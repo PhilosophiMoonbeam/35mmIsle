@@ -21,6 +21,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 option(ISLE_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+option(ISLE_BUILD_HOST_PROBE "Build the nonplayable real-libultraship procedural host probe" OFF)
 if(ISLE_ENABLE_SANITIZERS)
     if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$"
        OR NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$"
@@ -54,7 +55,15 @@ add_library(isle-rom STATIC src/rom.cpp include/35mmisle/rom.hpp)
 target_include_directories(isle-rom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-rom)
 
-# This is only the read-only identity CLI. No game host or LUS dependency is admitted.
+find_package(Threads REQUIRED)
+add_library(isle-process STATIC src/process.cpp include/35mmisle/process.hpp)
+target_include_directories(isle-process PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(isle-process PUBLIC Threads::Threads)
+isle_target_options(isle-process)
+target_compile_options(isle-process PRIVATE
+    "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>")
+
+# This remains only the read-only identity CLI; the host probe is a separate opt-in.
 add_executable(35mmisle-rom src/rom_main.cpp)
 target_link_libraries(35mmisle-rom PRIVATE isle-rom)
 if(MINGW)
@@ -62,6 +71,16 @@ if(MINGW)
     target_link_options(35mmisle-rom PRIVATE -municode)
 endif()
 isle_target_options(35mmisle-rom)
+
+if(ISLE_BUILD_HOST_PROBE)
+    include(cmake/Libultraship.cmake)
+    add_executable(35mmisle-host-probe src/host_probe.cpp)
+    target_compile_definitions(35mmisle-host-probe PRIVATE F3DEX_GBI_2
+        CVAR_ENABLE_MULTI_VIEWPORTS="${CVAR_ENABLE_MULTI_VIEWPORTS}"
+        ISLE_HOST_RENDERER_RESOURCES="${ISLE_HOST_RENDERER_RESOURCES}")
+    target_link_libraries(35mmisle-host-probe PRIVATE libultraship Threads::Threads)
+    isle_target_options(35mmisle-host-probe)
+endif()
 
 include(CTest)
 if(BUILD_TESTING)
@@ -75,8 +94,22 @@ if(BUILD_TESTING)
     isle_target_options(rom-tests)
     add_test(NAME rom-tests COMMAND rom-tests)
 
-    # Both executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    add_executable(process-tests tests/process_tests.cpp)
+    target_link_libraries(process-tests PRIVATE isle-process Threads::Threads)
+    isle_target_options(process-tests)
+    target_compile_options(process-tests PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>")
+    add_test(NAME process-tests COMMAND process-tests)
+
+    add_executable(message-queue-tests tests/message_queue_tests.cpp include/35mmisle/message_queue.hpp)
+    target_include_directories(message-queue-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    target_link_libraries(message-queue-tests PRIVATE Threads::Threads)
+    isle_target_options(message-queue-tests)
+    add_test(NAME message-queue-tests COMMAND message-queue-tests)
+
+    # All executables use explicit failure checks, including in Release builds.
+    set_tests_properties(native-tests rom-tests process-tests message-queue-tests
+        PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 
 include(GNUInstallDirs)

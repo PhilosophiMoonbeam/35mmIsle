@@ -1,0 +1,224 @@
+35mmIsle host-only lifetime adaptation, authored 2026-10-14.
+Base: Kenix3/libultraship 759b13401cd6903daa67a00a753066f791622e78.
+Upstream libultraship is MIT licensed; its LICENSE is preserved in the private
+source snapshot. Hunks are generated from immutable git-object bytes at this pin,
+with three lines of unified context, not from a mutable reference worktree.
+Ship::ControlDeck is the owning base of LUS::ControlDeck at this pin; its private
+Window/wheel/controller-bit caches therefore require the ship/controller paths.
+This patch adds explicit final-use cache release and safe SDL/OpenGL host teardown,
+not game behavior or general multi-context GUI support. Apply only to the freshly
+exported build-private snapshot, never to the reference checkout.
+
+diff --git a/include/ship/window/gui/Gui.h b/include/ship/window/gui/Gui.h
+--- a/include/ship/window/gui/Gui.h
++++ b/include/ship/window/gui/Gui.h
+@@ -174,6 +174,9 @@
+      */
+     void ShutDownImGui(Ship::Window* window);
+ 
++    // Final-use host shutdown: release cached owning backreferences.
++    void ReleaseHostReferences();
++
+   protected:
+     /** @brief Calls ImGui::NewFrame() after processing backend-specific input. */
+     void StartFrame();
+diff --git a/src/ship/window/gui/Gui.cpp b/src/ship/window/gui/Gui.cpp
+--- a/src/ship/window/gui/Gui.cpp
++++ b/src/ship/window/gui/Gui.cpp
+@@ -151,9 +151,21 @@
+ }
+ 
+ void Gui::ShutDownImGui(Ship::Window* window) {
++    if (ImGui::GetCurrentContext() == nullptr) {
++        return;
++    }
+     ImGuiWMShutdown();
+     ImGuiBackendShutdown();
+     ImGui::DestroyContext();
++}
++
++void Gui::ReleaseHostReferences() {
++    RemoveAllGuiWindows();
++    GetChildren().Remove(true);
++    mGameOverlay.reset();
++    mMenuBar.reset();
++    mMenu.reset();
++    mWindow.reset();
+ }
+ 
+ void Gui::ImGuiWMShutdown() {
+diff --git a/src/fast/Fast3dWindow.cpp b/src/fast/Fast3dWindow.cpp
+--- a/src/fast/Fast3dWindow.cpp
++++ b/src/fast/Fast3dWindow.cpp
+@@ -70,6 +70,8 @@
+ 
+ Fast3dWindow::~Fast3dWindow() {
+     SPDLOG_DEBUG("destruct fast3dwindow");
++    // ImGui releases GPU objects while the backend context still exists.
++    GetGui()->ShutDownImGui(this);
+     mInterpreter->Destroy();
+     delete mRenderingApi;
+     delete mWindowManagerApi;
+diff --git a/include/ship/controller/controldeck/ControlDeck.h b/include/ship/controller/controldeck/ControlDeck.h
+--- a/include/ship/controller/controldeck/ControlDeck.h
++++ b/include/ship/controller/controldeck/ControlDeck.h
+@@ -50,6 +50,9 @@
+                 std::unordered_map<CONTROLLERBUTTONS_T, std::string> buttonNames,
+                 std::shared_ptr<Window> window = nullptr, std::shared_ptr<ConsoleVariable> consoleVariable = nullptr);
+     ~ControlDeck();
++
++    // Final-use host shutdown; no controller sampling is permitted afterward.
++    void ReleaseHostReferences();
+ 
+     /**
+      * @brief Initialises the controller deck and loads saved mappings from Config.
+diff --git a/src/ship/controller/controldeck/ControlDeck.cpp b/src/ship/controller/controldeck/ControlDeck.cpp
+--- a/src/ship/controller/controldeck/ControlDeck.cpp
++++ b/src/ship/controller/controldeck/ControlDeck.cpp
+@@ -24,6 +24,18 @@
+ 
+ ControlDeck::~ControlDeck() {
+     SPDLOG_TRACE("destruct control deck");
++}
++
++void ControlDeck::ReleaseHostReferences() {
++    for (auto& port : mPorts) {
++        if (auto controller = port->GetConnectedController()) {
++            controller->SetControlDeck(nullptr);
++        }
++    }
++    mPorts.clear();
++    mWheelHandler.reset();
++    mWindow.reset();
++    mControllerBits = nullptr;
+ }
+ 
+ void ControlDeck::Init(uint8_t* controllerBits) {
+diff --git a/include/ship/resource/ResourceManager.h b/include/ship/resource/ResourceManager.h
+--- a/include/ship/resource/ResourceManager.h
++++ b/include/ship/resource/ResourceManager.h
+@@ -67,6 +67,9 @@
+                              std::shared_ptr<Keystore> keystore = nullptr);
+     ~ResourceManager();
+ 
++    // Call only after consumers and resource work have stopped.
++    void ReleaseHostReferences();
++
+     /** @brief Returns the ArchiveManager that manages the mounted archives. */
+     std::shared_ptr<ArchiveManager> GetArchiveManager();
+     /** @brief Returns the ResourceLoader responsible for deserializing file data. */
+diff --git a/src/ship/resource/ResourceManager.cpp b/src/ship/resource/ResourceManager.cpp
+--- a/src/ship/resource/ResourceManager.cpp
++++ b/src/ship/resource/ResourceManager.cpp
+@@ -42,6 +42,13 @@
+         }
+         throw std::runtime_error("Failed to initialize ArchiveManager");
+     }
++}
++
++void ResourceManager::ReleaseHostReferences() {
++    mResourceCache.clear();
++    mDefaultCacheArchive.reset();
++    mResourceLoader.reset();
++    mArchiveManager.reset();
+ }
+ 
+ ResourceManager::~ResourceManager() {
+diff --git a/src/fast/interpreter.cpp b/src/fast/interpreter.cpp
+--- a/src/fast/interpreter.cpp
++++ b/src/fast/interpreter.cpp
+@@ -5025,15 +5025,24 @@
+ }
+ 
+ void Interpreter::Destroy() {
+-    // TODO: should also destroy rapi, and any other resources acquired in fast3d
++    // Fast3dWindow owns the rendering and window backend objects.
+     free(mTexUploadBuffer);
+-    mWapi->Destroy();
++    mTexUploadBuffer = nullptr;
++    if (mWapi != nullptr) {
++        mWapi->Destroy();
++        mWapi = nullptr;
++    }
+ 
+     // Texture cache and loaded textures store references to Resources which need to be unreferenced.
+     TextureCacheClear();
+     mRdp->texture_to_load.raw_tex_metadata.resource = nullptr;
+     mRdp->loaded_texture[0].raw_tex_metadata.resource = nullptr;
+     mRdp->loaded_texture[1].raw_tex_metadata.resource = nullptr;
++    if (mInstance.lock().get() == this) {
++        sResourceManager.reset();
++        mInstance.reset();
++    }
++    mResourceManager.reset();
+ }
+ 
+ GfxRenderingAPI* Interpreter::GetCurrentRenderingAPI() {
+diff --git a/include/fast/backends/gfx_opengl.h b/include/fast/backends/gfx_opengl.h
+--- a/include/fast/backends/gfx_opengl.h
++++ b/include/fast/backends/gfx_opengl.h
+@@ -82,7 +82,7 @@
+     /** @brief Constructs the OpenGL renderer with optional shared dependencies. */
+     GfxRenderingAPIOGL(std::shared_ptr<Ship::ConsoleVariable> consoleVariable = nullptr,
+                        std::shared_ptr<Ship::ResourceManager> resourceManager = nullptr);
+-    ~GfxRenderingAPIOGL() override = default;
++    ~GfxRenderingAPIOGL() override;
+ 
+     /** @name GfxRenderingAPI implementation */
+     /** @{ */
+diff --git a/src/fast/backends/gfx_opengl.cpp b/src/fast/backends/gfx_opengl.cpp
+--- a/src/fast/backends/gfx_opengl.cpp
++++ b/src/fast/backends/gfx_opengl.cpp
+@@ -35,6 +35,12 @@
+ GfxRenderingAPIOGL::GfxRenderingAPIOGL(std::shared_ptr<Ship::ConsoleVariable> consoleVariable,
+                                        std::shared_ptr<Ship::ResourceManager> resourceManager)
+     : mConsoleVariable(std::move(consoleVariable)), mResourceManager(std::move(resourceManager)) {
++}
++
++GfxRenderingAPIOGL::~GfxRenderingAPIOGL() {
++    if (sOGLResourceManager == mResourceManager) {
++        sOGLResourceManager.reset();
++    }
+ }
+ 
+ int GfxRenderingAPIOGL::GetMaxTextureSize() {
+diff --git a/src/fast/backends/gfx_sdl.cpp b/src/fast/backends/gfx_sdl.cpp
+--- a/src/fast/backends/gfx_sdl.cpp
++++ b/src/fast/backends/gfx_sdl.cpp
+@@ -1,5 +1,6 @@
+ #include <math.h>
+ #include <stdio.h>
++#include <stdexcept>
+ 
+ #if defined(ENABLE_OPENGL) || defined(__APPLE__)
+ 
+@@ -336,7 +337,7 @@
+ 
+     if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+         SPDLOG_ERROR("SDL video initialization failed: {}", SDL_GetError());
+-        return;
++        throw std::runtime_error(std::string("SDL video initialization failed: ") + SDL_GetError());
+     }
+ 
+     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
+@@ -406,7 +407,7 @@
+     SDL_DestroyProperties(windowProperties);
+     if (mWnd == nullptr) {
+         SPDLOG_ERROR("Error creating SDL window: {}", SDL_GetError());
+-        return;
++        throw std::runtime_error(std::string("SDL window creation failed: ") + SDL_GetError());
+     }
+ #ifdef _WIN32
+     // Get Windows window handle and use it to subclass the window procedure.
+@@ -432,8 +433,9 @@
+         }
+ 
+         mCtx = SDL_GL_CreateContext(mWnd);
+-
+-        SDL_GL_MakeCurrent(mWnd, mCtx);
++        if (mCtx == nullptr || !SDL_GL_MakeCurrent(mWnd, mCtx)) {
++            throw std::runtime_error(std::string("SDL OpenGL context creation failed: ") + SDL_GetError());
++        }
+         SDL_GL_SetSwapInterval(mVsyncEnabled ? 1 : 0);
+ 
+         window_impl.Opengl = { mWnd, mCtx };

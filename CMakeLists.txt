@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(isle_rom_tools VERSION 0.1.0
-    DESCRIPTION "35mmIsle ROM identity tooling; not a game executable"
+project(35mmIsle VERSION 0.1.0
+    DESCRIPTION "35mmIsle original native services, ROM tooling and opt-in libultraship host probe"
     LANGUAGES C CXX)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
@@ -55,6 +55,10 @@ add_library(isle-rom STATIC src/rom.cpp include/35mmisle/rom.hpp)
 target_include_directories(isle-rom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-rom)
 
+add_library(isle-vpk0 STATIC src/vpk0.cpp include/35mmisle/vpk0.hpp)
+target_include_directories(isle-vpk0 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-vpk0)
+
 find_package(Threads REQUIRED)
 add_library(isle-process STATIC src/process.cpp include/35mmisle/process.hpp)
 target_include_directories(isle-process PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -94,6 +98,11 @@ if(BUILD_TESTING)
     isle_target_options(rom-tests)
     add_test(NAME rom-tests COMMAND rom-tests)
 
+    add_executable(vpk0-tests tests/vpk0_tests.cpp)
+    target_link_libraries(vpk0-tests PRIVATE isle-vpk0)
+    isle_target_options(vpk0-tests)
+    add_test(NAME vpk0-tests COMMAND vpk0-tests)
+
     add_executable(process-tests tests/process_tests.cpp)
     target_link_libraries(process-tests PRIVATE isle-process Threads::Threads)
     isle_target_options(process-tests)
@@ -108,7 +117,7 @@ if(BUILD_TESTING)
     add_test(NAME message-queue-tests COMMAND message-queue-tests)
 
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests process-tests message-queue-tests
+    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 

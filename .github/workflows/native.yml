@@ -1,4 +1,4 @@
-name: Native ROM tooling (synthetic only)
+name: Native services and procedural LUS host
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# Hosted runners only. No ROM inputs, extraction, uploads, or publication steps.
+# Hosted runners only. Synthetic/procedural inputs; no ROMs or artifact uploads.
 jobs:
   linux:
     name: Linux ${{ matrix.compiler.name }} / ${{ matrix.preset }}
@@ -25,7 +25,7 @@ jobs:
       CC: ${{ matrix.compiler.cc }}
       CXX: ${{ matrix.compiler.cxx }}
     steps:
-      - name: Check out original tooling sources
+      - name: Check out original native sources
         # actions/checkout v6.1.0, verified with upstream git ls-remote.
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -36,7 +36,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ninja-build
-      - name: Configure ROM tooling and synthetic tests
+      - name: Configure original services, decoder and synthetic tests
         run: cmake --preset ${{ matrix.preset }}
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
@@ -61,14 +61,14 @@ jobs:
           - { preset: windows-debug, configuration: Debug }
           - { preset: windows-release, configuration: Release }
     steps:
-      - name: Check out original tooling sources
+      - name: Check out original native sources
         # actions/checkout v6.1.0, verified with upstream git ls-remote.
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
           submodules: false
           lfs: false
-      - name: Configure ROM tooling and synthetic tests
+      - name: Configure original services, decoder and synthetic tests
         run: cmake --preset ${{ matrix.preset }}
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
@@ -95,3 +95,74 @@ jobs:
         run: cmake --install build/${{ matrix.preset }} --config ${{ matrix.configuration }}
       - name: Package tooling locally without uploading
         run: cpack --config build/${{ matrix.preset }}/CPackConfig.cmake -C ${{ matrix.configuration }} -B build/${{ matrix.preset }}/packages
+
+  linux-host:
+    name: Linux LUS / SDL3 / Mesa EGL procedural probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CC: gcc
+      CXX: g++
+    steps:
+      - name: Check out native sources
+        # actions/checkout v6.1.0; immutable action pin shared with the core matrix.
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Check out immutable SDL3 source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: libsdl-org/SDL
+          # release-3.4.2, resolved and version-checked on 2026-10-14.
+          ref: 683181b47cfabd293e3ea409f838915b8297a4fd
+          path: build-dependencies/SDL
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Install host headers and software renderer
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            ninja-build pkg-config libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev \
+            libgl-dev libopengl-dev libegl1-mesa-dev libgles2-mesa-dev \
+            libgl1-mesa-dri libglx-mesa0 libegl-mesa0 \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+            libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libudev-dev xvfb xauth
+      - name: Build and install pinned SDL3 outside the source tree
+        run: |
+          cmake -S build-dependencies/SDL -B "$RUNNER_TEMP/sdl-build" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/host-prefix" \
+            -DCMAKE_INSTALL_LIBDIR=lib -DSDL_SHARED=ON -DSDL_STATIC=OFF \
+            -DSDL_INSTALL=ON -DSDL_TEST_LIBRARY=OFF -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
+            -DSDL_X11=ON -DSDL_WAYLAND=OFF -DSDL_OPENGL=ON -DSDL_OPENGLES=ON
+          cmake --build "$RUNNER_TEMP/sdl-build" --parallel 2
+          cmake --install "$RUNNER_TEMP/sdl-build"
+      - name: Configure genuine pinned LUS host and all synthetic tests
+        # Empty ISLE_LUS_SOURCE_DIR fetches the enforced immutable LUS commit.
+        # System packages/runner images are not a fully locked release composition.
+        run: |
+          cmake -S . -B build/linux-host -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON -DISLE_BUILD_HOST_PROBE=ON -DISLE_LUS_SOURCE_DIR= \
+            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/host-prefix"
+      - name: Build host and original services
+        run: cmake --build build/linux-host --parallel 2
+      - name: Run all Release-active synthetic tests
+        run: ctest --test-dir build/linux-host --output-on-failure --no-tests=error
+      - name: Require bounded real renderer submission and owner teardown
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/host-prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          export XDG_DATA_HOME="$RUNNER_TEMP/host-data"
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/host-config"
+          probe_output="$(timeout 90s xvfb-run --auto-servernum \
+            --server-args="-screen 0 800x600x24 -nolisten tcp" \
+            env SDL_VIDEODRIVER=x11 SDL_VIDEO_FORCE_EGL=1 LIBGL_ALWAYS_SOFTWARE=1 \
+            build/linux-host/35mmisle-host-probe --frames 240 2>&1)"
+          printf '%s\n' "$probe_output"
+          [[ "$probe_output" == *"FIRST_SUCCESSFUL_RENDERER_FRAME:"* ]]
+          [[ "$probe_output" == *"Submitted 240 real-renderer frames;"* ]]
+          [[ "$probe_output" == *"HOST_OWNERS_RELEASED:"* ]]
+          # Submission/lifetime markers are not pixel or game-fidelity assertions.

@@ -31,9 +31,21 @@ Repository creation succeeded for [PhilosophiMoonbeam/35mmIsle](https://github.c
 - `origin`: `https://github.com/PhilosophiMoonbeam/35mmIsle.git`
 - Description: “Planning a faithful native Pokémon Snap (1999) port using libultraship; original work MIT, third-party rights retained.”
 
-A later baseline observation reported `isEmpty=true`, before authorized publication. The user subsequently authorized the focused planning/license publication; this document does not claim that commit or push has occurred.
+A baseline observation reported `isEmpty=true` before publication. The user then explicitly authorized the focused planning/license commit and push. The resulting hosted publication was exercised and is recorded below.
 
 The local Pokémon Snap fork baseline was `hermes/final-stretch` at `b35d6de06edd43aa842fdd3d03175967dfecfbea`, with existing tracked modifications and fork/upstream remotes. It was preserved as an observed research baseline, not adopted as the authoritative source or implicitly imported. Local libultraship (`main`, `759b13401cd6903daa67a00a753066f791622e78`) and Ghostship (`develop`, `40eef13823a954a466574dc78e73187a17a2dd42`) had no tracked changes in the captured baseline. These observations are not a final before/after diff assertion for any reference checkout.
+
+### Hosted publication proof
+
+The first planning publication was verified at [commit `1b82c9eac1d13c23552fd3ed27404ab37d0a7023`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/1b82c9eac1d13c23552fd3ed27404ab37d0a7023) using GitHub REST ref/tree/license/README responses and its GFM renderer. This is a frozen publication observation, not a native-game result.
+
+| Exercised hosted check | Observed result |
+| --- | --- |
+| Repository and branch | Public; administrator access; default branch `main`; remote ref matched the publication commit |
+| License detection | GitHub detected SPDX `MIT`; applicability remains limited to original work |
+| Published files | All 14 original planning/license file blobs matched local bytes; no mismatches |
+| README surface | Hosted content matched local README; GitHub GFM rendered its H1, table and plan navigation |
+
 
 ## Exercised documentation and graph gates
 

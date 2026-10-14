@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "bd_35mmIsle",
+  "project_id": "115fb942-21d3-4f4b-acc6-8b3511a92cd3"
+}

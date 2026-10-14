@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/35mmisle-logo.svg" alt="35mmIsle — a film camera with a palm island and coral sun inside its lens" width="600">
+</p>
+
 # 35mmIsle
 
 **35mmIsle is the native port of Pokémon Snap (1999) to modern systems, based on [libultraship (LUS)](https://github.com/Kenix3/libultraship).** The project targets Linux, Windows and macOS.

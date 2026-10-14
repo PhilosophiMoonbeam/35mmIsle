@@ -2,7 +2,7 @@
 
 ## Scope, authority and navigation
 
-35mmIsle proposes a faithful native desktop port of **Pokémon Snap (1999)**. This package is planning and source research, not a game implementation, playable build, completed decompilation or compatibility certification. Linux, Windows and macOS are proposed targets, not established support. No ROM, extracted assets, Nintendo/SGI SDK, microcode or reference checkout is part of the deliverable.
+35mmIsle is the native port of **Pokémon Snap (1999)** to modern systems, based on libultraship, targeting Linux, Windows and macOS. This document specifies architecture, design decisions and evidence requirements; it does not certify runtime compatibility or platform qualification. ROMs and extracted game assets are not distributed with the repository.
 
 This document is the integrated architecture/decision register. [BASELINES](BASELINES.md) freezes all seven source identities and local-state preservation; [DECOMP](DECOMP.md) is game-behavior authority; [LUS / Ghostship](LUS_GHOSTSHIP.md), [2Ship / MM](2SHIP_MM.md) and [Shipwright / OOT](SHIPWRIGHT_OOT.md) supply host/port comparisons. [ROADMAP](ROADMAP.md) alone owns the work-unit dependency/wave table, [VALIDATION](VALIDATION.md) the future behavioral proof contracts, [LICENSING](LICENSING.md) the rights gates, [INVENTORY](INVENTORY.md) the bounded portability screen and [VERIFICATION](VERIFICATION.md) the actual planning-check results. [BEADS](BEADS.md) maps work-unit IDs to live issues; this register does not track task completion.
 

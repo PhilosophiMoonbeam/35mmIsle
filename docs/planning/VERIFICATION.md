@@ -29,7 +29,7 @@ Repository creation succeeded for [PhilosophiMoonbeam/35mmIsle](https://github.c
 - `isPrivate`: `false`
 - `viewerPermission`: `ADMIN`
 - `origin`: `https://github.com/PhilosophiMoonbeam/35mmIsle.git`
-- Description: “Planning a faithful native Pokémon Snap (1999) port using libultraship; original work MIT, third-party rights retained.”
+- Description at repository creation (historical, superseded): “Planning a faithful native Pokémon Snap (1999) port using libultraship; original work MIT, third-party rights retained.”
 
 A baseline observation reported `isEmpty=true` before publication. The user then explicitly authorized the focused planning/license commit and push. The resulting hosted publication was exercised and is recorded below.
 

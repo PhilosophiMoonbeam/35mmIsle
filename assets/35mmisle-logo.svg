@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"
+     role="img" aria-labelledby="logo-title logo-desc">
+  <title id="logo-title">35mmIsle</title>
+  <desc id="logo-desc">An original cream and teal film camera frames a sandy island,
+    a single palm, and a coral sun inside its lens. Beside it, rounded lettering
+    spells 35mmIsle, with a barred capital I.</desc>
+
+  <defs>
+    <path id="camera-body" d="M77 112H153L169 96H294Q306 96 314 108L317 112H374
+      Q406 112 406 144V281Q406 313 374 313H77Q45 313 45 281V144Q45 112 77 112Z"/>
+    <clipPath id="lens-window">
+      <circle cx="244" cy="221" r="84"/>
+    </clipPath>
+
+    <!-- Original lettering: each glyph is drawn here, with no font dependency. -->
+    <g id="wordmark" fill-rule="evenodd">
+      <!-- 3 -->
+      <path d="M10 3H43C65 3 78 17 78 38C78 51 72 60 62 66
+        C75 71 82 82 82 98C82 121 66 135 42 135H9Q3 135 3 129V118
+        Q3 112 9 112H41Q58 112 58 98Q58 84 42 84H25Q19 84 19 78V66
+        Q19 60 25 60H40Q55 60 55 44Q55 27 40 27H10Q4 27 4 21V9Q4 3 10 3Z"/>
+      <!-- 5 -->
+      <path transform="translate(96)" d="M12 3H73Q79 3 79 9V21Q79 27 73 27H30L28 54
+        H43C68 54 83 68 83 94C83 120 67 135 42 135H10Q4 135 4 129V118
+        Q4 112 10 112H40Q59 112 59 95Q59 77 40 77H10Q3 77 4 69L7 9Q7 3 12 3Z"/>
+      <!-- m -->
+      <path id="letter-m" transform="translate(192)" d="M6 38H17Q22 38 23 45
+        C28 39 35 35 44 35C56 35 63 40 67 49C73 40 81 35 91 35
+        C110 35 119 48 119 68V129Q119 135 113 135H102Q96 135 96 129V73
+        Q96 57 83 57Q70 57 70 74V129Q70 135 64 135H52Q46 135 46 129V73
+        Q46 57 34 57Q22 57 22 74V129Q22 135 16 135H6Q0 135 0 129V44Q0 38 6 38Z"/>
+      <use href="#letter-m" transform="translate(133)"/>
+      <!-- Capital I: full top and bottom bars distinguish it from lowercase l. -->
+      <path transform="translate(461)" d="M6 3H52Q58 3 58 9V20Q58 26 52 26H41
+        V112H52Q58 112 58 118V129Q58 135 52 135H6Q0 135 0 129V118
+        Q0 112 6 112H17V26H6Q0 26 0 20V9Q0 3 6 3Z"/>
+      <!-- s -->
+      <path transform="translate(535)" d="M36 35Q53 35 65 41Q70 43 68 49L65 59
+        Q63 65 57 62Q47 57 36 57Q23 57 23 65Q23 72 42 77
+        Q72 85 72 106Q72 137 35 137Q16 137 3 130Q-2 127 0 122L4 112
+        Q6 107 12 110Q23 116 35 116Q49 116 49 108Q49 101 31 96
+        Q0 88 0 66Q0 35 36 35Z"/>
+      <!-- l -->
+      <path transform="translate(621)" d="M6 3H17Q23 3 23 9V105Q23 113 31 113
+        H33Q38 113 38 119V130Q38 135 32 135H26Q0 135 0 109V9Q0 3 6 3Z"/>
+      <!-- e -->
+      <path transform="translate(672)" d="M41 35C67 35 80 53 80 80V87Q80 93 74 93H24
+        Q27 115 45 115Q58 115 66 111Q72 108 74 114L77 123Q79 129 73 131
+        Q59 137 43 137C16 137 0 118 0 87C0 55 16 35 41 35Z
+        M24 75H57Q56 56 41 56Q27 56 24 75Z"/>
+    </g>
+  </defs>
+
+  <!-- A narrow cream silhouette keyline keeps the camera clear on dark pages. -->
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <g fill="#F3DDB3" stroke="#F3DDB3" stroke-width="20">
+      <rect x="75" y="91" width="48" height="28" rx="9"/>
+      <use href="#camera-body"/>
+      <circle cx="244" cy="221" r="110"/>
+    </g>
+
+    <!-- Shutter, rounded shell, and a broad rubber grip. -->
+    <rect x="75" y="91" width="48" height="28" rx="9"
+          fill="#EF7868" stroke="#283333" stroke-width="8"/>
+    <use href="#camera-body" fill="#F3DDB3" stroke="#283333" stroke-width="8"/>
+    <path d="M49 265Q57 290 82 290H374Q391 290 402 276V281
+      Q402 309 374 309H77Q49 309 49 281Z" fill="#D4B58A"/>
+    <path d="M78 116H112V309H78Q49 309 49 281V144Q49 116 78 116Z"
+          fill="#268E92"/>
+    <path d="M78 116H91Q68 127 68 153V274Q68 297 84 309H78
+      Q49 309 49 281V144Q49 116 78 116Z" fill="#226C70"/>
+    <path d="M112 122V303" fill="none" stroke="#283333" stroke-width="7"/>
+    <path d="M83 170V247" fill="none" stroke="#73BDB5" stroke-width="7"/>
+    <rect x="329" y="135" width="50" height="32" rx="9" fill="#283333"/>
+    <path d="M340 143H369Q372 143 372 147V153L340 153Z" fill="#73BDB5"/>
+    <circle cx="370" cy="189" r="6" fill="#EF7868"/>
+
+    <!-- Concentric rings seat the landscape inside the camera lens. -->
+    <circle cx="244" cy="221" r="110" fill="#283333"/>
+    <circle cx="244" cy="221" r="100" fill="#527878"/>
+    <circle cx="244" cy="221" r="91" fill="#283333"/>
+    <path d="M166 171A93 93 0 0 1 224 130" fill="none" stroke="#F3DDB3" stroke-width="5"/>
+    <path d="M302 294A93 93 0 0 0 332 253" fill="none" stroke="#268E92" stroke-width="5"/>
+
+    <!-- Flat, clipped color fields: sky, sun, water, shoreline, and one palm. -->
+    <g clip-path="url(#lens-window)">
+      <circle cx="244" cy="221" r="84" fill="#A9D9CE"/>
+      <circle cx="284" cy="182" r="20" fill="#EF7868"/>
+      <path d="M153 221Q191 214 231 221T335 221V312H153Z" fill="#268E92"/>
+      <path d="M173 272C192 256 209 247 227 251C249 255 259 266 281 264
+        Q303 262 317 277C296 293 260 297 229 292Q194 288 173 272Z" fill="#73BDB5"/>
+      <path d="M181 271C198 259 211 252 227 256C247 260 260 271 282 268
+        Q299 266 308 276C288 287 258 290 230 286Q201 283 181 271Z" fill="#F3DDB3"/>
+      <path d="M181 271Q205 274 230 279Q271 286 308 276
+        C288 287 258 290 230 286Q201 283 181 271Z" fill="#D4B58A"/>
+      <path d="M270 239H294M179 237H193" fill="none" stroke="#A9D9CE" stroke-width="4"/>
+      <path d="M214 263C222 242 223 218 213 195L220 194
+        C232 217 232 244 226 264Z" fill="#283333"/>
+      <path d="M216 196C200 173 183 177 175 196C190 187 202 190 216 196Z
+        M216 196C202 181 205 166 220 159C214 174 216 185 216 196Z
+        M216 196C225 175 244 175 254 193C237 185 226 190 216 196Z
+        M216 196C236 187 254 202 253 220C241 206 229 201 216 196Z
+        M216 196C196 189 181 204 184 221C195 208 204 201 216 196Z" fill="#283333"/>
+    </g>
+  </g>
+
+  <!-- One weight and color throughout; cream keylines work on light and dark. -->
+  <g transform="translate(451 132) scale(.94)" fill="#F3DDB3"
+     stroke-linejoin="round" paint-order="stroke fill">
+    <use href="#wordmark" stroke="#F3DDB3" stroke-width="14"/>
+    <use href="#wordmark" stroke="#283333" stroke-width="8"/>
+  </g>
+</svg>

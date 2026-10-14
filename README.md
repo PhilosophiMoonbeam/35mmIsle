@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/35mmisle-logo.svg" alt="35mmIsle — a film camera with a palm island and coral sun inside its lens" width="600">
+  <img src="assets/35mmisle-logo.svg" alt="35mmIsle — a weathered film SLR rediscovered on a sunlit beach, with a volcanic island reflected in its lens" width="1000">
 </p>
 
 # 35mmIsle

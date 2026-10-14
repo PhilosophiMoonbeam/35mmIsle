@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 210" role="img" aria-labelledby="wordmark-title wordmark-desc">
+<title id="wordmark-title">35mmIsle</title>
+<desc id="wordmark-desc">Original slanted cream lettering with deep-teal outlines, a warm terracotta shadow, a sweeping underline and a small glint. The capital I has broad serifs to distinguish it from the lowercase l. Transparent background; all lettering is drawn as vector paths.</desc>
+<defs><g id="lettering" fill-rule="evenodd">
+  <path d="M13 18Q39-1 69 5Q99 9 94 35Q91 53 70 63Q94 68 88 94Q82 126 47 131Q17 136 0 118L15 96Q27 114 45 111Q63 108 65 94Q68 78 44 79H32L37 59H47Q66 58 69 41Q72 27 57 26Q43 24 35 37L30 47H9Z"/>
+  <path transform="translate(99)" d="M22 8H103L95 33H42L35 57Q48 49 62 53Q92 59 85 91Q78 125 44 131Q19 136 0 121L11 98Q26 115 43 111Q59 107 62 92Q66 73 48 72Q36 71 24 80L7 72Z"/>
+  <path id="glyph-m" transform="translate(205)" d="M9 51L42 42L38 59Q54 40 71 45Q82 48 82 60Q98 40 116 45Q133 49 128 71L119 107Q117 116 129 113L126 125Q91 141 94 118L105 74Q108 63 99 65Q89 67 83 81L72 126H48L60 76Q63 64 55 65Q44 65 37 82L27 126H3L19 62L7 63Z"/>
+  <use href="#glyph-m" transform="translate(135)"/>
+  <path transform="translate(480)" d="M11 8H72L68 21L51 26L31 109L47 113L44 126H-17L-14 113L3 108L23 26L8 21Z"/>
+  <path transform="translate(550)" d="M7 100Q17 117 34 111Q49 106 33 96L20 88Q0 75 13 57Q27 39 51 43Q65 45 73 51L63 73H51Q53 59 41 61Q27 63 38 72L55 83Q74 98 60 116Q47 133 24 130Q8 129-2 121Z"/>
+  <path transform="translate(625)" d="M12 13L47 3L22 105Q19 117 34 111L30 125Q-7 143-2 118L21 24L10 25Z"/>
+  <path transform="translate(670)" d="M22 94Q19 113 36 111Q51 110 63 99L66 112Q48 133 23 130Q-6 127-1 98Q4 66 28 49Q47 37 64 46Q79 55 68 73Q57 91 22 94Z M27 79Q46 78 49 66Q52 58 45 60Q35 63 27 79Z"/>
+</g></defs>
+<g transform="translate(25 17)"><g stroke-linejoin="round" paint-order="stroke fill">
+  <use href="#lettering" transform="translate(0 8)" fill="#be7158" stroke="#be7158" stroke-width="15"/>
+  <use href="#lettering" fill="#fff5d9" stroke="#244d53" stroke-width="10"/>
+  <path d="M5 151C148 128 273 154 391 148C516 142 618 122 732 137C609 137 529 161 397 166C242 170 143 144 5 151Z" fill="#244d53"/>
+  <path d="M14 151C157 138 263 158 392 154C529 150 628 130 714 137" fill="none" stroke="#fff0c8" stroke-width="3"/>
+  <path d="M757 15L762 29L776 34L761 40L756 55L751 40L738 35L751 29Z" fill="#fff5d9" stroke="#244d53" stroke-width="3"/>
+</g></g>
+</svg>

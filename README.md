@@ -4,7 +4,7 @@
 
 # 35mmIsle
 
-**35mmIsle is the native port of Pokémon Snap (1999) to modern systems, based on [libultraship (LUS)](https://github.com/Kenix3/libultraship).** The project targets Linux, Windows and macOS.
+**35mmIsle is the native port of Pokémon Snap (1999) to modern systems, based on [libultraship (LUS)](https://github.com/Kenix3/libultraship).** The initial implementation targets are Linux x64 and Windows 11 x64.
 
 The port builds on the authoritative [Pokémon Snap decompilation](https://github.com/ethteck/pokemonsnap), with integration patterns informed by other mature LUS-based ports. ROMs and extracted game assets are not distributed with this repository.
 
@@ -33,6 +33,29 @@ The [upstream `ethteck/pokemonsnap`](https://github.com/ethteck/pokemonsnap/tree
 ## Project scope
 
 The port's scope covers all seven courses, original interactions and unlocks, camera/focus/shutter, photo selection and Oak evaluation, report/album/gallery, durable save and cold reload, original audio, ending and credits. Faithful photography requires both per-object live focus-color history and reconstructed-photo depth/scoring semantics. ROADMAP and VALIDATION define implementation dependencies and fidelity requirements.
+
+## Building development tools
+
+Requires CMake 3.24+, a C11/C++20 compiler and a 64-bit target. Linux presets use Ninja; Windows presets use Visual Studio 2022 x64.
+
+```sh
+cmake --preset linux-release
+cmake --build --preset linux-release
+ctest --preset linux-release
+build/linux-release/35mmisle-rom check /path/to/pokemonsnap.z64
+```
+
+```powershell
+cmake --preset windows-release
+cmake --build --preset windows-release
+ctest --preset windows-release
+.\build\windows-release\Release\35mmisle-rom.exe check "C:\private\pokemonsnap.z64"
+```
+
+`35mmisle-rom` validates the exact US image in z64, v64 or n64 byte order without writing normalized ROM data. These targets build development tooling, not the game executable. Public tests use independently constructed synthetic inputs; the development ROM and all generated game content stay private.
+
+[ADMISSION](docs/development/ADMISSION.md) records original-source boundaries and unresolved import decisions. [Dependency evidence](cmake/dependencies.json) identifies the selected future LUS baseline; it is not a complete dependency lock or a linked runtime.
+
 
 ## License and contributions
 

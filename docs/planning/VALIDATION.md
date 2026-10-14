@@ -2,7 +2,7 @@
 
 ## Scope
 
-Proposed proof obligations for the ROADMAP work units, from authority review through a native Pokémon Snap release on Linux, Windows and macOS. No gate, build, test, formatter or runtime experiment was executed in preparing this document. Compilation, an initialized window or a synthetic render demonstrates only that limited operation; none proves a playable or complete game.
+Proof obligations for the ROADMAP work units, from authority review through a native Pokémon Snap release on Linux x64 and Windows 11 x64. The original planning preparation executed no gate, build, test, formatter or runtime experiment. Compilation, an initialized window or a synthetic render demonstrates only that limited operation; none proves a playable or complete game.
 
 The initial original-region baseline is US ROM SHA-1 `edc7c49cc568c045fe48be0d18011c30f393cbaf`. Other revisions/regions and broader LUS platforms are deferred decisions, not accepted compatibility. Original behavior is evaluated against provenance-controlled local ROM fixtures; public artifacts contain no ROM or extracted game assets. A failed rights gate blocks imports/releases even if the technical gates pass.
 
@@ -107,13 +107,12 @@ The orchestrator runs a repeatable vertical slice on the integrated wave: cold l
 
 ## Platform, compiler and presentation matrix
 
-Proposed initial qualification targets: desktop x86-64 Linux/Windows and arm64 macOS. Architecture breadth is a release decision, not an implicit promise of every architecture supported by LUS. If another architecture is advertised, it receives its own native cell. Backend availability must first be confirmed for the pinned dependency/build; the candidate choices below are not assertions of completed support.
+Requested initial qualification targets are Linux x86-64 and Windows 11 x86-64. Architecture breadth is a release decision, not an implicit promise of every architecture supported by LUS. If another architecture is advertised, it receives its own native cell. Backend availability must first be confirmed for the pinned dependency/build; the candidate choices below are not assertions of completed support.
 
 | Native platform | ABI / candidate compiler cells | Candidate renderer cells | Required evidence |
 |---|---|---|---|
 | Linux x86-64 | LP64; GCC and Clang | OpenGL; any additional advertised backend independently | F01–F14; real desktop input/audio/save/package; original semantic/score fixture parity across compilers. |
-| Windows x86-64 | LLP64; MSVC and clang-cl (GCC/Clang results elsewhere ensure a second compiler family) | Direct3D 11 and OpenGL if both advertised | F01–F14 on actual Windows; pointer/long conversions, disk replacement/path semantics; score/readback parity for every advertised backend. |
-| macOS arm64 | LP64; Apple Clang | Metal and OpenGL only if explicitly retained/available | F01–F14 on actual macOS; package launch/write locations, graphics/audio device path and calibrated parity. |
+| Windows 11 x86-64 | LLP64; MSVC and clang-cl (GCC/Clang results elsewhere ensure a second compiler family) | Direct3D 11 and OpenGL if both advertised | F01–F14 on actual Windows 11; pointer/long conversions, disk replacement/path semantics; score/readback parity for every advertised backend. |
 
 Minimum compiler-family coverage is GCC-compatible and MSVC-compatible, not two versions of Clang alone. Debug and release/optimized builds must both preserve fixture semantics; sanitizer-supported ABI/asset/process/save runs target plausible UB/lifetime edges, not a blanket all-platform sanitizer promise. Cross-compilation or CI compilation does not replace native runtime evidence.
 
@@ -129,7 +128,7 @@ Proposed native schema: a versioned envelope identifying game/ROM baseline, cano
 | Crash/fault | Interrupt before/after write, flush, replace and durability boundary. A loader accepts complete last committed or complete new generation; an incomplete temp never supersedes valid state. Document residual power-loss limits per filesystem/OS rather than promising impossible universal atomicity. |
 | Recovery | Preserve corrupt/unknown-version bytes and last known-good state; offer explicit recovery/error policy. Never silently start a new game and overwrite evidence. Simultaneous writers must be rejected or serialized with an explicit lock policy. |
 | Version migration | Supported old schema has explicit validated conversion and round-trip fixtures; future/unknown schema is rejected without mutation. New schema versions require a work unit and changed fixtures, not a raw-struct compatibility assumption. |
-| Cross-platform | Linux/Windows/macOS load the same native schema into identical canonical state and regenerate the same original photos; host pointer/bitfield/locale differences are absent. |
+| Cross-platform | Linux x64 and Windows 11 x64 load the same native schema into identical canonical state and regenerate the same original photos; host pointer/bitfield/locale differences are absent. |
 
 ## Reuse decisions
 

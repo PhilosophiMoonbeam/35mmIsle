@@ -8,3 +8,28 @@
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Out-of-source native builds, local installs, and developer-only presets.
+/build/
+/build-*/
+/cmake-build-*/
+/install/
+/install-*/
+/CMakeUserPresets.json
+/_CPack_Packages/
+
+# Private ROMs are inputs only, never repository fixtures.
+/private/
+/roms/
+*.[zZ]64
+*.[vV]64
+*.[nN]64
+*.[rR][oO][mM]
+
+# Generated assets and graphics captures; do not hide authored source/assets.
+/generated/assets/
+/assets/generated/
+/captures/
+*.rdc
+*.gfxr
+*.apitrace

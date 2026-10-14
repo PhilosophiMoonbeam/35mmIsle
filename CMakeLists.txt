@@ -1,0 +1,103 @@
+cmake_minimum_required(VERSION 3.24)
+
+project(isle_rom_tools VERSION 0.1.0
+    DESCRIPTION "35mmIsle ROM identity tooling; not a game executable"
+    LANGUAGES C CXX)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "Use an out-of-source build, for example cmake --preset linux-debug")
+endif()
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "35mmIsle native tooling requires a 64-bit target")
+endif()
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+# Keep the standalone MSVC tooling package independent of an installed VC runtime.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+option(ISLE_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if(ISLE_ENABLE_SANITIZERS)
+    if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$"
+       OR NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$"
+       OR CMAKE_C_SIMULATE_ID STREQUAL "MSVC"
+       OR CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+        message(FATAL_ERROR "ISLE_ENABLE_SANITIZERS requires GCC or GNU-style Clang for both C and C++")
+    endif()
+endif()
+
+function(isle_target_options target)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /W4 /utf-8 /fp:strict
+            "$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
+            "$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>")
+    else()
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-Wall;-Wextra;-Wpedantic;-Wconversion;-Wshadow;-fno-fast-math;-ffp-contract=off>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-Wall;-Wextra;-Wpedantic;-Wconversion;-Wshadow;-fno-fast-math;-ffp-contract=off>")
+    endif()
+    if(ISLE_ENABLE_SANITIZERS)
+        target_compile_options(${target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+        target_link_options(${target} PRIVATE -fsanitize=address,undefined -fno-sanitize-recover=all)
+    endif()
+endfunction()
+
+add_library(isle-native STATIC src/native.c include/35mmisle/native.h)
+target_include_directories(isle-native PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-native)
+
+add_library(isle-rom STATIC src/rom.cpp include/35mmisle/rom.hpp)
+target_include_directories(isle-rom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-rom)
+
+# This is only the read-only identity CLI. No game host or LUS dependency is admitted.
+add_executable(35mmisle-rom src/rom_main.cpp)
+target_link_libraries(35mmisle-rom PRIVATE isle-rom)
+if(MINGW)
+    # Match the CLI's Unicode wmain entry point, without creating a GUI subsystem.
+    target_link_options(35mmisle-rom PRIVATE -municode)
+endif()
+isle_target_options(35mmisle-rom)
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(native-tests tests/native_tests.c)
+    target_link_libraries(native-tests PRIVATE isle-native)
+    isle_target_options(native-tests)
+    add_test(NAME native-tests COMMAND native-tests)
+
+    add_executable(rom-tests tests/rom_tests.cpp)
+    target_link_libraries(rom-tests PRIVATE isle-rom)
+    isle_target_options(rom-tests)
+    add_test(NAME rom-tests COMMAND rom-tests)
+
+    # Both executables use explicit failure checks, including in Release builds.
+    set_tests_properties(native-tests rom-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+endif()
+
+include(GNUInstallDirs)
+install(TARGETS 35mmisle-rom RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle-rom-tool")
+
+set(CPACK_PACKAGE_NAME "35mmisle-rom-tool")
+set(CPACK_PACKAGE_VENDOR "35mmIsle contributors")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Read-only ROM identity checker; no game or assets")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-64bit")
+set(CPACK_VERBATIM_VARIABLES ON)
+# Only install-listed tooling enters a binary archive; never package the source tree.
+set(CPACK_SOURCE_GENERATOR "")
+foreach(format IN ITEMS 7Z CYGWIN RPM TBZ2 TGZ TXZ TZ ZIP)
+    set(CPACK_SOURCE_${format} OFF)
+endforeach()
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP")
+else()
+    set(CPACK_GENERATOR "TGZ")
+endif()
+include(CPack)

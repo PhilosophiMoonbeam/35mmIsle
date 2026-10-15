@@ -184,6 +184,35 @@
       <path d="M1138.66 773.40 L1154.38 770.42 L1151.41 775.99 L1135.71 778.96 Z"/><path d="M1127.73 794.01 L1143.40 791.05 L1140.43 796.62 L1124.78 799.57 Z"/>
       <path d="M1179.22 765.30 L1193.64 762.07 L1190.67 767.63 L1176.25 770.87 Z"/><path d="M1168.20 785.93 L1182.63 782.67 L1179.65 788.22 L1165.23 791.50 Z"/>
     </g>
+
+    <!-- 1990s Anime Atmospheric, Safari Apple & Optical Flare Gradients -->
+    <linearGradient id="sunbeam-grad" x1="946" y1="170" x2="660" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffbe0" stop-opacity="0.42"/>
+      <stop offset="0.55" stop-color="#ffe299" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#ffd27d" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="rainbow-arc" x1="875" y1="355" x2="995" y2="405" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff6b7a" stop-opacity="0"/>
+      <stop offset="0.18" stop-color="#ff6b7a" stop-opacity="0.55"/>
+      <stop offset="0.38" stop-color="#ffd86b" stop-opacity="0.55"/>
+      <stop offset="0.58" stop-color="#7be896" stop-opacity="0.55"/>
+      <stop offset="0.78" stop-color="#6be0ff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#b28dff" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="safari-apple" cx="35%" cy="30%" r="68%">
+      <stop offset="0" stop-color="#ff857a"/>
+      <stop offset="0.45" stop-color="#e83838"/>
+      <stop offset="0.85" stop-color="#a81826"/>
+      <stop offset="1" stop-color="#700f1b"/>
+    </radialGradient>
+
+    <!-- Classic 90s Anime 4-Point Cel Star Glint -->
+    <g id="cel-sparkle">
+      <path d="M0 -14 L3 -3 L14 0 L3 3 L0 14 L-3 3 L-14 0 L-3 -3 Z" fill="#fffef2" stroke="#153b43" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="0" cy="0" r="2.5" fill="#ffffff"/>
+    </g>
   </defs>
 
   <!-- ========================================================================= -->
@@ -291,10 +320,26 @@
       <circle cx="946" cy="170" r="76" fill="#fff6cf"/>
       <circle cx="946" cy="170" r="59" fill="#ffe699"/>
 
-      <!-- Layered Horizon Clouds & Mist -->
-      <path d="M585 185 H750 Q762 185 765 176 Q768 166 756 165 H660 Z" fill="#ffefd0" opacity="0.55"/>
-      <path d="M610 151 H653 Q653 137 671 137 Q675 117 692 126 Q706 126 708 141 H766 M983 113 H1046 M968 126 H1078" stroke="#fff8de" stroke-width="10"/>
-      <path d="M626 163 H738 M1002 138 H1065" stroke="#fde2b2" stroke-width="5"/>
+      <!-- 1990s Anime Crepuscular Sunbeams (God Rays) -->
+      <g fill="url(#sunbeam-grad)">
+        <polygon points="946,170 615,355 665,410"/>
+        <polygon points="946,170 705,435 775,465"/>
+        <polygon points="946,170 815,475 875,485"/>
+        <polygon points="946,170 575,255 595,305"/>
+      </g>
+
+      <!-- Sculpted 1990s Anime Cumulus Cloud Banks -->
+      <g id="anime-clouds">
+        <!-- Western Cumulus Bank -->
+        <path d="M582 178 H774 Q786 178 784 167 Q781 156 765 156 Q769 138 751 135 Q746 113 721 116 Q708 94 681 102 Q658 96 647 117 Q626 112 616 132 Q596 131 591 151 H576 Z" fill="#fff9e2" stroke="#d48862" stroke-width="2.5"/>
+        <path d="M586 178 H772 Q782 178 780 169 Q762 167 752 158 Q736 164 723 151 Q701 162 683 146 Q661 158 644 145 Q624 156 607 148 Q595 160 582 162 Z" fill="#f7be8a"/>
+        <path d="M590 178 H768 Q754 171 738 168 Q716 174 698 164 Q675 173 655 163 Q632 171 612 165 Z" fill="#e08d67"/>
+        <!-- Eastern Horizon Cloud Wisps -->
+        <path d="M966 134 H1092 Q1102 134 1098 124 Q1093 114 1078 115 Q1074 97 1054 99 Q1039 83 1018 93 Q1001 92 994 109 Q976 108 972 122 H960 Z" fill="#fff9e2" stroke="#d48862" stroke-width="2.2"/>
+        <path d="M970 134 H1088 Q1072 126 1056 121 Q1036 129 1018 118 Q998 127 978 122 Z" fill="#f7be8a"/>
+        <!-- Classic 90s Anime Streaking Cloud Lines -->
+        <path d="M596 186 H685 M712 185 H758 M952 142 H1038" stroke="#fff6d6" stroke-width="4" stroke-linecap="round"/>
+      </g>
 
       <!-- Distant Atmospheric Mountain Ridgelines -->
       <path d="M575 297 L632 242 L672 256 L726 210 L768 242 L824 206 L887 262 L933 250 L1008 307 Z" fill="#c2c59c"/>
@@ -379,10 +424,23 @@
       <!-- Waterfall Crest & Cascade Highlights -->
       <path d="M949 340 Q952 345 952 350 M942 351 Q953 349 963 351 M946 351 L944 387 M956 352 L958 388 M951 362 L950 389" stroke="#fff8d6" stroke-width="3.5" fill="none"/>
 
-      <!-- Waterfall Plunge Foam & Shimmering Water Reflections (Directly Meeting Base of Falls) -->
-      <path d="M928 393 Q934 385 945 388 Q954 382 963 388 Q973 384 979 392 Q985 397 974 399 Q953 402 933 399 Q924 397 928 393 Z" fill="#e8fbf3" opacity="0.92"/>
+      <!-- Waterfall Plunge Foam, Rainbow Mist Arc & 90s Anime Water Caustics -->
+      <path d="M878 404 A64 64 0 0 1 996 364" stroke="url(#rainbow-arc)" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="M922 392 C916 382 930 376 938 383 C946 374 962 374 969 383 C978 377 990 384 984 394 C990 401 975 404 953 403 C931 404 917 399 922 392 Z" fill="#effcf7" stroke="#204848" stroke-width="2.5"/>
       <path d="M935 391 Q945 384 954 390 Q964 383 973 390 M931 395 Q953 400 976 394 M922 399 Q953 406 984 397" stroke="#fff7d6" stroke-width="3.5" fill="none"/>
-      <path d="M916 406 Q953 415 990 403 M930 415 Q954 421 978 413 M612 411 Q682 392 750 398 M812 409 Q885 422 918 417 M994 409 L1044 392 M795 445 Q853 450 891 445 M1013 443 L1091 423 M583 460 Q644 443 703 451 M725 426 H778" stroke="#b9e8cf" stroke-width="4.5" fill="none"/>
+
+      <!-- Cel-Shaded Lagoon Wave Bands & Sunlit Caustic Ribbons -->
+      <path d="M565 432 Q675 408 785 424 Q885 438 975 418 Q1045 402 1115 412 L1115 436 Q1035 424 955 442 Q865 458 765 442 Q665 428 565 452 Z" fill="#63d2c2" opacity="0.35"/>
+      <path d="M605 485 Q725 468 845 482 Q945 494 1065 468 L1065 492 Q945 514 835 502 Q715 488 605 508 Z" fill="#1c6880" opacity="0.45"/>
+      <path d="M916 406 Q953 415 990 403 M930 415 Q954 421 978 413 M612 411 Q682 392 750 398 M812 409 Q885 422 918 417 M994 409 L1044 392 M795 445 Q853 450 891 445 M1013 443 L1091 423 M583 460 Q644 443 703 451 M725 426 H778 M745 468 Q805 476 862 466 M655 492 Q712 485 768 495" stroke="#b9e8cf" stroke-width="4.5" fill="none"/>
+
+      <!-- 90s Anime Water Pinprick Glints -->
+      <g stroke="#fffbe6" stroke-width="2.5" stroke-linecap="round">
+        <path d="M902 418 H914 M908 412 V424"/>
+        <path d="M854 432 H864 M859 427 V437"/>
+        <path d="M968 426 H978 M973 421 V431"/>
+        <path d="M778 412 H786 M782 408 V416"/>
+      </g>
 
       <!-- Mysterious Aquatic Silhouette & Concentric Ripples in the Bay -->
       <path d="M1008 470 Q1026 439 1045 450 Q1055 460 1076 459 L1085 469 Z" fill="#1d5662" stroke="#133b44" stroke-width="3"/>
@@ -390,16 +448,24 @@
       <path d="M994 478 Q1034 462 1091 473 M1005 487 Q1055 489 1102 475 M1022 496 Q1058 497 1088 490" stroke="#a2e0cd" stroke-width="4"/>
       <path d="M1066 482 L1095 481" stroke="#fff3cc" stroke-width="3"/>
 
-      <!-- Distant Birds -->
-      <path d="M766 173 Q774 164 784 173 Q794 164 802 173 M738 190 Q744 183 751 190 Q759 182 766 188 M818 152 Q823 146 829 152 Q835 146 840 151" stroke="#5d8576" stroke-width="3"/>
+      <!-- Distant Sea Birds Flock -->
+      <path d="M766 173 Q774 164 784 173 Q794 164 802 173 M738 190 Q744 183 751 190 Q759 182 766 188 M818 152 Q823 146 829 152 Q835 146 840 151 M705 172 Q711 165 718 172 Q725 165 731 171" stroke="#5d8576" stroke-width="3"/>
 
       <!-- Cliffside Palm -->
       <use href="#palm" transform="translate(1061 266) scale(.55) rotate(9)"/>
 
+      <!-- 1990s Anime Hexagonal Optical Lens Flare Chain -->
+      <g pointer-events="none">
+        <polygon points="815,282 835,292 835,314 815,324 795,314 795,292" fill="#7bf0e0" fill-opacity="0.14" stroke="#bffaf0" stroke-width="2" stroke-opacity="0.45"/>
+        <polygon points="758,342 772,349 772,365 758,372 744,365 744,349" fill="#ff9ec6" fill-opacity="0.16" stroke="#ffd4e5" stroke-width="1.8" stroke-opacity="0.45"/>
+        <circle cx="712" cy="396" r="18" fill="#ffe680" fill-opacity="0.18" stroke="#fff5b8" stroke-width="1.5" stroke-opacity="0.4"/>
+        <circle cx="882" cy="232" r="11" fill="#ffffff" fill-opacity="0.25"/>
+      </g>
+
       <!-- Optical Multi-Coating Glass Flare & Subtle Viewfinder Crosshair -->
       <circle cx="840" cy="324" r="262" fill="url(#lens-glass)"/>
-      <path d="M628 215 A238 238 0 0 1 785 92" stroke="#ffffff" stroke-width="6" opacity="0.22"/>
-      <path d="M642 238 A222 222 0 0 1 765 112" stroke="#ffffff" stroke-width="2.5" opacity="0.3"/>
+      <path d="M628 215 A238 238 0 0 1 785 92" stroke="#ffffff" stroke-width="6" opacity="0.26"/>
+      <path d="M642 238 A222 222 0 0 1 765 112" stroke="#ffffff" stroke-width="2.5" opacity="0.35"/>
       <g stroke="#fff8dc" stroke-width="2" opacity="0.38">
         <path d="M832 82 H848 M840 74 V90"/>
         <path d="M1074 316 V332 M1066 324 H1082"/>
@@ -437,6 +503,19 @@
     <path d="M255 680 Q336 704 381 707 M1093 708 Q1145 696 1193 667 M645 734 Q715 739 785 734" stroke="#436d53" stroke-width="4"/>
     <!-- Re-stroke outer boundary for crispness -->
     <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" fill="none" stroke="#163c44" stroke-width="6"/>
+
+    <!-- Tropical Hibiscus Blossom Cluster on the Eastern Bluff -->
+    <g id="tropical-hibiscus" transform="translate(1192 668)">
+      <g transform="rotate(12)">
+        <path d="M0 -14 C6 -14 9 -5 3 -1 C11 -4 16 4 9 9 C12 15 3 18 -1 10 C-6 17 -14 12 -9 5 C-16 1 -11 -9 -3 -4 C-6 -11 -4 -14 0 -14 Z" fill="#ff6b5b" stroke="#163c44" stroke-width="3.2"/>
+        <circle cx="0" cy="2" r="4" fill="#ffe169"/>
+        <path d="M0 2 L5 -5" stroke="#fff8d6" stroke-width="2"/>
+      </g>
+      <g transform="translate(22 14) scale(0.75) rotate(-18)">
+        <path d="M0 -14 C6 -14 9 -5 3 -1 C11 -4 16 4 9 9 C12 15 3 18 -1 10 C-6 17 -14 12 -9 5 C-16 1 -11 -9 -3 -4 C-6 -11 -4 -14 0 -14 Z" fill="#ffd24c" stroke="#163c44" stroke-width="3.5"/>
+        <circle cx="0" cy="2" r="4" fill="#e84838"/>
+      </g>
+    </g>
   </g>
 
   <!-- ========================================================================= -->
@@ -453,11 +532,21 @@
     <!-- Recessed Sprocket Track Band -->
     <path d="M207.00 756.00 C434.00 841.00 1022.00 815.00 1251.00 744.00 L1234.00 776.00 C1001.00 852.00 435.00 856.00 194.00 787.00 Z" fill="#2d5757" stroke="#123038" stroke-width="2"/>
 
-    <!-- Exposed 35mm Film Frames Strip Between Perforations -->
+    <!-- Vivid Exposed 35mm Safari Snapshot Frames Between Perforations -->
     <g clip-path="url(#film-track-clip)">
       <path d="M202.58 766.54 C434.34 846.10 1014.86 827.58 1245.22 754.88 L1239.78 765.12 C1008.14 839.42 434.66 850.90 198.42 776.46 Z" fill="url(#film-emulsion)"/>
+      <!-- Individual Color-Tinted Mini Snapshots Along the Strip -->
+      <polygon points="255,745 356,760 350,835 250,820" fill="#e58b52" opacity="0.82"/>
+      <polygon points="356,760 453,772 448,845 350,835" fill="#46b4b0" opacity="0.82"/>
+      <polygon points="453,772 554,778 550,850 448,845" fill="#78b05e" opacity="0.82"/>
+      <polygon points="554,778 658,782 656,855 550,850" fill="#f0b85c" opacity="0.85"/>
+      <polygon points="658,782 766,780 764,855 656,855" fill="#e26b58" opacity="0.82"/>
+      <polygon points="766,780 874,772 870,850 764,855" fill="#4bc0b8" opacity="0.82"/>
+      <polygon points="874,772 978,762 972,840 870,850" fill="#88bc64" opacity="0.82"/>
+      <polygon points="978,762 1078,750 1070,830 972,840" fill="#f2a65a" opacity="0.82"/>
+      <polygon points="1078,750 1170,735 1162,815 1070,830" fill="#529ab5" opacity="0.82"/>
       <!-- Frame Divider Bars along the strip -->
-      <g stroke="#163840" stroke-width="5">
+      <g stroke="#143239" stroke-width="6">
         <line x1="265" y1="740" x2="255" y2="820"/>
         <line x1="358" y1="755" x2="350" y2="835"/>
         <line x1="455" y1="770" x2="448" y2="845"/>
@@ -469,6 +558,10 @@
         <line x1="1080" y1="750" x2="1070" y2="830"/>
         <line x1="1172" y1="735" x2="1162" y2="815"/>
       </g>
+    </g>
+    <!-- Golden DX Film Edge Frame Index Marks -->
+    <g stroke="#f3c86b" stroke-width="2.2" opacity="0.8">
+      <path d="M302 778 L312 780 M402 793 L414 794 M502 802 L514 803 M606 806 L618 806 M712 806 L724 806 M820 802 L832 801 M926 794 L938 792 M1028 782 L1040 780 M1124 768 L1136 765"/>
     </g>
     <!-- Subtle Edge Highlight Along the Frame Track -->
     <path d="M202.58 766.54 C434.34 846.10 1014.86 827.58 1245.22 754.88" stroke="#d5c696" stroke-width="1.8" fill="none" opacity="0.75"/>
@@ -506,18 +599,25 @@
     <g fill="url(#amber)" stroke="#153b43" stroke-width="5">
       <use href="#number-letters"/><use href="#unit-letters"/>
     </g>
-    <!-- Chiseled Inner Highlights & Gloss Arc -->
+    <!-- 1990s Anime Horizon-Split Cel Gloss & Diagonal Specular Slashes -->
     <g clip-path="url(#number-faces)">
-      <path d="M-20 12 Q240 -18 520 35 L520 62 Q240 15 -20 42 Z" fill="#ffffff" opacity="0.32"/>
-      <path d="M-20 135 Q240 165 520 125 V175 H-20 Z" fill="#c96b1e" opacity="0.28"/>
-      <g transform="translate(1 3)" fill="none" stroke="#fff6bf" stroke-width="4">
+      <path d="M-20 -10 H525 V66 Q255 34 -20 62 Z" fill="#fffce0" opacity="0.38"/>
+      <path d="M-20 12 Q240 -18 520 35 L520 58 Q240 12 -20 38 Z" fill="#ffffff" opacity="0.52"/>
+      <!-- Diagonal Anime Chrome-Gold Light Slashes -->
+      <polygon points="35,-10 72,-10 18,175 -18,175" fill="#ffffff" opacity="0.32"/>
+      <polygon points="185,-10 215,-10 162,175 132,175" fill="#ffffff" opacity="0.28"/>
+      <polygon points="345,-10 378,-10 324,175 292,175" fill="#ffffff" opacity="0.28"/>
+      <path d="M-20 128 Q240 158 520 118 V175 H-20 Z" fill="#b85416" opacity="0.42"/>
+      <g transform="translate(1 3)" fill="none" stroke="#fff9d2" stroke-width="4.5">
         <use href="#number-letters"/><use href="#unit-letters"/>
       </g>
     </g>
-    <!-- Crisp Final Face Outline -->
+    <!-- Crisp Final Face Outline & Corner Star Glints -->
     <g fill="none" stroke="#153b43" stroke-width="4.5">
       <use href="#number-letters"/><use href="#unit-letters"/>
     </g>
+    <use href="#cel-sparkle" transform="translate(98 14) scale(0.85)"/>
+    <use href="#cel-sparkle" transform="translate(246 10) scale(0.7)"/>
   </g>
 
   <!-- ========================================================================= -->
@@ -536,19 +636,29 @@
     <!-- Mid Lagoon Extrusion Bevel -->
     <use href="#isle-letters" transform="translate(2.5 12)" fill="url(#isle-extrude)" stroke="url(#isle-extrude)" stroke-width="9"/>
     <!-- Upper-Left Lit Extrusion Rim -->
-    <use href="#isle-letters" transform="translate(1.2 6)" fill="#45a898" stroke="#267f79" stroke-width="6"/>
+    <use href="#isle-letters" transform="translate(1.2 6)" fill="#55c2b0" stroke="#267f79" stroke-width="6"/>
 
     <!-- Main Sculpted Ivory Face -->
     <use href="#isle-letters" fill="url(#ivory)" stroke="#153b43" stroke-width="6"/>
 
-    <!-- Chiseled Face Lighting, Gloss Sweep & Warm Bounce Light -->
+    <!-- 1990s Box-Art Chiseled Cel Shading, Diagonal Gloss & Warm Bounce Light -->
     <g clip-path="url(#isle-faces)">
-      <path d="M-20 17 Q360 -17 834 71 L831 98 Q366 20 -20 47 Z" fill="#ffffff" opacity="0.38"/>
-      <path d="M-20 245 Q404 280 830 222 V304 H-20 Z" fill="#d4a853" opacity="0.38"/>
-      <use href="#isle-letters" transform="translate(2 4)" fill="none" stroke="#fffef2" stroke-width="4.5"/>
+      <path d="M-20 14 Q360 -20 834 68 L831 102 Q366 22 -20 52 Z" fill="#ffffff" opacity="0.58"/>
+      <!-- Diagonal Specular Sheens Across Letter Faces -->
+      <polygon points="55,-15 110,-15 35,295 -20,295" fill="#ffffff" opacity="0.35"/>
+      <polygon points="315,-15 355,-15 280,295 240,295" fill="#ffffff" opacity="0.28"/>
+      <polygon points="510,-15 555,-15 480,295 435,295" fill="#ffffff" opacity="0.32"/>
+      <polygon points="715,-15 765,-15 690,295 640,295" fill="#ffffff" opacity="0.30"/>
+      <!-- Crisp Cel-Cut Lower Bevel Shadow -->
+      <path d="M-20 236 Q404 272 830 214 V304 H-20 Z" fill="#cf9e42" opacity="0.52"/>
+      <path d="M-20 258 Q404 290 830 238 V304 H-20 Z" fill="#b07b28" opacity="0.38"/>
+      <use href="#isle-letters" transform="translate(2 4)" fill="none" stroke="#ffffff" stroke-width="5"/>
     </g>
-    <!-- Crisp Final Face Outline -->
+    <!-- Crisp Final Face Outline & 90s Anime Corner Star Glints -->
     <use href="#isle-letters" fill="none" stroke="#153b43" stroke-width="5.5"/>
+    <use href="#cel-sparkle" transform="translate(182 10) scale(1.05)"/>
+    <use href="#cel-sparkle" transform="translate(526 6) scale(0.9)"/>
+    <use href="#cel-sparkle" transform="translate(772 98) scale(0.85)"/>
   </g>
 
   <!-- ========================================================================= -->
@@ -563,9 +673,12 @@
     <path d="M52 202 Q45 121 67 48 Q66 127 80 168 Q88 100 121 62 Q98 136 94 194 Z" fill="#79aa66"/>
     <path d="M65 65 Q61 118 70 165 M112 75 Q96 125 90 172" stroke="#b5d682" stroke-width="2.5" fill="none"/>
 
-    <!-- Deep Rustling Shadow Pocket & Subtle Eye-Shine Glints -->
-    <path d="M73 188 Q80 153 107 151 Q131 149 142 180 Q116 174 113 203 Z" fill="#123339"/>
-    <path d="M86 179 Q92 175 97 180 M112 177 Q117 173 121 177" stroke="#e8d88c" stroke-width="2.8"/>
+    <!-- Deep Rustling Shadow Pocket & Luminous 90s Anime Creature Eye-Glints -->
+    <path d="M73 188 Q80 153 107 151 Q131 149 142 180 Q116 174 113 203 Z" fill="#0d262b"/>
+    <ellipse cx="91" cy="178" rx="4.5" ry="3" transform="rotate(-8 91 178)" fill="#ffe97d"/>
+    <ellipse cx="117" cy="176" rx="4.5" ry="3" transform="rotate(8 117 176)" fill="#ffe97d"/>
+    <circle cx="90" cy="177" r="1.5" fill="#ffffff"/>
+    <circle cx="116" cy="175" r="1.5" fill="#ffffff"/>
 
     <!-- Two Curved Notched Leaves (Naturalistic Flora / Pareidolia Ears) -->
     <path d="M90 174 Q60 142 62 112 Q86 116 102 150 L111 163 Z" fill="#bbd178" stroke="#163c44" stroke-width="4.5"/>
@@ -579,6 +692,23 @@
     <path d="M43 207 L29 182 M68 202 L61 181 M103 217 L134 202" stroke="#b0cc7c" stroke-width="3"/>
     <!-- Rustle Motion Arcs -->
     <path d="M42 99 Q37 83 40 70 M132 105 Q143 94 147 82" fill="none" stroke="#749b66" stroke-width="3.5"/>
+
+    <!-- Glossy 1990s Anime Red Safari Apple Resting in Front of the Bush -->
+    <g id="safari-bait-apple" transform="translate(132 214) rotate(-10)">
+      <ellipse cx="2" cy="15" rx="18" ry="6" fill="#163c44" opacity="0.38"/>
+      <!-- Bounce Trail Arcs -->
+      <path d="M22 12 Q36 -4 48 10 M48 10 Q56 2 64 11" stroke="#fff2ca" stroke-width="2.5" stroke-dasharray="4 3" fill="none"/>
+      <!-- Sculpted Apple Body -->
+      <path d="M0 -13 C-10 -20 -22 -10 -20 4 C-18 16 -9 20 -2 17 C2 19 6 19 9 16 C17 19 22 11 21 -1 C20 -13 8 -19 0 -13 Z" fill="url(#safari-apple)" stroke="#163c44" stroke-width="4"/>
+      <!-- Cel Shadow & Warm Sand Bounce-Light -->
+      <path d="M-16 8 C-10 16 8 17 17 7 C14 16 4 18 -2 16 C-9 18 -14 14 -16 8 Z" fill="#f2b66d" opacity="0.45"/>
+      <!-- Stem & Tropical Leaf -->
+      <path d="M0 -11 Q2 -20 6 -23" stroke="#5c381c" stroke-width="3.5" fill="none"/>
+      <path d="M2 -16 Q14 -25 22 -15 Q12 -8 2 -16 Z" fill="#88c462" stroke="#163c44" stroke-width="3"/>
+      <!-- 90s Anime Window-Gloss Highlight -->
+      <ellipse cx="-8" cy="-4" rx="5.5" ry="3.5" transform="rotate(-28 -8 -4)" fill="#ffffff" opacity="0.92"/>
+      <circle cx="-11" cy="4" r="2" fill="#ffffff" opacity="0.8"/>
+    </g>
   </g>
 
   <!-- Right: Weathered Spiral Fossil Stone Half-Buried in Coastal Sand -->

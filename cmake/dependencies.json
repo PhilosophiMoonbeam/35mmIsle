@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "recorded_on": "2026-10-14",
+  "recorded_on": "2026-10-15",
   "purpose": "Selected dependency evidence and observed nonplayable host composition; not a complete package lock or release approval",
   "targets": ["Linux x64", "Windows 11 x64"],
   "current_original_build": {"default_lus_linked": false, "opt_in_host_probe_lus_linked": true, "private_game_source_candidate_selected": true, "languages": ["C11", "C++20"], "cmake_minimum": "3.24", "public_fixtures": "independently authored synthetic and procedural inputs only"},

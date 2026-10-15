@@ -62,6 +62,7 @@
     "creation_owned_explicit_config": true,
     "original_outer_blocks_preserved_across_client_fragmentation": true,
     "Linux_GCC_Debug_Release_Clang_ASan_UBSan_tests_each": 20,
+    "MSVC_Server2022_static_host_tests": 20,
     "actual_original_native_component_executions": 1040,
     "different_compared_PCM_ring_pole_bytes": 0,
     "actual_public_integration_executions": 17741,
@@ -73,6 +74,25 @@
     "Nativevoice_Original_producer_parity": false,
     "chorus_implemented": false,
     "full_effects_BGM_AI_device_Windows11_qualified": false
+  },
+  "native_game_rng": {
+    "target": "isle-native",
+    "header": "include/35mmisle/rng.h",
+    "caller_owned_seed_bits": 32,
+    "returned_high_bits": 16,
+    "global_state_or_allocation": false,
+    "signed_wrap_and_binary32_time_scaling": true,
+    "private_source_arithmetic_comparison": {
+      "GAME_commit": "df8815e75f3d79618466e01e0827c6165b93d11c",
+      "GAME_path_and_span": "src/sys/misc.c:110-146",
+      "configurations": ["GCC Release", "Clang ASan+UBSan"],
+      "LCG_results_and_seeds_exact_each": 3670016,
+      "supplied_tick_results_exact_each": 14336,
+      "FP_modes": 4,
+      "different_results": 0
+    },
+    "Linux_GCC_Debug_Release_Clang_ASan_UBSan_tests_each": 20,
+    "Original_CPU_guest_time_GAME_call_order_photo_qualified": false
   },
   "native_save_codec_and_store": {
     "targets": ["isle-save-image", "isle-save-store"],
@@ -112,7 +132,7 @@
     "packaged": false,
     "evidence": "docs/development/ADMISSION.md"
   },
-  "observed_windows_host": {"commit": "43442de5c94a25844303dc74e9af644db808f803", "workflow": "https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38754821969", "job_id": 116490347233, "all_matrix_jobs_passed": 10, "host": "Windows Server 2022 10.0.20348; not Windows 11", "compiler": "MSVC 19.44.35229.0 x64", "selected_SDK": "10.0.26100.0", "triplet": "x64-windows-static", "verified_source_and_tool_before_project": true, "full_LUS_audio_RSP_engine_built": true, "CPU_tests_passed": 19, "native_CLI_helps_passed": 4, "selected_packages": {"bzip2": "1.0.8#6", "egl-registry": "2025-05-27", "fmt": "12.1.0", "glew": "2.3.1", "libzip": "1.11.4", "nlohmann-json": "3.12.0#2", "opengl": "2022-12-04#3", "opengl-registry": "2026-01-26", "sdl3": "3.4.2#1", "spdlog": "1.17.0", "tinyxml2": "11.0.0", "vcpkg-cmake": "2024-04-23", "vcpkg-cmake-config": "2024-05-23", "zlib": "1.3.1"}, "private_ROM_graphics_audio_or_Windows11_runtime_qualified": false, "binary_release_approved": false},
+  "observed_windows_host": {"commit": "ffde8a3562265cd46d841575906378b4b59cbee4", "workflow": "https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38766587623", "job_id": 116531273203, "all_matrix_jobs_passed": 10, "host": "Windows Server 2022 10.0.20348; not Windows 11", "compiler": "MSVC 19.44.35229.0 x64", "selected_SDK": "10.0.26100.0", "triplet": "x64-windows-static", "verified_source_and_tool_before_project": true, "full_LUS_audio_RSP_engine_built": true, "CPU_tests_passed": 20, "native_CLI_helps_passed": 4, "selected_packages": {"bzip2": "1.0.8#6", "egl-registry": "2025-05-27", "fmt": "12.1.0", "glew": "2.3.1", "libzip": "1.11.4", "nlohmann-json": "3.12.0#2", "opengl": "2022-12-04#3", "opengl-registry": "2026-01-26", "sdl3": "3.4.2#1", "spdlog": "1.17.0", "tinyxml2": "11.0.0", "vcpkg-cmake": "2024-04-23", "vcpkg-cmake-config": "2024-05-23", "zlib": "1.3.1"}, "private_ROM_graphics_audio_or_Windows11_runtime_qualified": false, "binary_release_approved": false},
   "fully_locked": false,
   "release_approved": false,
   "lus": {

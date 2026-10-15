@@ -414,5 +414,18 @@ All executions completed with `SP=0x203`, error zero and no DPC packets. The par
 
 The original capture's scratch ALVoice storage capacity/type authority remains unestablished. Qualification uses literal coprocessor commands and addressed bytes, not opaque producer fields, natural constructor proof or SDK producer parity. Captured voice-prefix inputs do not establish Nativevoice parity. Custom7 uses the measured 4-physical/6-virtual/2-per-CSP profile, not an inferred successful default22 original profile. The private reference consumer hydrates a broader opaque canonical ROM-main context; CPU bytes remain inert and its full loaded extent is not claimed consumed. Only declared RSP text/data/boot and explicit command-addressed spans are grounded; no SDK producer body/header is translated, linked or interpreted.
 
-Chorus types3/4 are not replaced by static graphs. They, full mixed BGM PCM, original AI occupancy/cue timing, hardware/hearing, Windows 11 and full W12 qualification remain open. This subsequent static implementation is not covered by the earlier published nineteen-test Windows commit.
+Chorus types3/4 are not replaced by static graphs. They, full mixed BGM PCM, original AI occupancy/cue timing, hardware/hearing, Windows 11 and full W12 qualification remain open. At [`ffde8a3562265cd46d841575906378b4b59cbee4`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/ffde8a3562265cd46d841575906378b4b59cbee4), [workflow 38766587623](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38766587623) passed all ten jobs, including twenty actual MSVC CTest executables and four CLI helps in the full static-runtime host composition. This subsequent compiler/component evidence remains hosted Server 2022, not Win11/private-ROM/device qualification.
+
+## Deterministic game RNG and supplied-tick projections
+
+`rng.h/.c` extends `isle-native` with caller-owned 32-bit replay state and no global state or allocation. Each seed-based operation advances the modulo-2^32 linear congruential generator once and uses all sixteen high bits, not the C library's fifteen-bit `rand()`. Binary fractions remain exact. Range scaling preserves the original signed product wrap and truncation toward zero, including zero, negative and overflowing ranges. Tick-based operations use only the low eight bits of an explicitly supplied guest `osGetTime`-domain value and do not advance the LCG. Time-range conversion preserves binary32 rounding under the caller's FP mode.
+
+Requirements derive from authoritative GAME `src/sys/misc.c:110–146`, blob `84be12339c2f266dcfb5e2ae7ccd6a73cbe2a46b`, not SDK implementation. Private source-compiled arithmetic comparison used those exact GAME definitions, independent scalar interface declarations and supplied tick values. `-fwrapv` expresses MIPS low-word arithmetic for the private source oracle; the original native service uses defined unsigned arithmetic and in-range signed conversion instead.
+
+| Actual native API consumer | LCG results and resulting seeds matched | Tick-projection results matched | FP modes |
+|---|---:|---:|---:|
+| GCC Release | 3,670,016 | 14,336 | 4 |
+| Clang ASan+UBSan | 3,670,016 | 14,336 | 4 |
+
+Every high16 output and low8 tick value participates; both consumers reported zero differences, with no sanitizer diagnostics. Existing native regressions cover mixed-call advancement, full-bit outputs, signed wrap, division direction and binary32-versus-integer scaling boundaries. All twenty component tests passed under GCC Debug/full LUS, GCC Release and Clang ASan+UBSan. This is native arithmetic and private source-compilation evidence, **not** Original R4300 execution, original time-service mapping, photo replay, gameplay RNG call-order or full W04 qualification. No GAME body or SDK implementation/header is published.
 

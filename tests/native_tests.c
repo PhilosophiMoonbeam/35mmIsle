@@ -1,4 +1,5 @@
 #include "35mmisle/native.h"
+#include "35mmisle/rng.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -485,6 +486,64 @@ static void test_real_high_address_arena(void) {
     free(allocation);
 }
 
+static void test_game_rng(void) {
+    static const uint32_t seeds[] = {
+        UINT32_C(0x0029e2c0), UINT32_C(0xc823f683), UINT32_C(0x18be873a),
+        UINT32_C(0xe7847115), UINT32_C(0xcae1df84), UINT32_C(0x3d6c1037),
+        UINT32_C(0x2cd60a1e), UINT32_C(0x72ae7869)
+    };
+    isle_rng state = {1};
+    size_t i;
+    for (i = 0; i < sizeof(seeds) / sizeof(seeds[0]); ++i) {
+        CHECK(isle_rng_next16(&state) == seeds[i] >> 16);
+        CHECK(state.seed == seeds[i]);
+    }
+
+    state.seed = 1;
+    CHECK(isle_rng_next16(&state) == 41);
+    CHECK(isle_rng_next_float(&state) == 51235.0f / 65536.0f);
+    CHECK(isle_rng_range(&state, 100) == 9);
+    CHECK(isle_rng_range(&state, 0) == 0);
+    CHECK(isle_rng_next16(&state) == 51937);
+
+    state.seed = UINT32_C(0x701bf641);
+    CHECK(isle_rng_next_float(&state) == 65535.0f / 65536.0f);
+    state.seed = UINT32_C(0xa170f641);
+    CHECK(isle_rng_next_float(&state) == 0.0f);
+    CHECK(state.seed == 0);
+}
+
+static void test_game_rng_signed_ranges(void) {
+    static const struct {
+        int32_t range;
+        int32_t expected;
+    } cases[] = {
+        {0, 0}, {100, 99}, {65536, -1}, {32769, -32767},
+        {-1, 0}, {-32768, -32767}, {INT32_MAX, 32767}, {INT32_MIN, -32768}
+    };
+    size_t i;
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        isle_rng state = {UINT32_C(0x701bf641)};
+        CHECK(isle_rng_range(&state, cases[i].range) == cases[i].expected);
+        CHECK(state.seed == UINT32_C(0xffff0000));
+    }
+}
+
+static void test_guest_time_random(void) {
+    CHECK(isle_rng_time8(UINT64_C(0x1234567801)) == 1);
+    CHECK(isle_rng_time8(UINT64_MAX) == 255);
+    CHECK(isle_rng_time_float(UINT64_C(0x100)) == 0.0f);
+    CHECK(isle_rng_time_float(UINT64_MAX) == 255.0f / 256.0f);
+    CHECK(isle_rng_time_range(UINT64_C(0x100), INT32_MAX) == 0);
+    CHECK(isle_rng_time_range(255, 65536) == 65280);
+    CHECK(isle_rng_time_range(255, -1) == 0);
+    CHECK(isle_rng_time_range(128, INT32_MAX) == 0);
+    /* Binary32 rounding before scaling differs from integer division here. */
+    CHECK(isle_rng_time_range(1, INT32_MAX) == 8388608);
+    CHECK(isle_rng_time_range(UINT64_MAX, INT32_MAX) == 8388607);
+    CHECK(isle_rng_time_range(1, INT32_MIN) == -8388608);
+}
+
 int main(void) {
     test_arithmetic();
     test_spans();
@@ -493,11 +552,14 @@ int main(void) {
     test_arena_padding();
     test_arena_rejections();
     test_real_high_address_arena();
+    test_game_rng();
+    test_game_rng_signed_ranges();
+    test_guest_time_random();
 
     if (failures != 0) {
         fprintf(stderr, "native mechanism tests: %u failure(s)\n", failures);
         return EXIT_FAILURE;
     }
-    puts("native mechanism tests passed (synthetic host memory only)");
+    puts("native mechanism tests passed (synthetic memory and arithmetic)");
     return EXIT_SUCCESS;
 }

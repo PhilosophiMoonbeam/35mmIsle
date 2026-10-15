@@ -90,9 +90,12 @@ function(isle_target_options target)
     endif()
 endfunction()
 
-add_library(isle-native STATIC src/native.c include/35mmisle/native.h)
+add_library(isle-native STATIC src/native.c src/rng.c
+    include/35mmisle/native.h include/35mmisle/rng.h)
 target_include_directories(isle-native PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-native)
+target_compile_options(isle-native PRIVATE
+    "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math>")
 
 add_library(isle-rom STATIC src/rom.cpp include/35mmisle/rom.hpp)
 target_include_directories(isle-rom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")

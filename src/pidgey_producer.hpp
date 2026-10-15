@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <span>
 
+namespace isle::photo { class LightingInputs; }
+
 namespace isle::pidgey {
 struct PhotoTargets {
     std::uint32_t color, depth;
@@ -53,6 +55,13 @@ public:
     PreparedPidgeyTask prepare(std::span<std::uint32_t> word_swapped_rdram,
                               std::uint64_t canonical_epoch, PhotoTargets targets);
 
+    // Actual normal photo-check setup and global GAME light list, distinct
+    // from lighting-off scoring. Installs the three light/setup spans once
+    // per canonical epoch and updates direction only when camera XZ changes.
+    PreparedPidgeyTask prepare_preview(std::span<std::uint32_t> word_swapped_rdram,
+                                      std::uint64_t canonical_epoch, PhotoTargets targets,
+                                      const photo::LightingInputs& lighting);
+
     static constexpr std::uint32_t commands_address = 0x100000;
     static constexpr std::uint32_t commands_end = 0x101000;
     static constexpr std::uint32_t matrices_address = 0x101000;
@@ -66,6 +75,9 @@ public:
     static constexpr std::uint32_t output_end = 0x210000;
 
 private:
+    PreparedPidgeyTask prepare_impl(std::span<std::uint32_t> word_swapped_rdram,
+                                   std::uint64_t canonical_epoch, PhotoTargets targets,
+                                   const photo::LightingInputs* lighting);
     IsleGame* game_;
     IsleGameModelTransform baked_root_{};
     IsleGameCamera* camera_;
@@ -80,6 +92,8 @@ private:
     std::uint64_t resident_epoch_ = 0;
     IsleGameViewport resident_viewport_{};
     bool resident_payloads_ = false, have_pose_ = false;
+    bool preview_inputs_ = false, preview_direction_ = false;
+    std::array<float, 4> preview_camera_xz_{};
     float animation_time_ = 0, yaw_ = 0;
     IsleGameVec3 position_{};
 };

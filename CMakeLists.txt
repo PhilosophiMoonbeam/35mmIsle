@@ -100,6 +100,10 @@ target_compile_options(isle-native PRIVATE
 add_library(isle-host-clock STATIC src/host_clock.cpp src/host_clock.hpp)
 isle_target_options(isle-host-clock)
 
+add_library(isle-photo-feedback STATIC src/photo_feedback.cpp include/35mmisle/photo_feedback.hpp)
+target_include_directories(isle-photo-feedback PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-photo-feedback)
+
 add_library(isle-required-work STATIC src/required_work.cpp src/required_work.hpp)
 target_link_libraries(isle-required-work PUBLIC Threads::Threads)
 target_include_directories(isle-required-work PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -117,6 +121,10 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE OR (ISLE_BUILD_HOST_PROBE AND 
     target_include_directories(isle-pidgey-resources PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(isle-pidgey-resources PUBLIC isle-rom-snapshot)
     isle_target_options(isle-pidgey-resources)
+    add_library(isle-photo-lighting STATIC src/photo_lighting.cpp src/photo_lighting.hpp)
+    target_include_directories(isle-photo-lighting PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(isle-photo-lighting PUBLIC isle-rom-snapshot)
+    isle_target_options(isle-photo-lighting)
 endif()
 
 add_library(isle-vpk0 STATIC src/vpk0.cpp include/35mmisle/vpk0.hpp)
@@ -193,7 +201,7 @@ if(ISLE_BUILD_GAME_ENGINE)
     include(cmake/SnapEngine.cmake)
     if(TARGET isle-pidgey-resources)
         add_library(isle-pidgey-producer STATIC src/pidgey_producer.cpp src/pidgey_producer.hpp)
-        target_link_libraries(isle-pidgey-producer PUBLIC isle-engine isle-pidgey-resources)
+        target_link_libraries(isle-pidgey-producer PUBLIC isle-engine isle-pidgey-resources isle-photo-lighting)
         isle_target_options(isle-pidgey-producer)
     endif()
     if(ISLE_BUILD_HOST_PROBE)
@@ -208,6 +216,11 @@ if(BUILD_TESTING)
     target_link_libraries(native-tests PRIVATE isle-native)
     isle_target_options(native-tests)
     add_test(NAME native-tests COMMAND native-tests)
+
+    add_executable(photo-feedback-tests tests/photo_feedback_tests.cpp)
+    target_link_libraries(photo-feedback-tests PRIVATE isle-photo-feedback)
+    isle_target_options(photo-feedback-tests)
+    add_test(NAME photo-feedback-tests COMMAND photo-feedback-tests)
 
     add_executable(host-clock-tests tests/host_clock_tests.cpp)
     target_link_libraries(host-clock-tests PRIVATE isle-host-clock)
@@ -303,14 +316,14 @@ if(BUILD_TESTING)
     add_test(NAME audio-service-tests COMMAND audio-service-tests)
 
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests host-clock-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-effects-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
+    set_tests_properties(native-tests photo-feedback-tests host-clock-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-effects-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 
 if(ISLE_BUILD_RDP_PROBE)
     include(cmake/ParallelRdp.cmake)
     add_executable(35mmisle-rdp-probe src/rdp_probe.cpp src/rdp_fixture.cpp src/rdp_fixture.hpp)
-    target_link_libraries(35mmisle-rdp-probe PRIVATE isle_parallel_rdp)
+    target_link_libraries(35mmisle-rdp-probe PRIVATE isle_parallel_rdp isle-photo-feedback)
     isle_target_options(35mmisle-rdp-probe)
     if(MINGW)
         target_link_options(35mmisle-rdp-probe PRIVATE -municode)

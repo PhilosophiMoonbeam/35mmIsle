@@ -566,3 +566,30 @@ The complete model trace contained 38/38 traced/terminal PIDs, zero known DRM/in
 
 The four hash-bound native support paths now explicitly use `text eol=lf`, matching the existing manifest/patch policy. A disposable Git checkout with `core.autocrlf=true` preserved all four exact manifest hashes and successfully prepared all twenty-six pinned GAME definitions. The preparer still hashes raw bytes and rejects differences; it does not normalize inputs or accept alternate identities. This proves the exercised checkout/preparation path, not hosted Windows compilation or Windows 11 execution.
 
+## Native packed-depth photo reductions
+
+Original `photo_feedback.hpp/.cpp` implement GAME `src/app_render/score.c:243–318` reductions without importing an SDK body or serializing planes. A checked borrow addresses all twenty-six 64×48 halfword planes in completed word-swapped RDRAM: F/color, C/scene depth, twelve A/subject depths and twelve B/before depths. CPU access remains inside the actual completed-memory read lease; wide counts survive by value before narrow reuse. Clear depth is exactly `0xFFFC`; visibility requires `A != 0xFFFC && A == C && B != C`, preserving every packed-Z/dZ bit. Inclusive windows and integer area estimation match the GAME expressions.
+
+Permanent regressions cover packed low-bit differences, coincident before/current occlusion, first/last subject slots, reversed halfword pairs, all center-window boundaries, dense/empty planes, same-buffer reuse and rejected extents/counts preserving outputs. GCC Debug/full LUS, GCC Release and Clang ASan+UBSan each passed all twenty-three tests. The actual CPU-Vulkan RDP probe also completed clear, geometry and depth-copy stages with zero semantic/backend errors; the reducer consumed the real completed GPU-written/copied planes and matched independent analytic counts for all twelve slots. This probe deliberately reuses its synthetic geometry across wide/narrow reductions; it is not the genuine two-camera-pass GAME model graph or Oak scoring.
+
+## Actual normal photo-preview lighting
+
+`photo_lighting.hpp/.cpp` borrow the exact private-ROM ambient/directional light union, global pre-render list and normal photo-preview setup. The manifest records ten pinned GAME blob identities, independently verified by the parent. Three disjoint installation spans total 200 bytes; only the three directional bytes are mutable. The original camera calculation uses strict binary32 horizontal normalization, Y=1, full normalization and signed-byte truncation. The producer restores ordinary reset → global pre-render → camera matrices → normal camera setup → fog/material/model ordering. Normal FRUSTRATIO6 remains distinct from score FRUSTRATIO1; score rendering still disables lighting.
+
+A private actual consumer checked every byte of 8 MiB RAM plus guards: only the 200 installation bytes changed, and every directional update stayed within its three-byte set. Four signed X/Z axes produced ±89 with Y89. Seventeen invalid cases rejected before mutation, including nonfinite horizontal inputs, zero/overflow/underflow direction, invalid extent, Snapshot aliasing and non-nearest rounding. Unused eye/at Y did not affect direction, and the complete immutable ROM Snapshot remained unchanged.
+
+Nine real native model tasks then executed on one persistent canonical allocation with actual RSP/RDP completion and lease retirement. The baseline camera fit the entire coarse 64×48 bird; parent visual inspection observed original brown/cream texture coloration rather than the score pass's normal-byte colors. Every task retained three canaries, all 36,752 immutable resource bytes and zero arena growth; each executed 27 TLUT and 27 texture loads.
+
+| Actual comparison | Different color pixels | Different depth pixels |
+|---|---:|---:|
+| Score versus lit preview | 559 | 0 |
+| Exact preview repeat | 0 | 0 |
+| Diagnostic −X light with fixed matrices | 511 | 0 |
+| Restored diagnostic direction | 0 | 0 |
+| Score repeat after previews | 0 | 0 |
+| Preview restored after score | 0 | 0 |
+| Native camera changed to +X | 671 | 677 |
+| Native camera restored | 0 | 0 |
+
+The isolated light experiment changed only direction bytes after preparation; it is a diagnostic, not an Original caller-parity claim. Baseline output covered 560 color/depth pixels and 328 textured-Z triangles. All model/game/backend owners retired. Private proof SHA-256: `09e7a99f97e36e43134295e1d7bd7ba6d84339e9978df7295e1a4e441d3a0d8a`; resource manifest SHA-256: `975e030ded932c4b460b95bd277220b235f6376056762d15736d940ea40268ba`. These results establish bounded native preview lighting, not independent Original pixel parity, full scene/photo reconstruction, a presented gameplay surface, Windows 11 execution or release readiness. No payload or screenshot is published.
+

@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Address, extent, public-wire-ABI and camera-direction provenance for src/photo_lighting.hpp/.cpp. Exact GAME payload bytes are borrowed from a private admitted Snapshot, never compiled into the component. This is the bounded normal photo-preview lighting/setup closure, not the score pass, a renderer, full photo reconstruction, or a source-import manifest.",
+  "rom": {
+    "canonical_order": "big-endian z64",
+    "size": 16777216,
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf"
+  },
+  "source_files": {
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "facts": "353-382: app_render ROM 0x46270 <-> guest 0x8009A8C0; raw GAME data subsegment 0x5A580..0x5AD20. 10212-10229: photo_check ROM 0x98C330 <-> guest 0x801DC8C0; raw data begins 0x994E10. Neither generated/dirty 5A580.c nor generated photo_check data.inc.c is authority."
+    },
+    "src/app_render/4D400.c": {
+      "git_blob": "f2ab62d614dffc86bbd413f87150ea68ff473fd3",
+      "sha256": "67b399176bfd9884cfa3ab929ed3b8565e6503ec88cb5b540f572d3f490927ca",
+      "facts": "3-15: GAME Some14 names mutable signed bytes at D_800AEBD0+0x10,+0x11,+0x12. 17-19: global pre-render callback calls D_800AEC18. 98-101: each direction component is multiplied by 127.0f then assigned to signed byte. Time-of-day mutator 21-90 is a different path and is not implemented or invoked here."
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "facts": "1106-1133: photo camera uses fovy30, near10, far25600 and eye/at from PhotoData. 1125-1132: XZ=eye-at; inv=1.0f/sqrtf(X*X+Z*Z); Y=1; multiply X/Z by inv; Vec3fNormalize; func_800A1E6C. Eye/at Y does not contribute to this direction. 1654-1679: initObjectsOnPhoto invokes this camera/direction setup after reconstructing photo objects."
+    },
+    "src/sys/vector.c": {
+      "git_blob": "99b21e6c073cdbce135abfc10533defc56a05026",
+      "sha256": "f36b6f36e6e1434bd498d41df4b03e63775d8f765dc6337f76a7ccfbb5c9fa57",
+      "facts": "5-15: magnitude=sqrtf((X*X+Y*Y)+Z*Z), return without mutation for zero magnitude, otherwise multiply X/Y/Z by 1.0f/magnitude. The admitted nonzero horizontal photo-camera domain cannot reach zero XYZ magnitude after Y=1."
+    },
+    "src/sys/rdp_reset.c": {
+      "git_blob": "e08f96ecfcfbf11b6e0d818eb3e850dc096d4b1c",
+      "sha256": "2c36586442e7a5d16e9ffb4125a99e4402e7e20a3ac8b4eb7465333b36d1ec4c",
+      "facts": "19-44: ordinary reset clears lighting, selects FRUSTRATIO_1, enables ZBUFFER/SHADE/CULL_BACK/SHADING_SMOOTH, loads identity projection/modelview, sets one-cycle and standard texture/blender defaults. 68-83: segment0, segmentF, depth image, reset list, scissor, THEN global sPreRenderFunc. Thus D_800AEC18 re-enables lighting after ordinary reset, not before its lighting clear."
+    },
+    "src/sys/gtl.c": {
+      "git_blob": "5b7ed17b40804177dacc5dbfb33283cf7f405175",
+      "sha256": "572c963eea665c1ce02c6e4470b268d76fe8d8ad15790809b21ead077e6cb931",
+      "facts": "155-169: captures reset/global-pre-render list before object rendering. 537-541: calls reset list then branches to produced lists at actual execution. 891-894: binds scene setup fnPreRender."
+    },
+    "include/sys/gtl.h": {
+      "git_blob": "a17ea5a556c505ea432a1a5c800a7e34ef313323",
+      "sha256": "8a24f1d44f97f92cbc2cc5d4950875666e758bd059c3456ecca7512af59cd83b",
+      "facts": "21-41: GAME BufferSetup fnPreRender guest pointer at +0x38; SceneSetup begins with that BufferSetup. This is GAME data layout, not SDK producer layout."
+    },
+    "src/photo_check/98C330.c": {
+      "git_blob": "4db2840e32f9b52ea72ae64f448a3fd9519d57c6",
+      "sha256": "d779d7f06ca6bc30e777f104e0bf3bea0eca136549ba90efc64af0b674f077be",
+      "facts": "12-74 contains commented data leads, NOT sole authority for payloads. ROM independently confirms D_801E53A0_994E10, its full fourteen-command extent and scene fnPreRender at ROM0x994ED4=0x800A1A50. Active 334-344 func_801DC904_98C374 calls the actual normal setup list, sets MAGICSQ color dither, pipe-syncs, sets custom opaque AA/Z render mode, and MODULATEIA/PASS2 combiner."
+    },
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "facts": "2363-2376: perspective normalization and ordinary look-at MUL in PROJECTION; not a modelview camera. 2490-2493: per-camera pre-render callback is distinct from global rdp-reset callback. 2591-2603: camera initialization, camera matrices, camera pre-render, model rendering, camera post-render, in that order."
+    },
+    "src/app_render/score.c": {
+      "git_blob": "17a0d973c0050536cf4af4265a0bb106f294c82e",
+      "sha256": "ae38f419085fa0506c799d06347b4f6e0772ac06819021f07f838735e24cb60c",
+      "facts": "80-122: score setup deliberately clears LIGHTING and never re-enables it; ratio1, one-primitive pipeline, SHADE combiner and score target/depth policy are NOT normal preview state. Source NOOP/NOOP2 clear-mode OR independently reads as zero at ROM0x5A2B8 and0x5A308. Do not insert this component's lighting/setup lists after score setup."
+    }
+  },
+  "public_contracts": [
+    {
+      "url": "http://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPLight.html",
+      "facts": "Public Light_t byte ABI: col[3] at0, pad at3, duplicate colc[3] at4, pad at7, signed dir[3] at8, pad at11; Light union is16 bytes. Slots1..N directional, slotN+1 ambient. Direction points toward light. Direction changes require reloading light and number of lights; the original pre-render list does both. No SDK header/body is consulted."
+    },
+    {
+      "url": "http://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPSetLights.html",
+      "facts": "Public LightsM ordering is Ambient followed by M diffuse Light records. Actual byte extents and colors here come only from the admitted ROM."
+    },
+    {
+      "url": "http://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPSetGeometryMode.html",
+      "facts": "LIGHTING calculates vertex color from normals. SHADE and SHADING_SMOOTH retain normal smooth-shaded behavior. Enabling LIGHTING on a score pass is not a faithful preview implementation."
+    },
+    {
+      "url": "https://wiki.cloudmodding.com/oot/F3DZEX2/Opcode_Details",
+      "facts": "Public F3DEX2-compatible wire documentation: DCnnooii address has transfer size=((nn>>3)+1)*8, offset=oo*8, index0x0A=light buffer. DC08060A and DC08090A therefore DMA16 bytes to offsets48 and72. D9 geometry, DB move-word, DE nested DL, DF EndDL, E3 high-othermode and FC combiner bit encodings are decoded directly, not through SDK macros."
+    },
+    {
+      "url": "https://wiki.cloudmodding.com/oot/F3DZEX2",
+      "facts": "Public geometry, othermode, blender and combiner bit tables; only public wire interface facts are used, not producer layouts or executable implementation."
+    },
+    {
+      "url": "http://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gdp/gDPSetCombineMode.html",
+      "facts": "MODULATEIA multiplies texture and shade RGBA; PASS2 forwards cycle1 combined RGBA. Normal caller words are source/public-ABI-derived, not runtime-captured evidence."
+    }
+  ],
+  "mapping_rule": "rom=segment.rom_start+guest-segment.guest_start; all ends exclusive",
+  "segments": [
+    {"name": "app_render", "rom_start": "0x46270", "guest_start": "0x8009A8C0"},
+    {"name": "photo_check", "rom_start": "0x98C330", "guest_start": "0x801DC8C0"}
+  ],
+  "resources": {
+    "lights_exact_dma_union": {
+      "guest_begin": "0x800AEBD0", "guest_end": "0x800AEBE8",
+      "rom_begin": "0x5A580", "rom_end": "0x5A598", "bytes": 24,
+      "sha256": "873516340a66706687896cc7f4f429fcdbd70c17a03968696e12e4e6ab8943a7",
+      "color_policy": "Original ambient/diffuse RGB and duplicate bytes are retained in private Snapshot views. No color literals, guessed white fallback, normalized colors, relocated light records, or generated SDK structure are compiled in.",
+      "references_in_list_order": [
+        {"slot": 1, "kind": "directional", "guest": "0x800AEBD8", "rom": "0x5A588", "dma_bytes": 16, "destination_offset": 48},
+        {"slot": 2, "kind": "ambient", "guest": "0x800AEBD0", "rom": "0x5A580", "dma_bytes": 16, "destination_offset": 72, "abi_color_record_bytes": 8}
+      ],
+      "extent_proof": "[EBD8,EBE8) directional DMA and [EBD0,EBE0) ambient DMA overlap by8; their contiguous union is exactly24 bytes. Ambient DMA's last8 are directional RGB/duplicate storage, not another mutable direction. No unreferenced alignment tail is installed."
+    },
+    "pre_render": {
+      "symbol": "D_800AEC18", "guest": "0x800AEC18",
+      "rom_begin": "0x5A5C8", "rom_end": "0x5A608", "bytes": 64,
+      "command_count_including_end": 8,
+      "sha256": "1c9b137187079660cdfd53e3da98ef2d2373ba4681f33ce7e156716fcbe8505d",
+      "state_in_order": ["PipeSync", "SetGeometryMode LIGHTING only", "NumLights1", "Light slot1 directional DMA16", "Light slot2 ambient DMA16", "ColorDither MAGICSQ", "AlphaDither PATTERN", "EndDL"],
+      "nested_dl_count": 0, "other_reference_count": 0
+    },
+    "normal_preview_setup": {
+      "symbol": "D_801E53A0_994E10", "guest": "0x801E53A0",
+      "rom_begin": "0x994E10", "rom_end": "0x994E80", "bytes": 112,
+      "command_count_including_end": 14,
+      "sha256": "b3f5b37c4f47f9cd63b90192d81b0af3e5671b8711a1aa9081bf9f94bd0867e3",
+      "state_in_order": ["PipeSync", "Pipeline NPRIMITIVE", "SetGeometryMode LIGHTING only", "TextureLOD TILE", "TextureDetail CLAMP", "TexturePersp PERSP", "TextureLUT NONE", "TextureFilter BILERP", "TextureConvert FILT", "Clip RNX6", "Clip RNY6", "Clip RPX0xFFFA", "Clip RPY0xFFFA", "EndDL"],
+      "nested_dl_count": 0, "other_reference_count": 0,
+      "not_set_here": "This list does not reset base geometry, matrices, viewport/scissor/targets, cycle type, combiner, render mode or fog; those remain the actual reset/camera/model/caller responsibilities."
+    }
+  },
+  "mutable_direction": {
+    "guest_begin": "0x800AEBE0", "guest_end": "0x800AEBE3",
+    "owner": "Caller-owned canonical word-swapped RDRAM during an exclusive preparation borrow after full prior RSP/RDP retirement; never Snapshot storage.",
+    "calculation": "Every subtraction, multiply, add, division and sqrt result is stored binary32. Preserve source left association (X*X+Y*Y)+Z*Z. First normalize XZ eye-at, then set Y=1 and normalize XYZ, then truncate f32(component*127.0f) toward zero into signed8. No algebraic collapse into a direct1/sqrt2, no binary64 normalization, no clamp.",
+    "checked_domain": "Round-to-nearest; finite input eye/at XZ and positive finite rounded horizontal square sum. Nonfinite/zero/overflow/underflow-to-zero horizontal directions are rejected before writes because the original NaN-to-signed-byte result is not defined by GAME C. Eye/at Y is unused. No guessed replacement direction is supplied.",
+    "write_set": "Exactly3 bytes at physical ((0xAEBE0+i)^3), i=0..2. RGB, duplicate RGB, padding, lists and unrelated RAM remain untouched. Return value is those signed direction bytes."
+  },
+  "installation": {
+    "layout": "Exclusive caller-owned word-swapped8MiB, disjoint from Snapshot storage; destination byte=(guest-0x80000000+i) XOR3",
+    "disjoint_span_count": 3, "total_bytes": 200,
+    "span_order": ["lights_exact_dma_union", "pre_render", "normal_preview_setup"],
+    "lifetime": "Snapshot and its storage outlive LightingInputs and all borrowed views; do not move a borrowed Snapshot. Construction/install/update reject moved-from input. Returned descriptor access follows the same lifetime contract.",
+    "preservation": "Only the3 exact spans are installed; original guest addresses/pointers are unchanged. In particular the48-byte gap after light records, raw-data neighbors and opaque photo_check overlay are not installed or cleared. Reinstall restores original ROM direction, so update_direction follows installation for the active camera. No per-update allocation or payload copy other than the3 required direction bytes."
+  },
+  "parent_integration_contract": {
+    "execution_order": "Bind segment0; ordinary GAME reset/base geometry and target/viewport/scissor policy; global pre-render call to pre_render_guest() AFTER reset's lighting clear; actual camera initialization and perspective/normalization/look-at PROJECTION commands; per-camera normal-preview setup via normal_setup_guest() and actual caller state; genuine photo-model/fog/material traversal. Preserve exclusive prepare -> actual RSP -> actual RDP -> completed CPU read -> full retirement ownership.",
+    "normal_caller_source": "src/photo_check/98C330.c:334-344 func_801DC904_98C374",
+    "normal_caller_sequence": ["Call borrowed normal setup list", "ColorDither MAGICSQ", "PipeSync", "Custom opaque render mode AA_EN|Z_CMP|Z_UPD|IM_RD|CVG_DST_CLAMP|ZMODE_OPA|ALPHA_CVG_SEL with c1/c2 blender(IN,0,MEM,0), plus NOOP2", "Combine MODULATEIA/PASS2"],
+    "normal_caller_public_abi_derived_words": ["DE000000 801E53A0", "E3001801 00000000", "E7000000 00000000", "E200001C 0F5F2078", "FC1219FF FFFFFE38"],
+    "caller_word_evidence_limit": "Dynamic caller words above are independently encoded from pinned GAME C and public GBI bit tables; they are not an executed or captured display list. Actual normal setup/pre-render list words are available directly through checked borrowed views/command getters.",
+    "score_boundary": "Score setup deliberately clears LIGHTING. Keep existing score mode lighting OFF and its FRUSTRATIO_1 and scoring policy unchanged; do not reuse the preview list after score setup. Normal photo_check setup uses FRUSTRATIO_6, not a hand-adjusted score path.",
+    "component_nonclaims": "Does not prepare producer tasks, import SDK producers, bind renderer memory, acquire fences, reconstruct world/sky/items/effects/other species/poses, run time-of-day mutation, calculate score or claim game boot. Parent owns root CMake/docs/producer integration."
+  },
+  "parent_verification_plan_not_exercised_by_worker": [
+    "Compile/link photo_lighting.cpp into parent-owned targets with strict floating-point flags; run existing CPU/Release/sanitizer gates only after integration.",
+    "Admit the private exact ROM; assert both list guest/ROM mappings,8/14 commands, final EndDL, all reference extents and zero nested references. Independently compare all200 installed bytes against Snapshot with word swap.",
+    "Initialize caller RAM with nonuniform guards and assert every byte outside the3 exact installation spans is unchanged, including48-byte light/list gap and both adjacent overlay neighbors. Rejected size/moved/alias installs must write nothing.",
+    "Compare update direction with independently evaluated exact GAME binary32 XZ-normalize -> Y1 -> XYZ-normalize -> truncate*127 for +/-X,+/-Z, diagonals and non-axis directions. Eye/at Y-only changes must not affect it. Exercise negative truncation, invalid horizontal inputs and rounding modes; rejection writes nothing.",
+    "Across direction updates, compare all bytes against pre-update RAM: only3 direction bytes may differ. Verify ambient/diffuse RGB, duplicate bytes, pads, both lists, Snapshot and every unrelated RAM byte unchanged. Reinstall then restore camera must reproduce exact original/current expected bytes.",
+    "Run a real preview task through existing actual canonical RSP/RDP ownership using original ROM Pidgey normals/textures/TLUT and full color+Z targets, original borrowed normal setup, current camera direction and genuine fog/material sequence. Inspect a private real RGB image for lit normal shading and palette detail; nonzero pixels/triangle count alone is not proof.",
+    "Repeat identical preview inputs and restore camera/time/world inputs for exact output repeatability. To isolate light sensitivity from camera/matrix motion, hold pose and camera matrices fixed and vary only source-valid light-direction inputs in a diagnostic prepare: RGB should respond while geometry coverage/Z remains consistent. Restore original direction and recover original RGB/Z.",
+    "Check score mode never re-enables lighting and retains existing score output; preview/score alternation must not leak lighting/clip/blender state across tasks. No arena growth or per-frame heap allocation, resource mutation, host-pointer truncation, skipped ownership retirement or hidden-RAM reset is acceptable."
+  ]
+}

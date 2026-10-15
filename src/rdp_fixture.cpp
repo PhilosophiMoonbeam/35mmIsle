@@ -6,8 +6,10 @@
 // cover only these constant-Z, quarter-pixel, slope-minus-one triangles. They
 // are not a substitute for an independent hardware/raw-memory reference oracle.
 #include "rdp_fixture.hpp"
+#include "35mmisle/photo_feedback.hpp"
 
 #include <initializer_list>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 
@@ -239,6 +241,13 @@ void validate_stage(StageKind kind, std::span<const std::byte> rdram,
         clear_words(kind, rdram, hidden, before_base, region_end, 0xfffcfffc, 0);
         return;
     }
+    struct FeedbackCounts {
+        photo_feedback::WideCounts wide{};
+        photo_feedback::FinalCounts narrow{};
+    };
+    std::optional<FeedbackCounts> expected_feedback;
+    if (kind == StageKind::depth_copy) expected_feedback.emplace();
+
 
     for (unsigned y = 0; y != height; ++y) {
         for (unsigned x = 0; x != width; ++x) {
@@ -285,8 +294,56 @@ void validate_stage(StageKind kind, std::span<const std::byte> rdram,
                     const bool expected = object == 0 ? a != 0 && b == 0 : b != 0;
                     expect(kind, object == 0 ? "A visibility predicate" : "B visibility predicate",
                            depth(object + 1) + offset, expected, visible);
+                    auto& wide = expected_feedback->wide[object];
+                    auto& narrow = expected_feedback->narrow[object];
+                    if (object == 0 ? a != 0 : b != 0) {
+                        ++wide.total; ++narrow.total;
+                        if (x >= 17 && x <= 46 && y >= 13 && y <= 34) ++wide.center;
+                        if (x >= 30 && x <= 33 && y >= 22 && y <= 25) ++narrow.center;
+                        if (expected) {
+                            ++narrow.visible;
+                            if (x >= 31 && x <= 32 && y >= 23 && y <= 24) ++narrow.visible_center;
+                        }
+                    }
+                }
+                // This fixture also copies completed scene depth into A[2].
+                // Its B[2] stays clear, so its winner is the union of A and B.
+                if (a != 0 || b != 0) {
+                    auto& wide = expected_feedback->wide[2];
+                    auto& narrow = expected_feedback->narrow[2];
+                    ++wide.total; ++narrow.total; ++narrow.visible;
+                    if (x >= 17 && x <= 46 && y >= 13 && y <= 34) ++wide.center;
+                    if (x >= 30 && x <= 33 && y >= 22 && y <= 25) ++narrow.center;
+                    if (x >= 31 && x <= 32 && y >= 23 && y <= 24) ++narrow.visible_center;
                 }
             }
+        }
+    }
+    if (expected_feedback) {
+        photo_feedback::PlanesView view;
+        photo_feedback::WideCounts wide{};
+        photo_feedback::FinalCounts narrow{};
+        const auto bytes = std::span(reinterpret_cast<const std::uint8_t*>(rdram.data()), rdram.size());
+        if (!photo_feedback::PlanesView::borrow(bytes, color_base, view) ||
+            !photo_feedback::count_wide(view, wide) ||
+            !photo_feedback::count_narrow(view, wide, narrow))
+            throw std::runtime_error("Completed RDP planes rejected by native photo feedback reader");
+        for (unsigned subject = 0; subject != photo_feedback::subject_count; ++subject) {
+            const auto& expected_wide = expected_feedback->wide[subject];
+            auto& expected_narrow = expected_feedback->narrow[subject];
+            expected_narrow.approximate_total = expected_wide.center
+                ? expected_wide.total * expected_narrow.total / expected_wide.center
+                : expected_wide.total * 4;
+            const auto address = depth(subject + 1);
+            expect(kind, "native wide total", address, expected_wide.total, wide[subject].total);
+            expect(kind, "native wide center", address, expected_wide.center, wide[subject].center);
+            expect(kind, "native narrow total", address, expected_narrow.total, narrow[subject].total);
+            expect(kind, "native narrow center", address, expected_narrow.center, narrow[subject].center);
+            expect(kind, "native unobstructed total", address, expected_narrow.visible, narrow[subject].visible);
+            expect(kind, "native unobstructed center", address,
+                   expected_narrow.visible_center, narrow[subject].visible_center);
+            expect(kind, "native approximate total", address,
+                   expected_narrow.approximate_total, narrow[subject].approximate_total);
         }
     }
 }

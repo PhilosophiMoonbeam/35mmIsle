@@ -1,4 +1,5 @@
 #include "pidgey_producer.hpp"
+#include "photo_lighting.hpp"
 
 #include <algorithm>
 #include <array>
@@ -168,7 +169,7 @@ void sample(const RomView& stream, float animation_time,
 
 struct Range { std::uint32_t begin, end; };
 bool overlap(Range a, Range b) { return a.begin < b.end && b.begin < a.end; }
-constexpr std::array<Range, 9> reserved{{
+constexpr std::array<Range, 12> reserved{{
     {main_begin, bss_end},
     {PidgeyProducer::commands_address, PidgeyProducer::material_address + 0x28},
     {PidgeyProducer::viewport_address, PidgeyProducer::viewport_address + 0x40},
@@ -177,7 +178,9 @@ constexpr std::array<Range, 9> reserved{{
     {PidgeyProducer::task_address, PidgeyProducer::task_address + 64},
     {PidgeyProducer::boot_address, PidgeyProducer::boot_address + boot_bytes},
     {PidgeyProducer::output_address, PidgeyProducer::output_end},
-    {0, main_begin}
+    {0, main_begin},
+    // Actual GAME light DMA union, global pre-render and normal photo setup.
+    {0x0aebd0, 0x0aebe8}, {0x0aec18, 0x0aec58}, {0x1e53a0, 0x1e5410}
 }};
 void validate_targets(PhotoTargets targets, const HdResources& resources) {
     require(targets.width != 0 && targets.width <= 1023 && targets.height != 0 && targets.height <= 1023,
@@ -358,8 +361,19 @@ void PidgeyProducer::install_inputs(std::span<std::uint32_t> words, std::uint64_
     resources_.install(std::as_writable_bytes(words));
     resident_memory_ = words.data(); resident_epoch_ = epoch;
     resident_revisions_.fill(0); resident_payloads_ = false;
+    preview_inputs_ = preview_direction_ = false;
 }
 PreparedPidgeyTask PidgeyProducer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch, PhotoTargets targets) {
+    return prepare_impl(words, epoch, targets, nullptr);
+}
+PreparedPidgeyTask PidgeyProducer::prepare_preview(std::span<std::uint32_t> words,
+                                                std::uint64_t epoch, PhotoTargets targets,
+                                                const photo::LightingInputs& lighting) {
+    return prepare_impl(words, epoch, targets, &lighting);
+}
+PreparedPidgeyTask PidgeyProducer::prepare_impl(std::span<std::uint32_t> words,
+                                             std::uint64_t epoch, PhotoTargets targets,
+                                             const photo::LightingInputs* lighting) {
     Memory memory(words);
     require(words.data() == resident_memory_ && epoch == resident_epoch_, "Pidgey canonical inputs are not resident at pointer+epoch");
     require(have_pose_, "No complete Pidgey photo pose");
@@ -381,6 +395,20 @@ PreparedPidgeyTask PidgeyProducer::prepare(std::span<std::uint32_t> words, std::
     }
     const IsleGameCameraParameters* parameters = nullptr;
     check(isle_game_camera_parameters(game_, camera_, &parameters));
+    if (lighting) {
+        if (!preview_inputs_) {
+            lighting->install(std::as_writable_bytes(words));
+            preview_inputs_ = true;
+        }
+        const auto& view = parameters->look_at;
+        const std::array<float, 4> camera_xz{view.eye[0], view.eye[2], view.at[0], view.at[2]};
+        if (!preview_direction_ || preview_camera_xz_ != camera_xz) {
+            lighting->update_direction(std::as_writable_bytes(words),
+                                       {view.eye[0], 0, view.eye[2]}, {view.at[0], 0, view.at[2]});
+            preview_camera_xz_ = camera_xz;
+            preview_direction_ = true;
+        }
+    }
     if (!resident_payloads_ || !equal(resident_viewport_, parameters->viewport)) {
         for (unsigned i = 0; i < 4; ++i) {
             memory.half(viewport_address + i * 2, static_cast<std::uint16_t>(parameters->viewport.scale[i]));
@@ -450,12 +478,21 @@ PreparedPidgeyTask PidgeyProducer::prepare(std::span<std::uint32_t> words, std::
     list.low(0, 2, 0); list.high(6, 2, 0); list.high(4, 2, 0);
     list.high(20, 2, 0); list.low(3, 29, opaque_mode); list.low(2, 1, 0);
     list.command(0xe7000000, 0);
+    if (lighting) list.call(lighting->pre_render_guest());
     list.command(0xdc080008, viewport_address);
     // Original GAME camera placement: perspective LOAD, normalize, ordinary
     // look-at MUL into PROJECTION. MODELVIEW remains the identity loaded above.
     list.command(0xda380007, matrices_address);
     list.command(0xdb0e0000, norm);
     list.command(0xda380005, matrices_address + 64);
+    if (lighting) {
+        list.call(lighting->normal_setup_guest());
+        // GAME photo_check/98C330.c:334-344 normal camera state.
+        list.high(6, 2, 0);
+        list.command(0xe7000000, 0);
+        list.low(3, 29, 0x0f5f2078);
+        list.command(0xfc1219ff, 0xfffffe38);
+    }
     // Genuine renderModelTypeIFogged wrapper, 968..990, not invented lighting.
     list.command(0xe7000000, 0);
     constexpr std::int32_t fog_multiplier = 128000 / (990 - 968);

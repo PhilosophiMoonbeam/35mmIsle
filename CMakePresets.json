@@ -73,7 +73,7 @@
     },
     {
       "name": "windows-host-release",
-      "displayName": "Windows MSVC x64 static-runtime LUS, audio, RSP and native engine",
+      "displayName": "Windows MSVC x64 static-runtime LUS, audio, RSP, canonical RDP and native engine",
       "inherits": "windows-base",
       "toolchainFile": "$env{ISLE_WINDOWS_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "environment": {
@@ -94,6 +94,7 @@
         "ISLE_BUILD_HOST_PROBE": true,
         "ISLE_BUILD_AUDIO_PROBE": true,
         "ISLE_BUILD_RSP_PROBE": true,
+        "ISLE_BUILD_RDP_PROBE": true,
         "ISLE_BUILD_GAME_ENGINE": true,
         "ISLE_LUS_SOURCE_DIR": "",
         "ISLE_SNAP_SOURCE_DIR": ""

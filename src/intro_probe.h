@@ -3,6 +3,9 @@
 
 #include <libultraship/libultra/gbi.h>
 #include "host_clock.hpp"
+#ifdef ISLE_HAS_CANONICAL_RDP
+#include "required_work.hpp"
+#endif
 
 #include <cstdint>
 #include <memory>
@@ -14,7 +17,7 @@ namespace isle::rom { class Snapshot; }
 // are borrowed by LUS, independently of the C object's lifetime.
 class IntroProbe final {
   public:
-    explicit IntroProbe(const isle::rom::Snapshot& snapshot);
+    explicit IntroProbe(const isle::rom::Snapshot& snapshot, std::uint32_t feedback_cycles);
     ~IntroProbe();
     IntroProbe(const IntroProbe&) = delete;
     IntroProbe& operator=(const IntroProbe&) = delete;
@@ -30,6 +33,17 @@ class IntroProbe final {
     isle::host::ClockError SetIntervals(std::uint16_t update, std::uint16_t draw);
     std::uint32_t Ticks() const;
     isle::host::ClockStats Stats() const;
+    bool FeedbackDiagnostic() const noexcept;
+    std::uint32_t CompletedFeedbackCycles() const;
+#ifdef ISLE_HAS_CANONICAL_RDP
+    bool TakeRequired(isle::host::RequiredRequest&);
+    isle::host::ClockError PublishRequired(isle::host::RequiredToken, isle::host::RequiredMemoryView);
+    isle::host::ClockError FailRequired(isle::host::RequiredToken);
+    bool TakeRequiredRetirement(isle::host::RequiredRetirement&);
+    isle::host::ClockError FinishRequiredRetirement(isle::host::RequiredToken);
+    isle::host::RequiredStats RequiredStats() const;
+    bool RequiredQuiescent() const;
+#endif
     void Check() const;
     void StopGame();
 

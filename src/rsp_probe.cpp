@@ -268,8 +268,9 @@ int run(int argc, Argument* argv[]) {
         if (!std::filesystem::create_directory(matrix_directory) ||
             !std::filesystem::create_directory(reload_directory))
             throw std::runtime_error("cannot create independent RDP case directories");
-        isle::rsp::probe::render_capture(matrix, matrix_directory, "fractional-matrix", cpu_device);
-        isle::rsp::probe::render_capture(reload, reload_directory, "in-list-reload", cpu_device);
+        isle::rsp::probe::CanonicalCaptureExecutor executor(cpu_device);
+        isle::rsp::probe::render_capture(executor, matrix, matrix_directory, "fractional-matrix");
+        isle::rsp::probe::render_capture(executor, reload, reload_directory, "in-list-reload");
         rendered = true;
     }
 #endif

@@ -10,11 +10,15 @@
 #include <bit>
 #include <cstdint>
 #include <cstring>
+#include <exception>
 #include <fstream>
 #include <mutex>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <thread>
+#include <utility>
 #include <vector>
 
 namespace isle::rsp::probe {
@@ -242,59 +246,186 @@ void write_metadata(const std::filesystem::path& directory, const fixture::Captu
 }
 } // namespace
 
-void render_capture(const rsp_probe::Capture& capture,
-                    const std::filesystem::path& output_directory,
-                    std::string_view label, bool require_cpu_device) {
+struct CanonicalCaptureExecutor::Impl {
+    explicit Impl(bool require_cpu_device) {
+        context.set_notification_callback([this](const char* message) { errors.record(message); });
+        initialize_context(context, require_cpu_device);
+        require(context.get_gpu() != VK_NULL_HANDLE && context.get_device() != VK_NULL_HANDLE,
+                "RSP replay initialization returned no actual Vulkan device");
+        require_clean();
+        device.set_context(context);
+        processor.emplace(device, nullptr, 0, fixture::rdram_bytes, hidden_bytes,
+            RDP::COMMAND_PROCESSOR_FLAG_HOST_VISIBLE_HIDDEN_RDRAM_BIT);
+        processor->set_validation_interface(&errors);
+        require(processor->device_is_supported(),
+                "RSP replay Vulkan device does not support pinned paraLLEl-RDP");
+        require_clean();
+    }
+
+    void require_creator() const {
+        require(creator == std::this_thread::get_id(),
+                "RSP replay executor must be used on its creating thread");
+    }
+
+    void require_creator_noexcept() const noexcept {
+        if (creator != std::this_thread::get_id()) std::terminate();
+    }
+
+    void require_clean() {
+        try {
+            errors.require_clean();
+        } catch (...) {
+            poisoned = true;
+            throw;
+        }
+    }
+
+    // Reverse destruction preserves the diagnostic sink and Vulkan dependencies
+    // through the processor's final drain, including partial construction.
+    const std::thread::id creator = std::this_thread::get_id();
+    ErrorSink errors;
+    Vulkan::Context context;
+    Vulkan::Device device;
+    std::optional<RDP::CommandProcessor> processor;
+    bool executing = false;
+    bool leased = false;
+    bool poisoned = false;
+};
+
+CanonicalCaptureExecutor::CanonicalCaptureExecutor(bool require_cpu_device) {
     if constexpr (std::endian::native != std::endian::little)
         throw std::runtime_error("RSP replay raw snapshots require a little-endian word-swapped host");
+    impl_ = std::make_unique<Impl>(require_cpu_device);
+}
+
+CanonicalCaptureExecutor::~CanonicalCaptureExecutor() {
+    impl_->require_creator_noexcept();
+    if (impl_->executing || impl_->leased) std::terminate();
+}
+
+CanonicalCaptureExecutor::MemoryLease::MemoryLease(
+    Impl& owner, std::span<const std::byte> rdram, std::span<const std::byte> hidden) noexcept
+    : owner_(&owner), rdram_(rdram), hidden_(hidden) {}
+
+CanonicalCaptureExecutor::MemoryLease::~MemoryLease() {
+    release();
+}
+
+CanonicalCaptureExecutor::MemoryLease::MemoryLease(MemoryLease&& other) noexcept
+    : owner_(std::exchange(other.owner_, nullptr)),
+      rdram_(std::exchange(other.rdram_, {})), hidden_(std::exchange(other.hidden_, {})) {
+    if (owner_) owner_->require_creator_noexcept();
+}
+
+CanonicalCaptureExecutor::MemoryLease&
+CanonicalCaptureExecutor::MemoryLease::operator=(MemoryLease&& other) noexcept {
+    if (this != &other) {
+        release();
+        if (other.owner_) other.owner_->require_creator_noexcept();
+        owner_ = std::exchange(other.owner_, nullptr);
+        rdram_ = std::exchange(other.rdram_, {});
+        hidden_ = std::exchange(other.hidden_, {});
+    }
+    return *this;
+}
+
+std::span<const std::byte> CanonicalCaptureExecutor::MemoryLease::rdram() const noexcept {
+    if (owner_) owner_->require_creator_noexcept();
+    return rdram_;
+}
+
+std::span<const std::byte> CanonicalCaptureExecutor::MemoryLease::hidden() const noexcept {
+    if (owner_) owner_->require_creator_noexcept();
+    return hidden_;
+}
+
+void CanonicalCaptureExecutor::MemoryLease::release() noexcept {
+    if (!owner_) return;
+    owner_->require_creator_noexcept();
+    if (!owner_->leased || owner_->executing) std::terminate();
+    owner_->leased = false;
+    owner_ = nullptr;
+    rdram_ = {};
+    hidden_ = {};
+}
+
+bool CanonicalCaptureExecutor::quiescent() const noexcept {
+    impl_->require_creator_noexcept();
+    return !impl_->executing && !impl_->leased;
+}
+
+CanonicalCaptureExecutor::MemoryLease
+CanonicalCaptureExecutor::execute(const ::isle::rsp_probe::Capture& capture) {
+    auto& state = *impl_;
+    state.require_creator();
+    require(!state.executing && !state.leased,
+            "RSP replay cannot execute or reinitialize memory while executing or leased");
+    require(!state.poisoned, "RSP replay executor is poisoned by an earlier backend failure");
     validate_capture(capture);
+    state.executing = true;
+    try {
+        state.require_clean();
+        auto& processor = *state.processor;
+        processor.idle();
+        // Idle waits; advancing the frame context recycles Granite command pools.
+        // The old CPU lease is already released before this reuse boundary.
+        processor.begin_frame_context();
+        state.require_clean();
+        auto* memory = static_cast<std::byte*>(processor.begin_read_rdram());
+        auto* hidden = static_cast<std::byte*>(processor.begin_read_hidden_rdram());
+        require(memory && hidden, "RSP replay could not map independently owned RDRAM/hidden buffers");
+        std::memset(memory, 0xa5, fixture::rdram_bytes);
+        processor.end_write_rdram();
+        std::memset(hidden, 0, hidden_bytes);
+        processor.end_write_hidden_rdram();
+        state.require_clean();
+
+        // Borrow stable packet spans directly. There is no capture/RAM clone,
+        // per-packet host allocation or per-execution backend construction.
+        for (const auto& packet : capture.packets())
+            processor.enqueue_command(static_cast<unsigned>(packet.count),
+                                      capture.words().data() + packet.offset);
+        processor.idle();
+        require(vkDeviceWaitIdle(state.context.get_device()) == VK_SUCCESS,
+                "RSP replay Vulkan device completion failed");
+        state.require_clean();
+        const auto* completed_memory = static_cast<const std::byte*>(processor.begin_read_rdram());
+        const auto* completed_hidden = static_cast<const std::byte*>(processor.begin_read_hidden_rdram());
+        require(completed_memory && completed_hidden, "RSP replay completed memory mapping failed");
+        const std::span<const std::byte> memory_view(completed_memory, fixture::rdram_bytes);
+        const std::span<const std::byte> hidden_view(completed_hidden, hidden_bytes);
+        state.require_clean();
+        validate_guards(memory_view, hidden_view);
+        state.leased = true;
+        state.executing = false;
+        return MemoryLease(state, memory_view, hidden_view);
+    } catch (...) {
+        state.poisoned = true;
+        // Its destructor drains while the caller's immutable capture is still
+        // alive. Never leave failed work awaiting a later task/destructor, and
+        // never rebuild this failed backend or publish a completion lease.
+        state.processor.reset();
+        state.executing = false;
+        throw;
+    }
+}
+
+void render_capture(CanonicalCaptureExecutor& executor,
+                    const ::isle::rsp_probe::Capture& capture,
+                    const std::filesystem::path& output_directory,
+                    std::string_view label) {
     require(!output_directory.empty() && std::filesystem::is_directory(output_directory) &&
             std::filesystem::is_empty(output_directory),
             "RSP replay output must be an existing newly-created empty directory");
-
-    // Reverse destruction keeps callbacks, Device, Context and input packet
-    // storage alive through CommandProcessor's final drain, including exceptions.
-    ErrorSink errors;
-    Vulkan::Context context;
-    context.set_notification_callback([&errors](const char* message) { errors.record(message); });
-    initialize_context(context, require_cpu_device);
-    require(context.get_gpu() != VK_NULL_HANDLE && context.get_device() != VK_NULL_HANDLE,
-            "RSP replay initialization returned no actual Vulkan device");
-    errors.require_clean();
-    Vulkan::Device device;
-    device.set_context(context);
-    RDP::CommandProcessor processor(device, nullptr, 0, fixture::rdram_bytes, hidden_bytes,
-        RDP::COMMAND_PROCESSOR_FLAG_HOST_VISIBLE_HIDDEN_RDRAM_BIT);
-    processor.set_validation_interface(&errors);
-    require(processor.device_is_supported(), "RSP replay Vulkan device does not support pinned paraLLEl-RDP");
-    processor.idle();
-    auto* memory = static_cast<std::byte*>(processor.begin_read_rdram());
-    auto* hidden = static_cast<std::byte*>(processor.begin_read_hidden_rdram());
-    require(memory && hidden, "RSP replay could not map independently owned RDRAM/hidden buffers");
-    std::memset(memory, 0xa5, fixture::rdram_bytes);
-    processor.end_write_rdram();
-    std::memset(hidden, 0, hidden_bytes);
-    processor.end_write_hidden_rdram();
-    errors.require_clean();
-
-    // enqueue_command consumes the stable capture spans directly: no packet
-    // vectors, endian reinterpretation or per-packet host allocation/copy here.
-    for (const auto& packet : capture.packets())
-        processor.enqueue_command(static_cast<unsigned>(packet.count), capture.words().data() + packet.offset);
-    processor.idle();
-    require(vkDeviceWaitIdle(context.get_device()) == VK_SUCCESS,
-            "RSP replay Vulkan device completion failed");
-    errors.require_clean();
-    const auto completed_memory = std::span(static_cast<const std::byte*>(processor.begin_read_rdram()), fixture::rdram_bytes);
-    const auto completed_hidden = std::span(static_cast<const std::byte*>(processor.begin_read_hidden_rdram()), hidden_bytes);
-    require(completed_memory.data() && completed_hidden.data(), "RSP replay completed memory mapping failed");
-    errors.require_clean();
-    validate_guards(completed_memory, completed_hidden);
-    write_binary(output_directory / "rdram.bin", completed_memory.subspan(snapshot_begin, snapshot_end - snapshot_begin));
-    write_binary(output_directory / "hidden.bin", completed_hidden.subspan(snapshot_begin / 2, (snapshot_end - snapshot_begin) / 2));
-    write_ppm(output_directory / "color.ppm", completed_memory);
-    errors.require_clean();
-    // Written last: no successful-completion metadata for failed snapshots.
-    write_metadata(output_directory, capture, label, context);
+    auto lease = executor.execute(capture);
+    const auto memory = lease.rdram();
+    const auto hidden = lease.hidden();
+    write_binary(output_directory / "rdram.bin", memory.subspan(snapshot_begin, snapshot_end - snapshot_begin));
+    write_binary(output_directory / "hidden.bin", hidden.subspan(snapshot_begin / 2, (snapshot_end - snapshot_begin) / 2));
+    write_ppm(output_directory / "color.ppm", memory);
+    executor.impl_->require_clean();
+    // Written last, with the actual mappings still leased: no successful
+    // completion metadata for failed snapshots.
+    write_metadata(output_directory, capture, label, executor.impl_->context);
 }
 } // namespace isle::rsp::probe

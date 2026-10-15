@@ -53,7 +53,7 @@ ctest --preset windows-release
 ```
 
 Debug presets are `linux-debug` and `windows-debug`. The default nineteen CTest executables exercise independently authored native memory, ROM identity, GTL clock/context policy, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites, audio resources/readers/players/synthesis/effects and checked save codecs/persistence; checks remain active in Release. The private game engine adds an executable for the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
-The optional RSP service adds a separate coprocessor regression executable: twenty-one total with engine and RSP enabled. These tests execute original synthetic instruction programs, not a public microcode dump. The published Windows run below predates the new GTL regression and covers twenty component tests.
+The optional RSP composition adds coprocessor and required-work lifetime regressions: twenty-two total with engine and RSP enabled. These tests use original synthetic instruction programs and owned capture objects, not a public microcode dump. The published [Windows run](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38787370975) passed the preceding twenty-one-test composition.
 
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 
@@ -137,7 +137,7 @@ cmake --build --preset windows-host-release --parallel 2
 ctest --preset windows-host-release
 ```
 
-The script creates only its own checkout, refuses unowned/dirty/wrong-pin inputs, and verifies the vcpkg executable's size/SHA-256 before execution. CMake repeats verification before `project()` loads the toolchain. No floating bootstrap, overlays, automatic LUS vcpkg or binary cache substitution. The preset enables host, private engine, audio and RSP; public CI needs no ROM. Compiler/CLI evidence and Windows 11/device runtime qualification remain separate; see ADMISSION.
+The script creates only its own checkout, refuses unowned/dirty/wrong-pin inputs, and verifies the vcpkg executable's size/SHA-256 before execution. CMake repeats verification before `project()` loads the toolchain. No floating bootstrap, overlays, automatic LUS vcpkg or binary cache substitution. The preset enables host, private engine, audio, RSP and canonical RDP; public CI needs no ROM. Compiler/CLI evidence and Windows 11/device runtime qualification remain separate; see ADMISSION.
 
 ### Private intro asset and original C fade
 
@@ -149,7 +149,24 @@ build/linux-host/35mmisle-host-probe --frames 120 --rom /path/to/private/pokemon
 
 The loader verifies one bounded read-only ROM snapshot, decodes the selected bank, hydrates eight bitmap views and creates actual native C GObj/SObj state on a dedicated ordinary game-owner thread. After renderer/audio admission, an independent rational VI clock drives the bounded GTL policy: consume the update interval, drain surplus retraces, update once, then acquire a draw context when due. Presentation refusal retains the exact command lease; it does not manufacture an update or completion. Each context owns four wrapper commands over immutable asset lists. The selected RGB fade starts at game update 60 and runs twenty updates; alpha is unchanged. This remains an experimental stimulus, not the complete original intro timeline. Invalid ROM/layout/decode input fails without a procedural fallback.
 
-The integration owner observed the original Nintendo 64 sprite and completed black fade through actual LUS/SDL3 EGL: 120 presentations, 122 C updates, 130 retraces/3 dropped and 121 admitted/retired graphics leases. Independent SDL-dummy audio executed 107 actual RSP tasks. C users joined on their creator; GPU/cache/host owners retired before asset storage and the game-owner thread were released. Captures remain private. The documented NTSC progressive rate 2250000/37609 Hz is a pacing candidate, not a physical measurement; required canonical feedback, scene reset/input integration, original cues, gameplay and Windows 11 runtime remain unqualified. The fully traced software run opened no DRM/audio nodes but retained 13 denied SDL input-node and two denied `/dev/udmabuf` opens; no device/hearing or all-process zero-device-attempt claim follows.
+The integration owner observed the original Nintendo 64 sprite and completed black fade through actual LUS/SDL3 EGL: 120 presentations, 122 C updates, 130 retraces/3 dropped and 121 admitted/retired graphics leases. Independent SDL-dummy audio executed 107 actual RSP tasks. C users joined on their creator; GPU/cache/host owners retired before asset storage and the game-owner thread were released. Captures remain private. The documented NTSC progressive rate 2250000/37609 Hz is a pacing candidate, not a physical measurement; genuine GAME canonical-memory feedback, scene reset/input integration, original cues, gameplay and Windows 11 runtime remain unqualified. The fully traced software run opened no DRM/audio nodes but retained 13 denied SDL input-node and two denied `/dev/udmabuf` opens; no device/hearing or all-process zero-device-attempt claim follows.
+
+### Required feedback independent of presentation
+
+Enable host, private engine, RSP and canonical RDP together, then use a compatible actual OpenGL/Vulkan composition:
+
+```sh
+cmake -S . -B build/host-feedback -DISLE_BUILD_HOST_PROBE=ON \
+  -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON
+cmake --build build/host-feedback --parallel 2
+build/host-feedback/35mmisle-host-probe --rom /private/pokemonsnap.z64 \
+  --required-feedback-probe --decline-presentations --cpu-device --frames 64
+```
+
+This explicit diagnostic disables controller enumeration/input callbacks and retains both optional visual leases. A separate fixed required-work slot drives one persistent canonical executor on main; the native owner consumes actual mapped color/hidden memory and acknowledges each borrow before main releases the backend lease and admits the dependent operation. `--frames` counts CPU consumptions, not presentations. Six independently derived triangle/color predicates, guards and repeated-result identity are checked.
+
+The Linux smoke completed 64 canonical executions/CPU borrows/actual lease retirements, with two retained visual leases and zero visual submissions. Its two genuine ROM-bound RSP executions prepare immutable diagnostic captures reused across those operations; it does not claim 64 new RSP tasks, GAME photo scoring or persistent canonical GAME RAM. Each bounded capture still initializes its own target memory. CPU-device selection alone does not prevent driver probes: this smoke used privately source-qualified Mesa with optional node-probing paths removed, not a warning filter or device allowlist. Whole-process traces recorded no DRM/input/sound/udmabuf attempts. Full scene/input/reset and Windows 11 runtime remain open.
+
 
 
 [ADMISSION](docs/development/ADMISSION.md) records original-source boundaries, private source candidates and exercised evidence. [Dependency evidence](cmake/dependencies.json), [Libultraship.cmake](cmake/Libultraship.cmake) and [SnapEngine.cmake](cmake/SnapEngine.cmake) distinguish selected inputs from complete shipped-composition approval. Configured builds write `isle-host-dependencies.txt` and, with the engine enabled, `isle-snap-engine-inputs.json`. CPack still installs/packages **only the ROM checker and its original MIT license**, not host/engine binaries, source bundles or a game.

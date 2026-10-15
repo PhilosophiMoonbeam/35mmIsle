@@ -1,6 +1,7 @@
 // Original host integration; procedural by default, with an explicit bounded private-ROM experiment.
 #include <SDL3/SDL.h>
 #include <imgui.h>
+#include <backends/imgui_impl_sdl3.h>
 #include <fast/Fast3dGui.h>
 #include <fast/Fast3dWindow.h>
 #include <fast/backends/gfx_rendering_api.h>
@@ -25,6 +26,9 @@ class IntroProbe;
 #ifdef ISLE_HAS_AUDIO_PROBE
 #include "audio_host_probe.hpp"
 #endif
+#ifdef ISLE_HAS_CANONICAL_RDP
+#include "rsp_render.hpp"
+#endif
 
 #include <array>
 #include <chrono>
@@ -48,6 +52,7 @@ namespace {
 // Clear both only after the final frame and after ImGui has released GPU objects.
 class ProbeGui final : public Fast::Fast3dGui {
   public:
+    explicit ProbeGui(bool enableInput) : inputEnabled(enableInput) {}
     void ReleaseReferences() {
         Ship::Gui::ReleaseHostReferences();
         mWindow.reset();
@@ -58,6 +63,8 @@ class ProbeGui final : public Fast::Fast3dGui {
   protected:
     void ImGuiWMInit() override {
         Fast::Fast3dGui::ImGuiWMInit();
+        if (!inputEnabled)
+            ImGui_ImplSDL3_SetGamepadMode(ImGui_ImplSDL3_GamepadMode_Manual, nullptr, 0);
         platformReady = true;
     }
     void ImGuiBackendInit() override {
@@ -83,15 +90,16 @@ class ProbeGui final : public Fast::Fast3dGui {
     }
 
   private:
+    const bool inputEnabled;
     bool platformReady = false;
     bool rendererReady = false;
 };
 
 class SdlLifetime final {
   public:
-    SdlLifetime() {
-        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
-            throw std::runtime_error(std::string("SDL3 video/gamepad unavailable: ") + SDL_GetError());
+    explicit SdlLifetime(bool enableInput) {
+        if (!SDL_Init(SDL_INIT_VIDEO | (enableInput ? SDL_INIT_GAMEPAD : 0u))) {
+            throw std::runtime_error(std::string("SDL3 requested subsystems unavailable: ") + SDL_GetError());
         }
         // Early diagnostic only: the private adaptation separately rejects failures
         // when LUS creates its actual SDL window and OpenGL context.
@@ -129,7 +137,7 @@ class ProbeHost final {
     ProbeHost(const ProbeHost&) = delete;
     ProbeHost& operator=(const ProbeHost&) = delete;
 
-    void Init(bool introMode) {
+    void Init(bool introMode, bool enableInput) {
         context = Ship::Context::CreateInstance("35mmIsleHostProbe", "35mmIsle nonplayable host probe");
         context->Init();
         const std::filesystem::path data =
@@ -159,18 +167,29 @@ class ProbeHost final {
         console = std::make_shared<Ship::Console>();
         context->GetChildren().Add(console);
         console->Init();
-        gui = std::make_shared<ProbeGui>();
+        gui = std::make_shared<ProbeGui>(enableInput);
         window = std::make_shared<Fast::Fast3dWindow>(gui, config, variables);
         context->GetChildren().Add(window);
-        deck = std::make_shared<LUS::ControlDeck>(window, variables);
-        context->GetChildren().Add(deck);
+        if (enableInput) {
+            deck = std::make_shared<LUS::ControlDeck>(window, variables);
+            context->GetChildren().Add(deck);
+        }
         bridge = std::make_shared<LUS::UltraBridge>();
         context->GetChildren().Add(bridge);
         window->Init();
         windowReady = true;
         // This probe does not import files; the SDL backend's FileDrop is absent.
         SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, false);
-        deck->Init(&controllerBits);
+        if (deck) deck->Init(&controllerBits);
+        else {
+            // Fast3dWindow installs handlers requiring ControlDeck. Disable only
+            // those event types; window, resize and quit processing remain live.
+            for (const auto type : {SDL_EVENT_KEY_DOWN, SDL_EVENT_KEY_UP,
+                                    SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP})
+                SDL_SetEventEnabled(type, false);
+            std::cout << "INPUT_ENUMERATION_DISABLED: explicit feedback diagnostic; "
+                         "no SDL gamepad subsystem, ControlDeck initialization, input callbacks or ImGui auto-enumeration.\n";
+        }
         bridge->UpdateCaches(context);
         window->SetRendererUCode(ucode_f3dex2);
         window->SetTargetFps(60);
@@ -203,10 +222,22 @@ class ProbeHost final {
     }
 #endif
 
+#ifdef ISLE_HAS_CANONICAL_RDP
+    void EnableRequiredFeedback(bool requireCpu, bool decline) {
+        requiredExecutor.emplace(requireCpu);
+        declinePresentations = decline;
+        std::cout << "REQUIRED_FEEDBACK_ENABLED: one persistent canonical executor; "
+                     "fixed required slot independent of optional visual leases.\n";
+        if (decline)
+            std::cout << "OPTIONAL_PRESENTATIONS_DECLINED: explicit diagnostic policy retains both leases; "
+                         "not a claim that LUS returned false.\n";
+    }
+#endif
 #ifdef ISLE_HAS_GAME_ENGINE
     void RunIntro(std::uint32_t frameLimit, IntroProbe& intro) {
         std::array<std::optional<IntroProbe::Frame>, 2> pending;
         const std::unordered_map<Mtx*, MtxF> replacements;
+        const bool feedbackDiagnostic = intro.FeedbackDiagnostic();
         const auto deadline = std::chrono::steady_clock::now() +
                               std::chrono::seconds(20 + frameLimit / 10);
         auto retire = [&intro](std::optional<IntroProbe::Frame>& frame, isle::host::Terminal terminal) {
@@ -219,20 +250,28 @@ class ProbeHost final {
             finishGpu(); // Do not retire a borrowed list while GL may still access it.
             for (auto& frame : pending) if (frame) retire(frame, isle::host::Terminal::cancelled);
             intro.StopGame(); // Stops C users on their creator, not this SDL thread.
+            #ifdef ISLE_HAS_CANONICAL_RDP
+            RetireRequired(intro); // CPU accesses ceased; release main lease before capacity.
+            if (!intro.RequiredQuiescent() || requiredMemory || requiredToken)
+                throw std::logic_error("Required feedback did not quiesce before renderer shutdown");
+            #endif
         };
         std::uint32_t submitted = 0;
         intro.Start(); // Asset admission and SDL/audio initialization precede VI time.
         try {
-            while (submitted < frameLimit) {
+            while (feedbackDiagnostic ? intro.CompletedFeedbackCycles() < frameLimit : submitted < frameLimit) {
                 window->HandleEvents();
                 if (!window->IsRunning()) throw std::runtime_error("Window closed before intro completed");
                 if (std::chrono::steady_clock::now() >= deadline)
                     throw std::runtime_error("Intro renderer exceeded bounded deadline");
                 intro.Check();
+#ifdef ISLE_HAS_CANONICAL_RDP
+                ServiceRequired(intro); // Required work never queues behind optional presentation.
+#endif
 #ifdef ISLE_HAS_AUDIO_PROBE
                 if (audio) audio->Tick();
 #endif
-                deck->WriteToPad(pads.data());
+                if (deck) deck->WriteToPad(pads.data());
                 IntroProbe::Frame frame;
                 while (intro.TakeFrame(frame)) {
                     auto& slot = pending[frame.token.context];
@@ -243,7 +282,7 @@ class ProbeHost final {
                 std::optional<IntroProbe::Frame>* next = pending[0] ? &pending[0] : nullptr;
                 if (pending[1] && (next == nullptr || pending[1]->token.serial < (*next)->token.serial))
                     next = &pending[1];
-                if (next && window->DrawAndRunGraphicsCommands((*next)->commands, replacements)) {
+                if (!declinePresentations && next && window->DrawAndRunGraphicsCommands((*next)->commands, replacements)) {
                     finishGpu(); // Pinned LUS FinishRender is empty; FullSync is not a GPU fence.
                     retire(*next, isle::host::Terminal::completed);
                     ++submitted;
@@ -268,6 +307,20 @@ class ProbeHost final {
                   << "Submitted " << submitted << " real-renderer intro-asset frames; "
                   << intro.Ticks() << " independently clocked C updates.\n"
                      "Bounded native GTL/asset experiment; not scene boot, physical timing or full fidelity.\n";
+        #ifdef ISLE_HAS_CANONICAL_RDP
+        if (feedbackDiagnostic) {
+            const auto requiredStats = intro.RequiredStats();
+            if (submitted != 0 || stats.submissions != 2 || stats.terminals != 2 ||
+                requiredStats.completed != frameLimit || requiredStats.submissions != frameLimit ||
+                requiredStats.retirements != frameLimit || requiredStats.failed != 0 ||
+                requiredStats.cancelled != 0 || !intro.RequiredQuiescent())
+                throw std::logic_error("Required-feedback diagnostic violated its end-to-end acceptance contract");
+            std::cout << "REQUIRED_FEEDBACK_COMPLETE: cpu_consumed=" << intro.CompletedFeedbackCycles()
+                      << "; gpu_ready=" << requiredStats.gpu_ready << "; cpu_borrows=" << requiredStats.cpu_borrows
+                      << "; real_backend_leases_retired=" << requiredStats.retirements
+                      << "; visual_leases_retained=2; visual_submissions=0; required_quiescent=true.\n";
+        }
+        #endif
     }
 #endif
     void Run(std::uint32_t frameLimit, [[maybe_unused]] IntroProbe* intro = nullptr) {
@@ -334,6 +387,11 @@ class ProbeHost final {
         if (stopped) {
             return;
         }
+#ifdef ISLE_HAS_CANONICAL_RDP
+        if (requiredMemory || requiredToken || (requiredExecutor && !requiredExecutor->quiescent()))
+            throw std::logic_error("Canonical executor still has a required memory lease during shutdown");
+        requiredExecutor.reset();
+#endif
         bool audioOk = true;
 #ifdef ISLE_HAS_AUDIO_PROBE
         if (audio) {
@@ -409,6 +467,40 @@ class ProbeHost final {
     }
 
   private:
+#ifdef ISLE_HAS_CANONICAL_RDP
+    void RetireRequired(IntroProbe& intro) {
+        isle::host::RequiredRetirement retirement;
+        while (intro.TakeRequiredRetirement(retirement)) {
+            if (requiredToken && *requiredToken != retirement.token)
+                throw std::logic_error("Required retirement has a foreign backend lease");
+            if (static_cast<bool>(requiredMemory) != requiredToken.has_value() ||
+                (!requiredToken && retirement.outcome == isle::host::Terminal::completed))
+                throw std::logic_error("Required retirement has no matching actual memory ownership");
+            requiredMemory.release();
+            requiredToken.reset();
+            if (intro.FinishRequiredRetirement(retirement.token) != isle::host::ClockError::none)
+                throw std::logic_error("Required retirement rejected after actual lease release");
+        }
+    }
+    void ServiceRequired(IntroProbe& intro) {
+        RetireRequired(intro);
+        isle::host::RequiredRequest request;
+        if (!intro.TakeRequired(request)) return;
+        if (!requiredExecutor || requiredMemory || requiredToken)
+            throw std::logic_error("Required executor missing or reused before actual retirement");
+        try {
+            requiredMemory = requiredExecutor->execute(*request.capture);
+            requiredToken = request.token;
+        } catch (...) {
+            // execute drains/resets failed backend access before publishing failure.
+            if (intro.FailRequired(request.token) != isle::host::ClockError::none) std::abort();
+            throw;
+        }
+        if (intro.PublishRequired(request.token, {requiredMemory.rdram(), requiredMemory.hidden()}) !=
+            isle::host::ClockError::none)
+            throw std::logic_error("Canonical memory readiness publication rejected");
+    }
+#endif
 #ifdef _WIN32
     using GlFinish = void (__stdcall*)();
 #else
@@ -428,6 +520,12 @@ class ProbeHost final {
 #ifdef ISLE_HAS_AUDIO_PROBE
     std::unique_ptr<AudioHostProbe> audio;
 #endif
+#ifdef ISLE_HAS_CANONICAL_RDP
+    std::optional<isle::rsp::probe::CanonicalCaptureExecutor> requiredExecutor;
+    isle::rsp::probe::CanonicalCaptureExecutor::MemoryLease requiredMemory;
+    std::optional<isle::host::RequiredToken> requiredToken;
+#endif
+    bool declinePresentations = false;
     std::array<OSContPad, MAXCONTROLLERS> pads{};
     std::uint8_t controllerBits = 0;
     bool windowReady = false;
@@ -439,12 +537,18 @@ using Argument = wchar_t;
 constexpr std::wstring_view framesArgument = L"--frames";
 constexpr std::wstring_view romArgument = L"--rom";
 constexpr std::wstring_view audioArgument = L"--audio";
+constexpr std::wstring_view requiredArgument = L"--required-feedback-probe";
+constexpr std::wstring_view declineArgument = L"--decline-presentations";
+constexpr std::wstring_view cpuArgument = L"--cpu-device";
 constexpr std::wstring_view helpArgument = L"--help";
 #else
 using Argument = char;
 constexpr std::string_view framesArgument = "--frames";
 constexpr std::string_view romArgument = "--rom";
 constexpr std::string_view audioArgument = "--audio";
+constexpr std::string_view requiredArgument = "--required-feedback-probe";
+constexpr std::string_view declineArgument = "--decline-presentations";
+constexpr std::string_view cpuArgument = "--cpu-device";
 constexpr std::string_view helpArgument = "--help";
 #endif
 
@@ -452,14 +556,21 @@ struct Options {
     std::uint32_t frames = 120;
     std::optional<std::filesystem::path> rom;
     bool audio = false;
+    bool requiredFeedback = false, declinePresentations = false, requireCpu = false;
 };
 void Usage(std::ostream& output) {
     output << "35mmisle-host-probe [--frames 1..3600] [--rom PRIVATE_ROM] [--audio]\n"
+              "  [--required-feedback-probe --decline-presentations [--cpu-device]]\n"
               "--rom: one admitted z64/v64/n64 snapshot for compiled private consumers.\n"
               "ISLE_BUILD_GAME_ENGINE enables the bounded original intro sprite/C fade.\n"
               "ISLE_BUILD_AUDIO_PROBE + --audio enables independently queue-paced native SFX14.\n"
               "--audio requires --rom; no Ship::Audio/legacy-bridge/AI/VI/cue fidelity claim.\n"
               "Checked SDL stream drain is not physical-device/hearing completion.\n"
+              "Required-feedback mode needs compiled native engine/RSP/canonical RDP and --rom;\n"
+              "--frames counts owner-domain CPU consumptions, not optional presentations.\n"
+              "It deliberately retains two visual leases and disables physical controller enumeration;\n"
+              "actual canonical mapped pixels/hidden memory feed dependent diagnostic operations,\n"
+              "not GAME photo scoring, scene boot, a prerecorded image or a Null backend.\n"
               "Neither mode is full native game boot. No implicit ROM search or Null fallback.\n";
 }
 
@@ -500,11 +611,25 @@ Options ParseOptions(int argc, Argument* argv[]) {
 #else
             throw std::invalid_argument("--audio requires ISLE_BUILD_AUDIO_PROBE");
 #endif
+        } else if (argument == requiredArgument && !options.requiredFeedback) {
+#ifdef ISLE_HAS_CANONICAL_RDP
+            options.requiredFeedback = true;
+#else
+            throw std::invalid_argument("--required-feedback-probe requires compiled native engine/RSP/canonical RDP");
+#endif
+        } else if (argument == declineArgument && !options.declinePresentations) {
+            options.declinePresentations = true;
+        } else if (argument == cpuArgument && !options.requireCpu) {
+            options.requireCpu = true;
         } else {
             throw std::invalid_argument("Unknown, repeated or incomplete host argument; use --help");
         }
     }
     if (options.audio && !options.rom) throw std::invalid_argument("--audio requires --rom");
+    if (options.requiredFeedback && (!options.rom || !options.declinePresentations))
+        throw std::invalid_argument("--required-feedback-probe requires --rom and --decline-presentations");
+    if ((options.declinePresentations || options.requireCpu) && !options.requiredFeedback)
+        throw std::invalid_argument("--decline-presentations/--cpu-device require --required-feedback-probe");
 #if !defined(ISLE_HAS_GAME_ENGINE) && defined(ISLE_HAS_AUDIO_PROBE)
     if (options.rom && !options.audio) throw std::invalid_argument("This composition requires --audio with --rom");
 #endif
@@ -520,7 +645,7 @@ int Run(int argc, Argument* argv[]) {
             return std::cout ? 0 : 1;
         }
         const Options options = ParseOptions(argc, argv);
-        SdlLifetime sdl;
+        SdlLifetime sdl(!options.requiredFeedback);
 #if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
         std::optional<isle::rom::Snapshot> snapshot;
         if (options.rom) snapshot.emplace(isle::rom::read_snapshot(*options.rom));
@@ -530,14 +655,18 @@ int Run(int argc, Argument* argv[]) {
         // borrowed CPU owners, even if frame submission or shutdown throws.
         std::unique_ptr<IntroProbe> intro;
         if (options.rom) {
-            intro = std::make_unique<IntroProbe>(*snapshot);
+            intro = std::make_unique<IntroProbe>(*snapshot, options.requiredFeedback ? options.frames : 0u);
         }
 #endif
         ProbeHost host;
 #ifdef ISLE_HAS_GAME_ENGINE
-        host.Init(intro != nullptr);
+        host.Init(intro != nullptr, !options.requiredFeedback);
 #else
-        host.Init(false);
+        host.Init(false, true);
+#endif
+#ifdef ISLE_HAS_CANONICAL_RDP
+        if (options.requiredFeedback)
+            host.EnableRequiredFeedback(options.requireCpu, options.declinePresentations);
 #endif
 #ifdef ISLE_HAS_AUDIO_PROBE
         if (options.audio) host.EnableAudio(*snapshot);

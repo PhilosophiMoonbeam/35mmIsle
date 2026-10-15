@@ -102,7 +102,7 @@ jobs:
         run: cpack --config build/${{ matrix.preset }}/CPackConfig.cmake -C ${{ matrix.configuration }} -B build/${{ matrix.preset }}/packages
 
   windows-host:
-    name: Windows MSVC x64 / static-runtime LUS + audio + RSP + native engine
+    name: Windows MSVC x64 / static-runtime LUS + audio + RSP + RDP + native engine
     # Hosted compiler/CPU/CLI proof, not a Windows 11, graphics or audio-device claim.
     runs-on: windows-2022
     timeout-minutes: 60
@@ -120,13 +120,13 @@ jobs:
         run: ./tools/prepare_windows_host.ps1 -Root "$env:RUNNER_TEMP/35mmisle-windows-host-vcpkg"
       - name: Configure actual static-runtime host and audio before project discovery
         run: cmake --preset windows-host-release
-      - name: Build full LUS, audio, RSP, native engine and CPU tests with MSVC
+      - name: Build full LUS, audio, RSP, canonical RDP, native engine and CPU tests with MSVC
         run: cmake --build --preset windows-host-release --parallel 2
       - name: Run all ROMless CPU CTests
         run: ctest --preset windows-host-release
       - name: Exercise help without graphics, audio devices or ROMs
         run: |
-          foreach ($name in @('rom', 'host-probe', 'audio-probe', 'rsp-probe')) {
+          foreach ($name in @('rom', 'host-probe', 'audio-probe', 'rsp-probe', 'rdp-probe')) {
             & "./build/windows-host-release/Release/35mmisle-$name.exe" --help
             if ($LASTEXITCODE -ne 0) { throw "$name help failed" }
           }

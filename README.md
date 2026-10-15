@@ -2,7 +2,7 @@
   <img src="assets/35mmisle-logo.svg" alt="An original island photo-safari emblem with sculpted gold and ivory lettering, a forested caldera, waterfalls, a camera-lens horizon, and a winding strip of film. Look closer for parted grass, a half-buried spiral stone, and a rock profile that might be watching the bay." width="1000">
 </p>
 
-# 35mmIsle
+# 35mmIsle 📸
 
 **35mmIsle is the native port of Pokémon Snap (1999) to modern systems, based on [libultraship (LUS)](https://github.com/Kenix3/libultraship).** The initial implementation targets are Linux x64 and Windows 11 x64.
 
@@ -53,7 +53,7 @@ ctest --preset windows-release
 ```
 
 Debug presets are `linux-debug` and `windows-debug`. The default nineteen CTest executables exercise independently authored native memory, ROM identity, GTL clock/context policy, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites, audio resources/readers/players/synthesis/effects and checked save codecs/persistence; checks remain active in Release. The private game engine adds an executable for the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
-The optional RSP composition adds coprocessor and required-work lifetime regressions: twenty-two total with engine and RSP enabled. These tests use original synthetic instruction programs and owned capture objects, not a public microcode dump. The [published full Windows MSVC host/RDP run](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38796577921) passed all twenty-two CPU tests and five native CLI helps on Windows Server 2022; this is not Windows 11/device execution.
+The optional RSP composition adds coprocessor and required-work lifetime regressions: twenty-two total with engine and RSP enabled. These tests use original synthetic instruction programs and caller-owned memory, not a public microcode dump. The [published full Windows MSVC host/RDP run](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38809340203) passed all twenty-two CPU tests and five native CLI helps on Windows Server 2022; this is not Windows 11/device execution or qualification of subsequent changes.
 
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 
@@ -65,6 +65,7 @@ Current implemented surfaces are **not a playable Pokémon Snap executable**:
 - `isle-vpk0` (`35mmisle/vpk0.hpp`): the original allocation-free decoder contract described below.
 - `isle-continuation` (`35mmisle/continuation.h`): a C ABI over genuine stackful processes. Callback-created children rendezvous with the central owner; cross-cancellation joins before user storage can be recycled. The C trampoline fences control transfer: no C++ exception crosses a C frame. Intervening callback frames must not retain owning C++ automatic objects across wait, finish or failure; C resources require explicit object/scene ownership.
 - `isle-sprite` (`35mmisle/sprite.h`, `35mmisle/sprite.hpp`): checked big-endian Sprite/Bitmap graph hydration with immutable bank ownership, canonical RGBA/CI/IA/I texel normalization and odd-row texture shuffle. Positive `actualHeight` determines stored planes; zero uses nominal height. Bare C views borrow their owning `Sprite`; renderer completion must precede owner release. This is not the original RDP DMA footprint or full Sprite renderer.
+- Internal `isle-pidgey-resources`: immutable exact-ROM HD photo-Pidgey hierarchy, material/texture, vertex/display-list and pose-0 stream views. Installation writes 42 checked guest-addressed spans into caller-owned canonical memory, preserving unrelated bytes. This is real resource decoding, not yet animation evaluation, model rendering or photo scoring.
 - `isle-audio-bank` (`35mmisle/audio_bank.hpp`, `35mmisle/audio_sequence.hpp`): immutable, alias-preserving BE B1 sample graphs and S1 sequence catalogs, with retained input owners and checked offsets/extents. Signed envelope/detune/coefficient fields and partial ADPCM loops remain intact. S1 preserves declared payload length separately from even-DMA padding, including bounded aliases and gaps; all 37 original entries have been exercised privately. This is resource hydration, not compressed-event interpretation, sequencing, synthesis or an audio-ready signal.
 - `isle-audio-sequence` (`35mmisle/audio_cseq.hpp`): allocation-free compressed-MIDI event decoding over retained S1 views, with value-copyable cursors, independent loop counters and atomic failure. All 112,733 qualified original public events across 37 actual sequences match: eleven terminal streams and twenty-six bounded 4,096-event prefixes. This is event decoding, not a CSP/MIDI voice player, ADSR, effects or BGM PCM qualification.
 - `isle-audio` (`35mmisle/audio_synth.hpp`, `35mmisle/audio_sfx.hpp`, `35mmisle/audio_csp.hpp`, `35mmisle/audio_effects.hpp`): retained catalog, shared ABI1 synthesis, independent SoundPlayer and compact-MIDI sequence clients. One service owns up to 22 physical filters, 42 logical descriptors, three typed client calendars, a shared 44-slot modulation pool, stable RDRAM and a graph-wide task/PCM lease. Original ROM microcode performs decoding/resampling/mixing; no SDK producer body is imported. Finite SoundPlayer lifecycles, CSP scheduling/controller semantics, FX sends and static wet graphs have bounded actual-RSP qualification. A chorus candidate adds checked modulated taps and persistent resampling state; original-producer arithmetic and capture-admission counterexamples remain open, including an admitted `depth=50000` case. Complete BGM PCM, original AI scheduling and the short-envelope packed-rate counterexample remain open.
@@ -112,7 +113,7 @@ cmake --build build/linux-host --parallel 2
 ctest --test-dir build/linux-host --output-on-failure
 ```
 
-The supplied LUS checkout must be clean at the exact pin; it is never modified. Omitting `ISLE_LUS_SOURCE_DIR` (or setting it empty) fetches the enforced immutable pin instead. CMake exports committed LUS bytes into the build directory, applies the exact-pin host-lifetime adaptation only there, enforces selected dependency commits and verifies the pinned stb header digest. The OpenGL shader support resources under `build/linux-host/host-renderer-resources` are pinned renderer resources, not game assets; retain that directory when running the development binary. Do not enable upstream automatic vcpkg, scripting/TCC, MPQ or DLL loading for this probe.
+The supplied LUS checkout must be clean at the exact pin; it is never modified. Omitting `ISLE_LUS_SOURCE_DIR` (or setting it empty) fetches the enforced immutable pin instead. Every configure exports committed bytes and applies exact-context lifetime/stb adaptations in fresh build-owned staging, then synchronizes changed bytes only into live private sources. Identical headers and generated stb implementation retain timestamps; an inventory removes obsolete owned inputs without deleting generated-only files. Pin/clean-source/patch/digest checks are not skipped. Retain the pinned `build/linux-host/host-renderer-resources` shaders/licenses when running the development binary. Do not enable upstream automatic vcpkg, scripting/TCC, MPQ or DLL loading.
 
 For the explicitly observed Linux software-rendering path (prefix libraries shown under `lib`; adjust for your dependency layout):
 
@@ -167,9 +168,9 @@ build/host-feedback/35mmisle-host-probe --rom /private/pokemonsnap.z64 \
   --required-feedback-probe --decline-presentations --cpu-device --frames 64
 ```
 
-This explicit diagnostic disables controller enumeration/input callbacks and retains both optional visual leases. A separate fixed required-work slot drives one persistent canonical executor on main; the native owner consumes actual mapped color/hidden memory and acknowledges each borrow before main releases the backend lease and admits the dependent operation. `--frames` counts CPU consumptions, not presentations. Six independently derived triangle/color predicates, guards and repeated-result identity are checked.
+This explicit diagnostic disables controller enumeration/input callbacks and retains both optional visual leases. A separate fixed required-work slot grants the native owner exclusive preparation of main's actual canonical RDRAM. Main runs a new ROM-bound RSP task on that same allocation, stages packets, flushes CPU/RSP writes and executes RDP work. Actual device completion precedes the owner-domain mapped color/hidden read; acknowledgement precedes main-only lease retirement and dependent preparation. `--frames` counts CPU consumptions, not presentations. No per-operation RAM snapshot, hidden reset or retained-capture replay occurs.
 
-The Linux smoke completed 64 canonical executions/CPU borrows/actual lease retirements, with two retained visual leases and zero visual submissions. Its two genuine ROM-bound RSP executions prepare immutable diagnostic captures reused across those operations; it does not claim 64 new RSP tasks, GAME photo scoring or persistent canonical GAME RAM. Each bounded capture still initializes its own target memory. CPU-device selection alone does not prevent driver probes: this smoke used privately source-qualified Mesa with optional node-probing paths removed, not a warning filter or device allowlist. Whole-process traces recorded no DRM/input/sound/udmabuf attempts. Full scene/input/reset and Windows 11 runtime remain open.
+The Linux smoke completed 64 actual RSP tasks, RDP completions, CPU preparations/readbacks and backend retirements, with two retained visual leases and zero visual submissions. Six authored color predicates, guards, repeated-result identity and a persistent pixel-derived canary were checked against the same mapped allocation. This is persistent shared coprocessor memory, **not yet a GAME photo producer or scorer**. Whole-process traces recorded zero DRM/input/sound/udmabuf attempts and permission failures under privately source-qualified Mesa; CPU-device selection alone does not prevent driver probes. Full scene/input/reset and Windows 11 runtime remain open.
 
 
 
@@ -237,16 +238,16 @@ The original host service implements bounded two-way DMA, IMEM invalidation, SP 
 
 Actual GCC Debug/Release and Clang ASan+UBSan runs completed two cold fractional-matrix tasks, two cold graphics→line→graphics tasks and a warm graphics repeat after reload. The original viewport's downward screen Y, partial signed/fractional matrix writes and temporary line-scissor restoration are checked independently. Repeats compare semantic operands, not ignored NOOP/sync scratch words. Full-source sanitization retains one explicit Clang function-cookie exception at the foreign JIT-entry call; generated instructions themselves are uninstrumented. After correcting MSVC standard-token conformance with `/permissive-`, [all nine jobs passed at `3e478d80`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38675299538), including native MSVC x64 Debug/Release ten-test suites and the combined renderer/compiler build. Hosted Windows Server 2022 is not Windows 11 or Windows Vulkan runtime qualification.
 
-Enable both probe options to replay these actual emitted packets through the real canonical renderer:
+Enable both probe options to execute new RSP tasks directly on the real canonical renderer's persistent memory:
 
 ```sh
 cmake -S . -B build/rsp -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON
 cmake --build build/rsp --target 35mmisle-rsp-probe --parallel 2
 build/rsp/35mmisle-rsp-probe --rom /private/pokemonsnap.z64 \
-  --cpu-device --render-out /private/new-replay-directory
+  --cpu-device --render-out /private/new-canonical-directory
 ```
 
-Actual CPU Vulkan completed both after-SP replay cases; all **18,816** guarded color/hidden bytes matched a separately executed private CPU RDP reference. Actual images show distinct interpolated vertex colors and changed fractional/partial geometry. Replay owns separate explicitly initialized RDRAM and waits for real GPU completion before readback. This is not production shared-memory/coherency, independent RSP/frontend, VI, original-game/hardware/photo parity or W06 completion. No full ROM memory is dumped. See [ADMISSION](docs/development/ADMISSION.md) for exact terms, hashes, findings and resource boundaries.
+Actual CPU Vulkan completed fractional/partial-matrix and graphics→line→graphics tasks on one shared allocation. CPU preparation, actual RSP writes and subsequent RDP reads use the same word-swapped RDRAM; actual device completion precedes readback. Cold initialization occurs once, while each authored task explicitly clears its target through RDP commands. The earlier separate-memory after-SP replay matched **18,816** reference bytes; that historical comparison does not qualify the changed task/initialization contract. A separate actual native-camera consumer uploaded GAME-computed FOV30/60 matrices and observed the expected smaller raster footprint at wider FOV. These are authored workloads, not a textured GAME model, independent frontend oracle, photo scoring or W06 completion. No full ROM memory is dumped; see [ADMISSION](docs/development/ADMISSION.md).
 
 ## License and contributions
 

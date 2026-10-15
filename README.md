@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/35mmisle-logo.svg" alt="35mmIsle — a weathered film SLR rediscovered on a sunlit beach, with a volcanic island reflected in its lens" width="1000">
+  <img src="assets/35mmisle-logo.svg" alt="An original island photo-safari emblem with sculpted gold and ivory lettering, a forested caldera, waterfalls, a camera-lens horizon, and a winding strip of film. Look closer for parted grass, a half-buried spiral stone, and a rock profile that might be watching the bay." width="1000">
 </p>
 
 # 35mmIsle

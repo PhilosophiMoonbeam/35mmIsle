@@ -884,7 +884,8 @@ void public_guards_and_live_lease_controls() {
     isle::audio_test::Fixture fixture;
     auto decoded = fixture.decode();
     const std::array owners{decoded.asset};
-    auto created = a::AudioService::create(owners, {32006, 1, 3, {448, 512}}, isle::audio_test::coefficients());
+    auto created = a::AudioService::create(owners, {32006, 1, 3, {448, 512}}, isle::audio_test::coefficients(),
+                                         {a::effects::Routing::direct});
     check(static_cast<bool>(created), "public shared service creates");
     if (!created) return;
     auto& service = *created.service;

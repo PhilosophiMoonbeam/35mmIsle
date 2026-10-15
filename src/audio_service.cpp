@@ -97,7 +97,7 @@ Error service_quota(SynthConfig config, Service service, std::uint32_t& frames) 
 AudioService::AudioService(std::unique_ptr<detail::Context> context) noexcept : context_(std::move(context)) {}
 AudioService::~AudioService() = default;
 ServiceResult AudioService::create(std::span<const BankFile> owners, SynthConfig config,
-                                   const Coefficients& coefficients) noexcept {
+                                   const Coefficients& coefficients, effects::Config effects) noexcept {
     if (owners.empty() || std::any_of(owners.begin(), owners.end(), [](const auto& owner) { return !owner; }))
         return {Error::invalid_resource, nullptr};
     if (config.synthesis_rate == 0 || config.synthesis_rate > 96000 ||
@@ -112,6 +112,8 @@ ServiceResult AudioService::create(std::span<const BankFile> owners, SynthConfig
         std::any_of(coefficients.logarithm.begin(), coefficients.logarithm.end(),
                     [](double v) { return !std::isfinite(v) || v < -1.0 || v > 0.0; }))
         return {Error::invalid_parameter, nullptr};
+    const auto effects_error = detail::validate_effects(effects);
+    if (effects_error != Error::none) return {effects_error, nullptr};
     try {
         auto context = std::make_unique<detail::Context>();
         context->owner = reserve_owner();
@@ -121,6 +123,8 @@ ServiceResult AudioService::create(std::span<const BankFile> owners, SynthConfig
         context->memory = std::make_unique<std::uint32_t[]>(rdram_bytes / 4u);
         const auto admitted = detail::build_catalog(*context, owners);
         if (admitted != Error::none) return {admitted, nullptr};
+        const auto effects_admitted = detail::build_effects(*context, effects);
+        if (effects_admitted != Error::none) return {effects_admitted, nullptr};
         return {Error::none, std::unique_ptr<AudioService>(new AudioService(std::move(context)))};
     } catch (const std::bad_alloc&) {
         return {Error::allocation_failure, nullptr};
@@ -218,6 +222,7 @@ Error AudioService::build(Service service, TaskView& task) noexcept {
         error = detail::render(c, shadow, static_cast<std::uint32_t>(end - shadow.sample_clock), offset, frames);
     }
     if (error == Error::none && shadow.sample_clock != end) error = Error::invalid_state;
+    if (error == Error::none && shadow.effects.staged_frames != 0) error = Error::invalid_state;
     // CPU-only events at the endpoint become visible to subsequent accepted
     // controls; raw client callbacks exactly there remain deferred to next task.
     if (error == Error::none) error = detail::advance_parameters(c, shadow, {end});
@@ -266,11 +271,12 @@ Error AudioService::reset() noexcept {
     c.state().next_parameter_sequence = sequence;
     for (auto& checkpoints : c.sfx) checkpoints.reset();
     for (auto& checkpoints : c.csp) checkpoints.reset();
+    detail::reset_effects(c);
     c.poisoned = false;
     c.task = {};
     c.pcm = {};
-    // All next sources emit A_INIT. No resource bytes or borrowed RAM allocation
-    // are destroyed, and no speculative CPU history reset substitutes for DSP.
+    // All next sources emit A_INIT. Mutable global FX storage is cleared above;
+    // immutable program/books/catalog and the stable RAM allocation survive.
     return Error::none;
 }
 bool AudioService::has_lease() const noexcept { return context_->lease != detail::Lease::none; }

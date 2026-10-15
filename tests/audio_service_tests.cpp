@@ -17,7 +17,7 @@ a::ServiceResult make(const a::BankFile& bank, std::uint16_t physical = 22) {
     const std::array owners{bank};
     a::SynthConfig config{32006};
     config.physical_voices = physical;
-    return a::AudioService::create(owners, config, f::coefficients());
+    return a::AudioService::create(owners, config, f::coefficients(), {a::effects::Routing::direct});
 }
 a::SoundId sound(a::AudioService& service, const a::BankFile& bank) {
     a::SoundId id;

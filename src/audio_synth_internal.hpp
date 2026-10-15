@@ -4,6 +4,7 @@
 #include "35mmisle/audio_synth.hpp"
 #include "35mmisle/audio_sfx.hpp"
 #include "35mmisle/audio_csp.hpp"
+#include "audio_effects_internal.hpp"
 #include <limits>
 #include <vector>
 
@@ -184,6 +185,7 @@ struct CpuState {
     std::array<PhysicalVoice, AudioService::max_physical_voices> physical{};
     std::array<ClientCalendar, AudioService::max_players> clients{};
     OscillatorPool oscillators{};
+    EffectsState effects{};
     std::uint16_t free_head = no_slot, allocated_head = no_slot, retiring_head = no_slot;
     bool lists_initialized = false;
     // Fixed min-heap by (due, sequence); no per-event erase/memmove or allocation.
@@ -197,6 +199,7 @@ struct Context {
     SynthConfig config{};
     Coefficients coefficients{};
     Catalog catalog{};
+    EffectsProgram effects{};
     std::unique_ptr<std::uint32_t[]> memory;
     std::array<CpuState, 2> cpu{};
     // Typed storage is acquired only at quiescent registration, never by a task.

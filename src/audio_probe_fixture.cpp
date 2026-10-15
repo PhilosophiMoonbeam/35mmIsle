@@ -55,7 +55,7 @@ Session::Session(const rom::Snapshot& snapshot, std::uint32_t sound_index) {
     for (std::size_t i = 0; i != coefficients.logarithm.size(); ++i)
         coefficients.logarithm[i] = std::bit_cast<double>(be64(bytes, 0x437b0 + i * 8));
     const std::array owners{bank.asset};
-    auto made = audio::AudioService::create(owners, {synthesis_rate}, coefficients);
+    auto made = audio::AudioService::create(owners, {synthesis_rate}, coefficients, {audio::effects::Routing::direct});
     require(made.error, "shared SFX catalog admission failed");
     if (!made.service) throw std::runtime_error("native audio admission returned no owner");
     service_ = std::move(made.service);

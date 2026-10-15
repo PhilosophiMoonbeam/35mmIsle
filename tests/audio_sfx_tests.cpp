@@ -43,7 +43,7 @@ void check(bool condition, std::string_view meaning) {
 a::ServiceResult service(const a::BankFile& bank, std::uint16_t physical = 22,
                          std::uint16_t logical = 42) {
     const std::array owners{bank};
-    return a::AudioService::create(owners, {32006, physical, logical}, f::coefficients());
+    return a::AudioService::create(owners, {32006, physical, logical}, f::coefficients(), {a::effects::Routing::direct});
 }
 
 void author_envelope(f::Fixture& fixture, std::int32_t attack, std::int32_t decay,

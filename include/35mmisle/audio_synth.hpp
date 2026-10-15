@@ -2,6 +2,7 @@
 #define ISLE_AUDIO_SYNTH_HPP
 
 #include "35mmisle/audio_bank.hpp"
+#include "35mmisle/audio_effects.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -130,8 +131,9 @@ public:
 
     // Retains all bank/table owners and catalog aliases. Unsupported wave types
     // remain identifiable but direct start rejects them; no alternate resource.
+    // Effects data is validated and copied at creation; no caller span survives.
     static ServiceResult create(std::span<const BankFile> owners, SynthConfig,
-                                const Coefficients&) noexcept;
+                                const Coefficients&, effects::Config) noexcept;
     ~AudioService();
     AudioService(const AudioService&) = delete;
     AudioService& operator=(const AudioService&) = delete;

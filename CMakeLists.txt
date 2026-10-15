@@ -146,9 +146,11 @@ target_link_libraries(isle-save-store PUBLIC isle-save-image)
 isle_target_options(isle-save-store)
 
 add_library(isle-audio STATIC
-    src/audio_catalog.cpp src/audio_synth_math.cpp src/audio_synth.cpp
+    src/audio_catalog.cpp src/audio_synth_math.cpp src/audio_synth.cpp src/audio_effects.cpp
     src/audio_service.cpp src/audio_sfx.cpp src/audio_csp.cpp src/audio_synth_internal.hpp
-    include/35mmisle/audio_synth.hpp include/35mmisle/audio_sfx.hpp include/35mmisle/audio_csp.hpp)
+    src/audio_effects_internal.hpp src/audio_dsp.hpp
+    include/35mmisle/audio_synth.hpp include/35mmisle/audio_sfx.hpp
+    include/35mmisle/audio_csp.hpp include/35mmisle/audio_effects.hpp)
 target_link_libraries(isle-audio PUBLIC isle-audio-sequence)
 isle_target_options(isle-audio)
 
@@ -245,6 +247,11 @@ if(BUILD_TESTING)
     isle_target_options(audio-csp-tests)
     add_test(NAME audio-csp-tests COMMAND audio-csp-tests)
 
+    add_executable(audio-effects-tests tests/audio_effects_tests.cpp)
+    target_link_libraries(audio-effects-tests PRIVATE isle-audio)
+    isle_target_options(audio-effects-tests)
+    add_test(NAME audio-effects-tests COMMAND audio-effects-tests)
+
     add_executable(save-image-tests tests/save_image_tests.cpp)
     target_link_libraries(save-image-tests PRIVATE isle-save-image)
     isle_target_options(save-image-tests)
@@ -271,7 +278,7 @@ if(BUILD_TESTING)
     add_test(NAME audio-service-tests COMMAND audio-service-tests)
 
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
+    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-effects-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 

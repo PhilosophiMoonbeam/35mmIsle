@@ -1,4 +1,5 @@
 #include "audio_synth_internal.hpp"
+#include "audio_dsp.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -279,35 +280,11 @@ Error control_event(Context& context, CpuState& state, VoiceHandle handle, Param
     return apply_now(context, state);
 }
 
-// Only the renderer writes command RAM. No start/control path resets persistent
-// DSP memory: actual A_INIT execution owns that transition.
-class Renderer {
+// Only DSP command writers mutate command RAM. No start/control path resets
+// persistent DSP memory: actual A_INIT execution owns that transition.
+class Renderer : public DspWriter {
 public:
-    explicit Renderer(Context& context) noexcept : context_(context) {}
-    void buffers(std::uint16_t input, std::uint16_t output, std::uint16_t bytes) noexcept {
-        context_.emit(0x08000000u | input, (static_cast<std::uint32_t>(output) << 16) | bytes);
-    }
-    void clear(std::uint16_t output, std::uint16_t bytes) noexcept {
-        if (bytes != 0) context_.emit(0x02000000u | output, bytes);
-    }
-    void move(std::uint16_t input, std::uint16_t output, std::uint16_t bytes) noexcept {
-        if (bytes != 0) context_.emit(0x0a000000u | input, (static_cast<std::uint32_t>(output) << 16) | bytes);
-    }
-    bool address(std::uint32_t value, std::uint32_t bytes) noexcept {
-        if (context_.range(value, bytes)) return true;
-        context_.write_error = Error::address_range;
-        return false;
-    }
-    void load(std::uint32_t source, std::uint16_t dest, std::uint16_t bytes) noexcept {
-        if (!address(source, bytes)) return;
-        buffers(dest, 0, bytes);
-        context_.emit(0x04000000u, source);
-    }
-    void save(std::uint16_t source, std::uint32_t dest, std::uint16_t bytes) noexcept {
-        if (!address(dest, bytes)) return;
-        buffers(0, source, bytes);
-        context_.emit(0x06000000u, dest);
-    }
+    explicit Renderer(Context& context) noexcept : DspWriter(context) {}
     void envelope(RenderVoice& voice, std::uint32_t frames, std::uint32_t state_address) noexcept {
         if (voice.envelope_init) {
             const auto& current = voice.retarget_current;
@@ -423,8 +400,6 @@ public:
         context_.emit(0x0d000000u, (static_cast<std::uint32_t>(left_bus) << 16) | right_bus);
         save(interleaved, AudioService::pcm_address + offset * 4u, static_cast<std::uint16_t>(frames * 4u));
     }
-private:
-    Context& context_;
 };
 void consume_loops(Context& context, RenderVoice& voice) noexcept {
     if (!voice.active) return;
@@ -697,7 +672,8 @@ Error render(Context& context, CpuState& state, std::uint32_t frames, std::uint3
             if (voice.active && !suppress_active_start_prefix(state, static_cast<std::uint16_t>(slot - 1), outer_end))
                 renderer.visit(voice, static_cast<std::uint16_t>(slot - 1), count);
         }
-        renderer.output(task_offset + offset, count);
+        const auto wet_output = render_effects(context, state.effects, task_offset + offset, count, task_frames);
+        if (wet_output.frames != 0) renderer.output(wet_output.task_offset, wet_output.frames);
         offset += count;
         state.sample_clock += count;
         if ((task_offset + offset) % chunk_frames == 0 || task_offset + offset == task_frames)

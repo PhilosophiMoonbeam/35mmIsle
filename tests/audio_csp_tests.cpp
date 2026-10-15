@@ -38,7 +38,7 @@ a::SequenceFile sequence(std::initializer_list<unsigned> track, std::uint32_t di
 }
 a::ServiceResult service(const a::BankFile& bank, std::uint16_t logical = 42) {
     const std::array owners{bank};
-    return a::AudioService::create(owners, {32006, 22, logical}, f::coefficients());
+    return a::AudioService::create(owners, {32006, 22, logical}, f::coefficients(), {a::effects::Routing::direct});
 }
 // CPU scheduling tests only: acknowledge lease ownership without claiming RSP
 // execution, meaningful PCM, original fidelity, or effect-network qualification.
@@ -869,7 +869,7 @@ void public_perceptual_gain_reaches_measured_DSP_amplitude() {
     auto coefficients = f::coefficients();
     coefficients.pan[64] = 23026; coefficients.pan[63] = 23313;
     const std::array owners{bank.asset};
-    auto made = a::AudioService::create(owners, {32006, 22, 42}, coefficients);
+    auto made = a::AudioService::create(owners, {32006, 22, 42}, coefficients, {a::effects::Routing::direct});
     check(bool(made), "gain-domain regression admits authored bank and measured numeric coefficients");
     if (!made) return;
     auto& audio = *made.service;

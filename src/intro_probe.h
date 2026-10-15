@@ -48,7 +48,10 @@ class IntroProbe final {
     bool RequiredQuiescent() const;
 #endif
     void Check() const;
-    void StopGame();
+    void StopGame(); // C users quiescent; queued visual terminals may still await owner polling.
+    // After StopGame and return of every borrowed frame, wait for the owner to
+    // consume all visual terminals. Does not manufacture GPU completion.
+    void WaitForVisualRetirement();
 
   private:
     struct Impl;

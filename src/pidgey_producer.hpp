@@ -8,6 +8,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <span>
 
 namespace isle::photo { class LightingInputs; }
@@ -21,46 +22,75 @@ struct PreparedPidgeyTask {
     rsp::Task task;
     std::span<const std::byte> boot;
 };
+inline constexpr std::size_t max_instances = 12;
+enum class FeedbackPass { wide, narrow };
+struct FeedbackActor {
+    std::size_t instance;
+    std::optional<std::uint8_t> score_slot; // nullopt: genuine cumulative-only occluder.
+    float animation_time;
+    IsleGameVec3 position;
+    float yaw;
+};
+struct FeedbackRequest {
+    IsleGameLookAt look_at; // GAME photograph uses world-up (0,1,0).
+    std::span<const FeedbackActor> actors; // Source order, never sorted/compacted.
+    std::uint32_t planes_base;
+};
+class FrozenFeedbackRequest final {
+public:
+    std::uint32_t planes_base() const noexcept { return planes_base_; }
+private:
+    friend class PidgeyProducer;
+    FrozenFeedbackRequest() = default;
+    const class PidgeyProducer* owner_ = nullptr;
+    std::array<FeedbackActor, max_instances> actors_{};
+    std::size_t count_ = 0;
+    std::uint32_t planes_base_ = 0;
+    IsleGameCameraParameters camera_{};
+};
 
-// One bounded pose-0, score-style model pass, not the complete photo scorer.
-// Game, camera, immutable Snapshot AND HdResources must remain alive/unmoved
-// through this object's destruction AND final canonical request retirement.
-// No API may overlap an executing request or its completed-memory borrow.
+// One scene owner with independently owned native pose-0 model instances.
+// Game, camera, immutable Snapshot AND HdResources remain alive/unmoved through
+// destruction AND final canonical retirement. Calls must not overlap execution
+// or a completed-memory borrow; the caller owns that exclusion.
 class PidgeyProducer final {
 public:
     PidgeyProducer(IsleGame* game, IsleGameCamera* camera,
-                   const rom::Snapshot& snapshot, const HdResources& resources);
+                   const rom::Snapshot& snapshot, const HdResources& resources,
+                   std::size_t capacity);
     ~PidgeyProducer();
     PidgeyProducer(const PidgeyProducer&) = delete;
     PidgeyProducer& operator=(const PidgeyProducer&) = delete;
     PidgeyProducer(PidgeyProducer&&) = delete;
     PidgeyProducer& operator=(PidgeyProducer&&) = delete;
 
-    void set_photo_pose(float animation_time, IsleGameVec3 position, float yaw);
-    std::span<const IsleGameModelNode> model_nodes() const;
-    std::span<const IsleGameModelTransform> unbaked_pose() const noexcept { return unbaked_; }
+    std::size_t capacity() const noexcept { return capacity_; }
+    void set_photo_pose(std::size_t instance, float animation_time, IsleGameVec3 position, float yaw);
+    std::span<const IsleGameModelNode> model_nodes(std::size_t instance) const;
+    std::span<const IsleGameModelTransform> unbaked_pose(std::size_t instance) const;
 
-    // Explicit COLD input installation. Copies only actual main image, clears
-    // actual main BSS, installs IPL boot and the exact 42 immutable resource
-    // spans. Never clears whole RAM. Call once per exclusive canonical session;
-    // repeated pointer+epoch is rejected, not a hidden per-frame reinstallation.
-    // A new epoch is REQUIRED after external RAM replacement/reset/overwrite.
+    // Explicit COLD installation: main image/BSS, boot, exact immutable model
+    // spans and original GAME score copy list. Never resets whole RAM/hidden.
+    // Repeated pointer+epoch rejected; external replacement requires new epoch.
     void install_inputs(std::span<std::uint32_t> word_swapped_rdram,
                         std::uint64_t canonical_epoch);
-
-    // Requires successful install_inputs on this exact pointer+epoch. Caller
-    // retains the canonical map/lease and every input owner through retirement.
-    // Writes only runtime payloads (revision cached) and the new command/task
-    // stream. Real RDP commands clear RGBA16 color and Z; no CPU target reset.
     PreparedPidgeyTask prepare(std::span<std::uint32_t> word_swapped_rdram,
-                              std::uint64_t canonical_epoch, PhotoTargets targets);
-
-    // Actual normal photo-check setup and global GAME light list, distinct
-    // from lighting-off scoring. Installs the three light/setup spans once
-    // per canonical epoch and updates direction only when camera XZ changes.
+                              std::uint64_t canonical_epoch, std::size_t instance,
+                              PhotoTargets targets);
+    // The verified normal photo lighting path, not lighting-off score state.
     PreparedPidgeyTask prepare_preview(std::span<std::uint32_t> word_swapped_rdram,
-                                      std::uint64_t canonical_epoch, PhotoTargets targets,
-                                      const photo::LightingInputs& lighting);
+                                      std::uint64_t canonical_epoch, std::size_t instance,
+                                      PhotoTargets targets, const photo::LightingInputs& lighting);
+
+    // Copies all bounded descriptors and validates slots/instances, complete
+    // plane reservation, both cameras and native poses before any RAM write.
+    FrozenFeedbackRequest freeze_feedback_request(const FeedbackRequest& request);
+    // One complete task per FOV; inactive B visible bytes alone are CPU-zeroed.
+    // Active B uses the exact two-half GAME GPU copy; hidden B is never cleared.
+    PreparedPidgeyTask prepare_feedback_pass(std::span<std::uint32_t> word_swapped_rdram,
+                                            std::uint64_t canonical_epoch,
+                                            const FrozenFeedbackRequest& request,
+                                            FeedbackPass pass);
 
     static constexpr std::uint32_t commands_address = 0x100000;
     static constexpr std::uint32_t commands_end = 0x101000;
@@ -71,31 +101,48 @@ public:
     static constexpr std::uint32_t yield_address = 0x105000;
     static constexpr std::uint32_t task_address = 0x106000;
     static constexpr std::uint32_t boot_address = 0x107000;
+    static constexpr std::uint32_t model_lists_address = 0x108000;
+    static constexpr std::uint32_t model_list_bytes = 0x400;
+    static constexpr std::uint32_t node_matrices_address = 0x10b000;
+    static constexpr std::uint32_t copy_list_address = 0x10e800;
+    static constexpr std::uint32_t runtime_end = 0x110000;
     static constexpr std::uint32_t output_address = 0x200000;
     static constexpr std::uint32_t output_end = 0x210000;
 
 private:
-    PreparedPidgeyTask prepare_impl(std::span<std::uint32_t> word_swapped_rdram,
-                                   std::uint64_t canonical_epoch, PhotoTargets targets,
+    struct Instance {
+        IsleGameObject* object = nullptr;
+        IsleGameModel* model = nullptr;
+        IsleGameModelTransform baked_root{};
+        std::array<IsleGameModelTransform, node_count> unbaked{};
+        std::array<std::uint32_t, node_count> flags{};
+        std::array<std::uint64_t, node_count> resident_revisions{};
+        bool have_pose = false, resident_payloads = false;
+        float animation_time = 0, yaw = 0;
+        IsleGameVec3 position{};
+    };
+    Instance& instance_at(std::size_t instance);
+    const Instance& instance_at(std::size_t instance) const;
+    std::uint16_t upload_payloads(std::span<std::uint32_t> words,
+                                  std::span<const std::size_t> instances,
+                                  const photo::LightingInputs* lighting);
+    PreparedPidgeyTask finish_task(std::span<std::uint32_t> words);
+    PreparedPidgeyTask prepare_impl(std::span<std::uint32_t> words, std::uint64_t epoch,
+                                   std::size_t instance, PhotoTargets targets,
                                    const photo::LightingInputs* lighting);
     IsleGame* game_;
-    IsleGameModelTransform baked_root_{};
     IsleGameCamera* camera_;
     const rom::Snapshot& snapshot_;
     const HdResources& resources_;
-    IsleGameObject* object_ = nullptr;
-    IsleGameModel* model_ = nullptr;
-    std::array<IsleGameModelTransform, node_count> unbaked_{};
-    std::array<std::uint32_t, node_count> flags_{};
-    std::array<std::uint64_t, node_count + 2> resident_revisions_{};
+    std::size_t capacity_;
+    std::array<Instance, max_instances> instances_{};
+    std::array<std::uint64_t, 2> resident_camera_revisions_{};
     std::uint32_t* resident_memory_ = nullptr;
     std::uint64_t resident_epoch_ = 0;
     IsleGameViewport resident_viewport_{};
-    bool resident_payloads_ = false, have_pose_ = false;
+    bool resident_payloads_ = false;
     bool preview_inputs_ = false, preview_direction_ = false;
     std::array<float, 4> preview_camera_xz_{};
-    float animation_time_ = 0, yaw_ = 0;
-    IsleGameVec3 position_{};
 };
 } // namespace isle::pidgey
 #endif

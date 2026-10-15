@@ -614,6 +614,16 @@ void IntroProbe::StopGame() {
     impl->changed.notify_all();
     impl->changed.wait(lock, [this] { return impl->game_stopped; });
 }
+void IntroProbe::WaitForVisualRetirement() {
+    std::unique_lock lock(impl->mutex);
+    if (!impl->game_stopped || !impl->policy.stopping() || impl->count != 0)
+        throw std::logic_error("Visual retirement requires stopped C users and resolved queued frames");
+    for (const bool borrowed : impl->borrowed)
+        if (borrowed) throw std::logic_error("Visual retirement requires returned consumer frames");
+    // offer_terminal queues acknowledgements; only the actual owner poll
+    // consumes them. C teardown alone is not this clock-retirement barrier.
+    impl->changed.wait(lock, [this] { return impl->policy.stopped(); });
+}
 isle::host::ClockError IntroProbe::RequestPause() {
     std::lock_guard lock(impl->mutex);
     const auto result = impl->policy.request_pause();

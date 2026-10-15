@@ -1,5 +1,6 @@
 #include "pidgey_producer.hpp"
 #include "photo_lighting.hpp"
+#include "35mmisle/photo_feedback.hpp"
 
 #include <algorithm>
 #include <array>
@@ -24,13 +25,16 @@ constexpr std::uint32_t main_rom_end = 0x46270, bss_begin = 0x45670, bss_end = 0
 constexpr std::uint32_t graphics_text = 0x3e7a0, graphics_data = 0x44e60;
 constexpr std::uint32_t boot_rom = 0xb70, boot_bytes = 0x100;
 constexpr std::uint32_t identity_address = PidgeyProducer::matrices_address + 128;
-constexpr std::uint32_t node_matrices = identity_address + 64;
+constexpr std::uint32_t copy_rom_begin = 0x5a180, copy_rom_end = 0x5a2a8;
 constexpr std::uint32_t absent = std::numeric_limits<std::uint32_t>::max();
 constexpr std::uint32_t geometry_score = 0x00200405; // Z, shade, back cull, smooth.
 constexpr std::uint32_t geometry_clear = 0x00bf0605; // score.c:100 incl. LOD/clipping.
 constexpr std::uint32_t opaque_mode = 0x00552078;
 constexpr std::uint32_t fog_mode = 0xc8112078;
-static_assert(node_matrices + node_count * 64 == PidgeyProducer::material_address);
+static_assert(PidgeyProducer::model_lists_address + max_instances * PidgeyProducer::model_list_bytes ==
+              PidgeyProducer::node_matrices_address);
+static_assert(PidgeyProducer::node_matrices_address + max_instances * node_count * 64 == 0x10e300);
+static_assert(PidgeyProducer::copy_list_address + copy_rom_end - copy_rom_begin <= 0x10ec00);
 static_assert(main_begin + main_rom_end - main_rom_begin == bss_begin);
 
 void require(bool ok, const char* message) {
@@ -169,19 +173,22 @@ void sample(const RomView& stream, float animation_time,
 
 struct Range { std::uint32_t begin, end; };
 bool overlap(Range a, Range b) { return a.begin < b.end && b.begin < a.end; }
-constexpr std::array<Range, 12> reserved{{
-    {main_begin, bss_end},
-    {PidgeyProducer::commands_address, PidgeyProducer::material_address + 0x28},
-    {PidgeyProducer::viewport_address, PidgeyProducer::viewport_address + 0x40},
-    {PidgeyProducer::stack_address, PidgeyProducer::stack_address + 0x400},
-    {PidgeyProducer::yield_address, PidgeyProducer::yield_address + 0xc00},
-    {PidgeyProducer::task_address, PidgeyProducer::task_address + 64},
-    {PidgeyProducer::boot_address, PidgeyProducer::boot_address + boot_bytes},
+constexpr std::array<Range, 6> reserved{{
+    {0, bss_end},
+    {PidgeyProducer::commands_address, PidgeyProducer::runtime_end},
     {PidgeyProducer::output_address, PidgeyProducer::output_end},
-    {0, main_begin},
     // Actual GAME light DMA union, global pre-render and normal photo setup.
     {0x0aebd0, 0x0aebe8}, {0x0aec18, 0x0aec58}, {0x1e53a0, 0x1e5410}
 }};
+void validate_range(Range target, const HdResources& resources) {
+    for (const auto region : reserved)
+        require(!overlap(target, region), "Pidgey target overlaps code/runtime/FIFO reservation");
+    for (const auto& resource : resources.installation_spans()) {
+        const std::uint32_t begin = resource.guest_address - 0x80000000;
+        require(!overlap(target, {begin, begin + static_cast<std::uint32_t>(resource.bytes.size())}),
+                "Pidgey target overlaps immutable resource");
+    }
+}
 void validate_targets(PhotoTargets targets, const HdResources& resources) {
     require(targets.width != 0 && targets.width <= 1023 && targets.height != 0 && targets.height <= 1023,
             "Pidgey target dimensions exceed RDP/scissor extent");
@@ -193,15 +200,7 @@ void validate_targets(PhotoTargets targets, const HdResources& resources) {
     const std::array<Range, 2> targets_ranges{{{targets.color, targets.color + bytes},
                                              {targets.depth, targets.depth + bytes}}};
     require(!overlap(targets_ranges[0], targets_ranges[1]), "Pidgey color/Z targets overlap");
-    for (const auto target : targets_ranges) {
-        for (const auto region : reserved)
-            require(!overlap(target, region), "Pidgey target overlaps code/runtime/FIFO reservation");
-        for (const auto& resource : resources.installation_spans()) {
-            const std::uint32_t begin = resource.guest_address - 0x80000000;
-            require(!overlap(target, {begin, begin + static_cast<std::uint32_t>(resource.bytes.size())}),
-                    "Pidgey target overlaps immutable resource");
-        }
-    }
+    for (const auto target : targets_ranges) validate_range(target, resources);
 }
 class Memory {
 public:
@@ -231,9 +230,11 @@ private:
 };
 class List {
 public:
-    explicit List(Memory& memory) : memory_(memory) {}
+    explicit List(Memory& memory, std::uint32_t begin = PidgeyProducer::commands_address,
+                  std::uint32_t end = PidgeyProducer::commands_end)
+        : memory_(memory), next_(begin), end_(end) {}
     void command(std::uint32_t w0, std::uint32_t w1) {
-        require(next_ <= PidgeyProducer::commands_end - 8, "Pidgey command capacity exceeded");
+        require(next_ <= end_ - 8, "Pidgey command capacity exceeded");
         memory_.word(next_, w0); memory_.word(next_ + 4, w1); next_ += 8;
     }
     void high(unsigned shift, unsigned bits, std::uint32_t value) {
@@ -244,7 +245,8 @@ public:
     }
     void segment(unsigned index, std::uint32_t address) { command(0xdb060000u | (index * 4), address); }
     void call(std::uint32_t guest) { command(0xde000000, guest); }
-    void node(std::size_t index, std::span<const IsleGameModelNode> nodes, const HdResources& resources) {
+    void node(std::size_t index, std::span<const IsleGameModelNode> nodes,
+              const HdResources& resources, std::uint32_t matrices) {
         const auto& n = nodes[index];
         if (!(n.flags & 2u)) {
             const auto payload_index = resources.nodes()[index].payload_index;
@@ -252,27 +254,160 @@ public:
             if (payload && payload->pre_guest && !(n.flags & 1u)) call(payload->pre_guest);
             const bool push = n.parent == absent || n.next_sibling != absent;
             command(push ? 0xda380000 : 0xda380001,
-                    node_matrices + static_cast<std::uint32_t>(index * 64));
+                    matrices + static_cast<std::uint32_t>(index * 64));
             if (payload && payload->draw_guest && !(n.flags & 1u)) {
                 if (resources.node_material_guests()[index]) segment(14, PidgeyProducer::material_address);
                 call(payload->draw_guest);
             }
             for (auto child = n.first_child; child != absent; child = nodes[child].next_sibling)
-                node(child, nodes, resources);
+                node(child, nodes, resources, matrices);
             if (push) command(0xd8380002, 64);
         }
     }
+    void model(std::span<const IsleGameModelNode> nodes, const HdResources& resources,
+               std::uint32_t matrices) {
+        // Genuine renderModelTypeIFogged wrapper, shared by preview and scoring.
+        command(0xe7000000, 0);
+        constexpr std::int32_t fog_multiplier = 128000 / (990 - 968);
+        constexpr std::int32_t fog_offset = (500 - 968) * 256 / (990 - 968);
+        command(0xdb080000, (std::uint32_t(fog_multiplier) << 16) | (std::uint32_t(fog_offset) & 0xffff));
+        command(0xf8000000, 0x3c6eb400);
+        high(20, 2, 1u << 20); low(3, 29, fog_mode);
+        command(0xd9ffffff, 0x00010000);
+        node(0, nodes, resources, matrices);
+        command(0xe7000000, 0);
+        high(20, 2, 0); low(3, 29, opaque_mode);
+        command(0xd9feffff, 0);
+        command(0xdf000000, 0);
+    }
 private:
     Memory& memory_;
-    std::uint32_t next_ = PidgeyProducer::commands_address;
+    std::uint32_t next_, end_;
 };
+std::uint32_t matrices_for(std::size_t instance) {
+    return PidgeyProducer::node_matrices_address + static_cast<std::uint32_t>(instance * node_count * 64);
+}
+std::uint32_t list_for(std::size_t instance) {
+    return PidgeyProducer::model_lists_address +
+           static_cast<std::uint32_t>(instance * PidgeyProducer::model_list_bytes);
+}
+// At most matrix/pre-list/material/draw/pop per node, plus fog wrapper.
+static_assert((node_count * 5 + 16) * 8 <= PidgeyProducer::model_list_bytes);
+static_assert((80 + max_instances * 8) * 8 <=
+              PidgeyProducer::commands_end - PidgeyProducer::commands_address);
+
+class CameraRestore {
+public:
+    CameraRestore(IsleGame* game, IsleGameCamera* camera) : game_(game), camera_(camera) {
+        const IsleGameCameraParameters* parameters = nullptr;
+        check(isle_game_camera_parameters(game, camera, &parameters));
+        saved_ = *parameters;
+    }
+    ~CameraRestore() {
+        static_cast<void>(isle_game_camera_set_perspective(game_, camera_, &saved_.perspective));
+        static_cast<void>(isle_game_camera_set_look_at(game_, camera_, &saved_.look_at));
+        static_cast<void>(isle_game_camera_set_viewport(game_, camera_, &saved_.viewport));
+    }
+    const IsleGameCameraParameters& saved() const noexcept { return saved_; }
+private:
+    IsleGame* game_;
+    IsleGameCamera* camera_;
+    IsleGameCameraParameters saved_{};
+};
+void set_camera(IsleGame* game, IsleGameCamera* camera,
+                const IsleGameCameraParameters& parameters, FeedbackPass pass) {
+    require(pass == FeedbackPass::wide || pass == FeedbackPass::narrow, "Invalid feedback camera pass");
+    auto perspective = parameters.perspective;
+    perspective.fovy = pass == FeedbackPass::wide ? 60.0f : 30.0f;
+    check(isle_game_camera_set_perspective(game, camera, &perspective));
+    check(isle_game_camera_set_look_at(game, camera, &parameters.look_at));
+    check(isle_game_camera_set_viewport(game, camera, &parameters.viewport));
+    for (std::size_t i = 0; i < 2; ++i) {
+        const IsleGameCameraMatrix* matrix = nullptr;
+        check(isle_game_camera_matrix(game, camera, i, &matrix));
+    }
+}
+
+void emit_setup(List& list, PhotoTargets targets, std::uint16_t norm,
+                unsigned depth_planes, const photo::LightingInputs* lighting) {
+    list.segment(0, 0);
+    list.segment(15, targets.color); list.segment(12, targets.depth);
+    list.segment(10, targets.depth); list.segment(11, targets.depth);
+    list.command(0xe7000000, 0);
+    list.high(20, 2, 3u << 20); list.low(3, 29, 0);
+    list.command(0xff100000 | (targets.width - 1), targets.depth);
+    list.command(0xf7000000, 0xfffcfffc);
+    const auto depth_height = std::uint32_t(targets.height) * depth_planes;
+    list.command(0xed000000, (std::uint32_t(targets.width) * 4 << 12) | (depth_height * 4));
+    list.command(0xf6000000 | (std::uint32_t(targets.width - 1) * 4 << 12) |
+                 ((depth_height - 1) * 4), 0);
+    list.command(0xe7000000, 0);
+    list.command(0xff100000 | (targets.width - 1), targets.color);
+    list.command(0xfe000000, targets.depth);
+    list.command(0xed000000, (std::uint32_t(targets.width) * 4 << 12) |
+                              (std::uint32_t(targets.height) * 4));
+    list.command(0xf7000000, 0x00010001);
+    list.command(0xf6000000 | (std::uint32_t(targets.width - 1) * 4 << 12) |
+                 (std::uint32_t(targets.height - 1) * 4), 0);
+    list.command(0xe7000000, 0);
+    list.command(0xd9000000 | (~geometry_clear & 0x00ffffff), 0);
+    // Exact source-selected GAME FRUSTRATIO_1 at US ROM 0x5a330..0x5a350.
+    list.command(0xdb040004, 1); list.command(0xdb04000c, 1);
+    list.command(0xdb040014, 0x0000ffff); list.command(0xdb04001c, 0x0000ffff);
+    list.command(0xd7000000, 0);
+    list.command(0xd9ffffff, geometry_score);
+    list.command(0xda380007, identity_address); list.command(0xda380003, identity_address);
+    list.high(23, 1, 1u << 23);
+    list.command(0xfcffffff, 0xfffe793c); // SHADE in both cycles.
+    list.high(16, 1, 0); list.high(14, 2, 0); list.high(17, 2, 0);
+    list.high(19, 1, 1u << 19); list.high(12, 2, 2u << 12);
+    list.high(9, 3, 6u << 9); list.high(8, 1, 0);
+    list.low(0, 2, 0); list.high(6, 2, 0); list.high(4, 2, 0);
+    list.high(20, 2, 0); list.low(3, 29, opaque_mode); list.low(2, 1, 0);
+    list.command(0xe7000000, 0);
+    if (lighting) list.call(lighting->pre_render_guest());
+    list.command(0xdc080008, PidgeyProducer::viewport_address);
+    list.command(0xda380007, PidgeyProducer::matrices_address);
+    list.command(0xdb0e0000, norm);
+    list.command(0xda380005, PidgeyProducer::matrices_address + 64);
+    if (lighting) {
+        list.call(lighting->normal_setup_guest());
+        list.high(6, 2, 0);
+        list.command(0xe7000000, 0);
+        list.low(3, 29, 0x0f5f2078);
+        list.command(0xfc1219ff, 0xfffffe38);
+    }
+}
 } // namespace
 
 PidgeyProducer::PidgeyProducer(IsleGame* game, IsleGameCamera* camera,
-                             const rom::Snapshot& snapshot, const HdResources& resources)
-    : game_(game), camera_(camera), snapshot_(snapshot), resources_(resources) {
+                             const rom::Snapshot& snapshot, const HdResources& resources,
+                             std::size_t capacity)
+    : game_(game), camera_(camera), snapshot_(snapshot), resources_(resources), capacity_(capacity) {
     require(game && camera && snapshot.canonical().size() == rom::us_size,
             "Pidgey producer requires live native and immutable input owners");
+    require(capacity >= 1 && capacity <= max_instances, "Pidgey instance capacity must be 1..12");
+    // Exact private US ROM, GAME score.c:53-79 at the pinned revision. This
+    // self-contained 37-command static list is copied, never macro-recreated.
+    // Its only memory operands are C+[0,C00], B+[0,C00], F and A segments.
+    const RomView copy{0, copy_rom_begin,
+                       snapshot.canonical().subspan(copy_rom_begin, copy_rom_end - copy_rom_begin)};
+    for (std::size_t i = 0; i < copy.bytes.size(); i += 8) {
+        const auto w0 = copy.u32(i), w1 = copy.u32(i + 4), op = w0 >> 24;
+        switch (op) {
+        case 0xfd: require(w1 == 0x0c000000 || w1 == 0x0c000c00, "Copy source escapes C"); break;
+        case 0xff: require(w1 == 0x0b000000 || w1 == 0x0b000c00 || w1 == 0x0f000000,
+                           "Copy color target escapes B/F"); break;
+        case 0xfe: require(w1 == 0x0a000000, "Copy depth target escapes A"); break;
+        case 0xdf: require(i + 8 == copy.bytes.size() && w1 == 0, "Copy terminator is not final"); break;
+        case 0xe7: case 0xe3: case 0xe2: case 0xed: case 0xf5: case 0xe6:
+        case 0xf3: case 0xf2: case 0xe4: case 0xe1: case 0xf1: break;
+        default: throw std::runtime_error("Original GAME copy list has an external reference/unsupported opcode");
+        }
+    }
+    require(copy.u32(9 * 8) == 0xf3000000 && copy.u32(9 * 8 + 4) == 0x075ff080 &&
+            copy.u32(21 * 8) == 0xf3000000 && copy.u32(21 * 8 + 4) == 0x075ff080 &&
+            copy.u32(36 * 8) == 0xdf000000, "Original GAME two-half LoadBlock bounds differ");
     std::size_t camera_count = 0;
     check(isle_game_camera_matrix_count(game_, camera_, &camera_count));
     require(camera_count == 2, "Photo camera must own perspective then look-at matrices");
@@ -294,31 +429,48 @@ PidgeyProducer::PidgeyProducer(IsleGame* game, IsleGameCamera* camera,
     for (std::size_t i = 0; i < node_count; ++i)
         init[i] = {resources.nodes()[i].parent == no_index ? absent : resources.nodes()[i].parent,
                    initial(resources.nodes()[i])};
-    check(isle_game_add_object(game_, 128, 0, 0x80000000, nullptr, nullptr, &object_));
     try {
-        check(isle_game_attach_model(game_, object_, init.data(), init.size(), &model_));
-        set_photo_pose(0, {0, 0, 0}, 0);
+        for (std::size_t i = 0; i < capacity_; ++i) {
+            auto& instance = instances_[i];
+            check(isle_game_add_object(game_, 128, 0, 0x80000000, nullptr, nullptr, &instance.object));
+            check(isle_game_attach_model(game_, instance.object, init.data(), init.size(), &instance.model));
+            set_photo_pose(i, 0, {0, 0, 0}, 0);
+        }
     } catch (...) {
-        static_cast<void>(isle_game_delete_object(game_, object_));
-        object_ = nullptr;
+        for (auto& instance : instances_)
+            if (instance.object) static_cast<void>(isle_game_delete_object(game_, instance.object));
         throw;
     }
 }
 PidgeyProducer::~PidgeyProducer() {
-    if (object_) static_cast<void>(isle_game_delete_object(game_, object_));
+    for (auto& instance : instances_)
+        if (instance.object) static_cast<void>(isle_game_delete_object(game_, instance.object));
 }
-std::span<const IsleGameModelNode> PidgeyProducer::model_nodes() const {
+PidgeyProducer::Instance& PidgeyProducer::instance_at(std::size_t instance) {
+    require(instance < capacity_, "Pidgey instance index outside constructed capacity");
+    return instances_[instance];
+}
+const PidgeyProducer::Instance& PidgeyProducer::instance_at(std::size_t instance) const {
+    require(instance < capacity_, "Pidgey instance index outside constructed capacity");
+    return instances_[instance];
+}
+std::span<const IsleGameModelTransform> PidgeyProducer::unbaked_pose(std::size_t instance) const {
+    return instance_at(instance).unbaked;
+}
+std::span<const IsleGameModelNode> PidgeyProducer::model_nodes(std::size_t instance) const {
     const IsleGameModelNode* nodes = nullptr;
     std::size_t count = 0;
-    check(isle_game_model_nodes(game_, model_, &nodes, &count));
+    check(isle_game_model_nodes(game_, instance_at(instance).model, &nodes, &count));
     require(count == node_count, "Native Pidgey node count changed");
     return {nodes, count};
 }
-void PidgeyProducer::set_photo_pose(float animation_time, IsleGameVec3 position, float yaw) {
+void PidgeyProducer::set_photo_pose(std::size_t index, float animation_time, IsleGameVec3 position, float yaw) {
+    auto& instance = instance_at(index);
     require(std::isfinite(animation_time) && std::isfinite(position.x) && std::isfinite(position.y) &&
             std::isfinite(position.z) && std::isfinite(yaw), "Nonfinite Pidgey photo pose");
-    if (have_pose_ && animation_time == animation_time_ && equal(position, position_) && yaw == yaw_) return;
-    const bool resample = !have_pose_ || animation_time != animation_time_;
+    if (instance.have_pose && animation_time == instance.animation_time &&
+        equal(position, instance.position) && yaw == instance.yaw) return;
+    const bool resample = !instance.have_pose || animation_time != instance.animation_time;
     std::array<IsleGameModelTransform, node_count> sampled_pose;
     std::array<std::uint32_t, node_count> sampled_flags;
     if (resample) {
@@ -328,27 +480,28 @@ void PidgeyProducer::set_photo_pose(float animation_time, IsleGameVec3 position,
             sample(resources_.pose0().model_streams[i], animation_time, sampled_pose[i], sampled_flags[i]);
         }
     }
-    const auto& pose = resample ? sampled_pose : unbaked_;
-    const auto& flags = resample ? sampled_flags : flags_;
+    const auto& pose = resample ? sampled_pose : instance.unbaked;
+    const auto& flags = resample ? sampled_flags : instance.flags;
     IsleGameModelTransform root{};
     check(isle_game_model_bake_photo_transform(&pose[0], &position, yaw,
                                               resources_.photo_selection().scale, &root));
-    const bool previous_valid = have_pose_;
+    const bool previous_valid = instance.have_pose;
     // On any rejected native mutation, leave the pose cache invalid so the next
     // request resamples from immutable streams instead of treating a partial
     // native mutation as a committed pose.
-    have_pose_ = false;
+    instance.have_pose = false;
     for (std::size_t i = 0; i < node_count; ++i) {
         const auto& transform = i == 0 ? root : pose[i];
-        const auto& previous = i == 0 ? baked_root_ : unbaked_[i];
+        const auto& previous = i == 0 ? instance.baked_root : instance.unbaked[i];
         if (!previous_valid || !equal(previous, transform))
-            check(isle_game_model_set_transform(game_, model_, i, &transform));
-        if (!previous_valid || flags_[i] != flags[i])
-            check(isle_game_model_set_flags(game_, model_, i, flags[i]));
+            check(isle_game_model_set_transform(game_, instance.model, i, &transform));
+        if (!previous_valid || instance.flags[i] != flags[i])
+            check(isle_game_model_set_flags(game_, instance.model, i, flags[i]));
     }
-    if (resample) { unbaked_ = sampled_pose; flags_ = sampled_flags; }
-    baked_root_ = root;
-    animation_time_ = animation_time; position_ = position; yaw_ = yaw; have_pose_ = true;
+    if (resample) { instance.unbaked = sampled_pose; instance.flags = sampled_flags; }
+    instance.baked_root = root;
+    instance.animation_time = animation_time; instance.position = position;
+    instance.yaw = yaw; instance.have_pose = true;
 }
 void PidgeyProducer::install_inputs(std::span<std::uint32_t> words, std::uint64_t epoch) {
     Memory memory(words);
@@ -358,40 +511,57 @@ void PidgeyProducer::install_inputs(std::span<std::uint32_t> words, std::uint64_
     memory.copy(main_begin, rom.subspan(main_rom_begin, main_rom_end - main_rom_begin));
     std::fill(words.begin() + bss_begin / 4, words.begin() + bss_end / 4, 0);
     memory.copy(boot_address, rom.subspan(boot_rom, boot_bytes));
+    memory.copy(copy_list_address, rom.subspan(copy_rom_begin, copy_rom_end - copy_rom_begin));
     resources_.install(std::as_writable_bytes(words));
     resident_memory_ = words.data(); resident_epoch_ = epoch;
-    resident_revisions_.fill(0); resident_payloads_ = false;
+    resident_camera_revisions_.fill(0); resident_payloads_ = false;
+    for (auto& instance : instances_) {
+        instance.resident_revisions.fill(0);
+        instance.resident_payloads = false;
+    }
     preview_inputs_ = preview_direction_ = false;
 }
-PreparedPidgeyTask PidgeyProducer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch, PhotoTargets targets) {
-    return prepare_impl(words, epoch, targets, nullptr);
+PreparedPidgeyTask PidgeyProducer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch,
+                                         std::size_t instance, PhotoTargets targets) {
+    return prepare_impl(words, epoch, instance, targets, nullptr);
 }
 PreparedPidgeyTask PidgeyProducer::prepare_preview(std::span<std::uint32_t> words,
-                                                std::uint64_t epoch, PhotoTargets targets,
+                                                std::uint64_t epoch, std::size_t instance,
+                                                PhotoTargets targets,
                                                 const photo::LightingInputs& lighting) {
-    return prepare_impl(words, epoch, targets, &lighting);
+    return prepare_impl(words, epoch, instance, targets, &lighting);
 }
-PreparedPidgeyTask PidgeyProducer::prepare_impl(std::span<std::uint32_t> words,
-                                             std::uint64_t epoch, PhotoTargets targets,
-                                             const photo::LightingInputs* lighting) {
+std::uint16_t PidgeyProducer::upload_payloads(std::span<std::uint32_t> words,
+                                            std::span<const std::size_t> indices,
+                                            const photo::LightingInputs* lighting) {
     Memory memory(words);
-    require(words.data() == resident_memory_ && epoch == resident_epoch_, "Pidgey canonical inputs are not resident at pointer+epoch");
-    require(have_pose_, "No complete Pidgey photo pose");
-    validate_targets(targets, resources_);
-    const auto nodes = model_nodes();
+    // Force all native fixed-matrix range checks before canonical writes.
     std::array<const IsleGameCameraMatrix*, 2> camera{};
-    for (std::size_t i = 0; i < camera.size(); ++i) {
+    for (std::size_t i = 0; i < camera.size(); ++i)
         check(isle_game_camera_matrix(game_, camera_, i, &camera[i]));
-        if (!resident_payloads_ || resident_revisions_[i] != camera[i]->revision) {
+    std::uint16_t norm = 0;
+    check(isle_game_camera_perspective_normalization(game_, camera_, &norm));
+    std::array<std::span<const IsleGameModelNode>, max_instances> models{};
+    for (const auto index : indices) {
+        require(instance_at(index).have_pose, "No complete Pidgey photo pose");
+        models[index] = model_nodes(index);
+    }
+    for (std::size_t i = 0; i < camera.size(); ++i) {
+        if (!resident_payloads_ || resident_camera_revisions_[i] != camera[i]->revision) {
             memory.matrix(matrices_address + static_cast<std::uint32_t>(i * 64), camera[i]->fixed);
-            resident_revisions_[i] = camera[i]->revision;
+            resident_camera_revisions_[i] = camera[i]->revision;
         }
     }
-    for (std::size_t i = 0; i < nodes.size(); ++i) {
-        if (!resident_payloads_ || resident_revisions_[i + 2] != nodes[i].revision) {
-            memory.matrix(node_matrices + static_cast<std::uint32_t>(i * 64), nodes[i].fixed);
-            resident_revisions_[i + 2] = nodes[i].revision;
+    for (const auto index : indices) {
+        auto& instance = instance_at(index);
+        const auto nodes = models[index];
+        for (std::size_t i = 0; i < nodes.size(); ++i) {
+            if (!instance.resident_payloads || instance.resident_revisions[i] != nodes[i].revision) {
+                memory.matrix(matrices_for(index) + static_cast<std::uint32_t>(i * 64), nodes[i].fixed);
+                instance.resident_revisions[i] = nodes[i].revision;
+            }
         }
+        instance.resident_payloads = true;
     }
     const IsleGameCameraParameters* parameters = nullptr;
     check(isle_game_camera_parameters(game_, camera_, &parameters));
@@ -442,70 +612,29 @@ PreparedPidgeyTask PidgeyProducer::prepare_impl(std::span<std::uint32_t> words,
         }
     }
     resident_payloads_ = true;
-    std::uint16_t norm = 0;
-    check(isle_game_camera_perspective_normalization(game_, camera_, &norm));
+    return norm;
+}
+PreparedPidgeyTask PidgeyProducer::prepare_impl(std::span<std::uint32_t> words,
+                                             std::uint64_t epoch, std::size_t instance,
+                                             PhotoTargets targets,
+                                             const photo::LightingInputs* lighting) {
+    Memory memory(words);
+    require(words.data() == resident_memory_ && epoch == resident_epoch_,
+            "Pidgey canonical inputs are not resident at pointer+epoch");
+    instance_at(instance);
+    validate_targets(targets, resources_);
+    const std::array indices{instance};
+    const auto norm = upload_payloads(words, indices, lighting);
+    List model(memory, list_for(instance), list_for(instance) + model_list_bytes);
+    model.model(model_nodes(instance), resources_, matrices_for(instance));
     List list(memory);
-    list.segment(0, 0);
-    list.segment(15, targets.color); list.segment(12, targets.depth);
-    list.segment(10, targets.depth); list.segment(11, targets.depth);
-    list.command(0xe7000000, 0);
-    list.high(20, 2, 3u << 20); list.low(3, 29, 0); // FILL, NOOP blender.
-    list.command(0xff100000 | (targets.width - 1), targets.depth);
-    list.command(0xf7000000, 0xfffcfffc);
-    list.command(0xed000000, (std::uint32_t(targets.width) * 4 << 12) | (std::uint32_t(targets.height) * 4));
-    const auto rectangle = 0xf6000000 | (std::uint32_t(targets.width - 1) * 4 << 12) |
-                           (std::uint32_t(targets.height - 1) * 4);
-    list.command(rectangle, 0); list.command(0xe7000000, 0);
-    list.command(0xff100000 | (targets.width - 1), targets.color);
-    list.command(0xfe000000, targets.depth);
-    list.command(0xf7000000, 0x00010001); list.command(rectangle, 0);
-    list.command(0xe7000000, 0);
-    list.command(0xd9000000 | (~geometry_clear & 0x00ffffff), 0);
-    // Exact GAME FRUSTRATIO_1 wire order, observed in the source-selected
-    // score setup list at US ROM 0x5a330..0x5a350. Reversing these signs
-    // rejects every otherwise visible model triangle in the actual RSP.
-    list.command(0xdb040004, 1); list.command(0xdb04000c, 1);
-    list.command(0xdb040014, 0x0000ffff); list.command(0xdb04001c, 0x0000ffff);
-    list.command(0xd7000000, 0);
-    list.command(0xd9ffffff, geometry_score);
-    list.command(0xda380007, identity_address); list.command(0xda380003, identity_address);
-    list.high(23, 1, 1u << 23);
-    // G_CC_SHADE in both cycles: (0-0)*0+SHADE, likewise alpha.
-    list.command(0xfcffffff, 0xfffe793c);
-    list.high(16, 1, 0); list.high(14, 2, 0); list.high(17, 2, 0);
-    list.high(19, 1, 1u << 19); list.high(12, 2, 2u << 12);
-    list.high(9, 3, 6u << 9); list.high(8, 1, 0);
-    list.low(0, 2, 0); list.high(6, 2, 0); list.high(4, 2, 0);
-    list.high(20, 2, 0); list.low(3, 29, opaque_mode); list.low(2, 1, 0);
-    list.command(0xe7000000, 0);
-    if (lighting) list.call(lighting->pre_render_guest());
-    list.command(0xdc080008, viewport_address);
-    // Original GAME camera placement: perspective LOAD, normalize, ordinary
-    // look-at MUL into PROJECTION. MODELVIEW remains the identity loaded above.
-    list.command(0xda380007, matrices_address);
-    list.command(0xdb0e0000, norm);
-    list.command(0xda380005, matrices_address + 64);
-    if (lighting) {
-        list.call(lighting->normal_setup_guest());
-        // GAME photo_check/98C330.c:334-344 normal camera state.
-        list.high(6, 2, 0);
-        list.command(0xe7000000, 0);
-        list.low(3, 29, 0x0f5f2078);
-        list.command(0xfc1219ff, 0xfffffe38);
-    }
-    // Genuine renderModelTypeIFogged wrapper, 968..990, not invented lighting.
-    list.command(0xe7000000, 0);
-    constexpr std::int32_t fog_multiplier = 128000 / (990 - 968);
-    constexpr std::int32_t fog_offset = (500 - 968) * 256 / (990 - 968);
-    list.command(0xdb080000, (std::uint32_t(fog_multiplier) << 16) | (std::uint32_t(fog_offset) & 0xffff));
-    list.command(0xf8000000, 0x3c6eb400);
-    list.high(20, 2, 1u << 20); list.low(3, 29, fog_mode);
-    list.command(0xd9ffffff, 0x00010000);
-    list.node(0, nodes, resources_);
-    list.command(0xe7000000, 0);
-    list.high(20, 2, 0); list.low(3, 29, opaque_mode);
-    list.command(0xd9feffff, 0);
+    emit_setup(list, targets, norm, 1, lighting);
+    list.call(list_for(instance));
     list.command(0xe9000000, 0); list.command(0xdf000000, 0);
+    return finish_task(words);
+}
+PreparedPidgeyTask PidgeyProducer::finish_task(std::span<std::uint32_t> words) {
+    Memory memory(words);
     // GAME gtl.c sets data_size (command size) to zero; DL termination controls
     // traversal. Loaded CPU main bytes remain inert; only graphics/boot execute.
     const rsp::Task task{1, 4, boot_address, boot_bytes, graphics_text, 0x1000,
@@ -518,5 +647,102 @@ PreparedPidgeyTask PidgeyProducer::prepare_impl(std::span<std::uint32_t> words,
     for (std::size_t i = 0; i < fields.size(); ++i)
         memory.word(task_address + static_cast<std::uint32_t>(i * 4), fields[i]);
     return {task, snapshot_.canonical().subspan(boot_rom, boot_bytes)};
+}
+FrozenFeedbackRequest PidgeyProducer::freeze_feedback_request(const FeedbackRequest& input) {
+    require(input.actors.size() <= capacity_, "Feedback actor count exceeds constructed capacity");
+    require((input.planes_base & 63u) == 0 &&
+            input.planes_base <= rdram_size - photo_feedback::buffer_bytes,
+            "Feedback whole-plane block is unaligned/outside 8 MiB");
+    validate_range({input.planes_base,
+                    input.planes_base + static_cast<std::uint32_t>(photo_feedback::buffer_bytes)}, resources_);
+    FrozenFeedbackRequest request;
+    request.owner_ = this;
+    request.count_ = input.actors.size();
+    request.planes_base_ = input.planes_base;
+    std::copy(input.actors.begin(), input.actors.end(), request.actors_.begin());
+    std::array<bool, max_instances> used_instances{}, used_slots{};
+    for (std::size_t i = 0; i < request.count_; ++i) {
+        const auto& actor = request.actors_[i];
+        require(actor.instance < capacity_ && !used_instances[actor.instance],
+                "Feedback instance is duplicate/outside capacity");
+        used_instances[actor.instance] = true;
+        if (actor.score_slot) {
+            require(*actor.score_slot < max_instances && !used_slots[*actor.score_slot],
+                    "Feedback score slot is duplicate/outside 0..11");
+            used_slots[*actor.score_slot] = true;
+        }
+        require(std::isfinite(actor.animation_time) && std::isfinite(actor.position.x) &&
+                std::isfinite(actor.position.y) && std::isfinite(actor.position.z) &&
+                std::isfinite(actor.yaw), "Nonfinite feedback actor pose");
+    }
+    CameraRestore restore(game_, camera_);
+    request.camera_ = restore.saved();
+    request.camera_.look_at = input.look_at;
+    require(input.look_at.up[0] == 0 && input.look_at.up[1] == 1 && input.look_at.up[2] == 0,
+            "Feedback photograph requires GAME world-up (0,1,0)");
+    request.camera_.perspective = {30.0f, 4.0f / 3.0f, 10.0f, 25600.0f, 1.0f};
+    // score_Render changes only XY. Preserve source depth/reserved lanes.
+    request.camera_.viewport.scale[0] = request.camera_.viewport.translate[0] = 128;
+    request.camera_.viewport.scale[1] = request.camera_.viewport.translate[1] = 96;
+    set_camera(game_, camera_, request.camera_, FeedbackPass::wide);
+    set_camera(game_, camera_, request.camera_, FeedbackPass::narrow);
+    for (std::size_t i = 0; i < request.count_; ++i) {
+        const auto& actor = request.actors_[i];
+        set_photo_pose(actor.instance, actor.animation_time, actor.position, actor.yaw);
+        static_cast<void>(model_nodes(actor.instance));
+    }
+    return request;
+}
+PreparedPidgeyTask PidgeyProducer::prepare_feedback_pass(std::span<std::uint32_t> words,
+                                                        std::uint64_t epoch,
+                                                        const FrozenFeedbackRequest& request,
+                                                        FeedbackPass pass) {
+    Memory memory(words); // Extent guard before any canonical write.
+    require(request.owner_ == this, "Frozen feedback request belongs to another scene owner");
+    require(words.data() == resident_memory_ && epoch == resident_epoch_,
+            "Pidgey canonical inputs are not resident at pointer+epoch");
+    CameraRestore restore(game_, camera_);
+    set_camera(game_, camera_, request.camera_, pass);
+    std::array<std::size_t, max_instances> indices{};
+    std::array<bool, max_instances> active_slots{};
+    for (std::size_t i = 0; i < request.count_; ++i) {
+        const auto& actor = request.actors_[i];
+        indices[i] = actor.instance;
+        if (actor.score_slot) active_slots[*actor.score_slot] = true;
+        set_photo_pose(actor.instance, actor.animation_time, actor.position, actor.yaw);
+        static_cast<void>(model_nodes(actor.instance));
+    }
+    const auto norm = upload_payloads(words, {indices.data(), request.count_}, nullptr);
+    for (std::size_t slot = 0; slot < max_instances; ++slot) {
+        if (!active_slots[slot]) {
+            const auto begin = request.planes_base_ + (14 + slot) * photo_feedback::plane_bytes;
+            std::fill_n(words.begin() + static_cast<std::ptrdiff_t>(begin / 4),
+                        photo_feedback::plane_bytes / 4, 0u);
+        }
+    }
+    for (std::size_t i = 0; i < request.count_; ++i) {
+        const auto instance = indices[i];
+        List model(memory, list_for(instance), list_for(instance) + model_list_bytes);
+        model.model(model_nodes(instance), resources_, matrices_for(instance));
+    }
+    List list(memory);
+    const auto base = request.planes_base_;
+    emit_setup(list, {base, base + static_cast<std::uint32_t>(photo_feedback::plane_bytes), 64, 48},
+               norm, 13, nullptr);
+    for (std::size_t i = 0; i < request.count_; ++i) {
+        const auto& actor = request.actors_[i];
+        if (actor.score_slot) {
+            const auto slot = std::uint32_t(*actor.score_slot);
+            list.segment(10, base + (2 + slot) * static_cast<std::uint32_t>(photo_feedback::plane_bytes));
+            list.segment(11, base + (14 + slot) * static_cast<std::uint32_t>(photo_feedback::plane_bytes));
+            list.call(copy_list_address); // Prefix C -> B; restores F color, A depth.
+            list.call(list_for(actor.instance)); // Genuine isolated draw, also writes F.
+            list.command(0xe7000000, 0);
+            list.command(0xfe000000, 0x0c000000);
+        }
+        list.call(list_for(actor.instance)); // Same body, cumulative C (unscored: only draw).
+    }
+    list.command(0xe9000000, 0); list.command(0xdf000000, 0);
+    return finish_task(words);
 }
 } // namespace isle::pidgey

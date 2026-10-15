@@ -28,6 +28,7 @@ class IntroProbe;
 #endif
 #ifdef ISLE_HAS_CANONICAL_RDP
 #include "rsp_render.hpp"
+#include "model_preview.hpp"
 #endif
 
 #include <array>
@@ -137,7 +138,7 @@ class ProbeHost final {
     ProbeHost(const ProbeHost&) = delete;
     ProbeHost& operator=(const ProbeHost&) = delete;
 
-    void Init(bool introMode, bool enableInput) {
+    void Init(bool introMode, bool modelMode, bool enableInput) {
         context = Ship::Context::CreateInstance("35mmIsleHostProbe", "35mmIsle nonplayable host probe");
         context->Init();
         const std::filesystem::path data =
@@ -206,12 +207,14 @@ class ProbeHost final {
             throw std::runtime_error("OpenGL completion barrier is unavailable");
         }
         interpreter->SetNativeDimensions(320.0f, 240.0f);
-        std::cout << "NONPLAYABLE " << (introMode ? "bounded intro-asset" : "procedural host")
+        std::cout << "NONPLAYABLE "
+                  << (modelMode ? "native lit-model" : introMode ? "bounded intro-asset" : "procedural host")
                   << " probe: real LUS 759b13401cd6903daa67a00a753066f791622e78; backend="
                   << interpreter->GetCurrentRenderingAPI()->GetName()
                   << "; F3DEX_GBI_2 / ucode_f3dex2; pinned renderer shaders; "
-                  << (introMode ? "explicit private-ROM sprite/C-fade scope only, not a full scene\n"
-                                : "procedural graphics, not a game scheduler\n");
+                  << (modelMode ? "actual native model/RSP/RDP presentation, not full scene/gameplay\n"
+                      : introMode ? "explicit private-ROM sprite/C-fade scope only, not a full scene\n"
+                                  : "procedural graphics, not a game scheduler\n");
     }
 #ifdef ISLE_HAS_AUDIO_PROBE
     void EnableAudio(const isle::rom::Snapshot& snapshot) {
@@ -231,6 +234,37 @@ class ProbeHost final {
         if (decline)
             std::cout << "OPTIONAL_PRESENTATIONS_DECLINED: explicit diagnostic policy retains both leases; "
                          "not a claim that LUS returned false.\n";
+    }
+    void RunModelPreview(std::uint32_t frameLimit, ModelPreview& model) {
+        const std::unordered_map<Mtx*, MtxF> replacements;
+        const auto deadline = std::chrono::steady_clock::now() +
+                              std::chrono::seconds(30 + frameLimit / 5);
+        const auto interpreter = window->GetInterpreterWeak().lock();
+        if (!interpreter) throw std::runtime_error("Native model presentation lost its interpreter");
+        for (std::uint32_t submitted = 0; submitted < frameLimit; ++submitted) {
+            finishGpu();
+            for (const auto* base : model.TextureBases()) interpreter->TextureCacheDelete(base);
+            model.PrepareFrame(submitted);
+            for (;;) {
+                window->HandleEvents();
+                if (!window->IsRunning())
+                    throw std::runtime_error("Window closed before native model presentation completed");
+                if (std::chrono::steady_clock::now() >= deadline)
+                    throw std::runtime_error("Native model presentation exceeded bounded deadline");
+#ifdef ISLE_HAS_AUDIO_PROBE
+                if (audio) audio->Tick();
+#endif
+                if (deck) deck->WriteToPad(pads.data());
+                if (window->DrawAndRunGraphicsCommands(model.Commands(), replacements)) break;
+                // Retain this exact completed frame/list until real presentation.
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+            finishGpu(); // LUS FinishRender alone is not a completion fence.
+            if (submitted == 0)
+                std::cout << "FIRST_SUCCESSFUL_RENDERER_FRAME: actual native model framebuffer submitted "
+                             "through real LUS; GL completion observed, not first-swap pixel proof.\n" << std::flush;
+        }
+        model.Report();
     }
 #endif
 #ifdef ISLE_HAS_GAME_ENGINE
@@ -256,6 +290,7 @@ class ProbeHost final {
                 (requiredExecutor && !requiredExecutor->quiescent()))
                 throw std::logic_error("Required feedback did not quiesce before renderer shutdown");
             #endif
+            intro.WaitForVisualRetirement();
         };
         std::uint32_t submitted = 0;
         intro.Start(); // Asset admission and SDL/audio initialization precede VI time.
@@ -567,6 +602,7 @@ constexpr std::wstring_view noInputArgument = L"--no-input";
 constexpr std::wstring_view requiredArgument = L"--required-feedback-probe";
 constexpr std::wstring_view declineArgument = L"--decline-presentations";
 constexpr std::wstring_view cpuArgument = L"--cpu-device";
+constexpr std::wstring_view modelArgument = L"--model-preview";
 constexpr std::wstring_view helpArgument = L"--help";
 #else
 using Argument = char;
@@ -577,6 +613,7 @@ constexpr std::string_view noInputArgument = "--no-input";
 constexpr std::string_view requiredArgument = "--required-feedback-probe";
 constexpr std::string_view declineArgument = "--decline-presentations";
 constexpr std::string_view cpuArgument = "--cpu-device";
+constexpr std::string_view modelArgument = "--model-preview";
 constexpr std::string_view helpArgument = "--help";
 #endif
 
@@ -585,10 +622,12 @@ struct Options {
     std::optional<std::filesystem::path> rom;
     bool audio = false;
     bool noInput = false;
+    bool modelPreview = false;
     bool requiredFeedback = false, declinePresentations = false, requireCpu = false;
 };
 void Usage(std::ostream& output) {
     output << "35mmisle-host-probe [--frames 1..3600] [--rom PRIVATE_ROM] [--audio] [--no-input]\n"
+              "  [--model-preview [--cpu-device]]\n"
               "  [--required-feedback-probe --decline-presentations [--cpu-device]]\n"
               "--rom: one admitted z64/v64/n64 snapshot for compiled private consumers.\n"
               "--no-input: disable controller enumeration and keyboard/button callbacks;\n"
@@ -597,6 +636,8 @@ void Usage(std::ostream& output) {
               "ISLE_BUILD_AUDIO_PROBE + --audio enables independently queue-paced native SFX14.\n"
               "--audio requires --rom; no Ship::Audio/legacy-bridge/AI/VI/cue fidelity claim.\n"
               "Checked SDL stream drain is not physical-device/hearing completion.\n"
+              "--model-preview requires native engine/RSP/canonical RDP and --rom; presents\n"
+              "actual lit pose-0 Pidgey frames through LUS, not full scene/gameplay.\n"
               "Required-feedback mode needs compiled native engine/RSP/canonical RDP and --rom;\n"
               "--frames counts owner-domain CPU consumptions, not optional presentations.\n"
               "It deliberately retains two visual leases and disables physical controller enumeration;\n"
@@ -644,6 +685,12 @@ Options ParseOptions(int argc, Argument* argv[]) {
 #endif
         } else if (argument == noInputArgument && !options.noInput) {
             options.noInput = true;
+        } else if (argument == modelArgument && !options.modelPreview) {
+#ifdef ISLE_HAS_CANONICAL_RDP
+            options.modelPreview = true;
+#else
+            throw std::invalid_argument("--model-preview requires compiled native engine/RSP/canonical RDP");
+#endif
         } else if (argument == requiredArgument && !options.requiredFeedback) {
 #ifdef ISLE_HAS_CANONICAL_RDP
             options.requiredFeedback = true;
@@ -661,8 +708,12 @@ Options ParseOptions(int argc, Argument* argv[]) {
     if (options.audio && !options.rom) throw std::invalid_argument("--audio requires --rom");
     if (options.requiredFeedback && (!options.rom || !options.declinePresentations))
         throw std::invalid_argument("--required-feedback-probe requires --rom and --decline-presentations");
-    if ((options.declinePresentations || options.requireCpu) && !options.requiredFeedback)
-        throw std::invalid_argument("--decline-presentations/--cpu-device require --required-feedback-probe");
+    if (options.modelPreview && (!options.rom || options.requiredFeedback))
+        throw std::invalid_argument("--model-preview requires --rom and excludes --required-feedback-probe");
+    if (options.declinePresentations && !options.requiredFeedback)
+        throw std::invalid_argument("--decline-presentations requires --required-feedback-probe");
+    if (options.requireCpu && !options.requiredFeedback && !options.modelPreview)
+        throw std::invalid_argument("--cpu-device requires --required-feedback-probe or --model-preview");
 #if !defined(ISLE_HAS_GAME_ENGINE) && defined(ISLE_HAS_AUDIO_PROBE)
     if (options.rom && !options.audio) throw std::invalid_argument("This composition requires --audio with --rom");
 #endif
@@ -688,17 +739,23 @@ int Run(int argc, Argument* argv[]) {
         // Declared before the host: unwind destroys the renderer before these
         // borrowed CPU owners, even if frame submission or shutdown throws.
         std::unique_ptr<IntroProbe> intro;
-        if (options.rom) {
+        if (options.rom && !options.modelPreview) {
             intro = std::make_unique<IntroProbe>(*snapshot, options.requiredFeedback ? options.frames : 0u);
         }
 #endif
+#ifdef ISLE_HAS_CANONICAL_RDP
+        // GL texture pointers remain live until the host has retired its cache.
+        std::unique_ptr<ModelPreview> model;
+#endif
         ProbeHost host;
 #ifdef ISLE_HAS_GAME_ENGINE
-        host.Init(intro != nullptr, inputEnabled);
+        host.Init(intro != nullptr, options.modelPreview, inputEnabled);
 #else
-        host.Init(false, inputEnabled);
+        host.Init(false, false, inputEnabled);
 #endif
 #ifdef ISLE_HAS_CANONICAL_RDP
+        if (options.modelPreview)
+            model = std::make_unique<ModelPreview>(*snapshot, options.requireCpu);
         if (options.requiredFeedback)
             host.EnableRequiredFeedback(options.requireCpu, options.declinePresentations);
 #endif
@@ -706,7 +763,7 @@ int Run(int argc, Argument* argv[]) {
         if (options.audio) host.EnableAudio(*snapshot);
 #endif
 #if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
-        if (snapshot && !options.requiredFeedback) {
+        if (snapshot && !options.requiredFeedback && !options.modelPreview) {
             snapshot.reset();
             std::cout << "PRIVATE_ROM_SNAPSHOT_RELEASED: one admission/normalization; typed consumers own their resources.\n"
                       << std::flush;
@@ -717,6 +774,10 @@ int Run(int argc, Argument* argv[]) {
         }
 #endif
         try {
+#ifdef ISLE_HAS_CANONICAL_RDP
+            if (model) host.RunModelPreview(options.frames, *model);
+            else
+#endif
 #ifdef ISLE_HAS_GAME_ENGINE
             host.Run(options.frames, intro.get());
 #else
@@ -739,6 +800,13 @@ int Run(int argc, Argument* argv[]) {
         }
 #endif
         host.Shutdown();
+#ifdef ISLE_HAS_CANONICAL_RDP
+        if (model) {
+            model.reset();
+            std::cout << "NATIVE_MODEL_OWNERS_RELEASED: RSP/RDP and GL completion/cache retirement "
+                         "preceded model, game and resource release.\n" << std::flush;
+        }
+#endif
 #ifdef ISLE_HAS_GAME_ENGINE
         if (intro) {
             intro.reset();

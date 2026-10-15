@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Source/design and exact private static GAME copy-list provenance for src/pidgey_producer.cpp and pidgey_feedback.cpp. No ROM payload is embedded. This is an ordered, bounded pose-0 Pidgey graph, not full PhotoData reconstruction, other species/world/items/effects, Oak scoring or Original/hardware parity.",
+  "rom": {
+    "canonical_order": "big-endian z64",
+    "size": 16777216,
+    "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc"
+  },
+  "source_files": {
+    "src/app_render/score.c": {
+      "git_blob": "17a0d973c0050536cf4af4265a0bb106f294c82e",
+      "sha256": "ae38f419085fa0506c799d06347b4f6e0772ac06819021f07f838735e24cb60c",
+      "facts": "53-79: exact two-half 64x24 LoadTextureBlock copy, C to B, restore two-cycle FOG_SHADE_A/AA_ZB_OPA_SURF2, perspective, F color and A depth. 80-122: C+A12 contiguous clear, F clear, lighting-off score setup and original FRUSTRATIO_1. 166-227: preserve viewport Z lanes, aspect4/3, source-order prefix copy -> isolated draw -> sync/C restore -> cumulative draw; unscored objects draw only to C. 243-318: 26-plane layout, wide then narrow renders and packed-depth reductions. Private exact Git-object snapshot local://pinned-game-score.c was the implementation source."
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "facts": "1106-1133: photograph camera uses fovy30, near10, far25600, scale1, recorded eye/at and world-up (0,1,0). Wide fovy60 derives from score.c. Existing admitted kind28/local-times-world root and type-I traversal conventions are reused, not replaced."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "facts": "app_render mapping ROM0x46270 to guest0x8009A8C0; copy list ROM0x5A180 maps to guest0x800AE7D0. Dirty generated asset files and SDK bodies/headers/layouts/disassembly are excluded."
+    }
+  },
+  "copy_list": {
+    "symbol": "score_GfxCopyZBuffer",
+    "rom_begin": "0x5A180",
+    "rom_end_exclusive": "0x5A2A8",
+    "original_guest_begin": "0x800AE7D0",
+    "runtime_physical_begin": "0x10E800",
+    "bytes": 296,
+    "commands_including_final_end": 37,
+    "sha256": "d704d408a6f26a771fc9a40a98b8d34b5ebe1f9f8d5266863017ad5440a495cb",
+    "installation": "Borrow exact admitted Snapshot bytes; copy once per explicitly cold pointer+epoch, word-swapped into the reserved runtime slot. Original segmented operands remain unchanged. Constructor rejects external-reference opcodes, wrong image segments, wrong two 1536-texel LoadBlock count/DXT words or nonfinal terminator. No synthetic LoadTile replacement, CPU depth copy or captured command stream.",
+    "external_dl_or_matrix_references": 0,
+    "halves": [
+      {"source": "0x0C000000", "destination": "0x0B000000", "bytes": 3072},
+      {"source": "0x0C000C00", "destination": "0x0B000C00", "bytes": 3072}
+    ],
+    "each_half": {
+      "dimensions": [64, 24],
+      "load_tile": 7,
+      "load_count_encoded": 1535,
+      "dxt": 128,
+      "render_line_64bit_words": 16,
+      "rectangle_lower_right_quarter_coordinates": [252, 92],
+      "texture_derivatives": [4096, 1024]
+    },
+    "restored_state": ["two-cycle", "FOG_SHADE_A/AA_ZB_OPA_SURF2", "texture perspective", "F color", "A depth", "PipeSync", "EndDL"]
+  },
+  "runtime_reservations": {
+    "coarse": ["0x100000", "0x110000"],
+    "fifo": ["0x200000", "0x210000"],
+    "model_sublists": {"begin": "0x108000", "end": "0x10B000", "slots": 12, "bytes_each": 1024},
+    "instance_node_matrices": {"begin": "0x10B000", "end": "0x10E300", "instances": 12, "matrices_each": 17, "bytes_each": 64},
+    "copy_list_slot": ["0x10E800", "0x10EC00"],
+    "guard": "Constructor checks every immutable model span against all runtime reservations. Request checks the entire aligned0x27000-plane block, not just color/C, against code/BSS, runtime, FIFO, preview lighting and every immutable model span before canonical writes."
+  },
+  "clear_policy": "GPU clears C+A12 as one64x624 RGBA16 fill toFFFC and F64x48 to0001. CPU zeroes only inactive B visible bytes during exclusive preparation. Active B is fully GPU-overwritten. CPU writes never initialize hidden B; B never receives GPU fill clears.",
+  "ownership": "One producer with explicit1..12 native instances, separate objects/type1 models/unbaked poses/revisions and fixed matrices. Immutable geometry/material shared; actual per-instance model sublist is called twice for scored actors and once for unscored actors. render_feedback freezes copied descriptors, reduces wide while actual canonical completed lease is held, saves counts by value/releases, then prepares/reduces narrow held/releases. No executor reset, per-pass arena growth, full-RAM reset/copy, per-subject task serialization, capture or replay.",
+  "verification_status": "Worker implemented source only. No builds, tests, formatters, RSP/RDP execution or parity checks were run; parent owns integration and runtime acceptance. Copy-list SHA256/address/extent are provenance data derived directly from the private admitted ROM, not runtime evidence."
+}

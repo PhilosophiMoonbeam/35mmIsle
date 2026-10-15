@@ -43,11 +43,14 @@ if(NOT _isle_engine_result EQUAL 0)
 endif()
 message(STATUS "${_isle_engine_output}")
 
-add_library(isle-engine STATIC src/engine.c src/engine_internal.h
+add_library(isle-engine STATIC src/engine.c src/engine_internal.h src/engine_math.h
     include/35mmisle/engine.h "${_isle_engine_generated}")
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)
+if(UNIX)
+    target_link_libraries(isle-engine PRIVATE m)
+endif()
 isle_target_options(isle-engine)
 target_compile_options(isle-engine PRIVATE
     "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math>")
@@ -60,4 +63,4 @@ if(BUILD_TESTING)
     set_tests_properties(engine-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
 endif()
 
-message(STATUS "Native OM/intro-fade definitions are private development inputs, not full scene/audio readiness or a redistribution grant")
+message(STATUS "Native OM/intro-fade/camera-math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")

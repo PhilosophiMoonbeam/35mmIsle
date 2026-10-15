@@ -10,6 +10,7 @@ GObj* omCurrentObject;
 GObjProcess* omCurrentProcess;
 s32 omD_8004AC54;
 static IsleGame* active_game;
+static void remove_camera(OMCamera* camera);
 
 static void diagnostic(IsleGame* game, const char* text) {
     size_t i = 0;
@@ -86,6 +87,7 @@ IsleGameResult isle_game_create(isle_arena* arena, IsleGame** output) {
     isle_span storage;
     IsleContinuationDomain* domain = NULL;
     IsleGame* game;
+    if (output != NULL) *output = NULL;
     if (arena == NULL || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
     if (active_game != NULL) return ISLE_GAME_INVALID_STATE;
     candidate = *arena;
@@ -145,6 +147,7 @@ IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
                                    uint32_t priority, IsleGameCallback update,
                                    void* user, IsleGameObject** output) {
     GObj* object;
+    if (output != NULL) *output = NULL;
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
     if (output == NULL || link >= ARRAY_COUNT(omGObjListHead)) return ISLE_GAME_INVALID_ARGUMENT;
@@ -193,6 +196,7 @@ IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
                                     IsleGameProcess** output) {
     GObjProcess* process;
     IsleContinuationResult created;
+    if (output != NULL) *output = NULL;
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL) object = omCurrentObject;
@@ -319,6 +323,7 @@ void omFreeSObj(SObj* sprite) {
 IsleGameResult isle_game_add_sprite(IsleGame* game, IsleGameObject* object,
                                    const IsleSprite* initial, IsleGameSprite** output) {
     SObj* sprite;
+    if (output != NULL) *output = NULL;
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL) object = omCurrentObject;
@@ -339,6 +344,7 @@ IsleGameResult isle_game_remove_sprite(IsleGame* game, IsleGameSprite* sprite) {
 }
 
 IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite, IsleSprite** output) {
+    if (output != NULL) *output = NULL;
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
     if (!valid_sprite(game, sprite) || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
@@ -346,10 +352,252 @@ IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite, Isl
     return ISLE_GAME_OK;
 }
 
+static IsleGameResult access_camera(IsleGame* game, OMCamera* camera) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (camera == NULL || !camera->alive || camera->game != game ||
+        !valid_object(game, camera->obj) || camera->obj->type != 3 ||
+        camera->obj->data.cam != camera) return ISLE_GAME_INVALID_ARGUMENT;
+    return game->fault;
+}
+
+static void remove_camera(OMCamera* camera) {
+    IsleGame* game = camera->game;
+    camera->obj->type = 0;
+    camera->obj->data.any = NULL;
+    for (size_t i = 0; i < camera->numMatrices; ++i) {
+        OMMtx* matrix = camera->matrices[i];
+        matrix->nextFree = game->free_matrices;
+        game->free_matrices = matrix;
+        --game->counts.matrices;
+    }
+    camera->numMatrices = 0;
+    camera->alive = false;
+    camera->nextFree = game->free_cameras;
+    game->free_cameras = camera;
+    --game->counts.cameras;
+}
+
+IsleGameResult isle_game_attach_camera(IsleGame* game, IsleGameObject* object,
+                                      IsleGameCamera** output) {
+    OMCamera* camera;
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (output == NULL || !valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (object->type != 0 || object->data.any != NULL) return ISLE_GAME_INVALID_STATE;
+    camera = game->free_cameras;
+    if (camera != NULL) game->free_cameras = camera->nextFree;
+    else camera = allocate(game, sizeof(*camera), _Alignof(OMCamera));
+    if (camera == NULL) return ISLE_GAME_EXHAUSTED;
+    *camera = (OMCamera){0};
+    camera->obj = object;
+    camera->game = game;
+    camera->alive = true;
+    /* Native ownership initialization, following pinned GAME om.c:63,65 and
+     * rdp_reset.c:58-62. These are not admitted GAME ownership/render bodies.
+     */
+    camera->parameters.perspective = (IsleGamePerspective){30.0f, 4.0f / 3.0f, 100.0f, 12800.0f, 1.0f};
+    camera->parameters.look_at = (IsleGameLookAt){{1500.0f, 0, 0}, {0, 0, 0}, {0, 0, 1.0f}};
+    camera->parameters.viewport = (IsleGameViewport){{640, 480, 511, 0}, {640, 480, 511, 0}};
+    object->type = 3;
+    object->data.cam = camera;
+    ++game->counts.cameras;
+    *output = camera;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_add_matrix(IsleGame* game, IsleGameCamera* camera,
+                                          IsleGameCameraMatrixKind kind) {
+    OMMtx* matrix;
+    IsleGameResult result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (kind != ISLE_GAME_CAMERA_PERSPECTIVE_FAST && kind != ISLE_GAME_CAMERA_LOOK_AT)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    if (camera->numMatrices == ARRAY_COUNT(camera->matrices)) return ISLE_GAME_EXHAUSTED;
+    matrix = game->free_matrices;
+    if (matrix != NULL) game->free_matrices = matrix->nextFree;
+    else matrix = allocate(game, sizeof(*matrix), _Alignof(OMMtx));
+    if (matrix == NULL) return ISLE_GAME_EXHAUSTED;
+    *matrix = (OMMtx){0};
+    matrix->result.kind = kind;
+    camera->matrices[camera->numMatrices++] = matrix;
+    ++game->counts.matrices;
+    return ISLE_GAME_OK;
+}
+
+static void invalidate_camera(OMCamera* camera, IsleGameCameraMatrixKind kind) {
+    for (size_t i = 0; i < camera->numMatrices; ++i)
+        if (camera->matrices[i]->result.kind == kind) camera->matrices[i]->cached = false;
+}
+
+IsleGameResult isle_game_camera_set_perspective(IsleGame* game, IsleGameCamera* camera,
+                                               const IsleGamePerspective* p) {
+    IsleGamePerspective* old;
+    IsleGameResult result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (p == NULL || !isfinite(p->fovy) || !isfinite(p->aspect) ||
+        !isfinite(p->near_plane) || !isfinite(p->far_plane) || !isfinite(p->scale) ||
+        p->fovy <= 0 || p->fovy >= 180 || p->aspect <= 0 || p->near_plane <= 0 ||
+        p->far_plane <= p->near_plane || p->scale <= 0 ||
+        (s32)(p->fovy * 0.008726646f * 651.8986f) == 0)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    old = &camera->parameters.perspective;
+    if (old->fovy == p->fovy && old->aspect == p->aspect &&
+        old->near_plane == p->near_plane && old->far_plane == p->far_plane &&
+        old->scale == p->scale) return ISLE_GAME_OK;
+    *old = *p;
+    invalidate_camera(camera, ISLE_GAME_CAMERA_PERSPECTIVE_FAST);
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_set_look_at(IsleGame* game, IsleGameCamera* camera,
+                                           const IsleGameLookAt* p) {
+    float look[3], right[3], length = 0, cross_length = 0, inverse_length;
+    bool changed = false;
+    IsleGameResult result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (p == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    if (memcmp(p, &camera->parameters.look_at, sizeof(*p)) == 0) return ISLE_GAME_OK;
+    for (size_t i = 0; i < 3; ++i) {
+        if (!isfinite(p->eye[i]) || !isfinite(p->at[i]) || !isfinite(p->up[i]))
+            return ISLE_GAME_INVALID_ARGUMENT;
+        look[i] = p->at[i] - p->eye[i];
+        length += look[i] * look[i];
+        if (p->eye[i] != camera->parameters.look_at.eye[i] ||
+            p->at[i] != camera->parameters.look_at.at[i] ||
+            p->up[i] != camera->parameters.look_at.up[i]) changed = true;
+    }
+    if (!isfinite(length) || length <= 0) return ISLE_GAME_INVALID_ARGUMENT;
+    inverse_length = -1.0f / sqrtf(length);
+    if (!isfinite(inverse_length)) return ISLE_GAME_INVALID_ARGUMENT;
+    for (size_t i = 0; i < 3; ++i) look[i] *= inverse_length;
+    right[0] = p->up[1] * look[2] - p->up[2] * look[1];
+    right[1] = p->up[2] * look[0] - p->up[0] * look[2];
+    right[2] = p->up[0] * look[1] - p->up[1] * look[0];
+    for (size_t i = 0; i < 3; ++i) cross_length += right[i] * right[i];
+    if (!isfinite(cross_length) || cross_length <= 0 ||
+        !isfinite(1.0f / sqrtf(cross_length))) return ISLE_GAME_INVALID_ARGUMENT;
+    if (!changed) return ISLE_GAME_OK;
+    camera->parameters.look_at = *p;
+    invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT);
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_set_viewport(IsleGame* game, IsleGameCamera* camera,
+                                            const IsleGameViewport* p) {
+    IsleGameResult result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (p == NULL || p->scale[0] <= 0 || p->scale[1] <= 0 || p->scale[2] < 0 ||
+        p->translate[2] < p->scale[2] || (int)p->translate[2] + p->scale[2] > 1023 ||
+        p->scale[3] != 0 || p->translate[3] != 0) return ISLE_GAME_INVALID_ARGUMENT;
+    camera->parameters.viewport = *p;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_parameters(IsleGame* game, IsleGameCamera* camera,
+                                          const IsleGameCameraParameters** output) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = &camera->parameters;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_matrix_count(IsleGame* game, IsleGameCamera* camera,
+                                            size_t* output) {
+    IsleGameResult result;
+    if (output != NULL) *output = 0;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = camera->numMatrices;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
+                                      size_t index, const IsleGameCameraMatrix** output) {
+    OMMtx* matrix;
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || index >= camera->numMatrices) return ISLE_GAME_INVALID_ARGUMENT;
+    matrix = camera->matrices[index];
+    if (!matrix->cached) {
+        if (matrix->result.kind == ISLE_GAME_CAMERA_PERSPECTIVE_FAST) {
+            const IsleGamePerspective* p = &camera->parameters.perspective;
+            /* Keep invalid huge inputs away from GAME's float-to-u16 norm cast. */
+            float sum = p->near_plane + p->far_plane;
+            if (!isfinite(sum)) return ISLE_GAME_INVALID_ARGUMENT;
+            hal_perspective_fast_f(matrix->result.floating, &camera->normalization,
+                                  p->fovy, p->aspect, p->near_plane, p->far_plane, p->scale);
+        } else {
+            const IsleGameLookAt* p = &camera->parameters.look_at;
+            hal_look_at_f(matrix->result.floating, p->eye[0], p->eye[1], p->eye[2],
+                          p->at[0], p->at[1], p->at[2], p->up[0], p->up[1], p->up[2]);
+        }
+        for (size_t row = 0; row < 4; ++row) {
+            for (size_t col = 0; col < 4; ++col) {
+                float value = matrix->result.floating[row][col] * 65536.0f;
+                if (!isfinite(value) || value < -2147483648.0f || value >= 2147483648.0f)
+                    return ISLE_GAME_INVALID_ARGUMENT;
+            }
+        }
+        hal_mtx_f2l(matrix->result.floating, &matrix->result.fixed);
+        ++matrix->result.revision;
+        matrix->cached = true;
+    }
+    *output = &matrix->result;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_perspective_normalization(IsleGame* game,
+                                                         IsleGameCamera* camera,
+                                                         uint16_t* output) {
+    const IsleGameCameraMatrix* matrix;
+    IsleGameResult result;
+    if (output != NULL) *output = 0;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    for (size_t i = 0; i < camera->numMatrices; ++i) {
+        if (camera->matrices[i]->result.kind != ISLE_GAME_CAMERA_PERSPECTIVE_FAST) continue;
+        result = isle_game_camera_matrix(game, camera, i, &matrix);
+        if (result == ISLE_GAME_OK) *output = camera->normalization;
+        return result;
+    }
+    return ISLE_GAME_INVALID_STATE;
+}
+
+IsleGameResult isle_game_remove_camera(IsleGame* game, IsleGameCamera* camera) {
+    IsleGameResult result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    remove_camera(camera);
+    return ISLE_GAME_OK;
+}
+
 void omDeleteGObj(GObj* object) {
+    /* Reject an unadmitted/corrupt payload before ending processes or unlinking.
+     * In particular type 1 is NOT an empty/native DObj implementation.
+     */
     IsleGame* game = active_game;
     if (object == NULL || object == omCurrentObject) {
         omD_8004AC54 = 2;
+        return;
+    }
+    if (!valid_object(game, object) ||
+        (object->type != 0 && object->type != 2 && object->type != 3) ||
+        (object->type == 0 && object->data.any != NULL) ||
+        (object->type == 3 && (object->data.cam == NULL ||
+          !object->data.cam->alive || object->data.cam->game != game ||
+          object->data.cam->obj != object))) {
+        execution_fault(game, "unsupported or invalid native object payload");
         return;
     }
     while (object->processListHead != NULL) {
@@ -357,7 +605,16 @@ void omDeleteGObj(GObj* object) {
         omEndProcess(before);
         if (before == object->processListHead) return;
     }
-    while (object->data.sobj != NULL) omGObjRemoveSprite(object->data.sobj);
+    switch (object->type) {
+        case 2:
+            while (object->data.sobj != NULL) omGObjRemoveSprite(object->data.sobj);
+            break;
+        case 3:
+            remove_camera(object->data.cam);
+            break;
+        case 0:
+            break;
+    }
     omUnlinkGObj(object);
     object->alive = false;
     object->next = game->free_objects;
@@ -384,6 +641,7 @@ IsleGameResult isle_game_add_intro_fade(IsleGame* game, IsleGameObject* object,
                                        IsleGameSprite* sprite, uint16_t updates,
                                        uint32_t priority, IsleGameProcess** output) {
     GObjProcess* process;
+    if (output != NULL) *output = NULL;
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL) object = omCurrentObject;

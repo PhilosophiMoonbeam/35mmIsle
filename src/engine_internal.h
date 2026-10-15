@@ -3,6 +3,7 @@
 
 #include "35mmisle/engine.h"
 #include "35mmisle/continuation.h"
+#include "engine_math.h"
 #include <stdbool.h>
 #include <setjmp.h>
 #include <stdint.h>
@@ -14,6 +15,8 @@ typedef int32_t s32;
 typedef struct GObj GObj;
 typedef struct GObjProcess GObjProcess;
 typedef struct SObj SObj;
+typedef struct OMCamera OMCamera;
+typedef struct OMMtx OMMtx;
 typedef IsleSprite Sprite;
 typedef void (*GObjFunc)(GObj*);
 
@@ -50,7 +53,7 @@ struct GObj {
     GObjFunc fnUpdate;
     GObjProcess* processListHead;
     GObjProcess* processListTail;
-    union { SObj* sobj; void* any; } data;
+    union { SObj* sobj; OMCamera* cam; void* any; } data;
     u32 flags;
     IsleGameCallback update;
     void* userData;
@@ -71,12 +74,33 @@ struct SObj {
     bool alive;
 };
 
+/* Native ownership seam follows GAME omGetCamera/omGetMtx and their free lists.
+ * No unadmitted animation, render-list or SDK viewport ownership is present.
+ */
+struct OMMtx {
+    OMMtx* nextFree;
+    IsleGameCameraMatrix result;
+    bool cached;
+};
+struct OMCamera {
+    OMCamera* nextFree;
+    GObj* obj;
+    IsleGame* game;
+    IsleGameCameraParameters parameters;
+    OMMtx* matrices[2];
+    size_t numMatrices;
+    u16 normalization;
+    bool alive;
+};
+
 struct IsleGame {
     isle_arena* arena;
     IsleContinuationDomain* domain;
     GObj* free_objects;
     GObjProcess* free_processes;
     SObj* free_sprites;
+    OMCamera* free_cameras;
+    OMMtx* free_matrices;
     IsleGameCounts counts;
     IsleGameResult fault;
     char error[512];

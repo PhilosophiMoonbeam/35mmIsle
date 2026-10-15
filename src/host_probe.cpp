@@ -187,7 +187,7 @@ class ProbeHost final {
             for (const auto type : {SDL_EVENT_KEY_DOWN, SDL_EVENT_KEY_UP,
                                     SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP})
                 SDL_SetEventEnabled(type, false);
-            std::cout << "INPUT_ENUMERATION_DISABLED: explicit feedback diagnostic; "
+            std::cout << "INPUT_ENUMERATION_DISABLED: explicit input-disabled diagnostic; "
                          "no SDL gamepad subsystem, ControlDeck initialization, input callbacks or ImGui auto-enumeration.\n";
         }
         bridge->UpdateCaches(context);
@@ -346,7 +346,7 @@ class ProbeHost final {
 #ifdef ISLE_HAS_AUDIO_PROBE
             if (audio) audio->Tick();
 #endif
-            deck->WriteToPad(pads.data());
+            if (deck) deck->WriteToPad(pads.data());
             Gfx* out = commands.data();
             gDPPipeSync(out++);
             gDPSetScissor(out++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
@@ -537,6 +537,7 @@ using Argument = wchar_t;
 constexpr std::wstring_view framesArgument = L"--frames";
 constexpr std::wstring_view romArgument = L"--rom";
 constexpr std::wstring_view audioArgument = L"--audio";
+constexpr std::wstring_view noInputArgument = L"--no-input";
 constexpr std::wstring_view requiredArgument = L"--required-feedback-probe";
 constexpr std::wstring_view declineArgument = L"--decline-presentations";
 constexpr std::wstring_view cpuArgument = L"--cpu-device";
@@ -546,6 +547,7 @@ using Argument = char;
 constexpr std::string_view framesArgument = "--frames";
 constexpr std::string_view romArgument = "--rom";
 constexpr std::string_view audioArgument = "--audio";
+constexpr std::string_view noInputArgument = "--no-input";
 constexpr std::string_view requiredArgument = "--required-feedback-probe";
 constexpr std::string_view declineArgument = "--decline-presentations";
 constexpr std::string_view cpuArgument = "--cpu-device";
@@ -556,12 +558,15 @@ struct Options {
     std::uint32_t frames = 120;
     std::optional<std::filesystem::path> rom;
     bool audio = false;
+    bool noInput = false;
     bool requiredFeedback = false, declinePresentations = false, requireCpu = false;
 };
 void Usage(std::ostream& output) {
-    output << "35mmisle-host-probe [--frames 1..3600] [--rom PRIVATE_ROM] [--audio]\n"
+    output << "35mmisle-host-probe [--frames 1..3600] [--rom PRIVATE_ROM] [--audio] [--no-input]\n"
               "  [--required-feedback-probe --decline-presentations [--cpu-device]]\n"
               "--rom: one admitted z64/v64/n64 snapshot for compiled private consumers.\n"
+              "--no-input: disable controller enumeration and keyboard/button callbacks;\n"
+              "real presentation remains enabled. Audio and graphics drivers are independent.\n"
               "ISLE_BUILD_GAME_ENGINE enables the bounded original intro sprite/C fade.\n"
               "ISLE_BUILD_AUDIO_PROBE + --audio enables independently queue-paced native SFX14.\n"
               "--audio requires --rom; no Ship::Audio/legacy-bridge/AI/VI/cue fidelity claim.\n"
@@ -611,6 +616,8 @@ Options ParseOptions(int argc, Argument* argv[]) {
 #else
             throw std::invalid_argument("--audio requires ISLE_BUILD_AUDIO_PROBE");
 #endif
+        } else if (argument == noInputArgument && !options.noInput) {
+            options.noInput = true;
         } else if (argument == requiredArgument && !options.requiredFeedback) {
 #ifdef ISLE_HAS_CANONICAL_RDP
             options.requiredFeedback = true;
@@ -645,7 +652,8 @@ int Run(int argc, Argument* argv[]) {
             return std::cout ? 0 : 1;
         }
         const Options options = ParseOptions(argc, argv);
-        SdlLifetime sdl(!options.requiredFeedback);
+        const bool inputEnabled = !options.noInput && !options.requiredFeedback;
+        SdlLifetime sdl(inputEnabled);
 #if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
         std::optional<isle::rom::Snapshot> snapshot;
         if (options.rom) snapshot.emplace(isle::rom::read_snapshot(*options.rom));
@@ -660,9 +668,9 @@ int Run(int argc, Argument* argv[]) {
 #endif
         ProbeHost host;
 #ifdef ISLE_HAS_GAME_ENGINE
-        host.Init(intro != nullptr, !options.requiredFeedback);
+        host.Init(intro != nullptr, inputEnabled);
 #else
-        host.Init(false, true);
+        host.Init(false, inputEnabled);
 #endif
 #ifdef ISLE_HAS_CANONICAL_RDP
         if (options.requiredFeedback)

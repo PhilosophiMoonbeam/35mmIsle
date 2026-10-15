@@ -11,6 +11,14 @@
     "src/sys/om.c": {
       "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
       "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c"
+    },
+    "src/sys/matrix.c": {
+      "git_blob": "b6c98ec45939cd9e59ef16d7e44868eee5dc250d",
+      "sha256": "a0f4c47c2428b846a171fbb1fe30e8254f7bf67d69e30cb191ad87439f1f7f77"
+    },
+    "include/sys/mtx.h": {
+      "git_blob": "4f0706f10e48d4df55f1e9bf625ede7c9fd7f6c3",
+      "sha256": "f9c8b54723daea19b28f66f57bb0c8eaf2001dcf613dac4afce712a7ea51b4e7"
     }
   },
   "definitions": [
@@ -162,6 +170,95 @@
           "find": "temp_lo = (arg1 * (temp = 0xFF)) / temp_arg1;",
           "replace": "temp_lo = (u8) ((arg1 * (temp = 0xFF)) / temp_arg1);",
           "reason": "Explicit native C conversion; original quotient is in 0..254."
+        }
+      ]
+    },
+    {
+      "symbol": "prototype_hal_mtx_f2l",
+      "path": "include/sys/mtx.h",
+      "first": 22,
+      "last": 22,
+      "source_sha256": "18cb592f197f63148c61c75086d89c763ab38d656af5cf536817eafad5ef6aee",
+      "native_sha256": "18cb592f197f63148c61c75086d89c763ab38d656af5cf536817eafad5ef6aee",
+      "changes": []
+    },
+    {
+      "symbol": "prototype_hal_look_at_f",
+      "path": "include/sys/mtx.h",
+      "first": 24,
+      "last": 24,
+      "source_sha256": "8ca19001d8713687904111a4f22d93486ac1779679310be9ee8dd1645a688028",
+      "native_sha256": "8ca19001d8713687904111a4f22d93486ac1779679310be9ee8dd1645a688028",
+      "changes": []
+    },
+    {
+      "symbol": "prototype_hal_perspective_fast_f",
+      "path": "include/sys/mtx.h",
+      "first": 39,
+      "last": 39,
+      "source_sha256": "ea71e3bdacf654571e1ce2e261d08cffd24c7bb687be402a4798acc3f0ccb719",
+      "native_sha256": "ea71e3bdacf654571e1ce2e261d08cffd24c7bb687be402a4798acc3f0ccb719",
+      "changes": []
+    },
+    {
+      "symbol": "combine_fixed_macros",
+      "path": "src/sys/matrix.c",
+      "first": 3,
+      "last": 4,
+      "source_sha256": "5fa0405549f02ec338dfa753ba5dc265937c9291bfa6d3564962fb866345caab",
+      "native_sha256": "5fa0405549f02ec338dfa753ba5dc265937c9291bfa6d3564962fb866345caab",
+      "changes": []
+    },
+    {
+      "symbol": "sSinTable",
+      "path": "src/sys/matrix.c",
+      "first": 9,
+      "last": 266,
+      "source_sha256": "c8cd3ac2b8850b80ee1ba04c9b9e19845f551f0ca8830e8119809c6e7b9dc5cb",
+      "native_sha256": "c0b23ed12ed3ff46a74f6e0b9bedfdb5d938037fd37757f90c727bfd952b33cb",
+      "changes": [
+        {
+          "find": "u16 sSinTable[]",
+          "replace": "static const u16 sSinTable[]",
+          "reason": "The admitted lookup table is immutable private GAME data."
+        }
+      ]
+    },
+    {
+      "symbol": "hal_mtx_f2l",
+      "path": "src/sys/matrix.c",
+      "first": 268,
+      "last": 303,
+      "source_sha256": "e762be9bf299b04420b90e42491d945319ef96a6a5c18b09448e3a6b03256b02",
+      "native_sha256": "e762be9bf299b04420b90e42491d945319ef96a6a5c18b09448e3a6b03256b02",
+      "changes": []
+    },
+    {
+      "symbol": "hal_look_at_f",
+      "path": "src/sys/matrix.c",
+      "first": 371,
+      "last": 433,
+      "source_sha256": "4335e9642db2e1aa36124fe533b240d17c4e90cda141940df2756d8a7c7fe0c6",
+      "native_sha256": "4335e9642db2e1aa36124fe533b240d17c4e90cda141940df2756d8a7c7fe0c6",
+      "changes": []
+    },
+    {
+      "symbol": "hal_perspective_fast_f",
+      "path": "src/sys/matrix.c",
+      "first": 791,
+      "last": 853,
+      "source_sha256": "a32ece8fec4a85cf8e8108028f7bf65e96f42d21aa285942ed6a01588ae6ea21",
+      "native_sha256": "e5e06a52e2af9d6bd4da6b14e517c323d4d664652ef28ca3e222c3b3885af561",
+      "changes": [
+        {
+          "find": "    s32 unused[4];\n",
+          "replace": "",
+          "reason": "Remove unused matching-only stack padding, not arithmetic."
+        },
+        {
+          "find": "sinAngle = (s32) (fovy * 651.8986f) & 0xFFF;",
+          "replace": "sinAngle = (u16) ((s32) (fovy * 651.8986f) & 0xFFF);",
+          "reason": "Explicit bounded native narrowing; retain original binary32 quantization."
         }
       ]
     }

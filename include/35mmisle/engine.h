@@ -13,6 +13,7 @@ typedef struct IsleGame IsleGame;
 typedef struct GObj IsleGameObject;
 typedef struct GObjProcess IsleGameProcess;
 typedef struct SObj IsleGameSprite;
+typedef struct OMCamera IsleGameCamera;
 typedef void (*IsleGameCallback)(IsleGameObject* object, void* user);
 
 typedef enum IsleGameResult {
@@ -33,6 +34,8 @@ typedef struct IsleGameCounts {
     size_t objects;
     size_t processes;
     size_t sprites;
+    size_t cameras;
+    size_t matrices;
 } IsleGameCounts;
 
 /* One active authoritative OM world, one gameplay timeline. Caller-owned arena
@@ -96,6 +99,73 @@ IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite,
 IsleGameResult isle_game_add_intro_fade(IsleGame* game, IsleGameObject* object,
                                        IsleGameSprite* sprite, uint16_t updates,
                                        uint32_t priority, IsleGameProcess** output);
+
+typedef struct IsleGamePerspective {
+    float fovy, aspect, near_plane, far_plane, scale;
+} IsleGamePerspective;
+typedef struct IsleGameLookAt {
+    float eye[3], at[3], up[3];
+} IsleGameLookAt;
+/* Public viewport ABI: quarter-pixel X/Y, half-depth Z; fourth lanes reserved.
+ * Initial viewport is 320x240, depth 0..1023, as in GAME initialization.
+ */
+typedef struct IsleGameViewport {
+    int16_t scale[4], translate[4];
+} IsleGameViewport;
+typedef struct IsleGameCameraParameters {
+    IsleGamePerspective perspective;
+    IsleGameLookAt look_at;
+    IsleGameViewport viewport;
+} IsleGameCameraParameters;
+typedef enum IsleGameCameraMatrixKind {
+    ISLE_GAME_CAMERA_PERSPECTIVE_FAST = 3,
+    ISLE_GAME_CAMERA_LOOK_AT = 6
+} IsleGameCameraMatrixKind;
+/* Native numeric words, NOT a host-endian serialized SDK structure. First
+ * eight words pair signed integral halves, last eight pair fractional halves.
+ * Copy numeric words directly into aligned word-swapped canonical RDRAM.
+ * floating preserves the actual GAME f32 result (row-vector convention).
+ */
+typedef struct IsleGameFixedMatrix { uint32_t m[4][4]; } IsleGameFixedMatrix;
+typedef struct IsleGameCameraMatrix {
+    float floating[4][4];
+    IsleGameFixedMatrix fixed;
+    uint64_t revision;
+    IsleGameCameraMatrixKind kind;
+} IsleGameCameraMatrix;
+
+/* Nonanimated camera payload, type 3, attached only to an empty object. Like
+ * GAME omGObjSetCamera it initially has no matrices. Add up to two of either
+ * supported kind, as GAME omCameraAddMtx permits; defaults are GAME parameters.
+ * No renderer, command, animation or callback interface is implied.
+ * All handles/borrows expire on removal or object deletion, including reuse.
+ * Borrow addresses stay stable until removal; contents change only on compute
+ * after the relevant parameters change. Viewport changes do not dirty matrices.
+ * Projection normalization is computed with the projection. No update allocates.
+ * Nonfinite/degenerate inputs are rejected; an otherwise valid pose/projection
+ * outside signed 16.16 range is rejected by compute, never wrapped or clamped.
+ * Pointer outputs are cleared on every error, including wrong-owner errors.
+ */
+IsleGameResult isle_game_attach_camera(IsleGame* game, IsleGameObject* object,
+                                      IsleGameCamera** output);
+IsleGameResult isle_game_camera_add_matrix(IsleGame* game, IsleGameCamera* camera,
+                                          IsleGameCameraMatrixKind kind);
+IsleGameResult isle_game_camera_set_perspective(IsleGame* game, IsleGameCamera* camera,
+                                               const IsleGamePerspective* parameters);
+IsleGameResult isle_game_camera_set_look_at(IsleGame* game, IsleGameCamera* camera,
+                                           const IsleGameLookAt* parameters);
+IsleGameResult isle_game_camera_set_viewport(IsleGame* game, IsleGameCamera* camera,
+                                            const IsleGameViewport* parameters);
+IsleGameResult isle_game_camera_parameters(IsleGame* game, IsleGameCamera* camera,
+                                          const IsleGameCameraParameters** output);
+IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
+                                      size_t index, const IsleGameCameraMatrix** output);
+IsleGameResult isle_game_camera_matrix_count(IsleGame* game, IsleGameCamera* camera,
+                                            size_t* output);
+IsleGameResult isle_game_camera_perspective_normalization(IsleGame* game,
+                                                         IsleGameCamera* camera,
+                                                         uint16_t* output);
+IsleGameResult isle_game_remove_camera(IsleGame* game, IsleGameCamera* camera);
 
 #ifdef __cplusplus
 }

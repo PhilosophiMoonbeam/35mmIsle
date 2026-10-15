@@ -135,6 +135,23 @@ The integration owner ran this mode through real LUS/SDL3 EGL for 120 frames and
 [ADMISSION](docs/development/ADMISSION.md) records original-source boundaries, private source candidates and exercised evidence. [Dependency evidence](cmake/dependencies.json), [Libultraship.cmake](cmake/Libultraship.cmake) and [SnapEngine.cmake](cmake/SnapEngine.cmake) distinguish selected inputs from complete shipped-composition approval. Configured builds write `isle-host-dependencies.txt` and, with the engine enabled, `isle-snap-engine-inputs.json`. CPack still installs/packages **only the ROM checker and its original MIT license**, not host/engine binaries, source bundles or a game.
 
 
+## Canonical RDP memory experiment
+
+The opt-in `35mmisle-rdp-probe` runs original synthetic low-level RDP packets through pinned [paraLLEl-RDP](https://github.com/Themaister/parallel-rdp/tree/1cecd042b2619bc505c12bfdc713808386f2b54d), independently of LUS presentation and game CPU execution:
+
+```sh
+cmake -S . -B build/rdp -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON
+CMAKE_BUILD_PARALLEL_LEVEL=2 cmake --build build/rdp --target 35mmisle-rdp-probe --parallel 2
+build/rdp/35mmisle-rdp-probe --cpu-device --raw-out /path/to/new/synthetic-output-directory
+```
+
+This requires a real Vulkan loader/ICD, Vulkan 1.1 and enabled 8-/16-bit storage-buffer access. `--cpu-device` selects an enumerated Vulkan CPU device, not a null backend. The build acquires ten exact archive-digest-pinned renderer/tool inputs and builds its own pinned Granite `slangmosh` compiler; no installed shader-tool assumption. [ParallelRdp.cmake](cmake/ParallelRdp.cmake) compiles the standalone renderer subset, **not** `rdp-utils`, `alp-core`, Angrylion or MAME. Build-private provenance and complete upstream notices remain with the inputs. The probe is not installed/packaged.
+
+The three stages clear a contiguous 64×48 color/13-depth/12-before region, draw five overlapping depth/coverage-sensitive triangles, then perform three GPU depth-as-color copies in two `0xC00`-byte halves each. After real timeline completion, checks inspect every region/hidden value and the original visibility predicates. One depth deliberately retains nonzero packed-dZ low bits; copied hidden coverage is not confused with depth metadata.
+
+On the development machine, actual CPU Vulkan (`llvmpipe (LLVM 21.1.8, 256 bits)`, Mesa 26.0.8, Vulkan 1.4.335) completed all stages without semantic/backend errors. All **718,848** visible/hidden bytes across six snapshots matched a separately executed private CPU reference. This validates only the synthetic workload—not private-ROM raster frames, the RSP/custom-matrix frontend, full photo scoring, hardware GPUs or Windows Vulkan. See ADMISSION for exact reference/terms and limits. Output snapshots contain only this original synthetic workload; the CLI accepts no ROM or native frame.
+
 ## License and contributions
 
 [LICENSE](LICENSE) is MIT for **original 35mmIsle contributions**, copyright 2026 35mmIsle contributors. It does not relicense Pokémon Snap, Nintendo/SGI material, decompilations, reference ports, dependencies or extracted payloads. Their rights and notices remain with their respective holders; missing or restricted grants block the affected import/release. Read LICENSING before proposing any imported source or generated content.

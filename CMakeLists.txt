@@ -23,6 +23,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 option(ISLE_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(ISLE_BUILD_HOST_PROBE "Build the nonplayable real-libultraship procedural host probe" OFF)
 option(ISLE_BUILD_GAME_ENGINE "Build selected authoritative game C definitions through the native private source adapter" OFF)
+option(ISLE_BUILD_RDP_PROBE "Build the synthetic headless canonical RDP memory/feedback probe" OFF)
 if(ISLE_ENABLE_SANITIZERS)
     if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$"
        OR NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$"
@@ -149,6 +150,16 @@ if(BUILD_TESTING)
     # All executables use explicit failure checks, including in Release builds.
     set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
+endif()
+
+if(ISLE_BUILD_RDP_PROBE)
+    include(cmake/ParallelRdp.cmake)
+    add_executable(35mmisle-rdp-probe src/rdp_probe.cpp src/rdp_fixture.cpp src/rdp_fixture.hpp)
+    target_link_libraries(35mmisle-rdp-probe PRIVATE isle_parallel_rdp)
+    isle_target_options(35mmisle-rdp-probe)
+    if(MINGW)
+        target_link_options(35mmisle-rdp-probe PRIVATE -municode)
+    endif()
 endif()
 
 include(GNUInstallDirs)

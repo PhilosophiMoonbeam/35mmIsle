@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "scope": "Renderer-only synthetic headless RDP probe; shader compiler is build-only. No rdp-utils, alp-core, Angrylion, MAME, SDK or game assets.",
+  "dependencies": [
+    {"name":"parallel-rdp","repository":"Themaister/parallel-rdp","commit":"1cecd042b2619bc505c12bfdc713808386f2b54d","archive_sha256":"5484ec46ac0a877272d645e6ea80878424a527d0d0ecfd13af1e27a537c53529","license":"MIT"},
+    {"name":"Granite","repository":"Themaister/Granite","commit":"cf71dee71fb00110749a9a3fcbd87b0297e49b6a","archive_sha256":"d18286f67190b71b1cd80c1a37da57f5801ae76a955e5bb5294c898da45f232e","license":"MIT; selected source retains per-file notices"},
+    {"name":"volk","repository":"zeux/volk","commit":"41c8f70e805142d529653d8bc87a5b2f259c619d","archive_sha256":"c91629257f5cec19cdf55b7c652bf120d6fa08d8fd93f1d7acf7ae09fddf4c41","license":"MIT"},
+    {"name":"vulkan-headers","repository":"KhronosGroup/Vulkan-Headers","commit":"31aa7f634b052d87ede4664053e85f3f4d1d50d3","archive_sha256":"a4b8c15f4bbbc9feb007bfb7131f0fb390af47508368fc765b99472cc4c74159","license":"Apache-2.0 OR MIT; per-file notices"},
+    {"name":"shaderc","repository":"google/shaderc","commit":"f59f0d11b80fd622383199c867137ededf89d43b","archive_sha256":"b7d8d95d6b82bec3692e32c9576779766f97c054b8a31bc0029bb30830360963","license":"Apache-2.0"},
+    {"name":"glslang","repository":"KhronosGroup/glslang","commit":"7c3c50ea94354d06dc8c280de8b8a5d5aacbbb19","archive_sha256":"b11e511a546444bf8a85076c67848310e536a6393b165be7d4a4e86500ed0962","license":"BSD-3-Clause and per-file MIT/Apache-2.0 notices"},
+    {"name":"spirv-tools","repository":"KhronosGroup/SPIRV-Tools","commit":"199038f10cbe56bf7cbfeb5472eb0a25af2f09f5","archive_sha256":"f025fe5f3433a6f687b08d4bf22855a74873ce4f489a7d3ce030fd0141d0a2c0","license":"Apache-2.0"},
+    {"name":"spirv-headers","repository":"KhronosGroup/SPIRV-Headers","commit":"49a1fceb9b1d087f3c25ad5ec077bb0e46231297","archive_sha256":"d364b43c454279e13d37b713915afa33a4f14381d6b9f7bb830c4cc7941481d0","license":"MIT; per-file notices"},
+    {"name":"spirv-cross","repository":"KhronosGroup/SPIRV-Cross","commit":"476f384eb7d9e48613c45179e502a15ab95b6b49","archive_sha256":"b52b6fcfc45e7fa69b1f06a1362c155473444e2cc09995556b156c53ba6657e3","license":"Apache-2.0 OR MIT"},
+    {"name":"rapidjson","repository":"miloyip/rapidjson","commit":"06d58b9e848c650114556a23294d0b6440078c61","archive_sha256":"30d28bbe0bfff9d8dc5d3cf62799b6ee550499cc1520e44bdece81e002480d19","license":"MIT; bundled notices retained"}
+  ]
+}

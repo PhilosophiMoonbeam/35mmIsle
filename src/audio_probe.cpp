@@ -41,7 +41,7 @@ struct Control {
 struct Options {
     std::filesystem::path rom, raw;
     std::uint32_t sound = 14, tasks = 120, quota = probe::default_quota;
-    sfx::Parameters initial{};
+    probe::GameParameters initial{};
     std::array<Control, control_capacity> controls{};
     std::size_t control_count = 0;
     bool play = false;
@@ -188,7 +188,7 @@ void settings(std::ostream& out, const Options& options) {
         << "sound=" << options.sound << " tasks=" << options.tasks << " experimental_quota_frames=" << options.quota
         << " volume=" << options.initial.volume << " pitch=" << options.initial.pitch
         << " pan=" << static_cast<unsigned>(options.initial.pan)
-        << " global_volume=" << static_cast<unsigned>(options.initial.global_volume)
+        << " global_volume=127"
         << " source_clock_hz=" << probe::synthesis_rate << " controls=" << options.control_count
         << " checked_SDL_stream=" << options.play << '\n';
     for (std::size_t i = 0; i != options.control_count; ++i) {
@@ -300,7 +300,8 @@ int run(int argc, Argument* argv[]) {
                   << " physical_playback=not_qualified\n";
     }
     std::uint64_t generation = 0, total_frames = 0, total_reads = 0, total_writes = 0;
-    probe::require(producer.stage_start(options.initial, generation), "initial voice start failed");
+    const auto initial = session.player_parameters(options.initial);
+    probe::require(producer.stage_start(initial, generation), "initial voice start failed");
     probe::require(producer.stage(), "initial controls publication failed");
     std::array<std::int16_t, sfx::Producer::max_frames * 2> scratch{};
     std::size_t next_control = 0;
@@ -337,7 +338,7 @@ int run(int argc, Argument* argv[]) {
         probe::require(producer.release(pcm.task_id, pcm.generation), "copied PCM lease release failed");
         bool changed = false;
         while (next_control != options.control_count && options.controls[next_control].after_task == task) {
-            apply(producer, options.controls[next_control++], options.initial, generation);
+            apply(producer, options.controls[next_control++], initial, generation);
             changed = true;
         }
         if (changed) probe::require(producer.stage(), "timed controls publication failed");

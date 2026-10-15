@@ -13,7 +13,7 @@ namespace isle::audio::sfx {
 
 // A deliberately bounded, dry, one-voice ABI1 producer. This is not the
 // original game's multi-player/voice allocator, effects graph, or BGM API.
-// Admission: ADPCM order 2, at most 8 predictors, 16-sample-aligned loops,
+// Admission: ADPCM order 2, at most 8 predictors, bounded ADPCM loop history,
 // attack >= 0, indefinite decay (-1), release >= 0. Other resources fail.
 // Original envelope-rate and control-clock fidelity is qualified separately
 // against private reference observations. Caller supplies original coefficient
@@ -41,9 +41,10 @@ struct Config {
     std::uint32_t synthesis_rate = 0;
 };
 struct Parameters {
+    // Direct sound-player volume; game sample/global scaling belongs to its
+    // caller. An explicit player volume must override the resource default.
     std::uint16_t volume = 0x7fff;
     std::uint8_t pan = 64;
-    std::uint8_t global_volume = 127;
     // Direct alSndp pitch domain; no keymap or bank-rate multiplication.
     // Q1.15 quantized downward, range [1/32768, 65535/32768].
     float pitch = 1.0f;
@@ -109,6 +110,9 @@ public:
     Error stage_start(Parameters parameters, std::uint64_t& generation) noexcept;
     Error stage_pitch(std::uint64_t generation, float pitch) noexcept;
     Error stage_pan(std::uint64_t generation, std::uint8_t pan) noexcept;
+    // Sound-player domain [0, 0x7fff], with a 1-ms gain transition.
+    // Source position and the attack/release deadline are not restarted.
+    Error stage_volume(std::uint64_t generation, std::uint16_t volume) noexcept;
     Error stage_stop(std::uint64_t generation) noexcept;
     Error stage() noexcept;
 

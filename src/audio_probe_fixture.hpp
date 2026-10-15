@@ -14,6 +14,14 @@ namespace isle::audio_probe {
 inline constexpr std::uint32_t synthesis_rate = 32006;
 inline constexpr std::uint32_t default_quota = 640;
 
+// Game auPlaySoundWithParams domain. The probe fixes game global volume at127;
+// the producer receives the resulting explicit sound-player volume instead.
+struct GameParameters {
+    std::uint16_t volume = 0x7fff;
+    std::uint8_t pan = 64;
+    float pitch = 1.0f;
+};
+
 struct Completion {
     audio::sfx::TaskView task{};
     rsp::Result execution{};
@@ -32,6 +40,8 @@ public:
 
     const rom::Identity& identity() const noexcept { return identity_; }
     audio::sfx::Producer& producer() noexcept { return *producer_; }
+    // Convert prevalidated game parameters once, preserving game integer shifts.
+    audio::sfx::Parameters player_parameters(GameParameters parameters) const noexcept;
     // Executes actual ROM aspMain. Returns only after SP=0x203 and no DPC.
     // Leaves the actual completed PCM lease owned by producer(): a downstream
     // sink must retain it on WouldBlock, release after copying, and never build
@@ -40,6 +50,7 @@ public:
 
 private:
     rom::Identity identity_{};
+    std::uint8_t sample_volume_ = 0;
     std::array<std::byte, 0x100> boot_{};
     std::unique_ptr<audio::sfx::Producer> producer_;
     // Destroy the borrower before producer-owned RDRAM.

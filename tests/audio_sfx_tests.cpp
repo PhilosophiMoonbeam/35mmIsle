@@ -73,14 +73,6 @@ void quotas_and_admission() {
     a::Sound foreign = selected(bank.asset);
     auto rejected = s::Producer::create(bank.asset, foreign, {32006}, coefficients());
     check(rejected.error == s::Error::foreign_sound && !rejected.producer, "foreign descriptor is not retained by coincidence");
-    Input unaligned_input;
-    put32(*unaligned_input.bank, 124, 1);
-    auto unaligned = unaligned_input.decode();
-    check(bool(unaligned), "bank decoder remains general for non-frame loop");
-    if (unaligned) {
-        rejected = s::Producer::create(unaligned.asset, selected(unaligned.asset), {32006}, coefficients());
-        check(rejected.error == s::Error::unsupported_loop && !rejected.producer, "producer explicitly rejects unsupported loop alignment");
-    }
 }
 void staging_leases_and_failure() {
     Input input;
@@ -153,6 +145,8 @@ void bounded_events() {
     auto& p = *made.producer;
     std::uint64_t generation = 0;
     check(p.stage_start({}, generation) == s::Error::none, "event start posts");
+    check(p.stage_volume(generation, 0x8000) == s::Error::invalid_parameter,
+          "unsigned out-of-domain player volume cannot consume a bounded control slot");
     for (std::size_t i = 1; i < s::Producer::event_capacity; ++i)
         check(p.stage_pan(generation, static_cast<std::uint8_t>(i)) == s::Error::none, "bounded event slot accepts");
     check(p.stage_stop(generation) == s::Error::event_capacity, "overflow is explicit before stage/publication");

@@ -21,7 +21,7 @@ AudioHostProbe::AudioHostProbe(const isle::rom::Snapshot& snapshot) : session_(s
     if (!output_.open({static_cast<int>(probe::synthesis_rate), 4096, 0}))
         AudioFailure(output_, "checked audio admission failed");
     auto& producer = session_.producer();
-    probe::require(producer.stage_start({}, generation_), "host experimental SFX14 start failed");
+    probe::require(producer.stage_start(session_.player_parameters({}), generation_), "host experimental SFX14 start failed");
     probe::require(producer.stage(), "host initial audio publication failed");
     const auto& info = output_.info();
     std::cout << "AUDIO_STREAM_OPEN: driver=" << info.driver.data()

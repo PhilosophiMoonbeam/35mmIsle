@@ -48,6 +48,7 @@ Session::Session(const rom::Snapshot& snapshot, std::uint32_t sound_index) {
     const auto& sounds = banks[0]->instruments[0]->sounds;
     if (sound_index >= sounds.size() || sounds[sound_index] == nullptr)
         throw std::runtime_error("--sound does not select a populated SFX bank 0 instrument 0 slot");
+    sample_volume_ = sounds[sound_index]->volume;
     audio::sfx::Coefficients coefficients;
     for (std::size_t i = 0; i != coefficients.pan.size(); ++i)
         coefficients.pan[i] = be16(bytes, 0x436b0 + i * 2);
@@ -69,6 +70,14 @@ Session::Session(const rom::Snapshot& snapshot, std::uint32_t sound_index) {
     machine_ = std::make_unique<rsp::Machine>(producer_->rdram_words(), reject_dp, nullptr);
 }
 Session::~Session() = default;
+audio::sfx::Parameters Session::player_parameters(GameParameters parameters) const noexcept {
+    audio::sfx::Parameters player;
+    player.volume = static_cast<std::uint16_t>(
+        (static_cast<std::uint32_t>(parameters.volume) * sample_volume_ * 127u) >> 14);
+    player.pan = parameters.pan;
+    player.pitch = parameters.pitch;
+    return player;
+}
 
 Completion Session::execute(audio::sfx::Service service) {
     Completion completion;

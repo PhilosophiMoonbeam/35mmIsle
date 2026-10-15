@@ -10,19 +10,23 @@
 
 namespace isle::audio::sfx {
 namespace {
-constexpr std::uint32_t chunk_frames = 128;
+constexpr std::uint32_t chunk_frames = 160;
+constexpr std::uint32_t decode_chunk = 112;
 // ABI1 command DMEM operands are relative to its 0x5c0 sample area.
 constexpr std::uint16_t stream = 0x008; // preceding eight bytes: resampler history
-constexpr std::uint16_t decoded = 0x220;
-constexpr std::uint16_t encoded = 0x460;
-constexpr std::uint16_t mono = 0x520;
-// Keep source, mono, dry and wet workspaces disjoint for every 128-frame chunk.
-constexpr std::uint16_t left_bus = 0x630;
-constexpr std::uint16_t right_bus = 0x730;
-// Decoder scratch is dead once RESAMPLE has persisted its history. The actual
-// AUX kernel still needs two separate zeroed buses when the wet send is zero.
-constexpr std::uint16_t wet_left = decoded;
-constexpr std::uint16_t wet_right = decoded + 0x100;
+constexpr std::uint16_t decoded = 0x2a0;
+constexpr std::uint16_t encoded = 0x3c0;
+// Decoder and encoded scratch are dead when RESAMPLE writes the mono buffer.
+constexpr std::uint16_t mono = decoded;
+constexpr std::uint16_t left_bus = 0x440;
+constexpr std::uint16_t right_bus = 0x580;
+constexpr std::uint16_t wet_left = 0x6c0;
+constexpr std::uint16_t wet_right = 0x800;
+static_assert(stream + chunk_frames * 4u <= decoded);
+static_assert(decoded + 32u + decode_chunk * 2u <= encoded);
+static_assert(encoded + 72u <= left_bus);
+static_assert(mono + chunk_frames * 2u <= left_bus);
+static_assert(wet_right + chunk_frames * 2u <= 0x940);
 // Source scratch is dead after RESAMPLE saves history. Reuse it for output;
 // no overlap with live buses or the task/command area at the top of DMEM.
 constexpr std::uint16_t interleaved = 0;
@@ -40,7 +44,7 @@ bool pitch_word(float pitch, std::uint16_t& result) noexcept {
 }
 bool valid_parameters(const Parameters& p) noexcept {
     std::uint16_t unused = 0;
-    return p.volume <= 0x7fff && p.pan <= 127 && p.global_volume <= 127 && pitch_word(p.pitch, unused);
+    return p.volume <= 0x7fff && p.pan <= 127 && pitch_word(p.pitch, unused);
 }
 std::uint32_t rounded_frames(std::int32_t us, std::uint32_t rate) noexcept {
     // Original conversion uses a single-precision product, double division
@@ -130,7 +134,7 @@ Error service_quota(Config config, Service service, std::uint32_t& frames) noexc
 
 struct Producer::Impl {
     enum class Phase { attack, sustain, release, done };
-    enum class EventKind { start, pitch, pan, stop };
+    enum class EventKind { start, pitch, pan, volume, stop };
     enum class Lease { none, executing, pcm };
     struct Event {
         EventKind kind = EventKind::stop;
@@ -144,11 +148,15 @@ struct Producer::Impl {
     };
     struct Voice {
         bool active = false, resample_init = true, envelope_init = true;
+        bool source_finished = false;
         std::uint8_t adpcm_flags = 1;
         std::uint64_t generation = 0;
         Parameters parameters{};
         std::uint16_t pitch = 0x8000;
         std::uint32_t cursor = 0, decoded_to = 0, loops_remaining = 0;
+        // Finite repeats retire after the enclosing outer160-frame pull,
+        // not after decoder calls, callback subdivisions or individual wraps.
+        std::uint32_t deferred_loops = 0;
         std::uint32_t fraction = 0;
         Phase phase = Phase::done;
         std::uint64_t event_us = 0;
@@ -235,9 +243,8 @@ struct Producer::Impl {
     }
 
     std::array<std::uint16_t, 2> channel_volumes(const Voice& v) const noexcept {
-        const std::uint64_t product = static_cast<std::uint64_t>(v.parameters.volume) *
-            sound->volume * v.parameters.global_volume;
-        const auto perceived = static_cast<std::uint32_t>(((product >> 14) * sound->envelope->attack_volume) >> 7);
+        const auto perceived = (static_cast<std::uint32_t>(v.parameters.volume) *
+                                sound->envelope->attack_volume) >> 7;
         const std::uint32_t amplitude = (perceived * perceived) >> 15;
         const auto pan = v.parameters.pan;
         return {static_cast<std::uint16_t>((amplitude * coefficients.pan[pan]) >> 15),
@@ -292,10 +299,11 @@ struct Producer::Impl {
         if (v.generation != control.generation) initialize(v, control, now_us);
         if (!v.active) return;
         const auto& desired = control.parameters;
-        if (v.parameters.pan != desired.pan || v.parameters.volume != desired.volume ||
-            v.parameters.global_volume != desired.global_volume) {
+        const bool volume_changed = v.parameters.volume != desired.volume;
+        if (v.parameters.pan != desired.pan || volume_changed) {
             v.retarget_current = current_gains(v);
-            v.pending_frames = v.gain_frames - v.gain_elapsed;
+            v.pending_frames = volume_changed ? duration_frames(1000, config.synthesis_rate) :
+                                               v.gain_frames - v.gain_elapsed;
             v.have_retarget_current = true;
             v.envelope_init = true;
         }
@@ -355,19 +363,27 @@ struct Producer::Impl {
         v.envelope_init = false;
     }
 
-    // Assemble only newly consumed source samples in DMEM. The decoder's
-    // 16-sample history prefix supplies partially consumed frames on later
-    // chunks/tasks, so there is no CPU sample decode/copy or lost frame tail.
+    // Assemble source samples in DMEM. The decoder's 16-sample prefix carries
+    // partial frames until the encoded extent finishes at an outer-pull fence;
+    // no sample decoding or decoded-sample copies run on the CPU.
     void source(Voice& v, std::uint32_t needed) noexcept {
+        if (v.source_finished) {
+            // A completed encoded extent makes the next outer pull silent;
+            // residual decoded frame history is not another source cache.
+            if (needed != 0) clear(stream, static_cast<std::uint16_t>(needed * 2u));
+            v.cursor = sample_frames;
+            return;
+        }
         std::uint32_t written = 0;
         const Loop* loop = sound->wave->loop;
         while (written < needed && build_error == Error::none) {
             if (loop != nullptr && v.loops_remaining != 0 && v.cursor == loop->end) {
-                if (v.loops_remaining != 0xffffffffu) --v.loops_remaining;
+                if (v.loops_remaining != 0xffffffffu) ++v.deferred_loops;
                 v.cursor = loop->start;
-                // Loop history is already the first sixteen restored samples.
-                // Its following compressed frame, not the same frame, is next.
-                v.decoded_to = loop->start + 16u;
+                // History covers the aligned frame containing loop start.
+                // A partial start skips its prefix; the next compressed frame
+                // follows that restored frame, not sixteen logical samples.
+                v.decoded_to = (loop->start & ~15u) + 16u;
                 v.adpcm_flags = 2; // restore immutable loop history, not zeros
             }
             if (v.cursor == sample_frames) {
@@ -380,14 +396,31 @@ struct Producer::Impl {
             const std::uint32_t available = v.decoded_to - v.cursor;
             if (available != 0) {
                 const std::uint32_t copied = std::min(take, available);
-                load(v.adpcm_flags == 2 ? Producer::loop_state_address : Producer::adpcm_state_address, decoded, 32);
+                if (v.adpcm_flags == 2) {
+                    // A zero-count LOOP restores both the DMEM prefix and
+                    // persistent history, even if this pull consumes no new
+                    // compressed frame. Later decoding continues that state.
+                    buffers(encoded, decoded, 0);
+                    // LOOP context is shared microcode workspace, not a
+                    // task-lifetime cache: intervening kernels may clobber it.
+                    if (address(Producer::loop_state_address, 32))
+                        command(0x0f000000u, Producer::loop_state_address);
+                    if (address(Producer::adpcm_state_address, 32))
+                        command(0x01020000u, Producer::adpcm_state_address);
+                    v.adpcm_flags = 0;
+                } else {
+                    load(Producer::adpcm_state_address, decoded, 32);
+                }
                 move(static_cast<std::uint16_t>(decoded + 32u - available * 2u),
                      static_cast<std::uint16_t>(stream + written * 2u), static_cast<std::uint16_t>(copied * 2u));
                 v.cursor += copied;
                 written += copied;
                 continue;
             }
-            const std::uint32_t decode_samples = std::min(align16(take), boundary - v.cursor);
+            // Decode complete compressed frames in disjoint scratch, even
+            // when the logical loop ends inside one. Copy only logical samples.
+            const std::uint32_t copied = std::min(take, decode_chunk);
+            const std::uint32_t decode_samples = align16(copied);
             const std::uint32_t bytes = (decode_samples / 16u) * 9u;
             const std::uint32_t source_address = Producer::sample_address + (v.cursor / 16u) * 9u;
             const std::uint32_t prefix = source_address & 7u;
@@ -398,13 +431,23 @@ struct Producer::Impl {
             v.adpcm_flags = 0;
             v.decoded_to += decode_samples;
             move(static_cast<std::uint16_t>(decoded + 32u), static_cast<std::uint16_t>(stream + written * 2u),
-                 static_cast<std::uint16_t>(take * 2u));
-            v.cursor += take;
-            written += take;
+                 static_cast<std::uint16_t>(copied * 2u));
+            v.cursor += copied;
+            written += copied;
         }
+    }
+    void consume_loops(Voice& v) const noexcept {
+        if (v.loops_remaining != 0xffffffffu)
+            v.loops_remaining -= std::min(v.loops_remaining, v.deferred_loops);
+        v.deferred_loops = 0;
+        v.source_finished = v.loops_remaining == 0 && v.decoded_to == sample_frames;
     }
     void output(std::uint32_t offset, std::uint32_t frames) noexcept {
         buffers(0, interleaved, static_cast<std::uint16_t>(frames * 2u));
+        // Original AUX return mixing is observable even with a zero wet send:
+        // the real kernel's fixed-point destination scaling is not an identity.
+        command(0x0c007fffu, (static_cast<std::uint32_t>(wet_left) << 16) | left_bus);
+        command(0x0c007fffu, (static_cast<std::uint32_t>(wet_right) << 16) | right_bus);
         command(0x0d000000u, (static_cast<std::uint32_t>(left_bus) << 16) | right_bus);
         save(interleaved, Producer::pcm_address + offset * 4u, static_cast<std::uint16_t>(frames * 4u));
     }
@@ -413,15 +456,15 @@ struct Producer::Impl {
             prepared = true;
             if (address(Producer::book_address, book_bytes))
                 command(0x0b000000u | book_bytes, Producer::book_address);
-            if (sound->wave->loop != nullptr && sound->wave->loop->count != 0 &&
-                address(Producer::loop_state_address, 32))
-                command(0x0f000000u, Producer::loop_state_address);
         }
         std::uint32_t offset = 0;
         while (offset < frames && build_error == Error::none) {
-            std::uint32_t count = std::min(chunk_frames, frames - offset);
+            const std::uint32_t count = std::min(
+                chunk_frames - ((output_offset + offset) % chunk_frames), frames - offset);
             clear(left_bus, static_cast<std::uint16_t>(count * 2));
             clear(right_bus, static_cast<std::uint16_t>(count * 2));
+            clear(wet_left, static_cast<std::uint16_t>(count * 2u));
+            clear(wet_right, static_cast<std::uint16_t>(count * 2u));
             if (v.active) {
                 const std::uint64_t total = static_cast<std::uint64_t>(v.fraction) +
                     static_cast<std::uint64_t>(v.pitch) * 2u * count;
@@ -433,13 +476,12 @@ struct Producer::Impl {
                             Producer::resample_state_address);
                 v.resample_init = false;
                 v.fraction = static_cast<std::uint32_t>(total & 0xffffu);
-                clear(wet_left, static_cast<std::uint16_t>(count * 2u));
-                clear(wet_right, static_cast<std::uint16_t>(count * 2u));
                 envelope(v, count);
                 advance_gain(v, count);
             }
             output(output_offset + offset, count);
             offset += count;
+            if ((output_offset + offset) % chunk_frames == 0) consume_loops(v);
         }
     }
     bool accepts(std::uint64_t generation) const noexcept {
@@ -486,8 +528,7 @@ CreateResult Producer::create(BankFile owner, const Sound& selected, Config conf
         if ((std::to_integer<std::uint8_t>(wave.encoded[i * 9u]) & 15u) >= static_cast<std::uint32_t>(wave.book->predictors))
             return {Error::invalid_resource, nullptr};
     if (wave.loop != nullptr && wave.loop->count != 0 &&
-        (!wave.loop->adpcm_history || wave.loop->start >= wave.loop->end || wave.loop->end > samples ||
-         ((wave.loop->start | wave.loop->end) & 15u) != 0))
+        (!wave.loop->adpcm_history || wave.loop->start >= wave.loop->end || wave.loop->end > samples))
         return {Error::unsupported_loop, nullptr};
     const Envelope& envelope = *selected.envelope;
     if (envelope.attack_us < 0 || envelope.decay_us != -1 || envelope.release_us < 0 ||
@@ -541,6 +582,12 @@ Error Producer::stage_pan(std::uint64_t generation, std::uint8_t pan) noexcept {
     event.parameters.pan = pan;
     return impl_->post(event);
 }
+Error Producer::stage_volume(std::uint64_t generation, std::uint16_t volume) noexcept {
+    if (volume > 0x7fff) return Error::invalid_parameter;
+    Impl::Event event{Impl::EventKind::volume, generation, {}};
+    event.parameters.volume = volume;
+    return impl_->post(event);
+}
 Error Producer::stage_stop(std::uint64_t generation) noexcept {
     return impl_->post({Impl::EventKind::stop, generation, {}});
 }
@@ -556,6 +603,7 @@ Error Producer::stage() noexcept {
             break;
         case Impl::EventKind::pitch: s.control.parameters.pitch = event.parameters.pitch; break;
         case Impl::EventKind::pan: s.control.parameters.pan = event.parameters.pan; break;
+        case Impl::EventKind::volume: s.control.parameters.volume = event.parameters.volume; break;
         case Impl::EventKind::stop: s.control.stop = true; break;
         }
     }
@@ -604,6 +652,8 @@ Error Producer::build(Service service, TaskView& task) noexcept {
         offset += count;
     }
     if (s.build_error != Error::none) return s.build_error;
+    // The task's last short outer pull also retires its measured repeats.
+    s.consume_loops(next);
     s.task = {command_address, s.write_address - command_address, pcm_address, frames,
               s.config.synthesis_rate, ++s.next_task, next.generation, service.service_id};
     s.pending_voice = next;

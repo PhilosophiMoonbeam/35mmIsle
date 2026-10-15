@@ -52,7 +52,7 @@ ctest --preset windows-release
 .\build\windows-release\Release\35mmisle-rom.exe check "C:\private\pokemonsnap.z64"
 ```
 
-Debug presets are `linux-debug` and `windows-debug`. CTest runs independently authored synthetic fixtures for native memory primitives, ROM identity, stackful processes, owned message queues and VPK0 decoding; checks remain active in Release. Public jobs never receive a ROM or extracted game content.
+Debug presets are `linux-debug` and `windows-debug`. The default seven CTest executables exercise independently authored native memory, ROM identity, stackful processes, owned queues, VPK0, compiled-C continuations and typed sprites; checks remain active in Release. Enabling the private game engine adds the eighth executable, exercising the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
 
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 
@@ -61,6 +61,9 @@ Current implemented surfaces are **not a playable Pokémon Snap executable**:
 - `isle-process` (`35mmisle/process.hpp`): an original stack-preserving `isle::Process`, implemented with a parked, joinable native worker and synchronous creator-thread handoff. Only the creator may resume, inspect, cancel or destroy it. `Yield::wait(0)` stays inline; `wait(N)` resumes the same stack after exactly N subsequent `resume()` calls. Cancellation unwinds and joins at cooperative boundaries, not during non-yielding callback execution. Successful waits/resumes do not allocate or copy callbacks. Native FP state is isolated across waits; that is not R4300 FP or Snap scheduling equivalence. Callers must honor the header's exception/unwind and lifetime rules and compile callback arithmetic with dynamic-FP-aware options.
 - `isle::MessageQueue<T>` (`35mmisle/message_queue.hpp`): a bounded, construction-allocated, move-only ownership ring with blocking and nonblocking push/pop. `accepted` means admitted ownership, not completed work; failed pushes retain caller ownership. `close()` rejects new messages, wakes waiters and permits FIFO drain. Payload move/destruction must be nonthrowing, nonblocking and non-reentrant; prevent new access and join users before destroying the queue. This is not an N64 priority scheduler.
 - `isle-vpk0` (`35mmisle/vpk0.hpp`): the original allocation-free decoder contract described below.
+- `isle-continuation` (`35mmisle/continuation.h`): a C ABI over genuine stackful processes. Callback-created children rendezvous with the central owner; cross-cancellation joins before user storage can be recycled. The C trampoline fences control transfer: no C++ exception crosses a C frame. Intervening callback frames must not retain owning C++ automatic objects across wait, finish or failure; C resources require explicit object/scene ownership.
+- `isle-sprite` (`35mmisle/sprite.h`, `35mmisle/sprite.hpp`): checked big-endian Sprite/Bitmap graph hydration with immutable bank ownership, canonical RGBA/CI/IA/I texel normalization and odd-row texture shuffle. Positive `actualHeight` determines stored planes; zero uses nominal height. Bare C views borrow their owning `Sprite`; renderer completion must precede owner release. This is not the original RDP DMA footprint or full Sprite renderer.
+- Opt-in `isle-engine` (`35mmisle/engine.h`): native arena-backed GObj/process/SObj services around thirteen exact authoritative C definitions. Actual update ordering, pause-preserved waits, deferred self-deletion and RGB fade run through the C continuation bridge. No full scene, SDK service, audio or game-clock mapping is implied.
 
 Link `isle-process` through CMake to inherit `Threads::Threads`; the header-only queue also requires native thread linkage. Existing process targets retain strict FP options (`/fp:strict` on MSVC; `-fno-fast-math`, `-ffp-contract=off` and `-frounding-math` on GCC/Clang).
 
@@ -70,9 +73,22 @@ Link `isle-process` through CMake to inherit `Threads::Threads`; the header-only
 
 Linux Debug/Release and Clang ASan+UBSan checks passed. Private differential checks matched all three recognized streams in the exact supported ROM against the pinned independent reference: 1,026,256 output bytes and exact consumed lengths. Truncated streams were rejected without publication. This validates decoding, not typed asset relocation or game integration; no raw game payload is a public fixture.
 
+### Exact private C engine
+
+```sh
+cmake -S . -B build/native-engine -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DISLE_BUILD_GAME_ENGINE=ON \
+  -DISLE_SNAP_SOURCE_DIR=/path/to/read-only/pokemonsnap
+cmake --build build/native-engine --parallel 2
+ctest --test-dir build/native-engine --output-on-failure --no-tests=error
+```
+
+Omit `ISLE_SNAP_SOURCE_DIR` to fetch the immutable authoritative commit privately. A supplied repository may have a different HEAD or dirty worktree: preparation reads exact Git objects, never working files or an upstream build. [`snap-engine-inputs.json`](cmake/snap-engine-inputs.json) identifies both complete source blobs, thirteen definition spans, source/native hashes and narrowly versioned seam transformations. [`prepare_engine.py`](tools/prepare_engine.py) emits C and provenance only inside the build directory. No SDK implementation/header is compiled, and complete game bodies are not committed or packaged. This is admitted private development/synthetic build use, not a blanket MIT or redistribution grant.
+
+
 ## Opt-in real libultraship host probe (nonplayable)
 
-`35mmisle-host-probe` links real LUS at `759b13401cd6903daa67a00a753066f791622e78`. It opens an SDL3/OpenGL window, submits original procedural colored rectangles through the real renderer and tears down host owners before exit. It does not boot the game, load a ROM, run the Snap scheduler, synthesize audio or establish graphics/photo fidelity.
+`35mmisle-host-probe` links real LUS at `759b13401cd6903daa67a00a753066f791622e78`. Its default SDL3/OpenGL mode submits original procedural colored rectangles through the real renderer and tears down host owners before exit. When the private engine is also enabled, an explicit `--rom` mode exercises the actual intro sprite and selected C fade. Neither mode is full scene/game boot, audio or graphics/photo fidelity.
 
 The Linux development run used SDL3 **3.4.2**, OpenGL **and GLES2 development headers**, plus libzip, nlohmann-json, tinyxml2, spdlog, native threads and X11/EGL/Mesa support. GLES headers are needed by this dependency composition even though the probe selects desktop OpenGL (`USE_OPENGLES=OFF`). Supply these dependencies in a user-controlled prefix and/or through system packages. See the [Linux host CI recipe](.github/workflows/native.yml) for Ubuntu packages and an SDL3 source build pinned to [`683181b47cfabd293e3ea409f838915b8297a4fd`](https://github.com/libsdl-org/SDL/tree/683181b47cfabd293e3ea409f838915b8297a4fd); distro package versions are not a fully locked release composition.
 
@@ -103,7 +119,20 @@ For a visible Linux desktop window, use the same library/EGL/software environmen
 
 The integration owner observed 240 real-renderer frames via Xvfb + Mesa llvmpipe + SDL3 EGL, colored geometry in a later frame and `HOST_OWNERS_RELEASED` before exit. The first captured frame was gray GUI startup; `FIRST_SUCCESSFUL_RENDERER_FRAME` means submission, **not pixel proof**. Default GLX context creation failed on that host; only the explicit EGL path is qualified by that observation. The new CI host job requires bounded submission and owner-release markers; its logs alone do not assert pixels. No Windows host-probe pass or Windows 11 qualification is recorded. Core MSVC synthetic CI is separate from host/game qualification.
 
-[ADMISSION](docs/development/ADMISSION.md) records original-source boundaries, observed mechanism evidence and candidate-scoped import/release decisions. [Dependency evidence](cmake/dependencies.json) records selected pins and the observed Linux host composition; the enforced opt-in build controls are [Libultraship.cmake](cmake/Libultraship.cmake), and each configured host build writes `isle-host-dependencies.txt`. Neither is a complete shipped-composition approval. CPack still installs/packages **only the ROM checker and its original MIT license**, not the host probe, source bundles or a game.
+### Private intro asset and original C fade
+
+Configure the host above with `-DISLE_BUILD_GAME_ENGINE=ON` and optionally `-DISLE_SNAP_SOURCE_DIR=/path/to/read-only/pokemonsnap`. Then run the same explicit EGL/library environment with:
+
+```sh
+build/linux-host/35mmisle-host-probe --frames 120 --rom /path/to/private/pokemonsnap.z64
+```
+
+The loader verifies one bounded read-only ROM snapshot, decodes the selected bank, hydrates eight bitmap views and creates actual native C GObj/SObj state. The initial state is presented first; one fixed C update runs between accepted submissions. Sixty initial presentation frames precede the selected twenty-update original RGB fade; alpha is unchanged. This is an experimental stimulus, not production game-clock mapping or the complete original intro timeline. Invalid ROM/layout/decode input fails without a procedural fallback.
+
+The integration owner ran this mode through real LUS/SDL3 EGL for 120 frames and 119 C updates, visually observed the centered original sprite and fade, and observed C-user quiescence, GPU completion and host/cache owner release before asset storage was released. Captures remain private. No native title/menu/gameplay, audio, hardware-GPU, Windows host or Windows 11 qualification follows from this bounded run.
+
+
+[ADMISSION](docs/development/ADMISSION.md) records original-source boundaries, private source candidates and exercised evidence. [Dependency evidence](cmake/dependencies.json), [Libultraship.cmake](cmake/Libultraship.cmake) and [SnapEngine.cmake](cmake/SnapEngine.cmake) distinguish selected inputs from complete shipped-composition approval. Configured builds write `isle-host-dependencies.txt` and, with the engine enabled, `isle-snap-engine-inputs.json`. CPack still installs/packages **only the ROM checker and its original MIT license**, not host/engine binaries, source bundles or a game.
 
 
 ## License and contributions

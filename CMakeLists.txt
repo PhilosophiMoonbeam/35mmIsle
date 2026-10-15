@@ -22,6 +22,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 option(ISLE_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(ISLE_BUILD_HOST_PROBE "Build the nonplayable real-libultraship procedural host probe" OFF)
+option(ISLE_BUILD_GAME_ENGINE "Build selected authoritative game C definitions through the native private source adapter" OFF)
 if(ISLE_ENABLE_SANITIZERS)
     if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$"
        OR NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$"
@@ -67,6 +68,16 @@ isle_target_options(isle-process)
 target_compile_options(isle-process PRIVATE
     "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>")
 
+add_library(isle-continuation STATIC src/continuation.cpp src/continuation_trampoline.c
+    include/35mmisle/continuation.h src/continuation_trampoline.h)
+target_include_directories(isle-continuation PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(isle-continuation PUBLIC isle-process)
+isle_target_options(isle-continuation)
+
+add_library(isle-sprite STATIC src/sprite.cpp include/35mmisle/sprite.hpp include/35mmisle/sprite.h)
+target_include_directories(isle-sprite PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-sprite)
+
 # This remains only the read-only identity CLI; the host probe is a separate opt-in.
 add_executable(35mmisle-rom src/rom_main.cpp)
 target_link_libraries(35mmisle-rom PRIVATE isle-rom)
@@ -87,6 +98,15 @@ if(ISLE_BUILD_HOST_PROBE)
 endif()
 
 include(CTest)
+if(ISLE_BUILD_GAME_ENGINE)
+    include(cmake/SnapEngine.cmake)
+    if(ISLE_BUILD_HOST_PROBE)
+        target_sources(35mmisle-host-probe PRIVATE src/intro_probe.cpp src/intro_probe.h)
+        target_compile_definitions(35mmisle-host-probe PRIVATE ISLE_HAS_GAME_ENGINE=1)
+        target_link_libraries(35mmisle-host-probe PRIVATE isle-engine isle-sprite isle-rom isle-vpk0)
+    endif()
+endif()
+
 if(BUILD_TESTING)
     add_executable(native-tests tests/native_tests.c)
     target_link_libraries(native-tests PRIVATE isle-native)
@@ -116,8 +136,18 @@ if(BUILD_TESTING)
     isle_target_options(message-queue-tests)
     add_test(NAME message-queue-tests COMMAND message-queue-tests)
 
+    add_executable(continuation-tests tests/continuation_tests.cpp tests/continuation_fixture.c)
+    target_link_libraries(continuation-tests PRIVATE isle-continuation)
+    isle_target_options(continuation-tests)
+    add_test(NAME continuation-tests COMMAND continuation-tests)
+
+    add_executable(sprite-tests tests/sprite_tests.cpp)
+    target_link_libraries(sprite-tests PRIVATE isle-sprite)
+    isle_target_options(sprite-tests)
+    add_test(NAME sprite-tests COMMAND sprite-tests)
+
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests
+    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 

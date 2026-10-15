@@ -36,8 +36,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ninja-build
-      - name: Configure original services, decoder and synthetic tests
-        run: cmake --preset ${{ matrix.preset }}
+      - name: Configure native services and exact private C dispatcher
+        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
       - name: Run synthetic tests (including Release)
@@ -68,8 +68,8 @@ jobs:
           persist-credentials: false
           submodules: false
           lfs: false
-      - name: Configure original services, decoder and synthetic tests
-        run: cmake --preset ${{ matrix.preset }}
+      - name: Configure native services and exact private C dispatcher
+        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
       - name: Run synthetic tests (including Release)
@@ -145,6 +145,7 @@ jobs:
         run: |
           cmake -S . -B build/linux-host -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_TESTING=ON -DISLE_BUILD_HOST_PROBE=ON -DISLE_LUS_SOURCE_DIR= \
+            -DISLE_BUILD_GAME_ENGINE=ON -DISLE_SNAP_SOURCE_DIR= \
             -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/host-prefix"
       - name: Build host and original services
         run: cmake --build build/linux-host --parallel 2

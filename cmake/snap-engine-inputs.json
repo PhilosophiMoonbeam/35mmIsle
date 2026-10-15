@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "User-directed private native development and synthetic build verification; no SDK input or source/binary redistribution grant. Public repository contains original adapter and interface-level patch anchors, not complete imported game bodies.",
+  "source_files": {
+    "src/AA0650.c": {
+      "git_blob": "d6263d3d6e1ff1f913e7620d402ed70c4d399acc",
+      "sha256": "62e01867df443487283155a3c8d07d01c4922b7425c3788d2033ec4ef2ad43bf"
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c"
+    }
+  },
+  "definitions": [
+    {
+      "symbol": "omLinkProcess",
+      "path": "src/sys/om.c",
+      "first": 183,
+      "last": 230,
+      "source_sha256": "87265d948bfc4e170c47bd54a12413fa6d1f1c2bf60258387584ce5f4d6b0bb0",
+      "native_sha256": "bd10322692b7c8f8a0d13c14a9a6edd318f64b8d6716e178765cf57141eba72e",
+      "changes": [
+        {
+          "find": "    curObj = curObj; // required to match\n",
+          "replace": "",
+          "reason": "Remove obsolete matching-only self-assignment."
+        }
+      ]
+    },
+    {
+      "symbol": "omUnlinkProcessFromPriorityList",
+      "path": "src/sys/om.c",
+      "first": 238,
+      "last": 248,
+      "source_sha256": "9725fe71dc70c7df2b6af22f194e04942c47db01104a286b9b2b2840bd7dc047",
+      "native_sha256": "9725fe71dc70c7df2b6af22f194e04942c47db01104a286b9b2b2840bd7dc047",
+      "changes": []
+    },
+    {
+      "symbol": "omUnlinkProcess",
+      "path": "src/sys/om.c",
+      "first": 250,
+      "last": 265,
+      "source_sha256": "13d6c1f54d5e4f065a6578948a008d018d791b22db0856685a54810235dbe2a8",
+      "native_sha256": "13d6c1f54d5e4f065a6578948a008d018d791b22db0856685a54810235dbe2a8",
+      "changes": []
+    },
+    {
+      "symbol": "omLinkGObjAfter",
+      "path": "src/sys/om.c",
+      "first": 344,
+      "last": 359,
+      "source_sha256": "b4b7ed1e32fcff3c7f7554e863cd894120f955cdd38201c289ce78f1fc8db29c",
+      "native_sha256": "b4b7ed1e32fcff3c7f7554e863cd894120f955cdd38201c289ce78f1fc8db29c",
+      "changes": []
+    },
+    {
+      "symbol": "omLinkGObjAfterSamePriority",
+      "path": "src/sys/om.c",
+      "first": 361,
+      "last": 370,
+      "source_sha256": "6425f4b2db5bccc5b6bd9ac3987071dde698c65c25a2af454213a71c296cfca0",
+      "native_sha256": "6425f4b2db5bccc5b6bd9ac3987071dde698c65c25a2af454213a71c296cfca0",
+      "changes": []
+    },
+    {
+      "symbol": "omLinkGObjBeforeSamePriority",
+      "path": "src/sys/om.c",
+      "first": 372,
+      "last": 388,
+      "source_sha256": "5edb194f20c86e411ee73a4e41acd859eb5f3b91b236fe39ff6b96fc86fadcaa",
+      "native_sha256": "5edb194f20c86e411ee73a4e41acd859eb5f3b91b236fe39ff6b96fc86fadcaa",
+      "changes": []
+    },
+    {
+      "symbol": "omUnlinkGObj",
+      "path": "src/sys/om.c",
+      "first": 390,
+      "last": 402,
+      "source_sha256": "85501e315f8e5f5e72240d22a919ff047101ff6354e4737deae7fb9a8f8e088c",
+      "native_sha256": "85501e315f8e5f5e72240d22a919ff047101ff6354e4737deae7fb9a8f8e088c",
+      "changes": []
+    },
+    {
+      "symbol": "omGObjAddSprite",
+      "path": "src/sys/om.c",
+      "first": 1286,
+      "last": 1319,
+      "source_sha256": "56ceeb72ff942b2f5d541a9d550cd08778203ef59f5014fd38137395e881f240",
+      "native_sha256": "6d61f7c8830e5d35c103dec122af4b01ebf8a9279406bd81172c37598c933b0e",
+      "changes": [
+        {
+          "find": "SObj* omGObjAddSprite(GObj* obj, Sprite* sprite)",
+          "replace": "SObj* omGObjAddSprite(GObj* obj, const Sprite* sprite)",
+          "reason": "Read-only native descriptor avoids an otherwise unnecessary intermediate copy."
+        },
+        {
+          "find": "    sobj = omGetSObj();\n",
+          "replace": "    sobj = omGetSObj();\n    if (sobj == NULL) return NULL;\n",
+          "reason": "Propagate bounded native allocation rejection before publishing or dereferencing a node."
+        }
+      ]
+    },
+    {
+      "symbol": "omGObjRemoveSprite",
+      "path": "src/sys/om.c",
+      "first": 1321,
+      "last": 1338,
+      "source_sha256": "6df39c0e0d6f7c6fbcd4757bc2887899c6bf2fcb94770f408bb6932a5c64386d",
+      "native_sha256": "6df39c0e0d6f7c6fbcd4757bc2887899c6bf2fcb94770f408bb6932a5c64386d",
+      "changes": []
+    },
+    {
+      "symbol": "omUpdateGObj",
+      "path": "src/sys/om.c",
+      "first": 1757,
+      "last": 1778,
+      "source_sha256": "eb2dc0b80c2f9b5a65b9a3b655c5b8f95011ee311732f3b30f5b761ee185c65a",
+      "native_sha256": "eb2dc0b80c2f9b5a65b9a3b655c5b8f95011ee311732f3b30f5b761ee185c65a",
+      "changes": []
+    },
+    {
+      "symbol": "omRunProcess",
+      "path": "src/sys/om.c",
+      "first": 1780,
+      "last": 1824,
+      "source_sha256": "6fa0572fcd33c193010b3e3b1daaf4540392a179fefe04464378c29bebf08345",
+      "native_sha256": "b63b7026a2c36cc3d368489fada478060f23cbc755f66286298705c30a410931",
+      "changes": [
+        {
+          "find": "            osStartThread(&proc->unk_1C.thread->osThread);\n            osRecvMesg(&omProcessWaitQueue, NULL, OS_MESG_BLOCK);\n",
+          "replace": "            isle_native_resume_process(proc);\n",
+          "reason": "Real owned native continuation resume/completion, not SDK thread/message emulation."
+        }
+      ]
+    },
+    {
+      "symbol": "omUpdateAll",
+      "path": "src/sys/om.c",
+      "first": 1826,
+      "last": 1856,
+      "source_sha256": "efdf664718f3b68d3ac3301106204304a9d5e6c98f5b8f41a8bb58fdcad16b69",
+      "native_sha256": "efdf664718f3b68d3ac3301106204304a9d5e6c98f5b8f41a8bb58fdcad16b69",
+      "changes": []
+    },
+    {
+      "symbol": "func_800E1958_AA0708",
+      "path": "src/AA0650.c",
+      "first": 94,
+      "last": 113,
+      "source_sha256": "e13fdfdc4e17d675e56fd8f01fea058468a952f2004c00cb956903f51816b45b",
+      "native_sha256": "138f86e14556d0eecb9cebb8ce13249cf7562ac32713be2b756014dbde4d9017",
+      "changes": [
+        {
+          "find": "for (arg1 = arg1 - 1;",
+          "replace": "for (arg1 = (u16) (arg1 - 1);",
+          "reason": "Explicit bounded native C conversion; guarded arg1 is positive."
+        },
+        {
+          "find": "temp_lo = (arg1 * (temp = 0xFF)) / temp_arg1;",
+          "replace": "temp_lo = (u8) ((arg1 * (temp = 0xFF)) / temp_arg1);",
+          "reason": "Explicit native C conversion; original quotient is in 0..254."
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-// Original procedural host integration; deliberately not a Pokémon Snap executable.
+// Original host integration; procedural by default, with an explicit bounded private-ROM experiment.
 #include <SDL3/SDL.h>
 #include <imgui.h>
 #include <fast/Fast3dGui.h>
@@ -14,13 +14,19 @@
 #include <ship/resource/ResourceManager.h>
 #include <ship/thread/ThreadPool.h>
 
+#ifdef ISLE_HAS_GAME_ENGINE
+#include "intro_probe.h"
+#else
+class IntroProbe;
+#endif
+
 #include <array>
-#include <charconv>
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -117,7 +123,7 @@ class ProbeHost final {
     ProbeHost(const ProbeHost&) = delete;
     ProbeHost& operator=(const ProbeHost&) = delete;
 
-    void Init() {
+    void Init(bool introMode) {
         context = Ship::Context::CreateInstance("35mmIsleHostProbe", "35mmIsle nonplayable host probe");
         context->Init();
         const std::filesystem::path data =
@@ -168,14 +174,22 @@ class ProbeHost final {
             SDL_GL_GetCurrentContext() == nullptr || !window->IsRunning()) {
             throw std::runtime_error("LUS did not establish a running SDL3/OpenGL renderer");
         }
+        // The pinned OpenGL FinishRender() is empty. A real GL completion
+        // barrier is required before borrowed intro texels may be released.
+        finishGpu = reinterpret_cast<GlFinish>(SDL_GL_GetProcAddress("glFinish"));
+        if (finishGpu == nullptr) {
+            throw std::runtime_error("OpenGL completion barrier is unavailable");
+        }
         interpreter->SetNativeDimensions(320.0f, 240.0f);
-        std::cout << "NONPLAYABLE procedural host probe: real LUS "
-                     "759b13401cd6903daa67a00a753066f791622e78; backend="
+        std::cout << "NONPLAYABLE " << (introMode ? "bounded intro-asset" : "procedural host")
+                  << " probe: real LUS 759b13401cd6903daa67a00a753066f791622e78; backend="
                   << interpreter->GetCurrentRenderingAPI()->GetName()
-                  << "; F3DEX_GBI_2 / ucode_f3dex2; pinned renderer shaders only; no game assets, audio or game scheduler\n";
+                  << "; F3DEX_GBI_2 / ucode_f3dex2; pinned renderer shaders; "
+                  << (introMode ? "explicit private-ROM sprite/C-fade scope only, no full scene or audio\n"
+                                : "no game assets, audio or game scheduler\n");
     }
 
-    void Run(std::uint32_t frameLimit) {
+    void Run(std::uint32_t frameLimit, [[maybe_unused]] IntroProbe* intro = nullptr) {
         std::array<Gfx, 32> commands{};
         const std::unordered_map<Mtx*, MtxF> replacements;
         const auto deadline = std::chrono::steady_clock::now() +
@@ -190,6 +204,23 @@ class ProbeHost final {
                 throw std::runtime_error("Renderer did not submit the requested frames before the bounded deadline");
             }
             deck->WriteToPad(pads.data());
+#ifdef ISLE_HAS_GAME_ENGINE
+            if (intro != nullptr) {
+                if (window->DrawAndRunGraphicsCommands(intro->Commands(), replacements)) {
+                    ++submitted;
+                    if (submitted == 1) {
+                        std::cout << "FIRST_SUCCESSFUL_RENDERER_FRAME: private intro textured display list submitted; "
+                                     "submission is not pixel or fidelity proof.\n" << std::flush;
+                    }
+                    if (submitted < frameLimit) {
+                        intro->Advance();
+                    }
+                } else {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+                continue;
+            }
+#endif
             Gfx* out = commands.data();
             gDPPipeSync(out++);
             gDPSetScissor(out++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
@@ -221,6 +252,14 @@ class ProbeHost final {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         }
+#ifdef ISLE_HAS_GAME_ENGINE
+        if (intro != nullptr) {
+            std::cout << "Submitted " << submitted << " real-renderer intro-asset frames; "
+                      << intro->Ticks() << " fixed C updates; observe the original centered sprite and RGB fade.\n"
+                         "Bounded asset/update experiment only, not a full game or fidelity claim.\n";
+            return;
+        }
+#endif
         std::cout << "Submitted " << submitted
                   << " real-renderer frames; observe red/green/yellow geometry and moving cyan on dark blue.\n"
                      "This is host integration evidence only, not game/render-fidelity evidence.\n";
@@ -238,6 +277,14 @@ class ProbeHost final {
         // Shader loads use synchronous LoadResource(...).get(); no resource work
         // or host submission remains outstanding once Run has returned.
         // Keep owners alive until all caches and backend references are unbound.
+        if (finishGpu != nullptr && SDL_GL_GetCurrentContext() != nullptr) {
+            finishGpu();
+        }
+        if (windowReady) {
+            if (auto interpreter = window->GetInterpreterWeak().lock()) {
+                interpreter->TextureCacheClear();
+            }
+        }
         if (bridge) {
             bridge->ClearCaches();
         }
@@ -289,6 +336,12 @@ class ProbeHost final {
     }
 
   private:
+#ifdef _WIN32
+    using GlFinish = void (__stdcall*)();
+#else
+    using GlFinish = void (*)();
+#endif
+    GlFinish finishGpu = nullptr;
     std::shared_ptr<Ship::Context> context;
     std::shared_ptr<Ship::Config> config;
     std::shared_ptr<Ship::ConsoleVariable> variables;
@@ -305,34 +358,110 @@ class ProbeHost final {
     bool stopped = false;
 };
 
-std::uint32_t ParseFrames(int argc, char** argv) {
-    if (argc == 1) {
-        return 120;
+#ifdef _WIN32
+using Argument = wchar_t;
+constexpr std::wstring_view framesArgument = L"--frames";
+constexpr std::wstring_view romArgument = L"--rom";
+#else
+using Argument = char;
+constexpr std::string_view framesArgument = "--frames";
+constexpr std::string_view romArgument = "--rom";
+#endif
+
+struct Options {
+    std::uint32_t frames = 120;
+    std::optional<std::filesystem::path> rom;
+};
+
+Options ParseOptions(int argc, Argument* argv[]) {
+    Options options;
+    bool haveFrames = false;
+    for (int i = 1; i < argc; ++i) {
+        const std::basic_string_view<Argument> argument(argv[i]);
+        if (argument == framesArgument && !haveFrames && i + 1 < argc) {
+            const std::basic_string_view<Argument> text(argv[++i]);
+            std::uint32_t count = 0;
+            if (text.empty()) {
+                throw std::invalid_argument("--frames must be an integer in 1..3600");
+            }
+            for (const Argument digit : text) {
+                if (digit < '0' || digit > '9' || count > 3600) {
+                    throw std::invalid_argument("--frames must be an integer in 1..3600");
+                }
+                count = count * 10 + static_cast<std::uint32_t>(digit - '0');
+            }
+            if (count == 0 || count > 3600) {
+                throw std::invalid_argument("--frames must be an integer in 1..3600");
+            }
+            options.frames = count;
+            haveFrames = true;
+        } else if (argument == romArgument && !options.rom && i + 1 < argc) {
+#ifdef ISLE_HAS_GAME_ENGINE
+            // Preserve Windows UTF-16 and native argv bytes elsewhere.
+            options.rom.emplace(argv[++i]);
+#else
+            throw std::invalid_argument("--rom requires both ISLE_BUILD_HOST_PROBE and ISLE_BUILD_GAME_ENGINE");
+#endif
+        } else {
+            throw std::invalid_argument("Usage: 35mmisle-host-probe [--frames 1..3600] [--rom <private-ROM-path>]");
+        }
     }
-    if (argc != 3 || std::string_view(argv[1]) != "--frames") {
-        throw std::invalid_argument("Usage: 35mmisle-host-probe [--frames 1..3600]");
-    }
-    const std::string_view text(argv[2]);
-    std::uint32_t count = 0;
-    const auto result = std::from_chars(text.data(), text.data() + text.size(), count);
-    if (result.ec != std::errc{} || result.ptr != text.data() + text.size() || count == 0 || count > 3600) {
-        throw std::invalid_argument("--frames must be an integer in 1..3600");
-    }
-    return count;
+    return options;
 }
 } // namespace
 
-int main(int argc, char** argv) {
+int Run(int argc, Argument* argv[]) {
     try {
-        const std::uint32_t frames = ParseFrames(argc, argv);
+        const Options options = ParseOptions(argc, argv);
         SdlLifetime sdl;
+#ifdef ISLE_HAS_GAME_ENGINE
+        // Declared before the host: unwind destroys the renderer before these
+        // borrowed CPU owners, even if frame submission or shutdown throws.
+        std::unique_ptr<IntroProbe> intro;
+        if (options.rom) {
+            intro = std::make_unique<IntroProbe>(*options.rom);
+        }
+#endif
         ProbeHost host;
-        host.Init();
-        host.Run(frames);
+        host.Init(options.rom.has_value());
+        try {
+#ifdef ISLE_HAS_GAME_ENGINE
+            host.Run(options.frames, intro.get());
+#else
+            host.Run(options.frames);
+#endif
+        } catch (...) {
+#ifdef ISLE_HAS_GAME_ENGINE
+            if (intro) {
+                intro->StopGame();
+            }
+#endif
+            throw;
+        }
+#ifdef ISLE_HAS_GAME_ENGINE
+        if (intro) {
+            intro->StopGame();
+        }
+#endif
         host.Shutdown();
+#ifdef ISLE_HAS_GAME_ENGINE
+        if (intro) {
+            intro.reset();
+            std::cout << "INTRO_ASSET_OWNERS_RELEASED: C users joined, GL completion barrier passed, "
+                         "renderer/cache destroyed, then arena/bank/pixels/display lists released.\n" << std::flush;
+        }
+#endif
         return 0;
     } catch (const std::exception& error) {
         std::cerr << "Nonplayable host probe failed: " << error.what() << '\n';
         return 1;
     }
+}
+
+#ifdef _WIN32
+int wmain(int argc, wchar_t* argv[]) {
+#else
+int main(int argc, char* argv[]) {
+#endif
+    return Run(argc, argv);
 }

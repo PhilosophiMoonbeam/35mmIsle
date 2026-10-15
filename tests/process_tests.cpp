@@ -8,6 +8,7 @@
 #include <functional>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <thread>
 
@@ -262,8 +263,12 @@ void owner_and_yield_boundaries() {
     bool wait_rejected = false;
     bool finish_rejected = false;
     try { suspended_yield->wait(0); } catch (const std::logic_error&) { wait_rejected = true; }
+    bool action_rejected = false;
     try { suspended_yield->finish(); } catch (const std::logic_error&) { finish_rejected = true; }
-    check(wait_rejected && finish_rejected, "even zero wait and finish require the actual callback worker");
+    try { suspended_yield->on_owner(+[](void*) {}, nullptr); }
+    catch (const std::logic_error&) { action_rejected = true; }
+    check(wait_rejected && finish_rejected && action_rejected,
+          "wait, finish, and owner actions require the actual callback worker");
     check(process.resume() == State::completed, "boundary errors do not damage later valid handoff");
 }
 
@@ -336,6 +341,124 @@ void callback_retention() {
     check(copies == initial_copies && moves == initial_moves, "handoff never copies, moves, or reconstructs callback");
 }
 
+struct OwnerActions {
+    std::thread::id owner;
+    isle::Process* source = nullptr;
+    std::unique_ptr<isle::Process> child;
+    int live = 0;
+    int destroyed = 0;
+    int child_step = 0;
+    int parent_step = 0;
+};
+
+void create_owner_child(void* payload) {
+    auto& data = *static_cast<OwnerActions*>(payload);
+    check(std::this_thread::get_id() == data.owner, "owner service executes on the constructing thread");
+    check(data.source->state() == State::running, "source remains running while owner services its request");
+    data.child = std::make_unique<isle::Process>([&data](isle::Yield& yield) {
+        Lifetime lifetime(data.live, data.destroyed);
+        data.child_step = 1;
+        yield.wait(7);
+        data.child_step = 2;
+    });
+    check(data.child->state() == State::ready && data.child_step == 0,
+          "owner service constructs a real parked child without dispatching it");
+    bool source_resume_rejected = false;
+    bool source_cancel_rejected = false;
+    bool child_resume_rejected = false;
+    try { data.source->resume(); }
+    catch (const std::logic_error&) { source_resume_rejected = true; }
+    try { data.source->cancel(); }
+    catch (const std::logic_error&) { source_cancel_rejected = true; }
+    try { data.child->resume(); }
+    catch (const std::logic_error&) { child_resume_rejected = true; }
+    check(source_resume_rejected && source_cancel_rejected && child_resume_rejected,
+          "owner service rejects source reentry/cancellation and nested gameplay dispatch");
+}
+
+void cancel_owner_child(void* payload) {
+    auto& data = *static_cast<OwnerActions*>(payload);
+    check(std::this_thread::get_id() == data.owner, "child cancellation returns to the actual owner");
+    check(data.child->cancel() == State::cancelled,
+          "owner service synchronously cancels a distinct real child");
+    check(data.live == 0 && data.destroyed == 1 && data.child_step == 1,
+          "owner-service cancellation unwinds the child before the caller reuses its data");
+    data.child.reset();
+}
+
+void owner_actions_preserve_waits() {
+    OwnerActions data{};
+    data.owner = std::this_thread::get_id();
+    isle::Process process([&](isle::Yield& yield) {
+        bool null_rejected = false;
+        try { yield.on_owner(nullptr, &data); }
+        catch (const std::invalid_argument&) { null_rejected = true; }
+        check(null_rejected, "a null owner action is rejected without stranding the worker");
+        yield.on_owner(create_owner_child, &data);
+        check(data.child != nullptr && data.child_step == 0,
+              "child construction is complete before its creating callback continues");
+        data.parent_step = 1;
+        yield.wait(3);
+        data.parent_step = 2;
+        yield.on_owner(cancel_owner_child, &data);
+        check(data.child == nullptr && data.live == 0,
+              "worker continues only after owner cancellation and destruction have joined");
+        yield.wait();
+        data.parent_step = 3;
+    });
+    data.source = &process;
+    check(process.resume() == State::waiting && data.parent_step == 1,
+          "creation rendezvous does not cause resume to return before the real wait");
+    check(data.child->resume() == State::waiting && data.live == 1,
+          "callback-created child belongs to the central owner and dispatches later");
+    check(process.resume() == State::waiting && data.parent_step == 1,
+          "owner action does not consume the first of three wait ticks");
+    check(process.resume() == State::waiting && data.parent_step == 1,
+          "owner action does not consume the second of three wait ticks");
+    check(process.resume() == State::waiting && data.parent_step == 2 && !data.child,
+          "third tick resumes the original stack, cancels child, and reaches the next real wait");
+    check(process.resume() == State::completed && data.parent_step == 3,
+          "owner rendezvous preserves a later one-tick wait");
+}
+
+void owner_action_exception_transport() {
+    std::unique_ptr<isle::Process> child;
+    bool caught = false;
+    int phase = 0;
+    struct FailureAction {
+        std::unique_ptr<isle::Process>* child;
+        static void perform(void* payload) {
+            auto& data = *static_cast<FailureAction*>(payload);
+            *data.child = std::make_unique<isle::Process>([](isle::Yield&) {});
+            throw CallbackFailure{83};
+        }
+    } action{&child};
+    isle::Process process([&](isle::Yield& yield) {
+        try { yield.on_owner(FailureAction::perform, &action); }
+        catch (const CallbackFailure& failure) { caught = failure.value == 83; }
+        phase = 1;
+        yield.wait(2);
+        phase = 2;
+    });
+    check(process.resume() == State::waiting && caught && phase == 1,
+          "an owner action exception is delivered to the worker, not escaped from resume");
+    check(child && child->state() == State::ready,
+          "throwing service still constructed a real centrally owned child");
+    check(child->cancel() == State::cancelled, "owner can cancel that child after service exception recovery");
+    child.reset();
+    check(process.resume() == State::waiting && phase == 1,
+          "action exception recovery does not consume wait ticks");
+    check(process.resume() == State::completed && phase == 2,
+          "worker remains usable and joined after an owner action exception");
+
+    isle::Process failed([](isle::Yield& yield) {
+        yield.on_owner(+[](void*) { throw CallbackFailure{89}; }, nullptr);
+    });
+    check(receives_failure(failed, 89) && failed.state() == State::failed,
+          "an uncaught owner action exception becomes the worker's retained failure");
+    check(receives_failure(failed, 89), "owner action failure rethrows on each later resume");
+}
+
 struct EnvironmentRestore {
     std::fenv_t environment{};
     bool captured = std::fegetenv(&environment) == 0;
@@ -357,9 +480,21 @@ void floating_point_isolation() {
         check(std::fetestexcept(FE_ALL_EXCEPT) == 0, "worker explicitly starts with default exception flags");
         check(std::fesetround(FE_TOWARDZERO) == 0, "worker changes its private rounding mode");
         check(std::feraiseexcept(FE_DIVBYZERO) == 0, "worker changes its private exception flags");
+        yield.on_owner(+[](void*) {
+            check(std::fegetround() == FE_UPWARD && std::fetestexcept(FE_ALL_EXCEPT) == FE_INVALID,
+                  "owner action uses the owner's FP environment, not the worker's");
+        }, nullptr);
+        check(std::fegetround() == FE_TOWARDZERO && std::fetestexcept(FE_ALL_EXCEPT) == FE_DIVBYZERO,
+              "owner rendezvous leaves the worker's private FP environment unchanged");
         yield.wait(2);
         check(std::fegetround() == FE_TOWARDZERO, "worker rounding survives multi-iteration suspension");
         check(std::fetestexcept(FE_ALL_EXCEPT) == FE_DIVBYZERO, "worker flags survive suspension without owner contamination");
+        yield.on_owner(+[](void*) {
+            check(std::fegetround() == FE_DOWNWARD && std::fetestexcept(FE_ALL_EXCEPT) == FE_INVALID,
+                  "later owner service sees owner FP changes made while the worker was parked");
+        }, nullptr);
+        check(std::fegetround() == FE_TOWARDZERO && std::fetestexcept(FE_ALL_EXCEPT) == FE_DIVBYZERO,
+              "later owner service preserves suspended worker FP state too");
     });
     check(std::fesetround(FE_UPWARD) == 0, "owner can change rounding after process construction");
     check(process.resume() == State::waiting, "FP fixture genuinely suspends");
@@ -389,6 +524,8 @@ int main() {
         serialized_execution();
         callback_retention();
         floating_point_isolation();
+        owner_actions_preserve_waits();
+        owner_action_exception_transport();
     } catch (const std::exception& error) {
         check(false, error.what());
     } catch (...) {

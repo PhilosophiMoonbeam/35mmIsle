@@ -11,6 +11,10 @@
 namespace isle {
 namespace {
 
+// Only owner-side service code sets this. A service may manage parked workers,
+// but must not dispatch a second gameplay callback during the rendezvous.
+thread_local Process* owner_service_source = nullptr;
+
 bool terminal(Process::State state) noexcept {
     return state == Process::State::completed || state == Process::State::failed ||
            state == Process::State::cancelled;
@@ -24,6 +28,10 @@ void Yield::wait(std::uint64_t iterations) {
 
 [[noreturn]] void Yield::finish() {
     process_.finish();
+}
+
+void Yield::on_owner(void (*action)(void*), void* payload) {
+    process_.on_owner(action, payload);
 }
 
 Process::Process(Callback callback)
@@ -65,6 +73,9 @@ Process::State Process::state() const {
 
 Process::State Process::resume() {
     require_owner();
+    if (owner_service_source != nullptr) {
+        throw std::logic_error("owner actions cannot dispatch process callbacks");
+    }
     std::unique_lock lock(mutex_);
     if (!terminal(state_)) {
         if (state_ == State::running) {
@@ -77,7 +88,29 @@ Process::State Process::resume() {
         remaining_ = 0;
         state_ = State::running;
         changed_.notify_one();
-        changed_.wait(lock, [this] { return state_ != State::running; });
+        while (state_ == State::running) {
+            changed_.wait(lock, [this] {
+                return state_ != State::running || owner_action_ != nullptr;
+            });
+            if (owner_action_ != nullptr) {
+                const auto action = owner_action_;
+                void* const payload = owner_payload_;
+                lock.unlock();
+                owner_service_source = this;
+                std::exception_ptr failure;
+                try {
+                    action(payload);
+                } catch (...) {
+                    failure = std::current_exception();
+                }
+                owner_service_source = nullptr;
+                lock.lock();
+                owner_failure_ = std::move(failure);
+                owner_action_ = nullptr;
+                owner_payload_ = nullptr;
+                changed_.notify_one();
+            }
+        }
     }
     const auto result = state_;
     lock.unlock();
@@ -96,7 +129,11 @@ Process::State Process::cancel() {
 }
 
 Process::State Process::cancel_and_join() {
+    require_owner();
     std::unique_lock lock(mutex_);
+    if (state_ == State::running) {
+        throw std::logic_error("a running process cannot cancel or destroy itself during owner service");
+    }
     if (!terminal(state_)) {
         cancellation_requested_ = true;
         changed_.notify_one();
@@ -137,6 +174,26 @@ void Process::wait(std::uint64_t iterations) {
 [[noreturn]] void Process::finish() {
     require_worker();
     throw Finished{};
+}
+
+void Process::on_owner(void (*action)(void*), void* payload) {
+    require_worker();
+    if (action == nullptr) {
+        throw std::invalid_argument("an owner action requires a function");
+    }
+    std::unique_lock lock(mutex_);
+    if (cancellation_requested_) {
+        throw Cancelled{};
+    }
+    owner_payload_ = payload;
+    owner_action_ = action;
+    changed_.notify_one();
+    changed_.wait(lock, [this] { return owner_action_ == nullptr; });
+    auto failure = std::move(owner_failure_);
+    lock.unlock();
+    if (failure) {
+        std::rethrow_exception(failure);
+    }
 }
 
 void Process::run() noexcept {

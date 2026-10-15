@@ -27,6 +27,12 @@ public:
     // return. This also works from nested helpers; it is not a process restart.
     [[noreturn]] void finish();
 
+    // Synchronously service an action on the owner inside the current resume,
+    // without a wait tick or callback dispatch. The action may construct or
+    // cancel another process, but cannot resume callbacks or cancel this one.
+    // Exceptions return to this worker. No action storage is allocated/copied.
+    void on_owner(void (*action)(void*), void* payload);
+
 private:
     friend class Process;
     explicit Yield(Process& process) noexcept : process_(process) {}
@@ -95,6 +101,7 @@ private:
     void require_worker() const;
     void wait(std::uint64_t iterations);
     [[noreturn]] void finish();
+    void on_owner(void (*action)(void*), void* payload);
     void run() noexcept;
     State cancel_and_join();
     void join();
@@ -108,6 +115,9 @@ private:
     bool parked_ = false;
     bool cancellation_requested_ = false;
     std::exception_ptr failure_;
+    void (*owner_action_)(void*) = nullptr;
+    void* owner_payload_ = nullptr;
+    std::exception_ptr owner_failure_;
     std::thread::id worker_id_;
     std::thread worker_;
 };

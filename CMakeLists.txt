@@ -126,13 +126,31 @@ add_library(isle-sprite STATIC src/sprite.cpp include/35mmisle/sprite.hpp includ
 target_include_directories(isle-sprite PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-sprite)
 
-add_library(isle-audio-bank STATIC src/audio_bank.cpp include/35mmisle/audio_bank.hpp)
+add_library(isle-audio-bank STATIC
+    src/audio_bank.cpp src/audio_sequence.cpp
+    include/35mmisle/audio_bank.hpp include/35mmisle/audio_sequence.hpp)
 target_include_directories(isle-audio-bank PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-audio-bank)
 
-add_library(isle-audio-sfx STATIC src/audio_sfx.cpp include/35mmisle/audio_sfx.hpp)
-target_link_libraries(isle-audio-sfx PUBLIC isle-audio-bank)
-isle_target_options(isle-audio-sfx)
+add_library(isle-audio-sequence STATIC src/audio_cseq.cpp include/35mmisle/audio_cseq.hpp)
+target_link_libraries(isle-audio-sequence PUBLIC isle-audio-bank)
+isle_target_options(isle-audio-sequence)
+
+add_library(isle-save-image STATIC
+    src/save_image.cpp src/save_hash.hpp include/35mmisle/save_image.hpp)
+target_include_directories(isle-save-image PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-save-image)
+
+add_library(isle-save-store STATIC src/save_store.cpp include/35mmisle/save_store.hpp)
+target_link_libraries(isle-save-store PUBLIC isle-save-image)
+isle_target_options(isle-save-store)
+
+add_library(isle-audio STATIC
+    src/audio_catalog.cpp src/audio_synth_math.cpp src/audio_synth.cpp
+    src/audio_service.cpp src/audio_sfx.cpp src/audio_csp.cpp src/audio_synth_internal.hpp
+    include/35mmisle/audio_synth.hpp include/35mmisle/audio_sfx.hpp include/35mmisle/audio_csp.hpp)
+target_link_libraries(isle-audio PUBLIC isle-audio-sequence)
+isle_target_options(isle-audio)
 
 # This remains only the read-only identity CLI; the host probe is a separate opt-in.
 add_executable(35mmisle-rom src/rom_main.cpp)
@@ -207,13 +225,53 @@ if(BUILD_TESTING)
     isle_target_options(audio-bank-tests)
     add_test(NAME audio-bank-tests COMMAND audio-bank-tests)
 
+    add_executable(audio-sequence-tests tests/audio_sequence_tests.cpp)
+    target_link_libraries(audio-sequence-tests PRIVATE isle-audio-bank)
+    isle_target_options(audio-sequence-tests)
+    add_test(NAME audio-sequence-tests COMMAND audio-sequence-tests)
+
+    add_executable(audio-cseq-tests tests/audio_cseq_tests.cpp)
+    target_link_libraries(audio-cseq-tests PRIVATE isle-audio-sequence)
+    isle_target_options(audio-cseq-tests)
+    add_test(NAME audio-cseq-tests COMMAND audio-cseq-tests)
+
     add_executable(audio-sfx-tests tests/audio_sfx_tests.cpp)
-    target_link_libraries(audio-sfx-tests PRIVATE isle-audio-sfx)
+    target_link_libraries(audio-sfx-tests PRIVATE isle-audio)
     isle_target_options(audio-sfx-tests)
     add_test(NAME audio-sfx-tests COMMAND audio-sfx-tests)
 
+    add_executable(audio-csp-tests tests/audio_csp_tests.cpp)
+    target_link_libraries(audio-csp-tests PRIVATE isle-audio)
+    isle_target_options(audio-csp-tests)
+    add_test(NAME audio-csp-tests COMMAND audio-csp-tests)
+
+    add_executable(save-image-tests tests/save_image_tests.cpp)
+    target_link_libraries(save-image-tests PRIVATE isle-save-image)
+    isle_target_options(save-image-tests)
+    add_test(NAME save-image-tests COMMAND save-image-tests)
+
+    add_executable(save-store-tests tests/save_store_tests.cpp)
+    target_link_libraries(save-store-tests PRIVATE isle-save-store)
+    isle_target_options(save-store-tests)
+    add_test(NAME save-store-tests COMMAND save-store-tests)
+
+    add_executable(audio-catalog-tests tests/audio_catalog_tests.cpp)
+    target_link_libraries(audio-catalog-tests PRIVATE isle-audio)
+    isle_target_options(audio-catalog-tests)
+    add_test(NAME audio-catalog-tests COMMAND audio-catalog-tests)
+
+    add_executable(audio-synth-tests tests/audio_synth_tests.cpp)
+    target_link_libraries(audio-synth-tests PRIVATE isle-audio)
+    isle_target_options(audio-synth-tests)
+    add_test(NAME audio-synth-tests COMMAND audio-synth-tests)
+
+    add_executable(audio-service-tests tests/audio_service_tests.cpp)
+    target_link_libraries(audio-service-tests PRIVATE isle-audio)
+    isle_target_options(audio-service-tests)
+    add_test(NAME audio-service-tests COMMAND audio-service-tests)
+
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sfx-tests
+    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 
@@ -263,7 +321,7 @@ if(ISLE_BUILD_AUDIO_PROBE)
     isle_target_options(isle-audio-output)
 
     add_library(isle-audio-probe-support STATIC src/audio_probe_fixture.cpp src/audio_probe_fixture.hpp)
-    target_link_libraries(isle-audio-probe-support PUBLIC isle-audio-sfx isle-rom-snapshot isle-rsp)
+    target_link_libraries(isle-audio-probe-support PUBLIC isle-audio isle-rom-snapshot isle-rsp)
     isle_target_options(isle-audio-probe-support)
     add_executable(35mmisle-audio-probe src/audio_probe.cpp)
     target_link_libraries(35mmisle-audio-probe PRIVATE isle-audio-probe-support isle-audio-output)

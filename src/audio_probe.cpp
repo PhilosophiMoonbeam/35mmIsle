@@ -128,7 +128,7 @@ Options parse(int argc, Argument* argv[]) {
         } else if (flag == "--tasks") {
             once(3); options.tasks = integer(next(), 1, max_tasks);
         } else if (flag == "--quota") {
-            once(4); options.quota = integer(next(), 16, sfx::Producer::max_frames);
+            once(4); options.quota = integer(next(), 16, isle::audio::AudioService::max_frames);
             if ((options.quota & 15u) != 0) throw std::runtime_error("--quota must be a multiple of 16 frames");
         } else if (flag == "--volume") {
             once(5); options.initial.volume = static_cast<std::uint16_t>(integer(next(), 0, 32767));
@@ -153,7 +153,7 @@ Options parse(int argc, Argument* argv[]) {
                 ++same_task;
                 if (previous.kind == control.kind) throw std::runtime_error("repeated timed control kind at the same task");
             }
-            if (same_task > sfx::Producer::event_capacity)
+            if (same_task > sfx::SoundPlayer::event_capacity)
                 throw std::runtime_error("controls at one task exceed native event capacity");
             options.controls[options.control_count++] = control;
         } else {
@@ -200,13 +200,17 @@ void settings(std::ostream& out, const Options& options) {
         out << '\n';
     }
 }
-void apply(sfx::Producer& producer, const Control& control, const sfx::Parameters& initial, std::uint64_t& generation) {
-    sfx::Error error = sfx::Error::invalid_parameter;
+void apply(sfx::SoundPlayer& player, const Control& control, isle::audio::SoundId selected,
+           const sfx::Parameters& initial, sfx::SoundHandle& handle) {
+    auto error = isle::audio::Error::invalid_parameter;
     switch (control.kind) {
-    case Kind::pitch: error = producer.stage_pitch(generation, control.pitch); break;
-    case Kind::pan: error = producer.stage_pan(generation, control.pan); break;
-    case Kind::stop: error = producer.stage_stop(generation); break;
-    case Kind::replay: error = producer.stage_start(initial, generation); break;
+    case Kind::pitch: error = player.stage_pitch(handle, control.pitch); break;
+    case Kind::pan: error = player.stage_pan(handle, control.pan); break;
+    case Kind::stop: error = player.stage_stop(handle); break;
+    case Kind::replay:
+        error = player.active(handle) ? isle::audio::Error::invalid_state :
+                player.stage_start(selected, initial, handle);
+        break;
     }
     probe::require(error, "timed control rejected (voice must be live for changes/stops and idle for replay)");
 }
@@ -267,7 +271,13 @@ int run(int argc, Argument* argv[]) {
     // Native argv bytes / Windows UTF-16 reach filesystem directly. Never log
     // paths, reopen the ROM, or narrow Windows paths through a locale.
     probe::Session session(isle::rom::read_snapshot(options.rom), options.sound);
-    auto& producer = session.producer();
+    auto& service = session.service();
+    auto player = session.player();
+    const auto selected = session.selected_sound();
+    const auto initial = session.player_parameters(options.initial);
+    sfx::SoundHandle handle;
+    probe::require(player.stage_start(selected, initial, handle), "initial sound start failed");
+    probe::require(player.stage(), "initial controls publication failed");
     Output output;
     settings(std::cout, options);
     std::cout << "private_rom_admitted normalized_sha1=" << isle::rom::digest_hex(session.identity())
@@ -287,7 +297,7 @@ int run(int argc, Argument* argv[]) {
         tasks_file.exceptions(std::ios::failbit | std::ios::badbit);
         pcm_file.open(options.raw / "pcm.s16be", std::ios::binary);
         tasks_file.open(options.raw / "tasks.csv");
-        tasks_file << "task,frames,source_frame_begin,task_id,generation,commands,sp_status,dma_reads,dma_writes,voice_active\n";
+        tasks_file << "task,frames,source_frame_begin,task_owner,task_serial,sound_generation,commands,sp_status,dma_reads,dma_writes,sound_active\n";
     }
     if (options.play) {
         if (!output.open({static_cast<int>(probe::synthesis_rate), 4096, 0}))
@@ -299,19 +309,16 @@ int run(int argc, Argument* argv[]) {
                   << " device_format=" << info.device.format << " device_buffer_frames=" << info.device_buffer_frames
                   << " physical_playback=not_qualified\n";
     }
-    std::uint64_t generation = 0, total_frames = 0, total_reads = 0, total_writes = 0;
-    const auto initial = session.player_parameters(options.initial);
-    probe::require(producer.stage_start(initial, generation), "initial voice start failed");
-    probe::require(producer.stage(), "initial controls publication failed");
-    std::array<std::int16_t, sfx::Producer::max_frames * 2> scratch{};
+    std::uint64_t total_frames = 0, total_reads = 0, total_writes = 0;
+    std::array<std::int16_t, isle::audio::AudioService::max_frames * 2> scratch{};
     std::size_t next_control = 0;
     for (std::uint32_t task = 1; task <= options.tasks; ++task) {
         const auto completed = session.execute({task, 0, options.quota});
         const auto& pcm = completed.pcm;
-        if (pcm.frame_count > sfx::Producer::max_frames || pcm.synthesis_rate != probe::synthesis_rate)
+        if (pcm.frame_count > isle::audio::AudioService::max_frames || pcm.synthesis_rate != probe::synthesis_rate)
             throw std::runtime_error("completed PCM exceeds admitted format or fixed scratch capacity");
         if (options.play || pcm_file.is_open()) {
-            probe::require(producer.copy_pcm(pcm, scratch), "owned completed PCM extraction failed");
+            probe::require(service.copy_pcm(pcm, scratch), "owned completed PCM extraction failed");
             auto samples = std::span(scratch).first(pcm.frame_count * 2u);
             // SDL must own its native-endian copy before scratch is converted
             // in place for an optional canonical BE16 file. The lease remains
@@ -327,21 +334,21 @@ int run(int argc, Argument* argv[]) {
         }
         if (pcm_file.is_open()) {
             pcm_file.write(reinterpret_cast<const char*>(scratch.data()), static_cast<std::streamsize>(pcm.frame_count * 4u));
-            tasks_file << task << ',' << pcm.frame_count << ',' << total_frames << ',' << completed.task.task_id << ','
-                       << completed.task.generation << ',' << completed.task.command_bytes / 8 << ','
+            tasks_file << task << ',' << pcm.frame_count << ',' << total_frames << ',' << completed.task.token.owner << ','
+                       << completed.task.token.serial << ',' << handle.generation << ',' << completed.task.command_bytes / 8 << ','
                        << completed.execution.sp_status << ',' << completed.execution.dma_reads << ','
-                       << completed.execution.dma_writes << ',' << producer.voice_active() << '\n';
+                       << completed.execution.dma_writes << ',' << player.active(handle) << '\n';
         }
         total_frames += pcm.frame_count;
         total_reads += completed.execution.dma_reads;
         total_writes += completed.execution.dma_writes;
-        probe::require(producer.release(pcm.task_id, pcm.generation), "copied PCM lease release failed");
+        probe::require(service.release(pcm.token), "copied PCM lease release failed");
         bool changed = false;
         while (next_control != options.control_count && options.controls[next_control].after_task == task) {
-            apply(producer, options.controls[next_control++], initial, generation);
+            apply(player, options.controls[next_control++], selected, initial, handle);
             changed = true;
         }
-        if (changed) probe::require(producer.stage(), "timed controls publication failed");
+        if (changed) probe::require(player.stage(), "timed controls publication failed");
     }
     if (next_control != options.control_count) throw std::runtime_error("scheduled controls were not all consumed");
     if (pcm_file.is_open()) { pcm_file.close(); tasks_file.close(); }

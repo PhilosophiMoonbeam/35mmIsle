@@ -9,7 +9,6 @@
 
 namespace {
 namespace probe = isle::audio_probe;
-namespace sfx = isle::audio::sfx;
 using Output = isle::audio::SdlAudioOutput;
 [[noreturn]] void AudioFailure(Output& output, const char* operation) {
     const auto& error = output.error();
@@ -20,9 +19,10 @@ using Output = isle::audio::SdlAudioOutput;
 AudioHostProbe::AudioHostProbe(const isle::rom::Snapshot& snapshot) : session_(snapshot, 14) {
     if (!output_.open({static_cast<int>(probe::synthesis_rate), 4096, 0}))
         AudioFailure(output_, "checked audio admission failed");
-    auto& producer = session_.producer();
-    probe::require(producer.stage_start(session_.player_parameters({}), generation_), "host experimental SFX14 start failed");
-    probe::require(producer.stage(), "host initial audio publication failed");
+    auto player = session_.player();
+    probe::require(player.stage_start(session_.selected_sound(), session_.player_parameters({}), sound_),
+                   "host experimental SFX14 start failed");
+    probe::require(player.stage(), "host initial audio publication failed");
     const auto& info = output_.info();
     std::cout << "AUDIO_STREAM_OPEN: driver=" << info.driver.data()
               << " physical_device=" << info.physical_device << " logical_device=" << info.logical_device
@@ -38,7 +38,7 @@ void AudioHostProbe::Build() {
     // Explicit experimental quota: the unused occupancy field is not an
     // observation of zero AI occupancy and never comes from the SDL queue.
     pending_.emplace(session_.execute({++service_, 0, probe::default_quota}));
-    probe::require(session_.producer().copy_pcm(pending_->pcm, samples_), "host owned PCM extraction failed");
+    probe::require(session_.service().copy_pcm(pending_->pcm, samples_), "host owned PCM extraction failed");
     produced_ += pending_->pcm.frame_count;
 }
 bool AudioHostProbe::Submit() {
@@ -49,7 +49,7 @@ bool AudioHostProbe::Submit() {
     if (result != Output::Submit::accepted) AudioFailure(output_, "host audio submission failed");
     accepted_ += pcm.frame_count;
     // SDL owns a full copy. Only now may this exact producer lease retire.
-    probe::require(session_.producer().release(pcm.task_id, pcm.generation), "host copied PCM release failed");
+    probe::require(session_.service().release(pcm.token), "host copied PCM release failed");
     pending_.reset();
     return true;
 }
@@ -69,16 +69,16 @@ void AudioHostProbe::Wait(std::chrono::steady_clock::time_point deadline) {
 void AudioHostProbe::Finish() {
     if (closed_) throw std::runtime_error("host audio finish after closure");
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
-    auto& producer = session_.producer();
-    if (producer.voice_active()) {
-        probe::require(producer.stage_stop(generation_), "host SFX stop failed");
-        probe::require(producer.stage(), "host SFX stop publication failed");
+    auto player = session_.player();
+    if (player.active(sound_)) {
+        probe::require(player.stage_stop(sound_), "host SFX stop failed");
+        probe::require(player.stage(), "host SFX stop publication failed");
     }
-    while (pending_ || producer.voice_active()) {
+    while (pending_ || player.active(sound_)) {
         if (!pending_) Build();
         if (!Submit()) Wait(deadline);
     }
-    if (producer.has_lease() || produced_ != accepted_)
+    if (session_.service().has_lease() || produced_ != accepted_)
         throw std::runtime_error("host audio completion retained a lease or lost a whole source block");
     if (!output_.finish_input()) AudioFailure(output_, "host audio final flush failed");
     for (;;) {
@@ -101,8 +101,8 @@ bool AudioHostProbe::Abort() noexcept {
     cleanup_ok_ = !output_.close().failed;
     if (pending_) {
         const auto& pcm = pending_->pcm;
-        const auto result = session_.producer().release(pcm.task_id, pcm.generation);
-        cleanup_ok_ = result == sfx::Error::none && cleanup_ok_;
+        const auto result = session_.service().release(pcm.token);
+        cleanup_ok_ = result == isle::audio::Error::none && cleanup_ok_;
         pending_.reset();
     }
     closed_ = true;

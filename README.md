@@ -53,6 +53,7 @@ ctest --preset windows-release
 ```
 
 Debug presets are `linux-debug` and `windows-debug`. The default eight CTest executables exercise independently authored native memory, ROM identity, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites and audio-bank graphs; checks remain active in Release. Enabling the private game engine adds the ninth executable, exercising the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
+The optional RSP service adds a separate coprocessor regression executable (ten total with both engine and RSP enabled). These tests execute original synthetic instruction programs, not a public microcode dump.
 
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 
@@ -152,6 +153,25 @@ This requires a real Vulkan loader/ICD, Vulkan 1.1 and enabled 8-/16-bit storage
 The three stages clear a contiguous 64×48 color/13-depth/12-before region, draw five overlapping depth/coverage-sensitive triangles, then perform three GPU depth-as-color copies in two `0xC00`-byte halves each. After real timeline completion, checks inspect every region/hidden value and the original visibility predicates. One depth deliberately retains nonzero packed-dZ low bits; copied hidden coverage is not confused with depth metadata.
 
 On the development machine, actual CPU Vulkan (`llvmpipe (LLVM 21.1.8, 256 bits)`, Mesa 26.0.8, Vulkan 1.4.335) completed all stages without semantic/backend errors. All **718,848** visible/hidden bytes across six snapshots matched a separately executed private CPU reference. This validates only the synthetic workload—not private-ROM raster frames, the RSP/custom-matrix frontend, full photo scoring, hardware GPUs or Windows Vulkan. See ADMISSION for exact reference/terms and limits. Output snapshots contain only this original synthetic workload; the CLI accepts no ROM or native frame.
+
+## Private exact RSP task execution
+
+`35mmisle-rsp-probe` executes the supported ROM's real boot/graphics/line microcode with independently authored matrix and geometry inputs. The game CPU remains native; no R4300 instructions execute.
+
+```sh
+cmake -S . -B build/rsp -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_TESTING=ON -DISLE_BUILD_RSP_PROBE=ON
+cmake --build build/rsp --parallel 2
+ctest --test-dir build/rsp --output-on-failure --no-tests=error
+build/rsp/35mmisle-rsp-probe --rom /private/pokemonsnap.z64 \
+  --raw-out /private/new-synthetic-packet-directory
+```
+
+The exact archive-pinned [parallel-rsp](https://github.com/libretro/parallel-rsp/tree/9ab776a2ce28899769c4f911403234cac62fc799) library-only composition selects its MIT core license **but statically links GNU lightning under LGPL-3.0-or-later**. This is not an MIT-only binary or release admission. Original sources, complete notices, exact-input adaptations and provenance remain build-private; no SDK implementation/header, ROM, microcode, RSP runner or fuzzer enters the public source/package.
+
+The original host service implements bounded two-way DMA, IMEM invalidation, SP status/semaphore/interrupt state and RDRAM/XBUS DPC packet delivery outside generated JIT frames. It borrows explicit word-swapped 8-MiB RDRAM and never truncates native pointers. JIT block-entry and packet limits bound execution. Currently admitted tasks are graphics/type 1/flags 4; DMA transport is synchronous, not cycle emulation, audio or yield/resume support. An observed FullSync packet is **not** GPU completion.
+
+Actual GCC Debug/Release and Clang ASan+UBSan runs completed two cold fractional-matrix tasks, two cold graphics→line→graphics tasks and a warm graphics repeat after reload. The original viewport's downward screen Y, partial signed/fractional matrix writes and temporary line-scissor restoration are checked independently. Repeats compare semantic operands, not ignored NOOP/sync scratch words. Full-source sanitization retains one explicit Clang function-cookie exception at the foreign JIT-entry call; generated instructions themselves are uninstrumented. Native MSVC evidence is pending this contribution's CI. This proves coprocessor execution and synthetic packets—not rendered output, original game frames, frontend/hardware parity or W06 completion. See [ADMISSION](docs/development/ADMISSION.md) for findings and exact resource boundaries.
 
 ## License and contributions
 

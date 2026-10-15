@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "scope": "Private coprocessor-only exact-ROM microcode-input experiment; no game CPU emulation, no redistributed ROM or SDK implementation, and no release/license approval",
+  "dependencies": [
+    {
+      "name": "parallel-rsp",
+      "repository": "libretro/parallel-rsp",
+      "commit": "9ab776a2ce28899769c4f911403234cac62fc799",
+      "archive_sha256": "e03ad7e3277a9f763aab0aff86da350cf93fecb66ef7f616298d84755fa6275d",
+      "core_license_selection": "MIT where the upstream dual license applies",
+      "bundled_lightning_license": "LGPL-3.0-or-later; statically linked, not MIT",
+      "other_notices": "Preserve complete upstream archive and all embedded and standalone notices, including bundled third-party terms"
+    }
+  ]
+}

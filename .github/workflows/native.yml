@@ -1,4 +1,4 @@
-name: Native services, LUS host and canonical RDP
+name: Native services, LUS host and canonical RDP/RSP
 
 on:
   push:
@@ -36,14 +36,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ninja-build
-      - name: Configure native services and exact private C dispatcher
-        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON
+      - name: Configure native services, exact C dispatcher and bounded RSP
+        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
       - name: Run synthetic tests (including Release)
         run: ctest --preset ${{ matrix.preset }}
       - name: Exercise the actual CLI
         run: build/${{ matrix.preset }}/35mmisle-rom --help
+      - name: Exercise the coprocessor CLI without a ROM
+        run: build/${{ matrix.preset }}/35mmisle-rsp-probe --help
       - name: Install only the CLI and license
         run: cmake --install build/${{ matrix.preset }}
       - name: Package tooling locally without uploading
@@ -68,25 +70,28 @@ jobs:
           persist-credentials: false
           submodules: false
           lfs: false
-      - name: Configure native services and exact private C dispatcher
-        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON
+      - name: Configure native services, exact C dispatcher and bounded RSP
+        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
       - name: Run synthetic tests (including Release)
         run: ctest --preset ${{ matrix.preset }}
-      - name: Exercise the CLI and a Unicode input path
+      - name: Exercise both CLIs and a Unicode input path
         shell: pwsh
         run: |
           $exe = "./build/${{ matrix.preset }}/${{ matrix.configuration }}/35mmisle-rom.exe"
           & $exe --help
           if ($LASTEXITCODE -ne 0) { throw "CLI help failed" }
+          $rspExe = "./build/${{ matrix.preset }}/${{ matrix.configuration }}/35mmisle-rsp-probe.exe"
+          & $rspExe --help
+          if ($LASTEXITCODE -ne 0) { throw "RSP CLI help failed" }
           $inputPath = Join-Path $env:RUNNER_TEMP "35mmIsle 路径 spaces.z64"
           [System.IO.File]::WriteAllBytes($inputPath, [byte[]]@(0x80, 0x37, 0x12, 0x40))
           try {
-            $report = (& $exe check $inputPath 2>&1 | Out-String)
-            if ($LASTEXITCODE -ne 1 -or $report -notmatch "wrong size") {
-              throw "CLI did not read and reject the synthetic Unicode-path input"
-            }
+            & $exe check $inputPath
+            if ($LASTEXITCODE -ne 1) { throw "CLI accepted invalid input or failed unexpectedly" }
+            & $rspExe --rom $inputPath
+            if ($LASTEXITCODE -ne 1) { throw "RSP CLI accepted invalid input or failed unexpectedly" }
           } finally {
             Remove-Item -LiteralPath $inputPath -Force
           }

@@ -4,7 +4,7 @@
 #include "audio_synth_internal.hpp"
 
 namespace isle::audio::detail {
-// Shared low-level producer convention for voices and the static wet graph.
+// Shared low-level producer convention for voices and the wet graph.
 // Building writes command RAM only; mutable DSP storage changes on execution.
 class DspWriter {
 public:

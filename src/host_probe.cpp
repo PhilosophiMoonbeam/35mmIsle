@@ -203,7 +203,80 @@ class ProbeHost final {
     }
 #endif
 
+#ifdef ISLE_HAS_GAME_ENGINE
+    void RunIntro(std::uint32_t frameLimit, IntroProbe& intro) {
+        std::array<std::optional<IntroProbe::Frame>, 2> pending;
+        const std::unordered_map<Mtx*, MtxF> replacements;
+        const auto deadline = std::chrono::steady_clock::now() +
+                              std::chrono::seconds(20 + frameLimit / 10);
+        auto retire = [&intro](std::optional<IntroProbe::Frame>& frame, isle::host::Terminal terminal) {
+            if (intro.CompleteFrame(frame->token, terminal) != isle::host::ClockError::none)
+                throw std::logic_error("Intro consumer terminal rejected");
+            frame.reset();
+        };
+        auto quiesce = [&] {
+            intro.RequestStop();
+            finishGpu(); // Do not retire a borrowed list while GL may still access it.
+            for (auto& frame : pending) if (frame) retire(frame, isle::host::Terminal::cancelled);
+            intro.StopGame(); // Stops C users on their creator, not this SDL thread.
+        };
+        std::uint32_t submitted = 0;
+        intro.Start(); // Asset admission and SDL/audio initialization precede VI time.
+        try {
+            while (submitted < frameLimit) {
+                window->HandleEvents();
+                if (!window->IsRunning()) throw std::runtime_error("Window closed before intro completed");
+                if (std::chrono::steady_clock::now() >= deadline)
+                    throw std::runtime_error("Intro renderer exceeded bounded deadline");
+                intro.Check();
+#ifdef ISLE_HAS_AUDIO_PROBE
+                if (audio) audio->Tick();
+#endif
+                deck->WriteToPad(pads.data());
+                IntroProbe::Frame frame;
+                while (intro.TakeFrame(frame)) {
+                    auto& slot = pending[frame.token.context];
+                    if (slot) throw std::logic_error("Intro context reused before terminal");
+                    slot = frame;
+                }
+                // Context indices are reusable storage, not submission order.
+                std::optional<IntroProbe::Frame>* next = pending[0] ? &pending[0] : nullptr;
+                if (pending[1] && (next == nullptr || pending[1]->token.serial < (*next)->token.serial))
+                    next = &pending[1];
+                if (next && window->DrawAndRunGraphicsCommands((*next)->commands, replacements)) {
+                    finishGpu(); // Pinned LUS FinishRender is empty; FullSync is not a GPU fence.
+                    retire(*next, isle::host::Terminal::completed);
+                    ++submitted;
+                    if (submitted == 1)
+                        std::cout << "FIRST_SUCCESSFUL_RENDERER_FRAME: immutable intro list/context rendered; "
+                                     "GL completion acknowledged, not pixel/fidelity proof.\n" << std::flush;
+                } else {
+                    // A declined presentation retains its exact lease and bytes.
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+            }
+        } catch (...) {
+            quiesce();
+            throw;
+        }
+        quiesce();
+        const auto stats = intro.Stats();
+        std::cout << "GTL_NATIVE_CLOCK: documented NTSC progressive 2250000/37609 Hz; "
+                  << "retraces=" << stats.retraces << "; dropped=" << stats.dropped_retraces
+                  << "; updates=" << stats.updates << "; admissions=" << stats.submissions
+                  << "; terminals=" << stats.terminals << "; skipped=" << stats.skipped_draws << '\n'
+                  << "Submitted " << submitted << " real-renderer intro-asset frames; "
+                  << intro.Ticks() << " independently clocked C updates.\n"
+                     "Bounded native GTL/asset experiment; not scene boot, physical timing or full fidelity.\n";
+    }
+#endif
     void Run(std::uint32_t frameLimit, [[maybe_unused]] IntroProbe* intro = nullptr) {
+#ifdef ISLE_HAS_GAME_ENGINE
+        if (intro != nullptr) {
+            RunIntro(frameLimit, *intro);
+            return;
+        }
+#endif
         std::array<Gfx, 32> commands{};
         const std::unordered_map<Mtx*, MtxF> replacements;
         const auto deadline = std::chrono::steady_clock::now() +
@@ -221,23 +294,6 @@ class ProbeHost final {
             if (audio) audio->Tick();
 #endif
             deck->WriteToPad(pads.data());
-#ifdef ISLE_HAS_GAME_ENGINE
-            if (intro != nullptr) {
-                if (window->DrawAndRunGraphicsCommands(intro->Commands(), replacements)) {
-                    ++submitted;
-                    if (submitted == 1) {
-                        std::cout << "FIRST_SUCCESSFUL_RENDERER_FRAME: private intro textured display list submitted; "
-                                     "submission is not pixel or fidelity proof.\n" << std::flush;
-                    }
-                    if (submitted < frameLimit) {
-                        intro->Advance();
-                    }
-                } else {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                }
-                continue;
-            }
-#endif
             Gfx* out = commands.data();
             gDPPipeSync(out++);
             gDPSetScissor(out++, G_SC_NON_INTERLACE, 0, 0, 320, 240);
@@ -269,14 +325,6 @@ class ProbeHost final {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         }
-#ifdef ISLE_HAS_GAME_ENGINE
-        if (intro != nullptr) {
-            std::cout << "Submitted " << submitted << " real-renderer intro-asset frames; "
-                      << intro->Ticks() << " fixed C updates; observe the original centered sprite and RGB fade.\n"
-                         "Bounded asset/update experiment only, not a full game or fidelity claim.\n";
-            return;
-        }
-#endif
         std::cout << "Submitted " << submitted
                   << " real-renderer frames; observe red/green/yellow geometry and moving cyan on dark blue.\n"
                      "This is host integration evidence only, not game/render-fidelity evidence.\n";

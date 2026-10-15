@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <bit>
+#include <cmath>
+#include <numbers>
 
 namespace isle::audio::detail {
 namespace {
@@ -14,10 +16,22 @@ static_assert(AudioService::state_address + AudioService::max_physical_voices *
 static_assert(effects_ring_address + effects_ring_bytes == effects_section_address);
 static_assert(effects_section_address + effects::max_sections * effects_section_stride ==
               effects_staging_address);
-static_assert(effects_book_bytes + effects_history_bytes <= effects_section_stride);
+static_assert(effects_book_bytes + effects_mutable_section_bytes <= effects_section_stride);
 static_assert(effects_staging_address + effects_staging_bytes <= AudioService::resource_address);
 static_assert((effects_ring_address | effects_section_address | effects_staging_address |
-               effects_section_stride | effects_book_bytes | effects_history_bytes) % 8u == 0);
+               effects_section_stride | effects_book_bytes | effects_history_bytes |
+               effects_resample_bytes) % 8u == 0);
+
+// Strict target FP options preserve these explicit float stages without FMA
+// contraction or reassociation; no volatile spill/reload barriers are needed.
+float chorus_amplitude(std::uint32_t depth) noexcept {
+    constexpr double scale = std::numbers::ln2 / 120000.0;
+    return static_cast<float>(static_cast<double>(depth) * scale);
+}
+float chorus_increment(std::uint32_t rate, std::uint32_t sample_rate) noexcept {
+    const float scaled = static_cast<float>(static_cast<double>(rate) / 2000.0);
+    return static_cast<float>(static_cast<double>(scaled) / sample_rate);
+}
 
 class WetRenderer final : public DspWriter {
 public:
@@ -49,6 +63,50 @@ public:
                  static_cast<std::uint16_t>(bytes - first));
         buffers(0, source, bytes);
     }
+    void chorus_load(std::size_t index, std::uint32_t output, ChorusState& state,
+                     std::uint32_t frames) noexcept {
+        const auto& modulation = program_.chorus[index];
+        const float advance = modulation.increment * static_cast<float>(frames);
+        state.phase += advance;
+        if (state.phase > 0.5f) state.phase -= 1.0f;
+        const float triangle = 1.0f - 4.0f * std::abs(state.phase);
+        const float delta = triangle * modulation.amplitude * 32768.0f;
+        const auto word = static_cast<std::uint16_t>(32768 + static_cast<std::int32_t>(delta));
+        const auto total = frames * word + state.carry;
+        const auto pull = total >> 15;
+        const auto tap = (output + state.drift) % program_.ring_bytes;
+        const auto alignment = static_cast<std::uint16_t>(tap & 7u);
+        const auto load_bytes = static_cast<std::uint16_t>(pull * 2u + alignment);
+        // LOAD rounds nonzero counts up to eight bytes. Refuse an actual
+        // scratch/bus overlap, not a fitted depth/rate admission threshold.
+        if (((static_cast<std::uint32_t>(load_bytes) + 7u) & ~7u) > buses[0] - 0x280u) {
+            context_.write_error = Error::address_range;
+            return;
+        }
+        // The aligned start and every ring boundary are eight-byte aligned.
+        // Retain LOAD count0: the real command emits no input DMA but RESAMPLE
+        // still executes, including INIT/continuation history ownership.
+        auto offset = tap & ~7u;
+        std::uint16_t remaining = load_bytes, dest = 0x280;
+        do {
+            const auto bytes = static_cast<std::uint16_t>(
+                std::min<std::uint32_t>(remaining, program_.ring_bytes - offset));
+            load(effects_ring_address + offset, dest, bytes);
+            remaining = static_cast<std::uint16_t>(remaining - bytes);
+            dest = static_cast<std::uint16_t>(dest + bytes);
+            offset = 0;
+        } while (remaining != 0);
+        buffers(static_cast<std::uint16_t>(0x280u + alignment), section_output,
+                static_cast<std::uint16_t>(frames * 2u));
+        if (address(effects_resample_address(index), effects_resample_bytes))
+            context_.emit(0x05000000u | (state.initialized ? 0u : 0x00010000u) | word,
+                          effects_resample_address(index));
+        state.initialized = true;
+        state.carry = static_cast<std::uint16_t>(total & 0x7fffu);
+        // Bounded modulo arithmetic also handles negative cumulative drift and
+        // arbitrarily many lifetimes without signed overflow.
+        state.drift = (state.drift + program_.ring_bytes + pull * 2u - frames * 2u) % program_.ring_bytes;
+    }
     void graph(EffectsState& state, std::uint32_t frames) noexcept {
         const auto bytes = static_cast<std::uint16_t>(frames * 2u);
         buffers(0, 0, bytes);
@@ -62,16 +120,21 @@ public:
             const auto& section = program_.sections[index];
             const auto input = port(state.cursor, section.input_samples);
             const auto output = port(state.cursor, section.output_samples);
+            const bool chorus = section.chorus && section.chorus->rate != 0;
             ring_load(input, section_input, bytes);
-            ring_load(output, section_output, bytes);
+            if (chorus) chorus_load(index, output, state.chorus[index], frames);
+            else ring_load(output, section_output, bytes);
+            if (context_.write_error != Error::none) return;
             if (section.feedforward != 0) {
                 mix(section.feedforward, section_input, section_output);
                 // This pre-feedback commit is observable when ring windows
                 // alias, even though a non-pole output is saved again below.
-                if (!section.pole) ring_save(section_output, output, bytes);
+                if (!chorus && !section.pole) ring_save(section_output, output, bytes);
             }
             if (section.feedback != 0) {
                 mix(section.feedback, section_output, section_input);
+                // Sealed combined graph: only nonzero FB commits input.
+                // FF-only, pole-only and pure chorus have no input SAVE.
                 ring_save(section_input, input, bytes);
             }
             if (section.pole) {
@@ -85,7 +148,7 @@ public:
                 // Renderer::visit reloads each voice book unconditionally; no
                 // book cache survives this graph or a callback subdivision.
             }
-            ring_save(section_output, output, bytes);
+            if (!chorus) ring_save(section_output, output, bytes);
             if (section.gain != 0) mix(section.gain, section_output, wet_right);
         }
         move(wet_right, wet_left, bytes);
@@ -115,6 +178,18 @@ Error validate_effects(effects::Config config) noexcept {
         if ((section.input_samples & 3u) != 0 || (section.output_samples & 3u) != 0 ||
             section.input_samples > max_offset || section.output_samples > max_offset)
             return Error::invalid_parameter;
+        if (section.chorus && section.chorus->rate != 0) {
+            const auto amplitude = chorus_amplitude(section.chorus->depth);
+            if (!(amplitude < 1.0f)) return Error::invalid_parameter;
+            const auto maximum_word = 32768u + static_cast<std::uint32_t>(amplitude * 32768.0f);
+            const auto maximum_pull = (outer_capacity * maximum_word + 32767u) >> 15;
+            // Worst case: original160, carry32767, six alignment bytes, then
+            // actual LOAD rounding to eight. No public lifetime may overwrite
+            // the dry bus at440. This is geometry, not a corpus-depth cap;
+            // depth50000 remains admitted, including its open .17.9 residual.
+            if (((maximum_pull * 2u + 6u + 7u) & ~7u) > buses[0] - 0x280u)
+                return Error::invalid_parameter;
+        }
     }
     return Error::none;
 }
@@ -122,11 +197,28 @@ Error build_effects(Context& context, effects::Config config) noexcept {
     const auto error = validate_effects(config);
     if (error != Error::none) return error;
     if (!context.memory) return Error::invalid_state;
+    // The measured recurrence subtracts one period, not arbitrary modulo.
+    // At most one period per largest outer preserves its centered phase.
+    if (config.routing == effects::Routing::network) {
+        if (context.config.synthesis_rate == 0) return Error::invalid_parameter;
+        for (const auto& section : config.sections)
+            if (section.chorus && section.chorus->rate != 0 &&
+                chorus_increment(section.chorus->rate, context.config.synthesis_rate) *
+                    static_cast<float>(outer_capacity) > 1.0f)
+                return Error::invalid_parameter;
+    }
     auto& program = context.effects;
     program.routing = config.routing;
     program.ring_bytes = config.ring_samples * 2u;
     program.section_count = config.sections.size();
     std::copy(config.sections.begin(), config.sections.end(), program.sections.begin());
+    for (std::size_t index = 0; index < program.section_count; ++index) {
+        const auto& chorus = program.sections[index].chorus;
+        program.chorus[index] = chorus && chorus->rate != 0
+            ? ChorusProgram{chorus_increment(chorus->rate, context.config.synthesis_rate),
+                            chorus_amplitude(chorus->depth)}
+            : ChorusProgram{};
+    }
     // Only creation writes immutable books. There are no caller spans or CPU
     // pointers in the published program, checkpoint, or command stream.
     for (std::size_t index = 0; index < program.section_count; ++index) {
@@ -142,7 +234,8 @@ void reset_effects(Context& context) noexcept {
     // Quiescent reset only. Leave immutable books and program/catalog untouched.
     std::fill_n(context.memory.get() + effects_ring_address / 4u, effects_ring_bytes / 4u, 0u);
     for (std::size_t index = 0; index < effects::max_sections; ++index)
-        std::fill_n(context.memory.get() + effects_history_address(index) / 4u, effects_history_bytes / 4u, 0u);
+        std::fill_n(context.memory.get() + effects_history_address(index) / 4u,
+                    effects_mutable_section_bytes / 4u, 0u);
     std::fill_n(context.memory.get() + effects_staging_address / 4u, effects_staging_bytes / 4u, 0u);
     for (auto& state : context.cpu) state.effects = EffectsState{};
 }

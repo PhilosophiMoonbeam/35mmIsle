@@ -7,13 +7,19 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
+#include <mutex>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <utility>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -99,12 +105,13 @@ void CheckLayout(const IsleSprite& view) {
 }
 } // namespace
 
-struct IntroProbe::Impl {
+namespace {
+struct IntroScene {
     isle::sprite::BankOwner bank;
     isle::sprite::Sprite asset;
     std::array<std::vector<std::uint8_t>, bitmapCount> planes;
     std::array<Gfx, 256> commands{};
-    Gfx* modulation = nullptr;
+    Gfx* textures = nullptr;
     // Last owning member is destroyed first, before borrowed asset/texel owners.
     NativeGame world;
     IsleGameObject* object = nullptr;
@@ -112,7 +119,7 @@ struct IntroProbe::Impl {
     IsleSprite* view = nullptr;
     std::uint32_t ticks = 0;
 
-    explicit Impl(const isle::rom::Snapshot& snapshot) : bank(LoadBank(snapshot)) {
+    explicit IntroScene(const isle::rom::Snapshot& snapshot) : bank(LoadBank(snapshot)) {
         auto hydrated = isle::sprite::hydrate(bank, introBankBase, introSpriteAddress);
         if (!hydrated) {
             throw std::runtime_error("Private intro Sprite hydration failed; no procedural fallback is permitted");
@@ -142,8 +149,8 @@ struct IntroProbe::Impl {
         BuildCommands();
         std::cout << "BOUNDED_INTRO_ASSET_SCOPE: original 128x112 US sprite centered at (96,64); "
                      "8 bitmap views normalized once; native C GObj/SObj; TEXSHUF|TRANSPARENT.\n"
-                     "Fixed-step experiment: initial state presented first, one C update between accepted submissions; "
-                     "60 presentation frames before the selected original 20-update RGB fade (alpha is not faded).\n"
+                     "GTL experiment: dedicated ordinary game-owner thread; rational VI clock, bounded retraces; "
+                     "60 game updates before the selected original 20-update RGB fade (alpha is not faded).\n"
                      "Not full intro entry, scene boot, persistence/save, original intro audio/cue timing, photo fidelity, full Sprite/RDP parity, "
                      "or broad platform evidence.\n";
     }
@@ -166,8 +173,8 @@ struct IntroProbe::Impl {
         gDPSetAlphaCompare(out++, G_AC_NONE);
         gDPSetRenderMode(out++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
         gDPSetCombineMode(out++, G_CC_MODULATERGBA_PRIM, G_CC_MODULATERGBA_PRIM);
-        modulation = out;
-        gDPSetPrimColor(out++, 0, 0, view->red, view->green, view->blue, view->alpha);
+        gSPEndDisplayList(out++);
+        textures = out;
 
         for (std::size_t i = 0; i < bitmapCount; ++i) {
             const auto& bitmap = view->bitmap[i];
@@ -191,44 +198,251 @@ struct IntroProbe::Impl {
         }
         gDPFullSync(out++);
         gSPEndDisplayList(out++);
-        // Fixed layout above emits 195 commands, within the resident 256 slots.
+        // Two immutable lists fit here; each context owns four wrapper commands.
+    }
+
+    void BuildDraw(std::span<Gfx, 4> draw) const {
+        Gfx* out = draw.data();
+        gDma1p(out++, G_DL, commands.data(), 0, G_DL_PUSH);
+        gDPSetPrimColor(out++, 0, 0, view->red, view->green, view->blue, view->alpha);
+        gDma1p(out++, G_DL, textures, 0, G_DL_PUSH);
+        gSPEndDisplayList(out++);
+    }
+    void Advance() {
+        if (world.Get() == nullptr) throw std::runtime_error("Cannot advance a stopped intro world");
+        if (ticks + 1 == holdTicks) {
+            IsleGameProcess* fade = nullptr;
+            world.Require(isle_game_add_intro_fade(world.Get(), object, sprite, fadeTicks, 5, &fade));
+        }
+        world.Require(isle_game_tick(world.Get()));
+        ++ticks;
+        if (ticks == holdTicks || ticks == holdTicks + fadeTicks - 1) {
+            std::cout << "INTRO_C_FADE_STATE: tick=" << ticks
+                      << "; RGB=" << static_cast<unsigned>(view->red) << ','
+                      << static_cast<unsigned>(view->green) << ','
+                      << static_cast<unsigned>(view->blue)
+                      << "; alpha=" << static_cast<unsigned>(view->alpha) << '\n';
+        }
+    }
+    void StopGame() {
+        if (world.Get() != nullptr) {
+            world.Stop();
+            object = nullptr;
+            sprite = nullptr;
+            view = nullptr;
+            std::cout << "INTRO_C_USERS_QUIESCENT: owner destroyed game and joined continuations; "
+                         "arena, bank, pixels and immutable display lists retained for renderer shutdown.\n";
+        }
+    }
+};
+} // namespace
+
+struct IntroProbe::Impl {
+    using Clock = std::chrono::steady_clock;
+    using Error = isle::host::ClockError;
+    std::mutex mutex;
+    std::condition_variable changed;
+    isle::host::GtlClock policy{{}};
+    std::array<std::array<Gfx, 4>, 2> wrappers{};
+    std::array<Frame, 2> queue{};
+    std::array<bool, 2> borrowed{};
+    std::size_t head = 0, count = 0;
+    std::uint32_t ticks = 0;
+    bool ready = false, started = false, game_stopped = false, release_assets = false;
+    std::exception_ptr failure;
+    std::thread owner;
+
+    explicit Impl(const isle::rom::Snapshot& snapshot)
+        : owner([this, &snapshot] { Run(snapshot); }) {
+        std::unique_lock lock(mutex);
+        changed.wait(lock, [this] { return ready; });
+        if (failure) {
+            lock.unlock();
+            owner.join();
+            std::rethrow_exception(failure);
+        }
+    }
+    void StopScene(std::unique_lock<std::mutex>& lock, IntroScene& scene) {
+        if (game_stopped) return;
+        lock.unlock();
+        try { scene.StopGame(); }
+        catch (...) { std::abort(); } // Never free an unquiescent C arena.
+        lock.lock();
+        game_stopped = true;
+        changed.notify_all();
+    }
+    void Run(const isle::rom::Snapshot& snapshot) {
+        std::optional<IntroScene> scene;
+        try { scene.emplace(snapshot); }
+        catch (...) {
+            std::lock_guard lock(mutex);
+            failure = std::current_exception();
+            ready = game_stopped = true;
+            policy.request_stop();
+            (void)policy.poll();
+            changed.notify_all();
+            return;
+        }
+        std::unique_lock lock(mutex);
+        ready = true; // No snapshot reference is used after this admission barrier.
+        changed.notify_all();
+        changed.wait(lock, [this] { return started || policy.stopping(); });
+        const auto origin = Clock::now();
+        // Documented NTSC progressive rational (not the emulator's modal VI
+        // period, physical hardware qualification, or a presentation callback).
+        isle::host::RetraceClock retraces(2250000, 37609);
+        for (;;) {
+            if (policy.stopping()) StopScene(lock, *scene);
+            if (!policy.stopping()) {
+                const auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - origin);
+                const auto due = retraces.advance(static_cast<std::uint64_t>(elapsed.count()));
+                if (due != 0) (void)policy.offer_retraces(due); // Drop newest when full.
+            }
+            const auto action = policy.poll();
+            switch (action.kind) {
+            case isle::host::ActionKind::update:
+                lock.unlock();
+                try { scene->Advance(); }
+                catch (...) {
+                    lock.lock();
+                    failure = std::current_exception();
+                    (void)policy.abandon_update();
+                    changed.notify_all();
+                    break;
+                }
+                lock.lock();
+                ticks = scene->ticks;
+                (void)policy.finish_update();
+                break;
+            case isle::host::ActionKind::draw:
+                lock.unlock();
+                try { scene->BuildDraw(wrappers[action.token.context]); }
+                catch (...) {
+                    lock.lock();
+                    failure = std::current_exception();
+                    (void)policy.abandon_draw(action.token);
+                    changed.notify_all();
+                    break;
+                }
+                lock.lock();
+                if (policy.stopping()) {
+                    (void)policy.abandon_draw(action.token);
+                    break;
+                }
+                if (count == queue.size()) std::abort(); // At most two live context leases.
+                queue[(head + count) % queue.size()] = {action.token, wrappers[action.token.context].data()};
+                ++count;
+                if (policy.accept_draw(action.token) != Error::none) std::abort();
+                changed.notify_all();
+                break;
+            case isle::host::ActionKind::paused:
+                changed.notify_all();
+                break;
+            case isle::host::ActionKind::stopped:
+                StopScene(lock, *scene);
+                changed.notify_all();
+                changed.wait(lock, [this] { return release_assets; });
+                lock.unlock();
+                scene.reset(); // C users and borrowed GPU/cache accesses already ceased.
+                return;
+            case isle::host::ActionKind::wait:
+                if (policy.stopping()) changed.wait(lock);
+                else changed.wait_for(lock, std::chrono::nanoseconds(retraces.nanoseconds_until_next()));
+                break;
+            }
+        }
     }
 };
 
 IntroProbe::IntroProbe(const isle::rom::Snapshot& snapshot) : impl(std::make_unique<Impl>(snapshot)) {}
-IntroProbe::~IntroProbe() = default;
-Gfx* IntroProbe::Commands() noexcept { return impl->commands.data(); }
-std::uint32_t IntroProbe::Ticks() const noexcept { return impl->ticks; }
-
-void IntroProbe::Advance() {
-    if (impl->world.Get() == nullptr) {
-        throw std::runtime_error("Cannot advance a stopped intro world");
-    }
-    if (impl->ticks + 1 == holdTicks) {
-        IsleGameProcess* fade = nullptr;
-        impl->world.Require(isle_game_add_intro_fade(impl->world.Get(), impl->object, impl->sprite,
-                                                    fadeTicks, 5, &fade));
-    }
-    impl->world.Require(isle_game_tick(impl->world.Get()));
-    ++impl->ticks;
-    gDPSetPrimColor(impl->modulation, 0, 0, impl->view->red, impl->view->green,
-                   impl->view->blue, impl->view->alpha);
-    if (impl->ticks == holdTicks || impl->ticks == holdTicks + fadeTicks - 1) {
-        std::cout << "INTRO_C_FADE_STATE: tick=" << impl->ticks
-                  << "; RGB=" << static_cast<unsigned>(impl->view->red) << ','
-                  << static_cast<unsigned>(impl->view->green) << ','
-                  << static_cast<unsigned>(impl->view->blue)
-                  << "; alpha=" << static_cast<unsigned>(impl->view->alpha) << '\n';
-    }
+IntroProbe::~IntroProbe() {
+    try {
+        StopGame();
+        std::unique_lock lock(impl->mutex);
+        for (const auto borrowed : impl->borrowed) if (borrowed) std::abort();
+        impl->changed.wait(lock, [this] { return impl->policy.stopped(); });
+        impl->release_assets = true;
+        impl->changed.notify_all();
+        lock.unlock();
+        impl->owner.join();
+    } catch (...) { std::abort(); }
 }
-
-void IntroProbe::StopGame() {
-    if (impl->world.Get() != nullptr) {
-        impl->world.Stop();
-        impl->object = nullptr;
-        impl->sprite = nullptr;
-        impl->view = nullptr;
-        std::cout << "INTRO_C_USERS_QUIESCENT: game destroyed and continuations joined; "
-                     "arena, canonical bank, normalized pixels and display lists still retained for renderer shutdown.\n";
+void IntroProbe::Start() {
+    std::lock_guard lock(impl->mutex);
+    if (impl->started || impl->policy.stopping()) throw std::logic_error("Intro owner cannot restart");
+    impl->started = true;
+    impl->changed.notify_all();
+}
+bool IntroProbe::TakeFrame(Frame& frame) {
+    std::lock_guard lock(impl->mutex);
+    if (impl->count == 0) return false;
+    frame = impl->queue[impl->head];
+    impl->head = (impl->head + 1) % impl->queue.size();
+    --impl->count;
+    impl->borrowed[frame.token.context] = true;
+    return true;
+}
+isle::host::ClockError IntroProbe::CompleteFrame(isle::host::FrameToken token, isle::host::Terminal terminal) {
+    std::lock_guard lock(impl->mutex);
+    if (token.context >= impl->borrowed.size() || !impl->borrowed[token.context])
+        return Impl::Error::not_ready;
+    const auto result = impl->policy.offer_terminal(token, terminal);
+    if (result == Impl::Error::none) {
+        impl->borrowed[token.context] = false;
+        impl->changed.notify_all();
     }
+    return result;
+}
+void IntroProbe::RequestStop() {
+    std::lock_guard lock(impl->mutex);
+    impl->policy.request_stop();
+    impl->changed.notify_all();
+}
+void IntroProbe::StopGame() {
+    std::unique_lock lock(impl->mutex);
+    impl->policy.request_stop();
+    while (impl->count != 0) {
+        const auto token = impl->queue[impl->head].token;
+        impl->head = (impl->head + 1) % impl->queue.size();
+        --impl->count;
+        if (impl->policy.offer_terminal(token, isle::host::Terminal::cancelled) != Impl::Error::none)
+            std::abort();
+    }
+    impl->changed.notify_all();
+    impl->changed.wait(lock, [this] { return impl->game_stopped; });
+}
+isle::host::ClockError IntroProbe::RequestPause() {
+    std::lock_guard lock(impl->mutex);
+    const auto result = impl->policy.request_pause();
+    impl->changed.notify_all();
+    return result;
+}
+isle::host::ClockError IntroProbe::Resume() {
+    std::lock_guard lock(impl->mutex);
+    const auto result = impl->policy.resume();
+    impl->changed.notify_all();
+    return result;
+}
+bool IntroProbe::Paused() const {
+    std::lock_guard lock(impl->mutex);
+    return impl->policy.paused();
+}
+isle::host::ClockError IntroProbe::SetIntervals(std::uint16_t update, std::uint16_t draw) {
+    std::lock_guard lock(impl->mutex);
+    const auto result = impl->policy.set_intervals(update, draw);
+    impl->changed.notify_all();
+    return result;
+}
+std::uint32_t IntroProbe::Ticks() const {
+    std::lock_guard lock(impl->mutex);
+    return impl->ticks;
+}
+isle::host::ClockStats IntroProbe::Stats() const {
+    std::lock_guard lock(impl->mutex);
+    return impl->policy.stats();
+}
+void IntroProbe::Check() const {
+    std::lock_guard lock(impl->mutex);
+    if (impl->failure) std::rethrow_exception(impl->failure);
+    if (impl->policy.failed()) throw std::runtime_error("Intro GTL task/clock failed");
 }

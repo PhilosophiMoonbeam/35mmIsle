@@ -97,6 +97,9 @@ isle_target_options(isle-native)
 target_compile_options(isle-native PRIVATE
     "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math>")
 
+add_library(isle-host-clock STATIC src/host_clock.cpp src/host_clock.hpp)
+isle_target_options(isle-host-clock)
+
 add_library(isle-rom STATIC src/rom.cpp include/35mmisle/rom.hpp)
 target_include_directories(isle-rom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-rom)
@@ -172,7 +175,7 @@ if(ISLE_BUILD_HOST_PROBE)
     target_compile_definitions(35mmisle-host-probe PRIVATE F3DEX_GBI_2
         CVAR_ENABLE_MULTI_VIEWPORTS="${CVAR_ENABLE_MULTI_VIEWPORTS}"
         ISLE_HOST_RENDERER_RESOURCES="${ISLE_HOST_RENDERER_RESOURCES}")
-    target_link_libraries(35mmisle-host-probe PRIVATE libultraship Threads::Threads)
+    target_link_libraries(35mmisle-host-probe PRIVATE libultraship Threads::Threads isle-host-clock)
     isle_target_options(35mmisle-host-probe)
 endif()
 
@@ -191,6 +194,11 @@ if(BUILD_TESTING)
     target_link_libraries(native-tests PRIVATE isle-native)
     isle_target_options(native-tests)
     add_test(NAME native-tests COMMAND native-tests)
+
+    add_executable(host-clock-tests tests/host_clock_tests.cpp)
+    target_link_libraries(host-clock-tests PRIVATE isle-host-clock)
+    isle_target_options(host-clock-tests)
+    add_test(NAME host-clock-tests COMMAND host-clock-tests)
 
     add_executable(rom-tests tests/rom_tests.cpp)
     target_link_libraries(rom-tests PRIVATE isle-rom)
@@ -281,7 +289,7 @@ if(BUILD_TESTING)
     add_test(NAME audio-service-tests COMMAND audio-service-tests)
 
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-effects-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
+    set_tests_properties(native-tests host-clock-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-effects-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 

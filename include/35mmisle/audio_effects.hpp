@@ -21,12 +21,26 @@ struct PoleFilter {
     std::uint16_t gain = 0;
     std::array<std::int16_t, 16> coefficients{};
 };
+// Creation-owned modulation, in the measured integer rate/depth units. A missing
+// chorus or rate zero retains the static section graph. Depth zero with positive
+// rate still runs the persistent resampler; it is not a static bypass.
+// The ordinary-range recurrence is qualified, not a universal extreme-depth
+// arithmetic claim (tracked separately by bd_35mmIsle-v4u.9.17.9).
+// Creation rejects a possible u16 pitch overflow or rounded aligned LOAD past
+// scratch280..43f into dry440 (worst original160, carry32767, alignment6).
+// Some extreme-depth structural probes are consequently not safe musical
+// configurations. Rate must advance at most one phase period per160 samples
+// at the supplied actual synthesis rate. Neither parameter is silently clamped.
+struct Chorus {
+    std::uint32_t rate = 0, depth = 0;
+};
 struct Section {
     // Backward offsets from the common ring cursor, in samples, on a four-sample
     // grid. Both complete windows are loaded before the ordered section writes.
     std::uint32_t input_samples = 0, output_samples = 0;
     std::int16_t feedback = 0, feedforward = 0, gain = 0;
-    std::optional<PoleFilter> pole;
+    std::optional<PoleFilter> pole = std::nullopt;
+    std::optional<Chorus> chorus = std::nullopt;
 };
 struct Config {
     Routing routing = Routing::direct;

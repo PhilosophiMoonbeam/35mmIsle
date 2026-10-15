@@ -72,8 +72,37 @@
     "parent_actual_RSP_smoke_tasks": 29,
     "original_custom7_profile": "4 physical,6 virtual,2 per CSP; not default22 qualification",
     "Nativevoice_Original_producer_parity": false,
-    "chorus_implemented": false,
+    "chorus_qualification": "Separate candidate; static proof does not qualify chorus",
     "full_effects_BGM_AI_device_Windows11_qualified": false
+  },
+  "native_chorus_candidate": {
+    "implemented": true,
+    "per_section_optional_rate_and_depth": true,
+    "persistent_phase_fractional_carry_tap_drift_RS32": true,
+    "creation_checks_worst_case_DMA_staging_geometry": true,
+    "Linux_GCC_Debug_Release_Clang_ASan_UBSan_tests_each": 21,
+    "historical_numerical_component_task_pairs": 10500,
+    "historical_numerical_own_actual_RSP_executions": 21000,
+    "historical_collection_public_argument_scope_qualified": false,
+    "strict_typed_replacement_complete": false,
+    "typed_replacement_first_run_actual_RSP_tasks": 2600,
+    "typed_replacement_device_qualification": "Rejected denied /dev/udmabuf attempt; remaining seven raw profiles and combined pair unlaunched; no retry",
+    "known_admitted_depth_counterexample": 50000,
+    "ordinary_depth2500_N16_section_arithmetic_resolved": false,
+    "whole_RS32_Original_producer_BGM_AI_Windows11_qualified": false
+  },
+  "native_GTL_clock": {
+    "target": "isle-host-clock",
+    "retrace_capacity": 4,
+    "completion_capacity": 3,
+    "maximum_contexts": 2,
+    "owner_epoch_lifetime_serial_qualified_leases": true,
+    "interval_change_preserves_entered_receive": true,
+    "failed_terminal_immediately_closes_admission": true,
+    "pacing_candidate_Hz_numerator": 2250000,
+    "pacing_candidate_Hz_denominator": 37609,
+    "Linux_GCC_Debug_Release_Clang_ASan_UBSan_tests_each": 21,
+    "physical_timing_full_input_reset_required_feedback_W07_qualified": false
   },
   "native_game_rng": {
     "target": "isle-native",
@@ -167,7 +196,31 @@
     "windows": {"kind": "frozen_vcpkg_source_registry_and_hash_verified_tool_plus_external_Windows_SDK", "manifest": "cmake/windows-host/vcpkg.json", "registry": "cmake/windows-host/vcpkg-configuration.json", "source_and_registry_commit": "4da8ab8ef910293046e651287ff1115d9a4f14b0", "provisioner": "tools/prepare_windows_host.ps1", "tool": {"release": "2026-03-04", "asset_id": 367069288, "bytes": 6591048, "sha256": "13a1c66b9c7578427b3eda7eba2332b73d4fb86706e053ad6426dad2f354cbc3", "verified_before_execution": true, "upstream_release_immutable": false}, "triplets": "x64-windows-static", "additional": ["GLEW (find_package REQUIRED)", "opengl32", "DX11 backend compiled at LUS pin"], "runtime": "MultiThreaded$<$<CONFIG:Debug>:Debug>", "selected_SDL3": "3.4.2#1", "installed_versions": null, "compiler_identity": null, "sdk_identity": null, "upstream_auto_vcpkg": {"selected": false, "reason": "Floating clone/pull/bootstrap excluded; exact owned checkout and verified executable required before project()"}}
   },
   "observed_linux_host": {"build_type": "Debug", "compiler": "GNU 15.2.0", "SDL3": "3.4.2", "libzip": "1.11.4", "nlohmann_json": "3.11.3", "tinyxml2": "11.0.0", "spdlog": "1.15.3", "frames": 240, "presentation": "Xvfb, SDL3 X11/EGL, Mesa llvmpipe OpenGL; SDL_VIDEO_FORCE_EGL=1 and LIBGL_ALWAYS_SOFTWARE=1", "lifetime": "HOST_OWNERS_RELEASED before successful exit", "scope": "Original procedural geometry only; no game/audio/Windows host qualification", "build_local_evidence": "isle-host-dependencies.txt"},
-  "observed_linux_private_intro": {"frames": 120, "fixed_C_updates": 119, "initial_state_presented_before_updates": true, "source": "Exact private US ROM snapshot; VPK0 typed Sprite/Bitmap; selected authoritative C dispatcher/SObj/fade", "visual": "Parent observed centered original sprite, RGB fade and completed black state through real SDL3 EGL software OpenGL", "lifetime": "C users joined; real GPU completion; texture cache and host owners released; then arena/bank/pixels/display lists released", "scope": "Experimental 60-presentation-frame hold and 20-update fade; no full native scene, production clock mapping, audio, photo/depth/coverage parity or Windows qualification", "video_sha256": "0d9e7502c89e2af4e242ebe9a3ea6cf115e80561ba49a81aa800b9d0aadefb85"},
+  "observed_linux_private_intro": {
+    "frames": 120,
+    "independently_clocked_C_updates": 122,
+    "retraces": 130,
+    "dropped_retraces": 3,
+    "graphics_admissions": 121,
+    "graphics_terminals": 121,
+    "C_owner": "Dedicated ordinary creator-owned thread; construct/update/stop/destruction never on renderer thread",
+    "source": "Exact private US ROM snapshot; typed VPK0 Sprite/Bitmap and selected authoritative C dispatcher/fade",
+    "visual": "Parent inspected actual Nintendo64 sprite and completed black RGB fade through SDL3 EGL software OpenGL",
+    "independent_audio_actual_RSP_tasks": 107,
+    "independent_audio_source_frames": 68480,
+    "audio_transport": "SDL dummy; no hearing/physical AI claim",
+    "lifetime": "Every admitted lease resolved; C users joined, actual GL completion and renderer/cache destruction precede assets/thread release",
+    "process_tree_traced": true,
+    "DRM_or_audio_node_opens": 0,
+    "observed_denied_input_node_opens": 13,
+    "observed_denied_udmabuf_opens": 2,
+    "all_process_zero_device_attempts_qualified": false,
+    "surface_png_sha256": {
+      "sprite": "ff5ef3d6201ed96b91647ef942a0d05cf4dfc93ef3eb9529f5a28a03f240ae6d",
+      "post_fade": "724319c36b0ea551aa309b59afed2e46bb1255b254b235f4dcfc77d96f1c6931"
+    },
+    "scope": "Bounded native GTL/intro experiment, not full scene, physical pacing, canonical RAM feedback, original cues, photo fidelity or Windows11 runtime"
+  },
   "disabled_optional_inputs": [
     {"name": "StormLib", "repository": "https://github.com/ladislav-zezula/StormLib.git", "declared_ref_kind": "tag", "declared_ref": "v9.25", "resolved_commit": null, "gate": "INCLUDE_MPQ_SUPPORT=OFF", "patch": "cmake/dependencies/patches/stormlib-optimizations.patch"},
     {"name": "libgfxd", "repository": "https://github.com/glankk/libgfxd.git", "declared_ref_kind": "immutable_git_commit", "declared_ref": "008f73dca8ebc9151b205959b17773a19c5bd0da", "resolved_commit": null, "gate": "GFX_DEBUG_DISASSEMBLER=OFF"},

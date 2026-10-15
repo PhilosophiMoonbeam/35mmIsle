@@ -2,6 +2,7 @@
 #define ISLE_INTRO_PROBE_H
 
 #include <libultraship/libultra/gbi.h>
+#include "host_clock.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -18,9 +19,18 @@ class IntroProbe final {
     IntroProbe(const IntroProbe&) = delete;
     IntroProbe& operator=(const IntroProbe&) = delete;
 
-    Gfx* Commands() noexcept;
-    void Advance();
-    std::uint32_t Ticks() const noexcept;
+    struct Frame { isle::host::FrameToken token{}; Gfx* commands = nullptr; };
+    void Start();
+    bool TakeFrame(Frame&);
+    isle::host::ClockError CompleteFrame(isle::host::FrameToken, isle::host::Terminal);
+    void RequestStop();
+    isle::host::ClockError RequestPause();
+    isle::host::ClockError Resume();
+    bool Paused() const;
+    isle::host::ClockError SetIntervals(std::uint16_t update, std::uint16_t draw);
+    std::uint32_t Ticks() const;
+    isle::host::ClockStats Stats() const;
+    void Check() const;
     void StopGame();
 
   private:

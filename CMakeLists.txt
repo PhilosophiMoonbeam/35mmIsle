@@ -79,6 +79,10 @@ add_library(isle-sprite STATIC src/sprite.cpp include/35mmisle/sprite.hpp includ
 target_include_directories(isle-sprite PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-sprite)
 
+add_library(isle-audio-bank STATIC src/audio_bank.cpp include/35mmisle/audio_bank.hpp)
+target_include_directories(isle-audio-bank PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-audio-bank)
+
 # This remains only the read-only identity CLI; the host probe is a separate opt-in.
 add_executable(35mmisle-rom src/rom_main.cpp)
 target_link_libraries(35mmisle-rom PRIVATE isle-rom)
@@ -147,8 +151,13 @@ if(BUILD_TESTING)
     isle_target_options(sprite-tests)
     add_test(NAME sprite-tests COMMAND sprite-tests)
 
+    add_executable(audio-bank-tests tests/audio_bank_tests.cpp)
+    target_link_libraries(audio-bank-tests PRIVATE isle-audio-bank)
+    isle_target_options(audio-bank-tests)
+    add_test(NAME audio-bank-tests COMMAND audio-bank-tests)
+
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests
+    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 

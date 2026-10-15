@@ -52,7 +52,7 @@ ctest --preset windows-release
 .\build\windows-release\Release\35mmisle-rom.exe check "C:\private\pokemonsnap.z64"
 ```
 
-Debug presets are `linux-debug` and `windows-debug`. The default seven CTest executables exercise independently authored native memory, ROM identity, stackful processes, owned queues, VPK0, compiled-C continuations and typed sprites; checks remain active in Release. Enabling the private game engine adds the eighth executable, exercising the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
+Debug presets are `linux-debug` and `windows-debug`. The default eight CTest executables exercise independently authored native memory, ROM identity, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites and audio-bank graphs; checks remain active in Release. Enabling the private game engine adds the ninth executable, exercising the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
 
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 
@@ -63,6 +63,7 @@ Current implemented surfaces are **not a playable Pokémon Snap executable**:
 - `isle-vpk0` (`35mmisle/vpk0.hpp`): the original allocation-free decoder contract described below.
 - `isle-continuation` (`35mmisle/continuation.h`): a C ABI over genuine stackful processes. Callback-created children rendezvous with the central owner; cross-cancellation joins before user storage can be recycled. The C trampoline fences control transfer: no C++ exception crosses a C frame. Intervening callback frames must not retain owning C++ automatic objects across wait, finish or failure; C resources require explicit object/scene ownership.
 - `isle-sprite` (`35mmisle/sprite.h`, `35mmisle/sprite.hpp`): checked big-endian Sprite/Bitmap graph hydration with immutable bank ownership, canonical RGBA/CI/IA/I texel normalization and odd-row texture shuffle. Positive `actualHeight` determines stored planes; zero uses nominal height. Bare C views borrow their owning `Sprite`; renderer completion must precede owner release. This is not the original RDP DMA footprint or full Sprite renderer.
+- `isle-audio-bank` (`35mmisle/audio_bank.hpp`): immutable, alias-preserving BE B1 bank/instrument/sound/envelope/keymap/wavetable/book/loop decoding, with table-relative sample spans and retained input owners. Signed envelope/detune/coefficient fields and non-frame-aligned loop endpoints remain intact. Relocated input, conflicting records, malformed extents and sample/book/loop bounds reject before asset publication. This is resource hydration, not a sequencer, synthesizer or audio-ready signal.
 - Opt-in `isle-engine` (`35mmisle/engine.h`): native arena-backed GObj/process/SObj services around thirteen exact authoritative C definitions. Actual update ordering, pause-preserved waits, deferred self-deletion and RGB fade run through the C continuation bridge. No full scene, SDK service, audio or game-clock mapping is implied.
 
 Link `isle-process` through CMake to inherit `Threads::Threads`; the header-only queue also requires native thread linkage. Existing process targets retain strict FP options (`/fp:strict` on MSVC; `-fno-fast-math`, `-ffp-contract=off` and `-frounding-math` on GCC/Clang).

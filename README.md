@@ -171,7 +171,18 @@ The exact archive-pinned [parallel-rsp](https://github.com/libretro/parallel-rsp
 
 The original host service implements bounded two-way DMA, IMEM invalidation, SP status/semaphore/interrupt state and RDRAM/XBUS DPC packet delivery outside generated JIT frames. It borrows explicit word-swapped 8-MiB RDRAM and never truncates native pointers. JIT block-entry and packet limits bound execution. Currently admitted tasks are graphics/type 1/flags 4; DMA transport is synchronous, not cycle emulation, audio or yield/resume support. An observed FullSync packet is **not** GPU completion.
 
-Actual GCC Debug/Release and Clang ASan+UBSan runs completed two cold fractional-matrix tasks, two cold graphics→line→graphics tasks and a warm graphics repeat after reload. The original viewport's downward screen Y, partial signed/fractional matrix writes and temporary line-scissor restoration are checked independently. Repeats compare semantic operands, not ignored NOOP/sync scratch words. Full-source sanitization retains one explicit Clang function-cookie exception at the foreign JIT-entry call; generated instructions themselves are uninstrumented. Native MSVC evidence is pending this contribution's CI. This proves coprocessor execution and synthetic packets—not rendered output, original game frames, frontend/hardware parity or W06 completion. See [ADMISSION](docs/development/ADMISSION.md) for findings and exact resource boundaries.
+Actual GCC Debug/Release and Clang ASan+UBSan runs completed two cold fractional-matrix tasks, two cold graphics→line→graphics tasks and a warm graphics repeat after reload. The original viewport's downward screen Y, partial signed/fractional matrix writes and temporary line-scissor restoration are checked independently. Repeats compare semantic operands, not ignored NOOP/sync scratch words. Full-source sanitization retains one explicit Clang function-cookie exception at the foreign JIT-entry call; generated instructions themselves are uninstrumented. The first hosted native MSVC build exposed missing standard-token conformance; `/permissive-` corrects that configuration, with the resulting MSVC run still pending.
+
+Enable both probe options to replay these actual emitted packets through the real canonical renderer:
+
+```sh
+cmake -S . -B build/rsp -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON
+cmake --build build/rsp --target 35mmisle-rsp-probe --parallel 2
+build/rsp/35mmisle-rsp-probe --rom /private/pokemonsnap.z64 \
+  --cpu-device --render-out /private/new-replay-directory
+```
+
+Actual CPU Vulkan completed both after-SP replay cases; all **18,816** guarded color/hidden bytes matched a separately executed private CPU RDP reference. Actual images show distinct interpolated vertex colors and changed fractional/partial geometry. Replay owns separate explicitly initialized RDRAM and waits for real GPU completion before readback. This is not production shared-memory/coherency, independent RSP/frontend, VI, original-game/hardware/photo parity or W06 completion. No full ROM memory is dumped. See [ADMISSION](docs/development/ADMISSION.md) for exact terms, hashes, findings and resource boundaries.
 
 ## License and contributions
 

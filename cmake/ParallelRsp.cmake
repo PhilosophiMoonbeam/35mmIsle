@@ -89,7 +89,7 @@ target_link_libraries(isle-parallel-rsp PUBLIC isle-rsp-lightning PRIVATE ${CMAK
 set_target_properties(isle-parallel-rsp PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 if(MSVC)
     target_compile_definitions(isle-parallel-rsp PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_compile_options(isle-parallel-rsp PRIVATE /wd4267 /wd4244 /wd4309)
+    target_compile_options(isle-parallel-rsp PRIVATE /permissive- /wd4267 /wd4244 /wd4309)
 endif()
 
 add_library(isle-rsp STATIC "${_isle_rsp_project}/src/rsp.cpp")

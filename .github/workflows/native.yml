@@ -193,9 +193,9 @@ jobs:
       - name: Configure exact renderer and shader compiler closure
         run: |
           cmake -S . -B build/linux-rdp -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON
+            -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON
       - name: Build real renderer and original packet workload
-        run: cmake --build build/linux-rdp --target 35mmisle-rdp-probe --parallel 2
+        run: cmake --build build/linux-rdp --target 35mmisle-rdp-probe 35mmisle-rsp-probe --parallel 2
       - name: Execute exact packed-depth, coverage and GPU-copy checks
         run: |
           export XDG_CACHE_HOME="$RUNNER_TEMP/rdp-cache"
@@ -203,6 +203,8 @@ jobs:
             --raw-out "$RUNNER_TEMP/rdp-synthetic-raw"
           # Built-in checks inspect all region/hidden bytes after real timeline
           # completion. No ROM, VI window, native game or hardware-parity claim.
+      - name: Exercise combined coprocessor renderer CLI without a ROM
+        run: build/linux-rdp/35mmisle-rsp-probe --help
 
   windows-rdp:
     name: Windows MSVC x64 / canonical RDP build
@@ -221,21 +223,24 @@ jobs:
       - name: Configure exact renderer and shader compiler closure
         run: |
           cmake -S . -B build/windows-rdp -G "Visual Studio 17 2022" -A x64 `
-            -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON
+            -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON
       - name: Build actual MSVC renderer and shader tool
-        run: cmake --build build/windows-rdp --config Release --target 35mmisle-rdp-probe --parallel 2
+        run: cmake --build build/windows-rdp --config Release --target 35mmisle-rdp-probe 35mmisle-rsp-probe --parallel 2
       - name: Exercise native CLI and fail-closed Unicode output ownership
         shell: pwsh
         run: |
           $exe = "./build/windows-rdp/Release/35mmisle-rdp-probe.exe"
           & $exe --help
           if ($LASTEXITCODE -ne 0) { throw "RDP CLI help failed" }
+          & "./build/windows-rdp/Release/35mmisle-rsp-probe.exe" --help
+          if ($LASTEXITCODE -ne 0) { throw "Combined RSP CLI help failed" }
           $existing = Join-Path $env:RUNNER_TEMP "RDP 路径 spaces"
           New-Item -ItemType Directory -Path $existing -ErrorAction Stop | Out-Null
           try {
-            $report = (& $exe --raw-out $existing 2>&1 | Out-String)
-            if ($LASTEXITCODE -ne 1 -or $report -notmatch "directory already exists") {
-              throw "Native UTF-16 output path was not read and rejected before Vulkan initialization"
+            & $exe --raw-out $existing
+            if ($LASTEXITCODE -ne 1) { throw "RDP CLI accepted owned output or failed unexpectedly" }
+            if (Get-ChildItem -LiteralPath $existing -Force) {
+              throw "Rejected output directory was modified"
             }
           } finally {
             Remove-Item -LiteralPath $existing -Force

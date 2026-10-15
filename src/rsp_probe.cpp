@@ -1,4 +1,7 @@
 #include "rsp_fixture.hpp"
+#ifdef ISLE_HAS_CANONICAL_RDP
+#include "rsp_render.hpp"
+#endif
 
 #include "35mmisle/rom.hpp"
 #include "35mmisle/rsp.hpp"
@@ -27,21 +30,27 @@ constexpr std::string_view rsp_pin = "9ab776a2ce28899769c4f911403234cac62fc799";
 using Argument = wchar_t;
 constexpr std::wstring_view rom_argument = L"--rom";
 constexpr std::wstring_view raw_argument = L"--raw-out";
+constexpr std::wstring_view render_argument = L"--render-out";
+constexpr std::wstring_view cpu_argument = L"--cpu-device";
 constexpr std::wstring_view help_argument = L"--help";
 #else
 using Argument = char;
 constexpr std::string_view rom_argument = "--rom";
 constexpr std::string_view raw_argument = "--raw-out";
+constexpr std::string_view render_argument = "--render-out";
+constexpr std::string_view cpu_argument = "--cpu-device";
 constexpr std::string_view help_argument = "--help";
 #endif
 
 void usage(std::ostream& output) {
     output << "35mmisle-rsp-probe --rom PRIVATE_ROM [--raw-out NEW_DIRECTORY]\n"
+              "  [--render-out NEW_DIRECTORY [--cpu-device]]\n"
               "35mmisle-rsp-probe --help\n"
               "Private exact-US-ROM coprocessor-only synthetic task experiment.\n"
               "Runs fractional/negative-partial matrix geometry and an in-list graphics/line/graphics switch.\n"
-              "No R4300/game CPU, full scene, RDP rendering, VI, or hardware/frontend parity claim.\n"
-              "Raw output contains only validated synthetic emitted RDP packets and fingerprint metadata; no ROM payload.\n";
+              "Optional after-SP RDP replay requires both ISLE_BUILD_RSP_PROBE and ISLE_BUILD_RDP_PROBE.\n"
+              "No R4300/game CPU, full scene, VI, shared production memory or hardware/frontend parity claim.\n"
+              "Outputs contain only validated synthetic packets, replay and metadata; no ROM memory dump.\n";
 }
 
 class SnapshotBuffer final : public std::streambuf {
@@ -220,7 +229,8 @@ int run(int argc, Argument* argv[]) {
         std::cout.flush();
         return std::cout ? 0 : 1;
     }
-    std::filesystem::path rom_path, raw_directory;
+    std::filesystem::path rom_path, raw_directory, render_directory;
+    bool cpu_device = false;
     for (int index = 1; index < argc; ++index) {
         const std::basic_string_view<Argument> argument(argv[index]);
         if (argument == rom_argument && index + 1 < argc && rom_path.empty()) {
@@ -229,6 +239,11 @@ int run(int argc, Argument* argv[]) {
         } else if (argument == raw_argument && index + 1 < argc && raw_directory.empty()) {
             raw_directory = argv[++index];
             if (raw_directory.empty()) throw std::runtime_error("--raw-out requires a nonempty new directory");
+        } else if (argument == render_argument && index + 1 < argc && render_directory.empty()) {
+            render_directory = argv[++index];
+            if (render_directory.empty()) throw std::runtime_error("--render-out requires a nonempty new directory");
+        } else if (argument == cpu_argument && !cpu_device) {
+            cpu_device = true;
         } else {
             usage(std::cerr);
             throw std::runtime_error("unknown, repeated or incomplete private probe argument");
@@ -238,6 +253,12 @@ int run(int argc, Argument* argv[]) {
         usage(std::cerr);
         throw std::runtime_error("--rom is required; no implicit ROM search is performed");
     }
+    if (cpu_device && render_directory.empty())
+        throw std::runtime_error("--cpu-device requires --render-out");
+#ifndef ISLE_HAS_CANONICAL_RDP
+    if (!render_directory.empty())
+        throw std::runtime_error("RDP replay requires both probe build options");
+#endif
     if constexpr (std::endian::native != std::endian::little)
         throw std::runtime_error("the word-swapped RSP backend requires a little-endian host");
     // std::filesystem::path consumes Linux argv bytes or Windows UTF-16 wmain
@@ -284,8 +305,24 @@ int run(int argc, Argument* argv[]) {
         write_words(raw_directory / "in-list-reload-rdp.bin", reload);
         write_metadata(raw_directory, snapshot, fixture, matrix, reload, results);
     }
+    bool rendered = false;
+#ifdef ISLE_HAS_CANONICAL_RDP
+    if (!render_directory.empty()) {
+        if (!std::filesystem::create_directory(render_directory))
+            throw std::runtime_error("--render-out directory already exists; refusing to overwrite");
+        const auto matrix_directory = render_directory / "fractional-matrix";
+        const auto reload_directory = render_directory / "in-list-reload";
+        if (!std::filesystem::create_directory(matrix_directory) ||
+            !std::filesystem::create_directory(reload_directory))
+            throw std::runtime_error("cannot create independent RDP case directories");
+        isle::rsp::probe::render_capture(matrix, matrix_directory, "fractional-matrix", cpu_device);
+        isle::rsp::probe::render_capture(reload, reload_directory, "in-list-reload", cpu_device);
+        rendered = true;
+    }
+#endif
     std::cout << "private_rsp_experiment=passed cold_repeats=2 warm_reload_repeat=1"
-                 " rdp_rendered=no independent_frontend_parity=not_claimed\n";
+              << " rdp_rendered=" << (rendered ? "yes" : "no")
+              << " independent_frontend_parity=not_claimed\n";
     std::cout.flush();
     if (!std::cout) throw std::runtime_error("cannot write private experiment report");
     return 0;

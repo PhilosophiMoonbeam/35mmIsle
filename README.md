@@ -53,7 +53,7 @@ ctest --preset windows-release
 ```
 
 Debug presets are `linux-debug` and `windows-debug`. The default nineteen CTest executables exercise independently authored native memory, ROM identity, GTL clock/context policy, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites, audio resources/readers/players/synthesis/effects and checked save codecs/persistence; checks remain active in Release. The private game engine adds an executable for the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
-The optional RSP composition adds coprocessor and required-work lifetime regressions: twenty-two total with engine and RSP enabled. These tests use original synthetic instruction programs and owned capture objects, not a public microcode dump. The published [Windows run](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38787370975) passed the preceding twenty-one-test composition.
+The optional RSP composition adds coprocessor and required-work lifetime regressions: twenty-two total with engine and RSP enabled. These tests use original synthetic instruction programs and owned capture objects, not a public microcode dump. The [published full Windows MSVC host/RDP run](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38796577921) passed all twenty-two CPU tests and five native CLI helps on Windows Server 2022; this is not Windows 11/device execution.
 
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 

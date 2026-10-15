@@ -560,3 +560,9 @@ Each task executed 27 actual TLUT loads and 27 texture loads. Repeat and restore
 
 The complete model trace contained 38/38 traced/terminal PIDs, zero known DRM/input/audio/udmabuf attempts and zero EACCES/EPERM under the source-qualified software composition. Private proof SHA-256: `9ee54ff8df3884c1fe2a131f2ea87df1466d8ac8cc8ec1cbd5841d95bcb3c4cc`. This is genuine native pose/resource/material/task execution, not independent Original/hardware pixel parity, normal preview lighting, 13-plane/two-draw/depth-copy CPU feedback, complete photo reconstruction, full native game, Windows 11 or release qualification.
 
+## Native support byte identities on Windows
+
+[Run 38818215978](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38818215978) passed seven jobs but rejected all three Windows engine configurations during preparation: `native support identity mismatch: src/engine.c`. The native support files had newly enforced raw-byte hashes without explicit checkout line-ending attributes. No compiler failure or admitted-source mismatch was bypassed.
+
+The four hash-bound native support paths now explicitly use `text eol=lf`, matching the existing manifest/patch policy. A disposable Git checkout with `core.autocrlf=true` preserved all four exact manifest hashes and successfully prepared all twenty-six pinned GAME definitions. The preparer still hashes raw bytes and rejects differences; it does not normalize inputs or accept alternate identities. This proves the exercised checkout/preparation path, not hosted Windows compilation or Windows 11 execution.
+

@@ -1,3 +1,9 @@
 # Dependency manifests and applied patches are byte-hashed build inputs.
 cmake/*.json text eol=lf
 cmake/patches/*.patch text eol=lf
+
+# Native engine support is admitted by exact source-byte identities.
+src/engine.c text eol=lf
+src/engine_math.h text eol=lf
+src/engine_internal.h text eol=lf
+include/35mmisle/engine.h text eol=lf

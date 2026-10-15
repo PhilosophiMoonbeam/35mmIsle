@@ -1,5 +1,44 @@
 cmake_minimum_required(VERSION 3.24)
 
+# Verify the executable and registry checkout before project() can execute a
+# vcpkg toolchain. Standalone builds retain their dependency-free entry path.
+if(CMAKE_HOST_WIN32 AND (ISLE_BUILD_HOST_PROBE OR ISLE_BUILD_AUDIO_PROBE))
+    if("$ENV{ISLE_WINDOWS_VCPKG_ROOT}" STREQUAL "" OR NOT CMAKE_TOOLCHAIN_FILE)
+        message(FATAL_ERROR "Run tools/prepare_windows_host.ps1, then use the windows-host-release preset")
+    endif()
+    file(REAL_PATH "$ENV{ISLE_WINDOWS_VCPKG_ROOT}" _isle_windows_vcpkg)
+    file(REAL_PATH "${CMAKE_TOOLCHAIN_FILE}" _isle_windows_toolchain
+        BASE_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    file(REAL_PATH "${VCPKG_MANIFEST_DIR}" _isle_windows_manifest
+        BASE_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    if(NOT _isle_windows_toolchain STREQUAL "${_isle_windows_vcpkg}/scripts/buildsystems/vcpkg.cmake"
+       OR NOT _isle_windows_manifest STREQUAL "${CMAKE_SOURCE_DIR}/cmake/windows-host"
+       OR NOT VCPKG_TARGET_TRIPLET STREQUAL "x64-windows-static"
+       OR NOT VCPKG_HOST_TRIPLET STREQUAL "x64-windows-static"
+       OR NOT VCPKG_MANIFEST_MODE OR NOT VCPKG_MANIFEST_INSTALL OR USE_AUTO_VCPKG)
+        message(FATAL_ERROR "Windows host/audio builds require the frozen manifest/toolchain and static x64 triplets")
+    endif()
+    foreach(_isle_customization IN ITEMS VCPKG_OVERLAY_PORTS VCPKG_OVERLAY_TRIPLETS
+            VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
+        if(DEFINED ${_isle_customization} AND NOT "${${_isle_customization}}" STREQUAL "")
+            message(FATAL_ERROR "Windows host provisioning excludes ${_isle_customization}")
+        endif()
+    endforeach()
+    if(DEFINED CMAKE_MSVC_RUNTIME_LIBRARY AND NOT CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL
+            "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        message(FATAL_ERROR "Windows host/audio dependencies require the static MSVC runtime")
+    endif()
+    find_program(_isle_pwsh NAMES pwsh REQUIRED)
+    execute_process(COMMAND "${_isle_pwsh}" -NoProfile -NonInteractive -File
+        "${CMAKE_SOURCE_DIR}/tools/prepare_windows_host.ps1" -Root "${_isle_windows_vcpkg}"
+        RESULT_VARIABLE _isle_windows_provisioned)
+    if(NOT _isle_windows_provisioned EQUAL 0)
+        message(FATAL_ERROR "Windows host source/tool verification failed before project discovery")
+    endif()
+    set(ENV{VCPKG_DISABLE_METRICS} 1)
+    set(ENV{VCPKG_BINARY_SOURCES} clear)
+endif()
+
 project(35mmIsle VERSION 0.1.0
     DESCRIPTION "35mmIsle original native services, ROM tooling and opt-in libultraship host probe"
     LANGUAGES C CXX)
@@ -25,6 +64,7 @@ option(ISLE_BUILD_HOST_PROBE "Build the nonplayable real-libultraship procedural
 option(ISLE_BUILD_GAME_ENGINE "Build selected authoritative game C definitions through the native private source adapter" OFF)
 option(ISLE_BUILD_RDP_PROBE "Build the synthetic headless canonical RDP memory/feedback probe" OFF)
 option(ISLE_BUILD_RSP_PROBE "Build bounded coprocessor-only RSP services and the private-ROM matrix probe" OFF)
+option(ISLE_BUILD_AUDIO_PROBE "Build the native one-voice ROM audio probe and checked SDL3 output" OFF)
 if(ISLE_ENABLE_SANITIZERS)
     if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$"
        OR NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$"
@@ -58,6 +98,12 @@ add_library(isle-rom STATIC src/rom.cpp include/35mmisle/rom.hpp)
 target_include_directories(isle-rom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-rom)
 
+if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE OR (ISLE_BUILD_HOST_PROBE AND ISLE_BUILD_GAME_ENGINE))
+    add_library(isle-rom-snapshot STATIC src/rom_snapshot.cpp src/rom_snapshot.hpp)
+    target_link_libraries(isle-rom-snapshot PUBLIC isle-rom)
+    isle_target_options(isle-rom-snapshot)
+endif()
+
 add_library(isle-vpk0 STATIC src/vpk0.cpp include/35mmisle/vpk0.hpp)
 target_include_directories(isle-vpk0 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-vpk0)
@@ -84,6 +130,10 @@ add_library(isle-audio-bank STATIC src/audio_bank.cpp include/35mmisle/audio_ban
 target_include_directories(isle-audio-bank PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-audio-bank)
 
+add_library(isle-audio-sfx STATIC src/audio_sfx.cpp include/35mmisle/audio_sfx.hpp)
+target_link_libraries(isle-audio-sfx PUBLIC isle-audio-bank)
+isle_target_options(isle-audio-sfx)
+
 # This remains only the read-only identity CLI; the host probe is a separate opt-in.
 add_executable(35mmisle-rom src/rom_main.cpp)
 target_link_libraries(35mmisle-rom PRIVATE isle-rom)
@@ -109,7 +159,7 @@ if(ISLE_BUILD_GAME_ENGINE)
     if(ISLE_BUILD_HOST_PROBE)
         target_sources(35mmisle-host-probe PRIVATE src/intro_probe.cpp src/intro_probe.h)
         target_compile_definitions(35mmisle-host-probe PRIVATE ISLE_HAS_GAME_ENGINE=1)
-        target_link_libraries(35mmisle-host-probe PRIVATE isle-engine isle-sprite isle-rom isle-vpk0)
+        target_link_libraries(35mmisle-host-probe PRIVATE isle-engine isle-sprite isle-rom-snapshot isle-vpk0)
     endif()
 endif()
 
@@ -157,8 +207,13 @@ if(BUILD_TESTING)
     isle_target_options(audio-bank-tests)
     add_test(NAME audio-bank-tests COMMAND audio-bank-tests)
 
+    add_executable(audio-sfx-tests tests/audio_sfx_tests.cpp)
+    target_link_libraries(audio-sfx-tests PRIVATE isle-audio-sfx)
+    isle_target_options(audio-sfx-tests)
+    add_test(NAME audio-sfx-tests COMMAND audio-sfx-tests)
+
     # All executables use explicit failure checks, including in Release builds.
-    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests
+    set_tests_properties(native-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sfx-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 
@@ -172,7 +227,7 @@ if(ISLE_BUILD_RDP_PROBE)
     endif()
 endif()
 
-if(ISLE_BUILD_RSP_PROBE)
+if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE)
     include(cmake/ParallelRsp.cmake)
     isle_target_options(isle-rsp)
     if(ISLE_ENABLE_SANITIZERS)
@@ -181,13 +236,15 @@ if(ISLE_BUILD_RSP_PROBE)
                 -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
         endforeach()
     endif()
-    add_executable(35mmisle-rsp-probe src/rsp_probe.cpp src/rsp_fixture.cpp src/rsp_fixture.hpp)
-    target_link_libraries(35mmisle-rsp-probe PRIVATE isle-rsp isle-rom)
-    isle_target_options(35mmisle-rsp-probe)
-    if(ISLE_BUILD_RDP_PROBE)
-        target_sources(35mmisle-rsp-probe PRIVATE src/rsp_render.cpp src/rsp_render.hpp)
-        target_link_libraries(35mmisle-rsp-probe PRIVATE isle_parallel_rdp)
-        target_compile_definitions(35mmisle-rsp-probe PRIVATE ISLE_HAS_CANONICAL_RDP=1)
+    if(ISLE_BUILD_RSP_PROBE)
+        add_executable(35mmisle-rsp-probe src/rsp_probe.cpp src/rsp_fixture.cpp src/rsp_fixture.hpp)
+        target_link_libraries(35mmisle-rsp-probe PRIVATE isle-rsp isle-rom-snapshot)
+        isle_target_options(35mmisle-rsp-probe)
+        if(ISLE_BUILD_RDP_PROBE)
+            target_sources(35mmisle-rsp-probe PRIVATE src/rsp_render.cpp src/rsp_render.hpp)
+            target_link_libraries(35mmisle-rsp-probe PRIVATE isle_parallel_rdp)
+            target_compile_definitions(35mmisle-rsp-probe PRIVATE ISLE_HAS_CANONICAL_RDP=1)
+        endif()
     endif()
     if(BUILD_TESTING)
         add_executable(rsp-tests tests/rsp_tests.cpp)
@@ -195,6 +252,29 @@ if(ISLE_BUILD_RSP_PROBE)
         isle_target_options(rsp-tests)
         add_test(NAME rsp-tests COMMAND rsp-tests)
         set_tests_properties(rsp-tests PROPERTIES LABELS "synthetic;coprocessor" TIMEOUT 60)
+    endif()
+endif()
+
+if(ISLE_BUILD_AUDIO_PROBE)
+    find_package(SDL3 3.4.2 REQUIRED CONFIG COMPONENTS SDL3)
+    add_library(isle-audio-output STATIC src/audio_transport.cpp include/35mmisle/audio_transport.hpp)
+    target_include_directories(isle-audio-output PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    target_link_libraries(isle-audio-output PUBLIC SDL3::SDL3)
+    isle_target_options(isle-audio-output)
+
+    add_library(isle-audio-probe-support STATIC src/audio_probe_fixture.cpp src/audio_probe_fixture.hpp)
+    target_link_libraries(isle-audio-probe-support PUBLIC isle-audio-sfx isle-rom-snapshot isle-rsp)
+    isle_target_options(isle-audio-probe-support)
+    add_executable(35mmisle-audio-probe src/audio_probe.cpp)
+    target_link_libraries(35mmisle-audio-probe PRIVATE isle-audio-probe-support isle-audio-output)
+    isle_target_options(35mmisle-audio-probe)
+    if(MINGW)
+        target_link_options(35mmisle-audio-probe PRIVATE -municode)
+    endif()
+    if(ISLE_BUILD_HOST_PROBE)
+        target_sources(35mmisle-host-probe PRIVATE src/audio_host_probe.cpp src/audio_host_probe.hpp)
+        target_link_libraries(35mmisle-host-probe PRIVATE isle-audio-probe-support isle-audio-output)
+        target_compile_definitions(35mmisle-host-probe PRIVATE ISLE_HAS_AUDIO_PROBE=1)
     endif()
 endif()
 

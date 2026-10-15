@@ -116,9 +116,14 @@ struct Machine::Impl {
     }
 
     bool valid_task(const Task& task, std::span<const std::byte> boot) const noexcept {
-        // Only loadable, non-yield-resume graphics tasks are this experiment's
-        // input. There is no CPU scheduler, yield replay or game emulation.
-        if (task.type != 1 || task.flags != 4 || task.boot_size == 0 ||
+        // Loadable graphics and original ABI audio task fields only. There is
+        // no CPU scheduler, yield replay or game emulation.
+        const bool graphics = task.type == 1 && task.flags == 4;
+        const bool audio = task.type == 2 && task.flags == 0 &&
+            task.stack_address == 0 && task.stack_size == 0 &&
+            task.output_address == 0 && task.output_end == 0 &&
+            task.yield_address == 0 && task.yield_size == 0;
+        if ((!graphics && !audio) || task.boot_size == 0 ||
             task.boot_size != boot.size() || task.boot_size > 4096 ||
             (task.boot_size & 3u) != 0 || task.text_size > 4096 || task.data_size > 4096 ||
             task.output_end < task.output_address || (task.stack_address & 15u) != 0) {

@@ -19,6 +19,12 @@
 #else
 class IntroProbe;
 #endif
+#if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
+#include "rom_snapshot.hpp"
+#endif
+#ifdef ISLE_HAS_AUDIO_PROBE
+#include "audio_host_probe.hpp"
+#endif
 
 #include <array>
 #include <chrono>
@@ -185,9 +191,17 @@ class ProbeHost final {
                   << " probe: real LUS 759b13401cd6903daa67a00a753066f791622e78; backend="
                   << interpreter->GetCurrentRenderingAPI()->GetName()
                   << "; F3DEX_GBI_2 / ucode_f3dex2; pinned renderer shaders; "
-                  << (introMode ? "explicit private-ROM sprite/C-fade scope only, no full scene or audio\n"
-                                : "no game assets, audio or game scheduler\n");
+                  << (introMode ? "explicit private-ROM sprite/C-fade scope only, not a full scene\n"
+                                : "procedural graphics, not a game scheduler\n");
     }
+#ifdef ISLE_HAS_AUDIO_PROBE
+    void EnableAudio(const isle::rom::Snapshot& snapshot) {
+        audio = std::make_unique<AudioHostProbe>(snapshot);
+    }
+    void FinishAudio() {
+        if (audio) audio->Finish();
+    }
+#endif
 
     void Run(std::uint32_t frameLimit, [[maybe_unused]] IntroProbe* intro = nullptr) {
         std::array<Gfx, 32> commands{};
@@ -203,6 +217,9 @@ class ProbeHost final {
             if (std::chrono::steady_clock::now() >= deadline) {
                 throw std::runtime_error("Renderer did not submit the requested frames before the bounded deadline");
             }
+#ifdef ISLE_HAS_AUDIO_PROBE
+            if (audio) audio->Tick();
+#endif
             deck->WriteToPad(pads.data());
 #ifdef ISLE_HAS_GAME_ENGINE
             if (intro != nullptr) {
@@ -269,6 +286,13 @@ class ProbeHost final {
         if (stopped) {
             return;
         }
+        bool audioOk = true;
+#ifdef ISLE_HAS_AUDIO_PROBE
+        if (audio) {
+            audioOk = audio->Abort();
+            audio.reset();
+        }
+#endif
         const std::weak_ptr<Fast::Fast3dWindow> windowWitness = window;
         const std::weak_ptr<ProbeGui> guiWitness = gui;
         const std::weak_ptr<LUS::ControlDeck> deckWitness = deck;
@@ -323,6 +347,7 @@ class ProbeHost final {
             !resourcesWitness.expired() || !poolWitness.expired()) {
             throw std::runtime_error("Host shutdown retained a window, GUI, deck, resource manager or worker-pool owner");
         }
+        if (!audioOk) throw std::runtime_error("Checked audio aborted with an observed endpoint or lease error");
         std::cout << "HOST_OWNERS_RELEASED: window, GUI, deck, resources and worker pool destroyed before process exit.\n"
                   << std::flush;
     }
@@ -352,6 +377,9 @@ class ProbeHost final {
     std::shared_ptr<Fast::Fast3dWindow> window;
     std::shared_ptr<LUS::ControlDeck> deck;
     std::shared_ptr<LUS::UltraBridge> bridge;
+#ifdef ISLE_HAS_AUDIO_PROBE
+    std::unique_ptr<AudioHostProbe> audio;
+#endif
     std::array<OSContPad, MAXCONTROLLERS> pads{};
     std::uint8_t controllerBits = 0;
     bool windowReady = false;
@@ -362,16 +390,30 @@ class ProbeHost final {
 using Argument = wchar_t;
 constexpr std::wstring_view framesArgument = L"--frames";
 constexpr std::wstring_view romArgument = L"--rom";
+constexpr std::wstring_view audioArgument = L"--audio";
+constexpr std::wstring_view helpArgument = L"--help";
 #else
 using Argument = char;
 constexpr std::string_view framesArgument = "--frames";
 constexpr std::string_view romArgument = "--rom";
+constexpr std::string_view audioArgument = "--audio";
+constexpr std::string_view helpArgument = "--help";
 #endif
 
 struct Options {
     std::uint32_t frames = 120;
     std::optional<std::filesystem::path> rom;
+    bool audio = false;
 };
+void Usage(std::ostream& output) {
+    output << "35mmisle-host-probe [--frames 1..3600] [--rom PRIVATE_ROM] [--audio]\n"
+              "--rom: one admitted z64/v64/n64 snapshot for compiled private consumers.\n"
+              "ISLE_BUILD_GAME_ENGINE enables the bounded original intro sprite/C fade.\n"
+              "ISLE_BUILD_AUDIO_PROBE + --audio enables independently queue-paced native SFX14.\n"
+              "--audio requires --rom; no Ship::Audio/legacy-bridge/AI/VI/cue fidelity claim.\n"
+              "Checked SDL stream drain is not physical-device/hearing completion.\n"
+              "Neither mode is full native game boot. No implicit ROM search or Null fallback.\n";
+}
 
 Options ParseOptions(int argc, Argument* argv[]) {
     Options options;
@@ -396,39 +438,77 @@ Options ParseOptions(int argc, Argument* argv[]) {
             options.frames = count;
             haveFrames = true;
         } else if (argument == romArgument && !options.rom && i + 1 < argc) {
-#ifdef ISLE_HAS_GAME_ENGINE
-            // Preserve Windows UTF-16 and native argv bytes elsewhere.
-            options.rom.emplace(argv[++i]);
+#if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
+            const std::basic_string_view<Argument> text(argv[++i]);
+            if (text.empty() || (text.size() >= 2 && text[0] == '-' && text[1] == '-'))
+                throw std::invalid_argument("--rom requires a native path, not another flag");
+            options.rom.emplace(text);
 #else
-            throw std::invalid_argument("--rom requires both ISLE_BUILD_HOST_PROBE and ISLE_BUILD_GAME_ENGINE");
+            throw std::invalid_argument("--rom requires a compiled private intro or audio consumer");
+#endif
+        } else if (argument == audioArgument && !options.audio) {
+#ifdef ISLE_HAS_AUDIO_PROBE
+            options.audio = true;
+#else
+            throw std::invalid_argument("--audio requires ISLE_BUILD_AUDIO_PROBE");
 #endif
         } else {
-            throw std::invalid_argument("Usage: 35mmisle-host-probe [--frames 1..3600] [--rom <private-ROM-path>]");
+            throw std::invalid_argument("Unknown, repeated or incomplete host argument; use --help");
         }
     }
+    if (options.audio && !options.rom) throw std::invalid_argument("--audio requires --rom");
+#if !defined(ISLE_HAS_GAME_ENGINE) && defined(ISLE_HAS_AUDIO_PROBE)
+    if (options.rom && !options.audio) throw std::invalid_argument("This composition requires --audio with --rom");
+#endif
     return options;
 }
 } // namespace
 
 int Run(int argc, Argument* argv[]) {
     try {
+        if (argc == 2 && std::basic_string_view<Argument>(argv[1]) == helpArgument) {
+            Usage(std::cout);
+            std::cout.flush();
+            return std::cout ? 0 : 1;
+        }
         const Options options = ParseOptions(argc, argv);
         SdlLifetime sdl;
+#if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
+        std::optional<isle::rom::Snapshot> snapshot;
+        if (options.rom) snapshot.emplace(isle::rom::read_snapshot(*options.rom));
+#endif
 #ifdef ISLE_HAS_GAME_ENGINE
         // Declared before the host: unwind destroys the renderer before these
         // borrowed CPU owners, even if frame submission or shutdown throws.
         std::unique_ptr<IntroProbe> intro;
         if (options.rom) {
-            intro = std::make_unique<IntroProbe>(*options.rom);
+            intro = std::make_unique<IntroProbe>(*snapshot);
         }
 #endif
         ProbeHost host;
-        host.Init(options.rom.has_value());
+#ifdef ISLE_HAS_GAME_ENGINE
+        host.Init(intro != nullptr);
+#else
+        host.Init(false);
+#endif
+#ifdef ISLE_HAS_AUDIO_PROBE
+        if (options.audio) host.EnableAudio(*snapshot);
+#endif
+#if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
+        if (snapshot) {
+            snapshot.reset();
+            std::cout << "PRIVATE_ROM_SNAPSHOT_RELEASED: one admission/normalization; typed consumers own their resources.\n"
+                      << std::flush;
+        }
+#endif
         try {
 #ifdef ISLE_HAS_GAME_ENGINE
             host.Run(options.frames, intro.get());
 #else
             host.Run(options.frames);
+#endif
+#ifdef ISLE_HAS_AUDIO_PROBE
+            host.FinishAudio();
 #endif
         } catch (...) {
 #ifdef ISLE_HAS_GAME_ENGINE

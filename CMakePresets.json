@@ -70,6 +70,34 @@
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Release"
       }
+    },
+    {
+      "name": "windows-host-release",
+      "displayName": "Windows MSVC x64 static-runtime LUS, audio, RSP and native engine",
+      "inherits": "windows-base",
+      "toolchainFile": "$env{ISLE_WINDOWS_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "environment": {
+        "VCPKG_ROOT": "$env{ISLE_WINDOWS_VCPKG_ROOT}",
+        "VCPKG_DISABLE_METRICS": "1",
+        "VCPKG_BINARY_SOURCES": "clear"
+      },
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Release",
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>",
+        "VCPKG_MANIFEST_DIR": "${sourceDir}/cmake/windows-host",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+        "VCPKG_HOST_TRIPLET": "x64-windows-static",
+        "VCPKG_MANIFEST_MODE": true,
+        "VCPKG_MANIFEST_INSTALL": true,
+        "VCPKG_APPLOCAL_DEPS": false,
+        "USE_AUTO_VCPKG": false,
+        "ISLE_BUILD_HOST_PROBE": true,
+        "ISLE_BUILD_AUDIO_PROBE": true,
+        "ISLE_BUILD_RSP_PROBE": true,
+        "ISLE_BUILD_GAME_ENGINE": true,
+        "ISLE_LUS_SOURCE_DIR": "",
+        "ISLE_SNAP_SOURCE_DIR": ""
+      }
     }
   ],
   "buildPresets": [
@@ -89,6 +117,11 @@
     {
       "name": "windows-release",
       "configurePreset": "windows-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-host-release",
+      "configurePreset": "windows-host-release",
       "configuration": "Release"
     }
   ],
@@ -123,6 +156,12 @@
       "name": "windows-release",
       "inherits": "synthetic-base",
       "configurePreset": "windows-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-host-release",
+      "inherits": "synthetic-base",
+      "configurePreset": "windows-host-release",
       "configuration": "Release"
     }
   ]

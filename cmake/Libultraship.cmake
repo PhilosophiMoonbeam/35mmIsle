@@ -201,4 +201,4 @@ file(WRITE "${CMAKE_BINARY_DIR}/isle-host-dependencies.txt"
     "tinyxml2=${tinyxml2_VERSION}; spdlog=${spdlog_VERSION}; GLEW=${GLEW_VERSION}\n"
     "C=${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}; CXX=${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}\n"
     "System packages, platform SDK and transitive binary content still require separate inventory.\n")
-message(STATUS "Nonplayable LUS renderer: ${_isle_lus_pin}, explicit F3DEX_GBI_2, SDL3/OpenGL; private intro mode requires the separate game-engine option; no audio")
+message(STATUS "Nonplayable LUS renderer: ${_isle_lus_pin}, explicit F3DEX_GBI_2, SDL3/OpenGL; private intro and checked dry-audio modes require their separate options")

@@ -1,0 +1,13 @@
+{
+  "name": "35mmisle-windows-host",
+  "version-string": "0",
+  "supports": "windows & x64 & staticcrt",
+  "dependencies": [
+    { "name": "sdl3", "default-features": false },
+    "glew",
+    "libzip",
+    "nlohmann-json",
+    "tinyxml2",
+    "spdlog"
+  ]
+}

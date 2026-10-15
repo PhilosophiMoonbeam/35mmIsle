@@ -1,7 +1,7 @@
 #include "intro_probe.h"
 
 #include "35mmisle/engine.h"
-#include "35mmisle/rom.hpp"
+#include "rom_snapshot.hpp"
 #include "35mmisle/sprite.hpp"
 #include "35mmisle/vpk0.hpp"
 
@@ -10,11 +10,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#include <fstream>
 #include <iostream>
 #include <span>
 #include <stdexcept>
-#include <streambuf>
 #include <utility>
 #include <vector>
 
@@ -30,64 +28,13 @@ constexpr std::uint16_t fadeTicks = 20;
 constexpr std::size_t bitmapCount = 8;
 constexpr std::size_t tmemBytes = 4096;
 
-class SnapshotBuffer final : public std::streambuf {
-  public:
-    explicit SnapshotBuffer(std::span<const std::uint8_t> bytes) {
-        // basic_streambuf's input API predates const buffers. Only an istream
-        // is exposed; no put area or write operation exists for this snapshot.
-        char* first = const_cast<char*>(reinterpret_cast<const char*>(bytes.data()));
-        setg(first, first, first + bytes.size());
-    }
-};
+isle::sprite::BankOwner LoadBank(const isle::rom::Snapshot& snapshot) {
+    if (snapshot.canonical().size() != isle::rom::us_size)
+        throw std::runtime_error("Private intro requires a live admitted ROM snapshot");
+    std::cout << "INTRO_ROM_IDENTITY: exact US image; size=" << snapshot.identity().size
+              << "; normalized SHA1=" << isle::rom::digest_hex(snapshot.identity()) << '\n';
 
-std::vector<std::uint8_t> ReadSnapshot(const std::filesystem::path& path) {
-    std::ifstream input(path, std::ios::in | std::ios::binary);
-    if (!input.is_open()) {
-        throw std::runtime_error("Cannot open private ROM for a read-only snapshot");
-    }
-    std::vector<std::uint8_t> bytes(static_cast<std::size_t>(isle::rom::us_size));
-    input.read(reinterpret_cast<char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
-    if (input.gcount() != static_cast<std::streamsize>(bytes.size()) || input.bad() || input.fail()) {
-        throw std::runtime_error("Private ROM snapshot is unreadable or shorter than exactly 16 MiB");
-    }
-    char extra = 0;
-    input.read(&extra, 1);
-    if (input.gcount() != 0 || input.bad() || !input.eof()) {
-        throw std::runtime_error("Private ROM snapshot is unreadable or larger than exactly 16 MiB");
-    }
-    return bytes;
-}
-
-isle::sprite::BankOwner LoadBank(const std::filesystem::path& path) {
-    // The sole file read ends here. Identity and decoding see the same immutable
-    // bounded bytes; replacing the path later cannot change the admitted data.
-    const auto snapshot = ReadSnapshot(path);
-    SnapshotBuffer buffer(snapshot);
-    std::istream input(&buffer);
-    const auto identity = isle::rom::validate_us(input);
-    if (!identity) {
-        throw std::runtime_error("Private ROM rejected: exact normalized US identity is required before decoding");
-    }
-    std::cout << "INTRO_ROM_IDENTITY: exact US image; size=" << identity.identity.size
-              << "; normalized SHA1=" << isle::rom::digest_hex(identity.identity) << '\n';
-
-    // ByteOrder is established by isle-rom's content magic and whole-image hash.
-    // Select canonical bytes from this snapshot, not from another file opening.
-    std::size_t byteXor = 0;
-    switch (identity.identity.order) {
-    case isle::rom::ByteOrder::z64: break;
-    case isle::rom::ByteOrder::v64: byteXor = 1; break;
-    case isle::rom::ByteOrder::n64: byteXor = 3; break;
-    }
-    std::array<std::byte, introRomEnd - introRomStart> canonicalStorage;
-    std::span<const std::byte> compressed =
-        std::as_bytes(std::span(snapshot)).subspan(introRomStart, introRomEnd - introRomStart);
-    if (byteXor != 0) {
-        for (std::size_t i = 0; i < canonicalStorage.size(); ++i) {
-            canonicalStorage[i] = static_cast<std::byte>(snapshot[(introRomStart + i) ^ byteXor]);
-        }
-        compressed = canonicalStorage;
-    }
+    const auto compressed = snapshot.canonical().subspan(introRomStart, introRomEnd - introRomStart);
     auto writableBank = std::make_shared<isle::sprite::Bank>(introBankSize);
     const auto decoded = isle::vpk0::decode(compressed, std::as_writable_bytes(std::span(*writableBank)));
     if (!decoded || decoded.bytes_written != introBankSize || decoded.bytes_consumed > compressed.size()) {
@@ -165,7 +112,7 @@ struct IntroProbe::Impl {
     IsleSprite* view = nullptr;
     std::uint32_t ticks = 0;
 
-    explicit Impl(const std::filesystem::path& path) : bank(LoadBank(path)) {
+    explicit Impl(const isle::rom::Snapshot& snapshot) : bank(LoadBank(snapshot)) {
         auto hydrated = isle::sprite::hydrate(bank, introBankBase, introSpriteAddress);
         if (!hydrated) {
             throw std::runtime_error("Private intro Sprite hydration failed; no procedural fallback is permitted");
@@ -197,7 +144,7 @@ struct IntroProbe::Impl {
                      "8 bitmap views normalized once; native C GObj/SObj; TEXSHUF|TRANSPARENT.\n"
                      "Fixed-step experiment: initial state presented first, one C update between accepted submissions; "
                      "60 presentation frames before the selected original 20-update RGB fade (alpha is not faded).\n"
-                     "Not full intro entry, scene boot, persistence/save, audio, photo fidelity, full Sprite/RDP parity, "
+                     "Not full intro entry, scene boot, persistence/save, original intro audio/cue timing, photo fidelity, full Sprite/RDP parity, "
                      "or broad platform evidence.\n";
     }
 
@@ -248,7 +195,7 @@ struct IntroProbe::Impl {
     }
 };
 
-IntroProbe::IntroProbe(const std::filesystem::path& romPath) : impl(std::make_unique<Impl>(romPath)) {}
+IntroProbe::IntroProbe(const isle::rom::Snapshot& snapshot) : impl(std::make_unique<Impl>(snapshot)) {}
 IntroProbe::~IntroProbe() = default;
 Gfx* IntroProbe::Commands() noexcept { return impl->commands.data(); }
 std::uint32_t IntroProbe::Ticks() const noexcept { return impl->ticks; }

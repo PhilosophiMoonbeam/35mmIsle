@@ -52,8 +52,8 @@ ctest --preset windows-release
 .\build\windows-release\Release\35mmisle-rom.exe check "C:\private\pokemonsnap.z64"
 ```
 
-Debug presets are `linux-debug` and `windows-debug`. The default eight CTest executables exercise independently authored native memory, ROM identity, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites and audio-bank graphs; checks remain active in Release. Enabling the private game engine adds the ninth executable, exercising the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
-The optional RSP service adds a separate coprocessor regression executable (ten total with both engine and RSP enabled). These tests execute original synthetic instruction programs, not a public microcode dump.
+Debug presets are `linux-debug` and `windows-debug`. The default nine CTest executables exercise independently authored native memory, ROM identity, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites, audio-bank graphs and staged audio-producer ownership; checks remain active in Release. Enabling the private game engine adds the tenth executable, exercising the actual upstream C dispatcher and fade with synthetic data. Public jobs never receive a ROM or extracted game content.
+The optional RSP service adds a separate coprocessor regression executable (eleven total with engine and RSP enabled). These tests execute original synthetic instruction programs, not a public microcode dump.
 
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 
@@ -65,6 +65,7 @@ Current implemented surfaces are **not a playable Pokémon Snap executable**:
 - `isle-continuation` (`35mmisle/continuation.h`): a C ABI over genuine stackful processes. Callback-created children rendezvous with the central owner; cross-cancellation joins before user storage can be recycled. The C trampoline fences control transfer: no C++ exception crosses a C frame. Intervening callback frames must not retain owning C++ automatic objects across wait, finish or failure; C resources require explicit object/scene ownership.
 - `isle-sprite` (`35mmisle/sprite.h`, `35mmisle/sprite.hpp`): checked big-endian Sprite/Bitmap graph hydration with immutable bank ownership, canonical RGBA/CI/IA/I texel normalization and odd-row texture shuffle. Positive `actualHeight` determines stored planes; zero uses nominal height. Bare C views borrow their owning `Sprite`; renderer completion must precede owner release. This is not the original RDP DMA footprint or full Sprite renderer.
 - `isle-audio-bank` (`35mmisle/audio_bank.hpp`): immutable, alias-preserving BE B1 bank/instrument/sound/envelope/keymap/wavetable/book/loop decoding, with table-relative sample spans and retained input owners. Signed envelope/detune/coefficient fields and non-frame-aligned loop endpoints remain intact. Relocated input, conflicting records, malformed extents and sample/book/loop bounds reject before asset publication. This is resource hydration, not a sequencer, synthesizer or audio-ready signal.
+- `isle-audio-sfx` (`35mmisle/audio_sfx.hpp`): original bounded dry ADPCM command producer with live pitch/pan, stop/release, original numeric/control-clock semantics, stable RDRAM and explicit execution/PCM leases. Original ROM microcode performs decoding/resampling/mixing; no SDK producer body is imported. Current admission is one selected voice, not the original voice pool, sequencers, effects or AI scheduling.
 - Opt-in `isle-engine` (`35mmisle/engine.h`): native arena-backed GObj/process/SObj services around thirteen exact authoritative C definitions. Actual update ordering, pause-preserved waits, deferred self-deletion and RGB fade run through the C continuation bridge. No full scene, SDK service, audio or game-clock mapping is implied.
 
 Link `isle-process` through CMake to inherit `Threads::Threads`; the header-only queue also requires native thread linkage. Existing process targets retain strict FP options (`/fp:strict` on MSVC; `-fno-fast-math`, `-ffp-contract=off` and `-frounding-math` on GCC/Clang).
@@ -90,7 +91,7 @@ Omit `ISLE_SNAP_SOURCE_DIR` to fetch the immutable authoritative commit privatel
 
 ## Opt-in real libultraship host probe (nonplayable)
 
-`35mmisle-host-probe` links real LUS at `759b13401cd6903daa67a00a753066f791622e78`. Its default SDL3/OpenGL mode submits original procedural colored rectangles through the real renderer and tears down host owners before exit. When the private engine is also enabled, an explicit `--rom` mode exercises the actual intro sprite and selected C fade. Neither mode is full scene/game boot, audio or graphics/photo fidelity.
+`35mmisle-host-probe` links real LUS at `759b13401cd6903daa67a00a753066f791622e78`. Its default SDL3/OpenGL mode submits original procedural colored rectangles through the real renderer and tears down host owners before exit. With the private engine enabled, `--rom` exercises the actual intro sprite and selected C fade. With the audio option enabled, `--rom ... --audio` adds actual native dry SFX14/RSP synthesis and checked SDL output. These are independent bounded experiments, not full scene/game boot, original cue synchronization or graphics/photo fidelity.
 
 The Linux development run used SDL3 **3.4.2**, OpenGL **and GLES2 development headers**, plus libzip, nlohmann-json, tinyxml2, spdlog, native threads and X11/EGL/Mesa support. GLES headers are needed by this dependency composition even though the probe selects desktop OpenGL (`USE_OPENGLES=OFF`). Supply these dependencies in a user-controlled prefix and/or through system packages. See the [Linux host CI recipe](.github/workflows/native.yml) for Ubuntu packages and an SDL3 source build pinned to [`683181b47cfabd293e3ea409f838915b8297a4fd`](https://github.com/libsdl-org/SDL/tree/683181b47cfabd293e3ea409f838915b8297a4fd); distro package versions are not a fully locked release composition.
 
@@ -121,6 +122,19 @@ For a visible Linux desktop window, use the same library/EGL/software environmen
 
 The integration owner observed 240 real-renderer frames via Xvfb + Mesa llvmpipe + SDL3 EGL, colored geometry in a later frame and `HOST_OWNERS_RELEASED` before exit. The first captured frame was gray GUI startup; `FIRST_SUCCESSFUL_RENDERER_FRAME` means submission, **not pixel proof**. Default GLX context creation failed on that host; only the explicit EGL path is qualified by that observation. The new CI host job requires bounded submission and owner-release markers; its logs alone do not assert pixels. No Windows host-probe pass or Windows 11 qualification is recorded. Core MSVC synthetic CI is separate from host/game qualification.
 
+### Windows static-runtime host dependencies
+
+The full-host preset uses Visual Studio 2022 x64, static CRT dependencies and a frozen vcpkg source/registry/tool selection. In the **same PowerShell 7 session**:
+
+```powershell
+./tools/prepare_windows_host.ps1
+cmake --preset windows-host-release
+cmake --build --preset windows-host-release --parallel 2
+ctest --preset windows-host-release
+```
+
+The script creates only its own checkout, refuses unowned/dirty/wrong-pin inputs, and verifies the vcpkg executable's size/SHA-256 before execution. CMake repeats verification before `project()` loads the toolchain. No floating bootstrap, overlays, automatic LUS vcpkg or binary cache substitution. The preset enables host, private engine, audio and RSP; public CI needs no ROM. Compiler/CLI evidence and Windows 11/device runtime qualification remain separate; see ADMISSION.
+
 ### Private intro asset and original C fade
 
 Configure the host above with `-DISLE_BUILD_GAME_ENGINE=ON` and optionally `-DISLE_SNAP_SOURCE_DIR=/path/to/read-only/pokemonsnap`. Then run the same explicit EGL/library environment with:
@@ -136,6 +150,25 @@ The integration owner ran this mode through real LUS/SDL3 EGL for 120 frames and
 
 [ADMISSION](docs/development/ADMISSION.md) records original-source boundaries, private source candidates and exercised evidence. [Dependency evidence](cmake/dependencies.json), [Libultraship.cmake](cmake/Libultraship.cmake) and [SnapEngine.cmake](cmake/SnapEngine.cmake) distinguish selected inputs from complete shipped-composition approval. Configured builds write `isle-host-dependencies.txt` and, with the engine enabled, `isle-snap-engine-inputs.json`. CPack still installs/packages **only the ROM checker and its original MIT license**, not host/engine binaries, source bundles or a game.
 
+
+## Native audio producer and checked output
+
+Enable `-DISLE_BUILD_AUDIO_PROBE=ON` in a build with SDL3 3.4.2 or newer. This builds `35mmisle-audio-probe`, the actual RSP consumer and a checked SDL leaf; LUS is optional for the standalone CLI:
+
+```sh
+build/linux-host/35mmisle-audio-probe --rom /private/pokemonsnap.z64 \
+  --tasks 400 --raw-out /private/new-audio-directory \
+  --pitch-at 150 0.5 --pan-at 150 0 --stop-at 360 --replay-at 362
+# Explicit virtual transport verification, not physical playback:
+SDL_AUDIO_DRIVER=dummy build/linux-host/35mmisle-audio-probe \
+  --rom /private/pokemonsnap.z64 --tasks 24 --play
+# Combined real LUS presentation and native audio, with all three options enabled:
+build/linux-host/35mmisle-host-probe --rom /private/pokemonsnap.z64 --audio --frames 120
+```
+
+`--help` lists bounded resource, quota, gain and chronological control options. Initial start precedes task 1; timed controls publish **after** the specified completed task for the next sound-client callback. The explicit quota is experimental, never host queue depth masquerading as guest AI occupancy. Raw output refuses an existing directory, contains private synthesized BE16 PCM/task metadata only, and writes success provenance last. No output directory means no raw files; without `--play`, the audio CLI opens no audio device.
+
+The sink retains completed PCM on `WouldBlock`, copies each accepted block once through SDL, checks actual opening/removal/queue failures, and distinguishes final **stream** drain from DAC/hearing. It is owned directly by the host session, not falsely registered as LUS's legacy void-playback backend. Combined intro/audio preparation shares one immutable admitted ROM snapshot, releases it before presentation and retains typed resources through their consumer fences. Native producer versus original SDK producer matched the complete private reference schedule; exact scope, hashes and exercised transport/visual limits are in ADMISSION. Original multi-voice/BGM/effects/AI integration, hardware sound, full boot and Windows 11 qualification remain open.
 
 ## Canonical RDP memory experiment
 
@@ -171,7 +204,7 @@ The exact archive-pinned [parallel-rsp](https://github.com/libretro/parallel-rsp
 
 The original host service implements bounded two-way DMA, IMEM invalidation, SP status/semaphore/interrupt state and RDRAM/XBUS DPC packet delivery outside generated JIT frames. It borrows explicit word-swapped 8-MiB RDRAM and never truncates native pointers. JIT block-entry and packet limits bound execution. Currently admitted tasks are graphics/type 1/flags 4; DMA transport is synchronous, not cycle emulation, audio or yield/resume support. An observed FullSync packet is **not** GPU completion.
 
-Actual GCC Debug/Release and Clang ASan+UBSan runs completed two cold fractional-matrix tasks, two cold graphics→line→graphics tasks and a warm graphics repeat after reload. The original viewport's downward screen Y, partial signed/fractional matrix writes and temporary line-scissor restoration are checked independently. Repeats compare semantic operands, not ignored NOOP/sync scratch words. Full-source sanitization retains one explicit Clang function-cookie exception at the foreign JIT-entry call; generated instructions themselves are uninstrumented. The first hosted native MSVC build exposed missing standard-token conformance; `/permissive-` corrects that configuration, with the resulting MSVC run still pending.
+Actual GCC Debug/Release and Clang ASan+UBSan runs completed two cold fractional-matrix tasks, two cold graphics→line→graphics tasks and a warm graphics repeat after reload. The original viewport's downward screen Y, partial signed/fractional matrix writes and temporary line-scissor restoration are checked independently. Repeats compare semantic operands, not ignored NOOP/sync scratch words. Full-source sanitization retains one explicit Clang function-cookie exception at the foreign JIT-entry call; generated instructions themselves are uninstrumented. After correcting MSVC standard-token conformance with `/permissive-`, [all nine jobs passed at `3e478d80`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38675299538), including native MSVC x64 Debug/Release ten-test suites and the combined renderer/compiler build. Hosted Windows Server 2022 is not Windows 11 or Windows Vulkan runtime qualification.
 
 Enable both probe options to replay these actual emitted packets through the real canonical renderer:
 

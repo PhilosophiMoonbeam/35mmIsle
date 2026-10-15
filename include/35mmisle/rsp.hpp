@@ -58,9 +58,9 @@ public:
     // ROM snapshot and resource identities are checked by the private consumer.
     // No C++ exception may cross generated JIT frames. Failure invalidates task
     // output; caller must not publish it. No R4300/game CPU instructions execute.
-    // Currently admits graphics tasks (type 1, flags 4) only. DMA is synchronous
-    // transport, not cycle emulation; yield/resume and audio task execution are
-    // not implemented. FullSync counts observed commands, not GPU completion.
+    // Admits graphics (type 1, flags 4) and audio (type 2, flags 0, unused
+    // stack/output/yield fields zero). DMA is synchronous transport, not cycle
+    // emulation or yield/resume. FullSync counts commands, not GPU completion.
     Result execute(const Task& task, std::span<const std::byte> boot, Limits limits = {});
 private:
     struct Impl;

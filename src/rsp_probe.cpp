@@ -3,7 +3,7 @@
 #include "rsp_render.hpp"
 #endif
 
-#include "35mmisle/rom.hpp"
+#include "rom_snapshot.hpp"
 #include "35mmisle/rsp.hpp"
 
 #include <algorithm>
@@ -17,10 +17,8 @@
 #include <iostream>
 #include <span>
 #include <stdexcept>
-#include <streambuf>
 #include <string>
 #include <string_view>
-#include <vector>
 
 namespace {
 namespace probe = isle::rsp_probe;
@@ -51,51 +49,6 @@ void usage(std::ostream& output) {
               "Optional after-SP RDP replay requires both ISLE_BUILD_RSP_PROBE and ISLE_BUILD_RDP_PROBE.\n"
               "No R4300/game CPU, full scene, VI, shared production memory or hardware/frontend parity claim.\n"
               "Outputs contain only validated synthetic packets, replay and metadata; no ROM memory dump.\n";
-}
-
-class SnapshotBuffer final : public std::streambuf {
-public:
-    explicit SnapshotBuffer(std::span<char> bytes) {
-        setg(bytes.data(), bytes.data(), bytes.data() + bytes.size());
-    }
-};
-
-struct Snapshot {
-    std::vector<char> bytes;
-    isle::rom::Identity identity{};
-    std::span<const std::byte> canonical() const noexcept {
-        return std::as_bytes(std::span<const char>(bytes));
-    }
-};
-
-Snapshot read_snapshot(const std::filesystem::path& path) {
-    std::ifstream input(path, std::ios::binary);
-    if (!input.is_open()) throw std::runtime_error("cannot open private ROM for reading");
-    Snapshot snapshot{std::vector<char>(static_cast<std::size_t>(isle::rom::us_size)), {}};
-    input.read(snapshot.bytes.data(), static_cast<std::streamsize>(snapshot.bytes.size()));
-    if (input.gcount() != static_cast<std::streamsize>(snapshot.bytes.size()) || input.bad())
-        throw std::runtime_error("private ROM snapshot is incomplete or unreadable");
-    char extra = 0;
-    if (input.get(extra)) throw std::runtime_error("private ROM exceeds the exact admitted image size");
-    if (!input.eof() || input.bad()) throw std::runtime_error("private ROM snapshot read failed");
-    input.close();
-    // Admission and extraction consume the SAME owned snapshot, never a second
-    // pathname open vulnerable to replacement between fingerprinting and use.
-    SnapshotBuffer buffer(snapshot.bytes);
-    std::istream memory_input(&buffer);
-    const auto admitted = isle::rom::validate_us(memory_input);
-    if (!admitted) throw std::runtime_error("private ROM snapshot failed existing isle-rom exact-US admission");
-    snapshot.identity = admitted.identity;
-    for (std::size_t offset = 0; offset < snapshot.bytes.size(); offset += 4) {
-        if (admitted.identity.order == isle::rom::ByteOrder::v64) {
-            std::swap(snapshot.bytes[offset], snapshot.bytes[offset + 1]);
-            std::swap(snapshot.bytes[offset + 2], snapshot.bytes[offset + 3]);
-        } else if (admitted.identity.order == isle::rom::ByteOrder::n64) {
-            std::swap(snapshot.bytes[offset], snapshot.bytes[offset + 3]);
-            std::swap(snapshot.bytes[offset + 1], snapshot.bytes[offset + 2]);
-        }
-    }
-    return snapshot;
 }
 
 struct SinkContext {
@@ -164,7 +117,7 @@ void write_capture(std::ostream& output, const char* file, const probe::Capture&
     output << "]}";
 }
 
-void write_metadata(const std::filesystem::path& directory, const Snapshot& snapshot,
+void write_metadata(const std::filesystem::path& directory, const isle::rom::Snapshot& snapshot,
                     const probe::Fixture& fixture, const probe::Capture& matrix,
                     const probe::Capture& reload, const std::array<isle::rsp::Result, 5>& results) {
     std::ofstream output(directory / "metadata.json");
@@ -173,7 +126,7 @@ void write_metadata(const std::filesystem::path& directory, const Snapshot& snap
               "  \"scope\":\"private exact-ROM RSP input, original synthetic geometry; no ROM payload, R4300, scene, RDP render or parity claim\",\n"
            << "  \"snap_source_commit\":\"" << snap_pin << "\",\n"
            << "  \"rsp_source_commit\":\"" << rsp_pin << "\",\n"
-           << "  \"rom_normalized_sha1\":\"" << isle::rom::digest_hex(snapshot.identity) << "\",\n"
+           << "  \"rom_normalized_sha1\":\"" << isle::rom::digest_hex(snapshot.identity()) << "\",\n"
               "  \"fingerprint_basis\":\"resource SHA1 constants are consequences of exact full-snapshot admission and pinned ranges; not independent frontend verification\",\n"
               "  \"layout_source\":\"pinned splat.yaml main segment and src/entry/entry.s clear_bss\",\n"
               "  \"task_source\":\"pinned src/sys/gtl.c:297-364; in-list switch interface 426-439\",\n"
@@ -263,9 +216,9 @@ int run(int argc, Argument* argv[]) {
         throw std::runtime_error("the word-swapped RSP backend requires a little-endian host");
     // std::filesystem::path consumes Linux argv bytes or Windows UTF-16 wmain
     // directly. No locale narrowing, path logging, mutation, or second ROM open.
-    const auto snapshot = read_snapshot(rom_path);
-    std::cout << "private_rom_admitted normalized_sha1=" << isle::rom::digest_hex(snapshot.identity)
-              << " size=" << snapshot.identity.size << " scope=coprocessor-only\n";
+    const auto snapshot = isle::rom::read_snapshot(rom_path);
+    std::cout << "private_rom_admitted normalized_sha1=" << isle::rom::digest_hex(snapshot.identity())
+              << " size=" << snapshot.identity().size << " scope=coprocessor-only\n";
     probe::Fixture fixture(snapshot.canonical(), probe::Case::matrix);
     probe::Capture matrix, reload, repeat;
     SinkContext sink;

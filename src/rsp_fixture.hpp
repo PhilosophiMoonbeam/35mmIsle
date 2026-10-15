@@ -2,11 +2,11 @@
 #define ISLE_RSP_FIXTURE_HPP
 
 #include "35mmisle/rsp.hpp"
+#include "rsp_packets.hpp"
 
 #include <cstddef>
 #include <cstdint>
 #include <span>
-#include <vector>
 
 namespace isle::rsp_probe {
 inline constexpr std::size_t rdram_bytes = 8u << 20;
@@ -40,40 +40,25 @@ constexpr std::uint32_t main_address(std::uint32_t rom_address) noexcept {
 enum class Case { matrix, reload };
 const char* name(Case kind) noexcept;
 
-struct Packet {
-    std::size_t offset = 0, count = 0;
-    bool operator==(const Packet&) const = default;
-};
-
-// Storage is allocated before execute; the noexcept JIT callback cannot allocate.
-class Capture {
-public:
-    Capture();
-    void clear() noexcept;
-    static bool sink(void* context, std::span<const std::uint32_t> packet) noexcept;
-    std::span<const std::uint32_t> words() const noexcept;
-    std::span<const Packet> packets() const noexcept;
-    bool rejected() const noexcept { return rejected_; }
-private:
-    std::vector<std::uint32_t> words_;
-    std::vector<Packet> packets_;
-    std::size_t word_count_ = 0, packet_count_ = 0;
-    bool rejected_ = false;
-};
+// Cold-session admission only: initialize the caller's complete 8-MiB mapping,
+// reconstruct the real main/BSS image, and load the real separately mapped boot.
+void initialize_fixture_memory(std::span<std::uint32_t> memory,
+                               std::span<const std::byte> canonical_rom);
 
 struct Fixture {
-    explicit Fixture(std::span<const std::byte> canonical_rom, Case kind);
-    void load(std::span<const std::byte> canonical_rom, Case kind);
-    std::vector<std::uint32_t> rdram;
+    // Prepare only declared per-task workspaces. Main, boot and color/hidden
+    // persistence belong to the cold session; this never reloads or clears them.
+    Fixture(std::span<std::uint32_t> memory, Case kind);
+    std::span<std::uint32_t> rdram;
     rsp::Task task{};
 };
 
 struct Geometry {
     std::size_t triangles = 0, line_triangles = 0, markers = 0;
 };
-Geometry validate(const Fixture& fixture, Case kind, const Capture& capture,
+Geometry validate(const Fixture& fixture, Case kind, const rsp::PacketBuffer& packets,
                   const rsp::Result& result);
-void require_repeat(const Capture& first, const rsp::Result& first_result,
-                    const Capture& second, const rsp::Result& second_result);
+void require_repeat(const rsp::PacketBuffer& first, const rsp::Result& first_result,
+                    const rsp::PacketBuffer& second, const rsp::Result& second_result);
 } // namespace isle::rsp_probe
 #endif

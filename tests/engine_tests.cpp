@@ -468,6 +468,247 @@ void camera_exhaustion_and_reuse() {
         require(counts(world).cameras == 0 && counts(world).matrices == 0, "reused camera cleanup leaked nodes");
     }
 }
+
+IsleGameModelTransform identity_model_transform() {
+    return {{0, 0, 0}, {0, 0, 0}, {1, 1, 1}};
+}
+
+std::int32_t fixed_lane(const IsleGameFixedMatrix& m, std::size_t row, std::size_t col) {
+    const auto pair = row * 2 + col / 2;
+    const auto shift = col % 2 == 0 ? 16u : 0u;
+    const auto bits = (((m.m[pair / 4][pair % 4] >> shift) & 0xffffu) << 16) |
+        ((m.m[2 + pair / 4][pair % 4] >> shift) & 0xffffu);
+    std::int32_t value;
+    std::memcpy(&value, &bits, sizeof(value));
+    return value;
+}
+
+void model_hierarchy_math_and_cache() {
+    World world;
+    auto* owner = object(world, 1);
+    std::array<IsleGameModelNodeInit, 5> initial{};
+    for (auto& node : initial) node.transform = identity_model_transform();
+    initial[0].parent = UINT32_MAX;
+    initial[1].parent = 0; initial[2].parent = 1;
+    initial[3].parent = 0; initial[4].parent = 3;
+    initial[2].transform.scale = {0.999999f, -0.2f, 1.25f};
+    initial[2].transform.position = {1.5f, -2.25f, 3.125f};
+    IsleGameModel* model = nullptr;
+    ok(isle_game_attach_model(world.game, owner, initial.data(), initial.size(), &model));
+    auto* cam_owner = object(world, 2);
+    camera(world, cam_owner);
+    const auto live = counts(world);
+    require(live.models == 1 && live.model_nodes == 5 && live.matrices == 7,
+            "model and camera matrix ownership was omitted or double counted");
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t count = 0;
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    require(count == 5 && nodes[0].parent == UINT32_MAX && nodes[0].first_child == 1 &&
+        nodes[1].next_sibling == 3 && nodes[1].first_child == 2 && nodes[3].first_child == 4 &&
+        nodes[2].next_sibling == UINT32_MAX && nodes[4].first_child == UINT32_MAX,
+        "parent-before-child hierarchy lost root, children or sibling order");
+    require(fixed_lane(nodes[2].fixed, 0, 0) == 65280 &&
+        fixed_lane(nodes[2].fixed, 1, 1) == -13056 &&
+        fixed_lane(nodes[2].fixed, 2, 2) == 81920 &&
+        fixed_lane(nodes[2].fixed, 3, 0) == 98304 &&
+        fixed_lane(nodes[2].fixed, 3, 1) == -147456 &&
+        fixed_lane(nodes[2].fixed, 3, 2) == 204800,
+        "kind28 rounded scale to one or used float-to-fixed TRS instead of integer scales");
+    const auto used = world.arena.cursor;
+    const auto original = nodes[2].fixed;
+    for (std::size_t i = 0; i < count; ++i) {
+        ok(isle_game_model_set_transform(world.game, model, i, &initial[i].transform));
+        ok(isle_game_model_set_flags(world.game, model, i, 3));
+    }
+    const IsleGameModelNode* again = nullptr;
+    ok(isle_game_model_nodes(world.game, model, &again, &count));
+    require(again == nodes && world.arena.cursor == used && nodes[2].revision == 1 &&
+        std::memcmp(&nodes[2].fixed, &original, sizeof(original)) == 0,
+        "unchanged transforms or flags allocated/recomputed/moved model storage");
+    auto root = initial[0].transform;
+    root.position.x = 9;
+    ok(isle_game_model_set_transform(world.game, model, 0, &root));
+    ok(isle_game_model_nodes(world.game, model, &again, &count));
+    require(nodes[0].revision == 2 && nodes[1].revision == 1 && nodes[2].revision == 1,
+        "root update recomputed child local matrices");
+    auto turn = identity_model_transform();
+    turn.rotation.y = 1.57079637f;
+    turn.scale.x = 0.999999f;
+    ok(isle_game_model_set_transform(world.game, model, 1, &turn));
+    ok(isle_game_model_nodes(world.game, model, &again, &count));
+    require(fixed_lane(nodes[1].fixed, 0, 2) == -65280 &&
+        fixed_lane(nodes[1].fixed, 2, 0) == 65536 &&
+        fixed_lane(nodes[1].fixed, 0, 0) == 0,
+        "GAME table-angle quantization or signed scale arithmetic differs");
+    turn = identity_model_transform();
+    // ROM-observed binary32 MUL.S gives table index 14 here; evaluating the
+    // unsuffixed mathematical PI ratio in double incorrectly gives index 15.
+    turn.rotation.y = 0x1.78fdbap-6f;
+    ok(isle_game_model_set_transform(world.game, model, 1, &turn));
+    ok(isle_game_model_nodes(world.game, model, &again, &count));
+    require(fixed_lane(nodes[1].fixed, 0, 2) == -1406 &&
+        fixed_lane(nodes[1].fixed, 2, 0) == 1406,
+        "kind28 angle quantization did not retain actual GAME binary32 multiplication");
+    turn = identity_model_transform();
+    turn.scale.x = 128; // GAME MULTU/MFLO + SRA retains the low product word.
+    ok(isle_game_model_set_transform(world.game, model, 1, &turn));
+    ok(isle_game_model_nodes(world.game, model, &again, &count));
+    require(fixed_lane(nodes[1].fixed, 0, 0) == -8388608,
+        "kind28 lost defined MIPS low-word multiplication semantics");
+    require(world.arena.cursor == used, "model mutations allocated");
+}
+
+void model_photo_bake() {
+    auto root = identity_model_transform();
+    root.position = {10, 20, 30};
+    root.rotation = {0.25f, 0.5f, -0.75f};
+    root.scale = {0.999999f, 2, -3};
+    const IsleGameVec3 world{100, 200, 300};
+    IsleGameModelTransform baked{}, repeated{};
+    ok(isle_game_model_bake_photo_transform(&root, &world, 1.57079637f, 2, &baked));
+    close_to(baked.position.x, 106);
+    close_to(baked.position.y, 204);
+    close_to(baked.position.z, 298);
+    close_to(baked.rotation.x, root.rotation.x);
+    close_to(baked.rotation.y, root.rotation.y + 1.57079637f);
+    close_to(baked.rotation.z, root.rotation.z);
+    require(baked.scale.x == root.scale.x * 0.2f && baked.scale.y == 0.4f &&
+        baked.scale.z == -0.6f, "photo Pidgey scale did not use 2*0.1 binary32 order");
+    ok(isle_game_model_bake_photo_transform(&root, &world, 1.57079637f, 2, &repeated));
+    require(std::memcmp(&baked, &repeated, sizeof(baked)) == 0,
+        "repeated unbaked photo input accumulated the world transform");
+    auto aliased = root;
+    ok(isle_game_model_bake_photo_transform(&aliased, &world, 1.57079637f, 2, &aliased));
+    require(std::memcmp(&baked, &aliased, sizeof(baked)) == 0, "photo output/root alias changed the result");
+    auto invalid = root;
+    invalid.scale.x = std::numeric_limits<float>::infinity();
+    require(isle_game_model_bake_photo_transform(&invalid, &world, 0, 2, &repeated) ==
+        ISLE_GAME_INVALID_ARGUMENT && repeated.scale.x == 0 && repeated.position.x == 0,
+        "invalid photo root leaked output");
+}
+
+void model_rejection_atomicity_and_reuse() {
+    World world(8192);
+    auto* owner = object(world, 1);
+    auto* other = object(world, 2);
+    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform()};
+    IsleGameModel* model = nullptr;
+    const auto before = world.arena.cursor;
+    auto invalid = initial;
+    invalid.parent = 0;
+    require(isle_game_attach_model(world.game, owner, &invalid, 1, &model) ==
+        ISLE_GAME_INVALID_ARGUMENT && !model && world.arena.cursor == before,
+        "invalid root attachment changed arena or published a partial model");
+    std::array<IsleGameModelNodeInit, 2> bad_tree{initial, initial};
+    require(isle_game_attach_model(world.game, owner, bad_tree.data(), bad_tree.size(), &model) ==
+        ISLE_GAME_INVALID_ARGUMENT && !model && world.arena.cursor == before,
+        "multiple roots accepted");
+    bad_tree[1].parent = 2;
+    require(isle_game_attach_model(world.game, owner, bad_tree.data(), bad_tree.size(), &model) ==
+        ISLE_GAME_INVALID_ARGUMENT && !model, "forward/cyclic parent accepted");
+    ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+    IsleGameCamera* rejected_camera = nullptr;
+    require(isle_game_attach_camera(world.game, owner, &rejected_camera) == ISLE_GAME_INVALID_STATE &&
+        !rejected_camera, "camera overwrote model payload");
+    IsleGameSprite* rejected_sprite = nullptr;
+    require(isle_game_add_sprite(world.game, owner, nullptr, &rejected_sprite) == ISLE_GAME_INVALID_ARGUMENT &&
+        !rejected_sprite, "sprite interpreted native model as sprite list");
+    IsleGameModel* rejected = model;
+    require(isle_game_attach_model(world.game, owner, &initial, 1, &rejected) ==
+        ISLE_GAME_INVALID_STATE && !rejected, "second model overwrote object");
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t extent = 0;
+    ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+    const auto original = nodes[0].fixed;
+    for (auto value : {std::numeric_limits<float>::quiet_NaN(),
+                       std::numeric_limits<float>::infinity(), 32768.0f}) {
+        auto t = initial.transform;
+        t.position.x = value;
+        require(isle_game_model_set_transform(world.game, model, 0, &t) == ISLE_GAME_INVALID_ARGUMENT,
+            "nonfinite or unrepresentable position reached fixed cast");
+    }
+    auto t = initial.transform;
+    t.rotation.y = std::numeric_limits<float>::max();
+    require(isle_game_model_set_transform(world.game, model, 0, &t) == ISLE_GAME_INVALID_ARGUMENT,
+        "angle product outside signed word reached cast");
+    t = initial.transform; t.scale.z = 8388608.0f;
+    require(isle_game_model_set_transform(world.game, model, 0, &t) == ISLE_GAME_INVALID_ARGUMENT,
+        "scale product outside signed word reached cast");
+    t = initial.transform; t.position.x = -32768;
+    ok(isle_game_model_set_transform(world.game, model, 0, &t));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+    require(fixed_lane(nodes[0].fixed, 3, 0) == INT32_MIN, "legal negative fixed boundary rejected");
+    ok(isle_game_model_set_transform(world.game, model, 0, &initial.transform));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+    require(std::memcmp(&nodes[0].fixed, &original, sizeof(original)) == 0,
+        "restoring original model input did not restore fixed bytes");
+    bool wrong_owner = false;
+    std::thread foreign([&] {
+        const IsleGameModelNode* output = nodes;
+        std::size_t count = 7;
+        IsleGameModel* attached = model;
+        wrong_owner = isle_game_model_nodes(world.game, model, &output, &count) == ISLE_GAME_WRONG_OWNER &&
+            !output && count == 0 &&
+            isle_game_attach_model(world.game, other, &initial, 1, &attached) == ISLE_GAME_WRONG_OWNER &&
+            !attached && isle_game_remove_model(world.game, model) == ISLE_GAME_WRONG_OWNER &&
+            isle_game_model_set_flags(world.game, model, 0, 1) == ISLE_GAME_WRONG_OWNER &&
+            isle_game_model_set_transform(world.game, model, 0, &initial.transform) == ISLE_GAME_WRONG_OWNER;
+    });
+    foreign.join();
+    require(wrong_owner, "native model admitted foreign creator-domain access");
+    std::vector<IsleGameObject*> fillers;
+    for (;;) {
+        IsleGameObject* extra = nullptr;
+        auto result = isle_game_add_object(world.game, 3, 0, 0, nullptr, nullptr, &extra);
+        if (result == ISLE_GAME_EXHAUSTED) break;
+        ok(result); fillers.push_back(extra);
+    }
+    const auto exhausted = world.arena.cursor;
+    rejected = model;
+    require(isle_game_attach_model(world.game, other, &initial, 1, &rejected) == ISLE_GAME_EXHAUSTED &&
+        !rejected && counts(world).models == 1 && counts(world).model_nodes == 1 &&
+        world.arena.cursor == exhausted, "exhausted attachment published state or consumed arena");
+    ok(isle_game_remove_model(world.game, model));
+    nodes = reinterpret_cast<const IsleGameModelNode*>(std::uintptr_t{1}); extent = 9;
+    require(isle_game_model_nodes(world.game, model, &nodes, &extent) == ISLE_GAME_INVALID_ARGUMENT &&
+        !nodes && extent == 0, "removed model remained borrowable");
+    IsleGameModel* reused = nullptr;
+    ok(isle_game_attach_model(world.game, other, &initial, 1, &reused));
+    require(reused == model && world.arena.cursor == exhausted, "released model block was not reused");
+    ok(isle_game_model_nodes(world.game, reused, &nodes, &extent));
+    require(nodes[0].revision == 1 && nodes[0].flags == 0, "reused model inherited cache/flags");
+    ok(isle_game_delete_object(world.game, other));
+    require(counts(world).models == 0 && counts(world).model_nodes == 0 && counts(world).matrices == 0,
+        "typed object deletion leaked model ownership");
+}
+
+void model_deferred_delete_and_destroy() {
+    for (int mode : {0, 1, 2}) {
+        World world;
+        EngineFixture fixture{}; fixture.game = world.game; fixture.mode = mode;
+        auto* owner = object(world, 1, 0, 0, mode == 2 ? engine_delete_self : nullptr,
+                             mode == 2 ? &fixture : nullptr);
+        IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform()};
+        IsleGameModel* model = nullptr;
+        ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+        if (mode != 2) process(world, owner, engine_delete_self, &fixture,
+                              mode == 0 ? ISLE_GAME_STACKFUL : ISLE_GAME_SYNCHRONOUS, 5);
+        ok(isle_game_tick(world.game));
+        auto live = counts(world);
+        require(live.objects == 0 && live.processes == 0 && live.models == 0 &&
+            live.model_nodes == 0 && live.matrices == 0 && fixture.retired_continued == 0,
+            "deferred self-deletion failed to retire native type1 model");
+    }
+    World world;
+    auto* owner = object(world, 1);
+    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform()};
+    IsleGameModel* model = nullptr;
+    ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+    world.reset();
+    auto live = counts(world);
+    require(live.objects == 0 && live.models == 0 && live.model_nodes == 0 && live.matrices == 0,
+        "destroy/cold reset retained native type1 payload");
+}
 } // namespace
 
 int main() {
@@ -482,6 +723,10 @@ int main() {
         camera_geometry_and_cache();
         camera_rejection_and_typed_cleanup();
         camera_exhaustion_and_reuse();
+        model_hierarchy_math_and_cache();
+        model_photo_bake();
+        model_rejection_atomicity_and_reuse();
+        model_deferred_delete_and_destroy();
     } catch (const std::exception& error) {
         std::cerr << "native C engine checks failed: " << error.what() << '\n';
         return 1;

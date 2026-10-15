@@ -15,10 +15,12 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace {
 namespace probe = isle::rsp_probe;
@@ -46,16 +48,16 @@ void usage(std::ostream& output) {
               "35mmisle-rsp-probe --help\n"
               "Private exact-US-ROM coprocessor-only synthetic task experiment.\n"
               "Runs fractional/negative-partial matrix geometry and an in-list graphics/line/graphics switch.\n"
-              "Optional after-SP RDP replay requires both ISLE_BUILD_RSP_PROBE and ISLE_BUILD_RDP_PROBE.\n"
-              "No R4300/game CPU, full scene, VI, shared production memory or hardware/frontend parity claim.\n"
-              "Outputs contain only validated synthetic packets, replay and metadata; no ROM memory dump.\n";
+              "Optional canonical execution requires both ISLE_BUILD_RSP_PROBE and ISLE_BUILD_RDP_PROBE.\n"
+              "No R4300/game CPU, full scene, VI, hardware/frontend parity or GAME scene qualification claim.\n"
+              "Outputs contain only authored target snapshots, validated synthetic packets and metadata; no ROM dump.\n";
 }
 
 struct SinkContext {
-    probe::Capture* capture = nullptr;
+    isle::rsp::PacketBuffer* capture = nullptr;
     static bool submit(void* context, std::span<const std::uint32_t> words) noexcept {
         const auto& sink = *static_cast<SinkContext*>(context);
-        return sink.capture && probe::Capture::sink(sink.capture, words);
+        return sink.capture && isle::rsp::PacketBuffer::sink(sink.capture, words);
     }
 };
 
@@ -81,7 +83,7 @@ void report(const char* label, const isle::rsp::Result& result) {
               << " packet_words=" << result.packet_words << " full_syncs=" << result.full_syncs << '\n';
 }
 
-void write_words(const std::filesystem::path& path, const probe::Capture& capture) {
+void write_words(const std::filesystem::path& path, const isle::rsp::PacketBuffer& capture) {
     std::ofstream output(path, std::ios::binary);
     output.exceptions(std::ios::badbit | std::ios::failbit);
     std::array<char, 4096> buffer{};
@@ -107,7 +109,7 @@ void write_task(std::ostream& output, const isle::rsp::Task& task) {
            << ',' << task.commands_address << ',' << task.commands_size << ',' << task.yield_address << ',' << task.yield_size << ']';
 }
 
-void write_capture(std::ostream& output, const char* file, const probe::Capture& capture) {
+void write_capture(std::ostream& output, const char* file, const isle::rsp::PacketBuffer& capture) {
     output << "{\"file\":\"" << file << "\",\"word_count\":" << capture.words().size() << ",\"packets\":[";
     for (std::size_t index = 0; index < capture.packets().size(); ++index) {
         const auto& packet = capture.packets()[index];
@@ -118,8 +120,8 @@ void write_capture(std::ostream& output, const char* file, const probe::Capture&
 }
 
 void write_metadata(const std::filesystem::path& directory, const isle::rom::Snapshot& snapshot,
-                    const probe::Fixture& fixture, const probe::Capture& matrix,
-                    const probe::Capture& reload, const std::array<isle::rsp::Result, 5>& results) {
+                    const probe::Fixture& fixture, const isle::rsp::PacketBuffer& matrix,
+                    const isle::rsp::PacketBuffer& reload, const std::array<isle::rsp::Result, 5>& results) {
     std::ofstream output(directory / "metadata.json");
     output.exceptions(std::ios::badbit | std::ios::failbit);
     output << "{\n  \"schema_version\":1,\n"
@@ -156,8 +158,8 @@ void write_metadata(const std::filesystem::path& directory, const isle::rom::Sna
     output << ",\n  \"width\":" << probe::width << ",\"height\":" << probe::height
            << ",\"color_address\":" << probe::color_address << ",\n"
            << "  \"limits\":{\"jit_block_entries\":1000000,\"packet_words\":" << probe::capture_words << "},\n"
-              "  \"stimulus\":\"nonidentity fractional projection/modelview; SPECIAL_1 recalc; combined XX/XY integer=-1,-1 and fraction=.75,.875; distinct shaded vertex colors; no texture/light/Z/cull; baseline versus partial geometry and graphics-line-graphics reload\",\n"
-              "  \"repeat_checks\":\"two cold runs per case and warm graphics repeat after switched task; compare packet boundaries, semantic operands and DMA/status counters; ignored NOOP/sync operands excluded\",\n"
+              "  \"stimulus\":\"one authored opaque-black full-target RGBA5551 fill before all draw phases; nonidentity fractional projection/modelview; SPECIAL_1 recalc; combined XX/XY integer=-1,-1 and fraction=.75,.875; distinct shaded vertex colors; no texture/light/Z/cull; baseline versus partial geometry and graphics-line-graphics reload\",\n"
+              "  \"repeat_checks\":\"two cold coprocessor runs per case and warm graphics repeat after switched task in one separately allocated persistent RSP-only RAM session; only explicit per-task workspace is prepared; compare packet boundaries, semantic operands and DMA/status counters; ignored NOOP/sync operands excluded\",\n"
               "  \"captures\":{\"fractional_matrix\":";
     write_capture(output, "fractional-matrix-rdp.bin", matrix);
     output << ",\"in_list_graphics_line_graphics\":";
@@ -175,6 +177,106 @@ void write_metadata(const std::filesystem::path& directory, const isle::rom::Sna
     output << "]\n}\n";
     output.close();
 }
+
+#ifdef ISLE_HAS_CANONICAL_RDP
+void write_binary(const std::filesystem::path& path, std::span<const std::byte> bytes) {
+    std::ofstream output(path, std::ios::binary);
+    output.exceptions(std::ios::badbit | std::ios::failbit);
+    output.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+    output.close();
+}
+
+// Diagnostic exports deliberately live in the CLI, not in the general backend.
+// Only this authored color target, its guards/coverage, and original packet
+// words may leave the real result lease. Never export main, boot, or whole RAM.
+void write_rendered_fixture(const std::filesystem::path& directory,
+                            const isle::rsp::CanonicalExecutor::MemoryLease& completed,
+                            const char* label) {
+    constexpr std::size_t color_bytes = probe::width * probe::height * 2;
+    constexpr std::size_t guard_bytes = 64;
+    constexpr std::size_t snapshot_begin = probe::color_address - guard_bytes;
+    constexpr std::size_t snapshot_end = probe::color_address + color_bytes + guard_bytes;
+    const auto memory = completed.rdram();
+    const auto hidden = completed.hidden();
+    if (!std::filesystem::is_directory(directory) || !std::filesystem::is_empty(directory) ||
+        memory.size() != probe::rdram_bytes || hidden.size() != probe::rdram_bytes / 2)
+        throw std::runtime_error("canonical fixture export requires an empty directory and actual completed mappings");
+    for (std::size_t offset = 0; offset < guard_bytes; ++offset) {
+        if (memory[snapshot_begin + offset] != std::byte{0xa5} ||
+            memory[probe::color_address + color_bytes + offset] != std::byte{0xa5})
+            throw std::runtime_error("canonical fixture changed a color-target guard byte");
+    }
+    for (std::size_t offset = 0; offset < guard_bytes / 2; ++offset) {
+        if (hidden[snapshot_begin / 2 + offset] != std::byte{3} ||
+            hidden[(probe::color_address + color_bytes) / 2 + offset] != std::byte{3})
+            throw std::runtime_error("canonical fixture changed a hidden color-target guard byte");
+    }
+    write_binary(directory / "rdram.bin", memory.subspan(snapshot_begin, snapshot_end - snapshot_begin));
+    write_binary(directory / "hidden.bin", hidden.subspan(snapshot_begin / 2, (snapshot_end - snapshot_begin) / 2));
+    write_words(directory / "rdp.bin", completed.packets());
+    {
+        std::ofstream output(directory / "color.ppm", std::ios::binary);
+        output.exceptions(std::ios::badbit | std::ios::failbit);
+        output << "P6\n" << probe::width << ' ' << probe::height << "\n255\n";
+        std::array<char, probe::width * 3> row;
+        for (unsigned y = 0; y < probe::height; ++y) {
+            for (unsigned x = 0; x < probe::width; ++x) {
+                const auto address = probe::color_address + (y * probe::width + x) * 2;
+                const unsigned rgba = (std::to_integer<unsigned>(memory[address ^ 3u]) << 8) |
+                                      std::to_integer<unsigned>(memory[(address + 1) ^ 3u]);
+                for (unsigned channel = 0; channel < 3; ++channel) {
+                    const unsigned five = (rgba >> (11 - channel * 5)) & 31u;
+                    row[x * 3 + channel] = static_cast<char>((five << 3) | (five >> 2));
+                }
+            }
+            output.write(row.data(), static_cast<std::streamsize>(row.size()));
+        }
+        output.close();
+    }
+    // Written last while the real result remains leased. No context/processor
+    // internals or successful completion metadata are exposed on backend failure.
+    const auto& result = completed.rsp_result();
+    const auto& packets = completed.packets();
+    std::ofstream output(directory / "metadata.json");
+    output.exceptions(std::ios::badbit | std::ios::failbit);
+    output << "{\n  \"schema_version\":2,\n  \"label\":\"" << label << "\",\n"
+              "  \"scope\":\"actual ROM-bound persistent RSP and RDP on the same processor-owned canonical RAM; authored synthetic target only; NOT GAME scene, photo, VI, hardware or frontend parity\",\n"
+              "  \"renderer_commit\":\"1cecd042b2619bc505c12bfdc713808386f2b54d\",\n"
+           << "  \"snap_source_commit\":\"" << snap_pin << "\",\n"
+           << "  \"rsp_source_commit\":\"" << rsp_pin << "\",\n"
+              "  \"completion\":\"actual Machine::execute, flush CPU and RSP writes, staged packet enqueue, CommandProcessor::idle and successful vkDeviceWaitIdle before CPU read mapping; FullSync is not host completion\",\n"
+              "  \"timeline_complete\":true,\n  \"backend_errors\":0,\n"
+              "  \"memory_layout\":\"little-endian word-swapped N64: canonical byte a at host byte[a^3], halfword a at host u16[(a/2)^1], word a at host u32[a/4]; hidden byte at a/2\",\n"
+              "  \"memory_lifetime\":\"one persistent processor-owned allocation; hidden initialized once cold; main/BSS/boot admitted once; no per-pass RAM/hidden reset\",\n"
+           << "  \"rdram_size\":" << probe::rdram_bytes << ",\n  \"hidden_size\":" << probe::rdram_bytes / 2
+           << ",\n  \"initial_target_byte\":165,\n  \"initial_hidden_byte\":3,\n"
+              "  \"authored_clear\":{\"count\":1,\"rgba5551\":1,\"fill_word\":65537,\"before_all_phases\":true},\n"
+           << "  \"width\":" << probe::width << ",\n  \"height\":" << probe::height
+           << ",\n  \"color_format\":\"RGBA5551\",\n  \"color_base\":" << probe::color_address
+           << ",\n  \"plane_bytes\":" << color_bytes << ",\n  \"guard_bytes_each_side\":" << guard_bytes
+           << ",\n  \"rdram_file\":\"rdram.bin\",\n  \"rdram_file_offset\":" << snapshot_begin
+           << ",\n  \"rdram_file_bytes\":" << snapshot_end - snapshot_begin
+           << ",\n  \"hidden_file\":\"hidden.bin\",\n  \"hidden_file_offset\":" << snapshot_begin / 2
+           << ",\n  \"hidden_file_bytes\":" << (snapshot_end - snapshot_begin) / 2
+           << ",\n  \"ppm\":\"direct RGBA5551 RGB bit-replication; alpha/coverage ignored, no VI filtering\",\n"
+              "  \"rsp_result\":{\"error\":\"" << error_name(result.error)
+           << "\",\"sp_status\":" << result.sp_status << ",\"dma_reads\":" << result.dma_reads
+           << ",\"dma_writes\":" << result.dma_writes << ",\"imem_writes\":" << result.imem_writes
+           << ",\"packets\":" << result.packets << ",\"packet_words\":" << result.packet_words
+           << ",\"full_syncs\":" << result.full_syncs << "},\n"
+              "  \"words_encoding\":\"canonical host-value RDP u32 integers, not raw RDRAM byte order; rdp.bin contains big-endian numeric words\",\n  \"words\":[";
+    for (std::size_t index = 0; index < packets.words().size(); ++index)
+        output << (index ? "," : "") << packets.words()[index];
+    output << "],\n  \"packets\":[";
+    for (std::size_t index = 0; index < packets.packets().size(); ++index) {
+        const auto& packet = packets.packets()[index];
+        output << (index ? "," : "") << "{\"word_offset\":" << packet.offset
+               << ",\"word_count\":" << packet.count << '}';
+    }
+    output << "]\n}\n";
+    output.close();
+}
+#endif
 
 int run(int argc, Argument* argv[]) {
     if (argc == 2 && std::basic_string_view<Argument>(argv[1]) == help_argument) {
@@ -210,7 +312,7 @@ int run(int argc, Argument* argv[]) {
         throw std::runtime_error("--cpu-device requires --render-out");
 #ifndef ISLE_HAS_CANONICAL_RDP
     if (!render_directory.empty())
-        throw std::runtime_error("RDP replay requires both probe build options");
+        throw std::runtime_error("canonical RSP/RDP execution requires both probe build options");
 #endif
     if constexpr (std::endian::native != std::endian::little)
         throw std::runtime_error("the word-swapped RSP backend requires a little-endian host");
@@ -219,13 +321,19 @@ int run(int argc, Argument* argv[]) {
     const auto snapshot = isle::rom::read_snapshot(rom_path);
     std::cout << "private_rom_admitted normalized_sha1=" << isle::rom::digest_hex(snapshot.identity())
               << " size=" << snapshot.identity().size << " scope=coprocessor-only\n";
-    probe::Fixture fixture(snapshot.canonical(), probe::Case::matrix);
-    probe::Capture matrix, reload, repeat;
+    // This RSP-only experiment owns ONE honest, separate allocation. Do not
+    // zero it before the explicit guard/main/BSS/boot cold initialization.
+    auto memory_owner = std::make_unique_for_overwrite<std::uint32_t[]>(probe::rdram_bytes / 4);
+    const std::span<std::uint32_t> memory(memory_owner.get(), probe::rdram_bytes / 4);
+    probe::initialize_fixture_memory(memory, snapshot.canonical());
+    probe::Fixture fixture(memory, probe::Case::matrix);
+    isle::rsp::PacketBuffer matrix(probe::capture_words), reload(probe::capture_words),
+                            repeat(probe::capture_words);
     SinkContext sink;
-    isle::rsp::Machine machine(fixture.rdram, SinkContext::submit, &sink);
+    isle::rsp::Machine machine(memory, SinkContext::submit, &sink);
     const auto boot = snapshot.canonical().subspan(probe::boot_rom_begin, probe::boot_bytes);
     const isle::rsp::Limits limits{1000000, probe::capture_words};
-    auto execute = [&](probe::Case kind, const char* label, probe::Capture& capture, bool cold) {
+    auto execute = [&](probe::Case kind, const char* label, isle::rsp::PacketBuffer& capture, bool cold) {
         if (cold) machine.reset();
         capture.clear();
         sink.capture = &capture;
@@ -238,15 +346,15 @@ int run(int argc, Argument* argv[]) {
     };
     std::array<isle::rsp::Result, 5> results;
     results[0] = execute(probe::Case::matrix, "matrix-cold-1", matrix, true);
-    fixture.load(snapshot.canonical(), probe::Case::matrix);
+    fixture = probe::Fixture(memory, probe::Case::matrix);
     results[1] = execute(probe::Case::matrix, "matrix-cold-2", repeat, true);
     probe::require_repeat(matrix, results[0], repeat, results[1]);
-    fixture.load(snapshot.canonical(), probe::Case::reload);
+    fixture = probe::Fixture(memory, probe::Case::reload);
     results[2] = execute(probe::Case::reload, "reload-cold-1", reload, true);
-    fixture.load(snapshot.canonical(), probe::Case::reload);
+    fixture = probe::Fixture(memory, probe::Case::reload);
     results[3] = execute(probe::Case::reload, "reload-cold-2", repeat, true);
     probe::require_repeat(reload, results[2], repeat, results[3]);
-    fixture.load(snapshot.canonical(), probe::Case::matrix);
+    fixture = probe::Fixture(memory, probe::Case::matrix);
     results[4] = execute(probe::Case::matrix, "matrix-after-reload-warm", repeat, false);
     probe::require_repeat(matrix, results[0], repeat, results[4]);
     // Publish only after every real task, status, geometry, and repeat check passed.
@@ -267,10 +375,23 @@ int run(int argc, Argument* argv[]) {
         const auto reload_directory = render_directory / "in-list-reload";
         if (!std::filesystem::create_directory(matrix_directory) ||
             !std::filesystem::create_directory(reload_directory))
-            throw std::runtime_error("cannot create independent RDP case directories");
-        isle::rsp::probe::CanonicalCaptureExecutor executor(cpu_device);
-        isle::rsp::probe::render_capture(executor, matrix, matrix_directory, "fractional-matrix");
-        isle::rsp::probe::render_capture(executor, reload, reload_directory, "in-list-reload");
+            throw std::runtime_error("cannot create canonical fixture case directories");
+        isle::rsp::CanonicalExecutor executor(cpu_device, limits);
+        auto canonical_run = [&](probe::Case kind, const std::filesystem::path& directory,
+                                 const isle::rsp::PacketBuffer& reference,
+                                 const isle::rsp::Result& reference_result, bool initialize) {
+            auto preparation = executor.begin_preparation();
+            if (initialize)
+                probe::initialize_fixture_memory(preparation.words(), snapshot.canonical());
+            const probe::Fixture canonical_fixture(preparation.words(), kind);
+            auto completed = executor.execute(std::move(preparation), canonical_fixture.task, boot);
+            report(probe::name(kind), completed.rsp_result());
+            probe::validate(canonical_fixture, kind, completed.packets(), completed.rsp_result());
+            probe::require_repeat(reference, reference_result, completed.packets(), completed.rsp_result());
+            write_rendered_fixture(directory, completed, probe::name(kind));
+        };
+        canonical_run(probe::Case::matrix, matrix_directory, matrix, results[0], true);
+        canonical_run(probe::Case::reload, reload_directory, reload, results[2], false);
         rendered = true;
     }
 #endif

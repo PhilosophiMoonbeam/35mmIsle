@@ -26,21 +26,23 @@ RequiredChannel::~RequiredChannel() {
     // Waiting here would deadlock main's own retirement responsibilities. Never
     // silently destroy synchronization protecting an executing input/CPU borrow.
     std::lock_guard lock(mutex_);
-    if (phase_ != Phase::idle || stats_.capacity_waiters != 0 || stats_.result_waiters != 0)
+    if (phase_ != Phase::idle || stats_.capacity_waiters != 0 ||
+        stats_.preparation_waiters != 0 || stats_.result_waiters != 0)
         std::terminate();
 }
 bool RequiredChannel::matches(RequiredToken token) const noexcept {
     return token.owner == owner_ && token.epoch == epoch_ && token.serial != 0 && request_.token == token;
 }
-ClockError RequiredChannel::publication_error() const noexcept {
-    return phase_ == Phase::queued ? ClockError::not_ready : ClockError::duplicate;
+ClockError RequiredChannel::transition_error(Phase expected) const noexcept {
+    return phase_ != Phase::idle && phase_ < expected ? ClockError::not_ready : ClockError::duplicate;
 }
 void RequiredChannel::acknowledge(Terminal outcome) noexcept {
     outcome_ = outcome;
+    writable_ = {};
     memory_ = {};
     phase_ = Phase::acknowledged;
 }
-ClockError RequiredChannel::offer(const isle::rsp_probe::Capture& capture, RequiredToken& out) {
+ClockError RequiredChannel::request_preparation(RequiredToken& out) {
     std::lock_guard lock(mutex_);
     if (closed_) return ClockError::closed;
     if (phase_ != Phase::idle) return ClockError::full;
@@ -49,8 +51,8 @@ ClockError RequiredChannel::offer(const isle::rsp_probe::Capture& capture, Requi
         changed_.notify_all();
         return ClockError::exhausted;
     }
-    request_ = {{owner_, epoch_, next_serial_++}, &capture};
-    phase_ = Phase::queued;
+    request_ = {{owner_, epoch_, next_serial_++}, {}, {}};
+    phase_ = Phase::preparation_requested;
     ++stats_.submissions;
     out = request_.token;
     changed_.notify_all();
@@ -70,6 +72,73 @@ ClockError RequiredChannel::wait_capacity() {
     }
     return closed_ ? ClockError::closed : ClockError::none;
 }
+bool RequiredChannel::take_preparation(RequiredToken& out) {
+    std::lock_guard lock(mutex_);
+    if (phase_ != Phase::preparation_requested) return false;
+    phase_ = Phase::preparation_mapping;
+    out = request_.token;
+    return true;
+}
+ClockError RequiredChannel::publish_preparation(RequiredToken token, RequiredWritableView memory) {
+    std::lock_guard lock(mutex_);
+    if (!matches(token)) return ClockError::stale;
+    if (phase_ != Phase::preparation_mapping) return transition_error(Phase::preparation_mapping);
+    if (memory.rdram.empty()) return ClockError::invalid;
+    if (closed_) acknowledge(Terminal::cancelled);
+    else {
+        writable_ = memory;
+        phase_ = Phase::preparation_ready;
+    }
+    changed_.notify_all();
+    return ClockError::none;
+}
+ClockError RequiredChannel::wait_preparation(RequiredToken token, RequiredWritableView& out) {
+    std::unique_lock lock(mutex_);
+    if (!matches(token)) return ClockError::stale;
+    if (!closed_ && (phase_ == Phase::preparation_requested || phase_ == Phase::preparation_mapping)) {
+        ++stats_.preparation_waiters;
+        try {
+            changed_.wait(lock, [this, token] {
+                return closed_ || !matches(token) ||
+                       (phase_ != Phase::preparation_requested && phase_ != Phase::preparation_mapping);
+            });
+        } catch (...) {
+            --stats_.preparation_waiters;
+            throw;
+        }
+        --stats_.preparation_waiters;
+    }
+    if (!matches(token)) return ClockError::stale;
+    if (closed_) return ClockError::closed;
+    if (phase_ != Phase::preparation_ready) return transition_error(Phase::preparation_ready);
+    phase_ = Phase::preparing;
+    ++stats_.cpu_writes;
+    out = writable_;
+    return ClockError::none;
+}
+ClockError RequiredChannel::submit(RequiredToken token, const rsp::Task& task,
+                                   std::span<const std::byte> boot) {
+    std::lock_guard lock(mutex_);
+    if (!matches(token)) return ClockError::stale;
+    if (phase_ != Phase::preparing) return transition_error(Phase::preparing);
+    request_.task = task;
+    request_.boot = boot;
+    writable_ = {};
+    if (closed_) acknowledge(Terminal::cancelled);
+    else phase_ = Phase::queued;
+    changed_.notify_all();
+    return ClockError::none;
+}
+ClockError RequiredChannel::abandon_preparation(RequiredToken token, Terminal outcome) {
+    std::lock_guard lock(mutex_);
+    if (outcome != Terminal::cancelled && outcome != Terminal::failed) return ClockError::invalid;
+    if (!matches(token)) return ClockError::stale;
+    if (phase_ != Phase::preparing) return transition_error(Phase::preparing);
+    closed_ = true;
+    acknowledge(outcome);
+    changed_.notify_all();
+    return ClockError::none;
+}
 bool RequiredChannel::take(RequiredRequest& out) {
     std::lock_guard lock(mutex_);
     if (phase_ != Phase::queued) return false;
@@ -80,7 +149,7 @@ bool RequiredChannel::take(RequiredRequest& out) {
 ClockError RequiredChannel::publish_ready(RequiredToken token, RequiredMemoryView memory) {
     std::lock_guard lock(mutex_);
     if (!matches(token)) return ClockError::stale;
-    if (phase_ != Phase::executing) return publication_error();
+    if (phase_ != Phase::executing) return transition_error(Phase::executing);
     if (memory.rdram.empty() || memory.hidden.empty()) return ClockError::invalid;
     ++stats_.gpu_ready;
     if (closed_) acknowledge(Terminal::cancelled);
@@ -94,7 +163,8 @@ ClockError RequiredChannel::publish_ready(RequiredToken token, RequiredMemoryVie
 ClockError RequiredChannel::publish_failed(RequiredToken token) {
     std::lock_guard lock(mutex_);
     if (!matches(token)) return ClockError::stale;
-    if (phase_ != Phase::executing) return publication_error();
+    if (phase_ != Phase::preparation_mapping && phase_ != Phase::executing)
+        return transition_error(Phase::executing);
     closed_ = true;
     acknowledge(Terminal::failed);
     changed_.notify_all();
@@ -117,7 +187,7 @@ ClockError RequiredChannel::wait_ready(RequiredToken token, RequiredMemoryView& 
     }
     if (!matches(token)) return ClockError::stale;
     if (closed_) return ClockError::closed;
-    if (phase_ != Phase::ready) return ClockError::duplicate;
+    if (phase_ != Phase::ready) return transition_error(Phase::ready);
     phase_ = Phase::borrowed;
     ++stats_.cpu_borrows;
     out = memory_;
@@ -148,8 +218,9 @@ ClockError RequiredChannel::finish_retirement(RequiredToken token) {
     if (phase_ == Phase::idle) return ClockError::duplicate;
     if (phase_ != Phase::retiring) return ClockError::not_ready;
     // The caller has now released the actual backend lease on main. Only here
-    // can a new input be admitted or the old producer-owned Capture be freed.
-    request_.capture = nullptr;
+    // can a new preparation be admitted or old task/boot resources be freed.
+    request_.task = {};
+    request_.boot = {};
     phase_ = Phase::idle;
     ++stats_.retirements;
     switch (outcome_) {
@@ -163,27 +234,31 @@ ClockError RequiredChannel::finish_retirement(RequiredToken token) {
 ClockError RequiredChannel::close() {
     std::lock_guard lock(mutex_);
     closed_ = true;
-    if (phase_ == Phase::queued || phase_ == Phase::ready) acknowledge(Terminal::cancelled);
-    // Executing and borrowed phases are untouched. Wake before the owner joins
-    // its continuations, without pretending either kind of access has ceased.
+    if (phase_ == Phase::preparation_requested || phase_ == Phase::preparation_ready ||
+        phase_ == Phase::queued || phase_ == Phase::ready) acknowledge(Terminal::cancelled);
+    // Mapping, preparing, executing and borrowed phases are untouched. Wake
+    // before joining continuations, without pretending those accesses ceased.
     changed_.notify_all();
     return ClockError::none;
 }
 ClockError RequiredChannel::reset() {
     std::lock_guard lock(mutex_);
-    if (!closed_ || phase_ != Phase::idle || stats_.capacity_waiters != 0 || stats_.result_waiters != 0)
+    if (!closed_ || phase_ != Phase::idle || stats_.capacity_waiters != 0 ||
+        stats_.preparation_waiters != 0 || stats_.result_waiters != 0)
         return ClockError::not_ready;
     if (epoch_ == std::numeric_limits<std::uint64_t>::max() ||
         next_serial_ == std::numeric_limits<std::uint64_t>::max()) return ClockError::exhausted;
     ++epoch_;
     request_ = {};
+    writable_ = {};
     memory_ = {};
     closed_ = false;
     return ClockError::none;
 }
 bool RequiredChannel::quiescent() const {
     std::lock_guard lock(mutex_);
-    return phase_ == Phase::idle && stats_.capacity_waiters == 0 && stats_.result_waiters == 0;
+    return phase_ == Phase::idle && stats_.capacity_waiters == 0 &&
+           stats_.preparation_waiters == 0 && stats_.result_waiters == 0;
 }
 bool RequiredChannel::closed() const {
     std::lock_guard lock(mutex_);

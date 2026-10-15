@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Address, wire-layout and extent provenance for src/pidgey_resources.cpp. Original payloads are borrowed only from an admitted private ROM Snapshot; this manifest contains no extracted assets. This is not a source-import manifest or an animation/renderer admission.",
+  "rom": {
+    "canonical_order": "big-endian z64",
+    "size": 16777216,
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf"
+  },
+  "source_files": {
+    "src/beach/pidgey/model_hd.c": {
+      "git_blob": "b45e62cef581599f0bcdd19b740095060e4c7d0e",
+      "sha256": "25e811e68939473b97520623c9a07d0ae291b2fbea479dc863138ffa4057cb18",
+      "facts": "17 live nodes plus sentinel, 15 payload pairs, 17 material slots, slot 9 material and two CI8 image references; all 18 model records independently byte-compared to ROM after IEEE-754 binary32 encoding of pinned GAME literals. Normal model is not the photo model."
+    },
+    "src/beach/pidgey/model.c": {
+      "git_blob": "3862c7d8053a85389f4a340172cf6d57cf42462e",
+      "sha256": "0b5e7d293ae4b42654e3c601954ba3b1749a8e5e2b59b3a1b3c0ded3a7efe8c0",
+      "facts": "Comparison authority only; no normal-model resources admitted by this component."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "facts": "353-379 app_render mapping/data; 770-789 beach_assets mapping/Pidgey bank; 793-810 beach_extra mapping; 1018-1048 HD Pidgey subsegments and next bank."
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d",
+      "facts": "1859-1884 HD symbols; 1886-1906 shared texture labels. The HD vertex size annotation 0x2430 is stale: independently verified splat span is 0x25A0."
+    },
+    "include/sys/anim.h": {
+      "git_blob": "1a0178fc52a859eda997ca232e1b063e10f9a4c9",
+      "sha256": "1e0ddc0140d6c05a6d5bb7fdf8db54f1a809fd89cb39be6ce0eb0bde75c5d5dd",
+      "facts": "23-29 UnkEC64Arg3: depthFlags u32, payload guest u32, position/rotation/scale binary32 Vec3; 44-byte wire stride."
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "facts": "90-115 GAME AnimCommand IDs; 354-357 GAME DObjPayloadTypeI 8-byte pair; 423-467 GAME Texture 0x78 wire record. No SDK producer layout used."
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf",
+      "facts": "269-513 command operand framing, including one-word callback opcode 16; 1930-1978 sentinel 18, low-12-bit depth parent stack, high-nibble matrix flags and node/material assignment. Component frames immutable command extents, does not evaluate animation."
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "facts": "31-49 GAME photo selection/pose wire types; 1157-1172 species/pose lookup; 1245-1272 D_800ADBEC photo model selection. Serialized values independently read from exact ROM, not dirty generated includes."
+    }
+  },
+  "mapping_rule": "rom = segment.rom_start + guest - segment.guest_start; all addresses below are hexadecimal strings; ROM ends exclusive",
+  "segments": [
+    {"name": "app_render", "rom_start": "0x46270", "guest_start": "0x8009A8C0"},
+    {"name": "beach_assets", "rom_start": "0xA74E0", "guest_start": "0x8011B050"},
+    {"name": "beach_extra", "rom_start": "0x13C780", "guest_start": "0x801B0310"}
+  ],
+  "resources": {
+    "material_slots": {"guest": "0x801CDC40", "rom": "0x15A0B0", "count": 17, "stride": 4, "nonnull_node": 9},
+    "material_images": {"guest": "0x801CDC84", "rom": "0x15A0F4", "count_including_null": 3, "stride": 4},
+    "material": {"guest": "0x801CDC90", "rom": "0x15A100", "size": "0x78"},
+    "material_list": {"guest": "0x801CDD08", "rom": "0x15A178", "count_including_null": 2, "stride": 4},
+    "vertices": {"guest": "0x801CDD10", "rom_begin": "0x15A180", "rom_end": "0x15C720", "count": 602, "stride": 16, "size": "0x25A0"},
+    "display_lists": {"guest_begin": "0x801D02B0", "rom_begin": "0x15C720", "rom_end": "0x15E578", "count": 23, "command_stride": 8, "size": "0x1E58"},
+    "payloads": {"guest": "0x801D2108", "rom": "0x15E578", "count": 15, "stride": 8, "size": "0x78"},
+    "model": {"guest": "0x801D2180", "rom_begin": "0x15E5F0", "rom_end": "0x15E908", "live_nodes": 17, "records_including_sentinel": 18, "stride": 44, "size": "0x318"},
+    "photo_render_record": {"table": "D_800ADBEC", "index": 43, "guest": "0x800ADF48", "rom": "0x598F8", "size": 20, "pokemon_id": 16, "scale": 2.0, "model_guest": "0x801D2180", "materials_guest": "0x801CDC40", "render_callback_guest": "0x800A1650"},
+    "photo_animation_set": {"table": "D_800AD4B8", "index": 43, "guest": "0x800AD6BC", "rom": "0x5906C", "size": 12, "pokemon_id": 16, "pose_table_guest": "0x800AC414", "pose_count": 4},
+    "pose0": {"guest": "0x800AC414", "rom": "0x57DC4", "size": 12, "pose_id": 0.0, "model_table_guest": "0x801A66D0", "material_animation_guest": "0x00000000"},
+    "pose0_model_table": {"guest": "0x801A66D0", "rom": "0x132B60", "count": 17, "stride": 4, "null_node": 1},
+    "pose0_streams": {"nonnull_count": 16, "rom_begin": "0x132BA4", "rom_end": "0x13514C", "total_bytes_including_end_words": 9640, "end_opcode": 0, "branch_or_interpolation_pointer_count": 0},
+    "textures": {"count": 21, "rgba16_palettes": 10, "ci4_images": 9, "ci8_images": 2, "exact_installed_payload_bytes": 8480, "note": "Per-object byte extents exclude alignment prefixes, inter-object gaps and unreferenced bytes. CI4 extents follow observed load-block words; both dynamic CI8 image extents follow the GAME Texture's 32x32 dimensions. Palette storage covers 16 entries, or 256 for 0x8019F618; actual lists request 13,14,15 or255 entries."}
+  },
+  "external_requirement": {
+    "command_guest": "0x801D1070",
+    "command_rom": "0x15D4E0",
+    "target": "0x0E000000",
+    "meaning": "hd_part7_draw calls caller-generated dynamic material display list. Caller must run the genuine material producer and bind segment 0x0E. No fake list or segment binding is supplied by this immutable resource component."
+  },
+  "installation": {
+    "layout": "caller-owned word-swapped 8 MiB; destination byte index = (guest - 0x80000000 + source_byte_index) XOR 3",
+    "disjoint_span_count": 42,
+    "total_bytes": 36752,
+    "hd_tu_rom_begin": "0x15A0B0",
+    "hd_tu_rom_end": "0x15E908",
+    "note": "Only selected photo/pose records are installed, not full species or pose tables. All original guest references remain unchanged. Unrelated RAM, backend ownership and hidden RAM are untouched."
+  },
+  "corrections": [
+    "18 * 0x2C = 792 = 0x318, not 756; 17 live nodes plus one sentinel.",
+    "Model guest0x801D2180 maps to ROM0x15E5F0, not0x15E0F0.",
+    "Vertex span is0x25A0, not symbol annotation0x2430.",
+    "DL span ends at payload table ROM0x15E578; ROM0x15E910 is next model bank, not DL end.",
+    "23 actual HD lists and all21 shared texture/palette labels participate, not the prior scout's24 lists or narrow texture subset.",
+    "Pidgey photo render record is D_800ADBEC index43, not44."
+  ]
+}

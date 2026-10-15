@@ -21,6 +21,62 @@
       "sha256": "f9c8b54723daea19b28f66f57bb0c8eaf2001dcf613dac4afce712a7ea51b4e7"
     }
   },
+  "native_support": {
+    "src/engine.c": {
+      "sha256": "11943edb2d979a2fdaa660344a945e81999fa7e7b870a5ea971391c21e5aec55",
+      "use": "Original actual-size native model ownership, validated typed API, lazy local matrix cache and alias-safe binary32 root-local times photo-world concatenation. No imported SDK implementation."
+    },
+    "src/engine_math.h": {
+      "sha256": "41f7ba1cd6de9012cccd7de47f9c9d98acf53d6ed0769662bfc91664ae27c81e",
+      "use": "Original native public matrix ABI and explicitly defined MIPS low-word multiply, signed interpretation and arithmetic shifts, without sanitizer suppression."
+    },
+    "src/engine_internal.h": {
+      "sha256": "1e4ccee77ceae43e586e67e83544cfb6505b5a8d6d57ae2c087c9af3319f8ab2",
+      "use": "Original native payload ownership and arena block/free-list layout, not a console DObj or SDK layout."
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "2ffa6a996fb438f4606ab602db393fec8c1b0221fd36e8f73fc5cf4989d1b2bb",
+      "use": "Stable native C model API and borrowed local fixed-matrix representation."
+    }
+  },
+  "rom_observations": [
+    {
+      "use": "Static observation of only the pinned GAME kind28 function and its referenced GAME compiler constant; no SDK code/header inspection, target execution or emulator launch.",
+      "rom_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+      "symbol_map": {
+        "path": "tools/symbol_addrs.txt",
+        "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+        "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+        "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d",
+        "line": 649,
+        "symbol": "hal_rotate_rpy_translate_scale",
+        "guest_start": "0x8001DA08",
+        "next_guest_symbol": "0x8001DDFC"
+      },
+      "mapping": "Pinned splat.yaml main segment ROM 0x1000 maps guest 0x80000400; ROM offset = guest - 0x80000000 + 0xC00.",
+      "mapping_source": {
+        "path": "splat.yaml",
+        "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+        "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+        "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+        "lines": [28, 29]
+      },
+      "function_rom_start": "0x1E608",
+      "function_rom_end_exclusive": "0x1E9FC",
+      "function_rom_sha256": "e4d5b07704d2be9e0a145d0503723da08f2ad08ff056d30c76de18c382682daa",
+      "angle_prefix_rom_start": "0x1E608",
+      "angle_prefix_rom_end_exclusive": "0x1E688",
+      "angle_prefix_rom_sha256": "6946a02a11f250867fba55d63a9f859b11fbca0f64322b0b62d7130321a4f94d",
+      "constant_guest": "0x80043DB0",
+      "constant_rom": "0x449B0",
+      "constant_size": 4,
+      "constant_binary32_bits": "0x4422F983",
+      "constant_hex_float": "0x1.45f306p+9f",
+      "constant_sha256": "b4c51ef8381f53d4df8f70ab2a467d8829c549b7b6b106d333abda053d86ffd7",
+      "instructions": "0x8001DA0C LUI/0x8001DA10 LWC1 loads the single-precision factor; 0x8001DA20,0x8001DA2C,0x8001DA48 MUL.S multiply r,p,h; 0x8001DA44,0x8001DA58,0x8001DA80 TRUNC.W.S convert to signed words before the GAME mask/table lookup.",
+      "adaptation": "Use the observed binary32 factor and multiplication explicitly, rather than guessing SDK PI macro precision or retaining a double evaluation that differs at angle quantization boundaries."
+    }
+  ],
   "definitions": [
     {
       "symbol": "omLinkProcess",
@@ -259,6 +315,123 @@
           "find": "sinAngle = (s32) (fovy * 651.8986f) & 0xFFF;",
           "replace": "sinAngle = (u16) ((s32) (fovy * 651.8986f) & 0xFFF);",
           "reason": "Explicit bounded native narrowing; retain original binary32 quantization."
+        }
+      ]
+    },
+    {
+      "symbol": "hal_get_sin_cos_u_short",
+      "path": "include/sys/mtx.h",
+      "first": 4,
+      "last": 20,
+      "source_sha256": "49eb3fe933ee44842b5ec767eb5c0d7e9aee94a718835770f9e1a220e0a007d6",
+      "native_sha256": "ecaf5374d09d390e63b2fd3329b680413b99483f8121d63bd65c84c6a2039ea5",
+      "changes": [
+        {
+          "find": "id = ((s32) ((angle) * ((f32) ARRAY_COUNT(sSinTable) / PI))) & 0xFFF;",
+          "replace": "id = (u16) (((s32) ((angle) * 0x1.45f306p+9f)) & 0xFFF);",
+          "reason": "Preserve actual GAME ROM binary32 angle multiplication and truncation: exact GAME hal_rotate_rpy_translate_scale loads 0x4422F983 at 0x80043DB0, then MUL.S/TRUNC.W.S. No SDK PI macro/header input. Explicit bounded native narrowing after native cast-range validation."
+        },
+        {
+          "find": "id += 0x400;",
+          "replace": "id = (u16) (id + 0x400);",
+          "reason": "Explicit safe native narrowing: index is at most 4095 before adding 1024."
+        }
+      ]
+    },
+    {
+      "symbol": "hal_scale_mul_f",
+      "path": "src/sys/matrix.c",
+      "first": 979,
+      "last": 999,
+      "source_sha256": "e4c4a37d5d3ccb0865fbec6837aebbfb7afa853178133d6eb819fbd3547747c1",
+      "native_sha256": "e4c4a37d5d3ccb0865fbec6837aebbfb7afa853178133d6eb819fbd3547747c1",
+      "changes": []
+    },
+    {
+      "symbol": "hal_rotate_rpy_f",
+      "path": "src/sys/matrix.c",
+      "first": 1148,
+      "last": 1179,
+      "source_sha256": "d9d21e1e5f49fa9c49353519fe33005ffb35976a135ccdaaebb9f4be2d82f88e",
+      "native_sha256": "d9d21e1e5f49fa9c49353519fe33005ffb35976a135ccdaaebb9f4be2d82f88e",
+      "changes": []
+    },
+    {
+      "symbol": "hal_rotate_rpy_translate_scale_f",
+      "path": "src/sys/matrix.c",
+      "first": 1289,
+      "last": 1305,
+      "source_sha256": "8a0c2fbcaf8ce27401e5570ca8e4de1d04396a86bcce6babd1585ad299a34441",
+      "native_sha256": "8a0c2fbcaf8ce27401e5570ca8e4de1d04396a86bcce6babd1585ad299a34441",
+      "changes": []
+    },
+    {
+      "symbol": "hal_rotate_rpy_translate_scale",
+      "path": "src/sys/matrix.c",
+      "first": 1307,
+      "last": 1371,
+      "source_sha256": "fe57cafa9df1c01ffefa4f0af94ec079937bcc393ee65274aadcfb505f950617",
+      "native_sha256": "24539b750579c5caffa89f5c36b6ecc5a5ad74b0868ffe6d74da854eab661a4d",
+      "changes": [
+        {
+          "find": "scalex = sx * 256;",
+          "replace": "scalex = (s32) (sx * 256);",
+          "reason": "Explicit binary32-to-signed-word truncation; native entry points validate the product before the cast."
+        },
+        {
+          "find": "scaley = sy * 256;",
+          "replace": "scaley = (s32) (sy * 256);",
+          "reason": "Explicit binary32-to-signed-word truncation; native entry points validate the product before the cast."
+        },
+        {
+          "find": "scalez = sz * 256;",
+          "replace": "scalez = (s32) (sz * 256);",
+          "reason": "Explicit binary32-to-signed-word truncation; native entry points validate the product before the cast."
+        },
+        {
+          "find": "e1 = (((cosp * cosy) >> 14) * scalex) >> 8;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosp, cosy), 14), scalex), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e2 = (((cosp * siny) >> 14) * scalex) >> 8;",
+          "replace": "e2 = (u32) isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosp, siny), 14), scalex), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e1 = (-sinp * scalex) >> 7;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(-sinp, scalex), 7);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e1 = ((((((sinr * sinp) >> 15) * cosy) >> 14) - ((cosr * siny) >> 14)) * scaley) >> 8;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul((isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(sinr, sinp), 15), cosy), 14) - isle_game_mips_sar(isle_game_mips_mul(cosr, siny), 14)), scaley), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e2 = ((((((sinr * sinp) >> 15) * siny) >> 14) + ((cosr * cosy) >> 14)) * scaley) >> 8;",
+          "replace": "e2 = (u32) isle_game_mips_sar(isle_game_mips_mul((isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(sinr, sinp), 15), siny), 14) + isle_game_mips_sar(isle_game_mips_mul(cosr, cosy), 14)), scaley), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e1 = (((sinr * cosp) >> 14) * scaley) >> 8;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(sinr, cosp), 14), scaley), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e1 = ((((((cosr * sinp) >> 15) * cosy) >> 14) + ((sinr * siny) >> 14)) * scalez) >> 8;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul((isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosr, sinp), 15), cosy), 14) + isle_game_mips_sar(isle_game_mips_mul(sinr, siny), 14)), scalez), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e2 = ((((((cosr * sinp) >> 15) * siny) >> 14) - ((sinr * cosy) >> 14)) * scalez) >> 8;",
+          "replace": "e2 = (u32) isle_game_mips_sar(isle_game_mips_mul((isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosr, sinp), 15), siny), 14) - isle_game_mips_sar(isle_game_mips_mul(sinr, cosy), 14)), scalez), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        },
+        {
+          "find": "e1 = (((cosr * cosp) >> 14) * scalez) >> 8;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosr, cosp), 14), scalez), 8);",
+          "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
         }
       ]
     }

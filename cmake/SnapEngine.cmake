@@ -4,7 +4,11 @@ find_package(Python3 3.9 REQUIRED COMPONENTS Interpreter)
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_LIST_DIR}/snap-engine-inputs.json"
-    "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py")
+    "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py"
+    "${PROJECT_SOURCE_DIR}/src/engine.c"
+    "${PROJECT_SOURCE_DIR}/src/engine_math.h"
+    "${PROJECT_SOURCE_DIR}/src/engine_internal.h"
+    "${PROJECT_SOURCE_DIR}/include/35mmisle/engine.h")
 file(READ "${CMAKE_CURRENT_LIST_DIR}/snap-engine-inputs.json" _isle_engine_manifest)
 string(JSON _isle_snap_revision GET "${_isle_engine_manifest}" revision)
 string(JSON _isle_snap_repository GET "${_isle_engine_manifest}" repository)
@@ -53,7 +57,8 @@ if(UNIX)
 endif()
 isle_target_options(isle-engine)
 target_compile_options(isle-engine PRIVATE
-    "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math>")
+    "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+    "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
 
 if(BUILD_TESTING)
     add_executable(engine-tests tests/engine_tests.cpp tests/engine_fixture.c)
@@ -63,4 +68,4 @@ if(BUILD_TESTING)
     set_tests_properties(engine-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
 endif()
 
-message(STATUS "Native OM/intro-fade/camera-math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")
+message(STATUS "Native OM/model/intro-fade/camera and kind-28/photo math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")

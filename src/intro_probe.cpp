@@ -240,34 +240,40 @@ struct IntroScene {
 };
 #ifdef ISLE_HAS_CANONICAL_RDP
 struct FeedbackInputs {
-    std::array<isle::rsp_probe::Capture, 2> captures;
-    explicit FeedbackInputs(const isle::rom::Snapshot& snapshot) {
-        namespace probe = isle::rsp_probe;
-        probe::Fixture fixture(snapshot.canonical(), probe::Case::matrix);
-        struct Sink {
-            probe::Capture* current;
-            static bool Submit(void* context, std::span<const std::uint32_t> packet) noexcept {
-                return probe::Capture::sink(static_cast<Sink*>(context)->current, packet);
-            }
-        } sink{&captures[0]};
-        isle::rsp::Machine machine(fixture.rdram, Sink::Submit, &sink);
-        const auto boot = snapshot.canonical().subspan(probe::boot_rom_begin, probe::boot_bytes);
-        const isle::rsp::Limits limits{1000000, probe::capture_words};
-        const auto first = machine.execute(fixture.task, boot, limits);
-        (void)probe::validate(fixture, probe::Case::matrix, captures[0], first);
-        fixture.load(snapshot.canonical(), probe::Case::matrix);
-        machine.reset();
-        sink.current = &captures[1];
-        const auto second = machine.execute(fixture.task, boot, limits);
-        (void)probe::validate(fixture, probe::Case::matrix, captures[1], second);
-        probe::require_repeat(captures[0], first, captures[1], second);
-        std::cout << "REQUIRED_INPUTS_READY: two actual ROM-bound RSP matrix executions; "
-                     "stable packets retained, not prerecorded tasks or GAME photo input.\n";
+    const isle::rom::Snapshot& snapshot;
+    const std::uint32_t* canonical_identity = nullptr;
+    std::uint32_t written_canary = 0x13572468u, next_canary = written_canary;
+    static constexpr auto canary_address = isle::rsp_probe::rdram_bytes - 64u;
+    explicit FeedbackInputs(const isle::rom::Snapshot& source) : snapshot(source) {
+        std::cout << "REQUIRED_INPUTS_READY: exact ROM resources retained; each operation prepares "
+                     "actual canonical RAM and executes a new RSP task, not retained capture replay "
+                     "or GAME photo input.\n";
     }
-    static std::uint64_t Consume(isle::host::RequiredMemoryView memory) {
+    isle::rsp::Task Prepare(isle::host::RequiredWritableView memory) {
+        namespace probe = isle::rsp_probe;
+        if (memory.rdram.size() != probe::rdram_bytes / sizeof(std::uint32_t))
+            throw std::runtime_error("Required writable canonical mapping has the wrong extent");
+        if (!canonical_identity) {
+            probe::initialize_fixture_memory(memory.rdram, snapshot.canonical());
+            canonical_identity = memory.rdram.data();
+        } else if (canonical_identity != memory.rdram.data() ||
+                   memory.rdram[canary_address / 4u] != written_canary) {
+            throw std::runtime_error("Required canonical allocation or persistent CPU dependency changed");
+        }
+        probe::Fixture fixture(memory.rdram, probe::Case::matrix);
+        memory.rdram[canary_address / 4u] = next_canary;
+        written_canary = next_canary;
+        return fixture.task;
+    }
+    std::span<const std::byte> Boot() const {
+        return snapshot.canonical().subspan(isle::rsp_probe::boot_rom_begin, isle::rsp_probe::boot_bytes);
+    }
+    std::uint64_t Consume(isle::host::RequiredMemoryView memory) {
         namespace probe = isle::rsp_probe;
         if (memory.rdram.size() != probe::rdram_bytes || memory.hidden.size() != probe::rdram_bytes / 2)
             throw std::runtime_error("Required canonical mapping has the wrong extent");
+        if (static_cast<const void*>(memory.rdram.data()) != static_cast<const void*>(canonical_identity))
+            throw std::runtime_error("Required readback is not the prepared canonical allocation");
         auto byte = [&](std::size_t address) {
             return std::to_integer<std::uint8_t>(memory.rdram[address ^ 3u]);
         };
@@ -276,11 +282,19 @@ struct FeedbackInputs {
             return static_cast<std::uint16_t>((static_cast<unsigned>(byte(address)) << 8u) | byte(address + 1u));
         };
         constexpr auto color_bytes = probe::width * probe::height * 2u;
-        if (pixel(0, 0) != 0xa5a5 || byte(probe::color_address - 1u) != 0xa5 ||
+        // The authored real RDP fill is opaque black; the pinned processor's
+        // single cold hidden initialization is 3, not the old replay's CPU zero.
+        if (pixel(0, 0) != 0x0001 || byte(probe::color_address - 1u) != 0xa5 ||
             byte(probe::color_address + color_bytes) != 0xa5 ||
-            memory.hidden[probe::color_address / 2u - 1u] != std::byte{} ||
-            memory.hidden[(probe::color_address + color_bytes) / 2u] != std::byte{})
+            memory.hidden[probe::color_address / 2u - 1u] != std::byte{3} ||
+            memory.hidden[(probe::color_address + color_bytes) / 2u] != std::byte{3})
             throw std::runtime_error("Required canonical target/hidden guard mismatch");
+        const auto canary = (std::uint32_t(byte(canary_address)) << 24u) |
+                            (std::uint32_t(byte(canary_address + 1u)) << 16u) |
+                            (std::uint32_t(byte(canary_address + 2u)) << 8u) |
+                            std::uint32_t(byte(canary_address + 3u));
+        if (canary != written_canary)
+            throw std::runtime_error("Required actual RSP/RDP execution changed its persistent guard");
         // Independent authored geometry/color expectations, not merely a digest
         // or nonempty-buffer test. Each triangle retains red/green/blue corners.
         // Row-vector stimulus transforms give R/G/B vertices
@@ -310,6 +324,9 @@ struct FeedbackInputs {
             digest ^= std::to_integer<std::uint8_t>(value);
             digest *= UINT64_C(1099511628211);
         }
+        // The next preparation depends on this actual rendered pixel. Upper
+        // halves alternate, so a per-pass RAM reset cannot satisfy the check.
+        next_canary = (~written_canary & 0xffff0000u) | pixel(16, 27);
         return digest;
     }
 };
@@ -366,25 +383,37 @@ struct IntroProbe::Impl {
         changed.notify_all();
     }
 #ifdef ISLE_HAS_CANONICAL_RDP
-    bool ConsumeFeedback(const FeedbackInputs& inputs) {
+    bool ConsumeFeedback(FeedbackInputs& inputs) {
         isle::host::RequiredToken token;
-        const auto& capture = inputs.captures[feedback_completed % inputs.captures.size()];
-        auto admitted = required->offer(capture, token);
+        auto admitted = required->request_preparation(token);
         while (admitted == Error::full) {
             if (required->wait_capacity() == Error::closed) return false;
-            admitted = required->offer(capture, token);
+            admitted = required->request_preparation(token);
         }
         if (admitted == Error::closed) return false;
-        if (admitted != Error::none) throw std::runtime_error("Required capture admission failed");
+        if (admitted != Error::none) throw std::runtime_error("Required preparation admission failed");
+        isle::host::RequiredWritableView writable;
+        const auto prepared = required->wait_preparation(token, writable);
+        if (prepared == Error::closed) return false;
+        if (prepared != Error::none) throw std::runtime_error("Required writable grant failed");
+        try {
+            const auto task = inputs.Prepare(writable);
+            if (required->submit(token, task, inputs.Boot()) != Error::none)
+                throw std::runtime_error("Required prepared task submission failed");
+        } catch (...) {
+            if (required->abandon_preparation(token, isle::host::Terminal::failed) != Error::none)
+                std::abort();
+            throw;
+        }
         isle::host::RequiredMemoryView memory;
         const auto ready_result = required->wait_ready(token, memory);
         if (ready_result == Error::closed) return false;
-        if (ready_result != Error::none) throw std::runtime_error("Required capture readiness failed");
+        if (ready_result != Error::none) throw std::runtime_error("Required task readiness failed");
         std::uint64_t digest;
         try {
-            digest = FeedbackInputs::Consume(memory);
+            digest = inputs.Consume(memory);
             if (feedback_completed != 0 && digest != feedback_digest)
-                throw std::runtime_error("Dependent canonical feedback operation changed its independently initialized result");
+                throw std::runtime_error("Dependent canonical task changed its explicitly cleared target result");
         } catch (...) {
             if (required->release_result(token, isle::host::Terminal::failed) != Error::none) std::abort();
             throw;
@@ -394,8 +423,9 @@ struct IntroProbe::Impl {
         feedback_digest = digest;
         if (feedback_completed == 0 || feedback_completed + 1u == feedback_goal)
             std::cout << "REQUIRED_CPU_CONSUMED: cycle=" << feedback_completed + 1u
-                      << "; digest=" << digest << "; authored_target_samples=6; owner_domain=true; "
-                         "diagnostic, not native GAME photo scoring.\n" << std::flush;
+                      << "; digest=" << digest << "; authored_target_samples=6; same_canonical_allocation=true; "
+                         "persistent_pixel_dependency=true; owner_domain=true; diagnostic, not GAME photo scoring.\n"
+                      << std::flush;
         return true;
     }
 #endif
@@ -626,6 +656,13 @@ std::uint32_t IntroProbe::CompletedFeedbackCycles() const {
     return impl->feedback_completed;
 }
 #ifdef ISLE_HAS_CANONICAL_RDP
+bool IntroProbe::TakeRequiredPreparation(isle::host::RequiredToken& token) {
+    return impl->required && impl->required->take_preparation(token);
+}
+isle::host::ClockError IntroProbe::PublishRequiredPreparation(isle::host::RequiredToken token,
+                                                           isle::host::RequiredWritableView memory) {
+    return impl->required ? impl->required->publish_preparation(token, memory) : Impl::Error::closed;
+}
 bool IntroProbe::TakeRequired(isle::host::RequiredRequest& request) {
     return impl->required && impl->required->take(request);
 }

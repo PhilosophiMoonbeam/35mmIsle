@@ -102,16 +102,36 @@ if(NOT _isle_git_result EQUAL 0 OR NOT _isle_dirty STREQUAL "")
     message(FATAL_ERROR "The selected LUS checkout must be clean; it is never modified by this project")
 endif()
 
-# Export committed bytes only. All upstream generated files/patches stay in this build.
+# Export and adapt committed bytes in a fresh build-owned staging tree on EVERY
+# configure. Only the final changed bytes reach the live source used by the build.
 set(_isle_lus_private "${CMAKE_BINARY_DIR}/_deps/isle-lus-private")
-file(MAKE_DIRECTORY "${_isle_lus_private}")
+set(_isle_lus_staging "${CMAKE_BINARY_DIR}/_deps/isle-lus-staging")
+set(_isle_lus_inventory "${CMAKE_BINARY_DIR}/_deps/isle-lus-private-inputs.txt")
+set(_isle_lus_archive "${CMAKE_BINARY_DIR}/_deps/isle-lus-pinned.tar")
+set(_isle_lus_previous_inputs "")
+if(EXISTS "${_isle_lus_inventory}")
+    file(STRINGS "${_isle_lus_inventory}" _isle_lus_previous_inputs)
+elseif(EXISTS "${_isle_lus_archive}")
+    # Upgrade an existing build without discarding its source timestamps. The old
+    # archive identifies old pinned inputs, not upstream's live generated files.
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E tar tf "${_isle_lus_archive}"
+        OUTPUT_VARIABLE _isle_lus_previous_text RESULT_VARIABLE _isle_inventory_result)
+    if(NOT _isle_inventory_result EQUAL 0)
+        message(FATAL_ERROR "Could not inventory the previous build-private LUS archive")
+    endif()
+    string(REPLACE "\r\n" "\n" _isle_lus_previous_text "${_isle_lus_previous_text}")
+    string(REGEX REPLACE "/\n" "\n" _isle_lus_previous_text "${_isle_lus_previous_text}")
+    string(REPLACE "\n" ";" _isle_lus_previous_inputs "${_isle_lus_previous_text}")
+endif()
+file(REMOVE_RECURSE "${_isle_lus_staging}")
+file(MAKE_DIRECTORY "${_isle_lus_staging}")
 execute_process(COMMAND "${GIT_EXECUTABLE}" -C "${_isle_lus_input}" archive --format=tar
-    "--output=${CMAKE_BINARY_DIR}/_deps/isle-lus-pinned.tar" ${_isle_lus_pin}
+    "--output=${_isle_lus_archive}" ${_isle_lus_pin}
     RESULT_VARIABLE _isle_archive_result)
 if(NOT _isle_archive_result EQUAL 0)
     message(FATAL_ERROR "Could not export the immutable LUS source snapshot")
 endif()
-file(ARCHIVE_EXTRACT INPUT "${CMAKE_BINARY_DIR}/_deps/isle-lus-pinned.tar" DESTINATION "${_isle_lus_private}")
+file(ARCHIVE_EXTRACT INPUT "${_isle_lus_archive}" DESTINATION "${_isle_lus_staging}")
 set(_isle_lifetime_patch "${CMAKE_CURRENT_LIST_DIR}/patches/lus-host-lifetime.patch")
 # Exact-pin, three-context-line hunks are applied after each fresh committed-byte
 # export. Ship::ControlDeck owns the caches used by its LUS::ControlDeck subclass.
@@ -120,12 +140,39 @@ set(_isle_lifetime_patch "${CMAKE_CURRENT_LIST_DIR}/patches/lus-host-lifetime.pa
 execute_process(COMMAND "${CMAKE_COMMAND}" -E env --unset=GIT_DIR --unset=GIT_WORK_TREE
     --unset=GIT_COMMON_DIR --unset=GIT_INDEX_FILE
     "GIT_CEILING_DIRECTORIES=${CMAKE_BINARY_DIR}" "${GIT_EXECUTABLE}" apply "${_isle_lifetime_patch}"
-    WORKING_DIRECTORY "${_isle_lus_private}" RESULT_VARIABLE _isle_patch_result)
+    WORKING_DIRECTORY "${_isle_lus_staging}" RESULT_VARIABLE _isle_patch_result)
 if(NOT _isle_patch_result EQUAL 0)
     message(FATAL_ERROR "The exact-base host lifetime adaptation could not be applied")
 endif()
 file(SHA256 "${_isle_lifetime_patch}" _isle_lifetime_digest)
-file(SHA256 "${CMAKE_BINARY_DIR}/_deps/isle-lus-pinned.tar" _isle_lus_archive_digest)
+file(SHA256 "${_isle_lus_archive}" _isle_lus_archive_digest)
+
+# Upstream downloads stb without a digest. Replace precisely that acquisition statement
+# in the staging snapshot; this is an acquisition check, not a source behavior change.
+set(_isle_common "${_isle_lus_staging}/cmake/dependencies/common.cmake")
+file(READ "${_isle_common}" _isle_common_text)
+set(_isle_stb_old [=[file(DOWNLOAD "https://github.com/nothings/stb/raw/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h" "${STB_DIR}/stb_image.h")]=])
+set(_isle_stb_new [=[file(DOWNLOAD "https://raw.githubusercontent.com/nothings/stb/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h" "${STB_DIR}/stb_image.h" EXPECTED_HASH SHA256=c54b15a689e6a1f32c75e2ec23afa442e3e0e37e894b73c1974d08679b20dd5c TLS_VERIFY ON)]=])
+string(FIND "${_isle_common_text}" "${_isle_stb_old}" _isle_stb_location)
+if(_isle_stb_location LESS 0)
+    message(FATAL_ERROR "The pinned stb acquisition statement changed unexpectedly")
+endif()
+string(REPLACE "${_isle_stb_old}" "${_isle_stb_new}" _isle_common_text "${_isle_common_text}")
+# Its generated implementation also needs content-stable writes, otherwise every
+# configure still recompiles stb even when the prepared LUS source is unchanged.
+set(_isle_stb_impl_old [=[file(WRITE "${STB_DIR}/stb_impl.c" "#define STB_IMAGE_IMPLEMENTATION\n#include \"stb_image.h\"")]=])
+set(_isle_stb_impl_new [=[file(CONFIGURE OUTPUT "${STB_DIR}/stb_impl.c" CONTENT "#define STB_IMAGE_IMPLEMENTATION\n#include \"stb_image.h\"" @ONLY)]=])
+string(FIND "${_isle_common_text}" "${_isle_stb_impl_old}" _isle_stb_impl_location)
+if(_isle_stb_impl_location LESS 0)
+    message(FATAL_ERROR "The pinned stb implementation generation statement changed unexpectedly")
+endif()
+string(REPLACE "${_isle_stb_impl_old}" "${_isle_stb_impl_new}" _isle_common_text "${_isle_common_text}")
+file(WRITE "${_isle_common}" "${_isle_common_text}")
+
+include("${CMAKE_CURRENT_LIST_DIR}/SyncLibultraship.cmake")
+isle_sync_lus_source("${_isle_lus_staging}" "${_isle_lus_private}"
+    "${_isle_lus_inventory}" "${_isle_lus_previous_inputs}")
+file(REMOVE_RECURSE "${_isle_lus_staging}")
 
 # These are pinned MIT renderer support shaders, not game assets. Mount only the
 # exercised backend's tree, rooted exactly as the renderer's resource identifiers.
@@ -137,19 +184,6 @@ file(COPY "${_isle_lus_private}/LICENSE" DESTINATION "${ISLE_HOST_RENDERER_RESOU
 # Preserve the renderer authors' separate MIT notice alongside the project license.
 configure_file("${_isle_lus_private}/src/fast/LICENSE.txt"
     "${ISLE_HOST_RENDERER_RESOURCES}/fast-renderer-LICENSE.txt" COPYONLY)
-
-# Upstream downloads stb without a digest. Replace precisely that acquisition statement
-# in the private snapshot; this is an acquisition check, not a source behavior change.
-set(_isle_common "${_isle_lus_private}/cmake/dependencies/common.cmake")
-file(READ "${_isle_common}" _isle_common_text)
-set(_isle_stb_old [=[file(DOWNLOAD "https://github.com/nothings/stb/raw/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h" "${STB_DIR}/stb_image.h")]=])
-set(_isle_stb_new [=[file(DOWNLOAD "https://raw.githubusercontent.com/nothings/stb/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h" "${STB_DIR}/stb_image.h" EXPECTED_HASH SHA256=c54b15a689e6a1f32c75e2ec23afa442e3e0e37e894b73c1974d08679b20dd5c TLS_VERIFY ON)]=])
-string(FIND "${_isle_common_text}" "${_isle_stb_old}" _isle_stb_location)
-if(_isle_stb_location LESS 0)
-    message(FATAL_ERROR "The pinned stb acquisition statement changed unexpectedly")
-endif()
-string(REPLACE "${_isle_stb_old}" "${_isle_stb_new}" _isle_common_text "${_isle_common_text}")
-file(WRITE "${_isle_common}" "${_isle_common_text}")
 
 # First FetchContent declaration wins. Resolve upstream tag names to recorded commits.
 FetchContent_Declare(ImGui

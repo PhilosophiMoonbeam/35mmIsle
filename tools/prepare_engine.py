@@ -57,6 +57,18 @@ def prepare(repository, manifest_path, output_path, evidence_path):
         if blob != identity["git_blob"] or hashlib.sha256(data).hexdigest() != identity["sha256"]:
             raise ValueError("engine source identity mismatch: " + path)
         sources[path] = data.decode("utf-8").splitlines(keepends=True)
+    # Hash the original native seams that implement defined MIPS arithmetic and
+    # ownership/photo concatenation. These are local sources, never SDK input.
+    native_support = {}
+    root = Path(__file__).resolve().parent.parent
+    for path, identity in manifest["native_support"].items():
+        if path not in ("src/engine.c", "src/engine_math.h", "src/engine_internal.h",
+                        "include/35mmisle/engine.h"):
+            raise ValueError("unadmitted native support path: " + path)
+        digest = hashlib.sha256((root / path).read_bytes()).hexdigest()
+        if digest != identity["sha256"]:
+            raise ValueError("native support identity mismatch: " + path)
+        native_support[path] = identity
     output = ['/* Build-private selected game definitions; see source evidence. */\n',
               '#include "engine_internal.h"\n\n']
     identities = []
@@ -96,6 +108,10 @@ def prepare(repository, manifest_path, output_path, evidence_path):
         "generated_source_sha256": hashlib.sha256(source.encode()).hexdigest(),
         "source_files": manifest["source_files"],
         "definitions": identities,
+        "native_support": native_support,
+        # Historical static observations are evidence, not ROM/runtime inputs
+        # to preparation. The private ROM is neither copied nor published here.
+        "rom_observations": manifest["rom_observations"],
         "scope": "Private game C compilation; no SDK implementation or public asset input",
     }
     # Validate everything before replacing the prior valid generated source.

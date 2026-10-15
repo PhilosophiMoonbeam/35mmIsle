@@ -197,7 +197,7 @@ jobs:
           probe_output="$(timeout 90s xvfb-run --auto-servernum \
             --server-args="-screen 0 800x600x24 -nolisten tcp" \
             env SDL_VIDEODRIVER=x11 SDL_VIDEO_FORCE_EGL=1 LIBGL_ALWAYS_SOFTWARE=1 \
-            build/linux-host/35mmisle-host-probe --frames 240 2>&1)"
+            build/linux-host/35mmisle-host-probe --no-input --frames 240 2>&1)"
           printf '%s\n' "$probe_output"
           [[ "$probe_output" == *"FIRST_SUCCESSFUL_RENDERER_FRAME:"* ]]
           [[ "$probe_output" == *"Submitted 240 real-renderer frames;"* ]]

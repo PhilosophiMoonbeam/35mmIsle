@@ -582,18 +582,229 @@ IsleGameResult isle_game_remove_camera(IsleGame* game, IsleGameCamera* camera) {
     return ISLE_GAME_OK;
 }
 
-void omDeleteGObj(GObj* object) {
-    /* Reject an unadmitted/corrupt payload before ending processes or unlinking.
-     * In particular type 1 is NOT an empty/native DObj implementation.
+static unsigned char* model_dirty(IsleGameModel* model) {
+    return (unsigned char*) (model->nodes + model->capacity);
+}
+
+static bool signed_word_range(double value) {
+    return isfinite(value) && value >= -2147483648.0 && value < 2147483648.0;
+}
+
+static bool valid_model_transform(const IsleGameModelTransform* t) {
+    if (t == NULL) return false;
+    /* Exact GAME ROM kind-28 MUL.S constant, observed at 0x80043DB0:
+     * binary32 0x4422F983. Validate the same binary32 products as its casts.
      */
+    const float angle_factor = 0x1.45f306p+9f;
+    return signed_word_range(t->position.x * 65536.0f) &&
+        signed_word_range(t->position.y * 65536.0f) &&
+        signed_word_range(t->position.z * 65536.0f) &&
+        signed_word_range(t->rotation.x * angle_factor) &&
+        signed_word_range(t->rotation.y * angle_factor) &&
+        signed_word_range(t->rotation.z * angle_factor) &&
+        signed_word_range(t->scale.x * 256.0f) &&
+        signed_word_range(t->scale.y * 256.0f) &&
+        signed_word_range(t->scale.z * 256.0f);
+}
+
+static bool same_vec3(IsleGameVec3 a, IsleGameVec3 b) {
+    return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+static IsleGameResult access_model(IsleGame* game, IsleGameModel* model) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (model == NULL || !model->alive || model->game != game ||
+        !valid_object(game, model->obj) || model->obj->type != 1 ||
+        model->obj->data.model != model) return ISLE_GAME_INVALID_ARGUMENT;
+    return game->fault;
+}
+
+static void remove_model(IsleGameModel* model) {
+    IsleGame* game = model->game;
+    model->obj->type = 0;
+    model->obj->data.any = NULL;
+    --game->counts.models;
+    game->counts.model_nodes -= model->count;
+    game->counts.matrices -= model->count;
+    model->count = 0;
+    model->alive = false;
+    model->nextFree = game->free_models;
+    game->free_models = model;
+}
+
+IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
+    const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output) {
+    IsleGameModel* model;
+    IsleGameModel** best = NULL;
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (output == NULL || !valid_object(game, object) || initial == NULL ||
+        count == 0 || count > UINT32_MAX ||
+        count > (SIZE_MAX - sizeof(IsleGameModel)) / (sizeof(IsleGameModelNode) + 1))
+        return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (object->type != 0 || object->data.any != NULL) return ISLE_GAME_INVALID_STATE;
+    for (size_t i = 0; i < count; ++i) {
+        if ((i == 0 ? initial[i].parent != UINT32_MAX : initial[i].parent >= i) ||
+            !valid_model_transform(&initial[i].transform)) return ISLE_GAME_INVALID_ARGUMENT;
+    }
+    /* Best-fit released block, or one actual-size allocation. All rejection
+     * precedes free-list/arena mutation and object publication.
+     */
+    for (IsleGameModel** slot = &game->free_models; *slot != NULL; slot = &(*slot)->nextFree) {
+        if ((*slot)->capacity >= count &&
+            (best == NULL || (*slot)->capacity < (*best)->capacity)) best = slot;
+    }
+    if (best != NULL) {
+        model = *best;
+        *best = model->nextFree;
+    } else {
+        model = allocate(game, sizeof(*model) + count * (sizeof(model->nodes[0]) + 1),
+                         _Alignof(IsleGameModel));
+        if (model == NULL) return ISLE_GAME_EXHAUSTED;
+        model->capacity = count;
+    }
+    model->nextFree = NULL;
+    model->obj = object;
+    model->game = game;
+    model->count = count;
+    model->alive = true;
+    for (size_t i = 0; i < count; ++i) {
+        model->nodes[i] = (IsleGameModelNode){
+            .transform = initial[i].transform, .parent = initial[i].parent,
+            .first_child = UINT32_MAX, .next_sibling = UINT32_MAX
+        };
+        model_dirty(model)[i] = 1;
+    }
+    /* Reverse prepend preserves the original order, including geometry-less
+     * nodes, in linear time without a second allocation of child-tail indices.
+     */
+    for (size_t i = count; i-- > 1;) {
+        IsleGameModelNode* parent = &model->nodes[model->nodes[i].parent];
+        model->nodes[i].next_sibling = parent->first_child;
+        parent->first_child = (uint32_t) i;
+    }
+    object->type = 1;
+    object->data.model = model;
+    ++game->counts.models;
+    game->counts.model_nodes += count;
+    game->counts.matrices += count;
+    *output = model;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_remove_model(IsleGame* game, IsleGameModel* model) {
+    IsleGameResult result = access_model(game, model);
+    if (result != ISLE_GAME_OK) return result;
+    remove_model(model);
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_set_transform(IsleGame* game, IsleGameModel* model,
+    size_t index, const IsleGameModelTransform* transform) {
+    IsleGameResult result = access_model(game, model);
+    if (result != ISLE_GAME_OK) return result;
+    if (index >= model->count || !valid_model_transform(transform)) return ISLE_GAME_INVALID_ARGUMENT;
+    IsleGameModelTransform* old = &model->nodes[index].transform;
+    if (same_vec3(old->position, transform->position) &&
+        same_vec3(old->rotation, transform->rotation) &&
+        same_vec3(old->scale, transform->scale)) return ISLE_GAME_OK;
+    *old = *transform;
+    model_dirty(model)[index] = 1;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_set_flags(IsleGame* game, IsleGameModel* model,
+    size_t index, uint32_t flags) {
+    IsleGameResult result = access_model(game, model);
+    if (result != ISLE_GAME_OK) return result;
+    if (index >= model->count) return ISLE_GAME_INVALID_ARGUMENT;
+    model->nodes[index].flags = flags;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
+    const IsleGameModelNode** output, size_t* count) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    if (count != NULL) *count = 0;
+    result = access_model(game, model);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || count == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    for (size_t i = 0; i < model->count; ++i) {
+        if (!model_dirty(model)[i]) continue;
+        IsleGameModelNode* node = &model->nodes[i];
+        const IsleGameModelTransform* t = &node->transform;
+        hal_rotate_rpy_translate_scale(&node->fixed, t->position.x, t->position.y, t->position.z,
+            t->rotation.x, t->rotation.y, t->rotation.z, t->scale.x, t->scale.y, t->scale.z);
+        ++node->revision;
+        model_dirty(model)[i] = 0;
+    }
+    *output = model->nodes;
+    *count = model->count;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_bake_photo_transform(
+    const IsleGameModelTransform* unbaked_root, const IsleGameVec3* position,
+    float yaw, float game_model_scale, IsleGameModelTransform* output) {
+    /* Copy before clearing: output may alias the root or its position. */
+    IsleGameModelTransform root = {0}, baked;
+    IsleGameVec3 world_position = {0};
+    Mtx4f local, world, concatenated;
+    if (unbaked_root != NULL) root = *unbaked_root;
+    if (position != NULL) world_position = *position;
+    if (output != NULL) *output = (IsleGameModelTransform){0};
+    if (unbaked_root == NULL || position == NULL || output == NULL ||
+        !valid_model_transform(&root) || !isfinite(yaw) || !isfinite(game_model_scale) ||
+        !isfinite(world_position.x) || !isfinite(world_position.y) || !isfinite(world_position.z))
+        return ISLE_GAME_INVALID_ARGUMENT;
+    float scale = game_model_scale * 0.1f;
+    if (!isfinite(scale)) return ISLE_GAME_INVALID_ARGUMENT;
+    hal_rotate_rpy_translate_scale_f(local, root.position.x, root.position.y, root.position.z,
+        root.rotation.x, root.rotation.y, root.rotation.z, root.scale.x, root.scale.y, root.scale.z);
+    hal_rotate_rpy_translate_scale_f(world, world_position.x, world_position.y, world_position.z,
+        0.0f, yaw, 0.0f, scale, scale, scale);
+    /* Original native row-vector concatenation, public guMtxCatF contract;
+     * no SDK implementation. Explicit left-associated binary32 operations,
+     * with contraction/reassociation disabled by the engine target.
+     */
+    for (size_t row = 0; row < 4; ++row) {
+        for (size_t col = 0; col < 4; ++col) {
+            concatenated[row][col] = ((local[row][0] * world[0][col] +
+                local[row][1] * world[1][col]) + local[row][2] * world[2][col]) +
+                local[row][3] * world[3][col];
+            if (!isfinite(concatenated[row][col])) return ISLE_GAME_INVALID_ARGUMENT;
+        }
+    }
+    baked = root;
+    baked.position = (IsleGameVec3){concatenated[3][0], concatenated[3][1], concatenated[3][2]};
+    baked.rotation.y += yaw;
+    baked.scale.x *= scale;
+    baked.scale.y *= scale;
+    baked.scale.z *= scale;
+    if (!valid_model_transform(&baked)) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = baked;
+    return ISLE_GAME_OK;
+}
+
+void omDeleteGObj(GObj* object) {
+    /* Reject an unadmitted/corrupt payload before ending processes or unlinking. */
     IsleGame* game = active_game;
     if (object == NULL || object == omCurrentObject) {
         omD_8004AC54 = 2;
         return;
     }
     if (!valid_object(game, object) ||
-        (object->type != 0 && object->type != 2 && object->type != 3) ||
+        (object->type != 0 && object->type != 1 && object->type != 2 && object->type != 3) ||
         (object->type == 0 && object->data.any != NULL) ||
+        (object->type == 1 && (object->data.model == NULL ||
+          !object->data.model->alive || object->data.model->game != game ||
+          object->data.model->obj != object)) ||
         (object->type == 3 && (object->data.cam == NULL ||
           !object->data.cam->alive || object->data.cam->game != game ||
           object->data.cam->obj != object))) {
@@ -606,6 +817,9 @@ void omDeleteGObj(GObj* object) {
         if (before == object->processListHead) return;
     }
     switch (object->type) {
+        case 1:
+            remove_model(object->data.model);
+            break;
         case 2:
             while (object->data.sobj != NULL) omGObjRemoveSprite(object->data.sobj);
             break;

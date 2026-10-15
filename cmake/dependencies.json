@@ -106,7 +106,7 @@
   },
   "native_required_feedback": {
     "channel_target": "isle-required-work",
-    "backend_target": "isle-canonical-capture",
+    "backend_target": "isle-canonical-executor",
     "required_slot_capacity": 1,
     "independent_of_optional_visual_leases": true,
     "typed_owner_epoch_serial_tokens": true,
@@ -115,10 +115,15 @@
     "close_before_continuation_join": true,
     "Granite_frame_context_recycled_after_old_lease": true,
     "persistent_backend": true,
-    "persistent_canonical_GAME_memory": false,
-    "capture_RDRAM_and_hidden_reinitialized_each_execution": true,
+    "persistent_shared_RSP_RDP_RDRAM": true,
+    "actual_RSP_machine_borrows_processor_allocation": true,
+    "exclusive_mapped_CPU_preparation": true,
+    "CPU_and_RSP_writes_flushed_before_RDP_enqueue": true,
+    "per_operation_RDRAM_or_hidden_reset": false,
+    "GAME_photo_memory_producer_attached": false,
     "observed_Linux": {
-      "actual_RSP_executions_preparing_retained_captures": 2,
+      "actual_RSP_tasks": 64,
+      "CPU_preparations": 64,
       "canonical_executions": 64,
       "CPU_borrows": 64,
       "actual_backend_lease_retirements": 64,
@@ -126,11 +131,14 @@
       "visual_submissions": 0,
       "native_C_updates": 3,
       "authored_color_samples_per_consumption": 6,
-      "canonical_color_hidden_digest": "12064675857534137910",
+      "canonical_color_hidden_digest": "4938304128900258360",
+      "same_actual_allocation_and_persistent_pixel_canary_checked": true,
       "channel_quiescent_before_backend_shutdown": true,
-      "forbidden_node_attempts": 0,
+      "whole_trace_PID_and_terminal_counts": [106, 106],
+      "known_DRM_input_audio_udmabuf_attempts": 0,
       "access_denials": 0,
-      "proof_manifest_sha256": "029b5bac02f6e3b8367be4d537e2341d6eab394598d442bd7eaa9180a6ad93b4"
+      "universal_strict_descriptor_qualification": false,
+      "proof_manifest_sha256": "a00a10bcfb958ffec5631f18464ed4851129a5080261fa92943c190a98a9379c"
     },
     "private_software_transport": {
       "Mesa_version": "26.0.8",
@@ -146,6 +154,9 @@
     },
     "GAME_photo_scene_Windows11_physical_device_release_qualified": false
   },
+  "native_pidgey_resources": {"target": "isle-pidgey-resources", "manifest": "cmake/pidgey-resource-inputs.json", "verified_GAME_blobs": 8, "live_nodes": 17, "payloads": 15, "display_lists": 23, "commands": 971, "vertices": 602, "texture_palette_views": 21, "installed_disjoint_spans": 42, "installed_bytes": 36752, "parent_Release_and_ASan_UBSan_actual_ROM_install_passed": true, "unrelated_RDRAM_bytes_checked": 8351856, "outer_guard_bytes": 128, "proof_manifest_sha256": "818ab451c4af694bf46738011a3ce37b88f5d4f00d0cfd595dfb645c75350022", "payload_published": false},
+  "native_pidgey_producer": {"target": "isle-pidgey-producer", "native_GObj_payload_type": 1, "GAME_math_definition_count": 26, "pose": "Actual model-animation pose0 sampling; no material animation", "root_bake": "unbaked local x photo world; model scale2.0 *0.1", "material": "Actual node9/payload7 segment0E five-command A1 object and original CI/TLUT geometry lists", "same_persistent_canonical_allocation": true, "per_frame_arena_growth_bytes": 0, "actual_Debug_RSP_RDP_tasks_and_retirements": 6, "baseline_textured_Z_triangles": 303, "TLUT_and_texture_loads_each": [27, 27], "repeat_and_restore_exact_color_and_Z": true, "time_world_and_camera_changes_exercised": true, "frustum_ratio_bug": "Failing actual model emitted0triangles; exact GAME score ROM5a330..5a350 wire values corrected, no MVP/culling workaround", "actual_private_score_style_surfaces_inspected": true, "whole_trace_PID_and_terminal_counts": [38, 38], "known_DRM_input_audio_udmabuf_attempts": 0, "permission_failures": 0, "proof_manifest_sha256": "9ee54ff8df3884c1fe2a131f2ea87df1466d8ac8cc8ec1cbd5841d95bcb3c4cc", "Original_hardware_pixel_parity_normal_lit_preview_full_photo_game_Windows11_release_qualified": false},
+  "private_LUS_materialization": {"recipe": "cmake/Libultraship.cmake", "synchronizer": "cmake/SyncLibultraship.cmake", "fresh_exact_export_patch_acquisition_validation_every_configure": true, "changed_bytes_only_live_copy": true, "owned_input_inventory_not_trusted_cache": true, "generated_only_files_preserved": true, "stb_implementation_content_stable": true, "observed_Linux_reconfigure_build_pairs": 2, "unnecessary_LUS_or_stb_object_recompiles": 0, "actual_postconfigure_no_input_host_frames": 4, "Windows_runtime_incrementality_qualified": false},
   "native_game_rng": {
     "target": "isle-native",
     "header": "include/35mmisle/rng.h",
@@ -181,11 +192,11 @@
   "purpose": "Selected dependency evidence and observed nonplayable host composition; not a complete package lock or release approval",
   "targets": ["Linux x64", "Windows 11 x64"],
   "current_original_build": {"default_lus_linked": false, "opt_in_host_probe_lus_linked": true, "private_game_source_candidate_selected": true, "languages": ["C11", "C++20"], "cmake_minimum": "3.24", "public_fixtures": "independently authored synthetic and procedural inputs only"},
-  "private_game_candidate": {"repository": "https://github.com/ethteck/pokemonsnap.git", "commit": "df8815e75f3d79618466e01e0827c6165b93d11c", "manifest": "cmake/snap-engine-inputs.json", "definitions": 21, "source_files": ["src/sys/om.c", "src/AA0650.c", "src/sys/matrix.c", "include/sys/mtx.h"], "default_enabled": false, "use": "Private native development and ROM-free synthetic build execution; native nonanimated camera ownership and exact GAME perspective/look-at/fixed computation", "publication": "Complete game bodies and generated C remain outside public source/packages; no blanket MIT or redistribution grant", "sdk_headers_or_implementation_compiled": false, "mutable_worktree_used": false},
-  "native_camera_component": {"ownership": "Original native arena/recycled type-3 payload and two matrix nodes", "GAME_computation": ["hal_perspective_fast_f", "hal_look_at_f", "hal_mtx_f2l"], "fixed_representation": "Native numeric packed words copied into aligned word-swapped RDRAM; no redundant serialized cache", "observed_linux_standalone_API": {"photo_FOV": [30, 60], "near": 10, "far": 25600, "perspective_normalization": 5, "matrix_update_arena_growth_bytes": 0, "all_owners_retired": true}, "actual_RSP_upload_qualified": false, "model_photo_or_animation_qualified": false},
+  "private_game_candidate": {"repository": "https://github.com/ethteck/pokemonsnap.git", "commit": "df8815e75f3d79618466e01e0827c6165b93d11c", "manifest": "cmake/snap-engine-inputs.json", "definitions": 26, "source_files": ["src/sys/om.c", "src/AA0650.c", "src/sys/matrix.c", "include/sys/mtx.h"], "default_enabled": false, "use": "Private native development and ROM-free synthetic builds; native camera/type1-model ownership, exact GAME camera/kind28/photo transform math", "publication": "Complete GAME bodies and generated C remain outside public source/packages; no blanket MIT or redistribution grant", "sdk_headers_or_implementation_compiled": false, "mutable_worktree_used": false},
+  "native_camera_component": {"ownership": "Original native arena/recycled type-3 payload and two matrix nodes", "GAME_computation": ["hal_perspective_fast_f", "hal_look_at_f", "hal_mtx_f2l"], "fixed_representation": "Native numeric packed words copied into aligned word-swapped RDRAM; no redundant serialized cache", "observed_linux_standalone_API": {"photo_FOV": [30, 60], "near": 10, "far": 25600, "perspective_normalization": 5, "matrix_update_arena_growth_bytes": 0, "all_owners_retired": true}, "actual_RSP_upload_qualified": true, "full_scene_photo_or_all_animation_qualified": false},
   "input_disabled_presentation": {"flag": "--no-input", "default_input_unchanged": true, "driver_isolation": false, "observed_linux_intro_presentations": 120, "native_C_updates": 122, "visual_admissions_and_terminals": 121, "actual_default_framebuffer_inspected": "Private real SDL swap60 original sprite, swap100 black, 640x480 front framebuffer; every actual swap forwarded", "whole_trace_PID_and_terminal_pairs": [[70,70],[70,70],[68,68]], "known_DRM_input_audio_udmabuf_attempts": 0, "EACCES_EPERM_rows": 0, "evidence_manifest_sha256": "1cc8c47baf47bb5253855a354856c6c5b247b0382743a988f3e7a46e91e85624", "physical_input_gameplay_Windows11_qualified": false},
   "canonical_rdp_experiment": {"default_enabled": false, "manifest": "cmake/rdp-dependencies.json", "build": "cmake/ParallelRdp.cmake", "renderer_commit": "1cecd042b2619bc505c12bfdc713808386f2b54d", "exact_archive_pins": 10, "shader_compiler": "Built from exact private Granite/compiler closure; two hash-bounded missing-standard-header adaptations", "observed_runtime": "Actual CPU Vulkan llvmpipe LLVM21.1.8, Mesa26.0.8, API1.4.335; three completed stages, zero errors", "independent_private_comparison": {"reference_commit": "31bdb1f0a79dd726017a38432540c6b5db0fa117", "reference_terms": "Old MAME noncommercial/source-disclosure; private standalone research only, not port-linked or distributed", "exact_matched_bytes": 718848, "different_bytes": 0}, "packaged": false, "limits": "Original synthetic workload only; no private-ROM/RSP/custom-matrix/full-photo/hardware/Windows Vulkan qualification"},
-  "canonical_rsp_experiment": {"default_enabled": false, "manifest": "cmake/rsp-dependencies.json", "build": "cmake/ParallelRsp.cmake", "core_commit": "9ab776a2ce28899769c4f911403234cac62fc799", "core_license_selection": "MIT", "statically_linked_lightning": "LGPL-3.0-or-later, not MIT", "adaptation": "bounded-block-host-services-msvc-safe-emission-v2", "source_composition": "Explicit library-only JIT/SIMD sources and original host CP0 service; no SDK, upstream runner/fuzzer/debug JIT or game CPU", "observed_runtime": "GCC Debug/Release and fully source-instrumented Clang ASan+UBSan; actual exact-ROM graphics/line and native-produced audio tasks", "native_msvc_ci": {"commit": "3e478d80d34a30c8f456ed43430587b95a2c923c", "run": "https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38675299538", "jobs_passed": 9, "jobs_total": 9, "native_debug_release_tests": 10, "combined_renderer_compiler_built": true, "standard_token_conformance": "/permissive-", "host": "Windows Server 2022; not Windows 11 or Windows Vulkan runtime qualification"}, "sanitizer_limit": "Generated instructions uninstrumented; Clang function-type-cookie check disabled only on foreign JIT-entry call; ASan and other UBSan remain", "graphics_only": false, "rsp_fullsync_is_gpu_completion": false, "after_sp_replay": {"actual_vulkan_completed": true, "memory": "Separate explicitly initialized RDRAM; not shared production coherence", "independent_cpu_reference": "31bdb1f0a79dd726017a38432540c6b5db0fa117; old MAME terms, private reference-only", "matched_bytes": 18816, "different_bytes": 0}, "independent_frontend_parity": false, "packaged": false, "release_approved": false},
+  "canonical_rsp_experiment": {"default_enabled": false, "manifest": "cmake/rsp-dependencies.json", "build": "cmake/ParallelRsp.cmake", "core_commit": "9ab776a2ce28899769c4f911403234cac62fc799", "core_license_selection": "MIT", "statically_linked_lightning": "LGPL-3.0-or-later, not MIT", "adaptation": "bounded-block-host-services-msvc-safe-emission-v2", "source_composition": "Explicit library-only JIT/SIMD sources and original host CP0 service; no SDK, upstream runner/fuzzer/debug JIT or game CPU", "observed_runtime": "GCC Debug/Release and fully source-instrumented Clang ASan+UBSan; actual exact-ROM graphics/line and native-produced audio tasks", "native_msvc_ci": {"commit": "3e478d80d34a30c8f456ed43430587b95a2c923c", "run": "https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38675299538", "jobs_passed": 9, "jobs_total": 9, "native_debug_release_tests": 10, "combined_renderer_compiler_built": true, "standard_token_conformance": "/permissive-", "host": "Windows Server 2022; not Windows 11 or Windows Vulkan runtime qualification"}, "sanitizer_limit": "Generated instructions uninstrumented; Clang function-type-cookie check disabled only on foreign JIT-entry call; ASan and other UBSan remain", "graphics_only": false, "rsp_fullsync_is_gpu_completion": false, "historical_after_sp_replay": {"actual_vulkan_completed": true, "memory": "Former separate initialized RDRAM; superseded by actual shared-memory execution", "independent_cpu_reference": "31bdb1f0a79dd726017a38432540c6b5db0fa117; old MAME terms, private reference-only", "matched_bytes": 18816, "different_bytes": 0}, "current_canonical_execution": "Actual new RSP tasks on processor-owned persistent RDRAM; authored target clears, one cold hidden initialization; real RDP device completion before CPU readback", "actual_native_camera_upload": {"tasks": 2, "normalization": 5, "FOV30_colored_pixels": 153, "FOV60_colored_pixels": 28, "same_canonical_allocation_and_canary": true, "GAME_model_or_photo_qualified": false}, "independent_frontend_parity": false, "packaged": false, "release_approved": false},
   "native_audio_experiment": {
     "default_producer_enabled": true,
     "default_ROM_or_SDL_consumer_enabled": false,
@@ -273,6 +284,6 @@
     {"name": "script keys and generated DefaultKeys.h", "gate": "ENABLE_SCRIPTING=OFF"}
   ],
   "unresolved_composition": ["Installed Linux/Windows package content identities and transitive platform/toolchain inputs", "Font Awesome embedded font and generated icon-header exact versions and governing terms", "Transitive notices and content identities including libzip compression libraries, spdlog/fmt, StrHash64 and embedded glob.c dual MIT/GPL notice", "Upstream and patched-source notice bundle and final static/dynamic binary composition", "Windows host build/run and actual Windows 11 qualification; Linux hardware-GPU and GLX qualification"],
-  "excluded_reference_imports": ["Restricted SDK implementation and headers", "Snap code outside the exact private thirteen-definition allowlist; all complete game bodies from public source/packages", "modified Snap fork", "Ghostship and its unaudited nested LUS/Torch gitlinks", "Zelda implementation"],
+  "excluded_reference_imports": ["Restricted SDK implementation and headers", "GAME bodies outside the explicit private source-span allowlist; complete GAME bodies from public source/packages", "modified Snap fork", "Ghostship and its unaudited nested LUS/Torch gitlinks", "Zelda implementation"],
   "invalidation": "Any source pin, patch, package, option, target, compiler ABI, embedded data or linking change requires affected provenance, notice, API/GBI and validation review again"
 }

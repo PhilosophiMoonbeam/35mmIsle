@@ -14,6 +14,7 @@ typedef struct GObj IsleGameObject;
 typedef struct GObjProcess IsleGameProcess;
 typedef struct SObj IsleGameSprite;
 typedef struct OMCamera IsleGameCamera;
+typedef struct IsleGameModel IsleGameModel;
 typedef void (*IsleGameCallback)(IsleGameObject* object, void* user);
 
 typedef enum IsleGameResult {
@@ -36,6 +37,8 @@ typedef struct IsleGameCounts {
     size_t sprites;
     size_t cameras;
     size_t matrices;
+    size_t models;
+    size_t model_nodes;
 } IsleGameCounts;
 
 /* One active authoritative OM world, one gameplay timeline. Caller-owned arena
@@ -166,6 +169,48 @@ IsleGameResult isle_game_camera_perspective_normalization(IsleGame* game,
                                                          IsleGameCamera* camera,
                                                          uint16_t* output);
 IsleGameResult isle_game_remove_camera(IsleGame* game, IsleGameCamera* camera);
+
+typedef struct IsleGameVec3 { float x, y, z; } IsleGameVec3;
+typedef struct IsleGameModelTransform {
+    IsleGameVec3 position, rotation, scale;
+} IsleGameModelTransform;
+typedef struct IsleGameModelNodeInit {
+    uint32_t parent; /* UINT32_MAX root; otherwise an earlier node index. */
+    IsleGameModelTransform transform;
+} IsleGameModelNodeInit;
+typedef struct IsleGameModelNode {
+    IsleGameModelTransform transform;
+    uint32_t parent, first_child, next_sibling; /* UINT32_MAX absent. */
+    uint32_t flags;
+    IsleGameFixedMatrix fixed; /* Direct GAME kind-28 integer computation. */
+    uint64_t revision;
+} IsleGameModelNode;
+
+/* Native type-1 payload: exactly one root, parent-before-child node order.
+ * Actual-size arena storage is reused after removal. No mutation/compute
+ * allocates. Local matrices compute lazily, only after transform changes;
+ * flags do not dirty matrices, and parent changes do not dirty child locals.
+ * Node borrows stay stable until model removal/object deletion. Handles expire
+ * at removal, including slot reuse. Pointer/count outputs clear on errors.
+ * Finite angle, scale*256 and translation*65536 must fit signed int32 before
+ * GAME casts; MIPS low-word products and arithmetic shifts are defined explicitly.
+ */
+IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
+    const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output);
+IsleGameResult isle_game_remove_model(IsleGame* game, IsleGameModel* model);
+IsleGameResult isle_game_model_set_transform(IsleGame* game, IsleGameModel* model,
+    size_t index, const IsleGameModelTransform* transform);
+IsleGameResult isle_game_model_set_flags(IsleGame* game, IsleGameModel* model,
+    size_t index, uint32_t flags);
+IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
+    const IsleGameModelNode** output, size_t* count);
+/* Alias-safe, noncumulative root-local × photo-world bake. Always pass the
+ * unbaked animated root. Photo-world uniform scale is game_model_scale*0.1f.
+ * Output is cleared on failure; this pure calculation has no game ownership.
+ */
+IsleGameResult isle_game_model_bake_photo_transform(
+    const IsleGameModelTransform* unbaked_root, const IsleGameVec3* position,
+    float yaw, float game_model_scale, IsleGameModelTransform* output);
 
 #ifdef __cplusplus
 }

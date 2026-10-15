@@ -90,6 +90,15 @@ public:
         command(0xe1000000, main_address(data_rom));
         command(0xdd000000 | (data_bytes - 1), main_address(text_rom));
     }
+    void clear_target() {
+        command(0xe7000000, 0);                         // PipeSync before fill state.
+        command(0xff100000 | (width - 1), color_address);
+        command(0xed000000, ((width * 4) << 12) | (height * 4));
+        command(0xef300000, 0);                        // Fill cycle, no depth/blending.
+        command(0xf7000000, 0x00010001);                // Opaque black RGBA5551 pair.
+        command(0xf6000000 | (((width - 1) * 4) << 12) | ((height - 1) * 4), 0);
+        // phase() issues PipeSync and restores one-cycle shade before drawing.
+    }
     void phase(unsigned marker, bool partial, bool line) {
         command(0xe7000000, 0);                         // PipeSync.
         command(0xff100000 | (width - 1), color_address);
@@ -170,48 +179,13 @@ const char* name(Case kind) noexcept {
     return kind == Case::matrix ? "fractional-matrix" : "in-list-graphics-line-graphics";
 }
 
-Capture::Capture() : words_(capture_words), packets_(capture_words / 2) {}
-void Capture::clear() noexcept {
-    word_count_ = packet_count_ = 0;
-    rejected_ = false;
-}
-bool Capture::sink(void* context, std::span<const std::uint32_t> packet) noexcept {
-    auto& capture = *static_cast<Capture*>(context);
-    if (packet.size() < 2 || packet.size() > 44 || (packet.size() & 1) != 0 ||
-        packet.size() > capture.words_.size() - capture.word_count_ ||
-        capture.packet_count_ == capture.packets_.size()) {
-        capture.rejected_ = true;
-        return false;
-    }
-    capture.packets_[capture.packet_count_++] = {capture.word_count_, packet.size()};
-    std::copy(packet.begin(), packet.end(), capture.words_.data() + capture.word_count_);
-    capture.word_count_ += packet.size();
-    return true;
-}
-std::span<const std::uint32_t> Capture::words() const noexcept {
-    return {words_.data(), word_count_};
-}
-std::span<const Packet> Capture::packets() const noexcept {
-    return {packets_.data(), packet_count_};
-}
-
-Fixture::Fixture(std::span<const std::byte> canonical_rom, Case kind) : rdram(rdram_bytes / 4) {
-    load(canonical_rom, kind);
-}
-void Fixture::load(std::span<const std::byte> canonical_rom, Case kind) {
+void initialize_fixture_memory(std::span<std::uint32_t> rdram,
+                               std::span<const std::byte> canonical_rom) {
+    require(rdram.size() == rdram_bytes / 4, "fixture requires exactly 8 MiB of caller-owned RDRAM");
     require(canonical_rom.size() == rom::us_size, "fixture requires the admitted complete ROM snapshot");
-    // Validate every fixed region before any RAM write. No native pointer enters a command.
     range(main_ram_begin, main_rom_end - main_rom_begin);
     range(main_bss_begin, main_bss_end - main_bss_begin);
-    range(commands_address, 0x1000);
-    range(projection_address, 128);
-    range(viewport_address, 16);
-    range(vertices_address, 48);
-    range(stack_address, 0x400);
-    range(yield_address, 0xc00);
-    range(task_record_address, 64);
     range(boot_address, boot_bytes);
-    range(output_address - 64, output_end - output_address + 128);
     range(main_address(graphics_text_rom), text_bytes);
     range(main_address(graphics_data_rom), data_bytes);
     range(main_address(line_text_rom), text_bytes);
@@ -226,6 +200,28 @@ void Fixture::load(std::span<const std::byte> canonical_rom, Case kind) {
     // gRspBootCode is loaded separately by main.c:114 from IPL ROM offset 0xb70;
     // it is not the different linked rspbootTextStart resource in main text.
     memory.copy(boot_address, canonical_rom.subspan(boot_rom_begin, boot_bytes));
+}
+
+Fixture::Fixture(std::span<std::uint32_t> memory_words, Case kind) : rdram(memory_words) {
+    require(rdram.size() == rdram_bytes / 4, "fixture requires exactly 8 MiB of caller-owned RDRAM");
+    // Validate each declared per-task workspace before any write. No task
+    // preparation touches the loaded main/BSS, boot, color or hidden regions.
+    range(commands_address, 0x1000);
+    range(projection_address, 128);
+    range(viewport_address, 16);
+    range(vertices_address, 48);
+    range(stack_address, 0x400);
+    range(yield_address, 0xc00);
+    range(task_record_address, 64);
+    range(output_address - 64, output_end - output_address + 128);
+    const auto guard = [&](std::uint32_t address, std::size_t size) {
+        std::fill(rdram.begin() + address / 4, rdram.begin() + (address + size) / 4, guard_word);
+    };
+    guard(commands_address, 0x1000);
+    guard(stack_address, 0x400);
+    guard(yield_address, 0xc00);
+    guard(output_address - 64, output_end - output_address + 128);
+    Memory memory(rdram);
     memory.matrix(projection_address, {
         0x4000, 0, 0, 0, 0, 0x4000, 0, 0,
         0, 0, 0x4000, 0, 0, 0, 0, 0x10000});
@@ -246,6 +242,7 @@ void Fixture::load(std::span<const std::byte> canonical_rom, Case kind) {
         memory.word(address + 12, colors[index]);
     }
     List list(memory);
+    list.clear_target();
     if (kind == Case::matrix) {
         list.phase(0, false, false);
         list.phase(1, true, false);
@@ -264,7 +261,7 @@ void Fixture::load(std::span<const std::byte> canonical_rom, Case kind) {
     serialize_task(memory, task);
 }
 
-Geometry validate(const Fixture& fixture, Case kind, const Capture& capture, const rsp::Result& result) {
+Geometry validate(const Fixture& fixture, Case kind, const rsp::PacketBuffer& capture, const rsp::Result& result) {
     require(bool(result), "RSP execution failed; captured output is invalid and will not be published");
     require(!capture.rejected(), "bounded packet sink rejected the task");
     // HALT+BROKE+TASKDONE, with no pending DMA/IO, single-step, or yield signals.
@@ -286,14 +283,20 @@ Geometry validate(const Fixture& fixture, Case kind, const Capture& capture, con
     bool saw_full_sync = false;
     bool line_scissor = false;
     bool saw_line_scissor = false;
+    bool color_defined = false, scissor_defined = false;
+    bool fill_mode = false, fill_color = false, cleared = false, shade_mode = false, combine = false;
+    std::size_t next_packet = 0;
     for (const auto& packet : capture.packets()) {
-        require(packet.offset <= capture.words().size() && packet.count <= capture.words().size() - packet.offset,
-                "capture contains an invalid packet range");
+        require(packet.offset == next_packet && packet.offset <= capture.words().size() &&
+                packet.count >= 2 && packet.count <= capture.words().size() - packet.offset,
+                "packet buffer contains an invalid or noncontiguous packet range");
+        next_packet += packet.count;
         const auto words = capture.words().subspan(packet.offset, packet.count);
         const auto opcode = (words[0] >> 24) & 0x3f;
         require(!saw_full_sync, "unexpected RDP output after final FullSync");
         if (opcode >= 8 && opcode <= 15) {
-            require(phase < geometry.markers, "geometry appeared before its explicit primitive marker");
+            require(phase < geometry.markers && cleared && shade_mode && combine,
+                    "geometry appeared before the authored clear and explicit shade state/marker");
             const bool line = kind == Case::reload && phase == 1;
             require(line == line_scissor,
                     "line narrowing must be active only for the line primitive and restored before graphics");
@@ -319,6 +322,7 @@ Geometry validate(const Fixture& fixture, Case kind, const Capture& capture, con
                     "unexpected vertical scissor or interlace state");
             if (ulx == 0 && lrx == width * 4) {
                 line_scissor = false;
+                scissor_defined = true;
             } else {
                 // Line microcode temporarily bounds X to the two transformed
                 // endpoints: clip X=-.4375,.0625 -> framebuffer X=18,34.
@@ -333,24 +337,52 @@ Geometry validate(const Fixture& fixture, Case kind, const Capture& capture, con
             break;
         }
         case 0x2f:
-            require((words[0] & 0xffffff) == 0xf0 && words[1] == 0,
-                    "unexpected cycle, depth, blend or texture state");
+            require(words[1] == 0, "unexpected depth, blend or texture state");
+            if ((words[0] & 0xffffff) == 0x300000) {
+                require(!fill_mode && !cleared && geometry.markers == 0,
+                        "fill mode is allowed only for the single leading authored clear");
+                fill_mode = true;
+            } else {
+                require((words[0] & 0xffffff) == 0xf0 && cleared,
+                        "expected one-cycle shade after the authored target clear");
+                fill_mode = false;
+                shade_mode = true;
+            }
+            break;
+        case 0x36:
+            require(fill_mode && fill_color && color_defined && scissor_defined && !cleared &&
+                    geometry.markers == 0 && (words[0] & 0xffffff) ==
+                        ((((width - 1) * 4) << 12) | ((height - 1) * 4)) && words[1] == 0,
+                    "expected exactly one full-target inclusive fill rectangle before all draw phases");
+            cleared = true;
+            break;
+        case 0x37:
+            require(fill_mode && !fill_color && !cleared && geometry.markers == 0 &&
+                    (words[0] & 0xffffff) == 0 && words[1] == 0x00010001,
+                    "expected the authored opaque-black RGBA5551 fill color");
+            fill_color = true;
             break;
         case 0x3a:
-            require(geometry.markers < (kind == Case::matrix ? 2u : 3u) &&
+            require(cleared && shade_mode && geometry.markers < (kind == Case::matrix ? 2u : 3u) &&
                     words[1] == markers[geometry.markers], "unexpected primitive phase marker/order");
             phase = static_cast<unsigned>(geometry.markers++);
             break;
-        case 0x3c: break;
+        case 0x3c:
+            require((words[0] & 0xffffff) == 0x887f10 && words[1] == 0x88fe793c,
+                    "expected the authored shade-only combiner");
+            combine = true;
+            break;
         case 0x3f:
             require((words[0] & 0xffffff) == (0x100000 | (width - 1)) && words[1] == color_address,
                     "unexpected synthetic color image format/address");
+            color_defined = true;
             break;
         default: throw std::runtime_error("unexpected RDP opcode in original geometry stimulus");
         }
     }
-    require(saw_full_sync && geometry.markers == (kind == Case::matrix ? 2u : 3u),
-            "missing final FullSync or primitive phase");
+    require(next_packet == capture.words().size() && cleared && !fill_mode && saw_full_sync &&
+            geometry.markers == (kind == Case::matrix ? 2u : 3u),
+            "missing authored clear, final FullSync or primitive phase");
     require(!line_scissor && (kind != Case::reload || saw_line_scissor),
             "line microcode must narrow and restore its temporary scissor");
     require(phase_triangles[0] == 1 && phase_triangles[1] >= 1,
@@ -368,7 +400,8 @@ Geometry validate(const Fixture& fixture, Case kind, const Capture& capture, con
     return geometry;
 }
 
-void require_repeat(const Capture& first, const rsp::Result& a, const Capture& second, const rsp::Result& b) {
+void require_repeat(const rsp::PacketBuffer& first, const rsp::Result& a,
+                    const rsp::PacketBuffer& second, const rsp::Result& b) {
     require(first.words().size() == second.words().size() &&
             first.packets().size() == second.packets().size() &&
             std::equal(first.packets().begin(), first.packets().end(), second.packets().begin()),

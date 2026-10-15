@@ -36,6 +36,9 @@ class IntroProbe final {
     bool FeedbackDiagnostic() const noexcept;
     std::uint32_t CompletedFeedbackCycles() const;
 #ifdef ISLE_HAS_CANONICAL_RDP
+    bool TakeRequiredPreparation(isle::host::RequiredToken&);
+    isle::host::ClockError PublishRequiredPreparation(isle::host::RequiredToken,
+                                                     isle::host::RequiredWritableView);
     bool TakeRequired(isle::host::RequiredRequest&);
     isle::host::ClockError PublishRequired(isle::host::RequiredToken, isle::host::RequiredMemoryView);
     isle::host::ClockError FailRequired(isle::host::RequiredToken);

@@ -226,8 +226,8 @@ class ProbeHost final {
     void EnableRequiredFeedback(bool requireCpu, bool decline) {
         requiredExecutor.emplace(requireCpu);
         declinePresentations = decline;
-        std::cout << "REQUIRED_FEEDBACK_ENABLED: one persistent canonical executor; "
-                     "fixed required slot independent of optional visual leases.\n";
+        std::cout << "REQUIRED_FEEDBACK_ENABLED: persistent shared canonical RAM; actual RSP then RDP "
+                     "per operation; exclusive CPU preparation/readback independent of optional visual leases.\n";
         if (decline)
             std::cout << "OPTIONAL_PRESENTATIONS_DECLINED: explicit diagnostic policy retains both leases; "
                          "not a claim that LUS returned false.\n";
@@ -252,7 +252,8 @@ class ProbeHost final {
             intro.StopGame(); // Stops C users on their creator, not this SDL thread.
             #ifdef ISLE_HAS_CANONICAL_RDP
             RetireRequired(intro); // CPU accesses ceased; release main lease before capacity.
-            if (!intro.RequiredQuiescent() || requiredMemory || requiredToken)
+            if (!intro.RequiredQuiescent() || requiredWrite || requiredMemory || requiredToken ||
+                (requiredExecutor && !requiredExecutor->quiescent()))
                 throw std::logic_error("Required feedback did not quiesce before renderer shutdown");
             #endif
         };
@@ -312,10 +313,12 @@ class ProbeHost final {
             const auto requiredStats = intro.RequiredStats();
             if (submitted != 0 || stats.submissions != 2 || stats.terminals != 2 ||
                 requiredStats.completed != frameLimit || requiredStats.submissions != frameLimit ||
-                requiredStats.retirements != frameLimit || requiredStats.failed != 0 ||
-                requiredStats.cancelled != 0 || !intro.RequiredQuiescent())
+                requiredStats.cpu_writes != frameLimit || requiredRspExecutions != frameLimit ||
+                requiredStats.gpu_ready != frameLimit || requiredStats.retirements != frameLimit ||
+                requiredStats.failed != 0 || requiredStats.cancelled != 0 || !intro.RequiredQuiescent())
                 throw std::logic_error("Required-feedback diagnostic violated its end-to-end acceptance contract");
             std::cout << "REQUIRED_FEEDBACK_COMPLETE: cpu_consumed=" << intro.CompletedFeedbackCycles()
+                      << "; rsp_tasks=" << requiredRspExecutions << "; cpu_writes=" << requiredStats.cpu_writes
                       << "; gpu_ready=" << requiredStats.gpu_ready << "; cpu_borrows=" << requiredStats.cpu_borrows
                       << "; real_backend_leases_retired=" << requiredStats.retirements
                       << "; visual_leases_retained=2; visual_submissions=0; required_quiescent=true.\n";
@@ -388,7 +391,7 @@ class ProbeHost final {
             return;
         }
 #ifdef ISLE_HAS_CANONICAL_RDP
-        if (requiredMemory || requiredToken || (requiredExecutor && !requiredExecutor->quiescent()))
+        if (requiredWrite || requiredMemory || requiredToken || (requiredExecutor && !requiredExecutor->quiescent()))
             throw std::logic_error("Canonical executor still has a required memory lease during shutdown");
         requiredExecutor.reset();
 #endif
@@ -473,9 +476,10 @@ class ProbeHost final {
         while (intro.TakeRequiredRetirement(retirement)) {
             if (requiredToken && *requiredToken != retirement.token)
                 throw std::logic_error("Required retirement has a foreign backend lease");
-            if (static_cast<bool>(requiredMemory) != requiredToken.has_value() ||
-                (!requiredToken && retirement.outcome == isle::host::Terminal::completed))
+            if (((requiredWrite || requiredMemory) && !requiredToken) ||
+                (retirement.outcome == isle::host::Terminal::completed && !requiredMemory))
                 throw std::logic_error("Required retirement has no matching actual memory ownership");
+            requiredWrite.cancel(); // Only after the writer ceased; abandoned preparation poisons.
             requiredMemory.release();
             requiredToken.reset();
             if (intro.FinishRequiredRetirement(retirement.token) != isle::host::ClockError::none)
@@ -484,15 +488,35 @@ class ProbeHost final {
     }
     void ServiceRequired(IntroProbe& intro) {
         RetireRequired(intro);
+        isle::host::RequiredToken preparation;
+        if (intro.TakeRequiredPreparation(preparation)) {
+            try {
+                if (!requiredExecutor || requiredWrite || requiredMemory || requiredToken)
+                    throw std::logic_error("Required executor missing or reused before actual retirement");
+                requiredToken = preparation;
+                requiredWrite = requiredExecutor->begin_preparation();
+                if (intro.PublishRequiredPreparation(preparation, {requiredWrite.words()}) !=
+                    isle::host::ClockError::none)
+                    throw std::logic_error("Canonical writable grant publication rejected");
+            } catch (...) {
+                if (intro.FailRequired(preparation) != isle::host::ClockError::none) std::abort();
+                throw;
+            }
+        }
         isle::host::RequiredRequest request;
         if (!intro.TakeRequired(request)) return;
-        if (!requiredExecutor || requiredMemory || requiredToken)
-            throw std::logic_error("Required executor missing or reused before actual retirement");
         try {
-            requiredMemory = requiredExecutor->execute(*request.capture);
-            requiredToken = request.token;
+            if (!requiredExecutor || !requiredWrite || requiredMemory ||
+                !requiredToken || *requiredToken != request.token)
+                throw std::logic_error("Required prepared task has no exclusive matching write lease");
+            requiredMemory = requiredExecutor->execute(std::move(requiredWrite), request.task, request.boot);
+            ++requiredRspExecutions;
+            if (requiredRspExecutions == 1)
+                std::cout << "REQUIRED_ACTUAL_RSP: status=" << requiredMemory.rsp_result().sp_status
+                          << "; packets=" << requiredMemory.rsp_result().packets
+                          << "; canonical_allocation_shared=true; completion=actual_RDP_device_idle.\n";
         } catch (...) {
-            // execute drains/resets failed backend access before publishing failure.
+            // Actual RSP/device accesses ceased on the backend's poison path.
             if (intro.FailRequired(request.token) != isle::host::ClockError::none) std::abort();
             throw;
         }
@@ -521,8 +545,10 @@ class ProbeHost final {
     std::unique_ptr<AudioHostProbe> audio;
 #endif
 #ifdef ISLE_HAS_CANONICAL_RDP
-    std::optional<isle::rsp::probe::CanonicalCaptureExecutor> requiredExecutor;
-    isle::rsp::probe::CanonicalCaptureExecutor::MemoryLease requiredMemory;
+    std::optional<isle::rsp::CanonicalExecutor> requiredExecutor;
+    isle::rsp::CanonicalExecutor::PreparationLease requiredWrite;
+    isle::rsp::CanonicalExecutor::MemoryLease requiredMemory;
+    std::uint64_t requiredRspExecutions = 0;
     std::optional<isle::host::RequiredToken> requiredToken;
 #endif
     bool declinePresentations = false;
@@ -574,7 +600,7 @@ void Usage(std::ostream& output) {
               "Required-feedback mode needs compiled native engine/RSP/canonical RDP and --rom;\n"
               "--frames counts owner-domain CPU consumptions, not optional presentations.\n"
               "It deliberately retains two visual leases and disables physical controller enumeration;\n"
-              "actual canonical mapped pixels/hidden memory feed dependent diagnostic operations,\n"
+              "each operation writes persistent canonical RAM, runs actual RSP/RDP and reads its result,\n"
               "not GAME photo scoring, scene boot, a prerecorded image or a Null backend.\n"
               "Neither mode is full native game boot. No implicit ROM search or Null fallback.\n";
 }
@@ -680,10 +706,14 @@ int Run(int argc, Argument* argv[]) {
         if (options.audio) host.EnableAudio(*snapshot);
 #endif
 #if defined(ISLE_HAS_GAME_ENGINE) || defined(ISLE_HAS_AUDIO_PROBE)
-        if (snapshot) {
+        if (snapshot && !options.requiredFeedback) {
             snapshot.reset();
             std::cout << "PRIVATE_ROM_SNAPSHOT_RELEASED: one admission/normalization; typed consumers own their resources.\n"
                       << std::flush;
+        }
+        else if (snapshot) {
+            std::cout << "PRIVATE_ROM_SNAPSHOT_RETAINED: recurring RSP boot/resource reads; "
+                         "one admitted immutable image lives through final canonical retirement.\n" << std::flush;
         }
 #endif
         try {

@@ -53,7 +53,7 @@ struct GObj {
     GObjFunc fnUpdate;
     GObjProcess* processListHead;
     GObjProcess* processListTail;
-    union { SObj* sobj; OMCamera* cam; void* any; } data;
+    union { SObj* sobj; OMCamera* cam; IsleGameModel* model; void* any; } data;
     u32 flags;
     IsleGameCallback update;
     void* userData;
@@ -93,6 +93,18 @@ struct OMCamera {
     bool alive;
 };
 
+/* Original native ownership, not an imported console DObj layout. A single
+ * arena block contains the header, capacity nodes and capacity dirty bytes.
+ */
+struct IsleGameModel {
+    IsleGameModel* nextFree;
+    GObj* obj;
+    IsleGame* game;
+    size_t count, capacity;
+    bool alive;
+    IsleGameModelNode nodes[];
+};
+
 struct IsleGame {
     isle_arena* arena;
     IsleContinuationDomain* domain;
@@ -101,6 +113,7 @@ struct IsleGame {
     SObj* free_sprites;
     OMCamera* free_cameras;
     OMMtx* free_matrices;
+    IsleGameModel* free_models;
     IsleGameCounts counts;
     IsleGameResult fault;
     char error[512];

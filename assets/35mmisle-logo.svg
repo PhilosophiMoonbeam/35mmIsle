@@ -230,7 +230,7 @@
     </g>
     <path d="M1194 342 L1204 370 L1233 380 L1204 390 L1194 419 L1184 390 L1155 380 L1184 370 Z" stroke-width="13"/>
     <path d="M213 152 V127 Q213 118 222 118 H247 M1313 830 H1335 Q1343 830 1343 821 V800" fill="none" stroke-width="13"/>
-    <circle cx="233" cy="136" r="3" stroke-width="12"/>
+    <circle cx="233" cy="137" r="3" stroke-width="12"/>
   </g>
 
   <!-- ========================================================================= -->
@@ -612,7 +612,7 @@
     <!-- Viewfinder Autofocus Corner Brackets Framing the Environmental Clues -->
     <path d="M213 152 V127 Q213 118 222 118 H247 M1313 830 H1335 Q1343 830 1343 821 V800" stroke="#163c44" stroke-width="8" fill="none"/>
     <path d="M213 152 V127 Q213 118 222 118 H247 M1313 830 H1335 Q1343 830 1343 821 V800" stroke="#d4b463" stroke-width="4" fill="none"/>
-    <circle cx="233" cy="136" r="7" fill="#163c44"/>
-    <circle cx="233" cy="136" r="4.5" fill="#94d678"/>
+    <circle cx="233" cy="137" r="7" fill="#163c44"/>
+    <circle cx="233" cy="137" r="4.5" fill="#94d678"/>
   </g>
 </svg>

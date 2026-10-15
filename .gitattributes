@@ -1,0 +1,3 @@
+# Dependency manifests and applied patches are byte-hashed build inputs.
+cmake/*.json text eol=lf
+cmake/patches/*.patch text eol=lf

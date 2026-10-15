@@ -1,178 +1,588 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" fill="none" role="img" aria-labelledby="logo-title logo-desc">
   <title id="logo-title">35mmIsle</title>
-  <desc id="logo-desc">An original island photo-safari emblem with sculpted gold and ivory lettering, a forested caldera, waterfalls, a camera-lens horizon, and a winding strip of film. Look closer for parted grass, a half-buried spiral stone, and a rock profile that might be watching the bay.</desc>
+  <desc id="logo-desc">A professional island photo-safari emblem featuring sculpted gold and ivory lettering, an optical camera-lens horizon framing a volcanic caldera and waterfalls, a winding 35mm film strip with exposed frames, parted jungle grass under a viewfinder reticle, a half-buried spiral fossil stone, and a coastal cliff profile watching the bay.</desc>
+
   <defs>
-    <linearGradient id="sky" x1="840" y1="54" x2="840" y2="510" gradientUnits="userSpaceOnUse"><stop stop-color="#ffedbd"/><stop offset=".56" stop-color="#f8cd98"/><stop offset="1" stop-color="#e9b37e"/></linearGradient>
-    <linearGradient id="water" x1="840" y1="308" x2="840" y2="595" gradientUnits="userSpaceOnUse"><stop stop-color="#7ed5bf"/><stop offset=".4" stop-color="#3fabaa"/><stop offset="1" stop-color="#236e88"/></linearGradient>
-    <linearGradient id="ivory" x1="380" y1="0" x2="380" y2="290" gradientUnits="userSpaceOnUse"><stop stop-color="#fffbea"/><stop offset=".56" stop-color="#fff2cb"/><stop offset="1" stop-color="#edcd88"/></linearGradient>
-    <linearGradient id="amber" x1="210" y1="0" x2="210" y2="160" gradientUnits="userSpaceOnUse"><stop stop-color="#ffe68e"/><stop offset=".48" stop-color="#ffce5d"/><stop offset="1" stop-color="#eea246"/></linearGradient>
-    <linearGradient id="rim" x1="560" y1="105" x2="1050" y2="540" gradientUnits="userSpaceOnUse"><stop stop-color="#6f9b88"/><stop offset=".47" stop-color="#254e50"/><stop offset="1" stop-color="#163c46"/></linearGradient>
-    <linearGradient id="stone" x1="0" y1="0" x2="0" y2="160" gradientUnits="userSpaceOnUse"><stop stop-color="#c3b581"/><stop offset="1" stop-color="#827d5b"/></linearGradient>
-    <clipPath id="landscape"><circle cx="840" cy="324" r="264"/></clipPath>
-    <path id="isle-letters" d="M20 4 H181 Q193 4 190 16 L183 47 Q181 55 172 55 H133 L115 220 H151 Q162 220 159 231 L151 265 Q149 274 139 274 H5 Q-7 274 -4 262 L4 231 Q6 220 17 220 H47 L65 55 H30 Q19 55 17 45 L11 17 Q8 4 20 4 ZM389 89 Q359 67 316 69 C265 69 229 95 227 131 C225 171 252 187 295 198 L319 205 Q345 212 334 224 Q325 236 300 230 Q275 225 252 209 Q245 204 240 212 L219 246 Q213 254 222 260 C250 280 283 290 320 287 C377 284 410 260 412 220 C413 181 389 163 347 151 L321 143 Q294 135 302 123 Q311 110 337 119 L366 130 Q375 134 379 126 L395 103 Q401 95 389 89 ZM460 9 L520 0 Q533 -2 533 12 L529 205 Q529 223 548 219 L557 217 Q567 214 565 225 L558 266 Q556 275 548 277 Q522 285 496 280 Q448 274 449 226 L449 24 Q449 12 460 9 ZM806 184 Q805 192 796 193 L670 205 Q679 232 709 234 Q738 236 764 218 Q772 213 777 220 L797 250 Q802 258 793 264 Q756 289 708 288 C642 288 599 247 599 185 C599 123 638 76 697 71 C766 64 816 109 806 184 Z M669 159 L742 151 Q735 123 710 123 Q682 123 669 159 Z" fill-rule="evenodd"/>
-    <path id="number-letters" d="M55.47 0Q86.13 0 102.13 11.89Q118.13 23.79 118.13 43.82Q118.13 55.84 111.33 64.23Q104.53 72.61 95.2 76.87Q100.8 78.87 105.6 81.88Q110.4 84.88 114.13 89.39Q117.87 93.9 120 99.91Q122.13 105.92 122.13 113.93Q122.13 124.69 117.2 133.21Q112.27 141.72 103.47 147.73Q94.67 153.74 82.53 156.87Q70.4 160 56 160Q28.27 160 14.13 152.74Q0 145.48 0 134.21Q0 127.45 3.47 122.57Q6.93 117.68 12 114.93Q17.33 118.44 26.27 122.32Q35.2 126.2 49.6 126.2Q63.2 126.2 69.73 121.69Q76.27 117.18 76.27 109.92Q76.27 102.66 71.07 98.9Q65.87 95.15 53.07 95.15H28Q26.13 92.39 24.8 88.39Q23.47 84.38 23.47 78.87Q23.47 73.11 24.67 68.98Q25.87 64.85 28 62.1H53.07Q72.27 62.1 72.27 48.33Q72.27 41.82 66.13 37.81Q60 33.8 47.73 33.8Q36.8 33.8 28.53 36.18Q20.27 38.56 14.93 42.07Q10.4 39.06 7.47 34.68Q4.53 30.3 4.53 24.29Q4.53 11.77 18.4 5.88Q32.27 0 55.47 0ZM194.13 160Q181.87 160 171.87 158.25Q161.87 156.49 154.67 152.99Q147.47 149.48 143.47 144.35Q139.47 139.22 139.47 132.46Q139.47 125.45 143.73 120.69Q148 115.93 153.33 113.18Q160.8 118.44 169.33 122.32Q177.87 126.2 190.93 126.2Q203.47 126.2 208.8 120.94Q214.13 115.68 214.13 108.17Q214.13 100.91 209.47 96.15Q204.8 91.39 193.33 91.39Q186.13 91.39 181.33 92.9Q176.53 94.4 170.4 97.15Q157.33 96.65 149.73 90.52Q142.13 84.38 142.13 71.61Q142.13 70.86 142.13 69.73Q142.13 68.61 142.4 65.1L145.6 27.04Q146.4 16.28 152.8 10.02Q159.2 3.76 170.67 3.76H247.47Q249.07 6.51 250.67 11.02Q252.27 15.52 252.27 20.53Q252.27 30.05 247.73 34.05Q243.2 38.06 236.27 38.06H185.07L183.2 61.6Q188.27 60.34 193.47 59.34Q198.67 58.34 206.67 58.34Q220.53 58.34 230.67 62.22Q240.8 66.1 247.33 72.86Q253.87 79.62 256.93 88.64Q260 97.65 260 107.92Q260 118.18 256.27 127.7Q252.53 137.21 244.53 144.35Q236.53 151.49 224.13 155.74Q211.73 160 194.13 160Z"/>
-    <path id="unit-letters" d="M297.77 63Q303.01 63 308.06 65.17Q313.11 67.34 316.81 71.68Q320.65 67.9 325.44 65.45Q330.23 63 337 63Q341.86 63 346.52 64.89Q351.19 66.77 354.83 70.83Q358.47 74.88 360.64 81.58Q362.81 88.27 362.81 97.89V157.3Q361.54 157.87 358.79 158.43Q356.04 159 353.1 159Q350.29 159 348.05 158.43Q345.82 157.87 344.29 156.17Q342.75 154.47 341.92 151.55Q341.09 148.63 341.09 143.91V98.83Q341.09 93.18 338.92 90.63Q336.75 88.08 333.04 88.08Q331.25 88.08 329.21 89.31Q327.16 90.54 326.14 91.86Q326.27 92.61 326.27 93.27Q326.27 93.93 326.27 94.5V157.3Q324.86 157.87 322.12 158.43Q319.37 159 316.56 159Q313.75 159 311.51 158.43Q309.27 157.87 307.74 156.17Q306.21 154.47 305.38 151.55Q304.55 148.63 304.55 143.91V98.83Q304.55 93.18 302.18 90.63Q299.82 88.08 296.5 88.08Q294.2 88.08 292.53 89.12Q290.87 90.16 289.72 91.1V157.3Q288.45 157.87 285.7 158.43Q282.95 159 280.01 159Q277.2 159 274.96 158.43Q272.73 157.87 271.19 156.17Q269.66 154.47 268.83 151.55Q268 148.63 268 143.91V86.95Q268 81.86 269.47 78.84Q270.94 75.83 273.49 73.18Q277.84 68.66 284.29 65.83Q290.75 63 297.77 63ZM403.96 63Q409.2 63 414.25 65.17Q419.29 67.34 423 71.68Q426.83 67.9 431.62 65.45Q436.42 63 443.19 63Q448.04 63 452.71 64.89Q457.37 66.77 461.01 70.83Q464.66 74.88 466.83 81.58Q469 88.27 469 97.89V157.3Q467.72 157.87 464.97 158.43Q462.23 159 459.29 159Q456.48 159 454.24 158.43Q452.01 157.87 450.47 156.17Q448.94 154.47 448.11 151.55Q447.28 148.63 447.28 143.91V98.83Q447.28 93.18 445.1 90.63Q442.93 88.08 439.23 88.08Q437.44 88.08 435.39 89.31Q433.35 90.54 432.33 91.86Q432.45 92.61 432.45 93.27Q432.45 93.93 432.45 94.5V157.3Q431.05 157.87 428.3 158.43Q425.55 159 422.74 159Q419.93 159 417.7 158.43Q415.46 157.87 413.93 156.17Q412.39 154.47 411.56 151.55Q410.73 148.63 410.73 143.91V98.83Q410.73 93.18 408.37 90.63Q406 88.08 402.68 88.08Q400.38 88.08 398.72 89.12Q397.06 90.16 395.91 91.1V157.3Q394.63 157.87 391.88 158.43Q389.14 159 386.2 159Q383.39 159 381.15 158.43Q378.91 157.87 377.38 156.17Q375.85 154.47 375.02 151.55Q374.19 148.63 374.19 143.91V86.95Q374.19 81.86 375.66 78.84Q377.13 75.83 379.68 73.18Q384.03 68.66 390.48 65.83Q396.93 63 403.96 63Z"/>
-    <clipPath id="isle-faces"><use href="#isle-letters"/></clipPath>
-    <clipPath id="number-faces"><use href="#number-letters"/><use href="#unit-letters"/></clipPath>
+    <!-- Soft ambient drop shadow for the entire die-cut emblem -->
+    <filter id="emblem-shadow" x="-6%" y="-6%" width="112%" height="116%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#091f26" flood-opacity="0.38"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#091f26" flood-opacity="0.22"/>
+    </filter>
+
+    <!-- Subtle internal layer elevation shadow -->
+    <filter id="layer-shadow" x="-8%" y="-8%" width="116%" height="120%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#0b262d" flood-opacity="0.42"/>
+    </filter>
+
+    <!-- Atmospheric & Material Gradients -->
+    <linearGradient id="sky" x1="840" y1="54" x2="840" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff1c2"/>
+      <stop offset="0.48" stop-color="#fbd299"/>
+      <stop offset="0.82" stop-color="#efa973"/>
+      <stop offset="1" stop-color="#df8b64"/>
+    </linearGradient>
+
+    <radialGradient id="sun-glow" cx="946" cy="170" r="135" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffbe0" stop-opacity="1"/>
+      <stop offset="0.45" stop-color="#ffea9f" stop-opacity="0.85"/>
+      <stop offset="0.78" stop-color="#f9c479" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#f9c479" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="water" x1="840" y1="350" x2="840" y2="590" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8be0ca"/>
+      <stop offset="0.28" stop-color="#4bc0b8"/>
+      <stop offset="0.68" stop-color="#27859a"/>
+      <stop offset="1" stop-color="#17526d"/>
+    </linearGradient>
+
+    <linearGradient id="rim" x1="590" y1="90" x2="1090" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7ba892"/>
+      <stop offset="0.22" stop-color="#46736b"/>
+      <stop offset="0.55" stop-color="#234d50"/>
+      <stop offset="0.85" stop-color="#153841"/>
+      <stop offset="1" stop-color="#265459"/>
+    </linearGradient>
+
+    <linearGradient id="inner-bezel" x1="640" y1="120" x2="1040" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#13333b"/>
+      <stop offset="0.5" stop-color="#265256"/>
+      <stop offset="1" stop-color="#8ab396"/>
+    </linearGradient>
+
+    <linearGradient id="lens-glass" x1="630" y1="100" x2="1020" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="0.26" stop-color="#a8f0e2" stop-opacity="0.08"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.88" stop-color="#ffd885" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.22"/>
+    </linearGradient>
+
+    <linearGradient id="ivory" x1="400" y1="4" x2="400" y2="288" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffef6"/>
+      <stop offset="0.45" stop-color="#fff5d6"/>
+      <stop offset="0.82" stop-color="#f3d999"/>
+      <stop offset="1" stop-color="#dfb86c"/>
+    </linearGradient>
+
+    <linearGradient id="isle-extrude" x1="400" y1="10" x2="400" y2="305" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3da196"/>
+      <stop offset="0.5" stop-color="#257974"/>
+      <stop offset="1" stop-color="#175257"/>
+    </linearGradient>
+
+    <linearGradient id="amber" x1="235" y1="0" x2="235" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff0a6"/>
+      <stop offset="0.35" stop-color="#ffd666"/>
+      <stop offset="0.75" stop-color="#f3ad47"/>
+      <stop offset="1" stop-color="#d97f2b"/>
+    </linearGradient>
+
+    <linearGradient id="amber-extrude" x1="235" y1="10" x2="235" y2="175" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d9873c"/>
+      <stop offset="0.5" stop-color="#b8652c"/>
+      <stop offset="1" stop-color="#87421b"/>
+    </linearGradient>
+
+    <linearGradient id="turf" x1="740" y1="605" x2="740" y2="755" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8cb074"/>
+      <stop offset="0.55" stop-color="#6c9164"/>
+      <stop offset="1" stop-color="#4c7051"/>
+    </linearGradient>
+
+    <linearGradient id="sand-grad" x1="740" y1="665" x2="740" y2="795" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f2d79e"/>
+      <stop offset="0.6" stop-color="#e2bf82"/>
+      <stop offset="1" stop-color="#c69d63"/>
+    </linearGradient>
+
+    <linearGradient id="film-body" x1="150" y1="690" x2="1265" y2="790" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1c4a54"/>
+      <stop offset="0.25" stop-color="#143842"/>
+      <stop offset="0.7" stop-color="#112f38"/>
+      <stop offset="1" stop-color="#1d4c56"/>
+    </linearGradient>
+
+    <linearGradient id="film-emulsion" x1="200" y1="760" x2="1240" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8b6b47"/>
+      <stop offset="0.25" stop-color="#a58255"/>
+      <stop offset="0.5" stop-color="#798f6d"/>
+      <stop offset="0.75" stop-color="#9e7c52"/>
+      <stop offset="1" stop-color="#73583c"/>
+    </linearGradient>
+
+    <linearGradient id="stone" x1="60" y1="25" x2="60" y2="145" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d8ca98"/>
+      <stop offset="0.55" stop-color="#aca174"/>
+      <stop offset="1" stop-color="#797555"/>
+    </linearGradient>
+
+    <clipPath id="landscape">
+      <circle cx="840" cy="324" r="262"/>
+    </clipPath>
+
+    <!-- Custom Sculpted Wordmark Paths -->
+    <path id="isle-letters" d="M20 4 H181 Q193 4 190 16 L183 47 Q181 55 172 55 H133 L115 220 H151 Q162 220 159 231 L151 265 Q149 274 139 274 H5 Q-7 274 -4 262 L4 231 Q6 220 17 220 H47 L65 55 H30 Q19 55 17 45 L11 17 Q8 4 20 4 Z M389 89 Q359 67 316 69 C265 69 229 95 227 131 C225 171 252 187 295 198 L319 205 Q345 212 334 224 Q325 236 300 230 Q275 225 252 209 Q245 204 240 212 L219 246 Q213 254 222 260 C250 280 283 290 320 287 C377 284 410 260 412 220 C413 181 389 163 347 151 L321 143 Q294 135 302 123 Q311 110 337 119 L366 130 Q375 134 379 126 L395 103 Q401 95 389 89 Z M460 9 L520 0 Q533 -2 533 12 L529 205 Q529 223 548 219 L557 217 Q567 214 565 225 L558 266 Q556 275 548 277 Q522 285 496 280 Q448 274 449 226 L449 24 Q449 12 460 9 Z M806 184 Q805 192 796 193 L670 205 Q679 232 709 234 Q738 236 764 218 Q772 213 777 220 L797 250 Q802 258 793 264 Q756 289 708 288 C642 288 599 247 599 185 C599 123 638 76 697 71 C766 64 816 109 806 184 Z M669 159 L742 151 Q735 123 710 123 Q682 123 669 159 Z" fill-rule="evenodd"/>
+
+    <path id="number-letters" d="M55.47 0 Q86.13 0 102.13 11.89 Q118.13 23.79 118.13 43.82 Q118.13 55.84 111.33 64.23 Q104.53 72.61 95.2 76.87 Q100.8 78.87 105.6 81.88 Q110.4 84.88 114.13 89.39 Q117.87 93.9 120 99.91 Q122.13 105.92 122.13 113.93 Q122.13 124.69 117.2 133.21 Q112.27 141.72 103.47 147.73 Q94.67 153.74 82.53 156.87 Q70.4 160 56 160 Q28.27 160 14.13 152.74 Q0 145.48 0 134.21 Q0 127.45 3.47 122.57 Q6.93 117.68 12 114.93 Q17.33 118.44 26.27 122.32 Q35.2 126.2 49.6 126.2 Q63.2 126.2 69.73 121.69 Q76.27 117.18 76.27 109.92 Q76.27 102.66 71.07 98.9 Q65.87 95.15 53.07 95.15 H28 Q26.13 92.39 24.8 88.39 Q23.47 84.38 23.47 78.87 Q23.47 73.11 24.67 68.98 Q25.87 64.85 28 62.1 H53.07 Q72.27 62.1 72.27 48.33 Q72.27 41.82 66.13 37.81 Q60 33.8 47.73 33.8 Q36.8 33.8 28.53 36.18 Q20.27 38.56 14.93 42.07 Q10.4 39.06 7.47 34.68 Q4.53 30.3 4.53 24.29 Q4.53 11.77 18.4 5.88 Q32.27 0 55.47 0 Z M194.13 160 Q181.87 160 171.87 158.25 Q161.87 156.49 154.67 152.99 Q147.47 149.48 143.47 144.35 Q139.47 139.22 139.47 132.46 Q139.47 125.45 143.73 120.69 Q148 115.93 153.33 113.18 Q160.8 118.44 169.33 122.32 Q177.87 126.2 190.93 126.2 Q203.47 126.2 208.8 120.94 Q214.13 115.68 214.13 108.17 Q214.13 100.91 209.47 96.15 Q204.8 91.39 193.33 91.39 Q186.13 91.39 181.33 92.9 Q176.53 94.4 170.4 97.15 Q157.33 96.65 149.73 90.52 Q142.13 84.38 142.13 71.61 Q142.13 70.86 142.13 69.73 Q142.13 68.61 142.4 65.1 L145.6 27.04 Q146.4 16.28 152.8 10.02 Q159.2 3.76 170.67 3.76 H247.47 Q249.07 6.51 250.67 11.02 Q252.27 15.52 252.27 20.53 Q252.27 30.05 247.73 34.05 Q243.2 38.06 236.27 38.06 H185.07 L183.2 61.6 Q188.27 60.34 193.47 59.34 Q198.67 58.34 206.67 58.34 Q220.53 58.34 230.67 62.22 Q240.8 66.1 247.33 72.86 Q253.87 79.62 256.93 88.64 Q260 97.65 260 107.92 Q260 118.18 256.27 127.7 Q252.53 137.21 244.53 144.35 Q236.53 151.49 224.13 155.74 Q211.73 160 194.13 160 Z"/>
+
+    <!-- Harmonized bold 'mm' unit letters matching the weight and sculptural geometry of '35' -->
+    <path id="unit-letters" d="M298.5 55 Q306.5 55 313.2 58.2 Q319.8 61.4 324.2 67.2 Q329.4 61.6 336.1 58.3 Q342.8 55 351.2 55 Q364.8 55 372.4 63.8 Q380 72.6 380 89.4 V149 Q380 155.5 375.5 157.8 Q371 160 364.2 160 Q357.4 160 353.2 157.4 Q349 154.8 349 148.2 V94.5 Q349 87.2 346.1 84.1 Q343.2 81 338.8 81 Q334.4 81 331.4 84.2 Q328.5 87.4 328.5 94.5 V149 Q328.5 155.5 324.1 157.8 Q319.7 160 313 160 Q306.3 160 302.1 157.4 Q298 154.8 298 148.2 V94.5 Q298 87.2 295.1 84.1 Q292.2 81 287.8 81 Q283.4 81 280.4 84.2 Q277.5 87.4 277.5 94.5 V149 Q277.5 155.5 273 157.8 Q268.5 160 261.8 160 Q255 160 250.8 157.4 Q246.5 154.8 246.5 148.2 V79.5 Q246.5 68.2 254.2 61.6 Q262 55 274.5 55 Q283.2 55 290.8 58.8 Q294.8 55 298.5 55 Z M441.5 55 Q449.5 55 456.2 58.2 Q462.8 61.4 467.2 67.2 Q472.4 61.6 479.1 58.3 Q485.8 55 494.2 55 Q507.8 55 515.4 63.8 Q523 72.6 523 89.4 V149 Q523 155.5 518.5 157.8 Q514 160 507.2 160 Q500.4 160 496.2 157.4 Q492 154.8 492 148.2 V94.5 Q492 87.2 489.1 84.1 Q486.2 81 481.8 81 Q477.4 81 474.4 84.2 Q471.5 87.4 471.5 94.5 V149 Q471.5 155.5 467.1 157.8 Q462.7 160 456 160 Q449.3 160 445.1 157.4 Q441 154.8 441 148.2 V94.5 Q441 87.2 438.1 84.1 Q435.2 81 430.8 81 Q426.4 81 423.4 84.2 Q420.5 87.4 420.5 94.5 V149 Q420.5 155.5 416 157.8 Q411.5 160 404.8 160 Q398 160 393.8 157.4 Q389.5 154.8 389.5 148.2 V79.5 Q389.5 68.2 397.2 61.6 Q405 55 417.5 55 Q426.2 55 433.8 58.8 Q437.8 55 441.5 55 Z" transform="translate(38 0) scale(0.92 1)"/>
+
+    <clipPath id="isle-faces">
+      <use href="#isle-letters"/>
+    </clipPath>
+    <clipPath id="number-faces">
+      <use href="#number-letters"/>
+      <use href="#unit-letters"/>
+    </clipPath>
+    <clipPath id="film-track-clip">
+      <path d="M207.00 756.00 C434.00 841.00 1022.00 815.00 1251.00 744.00 L1234.00 776.00 C1001.00 852.00 435.00 856.00 194.00 787.00 Z"/>
+    </clipPath>
+
+    <!-- Reusable Botanicals -->
     <g id="fern" stroke-linecap="round" stroke-linejoin="round">
       <path d="M0 143 Q35 60 100 0" stroke="#153e43" stroke-width="7"/>
-      <path d="M14 111 Q-28 103 -32 72 Q0 74 21 96 Q0 66 4 39 Q32 57 35 78 Q32 40 46 20 Q61 44 53 58 Q65 20 83 14 Q85 35 70 42 Q86 14 100 0 Q106 26 90 35 Q123 18 137 23 Q130 45 78 51 Q111 40 130 52 Q116 71 58 73 Q91 62 111 77 Q91 94 37 95 Q69 86 84 101 Q62 121 14 111 Z" fill="#559a64" stroke="#153e43" stroke-width="3"/>
+      <path d="M14 111 Q-28 103 -32 72 Q0 74 21 96 Q0 66 4 39 Q32 57 35 78 Q32 40 46 20 Q61 44 53 58 Q65 20 83 14 Q85 35 70 42 Q86 14 100 0 Q106 26 90 35 Q123 18 137 23 Q130 45 78 51 Q111 40 130 52 Q116 71 58 73 Q91 62 111 77 Q91 94 37 95 Q69 86 84 101 Q62 121 14 111 Z" fill="#559a64" stroke="#153e43" stroke-width="3.5"/>
       <path d="M3 130 Q32 66 93 10" stroke="#b5d47c" stroke-width="3"/>
     </g>
+
     <g id="palm" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M3 176 Q29 102 11 27 L24 23 Q43 97 21 178 Z" fill="#a17e4c" stroke="#193e42" stroke-width="5"/>
+      <path d="M3 176 Q29 102 11 27 L24 23 Q43 97 21 178 Z" fill="#a17e4c" stroke="#163c44" stroke-width="5"/>
+      <path d="M10 174 Q32 102 16 26" stroke="#7c5c32" stroke-width="3"/>
       <path d="M13 149 L28 152 M19 123 L33 126 M23 97 L35 99 M23 72 L35 73 M22 49 L32 49" stroke="#d2ac6b" stroke-width="4"/>
-      <path d="M17 27 Q-32 -8 -83 21 Q-60 18 -50 23 L-55 31 L-38 28 L-39 36 Q-8 39 17 27 Z" fill="#386b53" stroke="#193e42" stroke-width="4"/>
-      <path d="M17 27 Q-54 35 -60 88 Q-43 65 -32 60 L-34 69 L-20 55 L-15 59 Q8 43 17 27 Z" fill="#4b8b58" stroke="#193e42" stroke-width="4"/>
-      <path d="M17 27 Q-21 -34 10 -60 Q10 -38 15 -29 L19 -34 L21 -15 Q28 4 17 27 Z" fill="#86b76b" stroke="#193e42" stroke-width="4"/>
-      <path d="M17 27 Q53 -30 99 -10 L77 1 L83 6 L60 12 L60 17 Q35 27 17 27 Z" fill="#94bf70" stroke="#193e42" stroke-width="4"/>
-      <path d="M17 27 Q79 9 112 58 Q92 46 79 44 L81 51 L62 43 L57 47 Q29 44 17 27 Z" fill="#548b56" stroke="#193e42" stroke-width="4"/>
-      <path d="M17 27 Q57 39 47 94 L36 72 L32 75 L26 55 L20 52 Q12 40 17 27 Z" fill="#386b53" stroke="#193e42" stroke-width="4"/>
-      <path d="M-65 24 Q-26 14 9 26 M26 24 Q54 0 83 -5 M24 31 Q69 24 97 48 M-44 68 Q-24 39 8 31" stroke="#aacb7a" stroke-width="3"/>
+      <ellipse cx="14" cy="31" rx="6" ry="5" fill="#6b4b27" stroke="#163c44" stroke-width="2.5"/>
+      <ellipse cx="23" cy="29" rx="5.5" ry="4.5" fill="#7d5930" stroke="#163c44" stroke-width="2.5"/>
+      <path d="M17 27 Q-32 -8 -83 21 Q-60 18 -50 23 L-55 31 L-38 28 L-39 36 Q-8 39 17 27 Z" fill="#386b53" stroke="#163c44" stroke-width="4"/>
+      <path d="M17 27 Q-54 35 -60 88 Q-43 65 -32 60 L-34 69 L-20 55 L-15 59 Q8 43 17 27 Z" fill="#4b8b58" stroke="#163c44" stroke-width="4"/>
+      <path d="M17 27 Q-21 -34 10 -60 Q10 -38 15 -29 L19 -34 L21 -15 Q28 4 17 27 Z" fill="#86b76b" stroke="#163c44" stroke-width="4"/>
+      <path d="M17 27 Q53 -30 99 -10 L77 1 L83 6 L60 12 L60 17 Q35 27 17 27 Z" fill="#94bf70" stroke="#163c44" stroke-width="4"/>
+      <path d="M17 27 Q79 9 112 58 Q92 46 79 44 L81 51 L62 43 L57 47 Q29 44 17 27 Z" fill="#548b56" stroke="#163c44" stroke-width="4"/>
+      <path d="M17 27 Q57 39 47 94 L36 72 L32 75 L26 55 L20 52 Q12 40 17 27 Z" fill="#386b53" stroke="#163c44" stroke-width="4"/>
+      <path d="M-65 24 Q-26 14 9 26 M26 24 Q54 0 83 -5 M24 31 Q69 24 97 48 M-44 68 Q-24 39 8 31" stroke="#b9d684" stroke-width="3"/>
+    </g>
+
+    <!-- Film Perforation Holes -->
+    <g id="film-sprockets">
+      <path d="M284.23 780.96 L299.40 784.07 L297.79 788.63 L282.56 785.60 Z"/><path d="M278.04 798.15 L293.44 800.98 L291.83 805.54 L276.37 802.78 Z"/>
+      <path d="M325.42 788.80 L341.81 791.45 L340.32 795.86 L323.89 793.26 Z"/><path d="M319.76 805.33 L336.28 807.79 L334.79 812.20 L318.23 809.79 Z"/>
+      <path d="M369.70 795.44 L387.15 797.64 L385.72 801.95 L368.25 799.78 Z"/><path d="M364.35 811.53 L381.87 813.62 L380.44 817.94 L362.90 815.88 Z"/>
+      <path d="M416.67 800.91 L435.04 802.68 L433.63 806.95 L415.26 805.19 Z"/><path d="M411.45 816.77 L429.82 818.49 L428.41 822.76 L410.04 821.05 Z"/>
+      <path d="M465.95 805.25 L485.08 806.60 L483.65 810.87 L464.53 809.51 Z"/><path d="M460.69 821.04 L479.77 822.41 L478.34 826.68 L459.27 825.31 Z"/>
+      <path d="M517.14 808.49 L536.89 809.43 L535.40 813.74 L515.67 812.77 Z"/><path d="M511.70 824.37 L531.36 825.38 L529.86 829.69 L510.23 828.66 Z"/>
+      <path d="M569.85 810.66 L590.08 811.21 L588.50 815.58 L568.30 815.01 Z"/><path d="M564.12 826.76 L584.21 827.42 L582.62 831.79 L562.57 831.10 Z"/>
+      <path d="M623.70 811.80 L644.26 811.97 L642.55 816.44 L622.04 816.23 Z"/><path d="M617.56 828.22 L637.95 828.53 L636.25 833.00 L615.91 832.65 Z"/>
+      <path d="M678.29 811.93 L699.03 811.73 L697.19 816.32 L676.51 816.47 Z"/><path d="M671.68 828.76 L692.22 828.73 L690.38 833.32 L669.89 833.31 Z"/>
+      <path d="M733.24 811.10 L754.00 810.54 L752.02 815.26 L731.31 815.77 Z"/><path d="M726.09 828.40 L746.64 828.03 L744.65 832.75 L724.16 833.07 Z"/>
+      <path d="M788.14 809.33 L808.79 808.42 L806.65 813.28 L786.06 814.13 Z"/><path d="M780.42 827.14 L800.85 826.43 L798.71 831.29 L778.34 831.94 Z"/>
+      <path d="M842.62 806.65 L863.01 805.41 L860.71 810.41 L840.38 811.60 Z"/><path d="M834.31 824.99 L854.48 823.94 L852.18 828.95 L832.07 829.93 Z"/>
+      <path d="M896.28 803.10 L916.26 801.54 L913.81 806.68 L893.89 808.19 Z"/><path d="M887.40 821.96 L907.16 820.59 L904.71 825.73 L885.00 827.05 Z"/>
+      <path d="M948.74 798.71 L968.16 796.84 L965.56 802.11 L946.19 803.93 Z"/><path d="M939.30 818.06 L958.52 816.37 L955.92 821.64 L936.75 823.28 Z"/>
+      <path d="M999.59 793.51 L1018.31 791.35 L1015.58 796.73 L996.91 798.85 Z"/><path d="M989.65 813.31 L1008.20 811.29 L1005.47 816.68 L986.97 818.65 Z"/>
+      <path d="M1048.46 787.54 L1066.32 785.09 L1063.48 790.56 L1045.66 792.98 Z"/><path d="M1038.09 807.71 L1055.81 805.38 L1052.98 810.85 L1035.29 813.15 Z"/>
+      <path d="M1094.94 780.83 L1111.81 778.10 L1108.89 783.64 L1092.06 786.34 Z"/><path d="M1084.24 801.27 L1101.00 798.63 L1098.09 804.16 L1081.35 806.79 Z"/>
+      <path d="M1138.66 773.40 L1154.38 770.42 L1151.41 775.99 L1135.71 778.96 Z"/><path d="M1127.73 794.01 L1143.40 791.05 L1140.43 796.62 L1124.78 799.57 Z"/>
+      <path d="M1179.22 765.30 L1193.64 762.07 L1190.67 767.63 L1176.25 770.87 Z"/><path d="M1168.20 785.93 L1182.63 782.67 L1179.65 788.22 L1165.23 791.50 Z"/>
     </g>
   </defs>
 
-  <!-- Optical housing: an asymmetrical, softly lit lens instead of a character badge. -->
+  <!-- ========================================================================= -->
+  <!-- UNIFIED DIE-CUT STICKER BACKING: Prevents cream strokes from colliding    -->
+  <!-- across overlapping foreground elements while uniting the entire silhouette -->
+  <!-- ========================================================================= -->
+  <g id="sticker-backing" filter="url(#emblem-shadow)" fill="#fff4d4" stroke="#fff4d4" stroke-linejoin="round" stroke-linecap="round">
+    <circle cx="840" cy="324" r="296"/>
+    <!-- Breakout foliage silhouettes -->
+    <g transform="translate(611 243) rotate(-18) scale(.93)" stroke-width="18">
+      <path d="M17 27 Q-32 -8 -83 21 Q-60 18 -50 23 L-55 31 L-38 28 L-39 36 Q-8 39 17 27 Z"/>
+      <path d="M17 27 Q-54 35 -60 88 Q-43 65 -32 60 L-34 69 L-20 55 L-15 59 Q8 43 17 27 Z"/>
+      <path d="M17 27 Q-21 -34 10 -60 Q10 -38 15 -29 L19 -34 L21 -15 Q28 4 17 27 Z"/>
+    </g>
+    <g transform="translate(1109 337) scale(.48) rotate(16)" stroke-width="26">
+      <path d="M17 27 Q53 -30 99 -10 L77 1 L83 6 L60 12 L60 17 Q35 27 17 27 Z"/>
+      <path d="M17 27 Q79 9 112 58 Q92 46 79 44 L81 51 L62 43 L57 47 Q29 44 17 27 Z"/>
+    </g>
+    <path d="M588 414 Q551 379 526 405 Q554 405 568 428 Q524 402 501 433 Q532 424 561 449 L627 443 Z" stroke-width="18"/>
+    <!-- Shoreline, Film Strip, Wordmarks, Grass, Stone, Ferns & Accents -->
+    <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" stroke-width="22"/>
+    <path d="M231 611 C131 633 122 713 209 748 C425 838 1040 824 1265 727 L1240 788 C1006 877 411 868 184 789 C54 744 98 639 231 611 Z" stroke-width="20"/>
+    <g transform="translate(277 269) rotate(-7 235 80)" stroke-width="30">
+      <use href="#number-letters"/><use href="#unit-letters"/>
+      <g transform="translate(2 15)"><use href="#number-letters"/><use href="#unit-letters"/></g>
+    </g>
+    <g transform="translate(303 438) rotate(-5 400 140) scale(1.10)" stroke-width="32">
+      <use href="#isle-letters"/>
+      <use href="#isle-letters" transform="translate(4 22)"/>
+    </g>
+    <g transform="translate(135 491)" stroke-width="20">
+      <path d="M37 213 Q11 152 22 100 Q40 119 49 148 Q39 86 67 32 Q81 74 82 117 Q97 74 130 48 Q122 100 106 147 Q145 112 175 114 Q155 147 124 177 Q150 175 170 187 L149 221 Z"/>
+      <path d="M30 220 Q26 183 10 161 Q40 170 55 199 Q54 159 43 142 Q76 164 84 199 L127 225 Z"/>
+    </g>
+    <g transform="translate(1226 617) rotate(9 70 90) scale(.76)" stroke-width="22">
+      <path d="M-19 153 Q-9 127 15 124 Q-10 109 0 79 Q6 42 42 30 Q86 17 112 50 Q135 77 120 120 Q153 125 162 158 Q63 188 -19 153 Z"/>
+      <path d="M114 133 Q124 91 148 69 Q146 113 131 139 M129 140 Q150 111 176 111 Q161 138 143 147"/>
+      <ellipse cx="-27" cy="167" rx="7" ry="4" transform="rotate(-15 -27 167)"/>
+      <ellipse cx="-48" cy="178" rx="6" ry="3" transform="rotate(-15 -48 178)"/>
+    </g>
+    <g transform="translate(1291 711) rotate(29) scale(.52)" stroke-width="26">
+      <path d="M0 143 Q35 60 100 0"/>
+      <path d="M14 111 Q-28 103 -32 72 Q0 74 21 96 Q0 66 4 39 Q32 57 35 78 Q32 40 46 20 Q61 44 53 58 Q65 20 83 14 Q85 35 70 42 Q86 14 100 0 Q106 26 90 35 Q123 18 137 23 Q130 45 78 51 Q111 40 130 52 Q116 71 58 73 Q91 62 111 77 Q91 94 37 95 Q69 86 84 101 Q62 121 14 111 Z"/>
+    </g>
+    <path d="M1194 342 L1204 370 L1233 380 L1204 390 L1194 419 L1184 390 L1155 380 L1184 370 Z" stroke-width="16"/>
+    <path d="M213 452 V427 Q213 418 222 418 H247 M1313 610 H1335 Q1343 610 1343 601 V580" fill="none" stroke-width="16"/>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- OPTICAL HOUSING & ISLAND LANDSCAPE (#island-lens)                         -->
+  <!-- ========================================================================= -->
   <g id="island-lens" stroke-linejoin="round" stroke-linecap="round">
-    <circle cx="840" cy="324" r="289" fill="#163c46" stroke="#fff4d4" stroke-width="12"/>
+    <!-- Outer Lens Barrel & Knurled Grip Ring -->
+    <circle cx="840" cy="324" r="287" fill="#153942" stroke="#153942" stroke-width="6"/>
     <circle cx="840" cy="324" r="280" fill="url(#rim)"/>
-    <path d="M584 223 A276 276 0 0 1 1040 133" stroke="#b4cc91" stroke-width="4"/>
-    <g stroke="#d0ddb1" stroke-width="3" opacity=".85"><path d="M563.5 294.9 L556.6 294.2"/><path d="M575.6 238.1 L568.9 235.9"/><path d="M599.2 185.0 L593.2 181.5"/><path d="M633.4 138.0 L628.2 133.3"/><path d="M676.6 99.1 L672.5 93.4"/><path d="M726.9 70.0 L724.1 63.6"/><path d="M782.2 52.1 L780.7 45.2"/><path d="M840.0 46.0 L840.0 39.0"/><path d="M897.8 52.1 L899.3 45.2"/><path d="M953.1 70.0 L955.9 63.6"/><path d="M1003.4 99.1 L1007.5 93.4"/><path d="M1046.6 138.0 L1051.8 133.3"/><path d="M1080.8 185.0 L1086.8 181.5"/><path d="M1104.4 238.1 L1111.1 235.9"/><path d="M1116.5 294.9 L1123.4 294.2"/></g>
-    <circle cx="840" cy="324" r="268" stroke="#173d44" stroke-width="6"/>
+
+    <!-- Precision Optical Bezel Rings & Specular Rim -->
+    <circle cx="840" cy="324" r="273" stroke="#123038" stroke-width="2.5" opacity="0.7"/>
+    <path d="M582 218 A279 279 0 0 1 1044 134" stroke="#c3da9e" stroke-width="4" opacity="0.9"/>
+    <path d="M626 502 A279 279 0 0 0 1098 428" stroke="#3c6e6b" stroke-width="3.5" opacity="0.8"/>
+
+    <!-- Aperture / Distance Scale Markings on Lens Barrel -->
+    <g stroke="#d7e4b9" stroke-width="3" opacity="0.88">
+      <path d="M563.5 294.9 L556.0 294.1"/>
+      <path d="M568.4 266.2 L562.5 264.9" stroke-width="2" opacity="0.65"/>
+      <path d="M575.6 238.1 L568.2 235.7"/>
+      <path d="M586.2 211.0 L580.6 208.5" stroke-width="2" opacity="0.65"/>
+      <path d="M599.2 185.0 L592.5 181.1"/>
+      <path d="M615.2 160.7 L610.2 157.1" stroke-width="2" opacity="0.65"/>
+      <path d="M633.4 138.0 L627.6 132.8"/>
+      <path d="M654.1 117.5 L649.9 112.9" stroke-width="2" opacity="0.65"/>
+      <path d="M676.6 99.1 L672.0 92.8"/>
+      <path d="M701.1 83.4 L697.9 78.1" stroke-width="2" opacity="0.65"/>
+      <path d="M726.9 70.0 L723.7 62.9"/>
+      <path d="M754.1 59.6 L752.1 53.7" stroke-width="2" opacity="0.65"/>
+      <path d="M782.2 52.1 L780.5 44.5"/>
+      <path d="M810.9 47.5 L810.3 41.4" stroke-width="2" opacity="0.65"/>
+      <path d="M869.1 47.5 L869.7 41.4" stroke-width="2" opacity="0.65"/>
+      <path d="M897.8 52.1 L899.5 44.5"/>
+      <path d="M925.9 59.6 L927.9 53.7" stroke-width="2" opacity="0.65"/>
+      <path d="M953.1 70.0 L956.3 62.9"/>
+      <path d="M978.9 83.4 L982.1 78.1" stroke-width="2" opacity="0.65"/>
+      <path d="M1003.4 99.1 L1008.0 92.8"/>
+      <path d="M1025.9 117.5 L1030.1 112.9" stroke-width="2" opacity="0.65"/>
+      <path d="M1046.6 138.0 L1052.4 132.8"/>
+      <path d="M1064.8 160.7 L1069.8 157.1" stroke-width="2" opacity="0.65"/>
+      <path d="M1080.8 185.0 L1087.5 181.1"/>
+      <path d="M1093.8 211.0 L1099.4 208.5" stroke-width="2" opacity="0.65"/>
+      <path d="M1104.4 238.1 L1111.8 235.7"/>
+      <path d="M1111.6 266.2 L1117.5 264.9" stroke-width="2" opacity="0.65"/>
+      <path d="M1116.5 294.9 L1124.0 294.1"/>
+    </g>
+    <!-- Top-Dead-Center Lens Calibration Amber Jewel -->
+    <circle cx="840" cy="42.5" r="4.5" fill="#ffce5d" stroke="#153942" stroke-width="2"/>
+
+    <!-- Stepped Inner Filter Thread & Bezel -->
+    <circle cx="840" cy="324" r="267" fill="url(#inner-bezel)" stroke="#153942" stroke-width="5"/>
+
+    <!-- Clipped Island Panorama -->
     <g clip-path="url(#landscape)">
+      <!-- Golden-Hour Sky & Sun -->
       <circle cx="840" cy="324" r="264" fill="url(#sky)"/>
-      <circle cx="946" cy="170" r="77" fill="#fff5cc"/>
-      <circle cx="946" cy="170" r="61" fill="#ffe7a0"/>
-      <!-- Thin, layered weather and distant ridgelines. -->
-      <path d="M610 151 H653 Q653 137 671 137 Q675 117 692 126 Q706 126 708 141 H766 M983 113 H1040 M977 125 H1074" stroke="#fff7d9" stroke-width="10"/>
-      <path d="M580 297 L632 245 L672 258 L725 213 L768 244 L824 209 L887 265 L933 253 L1005 307 Z" fill="#c0c49b"/>
-      <path d="M587 328 L647 282 L692 285 L744 248 L804 279 L867 250 L943 312 L1117 300 V430 H580 Z" fill="#86ad8c"/>
+      <circle cx="946" cy="170" r="130" fill="url(#sun-glow)"/>
+      <circle cx="946" cy="170" r="76" fill="#fff6cf"/>
+      <circle cx="946" cy="170" r="59" fill="#ffe699"/>
 
-      <!-- A caldera with stepped strata and weathered, almost animate profiles. -->
-      <path d="M735 337 L778 267 L800 212 L833 194 L842 160 L870 158 L883 178 L929 170 L950 191 L956 221 L982 243 L997 302 L1041 355 Z" fill="#718675" stroke="#244e4d" stroke-width="5"/>
-      <path d="M842 160 L871 158 L883 180 L928 172 L949 191 L922 203 L885 196 L855 209 L834 195 Z" fill="#c2c18d"/>
-      <path d="M835 194 L855 211 L833 249 L828 288 L793 322 L779 354 L741 342 L785 270 L802 214 Z" fill="#9eaa7f"/>
-      <path d="M885 198 L879 235 L901 256 L891 285 L913 321 L889 354 L956 360 L966 311 L945 273 L953 223 L928 203 Z" fill="#42685e"/>
-      <path d="M852 218 L846 247 L859 261 L850 289 M817 275 L806 300 L788 315 M935 235 L925 253 L936 272 M862 311 L849 331" stroke="#bac394" stroke-width="4"/>
-      <path d="M804 250 L823 245 M778 300 L801 297 M918 291 L946 294" stroke="#335b55" stroke-width="4"/>
-      <!-- A curl of geothermal mist dissolves into normal cloud shapes. -->
-      <path d="M889 169 C876 155 891 148 901 149 C918 151 921 139 909 131 C893 122 901 109 916 111 C936 114 938 101 926 91" stroke="#fff5d4" stroke-width="11"/>
-      <path d="M911 163 Q926 155 918 149" stroke="#fff5d4" stroke-width="5"/>
+      <!-- Layered Horizon Clouds & Mist -->
+      <path d="M585 185 H750 Q762 185 765 176 Q768 166 756 165 H660 Z" fill="#ffefd0" opacity="0.55"/>
+      <path d="M610 151 H653 Q653 137 671 137 Q675 117 692 126 Q706 126 708 141 H766 M983 113 H1046 M968 126 H1078" stroke="#fff8de" stroke-width="10"/>
+      <path d="M626 163 H738 M1002 138 H1065" stroke="#fde2b2" stroke-width="5"/>
 
-      <!-- The eastern cliff is original rock geometry: face or ordinary erosion? -->
-      <path d="M962 349 L977 290 L1004 272 L1014 236 L1037 229 L1051 247 L1073 251 L1092 284 L1071 299 L1078 319 L1104 337 L1118 378 Z" fill="#7f9475" stroke="#244e4d" stroke-width="4"/>
-      <path d="M1014 236 L1037 229 L1047 249 L1073 253 L1050 268 L1033 260 L1019 279 L992 291 Z" fill="#b3bd88"/>
-      <path d="M1035 277 L1055 272 L1065 282 L1048 287 Z" fill="#375f56"/>
-      <path d="M1071 299 L1048 306 L1051 327 L1078 319 Z" fill="#385f56"/>
-      <path d="M1008 292 L996 321 L1010 333 M1060 346 L1072 348" stroke="#bac491" stroke-width="4"/>
-      <!-- Rainforest follows the rock shelves in connected masses. -->
-      <path d="M559 350 Q584 312 614 320 Q618 291 646 299 Q659 273 680 292 Q707 272 725 301 Q744 293 752 316 Q775 315 782 338 L824 362 L788 410 H553 Z" fill="#3b805f" stroke="#244e4d" stroke-width="5"/>
-      <path d="M573 344 Q601 322 619 332 Q626 304 649 314 Q660 292 682 307 Q706 289 724 315 Q742 308 749 330 L714 338 L674 326 L646 345 L605 343 Z" fill="#89b866"/>
-      <path d="M589 352 L601 370 M630 343 L641 363 M678 334 L682 355 M718 344 L729 362" stroke="#245c50" stroke-width="5"/>
-      <path d="M760 345 Q838 323 895 337 Q942 348 983 327 Q1020 311 1082 337 L1127 386 L787 414 Z" fill="#397e61"/>
-      <path d="M778 346 Q848 332 894 345 Q950 360 993 338 L1038 338 L994 352 Q937 375 887 357 Q841 347 790 361 Z" fill="#91b965"/>
-      <!-- The falling river catches the last light. -->
-      <path d="M937 315 Q951 324 968 316 L967 365 Q966 381 987 394 L940 407 Q950 383 947 363 Z" fill="#77cec1"/>
-      <path d="M948 326 L954 368 Q955 386 949 394 M960 327 V353" stroke="#f8f3cc" stroke-width="4"/>
+      <!-- Distant Atmospheric Mountain Ridgelines -->
+      <path d="M575 297 L632 242 L672 256 L726 210 L768 242 L824 206 L887 262 L933 250 L1008 307 Z" fill="#c2c59c"/>
+      <path d="M632 242 L652 250 L638 282 L585 295 Z M726 210 L745 225 L718 265 L672 256 Z M824 206 L848 228 L810 264 L768 242 Z" fill="#d9d5a8" opacity="0.65"/>
+      <path d="M582 328 L647 280 L692 284 L744 246 L804 277 L867 248 L943 310 L1120 298 V430 H580 Z" fill="#85ac8b"/>
+      <path d="M647 280 L674 283 L650 315 L595 326 Z M744 246 L776 263 L740 302 L692 284 Z" fill="#a5c49b" opacity="0.55"/>
+
+      <!-- Central Volcanic Caldera with Sculpted Strata -->
+      <path d="M735 337 L778 267 L800 212 L833 194 L842 160 L870 158 L883 178 L929 170 L950 191 L956 221 L982 243 L997 302 L1041 355 Z" fill="#6d8474" stroke="#204848" stroke-width="5"/>
+      <!-- Sunlit Rim & Western Slopes -->
+      <path d="M842 160 L871 158 L883 180 L928 172 L949 191 L922 203 L885 196 L855 209 L834 195 Z" fill="#cac692"/>
+      <path d="M835 194 L855 211 L833 249 L828 288 L793 322 L779 354 L741 342 L785 270 L802 214 Z" fill="#a2ae82"/>
+      <path d="M855 211 L885 196 L879 235 L859 261 L850 289 L828 288 L833 249 Z" fill="#82967c"/>
+      <!-- Shadowed Eastern Crags -->
+      <path d="M885 198 L879 235 L901 256 L891 285 L913 321 L889 354 L956 360 L966 311 L945 273 L953 223 L928 203 Z" fill="#3f655c"/>
+      <path d="M953 223 L980 245 L995 302 L1035 352 L956 360 L966 311 L945 273 Z" fill="#31544e"/>
+      <!-- Ridge Highlights & Crevice Lines -->
+      <path d="M852 218 L846 247 L859 261 L850 289 M817 275 L806 300 L788 315 M935 235 L925 253 L936 272 M862 311 L849 331" stroke="#c4cc9c" stroke-width="4"/>
+      <path d="M804 250 L823 245 M778 300 L801 297 M918 291 L946 294 M958 265 L978 270" stroke="#2c524d" stroke-width="4"/>
+
+      <!-- Geothermal Steam Plume Dissolving into Golden Clouds -->
+      <path d="M889 169 C876 155 891 148 901 149 C918 151 921 139 909 131 C893 122 901 109 916 111 C936 114 938 101 926 91" stroke="#fff7da" stroke-width="11"/>
+      <path d="M889 169 C876 155 891 148 901 149 C918 151 921 139 909 131" stroke="#ffe7b3" stroke-width="5"/>
+      <path d="M911 163 Q926 155 918 149" stroke="#fff7da" stroke-width="5"/>
+
+      <!-- Eastern Coastal Cliff: Natural Rock Geometry with Subtle Watcher Profile -->
+      <path d="M962 349 L977 290 L1004 272 L1014 236 L1037 229 L1051 247 L1073 251 L1092 284 L1071 299 L1078 319 L1104 337 L1118 378 Z" fill="#7d9374" stroke="#204848" stroke-width="4.5"/>
+      <path d="M1014 236 L1037 229 L1047 249 L1073 253 L1050 268 L1033 260 L1019 279 L992 291 Z" fill="#b8c28d"/>
+      <!-- Shadowed Eye Cleft & Mouth Overhang -->
+      <path d="M1034 276 L1056 271 L1066 282 L1047 288 Z" fill="#2e544d"/>
+      <circle cx="1048" cy="279" r="2" fill="#dce0a8" opacity="0.85"/>
+      <path d="M1071 299 L1046 306 L1050 327 L1078 319 Z" fill="#2e544d"/>
+      <path d="M1050 327 L1082 323 L1104 337 L1062 342 Z" fill="#99a87a"/>
+      <path d="M1008 292 L996 321 L1010 333 M1060 346 L1072 348" stroke="#c2cb98" stroke-width="4"/>
+
+      <!-- Upper Caldera Stream & Main Plunging Waterfall -->
+      <path d="M873 284 Q879 305 875 332" stroke="#8de0d2" stroke-width="5"/>
+      <path d="M874 288 V318" stroke="#fff8d6" stroke-width="2"/>
+
+      <!-- Rainforest Canopy Masses -->
+      <path d="M559 350 Q584 312 614 320 Q618 291 646 299 Q659 273 680 292 Q707 272 725 301 Q744 293 752 316 Q775 315 782 338 L824 362 L788 410 H553 Z" fill="#387c5c" stroke="#204848" stroke-width="5"/>
+      <path d="M573 344 Q601 322 619 332 Q626 304 649 314 Q660 292 682 307 Q706 289 724 315 Q742 308 749 330 L714 338 L674 326 L646 345 L605 343 Z" fill="#8bbc68"/>
+      <path d="M589 352 L601 370 M630 343 L641 363 M678 334 L682 355 M718 344 L729 362" stroke="#22574b" stroke-width="5"/>
+
+      <path d="M760 345 Q838 323 895 337 Q942 348 983 327 Q1020 311 1082 337 L1127 386 L787 414 Z" fill="#35785c" stroke="#204848" stroke-width="4.5"/>
+      <path d="M778 346 Q848 332 894 345 Q950 360 993 338 L1038 338 L994 352 Q937 375 887 357 Q841 347 790 361 Z" fill="#93bc68"/>
+
+      <!-- Main Waterfall & Plunge Pool Mist -->
+      <path d="M936 315 Q951 324 969 315 L968 365 Q967 381 988 394 L938 407 Q949 383 946 363 Z" fill="#76d1c4" stroke="#204848" stroke-width="3"/>
+      <path d="M948 324 L954 368 Q955 386 949 394 M960 325 V358 M943 345 L945 375" stroke="#fff8d6" stroke-width="4"/>
+
+      <!-- Golden Cove Beach & Lagoon Water -->
+      <path d="M558 396 Q699 357 831 368 Q927 397 1099 349 L1115 362 Q932 413 828 384 Q699 374 558 412 Z" fill="#f2d69b" stroke="#204848" stroke-width="3.5"/>
       <path d="M559 407 Q692 365 827 376 Q956 411 1126 352 V628 H551 Z" fill="url(#water)"/>
-      <path d="M558 397 Q699 358 831 369 Q927 398 1099 350 L1111 360 Q932 411 828 382 Q699 372 558 410 Z" fill="#f0d49a"/>
-      <path d="M612 411 Q682 392 750 398 M812 409 Q891 423 942 418 M983 408 L1044 392 M795 445 Q853 450 891 445 M1013 443 L1091 423 M583 460 Q644 443 703 451" stroke="#b9e5cb" stroke-width="5"/>
-      <path d="M946 405 Q966 395 984 403 M941 412 H994" stroke="#fff4cd" stroke-width="4"/>
-      <!-- A dark shape beneath concentric ripples can be a rock, a wake, or life. -->
-      <path d="M1010 469 Q1028 441 1045 451 Q1054 460 1075 460 L1083 468 Z" fill="#286b74"/>
-      <path d="M996 478 Q1034 463 1089 473 M1007 486 Q1055 488 1100 475" stroke="#9cdac7" stroke-width="4"/>
-      <path d="M1068 482 L1094 481" stroke="#fff0c6" stroke-width="3"/>
-      <!-- Small birds are simply distant birds, with no signature character shape. -->
-      <path d="M766 173 Q774 164 784 173 Q794 164 802 173 M738 190 Q744 183 751 190 Q759 182 766 188" stroke="#638b7c" stroke-width="3"/>
+      <path d="M560 407 Q692 366 827 377 Q956 411 1120 354" stroke="#fff5cf" stroke-width="4" opacity="0.85"/>
+
+      <!-- Waterfall Plunge Foam & Shimmering Water Reflections -->
+      <path d="M932 404 Q945 392 962 398 Q975 390 992 401 Q1002 407 988 413 H936 Z" fill="#e8fbf3" opacity="0.85"/>
+      <path d="M946 405 Q966 395 984 403 M938 413 H996 M950 421 H985" stroke="#fff7d6" stroke-width="4"/>
+      <path d="M612 411 Q682 392 750 398 M812 409 Q891 423 942 418 M983 408 L1044 392 M795 445 Q853 450 891 445 M1013 443 L1091 423 M583 460 Q644 443 703 451 M725 426 H778" stroke="#b9e8cf" stroke-width="4.5"/>
+
+      <!-- Mysterious Aquatic Silhouette & Concentric Ripples in the Bay -->
+      <path d="M1008 470 Q1026 439 1045 450 Q1055 460 1076 459 L1085 469 Z" fill="#1d5662" stroke="#133b44" stroke-width="3"/>
+      <path d="M1020 457 Q1033 446 1043 453" stroke="#5ab5b0" stroke-width="2.5"/>
+      <path d="M994 478 Q1034 462 1091 473 M1005 487 Q1055 489 1102 475 M1022 496 Q1058 497 1088 490" stroke="#a2e0cd" stroke-width="4"/>
+      <path d="M1066 482 L1095 481" stroke="#fff3cc" stroke-width="3"/>
+
+      <!-- Distant Birds -->
+      <path d="M766 173 Q774 164 784 173 Q794 164 802 173 M738 190 Q744 183 751 190 Q759 182 766 188 M818 152 Q823 146 829 152 Q835 146 840 151" stroke="#5d8576" stroke-width="3"/>
+
+      <!-- Cliffside Palm -->
       <use href="#palm" transform="translate(1061 266) scale(.55) rotate(9)"/>
+
+      <!-- Optical Multi-Coating Glass Flare & Subtle Viewfinder Crosshair -->
+      <circle cx="840" cy="324" r="262" fill="url(#lens-glass)"/>
+      <path d="M628 215 A238 238 0 0 1 785 92" stroke="#ffffff" stroke-width="6" opacity="0.22"/>
+      <path d="M642 238 A222 222 0 0 1 765 112" stroke="#ffffff" stroke-width="2.5" opacity="0.3"/>
+      <g stroke="#fff8dc" stroke-width="2" opacity="0.38">
+        <path d="M832 82 H848 M840 74 V90"/>
+        <path d="M1074 316 V332 M1066 324 H1082"/>
+      </g>
+      <!-- Inner Lens Vignette Ring -->
+      <circle cx="840" cy="324" r="262" stroke="#13363e" stroke-width="8" opacity="0.35"/>
     </g>
-    <!-- Canopy extends past the circular frame to connect it to the foreground. -->
-    <use href="#palm" transform="translate(611 243) rotate(-18) scale(.93)"/>
-    <use href="#palm" transform="translate(1109 337) scale(.48) rotate(16)"/>
-    <path d="M588 414 Q551 379 526 405 Q554 405 568 428 Q524 402 501 433 Q532 424 561 449 L627 443 Z" fill="#316e55" stroke="#183e43" stroke-width="5"/>
-    <path d="M538 414 Q567 420 587 439" stroke="#7aab64" stroke-width="3"/>
+
+    <!-- Crisp Inner Bezel Ink Line -->
+    <circle cx="840" cy="324" r="263" stroke="#153942" stroke-width="5.5"/>
+
+    <!-- Foreground Canopy Breaking Out of the Lens Frame -->
+    <g filter="url(#layer-shadow)">
+      <use href="#palm" transform="translate(611 243) rotate(-18) scale(.93)"/>
+      <use href="#palm" transform="translate(1109 337) scale(.48) rotate(16)"/>
+      <path d="M588 414 Q551 379 526 405 Q554 405 568 428 Q524 402 501 433 Q532 424 561 449 L627 443 Z" fill="#316e55" stroke="#163c44" stroke-width="5"/>
+      <path d="M538 414 Q567 420 587 439 M522 427 Q548 429 569 442" stroke="#85b66b" stroke-width="3"/>
+    </g>
   </g>
 
-  <!-- Organic terrain along the base, with the implied expedition route. -->
-  <g id="shoreline" stroke="#193e43" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" fill="#719267" stroke="#fff4d4" stroke-width="16"/>
-    <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" fill="#719267"/>
-    <path d="M178 679 Q252 664 322 696 Q443 752 745 751 Q1090 753 1273 664 L1308 706 Q1171 773 920 782 Q438 805 190 731 Z" fill="#e4c48b" stroke="none"/>
-    <path d="M205 716 Q450 794 816 770 Q1098 760 1244 708" fill="none" stroke="#fff0c6" stroke-width="5"/>
-    <path d="M255 680 Q336 704 381 707 M1093 708 Q1145 696 1193 667" stroke="#436d53" stroke-width="4"/>
+  <!-- ========================================================================= -->
+  <!-- SHORELINE & EXPEDITION ROUTE (#shoreline)                                 -->
+  <!-- ========================================================================= -->
+  <g id="shoreline" filter="url(#layer-shadow)" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Grassy Island Bluff -->
+    <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" fill="url(#turf)" stroke="#163c44" stroke-width="6"/>
+    <!-- Sunlit Turf Rim -->
+    <path d="M180 652 Q188 625 231 618 L291 630 L364 667 Q532 741 818 711 Q1104 702 1198 615 Q1254 608 1292 650" stroke="#a8c982" stroke-width="4" fill="none"/>
+    <!-- Sandy Beach Cove -->
+    <path d="M178 679 Q252 664 322 696 Q443 752 745 751 Q1090 753 1273 664 L1308 706 Q1171 773 920 782 Q438 805 190 731 Z" fill="url(#sand-grad)"/>
+    <!-- Turf-to-Sand Grass Overhangs -->
+    <path d="M178 679 Q252 664 322 696 Q443 752 745 751 Q1090 753 1273 664" stroke="#426b50" stroke-width="4.5" fill="none"/>
+    <!-- Highlighted Expedition Trail -->
+    <path d="M205 716 Q450 794 816 770 Q1098 760 1244 708" fill="none" stroke="#fff2ca" stroke-width="5"/>
+    <path d="M255 680 Q336 704 381 707 M1093 708 Q1145 696 1193 667 M645 734 Q715 739 785 734" stroke="#436d53" stroke-width="4"/>
+    <!-- Re-stroke outer boundary for crispness -->
+    <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" fill="none" stroke="#163c44" stroke-width="6"/>
   </g>
 
-  <!-- The ribbon is a roll of film, with real paired rows of perforations. -->
-  <g id="film-route" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M231 611 C131 633 122 713 209 748 C425 838 1040 824 1265 727 L1240 788 C1006 877 411 868 184 789 C54 744 98 639 231 611 Z" fill="#153b45" stroke="#fff4d4" stroke-width="12"/>
-    <path d="M231 611 C131 633 122 713 209 748 L193 777 C125 751 121 681 170 646 Z" fill="#3f797b"/>
-    <path d="M207.00 756.00 C434.00 841.00 1022.00 815.00 1251.00 744.00 L1234.00 776.00 C1001.00 852.00 435.00 856.00 194.00 787.00 Z" fill="#436e69"/>
-    <path d="M202.58 766.54 C434.34 846.10 1014.86 827.58 1245.22 754.88 L1239.78 765.12 C1008.14 839.42 434.66 850.90 198.42 776.46 Z" fill="#a1b481"/>
-    <g fill="#fff2c9"><path d="M284.23 780.96 L299.40 784.07 L297.79 788.63 L282.56 785.60 Z"/><path d="M278.04 798.15 L293.44 800.98 L291.83 805.54 L276.37 802.78 Z"/><path d="M325.42 788.80 L341.81 791.45 L340.32 795.86 L323.89 793.26 Z"/><path d="M319.76 805.33 L336.28 807.79 L334.79 812.20 L318.23 809.79 Z"/><path d="M369.70 795.44 L387.15 797.64 L385.72 801.95 L368.25 799.78 Z"/><path d="M364.35 811.53 L381.87 813.62 L380.44 817.94 L362.90 815.88 Z"/><path d="M416.67 800.91 L435.04 802.68 L433.63 806.95 L415.26 805.19 Z"/><path d="M411.45 816.77 L429.82 818.49 L428.41 822.76 L410.04 821.05 Z"/><path d="M465.95 805.25 L485.08 806.60 L483.65 810.87 L464.53 809.51 Z"/><path d="M460.69 821.04 L479.77 822.41 L478.34 826.68 L459.27 825.31 Z"/><path d="M517.14 808.49 L536.89 809.43 L535.40 813.74 L515.67 812.77 Z"/><path d="M511.70 824.37 L531.36 825.38 L529.86 829.69 L510.23 828.66 Z"/><path d="M569.85 810.66 L590.08 811.21 L588.50 815.58 L568.30 815.01 Z"/><path d="M564.12 826.76 L584.21 827.42 L582.62 831.79 L562.57 831.10 Z"/><path d="M623.70 811.80 L644.26 811.97 L642.55 816.44 L622.04 816.23 Z"/><path d="M617.56 828.22 L637.95 828.53 L636.25 833.00 L615.91 832.65 Z"/><path d="M678.29 811.93 L699.03 811.73 L697.19 816.32 L676.51 816.47 Z"/><path d="M671.68 828.76 L692.22 828.73 L690.38 833.32 L669.89 833.31 Z"/><path d="M733.24 811.10 L754.00 810.54 L752.02 815.26 L731.31 815.77 Z"/><path d="M726.09 828.40 L746.64 828.03 L744.65 832.75 L724.16 833.07 Z"/><path d="M788.14 809.33 L808.79 808.42 L806.65 813.28 L786.06 814.13 Z"/><path d="M780.42 827.14 L800.85 826.43 L798.71 831.29 L778.34 831.94 Z"/><path d="M842.62 806.65 L863.01 805.41 L860.71 810.41 L840.38 811.60 Z"/><path d="M834.31 824.99 L854.48 823.94 L852.18 828.95 L832.07 829.93 Z"/><path d="M896.28 803.10 L916.26 801.54 L913.81 806.68 L893.89 808.19 Z"/><path d="M887.40 821.96 L907.16 820.59 L904.71 825.73 L885.00 827.05 Z"/><path d="M948.74 798.71 L968.16 796.84 L965.56 802.11 L946.19 803.93 Z"/><path d="M939.30 818.06 L958.52 816.37 L955.92 821.64 L936.75 823.28 Z"/><path d="M999.59 793.51 L1018.31 791.35 L1015.58 796.73 L996.91 798.85 Z"/><path d="M989.65 813.31 L1008.20 811.29 L1005.47 816.68 L986.97 818.65 Z"/><path d="M1048.46 787.54 L1066.32 785.09 L1063.48 790.56 L1045.66 792.98 Z"/><path d="M1038.09 807.71 L1055.81 805.38 L1052.98 810.85 L1035.29 813.15 Z"/><path d="M1094.94 780.83 L1111.81 778.10 L1108.89 783.64 L1092.06 786.34 Z"/><path d="M1084.24 801.27 L1101.00 798.63 L1098.09 804.16 L1081.35 806.79 Z"/><path d="M1138.66 773.40 L1154.38 770.42 L1151.41 775.99 L1135.71 778.96 Z"/><path d="M1127.73 794.01 L1143.40 791.05 L1140.43 796.62 L1124.78 799.57 Z"/><path d="M1179.22 765.30 L1193.64 762.07 L1190.67 767.63 L1176.25 770.87 Z"/><path d="M1168.20 785.93 L1182.63 782.67 L1179.65 788.22 L1165.23 791.50 Z"/></g>
-    <path d="M159 663 Q133 687 143 712" stroke="#bdd9b0" stroke-width="4"/>
+  <!-- ========================================================================= -->
+  <!-- WINDING 35MM FILM STRIP (#film-route)                                     -->
+  <!-- ========================================================================= -->
+  <g id="film-route" filter="url(#layer-shadow)" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Main Celluloid Ribbon Body -->
+    <path d="M231 611 C131 633 122 713 209 748 C425 838 1040 824 1265 727 L1240 788 C1006 877 411 868 184 789 C54 744 98 639 231 611 Z" fill="url(#film-body)" stroke="#143740" stroke-width="6"/>
+
+    <!-- Left 3D Loop Curl Underside -->
+    <path d="M231 611 C131 633 122 713 209 748 L193 777 C125 751 121 681 170 646 Z" fill="#3c7779" stroke="#143740" stroke-width="5"/>
+    <path d="M214 619 C145 642 135 702 198 738" stroke="#85b9ae" stroke-width="3" fill="none" opacity="0.75"/>
+
+    <!-- Recessed Sprocket Track Band -->
+    <path d="M207.00 756.00 C434.00 841.00 1022.00 815.00 1251.00 744.00 L1234.00 776.00 C1001.00 852.00 435.00 856.00 194.00 787.00 Z" fill="#2d5757" stroke="#123038" stroke-width="2"/>
+
+    <!-- Exposed 35mm Film Frames Strip Between Perforations -->
+    <g clip-path="url(#film-track-clip)">
+      <path d="M202.58 766.54 C434.34 846.10 1014.86 827.58 1245.22 754.88 L1239.78 765.12 C1008.14 839.42 434.66 850.90 198.42 776.46 Z" fill="url(#film-emulsion)"/>
+      <!-- Frame Divider Bars along the strip -->
+      <g stroke="#163840" stroke-width="5">
+        <line x1="265" y1="740" x2="255" y2="820"/>
+        <line x1="358" y1="755" x2="350" y2="835"/>
+        <line x1="455" y1="770" x2="448" y2="845"/>
+        <line x1="556" y1="775" x2="550" y2="850"/>
+        <line x1="660" y1="780" x2="656" y2="855"/>
+        <line x1="768" y1="778" x2="764" y2="855"/>
+        <line x1="876" y1="770" x2="870" y2="850"/>
+        <line x1="980" y1="760" x2="972" y2="840"/>
+        <line x1="1080" y1="750" x2="1070" y2="830"/>
+        <line x1="1172" y1="735" x2="1162" y2="815"/>
+      </g>
+    </g>
+    <!-- Subtle Edge Highlight Along the Frame Track -->
+    <path d="M202.58 766.54 C434.34 846.10 1014.86 827.58 1245.22 754.88" stroke="#d5c696" stroke-width="1.8" fill="none" opacity="0.75"/>
+    <path d="M198.42 776.46 C434.66 850.90 1008.14 839.42 1239.78 765.12" stroke="#112b33" stroke-width="2" fill="none" opacity="0.85"/>
+
+    <!-- Paired Rows of Kodak-Style Perforations -->
+    <use href="#film-sprockets" fill="#102a30" transform="translate(1 1.5)"/>
+    <use href="#film-sprockets" fill="#fff2c9"/>
+
+    <!-- Glossy Celluloid Rim Highlights -->
+    <path d="M159 663 Q133 687 143 712" stroke="#bdd9b0" stroke-width="4" fill="none"/>
+    <path d="M225 751 C442 831 1020 818 1255 730" stroke="#5a948e" stroke-width="2.5" fill="none" opacity="0.7"/>
   </g>
 
-  <!-- 35 mm: warm film stock, generous spacing, no secondary label text. -->
-  <g id="35mm" transform="translate(277 269) rotate(-7 235 80)" stroke-linecap="round" stroke-linejoin="round">
-    <g fill="#fff4d4" stroke="#fff4d4" stroke-width="27"><use href="#number-letters"/><use href="#unit-letters"/><g transform="translate(2 15)"><use href="#number-letters"/><use href="#unit-letters"/></g></g>
-    <g fill="#163d44" stroke="#163d44" stroke-width="17"><use href="#number-letters"/><use href="#unit-letters"/><g transform="translate(2 15)"><use href="#number-letters"/><use href="#unit-letters"/></g></g>
-    <g transform="translate(1 9)" fill="#be7137" stroke="#be7137" stroke-width="6"><use href="#number-letters"/><use href="#unit-letters"/></g>
-    <g fill="url(#amber)" stroke="#163d44" stroke-width="5"><use href="#number-letters"/><use href="#unit-letters"/></g>
-    <g clip-path="url(#number-faces)" fill="none"><g transform="translate(1 3)" stroke="#fff3ad" stroke-width="4"><use href="#number-letters"/><use href="#unit-letters"/></g></g>
+  <!-- ========================================================================= -->
+  <!-- SCULPTED "35mm" BADGE (#35mm)                                             -->
+  <!-- ========================================================================= -->
+  <g id="35mm" transform="translate(277 269) rotate(-7 235 80)" filter="url(#layer-shadow)" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Dark Ink Casing (Stepped for Smooth 3D Extrusion) -->
+    <g fill="#153b43" stroke="#153b43" stroke-width="18">
+      <use href="#number-letters"/><use href="#unit-letters"/>
+      <g transform="translate(0.7 5)"><use href="#number-letters"/><use href="#unit-letters"/></g>
+      <g transform="translate(1.4 10)"><use href="#number-letters"/><use href="#unit-letters"/></g>
+      <g transform="translate(2.0 15)"><use href="#number-letters"/><use href="#unit-letters"/></g>
+    </g>
+    <!-- Deep Bronze Lower Extrusion -->
+    <g transform="translate(1.8 12)" fill="#8c481e" stroke="#8c481e" stroke-width="6">
+      <use href="#number-letters"/><use href="#unit-letters"/>
+    </g>
+    <!-- Warm Copper Mid Extrusion -->
+    <g transform="translate(1.0 7)" fill="url(#amber-extrude)" stroke="url(#amber-extrude)" stroke-width="6">
+      <use href="#number-letters"/><use href="#unit-letters"/>
+    </g>
+    <!-- Main Sculpted Gold Face -->
+    <g fill="url(#amber)" stroke="#153b43" stroke-width="5">
+      <use href="#number-letters"/><use href="#unit-letters"/>
+    </g>
+    <!-- Chiseled Inner Highlights & Gloss Arc -->
+    <g clip-path="url(#number-faces)">
+      <path d="M-20 12 Q240 -18 520 35 L520 62 Q240 15 -20 42 Z" fill="#ffffff" opacity="0.32"/>
+      <path d="M-20 135 Q240 165 520 125 V175 H-20 Z" fill="#c96b1e" opacity="0.28"/>
+      <g transform="translate(1 3)" fill="none" stroke="#fff6bf" stroke-width="4">
+        <use href="#number-letters"/><use href="#unit-letters"/>
+      </g>
+    </g>
+    <!-- Crisp Final Face Outline -->
+    <g fill="none" stroke="#153b43" stroke-width="4.5">
+      <use href="#number-letters"/><use href="#unit-letters"/>
+    </g>
   </g>
 
-  <!-- A custom-drawn main wordmark: one coherent silhouette and shallow carved depth. -->
-  <g id="isle" transform="translate(303 438) rotate(-5 400 140) scale(1.10)" stroke-linecap="round" stroke-linejoin="round">
-    <g stroke="#fff4d4" stroke-width="31" fill="#fff4d4"><use href="#isle-letters"/><use href="#isle-letters" transform="translate(4 22)"/></g>
-    <g stroke="#163d44" stroke-width="21" fill="#163d44"><use href="#isle-letters"/><use href="#isle-letters" transform="translate(4 22)"/></g>
-    <use href="#isle-letters" transform="translate(3 14)" fill="#267f79" stroke="#267f79" stroke-width="9"/>
-    <use href="#isle-letters" fill="url(#ivory)" stroke="#163d44" stroke-width="6"/>
+  <!-- ========================================================================= -->
+  <!-- SCULPTED "Isle" WORDMARK (#isle)                                          -->
+  <!-- ========================================================================= -->
+  <g id="isle" transform="translate(303 438) rotate(-5 400 140) scale(1.10)" filter="url(#layer-shadow)" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Dark Ink Casing (Multi-stepped for Seamless 3D Block Depth) -->
+    <g stroke="#153b43" stroke-width="21" fill="#153b43">
+      <use href="#isle-letters"/>
+      <use href="#isle-letters" transform="translate(1.3 7)"/>
+      <use href="#isle-letters" transform="translate(2.6 14.5)"/>
+      <use href="#isle-letters" transform="translate(4 22)"/>
+    </g>
+    <!-- Deep Teal Shaded Extrusion -->
+    <use href="#isle-letters" transform="translate(3.5 18)" fill="#185a5d" stroke="#185a5d" stroke-width="9"/>
+    <!-- Mid Lagoon Extrusion Bevel -->
+    <use href="#isle-letters" transform="translate(2.5 12)" fill="url(#isle-extrude)" stroke="url(#isle-extrude)" stroke-width="9"/>
+    <!-- Upper-Left Lit Extrusion Rim -->
+    <use href="#isle-letters" transform="translate(1.2 6)" fill="#45a898" stroke="#267f79" stroke-width="6"/>
+
+    <!-- Main Sculpted Ivory Face -->
+    <use href="#isle-letters" fill="url(#ivory)" stroke="#153b43" stroke-width="6"/>
+
+    <!-- Chiseled Face Lighting, Gloss Sweep & Warm Bounce Light -->
     <g clip-path="url(#isle-faces)">
-      <path d="M-20 17 Q360 -17 834 71 L831 98 Q366 20 -20 47 Z" fill="#ffffff" opacity=".27"/>
-      <path d="M-20 249 Q404 282 830 225 V304 H-20 Z" fill="#d9b66d" opacity=".33"/>
-      <use href="#isle-letters" transform="translate(2 4)" fill="none" stroke="#fffce9" stroke-width="4"/>
+      <path d="M-20 17 Q360 -17 834 71 L831 98 Q366 20 -20 47 Z" fill="#ffffff" opacity="0.38"/>
+      <path d="M-20 245 Q404 280 830 222 V304 H-20 Z" fill="#d4a853" opacity="0.38"/>
+      <use href="#isle-letters" transform="translate(2 4)" fill="none" stroke="#fffef2" stroke-width="4.5"/>
     </g>
+    <!-- Crisp Final Face Outline -->
+    <use href="#isle-letters" fill="none" stroke="#153b43" stroke-width="5.5"/>
   </g>
 
-  <!-- Something has pushed through this grass. Only foliage and a moving shadow. -->
-  <g id="parted-grass" transform="translate(135 491)" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M37 213 Q11 152 22 100 Q40 119 49 148 Q39 86 67 32 Q81 74 82 117 Q97 74 130 48 Q122 100 106 147 Q145 112 175 114 Q155 147 124 177 Q150 175 170 187 L149 221 Z" fill="#163e44" stroke="#fff4d4" stroke-width="13"/>
-    <path d="M37 213 Q11 152 22 100 Q40 119 49 148 Q39 86 67 32 Q81 74 82 117 Q97 74 130 48 Q122 100 106 147 Q145 112 175 114 Q155 147 124 177 Q150 175 170 187 L149 221 Z" fill="#315f50" stroke="#163e44" stroke-width="5"/>
-    <path d="M52 202 Q45 121 67 48 Q66 127 80 168 Q88 100 121 62 Q98 136 94 194 Z" fill="#79a966"/>
-    <path d="M75 186 Q82 156 107 154 Q129 151 140 179 Q115 173 113 202 Z" fill="#163e44"/>
-    <path d="M87 179 Q92 176 96 180 M113 177 Q117 174 120 177" stroke="#d4c480" stroke-width="2.5"/>
-    <!-- These two curved shapes are leaves; the notches and veins remain visible. -->
-    <path d="M90 174 Q60 142 62 112 Q86 116 102 150 L111 163 Z" fill="#b8cf78" stroke="#193e43" stroke-width="4"/>
-    <path d="M105 174 Q104 137 134 117 Q145 144 125 169 L116 182 Z" fill="#91ba68" stroke="#193e43" stroke-width="4"/>
-    <path d="M72 127 Q87 150 99 169 M131 131 Q118 149 113 174" stroke="#e2dea2" stroke-width="2"/>
-    <path d="M30 220 Q26 183 10 161 Q40 170 55 199 Q54 159 43 142 Q76 164 84 199 Q101 178 122 176 Q103 195 101 212 Q128 186 157 193 Q138 204 127 225 Z" fill="#52875a" stroke="#193e43" stroke-width="4"/>
-    <path d="M43 207 L29 182 M68 202 L61 181 M103 217 L134 202" stroke="#aac777" stroke-width="3"/>
-    <path d="M42 99 Q37 83 40 70 M132 105 Q143 94 147 82" fill="none" stroke="#749b66" stroke-width="3"/>
+  <!-- ========================================================================= -->
+  <!-- FOREGROUND MYSTERIES: PARTED GRASS, SPIRAL STONE & VIEWFINDER UI          -->
+  <!-- ========================================================================= -->
+
+  <!-- Left: Disturbed Jungle Grass with Leaf-Ears & Shadowy Presence -->
+  <g id="parted-grass" transform="translate(135 491)" filter="url(#layer-shadow)" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Back Foliage Mass -->
+    <path d="M37 213 Q11 152 22 100 Q40 119 49 148 Q39 86 67 32 Q81 74 82 117 Q97 74 130 48 Q122 100 106 147 Q145 112 175 114 Q155 147 124 177 Q150 175 170 187 L149 221 Z" fill="#2e5e4e" stroke="#153b43" stroke-width="6"/>
+    <!-- Mid Sunlit Blades -->
+    <path d="M52 202 Q45 121 67 48 Q66 127 80 168 Q88 100 121 62 Q98 136 94 194 Z" fill="#79aa66"/>
+    <path d="M65 65 Q61 118 70 165 M112 75 Q96 125 90 172" stroke="#b5d682" stroke-width="2.5" fill="none"/>
+
+    <!-- Deep Rustling Shadow Pocket & Subtle Eye-Shine Glints -->
+    <path d="M73 188 Q80 153 107 151 Q131 149 142 180 Q116 174 113 203 Z" fill="#123339"/>
+    <path d="M86 179 Q92 175 97 180 M112 177 Q117 173 121 177" stroke="#e8d88c" stroke-width="2.8"/>
+
+    <!-- Two Curved Notched Leaves (Naturalistic Flora / Pareidolia Ears) -->
+    <path d="M90 174 Q60 142 62 112 Q86 116 102 150 L111 163 Z" fill="#bbd178" stroke="#163c44" stroke-width="4.5"/>
+    <path d="M62 112 Q72 114 78 122 L66 126 Q62 119 62 112 Z" fill="#2b5749"/>
+    <path d="M105 174 Q104 137 134 117 Q145 144 125 169 L116 182 Z" fill="#92bc68" stroke="#163c44" stroke-width="4.5"/>
+    <path d="M134 117 Q138 126 136 133 L125 126 Q129 120 134 117 Z" fill="#2b5749"/>
+    <path d="M72 127 Q87 150 99 169 M131 131 Q118 149 113 174" stroke="#e9e4a8" stroke-width="2.2"/>
+
+    <!-- Foreground Parted Grass Crown -->
+    <path d="M30 220 Q26 183 10 161 Q40 170 55 199 Q54 159 43 142 Q76 164 84 199 Q101 178 122 176 Q103 195 101 212 Q128 186 157 193 Q138 204 127 225 Z" fill="#52885a" stroke="#163c44" stroke-width="5"/>
+    <path d="M43 207 L29 182 M68 202 L61 181 M103 217 L134 202" stroke="#b0cc7c" stroke-width="3"/>
+    <!-- Rustle Motion Arcs -->
+    <path d="M42 99 Q37 83 40 70 M132 105 Q143 94 147 82" fill="none" stroke="#749b66" stroke-width="3.5"/>
   </g>
 
-  <!-- A weathered spiral exposed by the tide: fossil, stone, or something buried. -->
-  <g id="buried-stone" transform="translate(1226 617) rotate(9 70 90) scale(.76)" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M-19 153 Q-9 127 15 124 Q-10 109 0 79 Q6 42 42 30 Q86 17 112 50 Q135 77 120 120 Q153 125 162 158 Q63 188 -19 153 Z" fill="#e4c48b" stroke="#fff4d4" stroke-width="12"/>
-    <path d="M7 136 Q-6 105 6 76 Q16 41 48 34 Q86 26 109 56 Q131 86 109 134 Z" fill="url(#stone)" stroke="#193e43" stroke-width="5"/>
-    <path d="M17 113 Q10 78 35 61 Q65 38 88 64 Q110 90 86 110 Q62 127 45 105 Q33 86 50 76 Q68 65 78 82 Q85 96 71 99" fill="none" stroke="#6c7859" stroke-width="8"/>
-    <path d="M20 106 Q16 80 37 65 Q64 46 84 67 M48 101 Q40 88 53 80 Q67 73 73 84" fill="none" stroke="#d9cea0" stroke-width="3"/>
-    <path d="M89 44 L82 52 M12 85 L22 89 M100 111 L109 117" stroke="#596f57" stroke-width="3"/>
-    <path d="M-20 143 Q-8 122 16 123 Q31 105 49 118 Q67 112 83 126 Q103 113 123 125 Q149 131 161 159 Q71 181 -20 156 Z" fill="#e4c48b" stroke="#193e43" stroke-width="4"/>
-    <path d="M-3 140 Q21 129 43 132 M75 139 Q96 131 118 136" stroke="#fff0c6" stroke-width="4"/>
-    <path d="M114 133 Q124 91 148 69 Q146 113 131 139 M129 140 Q150 111 176 111 Q161 138 143 147" fill="#648e58" stroke="#193e43" stroke-width="4"/>
-    <path d="M126 129 L143 85 M143 137 L163 119" stroke="#b4c778" stroke-width="2"/>
-    <ellipse cx="-27" cy="167" rx="7" ry="4" transform="rotate(-15 -27 167)" fill="#9b9365"/>
-    <ellipse cx="-48" cy="178" rx="6" ry="3" transform="rotate(-15 -48 178)" fill="#9b9365"/>
+  <!-- Right: Weathered Spiral Fossil Stone Half-Buried in Coastal Sand -->
+  <g id="buried-stone" transform="translate(1226 617) rotate(9 70 90) scale(.76)" filter="url(#layer-shadow)" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Base Sand Mound -->
+    <path d="M-19 153 Q-9 127 15 124 Q-10 109 0 79 Q6 42 42 30 Q86 17 112 50 Q135 77 120 120 Q153 125 162 158 Q63 188 -19 153 Z" fill="#e4c48b" stroke="#163c44" stroke-width="5.5"/>
+    <!-- Sculpted Limestone Nautilus Relic -->
+    <path d="M7 136 Q-6 105 6 76 Q16 41 48 34 Q86 26 109 56 Q131 86 109 134 Z" fill="url(#stone)" stroke="#163c44" stroke-width="5.5"/>
+    <!-- Ammonite Spiral Groove & Chamber Sutures -->
+    <path d="M17 113 Q10 78 35 61 Q65 38 88 64 Q110 90 86 110 Q62 127 45 105 Q33 86 50 76 Q68 65 78 82 Q85 96 71 99" fill="none" stroke="#5f6c4e" stroke-width="8"/>
+    <path d="M20 106 Q16 80 37 65 Q64 46 84 67 M48 101 Q40 88 53 80 Q67 73 73 84" fill="none" stroke="#e2d7aa" stroke-width="3.2"/>
+    <path d="M89 44 L80 54 M62 36 L60 48 M33 45 L39 56 M12 85 L22 89 M100 111 L109 117 M96 82 L109 80" stroke="#596f57" stroke-width="3.2"/>
+    <!-- Coastal Grass Blades Tucking Behind Sand -->
+    <path d="M114 133 Q124 91 148 69 Q146 113 131 139 M129 140 Q150 111 176 111 Q161 138 143 147" fill="#648e58" stroke="#163c44" stroke-width="4.5"/>
+    <path d="M126 129 L143 85 M143 137 L163 119" stroke="#b8cb7c" stroke-width="2.5"/>
+    <!-- Foreground Sand Drift & Pebbles -->
+    <path d="M-20 143 Q-8 122 16 123 Q31 105 49 118 Q67 112 83 126 Q103 113 123 125 Q149 131 161 159 Q71 181 -20 156 Z" fill="#e6c78f" stroke="#163c44" stroke-width="5"/>
+    <path d="M-3 140 Q21 129 43 132 M75 139 Q96 131 118 136" stroke="#fff2ca" stroke-width="4"/>
+    <ellipse cx="-27" cy="167" rx="7" ry="4" transform="rotate(-15 -27 167)" fill="#9b9365" stroke="#163c44" stroke-width="3"/>
+    <ellipse cx="-48" cy="178" rx="6" ry="3" transform="rotate(-15 -48 178)" fill="#9b9365" stroke="#163c44" stroke-width="3"/>
   </g>
 
-  <!-- Ferns and a single shutter flash complete the outer silhouette. -->
-  <use href="#fern" transform="translate(1291 711) rotate(29) scale(.52)"/>
-  <g stroke-linecap="round" stroke-linejoin="round">
-    <path d="M1194 342 L1204 370 L1233 380 L1204 390 L1194 419 L1184 390 L1155 380 L1184 370 Z" fill="#f9d26b" stroke="#fff4d4" stroke-width="11"/>
-    <path d="M1194 342 L1204 370 L1233 380 L1204 390 L1194 419 L1184 390 L1155 380 L1184 370 Z" fill="#f9d26b" stroke="#193e43" stroke-width="4"/>
-    <path d="M1194 360 V371 M1173 380 H1184" stroke="#fff6d5" stroke-width="3"/>
-    <!-- A focus corner draws attention toward the disturbed grass, without labelling it. -->
-    <path d="M213 452 V427 Q213 418 222 418 H247 M1313 610 H1335 Q1343 610 1343 601 V580" stroke="#fff4d4" stroke-width="10"/>
-    <path d="M213 452 V427 Q213 418 222 418 H247 M1313 610 H1335 Q1343 610 1343 601 V580" stroke="#bfa35b" stroke-width="4"/>
+  <!-- Outer Fern & Camera Viewfinder / Shutter Accents -->
+  <use href="#fern" transform="translate(1291 711) rotate(29) scale(.52)" filter="url(#layer-shadow)"/>
+
+  <g id="camera-accents" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Four-Point Golden Shutter Flash Sparkle -->
+    <path d="M1194 342 L1204 370 L1233 380 L1204 390 L1194 419 L1184 390 L1155 380 L1184 370 Z" fill="#fbd569" stroke="#163c44" stroke-width="5"/>
+    <path d="M1194 356 L1199 375 L1218 380 L1199 385 L1194 404 L1189 385 L1170 380 L1189 375 Z" fill="#fff7d6"/>
+
+    <!-- Viewfinder Autofocus Corner Brackets Framing the Environmental Clues -->
+    <path d="M213 452 V427 Q213 418 222 418 H247 M1313 610 H1335 Q1343 610 1343 601 V580" stroke="#163c44" stroke-width="8" fill="none"/>
+    <path d="M213 452 V427 Q213 418 222 418 H247 M1313 610 H1335 Q1343 610 1343 601 V580" stroke="#d4b463" stroke-width="4" fill="none"/>
+    <circle cx="225" cy="430" r="2.5" fill="#94d678"/>
   </g>
 </svg>

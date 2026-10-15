@@ -314,10 +314,35 @@
       <path d="M852 218 L846 247 L859 261 L850 289 M817 275 L806 300 L788 315 M935 235 L925 253 L936 272 M862 311 L849 331" stroke="#c4cc9c" stroke-width="4"/>
       <path d="M804 250 L823 245 M778 300 L801 297 M918 291 L946 294 M958 265 L978 270" stroke="#2c524d" stroke-width="4"/>
 
-      <!-- Geothermal Steam Plume Dissolving into Golden Clouds -->
-      <path d="M889 169 C876 155 891 148 901 149 C918 151 921 139 909 131 C893 122 901 109 916 111 C936 114 938 101 926 91" stroke="#fff7da" stroke-width="11"/>
-      <path d="M889 169 C876 155 891 148 901 149 C918 151 921 139 909 131" stroke="#ffe7b3" stroke-width="5"/>
-      <path d="M911 163 Q926 155 918 149" stroke="#fff7da" stroke-width="5"/>
+      <!-- Dark Billowing Volcanic Smoke Plume & Glowing Crater Lava Lip -->
+      <g id="volcano-eruption">
+        <!-- Main Ash Smoke Plume Rising Against the Sun -->
+        <path d="M881 176 C868 164 871 146 883 140 C873 125 883 106 901 103 C904 84 926 74 945 82 C965 90 968 113 952 124 C962 135 954 152 937 153 C936 164 926 172 915 173 Z" fill="#5e5559" stroke="#23383c" stroke-width="4"/>
+        <!-- Upper Drifting Ash Puff -->
+        <path d="M948 73 C943 64 953 55 964 59 C973 54 984 63 978 72 C982 79 972 86 963 82 C956 85 947 80 948 73 Z" fill="#6d6366" stroke="#23383c" stroke-width="3.2"/>
+        <!-- Deep Charcoal Inner Smoke Shadows -->
+        <path d="M883 174 C873 163 876 148 887 142 C879 128 887 112 903 109 C912 118 908 133 898 139 C909 147 905 163 894 169 Z" fill="#433b40"/>
+        <!-- Sunlit Ash Highlights on the Sunward Rim -->
+        <path d="M906 102 C912 87 930 80 944 86 C959 93 961 111 947 121 C955 131 949 145 934 147 C939 135 932 123 920 122 C925 112 918 103 906 102 Z" fill="#8d807e"/>
+        <!-- Warm Magma Under-Glow Reflecting on Base of Smoke -->
+        <path d="M883 173 Q892 157 905 162 Q916 153 928 164 Q916 174 883 173 Z" fill="#d95b2b" opacity="0.8"/>
+        <!-- Swirling Smoke Contours -->
+        <path d="M892 152 Q885 139 898 131 M908 135 Q922 126 916 112 M926 104 Q939 95 948 106" stroke="#362f34" stroke-width="3" fill="none"/>
+        <path d="M922 86 Q938 82 948 93 M947 125 Q953 136 941 143" stroke="#b5a49b" stroke-width="2.5" fill="none"/>
+
+        <!-- Dark Basalt Crater Vent Backing -->
+        <path d="M871 161 L883 178 L928 170 L921 182 L882 185 Z" fill="#283236" stroke="#204848" stroke-width="2.5"/>
+        <!-- Molten Lava Rim & Overflow Trickles on the Crater Lip -->
+        <path d="M876 171 Q899 166 923 172 L916 181 L905 184 L903 200 Q899 205 896 198 L894 186 L889 212 Q885 217 882 210 L881 184 L874 177 Z" fill="#de391e" stroke="#2b1e1f" stroke-width="2.5"/>
+        <!-- Bright Orange-Gold Magma Core -->
+        <path d="M880 173 Q899 169 918 174 L912 179 L901 181 L900 195 L895 183 L886 205 L885 181 L878 176 Z" fill="#ff9824"/>
+        <!-- White-Hot Crater Lip & Flow Highlights -->
+        <path d="M884 175 Q899 172 912 175 M886 180 L886 196 M899 179 L899 189" stroke="#fff49c" stroke-width="2.4" fill="none"/>
+        <!-- Rising Lava Embers -->
+        <circle cx="894" cy="161" r="2.2" fill="#ffae33"/>
+        <circle cx="909" cy="154" r="1.8" fill="#ff6b2b"/>
+        <circle cx="885" cy="149" r="1.6" fill="#ffd966"/>
+      </g>
 
       <!-- Eastern Coastal Cliff: Natural Rock Geometry with Subtle Watcher Profile -->
       <path d="M962 349 L977 290 L1004 272 L1014 236 L1037 229 L1051 247 L1073 251 L1092 284 L1071 299 L1078 319 L1104 337 L1118 378 Z" fill="#7d9374" stroke="#204848" stroke-width="4.5"/>
@@ -329,31 +354,34 @@
       <path d="M1050 327 L1082 323 L1104 337 L1062 342 Z" fill="#99a87a"/>
       <path d="M1008 292 L996 321 L1010 333 M1060 346 L1072 348" stroke="#c2cb98" stroke-width="4"/>
 
-      <!-- Upper Caldera Stream & Main Plunging Waterfall -->
-      <path d="M873 284 Q879 305 875 332" stroke="#8de0d2" stroke-width="5"/>
-      <path d="M874 288 V318" stroke="#fff8d6" stroke-width="2"/>
-
       <!-- Rainforest Canopy Masses -->
       <path d="M559 350 Q584 312 614 320 Q618 291 646 299 Q659 273 680 292 Q707 272 725 301 Q744 293 752 316 Q775 315 782 338 L824 362 L788 410 H553 Z" fill="#387c5c" stroke="#204848" stroke-width="5"/>
       <path d="M573 344 Q601 322 619 332 Q626 304 649 314 Q660 292 682 307 Q706 289 724 315 Q742 308 749 330 L714 338 L674 326 L646 345 L605 343 Z" fill="#8bbc68"/>
       <path d="M589 352 L601 370 M630 343 L641 363 M678 334 L682 355 M718 344 L729 362" stroke="#22574b" stroke-width="5"/>
 
-      <path d="M760 345 Q838 323 895 337 Q942 348 983 327 Q1020 311 1082 337 L1127 386 L787 414 Z" fill="#35785c" stroke="#204848" stroke-width="4.5"/>
-      <path d="M778 346 Q848 332 894 345 Q950 360 993 338 L1038 338 L994 352 Q937 375 887 357 Q841 347 790 361 Z" fill="#93bc68"/>
-
-      <!-- Main Waterfall & Plunge Pool Mist -->
-      <path d="M936 315 Q951 324 969 315 L968 365 Q967 381 988 394 L938 407 Q949 383 946 363 Z" fill="#76d1c4" stroke="#204848" stroke-width="3"/>
-      <path d="M948 324 L954 368 Q955 386 949 394 M960 325 V358 M943 345 L945 375" stroke="#fff8d6" stroke-width="4"/>
+      <!-- Elevated Eastern Bluff Framing the River & Waterfall Source -->
+      <path d="M760 345 Q838 321 895 331 Q942 336 983 324 Q1020 311 1082 337 L1127 386 L787 414 Z" fill="#35785c" stroke="#204848" stroke-width="4.5"/>
+      <path d="M778 344 Q848 329 894 338 Q946 345 993 331 L1038 334 L994 347 Q944 361 887 351 Q841 344 790 359 Z" fill="#93bc68"/>
 
       <!-- Golden Cove Beach & Lagoon Water -->
       <path d="M558 396 Q699 357 831 368 Q927 397 1099 349 L1115 362 Q932 413 828 384 Q699 374 558 412 Z" fill="#f2d69b" stroke="#204848" stroke-width="3.5"/>
       <path d="M559 407 Q692 365 827 376 Q956 411 1126 352 V628 H551 Z" fill="url(#water)"/>
       <path d="M560 407 Q692 366 827 377 Q956 411 1120 354" stroke="#fff5cf" stroke-width="4" opacity="0.85"/>
 
-      <!-- Waterfall Plunge Foam & Shimmering Water Reflections -->
-      <path d="M932 404 Q945 392 962 398 Q975 390 992 401 Q1002 407 988 413 H936 Z" fill="#e8fbf3" opacity="0.85"/>
-      <path d="M946 405 Q966 395 984 403 M938 413 H996 M950 421 H985" stroke="#fff7d6" stroke-width="4"/>
-      <path d="M612 411 Q682 392 750 398 M812 409 Q891 423 942 418 M983 408 L1044 392 M795 445 Q853 450 891 445 M1013 443 L1091 423 M583 460 Q644 443 703 451 M725 426 H778" stroke="#b9e8cf" stroke-width="4.5"/>
+      <!-- Main Waterfall (Emerging from Bluff Terrace & Plunging Across Shoreline into Lagoon) -->
+      <path d="M943 339 Q951 335 959 338 Q964 344 966 351 L970 391 Q953 396 936 392 L939 352 Q940 345 943 339 Z" fill="#76d1c4" stroke="#204848" stroke-width="3.2"/>
+      <!-- Waterfall Depth Shading -->
+      <path d="M944 339 Q951 336 958 338 Q962 344 964 351 L961 391 L952 392 L954 351 Q952 344 944 339 Z" fill="#4bc0b8" opacity="0.65"/>
+      <!-- Canopy Arch Overhang & Bluff Lip Shoulders -->
+      <path d="M938 341 Q951 333 964 340" stroke="#204848" stroke-width="4" fill="none"/>
+      <path d="M932 353 Q937 351 940 355 M965 354 Q969 350 974 352" stroke="#204848" stroke-width="3.2" fill="none"/>
+      <!-- Waterfall Crest & Cascade Highlights -->
+      <path d="M949 340 Q952 345 952 350 M942 351 Q953 349 963 351 M946 351 L944 387 M956 352 L958 388 M951 362 L950 389" stroke="#fff8d6" stroke-width="3.5" fill="none"/>
+
+      <!-- Waterfall Plunge Foam & Shimmering Water Reflections (Directly Meeting Base of Falls) -->
+      <path d="M928 393 Q934 385 945 388 Q954 382 963 388 Q973 384 979 392 Q985 397 974 399 Q953 402 933 399 Q924 397 928 393 Z" fill="#e8fbf3" opacity="0.92"/>
+      <path d="M935 391 Q945 384 954 390 Q964 383 973 390 M931 395 Q953 400 976 394 M922 399 Q953 406 984 397" stroke="#fff7d6" stroke-width="3.5" fill="none"/>
+      <path d="M916 406 Q953 415 990 403 M930 415 Q954 421 978 413 M612 411 Q682 392 750 398 M812 409 Q885 422 918 417 M994 409 L1044 392 M795 445 Q853 450 891 445 M1013 443 L1091 423 M583 460 Q644 443 703 451 M725 426 H778" stroke="#b9e8cf" stroke-width="4.5" fill="none"/>
 
       <!-- Mysterious Aquatic Silhouette & Concentric Ripples in the Bay -->
       <path d="M1008 470 Q1026 439 1045 450 Q1055 460 1076 459 L1085 469 Z" fill="#1d5662" stroke="#133b44" stroke-width="3"/>

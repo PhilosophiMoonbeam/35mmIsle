@@ -61,6 +61,6 @@
     "test_source": "tests/game_save_tests.cpp",
     "test_executable": "game-save-tests",
     "test_arguments": "Optional existing owned parent directory; tests create fresh unique child profiles and never open an external profile.",
-    "verification": "Not run by worker; parent owns builds, tests and actual integration smoke."
+    "verification": "Main exercised COW snapshot mutation/reset, real two-generation commit/cold reload and rejected-state preservation through the existing consumer contracts and application integration. GCC Debug, GCC Release and Clang ASan/UBSan builds and game-save-tests pass. Windows CI on611b9da exposed shared_ptr::unique(), removed in C++20; both ownership checks now use the standard equivalent use_count()!=1 under the existing serialized session contract. This preserves copy-only-when-shared behavior and reset's no-copy overwrite path without a deprecated-API compatibility define. New Windows build verification is required; no Windows11 runtime claim."
   }
 }

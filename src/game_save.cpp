@@ -113,7 +113,7 @@ struct GameSession::Impl {
     bool dirty = false;
     bool writable = false;
     GameSnapshot::Data& mutate() {
-        if (!data.unique()) data = std::make_shared<GameSnapshot::Data>(*data);
+        if (data.use_count() != 1) data = std::make_shared<GameSnapshot::Data>(*data);
         dirty = true;
         return *data;
     }
@@ -190,7 +190,7 @@ GameOpenResult GameSession::open(const std::filesystem::path& directory, std::ui
 }
 GameError GameSession::reset(std::uint32_t time) {
     if (!*this) return unavailable;
-    if (!impl_->data.unique()) {
+    if (impl_->data.use_count() != 1) {
         // A reset replaces every byte; preserve snapshots without first copying
         // their payload only to overwrite it with defaults.
         auto replacement = std::make_shared<GameSnapshot::Data>();

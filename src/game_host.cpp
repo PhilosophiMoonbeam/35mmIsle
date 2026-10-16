@@ -1,3 +1,12 @@
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
 #include "game_host.hpp"
 #include "graphics_task.hpp"
 #include "35mmisle/rsp.hpp"
@@ -25,15 +34,6 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#endif
 
 #if !defined(F3DEX_GBI_2) || defined(GBI_FLOATS)
 #error "The game host requires F3DEX_GBI_2 and integer vertices"

@@ -96,19 +96,25 @@
       <stop offset="1" stop-color="#c69d63"/>
     </linearGradient>
 
-    <linearGradient id="film-body" x1="150" y1="690" x2="1265" y2="790" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1c4a54"/>
-      <stop offset="0.25" stop-color="#143842"/>
-      <stop offset="0.7" stop-color="#112f38"/>
-      <stop offset="1" stop-color="#1d4c56"/>
+    <linearGradient id="film-body" x1="140" y1="680" x2="1280" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5a2b13"/>
+      <stop offset="0.18" stop-color="#7c3d1b"/>
+      <stop offset="0.5" stop-color="#4e2410"/>
+      <stop offset="0.82" stop-color="#783a19"/>
+      <stop offset="1" stop-color="#4a220f"/>
     </linearGradient>
 
-    <linearGradient id="film-emulsion" x1="200" y1="760" x2="1240" y2="760" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#8b6b47"/>
-      <stop offset="0.25" stop-color="#a58255"/>
-      <stop offset="0.5" stop-color="#798f6d"/>
-      <stop offset="0.75" stop-color="#9e7c52"/>
-      <stop offset="1" stop-color="#73583c"/>
+    <linearGradient id="film-curl-underside" x1="115" y1="630" x2="210" y2="775" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6e3618"/>
+      <stop offset="0.45" stop-color="#b86b2d"/>
+      <stop offset="0.8" stop-color="#965020"/>
+      <stop offset="1" stop-color="#4e2410"/>
+    </linearGradient>
+
+    <linearGradient id="film-emulsion" x1="190" y1="760" x2="1265" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2b1208"/>
+      <stop offset="0.5" stop-color="#1f0d05"/>
+      <stop offset="1" stop-color="#2b1208"/>
     </linearGradient>
 
     <linearGradient id="stone" x1="60" y1="25" x2="60" y2="145" gradientUnits="userSpaceOnUse">
@@ -137,7 +143,7 @@
       <use href="#unit-letters"/>
     </clipPath>
     <clipPath id="film-track-clip">
-      <path d="M207.00 756.00 C434.00 841.00 1022.00 815.00 1251.00 744.00 L1234.00 776.00 C1001.00 852.00 435.00 856.00 194.00 787.00 Z"/>
+      <path d="M189.84 757.12 C424.16 849.92 1026.40 835.92 1261.60 741.12 L1270.40 764.88 C1028.60 864.08 422.84 878.08 180.16 780.88 Z"/>
     </clipPath>
 
     <!-- Reusable Botanicals -->
@@ -162,27 +168,13 @@
       <path d="M-65 24 Q-26 14 9 26 M26 24 Q54 0 83 -5 M24 31 Q69 24 97 48 M-44 68 Q-24 39 8 31" stroke="#b9d684" stroke-width="3"/>
     </g>
 
-    <!-- Film Perforation Holes -->
-    <g id="film-sprockets">
-      <path d="M284.23 780.96 L299.40 784.07 L297.79 788.63 L282.56 785.60 Z"/><path d="M278.04 798.15 L293.44 800.98 L291.83 805.54 L276.37 802.78 Z"/>
-      <path d="M325.42 788.80 L341.81 791.45 L340.32 795.86 L323.89 793.26 Z"/><path d="M319.76 805.33 L336.28 807.79 L334.79 812.20 L318.23 809.79 Z"/>
-      <path d="M369.70 795.44 L387.15 797.64 L385.72 801.95 L368.25 799.78 Z"/><path d="M364.35 811.53 L381.87 813.62 L380.44 817.94 L362.90 815.88 Z"/>
-      <path d="M416.67 800.91 L435.04 802.68 L433.63 806.95 L415.26 805.19 Z"/><path d="M411.45 816.77 L429.82 818.49 L428.41 822.76 L410.04 821.05 Z"/>
-      <path d="M465.95 805.25 L485.08 806.60 L483.65 810.87 L464.53 809.51 Z"/><path d="M460.69 821.04 L479.77 822.41 L478.34 826.68 L459.27 825.31 Z"/>
-      <path d="M517.14 808.49 L536.89 809.43 L535.40 813.74 L515.67 812.77 Z"/><path d="M511.70 824.37 L531.36 825.38 L529.86 829.69 L510.23 828.66 Z"/>
-      <path d="M569.85 810.66 L590.08 811.21 L588.50 815.58 L568.30 815.01 Z"/><path d="M564.12 826.76 L584.21 827.42 L582.62 831.79 L562.57 831.10 Z"/>
-      <path d="M623.70 811.80 L644.26 811.97 L642.55 816.44 L622.04 816.23 Z"/><path d="M617.56 828.22 L637.95 828.53 L636.25 833.00 L615.91 832.65 Z"/>
-      <path d="M678.29 811.93 L699.03 811.73 L697.19 816.32 L676.51 816.47 Z"/><path d="M671.68 828.76 L692.22 828.73 L690.38 833.32 L669.89 833.31 Z"/>
-      <path d="M733.24 811.10 L754.00 810.54 L752.02 815.26 L731.31 815.77 Z"/><path d="M726.09 828.40 L746.64 828.03 L744.65 832.75 L724.16 833.07 Z"/>
-      <path d="M788.14 809.33 L808.79 808.42 L806.65 813.28 L786.06 814.13 Z"/><path d="M780.42 827.14 L800.85 826.43 L798.71 831.29 L778.34 831.94 Z"/>
-      <path d="M842.62 806.65 L863.01 805.41 L860.71 810.41 L840.38 811.60 Z"/><path d="M834.31 824.99 L854.48 823.94 L852.18 828.95 L832.07 829.93 Z"/>
-      <path d="M896.28 803.10 L916.26 801.54 L913.81 806.68 L893.89 808.19 Z"/><path d="M887.40 821.96 L907.16 820.59 L904.71 825.73 L885.00 827.05 Z"/>
-      <path d="M948.74 798.71 L968.16 796.84 L965.56 802.11 L946.19 803.93 Z"/><path d="M939.30 818.06 L958.52 816.37 L955.92 821.64 L936.75 823.28 Z"/>
-      <path d="M999.59 793.51 L1018.31 791.35 L1015.58 796.73 L996.91 798.85 Z"/><path d="M989.65 813.31 L1008.20 811.29 L1005.47 816.68 L986.97 818.65 Z"/>
-      <path d="M1048.46 787.54 L1066.32 785.09 L1063.48 790.56 L1045.66 792.98 Z"/><path d="M1038.09 807.71 L1055.81 805.38 L1052.98 810.85 L1035.29 813.15 Z"/>
-      <path d="M1094.94 780.83 L1111.81 778.10 L1108.89 783.64 L1092.06 786.34 Z"/><path d="M1084.24 801.27 L1101.00 798.63 L1098.09 804.16 L1081.35 806.79 Z"/>
-      <path d="M1138.66 773.40 L1154.38 770.42 L1151.41 775.99 L1135.71 778.96 Z"/><path d="M1127.73 794.01 L1143.40 791.05 L1140.43 796.62 L1124.78 799.57 Z"/>
-      <path d="M1179.22 765.30 L1193.64 762.07 L1190.67 767.63 L1176.25 770.87 Z"/><path d="M1168.20 785.93 L1182.63 782.67 L1179.65 788.22 L1165.23 791.50 Z"/>
+    <!-- True 35mm Vertical KS-1870 Perforations (Exact Parametric Bezier Rail Centerlines) -->
+    <g id="film-sprockets" fill="none" stroke-linecap="butt">
+      <!-- Left 3D Curl Inside-Loop Foreshortened Perforations -->
+      <path d="M222.5 618.2 C172.0 630.5 142.0 653.5 135.5 677.5" stroke-width="8.8" stroke-dasharray="6.8 6.2"/>
+      <!-- Top & Bottom Orthogonal Vertical 35mm Perforation Tracks (s = 0.1425 & s = 0.8575) -->
+      <path d="M192.87 749.70 C424.57 841.12 1025.71 827.12 1258.85 733.70" stroke-width="10.2" stroke-dasharray="8.2 10.42" stroke-dashoffset="-4"/>
+      <path d="M177.13 788.30 C422.43 886.88 1029.29 872.88 1273.15 772.30" stroke-width="10.2" stroke-dasharray="8.43 10.72" stroke-dashoffset="-4.1"/>
     </g>
 
     <!-- 1990s Anime Atmospheric, Safari Apple & Optical Flare Gradients -->
@@ -230,7 +222,7 @@
     <path d="M588 414 Q551 379 526 405 Q554 405 568 428 Q524 402 501 433 Q532 424 561 449 L627 443 Z" stroke-width="18"/>
     <!-- Shoreline, Film Strip, Wordmarks, Grass, Stone, Ferns & Accents -->
     <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" stroke-width="22"/>
-    <path d="M231 611 C131 633 122 713 209 748 C425 838 1040 824 1265 727 L1240 788 C1006 877 411 868 184 789 C54 744 98 639 231 611 Z" stroke-width="20"/>
+    <path d="M231 609 C126 631 116 708 196 742 C425 832 1025 818 1256 726 L1276 780 C1030 882 422 896 174 796 C54 748 92 638 231 609 Z" stroke-width="20"/>
     <g transform="translate(277 269) rotate(-7 235 80)" stroke-width="30">
       <use href="#number-letters"/><use href="#unit-letters"/>
       <g transform="translate(2 15)"><use href="#number-letters"/><use href="#unit-letters"/></g>
@@ -519,58 +511,106 @@
   <!-- WINDING 35MM FILM STRIP (#film-route)                                     -->
   <!-- ========================================================================= -->
   <g id="film-route" filter="url(#layer-shadow)" stroke-linejoin="round" stroke-linecap="round">
-    <!-- Main Celluloid Ribbon Body -->
-    <path d="M231 611 C131 633 122 713 209 748 C425 838 1040 824 1265 727 L1240 788 C1006 877 411 868 184 789 C54 744 98 639 231 611 Z" fill="url(#film-body)" stroke="#143740" stroke-width="6"/>
+    <!-- Left 3D Loop Curl Underside (Matte Amber Emulsion Backside) -->
+    <path d="M231 609 C126 631 116 708 196 742 L174 796 C92 756 96 668 186 636 Z" fill="url(#film-curl-underside)" stroke="#153b43" stroke-width="6"/>
+    <!-- Warm Backlit Amber Glow Inside the 3D Curl -->
+    <path d="M222 615 C136 636 122 698 186 734" stroke="#f5a64c" stroke-width="3.5" fill="none" opacity="0.8"/>
+    <path d="M188 642 C122 668 112 726 168 768" stroke="#3b190b" stroke-width="4" fill="none" opacity="0.65"/>
 
-    <!-- Left 3D Loop Curl Underside -->
-    <path d="M231 611 C131 633 122 713 209 748 L193 777 C125 751 121 681 170 646 Z" fill="#3c7779" stroke="#143740" stroke-width="5"/>
-    <path d="M214 619 C145 642 135 702 198 738" stroke="#85b9ae" stroke-width="3" fill="none" opacity="0.75"/>
+    <!-- Main Front 35mm Celluloid Ribbon Body -->
+    <path d="M231 609 C126 631 116 708 196 742 C425 832 1025 818 1256 726 L1276 780 C1030 882 422 896 174 796 C54 748 92 638 231 609 Z" fill="url(#film-body)" stroke="#153b43" stroke-width="6"/>
 
-    <!-- Recessed Sprocket Track Band -->
-    <path d="M207.00 756.00 C434.00 841.00 1022.00 815.00 1251.00 744.00 L1234.00 776.00 C1001.00 852.00 435.00 856.00 194.00 787.00 Z" fill="#2d5757" stroke="#123038" stroke-width="2"/>
+    <!-- Top & Bottom Translucent Amber Sprocket Rail Glows (Outside Frame Track) -->
+    <path d="M193.2 748.8 C424.6 840.0 1025.6 826.0 1258.5 732.8" stroke="#c86d28" stroke-width="11" fill="none" opacity="0.42"/>
+    <path d="M177.2 788.2 C422.4 886.8 1029.3 872.8 1273.1 772.2" stroke="#c86d28" stroke-width="11" fill="none" opacity="0.42"/>
 
-    <!-- Vivid Exposed 35mm Safari Snapshot Frames Between Perforations -->
+    <!-- Central Exposed 35mm Slide Frame Channel (Strictly Between Sprocket Rows) -->
+    <path d="M189.84 757.12 C424.16 849.92 1026.40 835.92 1261.60 741.12 L1270.40 764.88 C1028.60 864.08 422.84 878.08 180.16 780.88 Z" fill="url(#film-emulsion)" stroke="#240f06" stroke-width="2.5"/>
+
+    <!-- 9 Developed Safari Slide Exposures Clipped Inside the Center Channel -->
     <g clip-path="url(#film-track-clip)">
-      <path d="M202.58 766.54 C434.34 846.10 1014.86 827.58 1245.22 754.88 L1239.78 765.12 C1008.14 839.42 434.66 850.90 198.42 776.46 Z" fill="url(#film-emulsion)"/>
-      <!-- Individual Color-Tinted Mini Snapshots Along the Strip -->
-      <polygon points="255,745 356,760 350,835 250,820" fill="#e58b52" opacity="0.82"/>
-      <polygon points="356,760 453,772 448,845 350,835" fill="#46b4b0" opacity="0.82"/>
-      <polygon points="453,772 554,778 550,850 448,845" fill="#78b05e" opacity="0.82"/>
-      <polygon points="554,778 658,782 656,855 550,850" fill="#f0b85c" opacity="0.85"/>
-      <polygon points="658,782 766,780 764,855 656,855" fill="#e26b58" opacity="0.82"/>
-      <polygon points="766,780 874,772 870,850 764,855" fill="#4bc0b8" opacity="0.82"/>
-      <polygon points="874,772 978,762 972,840 870,850" fill="#88bc64" opacity="0.82"/>
-      <polygon points="978,762 1078,750 1070,830 972,840" fill="#f2a65a" opacity="0.82"/>
-      <polygon points="1078,750 1170,735 1162,815 1070,830" fill="#529ab5" opacity="0.82"/>
-      <!-- Frame Divider Bars along the strip -->
-      <g stroke="#143239" stroke-width="6">
-        <line x1="265" y1="740" x2="255" y2="820"/>
-        <line x1="358" y1="755" x2="350" y2="835"/>
-        <line x1="455" y1="770" x2="448" y2="845"/>
-        <line x1="556" y1="775" x2="550" y2="850"/>
-        <line x1="660" y1="780" x2="656" y2="855"/>
-        <line x1="768" y1="778" x2="764" y2="855"/>
-        <line x1="876" y1="770" x2="870" y2="850"/>
-        <line x1="980" y1="760" x2="972" y2="840"/>
-        <line x1="1080" y1="750" x2="1070" y2="830"/>
-        <line x1="1172" y1="735" x2="1162" y2="815"/>
+      <!-- Frame 0 (Leading Edge): Deep Sunset Coral -->
+      <polygon points="180,740 233,755 214,810 165,795" fill="#d96b43"/>
+      <!-- Frame 1: Sunset Cove (Gold Sky / Coral Horizon at Exact Midline) -->
+      <polygon points="233.0,754.7 321.6,775.6 307.5,833.4 213.8,810.1" fill="#f39c4f"/>
+      <polygon points="223.4,782.4 314.5,804.5 307.5,833.4 213.8,810.1" fill="#d95b38"/>
+      <!-- Frame 2: Turquoise Lagoon -->
+      <polygon points="321.6,775.6 436.9,791.6 427.8,851.3 307.5,833.4" fill="#7ce0d3"/>
+      <polygon points="314.5,804.5 432.3,821.5 427.8,851.3 307.5,833.4" fill="#268c9e"/>
+      <!-- Frame 3: Jungle Canopy (Emerald & Lime) -->
+      <polygon points="436.9,791.6 565.1,800.5 560.6,861.5 427.8,851.3" fill="#9cd468"/>
+      <polygon points="432.3,821.5 562.8,831.0 560.6,861.5 427.8,851.3" fill="#3b7d54"/>
+      <!-- Frame 4: Golden Beach & Sun -->
+      <polygon points="565.1,800.5 700.4,802.7 700.5,864.2 560.6,861.5" fill="#ffe485"/>
+      <polygon points="562.8,831.0 700.2,833.3 700.5,864.2 560.6,861.5" fill="#e59a3e"/>
+      <!-- Frame 5: Volcanic Caldera (Magma Red & Ash) -->
+      <polygon points="700.4,802.7 836.8,798.0 840.6,859.2 700.5,864.2" fill="#ff7852"/>
+      <polygon points="700.2,833.3 838.7,828.7 840.6,859.2 700.5,864.2" fill="#9e2f2b"/>
+      <!-- Frame 6: Waterfall Bay (Aqua & Mint) -->
+      <polygon points="836.8,798.0 968.5,787.0 976.4,847.3 840.6,859.2" fill="#88ebd6"/>
+      <polygon points="838.7,828.7 972.4,817.2 976.4,847.3 840.6,859.2" fill="#2b95a3"/>
+      <!-- Frame 7: Palm Bluff (Tropical Green) -->
+      <polygon points="968.5,787.0 1089.4,769.8 1101.5,828.4 976.4,847.3" fill="#a8d96c"/>
+      <polygon points="972.4,817.2 1095.5,799.1 1101.5,828.4 976.4,847.3" fill="#438558"/>
+      <!-- Frame 8: Amber Dusk -->
+      <polygon points="1089.4,769.8 1193.9,746.6 1210.4,802.8 1101.5,828.4" fill="#ffb85c"/>
+      <polygon points="1095.5,799.1 1202.1,774.7 1210.4,802.8 1101.5,828.4" fill="#cf6532"/>
+      <!-- Frame 9: Deep Ocean Twilight -->
+      <polygon points="1193.9,746.6 1262.0,724.0 1280.0,782.0 1210.4,802.8" fill="#68c4d6"/>
+      <polygon points="1202.1,774.7 1266.0,753.0 1280.0,782.0 1210.4,802.8" fill="#266885"/>
+
+      <!-- Diagonal Glossy Slide Emulsion Sheen Across Each Frame -->
+      <g fill="#ffffff" opacity="0.22">
+        <polygon points="248,750 268,754 242,815 222,811"/>
+        <polygon points="355,770 375,773 352,838 332,835"/>
+        <polygon points="478,785 500,787 480,855 458,853"/>
+        <polygon points="612,792 634,793 618,864 596,863"/>
+        <polygon points="750,792 772,791 760,862 738,863"/>
+        <polygon points="885,784 907,782 898,854 876,856"/>
+        <polygon points="1012,770 1034,767 1028,838 1006,841"/>
+        <polygon points="1128,748 1148,744 1146,815 1126,819"/>
+      </g>
+
+      <!-- Orthogonal Dark Celluloid Inter-Frame Divider Bars -->
+      <g stroke="#261006" stroke-width="8.5" stroke-linecap="butt">
+        <line x1="233.0" y1="754.7" x2="213.8" y2="810.1"/>
+        <line x1="321.6" y1="775.6" x2="307.5" y2="833.4"/>
+        <line x1="436.9" y1="791.6" x2="427.8" y2="851.3"/>
+        <line x1="565.1" y1="800.5" x2="560.6" y2="861.5"/>
+        <line x1="700.4" y1="802.7" x2="700.5" y2="864.2"/>
+        <line x1="836.8" y1="798.0" x2="840.6" y2="859.2"/>
+        <line x1="968.5" y1="787.0" x2="976.4" y2="847.3"/>
+        <line x1="1089.4" y1="769.8" x2="1101.5" y2="828.4"/>
+        <line x1="1193.7" y1="746.6" x2="1210.2" y2="802.8"/>
+      </g>
+      <!-- Thin Amber Highlight Along Inter-Frame Divider Edges -->
+      <g stroke="#9e5222" stroke-width="1.4" stroke-linecap="butt" opacity="0.7">
+        <line x1="236.5" y1="755.5" x2="217.3" y2="810.9"/>
+        <line x1="325.2" y1="776.3" x2="311.1" y2="834.1"/>
+        <line x1="440.5" y1="792.1" x2="431.4" y2="851.8"/>
+        <line x1="568.7" y1="800.8" x2="564.2" y2="861.8"/>
+        <line x1="704.0" y1="802.7" x2="704.1" y2="864.2"/>
+        <line x1="840.4" y1="797.8" x2="844.2" y2="859.0"/>
+        <line x1="972.1" y1="786.6" x2="980.0" y2="846.9"/>
+        <line x1="1093.0" y1="769.2" x2="1105.1" y2="827.8"/>
+        <line x1="1197.2" y1="745.8" x2="1213.7" y2="802.0"/>
       </g>
     </g>
-    <!-- Golden DX Film Edge Frame Index Marks -->
-    <g stroke="#f3c86b" stroke-width="2.2" opacity="0.8">
-      <path d="M302 778 L312 780 M402 793 L414 794 M502 802 L514 803 M606 806 L618 806 M712 806 L724 806 M820 802 L832 801 M926 794 L938 792 M1028 782 L1040 780 M1124 768 L1136 765"/>
-    </g>
-    <!-- Subtle Edge Highlight Along the Frame Track -->
-    <path d="M202.58 766.54 C434.34 846.10 1014.86 827.58 1245.22 754.88" stroke="#d5c696" stroke-width="1.8" fill="none" opacity="0.75"/>
-    <path d="M198.42 776.46 C434.66 850.90 1008.14 839.42 1239.78 765.12" stroke="#112b33" stroke-width="2" fill="none" opacity="0.85"/>
 
-    <!-- Paired Rows of Kodak-Style Perforations -->
-    <use href="#film-sprockets" fill="#102a30" transform="translate(1 1.5)"/>
-    <use href="#film-sprockets" fill="#fff2c9"/>
+    <!-- Crisp Frame Track Border Lines & Golden DX Edge Barcode Ticks Along Rail -->
+    <path d="M189.84 757.12 C424.16 849.92 1026.40 835.92 1261.60 741.12" stroke="#f0a854" stroke-width="1.8" fill="none" opacity="0.8"/>
+    <path d="M180.16 780.88 C422.84 878.08 1028.60 864.08 1270.40 764.88" stroke="#f0a854" stroke-width="1.8" fill="none" opacity="0.8"/>
+    <path d="M179.50 782.50 C422.75 880.00 1028.75 866.00 1271.00 766.50" stroke="#ffcf70" stroke-width="1.8" stroke-dasharray="14 48 4 6 8 52" stroke-dashoffset="-18" fill="none" opacity="0.85"/>
 
-    <!-- Glossy Celluloid Rim Highlights -->
-    <path d="M159 663 Q133 687 143 712" stroke="#bdd9b0" stroke-width="4" fill="none"/>
-    <path d="M225 751 C442 831 1020 818 1255 730" stroke="#5a948e" stroke-width="2.5" fill="none" opacity="0.7"/>
+    <!-- Die-Cut Vertical 35mm Sprocket Perforations (Dark Rim Bevel + Cream Punch-Through) -->
+    <use href="#film-sprockets" stroke="#210d05" transform="translate(1.2 1.5)"/>
+    <use href="#film-sprockets" stroke="#fff4d4"/>
+
+    <!-- Glossy Celluloid Outer Rim Specular Highlights -->
+    <path d="M154 658 C122 686 122 722 152 752" stroke="#ffd28a" stroke-width="4" fill="none" opacity="0.85"/>
+    <path d="M202 741 C428 829 1022 815 1252 725" stroke="#e89543" stroke-width="2.2" fill="none" opacity="0.75"/>
+    <!-- Re-stroke Outer Ink Contour for Crisp Cel Line Weight -->
+    <path d="M231 609 C126 631 116 708 196 742 C425 832 1025 818 1256 726 L1276 780 C1030 882 422 896 174 796 C54 748 92 638 231 609 Z" fill="none" stroke="#153b43" stroke-width="6"/>
   </g>
 
   <!-- ========================================================================= -->

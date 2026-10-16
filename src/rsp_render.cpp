@@ -279,6 +279,7 @@ CanonicalExecutor::MemoryLease::MemoryLease(MemoryLease&& other) noexcept {
     owner_ = std::exchange(other.owner_, nullptr);
     rdram_ = std::exchange(other.rdram_, {});
     hidden_ = std::exchange(other.hidden_, {});
+    postprocessing_ = std::exchange(other.postprocessing_, false);
 }
 
 CanonicalExecutor::MemoryLease&
@@ -290,6 +291,7 @@ CanonicalExecutor::MemoryLease::operator=(MemoryLease&& other) noexcept {
         owner_ = std::exchange(other.owner_, nullptr);
         rdram_ = std::exchange(other.rdram_, {});
         hidden_ = std::exchange(other.hidden_, {});
+        postprocessing_ = std::exchange(other.postprocessing_, false);
     }
     return *this;
 }
@@ -308,6 +310,34 @@ std::span<const std::byte> CanonicalExecutor::MemoryLease::hidden() const noexce
     if (owner_) owner_->require_creator_noexcept();
     return hidden_;
 }
+std::span<std::uint32_t> CanonicalExecutor::MemoryLease::postprocess_words() {
+    require(owner_ != nullptr,"canonical postprocess requires an active completed lease");
+    owner_->require_creator();
+    require(owner_->leased && !owner_->preparing && !owner_->executing && !owner_->poisoned && !postprocessing_,
+            "canonical completed CPU write phase is already active or invalid");
+    postprocessing_ = true;
+    return owner_->words;
+}
+
+void CanonicalExecutor::MemoryLease::finish_postprocess() {
+    require(owner_ != nullptr,"canonical postprocess completion requires an active lease");
+    owner_->require_creator();
+    require(owner_->leased && !owner_->preparing && !owner_->executing && postprocessing_,
+            "canonical completed CPU write phase is not active");
+    try {
+        // The actual GPU/readback already completed. Do not remap/invalidate
+        // these CPU writes; write them back before presentation or RAM reuse.
+        owner_->processor->end_write_rdram();
+        owner_->errors.require_clean();
+        postprocessing_ = false;
+    } catch (...) {
+        postprocessing_ = false;
+        owner_->poison();
+        rdram_ = {}; hidden_ = {};
+        throw;
+    }
+}
+
 
 const Result& CanonicalExecutor::MemoryLease::rsp_result() const {
     require(owner_ != nullptr, "canonical result lease is not active");
@@ -325,6 +355,7 @@ void CanonicalExecutor::MemoryLease::release() noexcept {
     if (!owner_) return;
     owner_->require_creator_noexcept();
     if (!owner_->leased || owner_->preparing || owner_->executing) std::terminate();
+    if (postprocessing_) { owner_->poison(); postprocessing_ = false; }
     owner_->leased = false;
     owner_ = nullptr;
     rdram_ = {};

@@ -39,7 +39,7 @@
     "tests/focus_detector_tests.cpp"
   ],
   "contracts": {
-    "input": "Caller stages active metadata/photo12membership at actual draw capture and owns native identity/context reuse. Analyze requires matching realGPU-completed dense128-byte/64-aligned RGBA16 regions in canonical word-swapped RDRAM; no manufactured fence/queue or CPU rasterization.",
+    "input": "Caller stages active metadata/photo12membership at actual draw capture and owns native identity/context reuse. append(context,subjects) preserves old-context captures before the source prefix; invalid context/capacity rejects before mutation. history(context) exposes borrowed ordered metadata. Analyze consumes matching real GPU-completed dense128-byte/64-aligned RGBA16 regions in canonical word-swapped RDRAM, not manufactured fences/queues or CPU rasterization.",
     "reduction": "All16bits including framebuffer coverage-bit changes compare. Source31/32boundary and last qualifying draw retained; normal photo12 membership and1004/1018/1022/1035 exceptions follow source. Source ID/flags and captured-photo focus history are retained/cleared at their actual branches.",
     "retirement": "Cleanup removes comparison identities in both context arrays before native reuse, does not dereference actor pointers and does not publish early. Native scene must also perform its separate player/photo cleanup/fences.",
     "mark": "When computed focus is present, direction=-1 and flag4, writeexact0xf801 at21sourcecenterpixels in320x240canonical framebuffer, preserving fourcorners/neighborhalfwords/unrelatedRAM and existingRDP hidden memory. Otherwise framebuffer unused. Rejected positivework extent leaves allRAM unchanged.",
@@ -69,11 +69,19 @@
         0
       ],
       "ROM_not_used": true
+    },
+    "actual_live_GPU": {
+      "root": "/home/bbferko/35mmisle-actor-focus-evaluated-surface-f3krr9nu",
+      "binary_sha256": "ee126de53297ac04d4c74d1f5c7aed17d8a559e375e42035a85427923d78de69",
+      "source_archive_sha256": "df9d8e76965829a718d8b2668210c9ca82df55b569411e519ebd5fa891b20f37",
+      "result": "Complete six-actor actual RSP/RDP consumer exit0,12.183876750s; true center-region histories select actual native Pikachu from64full16bit differences, source gate/native hide restore Snorlax, exact reveal restores Pikachu. Preprefix old-context append, unconditional disabled baseline, atomic rejection/recovery, cleanup and deferred publication pass. Completed-memory real writeback marks exactly21pixels with outside pixels/hidden fingerprint unchanged. Whole closure77/76/78stable,0physical/permission,ROM unchanged; actual focus/mark/hide surfaces inspected only after successful closure.",
+      "current_CPU": "49/49 Debug/Release/ClangASanUBSan including preprefix append/capacity/invalid-context/publication regressions.",
+      "bounded_proof": "parent-complete-live-actor-focus-proof.json"
     }
   },
   "limits": [
-    "Complete CPU history/reduction/publication/mark component, not source renderer capture emission, original queue/update GObjs, fullPhotoSnapshot collection or actor player integration.",
-    "The API demonstration uses real native actor identity and private compiled GAME control; its color inputs are authored, not actualGPUlivefocus proof.",
-    "No enabled detector/gameplay, Original numerical/hardware parity, physical input/audio or Windows11 runtime qualification."
+    "CPU history/reduction/publication/mark integrates with actual source-ordered actor GPU center copies; it does not implement original snapshot collection/update queue/GObjs, complete PhotoSnapshot or actor/player/gameplay ownership.",
+    "Historical API demonstration uses authored colors; the separately accepted complete actual GPU actor consumer supplies genuine center histories. Failed fixture roots remain wholly rejected and uninspected.",
+    "No Original numerical/hardware parity, physical input/audio, complete gameplay or Windows11 private-ROM runtime qualification."
   ]
 }

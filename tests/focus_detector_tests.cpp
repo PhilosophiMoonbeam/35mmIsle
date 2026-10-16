@@ -163,10 +163,38 @@ void source_center_mark() {
     detector.cleanup(99);
     check(detector.mark_center({},0xffffffffu,-1)==f::Error::none,"retired source focus accessed framebuffer");
 }
+void capture_before_prefix() {
+    Fixture memory; f::Detector detector;
+    const std::array baseline{f::Subject{0,-1,0}};
+    const std::array first{f::Subject{11,25,4}},second{f::Subject{22,143,4}};
+    memory.fill(0,0x1234); memory.fill(1,0x5678); memory.fill(2,0x9abc);
+    check(detector.stage(1,baseline,photo(11,22))==f::Error::none &&
+          detector.append(1,first)==f::Error::none &&
+          detector.analyze(1,memory.words,Fixture::base)==f::Error::none &&
+          detector.computed().object==11,"old-context capture append did not retain the prior baseline");
+    detector.publish(); const auto published=detector.published();
+    check(detector.stage(0,baseline,photo(33))==f::Error::none &&
+          detector.append(1,second)==f::Error::none &&
+          detector.analyze(1,memory.words,Fixture::base)==f::Error::none &&
+          detector.computed().object==22 && detector.photo(1)->focus==22 &&
+          detector.photo(0)->focus==0,"prefix reset changed the other context's appended candidate/photo");
+    check(equal(detector.published(),published),"metadata append or prefix staged an early focus publication");
+    const std::array<f::Subject,18> overflow{};
+    check(detector.append(1,overflow)==f::Error::extent &&
+          detector.append(2,first)==f::Error::invalid_context &&
+          detector.history(1).size()==3 &&
+          detector.analyze(1,memory.words,Fixture::base)==f::Error::none &&
+          detector.computed().object==22,"rejected metadata append changed accepted candidate history");
+    detector.cleanup(22);
+    check(detector.history(1)[2].object==0 &&
+          detector.analyze(1,memory.words,Fixture::base)==f::Error::none &&
+          detector.computed().object==11 && equal(detector.published(),published),
+          "cleanup failed to clear an appended identity without early publication");
+}
 } // namespace
 int main() {
     threshold_and_full_color(); last_candidate_and_photo_membership(); snapshot_and_two_context_cleanup();
-    late_rejection_and_capacity(); source_center_mark();
+    late_rejection_and_capacity(); source_center_mark(); capture_before_prefix();
     if (failures) return 1;
     std::cout<<"Source live focus color-history, cleanup/publication and canonical center-mark contracts passed\n";
 }

@@ -47,6 +47,12 @@ public:
         // expire on release. A borrowing reader must cease access first.
         std::span<const std::byte> rdram() const noexcept;
         std::span<const std::byte> hidden() const noexcept;
+        // Exclusive creator-thread CPU postprocess of this actually completed
+        // RDRAM, not preparation or a copied image. Hidden remains read-only.
+        // Cease writer access before finish_postprocess, which performs real
+        // host writeback. Finish before release; abandonment poisons the owner.
+        std::span<std::uint32_t> postprocess_words();
+        void finish_postprocess();
         const Result& rsp_result() const;
         const PacketBuffer& packets() const;
         void release() noexcept;
@@ -57,6 +63,7 @@ public:
         Impl* owner_ = nullptr;
         std::span<const std::byte> rdram_;
         std::span<const std::byte> hidden_;
+        bool postprocessing_ = false;
     };
 
     explicit CanonicalExecutor(bool require_cpu, Limits limits = {});

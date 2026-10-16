@@ -4,6 +4,8 @@
 #include "beach_actor_resources.hpp"
 #include "borrowed_model_kernel.hpp"
 #include "scene_render.hpp"
+#include "focus_capture.hpp"
+#include "35mmisle/focus_detector.hpp"
 
 namespace isle::actor {
 // No implicit Title/World RAM addresses. Framebuffers are complete physical
@@ -12,16 +14,23 @@ struct ProducerLayout {
     menu::RamRange payloads, lists, materials;
     std::array<menu::RamRange,2> framebuffers;
 };
-// Only the detector-disabled geometry branch is admitted. There is deliberately
-// no enabled mode/no-op capture callback; invalid enum values reject at creation.
-enum class DetectorPolicy { disabled };
+// Actual source detector state, not an optional capture callback. Null at
+// Producer creation selects geometry-only composition without a detector owner.
+// A bound owner always emits the source DL5 prefix; enabled controls per-actor
+// captures only. Context starts at source1 and flips when the prefix renders.
+struct DetectorBinding {
+    focus::RegionCopies& copies;
+    focus::Detector& history;
+    focus::Photo photo{}; // Caller supplies source membership before preparation.
+    focus::Scissor scissor{0,0,320,240};
+    std::uint16_t context = 1;
+    bool enabled = false;
+};
+// Active objects carry the actual bound IsleActorSource payload. Rendering reads
+// its authoritative Pokemon flags; no renderer-side flag100 replica is retained.
 struct ActorRenderBinding {
     menu::model::BorrowedBinding model;
     scene::RenderMetadata render;
-    // Actual renderPokemonModelType* wrapper gate (pokemon_detect.c247-280).
-    // The owner supplies Pokemon.flags bit100, not native GObj hidden flags or
-    // an inferred cull. Native GObj/Runtime hidden flags are independently read.
-    bool source_flag100 = false;
 };
 struct ProducerFrame {
     menu::model::ListRange camera;
@@ -32,7 +41,11 @@ struct ProducerFrame {
 // Beach main-camera graphics policy: GAME player.c2936-2975 kinds3/14,
 // pokemon.c2101-2150 DL5/default or DL4/wrapper, pokemon_detect.c247-280
 // render gates and app_render/4CDB0.c15-49,131-163 fog/hierarchy wrappers.
-// Detector-region saving is NOT implemented: use only with the detector off.
+// A detector binding stages real GPU-copy commands and CPU history metadata.
+// The caller installs static copies after RAM reset, completes actual GPU and
+// readback before analyze, and analyzes before shared rows can be overwritten.
+// It supplies real photo membership; full snapshot collection/queue/GObjs are
+// outside this graphics policy. Native cleanup must clear history before reuse.
 // This owns no actor factory/FSM, scheduling, effect sampling or GPU fence.
 //
 // All resource/native/Runtime/basis owners and the ordered binding span remain
@@ -50,7 +63,7 @@ public:
     Producer(IsleGame*, IsleGameCamera*, menu::model::CameraBasisState&,
              const beach::ActorResources&, std::span<const menu::animation::SlotCapacity>,
              std::span<const ActorRenderBinding> ordered_bindings, ProducerLayout,
-             std::span<const menu::RamRange> other_reservations, DetectorPolicy);
+             std::span<const menu::RamRange> other_reservations, DetectorBinding*);
     ~Producer();
     Producer(const Producer&) = delete;
     Producer& operator=(const Producer&) = delete;

@@ -36,6 +36,11 @@ public:
     // Snapshot active metadata/photo fields, not color pixels. Rejection changes
     // nothing; unused source history tails remain inaccessible to analysis.
     Error stage(std::uint16_t context, std::span<const Subject>, const Photo&) noexcept;
+    // Source callbacks before the DL5 detector prefix append to the previous
+    // context; the later prefix stages a fresh baseline in the other context.
+    // Overflow/invalid context leaves metadata, photo and publication unchanged.
+    Error append(std::uint16_t context, std::span<const Subject>) noexcept;
+    std::span<const Subject> history(std::uint16_t context) const noexcept;
     // Dense 128-byte regions in canonical word-swapped RDRAM; offset is physical
     // and 64-byte aligned, matching source capture allocations. No pixel copy,
     // allocation, FP arithmetic, GPU submission or manufactured completion.

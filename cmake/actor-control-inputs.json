@@ -20,7 +20,7 @@
   },
   "native_support": {
     "src/actor_source.h": {
-      "sha256": "bf5912d7aac70cad73b3c972579eb4a8b7f8b45a8bae4bb64ee3d0965f93475e"
+      "sha256": "56302e4d7509d261cc8e7fd1dbba41ec2bd971f775bd0c8b7f6f02e7692f6454"
     },
     "src/actor_source_bridge.c": {
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
@@ -139,6 +139,11 @@
     "actual_API": {"root": "native-control-focus-api-proof-uznt46qi", "binary_sha256": "c45fe45b98c1b709b8c41691ba45bac99c778df210203fa62fc7e653704dbbd2", "archive_sha256": "5fc2250160f8c4eae5f63cfc650218dc5046c0f0572accbf9977aa742f7366b3", "seconds": 0.05148720997385681, "native_ticks": 61, "actual_source_path_waits": 59, "joined_source_processes": true, "after_end_C_statements": 0, "closure": [4,3,5]},
     "observation": "Actual API root closed once, zero known physical attempts or permission errors; ROM unused. Source bytes selected only through exact Git objects, never the modified decomp worktree.",
     "limits": "Controls and binding only: demonstration is not the complete common1003 FSM/factory, actor animation coordination, interactions or gameplay."
+  },
+  "canonical_render_payload": {
+    "fields": "Actual signed Pokemon id andu16Pokemon flags live only in the guarded IsleActorSource GObj.userData record. Renderer no longer carries source_flag100 replica; native GObj hidden flags remain distinct.",
+    "ownership": "Actual actor consumer allocates full records in the native arena with shared application RNG/owner; record storage is validated disjoint from canonical8MiBRAM even for hidden/filtered actors. Joined old native work precedes record reset/reuse. Foreign userData is never cast before actual native binding marker validation.",
+    "actual_consumer": "Complete actor/focus source-evaluated surface root f3krr9nu passed all6native-actor geometry/lifetime and actual GPU capture/history/gate/nativehide/cleanup/writeback gates; see actor-producer-inputs.json. Debug/Release/ClangASanUBSan each passed49 CPU tests. The source header SHA256 above is the current canonical record, not an SDK layout."
   },
   "scope": "Six selected helpers only; no interaction, standard WaitForFlag, animation, factory, guest function casts, second interpreter/scheduler, console size padding or callback registry."
 }

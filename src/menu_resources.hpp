@@ -174,6 +174,8 @@ struct DynamicMaterialCall {
     std::size_t material_index;
 };
 struct EffectInstruction {
+    // branch_offset is informational: no_index also denotes multiple register
+    // targets. Execution uses the source loop/return registers, never this hint.
     std::size_t offset = 0, size = 0, branch_offset = no_index;
     std::uint8_t opcode = 0;
 };
@@ -193,8 +195,7 @@ struct EffectBank {
     rom::GuestView script_table, image_table;
     std::vector<EffectScript> scripts;
     std::vector<EffectImage> images;
-    std::uint32_t bank_id = 0, particle_pool = 100, effect_pool = 10;
-    std::uint32_t color_dither = 0xc0, alpha_dither = 0x30;
+    std::uint32_t bank_id = 0;
 };
 struct RamRange { std::size_t offset, size; };
 struct Collision { rom::GuestView source; RamRange reservation; };

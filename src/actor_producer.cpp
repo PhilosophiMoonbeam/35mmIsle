@@ -1,4 +1,5 @@
 #include "actor_producer.hpp"
+#include "actor_source.h"
 #include "graphics_task.hpp"
 
 #include <algorithm>
@@ -49,6 +50,13 @@ struct Producer::Impl {
     std::array<Range,3> owned;
     std::vector<Policy> policies;
     std::vector<menu::model::BorrowedBinding> staged;
+    std::vector<scene::RenderMetadata> staged_render;
+    std::vector<focus::Subject> staged_subjects;
+    DetectorBinding* detector;
+    std::array<focus::Subject,focus::history_capacity> previous_subjects{}, current_subjects{};
+    std::size_t previous_count = 0, appended_count = 0, current_count = 0;
+    std::uint16_t source_context = 0;
+    bool prefix_staged = false;
     std::unique_ptr<menu::model::BorrowedKernel> kernel;
     std::array<std::vector<Command>,4> lanes;
     std::vector<Command> pending;
@@ -60,8 +68,10 @@ struct Producer::Impl {
     const std::uint32_t* ram = nullptr;
     bool retired = false;
     Impl(IsleGame* g, IsleGameCamera* c, menu::model::CameraBasisState& b,
-         const beach::ActorResources& r, std::span<const ActorRenderBinding> bindings_, ProducerLayout l)
-        : game(g),camera(c),basis(b),resources(r),bindings(bindings_),layout(l),owned{l.payloads,l.lists,l.materials} {}
+         const beach::ActorResources& r, std::span<const ActorRenderBinding> bindings_, ProducerLayout l,
+         DetectorBinding* detector_)
+        : game(g),camera(c),basis(b),resources(r),bindings(bindings_),layout(l),
+          owned{l.payloads,l.lists,l.materials},detector(detector_) {}
     std::uint32_t payload(std::size_t offset) const { return static_cast<std::uint32_t>(layout.payloads.offset+offset); }
     void command(unsigned lane, std::uint32_t a, std::uint32_t b) {
         require(lane < 4 && counts[lane] < lanes[lane].size(),"Actor producer command capacity exceeded");
@@ -82,7 +92,42 @@ struct Producer::Impl {
             (lane == 1 ? 0x005049d8 : 0x00552078));
         command(lane,enable ? 0xd9ffffff : 0xd9feffff,enable ? 0x10000 : 0);
     }
-    void stage(const scene::render::Pass* pass, const menu::model::RenderContext& context) {
+    void capture(focus::Subject subject) {
+        const auto row=prefix_staged?current_count:previous_count+appended_count;
+        require(row<focus::history_capacity,"Actor source focus history capacity exceeded");
+        const auto emitted=detector->copies.append_region((lanes[0].size()-counts[0])*2,
+            static_cast<unsigned>(row),detector->scissor,
+            [this](std::uint32_t a,std::uint32_t b) { command(0,a,b); });
+        require(bool(emitted),"Actor source focus copy/scissor capacity rejected");
+        if (prefix_staged) current_subjects[current_count++]=subject;
+        else previous_subjects[appended_count++]=subject;
+    }
+    void start_prefix() {
+        prefix_staged=true;
+        capture({0,-1,0});
+    }
+    void commit_detector() noexcept {
+        if (!detector) return;
+        // Context, row counts and all extents were admitted before native/RAM
+        // publication. No callback or concurrent owner may intervene.
+        if (appended_count)
+            static_cast<void>(detector->history.append(source_context,std::span(previous_subjects).first(appended_count)));
+        if (prefix_staged) {
+            detector->context=static_cast<std::uint16_t>(1-source_context);
+            static_cast<void>(detector->history.stage(detector->context,
+                std::span(current_subjects).first(current_count),detector->photo));
+        }
+    }
+    void stage(const scene::render::Pass* pass, const menu::model::RenderContext& context,
+               std::uintptr_t ram_begin,std::uintptr_t ram_end) {
+        prefix_staged=false; appended_count=0; current_count=0;
+        constexpr scene::RenderMetadata prefix{5,0x80000001u,UINT32_MAX};
+        const bool draw_prefix=detector && (!pass || pass->includes(prefix));
+        if (detector) {
+            require(detector->context<2,"Actor source detector context is invalid");
+            source_context=detector->context;
+            previous_count=detector->history.history(source_context).size();
+        }
         std::size_t active = 0;
         for (const auto& binding : bindings) {
             auto b = binding.model;
@@ -92,9 +137,22 @@ struct Producer::Impl {
             b.state = b.runtime->model(b.state.instance);
             require(bool(b.state) && b.state.resource_model < policies.size(),"Actor stale instance or resource binding");
             const auto& p = policies[b.state.resource_model];
-            b.draw = b.draw && p.geometry && (!p.gate || !binding.source_flag100) &&
-                (!pass || pass->includes(binding.render));
+            IsleActorSource* source=nullptr;
+            native(isle_actor_source_get(game,b.object,&source));
+            const auto source_at=reinterpret_cast<std::uintptr_t>(source);
+            require(source_at<=UINTPTR_MAX-sizeof(*source) &&
+                (ram_end<=source_at || source_at+sizeof(*source)<=ram_begin),"Actor RAM aliases canonical source payload");
             require(active < staged.size(),"Actor bindings exceed explicit slot count");
+            if (detector && active) {
+                const auto previous=staged_render[active-1];
+                require(previous.link<binding.render.link ||
+                    (previous.link==binding.render.link && previous.priority>=binding.render.priority),
+                    "Actor detector bindings are not in source DL/priority order");
+            }
+            staged_subjects[active]={reinterpret_cast<focus::Object>(b.object),source->id,source->flags};
+            staged_render[active]=binding.render;
+            b.draw = b.draw && p.geometry && (!p.gate || !(staged_subjects[active].flags&0x100u)) &&
+                (!pass || pass->includes(binding.render));
             staged[active++] = b;
         }
         require(bool(kernel->stage(std::span(staged).first(active))),"Actor kernel rejected native pose/material/slot capacity");
@@ -102,6 +160,10 @@ struct Producer::Impl {
         const auto models = resources.models();
         for (std::size_t i = 0; i < active; ++i) {
             const auto& b = staged[i];
+            const auto render=staged_render[i];
+            if (draw_prefix && !prefix_staged &&
+                (render.link>prefix.link || (render.link==prefix.link && render.priority<=prefix.priority)))
+                start_prefix();
             if (!kernel->draws(b.slot)) continue;
             const auto& p = policies[b.state.resource_model];
             const auto& model = models[b.state.resource_model];
@@ -110,7 +172,9 @@ struct Producer::Impl {
                 std::span(lanes[2]),std::span(lanes[3])},counts,pending};
             require(bool(kernel->encode(b.slot,context,buffer)),"Actor source hierarchy/context/list capacity rejected");
             if (p.fog) { fog(0,model,false); if (p.transparent) fog(1,model,false); }
+            if (detector && detector->enabled && p.gate) capture(staged_subjects[i]);
         }
+        if (draw_prefix && !prefix_staged) start_prefix();
         std::size_t cursor = layout.lists.offset+camera_commands.size()*8;
         for (unsigned lane = 0; lane < 4; ++lane) {
             command(lane,0xdf000000,0);
@@ -125,12 +189,16 @@ struct Producer::Impl {
 Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,
     const beach::ActorResources& resources, std::span<const menu::animation::SlotCapacity> capacities,
     std::span<const ActorRenderBinding> bindings, ProducerLayout layout, std::span<const Range> other,
-    DetectorPolicy detector)
-    : impl_(std::make_unique<Impl>(game,camera,basis,resources,bindings,layout)) {
+    DetectorBinding* detector)
+    : impl_(std::make_unique<Impl>(game,camera,basis,resources,bindings,layout,detector)) {
     auto& s = *impl_;
-    require(detector == DetectorPolicy::disabled,"Actor producer does not implement enabled detector-region capture");
+    require(!detector || detector->context<2,"Actor source detector context is invalid");
     require(game && camera && !capacities.empty() && !bindings.empty() && !other.empty(),
             "Actor producer requires actual native owners, explicit slots/bindings and complete external RAM plan");
+    if (detector) for (const auto r:detector->copies.reservations())
+        require(std::any_of(other.begin(),other.end(),[&](Range owner) {
+            return owner.offset<=r.offset && owner.size>=r.size && r.offset-owner.offset<=owner.size-r.size;
+        }),"Actor complete RAM union omits detector capture storage");
     resources.require_live();
     // Validate the FULL supplied union against assets, including task/output and
     // framebuffer spans. Isolated ActorResources.install({}) proves no such union.
@@ -174,6 +242,7 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
     s.kernel = std::make_unique<menu::model::BorrowedKernel>(game,models,resources.materials(),slots,
         Range{matrix,layout.payloads.offset+layout.payloads.size-matrix});
     s.staged.resize(capacities.size());
+    s.staged_render.resize(capacities.size()); s.staged_subjects.resize(capacities.size());
     for (auto& lane : s.lanes) lane.resize(layout.lists.size/8);
     // Every node can append a matrix + source48's13 words and a placement.
     s.pending.resize(nodes*15+capacities.size());
@@ -201,6 +270,13 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     disjoint(s.bindings.data(),s.bindings.size_bytes());
     disjoint(s.policies.data(),s.policies.size()*sizeof(Policy));
     disjoint(s.staged.data(),s.staged.size()*sizeof(menu::model::BorrowedBinding));
+    disjoint(s.staged_render.data(),s.staged_render.size()*sizeof(scene::RenderMetadata));
+    disjoint(s.staged_subjects.data(),s.staged_subjects.size()*sizeof(focus::Subject));
+    if (s.detector) {
+        disjoint(s.detector,sizeof(*s.detector));
+        disjoint(&s.detector->copies,sizeof(s.detector->copies));
+        disjoint(&s.detector->history,sizeof(s.detector->history));
+    }
     disjoint(s.pending.data(),s.pending.size()*sizeof(Command));
     if (pass) disjoint(pass,sizeof(*pass));
     for (const auto& lane : s.lanes) disjoint(lane.data(),lane.size()*sizeof(Command));
@@ -222,7 +298,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     require(bool(menu::model::prepare_render_context(s.basis.value,*parameters,operations,s.basis.selector,context)),
             "Actor source camera context rejected");
     require(bool(s.kernel->validate_upload(words,epoch)),"Actor kernel fixed scratch aliases RAM");
-    s.stage(pass,context);
+    s.stage(pass,context,begin,end);
     require(bool(s.kernel->validate_upload(words,epoch)),"Actor kernel borrowed pose aliases RAM");
     // Last fallible computation: the native batch is itself failure-atomic.
     // No native pose/cache, basis, residency, list revision or RAM was published.
@@ -264,6 +340,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     for (unsigned lane = 0; lane < 4; ++lane) for (std::size_t i = 0; i < s.counts[lane]; ++i)
         write(s.ranges[lane].address+static_cast<std::uint32_t>(i*8),s.lanes[lane][i]);
     s.ram = words.data(); s.epoch = epoch; s.basis.value = context; ++s.revision;
+    s.commit_detector();
     return {{static_cast<std::uint32_t>(s.layout.lists.offset),static_cast<std::uint32_t>(s.camera_commands.size())},
         s.ranges,s.owned,s.revision};
 }

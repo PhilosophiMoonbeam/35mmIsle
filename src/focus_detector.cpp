@@ -18,6 +18,19 @@ Error Detector::stage(std::uint16_t context,std::span<const Subject> subjects,co
     destination.photo=photo;
     return Error::none;
 }
+Error Detector::append(std::uint16_t context,std::span<const Subject> subjects) noexcept {
+    if (context>=contexts_.size()) return Error::invalid_context;
+    auto& destination=contexts_[context];
+    if (subjects.size()>history_capacity-destination.count) return Error::extent;
+    std::copy(subjects.begin(),subjects.end(),destination.subjects.begin()+static_cast<std::ptrdiff_t>(destination.count));
+    destination.count+=subjects.size();
+    return Error::none;
+}
+std::span<const Subject> Detector::history(std::uint16_t context) const noexcept {
+    if (context>=contexts_.size()) return {};
+    const auto& source=contexts_[context];
+    return std::span(source.subjects).first(source.count);
+}
 Error Detector::analyze(std::uint16_t context,std::span<const std::uint32_t> words,
                         std::uint32_t regions_offset) noexcept {
     if (context>=contexts_.size()) return Error::invalid_context;

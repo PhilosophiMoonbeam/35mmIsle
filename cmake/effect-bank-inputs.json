@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "One borrowed typed relative-offset decoder shared by Title Catalog and immutable nine-group resource selection. Resource decoding is not native runtime, renderer, installation, application, hardware or full-game acceptance. No GAME source bodies, ROM bytecode, images or palettes are distributed.",
+  "source_files": {
+    "src/app_render/effect.c": {
+      "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
+      "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
+      "spans": [[8,22],[29,64],[104,169],[275,295],[463,817],[946,1247],[1579,1639]],
+      "facts": [
+        "Script/image table entries and frame/palette pointers are relative to their section base. Source mutates each image descriptor's pointer table once per descriptor table entry: duplicate image descriptors would double-relocate and are rejected; script descriptor aliases and frame/palette payload aliases retain borrowed address identity.",
+        "Particle bytecodePos and the single returnPtr initialize to zero. FA overwrites one loop pointer and eight-bit count; FB decrements with byte wrap, so FA00 executes256 iterations. FC replaces one return pointer; FD is not a call stack. Only the completely decoded nonzero wait yields. FE/FF terminate. Loop state before the first FA is not initialized by creation, and reachable FB-before-FA is rejected rather than inventing initial source values.",
+        "Float operands are byte-packed: decoder reframes checked four bytes and calls GuestView::f32(0), never unaligned casts or weakened aligned-record scalar reads. All descriptor/operand floats must be finite.",
+        "A4/A5/B9 and AA references are bank-local; AA zero range still selects its base. Wait/BC frame bounds use the script's selected image. B7/B8 address the separately declared single target slot0, while BF selects separate output slots1..8.",
+        "CI pointer palette count tests flags&1; source emitter shared-palette flag tests flags!=0. Decoder retains the original flags without conflating those tests. CI4 palettes are exactly16 RGBA16 entries,32 bytes: the existing native legalization is preserved rather than exposing source pal256 overread bytes."
+      ]
+    },
+    "src/app_render/effect.h": {
+      "git_blob": "665b175675d4764d5034b38a8094d686108c9054",
+      "sha256": "0f138ccc1c6a4596bd6a10db0d6e5849ade7f879fc2e3d170ade552089540f83",
+      "spans": [[13,47],[49,77]],
+      "facts": "Exact own pinned GAME declarations read from Main's privately staged file, without following SDK includes or importing console layout:48-byte script header,24-byte image header and variable pointer arrays; loopCount/dataID/textureID areu8; bytecodePos/returnPtr/loopPtr areu16. EffectSprites dimensions are signed32. Source creation initializes bytecodePos/returnPtr to0 but not loop state."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "spans": [[10472,10499]],
+      "facts": "Exact nine initialized FX script/image resource section boundaries below, exclusive ends. ROM0xAE0510 begins unrelated data and is not admitted."
+    },
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "spans": [[125,137]],
+      "facts": "Common registers at resource slot3; selected Beach registers at slot0. One scene allocates100 particles/10 effects and ditherC0/30 separately: pool sizes and dither are not bank properties. Resource group selection does not publish nine competing slot0 banks."
+    },
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "spans": [[405,417]],
+      "facts": "Title registers intro at slot0 and configures scene pools/dither separately. Catalog invokes the shared decoder then certifies Title descriptor offsets, kinds, selected images, frame counts, formats, sizes, dimensions and flags at the Title caller."
+    }
+  },
+  "rom": {"canonical_order":"big-endian z64","size":16777216,"sha1":"edc7c49cc568c045fe48be0d18011c30f393cbaf","sha256":"a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc"},
+  "banks": [
+    {"group":"common","bank_id":3,"script_begin":"0xAB5860","image_begin":"0xAB5980","end":"0xAB85E0","scripts":3,"images":2,"scripts_sha256":"dedd74eee053ba549736f3f9610ad9c77886fb233ce2c11331c7e8cdf55969bc","images_sha256":"fc7f9b66fd3fe6cd7b5d412ece7d869bf2f366857fd21f63e22c261bce98d273"},
+    {"group":"beach","bank_id":0,"script_begin":"0xAB85E0","image_begin":"0xAB8780","end":"0xABE7A0","scripts":5,"images":6,"scripts_sha256":"58330ca6c5326520434012782591081766bbf4a1868d37966cdb093074d234bb","images_sha256":"4d8ed2d65670939187bab4b2d3cccbe199425dff0f1f50870423b9e2cff7fa6c"},
+    {"group":"tunnel","bank_id":0,"script_begin":"0xABE7A0","image_begin":"0xABEBD0","end":"0xAC6890","scripts":11,"images":7,"scripts_sha256":"26ba1b81922192f1fceb80d57114313baa769ed5e5c047304d2dc495cdb0d232","images_sha256":"ae737c5fdfcbff163966a28fa368a39b03d254b1b31da6a24ac01a40142ce70e"},
+    {"group":"cave","bank_id":0,"script_begin":"0xAC6890","image_begin":"0xAC6A80","end":"0xAC8510","scripts":5,"images":3,"scripts_sha256":"245b439239d938fd7c469ce0a4e499d9e8251386dd6d50d4d73108c8c0e50d84","images_sha256":"a2bff1ed01414c66d792751adbe84954b49a3830cc01d0ebac65f68aadb620a9"},
+    {"group":"river","bank_id":0,"script_begin":"0xAC8510","image_begin":"0xAC8830","end":"0xACF6F0","scripts":8,"images":4,"scripts_sha256":"e3916e620cfb6f3eda2d1819aa1fbec42d790461dd84c45f7aade386ce4ba9b7","images_sha256":"87aac91f1de21b7a9e996e0eb49786afc858eebcead7550f94c82a7ba70f24ce"},
+    {"group":"volcano","bank_id":0,"script_begin":"0xACF6F0","image_begin":"0xACF9A0","end":"0xAD0E00","scripts":7,"images":2,"scripts_sha256":"fcfdc82915cb74bce9a7958157e3210d2aa44c28dc348a771d60b1a0904a2654","images_sha256":"2ba9f935472be91382f733318c679a374c9d79a7afcec5ba4c3da29cf77a2e2c"},
+    {"group":"valley","bank_id":0,"script_begin":"0xAD0E00","image_begin":"0xAD1640","end":"0xADD310","scripts":22,"images":5,"scripts_sha256":"6d71b0f9283044d21d3a14bdbad770e71263b9c7837e1f9ad15173070fac15f7","images_sha256":"62d86139cba78257d092ac395a69ae9577da8d7f9de0dd17a8745b687e10bd66"},
+    {"group":"rainbow","bank_id":0,"script_begin":"0xADD310","image_begin":"0xADD5D0","end":"0xADEC60","scripts":8,"images":3,"scripts_sha256":"514ef1adfbb9d70e04bbd2008cfa9df47148d34704c74350e9ac048240e86ae1","images_sha256":"7f4ece1d17a189b73efccbd0bfeb3b6f2dd0713591dfdfc6e35eaffd9768b99f"},
+    {"group":"intro","bank_id":0,"script_begin":"0xADEC60","image_begin":"0xADEDF0","end":"0xAE0510","scripts":4,"images":2,"scripts_sha256":"98cd959dad18ea93f3ad458c03f1ce219af7641877ec89e54142f1fb95dea18b","images_sha256":"dc8a64b058a8caf34eb0545cf000e2a529f16ca9f84c7443911f4d7bf8cbc0b4"}
+  ],
+  "typed_metadata_authority": "Main's authorized private typed descriptor metadata for these exact source ranges:73 scripts/34 images, kinds0/3, formatsI4/I8/IA8/CI4/RGBA16/RGBA32, dimensions16/32/48/64, maximum10frames. Section hashes above are provenance supplied by that metadata, not worker re-observations or new admission pins. Generic decoder derives legal sizes and references; it does not repin observed descriptor or instruction bytes.",
+  "decoder_contract": {
+    "format_extent": "ceil(width*height*(4<<size_code)/8), all products/additions checked; only evidenced format/size combinations; dimensions nonzero and payloads bounded by the entire image section, not adjacent descriptors. No Title frame/dimension ceiling or forced GPU address.",
+    "relative_records": "Preserve original table order. Script extent is the next greater distinct descriptor start or section end; duplicate script starts retain header/bytecode address identity. Descriptor/pointer tables cannot overlap each other or payloads; payload aliases remain borrowed. Reachable instruction extents cannot overlap or cross the bounded script record.",
+    "state_graph": "Deterministic source control trajectory over(pc,loopPointer,count8,returnPointer), initialpc0/return0 and undefined loop untilFA. Raw in-tick pc is a byte-pointer offset; only FA loopPtr, FC returnPtr and nonzero-wait saved bytecodePos narrow tou16 exactly at source assignments. This is not a bytecode-length cap. Every reached instruction is framed/operand-validated. Exact per-tick state repetition rejects non-yielding cycles; repetition across decoded nonzero waits certifies a periodic yielding trajectory. Single loop and return registers persist across waits. No lexical-wait shortcut, nesting assumption, instruction cap or arbitrary exploration cutoff. A7's possible death is not used to justify a potentially hanging continuation. Unreachable terminal padding is excluded. Script header textureID is checked asu16 for emitter image-flag access, then narrowed tou8 for particle selected-image frame validation; BC frame ranges preserveu8 wrap.",
+    "limits": "Resource stage admits descriptor kinds0/3 for this selected closure; runtime must independently prove every reached opcode, scene flags/physics, immediate child allocation/ordering, attachment/target services and bank lifetimes. Control proof is per interpreter invocation, not a claim about recursively spawned children, RNG, complete source scene setup or application readiness. Resource vectors allocate at decoding only; borrowed views remain immutable afterward.",
+    "errors": "EffectResourceError carries menu::Status(error,address); address is section guest identity when supplied, otherwise exact ROM/author extent identity. Malformed encoding/references/control flow uses malformed, escaped/overflowed extents use extent, invalid/moved Snapshot uses invalid_snapshot. Allocation failures propagate. Title translates the typed error into its existing hydrate Status; no partial Catalog publication.",
+    "lifetime": "Generic callers retain both section storage owners. EffectResources requires an admitted const lvalue Snapshot, forbids copy/move and rvalue Snapshot construction, and checks Snapshot data identity/extent on every bank/installation_spans access. Snapshot must outlive selector and all exported references; destruction cannot be detected through a dangling C++ reference. Scene must retain owners and installations through actual GPU submission completion. Moving Snapshot invalidates access, not already-returned raw C++ views.",
+    "installation": "Per-group sorted merged union of original frame/palette borrowed extents, no descriptor/code bytes and no duplicated image bytes or forced addresses. Scene chooses active resource slots, packs/relocates legal GPU bindings, checks reservations/TMEM/packet capacity and fences real completion separately."
+  },
+  "validation": {
+    "public_cpu": "tests/effect_bank_resources_tests.cpp: synthetic owned legal sections exercise unordered/aliased script IDs, descriptor double-relocation rejection versus payload aliases, every evidenced format extent, tenframes/48pixels, unaligned floats/extended duration, nonfinite/truncated operands,256-count finite no-wait loops, a >65536-instruction finite tick, initial return0/replaced return register, overwritten counted-loop hang, decoded-zero extended wait, sourceu16 saved-PC/loop-pointer wrap, particleu8 texture/frame narrowing, bank-local zero-range bounds, record and one-byte payload boundaries, overlap/overflow and compile-time rvalue-owner rejection.",
+    "private_rom": "tests/effect_bank_resources_rom_smoke.cpp: opt-in actual admitted Snapshot constructs all9 groups and consumes73 scripts/34 images, original pointer/table identities, unique merged payload packing with byte-for-byte resolution of every frame/palette, Common3+Beach0 source shapes,10frame/RGBA32 resources, Title Catalog/shared intro bytecode identity and moved-Snapshot access rejection. No assets embedded, no FX/GPU execution.",
+    "status": "Main integrated the independent resource library/Title decoder cutover and public tests. Debug, Release and ClangASanUBSan each passed49 CPU tests. GCC's ambiguous authored nested-brace fixture was made an explicit vector without changing data. Worker executed no checks.",
+    "actual_private_resource_run": {
+      "root": "/home/bbferko/35mmisle-shared-effect-banks-jkug38rg",
+      "binary_sha256": "c42603a6bfb69e845927fb8b74d140898c6bbafe0b1f77c3f36eb8243c9ae373",
+      "source_archive_sha256": "d60519707dcc4fa3fb74ad7aa04b194db3d6fbe6d1c37f47a3e560e2919accbd",
+      "result": "exit0,0.480057493s; all9groups/73scripts/34images and original alias/packing/Title identity/moved-owner assertions passed. Sole initial whole-tree closure1terminal/0created/2absent stable;0known physical/permission attempts; ROM unchanged. No GPU/FX execution or Original/Windows11 runtime claim from this resource consumer.",
+      "bounded_proof": "parent-bounded-native-acceptance.json"
+    }
+  },
+  "cmake_recipe": {
+    "resource_library": "add_library(isle-effect-bank-resources STATIC src/effect_bank_resources.cpp); target_include_directories(isle-effect-bank-resources PUBLIC src); target_link_libraries(isle-effect-bank-resources PUBLIC isle-rom-snapshot); use project C++20/compile policy. Existing IR remains in menu_resources.hpp, whose declarations create no link dependency on isle-menu-resources and do not require optional private GAME engine headers.",
+    "title_dependency": "target_link_libraries(isle-menu-resources PUBLIC isle-effect-bank-resources); never link the new resource library back to isle-menu-resources. One decoder implementation; no linker cycle.",
+    "public_cpu": "add_executable(effect-bank-resources-tests tests/effect_bank_resources_tests.cpp); target_link_libraries(effect-bank-resources-tests PRIVATE isle-effect-bank-resources); add_test(NAME effect-bank-resources-tests COMMAND effect-bank-resources-tests). Default CPU-only and no ROM argument.",
+    "private_rom": "Under existing opt-in original-ROM test gate, add executable effect-bank-resources-rom-smoke from tests/effect_bank_resources_rom_smoke.cpp and link isle-menu-resources (transitively shared resource/snapshot libraries); invoke with privately admitted original.z64 using the existing private path policy. Never enable ROM discovery or execution in default/public CI."
+  }
+}

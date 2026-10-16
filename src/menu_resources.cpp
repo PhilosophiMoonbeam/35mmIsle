@@ -1,4 +1,5 @@
 #include "menu_resources.hpp"
+#include "effect_bank_resources.hpp"
 
 #include "35mmisle/vpk0.hpp"
 
@@ -606,148 +607,34 @@ struct Builder {
 };
 
 void Builder::effects() {
-    auto& out = c.effects_;
     constexpr std::size_t script_begin = 0xadec60, script_end = 0xadedf0;
     constexpr std::size_t image_begin = 0xadedf0, image_end = 0xae0510;
-    const auto scripts = rom_view(*c.snapshot_, script_begin, script_end - script_begin);
-    const auto images = rom_view(*c.snapshot_, image_begin, image_end - image_begin);
-    require(scripts.u32(0) == 4, Error::malformed, script_begin);
-    require(images.u32(0) == 2, Error::malformed, image_begin);
-    out.script_table = rom_view(*c.snapshot_, script_begin, 20);
-    out.image_table = rom_view(*c.snapshot_, image_begin, 12);
+    try {
+        c.effects_ = decode_effect_bank(
+            rom_view(*c.snapshot_, script_begin, script_end - script_begin),
+            rom_view(*c.snapshot_, image_begin, image_end - image_begin), 0);
+    } catch (const EffectResourceError& error) {
+        throw Failure{error.status()};
+    }
+    // Title identity certification belongs to this caller, not the reusable
+    // relative decoder. Scene capacities/dither are not resource properties.
+    const auto& out = c.effects_;
+    require(out.scripts.size() == 4 && out.images.size() == 2, Error::malformed, script_begin);
     constexpr std::array<std::size_t, 4> script_offsets{0x14, 0x74, 0xd4, 0x134};
-    for (std::size_t i = 0; i < 4; ++i) {
-        const auto begin = static_cast<std::size_t>(scripts.u32(4 + i * 4));
-        const auto end = i + 1 < 4 ? static_cast<std::size_t>(scripts.u32(8 + i * 4)) : scripts.bytes.size();
-        require(begin == script_offsets[i] && end >= begin + 49 && end <= scripts.bytes.size(),
-                Error::malformed, static_cast<std::uint32_t>(script_begin + 4 + i * 4));
-        EffectScript result{};
-        result.header = rom_view(*c.snapshot_, script_begin + begin, 48);
-        const auto& h = result.header;
-        result.kind = h.u16(0); result.texture = h.u16(2);
-        result.effect_lifetime = h.u16(4); result.particle_lifetime = h.u16(6); result.flags = h.u32(8);
-        require(result.kind == (i == 3 ? 3 : 0) && result.texture == (i == 3 ? 1 : 0),
-                Error::malformed, static_cast<std::uint32_t>(h.rom_offset));
-        for (std::size_t j = 0; j < 9; ++j) result.parameters[j] = finite(h, 12 + j * 4);
-        const auto bytecode = rom_view(*c.snapshot_, script_begin + begin + 48, end - begin - 48);
-        std::size_t p = 0, return_point = no_index, loop_point = no_index;
-        bool ended = false;
-        const auto byte_identity = [&]() { return static_cast<std::uint32_t>(bytecode.rom_offset + p); };
-        auto byte = [&]() { require(p < bytecode.bytes.size(), Error::extent, byte_identity()); return bytecode.u8(p++); };
-        auto skip = [&](std::size_t count) { require(count <= bytecode.bytes.size() - p, Error::extent, byte_identity()); p += count; };
-        auto number = [&]() { const auto n = byte(); if (n & 128) skip(1); };
-        auto floating = [&]() {
-            require(p <= bytecode.bytes.size() && 4 <= bytecode.bytes.size() - p, Error::extent, byte_identity());
-            // GAME's effect bytecode packs floats at arbitrary byte offsets.
-            // Reframe exactly four borrowed bytes so the existing aligned BE
-            // scalar reader consumes offset0; never cast an unaligned float or
-            // weaken GuestView's aligned-record contract.
-            const rom::GuestView operand{0, bytecode.rom_offset + p, bytecode.bytes.subspan(p, 4)};
-            finite(operand, 0);
-            p += 4;
-        };
-        while (!ended) {
-            const auto start = p;
-            const auto op = byte();
-            std::size_t branch = no_index;
-            if (op < 128) {
-                if (op & 32) skip(1);
-                if ((op & 0xc0) == 0x40) {
-                    const auto frame = byte();
-                    require(frame < (result.texture == 0 ? 6 : 5), Error::malformed,
-                            static_cast<std::uint32_t>(bytecode.rom_offset + start));
-                }
-            } else if (op >= 0x80 && op <= 0x9f) {
-                const auto mask = op & 7;
-                for (unsigned bit = 0; bit < 3; ++bit) if (mask & (1u << bit)) floating();
-            } else if ((op & 0xf0) == 0xc0 || (op & 0xf0) == 0xd0) {
-                number(); skip(static_cast<std::size_t>(std::popcount(static_cast<unsigned>(op & 15))));
-            } else switch (op) {
-            case 0xa0: number(); floating(); break;
-            case 0xa1: skip(1); break;
-            case 0xa2: case 0xa3: case 0xa9: case 0xab: floating(); break;
-            case 0xa4: case 0xa5: case 0xb9: {
-                const auto hi = byte(), lo = byte();
-                require((static_cast<unsigned>(hi) << 8 | lo) < 4, Error::malformed,
-                        static_cast<std::uint32_t>(bytecode.rom_offset + start)); break;
-            }
-            case 0xa6: skip(4); break;
-            case 0xa7: skip(1); break;
-            case 0xa8: case 0xbe: floating(); floating(); floating(); break;
-            case 0xaa: {
-                const auto first = static_cast<unsigned>(byte()) << 8; const auto first_lo = byte();
-                const auto range = static_cast<unsigned>(byte()) << 8; const auto range_lo = byte();
-                require((first | first_lo) < 4 && (first | first_lo) + (range | range_lo) <= 4,
-                        Error::malformed, static_cast<std::uint32_t>(bytecode.rom_offset + start)); break;
-            }
-            case 0xac: number(); floating(); floating(); break;
-            case 0xad: case 0xae: case 0xaf: case 0xb0: case 0xb1: case 0xb2:
-            case 0xb3: case 0xb4: case 0xb5: case 0xb6: break;
-            case 0xb7: case 0xbf: skip(1); break;
-            case 0xb8: skip(1); floating(); break;
-            case 0xba: case 0xbb: skip(4); break;
-            case 0xbc: {
-                const auto first = byte(), range = byte();
-                require(static_cast<unsigned>(first) + range <= (result.texture == 0 ? 6u : 5u),
-                        Error::malformed, static_cast<std::uint32_t>(bytecode.rom_offset + start)); break;
-            }
-            case 0xbd: floating(); floating(); break;
-            case 0xfa: {
-                const auto count = byte();
-                require(count != 0, Error::malformed, byte_identity() - 1);
-                loop_point = p;
-                break;
-            }
-            case 0xfb: require(loop_point != no_index, Error::malformed, byte_identity() - 1); branch = loop_point; break;
-            case 0xfc: return_point = p; break;
-            case 0xfd: require(return_point != no_index, Error::malformed, byte_identity() - 1); branch = return_point; break;
-            case 0xfe: case 0xff: ended = true; break;
-            default: require(false, Error::malformed, byte_identity() - 1);
-            }
-            result.instructions.push_back({start, p - start, branch, op});
-        }
-        // Bytes beyond the first lexical termination are padding/unreachable,
-        // not part of the executable view. Loops retain their checked edges.
-        result.bytecode = rom_view(*c.snapshot_, bytecode.rom_offset, p);
-        for (const auto& instruction : result.instructions) if (instruction.branch_offset != no_index) {
-            const auto target = std::find_if(result.instructions.begin(), result.instructions.end(), [&](const auto& ins) {
-                return ins.offset == instruction.branch_offset;
-            });
-            require(target != result.instructions.end(), Error::malformed,
-                    static_cast<std::uint32_t>(bytecode.rom_offset + instruction.offset));
-            bool yields = false;
-            for (auto it = target; it != result.instructions.end() && it->offset <= instruction.offset; ++it)
-                if (it->opcode < 128 && ((it->opcode & 31) != 0 || (it->opcode & 32) != 0)) yields = true;
-            require(yields, Error::malformed, static_cast<std::uint32_t>(bytecode.rom_offset + instruction.offset));
-        }
-        out.scripts.push_back(std::move(result));
+    for (std::size_t i = 0; i < out.scripts.size(); ++i) {
+        const auto& script = out.scripts[i];
+        require(script.header.rom_offset == script_begin + script_offsets[i] &&
+                script.kind == (i == 3 ? 3 : 0) && script.texture == (i == 3 ? 1 : 0),
+                Error::malformed, static_cast<std::uint32_t>(script.header.rom_offset));
     }
     constexpr std::array<std::size_t, 2> image_offsets{0x10, 0xc40};
-    for (std::size_t i = 0; i < 2; ++i) {
-        const auto begin = static_cast<std::size_t>(images.u32(4 + i * 4));
-        require(begin == image_offsets[i] && begin + 24 <= images.bytes.size(),
-                Error::malformed, static_cast<std::uint32_t>(image_begin + 4 + i * 4));
-        EffectImage result{};
-        result.header = rom_view(*c.snapshot_, image_begin + begin, 24);
-        const auto& h = result.header;
-        const auto frames = h.u32(0);
-        result.format = h.u32(4); result.size_code = h.u32(8); result.width = h.u32(12);
-        result.height = h.u32(16); result.flags = h.u32(20);
-        require(frames == (i == 0 ? 6 : 5) && result.format == (i == 0 ? 4 : 2) && result.size_code == 0 &&
-                result.width == 32 && result.height == 32 && result.flags == (i == 0 ? 1 : 0),
-                Error::malformed, static_cast<std::uint32_t>(h.rom_offset));
-        const auto palette_count = result.format == 2 ? (result.flags & 1 ? 1u : frames) : 0u;
-        const auto pointers = rom_view(*c.snapshot_, image_begin + begin + 24, (frames + palette_count) * 4);
-        for (std::size_t j = 0; j < frames + palette_count; ++j) {
-            const auto offset = static_cast<std::size_t>(pointers.u32(j * 4));
-            const bool palette = j >= frames;
-            const auto size = palette ? 32u : 512u;
-            require(offset % 8 == 0 && offset <= images.bytes.size() && size <= images.bytes.size() - offset,
-                    Error::extent, static_cast<std::uint32_t>(pointers.rom_offset + j * 4));
-            const auto wire = rom_view(*c.snapshot_, image_begin + offset, size);
-            (palette ? result.palettes : result.frames).push_back(wire);
-        }
-        out.images.push_back(std::move(result));
+    for (std::size_t i = 0; i < out.images.size(); ++i) {
+        const auto& image = out.images[i];
+        require(image.header.rom_offset == image_begin + image_offsets[i] &&
+                image.frames.size() == (i == 0 ? 6 : 5) && image.format == (i == 0 ? 4 : 2) &&
+                image.size_code == 0 && image.width == 32 && image.height == 32 &&
+                image.flags == (i == 0 ? 1 : 0), Error::malformed,
+                static_cast<std::uint32_t>(image.header.rom_offset));
     }
 }
 

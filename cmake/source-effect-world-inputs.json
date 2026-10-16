@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "native_files": ["src/source_effect_world.hpp", "src/source_effect_world.cpp", "tests/source_effect_world_tests.cpp"],
+  "source_files": {
+    "src/app_render/effect.c": {
+      "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
+      "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
+      "spans": [[1277, 1360]],
+      "facts": "fx_getPosVelDObj starts identity and visits leaf then each parent. Each node conditionally concatenates scale, RPY rotation, translation, then auxiliary scale, RPY rotation, translation. Matrix-kind/render flags are irrelevant. Position is raw world row3. Source column normalization and velocity transformation1348-1359 remain in the sole EffectRuntime; this helper returns the raw matrix, including zero columns."
+    },
+    "src/sys/matrix.c": {
+      "git_blob": "b6c98ec45939cd9e59ef16d7e44868eee5dc250d",
+      "sha256": "a0f4c47c2428b846a171fbb1fe30e8254f7bf67d69e30cb191ad87439f1f7f77",
+      "spans": [[930,945],[1148,1179],[1229,1234]],
+      "facts": "Compared admitted source formulas: hal_scale_f writes diagonal and zero off-diagonal. hal_rotate_rpy_translate_f calls hal_rotate_rpy_f then overwrites only translation, so zero translation supplies the identical source RPY rotation. Reuses existing privately compiled own-GAME symbols, without importing additional bodies. Independently authored identity and left-associated four-term row-matrix multiplication; no SDK identity/concat/normalize headers or bodies."
+    }
+  },
+  "native_seam": {
+    "api": "isle::menu::model::source_effect_world(IsleGame*, IsleGameModel*, size_t, menu::EffectWorld&) noexcept -> EffectsStatus",
+    "borrows": "Pure public isle_game_model_peek_nodes and isle_game_model_placement validate native ownership; no computing model_nodes, copied pose, renderer fixed/MVP, BorrowedKernel world cache, allocations or native mutation. Caller excludes concurrent mutation/removal and retains actual model lifetime; stale handles after model removal/slot reuse are invalid by native API contract.",
+    "topology": "Native one-root parent-before-child hierarchy; walk requested node to UINT32_MAX root, guarding against non-earlier parents. Does not visit siblings. Source auxiliary record is represented only by current native root placement: disabled consumes nothing; RT consumes rotation/translation; RTS consumes scale/rotation/translation, applied after root local. No invented per-node auxiliary storage or future factory fields.",
+    "errors": "Owner/null/native borrow failure maps attachment; bad node maps extent; nonfinite consumed scalar/composed arithmetic maps arithmetic. Output unchanged on every failure. Native accepted transforms are used regardless of node flags or matrix kind.",
+    "limits": "Native API exposes auxiliary placement at root only. Main wires this resolver into actual native Title after accepted-pose synchronization and retains the scene's real effect/native/GPU owners. The helper is not an actor factory/FSM, renderer matrix cache or a fence. C-libm/binary32 Original numerical parity is not qualified."
+  },
+  "build_handoff": {
+    "sources": ["src/source_effect_world.cpp"],
+    "dependencies": ["existing isle_game engine/native target", "existing private own-GAME float matrix object exporting hal_scale_f and hal_rotate_rpy_translate_f", "existing menu_effects headers; no new extraction"],
+    "compile_options": ["C++20", "-fno-fast-math", "-ffp-contract=off"],
+    "msvc_compile_options": ["/fp:strict"],
+    "test_recipe": "Add executable source_effect_world_tests from tests/source_effect_world_tests.cpp; include src and include; link the same existing native engine/private matrix dependencies as menu_model_tests plus the helper implementation. Register ordinary public CTest; no ROM or GPU backend required. Do not compile private GAME matrix source twice.",
+    "tests": "Real native GObj/model hierarchy with independent analytic point/quarter-turn oracle for origin, basis and arbitrary point; nonuniform/negative scales; noncommuting rotations; descendant-to-parent/root auxiliary order; disabled/RT/RTS modes; flags; contextual and ordinary RTS/translate kinds; native mutations; zero raw columns; null owner/model/index and finite-input overflow output atomicity; native nonfinite rejection; repeated pure borrow heap/native cursor and cache immutability."
+  },
+  "qualification": "Main built the integrated helper with strict source FP policy; Debug/Release/ClangASanUBSan each passed49 CPU tests including the independent analytic native-node cases. Worker executed no checks. Actual native Title/startup and a separate throwaway all-bank API example passed; no Original or Windows11 runtime claim.",
+  "main_acceptance": {
+    "actual_native_emission_API": {
+      "root": "/home/bbferko/35mmisle-all-effect-banks-native-vm-q1417y_1",
+      "binary_sha256": "71ec1ff868e66e766735a5b24b5f639fe263013540a68043f4e70445b64c0335",
+      "source_archive_sha256": "e99c4dd20ca532b810803dd3c818846a7a998931aee71e6824a0af55fbc5d4b1",
+      "result": "exit0,0.407942933s; all9 banks/73 particle and73 attached-emitter API trials,8updates each, invoked this raw-world helper240times on a real native DObj with rotation/nonuniform/negative auxiliary scale and a real Runtime-issued identity. Supplied native local target services had0read/write invocations in these prefixes; do not claim their runtime coverage. Sole initial closure1terminal/0created/2absent stable,0physical/permission,ROM unchanged.",
+      "bounded_proof": "parent-all-source-bank-native-api-proof.json",
+      "maintenance": "Throwaway non-test API example source/build target removed after smoke; exact source and executable remain in its private immutable archive. Not a new count-only/not-throw permanent test."
+    },
+    "actual_native_Title_startup": {
+      "root": "/home/bbferko/35mmisle-startup-shared-effect-world-ef1o5dmv",
+      "binary_sha256": "f0795336aa1f97826d5c17b9d38123b9289b1571c22f613803cfb9088337fda1",
+      "source_archive_sha256": "c7716a6466b0853174ae719bbb9deba5547dacce5a40860ed77e6a575821dd7e",
+      "result": "exit0,42.000337222s;643actual canonical/LUS frames,53Name/229earlyOak;1257040dummyPCM frames,130416duringGPUwait. Sole initial closure131terminal/130created/132absent stable,0physical/permission,ROM unchanged. Five actual window surfaces inspected only after successful closure. Not full Oak/course gameplay, physical input/audio, Original or Windows11.",
+      "bounded_proof": "parent-shared-effect-native-startup-proof.json"
+    }
+  }
+}

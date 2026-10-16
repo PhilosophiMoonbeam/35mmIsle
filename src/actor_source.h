@@ -19,6 +19,8 @@ typedef struct IsleActorSource {
     IsleGameProcess* stateProc;
     IsleGameProcess* pathProc;
     uint32_t processFlags;
+    int32_t id;
+    uint16_t flags;                /* Actual Pokemon semantics, not GObj flags. */
     const void* transitionGraph;
     isle_rng* rng;                 /* The application's actual State RNG. */
     void* owner;                   /* The actual native actor owner. */

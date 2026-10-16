@@ -24,6 +24,8 @@ constexpr std::uint32_t fade_viewport = 0x1f00c0;
 constexpr std::uint32_t stack = 0x280000, yield = 0x284000, task_address = 0x286000, boot = 0x287000;
 constexpr sp::RamRange sprite_commands{0x150000, 0x50000};
 constexpr std::uint32_t effect_commands = 0x1a0000, effect_assets = 0x1b0000, effect_end = 0x1f0000;
+static_assert((menu::EffectRuntime::max_render_words + 2) * sizeof(std::uint32_t) <=
+              effect_assets - effect_commands, "FX packet plus caller END exceeds command arena");
 constexpr std::uint32_t fade_projection = 0x1f0000, fade_view = 0x1f0040, fade_scale = 0x1f0080;
 constexpr std::uint32_t rsp_output = 0x200000, output_end = 0x240000, depth = 0x600000;
 constexpr std::uint32_t fade_list = 0xaecb0, fade_vertices = 0xaec70;
@@ -220,7 +222,13 @@ struct Frame::Impl {
     const rom::Snapshot& snapshot;
     const std::byte* source;
     std::array<SceneAssets, 2> scenes;
-    std::vector<menu::EffectImageBinding> images;
+    struct EffectBankAssets {
+        struct ImageAddresses { std::vector<std::uint32_t> frames, palettes; };
+        std::vector<ImageAddresses> addresses;
+        std::vector<menu::EffectImageBinding> images;
+    };
+    std::vector<EffectBankAssets> effect_bank_assets;
+    std::vector<menu::EffectBankBinding> effect_banks;
     std::vector<menu::RamRange> image_ranges;
     std::vector<sp::Draw> draws;
     std::vector<scene::SpriteDraw> startup_sprites;
@@ -243,6 +251,79 @@ struct Frame::Impl {
     std::uint32_t color = 0;
     bool cold = true, resident = false, ready = false, retired = false;
 
+    void install_effects(std::span<const menu::EffectBank* const> selected,
+                         std::vector<sp::AssetSpan>& spans) {
+        struct Payload {
+            std::size_t begin, end;
+            std::uint32_t* address;
+        };
+        std::vector<Payload> payloads;
+        std::array<bool, 8> occupied{};
+        effect_bank_assets.resize(selected.size());
+        effect_banks.resize(selected.size());
+        const auto source_address = reinterpret_cast<std::uintptr_t>(source);
+        const auto source_size = snapshot.canonical().size();
+        const auto collect = [&](const rom::GuestView& value, std::uint32_t& address) {
+            const auto at = reinterpret_cast<std::uintptr_t>(value.bytes.data());
+            require(!value.bytes.empty() && at >= source_address &&
+                    at - source_address <= source_size &&
+                    value.bytes.size() <= source_size - (at - source_address),
+                    "startup FX payload does not borrow its retained Snapshot", Error::resource);
+            const auto begin = static_cast<std::size_t>(at - source_address);
+            payloads.push_back({begin, begin + value.bytes.size(), &address});
+        };
+        for (std::size_t bank = 0; bank < selected.size(); ++bank) {
+            const auto* resource = selected[bank];
+            require(resource && resource->bank_id < occupied.size() && !occupied[resource->bank_id],
+                    "startup FX active bank identities overlap or exceed source slots", Error::resource);
+            occupied[resource->bank_id] = true;
+            auto& storage = effect_bank_assets[bank];
+            storage.addresses.resize(resource->images.size());
+            storage.images.resize(resource->images.size());
+            for (std::size_t image = 0; image < resource->images.size(); ++image) {
+                const auto& input = resource->images[image];
+                auto& output = storage.addresses[image];
+                output.frames.resize(input.frames.size());
+                output.palettes.resize(input.palettes.size());
+                for (std::size_t frame = 0; frame < input.frames.size(); ++frame)
+                    collect(input.frames[frame], output.frames[frame]);
+                for (std::size_t palette = 0; palette < input.palettes.size(); ++palette)
+                    collect(input.palettes[palette], output.palettes[palette]);
+                storage.images[image] = {output.frames, output.palettes};
+            }
+            effect_banks[bank] = {resource->bank_id, storage.images};
+        }
+        std::sort(payloads.begin(), payloads.end(), [](const Payload& a, const Payload& b) {
+            return a.begin < b.begin || (a.begin == b.begin && a.end < b.end);
+        });
+        auto next_asset = effect_assets;
+        for (std::size_t first = 0; first < payloads.size();) {
+            const auto begin = payloads[first].begin;
+            auto end = payloads[first].end;
+            auto last = first + 1;
+            // Preserve source identity for exact, nested and partial aliases.
+            // One borrowed union upload backs every overlapping payload view.
+            while (last < payloads.size() && payloads[last].begin < end) {
+                end = std::max(end, payloads[last].end);
+                ++last;
+            }
+            const auto extent = end - begin;
+            require(next_asset <= effect_end && extent <= effect_end - next_asset,
+                    "startup selected FX assets exceed reservation", Error::resource);
+            const auto padded = (extent + 7u) & ~std::size_t(7u);
+            require(padded <= effect_end - next_asset,
+                    "startup selected FX asset alignment exceeds reservation", Error::resource);
+            for (auto item = first; item < last; ++item) {
+                const auto offset = payloads[item].begin - begin;
+                require(!(offset & 7u), "startup FX payload alias is not texture aligned", Error::resource);
+                *payloads[item].address = next_asset + static_cast<std::uint32_t>(offset);
+            }
+            spans.push_back({next_asset, bytes(snapshot.canonical().subspan(begin, extent))});
+            image_ranges.push_back({next_asset, extent});
+            next_asset += static_cast<std::uint32_t>(padded);
+            first = last;
+        }
+    }
     Impl(const menu::Catalog* c, const rom::Snapshot& s, Config config)
         : catalog(c), snapshot(s), source(s.canonical().data()), executor(config.require_cpu, config.limits) {
         require(source != nullptr && snapshot.canonical().size() == rom::us_size,
@@ -253,25 +334,10 @@ struct Frame::Impl {
                 fade_wire.u32(40) == 0xdf000000 && fade_wire.u32(44) == 0,
                 "startup private source fade closure is malformed", Error::resource);
         std::vector<sp::AssetSpan> effect_spans;
-        auto next_asset = effect_assets;
-        const auto& effects = catalog->effects();
-        images.resize(effects.images.size());
-        for (std::size_t i = 0; i < images.size(); ++i) {
-            const auto& image = effects.images[i];
-            require(image.frames.size() <= images[i].frames.size() &&
-                    image.palettes.size() <= images[i].palettes.size(),
-                    "startup FX binding exceeds source frame domain", Error::resource);
-            const auto add = [&](const rom::GuestView& value, std::uint32_t& address) {
-                require(!value.bytes.empty() && next_asset <= effect_end && value.bytes.size() <= effect_end - next_asset,
-                        "startup selected FX assets exceed reservation", Error::resource);
-                address = next_asset;
-                effect_spans.push_back({address, bytes(value.bytes)});
-                image_ranges.push_back({address, value.bytes.size()});
-                next_asset += static_cast<std::uint32_t>((value.bytes.size() + 7u) & ~std::size_t(7u));
-            };
-            for (std::size_t f = 0; f < image.frames.size(); ++f) add(image.frames[f], images[i].frames[f]);
-            for (std::size_t f = 0; f < image.palettes.size(); ++f) add(image.palettes[f], images[i].palettes[f]);
-        }
+        // Startup installs only intro. The installation/binding domain itself
+        // is bank-qualified and can admit any selected immutable bank set.
+        const std::array<const menu::EffectBank*, 1> selected{&catalog->effects()};
+        install_effects(selected, effect_spans);
         for (std::size_t index = 0; index < scenes.size(); ++index) {
             const auto scene = index == 0 ? menu::Scene::logo : menu::Scene::title_menu;
             auto& result = scenes[index];
@@ -380,10 +446,14 @@ struct Frame::Impl {
         const auto& context = *static_cast<StartupPreparation*>(userdata);
         auto& owner = *context.owner;
         const auto camera = effect_camera(context.view.game, context.view.title->camera());
+        require(effect_commands / 4 <= ram.size() &&
+                menu::EffectRuntime::max_render_words + 2 <= ram.size() - effect_commands / 4,
+                "startup FX packet and caller END exceed RAM", Error::preparation);
         const auto rendered = context.view.title->effects()->render(camera,
-            {ram.subspan(effect_commands / 4, menu::MenuEffects::max_render_words), owner.images, owner.image_ranges});
-        require(bool(rendered.status) && rendered.words <= menu::MenuEffects::max_render_words,
-                "startup actual native FX render rejected", Error::preparation);
+            {ram.subspan(effect_commands / 4, menu::EffectRuntime::max_render_words),
+             owner.effect_banks, owner.image_ranges});
+        require(bool(rendered.status) && rendered.words <= menu::EffectRuntime::max_render_words &&
+                !(rendered.words & 1u), "startup actual native FX render rejected", Error::preparation);
         wire::Memory memory(ram);
         memory.word(effect_commands + static_cast<std::uint32_t>(rendered.words * 4), 0xdf000000);
         memory.word(effect_commands + static_cast<std::uint32_t>(rendered.words * 4 + 4), 0);

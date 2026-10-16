@@ -22,7 +22,7 @@ public:
     IsleGameCamera* camera() const noexcept;
     animation::Runtime* animation() noexcept;
     model::Producer* models() noexcept;
-    MenuEffects* effects() noexcept;
+    EffectRuntime* effects() noexcept;
     // Caller must retire actual Frame completion/completed-memory leases first.
     // Ui control is separate from every Title-owned object; final destruction
     // follows Ui retirement outside traversal. Cleanup keeps all contexts alive

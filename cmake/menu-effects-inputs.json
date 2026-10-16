@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "use": "Payload-free own-GAME semantic provenance for a bounded native menu particle/effect runtime and canonical F3DEX2 packet producer. This is source-complete implementation, not Original numerical, full title scene, hardware, audio, or integrated-session qualification. No SDK producer body/header/layout, disassembly, private ROM bytes, bytecode operands, palettes, frames, or other assets are distributed.",
+  "use": "Payload-free own-GAME semantic provenance for the single shared native FX interpreter and canonical F3DEX2 packet producer. Source implementation and authored regressions are not claims of executed GPU, Original numerical, full scene, hardware or integrated-session qualification. No SDK implementation/header/layout, disassembly, ROM bytecode, frames or palettes are distributed.",
   "native_files": [
     "src/menu_effects.hpp",
     "src/menu_effects.cpp",
@@ -14,39 +14,89 @@
       "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
       "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
       "facts": [
-        "66-97 particle pool100 and camera0; 104-169 native free-list/head insertion, initial lifetime+1, timer1, frame0, white primitive/zero environment, source effect ID and flags. Pool exhaustion returns null without consuming interpreter RNG.",
-        "275-295 big-endian float and variable duration+1; 298-336 random velocity rotation preserves source atan2/sin/cos/sqrt expression grouping and one shared randFloat call.",
-        "407-817 persistent bytecode cursor/timer, zero-duration continuation, flag assignment, A0/AC size targets, AB velocity scale, AD environment combiner, masked primitive/environment color targets, FC return cursor and FD unconditional return. Reached scripts0/3 do not spawn child scripts, use path/attractor callbacks, or use kind2 particles. Unknown/unreached opcode requests are explicitly rejected at construction rather than ignored.",
-        "819-854 size interpolation and integer16 color interpolation occur before lifetime decrement/retirement. 897-909 ordinary particles apply gravity, then friction, then position integration. The immediate first tick is part of spawn; a later ordinary update is separate.",
-        "946-1247 source rendering uses a fresh GAME look-at-roll times perspective-fast float matrix, row-vector projection, quarter-pixel viewport coordinates, clip-center tests, size/matrix column magnitudes, primitive Z, source translucency, dithers, image/palette cache, primitive/environment combiner, alpha threshold8 and scissored texture rectangles. Selected images are 32x32 I4 and CI4, clamp S/T, palette bank0. Source command recipes are independently packed from public wire ABI, not SDK macros or implementation bodies.",
-        "1260-1274 effect pool10. 1277-1360 attachment position is composed world translation; script velocity is transformed through separately normalized world matrix columns, NOT motion between frames. Caller supplies complete parent/local/auxiliary GAME world matrix.",
-        "1390-1485 accumulator advances using shared source RNG even when no particles fit; initial azimuth RNG still occurs before positive-angle per-particle replacement. Kinds0/3 retain radius/fraction/angle grouping, sqrt fraction for kind3, and kind3 velocity scaling. 1536-1638 emitter lifetime, free-list reuse, source currentEffectID16 wrap and sprite flags remain semantic native values.",
-        "1740-1755 model detach removes attached emitters; ordinary live particles continue independently until their script/lifetime retires. Runtime reset is an explicit native owner/scene operation, never an implicit RNG reseed or GPU fence."
+        "29-64 section-relative script/image relocation; bank slot is separate from resource group. 66-97 one particle allocation pool; 104-169 free-list allocation, ordinary head insertion versus after-parent child insertion, lifetime+1, timer1, white primitive/zero environment and source ID inheritance. Source allocation failure is null spawn.",
+        "171-234 source child/default/explicit-position-velocity particle entry points; public direct paths execute an immediate interpreter/physics tick. bankID&7 selects resources; bankID>>3 selects one of sixteen particle lists.",
+        "275-295 bytewise big-endian float and one/two-byte duration+1. 298-335 A9 consumes one randFloat and preserves binary32 pitch/yaw/trigonometric expression grouping. The final component is -x*cosPitch*sinYaw - y*sinPitch + axial*cosPitch*cosYaw. Main adjudicated the alleged sign defect as a false-positive assessment: exact published d8bb80e src/menu_effects.cpp172 already has the source-correct minus (file SHA256 a02f83683eb7b17015debc303b703617c5f06a9d88607bc64bff40d1159031d1). The cutover preserves that baseline and adds an independent regression; no sign fix or failing-before reproduction is claimed.",
+        "338-376 B7 reads target LOCAL position preserving speed, B8 adds inverse squared LOCAL displacement attraction; null source target slots do nothing. 657-665 target reads and 734-737,909-917 BF output selection/local position writes use separate aim/output target tables.",
+        "407-817 packed delays including decoded-zero continuation and optional frame selection; masked position/velocity set/add; A0-AC size, flags, gravity/friction, child particles/emitter, randomized lifetime/death/position/velocity/size; AD-B6 render flags; B7-BF targets, inherited child velocity, colors, frame/speed/component scales; C0-DF color masks; FA/FB uint8 counted loops (zero means256 iterations), FC replaces one return register, FD uses its initially-zero offset, FE/FF retire. Finite no-wait loops are valid; unbounded decoded-zero-wait cycles are not admitted.",
+        "539-564,593-610,666-682 children inherit parent position and source ID; B9 additionally copies parent velocity, A5 retains child script velocity. Child particle creation immediately ticks and inserts after parent. Allocations consume an ID before child paths overwrite it with the inherited ID.",
+        "819-854 size and integer16 color interpolation precede lifetime decrement/retirement; 897-909 gravity precedes friction precedes position integration. Newly created particles tick immediately rather than waiting for next scene update.",
+        "920-942 ascending sixteen-list update order with per-list pause. 946-1247 row-vector camera, quarter-pixel rectangles, center clipping, dimension-derived derivatives, mirrored-axis mask/derivative rules, primitive depth, translucency without depth write, image/palette caching, environment-over-noise precedence and alpha/dither modes. 1178-1202 large texture loads occupying at least2048 bytes invalidate cached TLUT even when the next palette address is unchanged.",
+        "1260-1274 one emitter allocation pool; 1277-1360 raw attachment world translation and separately normalized velocity columns. Native target local position callbacks are not this attachment world-matrix resolver.",
+        "1390-1485 negative fixed versus nonnegative randomized accumulation; initial azimuth draw occurs before per-particle replacement; geometry/RNG/accumulation advance on particle exhaustion. Kinds0/3 preserve radius/fraction/angle grouping, including kind3 sqrt-fraction and velocity scaling. 1536-1639 source emitter lifetime, wrapping16-bit source ID and image flags!=0 shared-palette semantics.",
+        "1682-1738 ID ejection restricts particles to the requested link but scans matching emitters globally. 1740-1755 model detach removes matching attached emitters while ordinary particles survive. 1757-1775 translates all live particles and emitters. 1777-1809 ID pause/resume acts on requested particle link and matching emitters. Native reset follows explicit owner cleanup, preserves externally owned RNG/source counter and is not a GPU fence."
       ]
     },
     "src/app_render/effect.h": {
       "git_blob": "665b175675d4764d5034b38a8094d686108c9054",
       "sha256": "0f138ccc1c6a4596bd6a10db0d6e5849ade7f879fc2e3d170ade552089540f83",
-      "facts": "13-42 own-GAME script/image semantic scalar fields; 49-77 particle persistent semantic values. Native records have native sizeof/alignment and indices, never guest-pointer casts or an SDK layout claim. Catalog owns resolved typed descriptors and bounded bytecode/image/palette views."
+      "facts": "13-42 own-GAME script/image scalar semantics; 49-77 particle persistent values. Native records use native alignment and indices, never guest pointer casts or SDK layout claims. Decoder owns typed IR; payload views remain borrowed."
     },
     "include/common_structs.h": {
       "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
       "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
-      "facts": "293-314 own-GAME Effect stores ID/flags/kind/script/texture/lifetimes, position/velocity/gravity/friction/size/emission parameters and model attachment. Reached kinds0/3 need no effectVars kind2 layout."
+      "facts": "293-314 own-GAME Effect semantic fields. Admitted descriptors use kinds0/3; source kind2 coupled-child physics and deferred-retirement accounting are not falsely advertised as supported."
+    },
+    "src/beach/55C110.c": {
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "facts": "125-137 installs Common in resource slot3 and Beach in slot0, then allocates ONE100-particle pool and ONE10-emitter pool and sets scene dithersC0/30. This is the evidenced shared scene configuration, not nine simultaneous slot0 banks."
     },
     "src/main_menu/A0BE70.c": {
       "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
       "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
       "facts": [
-        "54-69 animation -1/-2 sets title state3; otherwise truncation of argument-1 selects a script in the event-ID bank, and successful emitter attaches to the actual callback node. Parent receives title_finished and dispatches each event in animation source order, without coalescing.",
-        "105-106 installs callbacks only on third D5 and fourth I33 models. The first D226 model's lexical script3 op16 does NOT execute because its callback is NULL. Script3 is explicitly supported and exercised as an independent private native producer stimulus; no fabricated title callback reachability is claimed.",
-        "405-416 hydrates intro bank0, camera0/depth enabled, particle pool100, effect pool10, color ditherC0 and alpha dither30."
+        "54-69 Title policy, owned by Title::Impl rather than EffectRuntime: events-1/-2 set state3; otherwise subtract1 in binary32 then truncate, select script in encoded event bank and attach successful emitter to callback node. There is no MenuEffects/EffectEventResult compatibility wrapper.",
+        "105-106 callbacks are installed only on third D5 and fourth I33 models. First D226 model callback is NULL: its lexical script3 event is not claimed to execute naturally. The private GPU consumer explicitly stimulates original intro scripts0/3 as independent core consumers.",
+        "405-416 intro bank0, camera0/depth, pool100/10 and scene dithersC0/30."
       ]
     },
     "src/app_render/47380.c": {
       "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
       "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
-      "facts": "1380-1436,1480-1501,1570-1640 own-GAME photo resource applicator corroborates projection column magnitudes, frame/palette lookup, CI4 palette0 load, texture size/derivative and primitive depth semantics. It is not substituted for live title effect update or the effect.c render state."
+      "facts": "1380-1436,1480-1501,1570-1640 own-GAME photo applicator corroborates projection column magnitudes, frame/palette lookup, derivatives and primitive depth. It does not replace live effect.c semantics."
+    }
+  },
+  "typed_data_provenance": {
+    "authority": "Own splat.yaml10472-10499 and privately staged typed-effect-banks.json descriptor metadata; actual borrowed payloads are obtained only through EffectResources/Snapshot, never private raw-ROM offset reads in the smoke.",
+    "common": {
+      "bank_id": 3,
+      "script_range": [11229280, 11229568],
+      "image_range": [11229568, 11240928],
+      "scripts_sha256": "dedd74eee053ba549736f3f9610ad9c77886fb233ce2c11331c7e8cdf55969bc",
+      "images_sha256": "fc7f9b66fd3fe6cd7b5d412ece7d869bf2f366857fd21f63e22c261bce98d273",
+      "shapes": ["image0 I8 64x64 two4096-byte frames", "image1 I4 32x32 six512-byte frames"]
+    },
+    "beach": {
+      "bank_id": 0,
+      "script_range": [11240928, 11241344],
+      "image_range": [11241344, 11265952],
+      "scripts_sha256": "58330ca6c5326520434012782591081766bbf4a1868d37966cdb093074d234bb",
+      "images_sha256": "4d8ed2d65670939187bab4b2d3cccbe199425dff0f1f50870423b9e2cff7fa6c",
+      "shapes": ["image0 I8 64x64 two frames", "image1 I8 32x32 one frame", "image2 I4 48x48 four1152-byte frames", "image3 RGBA16 32x32 three2048-byte frames", "images4/5 CI4 32x32 four512-byte frames with per-frame32-byte palettes"]
+    },
+    "volcano": {
+      "bank_id": 0,
+      "script_range": [11335408, 11336096],
+      "image_range": [11336096, 11341312],
+      "scripts_sha256": "fcfdc82915cb74bce9a7958157e3210d2aa44c28dc348a771d60b1a0904a2654",
+      "images_sha256": "2ba9f935472be91382f733318c679a374c9d79a7afcec5ba4c3da29cf77a2e2c",
+      "selected_shape": "image0 IA8 32x32 four1024-byte frames"
+    },
+    "valley": {
+      "bank_id": 0,
+      "script_range": [11341312, 11343424],
+      "image_range": [11343424, 11391760],
+      "scripts_sha256": "6d71b0f9283044d21d3a14bdbad770e71263b9c7837e1f9ad15173070fac15f7",
+      "images_sha256": "62d86139cba78257d092ac395a69ae9577da8d7f9de0dd17a8745b687e10bd66",
+      "selected_shape": "image0 RGBA32 32x32 four4096-byte frames"
+    },
+    "river": {
+      "bank_id": 0,
+      "script_range": [11306256, 11307056],
+      "image_range": [11307056, 11335408],
+      "scripts_sha256": "e3916e620cfb6f3eda2d1819aa1fbec42d790461dd84c45f7aade386ce4ba9b7",
+      "images_sha256": "87aac91f1de21b7a9e996e0eb49786afc858eebcead7550f94c82a7ba70f24ce",
+      "selected_shape": "image3 RGBA16 32x32 ten2048-byte frames; authored consumer explicitly selects frame9"
     }
   },
   "public_wire_boundary": [
@@ -55,24 +105,41 @@
     "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPScisTextureRectangle.html"
   ],
   "palette_semantic_legalization": {
-    "source_issue": "effect.c1166 uses pal256, reading512 bytes from each intro CI4 palette, but the actual GAME bank allocation ends after the final16-entry/32-byte palette. Those reads escape the source heap allocation; next ROM bytes are NOT their provenance.",
-    "authorized_native_fix": "Load exactly16 RGBA16 entries into TLUT palette0. This is an explicit bounded semantic legalization of undefined source overread, NOT byte-equivalence. Admission restricts CI4, 4-bit nibble indices0..15, palette bank0 and contiguous producer packet with no interposed CI8/other-bank consumer. No padding entries or adjoining ROM/heap bytes are invented.",
-    "proof_source": "Actual-RSP/RDP private smoke poisons both unowned adjacent RAM and full prior TLUT with alternate values, compares selected rendered colors/depth, and checks the complete poisoned asset reservation for writes. Focused tests inspect16-entry canonical loads and failure-atomic packet/asset capacity rejection. Worker did not execute this source."
+    "source_issue": "effect.c1166 pal256 reads512 bytes although CI4 payload provenance provides exactly16 entries/32 bytes. Adjacent ROM/heap bytes are not palette provenance.",
+    "authorized_native_fix": "Load exactly16 RGBA16 entries in palette0; retain nibble indices0..15. No fabricated tail. A large>=2048-byte texture load invalidates TLUT cache, including identical palette-address reuse.",
+    "proof_source": "Private actual RSP/RDP consumer poisons prior256-entry TLUT and unowned adjacent RAM with alternate patterns; compares completed colors/depth and asset integrity. Common3/Beach0 sequence is exactly CI4P -> Common I8_64 -> same CI4P; requires two16-entry loads and matching completed left/right CI4 sprites. Main executed the complete consumer successfully; worker performed no execution."
   },
   "ownership": {
-    "resources": "Borrowed Catalog/Snapshot must outlive runtime and all GPU asset leases. Runtime caches immutable EffectBank once and never rescans/re-hydrates resources per frame. Caller installs exact frames/palettes once into exclusive physical RDRAM reservations and supplies bindings; runtime does not own global GPU/device state.",
-    "gameplay": "One serialized MenuEffects owner with fixed stable100-particle/10-effect native arrays, shared externally owned isle_rng, no per-frame heap allocation. Invalid attachments/normalization are rejected before pool/RNG mutation; canonical packet capacity/assets are checked before any destination write. Source pool exhaustion remains successful null spawn/drop, not invented bounded-buffer failure or a deferred retry.",
-    "ordering": "Parent dispatches animation callbacks immediately in exact source order and calls update_particles/update_effects in actual OM object order. Emission performs its immediate first interpreter/physics tick. Ordinary source frame timing is never resampled from zero.",
-    "instance_ownership": "EffectAttachment carries full animation InstanceHandle plus local node. detach_instance compares pool/incarnation/slot, so old retirement cannot detach another lifetime or foreign pool; resolvers validate live Runtime and matching producer world views. Title synchronizes current pose before ordered event dispatch, detaches emitters before slot release and retains ordinary particles independently. Main passed all43 Debug/Release/ASanUBSan contracts including detach isolation, then actual natural-title effect/music completion4101 canonical+4101 LUS frames and186 retained-profile reentry frames, plus925-frame Name/Oak application. This qualifies current title effects, not full actor FX banks/wrappers/graphs.",
-    "render": "Parent supplies actual GAME row-vector camera projection and quarter-pixel viewport scale/translation, world resolver, installed image bindings, canonical bounded word span and exclusive asset reservations. Render appends no END/full-sync and owns no color/depth/scissor/task state. Parent splices commands contiguously into its canonical packet, submits actual RSP/RDP, retires leases and waits actual GPU quiescence before Catalog/asset destruction.",
-    "layout": "Parent effects workspace1A0000..1F0000 is sufficient; runtime has no hardcoded RDRAM placement. max_render_words6020 is conservative. Private smoke relocates its commands to1A0000 so fixture matrix/stack/yield ranges remain separate."
+    "resources": "Immutable active EffectBank pointer span maps at most eight distinct source slots. Snapshot and banks outlive EffectRuntime and every GPU lease. EffectResources exposes nine resource groups, not nine simultaneous active banks. No hot rebinding is exposed.",
+    "gameplay": "One EffectRuntime owns stable100-particle/10-emitter arrays, sixteen particle heads, one externally owned shared isle_rng and one wrapping source-ID counter. No per-frame allocation. Full generation-qualified emitter handles are distinct from source IDs. Exhaustion is successful null spawn/drop without retries or invented debt.",
+    "api": "EffectRuntime(active_bank_span,rng,target_services); create_effect(encoded_bank,script,attachment), configure_effect(handle,position,velocity), create_particle default/explicit position+velocity, separate update_particles/update_effects. register_aim_target supports slot0; register_output_target slots0..7; local read/write callbacks are separate from raw-world attachment resolver. clear_targets/detach_instance use complete pool/incarnation/slot identity; eject/pause IDs preserve source list/global-emitter distinctions; translate moves all live positions; reset preserves RNG/source counter and handle generations.",
+    "render": "EffectImageBinding borrows frame/palette address spans; EffectBankBinding qualifies images by source bank slot; EffectRenderStorage supplies banks and exact exclusive asset reservations. Canonical render supports I4/I8/IA8/CI4/RGBA16/RGBA32, variable evidenced dimensions/frame counts, scene dithers, masks/noise/alpha/depth. Source and image capacity checks precede packet writes. Caller owns camera, frame/depth/scissor/task state and appends END/full-sync; actual GPU completion/quiescence precedes resource retirement.",
+    "packet_bound": "max_render_words4616 = 2*(setup7 + 100*(TLUT6 + LUTmode1 + texture7 + primitive1 + environment/combine2 + blend1 + alphamode1 + depth1 + rectangle3) + finalLUTreset1). This is the canonical renderer bound, not old6020/provisional8040. Private smoke commands start1A0000 and remain below1A6000; poison palette1A8000; exact borrowed assets packed1B0000..1E0000 with unowned512-byte tails."
   },
   "build_handoff": {
     "sources": ["src/menu_effects.cpp"],
-    "dependencies": ["existing menu resource/Catalog target", "existing isle_rng implementation", "existing admitted native float libm boundary"],
+    "dependencies": ["isle-menu-resources existing typed IR", "isle-native shared isle_rng and admitted native float libm boundary"],
     "compile_options": ["C++20", "-fno-fast-math", "-ffp-contract=off"],
-    "focused_private_test": "tests/menu_effects_tests.cpp plus menu-effects/resource/snapshot dependencies; run with one explicit admitted private ROM path. Covers100/10 exhaustion, ID/free-list semantics, null-spawn RNG, failure-atomic attachment/packet/asset errors, detach/reset, normalized world columns, persistent FD/timer/size/color/END boundaries, replay and16-entry palette command closure.",
-    "actual_private_smoke": "tests/menu_effects_rsp_smoke.cpp plus existing rsp_fixture/CanonicalExecutor/resource/snapshot dependencies; run with one explicit admitted private ROM path and actual CPU-Vulkan RSP/RDP backend. Exercises scripts0/3 native spawns/ticks/texture frames/colors, actual rectangles, prior TLUT/RAM poison alternatives, primitive Z occlusion without translucent depth updates, animation change and quiescent teardown."
+    "public_cpu_test": "tests/menu_effects_tests.cpp is public authored EffectBank IR with no ROM argument/hydration. Register menu-effects-tests outside the private-ROM guard, link isle-menu-effects, retain no-fast-math/no-contraction for independent binary32 A9 oracle. Covers masked opcode transitions/physics/color/size/waits, FA00 finite loops and single-return state, child immediate/order/IDs/A5, regular traversal ticking a new child again, inherited-emitter survival during current-emitter retirement, uint16 source ID wrap, encoded lists, common/course100/10 pool contention, null versus malformed/error paths, kind0/3 random expression draw order, nonemitting attachment resolver timing, pause/translation/retirement/handles/attachments, local targets, bank-qualified packet atomicity and operand bounds. Title event policy is intentionally absent from core tests.",
+    "actual_private_smoke": "tests/menu_effects_rsp_smoke.cpp retains original intro scripts0/3 and actual GPU completion/poison/depth/animation/teardown assertions, then uses EffectResources borrowed image descriptors and untouched payloads with explicitly AUTHORED native renderer-only scripts. No fabricated source fixture/assets and no claim original Beach scripts reach unused RGBA16 image3. Common3+Beach0 use the same canonical renderer for CI4P->I8_64->sameCI4P and I8_32/I4_48/RGBA16_32, exact command shape order, same-palette sprite equality and per-region completed color versus depth occlusion. Separate Common3+Volcano0, Common3+Valley0 and Common3+River0 scenes exercise true IA8, RGBA32 and actual tenth RGBA16 frame. A private independent texel oracle decodes real borrowed I4/I8/IA8/CI4+RGBA16 palette/RGBA16/RGBA32 pixels, selects caller-owned point filtering with exact1:1 projection, and compares at least128 completed interior pixels per case against decoded RGB*alpha over black (two RGB5-level rounding tolerance, exact alpha-threshold-transparent RGB). It includes Common64, Beach48 and Riverframe9; a legitimate transparent final frame is not falsely required to paint. Black primitive modulation, depth, alternate unowned-tail poison and GPU retirement remain separate oracles. Banks never hot-rebind or collide in slot0. Link isle-menu-effects, shared effect-bank resource target, isle-canonical-executor and isle-rsp-fixture. Run with explicit admitted private ROM path on actual CPU-Vulkan RSP/RDP backend; workers never execute."
   },
-  "qualification": "No worker build, tests, lint, formatter, executable, Original collector, physical-device or runtime probe was run. Parent owns one final integrated build and actual RSP/RDP/PCM/session qualification. Native float libm/Original numerical parity and complete end-to-end title behavior remain unqualified until observed."
+  "qualification": "Main integrated the sole EffectRuntime/resource/render/Title cutover. Debug/Release/ClangASanUBSan each passed49 CPU tests. Actual six-format GPU, complete native World translation, native Title/startup and all9-bank source-VM API consumers passed independent closed-tree acceptance. Worker executed no checks. Historical A9 sign finding was false: published d8bb80e already had the source-correct minus; no sign fix/failing-before claim.",
+  "main_acceptance": {
+    "actual_shared_renderer": {
+      "root": "/home/bbferko/35mmisle-shared-effects-six-formats-hip2s590",
+      "binary_sha256": "a960f38ee2c9d46048c2e8c666cb65c734ef78cacbda5cbeacec07489d7a802a",
+      "source_archive_sha256": "13447f5b3649c89ec99b4566d86fb25ce3a4f4d418eefec3e278632a1fc9fdf7",
+      "result": "exit0,6.291338645s; actual intro scripts0/3 plus borrowed actual I8/I4_48/RGBA16/CI4/IA8/RGBA32 images driven by explicitly authored renderer-only scripts; independent completed texel/color/depth oracles, frame9, exact16-entry palette tail isolation and sameCI4-after-largeI8 reload passed. Sole initial closure39terminal/38created/40absent stable,0physical/permission,ROM unchanged.",
+      "bounded_proof": "parent-bounded-native-acceptance.json"
+    },
+    "actual_World_translation": {
+      "root": "/home/bbferko/35mmisle-world-real-effect-shift-19xox5ij",
+      "binary_sha256": "68c5e48422067b41ce702f9cc27fe057534e69582b1ebe6350cc8ed948ec1235",
+      "source_archive_sha256": "236711bd0fe9449456ec5d491fbac0805b2adcdcf785edd46dd21e0d9f5e03ce",
+      "result": "exit0,8.781325694s; complete8primary/4secondary actual World GPU/native/placement/residency/hide/retirement regression plus actual common3+Beach0 pool/source-created particle translation across all7primary entries, unchanged velocity/RNG. Diagnostic effect_position surrogate removed. Sole initial closure77terminal/76created/78absent stable,0physical/permission,ROM unchanged. Not combined rendered World+FX or gameplay.",
+      "bounded_proof": "parent-real-world-effect-translation-proof.json"
+    },
+    "native_world_resolver_and_Title": "See source-effect-world-inputs.json for240actual native resolver calls in the separate all9-bank/73particle+73emitter API example and643actual native startup/LUS frames with five inspected surfaces. Supplied local-target capabilities were not invoked by those8-update script prefixes.",
+    "limits": "No exhaustive source VM branches/timing/physics Original parity, kind2/flag4 parent-coupled admission, complete actor factory/events/items/player, combined World/actor/FX scene or Windows11 private-ROM runtime claim. Actual descriptor closure kinds0/3 and current source opcode admission passed; full game remains open."
+  }
 }

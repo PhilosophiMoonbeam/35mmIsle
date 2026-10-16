@@ -5,6 +5,8 @@
 #include "world_movement.hpp"
 #include "graphics_task.hpp"
 #include "rsp_render.hpp"
+#include "effect_bank_resources.hpp"
+#include "menu_effects.hpp"
 #include <algorithm>
 #include <array>
 #include <filesystem>
@@ -27,8 +29,8 @@ struct Owners {
     IsleGame* game=nullptr;
     IsleGameCamera* camera=nullptr;
     std::size_t commands=0, shifts=0, effect_shifts=0;
-    world::Vec3 effect_position{1,2,3};
-    Owners() {
+    menu::EffectRuntime& effects;
+    explicit Owners(menu::EffectRuntime& pool) : effects(pool) {
         require(isle_arena_init(&arena,bytes.data(),bytes.size())==ISLE_OK,"arena init"); native(isle_game_create(&arena,&game));
         IsleGameObject* object=nullptr; native(isle_game_add_object(game,1,0,0,nullptr,nullptr,&object));
         native(isle_game_attach_camera(game,object,&camera));
@@ -49,7 +51,10 @@ struct Owners {
         ++o.shifts;
     }
     static void shift_effects(void* p,world::Vec3 d) noexcept {
-        auto& o=*static_cast<Owners*>(p); o.effect_position.x+=d.x;o.effect_position.y+=d.y;o.effect_position.z+=d.z;++o.effect_shifts;
+        auto& o=*static_cast<Owners*>(p);
+        o.effects.translate({d.x,d.y,d.z});
+        if (!o.effects.status()) std::terminate();
+        ++o.effect_shifts;
     }
 };
 void top_list(std::span<std::uint32_t> words,const world::ProducerFrame& frame) {
@@ -68,7 +73,16 @@ void top_list(std::span<std::uint32_t> words,const world::ProducerFrame& frame) 
 }
 struct Result { std::vector<std::uint32_t> triangles;std::vector<std::byte> pixels,depths; };
 int run(const std::filesystem::path& path) {
-    const auto snapshot=rom::read_snapshot(path);const world::Resources resources(snapshot);Owners owners;
+    const auto snapshot=rom::read_snapshot(path);const world::Resources resources(snapshot);
+    const menu::EffectResources effect_resources(snapshot);
+    const std::array effect_banks{&effect_resources.bank(menu::EffectGroup::common),
+        &effect_resources.bank(menu::EffectGroup::beach)};
+    isle_rng effect_rng{0x12345678};
+    menu::EffectRuntime effects(effect_banks,effect_rng);
+    require(bool(effects.status()),"actual common3/Beach0 effect bank admission failed");
+    const auto initial_effect=effects.create_particle(3,0,{1,2,3},{});
+    require(bool(initial_effect.status)&&initial_effect.spawned,"real common-bank particle did not remain live");
+    Owners owners(effects);
     const auto view=world::ResourceView{&resources.setup(),&resources.sky(),resources.blocks(),resources.primary_count(),resources.models(),
         resources.materials(),resources.animations(),resources.paths(),resources.static_definitions(),&resources.height_map(),resources.collision_models()};
     world::Callbacks callbacks;callbacks.user=&owners;callbacks.shift_camera=Owners::shift_camera;
@@ -267,8 +281,24 @@ int run(const std::filesystem::path& path) {
     // also enters the next block on carried speed; it is not a pose-only sample.
     // Match movement.c:270-277: restart the entered road, then sample its clock.
     for(std::size_t i=1;i<resources.primary_count();++i){
+        menu::EffectParticleView before_effect{};
+        require(effects.particle(0,before_effect),"real effect particle disappeared before World entry");
+        const auto old_world=component.current()->resource->metadata.world_position;
+        const auto rng_before=effect_rng.seed;
         auto* block=component.enter_next();
         require(block==&component.blocks()[i],"complete primary chain transition failed");
+        const auto next_world=block->resource->metadata.world_position;
+        const menu::Vec3 displacement{(old_world.x-next_world.x)*100.0f,
+            (old_world.y-next_world.y)*100.0f,(old_world.z-next_world.z)*100.0f};
+        menu::EffectParticleView after_effect{};
+        require(effects.particle(0,after_effect)&&after_effect.effect_id==before_effect.effect_id&&
+            after_effect.position.x==before_effect.position.x+displacement.x&&
+            after_effect.position.y==before_effect.position.y+displacement.y&&
+            after_effect.position.z==before_effect.position.z+displacement.z&&
+            after_effect.velocity.x==before_effect.velocity.x&&
+            after_effect.velocity.y==before_effect.velocity.y&&
+            after_effect.velocity.z==before_effect.velocity.z&&effect_rng.seed==rng_before,
+            "World primary entry did not translate the real source effect particle without advancing physics/RNG");
         if(block->road_model&&block->resource->metadata.movement_animation_guest)component.reset_road(*block,0);
         movement_state.block=block;movement_state.move_time=0.5f;
         movement.update_position(*block,movement_state.move_time,movement_state.control_time);
@@ -282,7 +312,10 @@ int run(const std::filesystem::path& path) {
     execute(false);
     producer.retire();component.retire();IsleGameCounts counts{};native(isle_game_counts(owners.game,&counts));
     require(counts.objects==1&&counts.models==0&&counts.processes==0&&counts.matrices==2,"world retirement retained native resources");
-    std::cout<<"world_component_rsp_rdp=passed primary=8 secondary=4 placement=hierarchy_sky_rt_rts_restore_fresh visibility=hide_restore native_retirement=joined gameplay=not_claimed\n";return 0;
+    effects.reset();
+    require(effects.particle_count()==0&&effects.effect_count()==0,"World effect pool survived joined GPU teardown");
+    std::cout<<"world_component_rsp_rdp=passed primary=8 secondary=4 placement=hierarchy_sky_rt_rts_restore_fresh visibility=hide_restore "
+        "common3_Beach0_real_effect_particle_translation=passed native_retirement=joined combined_FX_render_gameplay=not_claimed\n";return 0;
 }
 }
 #ifdef _WIN32

@@ -716,7 +716,7 @@
     "actor_payload": "Native actorSourceBound marker prevents reading unrelated GObj.userData as IsleActorSource, including reused GObj storage. Actual ASan failing-before/passing-after evidence is recorded in actor-control-inputs.json.",
     "camera_storage": "Pure isle_game_camera_validate_disjoint checks complete actual native game/camera/GObj and every OMMtx result/reflection/cache storage before producer writes or camera computation. Actual16MiB-arena reflection-adjacent8MiB-RAM counterexample failed before fix; Actor, Title and World borrowed-model producers now reject before native/RAM mutation.",
     "native_fault": "Existing execution-fault path promoted privately for selected GAME actor controls; all native engine callers migrated, no new scheduler/fence.",
-    "portable_exhaustion": "Windows a72f332 CI38905019507 built all target configurations but3Windows CTests exposed a size-dependent camera-OOM fixture. Exhausting large GObj allocations need not exhaust smaller camera/matrix allocations; corrected fixture explicitly consumes the actual remaining public arena tail. Linux46/46 gates pass; replacement Windows hosted acceptance remains pending.",
+    "portable_exhaustion": "Windows a72f332 CI38905019507 built all targets but3Windows CTests exposed the size-dependent camera-OOM fixture. Explicitly consuming the actual remaining public arena tail corrected it. Published d8bb80e passed all10 replacement CI38915801831 jobs, including MSVC Debug/Release, standalone RDP/compiler and fullstatic LUS/audio/RSP/RDP/private GAME. Hosted Windows Server build/component evidence, not Windows11 private-ROM runtime or later working changes.",
     "cpu": "GCC Debug46/46 raw6929, GCC Release46/46 raw6928, Clang ASan+UBSan46/46 raw6930."
   }
 }

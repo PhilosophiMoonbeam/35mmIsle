@@ -1,6 +1,8 @@
 #include "menu_title_scene.hpp"
 #include "menu_scene_bridge.h"
+#include "source_effect_world.hpp"
 
+#include <cmath>
 #include <exception>
 #include <initializer_list>
 #include <utility>
@@ -22,26 +24,75 @@ struct Title::Impl {
     IsleGameCamera* particle_camera = nullptr;
     std::unique_ptr<animation::Runtime> animation;
     std::unique_ptr<model::Producer> models;
-    std::unique_ptr<MenuEffects> effects;
+    std::array<const EffectBank*, 1> active_effect_banks;
+    std::unique_ptr<EffectRuntime> effects;
     std::int32_t state = 0;
     std::uint32_t counter = 0;
     float last_time = 0;
     int ambient = -1, voice = -1, wing = -1;
     bool active = false, animations_started = false;
 
-    explicit Impl(::isle::scene::Services& services, const Catalog& resources) : s(services), catalog(resources) {
+    explicit Impl(::isle::scene::Services& services, const Catalog& resources)
+        : s(services), catalog(resources), active_effect_banks{&resources.effects()} {
         for (auto& callback : model_callbacks) callback.owner = this;
         for (auto& callback : label_callbacks) callback.owner = this;
     }
+    IsleGameModel* native_target(EffectAttachment attachment) noexcept {
+        if (!models || !animation || !animation->model(attachment.instance)) return nullptr;
+        return models->native_model(attachment.instance);
+    }
     static bool resolve(void* context, EffectAttachment attachment, EffectWorld& output) noexcept {
         auto& self = *static_cast<Impl*>(context);
-        if (!self.models || !self.animation || !self.animation->model(attachment.instance)) return false;
-        const auto world = self.models->world_nodes(attachment.instance);
-        if (attachment.node >= world.size()) return false;
-        for (std::size_t row = 0; row < 4; ++row)
-            for (std::size_t column = 0; column < 4; ++column)
-                output.matrix[row][column] = world[attachment.node].m[row][column];
+        auto* native = self.native_target(attachment);
+        return native && bool(model::source_effect_world(self.s.game, native, attachment.node, output));
+    }
+    static bool read_target(void* context, EffectAttachment attachment, Vec3& output) noexcept {
+        auto& self = *static_cast<Impl*>(context);
+        auto* native = self.native_target(attachment);
+        const IsleGameModelNode* nodes = nullptr;
+        std::size_t count = 0;
+        if (!native || isle_game_model_peek_nodes(self.s.game, native, &nodes, &count) != ISLE_GAME_OK ||
+            attachment.node >= count) return false;
+        const auto& position = nodes[attachment.node].transform.position;
+        output = {position.x, position.y, position.z};
         return true;
+    }
+    static bool write_target(void* context, EffectAttachment attachment, Vec3 position) noexcept {
+        auto& self = *static_cast<Impl*>(context);
+        auto* native = self.native_target(attachment);
+        const IsleGameModelNode* nodes = nullptr;
+        std::size_t count = 0;
+        if (!native || isle_game_model_peek_nodes(self.s.game, native, &nodes, &count) != ISLE_GAME_OK ||
+            attachment.node >= count) return false;
+        auto transform = nodes[attachment.node].transform;
+        transform.position = {position.x, position.y, position.z};
+        if (isle_game_model_validate_transform(self.s.game, native, attachment.node, &transform) != ISLE_GAME_OK)
+            return false;
+        const auto state = self.animation->model(attachment.instance);
+        if (attachment.node >= state.nodes.size()) return false;
+        auto pose = state.nodes[attachment.node].transform;
+        pose.position = position;
+        // Native is the source target, but the animation pose is authoritative
+        // at the next producer synchronization. Publish the same local write to
+        // both under the native update exclusion, preserving rotation/scale.
+        if (!self.animation->set_node_transform(attachment.instance, attachment.node, pose)) return false;
+        return isle_game_model_set_transform(self.s.game, native, attachment.node, &transform) == ISLE_GAME_OK;
+    }
+    bool animation_event(const animation::CallbackEvent& event) noexcept {
+        if (event.event_id == -1 || event.event_id == -2) {
+            state = 3;
+            return true;
+        }
+        // A0BE70 subtracts in binary32 before signed truncation: 0.5 -> 0.
+        const float selection = event.argument - 1.0f;
+        if (!std::isfinite(selection) || selection < -2147483648.0f || selection >= 2147483648.0f)
+            return false;
+        const auto script = static_cast<std::int32_t>(selection);
+        if (script < 0) return true;
+        if (event.event_id < 0 || event.event_id >= 128) return false;
+        const auto result = effects->create_effect(static_cast<std::uint16_t>(event.event_id),
+            static_cast<std::size_t>(script), {event.instance, event.node});
+        return bool(result.status);
     }
     static void particles_update(IsleGameObject*, void* context) noexcept {
         auto& self = *static_cast<Impl*>(context);
@@ -63,9 +114,7 @@ struct Title::Impl {
         // Events borrow Runtime storage only until the next step. Deliver them
         // here, with this exact native world pose, before the next model runs.
         for (const auto& event : self.animation->events()) {
-            const auto result = self.effects->animation_event({event.instance, event.node}, event.event_id, event.argument);
-            if (!result.status) { self.s.fail("title animation effect callback"); return; }
-            if (result.title_finished) self.state = 3;
+            if (!self.animation_event(event)) { self.s.fail("title animation effect callback"); return; }
         }
     }
     static void camera_update(IsleGameObject*, void* context) noexcept {
@@ -234,7 +283,8 @@ struct Title::Impl {
                 if (particle_object != nullptr && !s.check(isle_menu_place_before(s.game, camera_object, particle_object), "title reentry source camera order")) return false;
             }
             if (!effects) {
-                effects = std::make_unique<MenuEffects>(catalog, s.rng);
+                effects = std::make_unique<EffectRuntime>(active_effect_banks, s.rng,
+                    EffectTargetServices{this, read_target, write_target});
                 if (!effects->status()) { s.fail("title effect construction"); return false; }
             }
             if (particle_object == nullptr) {
@@ -344,7 +394,10 @@ struct Title::Impl {
         for (auto* object : {camera_object, labels, audio_object, input_object, setup_object})
             if (object != nullptr) s.end_processes(object);
         if (effects) {
-            for (const auto instance : instances) if (instance) effects->detach_instance(instance);
+            for (const auto instance : instances) if (instance) {
+                effects->clear_targets(instance);
+                effects->detach_instance(instance);
+            }
             effects->reset();
         }
         if (models) models->retire();
@@ -403,6 +456,6 @@ float Title::source_time() const noexcept { return impl_->last_time; }
 IsleGameCamera* Title::camera() const noexcept { return impl_->camera; }
 animation::Runtime* Title::animation() noexcept { return impl_->animation.get(); }
 model::Producer* Title::models() noexcept { return impl_->models.get(); }
-MenuEffects* Title::effects() noexcept { return impl_->effects.get(); }
+EffectRuntime* Title::effects() noexcept { return impl_->effects.get(); }
 void Title::retire() noexcept { impl_->cleanup(true); }
 } // namespace isle::menu::scene

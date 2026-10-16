@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "component": "standalone source GPU focus center-region copy",
+  "own_game_authority": {
+    "commit": "df8815e75f3d79618466e01e0827c6165b93d11c",
+    "path": "src/app_level/pokemon_detect.c",
+    "blob": "be633c092754e02a42195f394220c4203fc6aabc",
+    "sha256": "a8f0d6937417d5a63b70a7e6674f64877a8b62e25f8c8865b96420a6f2cdba5b",
+    "staged_source": "/home/bbferko/35mmisle-course-pinned-source-vhh0_3lz/src/app_level/pokemon_detect.c",
+    "spans": {
+      "TileInCenter_and_CopyTile": "11-34",
+      "camera_effective_scissor_and_context": "120-148",
+      "one_shared_twenty_row_allocation": "160-183",
+      "SaveRegion_GPU_suffix_and_source_metadata_boundary": "193-211"
+    },
+    "identity_status": "Shared authority supplied by Main; worker read only assigned staged own-GAME spans, did not independently execute identity checks."
+  },
+  "authored_files": [
+    "src/focus_capture.hpp",
+    "src/focus_capture.cpp",
+    "tests/focus_capture_rsp_smoke.cpp"
+  ],
+  "implementation": {
+    "encoding": "Independently authored public numeric F3DEX2/RDP commands; no SDK producer/header/body copied or read.",
+    "api": "isle::focus::RegionCopies(CaptureLayout); reservations(); installation_ranges(); region_offset(row); install(canonical_words); emit_region(command_storage,row,Scissor); append_region(capacity_words,row,Scissor,typed_command_sink). Both emission forms share one preflight/encoder, avoiding temporary word-array copying into actor command storage.",
+    "units": "RamRange physical byte offsets and sizes in 8 MiB RDRAM; canonical host uint32 numeric words; scissor integer pixels",
+    "layout": "Explicit nonoverlapping tile/copy/region reservations; lists aligned8, twenty shared128byte rows aligned64. No default addresses.",
+    "installation": "18 tile words,28 copy words. Full declared extents validated before either list write; no epoch/pointer residency cache. Explicit install after actual cold/reset.",
+    "emission": "12 words; source pipe sync/LUTnone/calltile/CIMG width8 row/callcopy/caller scissor. No EndDL or FullSync. Row/scissor/capacity preflight before writes.",
+    "restoration": "Copy list restores two-cycle, fog-shade-A/AA-ZB-opaque-surface2, perspective and RGBA16 CIMG width320 segmentF; append restores supplied camera scissor. This is source restoration, not arbitrary incoming-state preservation.",
+    "ownership": "Caller proves complete global RAM/framebuffer/asset disjoint union, binds segmentF, retains RAM/static lists until actual GPU completion/readback. ONE shared row pool across both CPU history contexts; GPU owner and CPU analysis must both finish before overwrite. No fences simulated.",
+    "limits": "Standalone GPU copy only; no actor policy, native camera/GObj, source photo snapshot, queue, actor-color history or detector integration. Main owns integration."
+  },
+  "actual_consumer": {
+    "file": "tests/focus_capture_rsp_smoke.cpp",
+    "consumer": "isle::rsp::CanonicalExecutor, real canonical RSP then RDP GPU completion/readback; isle::graphics cold inputs/task helpers",
+    "private_rom_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "checks_exercised": [
+      "Full16bit varied framebuffer center expected from original independent pixel coordinates; both bit0 states",
+      "Rows0,7,19; untouched rows and leading/trailing/external guards",
+      "Both actual framebuffer/segmentF choices; both source planes unchanged",
+      "Repeat append without reinstall; explicit cold/reinstall; fresh actual RAM owner with same helper",
+      "Invalid row/scissor/short emission and short installation unchanged storage; invalid layouts rejected",
+      "Completed native CPU postprocess write/move/real writeback; next actual GPU task consumes retained CPU framebuffer writes; released lease rejects writers; abandoning unfinished writes poisons future preparation"
+    ],
+    "registration": "Private-ROM opt-in executable only, NEVER add_test/CTest or public ROM fixture",
+    "execution": "Main Debug built and ran actual private component: six RSP/RDP tasks passed exact full16bit copies, both contexts, unchanged GPU source planes/guard rows, repeat/cold/fresh RAM and completed-write phase invariants. Public integrated Debug/Release/ClangASanUBSan each passed49 CPU tests; worker executed no checks."
+  },
+  "cmake_recipe": [
+    "if(TARGET isle-menu-resources)",
+    "  add_library(isle-focus-capture STATIC src/focus_capture.cpp src/focus_capture.hpp)",
+    "  target_link_libraries(isle-focus-capture PUBLIC isle-menu-resources)",
+    "  isle_target_options(isle-focus-capture)",
+    "endif()",
+    "if(TARGET isle-focus-capture AND TARGET isle-canonical-executor)",
+    "  add_executable(focus-capture-rsp-smoke tests/focus_capture_rsp_smoke.cpp)",
+    "  target_link_libraries(focus-capture-rsp-smoke PRIVATE isle-focus-capture isle-graphics-task isle-canonical-executor)",
+    "  isle_target_options(focus-capture-rsp-smoke)",
+    "endif()"
+  ],
+  "main_acceptance": {
+    "root": "/home/bbferko/35mmisle-focus-copy-postprocess-zeue3__9",
+    "binary_sha256": "3534ca084eded76cc308d3972b28a51b687b6b0c9f188ed2b324cf7f7b42084e",
+    "source_archive_sha256": "9c55cbb4d0fd5e6225b496cbaa3b302b5dc6b370f1c700d50f7ed1c342d412c8",
+    "result": "exit0,5.110100074s, six actual GPU tasks; sole initial whole-tree closure77terminal/76created/78absent stable;0known physical/permission attempts; ROM unchanged. Whole component accepted, not Original/physical-device/Windows11 runtime or the separate still-open complete actor-focus integration.",
+    "bounded_proof": "parent-bounded-native-acceptance.json",
+    "completed_memory_api": "CanonicalExecutor::MemoryLease::postprocess_words()/finish_postprocess() borrow the actual completed persistent processor RDRAM and flush through pinned consumer end_write_rdram(); no remap, writable hidden memory, fake fence or abandoned preparation lease. Writer phase moves with the lease; unfinished release poisons RAM reuse."
+  }
+}

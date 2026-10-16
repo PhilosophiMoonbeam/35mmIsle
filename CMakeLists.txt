@@ -104,6 +104,12 @@ add_library(isle-photo-feedback STATIC src/photo_feedback.cpp include/35mmisle/p
 target_include_directories(isle-photo-feedback PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-photo-feedback)
 
+add_library(isle-photo-score STATIC src/photo_score.cpp include/35mmisle/photo_score.hpp)
+target_link_libraries(isle-photo-score PUBLIC isle-photo-feedback)
+isle_target_options(isle-photo-score)
+target_compile_options(isle-photo-score PRIVATE
+    "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>")
+
 add_library(isle-required-work STATIC src/required_work.cpp src/required_work.hpp)
 target_link_libraries(isle-required-work PUBLIC Threads::Threads)
 target_include_directories(isle-required-work PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -221,6 +227,11 @@ if(BUILD_TESTING)
     target_link_libraries(photo-feedback-tests PRIVATE isle-photo-feedback)
     isle_target_options(photo-feedback-tests)
     add_test(NAME photo-feedback-tests COMMAND photo-feedback-tests)
+
+    add_executable(photo-score-tests tests/photo_score_tests.cpp)
+    target_link_libraries(photo-score-tests PRIVATE isle-photo-score)
+    isle_target_options(photo-score-tests)
+    add_test(NAME photo-score-tests COMMAND photo-score-tests)
 
     add_executable(host-clock-tests tests/host_clock_tests.cpp)
     target_link_libraries(host-clock-tests PRIVATE isle-host-clock)

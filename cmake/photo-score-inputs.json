@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Original native CPU scoring implementation over completed genuine feedback and caller-admitted immutable GAME ROM data. No ROM payload, imported GAME function body or SDK implementation/header/opaque layout is published. This is not full photo reconstruction, Original math/pixel parity or scene/gameplay readiness.",
+  "source_files": {
+    "src/app_render/score.c": {
+      "git_blob": "17a0d973c0050536cf4af4265a0bb106f294c82e",
+      "sha256": "ae38f419085fa0506c799d06347b4f6e0772ac06819021f07f838735e24cb60c",
+      "facts": "5-49 immutable bonus/class tables;329-370 interpolation and same-species bonus;372-482 score stages/early gates;488-674 focus, signs/eggs, raw-index classification, category priority and conditional flag clearing."
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "facts": "39-49 GAME animation-set record fields;329-364 Pokemon-to-orientation-class index;400-427 preferred subject flags;449-458 animation eligibility lookup."
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "facts": "229-271 GAME PhotoData/PokemonPhotoData own fields, not SDK layouts. Native interface uses scalars rather than guest bitfields or pointer casts."
+    },
+    "src/photo_check/photo_check.h": {
+      "git_blob": "6efc959c6171696a8b1ab14b554cb91597b4f02d",
+      "sha256": "27ed09f5d508fe25f31a760d92b4a923f8a88227dd34ebd400da21d3ad554a98",
+      "facts": "34-46 exact signedness and widths of GAME ScoreData scalar outputs."
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "facts": "325-370 Shellder90, Pokedex151, unknown500, eggs600/601/602, alternate603 and signs including Koffing smoke1028."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "facts": "353-400 app_render ROM46270..5BF20 mapped at guest8009A8C0; no main-segment mapping for these data."
+    }
+  },
+  "overlay": {
+    "rom_begin": "0x46270",
+    "rom_end_exclusive": "0x5BF20",
+    "guest_begin": "0x8009A8C0",
+    "minimum_fixed_tables_bytes": "0x13F04",
+    "full_bytes": "0x15CB0",
+    "admission": "RulesView checks extent and every used animation subrecord; caller independently admits and retains the immutable canonical Snapshot. A fixed-table prefix does not guarantee every referenced subrecord is present."
+  },
+  "tables": [
+    {
+      "name": "score_SpecialBonuses",
+      "guest": "0x800ae580",
+      "rom_offset": "0x59f30",
+      "bytes": 28,
+      "sha256": "b5272ebd67a0eb52115b2558bccbf4a405ad29cc435461800974ff6fc7ce43b4",
+      "every_value_equals_pinned_GAME_initializer": true
+    },
+    {
+      "name": "score_PoseBonuses",
+      "guest": "0x800ae59c",
+      "rom_offset": "0x59f4c",
+      "bytes": 328,
+      "sha256": "196bfd73da5bbadd6c468a1145e605bdf152d3c5f482997cb96a4a9a3a7a440e",
+      "every_value_equals_pinned_GAME_initializer": true
+    },
+    {
+      "name": "D_800AE6E4",
+      "guest": "0x800ae6e4",
+      "rom_offset": "0x5a094",
+      "bytes": 96,
+      "sha256": "dacf688563ad3829250063aa7a8558abb90adf424d394aa058d7624257f271fd",
+      "every_value_equals_pinned_GAME_initializer": true
+    },
+    {
+      "name": "D_800AE744",
+      "guest": "0x800ae744",
+      "rom_offset": "0x5a0f4",
+      "bytes": 128,
+      "sha256": "13112c3f8eff6ccb9acdd4c01692d6db000c5927ee3cf05aa91abeec44df1c94",
+      "every_value_equals_pinned_GAME_initializer": true
+    }
+  ],
+  "animation_sets": {
+    "guest": "0x800AD4B8",
+    "rows": 67,
+    "record_bytes": 12,
+    "subrecord_bytes": 12,
+    "read_subrecord_field": "First binary32 only; animation/model/material pointers are not followed.",
+    "actual_verified_unique_ids": 67,
+    "actual_count_min": 1,
+    "actual_count_max": 22
+  },
+  "pokemon_index": {
+    "guest": "0x800AE4E4",
+    "rom": "0x59E94",
+    "signed_bytes": 151
+  },
+  "angular_precision": {
+    "scope": "Static observations of known GAME score_CalculateScore only; no SDK code/header/layout/body or SDK disassembly.",
+    "function_guest": [
+      "0x800A081C",
+      "0x800A0E9C"
+    ],
+    "function_sha256": "3b02e4cadac82951e72b9e305552f5d8f5d07b7ec07c15fe258a8903782284cf",
+    "pi_binary32_bits": "0x40490FDB",
+    "tau_binary32_bits": "0x40C90FDB",
+    "constant_observations": [
+      {
+        "instruction_guest": "0x800a0aa0",
+        "load": "LWC1",
+        "constant_guest": "0x800b0184",
+        "rom_offset": "0x5bb34",
+        "value": 10000.0
+      },
+      {
+        "instruction_guest": "0x800a0b80",
+        "load": "LWC1",
+        "constant_guest": "0x800b0188",
+        "rom_offset": "0x5bb38",
+        "value": 10000.0
+      },
+      {
+        "instruction_guest": "0x800a0c34",
+        "load": "LWC1",
+        "constant_guest": "0x800b018c",
+        "rom_offset": "0x5bb3c",
+        "value": 0.24500000476837158
+      },
+      {
+        "instruction_guest": "0x800a0c4c",
+        "load": "LWC1",
+        "constant_guest": "0x800b0190",
+        "rom_offset": "0x5bb40",
+        "value": 0.6000000238418579
+      },
+      {
+        "instruction_guest": "0x800a0cc8",
+        "load": "LWC1",
+        "constant_guest": "0x800b0194",
+        "rom_offset": "0x5bb44",
+        "value": 3.1415927410125732
+      },
+      {
+        "instruction_guest": "0x800a0cf4",
+        "load": "LWC1",
+        "constant_guest": "0x800b0198",
+        "rom_offset": "0x5bb48",
+        "value": 6.2831854820251465
+      },
+      {
+        "instruction_guest": "0x800a0d10",
+        "load": "LWC1",
+        "constant_guest": "0x800b019c",
+        "rom_offset": "0x5bb4c",
+        "value": 6.2831854820251465
+      },
+      {
+        "instruction_guest": "0x800a0d18",
+        "load": "LWC1",
+        "constant_guest": "0x800b01a0",
+        "rom_offset": "0x5bb50",
+        "value": -3.1415927410125732
+      },
+      {
+        "instruction_guest": "0x800a0d64",
+        "load": "LWC1",
+        "constant_guest": "0x800b01a4",
+        "rom_offset": "0x5bb54",
+        "value": 3.1415927410125732
+      }
+    ],
+    "operations": [
+      "single-precision folding",
+      "MUL.S at800A0D7C",
+      "DIV.S at800A0D98",
+      "DIV.S at800A0DAC",
+      "TRUNC.W.S at800A0DB0"
+    ],
+    "endpoint": "Exact binary32 pi produces column12. Defined BE image address reads preserve next-row spill, including final row into class[0]; no native out-of-bounds array or angle clamp.",
+    "atan2": "Native standard-library float atan2; independent Original return/boundary parity remains unqualified."
+  },
+  "ownership": "Borrow FinalCounts directly, separate2byte SubjectMap per render rank maps original photo index and sparse feedback slot. Preserve zero-visible active ranks, original raw record order, exact camera/yaw/animation/pose/special/level/flags/dash metadata and apply returned photo_flags after success. No per-call allocation, plane/table/count repacking or hidden global state.",
+  "verification": {
+    "actual_native_RSP_RDP_tasks": 16,
+    "actual_two_FOV_photos": 8,
+    "actual_counts_to_score": true,
+    "sparse_slots": [
+      11,
+      3
+    ],
+    "nonidentity_photo_indices": [
+      0,
+      2
+    ],
+    "actual_zero_visible_candidate": true,
+    "actual_unscored_intervening_geometry": "Original Pidgey mesh diagnostic, not a claimed Gate asset",
+    "repeat_and_restore": true,
+    "actual_back_facing_pose_points": 500,
+    "actual_front_facing_pose_points": 1000,
+    "CPU_CTests_each": 24,
+    "configurations": [
+      "GCC Debug",
+      "GCC Release",
+      "Clang ASan+UBSan"
+    ],
+    "private_proof_sha256": "2722a3e406a2e76641544894979b323a989d9b09e753ae448ab5b88b8beebbc4",
+    "known_physical_node_attempts": 0,
+    "access_denials": 0,
+    "trace_files_and_exit0": 38,
+    "Original_parity": false,
+    "full_photo_reconstruction": false,
+    "Windows11_runtime": false
+  }
+}

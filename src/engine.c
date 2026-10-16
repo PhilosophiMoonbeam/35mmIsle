@@ -193,6 +193,18 @@ IsleGameResult isle_game_object_set_flags(IsleGame* game, IsleGameObject* object
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_game_object_set_pre_retire_callback(IsleGame* game, IsleGameObject* object,
+    IsleGameCallback callback, void* user) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (object->retirementStarted) return ISLE_GAME_INVALID_STATE;
+    object->retiring = callback;
+    object->preRetireUser = user;
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_object_set_retire_callback(IsleGame* game, IsleGameObject* object,
     IsleGameCallback callback, void* user) {
     IsleGameResult result = access_game(game);
@@ -1206,6 +1218,14 @@ void omDeleteGObj(GObj* object) {
           object->data.cam->obj != object))) {
         execution_fault(game, "unsupported or invalid native object payload");
         return;
+    }
+    if (!object->retirementStarted) {
+        IsleGameCallback callback = object->retiring;
+        void* user = object->preRetireUser;
+        object->retirementStarted = true;
+        object->retiring = NULL;
+        object->preRetireUser = NULL;
+        if (callback != NULL) callback(object, user);
     }
     while (object->processListHead != NULL) {
         GObjProcess* before = object->processListHead;

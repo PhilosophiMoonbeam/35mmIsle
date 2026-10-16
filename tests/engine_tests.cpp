@@ -1711,38 +1711,179 @@ void model_rejection_atomicity_and_reuse() {
         "typed object deletion leaked model ownership");
 }
 
-void model_deferred_delete_and_destroy() {
-    for (int mode : {0, 1, 2}) {
+void observe_model_retirement(World& world, IsleGameObject* owner, EngineFixture& fixture) {
+    fixture.game = world.game;
+    engine_bind_source_payload(owner, &fixture);
+    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_CONTEXTUAL_RPY};
+    initial.transform.position = {7, -3, 11};
+    ok(isle_game_attach_model(world.game, owner, &initial, 1, &fixture.model));
+    ok(isle_game_object_set_pre_retire_callback(world.game, owner, engine_observe_retiring, &fixture));
+    ok(isle_game_object_set_retire_callback(world.game, owner, engine_observe_joined, &fixture));
+}
+
+void native_retirement_observes_real_joins_and_reuse() {
+    for (bool direct : {false, true}) {
+        EngineFixture fixture{}, replacement{}, rejected{};
         World world;
-        EngineFixture fixture{}; fixture.game = world.game; fixture.mode = mode;
+        fixture.mode = 1;
+        auto* owner = object(world, 1);
+        observe_model_retirement(world, owner, fixture);
+        fixture.observed_processes[0] = process(world, owner, engine_victim, &fixture, ISLE_GAME_STACKFUL, 8);
+        ok(isle_game_add_source_process(world.game, owner, engine_source_a, ISLE_GAME_STACKFUL, 5,
+                                       &fixture.observed_processes[1]));
+        fixture.observed_process_count = fixture.waiting_processes = 2;
+        ok(isle_game_tick(world.game));
+        trace(fixture, {700, 410});
+        require(fixture.pre_retire_calls == 0 && fixture.retire_calls == 0,
+                "parking source/native continuations prematurely notified retirement");
+        bool wrong_owner = false;
+        std::thread foreign([&] {
+            wrong_owner = isle_game_object_set_pre_retire_callback(
+                world.game, owner, engine_observe_retiring, &rejected) == ISLE_GAME_WRONG_OWNER;
+        });
+        foreign.join();
+        require(wrong_owner && isle_game_object_set_pre_retire_callback(
+                    world.game, nullptr, nullptr, nullptr) == ISLE_GAME_INVALID_ARGUMENT,
+                "pre-retirement setter lost owner/NULL-current validation precedence");
+        const auto used = world.arena.cursor;
+        if (direct) engine_direct_delete(owner);
+        else ok(isle_game_delete_object(world.game, owner));
+        trace(fixture, {700, 410, 451, 452});
+        require(fixture.pre_retire_calls == 1 && fixture.retire_calls == 1 &&
+                fixture.retired_continued == 0 && counts(world).objects == 0 &&
+                counts(world).processes == 0 && counts(world).models == 0 &&
+                rejected.pre_retire_calls == 0,
+                "native deletion did not observe intact processes/model then actual joined removal");
+        require(isle_game_delete_object(world.game, owner) == ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_object_set_pre_retire_callback(world.game, owner, nullptr, nullptr) ==
+                    ISLE_GAME_INVALID_ARGUMENT,
+                "dead native object accepted a new retirement observer or repeated deletion");
+        auto* reused = object(world, 2);
+        require(reused == owner, "native object pool did not exercise the retired slot");
+        observe_model_retirement(world, reused, replacement);
+        require(replacement.model == fixture.model, "native model reuse did not exercise the retired payload");
+        ok(isle_game_delete_object(world.game, reused));
+        trace(replacement, {451, 452});
+        require(fixture.pre_retire_calls == 1 && fixture.retire_calls == 1 && world.arena.cursor == used,
+                "reuse retained observer state or allocated instead of reusing joined storage");
+        reused = object(world, 3);
+        observe_model_retirement(world, reused, rejected);
+        ok(isle_game_object_set_pre_retire_callback(world.game, reused, nullptr, nullptr));
+        ok(isle_game_object_set_retire_callback(world.game, reused, nullptr, nullptr));
+        ok(isle_game_delete_object(world.game, reused));
+        require(rejected.pre_retire_calls == 0 && rejected.retire_calls == 0,
+                "cleared native lifecycle observers still ran");
+    }
+}
+
+void native_retirement_rejects_corrupt_payload_before_notification() {
+    for (int mode : {0, 1, 2, 3, 4}) {
+        EngineFixture fixture{};
+        World world;
+        auto* owner = object(world, 1);
+        observe_model_retirement(world, owner, fixture);
+        fixture.observed_processes[0] = process(world, owner, engine_victim, &fixture, ISLE_GAME_STACKFUL, 5);
+        fixture.observed_process_count = fixture.waiting_processes = 1;
+        ok(isle_game_tick(world.game));
+        require(engine_delete_corrupt_payload(owner, mode) == ISLE_GAME_EXECUTION_FAILURE &&
+                fixture.failures == 0 && fixture.pre_retire_calls == 0 && fixture.retire_calls == 0 &&
+                counts(world).objects == 1 && counts(world).processes == 1 && counts(world).models == 1,
+                "corrupt payload changed lifecycle state, joined a process or removed storage");
+        ok(isle_game_destroy(world.game));
+        world.game = nullptr;
+        trace(fixture, {700, 451, 452});
+        require(fixture.retired_continued == 0, "fault destruction resumed a parked continuation");
+    }
+}
+
+void native_fault_destruction_notifies_only_at_actual_teardown() {
+    for (auto kind : {ISLE_GAME_SYNCHRONOUS, ISLE_GAME_STACKFUL}) {
+        EngineFixture fixture{};
+        World world;
+        fixture.mode = kind == ISLE_GAME_STACKFUL ? 1 : 0;
+        auto* owner = object(world, 1);
+        observe_model_retirement(world, owner, fixture);
+        fixture.observed_processes[0] = process(world, owner, engine_victim, &fixture, ISLE_GAME_STACKFUL, 11);
+        fixture.observed_processes[1] = process(world, owner, engine_invalid_legacy_wait, &fixture, kind, 5);
+        fixture.observed_process_count = 2;
+        fixture.waiting_processes = 1;
+        require(isle_game_tick(world.game) == ISLE_GAME_EXECUTION_FAILURE &&
+                fixture.pre_retire_calls == 0 && fixture.retire_calls == 0 &&
+                counts(world).models == 1 && counts(world).processes == 2,
+                "callback fault synthesized retirement before the actual destruction boundary");
+        ok(isle_game_destroy(world.game));
+        world.game = nullptr;
+        trace(fixture, {700, 60, 451, 452});
+        require(fixture.retired_continued == 0 && fixture.pre_retire_calls == 1 && fixture.retire_calls == 1,
+                "fault teardown did not join all native continuations exactly once");
+    }
+}
+
+void model_deferred_delete_and_destroy() {
+    for (int mode : {0, 1, 2, 3}) {
+        EngineFixture fixture{};
+        World world;
+        fixture.game = world.game; fixture.mode = mode;
         auto* owner = object(world, 1, 0, 0, mode == 2 ? engine_delete_self : nullptr,
                              mode == 2 ? &fixture : nullptr);
         IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
         IsleGameModel* model = nullptr;
         ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+        fixture.model = model;
+        engine_bind_source_payload(owner, &fixture);
+        ok(isle_game_object_set_pre_retire_callback(world.game, owner, engine_observe_retiring, &fixture));
+        ok(isle_game_object_set_retire_callback(world.game, owner, engine_observe_joined, &fixture));
         auto placement = identity_model_transform();
         placement.position = {3, 4, 5};
         ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RT, &placement));
         require(counts(world).matrices == 2, "deferred owner omitted active placement");
-        if (mode != 2) process(world, owner, engine_delete_self, &fixture,
-                              mode == 0 ? ISLE_GAME_STACKFUL : ISLE_GAME_SYNCHRONOUS, 5);
+        fixture.observed_processes[0] = process(world, owner, engine_victim, &fixture, ISLE_GAME_STACKFUL, 11);
+        fixture.observed_process_count = 1;
+        if (mode != 2) {
+            if (mode == 3) {
+                ok(isle_game_add_source_process(world.game, owner, engine_source_delete,
+                    ISLE_GAME_STACKFUL, 5, &fixture.observed_processes[1]));
+            } else {
+                fixture.observed_processes[1] = process(world, owner, engine_delete_self, &fixture,
+                    mode == 0 ? ISLE_GAME_STACKFUL : ISLE_GAME_SYNCHRONOUS, 5);
+            }
+            fixture.observed_process_count = 2;
+            fixture.waiting_processes = mode == 1 ? 1 : 2;
+        }
         ok(isle_game_tick(world.game));
         auto live = counts(world);
         require(live.objects == 0 && live.processes == 0 && live.models == 0 &&
             live.model_nodes == 0 && live.matrices == 0 && fixture.retired_continued == 0,
             "deferred self-deletion failed to retire native type1 model");
+        if (mode == 2) trace(fixture, {30, 31, 451, 452});
+        else trace(fixture, {700, 30, 31, 451, 452});
+        require(fixture.pre_retire_calls == 1 && fixture.retire_calls == 1,
+                "deferred self-delete notified early, repeated or missed actual teardown");
     }
+    EngineFixture fixture{};
     World world;
     auto* owner = object(world, 1);
     IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
     IsleGameModel* model = nullptr;
     ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+    fixture.game = world.game;
+    fixture.model = model;
+    engine_bind_source_payload(owner, &fixture);
+    ok(isle_game_object_set_pre_retire_callback(world.game, owner, engine_observe_retiring, &fixture));
+    ok(isle_game_object_set_retire_callback(world.game, owner, engine_observe_joined, &fixture));
+    fixture.observed_processes[0] = process(world, owner, engine_victim, &fixture, ISLE_GAME_STACKFUL, 5);
+    fixture.observed_process_count = fixture.waiting_processes = 1;
+    ok(isle_game_tick(world.game));
     const auto placement = identity_model_transform();
     ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RTS, &placement));
     world.reset();
     auto live = counts(world);
     require(live.objects == 0 && live.models == 0 && live.model_nodes == 0 && live.matrices == 0,
         "destroy/cold reset retained native type1 payload");
+    trace(fixture, {700, 451, 452});
+    ok(isle_game_tick(world.game));
+    require(fixture.pre_retire_calls == 1 && fixture.retire_calls == 1 && fixture.retired_continued == 0,
+            "native context destruction must join before arena reuse, without resurrecting old observers");
 }
 } // namespace
 
@@ -1775,6 +1916,9 @@ int main() {
         model_translate_selection_and_cache();
         model_photo_bake();
         model_rejection_atomicity_and_reuse();
+        native_retirement_observes_real_joins_and_reuse();
+        native_retirement_rejects_corrupt_payload_before_notification();
+        native_fault_destruction_notifies_only_at_actual_teardown();
         model_deferred_delete_and_destroy();
     } catch (const std::exception& error) {
         std::cerr << "native C engine checks failed: " << error.what() << '\n';

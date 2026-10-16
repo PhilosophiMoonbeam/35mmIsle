@@ -1,6 +1,5 @@
 #include "game_audio.hpp"
-#include "graphics_task.hpp"
-#include "35mmisle/rsp.hpp"
+#include "actual_audio_driver.hpp"
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -25,56 +24,6 @@ std::array<a::effects::PoleFilter, 3> poles(const std::filesystem::path& path) {
     require(g::decode_startup_poles(wire, result), "private numeric input has wrong parameter identity/order");
     return result;
 }
-struct Capture {
-    // Checked owned capture, not a physical device or discard/Null consumer.
-    std::vector<std::int16_t> samples = std::vector<std::int16_t>(512 * a::AudioService::max_frames * 2);
-    std::size_t used = 0;
-    g::Output::State state = g::Output::State::ready;
-    unsigned finishes = 0, polls = 0;
-    static g::Output::Info inspect(void* p) noexcept { return {static_cast<Capture*>(p)->state, g::source_rate}; }
-    static g::Output::Acceptance submit(void* p, std::span<const std::int16_t> block) noexcept {
-        auto& c = *static_cast<Capture*>(p);
-        if (c.state != g::Output::State::ready || (block.size() & 1u) || block.empty() || block.size() > c.samples.size() - c.used) return {};
-        std::copy(block.begin(), block.end(), c.samples.begin() + static_cast<std::ptrdiff_t>(c.used));
-        c.used += block.size();
-        return {g::Output::Submit::accepted, static_cast<std::uint32_t>(block.size() / 2)};
-    }
-    static bool finish(void* p) noexcept {
-        auto& c = *static_cast<Capture*>(p);
-        if (c.state != g::Output::State::ready || c.finishes != 0) return false;
-        ++c.finishes; c.state = g::Output::State::draining; return true;
-    }
-    static g::Output::State poll(void* p) noexcept {
-        auto& c = *static_cast<Capture*>(p);
-        if (c.state == g::Output::State::draining && ++c.polls >= 2) c.state = g::Output::State::drained;
-        return c.state;
-    }
-    g::Output output() noexcept { return {this, inspect, submit, finish, poll}; }
-};
-bool reject_dp(void*, std::span<const std::uint32_t>) noexcept { return false; }
-struct Execution {
-    const isle::rom::Snapshot& snapshot;
-    const std::uint32_t* borrowed = nullptr;
-    std::unique_ptr<isle::rsp::Machine> machine;
-    static bool initialize(void* p, std::span<std::uint32_t> words) noexcept {
-        auto& e = *static_cast<Execution*>(p);
-        try {
-            isle::graphics::validate_cold_inputs(words, e.snapshot, e.snapshot.canonical().data(), 0x107000);
-            isle::graphics::install_cold_inputs(words, e.snapshot, 0x107000);
-            e.machine = std::make_unique<isle::rsp::Machine>(words, reject_dp, nullptr);
-            e.borrowed = words.data();
-            return true;
-        } catch (...) { e.machine.reset(); e.borrowed = nullptr; return false; }
-    }
-    static bool ready(void* p, std::span<std::uint32_t> words) noexcept {
-        const auto& e = *static_cast<Execution*>(p);
-        return bool(e.machine) && e.borrowed == words.data();
-    }
-    static void retire(void* p) noexcept {
-        auto& e = *static_cast<Execution*>(p); e.machine.reset(); e.borrowed = nullptr;
-    }
-    g::Executor executor() noexcept { return {this, initialize, ready, retire}; }
-};
 struct Run {
     std::vector<std::int16_t> samples;
     std::vector<std::uint32_t> quotas;
@@ -82,14 +31,13 @@ struct Run {
 };
 Run run(const isle::rom::Snapshot& snapshot, const g::Resources& resources, a::effects::Config effects,
         unsigned isolated_mute, bool controls) {
-    Capture capture;
-    Execution execution{snapshot, nullptr, {}};
+    isle::private_audio::Capture capture;
+    isle::private_audio::Execution execution{snapshot, nullptr, {}};
     auto made = g::Session::create(resources, effects, capture.output(), execution.executor());
     require(bool(made), "startup resource/three-calendar/effects/output initialization failed");
     auto& session = *made.session;
     auto words = session.service().rdram_words();
     const auto* stable = words.data();
-    const auto bytes = snapshot.canonical();
     Run result;
     result.quotas.reserve(512);
     int rain = -1;
@@ -100,15 +48,7 @@ Run run(const isle::rom::Snapshot& snapshot, const g::Resources& resources, a::e
     require(session.play_sound(0x2c, {static_cast<std::uint16_t>(isolated_mute == 3 ? 0 : 0x2000), 64, 30, 1.0f}, rain), "actual intro SFX2C request failed");
     require(rain >= 0, "actual SFX2C has no logical sound slot");
     auto execute = [&](const a::TaskView& built) {
-        const isle::rsp::Task task{2, 0, 0x107000, 0x100, 0x3d980, 0x1000, 0x44ba0, 0x800,
-            0, 0, 0, 0, built.command_address, built.command_bytes, 0, 0};
-        isle::rsp::Result actual;
-        try { actual = execution.machine->execute(task, bytes.subspan(0xb70, 0x100), {10000000, 0}); }
-        catch (...) { session.complete(built.token, false); throw; }
-        const bool success = bool(actual) && actual.sp_status == 0x203 && actual.packets == 0 && actual.packet_words == 0 && actual.full_syncs == 0;
-        const auto completed = session.complete(built.token, success);
-        require(success, "actual audio RSP did not reach checked SP203/no-DPC terminal");
-        require(completed, "actual RSP PCM lease completion failed");
+        const auto actual = isle::private_audio::execute(session,execution,built);
         ++result.tasks; result.reads += actual.dma_reads; result.writes += actual.dma_writes;
         result.quotas.push_back(built.frame_count);
         require(session.submit(), "owned actual PCM capture acceptance failed");

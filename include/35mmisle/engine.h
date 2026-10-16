@@ -70,9 +70,7 @@ IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
 IsleGameResult isle_game_delete_object(IsleGame* game, IsleGameObject* object);
 IsleGameResult isle_game_pause_updates(IsleGame* game, IsleGameObject* object, int paused);
 IsleGameResult isle_game_object_id(IsleGame* game, IsleGameObject* object, uint32_t* output);
-/* Native ownership metadata, never a console record layout. Retirement callback
- * runs once after every process is joined and payload is removed, before node
- * reuse; it must not throw, wait or mutate OM. Its userdata survives that fence. */
+/* Native ownership metadata, never a console record layout. */
 typedef struct IsleGameObjectMetadata {
     uint32_t id, priority, flags;
     uint8_t update_link;
@@ -81,6 +79,18 @@ IsleGameResult isle_game_object_metadata(IsleGame*, IsleGameObject*, IsleGameObj
 /* Immediate source flag assignment (e.g. setWorldBlocksVisibility), not queued
  * command delivery. Caller preserves unrelated flag bits using metadata(). */
 IsleGameResult isle_game_object_set_flags(IsleGame*, IsleGameObject*, uint32_t flags);
+/* Pre-retirement runs exactly once at validated actual teardown, with payload
+ * and processes still intact, before joins/removal. A self-delete request does
+ * not notify until its callback yields/returns. Invalid payloads never notify;
+ * an incomplete join retains storage without notifying pre-retirement again.
+ * The post-retirement callback runs only after every process has joined and
+ * payload is removed, before node reuse. Neither callback may throw, wait or
+ * mutate OM. Userdata must survive both callbacks and any enclosing command
+ * dispatch; joined observation is not graphics completion or permission to
+ * destroy a callback's context from inside that callback.
+ * NULL clears an observer. Pre-retirement changes reject once teardown starts.
+ */
+IsleGameResult isle_game_object_set_pre_retire_callback(IsleGame*, IsleGameObject*, IsleGameCallback, void*);
 IsleGameResult isle_game_object_set_retire_callback(IsleGame*, IsleGameObject*, IsleGameCallback, void*);
 
 /* One source FIFO per object, arena-backed recycled nodes. Command userdata and

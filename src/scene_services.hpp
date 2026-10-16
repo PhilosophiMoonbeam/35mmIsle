@@ -31,10 +31,20 @@ struct SpriteDraw {
     IsleGameObject* object = nullptr;
     RenderMetadata render;
 };
+// Observers compose with Services-owned native hooks; they never replace queue/
+// record ownership. Retiring sees intact payload/processes; joined sees actual
+// joins and payload removal, not graphics completion. Neither may throw, wait or
+// mutate OM. Userdata outlives both callbacks and enclosing command dispatch.
+struct ObjectLifecycle {
+    IsleGameCallback retiring = nullptr, joined = nullptr;
+    void* user = nullptr;
+};
 // Concrete scene-owned native records. ResourceView, State, input/audio, game
 // and arena are borrowed stable owners. Destruction is outside OM traversal and
 // after actual graphics borrowers retire; all native processes are joined before
-// callback userdata/queues are recycled. No per-scene audio drain or scheduler.
+// callback userdata/queues are recycled. Pending external/manual dispatch must
+// finish before destruction; an unproven join/caller boundary terminates rather
+// than free live callback storage. No per-scene audio drain or scheduler.
 class Services final {
 public:
     Services(IsleGame*, isle_arena&, ResourceView, game_input::Service&,
@@ -65,6 +75,9 @@ public:
     IsleGameObject* object(std::uint32_t id, std::uint8_t update_link = 0,
                           std::uint32_t priority = 0x80000000u) noexcept;
     bool set_update(IsleGameObject*, IsleGameCallback, void*) noexcept;
+    // Registered live owners only, before Services erase/actual retirement.
+    // All-null clears the observers; rejection leaves the old observers intact.
+    bool set_lifecycle(IsleGameObject*, ObjectLifecycle) noexcept;
     bool set_command_handler(IsleGameObject*, IsleGameCommandHandler, void*) noexcept;
     bool process_commands(IsleGameObject* = nullptr) noexcept;
     bool send_command(IsleGameObject*, std::int32_t, IsleGameObject* source = nullptr) noexcept;

@@ -25,6 +25,35 @@ void check(bool condition, std::string_view meaning) {
     if (!condition) { ++failures; std::cerr << "FAIL: " << meaning << '\n'; }
 }
 std::uint32_t f(float value) { return std::bit_cast<std::uint32_t>(value); }
+bool same_transform(const a::Transform& x, const a::Transform& y) {
+    const auto same_vec = [](m::Vec3 v, m::Vec3 w) {
+        return f(v.x) == f(w.x) && f(v.y) == f(w.y) && f(v.z) == f(w.z);
+    };
+    return same_vec(x.position,y.position) && same_vec(x.rotation,y.rotation) && same_vec(x.scale,y.scale);
+}
+bool same_clock(const a::Clock& x, const a::Clock& y) {
+    return x.phase == y.phase && f(x.time_left) == f(y.time_left) &&
+        f(x.time_passed) == f(y.time_passed) && f(x.speed) == f(y.speed);
+}
+bool same_node(const a::NodeState& x, const a::NodeState& y) {
+    return same_transform(x.transform,y.transform) && x.parent == y.parent &&
+        x.first_material == y.first_material && x.material_count == y.material_count &&
+        x.flags == y.flags && x.revision == y.revision &&
+        x.callback_receiver == y.callback_receiver && same_clock(x.clock,y.clock);
+}
+bool same_material(const a::MaterialState& x, const a::MaterialState& y) {
+    if (x.resource != y.resource || x.image_index != y.image_index || x.next_image_index != y.next_image_index ||
+        f(x.palette_index) != f(y.palette_index) || f(x.lod_level) != f(y.lod_level) ||
+        x.color_and_trailing_words != y.color_and_trailing_words || x.word_4c != y.word_4c ||
+        x.revision != y.revision || !same_clock(x.clock,y.clock)) return false;
+    for (std::size_t i = 0; i < x.parameters.size(); ++i)
+        if (f(x.parameters[i]) != f(y.parameters[i])) return false;
+    return true;
+}
+bool same_event(const a::CallbackEvent& x, const a::CallbackEvent& y) {
+    return x.instance == y.instance && x.node == y.node && x.event_id == y.event_id &&
+        f(x.argument) == f(y.argument) && x.command_address == y.command_address && x.source_order == y.source_order;
+}
 struct Stream {
     std::vector<std::byte> bytes;
     std::vector<std::pair<std::size_t,std::size_t>> extents;
@@ -218,6 +247,274 @@ void rates_and_source_restart() {
     check(bool(r.step_model(fixture.instances[0])) && r.model(fixture.instances[0]).nodes[0].transform.position.x == 2,"source restart processes time0 with retained allocated tracks");
     check(bool(r.reset()) && r.model(fixture.instances[0]).nodes[0].transform.position.x == 99,"fresh reset differs from source restart field preservation");
 }
+void local_pose_authority_and_waits() {
+    Stream child;
+    child.cmd(15,7,0); child.cmd(16,0x103,0); child.cmd(2,0,64); child.cmd(0,0,0);
+    Stream texture;
+    texture.cmd(11,2,0,{f(2)}); texture.cmd(3,2,64,{f(130)}); texture.cmd(0,0,0);
+    std::array<std::byte,0x78> material_bytes{};
+    Fixture fixture;
+    fixture.models[0].nodes[0].animation = m::no_index;
+    auto descendant = fixture.models[0].nodes[0];
+    descendant.parent = 0;
+    descendant.animation = 0;
+    fixture.models[0].nodes.push_back(descendant);
+    fixture.models[0].nodes[0].materials = {0};
+    fixture.models[0].nodes[0].material_animations = {1};
+    fixture.materials.resize(1);
+    fixture.materials[0].wire = {0x7200,0,material_bytes};
+    fixture.animations = {child.view(m::AnimationKind::model,0x7300),
+                          texture.view(m::AnimationKind::texture,0x7400)};
+    const auto capacity = a::slot_capacity(fixture.models[0]);
+    const std::array<a::SlotCapacity,2> capacities{capacity,capacity};
+    auto made = a::Runtime::create({fixture.models,fixture.materials,fixture.animations},
+                                   capacities,fixture.initial_camera,{});
+    check(bool(made),"local-pose same-resource instance pool admitted"); if (!made) return;
+    auto& r = *made.runtime;
+    const auto acquired = r.acquire(0,0,true), other = r.acquire(1,0,true);
+    check(bool(acquired) && bool(other),"local-pose independent owners acquired"); if (!acquired || !other) return;
+    const auto h = acquired.handle, peer = other.handle;
+    check(bool(r.step_model(h)) && bool(r.set_object_flags(h,1)) && r.events().size() == 1,
+          "local-pose source wait leaves one borrowed child callback");
+    if (r.events().size() != 1) return;
+    const auto view = r.model(h);
+    const auto* nodes = view.nodes.data();
+    const auto* materials = view.materials.data();
+    const auto child_before = nodes[1], peer_root = r.model(peer).nodes[0], peer_child = r.model(peer).nodes[1];
+    const auto material_before = materials[0], peer_material = r.model(peer).materials[0];
+    const auto emitted = r.events();
+    const auto event = emitted[0];
+    const auto generation = r.generation();
+    a::Transform pose{{99,7,8},{0.25f,-0.5f,0.75f},{0,-2,1}};
+    auto expected_root = nodes[0];
+    expected_root.transform = pose;
+    ++expected_root.revision;
+    check(bool(r.set_node_transform(h,0,pose)) && same_node(nodes[0],expected_root) &&
+          same_node(nodes[1],child_before) && same_material(materials[0],material_before) &&
+          r.model(h).nodes.data() == nodes && r.model(h).materials.data() == materials &&
+          r.generation() == generation+1 && r.model(h).animation_time == view.animation_time &&
+          r.model(h).object_flags == 1 && r.events().data() == emitted.data() &&
+          r.events().size() == 1 && same_event(r.events()[0],event),
+          "local pose publishes in authoritative storage, dirtying only its node without consuming borrowed events");
+    const auto unchanged_generation = r.generation();
+    check(bool(r.set_node_transform(h,0,pose)) && r.generation() == unchanged_generation &&
+          same_node(nodes[0],expected_root) && r.events().size() == 1 && same_event(r.events()[0],event),
+          "bitwise-identical local pose leaves revisions, generation and pending callbacks unchanged");
+    bool hot_ok = true;
+    allocation_probe::count = 0;
+    allocation_probe::enabled = true;
+    // GAME common1003 changes root-local Y once before each of 59 source waits.
+    for (unsigned wait = 0; wait < 59; ++wait) {
+        pose.position.y -= 0.2f;
+        const auto revision = nodes[0].revision;
+        hot_ok &= bool(r.set_node_transform(h,0,pose)) && same_transform(nodes[0].transform,pose) &&
+                  nodes[0].revision == revision+1;
+        hot_ok &= bool(r.step_model(h)) && same_transform(nodes[0].transform,pose) &&
+                  nodes[0].revision == revision+1;
+    }
+    allocation_probe::enabled = false;
+    const auto allocations = allocation_probe::count;
+    check(hot_ok && nodes[0].clock.phase == a::Phase::disabled &&
+          nodes[1].clock.time_passed == 29.5f && nodes[1].clock.time_left == 34.5f &&
+          nodes[1].flags == 7 && nodes[1].callback_receiver && materials[0].parameters[0] == 61 &&
+          r.model(h).animation_time == 29.5f && r.model(h).object_flags == 1,
+          "59 source root-local decrements survive animation waits while child clocks and material tracks continue");
+    check(allocations == 0,"repeated local-pose mutation and source wait evaluation allocate no heap storage");
+    const auto root_before_child_write = nodes[0];
+    auto changed_child = nodes[1];
+    changed_child.transform.position = {3,4,5};
+    ++changed_child.revision;
+    const auto material_before_child_write = materials[0];
+    const auto before_child_generation = r.generation();
+    check(bool(r.set_node_transform(h,1,changed_child.transform)) && same_node(nodes[1],changed_child) &&
+          same_node(nodes[0],root_before_child_write) && same_material(materials[0],material_before_child_write) &&
+          r.generation() == before_child_generation+1,
+          "non-root local mutation selects exactly the requested node, preserving its active wait, flags and receiver");
+    check(same_node(r.model(peer).nodes[0],peer_root) && same_node(r.model(peer).nodes[1],peer_child) &&
+          same_material(r.model(peer).materials[0],peer_material) && r.model(peer).animation_time == 0 &&
+          r.model(peer).object_flags == 0,
+          "local writes and waiting animation never alter a second instance of the same immutable resource");
+}
+
+void local_pose_animation_overwrite_and_null_binding() {
+    Stream original;
+    original.cmd(15,7,0); original.cmd(11,16|32,0,{f(2),f(10)});
+    original.cmd(3,16|32,2,{f(6),f(18)}); original.cmd(0,0,0);
+    Stream retained;
+    retained.cmd(4,16,0,{f(40)}); retained.cmd(2,0,4); retained.cmd(0,0,0);
+    Fixture fixture;
+    fixture.models[0].animation_speed = 0.25f;
+    auto child = fixture.models[0].nodes[0];
+    child.parent = 0;
+    child.animation = m::no_index;
+    fixture.models[0].nodes.push_back(child);
+    fixture.animations = {original.view(m::AnimationKind::model,0x7500),
+                          retained.view(m::AnimationKind::model,0x7600)};
+    auto made = fixture.create();
+    check(bool(made),"local-pose animated override streams admitted"); if (!made) return;
+    auto& r = *made.runtime;
+    const auto h = fixture.instances[0];
+    check(bool(r.step_model(h)) && bool(r.step_model(h)) &&
+          r.model(h).nodes[0].transform.position.x == 2.5f &&
+          r.model(h).nodes[0].transform.position.y == 11,
+          "authored tracks advance on their original quarter-frame source clock");
+    const auto* nodes = r.model(h).nodes.data();
+    const auto child_before = nodes[1];
+    a::Transform pose{{400,-100,88},{2,-3,4},{-1,0,2}};
+    auto expected = nodes[0];
+    expected.transform = pose;
+    ++expected.revision;
+    const auto generation = r.generation();
+    const auto animation_time = r.model(h).animation_time;
+    check(bool(r.set_node_transform(h,0,pose)) && same_node(nodes[0],expected) &&
+          same_node(nodes[1],child_before) && r.generation() == generation+1 &&
+          r.model(h).animation_time == animation_time,
+          "animated local override preserves tracks' clocks, speed, receiver, flags and sibling state");
+    auto animated_pose = pose;
+    animated_pose.position.x = 3;
+    animated_pose.position.y = 12;
+    check(bool(r.step_model(h)) && same_transform(nodes[0].transform,animated_pose) &&
+          nodes[0].clock.time_passed == 0.5f && nodes[0].clock.time_left == 1.5f &&
+          nodes[0].clock.speed == 0.25f && nodes[0].revision == expected.revision+1,
+          "next animation publication overwrites only authored channels using retained targets, rates and elapsed clock");
+    const std::array<std::size_t,2> nulls{m::no_index,m::no_index};
+    check(bool(r.bind_model(h,nulls,3.5f)) && nodes[0].clock.phase == a::Phase::disabled &&
+          nodes[0].clock.time_passed == 0.5f && nodes[0].clock.time_left == 1.5f,
+          "source null binding disables animation without clearing the retained stream and tracks");
+    pose.position = {500,-200,89};
+    expected = nodes[0];
+    expected.transform = pose;
+    ++expected.revision;
+    check(bool(r.set_node_transform(h,0,pose)) && same_node(nodes[0],expected) &&
+          bool(r.step_model(h)) && bool(r.step_model(h)) && same_node(nodes[0],expected) &&
+          r.model(h).animation_time == 3.5f && same_node(nodes[1],child_before),
+          "null-bound local override persists across updates without advancing disabled clocks or restoring a hidden pose");
+    const std::array<std::size_t,2> rebound{1,m::no_index};
+    animated_pose = pose;
+    animated_pose.position.x = 7;
+    check(bool(r.bind_model(h,rebound,0.5f)) && bool(r.step_model(h)) &&
+          same_transform(nodes[0].transform,animated_pose) && nodes[0].clock.speed == 0.25f &&
+          nodes[0].clock.time_passed == 0.5f && nodes[0].callback_receiver && nodes[0].flags == 7,
+          "rebind after local/null writes inherits original target6 and rate2, not the overridden position or fresh tracks");
+    animated_pose.position.x = 7.5f;
+    check(bool(r.step_model(h)) && same_transform(nodes[0].transform,animated_pose) &&
+          nodes[0].clock.time_passed == 0.75f,
+          "zero-duration retained-rate animation continues normally after overriding and null-binding");
+}
+
+void local_pose_admission_atomicity_and_retirement() {
+    Stream stream;
+    stream.cmd(16,0x109,0); stream.cmd(2,0,1);
+    stream.cmd(16,0x20a,0); stream.cmd(2,0,1); stream.cmd(0,0,0);
+    std::array<std::byte,0x78> material_bytes{};
+    Fixture fixture;
+    fixture.models[0].receives_effect_callback = true;
+    auto child = fixture.models[0].nodes[0];
+    child.parent = 0;
+    child.animation = m::no_index;
+    fixture.models[0].nodes.push_back(child);
+    fixture.models[0].nodes[0].materials = {0};
+    fixture.materials.resize(1);
+    fixture.materials[0].wire = {0x7700,0,material_bytes};
+    fixture.materials[0].parameters = {2,3,4,5,6,7,8,9,10};
+    fixture.animations = {stream.view(m::AnimationKind::model,0x7800)};
+    auto made = fixture.create();
+    const std::array<a::SlotCapacity,1> capacity{a::slot_capacity(fixture.models[0])};
+    auto foreign = a::Runtime::create({fixture.models,fixture.materials,fixture.animations},capacity,{},{});
+    check(bool(made) && bool(foreign),"local-pose rejection pools admitted"); if (!made || !foreign) return;
+    auto& r = *made.runtime;
+    const auto h = fixture.instances[0];
+    const auto foreign_instance = foreign.runtime->acquire(0,0,true);
+    check(bool(foreign_instance),"local-pose wrong-pool owner acquired"); if (!foreign_instance) return;
+    check(bool(r.step_model(h)) && bool(r.set_object_flags(h,1)) && r.events().size() == 1,
+          "local-pose atomicity begins with live borrowed events");
+    if (r.events().size() != 1) return;
+    const auto* nodes = r.model(h).nodes.data();
+    const auto* materials = r.model(h).materials.data();
+    const auto maximum = std::numeric_limits<float>::max();
+    a::Transform finite{{maximum,-maximum,std::numeric_limits<float>::denorm_min()},
+                        {maximum,-maximum,1000000},{0,-2,-0.0f}};
+    const auto initial_generation = r.generation(), initial_revision = nodes[0].revision;
+    check(bool(r.set_node_transform(h,0,finite)) && same_transform(nodes[0].transform,finite) &&
+          nodes[0].revision == initial_revision+1 && r.generation() == initial_generation+1,
+          "source-state admission accepts full finite position/RPY and zero/negative scale without renderer quantization limits");
+    finite.scale.x = -0.0f;
+    check(bool(r.set_node_transform(h,0,finite)) && f(nodes[0].transform.scale.x) == f(-0.0f) &&
+          nodes[0].revision == initial_revision+2 && r.generation() == initial_generation+2,
+          "binary32 signed-zero changes are published and dirty the authoritative pose");
+    const auto generation = r.generation();
+    const std::array<a::NodeState,2> before{nodes[0],nodes[1]};
+    const auto material_before = materials[0];
+    const auto view = r.model(h);
+    const auto emitted = r.events();
+    const auto event = emitted[0];
+    const auto unchanged = [&] {
+        const auto current = r.model(h);
+        return r.generation() == generation && current.nodes.data() == nodes &&
+            current.materials.data() == materials && same_node(nodes[0],before[0]) &&
+            same_node(nodes[1],before[1]) && same_material(materials[0],material_before) &&
+            f(current.animation_time) == f(view.animation_time) && current.object_flags == view.object_flags &&
+            current.instance == h && current.resource_model == view.resource_model &&
+            r.events().data() == emitted.data() && r.events().size() == 1 && same_event(r.events()[0],event);
+    };
+    check(bool(r.set_node_transform(h,0,finite)) && unchanged(),
+          "same signed-zero pose is a no-op including frame generation and borrowed event storage");
+    a::Transform bad{{11,12,13},{14,15,16},{17,18,19}};
+    const std::array<float*,9> scalars{&bad.position.x,&bad.position.y,&bad.position.z,
+        &bad.rotation.x,&bad.rotation.y,&bad.rotation.z,&bad.scale.x,&bad.scale.y,&bad.scale.z};
+    bool atomic = true;
+    for (const auto invalid : {std::numeric_limits<float>::quiet_NaN(),
+                              std::numeric_limits<float>::infinity(),-std::numeric_limits<float>::infinity()})
+        for (auto* scalar : scalars) {
+            const auto value = *scalar;
+            *scalar = invalid;
+            atomic &= r.set_node_transform(h,0,bad).error == a::Error::malformed && unchanged();
+            *scalar = value;
+        }
+    bad.scale.z = std::numeric_limits<float>::quiet_NaN();
+    auto wrong_incarnation = h; ++wrong_incarnation.incarnation;
+    auto wrong_slot = h; wrong_slot.slot = 1;
+    atomic &= r.set_node_transform(h,2,bad).error == a::Error::extent && unchanged();
+    atomic &= r.set_node_transform(h,m::no_index,bad).error == a::Error::extent && unchanged();
+    atomic &= r.set_node_transform({},m::no_index,bad).error == a::Error::handle && unchanged();
+    atomic &= r.set_node_transform(foreign_instance.handle,0,bad).error == a::Error::handle && unchanged();
+    atomic &= r.set_node_transform(wrong_incarnation,0,bad).error == a::Error::handle && unchanged();
+    atomic &= r.set_node_transform(wrong_slot,0,bad).error == a::Error::handle && unchanged();
+    check(atomic,"all nine NaN/infinite scalars, late invalid input, extent, pool, slot and incarnation reject atomically with existing precedence");
+    check(bool(r.step_model(h)) && bool(r.step_model(h)) && r.events().size() == 1 &&
+          r.events()[0].source_order == event.source_order+1 && r.events()[0].event_id == 2 &&
+          r.events()[0].argument == 10 && same_transform(nodes[0].transform,finite),
+          "accepted/no-op/rejected local writes neither advance command cursors nor consume callback source order");
+    const auto retained_node = nodes[0];
+    check(bool(r.begin_retire(h)),"local-pose owner begins retirement");
+    const auto retiring_generation = r.generation();
+    check(r.set_node_transform(h,0,bad).error == a::Error::handle &&
+          r.set_node_transform(h,m::no_index,finite).error == a::Error::handle &&
+          r.generation() == retiring_generation && !r.model(h) && r.events().empty() &&
+          same_node(nodes[0],retained_node),
+          "retiring instance rejects local writes without touching retained owner storage");
+    // This pure animator fixture has no native, graphics or effect borrows.
+    check(bool(r.release_retired(h)),"local-pose pure owner releases retired storage");
+    const auto free_generation = r.generation();
+    check(r.set_node_transform(h,0,finite).error == a::Error::handle &&
+          r.generation() == free_generation && !r.model(h),
+          "released free slot rejects the old incarnation before any local publication");
+    const auto reacquired = r.acquire(0,0,true);
+    check(bool(reacquired),"local-pose slot reacquired after release"); if (!reacquired) return;
+    const auto fresh = r.model(reacquired.handle).nodes[0];
+    const auto reused_generation = r.generation();
+    check(r.set_node_transform(h,0,finite).error == a::Error::handle &&
+          r.generation() == reused_generation && same_node(r.model(reacquired.handle).nodes[0],fresh) &&
+          r.set_node_transform(reacquired.handle,0,fresh.transform) && r.generation() == reused_generation,
+          "stale handle cannot overwrite a reused slot, whose fresh identical pose remains clean");
+    r.retire();
+    const auto retired_generation = r.generation();
+    check(r.set_node_transform(reacquired.handle,0,finite).error == a::Error::retired &&
+          r.set_node_transform({},m::no_index,bad).error == a::Error::retired &&
+          r.generation() == retired_generation && r.events().empty(),
+          "whole-runtime retirement takes precedence and rejects local writes without publication");
+}
+
 void model_binding_switches_and_instances() {
     Stream original;
     original.cmd(15,7,0); original.cmd(11,16,0,{f(2)});
@@ -851,6 +1148,8 @@ int main() {
     persistent_linear_and_end(); cubic_wait_flags_and_zero_duration(); callbacks_receivers_and_atomic_errors();
     materials_and_camera(); rates_and_source_restart(); model_binding_switches_and_instances();
     texture_track_time_offset();
+    local_pose_authority_and_waits(); local_pose_animation_overwrite_and_null_binding();
+    local_pose_admission_atomicity_and_retirement();
     switched_callbacks_and_atomicity(); material_binding_null_and_initial_reset(); malformed_streams_reject_unpublished();
     explicit_pool_reuse_and_retirement();
     loop_timers_tracks_receivers_and_reuse();

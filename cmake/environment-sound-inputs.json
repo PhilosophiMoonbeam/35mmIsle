@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Own GAME scalar/control semantics only; independently authored native source-angle/environmental sound over the existing native engine/Services and real audio Session. No SDK bodies/headers/layouts, media payloads, Original runner or dirty source.",
+  "source_files": {
+    "src/app_level/envsound.c": {
+      "blob": "731b7c8664dac9b182bc2fe1d69ad60d6803e986",
+      "sha256": "4fb0a9ef8c17ae9e69250371c5f02b109fbd6645c2b1452f04d7aaa8c1a94c20",
+      "spans": [
+        [
+          15,
+          270
+        ]
+      ]
+    },
+    "src/app_level/trig.c": {
+      "blob": "3ac0785d95b4347e5fe922c71a957fc0a5757185",
+      "sha256": "3891f8359e33e260a56bc3541ef7df636b17483b6d2c976bc915faa1dbbe561f",
+      "spans": [
+        [
+          5,
+          44
+        ]
+      ]
+    },
+    "src/app_level/app_level.h": {
+      "blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "spans": [
+        [
+          127,
+          163
+        ]
+      ]
+    },
+    "src/beach/55C110.c": {
+      "blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "spans": [
+        [
+          145,
+          163
+        ]
+      ]
+    },
+    "include/enums.h": {
+      "blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "spans": [
+        [
+          254,
+          254
+        ],
+        [
+          300,
+          300
+        ]
+      ]
+    },
+    "src/app_level/4FE330.c": {
+      "blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761",
+      "spans": [
+        [
+          63,
+          114
+        ]
+      ]
+    }
+  },
+  "implementation": [
+    "src/source_angles.hpp",
+    "src/source_angles.cpp",
+    "src/environment_sound.hpp",
+    "src/environment_sound.cpp"
+  ],
+  "rom": {
+    "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "bytes": 16777216,
+    "descriptor_table": {
+      "guest": "0x802cbe10",
+      "ROM": "0x563e80",
+      "bytes": 212,
+      "descriptor_sha256": "768d3e523938b6b010f129554f82015830f22a924b61e5948b806101952dcd07"
+    },
+    "descriptor_count": 53,
+    "angle_table": {
+      "guest": "0x80393bf0",
+      "ROM": "0x534000",
+      "entries": 4097,
+      "bytes": 8194,
+      "sha256": "6644fa3b54fc883d7fd71c004a1c7786121a6c0b17840b37b82d661fc3554ac7",
+      "first": 0,
+      "last": 4096
+    },
+    "publication": "Only numeric metadata/hashes; no descriptor/table/sample/PCM bytes are public fixtures."
+  },
+  "contracts": {
+    "owner": "Serialized native OM/audio owner, update object400/link9/priority1 and synchronous process kind1/priority1; arena-linked free records grow only on cache miss. Real shared Session sound capacity10 is retained. Interrupt masking is replaced by existing serialized ownership, not an SDK wrapper.",
+    "sound": "Full8bit hearing cutoff occurs before category replacement; attenuation consumes low7 bits, highbit fixes front1/pan64 and skips later pan writes. Source atan2s ROM lookup and binary32 arithmetic determine camera-relative front volume and integer pan. Exact pitch switch0/default1,1=.8,2=.7,3=.75,4=.5. Category stores two bits but source matching uses the unmasked request.",
+    "angle": "4097 BEu16 table atguest80393bf0/ROM534000. Source quantizedzero, branch/quadrant mask7fff and binary32 minor*4096/major order, not hostatan2. Snapshot identity/move checks; finite-input policy and consumed float-to-s32 bounds leave output unchanged on rejection: abs(x) must fit, abs(y) only when abs(x)<1 because GAME's zero test short-circuits. Large finite y with abs(x)>=1 remains admitted. Not Original trig-bit parity.",
+    "retirement": "Caller stops or fixes source parameters before removing native source model/distance storage. Fix keeps uintptr comparison identity but clears all actor borrows, preserving source fixed-voice identity without dereference. Cleanup clears listener pointers only, never drains/stops voices. Environment joined observer handles actual external update-object deletion; destructor is outside OM. Source native lifecycle callbacks are not GPU/effect fences."
+  },
+  "verification": {
+    "cpu": "Final all44 GCCDebug raw6817/GCCRelease raw6814/ClangASanUBSan raw6818 contracts passed after native pose/lifecycle and source-angle correction. Private actual consumers compile separately and require the authorized ROM; no permanent media fixture.",
+    "actual_pcm": {
+      "root": "/home/bbferko/35mmisle-native-environment-shortcircuit-fixed-_jr_tps7",
+      "binary_sha256": "7f25fe2b3d172aedcc9b2e18ea216f388bf324a2518782983a6d0591bdfae947",
+      "source_archive_sha256": "06c16e821af1e8e2019887dd898e0a82c11428e5f6061a78f318b2abf62a55b0",
+      "returncode": 0,
+      "elapsed_seconds": 0.7012330429861322,
+      "rom_sha256_before": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+      "rom_sha256_after": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+      "initial_closed_tree": {
+        "terminal_count": 3,
+        "created_task_count": 2,
+        "absent_tracer_and_task_count": 4,
+        "all_tasks_absent": true,
+        "trace_identities_stable": true,
+        "rom_unchanged": true
+      },
+      "sole_initial_observation": {
+        "sole_initial_scan": true,
+        "whole_tree_closed_before_scan": true,
+        "known_physical_attempts": 0,
+        "permission_errors": 0,
+        "physical_hits": [],
+        "permission_hits": [],
+        "original_admission": false
+      },
+      "observed": {
+        "real_audio_RSP_tasks": 57,
+        "accepted_stereo_frames": 30496,
+        "right_energy": 6015957515,
+        "right_opposite": 0,
+        "reversed_left_energy": 10288608652,
+        "reversed_opposite": 0,
+        "fixed_left_energy": 8868274833,
+        "fixed_opposite": 0,
+        "native_pre_join_counts": [
+          1,
+          1
+        ],
+        "parked_source_continuations_actually_joined": 2,
+        "source_model_actually_removed": true,
+        "category_coexistence_replacement_stop_and_hearing_cutoff_order": true,
+        "source_shortcircuit_large_y_cases": true,
+        "source_consumed_overflow_rejects_unchanged": true,
+        "native_camera_large_finite_spatialization": true,
+        "no_physical_sink_or_hearing": true
+      },
+      "Original_or_Windows11_or_full_game_admission": false
+    },
+    "existing_application_and_world": "snap-engine-inputs.json native_support.src/engine.c.object_lifecycle.verification records the fresh925canonical/925LUS frame Startup/Name/Oak consumer and actual World8+4 RSP/RDP retirement regression.",
+    "source_shortcircuit_regression": {
+      "source": "Exact GAME trig.c12 casts abs(y) only after abs(x) truncates zero. An unconditional y bound rejected source-defined atan2s(2^31,1)=0x2000 and an admitted native camera direction.",
+      "failed_before": {"root": "native-angle-shortcircuit-before-7__th_3u", "binary_sha256": "5c3f5a68a35a4521cd19dbcea4af26935519d995cae8f7959abc2698be7472e6", "source_archive_sha256": "acf7f6faa802519555a4d25c4df5a0bc79310fc8a00393a6cac71f5b2c5f2e51", "seconds": 0.41904907597927377, "exit": 1, "closure": [1,0,2], "sole_physical_or_permission_hits": [0,0], "rom_unchanged": true, "accepted": false, "never_replay_or_partial_accept": true},
+      "passed_after": "actual_pcm above includes large positive/negative finite y and FLT_MAX with nonzero-truncating x, actually consumed overflowing conversion rejection preserving output, and nativecamera target(1,0,2^31) through real Environment.update before camera restoration and complete realRSP/PCM proof."
+    },
+    "review": "Independent source reviewer found the short-circuit domain bug; after actual failing-before reproduction and minimal conditional y-bound correction, static re-review accepted with no remaining finding/confidence.99. Independent lifecycle planner found no demonstrated in-contract code defect: retain serialized RAII/composed hooks, fixed pointer-comparison identity and cleanup without voice stop; clarify source/listener/resource lifetimes. Exceptional constructor/external-update-delete/reconstruction/environment-owner retained-fault paths are not separately runtime-qualified."
+  },
+  "limits": [
+    "Standalone source component, not integrated actor animation event routing or complete actor factory/FSM.",
+    "Actual PCM uses source0x34; real53 descriptor metadata contains pitch modes0/1/2 and no highbit nonspatial entries. All pitch/highbit branches are source-derived; independent actualPCM qualification of each branch is not claimed.",
+    "Authored native source/listener models are control inputs; not actual Pokemon geometry/render/factory/player integration.",
+    "No physical audio sink/hearing, hardware/LUS controller, Original numerical parity, Windows11 ROM execution or full-game completion."
+  ]
+}

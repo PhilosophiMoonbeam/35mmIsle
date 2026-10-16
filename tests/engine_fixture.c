@@ -2,9 +2,6 @@
 #include "../src/engine_internal.h"
 #include "../src/menu_scene_bridge.h"
 
-/* The selected game ABI uses this wait entry. It must reject synchronous use
- * without returning into the invalid callback or crossing a C++ exception. */
-void ohWait(int32_t updates);
 
 static void record(EngineFixture* fixture, int value) {
     if (fixture->count >= sizeof(fixture->events) / sizeof(fixture->events[0])) {
@@ -99,6 +96,7 @@ void engine_delete_self(IsleGameObject* object, void* user) {
     (void) object;
     record(fixture, 30);
     require_ok(fixture, isle_game_delete_object(fixture->game, NULL));
+    if (fixture->pre_retire_calls != 0 || fixture->retire_calls != 0) ++fixture->failures;
     record(fixture, 31);
     if (fixture->mode == 0) {
         require_ok(fixture, isle_game_wait(fixture->game, 1));
@@ -110,7 +108,7 @@ void engine_invalid_legacy_wait(IsleGameObject* object, void* user) {
     EngineFixture* fixture = user;
     (void) object;
     record(fixture, 60);
-    ohWait(1);
+    ohWait(fixture->mode == 1 ? -1 : 1);
     ++fixture->retired_continued;
 }
 
@@ -201,3 +199,113 @@ void engine_source_retired(IsleGameObject* object, void* user) {
     ++fixture->retire_calls;
     record(fixture, 450);
 }
+
+void engine_source_delete(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    record(fixture, 30);
+    omDeleteGObj(object);
+    if (fixture->pre_retire_calls != 0 || fixture->retire_calls != 0) ++fixture->failures;
+    record(fixture, 31);
+    ohWait(1);
+    ++fixture->retired_continued;
+}
+
+void engine_observe_retiring(IsleGameObject* object, void* user) {
+    EngineFixture* fixture = user;
+    size_t processes = 0, waiting = 0;
+    if (!object->alive || !object->retirementStarted || object->userData != fixture ||
+        object->type != 1 || object->data.model != fixture->model ||
+        !fixture->model->alive || fixture->model->obj != object ||
+        fixture->pre_retire_calls != 0 || fixture->retire_calls != 0) ++fixture->failures;
+    for (GObjProcess* process = object->processListHead; process != NULL; process = process->next)
+        ++processes;
+    if (processes != fixture->observed_process_count) ++fixture->failures;
+    for (size_t i = 0; i < fixture->observed_process_count; ++i) {
+        GObjProcess* process = fixture->observed_processes[i];
+        if (!process->alive || process->object != object) ++fixture->failures;
+        if (process->kind == ISLE_GAME_STACKFUL) {
+            IsleContinuationState state = ISLE_CONT_READY;
+            if (process->continuation == NULL ||
+                isle_continuation_state(process->continuation, &state) != ISLE_CONT_OK)
+                ++fixture->failures;
+            if (state == ISLE_CONT_WAITING) ++waiting;
+        }
+    }
+    if (waiting != fixture->waiting_processes) ++fixture->failures;
+    ++fixture->pre_retire_calls;
+    record(fixture, 451);
+}
+
+void engine_observe_joined(IsleGameObject* object, void* user) {
+    EngineFixture* fixture = user;
+    if (object->alive || object->type != 0 || object->data.any != NULL ||
+        object->processListHead != NULL || object->processListTail != NULL ||
+        object->userData != fixture || fixture->model->alive ||
+        fixture->pre_retire_calls != 1 || fixture->retire_calls != 0) ++fixture->failures;
+    for (size_t i = 0; i < fixture->observed_process_count; ++i) {
+        GObjProcess* process = fixture->observed_processes[i];
+        if (process->alive || process->continuation != NULL) ++fixture->failures;
+    }
+    ++fixture->retire_calls;
+    record(fixture, 452);
+}
+
+void engine_direct_delete(IsleGameObject* object) {
+    omDeleteGObj(object);
+}
+
+IsleGameResult engine_delete_corrupt_payload(IsleGameObject* object, int mode) {
+    IsleGameModel* model = object->data.model;
+    EngineFixture* fixture = object->userData;
+    IsleGame* game = object->game;
+    if (mode == 0) object->type = 4;
+    if (mode == 1) object->type = 0; /* Non-null payload is invalid for type zero. */
+    if (mode == 2) model->alive = false;
+    if (mode == 3) model->game = NULL;
+    if (mode == 4) model->obj = NULL;
+    IsleGameResult result = isle_game_delete_object(game, object);
+    if (!object->alive || object->retirementStarted || fixture->pre_retire_calls != 0 ||
+        fixture->retire_calls != 0) ++fixture->failures;
+    /* Restore only fixture-owned corruption so normal fault destruction can
+     * reclaim its real model and parked continuation; no production recovery. */
+    object->type = 1;
+    model->alive = true;
+    model->game = game;
+    model->obj = object;
+    return result;
+}
+
+int engine_object_alive(const IsleGameObject* object) { return object != NULL && object->alive; }
+int engine_model_alive(const IsleGameModel* model) { return model != NULL && model->alive; }
+int engine_process_alive(const IsleGameProcess* process) { return process != NULL && process->alive; }
+int engine_process_has_continuation(const IsleGameProcess* process) {
+    return process != NULL && process->continuation != NULL;
+}
+int engine_process_waiting(const IsleGameProcess* process) {
+    IsleContinuationState state = ISLE_CONT_READY;
+    return engine_process_alive(process) && process->continuation != NULL &&
+        isle_continuation_state(process->continuation, &state) == ISLE_CONT_OK && state == ISLE_CONT_WAITING;
+}
+int engine_process_joined(const IsleGameProcess* process) {
+    return process != NULL && !process->alive && process->continuation == NULL;
+}
+void* engine_object_update_context(const IsleGameObject* object) { return object->updateUser; }
+void engine_set_actor_payload(IsleGameObject* object, void* payload) { object->userData = payload; }
+size_t engine_object_process_count(const IsleGameObject* object) {
+    size_t count = 0;
+    for (const GObjProcess* process = object->processListHead; process != NULL; process = process->next) ++count;
+    return count;
+}
+int engine_model_before_join(const IsleGameObject* object, const IsleGameModel* model,
+                            const void* payload, const void* context, float root_y) {
+    return object->alive && object->retirementStarted && object->userData == payload &&
+        object->updateUser == context && object->type == 1 && object->data.model == model &&
+        model->alive && model->obj == object && model->nodes[0].transform.position.y == root_y;
+}
+int engine_model_after_join(const IsleGameObject* object, const IsleGameModel* model,
+                           const void* payload, const void* context) {
+    return !object->alive && object->type == 0 && object->data.any == NULL && !model->alive &&
+        object->processListHead == NULL && object->processListTail == NULL &&
+        object->userData == payload && object->updateUser == context;
+}
+void engine_delete_object_direct(IsleGameObject* object) { omDeleteGObj(object); }

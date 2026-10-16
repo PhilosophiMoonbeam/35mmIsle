@@ -73,6 +73,18 @@ void consume_animations(const b::ActorResources& resources) {
                     "Actual zero-speed header must retain its evaluated model time");
         }
     }
+    for (const auto& initialization:resources.initializations()) if (initialization.actor_id==1003) {
+        const auto handle=instances[initialization.model];
+        float expected=runtime.model(handle).nodes[0].transform.position.y;
+        for (unsigned remaining=59;remaining;--remaining) {
+            auto transform=runtime.model(handle).nodes[0].transform;
+            transform.position.y-=0.2f;
+            expected-=0.2f;
+            require(bool(runtime.set_node_transform(handle,0,transform)) && bool(runtime.step_model(handle)) &&
+                    runtime.model(handle).nodes[0].transform.position.y==expected,
+                    "Actual common1003 animation overwrote its59 source root-local path writes");
+        }
+    }
     // Pure animator events are retained/validated, not dispatched to sound/FX.
     // No native actor factory, behavior, process, renderer or retirement claim.
 }

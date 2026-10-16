@@ -145,6 +145,11 @@ public:
     std::size_t slot_count() const noexcept;
     std::uint64_t generation() const noexcept;
     Status set_object_flags(InstanceHandle, std::uint32_t flags) noexcept;
+    // Source local-pose writes share the authoritative animation state. All nine
+    // scalars must be finite; zero/negative scale and full finite RPY are valid.
+    // Bitwise changes (including signed zero) dirty only this node and Runtime;
+    // tracks/clocks/bindings/flags and borrowed events remain untouched.
+    Status set_node_transform(InstanceHandle, std::size_t node, const Transform&) noexcept;
     // Source animSet semantics: clear track kinds but retain allocated track
     // values/rates and current fields/flags; skip is source skipFrames.
     Status restart_model(InstanceHandle, float skip_frames = 0) noexcept;

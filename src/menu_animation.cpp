@@ -9,7 +9,7 @@
 
 // GAME semantic authority df8815e75f3d79618466e01e0827c6165b93d11c:
 // sys/anim.c:106-214,217-1200,1270-1347,1617-1691,2016-2366;
-// sys/om.c:965-1093; app_level/pokemon.c:320-400.
+// sys/om.c:965-1093; app_level/pokemon.c:320-400; app_level/4FE330.c:79-93.
 // Original native implementation. No GAME/SDK object layout or producer import.
 // Compile without fast-math and with FP contraction disabled: binary32 expression
 // grouping differs intentionally between model/material and camera cubic paths.
@@ -749,6 +749,26 @@ Status Runtime::set_object_flags(InstanceHandle h, std::uint32_t flags) noexcept
     if (impl_->retired) return {Error::retired,0};
     if (!impl_->valid(h)) return {Error::handle,0};
     impl_->models[h.slot].flags = flags;
+    return {};
+}
+Status Runtime::set_node_transform(InstanceHandle h, std::size_t node, const Transform& transform) noexcept {
+    auto& s = *impl_;
+    if (s.retired) return {Error::retired,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    auto& m = s.models[h.slot];
+    if (node >= m.nodes.size()) return {Error::extent,0};
+    if (!std::isfinite(transform.position.x) || !std::isfinite(transform.position.y) ||
+        !std::isfinite(transform.position.z) || !std::isfinite(transform.rotation.x) ||
+        !std::isfinite(transform.rotation.y) || !std::isfinite(transform.rotation.z) ||
+        !std::isfinite(transform.scale.x) || !std::isfinite(transform.scale.y) ||
+        !std::isfinite(transform.scale.z)) return {Error::malformed,0};
+    auto& n = m.nodes[node];
+    if (!same(n.transform.position,transform.position) || !same(n.transform.rotation,transform.rotation) ||
+        !same(n.transform.scale,transform.scale)) {
+        n.transform = transform;
+        ++n.revision;
+        ++s.generation;
+    }
     return {};
 }
 Status Runtime::restart_model(InstanceHandle h, float skip) noexcept {

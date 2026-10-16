@@ -59,10 +59,13 @@ struct GObj {
     IsleGameCallback update;
     void* updateUser; /* Native callback context, never GAME actor data. */
     void* userData;   /* GAME entity payload; allocation/reuse clears it. */
+    IsleGameCallback retiring;
+    void* preRetireUser;
     IsleGameCallback retired;
     void* retireUser;
     IsleGame* game;
     bool alive;
+    bool retirementStarted;
 };
 
 struct SObj {

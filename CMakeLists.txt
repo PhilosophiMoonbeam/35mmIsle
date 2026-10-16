@@ -219,6 +219,13 @@ if(TARGET isle-rom-snapshot)
     target_link_libraries(isle-game-audio PUBLIC isle-audio isle-rom-snapshot)
     isle_target_options(isle-game-audio)
 
+    add_library(isle-source-angles STATIC src/source_angles.cpp src/source_angles.hpp)
+    target_link_libraries(isle-source-angles PUBLIC isle-rom-snapshot)
+    isle_target_options(isle-source-angles)
+    target_compile_options(isle-source-angles PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
     add_library(isle-menu-resources STATIC src/menu_resources.cpp src/menu_resources.hpp)
     target_include_directories(isle-menu-resources PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(isle-menu-resources PUBLIC isle-rom-snapshot isle-sprite isle-vpk0)
@@ -299,6 +306,10 @@ if(ISLE_BUILD_GAME_ENGINE)
             isle-engine isle-sprite-producer isle-game-state isle-game-audio)
         isle_target_options(isle-scene)
 
+        add_library(isle-environment-sound STATIC src/environment_sound.cpp src/environment_sound.hpp)
+        target_link_libraries(isle-environment-sound PUBLIC isle-scene isle-source-angles)
+        isle_target_options(isle-environment-sound)
+
         add_library(isle-menu-scene STATIC
             src/menu_title_scene.cpp src/menu_title_scene.hpp
             src/menu_ui_scene.cpp src/menu_ui_scene.hpp
@@ -337,7 +348,7 @@ if(ISLE_BUILD_GAME_ENGINE)
         isle_target_options(isle-world)
 
         foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
-                isle-new-game-scene isle-oaks-lab-scene isle-world)
+                isle-new-game-scene isle-oaks-lab-scene isle-world isle-environment-sound)
             target_compile_options(${_isle_source_math_target} PRIVATE
                 "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
                 "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
@@ -540,6 +551,7 @@ if(BUILD_TESTING)
             add_test(NAME ${_isle_scene_test}-tests COMMAND ${_isle_scene_test}-tests)
             set_tests_properties(${_isle_scene_test}-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
         endforeach()
+        target_sources(scene-services-tests PRIVATE tests/engine_fixture.c)
         foreach(_isle_window_test IN ITEMS memory text element widgets)
             add_executable(window-${_isle_window_test}-tests tests/window_${_isle_window_test}_tests.cpp)
             target_link_libraries(window-${_isle_window_test}-tests PRIVATE isle-window)
@@ -651,6 +663,12 @@ if(TARGET isle-rsp AND TARGET isle-game-audio)
     add_executable(game-audio-rsp-smoke tests/game_audio_rsp_smoke.cpp)
     target_link_libraries(game-audio-rsp-smoke PRIVATE isle-game-audio isle-graphics-task isle-rsp)
     isle_target_options(game-audio-rsp-smoke)
+endif()
+if(TARGET isle-rsp AND TARGET isle-environment-sound)
+    add_executable(environment-sound-rsp-smoke tests/environment_sound_rsp_smoke.cpp)
+    target_link_libraries(environment-sound-rsp-smoke PRIVATE
+        isle-environment-sound isle-graphics-task isle-rsp)
+    isle_target_options(environment-sound-rsp-smoke)
 endif()
 if(TARGET isle-canonical-executor AND TARGET isle-menu-resources)
     add_executable(menu-effects-rsp-smoke tests/menu_effects_rsp_smoke.cpp)

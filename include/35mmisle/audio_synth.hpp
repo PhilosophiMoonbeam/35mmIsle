@@ -158,7 +158,13 @@ public:
     Error complete(TaskToken, bool terminal_execution_succeeded, PcmView&) noexcept;
     Error release(TaskToken) noexcept;
     Error reset() noexcept; // Quiescent; invalidates descriptors/registrations, not serials.
+    // Quiescent GAME effects recreation. All creation/rate checks precede any
+    // mutation; successful reset owns the new program and preserves RAM/serials.
+    Error reset(effects::Config) noexcept;
     bool has_lease() const noexcept;
+    // No task/PCM lease, pending parameter events or physical DSP/steal users.
+    // Logical player descriptors may remain registered; effects tails persist.
+    bool voices_retired() const noexcept;
     Error read_pcm(const PcmView&, std::uint32_t frame,
                    std::int16_t& left, std::int16_t& right) const noexcept;
     Error copy_pcm(const PcmView&, std::span<std::int16_t>) const noexcept;

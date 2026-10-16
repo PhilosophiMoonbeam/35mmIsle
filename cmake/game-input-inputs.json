@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Payload-free provenance for the original platform-independent isle::game_input native controller service and menu derivation. This is the controller sampling/publication protocol, not a controller hardware/accessory implementation or a claim of full startup/gameplay/platform fidelity. No GAME producer bodies, SDK headers/layouts, assets or ROM payloads are distributed here.",
+  "native_files": [
+    "include/35mmisle/game_input.hpp",
+    "src/game_input.cpp",
+    "tests/game_input_tests.cpp"
+  ],
+  "source_files": {
+    "src/sys/cont.c": {
+      "git_blob": "316613e1bdffa6c2bf0267a6ecf9cfd7321594bf",
+      "sha256": "f479b86af9e6ae45c87ebf32a40dc454891f8aecf8cebdffcbb7d9b00cf0d96b",
+      "facts": [
+        "46-61 own-GAME controller state has raw buttons, edges, three OR accumulators, signed stick bytes and per-port countdown parameters.",
+        "171-184 healthy physical indices are ascending; unused entries are -1. 328-333 scalar globals always alias physical port zero, not first connected controller.",
+        "267-307 each successful read computes XOR press/release edges. Any changed button resets the countdown and held to newly pressed buttons; unchanged input repeats after 30 reads and then every 5 reads. Axes are unfiltered signed bytes. Failed reads update error but retain raw state and all accumulators; a read still makes publication pending.",
+        "310-336 publication writes healthy pads and clears only their accumulators; unhealthy pads retain even previously published edge fields. Reconnect compares retained buttons without synthesizing release/press events. Native explicit host identities are preserved as metadata, never substituted for physical port indices.",
+        "422-443 initialize delay/countdown30, interval5, zero pad state and no pending publication/waiter, with every-tick reads enabled. Native reentry restores complete initialized/BSS state rather than leaking prior session accumulators.",
+        "458-467 and 643-684 distinguish fresh read-and-publish from update-existing-or-wait. Fresh completion acknowledges only its own request even if an older update is waiting. Parameter changes do not reset an active countdown. Every-tick disable does not acknowledge an awaiting publication.",
+        "741-778 an enabled retrace reads even without a pending gameplay update; only a waiting update causes immediate retrace publication and acknowledgment. Presentation acceptance is not part of this protocol. Hardware accessory detection branches are not implemented, probed or represented as successful native accessory operations."
+      ]
+    },
+    "src/app_render/53AD0.c": {
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "facts": [
+        "39-45 and 489-495 initialize cache false, per-bit filter delay36/interval12/mask0, sequence0, scale0 and zeroed BSS per-port menu history. Initial notPressed is actually zero, not an invented all-ones initializer.",
+        "func_800AAE28 scene-entry reset zeros only the menu derivation sequence and per-bit delay clocks. It preserves repeat intervals/settings, current cached menu/history and every live read/publication ticket; the next real OM boundary invalidates the cache normally.",
+        "712-734 filter24 buttons independently for configured mask bits; unmasked buttons pass unchanged. Pressed/released menu edges derive from the filtered current mask and retained complement, not cont.c's accumulated edges/held field.",
+        "736-807 divides signed axes by unsuffixed double80.0, stores float, clamps +/-1, then compares the stored float promoted to double against unsuffixed +/-0.3 and +/-0.7. Therefore +/-24 qualifies as slow because float(24/80) exceeds double0.3, while +/-56 does not qualify as fast because float(56/80) is below double0.7; +/-57 does. No float-threshold replacement or integer dead-zone shortcut is used.",
+        "742-747 invalid physical indices return existing port-zero cache without computing. First valid menu query derives all four physical ports once. 797-807 uses zeroed complement history and advances one sequence per derivation. 836-838 explicitly invalidates at update boundary, independently of controller publication.",
+        "844-850 scale query is stored value times8 and setter integer-divides by8. 856-866 set per-bit filter delay/interval/mask. Native replay uses the same typed acquisition path rather than GAME's separate unsigned-axis scripted override at754-758."
+      ]
+    },
+    "include/sys/cont.h": {
+      "git_blob": "ba5f7dfb8f8bdd9138b6928b131e24b675d61f56",
+      "sha256": "fd4f46e43ec0698d98dacb65b57b3e3016bc2745d7657508376b35b1b26e442d",
+      "bytes": 897,
+      "facts": "7-14 own-GAME ControllerInput semantic values: buttons, pressed, held, released are 16-bit; X/Y are signed8. Read only this GAME value declaration and public function/global names; no included SDK header was opened or used. Exact blob staged privately from pinned Git object, not a worktree. Native Pad is semantic C++ storage and makes no foreign ABI-layout claim."
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "facts": "213-223 own-GAME menu record has sequence, two float axes, zero extra axis and current/pressed/released/complement button masks. Native MenuInput retains these semantic values without claiming host/guest layout equivalence."
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "facts": "411-420 own-GAME slow-up/down/right/left are bits16..19; fast-up/down/right/left bits20..23."
+    }
+  },
+  "native_ownership": {
+    "gameplay": "Exactly one serialized Service owner, never freely concurrent gameplay or snapshots. Retrace and fresh-read events issue typed owner/generation/serial ReadToken values; only matching four-port completion can read/publish. Request tickets are acknowledged only by real publication. stop returns each accepted outstanding ticket exactly once as cancellation, never success; old/foreign/duplicate completions cannot publish. Generation/serial exhaustion is an explicit error, not wraparound.",
+    "acquisition": "Main thread acquires actual host/LUS four-port samples in response to read requests. Present requires explicit nonzero host identity; absence is explicit, errors are actual per-port metadata. No fabricated accessory/card/rumble status is accepted or produced. Deterministic replay supplies the same typed samples/events.",
+    "transfer": "Optional HostTransfer contains exactly two fixed-capacity16 SPSC rings, one for read requests and one for completions. Release/acquire publishes fixed values. Full means explicit backpressure; no dropping, overwrite, latest-only coalescing or completion fabrication. One producer and consumer per ring; retain/retry failed pushes. Construct before owners start and destroy after both join; scene reentry never resets live transport. No per-frame allocations.",
+    "capabilities": "Controller samples only. Required rumble, Controller Pak, Transfer Pak and printer operations return unsupported, not mute/no-op success. Host adapters decide how to supply truthful connection/error identity; native service performs no hardware probes."
+  },
+  "tests": "Boundary/transition tests cover accumulated press-release, delay30/interval5 and changed-button reset, all four indices and signed axes, empty/error/disconnect/reconnect retention, cache behavior and floating ties, deferred versus fresh read acknowledgment, every-tick disable, explicit stop cancellation/reentry fencing, presentation-independent transfer, bounded backpressure and ring wrap. A two-thread1024-read acquisition scenario exercises both SPSC rings while only gameplay mutates Service. Source changes were not built or run by the worker."
+}

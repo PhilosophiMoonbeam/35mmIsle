@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Original native canonical-byte state/session service derived from GAME field and startup-policy facts. No imported GAME function bodies, SDK implementation/header/layout, assets, ROM payload or parallel serialization. Complete inspected GAME sources remain private. This manifest is provenance, not a redistribution grant or fidelity qualification.",
+  "source_files": {
+    "src/more_funcs/5BF20.c": {
+      "git_blob": "a223a8933886f1b2b9ebf77c72aab51225474791",
+      "sha256": "ce66ec4b0fbab3ee4161b6f2713f57dce59853c652592c2b9d715baa1211e333",
+      "ranges": [[30, 116], [143, 164], [195, 201], [239, 256], [307, 315], [366, 558], [602, 683]],
+      "facts": "All sixteen version bytes and digest validation; missing-state zero fill; 69 report plus four temporary photo invalid sentinels; 60 album sentinels; source PFID10 bit set; horizontal/vertical encoded defaults 76/36; four 32-bit relative offsets; source game-time word; source settings/progress clamping; independently consumed initialization notices. Explicit C042C reset is RAM-only: BF1F0 copies version bytes without hashing or durable writing; separate BF244 sets time, hashes and writes. Native reset shares the complete initializer, seals canonical bytes, preserves generation/Store lock/old snapshots and existing startup notices, and clears transient PFID15/course notice. Rejected or frozen profiles cannot reset. Corrupt originals were reset by GAME, but native admission deliberately preserves them and requires explicit recovery instead."
+    },
+    "src/more_funcs/more_funcs.h": {
+      "git_blob": "4593047e93cf51e09173c8e6aad023379b6c6137",
+      "sha256": "0c30accdb69f15d3978b8717dd683db60785277226b22a6c82f4f2b385681da8",
+      "ranges": [[18, 65]],
+      "facts": "GAME canonical wire offsets, field counts and bitfield order only; no native raw-host-struct serialization. Exact object staged separately in the worker's private artifact, never read from the dirty worktree."
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "ranges": [[225, 271], [324, 331]],
+      "facts": "16-byte source name, 0x3a0-byte photo wire records, 32 BE16 album characters and 0x3e0-byte album stride. Photo views are structural wire bytes, not authorization for replay."
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "ranges": [[32, 55]],
+      "facts": "Source player-flag IDs 0 through 21, including transient RAM-only PFID15."
+    },
+    "src/main_menu/A08E30.c": {
+      "git_blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+      "ranges": [[188, 190], [1103, 1118]],
+      "facts": "Confirmed explicit menu reset invokes E1CAC then C042C and returns source menu state 6; this callchain performs no durable write."
+    },
+    "src/AA0650.c": {
+      "git_blob": "d6263d3d6e1ff1f913e7620d402ed70c4d399acc",
+      "sha256": "62e01867df443487283155a3c8d07d01c4922b7425c3788d2033ec4ef2ad43bf",
+      "ranges": [[122, 136]],
+      "facts": "Logo invokes save startup within its concurrent minimum-hold sequence; save service does not force scene completion."
+    },
+    "src/app_render/46270.c": {
+      "git_blob": "bf53f3078a567ac78df51d3ee8d5e6f9fa17c135",
+      "sha256": "152884a39d0621dbbaafb57f292089048014efe70784cd03a72b70a57871d8c7",
+      "ranges": [[238, 258]],
+      "facts": "Post-logo sound-quality PFID9 and decoded screen offsets precede source main-menu scene selection."
+    }
+  },
+  "native_support": {
+    "include/35mmisle/game_save.hpp": "Owning immutable canonical snapshots and checked, serialized native session API; no raw GAME/SDK struct exposure.",
+    "src/game_save.cpp": "Original native initializer shared by missing-profile startup and explicit RAM-only reset, source-field access/mutation, copy-on-write lifetime ownership and existing Store commit policy; reset avoids copying bytes that will be replaced. All image/envelope hashing and durable serialization remain in existing save_image/save_store.",
+    "tests/game_save_tests.cpp": "Authored canonical field oracle and actual private-file default/commit/cold-reload/corruption/future/conflict/ownership/indeterminate-publication cases; explicit reset proves retained snapshots/notices/lock, no implicit persistence, and two real durable generations with exact cold-reset defaults. Rejected and frozen reset attempts preserve bytes. No external profiles or protected payload."
+  },
+  "integration": {
+    "library": "isle-game-save",
+    "sources": ["src/game_save.cpp"],
+    "public_link_libraries": ["isle-save-store", "isle-save-image"],
+    "public_include_directory": "include",
+    "language_standard": "cxx_std_20",
+    "test_source": "tests/game_save_tests.cpp",
+    "test_executable": "game-save-tests",
+    "test_arguments": "Optional existing owned parent directory; tests create fresh unique child profiles and never open an external profile.",
+    "verification": "Not run by worker; parent owns builds, tests and actual integration smoke."
+  }
+}

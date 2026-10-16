@@ -6,6 +6,7 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace isle::beach {
 namespace {
@@ -240,8 +241,12 @@ Command DisplayList::command(std::size_t index) const {
     if (index >= command_count()) throw std::out_of_range("Beach display-list command index");
     return {wire.u32(index * 8), wire.u32(index * 8 + 4)};
 }
-StartResources::StartResources(const rom::Snapshot& snapshot)
-    : snapshot_(&snapshot), source_data_(snapshot.canonical().data()) {
+WorldDescriptors world_descriptors(const rom::Snapshot& snapshot) {
+    WorldDescriptors decoded{};
+    auto& world_ = decoded.world;
+    auto& sky_ = decoded.sky;
+    auto& primary_ = decoded.primary;
+    auto& secondary_ = decoded.secondary;
     require(snapshot.canonical().size() == rom::us_size && snapshot.identity().size == rom::us_size &&
             snapshot.identity().sha1 == admitted_sha1,
             "Beach start resources require live admitted US Snapshot");
@@ -261,7 +266,7 @@ StartResources::StartResources(const rom::Snapshot& snapshot)
     world_.secondary_table_wire = group(snapshot, b.u32(4), secondary_);
     require(!primary_.empty() && primary_.size() + secondary_.size() < max_blocks,
             "Invalid Beach block group sizes");
-    const auto& first = start_block();
+    const auto& first = primary_.front();
     require(first.gfx_wire.guest_address == 0x8011cd50 && first.display_list_guest == 0x8011cf00 &&
             first.render_callback_guest == 0x800a1530 && first.materials_guest == 0 &&
             first.texture_animation_guest == 0,
@@ -275,6 +280,14 @@ StartResources::StartResources(const rom::Snapshot& snapshot)
     require(sky_.wire.guest_address == 0x8011b940 && sky_.display_list_guest == 0x8011cc28 &&
             sky_.render_callback_guest == 0x800e1ca4 && sky_.materials_guest == 0 && sky_.animation_guest == 0,
             "Beach sky selection requires an unadmitted callback or dynamic resource producer");
+    return decoded;
+}
+StartResources::StartResources(const rom::Snapshot& snapshot)
+    : snapshot_(&snapshot), source_data_(snapshot.canonical().data()) {
+    auto decoded = world_descriptors(snapshot);
+    world_ = decoded.world; sky_ = decoded.sky;
+    primary_ = std::move(decoded.primary); secondary_ = std::move(decoded.secondary);
+    const auto& first = start_block();
 
     Closure closure(snapshot, lists_, vertices_, images_);
     closure.root(first.display_list_guest);

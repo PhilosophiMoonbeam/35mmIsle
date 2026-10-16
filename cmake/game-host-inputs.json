@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "implementation": ["src/game_host.hpp", "src/game_host.cpp"],
+  "use": "Complete bounded platform owner for a caller-owned native scene lifecycle. Not a product entry point, a renamed diagnostic probe, a gameplay scene registry, a physical-device qualification, or a whole-game port.",
+  "upstream": {
+    "repository": "https://github.com/Kenix3/libultraship.git",
+    "revision": "759b13401cd6903daa67a00a753066f791622e78",
+    "existing_adaptation": "cmake/patches/lus-host-lifetime.patch, applied only to the existing immutable build-private LUS snapshot by cmake/Libultraship.cmake",
+    "patterns_reused_without_API_changes": ["src/host_probe.cpp", "src/model_preview.cpp", "src/audio_transport.cpp"],
+    "read_boundaries": [
+      "src/fast/Fast3dWindow.cpp:27-78,78-140,162-214",
+      "src/fast/Fast3dGui.cpp:53-63,117-149,151-226",
+      "src/fast/interpreter.cpp:4987-5037",
+      "src/fast/backends/gfx_sdl.cpp:332-472,541-550,638-691,800-814",
+      "src/ship/window/gui/Gui.cpp:50-148,153-157",
+      "src/libultraship/controller/controldeck/ControlDeck.cpp:10-79",
+      "src/libultraship/controller/controldevice/controller/Controller.cpp:24-75",
+      "src/ship/controller/controldeck/ControlDeck.cpp:29-56,84-113",
+      "src/ship/config/Config.cpp:15-18,202-224",
+      "src/ship/config/ConsoleVariable.cpp:251-287"
+    ],
+    "resource_scope": "Only real pinned MIT LUS OpenGL shader support resources mounted by the existing host renderer-resources CMake contract. No ROM/game art is copied into the public tree or mounted as an LUS archive. No Nintendo/SGI SDK producer implementation/header or opaque SDK object layout is imported. The GBI surface is the existing pinned MIT LUS public host ABI."
+  },
+  "GAME_source": {
+    "repository": "https://github.com/ethteck/pokemonsnap.git",
+    "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+    "files": {
+      "src/sys/vi.c": {
+        "git_blob": "3ce0baf687d8a7a323f1123cffc84dd90743616b",
+        "sha256": "c4f53eb8065a7355a7455789a24a7383926d4281e123f6cb172e9751a31f09c1",
+        "facts": "69-86 viSetScreenOffsets owns actual global left/right/top/bottom VI edges, then copies those edges into scheduler VI tasks. This exact git object was read, never dirty worktree/generated assets."
+      },
+      "src/sys/sched.c": {
+        "git_blob": "05ba775a6cfa9984f7e8a064ef3077555694d364",
+        "sha256": "1e4290cb7a8c7c8632e7202d86bc05463a617a26344f1352f65dfd067ea062e5",
+        "facts": "410-418 both vertical edges rounded down to even half-lines and vertical scale uses480;445-479 real horizontal/vertical start edges translated;506 horizontal scale uses640. Equal left/right offsets translate without changing scale. At native320x240, x=horizontal/2 pixel and y=(vertical rounded down to even)/2 pixel, including negative odd offsets. Presentation changes its rectangle/clip/texture coordinates, never a GAME camera.843-858 independent scheduler retraces and861-865 separate actual audio SP completion remain distinct."
+      },
+      "src/main_menu/A0E190.c": {
+        "git_blob": "2ce023756684bab6c9c060d6f7c00e24e9297406",
+        "sha256": "53aafbde96043e94c417d2eaba8c02acdaa2de07164b0e5bcde1858f74524995",
+        "facts": "121-196 calibration previews real global VI offsets every source update;Start zero/A accept/B restore, clamp+-12. Caller passes the live Runtime/Graphics screen_offsets with each completed copied surface."
+      }
+    },
+    "audio_provenance": "cmake/game-audio-inputs.json and cmake/pidgey-resource-inputs.json describe exact admitted main/BSS/boot resources. Reuse production graphics::validate_cold_inputs/install_cold_inputs, not audio_probe_fixture or a fixture Session. The main CPU image is inert data; only the checked RSP executes."
+  },
+  "platform": {
+    "owner": "Exclusive single SDL main-thread owner. Actual Context, product Config, ConsoleVariable, ThreadPool, ResourceManager, Console, guarded Fast3dGui, Fast3dWindow, optional actual LUS ControlDeck and UltraBridge. No extra qualification window or hidden backend retry is created.",
+    "product_data": "SDL_GetPrefPath(35mmIsle,35mmIsle), or an explicit native filesystem directory; actual persistent 35mmIsle.json plus owned ImGui ini/log paths. Normal pinned LUS Config/CVar/window persistence is used; no null-backed config, export mirror, process-CWD changes or 8.3 aliases.",
+    "Windows_paths": "Every native path crossing the pinned LUS narrow stream/archive boundary is explicitly encoded using path.u8string(). Windows requires GetACP()==CP_UTF8 before acquisition. Actual executable must embed activeCodePage=UTF-8; parent owns that fusion-manifest/CMake integration. SDL UTF8 preference paths and renderer-resource literals enter native filesystem paths with u8path. No locale-dependent path.string() conversion.",
+    "Windows_authority": "https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page (read2026-10-16): process UTF8 fusion manifest supported1903+, CP_ACP==CP_UTF8 with manifest; Windows11 target exceeds this floor. No Windows runtime execution is claimed.",
+    "partial_acquisition": "Required existing exact-pin lifetime adaptation guards interpreter/window teardown. GUI platform/renderer shutdown is gated on actual acquired ImGui backend data. SDL partial initialization is balanced; all controller backreferences, bridge caches, GUI windows, resources and worker owners are released. First operational failure remains immutable through cleanup."
+  },
+  "input": {
+    "normal": "Real ControlDeck Init and WriteToPad. All four logical source ports carry the actual LUS controller-bit mask, actual OSContPad.err_no/buttons/sticks and actual acquired Controller owner pointer identity. LUS aggregates keyboard/mouse/gamepads, so the pointer identifies that real logical acquisition owner, not a fabricated physical SDL instance or port+1. No invented physical gamepad identity is claimed.",
+    "blocked_or_failed": "Two fixed alternate pad destinations detect WriteToPad returning before an actual read when all input is blocked: GetPads must identify the current destination. Exception or actual SDL-reported read error gives completed=false and retained fatal message; caller must not complete/acknowledge an input request. Actual per-port err_no is propagated. Host never calls Service.begin_update or publishes/acknowledges a Service token itself.",
+    "diagnostic_disabled": "Explicit Config.input=diagnostic_disabled. SDL_INIT_GAMEPAD omitted, no ControlDeck constructed/initialized, keyboard/mouse acquisition callback event types disabled, ImGui SDL3 set to Manual gamepad mode with an empty device set before first NewFrame. Returns a completed all-ABSENT frame with identity0 and controller_bits0, never a synthetic connected controller. Does not qualify hardware."
+  },
+  "presentation": {
+    "input": "One completed tightly packed320x240 RGBA8 const byte span, stride1280, plus live ScreenOffsets. Compatible with startup::graphics::Completed.rgba/screen_offsets. Source span is needed only during queue_present; no native/RAM/preparation borrow survives the synchronous copy.",
+    "ownership": "One alignas64 preallocated307200-byte tile store and2048 preallocated native GBI commands.75 independent64x16 RGBA32 tiles, point/clamp one-cycle DECALRGBA and opaque surface rendering; never RGBA32 COPY. No per-frame vector/PCM/command allocation or host-frame copy queue. Black VI-exterior clear and clipped texture coordinates preserve half-pixel horizontal and source-rounded vertical translations.",
+    "backpressure": "Actual DrawAndRunGraphicsCommands false retains exactly the copied bytes and commands until real success or explicit cancel. queue_present cannot overwrite a pending frame. Presentation does not acquire input, notify retrace, tick a scene or produce audio.",
+    "fence": "Actual glFinish after successful draw, before texture address reuse/cache deletion and before final cache clear/window destruction. LUS OpenGL FinishRender is not treated as a GPU fence. Caller separately fences/retire actual canonical graphics RSP/RDP/CPU readback before the next Runtime.tick. Host owns copied pixels, not that mandatory graphics lease."
+  },
+  "audio": {
+    "initialization": "Checked SdlAudioOutput at native S16 stereo32006 with bounded source queue (default4096, must hold maximum1024-frame source block), exact selected physical endpoint/no driver or device fallback. game_audio::hydrate plus native_startup_effects creates the actual default8-section graph and real Session. No manually asserted ready flag or Null consumer.",
+    "executor": "Session initialize installs validated admitted GAME main ROM0x1000..0x46270 to RAM0x400, clears only source BSS0x45670..0x9a8c0, installs actual boot at0x107000 and constructs a real rsp::Machine borrowing that exact stable AudioService RAM. Session creation verifies the actual borrower. Snapshot is borrowed only during create; owned256-byte canonical boot survives. No whole-RAM replacement/copy.",
+    "task": "Public numeric audio type2/flags0 task, boot0x107000/0x100, text0x3d980/0x1000, data0x44ba0/0x800, actual published command address/count, unused fields zero. Bounded10000000 block-entry execution; actual SP0x203, zero packets/packet_words/full_syncs required. Unexpected DPC rejects the task. Every published token gets actual success/failure/cancellation completion even on exceptions or post-build errors.",
+    "output": "Required callbacks adapt existing SdlAudioOutput inspect, try_submit, finish_input, poll_drain. Accepted reports the whole synchronously SDL-owned prefix; WouldBlock reports0 and retains the exact Session PCM/scratch lease. No extra PCM buffer, conversion or copy is added. Fatal endpoint message wins before subsequent cleanup calls.",
+    "clock": "notify_retrace(ordinal,monotonic_ns) is independent of events/presentation. pump_audio performs at most one real RSP task and nonblocking copy submission. Session owns native AI ledger/fractional carry/one-message coalescing; SDL queue bytes are never guest AI. Caller must serialize every graphics/audio RSP execution because RSP internals are globally serialized.",
+    "stop": "stop_audio requests real client release, then caller continues actual independent retraces and pump_audio until Session drains. poll_audio_drain observes only checked flushed SDL input/output exhaustion, not DAC/hearing completion. shutdown destroys completed PCM ownership, retires Machine before Session service RAM, closes actual stream/watch before LUS/backend SDL lifetime ends. Pending output is explicitly CloseDisposition::aborted, never fabricated drained."
+  },
+  "integration": {
+    "language": "C++20",
+    "include_directories": ["src", "include"],
+    "required_libraries": ["isle-game-audio", "isle-audio-output", "isle-game-input", "isle-graphics-task", "isle-rsp", "isle-rom-snapshot", "pinned libultraship/SDL3/OpenGL host dependencies"],
+    "compile_contract": ["F3DEX_GBI_2", "integer GBI vertices (no GBI_FLOATS)", "ISLE_HOST_RENDERER_RESOURCES native UTF8 string literal", "existing isle_target_options strict-f32/no-fast-math/FMA-reassociation policy", "actual Windows executable embedded activeCodePage=UTF-8 fusion manifest"],
+    "parent_ownership": "CMake target wiring, actual startup driver/SceneManager, CLI/product cutover, source clock, source input Service publication/acknowledgement, async canonical graphics wait/poll and required one-source complete-wave validation. Host exposes real audio Session only after successful create. No host SceneDone/gameplay stub is supplied."
+  },
+  "qualification": {
+    "worker_builds_tests_linters_formatters_feature_executables": false,
+    "worker_physical_ALSA_DRM_gamepad_audio_probes": false,
+    "parent_source_complete_wave_required": true,
+    "excluded": ["whole game/course port", "physical hardware tested", "DAC/hearing or real AI parity", "Windows runtime qualification", "new Original evidence", "numerical W12 audio parity", "full-product cutover"]
+  }
+}

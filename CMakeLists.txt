@@ -76,7 +76,8 @@ endif()
 
 function(isle_target_options target)
     if(MSVC)
-        target_compile_options(${target} PRIVATE /W4 /utf-8 /fp:strict
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:C,CXX>:/W4;/utf-8;/fp:strict>"
             "$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
             "$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>")
     else()
@@ -85,7 +86,8 @@ function(isle_target_options target)
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-Wall;-Wextra;-Wpedantic;-Wconversion;-Wshadow;-fno-fast-math;-ffp-contract=off>")
     endif()
     if(ISLE_ENABLE_SANITIZERS)
-        target_compile_options(${target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:C,CXX>:-fsanitize=address,undefined;-fno-omit-frame-pointer;-fno-sanitize-recover=all>")
         target_link_options(${target} PRIVATE -fsanitize=address,undefined -fno-sanitize-recover=all)
     endif()
 endfunction()
@@ -99,6 +101,10 @@ target_compile_options(isle-native PRIVATE
 
 add_library(isle-host-clock STATIC src/host_clock.cpp src/host_clock.hpp)
 isle_target_options(isle-host-clock)
+
+add_library(isle-game-input STATIC src/game_input.cpp include/35mmisle/game_input.hpp)
+target_include_directories(isle-game-input PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-game-input)
 
 add_library(isle-photo-feedback STATIC src/photo_feedback.cpp include/35mmisle/photo_feedback.hpp)
 target_include_directories(isle-photo-feedback PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -164,6 +170,12 @@ add_library(isle-sprite STATIC src/sprite.cpp include/35mmisle/sprite.hpp includ
 target_include_directories(isle-sprite PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-sprite)
 
+add_library(isle-sprite-producer STATIC src/sprite_producer.cpp src/sprite_producer.hpp
+    src/sprite_raster.cpp src/sprite_raster.hpp)
+target_include_directories(isle-sprite-producer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+target_link_libraries(isle-sprite-producer PUBLIC isle-sprite)
+isle_target_options(isle-sprite-producer)
+
 add_library(isle-audio-bank STATIC
     src/audio_bank.cpp src/audio_sequence.cpp
     include/35mmisle/audio_bank.hpp include/35mmisle/audio_sequence.hpp)
@@ -174,6 +186,11 @@ add_library(isle-audio-sequence STATIC src/audio_cseq.cpp include/35mmisle/audio
 target_link_libraries(isle-audio-sequence PUBLIC isle-audio-bank)
 isle_target_options(isle-audio-sequence)
 
+add_library(isle-game-state STATIC src/game_state.cpp src/game_state.hpp)
+target_include_directories(isle-game-state PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+target_link_libraries(isle-game-state PUBLIC isle-game-save isle-game-input isle-native)
+isle_target_options(isle-game-state)
+
 add_library(isle-save-image STATIC
     src/save_image.cpp src/save_hash.hpp include/35mmisle/save_image.hpp)
 target_include_directories(isle-save-image PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -183,6 +200,10 @@ add_library(isle-save-store STATIC src/save_store.cpp include/35mmisle/save_stor
 target_link_libraries(isle-save-store PUBLIC isle-save-image)
 isle_target_options(isle-save-store)
 
+add_library(isle-game-save STATIC src/game_save.cpp include/35mmisle/game_save.hpp)
+target_link_libraries(isle-game-save PUBLIC isle-save-store)
+isle_target_options(isle-game-save)
+
 add_library(isle-audio STATIC
     src/audio_catalog.cpp src/audio_synth_math.cpp src/audio_synth.cpp src/audio_effects.cpp
     src/audio_service.cpp src/audio_sfx.cpp src/audio_csp.cpp src/audio_synth_internal.hpp
@@ -191,6 +212,27 @@ add_library(isle-audio STATIC
     include/35mmisle/audio_csp.hpp include/35mmisle/audio_effects.hpp)
 target_link_libraries(isle-audio PUBLIC isle-audio-sequence)
 isle_target_options(isle-audio)
+
+if(TARGET isle-rom-snapshot)
+    add_library(isle-game-audio STATIC src/game_audio.cpp src/game_audio.hpp)
+    target_include_directories(isle-game-audio PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(isle-game-audio PUBLIC isle-audio isle-rom-snapshot)
+    isle_target_options(isle-game-audio)
+
+    add_library(isle-menu-resources STATIC src/menu_resources.cpp src/menu_resources.hpp)
+    target_include_directories(isle-menu-resources PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(isle-menu-resources PUBLIC isle-rom-snapshot isle-sprite isle-vpk0)
+    isle_target_options(isle-menu-resources)
+
+    add_library(isle-menu-animation STATIC src/menu_animation.cpp src/menu_animation.hpp
+        src/menu_animation_path.cpp)
+    target_link_libraries(isle-menu-animation PUBLIC isle-menu-resources)
+    isle_target_options(isle-menu-animation)
+
+    add_library(isle-menu-effects STATIC src/menu_effects.cpp src/menu_effects.hpp)
+    target_link_libraries(isle-menu-effects PUBLIC isle-menu-resources isle-native)
+    isle_target_options(isle-menu-effects)
+endif()
 
 # This remains only the read-only identity CLI; the host probe is a separate opt-in.
 add_executable(35mmisle-rom src/rom_main.cpp)
@@ -214,6 +256,7 @@ endif()
 include(CTest)
 if(ISLE_BUILD_GAME_ENGINE)
     include(cmake/SnapEngine.cmake)
+    target_sources(isle-engine PRIVATE src/menu_scene_bridge.c src/menu_scene_bridge.h)
     if(TARGET isle-pidgey-resources)
         add_library(isle-pidgey-producer STATIC src/pidgey_producer.cpp src/pidgey_producer.hpp)
         target_link_libraries(isle-pidgey-producer PUBLIC
@@ -229,6 +272,65 @@ if(ISLE_BUILD_GAME_ENGINE)
         target_compile_options(isle-beach-world-producer PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-menu-resources)
+        add_library(isle-menu-model-producer STATIC
+            src/menu_model_producer.cpp src/menu_model_producer.hpp)
+        target_link_libraries(isle-menu-model-producer PUBLIC
+            isle-engine isle-menu-animation isle-graphics-task)
+        isle_target_options(isle-menu-model-producer)
+
+        add_library(isle-scene STATIC
+            src/scene_resources.hpp src/scene_storage.cpp src/scene_storage.hpp
+            src/scene_services.cpp src/scene_services.hpp)
+        target_include_directories(isle-scene PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+        target_link_libraries(isle-scene PUBLIC
+            isle-engine isle-sprite-producer isle-game-state isle-game-audio)
+        isle_target_options(isle-scene)
+
+        add_library(isle-menu-scene STATIC
+            src/menu_title_scene.cpp src/menu_title_scene.hpp
+            src/menu_ui_scene.cpp src/menu_ui_scene.hpp
+            src/startup_runtime.cpp src/startup_runtime.hpp)
+        target_link_libraries(isle-menu-scene PUBLIC
+            isle-scene isle-menu-model-producer isle-menu-effects)
+        isle_target_options(isle-menu-scene)
+
+        add_library(isle-window STATIC
+            src/window_memory.cpp src/window_memory.hpp
+            src/window_resources.cpp src/window_resources.hpp
+            src/window_element.cpp src/window_element.hpp
+            src/window_text.cpp src/window_text.hpp
+            src/window_widgets.cpp src/window_widgets.hpp src/window_widget_math.hpp
+            src/window_layout.cpp)
+        target_link_libraries(isle-window PUBLIC isle-scene isle-menu-resources isle-photo-lighting)
+        isle_target_options(isle-window)
+
+        add_library(isle-new-game-scene STATIC src/new_game_scene.cpp src/new_game_scene.hpp)
+        target_link_libraries(isle-new-game-scene PUBLIC isle-window)
+        isle_target_options(isle-new-game-scene)
+
+        add_library(isle-oaks-lab-scene STATIC src/oaks_lab_scene.cpp src/oaks_lab_scene.hpp
+            src/oaks_lab_resources.cpp src/oaks_lab_resources.hpp)
+        target_link_libraries(isle-oaks-lab-scene PUBLIC isle-window)
+        isle_target_options(isle-oaks-lab-scene)
+
+        add_library(isle-world STATIC
+            src/world_resources.cpp src/world_resources.hpp
+            src/world_collision.cpp src/world_collision.hpp
+            src/world_runtime.cpp src/world_runtime.hpp
+            src/world_movement.cpp src/world_movement.hpp
+            src/world_producer.cpp src/world_producer.hpp)
+        target_link_libraries(isle-world PUBLIC isle-scene isle-menu-animation
+            isle-beach-world-resources isle-menu-model-producer isle-graphics-task)
+        isle_target_options(isle-world)
+
+        foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
+                isle-new-game-scene isle-oaks-lab-scene isle-world)
+            target_compile_options(${_isle_source_math_target} PRIVATE
+                "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+                "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        endforeach()
     endif()
     if(ISLE_BUILD_HOST_PROBE)
         target_sources(35mmisle-host-probe PRIVATE src/intro_probe.cpp src/intro_probe.h)
@@ -257,6 +359,11 @@ if(BUILD_TESTING)
     target_link_libraries(host-clock-tests PRIVATE isle-host-clock)
     isle_target_options(host-clock-tests)
     add_test(NAME host-clock-tests COMMAND host-clock-tests)
+
+    add_executable(game-input-tests tests/game_input_tests.cpp)
+    target_link_libraries(game-input-tests PRIVATE isle-game-input Threads::Threads)
+    isle_target_options(game-input-tests)
+    add_test(NAME game-input-tests COMMAND game-input-tests)
 
     add_executable(rom-tests tests/rom_tests.cpp)
     target_link_libraries(rom-tests PRIVATE isle-rom)
@@ -331,6 +438,11 @@ if(BUILD_TESTING)
     isle_target_options(save-store-tests)
     add_test(NAME save-store-tests COMMAND save-store-tests)
 
+    add_executable(game-save-tests tests/game_save_tests.cpp)
+    target_link_libraries(game-save-tests PRIVATE isle-game-save)
+    isle_target_options(game-save-tests)
+    add_test(NAME game-save-tests COMMAND game-save-tests)
+
     add_executable(audio-catalog-tests tests/audio_catalog_tests.cpp)
     target_link_libraries(audio-catalog-tests PRIVATE isle-audio)
     isle_target_options(audio-catalog-tests)
@@ -346,8 +458,100 @@ if(BUILD_TESTING)
     isle_target_options(audio-service-tests)
     add_test(NAME audio-service-tests COMMAND audio-service-tests)
 
+    add_executable(sprite-producer-tests tests/sprite_producer_tests.cpp)
+    target_link_libraries(sprite-producer-tests PRIVATE isle-sprite-producer)
+    isle_target_options(sprite-producer-tests)
+    add_test(NAME sprite-producer-tests COMMAND sprite-producer-tests)
+
+    if(TARGET isle-game-audio)
+        add_executable(game-audio-tests tests/game_audio_tests.cpp)
+        target_link_libraries(game-audio-tests PRIVATE isle-game-audio)
+        isle_target_options(game-audio-tests)
+        add_test(NAME game-audio-tests COMMAND game-audio-tests)
+        set_tests_properties(game-audio-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    endif()
+    if(TARGET isle-menu-animation)
+        add_executable(menu-animation-tests tests/menu_animation_tests.cpp)
+        target_link_libraries(menu-animation-tests PRIVATE isle-menu-animation)
+        isle_target_options(menu-animation-tests)
+        add_test(NAME menu-animation-tests COMMAND menu-animation-tests)
+        set_tests_properties(menu-animation-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+
+        add_executable(menu-animation-rom-smoke tests/menu_animation_rom_smoke.cpp)
+        target_link_libraries(menu-animation-rom-smoke PRIVATE isle-menu-animation)
+        isle_target_options(menu-animation-rom-smoke)
+        add_executable(menu-effects-private-tests tests/menu_effects_tests.cpp)
+        target_link_libraries(menu-effects-private-tests PRIVATE isle-menu-effects)
+        isle_target_options(menu-effects-private-tests)
+    endif()
+    if(TARGET isle-menu-model-producer)
+        add_executable(menu-model-tests tests/menu_model_tests.cpp)
+        target_link_libraries(menu-model-tests PRIVATE isle-menu-model-producer)
+        isle_target_options(menu-model-tests)
+        add_test(NAME menu-model-tests COMMAND menu-model-tests)
+        set_tests_properties(menu-model-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+        add_executable(menu-ui-tests tests/menu_ui_tests.cpp)
+        target_link_libraries(menu-ui-tests PRIVATE isle-menu-scene)
+        isle_target_options(menu-ui-tests)
+        add_test(NAME menu-ui-tests COMMAND menu-ui-tests)
+        add_executable(menu-scene-bridge-tests tests/menu_scene_bridge_tests.cpp)
+        target_link_libraries(menu-scene-bridge-tests PRIVATE isle-engine)
+        target_include_directories(menu-scene-bridge-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+        isle_target_options(menu-scene-bridge-tests)
+        add_test(NAME menu-scene-bridge-tests COMMAND menu-scene-bridge-tests)
+        set_tests_properties(menu-ui-tests menu-scene-bridge-tests
+            PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    endif()
+    add_executable(game-state-tests tests/game_state_tests.cpp)
+    target_link_libraries(game-state-tests PRIVATE isle-game-state)
+    isle_target_options(game-state-tests)
+    add_test(NAME game-state-tests COMMAND game-state-tests)
+    set_tests_properties(game-state-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    if(TARGET isle-scene)
+        foreach(_isle_scene_test IN ITEMS scene-storage scene-services)
+            string(REPLACE "-" "_" _isle_scene_test_source "${_isle_scene_test}")
+            add_executable(${_isle_scene_test}-tests tests/${_isle_scene_test_source}_tests.cpp)
+            target_link_libraries(${_isle_scene_test}-tests PRIVATE isle-scene)
+            isle_target_options(${_isle_scene_test}-tests)
+            add_test(NAME ${_isle_scene_test}-tests COMMAND ${_isle_scene_test}-tests)
+            set_tests_properties(${_isle_scene_test}-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+        endforeach()
+        foreach(_isle_window_test IN ITEMS memory text element widgets)
+            add_executable(window-${_isle_window_test}-tests tests/window_${_isle_window_test}_tests.cpp)
+            target_link_libraries(window-${_isle_window_test}-tests PRIVATE isle-window)
+            isle_target_options(window-${_isle_window_test}-tests)
+            add_test(NAME window-${_isle_window_test}-tests COMMAND window-${_isle_window_test}-tests)
+            set_tests_properties(window-${_isle_window_test}-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+        endforeach()
+        add_executable(new-game-scene-tests tests/new_game_scene_tests.cpp)
+        target_link_libraries(new-game-scene-tests PRIVATE isle-new-game-scene)
+        isle_target_options(new-game-scene-tests)
+        add_test(NAME new-game-scene-tests COMMAND new-game-scene-tests)
+        set_tests_properties(new-game-scene-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+        foreach(_isle_world_test IN ITEMS runtime collision)
+            add_executable(world-${_isle_world_test}-tests tests/world_${_isle_world_test}_tests.cpp)
+            target_link_libraries(world-${_isle_world_test}-tests PRIVATE isle-world)
+            isle_target_options(world-${_isle_world_test}-tests)
+            add_test(NAME world-${_isle_world_test}-tests COMMAND world-${_isle_world_test}-tests)
+            set_tests_properties(world-${_isle_world_test}-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+        endforeach()
+        add_executable(window-resources-rom-smoke tests/window_resources_rom_smoke.cpp)
+        target_link_libraries(window-resources-rom-smoke PRIVATE isle-window)
+        isle_target_options(window-resources-rom-smoke)
+        add_executable(world-resources-rom-smoke tests/world_resources_rom_smoke.cpp)
+        target_link_libraries(world-resources-rom-smoke PRIVATE isle-world)
+        isle_target_options(world-resources-rom-smoke)
+        add_executable(oaks-lab-scene-tests tests/oaks_lab_scene_tests.cpp)
+        target_link_libraries(oaks-lab-scene-tests PRIVATE isle-oaks-lab-scene)
+        isle_target_options(oaks-lab-scene-tests)
+        add_test(NAME oaks-lab-scene-tests COMMAND oaks-lab-scene-tests)
+        set_tests_properties(oaks-lab-scene-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    endif()
+
     # All executables use explicit failure checks, including in Release builds.
     set_tests_properties(native-tests photo-feedback-tests host-clock-tests rom-tests vpk0-tests process-tests message-queue-tests continuation-tests sprite-tests audio-bank-tests audio-sequence-tests audio-cseq-tests audio-sfx-tests audio-csp-tests audio-effects-tests audio-catalog-tests audio-synth-tests audio-service-tests save-image-tests save-store-tests
+        PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    set_tests_properties(game-input-tests game-save-tests sprite-producer-tests
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 
@@ -384,7 +588,8 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE)
         isle_target_options(35mmisle-rsp-probe)
         if(ISLE_BUILD_RDP_PROBE)
             add_library(isle-canonical-executor STATIC src/rsp_render.cpp src/rsp_render.hpp)
-            target_link_libraries(isle-canonical-executor PUBLIC isle-rsp isle-rsp-packets PRIVATE isle_parallel_rdp)
+            target_link_libraries(isle-canonical-executor PUBLIC isle-rsp isle-rsp-packets
+                PRIVATE isle_parallel_rdp Threads::Threads)
             isle_target_options(isle-canonical-executor)
             if(TARGET isle-pidgey-producer)
                 add_library(isle-pidgey-feedback STATIC src/pidgey_feedback.cpp src/pidgey_feedback.hpp)
@@ -418,6 +623,31 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE)
     endif()
 endif()
 
+if(TARGET isle-rsp AND TARGET isle-game-audio)
+    add_executable(game-audio-rsp-smoke tests/game_audio_rsp_smoke.cpp)
+    target_link_libraries(game-audio-rsp-smoke PRIVATE isle-game-audio isle-graphics-task isle-rsp)
+    isle_target_options(game-audio-rsp-smoke)
+endif()
+if(TARGET isle-canonical-executor AND TARGET isle-menu-resources)
+    add_executable(menu-effects-rsp-smoke tests/menu_effects_rsp_smoke.cpp)
+    target_link_libraries(menu-effects-rsp-smoke PRIVATE
+        isle-menu-effects isle-canonical-executor isle-rsp-fixture)
+    isle_target_options(menu-effects-rsp-smoke)
+    add_executable(sprite-producer-rom-smoke tests/sprite_producer_rom_smoke.cpp)
+    target_link_libraries(sprite-producer-rom-smoke PRIVATE
+        isle-sprite-producer isle-menu-resources isle-graphics-task isle-canonical-executor)
+    isle_target_options(sprite-producer-rom-smoke)
+endif()
+if(TARGET isle-canonical-executor AND TARGET isle-menu-model-producer)
+    add_executable(menu-model-rsp-smoke tests/menu_model_rsp_smoke.cpp)
+    target_link_libraries(menu-model-rsp-smoke PRIVATE
+        isle-menu-model-producer isle-canonical-executor)
+    isle_target_options(menu-model-rsp-smoke)
+    add_executable(world-producer-rsp-smoke tests/world_producer_rsp_smoke.cpp)
+    target_link_libraries(world-producer-rsp-smoke PRIVATE isle-world isle-canonical-executor)
+    isle_target_options(world-producer-rsp-smoke)
+endif()
+
 if(ISLE_BUILD_AUDIO_PROBE)
     find_package(SDL3 3.4.2 REQUIRED CONFIG COMPONENTS SDL3)
     add_library(isle-audio-output STATIC src/audio_transport.cpp include/35mmisle/audio_transport.hpp)
@@ -438,6 +668,46 @@ if(ISLE_BUILD_AUDIO_PROBE)
         target_sources(35mmisle-host-probe PRIVATE src/audio_host_probe.cpp src/audio_host_probe.hpp)
         target_link_libraries(35mmisle-host-probe PRIVATE isle-audio-probe-support isle-audio-output)
         target_compile_definitions(35mmisle-host-probe PRIVATE ISLE_HAS_AUDIO_PROBE=1)
+    endif()
+endif()
+
+if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
+    add_library(isle-scene-graphics STATIC src/scene_graphics.cpp src/scene_graphics.hpp src/scene_render.hpp)
+    target_link_libraries(isle-scene-graphics PUBLIC
+        isle-menu-scene isle-sprite-producer isle-graphics-task isle-canonical-executor)
+    isle_target_options(isle-scene-graphics)
+endif()
+if(TARGET libultraship AND TARGET isle-audio-output AND TARGET isle-rsp AND TARGET isle-game-audio)
+    add_library(isle-game-host STATIC src/game_host.cpp src/game_host.hpp)
+    target_compile_definitions(isle-game-host PRIVATE F3DEX_GBI_2
+        CVAR_ENABLE_MULTI_VIEWPORTS="${CVAR_ENABLE_MULTI_VIEWPORTS}"
+        ISLE_HOST_RENDERER_RESOURCES="${ISLE_HOST_RENDERER_RESOURCES}")
+    target_link_libraries(isle-game-host PUBLIC isle-game-audio isle-game-input isle-audio-output
+        PRIVATE libultraship isle-graphics-task isle-rsp isle-continuation Threads::Threads)
+    isle_target_options(isle-game-host)
+endif()
+if(WIN32 AND TARGET isle-game-host)
+    enable_language(RC)
+endif()
+
+if(TARGET isle-scene-graphics AND TARGET isle-game-host)
+    # Explicit private-ROM scenario, never a ROM-free CTest or installed game.
+    add_executable(35mmisle-startup-runtime-rom-smoke tests/startup_runtime_rom_smoke.cpp)
+    target_sources(35mmisle-startup-runtime-rom-smoke PRIVATE
+        tests/new_game_scene_rom_smoke.cpp tests/oaks_lab_scene_rom_smoke.cpp)
+    target_link_libraries(35mmisle-startup-runtime-rom-smoke PRIVATE isle-scene-graphics isle-game-host
+        isle-host-clock isle-new-game-scene isle-oaks-lab-scene)
+    isle_target_options(35mmisle-startup-runtime-rom-smoke)
+    if(WIN32)
+        target_sources(35mmisle-startup-runtime-rom-smoke PRIVATE src/game_host.rc)
+        target_include_directories(35mmisle-startup-runtime-rom-smoke PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+        set_source_files_properties(src/game_host.rc PROPERTIES
+            OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/game_host.manifest")
+        if(MSVC)
+            target_link_options(35mmisle-startup-runtime-rom-smoke PRIVATE /MANIFEST:NO)
+        elseif(MINGW)
+            target_link_options(35mmisle-startup-runtime-rom-smoke PRIVATE -municode)
+        endif()
     endif()
 endif()
 

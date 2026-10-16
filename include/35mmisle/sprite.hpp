@@ -47,6 +47,8 @@ private:
     explicit Sprite(std::shared_ptr<const Storage> storage) noexcept;
     std::shared_ptr<const Storage> storage_;
     friend HydrateResult hydrate(BankOwner, std::uint32_t, std::uint32_t) noexcept;
+    friend HydrateResult hydrate_bitmaps(BankOwner, std::uint32_t, const IsleSprite&,
+                                         std::uint32_t, std::size_t) noexcept;
 };
 
 struct HydrateResult {
@@ -78,6 +80,14 @@ struct HydrateResult {
 // not malformed texture data. Aliased non-NULL canonical buffers remain aliases.
 HydrateResult hydrate(BankOwner bank, std::uint32_t canonical_base,
                       std::uint32_t root_address) noexcept;
+
+// Rebind an admitted native template to an explicit bounded GAME Bitmap table.
+// Reuses the same format/extent/termination/palette decoder as hydrate; it does
+// not synthesize or patch an opaque wire Sprite. Template palette bytes, when
+// present, must belong to bank. Returned native descriptors retain that bank.
+HydrateResult hydrate_bitmaps(BankOwner bank, std::uint32_t canonical_base,
+                              const IsleSprite& prototype, std::uint32_t bitmap_address,
+                              std::size_t bitmap_count) noexcept;
 
 struct NormalizeResult {
     Error error = Error::none;

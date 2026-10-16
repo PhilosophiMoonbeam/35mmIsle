@@ -626,6 +626,47 @@ void normalization_boundaries() {
     }
 }
 
+void native_template_bitmap_rebinding() {
+    Fixture fixture;
+    fixture.bitmap(1, 3, 4, Fixture::address(Fixture::texels + 8), 1);
+    auto owner = fixture.owner();
+    std::weak_ptr<const Bank> weak = owner;
+    auto root = isle::sprite::hydrate(owner, Fixture::base, Fixture::address(Fixture::root));
+    check(static_cast<bool>(root), "native-template fixture admits its original root");
+    if (!root) return;
+    const auto prototype = *root.asset.view();
+    auto rebound = isle::sprite::hydrate_bitmaps(owner, Fixture::base, prototype,
+        Fixture::address(Fixture::descriptors + 16), 1);
+    check(static_cast<bool>(rebound), "explicit standalone GAME bitmap table admits without wire-root patching");
+    if (!rebound) return;
+    check(rebound.asset.view()->x == prototype.x && rebound.asset.view()->alpha == prototype.alpha &&
+          rebound.asset.view()->bitmap != prototype.bitmap &&
+          rebound.asset.view()->bitmap[0].buf == owner->data() + Fixture::texels + 8 &&
+          prototype.bitmap[0].buf == owner->data() + Fixture::texels,
+          "rebind preserves native scalar state and never mutates original descriptors");
+    const auto short_table = isle::sprite::hydrate_bitmaps(owner, Fixture::base, prototype,
+        Fixture::address(owner->size() - 15), 1);
+    check(short_table.error == Error::out_of_bank && !short_table.asset,
+          "standalone table needs its exact complete final descriptor byte");
+    const auto oversized = isle::sprite::hydrate_bitmaps(owner, Fixture::base, prototype,
+        Fixture::address(Fixture::descriptors), 32768);
+    check(oversized.error == Error::invalid_scalar && !oversized.asset,
+          "standalone table count cannot narrow into native signed descriptor count");
+    auto foreign_palette = prototype;
+    std::array<std::uint8_t,2> foreign{};
+    foreign_palette.LUT=foreign.data(); foreign_palette.LUT_bytes=2; foreign_palette.nTLUT=1;
+    const auto foreign_result = isle::sprite::hydrate_bitmaps(owner, Fixture::base, foreign_palette,
+        Fixture::address(Fixture::descriptors), 1);
+    check(foreign_result.error == Error::invalid_palette && !foreign_result.asset,
+          "native template cannot retain a palette outside its admitted immutable owner");
+    root = {};
+    owner.reset();
+    check(!weak.expired() && rebound.asset.view()->bitmap[0].byte_count == 8,
+          "rebound native descriptor independently retains its immutable source owner");
+    rebound = {};
+    check(weak.expired(), "last standalone native descriptor releases bank ownership");
+}
+
 } // namespace
 
 int main() {
@@ -638,6 +679,7 @@ int main() {
     multi_bitmap_rgba16_closure();
     palettes();
     normalization_boundaries();
+    native_template_bitmap_rebinding();
     if (failures != 0) {
         std::cerr << failures << " sprite checks failed\n";
         return 1;

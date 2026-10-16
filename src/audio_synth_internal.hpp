@@ -81,6 +81,7 @@ struct PlayerSound {
     VoiceHandle descriptor{};
     SoundId sound{};
     sfx::Parameters parameters{}, desired{};
+    std::int16_t priority = 0;
     Error error = Error::none;
 };
 enum class PlayerEventKind { start, pitch, pan, fx, volume, stop };

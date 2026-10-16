@@ -36,6 +36,7 @@ struct GObjProcess {
     union { GObjFunc cb; } unk_1C;
     IsleContinuation* continuation;
     IsleGameCallback entry;
+    IsleGameSourceCallback function; /* Actual GAME entry, never a dispatch adapter. */
     void* user;
     IsleGame* game;
     bool alive;
@@ -56,7 +57,10 @@ struct GObj {
     union { SObj* sobj; OMCamera* cam; IsleGameModel* model; void* any; } data;
     u32 flags;
     IsleGameCallback update;
-    void* userData;
+    void* updateUser; /* Native callback context, never GAME actor data. */
+    void* userData;   /* GAME entity payload; allocation/reuse clears it. */
+    IsleGameCallback retired;
+    void* retireUser;
     IsleGame* game;
     bool alive;
 };

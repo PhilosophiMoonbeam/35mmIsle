@@ -1,4 +1,6 @@
 #include "engine_fixture.h"
+#include "../src/engine_internal.h"
+#include "../src/menu_scene_bridge.h"
 
 /* The selected game ABI uses this wait entry. It must reject synchronous use
  * without returning into the invalid callback or crossing a C++ exception. */
@@ -120,4 +122,78 @@ IsleGameResult engine_attach_model_with_invalid_kind(IsleGame* game, IsleGameObj
      * Construct it here: the equivalent C++ out-of-range enum cast is not. */
     invalid[1].matrix_kind = (IsleGameModelMatrixKind) 99;
     return isle_game_attach_model(game, owner, invalid, 2, model);
+}
+
+IsleGameResult engine_add_camera_matrix_with_invalid_kind(IsleGame* game, IsleGameCamera* camera) {
+    /* Exercise an unknown integer at the C ABI, not an out-of-range C++ enum. */
+    return isle_game_camera_add_matrix(game, camera, (IsleGameCameraMatrixKind) 99);
+}
+
+void engine_bind_actor_payload(IsleGameObject* object, int* payload) {
+    object->userData = payload;
+}
+
+void engine_actor_context_update(IsleGameObject* object, void* user) {
+    ++*(int*) user;
+    int* payload = object->userData;
+    *payload += 10;
+    if (*payload == 120) omDeleteGObj(object);
+}
+
+IsleGameResult engine_replace_actor_update(IsleGame* game, IsleGameObject* object, int* context) {
+    return isle_menu_set_update(game, object, engine_actor_context_update, context);
+}
+
+void engine_bind_source_payload(IsleGameObject* object, EngineFixture* fixture) {
+    object->userData = fixture;
+}
+
+void engine_source_a(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    IsleGameSourceCallback function = NULL;
+    uint64_t local = (uint64_t) fixture->shared_value + UINT64_C(17);
+    require_ok(fixture, isle_game_process_source_function(fixture->game, NULL, &function));
+    if (function != engine_source_a) ++fixture->failures;
+    record(fixture, 410);
+    ohWait(fixture->mode == 1 ? 100 : 1);
+    if (fixture->mode == 1) {
+        ++fixture->retired_continued;
+        return;
+    }
+    fixture->local_result = local;
+    record(fixture, 411);
+    require_ok(fixture, isle_game_add_source_process(fixture->game, NULL, engine_source_b,
+        ISLE_GAME_STACKFUL, 5, &fixture->child));
+    require_ok(fixture, isle_game_end_source_processes(fixture->game, NULL, engine_source_a));
+    ++fixture->after_finish;
+}
+
+void engine_source_b(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    IsleGameSourceCallback function = NULL;
+    require_ok(fixture, isle_game_process_source_function(fixture->game, NULL, &function));
+    if (function != engine_source_b) ++fixture->failures;
+    record(fixture, 420);
+    if (fixture->mode == 1) return;
+    if (fixture->mode == 3) {
+        require_ok(fixture, isle_game_end_source_processes(fixture->game, NULL, engine_source_b));
+        record(fixture, 422);
+        return;
+    }
+    ohWait(1);
+    record(fixture, 421);
+    require_ok(fixture, isle_game_delete_object(fixture->game, NULL));
+    record(fixture, 422);
+    ohWait(1);
+    ++fixture->retired_continued;
+}
+
+void engine_source_retired(IsleGameObject* object, void* user) {
+    EngineFixture* fixture = user;
+    IsleGameCounts counts = {0};
+    if (object->userData != fixture) ++fixture->failures;
+    require_ok(fixture, isle_game_counts(fixture->game, &counts));
+    if (counts.processes != 0) ++fixture->failures;
+    ++fixture->retire_calls;
+    record(fixture, 450);
 }

@@ -1,4 +1,4 @@
-// Private-ROM diagnostic, not Original Beach camera or hardware parity.
+// Private-ROM camera diagnostics, not Original title/Beach scene or hardware parity.
 // Public wire reference: https://hack64.net/wiki/doku.php?id=f3dex2
 // Ambient-only light-count contract:
 // https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPNumLights.html
@@ -21,7 +21,7 @@
 
 namespace {
 namespace probe = isle::rsp_probe;
-constexpr std::uint32_t projection = 0x101000, view = 0x101040, lookat = 0x101100;
+constexpr std::uint32_t projection = 0x101000, view = 0x101040, model = 0x101080, lookat = 0x101100;
 constexpr std::uint32_t diffuse = 0x101120, ambient = 0x101140;
 constexpr std::uint32_t texture = 0x101200, vertices = 0x103000;
 constexpr std::uint32_t depth = 0x310000;
@@ -32,14 +32,14 @@ struct World {
     isle_arena arena{};
     IsleGame* game = nullptr;
     IsleGameCamera* camera = nullptr;
-    World() {
+    explicit World(IsleGameCameraMatrixKind kind = ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) {
         require(isle_arena_init(&arena, storage.data(), storage.size()) == ISLE_OK, "arena init");
         ok(isle_game_create(&arena, &game));
         IsleGameObject* object = nullptr;
         ok(isle_game_add_object(game, 1, 0, 0, nullptr, nullptr, &object));
         ok(isle_game_attach_camera(game, object, &camera));
         ok(isle_game_camera_add_matrix(game, camera, ISLE_GAME_CAMERA_PERSPECTIVE_FAST));
-        ok(isle_game_camera_add_matrix(game, camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL));
+        ok(isle_game_camera_add_matrix(game, camera, kind));
         const IsleGamePerspective p{60, 4.0f / 3, 1, 100, 1};
         const IsleGameLookAt pose{{0, 0, 5}, {0, 0, 0}, {0, 1, 0}};
         ok(isle_game_camera_set_perspective(game, camera, &p));
@@ -127,9 +127,40 @@ struct Wire {
         }
         cmd(0x01003006, vertices); cmd(0x05000204, 0); cmd(0xe9000000, 0); cmd(0xdf000000, 0);
     }
+    void prepare_roll(std::uint16_t norm) {
+        fill(depth, 0xfffcfffc); fill(probe::color_address, 0x00010001);
+        cmd(0xe7000000, 0); cmd(0xfe000000, depth);
+        cmd(0xef000cf0, 0x00552078); // One-cycle shade with opaque Z compare/update.
+        cmd(0xfc887f10, 0x88fe793c); // Both combiner cycles select vertex shade.
+        cmd(0xdb060000, 0); cmd(0xd9000000, 0x00a00005); // Z/shade/smooth/clipping, NO light/texgen.
+        cmd(0xd7000000, 0); cmd(0xdc080008, 0x102000);
+        // Exact GAME df8815e75f3d79618466e01e0827c6165b93d11c render.c:
+        // 2262-2268,2360-2363: kind3 projection LOAD + normalization.
+        // 2294-2300: kind8 look-at-roll with fixed (0,1,0) up.
+        // 2373-2377: kind8 projection MUL, NO gSPLookAt (unlike kind14).
+        // Source blob 38e4e802c306971624149d83902767b59eca3214, SHA256
+        // fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2.
+        cmd(0xda380007, projection); cmd(0xdb0e0000, norm);
+        cmd(0xda380005, view);
+        // A genuine native translate-only model, not the reflection test's
+        // identity modelview. This fixture loads its complete root local.
+        cmd(0xda380003, model); cmd(0xd5000001, 0);
+        const std::array<std::array<std::int16_t, 3>, 3> positions{{{-1,-1,0},{1,-1,0},{-1,1,0}}};
+        const std::array<std::array<std::uint8_t, 3>, 3> colors{{{255,32,16},{16,255,32},{32,16,255}}};
+        for (unsigned i = 0; i < 3; ++i) {
+            for (unsigned c = 0; c < 3; ++c) {
+                half(vertices + i * 16 + c * 2, static_cast<std::uint16_t>(positions[i][c]));
+                byte(vertices + i * 16 + 12 + c, colors[i][c]);
+            }
+            half(vertices + i * 16 + 6, 0); word(vertices + i * 16 + 8, 0);
+            byte(vertices + i * 16 + 15, 255);
+        }
+        cmd(0x01003006, vertices); cmd(0x05000204, 0);
+        cmd(0xe9000000, 0); cmd(0xdf000000, 0);
+    }
 };
 // Hash only our synthetic task inputs, never private ROM/microcode bytes.
-void report_inputs(const Wire& wire) {
+void report_inputs(const Wire& wire, bool reflection = true) {
     const auto report = [&](const char* name, std::uint32_t begin, std::uint32_t end) {
         std::uint64_t hash = 14695981039346656037ull;
         for (std::uint32_t at = begin; at < end; ++at) {
@@ -142,34 +173,36 @@ void report_inputs(const Wire& wire) {
     report("commands", probe::commands_address, wire.next);
     report("projection", projection, projection + 64);
     report("view", view, view + 64);
-    report("identity", 0x101080, 0x1010c0);
-    report("lookat", lookat, lookat + 32);
-    report("diffuse", diffuse, diffuse + 16);
-    report("ambient", ambient, ambient + 16);
-    report("texture", texture, texture + 32);
+    report(reflection ? "identity" : "native-model", model, model + 64);
+    if (reflection) {
+        report("lookat", lookat, lookat + 32);
+        report("diffuse", diffuse, diffuse + 16);
+        report("ambient", ambient, ambient + 16);
+        report("texture", texture, texture + 32);
+    }
     report("viewport", 0x102000, 0x102010);
     report("vertices", vertices, vertices + 48);
 }
 struct Capture { std::vector<std::uint32_t> triangle; std::vector<std::byte> color, z; };
-Capture capture(isle::rsp::CanonicalExecutor::MemoryLease& completed) {
+Capture capture(isle::rsp::CanonicalExecutor::MemoryLease& completed, bool textured = true) {
     require(bool(completed.rsp_result()) && completed.rsp_result().full_syncs == 1,
             "actual RSP task did not complete");
     Capture result;
     for (const auto& packet : completed.packets().packets()) {
         const auto words = completed.packets().words().subspan(packet.offset, packet.count);
-        if (((words[0] >> 24) & 0x3f) == 0x0f) {
-            require(result.triangle.empty() && words.size() == 44, "expected one shaded textured Z triangle");
+        if (((words[0] >> 24) & 0x3f) == (textured ? 0x0fu : 0x0du)) {
+            require(result.triangle.empty() && words.size() == (textured ? 44u : 28u),
+                    "expected one shaded Z triangle with the selected texture state");
             result.triangle.assign(words.begin(), words.end());
         }
     }
-    require(result.triangle.size() == 44, "LookAt texture generation did not emit textured geometry");
+    require(result.triangle.size() == (textured ? 44u : 28u), "native camera task did not emit expected geometry");
     const auto ram = completed.rdram();
     result.color.assign(ram.begin() + probe::color_address, ram.begin() + probe::color_address + 64 * 48 * 2);
     result.z.assign(ram.begin() + depth, ram.begin() + depth + 64 * 48 * 2);
     return result;
 }
-int run(const std::filesystem::path& rom) {
-    const auto snapshot = isle::rom::read_snapshot(rom);
+void reflection_diagnostic(const isle::rom::Snapshot& snapshot) {
     World world;
     const IsleGameCameraMatrix* matrix = nullptr;
     const IsleGameCameraReflection* reflection = nullptr;
@@ -238,6 +271,82 @@ int run(const std::filesystem::path& rom) {
             "restored camera inputs did not reproduce real RSP/RDP output");
     std::cout << "reflection_camera_rsp_rdp=passed tasks=4 reflection_only_uv_color_change=yes "
                  "reflection_only_geometry_depth_unchanged=yes restored=yes Original_scene_parity=not_claimed\n";
+}
+
+void roll_diagnostic(const isle::rom::Snapshot& snapshot) {
+    World world(ISLE_GAME_CAMERA_LOOK_AT_ROLL);
+    IsleGameObject* owner = nullptr;
+    ok(isle_game_add_object(world.game, 2, 0, 0, nullptr, nullptr, &owner));
+    const IsleGameModelNodeInit initial{UINT32_MAX,
+        {{0.375f, 0.25f, 0.5f}, {0, 0, 0}, {1, 1, 1}}, ISLE_GAME_MODEL_TRANSLATE};
+    IsleGameModel* native_model = nullptr;
+    ok(isle_game_attach_model(world.game, owner, &initial, 1, &native_model));
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t node_count = 0;
+    ok(isle_game_model_nodes(world.game, native_model, &nodes, &node_count));
+    require(node_count == 1, "kind8 diagnostic requires one native translated model");
+    const auto local = nodes[0].fixed;
+    ok(isle_game_camera_compute_all(world.game, world.camera));
+    const IsleGameCameraMatrix* matrix = nullptr;
+    ok(isle_game_camera_matrix(world.game, world.camera, 0, &matrix)); const auto p = matrix->fixed;
+    ok(isle_game_camera_matrix(world.game, world.camera, 1, &matrix)); const auto unrolled = matrix->fixed;
+    const IsleGameCameraReflection* absent = nullptr;
+    require(isle_game_camera_reflection(world.game, world.camera, 1, &absent) ==
+                ISLE_GAME_INVALID_STATE && absent == nullptr, "kind8 fabricated reflection values");
+    std::uint16_t norm = 0;
+    ok(isle_game_camera_perspective_normalization(world.game, world.camera, &norm));
+    const auto used = world.arena.cursor;
+    isle::rsp::CanonicalExecutor executor(true, {1000000, probe::capture_words});
+    const auto task = [&](const char* phase, const IsleGameFixedMatrix& camera_view, bool cold) {
+        auto preparation = executor.begin_preparation();
+        if (cold) probe::initialize_fixture_memory(preparation.words(), snapshot.canonical());
+        probe::Fixture fixture(preparation.words(), probe::Case::matrix);
+        Wire wire{preparation.words()};
+        wire.matrix(projection, p); wire.matrix(view, camera_view); wire.matrix(model, local);
+        wire.prepare_roll(norm);
+        std::cout << "phase=" << phase << " kind=8 stage=prepared cold=" << cold
+                  << " commands=" << (wire.next - probe::commands_address) / 8
+                  << " normalization=" << norm
+                  << " upload=projection-load,normalize,view-projection-multiply,native-modelview-load"
+                     " reflection_upload=no\n";
+        report_inputs(wire, false);
+        std::cout << "phase=" << phase << " kind=8 stage=execute\n" << std::flush;
+        auto completed = executor.execute(std::move(preparation), fixture.task,
+            snapshot.canonical().subspan(probe::boot_rom_begin, probe::boot_bytes));
+        const auto& result = completed.rsp_result();
+        std::cout << "phase=" << phase << " kind=8 stage=completed sp_status=" << result.sp_status
+                  << " dma_reads=" << result.dma_reads << " dma_writes=" << result.dma_writes
+                  << " packets=" << result.packets << " packet_words=" << result.packet_words
+                  << " full_syncs=" << result.full_syncs << '\n' << std::flush;
+        return capture(completed, false);
+    };
+    const auto first = task("kind8-initial", unrolled, true);
+    bool depth_written = false;
+    for (std::size_t i = 0; i < first.z.size(); ++i)
+        if (first.z[i] != std::byte((i & 1) ? 0xff : 0xfc)) depth_written = true;
+    require(depth_written, "actual kind8 RDP task did not write geometry depth");
+    ok(isle_game_camera_set_roll(world.game, world.camera, 0.61f));
+    ok(isle_game_camera_compute_all(world.game, world.camera));
+    ok(isle_game_camera_matrix(world.game, world.camera, 1, &matrix));
+    const auto rolled = task("kind8-rolled", matrix->fixed, false);
+    require(!std::equal(first.triangle.begin(), first.triangle.begin() + 8, rolled.triangle.begin()) &&
+            first.color != rolled.color && first.z != rolled.z,
+            "kind8 source roll did not change actual RSP geometry and RDP color/depth coverage");
+    ok(isle_game_camera_set_roll(world.game, world.camera, 0));
+    ok(isle_game_camera_compute_all(world.game, world.camera));
+    ok(isle_game_camera_matrix(world.game, world.camera, 1, &matrix));
+    const auto restored = task("kind8-restored", matrix->fixed, false);
+    require(first.triangle == restored.triangle && first.color == restored.color && first.z == restored.z &&
+            world.arena.cursor == used, "kind8 restoration lost actual output or allocated native updates");
+    std::cout << "roll_camera_rsp_rdp=passed kind=8 tasks=3 source_projection_multiply=yes "
+                 "reflection_upload=no nonidentity_native_model=yes geometry_color_depth_change=yes "
+                 "restored=yes Original_scene_parity=not_claimed\n";
+}
+
+int run(const std::filesystem::path& rom) {
+    const auto snapshot = isle::rom::read_snapshot(rom);
+    reflection_diagnostic(snapshot);
+    roll_diagnostic(snapshot);
     return 0;
 }
 }
@@ -250,9 +359,9 @@ int main(int argc, char** argv) {
         require(argc == 2, "expected one explicit private ROM path");
         return run(std::filesystem::path(argv[1]));
     } catch (const std::filesystem::filesystem_error&) {
-        std::cerr << "reflection camera diagnostic: private filesystem operation failed\n";
+        std::cerr << "camera diagnostic: private filesystem operation failed\n";
     } catch (const std::runtime_error& error) {
-        std::cerr << "reflection camera diagnostic: " << error.what() << '\n';
-    } catch (...) { std::cerr << "reflection camera diagnostic failed\n"; }
+        std::cerr << "camera diagnostic: " << error.what() << '\n';
+    } catch (...) { std::cerr << "camera diagnostic failed\n"; }
     return 1;
 }

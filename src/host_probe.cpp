@@ -150,12 +150,12 @@ class ProbeHost final {
         }
         config = std::make_shared<Ship::Config>((data / "host-probe.json").string());
         context->GetChildren().Add(config);
+        variables = std::make_shared<Ship::ConsoleVariable>(config);
+        context->GetChildren().Add(variables);
         config->SetInt("Window.Backend.Id", Fast::FAST3D_SDL_OPENGL);
         config->SetInt("Window.Width", 640);
         config->SetInt("Window.Height", 480);
         config->SetBool("Window.Fullscreen.Enabled", false);
-        variables = std::make_shared<Ship::ConsoleVariable>(config);
-        context->GetChildren().Add(variables);
         variables->SetInteger(CVAR_ENABLE_MULTI_VIEWPORTS, 0);
         pool = std::make_shared<Ship::ThreadPool>(1);
         context->GetChildren().Add(pool);

@@ -1,0 +1,546 @@
+#include "sprite_producer.hpp"
+#include "scene_render.hpp"
+
+#include <algorithm>
+#include <array>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+namespace {
+namespace sp = isle::sprite;
+void check(bool value, const char* message) { if (!value) throw std::runtime_error(message); }
+template<class F> void rejects(F&& action, const char* message) {
+    bool rejected = false;
+    try { action(); } catch (const std::invalid_argument&) { rejected = true; }
+    check(rejected, message);
+}
+struct Fixture {
+    std::shared_ptr<sp::Bank> bytes = std::make_shared<sp::Bank>(128, 0);
+    std::array<IsleBitmap, 2> bitmap{};
+    IsleSprite sprite{};
+    Fixture() {
+        for (unsigned i = 0; i < 24; ++i) (*bytes)[8 + i] = static_cast<std::uint8_t>(i + 1);
+        bitmap[0] = {4, 4, 0, 0, bytes->data() + 8, 16, 2, 0};
+        bitmap[1] = {4, 4, 0, 0, bytes->data() + 24, 8, 1, 0};
+        sprite.width = 4; sprite.height = 3; sprite.scalex = sprite.scaley = 1;
+        sprite.attr = ISLE_SP_TEXSHUF; sprite.red = sprite.green = sprite.blue = sprite.alpha = 255;
+        sprite.istep = 1; sprite.nbitmaps = 2; sprite.bmheight = sprite.bmHreal = 2;
+        sprite.bmfmt = 0; sprite.bmsiz = 2; sprite.bitmap = bitmap.data();
+    }
+};
+std::vector<std::uint32_t> op(std::span<const std::uint32_t> words, unsigned code) {
+    std::vector<std::uint32_t> result;
+    for (std::size_t i = 0; i < words.size(); i += 2)
+        if ((words[i] >> 24) == code) { result.push_back(words[i]); result.push_back(words[i + 1]); }
+    return result;
+}
+void installation_and_transactions() {
+    Fixture f;
+    const std::array<const IsleSprite*, 1> roots{&f.sprite};
+    const std::array<sp::BankMapping, 1> banks{{{f.bytes, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8 * 1024 * 1024 / 4, 0xa5a5a5a5);
+    const auto original = ram;
+    const std::array<sp::RamRange, 1> collision{{{0x300010, 8}}};
+    rejects([&] { producer.install(ram, 7, collision); }, "asset collision must reject");
+    check(ram == original, "failed install writes nothing");
+    producer.install(ram, 7, {});
+    check(ram[0x300004 / 4] == 0xa5a5a5a5 && ram[0x300020 / 4] == 0xa5a5a5a5,
+          "exact selected asset spans preserve adjacent guards");
+    check(ram[0x300008 / 4] == 0x01020304 && ram[0x30001c / 4] == 0x15161718,
+          "canonical source bytes become exact word-swapped RDRAM words");
+    const std::array<sp::Draw, 1> draws{{{0, &f.sprite}}};
+    const auto installed = ram;
+    rejects([&] { producer.prepare(ram, 8, draws, {}, {0x150000, 4096}); }, "wrong RAM epoch rejects");
+    rejects([&] { producer.prepare(ram, 7, draws, {}, {0x150000, 8}); }, "command exhaustion rejects");
+    auto invalid = f.sprite; invalid.attr |= ISLE_SP_EXTERN;
+    const std::array<sp::Draw, 2> late_bad{{{0, &f.sprite}, {0, &invalid}}};
+    rejects([&] { producer.prepare(ram, 7, late_bad, {}, {0x150000, 4096}); }, "late invalid draw rejects");
+    check(ram == installed, "all preflight failures preserve every installed and unowned RAM word");
+    auto wrong = f.sprite; wrong.bmsiz = 3;
+    const std::array<sp::Draw, 1> bad_layout{{{0, &wrong}}};
+    rejects([&] { producer.prepare(ram, 7, bad_layout, {}, {0x150000, 4096}); }, "mutated layout cannot use stale plan");
+    const auto list = producer.prepare(ram, 7, draws, {}, {0x150000, 4096});
+    check(list.rectangles == 2, "short final piece draws only actual stored height");
+    const auto words = std::span(ram).subspan(list.address / 4, list.words);
+    const auto loads = op(words, 0xf3);
+    check(loads.size() == 4 && loads[1] == 0x07007000 && loads[3] == 0x07003000,
+          "pre-shuffled load blocks use exact short extents and zero dxt");
+    const auto rectangles = op(words, 0xe4);
+    check(rectangles.size() == 4 && rectangles[0] == 0xe4010008 && rectangles[2] == 0xe401000c &&
+          rectangles[3] == 8, "piece placement advances in source row-major order");
+    check(ram[(list.address + static_cast<std::uint32_t>(list.words * 4)) / 4] == 0xa5a5a5a5,
+          "command end preserves its immediate guard");
+}
+void mutable_state_and_scissor() {
+    Fixture f;
+    const std::array<const IsleSprite*, 1> roots{&f.sprite};
+    const std::array<sp::BankMapping, 1> banks{{{f.bytes, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8 * 1024 * 1024 / 4);
+    producer.install(ram, 1, {});
+    auto view = f.sprite;
+    view.x = -1; view.y = 10; view.attr |= ISLE_SP_SCALE | ISLE_SP_TRANSPARENT;
+    view.scalex = 2; view.scaley = 2; view.red = 31; view.green = 67; view.blue = 127; view.alpha = 91;
+    const std::array<sp::Draw, 1> draws{{{0, &view}}};
+    const auto list = producer.prepare(ram, 1, draws, {{0,0,320,240}, {0,10,6,14}}, {0x150000,4096});
+    const auto words = std::span(ram).subspan(list.address / 4, list.words);
+    check(list.rectangles == 1, "scissor removes whole second piece");
+    const auto color = op(words, 0xfa);
+    check(color.size() == 2 && color[1] == 0x1f437f5b, "shallow mutable tint and alpha reach primitive state");
+    const auto rectangle = op(words, 0xe4), start = op(words, 0xe1), derivative = op(words, 0xf1);
+    check(rectangle[0] == (0xe4000000 | (24u << 12) | 56u) && rectangle[1] == 40,
+          "scaled bounds intersect viewport/scissor before encoding");
+    check(start[1] == 0x00100000 && derivative[1] == 0x02000200,
+          "left clip advances S and scales hardware derivatives");
+    view.attr |= ISLE_SP_HIDDEN;
+    check(producer.prepare(ram, 1, draws, {}, {0x150000,4096}).rectangles == 0,
+          "hidden scalar suppresses texture rectangles without rehydration");
+    view.attr &= ~ISLE_SP_HIDDEN; view.x = 20; view.scalex = -1;
+    const auto flipped = producer.prepare(ram, 1, draws, {}, {0x150000,4096});
+    const auto flip_words = std::span(ram).subspan(flipped.address / 4, flipped.words);
+    check(op(flip_words,0xf1)[1] == 0xfc000200 && op(flip_words,0xe1)[1] == 0x00600000,
+          "negative scale flips S using signed derivatives and last-texel origin");
+}
+void derivatives_require_actual_raster_coverage() {
+    Fixture fixture;
+    fixture.bitmap[0] = {64,64,0,0,fixture.bytes->data(),128,1,0};
+    fixture.sprite.width = 64; fixture.sprite.height = 1;
+    fixture.sprite.nbitmaps = fixture.sprite.bmheight = fixture.sprite.bmHreal = 1;
+    fixture.sprite.attr |= ISLE_SP_SCALE;
+    const std::array<const IsleSprite*,1> roots{&fixture.sprite};
+    const std::array<sp::BankMapping,1> banks{{{fixture.bytes,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4);
+    producer.install(ram,1,{});
+    auto tiny = fixture.sprite;
+    tiny.x = 10; tiny.y = 10;
+    tiny.scalex = tiny.scaley = 1.0f/1048576.0f;
+    auto visible = fixture.sprite;
+    visible.x = 16; visible.y = 20;
+    const std::array<sp::Draw,2> draws{{{0,&tiny},{0,&visible}}};
+    const auto list = producer.prepare(ram,1,draws,{}, {0x150000,4096});
+    const auto words = std::span(ram).subspan(list.address/4,list.words);
+    const auto rectangle = op(words,0xe4), derivative = op(words,0xf1);
+    check(list.rectangles == 1 && rectangle.size() == 2 && derivative.size() == 2 &&
+          rectangle[0] == (0xe4000000u|(320u<<12)|84u) &&
+          rectangle[1] == ((64u<<12)|80u) && derivative[1] == 0x04000400,
+          "zero-quarter-pixel sprite consumes no derivative and cannot suppress the following visible sprite");
+    tiny.scalex = 0.02f; tiny.scaley = 1;
+    const std::array<sp::Draw,1> minified{{{0,&tiny}}};
+    const auto minified_list = producer.prepare(ram,1,minified,{}, {0x150000,4096});
+    check(minified_list.rectangles > 0, "visible reciprocal overflow is lowered, not rejected");
+    const auto minified_words = std::span(ram).subspan(minified_list.address/4,minified_list.words);
+    const auto lowered_derivatives = op(minified_words,0xf1);
+    for (std::size_t i=1; i<lowered_derivatives.size(); i+=2)
+        check(lowered_derivatives[i] == 0x00000400,
+              "only the overflowing X derivative is replaced by sample-local constant S");
+    const auto before_capacity_failure = ram;
+    rejects([&]{producer.prepare(ram,1,minified,{},
+                                 {0x150000,static_cast<std::uint32_t>(minified_list.words*4-8)});},
+            "minified geometry still requires complete command capacity");
+    check(ram == before_capacity_failure, "minified capacity failure preserves all RAM atomically");
+    tiny.scalex = -1.0f/1048576.0f;
+    const auto empty = producer.prepare(ram,1,draws,{}, {0x150000,4096});
+    check(empty.rectangles == 1,
+          "nonempty quarter bounds with no integer sample do not evaluate an overflowing reciprocal");
+}
+void minification_axes_and_coordinate_boundaries() {
+    auto bank = std::make_shared<sp::Bank>(60*68*2,0xff);
+    const std::array<IsleBitmap,2> bitmap{{
+        {60,60,0,0,bank->data(),60*34*2,34,0},
+        {60,60,0,0,bank->data()+60*34*2,60*34*2,34,0}}};
+    IsleSprite sprite{};
+    sprite.width=60; sprite.height=68; sprite.bmheight=sprite.bmHreal=34;
+    sprite.scalex=sprite.scaley=1; sprite.red=sprite.green=sprite.blue=sprite.alpha=255;
+    sprite.nbitmaps=2; sprite.istep=1; sprite.bitmap=bitmap.data();
+    sprite.bmfmt=0; sprite.bmsiz=2; sprite.attr=ISLE_SP_SCALE;
+    sprite.x=120; sprite.y=134;
+    const std::array<const IsleSprite*,1> roots{{&sprite}};
+    const std::array<sp::BankMapping,1> banks{{{bank,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4,0xa5a5a5a5);
+    producer.install(ram,1,{});
+    const std::array<sp::Draw,1> draws{{{0,&sprite}}};
+    const auto prepare = [&] {
+        return producer.prepare(ram,1,draws,{}, {0x150000,65536});
+    };
+    for (const auto scale : {1.0f/60.0f,-1.0f/60.0f}) {
+        sprite.scalex=sprite.scaley=scale;
+        const auto list=prepare();
+        check(list.rectangles > 0, "source 60x68 split-piece fade keeps covered samples");
+        const auto derivatives=op(std::span(ram).subspan(list.address/4,list.words),0xf1);
+        for (std::size_t i=1; i<derivatives.size(); i+=2)
+            check(derivatives[i] == 0, "both overflowing axes lower to independently rebased samples");
+    }
+    for (const bool overflow_y : {false,true}) {
+        sprite.scalex=overflow_y ? 1.0f : 1.0f/32.0f;
+        sprite.scaley=overflow_y ? 1.0f/32.0f : 1.0f;
+        const auto list=prepare();
+        check(list.rectangles > 0, "positive signed-derivative boundary remains drawable");
+        const auto derivatives=op(std::span(ram).subspan(list.address/4,list.words),0xf1);
+        for (std::size_t i=1; i<derivatives.size(); i+=2)
+            check(derivatives[i] == (overflow_y ? 0x04000000u : 0x00000400u),
+                  "anisotropic lowering preserves the representable axis");
+    }
+    sprite.scalex=-1.0f/32.0f; sprite.scaley=1;
+    const auto negative_boundary=prepare();
+    const auto derivatives=op(std::span(ram).subspan(negative_boundary.address/4,negative_boundary.words),0xf1);
+    for (std::size_t i=1; i<derivatives.size(); i+=2)
+        check(derivatives[i] == 0x80000400u, "negative -32768 derivative keeps its normal encoded path");
+    sprite.scalex=sprite.scaley=1.0f/60.0f;
+    sprite.attr |= ISLE_SP_FRACPOS | ISLE_SP_TEXSHIFT;
+    sprite.frac_s=32767;
+    const auto before_coordinate_failure=ram;
+    rejects([&]{prepare();}, "genuinely unrepresentable rebased sample coordinate rejects");
+    check(ram == before_coordinate_failure, "late sample-coordinate rejection writes no RAM");
+}
+void minified_bands_load_consumed_neighbors() {
+    auto bank=std::make_shared<sp::Bank>(128*128*2,0xff);
+    IsleBitmap bitmap{128,128,0,0,bank->data(),bank->size(),128,0};
+    IsleSprite sprite{};
+    sprite.width=sprite.height=sprite.bmheight=sprite.bmHreal=128;
+    sprite.scalex=1.0f/64.0f; sprite.scaley=1;
+    sprite.red=sprite.green=sprite.blue=sprite.alpha=255;
+    sprite.nbitmaps=sprite.istep=1; sprite.bitmap=&bitmap;
+    sprite.bmfmt=0; sprite.bmsiz=2; sprite.attr=ISLE_SP_SCALE;
+    sprite.x=sprite.y=10;
+    const std::array<const IsleSprite*,1> roots{{&sprite}};
+    const std::array<sp::BankMapping,1> banks{{{bank,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4);
+    producer.install(ram,1,{});
+    const std::array<sp::Draw,1> draws{{{0,&sprite}}};
+    for (const bool flipped : {false,true}) {
+        sprite.scaley=flipped ? -1.0f/64.0f : 1.0f/64.0f;
+        const auto list=producer.prepare(ram,1,draws,{}, {0x150000,65536});
+        const auto words=std::span(ram).subspan(list.address/4,list.words);
+        int load_first=0, load_rows=0, top=0;
+        bool checked=false;
+        for (std::size_t i=0; i<words.size(); i+=2) {
+            const auto opcode=words[i]>>24;
+            if (opcode == 0xfd)
+                load_first=static_cast<int>((words[i+1]-0x300000)/256);
+            else if (opcode == 0xf4)
+                load_rows=static_cast<int>((words[i+1]&0xfff)/4+1);
+            else if (opcode == 0xe4)
+                top=static_cast<int>(words[i+1]&0xfff)/4;
+            else if (opcode == 0xe1 && top == (flipped ? 9 : 11)) {
+                const int packed=static_cast<int>(words[i+1]&0xffff);
+                const int local_t=packed < 32768 ? packed : packed-65536;
+                const int expected_row=flipped ? 63 : 64;
+                check(load_first*32+local_t == expected_row*32,
+                      "fractional band anchor preserves independently derived global source T");
+                check(load_first <= expected_row && load_first+load_rows > expected_row+1,
+                      "minified band load contains both consumed sample neighbors without artificial clamp");
+                checked=true;
+            }
+        }
+        check(checked, "minified oversized source exercises the fractional-anchor row");
+    }
+}
+void ci_palette_and_odd_rows() {
+    auto bank = std::make_shared<sp::Bank>(128, 0);
+    (*bank)[8] = 0x12; (*bank)[9] = 0x30; (*bank)[10] = 0x32; (*bank)[11] = 0x10;
+    IsleBitmap bitmap{3,3,0,0,bank->data()+8,4,2,3};
+    IsleSprite s{};
+    s.width=3; s.height=2; s.scalex=s.scaley=1; s.red=s.green=s.blue=s.alpha=255;
+    s.bitmap=&bitmap; s.nbitmaps=1; s.istep=1; s.bmheight=s.bmHreal=2; s.bmfmt=2; s.bmsiz=0;
+    s.LUT=bank->data()+32; s.LUT_bytes=32; s.startTLUT=48; s.nTLUT=16;
+    const std::array<const IsleSprite*, 1> roots{&s};
+    const std::array<sp::BankMapping,1> banks{{{bank,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4,0xcccccccc);
+    producer.install(ram,1,{});
+    check(ram[0x30000c/4]==0xcccccccc, "odd nibble asset install preserves exact final guard");
+    auto wrong_bitmap=bitmap;
+    wrong_bitmap.LUToffset=2;
+    auto wrong=s;
+    wrong.bitmap=&wrong_bitmap;
+    const std::array<const IsleSprite*,1> wrong_roots{&wrong};
+    rejects([&]{sp::Producer invalid(wrong_roots,banks);},
+            "CI4 palette bank outside the loaded partial TLUT is rejected");
+}
+void oversized_bitmap_bands() {
+    auto bank = std::make_shared<sp::Bank>(32 * 68 * 2, 0xff);
+    IsleBitmap bitmap{32, 32, 0, 0, bank->data(), bank->size(), 68, 0};
+    IsleSprite s{};
+    s.width = 32; s.height = s.bmheight = s.bmHreal = 68;
+    s.scalex = s.scaley = 1; s.red = s.green = s.blue = s.alpha = 255;
+    s.nbitmaps = s.istep = 1; s.bitmap = &bitmap; s.bmfmt = 0; s.bmsiz = 2;
+    s.attr = ISLE_SP_TEXSHUF | ISLE_SP_FRACPOS;
+    s.frac_t = -16;
+    const std::array<const IsleSprite*, 1> roots{{&s}};
+    const std::array<sp::BankMapping, 1> banks{{{bank, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4);
+    producer.install(ram, 1, {});
+    const std::array<sp::Draw, 1> draws{{{0, &s}}};
+    const auto list = producer.prepare(ram, 1, draws, {}, {0x150000,4096});
+    const auto words = std::span(ram).subspan(list.address/4, list.words);
+    const auto loads = op(words, 0xf3), images = op(words, 0xfd), rectangles = op(words, 0xe4);
+    const auto origins = op(words, 0xe1);
+    check(list.rectangles == 2 && loads[1] == 0x077ff000 && loads[3] == 0x0713f000,
+          "4352-byte bitmap splits into bounded 4096/640-byte loads retaining both borders");
+    check(images[1] == 0x300000 && images[3] == 0x300e80,
+          "second band loads preceding source rows with even interleave parity");
+    check(rectangles[0] == (0xe4000000u | (128u<<12) | 240u) &&
+          rectangles[2] == (0xe4000000u | (128u<<12) | 272u) && rectangles[3] == 240,
+          "upper/lower stored borders do not duplicate screen coverage");
+    check(origins[1] == 0x0000fff0 && origins[3] == 0x00000030,
+          "negative half-texel T samples retained preceding row rather than an artificial band clamp");
+}
+void rgba32_copy_rejection_is_atomic() {
+    auto bank = std::make_shared<sp::Bank>(64, 0xff);
+    IsleBitmap bitmap{4, 4, 0, 0, bank->data(), bank->size(), 4, 0};
+    IsleSprite normal{};
+    normal.width = normal.height = normal.bmheight = normal.bmHreal = 4;
+    normal.scalex = normal.scaley = 1;
+    normal.red = normal.green = normal.blue = normal.alpha = 255;
+    normal.nbitmaps = normal.istep = 1; normal.bitmap = &bitmap;
+    normal.bmfmt = 0; normal.bmsiz = 3; normal.attr = ISLE_SP_TEXSHUF;
+    const std::array<const IsleSprite*, 1> roots{{&normal}};
+    const std::array<sp::BankMapping, 1> banks{{{bank, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4, 0xa5a5a5a5);
+    producer.install(ram, 1, {});
+    const auto installed = ram;
+    auto copy = normal; copy.attr |= ISLE_SP_FASTCOPY;
+    const std::array<sp::Draw, 2> draws{{{0, &normal}, {0, &copy}}};
+    rejects([&] { producer.prepare(ram, 1, draws, {}, {0x150000,4096}); },
+            "RGBA32 COPY must reject even after an earlier valid draw");
+    check(ram == installed, "unsupported RGBA32 COPY changes neither command arena nor any RAM guard");
+}
+void composed_residency_requires_exact_source_coverage() {
+    Fixture f;
+    const std::array<const IsleSprite*, 1> roots{{&f.sprite}};
+    const std::array<sp::BankMapping, 1> banks{{{f.bytes, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4, 0xa5a5a5a5);
+    const auto untouched = ram;
+    const std::array<sp::Draw, 1> draws{{{0,&f.sprite}}};
+    const std::array<sp::AssetSpan, 1> merged{{{0x300008,{f.bytes->data()+8,24}}}};
+    const std::array<sp::AssetSpan, 2> split{{
+        {0x300008,{f.bytes->data()+8,8}}, {0x300010,{f.bytes->data()+16,16}}}};
+    {
+        auto discarded = producer.validate_residency(ram, 9, merged);
+        check(bool(discarded), "validated merged residency produces a bound token");
+    }
+    rejects([&] { producer.prepare(ram,9,draws,{}, {0x150000,4096}); },
+            "abandoned preflight must not publish residency");
+    rejects([&] { producer.validate_residency(ram,9,std::span(split).first(1)); },
+            "a composed union omitting selected texture bytes must reject");
+    const std::vector<std::uint8_t> equal_copy(f.bytes->begin()+8,f.bytes->begin()+32);
+    const std::array<sp::AssetSpan, 1> different_owner{{{0x300008,equal_copy}}};
+    rejects([&] { producer.validate_residency(ram,9,different_owner); },
+            "equal payload bytes from different immutable source identities are not a collision whitelist");
+    const std::array<sp::AssetSpan, 2> conflicting_overlap{{merged[0],different_owner[0]}};
+    rejects([&] { producer.validate_residency(ram,9,conflicting_overlap); },
+            "an overlapping foreign source cannot hide behind an otherwise complete matching union");
+    check(ram == untouched, "residency preflight and rejection never write RAM");
+    auto prepared = producer.validate_residency(ram,9,split);
+    auto moved = std::move(prepared);
+    check(!prepared && bool(moved), "moving residency transfers its single commit authority");
+    rejects([&] { producer.prepare(ram,9,draws,{}, {0x150000,4096}); },
+            "uncommitted split-span preflight does not publish residency");
+    // Caller-owned union writer, not Producer::install: each byte is installed
+    // once despite the source plan splitting one sprite asset across spans.
+    for(const auto& span:split) for(std::size_t i=0;i<span.bytes.size();++i) {
+        const auto at=span.address+static_cast<std::uint32_t>(i);
+        const auto shift=(3u-(at&3u))*8u;
+        ram[at/4]=(ram[at/4]&~(255u<<shift)) | (std::uint32_t(span.bytes[i])<<shift);
+    }
+    const auto installed = ram;
+    producer.commit_residency(std::move(moved));
+    check(!moved && ram == installed, "commit consumes authority without copying or changing any RAM byte");
+    check(producer.prepare(ram,9,draws,{}, {0x150000,4096}).rectangles == 2,
+          "exact caller-installed split/merged source coverage satisfies normal producer residency");
+}
+
+std::shared_ptr<sp::Raster> dynamic_raster(std::uint32_t address = 0x400000,
+                                         std::weak_ptr<void>* lifetime = nullptr) {
+    auto primary = std::make_shared<std::vector<std::uint8_t>>(32, 0x11);
+    auto alternate = std::make_shared<std::vector<std::uint8_t>>(32, 0x77);
+    if (lifetime) *lifetime = primary;
+    IsleSprite s{};
+    s.width = s.height = s.bmheight = s.bmHreal = 4;
+    s.scalex = s.scaley = 1; s.red = s.green = s.blue = s.alpha = 255;
+    s.nbitmaps = s.istep = 1; s.bmfmt = 0; s.bmsiz = 2;
+    const std::array<sp::RasterPiece, 1> pieces{{{{4,4,0,0,nullptr,32,4,0},0}}};
+    return std::make_shared<sp::Raster>(s, pieces, std::array<sp::RasterStorage, 2>{{
+        {primary, *primary, address}, {alternate, *alternate, address + 0x100}}});
+}
+void dynamic_union_revision_and_rebind() {
+    Fixture f;
+    const std::array<const IsleSprite*, 1> roots{{&f.sprite}};
+    const std::array<sp::BankMapping, 1> banks{{{f.bytes, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    auto raster = dynamic_raster();
+    const auto binding = producer.register_raster(raster);
+    std::vector<sp::AssetSpan> union_plan(producer.assets().begin(), producer.assets().end());
+    std::array<std::uint8_t, 8> other{1,2,3,4,5,6,7,8};
+    union_plan.push_back({0x500000, other});
+    std::vector<std::uint32_t> ram(8*1024*1024/4, 0xa5a5a5a5);
+    producer.install_composed(ram, 1, union_plan);
+    check(ram[0x400000/4] == 0x11111111 && ram[0x400100/4] == 0x77777777 &&
+          ram[0x500000/4] == 0x01020304, "one residency includes immutable plus both mutable variants");
+    const auto* stable_descriptor = raster->view(sp::RasterSource::primary).bitmap;
+    auto pixels = raster->pixels(sp::RasterSource::primary);
+    pixels[1] = 0xee;
+    raster->publish(sp::RasterSource::primary, 1, 1);
+    check(raster->revision(sp::RasterSource::primary) == 2 &&
+          raster->view(sp::RasterSource::primary).bitmap == stable_descriptor,
+          "publication advances revision without topology allocation");
+    const auto before_rejection = ram;
+    union_plan.push_back({0x400100, other});
+    rejects([&] { producer.install_composed(ram, 1, union_plan); },
+            "late whole-union immutable/dynamic overlap rejects");
+    check(ram == before_rejection, "late whole-union rejection preserves every RAM byte");
+    union_plan.pop_back();
+    const std::array<sp::RamRange, 1> task_collision{{{0x400008, 8}}};
+    rejects([&] { producer.install_composed(ram, 1, union_plan, task_collision); },
+            "dynamic allocation colliding with a task rejects before changed uploads");
+    check(ram == before_rejection, "reservation rejection does not partially publish changed rasters");
+    const std::array<sp::Draw,1> primary{{{binding.resources[0],
+        &raster->view(sp::RasterSource::primary),binding.generation}}};
+    {
+        auto borrow = producer.borrow();
+        rejects([&] { producer.prepare(ram,1,primary,{}, {0x150000,4096}); },
+                "uninstalled changed revision cannot render stale texels");
+    }
+    // Sentinels inside unchanged spans make accidental whole-plane/per-frame
+    // uploads observable independently of matching source content.
+    ram[0x400008/4] = 0x12345678;
+    ram[0x400100/4] = 0x87654321;
+    producer.install_composed(ram, 1, union_plan);
+    check(ram[0x400000/4] == 0x11ee1111 && ram[0x400008/4] == 0x12345678 &&
+          ram[0x400100/4] == 0x87654321,
+          "only changed published bytes upload, preserving neighbor bytes and untouched alternate");
+    {
+        auto borrow = producer.borrow();
+        const auto list = producer.prepare(ram,1,primary,{}, {0x150000,4096});
+        check(op(std::span(ram).subspan(list.address/4,list.words),0xfd)[1] == 0x400000,
+              "primary binding uses its actual physical texture");
+        const std::array<sp::Draw,1> alternate{{{binding.resources[1],
+            &raster->view(sp::RasterSource::alternate),binding.generation}}};
+        const auto rebound = producer.prepare(ram,1,alternate,{}, {0x150000,4096});
+        check(op(std::span(ram).subspan(rebound.address/4,rebound.words),0xfd)[1] == 0x400100,
+              "explicit alternate rebind uses separately registered source");
+        const std::array<sp::Draw,1> bad_rebind{{{binding.resources[0],
+            &raster->view(sp::RasterSource::alternate),binding.generation}}};
+        const auto before = ram;
+        rejects([&] { producer.prepare(ram,1,bad_rebind,{}, {0x150000,4096}); },
+                "resource index and descriptor variant must agree");
+        check(before == ram, "bad rebind is command-write atomic");
+        rejects([&] { raster->publish(sp::RasterSource::primary,0,1); }, "live graphics pins revision");
+        rejects([&] { raster->pixels(sp::RasterSource::primary); }, "live graphics denies mutable span acquisition");
+        rejects([&] { producer.unregister_raster(binding); }, "real unretired borrower prevents release");
+    }
+    auto overlap = dynamic_raster(0x400000);
+    rejects([&] { producer.register_raster(overlap); }, "physical raster allocation overlap rejects");
+    producer.unregister_raster(binding);
+    const auto replacement = producer.register_raster(overlap);
+    check(replacement.resources == binding.resources && replacement.generation != binding.generation,
+          "retired slots reuse bounded topology storage with a new generation");
+    producer.install_composed(ram,1,union_plan);
+    {
+        auto borrow = producer.borrow();
+        rejects([&] { producer.prepare(ram,1,primary,{}, {0x150000,4096}); },
+                "old native draw binding cannot alias a reused registration");
+    }
+    rejects([&] { producer.unregister_raster(binding); }, "stale retirement cannot release a replacement");
+    producer.unregister_raster(replacement);
+}
+void dynamic_retirement_and_preflight_authority() {
+    sp::Producer producer({}, {});
+    std::weak_ptr<void> storage;
+    auto raster = dynamic_raster(0x400000, &storage);
+    const auto binding = producer.register_raster(raster);
+    raster.reset();
+    check(!storage.expired(), "producer owns actual mutable backing storage");
+    std::vector<std::uint32_t> ram(8*1024*1024/4);
+    {
+        auto token = producer.validate_residency(ram,1,{});
+        rejects([&] { producer.unregister_raster(binding); }, "uncommitted plan pins mutable allocation");
+        auto moved = std::move(token);
+        check(!token && bool(moved), "dynamic plan authority remains move-only");
+    }
+    producer.unregister_raster(binding);
+    check(storage.expired(), "last retired registration reclaims actual backing allocation");
+    auto first = producer.validate_residency(ram,2,{});
+    auto stale = producer.validate_residency(ram,2,{});
+    producer.commit_residency(std::move(first));
+    rejects([&] { producer.commit_residency(std::move(stale)); }, "stale plan cannot overwrite newer residency");
+    sp::Producer other({}, {});
+    auto foreign = other.validate_residency(ram,3,{});
+    rejects([&] { producer.commit_residency(std::move(foreign)); }, "foreign plan authority rejects");
+}
+void source_camera_masks_and_tags() {
+    isle::scene::render::Pass pass;
+    pass.link_mask = 2; pass.camera_tag = UINT32_MAX;
+    pass.tag_match = isle::scene::render::TagMatch::equality;
+    check(pass.includes({1,0x80000000u,UINT32_MAX}), "source sprite camera admits DL1/tag-1");
+    check(!pass.includes({2,0x80000000u,UINT32_MAX}), "source sprite camera rejects other render links");
+    check(!pass.includes({1,0x80000000u,1}), "flag8 camera requires exact tag equality, not intersection");
+    pass.tag_match = isle::scene::render::TagMatch::intersection;
+    pass.camera_tag = 0x80000000u;
+    check(pass.includes({1,0,0x80000001u}), "ordinary camera uses nonzero32-bit tag intersection");
+    check(!pass.includes({1,0,1}), "ordinary camera rejects disjoint tags");
+    check(!pass.includes({64,0,UINT32_MAX}), "invalid render links never shift by64");
+}
+void dynamic_native_formats_and_bank_alias_rejection() {
+    Fixture immutable;
+    const std::array<const IsleSprite*,1> roots{{&immutable.sprite}};
+    const std::array<sp::BankMapping,1> banks{{{immutable.bytes,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4);
+    for (const auto format_size : {std::array<unsigned,2>{3,1}, {3,2}, {0,3}}) {
+        const auto extent = 4u * 4u * (1u << format_size[1]) / 2u;
+        auto primary = std::make_shared<std::vector<std::uint8_t>>(extent,0xff);
+        auto alternate = std::make_shared<std::vector<std::uint8_t>>(extent,0x77);
+        IsleSprite s{};
+        s.width = s.height = s.bmheight = s.bmHreal = 4;
+        s.scalex = s.scaley = 1; s.red = s.green = s.blue = s.alpha = 255;
+        s.nbitmaps = s.istep = 1;
+        s.bmfmt = static_cast<std::uint8_t>(format_size[0]);
+        s.bmsiz = static_cast<std::uint8_t>(format_size[1]);
+        const std::array<sp::RasterPiece,1> pieces{{{{4,4,0,0,nullptr,extent,4,0},0}}};
+        auto raster = std::make_shared<sp::Raster>(s,pieces,std::array<sp::RasterStorage,2>{{
+            {primary,*primary,0x400000},{alternate,*alternate,0x400100}}});
+        const auto binding = producer.register_raster(raster);
+        producer.install(ram,1,{});
+        {
+            auto borrow = producer.borrow();
+            const std::array<sp::Draw,1> draw{{{binding.resources[0],
+                &raster->view(sp::RasterSource::primary),binding.generation}}};
+            check(producer.prepare(ram,1,draw,{}, {0x150000,4096}).rectangles == 1,
+                  "native dynamic IA8/IA16/RGBA32 uses the existing sprite generator");
+        }
+        producer.unregister_raster(binding);
+        if (format_size == std::array<unsigned,2>{3,2}) {
+            auto alias = std::make_shared<sp::Raster>(s,pieces,std::array<sp::RasterStorage,2>{{
+                {immutable.bytes,std::span(*immutable.bytes).first(extent),0x400000},
+                {alternate,*alternate,0x400100}}});
+            rejects([&] { producer.register_raster(alias); },
+                    "mutable dynamic allocation cannot alias any immutable bank bytes");
+        }
+    }
+}
+} // namespace
+int main() {
+    try {
+        installation_and_transactions(); mutable_state_and_scissor(); ci_palette_and_odd_rows();
+        derivatives_require_actual_raster_coverage();
+        minification_axes_and_coordinate_boundaries();
+        minified_bands_load_consumed_neighbors();
+        oversized_bitmap_bands(); rgba32_copy_rejection_is_atomic();
+        composed_residency_requires_exact_source_coverage();
+        dynamic_union_revision_and_rebind(); dynamic_retirement_and_preflight_authority();
+        source_camera_masks_and_tags();
+        dynamic_native_formats_and_bank_alias_rejection();
+        return 0;
+    } catch(const std::exception& error) { std::cerr << "sprite producer: " << error.what() << '\n'; return 1; }
+}

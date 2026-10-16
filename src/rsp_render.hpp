@@ -60,8 +60,9 @@ public:
     };
 
     explicit CanonicalExecutor(bool require_cpu, Limits limits = {});
-    // Outstanding preparation/execution/result ownership must be retired first.
-    // Machine destruction always precedes processor/backing-storage destruction.
+    // Preparation writers/result readers must cease access before destruction.
+    // An outstanding GPU-only token is drained without publishing completion;
+    // the worker joins before machine/processor/backing-storage destruction.
     ~CanonicalExecutor();
     CanonicalExecutor(const CanonicalExecutor&) = delete;
     CanonicalExecutor& operator=(const CanonicalExecutor&) = delete;
@@ -71,6 +72,20 @@ public:
     // The caller initializes every byte its task uses. Hidden is initialized
     // once at cold creation; neither memory is implicitly reset between tasks.
     PreparationLease begin_preparation();
+    // RSP execution remains synchronous on the owner thread (shared upstream
+    // JIT globals are not qualified for concurrent audio/graphics execution).
+    // Only the actual GPU submission/fence/read mapping runs on one persistent
+    // worker. No native view or preparation writer survives begin().
+    using Token = std::uint64_t;
+    Token begin(PreparationLease&& preparation, const Task& task,
+                std::span<const std::byte> boot);
+    // Nonblocking actual GPU completion, not FullSync. A failure drains/poisons
+    // and throws without publishing a result lease. Tokens are single-use.
+    bool poll(Token token);
+    MemoryLease completed(Token token);
+    // Blocking shutdown/abandonment fence, not an authored frame completion.
+    // On failure drains/poisons and throws; no result mapping escapes.
+    void retire(Token token);
     // Consumes exclusive CPU preparation, runs the actual persistent RSP to a
     // bounded packet buffer, flushes CPU+RSP writes, then enqueues all RDP work.
     // Real backend/device completion precedes readback. FullSync is not a fence.

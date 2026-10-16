@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Independent source-scene pass compositor with a typed startup adapter over actual native views, explicit selected resource inputs, production graphics_task helpers and one CanonicalExecutor. No alternate renderer, legacy Session alias, copied GAME renderer body, Nintendo/SGI producer/header, opaque SDK field/disassembly, fixture task, fake ready event, CPU color overlay, public asset bytes or whole decompressed-bank installation.",
+  "implementation": ["src/scene_graphics.hpp", "src/scene_graphics.cpp", "src/scene_render.hpp", "src/rsp_render.hpp", "src/rsp_render.cpp"],
+  "source_files": {
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "spans": [[14,17],[2062,2168],[2355,2377],[2576,2598],[2627,2674],[2714,2746]],
+      "facts": "Global camera scissors initially zero; quarter-pixel native viewport bounds intersect global scissors. Clear Z to packed maxFBZ0xfffc, then optional RGBA16 color, restore one-cycle and parity-selected opaque/translucent AA/Z render mode. Camera kind3 projection LOAD+normalization, kind6/8 projection MUL. Source title camera initializes each nonempty lane; camera flags4 join the complete group before lower-priority cameras. Sprite camera prepares clipped ordered draws and restores texture perspective. Model lane fog wrappers retain their own two-cycle state; compositor never forces a whole mixed packet to one-cycle."
+    },
+    "src/sys/oh.c": {
+      "git_blob": "b5b871a1b622803c944f5cf83d7624426238edf8",
+      "sha256": "5cd8502eb410caccc1bccd01d9c689d924c6366701d4ac2ba8bc229f8d31b86b",
+      "spans": [[207,222],[327,405]],
+      "facts": "Default model matrices are separate translation, degree rotation and scale; default camera matrices are perspective-fast and look-at. Camera default flags1|2|4 and black bgColor0xff differ from background wrapper flags3. Native camera state is borrowed, never replaced by fixture transforms."
+    },
+    "src/sys/gtl.c": {
+      "git_blob": "5b7ed17b40804177dacc5dbfb33283cf7f405175",
+      "sha256": "572c963eea665c1ce02c6e4470b268d76fe8d8ad15790809b21ead077e6cb931",
+      "spans": [[115,118],[155,174],[447,616]],
+      "facts": "SegmentF selects the current actual source framebuffer. Reset/global pre-render precedes produced display lists. Actual lane assembly order0,2,1,3, with line lanes2/3 empty in this selected title closure. Source camera group joins execute before FX, sprite and fade groups. FullSync terminates the actual RSP task but is not a GPU/device fence."
+    },
+    "src/sys/rdp_reset.c": {
+      "git_blob": "e08f96ecfcfbf11b6e0d818eb3e850dc096d4b1c",
+      "sha256": "2c36586442e7a5d16e9ffb4125a99e4402e7e20a3ac8b4eb7465333b36d1ec4c",
+      "spans": [[1,83]],
+      "facts": "Public-wire numeric identity, native full viewport, source geometry/clip/texture/combiner/othermode defaults, segment0/F and depth target; global pre-render runs AFTER ordinary lighting clear. Only arithmetic/public ABI facts are independently encoded."
+    },
+    "src/sys/vi.c": {
+      "git_blob": "3ce0baf687d8a7a323f1123cffc84dd90743616b",
+      "sha256": "c4f53eb8065a7355a7455789a24a7383926d4281e123f6cb172e9751a31f09c1",
+      "spans": [[20,31]],
+      "facts": "Source RGBA32-to-RGBA5551 fill packing truncates RGB to5 bits and alpha to its high bit, duplicated to both halfwords. Completed owned presentation expands5-bit RGB by bit replication and is opaque VI output, not alpha-blended host emulation."
+    },
+    "src/app_render/52DE0.c": {
+      "git_blob": "69f85403fc02060c7d5b2aa0c4428ed4fd1a4aaa",
+      "sha256": "cc36ae16113fba51ab053c62893f1bb09979e18d5cc6579c276156903d78479a",
+      "spans": [[37,58],[115,137],[264,290]],
+      "facts": "Fade object has live source-owned zero T/R and scale1,3.2,2.4, not kind28 scale*256 quantization. Existing admitted hal_mtx_f2l is reached through checked native isle_menu_scale_matrix and cached from actual source pose. Fade camera is45 degrees, near8,far1024,eye(290,0,0),at0,upZ. Primitive source RGBA and XLU_SURF/XLU_SURF2 precede retained immutable quad on lane1; root matrix stack is popped. No CPU black overlay."
+    },
+    "src/app_render/53AD0.c": {
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "spans": [[72,138],[856,859]],
+      "facts": "Fade viewport helper receives inclusive0,0,320,240: aspect is321.f/241.f, while integer half extents produce normal640/480 quarter-pixel scale/translate. Graphics uses Runtime's actual native camera rather than reconstructing a4/3 fixture. AA85C stores unrelated menu input scalars, not camera scissors."
+    },
+    "src/app_render/effect.c": {
+      "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
+      "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
+      "spans": [[66,101],[946,1023]],
+      "facts": "FX dispatch camera priority4 borrows the actual title camera; look-at-roll times perspective and raw quarter-pixel viewport lanes feed existing MenuEffects render. Source pool100 particles/10 effects, selected frames/palettes only, actual primitive-Z testing, no translucent depth-write overlay."
+    },
+    "src/main_menu/A08E30.c": {
+      "git_blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+      "spans": [[1282,1308]],
+      "facts": "Source menu background wrapper priority100 color0x6464b4ff, title camera priority5/model link4, sprite priority3/link1 with no clear, fade priority1/link0. Title camera retains its own default black clear while present. Source Z allocation0x25800; actual two framebuffer contexts supplied by Catalog."
+    },
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "spans": [[101,133],[405,416]],
+      "facts": "Actual animated native title camera near47 and five native model/material producers; FX priority4 and source dither0xc0/0x30. No authored fixed pose, external gameplay shortcut or fixed animation timer."
+    }
+  },
+  "public_abi": [
+    "https://hack64.net/wiki/doku.php?id=f3dex2",
+    "https://hack64.net/wiki/doku.php?id=rcpstructs",
+    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPMatrix.html",
+    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gdp/gDPSetRenderMode.html"
+  ],
+  "private_data": {
+    "snapshot_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "fade_display_list": {"guest":"0x800aecb0","rom":"0x5a660","bytes":48},
+    "fade_vertex_load": {"guest":"0x800aec70","rom":"0x5a620","bytes":64},
+    "handling": "Data-only public GBI/vertex inspection at exact known numeric identity. Runtime borrows admitted Snapshot and hydrates unchanged private selected extents; no extracted Gfx/Vtx arrays or images published."
+  },
+  "ram_layout": {
+    "cold_main_and_bss": ["0x400","0x9a8c0"],
+    "top_and_public_payloads": ["0x100000","0x110000"],
+    "model_camera_and_nodes": ["0x110000","0x120000"],
+    "four_model_lists": ["0x120000","0x130000"],
+    "dynamic_materials": ["0x130000","0x140000"],
+    "task_stack_yield_boot": ["0x280000","0x290000"],
+    "sprite_commands": ["0x150000","0x1a0000"],
+    "fx_commands_and_selected_assets": ["0x1a0000","0x1f0000"],
+    "fade_payloads": ["0x1f0000","0x200000"],
+    "actual_rsp_output": ["0x200000","0x240000"],
+    "source_framebuffers": ["0x3b5000","0x3da800"],
+    "source_depth": ["0x600000","0x625800"],
+    "installation": "Generic core reserves only actual cold/top/task/output/depth/framebuffers; source passes supply producer reservations and sprite command arenas. This admits world immutable assets at0x11b968..0x1508f8 without reserving title model arenas over them. Typed startup retains selected Catalog/model/FX/fade spans and submits real priority100/5/4/3/1 passes through the SAME generic preparation. Producer.install_composed validates immutable+both mutable variants+all reservations atomically before uploads, copies ROM only on source identity/RAM epoch change and copies only changed published raster bytes. Source sprite seeds are not caps; persistent scratch capacity grows only to observed high water. Scene inputs/native reads end synchronously; raster backing remains pinned until real GPU/readback retirement."
+  },
+  "executor": {
+    "public_api": "isle::scene::graphics::Frame::create(Snapshot,Config); begin(render::Input,FrameContext{buffer_index}); typed startup create(Catalog,Snapshot,Config)/begin(startup::View,FrameContext) compile actual source passes into the same core. CreateResult.frame replaces Session/session, with no compatibility alias. render::Input supplies explicit source resources and bounded camera passes, optional native sprite draw metadata or typed compiled preparation callbacks returning camera/four-lane real sublists. Stable priority ordering, source lanes0,2,1,3, native link masks and exact GAME cameraTag intersection/equality matching are retained. poll/busy/quiescent/retire and copied320x240 RGBA8 completion retain the actual execution/readback contract.",
+    "canonical_api": "CanonicalExecutor::begin(PreparationLease&&,Task,boot)->single-use Token; poll(Token) nonblocking; completed(Token)->MemoryLease; retire(Token) checked blocking GPU-only abandonment fence. Existing execute remains a genuine blocking diagnostic convenience over the same implementation, not an obsolete compatibility alias. Existing callers keep their actual execution semantics.",
+    "upstream": "cmake/rdp-dependencies.json pinned parallel-rdp1cecd042b2619bc505c12bfdc713808386f2b54d and Granitecf71dee71fb00110749a9a3fcbd87b0297e49b6a; actual CommandProcessor interface read in locally materialized renderer source. Pinned API exposes blocking idle/timeline wait but no nonblocking completed-fence query, so one persistent GPU-only worker is used; no lower wrapper or upstream edits.",
+    "threading": "Actual RSP executes synchronously on the creator/OM thread BEFORE GPU work is published, keeping audio and graphics upstream JIT execution serialized. The persistent worker holds only actual processor RAM/bounded packets and GPU state; never View/native/producer borrows. Packet submission, processor.idle, vkDeviceWaitIdle and completed mapping must ALL succeed before acquire/release-ready publication. Failure drains/poisons and never publishes a memory lease. Shutdown drains outstanding GPU-only token, joins worker and destroys machine before processor backing memory.",
+    "ownership": "Input and every mutable sprite/camera/effect/model read borrow cease before begin returns. Typed startup callbacks are preparation-stack-only and never retained. Copied draw pointers are cleared after preparation and on failure. Producer::Borrow retains dynamic raster ownership through GPU completion; publish/rebind/retirement cannot mutate storage under that live borrower. Poll copies completed mapped RGBA5551 to owned opaque RGBA8, releases MemoryLease, checks actual executor quiescence, then releases raster pins BEFORE reporting not busy. Host never interprets GPU FullSync as a fence."
+  },
+  "integration": {
+    "dependencies": ["startup_runtime typed adapter", "scene_resources and scene_services", "menu_resources", "menu_model_producer", "menu_effects", "sprite_producer and sprite_raster", "menu_scene_bridge scale conversion", "graphics_task", "canonical rsp_render backend"],
+    "compile_options": ["C++20", "-fno-fast-math", "-ffp-contract=off"],
+    "parent_checks": "Parent owns CMake and actual one-source-complete build/integration wave. Link native Runtime/Audio/GPU/Host, exercise both source buffers, logo mutable RGB fade, title model/FX/sprite/fade ordering, source321/241 fade camera, Start/B/reentry, GPU pending host pumping, error retirement and shutdown. Existing actual private-ROM model/sprite/effect consumers remain useful regressions. No permanent mock-forwarding test was added.",
+    "worker_activity": "Source/API research and edits only. No build, test, lint, formatter, project/feature executable, decompression, Original root retry/audit, ALSA/DRM/input/audio/udmabuf device probe, or rendering run was performed. Original numerical/parity and physical-device behavior remain unqualified."
+  }
+}

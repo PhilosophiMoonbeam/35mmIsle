@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Initialized source facts, checked native hydration and immutable selected logo/animated-title/main-menu resource closure. This is not a source-import manifest, renderer admission, animation execution, or full-game qualification. No asset payload or complete GAME body is published.",
+  "rom": {
+    "canonical_order": "big-endian z64",
+    "size": 16777216,
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf"
+  },
+  "source_files": {
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "facts": "68 declares signed s8 D_800AE4E4; 329-364 func_8009BB4C maps source Pokemon IDs to report-photo indices using exactly151 table bytes, Shellder alias603 and six sign IDs. The table payload remains private ROM data."
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "facts": "325 Shellder90; 341-342 Mew/PokedexMax151; 347 alias603; sign IDs1004,1010,1028(KoffingSmoke),1022,1018,1035."
+    },
+    "src/more_funcs/5BF20.c": {
+      "git_blob": "a223a8933886f1b2b9ebf77c72aab51225474791",
+      "sha256": "ce66ec4b0fbab3ee4161b6f2713f57dce59853c652592c2b9d715baa1211e333",
+      "facts": "212-226 caller applies report-photo array bounds and empty-photo marker after func_8009BB4C. Catalog returns raw mapped indices rather than applying that UI/storage policy."
+    },
+    "src/main_menu/A08E30.c": {
+      "git_blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+      "facts": "Sprite declarations, menu visual users and cold title->Start->menu->B->title lifecycle; 1282-1314 pre-render, screen/depth allocation, cameras, input, scene heap-size mutation and external SceneSetup consumer. The SceneSetup definition is absent here; it is independently read from mapped ROM, not inferred from logo."
+    },
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "facts": "34-52 five model/material/model-animation/material-animation roots plus camera stream; 54-69 bank/script callback semantics; 101-193 speed0.5 and actual render types D/J/D/I/B; 405-417 intro effect bank, particle100/effects10 and dither configuration."
+    },
+    "src/main_menu/A0D4D0.c": {
+      "git_blob": "b2fea62edc5568bc3ca65ea0c7946efb446dd7aa",
+      "sha256": "e1fed8577ac667363db941427014248a712d299e0bc6e4295241d3048ec0e35e",
+      "facts": "Additional initialized menu/options sprite and glyph resources; all declared roots hydrated, including save-dependent visual branches."
+    },
+    "src/main_menu/A0E190.c": {
+      "git_blob": "2ce023756684bab6c9c060d6f7c00e24e9297406",
+      "sha256": "53aafbde96043e94c417d2eaba8c02acdaa2de07164b0e5bcde1858f74524995",
+      "facts": "Five additional sprite roots retained for complete initialized overlay resource inventory; executing options is not claimed."
+    },
+    "src/AA0650.c": {
+      "git_blob": "d6263d3d6e1ff1f913e7620d402ed70c4d399acc",
+      "sha256": "62e01867df443487283155a3c8d07d01c4922b7425c3788d2033ec4ef2ad43bf",
+      "facts": "Logo sprite root802BC0C0; 14-78 initialized screen, source light constants, pre-render list and logo SceneSetup; 159-162 entry heap-size adjustment."
+    },
+    "src/app_render/46270.c": {
+      "git_blob": "bf53f3078a567ac78df51d3ee8d5e6f9fa17c135",
+      "sha256": "152884a39d0621dbbaafb57f292089048014efe70784cd03a72b70a57871d8c7",
+      "facts": "Logo overlay/VPK load, scene-manager entry-return switching, and per-scene update/draw intervals1/1."
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8",
+      "facts": "Fogged B/D/I/J wrapper identities and opaque/transparent list obligations."
+    },
+    "src/app_render/effect.c": {
+      "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
+      "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
+      "facts": "29-64 bank-relative script/image/frame/palette offsets; 276-299 scalar operand framing, including floats packed at arbitrary byte offsets; 407-816 bytecode framing, branches and terminal instructions. Hydration reframes each checked four-byte float operand as a borrowed GuestView with its actual ROM offset and calls existing f32(0); the shared aligned-record contract remains unchanged. Source execution remains the native effects producer's responsibility."
+    },
+    "src/app_render/effect.h": {
+      "git_blob": "665b175675d4764d5034b38a8094d686108c9054",
+      "sha256": "0f138ccc1c6a4596bd6a10db0d6e5849ade7f879fc2e3d170ade552089540f83",
+      "facts": "13-47 GAME effect script fixed header48bytes and effect image header24bytes with variable pointer arrays."
+    },
+    "src/sys/gtl.c": {
+      "git_blob": "5b7ed17b40804177dacc5dbfb33283cf7f405175",
+      "sha256": "572c963eea665c1ce02c6e4470b268d76fe8d8ad15790809b21ead077e6cb931",
+      "facts": "SceneSetup consumption, native allocation policy context, and gtlInit update/draw defaults1/1."
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf",
+      "facts": "Model/texture/camera command operand framing, packed-color operands, image index conversion, depth/flag tree construction and sentinel18. None of the exact selected116 streams uses jumps or interpolation pointers."
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c",
+      "facts": "997-1008 MObj AObj targetValue/targetRate initialize to0; 1061-1093 native MObj initialization differs from raw GAME Texture: lod from byte54, saved parameters24/28, image/next/palette indices0. Native runtime, not resource reader, applies these mutations."
+    },
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "facts": "913-1084 dynamic material command/segment0E semantics and block extents; actual B direct-list,D channel-list,I pre/draw-pair,J channel/pre/draw-array payload traversal. Public RDP LOADBLOCK/LOADTILE operand facts frame immutable image extents, not texture display dimensions."
+    },
+    "include/sys/anim.h": {
+      "git_blob": "1a0178fc52a859eda997ca232e1b063e10f9a4c9",
+      "sha256": "1e0ddc0140d6c05a6d5bb7fdf8db54f1a809fd89cb39be6ce0eb0bde75c5d5dd",
+      "facts": "44-byte GAME model node record."
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "facts": "AnimCommand and parameter IDs; GAME C/I/J payload wire records and Texture0x78 declaration. No SDK opaque host layout is imported."
+    },
+    "include/sys/gtl.h": {
+      "git_blob": "a17ea5a556c505ea432a1a5c800a7e34ef313323",
+      "sha256": "8a24f1d44f97f92cbc2cc5d4950875666e758bd059c3456ecca7512af59cd83b",
+      "facts": "21-61 BufferSetup0x40 and SceneSetup0x8C declared GAME wire offsets. Source object/model/sprite/camera strides are provenance only; native pools must use native sizeof/alignment and actual overflow allocation."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "facts": "10312-10353 main_menu overlay and compressed/uncompressed extents; 10407-10436 logo overlay/VPK extents; 10496-10499 intro effect bank extents."
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d",
+      "facts": "751-754 numeric fogged renderer callback identities B800A15D8,D800A1608,I800A1650,J800A16B0."
+    },
+    "tools/vpk0_codec.py": {
+      "git_blob": "ae2d7adcf9ec5ac93c3257533c6656af47f0aad4",
+      "sha256": "0b3622eb936fd89413841557e0a57f7d4894261e0f5c2be48a6c0e6a3d97e63c",
+      "facts": "Private data-only acquisition of exact decompressed numeric resource facts; production uses existing isle::vpk0::decode, not a duplicate codec."
+    }
+  },
+  "mapping": {
+    "rule": "ROM = overlay.rom_begin + guest - overlay.guest_begin; all ends exclusive",
+    "main_menu": {"rom_begin": "0xA08E30", "rom_end": "0xA0F830", "guest_begin": "0x800E18A0", "bss_begin": "0x800E82A0", "bss_end": "0x800E83A0"},
+    "logo": {"rom_begin": "0xAA0650", "rom_end": "0xAA0B80", "guest_begin": "0x800E18A0", "bss_end": "0x800E1DE0"}
+  },
+  "initialized_scene_setups": {
+    "main_menu": {"guest": "0x800E8188", "rom": "0xA0F718", "bytes": 140, "heap_guest": "0x800E83A0", "pre_render": "0x800E4610", "initialize": "0x800E4634"},
+    "logo": {"guest": "0x800E1D40", "rom": "0xAA0AF0", "bytes": 140, "heap_guest": "0x800E1DE0", "pre_render": "0x800E1B30", "initialize": "0x800E1B54"},
+    "shared_independently_read_facts": {
+      "update": "0x8000AFFC", "draw": "0x8000ADA0", "input": "0x80004860", "flags": 0,
+      "contexts": 2, "setup_count": 1, "display_list_bytes": [20480, 8192, 0, 0], "graphics_heap_bytes": 51200,
+      "thread_count": 32, "thread_stack_bytes": 1024, "stack_count": 128, "process_count": 64,
+      "object_count": 64, "matrix_count": 1024, "animation_object_count": 16, "material_count": 8,
+      "model_node_count": 16, "sprite_count": 128, "camera_count": 8,
+      "source_strides_not_native_pool_sizes": {"object": 92, "model_node": 136, "sprite": 88, "camera": 144},
+      "entry_heap_size": "0x802B5000 - initialized heap guest", "update_interval": 1, "draw_interval": 1,
+      "disable_near_clipping": true
+    }
+  },
+  "decompressed_banks": {
+    "main_menu": {"rom_begin": "0xA0F830", "rom_end": "0xA5CC46", "guest_begin": "0x802B5000", "bytes_consumed": 316438, "bytes_written": 997232, "sha256": "6ac54c55727be4e78db7ba6abc548c5ae805850d09dd214305bd5243e0a6f47e"},
+    "logo": {"rom_begin": "0xAA0B80", "rom_end": "0xAA18D3", "guest_begin": "0x802B5000", "bytes_consumed": 3411, "bytes_written": 28944, "sha256": "b8fe9bb81f07042670a3e7b252b2f2a3d0dd904c05878599ac65df3004184e67"},
+    "ownership": "Immutable sprite::BankOwner retained by Catalog; sprite::Sprite copies independently retain their bank/descriptor owners. Decompressed GuestView.rom_offset is size_t(-1), never a fabricated linear ROM address."
+  },
+  "initialized_menu_scalars": {"guest": "0x800E80D0", "rom": "0xA0F660", "bytes": 44, "initial_variant": 0, "pan": [0, 42, 84, 127], "y_positions": [[138, 162, 0, 0], [132, 150, 168, 0], [120, 138, 155, 174]], "source_bss_guest": "0x800E82A0", "source_bss_bytes": 256},
+  "screen_depth_allocation": {"initialized_depth_guest": 0, "logo_post_init_bytes": 153600, "menu_post_init_bytes": 153600, "alignment": 64, "source": "AA0650.c:147 and main_menu/A08E30.c:1292 each call gtlMalloc(0x25800,0x40); both initialized screen records contain NULL depth pointers before post-init."},
+  "report_photo_index": {"api": "Catalog::report_photo_index(int32_t sourcePokemonID) const", "table_guest": "0x800AE4E4", "table_rom": "0x59E94", "table_bytes": 151, "element": "signed s8", "mapping": "app_render ROM0x46270 + guest - guest0x8009A8C0, bounded before ROM0x59F30", "ordinary_domain": "IDs1..151 return signed table[id-1]", "alias": {"603": 90}, "special_offsets_from_table150": {"1004": 1, "1010": 2, "1028": 3, "1022": 4, "1018": 5, "1035": 6}, "default": -1, "policy": "Borrow exactly151 bytes from the retained Snapshot; no public table payload, save/photo-score dependency, table copy, remapping, capacity clamp or substitution. Caller UI separately enforces its report storage bounds."},
+  "closure": {
+    "sprites": {"logo": 1, "all_main_menu_overlay_roots": 64, "glyph_policy": "Menu visual text/glyphs are source sprite resources; no unrelated font renderer or procedural artwork is substituted."},
+    "models": [
+      {"tree": "0x8037F658", "materials": "0x8036A458", "animation": "0x80381D60", "material_animation": "0x80385700", "nodes": 226, "render_type": "D"},
+      {"tree": "0x803A1730", "materials": "0x8039BC48", "animation": "0x803A1BE0", "material_animation": "0x803A7F90", "nodes": 26, "render_type": "J"},
+      {"tree": "0x80359A20", "materials": "0x80359378", "animation": "0x80359B30", "material_animation": "0x80359CD0", "nodes": 5, "render_type": "D", "callback": "0x800E48E0"},
+      {"tree": "0x8038F3E0", "materials": "0x8038AD40", "animation": "0x8038F9C0", "material_animation": "0x80393AE0", "nodes": 33, "render_type": "I", "callback": "0x800E48E0"},
+      {"tree": "0x80393D30", "materials": null, "animation": "0x80393DC0", "material_animation": null, "nodes": 2, "render_type": "B"}
+    ],
+    "live_model_nodes": 292, "materials": 10, "animation_streams_including_camera": 116,
+    "camera_animation": "0x803A80D0", "animation_speed": 0.5, "model_matrix_kinds": [28, 0, 0], "camera_matrix_kinds": [3, 8],
+    "matrix_flag_overrides": {"tree": "0x80359A20", "nodes": [1, 2, 3], "depth_flags": "0x8001", "remaining_unflagged_nodes": 289, "policy": "Node.depth_flags retains the exact source high nibble; native renderer must apply anim_func_8000FE08 routing rather than assume every node uses unflagged kind28."},
+    "lod_resource_domain_certificate": {"material": "0x803593A0", "image_count": 5, "stream": "0x80359CE4", "first_cubic": {"command": "0x80359D2C", "opcode": 5, "duration": 10, "target": 3.0, "target_rate": 0.05999995395541191}, "following_cubic": {"command": "0x80359D38", "opcode": 8, "duration": 40, "target": 3.0, "inherited_initial_rate": 0.05999995395541191, "target_rate": 0.0}, "policy": "Admit actual nonzero-rate Hermite intervals by bounding their cubic Bezier control hull inside [0,image_count-1). Selected LAST commands delimit the two intervals. Following interval's upper control is below3.8, so floor(LOD)+1 remains at most4. No zero-rate assumption, LOD clamping, image alias substitution or runtime interpolation replacement."},
+    "immutable_display_lists": 226, "dynamic_material_segment": "0x0E", "dynamic_material_slots": [0, 1, 2, 3],
+    "required_public_gbi_operations": ["VTX", "MODIFYVTX", "CULLDL", "TRI1", "TRI2", "DL", "ENDDL", "MOVEWORD light colors", "SETTIMG", "LOADTLUT", "LOADBLOCK", "LOADTILE", "scalar render state"],
+    "effect_bank": {"bank_id": 0, "script_rom_begin": "0xADEC60", "script_rom_end": "0xADEDF0", "image_rom_begin": "0xADEDF0", "image_rom_end": "0xAE0510", "scripts": 4, "images": 2, "lexical_callback_scripts": [0, 3], "installed_callback_scripts": [0], "callback_note": "Script3 opcode16 words belong to first D226 model whose fnAnimCallback is NULL. Source installs callback only on third D5 and fourth I33. All scripts remain hydrated, but NULL callback events must not be dispatched.", "particle_pool": 100, "effect_pool": 10, "frame_counts": [6, 5], "formats": ["I4", "CI4 with one RGBA16 palette per frame"], "dimensions": [32, 32]},
+    "pre_render": {"logo_list_guest": "0x800E1CE8", "menu_list_guest": "0x800E8130", "list_bytes": 88, "light_wire_bytes": 24, "ambient_rgb": [97, 97, 97], "diffuse_rgb": [207, 207, 207], "direction": [26, 77, 127]}
+  },
+  "installation": {
+    "layout": "Caller-owned 8MiB word-swapped RDRAM: destination[(guest-0x80000000+i) XOR3] = canonical source[i]",
+    "spans": "Exact merged reachable GBI, vertex and all alternative static/dynamic image loads, plus scene-selected pre-render/light records. No complete overlay or decompressed bank installation.",
+    "fixed_reservations": [{"offset": "0x3B5000", "bytes": "0x25800"}, {"offset": "0x3DA800", "bytes": "0x25800"}],
+    "runtime_reservations": "Caller must supply actual runtime/FIFO/command/depth/cache reservations; collision returns relocation_required with exact spans. A real producer address-layout change or full address relocation is required, never silent overwrite.",
+    "effects": "Effect image/script relative offsets resolve to checked native borrowed spans. Their runtime heap/GPU allocation and address emission belong to the native effect producer, not a guessed source heap base.",
+    "known_source_palette_overread_and_native_repair": "GAME effect.c:1166 requests pal256 (512 bytes) for every CI format, while selected intro CI4 palettes are packed32-byte records at bank-relative1680,16A0,16C0,16E0,1700 in a1720-byte loaded bank. Each source512-byte request escapes that allocation; neighboring ROM bytes are NOT heap-neighbor provenance. Native effect producer must use the approved bounded pal16 semantic repair: source1180 selects CI4 palette bank0, all reached indices0..15, no CI8 or other palette-bank reuse. Catalog retains only actual32-byte palettes. Parent must prove adjacent/TMEM poison irrelevance. This repair is not claimed bit/cycle equivalent to the source over-read."
+  },
+  "integration": {
+    "sources": ["src/menu_resources.cpp", "src/menu_resources.hpp"],
+    "suggested_library": "isle-menu-resources",
+    "public_include_directories": ["src"],
+    "public_link_libraries": ["isle-rom-snapshot", "isle-sprite", "isle-vpk0"],
+    "language": "C++20",
+    "next_scene_closure": "Native scene manager must execute real logo/save/controller/fade, title model/material/camera kind8 animation and effects, fogged B/D/I/J command producers, input/audio lifecycle, menu Start/B re-entry and quiescence. No forced scene, muted audio, static-title stand-in or source qualification is provided by this resource component."
+  }
+}

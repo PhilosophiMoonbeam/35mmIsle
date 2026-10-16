@@ -199,8 +199,7 @@ HydrateResult hydrate(BankOwner bank, std::uint32_t canonical_base,
         return failure(Error::out_of_bank, root_address);
     }
     try {
-        auto storage = std::make_shared<Sprite::Storage>(std::move(bank));
-        auto& view = storage->view;
+        IsleSprite view{};
         view.x = signed16(root);
         view.y = signed16(root + 2);
         view.width = signed16(root + 4);
@@ -227,20 +226,6 @@ HydrateResult hydrate(BankOwner bank, std::uint32_t canonical_base,
         view.bmsiz = root[49];
         view.frac_s = signed16(root + 64);
         view.frac_t = signed16(root + 66);
-        if ((view.attr & ISLE_SP_EXTERN) != 0) {
-            return failure(Error::unsupported_external_state, root_address);
-        }
-        if (view.width < 0 || view.height < 0 || !std::isfinite(view.scalex) ||
-            !std::isfinite(view.scaley) || view.nbitmaps < 0 || view.ndisplist < 0 ||
-            view.bmheight < 0 || view.bmHreal < 0 || view.istart < 0 ||
-            (view.nbitmaps == 0 ? view.istart != 0 : view.istart >= view.nbitmaps)) {
-            return failure(Error::invalid_scalar, root_address);
-        }
-        unsigned bits = 0;
-        const auto format_error = format_bits(view.bmfmt, view.bmsiz, bits);
-        if (format_error != Error::none) {
-            return failure(format_error, root_address);
-        }
         if (view.startTLUT < 0 || view.nTLUT < 0 ||
             static_cast<unsigned>(view.startTLUT) + static_cast<unsigned>(view.nTLUT) > 256) {
             return failure(Error::invalid_palette, root_address);
@@ -254,8 +239,47 @@ HydrateResult hydrate(BankOwner bank, std::uint32_t canonical_base,
                                palette_address);
             }
         }
-        const auto bitmap_address = be32(root + 52);
-        const auto count = static_cast<std::size_t>(view.nbitmaps);
+        return hydrate_bitmaps(std::move(bank), canonical_base, view, be32(root + 52),
+                               static_cast<std::size_t>(view.nbitmaps));
+    } catch (...) {
+        return failure(Error::resource_failure, root_address);
+    }
+}
+
+HydrateResult hydrate_bitmaps(BankOwner bank, std::uint32_t canonical_base,
+                              const IsleSprite& prototype, std::uint32_t bitmap_address,
+                              std::size_t count) noexcept {
+    if (!bank) return failure(Error::invalid_owner, bitmap_address);
+    if (bank->size() > (std::uint64_t{1} << 32) - canonical_base)
+        return failure(Error::address_space_overflow, canonical_base);
+    const BankReader reader(*bank, canonical_base);
+    try {
+        auto storage = std::make_shared<Sprite::Storage>(std::move(bank));
+        auto& view = storage->view;
+        view = prototype;
+        view.bitmap = nullptr;
+        if ((view.attr & ISLE_SP_EXTERN) != 0)
+            return failure(Error::unsupported_external_state, bitmap_address);
+        if (view.width < 0 || view.height < 0 || !std::isfinite(view.scalex) ||
+            !std::isfinite(view.scaley) || count > static_cast<std::size_t>(std::numeric_limits<std::int16_t>::max()) ||
+            view.ndisplist < 0 || view.bmheight < 0 || view.bmHreal < 0 || view.istart < 0 ||
+            (count == 0 ? view.istart != 0 : static_cast<std::size_t>(view.istart) >= count))
+            return failure(Error::invalid_scalar, bitmap_address);
+        view.nbitmaps = static_cast<std::int16_t>(count);
+        unsigned bits = 0;
+        const auto format_error = format_bits(view.bmfmt, view.bmsiz, bits);
+        if (format_error != Error::none) return failure(format_error, bitmap_address);
+        if (view.startTLUT < 0 || view.nTLUT < 0 ||
+            static_cast<unsigned>(view.startTLUT) + static_cast<unsigned>(view.nTLUT) > 256)
+            return failure(Error::invalid_palette, bitmap_address);
+        if (view.nTLUT != 0) {
+            const auto begin = reinterpret_cast<std::uintptr_t>(storage->bank->data());
+            const auto palette = reinterpret_cast<std::uintptr_t>(view.LUT);
+            const auto extent = static_cast<std::size_t>(view.nTLUT) * 2;
+            if (!view.LUT || palette < begin || palette - begin > storage->bank->size() ||
+                extent > storage->bank->size() - (palette - begin) || view.LUT_bytes < extent)
+                return failure(Error::invalid_palette, bitmap_address);
+        } else { view.LUT = nullptr; view.LUT_bytes = 0; }
         if (count == 0) {
             return {Error::none, Sprite(std::move(storage)), 0};
         }
@@ -307,7 +331,7 @@ HydrateResult hydrate(BankOwner bank, std::uint32_t canonical_base,
         view.bitmap = storage->bitmaps.data();
         return {Error::none, Sprite(std::move(storage)), 0};
     } catch (...) {
-        return failure(Error::resource_failure, root_address);
+        return failure(Error::resource_failure, bitmap_address);
     }
 }
 

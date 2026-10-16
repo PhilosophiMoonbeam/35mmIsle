@@ -69,17 +69,19 @@ static bool valid_sprite(IsleGame* game, SObj* sprite) {
 }
 
 static void update_entry(GObj* object) {
-    object->update(object, object->userData);
+    object->update(object, object->updateUser);
 }
 
 static void synchronous_entry(GObj* object) {
     GObjProcess* process = omCurrentProcess;
-    process->entry(object, process->user);
+    if (process->function != NULL) process->function(object);
+    else process->entry(object, process->user);
 }
 
 static void stackful_entry(void* user) {
     GObjProcess* process = user;
-    process->entry(process->object, process->user);
+    if (process->function != NULL) process->function(process->object);
+    else process->entry(process->object, process->user);
 }
 
 IsleGameResult isle_game_create(isle_arena* arena, IsleGame** output) {
@@ -162,12 +164,42 @@ IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
     object->priority = priority;
     object->update = update;
     object->fnUpdate = update != NULL ? update_entry : NULL;
-    object->userData = user;
+    object->updateUser = user;
     object->game = game;
     object->alive = true;
     omLinkGObjAfterSamePriority(object);
     ++game->counts.objects;
     *output = object;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_object_metadata(IsleGame* game, IsleGameObject* object, IsleGameObjectMetadata* output) {
+    IsleGameResult result = access_game(game);
+    if (output != NULL) *output = (IsleGameObjectMetadata){0};
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object) || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = (IsleGameObjectMetadata){object->id, object->priority, object->flags, object->link};
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_object_set_flags(IsleGame* game, IsleGameObject* object, uint32_t flags) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    object->flags = flags;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_object_set_retire_callback(IsleGame* game, IsleGameObject* object,
+    IsleGameCallback callback, void* user) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    object->retired = callback;
+    object->retireUser = user;
     return ISLE_GAME_OK;
 }
 
@@ -190,17 +222,18 @@ IsleGameResult isle_game_object_id(IsleGame* game, IsleGameObject* object, uint3
     return ISLE_GAME_OK;
 }
 
-IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
-                                    IsleGameCallback entry, void* user,
-                                    IsleGameProcessKind kind, uint32_t priority,
-                                    IsleGameProcess** output) {
+static IsleGameResult add_process(IsleGame* game, IsleGameObject* object,
+                                 IsleGameCallback entry, void* user,
+                                 IsleGameSourceCallback function,
+                                 IsleGameProcessKind kind, uint32_t priority,
+                                 IsleGameProcess** output) {
     GObjProcess* process;
     IsleContinuationResult created;
     if (output != NULL) *output = NULL;
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL) object = omCurrentObject;
-    if (!valid_object(game, object) || entry == NULL || output == NULL || priority >= ARRAY_COUNT(omGProcessList)
+    if (!valid_object(game, object) || (entry == NULL && function == NULL) || output == NULL || priority >= ARRAY_COUNT(omGProcessList)
         || (kind != ISLE_GAME_STACKFUL && kind != ISLE_GAME_SYNCHRONOUS)) return ISLE_GAME_INVALID_ARGUMENT;
     if (game->fault != ISLE_GAME_OK) return game->fault;
     process = game->free_processes;
@@ -211,6 +244,7 @@ IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
     process->game = game;
     process->object = object;
     process->entry = entry;
+    process->function = function;
     process->user = user;
     process->kind = (u8) kind;
     process->priority = (s32) priority;
@@ -227,6 +261,30 @@ IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
     omLinkProcess(process);
     ++game->counts.processes;
     *output = process;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
+                                    IsleGameCallback entry, void* user,
+                                    IsleGameProcessKind kind, uint32_t priority,
+                                    IsleGameProcess** output) {
+    return add_process(game, object, entry, user, NULL, kind, priority, output);
+}
+
+IsleGameResult isle_game_add_source_process(IsleGame* game, IsleGameObject* object,
+    IsleGameSourceCallback function, IsleGameProcessKind kind, uint32_t priority,
+    IsleGameProcess** output) {
+    return add_process(game, object, NULL, NULL, function, kind, priority, output);
+}
+
+IsleGameResult isle_game_process_source_function(IsleGame* game, IsleGameProcess* process,
+    IsleGameSourceCallback* output) {
+    IsleGameResult result = access_game(game);
+    if (output != NULL) *output = NULL;
+    if (result != ISLE_GAME_OK) return result;
+    if (process == NULL) process = omCurrentProcess;
+    if (!valid_process(game, process) || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = process->function;
     return ISLE_GAME_OK;
 }
 
@@ -262,6 +320,27 @@ IsleGameResult isle_game_end_process(IsleGame* game, IsleGameProcess* process) {
     if (!valid_process(game, process)) return ISLE_GAME_INVALID_ARGUMENT;
     omEndProcess(process);
     return game->fault;
+}
+
+IsleGameResult isle_game_end_source_processes(IsleGame* game, IsleGameObject* object,
+    IsleGameSourceCallback function) {
+    GObjProcess* process;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object) || function == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    /* GAME items.c:77-84 saves the next object-local link before termination.
+     * A stackful self-end deliberately never returns into this C frame. */
+    process = object->processListHead;
+    while (process != NULL) {
+        GObjProcess* next = process->next;
+        if (process->function == function) {
+            omEndProcess(process);
+            if (game->fault != ISLE_GAME_OK) return game->fault;
+        }
+        process = next;
+    }
+    return ISLE_GAME_OK;
 }
 
 IsleGameResult isle_game_pause_process(IsleGame* game, IsleGameProcess* process, int paused) {
@@ -410,14 +489,48 @@ IsleGameResult isle_game_attach_camera(IsleGame* game, IsleGameObject* object,
     return ISLE_GAME_OK;
 }
 
+static bool valid_camera_pose(const IsleGameLookAt* p, bool require_y_up, bool require_supplied_up) {
+    float look[3], right[3], length = 0, cross_length = 0, inverse_length;
+    if (p == NULL) return false;
+    for (size_t i = 0; i < 3; ++i) {
+        if (!isfinite(p->eye[i]) || !isfinite(p->at[i]) || !isfinite(p->up[i])) return false;
+        look[i] = p->at[i] - p->eye[i];
+        length += look[i] * look[i];
+    }
+    if (!isfinite(length) || length <= 0) return false;
+    inverse_length = -1.0f / sqrtf(length);
+    if (!isfinite(inverse_length)) return false;
+    for (size_t i = 0; i < 3; ++i) look[i] *= inverse_length;
+    /* render.c kind 8 supplies (0,1,0), independently of look_at.up. Keep
+     * its normalization away from a zero/underflowed horizontal basis. */
+    if (require_y_up) {
+        float horizontal = look[0] * look[0] + look[2] * look[2];
+        if (!isfinite(horizontal) || horizontal <= 0 ||
+            !isfinite(1.0f / sqrtf(horizontal))) return false;
+    }
+    /* Kind 8 never consumes look_at.up. A valid fixed-Y basis must not be
+     * rejected merely because that separate, unused vector is collinear. */
+    if (!require_supplied_up) return true;
+    right[0] = p->up[1] * look[2] - p->up[2] * look[1];
+    right[1] = p->up[2] * look[0] - p->up[0] * look[2];
+    right[2] = p->up[0] * look[1] - p->up[1] * look[0];
+    for (size_t i = 0; i < 3; ++i) cross_length += right[i] * right[i];
+    return isfinite(cross_length) && cross_length > 0 &&
+        isfinite(1.0f / sqrtf(cross_length));
+}
+
 IsleGameResult isle_game_camera_add_matrix(IsleGame* game, IsleGameCamera* camera,
                                           IsleGameCameraMatrixKind kind) {
     OMMtx* matrix;
     IsleGameResult result = access_camera(game, camera);
     if (result != ISLE_GAME_OK) return result;
     if (kind != ISLE_GAME_CAMERA_PERSPECTIVE_FAST && kind != ISLE_GAME_CAMERA_LOOK_AT &&
-        kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
+        kind != ISLE_GAME_CAMERA_LOOK_AT_ROLL && kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
         return ISLE_GAME_INVALID_ARGUMENT;
+    if (kind == ISLE_GAME_CAMERA_LOOK_AT_ROLL &&
+        !valid_camera_pose(&camera->parameters.look_at, true, false)) return ISLE_GAME_INVALID_ARGUMENT;
+    if ((kind == ISLE_GAME_CAMERA_LOOK_AT || kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) &&
+        !valid_camera_pose(&camera->parameters.look_at, false, true)) return ISLE_GAME_INVALID_ARGUMENT;
     if (camera->numMatrices == ARRAY_COUNT(camera->matrices)) return ISLE_GAME_EXHAUSTED;
     matrix = game->free_matrices;
     if (matrix != NULL) game->free_matrices = matrix->nextFree;
@@ -457,34 +570,27 @@ IsleGameResult isle_game_camera_set_perspective(IsleGame* game, IsleGameCamera* 
 
 IsleGameResult isle_game_camera_set_look_at(IsleGame* game, IsleGameCamera* camera,
                                            const IsleGameLookAt* p) {
-    float look[3], right[3], length = 0, cross_length = 0, inverse_length;
-    bool changed = false;
+    bool pose_changed = false, up_changed = false, require_y_up = false, require_supplied_up = false;
     IsleGameResult result = access_camera(game, camera);
     if (result != ISLE_GAME_OK) return result;
     if (p == NULL) return ISLE_GAME_INVALID_ARGUMENT;
-    if (memcmp(p, &camera->parameters.look_at, sizeof(*p)) == 0) return ISLE_GAME_OK;
     for (size_t i = 0; i < 3; ++i) {
-        if (!isfinite(p->eye[i]) || !isfinite(p->at[i]) || !isfinite(p->up[i]))
-            return ISLE_GAME_INVALID_ARGUMENT;
-        look[i] = p->at[i] - p->eye[i];
-        length += look[i] * look[i];
         if (p->eye[i] != camera->parameters.look_at.eye[i] ||
-            p->at[i] != camera->parameters.look_at.at[i] ||
-            p->up[i] != camera->parameters.look_at.up[i]) changed = true;
+            p->at[i] != camera->parameters.look_at.at[i]) pose_changed = true;
+        if (p->up[i] != camera->parameters.look_at.up[i]) up_changed = true;
     }
-    if (!isfinite(length) || length <= 0) return ISLE_GAME_INVALID_ARGUMENT;
-    inverse_length = -1.0f / sqrtf(length);
-    if (!isfinite(inverse_length)) return ISLE_GAME_INVALID_ARGUMENT;
-    for (size_t i = 0; i < 3; ++i) look[i] *= inverse_length;
-    right[0] = p->up[1] * look[2] - p->up[2] * look[1];
-    right[1] = p->up[2] * look[0] - p->up[0] * look[2];
-    right[2] = p->up[0] * look[1] - p->up[1] * look[0];
-    for (size_t i = 0; i < 3; ++i) cross_length += right[i] * right[i];
-    if (!isfinite(cross_length) || cross_length <= 0 ||
-        !isfinite(1.0f / sqrtf(cross_length))) return ISLE_GAME_INVALID_ARGUMENT;
-    if (!changed) return ISLE_GAME_OK;
+    if (!pose_changed && !up_changed) return ISLE_GAME_OK;
+    for (size_t i = 0; i < camera->numMatrices; ++i) {
+        const IsleGameCameraMatrixKind kind = camera->matrices[i]->result.kind;
+        if (kind == ISLE_GAME_CAMERA_LOOK_AT_ROLL) require_y_up = true;
+        if (kind == ISLE_GAME_CAMERA_LOOK_AT || kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
+            require_supplied_up = true;
+    }
+    if (!valid_camera_pose(p, require_y_up, require_supplied_up || !require_y_up))
+        return ISLE_GAME_INVALID_ARGUMENT;
     camera->parameters.look_at = *p;
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT);
+    if (pose_changed) invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_ROLL);
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL);
     return ISLE_GAME_OK;
 }
@@ -495,6 +601,7 @@ IsleGameResult isle_game_camera_set_roll(IsleGame* game, IsleGameCamera* camera,
     if (!isfinite(radians)) return ISLE_GAME_INVALID_ARGUMENT;
     if (camera->roll == radians) return ISLE_GAME_OK;
     camera->roll = radians;
+    invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_ROLL);
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL);
     return ISLE_GAME_OK;
 }
@@ -564,6 +671,11 @@ static IsleGameResult compute_camera_matrix(const OMCamera* camera, const OMMtx*
                     p->eye[0], p->eye[1], p->eye[2], p->at[0], p->at[1], p->at[2],
                     camera->roll, p->up[0], p->up[1], p->up[2]))
                 return ISLE_GAME_INVALID_ARGUMENT;
+        } else if (matrix->result.kind == ISLE_GAME_CAMERA_LOOK_AT_ROLL) {
+            /* GAME render.c:2294-2300, kind 8 (not kind 10/Z-up). */
+            hal_look_at_roll_f(floating,
+                p->eye[0], p->eye[1], p->eye[2], p->at[0], p->at[1], p->at[2],
+                camera->roll, 0.0f, 1.0f, 0.0f);
         } else {
             hal_look_at_f(floating, p->eye[0], p->eye[1], p->eye[2],
                           p->at[0], p->at[1], p->at[2], p->up[0], p->up[1], p->up[2]);
@@ -948,6 +1060,13 @@ void omDeleteGObj(GObj* object) {
     }
     omUnlinkGObj(object);
     object->alive = false;
+    if (object->retired != NULL) {
+        IsleGameCallback callback = object->retired;
+        void* user = object->retireUser;
+        object->retired = NULL;
+        object->retireUser = NULL;
+        callback(object, user);
+    }
     object->next = game->free_objects;
     game->free_objects = object;
     --game->counts.objects;

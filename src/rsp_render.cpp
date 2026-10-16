@@ -7,6 +7,7 @@
 #include <atomic>
 #include <bit>
 #include <cstdint>
+#include <condition_variable>
 #include <exception>
 #include <mutex>
 #include <optional>
@@ -124,6 +125,50 @@ struct CanonicalExecutor::Impl {
         // reset it on a task. Caller admission initializes task-used RDRAM.
         errors.require_clean();
         machine.emplace(words, PacketBuffer::sink, &packets);
+        gpu_worker = std::thread([this] { run_gpu(); });
+    }
+    ~Impl() {
+        {
+            std::lock_guard lock(gpu_mutex);
+            gpu_stopping = true;
+        }
+        gpu_condition.notify_one();
+        if (gpu_worker.joinable()) gpu_worker.join();
+    }
+
+    void run_gpu() noexcept {
+        for (;;) {
+            {
+                std::unique_lock lock(gpu_mutex);
+                gpu_condition.wait(lock, [this] { return gpu_requested || gpu_stopping; });
+                if (gpu_stopping) return;
+                gpu_requested = false;
+            }
+            try {
+                errors.require_clean();
+                // CPU preparation and the real RSP have ceased all RAM access.
+                // Packets remain immutable until completed() retires this token.
+                for (const auto& packet : packets.packets())
+                    processor->enqueue_command(static_cast<unsigned>(packet.count),
+                                               packets.words().data() + packet.offset);
+                processor->idle();
+                require(vkDeviceWaitIdle(context.get_device()) == VK_SUCCESS,
+                        "canonical Vulkan device completion failed");
+                errors.require_clean();
+                completed_rdram = static_cast<const std::byte*>(processor->begin_read_rdram());
+                completed_hidden = static_cast<const std::byte*>(processor->begin_read_hidden_rdram());
+                require(completed_rdram == reinterpret_cast<const std::byte*>(words.data()) &&
+                        completed_hidden, "canonical completed memory mapping failed or changed address");
+                errors.require_clean();
+            } catch (...) {
+                gpu_failure = std::current_exception();
+            }
+            {
+                std::lock_guard lock(gpu_mutex);
+                gpu_ready.store(true, std::memory_order_release);
+            }
+            gpu_condition.notify_one();
+        }
     }
 
     void require_creator() const {
@@ -158,6 +203,14 @@ struct CanonicalExecutor::Impl {
     bool executing = false;
     bool leased = false;
     bool poisoned = false;
+    std::mutex gpu_mutex;
+    std::condition_variable gpu_condition;
+    std::thread gpu_worker;
+    std::atomic<bool> gpu_ready{false};
+    bool gpu_requested = false, gpu_stopping = false;
+    std::exception_ptr gpu_failure;
+    const std::byte *completed_rdram = nullptr, *completed_hidden = nullptr;
+    std::uint64_t next_token = 0, active_token = 0;
 };
 
 CanonicalExecutor::CanonicalExecutor(bool require_cpu, Limits limits) {
@@ -168,7 +221,11 @@ CanonicalExecutor::CanonicalExecutor(bool require_cpu, Limits limits) {
 
 CanonicalExecutor::~CanonicalExecutor() {
     impl_->require_creator_noexcept();
-    if (impl_->preparing || impl_->executing || impl_->leased) std::terminate();
+    if (impl_->preparing || impl_->leased) std::terminate();
+    if (impl_->executing) {
+        try { retire(impl_->active_token); }
+        catch (...) { /* Retire already drained/poisoned; destruction cannot report a frame. */ }
+    }
 }
 
 CanonicalExecutor::PreparationLease::PreparationLease(Impl& owner) noexcept : owner_(&owner) {}
@@ -305,7 +362,7 @@ CanonicalExecutor::PreparationLease CanonicalExecutor::begin_preparation() {
     }
 }
 
-CanonicalExecutor::MemoryLease CanonicalExecutor::execute(
+CanonicalExecutor::Token CanonicalExecutor::begin(
     PreparationLease&& preparation, const Task& task, std::span<const std::byte> boot) {
     auto& state = *impl_;
     state.require_creator();
@@ -330,23 +387,18 @@ CanonicalExecutor::MemoryLease CanonicalExecutor::execute(
         // No intervening read-map invalidation may discard noncoherent writes.
         processor.end_write_rdram();
         state.errors.require_clean();
-        // No fixture geometry/state gate: actual texture, depth, copy, fill and
-        // all other machine-framed commands retain their original packet order.
-        for (const auto& packet : state.packets.packets())
-            processor.enqueue_command(static_cast<unsigned>(packet.count),
-                                      state.packets.words().data() + packet.offset);
-        processor.idle();
-        require(vkDeviceWaitIdle(state.context.get_device()) == VK_SUCCESS,
-                "canonical Vulkan device completion failed");
-        state.errors.require_clean();
-        const auto* memory = static_cast<const std::byte*>(processor.begin_read_rdram());
-        const auto* hidden = static_cast<const std::byte*>(processor.begin_read_hidden_rdram());
-        require(memory == reinterpret_cast<const std::byte*>(state.words.data()) && hidden,
-                "canonical completed memory mapping failed or changed address");
-        state.errors.require_clean();
-        state.leased = true;
-        state.executing = false;
-        return MemoryLease(state, {memory, rdram_bytes}, {hidden, hidden_bytes});
+        require(state.next_token != UINT64_MAX, "canonical execution token exhausted");
+        state.active_token = ++state.next_token;
+        state.completed_rdram = nullptr;
+        state.completed_hidden = nullptr;
+        state.gpu_failure = nullptr;
+        state.gpu_ready.store(false, std::memory_order_relaxed);
+        {
+            std::lock_guard lock(state.gpu_mutex);
+            state.gpu_requested = true;
+        }
+        state.gpu_condition.notify_one();
+        return state.active_token;
     } catch (...) {
         // Invalid partial packet output never reaches the RDP, and no failed
         // execution publishes ready storage. Teardown drains any enqueued work.
@@ -354,5 +406,60 @@ CanonicalExecutor::MemoryLease CanonicalExecutor::execute(
         state.executing = false;
         throw;
     }
+}
+
+bool CanonicalExecutor::poll(Token token) {
+    auto& state = *impl_;
+    state.require_creator();
+    require(token != 0 && token == state.active_token && state.executing,
+            "canonical completion requires the outstanding execution token");
+    if (!state.gpu_ready.load(std::memory_order_acquire)) return false;
+    if (state.gpu_failure) {
+        const auto failure = state.gpu_failure;
+        // The GPU worker has left every processor call. Destruction drains any
+        // partial queued backend work before retiring RAM and reporting failure.
+        state.poison();
+        state.active_token = 0;
+        state.executing = false;
+        std::rethrow_exception(failure);
+    }
+    return true;
+}
+
+CanonicalExecutor::MemoryLease CanonicalExecutor::completed(Token token) {
+    require(poll(token), "canonical GPU execution has not completed");
+    auto& state = *impl_;
+    state.leased = true;
+    state.executing = false;
+    state.active_token = 0;
+    return MemoryLease(state, {state.completed_rdram, rdram_bytes},
+                       {state.completed_hidden, hidden_bytes});
+}
+
+void CanonicalExecutor::retire(Token token) {
+    auto& state = *impl_;
+    state.require_creator();
+    require(token != 0 && token == state.active_token && state.executing,
+            "canonical retirement requires the outstanding execution token");
+    {
+        std::unique_lock lock(state.gpu_mutex);
+        state.gpu_condition.wait(lock, [&state] {
+            return state.gpu_ready.load(std::memory_order_acquire);
+        });
+    }
+    auto lease = completed(token);
+    lease.release();
+}
+
+CanonicalExecutor::MemoryLease CanonicalExecutor::execute(
+    PreparationLease&& preparation, const Task& task, std::span<const std::byte> boot) {
+    const auto token = begin(std::move(preparation), task, boot);
+    {
+        std::unique_lock lock(impl_->gpu_mutex);
+        impl_->gpu_condition.wait(lock, [this] {
+            return impl_->gpu_ready.load(std::memory_order_acquire);
+        });
+    }
+    return completed(token);
 }
 } // namespace isle::rsp

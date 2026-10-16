@@ -57,6 +57,9 @@ void hal_perspective_fast_f(Mtx4f matrix, uint16_t* normalization, f32 fovy,
 bool hal_look_at_reflect_roll_f(Mtx4f matrix, LookAt* reflection,
     f32 eye_x, f32 eye_y, f32 eye_z, f32 at_x, f32 at_y, f32 at_z,
     f32 roll, f32 up_x, f32 up_y, f32 up_z);
+void hal_look_at_roll_f(Mtx4f matrix,
+    f32 eye_x, f32 eye_y, f32 eye_z, f32 at_x, f32 at_y, f32 at_z,
+    f32 roll, f32 up_x, f32 up_y, f32 up_z);
 void hal_translate(Mtx* matrix, f32 x, f32 y, f32 z);
 void hal_rotate_rpy_translate_scale(Mtx* matrix, f32 dx, f32 dy, f32 dz,
                                    f32 r, f32 p, f32 h, f32 sx, f32 sy, f32 sz);

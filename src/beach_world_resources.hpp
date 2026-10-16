@@ -43,6 +43,14 @@ struct SkyMetadata {
     std::uint32_t display_list_guest, render_callback_guest, materials_guest, animation_guest;
     float animation_speed;
 };
+struct WorldDescriptors {
+    WorldMetadata world;
+    SkyMetadata sky;
+    std::vector<BlockMetadata> primary, secondary;
+};
+// Metadata-only admission shared by the full native world and the independent
+// first-block diagnostic. Does not scan/install any GBI or runtime records.
+WorldDescriptors world_descriptors(const rom::Snapshot&);
 struct Command { std::uint32_t w0, w1; };
 struct DisplayList {
     rom::GuestView wire; // Through ENDDL or a terminating no-push G_DL, inclusive.

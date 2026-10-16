@@ -31,20 +31,20 @@
   },
   "native_support": {
     "src/engine.c": {
-      "sha256": "a44483e4e507cd869d5aee6e8718a4178124bf03490eeae4b5a86749751a1717",
-      "use": "Original actual-size native camera/model ownership and typed validation; atomic compute-all stages dirty native matrix/reflection/normalization payloads with no partial publication on failure, sharing exact math with individual getters. Pure model transform preflight reuses setter safety checks. Immutable per-node RTS/translate selection and exact direct GAME hal_translate; finite roll, numeric RCP light values and photo-world concatenation. No SDK implementation."
+      "sha256": "4a189ca04a2752fa5c518c08bce650e299eb4cb926cbc82898c1c19c6c6035b7",
+      "use": "Original actual-size native camera/model ownership and typed validation; atomic compute-all stages dirty native matrix/reflection/normalization payloads with no partial publication on failure, sharing exact math with individual getters. Kind8 exact GAME look-at-roll validates its consumed fixed Y-up basis independently of unused finite look_at.up; basic6/reflection14 and mixed cameras validate their consumed supplied up, including atomic matrix-attachment rejection. Finite radians and selective eye/at/roll dirtying without kind8 reflection output. Pure model transform preflight, immutable per-node RTS/translate and exact direct GAME hal_translate; numeric RCP light values and photo-world concatenation. Native source object/update metadata and once-only retirement callback after all process joins/payload removals and before node reuse keep generic scene userdata/queues alive through real deferred deletion. Typed one-argument GAME process entries are called directly through their original function identity, separately from synchronous/stackful dispatch adapters and native two-argument contexts; exact-identity ending follows GAME items.c:69-85 using existing OM lists, arena reuse and joined continuation retirement. No SDK implementation."
     },
     "src/engine_math.h": {
-      "sha256": "3b326cbe8b81fe990cb23b3166071739ed063f17df8d5315282cc5e5fbd6acdf",
-      "use": "Original native matrix/Vec3f/public RCP light numeric seams and checked signed-1.7 conversion; direct GAME hal_translate declaration, C libm binary32 roll trig, defined MIPS arithmetic. No SDK union, opaque tail/layout import or suppression."
+      "sha256": "ceed2ef41d8398c57c1532a63c825a21942fb2aeb2bea6597e38895866e3f782",
+      "use": "Original native matrix/Vec3f/public RCP light numeric seams and checked signed-1.7 conversion; direct GAME hal_look_at_roll_f and hal_translate declarations, C libm binary32 roll trig and shared exact GAME vector rotation, defined MIPS arithmetic. No SDK union, opaque tail/layout import or suppression."
     },
     "src/engine_internal.h": {
-      "sha256": "3b92c635e3cfc48e45f5151d7eb136fa052f19d1f7cb57fd9ea8a03b00ca0aed",
-      "use": "Original actual-size camera/matrix/reflection/model native payload ownership and bounded arena free lists, not console or SDK ownership layouts."
+      "sha256": "2b0a81b6468456f9fee25c5faa4c4c447b7684a5898d914f764b72552d2d1656",
+      "use": "Original actual-size camera/matrix/reflection/model native payload ownership, object retirement callback/userdata and bounded arena free lists, not console or SDK ownership layouts. Native updateUser is distinct from GAME entity userData; allocation and object reuse clear both, and callback replacement preserves actor payload. Process function is the actual callable IsleGameSourceCallback, distinct from native two-argument entry/user and scheduler adapter; zero-initialized arena reuse clears identities."
     },
     "include/35mmisle/engine.h": {
-      "sha256": "96a5a6d648dd98deba0a4ddad4614e32f875147aa6ae3da17045795fdae68251",
-      "use": "Native C camera/model ABI with atomic dirty-camera compute-all and pure model transform validation, explicit immutable per-node RTS/translate selection and stable revisions. Individual camera getters and source kind14 math semantics remain unchanged."
+      "sha256": "cfb7c5e9a1ba74421dbd70bc61e4f8a64a830e0e3ca2d3ce4b24ae0f4ca1a23f",
+      "use": "Native C camera kinds 3/6/8/14 and model ABI with atomic dirty-camera compute-all, finite-radians kind8 fixed-Y-up roll and selective caching, no kind8 reflection fabrication, pure model transform validation, explicit immutable per-node RTS/translate selection and stable revisions. Basic6 roll independence and source kind14 math semantics remain unchanged. Public native object/update metadata, joined/deferred retirement callback and promoted one-source command pool/FIFO/custom-handler API expose no SDK layouts or compatibility aliases. Typed GAME one-argument process creation, original callable identity observation and exact-function ending share existing native OM kind/priority/retirement semantics without callback casts or a parallel registry/scheduler."
     }
   },
   "rom_observations": [
@@ -354,6 +354,15 @@
           "reason": "Native binary32 C libm seam; no SDK producer implementation is an input."
         }
       ]
+    },
+    {
+      "symbol": "hal_look_at_roll_f",
+      "path": "src/sys/matrix.c",
+      "first": 442,
+      "last": 506,
+      "source_sha256": "43b040ab705e9d17292c7be17c229ba6142777606b2f3695050137fe9c2f9604",
+      "native_sha256": "43b040ab705e9d17292c7be17c229ba6142777606b2f3695050137fe9c2f9604",
+      "changes": []
     },
     {
       "symbol": "hal_look_at_reflect_roll_f",

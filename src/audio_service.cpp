@@ -279,7 +279,28 @@ Error AudioService::reset() noexcept {
     // immutable program/books/catalog and the stable RAM allocation survive.
     return Error::none;
 }
+Error AudioService::reset(effects::Config effects) noexcept {
+    auto& c = *context_;
+    if (c.lease != detail::Lease::none || c.building) return Error::task_busy;
+    const auto admitted = detail::validate_effects_for_rate(effects, c.config.synthesis_rate);
+    if (admitted != Error::none) return admitted;
+    // build_effects has no fallible operation after this same complete preflight.
+    // Install first, retaining any caller span aliased to the old program until
+    // copying is complete; reset() clears every mutable ring/history/staging byte.
+    const auto configured = detail::build_effects(c, effects);
+    if (configured != Error::none) return configured;
+    return reset();
+}
 bool AudioService::has_lease() const noexcept { return context_->lease != detail::Lease::none; }
+bool AudioService::voices_retired() const noexcept {
+    const auto& c = *context_;
+    const auto& state = c.state();
+    if (c.lease != detail::Lease::none || c.building || state.parameter_count != 0 ||
+        state.allocated_head != no_slot || state.retiring_head != no_slot) return false;
+    return std::none_of(state.physical.begin(), state.physical.end(), [](const auto& voice) {
+        return voice.allocated || voice.current.active || voice.pending.valid;
+    });
+}
 Error AudioService::read_pcm(const PcmView& pcm, std::uint32_t frame,
                               std::int16_t& left, std::int16_t& right) const noexcept {
     if (!valid_pcm(*context_, pcm)) return Error::stale_task;

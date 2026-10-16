@@ -196,7 +196,7 @@ Error start_sound(Context& context, CpuState& state, SfxCheckpoint& player,
     sound.phase = SoundPhase::attack;
     sound.published = true;
     Allocation allocation{};
-    error = detail::allocate_voice(context, state, sound.descriptor, player.priority, time, allocation);
+    error = detail::allocate_voice(context, state, sound.descriptor, sound.priority, time, allocation);
     if (error == Error::voice_unavailable) {
         // Original failed allocation remains logically playing and accepts
         // controls. It does not retry when a physical voice later becomes free.
@@ -289,6 +289,7 @@ Error SoundPlayer::stage_start(SoundId id, Parameters parameters, SoundHandle& h
     sound.generation = ++context_->next_sound;
     sound.sound = id;
     sound.parameters = sound.desired = parameters;
+    sound.priority = player->priority;
     handle = {context_->owner, sound.generation, id_.slot, slot};
     player->inbox[player->inbox_count++] = {PlayerEventKind::start, handle, id, parameters};
     return Error::none;
@@ -325,6 +326,19 @@ Error SoundPlayer::stage_volume(SoundHandle handle, std::uint16_t volume) noexce
 
 Error SoundPlayer::stage_stop(SoundHandle handle) noexcept {
     return post(context_, id_, {PlayerEventKind::stop, handle});
+}
+
+Error SoundPlayer::set_priority(SoundHandle handle, std::int16_t priority) noexcept {
+    SfxCheckpoint* player = nullptr;
+    auto error = mutable_player(context_, id_, player);
+    if (error != Error::none) return error;
+    PlayerSound* sound = nullptr;
+    error = playback(*context_, id_, *player, handle, sound);
+    if (error != Error::none) return error;
+    if (!playing(*sound)) return Error::stale_handle;
+    error = detail::priority_voice(*context_, context_->state(), sound->descriptor, priority);
+    if (error == Error::none) sound->priority = priority;
+    return error;
 }
 
 Error SoundPlayer::stage() noexcept {

@@ -16,6 +16,7 @@ typedef struct SObj IsleGameSprite;
 typedef struct OMCamera IsleGameCamera;
 typedef struct IsleGameModel IsleGameModel;
 typedef void (*IsleGameCallback)(IsleGameObject* object, void* user);
+typedef void (*IsleGameSourceCallback)(IsleGameObject* object);
 
 typedef enum IsleGameResult {
     ISLE_GAME_OK = 0,
@@ -69,10 +70,61 @@ IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
 IsleGameResult isle_game_delete_object(IsleGame* game, IsleGameObject* object);
 IsleGameResult isle_game_pause_updates(IsleGame* game, IsleGameObject* object, int paused);
 IsleGameResult isle_game_object_id(IsleGame* game, IsleGameObject* object, uint32_t* output);
+/* Native ownership metadata, never a console record layout. Retirement callback
+ * runs once after every process is joined and payload is removed, before node
+ * reuse; it must not throw, wait or mutate OM. Its userdata survives that fence. */
+typedef struct IsleGameObjectMetadata {
+    uint32_t id, priority, flags;
+    uint8_t update_link;
+} IsleGameObjectMetadata;
+IsleGameResult isle_game_object_metadata(IsleGame*, IsleGameObject*, IsleGameObjectMetadata*);
+/* Immediate source flag assignment (e.g. setWorldBlocksVisibility), not queued
+ * command delivery. Caller preserves unrelated flag bits using metadata(). */
+IsleGameResult isle_game_object_set_flags(IsleGame*, IsleGameObject*, uint32_t flags);
+IsleGameResult isle_game_object_set_retire_callback(IsleGame*, IsleGameObject*, IsleGameCallback, void*);
+
+/* One source FIFO per object, arena-backed recycled nodes. Command userdata and
+ * queues must survive actual deferred/joined object retirement. Handler receives
+ * only custom commands; -1 deletes, -2/-3 pause/resume all object processes,
+ * -4/-5 hide/show. NULL custom handler drains unknown commands. */
+typedef struct IsleGameCommand IsleGameCommand;
+typedef struct IsleGameCommandPool { isle_arena* arena; IsleGameCommand* free; } IsleGameCommandPool;
+typedef struct IsleGameCommandQueue {
+    IsleGameCommand* head;
+    IsleGameCommand* tail;
+    size_t count;
+    uint8_t processing, cancelled;
+} IsleGameCommandQueue;
+typedef void (*IsleGameCommandHandler)(IsleGameObject*, int32_t command, IsleGameObject* source, void* user);
+IsleGameResult isle_game_command_send(IsleGameCommandPool*, IsleGameCommandQueue*, int32_t, IsleGameObject*);
+/* delete_requested stops traversal; caller performs whole-object deletion. */
+IsleGameResult isle_game_commands(IsleGame*, IsleGameObject*, IsleGameCommandPool*,
+    IsleGameCommandQueue*, IsleGameCommandHandler, void*, int* delete_requested);
+void isle_game_commands_release(IsleGameCommandPool*, IsleGameCommandQueue*);
 IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
                                     IsleGameCallback entry, void* user,
                                     IsleGameProcessKind kind, uint32_t priority,
                                     IsleGameProcess** output);
+/* GAME one-argument entries retain their actual callable typed identity,
+ * separately from native dispatch/continuation adapters. They read GAME actor
+ * userData through their object, independently of native callback contexts.
+ * Both entry forms share OM priorities, kind semantics and joined retirement.
+ * No ownership is transferred.
+ */
+IsleGameResult isle_game_add_source_process(IsleGame* game, IsleGameObject* object,
+    IsleGameSourceCallback function, IsleGameProcessKind kind, uint32_t priority,
+    IsleGameProcess** output);
+/* Native two-argument processes report NULL. Output clears on every error. */
+IsleGameResult isle_game_process_source_function(IsleGame* game, IsleGameProcess* process,
+    IsleGameSourceCallback* output);
+/* Exact typed identity comparison in object insertion order, as GAME
+ * Items_EndProcessByFunction (items.c:69-85). NULL object selects the current
+ * object. Non-current matches are joined immediately. A matching stackful
+ * current process self-ends without returning or visiting later matches;
+ * synchronous self-end returns and traversal continues, like the source helper.
+ */
+IsleGameResult isle_game_end_source_processes(IsleGame* game, IsleGameObject* object,
+    IsleGameSourceCallback function);
 IsleGameResult isle_game_end_process(IsleGame* game, IsleGameProcess* process);
 IsleGameResult isle_game_pause_process(IsleGame* game, IsleGameProcess* process, int paused);
 /* Active stackful callback only. Paused processes consume no waits. */
@@ -123,6 +175,7 @@ typedef struct IsleGameCameraParameters {
 typedef enum IsleGameCameraMatrixKind {
     ISLE_GAME_CAMERA_PERSPECTIVE_FAST = 3,
     ISLE_GAME_CAMERA_LOOK_AT = 6,
+    ISLE_GAME_CAMERA_LOOK_AT_ROLL = 8,
     ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL = 14
 } IsleGameCameraMatrixKind;
 /* Native numeric words, NOT a host-endian serialized SDK structure. First
@@ -151,7 +204,9 @@ typedef struct IsleGameCameraReflection {
 /* Nonanimated camera payload, type 3, attached only to an empty object. Like
  * GAME omGObjSetCamera it initially has no matrices. Add up to two of any
  * supported kind, as GAME omCameraAddMtx permits; defaults are GAME parameters.
- * Roll defaults to zero radians and affects only reflection-roll matrices.
+ * Roll defaults to zero finite radians and affects kinds 8 and 14, not kind 6.
+ * Kind 8 uses GAME's fixed Y-up axis; kind 6/14 use look_at.up. A kind-8 pose
+ * must not look along Y. Up-only edits do not dirty kind 8.
  * No renderer, command, animation or callback interface is implied.
  * All handles/borrows expire on removal or object deletion, including reuse.
  * Borrow addresses stay stable until removal; contents change only on compute
@@ -182,8 +237,8 @@ IsleGameResult isle_game_camera_parameters(IsleGame* game, IsleGameCamera* camer
 IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* camera);
 IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
                                       size_t index, const IsleGameCameraMatrix** output);
-/* Same index/cache/revision and lifetime as matrix(); basic/projection indices
- * return INVALID_STATE, never fabricated reflection directions. */
+/* Same index/cache/revision and lifetime as matrix(); kinds 3/6/8 return
+ * INVALID_STATE, never fabricated reflection directions. */
 IsleGameResult isle_game_camera_reflection(IsleGame* game, IsleGameCamera* camera,
                                           size_t index, const IsleGameCameraReflection** output);
 IsleGameResult isle_game_camera_matrix_count(IsleGame* game, IsleGameCamera* camera,

@@ -154,7 +154,7 @@ IsleContinuationResult owner_state(IsleContinuation* node,
     }
 }
 
-enum class Operation { create, cancel, destroy, state };
+enum class Operation { create, cancel, destroy, state, invoke };
 struct Request {
     Operation operation;
     IsleContinuationDomain* domain;
@@ -182,6 +182,15 @@ void service(void* payload) noexcept {
         break;
     case Operation::state:
         request->result = owner_state(request->node, request->state);
+        break;
+    case Operation::invoke:
+        try {
+            request->entry(request->user);
+            request->result = ISLE_CONT_OK;
+        } catch (...) {
+            request->result = error(request->domain,ISLE_CONT_EXECUTION_FAILURE,
+                                    "owner service callback threw an exception");
+        }
         break;
     }
 }
@@ -286,6 +295,15 @@ isle_continuation_domain_destroy(IsleContinuationDomain* domain) {
     }
     delete domain;
     return ISLE_CONT_OK;
+}
+
+extern "C" IsleContinuationResult
+isle_continuation_on_owner(IsleContinuationEntry entry, void* user) {
+    if (entry == nullptr) return ISLE_CONT_INVALID_ARGUMENT;
+    if (active_context == nullptr) return ISLE_CONT_INVALID_STATE;
+    Request request{Operation::invoke,active_context->domain,active_context,entry,user,
+                    nullptr,nullptr,ISLE_CONT_OK};
+    return dispatch(&request);
 }
 
 extern "C" IsleContinuationResult

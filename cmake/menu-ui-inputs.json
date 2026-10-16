@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Independent native GAME menu control and mutable sprite UI implementation. Semantic source only: no SDK implementation/header, opaque SDK layout, original producer body, extracted resource payload, or disassembly is imported. Source completion does not claim executed RSP/RDP/PCM/LUS proof or complete external scenes.",
+  "implementation": ["src/menu_ui_scene.hpp", "src/menu_ui_scene.cpp"],
+  "behavior_tests": ["tests/menu_ui_tests.cpp"],
+  "private_input_smoke_source": "tests/startup_runtime_rom_smoke.cpp",
+  "source_files": {
+    "src/main_menu/A08E30.c": {
+      "git_blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+      "definitions": [
+        {"lines": "77-158", "facts": "Mutable sprite attributes/color/position, fade wait truncation, independent source idle calendar capped at1800; actual wait, not presentation frames."},
+        {"lines": "160-228", "facts": "Quick30-update BGM fade versus black60-update fade, native menu object deletion, checked new-game reset, report Pokemon IDs0..150 mapped before report-slot lookup, background entry tints."},
+        {"lines": "230-554", "facts": "Eight stacked logo components, exact initial positions/scales, source pan/Y initialized Catalog inputs, six-step scale per component and input skip, real sound/reverb, same-object chain replacement, source white fade; source four/three-frame runner sprite chains."},
+        {"lines": "556-791", "facts": "Actual menu song23 and volume, entry reveal/brightness, per-update runner cycling/scrolling, press-start tint pulse and A/Start controls, idle attract and selection flicker."},
+        {"lines": "793-987", "facts": "PFID16/report-threshold two/three/four item ordering and initialized Y table, source selection defaults, slow-axis wrap, B cancellation, confirmation/new-game prompt, states2/3/4/6/7/8/9/10/11."},
+        {"lines": "989-1191", "facts": "Reset prompt defaultNo, leftYes/rightNo, B cancel, actual confirmation BGM23/player1 and player0 volume calendar, checked RAM reset only whenYes; absent-controller display and no fabricated input/attract."},
+        {"lines": "1193-1279", "facts": "Real Title.play and main-menu alternation from BB40 start flags, controller0 versus-1, native state loop12 reconstruction, options branch, external GTL exit request rather than fake SceneDone."},
+        {"lines": "1286-1334", "facts": "Parent-owned common input initializer/ScreenSettings/cameras/GTL; UI source input repeat24/12/mask0xf0000. Explicit external scenes Beach0/flag1, OaksLab11/flag2, Gallery22, attract21."}
+      ]
+    },
+    "src/main_menu/A0D4D0.c": {
+      "git_blob": "b2fea62edc5568bc3ca65ea0c7946efb446dd7aa",
+      "sha256": "e1fed8577ac667363db941427014248a712d299e0bc6e4295241d3048ec0e35e",
+      "definitions": [
+        {"lines": "53-228", "facts": "Options background/frame/heading/five labels, exact coordinates and chains, PFID9/zoom12/invert13 two-choice color selection."},
+        {"lines": "230-331", "facts": "All five descriptions, screen calibration description, all six choice-specific descriptions, complete option sprite cleanup and source return12."}
+      ]
+    },
+    "src/main_menu/A0E190.c": {
+      "git_blob": "2ce023756684bab6c9c060d6f7c00e24e9297406",
+      "sha256": "53aafbde96043e94c417d2eaba8c02acdaa2de07164b0e5bcde1858f74524995",
+      "definitions": [
+        {"lines": "35-197", "facts": "Source file containing reached calibration functionA0E4F8 (not a separate A0E5B0 translation unit): two four-sprite frames,12-step in/24-step out, live VI preview clamp+-12, Startzero, Aaccept/Brestore, simultaneous vertical/horizontal slow axes."},
+        {"lines": "199-379", "facts": "Five option label selection colors, fade background255to102, native selected-label flicker, descriptions, raw physical A/B (Start is not accept), slow-axis wrap, B exits options."},
+        {"lines": "381-559", "facts": "Setting-choice pulse/description, source initial128 versus changed255 pulse clock, live actual audio quality inversion, Aaccept/Brestore original choice and quality."},
+        {"lines": "561-595", "facts": "Options song27, actual checked screen/flag mutations only on exit, no invented durable commit,30-update BGM fade/stop."}
+      ]
+    },
+    "src/app_render/574F0.c": {
+      "git_blob": "d813035979ca01f69ff71957fbc4e9d89a39fc96",
+      "sha256": "eac13b5042e70f19565fedec4e3e7765484db5d8fe66bb44127cbf4c47a550fe",
+      "definitions": [{"lines": "3-28", "facts": "Borrowed source BB40 flags, bitwise OR1, physical controller0 or-1 only; UI does not select first healthy alternative port."}]
+    },
+    "src/app_render/56880.c": {
+      "git_blob": "3085e2497a95d6b6e4ec96c2a8dfcbd573611c1e",
+      "sha256": "edf1b9f32d302e228421c6bd04ac268a18453745851fca384965449da914ae7d",
+      "definitions": [{"lines": "5-7", "facts": "Parent receives source entry flag bits via Ui.entry_flags; source OR semantics retained by actual entry manager."}]
+    },
+    "src/app_render/53AD0.c": {
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "definitions": [{"lines": "940-1028", "facts": "Parent-owned source common input/recording processAAB5C; begin_update exactly once before actual OM update, no UI presentation clock or source-recording no-op."}, {"lines": "1045-1058", "facts": "Parent owns complete reached AAE28 initializer and command-process creation; UI does not claim to implement these global systems."}]
+    },
+    "src/more_funcs/5BF20.c": {
+      "git_blob": "a223a8933886f1b2b9ebf77c72aab51225474791",
+      "sha256": "ce66ec4b0fbab3ee4161b6f2713f57dce59853c652592c2b9d715baa1211e333",
+      "definitions": [{"lines": "212-226", "facts": "Catalog sourcePokemonID lookup, reject negative/index>=69 as absent, checked GameSnapshot report photo presence. Never substitute69-slot count."}, {"lines": "618-654", "facts": "Checked GameSession.reset(raw_game_time) implements full source new-game RAM reset; UI does not fake defaults, retain snapshots across waits, or implicitly commit."}]
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "definitions": [{"lines": "4-49", "facts": "Explicit GAME scene IDs and player flag IDs; no guessed scene registry."}]
+    }
+  },
+  "public_boundary": {
+    "entry": "Ui(Services&,Title&); start registers native stackful control and independent source idle process. Parent calls actual isle_game_tick, actual acquisition publication and MenuInput.begin_update; Ui never authors ticks.",
+    "graphics": "Services sprite registry provides actual mutable native copies/chains. Parent produces numeric canonical RDRAM tasks and executes real RSP/RDP; UI has no CPU blit, own renderer, host Gfx pointers, or fake GPU fence.",
+    "lifetime": "Services, Title, Catalog, Snapshot, input/audio/save/rng and arena outlive Ui. UI retire joins native callbacks and deletes its objects/views; parent must cease actual GPU borrowers before any owning resource retirement. Parent separately owns Title retirement.",
+    "continuations": "All resource ownership lives in Impl before first wait. Snapshot/exception helpers return before waits. Callbacks never throw, own no nontrivial automatic objects across C continuation fences, and stop on checked first error.",
+    "save": "Options mutate exact source flags/screen offsets in RAM. New-gameYes uses checked source RAM reset only; stored offsets reset independently of live VI, which remains unchanged throughout the source exit wait. No new defaults, name encoding, fake dialog, automatic commit, or phantom external scene is supplied.",
+    "source_indeterminate_local": "A08E30 press-start/no-controller pulse declares source color uninitialized but establishes sprite tint0 before loop; independent native implementation explicitly seeds this pulse from the established black tint, avoiding undefined C++ state.",
+    "external_scene_requests": "Main menu itself contains no name-entry/progress editing screen. Source new-game Beach0 flag1 requires parent to load world/window/menu_new_game and execute real source name/new-game path before Beach; continuation11, gallery22, attract21 require their actual parent entry paths, not menu-completed aliases.",
+    "prerequisites": ["Services.remove_sprites retains original object/DL insertion position while retiring old sprite registry records", "Catalog.report_photo_index uses pinned signed151-byte GAME mapping", "GameSession.reset(raw_time) implements checked source C042C RAM reset", "Parent implements source common AAE28/AAB5C, ScreenSettings/global cameras, entry-manager overlays, actual service/input/GPU/audio execution"]
+  },
+  "verification": "Main exercised the actual private-ROM startup/title/menu A/B/Start roundtrip, existing-profile reset confirmation and title-only reentry through canonical RSP/RDP, checked SDL dummy PCM and actual LUS OpenGL. A before-fix capture failed when RAM reset changed live VI; the separate frozen after-fix artifact b814cee97f660a1516c6c97f7be624b4e02c6dbc1dcd346e7c0631c3a9188302 passed with live8,-6 retained, RAM0,0/PFID16false, cold disk8,-6/PFID16true/generation1 unchanged, persistent State/Storage, joined old-wrapper retirement and rejected second boot. All109 trace tasks terminal,108 created tracees covered,110 tracer/tasks absent and identities stable; zero known physical/permission rows; ROM unchanged. Four actual window captures inspected privately. Input is explicitly software-owned, Host hardware acquisition diagnostic-disabled; no physical/hearing/Original numerical or full-game claim. The obsolete nonexecutable menu_ui_rom_smoke hook was removed rather than retained as an API shim."
+}

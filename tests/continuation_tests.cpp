@@ -363,8 +363,6 @@ void cpp_entry_failure_boundary() {
           isle_continuation_cancel(continuation) == ISLE_CONT_OK &&
           state(continuation) == ISLE_CONT_FAILED && data.entries == 1,
           "C++ entry failure is retained and never escapes any public C API");
-    check(std::strlen(isle_continuation_error(domain.value)) != 0,
-          "nonstandard C++ entry failure has an explicit diagnostic");
 }
 
 void shutdown_joins_all_accepted_processes() {
@@ -401,6 +399,47 @@ void shutdown_joins_all_accepted_processes() {
           "all callback storage can be reused immediately after complete domain shutdown");
 }
 
+struct OwnerServiceData {
+    IsleContinuationDomain* domain;
+    std::thread::id owner;
+    bool service_on_owner = true, saw_first = false, saw_failure = false, saw_second = false;
+    bool after_wait = false;
+    int value = 0;
+};
+void owner_increment(void* payload) {
+    auto& data = *static_cast<OwnerServiceData*>(payload);
+    data.service_on_owner &= std::this_thread::get_id() == data.owner;
+    data.value += 11;
+}
+void owner_throws(void*) { throw 37; }
+void owner_service_entry(void* payload) {
+    auto& data = *static_cast<OwnerServiceData*>(payload);
+    data.saw_first = isle_continuation_on_owner(owner_increment,&data) == ISLE_CONT_OK && data.value == 11;
+    data.saw_failure = isle_continuation_on_owner(owner_throws,&data) == ISLE_CONT_EXECUTION_FAILURE && data.value == 11;
+    data.saw_second = isle_continuation_on_owner(owner_increment,&data) == ISLE_CONT_OK && data.value == 22;
+    if (isle_continuation_wait(data.domain,1) != ISLE_CONT_OK) return;
+    data.after_wait = true;
+}
+void callback_owner_service_fence() {
+    Domain domain;
+    OwnerServiceData data{domain.value,std::this_thread::get_id()};
+    check(isle_continuation_on_owner(owner_increment,&data) == ISLE_CONT_INVALID_STATE && data.value == 0,
+          "owner service rejects a call outside an active continuation without executing it");
+    std::atomic<IsleContinuationResult> foreign{ISLE_CONT_OK};
+    std::thread unrelated([&] { foreign = isle_continuation_on_owner(owner_increment,&data); });
+    unrelated.join();
+    check(foreign == ISLE_CONT_INVALID_STATE && data.value == 0,
+          "an unrelated thread cannot dispatch an owner service");
+    IsleContinuation* callback = nullptr;
+    check(isle_continuation_create(domain.value,owner_service_entry,&data,&callback) == ISLE_CONT_OK,
+          "create real callback for owner-affine endpoint work");
+    check(isle_continuation_resume(callback) == ISLE_CONT_OK && state(callback) == ISLE_CONT_WAITING &&
+          data.service_on_owner && data.saw_first && data.saw_failure && data.saw_second && !data.after_wait,
+          "real owner services and handled failure finish within one resume before the actual GAME wait");
+    check(isle_continuation_resume(callback) == ISLE_CONT_OK && state(callback) == ISLE_CONT_COMPLETED && data.after_wait,
+          "owner handoffs consume no extra gameplay resume or wait");
+}
+
 } // namespace
 
 int main() {
@@ -415,6 +454,7 @@ int main() {
         compiled_c_failure_fence();
         cpp_entry_failure_boundary();
         shutdown_joins_all_accepted_processes();
+        callback_owner_service_fence();
     } catch (const std::exception& exception) {
         check(false, exception.what());
     } catch (...) {

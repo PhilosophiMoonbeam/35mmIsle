@@ -1,0 +1,2 @@
+// Native Windows RT_MANIFEST resource; shared by MSVC and MinGW hosts.
+1 24 "game_host.manifest"

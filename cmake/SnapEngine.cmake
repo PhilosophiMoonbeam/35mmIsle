@@ -77,4 +77,4 @@ if(ISLE_BUILD_RSP_PROBE AND ISLE_BUILD_RDP_PROBE)
     isle_target_options(engine-camera-rsp-smoke)
 endif()
 
-message(STATUS "Native OM/model/intro-fade/camera, translate-only and kind-28/photo math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")
+message(STATUS "Native OM/model/intro-fade/camera kinds 3/6/8/14, translate-only and kind-28/photo math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")

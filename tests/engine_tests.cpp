@@ -88,6 +88,129 @@ void update_and_process_order() {
                     10, 13, 11, 12, 120, 100, 130, 110});
 }
 
+void actor_payload_and_update_context_are_independent() {
+    World world;
+    int initial_context=0,replacement_context=0,payload=100;
+    auto* owner=object(world,17,0,0,engine_actor_context_update,&initial_context);
+    engine_bind_actor_payload(owner,&payload);
+    ok(isle_game_tick(world.game));
+    require(initial_context==1&&payload==110,
+            "GAME actor payload overwrote the native update callback context");
+    ok(engine_replace_actor_update(world.game,owner,&replacement_context));
+    ok(isle_game_tick(world.game));
+    require(initial_context==1&&replacement_context==1&&payload==120&&counts(world).objects==0,
+            "update replacement must preserve actor payload and source self-deletion");
+    int reused_context=0,reused_payload=200;
+    auto* reused=object(world,18,0,0,engine_actor_context_update,&reused_context);
+    engine_bind_actor_payload(reused,&reused_payload);
+    ok(isle_game_tick(world.game));
+    require(reused_context==1&&reused_payload==210&&payload==120&&replacement_context==1,
+            "retired actor payload or context leaked into the next native object");
+    ok(isle_game_delete_object(world.game,reused));
+    ok(isle_game_tick(world.game));
+    require(counts(world).objects==0&&reused_context==1&&reused_payload==210,
+            "explicit actor retirement dispatched stale context or payload");
+}
+
+void source_function_identity_and_reuse() {
+    World world;
+    EngineFixture fixture{}; fixture.game = world.game; fixture.mode = 1;
+    EngineFixture other{}; other.game = world.game; other.mode = 1;
+    auto* owner = object(world, 1);
+    auto* other_owner = object(world, 2);
+    engine_bind_source_payload(owner, &fixture);
+    engine_bind_source_payload(other_owner, &other);
+    IsleGameProcess *a = nullptr, *duplicate = nullptr, *b = nullptr, *other_a = nullptr;
+    ok(isle_game_add_source_process(world.game, owner, engine_source_a, ISLE_GAME_STACKFUL, 8, &a));
+    ok(isle_game_add_source_process(world.game, owner, engine_source_a, ISLE_GAME_STACKFUL, 8, &duplicate));
+    ok(isle_game_add_source_process(world.game, owner, engine_source_b, ISLE_GAME_SYNCHRONOUS, 5, &b));
+    EngineRecord ordinary{&fixture, 430}, recycled{&fixture, 431};
+    auto* native = process(world, owner, engine_record_process, &ordinary, ISLE_GAME_SYNCHRONOUS, 5);
+    ok(isle_game_add_source_process(world.game, other_owner, engine_source_a, ISLE_GAME_STACKFUL, 8, &other_a));
+    IsleGameSourceCallback function = nullptr;
+    for (auto* entry : {a, duplicate, other_a}) {
+        ok(isle_game_process_source_function(world.game, entry, &function));
+        require(function == engine_source_a, "source identity must be the original callable function");
+    }
+    ok(isle_game_process_source_function(world.game, b, &function));
+    require(function == engine_source_b, "distinct source entries acquired the same adapter identity");
+    ok(isle_game_process_source_function(world.game, native, &function));
+    require(function == nullptr, "ordinary native callback acquired a source identity");
+    ok(isle_game_tick(world.game));
+    trace(fixture, {410, 410, 420, 430}); trace(other, {410});
+    ok(isle_game_end_source_processes(world.game, owner, engine_source_a));
+    require(counts(world).processes == 3, "identity termination missed duplicates or terminated unrelated entries");
+    ok(isle_game_tick(world.game));
+    trace(fixture, {410, 410, 420, 430, 420, 430}); trace(other, {410});
+    require(fixture.retired_continued == 0, "joined source process resumed after exact-identity cancellation");
+    ok(isle_game_end_source_processes(world.game, owner, engine_source_b));
+    ok(isle_game_end_source_processes(world.game, other_owner, engine_source_a));
+    require(counts(world).processes == 1 && other.retired_continued == 0,
+            "identity termination crossed object ownership or retained sleeping source entries");
+    const auto cursor = world.arena.cursor;
+    auto* reused_native = process(world, owner, engine_record_process, &recycled, ISLE_GAME_SYNCHRONOUS, 5);
+    ok(isle_game_process_source_function(world.game, reused_native, &function));
+    require(function == nullptr, "recycled source slot retained identity in a native callback");
+    ok(isle_game_add_source_process(world.game, owner, engine_source_b, ISLE_GAME_SYNCHRONOUS, 5, &b));
+    ok(isle_game_process_source_function(world.game, b, &function));
+    require(function == engine_source_b && world.arena.cursor == cursor,
+            "source replacement failed to reuse joined arena storage with its new typed identity");
+    ok(isle_game_end_source_processes(world.game, owner, engine_source_a));
+    require(counts(world).processes == 3, "stale source identity terminated a replacement");
+    fixture.count = 0;
+    ok(isle_game_tick(world.game)); trace(fixture, {430, 431, 420});
+    ok(isle_game_end_source_processes(world.game, owner, engine_source_b));
+    ok(isle_game_end_process(world.game, native));
+    ok(isle_game_end_process(world.game, reused_native));
+    fixture.mode = 3; fixture.count = 0;
+    ok(isle_game_add_source_process(world.game, owner, engine_source_b, ISLE_GAME_SYNCHRONOUS, 5, &b));
+    ok(isle_game_add_source_process(world.game, owner, engine_source_b, ISLE_GAME_SYNCHRONOUS, 5, &duplicate));
+    ok(isle_game_tick(world.game)); trace(fixture, {420, 422});
+    require(counts(world).processes == 0, "synchronous identity self-end did not return and terminate later matches");
+}
+
+void source_wait_replace_and_retirement() {
+    {
+        World world;
+        EngineFixture fixture{}; fixture.game = world.game; fixture.shared_value = 37;
+        auto* owner = object(world, 1);
+        engine_bind_source_payload(owner, &fixture);
+        ok(isle_game_object_set_retire_callback(world.game, owner, engine_source_retired, &fixture));
+        EngineRecord high{&fixture, 440}, low{&fixture, 430};
+        process(world, owner, engine_record_process, &high, ISLE_GAME_SYNCHRONOUS, 11);
+        process(world, owner, engine_record_process, &low, ISLE_GAME_SYNCHRONOUS, 0);
+        IsleGameProcess* source = nullptr;
+        ok(isle_game_add_source_process(world.game, owner, engine_source_a, ISLE_GAME_STACKFUL, 5, &source));
+        ok(isle_game_tick(world.game)); trace(fixture, {440, 410, 430});
+        fixture.shared_value = 99;
+        ok(isle_game_tick(world.game)); trace(fixture, {440, 410, 430, 440, 411, 420, 430});
+        require(fixture.local_result == 54 && fixture.after_finish == 0,
+                "source wait lost its C local or returned after identity-aware stackful self-end");
+        require(counts(world).processes == 3, "same-tick source replacement did not retire its parent");
+        ok(isle_game_tick(world.game));
+        trace(fixture, {440, 410, 430, 440, 411, 420, 430, 440, 421, 422, 450});
+        require(counts(world).objects == 0 && counts(world).processes == 0 &&
+                fixture.retire_calls == 1 && fixture.retired_continued == 0,
+                "source self-deletion failed its deferred joined retirement fence");
+        ok(isle_game_tick(world.game));
+        require(fixture.count == 11 && fixture.retire_calls == 1,
+                "source object dispatched again after retirement");
+    }
+    {
+        World world;
+        EngineFixture fixture{}; fixture.game = world.game; fixture.mode = 2;
+        auto* owner = object(world, 1);
+        engine_bind_source_payload(owner, &fixture);
+        IsleGameProcess* source = nullptr;
+        ok(isle_game_add_source_process(world.game, owner, engine_source_b, ISLE_GAME_SYNCHRONOUS, 5, &source));
+        require(isle_game_tick(world.game) == ISLE_GAME_EXECUTION_FAILURE,
+                "synchronous source ohWait escaped the C failure fence");
+        trace(fixture, {420});
+        require(fixture.retired_continued == 0 && fixture.retire_calls == 0,
+                "illegal source wait returned into source code");
+    }
+}
+
 void pause_preserves_nested_waits() {
     World world;
     EngineFixture fixture{}; fixture.game = world.game;
@@ -361,6 +484,274 @@ bool same_reflection_values(const IsleGameCameraReflection& a, const IsleGameCam
         std::memcmp(a.color_copy, b.color_copy, sizeof(a.color_copy)) == 0;
 }
 
+void camera_roll_geometry_and_cache() {
+    World world;
+    auto* cam = camera(world, object(world, 1), false);
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT));
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_ROLL));
+    IsleGameLookAt pose{{10, 20, 30}, {10, 20, 29}, {0, 1, 0}};
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    ok(isle_game_camera_compute_all(world.game, cam));
+    const auto* basic = matrix(world, cam, 0);
+    const auto* rolled = matrix(world, cam, 1);
+    const auto basic_revision = basic->revision;
+    const auto initial = *rolled;
+    const auto used = world.arena.cursor;
+    constexpr float half_pi = 1.57079632679489661923f;
+    for (float roll : {half_pi, -half_pi, 0.47f, -2.3f, 0.0f}) {
+        const auto revision = rolled->revision;
+        ok(isle_game_camera_set_roll(world.game, cam, roll));
+        float stored = 99;
+        ok(isle_game_camera_roll(world.game, cam, &stored));
+        require(stored == roll, "kind8 roll was not retained as native radians");
+        ok(isle_game_camera_compute_all(world.game, cam));
+        require(matrix(world, cam, 1) == rolled && rolled->revision == revision + 1 &&
+                rolled->kind == ISLE_GAME_CAMERA_LOOK_AT_ROLL &&
+                matrix(world, cam, 0) == basic && basic->revision == basic_revision,
+                "kind8 roll changed stable borrows or dirtied roll-independent kind6");
+        close_to(rolled->floating[0][0], std::cos(roll));
+        close_to(rolled->floating[1][0], std::sin(roll));
+        close_to(rolled->floating[0][1], -std::sin(roll));
+        close_to(rolled->floating[1][1], std::cos(roll));
+        const auto eye = transform(rolled->floating, {10, 20, 30, 1});
+        const auto at = transform(rolled->floating, {10, 20, 29, 1});
+        close_to(eye[0], 0); close_to(eye[1], 0); close_to(eye[2], 0);
+        close_to(at[0], 0); close_to(at[1], 0); close_to(at[2], -1);
+        ok(isle_game_camera_set_roll(world.game, cam, roll));
+        ok(isle_game_camera_compute_all(world.game, cam));
+        require(rolled->revision == revision + 1 && world.arena.cursor == used,
+                "identical kind8 roll recomputed or allocated");
+    }
+    for (std::size_t r = 0; r < 4; ++r)
+        for (std::size_t c = 0; c < 4; ++c)
+            close_to(rolled->floating[r][c], initial.floating[r][c]);
+    require(std::memcmp(rolled->fixed.m, initial.fixed.m, sizeof(initial.fixed.m)) == 0,
+            "kind8 zero-roll restoration changed fixed numeric words");
+    auto revision = rolled->revision;
+    pose.up[0] = 0.3f; pose.up[2] = 0.4f;
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    ok(isle_game_camera_compute_all(world.game, cam));
+    require(rolled->revision == revision && basic->revision == basic_revision + 1,
+            "kind8 used mutable up instead of source fixed Y-up");
+    const IsleGamePerspective perspective{60, 1, 1, 100, 1};
+    const IsleGameViewport viewport{{128, 96, 511, 0}, {128, 96, 511, 0}};
+    ok(isle_game_camera_set_perspective(world.game, cam, &perspective));
+    ok(isle_game_camera_set_viewport(world.game, cam, &viewport));
+    ok(isle_game_camera_compute_all(world.game, cam));
+    require(rolled->revision == revision && world.arena.cursor == used,
+            "projection/viewport mutation dirtied or allocated kind8");
+    for (const IsleGameLookAt arbitrary : {
+            IsleGameLookAt{{5, 0, 0}, {0, 0, 0}, {0, 1, 0}},
+            IsleGameLookAt{{-5, 0, 0}, {0, 0, 0}, {0, 1, 0}},
+            IsleGameLookAt{{12, -8, 4}, {-2, 3, -5}, {0, 1, 0}}}) {
+        ok(isle_game_camera_set_look_at(world.game, cam, &arbitrary));
+        const auto unrolled = *matrix(world, cam, 0);
+        ok(isle_game_camera_set_roll(world.game, cam, 0.61f));
+        const auto before = rolled->revision;
+        require(matrix(world, cam, 1) == rolled && rolled->revision == before + 1,
+                "kind8 arbitrary-axis mutation missed stable lazy cache");
+        for (std::size_t c = 0; c < 3; ++c) {
+            close_to(rolled->floating[c][0], std::cos(0.61f) * unrolled.floating[c][0] +
+                     std::sin(0.61f) * unrolled.floating[c][1]);
+            close_to(rolled->floating[c][1], -std::sin(0.61f) * unrolled.floating[c][0] +
+                     std::cos(0.61f) * unrolled.floating[c][1]);
+            close_to(rolled->floating[c][2], unrolled.floating[c][2]);
+        }
+    }
+    auto* paired = camera(world, object(world, 2), false);
+    ok(isle_game_camera_add_matrix(world.game, paired, ISLE_GAME_CAMERA_LOOK_AT_ROLL));
+    ok(isle_game_camera_add_matrix(world.game, paired, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL));
+    pose = {{0, 0, 5}, {0, 0, 0}, {0, 1, 0}};
+    ok(isle_game_camera_set_look_at(world.game, paired, &pose));
+    ok(isle_game_camera_compute_all(world.game, paired));
+    const auto* kind8 = matrix(world, paired, 0);
+    const auto* kind14 = matrix(world, paired, 1);
+    const auto* reflected = reflection(world, paired, 1);
+    const auto first_revision = kind8->revision, second_revision = kind14->revision;
+    ok(isle_game_camera_set_roll(world.game, paired, 0.31f));
+    ok(isle_game_camera_compute_all(world.game, paired));
+    require(kind8->revision == first_revision + 1 && kind14->revision == second_revision + 1 &&
+            reflected->revision == kind14->revision,
+            "shared roll did not dirty both kind8 and kind14");
+    pose.up[0] = 0.25f;
+    ok(isle_game_camera_set_look_at(world.game, paired, &pose));
+    ok(isle_game_camera_compute_all(world.game, paired));
+    require(kind8->revision == first_revision + 1 && kind14->revision == second_revision + 2 &&
+            reflected->revision == kind14->revision,
+            "up-only edit dirtied kind8 or missed kind14 reflection");
+    const IsleGameCameraReflection* absent = reflected;
+    require(isle_game_camera_reflection(world.game, paired, 0, &absent) == ISLE_GAME_INVALID_STATE &&
+            absent == nullptr, "kind8 fabricated reflection output");
+}
+
+void camera_roll_ignores_unused_up() {
+    World world;
+    auto* fixed_y = camera(world, object(world, 1), false);
+    ok(isle_game_camera_add_matrix(world.game, fixed_y, ISLE_GAME_CAMERA_LOOK_AT_ROLL));
+    const IsleGameLookAt source_pose{{0, 0, 5}, {0, 0, 0}, {0, 0, 1}};
+    require(isle_game_camera_set_look_at(world.game, fixed_y, &source_pose) == ISLE_GAME_OK,
+            "kind8 rejected valid fixed-Y view because its unused supplied up was parallel");
+    const auto* view = matrix(world, fixed_y, 0);
+    const auto stable = *view;
+    auto unused_up = source_pose;
+    unused_up.up[2] = 0;
+    ok(isle_game_camera_set_look_at(world.game, fixed_y, &unused_up));
+    require(same_camera_values(stable, *matrix(world, fixed_y, 0)),
+            "unused finite kind8 up changed its view or revision");
+    const auto used = world.arena.cursor;
+    const auto matrix_count = counts(world).matrices;
+    require(isle_game_camera_add_matrix(world.game, fixed_y, ISLE_GAME_CAMERA_LOOK_AT) ==
+                ISLE_GAME_INVALID_ARGUMENT && world.arena.cursor == used &&
+                counts(world).matrices == matrix_count,
+            "basic-view attachment admitted a degenerate consumed up or mutated its pool on rejection");
+    auto* mixed = camera(world, object(world, 2), false);
+    ok(isle_game_camera_add_matrix(world.game, mixed, ISLE_GAME_CAMERA_LOOK_AT));
+    ok(isle_game_camera_add_matrix(world.game, mixed, ISLE_GAME_CAMERA_LOOK_AT_ROLL));
+    ok(isle_game_camera_compute_all(world.game, mixed));
+    const auto basic = *matrix(world, mixed, 0);
+    const auto rolled = *matrix(world, mixed, 1);
+    require(isle_game_camera_set_look_at(world.game, mixed, &source_pose) == ISLE_GAME_INVALID_ARGUMENT &&
+            same_camera_values(basic, *matrix(world, mixed, 0)) &&
+            same_camera_values(rolled, *matrix(world, mixed, 1)),
+            "mixed basic/kind8 view ignored a consumed up or changed matrices on rejected mutation");
+}
+
+void camera_roll_boundaries_and_reuse() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* cam = camera(world, owner, false);
+    const IsleGameLookAt vertical{{0, 1, 0}, {0, 0, 0}, {0, 0, 1}};
+    ok(isle_game_camera_set_look_at(world.game, cam, &vertical));
+    const auto before_add = world.arena.cursor;
+    require(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_ROLL) ==
+                ISLE_GAME_INVALID_ARGUMENT && world.arena.cursor == before_add &&
+                counts(world).matrices == 0, "kind8 admitted degenerate source Y-up basis or allocated on failure");
+    const IsleGameLookAt pose{{0, 0, 0}, {0, 0, -1}, {0, 1, 0}};
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_ROLL));
+    const auto* borrowed = matrix(world, cam, 0);
+    const auto used = world.arena.cursor;
+    const auto initial = *borrowed;
+    for (float invalid : {std::numeric_limits<float>::infinity(),
+                          -std::numeric_limits<float>::infinity(),
+                          std::numeric_limits<float>::quiet_NaN()})
+        require(isle_game_camera_set_roll(world.game, cam, invalid) == ISLE_GAME_INVALID_ARGUMENT,
+                "kind8 accepted nonfinite radians");
+    std::feclearexcept(FE_ALL_EXCEPT);
+    require(isle_game_camera_set_look_at(world.game, cam, &vertical) == ISLE_GAME_INVALID_ARGUMENT &&
+            same_camera_values(initial, *matrix(world, cam, 0)) &&
+            (std::fetestexcept(FE_INVALID | FE_DIVBYZERO)) == 0,
+            "rejected kind8 vertical pose dirtied cache or divided by zero");
+    for (float extreme : {std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()}) {
+        ok(isle_game_camera_set_roll(world.game, cam, extreme));
+        const auto* computed = matrix(world, cam, 0);
+        for (const auto& row : computed->floating)
+            for (float lane : row) require(std::isfinite(lane), "finite extreme radians produced nonfinite kind8");
+    }
+    ok(isle_game_camera_set_roll(world.game, cam, 0));
+    auto boundary = pose;
+    boundary.eye[0] = boundary.at[0] = 32768;
+    ok(isle_game_camera_set_look_at(world.game, cam, &boundary));
+    require(matrix(world, cam, 0) == borrowed && borrowed->floating[3][0] == -32768,
+            "kind8 rejected representable negative 16.16 boundary");
+    const auto stable = *borrowed;
+    for (float invalid : {std::nextafter(32768.0f, std::numeric_limits<float>::infinity()), -32768.0f}) {
+        auto out_of_range = boundary;
+        out_of_range.eye[0] = out_of_range.at[0] = invalid;
+        ok(isle_game_camera_set_look_at(world.game, cam, &out_of_range));
+        const IsleGameCameraMatrix* failed = borrowed;
+        require(isle_game_camera_matrix(world.game, cam, 0, &failed) == ISLE_GAME_INVALID_ARGUMENT &&
+                failed == nullptr && same_camera_values(stable, *borrowed),
+                "kind8 range failure wrapped or published partial stable matrix");
+    }
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    require(matrix(world, cam, 0) == borrowed && borrowed->revision == stable.revision + 1 &&
+            world.arena.cursor == used, "kind8 range recovery lost stable borrow/revision or allocated");
+    bool wrong_owner = false;
+    std::thread foreign([&] {
+        const IsleGameCameraMatrix* output = borrowed;
+        const IsleGameCameraReflection* absent = nullptr;
+        wrong_owner = isle_game_camera_compute_all(world.game, cam) == ISLE_GAME_WRONG_OWNER &&
+            isle_game_camera_matrix(world.game, cam, 0, &output) == ISLE_GAME_WRONG_OWNER &&
+            output == nullptr && isle_game_camera_reflection(world.game, cam, 0, &absent) ==
+                ISLE_GAME_WRONG_OWNER && absent == nullptr;
+    });
+    foreign.join();
+    require(wrong_owner, "kind8 admitted a foreign gameplay owner");
+    ok(isle_game_remove_camera(world.game, cam));
+    const IsleGameCameraMatrix* expired = borrowed;
+    require(isle_game_camera_matrix(world.game, cam, 0, &expired) == ISLE_GAME_INVALID_ARGUMENT && !expired,
+            "removed kind8 retained a live matrix handle");
+    cam = camera(world, owner, false);
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_ROLL));
+    float roll = 99;
+    ok(isle_game_camera_roll(world.game, cam, &roll));
+    require(roll == 0 && matrix(world, cam, 0)->revision == 1 && world.arena.cursor == used,
+            "recycled kind8 camera inherited roll/cache or failed bounded pool reuse");
+}
+
+void camera_roll_batch_failure_is_atomic() {
+    for (bool view_first : {false, true}) {
+        World world;
+        auto* cam = camera(world, object(world, 1), false);
+        ok(isle_game_camera_add_matrix(world.game, cam,
+            view_first ? ISLE_GAME_CAMERA_LOOK_AT_ROLL : ISLE_GAME_CAMERA_PERSPECTIVE_FAST));
+        ok(isle_game_camera_add_matrix(world.game, cam,
+            view_first ? ISLE_GAME_CAMERA_PERSPECTIVE_FAST : ISLE_GAME_CAMERA_LOOK_AT_ROLL));
+        const std::size_t pi = view_first ? 1 : 0, vi = view_first ? 0 : 1;
+        IsleGamePerspective p{60, 4.0f / 3, 10, 25600, 1};
+        const IsleGameLookAt pose{{0, 0, 0}, {0, 0, -1}, {0, 1, 0}};
+        ok(isle_game_camera_set_perspective(world.game, cam, &p));
+        ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+        ok(isle_game_camera_compute_all(world.game, cam));
+        const auto* projection = matrix(world, cam, pi);
+        const auto* view = matrix(world, cam, vi);
+        auto old_projection = *projection, old_view = *view;
+        const auto projection_revision = projection->revision, view_revision = view->revision;
+        ok(isle_game_camera_set_roll(world.game, cam, 0.47f));
+        ok(isle_game_camera_compute_all(world.game, cam));
+        require(projection->revision == projection_revision && view->revision == view_revision + 1,
+                "roll-only kind8 update dirtied the projection or missed the view");
+        ok(isle_game_camera_set_roll(world.game, cam, 0));
+        ok(isle_game_camera_compute_all(world.game, cam));
+        old_projection = *projection; old_view = *view;
+        const auto used = world.arena.cursor;
+        p.fovy = 45;
+        ok(isle_game_camera_set_perspective(world.game, cam, &p));
+        auto far = pose; far.eye[0] = far.at[0] = 40000;
+        ok(isle_game_camera_set_look_at(world.game, cam, &far));
+        require(isle_game_camera_compute_all(world.game, cam) == ISLE_GAME_INVALID_ARGUMENT &&
+                same_camera_values(old_projection, *projection) && same_camera_values(old_view, *view),
+                "failed kind8 batch published staged projection/view or revision");
+        ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+        ok(isle_game_camera_compute_all(world.game, cam));
+        require(matrix(world, cam, pi) == projection && matrix(world, cam, vi) == view &&
+                projection->revision == old_projection.revision + 1 &&
+                view->revision == old_view.revision + 1,
+                "kind8 batch recovery moved borrows or lost dirty inputs");
+        old_projection = *projection; old_view = *view;
+        p.scale = 40000;
+        ok(isle_game_camera_set_perspective(world.game, cam, &p));
+        ok(isle_game_camera_set_roll(world.game, cam, 0.31f));
+        require(isle_game_camera_compute_all(world.game, cam) == ISLE_GAME_INVALID_ARGUMENT &&
+                same_camera_values(old_projection, *projection) && same_camera_values(old_view, *view),
+                "failed projection published an earlier kind8 roll computation");
+        p.scale = 1;
+        ok(isle_game_camera_set_perspective(world.game, cam, &p));
+        ok(isle_game_camera_compute_all(world.game, cam));
+        require(projection->revision == old_projection.revision + 1 && view->revision == old_view.revision + 1,
+                "kind8/projection atomic failure was not recoverable");
+        std::uint16_t norm = 0;
+        ok(isle_game_camera_perspective_normalization(world.game, cam, &norm));
+        require(norm == static_cast<std::uint16_t>(131072.0f / (p.near_plane + p.far_plane)),
+                "kind8 batch recovery published incorrect projection normalization");
+        old_projection = *projection; old_view = *view;
+        ok(isle_game_camera_compute_all(world.game, cam));
+        require(same_camera_values(old_projection, *projection) && same_camera_values(old_view, *view) &&
+                world.arena.cursor == used, "cached kind8 batch recomputed or allocated");
+    }
+}
+
 void camera_reflection_roll_geometry_and_state() {
     World world;
     auto* owner = object(world, 1);
@@ -588,7 +979,7 @@ void camera_rejection_and_typed_cleanup() {
     require(isle_game_add_sprite(world.game, owner, nullptr, &rejected_sprite) == ISLE_GAME_INVALID_ARGUMENT && !rejected_sprite,
             "sprite attach interpreted camera as sprite list");
     ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_PERSPECTIVE_FAST));
-    require(isle_game_camera_add_matrix(world.game, cam, static_cast<IsleGameCameraMatrixKind>(1)) ==
+    require(engine_add_camera_matrix_with_invalid_kind(world.game, cam) ==
                 ISLE_GAME_INVALID_ARGUMENT, "unsupported matrix kind was silently accepted");
     ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT));
     require(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT) == ISLE_GAME_EXHAUSTED &&
@@ -1019,6 +1410,9 @@ void model_deferred_delete_and_destroy() {
 int main() {
     try {
         update_and_process_order();
+        actor_payload_and_update_context_are_independent();
+        source_function_identity_and_reuse();
+        source_wait_replace_and_retirement();
         pause_preserves_nested_waits();
         callback_lifecycle_and_same_tick_child();
         synchronous_end_and_update_pause();
@@ -1026,6 +1420,10 @@ int main() {
         actual_intro_fade_and_cold_reset();
         bounded_pool_reuse_and_failure_fence();
         camera_geometry_and_cache();
+        camera_roll_geometry_and_cache();
+        camera_roll_ignores_unused_up();
+        camera_roll_boundaries_and_reuse();
+        camera_roll_batch_failure_is_atomic();
         camera_reflection_roll_geometry_and_state();
         camera_batch_failure_is_atomic();
         camera_rejection_and_typed_cleanup();

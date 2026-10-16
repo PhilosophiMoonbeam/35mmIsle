@@ -42,6 +42,13 @@ IsleContinuationResult isle_continuation_domain_create(IsleContinuationDomain** 
 IsleContinuationResult isle_continuation_domain_destroy(IsleContinuationDomain* domain);
 /* Side-effect-free creator/active-callback access check for C game services. */
 IsleContinuationResult isle_continuation_domain_check_access(const IsleContinuationDomain* domain);
+/* Active callback only: run a non-yielding service synchronously on this
+ * domain's constructing owner, then continue the SAME resume. This is not a
+ * gameplay wait/tick. The callback receives only caller-owned storage and
+ * must not resume/wait on this domain. Exceptions become EXECUTION_FAILURE.
+ */
+IsleContinuationResult isle_continuation_on_owner(IsleContinuationEntry service,
+                                                 void* user);
 IsleContinuationResult isle_continuation_create(IsleContinuationDomain* domain,
                                                IsleContinuationEntry entry,
                                                void* user,

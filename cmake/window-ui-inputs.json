@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "component": "native source-closed CPU window heap, font/text, element rasters, bounded private UI resources and actual common UI pre-render immutable closure",
+  "game_revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "implementation": ["src/window_memory.hpp", "src/window_memory.cpp", "src/window_resources.hpp", "src/window_resources.cpp", "src/window_text.hpp", "src/window_text.cpp", "src/window_element.hpp", "src/window_element.cpp"],
+  "shared_decoder_extension": ["include/35mmisle/sprite.hpp", "src/sprite.cpp"],
+  "shared_render_admission": ["src/photo_lighting.hpp", "src/photo_lighting.cpp", "src/sprite_producer.hpp"],
+  "behavior_tests": ["tests/window_memory_tests.cpp", "tests/window_text_tests.cpp", "tests/window_element_tests.cpp", "tests/sprite_tests.cpp"],
+  "private_input_smoke_source": "tests/window_resources_rom_smoke.cpp",
+  "source_method": "Exact pinned Git objects from the local .git object database. Dirty GAME working-tree source and generated assets are not authority. No SDK producer/header/opaque layout/disassembly, Original/device/audio/DRM/input probe, capture root, screenshot, host font or protected compiled payload was read or used.",
+  "source_files": {
+    "src/window/83D730.c": {"git_blob": "91d187c34537d1a13eabf0d5fc9285cb96dd124a", "sha256": "547b2bf789dd5cc6c3c41f2112b450ab5ce6812cfd9e1cb9004b3769762af7ac", "spans": [[1,216]], "facts": "Native-size first-fit circular free-list, strict remainder > sizeof(Chunk), physical-neighbor split/coalesce, shrink/adjacent-growth/relocate realloc and header-inclusive allocated accounting. Native implementation uses native sizeof/alignment, not N64 pointers or 0x18 records."},
+    "src/window/window.h": {"git_blob": "c7490b352a5c4b99e570f26ba9a556cb20afb305", "sha256": "b0140107b3fe440dd3ae5ddde311ebe89fa38b8e51ec2d95a1f9aff10764cdba", "spans": [[4,35],[73,120],[124,158]], "facts": "Own-GAME semantic flags, text cursor/font/mode, primary/alternate geometry and operation names only. No SDK layout used; native classes are not wire ABI records."},
+    "src/window/element.c": {"git_blob": "97bee119982c182b86e18bd9f7ab070e3cb84eb3", "sha256": "140f4df6819cca69307704bd1e465137f1c8dcbfeacdec5c4cda0d11054f312c", "spans": [[1,1175]], "facts": "Inclusive clamped rectangle packing, 4/8-pixel border, 16-pixel-rounded padded stride, 4096-byte source tile rows and short final bitmap; source alt copy/swap, color vs transient native tint, scroll format distinctions, padded-width text wrapping, image/position/visibility/list ordering."},
+    "src/window/text.c": {"git_blob": "3189fdc9bed7cbaf6b841c3899051b52b4b0097b", "sha256": "1e2785fd42cda4941a9a28f301dc24f7fbfe47bde045619d6593d19ae8742151", "spans": [[4,165],[170,197],[203,317],[327,671]], "facts": "370 two-byte character codes, 94 ASCII conversions, both private width/font planes; low-first font nibbles; distinct 5551 palettes/shadow detection and RGBA32 destination blending; exact source escapes, measurement vs button-advance distinction, invalid j/k font IDs, delay/skip reset and per-character hook/wait order. Protected tables are hydrated, not copied into C++."},
+    "src/window/button.c": {"git_blob": "079ac484cab27c89b43342a8ab54525dc709298a", "sha256": "2dce63536bd8963e953c4429a0d5ca2b5a754f4d10a367bffb0564ac8a91716c", "spans": [[5,138]], "facts": "11 button names, two explicit frame sources, first callback switches to phase1, source frame waits, scale/12 except24, native heap-backed list and in-rect deletion/visibility. Boolean source bitwise OR is equivalent here because all terms are pure comparisons."},
+    "src/window/frame.c": {"git_blob": "d8dbae0a744fb4992d82cab27dd12836e0459916", "sha256": "805eb890d95dfd9e1167dd149261ac770b96119ac5a6aab9305a6cc654910711", "spans": [[4,5],[130,165]], "facts": "Three nine-piece private bitmap tables and style3 uses style2; actual furniture choreography remains its scene owner's responsibility."},
+    "src/window/frame_fade.c": {"git_blob":"674b630e41543036c62b94dc3778c48bb6f87f17","sha256":"a431baba74d59c6f05107fc0fce216af9d2d72caa06df94bc5ec18c7815ad75e","spans":[[4,28]],"facts":"Private frame duration D_80381920_8550D0 at ROM0x8550d0 is15; resource accessor exposes actual value and first background pixel's source5-bit unpack to furniture owner."},
+    "src/window/focus_mark.c": {"git_blob": "2a278a440f474163d73299f6a7471c61644f841a", "sha256": "3dfc792c5fa69c78d51734ae0bee5dd5790365864f77a6c803755396b4570f5d", "spans": [[14,15]], "facts": "Common focus Sprite root and four explicit private bitmap variants; no SDK hierarchy inference."},
+    "src/window/layout.c": {"git_blob": "094f983e496e04fee8a69672db0ba33738999ba4", "sha256": "8a34f67d23bb95fac686ead529acbaa68b340f054b08751a61432c9fdcc23bcd", "spans": [[5,14],[419,467],[537,566]], "facts": "Static common panel/header roots, three page-indicator variants and exactly33 BUTTON_MAX-inclusive panel bitmap variants. No fake layout scene."},
+    "src/menu_new_game/A5CC50.c": {"git_blob": "a14d24262fe6433550d816f22dd4515c7b3a2588", "sha256": "cc5417fc89309cc62adf8808a1887d26119799a4276cff64c4fa3d5fefb742fa", "spans": [[7,88],[131,149],[319,336]], "facts": "Name background/card roots, actual351-pointer character table, source preview offset255, four End-row labels. Actual configured SceneSetup selects func_800A1A50, not the local D_800E35B0 list; no name-entry state handler or persistence shortcut is implemented here."},
+    "src/oaks_lab/oaks_lab.h": {"git_blob": "18006e45d1f32cf5488a9cd944f64669ec16d7b1", "sha256": "d7d6e641b4a8cba0566f3d1e0553819fd7003863305ac1ec3ca11668c9c3a067", "spans": [[7,63]], "facts": "Exact own-GAME Oak common root and standalone bitmap identities."},
+    "src/oaks_lab/8A70E0.c": {"git_blob": "385d65162801a2f3ae772e588770d3d3b03b3412", "sha256": "7b73d23b32b05ac9f51629519edf2b70947207b217e7cf94e054743cc2eb950e", "spans": [[8,20],[32,49]], "facts": "Actual configured Oak SceneSetup selects func_800A1A50 at line48. Local D_800E66D0_8ABEF0 is a different list and is not the global callback's target."},
+    "src/oaks_lab/8A7360.c": {"git_blob": "849a3ba584d13bb3cb5a6b74aee23d11281019bd", "sha256": "eae26de14e29530a72fb7361ab22acc245c5185ccde1baaf24fba18a871fb1d4", "spans": [[93,211],[411,441],[655,664]], "facts": "Seven stage-icon variants, item/map/Album variants, six mouth/ten eye bitmap sources and exact native templates. Character callback is exposed, not replaced by a fake Oak speech state machine."},
+    "src/oaks_lab/8AAF60.c": {"git_blob": "367cc805e7edf98f4cec662d7debba2469720a28", "sha256": "a1fb8b85f145eeb99632195f40acb16dd9f7fb94335816b9d374ad248b2fdf43", "spans": [[15,23],[25,48],[78,171],[326,369]], "facts": "Seven additional exact common Oak animation table/template associations, lengths4/6/9/6/3/4/4; all variants hydrated for real scene owners."},
+    "src/app_render/53AD0.c": {"git_blob": "aa25770661121586cb00b1927a96e147878a3255", "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced", "spans": [[160,177],[641,647]], "facts": "Text skip input uses synchronous priority0 process on update6; common window sprites use id1<<6/update6/object-priority6, renderDL2/priority6/camera-tag4; animated button uses stackful kind0/priority0."},
+    "src/app_render/4D400.c": {"git_blob": "f2ab62d614dffc86bbd413f87150ea68ff473fd3", "sha256": "67b399176bfd9884cfa3ab929ed3b8565e6503ec88cb5b540f572d3f490927ca", "spans": [[11,19]], "facts": "Read from the exact pinned Git object, not a worktree: func_800A1A50(Gfx**) emits one display-list call to declared D_800AEC18. Together with both configured callsites, this proves the common UI callback target without substituting title lighting or either local overlay list."},
+    "splat.yaml": {"git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45", "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd", "spans": [[353,382],[10105,10149],[10180,10211],[10355,10381]], "facts": "Exact initialized-data/rodata ROM-to-guest ranges below; overlay code and BSS excluded. app_render ROM0x46270 maps guest0x8009a8c0 and its raw data is ROM[0x5a580,0x5ad20); all newly retained common render spans are bounded inside that raw data."}
+  },
+  "private_rom": {
+    "bytes": 16777216,
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "inspection": "Read-only bounded metadata/data inspection; identities and span hashes were computed, but no code was built, tested or executed by this worker.",
+    "banks": [
+      {"group": "common", "rom": [8686528,8888496], "rom_hex": ["0x848bc0","0x87a0b0"], "guest": "0x80375410", "sha256": "8dc47fd81e1c80a0577e8768e70fbc8935460f286523a0467a8de49792700fd4"},
+      {"group": "name", "rom_hex": ["0xa5e3a0","0xa93460"], "guest": "0x800e2ff0", "sha256": "8059b63b882fe2d588aaaa082085bc90514c8bb4627035b7e063709639dc895a"},
+      {"group": "oak", "rom_hex": ["0x8ac010","0x98c330"], "guest": "0x800e67f0", "sha256": "63322be8781a9e10145cb53eb443b580b64e47b336bfc56de107f902c2e20634"}
+    ],
+    "common_pre_render": {
+      "source_chain": "A5CC50.c:319-336 and 8A70E0.c:32-49 -> func_800A1A50 -> 4D400.c:17-19 -> D_800AEC18",
+      "mapping_rule": "rom=0x46270+guest-0x8009a8c0; ends exclusive",
+      "raw_data_rom_hex": ["0x5a580","0x5ad20"],
+      "decoder": "Existing photo::LightingInputs admits the common pre-render list, exact light references and termination using public numeric wire ABI; no second GBI parser, SDK layout, source-synthetic list or fabricated EndDL.",
+      "installation_order": [
+        {"kind":"exact overlapping light-DMA union","guest_hex":["0x800aebd0","0x800aebe8"],"physical":"0x000aebd0","rom_hex":["0x5a580","0x5a598"],"bytes":24,"sha256":"873516340a66706687896cc7f4f429fcdbd70c17a03968696e12e4e6ab8943a7"},
+        {"kind":"D_800AEC18 pre-render list","guest_hex":["0x800aec18","0x800aec58"],"physical":"0x000aec18","rom_hex":["0x5a5c8","0x5a608"],"bytes":64,"sha256":"1c9b137187079660cdfd53e3da98ef2d2373ba4681f33ce7e156716fcbe8505d"}
+      ],
+      "references_in_list_order": [
+        {"kind":"directional light slot1","guest":"0x800aebd8","rom":"0x5a588","dma_bytes":16,"destination_offset":48},
+        {"kind":"ambient light slot2","guest":"0x800aebd0","rom":"0x5a580","dma_bytes":16,"destination_offset":72}
+      ],
+      "extent_proof": "Directional [0x800aebd8,0x800aebe8) and ambient [0x800aebd0,0x800aebe0) overlap by8; their exact union is24 bytes. The actual list is8 commands including its genuine terminal EndDL; no nested DL or other resource reference appears. Thus these2 disjoint spans,88 bytes total, are the complete referenced immutable closure; the48-byte unreferenced gap is not installed.",
+      "state_in_order": ["PipeSync","SetGeometryMode LIGHTING only","NumLights1","directional DMA16","ambient DMA16","ColorDither MAGICSQ","AlphaDither PATTERN","EndDL"],
+      "public_wire_reference": "https://wiki.cloudmodding.com/oot/F3DZEX2/Opcode_Details",
+      "normal_preview_exclusion": "The reused LightingInputs constructor also validates its existing independent photo-preview setup. That112-byte setup is not retained, published or installed by window Resources."
+    },
+    "fonts": [
+      {"font": 8,"glyph_rom_hex": ["0x848bc0","0x84ba00"],"glyph_guest":"0x80375410","bytes":11840,"sha256":"e0a2646dbf025282521a56126da4020f36ec5dad96956c596647b16989601008"},
+      {"font":12,"glyph_rom_hex":["0x84ba04","0x852214"],"glyph_guest":"0x80378254","bytes":26640,"sha256":"953c116775ab1369b791b442f864bed746b7a68c5a920c25f4762b5a7e77a1b2"}
+    ],
+    "tables": [
+      {"kind":"font pointer table","rom_hex":["0x852218","0x852220"],"guest":"0x8037ea68","count":2},
+      {"kind":"charset","rom_hex":["0x852294","0x852578"],"guest":"0x8037eae4","count":370,"sha256":"26124565fcf8cd2a821544a315074525fe5605f70e44c8bd659d27617fe8eb17"},
+      {"kind":"ASCII conversion","rom_hex":["0x85257c","0x852638"],"guest":"0x8037edcc","count":94,"sha256":"748fff0efb387f661a1bfdae3e78ce87410f12e85e8abaa5158aa16ad6f6647f"},
+      {"kind":"width tables","rom_hex":["0x85263c","0x852920"],"guest":"0x8037ee8c","count":740,"sha256":"f0d340d58b0f16d8b702aed6e52d794d644f73b461151033a781b050a0ad907f"},
+      {"kind":"button bitmaps","guest":"0x80380b50","count":22,"template":"0x8037f2a8"},
+      {"kind":"frame bitmaps","guest":"0x803818b0","count":27,"template":"0x80380c88"},
+      {"kind":"focus bitmaps","guest":"0x80381d98","count":4,"template":"0x80381a38"},
+      {"kind":"panel button bitmaps","guest":"0x803a6564","count":33,"template":"0x80382ce0"},
+      {"kind":"name characters","rom_hex":["0xa5e3a0","0xa5e91c"],"guest":"0x800e2ff0","count":351,"first_preview_offset":255},
+      {"kind":"name End row","rom_hex":["0xa5e91c","0xa5e92c"],"guest":"0x800e356c","count":4},
+      {"kind":"Oak stages","guest":"0x801957f4","count":7,"template":"0x80136498"},
+      {"kind":"Oak mouth","guest":"0x80195810","count":6,"template":"0x80146918"},
+      {"kind":"Oak eyes","guest":"0x80195828","count":10,"template":"0x80149a38"},
+      {"kind":"Oak animation","guest":"0x801c5404","count":4,"template":"0x80198fb8"},
+      {"kind":"Oak animation","guest":"0x801c5414","count":6,"template":"0x8019c2d0"},
+      {"kind":"Oak animation","guest":"0x801c542c","count":9,"template":"0x801a2900"},
+      {"kind":"Oak animation","guest":"0x801c5450","count":6,"template":"0x801ad198"},
+      {"kind":"Oak animation","guest":"0x801c5468","count":3,"template":"0x801b93a8"},
+      {"kind":"Oak animation","guest":"0x801c5474","count":4,"template":"0x801bfe98"},
+      {"kind":"Oak animation","guest":"0x801c5484","count":4,"template":"0x801c31b0"}
+    ],
+    "roots": {
+      "common":["0x8037f2a8","0x80380c88","0x80381a38","0x80382ce0","0x803a1360","0x803a1b10","0x803a22c0","0x803a51a0","0x803a6220"],
+      "name":["0x80109880","0x80117f98","0x80118068"],
+      "oak":["0x8010c590","0x8011eea0","0x80122548","0x80128f38","0x80136498","0x80141f48","0x80146918","0x80149a38","0x80190438","0x80197eb0","0x80198fb8","0x8019c2d0","0x801a2900","0x801ad198","0x801b93a8","0x801bed90","0x801bfe98","0x801c31b0"]
+    }
+  },
+  "ownership": {
+    "resources":"Immutable data-only BankOwner copies retain canonical private texels/palettes/glyphs/strings; native Sprite descriptors retain their bank independently. Fonts borrow Resources and require it to outlive Text.",
+    "common_render":"Resources retains one immutable88-byte BankOwner copied once at load from the admitted Snapshot. Its2 fixed AssetSpan descriptors preserve original physical identities and exact disjoint extents. common_pre_render() returns physical0x000aec18, never KSEG or ROM. common_render_assets() returns the same borrowed descriptor array with stable bytes, no per-frame allocation or copy; Resources must survive actual producer/GPU/readback borrowers. Snapshot need not outlive the copied Resources.",
+    "bitmap_variants":"One existing sprite::hydrate_bitmaps decoder admits already-hydrated native scalar template plus explicit bounded Bitmap table/count. It reuses original format/TLUT/extent/termination validation. No wire Sprite patch, second parser, guessed foreign pointer or SDK layout reconstruction.",
+    "residency":"Resources::sprites(Group::common) plus exactly one of name/Oak. Name and Oak overlap guest addresses; Resources::sprites() is an inventory, NOT a simultaneous resident union.",
+    "heap":"Native Heap-backed element and pixel allocations; shared Raster retains allocation independently after Element destruction until producer unregistration and actual borrowers retire. ElementList, Services, Buttons and Text userdata must survive their joined native callbacks. No owning automatic C++ objects cross source waits.",
+    "rasters":"Two explicit stable RasterSource planes/descriptors, exact source tile shape, caller-supplied distinct aligned physical reservations. Element::attach takes generation-bearing RasterBinding and actual native Services sprites. Publish before typewriter waits; no CPU GPU-memory acquisition, rendering submission, per-glyph producer rebuild or immutable-bank mutation.",
+    "callbacks":"Text::initialize installs real synchronous physical-port-zero input/skip callback; attached typewriter defaults to actual Services::wait. Character hooks use scene-owned caller userdata. Buttons creates actual native stackful animation callbacks, explicit static variants and source intervals. No fake scene handlers, name completion, Oak dialog state or Beach gameplay is claimed."
+  },
+  "native_safety_boundaries": [
+    "Native Element sprite width is total visible width, independently of padded CPU stride and bitmap width_img. Preserve allocation, tile heights, storage offsets and source font/spacing/shadow equations. Actual Name before/after proved that publishing stride224 for192wide vertical pieces placed alternate bands atx296; corrected logical width restores line originsy173/189/205 and removes right-edge fragments. Oak dialogue background bands are likewise contiguous.",
+    "Reallocate relocation copies the actual old native payload, not the GAME header-inclusive overread. No undefined-behavior equivalence is claimed.",
+    "Glyph, border, image and scroll byte accesses are bounded by the full padded allocation. Unsafe source overruns and negative glyph coordinates reject rather than corrupt neighboring native records. 32-bit source shadow writes outside logical text height remain possible only inside the admitted padded allocation.",
+    "IA8 fills preserve source nibble packing. Source non32 text dispatch still emits 16-bit packed glyph words even on IA8 backing; it is bounded by real padded bytes, never replaced with invented IA8 glyph blending. Name/Oak text callers use reached RGBA16 surfaces; IA8 text is a separate bounded source-format regression boundary, not a running-scene claim.",
+    "Only source-supported IA8/IA16/RGBA5551/RGBA32 dynamic format combinations are admitted; invalid RGBA8/IA32 combinations reject rather than invent unsupported hardware formats.",
+    "Source measure-newline uninitialized-character behavior is normalized to a no-width control; finite source text remains EUC-JP/ASCII, not UTF-8 conversion or host-font fallback.",
+    "Source formatted text keeps a persistent400-byte owner buffer; overflow rejects instead of reproducing sprintf memory corruption.",
+    "Source per-format horizontal/vertical scroll stride quirks, inclusive down-scroll clear, padded-width wrap, default/fallback font, and shadow traversal order are retained for in-allocation calls."
+  ],
+  "validation": {
+    "worker_execution":"UNEXERCISED: no build, test, lint, formatter, target executable, RSP/RDP/LUS, device/audio/input probe or scene runtime was run. Read-only private metadata/data/hash inspection only.",
+    "authored_regressions":"Native coalescing/realloc/accounting and strict split boundary; low-first pixel bytes, distinct16/32 blends/shadow edges, atomic unsafe glyph boundary; exact escape/wait/skip/hook transitions; IA8/RGBA16/32/IA16 packing, border/stride/cursor/scroll quirks, alternate descriptor/revision/isolation/lifetime and list ordering; existing-decoder standalone bitmap bound/owner/TLUT tests.",
+    "private_smoke":"Main's fresh actual Name/Oak run completed925canonicalRSP/RDP frames and925realLUS presentations through the shared compositor, mutable raster revision uploads and joined native retirement. It confirmed the sourcecourse0 request, not Beach gameplay. CheckedSDLdummy accepted1266416PCM frames with142880duringGPUwait. Frozen executable SHA256 f961dfe68b3984ce066152270167fd9091e411c21b04e2e1f6eb4f828a31ef28; source/executable archive SHA256 0b253b6ca20e467ddca79be264ab47b433a2a08f33e9a2948d27ae050457900b. Initial closure131terminal/130created/132tracer+tasks absentstable; sole initial scan0knownphysical/permission attempts, unchangedROM, exit0. Corrected Name/Oak actual640x480frontbuffers directly inspected; logo/title/menu PNGhashes exactly matched previously inspected actual surfaces.",
+    "common_pre_render_handoff":"Main composed actual scene Producer::assets() plus common_render_assets(), supplied common_pre_render() through unchanged Frame admission and retained owners through actual completion and joined retirement. Both Name/Oak source callbacks and the complete88byte immutable pre-render closure participated in the fresh actual shared-compositor proof. This does not establish unrelated scene branches or Original numerical parity.",
+    "main_required":"Main completed native integration and all43contracts under GCCDebug,GCCRelease,ClangASanUBSan. CPU contracts exercise Name editing/default/empty-B behavior; the fresh actual path exercises Name empty-default submission, Oak initial dialogue/course confirmation, native continuations, real GPU completion/LUS surfaces and checked dummy audio. Physical input, hearing, Windows11runtime, independent Original numerical/layout parity and full-game/report/album/error branch qualification remain outside this component proof."
+  },
+  "payloads_committed": false,
+  "dependencies": ["C++20", "existing admitted native sprite decoder", "existing photo::LightingInputs constructor in src/photo_lighting.cpp (window_resources link dependency; existing constructor also validates normal-preview setup)", "existing sprite::AssetSpan in src/sprite_producer.hpp", "scene_resources/scene_services", "single sprite_raster/Producer contract", "existing private Snapshot admission"]
+}

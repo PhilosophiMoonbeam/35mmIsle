@@ -57,6 +57,7 @@ struct EffectsState {
 };
 struct WetOutput { std::uint32_t task_offset = 0, frames = 0; };
 Error validate_effects(effects::Config) noexcept;
+Error validate_effects_for_rate(effects::Config, std::uint32_t synthesis_rate) noexcept;
 Error build_effects(Context&, effects::Config) noexcept;
 void reset_effects(Context&) noexcept;
 WetOutput render_effects(Context&, EffectsState&, std::uint32_t task_offset,

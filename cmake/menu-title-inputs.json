@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Independent native implementation of the complete reached A0BE70 title process/control graph. This manifest records semantic provenance, not imported GAME producer bodies, SDK implementations/headers/layouts, extracted payload tables, disassembly, executable proof, or full-game qualification.",
+  "implementation": ["src/menu_title_scene.hpp", "src/menu_title_scene.cpp"],
+  "source_files": {
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "definitions": [
+        {"lines": "54-69", "facts": "Actual installed model callback: -2/-1 writes source state3; nonnegative argument-1 creates actual source effect at that model/node world attachment. Script0 is a real bank0 association. No callback is installed on the first model's lexical opcode16 streams."},
+        {"lines": "72-99", "facts": "Input/timeout process writes state1 only at source counter>=3600, state4 only physical controller0, counter>1 and actual pressed A|Start. Counter increments only in state5; state3 is not rewritten into fake Ready or completion. B does not skip title."},
+        {"lines": "101-138", "facts": "Last-created source initializer starts camera process, installs only thirdD/fourthI callbacks through Runtime resource binding, source speed0.5 and camera near47; model processes stay inactive until initializer executes. Initializer remains a real waiting native stackful process."},
+        {"lines": "140-193", "facts": "Five native model objects id14/link0/priority0x80000000 created D/J/D/I/B, native synchronous animation process priority1, renderlink4/equal-priority stable source order; fog/material/matrix facts remain existing Producer/Catalog authority."},
+        {"lines": "195-266", "facts": "Three chained source label sprites at actual resource identities, source coordinates and transparent/TEXSHUF attributes. Scheduler hides all, launches label1/0/2 at counter210/480/750; each native process uses binary32 8.5 RGBA ramps, actual180-update hold, hide and self-end."},
+        {"lines": "268-403", "facts": "Complete 3600-update-reached source audio switch, including all sparse sound/pan/volume/pitch/reverb events through3414, both actual BGM players songs0x19/0x14, sound0x2c, AB41C/AB700 ramps, source auxiliary duck/return, actual ambient stop, and distinct source120/30-update BGM exit ramps. Source empty cases have no producer operation."},
+        {"lines": "405-417", "facts": "Actual bank0 MenuEffects uses immutable Catalog effects; native particle callback object-6/camera and effect callback object-7 are created before title model control, in source object update order."},
+        {"lines": "419-462", "facts": "Synchronous play called from active UI stackful process. Source creation order five models, labels, audio, input, initializer; actual60-update reveal wrapper; waits on source states1/4; AB918 source90/30-update fade then stop sounds/BGM; exact object/process cleanup with native borrower retirement."}
+      ]
+    },
+    "src/main_menu/A08E30.c": {
+      "git_blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+      "definitions": [
+        {"lines": "106-119", "facts": "Reveal/cover helpers call52DE0 then wait trunc(u16(seconds*60.f)) actual native updates, not presentation counters or authored animation completion."},
+        {"lines": "1193-1195,1262-1279", "facts": "Outer UI controls source start_flags and invokes title synchronously. Title itself leaves BB40 flags unchanged."},
+        {"lines": "1294-1308", "facts": "Menu init source model camera id1/link0/priority0x80000000, camera render priority5/renderlink mask0x10, explicit kind3/8 matrices; FX initialized before title UI process. Parent owns other menu cameras and whole-frame ordering."}
+      ]
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c",
+      "definitions": [
+        {"lines": "63-65", "facts": "Native camera initial perspective30deg/aspect4:3/near100/far12800/scale1; eye(1500,0,0),at0,up(0,0,1). Title near47 set before animated title draw; kind8 uses existing native camera's fixedY-up GAME math."},
+        {"lines": "183-230,1826-1856", "facts": "Real OM update traverses source object links then actual priority-ordered process list. Camera animation process inserted during initializer; FX particle/effect object callbacks execute before model/camera processes, not in a combined authored frame timer."}
+      ]
+    },
+    "src/app_render/effect.c": {
+      "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
+      "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
+      "definitions": [{"lines": "66-97,1260-1274", "facts": "Native particle camera object-6 at source link0/object priority0x80000000 and effect updater object-7; real100-particle/10-effect bank runtime delegated to MenuEffects, preserving particle-update then effect-update order."}]
+    }
+  },
+  "resource_and_math_boundary": {
+    "resources": "Borrow immutable Catalog/Snapshot; existing menu-resource/menu-animation/menu-model/menu-effects manifests define checked resources, original animation semantics, native matrices, source32 math and GPU producers. No asset reconstruction or alternate SDK shim.",
+    "models": "5 native model objects with292 nodes (226/26/5/33/2),10 material attachments and actual0.5 animation speed. No Pidgey/photo-world outer transform. Runtime model events dispatch immediately after native synchronization and before another model or camera step, with exact parent-composed floating world transforms.",
+    "camera": "Actual native type3 camera has explicit kind3/8 matrices; animated setters preserve near47/far12800/aspect4:3/viewport and source roll semantics. Parent Producer camera commands use normalization and projection LOAD/MUL, not fabricated LookAt/reflection commands.",
+    "counter_and_completion": "Source uint32 counter increments once per actual native input-process update only while state5; model/camera clocks independently advance binary32 speed0.5. source_time() reports actual first-model animation_time, not the timeout counter. No authored60/20 animation trigger. END callback state3 freezes the source counter exactly as source; only source input/timeout states1/4 return play.",
+    "audio": "Every source command uses borrowed checked real game_audio::Session or native10-entry Services calendar. Sound slot exhaustion remains actual source play_sound -1, never a fake sound slot; passing an unusable retained slot into a source ramp fails checked native boundary rather than indexing invalid memory. Parent independently drives real retrace/RSP/PCM output.",
+    "ownership": "Impl retains every owner across waits. Initialization/catch scopes end before the first C continuation fence. Callbacks never throw, contain no owning C++ automatic values across native wait/self-end/delete, and retain the first service failure rather than assert completion."
+  },
+  "lifecycle": {
+    "play": "Title construction creates the source camera/FX prefix before Ui.start creates source timer/control native objects; it does not wait. play requires an active stackful caller, then creates the five source model/label/audio/input/initializer process graph. Getters borrow only for parent's exclusive graphics preparation; the camera and empty FX prefix also exist before play.",
+    "retirement": "Main explicitly guarantees every graphics RSP/RDP task and native/producer view has actually completed/ceased BEFORE the next isle_game_tick. Optional presentation holds separate copied tile leases. Play cleanup ends title processes, detaches/resets FX, retires/destroys model Producer while model objects remain alive, retires/destroys Runtime, then source-deletes model/label/audio/input/initializer objects and camera. Source FX native callback objects survive until full Title.retire/scene cessation; empty/reset FX callbacks continue in native OM update order. Catalog/common canonical RAM remain parent-owned/live.",
+    "reentry": "Fresh play creates fresh native model/camera/animation owners and source fields, resets retained FX, and repositions a newly recreated process-free camera before the surviving FX/UI prefix before adding its actual animation process. No retired model view or frozen animation state is reused; native arena metadata recycles. Full scene reentry reconstructs Title prefix before UI startup. Title does not terminate parent GTL/session or mutate source start_flags."
+  },
+  "integration": {
+    "dependencies": ["src/scene_services.cpp", "src/scene_storage.cpp", "src/game_state.cpp", "src/menu_scene_bridge.c compiled once in isle-engine", "menu resources", "menu animation", "menu model Producer", "MenuEffects", "native engine/continuations", "game input", "real game audio", "game save", "RNG"],
+    "compiler": "C++20; disable fast-math and FP contraction for title/services and existing animation/model/effect/source32 math consumers.",
+    "parent_proof": "Build once after all edits land; run native scene-bridge behavior tests plus existing animation/model/effects boundary tests; run actual private-ROM complete startup/logo/title/menu Start/B roundtrip, timeout, source END/input ordering, fade/audio timelines, clean exit and reentry through real canonical RSP/RDP/PCM and checked LUS output. No worker build/test/executable/Original/device run was performed.",
+    "scope": "Parent owns source-independent elapsed notifications, actual input-read publication before isle_game_tick, one input.begin_update per OM update, GTL/session/logo/scene switch, canonical frame RAM/render/camera/task ordering, checked SDL/LUS output, CMake and final proof. This implementation supplies real native logical source processes, not those host responsibilities."
+  }
+}

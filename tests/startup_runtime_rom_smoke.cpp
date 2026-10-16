@@ -1,0 +1,505 @@
+// Explicit private-ROM integration scenario, never a ROM-free CTest or game
+// executable. Actual native Logo/Title/UI, canonical RSP/RDP, LUS OpenGL and
+// checked SDL dummy PCM. Input is an explicitly owned software acquisition,
+// NOT a fabricated physical/LUS connection. External scene requests end this
+// scenario before gameplay; the game scene manager must perform that entry.
+#include "scene_graphics.hpp"
+#include "scene_storage.hpp"
+#include "game_state.hpp"
+#include "game_host.hpp"
+#include "host_clock.hpp"
+#include "new_game_oak_driver.hpp"
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
+#include <algorithm>
+#include <chrono>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <optional>
+#include <stdexcept>
+#include <string_view>
+#include <thread>
+#include <vector>
+
+namespace {
+namespace s = isle::startup;
+namespace g = isle::game_host;
+namespace h = isle::host;
+namespace in = isle::game_input;
+void require(bool value, const char* reason) { if (!value) throw std::runtime_error(reason); }
+void checked(h::ClockError value) { require(value == h::ClockError::none,"GTL action/lease transition rejected"); }
+void offer_ticks(h::GtlClock& clock, std::uint64_t ticks) {
+    if (clock.stopping() || clock.stopped() || ticks == 0) return;
+    // Source sends nonblocking to four entries; surplus is counted/dropped,
+    // never replayed as catch-up GAME updates after a real GPU stall.
+    const auto result = clock.offer_retraces(ticks);
+    require(result == h::ClockError::none || result == h::ClockError::full,
+            "source GTL retrace queue closed or exhausted");
+}
+struct SoftwareController {
+    std::uint16_t buttons = 0;
+    std::int8_t stick_x = 0, stick_y = 0;
+    in::HostFrame sample() const noexcept {
+        in::HostFrame frame{};
+        frame[0] = {in::Connection::present,static_cast<std::uint64_t>(reinterpret_cast<std::uintptr_t>(this)),0,buttons,stick_x,stick_y};
+        return frame;
+    }
+};
+void complete_read(in::Service& input, in::EventResult event, const SoftwareController& controller) {
+    require(event.error == in::Error::none && bool(event.read),"explicit acquisition read request missing");
+    const auto completed = input.complete_read(event.read,controller.sample());
+    require(completed.error == in::Error::none,"actual owned software acquisition completion rejected");
+}
+enum class Scenario { roundtrip, full_title, reset_live_offsets, name_oak };
+void create_existing_profile(const std::filesystem::path& path) {
+    auto fixture = isle::save::GameSession::open(path,0x13579u);
+    require(bool(fixture),"real preexisting profile fixture could not acquire its Store");
+    require(!fixture.session.set_player_flag(16,true) && !fixture.session.set_screen_offsets(8,-6),
+            "real preexisting profile fixture mutation failed");
+    const auto committed = fixture.session.commit(0x13579u);
+    require(committed.outcome == isle::save::CommitOutcome::published && committed.generation == 1 &&
+            committed.durability != isle::save::Durability::none && !committed.error && !committed.cleanup_error,
+            "preexisting profile fixture lacks an actual acknowledged durable commit");
+}
+void check_existing_profile(const std::filesystem::path& path) {
+    // Called only after run's application State/Store lock has actually retired.
+    auto cold = isle::save::GameSession::open(path,0);
+    require(bool(cold) && cold.state == isle::save::GameLoadState::ready,"cold existing profile was not retained");
+    const auto data = cold.session.snapshot();
+    require(bool(data),"cold profile snapshot unavailable");
+    const auto flag = data.value.player_flag(16);
+    const auto screen = data.value.screen_offsets();
+    require(flag && flag.value && screen && screen.value.horizontal == 8 && screen.value.vertical == -6 &&
+            data.value.generation() == 1,"RAM-only new-game reset implicitly committed over the existing disk profile");
+}
+// Actual current default-framebuffer pixels AFTER successful LUS presentation
+// and its real GL completion. No canonical-RDRAM image is relabeled as a window.
+void capture_window(const std::filesystem::path& path) {
+    auto* window = SDL_GL_GetCurrentWindow();
+    require(window != nullptr,"presented GL window is unavailable");
+    int width = 0, height = 0;
+    require(SDL_GetWindowSizeInPixels(window,&width,&height) && width > 0 && height > 0 && width <= 4096 && height <= 4096,
+            "presented window has invalid pixel extent");
+    using ReadBuffer = void (APIENTRY*)(GLenum);
+    using PixelStore = void (APIENTRY*)(GLenum,GLint);
+    using ReadPixels = void (APIENTRY*)(GLint,GLint,GLsizei,GLsizei,GLenum,GLenum,void*);
+    using GetError = GLenum (APIENTRY*)();
+    using BindFramebuffer = void (APIENTRY*)(GLenum,GLuint);
+    using GetInteger = void (APIENTRY*)(GLenum,GLint*);
+    const auto read_buffer = reinterpret_cast<ReadBuffer>(SDL_GL_GetProcAddress("glReadBuffer"));
+    const auto pixel_store = reinterpret_cast<PixelStore>(SDL_GL_GetProcAddress("glPixelStorei"));
+    const auto read_pixels = reinterpret_cast<ReadPixels>(SDL_GL_GetProcAddress("glReadPixels"));
+    const auto error = reinterpret_cast<GetError>(SDL_GL_GetProcAddress("glGetError"));
+    const auto bind_framebuffer = reinterpret_cast<BindFramebuffer>(SDL_GL_GetProcAddress("glBindFramebuffer"));
+    const auto get_integer = reinterpret_cast<GetInteger>(SDL_GL_GetProcAddress("glGetIntegerv"));
+    require(read_buffer && pixel_store && read_pixels && error && bind_framebuffer && get_integer,
+            "actual GL surface readback API missing");
+    require(error() == GL_NO_ERROR,"presentation left an actual GL error before readback");
+    GLint old_framebuffer = 0, old_read_buffer = 0, old_alignment = 0;
+    get_integer(GL_READ_FRAMEBUFFER_BINDING,&old_framebuffer);
+    get_integer(GL_READ_BUFFER,&old_read_buffer);
+    get_integer(GL_PACK_ALIGNMENT,&old_alignment);
+    bind_framebuffer(GL_READ_FRAMEBUFFER,0);
+    read_buffer(GL_FRONT);
+    pixel_store(GL_PACK_ALIGNMENT,1);
+    std::vector<std::byte> pixels(static_cast<std::size_t>(width)*static_cast<std::size_t>(height)*3);
+    read_pixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,pixels.data());
+    const auto read_error = error();
+    pixel_store(GL_PACK_ALIGNMENT,old_alignment);
+    bind_framebuffer(GL_READ_FRAMEBUFFER,static_cast<GLuint>(old_framebuffer));
+    read_buffer(static_cast<GLenum>(old_read_buffer));
+    require(read_error == GL_NO_ERROR && error() == GL_NO_ERROR,"actual presented window readback/state restoration failed");
+    std::ofstream output(path,std::ios::binary);
+    output << "P6\n" << width << ' ' << height << "\n255\n";
+    const auto row = static_cast<std::size_t>(width)*3;
+    for (int y = height; y-- > 0;)
+        output.write(reinterpret_cast<const char*>(pixels.data()+static_cast<std::size_t>(y)*row),static_cast<std::streamsize>(row));
+    require(bool(output),"private actual-window capture could not be retained");
+}
+int run(const std::filesystem::path& rom, const std::filesystem::path& root, Scenario scenario) {
+    const bool full_title = scenario == Scenario::full_title;
+    const bool reset_offsets = scenario == Scenario::reset_live_offsets;
+    const bool name_oak = scenario == Scenario::name_oak;
+    for (const auto* name : {"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
+        const char* value = std::getenv(name);
+        require(value && std::string_view(value) == "dummy","private integration requires explicit SDL dummy audio; no physical driver selection");
+    }
+    require(root.is_absolute() && std::filesystem::is_directory(root) && !std::filesystem::is_symlink(root),
+            "private integration needs an existing absolute nonsymlink owned root");
+    require(std::filesystem::create_directory(root/"profile") && std::filesystem::create_directory(root/"host") &&
+            std::filesystem::create_directory(root/"proof"),"private scenario child roots must be newly owned, never reused");
+    if (reset_offsets) create_existing_profile(root/"profile");
+    const auto snapshot = isle::rom::read_snapshot(rom);
+    auto catalog = isle::menu::hydrate(snapshot);
+    require(bool(catalog),"complete private startup resource hydration rejected");
+    // A valid owned persisted config deliberately disagrees with this adapter's
+    // required backend. ConsoleVariable's reload must not erase the override.
+    {
+        std::ofstream config(root/"host"/"35mmIsle.json");
+        config << "{\"Window\":{\"Backend\":{\"Id\":123456},\"Width\":640,\"Height\":480}}\n";
+        require(bool(config),"owned renderer-precedence configuration write failed");
+    }
+    g::Config configuration;
+    configuration.data_directory = root/"host";
+    configuration.input = g::InputMode::diagnostic_disabled;
+    auto platform = g::Host::create(snapshot,std::move(configuration));
+    require(bool(platform),platform.message.data());
+    auto& host = *platform.host;
+    require(SDL_GL_GetCurrentContext() != nullptr,"actual required OpenGL override was lost during CVar reload");
+    const auto disabled = host.acquire_input();
+    require(disabled.completed && disabled.controller_bits == 0 &&
+        std::all_of(disabled.ports.begin(),disabled.ports.end(),[](const auto& p) {
+            return p.connection == in::Connection::absent && p.identity == 0;
+        }),"diagnostic-disabled input invented physical controller metadata");
+    SoftwareController controller;
+    in::Service input;
+    require(input.start(controller.sample()) == in::Error::none,"owned software input initialization failed");
+    isle::game::State game_state(root/"profile");
+    isle::scene::Storage scene_storage;
+    // Reverse destruction order is essential on every thrown failure: actual
+    // graphics drain/join, then callbacks/native objects, then host audio/SDL.
+    std::unique_ptr<s::Runtime> runtime;
+    auto renderer = isle::scene::graphics::Frame::create(*catalog.catalog,snapshot,{true,{12000000,4*1024*1024}});
+    require(bool(renderer),renderer.message.data());
+    auto& graphics = *renderer.frame;
+    auto started = s::Runtime::create(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
+    require(bool(started),started.message.data());
+    runtime = std::move(started.runtime);
+    require(runtime->save_initialization() == nullptr,"save initialization ran before the actual first logo wait");
+    h::GtlClock clock({1,1,2,true,0});
+    h::RetraceClock retraces(2250000,37609);
+    const auto epoch = std::chrono::steady_clock::now();
+    const auto deadline = epoch+std::chrono::seconds(1800);
+    std::uint64_t ordinal = 0, canonical_frames = 0, presentations = 0, first_menu_update = 0;
+    std::uint64_t busy_audio_begin = 0, greatest_busy_audio_progress = 0;
+    std::optional<h::FrameToken> executing;
+    bool saw_title = false, saw_main_music = false, saw_aux_music = false, menu_capture = false;
+    bool saw_save_after_wait = false, saw_logo = false, saw_menu = false, queued_menu_ready = false;
+    bool logo_capture = false, title_capture = false;
+    bool queued_logo_ready = false, queued_title_ready = false;
+    std::uint8_t last_logo_rgb = 255;
+    unsigned fade_changes = 0, stage = 0;
+    std::uint64_t stable_since = 0;
+    const auto set_pad = [&](std::uint16_t buttons,std::int8_t x=0,std::int8_t y=0) {
+        controller.buttons=buttons; controller.stick_x=x; controller.stick_y=y;
+        stable_since=runtime->updates();
+    };
+    for (;;) {
+        const auto now = std::chrono::steady_clock::now();
+        require(now < deadline,"actual startup integration wall deadline expired; no completion claimed");
+        require(host.pump_events(),host.message());
+        const auto ns = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now-epoch).count());
+        const auto ticks = retraces.advance(ns);
+        for (std::uint64_t n = 0; n < ticks; ++n) {
+            complete_read(input,input.retrace(),controller);
+            require(host.notify_retrace(++ordinal,ns),host.message());
+        }
+        offer_ticks(clock,ticks);
+        require(host.pump_audio(),host.message());
+        saw_main_music |= host.audio()->bgm_playing(0);
+        saw_aux_music |= host.audio()->bgm_playing(1);
+        if (executing) {
+            const auto result = graphics.poll();
+            require(result != isle::scene::graphics::Poll::failed,graphics.message());
+            if (result == isle::scene::graphics::Poll::completed) {
+                require(!graphics.busy() && graphics.quiescent(),"completed graphics retained actual RAM/native/GPU borrowers");
+                greatest_busy_audio_progress = std::max(greatest_busy_audio_progress,host.audio()->accepted_frames()-busy_audio_begin);
+                checked(clock.offer_terminal(*executing,h::Terminal::completed));
+                executing.reset();
+                const auto frame = graphics.completed();
+                require(frame && frame.rgba.size() == 320u*240u*4u,"actual framebuffer readback has wrong complete extent");
+                if (!host.presentation_pending()) {
+                    require(host.queue_present(frame.rgba,frame.screen_offsets),host.message());
+                    const auto* ui = runtime->menu_ui();
+                    queued_menu_ready = ui && ui->source_state() == 3 && runtime->updates()-stable_since >= 30;
+                    queued_logo_ready = runtime->phase() == s::Phase::logo &&
+                        runtime->logo_counter() >= 10 && runtime->logo_counter() < 60;
+                    const auto prepared_view = runtime->view();
+                    queued_title_ready = prepared_view.title && prepared_view.title->active() &&
+                        prepared_view.title->source_time() >= 50;
+                }
+                ++canonical_frames;
+            }
+        }
+        if (host.presentation_pending()) {
+            const auto shown = host.try_present();
+            require(shown != g::Present::failed,host.message());
+            if (shown == g::Present::completed) {
+                ++presentations;
+                // This tag belongs to the retained copied presentation, not
+                // whatever native UI state has advanced to during a decline.
+                if (!logo_capture && queued_logo_ready) {
+                    capture_window(root/"proof"/"actual-logo-window.ppm");
+                    logo_capture = true;
+                }
+                if (!title_capture && queued_title_ready) {
+                    capture_window(root/"proof"/"actual-title-window.ppm");
+                    title_capture = true;
+                }
+                if (!menu_capture && queued_menu_ready) {
+                    capture_window(root/"proof"/"actual-menu-window.ppm");
+                    menu_capture = true;
+                }
+            }
+        }
+        if (!executing) {
+            const auto action = clock.poll();
+            if (action.kind == h::ActionKind::update) {
+                require(graphics.quiescent(),"native tick attempted before actual graphics retirement");
+                const auto publication = input.update();
+                require(publication.error == in::Error::none && publication.accepted &&
+                        publication.acknowledged == publication.accepted,"contUpdate did not receive a real publication acknowledgement");
+                const auto step = runtime->tick(static_cast<std::uint32_t>(h::RetraceClock::guest_ticks(ns)));
+                require(step != s::Step::failed,runtime->message());
+                const auto view = runtime->view();
+                if (runtime->phase() == s::Phase::logo) {
+                    saw_logo = true;
+                    if (runtime->updates() == 1) require(runtime->save_initialization() == nullptr,"save initialization preceded first source wait");
+                    if (runtime->updates() == 2) {
+                        require(runtime->save_initialization() && *runtime->save_initialization(),"source logo did not initialize save after its first wait");
+                        saw_save_after_wait = true;
+                    }
+                    IsleSprite* sprite = nullptr;
+                    require(isle_game_sprite_view(view.game,view.logo_sprite,&sprite) == ISLE_GAME_OK,"live logo sprite state missing");
+                    require(sprite->red == sprite->green && sprite->green == sprite->blue,"actual source logo RGB fade diverged between channels");
+                    if (sprite->red != last_logo_rgb) {
+                        require(runtime->logo_counter() >= 60,"actual logo faded before its concurrent minimum hold");
+                        ++fade_changes; last_logo_rgb = sprite->red;
+                    }
+                }
+                checked(clock.finish_update());
+                if (step == s::Step::scene_changed) {
+                    require(saw_save_after_wait && runtime->controller() == 0 && fade_changes == 20 && last_logo_rgb == 0,
+                            "complete source logo/controller/save/20-step RGB transition was not observed");
+                    clock.request_stop(); clock.poll();
+                    require(clock.stopped(),"old logo GTL epoch did not actually quiesce");
+                    checked(clock.reset({1,1,2,true,0}));
+                    first_menu_update = runtime->updates();
+                    saw_menu = true;
+                } else if (step == s::Step::scene_exit) {
+                    require(stage == (reset_offsets?17u:9u) &&
+                            runtime->exit().scene == isle::menu::scene::SourceScene::beach &&
+                            runtime->exit().entry_flags == 1,
+                            "actual menu did not produce source result0/new-game notice1 after confirmation");
+                    if (reset_offsets) {
+                        const auto data = game_state.save()->snapshot();
+                        require(bool(data),"reset source snapshot missing");
+                        const auto screen = data.value.screen_offsets();
+                        const auto flag = data.value.player_flag(16);
+                        require(screen && screen.value.horizontal == 0 && screen.value.vertical == 0 &&
+                                flag && !flag.value && data.value.generation() == 1,
+                                "new-game confirmation failed to reset RAM while preserving durable generation");
+                    }
+                    clock.request_stop(); clock.poll();
+                    require(clock.stopped(),"menu GTL exit retained a context");
+                    break;
+                }
+                const auto* ui = runtime->menu_ui();
+                auto* title = view.title;
+                if (title) saw_title |= title->active();
+                if (ui) {
+                    if (reset_offsets)
+                        require(ui->screen_offsets().horizontal == 8 && ui->screen_offsets().vertical == -6,
+                                "RAM-only new-game reset incorrectly changed live VI offsets during the source exit wait");
+                    const auto state = ui->source_state();
+                    if (stage == 0 && saw_title) {
+                        if (!full_title && title->active() && title->source_time() >= 100) { controller.buttons = 0x1000; stage = 1; }
+                        else if (full_title && state == 2 && !title->active()) { stage = 2; stable_since = runtime->updates(); }
+                    } else if (stage == 1 && state == 2 && !title->active()) { controller.buttons = 0; stage = 2; stable_since = runtime->updates(); }
+                    else if (stage == 2 && runtime->updates()-stable_since >= 30) { controller.buttons = 0x8000; stage = 3; }
+                    else if (stage == 3 && state == 3) { controller.buttons = 0; stage = 4; stable_since = runtime->updates(); }
+                    else if (stage == 4 && runtime->updates()-stable_since >= 30) { controller.buttons = 0x4000; stage = 5; }
+                    else if (stage == 5 && state == 2) { controller.buttons = 0; stage = 6; stable_since = runtime->updates(); }
+                    else if (stage == 6 && runtime->updates()-stable_since >= 30) { controller.buttons = 0x1000; stage = 7; }
+                    else if (stage == 7 && state == 3) { controller.buttons = 0; stage = 8; stable_since = runtime->updates(); }
+                    else if (stage == 8 && runtime->updates()-stable_since >= 30 && menu_capture) {
+                        if (reset_offsets) { set_pad(0,0,80); stage=10; }
+                        else { controller.buttons=0x8000; stage=9; }
+                    } else if (stage==10 && runtime->updates()-stable_since>=4) { set_pad(0); stage=11; }
+                    else if (stage==11 && runtime->updates()-stable_since>=30) { set_pad(0x8000); stage=12; }
+                    else if (stage==12 && runtime->updates()-stable_since>=4) { set_pad(0); stage=13; }
+                    else if (stage==13 && runtime->updates()-stable_since>=60) { set_pad(0,-80,0); stage=14; }
+                    else if (stage==14 && runtime->updates()-stable_since>=4) { set_pad(0); stage=15; }
+                    else if (stage==15 && runtime->updates()-stable_since>=30) { set_pad(0x8000); stage=16; }
+                    else if (stage==16 && runtime->updates()-stable_since>=4) { set_pad(0); stage=17; }
+                }
+            } else if (action.kind == h::ActionKind::draw) {
+                require(graphics.begin(runtime->view(),{static_cast<unsigned>(canonical_frames&1)}),graphics.message());
+                checked(clock.accept_draw(action.token));
+                executing = action.token;
+                busy_audio_begin = host.audio()->accepted_frames();
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    require(saw_logo && saw_menu && saw_title && logo_capture && title_capture && menu_capture &&
+            saw_main_music && greatest_busy_audio_progress != 0,
+            "real startup, visible logo/title/menu or independent audio-during-GPU behavior was not exercised");
+    if (full_title) require(saw_aux_music,"natural title did not actually start the auxiliary music context");
+    require(graphics.quiescent(),graphics.message());
+    std::uint64_t reentry_frames = 0;
+    isle::private_scene::NameOakMetrics scene_metrics;
+    if (name_oak) {
+        require(runtime->retire(),runtime->message());
+        runtime.reset();
+        require(host.cancel_present(),host.message());
+        scene_metrics = isle::private_scene::exercise_name_to_oak(snapshot,game_state,scene_storage,
+            input,host,graphics,clock,retraces,ordinal,epoch,deadline,root,capture_window);
+    } else {
+    auto* const persistent_save = game_state.save();
+    auto* const initialization_evidence = game_state.save_initialization();
+    auto* const native_backing = scene_storage.game();
+    require(persistent_save && initialization_evidence && game_state.scene_notices() == 1,
+            "actual source new-game notice/profile was not retained at the manager boundary");
+    require(!persistent_save->set_player_flag(12,true),"source-owned reentry profile mutation failed");
+    auto old_runtime = std::move(runtime);
+    require(old_runtime->retire(),old_runtime->message());
+    const auto reentry_ns = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now()-epoch).count());
+    auto reentered = s::Runtime::create_title(*catalog.catalog,input,*host.audio(),game_state,scene_storage,
+        static_cast<std::uint32_t>(h::RetraceClock::guest_ticks(reentry_ns)));
+    require(bool(reentered),reentered.message.data());
+    runtime = std::move(reentered.runtime);
+    require(scene_storage.game() == native_backing && runtime->phase() == s::Phase::title_menu &&
+            runtime->logo_counter() == 0 && game_state.save() == persistent_save &&
+            game_state.save_initialization() == initialization_evidence,
+            "title reentry replayed boot, changed backing or replaced the persistent profile owner");
+    // The retired old wrapper must not destroy new content in borrowed Storage.
+    old_runtime.reset();
+    auto boot_again = s::Runtime::create(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
+    require(!boot_again && scene_storage.game() == native_backing,
+            "second boot reused an initialized profile or destroyed the live reentered native scene");
+    controller.buttons = 0;
+    require(host.cancel_present(),host.message());
+    checked(clock.reset({1,1,2,true,0}));
+    unsigned prompt_presentations = 0;
+    bool queued_prompt = false;
+    for (;;) {
+        const auto now = std::chrono::steady_clock::now();
+        require(now < deadline,"actual persistent-state title reentry deadline expired");
+        require(host.pump_events(),host.message());
+        const auto ns = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now-epoch).count());
+        const auto ticks = retraces.advance(ns);
+        for (std::uint64_t n=0;n<ticks;++n) {
+            complete_read(input,input.retrace(),controller);
+            require(host.notify_retrace(++ordinal,ns),host.message());
+        }
+        offer_ticks(clock,ticks);
+        require(host.pump_audio(),host.message());
+        if (executing) {
+            const auto result = graphics.poll();
+            require(result != isle::scene::graphics::Poll::failed,graphics.message());
+            if (result == isle::scene::graphics::Poll::completed) {
+                require(graphics.quiescent(),"reentry graphics retained native/readback borrowers");
+                checked(clock.offer_terminal(*executing,h::Terminal::completed));
+                executing.reset();
+                const auto frame = graphics.completed();
+                if (!host.presentation_pending()) {
+                    require(host.queue_present(frame.rgba,frame.screen_offsets),host.message());
+                    queued_prompt = runtime->menu_ui() && runtime->menu_ui()->source_state() == 2;
+                }
+                ++reentry_frames;
+            }
+        }
+        if (host.presentation_pending()) {
+            const auto shown = host.try_present();
+            require(shown != g::Present::failed,host.message());
+            if (shown == g::Present::completed && queued_prompt && prompt_presentations < 10) {
+                if (++prompt_presentations == 10)
+                    capture_window(root/"proof"/"actual-reentered-title-window.ppm");
+            }
+        }
+        if (prompt_presentations == 10) clock.request_stop();
+        if (!executing) {
+            const auto action = clock.poll();
+            if (action.kind == h::ActionKind::stopped) break;
+            if (action.kind == h::ActionKind::update) {
+                const auto publication = input.update();
+                require(publication.error == in::Error::none && publication.accepted &&
+                        publication.acknowledged == publication.accepted,"reentry contUpdate lacked actual publication");
+                require(runtime->tick(static_cast<std::uint32_t>(h::RetraceClock::guest_ticks(ns))) == s::Step::updated,
+                        runtime->message());
+                require(runtime->logo_counter() == 0 && !runtime->view().title->active(),
+                        "source title-only reentry unexpectedly replayed logo/movie");
+                checked(clock.finish_update());
+            } else if (action.kind == h::ActionKind::draw) {
+                require(graphics.begin(runtime->view(),{static_cast<unsigned>(reentry_frames&1)}),graphics.message());
+                checked(clock.accept_draw(action.token));
+                executing = action.token;
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    const auto reentry_snapshot = persistent_save->snapshot();
+    require(reentry_snapshot && reentry_snapshot.value.player_flag(12).value &&
+            game_state.save() == persistent_save && game_state.scene_notices() == 1,
+            "source reentry lost profile mutation/lock ownership or consumed Oak's notice");
+    }
+    require(graphics.quiescent() && graphics.retire(),graphics.message());
+    if (runtime) {
+        require(runtime->retire(),runtime->message());
+        runtime.reset();
+    }
+    const auto stopped_input = input.stop();
+    require(stopped_input.error == in::Error::none && !input.running() &&
+            std::none_of(stopped_input.cancelled.begin(),stopped_input.cancelled.end(),[](const auto& token) { return bool(token); }),
+            "actual input shutdown retained an unacknowledged publication");
+    require(host.cancel_present(),host.message());
+    require(host.stop_audio(),host.message());
+    for (;;) {
+        const auto now = std::chrono::steady_clock::now();
+        require(now < deadline,"actual SDL/native audio retirement deadline expired");
+        require(host.pump_events(),host.message());
+        const auto ns = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now-epoch).count());
+        const auto ticks = retraces.advance(ns);
+        for (std::uint64_t n = 0; n < ticks; ++n) require(host.notify_retrace(++ordinal,ns),host.message());
+        require(host.pump_audio(),host.message());
+        const auto drain = host.poll_audio_drain();
+        require(drain != g::Drain::failed,host.message());
+        if (drain == g::Drain::drained) break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    const auto accepted_frames = host.audio()->accepted_frames();
+    const auto closed = host.shutdown();
+    require(!closed.failed && closed.owners_released && closed.audio == isle::audio::SdlAudioOutput::CloseDisposition::stream_drained,
+            "actual platform/audio/GUI/worker ownership did not retire after observed stream drain");
+    std::cout << "native_startup_runtime=passed title_mode=" << (full_title?"natural_end":"actual_Start_interrupt")
+              << " canonical_frames=" << canonical_frames << " real_LUS_presentations=" << presentations
+              << " persistent_profile_title_reentry=" << (name_oak?"not_requested":"passed")
+              << " reentry_canonical_frames=" << reentry_frames
+              << " name_to_Oak_source_dispatch=" << (name_oak?"passed":"not_requested")
+              << " name_canonical_frames=" << scene_metrics.name_frames
+              << " name_LUS_presentations=" << scene_metrics.name_presentations
+              << " Oak_canonical_frames=" << scene_metrics.oak_frames
+              << " Oak_LUS_presentations=" << scene_metrics.oak_presentations
+              << " Oak_confirmed_course_request=" << (name_oak?"0_not_yet_gameplay":"not_requested")
+              << " live_VI_reset_scenario=" << (reset_offsets?"passed":"not_requested")
+              << " accepted_dummy_PCM_frames=" << accepted_frames << " max_audio_frames_during_GPU_wait=" << greatest_busy_audio_progress
+              << " menu_first_update=" << first_menu_update << " gtl_queue_dropped_retraces=" << clock.stats().dropped_retraces
+              << " logo_RGB_changes=20 menu=A_to_main_B_to_prompt_Start_to_main new_game_source_scene=0 entry_flags=1"
+                 " actual_window_capture=private_PPM input=explicit_owned_software_NOT_LUS_or_physical"
+                 " audio=actual_RSP_checked_SDL_dummy_drained gameplay_Original_numerical_hardware_parity=not_claimed\n";
+    return 0;
+}
+} // namespace
+#ifdef _WIN32
+int wmain(int argc,wchar_t** argv) {
+#else
+int main(int argc,char** argv) {
+#endif
+    try {
+        require(argc == 4,"expected PRIVATE_ROM NEW_EXISTING_OWNED_ROOT MODE(roundtrip|full-title|reset-live-offsets|name-oak)");
+        const auto mode = std::filesystem::path(argv[3]).u8string();
+        require(mode == u8"roundtrip" || mode == u8"full-title" || mode == u8"reset-live-offsets" || mode == u8"name-oak",
+                "unknown source startup scenario");
+        const auto scenario = mode == u8"full-title"?Scenario::full_title:
+                              mode == u8"reset-live-offsets"?Scenario::reset_live_offsets:
+                              mode == u8"name-oak"?Scenario::name_oak:Scenario::roundtrip;
+        const std::filesystem::path root(argv[2]);
+        const auto status = run(std::filesystem::path(argv[1]),root,scenario);
+        if (scenario == Scenario::reset_live_offsets) check_existing_profile(root/"profile");
+        return status;
+    } catch (const std::exception& e) { std::cerr << "private actual startup integration: " << e.what() << '\n'; return 1; }
+}

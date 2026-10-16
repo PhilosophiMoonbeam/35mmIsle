@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "component": "actual native source name-entry processes and post-scene Oak11 completion",
+  "game_revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "implementation": ["src/new_game_scene.hpp", "src/new_game_scene.cpp"],
+  "behavior_tests": ["tests/new_game_scene_tests.cpp"],
+  "private_input_smoke_source": ["tests/new_game_scene_private_smoke.hpp", "tests/new_game_scene_rom_smoke.cpp"],
+  "source_files": {
+    "src/menu_new_game/A5CC50.c": {
+      "git_blob": "a14d24262fe6433550d816f22dd4515c7b3a2588",
+      "sha256": "cc5417fc89309cc62adf8808a1887d26119799a4276cff64c4fa3d5fefb742fa",
+      "spans": [[1,372]],
+      "facts": "Actual351-pointer source grid, offset255 selection, background/card, description/grid/name/preview furniture, background fade255-to128, song12, source fade/60-update hold, initialized native scene pools and post-omSetupScene PFID16/Oak11 boundary. Source undefined saved-offset teardown is normalized to checked real saved offsets."
+    },
+    "src/menu_new_game/A5D5B0.c": {
+      "git_blob": "2b7ff006464815b526b4a21d04a7ef5c25911e2a",
+      "sha256": "a9dad36b835899d1a52472a75214bb5352189dd6b63f91f5414e26a202cb4131",
+      "spans": [[1,395]],
+      "facts": "Native control/caret/preview continuations; five-column19-row grid and remembered-column End navigation; direction thenB thenA thenStart; seven two-byte characters in16-byte record; B never cancels; ordinary-capacity vs space helper distinction; real one-update End wait; empty/all-fullwidth-space Todd substitution; full16-byte RAM copy; sound65/66/69/74/96 and exact blink calendars."
+    },
+    "src/app_render/53AD0.c": {
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "spans": [[1,1058]],
+      "facts": "Permitted own-GAME common sprite/camera routing and once-per-OM source menu-input invalidation. Name calls shared reset_scene_menu at actual AAE28 initialization: reset menu_update and repeat-delay counters only, preserve cache/history/interval counters/acquisition tickets. A85E8/AAE28 install exactly one objectID1<<9/updateLINK_PLAYER9/objectpriority9 with kind0 stackful processpriority0; its first action invalidates after lower-link Text consumers, then waits one actual OM update. Name's priority3 camera uses flag8/equality against tagffffffff; common DL2 camera has updateLINK_POKEMON3/objectpriority3/renderpriority2/flag4/intersection."
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "spans": [[248,258]],
+      "facts": "Exact own-GAME LINK_POKEMON3 and LINK_PLAYER9 numeric source values."
+    },
+    "src/sys/oh.c": {
+      "git_blob": "b5b871a1b622803c944f5cf83d7624426238edf8",
+      "sha256": "5cd8502eb410caccc1bccd01d9c689d924c6366701d4ac2ba8bc229f8d31b86b",
+      "spans": [[327,347],[368,390]],
+      "facts": "Own-GAME model/camera factory argument meaning: update link/object priority are distinct from camera DL priority; model process retains explicit source kind and priority."
+    }
+  },
+  "private_resources": {
+    "manifest": "cmake/window-ui-inputs.json",
+    "rom_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "groups": ["common", "name"],
+    "name_table_count": 351,
+    "preview_offset": 255,
+    "name_roots": ["0x80109880", "0x80117f98", "0x80118068"],
+    "producer_mapping": "Main builds Services resources and existing Producer in identical common+name order. Common BankMapping keeps its source guest base; relocate name BankMapping to physical0x700000 because original name texels overlap generic frame command RAM. Never install Oak overlay simultaneously.",
+    "common_pre_render": "window::Resources retains the actual common func_800A1A50 list and all referenced immutable data. Scene stores actual Producer::assets() plus Resources::common_render_assets() once in its immutable vector and returns Resources::common_pre_render() physical address. No zero/empty list or Frame guard relaxation.",
+    "dynamic_default_ranges": {
+      "element_planes": ["0x400000", "0x580000"],
+      "fade_planes": ["0x580000", "0x580008"],
+      "sprite_commands": [["0x640000", "0x660000"], ["0x660000", "0x680000"], ["0x680000", "0x6a0000"]]
+    },
+    "payloads_compiled": false
+  },
+  "ownership": {
+    "common": "Main owns ONE application-lifetime Storage and State. Scene borrows Main's scene Services and canonical sprite Producer; no duplicate native arena, command bus, renderer, save session/lock or audio/input service.",
+    "ui": "Source0x50000 UIMem heap and23 real dynamic Element rasters, source Frame/Focus/Buttons, actual native source camera/sprite/control/blink processes. Preparation-only render_input exposes generic camera passes, scene-lifetime immutable union and generation-bearing Producer bindings, never advances source state. Shared Resources retains every common pre-render owner until actual borrowers retire.",
+    "fence": "Caller must finish actual GPU/readback/preparation borrowers outside native traversal before retire/complete_scene. complete_scene first joins scene-owned callbacks, detaches/unregisters descriptors and releases UI; only then sets PFID16 and enables exactlyone source result11. Main destroys common Services and resets shared Storage afterward.",
+    "persistent": "End stores every one of16 source name bytes in same RAM session; scene notice1 untouched; no implicit commit/profile reopening; persistent audio owns all queued value commands and its calendar, never per-scene drain/restart.",
+    "native_safety": "No owning automatic C++ values cross native wait/cancellation. Source uninitialized by-value VI teardown uses actual checked saved offsets, not undefined pointer writes. All source name/raster access is bounded."
+  },
+  "authored_regressions": [
+    "Exact direction>B>A>Start precedence including simultaneous opposites and fast-only stick distinctions",
+    "B backspace/no cancellation, emptyB sound65, remembered-column wraps, End63,212 size15x5",
+    "Seven-character ordinary-capacity autoEnd versus source space no-redraw/no-autoEnd and capacity sound distinction",
+    "Pending confirmation cannot edit/default; empty and every source all-space length default only on actualEnd; full16-byte trailing-byte semantics preserved",
+    "Private actual scheduler consumer drives software-owned physical controller0 through normal acquisition, requires canonical RSP/RDP completed frames and nonuniform actual grid/card pixels",
+    "Private actual invalid-raster-extent error regression uses real native opening process, requires explicit actual graphics error fence, preserves first error and retires without name/PFID16/notices/result/durable side effects",
+    "Private selecting teardown never sets PFID16 or changes source name; confirmation wait precedes RAM copy; fade/hold precedes exit; PFID16 follows actual GPU fence and callback retirement; result11 once; notices and durable generation unchanged",
+    "Main integrated the source-positioned scene-owned LINK_PLAYER9 invalidation, preserved native input reset/cache semantics and flag8 camera matching. CPU contracts passed; the actual53-frame Name path consumed the nonzero common pre-render closure through both framebuffer contexts. This is not independent Original input-timing parity."
+  ],
+  "validation": "Main integrated and passed all43 contracts under GCC Debug, GCC Release and Clang ASan/UBSan. The fresh actual title-result0 to Name to Oak11 handoff executed53 Name canonical RSP/RDP frames and53 actual LUS presentations within the925-frame startup/scene proof. Empty-name submission used source Todd; CPU contracts cover editing/default/empty-B behavior separately. Source scene-owned input invalidation, camera matching, nonzero common pre-render closure, real GPU completion and joined retirement participated in the actual path. Native raster logical-width/stride correction was visually verified without font/spacing changes. Software-owned input and checked SDL dummy audio only; full gameplay, physical input/hearing, Original numerical/layout parity and Windows11 runtime remain unqualified.",
+  "source_policy": "Exact pinned local Git objects only. Dirty fork is not authority. No Nintendo/SGI SDK producer bodies/headers/opaque layouts/disassembly or quarantined modified SDK sprite material used; no host fonts, screenshots, protected compiled payloads or fabricated UI state."
+}

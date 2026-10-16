@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Payload-free own-GAME semantic provenance for a bounded native menu particle/effect runtime and canonical F3DEX2 packet producer. This is source-complete implementation, not Original numerical, full title scene, hardware, audio, or integrated-session qualification. No SDK producer body/header/layout, disassembly, private ROM bytes, bytecode operands, palettes, frames, or other assets are distributed.",
+  "native_files": [
+    "src/menu_effects.hpp",
+    "src/menu_effects.cpp",
+    "tests/menu_effects_tests.cpp",
+    "tests/menu_effects_rsp_smoke.cpp"
+  ],
+  "source_files": {
+    "src/app_render/effect.c": {
+      "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
+      "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
+      "facts": [
+        "66-97 particle pool100 and camera0; 104-169 native free-list/head insertion, initial lifetime+1, timer1, frame0, white primitive/zero environment, source effect ID and flags. Pool exhaustion returns null without consuming interpreter RNG.",
+        "275-295 big-endian float and variable duration+1; 298-336 random velocity rotation preserves source atan2/sin/cos/sqrt expression grouping and one shared randFloat call.",
+        "407-817 persistent bytecode cursor/timer, zero-duration continuation, flag assignment, A0/AC size targets, AB velocity scale, AD environment combiner, masked primitive/environment color targets, FC return cursor and FD unconditional return. Reached scripts0/3 do not spawn child scripts, use path/attractor callbacks, or use kind2 particles. Unknown/unreached opcode requests are explicitly rejected at construction rather than ignored.",
+        "819-854 size interpolation and integer16 color interpolation occur before lifetime decrement/retirement. 897-909 ordinary particles apply gravity, then friction, then position integration. The immediate first tick is part of spawn; a later ordinary update is separate.",
+        "946-1247 source rendering uses a fresh GAME look-at-roll times perspective-fast float matrix, row-vector projection, quarter-pixel viewport coordinates, clip-center tests, size/matrix column magnitudes, primitive Z, source translucency, dithers, image/palette cache, primitive/environment combiner, alpha threshold8 and scissored texture rectangles. Selected images are 32x32 I4 and CI4, clamp S/T, palette bank0. Source command recipes are independently packed from public wire ABI, not SDK macros or implementation bodies.",
+        "1260-1274 effect pool10. 1277-1360 attachment position is composed world translation; script velocity is transformed through separately normalized world matrix columns, NOT motion between frames. Caller supplies complete parent/local/auxiliary GAME world matrix.",
+        "1390-1485 accumulator advances using shared source RNG even when no particles fit; initial azimuth RNG still occurs before positive-angle per-particle replacement. Kinds0/3 retain radius/fraction/angle grouping, sqrt fraction for kind3, and kind3 velocity scaling. 1536-1638 emitter lifetime, free-list reuse, source currentEffectID16 wrap and sprite flags remain semantic native values.",
+        "1740-1755 model detach removes attached emitters; ordinary live particles continue independently until their script/lifetime retires. Runtime reset is an explicit native owner/scene operation, never an implicit RNG reseed or GPU fence."
+      ]
+    },
+    "src/app_render/effect.h": {
+      "git_blob": "665b175675d4764d5034b38a8094d686108c9054",
+      "sha256": "0f138ccc1c6a4596bd6a10db0d6e5849ade7f879fc2e3d170ade552089540f83",
+      "facts": "13-42 own-GAME script/image semantic scalar fields; 49-77 particle persistent semantic values. Native records have native sizeof/alignment and indices, never guest-pointer casts or an SDK layout claim. Catalog owns resolved typed descriptors and bounded bytecode/image/palette views."
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "facts": "293-314 own-GAME Effect stores ID/flags/kind/script/texture/lifetimes, position/velocity/gravity/friction/size/emission parameters and model attachment. Reached kinds0/3 need no effectVars kind2 layout."
+    },
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "facts": [
+        "54-69 animation -1/-2 sets title state3; otherwise truncation of argument-1 selects a script in the event-ID bank, and successful emitter attaches to the actual callback node. Parent receives title_finished and dispatches each event in animation source order, without coalescing.",
+        "105-106 installs callbacks only on third D5 and fourth I33 models. The first D226 model's lexical script3 op16 does NOT execute because its callback is NULL. Script3 is explicitly supported and exercised as an independent private native producer stimulus; no fabricated title callback reachability is claimed.",
+        "405-416 hydrates intro bank0, camera0/depth enabled, particle pool100, effect pool10, color ditherC0 and alpha dither30."
+      ]
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "facts": "1380-1436,1480-1501,1570-1640 own-GAME photo resource applicator corroborates projection column magnitudes, frame/palette lookup, CI4 palette0 load, texture size/derivative and primitive depth semantics. It is not substituted for live title effect update or the effect.c render state."
+    }
+  },
+  "public_wire_boundary": [
+    "https://hack64.net/wiki/doku.php?id=f3dex2",
+    "https://hack64.net/wiki/doku.php?id=rcpstructs",
+    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPScisTextureRectangle.html"
+  ],
+  "palette_semantic_legalization": {
+    "source_issue": "effect.c1166 uses pal256, reading512 bytes from each intro CI4 palette, but the actual GAME bank allocation ends after the final16-entry/32-byte palette. Those reads escape the source heap allocation; next ROM bytes are NOT their provenance.",
+    "authorized_native_fix": "Load exactly16 RGBA16 entries into TLUT palette0. This is an explicit bounded semantic legalization of undefined source overread, NOT byte-equivalence. Admission restricts CI4, 4-bit nibble indices0..15, palette bank0 and contiguous producer packet with no interposed CI8/other-bank consumer. No padding entries or adjoining ROM/heap bytes are invented.",
+    "proof_source": "Actual-RSP/RDP private smoke poisons both unowned adjacent RAM and full prior TLUT with alternate values, compares selected rendered colors/depth, and checks the complete poisoned asset reservation for writes. Focused tests inspect16-entry canonical loads and failure-atomic packet/asset capacity rejection. Worker did not execute this source."
+  },
+  "ownership": {
+    "resources": "Borrowed Catalog/Snapshot must outlive runtime and all GPU asset leases. Runtime caches immutable EffectBank once and never rescans/re-hydrates resources per frame. Caller installs exact frames/palettes once into exclusive physical RDRAM reservations and supplies bindings; runtime does not own global GPU/device state.",
+    "gameplay": "One serialized MenuEffects owner with fixed stable100-particle/10-effect native arrays, shared externally owned isle_rng, no per-frame heap allocation. Invalid attachments/normalization are rejected before pool/RNG mutation; canonical packet capacity/assets are checked before any destination write. Source pool exhaustion remains successful null spawn/drop, not invented bounded-buffer failure or a deferred retry.",
+    "ordering": "Parent dispatches animation callbacks immediately in exact source order and calls update_particles/update_effects in actual OM object order. Emission performs its immediate first interpreter/physics tick. Ordinary source frame timing is never resampled from zero.",
+    "render": "Parent supplies actual GAME row-vector camera projection and quarter-pixel viewport scale/translation, world resolver, installed image bindings, canonical bounded word span and exclusive asset reservations. Render appends no END/full-sync and owns no color/depth/scissor/task state. Parent splices commands contiguously into its canonical packet, submits actual RSP/RDP, retires leases and waits actual GPU quiescence before Catalog/asset destruction.",
+    "layout": "Parent effects workspace1A0000..1F0000 is sufficient; runtime has no hardcoded RDRAM placement. max_render_words6020 is conservative. Private smoke relocates its commands to1A0000 so fixture matrix/stack/yield ranges remain separate."
+  },
+  "build_handoff": {
+    "sources": ["src/menu_effects.cpp"],
+    "dependencies": ["existing menu resource/Catalog target", "existing isle_rng implementation", "existing admitted native float libm boundary"],
+    "compile_options": ["C++20", "-fno-fast-math", "-ffp-contract=off"],
+    "focused_private_test": "tests/menu_effects_tests.cpp plus menu-effects/resource/snapshot dependencies; run with one explicit admitted private ROM path. Covers100/10 exhaustion, ID/free-list semantics, null-spawn RNG, failure-atomic attachment/packet/asset errors, detach/reset, normalized world columns, persistent FD/timer/size/color/END boundaries, replay and16-entry palette command closure.",
+    "actual_private_smoke": "tests/menu_effects_rsp_smoke.cpp plus existing rsp_fixture/CanonicalExecutor/resource/snapshot dependencies; run with one explicit admitted private ROM path and actual CPU-Vulkan RSP/RDP backend. Exercises scripts0/3 native spawns/ticks/texture frames/colors, actual rectangles, prior TLUT/RAM poison alternatives, primitive Z occlusion without translucent depth updates, animation change and quiescent teardown."
+  },
+  "qualification": "No worker build, tests, lint, formatter, executable, Original collector, physical-device or runtime probe was run. Parent owns one final integrated build and actual RSP/RDP/PCM/session qualification. Native float libm/Original numerical parity and complete end-to-end title behavior remain unqualified until observed."
+}

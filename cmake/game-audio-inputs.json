@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Original native startup audio lifecycle/command facade, exact admitted ROM resource hydration, source retrace/quota policy and explicit native AI time mapping. No GAME function body, SDK producer body/header/opaque object layout, ROM payload, PCM or numeric coefficient table is published.",
+  "source_files": {
+    "src/sys/audio.c": {
+      "git_blob": "a617f2ee04ad0851e0db46d31a6cf034e1eb0355",
+      "sha256": "99e092ee4faf2707b312740d235257fad16616d062b350cacdc9924348777dd8",
+      "facts": "147-225 two GAME-authored custom effects scalar programs;227-246 GAME sound priorities;306-327 default settings;741-746 one-slot retrace queue and real initial SP completion credit;748-906 asset/player initialization;909-921 resource/player-ready initialization ordering;923-1050 build->retrace->AI-length sample->previous real SP completion->previous PCM queue->new task queue->SFX/BGM request update;1053-1064 float volume controller;1067-1134 stop/physical-task-fence/recreation;1136-1607 quality/song/volume/tempo/pan/pitch/effects/stop/global control domain. Only own GAME control flow and public call arguments are used, not local representations of opaque SDK players."
+    },
+    "src/sys/sched.c": {
+      "git_blob": "05ba775a6cfa9984f7e8a064ef3077555694d364",
+      "sha256": "1e4290cb7a8c7c8632e7202d86bc05463a617a26344f1352f65dfd067ea062e5",
+      "facts": "88-98 client queue creation and registration;843-858 each independent source VRetrace posts one nonblocking message to every client;861-865 actual audio SP terminal acknowledgement is separate from retrace delivery. The audio client's one-message queue drops/coalesces further retraces while occupied; presentation is not a retrace source."
+    },
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "facts": "269-283 independent BGM0 song0x19, BGM1 song0x14 volume0x1000, SFX0x2c volume0x2000/pan64/pitch1/reverb30; source later smooth controls and stop are real requests, not replaced by SFX14."
+    },
+    "src/main_menu/A08E30.c": {
+      "git_blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+      "facts": "556-559 full BGM volume restore and actual menu song0x17;source Start/B/select sounds0x40..0x43 and smooth song volume changes."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "facts": "Main ROM0x1000 maps guest0x80000400;10501-10548 exact sequence/bank/table segment boundaries. No dirty source tree, native_a74f0/standalone_data.c or generated assets are authority."
+    }
+  },
+  "rom": {
+    "size": 16777216,
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "canonical_order": "big-endian z64",
+    "ranges_end_exclusive": {
+      "sequences": ["0xAEFC10", "0xAFEEE0"],
+      "music_bank": ["0xAFEEE0", "0xB04430"],
+      "music_table": ["0xB04430", "0xBA6C20"],
+      "sound_bank": ["0xBA6C20", "0xBB6940"],
+      "sound_table": ["0xBB6940", "0xF53540"]
+    },
+    "coefficient_inputs": {
+      "pan_BE16": {"rom": "0x436B0", "count": 128},
+      "logarithm_BE64": {"rom": "0x437B0", "count": 8}
+    },
+    "GAME_priority_bytes": {"rom": "0x42E28", "count": 400, "sha256": "51fb8be0626eb714ebb552ad579afc8ab114f62cce99b8667196b3359525fe4a"},
+    "GAME_customFX1_words": {"rom": "0x42B50", "count": 66, "sha256": "6a82215d06a602930247871759b5a1a258def679d29b67110e4d4429bcb5c51a", "ring_samples": 10400, "sections": 8, "chorus_rate_and_depth_all_zero": true},
+    "identity_derivation": "The complete bounded GAME priority and customFX1 initializers each matched one exact ROM byte span. Only address/count/hash facts are published. Hydration retains immutable typed resource owners; the whole admitted Snapshot need not survive Session after the executor has copied its actual cold inputs."
+  },
+  "private_pole_inputs": {
+    "parameters_in_order": ["0x5000", "0x6000", "0x7000"],
+    "book_BE_sha256_in_order": [
+      "8ae43a831366661cdb5f8180a3de2629ce724b81382c83b4371316c583857974",
+      "fa76b4c69b5f9d847f02792f9ead35edabf12e0318b6747942053846eb889e15",
+      "c2aac1068692ceb1f8b34832fcecc528b141cd3a0b0cd6949c50d08d82d30c2c"
+    ],
+    "smoke_wire_format": "Exactly114 bytes: three ascending records, each BE32 GAME pole parameter, BE16 actual command gain,16 signed BE16 numeric book entries. Numeric payload remains private.",
+    "smoke_wire_sha256": "8520799fa5108f518ad8731f3d77f9ce3edbfb87894ea9a2c93eed0b5d27cf04",
+    "origin": "Main extracted only admitted own native numeric fixture op11 addressed book/op14 gain observations using prepare-consumed.py83-88; exact retained case0/1 fixture identities were checked by Main. Repeated matching parameter inputs agreed. No new Original executable, collector, SDK field, capture replay, historical run or device probe was used by this worker.",
+    "limit": "[INFERENCE] Transfer of these three parameter-corresponding numeric inputs to the actual default GAME8-section graph awaits the parent's new real-RSP smoke. This is not a numeric generator, startup parity, whole safe14-profile parity or physical-device admission. No Original all-process device claim is inherited."
+  },
+  "native_cadence": {
+    "source_requested_rate": 32000,
+    "actual_native_source_rate": 32006,
+    "source_nominal_stages": "floor(float(actual_rate)/60)+1, then ceil to16. At32006 this is544 stereo frames. The existing shared service equivalent integer expression is (actual_rate/60+16)&~15.",
+    "source_quota_stages": "(16 + nominal - lagged_AI_frames +80)&~15, then max(nominal-16, quota). Initial sp70=0 derives first quota640; it is not an experimental fixed quota. Service.quota_frames remains0.",
+    "AI_unit_mapping": "AI_LEN_REG>>2 is current-buffer stereo-frame occupancy because native AI frame=4 bytes. A separate two-buffer native ledger holds complete accepted buffers. Monotonic nanoseconds consume frames at32006 with fractional-frame carry and overflow-safe splitting. Head remainder, not summed host source queue bytes or converted SDL output bytes, is sampled on scheduler retrace and lagged into the next task build.",
+    "bootstrap": "The initial task may build before the first source retrace. First session-local notification's zero-count buffer0 produces no output submission/accepted frames/native AI credit. Completed PCM remains leased until the second actual session-local notification; an externally supplied first ordinal10 is not ten notifications. If notifications already coalesced before initial publication, a further notification is required rather than inventing post-publication output credit. Later completed tasks require the next actual notification after build.",
+    "mailbox": "One pending retrace bit mirrors the source one-message nonblocking queue. Further scheduler notifications while an executing or PCM lease blocks the owner do not create a task backlog. Monotonic native AI consumption still advances independently, retaining fractional clock progress even while AI is empty. Source command/float volume-controller updates occur once after task publication and its available source tick. An already-pending initial tick is consumed by the initial post-build update; if the initial build precedes that tick, its deferred update runs exactly once when the first tick arrives while the real task/PCM owner stays fenced. No presentation count drives these updates.",
+    "adaptation_limit": "The native shared service owns one executing/PCM lease and stable8MiB allocation, serializing the original two-task/three-PCM pipeline rather than secretly copying/releasing unfinished output. Exact original triple-buffer latency, RCP cycle timing, real AI hardware FIFO timing and physical playback are NOT claimed. No nominal samples, completion, output acceptance, presentation or logo exit is fabricated."
+  },
+  "ownership": {
+    "players": {"physical_voices": 22, "logical_descriptors": 42, "calendars": 3, "SFX_slots": 10, "BGM_contexts": 2, "notes_per_BGM": 16},
+    "initialization": "Required checked output inspector verifies native S16 stereo rate32006; actual resource/catalog/effects admission and all three player registrations must succeed. Required executor initialize/ready callbacks prepare the real borrowed-RDRAM RSP before create returns ready. Partly initialized executors are retired on failure before service RAM is freed. No Null output or manually asserted executor-ready operation exists.",
+    "commands": "Game requests, processed native player state, task publication, actual executor terminal, completed PCM lease, native-endian extraction, partial consumer acceptance and stream drain are separate states. Native CSP stopping means an actual release/drain is already pending, not the original SDK's opaque state value: source requests map playing to stop, stopping to wait, stopped to source phase advance. Repeated native stop would retarget the fifty-ms release indefinitely and is not emitted while draining. Live commands never write published RDRAM. Any post-build staging error still returns the outstanding token for actual cancellation terminal reporting.",
+    "SFX_generations": "Every service update first checks and retires all existing native playback handles before allocating any new start, because facade slot order can differ from native descriptor order after stealing. A bounded start-eligibility mask preserves GAME's one-iteration replacement delay for a just-retired slot. No stale later-slot handle is inspected after an earlier start may have reused that native descriptor.",
+    "PCM": "One fixed max_frames*2 native S16 scratch is populated once from the completed canonical BE16 lease. A consumer must synchronously own its reported accepted prefix. WouldBlock/partial output retains the remainder and lease; no duplicate prefix, repeated conversion, hidden task or per-service allocation occurs. Explicit abandon_pcm is abort/discard, never drain.",
+    "reset": "Source restart stops all requested clients and continues actual synthesis/output until SFX/CSP logical state, pending parameter events, allocated/current/pending/retiring physical voices and task/PCM leases are truly retired. Re-register only then; allocation/task identities stay stable/monotonic. Effects recreation validates every scalar and synthesis-rate-specific chorus constraint before any mutation. No caller effect span is retained. Native AI already accepted buffers remain owned and are not silently cleared on restart.",
+    "host": "One serialized service owner supplies scheduler retrace ordinals/monotonic timestamps and actual RSP terminals independently of presentation. Production Output callbacks compose existing SdlAudioOutput inspect/try_submit/finish_input/poll_drain; SDL accepts whole blocks while the facade also supports truthful partial owned consumers. Executor retire destroys the real RSP borrower before stable RDRAM. C-boundary wrappers must return explicit errors and never throw."
+  },
+  "integration": {
+    "library_sources": ["src/game_audio.cpp", "src/game_audio.hpp"],
+    "library_public_dependencies": ["isle-audio", "isle-rom-snapshot"],
+    "include_directories": ["src", "include"],
+    "CPU_test": {"source": "tests/game_audio_tests.cpp", "link": ["isle-game-audio"], "claim": "Authored wire inputs and explicitly labelled CPU-only executor/terminal fixtures test ordering, bootstrap, quotas, coalescing, partial acceptance, stop/reset/steal retirement and failure atomicity. No RSP or generated-PCM claim."},
+    "private_smoke": {"source": "tests/game_audio_rsp_smoke.cpp", "link": ["isle-game-audio", "isle-graphics-task", "isle-rsp"], "argv": ["PRIVATE_ROM", "PRIVATE_114_BYTE_POLE_INPUT"], "automatic_CTest": false, "proof": "Six actual-ROM/actual-RSP startup+menu runs; independent both-sequence/SFX isolation differences, live controls, same-allocation real effects/player recreation and resumed actual sequence/SFX, restored exact replay, checked owned PCM and complete retirement. All SP terminal and DPC counts checked. No device probe."},
+    "strict_float": "Reuse isle_target_options, no fast-math/FMA/reassociation; source smooth-volume float stages must stay separate."
+  },
+  "qualification": {
+    "worker_builds_tests_executables_run": false,
+    "parent_runtime_acceptance_required": true,
+    "W12_numerical_corpus": "Still open: Original chorus/envelope/CSP numerical qualification and known bounded command/PCM residuals are unchanged. Startup facade, explicit numeric inputs and real executor do not close those edges.",
+    "excluded_claims": ["full game or all courses", "Original/hardware sample or instruction parity", "cycle-exact AI/triple-buffer scheduling", "physical playback or DAC hearing", "Windows11 runtime qualification", "release qualification"]
+  }
+}

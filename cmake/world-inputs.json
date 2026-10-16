@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Complete native Beach world resource hydration and bounded immutable GBI installation. No console runtime layout, SDK implementation, capture payload, guest executable callback, actor implementation, or full Beach scene assembly is admitted by this manifest. The independent beach::StartResources first-block diagnostic remains separate.",
+  "qualification": "Main exercised the complete-resource native World consumer through actual ROM RSP and CPU Vulkan RDP: eight primary and four secondary resources, complete primary traversal, hide/restore and joined retirement. GCC Debug, GCC Release and Clang ASan/UBSan each passed all43 contracts, including movement sampling and collision boundaries. The consumer uses a diagnostic camera; full Beach player/actor/course assembly, LUS presentation, hardware and Original equivalence are not established by this proof.",
+  "rom": {
+    "canonical_order": "big-endian z64",
+    "size": 16777216,
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc"
+  },
+  "source_files": {
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "facts": "GAME wire records only: WorldSetup meaningful30bytes; WorldBlockSetup12; WorldBlockDescriptor36; WorldBlockGFX fixed32 with variable timestamp tail; StaticObject40; Collider44; CollisionModel12; HeightMapPatch20; HeightMapTreeNode28. Native object sizes are independent. The misleading UnkVioletMarlin size comment is not its field-array stride: three32-bit source fields occupy12bytes."
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "facts": "Verified ObjectSpawn48bytes: id0,behavior4,translation8,euler20,scale32,InterpData pointer44. This is not guessed from StaticObject or a host sizeof."
+    },
+    "include/sys/interpolation.h": {
+      "git_blob": "bb9e129275a30ce093c7b154167948a6be6a74d7",
+      "facts": "InterpData24bytes: u8kind0,s16numPoints2,tension4,points8,duration12,paramPoints16,FittingParams pointer20. FittingParams is five binary32 coefficients. All referenced Beach paths are kind2. Native AnimationPath preserves all scalars, guard points, parameter points, and speed polynomials."
+    },
+    "src/world/block.c": {
+      "git_blob": "be2f88ac84fea914d4894e522c76830a47602b04",
+      "facts": "Both null-terminated descriptor groups; A-fogged single-root terrain translate-only; root relative world position times100; attached material/texture-animation trees; road tree construction/control lines, signed32 duration, source nonfogged TypeB road callback; sky root and exact source callback identity as separately established in beach-world-inputs.json."
+    },
+    "src/world/60860.c": {
+      "git_blob": "7b5f2ce9a1ccdfc3eeeb9f7a89dd52ef91352671",
+      "facts": "Static definition traversal uses12-byte stride, sentinel id-1, callback/payload checks. Actual Beach sole definition1007 invokes func800E30B0: attaches direct display-list child, position times100, source Euler/scale, and only decorated blocks A-fogged to B-fogged conversion. Unknown static IDs are ignored exactly as source. No invented callback map is supplied."
+    },
+    "src/world/movement.c": {
+      "git_blob": "707ea16b9fd964340e99cb57d2aeb35cb015cfa3",
+      "facts": "Control-line count minus1 determines road segments; every Beach primary has2nodes/one segment, cpObjects[1] supplies pose/speed. Source signed seeking uses movementDuration*moveTime minus current animation time. Only native resource decoding is implemented by world_resources.cpp; runtime/movement are separate components."
+    },
+    "src/world/ground_int.c": {
+      "git_blob": "83c264a3f8a579e25b1bdec0a95a9e61f9ada8d0",
+      "facts": "Indexed serialized child/patch references with ffffffff sentinel, not native pointers; preserve source ordering, validate all index bounds/reachability and reject cycles."
+    },
+    "src/world/collision.c": {
+      "git_blob": "d8a1480cfcc7bd9157d090658b45dc0e18fbd20f",
+      "facts": "Collider trees terminate at depth18. Hitbox type1 consumes one parameter at132, types2/3 two, type4 three. Initialized console matrix scratch is not authoritative: native PreparedModels computes forward/inverse matrices and root indices once at World creation, matching InitCollisionModels lifetime; collision queries reuse native cached transforms without collider trigonometry or allocation."
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "facts": "Native shared menu Model/Material/Animation conventions; path opcode13 has one pointer operand bound to native AnimationPath index; model callback opcode17 owns popcount(mask) float arguments; road tree traversal consumes44-byte GAME nodes through depth18. Selected actual streams are straight-line and END-inclusive, no branch compatibility shim."
+    },
+    "src/1F960.c": {
+      "git_blob": "caf0e25e5ba3f1f0b313d46eb6a3b3cc6ff8b1d3",
+      "facts": "Exact GAME interpolation basis, source parameter remapping and GetInterpolatedPosition/GetInterpolatedVelocity; shared native path evaluation is owned by the animation runtime. Resource hydration retains actual referenced path arrays without inventing endpoint guard payload beyond their source extents."
+    },
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "facts": "Explicit source world root8011B914 and height root80318F00. Player/Pokemon/scene assembly remains separate; these are resource roots, not synthetic gameplay stand-ins."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "facts": "Authoritative Beach asset, common world data, and Beach code initialized-data ROM mappings. No generated asset declarations or modified checkout is read."
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "facts": "Exact GAME nonfogged road renderer renRenderModelTypeB=80014F98, terrain renderModelTypeAFogged=800A1530. Callback identities remain typed selectors/native bindings, never guest-to-host function casts."
+    }
+  },
+  "data_mappings": [
+    {"name":"beach_assets","guest_begin":"0x8011B050","guest_end_exclusive":"0x801B02F0","rom_begin":"0xA74E0","rom_end_exclusive":"0x13C780","use":"Bounded referenced terrain, sky, static definition, road, material, animation, spawn/path, and collision records/assets only"},
+    {"name":"world_default_collider_records","guest_begin":"0x800EDD40","guest_end_exclusive":"0x800EE104","rom_begin":"0x6B4F0","rom_end_exclusive":"0x6B8B4","use":"Exact common id1001 hitbox/collider records only, native metadata, never installed as executable content"},
+    {"name":"beach_height_records","guest_begin":"0x802CE1B0","guest_end_exclusive":"0x80318F08","rom_begin":"0x566220","rom_end_exclusive":"0x5B0F78","use":"Exact6386patches/6385nodes plus8-byte HeightMap root; source initialized-data mapping, not capture or code traversal"}
+  ],
+  "roots": {
+    "world_setup":"0x8011B914",
+    "primary_table":{"guest":"0x80135D84","count":8,"terminators":1,"stride":4},
+    "secondary_table":{"guest":"0x80135DA8","count":4,"terminators":1,"stride":4},
+    "descriptors_in_group_order":["0x80135C64","0x80135C88","0x80135CAC","0x80135CD0","0x80135CF4","0x80135D18","0x80135D3C","0x80135D60","0x80135BD4","0x80135BF8","0x80135C1C","0x80135C40"],
+    "static_definitions":"0x8011B060",
+    "static_definition":{"id":1007,"callback":"0x800E30B0","display_list":"0x80138C80"},
+    "collision_models":"0x8011B8E4",
+    "height_map":"0x80318F00",
+    "height_patches":"0x802CE1B0",
+    "height_tree":"0x802ED498",
+    "sky_display_list":"0x8011CC28"
+  },
+  "native_closure": {
+    "models":21,
+    "model_count_rule":"One standalone static-definition payload model, twelve terrain models with actual decoration children baked in, eight road models. BlockResource indices are authoritative, not an assumed catalog ordering.",
+    "nodes":32,
+    "materials":6,
+    "material_attachments":6,
+    "model_animation_streams":16,
+    "material_animation_streams":6,
+    "native_paths":33,
+    "model_path_commands":8,
+    "primary_road_nodes_each":2,
+    "primary_movement_duration_each_signed32":100,
+    "spawns_by_block":[7,1,7,5,7,4,4,2,0,0,0,0],
+    "decorations_by_block":[2,1,0,0,0,0,0,0,0,0,0,0],
+    "collision_objects_by_block":[3,1,0,0,0,0,0,1,0,0,0,0],
+    "effective_render_rule":"Terrain blocks0/1 only become B-fogged due to actual attached decorations; remaining terrain stays A-fogged. Road is source nonfogged TypeB. Sky keeps separately admitted source callback.",
+    "material_image_table_extent_rule":"Exact initialized array extents: six material records80130F60,80131B20,80131FF0,80132A58,80132AD0,80133070 each reference two images. Tables are not uniformly null terminated;80132A44 and80132A4C are adjacent two-entry tables.",
+    "path_extent_rule":"All actual referenced kind2 paths retain numPoints+2 point records, numPoints normalized parameter points, and(numPoints-1)*5 speed polynomial coefficients. Native path evaluation is supplied by shared animation runtime, not by resource hydration.",
+    "height_patches":6386,
+    "height_nodes":6385,
+    "collision_models":[{"id":1001,"colliders":8},{"id":1004,"colliders":13},{"id":1007,"colliders":6,"scale":-1}],
+    "hitbox_types":[1,2,3,4]
+  },
+  "immutable_gbi_closure": {
+    "display_lists":14,
+    "commands":3064,
+    "vertex_loads":315,
+    "loaded_vertices_including_reloads":3838,
+    "dynamic_material_call_bindings":6,
+    "installation_spans":94,
+    "installation_bytes":164936,
+    "installation_guest_min":"0x8011B968",
+    "installation_guest_end_exclusive_max":"0x801508F8",
+    "span_rule":"Only actually referenced list command words, vertex load bytes, static image/TLUT bytes and all possible source images consumed by each admitted dynamic material call. Sort/merge overlapping or adjacent selected byte ranges only; do not copy descriptor tables, animation streams, paths, height data, collider matrices, whole banks, code, or unused alignment padding into RDRAM.",
+    "public_wire_abi":"https://hack64.net/wiki/doku.php?id=f3dex2",
+    "strictness":"Follow actual calls/branches and cull-visible continuation. Reject active cycles, overdepth, unadmitted address-bearing operations and malformed cache/image extents. Dynamic segment0x0E calls bind real native attached material slots; no fake display-list target or blanket segment installation."
+  },
+  "native_component": {
+    "files":["src/world_runtime.hpp","src/world_runtime.cpp","src/world_movement.hpp","src/world_movement.cpp","src/world_collision.hpp","src/world_collision.cpp","src/world_producer.hpp","src/world_producer.cpp","src/menu_animation_path.cpp"],
+    "production_entry":"World(scene::Services&,const Resources&,Callbacks) uses existing concrete native object/process/command/render/retirement services. Explicit native-game ResourceView construction is an isolated component test seam and requires its typed command consumer.",
+    "source_objects":"Sky id99, primary/secondary terrain ids100+2*index, primary road ids101+2*index; update link9 distinct render DL3; source object tagffffffff; sky render priority80000001, terrain/road80000000; sky global clock process priority2, block texture priority1, follow-camera priority0.",
+    "source_callbacks":"Actor add/remove/change are nullable exactly as pinned source. Camera binding and effect-position translation are required typed consumers; no default no-op or guest function cast. Transition delta is(previous.worldPos-next.worldPos)*100. Real player/Pokemon/Beach scene assembly belongs to Main and is not implemented by this component.",
+    "operations":"Initial/next-block entry with exact actor-window callback ordering, all native terrain/road models and decoration subtrees, signed road animation seeking/control interpolation, movement carry/strict boundary/terminal stop, sky clock/follow/position, visibility, height lookup, adjacent-block collision, clear/destroy and joined native retirement.",
+    "renderer":"World Producer borrows actual component native models, uses the existing material encoder, emits source sky/fog wrappers and native fixed-matrix hierarchy, and exposes scene::render::Prepare. Source camera kinds3/14 with reflection; synchronous preparation only, no second executor or async scene snapshots. Pass includes filters renderDL3/tagffffffff; native object flags are the sole visibility authority, with immediate source hidden-bit mutation preserving other flags. Per-instance residency initializes matrices/material branches correctly even when initially hidden or excluded by a prior pass. Compositor owns viewport/scissor/targets and lane0,2,1,3.",
+    "default_producer_reservations":[{"offset":"0x170000","size":"0x10000"},{"offset":"0x180000","size":"0x10000"},{"offset":"0x190000","size":"0x10000"}],
+    "reservation_boundary":"Full immutable world GBI occupies sparse physical11b968..1508f8; startup model arenas110000..140000 cannot be reused for world. Integration must include all actual world/runtime/task/framebuffer reservations in one admission union before installation/preparation.",
+    "defined_source_limits":[
+      "Pinned cylinder/cone narrow phases compare uninitialized automatic scalar locals against FLOAT_MAX. Native code omits only those undefined comparisons while preserving every defined geometric branch/arithmetic expression; numerical undefined-behavior parity is not claimed.",
+      "A missing height patch is rejected instead of dereferencing the source null-normal result.",
+      "Pinned kind2 spline velocity at normalized parameter1 selects a final four-point window beyond the actual numPoints+2 admitted controls. Native bounded evaluation rejects that overread rather than fabricating a trailing protected point. Position evaluation preserves its separately defined endpoint law."
+    ],
+    "authored_checks":["tests/world_runtime_tests.cpp","tests/world_collision_tests.cpp","tests/world_resources_rom_smoke.cpp","tests/world_producer_rsp_smoke.cpp"],
+    "private_consumer_scope":"Main executed world_producer_rsp_smoke with the complete-resource native component and actual canonical RSP/RDP, including all8primary/4secondary resources, complete primary traversal, source visibility hide/restore and joined retirement. The camera is explicitly diagnostic: this is not a Beach scene handler, fake player/actor, first-gameplay frame, LUS surface or Original equivalence claim. Frozen executable SHA256 febf6d3be9e9c048ee9879a76462d569d1a0f7bbeb20bef4f1f7e2fc5129eadb; source/executable archive SHA256 29d6442620edfbf3d5e66cb836e13235f1b2c25398f5b9b882004e469673bdf8. Main initial closure39terminal/38created/40tracer+tasks absent, stable traces, sole initial scan0knownphysical/permission attempts, unchanged ROM, exit0.",
+    "private_consumer_transition_ownership":"The explicit component-chain consumer initializes through Movement::initialize once, enters each decoded primary exactly once through World::enter_next, restarts the entered road at0, and samples it at0.5 with Movement::update_position before native tick and actual canonical task completion. It must not call Movement::update after explicit entry: pinned world/movement.c250-272 independently enters the next block when moveSpeed+moveTime>1; lines65-72,219 use raw CP scale.x times speedMult, not an assumed maximum0.5 step. World::enter_next preserves block.c329-372 camera/effect shifts and actor-window ordering. Main verified allseven required transition callbacks in the fresh successful consumer. The prior double-transition harness failure remains rejected/frozen; no production World/resource behavior or expected primary/shift count was changed.",
+    "position_sampling_api_regression":"tests/world_runtime_tests.cpp position_sampling_preserves_movement_boundary exercises the genuine Movement_UpdatePos boundary with an authored animated CP: forward/backward signed road seeking updates the actual native model, movement position/rotation and interpolated next-block speed while preserving World::current, MovementState::block and move_time even when carried speed would trigger Movement_Update. Complete-chain orchestration remains covered by the actual full GPU consumer, not a permanent CPU harness-wiring/count regression."
+  },
+  "installation": {
+    "target":"Exactly caller-owned word-swapped8MiB RDRAM:dst[(guest-80000000+i)^3]=source[i]",
+    "atomic_admission":"Validate live unmoved Snapshot, RAM extent/nonaliasing, every exact immutable span and entire runtime reservation union before any write. Built-in beach producer/FIFO/frame reservations always apply. Invalid late reservation leaves all RAM unchanged.",
+    "ownership":"Resources noncopyable; temporary Snapshot construction rejected. Snapshot and its storage must outlive all native resource borrows. No runtime allocations during require_live/install. Shared metadata-only beach::world_descriptors avoids constructing or expanding StartResources diagnostic closure."
+  }
+}

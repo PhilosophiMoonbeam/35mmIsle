@@ -248,6 +248,7 @@ struct ClientFixture {
         voice.generation = ++context->next_sound;
         voice.sound = sound;
         voice.parameters = voice.desired = parameters;
+        voice.priority = registered.priority;
         s::SoundHandle handle{context->owner, voice.generation, player.slot, slot};
         registered.published_events[registered.published_count++] = {d::PlayerEventKind::start, handle, sound, parameters};
         return handle;

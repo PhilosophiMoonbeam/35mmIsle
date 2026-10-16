@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Original native bounded model/material wire producer for the actual five-model title closure. Semantic authorities are exact unchanged own-GAME Git objects, not a dirty fork, SDK producer source/header, extracted opaque object, or disassembly. No asset bytes, complete imported renderer body, or static pose table is published.",
+  "implementation": ["src/menu_model_producer.hpp", "src/menu_model_producer.cpp"],
+  "source_files": {
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "spans": [[236, 853], [913, 1084], [1129, 1177], [1253, 1351], [1647, 1804], [2262, 2377]],
+      "facts": "Matrix push iff root or next sibling; RTS kind28; source renScaleX tracking; reached metadata-selected translate+kind44 combined-MVP row replacement; all source B/D/I/J flags1/2, child/sibling traversal, lazy four-lane matrix copies, I/J pre-list-before-current-matrix semantics and draw-list IDs; per-node segment14 material branch table; full reached material flags, palette/image/LOD selection, lights, colors, image formats, auxiliary LOADBLOCK through source G_TX_TILE_BLOCK6 descriptor (not primary tile7), tile sizes, texture scales; source kind3 LOAD/normalize and kind8 projection MUL without LookAt-light upload. Immutable nested lists, including MODIFYVTX and baked vertex colors, remain unchanged and execute on the actual RSP. No CPU emulation/patching of those payloads."
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf",
+      "spans": [[1769, 1892], [1930, 1977]],
+      "facts": "Initial matrix kinds0,28,0,0 do not make every node plain RTS: third D5 nodes1,2,3 have high metadata0x8000, so 8000FE08 selects native translation plus kind44. Other289 nodes retain kind28. Runtime poses, not fixed matrix decodes, feed floating world attachments."
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c",
+      "spans": [[404, 430], [1589, 1595]],
+      "facts": "omLinkGObjDL inserts after same-priority existing renderlink objects, preserving five title model creation order D/J/D/I/B independently in each actual gMainGfxPos lane."
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8",
+      "spans": [[15, 49], [131, 163], [194, 214]],
+      "facts": "B/I fog-wrap lane0 only; D/J wrap opaque0 and translucent1. Fog120,120,150 min989/max1000 is actual title creation state, not Pidgey score fog."
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "spans": [[1135, 1192]],
+      "facts": "Comparison authority distinguishing photograph root baking from this title path. No photograph scale0.1/world-position/yaw bake applies to title nodes. Material producer itself is renLoadTextures in sys/render.c, not this photo-construction wrapper."
+    },
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "spans": [[101, 193]],
+      "facts": "Catalog source roots and creation/render order D226/J26/D5/I33/B2; all five objects link4 priority0x80000000; no outer model transform or cinematic scale; speed0.5; callback ownership only third D5/fourth I33; camera near47."
+    },
+    "src/sys/matrix.c": {
+      "git_blob": "b6c98ec45939cd9e59ef16d7e44868eee5dc250d",
+      "sha256": "a0f4c47c2428b846a171fbb1fe30e8254f7bf67d69e30cb191ad87439f1f7f77",
+      "spans": [[268, 303], [791, 853], [979, 999], [1148, 1179], [1289, 1371]],
+      "facts": "Calls existing privately admitted hal_rotate_rpy_translate_scale_f and hal_mtx_f2l/hal_perspective_fast_f symbols; no second trig wrapper or copied math body. Floating local x parent hierarchy uses explicit left-associated binary32 products. Existing engine kind28 fixed cache is reused, with source metadata-selected native translation for the three kind44 nodes."
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "spans": [[423, 484]],
+      "facts": "Own-GAME Texture/MObj field offsets, including paletteBitDepth, minLodValue byte55, saved24/28/44 offsets, colors and separate current/next image indices. Not an SDK descriptor/header import."
+    }
+  },
+  "public_abi": [
+    "https://hack64.net/wiki/doku.php?id=f3dex2",
+    "https://hack64.net/wiki/doku.php?id=rcpstructs",
+    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPMatrix.html",
+    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPLightColor.html",
+    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gdp/gDPLoadBlock.html"
+  ],
+  "resource_contract": {
+    "catalog": "menu-resource-inputs.json exact private Snapshot/decompressed data, immutable numeric guest identities and installation closure; Runtime from menu_animation.hpp owns persistent source poses/materials. Borrow all owners through actual GPU retirement.",
+    "nodes": 292,
+    "matrix_kinds": {"rotate_rpy_translate_scale": 289, "translate_plus_kind44": 3},
+    "materials": 10,
+    "dynamic_segment": 14,
+    "reached_branch_slots": [0, 1, 2, 3],
+    "model_order": ["D226", "J26", "D5", "I33", "B2"],
+    "default_reservations": {
+      "camera_and_native_node_payloads": ["0x110000", "0x120000"],
+      "camera_and_four_lane_commands": ["0x120000", "0x130000"],
+      "dynamic_material_branch_tables_and_bodies": ["0x130000", "0x140000"]
+    },
+    "ownership": "Parent owns five native objects, camera/game arena, immutable Catalog, animation Runtime, RAM and canonical executor. Producer owns attached native models and fixed-size persistent scratch. synchronize is explicit ordered FX attachment publication without RAM writes. prepare requires exclusive owner/preparation access and nonzero installation epoch; cold installs are external. Constructor checks caller-provided other reservations and immutable source collisions; no implicit relocation or whole-bank overwrite.",
+    "preflight": "All material/frame/index/finite/world/native-transform/list-capacity/baked-fixed conversion/host-alias checks finish before RAM writes or native pose/world publication. Camera batch computation follows list-capacity preflight and publishes atomically. Unchanged local revisions reuse native matrices; unchanged topology/fog/node flags/object visibility/baked values reuse lists; object hidden bit1 suppresses the complete callback including fog/prelist/material/payload commands in every lane, and flags-only hide/show invalidates lists even without an animation step/generation change or RAM epoch change; unchanged material revisions skip command uploads. No per-frame heap growth/allocation. Renderer-local flag0x10 derived current/next indices have no subsequent animation reader in the reached GAME graph."
+  },
+  "integration": {
+    "dependencies": ["native engine with admitted GAME math", "graphics_task.cpp", "menu_resources.cpp", "menu_animation.cpp"],
+    "compile_options": ["-fno-fast-math", "-ffp-contract=off"],
+    "task": "Parent builds a complete shared graphics task, target/scissor/viewport/identity/pre-render setup and FIFO/boot/stack/yield/output lifetime. Invoke Frame.camera before each nonempty lane; exact GAME gtlProcessAllDLists/gtlCombineAllDLists execute lane order0,2,1,3, not numeric0..3. The title closure leaves line lanes2/3 empty. Merge whole camera groups by source DL priority: background100, title5, effects4, sprites3, fade1. Producer never owns CanonicalExecutor/physical device or probes runtime.",
+    "tests": ["tests/menu_model_tests.cpp", "tests/menu_model_rsp_smoke.cpp"],
+    "test_status": "Main passed all43 contracts under GCC Debug, GCC Release and Clang ASan/UBSan. The fresh real-ROM canonical consumer exercised all5 models/292 nodes: animated geometry/color/depth changes, flags-only hide/show on identical RAM/epoch, disabled bindings held stable over180 updates, real stream rebinding with immediate evaluation, and exact cold restoration of the original completed frame. Guards, exclusive leases and retirement passed. Frozen executable SHA256 e9250ac81ce0d2103e36b7c80f187ddbdbb7f701c33abe19470a34aff3a4e9f2; source/executable archive SHA256 8209de7ba2215b806cdc67ff22fd754220b764781a8e011df1eaa31371ffff5b. Main initial closure39 terminal/38 created/40 tracer+tasks absent, stable traces; sole initial scan found0 known physical-device or permission attempts; ROM unchanged, exit0. Actual startup/title/Name/Oak composition separately produced925 canonical and925 LUS frames."
+  },
+  "qualification": "Native title producer and low-level binding/reset consumers are exercised through actual private-ROM RSP/RDP; the shared startup/scene compositor also has bounded actual LUS/dummy-audio proof. Full gameplay, independent Original numerical/rendering equivalence, hardware and Windows11 runtime qualification remain separate."
+}

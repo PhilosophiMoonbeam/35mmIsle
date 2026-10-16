@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "component": "independent native public-GBI/RDP sprite sublist producer",
+  "implementation": ["src/sprite_producer.hpp", "src/sprite_producer.cpp", "src/sprite_raster.hpp", "src/sprite_raster.cpp"],
+  "tests": ["tests/sprite_producer_tests.cpp", "tests/sprite_producer_rom_smoke.cpp"],
+  "game_revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "game_inputs": [
+    {
+      "path": "src/sys/render.c",
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "spans": [
+        {"lines": [2050, 2059], "symbol": "renDrawSprite", "facts": "SObj linked-list order; skip HIDDEN; append into common list without intermediate EndDL"},
+        {"lines": [2714, 2746], "symbol": "renSpriteCameraRender", "facts": "viewport/scaled-global-scissor intersection; source camera object order; perspective restore"}
+      ],
+      "admission": "Already staged exact Git-object GAME source; attempted git show in staging correctly failed because staging is not a Git checkout; recorded original blob identity governs the bounded source read. No dirty/generated asset source used."
+    },
+    {
+      "path": "src/main_menu/A08E30.c",
+      "git_blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+      "spans": [
+        {"lines": [89, 93], "facts": "Mutable RGB scalar writes"},
+        {"lines": [215, 228], "facts": "Background RGB 255/128, SCALE/TRANSPARENT/TEXSHUF"},
+        {"lines": [230, 268], "facts": "Ordered source sprite chain, mutable positions, HIDDEN/TRANSPARENT/SCALE, 1.2 scales"}
+      ]
+    },
+    {
+      "path": "src/main_menu/A0BE70.c",
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "spans": [
+        {"lines": [247, 265], "facts": "RGBA32 title root 0x803051f0 is positioned at 98,68 and its immutable descriptor attributes are overwritten with TEXSHUF|TRANSPARENT before drawing; linked title roots likewise overwrite attributes"}
+      ]
+    },
+    {
+      "path": "src/AA0650.c",
+      "git_blob": "d6263d3d6e1ff1f913e7620d402ed70c4d399acc",
+      "sha256": "62e01867df443487283155a3c8d07d01c4922b7425c3788d2033ec4ef2ad43bf",
+      "spans": [
+        {"lines": [81, 91], "facts": "Logo root 0x802bc0c0 attributes overwritten with TEXSHUF|TRANSPARENT and centered at 96,64 before drawing"}
+      ]
+    },
+    {
+      "path": "src/oaks_lab/8AAF60.c",
+      "spans": [
+        {"lines": [126, 154], "facts": "Route icon source fade enables SCALE and sets both scales to 1-i/60.0f for i=0..59; final visible scale is approximately 1/60, with no source minimum-scale clamp"},
+        {"lines": [355, 358], "facts": "Source route icon is deliberately revealed"}
+      ],
+      "admission": "Exact commit-pinned local GAME stage authority recorded by the integration owner; no SDK producer body/header or capture input inspected."
+    },
+    {
+      "path": "include/35mmisle/sprite.h",
+      "facts": "Existing repository native scalar/borrowed bitmap interface and numeric attribute constants, not an SDK structure"
+    },
+    {
+      "path": "include/35mmisle/sprite.hpp",
+      "facts": "Existing immutable BankOwner and Sprite hydration/short-piece/row-pitch/TEXSHUF contract"
+    }
+  ],
+  "public_references": [
+    {"url": "https://hack64.net/wiki/doku.php?id=f3dex2", "facts": "F3DEX2 EndDL, RDP command fields, E4/E1/F1 texture rectangles, image/tile/block/TLUT encodings"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro16/16-01.html", "facts": "Public sprite placement/scaling/scissor and overlap-border description"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro16/16-02.html", "facts": "Public bitmap scalar meanings, load-only s, actualHeight, explosion spacing, variable width, TLUT and sprite attributes; documentation only, no SDK header read"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/sp/spSetAttribute.html", "facts": "TRANSPARENT/CUTOUT/HIDDEN/Z/SCALE/FASTCOPY/TEXSHIFT/FRACPOS/TEXSHUF/EXTERN public semantics"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPTextureRectangle.html", "facts": "10.2 screen coordinates, S10.5 texture origins, S5.10 derivatives, COPY inclusive endpoints and derivative four, one-cycle exclusive endpoints"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro13/13-07.html", "facts": "Bilerp requires both interpolation neighbors; disjoint screen pieces retain texel overlap around both internal tile borders"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro13/13-11.html", "facts": "RGBA32/YUV unsupported in COPY mode; texture image alignment"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro13/13-09.html", "facts": "TMEM load/render tile separation, row padding, preinterleaved LoadBlock dxt=0, TLUT expansion, load-size reinterpretation"},
+    {"url": "https://github.com/Themaister/parallel-rdp/blob/1cecd042b2619bc505c12bfdc713808386f2b54d/parallel-rdp/shaders/tmem_update.comp#L461-L544", "license": "MIT", "facts": "TLUT upload uses RGBA16 source size2 and load-tile size0 to replicate each color into all four TMEM banks. Matching size2 leaves partial banks unwritten. Independent native command encoding derived from this consumer; no SDK producer/header imported."},
+    {"url": "https://github.com/Themaister/parallel-rdp/blob/1cecd042b2619bc505c12bfdc713808386f2b54d/parallel-rdp/shaders/memory_interfacing.h#L212-L221", "license": "MIT", "facts": "RGBA16 framebuffer bit0 stores upper coverage bit; hidden memory stores lower two bits, not source texture alpha. coverage.h51-61 and depth_test.h138-141 derive opaque non-AA CLAMP storedcoverage=(sampleCount-1)&7."},
+    {"url": "https://github.com/Themaister/parallel-rdp/tree/1cecd042b2619bc505c12bfdc713808386f2b54d", "license": "MIT", "facts": "Exact local pinned open-source consumer inspected: rdp_device.cpp735-771 decodes signed16 derivatives into rectangle attributes; shaders/span_setup.comp111-148 anchors Y at yh>>2 and corrects fractional X; shaders/interpolation.h95-125 samples native ST once per pixel; shaders/coverage.h31-43 and shading.h176-199 select coverage bit0 without AA; rdp_renderer.cpp1119-1134,1346-1368 derives texel1/LOD use from the fixed combiner and modes."}
+  ],
+  "resource_contract": {
+    "roots": "One scene's immutable hydrated roots, including all 64 menu roots or the logo root. Bank ownership retained; descriptor/shallow-view borrows remain live through actual GPU retirement.",
+    "mapping": "Checked host bank membership -> bounded byte offset -> caller numeric guest base -> checked physical RDRAM identity. A host pointer is never cast to a guest address.",
+    "installation": "Selected exact texture/TLUT extents only, canonical bytes converted into caller word-swapped RAM. No descriptor/code/full-bank overlay installation; no color normalization, CPU blit or decoded image substitution.",
+    "composed_residency": "install_composed(words,epoch,immutable,reservations) validates the entire immutable selected union, both dynamic variants, all task/framebuffer reservations and host source/destination nonaliasing before any RAM/cache write. Immutable overlaps require identical source-byte identity, not equal contents. ROM bytes copy only for a new RAM epoch; dynamic uploads copy exactly bytes whose published revision exceeds this producer's resident revision. Residency commits after all uploads. validate_residency/commit_residency remain the no-copy immutable composition seam with move-only authority; tokens pin dynamic storage, stale/foreign/consumed authority throws before residency change.",
+    "layout": "Original TEXSHUF odd-row bytes installed unchanged, LoadBlock dxt=0. Other layouts use pitch-preserving LoadTile; CI4 loads bytes and renders nibbles. Short stored pieces do not read invented nominal rows.",
+    "palette_upload": "CI4/8 palette source images remain RGBA16. The TLUT load tile uses size0, independently of source size2, so each entry reaches all four TMEM banks. Explicit startTLUT/nTLUT and CI4 bitmap palette-bank bounds remain checked. Actual bank0 red and independent bank3 blue, tint and restoration are exercised; no stale-bank or caller-specific workaround.",
+    "oversized_source": "Three reached 32x68 RGBA16 menu bitmaps exceed 4 KiB TMEM. Bounded bands retain upper AND lower filtered border rows with disjoint screen coverage; even-row interleave parity and 64-bit source alignment remain intact. Load windows follow whole-texel fractional-origin changes, while local texture origins retain the fractional remainder. A 32x68 RGBA16 plane with frac_t=-16 draws bands 0..60 and 60..68, loads rows 0..64 and 58..68, and samples local T=-0.5 and 1.5 respectively.",
+    "frame": "Caller supplies ordered Draw resource-index/shallow-view pairs, viewport/scissor, command arena, reservations and exclusive RAM epoch. Preflight precedes every write. No frame allocation, asset byte rescan/copy or cache growth.",
+    "minification_lowering": {
+      "selection": "Representable S5.10 derivatives and normal S10.5 origins retain existing float32 arithmetic and encoded values. Only overflowing axes are decomposed independently into destination sample cells. No source scalar clamp/hide, signed-field wrap, CPU pixels, per-frame allocation or arbitrary geometry snap.",
+      "numeric_contract": "For an overflowing axis, D=trunc(1024/exact-float-scale) is evaluated in required IEEE binary64, never host-dependent long double and never encoded. Conceptual S10.5 origin is trunc(base+(quarterBound/4-geometricMinimum)*D/32), retaining signed flip, bitmap s/t, fractional origin, TEXSHIFT and load-window offsets. For native integer sample (p,q), S=ss+floor(Dx*(4*p-left)/128), T=tt+floor(Dy*(q-floor(top/4))/32). Only the overflowing axis is replaced with that signed16 sample origin and derivative0; the other axis stays unchanged. The conceptual intermediate origin need not fit signed16, but every emitted origin must, otherwise complete preflight rejects before any RAM write.",
+      "minified_load_windows": "On overflowing Y with oversized TMEM bands, actual consumed global T extrema (including the asymmetric fractional-Y anchor) choose the aligned load window, not nominal source-band geometry. The window retains floor(T/32) and its next bilerp neighbor, clamped only at true bitmap edges; local origins are rebased by exactly32*(oldLoadFirst-newLoadFirst) after original-origin truncation. Source alignment, odd-row parity, bounded loads and preflight errors remain strict. CPU and actual native RSP/RDP cases independently require global row64/63 and resident neighbors for a128x128 plane at signed1/64.",
+      "coverage_and_state": "In the producer's fixed non-AA/non-perspective/non-LOD, TEXEL0-only normal-cycle state, consumed samples in quarter bounds [L,R) are p=ceil(L/4)..ceil(R/4)-1. Splits retain original quarter coverage within each occupied integer cell and omit only sample-empty cells. Bilerp keeps the same consumed S10.5 phase and neighbors. COPY remains unscaled and uses its original path. Fragment emission reuses each existing TMEM load and complete capacity preflight; fragmentation count is not an API guarantee.",
+      "unqualified_limits": "Actual consumer proof covers canonical native1x and fixed modes() state, not AA, internally upscaled RDP sampling, interlace, perspective, texture LOD or texel1/pipelined neighbor consumption. The existing asymmetric fractional-Y and per-piece/band origin convention is preserved, not repaired: independently quantized fractional-top split and unsplit source topologies are not generally phase-equivalent. Genuine emitted-coordinate overflow, reciprocal precision loss on the normal path and existing unsupported state remain explicit errors. No unobserved SDK-producer equivalence or independent Original numerical parity is asserted."
+    },
+    "attributes": "Hidden, transparent, alpha compare, primitive depth, signed scale/flip, copy, half-texel shift and fractional origin supported. EXTERN and undocumented SP_OVERLAP bit reject explicitly; neither occurs in the admitted initial 65 roots or source menu attribute assignments. FASTCOPY is unscaled/non-Z per public hardware constraints; RGBA32 COPY explicitly rejects during preflight before any RAM write.",
+    "immutable_fields": "Immutable bitmap arrays/layout, formats, TEXSHUF and palettes remain strict. Mutable UI uses Raster's explicit separately owned primary/alternate allocations and stable descriptor arrays, never mutable immutable-bank aliases or per-glyph Producer reconstruction. Raster supports bounded RGBA16/32 and IA4/8/16 planes; construction checks distinct physical/host storage and complete fixed topology. Register compiles both variants once; Draw(resource,view,generation) explicitly rebinds one variant.",
+    "ownership": "Producer::Borrow pins every registered raster until actual GPU completion/readback, not just preparation return. Mutable span acquisition/publication and register/unregister reject live borrowers; uncommitted prepared tokens also pin storage. At most128 high-water reusable registration slots and4096 pieces per source; retired unregister compacts compiled pieces, invalidates generations and releases the actual shared backing-storage owner. Pixel change revisions are monotonic and byte-exact; no history overflow loses a changed span. Epoch changes require reinstall after caller RAM reuse."
+  },
+  "private_facts": {
+    "payloads_committed": false,
+    "inventory": "Private data-only sprite-facts.json: 65 roots (64 menu + 1 logo), initial attrs 0x200/0x228, initial istart=0/istep=1, zero s/t/explosion/fractional origins, RGBA16/RGBA32/IA16. Total raw texture extents before alias dedup 644376 bytes; maximum individual extent 4352 bytes.",
+    "runtime_attribute_boundary": "Immutable descriptor attr0x228 is not runtime draw state. Before the first actual GAME title/logo draw, source initialization overwrites it with TEXSHUF|TRANSPARENT; menu chain additionally sets SCALE and 1.2 factors, initially HIDDEN. Private smoke applies those real mutations before submission and explicitly reveals the menu chain for its visible scalar boundary. It does not submit incidental descriptor-default COPY32; a separate focused late-invalid-draw test verifies failure-atomic rejection of unsupported RGBA32 COPY.",
+    "ci_proof_boundary": "Selected GAME menu roots do not contain CI. Separately authored actual-GPU CI4 fixtures require red from bank0 and independent blue from partial bank3 in the same frame, primitive tint, exact restoration and RDRAM guards; these are not claimed GAME assets.",
+    "fractional_band_proof": "Private actual-RSP/RDP source renders all three oversized GAME pieces at frac_t=-16, comparing pixels across both former and current internal band boundaries against a separately bounded window of the exact same packed source texels that fits wholly in TMEM. An independent distinct-row RGBA16 fixture additionally requires a genuinely interpolated seam pixel, preventing coincidentally repeated private rows from masking the former clamp defect. No CPU-rendered image is submitted.",
+    "coverage_proof": "Authored RGB5 sample expectations remain unchanged. The invalid incidental assumption that source texture alpha equals framebuffer bit0 was deleted, not re-pinned to observed output. Direct actual completed color+hidden reads independently require storedcoverage1 for four opaque quarter-height samples (sampleCount2), and storedcoverage7 for full/force-blended samples. CUTOUT separately requires exact clear-word preservation. Consumer equations and observed0002 versus sourcecolor0003 establish why RGB and framebuffer coverage are distinct properties.",
+    "dynamic_proof": "Authored deterministic CPU cases cover complete-union late overlap/reservation rejection without writes, changed-byte/untouched-neighbor/alternate preservation, revision freshness, physical source rebind, descriptor/index mismatch, graphics and preflight pins, stale generations/tokens, slot reuse and weak-owner storage reclamation. The actual native RSP/RDP consumer also submits dynamic RGBA16 revisions and alternate source rebind/restoration through the same producer/task/executor and verifies mapped framebuffer colors/guards.",
+    "execution": "Main exercised the complete private consumer in fresh g419eq9k: frozen binary32e6e1ce2760d5315abb626a74000f6301dbb8888315857f5de23ccccaac8d7a, source/archive865e4713e411f38f9106d35cd708453638abc0cf06da27eafaffec8461393866, exit0 in9.232s. Actual ROM RSP and CPU Vulkan RDP passed selected logo/title/menu, all3 oversized GAME pieces, CI banks, dynamic revisions, both/anisotropic overflowing axes, signed boundaries/flips, quarter origins/clipping/empty geometry, true/artificial borders, bilerp/TEXSHIFT, RGB5, hidden coverage, CUTOUT/alpha and memory guards. Main first closed39terminal/38created tasks plus tracer (40absent), stable identities, before its sole observation:0knownphysical/0permissionrows; ROM unchanged. No LUS surface, hearing, physical input, Original or Windows runtime qualification is implied by this coprocessor-only proof."
+  },
+  "dependencies": ["C++20", "existing sprite.hpp native declarations", "no new production library dependencies"],
+  "license_boundary": "Implementation independently authored from public numeric RDP/GBI ABI, public manuals and unchanged own GAME ordering/state code. No Nintendo/SGI SDK producer body/header, opaque object, disassembly or SDK descriptor imported. No ROM/texture/palette payload is committed."
+}

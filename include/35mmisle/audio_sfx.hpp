@@ -49,6 +49,9 @@ public:
     // One-ms gain retarget at the current attack/decay level, or zero in release.
     Error stage_volume(SoundHandle, std::uint16_t) noexcept;
     Error stage_stop(SoundHandle) noexcept;
+    // Serialized CPU allocation priority; affects subsequent allocation/steals.
+    // Does not alter the published DSP task or retime the sound calendar.
+    Error set_priority(SoundHandle, std::int16_t) noexcept;
     // Publish the bounded inbox for this player's next callback. Never modifies
     // published RDRAM or bypasses the shared raw-deadline calendar.
     Error stage() noexcept;

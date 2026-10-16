@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Independent concrete native common GAME services and application-lifetime state. Semantic references only: no GAME source body payload, Nintendo/SGI SDK body/header, opaque SDK structure, extracted asset table, or disassembly is imported.",
+  "implementation": ["src/game_state.hpp", "src/game_state.cpp", "src/scene_resources.hpp", "src/scene_storage.hpp", "src/scene_storage.cpp", "src/scene_services.hpp", "src/scene_services.cpp", "src/startup_runtime.hpp", "src/startup_runtime.cpp", "src/menu_scene_bridge.h", "src/menu_scene_bridge.c"],
+  "behavior_tests": ["tests/game_state_tests.cpp", "tests/scene_storage_tests.cpp", "tests/scene_services_tests.cpp", "tests/menu_scene_bridge_tests.cpp"],
+  "source_files": {
+    "src/sys/oh.c": {
+      "git_blob": "b5b871a1b622803c944f5cf83d7624426238edf8",
+      "sha256": "5cd8502eb410caccc1bccd01d9c689d924c6366701d4ac2ba8bc229f8d31b86b",
+      "definitions": [
+        {"lines": "100-114", "facts": "Default update actually calls cmdProcessCommands(NULL); ohWait suspends actual native stackful process for each requested update."},
+        {"lines": "116-156", "facts": "Pause/resume traverses every process attached to the selected/current object."},
+        {"lines": "303-310,350-390", "facts": "Whole sprite-chain removal retains owning object/DL insertion; native sprite and camera object construction order."}
+      ]
+    },
+    "src/sys/cmd.c": {
+      "git_blob": "775c332cdac3a3d2f952293f9742eda2f484c150",
+      "sha256": "5befe9ac2ef1ab92ee36ffe109a9ef46463219547c30d377b093d6218e5f213a",
+      "definitions": [
+        {"lines": "8-108", "symbols": ["cmdGetObjCmd", "cmdFreeObjCmd", "cmdSendCommand", "cmdSendSignal", "cmdSendCommandToLink", "cmdProcessCommands", "cmdReset"], "facts": "One arena-backed recycled FIFO per object, current-object/source NULL defaults, native update-link broadcasts, custom handler receives ordered command/source pairs including handler-appended commands. Builtins -1 stops traversal and requests deletion, -2/-3 pause/resume all processes, -4/-5 toggle hidden; NULL custom handler drains unknown commands. Native retirement keeps callback userdata and queue nodes alive through joined/deferred deletion."}
+      ]
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c",
+      "definitions": [
+        {"lines": "183-230,416-440,1589-1595", "facts": "Stable after-equal-priority process/DL insertion; sprite objects ordered by render link then descending unsigned priority, then per-object source sprite chain."},
+        {"lines": "1417-1419,1488-1489,1673-1696,1757-1778,1786-1830", "facts": "Initially empty source command queues. Whole-object deletion ends processes, removes payloads and releases queued commands. Self-object deletion is deferred until actual native callback return/yield; bookkeeping retirement is notified only after all process joins and payload removals, before node reuse."},
+        {"lines": "1858-2050", "facts": "Initialized pool sizes seed free lists, not fixed maxima. Native pools use native sizes/alignment; empty native lists grow through existing engine arena allocation/recycling."}
+      ]
+    },
+    "src/app_render/52DE0.c": {
+      "git_blob": "69f85403fc02060c7d5b2aa0c4428ed4fd1a4aaa",
+      "sha256": "cc36ae16113fba51ab053c62893f1bb09979e18d5cc6579c276156903d78479a",
+      "definitions": [
+        {"lines": "23-38,60-137", "facts": "Actual native id2/link1/object-priority1/process-priority0 fade. Binary32 accumulator changes before alpha output; strict >255/<0 termination, terminal alpha, running flag, optional three-update delay, whole-object deletion. RGB and alpha exposed as actual render view; no CPU drawing or presentation timer."}
+      ]
+    },
+    "src/app_render/568D0.c": {
+      "git_blob": "fed2e286e73ef66a946ebd7b614f2d2b7b1fca6c",
+      "sha256": "ab288404b621d0b12a51c846f00ae7335905931595ea58ca005f073c3e12b2b3",
+      "definitions": [
+        {"lines": "72-192", "facts": "Separate five-entry pan AB41C and five-entry volume AB700 calendars. Every entry owns actual id14/link0/process1 object; from/to clamp, t0 publication, float interpolation/truncation, inclusive terminal tick and object recycling; full calendar returns false without synthesized completion."},
+        {"lines": "223-253", "facts": "AB918 resets elapsed/duration and volume target but deliberately retains source's mistaken duplicate volume write instead of changing pan target. AB9A4 clears all ten entries; native stop_sound_ramps also ends their native processes before recycling bookkeeping."}
+      ]
+    },
+    "src/app_render/574F0.c": {
+      "git_blob": "d813035979ca01f69ff71957fbc4e9d89a39fc96",
+      "sha256": "eac13b5042e70f19565fedec4e3e7765484db5d8fe66bb44127cbf4c47a550fe",
+      "definitions": [{"lines": "3-28", "facts": "Application State retains separate BB40 byte title-start flags and selected physical controller0/-1. Selection is exactly sControllerIndices[0]==0, never first-healthy-pad promotion. Generic Services borrows those persistent scalars by reference."}]
+    },
+    "src/app_render/56880.c": {
+      "git_blob": "3085e2497a95d6b6e4ec96c2a8dfcbd573611c1e",
+      "sha256": "edf1b9f32d302e228421c6bd04ac268a18453745851fca384965449da914ae7d",
+      "definitions": [{"lines": "5-18", "facts": "32-bit scene notices OR flags, test any mask bit then clear the entire supplied mask, and clear all; independent from byte title-start flags, profile initialization notices and scene-local Beach end reasons. Title exit notices are ORed into persistent State, not consumed during name entry."}]
+    }, "src/app_render/46270.c": {
+      "git_blob": "bf53f3078a567ac78df51d3ee8d5e6f9fa17c135",
+      "sha256": "152884a39d0621dbbaafb57f292089048014efe70784cd03a72b70a57871d8c7",
+      "definitions": [{"lines": "56-62,238-389", "facts": "Independent scene-manager latch is retained separately. Post-logo output settings precede menu entry. MAIN_MENU result0 has name-entry context, not a global result0-to-Beach shortcut. This component exposes real exits only; it supplies no fake scene handlers."}]
+    }, "src/AA0650.c": {
+      "git_blob": "d6263d3d6e1ff1f913e7620d402ed70c4d399acc",
+      "sha256": "62e01867df443487283155a3c8d07d01c4922b7425c3788d2033ec4ef2ad43bf",
+      "definitions": [{"lines": "122-136", "facts": "Logo selects physical controller, creates real native sprite, waits once, initializes save, waits again, holds minimum60 and runs20-update RGB fade before GTL exit. State construction does not open the profile; the continuation makes its sole initialization attempt after the first actual native wait."}]
+    }, "src/sys/misc.c": {
+      "git_blob": "84be12339c2f266dcfb5e2ae7ccd6a73cbe2a46b",
+      "sha256": "f6607a602e8479b0647a6e87a8e290af614e3b1b8d5e36295a2ac9c7c45e7f32",
+      "definitions": [{"lines": "110-146", "facts": "Application State owns the existing source modulo32 LCG seed, default1; no scene-local RNG reconstruction or host-clock substitution."}]
+    }, "src/app_render/53AD0.c": {
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "definitions": [{"lines": "641-647", "facts": "A9F10 creates update-link/link-priority objects with DL2 and camera-tag1<<2; A9F84 uses DL30/tag1<<30. Shared Services keeps update metadata independent of explicit render-link/priority/tag; window consumers select their exact source wrapper."}]
+    }
+  },
+  "command_closure": {
+    "inventory": ["src/sys/cmd.c complete", "all four src/main_menu/*.c translation units", "src/app_render/52DE0.c", "src/app_render/568D0.c", "src/app_render/effect.c", "src/sys/anim.c", "src/sys/audio.c", "src/sys/oh.c", "src/sys/om.c"],
+    "implementation": "The existing queue is promoted to public IsleGameCommandPool/Queue and isle_game_command_send/commands/release, not copied into a second bus or retained under compatibility aliases. Services installs source default command processing on new native objects; custom update callbacks can explicitly process the same queue. Per-object custom handler/send and native-update-link send use that queue. Native retirement callback is outside source callback execution, after process joins, before record/queue recycling; handler-triggered deletion stops dispatch safely.",
+    "source_menu_route": "Menu reached senders remain absent; ohUpdateDefault uses NULL custom handler. Source-backed custom and broadcast operations are usable by real post-menu components, not invented menu producers."
+  },
+  "native_boundary": {
+    "arena": "scene::Storage is the one nonmovable bare native owner, with one backing allocation, stable isle_arena and actual IsleGame. Construction creates no native game or profile; create/destroy/reset/reenter return actual native statuses. Successful destroy joins all callbacks before clearing the handle; reset rejects a live game; reentry reuses backing storage. Destruction cannot free under failed joins. Startup uses this same owner before/after deferred save initialization. ResourceView carries only native seed PoolCounts and borrowed scene::SpriteResource span. Menu Catalog retains setup callbacks/material/model/animation facts and owns generic sprite records without aliases. Native pools use actual sizeof/alignment, grow on empty lists and recycle only after retirement. Resource lookup is supplied, never hardcoded title Catalog.",
+    "continuations": "C11 bridge contains native field/command operations. Services wait/end/self-delete use existing C continuation fences. No owning C++ automatic object or exception frame is retained across waits. Native retirement notification ensures externally deleted and deferred-self-deleted objects keep callback userdata and queue nodes until every process is joined.",
+    "source_prefix": "Private bridge can reinsert only a new process-free equal-link/equal-priority object before a live peer. This recreates the title camera ahead of retained FX/UI prefix on repeated play, preserving OM process order without moving live process owners. Behavior tests exercise actual order and reject live-process reorder.",
+    "audio": "Borrowed already initialized game_audio::Session controls are checked and retained; no mute, Null output, authored completion, retrace, task execution, or PCM ownership in Services.",
+    "math": "Fade division follows double-promoted source duration expression then binary32 step/accumulator; sound calendars use binary32 grouping and unsigned tick/duration. Clamp/truncate only at original source publication points. Reached durations are positive; invalid zero/negative sound ramp duration and invalid fade duration fail before publication rather than divide by zero/execute undefined conversion.",
+    "failure": "First diagnostic retained in fixed native storage. Native/audio errors are not exit requests. Full source calendars return false, not failure/progress. request_exit retains actual first GTL source result for the parent GTL owner, which must terminate its real update/draw loop.",
+    "render": "Native SpriteDraw includes explicit source DL link, priority, camera tag and object identity independently from update metadata. Startup sprite factory retains exact tag-1/DL1 and optional source object ID14 for UI or31 for title caption. Head/tail moves insert before/after equal DL priorities. Full descriptor rebind/replacement explicitly selects immutable resource index or dynamic producer slot/generation, never mutates compiled bank pointers, and retains generation in sprite::Draw. Capacity and every native borrow preflight before first draw publication. Public native object metadata exposes flags; immediate object_set_flags implements source direct visibility assignment separately from queued hide/show builtins, preserving unrelated bits when the caller masks the metadata.",
+    "lifetime": "Application State is noncopyable/nonmovable and owns profile path, one real GameOpenResult/Store lock, RNG, controller, byte title flags, 32-bit notices and independent scene latch. Construction does not open. Checked rejection evidence/lock is retained, initialization never retries/reopens, Startup borrows State and retirement/destruction does not release profile ownership. Explicit create_title requires initialized State and never replays boot/logo/open. Input/audio/game/arena/resources outlive Services and actual graphics completion. Scene destruction never drains or restarts persistent audio."
+    , "application_backing": "One application-lifetime Storage alongside State is borrowed by every startup/title/name/Oak/course owner; Runtime no longer owns or reallocates backing storage. Final API is create/create_title(catalog,input,audio,State&,Storage&,raw_time) with no old capacity overload. Admission requires empty native Storage; native_owned records whether this Runtime created current content. After retire, later destruction of an old Runtime cannot destroy a new scene using the same backing. Parent fences actual graphics/readback before native retirement and destroys profile State last."
+  },
+  "integration": {
+    "dependencies": ["C11 src/menu_scene_bridge.c compiled exactly once with isle-engine/private engine_internal.h", "existing native engine and continuation runtime", "C++20 scene_resources, scene_storage, scene_services, game_state, sprite producer, game input, game audio, game save, RNG", "startup_runtime explicitly borrowing Catalog/State and using common Storage"],
+    "compiler": "Disable fast-math and FP contraction for src/scene_services.cpp and src/menu_title_scene.cpp.",
+    "parent_verification": "Main integrated CMake and passed all43 contracts under GCC Debug, GCC Release and Clang ASan/UBSan: deferred profile opening/lock/snapshot state, joined Storage reentry/backing reuse, native command FIFO/builtins/deletion/retirement, immediate flags, resource generations, source DL ordering and first-error preservation. A frozen actual startup destruction/title-only reentry scenario retained one State/Storage and live VI offsets while cold durable profile data stayed unchanged; its actual canonical RSP/RDP/LUS and checked dummy PCM proof is documented in menu-ui-inputs.json. Subsequent actual Name-to-Oak integration completed925 canonical+925 LUS frames, checked dummy audio during GPU waits, copied inspected window surfaces and joined retirement over the same application-owned Services/Storage architecture. Diagnostic-disabled Host acquisition and separate software-owned input do not qualify hardware controllers, hearing, Original parity or Windows11 runtime."
+  }
+}

@@ -193,20 +193,24 @@ Error validate_effects(effects::Config config) noexcept {
     }
     return Error::none;
 }
-Error build_effects(Context& context, effects::Config config) noexcept {
+Error validate_effects_for_rate(effects::Config config, std::uint32_t synthesis_rate) noexcept {
     const auto error = validate_effects(config);
     if (error != Error::none) return error;
-    if (!context.memory) return Error::invalid_state;
     // The measured recurrence subtracts one period, not arbitrary modulo.
-    // At most one period per largest outer preserves its centered phase.
     if (config.routing == effects::Routing::network) {
-        if (context.config.synthesis_rate == 0) return Error::invalid_parameter;
+        if (synthesis_rate == 0) return Error::invalid_parameter;
         for (const auto& section : config.sections)
             if (section.chorus && section.chorus->rate != 0 &&
-                chorus_increment(section.chorus->rate, context.config.synthesis_rate) *
+                chorus_increment(section.chorus->rate, synthesis_rate) *
                     static_cast<float>(outer_capacity) > 1.0f)
                 return Error::invalid_parameter;
     }
+    return Error::none;
+}
+Error build_effects(Context& context, effects::Config config) noexcept {
+    const auto error = validate_effects_for_rate(config, context.config.synthesis_rate);
+    if (error != Error::none) return error;
+    if (!context.memory) return Error::invalid_state;
     auto& program = context.effects;
     program.routing = config.routing;
     program.ring_bytes = config.ring_samples * 2u;

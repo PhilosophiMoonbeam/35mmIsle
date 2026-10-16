@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Original native persistent execution of the complete reached title model/material/camera animation closure, with typed per-instance binding/reset primitives for future actual gameplay consumers. Semantic source references only; no GAME producer body, SDK body/header, opaque SDK layout, extracted payload, or disassembly is imported. Source completion is not actual-ROM execution, RSP/RDP/PCM integration, or full-game qualification.",
+  "implementation": ["src/menu_animation.hpp", "src/menu_animation.cpp"],
+  "behavior_tests": ["tests/menu_animation_tests.cpp"],
+  "private_input_smoke_source": "tests/menu_animation_rom_smoke.cpp",
+  "source_files": {
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf",
+      "definitions": [
+        {"lines": "106-214", "facts": "Model/texture animSet clears kind only, preserves allocated track fields; tree receiver first non-null stream; null model animation DISABLED; null material entries untouched."},
+        {"lines": "217-518", "facts": "Persistent model command processing; CHANGED skip, speed subtraction, LAST waits, zero durations retaining rates/inverse duration, END final time correction; node flags; opcode16 high-two-bit event ID/low-byte float argument; installed callback and receiver rules."},
+        {"lines": "520-567", "facts": "Camera cubic evaluation exact binary32 expression grouping, linear and step."},
+        {"lines": "581-666", "facts": "Model track advancement/publication, distinct model cubic grouping, object flag2 write suppression and FINISHED-to-DISABLED transition."},
+        {"lines": "668-1006", "facts": "Texture persistent command processing, scalar tracks13..22 and packed color tracks37..41; extra linear/step command families."},
+        {"lines": "1008-1160", "facts": "Texture publication, source u16 image/next indices, palette and LOD float values; clamped8.8 integer RGBA interpolation and actual color field mapping."},
+        {"lines": "1163-1200", "facts": "Native DFS update order: each model node process/apply then its material list, then descend/sibling/ancestor."},
+        {"lines": "1270-1347,1617-1691", "facts": "anim_func_8000F8E4 first clears model track kinds by animSet, then restores supplied initial-tree transforms (including null model entries), leaving flags/speeds/retained track values/rates intact; no stream evaluation until the caller updates. Native ModelBindPose::restore uses the borrowed Catalog node bind transforms."},
+        {"lines": "2016-2291", "facts": "Camera animSet/process persistent clocks and END timePassed correction."},
+        {"lines": "2293-2366", "facts": "Camera eye/at/roll/FOV publication, object flag2 suppression, FINISHED-to-DISABLED. Reached camera stream has no paths."}
+      ]
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c",
+      "definitions": [
+        {"lines": "965-1045", "facts": "New AObj zero values/rates/time, inverse duration1, kind NONE; reset differs from animSet retaining prior fields."},
+        {"lines": "1061-1093", "facts": "Per-attachment material state; lod byte54/255, saved14->24 and scaleS->28, image/next/palette indices0; copied Texture scalar/color state."}
+      ]
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "definitions": [
+        {"lines": "320-357", "facts": "Pokemon_SetTexture frees old AObjs, copies initial Texture, seeds lod and saved14/scaleS fields, zeros image/next indices, nulls stream, disables at time0/speed1; paletteIndex is NOT assigned. Null outer/node texture arrays skip attachments. Native reset_materials flattens attachment selections with no_index preserving an attachment."},
+        {"lines": "360-400", "facts": "Actor owns model/material-array identity and force decisions, sound stop, process resume/pause, header/loop/completion bookkeeping. Model starts at startTime, material rebinding starts at0, speeds apply before one immediate model-tree evaluation. Null material header resets initial textures when supplied, sets only model speed; null header pauses without clearing runtime tracks. Low-level runtime intentionally does not synthesize those actor consumers or identities."}
+      ]
+    },
+    "include/sys/anim.h": {
+      "git_blob": "1a0178fc52a859eda997ca232e1b063e10f9a4c9",
+      "sha256": "1e0ddc0140d6c05a6d5bb7fdf8db54f1a809fd89cb39be6ce0eb0bde75c5d5dd",
+      "definitions": [{"lines": "5-13", "facts": "DISABLED/CHANGED/FINISHED distinct sentinels represented by native Phase enum; AnimCmd canonical32-bit command/scalar union framing."}]
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "definitions": [
+        {"lines": "83-170", "facts": "Track kinds, exact command IDs, scalar/color channel IDs and GObj flag2."},
+        {"lines": "423-484", "facts": "GAME-owned Texture/MObj fields and u16 image indices. No native struct layout is assumed or reproduced."}
+      ]
+    },
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "definitions": [
+        {"lines": "987-994", "facts": "Texture flag0x10 derives imageIndex from truncating s32 lodLevel and nextImageIndex from that+1 at each actual render. Renderer owns these effective indices. Texture animation never reads render-side indices into independent AObj targets, so animation's readonly frame seam is pre-render state, not a second material producer."}
+      ]
+    },
+    "src/main_menu/A0BE70.c": {
+      "git_blob": "f7370211668842a41c7e28220e575b605fa0cbaf",
+      "sha256": "908066be21e2aa6d8068bfc53def4851fe2abbdeb535a4739767caf2b1237390",
+      "definitions": [
+        {"lines": "34-69", "facts": "Selected resource roots, callback effects bank/script conversion, END/JUMP title state event handling."},
+        {"lines": "101-133", "facts": "Camera and five model animation initialization at0.5, skip0; callback installed only on thirdD5 and fourthI33; firstD226's lexical script3 opcode16 remains sourceNULL and must not dispatch."}
+      ]
+    }
+  },
+  "resource_boundary": {
+    "authority": "cmake/menu-resource-inputs.json and immutable borrowed Catalog",
+    "rom_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "main_menu_compressed_rom": {"begin": "0xA0F830", "end_exclusive": "0xA5CC46"},
+    "decompressed_bank": {"guest_begin": "0x802B5000", "bytes": 997232, "sha256": "6ac54c55727be4e78db7ba6abc548c5ae805850d09dd214305bd5243e0a6f47e"},
+    "nodes_by_model": [226, 26, 5, 33, 2],
+    "live_nodes": 292,
+    "material_attachments": 10,
+    "streams": {"model": 105, "texture": 10, "camera": 1, "total": 116},
+    "camera_stream_guest": "0x803A80D0",
+    "model_opcodes": [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16],
+    "texture_opcodes": [0, 2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21],
+    "camera_opcodes": [0, 2, 3, 4, 5, 6, 7, 9, 10, 11],
+    "unreached_policy": "Jump/set-animation/path commands and unsupported opcodes reject the whole runtime before publication. Pointer-driven model channel4 and camera channels28/32 reject; no ignored or synthesized values.",
+    "ownership": "Catalog and all nested resource/wire owners outlive Runtime and render/effect leases. Runtime predecodes command operands once and owns bounded persistent native state, not guest object pointers. No ROM or private decompressed payload table is published."
+  },
+  "integration": {
+    "dependencies": ["existing menu resource target (Catalog/rom::GuestView)", "C++20 standard library"],
+    "compiler": "Disable fast-math and FP contraction for src/menu_animation.cpp; retain binary32 grouping.",
+    "schedule": "Parent calls step_model(model index) and step_camera in actual OM process order, consumes every bounded ordered callback before next successful step, and composes all native node parents including real object root parent.",
+    "render": "Stable frame spans and per-node/material revisions; parent owns engine models/matrices/material commands. Node local revision does not replace descendant world invalidation when an ancestor moves.",
+    "camera": "Apply through existing setter, source kind8 fixedYup. view_dirty selects eye/at/roll cache; projection_dirty selects FOV. Preserve near47/far/aspect/viewport/clips.",
+    "failure_atomicity": "All stream framing/unsupported commands/graph associations validated before runtime publication. Event storage reserves the richest precompiled model program for every node plus one receiver END, covering later arbitrary bindings without update/switch allocation or capacity truncation. Bind/reset extents, program kinds/indices, material resources, nonfinite skips and retirement validate before any state/event mutation.",
+    "lifecycle": "create/reset restore source bind and MObj initial values, zero new tracks, select receiver, mark camera caches dirty; first update time0. restart models/camera uses animSet kind-only clearing and retained track fields, not rebinding. bind_model uses exact DFS program indices: non-null entries kind-only restart and select first receiver, null entries disable preserving old list/tracks/timePassed/flags/speed; optional restore uses original Catalog bind transforms for every node. bind_materials uses flattened attachment indices: null array/entries retain old programs/tracks/clocks/fields, even while object animation_time changes to skip. reset_materials selects initial resources, clears tracks/list and disables at time0/speed1 while retaining paletteIndex; empty selection restores every original attachment. All mutate stable storage and leave evaluation to explicit step_model after actor speed setters. Successful bind/reset invalidates borrowed events; consume ordered events immediately after evaluation before any further mutation. END applies final values once then disables. retire invalidates generation and stops updates; leases must already be released.",
+    "verification": "Main passed all43 contracts in GCC Debug, GCC Release and Clang ASan/UBSan, including binding/null/reset/retention, signed clocks, instance independence, event order and invalid-input atomicity. A fresh actual-ROM GPU consumer exercised all5models/292nodes: disable model bindings/reset materials, step180times with fixed camera and prove identical completed geometry/color/depth, then rebind real streams and immediately evaluate to change allthree; final cold reset exactly reproduced the original completed frame. Visibility, guards, exclusive leases and retirement also passed. Frozen executable SHA256 e9250ac81ce0d2103e36b7c80f187ddbdbb7f701c33abe19470a34aff3a4e9f2; source/executable archive SHA256 8209de7ba2215b806cdc67ff22fd754220b764781a8e011df1eaa31371ffff5b. Initial closure39terminal/38created/40tracer+tasks absentstable; sole initial scan0knownphysical/permission attempts; ROM unchanged, exit0. Actual Pokemon header identity/force, model startTime versus material0, texture/palette reset, immediate actor event/sound/effect/loop completion and process pause/resume remain a distinct actor consumer contract, not implied by this low-level Runtime proof. No Beach gameplay, Windows runtime, hardware or Original equivalence claim."
+  }
+}

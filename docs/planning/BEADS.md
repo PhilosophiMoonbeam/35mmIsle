@@ -40,4 +40,4 @@ Dependencies below are prerequisites of the row, not tasks blocked by the row. I
 | W14 | Desktop/backend fidelity qualification / I + evidence | `bd_35mmIsle-v4u.15` | W13 | `bd_35mmIsle-v4u.14` |
 | W15 | Native packaging and release gate / I | `bd_35mmIsle-v4u.16` | W00, W14 | `bd_35mmIsle-v4u.1`, `bd_35mmIsle-v4u.15` |
 
-The frozen dependency graph contains 16 work units and 34 edges and is acyclic. Real W12 audio is a prerequisite for full-scene W08 boot; numeric unit IDs do not imply execution order. Acceptance criteria in the roadmap are future stop/go contracts, not completed tests.
+The frozen parent-completion graph contains 16 work units and 34 edges and is acyclic. W12 remains prerequisite to full W08 qualification/closure; numeric unit IDs do not imply execution order. The explicitly amended [H9 implementation contract](ROADMAP.md#source-closed-startup-implementation-h9), tracked by `bd_35mmIsle-v4u.10.6`, permits source-closed real startup implementation before whole-corpus qualification without deleting an edge or closing either parent. Roadmap acceptance criteria remain future stop/go contracts, not completed tests.

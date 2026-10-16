@@ -727,3 +727,8 @@ Prospective source corrections passed detached completeness/retained groups, rea
 
 Both newly authorized pipelines then stopped on live evidence and their sole qualifiers finalized rejection. No timeout, retry, failed-trace replay or numerical admission occurred. Exact first-fatal objects retain the adjacent successful anonymous memfd creation/truncation plus36/37 named missing-child snapshot dependencies. Source review proves a sufficient defect: ordinary exec makes the broad-hazard set nonempty, and the global gate disables pending classification, so valid anonymous syntax falls through to filesystem parsing. Other unretained vetoes remain unknown. Rejected roots/helpers/manifests are immutable; candidate-specific explained context and zero-authority live output are being developed only in new source artifacts. No known peer hazard, asynchronous mechanism or final-closure requirement is waived.
 
+
+## Hosted native Beach/camera component acceptance
+
+Commit [`bafca1214c6d92d88465bf15370e5c13cb965bd0`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/bafca1214c6d92d88465bf15370e5c13cb965bd0) passed [workflow38834976035](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38834976035), all ten jobs: GCC/Clang/MSVC Debug/Release, real Linux LUS/software presentation, actual Linux CPU Vulkan/RDP, Windows renderer/compiler, and full native MSVC static-runtime LUS/audio/RSP/RDP/engine composition. The full Windows job built the new resource/producer/camera code and passed twenty-four ROMless CPU CTests. This is hosted Windows Server build/component evidence, not private-ROM Windows or actual Windows11 runtime qualification.
+

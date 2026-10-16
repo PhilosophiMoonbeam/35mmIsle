@@ -1,7 +1,7 @@
 #ifndef ISLE_WORLD_PRODUCER_HPP
 #define ISLE_WORLD_PRODUCER_HPP
 #include "world_runtime.hpp"
-#include "menu_model_producer.hpp"
+#include "borrowed_model_kernel.hpp"
 #include "scene_render.hpp"
 
 namespace isle::world {
@@ -19,6 +19,8 @@ struct ProducerFrame {
 // Reusable synchronous scene pass, NOT a Beach handler. Borrows actual World
 // models/process state and the admitted full Resources. No duplicate objects,
 // player/actor substitutes, cold-image writes or independent GPU submission.
+// Ordinary poses/materials/uploads use the same borrowed kernel as title.
+// Camera3/14/reflection, direct sky, fog and pass policy stay in this adapter.
 // Public World model handles may enable native RT/RTS placement independently
 // of ordinary terrain/road/sky locals. Active placements append exactly 64 bytes
 // each after unchanged local payload addresses, admitted before writes. Root

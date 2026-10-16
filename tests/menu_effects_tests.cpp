@@ -26,17 +26,17 @@ bool same(const EffectParticleView& a, const EffectParticleView& b) {
 }
 void transitions(const Catalog& catalog) {
     isle_rng rng{0x12345678}; MenuEffects runtime(catalog, rng); ok(runtime.status());
-    require(runtime.animation_event({2, 0}, -1, 0).title_finished, "END callback not delivered");
+    require(runtime.animation_event({animation::InstanceHandle{1,1,2}, 0}, -1, 0).title_finished, "END callback not delivered");
     const auto before = rng.seed;
-    require(runtime.animation_event({2, 0}, 1, 1).status.error == EffectsError::unsupported,
+    require(runtime.animation_event({animation::InstanceHandle{1,1,2}, 0}, 1, 1).status.error == EffectsError::unsupported,
             "unadmitted bank accepted");
-    require(!runtime.animation_event({2, 0}, 0, 0).spawned && rng.seed == before,
+    require(!runtime.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, 0).spawned && rng.seed == before,
             "negative source script selection consumed RNG");
     for (unsigned i = 0; i < 10; ++i) {
-        const auto event = runtime.animation_event({2, 0}, 0, 1);
+        const auto event = runtime.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, 1);
         require(bool(event.status) && event.spawned && event.effect_id == i + 1, "source effect free-list/id order");
     }
-    const auto exhausted = runtime.animation_event({2, 0}, 0, 1);
+    const auto exhausted = runtime.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, 1);
     require(bool(exhausted.status) && !exhausted.spawned && runtime.effect_count() == 10 && rng.seed == before,
             "effect exhaustion is not GAME null-spawn");
     require(runtime.update_effects(missing, nullptr).error == EffectsError::attachment && rng.seed == before &&
@@ -53,13 +53,26 @@ void transitions(const Catalog& catalog) {
     for (unsigned tick = 0; tick < 80; ++tick) ok(runtime.update_particles());
     require(runtime.particle_count() == 0, "particle lifetime did not retire source loops");
     runtime.reset(); require(runtime.effect_count() == 0 && runtime.particle_count() == 0, "reset retained pool state");
-    const auto event = runtime.animation_event({2, 1}, 0, 1); require(event.spawned, "spawn after reset");
+    const auto event = runtime.animation_event({animation::InstanceHandle{1,1,2}, 1}, 0, 1); require(event.spawned, "spawn after reset");
     for (unsigned tick = 0; tick < 5 && runtime.particle_count() == 0; ++tick) ok(runtime.update_effects(world, &w));
     const auto live = runtime.particle_count(); require(live > 0, "deterministic source emitter produced no particles");
-    runtime.detach_model(2);
+    runtime.detach_instance(animation::InstanceHandle{1,1,2});
     require(runtime.effect_count() == 0 && runtime.particle_count() == live, "DObj detach removed ordinary particles");
     for (unsigned tick = 0; tick < 80; ++tick) ok(runtime.update_particles());
     require(runtime.particle_count() == 0, "detached particle teardown");
+    const animation::InstanceHandle old_instance{7,1,2}, reused_instance{7,2,2}, foreign_pool{8,2,2};
+    require(runtime.animation_event({old_instance,0},0,1).spawned &&
+            runtime.animation_event({reused_instance,0},0,1).spawned &&
+            runtime.animation_event({foreign_pool,0},0,1).spawned,
+            "explicit instance attachment emitters");
+    runtime.detach_instance(old_instance);
+    require(runtime.effect_count() == 2,"retiring incarnation detached another same-slot occupant or pool");
+    runtime.detach_instance(old_instance);
+    require(runtime.effect_count() == 2,"stale detach removed a newer incarnation");
+    runtime.detach_instance(foreign_pool);
+    require(runtime.effect_count() == 1,"foreign pool detach conflated otherwise equal slot/incarnation");
+    runtime.detach_instance(reused_instance);
+    require(runtime.effect_count() == 0,"live incarnation attachment did not detach");
 }
 void replay_and_columns(const Catalog& catalog) {
     isle_rng a_rng{0x12345678}, b_rng{0x12345678};
@@ -68,7 +81,7 @@ void replay_and_columns(const Catalog& catalog) {
     scaled.matrix[0][0] = 2; scaled.matrix[1][1] = 3; scaled.matrix[2][2] = 4;
     for (float argument : {1.0f, 4.0f}) {
         a.reset(); b.reset(); a_rng.seed = b_rng.seed = 0x12345678;
-        require(a.animation_event({2, 0}, 0, argument).spawned && b.animation_event({2, 0}, 0, argument).spawned,
+        require(a.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, argument).spawned && b.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, argument).spawned,
                 "explicit selected script spawn");
         for (unsigned tick = 0; tick < 100; ++tick) {
             ok(a.update_particles()); ok(b.update_particles());
@@ -87,10 +100,10 @@ void script_transitions(const Catalog& catalog) {
     auto w = identity();
     for (const std::size_t script : {std::size_t(0), std::size_t(3)}) {
         isle_rng rng{0x12345678}; MenuEffects runtime(catalog, rng); ok(runtime.status());
-        require(runtime.animation_event({2, 0}, 0, float(script+1)).spawned, "transition script spawn");
+        require(runtime.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, float(script+1)).spawned, "transition script spawn");
         for (unsigned t = 0; t < 5 && runtime.particle_count() == 0; ++t) ok(runtime.update_effects(world, &w));
         require(runtime.particle_count() > 0, "transition script emitted no particles");
-        runtime.detach_model(2);
+        runtime.detach_instance(animation::InstanceHandle{1,1,2});
         const auto& source = catalog.effects().scripts[script];
         EffectParticleView p{}; require(runtime.particle(0, p), "first source particle");
         require(p.lifetime == source.particle_lifetime, "immediate particle first tick/lifetime off by one");
@@ -128,7 +141,7 @@ void script_transitions(const Catalog& catalog) {
 void packet_boundaries(const Catalog& catalog) {
     isle_rng rng{0x12345678}; MenuEffects runtime(catalog, rng); ok(runtime.status());
     auto w = identity();
-    for (unsigned i = 0; i < 10; ++i) require(runtime.animation_event({2, 0}, 0, 4).spawned, "packet script spawn");
+    for (unsigned i = 0; i < 10; ++i) require(runtime.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, 4).spawned, "packet script spawn");
     for (unsigned t = 0; t < 3; ++t) { ok(runtime.update_particles()); ok(runtime.update_effects(world, &w)); }
     std::array<EffectImageBinding, 2> bindings{};
     std::uint32_t address = 0x1b0000;

@@ -23,7 +23,7 @@ ResourceView view(const Resources& r) {
 }
 }
 struct World::Impl {
-    struct Binding { Impl* owner; Block* block; std::size_t index; IsleGameModel* model; bool road; bool callbacks_installed = false; };
+    struct Binding { Impl* owner; Block* block; menu::animation::InstanceHandle instance; IsleGameModel* model; bool road; };
     IsleGame* game;
     scene::Services* services;
     ResourceView resources;
@@ -106,7 +106,7 @@ struct World::Impl {
         }
     }
     void synchronize(Binding& b) {
-        const auto state = animation->model(b.index);
+        const auto state = animation->model(b.instance);
         for (std::size_t i = 0; i < state.nodes.size(); ++i) {
             const auto& n = state.nodes[i];
             IsleGameModelTransform transform{converted(n.transform.position),converted(n.transform.rotation),converted(n.transform.scale)};
@@ -117,7 +117,7 @@ struct World::Impl {
             check(isle_game_model_set_transform(game,b.model,i,&transform));
             check(isle_game_model_set_flags(game,b.model,i,n.flags));
         }
-        for (const auto& e : animation->events()) if (b.callbacks_installed && e.model == b.index && e.event_id >= 0 && e.event_id < 14) {
+        for (const auto& e : animation->events()) if (e.instance == b.instance && e.event_id >= 0 && e.event_id < 14) {
             visibility(static_cast<std::uint32_t>(e.argument));
         }
     }
@@ -128,9 +128,9 @@ struct World::Impl {
         try {
             float time = s.timer;
             while (time >= 100) time -= 100;
-            check(s.animation->restart_model(b.index,time));
-            check(s.animation->set_texture_speed(b.index,0));
-            check(s.animation->step_model(b.index));
+            check(s.animation->restart_model(b.instance,time));
+            check(s.animation->set_texture_speed(b.instance,0));
+            check(s.animation->step_model(b.instance));
             s.synchronize(b);
         } catch (...) { s.failed = true; }
     }
@@ -166,7 +166,19 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
         r.primary_count > r.blocks.size() || !c.shift_camera || !c.shift_effects || (!services && !c.process_commands))
         throw std::invalid_argument("World requires source resources, command service and position-shift callbacks");
     auto& s = *impl_;
-    auto animation = menu::animation::Runtime::create({r.models,r.materials,r.animations,menu::no_index,r.paths},{});
+    std::vector<menu::animation::SlotCapacity> capacities;
+    for (std::size_t i = 0; i < r.blocks.size(); ++i) {
+        const auto& block = r.blocks[i];
+        if (block.model != no_index) {
+            if (block.model >= r.models.size()) throw std::invalid_argument("World model escapes resource pool");
+            capacities.push_back(menu::animation::slot_capacity(r.models[block.model]));
+        }
+        if (i < r.primary_count && block.metadata.control_line_count >= 2 && block.road_model != no_index) {
+            if (block.road_model >= r.models.size()) throw std::invalid_argument("World road escapes resource pool");
+            capacities.push_back(menu::animation::slot_capacity(r.models[block.road_model]));
+        }
+    }
+    auto animation = menu::animation::Runtime::create({r.models,r.materials,r.animations,menu::no_index,r.paths},capacities,{});
     if (!animation) throw std::runtime_error("World native animation resource admission failed");
     s.animation = std::move(animation.runtime);
     s.collisions = std::make_unique<collision::PreparedModels>(r.collision_models);
@@ -192,21 +204,27 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
                 if (i+1 < r.primary_count) b.next = &s.blocks[i+1];
             }
             if (b.resource->model != no_index) {
+                const auto acquired = s.animation->acquire(s.bindings.size(),b.resource->model,false);
+                check(acquired.status);
+                b.instance = acquired.handle;
                 b.object = s.object(static_cast<std::uint32_t>(100+i*2));
                 b.model = s.attach(b.object,b.resource->model,true);
                 const auto callback = static_cast<std::uint32_t>(r.models[b.resource->model].render_type);
-                s.render.push_back({b.object,b.model,b.resource->model,b.resource->metadata.display_list_guest,callback});
-                s.bindings.push_back({&s,&b,b.resource->model,b.model,false});
+                s.render.push_back({b.object,b.model,b.resource->model,b.resource->metadata.display_list_guest,callback,9,3,0x80000000,false,b.instance});
+                s.bindings.push_back({&s,&b,b.instance,b.model,false});
                 if (b.resource->metadata.texture_animation_guest)
                     s.process(b.object,Impl::update_texture,&s.bindings.back(),1);
             }
             if (i < r.primary_count && b.resource->metadata.control_line_count >= 2 && b.resource->road_model != no_index) {
+                const auto acquired = s.animation->acquire(s.bindings.size(),b.resource->road_model,false);
+                check(acquired.status);
+                b.road_instance = acquired.handle;
                 b.road_object = s.object(static_cast<std::uint32_t>(101+i*2));
                 b.road_model = s.attach(b.road_object,b.resource->road_model,false);
-                s.render.push_back({b.road_object,b.road_model,b.resource->road_model,0,0x80014f98});
-                s.bindings.push_back({&s,&b,b.resource->road_model,b.road_model,true});
+                s.render.push_back({b.road_object,b.road_model,b.resource->road_model,0,0x80014f98,9,3,0x80000000,false,b.road_instance});
+                s.bindings.push_back({&s,&b,b.road_instance,b.road_model,true});
                 reset_road(b,b.resource->metadata.reversed ? static_cast<float>(b.resource->metadata.movement_animation_duration) : 0);
-                s.bindings.back().callbacks_installed = true;
+                check(s.animation->set_callback_enabled(b.road_instance,true));
             }
         }
         // Beach primary list is null-terminated (not the source's optional
@@ -250,9 +268,9 @@ Block* World::enter_next() {
 void World::reset_road(Block& b, float skip) {
     auto& s = *impl_; s.owns(b);
     if (!b.road_model) return;
-    check(s.animation->restart_model(b.resource->road_model,skip));
-    check(s.animation->set_model_speed(b.resource->road_model,0));
-    check(s.animation->step_model(b.resource->road_model));
+    check(s.animation->restart_model(b.road_instance,skip));
+    check(s.animation->set_model_speed(b.road_instance,0));
+    check(s.animation->step_model(b.road_instance));
     for (auto& binding : s.bindings) if (binding.model == b.road_model) { s.synchronize(binding); break; }
 }
 namespace {
@@ -279,7 +297,7 @@ MovementSample World::sample(Block& b, float move, float cp) {
     if (!b.road_model || !b.control_points || !b.resource->metadata.movement_animation_guest || b.resource->road_model == no_index) return {};
     move = std::clamp(move,0.0f,1.0f); if (b.resource->metadata.reversed) move = 1-move;
     const float target = static_cast<float>(b.resource->metadata.movement_animation_duration)*move;
-    const auto index = b.resource->road_model;
+    const auto index = b.road_instance;
     check(s.animation->set_model_speed(index,target-s.animation->model(index).animation_time));
     check(s.animation->step_model(index));
     for (auto& binding : s.bindings) if (binding.model == b.road_model) { s.synchronize(binding); break; }
@@ -289,7 +307,7 @@ MovementSample World::sample(Block& b, float move, float cp) {
 float World::next_speed(const Block& b, float cp) const {
     impl_->owns(b);
     if (!b.road_model || !b.control_points || !b.resource->metadata.movement_animation_guest) return 0;
-    return control_sample(impl_->animation->model(b.resource->road_model),cp,b.resource->metadata.reversed,
+    return control_sample(impl_->animation->model(b.road_instance),cp,b.resource->metadata.reversed,
                           b.resource->metadata.control_line_count,b.resource->control_timestamps).speed;
 }
 void World::set_visibility(std::uint32_t mask) {
@@ -316,7 +334,8 @@ void World::set_sky_animation_speed(float speed) {
 }
 float World::global_time() const noexcept { return impl_->timer; }
 std::span<const RenderObject> World::render_objects() const noexcept { return impl_->render; }
-menu::animation::ModelState World::animation_model(std::size_t i) const { impl_->live(); return impl_->animation->model(i); }
+menu::animation::ModelState World::animation_model(menu::animation::InstanceHandle h) const { impl_->live(); return impl_->animation->model(h); }
+const menu::animation::Runtime& World::animation_runtime() const { impl_->live(); return *impl_->animation; }
 const ResourceView& World::resources() const noexcept { return impl_->resources; }
 bool World::ground_at(float x, float z, GroundResult& result) const {
     const auto& s = *impl_; s.live(); result = {};
@@ -344,15 +363,22 @@ std::int32_t World::collide(Vec3 position, Vec3 velocity, Vec3& out_position, Ve
 void World::clear_block(Block& b) {
     auto& s = *impl_; s.owns(b);
     if (s.callbacks.remove) s.callbacks.remove(s.callbacks.user,b);
+    // Public animation borrows end now. This operation does not claim a joined
+    // native/graphics fence and deliberately does not release/reuse either slot.
+    if (b.instance) check(s.animation->begin_retire(b.instance));
+    if (b.road_instance) check(s.animation->begin_retire(b.road_instance));
     s.erase(b.object); s.erase(b.road_object);
     for (auto& r : s.render) if (r.object == b.object || r.object == b.road_object) { r.object = nullptr; r.model = nullptr; }
     b.object = nullptr; b.model = nullptr; b.road_object = nullptr; b.road_model = nullptr;
+    b.instance = {}; b.road_instance = {};
 }
 void World::retire() noexcept {
     if (!impl_ || impl_->retired) return;
     auto& s = *impl_;
     for (auto& b : s.blocks) {
         if (s.constructed && s.callbacks.remove) s.callbacks.remove(s.callbacks.user,b);
+        if (b.instance && !s.animation->begin_retire(b.instance)) s.failed = true;
+        if (b.road_instance && !s.animation->begin_retire(b.road_instance)) s.failed = true;
         s.erase(b.object); s.erase(b.road_object);
         b.object = nullptr; b.model = nullptr; b.road_object = nullptr; b.road_model = nullptr;
     }

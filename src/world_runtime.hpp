@@ -18,6 +18,7 @@ struct Block {
     IsleGameModel* model = nullptr;
     IsleGameObject* road_object = nullptr;
     IsleGameModel* road_model = nullptr;
+    menu::animation::InstanceHandle instance, road_instance;
     bool control_points = false; // Source cpObjects slice: 0<numControlLines<4.
 };
 struct Callbacks {
@@ -54,6 +55,7 @@ struct RenderObject {
     std::uint8_t update_link = 9, render_link = 3;
     std::uint32_t priority = 0x80000000;
     bool sky = false;
+    menu::animation::InstanceHandle instance;
 };
 struct MovementSample { Vec3 position{}, rotation{}; float speed = 0; };
 struct GroundResult { float height = -9000; Vec3 normal{0, 1, 0}; std::int32_t surface = -1; };
@@ -81,7 +83,8 @@ public:
     void set_sky_animation_speed(float);
     float global_time() const noexcept;
     std::span<const RenderObject> render_objects() const noexcept;
-    menu::animation::ModelState animation_model(std::size_t) const;
+    menu::animation::ModelState animation_model(menu::animation::InstanceHandle) const;
+    const menu::animation::Runtime& animation_runtime() const;
     const ResourceView& resources() const noexcept;
     bool ground_at(float x, float z, GroundResult&) const;
     std::int32_t collide(Vec3 position, Vec3 velocity, Vec3& out_position, Vec3& out_velocity) const;

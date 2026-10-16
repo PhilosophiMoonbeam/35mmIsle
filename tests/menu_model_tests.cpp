@@ -1,10 +1,23 @@
 #include "menu_model_producer.hpp"
+#include "borrowed_model_kernel.hpp"
 #include <array>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <cstdlib>
+#include <cstring>
+#include <new>
+
+namespace allocation_probe { bool enabled = false; std::size_t count = 0; }
+void* operator new(std::size_t bytes) {
+    if (allocation_probe::enabled) ++allocation_probe::count;
+    if (auto* p = std::malloc(bytes ? bytes : 1)) return p;
+    throw std::bad_alloc();
+}
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, std::size_t) noexcept { std::free(p); }
 
 namespace {
 using namespace isle::menu;
@@ -324,6 +337,219 @@ void kind44_placement_inherits_only_x() {
     h.placement.transform.scale.x = 0;
     check(0,0);
 }
+void native(IsleGameResult result) { require(result == ISLE_GAME_OK,"kernel native owner operation rejected"); }
+struct KernelFixture {
+    std::vector<std::byte> arena_bytes = std::vector<std::byte>(1024*1024);
+    isle_arena arena{};
+    IsleGame* game = nullptr;
+    std::array<IsleGameObject*,2> objects{};
+    std::array<IsleGameModel*,2> native_models{};
+    std::array<Input,3> inputs;
+    std::array<Material,3> materials;
+    std::array<Model,2> models;
+    std::array<animation::SlotCapacity,2> capacities{{{3,2},{3,2}}};
+    std::unique_ptr<animation::Runtime> runtime;
+    std::array<animation::InstanceHandle,2> handles;
+    const std::array<model::KernelSlot,2> plans{{{{3,2},0x1000,0x2000},{{3,2},0x1100,0x2400}}};
+    std::unique_ptr<model::BorrowedKernel> kernel;
+    std::vector<std::uint32_t> ram = std::vector<std::uint32_t>(rdram_size/4,0xdeadbeef);
+    std::array<std::array<model::Command,512>,4> storage{};
+    std::array<model::Command,128> pending{};
+    std::array<std::size_t,4> counts{};
+    model::HierarchyBuffer output{{storage[0],storage[1],storage[2],storage[3]},counts,pending};
+    KernelFixture() {
+        require(isle_arena_init(&arena,arena_bytes.data(),arena_bytes.size()) == ISLE_OK,"kernel arena initialization");
+        native(isle_game_create(&arena,&game));
+        for (std::size_t i = 0; i < materials.size(); ++i) {
+            materials[i] = inputs[i].material;
+            materials[i].parameters[2] = materials[i].parameters[3] = 1;
+            for (auto& image : materials[i].images) image += static_cast<std::uint32_t>(i*0x10000);
+        }
+        // A finite, representable source scroll that cannot fit the encoder's
+        // required signed fixed-coordinate conversion; selected only by API.
+        materials[2].flags = 0x20; materials[2].parameters[0] = 1.0e30f;
+        for (std::size_t r = 0; r < models.size(); ++r) {
+            auto& source = models[r]; source.render_type = RenderType::i_fogged;
+            source.nodes.resize(r ? 1 : 3);
+            for (std::size_t n = 0; n < source.nodes.size(); ++n) {
+                auto& node = source.nodes[n]; node.parent = n ? 0 : no_index;
+                node.scale = {1,1,1}; node.position = {float(10+r*10+n),0,0};
+            }
+            source.nodes[0].materials = r ? std::vector<std::size_t>{1} : std::vector<std::size_t>{0,0};
+            source.nodes[0].payloads.push_back({{},0,0x80004000,0x80005000});
+        }
+        auto created = animation::Runtime::create(animation::Resources{models,materials,{}},capacities,
+            {{0,0,100},{0,0,0},0,45,true,true,0,{}});
+        require(bool(created),"kernel animator creation rejected"); runtime = std::move(created.runtime);
+        for (std::size_t i = 0; i < handles.size(); ++i) {
+            native(isle_game_add_object(game,static_cast<std::uint32_t>(i+1),0,0,nullptr,nullptr,&objects[i]));
+            const auto acquired = runtime->acquire(i,0,false); require(bool(acquired),"kernel instance acquisition rejected");
+            handles[i] = acquired.handle; attach(i,0);
+        }
+        kernel = std::make_unique<model::BorrowedKernel>(game,models,materials,plans,RamRange{0x3000,128});
+    }
+    ~KernelFixture() { if (game && isle_game_destroy(game) != ISLE_GAME_OK) std::terminate(); }
+    void attach(std::size_t slot, std::size_t resource) {
+        require(bool(model::attach_title_model(game,objects[slot],models[resource],runtime->model(handles[slot]),
+            &native_models[slot])),"kernel borrowed native attachment rejected");
+    }
+    std::array<model::BorrowedBinding,2> bindings(bool draw_first = true) {
+        return {{{1,runtime->model(handles[1]),objects[1],native_models[1],model::PoseSource::animation,
+                model::RootRecipe::source,true,runtime.get()},
+            {0,runtime->model(handles[0]),objects[0],native_models[0],model::PoseSource::animation,
+                model::RootRecipe::source,draw_first,runtime.get()}}};
+    }
+    void prepare(bool draw_first = true, std::uint64_t epoch = 1) {
+        const auto ordered = bindings(draw_first);
+        require(bool(kernel->stage(ordered)) && bool(kernel->validate_upload(ram,epoch)),"kernel bounded stage rejected");
+        counts.fill(0);
+        for (const auto& binding : ordered)
+            require(bool(kernel->encode(binding.slot,one(),output)),"kernel hierarchy rejected");
+        kernel->commit_pose(); kernel->upload(ram,epoch);
+    }
+    void replace(std::size_t resource) {
+        const auto old = handles[0];
+        require(bool(runtime->begin_retire(old)),"kernel retirement begin rejected");
+        native(isle_game_remove_model(game,native_models[0])); native_models[0] = nullptr;
+        // This harness has no native processes or submitted graphics/effects:
+        // removing the real model completes every outstanding native borrow.
+        require(bool(runtime->release_retired(old)),"kernel joined retirement release rejected");
+        const auto acquired = runtime->acquire(0,resource,false); require(bool(acquired),"kernel reusable acquisition rejected");
+        handles[0] = acquired.handle; attach(0,resource);
+    }
+};
+void kernel_independent_instances_and_order() {
+    KernelFixture f;
+    require(bool(f.runtime->set_model_speed(f.handles[0],2)) &&
+        bool(f.runtime->set_model_speed(f.handles[1],-0.5f)),"independent speed setters rejected");
+    const std::array<std::size_t,2> replacements{1,1};
+    require(bool(f.runtime->reset_materials(f.handles[0],replacements)),"selected replacement material reset rejected");
+    const IsleGameModelTransform a{{13,0,0},{},{1,1,1}}, b{{-29,0,0},{},{1,1,1}};
+    native(isle_game_model_set_placement(f.game,f.native_models[0],ISLE_GAME_MODEL_PLACEMENT_RT,&a));
+    native(isle_game_model_set_placement(f.game,f.native_models[1],ISLE_GAME_MODEL_PLACEMENT_RT,&b));
+    f.prepare();
+    require(f.runtime->model(f.handles[0]).nodes[0].clock.speed == 2 &&
+        f.runtime->model(f.handles[1]).nodes[0].clock.speed == -0.5f &&
+        f.kernel->world_nodes(f.handles[0])[0].m[3][0] == 23 && f.kernel->world_nodes(f.handles[1])[0].m[3][0] == -19,
+        "same-resource instances coupled clocks or placement worlds");
+    require(f.ram[0x2010/4+1] == f.materials[1].images[0] && f.ram[0x2410/4+1] == f.materials[0].images[0],
+        "kernel selected original attachment metadata instead of MaterialState.resource");
+    std::array<std::uint32_t,2> roots{}; std::size_t root_count = 0;
+    for (std::size_t i = 0; i < f.counts[0]; ++i) {
+        const auto c = f.storage[0][i];
+        if (c.w0 == 0xda380000 && (c.w1 == 0x3000 || c.w1 == 0x3040)) {
+            require(root_count < roots.size() && i && f.storage[0][i-1].w1 == 0x80004000,
+                "actual ordered pre-list was moved inside the root scope");
+            roots[root_count++] = f.storage[0][i+1].w1;
+        }
+    }
+    require(root_count == 2 && roots[0] == 0x1100 && roots[1] == 0x1000,
+        "kernel sorted actual render order by resource or cache slot");
+    require(bool(f.runtime->set_object_flags(f.handles[0],1)),"independent hide rejected");
+    f.prepare();
+    require(!f.kernel->draws(0) && f.kernel->draws(1),"same-resource visibility was coupled");
+    require(bool(f.runtime->set_object_flags(f.handles[0],0)),"independent reveal rejected");
+    const auto cursor = f.arena.cursor; allocation_probe::count = 0; allocation_probe::enabled = true;
+    for (unsigned i = 0; i < 32; ++i) f.prepare();
+    allocation_probe::enabled = false;
+    require(allocation_probe::count == 0 && f.arena.cursor == cursor,"kernel hot paths allocated heap/native storage");
+}
+void kernel_reuse_hidden_residency_and_epoch() {
+    KernelFixture f; f.prepare();
+    auto local_commands = [&] {
+        std::size_t count = 0;
+        for (unsigned lane = 0; lane < 4; ++lane) for (std::size_t i = 0; i < f.counts[lane]; ++i) {
+            const auto c = f.storage[lane][i];
+            if ((c.w0 >> 24) == 0xda && c.w1 >= 0x1000 && c.w1 < 0x10c0) ++count;
+        }
+        return count;
+    };
+    require(local_commands() == 3,"initial large instance omitted admitted hierarchy locals");
+    const auto stale = f.handles[0]; const auto stale_view = f.runtime->model(stale);
+    const auto* stable = stale_view.nodes.data();
+    f.replace(1);
+    require(f.runtime->model(f.handles[0]).nodes.data() == stable && !f.runtime->model(stale) &&
+        f.kernel->world_nodes(stale).empty() && f.kernel->native_nodes(stale).empty(),
+        "reused animator storage moved or old incarnation remained usable");
+    std::fill_n(f.ram.begin()+0x1000/4,3*16,0xdeadbeef);
+    std::fill_n(f.ram.begin()+0x2000/4,2*264/4,0xdeadbeef);
+    f.prepare(false); // Actual pass filtering: new incarnation is staged but not uploaded.
+    require(local_commands() == 0,"filtered new incarnation retained old hierarchy lists");
+    require(f.ram[0x2000/4] == 0xdeadbeef && f.kernel->world_nodes(f.handles[0]).size() == 1,
+        "filtered reuse wrote RAM or exposed a stale large-model tail");
+    f.prepare();
+    require(local_commands() == 1,"small revealed incarnation retained a large hierarchy tail");
+    require(f.ram[0x2000/4] == 0xde010000 && f.ram[0x2004/4] == 0x2008 &&
+        f.ram[0x2008/4+1] == f.materials[1].images[0] && f.ram[0x1000/4] != 0xdeadbeef,
+        "same-epoch reveal retained old branch/material/matrix residency");
+    f.replace(0);
+    require(bool(f.runtime->set_object_flags(f.handles[0],1)),"hidden fresh instance rejected");
+    f.prepare();
+    require(local_commands() == 0,"hidden reused incarnation retained old hierarchy lists");
+    require(bool(f.runtime->set_object_flags(f.handles[0],0)),"hidden fresh instance reveal rejected");
+    f.prepare();
+    require(local_commands() == 3,"large revealed incarnation retained short hierarchy lists");
+    require(f.kernel->world_nodes(f.handles[0]).size() == 3 && f.ram[0x2004/4] == 0x2010 &&
+        f.ram[0x2008/4] == 0xde010000 && f.ram[0x200c/4] == 0x2110 &&
+        f.ram[0x2010/4+1] == f.materials[0].images[0],"small-to-large hidden reuse retained a short branch table");
+    auto bad = f.bindings(); bad[1].state = stale_view;
+    const auto before = f.ram;
+    require(!f.kernel->stage(bad) && f.ram == before,"stale Runtime view changed live RAM");
+    auto other = animation::Runtime::create(animation::Resources{f.models,f.materials,{}},f.capacities,
+        {{0,0,100},{0,0,0},0,45,true,true,0,{}});
+    require(bool(other),"wrong-pool regression runtime creation rejected");
+    auto wrong_pool = f.bindings(); wrong_pool[1].runtime = other.runtime.get();
+    require(!f.kernel->stage(wrong_pool) && f.ram == before,"wrong-pool view authorized another owner");
+    std::fill(f.ram.begin(),f.ram.end(),0xdeadbeef); f.prepare(true,2);
+    require(f.ram[0x2000/4] == 0xde010000 && f.ram[0x200c/4] == 0x2110 &&
+        f.ram[0x1000/4] != 0xdeadbeef,"fresh epoch skipped unchanged matrices/branch payloads");
+    std::vector<std::uint32_t> fresh(rdram_size/4,0xdeadbeef); f.ram.swap(fresh); f.prepare(true,2);
+    require(f.ram[0x2000/4] == 0xde010000 && f.ram[0x2010/4+1] == f.materials[0].images[0],
+        "new RAM pointer with equal epoch reused stale material residency");
+}
+void kernel_late_rejection_is_atomic() {
+    KernelFixture f; f.prepare();
+    const auto prior_ram = f.ram; const auto prior_world = f.kernel->world_nodes(f.handles[0])[0];
+    const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+    native(isle_game_model_peek_nodes(f.game,f.native_models[0],&nodes,&count));
+    const auto prior = nodes[0]; auto changed = prior.transform; changed.position.x = 123;
+    native(isle_game_model_set_transform(f.game,f.native_models[0],0,&changed));
+    auto ordered = f.bindings();
+    // First binding validates a genuinely dirty native pose. A later binding
+    // fails in the real material encoder, not an artificial capacity sentinel.
+    std::swap(ordered[0],ordered[1]); ordered[0].pose = model::PoseSource::native;
+    const std::array<std::size_t,2> rejected_materials{2,2};
+    require(bool(f.runtime->reset_materials(f.handles[1],rejected_materials)),"late-reject material API reset failed");
+    require(!f.kernel->stage(ordered),"late real material encoder rejection was admitted");
+    const IsleGameModelNode* after = nullptr;
+    native(isle_game_model_peek_nodes(f.game,f.native_models[0],&after,&count));
+    require(after[0].transform.position.x == 123 && after[0].revision == prior.revision &&
+        std::memcmp(&after[0].fixed,&prior.fixed,sizeof(prior.fixed)) == 0 && f.ram == prior_ram &&
+        std::memcmp(&prior_world,&f.kernel->world_nodes(f.handles[0])[0],sizeof(prior_world)) == 0,
+        "late rejection computed native fixed/revision caches or published world/RAM");
+    require(bool(f.runtime->reset_materials(f.handles[1])),"late-reject material API restore failed");
+    ordered = f.bindings(); std::swap(ordered[0],ordered[1]); ordered[0].pose = model::PoseSource::native;
+    require(bool(f.kernel->stage(ordered)),"valid native preflight failed before list boundary");
+    f.counts.fill(0);
+    auto tight_output = f.output; tight_output.lanes[0] = tight_output.lanes[0].first(1);
+    require(!f.kernel->encode(0,one(),tight_output),"late bounded hierarchy-list rejection was admitted");
+    native(isle_game_model_peek_nodes(f.game,f.native_models[0],&after,&count));
+    require(after[0].revision == prior.revision && std::memcmp(&after[0].fixed,&prior.fixed,sizeof(prior.fixed)) == 0 &&
+        f.ram == prior_ram && std::memcmp(&prior_world,&f.kernel->world_nodes(f.handles[0])[0],sizeof(prior_world)) == 0,
+        "late hierarchy rejection published native caches/world/RAM");
+    native(isle_game_model_set_transform(f.game,f.native_models[0],0,&prior.transform)); f.prepare();
+    require(f.ram == prior_ram,"valid retry retained rejected material scratch");
+    auto tiny_plans = f.plans; tiny_plans[0].capacity = {1,1};
+    model::BorrowedKernel tiny(f.game,f.models,f.materials,tiny_plans,{0x3000,0});
+    require(!tiny.stage(f.bindings()) && f.ram == prior_ram,"native slot capacity rejection published payloads");
+    for (const auto recipe : {54,48}) {
+        auto bad_models = f.models; bad_models[0].matrix_kinds[0] = static_cast<std::uint8_t>(recipe);
+        bool rejected = false;
+        try { model::BorrowedKernel unsupported(f.game,bad_models,f.materials,f.plans,{0x3000,0}); }
+        catch (const std::invalid_argument&) { rejected = true; }
+        require(rejected && f.ram == prior_ram,"unimplemented actor54/48 recipe was silently coerced to RTS");
+    }
+}
 }
 int main() {
     try {
@@ -331,6 +557,8 @@ int main() {
         lod_and_atomic_rejection(); fractional_lod_above_terminal_key();
         deferred_placement_scopes_and_hide(); immediate_prelist_and_disabled_capacity();
         kind44_placement_inherits_only_x();
+        kernel_independent_instances_and_order(); kernel_reuse_hidden_residency_and_epoch();
+        kernel_late_rejection_is_atomic();
     }
     catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
     return 0;

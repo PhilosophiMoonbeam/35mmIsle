@@ -1013,6 +1013,19 @@ IsleGameResult isle_game_model_set_flags(IsleGame* game, IsleGameModel* model,
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_game_model_peek_nodes(IsleGame* game, IsleGameModel* model,
+    const IsleGameModelNode** output, size_t* count) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    if (count != NULL) *count = 0;
+    result = access_model(game, model);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || count == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = model->nodes;
+    *count = model->count;
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
     const IsleGameModelNode** output, size_t* count) {
     IsleGameResult result;

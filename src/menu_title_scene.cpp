@@ -7,11 +7,13 @@
 
 namespace isle::menu::scene {
 struct Title::Impl {
-    struct ModelCallback { Impl* owner = nullptr; std::size_t model = 0; };
+    struct ModelCallback { Impl* owner = nullptr; animation::InstanceHandle instance; };
     struct LabelCallback { Impl* owner = nullptr; IsleGameSprite* sprite = nullptr; };
     ::isle::scene::Services& s;
     const Catalog& catalog;
     std::array<IsleGameObject*, 5> objects{};
+    std::array<IsleGameModel*, 5> native_models{};
+    std::array<animation::InstanceHandle, 5> instances{};
     std::array<ModelCallback, 5> model_callbacks{};
     std::array<LabelCallback, 3> label_callbacks{};
     IsleGameObject *camera_object = nullptr, *particle_object = nullptr, *effect_object = nullptr;
@@ -28,13 +30,13 @@ struct Title::Impl {
     bool active = false, animations_started = false;
 
     explicit Impl(::isle::scene::Services& services, const Catalog& resources) : s(services), catalog(resources) {
-        for (std::size_t i = 0; i < model_callbacks.size(); ++i) model_callbacks[i] = {this, i};
+        for (auto& callback : model_callbacks) callback.owner = this;
         for (auto& callback : label_callbacks) callback.owner = this;
     }
     static bool resolve(void* context, EffectAttachment attachment, EffectWorld& output) noexcept {
         auto& self = *static_cast<Impl*>(context);
-        if (!self.models || attachment.model >= self.objects.size()) return false;
-        const auto world = self.models->world_nodes(attachment.model);
+        if (!self.models || !self.animation || !self.animation->model(attachment.instance)) return false;
+        const auto world = self.models->world_nodes(attachment.instance);
         if (attachment.node >= world.size()) return false;
         for (std::size_t row = 0; row < 4; ++row)
             for (std::size_t column = 0; column < 4; ++column)
@@ -55,13 +57,13 @@ struct Title::Impl {
         auto& binding = *static_cast<ModelCallback*>(context);
         auto& self = *binding.owner;
         if (self.s.failed() || !self.active || !self.animations_started) return;
-        if (!self.animation->step_model(binding.model)) { self.s.fail("title model animation update"); return; }
+        if (!self.animation->step_model(binding.instance)) { self.s.fail("title model animation update"); return; }
         if (!self.models->synchronize()) { self.s.fail("title model native synchronization"); return; }
-        self.last_time = self.animation->model(0).animation_time;
+        self.last_time = self.animation->model(self.instances[0]).animation_time;
         // Events borrow Runtime storage only until the next step. Deliver them
         // here, with this exact native world pose, before the next model runs.
         for (const auto& event : self.animation->events()) {
-            const auto result = self.effects->animation_event({event.model, event.node}, event.event_id, event.argument);
+            const auto result = self.effects->animation_event({event.instance, event.node}, event.event_id, event.argument);
             if (!result.status) { self.s.fail("title animation effect callback"); return; }
             if (result.title_finished) self.state = 3;
         }
@@ -271,16 +273,29 @@ struct Title::Impl {
             initial.eye = {parameters->look_at.eye[0], parameters->look_at.eye[1], parameters->look_at.eye[2]};
             initial.at = {parameters->look_at.at[0], parameters->look_at.at[1], parameters->look_at.at[2]};
             initial.fov_y = perspective.fovy;
-            auto runtime = animation::Runtime::create(catalog, initial);
+            std::array<animation::SlotCapacity,5> capacities;
+            if (catalog.models().size() != capacities.size()) { s.fail("title model count"); return false; }
+            for (std::size_t i = 0; i < capacities.size(); ++i) capacities[i] = animation::slot_capacity(catalog.models()[i]);
+            auto runtime = animation::Runtime::create(catalog, capacities, initial);
             if (!runtime) { s.fail("title animation construction"); return false; }
             animation = std::move(runtime.runtime);
             // Prefix camera/FX objects already precede the source UI timer and
             // control objects, so actual OM animation process order is retained.
+            std::array<model::Binding,5> bindings;
             for (std::size_t i = 0; i < objects.size(); ++i) {
+                const auto acquired = animation->acquire(i,i,catalog.models()[i].receives_effect_callback);
+                if (!acquired) { s.fail("title instance acquisition"); return false; }
+                instances[i] = acquired.handle;
+                model_callbacks[i].instance = acquired.handle;
                 objects[i] = s.object(14);
                 if (objects[i] == nullptr || s.process(objects[i], model_update, &model_callbacks[i], ISLE_GAME_SYNCHRONOUS) == nullptr) return false;
+                if (!model::attach_title_model(s.game,objects[i],catalog.models()[i],
+                        animation->model(instances[i]),&native_models[i])) {
+                    s.fail("title native model attachment"); return false;
+                }
+                bindings[i] = {instances[i],objects[i],native_models[i]};
             }
-            auto producer = model::Producer::create(s.game, camera, catalog, *animation, objects);
+            auto producer = model::Producer::create(s.game, camera, catalog, *animation, bindings);
             if (!producer) { s.fail("title native model producer construction"); return false; }
             models = std::move(producer.producer);
             if (!models->synchronize()) { s.fail("title native initial model poses"); return false; }
@@ -313,19 +328,42 @@ struct Title::Impl {
         return false;
     }
     void cleanup(bool final = false) noexcept {
-        // Main's exclusive tick boundary has already completed RSP/RDP and
-        // ceased all producer/native borrows. No presentation counter is a fence.
+        // Caller precondition: the runner retired the actual Frame completion
+        // and completed-memory lease before offering this native update (or
+        // fenced final Runtime retirement). play runs in Ui's separate control
+        // process, never a Title-owned object, so every deletion below joins
+        // immediately rather than requesting self-deletion.
         animations_started = false;
         active = false;
+        if (animation) for (const auto instance : instances)
+            if (instance && !animation->begin_retire(instance)) s.fail("title instance retirement");
         for (auto* object : objects) if (object != nullptr) s.end_processes(object);
         for (auto* object : {camera_object, labels, audio_object, input_object, setup_object})
             if (object != nullptr) s.end_processes(object);
         if (effects) {
-            for (std::size_t i = 0; i < objects.size(); ++i) effects->detach_model(i);
+            for (const auto instance : instances) if (instance) effects->detach_instance(instance);
             effects->reset();
         }
-        if (models) { models->retire(); models.reset(); }
-        if (animation) { animation->retire(); animation.reset(); }
+        if (models) models->retire();
+        // Keep producer, animator and every callback context alive until whole
+        // object deletion joins ALL processes. end_processes can return early
+        // after ending one process when a preexisting native fault is latched;
+        // erase still performs complete noncurrent-object teardown and its
+        // retirement callback before recycling the object, even on that path.
+        for (auto*& object : objects) { if (object != nullptr) s.erase(object); object = nullptr; }
+        for (auto* object : {camera_object, labels, audio_object, input_object, setup_object})
+            if (object != nullptr) s.erase(object);
+        camera_object = labels = audio_object = input_object = setup_object = nullptr;
+        camera = nullptr;
+        native_models.fill(nullptr);
+        models.reset();
+        if (animation) {
+            for (auto& instance : instances) {
+                if (instance && !animation->release_retired(instance)) s.fail("title instance release after native/graphics/effect retirement");
+                instance = {};
+            }
+            animation->retire(); animation.reset();
+        }
         if (final) {
             if (particle_object != nullptr) s.erase(particle_object);
             if (effect_object != nullptr) s.erase(effect_object);
@@ -333,14 +371,6 @@ struct Title::Impl {
             particle_camera = nullptr;
             effects.reset();
         }
-        for (auto*& object : objects) { if (object != nullptr) s.erase(object); object = nullptr; }
-        if (camera_object != nullptr) s.erase(camera_object);
-        if (labels != nullptr) s.erase(labels);
-        if (audio_object != nullptr) s.erase(audio_object);
-        if (input_object != nullptr) s.erase(input_object);
-        if (setup_object != nullptr) s.erase(setup_object);
-        camera_object = labels = audio_object = input_object = setup_object = nullptr;
-        camera = nullptr;
         for (auto& binding : label_callbacks) binding.sprite = nullptr;
     }
 };

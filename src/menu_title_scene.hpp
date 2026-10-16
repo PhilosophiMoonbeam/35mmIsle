@@ -23,7 +23,10 @@ public:
     animation::Runtime* animation() noexcept;
     model::Producer* models() noexcept;
     MenuEffects* effects() noexcept;
-    // Parent must stop callbacks and retire every view before scene destruction.
+    // Caller must retire actual Frame completion/completed-memory leases first.
+    // Ui control is separate from every Title-owned object; final destruction
+    // follows Ui retirement outside traversal. Cleanup keeps all contexts alive
+    // through synchronous noncurrent-object deletion, including latched faults.
     void retire() noexcept;
 private:
     struct Impl;

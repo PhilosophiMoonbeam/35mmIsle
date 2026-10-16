@@ -109,7 +109,7 @@ void run(const isle::rom::Snapshot& snapshot, const Catalog& catalog) {
     bool cold = true;
     for (float argument : {1.0f, 4.0f}) {
         isle_rng rng{0x12345678}; MenuEffects effects(catalog, rng); ok(effects.status());
-        for (unsigned i = 0; i < 10; ++i) require(effects.animation_event({2, 0}, 0, argument).spawned, "source smoke effect spawn");
+        for (unsigned i = 0; i < 10; ++i) require(effects.animation_event({animation::InstanceHandle{1,1,2}, 0}, 0, argument).spawned, "source smoke effect spawn");
         for (unsigned tick = 0; tick < 3; ++tick) { ok(effects.update_particles()); ok(effects.update_effects(world, nullptr)); }
         const auto first = draw(executor, snapshot, catalog, effects, cold, 0x5a, false); cold = false;
         const auto second = draw(executor, snapshot, catalog, effects, false, 0xa5, false);
@@ -121,7 +121,7 @@ void run(const isle::rom::Snapshot& snapshot, const Catalog& catalog) {
         for (unsigned tick = 0; tick < 5; ++tick) ok(effects.update_particles());
         const auto animated = draw(executor, snapshot, catalog, effects, false, 0xc3, false);
         require(first.color != animated.color, "actual particle animation/physics did not change rendered colors");
-        effects.detach_model(2);
+        effects.detach_instance(animation::InstanceHandle{1,1,2});
         for (unsigned tick = 0; tick < 80; ++tick) ok(effects.update_particles());
         require(effects.particle_count() == 0 && effects.effect_count() == 0, "actual smoke teardown retained pools");
         require(executor.quiescent(), "actual GPU leases not retired before runtime/catalog teardown");

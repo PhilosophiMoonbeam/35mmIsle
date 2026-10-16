@@ -1,6 +1,7 @@
 #include "menu_animation.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <bit>
 #include <cmath>
 #include <limits>
@@ -146,12 +147,24 @@ void restart(Player& p, Clock& clock, float skip) noexcept {
     clock.phase = p.program == no_index ? Phase::disabled : Phase::changed;
 }
 } // namespace
+SlotCapacity slot_capacity(const Model& model) noexcept {
+    SlotCapacity result{model.nodes.size(), 0};
+    for (const auto& node : model.nodes) result.material_attachments += node.materials.size();
+    return result;
+}
 
 struct Runtime::Impl {
     struct ModelStorage {
-        std::vector<NodeState> nodes;
-        std::vector<MaterialState> materials;
-        std::vector<Player> node_players, material_players;
+        std::vector<NodeState> node_storage;
+        std::vector<MaterialState> material_storage;
+        std::vector<Player> node_player_storage, material_player_storage;
+        std::span<NodeState> nodes;
+        std::span<MaterialState> materials;
+        std::span<Player> node_players, material_players;
+        std::size_t resource_model = no_index;
+        std::uint64_t incarnation = 0;
+        enum class Life { free, active, retiring } life = Life::free;
+        bool callback_enabled = false;
         float animation_time = 0;
         std::uint32_t flags = 0;
     };
@@ -159,14 +172,23 @@ struct Runtime::Impl {
     CameraState initial_camera, camera;
     Player camera_player;
     std::vector<Program> programs;
+    std::vector<SlotCapacity> resource_capacities;
     std::vector<ModelStorage> models;
     std::vector<CallbackEvent> event_storage;
     std::size_t event_count = 0;
     std::uint64_t generation = 1, event_order = 0;
+    std::uint64_t pool = 0;
+    InstanceHandle handle(std::size_t index) const noexcept {
+        return {pool, models[index].incarnation, static_cast<std::uint32_t>(index)};
+    }
+    bool valid(InstanceHandle h, ModelStorage::Life life = ModelStorage::Life::active) const noexcept {
+        return !retired && h && h.pool == pool && h.slot < models.size() &&
+            models[h.slot].incarnation == h.incarnation && models[h.slot].life == life;
+    }
     bool retired = false;
 
     void emit(std::size_t model, std::size_t node, int id, float argument, std::uint32_t address) noexcept {
-        event_storage[event_count++] = {model,node,id,argument,address,event_order++};
+        event_storage[event_count++] = {handle(model),node,id,argument,address,event_order++};
     }
     void process(Player& p, Clock& clock, std::size_t mi, std::size_t ni, bool receiver,
                  std::uint32_t* node_flags, float* animation_time) noexcept {
@@ -189,12 +211,12 @@ struct Runtime::Impl {
                 if (program.kind == AnimationKind::camera) clock.time_passed = clock.time_left;
                 if (animation_time && program.kind == AnimationKind::model) *animation_time = clock.time_passed;
                 clock.phase = Phase::finished;
-                if (receiver && resources.models[mi].receives_effect_callback) emit(mi,ni,-1,0,c.address);
+                if (receiver && models[mi].callback_enabled) emit(mi,ni,-1,0,c.address);
                 return;
             }
             if (c.opcode == 2 || c.opcode == 15 || c.opcode == 16) {
                 if (c.opcode == 15) *node_flags = c.mask;
-                if (c.opcode == 16 && resources.models[mi].receives_effect_callback)
+                if (c.opcode == 16 && models[mi].callback_enabled)
                     emit(mi,ni,c.mask >> 8,static_cast<float>(c.mask & 255u),c.address);
                 clock.time_left += duration;
                 continue;
@@ -210,7 +232,7 @@ struct Runtime::Impl {
                 for (unsigned channel = 0; channel < 10; ++channel) {
                     if (!(c.mask & (1u << channel))) continue;
                     const float argument = std::bit_cast<float>(c.operands[operand++]);
-                    if (resources.models[mi].receives_effect_callback) emit(mi,ni,static_cast<int>(channel+4),argument,c.address);
+                    if (models[mi].callback_enabled) emit(mi,ni,static_cast<int>(channel+4),argument,c.address);
                 }
                 clock.time_left += duration;
                 continue;
@@ -289,34 +311,40 @@ struct Runtime::Impl {
         camera_player = {};
         camera_player.program = resources.camera_animation;
         restart(camera_player,camera.clock,skip);
-        for (std::size_t mi = 0; mi < models.size(); ++mi) {
-            auto& m = models[mi];
-            const auto& source = resources.models[mi];
-            m.animation_time = skip;
-            m.flags = 0;
-            bool receiver = true;
-            for (std::size_t ni = 0; ni < m.nodes.size(); ++ni) {
-                const auto& node = source.nodes[ni];
-                auto& n = m.nodes[ni];
-                n.transform = {node.position,node.rotation,node.scale};
-                n.parent = node.parent;
-                n.flags = 0;
-                ++n.revision;
-                n.callback_receiver = node.animation != no_index && receiver;
-                if (node.animation != no_index) receiver = false;
-                n.clock.speed = source.animation_speed;
-                auto& p = m.node_players[ni];
-                p = {};
-                p.program = node.animation;
-                restart(p,n.clock,skip);
-                for (std::size_t j = 0; j < n.material_count; ++j) {
-                    const auto index = n.first_material+j;
-                    auto& state = m.materials[index];
-                    auto& mp = m.material_players[index];
-                    restore_material(state,mp,node.materials[j],source.animation_speed,0);
-                    mp.program = node.material_animations.empty() ? no_index : node.material_animations[j];
-                    restart(mp,state.clock,skip);
-                }
+        for (auto& m : models) if (m.life == ModelStorage::Life::active) initialize_model(m,skip);
+    }
+    void initialize_model(ModelStorage& m, float skip, bool fresh = false) noexcept {
+        const auto& source = resources.models[m.resource_model];
+        m.animation_time = skip;
+        m.flags = 0;
+        bool receiver = true;
+        std::size_t material_offset = 0;
+        for (std::size_t ni = 0; ni < m.nodes.size(); ++ni) {
+            const auto& node = source.nodes[ni];
+            auto& n = m.nodes[ni];
+            const auto revision = fresh ? std::uint64_t{1} : n.revision+1;
+            n = {};
+            n.revision = revision;
+            n.transform = {node.position,node.rotation,node.scale};
+            n.parent = node.parent;
+            n.first_material = material_offset;
+            n.material_count = node.materials.size();
+            material_offset += n.material_count;
+            n.callback_receiver = node.animation != no_index && receiver;
+            if (node.animation != no_index) receiver = false;
+            n.clock.speed = source.animation_speed;
+            auto& p = m.node_players[ni];
+            p = {};
+            p.program = node.animation;
+            restart(p,n.clock,skip);
+            for (std::size_t j = 0; j < n.material_count; ++j) {
+                const auto index = n.first_material+j;
+                auto& state = m.materials[index];
+                auto& mp = m.material_players[index];
+                restore_material(state,mp,node.materials[j],source.animation_speed,0);
+                if (fresh) state.revision = 1;
+                mp.program = node.material_animations.empty() ? no_index : node.material_animations[j];
+                restart(mp,state.clock,skip);
             }
         }
     }
@@ -324,11 +352,11 @@ struct Runtime::Impl {
 
 Runtime::Runtime(std::unique_ptr<Impl> impl) noexcept : impl_(std::move(impl)) {}
 Runtime::~Runtime() = default;
-CreateResult Runtime::create(const Catalog& catalog, CameraState camera) noexcept {
-    try { return create({catalog.models(),catalog.materials(),catalog.animations(),catalog.camera_animation()},camera); }
+CreateResult Runtime::create(const Catalog& catalog, std::span<const SlotCapacity> capacities, CameraState camera) noexcept {
+    try { return create({catalog.models(),catalog.materials(),catalog.animations(),catalog.camera_animation()},capacities,camera); }
     catch (...) { return {{Error::malformed,0},nullptr}; }
 }
-CreateResult Runtime::create(Resources resources, CameraState camera) noexcept {
+CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> capacities, CameraState camera) noexcept {
     try {
         require(std::isfinite(camera.eye.x) && std::isfinite(camera.eye.y) && std::isfinite(camera.eye.z) &&
                 std::isfinite(camera.at.x) && std::isfinite(camera.at.y) && std::isfinite(camera.at.z) &&
@@ -336,6 +364,14 @@ CreateResult Runtime::create(Resources resources, CameraState camera) noexcept {
         auto impl = std::make_unique<Impl>();
         impl->resources = resources;
         impl->initial_camera = camera;
+        // Never recycle pool identities, including after Runtime destruction.
+        static std::atomic<std::uint64_t> next_pool{1};
+        auto identity = next_pool.load(std::memory_order_relaxed);
+        do {
+            require(identity != std::numeric_limits<std::uint64_t>::max(),Error::exhausted);
+        } while (!next_pool.compare_exchange_weak(identity,identity+1,std::memory_order_relaxed));
+        impl->pool = identity;
+        require(capacities.size() <= UINT32_MAX,Error::extent);
         for (const auto& input : resources.animations) impl->programs.push_back(compile(input,resources.paths));
         auto check_program = [&](std::size_t index, AnimationKind kind) {
             if (index != no_index) require(index < impl->programs.size() && impl->programs[index].kind == kind, Error::malformed);
@@ -344,15 +380,13 @@ CreateResult Runtime::create(Resources resources, CameraState camera) noexcept {
         std::size_t max_callbacks = 0;
         for (const auto& program : impl->programs)
             if (program.kind == AnimationKind::model) max_callbacks = std::max(max_callbacks,program.callbacks);
-        impl->models.resize(resources.models.size());
+        impl->models.resize(capacities.size());
+        impl->resource_capacities.resize(resources.models.size());
         std::size_t event_capacity = 0;
         for (std::size_t mi = 0; mi < resources.models.size(); ++mi) {
             const auto& source = resources.models[mi];
-            auto& target = impl->models[mi];
-            require(std::isfinite(source.animation_speed) && source.animation_speed >= 0, Error::malformed);
-            target.nodes.resize(source.nodes.size());
-            target.node_players.resize(source.nodes.size());
             std::size_t materials = 0;
+            require(std::isfinite(source.animation_speed) && source.animation_speed >= 0, Error::malformed);
             for (std::size_t ni = 0; ni < source.nodes.size(); ++ni) {
                 const auto& node = source.nodes[ni];
                 require(node.parent == no_index || node.parent < ni, Error::malformed,node.wire.guest_address);
@@ -368,8 +402,7 @@ CreateResult Runtime::create(Resources resources, CameraState camera) noexcept {
                 check_program(node.animation,AnimationKind::model);
                 // Future bindings may select any precompiled model program.
                 require(node.material_animations.empty() || node.material_animations.size() == node.materials.size(),Error::malformed);
-                target.nodes[ni].first_material = materials;
-                target.nodes[ni].material_count = node.materials.size();
+                require(node.materials.size() <= std::numeric_limits<std::size_t>::max()-materials,Error::extent);
                 materials += node.materials.size();
                 for (std::size_t j = 0; j < node.materials.size(); ++j) {
                     require(node.materials[j] < resources.materials.size(), Error::extent);
@@ -377,11 +410,18 @@ CreateResult Runtime::create(Resources resources, CameraState camera) noexcept {
                     if (!node.material_animations.empty()) check_program(node.material_animations[j],AnimationKind::texture);
                 }
             }
-            target.materials.resize(materials);
-            target.material_players.resize(materials);
-            if (source.receives_effect_callback && !source.nodes.empty()) {
-                require(max_callbacks <= (std::numeric_limits<std::size_t>::max()-1)/source.nodes.size(),Error::extent);
-                event_capacity = std::max(event_capacity,max_callbacks*source.nodes.size()+1);
+            impl->resource_capacities[mi] = {source.nodes.size(),materials};
+        }
+        for (std::size_t slot = 0; slot < capacities.size(); ++slot) {
+            const auto capacity = capacities[slot];
+            auto& target = impl->models[slot];
+            target.node_storage.resize(capacity.nodes);
+            target.node_player_storage.resize(capacity.nodes);
+            target.material_storage.resize(capacity.material_attachments);
+            target.material_player_storage.resize(capacity.material_attachments);
+            if (capacity.nodes) {
+                require(max_callbacks <= (std::numeric_limits<std::size_t>::max()-1)/capacity.nodes,Error::extent);
+                event_capacity = std::max(event_capacity,max_callbacks*capacity.nodes+1);
             }
         }
         // Every node may bind the most callback-rich program; only one receives
@@ -393,11 +433,66 @@ CreateResult Runtime::create(Resources resources, CameraState camera) noexcept {
       catch (const std::bad_alloc&) { return {{Error::allocation,0},nullptr}; }
       catch (...) { return {{Error::malformed,0},nullptr}; }
 }
-
-Status Runtime::step_model(std::size_t index) noexcept {
+AcquireResult Runtime::acquire(std::size_t slot, std::size_t resource, bool callbacks) noexcept {
+    auto& s = *impl_;
+    if (s.retired) return {{Error::retired,0},{}};
+    if (slot >= s.models.size() || resource >= s.resources.models.size()) return {{Error::extent,0},{}};
+    auto& m = s.models[slot];
+    if (m.life != Impl::ModelStorage::Life::free) return {{Error::occupied,0},{}};
+    const auto capacity = s.resource_capacities[resource];
+    if (capacity.nodes > m.node_storage.size() || capacity.material_attachments > m.material_storage.size())
+        return {{Error::capacity,0},{}};
+    if (m.incarnation == std::numeric_limits<std::uint64_t>::max()) return {{Error::exhausted,0},{}};
+    m.nodes = std::span(m.node_storage).first(capacity.nodes);
+    m.node_players = std::span(m.node_player_storage).first(capacity.nodes);
+    m.materials = std::span(m.material_storage).first(capacity.material_attachments);
+    m.material_players = std::span(m.material_player_storage).first(capacity.material_attachments);
+    m.resource_model = resource;
+    m.callback_enabled = callbacks;
+    s.initialize_model(m,0,true);
+    ++m.incarnation;
+    m.life = Impl::ModelStorage::Life::active;
+    s.event_count = 0;
+    ++s.generation;
+    return {{},s.handle(slot)};
+}
+Status Runtime::begin_retire(InstanceHandle h) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
-    if (index >= s.models.size()) return {Error::extent,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    s.models[h.slot].life = Impl::ModelStorage::Life::retiring;
+    s.event_count = 0;
+    ++s.generation;
+    return {};
+}
+Status Runtime::release_retired(InstanceHandle h) noexcept {
+    auto& s = *impl_;
+    if (s.retired) return {Error::retired,0};
+    if (!s.valid(h,Impl::ModelStorage::Life::retiring)) return {Error::handle,0};
+    auto& m = s.models[h.slot];
+    m.life = Impl::ModelStorage::Life::free;
+    m.nodes = {};
+    m.materials = {};
+    m.node_players = {};
+    m.material_players = {};
+    m.resource_model = no_index;
+    s.event_count = 0;
+    ++s.generation;
+    return {};
+}
+Status Runtime::set_callback_enabled(InstanceHandle h, bool enabled) noexcept {
+    if (impl_->retired) return {Error::retired,0};
+    if (!impl_->valid(h)) return {Error::handle,0};
+    impl_->models[h.slot].callback_enabled = enabled;
+    impl_->event_count = 0;
+    return {};
+}
+
+Status Runtime::step_model(InstanceHandle h) noexcept {
+    auto& s = *impl_;
+    if (s.retired) return {Error::retired,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    const auto index = h.slot;
     auto& model = s.models[index];
     s.event_count = 0;
     ++s.generation;
@@ -521,25 +616,30 @@ Status Runtime::step_camera(std::uint32_t flags) noexcept {
     c.projection_dirty = initial || !same(fov,c.fov_y);
     return {};
 }
-ModelState Runtime::model(std::size_t index) const noexcept {
-    if (index >= impl_->models.size() || impl_->retired) return {};
-    const auto& m = impl_->models[index];
-    return {m.nodes,m.materials,m.animation_time,m.flags};
+ModelState Runtime::model(InstanceHandle h) const noexcept {
+    if (!impl_->valid(h)) {
+        ModelState invalid;
+        invalid.status = {impl_->retired ? Error::retired : Error::handle,0};
+        return invalid;
+    }
+    const auto& m = impl_->models[h.slot];
+    return {m.nodes,m.materials,m.animation_time,m.flags,h,m.resource_model,{}};
 }
 const CameraState& Runtime::camera() const noexcept { return impl_->camera; }
 std::span<const CallbackEvent> Runtime::events() const noexcept { return {impl_->event_storage.data(),impl_->event_count}; }
-std::size_t Runtime::model_count() const noexcept { return impl_->models.size(); }
+std::size_t Runtime::slot_count() const noexcept { return impl_->models.size(); }
 std::uint64_t Runtime::generation() const noexcept { return impl_->generation; }
-Status Runtime::set_object_flags(std::size_t index, std::uint32_t flags) noexcept {
+Status Runtime::set_object_flags(InstanceHandle h, std::uint32_t flags) noexcept {
     if (impl_->retired) return {Error::retired,0};
-    if (index >= impl_->models.size()) return {Error::extent,0};
-    impl_->models[index].flags = flags;
+    if (!impl_->valid(h)) return {Error::handle,0};
+    impl_->models[h.slot].flags = flags;
     return {};
 }
-Status Runtime::restart_model(std::size_t index, float skip) noexcept {
+Status Runtime::restart_model(InstanceHandle h, float skip) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
-    if (index >= s.models.size()) return {Error::extent,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    const auto index = h.slot;
     if (!std::isfinite(skip)) return {Error::malformed,0};
     auto& m = s.models[index];
     for (std::size_t i = 0; i < m.nodes.size(); ++i) restart(m.node_players[i],m.nodes[i].clock,skip);
@@ -552,11 +652,12 @@ Status Runtime::restart_model(std::size_t index, float skip) noexcept {
     ++s.generation;
     return {};
 }
-Status Runtime::bind_model(std::size_t index, std::span<const std::size_t> bindings,
+Status Runtime::bind_model(InstanceHandle h, std::span<const std::size_t> bindings,
                            float skip, ModelBindPose pose) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
-    if (index >= s.models.size()) return {Error::extent,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    const auto index = h.slot;
     auto& m = s.models[index];
     if (bindings.size() != m.nodes.size()) return {Error::extent,0};
     if (!std::isfinite(skip) || (pose != ModelBindPose::preserve && pose != ModelBindPose::restore))
@@ -579,7 +680,7 @@ Status Runtime::bind_model(std::size_t index, std::span<const std::size_t> bindi
             n.callback_receiver = false;
         }
         if (pose == ModelBindPose::restore) {
-            const auto& source = s.resources.models[index].nodes[i];
+            const auto& source = s.resources.models[m.resource_model].nodes[i];
             const Transform bind{source.position,source.rotation,source.scale};
             if (!same(n.transform.position,bind.position) || !same(n.transform.rotation,bind.rotation) ||
                 !same(n.transform.scale,bind.scale)) ++n.revision;
@@ -591,10 +692,11 @@ Status Runtime::bind_model(std::size_t index, std::span<const std::size_t> bindi
     ++s.generation;
     return {};
 }
-Status Runtime::bind_materials(std::size_t index, std::span<const std::size_t> bindings, float skip) noexcept {
+Status Runtime::bind_materials(InstanceHandle h, std::span<const std::size_t> bindings, float skip) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
-    if (index >= s.models.size()) return {Error::extent,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    const auto index = h.slot;
     auto& m = s.models[index];
     if (!bindings.empty() && bindings.size() != m.materials.size()) return {Error::extent,0};
     if (!std::isfinite(skip)) return {Error::malformed,0};
@@ -612,10 +714,11 @@ Status Runtime::bind_materials(std::size_t index, std::span<const std::size_t> b
     ++s.generation;
     return {};
 }
-Status Runtime::reset_materials(std::size_t index, std::span<const std::size_t> bindings) noexcept {
+Status Runtime::reset_materials(InstanceHandle h, std::span<const std::size_t> bindings) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
-    if (index >= s.models.size()) return {Error::extent,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    const auto index = h.slot;
     auto& m = s.models[index];
     if (!bindings.empty() && bindings.size() != m.materials.size()) return {Error::extent,0};
     for (const auto resource : bindings) {
@@ -627,7 +730,7 @@ Status Runtime::reset_materials(std::size_t index, std::span<const std::size_t> 
         const auto& n = m.nodes[ni];
         for (std::size_t j = 0; j < n.material_count; ++j) {
             const auto k = n.first_material+j;
-            const auto resource = bindings.empty() ? s.resources.models[index].nodes[ni].materials[j] : bindings[k];
+            const auto resource = bindings.empty() ? s.resources.models[m.resource_model].nodes[ni].materials[j] : bindings[k];
             if (resource == no_index) continue;
             auto& state = m.materials[k];
             s.restore_material(state,m.material_players[k],resource,1,state.palette_index);
@@ -637,18 +740,20 @@ Status Runtime::reset_materials(std::size_t index, std::span<const std::size_t> 
     ++s.generation;
     return {};
 }
-Status Runtime::set_model_speed(std::size_t index, float speed) noexcept {
+Status Runtime::set_model_speed(InstanceHandle h, float speed) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
-    if (index >= s.models.size()) return {Error::extent,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    const auto index = h.slot;
     if (!std::isfinite(speed)) return {Error::malformed,0};
     for (auto& n : s.models[index].nodes) n.clock.speed = speed;
     return {};
 }
-Status Runtime::set_texture_speed(std::size_t index, float speed) noexcept {
+Status Runtime::set_texture_speed(InstanceHandle h, float speed) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
-    if (index >= s.models.size()) return {Error::extent,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    const auto index = h.slot;
     if (!std::isfinite(speed)) return {Error::malformed,0};
     for (auto& m : s.models[index].materials) m.clock.speed = speed;
     return {};

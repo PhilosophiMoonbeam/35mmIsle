@@ -4,13 +4,26 @@
 #include "menu_resources.hpp"
 
 namespace isle::menu::animation {
-enum class Error { none, malformed, unsupported, extent, allocation, retired };
+enum class Error { none, malformed, unsupported, extent, allocation, retired, handle, occupied, capacity, exhausted };
 struct Status {
     Error error = Error::none;
     std::uint32_t address = 0;
     explicit operator bool() const noexcept { return error == Error::none; }
 };
 enum class Phase { disabled, changed, running, finished };
+struct InstanceHandle {
+    std::uint64_t pool = 0, incarnation = 0;
+    std::uint32_t slot = UINT32_MAX;
+    explicit operator bool() const noexcept { return pool != 0 && incarnation != 0 && slot != UINT32_MAX; }
+    bool operator==(const InstanceHandle&) const = default;
+};
+struct SlotCapacity { std::size_t nodes = 0, material_attachments = 0; };
+SlotCapacity slot_capacity(const Model&) noexcept;
+struct AcquireResult {
+    Status status;
+    InstanceHandle handle;
+    explicit operator bool() const noexcept { return static_cast<bool>(status); }
+};
 struct Clock {
     Phase phase = Phase::disabled;
     float time_left = 0, time_passed = 0, speed = 0.5f;
@@ -51,7 +64,8 @@ struct CameraState {
     Clock clock;
 };
 struct CallbackEvent {
-    std::size_t model = 0, node = 0;
+    InstanceHandle instance;
+    std::size_t node = 0;
     std::int32_t event_id = 0;
     float argument = 0;
     std::uint32_t command_address = 0;
@@ -62,6 +76,10 @@ struct ModelState {
     std::span<const MaterialState> materials;
     float animation_time = 0;
     std::uint32_t object_flags = 0; // Bit 2 advances tracks but suppresses model writes.
+    InstanceHandle instance;
+    std::size_t resource_model = no_index;
+    Status status{Error::handle, 0};
+    explicit operator bool() const noexcept { return static_cast<bool>(status); }
 };
 // Borrowed immutable input, also usable by synthetic behavior tests. Every span,
 // nested vector and wire owner must outlive Runtime and all outstanding views.
@@ -77,6 +95,9 @@ struct Resources {
 Vec3 path_position(const AnimationPath&, float parameter);
 Vec3 path_velocity(const AnimationPath&, float parameter);
 struct CreateResult;
+// Pure animator, not a native lifecycle coordinator. Destruction/whole-runtime
+// retirement require the owner to join native callbacks and end every renderer,
+// completed-memory and effect borrow first; neither operation manufactures a fence.
 class Runtime final {
 public:
     ~Runtime();
@@ -84,27 +105,36 @@ public:
     Runtime& operator=(const Runtime&) = delete;
     Runtime(Runtime&&) = delete;
     Runtime& operator=(Runtime&&) = delete;
-    static CreateResult create(const Catalog&, CameraState initial_camera) noexcept;
-    static CreateResult create(Resources, CameraState initial_camera) noexcept;
+    // Construction compiles immutable programs and fixes every storage address.
+    // Slots start free; capacity plans are not implicit resource assignments.
+    static CreateResult create(const Catalog&, std::span<const SlotCapacity>, CameraState initial_camera) noexcept;
+    static CreateResult create(Resources, std::span<const SlotCapacity>, CameraState initial_camera) noexcept;
+    AcquireResult acquire(std::size_t slot, std::size_t resource_model, bool callback_enabled) noexcept;
+    Status begin_retire(InstanceHandle) noexcept;
+    // Owner-only precondition: actual native work is joined, graphics/completed
+    // memory borrows ended and attached effects detached. Runtime cannot prove
+    // these external facts; call only from the real fenced retirement coordinator.
+    Status release_retired(InstanceHandle) noexcept;
+    Status set_callback_enabled(InstanceHandle, bool) noexcept;
     // Call in the actual OM object/process order, not catalog order by default.
     // Each model call visits all nodes depth-first, model then attached materials.
-    // First call after create/reset evaluates time 0 (CHANGED), subsequent calls
-    // advance source speed 0.5. END applies once then becomes DISABLED.
-    Status step_model(std::size_t model) noexcept;
+    // First call after acquire/reset evaluates time 0 (CHANGED); subsequent
+    // calls advance the instance's signed source speed. END applies once.
+    Status step_model(InstanceHandle) noexcept;
     Status step_camera(std::uint32_t object_flags = 0) noexcept;
-    // Immutable frame views have stable addresses until destruction. Contents and
-    // events are borrowed until the next successful step/bind/reset/restart/retire.
+    // Storage addresses stay stable until destruction; active spans are borrowed
+    // only until mutation/retirement and cannot authorize stale-handle access.
     // Dispatch every event in order before another mutation; bind its actual node
     // world transform (including native root parent), never a guest pointer.
-    ModelState model(std::size_t index) const noexcept;
+    ModelState model(InstanceHandle) const noexcept;
     const CameraState& camera() const noexcept;
     std::span<const CallbackEvent> events() const noexcept;
-    std::size_t model_count() const noexcept;
+    std::size_t slot_count() const noexcept;
     std::uint64_t generation() const noexcept;
-    Status set_object_flags(std::size_t model, std::uint32_t flags) noexcept;
+    Status set_object_flags(InstanceHandle, std::uint32_t flags) noexcept;
     // Source animSet semantics: clear track kinds but retain allocated track
     // values/rates and current fields/flags; skip is source skipFrames.
-    Status restart_model(std::size_t model, float skip_frames = 0) noexcept;
+    Status restart_model(InstanceHandle, float skip_frames = 0) noexcept;
     // Program indices refer to the immutable Resources::animations pool. Model
     // bindings have exactly one entry per DFS node. Non-null entries clear track
     // kinds only (retaining values/rates), restart at skip, and select the first
@@ -114,13 +144,13 @@ public:
     // Neither bind evaluates: the actor sets speeds, then calls step_model once
     // immediately and routes its borrowed events before any further mutation.
     // Header/array identity, force, pause, loops and completion belong to actor.
-    Status bind_model(std::size_t model, std::span<const std::size_t> programs,
+    Status bind_model(InstanceHandle, std::span<const std::size_t> programs,
                       float skip_frames = 0, ModelBindPose pose = ModelBindPose::preserve) noexcept;
     // Flattened node/material attachment order. Empty span is a null outer
     // array; no_index is a null entry: both preserve existing bindings/tracks/
     // clocks/fields. Non-null entries use kind-only restart at skip. Like GAME's
     // texture tree setter, even an all-null array sets object animation_time.
-    Status bind_materials(std::size_t model, std::span<const std::size_t> programs,
+    Status bind_materials(InstanceHandle, std::span<const std::size_t> programs,
                           float skip_frames = 0) noexcept;
     // Pokemon_SetTextures primitive: empty span restores every original attached
     // Catalog material; otherwise exactly one resource index per attachment,
@@ -128,15 +158,15 @@ public:
     // texture fields and image indices, disables clock at time0/speed1, but keeps
     // palette_index (GAME Pokemon_SetTexture does not assign it). No evaluation.
     // All binding/reset arguments validate before any state/event publication.
-    Status reset_materials(std::size_t model, std::span<const std::size_t> resources = {}) noexcept;
+    Status reset_materials(InstanceHandle, std::span<const std::size_t> resources = {}) noexcept;
     // Source speed setters permit signed deltas when movement seeks the road.
-    Status set_model_speed(std::size_t model, float speed) noexcept;
-    Status set_texture_speed(std::size_t model, float speed) noexcept;
+    Status set_model_speed(InstanceHandle, float speed) noexcept;
+    Status set_texture_speed(InstanceHandle, float speed) noexcept;
     Status restart_camera(float skip_frames = 0) noexcept;
-    // Fresh scene reentry restores Catalog bind/material fields, zero/new AObjs,
-    // receiver selection, camera initial values and clocks; invalidates all caches.
+    // Fresh active scene reentry restores resource bind/material fields, zero/new
+    // AObjs, receiver/camera/clocks. Keeps handles and per-instance callback policy.
     Status reset(float skip_frames = 0) noexcept;
-    // Retire only after renderer/effect leases stop; no updates after retirement.
+    // Owner-only whole-runtime retirement, under the same external fences.
     void retire() noexcept;
 private:
     struct Impl;

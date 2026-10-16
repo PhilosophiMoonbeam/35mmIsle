@@ -312,6 +312,13 @@ IsleGameResult isle_game_model_set_transform(IsleGame* game, IsleGameModel* mode
     size_t index, const IsleGameModelTransform* transform);
 IsleGameResult isle_game_model_set_flags(IsleGame* game, IsleGameModel* model,
     size_t index, uint32_t flags);
+/* Nonmutating borrow for transactional preflight: topology, accepted transform,
+ * flags and matrix kind are current; fixed/revision caches may still be stale.
+ * Do not upload those caches until model_nodes computes them after admission.
+ * Borrowed storage expires at model removal, as with model_nodes. */
+IsleGameResult isle_game_model_peek_nodes(IsleGame* game, IsleGameModel* model,
+    const IsleGameModelNode** output, size_t* count);
+/* Computes dirty ordinary local caches before returning the stable borrow. */
 IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
     const IsleGameModelNode** output, size_t* count);
 /* Pure consumed-field preflight, with the same exclusion as validate_transform.

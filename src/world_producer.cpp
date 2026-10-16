@@ -1,7 +1,11 @@
 #include "world_producer.hpp"
+#include "borrowed_model_kernel.hpp"
 #include "graphics_task.hpp"
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
+
+extern "C" void hal_perspective_fast_f(float [4][4], std::uint16_t*, float, float, float, float, float);
 
 namespace isle::world {
 namespace {
@@ -17,19 +21,9 @@ void valid(Range r, std::size_t alignment) {
 }
 struct Producer::Impl {
     struct Instance {
-        std::size_t render_index;
+        std::size_t render_index = 0, slot = no_index;
         std::uint32_t matrices = 0;
-        std::span<const IsleGameModelNode> nodes;
-        const IsleGameModelPlacement* placement = nullptr;
-        std::uint32_t placement_matrix = 0, uploaded_placement_matrix = 0;
-        std::uint64_t placement_revision = 0;
-        std::vector<std::uint64_t> revisions;
-        std::vector<std::uint32_t> material_bases;
-        std::vector<menu::model::MaterialCommands> encoded;
-        std::vector<std::uint64_t> material_revisions;
-        bool resident = false;
-        Instance(std::size_t index, std::uint32_t address, std::span<const IsleGameModelNode> input)
-            : render_index(index),matrices(address),nodes(input) {}
+        menu::model::RootRecipe root = menu::model::RootRecipe::source;
     };
     IsleGame* game;
     IsleGameCamera* camera;
@@ -39,19 +33,31 @@ struct Producer::Impl {
     std::size_t local_payload_end = 0;
     std::array<Range,3> owned;
     std::vector<Instance> instances;
+    std::vector<menu::model::BorrowedBinding> bindings;
+    std::unique_ptr<menu::model::BorrowedKernel> kernel;
     std::array<std::vector<Command>,4> lanes;
+    std::vector<Command> pending;
     std::array<std::size_t,4> counts{};
     std::array<menu::model::ListRange,4> ranges{};
     std::array<Command,9> camera_commands{};
     std::array<std::uint64_t,2> camera_revisions{};
     std::uint64_t reflection_revision = 0, revision = 0, epoch = 0;
     const std::uint32_t* ram = nullptr;
-    bool retired = false;
+    const IsleGameModelPlacement* sky_placement = nullptr;
+    std::uint32_t sky_placement_address = 0, published_sky_placement_address = 0, resident_sky_placement_address = 0;
+    std::uint64_t sky_placement_revision = 0, sky_revision = 0;
+    IsleGameModel* sky_model = nullptr;
+    IsleGameModel* resident_sky_model = nullptr;
+    const IsleGameModelNode* sky_node = nullptr;
+    bool sky_draw = false, sky_resident = false, retired = false;
+    menu::model::WorldMatrix projection;
+    IsleGamePerspective projection_parameters{};
+    bool needs_projection = false, have_projection = false;
     Impl(IsleGame* g, IsleGameCamera* c, const Resources& r, const World& w, ProducerLayout l)
         : game(g),camera(c),resources(r),world(w),layout(l),owned{l.payloads,l.lists,l.materials} {}
     std::uint32_t payload(std::size_t o) const { return static_cast<std::uint32_t>(layout.payloads.offset+o); }
     void command(unsigned lane, std::uint32_t a, std::uint32_t b) {
-        require(counts[lane] < lanes[lane].size(),"World producer command capacity exceeded");
+        require(lane < 4 && counts[lane] < lanes[lane].size(),"World producer command capacity exceeded");
         lanes[lane][counts[lane]++] = {a,b};
     }
     void high(unsigned shift, unsigned bits, std::uint32_t value) { command(0,0xe3000000u|((32-shift-bits)<<8)|(bits-1),value); }
@@ -70,87 +76,57 @@ struct Producer::Impl {
             command(0,0xe7000000,0); high(20,2,0); low(3,29,0x00552078); command(0,0xd9feffff,0);
         }
     }
-    void node(Instance& instance, const menu::Model& model, std::size_t index) {
-        const auto& node = instance.nodes[index];
-        if (node.flags&2) return;
-        const bool placed_root = index == 0 && instance.placement_matrix != 0;
-        if (placed_root) command(0,0xda380000,instance.placement_matrix);
-        command(0,placed_root ? 0xda380001 : 0xda380000,
-                instance.matrices+static_cast<std::uint32_t>(index*64));
-        command(0,0xd5000001,0);
-        if (!(node.flags&1)) {
-            const auto& source = model.nodes[index];
-            for (const auto& p : source.payloads) {
-                require(p.display_list_id == 0,"Beach source payload changed output lane");
-                if (p.pre_list) command(0,0xde000000,p.pre_list);
-                if (!source.materials.empty()) command(0,0xdb060038,instance.material_bases[index]);
-                if (p.draw_list) command(0,0xde000000,p.draw_list);
-            }
-        }
-        for (auto child = node.first_child; child != UINT32_MAX; child = instance.nodes[child].next_sibling) node_visit(instance,model,child);
-        command(0,0xd8380002,64);
-    }
-    void node_visit(Instance& instance, const menu::Model& model, std::size_t index) { node(instance,model,index); }
     void stage(const scene::render::Pass* pass) {
-        counts.fill(0);
-        // Locals keep their original addresses. Only active placements consume
-        // appended payload slots; lists are rebuilt below even without a tick.
-        // Admit the entire topology before camera computation or any RAM write.
-        std::size_t matrix = local_payload_end;
-        const auto owners = world.render_objects();
-        for (auto& instance : instances) {
+        counts.fill(0); sky_draw = false; sky_model = nullptr; sky_placement_address = 0;
+        const auto owners = world.render_objects(); std::size_t active = 0;
+        for (const auto& instance : instances) {
             require(instance.render_index < owners.size(),"World render owners changed before producer retirement");
             const auto& object = owners[instance.render_index];
-            std::uint32_t address = 0;
-            if (object.object && object.model) {
-                native(isle_game_model_placement(game,object.model,&instance.placement));
-                if (instance.placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED) {
-                    require(matrix <= layout.payloads.offset+layout.payloads.size &&
-                            64 <= layout.payloads.offset+layout.payloads.size-matrix,
-                            "World producer active placement payload reservation exhausted");
-                    address = static_cast<std::uint32_t>(matrix);
-                    matrix += 64;
-                }
-            }
-            // A filtered/hidden instance must also lose residency when slots
-            // move: another placement can overwrite its old address meanwhile.
-            if (instance.placement_matrix != address) instance.uploaded_placement_matrix = 0;
-            instance.placement_matrix = address;
-        }
-        const auto render = world.render_objects();
-        for (auto& instance : instances) {
-            require(instance.render_index < render.size(),"World render owners changed before producer retirement");
-            const auto& object = render[instance.render_index];
             if (!object.object || !object.model) continue;
-            if (pass && !pass->includes({object.render_link,object.priority,UINT32_MAX})) continue;
-            IsleGameObjectMetadata metadata{};
-            native(isle_game_object_metadata(game,object.object,&metadata));
-            if (metadata.flags&1u) continue;
-            const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
-            native(isle_game_model_nodes(game,object.model,&nodes,&count));
-            require(count == instance.revisions.size(),"World native model node ownership changed");
-            instance.nodes = {nodes,count};
+            const bool included = !pass || pass->includes({object.render_link,object.priority,UINT32_MAX});
             if (object.sky) {
+                require(instance.render_index == 0,"World direct sky source order changed");
+                sky_model = object.model;
+                native(isle_game_model_placement(game,object.model,&sky_placement));
+                if (sky_placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED) {
+                    require(64 <= layout.payloads.offset+layout.payloads.size-local_payload_end,
+                            "World direct sky placement payload reservation exhausted");
+                    sky_placement_address = static_cast<std::uint32_t>(local_payload_end);
+                }
+                std::size_t count = 0;
+                native(isle_game_model_peek_nodes(game,object.model,&sky_node,&count));
+                require(count == 1 && sky_node->matrix_kind == ISLE_GAME_MODEL_TRANSLATE,
+                        "World direct sky native attachment changed");
+                IsleGameObjectMetadata metadata{}; native(isle_game_object_metadata(game,object.object,&metadata));
+                sky_draw = included && !(metadata.flags&1u);
+            } else {
+                const auto state = world.animation_model(object.instance);
+                require(bool(state) && state.resource_model == object.resource_model,"World instance resource ownership changed");
+                bindings[active++] = {instance.slot,state,object.object,object.model,
+                    menu::model::PoseSource::native,instance.root,included,&world.animation_runtime()};
+            }
+        }
+        require(bool(kernel->stage(std::span(bindings).first(active),sky_placement_address ? 64 : 0)),
+                "World borrowed model kernel rejected native pose/material/capacity");
+        for (const auto& instance : instances) {
+            const auto& object = owners[instance.render_index];
+            if (!object.object || !object.model) continue;
+            if (object.sky) {
+                if (!sky_draw) continue;
                 command(0,0xe7000000,0); high(20,2,0); low(3,29,0x00552048); command(0,0xd9fefffe,0);
-                if (instance.placement_matrix) command(0,0xda380000,instance.placement_matrix);
-                command(0,instance.placement_matrix ? 0xda380001 : 0xda380000,instance.matrices);
+                if (sky_placement_address) command(0,0xda380000,sky_placement_address);
+                command(0,sky_placement_address ? 0xda380001 : 0xda380000,instance.matrices);
                 command(0,0xd5000001,0); command(0,0xde000000,object.display_list);
                 command(0,0xd8380002,64); command(0,0xe7000000,0); command(0,0xd9ffffff,0x00010001);
                 continue;
             }
-            const auto& model = resources.models()[object.resource_model];
-            const auto state = world.animation_model(object.resource_model);
-            std::size_t material = 0;
-            for (std::size_t n = 0; n < model.nodes.size(); ++n) for (const auto resource : model.nodes[n].materials) {
-                require(resource < resources.materials().size() && material < state.materials.size(),"World material ownership changed");
-                require(bool(menu::model::encode_material(resources.materials()[resource],state.materials[material],instance.encoded[material])),
-                        "World material encoder rejected source animation state");
-                ++material;
-            }
+            if (!kernel->draws(instance.slot)) continue;
             const bool fogged = object.callback_identity == 0x800a1530 || object.callback_identity == 0x800a15d8;
             require(fogged || object.callback_identity == 0x80014f98,"Unadmitted source world render callback");
             if (fogged) fog(true);
-            node(instance,model,0);
+            menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
+                std::span(lanes[2]),std::span(lanes[3])},counts,pending};
+            require(bool(kernel->encode(instance.slot,projection,buffer)),"World shared hierarchy encoder rejected source pose");
             if (fogged) fog(false);
         }
         std::size_t cursor = layout.lists.offset+camera_commands.size()*8;
@@ -169,8 +145,7 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, const Resources& reso
     require(game && camera && !world.retired(),"World producer requires live native owners");
     resources.require_live();
     require(world.resources().setup == &resources.setup() && world.resources().sky == &resources.sky() &&
-            world.resources().blocks.data() == resources.blocks().data() &&
-            world.resources().blocks.size() == resources.blocks().size(),
+            world.resources().blocks.data() == resources.blocks().data() && world.resources().blocks.size() == resources.blocks().size(),
             "World producer and native component borrow different resource owners");
     for (std::size_t i = 0; i < s.owned.size(); ++i) {
         valid(s.owned[i],i == 0 ? 64 : 8);
@@ -180,34 +155,34 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, const Resources& reso
         for (const auto& span : resources.installation_spans())
             require(!overlap(s.owned[i],{span.guest_address-0x80000000,span.bytes.size()}),"World producer overlaps source assets");
     }
-    std::size_t matrix = layout.payloads.offset+256, material = layout.materials.offset;
-    std::size_t command_capacity = 128;
-    const auto objects = world.render_objects();
-    s.instances.reserve(objects.size());
+    std::size_t matrix = layout.payloads.offset+256, material = layout.materials.offset, nodes_total = 0;
+    const auto objects = world.render_objects(); s.instances.reserve(objects.size());
+    std::vector<menu::model::KernelSlot> slots; slots.reserve(objects.size());
     for (std::size_t i = 0; i < objects.size(); ++i) {
-        const auto& object = objects[i];
-        const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
-        native(isle_game_model_nodes(game,object.model,&nodes,&count));
-        s.instances.emplace_back(i,static_cast<std::uint32_t>(matrix),std::span(nodes,count));
-        auto& instance = s.instances.back(); instance.revisions.resize(count);
-        // One possible placement command per model; reserve once, not per frame.
-        ++command_capacity;
-        instance.material_bases.resize(count); matrix += count*64;
+        const auto& object = objects[i]; const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+        native(isle_game_model_peek_nodes(game,object.model,&nodes,&count));
+        Impl::Instance instance{i,no_index,static_cast<std::uint32_t>(matrix)};
         if (!object.sky) {
-            const auto& source = resources.models()[object.resource_model];
-            std::size_t materials = 0;
-            for (std::size_t n = 0; n < count; ++n) {
-                const auto size = source.nodes[n].materials.size();
-                if (size) { instance.material_bases[n] = static_cast<std::uint32_t>(material); material += size*(8+256); }
-                materials += size; command_capacity += source.nodes[n].payloads.size()*3+5;
-            }
-            instance.encoded.resize(materials); instance.material_revisions.resize(materials);
+            require(object.resource_model < resources.models().size(),"World resource model escapes borrowed resources");
+            const auto capacity = menu::animation::slot_capacity(resources.models()[object.resource_model]);
+            require(capacity.nodes == count,"World native model capacity differs from admitted source");
+            instance.slot = slots.size();
+            instance.root = nodes[0].matrix_kind == ISLE_GAME_MODEL_TRANSLATE ?
+                menu::model::RootRecipe::translate : menu::model::RootRecipe::source;
+            slots.push_back({capacity,static_cast<std::uint32_t>(matrix),static_cast<std::uint32_t>(material)});
+            material += capacity.material_attachments*264;
         }
+        matrix += count*64; nodes_total += count; s.instances.push_back(instance);
     }
     require(matrix <= layout.payloads.offset+layout.payloads.size && material <= layout.materials.offset+layout.materials.size,
             "World producer payload/material reservation exhausted");
-    s.local_payload_end = matrix;
-    for (auto& lane : s.lanes) lane.resize(command_capacity);
+    s.local_payload_end = matrix; s.bindings.resize(slots.size());
+    for (const auto& source : resources.models()) for (const auto& node : source.nodes)
+        s.needs_projection |= (node.depth_flags & 0xf000u) == 0x8000u;
+    s.kernel = std::make_unique<menu::model::BorrowedKernel>(game,resources.models(),resources.materials(),slots,
+        Range{matrix,layout.payloads.offset+layout.payloads.size-matrix});
+    for (auto& lane : s.lanes) lane.resize(layout.lists.size/8);
+    s.pending.resize(nodes_total*14+objects.size());
 }
 Producer::~Producer() = default;
 ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::uint64_t epoch, const scene::render::Pass* pass) {
@@ -229,17 +204,33 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
         require(camera[i]->kind == (i == 0 ? ISLE_GAME_CAMERA_PERSPECTIVE_FAST : ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL),
                 "World producer requires source camera kinds3,14");
     }
-    s.stage(pass); // All bounded list/material rejection precedes canonical RAM writes.
+    const IsleGameCameraParameters* parameters = nullptr;
+    if (s.needs_projection) {
+        native(isle_game_camera_parameters(s.game,s.camera,&parameters));
+        const auto& perspective = parameters->perspective; const auto& old = s.projection_parameters;
+        if (!s.have_projection || perspective.fovy != old.fovy || perspective.aspect != old.aspect ||
+            perspective.near_plane != old.near_plane || perspective.far_plane != old.far_plane || perspective.scale != old.scale) {
+            s.have_projection = false;
+            std::uint16_t ignored = 0;
+            hal_perspective_fast_f(s.projection.m,&ignored,perspective.fovy,perspective.aspect,perspective.near_plane,
+                perspective.far_plane,perspective.scale);
+            for (const auto& row : s.projection.m) for (float f : row) require(std::isfinite(f),"World projection is not finite");
+            s.projection_parameters = perspective; s.have_projection = true;
+        }
+    }
+    s.stage(pass);
+    require(bool(s.kernel->validate_upload(words,epoch)),"World kernel RAM aliases borrowed state or has invalid extent");
     native(isle_game_camera_compute_all(s.game,s.camera));
     const IsleGameCameraReflection* reflection = nullptr;
     native(isle_game_camera_reflection(s.game,s.camera,1,&reflection));
     std::uint16_t norm = 0; native(isle_game_camera_perspective_normalization(s.game,s.camera,&norm));
+    s.kernel->commit_pose();
+    if (s.sky_model) { std::size_t sky_count = 0; native(isle_game_model_nodes(s.game,s.sky_model,&s.sky_node,&sky_count)); }
     s.camera_commands = {{{0xda380007,s.payload(0)},{0xdb0e0000,norm},{0xdc08000a,s.payload(192)},
         {0xdc08030a,s.payload(208)},{0xda380005,s.payload(64)},{0xda380003,s.payload(128)},
         {0xdb060000,0},{0xd5000001,0},{0xdf000000,0}}};
     graphics::Memory memory(words);
     const bool fresh = s.ram != words.data() || s.epoch != epoch;
-    if (fresh) for (auto& instance : s.instances) instance.resident = false;
     for (std::size_t i = 0; i < camera.size(); ++i) if (fresh || s.camera_revisions[i] != camera[i]->revision) {
         memory.matrix(s.payload(i*64),camera[i]->fixed); s.camera_revisions[i] = camera[i]->revision;
     }
@@ -258,46 +249,17 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
         }
         s.reflection_revision = reflection->revision;
     }
-    const auto render = s.world.render_objects();
-    for (auto& instance : s.instances) {
-        const auto& object = render[instance.render_index];
-        if (!object.object || !object.model) continue;
-        if (pass && !pass->includes({object.render_link,object.priority,UINT32_MAX})) continue;
-        IsleGameObjectMetadata metadata{};
-        native(isle_game_object_metadata(s.game,object.object,&metadata));
-        if (metadata.flags&1u) continue;
-        const bool instance_fresh = !instance.resident;
-        if (instance.placement_matrix &&
-            (instance_fresh || instance.uploaded_placement_matrix != instance.placement_matrix ||
-             instance.placement_revision != instance.placement->revision)) {
-            memory.matrix(instance.placement_matrix,instance.placement->fixed);
-            instance.placement_revision = instance.placement->revision;
-        }
-        instance.uploaded_placement_matrix = instance.placement_matrix;
-        for (std::size_t n = 0; n < instance.nodes.size(); ++n) if (instance_fresh || instance.revisions[n] != instance.nodes[n].revision) {
-            memory.matrix(instance.matrices+static_cast<std::uint32_t>(n*64),instance.nodes[n].fixed);
-            instance.revisions[n] = instance.nodes[n].revision;
-        }
-        if (object.sky) { instance.resident = true; continue; }
-        const auto state = s.world.animation_model(object.resource_model);
-        for (std::size_t n = 0; n < state.nodes.size(); ++n) {
-            const auto& node = state.nodes[n];
-            for (std::size_t j = 0; j < node.material_count; ++j) {
-                const auto index = node.first_material+j;
-                const auto branch = instance.material_bases[n]+static_cast<std::uint32_t>(j*8);
-                const auto body = instance.material_bases[n]+static_cast<std::uint32_t>(node.material_count*8+j*256);
-                if (instance_fresh) { memory.word(branch,0xde010000); memory.word(branch+4,body); }
-                if (!instance_fresh && instance.material_revisions[index] == state.materials[index].revision) continue;
-                const auto& commands = instance.encoded[index];
-                for (std::size_t c = 0; c < commands.count; ++c) {
-                    memory.word(body+static_cast<std::uint32_t>(c*8),commands.words[c].w0);
-                    memory.word(body+static_cast<std::uint32_t>(c*8+4),commands.words[c].w1);
-                }
-                instance.material_revisions[index] = state.materials[index].revision;
-            }
-        }
-        instance.resident = true;
-    }
+    s.kernel->upload(words,epoch);
+    if (s.published_sky_placement_address != s.sky_placement_address) s.sky_resident = false;
+    s.published_sky_placement_address = s.sky_placement_address;
+    if (s.sky_draw) {
+        const bool sky_fresh = fresh || !s.sky_resident || s.resident_sky_model != s.sky_model;
+        if (s.sky_placement_address && (sky_fresh || s.resident_sky_placement_address != s.sky_placement_address ||
+            s.sky_placement_revision != s.sky_placement->revision)) memory.matrix(s.sky_placement_address,s.sky_placement->fixed);
+        if (sky_fresh || s.sky_revision != s.sky_node->revision) memory.matrix(s.instances[0].matrices,s.sky_node->fixed);
+        s.sky_revision = s.sky_node->revision; s.sky_placement_revision = s.sky_placement->revision;
+        s.resident_sky_placement_address = s.sky_placement_address; s.resident_sky_model = s.sky_model; s.sky_resident = true;
+    } else if (fresh) s.sky_resident = false;
     const auto write = [&](std::uint32_t at, Command c) {
         if (fresh || words[at/4] != c.w0) memory.word(at,c.w0);
         if (fresh || words[at/4+1] != c.w1) memory.word(at+4,c.w1);
@@ -308,9 +270,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     s.ram = words.data(); s.epoch = epoch; ++s.revision;
     return {{static_cast<std::uint32_t>(s.layout.lists.offset),static_cast<std::uint32_t>(s.camera_commands.size())},s.ranges,s.owned,s.revision};
 }
-ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch) {
-    return prepare_filtered(words,epoch,nullptr);
-}
+ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch) { return prepare_filtered(words,epoch,nullptr); }
 ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch, const scene::render::Pass& pass) {
     return prepare_filtered(words,epoch,&pass);
 }
@@ -322,8 +282,7 @@ bool Producer::prepare_pass(void* user, std::span<std::uint32_t> words, std::uin
     staged.camera = {frame.camera.address,static_cast<std::size_t>(frame.camera.commands)*2};
     for (unsigned lane = 0; lane < 4; ++lane)
         staged.lanes[lane] = {frame.lanes[lane].address,static_cast<std::size_t>(frame.lanes[lane].commands)*2};
-    out = staged;
-    return true;
+    out = staged; return true;
 }
 std::span<const Range> Producer::reservations() const noexcept { return impl_->owned; }
 void Producer::retire() noexcept { impl_->retired = true; }

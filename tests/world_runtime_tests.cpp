@@ -1,4 +1,5 @@
 #include "world_movement.hpp"
+#include "menu_scene_bridge.h"
 #include <array>
 #include <bit>
 #include <cmath>
@@ -6,6 +7,10 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+
+// Native own-GAME wait boundary, also exercised by the compiled-C engine tests.
+// The callback below retains no owning C++ automatic across this failure fence.
+extern "C" void ohWait(std::int32_t);
 
 namespace {
 namespace w = isle::world;
@@ -156,14 +161,14 @@ void position_sampling_preserves_movement_boundary() {
     require(state.position.x == 60 && state.position.y == 20 && state.position.z == 30 &&
         state.rotation.x == 0.1f && state.rotation.y == 0.2f && state.rotation.z == 0.3f && state.move_speed == 1.5f,
         "position sampling lost animated control pose or next-block speed interpolation");
-    require(world.animation_model(block->resource->road_model).animation_time == 50,"road sample lost duration times moveTime");
+    require(world.animation_model(block->road_instance).animation_time == 50,"road sample lost duration times moveTime");
     const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
     ok(isle_game_model_nodes(n.game,block->road_model,&nodes,&count));
     require(count == 2 && nodes[1].transform.position.x == state.position.x,"sampled CP pose did not reach the native model");
     movement.update_position(*block,0.25f,state.control_time);
     require(world.current() == block && state.block == block && state.move_time == 0.75f &&
         state.position.x == 35 && state.move_speed == 1.25f &&
-        world.animation_model(block->resource->road_model).animation_time == 25 && nodes[1].transform.position.x == 35,
+        world.animation_model(block->road_instance).animation_time == 25 && nodes[1].transform.position.x == 35,
         "signed road resampling changed the movement boundary or lost native pose synchronization");
 }
 void required_consumers_and_sky_follow() {
@@ -211,15 +216,18 @@ void path_tracks_callbacks_and_boundaries() {
     program.commands = {{view(0,8),13,8,0,0},{view(8,8),11,8,0},{view(16,8),17,1,1},{view(24,4),0,0,0}};
     m::Model model; model.receives_effect_callback = true;
     m::Node node; node.scale = {1,1,1}; node.animation = 0; model.nodes.push_back(node);
-    auto result = m::animation::Runtime::create({std::span(&model,1),{},std::span(&program,1),m::no_index,std::span(&path,1)},{});
+    const std::array capacities{m::animation::slot_capacity(model)};
+    auto result = m::animation::Runtime::create({std::span(&model,1),{},std::span(&program,1),m::no_index,std::span(&path,1)},capacities,{});
     require(bool(result),"source opcode13/17 native program admission failed");
-    require(bool(result.runtime->step_model(0)),"path animation update failed");
-    const auto state = result.runtime->model(0);
+    const auto acquired = result.runtime->acquire(0,0,true);
+    require(bool(acquired),"path instance acquisition failed");
+    require(bool(result.runtime->step_model(acquired.handle)),"path animation update failed");
+    const auto state = result.runtime->model(acquired.handle);
     require(std::fabs(state.nodes[0].transform.position.x-15)<0.0001f,"opcode13 did not drive actual shared node transform");
     const auto events = result.runtime->events();
     require(events.size()==1 && events[0].event_id==4 && events[0].argument==3,
         "opcode17 must deliver real typed callback argument, not a noop");
-    require(bool(result.runtime->set_model_speed(0,-0.25f)),"signed source road seek speed rejected");
+    require(bool(result.runtime->set_model_speed(acquired.handle,-0.25f)),"signed source road seek speed rejected");
 }
 void source_control_line_limits() {
     Native n; Input input; Trace trace;
@@ -239,9 +247,118 @@ void source_control_line_limits() {
     require(state.block->index == 2 && !state.block->road_model,
         "source nonnull control slice must permit entry even when no UV model exists");
 }
+void same_resource_world_owners_and_clear() {
+    Native n; Input input; Trace trace;
+    input.blocks[1].road_model = input.blocks[0].road_model;
+    w::World world(n.game,input.view(),trace.callbacks());
+    auto& first = world.blocks()[0];
+    auto& second = world.blocks()[1];
+    const auto first_handle = first.road_instance, second_handle = second.road_instance;
+    const auto* second_nodes = world.animation_model(second_handle).nodes.data();
+    require(first_handle != second_handle &&
+            world.animation_model(first_handle).resource_model == world.animation_model(second_handle).resource_model,
+            "World conflated two real native owners of the same immutable road resource");
+    const auto native_cursor = n.arena.cursor;
+    world.reset_road(first,12);
+    world.reset_road(second,34);
+    require(world.animation_model(first_handle).animation_time == 12 &&
+            world.animation_model(second_handle).animation_time == 34,
+            "World road clock/reset crossed same-resource owners");
+    world.clear_block(first);
+    require(!world.animation_model(first_handle) &&
+            world.animation_model(second_handle).nodes.data() == second_nodes &&
+            world.animation_model(second_handle).animation_time == 34,
+            "World clear failed to retire its handle or invalidated another resource-sharing owner");
+    world.reset_road(second,56);
+    require(world.animation_model(second_handle).animation_time == 56,
+            "surviving same-resource World owner stopped after neighboring retirement");
+    require(n.arena.cursor == native_cursor,
+            "World road seeks/retirement advanced native allocation cursor (not an actor-spawn allocation claim)");
+}
+struct FaultRetirementContext {
+    IsleGame* game = nullptr;
+    w::World* world = nullptr;
+    m::animation::InstanceHandle instance;
+    const m::animation::NodeState* nodes = nullptr;
+    std::array<IsleGameProcess*,3> parked{};
+    unsigned entered = 0, resumed = 0, fault_returned = 0, retired_calls = 0;
+    unsigned live_at_retirement = 99;
+    m::animation::Error runtime_error_at_retirement = m::animation::Error::none;
+    float retained_position = -1;
+    bool world_retired_at_callback = true;
+    static void sleep(IsleGameObject*, void* user) noexcept {
+        auto& c = *static_cast<FaultRetirementContext*>(user);
+        ++c.entered;
+        if (isle_game_wait(c.game,1000) == ISLE_GAME_OK) ++c.resumed;
+    }
+    static void fault(IsleGameObject*, void* user) noexcept {
+        auto& c = *static_cast<FaultRetirementContext*>(user);
+        ohWait(-1);
+        ++c.fault_returned;
+    }
+    static void retired(IsleGameObject*, void* user) noexcept {
+        auto& c = *static_cast<FaultRetirementContext*>(user);
+        ++c.retired_calls;
+        c.live_at_retirement = 0;
+        for (auto* process : c.parked) {
+            IsleGameSourceCallback source = nullptr;
+            if (isle_game_process_source_function(c.game,process,&source) == ISLE_GAME_OK)
+                ++c.live_at_retirement;
+        }
+        c.world_retired_at_callback = c.world->retired();
+        if (!c.world_retired_at_callback) {
+            c.runtime_error_at_retirement = c.world->animation_model(c.instance).status.error;
+            c.retained_position = c.nodes[1].transform.position.x;
+        }
+    }
+};
+void faulted_owner_retirement_joins_before_context_release() {
+    Native n; Input input; Trace trace;
+    w::World world(n.game,input.view(),trace.callbacks());
+    auto& block = world.blocks()[0];
+    FaultRetirementContext context;
+    context.game = n.game; context.world = &world; context.instance = block.road_instance;
+    context.nodes = world.animation_model(context.instance).nodes.data();
+    ok(isle_game_object_set_retire_callback(n.game,block.road_object,FaultRetirementContext::retired,&context));
+    for (std::size_t i = 0; i < context.parked.size(); ++i)
+        ok(isle_game_add_process(n.game,block.road_object,FaultRetirementContext::sleep,&context,
+                                ISLE_GAME_STACKFUL,static_cast<std::uint32_t>(i),&context.parked[i]));
+    ok(isle_game_tick(n.game));
+    require(context.entered == 3 && context.resumed == 0,"three real continuations did not park before fault");
+    IsleGameObject* fault_owner = nullptr;
+    IsleGameProcess* fault_process = nullptr;
+    ok(isle_game_add_object(n.game,900,0,0,nullptr,nullptr,&fault_owner));
+    ok(isle_game_add_process(n.game,fault_owner,FaultRetirementContext::fault,&context,
+                            ISLE_GAME_SYNCHRONOUS,11,&fault_process));
+    require(isle_game_tick(n.game) == ISLE_GAME_EXECUTION_FAILURE && context.fault_returned == 0,
+            "illegal source wait did not latch a terminal native fault");
+    require(isle_menu_end_processes(n.game,block.road_object) == ISLE_GAME_EXECUTION_FAILURE,
+            "faulted end_processes unexpectedly concealed the latched failure");
+    unsigned survivors = 0;
+    for (auto* process : context.parked) {
+        IsleGameSourceCallback source = nullptr;
+        if (isle_game_process_source_function(n.game,process,&source) == ISLE_GAME_OK) ++survivors;
+    }
+    require(survivors == 2 && context.retired_calls == 0,
+            "faulted helper did not end exactly one process while retaining its owner/context");
+    // No graphics have been submitted by this native fixture. World owns its
+    // Runtime and keeps it, callback userdata and retiring storage through erase.
+    world.retire();
+    require(context.retired_calls == 1 && context.live_at_retirement == 0 && context.resumed == 0 &&
+            !context.world_retired_at_callback && context.runtime_error_at_retirement == m::animation::Error::handle &&
+            context.retained_position == 10 && world.retired() && !world.error().empty(),
+            "whole-object fault cleanup released context/animator storage before all real parked processes joined");
+    require(isle_game_delete_object(n.game,fault_owner) == ISLE_GAME_EXECUTION_FAILURE,
+            "fault owner deletion must preserve the terminal failure, not reset/retry it");
+    IsleGameCounts counts{}; ok(isle_game_counts(n.game,&counts));
+    require(counts.objects == 0 && counts.processes == 0 && counts.models == 0,
+            "latched-fault retirement left an actual native owner or continuation alive");
+}
 }
 int main() {
     try { transitions_and_retirement(); movement_boundary_rotation_and_stop(); position_sampling_preserves_movement_boundary(); required_consumers_and_sky_follow(); path_tracks_callbacks_and_boundaries(); source_control_line_limits();
+        same_resource_world_owners_and_clear();
+        faulted_owner_retirement_joins_before_context_release();
         std::cout << "native world lifecycle/movement tests passed\n"; return 0; }
     catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

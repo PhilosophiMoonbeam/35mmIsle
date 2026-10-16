@@ -35,20 +35,28 @@ void run(const char* path) {
     auto catalog = m::hydrate(snapshot);
     require(bool(catalog),"private menu resource hydration failed");
     const a::CameraState initial_camera{{0,0,100},{0,0,0},0,45,true,true,0,{}};
-    auto made = a::Runtime::create(*catalog.catalog,initial_camera);
+    std::vector<a::SlotCapacity> capacities;
+    for (const auto& model : catalog.catalog->models()) capacities.push_back(a::slot_capacity(model));
+    auto made = a::Runtime::create(*catalog.catalog,capacities,initial_camera);
     require(bool(made),"actual menu animation graph rejected");
     auto& runtime = *made.runtime;
-    require(runtime.model_count() == 5 && catalog.catalog->animations().size() == 116,"full actual model/116-stream resource boundary");
+    std::vector<a::InstanceHandle> instances;
+    for (std::size_t i = 0; i < capacities.size(); ++i) {
+        const auto acquired = runtime.acquire(i,i,catalog.catalog->models()[i].receives_effect_callback);
+        require(bool(acquired),"actual title instance acquisition");
+        instances.push_back(acquired.handle);
+    }
+    require(runtime.slot_count() == 5 && catalog.catalog->animations().size() == 116,"full actual model/116-stream resource boundary");
     std::size_t nodes = 0, materials = 0;
-    for (std::size_t i = 0; i < runtime.model_count(); ++i) {
-        nodes += runtime.model(i).nodes.size(); materials += runtime.model(i).materials.size();
+    for (std::size_t i = 0; i < runtime.slot_count(); ++i) {
+        nodes += runtime.model(instances[i]).nodes.size(); materials += runtime.model(instances[i]).materials.size();
     }
     require(nodes == 292 && materials == 10,"all292 nodes and10 material attachments required");
-    std::vector<std::vector<a::Transform>> prior(runtime.model_count());
-    std::vector<std::vector<std::uint64_t>> material_revision(runtime.model_count());
-    for (std::size_t i = 0; i < runtime.model_count(); ++i) {
-        for (const auto& node : runtime.model(i).nodes) prior[i].push_back(node.transform);
-        for (const auto& material : runtime.model(i).materials) material_revision[i].push_back(material.revision);
+    std::vector<std::vector<a::Transform>> prior(runtime.slot_count());
+    std::vector<std::vector<std::uint64_t>> material_revision(runtime.slot_count());
+    for (std::size_t i = 0; i < runtime.slot_count(); ++i) {
+        for (const auto& node : runtime.model(instances[i]).nodes) prior[i].push_back(node.transform);
+        for (const auto& material : runtime.model(instances[i]).materials) material_revision[i].push_back(material.revision);
     }
     std::size_t event_index = 0, transform_changes = 0, material_changes = 0, camera_changes = 0;
     bool prior_transform_changed = false, consecutive_transform_changes = false;
@@ -59,9 +67,9 @@ void run(const char* path) {
         bool frame_transform_changed = false;
         // Deliberately explicit caller schedule; production uses actual OM order.
         // No runtime-wide implicit catalog-order tick is provided.
-        for (std::size_t i = 0; i < runtime.model_count(); ++i) {
-            require(bool(runtime.step_model(i)),"actual persistent model update failed");
-            const auto state = runtime.model(i);
+        for (std::size_t i = 0; i < runtime.slot_count(); ++i) {
+            require(bool(runtime.step_model(instances[i])),"actual persistent model update failed");
+            const auto state = runtime.model(instances[i]);
             for (std::size_t n = 0; n < state.nodes.size(); ++n) {
                 const auto now = state.nodes[n].transform;
                 const auto old = prior[i][n];
@@ -78,7 +86,7 @@ void run(const char* path) {
             for (const auto& event : runtime.events()) {
                 require(event_index < std::size(expected),"unexpected real callback (including sourceNULL stream leakage)");
                 const auto& e = expected[event_index];
-                require(frame == e.frame && event.model == e.model && event.node == e.node &&
+                require(frame == e.frame && event.instance == instances[e.model] && event.node == e.node &&
                         event.event_id == e.id && event.argument == e.arg && event.command_address == e.address &&
                         event.source_order == event_index,"actual callback source order/time/receiver/encoding mismatch");
                 ++event_index;
@@ -89,7 +97,7 @@ void run(const char* path) {
         if (different(camera.eye,prior_camera.eye) || different(camera.at,prior_camera.at) ||
             camera.roll != prior_camera.roll || camera.fov_y != prior_camera.fov_y) ++camera_changes;
         prior_camera = camera;
-        if (frame == 60) { replay_pose = runtime.model(0).nodes[1].transform; replay_camera = camera; }
+        if (frame == 60) { replay_pose = runtime.model(instances[0]).nodes[1].transform; replay_camera = camera; }
         consecutive_transform_changes |= frame_transform_changed && prior_transform_changed;
         prior_transform_changed = frame_transform_changed;
     }
@@ -98,10 +106,10 @@ void run(const char* path) {
             "actual consecutive model/material/camera progression absent");
     require(bool(runtime.reset()),"actual fresh reentry reset failed");
     for (unsigned frame = 0; frame <= 60; ++frame) {
-        for (std::size_t i = 0; i < runtime.model_count(); ++i) require(bool(runtime.step_model(i)),"reentry model update failed");
+        for (std::size_t i = 0; i < runtime.slot_count(); ++i) require(bool(runtime.step_model(instances[i])),"reentry model update failed");
         require(bool(runtime.step_camera()),"reentry camera update failed");
     }
-    const auto replayed = runtime.model(0).nodes[1].transform;
+    const auto replayed = runtime.model(instances[0]).nodes[1].transform;
     require(!different(replayed.position,replay_pose.position) && !different(replayed.rotation,replay_pose.rotation) &&
             !different(replayed.scale,replay_pose.scale) && !different(runtime.camera().eye,replay_camera.eye) &&
             !different(runtime.camera().at,replay_camera.at) && runtime.camera().roll == replay_camera.roll &&

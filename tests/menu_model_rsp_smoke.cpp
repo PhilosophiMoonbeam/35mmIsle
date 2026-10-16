@@ -156,7 +156,8 @@ std::array<unsigned,292> live_matrix_lanes(const isle::menu::Model& source,
 }
 void placement_lists(std::span<const std::uint32_t> words, const isle::menu::model::Frame& frame,
                      const isle::menu::Catalog& catalog,
-                     const isle::menu::animation::Runtime& animation, bool require_all_models = false) {
+                     const isle::menu::animation::Runtime& animation,
+                     std::span<const menu::animation::InstanceHandle> handles, bool require_all_models = false) {
     // Consume the actual producer's flat lists. Payload calls remain opaque;
     // this checks logical modelview scope, not incidental command-word counts.
     constexpr std::uint32_t local_base = 0x110000 + 128;
@@ -200,7 +201,7 @@ void placement_lists(std::span<const std::uint32_t> words, const isle::menu::mod
             "model leaked an incomplete root prefix or stack scope into its sibling object/lane");
     }
     for (std::size_t m = 0; m < uses.size(); ++m) {
-        const auto expected = live_matrix_lanes(catalog.models()[m],animation.model(m))[0];
+        const auto expected = live_matrix_lanes(catalog.models()[m],animation.model(handles[m]))[0];
         require(!require_all_models || expected != 0,"all-visible source pose lost an actual model's matrix-use coverage");
         for (unsigned lane = 0; lane < frame.lanes.size(); ++lane)
             require(uses[m][lane] == ((expected >> lane) & 1u),
@@ -209,6 +210,7 @@ void placement_lists(std::span<const std::uint32_t> words, const isle::menu::mod
 }
 void kind44_inheritance(std::span<const std::uint32_t> words, const isle::menu::model::Frame& frame,
                         const isle::menu::Catalog& catalog, const isle::menu::animation::Runtime& animation,
+                        std::span<const menu::animation::InstanceHandle> handles,
                         const IsleGamePerspective& perspective, float actor_x, bool require_all_nodes = false) {
     float projection[4][4];
     std::uint16_t ignored = 0;
@@ -217,8 +219,8 @@ void kind44_inheritance(std::span<const std::uint32_t> words, const isle::menu::
     std::uint32_t base = 0x110000 + 128;
     unsigned reached = 0;
     for (std::size_t m = 0; m < catalog.models().size(); ++m) {
-        const auto poses = animation.model(m).nodes;
-        const auto used = live_matrix_lanes(catalog.models()[m],animation.model(m));
+        const auto poses = animation.model(handles[m]).nodes;
+        const auto used = live_matrix_lanes(catalog.models()[m],animation.model(handles[m]));
         std::array<float,292> inherited_x{};
         for (std::size_t n = 0; n < poses.size(); ++n)
             inherited_x[n] = (poses[n].parent == isle::menu::no_index ? actor_x :
@@ -268,17 +270,29 @@ int run(const std::filesystem::path& input) {
     require(bool(hydrated),"private resource hydration rejected");
     auto& catalog = *hydrated.catalog;
     World world;
+    std::array<menu::animation::SlotCapacity,5> capacities;
+    for (std::size_t m = 0; m < capacities.size(); ++m) capacities[m] = menu::animation::slot_capacity(catalog.models()[m]);
     auto animated = menu::animation::Runtime::create(
-        catalog, {{1500,0,0},{0,0,0},0,30,true,true,0,{}});
+        catalog, capacities, {{1500,0,0},{0,0,0},0,30,true,true,0,{}});
     require(bool(animated),"animation creation rejected");
     auto& animation = *animated.runtime;
+    std::array<menu::animation::InstanceHandle,5> handles;
+    std::array<menu::model::Binding,5> bindings;
+    for (std::size_t m = 0; m < handles.size(); ++m) {
+        const auto acquired = animation.acquire(m,m,catalog.models()[m].receives_effect_callback);
+        require(bool(acquired),"title instance acquisition rejected"); handles[m] = acquired.handle;
+        IsleGameModel* model = nullptr;
+        require(bool(menu::model::attach_title_model(world.game,world.objects[m],catalog.models()[m],
+            animation.model(handles[m]),&model)),"title native attachment rejected");
+        bindings[m] = {handles[m],world.objects[m],model};
+    }
     const std::array<menu::RamRange,5> reserved{{{top,0x10000},{stack,0x10000},
         {0x200000,0x40000},{depth,target_bytes},{guard,256}}};
     {
         auto tiny_layout = menu::model::Layout{};
         tiny_layout.lists.size = 64;
         auto tiny = menu::model::Producer::create(world.game,world.camera,catalog,animation,
-            world.objects,tiny_layout,reserved);
+            bindings,tiny_layout,reserved);
         require(bool(tiny),"bounded producer construction rejected before capacity exercise");
         const IsleGameCameraMatrix* matrix = nullptr;
         native(isle_game_camera_matrix(world.game,world.camera,0,&matrix));
@@ -288,7 +302,7 @@ int run(const std::filesystem::path& input) {
         std::vector<std::uint32_t> ram(menu::rdram_size / 4,0x11223344);
         const auto rejected = tiny.producer->prepare(ram,1);
         require(!rejected && rejected.status.error == menu::model::Error::extent &&
-            matrix->revision == revision && tiny.producer->world_nodes(0).empty() &&
+            matrix->revision == revision && tiny.producer->world_nodes(handles[0]).empty() &&
             std::all_of(ram.begin(),ram.end(),[](auto v) { return v == 0x11223344; }),
             "capacity exhaustion published RAM/native camera/world state");
         const IsleGamePerspective restored{30,4.0f / 3.0f,47,12800,1};
@@ -298,29 +312,29 @@ int run(const std::filesystem::path& input) {
         auto exact_layout = menu::model::Layout{};
         exact_layout.payloads.size = 128 + 292 * 64;
         auto exact = menu::model::Producer::create(world.game,world.camera,catalog,animation,
-            world.objects,exact_layout,reserved);
+            bindings,exact_layout,reserved);
         require(bool(exact),"disabled exact-capacity producer construction failed");
         std::vector<std::uint32_t> ram(menu::rdram_size / 4,0x11223344);
         require(bool(exact.producer->prepare(ram,1)),"disabled exact-capacity prepare failed");
         const auto baseline = ram;
-        const auto old_world = exact.producer->world_nodes(0)[0];
-        const auto old_local = exact.producer->native_nodes(0)[0];
+        const auto old_world = exact.producer->world_nodes(handles[0])[0];
+        const auto old_local = exact.producer->native_nodes(handles[0])[0];
         IsleGameModelTransform t{{3,4,5},{0,0.4f,0},{1,1,1}};
-        auto* handle = exact.producer->native_model(0);
+        auto* handle = exact.producer->native_model(handles[0]);
         native(isle_game_model_set_placement(world.game,handle,ISLE_GAME_MODEL_PLACEMENT_RT,&t));
         const IsleGameModelPlacement* placement = nullptr;
         native(isle_game_model_placement(world.game,handle,&placement));
         const auto accepted = *placement;
         require(!exact.producer->prepare(ram,1) && ram == baseline &&
-            std::memcmp(&old_world,&exact.producer->world_nodes(0)[0],sizeof(old_world)) == 0 &&
-            exact.producer->native_nodes(0)[0].revision == old_local.revision &&
+            std::memcmp(&old_world,&exact.producer->world_nodes(handles[0])[0],sizeof(old_world)) == 0 &&
+            exact.producer->native_nodes(handles[0])[0].revision == old_local.revision &&
             placement->revision == accepted.revision && placement->mode == ISLE_GAME_MODEL_PLACEMENT_RT,
             "payload rejection changed RAM/world/local or rolled back accepted native placement");
         native(isle_game_model_set_placement(world.game,handle,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
         require(bool(exact.producer->prepare(ram,1)) && ram == baseline,
             "disable did not restore exact-capacity admission/old local payload addresses");
     }
-    auto created = menu::model::Producer::create(world.game,world.camera,catalog,animation,world.objects,{},reserved);
+    auto created = menu::model::Producer::create(world.game,world.camera,catalog,animation,bindings,{},reserved);
     require(bool(created),"model producer creation rejected");
     auto& producer = *created.producer;
     {
@@ -328,24 +342,24 @@ int run(const std::filesystem::path& input) {
         // model and all three kind44 nodes, not merely those visible when frozen.
         IsleGameModelTransform placed{{70,-25,35},{0,1.57079637f,0},{-0.8f,1.2f,0.7f}};
         for (std::size_t m = 0; m < 5; ++m)
-            native(isle_game_model_set_placement(world.game,producer.native_model(m),
+            native(isle_game_model_set_placement(world.game,producer.native_model(handles[m]),
                 ISLE_GAME_MODEL_PLACEMENT_RTS,&placed));
         std::vector<std::uint32_t> source_pose(menu::rdram_size / 4,0x11223344);
         const auto frame = producer.prepare(source_pose,16);
         require(bool(frame),"all-visible source-pose placement preparation failed");
-        placement_lists(source_pose,frame.frame,catalog,animation,true);
+        placement_lists(source_pose,frame.frame,catalog,animation,handles,true);
         const IsleGameCameraParameters* parameters = nullptr;
         native(isle_game_camera_parameters(world.game,world.camera,&parameters));
-        kind44_inheritance(source_pose,frame.frame,catalog,animation,parameters->perspective,
+        kind44_inheritance(source_pose,frame.frame,catalog,animation,handles,parameters->perspective,
             placed.scale.x,true);
         for (std::size_t m = 0; m < 5; ++m)
-            native(isle_game_model_set_placement(world.game,producer.native_model(m),
+            native(isle_game_model_set_placement(world.game,producer.native_model(handles[m]),
                 ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
     }
     rsp::CanonicalExecutor executor(true,{12000000,4 * 1024 * 1024});
     const auto arena_used = world.arena.cursor;
     auto step = [&] {
-        for (std::size_t m = 0; m < 5; ++m) require(bool(animation.step_model(m)),"model animation rejected");
+        for (const auto handle : handles) require(bool(animation.step_model(handle)),"model animation rejected");
         require(bool(animation.step_camera()),"camera animation rejected");
         camera_pose(world,animation.camera());
     };
@@ -363,7 +377,7 @@ int run(const std::filesystem::path& input) {
             for (unsigned i = 0; i < 64; ++i) words[guard / 4 + i] = 0x13579bdf;
         }
         const auto before = std::vector<std::uint32_t>(words.begin(),words.end());
-        const auto nodes_before = producer.native_nodes(0);
+        const auto nodes_before = producer.native_nodes(handles[0]);
         const auto first_revision = nodes_before.empty() ? 0 : nodes_before[0].revision;
         const auto invalid = producer.prepare(words.first(words.size() - 1),1);
         require(!invalid && std::equal(words.begin(),words.end(),before.begin()),"invalid request changed RAM");
@@ -374,7 +388,7 @@ int run(const std::filesystem::path& input) {
         float placement_x = 1;
         for (std::size_t m = 0; m < 5; ++m) {
             const IsleGameModelPlacement* placement = nullptr;
-            native(isle_game_model_placement(world.game,producer.native_model(m),&placement));
+            native(isle_game_model_placement(world.game,producer.native_model(handles[m]),&placement));
             if (placement->mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED) continue;
             const auto x = placement->mode == ISLE_GAME_MODEL_PLACEMENT_RTS ? placement->transform.scale.x : 1.0f;
             if (active_placements++) require(x == placement_x,"GPU proof phase has unequal placement X inputs");
@@ -382,10 +396,10 @@ int run(const std::filesystem::path& input) {
         }
         if (active_placements) {
             require(active_placements == 5,"GPU proof phase must exercise all five accepted placements");
-            placement_lists(words,frame.frame,catalog,animation);
+            placement_lists(words,frame.frame,catalog,animation,handles);
             const IsleGameCameraParameters* parameters = nullptr;
             native(isle_game_camera_parameters(world.game,world.camera,&parameters));
-            kind44_inheritance(words,frame.frame,catalog,animation,parameters->perspective,placement_x);
+            kind44_inheritance(words,frame.frame,catalog,animation,handles,parameters->perspective,placement_x);
         }
         if (expect_all_hidden) for (const auto lane : frame.frame.lanes)
             require(lane.commands == 1 && words[lane.address / 4] == 0xdf000000 &&
@@ -427,8 +441,8 @@ int run(const std::filesystem::path& input) {
     const auto visible_generation = animation.generation();
     std::array<std::uint32_t,5> visible_flags{};
     for (std::size_t m = 0; m < visible_flags.size(); ++m) {
-        visible_flags[m] = animation.model(m).object_flags;
-        require(bool(animation.set_object_flags(m,visible_flags[m] | 1u)),"hide rejected");
+        visible_flags[m] = animation.model(handles[m]).object_flags;
+        require(bool(animation.set_object_flags(handles[m],visible_flags[m] | 1u)),"hide rejected");
     }
     require(animation.generation() == visible_generation,"visibility edit advanced animation");
     const auto hidden = execute(false,true); // Same RAM/epoch, no step/synchronize.
@@ -438,7 +452,7 @@ int run(const std::filesystem::path& input) {
             hidden.depth[i] == std::byte((i & 1) ? 0xfc : 0xff),
             "hidden model payloads still changed actual RDP color/depth");
     for (std::size_t m = 0; m < visible_flags.size(); ++m)
-        require(bool(animation.set_object_flags(m,visible_flags[m])),"show rejected");
+        require(bool(animation.set_object_flags(handles[m],visible_flags[m])),"show rejected");
     require(animation.generation() == visible_generation,"visibility restore advanced animation");
     const auto shown = execute(false); // Flags alone must invalidate every cached lane.
     require(initial.triangles == shown.triangles && initial.color == shown.color && initial.depth == shown.depth,
@@ -450,15 +464,15 @@ int run(const std::filesystem::path& input) {
     // Consume the gameplay binding APIs over real immutable ROM programs.
     // Keep the camera fixed: disabled model/material tracks must not move or
     // recolor a completed frame merely because the source clock is stepped.
-    for (std::size_t m = 0; m < animation.model_count(); ++m) {
+    for (std::size_t m = 0; m < handles.size(); ++m) {
         const std::vector<std::size_t> disabled(catalog.models()[m].nodes.size(),menu::no_index);
-        require(bool(animation.bind_model(m,disabled)),"disable real model bindings rejected");
-        require(bool(animation.reset_materials(m)),"restore real material resources rejected");
+        require(bool(animation.bind_model(handles[m],disabled)),"disable real model bindings rejected");
+        require(bool(animation.reset_materials(handles[m])),"restore real material resources rejected");
     }
     const auto frozen = execute(false);
     for (unsigned frame = 0; frame < 180; ++frame)
-        for (std::size_t m = 0; m < animation.model_count(); ++m)
-            require(bool(animation.step_model(m)),"disabled real model step rejected");
+        for (const auto handle : handles)
+            require(bool(animation.step_model(handle)),"disabled real model step rejected");
     const auto still_frozen = execute(false);
     require(frozen.triangles == still_frozen.triangles && frozen.color == still_frozen.color &&
         frozen.depth == still_frozen.depth,"disabled real bindings changed completed geometry/color/depth");
@@ -466,22 +480,22 @@ int run(const std::filesystem::path& input) {
     std::array<std::vector<IsleGameModelNode>,5> local_before;
     std::array<std::vector<menu::model::WorldMatrix>,5> worlds_before;
     for (std::size_t m = 0; m < 5; ++m) {
-        const auto nodes = producer.native_nodes(m);
+        const auto nodes = producer.native_nodes(handles[m]);
         local_before[m].assign(nodes.begin(),nodes.end());
-        const auto worlds = producer.world_nodes(m);
+        const auto worlds = producer.world_nodes(handles[m]);
         worlds_before[m].assign(worlds.begin(),worlds.end());
     }
     IsleGameModelTransform actor{{70,-25,35},{0,1.57079637f,0},
         {std::numeric_limits<float>::quiet_NaN(),std::numeric_limits<float>::infinity(),0}};
     auto set_placement = [&](IsleGameModelPlacementMode mode) {
         for (std::size_t m = 0; m < 5; ++m)
-            native(isle_game_model_set_placement(world.game,producer.native_model(m),mode,
+            native(isle_game_model_set_placement(world.game,producer.native_model(handles[m]),mode,
                 mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED ? nullptr : &actor));
     };
     auto check_locals = [&] {
         require(animation.generation() == placement_generation,"placement advanced animation generation");
         for (std::size_t m = 0; m < 5; ++m) {
-            const auto nodes = producer.native_nodes(m);
+            const auto nodes = producer.native_nodes(handles[m]);
             require(nodes.size() == local_before[m].size(),"placement inserted a synthetic source node");
             for (std::size_t n = 0; n < nodes.size(); ++n)
                 require(nodes[n].revision == local_before[m][n].revision &&
@@ -494,7 +508,7 @@ int run(const std::filesystem::path& input) {
     check_locals();
     for (std::size_t m = 0; m < 5; ++m)
         for (std::size_t n = 0; n < worlds_before[m].size(); ++n)
-            placement_world(worlds_before[m][n],producer.world_nodes(m)[n],actor,false);
+            placement_world(worlds_before[m][n],producer.world_nodes(handles[m])[n],actor,false);
     const auto rt_placed = execute(false);
     require(rt_placed.triangles != still_frozen.triangles && rt_placed.color != still_frozen.color &&
         rt_placed.depth != still_frozen.depth,"frozen animation RT placement did not change actual geometry/color/depth");
@@ -504,7 +518,7 @@ int run(const std::filesystem::path& input) {
     check_locals();
     for (std::size_t m = 0; m < 5; ++m)
         for (std::size_t n = 0; n < worlds_before[m].size(); ++n)
-            placement_world(worlds_before[m][n],producer.world_nodes(m)[n],actor,true);
+            placement_world(worlds_before[m][n],producer.world_nodes(handles[m])[n],actor,true);
     const auto rts_placed = execute(false);
     require(rts_placed.triangles != rt_placed.triangles && rts_placed.color != rt_placed.color &&
         rts_placed.depth != rt_placed.depth,"negative/nonuniform RTS placement did not change completed GPU outputs");
@@ -512,7 +526,7 @@ int run(const std::filesystem::path& input) {
         std::vector<std::uint32_t> fresh(menu::rdram_size / 4,0x89abcdef);
         auto frame = producer.prepare(fresh,17);
         require(bool(frame),"fresh pointer/epoch active-placement preparation failed");
-        placement_lists(fresh,frame.frame,catalog,animation);
+        placement_lists(fresh,frame.frame,catalog,animation,handles);
         const auto installed = fresh;
         for (const auto range : producer.reservations())
             std::fill(fresh.begin() + static_cast<std::ptrdiff_t>(range.offset / 4),
@@ -521,32 +535,32 @@ int run(const std::filesystem::path& input) {
         require(bool(frame),"same pointer/new epoch placement preparation failed");
         const IsleGameCameraParameters* camera = nullptr;
         native(isle_game_camera_parameters(world.game,world.camera,&camera));
-        kind44_inheritance(fresh,frame.frame,catalog,animation,camera->perspective,actor.scale.x);
+        kind44_inheritance(fresh,frame.frame,catalog,animation,handles,camera->perspective,actor.scale.x);
         constexpr auto matrix_end = (0x110000 + 128 + (292 + 5) * 64) / 4;
         require(std::equal(fresh.begin() + 0x110000 / 4,fresh.begin() + matrix_end,
             installed.begin() + 0x110000 / 4),"new epoch failed to republish active placement/local payloads");
         const auto stable_ram = fresh;
         const IsleGameModelPlacement* old = nullptr;
-        native(isle_game_model_placement(world.game,producer.native_model(0),&old));
+        native(isle_game_model_placement(world.game,producer.native_model(handles[0]),&old));
         const auto revision = old->revision;
         set_placement(ISLE_GAME_MODEL_PLACEMENT_RTS);
         require(bool(producer.prepare(fresh,18)) && fresh == stable_ram && old->revision == revision,
             "identical placement input invalidated resident command/matrix caches");
         auto distinctive = actor;
         distinctive.position.x += 3;
-        native(isle_game_model_set_placement(world.game,producer.native_model(1),
+        native(isle_game_model_set_placement(world.game,producer.native_model(handles[1]),
             ISLE_GAME_MODEL_PLACEMENT_RTS,&distinctive));
         require(bool(producer.prepare(fresh,18)),"distinctive placement preparation failed");
         const IsleGameModelPlacement* second = nullptr;
-        native(isle_game_model_placement(world.game,producer.native_model(2),&second));
+        native(isle_game_model_placement(world.game,producer.native_model(handles[2]),&second));
         const auto unchanged_revision = second->revision;
-        native(isle_game_model_set_placement(world.game,producer.native_model(0),
+        native(isle_game_model_set_placement(world.game,producer.native_model(handles[0]),
             ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
         require(bool(producer.prepare(fresh,18)),"active placement compaction failed");
         constexpr auto placement_base = 0x110000 + 128 + 292 * 64;
         for (std::size_t m = 1; m < 5; ++m) {
             const IsleGameModelPlacement* active = nullptr;
-            native(isle_game_model_placement(world.game,producer.native_model(m),&active));
+            native(isle_game_model_placement(world.game,producer.native_model(handles[m]),&active));
             for (unsigned row = 0; row < 4; ++row) for (unsigned col = 0; col < 4; ++col)
                 require(fresh[(placement_base + (m - 1) * 64) / 4 + row * 4 + col] ==
                     active->fixed.m[row][col],"compacted address reused stale equal-revision placement payload");
@@ -558,18 +572,18 @@ int run(const std::filesystem::path& input) {
         set_placement(ISLE_GAME_MODEL_PLACEMENT_RTS);
         require(bool(producer.prepare(fresh,18)),"placement re-enable after compaction failed");
         const auto ram_before_failure = fresh;
-        const auto world_before_failure = producer.world_nodes(0)[0];
+        const auto world_before_failure = producer.world_nodes(handles[0])[0];
         const auto camera_before_failure = *camera;
         const IsleGameCameraMatrix* camera_matrix = nullptr;
         native(isle_game_camera_matrix(world.game,world.camera,1,&camera_matrix));
         const auto camera_revision = camera_matrix->revision;
         distinctive = actor; distinctive.position.x += 1;
-        native(isle_game_model_set_placement(world.game,producer.native_model(0),
+        native(isle_game_model_set_placement(world.game,producer.native_model(handles[0]),
             ISLE_GAME_MODEL_PLACEMENT_RTS,&distinctive));
         const IsleGameLookAt invalid_fixed_view{{40000,0,0},{40000,0,-1},{0,1,0}};
         native(isle_game_camera_set_look_at(world.game,world.camera,&invalid_fixed_view));
         require(!producer.prepare(fresh,18) && fresh == ram_before_failure &&
-            std::memcmp(&world_before_failure,&producer.world_nodes(0)[0],sizeof(world_before_failure)) == 0 &&
+            std::memcmp(&world_before_failure,&producer.world_nodes(handles[0])[0],sizeof(world_before_failure)) == 0 &&
             camera_matrix->revision == camera_revision && old->transform.position.x == distinctive.position.x,
             "camera rejection partially published worlds/RAM/cache or rolled back accepted placement");
         native(isle_game_camera_set_look_at(world.game,world.camera,&camera_before_failure.look_at));
@@ -589,10 +603,10 @@ int run(const std::filesystem::path& input) {
         placement_restored.color == still_frozen.color && placement_restored.depth == still_frozen.depth,
         "disabled placement failed exact completed geometry/color/depth restoration");
     for (std::size_t m = 0; m < 5; ++m)
-        require(std::memcmp(worlds_before[m].data(),producer.world_nodes(m).data(),
+        require(std::memcmp(worlds_before[m].data(),producer.world_nodes(handles[m]).data(),
             worlds_before[m].size() * sizeof(menu::model::WorldMatrix)) == 0,
             "disabled placement did not exactly restore attachment worlds");
-    for (std::size_t m = 0; m < animation.model_count(); ++m) {
+    for (std::size_t m = 0; m < handles.size(); ++m) {
         const auto& source = catalog.models()[m];
         std::vector<std::size_t> models,materials;
         models.reserve(source.nodes.size());
@@ -602,12 +616,12 @@ int run(const std::filesystem::path& input) {
                 materials.push_back(k < node.material_animations.size() ?
                     node.material_animations[k] : menu::no_index);
         }
-        require(bool(animation.bind_model(m,models,0,menu::animation::ModelBindPose::restore)),
+        require(bool(animation.bind_model(handles[m],models,0,menu::animation::ModelBindPose::restore)),
                 "real model rebind rejected");
-        require(bool(animation.bind_materials(m,materials)),"real material rebind rejected");
-        require(bool(animation.set_model_speed(m,source.animation_speed)) &&
-                bool(animation.set_texture_speed(m,source.animation_speed)),"real rebound speed rejected");
-        require(bool(animation.step_model(m)),"real rebound immediate evaluation rejected");
+        require(bool(animation.bind_materials(handles[m],materials)),"real material rebind rejected");
+        require(bool(animation.set_model_speed(handles[m],source.animation_speed)) &&
+                bool(animation.set_texture_speed(handles[m],source.animation_speed)),"real rebound speed rejected");
+        require(bool(animation.step_model(handles[m])),"real rebound immediate evaluation rejected");
     }
     const auto rebound = execute(false);
     require(frozen.triangles != rebound.triangles && frozen.color != rebound.color &&

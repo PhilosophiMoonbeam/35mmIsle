@@ -217,7 +217,7 @@ EffectsStatus MenuEffects::update_effects(EffectWorldResolver resolve, void* con
     // node cannot produce a partially published tick.
     std::array<EffectWorld, 10> worlds{};
     for (int i = effect_head_; i != absent; i = effects_[i].next) {
-        if (effects_[i].attachment.model == no_index || (effects_[i].flags & 0x800)) continue;
+        if (!effects_[i].attachment.instance || (effects_[i].flags & 0x800)) continue;
         if (!resolve || !resolve(context, effects_[i].attachment, worlds[i])) return {EffectsError::attachment, effects_[i].script};
         for (const auto& row : worlds[i].matrix) for (float f : row)
             if (!std::isfinite(f)) return {EffectsError::arithmetic, effects_[i].script};
@@ -242,7 +242,7 @@ EffectsStatus MenuEffects::update_effects(EffectWorldResolver resolve, void* con
         Vec3 velocity = e.velocity;
         float azimuth = 0, step = 0;
         if (e.accumulator >= 1.0f) {
-            if (e.attachment.model != no_index) {
+            if (e.attachment.instance) {
                 const auto& matrix = worlds[i].matrix;
                 e.position = {matrix[3][0], matrix[3][1], matrix[3][2]};
                 const Vec3 v = velocity;
@@ -283,11 +283,11 @@ EffectsStatus MenuEffects::update_effects(EffectWorldResolver resolve, void* con
     }
     return {};
 }
-void MenuEffects::detach_model(std::size_t model) noexcept {
+void MenuEffects::detach_instance(animation::InstanceHandle instance) noexcept {
     int previous = absent;
     for (int i = effect_head_; i != absent;) {
         const int next = effects_[i].next;
-        if (effects_[i].attachment.model == model) remove_effect(i, previous); else previous = i;
+        if (effects_[i].attachment.instance == instance) remove_effect(i, previous); else previous = i;
         i = next;
     }
 }

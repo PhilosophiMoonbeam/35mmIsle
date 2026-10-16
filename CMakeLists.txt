@@ -275,7 +275,8 @@ if(ISLE_BUILD_GAME_ENGINE)
     endif()
     if(TARGET isle-menu-resources)
         add_library(isle-menu-model-producer STATIC
-            src/menu_model_producer.cpp src/menu_model_producer.hpp)
+            src/menu_model_producer.cpp src/menu_model_producer.hpp
+            src/borrowed_model_kernel.cpp src/borrowed_model_kernel.hpp)
         target_link_libraries(isle-menu-model-producer PUBLIC
             isle-engine isle-menu-animation isle-graphics-task)
         isle_target_options(isle-menu-model-producer)

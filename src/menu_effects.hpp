@@ -1,7 +1,7 @@
 #ifndef ISLE_MENU_EFFECTS_HPP
 #define ISLE_MENU_EFFECTS_HPP
 
-#include "menu_resources.hpp"
+#include "menu_animation.hpp"
 #include "35mmisle/rng.h"
 
 #include <array>
@@ -14,7 +14,7 @@ struct EffectsStatus {
     std::size_t script = no_index, offset = 0;
     explicit operator bool() const noexcept { return error == EffectsError::none; }
 };
-struct EffectAttachment { std::size_t model = no_index, node = no_index; };
+struct EffectAttachment { animation::InstanceHandle instance; std::size_t node = no_index; };
 // Row-vector GAME world matrix, including every parent/local auxiliary transform.
 // Velocity is transformed by independently normalized columns, NOT frame motion.
 struct EffectWorld { std::array<std::array<float, 4>, 4> matrix{}; };
@@ -66,7 +66,7 @@ public:
     EffectsStatus update_effects(EffectWorldResolver resolve, void* context) noexcept;
     // Detach source fx_ejectEffectDObj: remove attached emitters; live ordinary
     // particles survive independently. reset requires no outstanding GPU leases.
-    void detach_model(std::size_t model) noexcept;
+    void detach_instance(animation::InstanceHandle) noexcept;
     void reset() noexcept;
     std::size_t particle_count() const noexcept;
     std::size_t effect_count() const noexcept;

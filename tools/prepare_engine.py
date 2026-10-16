@@ -50,7 +50,8 @@ def prepare(repository, manifest_path, output_path, evidence_path):
     sources = {}
     for path, identity in manifest["source_files"].items():
         # This adapter has no SDK/OS/assembly input path or include-tree import.
-        if path not in ("src/sys/om.c", "src/AA0650.c", "src/sys/matrix.c", "include/sys/mtx.h"):
+        if path not in ("src/sys/om.c", "src/AA0650.c", "src/sys/matrix.c", "include/sys/mtx.h",
+                        "src/sys/vector.c", "include/sys/vector.h"):
             raise ValueError("unadmitted source path: " + path)
         data = git(repository, "show", revision + ":" + path)
         blob = git(repository, "rev-parse", revision + ":" + path).decode("ascii").strip()

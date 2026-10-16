@@ -19,24 +19,32 @@
     "include/sys/mtx.h": {
       "git_blob": "4f0706f10e48d4df55f1e9bf625ede7c9fd7f6c3",
       "sha256": "f9c8b54723daea19b28f66f57bb0c8eaf2001dcf613dac4afce712a7ea51b4e7"
+    },
+    "src/sys/vector.c": {
+      "git_blob": "99b21e6c073cdbce135abfc10533defc56a05026",
+      "sha256": "f36b6f36e6e1434bd498d41df4b03e63775d8f765dc6337f76a7ccfbb5c9fa57"
+    },
+    "include/sys/vector.h": {
+      "git_blob": "45fb97a9ff5f8ac204cce0e8bdc6661ebf967c8c",
+      "sha256": "d180a8407e7ef412b50472a3a30a675c49dac6dcafd8b3c968183c8c53c06b61"
     }
   },
   "native_support": {
     "src/engine.c": {
-      "sha256": "11943edb2d979a2fdaa660344a945e81999fa7e7b870a5ea971391c21e5aec55",
-      "use": "Original actual-size native model ownership, validated typed API, lazy local matrix cache and alias-safe binary32 root-local times photo-world concatenation. No imported SDK implementation."
+      "sha256": "a44483e4e507cd869d5aee6e8718a4178124bf03490eeae4b5a86749751a1717",
+      "use": "Original actual-size native camera/model ownership and typed validation; atomic compute-all stages dirty native matrix/reflection/normalization payloads with no partial publication on failure, sharing exact math with individual getters. Pure model transform preflight reuses setter safety checks. Immutable per-node RTS/translate selection and exact direct GAME hal_translate; finite roll, numeric RCP light values and photo-world concatenation. No SDK implementation."
     },
     "src/engine_math.h": {
-      "sha256": "41f7ba1cd6de9012cccd7de47f9c9d98acf53d6ed0769662bfc91664ae27c81e",
-      "use": "Original native public matrix ABI and explicitly defined MIPS low-word multiply, signed interpretation and arithmetic shifts, without sanitizer suppression."
+      "sha256": "3b326cbe8b81fe990cb23b3166071739ed063f17df8d5315282cc5e5fbd6acdf",
+      "use": "Original native matrix/Vec3f/public RCP light numeric seams and checked signed-1.7 conversion; direct GAME hal_translate declaration, C libm binary32 roll trig, defined MIPS arithmetic. No SDK union, opaque tail/layout import or suppression."
     },
     "src/engine_internal.h": {
-      "sha256": "1e4ccee77ceae43e586e67e83544cfb6505b5a8d6d57ae2c087c9af3319f8ab2",
-      "use": "Original native payload ownership and arena block/free-list layout, not a console DObj or SDK layout."
+      "sha256": "3b92c635e3cfc48e45f5151d7eb136fa052f19d1f7cb57fd9ea8a03b00ca0aed",
+      "use": "Original actual-size camera/matrix/reflection/model native payload ownership and bounded arena free lists, not console or SDK ownership layouts."
     },
     "include/35mmisle/engine.h": {
-      "sha256": "2ffa6a996fb438f4606ab602db393fec8c1b0221fd36e8f73fc5cf4989d1b2bb",
-      "use": "Stable native C model API and borrowed local fixed-matrix representation."
+      "sha256": "96a5a6d648dd98deba0a4ddad4614e32f875147aa6ae3da17045795fdae68251",
+      "use": "Native C camera/model ABI with atomic dirty-camera compute-all and pure model transform validation, explicit immutable per-node RTS/translate selection and stable revisions. Individual camera getters and source kind14 math semantics remain unchanged."
     }
   },
   "rom_observations": [
@@ -299,6 +307,80 @@
       "changes": []
     },
     {
+      "symbol": "prototype_hal_look_at_reflect_roll_f",
+      "path": "include/sys/mtx.h",
+      "first": 33,
+      "last": 34,
+      "source_sha256": "761e22bf33f26c50ad395769e08f5314c9cee53e28c7e5b99b1d8302f0277e83",
+      "native_sha256": "13c307c8544acfe20e4786b284ac7da46c639438031e6888dc3b1e0a29d52103",
+      "changes": [
+        {
+          "find": "void hal_look_at_reflect_roll_f(",
+          "replace": "bool hal_look_at_reflect_roll_f(",
+          "reason": "Match the checked native value seam; original parameter types/order retained."
+        }
+      ]
+    },
+    {
+      "symbol": "prototype_Vec3f_func_8001A8B8",
+      "path": "include/sys/vector.h",
+      "first": 19,
+      "last": 19,
+      "source_sha256": "c26a0bbc389b0d54c787e47ad39bd5a85e61418ccac118eafc3828042439c05b",
+      "native_sha256": "c26a0bbc389b0d54c787e47ad39bd5a85e61418ccac118eafc3828042439c05b",
+      "changes": []
+    },
+    {
+      "symbol": "Vec3f_func_8001A8B8",
+      "path": "src/sys/vector.c",
+      "first": 146,
+      "last": 193,
+      "source_sha256": "91b87bbe1ac04dfdf49a08d9ed209b2a133fca193f978c204de912854885d454",
+      "native_sha256": "4a6944aadc5b3248d073693849ed33a96a44cbec5e4a35e49a8abc9b085b6e80",
+      "changes": [
+        {
+          "find": "    f32 tmp;\n",
+          "replace": "",
+          "reason": "Remove unused matching-only local."
+        },
+        {
+          "find": "__sinf(arg2)",
+          "replace": "sinf(arg2)",
+          "reason": "Native binary32 C libm seam; no SDK producer implementation is an input."
+        },
+        {
+          "find": "__cosf(arg2)",
+          "replace": "cosf(arg2)",
+          "reason": "Native binary32 C libm seam; no SDK producer implementation is an input."
+        }
+      ]
+    },
+    {
+      "symbol": "hal_look_at_reflect_roll_f",
+      "path": "src/sys/matrix.c",
+      "first": 636,
+      "last": 728,
+      "source_sha256": "f9e50995b83969c1ed4b880104cf6e78e979da94ef775ad18250bcb579717123",
+      "native_sha256": "80db9d9be9d969935c4dd946bbd431946e7bd3b26fa236c76a7810cd22a6d278",
+      "changes": [
+        {
+          "find": "void hal_look_at_reflect_roll_f(",
+          "replace": "bool hal_look_at_reflect_roll_f(",
+          "reason": "Native checked computation propagates failed reflection conversion without publishing cache contents."
+        },
+        {
+          "find": "    l->l[0].l.dir[0] = FTOFRAC8(right.x);",
+          "replace": "    if (!isle_game_reflection_component(right.x) ||\n        !isle_game_reflection_component(right.y) ||\n        !isle_game_reflection_component(right.z) ||\n        !isle_game_reflection_component(xUp) ||\n        !isle_game_reflection_component(yUp) ||\n        !isle_game_reflection_component(zUp)) return false;\n\n    l->l[0].l.dir[0] = FTOFRAC8(right.x);",
+          "reason": "Validate finite signed 1.7 conversion range before GAME numeric casts; no invalid float-to-integer conversion."
+        },
+        {
+          "find": "    mf[3][3] = 1;\n}",
+          "replace": "    mf[3][3] = 1;\n    return true;\n}",
+          "reason": "Publish successful native checked computation."
+        }
+      ]
+    },
+    {
       "symbol": "hal_perspective_fast_f",
       "path": "src/sys/matrix.c",
       "first": 791,
@@ -317,6 +399,15 @@
           "reason": "Explicit bounded native narrowing; retain original binary32 quantization."
         }
       ]
+    },
+    {
+      "symbol": "hal_translate",
+      "path": "src/sys/matrix.c",
+      "first": 1020,
+      "last": 1049,
+      "source_sha256": "67bbcbdb9e9418cc00592645f11fed9741069fd8bd1f278aa9124a62d9aaef5e",
+      "native_sha256": "67bbcbdb9e9418cc00592645f11fed9741069fd8bd1f278aa9124a62d9aaef5e",
+      "changes": []
     },
     {
       "symbol": "hal_get_sin_cos_u_short",

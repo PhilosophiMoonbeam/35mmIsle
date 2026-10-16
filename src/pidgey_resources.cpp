@@ -77,11 +77,7 @@ constexpr std::array<StreamFact, node_count> stream_facts{{
 void require(bool condition) {
     if (!condition) throw std::runtime_error("Invalid admitted HD Pidgey resource graph");
 }
-void bounds(const RomView& view, std::size_t offset, std::size_t size, std::size_t alignment) {
-    if (offset % alignment != 0 || offset > view.bytes.size() || size > view.bytes.size() - offset)
-        throw std::out_of_range("HD Pidgey resource read outside aligned wire extent");
-}
-RomView view(const rom::Snapshot& snapshot, Mapping mapping, std::uint32_t guest,
+rom::GuestView view(const rom::Snapshot& snapshot, Mapping mapping, std::uint32_t guest,
              std::size_t size, std::size_t alignment = 4) {
     require(guest >= mapping.guest_begin && guest % alignment == 0 && size != 0);
     const auto delta = static_cast<std::size_t>(guest - mapping.guest_begin);
@@ -92,12 +88,12 @@ RomView view(const rom::Snapshot& snapshot, Mapping mapping, std::uint32_t guest
     require(offset <= bytes.size() && size <= bytes.size() - offset);
     return {guest, offset, bytes.subspan(offset, size)};
 }
-Vec3 vec3(const RomView& wire, std::size_t offset) {
+Vec3 vec3(const rom::GuestView& wire, std::size_t offset) {
     Vec3 value{wire.f32(offset), wire.f32(offset + 4), wire.f32(offset + 8)};
     require(std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z));
     return value;
 }
-std::array<std::uint8_t, 4> bytes4(const RomView& wire, std::size_t offset) {
+std::array<std::uint8_t, 4> bytes4(const rom::GuestView& wire, std::size_t offset) {
     return {wire.u8(offset), wire.u8(offset + 1), wire.u8(offset + 2), wire.u8(offset + 3)};
 }
 std::uint8_t list_index(std::uint32_t guest) {
@@ -111,7 +107,7 @@ std::uint8_t texture_index(std::uint32_t guest) {
         if (texture_facts[i].guest == guest) return static_cast<std::uint8_t>(i);
     throw std::runtime_error("HD Pidgey references an unknown texture");
 }
-void validate_stream(const RomView& wire) {
+void validate_stream(const rom::GuestView& wire) {
     std::size_t offset = 0;
     while (offset < wire.bytes.size()) {
         const auto word = wire.u32(offset);
@@ -142,23 +138,6 @@ void validate_stream(const RomView& wire) {
 }
 } // namespace
 
-std::uint8_t RomView::u8(std::size_t offset) const {
-    bounds(*this, offset, 1, 1);
-    return std::to_integer<std::uint8_t>(bytes[offset]);
-}
-std::uint16_t RomView::u16(std::size_t offset) const {
-    bounds(*this, offset, 2, 2);
-    return static_cast<std::uint16_t>((std::to_integer<std::uint16_t>(bytes[offset]) << 8) |
-                                    std::to_integer<std::uint16_t>(bytes[offset + 1]));
-}
-std::uint32_t RomView::u32(std::size_t offset) const {
-    bounds(*this, offset, 4, 4);
-    return (std::to_integer<std::uint32_t>(bytes[offset]) << 24) |
-           (std::to_integer<std::uint32_t>(bytes[offset + 1]) << 16) |
-           (std::to_integer<std::uint32_t>(bytes[offset + 2]) << 8) |
-           std::to_integer<std::uint32_t>(bytes[offset + 3]);
-}
-float RomView::f32(std::size_t offset) const { return std::bit_cast<float>(u32(offset)); }
 Command DisplayList::command(std::size_t index) const {
     if (index >= command_count()) throw std::out_of_range("HD Pidgey display-list command index");
     return {wire.u32(index * 8), wire.u32(index * 8 + 4)};

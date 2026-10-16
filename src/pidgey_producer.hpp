@@ -135,6 +135,7 @@ private:
     const rom::Snapshot& snapshot_;
     const HdResources& resources_;
     std::size_t capacity_;
+    const std::byte* snapshot_source_;
     std::array<Instance, max_instances> instances_{};
     std::array<std::uint64_t, 2> resident_camera_revisions_{};
     std::uint32_t* resident_memory_ = nullptr;

@@ -111,3 +111,13 @@ void engine_invalid_legacy_wait(IsleGameObject* object, void* user) {
     ohWait(1);
     ++fixture->retired_continued;
 }
+
+IsleGameResult engine_attach_model_with_invalid_kind(IsleGame* game, IsleGameObject* owner,
+                                                     const IsleGameModelNodeInit nodes[2],
+                                                     IsleGameModel** model) {
+    IsleGameModelNodeInit invalid[2] = {nodes[0], nodes[1]};
+    /* An integer outside the named enum values is a valid C ABI input.
+     * Construct it here: the equivalent C++ out-of-range enum cast is not. */
+    invalid[1].matrix_kind = (IsleGameModelMatrixKind) 99;
+    return isle_game_attach_model(game, owner, invalid, 2, model);
+}

@@ -1,6 +1,7 @@
 #include "pidgey_producer.hpp"
 #include "photo_lighting.hpp"
 #include "35mmisle/photo_feedback.hpp"
+#include "graphics_task.hpp"
 
 #include <algorithm>
 #include <array>
@@ -20,10 +21,8 @@
 // No console pointer union, native pointer cast, SDK layout or SDK code is used.
 namespace isle::pidgey {
 namespace {
-constexpr std::uint32_t main_begin = 0x400, main_rom_begin = 0x1000;
-constexpr std::uint32_t main_rom_end = 0x46270, bss_begin = 0x45670, bss_end = 0x9a8c0;
-constexpr std::uint32_t graphics_text = 0x3e7a0, graphics_data = 0x44e60;
-constexpr std::uint32_t boot_rom = 0xb70, boot_bytes = 0x100;
+using graphics::bss_end;
+using graphics::Memory;
 constexpr std::uint32_t identity_address = PidgeyProducer::matrices_address + 128;
 constexpr std::uint32_t copy_rom_begin = 0x5a180, copy_rom_end = 0x5a2a8;
 constexpr std::uint32_t absent = std::numeric_limits<std::uint32_t>::max();
@@ -35,7 +34,6 @@ static_assert(PidgeyProducer::model_lists_address + max_instances * PidgeyProduc
               PidgeyProducer::node_matrices_address);
 static_assert(PidgeyProducer::node_matrices_address + max_instances * node_count * 64 == 0x10e300);
 static_assert(PidgeyProducer::copy_list_address + copy_rom_end - copy_rom_begin <= 0x10ec00);
-static_assert(main_begin + main_rom_end - main_rom_begin == bss_begin);
 
 void require(bool ok, const char* message) {
     if (!ok) throw std::runtime_error(message);
@@ -80,7 +78,7 @@ float value(const Track& a) {
     return a.initial * ((t20 - t22) + 1.0f) + a.target * (t22 - t20) +
            a.rate * ((t24 - t18) + a.time) + a.target_rate * t24;
 }
-void sample(const RomView& stream, float animation_time,
+void sample(const rom::GuestView& stream, float animation_time,
             IsleGameModelTransform& transform, std::uint32_t& flags) {
     if (stream.bytes.empty()) return; // GAME ANIMATION_DISABLED (null node entry).
     std::array<Track, 10> tracks{};
@@ -202,32 +200,6 @@ void validate_targets(PhotoTargets targets, const HdResources& resources) {
     require(!overlap(targets_ranges[0], targets_ranges[1]), "Pidgey color/Z targets overlap");
     for (const auto target : targets_ranges) validate_range(target, resources);
 }
-class Memory {
-public:
-    explicit Memory(std::span<std::uint32_t> words) : words_(words) {
-        require(words.size_bytes() == rdram_size, "Pidgey producer requires exactly 8 MiB");
-    }
-    void word(std::uint32_t address, std::uint32_t value) { words_[address / 4] = value; }
-    void half(std::uint32_t address, std::uint16_t value) {
-        auto& w = words_[address / 4];
-        const auto shift = (address & 2u) ? 0u : 16u;
-        w = (w & ~(0xffffu << shift)) | (std::uint32_t(value) << shift);
-    }
-    void copy(std::uint32_t address, std::span<const std::byte> bytes) {
-        for (std::size_t i = 0; i < bytes.size(); i += 4)
-            word(address + static_cast<std::uint32_t>(i),
-                 std::to_integer<std::uint32_t>(bytes[i]) << 24 |
-                 std::to_integer<std::uint32_t>(bytes[i + 1]) << 16 |
-                 std::to_integer<std::uint32_t>(bytes[i + 2]) << 8 |
-                 std::to_integer<std::uint32_t>(bytes[i + 3]));
-    }
-    void matrix(std::uint32_t address, const IsleGameFixedMatrix& m) {
-        for (unsigned row = 0; row < 4; ++row)
-            for (unsigned col = 0; col < 4; ++col) word(address + (row * 4 + col) * 4, m.m[row][col]);
-    }
-private:
-    std::span<std::uint32_t> words_;
-};
 class List {
 public:
     explicit List(Memory& memory, std::uint32_t begin = PidgeyProducer::commands_address,
@@ -383,14 +355,15 @@ void emit_setup(List& list, PhotoTargets targets, std::uint16_t norm,
 PidgeyProducer::PidgeyProducer(IsleGame* game, IsleGameCamera* camera,
                              const rom::Snapshot& snapshot, const HdResources& resources,
                              std::size_t capacity)
-    : game_(game), camera_(camera), snapshot_(snapshot), resources_(resources), capacity_(capacity) {
+    : game_(game), camera_(camera), snapshot_(snapshot), resources_(resources), capacity_(capacity),
+      snapshot_source_(snapshot.canonical().data()) {
     require(game && camera && snapshot.canonical().size() == rom::us_size,
             "Pidgey producer requires live native and immutable input owners");
     require(capacity >= 1 && capacity <= max_instances, "Pidgey instance capacity must be 1..12");
     // Exact private US ROM, GAME score.c:53-79 at the pinned revision. This
     // self-contained 37-command static list is copied, never macro-recreated.
     // Its only memory operands are C+[0,C00], B+[0,C00], F and A segments.
-    const RomView copy{0, copy_rom_begin,
+    const rom::GuestView copy{0, copy_rom_begin,
                        snapshot.canonical().subspan(copy_rom_begin, copy_rom_end - copy_rom_begin)};
     for (std::size_t i = 0; i < copy.bytes.size(); i += 8) {
         const auto w0 = copy.u32(i), w1 = copy.u32(i + 4), op = w0 >> 24;
@@ -428,7 +401,7 @@ PidgeyProducer::PidgeyProducer(IsleGame* game, IsleGameCamera* camera,
     std::array<IsleGameModelNodeInit, node_count> init{};
     for (std::size_t i = 0; i < node_count; ++i)
         init[i] = {resources.nodes()[i].parent == no_index ? absent : resources.nodes()[i].parent,
-                   initial(resources.nodes()[i])};
+                   initial(resources.nodes()[i]), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
     try {
         for (std::size_t i = 0; i < capacity_; ++i) {
             auto& instance = instances_[i];
@@ -504,15 +477,14 @@ void PidgeyProducer::set_photo_pose(std::size_t index, float animation_time, Isl
     instance.yaw = yaw; instance.have_pose = true;
 }
 void PidgeyProducer::install_inputs(std::span<std::uint32_t> words, std::uint64_t epoch) {
-    Memory memory(words);
+    graphics::validate_cold_inputs(words, snapshot_, snapshot_source_, boot_address);
     require(words.data() != resident_memory_ || epoch != resident_epoch_, "Pidgey inputs already installed for this epoch");
-    const auto rom = snapshot_.canonical();
-    require(rom.size() == rom::us_size, "Moved-from Pidgey ROM owner");
-    memory.copy(main_begin, rom.subspan(main_rom_begin, main_rom_end - main_rom_begin));
-    std::fill(words.begin() + bss_begin / 4, words.begin() + bss_end / 4, 0);
-    memory.copy(boot_address, rom.subspan(boot_rom, boot_bytes));
-    memory.copy(copy_list_address, rom.subspan(copy_rom_begin, copy_rom_end - copy_rom_begin));
+    // Resource install validates all immutable spans before its first write.
+    // The remaining shared boot/image writes have already been preflighted.
     resources_.install(std::as_writable_bytes(words));
+    graphics::install_cold_inputs(words, snapshot_, boot_address);
+    Memory memory(words);
+    memory.copy(copy_list_address, snapshot_.canonical().subspan(copy_rom_begin, copy_rom_end - copy_rom_begin));
     resident_memory_ = words.data(); resident_epoch_ = epoch;
     resident_camera_revisions_.fill(0); resident_payloads_ = false;
     for (auto& instance : instances_) {
@@ -634,19 +606,10 @@ PreparedPidgeyTask PidgeyProducer::prepare_impl(std::span<std::uint32_t> words,
     return finish_task(words);
 }
 PreparedPidgeyTask PidgeyProducer::finish_task(std::span<std::uint32_t> words) {
-    Memory memory(words);
-    // GAME gtl.c sets data_size (command size) to zero; DL termination controls
-    // traversal. Loaded CPU main bytes remain inert; only graphics/boot execute.
-    const rsp::Task task{1, 4, boot_address, boot_bytes, graphics_text, 0x1000,
-                         graphics_data, 0x800, stack_address, 0x400,
-                         output_address, output_end, commands_address, 0, yield_address, 0xc00};
-    const std::array<std::uint32_t, 16> fields{
-        task.type, task.flags, task.boot_address, task.boot_size, task.text_address, task.text_size,
-        task.data_address, task.data_size, task.stack_address, task.stack_size, task.output_address,
-        task.output_end, task.commands_address, task.commands_size, task.yield_address, task.yield_size};
-    for (std::size_t i = 0; i < fields.size(); ++i)
-        memory.word(task_address + static_cast<std::uint32_t>(i * 4), fields[i]);
-    return {task, snapshot_.canonical().subspan(boot_rom, boot_bytes)};
+    const auto prepared = graphics::finish_task(words, snapshot_, boot_address, stack_address,
+                                                yield_address, task_address, output_address,
+                                                output_end, commands_address);
+    return {prepared.task, prepared.boot};
 }
 FrozenFeedbackRequest PidgeyProducer::freeze_feedback_request(const FeedbackRequest& input) {
     require(input.actors.size() <= capacity_, "Feedback actor count exceeds constructed capacity");

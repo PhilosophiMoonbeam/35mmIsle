@@ -1,7 +1,9 @@
 #include "engine_fixture.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cfenv>
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
@@ -341,6 +343,225 @@ void camera_geometry_and_cache() {
     }
 }
 
+const IsleGameCameraReflection* reflection(World& world, IsleGameCamera* cam, std::size_t index) {
+    const IsleGameCameraReflection* result = nullptr;
+    ok(isle_game_camera_reflection(world.game, cam, index, &result));
+    return result;
+}
+
+bool same_camera_values(const IsleGameCameraMatrix& a, const IsleGameCameraMatrix& b) {
+    return a.kind == b.kind && a.revision == b.revision &&
+        std::memcmp(a.floating, b.floating, sizeof(a.floating)) == 0 &&
+        std::memcmp(a.fixed.m, b.fixed.m, sizeof(a.fixed.m)) == 0;
+}
+bool same_reflection_values(const IsleGameCameraReflection& a, const IsleGameCameraReflection& b) {
+    return a.revision == b.revision &&
+        std::memcmp(a.direction, b.direction, sizeof(a.direction)) == 0 &&
+        std::memcmp(a.color, b.color, sizeof(a.color)) == 0 &&
+        std::memcmp(a.color_copy, b.color_copy, sizeof(a.color_copy)) == 0;
+}
+
+void camera_reflection_roll_geometry_and_state() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* cam = camera(world, owner, false);
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT));
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL));
+    IsleGameLookAt pose{{10, 20, 30}, {10, 20, 29}, {0, 1, 0}};
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    auto* basic = matrix(world, cam, 0);
+    auto* rolled = matrix(world, cam, 1);
+    auto* reflected = reflection(world, cam, 1);
+    require(reflected->direction[0][0] == 127 && reflected->direction[1][1] == 127 &&
+            reflected->direction[0][1] == 0 && reflected->direction[0][2] == 0 &&
+            reflected->direction[1][0] == 0 && reflected->direction[1][2] == 0,
+            "axis-aligned reflection directions are not actual signed 1.7 vectors");
+    for (std::size_t axis = 0; axis < 2; ++axis)
+        for (std::size_t component = 0; component < 3; ++component)
+            require(reflected->color[axis][component] == (axis == 1 && component == 1 ? 128 : 0) &&
+                    reflected->color_copy[axis][component] == reflected->color[axis][component],
+                    "GAME reflection colors were fabricated or omitted");
+    const auto initial = *rolled;
+    const auto initial_reflection = *reflected;
+    const auto basic_revision = basic->revision;
+    const auto used = world.arena.cursor;
+    constexpr float half_pi = 1.57079632679489661923f;
+    for (const float roll : {half_pi, -half_pi, 0.47f, -2.3f, 0.0f}) {
+        ok(isle_game_camera_set_roll(world.game, cam, roll));
+        float stored = 99;
+        ok(isle_game_camera_roll(world.game, cam, &stored));
+        require(stored == roll, "roll property did not retain finite radians");
+        const auto old_revision = rolled->revision;
+        require(reflection(world, cam, 1) == reflected && matrix(world, cam, 1) == rolled &&
+                rolled->revision == old_revision + 1 && reflected->revision == rolled->revision,
+                "matrix/reflection borrows did not share one stable lazy cache revision");
+        close_to(rolled->floating[0][0], std::cos(roll));
+        close_to(rolled->floating[1][0], std::sin(roll));
+        close_to(rolled->floating[0][1], -std::sin(roll));
+        close_to(rolled->floating[1][1], std::cos(roll));
+        const auto eye = transform(rolled->floating, {10, 20, 30, 1});
+        const auto at = transform(rolled->floating, {10, 20, 29, 1});
+        close_to(eye[0], 0); close_to(eye[1], 0); close_to(eye[2], 0);
+        close_to(at[0], 0); close_to(at[1], 0); close_to(at[2], -1);
+        for (std::size_t axis = 0; axis < 2; ++axis)
+            for (std::size_t component = 0; component < 3; ++component) {
+                const float scaled = rolled->floating[component][axis] * 128;
+                const auto expected = static_cast<int>(std::min(scaled, 127.0f));
+                require(reflected->direction[axis][component] == expected &&
+                        expected >= -128 && expected <= 127,
+                        "reflection quantization/sign is not derived from rolled camera basis");
+            }
+        if (roll == half_pi)
+            require(reflected->direction[0][1] == 127 && reflected->direction[1][0] == -128,
+                    "positive roll reflected directions have wrong handedness/endpoints");
+        ok(isle_game_camera_set_roll(world.game, cam, roll));
+        require(matrix(world, cam, 0)->revision == basic_revision &&
+                matrix(world, cam, 1)->revision == old_revision + 1 && world.arena.cursor == used,
+                "roll recomputed basic/unchanged matrices or allocated");
+    }
+    require(std::memcmp(initial.floating, rolled->floating, sizeof(initial.floating)) == 0 &&
+            std::memcmp(&initial.fixed, &rolled->fixed, sizeof(initial.fixed)) == 0 &&
+            std::memcmp(initial_reflection.direction, reflected->direction,
+                        sizeof(initial_reflection.direction)) == 0,
+            "restoring zero roll did not restore camera and reflection values");
+    for (const IsleGameLookAt arbitrary : {
+            IsleGameLookAt{{5, 0, 0}, {0, 0, 0}, {0, 1, 0}},
+            IsleGameLookAt{{-5, 0, 0}, {0, 0, 0}, {0, 1, 0}},
+            IsleGameLookAt{{12, -8, 4}, {-2, 3, -5}, {0.2f, 2, 0.4f}}}) {
+        ok(isle_game_camera_set_look_at(world.game, cam, &arbitrary));
+        const auto unrolled = *matrix(world, cam, 0);
+        ok(isle_game_camera_set_roll(world.game, cam, 0.61f));
+        rolled = matrix(world, cam, 1);
+        for (std::size_t c = 0; c < 3; ++c) {
+            close_to(rolled->floating[c][0], std::cos(0.61f) * unrolled.floating[c][0] +
+                     std::sin(0.61f) * unrolled.floating[c][1]);
+            close_to(rolled->floating[c][1], -std::sin(0.61f) * unrolled.floating[c][0] +
+                     std::cos(0.61f) * unrolled.floating[c][1]);
+            close_to(rolled->floating[c][2], unrolled.floating[c][2]);
+        }
+        require(reflection(world, cam, 1)->revision == rolled->revision,
+                "arbitrary-axis pose change did not invalidate reflection cache");
+    }
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    std::fenv_t environment;
+    require(std::fegetenv(&environment) == 0, "cannot save camera test floating environment");
+    for (int rounding : {FE_DOWNWARD, FE_UPWARD, FE_TOWARDZERO, FE_TONEAREST}) {
+        require(std::fesetround(rounding) == 0, "cannot select camera test rounding");
+        std::feclearexcept(FE_ALL_EXCEPT);
+        ok(isle_game_camera_set_roll(world.game, cam, static_cast<float>(rounding) * 0.0001f + 0.7f));
+        const auto* checked = reflection(world, cam, 1);
+        require(checked->revision == rolled->revision && std::fegetround() == rounding &&
+                (std::fetestexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW)) == 0,
+                "reflection computation changed rounding or raised invalid/divide/overflow exceptions");
+    }
+    require(std::fesetenv(&environment) == 0, "cannot restore camera test floating environment");
+    ok(isle_game_camera_set_roll(world.game, cam, 0));
+    reflection(world, cam, 1);
+    const auto revision = rolled->revision;
+    const auto stable = *rolled;
+    const auto stable_reflection = *reflected;
+    std::feclearexcept(FE_ALL_EXCEPT);
+    for (float invalid : {std::numeric_limits<float>::infinity(),
+                          -std::numeric_limits<float>::infinity(),
+                          std::numeric_limits<float>::quiet_NaN()})
+        require(isle_game_camera_set_roll(world.game, cam, invalid) == ISLE_GAME_INVALID_ARGUMENT,
+                "nonfinite roll mutated a camera");
+    auto bad = pose;
+    bad.at[2] = bad.eye[2];
+    require(isle_game_camera_set_look_at(world.game, cam, &bad) == ISLE_GAME_INVALID_ARGUMENT,
+            "reflection camera accepted zero-length look vector");
+    require((std::fetestexcept(FE_INVALID | FE_DIVBYZERO)) == 0 &&
+            matrix(world, cam, 1)->revision == revision,
+            "rejected mutation performed invalid floating math or dirtied cache");
+    auto far = pose; far.eye[0] = far.at[0] = 40000;
+    ok(isle_game_camera_set_look_at(world.game, cam, &far));
+    const IsleGameCameraReflection* failed = reflected;
+    require(isle_game_camera_reflection(world.game, cam, 1, &failed) == ISLE_GAME_INVALID_ARGUMENT &&
+            failed == nullptr && same_camera_values(stable, *rolled) &&
+            same_reflection_values(stable_reflection, *reflected),
+            "failed fixed computation exposed partial matrix/reflection cache contents");
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    require(reflection(world, cam, 1)->revision == revision + 1,
+            "pose restoration failed to refresh reflection cache");
+    failed = reflected;
+    require(isle_game_camera_reflection(world.game, cam, 0, &failed) == ISLE_GAME_INVALID_STATE && !failed,
+            "basic camera fabricated reflection output");
+    failed = reflected;
+    require(isle_game_camera_reflection(world.game, cam, 2, &failed) == ISLE_GAME_INVALID_ARGUMENT && !failed,
+            "reflection query accepted out-of-range matrix index");
+    require(isle_game_camera_reflection(world.game, cam, 1, nullptr) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_camera_roll(world.game, cam, nullptr) == ISLE_GAME_INVALID_ARGUMENT,
+            "reflection/roll query accepted null output");
+    bool rejected = false;
+    std::thread foreign([&] {
+        const IsleGameCameraReflection* output = reflected;
+        float roll = 99;
+        rejected = isle_game_camera_reflection(world.game, cam, 1, &output) == ISLE_GAME_WRONG_OWNER &&
+            output == nullptr && isle_game_camera_set_roll(world.game, cam, 1) == ISLE_GAME_WRONG_OWNER &&
+            isle_game_camera_roll(world.game, cam, &roll) == ISLE_GAME_WRONG_OWNER && roll == 0;
+    });
+    foreign.join();
+    require(rejected, "reflection camera admitted foreign owner access");
+    ok(isle_game_delete_object(world.game, owner));
+    failed = reflected;
+    require(isle_game_camera_reflection(world.game, cam, 1, &failed) == ISLE_GAME_INVALID_ARGUMENT &&
+            !failed && counts(world).matrices == 0 && counts(world).cameras == 0,
+            "deleted camera retained a live reflection borrow");
+    auto* replacement = object(world, 2);
+    cam = camera(world, replacement, false);
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL));
+    float roll = 99;
+    ok(isle_game_camera_roll(world.game, cam, &roll));
+    require(roll == 0 && reflection(world, cam, 0)->revision == 1 && world.arena.cursor == used,
+            "recycled reflection camera inherited roll/cache or failed actual-size arena reuse");
+}
+
+void camera_batch_failure_is_atomic() {
+    World world;
+    auto* cam = camera(world, object(world, 1), false);
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_PERSPECTIVE_FAST));
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL));
+    IsleGamePerspective perspective{60, 4.0f / 3, 10, 25600, 1};
+    const IsleGameLookAt pose{{0, 0, 0}, {0, 0, -1}, {0, 1, 0}};
+    ok(isle_game_camera_set_perspective(world.game, cam, &perspective));
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    ok(isle_game_camera_compute_all(world.game, cam));
+    const auto* projection = matrix(world, cam, 0);
+    const auto* view = matrix(world, cam, 1);
+    const auto* directions = reflection(world, cam, 1);
+    const auto previous_projection = *projection, previous_view = *view;
+    const auto previous_directions = *directions;
+    const auto used = world.arena.cursor;
+
+    perspective.fovy = 45;
+    ok(isle_game_camera_set_perspective(world.game, cam, &perspective));
+    auto unrepresentable = pose;
+    unrepresentable.eye[0] = unrepresentable.at[0] = 40000;
+    ok(isle_game_camera_set_look_at(world.game, cam, &unrepresentable));
+    require(isle_game_camera_compute_all(world.game, cam) == ISLE_GAME_INVALID_ARGUMENT &&
+            same_camera_values(previous_projection, *projection) &&
+            same_camera_values(previous_view, *view) &&
+            same_reflection_values(previous_directions, *directions) && world.arena.cursor == used,
+            "failed second camera computation published the first payload or changed stable ownership");
+
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    ok(isle_game_camera_compute_all(world.game, cam));
+    require(projection->revision == previous_projection.revision + 1 &&
+            view->revision == previous_view.revision + 1 &&
+            directions->revision == previous_directions.revision + 1 &&
+            std::memcmp(projection->fixed.m, previous_projection.fixed.m, sizeof(projection->fixed.m)) != 0 &&
+            std::memcmp(view->fixed.m, previous_view.fixed.m, sizeof(view->fixed.m)) == 0,
+            "camera batch recovery lost dirty inputs, double-published, or failed to restore source view");
+    const auto recovered_projection = *projection, recovered_view = *view;
+    const auto recovered_directions = *directions;
+    ok(isle_game_camera_compute_all(world.game, cam));
+    require(same_camera_values(recovered_projection, *projection) &&
+            same_camera_values(recovered_view, *view) &&
+            same_reflection_values(recovered_directions, *directions) && world.arena.cursor == used,
+            "unchanged camera batch recomputed, replaced or allocated cached output");
+}
+
+
 void camera_rejection_and_typed_cleanup() {
     World world;
     auto* owner = object(world, 1);
@@ -487,7 +708,10 @@ void model_hierarchy_math_and_cache() {
     World world;
     auto* owner = object(world, 1);
     std::array<IsleGameModelNodeInit, 5> initial{};
-    for (auto& node : initial) node.transform = identity_model_transform();
+    for (auto& node : initial) {
+        node.transform = identity_model_transform();
+        node.matrix_kind = ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE;
+    }
     initial[0].parent = UINT32_MAX;
     initial[1].parent = 0; initial[2].parent = 1;
     initial[3].parent = 0; initial[4].parent = 3;
@@ -558,6 +782,87 @@ void model_hierarchy_math_and_cache() {
     require(world.arena.cursor == used, "model mutations allocated");
 }
 
+void model_translate_selection_and_cache() {
+    World world;
+    auto* owner = object(world, 1);
+    std::array<IsleGameModelNodeInit, 2> initial{{
+        {UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_TRANSLATE},
+        {0, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE}
+    }};
+    initial[0].transform.position = {1.5f, -2.25f, 3.125f};
+    const auto arena_before = world.arena.cursor;
+    IsleGameModel* model = nullptr;
+    auto rejected = initial;
+    require(engine_attach_model_with_invalid_kind(world.game, owner, initial.data(), &model) ==
+            ISLE_GAME_INVALID_ARGUMENT && !model && world.arena.cursor == arena_before &&
+            counts(world).models == 0, "unknown matrix kind mutated model ownership/arena");
+    for (unsigned channel = 0; channel < 3; ++channel) {
+        rejected = initial;
+        if (channel == 0) rejected[0].transform.rotation.y = 0.25f;
+        if (channel == 1) rejected[0].transform.scale.x = 0.999f;
+        if (channel == 2) rejected[0].transform.position.x = 32768;
+        require(isle_game_attach_model(world.game, owner, rejected.data(), rejected.size(), &model) ==
+                ISLE_GAME_INVALID_ARGUMENT && !model && world.arena.cursor == arena_before &&
+                counts(world).models == 0, "invalid translate attachment changed ownership/arena");
+    }
+    ok(isle_game_attach_model(world.game, owner, initial.data(), initial.size(), &model));
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t extent = 0;
+    ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+    require(extent == 2 && nodes[0].matrix_kind == ISLE_GAME_MODEL_TRANSLATE &&
+            nodes[1].matrix_kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE,
+            "mixed native model matrix selections were lost");
+    const auto* stable = nodes;
+    const auto used = world.arena.cursor;
+    const auto child_revision = nodes[1].revision;
+    const std::array<std::int32_t, 3> expected_translation{98304, -147456, 204800};
+    for (std::size_t row = 0; row < 4; ++row)
+        for (std::size_t col = 0; col < 4; ++col)
+            require(fixed_lane(nodes[0].fixed, row, col) ==
+                    (row == 3 && col < 3 ? expected_translation[col] : (row == col ? 65536 : 0)),
+                    "translate matrix is not exact identity plus source FTOFIX32 translation");
+    const auto initial_fixed = nodes[0].fixed;
+    const auto initial_revision = nodes[0].revision;
+    ok(isle_game_model_set_transform(world.game, model, 0, &initial[0].transform));
+    ok(isle_game_model_set_flags(world.game, model, 0, 1));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+    require(nodes == stable && nodes[0].revision == initial_revision && nodes[1].revision == child_revision &&
+            world.arena.cursor == used, "unchanged translate/flags invalidated cache or replaced native borrow");
+    for (unsigned channel = 0; channel < 5; ++channel) {
+        auto invalid = initial[0].transform;
+        if (channel == 0) invalid.rotation.x = 1;
+        if (channel == 1) invalid.scale.z = 2;
+        if (channel == 2) invalid.position.y = std::numeric_limits<float>::quiet_NaN();
+        if (channel == 3) invalid.position.z = std::numeric_limits<float>::infinity();
+        if (channel == 4) invalid.position.x = 32768;
+        require(isle_game_model_set_transform(world.game, model, 0, &invalid) == ISLE_GAME_INVALID_ARGUMENT,
+                "invalid translate mutation accepted");
+        ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+        require(nodes == stable && nodes[0].revision == initial_revision &&
+                std::memcmp(&nodes[0].fixed, &initial_fixed, sizeof(initial_fixed)) == 0 &&
+                nodes[0].transform.position.x == initial[0].transform.position.x && world.arena.cursor == used,
+                "rejected translate mutation dirtied state/cache or allocated");
+    }
+    auto boundary = initial[0].transform;
+    boundary.position = {-32768.0f, std::nextafter(32768.0f, 0.0f), -0.5f / 65536.0f};
+    ok(isle_game_model_set_transform(world.game, model, 0, &boundary));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+    require(nodes == stable && nodes[0].revision == initial_revision + 1 &&
+            nodes[1].revision == child_revision && world.arena.cursor == used &&
+            fixed_lane(nodes[0].fixed, 3, 0) == std::numeric_limits<std::int32_t>::min() &&
+            fixed_lane(nodes[0].fixed, 3, 1) == 2147483520 &&
+            fixed_lane(nodes[0].fixed, 3, 2) == 0,
+            "translate boundary/truncate/cache/selective invalidation semantics differ from source");
+    ok(isle_game_model_set_transform(world.game, model, 0, &initial[0].transform));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+    require(nodes[0].revision == initial_revision + 2 && nodes[1].revision == child_revision &&
+            std::memcmp(&nodes[0].fixed, &initial_fixed, sizeof(initial_fixed)) == 0,
+            "restored translate input failed exact fixed repeat");
+    ok(isle_game_delete_object(world.game, owner));
+    require(counts(world).models == 0 && counts(world).model_nodes == 0 && counts(world).matrices == 0,
+            "mixed-kind model ownership did not retire");
+}
+
 void model_photo_bake() {
     auto root = identity_model_transform();
     root.position = {10, 20, 30};
@@ -591,7 +896,7 @@ void model_rejection_atomicity_and_reuse() {
     World world(8192);
     auto* owner = object(world, 1);
     auto* other = object(world, 2);
-    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform()};
+    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
     IsleGameModel* model = nullptr;
     const auto before = world.arena.cursor;
     auto invalid = initial;
@@ -688,7 +993,7 @@ void model_deferred_delete_and_destroy() {
         EngineFixture fixture{}; fixture.game = world.game; fixture.mode = mode;
         auto* owner = object(world, 1, 0, 0, mode == 2 ? engine_delete_self : nullptr,
                              mode == 2 ? &fixture : nullptr);
-        IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform()};
+        IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
         IsleGameModel* model = nullptr;
         ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
         if (mode != 2) process(world, owner, engine_delete_self, &fixture,
@@ -701,7 +1006,7 @@ void model_deferred_delete_and_destroy() {
     }
     World world;
     auto* owner = object(world, 1);
-    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform()};
+    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
     IsleGameModel* model = nullptr;
     ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
     world.reset();
@@ -721,9 +1026,12 @@ int main() {
         actual_intro_fade_and_cold_reset();
         bounded_pool_reuse_and_failure_fence();
         camera_geometry_and_cache();
+        camera_reflection_roll_geometry_and_state();
+        camera_batch_failure_is_atomic();
         camera_rejection_and_typed_cleanup();
         camera_exhaustion_and_reuse();
         model_hierarchy_math_and_cache();
+        model_translate_selection_and_cache();
         model_photo_bake();
         model_rejection_atomicity_and_reuse();
         model_deferred_delete_and_destroy();

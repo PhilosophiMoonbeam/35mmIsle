@@ -122,7 +122,8 @@ typedef struct IsleGameCameraParameters {
 } IsleGameCameraParameters;
 typedef enum IsleGameCameraMatrixKind {
     ISLE_GAME_CAMERA_PERSPECTIVE_FAST = 3,
-    ISLE_GAME_CAMERA_LOOK_AT = 6
+    ISLE_GAME_CAMERA_LOOK_AT = 6,
+    ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL = 14
 } IsleGameCameraMatrixKind;
 /* Native numeric words, NOT a host-endian serialized SDK structure. First
  * eight words pair signed integral halves, last eight pair fractional halves.
@@ -137,9 +138,20 @@ typedef struct IsleGameCameraMatrix {
     IsleGameCameraMatrixKind kind;
 } IsleGameCameraMatrix;
 
+/* Numeric RCP LookAt light values, not a serialized SDK structure. Axis 0 is
+ * screen-right, axis 1 screen-up. Directions are signed 1.7 (positive unity
+ * saturates to 127, negative unity is -128). Colors are actual GAME outputs.
+ */
+typedef struct IsleGameCameraReflection {
+    int8_t direction[2][3];
+    uint8_t color[2][3], color_copy[2][3];
+    uint64_t revision;
+} IsleGameCameraReflection;
+
 /* Nonanimated camera payload, type 3, attached only to an empty object. Like
- * GAME omGObjSetCamera it initially has no matrices. Add up to two of either
+ * GAME omGObjSetCamera it initially has no matrices. Add up to two of any
  * supported kind, as GAME omCameraAddMtx permits; defaults are GAME parameters.
+ * Roll defaults to zero radians and affects only reflection-roll matrices.
  * No renderer, command, animation or callback interface is implied.
  * All handles/borrows expire on removal or object deletion, including reuse.
  * Borrow addresses stay stable until removal; contents change only on compute
@@ -157,12 +169,23 @@ IsleGameResult isle_game_camera_set_perspective(IsleGame* game, IsleGameCamera* 
                                                const IsleGamePerspective* parameters);
 IsleGameResult isle_game_camera_set_look_at(IsleGame* game, IsleGameCamera* camera,
                                            const IsleGameLookAt* parameters);
+IsleGameResult isle_game_camera_set_roll(IsleGame* game, IsleGameCamera* camera, float radians);
+IsleGameResult isle_game_camera_roll(IsleGame* game, IsleGameCamera* camera, float* output);
 IsleGameResult isle_game_camera_set_viewport(IsleGame* game, IsleGameCamera* camera,
                                             const IsleGameViewport* parameters);
 IsleGameResult isle_game_camera_parameters(IsleGame* game, IsleGameCamera* camera,
                                           const IsleGameCameraParameters** output);
+/* Compute every dirty matrix/reflection as one transaction. Failure leaves all
+ * matrix/reflection payloads, revisions and normalization unpublished; success
+ * publishes only dirty entries, with unchanged stable borrow addresses.
+ */
+IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* camera);
 IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
                                       size_t index, const IsleGameCameraMatrix** output);
+/* Same index/cache/revision and lifetime as matrix(); basic/projection indices
+ * return INVALID_STATE, never fabricated reflection directions. */
+IsleGameResult isle_game_camera_reflection(IsleGame* game, IsleGameCamera* camera,
+                                          size_t index, const IsleGameCameraReflection** output);
 IsleGameResult isle_game_camera_matrix_count(IsleGame* game, IsleGameCamera* camera,
                                             size_t* output);
 IsleGameResult isle_game_camera_perspective_normalization(IsleGame* game,
@@ -174,16 +197,25 @@ typedef struct IsleGameVec3 { float x, y, z; } IsleGameVec3;
 typedef struct IsleGameModelTransform {
     IsleGameVec3 position, rotation, scale;
 } IsleGameModelTransform;
+/* Native choices, not serialized console matrix-kind numbers. Selection is
+ * immutable for a node's lifetime; both use the same stable revision cache.
+ */
+typedef enum IsleGameModelMatrixKind {
+    ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE = 0,
+    ISLE_GAME_MODEL_TRANSLATE = 1
+} IsleGameModelMatrixKind;
 typedef struct IsleGameModelNodeInit {
     uint32_t parent; /* UINT32_MAX root; otherwise an earlier node index. */
     IsleGameModelTransform transform;
+    IsleGameModelMatrixKind matrix_kind;
 } IsleGameModelNodeInit;
 typedef struct IsleGameModelNode {
     IsleGameModelTransform transform;
     uint32_t parent, first_child, next_sibling; /* UINT32_MAX absent. */
     uint32_t flags;
-    IsleGameFixedMatrix fixed; /* Direct GAME kind-28 integer computation. */
+    IsleGameFixedMatrix fixed; /* Direct selected GAME integer computation. */
     uint64_t revision;
+    IsleGameModelMatrixKind matrix_kind;
 } IsleGameModelNode;
 
 /* Native type-1 payload: exactly one root, parent-before-child node order.
@@ -194,10 +226,18 @@ typedef struct IsleGameModelNode {
  * at removal, including slot reuse. Pointer/count outputs clear on errors.
  * Finite angle, scale*256 and translation*65536 must fit signed int32 before
  * GAME casts; MIPS low-word products and arithmetic shifts are defined explicitly.
+ * Translate-only nodes require zero rotation and unit scale; their positions
+ * use exact GAME hal_translate without sine-table work or quantization.
  */
 IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output);
 IsleGameResult isle_game_remove_model(IsleGame* game, IsleGameModel* model);
+/* Pure preflight: owner/index/kind/scalar checks only, no state/cache mutation.
+ * With no intervening mutation/callback/thread access, the same setter input
+ * cannot subsequently fail. The caller owns that exclusion.
+ */
+IsleGameResult isle_game_model_validate_transform(IsleGame* game, IsleGameModel* model,
+    size_t index, const IsleGameModelTransform* transform);
 IsleGameResult isle_game_model_set_transform(IsleGame* game, IsleGameModel* model,
     size_t index, const IsleGameModelTransform* transform);
 IsleGameResult isle_game_model_set_flags(IsleGame* game, IsleGameModel* model,

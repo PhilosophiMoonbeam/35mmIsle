@@ -415,7 +415,8 @@ IsleGameResult isle_game_camera_add_matrix(IsleGame* game, IsleGameCamera* camer
     OMMtx* matrix;
     IsleGameResult result = access_camera(game, camera);
     if (result != ISLE_GAME_OK) return result;
-    if (kind != ISLE_GAME_CAMERA_PERSPECTIVE_FAST && kind != ISLE_GAME_CAMERA_LOOK_AT)
+    if (kind != ISLE_GAME_CAMERA_PERSPECTIVE_FAST && kind != ISLE_GAME_CAMERA_LOOK_AT &&
+        kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
         return ISLE_GAME_INVALID_ARGUMENT;
     if (camera->numMatrices == ARRAY_COUNT(camera->matrices)) return ISLE_GAME_EXHAUSTED;
     matrix = game->free_matrices;
@@ -484,6 +485,27 @@ IsleGameResult isle_game_camera_set_look_at(IsleGame* game, IsleGameCamera* came
     if (!changed) return ISLE_GAME_OK;
     camera->parameters.look_at = *p;
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT);
+    invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL);
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_set_roll(IsleGame* game, IsleGameCamera* camera, float radians) {
+    IsleGameResult result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (!isfinite(radians)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (camera->roll == radians) return ISLE_GAME_OK;
+    camera->roll = radians;
+    invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL);
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_roll(IsleGame* game, IsleGameCamera* camera, float* output) {
+    IsleGameResult result;
+    if (output != NULL) *output = 0;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = camera->roll;
     return ISLE_GAME_OK;
 }
 
@@ -520,6 +542,82 @@ IsleGameResult isle_game_camera_matrix_count(IsleGame* game, IsleGameCamera* cam
     return ISLE_GAME_OK;
 }
 
+/* All source math and finite checks finish before any output/cache publication.
+ * The same computation serves individual getters and atomic camera batches.
+ */
+static IsleGameResult compute_camera_matrix(const OMCamera* camera, const OMMtx* matrix,
+    IsleGameCameraMatrix* output, IsleGameCameraReflection* reflected, u16* norm) {
+    Mtx4f floating;
+    LookAt reflection;
+    u16 normalization = *norm;
+    if (matrix->result.kind == ISLE_GAME_CAMERA_PERSPECTIVE_FAST) {
+        const IsleGamePerspective* p = &camera->parameters.perspective;
+        /* Keep invalid huge inputs away from GAME's float-to-u16 norm cast. */
+        float sum = p->near_plane + p->far_plane;
+        if (!isfinite(sum)) return ISLE_GAME_INVALID_ARGUMENT;
+        hal_perspective_fast_f(floating, &normalization,
+                              p->fovy, p->aspect, p->near_plane, p->far_plane, p->scale);
+    } else {
+        const IsleGameLookAt* p = &camera->parameters.look_at;
+        if (matrix->result.kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) {
+            if (!hal_look_at_reflect_roll_f(floating, &reflection,
+                    p->eye[0], p->eye[1], p->eye[2], p->at[0], p->at[1], p->at[2],
+                    camera->roll, p->up[0], p->up[1], p->up[2]))
+                return ISLE_GAME_INVALID_ARGUMENT;
+        } else {
+            hal_look_at_f(floating, p->eye[0], p->eye[1], p->eye[2],
+                          p->at[0], p->at[1], p->at[2], p->up[0], p->up[1], p->up[2]);
+        }
+    }
+    for (size_t row = 0; row < 4; ++row) {
+        for (size_t col = 0; col < 4; ++col) {
+            float value = floating[row][col] * 65536.0f;
+            if (!isfinite(value) || value < -2147483648.0f || value >= 2147483648.0f)
+                return ISLE_GAME_INVALID_ARGUMENT;
+        }
+    }
+    output->kind = matrix->result.kind;
+    output->revision = matrix->result.revision + 1;
+    memcpy(output->floating, floating, sizeof(floating));
+    hal_mtx_f2l(floating, &output->fixed);
+    if (output->kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) {
+        for (size_t axis = 0; axis < 2; ++axis) {
+            memcpy(reflected->direction[axis], reflection.l[axis].l.dir, 3);
+            memcpy(reflected->color[axis], reflection.l[axis].l.col, 3);
+            memcpy(reflected->color_copy[axis], reflection.l[axis].l.colc, 3);
+        }
+        reflected->revision = output->revision;
+    }
+    *norm = normalization;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* camera) {
+    struct {
+        IsleGameCameraMatrix matrix;
+        IsleGameCameraReflection reflection;
+    } staged[2];
+    IsleGameResult result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    u16 normalization = camera->normalization;
+    for (size_t i = 0; i < camera->numMatrices; ++i) {
+        const OMMtx* matrix = camera->matrices[i];
+        if (matrix->cached) continue;
+        result = compute_camera_matrix(camera, matrix, &staged[i].matrix, &staged[i].reflection, &normalization);
+        if (result != ISLE_GAME_OK) return result;
+    }
+    for (size_t i = 0; i < camera->numMatrices; ++i) {
+        OMMtx* matrix = camera->matrices[i];
+        if (matrix->cached) continue;
+        matrix->result = staged[i].matrix;
+        if (matrix->result.kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
+            matrix->reflection = staged[i].reflection;
+        matrix->cached = true;
+    }
+    camera->normalization = normalization;
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
                                       size_t index, const IsleGameCameraMatrix** output) {
     OMMtx* matrix;
@@ -530,30 +628,27 @@ IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
     if (output == NULL || index >= camera->numMatrices) return ISLE_GAME_INVALID_ARGUMENT;
     matrix = camera->matrices[index];
     if (!matrix->cached) {
-        if (matrix->result.kind == ISLE_GAME_CAMERA_PERSPECTIVE_FAST) {
-            const IsleGamePerspective* p = &camera->parameters.perspective;
-            /* Keep invalid huge inputs away from GAME's float-to-u16 norm cast. */
-            float sum = p->near_plane + p->far_plane;
-            if (!isfinite(sum)) return ISLE_GAME_INVALID_ARGUMENT;
-            hal_perspective_fast_f(matrix->result.floating, &camera->normalization,
-                                  p->fovy, p->aspect, p->near_plane, p->far_plane, p->scale);
-        } else {
-            const IsleGameLookAt* p = &camera->parameters.look_at;
-            hal_look_at_f(matrix->result.floating, p->eye[0], p->eye[1], p->eye[2],
-                          p->at[0], p->at[1], p->at[2], p->up[0], p->up[1], p->up[2]);
-        }
-        for (size_t row = 0; row < 4; ++row) {
-            for (size_t col = 0; col < 4; ++col) {
-                float value = matrix->result.floating[row][col] * 65536.0f;
-                if (!isfinite(value) || value < -2147483648.0f || value >= 2147483648.0f)
-                    return ISLE_GAME_INVALID_ARGUMENT;
-            }
-        }
-        hal_mtx_f2l(matrix->result.floating, &matrix->result.fixed);
-        ++matrix->result.revision;
+        result = compute_camera_matrix(camera, matrix, &matrix->result, &matrix->reflection, &camera->normalization);
+        if (result != ISLE_GAME_OK) return result;
         matrix->cached = true;
     }
     *output = &matrix->result;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_reflection(IsleGame* game, IsleGameCamera* camera,
+                                          size_t index, const IsleGameCameraReflection** output) {
+    const IsleGameCameraMatrix* computed;
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || index >= camera->numMatrices) return ISLE_GAME_INVALID_ARGUMENT;
+    if (camera->matrices[index]->result.kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
+        return ISLE_GAME_INVALID_STATE;
+    result = isle_game_camera_matrix(game, camera, index, &computed);
+    if (result != ISLE_GAME_OK) return result;
+    *output = &camera->matrices[index]->reflection;
     return ISLE_GAME_OK;
 }
 
@@ -606,6 +701,15 @@ static bool valid_model_transform(const IsleGameModelTransform* t) {
         signed_word_range(t->scale.y * 256.0f) &&
         signed_word_range(t->scale.z * 256.0f);
 }
+static bool valid_model_matrix_transform(const IsleGameModelTransform* t, IsleGameModelMatrixKind kind) {
+    if (kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE) return valid_model_transform(t);
+    if (kind != ISLE_GAME_MODEL_TRANSLATE || t == NULL) return false;
+    return signed_word_range(t->position.x * 65536.0f) &&
+        signed_word_range(t->position.y * 65536.0f) &&
+        signed_word_range(t->position.z * 65536.0f) &&
+        t->rotation.x == 0.0f && t->rotation.y == 0.0f && t->rotation.z == 0.0f &&
+        t->scale.x == 1.0f && t->scale.y == 1.0f && t->scale.z == 1.0f;
+}
 
 static bool same_vec3(IsleGameVec3 a, IsleGameVec3 b) {
     return a.x == b.x && a.y == b.y && a.z == b.z;
@@ -650,7 +754,8 @@ IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     if (object->type != 0 || object->data.any != NULL) return ISLE_GAME_INVALID_STATE;
     for (size_t i = 0; i < count; ++i) {
         if ((i == 0 ? initial[i].parent != UINT32_MAX : initial[i].parent >= i) ||
-            !valid_model_transform(&initial[i].transform)) return ISLE_GAME_INVALID_ARGUMENT;
+            !valid_model_matrix_transform(&initial[i].transform, initial[i].matrix_kind))
+            return ISLE_GAME_INVALID_ARGUMENT;
     }
     /* Best-fit released block, or one actual-size allocation. All rejection
      * precedes free-list/arena mutation and object publication.
@@ -676,7 +781,8 @@ IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     for (size_t i = 0; i < count; ++i) {
         model->nodes[i] = (IsleGameModelNode){
             .transform = initial[i].transform, .parent = initial[i].parent,
-            .first_child = UINT32_MAX, .next_sibling = UINT32_MAX
+            .first_child = UINT32_MAX, .next_sibling = UINT32_MAX,
+            .matrix_kind = initial[i].matrix_kind
         };
         model_dirty(model)[i] = 1;
     }
@@ -704,11 +810,19 @@ IsleGameResult isle_game_remove_model(IsleGame* game, IsleGameModel* model) {
     return ISLE_GAME_OK;
 }
 
-IsleGameResult isle_game_model_set_transform(IsleGame* game, IsleGameModel* model,
+IsleGameResult isle_game_model_validate_transform(IsleGame* game, IsleGameModel* model,
     size_t index, const IsleGameModelTransform* transform) {
     IsleGameResult result = access_model(game, model);
     if (result != ISLE_GAME_OK) return result;
-    if (index >= model->count || !valid_model_transform(transform)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (index >= model->count || !valid_model_matrix_transform(transform, model->nodes[index].matrix_kind))
+        return ISLE_GAME_INVALID_ARGUMENT;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_set_transform(IsleGame* game, IsleGameModel* model,
+    size_t index, const IsleGameModelTransform* transform) {
+    IsleGameResult result = isle_game_model_validate_transform(game, model, index, transform);
+    if (result != ISLE_GAME_OK) return result;
     IsleGameModelTransform* old = &model->nodes[index].transform;
     if (same_vec3(old->position, transform->position) &&
         same_vec3(old->rotation, transform->rotation) &&
@@ -739,8 +853,11 @@ IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
         if (!model_dirty(model)[i]) continue;
         IsleGameModelNode* node = &model->nodes[i];
         const IsleGameModelTransform* t = &node->transform;
-        hal_rotate_rpy_translate_scale(&node->fixed, t->position.x, t->position.y, t->position.z,
-            t->rotation.x, t->rotation.y, t->rotation.z, t->scale.x, t->scale.y, t->scale.z);
+        if (node->matrix_kind == ISLE_GAME_MODEL_TRANSLATE)
+            hal_translate(&node->fixed, t->position.x, t->position.y, t->position.z);
+        else
+            hal_rotate_rpy_translate_scale(&node->fixed, t->position.x, t->position.y, t->position.z,
+                t->rotation.x, t->rotation.y, t->rotation.z, t->scale.x, t->scale.y, t->scale.z);
         ++node->revision;
         model_dirty(model)[i] = 0;
     }

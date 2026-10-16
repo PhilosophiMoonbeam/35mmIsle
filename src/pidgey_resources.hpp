@@ -2,6 +2,7 @@
 #define ISLE_PIDGEY_RESOURCES_HPP
 
 #include "rom_snapshot.hpp"
+#include "rom_view.hpp"
 
 #include <array>
 #include <cstddef>
@@ -19,18 +20,6 @@ inline constexpr std::size_t installation_span_count = 42;
 inline constexpr std::size_t rdram_size = 8 * 1024 * 1024;
 inline constexpr std::uint8_t no_index = 0xff;
 
-// Every byte span borrows the admitted Snapshot, in canonical big-endian order.
-// Addresses are guest KSEG0 values, never host pointers or ROM offsets.
-struct RomView {
-    std::uint32_t guest_address = 0;
-    std::size_t rom_offset = 0;
-    std::span<const std::byte> bytes{};
-
-    std::uint8_t u8(std::size_t offset) const;
-    std::uint16_t u16(std::size_t offset) const;
-    std::uint32_t u32(std::size_t offset) const;
-    float f32(std::size_t offset) const;
-};
 
 struct Vec3 { float x, y, z; };
 struct Node {
@@ -49,7 +38,7 @@ struct Payload {
 };
 struct Command { std::uint32_t w0, w1; };
 struct DisplayList {
-    RomView wire;
+    rom::GuestView wire;
     std::size_t command_count() const noexcept { return wire.bytes.size() / 8; }
     Command command(std::size_t index) const;
 };
@@ -61,7 +50,7 @@ struct Vertex {
 };
 enum class TextureKind { rgba16_palette, ci4, ci8 };
 struct TextureView {
-    RomView wire;
+    rom::GuestView wire;
     TextureKind kind;
     std::uint16_t width; // Palette entry count for rgba16_palette.
     std::uint16_t height;
@@ -70,7 +59,7 @@ struct TextureView {
 // Native scalar view of GAME's Texture (include/sys/om.h:423-467), not an SDK
 // structure. Retain all static fields, including the GAME's unnamed parameters.
 struct Material {
-    RomView wire;
+    rom::GuestView wire;
     std::uint16_t pad00;
     std::uint8_t format, palette_bit_depth;
     std::uint32_t images_guest;
@@ -91,20 +80,20 @@ struct Material {
     std::array<std::int32_t, 4> trailing;
 };
 struct PhotoSelection {
-    RomView render_record; // Only the selected D_800ADBEC record, not the whole table.
-    RomView animation_set_record; // Only the selected D_800AD4B8 record.
+    rom::GuestView render_record; // Only the selected D_800ADBEC record, not the whole table.
+    rom::GuestView animation_set_record; // Only the selected D_800AD4B8 record.
     std::uint32_t pokemon_id, model_guest, materials_guest, render_callback_guest;
     float scale;
     std::uint32_t pose_table_guest, pose_count;
 };
 struct Pose0 {
-    RomView record; // First D_800AC414 record; poses 1-3 are deliberately not installed.
-    RomView model_table;
+    rom::GuestView record; // First D_800AC414 record; poses 1-3 are deliberately not installed.
+    rom::GuestView model_table;
     float pose_id;
     std::uint32_t material_animation_guest;
     // Index corresponds to the 17 live nodes. Null table entries have empty views.
     // Each nonempty stream includes its END word; these are not evaluated here.
-    std::array<RomView, node_count> model_streams;
+    std::array<rom::GuestView, node_count> model_streams;
 };
 struct ExternalDisplayList {
     std::uint32_t command_guest;
@@ -132,8 +121,8 @@ public:
     const std::array<std::uint32_t, node_count>& node_material_guests() const noexcept { return node_materials_; }
     const PhotoSelection& photo_selection() const noexcept { return selection_; }
     const Pose0& pose0() const noexcept { return pose0_; }
-    const RomView& tree_wire() const noexcept { return tree_; }
-    const RomView& vertex_wire() const noexcept { return vertices_; }
+    const rom::GuestView& tree_wire() const noexcept { return tree_; }
+    const rom::GuestView& vertex_wire() const noexcept { return vertices_; }
     Vertex vertex(std::size_t index) const;
 
     // hd_part7_draw calls segment 0x0E+0: its dynamic material list is the real
@@ -143,7 +132,7 @@ public:
     // Exact disjoint writes, useful for caller RAM reservations and guard checks.
     // Includes only selected lookup records, not other species/poses or padding
     // between texture objects. Nothing else in the caller's memory is reset.
-    const std::array<RomView, installation_span_count>& installation_spans() const noexcept { return install_; }
+    const std::array<rom::GuestView, installation_span_count>& installation_spans() const noexcept { return install_; }
     std::size_t installed_byte_count() const noexcept;
     // Requires exactly caller-owned 8 MiB in the backend's word-swapped layout.
     // Copies original bytes to (guest - 0x80000000) ^ 3, preserving all pointers.
@@ -153,7 +142,7 @@ public:
 
 private:
     const rom::Snapshot* snapshot_;
-    RomView tree_, vertices_;
+    rom::GuestView tree_, vertices_;
     std::array<Node, node_count> nodes_{};
     std::array<Payload, payload_count> payloads_{};
     std::array<DisplayList, display_list_count> lists_{};
@@ -163,7 +152,7 @@ private:
     PhotoSelection selection_{};
     Pose0 pose0_{};
     ExternalDisplayList external_{};
-    std::array<RomView, installation_span_count> install_{};
+    std::array<rom::GuestView, installation_span_count> install_{};
 };
 } // namespace isle::pidgey
 #endif

@@ -68,4 +68,13 @@ if(BUILD_TESTING)
     set_tests_properties(engine-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
 endif()
 
-message(STATUS "Native OM/model/intro-fade/camera and kind-28/photo math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")
+if(ISLE_BUILD_RSP_PROBE AND ISLE_BUILD_RDP_PROBE)
+    # Explicit private-ROM diagnostic, deliberately not an automatic CTest.
+    # Canonical executor/fixture targets are declared later by the root build.
+    add_executable(engine-camera-rsp-smoke tests/engine_camera_rsp_smoke.cpp)
+    target_link_libraries(engine-camera-rsp-smoke PRIVATE
+        isle-engine isle-rom-snapshot isle-rsp-fixture isle-canonical-executor)
+    isle_target_options(engine-camera-rsp-smoke)
+endif()
+
+message(STATUS "Native OM/model/intro-fade/camera, translate-only and kind-28/photo math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")

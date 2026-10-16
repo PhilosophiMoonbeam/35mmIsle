@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Provenance for isle::beach::StartResources and StartProducer: first primary Beach static block plus sky ONLY through native GAME camera/model records and canonical actual RSP/RDP tasks. Native descriptors borrow canonical admitted Snapshot bytes; original lists/data stay unchanged in RDRAM. Not full-level/gameplay/road/spawn/actor/material-animation or source-import admission. No extracted asset payloads are present.",
+  "rom": {
+    "canonical_order": "big-endian z64",
+    "size": 16777216,
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc"
+  },
+  "source_files": {
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "facts": "64-137 GAME wire fields: SkyBox 0x14; WorldBlockGFX fixed header 0x20, variable cpTimeStamps tail; WorldBlockDescriptor 0x24; WorldBlockSetup 0x0C; WorldSetup meaningful fields through 0x1D. movementAnimDuration at 0x1C is SIGNED32, not float. No SDK object layout is used."
+    },
+    "src/world/block.c": {
+      "git_blob": "be2f88ac84fea914d4894e522c76830a47602b04",
+      "sha256": "1cff059a365a3a0ee3bfae553d5198fed4b12c9030c686618f662dcedc40b221",
+      "facts": "120-207 sky callback choices, translate vs rotate/translate, follow-camera behavior; 254-266 block position relative to current block times 100; 439-506 Type A/C use translate-only matrices despite assigning yaw; 508-537 road/movement separate from static model; 540-647 two null-terminated block groups; 649-661 setup fog/background/global sky speed. Exact 0x800E1CA4 callback semantics independently established from a bounded own-GAME ROM function span, not an absent map symbol or an inference from source order; see sky_callback_identity."
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8",
+      "facts": "15-30 and 81-115 renderModelTypeAFogged enables fog, invokes Type A renderer, restores fog state; 177-213 world background/fog setters and original fog distance/color patch semantics. StartProducer emits their public-wire equivalents around the unchanged original terrain list."
+    },
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "facts": "79-84 createWorld root D_8011B914 and setSkyBoxFollowPlayer; 140-158 background passed to main camera creation. Actor callbacks and runtime remain excluded."
+    },
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "facts": "838-853 root model matrix multiply/push; 1086-1114 Type A root draw/pop; 2106-2168 viewport/scissor, Z/background fill and opaque rendering. Scissor divides translation/4 and scale/4 separately before sum/difference (2119-2122), then encodes integer pixel bounds (2137). 2355-2376 kinds3/14 projection-normalization/reflection/view command order. Source MTX_TYPE_TRANSLATE selects hal_translate, not native kind28's quantized sine-table linear block."
+    },
+    "src/sys/matrix.c": {
+      "git_blob": "b6c98ec45939cd9e59ef16d7e44868eee5dc250d",
+      "sha256": "a0f4c47c2428b846a171fbb1fe30e8254f7bf67d69e30cb191ad87439f1f7f77",
+      "facts": "1020-1049 hal_translate writes exact identity linear words and FTOFIX32 translation. Exact unchanged definition is privately admitted to native engine (source/native SHA25667bbcbdb9e9418cc00592645f11fed9741069fd8bd1f278aa9124a62d9aaef5e). Beach native model nodes explicitly select translate-only; no kind28 trig work, quantized linear block or packed-row substitution."
+    },
+    "src/app_level/player.c": {
+      "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
+      "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b",
+      "facts": "2936-2975 main-camera kinds3/14, fovy60, near10, far25600, source initial eye/at/up and bordered viewport. Private producer smoke instead selects a clearly labeled diagnostic eye/at and full64x48 viewport; no Original first-rendered-frame or road/gameplay pose is claimed."
+    },
+    "src/app_render/score.c": {
+      "git_blob": "17a0d973c0050536cf4af4265a0bb106f294c82e",
+      "sha256": "ae38f419085fa0506c799d06347b4f6e0772ac06819021f07f838735e24cb60c",
+      "facts": "99-122 deterministic public-wire initial geometry, identity, clip ratio and texture state pattern already used by the native Pidgey producer; Beach applies genuine world fog/sky wrappers and original static lists, not score-pass lighting or actors."
+    },
+    "src/sys/gtl.c": {
+      "git_blob": "5b7ed17b40804177dacc5dbfb33283cf7f405175",
+      "sha256": "572c963eea665c1ce02c6e4470b268d76fe8d8ad15790809b21ead077e6cb931",
+      "facts": "325-364 graphics FIFO task setup; existing Pidgey main-image/BSS/boot/microcode/task residency moved to shared graphics_task support, with every Pidgey consumer cleanly migrated. CPU image remains inert; real RSP code only executes."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "facts": "770-796 beach_assets ROM mapping starts 0xA74E0 at guest 0x8011B050, ROM end 0x13C780. No native_a74f0, standalone_data.c, generated texture declarations or SDK producer inputs read."
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d",
+      "facts": "748 renderModelTypeAFogged identity 0x800A1530. All resource root pointers/extents/counts are independently decoded from admitted ROM wire traversal, not generated declarations."
+    }
+  },
+  "public_wire_abi": {
+    "url": "https://hack64.net/wiki/doku.php?id=f3dex2",
+    "facts": "Public numeric F3DEX2/RDP encoding only: vertex/list/image traversal; matrix load/multiply/push/pop, perspective normalize, LookAt light DMA, combined-MVP SPECIAL_1 recalculation, viewport/scissor, segment, geometry and other modes, fog factors/color, render modes and FullSync. No SDK producer body/header/opaque layout consulted."
+  },
+  "mapping": {
+    "name": "beach_assets",
+    "guest_start": "0x8011B050",
+    "rom_start": "0xA74E0",
+    "rom_end_exclusive": "0x13C780",
+    "rule": "rom = rom_start + guest - guest_start; only bounded aligned views inside this segment"
+  },
+  "roots": {
+    "world_setup": {"guest": "0x8011B914", "rom": "0xA7DA4", "meaningful_bytes": 30},
+    "blocks_setup": {"guest": "0x80135DBC", "rom": "0xC224C", "bytes": 12},
+    "primary_table": {"guest": "0x80135D84", "count": 8, "terminator_count": 1, "stride": 4},
+    "secondary_table": {"guest": "0x80135DA8", "count": 4, "terminator_count": 1, "stride": 4},
+    "start_descriptor": {"guest": "0x80135C64", "bytes": 36, "world_position": [0, 0, 0], "yaw": 0, "reversed": false},
+    "start_gfx": {"guest": "0x8011CD50", "fixed_header_bytes": 32, "materials": "0x0", "texture_animation": "0x0", "render_callback": "0x800A1530", "matrix_kind": "translate only"},
+    "sky": {"guest": "0x8011B940", "rom": "0xA7DD0", "bytes": 20, "render_callback": "0x800E1CA4", "materials": "0x0", "animation": "0x0", "animation_speed": 0},
+    "fog": {"min": 996, "max": 1000, "rgb": [90, 161, 188]},
+    "background_rgb": [90, 140, 200],
+    "global_sky_animation_speed_binary32_bits": "0x3ECCCCCD"
+  },
+  "sky_callback_identity": {
+    "method": "Bounded instruction observations within independently known own-GAME world/block callback; no SDK producer body or callee followed, no inferred symbol identity.",
+    "mapping": "Pinned splat.yaml420-429: world/block ROM0x5F050 maps guest0x800E18A0; next code begins ROM0x60860.",
+    "guest": "0x800E1CA4",
+    "rom_begin": "0x5F454",
+    "rom_end_exclusive": "0x5F530",
+    "function_sha256": "dadc126a6530bb3add03af5e5952c4eb5cfa481296efb63573e64dda965f5989",
+    "observed_semantics": "E700 sync; E3000A01/0 one cycle; E200001C/00552048 AA opaque no-Z surface; D9FEFFFE/0 clears fog+Z; direct GAME Type A renderer target0x80014D60; E700 sync; D9FFFFFF/00010001 restores fog+Z. Exactly source block.c120-128 drawSkyBox1Cycle-equivalent, so createSkyBox selects translate-only and no rotation process. Sky follows main camera eye."
+  },
+  "closure": {
+    "derivation": "Counts below independently derived by following root GBI words in the exact admitted ROM. C++ implementation/smoke source are source-complete but not runtime-admitted until main builds/exercises them.",
+    "display_lists": [
+      {"guest": "0x8011CF00", "rom": "0xA9390", "commands": 720, "bytes": 5760},
+      {"guest": "0x8011CC28", "rom": "0xA90B8", "commands": 36, "bytes": 288}
+    ],
+    "display_list_count": 2,
+    "command_count": 756,
+    "call_or_branch_count": 0,
+    "external_resource_reference_count": 0,
+    "vertex_load_count": 84,
+    "loaded_vertex_count_including_reloads": 1120,
+    "unique_vertex_count": 1106,
+    "vertex_unions": [
+      {"guest_begin": "0x8011C968", "guest_end_exclusive": "0x8011CC28", "bytes": 704},
+      {"guest_begin": "0x8011E580", "guest_end_exclusive": "0x801227E0", "bytes": 16992}
+    ],
+    "texture_load_count": 20,
+    "texture_bytes": 40960,
+    "rgba16_palette_load_count": 19,
+    "palette_bytes": 1036,
+    "image_extent_rule": "Actual SETTIMG source size code 2, width 1; LOADBLOCK consumes (lrs+1)*2 bytes. LOADTLUT consumes (count+1)*2 bytes. Palette counts are not rounded to 16 entries or padded words. All image source addresses are inside admitted beach_assets. Source load format/size does not assert rendered CI bit depth or dimensions."
+  },
+  "installation": {
+    "layout": "Exactly caller-owned 8 MiB, word-swapped canonical backend RAM. dst[(guest - 0x80000000 + i) XOR 3] = source[i].",
+    "span_rule": "Sorted union of reachable list, vertex-load and image-load byte extents; merge only overlapping or immediately adjacent selected spans. No full bank copies or alignment padding.",
+    "span_count": 40,
+    "total_bytes": 65740,
+    "always_reserved_logical_physical_ranges": [
+      {"begin": "0x100000", "end_exclusive": "0x110000", "use": "producer runtime"},
+      {"begin": "0x200000", "end_exclusive": "0x210000", "use": "FIFO"},
+      {"begin": "0x300000", "end_exclusive": "0x327000", "use": "frame/depth planes"}
+    ],
+    "prewrite_rejections": "Wrong RAM extent, moved-from Snapshot, RAM/ROM alias, invalid additional reservation extent, any selected resource overlap with built-in/additional reservations, invalid target/source provenance. All targets checked before any write; all other bytes preserved, including partial palette words.",
+    "metadata_policy": "GAME setup/descriptor/table/fixed-GFX/sky wires are retained as native borrowed metadata only, never installed as misleading guest pointers to excluded runtime resources. No per-frame resource allocation."
+  },
+  "explicit_exclusions": {
+    "other_blocks": 11,
+    "other_blocks_with_material_or_texture_animation_pointers": 5,
+    "roads_and_movement": {"first_road_guest": "0x801228E0", "control_lines": 2, "first_movement_guest": "0x80122970", "duration_signed32": 100, "variable_cpTimeStamps_tail": "not hydrated"},
+    "first_statics_guest": "0x8013515C",
+    "first_spawn_guest": "0x801351D4",
+    "first_static_objects_guest": "0x80135354",
+    "static_definitions_guest": "0x8011B060",
+    "collision_models_guest": "0x8011B8E4",
+    "note": "These numeric references are retained, not dereferenced/installed. Excludes roads, movement/camera evaluation, attached static objects, actors/spawns, other primary and secondary block geometry, dynamic materials/animations and full scene orchestration. Genuine first static terrain and sky wrappers ARE implemented by StartProducer. No synthetic material list, fake scene callback or terminator is substituted."
+  },
+  "strict_traversal": {
+    "termination": "ENDDL or terminating no-push G_DL; cull-visible continuation followed; active-target cycles rejected",
+    "limits": {"active_list_depth": 32, "command_visits": 1048576},
+    "unknown_operations": "Reject all non-whitelisted operations, including unhandled matrix/MOVEMEM/segment/BRANCH_Z/DMA/LOADTILE/color/depth target operations. External/segmented list/image/vertex references are rejected rather than fabricated.",
+    "ownership": "GuestView scalar decoder extracted to isle::rom and reused by every former Pidgey RomView callsite. Snapshot/storage must outlive nonmovable resources and returned views."
+  },
+  "native_producer": {
+    "inputs": "Live borrowed native main camera kinds3/14; source unit-scale/translate-only block relative to caller-selected current-block world position times100; eye-following translate-only sky; world fog996..1000 RGB90,161,188 and background90,140,200.",
+    "diagnostic_controls": "Caller camera pose/projection/viewport, current-block reference, representable fog interval/RGB and genuine layer isolation; controls do not simulate roads, advance gameplay or claim Original first-frame state.",
+    "ownership": "Caller owns canonical preparation/execution/completed-memory lease exclusion and keeps Snapshot/resources/game/camera/producer alive through real idle and visual retirement. Nonzero RAM pointer+epoch residency; moved owner, foreign Snapshot, repeated cold epoch, bad spans/reservations/targets/viewport/native matrices/fog/layers rejected before RAM writes. Pure native validation preflights BOTH model transforms before any native mutation or camera computation; atomic dirty-camera computation publishes no matrix, reflection, normalization or revision on failure. Successful computation precedes same-thread model commits.",
+    "frame_writes": "Only changed native camera/model/reflection/viewport payloads plus bounded command/task payload; no per-frame allocations, original asset copies, whole-RAM clear, hidden reset or replacement graph. The explicit cold installation uses shared GAME graphics boot/image/task support also used by Pidgey.",
+    "proof_policy": "Private own smoke source runs actual admitted ROM/native engine/CanonicalExecutor/real RSP/RDP; semantic geometry/color/depth, terrain+sky isolation, per-input changes and restored repeat, immutable source/guard preservation, one stable allocation and retired native/lease owners. Rejections compare prior stable native model/matrix/reflection borrows and revisions plus all RAM, including valid-terrain/invalid-sky and two-dirty-camera late-view-failure cases. Actual RDP scissor packet and colored/depth column boundaries prove separate integer rounding for scale126/translation130 => [1,63), followed by restored exact repeat. Runtime admission and builds are integration-owner actions, not claimed by source author."
+  }
+}

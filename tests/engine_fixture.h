@@ -34,6 +34,9 @@ void engine_parent(IsleGameObject* object, void* user);
 void engine_end_synchronous(IsleGameObject* object, void* user);
 void engine_delete_self(IsleGameObject* object, void* user);
 void engine_invalid_legacy_wait(IsleGameObject* object, void* user);
+IsleGameResult engine_attach_model_with_invalid_kind(IsleGame* game, IsleGameObject* owner,
+                                                     const IsleGameModelNodeInit nodes[2],
+                                                     IsleGameModel** model);
 
 #ifdef __cplusplus
 }

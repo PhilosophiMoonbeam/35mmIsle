@@ -5,6 +5,7 @@
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /* Independently owned public matrix ABI, not an SDK header/layout import.
  * GAME computations retain binary32 intermediates. Conversion is legal only
@@ -18,12 +19,45 @@ _Static_assert(sizeof(float) == 4 && FLT_RADIX == 2 && FLT_MANT_DIG == 24 &&
                FLT_MAX_EXP == 128, "GAME matrix math requires binary32 float");
 _Static_assert(sizeof(Mtx) == 64, "public fixed matrix ABI is 64 bytes");
 
+/* Independent native value seam for GAME's public RCP light fields. Deliberately
+ * no SDK union/alignment/opaque tail or guest structure casts. Serialize each
+ * numeric field explicitly when building a 16-byte RCP light record.
+ * ABI references: public gSPLookAt / gdSPDefLookAt manual pages at
+ * ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/.
+ */
+typedef struct {
+    struct {
+        struct {
+            uint8_t col[3], pad1, colc[3], pad2;
+            int8_t dir[3];
+        } l;
+    } l[2];
+} LookAt;
+typedef struct { float x, y, z; } Vec3f;
+/* Public signed 1.7 conversion: truncate c*128, upper endpoint saturates at 127.
+ * Mathematical unit components are bounded; finite output is checked before
+ * conversion in the private GAME extraction.
+ */
+#define FTOFRAC8(value) isle_game_frac8(value)
+static inline int8_t isle_game_frac8(float value) {
+    float scaled = value * 128.0f;
+    if (scaled > 127.0f) scaled = 127.0f;
+    return (int8_t) (int32_t) scaled;
+}
+static inline bool isle_game_reflection_component(float value) {
+    return isfinite(value) && value * 128.0f > -129.0f && value <= 1.000001f;
+}
+
 /* Native declarations checked against the privately admitted GAME prototypes. */
 void hal_mtx_f2l(Mtx4f source, Mtx* destination);
 void hal_look_at_f(Mtx4f matrix, f32 eye_x, f32 eye_y, f32 eye_z,
                    f32 at_x, f32 at_y, f32 at_z, f32 up_x, f32 up_y, f32 up_z);
 void hal_perspective_fast_f(Mtx4f matrix, uint16_t* normalization, f32 fovy,
                             f32 aspect, f32 near_plane, f32 far_plane, f32 scale);
+bool hal_look_at_reflect_roll_f(Mtx4f matrix, LookAt* reflection,
+    f32 eye_x, f32 eye_y, f32 eye_z, f32 at_x, f32 at_y, f32 at_z,
+    f32 roll, f32 up_x, f32 up_y, f32 up_z);
+void hal_translate(Mtx* matrix, f32 x, f32 y, f32 z);
 void hal_rotate_rpy_translate_scale(Mtx* matrix, f32 dx, f32 dy, f32 dz,
                                    f32 r, f32 p, f32 h, f32 sx, f32 sy, f32 sz);
 void hal_rotate_rpy_translate_scale_f(Mtx4f matrix, f32 dx, f32 dy, f32 dz,

@@ -80,6 +80,7 @@ struct SObj {
 struct OMMtx {
     OMMtx* nextFree;
     IsleGameCameraMatrix result;
+    IsleGameCameraReflection reflection;
     bool cached;
 };
 struct OMCamera {
@@ -90,6 +91,7 @@ struct OMCamera {
     OMMtx* matrices[2];
     size_t numMatrices;
     u16 normalization;
+    float roll;
     bool alive;
 };
 

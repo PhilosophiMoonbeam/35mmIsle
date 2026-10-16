@@ -274,15 +274,17 @@ void children_and_lists() {
     r.eject_id(stopped.effect_id,1); require(r.particle_count()==4,"ID eject crossed requested particle list"); r.eject_id(stopped.effect_id,0); require(r.particle_count()==3,"ID eject did not remove match");
 }
 struct LocalTargets {
-    EffectAttachment aim{},output{}; Vec3 local{3,4,0},written{}; unsigned reads=0,writes=0; bool alive=true;
+    EffectAttachment aim{},output{}; Vec3 local{3,4,0},written{}; bool alive=true;
 };
 bool target_read(void* context,EffectAttachment a,Vec3& out) noexcept {
-    auto& t=*static_cast<LocalTargets*>(context); ++t.reads;
-    if(!t.alive || a.instance!=t.aim.instance || a.node!=t.aim.node) return false; out=t.local; return true;
+    auto& t=*static_cast<LocalTargets*>(context);
+    if(!t.alive || a.instance!=t.aim.instance || a.node!=t.aim.node) return false;
+    out=t.local; return true;
 }
 bool target_write(void* context,EffectAttachment a,Vec3 value) noexcept {
-    auto& t=*static_cast<LocalTargets*>(context); ++t.writes;
-    if(!t.alive || a.instance!=t.output.instance || a.node!=t.output.node) return false; t.written=value; return true;
+    auto& t=*static_cast<LocalTargets*>(context);
+    if(!t.alive || a.instance!=t.output.instance || a.node!=t.output.node) return false;
+    t.written=value; return true;
 }
 void target_local_services() {
     Fixture f; Program p; p.op(0xb7).u8(0).op(0xb8).u8(0).f(5).op(0xbf).u8(8).hold(); f.add(std::move(p));
@@ -292,12 +294,16 @@ void target_local_services() {
     require(r.register_aim_target(1,t.aim).error!=EffectsError::none && r.register_output_target(8,t.output).error!=EffectsError::none,"target slot bounds");
     ok(r.create_particle(0,0,{0,0,0},{0,0,10}).status);
     vector_near(particle(r).velocity,{6.6f,8.8f,0},"B7 local aim preserving speed then B8 inverse squared local attraction");
-    vector_near(t.written,particle(r).position,"BF writes integrated LOCAL position, not world transform"); require(t.reads==2 && t.writes==1,"separate aim/output target services");
-    r.clear_targets(animation::InstanceHandle{7,2,2}); ok(r.update_particles()); require(t.writes==2,"foreign incarnation cleared target");
-    r.clear_targets(t.aim.instance); ok(r.update_particles()); require(t.writes==2,"cleared native incarnation remained bound");
-    // Missing source slots are legal and do not make callbacks or fabricate a target.
-    r.reset(); t.reads=t.writes=0; spawn(r,0,0); require(t.reads==0 && t.writes==0,"empty source targets must be null operations");
+    vector_near(t.written,{6.6f,8.8f,0},"BF publishes integrated local motion after B7/B8, not the pre-step position");
+    t.written={101,203,307};
+    r.clear_targets(animation::InstanceHandle{7,2,2}); ok(r.update_particles());
+    vector_near(t.written,{13.2f,17.6f,0},"foreign incarnation incorrectly cleared the active local output target");
+    t.written={101,203,307}; r.clear_targets(t.aim.instance); ok(r.update_particles());
+    vector_near(t.written,{101,203,307},"cleared native incarnation still changed local target state");
+    // Missing source slots do not fabricate an aim or an output destination.
+    r.reset(); spawn(r,0,0);
     vector_near(particle(r).velocity,{},"null target changed zero velocity");
+    vector_near(t.written,{101,203,307},"empty source target registry fabricated a local write");
     ok(r.register_output_target(7,t.output)); t.alive=false;
     require(r.update_particles().error==EffectsError::attachment,"stale registered native target was silently accepted");
 }

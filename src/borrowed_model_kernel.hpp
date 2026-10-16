@@ -16,6 +16,8 @@ struct Status {
     explicit operator bool() const noexcept { return error == Error::none; }
 };
 enum class RootRecipe { source, translate };
+// Canonical local-pose authority is independent of the fixed-cache recipe.
+enum class PoseSource { animation, native };
 struct MatrixRecipe {
     std::array<std::uint8_t,3> operations{};
     std::uint8_t count = 0;
@@ -55,8 +57,10 @@ struct HierarchyInput {
     const IsleGameModelPlacement& placement;
     const RenderContext& context;
     std::uint32_t matrices = 0, placement_address = 0;
-    // Empty for animated pose; World borrows its synchronized native pose.
+    // The native admission view can still contain the previous animation pose
+    // until commit. Only pose selects it as transform/flags authority.
     std::span<const IsleGameModelNode> native_nodes{};
+    PoseSource pose = PoseSource::animation;
     std::span<const MatrixRecipe> recipes;
     std::span<IsleGameFixedMatrix> contextual_fixed;
     std::span<unsigned char> contextual_consumed;
@@ -70,7 +74,6 @@ Status encode_hierarchy(const HierarchyInput&, HierarchyBuffer&) noexcept;
 
 // The owner supplies actual render order, fresh Runtime views and real native
 // attachments. Neither the kernel nor its destructor creates/deletes owners.
-enum class PoseSource { animation, native };
 struct BorrowedBinding {
     std::size_t slot = 0;
     animation::ModelState state;

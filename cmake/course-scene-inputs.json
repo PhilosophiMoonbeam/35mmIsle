@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/PhilosophiMoonbeam/35mmIsle",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "reused_authorities": [
+    "cmake/snap-engine-inputs.json",
+    "cmake/actor-owner-inputs.json",
+    "cmake/actor-producer-inputs.json",
+    "cmake/world-inputs.json",
+    "cmake/menu-model-inputs.json",
+    "cmake/menu-effects-inputs.json",
+    "cmake/effect-bank-inputs.json",
+    "cmake/source-effect-world-inputs.json",
+    "cmake/focus-capture-inputs.json",
+    "cmake/focus-detector-inputs.json",
+    "cmake/photo-light-inputs.json",
+    "cmake/scene-graphics-inputs.json"
+  ],
+  "native_support": {
+    "src/effect_graphics_resources.cpp": {
+      "sha256": "505774dce1f1d8edda33f169d1deda6caf7aefa04832e5131854893db91d1142"
+    },
+    "src/effect_graphics_resources.hpp": {
+      "sha256": "b294ed61393ed3ec6a33e8cc8d7851aca7610f15096c2626a584f37a352968bc"
+    },
+    "src/course_model_producer.cpp": {
+      "sha256": "09184a2395caf14dcc17c6d4bb87c7d0a411bab58fa937bfb15665897f331550"
+    },
+    "src/course_model_producer.hpp": {
+      "sha256": "b199cf1c5fa7b1eca6f7349a494047a837fd63e7419b3cc77d0633b9692e01ae"
+    },
+    "src/source_effect_camera.cpp": {
+      "sha256": "8ef3039e1db89c1eb3fe63a37266e75c91865bc1232a60318180591a4e23b395"
+    },
+    "src/source_effect_camera.hpp": {
+      "sha256": "6ac71b3e99b556d564eef874de56b502b7bb67a1ac1ee7026a831ae5eccce4c6"
+    },
+    "src/scene_graphics.cpp": {
+      "sha256": "dc02c859d3b1d2354b7e96a3c9605e980ea7c80f76de4800f870634589684cb0"
+    },
+    "src/scene_graphics.hpp": {
+      "sha256": "26b3c29771b4ae1d921410b282f518a470dbd5ce1207c1cfe3c5c38ff3ab5814"
+    },
+    "src/rsp_render.hpp": {
+      "sha256": "280a50d04be2a6413d2fe2807f5af3d4fb05e34d3516ff7b149e80726c268f59"
+    },
+    "tests/course_scene_rsp_smoke.cpp": {
+      "sha256": "01f9543c7fcf1f7d4f39af67384030b666d6b4d89e4444b1513e0b327e63a2ea"
+    },
+    "tests/menu_effects_tests.cpp": {
+      "sha256": "91cb83b16e2bdf4f8a684eb90480773dc909efdc12679fab7f3e72e027b3ecd8"
+    },
+    "tests/scene_layout_rom_smoke.cpp": {
+      "sha256": "0fbecf0d492fb0b8e5379f5e0247185f2526446374f2772b7d8afa6022574729"
+    }
+  },
+  "implementation": {
+    "assets": "Sole cold EffectGraphicsResources preserves bounded immutable Snapshot alias unions and stable bank-qualified native addresses; active bank IDs unique, no padding ownership. Title and composed course share it; independent palette-isolation GPU oracle retains its separate poisoned-gap test packer.",
+    "models": "Course ModelProducer joins each source lane World then Actor; existing global lane order0,2,1,3 remains Frame. One borrowed kernel per existing producer; no duplicate Runtime/model/scheduler.",
+    "frame": "Explicit disjoint core RAM layout admitted before executor creation; default startup layout retained. Actual completion hook runs once under completed persistent MemoryLease after canonical GPU completion/RSPFullSync; active postprocess may not escape. Native join never substitutes for GPU release.",
+    "camera": "Effect camera reuses exact admitted own-GAME look-at-roll/fixed-up and fast perspective, independent of renderer cache kinds; copied native viewport.",
+    "native_source": "One actual common1003 Owner, normal59 plus hidden/trigger behavior, World source relocation, shared FX pool/RNG and explicit owned neutral software controller. Frame destroyed/drained before producers/native owners; World retired while its callbacks retain live Owner.",
+    "scope": "Generic common1003 callback800a1608 is intentionally nongated. Real NULL baseline/no false photo subject is required; this does not fulfill genuine photo-gated subject qualification."
+  },
+  "memory": {
+    "world": {
+      "payload": [
+        2097152,
+        65536
+      ],
+      "lists": [
+        2162688,
+        65536
+      ],
+      "materials": [
+        2228224,
+        65536
+      ]
+    },
+    "actor": {
+      "payload": [
+        4194304,
+        524288
+      ],
+      "lists": [
+        4718592,
+        524288
+      ],
+      "materials": [
+        5242880,
+        1048576
+      ]
+    },
+    "framebuffers": [
+      [
+        3887104,
+        153600
+      ],
+      [
+        4040704,
+        153600
+      ]
+    ],
+    "depth": [
+      6291456,
+      153600
+    ],
+    "commands": [
+      6447104,
+      8192
+    ],
+    "workspace": [
+      6488064,
+      65536
+    ],
+    "output": [
+      6553600,
+      262144
+    ],
+    "focus": {
+      "tile": [
+        6815744,
+        80
+      ],
+      "copy": [
+        6815872,
+        128
+      ],
+      "rows": [
+        6816000,
+        2560
+      ]
+    },
+    "FX_commands": [
+      6818816,
+      21504
+    ],
+    "joined_lists": [
+      6840320,
+      256
+    ],
+    "FX_assets": [
+      7340032,
+      524288
+    ],
+    "guard": [
+      8323072,
+      256
+    ]
+  },
+  "source_sampling_boundary": {
+    "data": "Actual common3/script0 size5->15 over6 source VM updates, then50 over6; texture I8 64x64 corner0. Creation performs its first VM update.",
+    "preserved_case": "At unchanged source point(500,1233,4000), camera55deg and update2, measured S/T step0x8724 is negative signedS5.10, so clamped transparent corner changes no color. This exact checkpoint is retained.",
+    "visible_phase": "Exactly one subsequent genuine scene tick reaches update3 and positive step0x709e; paired frames require actual color change, identical triangle geometry/depth/focus mark. No source field/duration/math/budget adjustment or wait-until-pass loop.",
+    "numeric_reference": "http://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPScisTextureRectangle.html"
+  },
+  "build_recipe": {
+    "target": "course-scene-rsp-smoke",
+    "default_or_CTest": false,
+    "CLI": "BUILD/course-scene-rsp-smoke PRIVATE_ROM EXISTING_EMPTY_PRIVATE_PROFILE OUTPUT_DIRECTORY",
+    "strict_FP": [
+      "-frounding-math",
+      "-ffp-contract=off",
+      "-fno-fast-math",
+      "MSVC /fp:strict"
+    ]
+  },
+  "verification": {
+    "status": "Clean Debug and Clang ASan+UBSan actual composed scenes passed after diagnostic removal, genuine sky-follow update and startup storage collision correction. Nongated NULL baseline only; genuine gated species qualification remains open.",
+    "prior_debug": {
+      "root": "course-source-nongated-baseline-e9711k8f",
+      "seconds": 7.980197770055383,
+      "binary_sha256": "303729c91181beee87fa0016543cd991972ffc6326b26c650232a67c3b3c2ac6",
+      "archive_sha256": "e85d940de3f93b543f7f8f1fcbc806fa87d256c759c5905a03de64f5e18ade31",
+      "closure": [
+        44,
+        43,
+        45
+      ],
+      "GPU_frames": 12,
+      "all_assertions_passed": true
+    },
+    "prior_clang_ASan_UBSan": {
+      "root": "course-source-nongated-baseline-asan-vjzoghbj",
+      "seconds": 13.671349845011719,
+      "binary_sha256": "f81adeec7c96b23be04d7d12f1d7d2cb317f74964ce1e8549c1651b1d5759267",
+      "archive_sha256": "7f8a32f391406037553274a0639e2f6944b6e10d1dcf9b6064a88d94a48008bd",
+      "closure": [
+        44,
+        43,
+        45
+      ],
+      "GPU_frames": 12,
+      "all_assertions_passed": true
+    },
+    "clean_debug": {
+      "root": "course-composed-clean-ohkmbndl",
+      "seconds": 9.153452707105316,
+      "binary_sha256": "76786174be7703bb469b86ccb3a9d62b5915fc2c08f4756e33f89abdf3600482",
+      "archive_sha256": "f4674dc90d8429372eda3cf6fa58b7af25283d91453ec6b7bc000155339e3faa",
+      "closure": [44,43,45],
+      "GPU_frames": 12,
+      "all_assertions_passed": true
+    },
+    "clean_clang_ASan_UBSan": {
+      "root": "course-composed-clean-asan-3isu9ffe",
+      "seconds": 15.65339332493022,
+      "binary_sha256": "a6369ff9c20deca34e70d1a79b6a67d8f7d0ef8ea65088e99616ccbc28b77d9d",
+      "archive_sha256": "775260eab045612ceeac7ac62200c36f6a6539fffab2f751dfddcae0fa26d2a7",
+      "closure": [44,43,45],
+      "GPU_frames": 12,
+      "all_assertions_passed": true,
+      "scope": "Address/UB failures fatal, no address/UB errors observed; leak scan disabled only under complete-tree ptrace."
+    },
+    "startup_layout_regression": {
+      "before": {
+        "root": "startup-core-overlap-before-t9x2h1gu",
+        "seconds": 0.6222453869413584,
+        "binary_sha256": "1cc1886cbb4e3f150ba805ad2c0e097d128d1161503bcfce933a341b58612ed5",
+        "archive_sha256": "bfe430595e3f1e29aa83c78b11f8b4f27cd08fe0c7f28ea396fe43c40c5bd090",
+        "closure": [39,38,40],
+        "returncode": 1,
+        "reason": "Actual Catalog-backed Frame admitted commands110000 overlapping real Title producer payload110000; root rejected."
+      },
+      "after_debug": {
+        "root": "startup-core-overlap-after-91688alo",
+        "seconds": 1.3347584079019725,
+        "binary_sha256": "fb28d5aa5327c910acbba799386a429857aa97c954954d75d294cd20d4488bb6",
+        "archive_sha256": "a334589aa78ec22ceb17a739b83b95bb54e865e2e37053f495faba39d030950d",
+        "closure": [229,228,230],
+        "all_assertions_passed": true
+      },
+      "after_clang_ASan_UBSan": {
+        "root": "startup-core-overlap-after-asan-4ay4sjll",
+        "seconds": 2.6165521510411054,
+        "binary_sha256": "fcb58ca47f73714a5248f7e49aeeddce46a23ff9cfeb9a70fb4641a63456dbfb",
+        "archive_sha256": "0b05fdf8ca4b50901f22c545abc9946e1f2af54c8fb633d143500a67feca4c0e",
+        "closure": [229,228,230],
+        "all_assertions_passed": true
+      },
+      "behavior": "All configurable core kinds reject actual startup producer/fade/framebuffer aliases before executor creation. Each same internally valid plan is accepted by snapshot-only generic Frame and retires. No globally forbidden-address workaround or GPU-frame claim."
+    },
+    "existing_full_World": {
+      "root": "world-canonical-yaw-clean-swcq5ysh",
+      "seconds": 11.09470631799195,
+      "binary_sha256": "2247d239ef7a426651de5f2b145f35034c3fc6fb9aecabb0e09663521e3c566c",
+      "archive_sha256": "d8464245fb788351ff2b60ff7f2374010c5056b54b36572b9be9e652de854fd4",
+      "closure": [77,76,78],
+      "all_assertions_passed": true,
+      "scope": "Entire unchanged eight-primary/four-secondary source cohort, canonical descriptor yaw/nonroad texture pose, placement/context/residency/visibility/atomicity, real common3/Beach0 particle translation and joined retirement."
+    },
+    "existing_six_actor_GPU": {
+      "root": "six-actor-canonical-proof-6az3tywa",
+      "seconds": 15.60562864493113,
+      "binary_sha256": "9ea654a989c48af79f7025825ead9a8588c9569fc2c0bd3aea4e5e39cc8e1acd",
+      "archive_sha256": "8ca5b6ce6d85f32b5423a3108ea6cde8481976d687f8df088c624569e7e8931d",
+      "closure": [77,76,78],
+      "all_assertions_passed": true,
+      "scope": "Entire original six-actor54/48/28 cohort unchanged in source pose/scale/framing/LOD/focus32/budget. Snorlax gate437RGB5 pixels, Pikachu hide23, two source focus rows64 full16/RGB5 changes, actual21-red-center writeback, native residency/rejection/retirement. Not additional native species FSM admission."
+    },
+    "actual_startup": {
+      "root": "startup-native-frame-clean-qgm93nkm",
+      "seconds": 42.09230351401493,
+      "binary_sha256": "604273199b5b1c1e9d3b61afe1e4b52167fdde8dfb548f288fd2fcd8c85df890",
+      "archive_sha256": "e14064ad638ce103836b0fe87be14dba33314f2c40eae922085182e900ae1b3f",
+      "closure": [131,130,132],
+      "all_assertions_passed": true,
+      "canonical_and_LUS_frames": 643,
+      "Name_frames": 53,
+      "early_Oak_frames": 229,
+      "accepted_dummy_PCM_frames": 1256112,
+      "audio_frames_during_GPU_wait": 164944,
+      "surfaces": "Five actual640x480 GL window captures inspected after lossless PPM-to-PNG conversion; Name has three clean instruction lines/inline A and early Oak dialogue is contiguous.",
+      "scope": "Real startup/Title/menu/Name/Oak and source course0 request, not gameplay. Owned software input, diagnostic-disabled Host and checked SDL dummy output, no physical/hearing claim."
+    },
+    "CPU_contracts": {
+      "Debug": {"passed":49,"artifact":"7436"},
+      "Release_full_RDP_enabled": {"passed":49,"artifact":"7437"},
+      "Clang_ASan_UBSan": {"passed":49,"artifact":"7438"}
+    },
+    "independent_reviews": {
+      "native_ownership": "No actionable findings: source-only FIFO/credits/joins/retention/callback/wait/fault/rollback/self-replacement/canonical pose and borrower review.",
+      "graphics": "Found actual configurable-core/startup-producer collision. Real API failed before and passes after complete cold ownership preflight; default actual startup and composed GPU consumers requalified."
+    },
+    "observation": "Every accepted complete tree stable/absent before its sole initial scan: zero known physical/permission attempts and unchanged ROM. All five clean scene surfaces match Debug/ASan; first three match inspected prior successful surfaces and corrected sky-follow surface was directly inspected. Five actual LUS startup windows inspected. No failed image access/replay/rescan/partial acceptance, hearing/device or LUS-input claim.",
+    "gated_subject_focus": "OPEN: bd_35mmIsle-v4u.10.7.23.3.8.8; parent combined live-focus issue remains open until genuine gated native species FSM/services and actual shared GPU subject qualification. No fake id/callback or substitute prior cohort."
+  },
+  "limits": [
+    "No full player/items/photo snapshot/report/all-course/product/Original numerical parity or private Windows11 runtime claim.",
+    "Owned neutral software input is not actual LUS/hardware-controller acquisition.",
+    "CPU join, copied RAM reservations and preparation bookkeeping are not GPU fences.",
+    "Failed roots immutable/rejected; no replay, rescans, image inspection or partial acceptance."
+  ]
+}

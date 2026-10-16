@@ -44,7 +44,8 @@ typedef struct IsleGameCounts {
 
 /* One active authoritative OM world, one gameplay timeline. Caller-owned arena
  * metadata/storage must remain valid and cannot be reset until destroy joins
- * all processes. Native sizeof/alignment, not N64 pool strides, determine
+ * all processes. Destroy rejects outstanding identity holds before teardown.
+ * Native sizeof/alignment, not N64 pool strides, determine
  * allocations. Empty free lists grow from this bounded arena. The C++ process
  * domain owns actual continuation stacks separately. Creation publishes only
  * on success; failed allocations never publish partially linked objects.
@@ -79,6 +80,31 @@ IsleGameResult isle_game_object_metadata(IsleGame*, IsleGameObject*, IsleGameObj
 /* Immediate source flag assignment (e.g. setWorldBlocksVisibility), not queued
  * command delivery. Caller preserves unrelated flag bits using metadata(). */
 IsleGameResult isle_game_object_set_flags(IsleGame*, IsleGameObject*, uint32_t flags);
+/* Counted, nonallocating physical-address retention, not object liveness.
+ * Retain requires an explicit live object, valid native owner/callback access,
+ * and no started retirement; UINT32_MAX nested holds reject with EXHAUSTED.
+ * Retirement still joins all processes, removes typed payloads, unlinks and
+ * decrements live counts normally. Only the dead GObj's publication to the
+ * shared native free list is held back, so no native allocator can reuse it.
+ *
+ * Release requires the explicit same-game object with a genuine outstanding
+ * hold, live or actually joined-dead. It requires valid native owner access,
+ * outside ticks/processes/native callbacks (including retirement observers).
+ * An unheld identity or an active release returns INVALID_STATE, a foreign/NULL
+ * object returns INVALID_ARGUMENT, and unadmitted-thread access returns WRONG_OWNER.
+ * The final dead release publishes to the real free list exactly once; a live
+ * release only drops its hold. No deferred release or allocation is performed.
+ * Retain/release are forbidden in retirement and read-only queue observers.
+ * Destroy rejects outstanding holds without partially tearing down the world.
+ *
+ * A dead held pointer is identity-only: other object/model/process APIs still
+ * reject its expired handles. Holding does not prove graphics completion or
+ * close command/FX/sound borrows; the owner must do so before its final release.
+ * After final release, raw handles expire, including across address reuse or
+ * successful destroy and arena reset. No generation/stale-pointer recovery.
+ */
+IsleGameResult isle_game_object_retain_identity(IsleGame*, IsleGameObject*);
+IsleGameResult isle_game_object_release_identity(IsleGame*, IsleGameObject*);
 /* Pre-retirement runs exactly once at validated actual teardown, with payload
  * and processes still intact, before joins/removal. A self-delete request does
  * not notify until its callback yields/returns. Invalid payloads never notify;
@@ -135,6 +161,14 @@ IsleGameResult isle_game_process_source_function(IsleGame* game, IsleGameProcess
  */
 IsleGameResult isle_game_end_source_processes(IsleGame* game, IsleGameObject* object,
     IsleGameSourceCallback function);
+/* GAME ohPause/ResumeProcessByFunction (oh.c:160-188): pause/resume every
+ * matching actual typed source function in object insertion order. NULL object
+ * selects the current object; NULL function and stale/foreign objects reject
+ * unchanged. Native two-argument entries never match. No allocation, reordering
+ * or join; pausing the current process takes effect on its next dispatch.
+ */
+IsleGameResult isle_game_pause_source_processes(IsleGame* game, IsleGameObject* object,
+    IsleGameSourceCallback function, int paused);
 IsleGameResult isle_game_end_process(IsleGame* game, IsleGameProcess* process);
 IsleGameResult isle_game_pause_process(IsleGame* game, IsleGameProcess* process, int paused);
 /* Active stackful callback only. Paused processes consume no waits. */
@@ -322,7 +356,10 @@ typedef struct IsleGameModelNode {
  * reuse. Pointer/count outputs clear on errors.
  * Ordinary RPY angle, scale*256 and translation*65536 must fit signed int32
  * before GAME casts; MIPS low-word products/arithmetic shifts are explicit.
- * Translate-only requires zero rotation/unit scale and uses exact hal_translate.
+ * TRANSLATE retains complete finite canonical TRS, but its fixed cache consumes
+ * only position via exact hal_translate. Only position*65536 has signed-word
+ * bounds; rotation/scale have no unused RTS cast restrictions. Any TRS edit
+ * dirties the accepted-pose revision even when the fixed bytes stay identical.
  * Contextual RPY accepts every finite position/rotation/scale without those
  * quantization/cast limits. model_nodes never computes ordinary RTS or identity
  * for it; fixed remains unavailable. Later consumed renderer math has its own

@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "scope": "Completed native ActorOwner/common1003 component step under the still-open total native actors/player/items/courses/application port. No runtime, Original or Windows11 proof is claimed.",
+  "source_files": {
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "semantic_origins": [
+        {
+          "first": 74,
+          "last": 129,
+          "source_sha256": "79060cf44ee3d96e41b700c01a3417c18252137e6db15eace5f8f682bce2a421"
+        },
+        {
+          "first": 132,
+          "last": 210,
+          "source_sha256": "1ac9ca44cc3582b3f5e9d1c1d5a220a22f42896a5a71ab823a9dd0a7f0d3796d"
+        },
+        {
+          "first": 360,
+          "last": 432,
+          "source_sha256": "ac5481922fd3ea572e668bca66480e731df2aef6379a909687df3317acfe0be1"
+        },
+        {
+          "first": 486,
+          "last": 507,
+          "source_sha256": "6b71ded7f2119f007324888d9d542428406e38ee85419f8aa1c75ed5ca47a59d"
+        },
+        {
+          "first": 630,
+          "last": 773,
+          "source_sha256": "623a3376780c2a54c1e5dee6617c3af8872f419a92b32fc796e6c88567dd31a5"
+        },
+        {
+          "first": 1768,
+          "last": 1804,
+          "source_sha256": "7f4862e1f748394ee026168010a339c61b2d566bcf55ce35f314f9da2655fb02"
+        },
+        {
+          "first": 1806,
+          "last": 2089,
+          "source_sha256": "f1207f810c45e0a17e31b07e3fca2044b06ec5064771ad5fabd1b960e78e96a7"
+        },
+        {
+          "first": 2101,
+          "last": 2222,
+          "source_sha256": "f4d71b4365999bacf6422860100f36d62b57bffa738c27e5cf6d889b2303978e"
+        }
+      ]
+    },
+    "src/app_level/503C10.c": {
+      "git_blob": "85836484265173a036436390ddcc8961b9e8068b",
+      "sha256": "93549b82330d717e583d71c4628340c0f3b375e652492e9847dc79a0df78ae7a",
+      "semantic_origins": [
+        {
+          "first": 22,
+          "last": 25,
+          "source_sha256": "677498942aaa24880bec96bc4595b8e8d335e02f5ae822c5ff51e81b8f7ff3d1"
+        },
+        {
+          "first": 56,
+          "last": 64,
+          "source_sha256": "4a812527c3797a9941e42fec38857985fa6f6571e28b32940bc9eb347871c20a"
+        },
+        {
+          "first": 111,
+          "last": 191,
+          "source_sha256": "9eecb5fba1ea7e39d06a4017eda0a5a2ba862de97382e66ebbda4b79fa887026"
+        },
+        {
+          "first": 202,
+          "last": 226,
+          "source_sha256": "161af99caa13da47aeaf367710ce9d37f6689c247699d7cbfe4c37a03caeea71"
+        },
+        {
+          "first": 323,
+          "last": 357,
+          "source_sha256": "4cda71987d780b9258391dd0898acb895a2da76d4373930a6921766ad3c460f2"
+        }
+      ]
+    },
+    "src/app_level/4FE330.c": {
+      "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761",
+      "semantic_origins": [
+        {
+          "first": 15,
+          "last": 56,
+          "source_sha256": "2dadf281f2fa0e593e0c266a7494eef91c67085e4c4a03913c727b51d06a39ee"
+        },
+        {
+          "first": 63,
+          "last": 114,
+          "source_sha256": "36c1490c980a82c8a84cd07b89121b70f62cfdcd5147c7867bf871c43312c36a"
+        },
+        {
+          "first": 164,
+          "last": 173,
+          "source_sha256": "87200370fc436ea4a8ba9f88f5206b2c763f1a6d5403a4efea89bbeacf6cf29c"
+        }
+      ]
+    },
+    "src/app_level/player.c": {
+      "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
+      "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b",
+      "semantic_origins": [
+        {
+          "first": 1524,
+          "last": 1526,
+          "source_sha256": "5516876ac9d026d0483958deff6d6db8b68025adfdca6fb15e905515b5e20052"
+        },
+        {
+          "first": 2679,
+          "last": 2684,
+          "source_sha256": "b80f7b93679d0eb0a9168a3b062e1e8e4729f8d0fd1be8e0e1bc38a9599ebf3d"
+        }
+      ]
+    },
+    "src/app_level/envsound.c": {
+      "git_blob": "731b7c8664dac9b182bc2fe1d69ad60d6803e986",
+      "sha256": "4fb0a9ef8c17ae9e69250371c5f02b109fbd6645c2b1452f04d7aaa8c1a94c20",
+      "semantic_origins": [
+        {
+          "first": 15,
+          "last": 270,
+          "source_sha256": "30ef13113c249b0a366a20508fbcc82cc109bd33a5027fa3eedfa374903e19b0"
+        }
+      ]
+    }
+  },
+  "native_support": {
+    "src/actor_owner.hpp": {
+      "sha256": "3d4de644b3e6aa2e468312a0eae0215520e78eb65cfe0aebf2810f33a73277a7"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "f92b55bea0af4db4161f00b825b427aa87caf48ee1348e6cdba75481fcbbc208"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "d5d3c6ab97529c923339c7eeb51675fbc27d795197db961a50f4be613f77c7f2"
+    },
+    "src/actor_source.h": {
+      "sha256": "4555788cecc2f03190e9f5bb6badbeda627703bd4089191e12c8fdfb04a697e7"
+    },
+    "src/actor_source_bridge.c": {
+      "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "89e97e8e7cf9dd49a4b1704d2a9cede3e60c142409cb1e951d2117feb31ee996"
+    },
+    "src/beach_actor_resources.hpp": {
+      "sha256": "aeb595bf1a418bfe7999df35b5acfd3b24757a8fab07c50443b7f9752743c16e"
+    },
+    "src/beach_actor_resources.cpp": {
+      "sha256": "8eab1dea079fae231ed6c318f475a90c43a7d79b304ddb16db434f7d5a24c845"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "39cc870c40af16df6d1aea964124eee8efc7955dd0330963712e7826f03afd1b"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "584b861b54fdbc64fff5f1da3e5a7308cf4e5f176cba4a6f6f416892f982b739"
+    },
+    "src/environment_sound.hpp": {
+      "sha256": "ed68da392f3530ce1506d219f56fb8b6c19495b6882170efcc65833bc1364294"
+    },
+    "src/environment_sound.cpp": {
+      "sha256": "e4b1157cfbe03951c67f5a8f4a2be5b657ff5521e7be03529c9c0b0a6b68f4e7"
+    },
+    "tools/prepare_actor_control.py": {
+      "sha256": "f5d7534a75de99258ea6a9c1131d45555be7d2ce96fbf5fee5a5f69967b91c3c"
+    },
+    "cmake/actor-control-inputs.json": {
+      "sha256": "f4abef9aacc819b1a32187c68af196a8a9c07e92269ce1a01149a5ee0c421abf"
+    },
+    "tests/actor_owner_rom_smoke.cpp": {
+      "sha256": "acb07a79b9f1332c04740e2a42d6e0dbc91813ce0788531bca5ee3ac720d2ee4"
+    },
+    "tests/beach_actor_resources_rom_smoke.cpp": {
+      "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"
+    }
+  },
+  "integration_hash_authority": "Main refreshes all cross-file native_support hashes after final integration; this manifest records authored component bytes, not executed proof.",
+  "ownership": {
+    "canonical_record": "One guarded IsleActorSource in stable native Owner slot; owner points directly to that slot. Existing full InstanceHandle pool/slot/incarnation is the only generation identity.",
+    "resources": "Immutable ActorResources precomputes flat DFS model/material bindings, retaining actual source ARRAY identity and all NULL levels.",
+    "runtime": "One existing Runtime, native model and accepted local pose; one shared EffectRuntime and actual source particle/effect objects; no renderer/scheduler/second clock.",
+    "lifetime": "Mutations/native ticks/cleanup/reuse require actual serialized native+command and GPU/preparation/readback/postprocess exclusion. Owner creates no fence and does not certify GPU quiescence. Main combined CanonicalExecutor consumer must end the actual lease before the next tick. Lifecycle only invalidates borrows and records actual native joins; physical collect is outside traversal."
+  },
+  "obligations": {
+    "1": "Canonical header/ARRAY identities, loops/target/frame/counter/tangible, init/setup/block/path/behavior/misc/collision/position and command references extend sole record; guarded bind/get and RNG remain.",
+    "2": "Shared checked setter uses source ARRAY identities, force/startTime, category0 stop before changed model bind, material start0, NULL outer palette-preserving reset/model-speed-only; current header before immediate evaluation; trailing loop/ENDED/target/frame resets afterward; NULL pauses matching actual source callable without blanket sound stop. Actual GObj flags reach Runtime.",
+    "3": "Every scheduled/immediate step native-preflights and publishes accepted Runtime local pose before events. Local path/FX writes use preflight -> Runtime -> native setter without allocation. common1003 subtracts actual root-localY, never placement.",
+    "4": "Shared real event policy: -1/-2 loops; signed conversion before root0..3 policy, hidden/sound gate only play not zero category stop; child tangible positive conversion creates attached sharedFX with actual owner validation. Owner full handles resolve raw source world and separate local aim/output writes.",
+    "5": "Concrete optional native player model/object/camera listener, pause/execution/sound globals, focus/latch/direction/timer state and cleanup. Absent player is FLOATMAX. Exact ordinaryWait calls genuine NULLgraph early-return interactions before flags and clears graph; nonNULL graph fails admission without running an invented graph interpreter.",
+    "6": "Actual Services FIFO consumer handles21/22 identity-clearing with NULLgraph; sender is never liveness-filtered/dereferenced. All source21/22 enqueue borrows have per-recipient preallocated physical-slot credits; delivery consumes and actual receiver retirement cancels discarded credits without fake command delivery. Update keeps counter/pause/loop/frame/commands order. Execution pause pauses all actual object processes, not update.",
+    "7": "Checked immutable native factory switch enters actual selected common1003 C factory then native core: Services link3/prio80000000, source model recipe/separateRTS, exact spawn/block arithmetic, ground fallback0, source Euler/init.scale*.1 ignoring spawn.scale, initial fields/callback+prio3, forced immediate header, distanceprio8, actual configured initialstateprio7, late resets (loopTarget0), logical linking and actual DL4 wrapper move preserving camera tag-1. No guest callback casts.",
+    "8": "Source cache retention metadata40, logical actor-list40, block registry100 and caller native/Runtime capacities are distinct. Exhaustion fails admission explicitly rather than silent partial spawn/unsafe unlink. Actual registered base-block deletion lookup gates cleanup. common1003 block change translates placementXYZ/pos1/target independently from local descent; no ground variant.",
+    "9": "Cleanup order hide/Detector/player-focus/dieFIFO/cache+logical/FXdetach/soundfix/realnativeDelete/blockunlink. Fixed sound voices survive but lose comparison identities in the actual joined hook before native addresses can recycle, not at later Runtime collection. Physical release waits actual join and queued source identity release; caller must supply real external graphics exclusion. Failed Services shutdown still erases/joins; failure is not claimed as recoverable successful reset.",
+    "10": "Nine owner selected C bodies plus six engine controls: actual normal/path/hidden/retrigger/factory/ordinaryWait/RunCleanup/Update; path59 subtract-before-realWait, self-end/flags; hidden actual doWait/show allflags0/force/path/wait/selfreplace; checked selected actual trigger position before signal. Source header04 remains unqualified, never duration."
+  },
+  "admission_limits": [
+    "Only actual common1003 configured factory/initial-state/NULLgraph is currently admitted for full native factory/FSM. Other source factory/state/graph identities fail explicit admission; their whole behaviors remain open work.",
+    "Standalone real native model/Runtime/canonical record contexts can exercise shared actual header/event policy with additional admitted sound-bearing headers; this does not admit another actor FSM or add another coordinated owner.",
+    "Current immutable ActorResources contains source trees. Unrepresented dummy-root/nonGround configurations are not invented or falsely admitted; common1003 is actual GroundDlLink4.",
+    "Source command16 uninitialized interactionDist bug is neither initialized nor reinterpreted; its nonNULL graph is not admitted in this component.",
+    "Native full actor/player/item/photo/course application completion, all courses, Original parity, real private Windows11 execution and combined GPU qualification remain open.",
+    "All nine source groups/73 decoded programs contain no admitted B7/B8/BF instructions or initial flag8000. Original-bank local target execution is not claimed; impossible asset-search assertions were removed, not replaced by synthetic source scripts. Generic VM target semantics retain authored behavioral regression coverage.",
+    "No builds/tests/lint/format/generator/runtime/ROM/device/capture-root execution was performed by component workers."
+  ],
+  "build_recipe": {
+    "prepare": "python3 -B tools/prepare_actor_control.py --repository PINNED_GAME_GIT --manifest cmake/actor-control-inputs.json --output BUILD/generated/isle_actor_control.c --owner-output BUILD/generated/isle_actor_owner.c --evidence BUILD/isle-actor-control-inputs.json",
+    "core_target": "Keep original six generated controls + src/actor_source_bridge.c in isle-engine; do NOT compile all15 into the same archive object or create an engine-to-owner link dependency.",
+    "owner_target": "add_library(isle-actor-owner STATIC src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h src/actor_source_owner_bridge.c BUILD/generated/isle_actor_owner.c)",
+    "public_dependencies": [
+      "isle-engine",
+      "isle-actor-producer",
+      "isle-world",
+      "isle-environment-sound",
+      "isle-menu-effects",
+      "isle-source-effect-world",
+      "isle-focus-detector"
+    ],
+    "include_directories": "PUBLIC PROJECT_SOURCE_DIR/src and PROJECT_SOURCE_DIR/include; private generated C requires engine_internal.h in src.",
+    "configure_dependencies": [
+      "cmake/actor-owner-inputs.json",
+      "cmake/actor-control-inputs.json",
+      "tools/prepare_actor_control.py",
+      "src/actor_source.h",
+      "src/actor_source_bridge.c",
+      "src/actor_source_owner_bridge.c",
+      "src/actor_owner_source.h",
+      "src/engine.c",
+      "src/engine_internal.h",
+      "include/35mmisle/engine.h",
+      "include/35mmisle/rng.h",
+      "src/rng.c",
+      "tools/prepare_engine.py"
+    ],
+    "strict_fp": {
+      "GCC_Clang_AppleClang_C_and_CXX": [
+        "-frounding-math",
+        "-ffp-contract=off",
+        "-fno-fast-math"
+      ],
+      "MSVC_C_and_CXX": [
+        "/fp:strict"
+      ]
+    },
+    "private_consumer": "add_executable(actor-owner-rom-smoke EXCLUDE_FROM_ALL tests/actor_owner_rom_smoke.cpp); target_link_libraries(actor-owner-rom-smoke PRIVATE isle-actor-owner isle-actor-producer isle-effect-bank-resources isle-graphics-task isle-rsp); isle_target_options(actor-owner-rom-smoke); same strictFP options. Never add_test/CTest/default discovery.",
+    "configure_cli": "cmake -S . -B BUILD -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_SNAP_SOURCE_DIR=PINNED_GAME_GIT",
+    "build_cli": "cmake --build BUILD --target actor-control-tests actor-owner-rom-smoke beach-actor-resources-rom-smoke",
+    "consumer_cli": "BUILD/actor-owner-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PRIVATE_PROFILE_DIRECTORY"
+  },
+  "authored_acceptance": {
+    "private_consumer": "tests/actor_owner_rom_smoke.cpp: actual normal59/source end/wait/cleanup/join/no-after-end, hidden+two natural retriggers, real-OM Update counter/end/FIFO ordering, shared actual header matrix/material palette/current-header root events/soundstop+fix, actual raw-world attached FX and independent-particle retirement, focus/Detector, nonnative admission, oversized factory rollback/collection/capacity recovery/placement atomicity, physical capacity/reset/reuse, duplicate22 delivery and receiver-cancellation credits. No Original-bank local target execution or GPU lifetime proof.",
+    "resource_consumer": "tests/beach_actor_resources_rom_smoke.cpp directly consumes immutable flat bindings with actual Runtime and preserves NULL semantics.",
+    "execution": "Main verified the clean actual native consumer under Debug and Clang ASan+UBSan after ownership release; exact scope and frozen identities follow."
+  },
+  "verification": {
+    "scope": "CPU actual common1003 factory/FSM, all79 actual native header/event policies, real OM Update/FIFO, failed factory rollback/reuse, physical native identity retention, raw-world attached FX and joined/audio retirement. Not other species FSMs, Original-bank local target execution, GPU lifetime, full game, Original parity or private Windows11 execution.",
+    "consumer_sha256": "acb07a79b9f1332c04740e2a42d6e0dbc91813ce0788531bca5ee3ac720d2ee4",
+    "debug": {
+      "root": "actor-owner-clean-final-ll8j7_d6",
+      "seconds": 2.430761402938515,
+      "binary_sha256": "dca63287311e1dcc7383df3950c6fcc28522d56bd17551b903e699831fe2eab0",
+      "archive_sha256": "9a3d6c5ac38fb042edf041d8badcd60f7e52cdd7c30936d5832019fc6d8ee73f",
+      "closure": [26, 25, 27],
+      "all_assertions_passed": true
+    },
+    "clang_ASan_UBSan": {
+      "root": "actor-owner-clean-final-asan-swlmqwqr",
+      "seconds": 7.926716914982535,
+      "binary_sha256": "21c4f0445bdbbd563541f6ee2d46ee75af0b48e4b14c6017549139b149d667be",
+      "archive_sha256": "92db5525d13d1e2cca9114c3b6f30c235800ebfc235b9520b388752274a285a5",
+      "closure": [26, 25, 27],
+      "all_assertions_passed": true,
+      "sanitizer_scope": "Address and undefined-behavior failures fatal; leak scanning disabled because the complete process tree is ptraced. No address/UB errors observed."
+    },
+    "observation": "Each complete tree was stable and absent before its sole initial scan: zero known physical/permission attempts and unchanged ROM. Audio used an owned capture sink; no hearing/device claim. No failed root was replayed, rescanned, visually inspected or partially accepted.",
+    "source_adjudication": {
+      "placement": "Planner and reviewer retain safe eager fixed-placement admission. Exact authored oversized input remains a rejection/collection/capacity/atomicity regression; separate representable input explicitly has no current World and exercises source ground fallback0. No actual ROM spawn or original GPU cohort changed.",
+      "callback_context": "Selected C Update executes only through real native OM callbacks; actual FIFO-2 freezes processes while queued observers verify Update bookkeeping. No fabricated current object or direct source invocation outside its live callback contract.",
+      "target_inventory": "All nine source groups/73 decoded programs have no B7/B8/BF instructions or initial flag8000. Deleted impossible Original-asset coverage assertions and unobservable registration wiring; retained numerical B7/B8/BF and full-handle invalidation behavior in menu-effects-tests, without callback-count/mock-echo acceptance.",
+      "canonical_pose": "Actual header animation legally writes rotation/scale on T-only nodes. Native canonical local TRS now retains them; only the T cache consumes translation. Borrowed 44/48 pose authority and raw-world FX remain separate from fixed-cache recipes."
+    }
+  }
+}

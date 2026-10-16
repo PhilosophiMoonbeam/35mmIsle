@@ -34,6 +34,8 @@ struct Services::Impl {
         IsleGameCommandQueue commands{};
         IsleGameCommandHandler handler = nullptr;
         void* handler_user = nullptr;
+        IsleGameCommandHandler command_queued = nullptr;
+        void* command_queued_user = nullptr;
         RenderMetadata render{};
         ObjectLifecycle lifecycle{};
         bool drawing = false, deleting = false, dispatching = false, retired = false;
@@ -349,6 +351,12 @@ bool Services::set_command_handler(IsleGameObject* object, IsleGameCommandHandle
     record->handler_user = user;
     return !failed();
 }
+bool Services::set_command_queued_observer(IsleGameObject* object, IsleGameCommandHandler callback, void* user) noexcept {
+    auto* record=impl_->find(object);
+    if (!record || record->deleting) { fail("scene command borrow owner is unregistered or retiring"); return false; }
+    record->command_queued=callback; record->command_queued_user=user;
+    return !failed();
+}
 bool Services::process_commands(IsleGameObject* object) noexcept {
     auto* record = impl_->find(object);
     if (record == nullptr) { fail("scene command processing owner is unregistered"); return false; }
@@ -375,7 +383,12 @@ bool Services::send_command(IsleGameObject* object, std::int32_t command, IsleGa
     auto* record = impl_->find(object);
     if (record == nullptr || record->deleting) { fail("scene command destination is unregistered or retiring"); return false; }
     if (source == nullptr) source = isle_menu_current_object(game);
-    return check(isle_game_command_send(&impl_->commands, &record->commands, command, source), "scene command enqueue");
+    if (!check(isle_game_command_send(&impl_->commands, &record->commands, command, source), "scene command enqueue")) return false;
+    if (record->command_queued &&
+        !check(isle_menu_observe_command_queued(game, record->object, command, source,
+            record->command_queued, record->command_queued_user), "scene command enqueue observer"))
+        return false;
+    return !failed();
 }
 bool Services::send_command_to_link(std::uint8_t link, std::int32_t command, IsleGameObject* source) noexcept {
     if (link >= 32) { fail("scene command update link is invalid"); return false; }

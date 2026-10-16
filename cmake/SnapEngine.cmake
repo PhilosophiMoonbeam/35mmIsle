@@ -50,17 +50,22 @@ message(STATUS "${_isle_engine_output}")
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/cmake/actor-control-inputs.json"
+    "${PROJECT_SOURCE_DIR}/cmake/actor-owner-inputs.json"
     "${PROJECT_SOURCE_DIR}/tools/prepare_actor_control.py"
     "${PROJECT_SOURCE_DIR}/src/actor_source.h"
     "${PROJECT_SOURCE_DIR}/src/actor_source_bridge.c"
+    "${PROJECT_SOURCE_DIR}/src/actor_owner_source.h"
+    "${PROJECT_SOURCE_DIR}/src/actor_source_owner_bridge.c"
     "${PROJECT_SOURCE_DIR}/include/35mmisle/rng.h"
     "${PROJECT_SOURCE_DIR}/src/rng.c")
 set(_isle_actor_generated "${CMAKE_BINARY_DIR}/_deps/isle-actor-control-private/game.c")
+set(_isle_actor_owner_generated "${CMAKE_BINARY_DIR}/_deps/isle-actor-control-private/owner.c")
 execute_process(
     COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_actor_control.py"
         --repository "${_isle_snap_source}"
         --manifest "${PROJECT_SOURCE_DIR}/cmake/actor-control-inputs.json"
         --output "${_isle_actor_generated}"
+        --owner-output "${_isle_actor_owner_generated}"
         --evidence "${CMAKE_BINARY_DIR}/isle-actor-control-inputs.json"
     RESULT_VARIABLE _isle_actor_result
     OUTPUT_VARIABLE _isle_actor_output

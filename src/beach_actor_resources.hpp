@@ -29,6 +29,8 @@ struct ActorInitialization {
     std::array<std::uint8_t, 3> configured_matrix_kinds{};
     ActorSetup setup;
     bool animations_enabled = false;
+    // Actual initialization textures outer pointer, not inferred attachments.
+    bool textures_present = false;
 };
 struct ActorDefinition {
     rom::GuestView wire;
@@ -49,6 +51,10 @@ struct ActorAnimationHeader {
     std::size_t initialization = actor_no_index;
     float speed = 0, unknown_04 = 0; // Source field remains unqualified.
     std::vector<ActorNodeBinding> nodes;
+    // Precomputed once in source DFS/attachment order. Model slots include
+    // NULL entries; material slots include per-node/entry NULL preservation.
+    // Only an outer NULL material table omits the flattened material bindings.
+    std::vector<std::size_t> model_bindings, material_bindings;
     // Only root callbacks0..3 with positive arguments bound this prefix. A
     // zero argument stops a category without dereferencing ids; children are FX.
     std::vector<std::int32_t> sound_ids;

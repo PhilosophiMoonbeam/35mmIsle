@@ -167,7 +167,10 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
             const auto capacity = menu::animation::slot_capacity(resources.models()[object.resource_model]);
             require(capacity.nodes == count,"World native model capacity differs from admitted source");
             instance.slot = slots.size();
-            instance.root = nodes[0].matrix_kind == ISLE_GAME_MODEL_TRANSLATE ?
+            // Contextual source18+44/48 also uses a native TRANSLATE cache.
+            // Only the synthetic terrain resource marker selects root override.
+            instance.root = resources.models()[object.resource_model].matrix_kinds ==
+                std::array<std::uint8_t,3>{1,0,0} ?
                 menu::model::RootRecipe::translate : menu::model::RootRecipe::source;
             slots.push_back({capacity,static_cast<std::uint32_t>(matrix),static_cast<std::uint32_t>(material)});
             material += capacity.material_attachments*264;

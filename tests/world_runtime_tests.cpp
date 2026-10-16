@@ -1,5 +1,6 @@
 #include "world_movement.hpp"
 #include "menu_scene_bridge.h"
+#include "source_effect_world.hpp"
 #include <array>
 #include <bit>
 #include <cmath>
@@ -108,6 +109,99 @@ void transitions_and_retirement() {
     require(trace.events.size() == 13,"retirement did not invoke each source remove exactly once");
     for (std::size_t i = 0; i < 4; ++i) event(trace,9+i,'d',i);
     ok(isle_game_tick(n.game)); require(trace.command_calls == 8,"retired callback userdata reused");
+}
+void terrain_canonical_pose_and_source_effect_basis() {
+    Native n; Input input; Trace trace;
+    constexpr float quarter = 1.5707963267948966f;
+    input.blocks[0].metadata.yaw = quarter;
+    input.blocks[1].model = 0;
+    input.blocks[1].metadata.yaw = -quarter;
+    input.blocks[0].metadata.texture_animation_guest = 0x80300000;
+    input.blocks[1].metadata.texture_animation_guest = 0x80300000;
+    input.models[0].matrix_kinds = {1,0,0};
+    input.models[0].nodes[0].rotation = {0.2f,0.3f,0.4f};
+    input.models[0].nodes[0].scale = {2,3,4};
+    m::Node decoration; decoration.parent = 0; decoration.position = {10,20,30};
+    decoration.rotation = {quarter,0,0}; decoration.scale = {2,3,4};
+    input.models[0].nodes.push_back(decoration);
+    w::World world(n.game,input.view(),trace.callbacks());
+    auto& block = world.blocks()[0];
+    const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+    ok(isle_game_model_nodes(n.game,block.model,&nodes,&count));
+    require(count == 2 && nodes[0].matrix_kind == ISLE_GAME_MODEL_TRANSLATE &&
+        nodes[0].transform.rotation.x == 0 && nodes[0].transform.rotation.y == quarter &&
+        nodes[0].transform.rotation.z == 0 && nodes[0].transform.scale.x == 1 &&
+        nodes[0].transform.scale.y == 1 && nodes[0].transform.scale.z == 1,
+        "terrain creation lost block.c's raw yaw/unit scale or promoted its render recipe");
+    const auto animation_root = world.animation_model(block.instance).nodes[0].transform;
+    require(animation_root.rotation.y == quarter && animation_root.scale.x == 1 &&
+        world.animation_model(world.blocks()[1].instance).nodes[0].transform.rotation.y == -quarter &&
+        input.models[0].nodes[0].rotation.y == 0.3f && input.models[0].nodes[0].scale.x == 2,
+        "descriptor yaw was not seeded per Runtime instance or mutated shared immutable resources");
+    require(nodes[1].matrix_kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE &&
+        nodes[1].transform.rotation.x == quarter && nodes[1].transform.scale.z == 4,
+        "terrain root override changed ordinary decoration TRS");
+    const auto close = [](float a,float b) { return std::fabs(a-b) < 0.0001f; };
+    m::EffectWorld raw_root, raw_child;
+    require(bool(m::model::source_effect_world(n.game,block.model,0,raw_root)) &&
+        bool(m::model::source_effect_world(n.game,block.model,1,raw_child)),
+        "World raw source FX traversal rejected accepted terrain pose");
+    require(close(raw_root.matrix[0][0],0) && close(raw_root.matrix[0][2],-1) &&
+        close(raw_root.matrix[2][0],1) && close(raw_root.matrix[2][2],0) &&
+        close(raw_child.matrix[3][0],30) && close(raw_child.matrix[3][1],20) &&
+        close(raw_child.matrix[3][2],-10) && close(raw_child.matrix[0][2],-2) &&
+        close(raw_child.matrix[1][0],3) && close(raw_child.matrix[2][1],-4),
+        "World source FX basis/descendant used translation cache instead of raw terrain yaw/child TRS");
+    const auto pure_translation = [&](w::Vec3 position) {
+        ok(isle_game_model_nodes(n.game,block.model,&nodes,&count));
+        const std::array translation{position.x,position.y,position.z};
+        for (unsigned row = 0; row < 4; ++row) for (unsigned col = 0; col < 4; ++col) {
+            const auto pair = row*2+col/2, shift = col%2 ? 0u : 16u;
+            const auto bits = (((nodes[0].fixed.m[pair/4][pair%4]>>shift)&65535u)<<16) |
+                ((nodes[0].fixed.m[2+pair/4][pair%4]>>shift)&65535u);
+            const auto expected = row == 3 && col < 3 ?
+                static_cast<std::int32_t>(translation[col]*65536.0f) : (row == col ? 65536 : 0);
+            require(std::bit_cast<std::int32_t>(bits) == expected,
+                "terrain canonical rotation/scale leaked into translation-only fixed payload");
+        }
+    };
+    pure_translation({});
+    ok(isle_game_model_set_flags(n.game,block.model,0,0x40));
+    ok(isle_game_tick(n.game));
+    require(world.error().empty() && nodes[0].flags == 0 &&
+        nodes[0].transform.rotation.y == quarter &&
+        world.animation_model(block.instance).nodes[0].transform.rotation.y == quarter,
+        "actual terrain texture synchronization discarded initialized descriptor yaw");
+    // Actual texture-process synchronization must retain native root fields,
+    // including edits that differ from the initialized Runtime pose.
+    auto edited = nodes[0].transform;
+    edited.position = {7,-8,9};
+    edited.rotation = {0.25f,-0.75f,1.25f}; edited.scale = {-2,3,0.5f};
+    ok(isle_game_model_set_transform(n.game,block.model,0,&edited));
+    const auto retained = [&](w::Vec3 position) {
+        pure_translation(position);
+        require(nodes[0].transform.position.x == position.x && nodes[0].transform.position.y == position.y &&
+            nodes[0].transform.position.z == position.z &&
+            nodes[0].transform.rotation.x == edited.rotation.x && nodes[0].transform.rotation.y == edited.rotation.y &&
+            nodes[0].transform.rotation.z == edited.rotation.z &&
+            nodes[0].transform.scale.x == edited.scale.x && nodes[0].transform.scale.y == edited.scale.y &&
+            nodes[0].transform.scale.z == edited.scale.z,
+            "terrain texture sync or position-only relocation destroyed full canonical root pose");
+    };
+    ok(isle_game_model_set_flags(n.game,block.model,0,0x40));
+    ok(isle_game_tick(n.game)); retained({7,-8,9});
+    require(world.error().empty() && nodes[0].flags == 0,
+        "terrain pose test did not exercise successful real texture-process synchronization");
+    world.enter_first(0); retained({});
+    world.enter_next(); retained({-1000,-200,300});
+    ok(isle_game_tick(n.game)); retained({-1000,-200,300});
+    ok(isle_game_model_nodes(n.game,world.blocks()[1].model,&nodes,&count));
+    require(nodes[0].transform.rotation.y == -quarter && nodes[0].transform.position.x == 0,
+        "relocation crossed distinct terrain owners of one resource");
+    ok(isle_game_model_nodes(n.game,block.road_model,&nodes,&count));
+    require(nodes[1].transform.position.x == 10 && nodes[1].transform.rotation.y == 0.2f &&
+        nodes[1].transform.scale.x == 0.25f,
+        "terrain canonical yaw changed ordinary road control poses");
 }
 void movement_boundary_rotation_and_stop() {
     Native n; Input input; Trace trace;
@@ -358,6 +452,7 @@ void faulted_owner_retirement_joins_before_context_release() {
 int main() {
     try { transitions_and_retirement(); movement_boundary_rotation_and_stop(); position_sampling_preserves_movement_boundary(); required_consumers_and_sky_follow(); path_tracks_callbacks_and_boundaries(); source_control_line_limits();
         same_resource_world_owners_and_clear();
+        terrain_canonical_pose_and_source_effect_basis();
         faulted_owner_retirement_joins_before_context_release();
         std::cout << "native world lifecycle/movement tests passed\n"; return 0; }
     catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }

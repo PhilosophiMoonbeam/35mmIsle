@@ -42,6 +42,8 @@ struct GObjProcess {
     bool alive;
     SObj* fade_sprite;
     u16 fade_updates;
+    unsigned callbackDepth; /* Saved exclusion context across real continuation waits. */
+    bool retirementObserver;
 };
 
 struct GObj {
@@ -63,6 +65,7 @@ struct GObj {
     void* preRetireUser;
     IsleGameCallback retired;
     void* retireUser;
+    u32 identityHolds; /* Physical address only; never payload/process liveness. */
     IsleGame* game;
     bool alive;
     bool retirementStarted;
@@ -125,6 +128,9 @@ struct IsleGame {
     OMCamera* free_cameras;
     OMMtx* free_matrices;
     IsleGameModel* free_models;
+    size_t held_identities;
+    unsigned callback_depth;
+    bool retirement_observer; /* Also covers read-only successful-enqueue observers. */
     IsleGameCounts counts;
     IsleGameResult fault;
     char error[512];

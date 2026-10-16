@@ -120,11 +120,14 @@ IsleGameResult isle_game_create(isle_arena* arena, IsleGame** output) {
 IsleGameResult isle_game_tick(IsleGame* game) {
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
-    if (game->ticking) return ISLE_GAME_INVALID_STATE;
+    if (game->ticking || game->callback_depth != 0) return ISLE_GAME_INVALID_STATE;
     if (game->fault != ISLE_GAME_OK) return game->fault;
     game->ticking = true;
     if (setjmp(game->fault_frame) == 0) omUpdateAll();
     game->ticking = false;
+    /* Fault/continuation termination can discard a nested C callback frame. */
+    game->callback_depth = 0;
+    game->retirement_observer = false;
     omCurrentObject = NULL;
     omCurrentProcess = NULL;
     omD_8004AC54 = 0;
@@ -190,6 +193,37 @@ IsleGameResult isle_game_object_set_flags(IsleGame* game, IsleGameObject* object
     if (object == NULL) object = omCurrentObject;
     if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
     object->flags = flags;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_object_retain_identity(IsleGame* game, IsleGameObject* object) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (object->retirementStarted || game->retirement_observer) return ISLE_GAME_INVALID_STATE;
+    if (object->identityHolds == UINT32_MAX) return ISLE_GAME_EXHAUSTED;
+    if (object->identityHolds++ == 0) ++game->held_identities;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_object_release_identity(IsleGame* game, IsleGameObject* object) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL || object->game != game) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->ticking || omCurrentObject != NULL || omCurrentProcess != NULL ||
+        game->callback_depth != 0 || game->retirement_observer)
+        return ISLE_GAME_INVALID_STATE;
+    if (object->identityHolds == 0 ||
+        (!object->alive && (!object->retirementStarted ||
+          object->processListHead != NULL || object->processListTail != NULL ||
+          object->type != 0 || object->data.any != NULL))) return ISLE_GAME_INVALID_STATE;
+    if (--object->identityHolds == 0) {
+        --game->held_identities;
+        if (!object->alive) {
+            object->next = game->free_objects;
+            game->free_objects = object;
+        }
+    }
     return ISLE_GAME_OK;
 }
 
@@ -356,6 +390,19 @@ IsleGameResult isle_game_end_source_processes(IsleGame* game, IsleGameObject* ob
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_game_pause_source_processes(IsleGame* game, IsleGameObject* object,
+    IsleGameSourceCallback function, int paused) {
+    GObjProcess* process;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object) || function == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    for (process = object->processListHead; process != NULL; process = process->next) {
+        if (process->function == function) process->paused = paused ? 1 : 0;
+    }
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_pause_process(IsleGame* game, IsleGameProcess* process, int paused) {
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
@@ -381,13 +428,23 @@ void ohWait(s32 updates) {
 
 void isle_native_resume_process(GObjProcess* process) {
     IsleContinuationState state;
-    if (isle_continuation_resume(process->continuation) != ISLE_CONT_OK
+    IsleGame* game = process->game;
+    unsigned previous_depth = game->callback_depth;
+    bool previous_observer = game->retirement_observer;
+    game->callback_depth = process->callbackDepth;
+    game->retirement_observer = process->retirementObserver;
+    IsleContinuationResult resumed = isle_continuation_resume(process->continuation);
+    process->callbackDepth = game->callback_depth;
+    process->retirementObserver = game->retirement_observer;
+    game->callback_depth = previous_depth;
+    game->retirement_observer = previous_observer;
+    if (resumed != ISLE_CONT_OK
         || isle_continuation_state(process->continuation, &state) != ISLE_CONT_OK) {
-        isle_native_execution_fault(process->game, isle_continuation_error(process->game->domain));
+        isle_native_execution_fault(game, isle_continuation_error(game->domain));
         return;
     }
     if (state == ISLE_CONT_FAILED || state == ISLE_CONT_CANCELLED) {
-        isle_native_execution_fault(process->game, "unexpected terminal state of selected C game process");
+        isle_native_execution_fault(game, "unexpected terminal state of selected C game process");
     } else if (state == ISLE_CONT_COMPLETED && omD_8004AC54 == 0) omD_8004AC54 = 1;
 }
 
@@ -941,12 +998,12 @@ IsleGameResult isle_model_source48_basis(const IsleGameCameraParameters* camera,
 static bool valid_model_matrix_transform(const IsleGameModelTransform* t, IsleGameModelMatrixKind kind) {
     if (kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE) return valid_model_transform(t);
     if (kind == ISLE_GAME_MODEL_CONTEXTUAL_RPY) return finite_model_transform(t);
-    if (kind != ISLE_GAME_MODEL_TRANSLATE || t == NULL) return false;
+    if (kind != ISLE_GAME_MODEL_TRANSLATE || !finite_model_transform(t)) return false;
+    /* Canonical source TRS is independent of this recipe's translation cache.
+     * Unconsumed rotation/scale never pass through the ordinary RTS casts. */
     return signed_word_range(t->position.x * 65536.0f) &&
         signed_word_range(t->position.y * 65536.0f) &&
-        signed_word_range(t->position.z * 65536.0f) &&
-        t->rotation.x == 0.0f && t->rotation.y == 0.0f && t->rotation.z == 0.0f &&
-        t->scale.x == 1.0f && t->scale.y == 1.0f && t->scale.z == 1.0f;
+        signed_word_range(t->position.z * 65536.0f);
 }
 
 static bool same_vec3(IsleGameVec3 a, IsleGameVec3 b) {
@@ -1245,7 +1302,14 @@ void omDeleteGObj(GObj* object) {
         object->retirementStarted = true;
         object->retiring = NULL;
         object->preRetireUser = NULL;
-        if (callback != NULL) callback(object, user);
+        if (callback != NULL) {
+            bool previous_observer = game->retirement_observer;
+            ++game->callback_depth;
+            game->retirement_observer = true;
+            callback(object, user);
+            game->retirement_observer = previous_observer;
+            --game->callback_depth;
+        }
     }
     while (object->processListHead != NULL) {
         GObjProcess* before = object->processListHead;
@@ -1272,10 +1336,17 @@ void omDeleteGObj(GObj* object) {
         void* user = object->retireUser;
         object->retired = NULL;
         object->retireUser = NULL;
+        bool previous_observer = game->retirement_observer;
+        ++game->callback_depth;
+        game->retirement_observer = true;
         callback(object, user);
+        game->retirement_observer = previous_observer;
+        --game->callback_depth;
     }
-    object->next = game->free_objects;
-    game->free_objects = object;
+    if (object->identityHolds == 0) {
+        object->next = game->free_objects;
+        game->free_objects = object;
+    }
     --game->counts.objects;
 }
 
@@ -1315,7 +1386,8 @@ IsleGameResult isle_game_add_intro_fade(IsleGame* game, IsleGameObject* object,
 IsleGameResult isle_game_destroy(IsleGame* game) {
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
-    if (game->ticking) return ISLE_GAME_INVALID_STATE;
+    if (game->ticking || omCurrentObject != NULL || omCurrentProcess != NULL ||
+        game->callback_depth != 0 || game->held_identities != 0) return ISLE_GAME_INVALID_STATE;
     for (size_t link = 0; link < ARRAY_COUNT(omGObjListHead); ++link) {
         while (omGObjListHead[link] != NULL) {
             GObj* before = omGObjListHead[link];

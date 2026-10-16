@@ -22,6 +22,27 @@ typedef struct IsleActorSource {
     int32_t id;
     uint16_t flags;                /* Actual Pokemon semantics, not GObj flags. */
     const void* transitionGraph;
+    const void* animHeader;
+    uint32_t modelAnims, matAnims;
+    int32_t loopCount, pokemonLoopTarget, counter;
+    float lastAnimationFrame;
+    int32_t tangible;
+    const void* initData;
+    const void* animSetup;
+    void* baseBlock;
+    const void* path;
+    const void* forbiddenGround;
+    IsleGameVec3 pos1, targetPos, euler, collisionOffset;
+    float collisionRadius, playerDist, interactionDist;
+    int32_t behavior;
+    struct { int32_t field1; } miscVars[7];
+    IsleGameObject* apple;
+    IsleGameObject* interactionTarget;
+    int32_t unk_18;
+    uint8_t unk_E4;
+    float jumpVel, hSpeed, facingYaw, pathParam;
+    const void* eggGeo;
+    uint16_t poseID, specialPoseID;
     isle_rng* rng;                 /* The application's actual State RNG. */
     void* owner;                   /* The actual native actor owner. */
     IsleGame* game;
@@ -34,6 +55,8 @@ typedef struct IsleActorRandomState {
 } IsleActorRandomState;
 
 enum {
+    POKEMON_PROCESS_FLAG_ANIMATION_ENDED = 0x001,
+    POKEMON_PROCESS_WAIT_ENDED = 0x004,
     POKEMON_PROCESS_FLAG_PATH_ENDED = 0x002,
     POKEMON_PROCESS_FLAG_AUX_ENDED = 0x008,
     POKEMON_PROCESS_TARGET_REACHED = 0x010,

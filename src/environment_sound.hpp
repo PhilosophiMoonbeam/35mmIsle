@@ -43,6 +43,10 @@ public:
     bool stop_category(IsleGameObject*, std::uint8_t category) noexcept;
     bool stop(IsleGameObject*) noexcept;
     void fix_parameters(IsleGameObject*) noexcept;
+    // End comparison identity only after real joined retirement. Fixed voices
+    // keep playing, but a recycled native address cannot stop the old voice.
+    void release_identity(IsleGameObject*) noexcept;
+    bool set_listener(IsleGameModel*, IsleGameCamera*) noexcept;
     int sound_handle(std::int32_t sound) const noexcept;
     void cleanup() noexcept; // Source clears listeners; does not stop voices.
     bool update() noexcept;
@@ -54,7 +58,7 @@ private:
         int handle = -1;
         std::uint16_t sound = 0;
         std::uint8_t hearing_range = 0, category = 0;
-        bool fixed = false;
+        bool fixed = false, occupied = false;
     };
     scene::Services& services_;
     isle_arena& arena_;

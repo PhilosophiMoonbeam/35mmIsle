@@ -9,10 +9,12 @@
 #include "menu_effects.hpp"
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <filesystem>
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -88,7 +90,30 @@ int run(const std::filesystem::path& path) {
     world::Callbacks callbacks;callbacks.user=&owners;callbacks.shift_camera=Owners::shift_camera;
     callbacks.shift_effects=Owners::shift_effects;callbacks.process_commands=Owners::command;
     world::World component(owners.game,view,callbacks);component.follow_camera(owners.camera);
+    const auto source_terrain_pose=[&]{
+        for(const auto& block:component.blocks())if(block.model){
+            const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
+            native(isle_game_model_nodes(owners.game,block.model,&nodes,&count));
+            const auto& root=nodes[0].transform;
+            require(resources.models()[block.resource->model].matrix_kinds==std::array<std::uint8_t,3>{1,0,0}&&
+                nodes[0].matrix_kind==ISLE_GAME_MODEL_TRANSLATE&&root.rotation.x==0&&
+                root.rotation.y==block.resource->metadata.yaw&&root.rotation.z==0&&
+                root.scale.x==1&&root.scale.y==1&&root.scale.z==1,
+                "source terrain initial yaw/unit scale lost or render recipe promoted to RTS");
+            const auto runtime=component.animation_model(block.instance).nodes[0].transform;
+            require(runtime.rotation.y==block.resource->metadata.yaw&&runtime.scale.x==1&&
+                runtime.scale.y==1&&runtime.scale.z==1,"source terrain Runtime lost per-instance canonical yaw");
+            const auto origin=component.current()?component.current()->resource->metadata.world_position:
+                block.resource->metadata.world_position;
+            const auto position=block.resource->metadata.world_position;
+            require(root.position.x==(position.x-origin.x)*100.0f&&
+                root.position.y==(position.y-origin.y)*100.0f&&root.position.z==(position.z-origin.z)*100.0f,
+                "source terrain canonical yaw changed block-relative position");
+        }
+    };
+    source_terrain_pose();
     world::MovementState movement_state;world::Movement movement(component,movement_state,{});require(movement.initialize(0),"real road admission");
+    source_terrain_pose();
     const std::array<menu::RamRange,6> other{{{top,0x10000},{stack,0x10000},{output,output_end-output},
         {color,target_bytes},{depth,target_bytes},{guard,256}}};
     menu::model::CameraBasisState camera_basis;
@@ -113,11 +138,33 @@ int run(const std::filesystem::path& path) {
         const auto before=std::vector<std::uint32_t>(words.begin(),words.end());
         bool rejected=false;try{producer.prepare(words.first(words.size()-1),epoch);}catch(const std::exception&){rejected=true;}
         require(rejected&&std::equal(words.begin(),words.end(),before.begin()),"invalid preparation modified RAM");
+        std::vector<std::pair<IsleGameModel*,IsleGameModelTransform>> terrain_before;
+        for(const auto& block:component.blocks())if(block.model){
+            const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
+            native(isle_game_model_peek_nodes(owners.game,block.model,&nodes,&count));
+            terrain_before.emplace_back(block.model,nodes[0].transform);
+        }
         scene::render::Pass update_link_only;
         update_link_only.camera=owners.camera;update_link_only.link_mask=std::uint64_t(1)<<9;
         const auto filtered=producer.prepare(words,epoch,update_link_only);
         for(const auto lane:filtered.lanes) require(lane.commands==1,"update link9 was incorrectly treated as renderDL3");
         const auto frame=producer.prepare(words,epoch);
+        for(const auto& [model,pose]:terrain_before){
+            const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
+            native(isle_game_model_nodes(owners.game,model,&nodes,&count));
+            require(std::memcmp(&nodes[0].transform,&pose,sizeof(pose))==0,
+                "World producer preparation normalized or rewrote full native terrain pose");
+            const std::array translation{pose.position.x,pose.position.y,pose.position.z};
+            for(unsigned row=0;row<4;++row)for(unsigned col=0;col<4;++col){
+                const auto pair=row*2+col/2,shift=col%2?0u:16u;
+                const auto bits=(((nodes[0].fixed.m[pair/4][pair%4]>>shift)&65535u)<<16)|
+                    ((nodes[0].fixed.m[2+pair/4][pair%4]>>shift)&65535u);
+                const auto expected=row==3&&col<3?static_cast<std::int32_t>(translation[col]*65536.0f):
+                    (row==col?65536:0);
+                require(std::bit_cast<std::int32_t>(bits)==expected,
+                    "World source terrain yaw/scale entered translation-only fixed output");
+            }
+        }
         const IsleGameCameraParameters* context_camera=nullptr;
         native(isle_game_camera_parameters(owners.game,owners.camera,&context_camera));
         menu::model::WorldMatrix expected_basis;
@@ -137,7 +184,26 @@ int run(const std::filesystem::path& path) {
         for(unsigned i=0;i<64;++i)require(reinterpret_cast<const std::uint32_t*>(completed.rdram().data())[guard/4+i]==0x13579bdf,"actual consumer changed guard");
         completed.release();require(active_executor.quiescent(),"GPU borrow not retired");require(owners.arena.cursor==arena_used,"world frame allocated native storage");return result;
     };
-    native(isle_game_tick(owners.game));const auto initial=execute(true);require(!initial.triangles.empty(),"world canonical task emitted no geometry");
+    native(isle_game_tick(owners.game));source_terrain_pose();
+    const auto initial=execute(true);source_terrain_pose();require(!initial.triangles.empty(),"world canonical task emitted no geometry");
+    // Raw native R/S may change independently of Runtime without changing
+    // translation-only terrain rendering or being normalized by preparation.
+    IsleGameModel* raw_terrain=nullptr;IsleGameModelTransform original_terrain{};
+    for(const auto& block:component.blocks())if(block.model){
+        IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(owners.game,block.object,&metadata));
+        if(metadata.flags&1u)continue;
+        const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
+        native(isle_game_model_nodes(owners.game,block.model,&nodes,&count));
+        raw_terrain=block.model;original_terrain=nodes[0].transform;break;
+    }
+    require(raw_terrain,"visible terrain owner missing from source regression");
+    auto raw_pose=original_terrain;raw_pose.rotation={0.25f,-0.75f,1.25f};raw_pose.scale={-2,3,0.5f};
+    native(isle_game_model_set_transform(owners.game,raw_terrain,0,&raw_pose));
+    const auto raw_rendered=execute(false);
+    require(raw_rendered.triangles==initial.triangles&&raw_rendered.pixels==initial.pixels&&
+        raw_rendered.depths==initial.depths,"canonical terrain R/S incorrectly rotated/scaled rendered geometry");
+    native(isle_game_model_set_transform(owners.game,raw_terrain,0,&original_terrain));
+    execute(false);source_terrain_pose();
     // Freeze animation: placement-only RT/RTS edits must reach both native
     // hierarchy and direct sky rendering without rewriting their ordinary roots.
     const auto objects=component.render_objects();
@@ -287,6 +353,7 @@ int run(const std::filesystem::path& path) {
         const auto rng_before=effect_rng.seed;
         auto* block=component.enter_next();
         require(block==&component.blocks()[i],"complete primary chain transition failed");
+        source_terrain_pose();
         const auto next_world=block->resource->metadata.world_position;
         const menu::Vec3 displacement{(old_world.x-next_world.x)*100.0f,
             (old_world.y-next_world.y)*100.0f,(old_world.z-next_world.z)*100.0f};
@@ -304,7 +371,7 @@ int run(const std::filesystem::path& path) {
         movement.update_position(*block,movement_state.move_time,movement_state.control_time);
         require(component.current()==block&&movement_state.block==block,"road sampling changed primary chain ownership");
         require(owners.shifts==i&&owners.effect_shifts==i,"native camera/effect translation did not follow each primary entry");
-        native(isle_game_tick(owners.game));execute(false);
+        native(isle_game_tick(owners.game));source_terrain_pose();execute(false);source_terrain_pose();
     }
     // Retire an enabled World-owned placement only after the actual completed
     // lease has been released; removal must subtract that matrix exactly once.

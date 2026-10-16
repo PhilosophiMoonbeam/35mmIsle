@@ -32,6 +32,17 @@ typedef struct EngineRecord {
     int value;
 } EngineRecord;
 
+typedef struct EngineIdentityFixture {
+    EngineFixture retirement;
+    IsleGameObject* held;
+    IsleGameObject* target;
+    IsleGameCommandPool pool;
+    IsleGameCommandQueue nested;
+    size_t release_rejections;
+    size_t retain_successes;
+    size_t deliveries;
+} EngineIdentityFixture;
+
 void engine_record_object(IsleGameObject* object, void* user);
 void engine_record_process(IsleGameObject* object, void* user);
 void engine_nested_process(IsleGameObject* object, void* user);
@@ -51,12 +62,28 @@ IsleGameResult engine_replace_actor_update(IsleGame* game, IsleGameObject* objec
 void engine_bind_source_payload(IsleGameObject* object, EngineFixture* fixture);
 void engine_source_a(IsleGameObject* object);
 void engine_source_b(IsleGameObject* object);
+void engine_source_pause_pulse(IsleGameObject* object);
+void engine_native_source_pause_pulse(IsleGameObject* object, void* user);
+void engine_source_pause_wait(IsleGameObject* object);
+void engine_source_pause_self(IsleGameObject* object);
+void engine_source_pause_self_synchronous(IsleGameObject* object);
+void engine_source_pause_update(IsleGameObject* object, void* user);
 void engine_source_retired(IsleGameObject* object, void* user);
 void engine_source_delete(IsleGameObject* object);
 void engine_observe_retiring(IsleGameObject* object, void* user);
 void engine_observe_joined(IsleGameObject* object, void* user);
 void engine_direct_delete(IsleGameObject* object);
 IsleGameResult engine_delete_corrupt_payload(IsleGameObject* object, int mode);
+void engine_identity_retiring(IsleGameObject*, void*);
+void engine_identity_joined(IsleGameObject*, void*);
+void engine_identity_release_callback(IsleGameObject*, void*);
+void engine_identity_retain_process(IsleGameObject*, void*);
+void engine_identity_clear_target(IsleGameObject*, int32_t, IsleGameObject*, void*);
+void engine_identity_nested_command(IsleGameObject*, int32_t, IsleGameObject*, void*);
+void engine_identity_fault_update(IsleGameObject*, void*);
+void engine_identity_wait_process(IsleGameObject*, void*);
+IsleGameResult engine_identity_notify_queued(IsleGameObject*, EngineIdentityFixture*);
+IsleGameResult engine_identity_retain_at_limit(IsleGame*, IsleGameObject*);
 /* The selected game ABI uses this wait entry. It must reject synchronous use
  * without returning into the invalid callback or crossing a C++ exception. */
 void ohWait(int32_t updates);

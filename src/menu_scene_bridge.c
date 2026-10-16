@@ -127,6 +127,21 @@ void isle_game_commands_release(IsleGameCommandPool* pool, IsleGameCommandQueue*
     *queue = (IsleGameCommandQueue){0};
 }
 
+IsleGameResult isle_menu_observe_command_queued(IsleGame* game, IsleGameObject* object,
+    int32_t command, IsleGameObject* source, IsleGameCommandHandler observer, void* user) {
+    IsleGameResult result = access(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL || !object->alive || object->game != game || observer == NULL)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    bool previous_observer = game->retirement_observer;
+    ++game->callback_depth;
+    game->retirement_observer = true;
+    observer(object, command, source, user);
+    game->retirement_observer = previous_observer;
+    --game->callback_depth;
+    return game->fault;
+}
+
 IsleGameResult isle_game_commands(IsleGame* game, IsleGameObject* object,
     IsleGameCommandPool* pool, IsleGameCommandQueue* queue,
     IsleGameCommandHandler handler, void* user, int* delete_requested) {
@@ -151,7 +166,11 @@ IsleGameResult isle_game_commands(IsleGame* game, IsleGameObject* object,
         case -4: object->flags |= 1; break;
         case -5: object->flags &= ~UINT32_C(1); break;
         default:
-            if (handler != NULL) handler(object, command->command, command->source, user);
+            if (handler != NULL) {
+                ++game->callback_depth;
+                handler(object, command->command, command->source, user);
+                --game->callback_depth;
+            }
             break;
         }
         if (queue->cancelled || !object->alive || (object == omCurrentObject && omD_8004AC54 == 2)) {

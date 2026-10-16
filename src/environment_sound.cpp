@@ -51,6 +51,17 @@ void Environment::tick(IsleGameObject*,void* user) noexcept {
     static_cast<Environment*>(user)->update();
 }
 void Environment::cleanup() noexcept { player_=nullptr; camera_=nullptr; }
+bool Environment::set_listener(IsleGameModel* player, IsleGameCamera* camera) noexcept {
+    if ((player == nullptr) != (camera == nullptr)) return false;
+    if (player) {
+        const IsleGameModelPlacement* placement = nullptr;
+        const IsleGameCameraParameters* parameters = nullptr;
+        if (isle_game_model_placement(services_.game,player,&placement) != ISLE_GAME_OK ||
+            isle_game_camera_parameters(services_.game,camera,&parameters) != ISLE_GAME_OK) return false;
+    }
+    player_=player; camera_=camera;
+    return true;
+}
 bool Environment::volume_pan(Source source,std::uint8_t range,std::int32_t& volume,std::int32_t& pan) noexcept {
     if (!source.player_distance || !std::isfinite(*source.player_distance) || *source.player_distance<0 ||
         !resources_.angles().live()) {
@@ -109,7 +120,7 @@ bool Environment::play(Source source,std::uint8_t category,std::int32_t sound,
     if (!stop_category(source.identity,category)) return false;
     Record* record=records_;
     Record* last=nullptr;
-    for (;record && record->identity;record=record->next) last=record;
+    for (;record && record->occupied;record=record->next) last=record;
     if (!record) {
         record=allocate(); if (!record) return false;
         if (last) last->next=record; else records_=record;
@@ -132,7 +143,7 @@ bool Environment::play(Source source,std::uint8_t category,std::int32_t sound,
     if (handle!=-1) {
         record->identity=key(source.identity); record->source=source; record->handle=handle;
         record->category=category&3; record->hearing_range=range;
-        record->sound=static_cast<std::uint16_t>(sound); record->fixed=false;
+        record->sound=static_cast<std::uint16_t>(sound); record->fixed=false; record->occupied=true;
     }
     return true; // A source-priority refusal returns -1 without faulting audio.
 }
@@ -140,7 +151,7 @@ bool Environment::stop_category(IsleGameObject* source,std::uint8_t category) no
     bool result=true;
     for (auto* record=records_;record;record=record->next) if (record->identity==key(source) && record->identity && record->category==category) {
         result=services_.check(services_.audio.stop_sound(static_cast<unsigned>(record->handle)),"environmental sound category stop") && result;
-        record->identity=0; record->source={};
+        record->identity=0; record->source={}; record->occupied=false;
     }
     return result;
 }
@@ -148,7 +159,7 @@ bool Environment::stop(IsleGameObject* source) noexcept {
     bool result=true;
     for (auto* record=records_;record;record=record->next) if (record->identity==key(source) && record->identity) {
         result=services_.check(services_.audio.stop_sound(static_cast<unsigned>(record->handle)),"environmental sound source stop") && result;
-        record->identity=0; record->source={};
+        record->identity=0; record->source={}; record->occupied=false;
     }
     return result;
 }
@@ -157,17 +168,23 @@ void Environment::fix_parameters(IsleGameObject* source) noexcept {
         record->fixed=true; record->source={};
     }
 }
+void Environment::release_identity(IsleGameObject* source) noexcept {
+    for (auto* record=records_;record;record=record->next)
+        if (record->identity==key(source) && record->identity) {
+            record->fixed=true; record->source={}; record->identity=0;
+        }
+}
 int Environment::sound_handle(std::int32_t sound) const noexcept {
     for (auto* record=records_;record;record=record->next)
-        if (record->identity && record->sound==sound) return record->handle;
+        if (record->occupied && record->sound==sound) return record->handle;
     return -1;
 }
 bool Environment::update() noexcept {
     if (!player_ || !camera_) return true;
-    for (auto* record=records_;record;record=record->next) if (record->identity) {
+    for (auto* record=records_;record;record=record->next) if (record->occupied) {
         const auto sound=services_.audio.playing_sound(static_cast<unsigned>(record->handle));
         if (sound==-1 || sound!=record->sound) {
-            record->identity=0; record->source={}; record->fixed=true;
+            record->identity=0; record->source={}; record->fixed=true; record->occupied=false;
         } else if (!record->fixed) {
             std::int32_t volume=0,pan=0;
             if (!volume_pan(record->source,record->hearing_range,volume,pan) ||

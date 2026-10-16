@@ -18,6 +18,11 @@ IsleGameResult isle_menu_set_update(IsleGame*, IsleGameObject*, IsleGameCallback
 /* Reinsert a newly created process-free equal-priority object before a peer. */
 IsleGameResult isle_menu_place_before(IsleGame*, IsleGameObject*, IsleGameObject*);
 int isle_menu_object_hidden(IsleGame*, const IsleGameObject*);
+/* Read-only successful-enqueue observer: no OM mutation, wait or throwing.
+ * Shared native callback exclusion also covers manual outside-tick dispatch.
+ */
+IsleGameResult isle_menu_observe_command_queued(IsleGame*, IsleGameObject*, int32_t,
+    IsleGameObject*, IsleGameCommandHandler, void*);
 /* Active stackful callback only; reuses the retained exact GAME RGB fade. */
 IsleGameResult isle_menu_logo_fade(IsleGame*, IsleGameSprite*, uint16_t updates);
 /* Exact GAME float-to-fixed packing; native scale, no kind28 quantization. */

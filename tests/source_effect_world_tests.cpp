@@ -1,4 +1,5 @@
 #include "source_effect_world.hpp"
+#include "source_effect_camera.hpp"
 #include <array>
 #include <cmath>
 #include <cstdlib>
@@ -123,16 +124,76 @@ void behavior() {
     huge.position.x = std::numeric_limits<float>::quiet_NaN();
     require(isle_game_model_set_transform(f.game,f.model,1,&huge) != ISLE_GAME_OK,
             "native accepted nonfinite pose");
-    // Same source chain across ordinary and contextual native matrix choices.
+    // Mixed cache kinds retain the same full source chain. In particular the
+    // TRANSLATE root's noncommuting rotations and signed nonuniform scale must
+    // affect descendant basis/arbitrary points despite its translation cache.
     native(isle_game_remove_model(f.game,f.model));
-    f.initial[0] = {UINT32_MAX,{{3,4,5},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE};
+    f.initial[0] = {UINT32_MAX,{{3,4,5},{quarter,quarter,quarter},{-2,3,0.5f}},ISLE_GAME_MODEL_TRANSLATE};
     f.initial[1] = {0,{{2,-1,7},{0,quarter,0},{-2,3,1}},ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
     f.initial[2] = {1,{{-4,3,2},{quarter,0,0},{1,-2,4}},ISLE_GAME_MODEL_CONTEXTUAL_RPY};
     native(isle_game_attach_model(f.game,f.object,f.initial.data(),f.initial.size(),&f.model));
-    oracle(f,2,ISLE_GAME_MODEL_PLACEMENT_RTS,auxiliary);
+    for (auto mode : {ISLE_GAME_MODEL_PLACEMENT_DISABLED,ISLE_GAME_MODEL_PLACEMENT_RT,ISLE_GAME_MODEL_PLACEMENT_RTS})
+        for (unsigned leaf = 0; leaf < 3; ++leaf) oracle(f,leaf,mode,auxiliary);
+}
+Point screen(const EffectCamera& camera, Point point) {
+    std::array<double,4> clip{};
+    for (unsigned column=0;column<4;++column)
+        clip[column]=point.x*camera.projection[0][column]+point.y*camera.projection[1][column]+
+            point.z*camera.projection[2][column]+camera.projection[3][column];
+    return {(clip[0]/clip[3]*camera.viewport_scale[0]+camera.viewport_translate[0])/4,
+            (-clip[1]/clip[3]*camera.viewport_scale[1]+camera.viewport_translate[1])/4,0};
+}
+void close_pixel(Point actual, Point expected) {
+    // GAME fast-trig projection is quantized. Compare its visible probe against
+    // the continuous geometric oracle within half an RDP quarter-pixel.
+    require(std::abs(actual.x-expected.x)<0.125&&std::abs(actual.y-expected.y)<0.125,
+            "source FX projection exceeds the subpixel geometric oracle bound");
+}
+void camera_projection() {
+    Fixture f;
+    IsleGameObject* object=nullptr;
+    IsleGameCamera* camera=nullptr;
+    native(isle_game_add_object(f.game,2,0,0,nullptr,nullptr,&object));
+    native(isle_game_attach_camera(f.game,object,&camera));
+    native(isle_game_camera_add_matrix(f.game,camera,ISLE_GAME_CAMERA_PERSPECTIVE_FAST));
+    native(isle_game_camera_add_matrix(f.game,camera,ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL));
+    IsleGamePerspective perspective{90,1,1,100,1};
+    // Renderer up intentionally differs: GAME FX independently uses fixed Y up.
+    IsleGameLookAt look{{0,0,10},{0,0,0},{1,0,0}};
+    IsleGameViewport viewport{{640,480,511,0},{640,480,511,0}};
+    native(isle_game_camera_set_perspective(f.game,camera,&perspective));
+    native(isle_game_camera_set_look_at(f.game,camera,&look));
+    native(isle_game_camera_set_viewport(f.game,camera,&viewport));
+    native(isle_game_camera_set_roll(f.game,camera,0));
+    EffectCamera projected;
+    require(source_effect_camera(f.game,camera,projected),"gameplay FX camera rejected");
+    // 90-degree, unit-aspect frustum: (1,2) at distance10 is (0.1,0.2) NDC.
+    close_pixel(screen(projected,{1,2,0}),{176,96,0});
+    native(isle_game_camera_set_roll(f.game,camera,quarter));
+    require(source_effect_camera(f.game,camera,projected),"rolled FX camera rejected");
+    // Positive camera roll makes right=+Y and up=-X.
+    close_pixel(screen(projected,{1,2,0}),{192,132,0});
+    native(isle_game_camera_set_roll(f.game,camera,0));
+    look.eye[0]=look.at[0]=1;
+    native(isle_game_camera_set_look_at(f.game,camera,&look));
+    require(source_effect_camera(f.game,camera,projected),"changed FX view rejected");
+    close_pixel(screen(projected,{1,2,0}),{160,96,0});
+    perspective.scale=2;
+    native(isle_game_camera_set_perspective(f.game,camera,&perspective));
+    require(source_effect_camera(f.game,camera,projected),"scaled FX camera rejected");
+    close_pixel(screen(projected,{2,2,0}),{176,96,0});
+    viewport.scale[0]=viewport.translate[0]=320;
+    viewport.scale[1]=viewport.translate[1]=240;
+    native(isle_game_camera_set_viewport(f.game,camera,&viewport));
+    require(source_effect_camera(f.game,camera,projected),"changed FX viewport rejected");
+    close_pixel(screen(projected,{2,2,0}),{88,48,0});
+    const auto accepted=projected;
+    require(!source_effect_camera(f.game,nullptr,projected)&&projected.projection==accepted.projection&&
+            projected.viewport_scale==accepted.viewport_scale&&projected.viewport_translate==accepted.viewport_translate,
+            "invalid native camera published partial FX projection");
 }
 }
 int main() {
-    try { behavior(); std::cout << "source effect world contracts passed\n"; return 0; }
+    try { behavior(); camera_projection(); std::cout << "source effect world/camera contracts passed\n"; return 0; }
     catch (const std::exception& e) { probe::enabled = false; std::cerr << e.what() << '\n'; return 1; }
 }

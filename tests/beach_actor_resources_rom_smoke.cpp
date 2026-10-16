@@ -26,12 +26,9 @@ void consume_animations(const b::ActorResources& resources) {
     const auto models=resources.models();
     std::vector<a::SlotCapacity> capacities;
     capacities.reserve(models.size());
-    std::size_t max_nodes=0, max_materials=0;
     for (const auto& model:models) {
         const auto capacity=a::slot_capacity(model);
         capacities.push_back(capacity);
-        max_nodes=std::max(max_nodes,capacity.nodes);
-        max_materials=std::max(max_materials,capacity.material_attachments);
     }
     auto made=a::Runtime::create({models,resources.materials(),resources.animations(),m::no_index},
                                 capacities,{},{32768,4096});
@@ -43,26 +40,15 @@ void consume_animations(const b::ActorResources& resources) {
         require(bool(acquired),"Actual actor instance acquisition failed");
         instances[i]=acquired.handle;
     }
-    std::vector<std::size_t> model_bindings(max_nodes), material_bindings(max_materials);
     for (const auto& header:resources.headers()) {
         const auto model_index=resources.initializations()[header.initialization].model;
-        const auto& model=models[model_index];
         const auto handle=instances[model_index];
-        std::size_t material_count=0;
-        for (std::size_t i=0; i<header.nodes.size(); ++i) {
-            model_bindings[i]=header.nodes[i].model_animation;
-            const auto count=model.nodes[i].materials.size();
-            std::fill_n(material_bindings.begin()+static_cast<std::ptrdiff_t>(material_count),count,m::no_index);
-            std::copy(header.nodes[i].material_animations.begin(),header.nodes[i].material_animations.end(),
-                      material_bindings.begin()+static_cast<std::ptrdiff_t>(material_count));
-            material_count+=count;
-        }
-        require(bool(runtime.bind_model(handle,std::span(model_bindings).first(model.nodes.size()),0,a::ModelBindPose::restore)),
+        require(bool(runtime.bind_model(handle,header.model_bindings,0,a::ModelBindPose::restore)),
                 "Actual header model binding failed");
         if (!header.resets_materials()) {
-            require(bool(runtime.bind_materials(handle,std::span(material_bindings).first(material_count))) &&
+            require(bool(runtime.bind_materials(handle,header.material_bindings)) &&
                     bool(runtime.set_texture_speed(handle,header.speed)),"Actual header material binding/speed failed");
-        } else if (!model.material_table.bytes.empty()) {
+        } else if (resources.initializations()[header.initialization].textures_present) {
             require(bool(runtime.reset_materials(handle)),"Actual header original-texture reset failed");
         }
         require(bool(runtime.set_model_speed(handle,header.speed)) && bool(runtime.step_model(handle)),
@@ -106,6 +92,9 @@ void run(const char* filename) {
         const auto& init=initializations[i];
         require(init.actor_id==ids[i] && init.model==i && init.wire.bytes.size()==52 &&
                 init.render_callback_identity==init.wire.u32(8),"Lost actor source initialization/render identity");
+        require(init.textures_present==(init.wire.u32(4)!=0) &&
+                init.textures_present==!models[i].material_table.bytes.empty(),
+                "Initialization outer textures NULL semantics lost");
         const auto& model=models[i];
         require(model.matrix_kinds==m::model::select_source_matrix_kinds(init.flags,init.configured_matrix_kinds) &&
                 model.fog_rgb==fog.rgb && model.fog_min==fog.min && model.fog_max==fog.max,
@@ -146,12 +135,19 @@ void run(const char* filename) {
                 "Header fields or unqualified unknown04 lost");
         const auto& model=models[initializations[header.initialization].model];
         require(header.nodes.size()==model.nodes.size(),"Header outer tables need one entry per model node");
+        require(header.model_bindings.size()==header.nodes.size() &&
+                header.model_animation_table.guest_address==header.wire.u32(8) &&
+                header.material_animation_table.guest_address==header.wire.u32(12),
+                "Flattened binding construction changed source array identities");
+        std::size_t attachment=0;
         if (header.resets_materials()) ++reset_headers;
         std::size_t sound_count=0;
         for (std::size_t i=0; i<header.nodes.size(); ++i) {
             const auto& binding=header.nodes[i]; const auto& node=model.nodes[i];
             const auto model_guest=header.model_animation_table.bytes.empty() ? 0 : header.model_animation_table.u32(i*4);
             require((binding.model_animation==b::actor_no_index)==(model_guest==0),"Model animation NULL binding changed");
+            require(header.model_bindings[i]==binding.model_animation,
+                    "Flattened model binding changed DFS slot/NULL semantics");
             if (binding.model_animation!=b::actor_no_index) {
                 require(binding.model_animation<animations.size() && animations[binding.model_animation].wire.guest_address==model_guest,
                         "Unrelocated model animation header binding");
@@ -179,7 +175,17 @@ void run(const char* filename) {
                                  animations[index].kind==m::AnimationKind::texture,"Invalid material program native binding");
                 }
             }
+            if (!header.resets_materials()) {
+                for (std::size_t j=0; j<node.materials.size(); ++j) {
+                    require(attachment<header.material_bindings.size() &&
+                            header.material_bindings[attachment]==(inner ? binding.material_animations[j] : b::actor_no_index),
+                            "Flattened material binding changed attachment order/NULL preservation");
+                    ++attachment;
+                }
+            }
         }
+        require(header.material_bindings.size()==attachment,
+                "Outer NULL must omit bindings; non-NULL must retain every attachment");
         require(header.sound_ids.size()==(header.wire.u32(16) ? sound_count : 0) &&
                 header.sound_id_table.bytes.size()==header.sound_ids.size()*4,
                 "Sound ids must be bounded only by positive root callback0..3 uses");

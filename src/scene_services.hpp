@@ -79,6 +79,10 @@ public:
     // All-null clears the observers; rejection leaves the old observers intact.
     bool set_lifecycle(IsleGameObject*, ObjectLifecycle) noexcept;
     bool set_command_handler(IsleGameObject*, IsleGameCommandHandler, void*) noexcept;
+    // Borrow accounting only, after a successful FIFO enqueue. Observer must
+    // not throw/wait/mutate OM or enqueue recursively. Retiring lifecycle closes
+    // remaining queue borrows when native deletion discards the receiver FIFO.
+    bool set_command_queued_observer(IsleGameObject*, IsleGameCommandHandler, void*) noexcept;
     bool process_commands(IsleGameObject* = nullptr) noexcept;
     bool send_command(IsleGameObject*, std::int32_t, IsleGameObject* source = nullptr) noexcept;
     bool send_command_to_link(std::uint8_t, std::int32_t, IsleGameObject* source = nullptr) noexcept;

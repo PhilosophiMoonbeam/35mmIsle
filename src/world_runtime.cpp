@@ -107,8 +107,11 @@ struct World::Impl {
             const auto& n = state.nodes[i];
             IsleGameModelTransform transform{converted(n.transform.position),converted(n.transform.rotation),converted(n.transform.scale)};
             if (!b.road && i == 0) {
-                transform.position = current ? relative(*b.block,*current) : Vec3{};
-                transform.rotation = {}; transform.scale = {1,1,1};
+                // block.c's texture task does not redefine the terrain root's
+                // canonical pose, even though it renders translation only.
+                const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+                check(isle_game_model_peek_nodes(game,b.model,&nodes,&count));
+                transform = nodes[0].transform;
             }
             check(isle_game_model_set_transform(game,b.model,i,&transform));
             check(isle_game_model_set_flags(game,b.model,i,n.flags));
@@ -150,8 +153,11 @@ struct World::Impl {
     }
     void relocate(Block& reference) {
         for (auto& b : blocks) if (b.model) {
-            const IsleGameModelTransform t{relative(b,reference),{},{1,1,1}};
-            check(isle_game_model_set_transform(game,b.model,0,&t));
+            const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+            check(isle_game_model_peek_nodes(game,b.model,&nodes,&count));
+            auto transform = nodes[0].transform;
+            transform.position = relative(b,reference);
+            check(isle_game_model_set_transform(game,b.model,0,&transform));
         }
     }
 };
@@ -206,6 +212,10 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
                 const auto acquired = s.animation->acquire(s.bindings.size(),b.resource->model,false);
                 check(acquired.status);
                 b.instance = acquired.handle;
+                // block.c appends the translation recipe before setting the
+                // instance root's raw yaw. Shared immutable resources stay intact.
+                const menu::animation::Transform root{{},{0,b.resource->metadata.yaw,0},{1,1,1}};
+                check(s.animation->set_node_transform(b.instance,0,root));
                 b.object = s.object(static_cast<std::uint32_t>(100+i*2));
                 b.model = s.attach(b.object,b.resource->model,true,b.instance);
                 const auto callback = static_cast<std::uint32_t>(r.models[b.resource->model].render_type);

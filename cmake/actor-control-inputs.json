@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "actor-control-v1",
+  "transformation_version": "actor-control-v2",
   "use": "User-directed private native selected actor C control; no source/SDK/asset redistribution grant. Private selected bodies exist only in caller build output.",
   "source_files": {
     "src/app_level/pokemon.c": {
@@ -16,23 +16,27 @@
     "include/common_structs.h": {
       "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
       "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509"
+    },
+    "src/app_level/4FE330.c": {
+      "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761"
     }
   },
   "native_support": {
     "src/actor_source.h": {
-      "sha256": "56302e4d7509d261cc8e7fd1dbba41ec2bd971f775bd0c8b7f6f02e7692f6454"
+      "sha256": "4555788cecc2f03190e9f5bb6badbeda627703bd4089191e12c8fdfb04a697e7"
     },
     "src/actor_source_bridge.c": {
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
     },
     "src/engine.c": {
-      "sha256": "3ff8152dd1eb35187cb631ca269e2c411cb94df3197ac2e054c4869f1028405c"
+      "sha256": "8f54f4b0882badd901566d88744ee743054f59935a5d465b714c1fefd0d74eee"
     },
     "src/engine_internal.h": {
-      "sha256": "0bdba4fdc92e4969ba5e4c4bba3351ce22e7e95110ef7d2fbc52bfa1aec3452f"
+      "sha256": "0ad836d70b032df4ad873a9829858de70eb458d3a754c21133c5387bd5fa8974"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "2b8e9e0acf1de114aaca6c28e1300171380014832b2358f7eb0353e734a0d5cc"
+      "sha256": "5d47a6a3b4a34a492f2f964fbf8d10608dddbed3d5aad4ceb2e94989243574c1"
     },
     "include/35mmisle/rng.h": {
       "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
@@ -42,13 +46,23 @@
     },
     "tools/prepare_engine.py": {
       "sha256": "b48d11d4c787fdd6085268348a1b264955680e23818e2f55699ce3f0631ccca1"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "89e97e8e7cf9dd49a4b1704d2a9cede3e60c142409cb1e951d2117feb31ee996"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "d5d3c6ab97529c923339c7eeb51675fbc27d795197db961a50f4be613f77c7f2"
     }
   },
   "transformations": {
-    "preamble": "Private engine_internal.h + actor_source.h; native semantic Pokemon/RandomState typedefs, GET_POKEMON checked real userData accessor, omCreateProcess mapped to typed actual native source creation. Existing C omEndProcess/ohWait are linked unchanged.",
+    "preamble": "Private engine_internal.h + actor_owner_source.h; native semantic Pokemon/RandomState typedefs and one enumerated trigger Vec3f-to-IsleGameVec3 signature substitution, GET_POKEMON checked real userData accessor, omCreateProcess mapped to typed actual native source creation. Existing C omEndProcess/ohWait are linked unchanged.",
     "random": "One exact call substitution: randRange(sumWeight) -> isle_actor_source_rand_range(obj, sumWeight), consuming the bound application RNG through existing isle_rng_range.",
     "failure": "Existing engine C execution_fault is privately promoted to isle_native_execution_fault; all native callers migrated, identical fence semantics. Source control entrypoints require an active C callback; native startup uses returned engine status.",
-    "body_policy": "No source control-flow, priorities, kind, flags, wait masks, publication/end order or actual one-argument callable identity changed."
+    "body_policy": "Enumerated substitutions preserve waits, priorities, masks and publication/end order. RunInteractions preserves its actual NULL graph early return and substitutes the remaining unadmitted interpreter with the owner admission-failing leaf; cleanup body is native owner ordering, with actual GAME RunCleanup priority4 dispatch.",
+    "owner_leaves": "Enumerated exact substitutions in definitions; C leaves report faults only after C++ returns. No guest pointer callback casts.",
+    "factory": "Actual common1003 factory lines112-114 unchanged text; preamble aliases WorldBlock/ObjectSpawn/PokemonInitData to native typed owner contexts, static init identity0x80388348, Pokemon_SpawnOnGroundDlLink4 to nonwaiting isle_actor_owner_spawn_ground_dl4. Actual C factory callable identity retained; no guest pointer casts.",
+    "trigger": "Actual selected source trigger retains symbol and position-before-misc-signal ordering. Explicit signature change void to IsleGameResult; guarded status-returning source_get replaces active-callback require; native position leaf status checked before signal; success returned after signal. Nonwaiting selected C body safely callable by owner; not byte-identical. Existing active source require guard unchanged.",
+    "translation_units": "Original six control helpers emitted alone under --output; remaining nine owner/FSM/factory/trigger bodies emitted under required --owner-output. No owner preamble or owner leaf references in core unit, avoiding static archive circular dependencies. Separate source hashes in evidence; three destinations required distinct."
   },
   "semantic_origins": [
     {
@@ -125,6 +139,161 @@
       "source_sha256": "5835b02b34682fd502e7973e2bbde6552364190644a2b0aef44af7df0c9d8c7b",
       "native_sha256": "5835b02b34682fd502e7973e2bbde6552364190644a2b0aef44af7df0c9d8c7b",
       "changes": []
+    },
+    {
+      "symbol": "Pokemon_RunInteractions",
+      "path": "src/app_level/pokemon.c",
+      "first": 630,
+      "last": 720,
+      "source_sha256": "f372c6543793188d3c4ac5a1b8f6d4b1e1bb20541a956ecadc8d6aa8623b5e28",
+      "native_sha256": "a4a81ecfb42d51ee3362a3f931e9abacaed3fb05345f061c474685dd9a80c112",
+      "changes": [
+        {
+          "find": "    s32 i;\n    s32 continueSearch = true;\n    Vec3f dirToNeighbors;\n    f32 interactionDist;\n    GObj* interactionTarget;\n    GObjFunc stateProc = NULL;\n    GObjFunc auxProc = NULL;\n    InteractionHandler* transitionGraph = pokemon->transitionGraph;",
+          "replace": "    const void* transitionGraph = pokemon->transitionGraph;"
+        },
+        {
+          "find": "    for (i = 0; continueSearch && transitionGraph[i].cmd != POKEMON_CMD_58; i++) {\n        if (transitionGraph[i].state == NULL && transitionGraph[i].aux == NULL) {\n            continue;\n        }\n\n        switch (transitionGraph[i].cmd) {\n            case POKEMON_CMD_15:\n                interactionTarget = Pokemon_GetClosestItem(obj, &interactionDist);\n                if (interactionTarget != NULL) {\n                    Item* item = GET_ITEM(interactionTarget);\n                    if (interactionTarget != pokemon->apple && item->itemID == ITEM_ID_APPLE && item->state == ITEM_STATE_STILL && interactionDist < 600.0f) {\n                        pokemon->apple = interactionTarget;\n                        continueSearch = false;\n                        pokemon->interactionDist = interactionDist;\n                        pokemon->interactionTarget = interactionTarget;\n                        stateProc = transitionGraph[i].state;\n                        auxProc = transitionGraph[i].aux;\n                    }\n                }\n                break;\n            case POKEMON_CMD_16:\n                if (pokemon->playerDist < transitionGraph[i].value) {\n                    pokemon->interactionDist = interactionDist; // BUG: interactionDist undefined here, must use 'playerDist'\n                    continueSearch = false;\n                    pokemon->interactionTarget = gObjPlayer;\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                }\n                break;\n            case POKEMON_CMD_17:\n                if (Pokemon_GetDirToNeighbours(obj, &dirToNeighbors) > 0.0f) {\n                    pokemon->dirToNeighbors.x = dirToNeighbors.x;\n                    pokemon->dirToNeighbors.y = dirToNeighbors.y;\n                    pokemon->dirToNeighbors.z = dirToNeighbors.z;\n                    continueSearch = false;\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                }\n                break;\n            case POKEMON_CMD_5:\n            case POKEMON_CMD_6:\n            case POKEMON_CMD_7:\n                if (Items_GetPokeFluteCmd() == transitionGraph[i].cmd && pokemon->playerDist < 1400.0f) {\n                    continueSearch = false;\n                    pokemon->interactionTarget = gObjPlayer;\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                }\n                break;\n            case POKEMON_CMD_23:\n                if (sTimerInFocus > transitionGraph[i].value && obj == gPokemonInFocus) {\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                    continueSearch = false;\n                }\n                break;\n            case POKEMON_CMD_25:\n                if (gDirectionIndex < 0 && pokemon->playerDist < transitionGraph[i].value) {\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                    continueSearch = false;\n                }\n                break;\n        }\n    }\n\n    if (auxProc != NULL) {\n        Pokemon_StartAuxProc(obj, auxProc);\n    }\n    if (stateProc != NULL) {\n        Pokemon_SetState(obj, stateProc);\n    }\n    if (!func_80353D68_4F4178()) {\n        ohPauseObjectProcesses(obj);\n    }\n}\n",
+          "replace": "    isle_actor_source_interactions(obj);\n}\n"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_WaitForFlag",
+      "path": "src/app_level/pokemon.c",
+      "first": 723,
+      "last": 734,
+      "source_sha256": "ad0052ee332d0e4b6be7fff61aed182c6f02f0374e04a15d03f16a910cc8c056",
+      "native_sha256": "ad0052ee332d0e4b6be7fff61aed182c6f02f0374e04a15d03f16a910cc8c056",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_RunCleanup",
+      "path": "src/app_level/pokemon.c",
+      "first": 771,
+      "last": 773,
+      "source_sha256": "ffbfb4beed8903d8f5847b0e719a276c774fee2167002c002f0a05165253a597",
+      "native_sha256": "ffbfb4beed8903d8f5847b0e719a276c774fee2167002c002f0a05165253a597",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_Update",
+      "path": "src/app_level/pokemon.c",
+      "first": 2066,
+      "last": 2089,
+      "source_sha256": "1ce9268f16c49a42686da3c5f7202b717f877741db0b2cf746199fad386a7b7d",
+      "native_sha256": "9e47b9fb8c6c559586eb9e0d1ba4cc8c4cc9a033e97fb8e9104c57dbbbea44ff",
+      "changes": [
+        {
+          "find": "getIsPaused()",
+          "replace": "isle_actor_owner_paused(pokemon)"
+        },
+        {
+          "find": "obj->animationTime",
+          "replace": "isle_actor_owner_animation_time(pokemon)"
+        },
+        {
+          "find": "cmdProcessCommands(Pokemon_HandleCommand);",
+          "replace": "isle_actor_source_commands(obj);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_8035DF20_4FE330",
+      "path": "src/app_level/4FE330.c",
+      "first": 63,
+      "last": 77,
+      "source_sha256": "04c20e400cf745b77078ad41e1fd382e0e29a500ac7486957e5a57c347c41d78",
+      "native_sha256": "b88455e747a058cc0754a67a194048426eeb0fca0342a371dcf9a370e5102194",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_80388310_528720);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 0);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_8035DFB0_4FE3C0",
+      "path": "src/app_level/4FE330.c",
+      "first": 79,
+      "last": 93,
+      "source_sha256": "5275d163e8e2cb19043bbe9a733aef60958c5be9d22368eb22f843ddfaf088de",
+      "native_sha256": "4b54fe1d4a16eaf6a9dfda755b3679096394433638e5268f66e7c39c8cd6761d",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n",
+          "replace": ""
+        },
+        {
+          "find": "model->position.v.y -= 0.2f;",
+          "replace": "isle_actor_source_subtract_y(obj, 0.2f);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_8035E034_4FE444",
+      "path": "src/app_level/4FE330.c",
+      "first": 95,
+      "last": 110,
+      "source_sha256": "9a173b24f101d3cf61b71b6a0553f8cd56d5bcd6d42628167233d50adc461abf",
+      "native_sha256": "2c805d68d750c3af33fb0d392ca2afb720ac45d04d7708720fe65bfa63d874d2",
+      "changes": [
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_actor_source_visibility(obj, 1);"
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_actor_source_visibility(obj, 0);"
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_80388310_528720);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 1);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_8035E0D4_4FE4E4",
+      "path": "src/app_level/4FE330.c",
+      "first": 112,
+      "last": 114,
+      "source_sha256": "35c8fae18d4822f2452d667c80f28bd7da1f2cb2c609fc0ac092915e96747cb4",
+      "native_sha256": "35c8fae18d4822f2452d667c80f28bd7da1f2cb2c609fc0ac092915e96747cb4",
+      "changes": []
+    },
+    {
+      "symbol": "func_8035E264_4FE674",
+      "path": "src/app_level/4FE330.c",
+      "first": 164,
+      "last": 173,
+      "source_sha256": "87200370fc436ea4a8ba9f88f5206b2c763f1a6d5403a4efea89bbeacf6cf29c",
+      "native_sha256": "5caf5d934907f0a58676787df15e2fafb2cdcf8b3b3598050147dcc087fcc9d4",
+      "changes": [
+        {
+          "find": "void func_8035E264_4FE674",
+          "replace": "IsleGameResult func_8035E264_4FE674"
+        },
+        {
+          "find": "Vec3f* arg1",
+          "replace": "IsleGameVec3* arg1"
+        },
+        {
+          "find": "    PokemonTransform* sp2C;\n",
+          "replace": ""
+        },
+        {
+          "find": "    Pokemon* pokemon = GET_POKEMON(obj);",
+          "replace": "    Pokemon* pokemon = NULL;\n    IsleGameResult result = isle_actor_source_get(obj->game, obj, &pokemon);\n    if (result != ISLE_GAME_OK) return result;"
+        },
+        {
+          "find": "    sp2C = GET_TRANSFORM(obj->data.dobj);\n    sp2C->pos.v.x = arg1->x;\n    sp2C->pos.v.y = arg1->y;\n    sp2C->pos.v.z = arg1->z;",
+          "replace": "    result = isle_actor_owner_trigger_position(pokemon, *arg1);\n    if (result != ISLE_GAME_OK) return result;"
+        },
+        {
+          "find": "    pokemon->miscVars[0].field1 = 1;",
+          "replace": "    pokemon->miscVars[0].field1 = 1;\n    return ISLE_GAME_OK;"
+        }
+      ]
     }
   ],
   "regression_sources": [
@@ -136,14 +305,82 @@
     "cpu": "46/46 passed GCC Debug raw6929, GCC Release raw6928 and Clang ASan+UBSan raw6930.",
     "payload_guard": "ASan reproduced READ8 beyond a4byte unrelated userData payload before native GObj.actorSourceBound was checked. The native binding marker is published only after successful record/userData publication and clears through actual zeroed GObj allocation/reuse. Fresh and reused foreign payload regressions pass; independent source review accepted the fix.",
     "failure_route": "Promoted existing native execution fault to private isle_native_execution_fault; every existing callsite migrated. Worker C failure and owner C-tick longjmp remain the sole boundary, not a second scheduler or callback registry.",
-    "actual_API": {"root": "native-control-focus-api-proof-uznt46qi", "binary_sha256": "c45fe45b98c1b709b8c41691ba45bac99c778df210203fa62fc7e653704dbbd2", "archive_sha256": "5fc2250160f8c4eae5f63cfc650218dc5046c0f0572accbf9977aa742f7366b3", "seconds": 0.05148720997385681, "native_ticks": 61, "actual_source_path_waits": 59, "joined_source_processes": true, "after_end_C_statements": 0, "closure": [4,3,5]},
+    "actual_API": {
+      "root": "native-control-focus-api-proof-uznt46qi",
+      "binary_sha256": "c45fe45b98c1b709b8c41691ba45bac99c778df210203fa62fc7e653704dbbd2",
+      "archive_sha256": "5fc2250160f8c4eae5f63cfc650218dc5046c0f0572accbf9977aa742f7366b3",
+      "seconds": 0.05148720997385681,
+      "native_ticks": 61,
+      "actual_source_path_waits": 59,
+      "joined_source_processes": true,
+      "after_end_C_statements": 0,
+      "closure": [
+        4,
+        3,
+        5
+      ]
+    },
     "observation": "Actual API root closed once, zero known physical attempts or permission errors; ROM unused. Source bytes selected only through exact Git objects, never the modified decomp worktree.",
-    "limits": "Controls and binding only: demonstration is not the complete common1003 FSM/factory, actor animation coordination, interactions or gameplay."
+    "limits": "Controls and binding only: demonstration is not the complete common1003 FSM/factory, actor animation coordination, interactions or gameplay.",
+    "worker_execution": "Not run: preparation authoring only. Main owns generation, strict-FP compilation and behavior verification."
   },
   "canonical_render_payload": {
     "fields": "Actual signed Pokemon id andu16Pokemon flags live only in the guarded IsleActorSource GObj.userData record. Renderer no longer carries source_flag100 replica; native GObj hidden flags remain distinct.",
     "ownership": "Actual actor consumer allocates full records in the native arena with shared application RNG/owner; record storage is validated disjoint from canonical8MiBRAM even for hidden/filtered actors. Joined old native work precedes record reset/reuse. Foreign userData is never cast before actual native binding marker validation.",
     "actual_consumer": "Complete actor/focus source-evaluated surface root f3krr9nu passed all6native-actor geometry/lifetime and actual GPU capture/history/gate/nativehide/cleanup/writeback gates; see actor-producer-inputs.json. Debug/Release/ClangASanUBSan each passed49 CPU tests. The source header SHA256 above is the current canonical record, not an SDK layout."
   },
-  "scope": "Six selected helpers only; no interaction, standard WaitForFlag, animation, factory, guest function casts, second interpreter/scheduler, console size padding or callback registry."
+  "scope": "Private selected GAME control, ordinary wait/update/cleanup dispatch, common1003 normal/path/hidden/retrigger and position-before-signal trigger. Actual common1003 C factory delegates through typed nonwaiting owner registered spawn seam. NonNULL interactions reject admission in owner.",
+  "build_recipe": {
+    "private_sources": {
+      "isle-engine": [
+        "generated/isle_actor_control.c"
+      ],
+      "isle-actor-owner": [
+        "generated/isle_actor_owner.c",
+        "src/actor_source_owner_bridge.c"
+      ]
+    },
+    "configure_dependencies": [
+      "tools/prepare_actor_control.py",
+      "cmake/actor-control-inputs.json",
+      "src/actor_owner_source.h",
+      "src/actor_source.h",
+      "src/actor_source_bridge.c",
+      "src/actor_source_owner_bridge.c"
+    ],
+    "strict_fp": "Compile selected GAME C and source bridge with strict FP: GCC/Clang -fno-fast-math -ffp-contract=off; MSVC /fp:strict. Preserve native source ohWait/omEndProcess symbols. No worker generation or compilation performed.",
+    "final_support_hashes": "Main refreshes all native_support hashes after owner/engine sibling changes land, before preparation.",
+    "cli": "python3 -B tools/prepare_actor_control.py --repository <pinned-GAME-git> --manifest cmake/actor-control-inputs.json --output <build>/generated/isle_actor_control.c --owner-output <build>/generated/isle_actor_owner.c --evidence <build>/isle-actor-control-inputs.json"
+  },
+  "translation_units": {
+    "control": {
+      "cli": "--output",
+      "target": "isle-engine",
+      "definitions": [
+        "Pokemon_SetState",
+        "Pokemon_SetStateRandom",
+        "Pokemon_StartAuxProc",
+        "Pokemon_StopAuxProc",
+        "Pokemon_StartPathProc",
+        "Pokemon_WaitForFlagNoInteraction"
+      ],
+      "preamble": "engine_internal.h and actor_source.h only; no owner dependencies"
+    },
+    "owner": {
+      "cli": "--owner-output",
+      "target": "isle-actor-owner",
+      "definitions": [
+        "Pokemon_RunInteractions",
+        "Pokemon_WaitForFlag",
+        "Pokemon_RunCleanup",
+        "Pokemon_Update",
+        "func_8035DF20_4FE330",
+        "func_8035DFB0_4FE3C0",
+        "func_8035E034_4FE444",
+        "func_8035E0D4_4FE4E4",
+        "func_8035E264_4FE674"
+      ],
+      "preamble": "actor_owner_source.h typed nonwaiting leaves/factory contexts"
+    }
+  }
 }

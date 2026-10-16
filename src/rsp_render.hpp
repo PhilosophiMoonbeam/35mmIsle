@@ -53,6 +53,8 @@ public:
         // host writeback. Finish before release; abandonment poisons the owner.
         std::span<std::uint32_t> postprocess_words();
         void finish_postprocess();
+        // Writer-phase observation only; never a completion/retirement fence.
+        bool postprocess_active() const noexcept { return postprocessing_; }
         const Result& rsp_result() const;
         const PacketBuffer& packets() const;
         void release() noexcept;

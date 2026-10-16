@@ -258,6 +258,7 @@ struct ActorResourceBuilder {
         initialization.wire=at(fact.initialization,52); initialization.actor_id=fact.id;
         const auto& w=initialization.wire;
         initialization.render_callback_identity=w.u32(8);
+        initialization.textures_present=w.u32(4)!=0;
         initialization.scale=vector3(w,16); initialization.collision_center=vector3(w,28);
         initialization.radius=finite(w,40); initialization.flags=w.u16(44);
         initialization.configured_matrix_kinds={w.u8(46),w.u8(47),w.u8(48)};
@@ -328,6 +329,12 @@ struct ActorResourceBuilder {
         if (const auto table=header.wire.u32(8)) header.model_animation_table=at(table,model.nodes.size()*4);
         if (const auto table=header.wire.u32(12)) header.material_animation_table=at(table,model.nodes.size()*4);
         header.nodes.reserve(model.nodes.size());
+        header.model_bindings.reserve(model.nodes.size());
+        if (!header.material_animation_table.bytes.empty()) {
+            std::size_t attachments=0;
+            for (const auto& node:model.nodes) attachments+=node.materials.size();
+            header.material_bindings.reserve(attachments);
+        }
         std::size_t sound_count=0;
         for (std::size_t i=0; i<model.nodes.size(); ++i) {
             const auto& node=model.nodes[i]; ActorNodeBinding binding{};
@@ -350,6 +357,14 @@ struct ActorResourceBuilder {
                     validate_material_animation(stream,node.materials[j]);
                     binding.material_animations.push_back(stream); // NULL preserves this slot, never terminates.
                 }
+            }
+            header.model_bindings.push_back(binding.model_animation);
+            if (!header.material_animation_table.bytes.empty()) {
+                if (binding.material_animation_table.bytes.empty())
+                    header.material_bindings.insert(header.material_bindings.end(),node.materials.size(),actor_no_index);
+                else
+                    header.material_bindings.insert(header.material_bindings.end(),
+                                                    binding.material_animations.begin(),binding.material_animations.end());
             }
             header.nodes.push_back(std::move(binding));
         }

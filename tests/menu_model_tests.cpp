@@ -3,6 +3,7 @@
 #include "contextual_model_math.h"
 #include <array>
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -169,7 +170,7 @@ struct Hierarchy {
             if (!status) return status;
         }
         return model::encode_hierarchy({source,nodes,first,next,materials,placement,context,
-            0x1000,0x2000,{},recipes,fixed,consumed},buffer);
+            0x1000,0x2000,{},model::PoseSource::animation,recipes,fixed,consumed},buffer);
     }
 };
 void source_null_draw_guards() {
@@ -553,7 +554,7 @@ struct KernelFixture {
     std::array<std::size_t,4> counts{};
     model::HierarchyBuffer output{{storage[0],storage[1],storage[2],storage[3]},counts,pending};
     bool native_pose = false;
-    explicit KernelFixture(bool contextual = false) {
+    explicit KernelFixture(bool contextual = false, std::uint32_t row_flags = 0) {
         require(isle_arena_init(&arena,arena_bytes.data(),arena_bytes.size()) == ISLE_OK,"kernel arena initialization");
         native(isle_game_create(&arena,&game));
         for (std::size_t i = 0; i < materials.size(); ++i) {
@@ -579,6 +580,12 @@ struct KernelFixture {
             models[0].nodes[1].depth_flags = 0x2000;
             models[0].nodes[0].scale = {2,3,5};
             models[0].nodes[2].rotation = {0.2f,-0.3f,0.4f};
+        }
+        if (row_flags) {
+            models[0].nodes[1].depth_flags = row_flags;
+            models[0].nodes[1].rotation = {0.2f,-0.3f,0.4f};
+            models[0].nodes[1].scale = {3,-4,5};
+            models[0].nodes[1].payloads.push_back({{},0,0,0x80005008});
         }
         auto created = animation::Runtime::create(animation::Resources{models,materials,{}},capacities,
             {{0,0,100},{0,0,0},0,45,true,true,0,{}},{});
@@ -621,6 +628,186 @@ struct KernelFixture {
         handles[0] = acquired.handle; attach(0,resource);
     }
 };
+IsleGameModelTransform native_transform(const animation::Transform& t) {
+    return {{t.position.x,t.position.y,t.position.z},{t.rotation.x,t.rotation.y,t.rotation.z},
+        {t.scale.x,t.scale.y,t.scale.z}};
+}
+bool same_pose(const IsleGameModelTransform& a, const IsleGameModelTransform& b) {
+    return a.position.x == b.position.x && a.position.y == b.position.y && a.position.z == b.position.z &&
+        a.rotation.x == b.rotation.x && a.rotation.y == b.rotation.y && a.rotation.z == b.rotation.z &&
+        a.scale.x == b.scale.x && a.scale.y == b.scale.y && a.scale.z == b.scale.z;
+}
+float fixed_component(const IsleGameFixedMatrix& m, unsigned row, unsigned col) {
+    const auto index = (row % 2) * 2 + col / 2;
+    const auto shift = col % 2 ? 0 : 16;
+    const auto integer = (m.m[row / 2][index] >> shift) & 65535u;
+    const auto fraction = (m.m[2 + row / 2][index] >> shift) & 65535u;
+    const auto bits = (integer << 16) | fraction;
+    return static_cast<float>(std::bit_cast<std::int32_t>(bits)) / 65536.0f;
+}
+IsleGameFixedMatrix uploaded_child(const KernelFixture& f) {
+    IsleGameFixedMatrix result;
+    for (unsigned row = 0; row < 4; ++row) for (unsigned col = 0; col < 4; ++col)
+        result.m[row][col] = f.ram[0x1040 / 4 + row * 4 + col];
+    return result;
+}
+void translation_payload(const IsleGameFixedMatrix& m, IsleGameVec3 position) {
+    const std::array<float,3> xyz{position.x,position.y,position.z};
+    for (unsigned row = 0; row < 4; ++row) for (unsigned col = 0; col < 4; ++col) {
+        const auto expected = row == 3 && col < 3 ? xyz[col] : row == col ? 1.0f : 0.0f;
+        require(fixed_component(m,row,col) == expected,"contextual node uploaded more than its translation cache");
+    }
+}
+void contextual_child_rows(const KernelFixture& f, const model::RenderContext& context,
+    bool source48, const IsleGameModelTransform& root, const IsleGameModelTransform& child) {
+    // Consume public G_MW_MATRIX integer/fraction pairs, not recipe metadata or
+    // command counts. These rows replace the combined MVP, not the native RTS.
+    IsleGameFixedMatrix rows{};
+    bool found = false;
+    for (std::size_t i = 0; i < f.counts[0]; ++i) {
+        if ((f.storage[0][i].w0 >> 24) != 0xda || f.storage[0][i].w1 != 0x1040) continue;
+        require(!found && i + 13 < f.counts[0] && f.storage[0][i + 1].w0 == 0xd5000001,
+            "contextual child did not expose its combined-MVP row update");
+        found = true;
+        for (unsigned part = 0; part < 2; ++part) for (unsigned pair = 0; pair < 6; ++pair) {
+            const auto command = f.storage[0][i + 2 + part * 6 + pair];
+            require(command.w0 == (0xdb000000u | (part * 32 + pair * 4)),
+                "contextual row consumer received a different matrix register");
+            rows.m[part * 2 + pair / 4][pair % 4] = command.w1;
+        }
+    }
+    require(found,"contextual child draw omitted its matrix row commands");
+    const float x = root.scale.x * child.scale.x, y = root.scale.x * child.scale.y;
+    for (unsigned row = 0; row < 3; ++row) for (unsigned col = 0; col < 4; ++col) {
+        const float basis = source48 ? context.basis48.m[row][col] :
+            ((row == col || (row == 2 && col == 3)) ? context.perspective.m[row][col] : 0);
+        require(fixed_component(rows,row,col) == basis * (row == 1 ? y : x),
+            "contextual row commands used a different pose or inherited scale authority");
+    }
+}
+void mathematical_child_world(const KernelFixture& f, const IsleGameModelTransform& root,
+    const IsleGameModelTransform& child) {
+    // Independent Z-rotation/scale oracle; the root has scale and translation.
+    // Canonical rotation and Z scale matter here even though 44/48 ignore them.
+    const auto c = std::cos(child.rotation.z), s = std::sin(child.rotation.z);
+    model::WorldMatrix expected;
+    expected.m[0][0] = child.scale.x * c * root.scale.x;
+    expected.m[0][1] = child.scale.x * s * root.scale.y;
+    expected.m[1][0] = -child.scale.y * s * root.scale.x;
+    expected.m[1][1] = child.scale.y * c * root.scale.y;
+    expected.m[2][2] = child.scale.z * root.scale.z;
+    expected.m[3][0] = child.position.x * root.scale.x + root.position.x;
+    expected.m[3][1] = child.position.y * root.scale.y + root.position.y;
+    expected.m[3][2] = child.position.z * root.scale.z + root.position.z;
+    expected.m[3][3] = 1;
+    const auto worlds = f.kernel->world_nodes(f.handles[0]);
+    require(worlds.size() == 3,"selected pose did not publish its complete mathematical hierarchy");
+    for (unsigned row = 0; row < 4; ++row) for (unsigned col = 0; col < 4; ++col)
+        require(std::abs(worlds[1].m[row][col] - expected.m[row][col]) < 0.001f,
+            "mathematical world used renderer rows or the unselected local pose");
+}
+void kernel_contextual_pose_authority() {
+    for (const auto high : {0x8000u,0x2000u}) {
+        KernelFixture f(false,high);
+        const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+        native(isle_game_model_peek_nodes(f.game,f.native_models[0],&nodes,&count));
+        const auto attached = native_transform(f.runtime->model(f.handles[0]).nodes[1].transform);
+        require(count == 3 && nodes[1].matrix_kind == ISLE_GAME_MODEL_TRANSLATE &&
+            same_pose(nodes[1].transform,attached),"44/48 attachment erased canonical rotation/scale");
+        f.prepare();
+        require(same_pose(nodes[1].transform,attached),"first animation commit erased attached 44/48 pose fields");
+        translation_payload(uploaded_child(f),attached.position);
+
+        animation::Transform runtime_root{{17,-19,23},{},{7,11,13}};
+        animation::Transform runtime_child{{-2,3,5},{0,0,-1.57079637f},{5,-6,9}};
+        auto native_root = native_transform(animation::Transform{{10,-3,7},{},{2,3,4}});
+        auto native_child = native_transform(animation::Transform{{11,2,-5},{0,0,1.57079637f},{3,-4,5}});
+        require(bool(f.runtime->set_node_transform(f.handles[0],0,runtime_root)) &&
+            bool(f.runtime->set_node_transform(f.handles[0],1,runtime_child)),"divergent Runtime pose rejected");
+        native(isle_game_model_set_transform(f.game,f.native_models[0],0,&native_root));
+        native(isle_game_model_set_transform(f.game,f.native_models[0],1,&native_child));
+        f.native_pose = true;
+        model::RenderContext context;
+        context.perspective.m[0][0] = 2; context.perspective.m[1][1] = 3;
+        context.perspective.m[2][2] = 4; context.perspective.m[2][3] = -1;
+        for (unsigned row = 0; row < 3; ++row) for (unsigned col = 0; col < 4; ++col)
+            context.basis48.m[row][col] = float(row * 4 + col + 1) / 8;
+        auto encode = [&] {
+            const auto ordered = f.bindings();
+            require(bool(f.kernel->stage(ordered)) && bool(f.kernel->validate_upload(f.ram,1)),
+                "selected full-pose stage rejected");
+            f.counts.fill(0);
+            for (const auto& binding : ordered)
+                require(bool(f.kernel->encode(binding.slot,context,f.output)),"selected full-pose rows rejected");
+        };
+        auto publish = [&] { f.kernel->commit_pose(); f.kernel->upload(f.ram,1); };
+        encode(); contextual_child_rows(f,context,high == 0x2000,native_root,native_child); publish();
+        mathematical_child_world(f,native_root,native_child);
+        const auto native_world = f.kernel->world_nodes(f.handles[0])[1];
+        const auto native_revision = nodes[1].revision;
+        runtime_child.scale.x = 8; runtime_child.rotation.z = -0.5f;
+        require(bool(f.runtime->set_node_transform(f.handles[0],1,runtime_child)),"unselected Runtime edit rejected");
+        encode();
+        require(high == 0x2000 || !f.kernel->lists_changed(),
+            "native44 change detection borrowed the unselected Runtime revision");
+        contextual_child_rows(f,context,high == 0x2000,native_root,native_child); publish();
+        require(equal(native_world,f.kernel->world_nodes(f.handles[0])[1]) &&
+            nodes[1].revision == native_revision && same_pose(nodes[1].transform,native_child),
+            "unselected Runtime edit changed native pose publication or mathematical world");
+
+        const auto old_child = nodes[1];
+        const auto old_payload = uploaded_child(f);
+        const auto sibling_world = f.kernel->world_nodes(f.handles[0])[2];
+        native_child.rotation.z = -0.75f; native_child.scale = {-2,6,8};
+        native(isle_game_model_set_transform(f.game,f.native_models[0],1,&native_child));
+        encode();
+        require(nodes[1].revision == old_child.revision &&
+            std::memcmp(&nodes[1].fixed,&old_child.fixed,sizeof(old_child.fixed)) == 0,
+            "R/S-only stage eagerly evaluated the native translation cache");
+        contextual_child_rows(f,context,high == 0x2000,native_root,native_child); publish();
+        const auto new_payload = uploaded_child(f);
+        require(nodes[1].revision > old_child.revision && same_pose(nodes[1].transform,native_child) &&
+            std::memcmp(&new_payload,&old_payload,sizeof(old_payload)) == 0 &&
+            equal(sibling_world,f.kernel->world_nodes(f.handles[0])[2]),
+            "R/S-only native edit erased fields, changed translation bytes or damaged a sibling");
+        mathematical_child_world(f,native_root,native_child);
+
+        // Native spans still contain the divergent old pose during encoding.
+        // Animation authority must use staged Runtime fields before publication.
+        f.native_pose = false; encode();
+        contextual_child_rows(f,context,high == 0x2000,native_transform(runtime_root),native_transform(runtime_child));
+        require(same_pose(nodes[1].transform,native_child),"animation stage published before list admission");
+        publish();
+        require(same_pose(nodes[0].transform,native_transform(runtime_root)) &&
+            same_pose(nodes[1].transform,native_transform(runtime_child)),
+            "animation commit erased canonical contextual pose fields");
+        mathematical_child_world(f,native_transform(runtime_root),native_transform(runtime_child));
+        translation_payload(uploaded_child(f),native_transform(runtime_child).position);
+
+        const auto ram_before = f.ram;
+        const std::array<IsleGameModelNode,3> before{nodes[0],nodes[1],nodes[2]};
+        const auto worlds = f.kernel->world_nodes(f.handles[0]);
+        const std::array<model::WorldMatrix,3> world_before{worlds[0],worlds[1],worlds[2]};
+        auto staged_root = runtime_root; staged_root.position.x += 1;
+        auto overflow = runtime_child; overflow.scale.x = 40000; overflow.rotation.z = 0.25f;
+        require(bool(f.runtime->set_node_transform(f.handles[0],0,staged_root)) &&
+            bool(f.runtime->set_node_transform(f.handles[0],1,overflow)),"finite late-rejection input rejected");
+        require(bool(f.kernel->stage(f.bindings())),"translation cache incorrectly applied ordinary RTS scale bounds");
+        f.counts.fill(0);
+        require(!f.kernel->encode(0,context,f.output),"44/48 fixed-row overflow was admitted");
+        f.kernel->commit_pose(); f.kernel->upload(f.ram,1);
+        require(f.ram == ram_before,"late contextual rejection published RAM");
+        for (std::size_t n = 0; n < before.size(); ++n)
+            require(same_pose(nodes[n].transform,before[n].transform) && nodes[n].revision == before[n].revision &&
+                nodes[n].flags == before[n].flags && std::memcmp(&nodes[n].fixed,&before[n].fixed,sizeof(before[n].fixed)) == 0 &&
+                equal(world_before[n],f.kernel->world_nodes(f.handles[0])[n]),
+                "late contextual rejection published staged animation/native caches/worlds");
+        require(bool(f.runtime->set_node_transform(f.handles[0],0,runtime_root)) &&
+            bool(f.runtime->set_node_transform(f.handles[0],1,runtime_child)),"contextual retry restore rejected");
+        encode(); publish();
+        require(f.ram == ram_before,"valid contextual retry retained rejected scratch");
+    }
+}
 void kernel_independent_instances_and_order() {
     KernelFixture f;
     require(bool(f.runtime->set_model_speed(f.handles[0],2)) &&
@@ -859,6 +1046,7 @@ int main() {
         contextual_xyz_siblings_and_hidden(); source48_rows_are_not44();
         kernel_independent_instances_and_order(); kernel_reuse_hidden_residency_and_epoch();
         kernel_late_rejection_is_atomic();
+        kernel_contextual_pose_authority();
         kernel_contextual_residency_and_atomicity();
     }
     catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }

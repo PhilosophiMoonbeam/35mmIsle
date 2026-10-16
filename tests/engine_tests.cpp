@@ -170,6 +170,267 @@ void source_function_identity_and_reuse() {
     require(counts(world).processes == 0, "synchronous identity self-end did not return and terminate later matches");
 }
 
+void source_function_pause_matches_actual_callables() {
+    EngineFixture fixture{}, other{};
+    World world;
+    fixture.game = other.game = world.game;
+    fixture.mode = 1;
+    auto* owner = object(world, 1);
+    auto* other_owner = object(world, 2);
+    engine_bind_source_payload(owner, &fixture);
+    engine_bind_source_payload(other_owner, &other);
+    IsleGameProcess *first = nullptr, *duplicate = nullptr, *stackful = nullptr, *different = nullptr;
+    IsleGameProcess* other_process = nullptr;
+    ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                   ISLE_GAME_SYNCHRONOUS, 5, &first));
+    ok(isle_game_add_source_process(world.game, owner, engine_source_b,
+                                   ISLE_GAME_SYNCHRONOUS, 3, &different));
+    process(world, owner, engine_native_source_pause_pulse, &fixture, ISLE_GAME_SYNCHRONOUS, 5);
+    ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                   ISLE_GAME_SYNCHRONOUS, 4, &duplicate));
+    ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                   ISLE_GAME_STACKFUL, 6, &stackful));
+    ok(isle_game_add_source_process(world.game, other_owner, engine_source_pause_pulse,
+                                   ISLE_GAME_SYNCHRONOUS, 5, &other_process));
+    const auto used = world.arena.cursor;
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, 1));
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, -3));
+    ok(isle_game_tick(world.game));
+    trace(fixture, {461, 460, 420}); trace(other, {460});
+    require(counts(world).processes == 6 && engine_process_alive(stackful),
+            "pausing matching mixed-kind entries ended an unstarted continuation");
+    fixture.count = other.count = 0;
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_wait, 1));
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, 0));
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, 0));
+    ok(isle_game_tick(world.game));
+    trace(fixture, {460, 460, 461, 460, 460, 420}); trace(other, {460});
+    require(counts(world).processes == 5,
+            "resuming exact source identity lost source kind or normal-return retirement");
+    fixture.count = other.count = 0;
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, 1));
+    ok(isle_game_tick(world.game));
+    trace(fixture, {461, 460, 420}); trace(other, {460});
+    require(world.arena.cursor == used,
+            "pause/resume allocated storage instead of preserving actual native process lists");
+}
+
+void source_function_pause_preserves_real_waits() {
+    EngineFixture fixture{}, other{};
+    World world;
+    fixture.game = other.game = world.game;
+    fixture.shared_value = 37;
+    other.shared_value = 5;
+    auto* owner = object(world, 1);
+    auto* other_owner = object(world, 2);
+    engine_bind_source_payload(owner, &fixture);
+    engine_bind_source_payload(other_owner, &other);
+    IsleGameProcess *first = nullptr, *duplicate = nullptr, *pulse = nullptr, *other_wait = nullptr;
+    ok(isle_game_add_source_process(world.game, owner, engine_source_pause_wait,
+                                   ISLE_GAME_STACKFUL, 8, &first));
+    ok(isle_game_add_source_process(world.game, owner, engine_source_pause_wait,
+                                   ISLE_GAME_STACKFUL, 8, &duplicate));
+    ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                   ISLE_GAME_SYNCHRONOUS, 1, &pulse));
+    ok(isle_game_add_source_process(world.game, other_owner, engine_source_pause_wait,
+                                   ISLE_GAME_STACKFUL, 8, &other_wait));
+    ok(isle_game_tick(world.game));
+    trace(fixture, {470, 470, 460}); trace(other, {470});
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_wait, 1));
+    fixture.shared_value = 99;
+    for (int tick = 0; tick < 3; ++tick) {
+        fixture.count = 0;
+        ok(isle_game_tick(world.game));
+        trace(fixture, {460});
+        require(engine_process_waiting(first) && engine_process_waiting(duplicate),
+                "paused real source continuations consumed their pending waits");
+    }
+    trace(other, {470, 471, 472});
+    require(other.after_finish == 1 && other.local_result == 22 && fixture.after_finish == 0,
+            "function pause crossed object ownership or lost the other source continuation");
+    fixture.count = 0;
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_wait, 0));
+    ok(isle_game_tick(world.game)); trace(fixture, {460});
+    fixture.count = 0;
+    ok(isle_game_tick(world.game)); trace(fixture, {471, 471, 460});
+    require(fixture.local_result == 54 && fixture.after_finish == 0,
+            "resumed source waits restarted callbacks or lost saved C locals");
+    fixture.count = 0;
+    ok(isle_game_tick(world.game)); trace(fixture, {472, 472, 460});
+    require(fixture.after_finish == 2 && counts(world).processes == 1,
+            "resumed duplicate source functions did not finish their actual second waits");
+}
+
+void source_function_pause_current_callback_rules() {
+    {
+        EngineFixture fixture{}, other{};
+        World world;
+        fixture.game = other.game = world.game;
+        fixture.shared_value = 37;
+        fixture.mode = 1;
+        auto* owner = object(world, 1, 0, 0, engine_source_pause_update, &fixture);
+        auto* other_owner = object(world, 2);
+        engine_bind_source_payload(owner, &fixture);
+        engine_bind_source_payload(other_owner, &other);
+        IsleGameProcess *self = nullptr, *pulse = nullptr, *duplicate = nullptr, *other_pulse = nullptr;
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_self,
+                                       ISLE_GAME_STACKFUL, 5, &self));
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                       ISLE_GAME_SYNCHRONOUS, 3, &pulse));
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                       ISLE_GAME_SYNCHRONOUS, 3, &duplicate));
+        ok(isle_game_add_source_process(world.game, other_owner, engine_source_pause_pulse,
+                                       ISLE_GAME_SYNCHRONOUS, 3, &other_pulse));
+        ok(isle_game_tick(world.game)); trace(fixture, {490, 480, 481});
+        fixture.count = 0;
+        ok(isle_game_tick(world.game)); ok(isle_game_tick(world.game));
+        trace(fixture, {}); trace(other, {460, 460, 460});
+        require(engine_process_waiting(self) && fixture.after_finish == 0,
+                "source self-pause suspended inside the API, ended, or consumed waits");
+        fixture.mode = 2;
+        ok(isle_game_tick(world.game)); trace(fixture, {491, 460, 460});
+        fixture.count = 0;
+        fixture.shared_value = 99;
+        ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_self, 0));
+        ok(isle_game_tick(world.game)); trace(fixture, {460, 460});
+        fixture.count = 0;
+        ok(isle_game_tick(world.game)); trace(fixture, {482, 460, 460});
+        require(fixture.after_finish == 1 && fixture.local_result == 60,
+                "self-paused source callback failed its real resume or retained C-local contract");
+    }
+    {
+        EngineFixture fixture{};
+        World world;
+        fixture.game = world.game;
+        auto* owner = object(world, 1);
+        engine_bind_source_payload(owner, &fixture);
+        IsleGameProcess *first = nullptr, *duplicate = nullptr, *pulse = nullptr;
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_self_synchronous,
+                                       ISLE_GAME_SYNCHRONOUS, 5, &first));
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_self_synchronous,
+                                       ISLE_GAME_SYNCHRONOUS, 5, &duplicate));
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                       ISLE_GAME_SYNCHRONOUS, 3, &pulse));
+        ok(isle_game_tick(world.game)); trace(fixture, {483, 484, 460});
+        fixture.count = 0;
+        ok(isle_game_tick(world.game)); trace(fixture, {460});
+        fixture.count = 0;
+        ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_self_synchronous, 0));
+        ok(isle_game_tick(world.game)); trace(fixture, {483, 484, 483, 484, 460});
+        require(fixture.shared_value == 3 && counts(world).processes == 3,
+                "synchronous current-source pause returned early, missed later matches, or ended a process");
+    }
+}
+
+void source_function_pause_rejects_invalid_owners_unchanged() {
+    World retired_world;
+    auto* foreign_object = object(retired_world, 99);
+    auto* retired_game = retired_world.game;
+    ok(isle_game_destroy(retired_world.game));
+    retired_world.game = nullptr;
+    EngineFixture fixture{};
+    World world;
+    fixture.game = world.game;
+    fixture.mode = 1;
+    auto* owner = object(world, 1);
+    engine_bind_source_payload(owner, &fixture);
+    IsleGameProcess *pulse = nullptr, *different = nullptr;
+    ok(isle_game_add_source_process(world.game, owner, engine_source_pause_pulse,
+                                   ISLE_GAME_SYNCHRONOUS, 5, &pulse));
+    process(world, owner, engine_native_source_pause_pulse, &fixture, ISLE_GAME_SYNCHRONOUS, 5);
+    ok(isle_game_add_source_process(world.game, owner, engine_source_b,
+                                   ISLE_GAME_SYNCHRONOUS, 3, &different));
+    auto* stale = object(world, 2);
+    ok(isle_game_delete_object(world.game, stale));
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, 1));
+    const auto used = world.arena.cursor;
+    for (int paused : {0, 1}) {
+        require(isle_game_pause_source_processes(nullptr, owner, engine_source_pause_pulse, paused) ==
+                    ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_pause_source_processes(retired_game, owner, engine_source_pause_pulse, paused) ==
+                    ISLE_GAME_INVALID_STATE &&
+                isle_game_pause_source_processes(world.game, nullptr, engine_source_pause_pulse, paused) ==
+                    ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_pause_source_processes(world.game, owner, nullptr, paused) ==
+                    ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_pause_source_processes(world.game, stale, engine_source_pause_pulse, paused) ==
+                    ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_pause_source_processes(world.game, foreign_object, engine_source_pause_pulse, paused) ==
+                    ISLE_GAME_INVALID_ARGUMENT,
+                "source function pause admitted invalid game, absent current object, NULL identity or dead/foreign object");
+    }
+    bool wrong_owner = false;
+    std::thread foreign([&] {
+        wrong_owner = isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, 0) ==
+                          ISLE_GAME_WRONG_OWNER &&
+                      isle_game_pause_source_processes(world.game, nullptr, nullptr, 1) ==
+                          ISLE_GAME_WRONG_OWNER;
+    });
+    foreign.join();
+    require(wrong_owner, "source function pause bypassed native gameplay owner validation");
+    ok(isle_game_tick(world.game)); trace(fixture, {461, 460, 420});
+    fixture.count = 0;
+    ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_pulse, 0));
+    ok(isle_game_tick(world.game)); trace(fixture, {460, 461, 460, 420});
+    require(world.arena.cursor == used && counts(world).processes == 3,
+            "rejected source function pauses changed storage or process membership");
+}
+
+void source_function_pause_joins_and_reuses_real_continuations() {
+    for (bool cold_reset : {false, true}) {
+        EngineFixture retired{}, fresh{};
+        World world;
+        retired.game = world.game;
+        auto* owner = object(world, 1);
+        engine_bind_source_payload(owner, &retired);
+        ok(isle_game_object_set_retire_callback(world.game, owner, engine_source_retired, &retired));
+        IsleGameProcess *first = nullptr, *duplicate = nullptr;
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_wait,
+                                       ISLE_GAME_STACKFUL, 5, &first));
+        ok(isle_game_add_source_process(world.game, owner, engine_source_pause_wait,
+                                       ISLE_GAME_STACKFUL, 5, &duplicate));
+        ok(isle_game_tick(world.game)); trace(retired, {470, 470});
+        ok(isle_game_pause_source_processes(world.game, owner, engine_source_pause_wait, 1));
+        require(engine_process_waiting(first) && engine_process_waiting(duplicate),
+                "pause replaced or ended native sleeping continuations");
+        const auto used = world.arena.cursor;
+        if (cold_reset) world.reset();
+        else ok(isle_game_delete_object(world.game, owner));
+        trace(retired, {470, 470, 450});
+        require(retired.retire_calls == 1 && retired.after_finish == 0 &&
+                engine_process_joined(first) && engine_process_joined(duplicate),
+                "paused source continuations did not actually join before native retirement/reset");
+        if (!cold_reset) {
+            require(isle_game_pause_source_processes(world.game, owner, engine_source_pause_wait, 0) ==
+                        ISLE_GAME_INVALID_ARGUMENT,
+                    "retired object accepted source resume before slot reuse");
+        }
+        fresh.game = world.game;
+        auto* reused = object(world, 2);
+        engine_bind_source_payload(reused, &fresh);
+        auto* native = process(world, reused, engine_native_source_pause_pulse, &fresh,
+                               ISLE_GAME_SYNCHRONOUS, 5);
+        IsleGameProcess* source = nullptr;
+        ok(isle_game_add_source_process(world.game, reused, engine_source_pause_pulse,
+                                       ISLE_GAME_SYNCHRONOUS, 5, &source));
+        require(reused == owner && (native == first || native == duplicate) &&
+                (source == first || source == duplicate) && source != native &&
+                world.arena.cursor == used,
+                "pause lifetime regression failed to exercise actual object/process arena reuse");
+        ok(isle_game_pause_source_processes(world.game, reused, engine_source_pause_wait, 1));
+        ok(isle_game_tick(world.game)); trace(fresh, {461, 460, 460});
+        fresh.count = 0;
+        ok(isle_game_pause_source_processes(world.game, reused, engine_source_pause_pulse, 1));
+        ok(isle_game_tick(world.game)); trace(fresh, {461, 460});
+        fresh.count = 0;
+        ok(isle_game_pause_source_processes(world.game, reused, engine_source_pause_pulse, 0));
+        ok(isle_game_tick(world.game)); trace(fresh, {461, 460, 460});
+        trace(retired, {470, 470, 450});
+        require(retired.after_finish == 0 && retired.retire_calls == 1 && fresh.failures == 0,
+                "reused source/native slots retained paused identity or resumed retired C frames");
+    }
+}
+
 void source_wait_replace_and_retirement() {
     {
         World world;
@@ -1511,21 +1772,31 @@ void model_translate_selection_and_cache() {
         {0, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE}
     }};
     initial[0].transform.position = {1.5f, -2.25f, 3.125f};
+    initial[0].transform.rotation = {0.25f, -0.75f, 1.5f};
+    initial[0].transform.scale = {-2, 3, 0.5f};
+    auto scalar = [](IsleGameModelTransform& pose, unsigned channel) -> float& {
+        IsleGameVec3& vector = channel < 3 ? pose.position : channel < 6 ? pose.rotation : pose.scale;
+        return channel % 3 == 0 ? vector.x : channel % 3 == 1 ? vector.y : vector.z;
+    };
     const auto arena_before = world.arena.cursor;
     IsleGameModel* model = nullptr;
     auto rejected = initial;
     require(engine_attach_model_with_invalid_kind(world.game, owner, initial.data(), &model) ==
             ISLE_GAME_INVALID_ARGUMENT && !model && world.arena.cursor == arena_before &&
             counts(world).models == 0, "unknown matrix kind mutated model ownership/arena");
-    for (unsigned channel = 0; channel < 3; ++channel) {
+    for (unsigned channel = 0; channel < 18; ++channel) {
         rejected = initial;
-        if (channel == 0) rejected[0].transform.rotation.y = 0.25f;
-        if (channel == 1) rejected[0].transform.scale.x = 0.999f;
-        if (channel == 2) rejected[0].transform.position.x = 32768;
+        scalar(rejected[0].transform, channel % 9) = channel < 9 ?
+            std::numeric_limits<float>::quiet_NaN() : std::numeric_limits<float>::infinity();
         require(isle_game_attach_model(world.game, owner, rejected.data(), rejected.size(), &model) ==
                 ISLE_GAME_INVALID_ARGUMENT && !model && world.arena.cursor == arena_before &&
                 counts(world).models == 0, "invalid translate attachment changed ownership/arena");
     }
+    rejected = initial;
+    rejected[0].transform.position.x = 32768;
+    require(isle_game_attach_model(world.game, owner, rejected.data(), rejected.size(), &model) ==
+            ISLE_GAME_INVALID_ARGUMENT && !model && world.arena.cursor == arena_before &&
+            counts(world).models == 0, "translate attachment overflow changed ownership/arena");
     ok(isle_game_attach_model(world.game, owner, initial.data(), initial.size(), &model));
     const IsleGameModelNode* nodes = nullptr;
     std::size_t extent = 0;
@@ -1536,6 +1807,9 @@ void model_translate_selection_and_cache() {
     const auto* stable = nodes;
     const auto used = world.arena.cursor;
     const auto child_revision = nodes[1].revision;
+    const auto child_before = nodes[1];
+    require(std::memcmp(&nodes[0].transform, &initial[0].transform, sizeof(initial[0].transform)) == 0,
+            "translate attachment discarded canonical rotation/scale");
     const std::array<std::int32_t, 3> expected_translation{98304, -147456, 204800};
     for (std::size_t row = 0; row < 4; ++row)
         for (std::size_t col = 0; col < 4; ++col)
@@ -1549,19 +1823,21 @@ void model_translate_selection_and_cache() {
     ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
     require(nodes == stable && nodes[0].revision == initial_revision && nodes[1].revision == child_revision &&
             world.arena.cursor == used, "unchanged translate/flags invalidated cache or replaced native borrow");
-    for (unsigned channel = 0; channel < 5; ++channel) {
+    for (unsigned channel = 0; channel < 19; ++channel) {
         auto invalid = initial[0].transform;
-        if (channel == 0) invalid.rotation.x = 1;
-        if (channel == 1) invalid.scale.z = 2;
-        if (channel == 2) invalid.position.y = std::numeric_limits<float>::quiet_NaN();
-        if (channel == 3) invalid.position.z = std::numeric_limits<float>::infinity();
-        if (channel == 4) invalid.position.x = 32768;
+        if (channel < 18)
+            scalar(invalid, channel % 9) = channel < 9 ?
+                std::numeric_limits<float>::quiet_NaN() : std::numeric_limits<float>::infinity();
+        else invalid.position.x = 32768;
+        require(isle_game_model_validate_transform(world.game, model, 0, &invalid) == ISLE_GAME_INVALID_ARGUMENT,
+                "translate preflight accepted nonfinite/overflow pose");
         require(isle_game_model_set_transform(world.game, model, 0, &invalid) == ISLE_GAME_INVALID_ARGUMENT,
                 "invalid translate mutation accepted");
         ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
         require(nodes == stable && nodes[0].revision == initial_revision &&
                 std::memcmp(&nodes[0].fixed, &initial_fixed, sizeof(initial_fixed)) == 0 &&
-                nodes[0].transform.position.x == initial[0].transform.position.x && world.arena.cursor == used,
+                std::memcmp(&nodes[0].transform, &initial[0].transform, sizeof(initial[0].transform)) == 0 &&
+                std::memcmp(&nodes[1], &child_before, sizeof(child_before)) == 0 && world.arena.cursor == used,
                 "rejected translate mutation dirtied state/cache or allocated");
     }
     auto boundary = initial[0].transform;
@@ -1579,6 +1855,35 @@ void model_translate_selection_and_cache() {
     require(nodes[0].revision == initial_revision + 2 && nodes[1].revision == child_revision &&
             std::memcmp(&nodes[0].fixed, &initial_fixed, sizeof(initial_fixed)) == 0,
             "restored translate input failed exact fixed repeat");
+    auto canonical = initial[0].transform;
+    canonical.rotation = {-std::numeric_limits<float>::max(), 0.125f, std::numeric_limits<float>::max()};
+    canonical.scale = {std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), 0};
+    const auto before_edit_revision = nodes[0].revision;
+    for (unsigned channel = 3; channel < 9; ++channel) {
+        auto edited = nodes[0].transform;
+        scalar(edited, channel) = scalar(canonical, channel);
+        const auto revision = nodes[0].revision;
+        ok(isle_game_model_validate_transform(world.game, model, 0, &edited));
+        ok(isle_game_model_set_transform(world.game, model, 0, &edited));
+        require(nodes[0].revision == revision &&
+                std::memcmp(&nodes[0].fixed, &initial_fixed, sizeof(initial_fixed)) == 0,
+                "rotation/scale edit eagerly evaluated translation cache");
+        ok(isle_game_model_peek_nodes(world.game, model, &nodes, &extent));
+        require(nodes == stable && nodes[0].revision == revision &&
+                std::memcmp(&nodes[0].transform, &edited, sizeof(edited)) == 0,
+                "pure peek lost canonical pose or evaluated revision");
+        ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+        require(nodes[0].revision == revision + 1 &&
+                std::memcmp(&nodes[0].fixed, &initial_fixed, sizeof(initial_fixed)) == 0 &&
+                std::memcmp(&nodes[1], &child_before, sizeof(child_before)) == 0 &&
+                world.arena.cursor == used,
+                "rotation/scale-only edit changed translation bytes, child, arena, or lazy revision");
+        ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+        require(nodes[0].revision == revision + 1, "repeat cache read reevaluated canonical pose");
+    }
+    require(nodes[0].revision == before_edit_revision + 6 &&
+            std::memcmp(&nodes[0].transform, &canonical, sizeof(canonical)) == 0,
+            "finite huge rotation/scale was narrowed or discarded");
     ok(isle_game_delete_object(world.game, owner));
     require(counts(world).models == 0 && counts(world).model_nodes == 0 && counts(world).matrices == 0,
             "mixed-kind model ownership did not retire");
@@ -1716,6 +2021,288 @@ void observe_model_retirement(World& world, IsleGameObject* owner, EngineFixture
     ok(isle_game_attach_model(world.game, owner, &initial, 1, &fixture.model));
     ok(isle_game_object_set_pre_retire_callback(world.game, owner, engine_observe_retiring, &fixture));
     ok(isle_game_object_set_retire_callback(world.game, owner, engine_observe_joined, &fixture));
+}
+
+void native_identity_holds_preserve_only_joined_addresses() {
+    for (bool self_delete : {false, true}) {
+        EngineIdentityFixture identity{};
+        EngineFixture unrelated{}, fresh{};
+        World world;
+        auto& retired = identity.retirement;
+        retired.game = unrelated.game = world.game;
+        auto* owner = object(world, 1);
+        identity.held = owner;
+        observe_model_retirement(world, owner, retired);
+        ok(isle_game_object_set_pre_retire_callback(world.game, owner, engine_identity_retiring, &identity));
+        ok(isle_game_object_set_retire_callback(world.game, owner, engine_identity_joined, &identity));
+        retired.observed_processes[0] = process(world, owner, engine_victim, &retired, ISLE_GAME_STACKFUL, 11);
+        ok(isle_game_add_source_process(world.game, owner,
+            self_delete ? engine_source_delete : engine_source_a, ISLE_GAME_STACKFUL, 5,
+            &retired.observed_processes[1]));
+        retired.observed_process_count = retired.waiting_processes = 2;
+        auto* receiver = object(world, 9);
+        identity.pool.arena = &world.arena;
+        IsleGameCommandQueue queued{};
+        ok(isle_game_command_send(&identity.pool, &queued, 22, owner));
+        const auto held_cursor = world.arena.cursor;
+        ok(isle_game_object_retain_identity(world.game, owner));
+        ok(isle_game_object_retain_identity(world.game, owner));
+        require(engine_identity_retain_at_limit(world.game, owner) == ISLE_GAME_EXHAUSTED &&
+                world.arena.cursor == held_cursor,
+                "counted identity retain allocated or accepted bounded hold overflow");
+        ok(isle_game_tick(world.game));
+        if (!self_delete) ok(isle_game_delete_object(world.game, owner));
+        if (self_delete) trace(retired, {700, 30, 31, 451, 452});
+        else trace(retired, {700, 410, 451, 452});
+        require(identity.release_rejections == 2 && !engine_object_alive(owner) &&
+                !engine_model_alive(retired.model) && engine_process_joined(retired.observed_processes[0]) &&
+                engine_process_joined(retired.observed_processes[1]) &&
+                retired.retired_continued == 0 && counts(world).objects == 1 &&
+                counts(world).processes == 0 && counts(world).models == 0,
+                "identity retention delayed real native joins, typed retirement or lifecycle callbacks");
+        std::uint32_t id = 0;
+        const IsleGameModelNode* expired_nodes = nullptr;
+        std::size_t expired_count = 0;
+        require(isle_game_object_id(world.game, owner, &id) == ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_model_nodes(world.game, retired.model, &expired_nodes, &expired_count) ==
+                    ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_object_retain_identity(world.game, owner) == ISLE_GAME_INVALID_ARGUMENT,
+                "held physical identity manufactured live object/model access or accepted late retain");
+
+        auto* c = object(world, 3, 0, 0, engine_record_object, &unrelated);
+        require(c != owner, "ordinary unrelated native allocation recycled a held dead GObj");
+        IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_CONTEXTUAL_RPY};
+        IsleGameModel* c_model = nullptr;
+        ok(isle_game_attach_model(world.game, c, &initial, 1, &c_model));
+        require(c_model == retired.model,
+                "identity hold incorrectly retained retired model payload instead of only the GObj");
+        identity.target = c;
+        int delete_requested = 0;
+        ok(isle_game_commands(world.game, receiver, &identity.pool, &queued,
+                              engine_identity_clear_target, &identity, &delete_requested));
+        require(!delete_requested && identity.deliveries == 1 && identity.target == c &&
+                retired.failures == 0,
+                "queued retired sender aliased or cleared an unrelated newly allocated native target");
+        require(isle_game_destroy(world.game) == ISLE_GAME_INVALID_STATE &&
+                engine_object_alive(c) && engine_model_alive(c_model),
+                "destroy accepted dead held identities or partially tore down unrelated native state");
+        const auto released_cursor = world.arena.cursor;
+        ok(isle_game_object_release_identity(world.game, owner));
+        require(world.arena.cursor == released_cursor, "nested identity release allocated storage");
+        auto* d = object(world, 4);
+        require(d != owner, "one nested release published an identity still held by another borrow");
+        const auto final_cursor = world.arena.cursor;
+        ok(isle_game_object_release_identity(world.game, owner));
+        require(isle_game_object_release_identity(world.game, owner) == ISLE_GAME_INVALID_STATE,
+                "dead identity double release republished the native free-list node");
+        auto* reused = object(world, 5);
+        require(reused == owner && world.arena.cursor == final_cursor,
+                "final dead identity release did not publish the genuinely joined native pool slot");
+        auto* distinct = object(world, 6);
+        require(distinct != reused, "final dead release published the same physical GObj twice");
+        ok(isle_game_tick(world.game));
+        trace(unrelated, {3});
+        ok(isle_game_object_id(world.game, reused, &id));
+        require(id == 5 && retired.retired_continued == 0 && retired.pre_retire_calls == 1 &&
+                retired.retire_calls == 1,
+                "address reuse resurrected joined callbacks or corrupted an unrelated object");
+        world.reset();
+        fresh.game = world.game;
+        auto* reset = object(world, 7, 0, 0, engine_record_object, &fresh);
+        require(reset == owner, "cold reset did not exercise the formerly held dead GObj arena address");
+        ok(isle_game_object_retain_identity(world.game, reset));
+        ok(isle_game_object_release_identity(world.game, reset));
+        ok(isle_game_tick(world.game));
+        trace(fresh, {7}); trace(unrelated, {3});
+        require(retired.pre_retire_calls == 1 && retired.retire_calls == 1 &&
+                retired.retired_continued == 0,
+                "held-identity cold reset inherited prior holds, callbacks or queued sender effects");
+    }
+}
+
+void native_identity_access_rejections_preserve_live_holds() {
+    World old_world;
+    auto* foreign_object = object(old_world, 90);
+    auto* old_game = old_world.game;
+    ok(isle_game_destroy(old_world.game));
+    old_world.game = nullptr;
+    World world;
+    auto* held = object(world, 1);
+    auto* unheld = object(world, 2);
+    ok(isle_game_object_retain_identity(world.game, held));
+    const auto cursor = world.arena.cursor;
+    require(isle_game_object_retain_identity(nullptr, held) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_object_release_identity(nullptr, held) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_object_retain_identity(old_game, held) == ISLE_GAME_INVALID_STATE &&
+            isle_game_object_release_identity(old_game, held) == ISLE_GAME_INVALID_STATE &&
+            isle_game_object_retain_identity(world.game, nullptr) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_object_release_identity(world.game, nullptr) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_object_retain_identity(world.game, foreign_object) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_object_release_identity(world.game, foreign_object) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_object_release_identity(world.game, unheld) == ISLE_GAME_INVALID_STATE,
+            "identity operations admitted invalid games, absent/foreign objects or unheld release");
+    bool wrong_owner = false;
+    std::thread foreign([&] {
+        wrong_owner = isle_game_object_retain_identity(world.game, held) == ISLE_GAME_WRONG_OWNER &&
+                      isle_game_object_release_identity(world.game, held) == ISLE_GAME_WRONG_OWNER &&
+                      isle_game_object_retain_identity(world.game, nullptr) == ISLE_GAME_WRONG_OWNER &&
+                      isle_game_object_release_identity(world.game, nullptr) == ISLE_GAME_WRONG_OWNER;
+    });
+    foreign.join();
+    require(wrong_owner && world.arena.cursor == cursor &&
+            isle_game_destroy(world.game) == ISLE_GAME_INVALID_STATE,
+            "wrong-thread/rejected operations mutated a real live hold or allocated storage");
+    ok(isle_game_object_release_identity(world.game, held));
+    require(isle_game_object_release_identity(world.game, held) == ISLE_GAME_INVALID_STATE &&
+            engine_object_alive(held), "live release deleted an object or accepted a double release");
+    std::uint32_t id = 0;
+    ok(isle_game_object_id(world.game, held, &id));
+    require(id == 1 && object(world, 3) != held, "live final release published an active native GObj");
+    ok(isle_game_delete_object(world.game, held));
+    require(object(world, 4) == held, "live hold release prevented later ordinary joined pool reuse");
+}
+
+void native_identity_destroy_rejection_and_cold_reset() {
+    EngineFixture retired{}, updates{}, fresh{};
+    World world;
+    updates.game = world.game;
+    auto* first = object(world, 1);
+    observe_model_retirement(world, first, retired);
+    retired.observed_processes[0] = process(world, first, engine_victim, &retired, ISLE_GAME_STACKFUL, 5);
+    retired.observed_process_count = retired.waiting_processes = 1;
+    auto* held = object(world, 2, 1, 0, engine_record_object, &updates);
+    ok(isle_game_object_retain_identity(world.game, held));
+    ok(isle_game_object_retain_identity(world.game, held));
+    ok(isle_game_tick(world.game));
+    require(isle_game_destroy(world.game) == ISLE_GAME_INVALID_STATE &&
+            engine_object_alive(first) && engine_model_alive(retired.model) &&
+            engine_process_waiting(retired.observed_processes[0]) &&
+            retired.pre_retire_calls == 0 && retired.retire_calls == 0,
+            "destroy discovered a later held object only after partially deleting earlier native state");
+    ok(isle_game_tick(world.game));
+    trace(updates, {2, 2}); trace(retired, {700});
+    ok(isle_game_object_release_identity(world.game, held));
+    require(isle_game_destroy(world.game) == ISLE_GAME_INVALID_STATE &&
+            engine_object_alive(first) && engine_process_waiting(retired.observed_processes[0]),
+            "destroy ignored the remaining nested live identity hold");
+    ok(isle_game_object_release_identity(world.game, held));
+    world.reset();
+    trace(retired, {700, 451, 452});
+    require(retired.retired_continued == 0,
+            "released identities blocked actual destroy joins or resumed a retired callback");
+    fresh.game = world.game;
+    auto* reset = object(world, 7, 0, 0, engine_record_object, &fresh);
+    require(reset == first, "identity cold-reset case did not exercise the same arena-backed GObj address");
+    ok(isle_game_object_retain_identity(world.game, reset));
+    ok(isle_game_object_release_identity(world.game, reset));
+    ok(isle_game_tick(world.game));
+    trace(fresh, {7}); trace(updates, {2, 2});
+    require(retired.pre_retire_calls == 1 && retired.retire_calls == 1,
+            "cold reset inherited an identity hold, observer or old callback");
+}
+
+void native_identity_release_rejects_real_callback_nesting() {
+    EngineIdentityFixture identity{};
+    World world;
+    identity.retirement.game = world.game;
+    identity.pool.arena = &world.arena;
+    identity.held = object(world, 1);
+    ok(isle_game_object_retain_identity(world.game, identity.held));
+    ok(isle_game_delete_object(world.game, identity.held));
+    auto* receiver = object(world, 2, 0, 0, engine_identity_release_callback, &identity);
+    identity.target = receiver;
+    process(world, receiver, engine_identity_release_callback, &identity, ISLE_GAME_SYNCHRONOUS, 5);
+    process(world, receiver, engine_identity_release_callback, &identity, ISLE_GAME_STACKFUL, 4);
+    ok(isle_game_tick(world.game));
+    IsleGameCommandQueue outer{};
+    ok(isle_game_command_send(&identity.pool, &outer, 1, receiver));
+    ok(isle_game_command_send(&identity.pool, &identity.nested, 2, receiver));
+    int delete_requested = 0;
+    ok(isle_game_commands(world.game, receiver, &identity.pool, &outer,
+                         engine_identity_nested_command, &identity, &delete_requested));
+    ok(engine_identity_notify_queued(receiver, &identity));
+    require(identity.retirement.failures == 0 && identity.release_rejections == 7 && !delete_requested,
+            "real update/process/manual nested command/queue observers admitted active identity release");
+    ok(isle_game_object_retain_identity(world.game, receiver));
+    ok(isle_game_object_release_identity(world.game, receiver));
+    require(object(world, 3) != identity.held,
+            "a rejected callback release published a held retired native identity");
+    ok(isle_game_object_release_identity(world.game, identity.held));
+    require(object(world, 4) == identity.held,
+            "returned nested callbacks left a permanent guard or failed real dead pool publication");
+}
+
+void native_identity_callback_wait_restores_active_exclusion() {
+    EngineIdentityFixture identity{};
+    World world;
+    identity.retirement.game = world.game;
+    identity.pool.arena = &world.arena;
+    identity.held = object(world, 1);
+    ok(isle_game_object_retain_identity(world.game, identity.held));
+    ok(isle_game_delete_object(world.game, identity.held));
+    auto* receiver = object(world, 2);
+    auto* callback = process(world, receiver, engine_identity_wait_process, &identity,
+                             ISLE_GAME_STACKFUL, 5);
+    ok(isle_game_command_send(&identity.pool, &identity.nested, 1, receiver));
+    ok(isle_game_tick(world.game));
+    require(identity.retirement.failures == 0 && identity.release_rejections == 1 &&
+            identity.retirement.shared_value == 1 && identity.retirement.after_finish == 0 &&
+            engine_process_waiting(callback),
+            "real command-handler wait did not preserve its compiled-C continuation");
+    ok(isle_game_object_retain_identity(world.game, receiver));
+    ok(isle_game_object_release_identity(world.game, receiver));
+    require(object(world, 3) != identity.held,
+            "waiting command frame lost its held sender's physical identity");
+    ok(isle_game_tick(world.game));
+    require(identity.retirement.failures == 0 && identity.release_rejections == 2 &&
+            identity.retirement.after_finish == 1 && engine_process_joined(callback),
+            "real command-handler resume lost its active release exclusion or failed to join normally");
+    ok(isle_game_object_release_identity(world.game, identity.held));
+    require(object(world, 4) == identity.held,
+            "returned waiting command handler left callback exclusion permanently active");
+}
+
+void native_identity_retains_from_admitted_stackful_entries() {
+    EngineIdentityFixture identity{};
+    World world;
+    identity.retirement.game = world.game;
+    identity.held = object(world, 1);
+    auto* callback = process(world, identity.held, engine_identity_retain_process, &identity,
+                             ISLE_GAME_STACKFUL, 5);
+    ok(isle_game_tick(world.game));
+    trace(identity.retirement, {710});
+    require(identity.retain_successes == 1 && identity.release_rejections == 1 &&
+            engine_process_waiting(callback),
+            "identity retention rejected genuine serialized native continuation factory access");
+    ok(isle_game_delete_object(world.game, identity.held));
+    require(engine_process_joined(callback) && object(world, 2) != identity.held,
+            "callback-created hold delayed joining or allowed unrelated native address reuse");
+    ok(isle_game_object_release_identity(world.game, identity.held));
+    require(object(world, 3) == identity.held && identity.retirement.retired_continued == 0,
+            "admitted callback retention did not release its actual joined physical identity");
+}
+
+void native_identity_fault_unwinds_callback_exclusion() {
+    for (bool stackful : {false, true}) {
+        EngineIdentityFixture identity{};
+        World world;
+        identity.retirement.game = world.game;
+        identity.retirement.mode = stackful ? 1 : 0;
+        identity.pool.arena = &world.arena;
+        identity.held = object(world, 1);
+        ok(isle_game_object_retain_identity(world.game, identity.held));
+        ok(isle_game_delete_object(world.game, identity.held));
+        auto* receiver = object(world, 2, 0, 0, stackful ? nullptr : engine_identity_fault_update,
+                                 stackful ? nullptr : &identity);
+        if (stackful) process(world, receiver, engine_identity_fault_update, &identity, ISLE_GAME_STACKFUL, 5);
+        ok(isle_game_command_send(&identity.pool, &identity.nested, 1, receiver));
+        require(isle_game_tick(world.game) == ISLE_GAME_EXECUTION_FAILURE &&
+                identity.release_rejections == 1 && identity.retirement.failures == 0,
+                "actual owner/worker C fault failed to reject active release or resumed its discarded callback");
+        ok(isle_game_object_release_identity(world.game, identity.held));
+        ok(isle_game_destroy(world.game));
+        world.game = nullptr;
+    }
 }
 
 void native_retirement_observes_real_joins_and_reuse() {
@@ -1889,6 +2476,11 @@ int main() {
         update_and_process_order();
         actor_payload_and_update_context_are_independent();
         source_function_identity_and_reuse();
+        source_function_pause_matches_actual_callables();
+        source_function_pause_preserves_real_waits();
+        source_function_pause_current_callback_rules();
+        source_function_pause_rejects_invalid_owners_unchanged();
+        source_function_pause_joins_and_reuses_real_continuations();
         source_wait_replace_and_retirement();
         pause_preserves_nested_waits();
         callback_lifecycle_and_same_tick_child();
@@ -1914,6 +2506,13 @@ int main() {
         model_photo_bake();
         model_rejection_atomicity_and_reuse();
         native_retirement_observes_real_joins_and_reuse();
+        native_identity_holds_preserve_only_joined_addresses();
+        native_identity_access_rejections_preserve_live_holds();
+        native_identity_destroy_rejection_and_cold_reset();
+        native_identity_release_rejects_real_callback_nesting();
+        native_identity_callback_wait_restores_active_exclusion();
+        native_identity_retains_from_admitted_stackful_entries();
+        native_identity_fault_unwinds_callback_exclusion();
         native_retirement_rejects_corrupt_payload_before_notification();
         native_fault_destruction_notifies_only_at_actual_teardown();
         model_deferred_delete_and_destroy();

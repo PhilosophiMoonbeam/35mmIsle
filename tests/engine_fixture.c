@@ -190,6 +190,68 @@ void engine_source_b(IsleGameObject* object) {
     ++fixture->retired_continued;
 }
 
+void engine_source_pause_pulse(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    record(fixture, 460);
+}
+
+void engine_native_source_pause_pulse(IsleGameObject* object, void* user) {
+    EngineFixture* fixture = user;
+    IsleGameSourceCallback function = engine_source_pause_pulse;
+    require_ok(fixture, isle_game_process_source_function(fixture->game, NULL, &function));
+    if (function != NULL || object->userData != fixture) ++fixture->failures;
+    record(fixture, 461);
+    engine_source_pause_pulse(object);
+}
+
+void engine_source_pause_wait(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    IsleGameSourceCallback function = NULL;
+    uint64_t local = (uint64_t) fixture->shared_value + UINT64_C(17);
+    require_ok(fixture, isle_game_process_source_function(fixture->game, NULL, &function));
+    if (function != engine_source_pause_wait) ++fixture->failures;
+    record(fixture, 470);
+    ohWait(2);
+    fixture->local_result = local;
+    record(fixture, 471);
+    ohWait(1);
+    ++fixture->after_finish;
+    record(fixture, 472);
+}
+
+void engine_source_pause_self(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    uint64_t local = (uint64_t) fixture->shared_value + UINT64_C(23);
+    record(fixture, 480);
+    require_ok(fixture, isle_game_pause_source_processes(fixture->game, NULL,
+        engine_source_pause_self, -7));
+    record(fixture, 481);
+    ohWait(2);
+    fixture->local_result = local;
+    ++fixture->after_finish;
+    record(fixture, 482);
+}
+
+void engine_source_pause_self_synchronous(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    record(fixture, 483);
+    if (++fixture->shared_value == 1) {
+        require_ok(fixture, isle_game_pause_source_processes(fixture->game, NULL,
+            engine_source_pause_self_synchronous, 1));
+    }
+    record(fixture, 484);
+}
+
+void engine_source_pause_update(IsleGameObject* object, void* user) {
+    EngineFixture* fixture = user;
+    (void) object;
+    if (fixture->mode == 0) return;
+    require_ok(fixture, isle_game_pause_source_processes(fixture->game, NULL,
+        engine_source_pause_pulse, fixture->mode == 1));
+    record(fixture, fixture->mode == 1 ? 490 : 491);
+    fixture->mode = 0;
+}
+
 void engine_source_retired(IsleGameObject* object, void* user) {
     EngineFixture* fixture = user;
     IsleGameCounts counts = {0};
@@ -248,6 +310,135 @@ void engine_observe_joined(IsleGameObject* object, void* user) {
     }
     ++fixture->retire_calls;
     record(fixture, 452);
+}
+
+static void identity_release_rejected(EngineIdentityFixture* fixture) {
+    if (isle_game_object_release_identity(fixture->retirement.game, fixture->held) !=
+        ISLE_GAME_INVALID_STATE) ++fixture->retirement.failures;
+    else ++fixture->release_rejections;
+}
+
+void engine_identity_retiring(IsleGameObject* object, void* user) {
+    EngineIdentityFixture* fixture = user;
+    engine_observe_retiring(object, &fixture->retirement);
+    identity_release_rejected(fixture);
+    if (isle_game_object_retain_identity(fixture->retirement.game, object) !=
+        ISLE_GAME_INVALID_STATE ||
+        isle_game_destroy(fixture->retirement.game) != ISLE_GAME_INVALID_STATE)
+        ++fixture->retirement.failures;
+}
+
+void engine_identity_joined(IsleGameObject* object, void* user) {
+    EngineIdentityFixture* fixture = user;
+    engine_observe_joined(object, &fixture->retirement);
+    identity_release_rejected(fixture);
+    if (isle_game_object_retain_identity(fixture->retirement.game, object) !=
+        ISLE_GAME_INVALID_ARGUMENT ||
+        isle_game_destroy(fixture->retirement.game) != ISLE_GAME_INVALID_STATE)
+        ++fixture->retirement.failures;
+}
+
+void engine_identity_release_callback(IsleGameObject* object, void* user) {
+    EngineIdentityFixture* fixture = user;
+    (void) object;
+    identity_release_rejected(fixture);
+}
+
+void engine_identity_retain_process(IsleGameObject* object, void* user) {
+    EngineIdentityFixture* fixture = user;
+    require_ok(&fixture->retirement, isle_game_object_retain_identity(fixture->retirement.game, object));
+    ++fixture->retain_successes;
+    identity_release_rejected(fixture);
+    record(&fixture->retirement, 710);
+    require_ok(&fixture->retirement, isle_game_wait(fixture->retirement.game, 100));
+    ++fixture->retirement.retired_continued;
+}
+
+void engine_identity_clear_target(IsleGameObject* object, int32_t command,
+                                 IsleGameObject* source, void* user) {
+    EngineIdentityFixture* fixture = user;
+    (void) object;
+    if (command != 22 || source != fixture->held) ++fixture->retirement.failures;
+    if (fixture->target == source) fixture->target = NULL;
+    ++fixture->deliveries;
+}
+
+void engine_identity_nested_command(IsleGameObject* object, int32_t command,
+                                   IsleGameObject* source, void* user) {
+    EngineIdentityFixture* fixture = user;
+    int delete_requested = 0;
+    (void) source;
+    identity_release_rejected(fixture);
+    if (command == 1) {
+        require_ok(&fixture->retirement, isle_game_commands(fixture->retirement.game, object,
+            &fixture->pool, &fixture->nested, engine_identity_nested_command, fixture, &delete_requested));
+        if (delete_requested) ++fixture->retirement.failures;
+        identity_release_rejected(fixture);
+    }
+}
+
+static void identity_queued(IsleGameObject* object, int32_t command,
+                            IsleGameObject* source, void* user) {
+    EngineIdentityFixture* fixture = user;
+    (void) object;
+    (void) command;
+    (void) source;
+    identity_release_rejected(fixture);
+    if (isle_game_object_retain_identity(fixture->retirement.game, fixture->target) !=
+        ISLE_GAME_INVALID_STATE) ++fixture->retirement.failures;
+}
+
+IsleGameResult engine_identity_notify_queued(IsleGameObject* object, EngineIdentityFixture* fixture) {
+    return isle_menu_observe_command_queued(fixture->retirement.game, object, 22, fixture->held,
+        identity_queued, fixture);
+}
+
+static void identity_fault_command(IsleGameObject* object, int32_t command,
+                                   IsleGameObject* source, void* user) {
+    EngineIdentityFixture* fixture = user;
+    (void) object;
+    (void) command;
+    (void) source;
+    identity_release_rejected(fixture);
+    ohWait(fixture->retirement.mode == 1 ? -1 : 1);
+    ++fixture->retirement.failures;
+}
+
+void engine_identity_fault_update(IsleGameObject* object, void* user) {
+    EngineIdentityFixture* fixture = user;
+    int delete_requested = 0;
+    (void) isle_game_commands(fixture->retirement.game, object, &fixture->pool, &fixture->nested,
+        identity_fault_command, fixture, &delete_requested);
+    ++fixture->retirement.failures;
+}
+
+static void identity_wait_command(IsleGameObject* object, int32_t command,
+                                  IsleGameObject* source, void* user) {
+    EngineIdentityFixture* fixture = user;
+    (void) object;
+    (void) command;
+    (void) source;
+    identity_release_rejected(fixture);
+    ++fixture->retirement.shared_value;
+    require_ok(&fixture->retirement, isle_game_wait(fixture->retirement.game, 1));
+    identity_release_rejected(fixture);
+    ++fixture->retirement.after_finish;
+}
+
+void engine_identity_wait_process(IsleGameObject* object, void* user) {
+    EngineIdentityFixture* fixture = user;
+    int delete_requested = 0;
+    require_ok(&fixture->retirement, isle_game_commands(fixture->retirement.game, object,
+        &fixture->pool, &fixture->nested, identity_wait_command, fixture, &delete_requested));
+    if (delete_requested) ++fixture->retirement.failures;
+}
+
+IsleGameResult engine_identity_retain_at_limit(IsleGame* game, IsleGameObject* object) {
+    u32 holds = object->identityHolds;
+    object->identityHolds = UINT32_MAX;
+    IsleGameResult result = isle_game_object_retain_identity(game, object);
+    object->identityHolds = holds;
+    return result;
 }
 
 void engine_direct_delete(IsleGameObject* object) {

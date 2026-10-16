@@ -262,6 +262,11 @@ if(TARGET isle-rom-snapshot)
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
         "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
+    add_library(isle-effect-graphics-resources STATIC
+        src/effect_graphics_resources.cpp src/effect_graphics_resources.hpp)
+    target_link_libraries(isle-effect-graphics-resources PUBLIC isle-menu-effects)
+    isle_target_options(isle-effect-graphics-resources)
+
     add_library(isle-focus-capture STATIC src/focus_capture.cpp src/focus_capture.hpp)
     target_link_libraries(isle-focus-capture PUBLIC isle-menu-resources)
     isle_target_options(isle-focus-capture)
@@ -314,7 +319,9 @@ if(ISLE_BUILD_GAME_ENGINE)
             isle-engine isle-menu-animation isle-graphics-task)
         isle_target_options(isle-menu-model-producer)
 
-        add_library(isle-source-effect-world STATIC src/source_effect_world.cpp src/source_effect_world.hpp)
+        add_library(isle-source-effect-world STATIC
+            src/source_effect_world.cpp src/source_effect_world.hpp
+            src/source_effect_camera.cpp src/source_effect_camera.hpp)
         target_link_libraries(isle-source-effect-world PUBLIC isle-engine isle-menu-effects)
         isle_target_options(isle-source-effect-world)
 
@@ -372,6 +379,26 @@ if(ISLE_BUILD_GAME_ENGINE)
         target_link_libraries(isle-world PUBLIC isle-scene isle-menu-animation
             isle-beach-world-resources isle-model-assets isle-menu-model-producer isle-graphics-task)
         isle_target_options(isle-world)
+
+        add_library(isle-actor-owner STATIC
+            src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h
+            src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
+        target_link_libraries(isle-actor-owner PUBLIC
+            isle-engine isle-actor-producer isle-world isle-environment-sound
+            isle-menu-effects isle-source-effect-world isle-focus-detector)
+        target_include_directories(isle-actor-owner PUBLIC
+            "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/include")
+        isle_target_options(isle-actor-owner)
+        target_compile_options(isle-actor-owner PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
+        add_library(isle-course-model-producer STATIC
+            src/course_model_producer.cpp src/course_model_producer.hpp)
+        target_link_libraries(isle-course-model-producer PUBLIC isle-world isle-actor-producer)
+        isle_target_options(isle-course-model-producer)
 
         foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
                 isle-new-game-scene isle-oaks-lab-scene isle-world isle-environment-sound isle-actor-producer
@@ -559,6 +586,15 @@ if(BUILD_TESTING)
             isle-beach-actor-resources isle-beach-world-resources isle-menu-animation)
         isle_target_options(beach-actor-resources-rom-smoke)
     endif()
+    if(TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE)
+        add_executable(actor-owner-rom-smoke EXCLUDE_FROM_ALL tests/actor_owner_rom_smoke.cpp)
+        target_link_libraries(actor-owner-rom-smoke PRIVATE
+            isle-actor-owner isle-actor-producer isle-effect-bank-resources isle-graphics-task isle-rsp)
+        isle_target_options(actor-owner-rom-smoke)
+        target_compile_options(actor-owner-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
     if(TARGET isle-menu-animation)
         add_executable(menu-animation-tests tests/menu_animation_tests.cpp)
         target_link_libraries(menu-animation-tests PRIVATE isle-menu-animation)
@@ -630,6 +666,7 @@ if(BUILD_TESTING)
             add_test(NAME world-${_isle_world_test}-tests COMMAND world-${_isle_world_test}-tests)
             set_tests_properties(world-${_isle_world_test}-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
         endforeach()
+        target_link_libraries(world-runtime-tests PRIVATE isle-source-effect-world)
         add_executable(window-resources-rom-smoke tests/window_resources_rom_smoke.cpp)
         target_link_libraries(window-resources-rom-smoke PRIVATE isle-window)
         isle_target_options(window-resources-rom-smoke)
@@ -783,8 +820,21 @@ endif()
 if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
     add_library(isle-scene-graphics STATIC src/scene_graphics.cpp src/scene_graphics.hpp src/scene_render.hpp)
     target_link_libraries(isle-scene-graphics PUBLIC
-        isle-menu-scene isle-sprite-producer isle-graphics-task isle-canonical-executor)
+        isle-menu-scene isle-effect-graphics-resources isle-sprite-producer isle-graphics-task isle-canonical-executor)
     isle_target_options(isle-scene-graphics)
+    add_executable(scene-layout-rom-smoke EXCLUDE_FROM_ALL tests/scene_layout_rom_smoke.cpp)
+    target_link_libraries(scene-layout-rom-smoke PRIVATE isle-scene-graphics)
+    isle_target_options(scene-layout-rom-smoke)
+    if(TARGET isle-actor-owner AND TARGET isle-course-model-producer)
+        add_executable(course-scene-rsp-smoke EXCLUDE_FROM_ALL tests/course_scene_rsp_smoke.cpp)
+        target_link_libraries(course-scene-rsp-smoke PRIVATE isle-scene-graphics
+            isle-course-model-producer isle-actor-owner isle-photo-lighting
+            isle-effect-graphics-resources isle-effect-bank-resources isle-rsp)
+        isle_target_options(course-scene-rsp-smoke)
+        target_compile_options(course-scene-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
 endif()
 if(TARGET libultraship AND TARGET isle-audio-output AND TARGET isle-rsp AND TARGET isle-game-audio)
     add_library(isle-game-host STATIC src/game_host.cpp src/game_host.hpp)

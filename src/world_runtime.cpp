@@ -348,7 +348,7 @@ const menu::animation::Runtime& World::animation_runtime() const { impl_->live()
 const ResourceView& World::resources() const noexcept { return impl_->resources; }
 bool World::ground_at(float x, float z, GroundResult& result) const {
     const auto& s = *impl_; s.live(); result = {};
-    if (!s.current || !s.resources.height_map) return false;
+    if (!s.current || !s.current->resource || !s.resources.height_map) return false;
     const auto p = s.current->resource->metadata.world_position;
     collision::GroundResult ground;
     const bool found = collision::ground_at(*s.resources.height_map,{p.x,p.y,p.z},x,z,ground);

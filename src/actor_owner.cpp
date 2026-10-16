@@ -1,5 +1,6 @@
 #include "actor_owner.hpp"
 #include "actor_photo_eligibility.hpp"
+#include "actor_collision.hpp"
 #include "source_effect_world.hpp"
 #include <algorithm>
 #include <cmath>
@@ -156,7 +157,7 @@ struct Owner::Impl {
         const beach::ActorDefinition* definition = nullptr;
         scene::RenderMetadata render{};
         std::uint64_t insertion = 0;
-        std::size_t pending_die_commands = 0;
+        std::size_t pending_sender_commands = 0;
         std::vector<std::size_t> incoming_identity_credits;
         bool active = false, retiring = false, joined = false, cleaned = false, identity_held = false;
         bool logical = false, registered = false;
@@ -320,8 +321,8 @@ struct Owner::Impl {
         // identity borrows; never deliver discarded source commands as a fixup.
         for (std::size_t i=0;i<slot.incoming_identity_credits.size();++i) {
             const auto credits=slot.incoming_identity_credits[i];
-            if (credits>self.slots[i].pending_die_commands) self.services.fail("actor command identity credit corruption");
-            else self.slots[i].pending_die_commands-=credits;
+            if (credits>self.slots[i].pending_sender_commands) self.services.fail("actor command identity credit corruption");
+            else self.slots[i].pending_sender_commands-=credits;
             slot.incoming_identity_credits[i]=0;
         }
         if (!slot.cleaned) for (auto& receiver:self.slots) if (receiver.active && !receiver.retiring) {
@@ -343,22 +344,22 @@ struct Owner::Impl {
     }
     static void update_callback(IsleGameObject* object,void*) noexcept { Pokemon_Update(object); }
     static void command_queued(IsleGameObject*,std::int32_t command,IsleGameObject* source,void* user) noexcept {
-        if (command!=21 && command!=22) return;
+        if (command!=21 && command!=22 && command!=26) return;
         auto& receiver=*static_cast<Slot*>(user); auto& self=*receiver.owner;
         // A retiring source is comparison identity only. Never source-get it.
         for (auto& sender:self.slots) if (sender.active && sender.object==source) {
-            ++sender.pending_die_commands; ++receiver.incoming_identity_credits[sender.index]; return;
+            ++sender.pending_sender_commands; ++receiver.incoming_identity_credits[sender.index]; return;
         }
     }
     static void command_callback(IsleGameObject*,std::int32_t command,IsleGameObject* source,void* user) noexcept {
         auto& slot=*static_cast<Slot*>(user); auto& self=*slot.owner;
         // 21 and22 perform identity clearing even for a NULL transition graph.
-        // Never liveness-filter or dereference a command22 retiring sender.
+        // All queued senders, including command26, are comparison identity only.
         if (command==21 && slot.source.apple==source) slot.source.apple=nullptr;
         if (command==22 && slot.source.interactionTarget==source) slot.source.interactionTarget=nullptr;
-        if (command==21 || command==22) {
+        if (command==21 || command==22 || command==26) {
             for (std::size_t i=0;i<self.slots.size();++i) if (slot.incoming_identity_credits[i] && self.slots[i].object==source) {
-                --slot.incoming_identity_credits[i]; --self.slots[i].pending_die_commands; break;
+                --slot.incoming_identity_credits[i]; --self.slots[i].pending_sender_commands; break;
             }
         }
         if (slot.source.transitionGraph) { self.services.fail("actor command transition graph is not natively admitted"); return; }
@@ -474,15 +475,78 @@ SpawnResult Owner::add_one(std::size_t definition,world::Block* block,world::Blo
     }
     return spawn({id,definition,block,reference,&descriptor});
 }
-OwnerStatus Owner::refresh_collision_positions() noexcept {
+OwnerStatus Owner::step_walk(menu::animation::InstanceHandle handle, float velocity_x, float velocity_z,
+                            std::uint32_t flags, bool& blocked) noexcept {
     auto& self=*impl_;
-    for (std::size_t i=0;i<self.logical_count;++i) {
-        auto& slot=*self.logical[i];
+    if (self.services.failed()) return rejected(OwnerError::services,"actor walking requires healthy native Services");
+    auto* slot=self.find(handle);
+    if (!slot || !slot->logical || !slot->registered)
+        return rejected(OwnerError::lifetime,"actor walking requires a current logical native instance");
+    return collision::step_walk(self.world,slot->source,slot->model,velocity_x,velocity_z,flags,blocked);
+}
+OwnerStatus Owner::update_collisions() noexcept {
+    auto& self=*impl_;
+    if (self.services.failed()) return rejected(OwnerError::services,"actor collision update requires healthy native Services");
+    const auto refresh=[](Impl::Slot& slot) noexcept -> OwnerStatus {
         IsleGameVec3 position;
         if (photo::collision_position(slot.source,slot.model,position)!=ISLE_GAME_OK)
             return rejected(OwnerError::native,"canonical source collision position refresh failed");
         slot.source.collPosition=position;
+        return {};
+    };
+    for (std::size_t i=0;i<self.logical_count;++i) {
+        auto& slot=*self.logical[i];
+        const auto result=refresh(slot); if (!result) return result;
         slot.source.processFlags&=~std::uint32_t{0x80};
+    }
+    // Own pokemon.c2250-2321. These snapshots are deliberately NOT refreshed
+    // when a walk recalculates canonical fields. Source pair order is logical
+    // insertion order, independent of physical slots and native render/link3.
+    const auto displacement=[](const IsleGameVec3& to,const IsleGameVec3& from,float length,
+                               float& velocity_x,float& velocity_z) noexcept {
+        float dx=to.x-from.x,dz=to.z-from.z;
+        if (std::fabs(dz)<0.00001) { dx=1.0f; dz=0.0f; }
+        const float inverse=length/std::sqrt(dx*dx+dz*dz);
+        velocity_x=dx*inverse; velocity_z=dz*inverse;
+    };
+    const auto notify=[&](Impl::Slot& recipient,IsleGameObject* sender) noexcept -> OwnerStatus {
+        if (recipient.source.processFlags&0x80u) return {};
+        recipient.source.processFlags|=0x80u;
+        if (!self.services.send_command(recipient.object,26,sender))
+            return rejected(OwnerError::services,"source collision command26 enqueue failed");
+        return {};
+    };
+    const auto move=[&](Impl::Slot& slot,const IsleGameVec3& to,const IsleGameVec3& from,float length) noexcept -> OwnerStatus {
+        float velocity_x,velocity_z; displacement(to,from,length,velocity_x,velocity_z);
+        bool blocked;
+        const auto result=collision::step_walk(self.world,slot.source,slot.model,velocity_x,velocity_z,1,blocked);
+        if (!result) return result;
+        return refresh(slot); // Source refreshes even after ordinary blocking.
+    };
+    for (std::size_t i=0;i<self.logical_count;++i) {
+        auto& first=*self.logical[i]; auto& a=first.source;
+        if (!(a.flags&0x200u)) continue;
+        const auto first_position=a.collPosition;
+        for (std::size_t j=i+1;j<self.logical_count;++j) {
+            auto& second=*self.logical[j]; auto& b=second.source;
+            if (!(b.flags&0x200u)) continue;
+            const auto second_position=b.collPosition;
+            const float dx=first_position.x-second_position.x,dy=first_position.y-second_position.y,
+                        dz=first_position.z-second_position.z;
+            const float separation=std::sqrt((dx*dx+dy*dy)+dz*dz)-(a.collisionRadius+b.collisionRadius);
+            if (!(separation<0.0f)) continue;
+            const float penetration=-separation;
+            auto notified=notify(first,second.object); if (!notified) return notified;
+            notified=notify(second,first.object); if (!notified) return notified;
+            // Source tests INNER800 twice: inner alone moves BOTH endpoints.
+            // Its unreachable inner-only branch is omitted, not "corrected".
+            if (b.flags&0x800u) {
+                auto result=move(first,first_position,second_position,penetration/2); if (!result) return result;
+                result=move(second,second_position,first_position,penetration/2); if (!result) return result;
+            } else if (a.flags&0x800u) {
+                const auto result=move(first,first_position,second_position,penetration); if (!result) return result;
+            }
+        }
     }
     return {};
 }
@@ -681,7 +745,7 @@ OwnerStatus Owner::remove_block(world::Block& block) noexcept {
 }
 OwnerStatus Owner::collect_joined() noexcept {
     for (auto& slot:impl_->slots) if (slot.active && slot.retiring) {
-        if (!slot.joined || slot.pending_die_commands) return rejected(OwnerError::lifetime,"actor real native join/queued identity still outstanding");
+        if (!slot.joined || slot.pending_sender_commands) return rejected(OwnerError::lifetime,"actor real native join/queued identity still outstanding");
         if (slot.object) impl_->sound.release_identity(slot.object);
         if (slot.identity_held) {
             if (isle_game_object_release_identity(impl_->services.game,slot.object)!=ISLE_GAME_OK)
@@ -924,11 +988,10 @@ IsleGameResult isle_actor_owner_node_world(IsleActorSource* source,size_t node,I
 }
 IsleGameResult isle_actor_owner_ground(IsleActorSource* source,float x,float z,IsleActorGround* output) {
     auto* slot=isle::actor::SourceAccess::slot(source);
-    if (!slot || !output || !std::isfinite(x) || !std::isfinite(z)) return ISLE_GAME_INVALID_ARGUMENT;
-    isle::world::GroundResult ground{};
-    slot->owner->world.ground_at(x,z,ground);
-    output->height=ground.height;
-    return ISLE_GAME_OK;
+    if (!slot || !output) return ISLE_GAME_INVALID_ARGUMENT;
+    const auto result=isle::actor::collision::ground_query(slot->owner->world,x,z,*output);
+    if (result) return ISLE_GAME_OK;
+    return result.error==isle::actor::OwnerError::admission?ISLE_GAME_INVALID_ARGUMENT:ISLE_GAME_INVALID_STATE;
 }
 void* isle_actor_owner_current_block(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);

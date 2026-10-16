@@ -97,9 +97,13 @@ public:
                         const world::Spawn&) noexcept;
     OwnerStatus set_animation(menu::animation::InstanceHandle, const beach::ActorAnimationHeader*, float start = 0, bool force = false) noexcept;
     OwnerStatus step_animation(menu::animation::InstanceHandle) noexcept;
-    // Source global collision pass's position/flag80 refresh only. Caller owns
-    // its priority2 scene boundary; pair collision/command26/walking is separate.
-    OwnerStatus refresh_collision_positions() noexcept;
+    // Complete source logical-order position/flag80 + pair/command26 manager.
+    // Caller owns the sole priority2 scene boundary and real graphics exclusion.
+    OwnerStatus update_collisions() noexcept;
+    // Success distinguishes normal source blocking from invalid/native failure.
+    // On failure blocked is unchanged; earlier real currGround effects may remain.
+    OwnerStatus step_walk(menu::animation::InstanceHandle, float velocity_x, float velocity_z,
+                          std::uint32_t flags, bool& blocked) noexcept;
     OwnerStatus set_local(menu::animation::InstanceHandle, std::size_t node, const menu::animation::Transform&) noexcept;
     OwnerStatus set_placement(menu::animation::InstanceHandle, const IsleGameModelTransform&) noexcept;
     OwnerStatus trigger_common1003(menu::animation::InstanceHandle, menu::Vec3 position) noexcept;

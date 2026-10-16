@@ -400,6 +400,7 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h
             src/actor_photo_eligibility.cpp src/actor_photo_eligibility.hpp
             src/actor_photo_membership.cpp src/actor_photo_membership.hpp
+            src/actor_collision.cpp src/actor_collision.hpp
             src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
         target_link_libraries(isle-actor-owner PUBLIC
             isle-engine isle-actor-producer isle-world isle-environment-sound
@@ -655,6 +656,15 @@ if(BUILD_TESTING)
         add_test(NAME actor-photo-membership-tests COMMAND actor-photo-membership-tests)
         set_tests_properties(actor-photo-membership-tests PROPERTIES
             LABELS "synthetic;private-game-source" TIMEOUT 60)
+        add_executable(actor-collision-tests tests/actor_collision_tests.cpp)
+        target_link_libraries(actor-collision-tests PRIVATE isle-actor-owner)
+        isle_target_options(actor-collision-tests)
+        target_compile_options(actor-collision-tests PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_test(NAME actor-collision-tests COMMAND actor-collision-tests)
+        set_tests_properties(actor-collision-tests PROPERTIES
+            LABELS "synthetic;private-game-source" TIMEOUT 60)
     endif()
     if(TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE)
         add_executable(actor-owner-rom-smoke EXCLUDE_FROM_ALL tests/actor_owner_rom_smoke.cpp)
@@ -680,6 +690,20 @@ if(BUILD_TESTING)
             isle-beach-magikarp-scene isle-effect-bank-resources isle-graphics-task isle-rsp)
         isle_target_options(beach-magikarp-scene-rom-smoke)
         target_compile_options(beach-magikarp-scene-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_executable(actor-command26-rom-smoke EXCLUDE_FROM_ALL tests/actor_command26_rom_smoke.cpp)
+        target_link_libraries(actor-command26-rom-smoke PRIVATE
+            isle-actor-owner isle-effect-bank-resources isle-graphics-task isle-rsp)
+        isle_target_options(actor-command26-rom-smoke)
+        target_compile_options(actor-command26-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_executable(actor-collision-rom-smoke EXCLUDE_FROM_ALL tests/actor_collision_rom_smoke.cpp)
+        target_link_libraries(actor-collision-rom-smoke PRIVATE
+            isle-actor-photo-scene isle-effect-bank-resources isle-graphics-task isle-rsp)
+        isle_target_options(actor-collision-rom-smoke)
+        target_compile_options(actor-collision-rom-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
@@ -930,6 +954,14 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             isle-photo-lighting isle-effect-graphics-resources isle-effect-bank-resources isle-rsp)
         isle_target_options(course-magikarp-rsp-smoke)
         target_compile_options(course-magikarp-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_executable(course-collision-rsp-smoke EXCLUDE_FROM_ALL tests/course_collision_rsp_smoke.cpp)
+        target_link_libraries(course-collision-rsp-smoke PRIVATE isle-scene-graphics
+            isle-course-model-producer isle-actor-photo-scene isle-photo-lighting
+            isle-effect-bank-resources isle-rsp)
+        isle_target_options(course-collision-rsp-smoke)
+        target_compile_options(course-collision-rsp-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()

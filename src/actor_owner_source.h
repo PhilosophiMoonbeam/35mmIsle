@@ -42,7 +42,6 @@ typedef struct IsleActorGeoSpawn {
     const void* path;
     int32_t behavior;
 } IsleActorGeoSpawn;
-typedef struct IsleActorGround { float height; } IsleActorGround;
 IsleGameObject* Pokemon_AddAtGeo(IsleGameObject*, uint16_t, const IsleActorGeoDefinition*);
 IsleGameResult isle_actor_owner_yaw(IsleActorSource*, float);
 IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource*, int);

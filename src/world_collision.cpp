@@ -608,7 +608,7 @@ bool collision_model_one(const CollisionModel& m,Vec3 obj,Vec3 rotation,Vec3 p,V
 }
 const HeightPatch* height_patch_at(const HeightMap& map,float x,float z) noexcept {
     std::size_t index=0;
-    while(index<map.nodes.size()) {
+    for(std::size_t visited=0;index<map.nodes.size()&&visited<map.nodes.size();++visited) {
         const auto& n=map.nodes[index];bool right=n.a*x+n.b*z+n.c<=0;
         auto patch=right?n.right_patch:n.left_patch;
         if(patch!=no_index) return patch<map.patches.size()?&map.patches[patch]:nullptr;
@@ -631,7 +631,9 @@ bool ground_at_global(const HeightMap& map,float x,float z,GroundResult& out) no
     return true;
 }
 bool ground_at(const HeightMap& map,Vec3 block,float x,float z,GroundResult& out) noexcept {
-    if(!ground_at_global(map,x/100+block.x,z/100+block.z,out)) return false;
+    const float global_x=x/100+block.x,global_z=z/100+block.z;
+    if(!std::isfinite(global_x)||!std::isfinite(global_z)) { out={};return false; }
+    if(!ground_at_global(map,global_x,global_z,out)) return false;
     out.height=(out.height-block.y)*100;return true;
 }
 } // namespace isle::world::collision

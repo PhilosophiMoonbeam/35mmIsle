@@ -8,6 +8,13 @@
 extern "C" {
 #endif
 
+/* Native semantic ground result, not a console GroundResult layout. */
+typedef struct IsleActorGround {
+    float height;
+    IsleGameVec3 normal;
+    uint32_t surfaceType;
+} IsleActorGround;
+
 /* Native semantic data, not a console Pokemon layout. Exactly one record is
  * bound to the real GObj.userData; updateUser remains the engine's context.
  * Owner, RNG and record must survive all source processes and actual joined
@@ -31,7 +38,9 @@ typedef struct IsleActorSource {
     const void* animSetup;
     void* baseBlock;
     const void* path;
-    const void* forbiddenGround;
+    const float* forbiddenGround;
+    size_t forbiddenGroundCount;  /* Readable borrowed extent; consumed only for nonNULL lists. */
+    IsleActorGround currGround;   /* Destination query survives an ordinarily blocked walk. */
     IsleGameVec3 pos1, targetPos, euler, collisionOffset;
     IsleGameVec3 collPosition;     /* Sole canonical source collision point. */
     float collisionRadius, playerDist, interactionDist;

@@ -4,10 +4,10 @@
 #include "actor_owner.hpp"
 
 namespace isle::actor {
-// Bounded source focus controller, not a full photo serializer or pair-physics
-// manager. The caller proves the source flag200 pair branch inapplicable.
+// Bounded source focus controller with the complete logical collision pass,
+// not a full photo serializer, graph interpreter or Player/Item controller.
 // Native actors own distance8/state7/animation3 processes. This class adds the
-// synchronous priority2 collision-position first pass on the actual scene root0.
+// synchronous priority2 complete collision manager on the actual scene root0.
 //
 // Services, Owner, its canonical player/main camera and DetectorBinding (whose
 // history MUST be the same Detector supplied to Owner) are stable same-scene
@@ -35,7 +35,7 @@ public:
     IsleGameObject* copy_info_object() const noexcept { return copy_info_; }
 private:
     static IsleGameResult prepare_membership(void*, focus::Photo&) noexcept;
-    static void refresh_positions(IsleGameObject*, void*) noexcept;
+    static void update_collisions(IsleGameObject*, void*) noexcept;
     static void copy_info(IsleGameObject*, void*) noexcept;
     static void retiring(IsleGameObject*, void*) noexcept;
     static void joined(IsleGameObject*, void*) noexcept;
@@ -48,7 +48,7 @@ private:
     IsleGameObject* root_ = nullptr;
     IsleGameObject* prefix_ = nullptr;
     IsleGameObject* copy_info_ = nullptr;
-    IsleGameProcess* positions_ = nullptr;
+    IsleGameProcess* collisions_ = nullptr;
     bool root_observed_ = false, prefix_observed_ = false, copy_observed_ = false;
     bool root_retiring_ = false, prefix_retiring_ = false, copy_retiring_ = false;
     bool hook_installed_ = false, active_ = false, retiring_ = false, retired_ = false;

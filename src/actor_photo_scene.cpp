@@ -62,8 +62,8 @@ PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* 
         copy_observed_=true;
         if (!services.set_update(copy_info_,copy_info,this))
             throw std::runtime_error("PhotoScene source CopyInfo update installation failed");
-        positions_=services.process(root,refresh_positions,this,ISLE_GAME_SYNCHRONOUS,2);
-        if (!positions_) throw std::runtime_error("PhotoScene root priority2 process creation failed");
+        collisions_=services.process(root,update_collisions,this,ISLE_GAME_SYNCHRONOUS,2);
+        if (!collisions_) throw std::runtime_error("PhotoScene root priority2 process creation failed");
         // Last fallible installation. No failure after successful assignment
         // can escape construction with a borrowed root observer still installed.
         if (!services.set_lifecycle(root,{retiring,joined,this}))
@@ -107,14 +107,14 @@ IsleGameResult PhotoScene::prepare_membership(void* user, focus::Photo& output) 
     if (result!=ISLE_GAME_OK) self.fail("PhotoScene native membership collection failed");
     return result;
 }
-void PhotoScene::refresh_positions(IsleGameObject* object, void* user) noexcept {
+void PhotoScene::update_collisions(IsleGameObject* object, void* user) noexcept {
     auto& self=*static_cast<PhotoScene*>(user);
     if (!self.active()) {
         if (self.active_) self.fail("PhotoScene priority2 process lost live scope");
         return;
     }
     if (object!=self.root_) { self.fail("PhotoScene collision process is not on root0"); return; }
-    const auto result=self.owner_.refresh_collision_positions();
+    const auto result=self.owner_.update_collisions();
     if (!result) self.fail(result.detail);
 }
 void PhotoScene::copy_info(IsleGameObject* object, void* user) noexcept {
@@ -137,7 +137,7 @@ void PhotoScene::retiring(IsleGameObject* object, void* user) noexcept {
 void PhotoScene::joined(IsleGameObject* object, void* user) noexcept {
     auto& self=*static_cast<PhotoScene*>(user);
     if (object==self.root_) {
-        self.root_=nullptr; self.positions_=nullptr; self.root_observed_=false;
+        self.root_=nullptr; self.collisions_=nullptr; self.root_observed_=false;
     } else if (object==self.prefix_) {
         self.prefix_=nullptr; self.prefix_observed_=false;
     } else if (object==self.copy_info_) {
@@ -156,9 +156,9 @@ void PhotoScene::retire() noexcept {
         if (!services_.set_lifecycle(root_,{})) std::terminate();
         root_observed_=false;
     }
-    if (positions_) {
-        if (isle_game_end_process(services_.game,positions_)!=ISLE_GAME_OK) std::terminate();
-        positions_=nullptr;
+    if (collisions_) {
+        if (isle_game_end_process(services_.game,collisions_)!=ISLE_GAME_OK) std::terminate();
+        collisions_=nullptr;
     }
     const auto erase = [this](IsleGameObject*& object, bool observed) {
         if (!object) return;

@@ -173,7 +173,7 @@ struct Consumer {
             require(b.model.state.instance==h&&b.render.link==5,"scene actor bypassed same Runtime/DL5 binding"); binding=true;
         }
         require(binding&&owner.registered(h)&&owner.animation().model(h),"scene actor bypassed real Owner membership/Runtime");
-        accepted(owner.refresh_collision_positions());
+        accepted(owner.update_collisions());
         const IsleGameModelNode* nodes=nullptr; std::size_t node_count=0;
         native(isle_game_model_peek_nodes(services.game,owner.native_model(h),&nodes,&node_count));
         require(node_count!=0,"actual source collision root absent");

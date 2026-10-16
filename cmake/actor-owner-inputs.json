@@ -144,16 +144,16 @@
       "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
     },
     "src/actor_owner.hpp": {
-      "sha256": "4a554ef7a557deaee22f2de5f97f8c15b5822c9cd681c7d3f602e5b2ebae5d75"
+      "sha256": "e0729ff863adcc2184ea6d27d5d7c246f1fbad5f202cb19b2e72cb74d2e17071"
     },
     "src/actor_owner.cpp": {
-      "sha256": "132272bd5da0726af4b84fc05438e2cec39c5befac1105019771fa3736aa823d"
+      "sha256": "3424c6458f0feba22d993465ea00bc9ab4b538b2ee27967f6e87aa40da3cf2a0"
     },
     "src/actor_owner_source.h": {
-      "sha256": "4fb860530f06a4ace856e1ac51481ba0aab7fc855621c354dfad2d6e78dcf5b7"
+      "sha256": "592c76744a49094a1efad2317813c9804619d582115e105fed79477dd84c3dda"
     },
     "src/actor_source.h": {
-      "sha256": "0cd60febe8d9581ee74358b520a57b17cafe544b7d2dad1b5fc06f44b11619de"
+      "sha256": "5d9335a916e4fcd3aa2f9b71d141944b9f398526dd57e1685935cb79752ee5f6"
     },
     "src/actor_source_bridge.c": {
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
@@ -183,7 +183,7 @@
       "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "0087170b538a186fee09a5273b6c7a33b35609b4f1327008f79c650009875408"
+      "sha256": "5d496c888aab05529e7591bf7f5a0c39f2534768a935c5c32f6a93c6d7ef59f0"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "acb07a79b9f1332c04740e2a42d6e0dbc91813ce0788531bca5ee3ac720d2ee4"

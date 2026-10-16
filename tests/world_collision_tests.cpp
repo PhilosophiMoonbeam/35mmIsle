@@ -77,6 +77,15 @@ int main() {
     check(col::ground_at(map,{0,1,0},0,0,ground)&&near(ground.height,200),"local height subtracts block elevation before times100");
     map.patches[1].c=0;
     check(col::ground_at_global(map,0,0,ground)&&near(ground.height,0),"zero planeC preserves source zero height");
+    HeightNode loop{};loop.a=1;loop.left_patch=0;loop.right_patch=no_index;loop.right_child=0;
+    map.nodes={loop};
+    check(!col::ground_at_global(map,0,0,ground)&&ground.height==-9000&&ground.surface==-1,
+          "consumed height-node self-cycle rejects and restores source fallback");
+    check(col::ground_at_global(map,2,1,ground)&&near(ground.height,2),
+          "unvisited cyclic sibling does not reject an actual terminal patch");
+    map.nodes.push_back(loop);map.nodes[0].right_child=1;map.nodes[1].right_child=0;
+    check(!col::ground_at_global(map,0,0,ground)&&ground.height==-9000&&ground.surface==-1,
+          "consumed multi-node cycle rejects within the finite native node extent");
     map.nodes.clear();
     check(!col::ground_at_global(map,0,0,ground)&&near(ground.height,-9000)&&ground.surface==-1,"absent height map resets default result");
     return failures?1:0;

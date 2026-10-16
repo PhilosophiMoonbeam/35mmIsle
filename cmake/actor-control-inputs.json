@@ -33,7 +33,7 @@
   },
   "native_support": {
     "src/actor_source.h": {
-      "sha256": "0cd60febe8d9581ee74358b520a57b17cafe544b7d2dad1b5fc06f44b11619de"
+      "sha256": "5d9335a916e4fcd3aa2f9b71d141944b9f398526dd57e1685935cb79752ee5f6"
     },
     "src/actor_source_bridge.c": {
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
@@ -60,7 +60,7 @@
       "sha256": "62cff17b65330b22a011cbecb77459c65c0972cf8cf5ef6c91e293a4b2b8e43c"
     },
     "src/actor_owner_source.h": {
-      "sha256": "4fb860530f06a4ace856e1ac51481ba0aab7fc855621c354dfad2d6e78dcf5b7"
+      "sha256": "592c76744a49094a1efad2317813c9804619d582115e105fed79477dd84c3dda"
     }
   },
   "transformations": {

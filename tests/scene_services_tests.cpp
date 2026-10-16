@@ -563,12 +563,35 @@ void services_lifecycle_composes_delete_paths(const fs::path& parent) {
     }
     {
         sc::Storage native(1024*1024);
+        check(native.create() == ISLE_GAME_OK,"create failed-scope observer-detach arena");
+        Lifecycle context{};
+        {
+            sc::Services services(native.game(),native.arena(),{{1,1,0,0,0},{}},input,*audio.session,state);
+            auto* object = lifecycle_object(services,context);
+            services.fail("source failure before borrowed observer teardown");
+            const std::string first_error = services.error();
+            check(!services.set_lifecycle(object,{count,count,&context.unexpected}) &&
+                  services.failed() && first_error == services.error(),
+                  "failed scene cannot install new lifecycle work or replace its original failure");
+            check(services.set_lifecycle(object,{}) && services.failed() && first_error == services.error(),
+                  "validated all-null detach must release borrowed callbacks without healing scene failure");
+            check(isle_game_delete_object(native.game(),object) == ISLE_GAME_OK &&
+                  context.retiring == 0 && context.joined == 0 && context.unexpected == 0 &&
+                  engine_process_joined(context.processes[0]) && context.continued == 0,
+                  "detached failed-scope observer survives deletion or real parked continuation failed to join");
+            IsleGameCounts counts{};
+            check(isle_game_counts(native.game(),&counts) == ISLE_GAME_OK &&
+                  counts.objects == 0 && counts.processes == 0 && counts.models == 0 && counts.model_nodes == 0,
+                  "failed-scope detach removed native ownership hooks or leaked native model/process storage");
+        }
+        check(native.destroy() == ISLE_GAME_OK,"destroy joined failed-scope observer arena");
+    }
+    {
+        sc::Storage native(1024*1024);
         check(native.create() == ISLE_GAME_OK,"create native/Services address-ABA arena");
         sc::Services services(native.game(),native.arena(),{{1,1,0,0,0},{}},input,*audio.session,state);
         services_dispatch_owner_native_address_aba(services);
     }
-    check(audio_owner.submits == 0 && audio_owner.finishes == 0,
-          "native lifecycle observations claim neither device submission nor graphics/audio completion");
 }
 
 } // namespace

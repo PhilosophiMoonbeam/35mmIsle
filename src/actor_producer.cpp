@@ -57,6 +57,7 @@ struct Producer::Impl {
     std::size_t previous_count = 0, appended_count = 0, current_count = 0;
     std::uint16_t source_context = 0;
     bool prefix_staged = false;
+    focus::Photo staged_photo{};
     std::unique_ptr<menu::model::BorrowedKernel> kernel;
     std::array<std::vector<Command>,4> lanes;
     std::vector<Command> pending;
@@ -115,7 +116,8 @@ struct Producer::Impl {
         if (prefix_staged) {
             detector->context=static_cast<std::uint16_t>(1-source_context);
             static_cast<void>(detector->history.stage(detector->context,
-                std::span(current_subjects).first(current_count),detector->photo));
+                std::span(current_subjects).first(current_count),staged_photo));
+            detector->photo=staged_photo;
         }
     }
     void stage(const scene::render::Pass* pass, const menu::model::RenderContext& context,
@@ -128,6 +130,13 @@ struct Producer::Impl {
             source_context=detector->context;
             previous_count=detector->history.history(source_context).size();
         }
+        bool membership_prepared=false;
+        const auto prepare_membership = [&] {
+            if (detector->prepare_membership)
+                native(detector->prepare_membership(detector->prefix_user,staged_photo));
+            else staged_photo=detector->photo;
+            membership_prepared=true;
+        };
         std::size_t active = 0;
         for (const auto& binding : bindings) {
             auto b = binding.model;
@@ -149,12 +158,17 @@ struct Producer::Impl {
                     (previous.link==binding.render.link && previous.priority>=binding.render.priority),
                     "Actor detector bindings are not in source DL/priority order");
             }
+            if (draw_prefix && !membership_prepared &&
+                (binding.render.link>prefix.link ||
+                 (binding.render.link==prefix.link && binding.render.priority<=prefix.priority)))
+                prepare_membership();
             staged_subjects[active]={reinterpret_cast<focus::Object>(b.object),source->id,source->flags};
             staged_render[active]=binding.render;
             b.draw = b.draw && p.geometry && (!p.gate || !(staged_subjects[active].flags&0x100u)) &&
                 (!pass || pass->includes(binding.render));
             staged[active++] = b;
         }
+        if (draw_prefix && !membership_prepared) prepare_membership();
         require(bool(kernel->stage(std::span(staged).first(active))),"Actor kernel rejected native pose/material/slot capacity");
         counts.fill(0);
         const auto models = resources.models();
@@ -300,8 +314,10 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     require(bool(s.kernel->validate_upload(words,epoch)),"Actor kernel fixed scratch aliases RAM");
     s.stage(pass,context,begin,end);
     require(bool(s.kernel->validate_upload(words,epoch)),"Actor kernel borrowed pose aliases RAM");
-    // Last fallible computation: the native batch is itself failure-atomic.
-    // No native pose/cache, basis, residency, list revision or RAM was published.
+    // Last fallible computation: the native camera batch is failure-atomic.
+    // Membership may already have changed canonical visibility flags, including
+    // on a rejected preparation. No pose/cache, RAM, detector metadata/context,
+    // basis or frame revision has yet been published.
     native(isle_game_camera_compute_all(s.game,s.camera));
     const IsleGameCameraReflection* reflection = nullptr;
     native(isle_game_camera_reflection(s.game,s.camera,1,&reflection));

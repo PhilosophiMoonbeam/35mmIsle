@@ -399,6 +399,7 @@ if(ISLE_BUILD_GAME_ENGINE)
         add_library(isle-actor-owner STATIC
             src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h
             src/actor_photo_eligibility.cpp src/actor_photo_eligibility.hpp
+            src/actor_photo_membership.cpp src/actor_photo_membership.hpp
             src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
         target_link_libraries(isle-actor-owner PUBLIC
             isle-engine isle-actor-producer isle-world isle-environment-sound
@@ -418,6 +419,14 @@ if(ISLE_BUILD_GAME_ENGINE)
             isle-actor-owner isle-beach-behavior-resources)
         isle_target_options(isle-beach-magikarp-scene)
         target_compile_options(isle-beach-magikarp-scene PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
+        add_library(isle-actor-photo-scene STATIC
+            src/actor_photo_scene.cpp src/actor_photo_scene.hpp)
+        target_link_libraries(isle-actor-photo-scene PUBLIC isle-actor-owner)
+        isle_target_options(isle-actor-photo-scene)
+        target_compile_options(isle-actor-photo-scene PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
@@ -636,6 +645,15 @@ if(BUILD_TESTING)
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
         add_test(NAME actor-photo-eligibility-tests COMMAND actor-photo-eligibility-tests)
         set_tests_properties(actor-photo-eligibility-tests PROPERTIES
+            LABELS "synthetic;private-game-source" TIMEOUT 60)
+        add_executable(actor-photo-membership-tests tests/actor_photo_membership_tests.cpp)
+        target_link_libraries(actor-photo-membership-tests PRIVATE isle-actor-owner)
+        isle_target_options(actor-photo-membership-tests)
+        target_compile_options(actor-photo-membership-tests PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_test(NAME actor-photo-membership-tests COMMAND actor-photo-membership-tests)
+        set_tests_properties(actor-photo-membership-tests PROPERTIES
             LABELS "synthetic;private-game-source" TIMEOUT 60)
     endif()
     if(TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE)
@@ -902,6 +920,16 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             isle-effect-graphics-resources isle-effect-bank-resources isle-rsp)
         isle_target_options(course-scene-rsp-smoke)
         target_compile_options(course-scene-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-actor-photo-scene AND TARGET isle-beach-magikarp-scene AND TARGET isle-course-model-producer)
+        add_executable(course-magikarp-rsp-smoke EXCLUDE_FROM_ALL tests/course_magikarp_rsp_smoke.cpp)
+        target_link_libraries(course-magikarp-rsp-smoke PRIVATE isle-scene-graphics
+            isle-course-model-producer isle-actor-photo-scene isle-beach-magikarp-scene
+            isle-photo-lighting isle-effect-graphics-resources isle-effect-bank-resources isle-rsp)
+        isle_target_options(course-magikarp-rsp-smoke)
+        target_compile_options(course-magikarp-rsp-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()

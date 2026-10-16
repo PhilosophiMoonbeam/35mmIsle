@@ -21,10 +21,12 @@ struct ProducerLayout {
 struct DetectorBinding {
     focus::RegionCopies& copies;
     focus::Detector& history;
-    focus::Photo photo{}; // Caller supplies source membership before preparation.
+    focus::Photo photo{}; // Explicit membership when prepare_membership is null.
     focus::Scissor scissor{0,0,320,240};
     std::uint16_t context = 1;
     bool enabled = false;
+    void* prefix_user = nullptr;
+    IsleGameResult (*prepare_membership)(void*, focus::Photo&) noexcept = nullptr;
 };
 // Active objects carry the actual bound IsleActorSource payload. Rendering reads
 // its authoritative Pokemon flags; no renderer-side flag100 replica is retained.
@@ -44,9 +46,12 @@ struct ProducerFrame {
 // A detector binding stages real GPU-copy commands and CPU history metadata.
 // The caller installs static copies after RAM reset, completes actual GPU and
 // readback before analyze, and analyzes before shared rows can be overwritten.
-// It supplies real photo membership; full snapshot collection/queue/GObjs are
-// outside this graphics policy. Native cleanup must clear history before reuse.
-// This owns no actor factory/FSM, scheduling, effect sampling or GPU fence.
+// Membership is collected at the included source prefix when a hook is bound;
+// otherwise the explicit supplied photo remains supported. The hook may mutate
+// canonical visibility flags before a later rejection; those source side effects
+// are NOT rolled back. Photo/history/context/RAM publish only after success.
+// Original full snapshot serialization/queue is outside this graphics policy.
+// Native cleanup owns identity invalidation; this adapter owns no GPU fence.
 //
 // All resource/native/Runtime/basis owners and the ordered binding span remain
 // stable through actual GPU completion/readback. An empty binding has null
@@ -55,6 +60,10 @@ struct ProducerFrame {
 // capacities are NOT resource indices, and repeated resource models are legal.
 // Change bindings, poses or native lifetimes only under exclusive native and
 // actual GPU-quiescent owner control. Never mutate between preflight and upload.
+// The optional hook/user and all native membership owners must remain stable
+// through preparation. A hook must not mutate bindings, lifetimes or poses.
+// Preprefix gates/subjects retain their old flags; postprefix gates read the
+// collector's canonical flags. Filtered-out prefixes never invoke the hook.
 class Producer final {
 public:
     // other_reservations is the COMPLETE disjoint scene/task/output union,

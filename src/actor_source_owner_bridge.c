@@ -134,3 +134,40 @@ IsleGameResult isle_actor_source_id_in_use(IsleGame* game, uint32_t id, int* out
     }
     return ISLE_GAME_OK;
 }
+
+IsleGameResult isle_actor_source_link3_next(IsleGame* game, IsleGameObject* previous,
+    IsleGameObject** out_object, IsleActorSource** out_source, IsleGameModel** out_model) {
+    IsleGameCounts counts;
+    IsleGameObjectMetadata metadata;
+    IsleActorSource* source = NULL;
+    GObj* object;
+    IsleGameResult result;
+    if (out_object != NULL) *out_object = NULL;
+    if (out_source != NULL) *out_source = NULL;
+    if (out_model != NULL) *out_model = NULL;
+    result = isle_game_counts(game, &counts);
+    if (result != ISLE_GAME_OK) return result;
+    if (out_object == NULL || out_source == NULL || out_model == NULL)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (previous != NULL) {
+        result = isle_game_object_metadata(game, previous, &metadata);
+        if (result != ISLE_GAME_OK) return result;
+        if (previous->retirementStarted) return ISLE_GAME_INVALID_STATE;
+        if (metadata.update_link != 3) return ISLE_GAME_INVALID_ARGUMENT;
+        object = previous->next;
+    } else {
+        object = omGObjListHead[3];
+    }
+    if (object == NULL) return ISLE_GAME_OK;
+    result = isle_actor_source_get(game, object, &source);
+    if (result != ISLE_GAME_OK) return result;
+    if (object->link != 3 || object->type != 1 || object->data.model == NULL)
+        return ISLE_GAME_INVALID_STATE;
+    result = isle_actor_source_validate_model(game, object, object->data.model);
+    if (result != ISLE_GAME_OK) return result;
+    *out_object = object;
+    *out_source = source;
+    *out_model = object->data.model;
+    return ISLE_GAME_OK;
+}

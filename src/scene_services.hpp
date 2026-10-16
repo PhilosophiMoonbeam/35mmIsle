@@ -76,7 +76,9 @@ public:
                           std::uint32_t priority = 0x80000000u) noexcept;
     bool set_update(IsleGameObject*, IsleGameCallback, void*) noexcept;
     // Registered live owners only, before Services erase/actual retirement.
-    // All-null clears the observers; rejection leaves the old observers intact.
+    // All-null clears observers even after sticky scene failure, after validating
+    // the live owner; failure remains set and new observers still reject.
+    // Rejection leaves old observers intact.
     bool set_lifecycle(IsleGameObject*, ObjectLifecycle) noexcept;
     bool set_command_handler(IsleGameObject*, IsleGameCommandHandler, void*) noexcept;
     // Borrow accounting only, after a successful FIFO enqueue. Observer must

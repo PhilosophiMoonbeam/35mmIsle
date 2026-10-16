@@ -54,6 +54,14 @@ IsleGameResult isle_actor_owner_add_one(IsleActorSource*, void*, void*, const Is
     const IsleActorGeoDefinition*, IsleGameObject**);
 IsleGameResult isle_actor_owner_copy_position(IsleActorSource*, IsleGameObject*);
 IsleGameResult isle_actor_source_id_in_use(IsleGame*, uint32_t, int*);
+/* Checked, nonwaiting native link3 cursor. NULL previous starts at the head;
+ * otherwise previous must still be a live same-game link3 object. Each returned
+ * object has its identical canonical bound record and actual attached model.
+ * End and errors clear every supplied output; unbound nodes are never skipped.
+ * Caller retains all lifetimes and excludes list/binding/model mutation for the
+ * traversal. Expired/recycled raw previous handles are not supported. */
+IsleGameResult isle_actor_source_link3_next(IsleGame*, IsleGameObject* previous,
+    IsleGameObject** out_object, IsleActorSource** out_source, IsleGameModel** out_model);
 void isle_actor_source_yaw(IsleGameObject*, float);
 void isle_actor_source_magikarp_active(IsleGameObject*, int);
 size_t isle_actor_source_ground_node(IsleGameObject*);

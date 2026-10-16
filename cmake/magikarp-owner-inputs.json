@@ -107,16 +107,16 @@
       "sha256": "132272bd5da0726af4b84fc05438e2cec39c5befac1105019771fa3736aa823d"
     },
     "src/actor_owner_source.h": {
-      "sha256": "c13a8658cb70548d3b84b4ca1ed2175b6047143bd7af1861b33f5a9530755652"
+      "sha256": "4fb860530f06a4ace856e1ac51481ba0aab7fc855621c354dfad2d6e78dcf5b7"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "c7cf81856e3e211ab278deb672b3f8b652281023262bdf301ec3821a47a73f8e"
+      "sha256": "62cff17b65330b22a011cbecb77459c65c0972cf8cf5ef6c91e293a4b2b8e43c"
     },
     "tools/prepare_actor_control.py": {
       "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "b8d91a6c9b4386d034ed7f09560f50c64379ca06551dd473c97d2d7e443219f7"
+      "sha256": "0087170b538a186fee09a5273b6c7a33b35609b4f1327008f79c650009875408"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
       "sha256": "d00ad9f9fb4e850c00687f8e99235eabd1166d6f15791f2445d3a76716683dfc"

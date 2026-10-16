@@ -339,8 +339,15 @@ bool Services::set_lifecycle(IsleGameObject* object, ObjectLifecycle lifecycle) 
         return false;
     }
     IsleGameObjectMetadata metadata{};
-    if (!check(isle_game_object_metadata(game, record->object, &metadata),
-               "scene lifecycle owner validation")) return false;
+    const auto validation = isle_game_object_metadata(game, record->object, &metadata);
+    if (validation != ISLE_GAME_OK) {
+        check(validation,"scene lifecycle owner validation");
+        return false;
+    }
+    // Failed scenes still must release borrowed observer userdata. Permit only
+    // a validated detach; never install new work or clear the sticky failure.
+    const bool detach = !lifecycle.retiring && !lifecycle.joined && !lifecycle.user;
+    if (failed() && !detach) return false;
     record->lifecycle = lifecycle;
     return true;
 }

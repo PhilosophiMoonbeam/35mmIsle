@@ -122,6 +122,8 @@ jobs:
         run: cmake --preset windows-host-release
       - name: Build full LUS, audio, RSP, canonical RDP, native engine and CPU tests with MSVC
         run: cmake --build --preset windows-host-release --parallel 2
+      - name: Build opt-in native Magikarp focus consumer without a ROM
+        run: cmake --build --preset windows-host-release --target course-magikarp-rsp-smoke --parallel 2
       - name: Run all ROMless CPU CTests
         run: ctest --preset windows-host-release
       - name: Exercise help without graphics, audio devices or ROMs

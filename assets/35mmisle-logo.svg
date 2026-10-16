@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" fill="none" role="img" aria-labelledby="logo-title logo-desc">
   <title id="logo-title">35mmIsle</title>
-  <desc id="logo-desc">A professional island photo-safari emblem featuring sculpted gold and ivory lettering, an optical camera-lens horizon framing a volcanic caldera and waterfalls, a winding 35mm film strip with exposed frames, parted jungle grass under a viewfinder reticle, a half-buried spiral fossil stone, and a coastal cliff profile watching the bay.</desc>
+  <desc id="logo-desc">A professional island photo-safari emblem featuring sculpted gold and ivory lettering, an optical camera-lens horizon framing a volcanic caldera and waterfalls, a winding 35mm film strip with exposed frames, parted jungle grass under a viewfinder, a half-buried spiral fossil stone, and a coastal cliff profile watching the bay.</desc>
 
   <defs>
     <!-- Soft ambient drop shadow for the entire die-cut emblem -->
@@ -402,20 +402,27 @@
       <path d="M559 407 Q692 365 827 376 Q956 411 1126 352 V628 H551 Z" fill="url(#water)"/>
       <path d="M560 407 Q692 366 827 377 Q956 411 1120 354" stroke="#fff5cf" stroke-width="4" opacity="0.85"/>
 
-      <!-- Main Waterfall (Emerging from Bluff Terrace & Plunging Across Shoreline into Lagoon) -->
-      <path d="M943 339 Q951 335 959 338 Q964 344 966 351 L970 391 Q953 396 936 392 L939 352 Q940 345 943 339 Z" fill="#76d1c4" stroke="#204848" stroke-width="3.2"/>
-      <!-- Waterfall Depth Shading -->
-      <path d="M944 339 Q951 336 958 338 Q962 344 964 351 L961 391 L952 392 L954 351 Q952 344 944 339 Z" fill="#4bc0b8" opacity="0.65"/>
-      <!-- Canopy Arch Overhang & Bluff Lip Shoulders -->
-      <path d="M938 341 Q951 333 964 340" stroke="#204848" stroke-width="4" fill="none"/>
-      <path d="M932 353 Q937 351 940 355 M965 354 Q969 350 974 352" stroke="#204848" stroke-width="3.2" fill="none"/>
-      <!-- Waterfall Crest & Cascade Highlights -->
-      <path d="M949 340 Q952 345 952 350 M942 351 Q953 349 963 351 M946 351 L944 387 M956 352 L958 388 M951 362 L950 389" stroke="#fff8d6" stroke-width="3.5" fill="none"/>
+      <!-- Upper River Gorge & Rocky Spillway Feeding the Waterfall -->
+      <path d="M918 328 Q936 329 945 338 L961 338 Q954 326 936 323 Z" fill="#5ac8be" stroke="#204848" stroke-width="2.6"/>
+      <path d="M929 336 L941 334 L943 347 L931 345 Z M960 334 L972 337 L969 347 L958 345 Z" fill="#4f6e5e" stroke="#204848" stroke-width="2.5"/>
 
-      <!-- Waterfall Plunge Foam, Rainbow Mist Arc & 90s Anime Water Caustics -->
-      <path d="M878 404 A64 64 0 0 1 996 364" stroke="url(#rainbow-arc)" stroke-width="14" fill="none" stroke-linecap="round"/>
-      <path d="M922 392 C916 382 930 376 938 383 C946 374 962 374 969 383 C978 377 990 384 984 394 C990 401 975 404 953 403 C931 404 917 399 922 392 Z" fill="#effcf7" stroke="#204848" stroke-width="2.5"/>
-      <path d="M935 391 Q945 384 954 390 Q964 383 973 390 M931 395 Q953 400 976 394 M922 399 Q953 406 984 397" stroke="#fff7d6" stroke-width="3.5" fill="none"/>
+      <!-- Main Waterfall (Emerging from Gorge & Plunging Across Shoreline into Lagoon) -->
+      <path d="M941 336 Q951 332 961 336 Q966 344 968 352 L973 392 Q953 398 933 392 L937 352 Q938 344 941 336 Z" fill="#76d1c4" stroke="#204848" stroke-width="3.2"/>
+      <!-- Waterfall Depth Shading -->
+      <path d="M943 336 Q951 333 959 336 Q964 344 965 352 L963 392 L951 393 L953 351 Q951 343 943 336 Z" fill="#4bc0b8" opacity="0.7"/>
+      <!-- Waterfall Crest & Cascade Highlights -->
+      <path d="M934 328 Q946 331 951 338 M941 349 Q953 346 965 349 M944 340 L941 388 M952 339 L951 389 M959 341 L962 388" stroke="#fff8d6" stroke-width="3.4" fill="none"/>
+
+      <!-- Luminous Multi-Band Rainbow Mist Arc & Plunge Pool Foam -->
+      <g fill="none" stroke-linecap="round">
+        <path d="M870 408 A68 68 0 0 1 1002 374" stroke="#fffef4" stroke-width="18" opacity="0.28"/>
+        <path d="M868 409 A70 70 0 0 1 1004 373" stroke="#ff6b7a" stroke-width="3.8" opacity="0.78"/>
+        <path d="M871 411 A66 66 0 0 1 1000 376" stroke="#ffd86b" stroke-width="3.8" opacity="0.82"/>
+        <path d="M874 413 A62 62 0 0 1 996 379" stroke="#7be896" stroke-width="3.6" opacity="0.78"/>
+        <path d="M877 415 A58 58 0 0 1 992 382" stroke="#6be0ff" stroke-width="3.6" opacity="0.82"/>
+      </g>
+      <path d="M918 392 C912 381 927 374 937 382 C946 372 963 372 971 382 C981 375 994 383 987 394 C993 402 977 406 953 405 C929 406 913 400 918 392 Z" fill="#effcf7" stroke="#204848" stroke-width="2.6"/>
+      <path d="M933 390 Q944 383 954 389 Q965 382 975 390 M928 395 Q953 401 978 394 M918 400 Q953 408 988 398" stroke="#fff7d6" stroke-width="3.5" fill="none"/>
 
       <!-- Cel-Shaded Lagoon Wave Bands & Sunlit Caustic Ribbons -->
       <path d="M565 432 Q675 408 785 424 Q885 438 975 418 Q1045 402 1115 412 L1115 436 Q1035 424 955 442 Q865 458 765 442 Q665 428 565 452 Z" fill="#63d2c2" opacity="0.35"/>
@@ -430,11 +437,20 @@
         <path d="M778 412 H786 M782 408 V416"/>
       </g>
 
-      <!-- Mysterious Aquatic Silhouette & Concentric Ripples in the Bay -->
-      <path d="M1008 470 Q1026 439 1045 450 Q1055 460 1076 459 L1085 469 Z" fill="#1d5662" stroke="#133b44" stroke-width="3"/>
-      <path d="M1020 457 Q1033 446 1043 453" stroke="#5ab5b0" stroke-width="2.5"/>
-      <path d="M994 478 Q1034 462 1091 473 M1005 487 Q1055 489 1102 475 M1022 496 Q1058 497 1088 490" stroke="#a2e0cd" stroke-width="4"/>
-      <path d="M1066 482 L1095 481" stroke="#fff3cc" stroke-width="3"/>
+      <!-- Breaching Lagoon Plesiosaur / Sea-Dragon Silhouette & Concentric Ripples -->
+      <g id="lagoon-leviathan">
+        <!-- Arched Neck, Crested Head & Dual Dorsal Humps -->
+        <path d="M982 466 C982 448 986 432 975 426 C968 426 963 429 965 433 C970 435 975 434 976 439 C976 449 971 458 967 466 Z" fill="#174a56" stroke="#11343d" stroke-width="3"/>
+        <path d="M975 426 L983 419 L981 428 L988 424 L983 432 Z" fill="#2c7a82" stroke="#11343d" stroke-width="2"/>
+        <path d="M994 467 Q1014 440 1036 452 Q1046 460 1054 467 Z" fill="#174a56" stroke="#11343d" stroke-width="3"/>
+        <path d="M1058 468 Q1069 453 1081 461 L1087 468 Z" fill="#174a56" stroke="#11343d" stroke-width="2.8"/>
+        <!-- Sunlit Backlit Rim on Neck & Dorsal Arch -->
+        <path d="M970 429 C978 432 979 446 975 461 M1002 460 Q1015 446 1031 453" stroke="#7ce6d8" stroke-width="2.4" fill="none"/>
+        <circle cx="972" cy="429" r="1.6" fill="#fff6b8"/>
+        <!-- Concentric Surface Ripples & Splash Highlights -->
+        <path d="M956 467 Q982 461 1006 468 M990 472 Q1036 460 1092 471 M974 481 Q1034 484 1098 476 M1008 491 Q1050 493 1086 486" stroke="#a2e0cd" stroke-width="3.8" fill="none"/>
+        <path d="M962 466 H988 M1004 468 L1042 466 M1058 477 L1090 476" stroke="#fff6d6" stroke-width="2.8" fill="none"/>
+      </g>
 
       <!-- Distant Sea Birds Flock -->
       <path d="M766 173 Q774 164 784 173 Q794 164 802 173 M738 190 Q744 183 751 190 Q759 182 766 188 M818 152 Q823 146 829 152 Q835 146 840 151 M705 172 Q711 165 718 172 Q725 165 731 171" stroke="#5d8576" stroke-width="3"/>
@@ -452,14 +468,11 @@
         <circle cx="882" cy="232" r="11" fill="#ffffff" fill-opacity="0.25"/>
       </g>
 
-      <!-- Optical Multi-Coating Glass Flare & Subtle Viewfinder Crosshair -->
+      <!-- Optical Multi-Coating Glass Flare & SLR Split-Prism Viewfinder HUD -->
       <circle cx="840" cy="324" r="262" fill="url(#lens-glass)"/>
       <path d="M628 215 A238 238 0 0 1 785 92" stroke="#ffffff" stroke-width="6" opacity="0.26"/>
       <path d="M642 238 A222 222 0 0 1 765 112" stroke="#ffffff" stroke-width="2.5" opacity="0.35"/>
-      <g stroke="#fff8dc" stroke-width="2" opacity="0.38">
-        <path d="M832 82 H848 M840 74 V90"/>
-        <path d="M1074 316 V332 M1066 324 H1082"/>
-      </g>
+
       <!-- Inner Lens Vignette Ring -->
       <circle cx="840" cy="324" r="262" stroke="#13363e" stroke-width="8" opacity="0.35"/>
     </g>
@@ -559,8 +572,55 @@
       <polygon points="1193.9,746.6 1262.0,724.0 1280.0,782.0 1210.4,802.8" fill="#68c4d6"/>
       <polygon points="1202.1,774.7 1266.0,753.0 1280.0,782.0 1210.4,802.8" fill="#266885"/>
 
+      <!-- Developed Safari Micro-Scenes Inside Each 35mm Exposure -->
+      <g id="developed-safari-exposures">
+        <!-- Frame 1: Sunset Sun Disc & Banking Winged Silhouette -->
+        <circle cx="256" cy="791" r="7.5" fill="#fff4b8" opacity="0.9"/>
+        <path d="M271 789 Q279 781 286 789 Q294 783 302 792" stroke="#4a1c10" stroke-width="2.8" fill="none"/>
+        <path d="M245 799 L268 804" stroke="#ffe49e" stroke-width="2"/>
+
+        <!-- Frame 2: Breaching Lagoon Plesiosaur & Splash Rings -->
+        <path d="M368 818 C368 808 372 802 364 800 C360 800 359 804 363 806 C363 811 360 815 358 818 Z" fill="#103942"/>
+        <path d="M376 819 Q387 809 398 820 Z" fill="#103942"/>
+        <path d="M352 819 H405" stroke="#e4fff9" stroke-width="2.2"/>
+
+        <!-- Frame 3: Hidden Bush Creature Eyes & Tossed Safari Apple -->
+        <path d="M458 838 Q476 814 500 820 Q518 815 532 838 Z" fill="#1e4933"/>
+        <circle cx="486" cy="827" r="2.3" fill="#ffe97d"/>
+        <circle cx="498" cy="827" r="2.3" fill="#ffe97d"/>
+        <circle cx="520" cy="828" r="5" fill="#e83838" stroke="#1e4933" stroke-width="1.5"/>
+        <path d="M526 826 Q536 816 545 827" stroke="#fff6d6" stroke-width="1.8" stroke-dasharray="2.5 2" fill="none"/>
+
+        <!-- Frame 4: "Perfect Pose" Star Subject & Red Viewfinder Lock-On -->
+        <circle cx="632" cy="832" r="11" fill="#fffbe0" opacity="0.75"/>
+        <path d="M620 843 C620 831 625 826 632 826 C639 826 644 831 644 843 Z" fill="#8c3b16"/>
+        <path d="M624 828 L614 820 L628 826 M640 828 L650 820 L636 826" fill="#8c3b16"/>
+        <path d="M606 827 V822 H613 M658 827 V822 H651 M606 836 V841 H613 M658 836 V841 H651" stroke="#d93829" stroke-width="2.2" fill="none"/>
+
+        <!-- Frame 5: Erupting Volcano Cone & Magma Fountain -->
+        <polygon points="734,844 756,822 782,822 804,844" fill="#382024"/>
+        <path d="M760 822 Q769 813 778 822 L773 836 L769 829 L764 838 Z" fill="#ffcf4d"/>
+        <circle cx="764" cy="818" r="2" fill="#fff6b8"/>
+        <circle cx="775" cy="817" r="1.8" fill="#ff9824"/>
+
+        <!-- Frame 6: Waterfall Plunge & Mini Rainbow Arc -->
+        <path d="M876 829 A24 20 0 0 1 928 825" stroke="#ff7a8a" stroke-width="2.5" fill="none"/>
+        <path d="M879 831 A21 17 0 0 1 925 827" stroke="#ffe066" stroke-width="2.5" fill="none"/>
+        <polygon points="899,809 911,809 914,832 896,832" fill="#e8fffb"/>
+        <ellipse cx="905" cy="832" rx="15" ry="3.8" fill="#ffffff"/>
+
+        <!-- Frame 7: Leaning Coastal Palm Silhouette -->
+        <path d="M1022 822 Q1028 809 1024 800" stroke="#234d36" stroke-width="3.5" fill="none"/>
+        <path d="M1012 803 Q1024 795 1037 802 M1016 798 Q1026 794 1034 806" stroke="#234d36" stroke-width="2.6" fill="none"/>
+        <path d="M1044 814 Q1058 810 1072 813" stroke="#fff2b8" stroke-width="2.2" fill="none"/>
+
+        <!-- Frame 8: Eastern Cliff Watcher Profile & Twilight Star -->
+        <polygon points="1148,800 1155,778 1172,775 1178,784 1172,788 1184,796" fill="#2a3842"/>
+        <circle cx="1126" cy="783" r="3.2" fill="#fff8d6"/>
+      </g>
+
       <!-- Diagonal Glossy Slide Emulsion Sheen Across Each Frame -->
-      <g fill="#ffffff" opacity="0.22">
+      <g fill="#ffffff" opacity="0.20">
         <polygon points="248,750 268,754 242,815 222,811"/>
         <polygon points="355,770 375,773 352,838 332,835"/>
         <polygon points="478,785 500,787 480,855 458,853"/>
@@ -688,7 +748,7 @@
   <!-- FOREGROUND MYSTERIES: PARTED GRASS, SPIRAL STONE & VIEWFINDER UI          -->
   <!-- ========================================================================= -->
 
-  <!-- Left: Disturbed Jungle Grass with Leaf-Ears & Shadowy Presence -->
+  <!-- Left: Disturbed Jungle Grass with Leaf-Ears, Melody Notes & Safari Bait -->
   <g id="parted-grass" transform="translate(135 491)" filter="url(#layer-shadow)" stroke-linejoin="round" stroke-linecap="round">
     <!-- Back Foliage Mass -->
     <path d="M37 213 Q11 152 22 100 Q40 119 49 148 Q39 86 67 32 Q81 74 82 117 Q97 74 130 48 Q122 100 106 147 Q145 112 175 114 Q155 147 124 177 Q150 175 170 187 L149 221 Z" fill="#2e5e4e" stroke="#153b43" stroke-width="6"/>
@@ -696,25 +756,44 @@
     <path d="M52 202 Q45 121 67 48 Q66 127 80 168 Q88 100 121 62 Q98 136 94 194 Z" fill="#79aa66"/>
     <path d="M65 65 Q61 118 70 165 M112 75 Q96 125 90 172" stroke="#b5d682" stroke-width="2.5" fill="none"/>
 
-    <!-- Deep Rustling Shadow Pocket & Luminous 90s Anime Creature Eye-Glints -->
-    <path d="M73 188 Q80 153 107 151 Q131 149 142 180 Q116 174 113 203 Z" fill="#0d262b"/>
-    <ellipse cx="91" cy="178" rx="4.5" ry="3" transform="rotate(-8 91 178)" fill="#ffe97d"/>
-    <ellipse cx="117" cy="176" rx="4.5" ry="3" transform="rotate(8 117 176)" fill="#ffe97d"/>
-    <circle cx="90" cy="177" r="1.5" fill="#ffffff"/>
-    <circle cx="116" cy="175" r="1.5" fill="#ffffff"/>
+    <!-- Two Curved Notched Leaves (Rendered Behind Shadow Pocket so Creature Eyes Aren't Occluded) -->
+    <path d="M88 164 Q56 134 60 104 Q86 108 101 144 L108 158 Z" fill="#dce673" stroke="#163c44" stroke-width="4.5"/>
+    <path d="M60 104 Q72 106 79 116 L65 121 Q60 112 60 104 Z" fill="#1e443b"/>
+    <path d="M107 164 Q108 129 138 110 Q148 138 126 162 L117 172 Z" fill="#b8d968" stroke="#163c44" stroke-width="4.5"/>
+    <path d="M138 110 Q142 120 139 128 L127 120 Q132 114 138 110 Z" fill="#1e443b"/>
+    <path d="M71 120 Q85 140 95 156 M133 125 Q121 141 115 159" stroke="#f7f4bd" stroke-width="2.4"/>
 
-    <!-- Two Curved Notched Leaves (Naturalistic Flora / Pareidolia Ears) -->
-    <path d="M90 174 Q60 142 62 112 Q86 116 102 150 L111 163 Z" fill="#bbd178" stroke="#163c44" stroke-width="4.5"/>
-    <path d="M62 112 Q72 114 78 122 L66 126 Q62 119 62 112 Z" fill="#2b5749"/>
-    <path d="M105 174 Q104 137 134 117 Q145 144 125 169 L116 182 Z" fill="#92bc68" stroke="#163c44" stroke-width="4.5"/>
-    <path d="M134 117 Q138 126 136 133 L125 126 Q129 120 134 117 Z" fill="#2b5749"/>
-    <path d="M72 127 Q87 150 99 169 M131 131 Q118 149 113 174" stroke="#e9e4a8" stroke-width="2.2"/>
+    <!-- Deep Rustling Shadow Pocket & Un-Occluded Luminous Creature Eyes -->
+    <path d="M66 192 Q74 148 105 146 Q135 145 144 184 Q118 178 113 203 Z" fill="#0b2227" stroke="#163c44" stroke-width="3"/>
+    <ellipse cx="89" cy="171" rx="5.8" ry="4.2" transform="rotate(-8 89 171)" fill="#ffe97d"/>
+    <ellipse cx="118" cy="169" rx="5.8" ry="4.2" transform="rotate(8 118 169)" fill="#ffe97d"/>
+    <circle cx="87.5" cy="169.5" r="2.1" fill="#ffffff"/>
+    <circle cx="116.5" cy="167.5" r="2.1" fill="#ffffff"/>
+    <!-- Curious Rosy Cheek Glints -->
+    <ellipse cx="79" cy="177" rx="3.5" ry="2" fill="#ff7a6b" opacity="0.75"/>
+    <ellipse cx="127" cy="175" rx="3.5" ry="2" fill="#ff7a6b" opacity="0.75"/>
 
     <!-- Foreground Parted Grass Crown -->
     <path d="M30 220 Q26 183 10 161 Q40 170 55 199 Q54 159 43 142 Q76 164 84 199 Q101 178 122 176 Q103 195 101 212 Q128 186 157 193 Q138 204 127 225 Z" fill="#52885a" stroke="#163c44" stroke-width="5"/>
     <path d="M43 207 L29 182 M68 202 L61 181 M103 217 L134 202" stroke="#b0cc7c" stroke-width="3"/>
-    <!-- Rustle Motion Arcs -->
-    <path d="M42 99 Q37 83 40 70 M132 105 Q143 94 147 82" fill="none" stroke="#749b66" stroke-width="3.5"/>
+
+    <!-- Floating Safari Melody Notes (Homage to Musical Creature Lure Mechanic) -->
+    <g id="safari-melody-notes">
+      <path d="M128 114 Q146 98 142 78" stroke="#fff5c0" stroke-width="2.5" stroke-dasharray="4 4" fill="none"/>
+      <!-- Eighth Note -->
+      <g transform="translate(144 86) rotate(-12)">
+        <ellipse cx="0" cy="0" rx="6.5" ry="4.8" transform="rotate(-20)" fill="#ffcf52" stroke="#163c44" stroke-width="3.2"/>
+        <path d="M5 -1 V-21 Q14 -19 16 -11" stroke="#163c44" stroke-width="5" fill="none"/>
+        <path d="M5 -1 V-21 Q14 -19 16 -11" stroke="#ffcf52" stroke-width="2.4" fill="none"/>
+        <circle cx="-2" cy="-1" r="1.5" fill="#fffbe8"/>
+      </g>
+      <!-- Secondary Floating Note -->
+      <g transform="translate(40 84) rotate(14) scale(0.82)">
+        <ellipse cx="0" cy="0" rx="6.5" ry="4.8" transform="rotate(-20)" fill="#7be896" stroke="#163c44" stroke-width="3.4"/>
+        <path d="M5 -1 V-20 Q13 -18 15 -10" stroke="#163c44" stroke-width="5" fill="none"/>
+        <path d="M5 -1 V-20 Q13 -18 15 -10" stroke="#7be896" stroke-width="2.4" fill="none"/>
+      </g>
+    </g>
 
     <!-- Glossy 1990s Anime Red Safari Apple Resting in Front of the Bush -->
     <g id="safari-bait-apple" transform="translate(132 214) rotate(-10)">
@@ -734,22 +813,39 @@
     </g>
   </g>
 
-  <!-- Right: Weathered Spiral Fossil Stone Half-Buried in Coastal Sand -->
+  <!-- Right: Weathered Spiral Fossil Stone, Faceted Safari Orb & Sand Tracks -->
   <g id="buried-stone" transform="translate(1226 617) rotate(9 70 90) scale(.76)" filter="url(#layer-shadow)" stroke-linejoin="round" stroke-linecap="round">
     <!-- Base Sand Mound -->
     <path d="M-19 153 Q-9 127 15 124 Q-10 109 0 79 Q6 42 42 30 Q86 17 112 50 Q135 77 120 120 Q153 125 162 158 Q63 188 -19 153 Z" fill="#e4c48b" stroke="#163c44" stroke-width="5.5"/>
     <!-- Sculpted Limestone Nautilus Relic -->
     <path d="M7 136 Q-6 105 6 76 Q16 41 48 34 Q86 26 109 56 Q131 86 109 134 Z" fill="url(#stone)" stroke="#163c44" stroke-width="5.5"/>
-    <!-- Ammonite Spiral Groove & Chamber Sutures -->
+    <!-- Ammonite Spiral Groove & Glowing Ancient Chamber Sutures -->
     <path d="M17 113 Q10 78 35 61 Q65 38 88 64 Q110 90 86 110 Q62 127 45 105 Q33 86 50 76 Q68 65 78 82 Q85 96 71 99" fill="none" stroke="#5f6c4e" stroke-width="8"/>
-    <path d="M20 106 Q16 80 37 65 Q64 46 84 67 M48 101 Q40 88 53 80 Q67 73 73 84" fill="none" stroke="#e2d7aa" stroke-width="3.2"/>
+    <path d="M20 106 Q16 80 37 65 Q64 46 84 67 M48 101 Q40 88 53 80 Q67 73 73 84" fill="none" stroke="#9ef5e8" stroke-width="3" opacity="0.75"/>
     <path d="M89 44 L80 54 M62 36 L60 48 M33 45 L39 56 M12 85 L22 89 M100 111 L109 117 M96 82 L109 80" stroke="#596f57" stroke-width="3.2"/>
     <!-- Coastal Grass Blades Tucking Behind Sand -->
     <path d="M114 133 Q124 91 148 69 Q146 113 131 139 M129 140 Q150 111 176 111 Q161 138 143 147" fill="#648e58" stroke="#163c44" stroke-width="4.5"/>
     <path d="M126 129 L143 85 M143 137 L163 119" stroke="#b8cb7c" stroke-width="2.5"/>
-    <!-- Foreground Sand Drift & Pebbles -->
+
+    <!-- Faceted Two-Tone Safari Flush-Orb Half-Nestled in the Sand Drift -->
+    <g id="faceted-safari-orb" transform="translate(18 128) rotate(-16)">
+      <circle cx="0" cy="0" r="16.5" fill="#ff9e44" stroke="#163c44" stroke-width="4.5"/>
+      <path d="M-16 2 Q0 8 16 2 A16.5 16.5 0 0 1 -16 2 Z" fill="#9b6bff"/>
+      <path d="M-15 1 L-6 -4 L6 -4 L15 1 L6 6 L-6 6 Z" fill="#ffd86b" stroke="#163c44" stroke-width="2.8"/>
+      <path d="M-6 -14 L-6 -4 M6 -14 L6 -4 M-6 6 L-5 15 M6 6 L5 15" stroke="#163c44" stroke-width="2.5"/>
+      <circle cx="-6" cy="-8" r="3" fill="#ffffff" opacity="0.9"/>
+    </g>
+
+    <!-- Foreground Sand Drift, Creature Footprints & Pebbles -->
     <path d="M-20 143 Q-8 122 16 123 Q31 105 49 118 Q67 112 83 126 Q103 113 123 125 Q149 131 161 159 Q71 181 -20 156 Z" fill="#e6c78f" stroke="#163c44" stroke-width="5"/>
     <path d="M-3 140 Q21 129 43 132 M75 139 Q96 131 118 136" stroke="#fff2ca" stroke-width="4"/>
+    <!-- Tiny Three-Toed Safari Tracks Leading Across the Sand -->
+    <g fill="#b5925c">
+      <ellipse cx="48" cy="148" rx="6" ry="3.5" transform="rotate(-12 48 148)"/>
+      <circle cx="40" cy="145" r="2"/><circle cx="43" cy="141" r="2"/><circle cx="48" cy="140" r="2"/>
+      <ellipse cx="78" cy="155" rx="6" ry="3.5" transform="rotate(-8 78 155)"/>
+      <circle cx="70" cy="152" r="2"/><circle cx="73" cy="148" r="2"/><circle cx="78" cy="147" r="2"/>
+    </g>
     <ellipse cx="-27" cy="167" rx="7" ry="4" transform="rotate(-15 -27 167)" fill="#9b9365" stroke="#163c44" stroke-width="3"/>
     <ellipse cx="-48" cy="178" rx="6" ry="3" transform="rotate(-15 -48 178)" fill="#9b9365" stroke="#163c44" stroke-width="3"/>
   </g>

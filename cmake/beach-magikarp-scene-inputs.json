@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "issue": "bd_35mmIsle-v4u.10.7.23.3.11.4",
+  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"8bb26fde827615b8a59fda7e954e009a6801f014a43c07b1bd7400bb3c4ed4a6"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"d79691da3aa856fa391701ea12b3053af559889a67eed1b54d33d40d3c156695"}},
+  "parent_actual_runs": {
+    "scene_debug":{"capture_root":"/home/bbferko/35mmisle-genuine-scene-photo-cpu-7xbkhcc4","binary_sha256":"eb935087b5d41465687159fd258a47e882b021ced11b28fbea2f385be042acbf","source_archive_sha256":"d6fc51408dc063286c51e29ba08f41fbe6d7d854b004146f611dc7c83c01b61e","elapsed_seconds":0.7270003060111776,"closed":[8,7,9],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "mag_debug":{"capture_root":"/home/bbferko/35mmisle-scene-allocator-magikarp-cpu-jorbidha","binary_sha256":"3394e1edaf464a300b6071e3e50c504449df980a2ab9ff42ded314a63be0e533","source_archive_sha256":"4c58880b30f4ab96ac3d0c80d01ce0c744c653fc41a3dc8e0aa4206fafaf45e1","elapsed_seconds":0.7327733350684866,"closed":[25,24,26],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "common_debug":{"capture_root":"/home/bbferko/35mmisle-scene-canonical-common-cpu-fmx6lu5r","binary_sha256":"ae680c5795ea8acb03606e0c3d2544b474e70b182bba73d501f6ef14b6f53b08","source_archive_sha256":"214dc36638e5f6367d706c8808116e91ca2e88ded82b7bd876affd7dd992c363","elapsed_seconds":2.3874182540457696,"closed":[26,25,27],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "scene_release":{"capture_root":"/home/bbferko/35mmisle-scene-release-source-dl1jvyqo","binary_sha256":"848fae33326e337ced1047083d7b06cd2937268f88e4ea63b4df63493d3fde0f","source_archive_sha256":"ef6c24f7dcd702a0e234ee9a4da6f046466371711d40edb678a9be8f6b0aa55b","elapsed_seconds":0.29002749803476036,"closed":[8,7,9],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "mag_release":{"capture_root":"/home/bbferko/35mmisle-mag-release-source-wkqvqhwp","binary_sha256":"aec740712e59866977cb6c6359fbc7d57bf3b75a1050a1b86fe96fd4f2af61eb","source_archive_sha256":"da1ac1795f8e31ad74a4ee15e5e07ac76bb3046bea9a0a198de619e385ffe646","elapsed_seconds":0.30286669195629656,"closed":[25,24,26],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "common_release":{"capture_root":"/home/bbferko/35mmisle-common-release-source-857pls3r","binary_sha256":"9846c9ffe11b03b73fdb66cf37b7f7f9e3c682988eb4bf21f118ad81033373e3","source_archive_sha256":"03e7f75638930af7d6e6adac10135d89572048ee7a5a8abe40650f9516e56b3b","elapsed_seconds":0.6456670260522515,"closed":[26,25,27],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "composed_debug":{"capture_root":"/home/bbferko/35mmisle-composed-debug-collision-field-w09mm9yb","binary_sha256":"096f78bbd6334d45f2a8fefe4c6ab851c890577d2eb588c9c9a2879e35459705","source_archive_sha256":"6d9fb3a22d9edee85bf62e2337f1a8671ee41631e9978fb649802561b37e2e5e","elapsed_seconds":17.824820496025495,"closed":[44,43,45],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "six_debug":{"capture_root":"/home/bbferko/35mmisle-six-debug-collision-field-01z_7x9h","binary_sha256":"04242f605255d3d6865bb3f5f23321c71f79f52cb488251cf93f012d1457d802","source_archive_sha256":"e23fc9d1b71999062d646556dbb68ef5bcea2cfd7ee822773ea4e05224e8af82","elapsed_seconds":27.718845558003522,"closed":[77,76,78],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "scene_asan":{"capture_root":"/home/bbferko/35mmisle-scene-asan-source-ltlju_kd","binary_sha256":"fcce79f20450d826618e3b115413deb8efb4d716e93f2f75f0777e9a3369fd6e","source_archive_sha256":"0c023bb32347b3a931e8850b9726e1a94861db799f364af800d37ab696a03a09","elapsed_seconds":3.0223884070292115,"closed":[8,7,9],"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "mag_asan":{"capture_root":"/home/bbferko/35mmisle-mag-asan-source-agvo54rl","binary_sha256":"595efde0884c84d89820351e5c31be53ef022fc3979ae8734c0d739ca9c5fa89","source_archive_sha256":"2268d9ff06de57a58b916a55e2a55c5384c04ba09db086743d0c6d52a8f5a1a7","elapsed_seconds":3.198512998991646,"closed":[25,24,26],"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "common_asan":{"capture_root":"/home/bbferko/35mmisle-common-asan-source-2fnybhb4","binary_sha256":"2efc1de31fed4736cf3a80242519a8c2ce57cf432a09926c362a0abf214b4bb1","source_archive_sha256":"caa1902d4028b370a13a05946b4662c7869941094041f5b6929d951f5784dc07","elapsed_seconds":12.181450784089975,"closed":[26,25,27],"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
+    "composed_asan":{"capture_root":"/home/bbferko/35mmisle-composed-asan-source-pw2u1xeq","binary_sha256":"155fd8a608475a239abc13529f38e33799d58d6e04a8b23abe8ab19df52e567d","source_archive_sha256":"9f9035b433be1be07960a09017f9d47cc07d5a4f12be3eb4a3434692d4a9d41a","elapsed_seconds":30.06234736100305,"closed":[47,46,48],"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}
+  },
+  "current_contracts": {"Debug":{"passed":50,"artifact":"7609"},"Release":{"passed":50,"artifact":"7613"},"Clang_ASan_UBSan":{"passed":50,"artifact":"7617"}},
+  "actual_collision_photo_observation": {"collision":[123.25,100.5,-100.625],"source_admitted":false,"negative_retained_without_reframing":true,"scope":"Actual source/API CPU predicate over explicit native trigger/player inputs; not source manager scheduling/full snapshot/genuine gated GPU focus."},
+  "unchanged_composed_surfaces_sha256": {"actual-world-after-native-cleanup.ppm":"2260e41405cdb853c626f5720cf32d8034fd59d136d6f8ff0c78ca308234dab3","actual-world-next-block-shared-fx.ppm":"2260e41405cdb853c626f5720cf32d8034fd59d136d6f8ff0c78ca308234dab3","actual-world-native-actors-fx.ppm":"e734170e7c7250e22211d53d2855c2503dc01c72366214daa4703203e30ffab2","actual-world-without-hidden-subject.ppm":"2aeec0be2a6e7a77ab09d1152f1ee732a5e848613846e879e271d80a264672cd","actual-world-native-actors.ppm":"2dc882cf02be2b55912e1bacacb4f2588d7615219c5473eeef0e952123d5c451"},
+  "scope": "Complete bounded native source55C110.c10-65 helper and two-choice chooser. Genuine native trigger GObj/root DObj position, canonical Owner.player AUX, caller-supplied GroundResult and event timing. No Item physics, item owner, full gameplay event pipeline, GPU, framing, Original or Windows11 inference.",
+  "authority": "Own immutable GAME stage /home/bbferko/35mmisle-course-pinned-source-vhh0_3lz and exact pinned Git object database. No dirty decomp, SDK producer/layout/header, disassembly, ROM access or serialized scalar/table oracle by worker.",
+  "source_files": {
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "semantic_origins": [{"first": 10, "last": 37}, {"first": 39, "last": 65}]
+    },
+    "src/sys/vector.c": {
+      "git_blob": "99b21e6c073cdbce135abfc10533defc56a05026",
+      "sha256": "f36b6f36e6e1434bd498d41df4b03e63775d8f765dc6337f76a7ccfbb5c9fa57",
+      "semantic_origins": [{"first": 18, "last": 20}, {"first": 304, "last": 312}]
+    },
+    "src/beach/beach.h": {
+      "git_blob": "0aad5edbe49cd130449874b9b3b55941d3b73042",
+      "sha256": "a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc",
+      "semantic_origins": [{"first": 17, "last": 21}]
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d",
+      "semantic_origins": [{"first": 359, "last": 359}]
+    }
+  },
+  "resource_authority": {
+    "actor_definition": "ActorResources admitted definition802CBFF4, species129, actual factory802CAC48. Existing Owner admits the full actual initialization/render/setup/state/header tuple; module does not introduce a guest callback cast.",
+    "chooser": "BehaviorResources admitted initialized two-entry802CC004 table, including weighted NULL. Both uint8 weights are consumed from actual resource metadata, never hardcoded or replaced by a serialized table oracle. Selected nonNULL callback802C40A0 is bound by pinned symbol_addrs.txt359 and actual own-GAME helper body; unknown selected callbacks explicitly fail after RNG and active branch ordering.",
+    "latch": "Existing canonical CourseState.magikarp_active is D_beach_802CC014. Module writes true only after successful chosen helper. Genuine selected Magikarp state802CAB50 already clears it after actual ANIMATION_ENDED and before native RunCleanup. Direct factory/helper and external reset do not impersonate that transition."
+  },
+  "native_semantics": {
+    "helper": "Source current block for both factory arguments; explicit id129, zero XYZ/Euler and unit spawnScale; genuine same-Owner add_one allocation/factory. Only after spawn, sample native triggering root DObj.position and copy exactly into spawned AUX position, preserving factory rotation/scale, initial header, record pos1/targetPos and source state/process setup. No multiply100, ground requery, pose normalization, root animation rewrite or latch publication in direct helper.",
+    "chooser": "Compare supplied source surface337FB2 first, then native source Vec3fDistance(player AUX, triggering DObj.position)>50. Float subtraction, left-associated float square sum and sqrtf policy retained. Sum complete two-entry actual weights, consume exactly one Services.rng randRange(total), then source cumulative sum>draw. NULL remains a legitimate no-spawn choice; nonNULL already-active still consumes RNG. Read callback identity and invoke genuine helper only on selected nonNULL inactive branch; set latch after successful helper only.",
+    "bounded_input": "MagikarpTrigger carries live native GObj/model identity verified by existing native validate_model and canonical root-node getter. Player comes only from Owner.player canonical object/model and non-disabled AUX placement. Caller supplies GroundResult and invocation timing. Native consumer constructs actual one-root native models as explicit input, not pretend physical Items/player game FSM. Wrong-surface branch never validates or consumes otherwise unused trigger/player/tail fields.",
+    "explicit_errors": "Resource borrow/identity errors and native input errors are explicit. Factory failure preserves actual OwnerStatus and never sets latch. Postcopy representation/native failure returns error plus the genuine successfully spawned actor handle/object for caller cleanup; never hides an already-published factory, silently clamps, normalizes, deletes or reports fake success.",
+    "unwritten_spawn_fields_policy": "Parent-authorized deterministic modern initialization: world::no_index native NULL path and behavior0. Own55C110.c leaves ObjectSpawn.path/behavior unwritten; pokemon.c2213/2215 reads them. Original uninitialized automatic-storage equivalence is UNPROVEN. These are deliberate native policy values, NOT source defaults, inferred original values or public tail plumbing.",
+    "lifetime": "All same-Owner Runtime/World/Services/FX/RNG storage and existing serialization/GPU exclusion retained. No new scheduler/clock/actor pool/interpreter. No C bridge, guest structure alias, fake membership, source wait or owning automatic across a native wait/fault. Original Snapshot and resources must outlive module/borrowers and remain unmoved."
+  },
+  "owned_files": [
+    "src/beach_magikarp_scene.hpp",
+    "src/beach_magikarp_scene.cpp",
+    "tests/beach_magikarp_scene_rom_smoke.cpp",
+    "cmake/beach-magikarp-scene-inputs.json"
+  ],
+  "owner_allocator": {
+    "exact_existing_api": "actor::SpawnResult actor::Owner::add_one(std::size_t definition, world::Block* block, world::Block* reference, const world::Spawn& spawn) noexcept;",
+    "semantics": "Existing C AddAtGeo leaf and scene both use ONE shared Owner::add_one allocator/cursor with exact inclusive wrap, two half-open native link3 searches and occupied inclusive-max fallback. Genuine Owner::spawn returns canonical instance/object/status. All complete prior Magikarp/common consumers pass Debug/Release/ASan after refactor. No separate scene cursor, surrogate1003 or changed latch.",
+    "other_existing_api": "Existing isle_actor_source_validate_model, isle_game_model_peek_nodes root.transform.position and Owner native_model/set_placement/source/player/course suffice; no new engine getter or C bridge needed."
+  },
+  "private_consumer": {
+    "source": "tests/beach_magikarp_scene_rom_smoke.cpp",
+    "mode": "Parent actual Debug/Release/ClangASanUBSan CPU execution passed. Explicit opt-in EXCLUDE_FROM_ALL consumer, never CTest/default discovery; PRIVATE_ROM and existing empty private profile. Worker did not execute.",
+    "coverage": [
+      "Wrong surface with invalid trigger short-circuits without RNG; zero/exact 3-4-5 distance50 is filtered; just beyond50 consumes RNG using real player AUX versus trigger DObj, not their deliberately different other transforms.",
+      "Actual resource positive helper and NULL entries, draws0/boundary-1/boundary/total-1 require exact cumulative sum>draw; active nonNULL and active NULL outcomes consume exactly one shared application draw; inactive NULL never spawns/sets latch.",
+      "Direct helper both latchfalse and latchtrue never mutates latch. Actual current/current zero Ground factory verified through record pos1/targetPos, initial header802CDA8C, Euler0, native tail policy and init scale*.1; exact noninteger DObj coordinates postcopied unchanged and same Runtime/DL5/block membership observed.",
+      "Both existing Owner slots occupied: chosen actual factory rejects capacity, consumes RNG, does not alter latch or native counts. Unrepresentable DObj-to-AUX postcopy explicitly returns real spawned actor for cleanup, never clamps/hides it.",
+      "Successful chooser publishes latch, actual first native tick enters state header802CDAB4/path, and fixed512 native ticks observe genuine ANIMATION_ENDED before latch clear, joined source cleanup, physical Runtime collection and stale handle rejection. No timer/pose/scale/threshold/diagnostic-budget changes or advance-until-pass.",
+      "Actual World, sound resources, native audio session/RSP drain, canonical same-Owner FX/Runtime and application RNG; erased native trigger rejects without consuming RNG. No fabricated source FSM, animation program, Item owner, renderer or table scalar oracle."
+    ],
+    "executed_cpu": true
+  },
+  "integration": {
+    "production": "Integrated isle-beach-magikarp-scene STATIC src/beach_magikarp_scene.cpp/.hpp, PUBLIC existing isle-actor-owner and isle-beach-behavior-resources; strict source FP. Existing Owner compiles actor_photo_eligibility.cpp/.hpp once, no duplicate math/runtime/renderer/scheduler or dependency cycle.",
+    "private_target": "add_executable(beach-magikarp-scene-rom-smoke EXCLUDE_FROM_ALL tests/beach_magikarp_scene_rom_smoke.cpp)",
+    "private_link_libraries": ["isle-beach-magikarp-scene", "isle-effect-bank-resources", "isle-graphics-task", "isle-rsp"],
+    "private_options": "Same actual-ROM target gate as magikarp-owner-rom-smoke: TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE; isle_target_options; strict FP -frounding-math -ffp-contract=off -fno-fast-math or /fp:strict.",
+    "parent_owned": "Existing Owner API/shared allocator, CMake, .gitattributes/LF, source/native crosshash refresh, docs/changelog, all build/test/generator/runtime/ROM/devices and final issue proof/closure.",
+    "qualification_recipe": [
+      "Implement accepted existing Owner::add_one API using single canonical allocator, integrate module/private target and refresh crosshashes after all workers release.",
+      "Build beach-magikarp-scene-rom-smoke with existing strict-FP actual-source configuration.",
+      "Run BUILD/beach-magikarp-scene-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PRIVATE_PROFILE_DIRECTORY under parent authority; retain fixed512 diagnostic bound.",
+      "Run existing actual Magikarp/common consumers and authorized regression/sanitizer qualification after integration; no worker execution claim."
+    ]
+  },
+  "ownership_release": "NativeMagikarpScene releases exactly these four NEW files for parent integration. No existing code, CMake, attributes, docs, other manifests, generator or probes changed. Issue remains for parent actual proof/closure."
+}

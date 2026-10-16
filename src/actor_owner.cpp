@@ -1,4 +1,5 @@
 #include "actor_owner.hpp"
+#include "actor_photo_eligibility.hpp"
 #include "source_effect_world.hpp"
 #include <algorithm>
 #include <cmath>
@@ -453,6 +454,37 @@ SpawnResult Owner::spawn(const SpawnRequest& request) noexcept {
     else
         func_beach_802CAC48(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
     return result;
+}
+SpawnResult Owner::add_one(std::size_t definition,world::Block* block,world::Block* reference,
+                           const world::Spawn& descriptor) noexcept {
+    auto& self=*impl_;
+    // Exact source cursor/two half-open searches and inclusive max fallback.
+    constexpr std::uint32_t minimum=0x80,maximum=0xe4;
+    if (++self.pokemon_counter>maximum-minimum) self.pokemon_counter=0;
+    std::uint32_t id=maximum;
+    for (unsigned pass=0;pass<2 && id==maximum;++pass) {
+        const auto first=pass?minimum:minimum+self.pokemon_counter;
+        const auto last=pass?minimum+self.pokemon_counter:maximum;
+        for (auto candidate=first;candidate<last;++candidate) {
+            int used=0;
+            if (isle_actor_source_id_in_use(self.services.game,candidate,&used)!=ISLE_GAME_OK)
+                return {{OwnerError::native,"source native ID search failed"},{},nullptr};
+            if (!used) { id=candidate; break; }
+        }
+    }
+    return spawn({id,definition,block,reference,&descriptor});
+}
+OwnerStatus Owner::refresh_collision_positions() noexcept {
+    auto& self=*impl_;
+    for (std::size_t i=0;i<self.logical_count;++i) {
+        auto& slot=*self.logical[i];
+        IsleGameVec3 position;
+        if (photo::collision_position(slot.source,slot.model,position)!=ISLE_GAME_OK)
+            return rejected(OwnerError::native,"canonical source collision position refresh failed");
+        slot.source.collPosition=position;
+        slot.source.processFlags&=~std::uint32_t{0x80};
+    }
+    return {};
 }
 SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     auto& self=*impl_;
@@ -924,22 +956,8 @@ IsleGameResult isle_actor_owner_add_one(IsleActorSource* source,void* block,void
     for (size_t i=0;i<self.resources.definitions().size();++i)
         if (self.resources.definitions()[i].wire.guest_address==definition->identity) { definition_index=i; break; }
     if (definition_index==isle::beach::actor_no_index) return ISLE_GAME_INVALID_ARGUMENT;
-    // Exact source cursor/two half-open searches and inclusive max fallback.
-    constexpr uint32_t minimum=0x80,maximum=0xe4;
-    if (++self.pokemon_counter>maximum-minimum) self.pokemon_counter=0;
-    uint32_t id=maximum;
-    for (unsigned pass=0;pass<2 && id==maximum;++pass) {
-        const auto first=pass?minimum:minimum+self.pokemon_counter;
-        const auto last=pass?minimum+self.pokemon_counter:maximum;
-        for (auto candidate=first;candidate<last;++candidate) {
-            int used=0;
-            const auto result=isle_actor_source_id_in_use(source->game,candidate,&used);
-            if (result!=ISLE_GAME_OK) return result;
-            if (!used) { id=candidate; break; }
-        }
-    }
-    const auto child=self.facade->spawn({id,definition_index,static_cast<isle::world::Block*>(block),
-        static_cast<isle::world::Block*>(reference),&descriptor});
+    const auto child=self.facade->add_one(definition_index,static_cast<isle::world::Block*>(block),
+        static_cast<isle::world::Block*>(reference),descriptor);
     if (!child) return child.status.error==isle::actor::OwnerError::capacity?ISLE_GAME_EXHAUSTED:ISLE_GAME_EXECUTION_FAILURE;
     *output=child.object;
     return ISLE_GAME_OK;

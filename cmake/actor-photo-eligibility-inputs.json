@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "issue": "bd_35mmIsle-v4u.10.7.23.3.8.11",
+  "native_support": {"src/actor_photo_eligibility.hpp":{"sha256":"154c6b1da5ef0d14136d4d1ede56e22d43d0397b30d76d0ec0eda8a4d79d0a3c"},"src/actor_photo_eligibility.cpp":{"sha256":"9d2394ccd9f38f40483b5ab0b016d60cde374f95e32553a5763bc8d4c9476bb6"},"tests/actor_photo_eligibility_tests.cpp":{"sha256":"c208bfd3ddd57afc3815de137bf3d7396797e3287fca75828d2692fb607145d4"}},
+  "parent_verification": {"CPU_contracts":{"Debug":{"passed":50,"artifact":"7609"},"Release":{"passed":50,"artifact":"7613"},"Clang_ASan_UBSan":{"passed":50,"artifact":"7617"}},"actual_source_smoke":"beach-magikarp-scene-inputs.json contains three actual-ROM native scene/collision/predicate runs and nine unchanged source/GPU regressions with exact executable/archive/closed-tree scopes. Observed collision123.25,100.5,-100.625 and source eligibilityfalse; negative not reframed. Native source boundary/controller/collector/GPU subject remains separate."},
+  "authority": "Immutable own-GAME source stage /home/bbferko/35mmisle-course-pinned-source-vhh0_3lz and its blob-verified pinned-source-manifest.json; missing own include/sys/om.h read from this exact revision in /home/bbferko/repos/pokemonsnap/.git, not the dirty worktree. No SDK body/header/layout admission, disassembly, ROM, runtime or device access.",
+  "native_files": [
+    "src/actor_photo_eligibility.hpp",
+    "src/actor_photo_eligibility.cpp",
+    "tests/actor_photo_eligibility_tests.cpp"
+  ],
+  "source_files": {
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "spans": [[828,836],[2224,2248]],
+      "facts": "func_8036334C_50375C computes AUX rotation/translation using hal_rotate_rpy_translate_f. Flag1 alone adds root DObj local position times componentwise AUX scale to collisionOffset. collisionOffset itself is unscaled. translate(offset) precedes AUX RT, and only resulting row3 becomes collPosition. Root local rotation/scale and renderer matrices do not participate. Pokemon_SetFlag100 sets/clears only bit0x100 of the canonical source flags."
+    },
+    "src/app_level/5047F0.c": {
+      "git_blob": "a860c4e9bc9c1f21962deba7b666b19b8bb7bf4b",
+      "sha256": "20749e3eaa523fd5786616e74c18b33d158eabfb8d26b89bc587fc7b4c1ead03",
+      "spans": [[19,26],[60,101]],
+      "facts": "Camera perspective is prepared before explicit eye/at/up hal_look_at_f; view times projection is retained separately from view. Visibility uses view coordinates, not perspective/viewport: reject Z>-1, then Z<-10000, signed32 trunc((X*228.506134f)/Z) outside inclusive[-240,240], then the analogous Y outside[-180,180]. Flag40 clears100 and bypasses distance/point/camera. Otherwise playerDist>10000 sets100 and bypasses point/camera; otherwise point visibility sets/clears100."
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "spans": [[460,503]],
+      "facts": "Only the admission prefix of func_8009BF48 is implemented: native GObj hidden or !tangible rejects before visibility mutation; visibility then rejects; only afterward species whitelist admits all integer IDs1..151 plus600,601,602,603,1001,1002,1003,1006,1008,1009,1010,1012,1013,1028,1029,1030,1031,1033,1037,1038. No photo payload fields, pose/animation mapping, model extraction, object collection or membership claim."
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "spans": [[341,389]],
+      "facts": "Exact numeric POKEDEX_MAX151, special egg/controller/effect species IDs, and source actor flags1/40/100. This whitelist is not the narrower report-index mapping."
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "symbols": ["GOBJ_FLAG_HIDDEN"],
+      "facts": "Own-GAME enum GObjFlag defines GOBJ_FLAG_HIDDEN=0x01, distinct from Pokemon flags. Only this semantic constant is consumed; no source object layout is copied."
+    },
+    "src/sys/matrix.c": {
+      "git_blob": "b6c98ec45939cd9e59ef16d7e44868eee5dc250d",
+      "sha256": "a0f4c47c2428b846a171fbb1fe30e8254f7bf67d69e30cb191ad87439f1f7f77",
+      "spans": [[371,433],[791,853],[1148,1179],[1229,1234]],
+      "facts": "Reuses existing privately compiled own-GAME hal_look_at_f, hal_perspective_fast_f and hal_rotate_rpy_translate_f. Explicit up vector is normalized through GAME's look/right/up construction. Perspective passes NULL normalization as in5047F0.c. Independent left-associated four-term native row-matrix multiplication/point transform expresses public guMtxCatF/guMtxXFMF semantics; no SDK producers or duplicate GAME math bodies."
+    }
+  },
+  "native_seam": {
+    "namespace": "isle::actor::photo",
+    "apis": [
+      "prepare_camera(const IsleGameCameraParameters&, Camera&) noexcept -> IsleGameResult",
+      "prepare_camera(IsleGame*, IsleGameCamera*, Camera&) noexcept -> IsleGameResult",
+      "collision_position(const IsleActorSource&, IsleGameModel*, IsleGameVec3&) noexcept -> IsleGameResult",
+      "point_visible(const Camera&, IsleGameVec3, bool&) noexcept -> IsleGameResult",
+      "update_visibility(IsleActorSource&, const Camera&, IsleGameVec3 canonical_collision, bool&) noexcept -> IsleGameResult",
+      "species_allowed(int32_t) noexcept -> bool",
+      "admitted(IsleActorSource&, const Camera&, IsleGameVec3 canonical_collision, bool&) noexcept -> IsleGameResult"
+    ],
+    "ownership": "Record-consuming leaves require isle_actor_source_get to resolve the identical live canonical bound record, not a copy. Collision additionally uses existing isle_actor_source_validate_model to establish that this actual native model is the bound object's own attachment, then pure model placement/peek getters. Native camera overload uses camera_parameters only, never roll or computing fixed-matrix getters. Caller retains all native lifetimes and excludes concurrent mutation/removal; stale/recycled raw handles are forbidden by existing engine contracts.",
+    "collision": "Native root placement is the canonical AUX transform. RT and RTS are accepted; RT's existing canonical unit scale is used when flag1 consumes it. Disabled/missing AUX returns INVALID_STATE, with no identity invention. Root position/AUX scale are read only for flag1; root rotation/scale/node flags/matrix kinds/fixed caches never affect the calculation. Only the observed row3 is evaluated, not unused full concatenation rows.",
+    "branch_order": "Hidden and !tangible bypass all policy mutation and consumed numeric validation. Flag40 bypasses playerDist/collision/camera validation. Distance>10000 bypasses collision/camera. Point depth rejection bypasses X/Y; X-screen rejection bypasses Y arithmetic/cast. view_projection and view column3 are unused by point visibility. Species testing follows successful visibility publication, including clearing100 for a visible but disallowed species. Ownership guards always precede semantic bypasses.",
+    "errors": "All leaves are nonwaiting/allocation-free; no C wait/fault boundary. IsleGameResult propagates native ownership/argument/state errors. Consumed nonfinite point/view/distance, degenerate/nonfinite camera, overflow or out-of-int32 screen projection returns INVALID_ARGUMENT. Nonfinite/overflow canonical collision or absent AUX returns INVALID_STATE. Every error preserves all outputs and source flags. Nonfinite unconsumed branch fields are intentionally not validated. Signed32 projection is guarded at inclusive-2147483648/exclusive2147483648 before truncation, never clamped or mapped to invisible.",
+    "camera_domain": "Uses the existing native finite perspective domain:0<fovy<180,aspect>0,near>0,far>near,scale>0. Degenerate explicit look-at and fast-trig zero-sine/nonfinite results are explicit errors. No fixed16.16, GPU renderability, viewport, roll or renderer-budget checks. Finite negative playerDist retains source comparison semantics; consumed nonfinite distance is an explicit safe-domain error.",
+    "parent_integration_required": "Integrated sole native IsleActorSource.collPosition and Owner::refresh_collision_positions source position/clear80 pass; actual scene consumer checks independent actual-data collision and camera predicate oracles in all3 configurations. Existing Owner archive compiles these leaves once under strict source FP. Real sceneRoot0 kind1/priority2 scheduling, detector-prefix camera/membership projection and source CopyInfo remain tracked prerequisites; full pairphysics/photo payload/Player/gameplay not inferred."
+  },
+  "build_handoff": {
+    "sources": ["src/actor_photo_eligibility.cpp"],
+    "include_directories": ["src","include"],
+    "dependencies": [
+      "Existing native engine, actor_source binding and actor_source_owner_bridge ownership validator",
+      "Existing privately admitted own-GAME float matrix object exporting hal_rotate_rpy_translate_f,hal_look_at_f,hal_perspective_fast_f; do not compile matrix definitions twice",
+      "Existing actor owner/control link closure if required by the current actor_source_owner_bridge object"
+    ],
+    "compile_options": ["C++20","-frounding-math","-fno-fast-math","-ffp-contract=off"],
+    "msvc_compile_options": ["/fp:strict"],
+    "test_recipe": "Integrated actor-photo-eligibility-tests ordinary CTest target links existing isle-actor-owner/native engine/private math exactly once. All50 contracts pass Debug/Release/ClangASanUBSan. Tests require no ROM, GPU, extraction, source-text oracle or synthetic callback services.",
+    "tests": "Authored independent analytic collision vectors cover nonuniform/negative AUX scales, unscaled collisionOffset, AUX RT versus root local order, three noncommuting rotations, flag1, ignored root R/S/native flags, native pose mutation, missing AUX, consumed overflow/nonfinite inputs, actual record/model ownership, pure cache/arena invariance. Camera analytic view/NDC/depth cases cover explicit-up versus roll, view-times-projection order/eye translation, native getter path, render-fixed-bound independence, degenerate/overflow/fast-trig domains and atomicity. Point regressions cover both inclusive depth planes and nextafter outside, positive/zero Z, both signs of inclusive/truncated screen windows, exact int32 endpoints and neighboring values, cast/multiply/view overflow, unused projection/fourth column, depth-before-X and X-before-Y validation. Actual bound-record policy covers distance10000/nextafter, flag40 priority/clear100, far-distance bypass, point flag effects, negative distance, numeric error atomicity, hidden/intangible-before-mutation, nonzero tangible/unrelated native flags, exhaustive ordinary/special/hole species membership and visibility-before-species mutation."
+  },
+  "qualification": "Parent production integration, 50/50 Debug/Release/ClangASanUBSan CPU contracts and complete actual source scene/predicate CPU plus unchanged full source/GPU consumers passed. Exact scopes/identities in beach-magikarp-scene-inputs.json. Worker ran no build/runtime/ROM/devices. Native binary32/host-libm scope is not Original numerical parity, source manager scheduling or full photograph/gameplay qualification."
+}

@@ -4,6 +4,7 @@
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.11.1",
   "scope": "Parent-executed genuine native Magikarp129 source FSM/path/Ground factory and same-Owner common1003 AddAtGeo emission passed actual-ROM CPU consumers in GCC Debug/Release and Clang ASan+UBSan. Complete previous common acceptance remains intact. No gated composed GPU eligibility/focus, Item physics, fullgame, Original parity or private Windows11 execution inferred.",
+  "canonical_record_allocator_regression": "The initial v4 admission archives below remain retained at their exact bytes. Current collPosition record extension/shared Owner::add_one factoring is requalified by all complete actual Magikarp/common consumers in Debug/Release/ClangASanUBSan; exact nine CPU plus three unchanged GPU run identities are in beach-magikarp-scene-inputs.json. No original source cohort narrowed.",
   "authority": "Exact pinned own-GAME immutable stage / Git object database; no dirty decomp, SDK producer bodies/headers/layouts, disassembly or console object layout imported.",
   "numeric_policy": {
     "PI": "Unsuffixed C double literal3.14159265358979323846 in the private generated owner unit; source randRange(360)*PI/180.0f expression/order retained with final float yaw publication.",
@@ -100,10 +101,10 @@
   },
   "native_support": {
     "src/actor_owner.hpp": {
-      "sha256": "c247cdf0a2dbbbeab7a5d6fb5691a746114056ae1f789c0284d2fa00f48387d6"
+      "sha256": "4a554ef7a557deaee22f2de5f97f8c15b5822c9cd681c7d3f602e5b2ebae5d75"
     },
     "src/actor_owner.cpp": {
-      "sha256": "bb7ad61b4fd0f909691f0a637789692c42b9514ee06b906435bd8df5bd1c1768"
+      "sha256": "132272bd5da0726af4b84fc05438e2cec39c5befac1105019771fa3736aa823d"
     },
     "src/actor_owner_source.h": {
       "sha256": "c13a8658cb70548d3b84b4ca1ed2175b6047143bd7af1861b33f5a9530755652"
@@ -115,7 +116,7 @@
       "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "698ccd62389d19d8f9011053bfe7506fc8c2f58fb33db09a78a8622fc5aee1cd"
+      "sha256": "b8d91a6c9b4386d034ed7f09560f50c64379ca06551dd473c97d2d7e443219f7"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
       "sha256": "d00ad9f9fb4e850c00687f8e99235eabd1166d6f15791f2445d3a76716683dfc"

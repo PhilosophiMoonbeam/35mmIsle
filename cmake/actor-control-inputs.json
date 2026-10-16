@@ -33,7 +33,7 @@
   },
   "native_support": {
     "src/actor_source.h": {
-      "sha256": "4555788cecc2f03190e9f5bb6badbeda627703bd4089191e12c8fdfb04a697e7"
+      "sha256": "0cd60febe8d9581ee74358b520a57b17cafe544b7d2dad1b5fc06f44b11619de"
     },
     "src/actor_source_bridge.c": {
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"

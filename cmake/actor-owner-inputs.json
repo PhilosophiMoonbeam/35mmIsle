@@ -144,16 +144,16 @@
       "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
     },
     "src/actor_owner.hpp": {
-      "sha256": "c247cdf0a2dbbbeab7a5d6fb5691a746114056ae1f789c0284d2fa00f48387d6"
+      "sha256": "4a554ef7a557deaee22f2de5f97f8c15b5822c9cd681c7d3f602e5b2ebae5d75"
     },
     "src/actor_owner.cpp": {
-      "sha256": "bb7ad61b4fd0f909691f0a637789692c42b9514ee06b906435bd8df5bd1c1768"
+      "sha256": "132272bd5da0726af4b84fc05438e2cec39c5befac1105019771fa3736aa823d"
     },
     "src/actor_owner_source.h": {
       "sha256": "c13a8658cb70548d3b84b4ca1ed2175b6047143bd7af1861b33f5a9530755652"
     },
     "src/actor_source.h": {
-      "sha256": "4555788cecc2f03190e9f5bb6badbeda627703bd4089191e12c8fdfb04a697e7"
+      "sha256": "0cd60febe8d9581ee74358b520a57b17cafe544b7d2dad1b5fc06f44b11619de"
     },
     "src/actor_source_bridge.c": {
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
@@ -183,7 +183,7 @@
       "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "698ccd62389d19d8f9011053bfe7506fc8c2f58fb33db09a78a8622fc5aee1cd"
+      "sha256": "b8d91a6c9b4386d034ed7f09560f50c64379ca06551dd473c97d2d7e443219f7"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "acb07a79b9f1332c04740e2a42d6e0dbc91813ce0788531bca5ee3ac720d2ee4"
@@ -192,8 +192,8 @@
       "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"
     }
   },
-  "integration_hash_authority": "Main refreshes current cross-file native_support hashes after ownership release. Historical baseline proofs remain qualified to their archived bytes; current v4 common-source executions are recorded separately here and new Magikarp execution in magikarp-owner-inputs.json.",
-  "current_v4_common_cpu": {"common_debug":{"capture_root":"/home/bbferko/35mmisle-common-source-v4-cpu-j6umxu6r","binary_sha256":"f1ece045056f3b0ba660da83ba88408fd9577e00df77a301b3ae05019346cb02","source_archive_sha256":"97e46b931abc6b450f1ea76fad9ebdefad836129657e544336e9ae219e47dca0","elapsed_seconds":2.3904883021023124,"terminal_count":26,"created_task_count":25,"absent_tracer_and_task_count":27,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"common_asan":{"capture_root":"/home/bbferko/35mmisle-common-asan-cpu-b8xppoxl","binary_sha256":"42127e310e4e84f9a9e9375a962a7cb7a0102ec4576a170db8dda321cc4378f9","source_archive_sha256":"acddc2e42e494fd860ef874588a24e688462138d589adf3d1f5c853ea1b817f2","elapsed_seconds":7.320791418082081,"terminal_count":26,"created_task_count":25,"absent_tracer_and_task_count":27,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}},
+  "integration_hash_authority": "Main refreshes current native_support hashes after release; every historical proof qualifies its exact archived bytes. Pre-collision v4 common proofs are retained below; current canonical-record/shared-allocator complete Debug/Release/ASan common and Magikarp regressions are in beach-magikarp-scene-inputs.json.",
+  "pre_collision_v4_common_cpu": {"common_debug":{"capture_root":"/home/bbferko/35mmisle-common-source-v4-cpu-j6umxu6r","binary_sha256":"f1ece045056f3b0ba660da83ba88408fd9577e00df77a301b3ae05019346cb02","source_archive_sha256":"97e46b931abc6b450f1ea76fad9ebdefad836129657e544336e9ae219e47dca0","elapsed_seconds":2.3904883021023124,"terminal_count":26,"created_task_count":25,"absent_tracer_and_task_count":27,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"common_asan":{"capture_root":"/home/bbferko/35mmisle-common-asan-cpu-b8xppoxl","binary_sha256":"42127e310e4e84f9a9e9375a962a7cb7a0102ec4576a170db8dda321cc4378f9","source_archive_sha256":"acddc2e42e494fd860ef874588a24e688462138d589adf3d1f5c853ea1b817f2","elapsed_seconds":7.320791418082081,"terminal_count":26,"created_task_count":25,"absent_tracer_and_task_count":27,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}},
   "ownership": {
     "canonical_record": "One guarded IsleActorSource in stable native Owner slot; owner points directly to that slot. Existing full InstanceHandle pool/slot/incarnation is the only generation identity.",
     "resources": "Immutable ActorResources precomputes flat DFS model/material bindings, retaining actual source ARRAY identity and all NULL levels.",
@@ -224,7 +224,7 @@
   "build_recipe": {
     "prepare": "python3 -B tools/prepare_actor_control.py --repository PINNED_GAME_GIT --manifest cmake/actor-control-inputs.json --output BUILD/generated/isle_actor_control.c --owner-output BUILD/generated/isle_actor_owner.c --evidence BUILD/isle-actor-control-inputs.json",
     "core_target": "Keep original six generated controls + src/actor_source_bridge.c in isle-engine; do NOT compile all21 into the same archive object or create an engine-to-owner link dependency.",
-    "owner_target": "add_library(isle-actor-owner STATIC src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h src/actor_source_owner_bridge.c BUILD/generated/isle_actor_owner.c)",
+    "owner_target": "add_library(isle-actor-owner STATIC src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h src/actor_photo_eligibility.cpp src/actor_photo_eligibility.hpp src/actor_source_owner_bridge.c BUILD/generated/isle_actor_owner.c)",
     "public_dependencies": [
       "isle-engine",
       "isle-actor-producer",

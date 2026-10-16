@@ -33,6 +33,7 @@ typedef struct IsleActorSource {
     const void* path;
     const void* forbiddenGround;
     IsleGameVec3 pos1, targetPos, euler, collisionOffset;
+    IsleGameVec3 collPosition;     /* Sole canonical source collision point. */
     float collisionRadius, playerDist, interactionDist;
     int32_t behavior;
     struct { int32_t field1; } miscVars[7];

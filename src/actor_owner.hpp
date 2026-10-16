@@ -90,8 +90,16 @@ public:
     Owner(const Owner&) = delete;
     Owner& operator=(const Owner&) = delete;
     SpawnResult spawn(const SpawnRequest&) noexcept;
+    // Shared source getFreePokemonId cursor/search, including unrelated link3
+    // objects and occupied inclusive-max fallback. Allocation failures consume
+    // the cursor; reset does not reset it. No alternate scene allocator.
+    SpawnResult add_one(std::size_t definition, world::Block*, world::Block* reference,
+                        const world::Spawn&) noexcept;
     OwnerStatus set_animation(menu::animation::InstanceHandle, const beach::ActorAnimationHeader*, float start = 0, bool force = false) noexcept;
     OwnerStatus step_animation(menu::animation::InstanceHandle) noexcept;
+    // Source global collision pass's position/flag80 refresh only. Caller owns
+    // its priority2 scene boundary; pair collision/command26/walking is separate.
+    OwnerStatus refresh_collision_positions() noexcept;
     OwnerStatus set_local(menu::animation::InstanceHandle, std::size_t node, const menu::animation::Transform&) noexcept;
     OwnerStatus set_placement(menu::animation::InstanceHandle, const IsleGameModelTransform&) noexcept;
     OwnerStatus trigger_common1003(menu::animation::InstanceHandle, menu::Vec3 position) noexcept;

@@ -275,10 +275,16 @@
       "surfaces": "Five actual640x480 GL window captures inspected after lossless PPM-to-PNG conversion; Name has three clean instruction lines/inline A and early Oak dialogue is contiguous.",
       "scope": "Real startup/Title/menu/Name/Oak and source course0 request, not gameplay. Owned software input, diagnostic-disabled Host and checked SDL dummy output, no physical/hearing claim."
     },
-    "CPU_contracts": {
+    "pre_collision_CPU_contracts": {
       "Debug": {"passed":49,"artifact":"7532"},
       "Release_full_RDP_enabled": {"passed":49,"artifact":"7560"},
       "Clang_ASan_UBSan": {"passed":49,"artifact":"7562"}
+    },
+    "canonical_collision_record_regression": {
+      "source_manifest": "beach-magikarp-scene-inputs.json",
+      "runs": ["composed_debug", "composed_asan", "six_debug"],
+      "CPU_contracts": {"Debug":{"passed":50,"artifact":"7609"},"Release":{"passed":50,"artifact":"7613"},"Clang_ASan_UBSan":{"passed":50,"artifact":"7617"}},
+      "scope": "All original12common/fullsixActor GPU acceptance unchanged after canonical source record extension; five composed surfaces byte-identical to prior directly inspected surfaces. Exact archive/executable/closed-tree identities in referenced manifest; no additional native species FSM, source membership projection or genuine combined Magikarp focus inference."
     },
     "independent_reviews": {
       "native_ownership": "No actionable findings: source-only FIFO/credits/joins/retention/callback/wait/fault/rollback/self-replacement/canonical pose and borrower review.",

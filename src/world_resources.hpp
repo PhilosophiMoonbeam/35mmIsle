@@ -4,6 +4,8 @@
 #include "35mmisle/engine.h"
 #include "beach_world_resources.hpp"
 #include "menu_resources.hpp"
+#include "model_asset_closure.hpp"
+#include <optional>
 #include <limits>
 
 namespace isle::world {
@@ -64,11 +66,11 @@ public:
     const HeightMap& height_map() const noexcept { return height_map_; }
     std::span<const CollisionModel> collision_models() const noexcept { return collision_models_; }
     std::span<const StaticDefinition> static_definitions() const noexcept { return static_definitions_; }
-    std::span<const rom::GuestView> installation_spans() const noexcept { return installation_; }
-    std::span<const menu::DisplayList> display_lists() const noexcept { return lists_; }
-    std::span<const menu::VertexLoad> vertex_loads() const noexcept { return vertices_; }
-    std::span<const menu::ImageLoad> image_loads() const noexcept { return images_; }
-    std::span<const menu::DynamicMaterialCall> dynamic_material_calls() const noexcept { return dynamic_calls_; }
+    std::span<const rom::GuestView> installation_spans() const noexcept { return closure_->installation_spans(); }
+    std::span<const menu::DisplayList> display_lists() const noexcept { return closure_->display_lists(); }
+    std::span<const menu::VertexLoad> vertex_loads() const noexcept { return closure_->vertex_loads(); }
+    std::span<const menu::ImageLoad> image_loads() const noexcept { return closure_->image_loads(); }
+    std::span<const menu::DynamicMaterialCall> dynamic_material_calls() const noexcept { return closure_->dynamic_material_calls(); }
     void install(std::span<std::byte>, std::span<const beach::RamReservation> = {}) const;
     void require_live() const;
 private:
@@ -85,11 +87,7 @@ private:
     HeightMap height_map_;
     std::vector<CollisionModel> collision_models_;
     std::vector<StaticDefinition> static_definitions_;
-    std::vector<rom::GuestView> installation_;
-    std::vector<menu::DisplayList> lists_;
-    std::vector<menu::VertexLoad> vertices_;
-    std::vector<menu::ImageLoad> images_;
-    std::vector<menu::DynamicMaterialCall> dynamic_calls_;
+    std::optional<model_assets::Closure> closure_;
     friend struct ResourceBuilder;
 };
 Vec3 path_position(const menu::AnimationPath&, float time);

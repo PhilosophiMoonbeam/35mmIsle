@@ -19,28 +19,11 @@ constexpr std::array<std::uint8_t, 20> admitted_sha1{
 void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
-rom::GuestView view(const rom::Snapshot& snapshot, std::uint32_t address,
-                    std::size_t size, std::size_t alignment = 4) {
-    require(size && address % alignment == 0, "Misaligned/empty world resource");
-    std::size_t begin = 0, end = 0;
-    std::uint32_t base = 0;
-    if (address >= 0x8011b050 && address < 0x801b02f0) {
-        begin = 0xa74e0; end = 0x13c780; base = 0x8011b050;
-    } else if (address >= 0x800edd40 && address < 0x800ee104) {
-        // Exact GAME common default collider/hitbox records, not world code.
-        begin = 0x6b4f0; end = 0x6b8b4; base = 0x800edd40;
-    } else if (address >= 0x802ce1b0 && address < 0x80318f08) {
-        // Beach's initialized height patch/tree/root records only.
-        begin = 0x566220; end = 0x5b0f78; base = 0x802ce1b0;
-    } else throw std::runtime_error("World resource outside admitted GAME data mappings");
-    const auto delta = static_cast<std::size_t>(address - base);
-    require(delta <= end - begin && size <= end - begin - delta,
-            "World resource extent escapes admitted mapping");
-    const auto bytes = snapshot.canonical();
-    require(begin + delta <= bytes.size() && size <= bytes.size() - begin - delta,
-            "World resource extent escapes Snapshot");
-    return {address, begin + delta, bytes.subspan(begin + delta, size)};
-}
+constexpr std::array<model_assets::Mapping, 3> mappings{{
+    {0x8011b050, 0xa74e0, 0x13c780 - 0xa74e0},
+    {0x800edd40, 0x6b4f0, 0x6b8b4 - 0x6b4f0},
+    {0x802ce1b0, 0x566220, 0x5b0f78 - 0x566220}
+}};
 float finite(const rom::GuestView& wire, std::size_t offset) {
     const auto result = wire.f32(offset);
     require(std::isfinite(result), "Nonfinite GAME world scalar");
@@ -64,9 +47,9 @@ void disjoint(const rom::GuestView& wire, beach::RamReservation r) {
 
 struct ResourceBuilder {
     Resources& out;
-    const rom::Snapshot& snapshot;
+    const model_assets::Reader& reader;
     rom::GuestView at(std::uint32_t address, std::size_t size, std::size_t alignment = 4) const {
-        return view(snapshot, address, size, alignment);
+        return reader.view(address, size, alignment);
     }
     std::size_t path(std::uint32_t address) {
         if (!address) return no_index;
@@ -363,146 +346,13 @@ struct ResourceBuilder {
                 std::all_of(seen_patches.begin(),seen_patches.end(),[](auto v){return v == 1;}),
                 "Height resource extent contains unreachable records");
     }
-    struct ImageState {
-        std::span<const std::uint32_t> sources;
-        std::uint32_t single_source = 0;
-        std::uint8_t format = 0, size = 0;
-        std::uint16_t width = 0;
-    };
-    std::vector<std::uint32_t> active_lists;
-    std::size_t command_visits = 0;
-    void image_load(const ImageState& state, std::uint32_t command, std::size_t bytes, menu::ImageKind kind) {
-        require(!state.sources.empty() && bytes, "Image load without source");
-        for (const auto address : state.sources) {
-            const auto wire = at(address,bytes,8);
-            const auto old = std::find_if(out.images_.begin(),out.images_.end(),[&](const auto& image) {
-                return image.command_identity == command && image.wire.guest_address == address &&
-                       image.wire.bytes.size() == bytes && image.kind == kind;
-            });
-            if (old == out.images_.end()) {
-                out.images_.push_back({wire,command,kind,state.format,state.size,state.width});
-                out.installation_.push_back(wire);
-            }
-        }
-    }
-    void dynamic_call(std::uint32_t command, std::uint32_t target,
-                      std::span<const std::size_t> materials, ImageState& image) {
-        require((target & 0xffffffe7u) == 0x0e000000u && !(target & 7u), "Invalid dynamic material slot");
-        const auto slot = (target & 0xffffffu) / 8;
-        require(slot < materials.size(), "Dynamic material call lacks native attachment");
-        const auto index = materials[slot];
-        const auto& material = out.materials_[index];
-        const auto old = std::find_if(out.dynamic_calls_.begin(),out.dynamic_calls_.end(),[&](const auto& c) {
-            return c.command_identity == command && c.segmented_target == target && c.material_index == index;
-        });
-        if (old == out.dynamic_calls_.end()) out.dynamic_calls_.push_back({command,target,index});
-        const auto flags = material.flags ? material.flags : 0xa1;
-        require(!(flags & 4), "Beach material unexpectedly owns dynamic palette");
-        if (flags & (0x10 | 2)) {
-            image.sources = material.images; image.format = material.auxiliary_format;
-            image.size = static_cast<std::uint8_t>(material.auxiliary_size_code == 3 ? 3 : 2); image.width = 1;
-            if (flags & (0x10 | 1)) {
-                const auto bytes = (static_cast<std::size_t>(material.block_width) * material.block_height *
-                                    (4u << material.auxiliary_size_code) + 7) / 8;
-                image_load(image,command,bytes,menu::ImageKind::texture_block);
-            }
-        }
-        if (flags & (0x10 | 1)) {
-            image.sources = material.images; image.format = material.format;
-            image.size = static_cast<std::uint8_t>(material.size_code == 3 ? 3 : 2); image.width = 1;
-        }
-    }
-    void display_list(std::uint32_t address, std::span<const std::size_t> materials, ImageState& image) {
-        require(active_lists.size() < 32 && std::find(active_lists.begin(),active_lists.end(),address) == active_lists.end(),
-                "Cyclic/overdeep world GBI graph");
-        active_lists.push_back(address);
-        std::size_t count = 0;
-        for (;;) {
-            require(++command_visits <= 1048576, "World GBI closure exceeds finite traversal bound");
-            const auto command64 = static_cast<std::uint64_t>(address) + count * 8;
-            require(command64 <= 0xffffffffu, "World GBI command overflow");
-            const auto command = static_cast<std::uint32_t>(command64);
-            const auto w = at(command,8,8);
-            const auto w0 = w.u32(0), w1 = w.u32(4);
-            ++count; bool done = false;
-            switch (w0 >> 24) {
-            case 1: {
-                const auto n = (w0 >> 12) & 255, end = (w0 & 4095) >> 1;
-                require(n && end >= n && end <= 32 && (w0 & 0xfff00fffu) == (0x01000000u | end * 2), "Invalid world vertex cache range");
-                const auto wire = at(w1,n*16,8);
-                const auto old = std::find_if(out.vertices_.begin(),out.vertices_.end(),[&](const auto& v){return v.command_identity == command;});
-                if (old == out.vertices_.end()) {
-                    out.vertices_.push_back({wire,command,static_cast<std::uint8_t>(end-n),static_cast<std::uint8_t>(n)});
-                    out.installation_.push_back(wire);
-                }
-                break;
-            }
-            case 0xde:
-                require(w0 == 0xde000000 || w0 == 0xde010000, "Malformed world G_DL");
-                if ((w1 >> 24) == 0x0e) dynamic_call(command,w1,materials,image);
-                else display_list(w1,materials,image);
-                done = w0 == 0xde010000; break;
-            case 0xdf: require(w0 == 0xdf000000 && !w1,"Malformed world ENDDL"); done = true; break;
-            case 0xfd:
-                at(w1,1,8); image.single_source = w1; image.sources = {&image.single_source,1};
-                image.format = static_cast<std::uint8_t>((w0 >> 21) & 7);
-                image.size = static_cast<std::uint8_t>((w0 >> 19) & 3); image.width = static_cast<std::uint16_t>((w0 & 4095) + 1);
-                require(image.format <= 4 && !(w0 & 0x0007f000u),"Malformed world SETTIMG"); break;
-            case 0xf0: {
-                require(w0 == 0xf0000000 && image.format == 0 && image.size == 2 && image.width == 1,"Invalid world TLUT source");
-                const auto entries = ((w1 >> 14) & 1023) + 1;
-                require(entries <= 256 && !(w1 & 0xf0003fffu),"Malformed world TLUT count");
-                image_load(image,command,entries*2,menu::ImageKind::palette); break;
-            }
-            case 0xf3: {
-                require(!(w0 & 0xffffffu) && image.width == 1,"Unsupported world LOADBLOCK origin");
-                const auto units = ((w1 >> 12) & 4095) + 1;
-                image_load(image,command,(static_cast<std::size_t>(units)*(4u<<image.size)+7)/8,menu::ImageKind::texture_block); break;
-            }
-            case 0xf4: {
-                const auto sl=(w0>>12)&4095,tl=w0&4095,sh=(w1>>12)&4095,th=w1&4095;
-                require(sh>=sl && th>=tl && (sl|tl|sh|th)%4==0 && image.width && (sh>>2)<image.width,"Invalid world LOADTILE extent");
-                const auto texels=static_cast<std::size_t>(th>>2)*image.width+(sh>>2)+1;
-                image_load(image,command,(texels*(4u<<image.size)+7)/8,menu::ImageKind::texture_tile); break;
-            }
-            case 0xdb:
-                require((w0&0xffff0000u)==0xdb0a0000u && ((w0&65535)==0 || (w0&65535)==4 ||
-                        (w0&65535)==24 || (w0&65535)==28),"Unhandled world address-bearing MOVEWORD"); break;
-            case 0x02: case 0x03: case 0x05: case 0x06: case 0xd7: case 0xd9:
-            case 0xe2: case 0xe3: case 0xe6: case 0xe7: case 0xe8:
-            case 0xf2: case 0xf5: case 0xf9: case 0xfa: case 0xfb: case 0xfc: break;
-            default: throw std::runtime_error("Unhandled world GBI resource opcode at " + std::to_string(command));
-            }
-            if (done) break;
-        }
-        active_lists.pop_back();
-        const auto old = std::find_if(out.lists_.begin(),out.lists_.end(),[&](const auto& l){return l.wire.guest_address==address;});
-        if (old == out.lists_.end()) {
-            const auto wire = at(address,count*8,8); out.lists_.push_back({wire}); out.installation_.push_back(wire);
-        } else require(old->wire.bytes.size()==count*8,"State-dependent world list extent");
-    }
     void closure() {
-        for (const auto& model : out.models_) for (const auto& node : model.nodes) for (const auto& payload : node.payloads) {
-            ImageState image{};
-            if (payload.pre_list) display_list(payload.pre_list,node.materials,image);
-            if (payload.draw_list) display_list(payload.draw_list,node.materials,image);
-        }
-        ImageState image{}; display_list(out.sky_.display_list_guest,{},image);
-        auto& spans = out.installation_;
-        std::sort(spans.begin(),spans.end(),[](const auto& a,const auto& b){return a.guest_address<b.guest_address;});
-        std::vector<rom::GuestView> merged; merged.reserve(spans.size());
-        for (const auto& span : spans) {
-            if (!merged.empty()) {
-                auto& last=merged.back(); const auto end=static_cast<std::uint64_t>(last.guest_address)+last.bytes.size();
-                if (span.guest_address<=end) {
-                    const auto next=static_cast<std::uint64_t>(span.guest_address)+span.bytes.size();
-                    if (next>end) last=at(last.guest_address,static_cast<std::size_t>(next-last.guest_address),1);
-                    continue;
-                }
-            }
-            merged.push_back(span);
-        }
-        spans=std::move(merged);
+        std::vector<model_assets::ModelPlan> plans;
+        plans.reserve(out.models_.size());
+        for (const auto& model : out.models_) plans.push_back({&model, {}});
+        const std::array roots{out.sky_.display_list_guest};
+        out.closure_.emplace(reader, plans, out.materials_, roots);
+        out.closure_->require_complete();
     }
 };
 
@@ -515,7 +365,8 @@ Resources::Resources(const rom::Snapshot& snapshot)
     auto descriptors = beach::world_descriptors(snapshot);
     setup_=descriptors.world; sky_=descriptors.sky; primary_count_=descriptors.primary.size();
     require(primary_count_==8 && descriptors.secondary.size()==4,"Wrong Beach descriptor groups");
-    ResourceBuilder builder{*this,snapshot,{},0};
+    const model_assets::Reader reader(snapshot, mappings);
+    ResourceBuilder builder{*this, reader};
     builder.definitions();
     blocks_.reserve(12);
     for (const auto group : {std::span<const beach::BlockMetadata>(descriptors.primary),
@@ -551,7 +402,8 @@ void Resources::install(std::span<std::byte> ram, std::span<const beach::RamRese
         throw std::invalid_argument("World installation aliases Snapshot");
     for (const auto r:reservations) valid_reservation(r);
     // Validate the entire union before the first byte is touched.
-    for (const auto& span:installation_) {
+    const auto installation = closure_->installation_spans();
+    for (const auto& span:installation) {
         const auto offset=static_cast<std::size_t>(span.guest_address-ram_base);
         require(span.guest_address>=ram_base && offset<=ram.size() && span.bytes.size()<=ram.size()-offset &&
                 span.rom_offset<=source.size() && span.bytes.size()<=source.size()-span.rom_offset &&
@@ -559,7 +411,7 @@ void Resources::install(std::span<std::byte> ram, std::span<const beach::RamRese
         for (const auto r:beach::producer_reservations) disjoint(span,r);
         for (const auto r:reservations) disjoint(span,r);
     }
-    for (const auto& span:installation_) {
+    for (const auto& span:installation) {
         const auto offset=static_cast<std::size_t>(span.guest_address-ram_base);
         for (std::size_t i=0;i<span.bytes.size();++i) ram[(offset+i)^3u]=span.bytes[i];
     }

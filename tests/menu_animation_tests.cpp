@@ -144,6 +144,39 @@ void callbacks_receivers_and_atomic_errors() {
     auto silent = fixture.create(); check(bool(silent),"sourceNULL callback graph admitted");
     if (silent) check(bool(silent.runtime->step_model(fixture.instances[0])) && silent.runtime->events().empty(),"sourceNULL opcode16 consumed without dispatch");
 }
+void texture_track_time_offset() {
+    Stream shifted;
+    shifted.cmd(4,2,4,{f(4)}); shifted.cmd(12,2,1);
+    shifted.cmd(2,0,4); shifted.cmd(0,0,0);
+    Stream baseline;
+    baseline.cmd(4,2,4,{f(4)}); baseline.cmd(2,0,4); baseline.cmd(0,0,0);
+    std::array<std::byte,0x78> material_bytes{};
+    Fixture fixture;
+    fixture.models[0].animation_speed = 1;
+    fixture.models[0].nodes[0].animation = m::no_index;
+    fixture.models[0].nodes[0].materials = {0,0};
+    fixture.models[0].nodes[0].material_animations = {0,1};
+    fixture.materials.resize(1);
+    fixture.materials[0].wire = {0x3c00,0,material_bytes};
+    fixture.animations = {shifted.view(m::AnimationKind::texture,0x3a00),
+                          baseline.view(m::AnimationKind::texture,0x3b00)};
+    auto made = fixture.create();
+    check(bool(made),"texture opcode12 must compile through the shared animator");
+    if (!made) return;
+    auto& runtime = *made.runtime;
+    const auto handle = fixture.instances[0];
+    check(bool(runtime.step_model(handle)) &&
+          runtime.model(handle).materials[0].parameters[0] == 1 &&
+          runtime.model(handle).materials[1].parameters[0] == 0 &&
+          runtime.model(handle).materials[0].clock.time_left == 4 &&
+          runtime.model(handle).materials[1].clock.time_left == 4,
+          "texture opcode12 advances only selected track time, not the source wait");
+    check(bool(runtime.step_model(handle)) &&
+          runtime.model(handle).materials[0].parameters[0] == 2 &&
+          runtime.model(handle).materials[1].parameters[0] == 1,
+          "one-tick texture track offset persists during later interpolation");
+}
+
 void materials_and_camera() {
     Stream color;
     color.cmd(19,1,0,{0x10203040}); color.cmd(20,1,2,{0x90a0b0c0}); color.cmd(0,0,0);
@@ -817,6 +850,7 @@ void malformed_streams_reject_unpublished() {
 int main() {
     persistent_linear_and_end(); cubic_wait_flags_and_zero_duration(); callbacks_receivers_and_atomic_errors();
     materials_and_camera(); rates_and_source_restart(); model_binding_switches_and_instances();
+    texture_track_time_offset();
     switched_callbacks_and_atomicity(); material_binding_null_and_initial_reset(); malformed_streams_reject_unpublished();
     explicit_pool_reuse_and_retirement();
     loop_timers_tracks_receivers_and_reuse();

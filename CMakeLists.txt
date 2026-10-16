@@ -224,6 +224,16 @@ if(TARGET isle-rom-snapshot)
     target_link_libraries(isle-menu-resources PUBLIC isle-rom-snapshot isle-sprite isle-vpk0)
     isle_target_options(isle-menu-resources)
 
+    add_library(isle-model-assets STATIC src/model_asset_closure.cpp src/model_asset_closure.hpp
+        src/source_matrix_configuration.hpp)
+    target_include_directories(isle-model-assets PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(isle-model-assets PUBLIC isle-rom-snapshot)
+    isle_target_options(isle-model-assets)
+
+    add_library(isle-beach-actor-resources STATIC src/beach_actor_resources.cpp src/beach_actor_resources.hpp)
+    target_link_libraries(isle-beach-actor-resources PUBLIC isle-model-assets)
+    isle_target_options(isle-beach-actor-resources)
+
     add_library(isle-menu-animation STATIC src/menu_animation.cpp src/menu_animation.hpp
         src/menu_animation_path.cpp)
     target_link_libraries(isle-menu-animation PUBLIC isle-menu-resources)
@@ -323,7 +333,7 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/world_movement.cpp src/world_movement.hpp
             src/world_producer.cpp src/world_producer.hpp)
         target_link_libraries(isle-world PUBLIC isle-scene isle-menu-animation
-            isle-beach-world-resources isle-menu-model-producer isle-graphics-task)
+            isle-beach-world-resources isle-model-assets isle-menu-model-producer isle-graphics-task)
         isle_target_options(isle-world)
 
         foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
@@ -470,6 +480,19 @@ if(BUILD_TESTING)
         isle_target_options(game-audio-tests)
         add_test(NAME game-audio-tests COMMAND game-audio-tests)
         set_tests_properties(game-audio-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    endif()
+    if(TARGET isle-model-assets)
+        add_executable(model-asset-closure-tests tests/model_asset_closure_tests.cpp)
+        target_link_libraries(model-asset-closure-tests PRIVATE isle-model-assets)
+        isle_target_options(model-asset-closure-tests)
+        add_test(NAME model-asset-closure-tests COMMAND model-asset-closure-tests)
+        set_tests_properties(model-asset-closure-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    endif()
+    if(TARGET isle-beach-actor-resources)
+        add_executable(beach-actor-resources-rom-smoke tests/beach_actor_resources_rom_smoke.cpp)
+        target_link_libraries(beach-actor-resources-rom-smoke PRIVATE
+            isle-beach-actor-resources isle-beach-world-resources isle-menu-animation)
+        isle_target_options(beach-actor-resources-rom-smoke)
     endif()
     if(TARGET isle-menu-animation)
         add_executable(menu-animation-tests tests/menu_animation_tests.cpp)

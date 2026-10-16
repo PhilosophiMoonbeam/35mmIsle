@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Constructor-only shared World/Actor immutable GBI resource closure. This is typed data analysis, not guest CPU execution, a source factory implementation, a task-entry image-state assumption, or an all-actor GPU acceptance claim.",
+  "files": ["src/model_asset_closure.hpp", "src/model_asset_closure.cpp", "tests/model_asset_closure_tests.cpp"],
+  "source_files": {
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "facts": [
+        "913-975: Segment14 is rebound only for a nonempty actual MObj attachment list. The generated slot table branches to material commands. Palette SETTIMG precedes optional TLUT loading.",
+        "1009-1052: Auxiliary SETTIMG converts non32 size to16 and optional LOADBLOCK rounds source texels to loader units. Main SETTIMG uses the exact primary paletteBitDepth size field, without the auxiliary conversion. Flags0 defaults to0xA1; primitive-color-only0x200 preserves TIMG.",
+        "1086-1111: TypeA consumes its single root only when flags0.",
+        "1129-1177,1263-1350: TypeB/D tree traversal preserves sibling order. Low flag1 omits this payload but retains child traversal; low flag2 skips the subtree but not siblings. TypeD emits each selected lane in tree order.",
+        "1647-1803: TypeI/J pre-list executes before current material Segment14 binding. TypeJ pre-list is emitted only when its matching draw-list is nonNULL. A node with NULL MObj list does not reset the previous binding. Material generation itself does not execute SETTIMG."
+      ]
+    },
+    "src/sys/gtl.c": {
+      "git_blob": "5b7ed17b40804177dacc5dbfb33283cf7f405175",
+      "facts": "447-623 combines nonempty lanes0,2,1,3. A model's lane0 supplier cannot be assumed immediately adjacent to its lane1 consumer when other objects can interleave. Each model lane is therefore proved against independent symbolic entry registers. This closure does not invent reset/pre-render or framebuffer-detector effects absent an explicit rooted composition."
+    }
+  },
+  "public_packet_abi": [
+    "https://hack64.net/wiki/doku.php?id=f3dex2",
+    "https://ultra64.ca/files/documentation/online-manuals/man/n64man/gsp/gSPBranchLessZ.html"
+  ],
+  "packet_semantics": {
+    "state": "Complete correlated TIMG tuple (value-held direct address or stable immutable material image/palette-set identity, format, exact size, width), actual Segment14 attachment identity, and E1 latch. No self-pointing span copies or independent field unions.",
+    "control": "PUSH returns all callee exits to caller continuation; NOPUSH replaces PC. E1 latches word1;04 validates both vertex-index*5/index*2 encodings and explores taken NOPUSH and untaken continuation. CULL records early-return state at the cull and also follows visible continuation. END returns state. Active cycles, unsupported address-bearing operations, malformed packets and finite-bound exhaustion reject rather than truncate.",
+    "footprints": "LOADBLOCK uses its load-unit count, full incoming size and source-origin prefix. LOADTILE retains source row-stride prefix through the last consumed texel. TLUT validates RGBA16 width1 and exact entry count. Every selected material image is bounded by the same witnessed tuple; no pool, whole-bank copy or NULL image-table scan.",
+    "ownership": "Reader borrows immutable canonical bytes and exact nonoverlapping initialized guest/ROM windows. Closure owns value vectors and no pimpl allocation. Scratch decode/state cache exists only during construction. World removes its former independent GBI walker and four duplicated metadata vectors in favor of optional value-owned Closure.",
+    "incomplete": "Incoming image, Segment14 or branch-target consumers produce explicit command/model/lane obligations. Resource diagnostics may exist, but installation_spans and require_complete reject unless obligations are empty. Caller-provided extra spans require exact mapping/Snapshot provenance before inclusion in the final immutable union."
+  },
+  "source1006_boundary": {
+    "supplier": "Node1 lane1 root80139470 sets TIMG at80139498 before PUSH801394A0 to801394B0. Callee CULL801394D0 cannot bypass that setter; no intervening TIMG and primitive-color-only material preserve it.",
+    "consumer": "Consecutive sibling node2 lane1 LOADBLOCK801395D8 consumes192 units from(source8013DAF8,format4,size2,width1),384 bytes. This is local same-lane dominance, not equal-cull geometry, nearest-texture selection or a later-node/global image union.",
+    "visibility": "Actual all79-header source domain has no opcode15 for1006 nodes1/2. A caller independently admitting node1 omission must retain node2's unresolved incoming-image obligation. Whole-object source hidden filtering omits the entire component."
+  },
+  "authored_contracts": "CULL tuple alternatives; taken/false04 and PUSH caller return; E1 through callee/NOPUSH; SourceJ pre-before-bind; retained Segment14 on NULL attachment; exact primary size; source1006 dominating setter versus independent omission; lane separation; subtree versus sibling flags; TLUT/TILE footprints; packet/map/cycle/command/evaluation/alternative bounds; complete-only installation and extra-span provenance.",
+  "verification": {
+    "cpu_contracts": {"GCC_Debug": "44/44 raw6717", "GCC_Release": "44/44 raw6724", "Clang_ASan_UBSan": "44/44 raw6725"},
+    "independent_review": "No confirmed relational-state, cache, lifetime, source traversal or complete-only installation defect; static review does not replace actual consumers.",
+    "actual_actors": {"root": "native-actor-assets-corrected-8mbfmx8i", "seconds": 0.756, "models": 17, "headers_evaluated": 79, "materials": 33, "programs": 1317, "binary_sha256": "e2aaa29a134e4b77076d5e195462f0cee5d0301bac5a8a69e1260a3c20ab73c0", "archive_sha256": "096d9ea868f8f1bc51b6ac1f0d7df9abc787c9ce57734ab836b514c925dcd7f7", "closure": [1,0,2], "result": "all complete obligations discharged; source1006 actual384-byte predecessor consumer and atomic isolated installation passed"},
+    "actual_World": {"root": "native-shared-assets-world-watxhj2f", "seconds": 8.023, "primary": 8, "secondary": 4, "binary_sha256": "0b36f4116cd3a2d0b2c69034b37efea7039fb67f701891b004028b5699d121bb", "archive_sha256": "960008c868d8a3e9df991fbd473ee03b6b87ced1fcc8ea0986aa9d345a3dc88f", "closure": [78,77,79], "result": "actual RSP/RDP placement, binding, visibility, residency, dirty-camera rejection, guards, leases and joined retirement passed"},
+    "observation": "Stable initial whole-tree closure before each sole cached-text scan; zero known physical/permission attempts and unchanged exact ROM.",
+    "limits": "Not combined World+Actor RAM layout, native actor factories/FSM, actual actor54/48 GPU, sound/FX, gameplay, product entrypoint, Original parity or Windows11 ROM runtime."
+  }
+}

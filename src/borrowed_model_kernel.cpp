@@ -47,10 +47,6 @@ WorldMatrix compose(const WorldMatrix& a, const WorldMatrix& b) {
     finite(out); return out;
 }
 }
-std::array<std::uint8_t,3> select_source_matrix_kinds(std::uint32_t flags,
-    std::array<std::uint8_t,3> stored) noexcept {
-    return flags & 0x10u ? stored : std::array<std::uint8_t,3>{28,0,0};
-}
 Status decode_recipe(std::array<std::uint8_t,3> kinds, std::uint32_t depth_flags,
                      MatrixRecipe& output) noexcept {
     try {

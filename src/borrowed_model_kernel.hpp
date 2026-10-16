@@ -3,6 +3,7 @@
 
 #include "35mmisle/engine.h"
 #include "menu_animation.hpp"
+#include "source_matrix_configuration.hpp"
 
 namespace isle::menu::model {
 struct Command { std::uint32_t w0 = 0, w1 = 0; };
@@ -14,10 +15,6 @@ struct Status {
     std::uint32_t address = 0;
     explicit operator bool() const noexcept { return error == Error::none; }
 };
-// Effective configured kinds are selected by PokemonInitData flags before tree
-// decoding. High tree flags then decompose/override that sequence, in source order.
-std::array<std::uint8_t,3> select_source_matrix_kinds(std::uint32_t flags,
-    std::array<std::uint8_t,3> stored) noexcept;
 enum class RootRecipe { source, translate };
 struct MatrixRecipe {
     std::array<std::uint8_t,3> operations{};

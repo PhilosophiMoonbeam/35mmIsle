@@ -119,7 +119,7 @@ Program compile(const Animation& input, std::span<const AnimationPath> paths) {
         const bool texture = input.kind == AnimationKind::texture;
         require(c.opcode == 0 || c.opcode == 2 || basic ||
                 (model && (c.opcode == 12 || c.opcode == 13 || c.opcode == 15 || c.opcode == 16 || c.opcode == 17)) ||
-                (texture && extra) || ((model || texture) && c.opcode == 14), Error::unsupported, address);
+                (texture && (extra || c.opcode == 12)) || ((model || texture) && c.opcode == 14), Error::unsupported, address);
         require(!extra || !(c.mask & ~0x1fu), Error::unsupported, address);
         if (basic && input.kind == AnimationKind::camera)
             require(!(c.mask & 0x88u), Error::unsupported, address);

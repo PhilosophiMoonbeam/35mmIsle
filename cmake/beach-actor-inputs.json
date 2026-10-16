@@ -1,0 +1,892 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Immutable isle::beach::ActorResources descriptor/catalog data and shared model_assets::Closure. All17 source initializations including common1003 and geometryless1005; all79 headers,33 Texture descriptors,1201 model +116 material programs. Actual shared-animator header evaluation is exercised below; no native actor factory/FSM, camera/task scheduling, actor GPU or full-port completion claim.",
+  "rom": {
+    "size": 16777216,
+    "canonical_order": "big-endian z64",
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc"
+  },
+  "source_files": {
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509"
+    },
+    "include/sys/anim.h": {
+      "git_blob": "1a0178fc52a859eda997ca232e1b063e10f9a4c9",
+      "sha256": "1e0ddc0140d6c05a6d5bb7fdf8db54f1a809fd89cb39be6ce0eb0bde75c5d5dd"
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641"
+    },
+    "include/types.h": {
+      "git_blob": "c7e29e2b16ef978d9c077a43c540b5371a56d8e5",
+      "sha256": "33082990aab6c18243b86371c4f58d4a3b89b96c73ece6fa68d1851b222716bb"
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd"
+    },
+    "src/app_level/4FE330.c": {
+      "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761"
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181"
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8"
+    },
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77"
+    },
+    "src/beach/55C870.c": {
+      "git_blob": "2dd46c1a0bc0a360adc91e578b654e818483e794",
+      "sha256": "688c1b4bc4a71d0fdf8648427f3d44814ae1ac7edad1cc1d230767eef61da266"
+    },
+    "src/beach/55D1C0.c": {
+      "git_blob": "5f8561a9a6faec5ba4dbd42cdbddfa0c9443b04f",
+      "sha256": "88163d542e69d178a26451f2770ef9e7a0e1b3106f09ef91b1eaec92a3568ccb"
+    },
+    "src/beach/55D690.c": {
+      "git_blob": "fb11aab89391a0f904c213fc839aed697d5a5217",
+      "sha256": "74e5c8357f3a68f449f9404df2cbaa0d991a52e7904601f9d4ca0240844268c8"
+    },
+    "src/beach/55DCD0.c": {
+      "git_blob": "551a8f0db19547b7a4ceb47564f47e4badbccbb5",
+      "sha256": "68cddfc1b6e0bfe09b0b4768eb369e2dff173ac96bf8690a7aff4ad3bf7b0e1f"
+    },
+    "src/beach/55F350.c": {
+      "git_blob": "cf84fff65ff498e43e41580d2183bf61731983ae",
+      "sha256": "d25b732838514af48633add85309e475d2301e5f22d3c464155a0316ab470aab"
+    },
+    "src/beach/55FB80.c": {
+      "git_blob": "c7371561341ca5f9fd4de5a38d87b257b54dc6d3",
+      "sha256": "abf4de0e0299169ad63734142446444e509b1b608caec2291e16799f7f56c736"
+    },
+    "src/beach/560320.c": {
+      "git_blob": "88f761d674edcb80e50305bc0be70d960693ed25",
+      "sha256": "99f3e4ed91755b6db8ae29ddb7cf86393c539e5ec91e9251ba79dd1208530735"
+    },
+    "src/beach/560620.c": {
+      "git_blob": "fe72abeb5b19efe52bf00af9aa8871f52f3d4dd3",
+      "sha256": "8c0e9f0847ba8e0575315fa20ac9444529ea1a32ba8cf5ee0d917c3683ece8ce"
+    },
+    "src/beach/560E20.c": {
+      "git_blob": "89d62631f7b7e1111bb90ced6b09d9a6c7fe9436",
+      "sha256": "d3ada3eb7725e463c254e6875b3c6e0846902607960236ed4bec75f2274f7357"
+    },
+    "src/beach/5612B0.c": {
+      "git_blob": "6b3a78bf8fdb4b8611ee96ed6c16ef43303ab89c",
+      "sha256": "dc9841f64bbb87712c3e3606e12ecc4a1be36341671e8d8155a98d5f8074f74e"
+    },
+    "src/beach/561B30.c": {
+      "git_blob": "e0329cbddc9476e5d18c78c957e055f8eec9726f",
+      "sha256": "4d0babdf0b9a78f98d8238f4bec79c1d37437a050e15356d8579aba7212dee21"
+    },
+    "src/beach/562110.c": {
+      "git_blob": "5400237edae3bca52598b4769abfdc1505b23a40",
+      "sha256": "674f43396195db5eb464e52c4bbb20866b0c1068e340f0700cd6fddfecfb8064"
+    },
+    "src/beach/562370.c": {
+      "git_blob": "1326b4fd120353bbe005b8bfa8eeddd3da9228b4",
+      "sha256": "c45b29e4a8e0980c096b5f46c1388fff50430a52b10d064c59c57d6839ff6085"
+    },
+    "src/beach/562BC0.c": {
+      "git_blob": "c67645665414dfe2a93cbcb038bfb06dd34e46ec",
+      "sha256": "f68a107400ca34dab410dd9cb7b0672afffd76131b2e31719e40bfcbb33cbb5e"
+    },
+    "src/beach/563000.c": {
+      "git_blob": "6767e7be06fbd22d95feb129ecd07c08db108d2e",
+      "sha256": "d93896a020941a8222cc58132e2c83951f05f36840a6ca2a4a1cce967d1651ff"
+    },
+    "src/beach/beach.h": {
+      "git_blob": "0aad5edbe49cd130449874b9b3b55941d3b73042",
+      "sha256": "a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc"
+    },
+    "src/beach/butterfree/model.c": {
+      "git_blob": "4abbc1ea10d24797bd6ab4cc8c06d423cb7cd7a0",
+      "sha256": "b41aaf4d75882990eddb04ad05fbbe1769704cad8bb7894aec52ca219690ba62"
+    },
+    "src/beach/butterfree/model_hd.c": {
+      "git_blob": "e731b2fb57e41cb5c5f57bfc9c44c6d2305fc036",
+      "sha256": "445dc19786da776348b5814090a12c1281053e1eecc418171b29ead5cdea4d4a"
+    },
+    "src/beach/chansey/model.c": {
+      "git_blob": "80ad27cc35b234a831757064d073f580adf575cc",
+      "sha256": "8d64148032249614e844cd266270ee4647bb2c1a2eabb735f94e6cc701d03e32"
+    },
+    "src/beach/chansey/model_hd.c": {
+      "git_blob": "8b73617652f8e24e0ff95372a93e9a811316291a",
+      "sha256": "478840df351e5268a53dd531cacf7f61222f15e0517976c3e5d4924f053520cc"
+    },
+    "src/beach/doduo/model.c": {
+      "git_blob": "5809f795b5cbbe928a842ed8412b8a5079ee8b50",
+      "sha256": "ecf0b76f5b9ffe8211767b76018ba381f2f324fcb9ad911ad07640a0b9add5ee"
+    },
+    "src/beach/doduo/model_hd.c": {
+      "git_blob": "e9f20ed3193a64db94b3f8c58b20cf2726a165c0",
+      "sha256": "cfe6ad23fafe31984a5c6f7929080b15237ab08365379a0f7dcd2cf7dacf41b6"
+    },
+    "src/beach/eevee/model.c": {
+      "git_blob": "d098ed8a82ac187baf88ee7dd48ee3a61ad410c6",
+      "sha256": "9ace25c3e7fd94c509b4456ce91ae727335c06949ac647167693413db7857ff0"
+    },
+    "src/beach/eevee/model_hd.c": {
+      "git_blob": "0fa1f9630e78758c8a75fd8ac30dc97e2c2d0344",
+      "sha256": "46bf4d300ba86397a115f912a09a5a88f42828ab82fea4273d577c4a6ee89bd5"
+    },
+    "src/beach/kangaskhan/model.c": {
+      "git_blob": "38b3f31f470b70e60fa484855670024c0243b6bd",
+      "sha256": "3339a133396458a15dd26cb43e4abbad948565699baef8c43a43151c6fd1c1d7"
+    },
+    "src/beach/kangaskhan/model_hd.c": {
+      "git_blob": "4dd2db1597615d4e96da99671944947da964d176",
+      "sha256": "a85d70a382b9f4802882eb51538db67f911ec11fccb1f4e3d9d022c82b446d47"
+    },
+    "src/beach/lapras/model.c": {
+      "git_blob": "a99fa0306e51792fc8a75b521b284d56c1b0c944",
+      "sha256": "27cff046302c6085696d053b6589d61a195b10a7101d4bb02d1a4fe3dd50ebbc"
+    },
+    "src/beach/lapras/model_hd.c": {
+      "git_blob": "b59919561e5183298d0a3434714c22973ca5155b",
+      "sha256": "c5673f36b41e8ea2d9dd692f238314007852703a401329b82014fde859457d66"
+    },
+    "src/beach/meowth/model.c": {
+      "git_blob": "208e6ca87fea52b0c3f0c2f70423258a15b9c2fb",
+      "sha256": "df69618d42317302894c1c2df727265c56c8754ea72a34800fed7b40095eec7f"
+    },
+    "src/beach/meowth/model_hd.c": {
+      "git_blob": "7771e1551fe5ebf819b840fdbeafa1a56b4d02e2",
+      "sha256": "7ff9c2b7d6abea4e2b7135b3fd71030ce43750e0d6f5f829a905d8a8180e7247"
+    },
+    "src/beach/pidgey/model.c": {
+      "git_blob": "3862c7d8053a85389f4a340172cf6d57cf42462e",
+      "sha256": "0b5e7d293ae4b42654e3c601954ba3b1749a8e5e2b59b3a1b3c0ded3a7efe8c0"
+    },
+    "src/beach/pidgey/model_hd.c": {
+      "git_blob": "b45e62cef581599f0bcdd19b740095060e4c7d0e",
+      "sha256": "25e811e68939473b97520623c9a07d0ae291b2fbea479dc863138ffa4057cb18"
+    },
+    "src/beach/scyther/model.c": {
+      "git_blob": "06f70c53a9900686605c593709ae5af753017710",
+      "sha256": "6730d8413713d60bb377889ffeed3cc5ebf68ca1ee547d2f42e3706df88ce76e"
+    },
+    "src/beach/scyther/model_hd.c": {
+      "git_blob": "b44d6bde4dca674528a6c6023a78f51c3f6eb1c3",
+      "sha256": "cf5db2cdf91ea41a6e618ddc164f5250f7af1f9ebae5bff2f4baae1d4f970c58"
+    },
+    "src/beach/snorlax/model.c": {
+      "git_blob": "550909fed96388bf46fadb3be6edfd40b791fc6a",
+      "sha256": "e50d251b627581536d9ae24a763d2aa729e1cc50ba2854f627381dfb6a1886c8"
+    },
+    "src/beach/snorlax/model_hd.c": {
+      "git_blob": "e73420d5dc2e7616f10c3f715688a16a265c3359",
+      "sha256": "70db9c16e62ab6261925880ea38896e82a0c8fdf12ab5931b65fad1ac349e249"
+    },
+    "src/pokemon_common/magikarp/model.c": {
+      "git_blob": "ef39f3e4377744a9aba7c0fd092c585ed847786b",
+      "sha256": "b6be4b76603030d6670e2b49cc868522d6396499abf5ed05499766e6990fe1dd"
+    },
+    "src/pokemon_common/pikachu/model.c": {
+      "git_blob": "5741106db89eac2c9c24ef6655507c70a1eca3b2",
+      "sha256": "253d968de9b246ea96a9859451a08e11a30048797b4dc2b67d7cf463a97a8300"
+    },
+    "src/pokemon_common/pikachu/textures.c": {
+      "git_blob": "81d9dda54bdce26ece2e1206517efecb1d2bea91",
+      "sha256": "2886b760b49b5185098baaf791589540a8f02233b965dc977e6d98ad527bd5d3"
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf"
+    },
+    "src/sys/gtl.c": {
+      "git_blob": "5b7ed17b40804177dacc5dbfb33283cf7f405175",
+      "sha256": "572c963eea665c1ce02c6e4470b268d76fe8d8ad15790809b21ead077e6cb931"
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c"
+    },
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2"
+    },
+    "src/world/evolution_controller/materials.c": {
+      "git_blob": "355bccb14c85d52cba183f18c3938a0318197b3e",
+      "sha256": "d3ff77830aaaed89c8fb0e565591731f5017d61654442e6fbfcc3e2350981772"
+    },
+    "src/world/evolution_controller/model.c": {
+      "git_blob": "bec04a6d23ea44ac6e14713089292fd46b11f14b",
+      "sha256": "2e65f3874d00978a62eafa7b44ab1987044345338349e766947a5d11c6f22487"
+    },
+    "src/world/gate/materials.c": {
+      "git_blob": "79538be4866a51a0c6b0e4bd3e42e90a879d8d77",
+      "sha256": "7b4dd9ba63b942d7735de87eaa59cb0efd1d3c3d16b9d4fe746093a6cb71a6b5"
+    },
+    "src/world/gate/model.c": {
+      "git_blob": "bbab5fc33de6d9ef80dafa472023a4eac78ff23d",
+      "sha256": "677c54ecf3e051711ada3eb16b9371bc583e3165b5e0ae8c3658ae7fc61b3dc7"
+    },
+    "src/world/gate/textures.c": {
+      "git_blob": "654a729f55f2dc32eca9287400ae3b8eb71ab7c0",
+      "sha256": "968981962f836be17b8cc85b9b7d7991a8d7321e3e2a2299284c4737a14ac3da"
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d"
+    }
+  },
+  "authority": {
+    "ownership": "Only exact-pin own-GAME blobs listed above and independently recovered bounded typed numeric metadata. No SDK producer/header/layout, dirty source tree, disassembly, CPU code execution, captures, whole-bank copies, or extracted payload fixtures.",
+    "wire_layouts": "common_structs.h45-52 PokemonAnimationSetup20B,83-97 PokemonInitData52B,206-211 PokemonDef16B; anim.h15-29 AnimationHeader20B and ModelTreeNode44B/sentinel18; om.h423-466 Texture120B. Native sizeof never substitutes for these wire offsets.",
+    "callback_identity": "Pokemon render wrapper identities remain separate numeric originals; normalized B/D/I/J geometry types come from pinned own render wrapper selectors/symbols. Unknown selectors reject. Factory/state/update/remove identities are numeric only, never native function pointers, void-wrapper casts or fake successful spawns.",
+    "configuration": "pokemon.c2134-2149: flags0x10 selects stored matrix kinds, otherwise28/0/0; shared inline model::select_source_matrix_kinds. Kernel retains source high-tree flags. No0x2000-to-RTS or always48 substitute.",
+    "header_binding": "All79 header identities explicitly enumerated by source actor membership, including headers not initially selected. Setup selects the actual initial header. unknown_04 remains unqualified, not duration or frames. NULL initial header1005 explicitly disables animations.",
+    "material_nulls": "Attachment outer has one pointer per model node; nonNULL attachment inners terminate at firstNULL, bounded maximum3 attached +NULL. Animation outer also has one pointer per node; nonNULL animation inners read exact actual attached MObj count. A NULL entry preserves that slot and never terminates. NULL per-node pointer preserves that node; entire-headerNULL requires texture reset with palette retained when later applied, not at decode.",
+    "programs": "anim.c217-518 and727-1005: contiguous END-inclusive streams or opcode14 SET_ANIMATION with one framed pointer back to entry and positive accumulated source add-waits. Dedupe by guest+kind. Scalar operands3-11 are F32;18-21 retain packed RGBA words, not finite-float validation. Exact catalog has no1/13/17/22/23; these reject rather than falling through unsupported behavior. Model15/16 timing adds duration. Bound178 model/67 material commands per entry.",
+    "callbacks_and_sound": "pokemon.c1768-1803: root callback0..3 positive argument indexes ids[arg-1]; zero stops category without dereference; child callback0..3 uses FX instead. Sound ids bounded by actual root-positive uses, never sentinel scan. Opcode17 ids4..13 ignored by Pokemon callback and are absent here; no fake audio/FX execution.",
+    "visibility": "om.c1121 initializes DObj.flags0. Each node domain is bitset flags0 plus every opcode15 low-two flag choice in every source header. Object hide omits whole component. No invented independent node1 hide policy in actual1006.",
+    "images": "Exact33 facts below:94 admitted image entries/74 distinct addresses.28 trackedC image-array extents,3 typedNULL primitive-only descriptors,2 consumer-bounded4-entry1006 prefixes. Known NULL padding retained only in image_table wire, not images domain. Two additional trackedC NULLimage descriptors use non-image-emitting source flags; allNULLimage flags must not emit SETTIMG/TLUT. No generic Texture.images NULL termination.",
+    "shared_gfx_closure": "Actor borrows the one shared Reader and Closure, no independent GBI decoder. Model lanes preserve 0,2,1,3 source assembly, Jpre before matrix/material binding, full TIMG tuple+Segment14+E1 relational state, push returns, no-push replacement, CULL early-return and04 both outcomes. Catalog construction calls require_complete; no exposed complete install with unresolved obligations."
+  },
+  "typed_mappings": [
+    {
+      "name": "world",
+      "guest_begin": "0x800e18a0",
+      "rom_begin": "0x5f050",
+      "bytes": 82272
+    },
+    {
+      "name": "magikarp_textures",
+      "guest_begin": "0x800f5d90",
+      "rom_begin": "0x731b0",
+      "bytes": 41472
+    },
+    {
+      "name": "pikachu1",
+      "guest_begin": "0x800fff90",
+      "rom_begin": "0x7d3b0",
+      "bytes": 110784
+    },
+    {
+      "name": "beach_assets",
+      "guest_begin": "0x8011b050",
+      "rom_begin": "0xa74e0",
+      "bytes": 610976
+    },
+    {
+      "name": "beach_extra",
+      "guest_begin": "0x801b0310",
+      "rom_begin": "0x13c780",
+      "bytes": 156976
+    },
+    {
+      "name": "magikarp_model",
+      "guest_begin": "0x8034e130",
+      "rom_begin": "0x54b5d0",
+      "bytes": 8400
+    },
+    {
+      "name": "pikachu_model",
+      "guest_begin": "0x803476a0",
+      "rom_begin": "0x54d6a0",
+      "bytes": 27280
+    },
+    {
+      "name": "Beach initialized records ONLY, explicit new admission",
+      "guest_begin": "0x802cbe10",
+      "rom_begin": "0x563e80",
+      "bytes": 8928
+    },
+    {
+      "name": "Beach model data, explicit new mapping",
+      "guest_begin": "0x80318f10",
+      "rom_begin": "0x5b0f80",
+      "bytes": 190032
+    },
+    {
+      "name": "app_level 4FE330 initialized records ONLY",
+      "guest_begin": "0x80388310",
+      "rom_begin": "0x528720",
+      "bytes": 144
+    }
+  ],
+  "initializations": [
+    {
+      "actor_id": 143,
+      "guest": "0x802cc2f0",
+      "node_count": 15,
+      "headers": [
+        "0x802cc10c",
+        "0x802cc120",
+        "0x802cc134",
+        "0x802cc148",
+        "0x802cc15c",
+        "0x802cc170",
+        "0x802cc184",
+        "0x802cc198",
+        "0x802cc1ac",
+        "0x802cc1c0"
+      ]
+    },
+    {
+      "actor_id": 52,
+      "guest": "0x802cc968",
+      "node_count": 20,
+      "headers": [
+        "0x802cc344",
+        "0x802cc358",
+        "0x802cc36c",
+        "0x802cc380",
+        "0x802cc394",
+        "0x802cc3a8",
+        "0x802cc3bc",
+        "0x802cc3d0",
+        "0x802cc3e4",
+        "0x802cc3f8"
+      ]
+    },
+    {
+      "actor_id": 133,
+      "guest": "0x802cccec",
+      "node_count": 14,
+      "headers": [
+        "0x802cc9ac",
+        "0x802cc9c0",
+        "0x802cc9d4",
+        "0x802cc9e8",
+        "0x802cc9fc"
+      ]
+    },
+    {
+      "actor_id": 12,
+      "guest": "0x802ccda4",
+      "node_count": 12,
+      "headers": [
+        "0x802ccd24",
+        "0x802ccd38",
+        "0x802ccd4c"
+      ]
+    },
+    {
+      "actor_id": 131,
+      "guest": "0x802cce50",
+      "node_count": 11,
+      "headers": [
+        "0x802cce08",
+        "0x802ccde8"
+      ]
+    },
+    {
+      "actor_id": 84,
+      "guest": "0x802ccf78",
+      "node_count": 17,
+      "headers": [
+        "0x802cceb0",
+        "0x802ccec4",
+        "0x802cced8",
+        "0x802cceec",
+        "0x802ccf00"
+      ]
+    },
+    {
+      "actor_id": 16,
+      "guest": "0x802cd118",
+      "node_count": 17,
+      "headers": [
+        "0x802ccfc0",
+        "0x802ccfd4",
+        "0x802ccfe8",
+        "0x802ccffc"
+      ]
+    },
+    {
+      "actor_id": 123,
+      "guest": "0x802cd258",
+      "node_count": 17,
+      "headers": [
+        "0x802cd168",
+        "0x802cd17c",
+        "0x802cd190",
+        "0x802cd1a4",
+        "0x802cd1b8",
+        "0x802cd1cc"
+      ]
+    },
+    {
+      "actor_id": 113,
+      "guest": "0x802cd55c",
+      "node_count": 17,
+      "headers": [
+        "0x802cd2a8",
+        "0x802cd2bc",
+        "0x802cd2d0",
+        "0x802cd2e4",
+        "0x802cd2f8",
+        "0x802cd30c",
+        "0x802cd320",
+        "0x802cd334",
+        "0x802cd348"
+      ]
+    },
+    {
+      "actor_id": 115,
+      "guest": "0x802cd7a8",
+      "node_count": 18,
+      "headers": [
+        "0x802cd5a8",
+        "0x802cd5bc",
+        "0x802cd5d0",
+        "0x802cd5e4",
+        "0x802cd5f8",
+        "0x802cd60c",
+        "0x802cd620"
+      ]
+    },
+    {
+      "actor_id": 1005,
+      "guest": "0x802cd8e4",
+      "node_count": 1,
+      "headers": []
+    },
+    {
+      "actor_id": 1004,
+      "guest": "0x802cd948",
+      "node_count": 7,
+      "headers": [
+        "0x802cd920"
+      ]
+    },
+    {
+      "actor_id": 1001,
+      "guest": "0x802cda10",
+      "node_count": 4,
+      "headers": [
+        "0x802cd980",
+        "0x802cd994",
+        "0x802cd9a8",
+        "0x802cd9bc"
+      ]
+    },
+    {
+      "actor_id": 129,
+      "guest": "0x802cdaec",
+      "node_count": 18,
+      "headers": [
+        "0x802cda8c",
+        "0x802cdab4"
+      ]
+    },
+    {
+      "actor_id": 25,
+      "guest": "0x802ce038",
+      "node_count": 22,
+      "headers": [
+        "0x802cdb5c",
+        "0x802cdb70",
+        "0x802cdb84",
+        "0x802cdbac",
+        "0x802cdbc0",
+        "0x802cdbd4",
+        "0x802cdbe8",
+        "0x802cdbfc",
+        "0x802cdc10"
+      ]
+    },
+    {
+      "actor_id": 1006,
+      "guest": "0x802ce0a8",
+      "node_count": 5,
+      "headers": [
+        "0x802ce070"
+      ]
+    },
+    {
+      "actor_id": 1003,
+      "guest": "0x80388348",
+      "node_count": 4,
+      "headers": [
+        "0x80388310"
+      ]
+    }
+  ],
+  "material_image_extents": [
+    {
+      "material": "0x800eb520",
+      "image_table": "0x0",
+      "admitted_images": 0,
+      "declared_slots": null,
+      "extent_kind": "typed_NULL",
+      "source_symbol": null,
+      "source_line": null
+    },
+    {
+      "material": "0x800f07b8",
+      "image_table": "0x800f07b0",
+      "admitted_images": 1,
+      "declared_slots": 1,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "gate_part1_mat0",
+      "source_line": 24
+    },
+    {
+      "material": "0x800f0830",
+      "image_table": "0x800f07b4",
+      "admitted_images": 1,
+      "declared_slots": 1,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "gate_part2_mat0",
+      "source_line": 77
+    },
+    {
+      "material": "0x800f08a8",
+      "image_table": "0x0",
+      "admitted_images": 0,
+      "declared_slots": 0,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "gate_part3_mat0",
+      "source_line": 130
+    },
+    {
+      "material": "0x801397f8",
+      "image_table": "0x0",
+      "admitted_images": 0,
+      "declared_slots": null,
+      "extent_kind": "typed_NULL",
+      "source_symbol": null,
+      "source_line": null
+    },
+    {
+      "material": "0x80139870",
+      "image_table": "0x0",
+      "admitted_images": 0,
+      "declared_slots": null,
+      "extent_kind": "typed_NULL",
+      "source_symbol": null,
+      "source_line": null
+    },
+    {
+      "material": "0x801398e8",
+      "image_table": "0x801397d4",
+      "admitted_images": 4,
+      "declared_slots": null,
+      "extent_kind": "consumer_bounded_prefix",
+      "source_symbol": null,
+      "source_line": null
+    },
+    {
+      "material": "0x80139960",
+      "image_table": "0x801397e4",
+      "admitted_images": 4,
+      "declared_slots": null,
+      "extent_kind": "consumer_bounded_prefix",
+      "source_symbol": null,
+      "source_line": null
+    },
+    {
+      "material": "0x8031c278",
+      "image_table": "0x8031c264",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "doduo_part5_mat0",
+      "source_line": 53
+    },
+    {
+      "material": "0x8031c2f0",
+      "image_table": "0x8031c26c",
+      "admitted_images": 2,
+      "declared_slots": 3,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "doduo_part9_mat0",
+      "source_line": 97
+    },
+    {
+      "material": "0x80320128",
+      "image_table": "0x80320108",
+      "admitted_images": 4,
+      "declared_slots": 4,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "eevee_part8_mat0",
+      "source_line": 55
+    },
+    {
+      "material": "0x803201a0",
+      "image_table": "0x80320118",
+      "admitted_images": 4,
+      "declared_slots": 4,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "eevee_part8_mat1",
+      "source_line": 99
+    },
+    {
+      "material": "0x80324e98",
+      "image_table": "0x80324e88",
+      "admitted_images": 4,
+      "declared_slots": 4,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "kangaskhan_part7_mat0",
+      "source_line": 71
+    },
+    {
+      "material": "0x8032b960",
+      "image_table": "0x8032b934",
+      "admitted_images": 7,
+      "declared_slots": 7,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "snorlax_part4_mat0",
+      "source_line": 98
+    },
+    {
+      "material": "0x8032b9d8",
+      "image_table": "0x8032b950",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "snorlax_part4_mat1",
+      "source_line": 142
+    },
+    {
+      "material": "0x8032ba50",
+      "image_table": "0x8032b958",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "snorlax_part4_mat2",
+      "source_line": 186
+    },
+    {
+      "material": "0x8032bac8",
+      "image_table": "0x0",
+      "admitted_images": 0,
+      "declared_slots": 0,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "snorlax_part5_mat0",
+      "source_line": 230
+    },
+    {
+      "material": "0x803303c8",
+      "image_table": "0x803303bc",
+      "admitted_images": 3,
+      "declared_slots": 3,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "lapras_part6_mat0",
+      "source_line": 47
+    },
+    {
+      "material": "0x80332a08",
+      "image_table": "0x803329e4",
+      "admitted_images": 6,
+      "declared_slots": 6,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "chansey_part3_mat0",
+      "source_line": 55
+    },
+    {
+      "material": "0x80332a80",
+      "image_table": "0x803329fc",
+      "admitted_images": 3,
+      "declared_slots": 3,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "chansey_part3_mat1",
+      "source_line": 99
+    },
+    {
+      "material": "0x80335c18",
+      "image_table": "0x80335be0",
+      "admitted_images": 6,
+      "declared_slots": 6,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "meowth_part12_mat0",
+      "source_line": 83
+    },
+    {
+      "material": "0x80335c90",
+      "image_table": "0x80335bf8",
+      "admitted_images": 3,
+      "declared_slots": 3,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "meowth_part12_mat1",
+      "source_line": 127
+    },
+    {
+      "material": "0x80335d08",
+      "image_table": "0x80335c04",
+      "admitted_images": 4,
+      "declared_slots": 5,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "meowth_part19_mat0",
+      "source_line": 171
+    },
+    {
+      "material": "0x8033b210",
+      "image_table": "0x8033b204",
+      "admitted_images": 2,
+      "declared_slots": 3,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pidgey_part9_mat0",
+      "source_line": 53
+    },
+    {
+      "material": "0x80347770",
+      "image_table": "0x803476f8",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part1_mat0",
+      "source_line": 123
+    },
+    {
+      "material": "0x803477e8",
+      "image_table": "0x80347700",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part1_mat1",
+      "source_line": 167
+    },
+    {
+      "material": "0x80347860",
+      "image_table": "0x80347708",
+      "admitted_images": 5,
+      "declared_slots": 5,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part2_mat0",
+      "source_line": 211
+    },
+    {
+      "material": "0x803478d8",
+      "image_table": "0x8034771c",
+      "admitted_images": 5,
+      "declared_slots": 5,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part2_mat1",
+      "source_line": 255
+    },
+    {
+      "material": "0x80347950",
+      "image_table": "0x80347730",
+      "admitted_images": 5,
+      "declared_slots": 5,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part11_mat0",
+      "source_line": 299
+    },
+    {
+      "material": "0x803479c8",
+      "image_table": "0x80347744",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part11_mat1",
+      "source_line": 343
+    },
+    {
+      "material": "0x80347a40",
+      "image_table": "0x8034774c",
+      "admitted_images": 5,
+      "declared_slots": 5,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part11_mat2",
+      "source_line": 387
+    },
+    {
+      "material": "0x80347ab8",
+      "image_table": "0x80347760",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part14_mat0",
+      "source_line": 431
+    },
+    {
+      "material": "0x80347b30",
+      "image_table": "0x80347768",
+      "admitted_images": 2,
+      "declared_slots": 2,
+      "extent_kind": "tracked_own_C",
+      "source_symbol": "pikachu_part14_mat1",
+      "source_line": 475
+    }
+  ],
+  "program_coverage": {
+    "model_roots": 1201,
+    "model_commands": 19664,
+    "model_END": 464,
+    "model_real_entry_cycles": 737,
+    "material_roots": 116,
+    "material_commands": 1047,
+    "material_END": 47,
+    "material_real_entry_cycles": 69
+  },
+  "source1006_edge": {
+    "model": "0x80139a40",
+    "header": "0x802ce070",
+    "supplier_node": 1,
+    "consumer_node": 2,
+    "lane": 1,
+    "supplier_root": "0x80139470",
+    "setter_command": "0x80139498",
+    "callee_push": "0x801394a0",
+    "callee_root": "0x801394b0",
+    "callee_cull": "0x801394d0",
+    "supplier_end": "0x801394a8",
+    "consumer_root": "0x80139558",
+    "consumer_material": "0x80139870",
+    "consumer_load": "0x801395d8",
+    "image": "0x8013daf8",
+    "format": 4,
+    "size_code": 2,
+    "width": 1,
+    "loaded_units": 192,
+    "bytes": 384,
+    "proof": "Setter dominates the PUSH before any conditional CULL; all callee returns retain the tuple. Color-only flags0x200 preserve it; consecutive visible lane1 siblings consume it. No opcode15 on either node in all79 headers. A generic independent supplier omission must remain an obligation, not be admitted by this catalog."
+  },
+  "installation": {
+    "ownership": "Borrowed const Snapshot identity is checked before access/install; moved-from Snapshot rejects. Catalog never copies ROM asset payloads. Canonical selected spans only; all extents/provenance/reservations/alias checks precede any RAM write. Word-swapped destination[(guest-0x80000000+i)^3].",
+    "reservations": "Explicit caller-owned runtime reservation union, not a hardcoded Actor producer layout. Existing World guards remain strict. Actual actor resources overlap old World dynamic0x170000..190000; consumer requires atomic rejection. Isolated empty-reservation byte install is not production scene-layout proof. Main must select a disjoint full World+Actor+task/output/frame/depth layout.",
+    "complete_only": true
+  },
+  "consumer": {
+    "source": "tests/beach_actor_resources_rom_smoke.cpp",
+    "input": "Opt-in actual admitted original ROM pathname only",
+    "exercises": "17/79/33/1317 source binding/program framing; all real cycles;94/74 image domains; common1003 and disabled1005; NULL distinctions; root-only bounded sound ids; all-header visibility; exact1006 predecessor consumer; full shared-Runtime compilation and79 immediate header evaluations; both actualzero-speed headers; atomic conflict/reservation/alias/lifetime rejection and untouched-byte isolated installation. No actor GPU/sound/FX claim.",
+    "execution_status": "Main passed all44 GCCDebug/Release/ClangASanUBSan contracts and actual complete ROM consumer.",
+    "verification": {
+      "root": "native-actor-assets-corrected-8mbfmx8i",
+      "seconds": 0.756,
+      "binary_sha256": "e2aaa29a134e4b77076d5e195462f0cee5d0301bac5a8a69e1260a3c20ab73c0",
+      "archive_sha256": "096d9ea868f8f1bc51b6ac1f0d7df9abc787c9ce57734ab836b514c925dcd7f7",
+      "closure": [1,0,2],
+      "observation": "Stable whole tree before sole scan; zero known physical/permission attempts; ROM unchanged.",
+      "source_zero_speed": ["0x802cce08", "0x802cd920"],
+      "source_texture12": "Real8018218c Snorlax material program exposed a shared compiler kind gate; ownGAME anim.c889-906 supports texture track-time adjustment. Focused regression failed before correction and passed afterward; no second evaluator.",
+      "rejected_before_fix": {"root": "native-actor-assets-rsioegvh", "binary_sha256": "05daadaf9101c7b5754cc5526b5adb427b25e0ed4c910d3d46345a8ab9985b11", "archive_sha256": "bb054c24e77ccb10151685e8a66f0bd6693809c7ee58384e537c13098a38f51f", "closure": [1,0,2], "cause": "Unjustified strictly-positive speed restriction rejected actualheader802cce08. Immutable/rejected, never replayed/rescanned/partially accepted."},
+      "limits": "Pure resource/animator/isolated-RAM proof. Borrowed events are not sound/FX execution; no native actor factory/FSM/retirement, combined RAM layout, actor GPU, gameplay, product or Windows11 runtime proof."
+    }
+  },
+  "integration": {
+    "library_sources": [
+      "src/beach_actor_resources.cpp",
+      "src/beach_actor_resources.hpp",
+      "src/source_matrix_configuration.hpp"
+    ],
+    "dependencies": [
+      "isle-model-assets",
+      "isle-rom-snapshot"
+    ],
+    "consumer_dependencies": [
+      "isle-beach-actor-resources",
+      "isle-beach-world-resources (actual fog metadata)",
+      "isle-menu-animation (actual complete catalog and header consumer)"
+    ],
+    "renderer_dependency": "None. Pure matrix helper is inline; borrowed_model_kernel.hpp includes it and old out-of-line definition is removed."
+  }
+}

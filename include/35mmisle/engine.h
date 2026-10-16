@@ -125,11 +125,22 @@ IsleGameResult isle_game_object_set_retire_callback(IsleGame*, IsleGameObject*, 
  * -4/-5 hide/show. NULL custom handler drains unknown commands. */
 typedef struct IsleGameCommand IsleGameCommand;
 typedef struct IsleGameCommandPool { isle_arena* arena; IsleGameCommand* free; } IsleGameCommandPool;
+/* Optional nonallocating semantic-owner hooks. Acquire runs only after enqueue
+ * allocation succeeds; its token is settled exactly once, after delivery or on
+ * cancellation. Hooks must not throw, wait, mutate OM or enqueue recursively.
+ * Release also runs in retirement observers; neither hook may retain/release
+ * native identity there. NULL hooks preserve ordinary menu FIFO semantics. */
+typedef void* (*IsleGameCommandAcquire)(IsleGameObject* source, void* user);
+typedef void (*IsleGameCommandRelease)(void* token, void* user);
 typedef struct IsleGameCommandQueue {
     IsleGameCommand* head;
     IsleGameCommand* tail;
     size_t count;
     uint8_t processing, cancelled;
+    IsleGameCommandAcquire acquire;
+    IsleGameCommandRelease release;
+    void* borrow_user;
+    void* active_borrow;
 } IsleGameCommandQueue;
 typedef void (*IsleGameCommandHandler)(IsleGameObject*, int32_t command, IsleGameObject* source, void* user);
 IsleGameResult isle_game_command_send(IsleGameCommandPool*, IsleGameCommandQueue*, int32_t, IsleGameObject*);
@@ -137,6 +148,10 @@ IsleGameResult isle_game_command_send(IsleGameCommandPool*, IsleGameCommandQueue
 IsleGameResult isle_game_commands(IsleGame*, IsleGameObject*, IsleGameCommandPool*,
     IsleGameCommandQueue*, IsleGameCommandHandler, void*, int* delete_requested);
 void isle_game_commands_release(IsleGameCommandPool*, IsleGameCommandQueue*);
+/* Finish only the currently delivered credit after canonical field adoption,
+ * before genuinely nonreturning source control. Never cancels a FIFO suffix.
+ * Normal return finishes automatically; repeated finish is harmless. */
+void isle_game_command_finish(IsleGameCommandQueue*);
 IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
                                     IsleGameCallback entry, void* user,
                                     IsleGameProcessKind kind, uint32_t priority,

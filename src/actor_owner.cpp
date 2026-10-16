@@ -157,9 +157,8 @@ struct Owner::Impl {
         const beach::ActorDefinition* definition = nullptr;
         scene::RenderMetadata render{};
         std::uint64_t insertion = 0;
-        std::size_t pending_sender_commands = 0;
-        std::vector<std::size_t> incoming_identity_credits;
-        bool active = false, retiring = false, joined = false, cleaned = false, identity_held = false;
+        std::array<IsleGameObject**,2> source_fields{};
+        bool active = false, retiring = false, joined = false, cleaned = false, source_owned = false;
         bool logical = false, registered = false;
     };
     struct BlockEntry { Slot* slot = nullptr; int next = -1; };
@@ -198,7 +197,7 @@ struct Owner::Impl {
         if (c.empty() || !fx.status()) throw std::invalid_argument("actor owner needs native capacities and admitted shared FX banks");
         std::size_t maximum_nodes=0;
         for (std::size_t i=0;i<c.size();++i) {
-            slots[i].owner=this; slots[i].index=i; slots[i].incoming_identity_credits.resize(c.size());
+            slots[i].owner=this; slots[i].index=i;
             maximum_nodes=std::max(maximum_nodes,c[i].nodes);
         }
         scratch.resize(maximum_nodes);
@@ -317,18 +316,6 @@ struct Owner::Impl {
         auto& slot=*static_cast<Slot*>(user); auto& self=*slot.owner;
         if (slot.retiring) return;
         self.invalidate(slot);
-        // Native deletion discards this receiver FIFO. Cancel only its recorded
-        // identity borrows; never deliver discarded source commands as a fixup.
-        for (std::size_t i=0;i<slot.incoming_identity_credits.size();++i) {
-            const auto credits=slot.incoming_identity_credits[i];
-            if (credits>self.slots[i].pending_sender_commands) self.services.fail("actor command identity credit corruption");
-            else self.slots[i].pending_sender_commands-=credits;
-            slot.incoming_identity_credits[i]=0;
-        }
-        if (!slot.cleaned) for (auto& receiver:self.slots) if (receiver.active && !receiver.retiring) {
-            if (receiver.source.interactionTarget==slot.object) receiver.source.interactionTarget=nullptr;
-            if (receiver.source.apple==slot.object) receiver.source.apple=nullptr;
-        }
         self.unlink_logical(slot);
         slot.retiring=true;
         if (!self.runtime->begin_retire(slot.instance)) self.services.fail("actor Runtime retirement");
@@ -343,25 +330,14 @@ struct Owner::Impl {
         // remains held until outside-OM collection also closes command credits.
     }
     static void update_callback(IsleGameObject* object,void*) noexcept { Pokemon_Update(object); }
-    static void command_queued(IsleGameObject*,std::int32_t command,IsleGameObject* source,void* user) noexcept {
-        if (command!=21 && command!=22 && command!=26) return;
-        auto& receiver=*static_cast<Slot*>(user); auto& self=*receiver.owner;
-        // A retiring source is comparison identity only. Never source-get it.
-        for (auto& sender:self.slots) if (sender.active && sender.object==source) {
-            ++sender.pending_sender_commands; ++receiver.incoming_identity_credits[sender.index]; return;
-        }
-    }
     static void command_callback(IsleGameObject*,std::int32_t command,IsleGameObject* source,void* user) noexcept {
         auto& slot=*static_cast<Slot*>(user); auto& self=*slot.owner;
         // 21 and22 perform identity clearing even for a NULL transition graph.
         // All queued senders, including command26, are comparison identity only.
-        if (command==21 && slot.source.apple==source) slot.source.apple=nullptr;
-        if (command==22 && slot.source.interactionTarget==source) slot.source.interactionTarget=nullptr;
-        if (command==21 || command==22 || command==26) {
-            for (std::size_t i=0;i<self.slots.size();++i) if (slot.incoming_identity_credits[i] && self.slots[i].object==source) {
-                --slot.incoming_identity_credits[i]; --self.slots[i].pending_sender_commands; break;
-            }
-        }
+        if (command==21 && slot.source.apple==source &&
+            !self.services.source_reference_assign(slot.object,&slot.source.apple,nullptr)) return;
+        if (command==22 && slot.source.interactionTarget==source &&
+            !self.services.source_reference_assign(slot.object,&slot.source.interactionTarget,nullptr)) return;
         if (slot.source.transitionGraph) { self.services.fail("actor command transition graph is not natively admitted"); return; }
         // All other source switch cases/default have no action with NULLgraph.
         if (!self.course.execution_enabled) {
@@ -617,13 +593,8 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
         rollback(); return reject(OwnerError::services,"actor native lifecycle callbacks");
     }
     lifecycle_installed=true;
-    if (isle_game_object_retain_identity(self.services.game,slot->object)!=ISLE_GAME_OK) {
-        rollback(); return reject(OwnerError::native,"actor native identity retain");
-    }
-    slot->identity_held=true;
     if (!self.services.set_update(slot->object,Impl::update_callback,slot) ||
-        !self.services.set_command_handler(slot->object,Impl::command_callback,slot) ||
-        !self.services.set_command_queued_observer(slot->object,Impl::command_queued,slot)) {
+        !self.services.set_command_handler(slot->object,Impl::command_callback,slot)) {
         rollback(); return reject(OwnerError::services,"actor native callbacks");
     }
     slot->render={5,0x80000000u,UINT32_MAX};
@@ -646,6 +617,11 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
         isle_actor_source_bind(self.services.game,slot->object,&slot->source,&self.services.rng,slot)!=ISLE_GAME_OK) {
         rollback(); return reject(OwnerError::native,"actor source placement/record binding");
     }
+    slot->source_fields={&slot->source.apple,&slot->source.interactionTarget};
+    if (!self.services.source_owner_register(slot->object,slot->source_fields)) {
+        rollback(); return reject(OwnerError::services,"actor semantic source owner registration");
+    }
+    slot->source_owned=true;
     auto& source=slot->source;
     source.initData=&initialization; source.animSetup=&initialization.setup;
     source.pos1=placement.position; source.targetPos=placement.position; source.euler=placement.rotation;
@@ -745,18 +721,17 @@ OwnerStatus Owner::remove_block(world::Block& block) noexcept {
 }
 OwnerStatus Owner::collect_joined() noexcept {
     for (auto& slot:impl_->slots) if (slot.active && slot.retiring) {
-        if (!slot.joined || slot.pending_sender_commands) return rejected(OwnerError::lifetime,"actor real native join/queued identity still outstanding");
+        if (!slot.joined || (slot.source_owned && !impl_->services.source_owner_collectable(slot.object)))
+            return rejected(OwnerError::lifetime,"actor real native join/source identity borrows still outstanding");
         if (slot.object) impl_->sound.release_identity(slot.object);
-        if (slot.identity_held) {
-            if (isle_game_object_release_identity(impl_->services.game,slot.object)!=ISLE_GAME_OK)
-                return rejected(OwnerError::native,"actor joined native identity release requires outside-OM collection");
-            slot.identity_held=false;
+        if (slot.source_owned) {
+            if (!impl_->services.source_owner_release(slot.object))
+                return rejected(OwnerError::native,"actor joined source identity release requires outside-OM collection");
+            slot.source_owned=false;
         }
         if (!impl_->runtime->release_retired(slot.instance)) return rejected(OwnerError::animation,"actor physical Runtime release");
         const auto index=slot.index;
-        auto credits=std::move(slot.incoming_identity_credits);
         slot=Impl::Slot{}; slot.owner=impl_.get(); slot.index=index;
-        slot.incoming_identity_credits=std::move(credits);
     }
     return {};
 }
@@ -894,6 +869,16 @@ IsleGameResult isle_actor_owner_cleanup(IsleActorSource* source) {
 IsleGameResult isle_actor_owner_commands(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     return slot && slot->owner->services.process_commands(slot->object)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+IsleGameResult isle_actor_owner_reference_assign(IsleActorSource* source,IsleGameObject** field,IsleGameObject* sender) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    return slot && slot->owner->services.source_reference_assign(slot->object,field,sender)?
+        ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_actor_owner_command_before_transfer(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    return slot && slot->owner->services.source_command_before_transfer(slot->object)?
+        ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
 }
 IsleGameResult isle_actor_owner_distance(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);

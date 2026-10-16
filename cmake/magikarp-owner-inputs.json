@@ -101,25 +101,25 @@
   },
   "native_support": {
     "src/actor_owner.hpp": {
-      "sha256": "e0729ff863adcc2184ea6d27d5d7c246f1fbad5f202cb19b2e72cb74d2e17071"
+      "sha256": "4558fb6974cc26c7554ab3fdf65dca22bcefca0dbee2c9a5bfe076c12cd0e373"
     },
     "src/actor_owner.cpp": {
-      "sha256": "3424c6458f0feba22d993465ea00bc9ab4b538b2ee27967f6e87aa40da3cf2a0"
+      "sha256": "d93b080426ece5dee17220bdc132463e8320b217198b25f798d639239587a5c4"
     },
     "src/actor_owner_source.h": {
-      "sha256": "592c76744a49094a1efad2317813c9804619d582115e105fed79477dd84c3dda"
+      "sha256": "c2a00167ccd34a20c997b2b2233855f4574cc2af32a549ca0812255e8e053908"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "62cff17b65330b22a011cbecb77459c65c0972cf8cf5ef6c91e293a4b2b8e43c"
+      "sha256": "7a15395f96420e26a1f474dd7d5033f830bbaad78ce8ef7abe539643c18256ae"
     },
     "tools/prepare_actor_control.py": {
       "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "5d496c888aab05529e7591bf7f5a0c39f2534768a935c5c32f6a93c6d7ef59f0"
+      "sha256": "30082e1c32d148fbd89c3ea1920767ad488f90b8abf80b4916181d8e08191849"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
-      "sha256": "d00ad9f9fb4e850c00687f8e99235eabd1166d6f15791f2445d3a76716683dfc"
+      "sha256": "fd30566a0aa7c83abd1d7e7927c8c99f04b99c3b94c2ada1d3d5fc6d816d4bc0"
     },
     "tests/magikarp_owner_probe.c": {
       "sha256": "55f5b2d5776f863b768e2a796d97fc4f55ff775ea7412529a8acf8adf7f1c23d"

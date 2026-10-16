@@ -371,9 +371,10 @@ struct Consumer {
         }
         // Non-native graph admission fails unchanged, before invoking any graph.
         auto* record=owner.source(handle); const auto old=record->transitionGraph;
-        record->transitionGraph=&resources;
-        require(isle_actor_owner_interactions(record)!=ISLE_GAME_OK&&record->transitionGraph==&resources&&!services.failed(),
-                "non-native transition graph executed or rejection mutated source state");
+        const IsleActorInteractionGraph unadmitted_graph{};
+        record->transitionGraph=&unadmitted_graph;
+        require(isle_actor_owner_interactions(record)!=ISLE_GAME_OK&&record->transitionGraph==&unadmitted_graph&&!services.failed(),
+                "unadmitted typed graph executed or rejection mutated source state");
         record->transitionGraph=old;
         accepted(owner.set_focus(handle,true,7));
         const focus::Subject subject{reinterpret_cast<focus::Object>(actor.object),1003,0};
@@ -399,7 +400,8 @@ struct Consumer {
         }
         require(unsupported,"actual resource catalog lacked non-native admission subject");
         const auto first=spawn(1);
-        owner.source(first.instance)->apple=first.object;
+        require(services.source_reference_assign(first.object,&owner.source(first.instance)->apple,first.object),
+                "actual source self-apple borrow failed");
         require(services.send_command(first.object,21,first.object),"live sender identity command enqueue failed");
         const auto second=spawn(1);
         require(services.process_commands(first.object)&&!owner.source(first.instance)->apple,
@@ -408,22 +410,28 @@ struct Consumer {
         const auto rejected=owner.spawn({next_id++,common_definition,&world.blocks()[0],&world.blocks()[0],&descriptor});
         require(!rejected&&rejected.status.error==actor::OwnerError::capacity&&owner.registered(first.instance)&&owner.registered(second.instance),
                 "capacity failure silently partially spawned or damaged live actors");
-        auto* recipient=owner.source(second.instance); recipient->interactionTarget=first.object;
+        auto* recipient=owner.source(second.instance);
+        require(services.source_reference_assign(second.object,&recipient->interactionTarget,first.object),
+                "actual source target adoption failed");
         require(services.send_command(second.object,22,first.object),"actual FIFO command22 enqueue failed");
         accepted(owner.cleanup(first.instance));
         const auto unrelated_id=next_id++;
         auto* unrelated=services.object(unrelated_id);
         require(unrelated&&unrelated!=first.object,"unrelated native Services allocator reused a held retired sender identity");
-        recipient->interactionTarget=unrelated;
+        require(services.source_owner_register(unrelated,{})&&
+                services.source_reference_assign(second.object,&recipient->interactionTarget,unrelated),
+                "unrelated source registration/target borrow failed");
         require(services.process_commands(second.object)&&recipient->interactionTarget==unrelated,
                 "retiring command22 sender aliased/cleared unrelated native C");
         IsleGameObjectMetadata unrelated_metadata{};
         native(isle_game_object_metadata(services.game,unrelated,&unrelated_metadata));
         require(unrelated_metadata.id==unrelated_id,"retiring sender delivery damaged unrelated native C identity");
-        recipient->interactionTarget=first.object;
+        require(services.source_reference_assign(second.object,&recipient->interactionTarget,first.object),
+                "held joined source target adoption failed");
         require(services.send_command(second.object,22,first.object)&&services.process_commands(second.object)&&
                 !recipient->interactionTarget,"actual command22 delivery lost a held joined-dead sender identity");
         services.erase(unrelated);
+        require(services.source_owner_release(unrelated),"joined unrelated source still retained semantic borrows");
         accepted(owner.collect_joined());
         const auto replacement=spawn(1);
         require(replacement.instance!=first.instance&&!owner.set_local(first.instance,0,{})&&!owner.trigger_common1003(first.instance,{}),
@@ -434,7 +442,9 @@ struct Consumer {
         const auto reused=spawn(1); tick(); require(!owner.source(reused.instance)->tangible,"reset/reuse failed actual native initial state");
         accepted(owner.reset()); accepted(owner.collect_joined());
         const auto sender=spawn(1),recipient_actor=spawn(1);
-        owner.source(recipient_actor.instance)->interactionTarget=sender.object;
+        require(services.source_reference_assign(recipient_actor.object,
+                &owner.source(recipient_actor.instance)->interactionTarget,sender.object),
+                "duplicate-notification source target adoption failed");
         require(services.send_command(recipient_actor.object,22,sender.object)&&
                 services.send_command(recipient_actor.object,22,sender.object),
                 "duplicate real command22 enqueue failed");

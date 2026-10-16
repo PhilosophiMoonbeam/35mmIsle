@@ -281,7 +281,8 @@ struct Consumer {
                     require(equal(child_placement->transform.position,{raw.matrix[3][0],ground.height,raw.matrix[3][2]})&&
                         equal(child_placement->transform.rotation,{0,0,0}),
                         "helper failed exact raw child-world position/ground clamp/zero AddAtGeo Euler");
-                    child->interactionTarget=parent.object;
+                    require(services.source_reference_assign(child_object,&child->interactionTarget,parent.object),
+                        "real child did not retain canonical parent target");
                     require(services.send_command(child_object,-2,parent.object),"real child FIFO suspension failed");
                 } else require(binding.model.object==child_object,"completed path emitted a second sibling");
             }

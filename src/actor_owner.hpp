@@ -113,9 +113,9 @@ public:
     OwnerStatus remove_block(world::Block&) noexcept;
     OwnerStatus reset() noexcept;
     // Outside all OM/command traversal, after actual joins and external graphics
-    // releases. Native identities stay retained through queued sender borrows;
-    // collection releases them before either physical slot can be reused.
-    // Returns failure rather than treating a live native slot as joined.
+    // releases. Services retains native identities AND semantic slots through
+    // all successful FIFO/in-flight and actual canonical apple/target borrows.
+    // Stops at first held retiring slot, preserving earlier collection progress.
     OwnerStatus collect_joined() noexcept;
     IsleActorSource* source(menu::animation::InstanceHandle) noexcept;
     const IsleActorSource* source(menu::animation::InstanceHandle) const noexcept;

@@ -1,6 +1,7 @@
 #include "world_collision.hpp"
 #include <cmath>
 #include <iostream>
+#include <limits>
 
 namespace {
 using namespace isle::world;
@@ -88,5 +89,31 @@ int main() {
           "consumed multi-node cycle rejects within the finite native node extent");
     map.nodes.clear();
     check(!col::ground_at_global(map,0,0,ground)&&near(ground.height,-9000)&&ground.surface==-1,"absent height map resets default result");
+    // Shared ground/ceiling plane semantics from ground_int.c102-136 and
+    // own vector.c5-16. Axis permutation must happen AFTER normalization.
+    HeightMap planes;
+    HeightNode terminal{};terminal.left_patch=terminal.right_patch=0;
+    planes.nodes={terminal};planes.patches={{1,4096,1.5f,-8,0xffffffff}};
+    check(col::ground_at_global(planes,0,0,ground)&&
+          ground.normal.x==1.0f/4096&&ground.normal.y==1.5f/4096&&ground.normal.z==1&&
+          ground.surface==0xffffff,
+          "plane normalization preserves source float addition order before swapping B/C");
+    planes.patches[0]={1,2,3,-8,0x123456ff};
+    const float inverse=1.0f/std::sqrt(14.0f);
+    check(col::ground_at_global(planes,0,0,ground)&&ground.normal.x==inverse&&
+          ground.normal.y==3*inverse&&ground.normal.z==2*inverse&&ground.surface==0x123456,
+          "plane normalization multiplies by the source float reciprocal, not per-axis division");
+    const float tiny=std::numeric_limits<float>::denorm_min();
+    planes.patches[0]={tiny,-0.0f,-0.0f,-8,0};
+    check(col::ground_at_global(planes,0,0,ground)&&ground.height==0&&!std::signbit(ground.height)&&
+          ground.normal.x==tiny&&std::signbit(ground.normal.y)&&std::signbit(ground.normal.z),
+          "zero signed planeC returns positive zero height and zero-magnitude normal preserves source components");
+    planes.patches[0]={0,0,tiny,-tiny,0};
+    check(col::ground_at_global(planes,0,0,ground)&&ground.height==1&&ground.normal.y==tiny,
+          "nonzero subnormal planeC is not replaced by an epsilon or default upward normal");
+    planes.patches[0]={0,0,-1,0,0};
+    check(col::ground_at(planes,{0,-0.0f,0},-0.0f,0,ground)&&ground.height==0&&
+          !std::signbit(ground.height)&&ground.normal.y==-1,
+          "local signed-zero height/elevation and downward normal retain source arithmetic");
     return failures?1:0;
 }

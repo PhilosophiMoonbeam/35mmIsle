@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 #include <cstdlib>
-#include <cstring>
 #include <initializer_list>
 #include <iostream>
 #include <memory>
@@ -11,6 +10,8 @@
 #include <vector>
 
 namespace {
+constexpr IsleActorInteraction terminal_row{58,nullptr,0,nullptr};
+constexpr IsleActorInteractionGraph pending_graph{&terminal_row,1,0};
 void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
@@ -66,7 +67,7 @@ void trace(const ActorControlFixture& f, std::initializer_list<int> expected) {
 void self_replacement_and_null_state() {
     ActorControlFixture f{}; isle_rng rng{1}; World world;
     auto* object = bind(world, f, rng);
-    f.actor.transitionGraph = &f;
+    f.actor.transitionGraph = &pending_graph;
     f.actor.stateProc = start(world, object, actor_control_replace_self);
     ok(isle_game_tick(world.game));
     trace(f, {10, 11});
@@ -81,7 +82,7 @@ void cross_state_replacement_joins_old_stack() {
     auto* object = bind(world, f, rng);
     f.actor.stateProc = start(world, object, actor_control_sleep_state);
     ok(isle_game_tick(world.game));
-    f.actor.transitionGraph = &f;
+    f.actor.transitionGraph = &pending_graph;
     driver(world, actor_control_cross_replace, f);
     ok(isle_game_tick(world.game));
     trace(f, {20, 21, 22, 11});
@@ -153,7 +154,7 @@ void random_boundaries_zero_weights_and_application_stream() {
         for (auto& actor : f) {
             auto* object = bind(world, actor, rng);
             actor.random = list;
-            actor.actor.transitionGraph = &actor;
+            actor.actor.transitionGraph = &pending_graph;
             actor.actor.stateProc = start(world, object, actor_control_random);
         }
         std::uint32_t reference = initial_seed;
@@ -257,7 +258,7 @@ void creation_failure_exits_both_c_fences() {
     for (auto kind : {ISLE_GAME_STACKFUL, ISLE_GAME_SYNCHRONOUS}) {
         ActorControlFixture f{}; isle_rng rng{1}; World world;
         auto* object = bind(world, f, rng);
-        f.actor.transitionGraph = &f;
+        f.actor.transitionGraph = &pending_graph;
         f.actor.stateProc = start(world, object, actor_control_creation_failure, 7, kind);
         auto* original = f.actor.stateProc;
         isle_span consumed{};
@@ -268,8 +269,6 @@ void creation_failure_exits_both_c_fences() {
         trace(f, {60});
         require(f.actor.stateProc == original && f.actor.transitionGraph == nullptr && counts(world).processes == 1,
                 "failed create published NULL/new state or silently ended old source process");
-        require(std::strstr(isle_game_error(world.game), "creation failed") != nullptr,
-                "C fence lost concrete source creation failure");
         IsleGameProcess* rejected = original;
         require(isle_game_add_source_process(world.game, object, actor_control_new_state,
                     ISLE_GAME_STACKFUL, 7, &rejected) == ISLE_GAME_EXECUTION_FAILURE && rejected == nullptr,

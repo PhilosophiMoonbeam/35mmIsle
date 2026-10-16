@@ -15,20 +15,35 @@ typedef struct IsleActorGround {
     uint32_t surfaceType;
 } IsleActorGround;
 
+/* Native typed rows; guest function words are never callable addresses.
+ * rows/count is caller-retained readable storage including a command58 terminal.
+ * Executable callback closure admission precedes installing a nonNULL graph. */
+typedef struct IsleActorInteraction {
+    int32_t cmd;
+    IsleGameSourceCallback state;
+    float value;
+    IsleGameSourceCallback aux;
+} IsleActorInteraction;
+typedef struct IsleActorInteractionGraph {
+    const IsleActorInteraction* rows;
+    size_t count;
+    uint32_t source_identity;
+} IsleActorInteractionGraph;
+
 /* Native semantic data, not a console Pokemon layout. Exactly one record is
  * bound to the real GObj.userData; updateUser remains the engine's context.
  * Owner, RNG and record must survive all source processes and actual joined
  * object retirement. Serialization is the native game's owner/worker handoff.
- * After joined retirement a caller may zero/reuse the record; stale raw object
- * and process handles never become valid again merely because an address is
- * recycled. No automatic record reclamation or GPU completion is implied. */
+ * After joined retirement AND all registered queue/stored-field borrows close,
+ * the owning caller may zero/reuse the record. Stale raw object/process handles
+ * never revive through address reuse. GPU completion remains a separate fence. */
 typedef struct IsleActorSource {
     IsleGameProcess* stateProc;
     IsleGameProcess* pathProc;
     uint32_t processFlags;
     int32_t id;
     uint16_t flags;                /* Actual Pokemon semantics, not GObj flags. */
-    const void* transitionGraph;
+    const IsleActorInteractionGraph* transitionGraph;
     const void* animHeader;
     uint32_t modelAnims, matAnims;
     int32_t loopCount, pokemonLoopTarget, counter;
@@ -43,6 +58,7 @@ typedef struct IsleActorSource {
     IsleActorGround currGround;   /* Destination query survives an ordinarily blocked walk. */
     IsleGameVec3 pos1, targetPos, euler, collisionOffset;
     IsleGameVec3 collPosition;     /* Sole canonical source collision point. */
+    IsleGameVec3 dirToNeighbors;  /* Sole source neighbor direction, not collision membership. */
     float collisionRadius, playerDist, interactionDist;
     int32_t behavior;
     struct { int32_t field1; } miscVars[7];

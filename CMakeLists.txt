@@ -401,10 +401,13 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/actor_photo_eligibility.cpp src/actor_photo_eligibility.hpp
             src/actor_photo_membership.cpp src/actor_photo_membership.hpp
             src/actor_collision.cpp src/actor_collision.hpp
+            src/actor_spatial.cpp src/actor_spatial.h
+            src/actor_behavior_bindings.cpp src/actor_behavior_bindings.hpp
             src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
         target_link_libraries(isle-actor-owner PUBLIC
             isle-engine isle-actor-producer isle-world isle-environment-sound
-            isle-menu-effects isle-source-effect-world isle-focus-detector)
+            isle-menu-effects isle-source-effect-world isle-focus-detector
+            isle-beach-behavior-resources)
         target_include_directories(isle-actor-owner PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/include")
         isle_target_options(isle-actor-owner)
@@ -664,6 +667,15 @@ if(BUILD_TESTING)
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
         add_test(NAME actor-collision-tests COMMAND actor-collision-tests)
         set_tests_properties(actor-collision-tests PROPERTIES
+            LABELS "synthetic;private-game-source" TIMEOUT 60)
+        add_executable(actor-spatial-tests tests/actor_spatial_tests.cpp)
+        target_link_libraries(actor-spatial-tests PRIVATE isle-actor-owner)
+        isle_target_options(actor-spatial-tests)
+        target_compile_options(actor-spatial-tests PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_test(NAME actor-spatial-tests COMMAND actor-spatial-tests)
+        set_tests_properties(actor-spatial-tests PROPERTIES
             LABELS "synthetic;private-game-source" TIMEOUT 60)
     endif()
     if(TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE)

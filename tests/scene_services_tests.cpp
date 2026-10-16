@@ -1,4 +1,5 @@
 #include "scene_services.hpp"
+#include "actor_source.h"
 #include "scene_storage.hpp"
 #include "audio_fixture.hpp"
 #include "engine_fixture.h"
@@ -594,12 +595,203 @@ void services_lifecycle_composes_delete_paths(const fs::path& parent) {
     }
 }
 
+// These are real Services/GObj/canonical-payload owners, not queue callback
+// echoes. Native identity reuse is checked independently of semantic fields.
+struct SourceRecord {
+    IsleActorSource source{};
+    std::array<IsleGameObject**,2> fields{&source.apple,&source.interactionTarget};
+    IsleGameObject* object = nullptr;
+    IsleGameModel* model = nullptr;
+};
+void source_record(sc::Services& services, SourceRecord& record, unsigned id) {
+    record.object = services.object(id);
+    const IsleGameModelNodeInit node{UINT32_MAX,{{1,2,3},{0,0,0},{1,1,1}},ISLE_GAME_MODEL_CONTEXTUAL_RPY};
+    check(record.object && isle_game_attach_model(services.game,record.object,&node,1,&record.model) == ISLE_GAME_OK &&
+          isle_actor_source_bind(services.game,record.object,&record.source,&services.rng,&record) == ISLE_GAME_OK &&
+          services.source_owner_register(record.object,record.fields),"register actual canonical source/model owner");
+}
+struct SourceDelivery {
+    sc::Services* services = nullptr;
+    SourceRecord* receiver = nullptr;
+    IsleGameObject* sender = nullptr;
+    unsigned calls = 0, returned = 0;
+    bool park = false;
+};
+void source_delivery(IsleGameObject* object, std::int32_t command, IsleGameObject* sender, void* user) noexcept {
+    auto* context = static_cast<SourceDelivery*>(user);
+    auto& services = *context->services;
+    ++context->calls;
+    check(sender == context->sender && !services.source_owner_collectable(sender) &&
+          !services.source_owner_release(sender),"in-flight retired sender cannot collect inside manual handler");
+    if (context->park) {
+        check(isle_game_wait(services.game,100) == ISLE_GAME_OK,"park actual in-flight source delivery");
+        ++context->returned;
+        return;
+    }
+    if (command == 73) {
+        check(services.source_reference_assign(object,&context->receiver->source.interactionTarget,sender),
+              "adopt actual canonical target before finishing delivered credit");
+        check(services.source_command_before_transfer(object) && services.source_command_before_transfer(object) &&
+              services.source_owner_borrows(sender).fields == 1 &&
+              services.source_owner_borrows(sender).queued == 1,
+              "explicit finish settles current once while preserving ordinary FIFO suffix");
+    } else {
+        check(command == 74 && services.source_owner_borrows(sender).queued == 1,
+              "ordinary suffix arrives with its own in-flight credit");
+    }
+}
+void source_dispatch(IsleGameObject*, void* user) noexcept {
+    auto* context = static_cast<SourceDelivery*>(user);
+    context->services->process_commands(context->receiver->object);
+    ++context->returned;
+}
+void services_source_owners(const fs::path& parent) {
+    Profile profile(parent);
+    isle::game::State state(profile.path);
+    check(state.initialize(1),"initialize source-owner profile");
+    AudioOwner audio_owner;
+    auto audio = audio_owner.create();
+    if (!audio || !state.initialized()) throw std::runtime_error("source-owner fixture admission");
+    isle::game_input::Service input;
+    sc::Storage native(1024*1024);
+    check(native.create() == ISLE_GAME_OK,"create source-owner native arena");
+    sc::Services services(native.game(),native.arena(),{{2,2,0,0,0},{}},input,*audio.session,state);
+    SourceRecord sender, receiver, alternate;
+    source_record(services,sender,201); source_record(services,receiver,202); source_record(services,alternate,203);
+    SourceDelivery delivery{&services,&receiver,sender.object};
+    check(services.set_command_handler(receiver.object,source_delivery,&delivery) &&
+          services.send_command(receiver.object,73,sender.object) &&
+          services.send_command(receiver.object,74,sender.object) &&
+          services.source_owner_borrows(sender.object).queued == 2,"all custom commands acquire actual successful-enqueue borrows");
+    services.erase(sender.object);
+    IsleActorSource* expired = nullptr;
+    check(isle_actor_source_get(services.game,sender.object,&expired) != ISLE_GAME_OK && !expired &&
+          !services.source_owner_collectable(sender.object),"held sender is identity-only after real native retirement");
+    auto* pressure = services.object(204);
+    check(pressure && pressure != sender.object,"native allocator cannot alias queued retired source");
+    check(services.process_commands(receiver.object) && delivery.calls == 2 &&
+          services.source_owner_borrows(sender.object).queued == 0 &&
+          services.source_owner_borrows(sender.object).fields == 1 &&
+          receiver.source.interactionTarget == sender.object &&
+          !services.source_owner_collectable(sender.object),"delivery adopts persistent actual target without releasing semantic source");
+    check(services.source_reference_assign(receiver.object,&receiver.source.apple,sender.object) &&
+          services.source_owner_borrows(sender.object).fields == 2 &&
+          services.source_reference_assign(receiver.object,&receiver.source.apple,sender.object) &&
+          services.source_owner_borrows(sender.object).fields == 2,"same-field assignment does not double borrow");
+    check(services.source_reference_assign(receiver.object,&receiver.source.interactionTarget,alternate.object) &&
+          services.source_owner_borrows(sender.object).fields == 1 &&
+          services.source_owner_borrows(alternate.object).fields == 1 &&
+          services.source_reference_assign(receiver.object,&receiver.source.apple,nullptr) &&
+          services.source_owner_collectable(sender.object) && services.source_owner_release(sender.object),
+          "replacement and NULL release old borrows exactly once");
+    auto* reused = services.object(205);
+    check(reused == sender.object,"final joined source release returns actual address to native allocator");
+    services.erase(receiver.object); // Closes its owned target, not other owners' fields.
+    check(!receiver.source.interactionTarget && services.source_owner_borrows(alternate.object).fields == 0 &&
+          services.source_owner_release(receiver.object),"receiver retirement closes actual canonical field");
+    services.erase(alternate.object);
+    check(services.source_owner_release(alternate.object),"release alternate joined semantic owner");
+    services.erase(pressure); services.erase(reused);
+
+    SourceRecord cycle_a, cycle_b;
+    source_record(services,cycle_a,206); source_record(services,cycle_b,207);
+    check(services.source_reference_assign(cycle_a.object,&cycle_a.source.apple,cycle_b.object) &&
+          services.source_reference_assign(cycle_b.object,&cycle_b.source.interactionTarget,cycle_a.object) &&
+          services.send_command(cycle_b.object,12345,cycle_a.object),"cross-owner cycle and arbitrary custom sender enqueue");
+    services.erase(cycle_a.object);
+    check(!cycle_a.source.apple && cycle_b.source.interactionTarget == cycle_a.object &&
+          !services.source_owner_collectable(cycle_a.object) &&
+          services.source_owner_borrows(cycle_a.object).queued == 1,
+          "sender retirement does not eagerly clear other receiver's canonical fields or queued notifications");
+    services.erase(cycle_b.object);
+    check(!cycle_b.source.interactionTarget && services.source_owner_borrows(cycle_a.object).queued == 0 &&
+          services.source_owner_release(cycle_a.object) && services.source_owner_release(cycle_b.object),
+          "receiver retirement breaks field cycle and cancels each queued credit once");
+
+    SourceRecord parked_sender, parked_receiver;
+    source_record(services,parked_sender,208); source_record(services,parked_receiver,209);
+    auto* caller = services.object(210);
+    SourceDelivery parked{&services,&parked_receiver,parked_sender.object,0,0,true};
+    check(services.set_update(parked_receiver.object,nullptr,nullptr) &&
+          services.set_command_handler(parked_receiver.object,source_delivery,&parked) &&
+          services.process(caller,source_dispatch,&parked) &&
+          services.send_command(parked_receiver.object,73,parked_sender.object) &&
+          isle_game_tick(services.game) == ISLE_GAME_OK && parked.calls == 1,"park real cross-object source command continuation");
+    services.erase(parked_sender.object); services.erase(parked_receiver.object);
+    check(services.source_owner_borrows(parked_sender.object).queued == 1 &&
+          !services.source_owner_collectable(parked_sender.object) &&
+          !services.source_owner_collectable(parked_receiver.object),
+          "receiver join alone cannot close external caller's active dispatch token");
+    services.erase(caller);
+    check(!parked.returned && services.source_owner_borrows(parked_sender.object).queued == 0 &&
+          services.source_owner_release(parked_sender.object) &&
+          services.source_owner_release(parked_receiver.object),"actual caller join closes abandoned active borrow without unwinding");
+
+    SourceRecord failed_sender, failed_receiver;
+    source_record(services,failed_sender,211); source_record(services,failed_receiver,212);
+    services.fail("authored source enqueue rejection");
+    check(!services.send_command(failed_receiver.object,99,failed_sender.object) &&
+          services.source_owner_borrows(failed_sender.object).queued == 0,"failed enqueue records no semantic borrow");
+    services.erase(failed_sender.object);
+    check(services.source_owner_release(failed_sender.object),"failed enqueue cannot pin an otherwise collectable source");
+    services.erase(failed_receiver.object);
+    check(services.source_owner_release(failed_receiver.object),"failed scene permits joined source ownership release");
+}
+void adopt_target(IsleGameObject* object, std::int32_t, IsleGameObject* sender, void* user) noexcept {
+    auto& context=*static_cast<SourceDelivery*>(user);
+    auto& receiver=*context.receiver;
+    auto& services=*context.services;
+    check(services.source_reference_assign(object,&receiver.source.interactionTarget,sender),
+          "actual canonical target assignment failed");
+}
+void services_reject_unregistered_sender(const fs::path& parent) {
+    Profile profile(parent);
+    isle::game::State state(profile.path);
+    check(state.initialize(1),"initialize source-admission profile");
+    AudioOwner audio_owner; auto audio=audio_owner.create();
+    if (!audio || !state.initialized()) throw std::runtime_error("source-admission fixture");
+    isle::game_input::Service input;
+    sc::Storage native(1024*1024);
+    check(native.create()==ISLE_GAME_OK,"create source-admission native arena");
+    sc::Services services(native.game(),native.arena(),{{2,2,0,0,0},{}},input,*audio.session,state);
+    SourceRecord receiver;
+    source_record(services,receiver,301);
+    SourceDelivery delivery{&services,&receiver};
+    check(services.set_command_handler(receiver.object,adopt_target,&delivery),"install real field-adopting receiver");
+    auto* raw_sender=services.object(302);
+    check(raw_sender!=nullptr,"create unregistered native sender");
+    const bool enqueued=services.send_command(receiver.object,26,raw_sender);
+    check(!enqueued && services.failed(),"unregistered semantic sender must reject before source FIFO publication");
+    services.erase(raw_sender);
+    IsleGameObject* replacement=nullptr;
+    if (enqueued) {
+        // Expose the actual ABA consequence if admission ever regresses again.
+        replacement=services.object(303);
+        check(replacement && services.source_owner_register(replacement,{}),"register allocator replacement");
+        check(services.process_commands(receiver.object),"deliver unexpected unsafe source command");
+        check(receiver.source.interactionTarget!=replacement,
+              "queued retired unregistered sender rebound to replacement semantic identity");
+    }
+    check(!receiver.source.interactionTarget &&
+          services.source_owner_borrows(receiver.object).queued==0 &&
+          services.source_owner_borrows(receiver.object).fields==0,
+          "rejected source admission changed canonical fields or semantic credits");
+    services.erase(receiver.object);
+    check(services.source_owner_release(receiver.object),"release actual receiver after rejected source request");
+    if (replacement) {
+        services.erase(replacement);
+        check(services.source_owner_release(replacement),"release unexpected replacement after receiver cancellation");
+    }
+}
+
 } // namespace
 int main(int argc, char** argv) {
     try {
         if (argc > 2) throw std::runtime_error("usage: scene-services-tests [existing-owned-parent-directory]");
         services_preserve_state_and_source_metadata(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_lifecycle_composes_delete_paths(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
+        services_source_owners(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
+        services_reject_unregistered_sender(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
     } catch (const std::exception& error) { std::cerr << "FAIL: " << error.what() << '\n'; return EXIT_FAILURE; }
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;
 }

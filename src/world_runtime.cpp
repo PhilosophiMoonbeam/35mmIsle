@@ -19,8 +19,12 @@ Vec3 relative(const Block& a, const Block& b) {
 }
 ResourceView view(const Resources& r) {
     r.require_live();
+    // Pinned Beach 55C110.c79-84 installs only its height map. ground.c3-4
+    // initializes sCeilingMap to NULL; neither decoded WorldSetup nor
+    // WorldBlockSetup contains a ceiling pointer. Other courses must supply
+    // their admitted map through ResourceView, not an invented Beach address.
     return {&r.setup(),&r.sky(),r.blocks(),r.primary_count(),r.models(),r.materials(),r.animations(),r.paths(),
-            r.static_definitions(),&r.height_map(),r.collision_models()};
+            r.static_definitions(),&r.height_map(),r.collision_models(),nullptr};
 }
 }
 struct World::Impl {
@@ -353,6 +357,24 @@ bool World::ground_at(float x, float z, GroundResult& result) const {
     collision::GroundResult ground;
     const bool found = collision::ground_at(*s.resources.height_map,{p.x,p.y,p.z},x,z,ground);
     result = {ground.height,ground.normal,ground.surface}; return found;
+}
+bool World::ceiling_at_global(float x, float z, GroundResult& result) const {
+    const auto& s = *impl_; s.live(); result = {};
+    if (!s.resources.ceiling_map) return false;
+    collision::GroundResult ceiling;
+    const bool found = collision::ground_at_global(*s.resources.ceiling_map,x,z,ceiling);
+    result = {ceiling.height,ceiling.normal,ceiling.surface}; return found;
+}
+bool World::ceiling_at(float x, float z, GroundResult& result) const {
+    const auto& s = *impl_; s.live();
+    // The source tests map absence before even looking up the current block.
+    if (!s.resources.ceiling_map) return false;
+    result = {};
+    if (!s.current || !s.current->resource) return false;
+    const auto p = s.current->resource->metadata.world_position;
+    collision::GroundResult ceiling;
+    const bool found = collision::ground_at(*s.resources.ceiling_map,{p.x,p.y,p.z},x,z,ceiling);
+    result = {ceiling.height,ceiling.normal,ceiling.surface}; return found;
 }
 std::int32_t World::collide(Vec3 position, Vec3 velocity, Vec3& out_position, Vec3& out_velocity) const {
     const auto& s = *impl_; s.live();

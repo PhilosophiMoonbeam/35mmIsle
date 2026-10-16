@@ -1,7 +1,7 @@
 #include "actual_actor_world_hooks.hpp"
 // Explicit opt-in actual-ROM CPU/private-native-API consumer; never CTest or
 // default discovery. No graphics borrower/executor is created. This proves the
-// bounded command26 identity/NULL-graph mechanism, not collision-manager/gameplay
+// command26 queue/stored-field identity and NULL-graph mechanism, not complete
 // coverage, GPU lifetime, fullgame, Original or Windows11 execution.
 // Authority: GAME df8815e75f3d79618466e01e0827c6165b93d11c,
 // pokemon.c:1896-1910,1968-1995,2055-2088; common1003 4FE330.c:63-109.
@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <array>
 #include <cstdlib>
-#include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
@@ -37,7 +36,7 @@ struct State {
     IsleGameProcess* state=nullptr;
     IsleGameProcess* path=nullptr;
     IsleGameSourceCallback function=nullptr;
-    const void* graph=nullptr;
+    const IsleActorInteractionGraph* graph=nullptr;
     IsleGameObject* apple=nullptr;
     IsleGameObject* target=nullptr;
     float distance=0;
@@ -68,6 +67,7 @@ struct Consumer {
     std::size_t definition=beach::actor_no_index;
     std::uint32_t next_id=10000;
     unsigned reuse_proofs=0;
+    const IsleActorInteractionGraph invalid_graph{};
     Consumer(scene::Services& s,actor::Owner& o,world::World& w,const beach::ActorResources& r)
         : services(s),owner(o),world(w),resources(r),baseline(counts(s)) {
         const auto definitions=resources.definitions();
@@ -151,14 +151,18 @@ struct Consumer {
             object=services.object(next_id++);
             require(object&&object!=sender.object,"unrelated native allocator reused a held26 sender address");
         }
-        // Deliberately set matching identities AFTER the retiring hook's own
-        // stale-target cleanup.26 must not clear either, even for a dead sender.
+        // Adopt matching canonical identities AFTER actual sender retirement.
+        //26 must not clear either or revive the sender's native payload.
         auto* record=owner.source(receiver.instance);
-        record->apple=sender.object; record->interactionTarget=sender.object; record->interactionDist=37.0f;
+        require(services.source_reference_assign(receiver.object,&record->apple,sender.object)&&
+                services.source_reference_assign(receiver.object,&record->interactionTarget,sender.object),"adopt held sender fields");
+        record->interactionDist=37.0f;
         const State state(services,*record); const auto dispatched_counts=counts(services);
         dispatch(receiver.object); state.unchanged(services,*record);
         require(same_counts(counts(services),dispatched_counts),"NULL-graph26 changed native ownership on delivery");
-        record->apple=nullptr; record->interactionTarget=nullptr;
+        held(sender); // Delivered queue credit is gone; canonical fields still own it.
+        require(services.source_reference_assign(receiver.object,&record->apple,nullptr)&&
+                services.source_reference_assign(receiver.object,&record->interactionTarget,nullptr),"release held sender fields");
         accepted(owner.collect_joined());
         const auto replacement=spawn();
         incarnation(sender,replacement,"delivery");
@@ -197,7 +201,7 @@ struct Consumer {
         const auto sender=spawn(),receiver=spawn();
         // NonNULL is an explicit fail-closed graph, NOT a provider. If canceled
         //26 commands were fake-delivered, the real Owner handler would fail.
-        owner.source(receiver.instance)->transitionGraph=&resources;
+        owner.source(receiver.instance)->transitionGraph=&invalid_graph;
         send(receiver.object,-1,sender.object);
         send(receiver.object,26,sender.object); send(receiver.object,26,sender.object);
         native_delete(sender); held(sender);
@@ -216,7 +220,9 @@ struct Consumer {
     void live_consumption_and_legacy_clearing() {
         const auto sender=spawn(),receiver=spawn();
         auto* record=owner.source(receiver.instance);
-        record->apple=sender.object; record->interactionTarget=sender.object; record->interactionDist=19.0f;
+        require(services.source_reference_assign(receiver.object,&record->apple,sender.object)&&
+                services.source_reference_assign(receiver.object,&record->interactionTarget,sender.object),"adopt live sender fields");
+        record->interactionDist=19.0f;
         const State state(services,*record); const auto before=counts(services);
         send(receiver.object,26,sender.object); dispatch(receiver.object);
         state.unchanged(services,*record);
@@ -241,7 +247,8 @@ struct Consumer {
         require(record->tangible&&record->pathProc&&!record->transitionGraph,
                 "actual source trigger did not start a real priority5 path/NULL graph");
         send(receiver.object,-2,sender.object); tick();
-        record->apple=sender.object; record->interactionTarget=sender.object;
+        require(services.source_reference_assign(receiver.object,&record->apple,sender.object)&&
+                services.source_reference_assign(receiver.object,&record->interactionTarget,sender.object),"adopt paused sender fields");
         record->counter=2; record->processFlags&=~std::uint32_t(POKEMON_PROCESS_WAIT_ENDED);
         const State state(services,*record); const auto before=counts(services);
         const auto time=owner.animation().model(receiver.instance).animation_time;
@@ -290,15 +297,35 @@ struct Consumer {
                  <<" animation_resumed="<<progressed<<" path_before="<<y<<" path_resumed="<<progressed_y<<'\n';
         reset();
     }
+    void first_held_slot_preserves_progress() {
+        const auto earlier=spawn(),held_sender=spawn(),later=spawn(),receiver=spawn();
+        send(receiver.object,12345,held_sender.object);
+        native_delete(earlier); native_delete(held_sender); native_delete(later);
+        held(held_sender);
+        const auto earlier_replacement=spawn();
+        incarnation(earlier,earlier_replacement,"earlier-progress-before-first-held");
+        require(!owner.membership(earlier.instance).joined&&owner.membership(later.instance).joined,
+                "collection did not preserve earlier progress and stop at first held semantic slot");
+        const auto unavailable=attempt();
+        require(!unavailable&&unavailable.status.error==actor::OwnerError::capacity,
+                "collection skipped first-held slot to reclaim a later retiring slot");
+        dispatch(receiver.object);
+        accepted(owner.collect_joined());
+        const auto held_replacement=spawn(),later_replacement=spawn();
+        incarnation(held_sender,held_replacement,"arbitrary-custom-command");
+        incarnation(later,later_replacement,"after-first-held");
+        reset();
+    }
     void nonnull_graph_and_failed_enqueue() {
         const auto sender=spawn(),receiver=spawn();
         auto* record=owner.source(receiver.instance);
-        record->transitionGraph=&resources; record->apple=receiver.object; record->interactionTarget=receiver.object;
+        record->transitionGraph=&invalid_graph;
+        require(services.source_reference_assign(receiver.object,&record->apple,receiver.object)&&
+                services.source_reference_assign(receiver.object,&record->interactionTarget,receiver.object),"adopt self fields");
         const State state(services,*record); const auto before=counts(services);
         send(receiver.object,26,sender.object);
-        require(!services.process_commands(receiver.object)&&services.failed()&&
-                std::strcmp(services.error(),"actor command transition graph is not natively admitted")==0,
-                "nonNULL graph26 was silently admitted or reported an unrelated error");
+        require(!services.process_commands(receiver.object)&&services.failed(),
+                "invalid typed graph26 was silently admitted without sticky failure");
         state.unchanged(services,*record);
         require(same_counts(counts(services),before),"rejected graph26 ran native state/process ownership mutation");
         // Sticky failure rejects before successful FIFO enqueue/observer. Keep
@@ -377,6 +404,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             consumer.fifo_delete_cancels_tail(); pump();
             consumer.live_consumption_and_legacy_clearing(); pump();
             consumer.actual_fifo_pause_tail(); pump();
+            consumer.first_held_slot_preserves_progress(); pump();
         });
         // Sticky graph rejection is isolated from the healthy actual fixtures.
         with_owner([&](Consumer& consumer) { consumer.nonnull_graph_and_failed_enqueue(); });

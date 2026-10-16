@@ -1,0 +1,864 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6",
+  "scope": "Implemented real shared source lifetime, source spatial leaves, optional ceiling semantics and typed callable-data binding; complete C interpreters/native Item/Player/species services are still separately tracked, not claimed by these component proofs",
+  "authority": "Exact own-GAME immutable stage/blobs and authorized initialized data; no SDK producer/header/layout/disassembly or guest-function casts",
+  "native_support": {
+    "src/actor_source.h": {
+      "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "c2a00167ccd34a20c997b2b2233855f4574cc2af32a549ca0812255e8e053908"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "7a15395f96420e26a1f474dd7d5033f830bbaad78ce8ef7abe539643c18256ae"
+    },
+    "src/actor_source_bridge.c": {
+      "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "d93b080426ece5dee17220bdc132463e8320b217198b25f798d639239587a5c4"
+    },
+    "src/actor_owner.hpp": {
+      "sha256": "4558fb6974cc26c7554ab3fdf65dca22bcefca0dbee2c9a5bfe076c12cd0e373"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "a264723c2dcbc47ed3ae3a3e4115cf9eb37df18029499bc5a2ee040154d2e7db"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "71bfa5982bc66764ca89735cd296446bee32985460d6af2feadbf1d31f8a1c89"
+    },
+    "src/menu_scene_bridge.c": {
+      "sha256": "56c37eba980ca385be779cce38e5736a62487ecec41fd62e61a173e5a69863fa"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "1179c511bc7939dbe789da040afac6828e29a44b768c0a3fae47ade8076d2d7b"
+    },
+    "src/actor_spatial.h": {
+      "sha256": "962287772ecea45dbc4431ec014969c15dab2ba66bdd39e04853c6641326aaf9"
+    },
+    "src/actor_spatial.cpp": {
+      "sha256": "96ee40fe4ae80aeae7603a16e7768b4f2ba9f785ba815abac40933bb84acac97"
+    },
+    "src/actor_behavior_bindings.hpp": {
+      "sha256": "ebe6ace16313da2d3433b2a59dcdae72c47f8d77820d2dcaa427a39afd7de8c9"
+    },
+    "src/actor_behavior_bindings.cpp": {
+      "sha256": "6abe9e894b8c46b8a8a31aad315b7beed2696fca2c40109ae8af14c8ad0a71a2"
+    },
+    "src/world_runtime.hpp": {
+      "sha256": "ce18f1ec7e3219a7ba4f3677c82dce0af67486d6c8d4c1968abffb1bcf19ddca"
+    },
+    "src/world_runtime.cpp": {
+      "sha256": "4a92f82dfb94d21179fe26059b2fa2b5ce1012a374853fcfaf7b41a8b61d86a6"
+    },
+    "src/world_collision.cpp": {
+      "sha256": "976022f82ca35e6870f78675a34db6f4580fe1a935d31cfa800b3fe607337be0"
+    },
+    "tests/actor_spatial_tests.cpp": {
+      "sha256": "bd5afdd961ce6339b5784474b44425407f0f3837022bf66bbff29cec4509440d"
+    },
+    "tests/scene_services_tests.cpp": {
+      "sha256": "ac56e38fd0236fe28e8f7e84976c3726013544033f58df041e876e06095cb219"
+    },
+    "tests/world_runtime_tests.cpp": {
+      "sha256": "6a728390cf234cae6462a4731cad3ee07132bfd79e8ea46d18c2452b03d7e32a"
+    },
+    "tests/world_collision_tests.cpp": {
+      "sha256": "810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"
+    },
+    "tests/actor_control_tests.cpp": {
+      "sha256": "245acee37ce8a1cb80c8d6a3e27e044cffe6a1c5f2ad2cc665c895c56d44941a"
+    },
+    "tests/actor_owner_rom_smoke.cpp": {
+      "sha256": "ec29810a1ef40308e22846bcc9229aed36e61887368cff7c574413c4a135cd69"
+    },
+    "tests/magikarp_owner_rom_smoke.cpp": {
+      "sha256": "fd30566a0aa7c83abd1d7e7927c8c99f04b99c3b94c2ada1d3d5fc6d816d4bc0"
+    },
+    "tests/actor_command26_rom_smoke.cpp": {
+      "sha256": "360f206583313c369cda7c7b16106db3f6e40e138fcf7595c7ab6a89055b7f28"
+    }
+  },
+  "source_files": {
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "spans": [
+        [
+          74,
+          118
+        ],
+        [
+          560,
+          588
+        ],
+        [
+          1146,
+          1210
+        ],
+        [
+          2250,
+          2321
+        ],
+        [
+          2344,
+          2344
+        ]
+      ],
+      "facts": "Pokemon_IsGroundForbidden queries first, then either the nine-value integer default switch or an exact-float custom replacement ending at zero/first match. Pokemon_StepWalk queries next X/Z directly into currGround; if permitted, probes old AUX plus normalized velocity times signed collisionRadius using a separate ground temporary; exact fixed-height test precedes X/Z and optional ground-Y publication. No source targetPos, pos1, euler, root-local animation, yaw, tangibility or collPosition mutation occurs in this leaf."
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "spans": [
+        [
+          115,
+          124
+        ]
+      ],
+      "facts": "Movement ON_GROUND is bit0x01 and FIXED_HEIGHT bit0x10. The other movement flags do not gain behavior in StepWalk."
+    },
+    "src/sys/vector.c": {
+      "git_blob": "99b21e6c073cdbce135abfc10533defc56a05026",
+      "sha256": "f36b6f36e6e1434bd498d41df4b03e63775d8f765dc6337f76a7ccfbb5c9fa57",
+      "spans": [
+        [
+          5,
+          16
+        ],
+        [
+          54,
+          60
+        ]
+      ],
+      "facts": "Walk normalization uses sqrtf of left-associated binary32 squares and reciprocal multiplication. Zero magnitude returns without modifying the vector, including a nonzero component whose square underflows. Infinite squared magnitude from finite components is defined and gives zero components via reciprocal multiplication. Signed radius scale follows normalization; the different existing world_collision division helper is not reused."
+    },
+    "src/world/ground.c": {
+      "git_blob": "3a224b70ccbb73fca7138d0f5b5da7c17d7a6de2",
+      "sha256": "88d9003eee13aadb2d344596cb8b08a461e9ceca0b9d0975d06eced8dee822a9",
+      "spans": [
+        [
+          40,
+          86
+        ]
+      ],
+      "facts": "Absent current block, descriptor or height map gives height-9000, up normal and unsigned-minus-one surface. Coordinates transform as query/100 plus current-block world X/Z; block world elevation is subtracted before height times100. Full World normal including source up-axis swap and signed surface converted to native uint32 is retained, not reconstructed from height. The source walk ignores the ground boolean."
+    },
+    "src/world/ground_int.c": {
+      "git_blob": "83c264a3f8a579e25b1bdec0a95a9e61f9ada8d0",
+      "sha256": "9a9682b79d156d56102c5f4cc3a6587366d2fac9d28eaa9110b1104b2ba39c9f",
+      "spans": [
+        [
+          72,
+          96
+        ],
+        [
+          102,
+          112
+        ],
+        [
+          118,
+          137
+        ]
+      ],
+      "facts": "Ground branch equality selects right, patch takes precedence over child, and an uncovered branch returns NULL. ground.c then dereferences its missing normal: native ground_query rejects consumed uncovered/malformed paths rather than silently manufacturing fallback ground. Plane C zero gives zero height; no synthetic unit normal or new nonnegative-radius/underflow policy is added. Source unsigned patch surface shifts eight and masks24 bits."
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "spans": [
+        [
+          172,
+          193
+        ]
+      ],
+      "facts": "Default forbidden nine surface values are 007F66/00FF00/337FB2/4CCCCC/7F6633/7F667F/FF0000/FF4C19/FF7FB2."
+    }
+  },
+  "additional_source_semantics": {
+    "pokemon.c": "444-484 actual AUX/root distance;590-628 native link3 ordered weighted away-vector;630-720/1806-2064 complete interpreter contract researched but not yet executable native admission",
+    "ground.c": "89-105 GLOBAL absent ceiling writesdefault;108-133 LOCAL absent ceiling preservesoutput, present missingcurrent/descriptor defaults, nativeworldtranslation retained",
+    "ground_int.c": "118-129 normalizeoriginalA/B/C then ground.c swap; vector.c5-16 reciprocalmultiply/zero branch",
+    "beach/55C110.c": "79-84 sets height only; no initialized ceiling pointer in WorldBlockSetup, real Beach config NULL; nativegeneric positive ceiling remainsimplemented"
+  },
+  "shared_source_ownership": {
+    "registration": "OneexistingServices objectrecord, nativeidentityhold andborrowed actualcanonicalfieldaddresses. RegisterwhilelivebeforeSourcepublication; no secondIDmap, Actor matrices removed. Othermenuobjects remain opt-in",
+    "queue": "Successfulenqueue acquires one token; failed allocation/enqueue none. Persistent active tokenprotectsmanual/real delivery andfieldadoption. Normal return/explicitcurrentfinish/provencallerjoin settlesonce; nevercancel ordinarysuffix. UnregisterednonNULLsender tosourceownedcustomreceiver rejectsBEFOREenqueue. Builtinunconsumedsource semantics unchanged",
+    "fields": "Adoptnewsender beforeoldrelease; sameactualapple/targetnotcopies. Sender may be held-retired equalityidentity but notlivepayload/model. Replacement/21/22/receiverretirement releaseborrow; retiringreceiverbreaksownedfieldcycles without eagerlyclearingotherreceivers",
+    "collection": "Realjoined+outsideOM/commands/GPU/preparation/readback/postprocess+zeroqueue/inflight/fieldcounts, thenreleaseServices registration/nativehold. FirstheldActorslotfailswithpriorpartialprogresspreserved",
+    "actual_expanded_C26_each_profile": {
+      "reuse_proofs": 10,
+      "actual_audio_RSP_tasks": 9,
+      "checked_PCM_samples": 10176,
+      "stop_retraces": 2
+    }
+  },
+  "spatial": {
+    "API": [
+      "isle_actor_spatial_distance(IsleGame*,first,second,float*)",
+      "isle_actor_spatial_neighbors(IsleActorSource*,IsleGameVec3*,float*)"
+    ],
+    "distance": "Real native AUX whenenabled elseactualroot; NULLarguments/liveNULLsecondmodel FLTMAX; badfirstmodel, wronggame/payload, retiredmodel errors. Purelive API isnot aheld-retired interpreter projection",
+    "neighbors": "Actualnative link3 order acrossowners; onlyselfexcluded; AUX/full3D/strict100/sourceawayvector; accumulate distance*normalized components in order thennormalizesum. No hidden/tangible/pause/species/radius filter. CanonicaldirToNeighbors field; alloutputs unchangedonerror; no Cfault/wait insideCpp"
+  },
+  "ceilings": "AppendResourceView optionalactualmap; World ceiling_at_global/default vsceiling_at/untouched absentmap semantics; sameoneboundedexistingheighttree, no solver/prewalk/newalwaysfalseprovider. Realnativepositive/sloped/translated/maps/normal/unsignedsurface/cycle/unvisitedbranch/retirement/errorcases qualified",
+  "callable_binding": {
+    "native_graph": "TypedIsleActorInteractionGraph immutable rows/count including58/sourceidentity replacesvoid. NativeCallback typeexact; no guestwordcasts. C localgraphlifetimes stillneed eventual executableOwner admission",
+    "closure": "Constructor translatescomplete requestedcallback/graph/weighteddependencies once; cyclesdeduped; unknownlater/ineligible executablecallbacks rejectwholeconstructedowner. Unknownnonexecutablerow/terminalcallbackwords notexecuted; sourceorder/floatbits/NULLNULL retained; weightedNULLterminal",
+    "actual_CPU_only_proof": {
+      "graphs": 71,
+      "graph_rows": 212,
+      "weighted_lists": 8,
+      "graph_callback_identities": 72,
+      "command16_rows": 10,
+      "unresolved_graph_rejections": 70,
+      "terminal_only_graph_admissions": 1,
+      "unresolved_weighted_rejections": 8,
+      "real_compiled_common_callback_dependency_closure": 3,
+      "missing_transitive_callback_rejected": true,
+      "moved_Snapshot_rejected": true,
+      "temporary_consumer_removed_after_proof": true
+    },
+    "NOT_claimed": "Executable full71graph/8list factory/services/species closure or complete RunInteractions/HandleCommand/Item/Player/gameplay; openissue.4 andparent remainactive"
+  },
+  "integration_bug_proofs": {
+    "unregistered_sender": {
+      "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6.1.1",
+      "before": {
+        "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6.1.1",
+        "binary_sha256": "c4547f05c39039b715cac920b9ff77352c67654608fb5b6ee75ec19a15921183",
+        "source_sha256": "9cdeb0e959cd6acdc5cc35bfb08287a3f8e807c5a6aa206c9435ac4c08203b4e",
+        "test_source_sha256": "ac56e38fd0236fe28e8f7e84976c3726013544033f58df041e876e06095cb219",
+        "returncode": 1,
+        "observed": [
+          "unregistered sender accepted",
+          "real native address reused as registered replacement",
+          "canonical target adopted replacement through old queued pointer"
+        ],
+        "ROM_or_devices": false
+      },
+      "after_binary_sha256": "aa6c75463e267de182e538a5cc4a4ad2f74552fd9abe542a84667d3c8c9138a8",
+      "after_source_sha256": "a264723c2dcbc47ed3ae3a3e4115cf9eb37df18029499bc5a2ee040154d2e7db",
+      "same_test_source_sha256": "ac56e38fd0236fe28e8f7e84976c3726013544033f58df041e876e06095cb219",
+      "after_returncode": 0,
+      "change": "source-owned custom sender registration checked before node allocation/acquisition/publication; builtinunconsumed identities andopt-inmenu preserved"
+    },
+    "source_height_normal": {
+      "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6.3.1",
+      "published_before_source_revision": "1142f69e6d8afcbf73c696752d7e2ca2b40478bd",
+      "before_source_sha256": "ab1b6b693ff7e5cef68512b6f5fa572f529796af93d7c23129cc855deecea9fb",
+      "after_source_sha256": "976022f82ca35e6870f78675a34db6f4580fe1a935d31cfa800b3fe607337be0",
+      "probe_source_sha256": "04f42a3145ef281b0f0ffa0aed482598cc026839873d7dc20ac8b2ba10cb5ac8",
+      "results": [
+        {
+          "label": "published-before",
+          "binary_sha256": "62a98b06df77e3026ab55ce8ee35075c2091b4a784258552d6f04b1234e41a74",
+          "returncode": 1,
+          "stdout": "normal_bits=397ffffe,39bfffff,3f7ffffe\n",
+          "stderr": ""
+        },
+        {
+          "label": "corrected-after",
+          "binary_sha256": "ab25c2be5086649c6a9ebde065e2e59e38f310b64b585089e0dc984912d481ea",
+          "returncode": 0,
+          "stdout": "normal_bits=39800000,39c00000,3f800000\n",
+          "stderr": ""
+        }
+      ],
+      "ROM_or_devices": false
+    }
+  },
+  "CPU_contracts": {
+    "GCCDebug": {
+      "passed": 53,
+      "seconds": 3.64,
+      "raw_artifact": "7909"
+    },
+    "GCCRelease": {
+      "passed": 53,
+      "seconds": 0.95,
+      "raw_artifact": "7911"
+    },
+    "ClangASanUBSan": {
+      "passed": 53,
+      "seconds": 12.61,
+      "raw_artifact": "7915"
+    }
+  },
+  "accepted_private_runs": [
+    {
+      "label": "GCCDebug complete sharedsource command26",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-command26-dve_1r9x",
+      "binary_sha256": "e14332decdb86798b4a6b8eaa3c7f0d2779b096cdb6a66d943e2ceb2ee02a6cc",
+      "source_archive_sha256": "d23387c79096ab5611809fd6d91559955a51bac1d788d6dbe694c86276c4886e",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 0.8019781259354204,
+      "closed_terminals_created_absent": [
+        34,
+        33,
+        35
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "GCCDebug complete sharedsource manager",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-manager-fqd2czt4",
+      "binary_sha256": "92fb9dd860c9f1f98ba4c6b931b1135ece4ba8fe4d13b3356f6f4a15104dea29",
+      "source_archive_sha256": "081be2b5f182643140040fc0b8a6c63dfcc5ca6267be6cc8a47eb2670f573dcf",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 0.765842839027755,
+      "closed_terminals_created_absent": [
+        37,
+        36,
+        38
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "GCCDebug complete sharedsource pairGPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-pairGPU-byrr8jga",
+      "binary_sha256": "ce6787ce786e4095b6e2aeaf4e49d1efe3d59fda178cb54f9fb224dbf8d5835d",
+      "source_archive_sha256": "52494452a6d7c9fe7d8445f5b5a12aede593bc32778ca1d781c93b650790d6c3",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 8.844601858989336,
+      "closed_terminals_created_absent": [
+        45,
+        44,
+        46
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "GCCDebug complete sharedsource originalGenuine",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-originalGenuine-i5eageiw",
+      "binary_sha256": "4102ac15e48e6893c794a149fbbd70205cd7fe4f3e948ced4918cd0667faea2c",
+      "source_archive_sha256": "2e14f89ddeed639a70dae8dfda3ef33a07b8c48e7f4ea6be53e4123e081d18ee",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 11.254876506049186,
+      "closed_terminals_created_absent": [
+        48,
+        47,
+        49
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Release complete sharedsource command26",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Release-command26-2xwbbz9a",
+      "binary_sha256": "e2f2bf3e32340edaabc4f57a889c6844b09eba39bd2516b87f521bea34ec5385",
+      "source_archive_sha256": "07e420ffa020abe74104aebbf66a0939864e11f66e65a14e88562bd6630c1664",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 1.3137409660266712,
+      "closed_terminals_created_absent": [
+        34,
+        33,
+        35
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Release complete sharedsource manager",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Release-manager-txjqtvv9",
+      "binary_sha256": "83865bfc7aa74d1271fb537e92f0ff5a0c96115b0c17c03dcd5af5b196c1583a",
+      "source_archive_sha256": "986756ecce4f99e68508001342d6cd0eb3d4f55e358027101edda07a39b16462",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 1.2892535859718919,
+      "closed_terminals_created_absent": [
+        37,
+        36,
+        38
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Release complete sharedsource pairGPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Release-pairGPU-ml2lat16",
+      "binary_sha256": "e1bedf55b0d129689ec7a6884233c9901a43eccdbb24fbdc92b138da5034a780",
+      "source_archive_sha256": "28536b003215d1cd64f794342e2f26f36d8aa226959d5b2f33ff8f9a5e4c75d2",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 21.201201273011975,
+      "closed_terminals_created_absent": [
+        47,
+        46,
+        48
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Release complete sharedsource originalGenuine",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Release-originalGenuine-qn6dcm78",
+      "binary_sha256": "2934ae26ec8dfd3d58ab4f89f72d960a1e2c596f4a331d2decb256410be9a206",
+      "source_archive_sha256": "c857579d2fad92dd2d62e8798a645a17856289945a5c343f950482faa792e1f5",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 23.439143416006118,
+      "closed_terminals_created_absent": [
+        51,
+        50,
+        52
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Release complete sharedsource oldCommonCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Release-oldCommonCPU-rh9yzan_",
+      "binary_sha256": "2bb647c2aac87984eb6f2edefbac68fbf77ae0c838cef03812b0059c415189a5",
+      "source_archive_sha256": "2da5e69b4d48b41e4157229ce8f7aeefb5f1d97fa33b9815120fc4cdcca7b45b",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 1.7244963309494779,
+      "closed_terminals_created_absent": [
+        26,
+        25,
+        27
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Release complete sharedsource oldMagCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Release-oldMagCPU-81i7sro_",
+      "binary_sha256": "6cfd5f690bcda97b9ae469daa1b8cc4cf64bdb117ae49d44d5781335d6b8b197",
+      "source_archive_sha256": "83dc9fc25bd4d30e3be615d8be195bcc94a4d1910e33b6aa568fc5405bfd2ff6",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 0.8056518549565226,
+      "closed_terminals_created_absent": [
+        25,
+        24,
+        26
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Release complete sharedsource oldSceneCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Release-oldSceneCPU-i6op44jn",
+      "binary_sha256": "e6babd26e8ec96c12ef14a9d63078f7571c9dfca08770bddf9001f95d194e387",
+      "source_archive_sha256": "86ff2d6f4b2906fa22f65ffd15f4d7831c269e38ee529ffee65c07d69f4c3974",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 1.1298278720350936,
+      "closed_terminals_created_absent": [
+        8,
+        7,
+        9
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "ClangASanUBSan complete sharedsource command26",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-ClangASanUBSan-command26-w0io1m8z",
+      "binary_sha256": "0d20248ee2e67170b1261206f95b20d402ab1d2fd2f9090ee921fbf92929a51c",
+      "source_archive_sha256": "491371672a038c3f7e62fe33cbe2724ddea583c563fca5798400f4cc2a21052b",
+      "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+      "elapsed_seconds": 5.2824980289442465,
+      "closed_terminals_created_absent": [
+        34,
+        33,
+        35
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "ClangASanUBSan complete sharedsource manager",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-ClangASanUBSan-manager-lgxwa09y",
+      "binary_sha256": "6aa81c46af104bf6358bc2697b55f9e9a3c60b7683021a291eaa30346d3e09a1",
+      "source_archive_sha256": "b20a2f3ee9c61dbe7b09dacc29c618138347a44c1723bfaa7a0de5b53c21435a",
+      "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+      "elapsed_seconds": 5.539011134998873,
+      "closed_terminals_created_absent": [
+        37,
+        36,
+        38
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "ClangASanUBSan complete sharedsource pairGPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-ClangASanUBSan-pairGPU-79rte1ld",
+      "binary_sha256": "bb86922c217c34eb6be8b5aed17133efaa83c68311dabc2f8c7247e76e69b106",
+      "source_archive_sha256": "a6338cd9c82af1c047ad4394cb0c0daf0ac472469331fe78622d1309e14fe742",
+      "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+      "elapsed_seconds": 32.98224044498056,
+      "closed_terminals_created_absent": [
+        47,
+        46,
+        48
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "ClangASanUBSan complete sharedsource originalGenuine",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-ClangASanUBSan-originalGenuine-e60656i_",
+      "binary_sha256": "ffdbb8984b74c685677377daf94889b50d32d81dd28c9595b661c1d86d0429bc",
+      "source_archive_sha256": "8060050e496264179c6eb1620353fd7124b3d742be994c02e334302ccd8b50f4",
+      "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+      "elapsed_seconds": 42.049227064009756,
+      "closed_terminals_created_absent": [
+        50,
+        49,
+        51
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "ClangASanUBSan complete sharedsource oldCommonCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-ClangASanUBSan-oldCommonCPU-j6udokng",
+      "binary_sha256": "a96088a9ba91d8fdd8f66a8ea40e3335d501f38e8249efd6377e6b4de2e6da04",
+      "source_archive_sha256": "4084ecf423ce1d55055513193572e04f03a28ed75cd24e0723adafb2218f36f3",
+      "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+      "elapsed_seconds": 16.084282455965877,
+      "closed_terminals_created_absent": [
+        26,
+        25,
+        27
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "ClangASanUBSan complete sharedsource oldMagCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-ClangASanUBSan-oldMagCPU-l8kxw3m7",
+      "binary_sha256": "394e4a2f18ef19d50ebed5c93e48a40006d283d6dc621dd35700cf7e20601d54",
+      "source_archive_sha256": "ee3d1f87654639040912f7d11587cf89bd2a725403086fc2f40cc3262c32aa38",
+      "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+      "elapsed_seconds": 5.902122888946906,
+      "closed_terminals_created_absent": [
+        25,
+        24,
+        26
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "ClangASanUBSan complete sharedsource oldSceneCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-ClangASanUBSan-oldSceneCPU-itmng3h8",
+      "binary_sha256": "add6576e395dd98375261097bf5341d2b180cdc5a9ce2b77ed387073a16d3022",
+      "source_archive_sha256": "5712bf65cae6b93b1ac2e2ec9009ba4cb340355e3cc8cfdb007e67274c1bf4f9",
+      "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+      "elapsed_seconds": 5.1817647269926965,
+      "closed_terminals_created_absent": [
+        8,
+        7,
+        9
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Debug complete sharedsource oldCommonCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-oldCommonCPU-tzuxyve7",
+      "binary_sha256": "d8a5e24037c3f760d7d410dd821d07bc7fbc73dc231a0a4766813146f52ad070",
+      "source_archive_sha256": "05f09600045dc78a6c0ea2aa53197acd953b214c37a62090ff2988bca3c1acfa",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 6.032967934035696,
+      "closed_terminals_created_absent": [
+        26,
+        25,
+        27
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Debug complete sharedsource oldMagCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-oldMagCPU-9e25yl5v",
+      "binary_sha256": "f46efc71f869eaf87774e6a3c38b036fb7ddb9c23090a26b9936a70e180576fa",
+      "source_archive_sha256": "a11d3cbc04fd486529a998c291500f8f983a3421709b8dc8b70f98edd0fe29c7",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 2.209268710925244,
+      "closed_terminals_created_absent": [
+        25,
+        24,
+        26
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Debug complete sharedsource oldSceneCPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-oldSceneCPU-z_xt0jt_",
+      "binary_sha256": "4a4468f2221370e5fec0f530469cbab38ae1c69bee77e05ed400d150a88612ca",
+      "source_archive_sha256": "9b821cf5e955b004f424b82e00809d08fba0eaf402a1dae14d637d88502deb4d",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 2.2584220280405134,
+      "closed_terminals_created_absent": [
+        8,
+        7,
+        9
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Debug complete sharedsource originalCommon12GPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-originalCommon12GPU-kgtg309z",
+      "binary_sha256": "8a4e2a62540a3721b581953f8b389d20019b352d3717ff9a3e3cd6ee10df752c",
+      "source_archive_sha256": "ccf28711757951a0c85cf222c3e12b385752d1b218e954aec8af82297f44467a",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 22.69728356099222,
+      "closed_terminals_created_absent": [
+        46,
+        45,
+        47
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Debug complete unchanged originalFullSixGPU correct allCLIprerequisites",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-fullsix-complete-prerequisites-z55fipaq",
+      "binary_sha256": "42a677c7d97ed965b8f6d3fd4fd25debd97d1241f10efe40bf276641419166d2",
+      "source_archive_sha256": "779720947c827f9ddca22ab7ff440b6818719f93ade821152bce791b09951557",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 12.11674741806928,
+      "closed_terminals_created_absent": [
+        77,
+        76,
+        78
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    },
+    {
+      "label": "Actual CPU-only typed callable-data closure, complete graph inventory and real3commoncallbackcycle",
+      "capture_root": "/home/bbferko/35mmisle-native-callable-CPU-only-pwg81c6f",
+      "binary_sha256": "a360ba6574fa661df187f7b13e7b7461f6f8246cf3a578d861fba339b6877fab",
+      "source_archive_sha256": "7a151101d18dd2da449787a3f97a9014af10b9a4cb915bf8fbb79960aac8c5bc",
+      "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+      "elapsed_seconds": 0.40849094197619706,
+      "closed_terminals_created_absent": [
+        1,
+        0,
+        2
+      ],
+      "all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "returncode": 0
+    }
+  ],
+  "rejected_private_runs": [
+    {
+      "capture_root": "/home/bbferko/35mmisle-native-callable-closure-inventory-2y4fw2kj",
+      "binary_sha256": "a360ba6574fa661df187f7b13e7b7461f6f8246cf3a578d861fba339b6877fab",
+      "source_archive_sha256": "5a3cbcb27466ec203e1fc5b4aff29280e6bc0ae2d4be4b62055a679ab1b9f7a3",
+      "elapsed_seconds": 0.41225438099354506,
+      "returncode": 0,
+      "closed_terminals_created_absent": [
+        1,
+        0,
+        2
+      ],
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "whole_root_rejected": true,
+      "partial_callable_or_inventory_acceptance": false,
+      "reason": "Parent accidentally inherited generic canonicalGPU required_graphics text for a CPU-only metadata/binding CLI. Actual CPU-only execution does not fulfill that frozen graphics requirement. Whole root rejected; never reopen/replay/rescan/read logs or partially accept inventory. Fresh root explicitly predeclares no graphics/audio."
+    },
+    {
+      "label": "Debug originalFullSixGPU",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-Debug-originalFullSixGPU-8ldxf57_",
+      "binary_sha256": "42a677c7d97ed965b8f6d3fd4fd25debd97d1241f10efe40bf276641419166d2",
+      "source_archive_sha256": "379c47641411541aa8c770c818a37508a27096d4e4223926b32982c6385362ea",
+      "elapsed_seconds": 0.21347951400093734,
+      "returncode": 1,
+      "closed_terminals_created_absent": [
+        1,
+        0,
+        2
+      ],
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "whole_root_rejected": true,
+      "partial_acceptance": false,
+      "reason": "Parent supplied 3arguments to unchanged fullsix consumer; actual source627-645 accepts ROM plus optional EMPTY_CAPTURE only, no profile argument. Usage rejection is not product failure. Whole root immutable: never reopen/replay/rescan/image/logread/partialaccept; fresh root correctargs only; binary/source/cohort/budget unchanged."
+    },
+    {
+      "label": "Debug fullsix correctCLI butmissingexistingemptycapture",
+      "capture_root": "/home/bbferko/35mmisle-shared-source-fullsix-correct-CLI-dhzinxnk",
+      "binary_sha256": "42a677c7d97ed965b8f6d3fd4fd25debd97d1241f10efe40bf276641419166d2",
+      "source_archive_sha256": "bcd3f30cab0e8ed657398a6c94ace93f6b3ef5ab63bf624f5afd8d5f3dadcda7",
+      "elapsed_seconds": 0.04482597904279828,
+      "returncode": 1,
+      "closed_terminals_created_absent": [
+        1,
+        0,
+        2
+      ],
+      "rom_unchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "whole_root_rejected": true,
+      "partial_acceptance": false,
+      "reason": "Parent corrected CLI butdidnotcreate required EXISTING EMPTY privatecapture directory. Consumer correctlyrejects. No production/source/binary/budgetchanges; whole rootneveraccess/replay/rescan/images/logread/partialaccept again. Freshroot createsexactrequired700emptydirectorybeforelaunch."
+    }
+  ],
+  "saved_pair_surfaces": {
+    "actual-collision-before.ppm": {
+      "sha256": "578f5cce00c040b1204adeb34703c72671d136674c7a873ebe11265277cf7ec0",
+      "rgb_sha256": "9d2594edc9a3254fd464eaef4ac3c420eb3198efc34eb6e64460f75a0d0ac32f"
+    },
+    "actual-collision-after.ppm": {
+      "sha256": "8964f44531fa6de048202e082cae4629d108bb3a5c807a6e888d0b4a49ce0ca0",
+      "rgb_sha256": "9dff0c67ac3bdc04f3b76d665481f443dde60eb387f0e19969f0a572e86de054"
+    },
+    "actual-collision-hidden.ppm": {
+      "sha256": "de6c5bd0feb1bead823649ce8203967c1aa1ab08d64c5a22d42e3e79b28d89f6",
+      "rgb_sha256": "b7616ea035687c4010c73e192081d0dfbaccb564c43ad98924087fe374a6fdbd"
+    },
+    "actual-collision-retired.ppm": {
+      "sha256": "12cb68024b41423436016c50b4ac264ff65a77ab363ca4ef5ecd3fa6ce32c158",
+      "rgb_sha256": "8220d41e370b0c5025320babd293fd3c5d6e6b6e72c232861c54c7416c43591d"
+    }
+  },
+  "saved_genuine_surfaces": {
+    "genuine-magikarp-update1.ppm": {
+      "sha256": "cfee4b0f9f3236f6fe3437966c3e11b0fac7ee3009528bc92630b479ae19ee89",
+      "rgb_sha256": "805c343fdd1d0f4678d8bcdfeca3d58c4f1204fd72db9bf36883a7ff8bbf23d7"
+    },
+    "genuine-magikarp-update11.ppm": {
+      "sha256": "4145833ee3ee74f25e6acee4b03db5ff2d41882517274fc336d0b0f1b6e0c711",
+      "rgb_sha256": "ee5f76d41e44016b8efb4feb20b38256c0ac3bd58c5c1a226f55e0a995817b00"
+    },
+    "genuine-magikarp-hidden.ppm": {
+      "sha256": "12cb68024b41423436016c50b4ac264ff65a77ab363ca4ef5ecd3fa6ce32c158",
+      "rgb_sha256": "8220d41e370b0c5025320babd293fd3c5d6e6b6e72c232861c54c7416c43591d"
+    },
+    "genuine-source-retired.ppm": {
+      "sha256": "dcdae6baf92ddc54b60048f2f963d33ad6cf148038e750df93dbd31e5ed0c863",
+      "rgb_sha256": "216ab8795653dc9abc1ba92dfcf75d656e24f9ff4ddd648e2c4ae18e0bd2634c"
+    },
+    "ordinary-common-reused-slot.ppm": {
+      "sha256": "ea11b2fe2453a7fe7015b01e75051ffb0f2d2e8962273c87ff01dcb5add0ea96",
+      "rgb_sha256": "3f9640332541430e8c284e4b84109038c713e3361068f946aff7b96b678b6919"
+    }
+  },
+  "qualification": {
+    "status": "qualified-local-real-shared-source-spatial-ceiling-callable-data-and-preserved-full-GPU",
+    "accepted_complete_runs": 24,
+    "all_sole_initial_whole_tree_closures_stable_tasks_absent_ROMunchanged_zero_known_physical_permission_attempts": true,
+    "pair4_and_genuine5_saved_surfaces_byte_identical_all3profiles_prior_inspected_proof": true,
+    "original3GPUconsumer_source_bytes_unchanged": true,
+    "fatal_ASan_UBSan": true,
+    "ptrace_only_LSan_disabled_not_leak_qualification": true,
+    "failed_roots_immutable_after_final_rejection_no_subsequent_access_or_partial_results_used": true,
+    "not_qualified": [
+      "complete nonNULL C interpreters/services/all71graph callback closure",
+      "native Item/Player FSM and fullphotoqueue/snapshots",
+      "other species/courses/product entrypoint",
+      "Original numerical equivalence",
+      "physical devices/hearing",
+      "private Windows11 execution"
+    ]
+  }
+}

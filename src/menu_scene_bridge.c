@@ -7,6 +7,7 @@ struct IsleGameCommand {
     struct IsleGameCommand* next;
     int32_t command;
     IsleGameObject* source;
+    void* borrow;
 };
 
 static IsleGameResult access(IsleGame* game) {
@@ -113,6 +114,7 @@ IsleGameResult isle_game_command_send(IsleGameCommandPool* pool, IsleGameCommand
     entry->next = NULL;
     entry->command = command;
     entry->source = source != NULL ? source : omCurrentObject;
+    entry->borrow = queue->acquire != NULL ? queue->acquire(entry->source, queue->borrow_user) : NULL;
     if (queue->tail != NULL) queue->tail->next = entry;
     else queue->head = entry;
     queue->tail = entry;
@@ -120,11 +122,30 @@ IsleGameResult isle_game_command_send(IsleGameCommandPool* pool, IsleGameCommand
     return ISLE_GAME_OK;
 }
 
+static void settle_command(IsleGameCommandQueue* queue, IsleGameCommand* command) {
+    void* token = command->borrow;
+    command->borrow = NULL;
+    if (token != NULL && queue->release != NULL) queue->release(token, queue->borrow_user);
+}
+void isle_game_command_finish(IsleGameCommandQueue* queue) {
+    void* token;
+    if (queue == NULL) return;
+    token = queue->active_borrow;
+    queue->active_borrow = NULL;
+    if (token != NULL && queue->release != NULL) queue->release(token, queue->borrow_user);
+}
+
+
 void isle_game_commands_release(IsleGameCommandPool* pool, IsleGameCommandQueue* queue) {
     if (pool == NULL || queue == NULL) return;
+    for (IsleGameCommand* command = queue->head; command != NULL; command = command->next)
+        settle_command(queue, command);
     if (queue->processing) { queue->cancelled = 1; return; }
+    isle_game_command_finish(queue);
     if (queue->tail != NULL) { queue->tail->next = pool->free; pool->free = queue->head; }
-    *queue = (IsleGameCommandQueue){0};
+    queue->head = queue->tail = NULL;
+    queue->count = 0;
+    queue->processing = queue->cancelled = 0;
 }
 
 IsleGameResult isle_menu_observe_command_queued(IsleGame* game, IsleGameObject* object,
@@ -154,6 +175,10 @@ IsleGameResult isle_game_commands(IsleGame* game, IsleGameObject* object,
     if (queue->processing) return ISLE_GAME_INVALID_STATE;
     queue->processing = 1;
     for (IsleGameCommand* command = queue->head; command != NULL; command = command->next) {
+        /* In-flight ownership survives manual dispatch and nonreturning C
+         * frames in persistent queue storage, never in C++ RAII. */
+        queue->active_borrow = command->borrow;
+        command->borrow = NULL;
         switch (command->command) {
         case -1:
             queue->processing = 0;
@@ -173,6 +198,7 @@ IsleGameResult isle_game_commands(IsleGame* game, IsleGameObject* object,
             }
             break;
         }
+        isle_game_command_finish(queue);
         if (queue->cancelled || !object->alive || (object == omCurrentObject && omD_8004AC54 == 2)) {
             *delete_requested = object->alive && object == omCurrentObject && omD_8004AC54 == 2;
             break;

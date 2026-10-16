@@ -144,22 +144,22 @@
       "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
     },
     "src/actor_owner.hpp": {
-      "sha256": "e0729ff863adcc2184ea6d27d5d7c246f1fbad5f202cb19b2e72cb74d2e17071"
+      "sha256": "4558fb6974cc26c7554ab3fdf65dca22bcefca0dbee2c9a5bfe076c12cd0e373"
     },
     "src/actor_owner.cpp": {
-      "sha256": "3424c6458f0feba22d993465ea00bc9ab4b538b2ee27967f6e87aa40da3cf2a0"
+      "sha256": "d93b080426ece5dee17220bdc132463e8320b217198b25f798d639239587a5c4"
     },
     "src/actor_owner_source.h": {
-      "sha256": "592c76744a49094a1efad2317813c9804619d582115e105fed79477dd84c3dda"
+      "sha256": "c2a00167ccd34a20c997b2b2233855f4574cc2af32a549ca0812255e8e053908"
     },
     "src/actor_source.h": {
-      "sha256": "5d9335a916e4fcd3aa2f9b71d141944b9f398526dd57e1685935cb79752ee5f6"
+      "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
     },
     "src/actor_source_bridge.c": {
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "62cff17b65330b22a011cbecb77459c65c0972cf8cf5ef6c91e293a4b2b8e43c"
+      "sha256": "7a15395f96420e26a1f474dd7d5033f830bbaad78ce8ef7abe539643c18256ae"
     },
     "src/beach_actor_resources.hpp": {
       "sha256": "aeb595bf1a418bfe7999df35b5acfd3b24757a8fab07c50443b7f9752743c16e"
@@ -168,10 +168,10 @@
       "sha256": "f5aeb56a912880c06a0fa1aa4623db8a3e5a78686d084ab124bd4eb446f3896b"
     },
     "src/scene_services.hpp": {
-      "sha256": "bc26c6c0a52c9cf78b62188f76babdbdfec6cdb1373b4d27798e235fc2393ef1"
+      "sha256": "71bfa5982bc66764ca89735cd296446bee32985460d6af2feadbf1d31f8a1c89"
     },
     "src/scene_services.cpp": {
-      "sha256": "5f7449264679d95615ad61375e0b19336fa709c5e09db05ffb5d0d00be18ee5a"
+      "sha256": "a264723c2dcbc47ed3ae3a3e4115cf9eb37df18029499bc5a2ee040154d2e7db"
     },
     "src/environment_sound.hpp": {
       "sha256": "ed68da392f3530ce1506d219f56fb8b6c19495b6882170efcc65833bc1364294"
@@ -183,10 +183,10 @@
       "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "5d496c888aab05529e7591bf7f5a0c39f2534768a935c5c32f6a93c6d7ef59f0"
+      "sha256": "30082e1c32d148fbd89c3ea1920767ad488f90b8abf80b4916181d8e08191849"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "acb07a79b9f1332c04740e2a42d6e0dbc91813ce0788531bca5ee3ac720d2ee4"
+      "sha256": "ec29810a1ef40308e22846bcc9229aed36e61887368cff7c574413c4a135cd69"
     },
     "tests/beach_actor_resources_rom_smoke.cpp": {
       "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"

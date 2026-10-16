@@ -38,6 +38,9 @@ struct Services::Impl {
         void* command_queued_user = nullptr;
         RenderMetadata render{};
         ObjectLifecycle lifecycle{};
+        std::span<IsleGameObject** const> source_fields{};
+        SourceBorrows source_borrows{};
+        bool source_registered = false;
         bool drawing = false, deleting = false, dispatching = false, retired = false;
         bool dispatch_owner_joined = false;
     };
@@ -115,9 +118,35 @@ struct Services::Impl {
         auto* entry = static_cast<ObjectRecord*>(user);
         entry->owner->s.process_commands(entry->object);
     }
+    static void* acquire_source(IsleGameObject* source, void* user) noexcept {
+        auto& self = *static_cast<Impl*>(user);
+        auto* entry = source ? self.find(source) : nullptr;
+        if (!entry || !entry->source_registered) return nullptr;
+        ++entry->source_borrows.queued;
+        return entry;
+    }
+    static void release_source(void* token, void*) noexcept {
+        auto& entry = *static_cast<ObjectRecord*>(token);
+        if (!entry.source_borrows.queued) entry.owner->s.fail("scene queued source borrow corruption");
+        else --entry.source_borrows.queued;
+    }
+    void close_source_fields(ObjectRecord& entry) noexcept {
+        for (auto** field : entry.source_fields) {
+            if (!*field) continue;
+            auto* sender = find(*field);
+            if (!sender || !sender->source_registered || !sender->source_borrows.fields)
+                s.fail("scene canonical source field borrow corruption");
+            else --sender->source_borrows.fields;
+            *field = nullptr;
+        }
+    }
     static void retiring(IsleGameObject* object, void* user) noexcept {
         auto* entry = static_cast<ObjectRecord*>(user);
         entry->deleting = true;
+        // Close this receiver's owned references, not references in other live
+        // receivers: ordinary 21/22 remain visible at their real FIFO positions.
+        entry->owner->close_source_fields(*entry);
+        isle_game_commands_release(&entry->owner->commands, &entry->commands);
         if (entry->lifecycle.retiring != nullptr)
             entry->lifecycle.retiring(object, entry->lifecycle.user);
     }
@@ -135,8 +164,13 @@ struct Services::Impl {
             if (dependent->dispatching && dependent->dispatch_owner == entry) {
                 dependent->dispatch_owner_joined = true;
                 dependent->dispatch_owner = nullptr;
+                // Actual caller join proves even a live target's abandoned
+                // handler cannot resume its active sender access.
+                isle_game_command_finish(&dependent->commands);
                 if (dependent != entry && dependent->retired && !owner->destroying) {
+                    dependent->dispatching = false;
                     dependent->commands.processing = 0;
+                    isle_game_commands_release(&owner->commands, &dependent->commands);
                     owner->unlink(dependent);
                 }
             }
@@ -144,6 +178,8 @@ struct Services::Impl {
         }
         if (entry->dispatching && entry->dispatch_owner_joined) {
             entry->commands.processing = 0;
+            entry->dispatching = false;
+            isle_game_commands_release(&owner->commands, &entry->commands);
             owner->unlink(entry);
         } else if (entry->dispatching) {
             isle_game_commands_release(&owner->commands, &entry->commands);
@@ -152,6 +188,9 @@ struct Services::Impl {
         }
     }
     void unlink(ObjectRecord* entry) noexcept {
+        // A source owner is the semantic slot authority, including after native
+        // join. Only its outside-OM release may recycle this registration.
+        if (entry->source_registered) return;
         auto** at = &objects;
         while (*at != nullptr && *at != entry) at = &(*at)->next;
         if (*at != nullptr) *at = entry->next;
@@ -278,7 +317,9 @@ Services::~Services() {
         if (!entry->retired || (entry->dispatching && !entry->dispatch_owner_joined))
             std::terminate();
         entry->commands.processing = 0;
-        impl_->unlink(entry);
+        if (entry->source_registered) {
+            if (!source_owner_release(entry->object)) std::terminate();
+        } else impl_->unlink(entry);
     }
 }
 bool Services::failed() const noexcept { return impl_->error[0] != '\0'; }
@@ -310,6 +351,9 @@ IsleGameObject* Services::object(std::uint32_t id, std::uint8_t link, std::uint3
     if (record == nullptr) return nullptr;
     *record = Impl::ObjectRecord{};
     record->owner = impl_.get();
+    record->commands.acquire = Impl::acquire_source;
+    record->commands.release = Impl::release_source;
+    record->commands.borrow_user = impl_.get();
     if (!check(isle_game_add_object(game, id, link, priority, Impl::default_update, record,
             &record->object), "menu native object creation")) {
         record->next = impl_->free_objects;
@@ -364,6 +408,81 @@ bool Services::set_command_queued_observer(IsleGameObject* object, IsleGameComma
     record->command_queued=callback; record->command_queued_user=user;
     return !failed();
 }
+bool Services::source_owner_register(IsleGameObject* object,
+    std::span<IsleGameObject** const> fields) noexcept {
+    auto* record = object ? impl_->find(object) : nullptr;
+    if (failed()) return false;
+    if (!record || record->deleting || record->source_registered) {
+        fail("scene source registration requires a unique live Services owner");
+        return false;
+    }
+    for (std::size_t i = 0; i < fields.size(); ++i) {
+        if (!fields[i] || *fields[i]) {
+            fail("scene source registration requires actual NULL canonical fields");
+            return false;
+        }
+        for (std::size_t j = 0; j < i; ++j) if (fields[i] == fields[j]) {
+            fail("scene source registration repeats a canonical field");
+            return false;
+        }
+    }
+    if (!check(isle_game_object_retain_identity(game, object), "scene source native identity retain")) return false;
+    record->source_fields = fields;
+    record->source_registered = true;
+    return true;
+}
+bool Services::source_reference_assign(IsleGameObject* receiver, IsleGameObject** field,
+    IsleGameObject* source) noexcept {
+    auto* record = receiver ? impl_->find(receiver) : nullptr;
+    if (!record || !record->source_registered || record->deleting ||
+        std::find(record->source_fields.begin(), record->source_fields.end(), field) == record->source_fields.end()) {
+        fail("scene reference assignment requires an actual live registered canonical field");
+        return false;
+    }
+    auto* sender = source ? impl_->find(source) : nullptr;
+    if (source && (!sender || !sender->source_registered)) {
+        fail("scene reference assignment source is not registered");
+        return false;
+    }
+    if (*field == source) return true;
+    auto* old = *field ? impl_->find(*field) : nullptr;
+    if (*field && (!old || !old->source_registered || !old->source_borrows.fields)) {
+        fail("scene reference assignment found an unowned canonical field");
+        return false;
+    }
+    if (sender) ++sender->source_borrows.fields;
+    *field = source;
+    if (old) --old->source_borrows.fields;
+    return true;
+}
+SourceBorrows Services::source_owner_borrows(IsleGameObject* object) const noexcept {
+    const auto* record = object ? impl_->find(object) : nullptr;
+    return record && record->source_registered ? record->source_borrows : SourceBorrows{};
+}
+bool Services::source_owner_collectable(IsleGameObject* object) const noexcept {
+    const auto* record = object ? impl_->find(object) : nullptr;
+    return record && record->source_registered && record->retired && !record->dispatching &&
+        !record->source_borrows.queued && !record->source_borrows.fields;
+}
+bool Services::source_owner_release(IsleGameObject* object) noexcept {
+    if (!source_owner_collectable(object)) return false;
+    auto* record = impl_->find(object);
+    // Native release enforces actual outside-OM/callback exclusion as well.
+    if (isle_game_object_release_identity(game, object) != ISLE_GAME_OK) return false;
+    record->source_registered = false;
+    record->source_fields = {};
+    impl_->unlink(record);
+    return true;
+}
+bool Services::source_command_before_transfer(IsleGameObject* object) noexcept {
+    auto* record = object ? impl_->find(object) : nullptr;
+    if (!record || !record->dispatching || !record->commands.processing) {
+        fail("scene source transfer requires the active custom command handler");
+        return false;
+    }
+    isle_game_command_finish(&record->commands);
+    return true;
+}
 bool Services::process_commands(IsleGameObject* object) noexcept {
     auto* record = impl_->find(object);
     if (record == nullptr) { fail("scene command processing owner is unregistered"); return false; }
@@ -390,6 +509,16 @@ bool Services::send_command(IsleGameObject* object, std::int32_t command, IsleGa
     auto* record = impl_->find(object);
     if (record == nullptr || record->deleting) { fail("scene command destination is unregistered or retiring"); return false; }
     if (source == nullptr) source = isle_menu_current_object(game);
+    // Source fields may outlive delivery. An unregistered sender has neither a
+    // semantic slot nor a native identity hold and could alias a later owner.
+    // Built-ins never consume sender identity; ordinary menu queues stay opt-in.
+    if (record->source_registered && (command >= 0 || command < -5) && source) {
+        const auto* sender = impl_->find(source);
+        if (!sender || !sender->source_registered) {
+            fail("scene source command sender is not registered");
+            return false;
+        }
+    }
     if (!check(isle_game_command_send(&impl_->commands, &record->commands, command, source), "scene command enqueue")) return false;
     if (record->command_queued &&
         !check(isle_menu_observe_command_queued(game, record->object, command, source,

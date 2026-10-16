@@ -46,6 +46,8 @@ struct ResourceView {
     std::span<const StaticDefinition> static_definitions;
     const HeightMap* height_map = nullptr;
     std::span<const CollisionModel> collision_models;
+    // Optional source sCeilingMap, independent of the ground height map.
+    const HeightMap* ceiling_map = nullptr;
 };
 struct RenderObject {
     IsleGameObject* object = nullptr;
@@ -87,6 +89,10 @@ public:
     const menu::animation::Runtime& animation_runtime() const;
     const ResourceView& resources() const noexcept;
     bool ground_at(float x, float z, GroundResult&) const;
+    // GAME ground.c89-133: global absence defaults the result; local absence
+    // leaves it untouched. A present map uses the same height-tree solver.
+    bool ceiling_at_global(float x, float z, GroundResult&) const;
+    bool ceiling_at(float x, float z, GroundResult&) const;
     std::int32_t collide(Vec3 position, Vec3 velocity, Vec3& out_position, Vec3& out_velocity) const;
     void clear_block(Block&);
     void retire() noexcept;

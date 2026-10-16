@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -70,6 +71,115 @@ struct Input {
 void event(const Trace& trace,std::size_t i,char kind,std::size_t block,std::size_t reference = 0) {
     require(i < trace.events.size() && trace.events[i].kind == kind && trace.events[i].block == block &&
         trace.events[i].reference == reference,"world callback source order differs");
+}
+bool default_ground(const w::GroundResult& result) {
+    return result.height == -9000 && result.normal.x == 0 && !std::signbit(result.normal.x) &&
+        result.normal.y == 1 && result.normal.z == 0 && !std::signbit(result.normal.z) && result.surface == -1;
+}
+void optional_ceiling_output_rules() {
+    Native n; Input input; Trace trace;
+    w::World world(n.game,input.view(),trace.callbacks());
+    require(world.resources().ceiling_map == nullptr,"legacy aggregate acquired an invented ceiling map");
+    const float infinity = std::numeric_limits<float>::infinity();
+    w::GroundResult result{123,{-0.0f,7,-11},42};
+    const auto unchanged = [&] {
+        return result.height == 123 && std::signbit(result.normal.x) && result.normal.y == 7 &&
+            result.normal.z == -11 && result.surface == 42;
+    };
+    require(!world.ceiling_at(infinity,infinity,result) && unchanged(),
+        "absent local ceiling consumed coordinates or changed output before current block exists");
+    world.enter_first(1);
+    require(!world.ceiling_at(infinity,infinity,result) && unchanged(),
+        "absent local ceiling changed output after current block exists");
+    require(!world.ceiling_at_global(infinity,infinity,result) && default_ground(result),
+        "absent global ceiling did not write the source default result");
+    result = {123,{-0.0f,7,-11},42};
+    auto* current = world.current();
+    const auto* descriptor = current->resource; current->resource = nullptr;
+    const bool missing_map = !world.ceiling_at(infinity,infinity,result) && unchanged();
+    current->resource = descriptor;
+    require(missing_map,"local missing-map arm inspected descriptor before preserving output");
+    world.retire();
+    bool local_rejected = false, global_rejected = false;
+    try { world.ceiling_at(0,0,result); } catch (const std::logic_error&) { local_rejected = true; }
+    try { world.ceiling_at_global(0,0,result); } catch (const std::logic_error&) { global_rejected = true; }
+    require(local_rejected && global_rejected,"ceiling API bypassed retired-World admission");
+}
+void actual_native_ceiling_coordinates_and_defaults() {
+    Native n; Input input; Trace trace;
+    w::HeightMap ceiling;
+    ceiling.patches = {{1,2,-2,80,0x12345678},{0,0,-1,9,0xabcdef00}};
+    w::HeightNode split{}; split.a = 1; split.c = -10; split.left_patch = 0; split.right_patch = 1;
+    ceiling.nodes = {split};
+    w::HeightMap ground;
+    ground.patches = {{0,0,1,-1,0x76543200}};
+    w::HeightNode flat{}; flat.left_patch = flat.right_patch = 0; ground.nodes = {flat};
+    auto view = input.view(); view.height_map = &ground; view.ceiling_map = &ceiling;
+    // Source ceiling queries translate but do not rotate by descriptor yaw.
+    input.blocks[1].metadata.yaw = 0.75f;
+    w::World world(n.game,view,trace.callbacks());
+    w::GroundResult result{123,{4,5,6},7};
+    require(!world.ceiling_at(200,100,result) && default_ground(result),
+        "present ceiling without current block did not reset all result fields");
+    require(world.ceiling_at_global(12,-2,result) && result.height == 44 && result.surface == 0x123456 &&
+        std::fabs(result.normal.x-1.0f/3) < 0.000001f &&
+        std::fabs(result.normal.y+2.0f/3) < 0.000001f &&
+        std::fabs(result.normal.z-2.0f/3) < 0.000001f,
+        "global ceiling incorrectly requires current block or loses plane/normal/surface semantics");
+    auto* block = world.enter_first(1);
+    require(world.ceiling_at(200,100,result) && result.height == 4200 && result.surface == 0x123456,
+        "actual World ceiling lost local100/global translation or block elevation subtraction");
+    require(world.ceiling_at(0,0,result) && result.height == 700 && result.surface == 0xabcdef,
+        "translated split equality must take source right patch");
+    require(world.ground_at(0,0,result) && result.height == -100 && result.surface == 0x765432,
+        "ceiling map replaced the independent ground resource");
+    const auto* descriptor = block->resource; block->resource = nullptr;
+    const bool global_without_descriptor = world.ceiling_at_global(12,-2,result) && result.height == 44;
+    const bool local_without_descriptor = !world.ceiling_at(200,100,result) && default_ground(result);
+    block->resource = descriptor;
+    require(global_without_descriptor && local_without_descriptor,
+        "ceiling global/local missing descriptor rules differ from source");
+    world.enter_next();
+    require(world.ceiling_at(-800,400,result) && result.height == 4000 &&
+        world.ceiling_at_global(12,-2,result) && result.height == 44,
+        "ceiling coordinates failed to track real native current-block transition");
+    require(!world.ceiling_at(std::numeric_limits<float>::infinity(),0,result) && default_ground(result),
+        "present local ceiling did not reuse ground coordinate-domain rejection");
+}
+void actual_native_ceiling_consumed_paths() {
+    // Each World borrows a fixed immutable map; only the selected path matters.
+    w::HeightMap selected;
+    selected.patches = {{0,0,-1,9,0x11223344}};
+    w::HeightNode split{}; split.a = 1; split.left_patch = 0; split.left_child = 999;
+    split.right_child = 0;
+    selected.nodes = {split};
+    std::array<w::HeightMap,8> maps;
+    maps[0] = selected; // Positive terminal ignores both its child and cyclic sibling.
+    maps[1].nodes = {split}; // No patches.
+    maps[2].patches = selected.patches; // No nodes.
+    maps[3] = selected; maps[3].nodes[0].right_child = 999;
+    maps[4] = selected; maps[4].nodes[0].right_patch = 999;
+    maps[5] = selected; // Consumed self-cycle.
+    maps[6] = selected; maps[6].nodes.push_back(split);
+    maps[6].nodes[0].right_child = 1; maps[6].nodes[1].right_child = 0;
+    maps[7] = selected; maps[7].nodes[0].right_child = w::no_index;
+    for (std::size_t i = 0; i < maps.size(); ++i) {
+        Native n; Input input; Trace trace;
+        auto view = input.view(); view.ceiling_map = &maps[i];
+        w::World world(n.game,view,trace.callbacks()); world.enter_first(1);
+        w::GroundResult result{123,{4,5,6},7};
+        if (i == 0) {
+            require(world.ceiling_at_global(2,0,result) && result.height == 9 &&
+                world.ceiling_at(-800,300,result) && result.height == 700,
+                "unused malformed ceiling branches or terminal child caused eager rejection");
+        } else {
+            require(!world.ceiling_at_global(0,0,result) && default_ground(result),
+                "consumed unsafe global ceiling branch escaped bounded traversal/default");
+            result = {123,{4,5,6},7};
+            require(!world.ceiling_at(-1000,300,result) && default_ground(result),
+                "consumed unsafe local ceiling branch escaped bounded traversal/default");
+        }
+    }
 }
 void transitions_and_retirement() {
     Native n; Input input; Trace trace;
@@ -452,6 +562,9 @@ void faulted_owner_retirement_joins_before_context_release() {
 int main() {
     try { transitions_and_retirement(); movement_boundary_rotation_and_stop(); position_sampling_preserves_movement_boundary(); required_consumers_and_sky_follow(); path_tracks_callbacks_and_boundaries(); source_control_line_limits();
         same_resource_world_owners_and_clear();
+        optional_ceiling_output_rules();
+        actual_native_ceiling_coordinates_and_defaults();
+        actual_native_ceiling_consumed_paths();
         terrain_canonical_pose_and_source_effect_basis();
         faulted_owner_retirement_joins_before_context_release();
         std::cout << "native world lifecycle/movement tests passed\n"; return 0; }

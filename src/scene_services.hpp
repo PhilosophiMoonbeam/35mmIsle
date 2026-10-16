@@ -39,6 +39,9 @@ struct ObjectLifecycle {
     IsleGameCallback retiring = nullptr, joined = nullptr;
     void* user = nullptr;
 };
+struct SourceBorrows {
+    std::size_t queued = 0, fields = 0;
+};
 // Concrete scene-owned native records. ResourceView, State, input/audio, game
 // and arena are borrowed stable owners. Destruction is outside OM traversal and
 // after actual graphics borrowers retire; all native processes are joined before
@@ -81,13 +84,34 @@ public:
     // Rejection leaves old observers intact.
     bool set_lifecycle(IsleGameObject*, ObjectLifecycle) noexcept;
     bool set_command_handler(IsleGameObject*, IsleGameCommandHandler, void*) noexcept;
-    // Borrow accounting only, after a successful FIFO enqueue. Observer must
-    // not throw/wait/mutate OM or enqueue recursively. Retiring lifecycle closes
-    // remaining queue borrows when native deletion discards the receiver FIFO.
+    // Optional read-only successful-enqueue observation, independent of source
+    // ownership. Never throw/wait/mutate OM or enqueue recursively.
     bool set_command_queued_observer(IsleGameObject*, IsleGameCommandHandler, void*) noexcept;
     bool process_commands(IsleGameObject* = nullptr) noexcept;
     bool send_command(IsleGameObject*, std::int32_t, IsleGameObject* source = nullptr) noexcept;
     bool send_command_to_link(std::uint8_t, std::int32_t, IsleGameObject* source = nullptr) noexcept;
+    // Opt-in source owners only; unrelated menu objects are not retained.
+    // Register while live, before publishing any source reference. The borrowed
+    // span contains unique addresses of actual NULL canonical fields and stays
+    // valid until release. All subsequent writes MUST use reference_assign.
+    // One native identity hold and this same Services record survive real join
+    // until outside-OM release; no model/payload liveness is implied.
+    bool source_owner_register(IsleGameObject*, std::span<IsleGameObject** const>) noexcept;
+    // Receiver must be registered/live and field must be its registered actual
+    // address. Sender is NULL or a registered live/held-retired source. Replacement
+    // adopts the new borrow before releasing the old one; NULL works after fail.
+    bool source_reference_assign(IsleGameObject* receiver, IsleGameObject** field,
+                                 IsleGameObject* sender) noexcept;
+    SourceBorrows source_owner_borrows(IsleGameObject*) const noexcept;
+    bool source_owner_collectable(IsleGameObject*) const noexcept;
+    // Joined, no queue/field borrowers, outside ALL OM/command/graphics borrowers.
+    // Failure preserves registration; callers preserve first-held-slot policy.
+    bool source_owner_release(IsleGameObject*) noexcept;
+    // Only from the active custom handler, AFTER canonical field adoption and
+    // BEFORE genuinely nonreturning C control. Finishes CURRENT credit only,
+    // never a FIFO suffix. Ordinary state selection/return needs no call.
+    // No unwinding/destructor/post-handler code is required to finish that credit.
+    bool source_command_before_transfer(IsleGameObject* receiver) noexcept;
     IsleGameProcess* process(IsleGameObject*, IsleGameCallback, void*,
                             IsleGameProcessKind kind = ISLE_GAME_STACKFUL,
                             std::uint32_t priority = 1) noexcept;

@@ -11,6 +11,11 @@ IsleGameResult isle_actor_owner_step(IsleActorSource*);
 IsleGameResult isle_actor_owner_interactions(IsleActorSource*);
 IsleGameResult isle_actor_owner_cleanup(IsleActorSource*);
 IsleGameResult isle_actor_owner_commands(IsleActorSource*);
+IsleGameResult isle_actor_owner_reference_assign(IsleActorSource*, IsleGameObject** field,
+    IsleGameObject* sender);
+/* Settles only the current persistent command token; preserves FIFO suffix.
+ * Call after canonical-field adoption and before a nonreturning C transfer. */
+IsleGameResult isle_actor_owner_command_before_transfer(IsleActorSource*);
 IsleGameResult isle_actor_owner_distance(IsleActorSource*);
 IsleGameResult isle_actor_owner_local_subtract_y(IsleActorSource*, float);
 IsleGameResult isle_actor_owner_visibility(IsleActorSource*, int hidden);

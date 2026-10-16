@@ -626,7 +626,15 @@ bool ground_at_global(const HeightMap& map,float x,float z,GroundResult& out) no
     // rather than manufacturing a surface where source behavior is undefined.
     if(!p) { out={};return false; }
     out.height=patch_height_at(p,x,z);
-    out.normal={p->a,p->c,p->b};Vec3fNormalize(&out.normal);
+    // ground_int.c118-129 and own vector.c5-16 normalize (A,B,C) before
+    // ground.c swaps B/C, using a float reciprocal followed by multiplication.
+    Vec3 normal{p->a,p->b,p->c};
+    const float magnitude=std::sqrt(dot_product(&normal,&normal));
+    if(magnitude!=0) {
+        const float inverse=1.0f/magnitude;
+        normal.x*=inverse;normal.y*=inverse;normal.z*=inverse;
+    }
+    out.normal={normal.x,normal.z,normal.y};
     out.surface=static_cast<std::int32_t>((p->surface>>8)&0xffffff);
     return true;
 }

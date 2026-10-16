@@ -1,4 +1,5 @@
 #include "actor_owner_source.h"
+#include "actor_spatial.h"
 #include "engine_internal.h"
 
 static void checked(IsleActorSource* actor, IsleGameResult result) {
@@ -168,6 +169,34 @@ IsleGameResult isle_actor_source_link3_next(IsleGame* game, IsleGameObject* prev
     if (result != ISLE_GAME_OK) return result;
     *out_object = object;
     *out_source = source;
+    *out_model = object->data.model;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_actor_spatial_object_model(IsleGame* game, IsleGameObject* object,
+    IsleGameModel** out_model) {
+    IsleGameObjectMetadata metadata;
+    IsleGameCounts counts;
+    IsleGameResult result;
+    if (out_model != NULL) *out_model = NULL;
+    /* Never let metadata's NULL-current-object convention change the source
+     * distance NULL sentinel. No object is consumed on this branch. */
+    if (object == NULL) {
+        result = isle_game_counts(game, &counts);
+        if (result != ISLE_GAME_OK) return result;
+        if (out_model == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+        return game->fault;
+    }
+    result = isle_game_object_metadata(game, object, &metadata);
+    if (result != ISLE_GAME_OK) return result;
+    if (out_model == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (object->retirementStarted) return ISLE_GAME_INVALID_STATE;
+    if (object->type == 0 && object->data.any == NULL) return ISLE_GAME_OK;
+    if (object->type != 1) return ISLE_GAME_INVALID_STATE;
+    if (object->data.model == NULL) return ISLE_GAME_OK;
+    result = isle_actor_source_validate_model(game, object, object->data.model);
+    if (result != ISLE_GAME_OK) return result;
     *out_model = object->data.model;
     return ISLE_GAME_OK;
 }

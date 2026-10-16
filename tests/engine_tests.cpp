@@ -1,4 +1,5 @@
 #include "engine_fixture.h"
+#include "contextual_model_math.h"
 
 #include <algorithm>
 #include <array>
@@ -404,6 +405,12 @@ void camera_geometry_and_cache() {
     }
     p.fovy = 60;
     ok(isle_game_camera_set_perspective(world.game, cam, &p));
+    const IsleGameCameraMatrix* pending_projection = nullptr;
+    ok(isle_game_camera_peek_matrix(world.game, cam, 0, &pending_projection));
+    require(pending_projection == projection && pending_projection->kind == ISLE_GAME_CAMERA_PERSPECTIVE_FAST &&
+            projection->revision == photo_revision && projection->floating[1][1] == narrow &&
+            world.arena.cursor == arena_used,
+            "pure dirty-camera preflight computed, replaced or allocated a published cache");
     require(matrix(world, cam, 0) == projection && projection->revision == photo_revision + 1,
             "projection update changed stable address or missed cache invalidation");
     require(narrow > projection->floating[1][1] * 2.0f, "wide photo FOV did not widen frustum");
@@ -1095,6 +1102,205 @@ std::int32_t fixed_lane(const IsleGameFixedMatrix& m, std::size_t row, std::size
     return value;
 }
 
+void model_contextual_pose_admission_and_cache() {
+    World world;
+    auto* owner = object(world, 1);
+    auto pose = identity_model_transform();
+    const float largest = std::numeric_limits<float>::max();
+    pose.position = {largest, -largest, largest};
+    pose.rotation = {-largest, largest, -largest};
+    pose.scale = {largest, 0, -largest};
+    std::array<IsleGameModelNodeInit, 2> initial{{
+        {UINT32_MAX, pose, ISLE_GAME_MODEL_CONTEXTUAL_RPY},
+        {0, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE}
+    }};
+    IsleGameModel* model = nullptr;
+    ok(isle_game_attach_model(world.game, owner, initial.data(), initial.size(), &model));
+    const auto used = world.arena.cursor;
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t count = 0;
+    ok(isle_game_model_peek_nodes(world.game, model, &nodes, &count));
+    const auto* stable = nodes;
+    const IsleGameFixedMatrix zero{};
+    require(count == 2 && nodes[0].revision == 0 && nodes[0].first_child == 1 &&
+        nodes[1].parent == 0 && nodes[0].matrix_kind == ISLE_GAME_MODEL_CONTEXTUAL_RPY &&
+        std::memcmp(&nodes[0].fixed, &zero, sizeof(zero)) == 0,
+        "contextual attachment fabricated fixed payload, lost kind or topology");
+    std::feclearexcept(FE_ALL_EXCEPT);
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    require(nodes == stable && nodes[0].revision == 1 && nodes[1].revision == 1 &&
+        std::memcmp(&nodes[0].fixed, &zero, sizeof(zero)) == 0 &&
+        std::fetestexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW) == 0,
+        "contextual getter evaluated old kind28/identity or rejected full finite pose");
+    ok(isle_game_model_set_transform(world.game, model, 0, &pose));
+    ok(isle_game_model_set_flags(world.game, model, 0, 3));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    require(nodes[0].revision == 1 && nodes[0].flags == 3,
+        "identical contextual pose or flags dirtied accepted-pose revision");
+    const auto accepted = nodes[0];
+    for (auto channel : {&IsleGameModelTransform::position, &IsleGameModelTransform::rotation,
+                         &IsleGameModelTransform::scale}) {
+        for (auto component : {&IsleGameVec3::x, &IsleGameVec3::y, &IsleGameVec3::z}) {
+            auto bad = pose;
+            (bad.*channel).*component = std::numeric_limits<float>::quiet_NaN();
+            require(isle_game_model_validate_transform(world.game, model, 0, &bad) ==
+                    ISLE_GAME_INVALID_ARGUMENT &&
+                isle_game_model_set_transform(world.game, model, 0, &bad) == ISLE_GAME_INVALID_ARGUMENT &&
+                nodes[0].revision == accepted.revision &&
+                std::memcmp(&nodes[0].transform, &accepted.transform, sizeof(pose)) == 0,
+                "nonfinite contextual scalar was accepted or partially published");
+        }
+    }
+    pose.position.x = 40000; pose.rotation.y = 1.0e20f; pose.scale.x = 0.999999f;
+    ok(isle_game_model_validate_transform(world.game, model, 0, &pose));
+    ok(isle_game_model_set_transform(world.game, model, 0, &pose));
+    ok(isle_game_model_peek_nodes(world.game, model, &nodes, &count));
+    require(nodes[0].revision == 1 && nodes[0].transform.position.x == 40000,
+        "contextual peek evaluated pose or applied kind28 output limits");
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    require(nodes == stable && nodes[0].revision == 2 && nodes[1].revision == 1 &&
+        std::memcmp(&nodes[0].fixed, &zero, sizeof(zero)) == 0 && world.arena.cursor == used,
+        "contextual evaluation allocated, fabricated fixed, or dirtied ordinary child");
+    ok(isle_game_remove_model(world.game, model));
+    ok(isle_game_attach_model(world.game, owner, initial.data(), 1, &model));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    require(nodes[0].revision == 1 && nodes[0].flags == 0 &&
+        std::memcmp(&nodes[0].fixed, &zero, sizeof(zero)) == 0 && world.arena.cursor == used,
+        "contextual block reuse inherited flags/revision/fixed or allocated");
+}
+
+void model_source54_math_and_atomicity() {
+    auto pose = identity_model_transform();
+    pose.position = {1.5f, -2.25f, 3.125f};
+    pose.scale = {0.999999f, -0.2f, 1.25f};
+    float inherited[3]{2, 3, 5};
+    IsleGameFixedMatrix output{};
+    ok(isle_model_source54_matrix(&pose, inherited, &output));
+    require(fixed_lane(output, 0, 0) == 65535 && fixed_lane(output, 1, 1) == -13107 &&
+        fixed_lane(output, 2, 2) == 81920 &&
+        fixed_lane(output, 3, 0) == 98304 && fixed_lane(output, 3, 1) == -147456 &&
+        fixed_lane(output, 3, 2) == 204800,
+        "source54 quantized local scale or multiplied translation by inherited XYZ");
+    pose.rotation = {0.37f, -0.63f, 0.91f};
+    ok(isle_model_source54_matrix(&pose, inherited, &output));
+    // Independent double RPY basis and coordinate-scale conjugation oracle;
+    // conversion is binary32/truncation, not claimed original trig bit parity.
+    const double sx = std::sin(double(pose.rotation.x)), cx = std::cos(double(pose.rotation.x));
+    const double sy = std::sin(double(pose.rotation.y)), cy = std::cos(double(pose.rotation.y));
+    const double sz = std::sin(double(pose.rotation.z)), cz = std::cos(double(pose.rotation.z));
+    const double rotation[3][3]{{cy*cz, cy*sz, -sy},
+        {sx*sy*cz-cx*sz, sx*sy*sz+cx*cz, sx*cy},
+        {cx*sy*cz+sx*sz, cx*sy*sz-sx*cz, cx*cy}};
+    const float scale[3]{pose.scale.x, pose.scale.y, pose.scale.z};
+    for (std::size_t r = 0; r < 3; ++r)
+        for (std::size_t c = 0; c < 3; ++c) {
+            const double expected = rotation[r][c] * scale[r] * inherited[r] / inherited[c];
+            require(std::abs(double(fixed_lane(output, r, c)) - expected * 65536.0) < 1.1,
+                "source54 lost RPY order or unequal inherited-axis conjugation");
+        }
+    // Check the actual reciprocal/multiply order at a sensitive off-diagonal.
+    const float exact01 = std::cos(pose.rotation.y) * std::sin(pose.rotation.z) *
+        pose.scale.x * inherited[0] * (1.0f / inherited[1]);
+    require(fixed_lane(output, 0, 1) == static_cast<std::int32_t>(exact01 * 65536.0f),
+        "source54 reassociated reciprocal/expression evaluation");
+    for (std::size_t row = 0; row < 4; ++row)
+        require(fixed_lane(output, row, 3) == (row == 3 ? 65536 : 0),
+            "source54 did not preserve exact fixed-W column");
+    const auto valid = output;
+    for (unsigned error = 0; error < 8; ++error) {
+        auto bad = pose;
+        float scales[3]{2, 3, 5};
+        if (error == 0) scales[0] = 0;
+        if (error == 1) scales[1] = std::numeric_limits<float>::denorm_min();
+        if (error == 2) scales[2] = std::numeric_limits<float>::infinity();
+        if (error == 3) bad.position.z = 32768;
+        if (error == 4) bad.rotation.x = std::numeric_limits<float>::quiet_NaN();
+        if (error == 5) bad.scale.y = std::numeric_limits<float>::max();
+        const auto result = isle_model_source54_matrix(error == 6 ? nullptr : &bad,
+            error == 7 ? nullptr : scales, &output);
+        require(result == ISLE_GAME_INVALID_ARGUMENT &&
+            std::memcmp(&output, &valid, sizeof(output)) == 0,
+            "source54 rejection changed output or repaired invalid inherited scale");
+    }
+    require(isle_model_source54_matrix(&pose, inherited, nullptr) == ISLE_GAME_INVALID_ARGUMENT,
+        "source54 accepted absent output");
+    pose = identity_model_transform();
+    pose.rotation = {std::numeric_limits<float>::max(), -1.0e20f, 1.0e10f};
+    ok(isle_model_source54_matrix(&pose, inherited, &output));
+    require(fixed_lane(output, 3, 3) == 65536,
+        "source54 imposed kind28 angle-cast limits on finite libm angles");
+    pose = identity_model_transform(); pose.scale = {0, 0, 0};
+    ok(isle_model_source54_matrix(&pose, inherited, &output));
+    require(fixed_lane(output, 0, 0) == 0 && fixed_lane(output, 3, 3) == 65536,
+        "source54 rejected source-valid local zero scale");
+    inherited[1] = 0;
+    require(isle_model_source54_matrix(&pose, inherited, &output) == ISLE_GAME_INVALID_ARGUMENT,
+        "local zero incorrectly rescued source54 zero inherited scale");
+    inherited[1] = -3; pose = identity_model_transform();
+    pose.position.x = -32768;
+    ok(isle_model_source54_matrix(&pose, inherited, &output));
+    require(fixed_lane(output, 3, 0) == INT32_MIN, "source54 rejected signed fixed lower endpoint");
+}
+
+void model_source48_basis_and_atomicity() {
+    IsleGameCameraParameters camera{};
+    camera.look_at = {{0, 0, 5}, {0, 0, 0}, {0, 1, 0}};
+    float perspective[4][4]{{2, 0, 0, 0}, {0, 3, 0, 0},
+        {0, 0, -1.25f, -1}, {0, 0, -7, 0}};
+    float basis[4][4]{};
+    ok(isle_model_source48_basis(&camera, perspective, 1, basis));
+    for (std::size_t r = 0; r < 3; ++r)
+        for (std::size_t c = 0; c < 4; ++c)
+            require(basis[r][c] == perspective[r][c], "source48 did not concatenate synthetic look-at");
+    require(basis[3][2] == -0.75f && basis[3][3] == 5,
+        "source48 synthetic eyeZ or row-vector multiplication differs");
+    camera.look_at = {{0, 3, 4}, {0, 0, 0}, {0, 0, 0}};
+    ok(isle_model_source48_basis(&camera, perspective, 1, basis));
+    close_to(basis[1][1], 2.4f); close_to(basis[1][2], -0.75f);
+    close_to(basis[2][1], -1.8f); close_to(basis[2][2], -1.0f);
+    float other_axis[4][4]{};
+    ok(isle_model_source48_basis(&camera, perspective, 2, other_axis));
+    close_to(other_axis[1][1], 1.8f); close_to(other_axis[2][1], -2.4f);
+    float aliased[4][4]; std::memcpy(aliased, perspective, sizeof(aliased));
+    ok(isle_model_source48_basis(&camera, aliased, 1, aliased));
+    require(std::memcmp(aliased, basis, sizeof(basis)) == 0,
+        "source48 perspective/output alias changed result");
+    float saved[4][4]; std::memcpy(saved, basis, sizeof(saved));
+    for (unsigned error = 0; error < 6; ++error) {
+        auto bad = camera;
+        float projection[4][4]; std::memcpy(projection, perspective, sizeof(projection));
+        if (error == 0) bad.look_at.eye[0] = std::numeric_limits<float>::infinity();
+        if (error == 1) bad.look_at.eye[1] = std::numeric_limits<float>::quiet_NaN();
+        if (error == 2) projection[2][3] = std::numeric_limits<float>::max();
+        if (error == 2) projection[1][3] = std::numeric_limits<float>::max();
+        const auto result = isle_model_source48_basis(error == 3 ? nullptr : &bad,
+            error == 4 ? nullptr : projection, error == 5 ? 0u : 1u, basis);
+        require(result == ISLE_GAME_INVALID_ARGUMENT &&
+            std::memcmp(basis, saved, sizeof(basis)) == 0,
+            "source48 invalid consumed math changed output");
+    }
+    require(isle_model_source48_basis(&camera, perspective, 3, basis) == ISLE_GAME_INVALID_ARGUMENT &&
+        isle_model_source48_basis(&camera, perspective, 1, nullptr) == ISLE_GAME_INVALID_ARGUMENT,
+        "source48 accepted unknown axis or absent output");
+    // Degenerate source branch bypasses perspective and vertical pose entirely.
+    camera.look_at.eye[0] = camera.look_at.at[0] = 0;
+    camera.look_at.eye[2] = 0; camera.look_at.at[2] = 0.00001f;
+    camera.look_at.eye[1] = std::numeric_limits<float>::quiet_NaN();
+    perspective[0][0] = std::numeric_limits<float>::quiet_NaN();
+    ok(isle_model_source48_basis(&camera, perspective, 1, basis));
+    for (std::size_t r = 0; r < 4; ++r)
+        for (std::size_t c = 0; c < 4; ++c)
+            require(basis[r][c] == (r == 3 && c == 3 ? 1.0f : 0.0f),
+                "source48 degenerate basis concatenated perspective or fabricated identity");
+    // Row3 is not consumed by recipe48, even if its concat overflows.
+    const float largest = std::numeric_limits<float>::max();
+    camera.look_at = {{0, largest, 4}, {0, largest, 0}, {0, 1, 0}};
+    float diagonal[4][4]{{1,0,0,0},{0,2,0,0},{0,0,1,0},{0,0,0,1}};
+    ok(isle_model_source48_basis(&camera, diagonal, 1, basis));
+    require(basis[0][0] == 1 && basis[1][1] == 2 && std::isinf(basis[3][1]),
+        "source48 invented finite restrictions for unused basis row3");
+}
+
 void model_hierarchy_math_and_cache() {
     World world;
     auto* owner = object(world, 1);
@@ -1562,6 +1768,9 @@ int main() {
         camera_rejection_and_typed_cleanup();
         camera_exhaustion_and_reuse();
         model_hierarchy_math_and_cache();
+        model_contextual_pose_admission_and_cache();
+        model_source54_math_and_atomicity();
+        model_source48_basis_and_atomicity();
         model_placement_atomicity_and_lifecycle();
         model_translate_selection_and_cache();
         model_photo_bake();

@@ -1,4 +1,5 @@
 #include "engine_internal.h"
+#include "contextual_model_math.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -730,6 +731,17 @@ IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* came
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_game_camera_peek_matrix(IsleGame* game, IsleGameCamera* camera,
+                                          size_t index, const IsleGameCameraMatrix** output) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || index >= camera->numMatrices) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = &camera->matrices[index]->result;
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
                                       size_t index, const IsleGameCameraMatrix** output) {
     OMMtx* matrix;
@@ -816,8 +828,87 @@ static bool valid_model_transform(const IsleGameModelTransform* t) {
         signed_word_range(t->scale.y * 256.0f) &&
         signed_word_range(t->scale.z * 256.0f);
 }
+
+static bool finite_model_transform(const IsleGameModelTransform* t) {
+    return t != NULL &&
+        isfinite(t->position.x) && isfinite(t->position.y) && isfinite(t->position.z) &&
+        isfinite(t->rotation.x) && isfinite(t->rotation.y) && isfinite(t->rotation.z) &&
+        isfinite(t->scale.x) && isfinite(t->scale.y) && isfinite(t->scale.z);
+}
+
+IsleGameResult isle_model_source54_matrix(const IsleGameModelTransform* transform,
+    const float inherited_scale[3], IsleGameFixedMatrix* output) {
+    if (!finite_model_transform(transform) || inherited_scale == NULL || output == NULL)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    for (size_t axis = 0; axis < 3; ++axis)
+        if (!isfinite(inherited_scale[axis]) || inherited_scale[axis] == 0.0f)
+            return ISLE_GAME_INVALID_ARGUMENT;
+    Mtx4f floating;
+    /* Own GAME matrix.c:1717-1759, followed by the exact fixed-W converter.
+     * Preserve its reciprocal and expression order, including local-scale zero
+     * and untranslated inherited axes. Native sinf/cosf replace __sinf/__cosf;
+     * the existing strict FP target disables contraction and reassociation.
+     */
+    func_8001EA90(floating,
+        transform->position.x, transform->position.y, transform->position.z,
+        transform->rotation.x, transform->rotation.y, transform->rotation.z,
+        inherited_scale[0], inherited_scale[1], inherited_scale[2],
+        transform->scale.x, transform->scale.y, transform->scale.z);
+    for (size_t row = 0; row < 4; ++row)
+        for (size_t col = 0; col < 3; ++col)
+            if (!signed_word_range(floating[row][col] * 65536.0f))
+                return ISLE_GAME_INVALID_ARGUMENT;
+    /* All consumed float-to-word conversions are now representable; the
+     * converter consumes only staged floats, so input/output aliasing is safe.
+     */
+    hal_mtx_f2l_fixed_w(floating, output);
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_model_source48_basis(const IsleGameCameraParameters* camera,
+    const float perspective[4][4], unsigned axis, float output[4][4]) {
+    if (camera == NULL || perspective == NULL || output == NULL || (axis != 1 && axis != 2))
+        return ISLE_GAME_INVALID_ARGUMENT;
+    const IsleGameLookAt* look = &camera->look_at;
+    const size_t horizontal_axis = axis == 1 ? 2u : 1u;
+    const size_t vertical_axis = axis == 1 ? 1u : 2u;
+    float horizontal = look->at[horizontal_axis] - look->eye[horizontal_axis];
+    float x = look->at[0] - look->eye[0];
+    /* Own GAME render.c:2433-2452, with binary32 SQ/add/sqrt order intact. */
+    float eye_z = sqrtf(horizontal * horizontal + x * x);
+    if (!isfinite(eye_z)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (eye_z < 0.0001f) {
+        /* Source does not concatenate perspective or consume eyeY/atY here. */
+        hal_scale_f(output, 0.0f, 0.0f, 0.0f);
+        return ISLE_GAME_OK;
+    }
+    float eye_y = look->eye[vertical_axis], at_y = look->at[vertical_axis];
+    if (!isfinite(eye_y) || !isfinite(at_y)) return ISLE_GAME_INVALID_ARGUMENT;
+    Mtx4f synthetic, basis;
+    hal_look_at_f(synthetic, 0.0f, eye_y, eye_z,
+        0.0f, at_y, 0.0f, 0.0f, 1.0f, 0.0f);
+    /* Independently written row-vector concatenation, not SDK guMtxCatF.
+     * Stage exactly one result so failure and perspective/output aliasing are
+     * atomic. Keep all four multiply/add terms, left-associated in binary32.
+     */
+    for (size_t row = 0; row < 4; ++row) {
+        for (size_t col = 0; col < 4; ++col) {
+            basis[row][col] = ((synthetic[row][0] * perspective[0][col] +
+                synthetic[row][1] * perspective[1][col]) +
+                synthetic[row][2] * perspective[2][col]) +
+                synthetic[row][3] * perspective[3][col];
+            if (row < 3 && !isfinite(basis[row][col])) return ISLE_GAME_INVALID_ARGUMENT;
+        }
+    }
+    /* Recipe 48 consumes only rows 0..2. In particular, no representability
+     * restriction is invented for the unused synthetic translation row.
+     */
+    memcpy(output, basis, sizeof(basis));
+    return ISLE_GAME_OK;
+}
 static bool valid_model_matrix_transform(const IsleGameModelTransform* t, IsleGameModelMatrixKind kind) {
     if (kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE) return valid_model_transform(t);
+    if (kind == ISLE_GAME_MODEL_CONTEXTUAL_RPY) return finite_model_transform(t);
     if (kind != ISLE_GAME_MODEL_TRANSLATE || t == NULL) return false;
     return signed_word_range(t->position.x * 65536.0f) &&
         signed_word_range(t->position.y * 65536.0f) &&
@@ -1040,9 +1131,12 @@ IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
         const IsleGameModelTransform* t = &node->transform;
         if (node->matrix_kind == ISLE_GAME_MODEL_TRANSLATE)
             hal_translate(&node->fixed, t->position.x, t->position.y, t->position.z);
-        else
+        else if (node->matrix_kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE)
             hal_rotate_rpy_translate_scale(&node->fixed, t->position.x, t->position.y, t->position.z,
                 t->rotation.x, t->rotation.y, t->rotation.z, t->scale.x, t->scale.y, t->scale.z);
+        /* Contextual nodes have accepted poses, not context-free matrices.
+         * Reserved fixed bytes stay zero; only the renderer evaluates recipes.
+         */
         ++node->revision;
         model_dirty(model)[i] = 0;
     }

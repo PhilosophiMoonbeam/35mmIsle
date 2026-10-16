@@ -276,12 +276,15 @@ struct Title::Impl {
             std::array<animation::SlotCapacity,5> capacities;
             if (catalog.models().size() != capacities.size()) { s.fail("title model count"); return false; }
             for (std::size_t i = 0; i < capacities.size(); ++i) capacities[i] = animation::slot_capacity(catalog.models()[i]);
-            auto runtime = animation::Runtime::create(catalog, capacities, initial);
+            auto runtime = animation::Runtime::create(catalog, capacities, initial, {});
             if (!runtime) { s.fail("title animation construction"); return false; }
             animation = std::move(runtime.runtime);
             // Prefix camera/FX objects already precede the source UI timer and
             // control objects, so actual OM animation process order is retained.
             std::array<model::Binding,5> bindings;
+            std::size_t max_nodes = 0;
+            for (const auto capacity : capacities) if (capacity.nodes > max_nodes) max_nodes = capacity.nodes;
+            std::vector<IsleGameModelNodeInit> attachment_scratch(max_nodes);
             for (std::size_t i = 0; i < objects.size(); ++i) {
                 const auto acquired = animation->acquire(i,i,catalog.models()[i].receives_effect_callback);
                 if (!acquired) { s.fail("title instance acquisition"); return false; }
@@ -290,12 +293,12 @@ struct Title::Impl {
                 objects[i] = s.object(14);
                 if (objects[i] == nullptr || s.process(objects[i], model_update, &model_callbacks[i], ISLE_GAME_SYNCHRONOUS) == nullptr) return false;
                 if (!model::attach_title_model(s.game,objects[i],catalog.models()[i],
-                        animation->model(instances[i]),&native_models[i])) {
+                        animation->model(instances[i]),attachment_scratch,&native_models[i])) {
                     s.fail("title native model attachment"); return false;
                 }
                 bindings[i] = {instances[i],objects[i],native_models[i]};
             }
-            auto producer = model::Producer::create(s.game, camera, catalog, *animation, bindings);
+            auto producer = model::Producer::create(s.game, camera, s.camera_basis(), catalog, *animation, bindings);
             if (!producer) { s.fail("title native model producer construction"); return false; }
             models = std::move(producer.producer);
             if (!models->synchronize()) { s.fail("title native initial model poses"); return false; }

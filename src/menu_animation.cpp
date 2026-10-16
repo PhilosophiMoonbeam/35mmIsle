@@ -31,6 +31,7 @@ struct Command {
     std::uint32_t address = 0;
     std::array<std::uint32_t, 20> operands{};
     std::size_t path = no_index;
+    std::size_t target = no_index;
 };
 struct Program {
     AnimationKind kind{};
@@ -82,12 +83,19 @@ std::uint32_t color(const Track& a) noexcept {
     }
     return result;
 }
+bool adds_duration(std::uint8_t opcode) noexcept {
+    return opcode == 2 || opcode == 3 || opcode == 5 || opcode == 8 ||
+        opcode == 10 || opcode == 15 || opcode == 16 || opcode == 17 ||
+        opcode == 18 || opcode == 20;
+}
 Program compile(const Animation& input, std::span<const AnimationPath> paths) {
     Program output;
     output.kind = input.kind;
     require(input.kind == AnimationKind::model || input.kind == AnimationKind::texture ||
             input.kind == AnimationKind::camera, Error::malformed, input.wire.guest_address);
     require(!input.commands.empty(), Error::malformed, input.wire.guest_address);
+    require(!input.wire.bytes.empty() && input.wire.bytes.size()-1 <= UINT32_MAX-input.wire.guest_address, Error::extent,
+            input.wire.guest_address);
     std::size_t offset = 0;
     for (std::size_t i = 0; i < input.commands.size(); ++i) {
         const auto& source = input.commands[i];
@@ -111,7 +119,7 @@ Program compile(const Animation& input, std::span<const AnimationPath> paths) {
         const bool texture = input.kind == AnimationKind::texture;
         require(c.opcode == 0 || c.opcode == 2 || basic ||
                 (model && (c.opcode == 12 || c.opcode == 13 || c.opcode == 15 || c.opcode == 16 || c.opcode == 17)) ||
-                (texture && extra), Error::unsupported, address);
+                (texture && extra) || ((model || texture) && c.opcode == 14), Error::unsupported, address);
         require(!extra || !(c.mask & ~0x1fu), Error::unsupported, address);
         if (basic && input.kind == AnimationKind::camera)
             require(!(c.mask & 0x88u), Error::unsupported, address);
@@ -121,22 +129,36 @@ Program compile(const Animation& input, std::span<const AnimationPath> paths) {
         }
         const unsigned count = (basic || extra || c.opcode == 17) ?
             static_cast<unsigned>(std::popcount(static_cast<unsigned>(c.mask))) : 0;
-        const unsigned operands = c.opcode == 13 ? 1 :
+        const unsigned operands = (c.opcode == 13 || c.opcode == 14) ? 1 :
             count * ((c.opcode == 5 || c.opcode == 6) ? 2 : 1);
         require(source.wire.bytes.size() == 4u+4u*operands, Error::malformed, address);
         for (unsigned j = 0; j < operands; ++j) {
             c.operands[j] = source.wire.u32(4u+4u*j);
-            if (!extra && c.opcode != 13)
+            if (!extra && c.opcode != 13 && c.opcode != 14)
                 require(std::isfinite(std::bit_cast<float>(c.operands[j])), Error::malformed, address);
         }
-        if (c.opcode == 0) require(word == 0 && i+1 == input.commands.size(), Error::malformed, address);
-        else require(i+1 != input.commands.size(), Error::malformed, address);
-        if (c.opcode == 16) ++output.callbacks;
+        if (c.opcode == 0) require(word == 0, Error::malformed, address);
+        require((c.opcode == 0 || c.opcode == 14) == (i+1 == input.commands.size()),
+                Error::malformed, address);
+        if (c.opcode == 16 || c.opcode == 14) ++output.callbacks;
         if (c.opcode == 17) output.callbacks += count;
         output.commands.push_back(c);
         offset += source.wire.bytes.size();
     }
     require(offset == input.wire.bytes.size(), Error::extent, input.wire.guest_address);
+    if (output.commands.back().opcode == 14) {
+        auto& jump = output.commands.back();
+        const auto target = std::find_if(output.commands.begin(),output.commands.end(),
+            [&](const Command& command) { return command.address == jump.operands[0]; });
+        require(target != output.commands.end(),Error::malformed,jump.address);
+        jump.target = static_cast<std::size_t>(target-output.commands.begin());
+        // A contiguous stream has one terminal edge. A backward edge to any
+        // admitted boundary is a prefix plus one cycle, not an arbitrary graph.
+        // At least one additive wait on that cycle is necessary for progress.
+        require(std::any_of(target,output.commands.end(),[](const Command& command) {
+            return adds_duration(command.opcode) && command.duration != 0;
+        }),Error::malformed,jump.address);
+    }
     return output;
 }
 void restart(Player& p, Clock& clock, float skip) noexcept {
@@ -175,6 +197,8 @@ struct Runtime::Impl {
     std::vector<SlotCapacity> resource_capacities;
     std::vector<ModelStorage> models;
     std::vector<CallbackEvent> event_storage;
+    std::size_t command_capacity = 0;
+    bool needs_preflight = false;
     std::size_t event_count = 0;
     std::uint64_t generation = 1, event_order = 0;
     std::uint64_t pool = 0;
@@ -186,6 +210,47 @@ struct Runtime::Impl {
             models[h.slot].incarnation == h.incarnation && models[h.slot].life == life;
     }
     bool retired = false;
+    // Admission only: follow the same immutable command boundaries and binary32
+    // wait additions, without touching tracks, fields, cursors or borrowed events.
+    // Total work is charged across the entire public call, not separately per
+    // node. This also bounds a positive mathematical cycle whose additions cease
+    // to advance a very large binary32 overshoot.
+    Status preflight(const Player& player, const Clock& clock, bool receiver,
+                     bool callbacks, std::size_t& commands, std::size_t& events) const noexcept {
+        if (clock.phase == Phase::disabled) return {};
+        float left = clock.phase == Phase::changed ? -clock.time_passed : clock.time_left-clock.speed;
+        if (!std::isfinite(left) ||
+            (clock.phase != Phase::changed && !std::isfinite(clock.time_passed+clock.speed)))
+            return {Error::capacity,0};
+        if (clock.phase != Phase::changed && left > 0) return {};
+        const auto& program = programs[player.program];
+        auto cursor = player.cursor;
+        bool loop_seen = false;
+        float loop_left = 0;
+        do {
+            const auto& command = program.commands[cursor++];
+            if (commands == command_capacity) return {Error::capacity,command.address};
+            ++commands;
+            std::size_t emitted = 0;
+            if (callbacks && program.kind == AnimationKind::model) {
+                if ((command.opcode == 0 || command.opcode == 14) && receiver) emitted = 1;
+                if (command.opcode == 16) emitted = 1;
+                if (command.opcode == 17) emitted = static_cast<std::size_t>(std::popcount(static_cast<unsigned>(command.mask)));
+            }
+            if (emitted > event_storage.size()-events) return {Error::capacity,command.address};
+            events += emitted;
+            if (events > UINT64_MAX-event_order) return {Error::exhausted,command.address};
+            if (command.opcode == 0) return {};
+            if (command.opcode == 14) {
+                if (loop_seen && left <= loop_left) return {Error::capacity,command.address};
+                loop_seen = true;
+                loop_left = left;
+                cursor = command.target;
+            }
+            if (adds_duration(command.opcode)) left += static_cast<float>(command.duration);
+        } while (left <= 0);
+        return {};
+    }
 
     void emit(std::size_t model, std::size_t node, int id, float argument, std::uint32_t address) noexcept {
         event_storage[event_count++] = {handle(model),node,id,argument,address,event_order++};
@@ -227,6 +292,13 @@ struct Runtime::Impl {
                 continue;
             }
             if (c.opcode == 13) { p.tracks[3].path = c.path; continue; }
+            if (c.opcode == 14) {
+                p.cursor = c.target;
+                clock.time_passed = -clock.time_left;
+                if (animation_time) *animation_time = -clock.time_left;
+                if (receiver && models[mi].callback_enabled) emit(mi,ni,-2,0,c.address);
+                continue;
+            }
             if (c.opcode == 17) {
                 unsigned operand = 0;
                 for (unsigned channel = 0; channel < 10; ++channel) {
@@ -272,8 +344,7 @@ struct Runtime::Impl {
                 }
                 a.time = -clock.time_left-clock.speed;
             }
-            if (c.opcode == 3 || c.opcode == 5 || c.opcode == 8 || c.opcode == 10 ||
-                c.opcode == 18 || c.opcode == 20) clock.time_left += duration;
+            if (adds_duration(c.opcode)) clock.time_left += duration;
         } while (clock.time_left <= 0);
     }
     static void advance(Player& p, const Clock& clock) noexcept {
@@ -352,11 +423,13 @@ struct Runtime::Impl {
 
 Runtime::Runtime(std::unique_ptr<Impl> impl) noexcept : impl_(std::move(impl)) {}
 Runtime::~Runtime() = default;
-CreateResult Runtime::create(const Catalog& catalog, std::span<const SlotCapacity> capacities, CameraState camera) noexcept {
-    try { return create({catalog.models(),catalog.materials(),catalog.animations(),catalog.camera_animation()},capacities,camera); }
+CreateResult Runtime::create(const Catalog& catalog, std::span<const SlotCapacity> capacities, CameraState camera,
+                             ExecutionCapacity execution) noexcept {
+    try { return create({catalog.models(),catalog.materials(),catalog.animations(),catalog.camera_animation()},capacities,camera,execution); }
     catch (...) { return {{Error::malformed,0},nullptr}; }
 }
-CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> capacities, CameraState camera) noexcept {
+CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> capacities, CameraState camera,
+                             ExecutionCapacity execution) noexcept {
     try {
         require(std::isfinite(camera.eye.x) && std::isfinite(camera.eye.y) && std::isfinite(camera.eye.z) &&
                 std::isfinite(camera.at.x) && std::isfinite(camera.at.y) && std::isfinite(camera.at.z) &&
@@ -373,13 +446,26 @@ CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> 
         impl->pool = identity;
         require(capacities.size() <= UINT32_MAX,Error::extent);
         for (const auto& input : resources.animations) impl->programs.push_back(compile(input,resources.paths));
+        require((execution.commands == no_index) == (execution.events == no_index),Error::malformed);
+        const bool finite_certificate = execution.commands == no_index;
+        for (const auto& program : impl->programs)
+            require(!finite_certificate || program.commands.back().opcode != 14,
+                    Error::capacity,program.commands.back().address);
+        impl->needs_preflight = !finite_certificate;
         auto check_program = [&](std::size_t index, AnimationKind kind) {
             if (index != no_index) require(index < impl->programs.size() && impl->programs[index].kind == kind, Error::malformed);
         };
         check_program(resources.camera_animation,AnimationKind::camera);
-        std::size_t max_callbacks = 0;
-        for (const auto& program : impl->programs)
-            if (program.kind == AnimationKind::model) max_callbacks = std::max(max_callbacks,program.callbacks);
+        std::size_t max_callbacks = 0, model_commands = 0, material_commands = 0, camera_commands = 0;
+        for (const auto& program : impl->programs) {
+            if (program.kind == AnimationKind::model) {
+                max_callbacks = std::max(max_callbacks,program.callbacks);
+                model_commands = std::max(model_commands,program.commands.size());
+            } else if (program.kind == AnimationKind::texture) {
+                material_commands = std::max(material_commands,program.commands.size());
+            } else camera_commands = std::max(camera_commands,program.commands.size());
+        }
+        impl->command_capacity = camera_commands;
         impl->models.resize(capacities.size());
         impl->resource_capacities.resize(resources.models.size());
         std::size_t event_capacity = 0;
@@ -419,13 +505,25 @@ CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> 
             target.node_player_storage.resize(capacity.nodes);
             target.material_storage.resize(capacity.material_attachments);
             target.material_player_storage.resize(capacity.material_attachments);
+            require(capacity.nodes == 0 || model_commands <= std::numeric_limits<std::size_t>::max()/capacity.nodes,
+                    Error::extent);
+            const auto node_work = model_commands*capacity.nodes;
+            require(capacity.material_attachments == 0 ||
+                    material_commands <= (std::numeric_limits<std::size_t>::max()-node_work)/capacity.material_attachments,
+                    Error::extent);
+            impl->command_capacity = std::max(impl->command_capacity,
+                node_work+material_commands*capacity.material_attachments);
             if (capacity.nodes) {
                 require(max_callbacks <= (std::numeric_limits<std::size_t>::max()-1)/capacity.nodes,Error::extent);
                 event_capacity = std::max(event_capacity,max_callbacks*capacity.nodes+1);
             }
         }
-        // Every node may bind the most callback-rich program; only one receives
-        // END. Reserve for arbitrary later bindings, not only initial streams.
+        // Finite certification covers every node's richest possible future
+        // binding and one receiver END. Cyclic callers select explicit storage.
+        if (!finite_certificate) {
+            impl->command_capacity = execution.commands;
+            event_capacity = execution.events;
+        }
         impl->event_storage.resize(event_capacity);
         impl->initialize(0);
         return {{},std::unique_ptr<Runtime>(new Runtime(std::move(impl)))};
@@ -494,6 +592,19 @@ Status Runtime::step_model(InstanceHandle h) noexcept {
     if (!s.valid(h)) return {Error::handle,0};
     const auto index = h.slot;
     auto& model = s.models[index];
+    std::size_t commands = 0, events = 0;
+    if (s.needs_preflight) for (std::size_t ni = 0; ni < model.nodes.size(); ++ni) {
+        const auto& node = model.nodes[ni];
+        const auto status = s.preflight(model.node_players[ni],node.clock,node.callback_receiver,
+                                        model.callback_enabled,commands,events);
+        if (!status) return status;
+        for (std::size_t j = 0; j < node.material_count; ++j) {
+            const auto k = node.first_material+j;
+            const auto material_status = s.preflight(model.material_players[k],model.materials[k].clock,
+                                                     false,false,commands,events);
+            if (!material_status) return material_status;
+        }
+    }
     s.event_count = 0;
     ++s.generation;
     for (std::size_t ni = 0; ni < model.nodes.size(); ++ni) {
@@ -583,6 +694,11 @@ Status Runtime::step_model(InstanceHandle h) noexcept {
 Status Runtime::step_camera(std::uint32_t flags) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};
+    std::size_t commands = 0, events = 0;
+    if (s.needs_preflight) {
+        const auto status = s.preflight(s.camera_player,s.camera.clock,false,false,commands,events);
+        if (!status) return status;
+    }
     s.event_count = 0;
     ++s.generation;
     auto& c = s.camera;

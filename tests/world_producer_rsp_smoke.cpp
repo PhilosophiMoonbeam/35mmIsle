@@ -1,6 +1,7 @@
 // Opt-in private-ROM component renderer consumer. NOT a Beach scene, player or
 // actor implementation, and not an Original/gameplay parity claim. Main executes.
 #include "world_producer.hpp"
+#include "contextual_model_math.h"
 #include "world_movement.hpp"
 #include "graphics_task.hpp"
 #include "rsp_render.hpp"
@@ -76,7 +77,8 @@ int run(const std::filesystem::path& path) {
     world::MovementState movement_state;world::Movement movement(component,movement_state,{});require(movement.initialize(0),"real road admission");
     const std::array<menu::RamRange,6> other{{{top,0x10000},{stack,0x10000},{output,output_end-output},
         {color,target_bytes},{depth,target_bytes},{guard,256}}};
-    world::Producer producer(owners.game,owners.camera,resources,component,{},other);
+    menu::model::CameraBasisState camera_basis;
+    world::Producer producer(owners.game,owners.camera,camera_basis,resources,component,{},other);
     rsp::CanonicalExecutor executor(true,{16000000,4*1024*1024});
     const auto arena_used=owners.arena.cursor;
     auto execute=[&](bool cold,std::uint64_t epoch=1,rsp::CanonicalExecutor* alternate=nullptr){
@@ -102,6 +104,12 @@ int run(const std::filesystem::path& path) {
         const auto filtered=producer.prepare(words,epoch,update_link_only);
         for(const auto lane:filtered.lanes) require(lane.commands==1,"update link9 was incorrectly treated as renderDL3");
         const auto frame=producer.prepare(words,epoch);
+        const IsleGameCameraParameters* context_camera=nullptr;
+        native(isle_game_camera_parameters(owners.game,owners.camera,&context_camera));
+        menu::model::WorldMatrix expected_basis;
+        native(isle_model_source48_basis(context_camera,camera_basis.value.perspective.m,1,expected_basis.m));
+        require(std::memcmp(&expected_basis,&camera_basis.value.basis48,sizeof(expected_basis))==0,
+                "World camera3/14 did not publish its retained source-derived basis");
         for(std::size_t i=0;i<words.size();++i){const auto address=i*4;
             const bool owned=std::any_of(frame.reservations.begin(),frame.reservations.end(),[&](menu::RamRange r){return address>=r.offset&&address<r.offset+r.size;});
             if(!owned)require(words[i]==before[i],"world producer wrote outside its exact owners");}
@@ -203,7 +211,7 @@ int run(const std::filesystem::path& path) {
     // One extra64-byte slot succeeds; two active placements exceed it before
     // canonical RAM or any native camera/model publication can be changed.
     auto tight_layout=world::ProducerLayout{};tight_layout.payloads.size=local_payload_bytes+64;
-    world::Producer tight(owners.game,owners.camera,resources,component,tight_layout,other);
+    world::Producer tight(owners.game,owners.camera,camera_basis,resources,component,tight_layout,other);
     {
         // This is a CPU admission boundary, not an execution. Never acquire a
         // canonical preparation lease that would be abandoned on scope exit:
@@ -213,9 +221,19 @@ int run(const std::filesystem::path& path) {
         const auto before=std::vector<std::uint32_t>(words.begin(),words.end());
         const IsleGameCameraMatrix* camera_before=nullptr;native(isle_game_camera_matrix(owners.game,owners.camera,0,&camera_before));
         const auto camera_revision=camera_before->revision;
+        const auto camera_fixed=camera_before->fixed;
+        const IsleGameCameraParameters* camera_parameters=nullptr;
+        native(isle_game_camera_parameters(owners.game,owners.camera,&camera_parameters));
+        const auto original_perspective=camera_parameters->perspective;
+        auto dirty_perspective=original_perspective;dirty_perspective.fovy+=1;
+        native(isle_game_camera_set_perspective(owners.game,owners.camera,&dirty_perspective));
+        const auto retained_before=camera_basis.value;
         bool rejected=false;try{tight.prepare(words,1);}catch(const std::exception&){rejected=true;}
-        require(rejected&&std::equal(words.begin(),words.end(),before.begin())&&camera_before->revision==camera_revision,
-                "placement capacity rejection partially published native/RAM state");
+        require(rejected&&std::equal(words.begin(),words.end(),before.begin())&&camera_before->revision==camera_revision&&
+                std::memcmp(&camera_fixed,&camera_before->fixed,sizeof(camera_fixed))==0&&
+                std::memcmp(&retained_before,&camera_basis.value,sizeof(retained_before))==0,
+                "placement capacity rejection partially published native/RAM/retained-camera state");
+        native(isle_game_camera_set_perspective(owners.game,owners.camera,&original_perspective));
         native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
         tight.prepare(words,1); // Exact disabled-local budget plus one active64B.
     }

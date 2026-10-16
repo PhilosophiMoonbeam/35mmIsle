@@ -5,7 +5,6 @@
 #include <cmath>
 #include <stdexcept>
 
-extern "C" void hal_perspective_fast_f(float [4][4], std::uint16_t*, float, float, float, float, float);
 
 namespace isle::world {
 namespace {
@@ -27,6 +26,7 @@ struct Producer::Impl {
     };
     IsleGame* game;
     IsleGameCamera* camera;
+    menu::model::CameraBasisState& camera_basis;
     const Resources& resources;
     const World& world;
     ProducerLayout layout;
@@ -50,11 +50,10 @@ struct Producer::Impl {
     IsleGameModel* resident_sky_model = nullptr;
     const IsleGameModelNode* sky_node = nullptr;
     bool sky_draw = false, sky_resident = false, retired = false;
-    menu::model::WorldMatrix projection;
-    IsleGamePerspective projection_parameters{};
-    bool needs_projection = false, have_projection = false;
-    Impl(IsleGame* g, IsleGameCamera* c, const Resources& r, const World& w, ProducerLayout l)
-        : game(g),camera(c),resources(r),world(w),layout(l),owned{l.payloads,l.lists,l.materials} {}
+    Impl(IsleGame* g, IsleGameCamera* c, menu::model::CameraBasisState& basis,
+         const Resources& r, const World& w, ProducerLayout l)
+        : game(g),camera(c),camera_basis(basis),resources(r),world(w),layout(l),
+          owned{l.payloads,l.lists,l.materials} {}
     std::uint32_t payload(std::size_t o) const { return static_cast<std::uint32_t>(layout.payloads.offset+o); }
     void command(unsigned lane, std::uint32_t a, std::uint32_t b) {
         require(lane < 4 && counts[lane] < lanes[lane].size(),"World producer command capacity exceeded");
@@ -76,7 +75,7 @@ struct Producer::Impl {
             command(0,0xe7000000,0); high(20,2,0); low(3,29,0x00552078); command(0,0xd9feffff,0);
         }
     }
-    void stage(const scene::render::Pass* pass) {
+    void stage(const scene::render::Pass* pass, const menu::model::RenderContext& context) {
         counts.fill(0); sky_draw = false; sky_model = nullptr; sky_placement_address = 0;
         const auto owners = world.render_objects(); std::size_t active = 0;
         for (const auto& instance : instances) {
@@ -126,7 +125,7 @@ struct Producer::Impl {
             if (fogged) fog(true);
             menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
                 std::span(lanes[2]),std::span(lanes[3])},counts,pending};
-            require(bool(kernel->encode(instance.slot,projection,buffer)),"World shared hierarchy encoder rejected source pose");
+            require(bool(kernel->encode(instance.slot,context,buffer)),"World shared hierarchy encoder rejected source pose");
             if (fogged) fog(false);
         }
         std::size_t cursor = layout.lists.offset+camera_commands.size()*8;
@@ -139,8 +138,9 @@ struct Producer::Impl {
         }
     }
 };
-Producer::Producer(IsleGame* game, IsleGameCamera* camera, const Resources& resources, const World& world,
-                   ProducerLayout layout, std::span<const Range> other): impl_(std::make_unique<Impl>(game,camera,resources,world,layout)) {
+Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,
+                   const Resources& resources, const World& world, ProducerLayout layout,
+                   std::span<const Range> other): impl_(std::make_unique<Impl>(game,camera,basis,resources,world,layout)) {
     auto& s = *impl_;
     require(game && camera && !world.retired(),"World producer requires live native owners");
     resources.require_live();
@@ -177,8 +177,6 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, const Resources& reso
     require(matrix <= layout.payloads.offset+layout.payloads.size && material <= layout.materials.offset+layout.materials.size,
             "World producer payload/material reservation exhausted");
     s.local_payload_end = matrix; s.bindings.resize(slots.size());
-    for (const auto& source : resources.models()) for (const auto& node : source.nodes)
-        s.needs_projection |= (node.depth_flags & 0xf000u) == 0x8000u;
     s.kernel = std::make_unique<menu::model::BorrowedKernel>(game,resources.models(),resources.materials(),slots,
         Range{matrix,layout.payloads.offset+layout.payloads.size-matrix});
     for (auto& lane : s.lanes) lane.resize(layout.lists.size/8);
@@ -187,38 +185,47 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, const Resources& reso
 Producer::~Producer() = default;
 ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::uint64_t epoch, const scene::render::Pass* pass) {
     auto& s = *impl_;
-    require(!s.retired && !s.world.retired() && epoch && words.size_bytes() == beach::rdram_size,
+    require(!s.retired && !s.world.retired() && words.data() && epoch && words.size_bytes() == beach::rdram_size,
             "World producer preparation requires live exclusive 8MiB owner/epoch");
     require(!pass || pass->camera == s.camera,"World pass camera differs from native producer owner");
     s.resources.require_live();
     const auto begin = reinterpret_cast<std::uintptr_t>(words.data()), end = begin+words.size_bytes();
+    require(begin <= UINTPTR_MAX-words.size_bytes() && begin%alignof(std::uint32_t) == 0,
+            "World producer RAM pointer range is invalid");
     for (const auto& span : s.resources.installation_spans()) {
         const auto pointer = reinterpret_cast<std::uintptr_t>(span.bytes.data());
         require(end <= pointer || pointer+span.bytes.size() <= begin,"World producer RAM aliases immutable ROM input");
     }
+    auto disjoint = [&](const void* pointer, std::size_t bytes) {
+        if (!bytes) return;
+        const auto at = reinterpret_cast<std::uintptr_t>(pointer);
+        require(pointer && at <= UINTPTR_MAX-bytes && (end <= at || at+bytes <= begin),
+                "World producer RAM aliases preparation state");
+    };
+    disjoint(this,sizeof(*this)); disjoint(&s,sizeof(s));
+    disjoint(&s.camera_basis,sizeof(s.camera_basis));
+    disjoint(s.instances.data(),s.instances.size()*sizeof(Impl::Instance));
+    disjoint(s.bindings.data(),s.bindings.size()*sizeof(menu::model::BorrowedBinding));
+    disjoint(s.pending.data(),s.pending.size()*sizeof(Command));
+    for (const auto& lane : s.lanes) disjoint(lane.data(),lane.size()*sizeof(Command));
     std::size_t count = 0; native(isle_game_camera_matrix_count(s.game,s.camera,&count));
     require(count == 2,"World producer source camera matrix count changed");
     std::array<const IsleGameCameraMatrix*,2> camera{};
     for (std::size_t i = 0; i < 2; ++i) {
-        native(isle_game_camera_matrix(s.game,s.camera,i,&camera[i]));
+        native(isle_game_camera_peek_matrix(s.game,s.camera,i,&camera[i]));
         require(camera[i]->kind == (i == 0 ? ISLE_GAME_CAMERA_PERSPECTIVE_FAST : ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL),
                 "World producer requires source camera kinds3,14");
+        disjoint(camera[i],sizeof(*camera[i]));
     }
     const IsleGameCameraParameters* parameters = nullptr;
-    if (s.needs_projection) {
-        native(isle_game_camera_parameters(s.game,s.camera,&parameters));
-        const auto& perspective = parameters->perspective; const auto& old = s.projection_parameters;
-        if (!s.have_projection || perspective.fovy != old.fovy || perspective.aspect != old.aspect ||
-            perspective.near_plane != old.near_plane || perspective.far_plane != old.far_plane || perspective.scale != old.scale) {
-            s.have_projection = false;
-            std::uint16_t ignored = 0;
-            hal_perspective_fast_f(s.projection.m,&ignored,perspective.fovy,perspective.aspect,perspective.near_plane,
-                perspective.far_plane,perspective.scale);
-            for (const auto& row : s.projection.m) for (float f : row) require(std::isfinite(f),"World projection is not finite");
-            s.projection_parameters = perspective; s.have_projection = true;
-        }
-    }
-    s.stage(pass);
+    native(isle_game_camera_parameters(s.game,s.camera,&parameters));
+    disjoint(parameters,sizeof(*parameters));
+    menu::model::RenderContext context;
+    constexpr std::array<menu::model::CameraMatrixOperation,2> camera_operations{{{3,0},{14,0}}};
+    require(bool(menu::model::prepare_render_context(s.camera_basis.value,*parameters,camera_operations,
+        s.camera_basis.selector,context)),"World source camera context is unrepresentable");
+    require(bool(s.kernel->validate_upload(words,epoch)),"World kernel RAM aliases fixed preparation scratch");
+    s.stage(pass,context);
     require(bool(s.kernel->validate_upload(words,epoch)),"World kernel RAM aliases borrowed state or has invalid extent");
     native(isle_game_camera_compute_all(s.game,s.camera));
     const IsleGameCameraReflection* reflection = nullptr;
@@ -268,6 +275,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     for (unsigned lane = 0; lane < 4; ++lane) for (std::size_t i = 0; i < s.counts[lane]; ++i)
         write(s.ranges[lane].address+static_cast<std::uint32_t>(i*8),s.lanes[lane][i]);
     s.ram = words.data(); s.epoch = epoch; ++s.revision;
+    s.camera_basis.value = context;
     return {{static_cast<std::uint32_t>(s.layout.lists.offset),static_cast<std::uint32_t>(s.camera_commands.size())},s.ranges,s.owned,s.revision};
 }
 ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch) { return prepare_filtered(words,epoch,nullptr); }

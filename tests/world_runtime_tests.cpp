@@ -217,7 +217,7 @@ void path_tracks_callbacks_and_boundaries() {
     m::Model model; model.receives_effect_callback = true;
     m::Node node; node.scale = {1,1,1}; node.animation = 0; model.nodes.push_back(node);
     const std::array capacities{m::animation::slot_capacity(model)};
-    auto result = m::animation::Runtime::create({std::span(&model,1),{},std::span(&program,1),m::no_index,std::span(&path,1)},capacities,{});
+    auto result = m::animation::Runtime::create({std::span(&model,1),{},std::span(&program,1),m::no_index,std::span(&path,1)},capacities,{},{});
     require(bool(result),"source opcode13/17 native program admission failed");
     const auto acquired = result.runtime->acquire(0,0,true);
     require(bool(acquired),"path instance acquisition failed");

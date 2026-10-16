@@ -18,6 +18,13 @@ struct InstanceHandle {
     bool operator==(const InstanceHandle&) const = default;
 };
 struct SlotCapacity { std::size_t nodes = 0, material_attachments = 0; };
+// Total decoded instructions and callback events per step_model (including its
+// materials), or per step_camera. Fixed at construction; never silently capped.
+// {} selects resource-certified finite-only bounds and rejects cyclic input.
+// Cyclic owners must specify their actual scheduling/skip envelope explicitly;
+// a call exceeding either bound rejects before any state/event publication.
+// Both fields must be defaulted, or both explicit. Explicit zero is valid.
+struct ExecutionCapacity { std::size_t commands = no_index, events = no_index; };
 SlotCapacity slot_capacity(const Model&) noexcept;
 struct AcquireResult {
     Status status;
@@ -83,7 +90,8 @@ struct ModelState {
 };
 // Borrowed immutable input, also usable by synthetic behavior tests. Every span,
 // nested vector and wire owner must outlive Runtime and all outstanding views.
-// Production uses create(Catalog,...), never reconstructed private asset tables.
+// Production owners supply typed Snapshot-backed catalog views; this interface
+// borrows them and does not confer admission on reconstructed private tables.
 struct Resources {
     std::span<const Model> models;
     std::span<const Material> materials;
@@ -107,8 +115,10 @@ public:
     Runtime& operator=(Runtime&&) = delete;
     // Construction compiles immutable programs and fixes every storage address.
     // Slots start free; capacity plans are not implicit resource assignments.
-    static CreateResult create(const Catalog&, std::span<const SlotCapacity>, CameraState initial_camera) noexcept;
-    static CreateResult create(Resources, std::span<const SlotCapacity>, CameraState initial_camera) noexcept;
+    static CreateResult create(const Catalog&, std::span<const SlotCapacity>, CameraState initial_camera,
+                               ExecutionCapacity) noexcept;
+    static CreateResult create(Resources, std::span<const SlotCapacity>, CameraState initial_camera,
+                               ExecutionCapacity) noexcept;
     AcquireResult acquire(std::size_t slot, std::size_t resource_model, bool callback_enabled) noexcept;
     Status begin_retire(InstanceHandle) noexcept;
     // Owner-only precondition: actual native work is joined, graphics/completed
@@ -120,6 +130,9 @@ public:
     // Each model call visits all nodes depth-first, model then attached materials.
     // First call after acquire/reset evaluates time 0 (CHANGED); subsequent
     // calls advance the instance's signed source speed. END applies once.
+    // SET_ANIMATION14 follows a validated same-stream boundary and resets source
+    // clocks only, retaining tracks/fields/speeds/receiver. Receiver callbacks
+    // report -2 on model loops; material loops never emit model callbacks.
     Status step_model(InstanceHandle) noexcept;
     Status step_camera(std::uint32_t object_flags = 0) noexcept;
     // Storage addresses stay stable until destruction; active spans are borrowed
@@ -143,7 +156,7 @@ public:
     // Catalog bind transform, as GAME anim_func_8000F8E4 with its initial tree.
     // Neither bind evaluates: the actor sets speeds, then calls step_model once
     // immediately and routes its borrowed events before any further mutation.
-    // Header/array identity, force, pause, loops and completion belong to actor.
+    // Header/array identity, force, pause and actor loop bookkeeping belong to actor.
     Status bind_model(InstanceHandle, std::span<const std::size_t> programs,
                       float skip_frames = 0, ModelBindPose pose = ModelBindPose::preserve) noexcept;
     // Flattened node/material attachment order. Empty span is a null outer

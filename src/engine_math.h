@@ -50,6 +50,12 @@ static inline bool isle_game_reflection_component(float value) {
 
 /* Native declarations checked against the privately admitted GAME prototypes. */
 void hal_mtx_f2l(Mtx4f source, Mtx* destination);
+void hal_mtx_f2l_fixed_w(Mtx4f source, Mtx* destination);
+void hal_scale_f(Mtx4f matrix, f32 x, f32 y, f32 z);
+void func_8001EA90(Mtx4f matrix,
+    f32 x, f32 y, f32 z, f32 rot_x, f32 rot_y, f32 rot_z,
+    f32 inherited_x, f32 inherited_y, f32 inherited_z,
+    f32 scale_x, f32 scale_y, f32 scale_z);
 void hal_look_at_f(Mtx4f matrix, f32 eye_x, f32 eye_y, f32 eye_z,
                    f32 at_x, f32 at_y, f32 at_z, f32 up_x, f32 up_y, f32 up_z);
 void hal_perspective_fast_f(Mtx4f matrix, uint16_t* normalization, f32 fovy,

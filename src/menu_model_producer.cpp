@@ -6,8 +6,6 @@
 #include <stdexcept>
 #include <utility>
 
-// Existing privately admitted, unchanged GAME math seam (not an SDK body).
-extern "C" void hal_perspective_fast_f(float [4][4], std::uint16_t*, float, float, float, float, float);
 
 namespace isle::menu::model {
 namespace {
@@ -27,14 +25,6 @@ std::uint32_t address(std::size_t value) {
     require(value < rdram_size, Error::extent);
     return static_cast<std::uint32_t>(value);
 }
-IsleGameVec3 vec(Vec3 v) { return {v.x,v.y,v.z}; }
-IsleGameModelTransform transform(const animation::Transform& t, bool baked) {
-    if (baked) return {vec(t.position), {0,0,0}, {1,1,1}};
-    return {vec(t.position), vec(t.rotation), vec(t.scale)};
-}
-void finite(const WorldMatrix& m) {
-    for (const auto& row : m.m) for (float f : row) require(std::isfinite(f));
-}
 }
 
 
@@ -42,6 +32,7 @@ struct Producer::Impl {
     IsleGame* game;
     IsleGameCamera* camera;
     const Catalog& catalog;
+    CameraBasisState& camera_basis;
     const animation::Runtime& animation;
     Layout layout;
     std::array<RamRange,3> owned;
@@ -57,12 +48,13 @@ struct Producer::Impl {
     std::array<Command,4> camera_commands{};
     std::uint32_t* resident_memory = nullptr;
     std::uint64_t resident_epoch = 0;
-    bool retired = false, have_lists = false, lists_dirty = true, have_projection = false;
-    WorldMatrix projection;
-    IsleGamePerspective list_perspective{}, projection_perspective{};
+    bool retired = false, have_lists = false, lists_dirty = true;
+    IsleGamePerspective list_perspective{};
     std::vector<rom::GuestView> source_spans;
-    Impl(IsleGame* g, IsleGameCamera* c, const Catalog& cat, const animation::Runtime& a, Layout l)
-        : game(g),camera(c),catalog(cat),animation(a),layout(l),owned{l.payloads,l.lists,l.materials} {}
+    Impl(IsleGame* g, IsleGameCamera* c, CameraBasisState& basis, const Catalog& cat,
+         const animation::Runtime& a, Layout l)
+        : game(g),camera(c),catalog(cat),camera_basis(basis),animation(a),layout(l),
+          owned{l.payloads,l.lists,l.materials} {}
     void command(unsigned lane, std::uint32_t a, std::uint32_t b) {
         require(lane < 4 && counts[lane] < lanes[lane].size(),Error::extent);
         lanes[lane][counts[lane]++] = {a,b};
@@ -97,7 +89,7 @@ struct Producer::Impl {
         if (!status) throw Failure{status};
         lists_dirty |= kernel->lists_changed();
     }
-    void build_lists() {
+    void build_lists(const RenderContext& context) {
         counts.fill(0);
         for (std::size_t i = 0; i < bindings.size(); ++i) {
             if (!kernel->draws(i)) continue;
@@ -107,7 +99,7 @@ struct Producer::Impl {
             fog(0,source,true); if (deferred) fog(1,source,true);
             HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
                 std::span(lanes[2]),std::span(lanes[3])},counts,pending};
-            const auto result = kernel->encode(i,projection,buffer);
+            const auto result = kernel->encode(i,context,buffer);
             if (!result) throw Failure{result};
             fog(0,source,false); if (deferred) fog(1,source,false);
         }
@@ -129,37 +121,30 @@ struct Producer::Impl {
 };
 
 Status attach_title_model(IsleGame* game, IsleGameObject* object, const Model& source,
-    animation::ModelState state, IsleGameModel** output) noexcept {
+    animation::ModelState state, std::span<IsleGameModelNodeInit> scratch, IsleGameModel** output) noexcept {
     if (output) *output = nullptr;
     try {
         require(game && object && output && bool(state) && state.nodes.size() == source.nodes.size() &&
             !source.nodes.empty());
         require(source.matrix_kinds == std::array<std::uint8_t,3>{0x1c,0,0});
-        std::vector<IsleGameModelNodeInit> initial(source.nodes.size());
         for (std::size_t n = 0; n < source.nodes.size(); ++n) {
             const auto& node = source.nodes[n];
             const auto flags = node.depth_flags & 0xf000u;
             require(flags == 0 || flags == 0x8000u);
-            require(n == 0 ? node.parent == no_index : node.parent < n);
-            const bool baked = flags != 0;
-            initial[n] = {node.parent == no_index ? UINT32_MAX : static_cast<std::uint32_t>(node.parent),
-                transform(state.nodes[n].transform,baked),baked ? ISLE_GAME_MODEL_TRANSLATE :
-                ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
         }
-        native(isle_game_attach_model(game,object,initial.data(),initial.size(),output));
-        return {};
+        return attach_source_model(game,object,source,state,RootRecipe::source,scratch,output);
     } catch (const Failure& f) { return f.status; }
       catch (const std::bad_alloc&) { return {Error::allocation}; }
       catch (...) { return {Error::invalid_input}; }
 }
 Producer::Producer(std::unique_ptr<Impl> impl) noexcept : impl_(std::move(impl)) {}
 Producer::~Producer() = default;
-CreateResult Producer::create(IsleGame* game, IsleGameCamera* camera, const Catalog& catalog,
-    const animation::Runtime& animation, std::span<const Binding> bindings,
+CreateResult Producer::create(IsleGame* game, IsleGameCamera* camera, CameraBasisState& basis,
+    const Catalog& catalog, const animation::Runtime& animation, std::span<const Binding> bindings,
     Layout layout, std::span<const RamRange> other) noexcept {
     try {
         require(game && camera && bindings.size() == catalog.models().size() && bindings.size() == 5);
-        auto p = std::make_unique<Impl>(game,camera,catalog,animation,layout);
+        auto p = std::make_unique<Impl>(game,camera,basis,catalog,animation,layout);
         for (std::size_t i = 0; i < p->owned.size(); ++i) {
             range(p->owned[i],i == 0 ? 64 : 8);
             require(!overlaps(p->owned[i],{0,graphics::bss_end}),Error::reservation);
@@ -226,12 +211,15 @@ PrepareResult Producer::prepare(std::span<std::uint32_t> words, std::uint64_t ep
                 require(begin+rdram_size <= at || at+bytes <= begin);
             };
             disjoint(this,sizeof(*this)); disjoint(&p,sizeof(p)); disjoint(p.camera,1);
+            disjoint(&p.camera_basis,sizeof(p.camera_basis));
             disjoint(&p.catalog,sizeof(p.catalog)); disjoint(&p.animation,sizeof(p.animation));
             disjoint(p.bindings.data(),p.bindings.size()*sizeof(Binding));
             disjoint(p.staged.data(),p.staged.size()*sizeof(BorrowedBinding));
             disjoint(p.pending.data(),p.pending.size()*sizeof(Command));
             for (const auto& lane : p.lanes) disjoint(lane.data(),lane.size()*sizeof(Command));
         }
+        const auto scratch_status = p.kernel->validate_upload(words,epoch);
+        if (!scratch_status) throw Failure{scratch_status};
         p.stage();
         const auto upload_status = p.kernel->validate_upload(words,epoch);
         if (!upload_status) throw Failure{upload_status};
@@ -242,23 +230,13 @@ PrepareResult Producer::prepare(std::span<std::uint32_t> words, std::uint64_t ep
         const auto& perspective = parameters->perspective; const auto& old = p.list_perspective;
         const bool changed = !p.have_lists || perspective.fovy != old.fovy || perspective.aspect != old.aspect ||
             perspective.near_plane != old.near_plane || perspective.far_plane != old.far_plane || perspective.scale != old.scale;
+        RenderContext context;
+        constexpr std::array<CameraMatrixOperation,2> camera_operations{{{3,0},{8,0}}};
+        const auto context_status = prepare_render_context(p.camera_basis.value,*parameters,
+            camera_operations,p.camera_basis.selector,context);
+        if (!context_status) throw Failure{context_status};
         const bool rebuild = !p.have_lists || p.lists_dirty || changed;
-        if (rebuild) {
-            p.lists_dirty = true;
-            const auto& cached = p.projection_perspective;
-            if (!p.have_projection || perspective.fovy != cached.fovy || perspective.aspect != cached.aspect ||
-                perspective.near_plane != cached.near_plane || perspective.far_plane != cached.far_plane ||
-                perspective.scale != cached.scale) {
-                p.have_projection = false;
-                require(std::isfinite(perspective.near_plane+perspective.far_plane));
-                std::uint16_t ignored = 0;
-                hal_perspective_fast_f(p.projection.m,&ignored,perspective.fovy,perspective.aspect,
-                    perspective.near_plane,perspective.far_plane,perspective.scale);
-                finite(p.projection);
-                p.projection_perspective = perspective; p.have_projection = true;
-            }
-            p.build_lists();
-        }
+        if (rebuild) { p.lists_dirty = true; p.build_lists(context); }
         native(isle_game_camera_compute_all(p.game,p.camera));
         for (unsigned i = 0; i < 2; ++i) native(isle_game_camera_matrix(p.game,p.camera,i,&p.camera_matrices[i]));
         std::uint16_t normalization = 0;
@@ -287,6 +265,7 @@ PrepareResult Producer::prepare(std::span<std::uint32_t> words, std::uint64_t ep
             if (fresh || words[at/4+1] != c.w1) memory.word(at+4,c.w1);
         }
         p.camera_commands = camera_commands; p.list_perspective = perspective;
+        p.camera_basis.value = context;
         p.have_lists = true; p.lists_dirty = false;
         p.resident_memory = words.data(); p.resident_epoch = epoch;
         return {{},{{address(p.layout.lists.offset),4},p.ranges,p.owned,p.animation.generation()}};

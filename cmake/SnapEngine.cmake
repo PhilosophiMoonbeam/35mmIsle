@@ -7,6 +7,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py"
     "${PROJECT_SOURCE_DIR}/src/engine.c"
     "${PROJECT_SOURCE_DIR}/src/engine_math.h"
+    "${PROJECT_SOURCE_DIR}/src/contextual_model_math.h"
     "${PROJECT_SOURCE_DIR}/src/engine_internal.h"
     "${PROJECT_SOURCE_DIR}/include/35mmisle/engine.h")
 file(READ "${CMAKE_CURRENT_LIST_DIR}/snap-engine-inputs.json" _isle_engine_manifest)
@@ -48,7 +49,7 @@ endif()
 message(STATUS "${_isle_engine_output}")
 
 add_library(isle-engine STATIC src/engine.c src/engine_internal.h src/engine_math.h
-    include/35mmisle/engine.h "${_isle_engine_generated}")
+    src/contextual_model_math.h include/35mmisle/engine.h "${_isle_engine_generated}")
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)
@@ -63,6 +64,7 @@ target_compile_options(isle-engine PRIVATE
 if(BUILD_TESTING)
     add_executable(engine-tests tests/engine_tests.cpp tests/engine_fixture.c)
     target_link_libraries(engine-tests PRIVATE isle-engine)
+    target_include_directories(engine-tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
     isle_target_options(engine-tests)
     add_test(NAME engine-tests COMMAND engine-tests)
     set_tests_properties(engine-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
@@ -77,4 +79,4 @@ if(ISLE_BUILD_RSP_PROBE AND ISLE_BUILD_RDP_PROBE)
     isle_target_options(engine-camera-rsp-smoke)
 endif()
 
-message(STATUS "Native OM/model/intro-fade/camera kinds 3/6/8/14, translate-only, kind-28/photo and RT/RTS placement math definitions are private development inputs, not full scene/audio readiness or a redistribution grant")
+message(STATUS "Native OM/model/intro-fade/camera kinds 3/6/8/14, translate-only, kind-28/photo, RT/RTS placement, source54 fixed-W and source48 basis math are private development inputs, not full scene/audio readiness or a redistribution grant")

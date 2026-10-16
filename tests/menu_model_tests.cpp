@@ -1,5 +1,6 @@
 #include "menu_model_producer.hpp"
 #include "borrowed_model_kernel.hpp"
+#include "contextual_model_math.h"
 #include <array>
 #include <algorithm>
 #include <cmath>
@@ -137,7 +138,10 @@ struct Hierarchy {
     std::array<std::uint32_t,6> first{1,2,UINT32_MAX,4,UINT32_MAX,UINT32_MAX};
     std::array<std::uint32_t,6> next{UINT32_MAX,3,UINT32_MAX,5,UINT32_MAX,UINT32_MAX}, materials{};
     IsleGameModelPlacement placement{};
-    model::WorldMatrix projection{};
+    model::RenderContext context{};
+    std::array<model::MatrixRecipe,6> recipes{};
+    std::array<IsleGameFixedMatrix,6> fixed{};
+    std::array<unsigned char,6> consumed{};
     std::array<std::array<model::Command,128>,4> storage{};
     std::array<model::Command,128> pending{};
     std::array<std::size_t,4> counts{};
@@ -153,14 +157,19 @@ struct Hierarchy {
         source.nodes[2].payloads.push_back({{},0,0x80002000,0x80001000});
         source.nodes[4].payloads.push_back({{},2,0x80002008,0x80001008});
         source.nodes[5].payloads.push_back({{},1,0x80002010,0x80001010});
-        projection.m[0][0] = 2; projection.m[1][1] = 3;
-        projection.m[2][2] = 4; projection.m[2][3] = -1;
+        context.perspective.m[0][0] = 2; context.perspective.m[1][1] = 3;
+        context.perspective.m[2][2] = 4; context.perspective.m[2][3] = -1;
         placement.transform.scale = {1,1,1};
     }
     model::Status encode(bool reset = true) {
         if (reset) buffer.counts.fill(0);
-        return model::encode_hierarchy({source,nodes,first,next,materials,placement,projection,
-            0x1000,0x2000},buffer);
+        consumed.fill(0);
+        for (std::size_t n = 0; n < nodes.size(); ++n) {
+            const auto status = model::decode_model_recipe(source,n,recipes[n]);
+            if (!status) return status;
+        }
+        return model::encode_hierarchy({source,nodes,first,next,materials,placement,context,
+            0x1000,0x2000,{},recipes,fixed,consumed},buffer);
     }
 };
 model::WorldMatrix one() {
@@ -337,6 +346,165 @@ void kind44_placement_inherits_only_x() {
     h.placement.transform.scale.x = 0;
     check(0,0);
 }
+bool equal(const model::WorldMatrix& a, const model::WorldMatrix& b) {
+    return std::memcmp(&a,&b,sizeof(a)) == 0;
+}
+void configured_recipe_selection() {
+    require(model::select_source_matrix_kinds(0,{54,32,26}) ==
+        std::array<std::uint8_t,3>{28,0,0},"stored kinds used without Pokemon flag10");
+    require(model::select_source_matrix_kinds(0x35,{54,0,0}) ==
+        std::array<std::uint8_t,3>{54,0,0},"configured Snorlax54 lost flag10 selection");
+    for (const auto ordinary : std::array<std::uint8_t,2>{28,54}) {
+        model::MatrixRecipe recipe;
+        require(bool(model::decode_recipe({ordinary,0,0},0,recipe)) &&
+            recipe.count == 1 && recipe.operations[0] == ordinary,"ordinary configured kind changed");
+        require(bool(model::decode_recipe({ordinary,0,0},0x2000,recipe)) &&
+            recipe.count == 2 && recipe.operations[0] == 18 && recipe.operations[1] == 48 &&
+            recipe.native_kind == ISLE_GAME_MODEL_TRANSLATE,"reached high2000 did not become translate+48");
+        require(bool(model::decode_recipe({ordinary,0,0},0x8000,recipe)) &&
+            recipe.operations[1] == 44,"high8000 did not become translate+44");
+        require(bool(model::decode_recipe({ordinary,0,0},0xa000,recipe)) &&
+            recipe.operations[1] == 48,"high2000 precedence over scale changed");
+        const auto saved = recipe;
+        for (const auto high : {0x4000u,0x6000u,0x1000u,0x9000u})
+            require(!model::decode_recipe({ordinary,0,0},high,recipe) &&
+                std::memcmp(&recipe,&saved,sizeof(recipe)) == 0,"unsupported override coerced or partially published");
+    }
+    model::MatrixRecipe recipe;
+    require(!model::decode_recipe({31,0,0},0x2000,recipe) &&
+        !model::decode_recipe({32,0,0},0x8000,recipe) &&
+        !model::decode_recipe({26,0,0},0x8000,recipe),"PYR47/scale43/no-scale42 became RPY");
+    require(bool(model::decode_recipe({18,26,32},0x8000,recipe)) && recipe.operations[1] == 44,
+        "decomposition before override lost second rotation/third scale");
+    require(!model::decode_recipe({28,29,0},0x2000,recipe),"second-kind PYR override was ignored");
+    Model proxy; proxy.matrix_kinds = {1,0,0}; proxy.nodes.resize(2);
+    proxy.nodes[1].parent = 0;
+    require(bool(model::decode_model_recipe(proxy,0,recipe)) && recipe.operations[0] == 1 &&
+        bool(model::decode_model_recipe(proxy,1,recipe)) && recipe.operations[0] == 28,
+        "World native translate proxy changed decoration children");
+}
+void camera_value_context_and_retention() {
+    model::CameraBasisState shared;
+    IsleGameCameraParameters camera{};
+    camera.perspective = {45,4.0f/3.0f,10,1000,1};
+    camera.look_at = {{3,7,11},{1,2,4},{0,1,0}};
+    constexpr std::array<model::CameraMatrixOperation,2> yup{{{3,0},{8,0}}};
+    model::RenderContext first;
+    require(bool(model::prepare_render_context(shared.value,camera,yup,0,first)),"source camera context rejected");
+    model::WorldMatrix axis1, axis2;
+    require(isle_model_source48_basis(&camera,first.perspective.m,1,axis1.m) == ISLE_GAME_OK &&
+        isle_model_source48_basis(&camera,first.perspective.m,2,axis2.m) == ISLE_GAME_OK &&
+        equal(first.basis48,axis1) && !equal(axis1,axis2),"source48 did not use synthetic Y-up axis1");
+    shared.value = first;
+    for (unsigned selector = 0; selector < 8; ++selector) {
+        model::RenderContext next;
+        require(bool(model::prepare_render_context(shared.value,camera,yup,selector,next)),"selector rejected");
+        const auto& expected = selector == 5 || selector == 6 ? axis2 : axis1;
+        require(equal(next.basis48,expected),"source selector mapping changed");
+    }
+    auto eye_only = camera; eye_only.look_at.eye[1] = 23;
+    model::RenderContext moved;
+    require(bool(model::prepare_render_context(first,eye_only,yup,0,moved)) &&
+        !equal(moved.basis48,first.basis48) && equal(moved.perspective,first.perspective),
+        "camera-only eye change at fixed perspective retained stale48 basis");
+    auto other_camera = eye_only; other_camera.perspective.fovy = 55;
+    model::RenderContext other;
+    for (const auto selector : {1u,4u,7u})
+        require(bool(model::prepare_render_context(shared.value,other_camera,yup,selector,other)) &&
+            equal(other.basis48,first.basis48) && !equal(other.perspective,first.perspective),
+            "cross-camera retention replaced AFA8 with current perspective/basis");
+    constexpr std::array<model::CameraMatrixOperation,2> cached{{{3,2},{8,2}}};
+    require(bool(model::prepare_render_context(first,other_camera,cached,0,other)) &&
+        equal(other.perspective,first.perspective) && equal(other.basis48,first.basis48),
+        "source-cache2 recomputed retained globals");
+    require(bool(model::prepare_render_context(first,other_camera,{},2,other)) &&
+        equal(other.basis48,first.basis48),"zero camera matrices executed forced selector");
+    shared.selector = 7; shared.reset_selector();
+    require(shared.selector == 0 && equal(shared.value.basis48,first.basis48),"source reset erased retained basis");
+    constexpr std::array<model::CameraMatrixOperation,2> plain{{{3,0},{6,0}}};
+    camera.look_at.up[1] = 0; camera.look_at.up[2] = 1;
+    require(bool(model::prepare_render_context(first,camera,plain,0,other)) &&
+        equal(other.basis48,axis2),"plain look-at up-axis selector changed");
+    constexpr std::array<model::CameraMatrixOperation,2> zup{{{3,0},{16,0}}};
+    require(bool(model::prepare_render_context(first,camera,zup,0,other)) &&
+        equal(other.basis48,axis2),"reflected Z-up selector changed");
+    camera.look_at.eye[0] = camera.look_at.at[0];
+    camera.look_at.eye[2] = camera.look_at.at[2];
+    require(bool(model::prepare_render_context(first,camera,yup,0,other)),"degenerate source48 basis rejected");
+    for (unsigned r = 0; r < 3; ++r) for (float value : other.basis48.m[r])
+        require(value == 0,"near-zero source48 distance concatenated perspective");
+    require(other.basis48.m[3][3] == 1,"near-zero source48 W changed");
+    const auto saved = other;
+    camera.look_at.eye[0] = std::numeric_limits<float>::max();
+    require(!model::prepare_render_context(first,camera,yup,0,other) &&
+        std::memcmp(&other,&saved,sizeof(other)) == 0 && equal(shared.value.basis48,first.basis48),
+        "camera context failure published partial retained state");
+}
+void contextual_xyz_siblings_and_hidden() {
+    Hierarchy h; h.source.matrix_kinds = {54,0,0};
+    h.placement.mode = ISLE_GAME_MODEL_PLACEMENT_RTS;
+    h.placement.transform.scale = {-2,3,5};
+    h.nodes[0].transform.scale = {2,7,11};
+    h.nodes[1].transform.scale = {3,13,17};
+    for (auto& node : h.nodes) node.transform.rotation = {0.2f,-0.3f,0.4f};
+    h.nodes[1].flags = 1;
+    auto check = [&] {
+        require(bool(h.encode()),"source54 deferred XYZ traversal rejected");
+        const auto root = h.nodes[0].transform.scale, a = h.nodes[1].transform.scale,
+            b = h.nodes[3].transform.scale;
+        const auto p = h.placement.transform.scale;
+        const IsleGameVec3 r{p.x*root.x,p.y*root.y,p.z*root.z};
+        const std::array<IsleGameVec3,6> inherited{{p,r,{r.x*a.x,r.y*a.y,r.z*a.z},r,
+            {r.x*b.x,r.y*b.y,r.z*b.z},r}};
+        for (std::size_t n = 0; n < h.nodes.size(); ++n) {
+            const auto& t = h.nodes[n].transform;
+            const IsleGameModelTransform pose{{t.position.x,t.position.y,t.position.z},
+                {t.rotation.x,t.rotation.y,t.rotation.z},{t.scale.x,t.scale.y,t.scale.z}};
+            const float xyz[]{inherited[n].x,inherited[n].y,inherited[n].z};
+            IsleGameFixedMatrix expected;
+            require(isle_model_source54_matrix(&pose,xyz,&expected) == ISLE_GAME_OK &&
+                h.consumed[n] && std::memcmp(&expected,&h.fixed[n],sizeof(expected)) == 0,
+                "source54 sibling/deferred lane inherited XYZ advanced more than once");
+        }
+    };
+    check(); const auto child = h.fixed[2], sibling = h.fixed[3];
+    h.nodes[1].transform.scale.y *= 2; check();
+    require(std::memcmp(&child,&h.fixed[2],sizeof(child)) != 0 &&
+        std::memcmp(&sibling,&h.fixed[3],sizeof(sibling)) == 0,"ancestor Y did not invalidate child or leaked to sibling");
+    h.placement.transform.scale.z *= 2; check();
+    h.nodes[2].transform.scale = {0,0,0}; check(); // Zero LOCAL scale is lawful.
+    h.placement.transform.scale.x = 0;
+    require(!h.encode(),"zero inherited scale was rescued in source54");
+    h.nodes[0].flags = 2;
+    require(bool(h.encode()) && std::all_of(h.consumed.begin(),h.consumed.end(),
+        [](auto v) { return v == 0; }),"hidden subtree manufactured contextual consumption/errors");
+    h.nodes[0].flags = 0; h.placement.transform.scale = {-2,3,5}; h.nodes[2].flags = 2;
+    require(bool(h.encode()) && !h.consumed[2] && h.consumed[3],"hidden child corrupted sibling context");
+}
+void source48_rows_are_not44() {
+    Hierarchy h; h.source.nodes[2].depth_flags = 0x2000;
+    h.nodes[0].transform.scale = {2,13,17}; h.nodes[1].transform.scale = {3,19,23};
+    h.nodes[2].transform.scale = {5,7,11};
+    for (unsigned r = 0; r < 3; ++r) for (unsigned c = 0; c < 4; ++c)
+        h.context.basis48.m[r][c] = float(r*4+c+1)/8;
+    h.context.basis48.m[3][0] = std::numeric_limits<float>::infinity(); // Unconsumed row.
+    require(bool(h.encode()),"source48 rejected unused basis row3");
+    const auto old = h.storage[0];
+    auto inline_words = [&] {
+        std::array<std::uint32_t,12> rows{}; std::size_t count = 0;
+        for (std::size_t i = 0; i < h.counts[0]; ++i) if ((h.storage[0][i].w0 >> 24) == 0xdb)
+            rows[count++] = h.storage[0][i].w1;
+        require(count == 12,"source48 emitted wrong row command extent"); return rows;
+    };
+    const auto rows = inline_words();
+    require((rows[0] >> 16) == 3 && (rows[2] & 65535) == 31,
+        "source48 did not use inheritedX for localX/Y independently");
+    h.context.basis48.m[0][1] += 1;
+    require(bool(h.encode()) && inline_words() != rows,"camera-only basis change reused inline48 rows");
+    h.source.nodes[2].depth_flags = 0x8000;
+    require(bool(h.encode()) && h.storage[0][0].w0 == old[0].w0 && inline_words() != rows,
+        "kind44 silently consumed camera48 basis");
+}
 void native(IsleGameResult result) { require(result == ISLE_GAME_OK,"kernel native owner operation rejected"); }
 struct KernelFixture {
     std::vector<std::byte> arena_bytes = std::vector<std::byte>(1024*1024);
@@ -352,12 +520,14 @@ struct KernelFixture {
     std::array<animation::InstanceHandle,2> handles;
     const std::array<model::KernelSlot,2> plans{{{{3,2},0x1000,0x2000},{{3,2},0x1100,0x2400}}};
     std::unique_ptr<model::BorrowedKernel> kernel;
+    std::array<IsleGameModelNodeInit,3> attachment_scratch{};
     std::vector<std::uint32_t> ram = std::vector<std::uint32_t>(rdram_size/4,0xdeadbeef);
     std::array<std::array<model::Command,512>,4> storage{};
     std::array<model::Command,128> pending{};
     std::array<std::size_t,4> counts{};
     model::HierarchyBuffer output{{storage[0],storage[1],storage[2],storage[3]},counts,pending};
-    KernelFixture() {
+    bool native_pose = false;
+    explicit KernelFixture(bool contextual = false) {
         require(isle_arena_init(&arena,arena_bytes.data(),arena_bytes.size()) == ISLE_OK,"kernel arena initialization");
         native(isle_game_create(&arena,&game));
         for (std::size_t i = 0; i < materials.size(); ++i) {
@@ -378,8 +548,14 @@ struct KernelFixture {
             source.nodes[0].materials = r ? std::vector<std::size_t>{1} : std::vector<std::size_t>{0,0};
             source.nodes[0].payloads.push_back({{},0,0x80004000,0x80005000});
         }
+        if (contextual) {
+            models[0].matrix_kinds = {54,0,0};
+            models[0].nodes[1].depth_flags = 0x2000;
+            models[0].nodes[0].scale = {2,3,5};
+            models[0].nodes[2].rotation = {0.2f,-0.3f,0.4f};
+        }
         auto created = animation::Runtime::create(animation::Resources{models,materials,{}},capacities,
-            {{0,0,100},{0,0,0},0,45,true,true,0,{}});
+            {{0,0,100},{0,0,0},0,45,true,true,0,{}},{});
         require(bool(created),"kernel animator creation rejected"); runtime = std::move(created.runtime);
         for (std::size_t i = 0; i < handles.size(); ++i) {
             native(isle_game_add_object(game,static_cast<std::uint32_t>(i+1),0,0,nullptr,nullptr,&objects[i]));
@@ -390,13 +566,14 @@ struct KernelFixture {
     }
     ~KernelFixture() { if (game && isle_game_destroy(game) != ISLE_GAME_OK) std::terminate(); }
     void attach(std::size_t slot, std::size_t resource) {
-        require(bool(model::attach_title_model(game,objects[slot],models[resource],runtime->model(handles[slot]),
-            &native_models[slot])),"kernel borrowed native attachment rejected");
+        require(bool(model::attach_source_model(game,objects[slot],models[resource],runtime->model(handles[slot]),
+            model::RootRecipe::source,attachment_scratch,&native_models[slot])),"kernel borrowed native attachment rejected");
     }
     std::array<model::BorrowedBinding,2> bindings(bool draw_first = true) {
-        return {{{1,runtime->model(handles[1]),objects[1],native_models[1],model::PoseSource::animation,
+        const auto pose = native_pose ? model::PoseSource::native : model::PoseSource::animation;
+        return {{{1,runtime->model(handles[1]),objects[1],native_models[1],pose,
                 model::RootRecipe::source,true,runtime.get()},
-            {0,runtime->model(handles[0]),objects[0],native_models[0],model::PoseSource::animation,
+            {0,runtime->model(handles[0]),objects[0],native_models[0],pose,
                 model::RootRecipe::source,draw_first,runtime.get()}}};
     }
     void prepare(bool draw_first = true, std::uint64_t epoch = 1) {
@@ -404,7 +581,7 @@ struct KernelFixture {
         require(bool(kernel->stage(ordered)) && bool(kernel->validate_upload(ram,epoch)),"kernel bounded stage rejected");
         counts.fill(0);
         for (const auto& binding : ordered)
-            require(bool(kernel->encode(binding.slot,one(),output)),"kernel hierarchy rejected");
+            require(bool(kernel->encode(binding.slot,{one(),{}},output)),"kernel hierarchy rejected");
         kernel->commit_pose(); kernel->upload(ram,epoch);
     }
     void replace(std::size_t resource) {
@@ -496,7 +673,7 @@ void kernel_reuse_hidden_residency_and_epoch() {
     const auto before = f.ram;
     require(!f.kernel->stage(bad) && f.ram == before,"stale Runtime view changed live RAM");
     auto other = animation::Runtime::create(animation::Resources{f.models,f.materials,{}},f.capacities,
-        {{0,0,100},{0,0,0},0,45,true,true,0,{}});
+        {{0,0,100},{0,0,0},0,45,true,true,0,{}},{});
     require(bool(other),"wrong-pool regression runtime creation rejected");
     auto wrong_pool = f.bindings(); wrong_pool[1].runtime = other.runtime.get();
     require(!f.kernel->stage(wrong_pool) && f.ram == before,"wrong-pool view authorized another owner");
@@ -532,7 +709,7 @@ void kernel_late_rejection_is_atomic() {
     require(bool(f.kernel->stage(ordered)),"valid native preflight failed before list boundary");
     f.counts.fill(0);
     auto tight_output = f.output; tight_output.lanes[0] = tight_output.lanes[0].first(1);
-    require(!f.kernel->encode(0,one(),tight_output),"late bounded hierarchy-list rejection was admitted");
+    require(!f.kernel->encode(0,{one(),{}},tight_output),"late bounded hierarchy-list rejection was admitted");
     native(isle_game_model_peek_nodes(f.game,f.native_models[0],&after,&count));
     require(after[0].revision == prior.revision && std::memcmp(&after[0].fixed,&prior.fixed,sizeof(prior.fixed)) == 0 &&
         f.ram == prior_ram && std::memcmp(&prior_world,&f.kernel->world_nodes(f.handles[0])[0],sizeof(prior_world)) == 0,
@@ -542,13 +719,107 @@ void kernel_late_rejection_is_atomic() {
     auto tiny_plans = f.plans; tiny_plans[0].capacity = {1,1};
     model::BorrowedKernel tiny(f.game,f.models,f.materials,tiny_plans,{0x3000,0});
     require(!tiny.stage(f.bindings()) && f.ram == prior_ram,"native slot capacity rejection published payloads");
-    for (const auto recipe : {54,48}) {
+    for (const auto recipe : {48,47}) {
         auto bad_models = f.models; bad_models[0].matrix_kinds[0] = static_cast<std::uint8_t>(recipe);
         bool rejected = false;
         try { model::BorrowedKernel unsupported(f.game,bad_models,f.materials,f.plans,{0x3000,0}); }
         catch (const std::invalid_argument&) { rejected = true; }
-        require(rejected && f.ram == prior_ram,"unimplemented actor54/48 recipe was silently coerced to RTS");
+        require(rejected && f.ram == prior_ram,"unadmitted raw override recipe was silently coerced to RTS");
     }
+}
+void kernel_contextual_residency_and_atomicity() {
+    KernelFixture f(true); f.native_pose = true; f.prepare();
+    const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+    native(isle_game_model_peek_nodes(f.game,f.native_models[0],&nodes,&count));
+    require(nodes[0].matrix_kind == ISLE_GAME_MODEL_CONTEXTUAL_RPY &&
+        nodes[1].matrix_kind == ISLE_GAME_MODEL_TRANSLATE &&
+        f.kernel->world_nodes(f.handles[0]).size() == 3,"contextual attachment lost its mathematical world cache");
+    auto payload = [&](std::size_t n) {
+        IsleGameFixedMatrix result;
+        for (unsigned r = 0; r < 4; ++r) for (unsigned c = 0; c < 4; ++c)
+            result.m[r][c] = f.ram[(0x1000+n*64)/4+r*4+c];
+        return result;
+    };
+    auto matches_child = [&] {
+        const float inherited[]{nodes[0].transform.scale.x,nodes[0].transform.scale.y,nodes[0].transform.scale.z};
+        IsleGameFixedMatrix expected;
+        native(isle_model_source54_matrix(&nodes[2].transform,inherited,&expected));
+        const auto actual = payload(2);
+        require(std::memcmp(&expected,&actual,sizeof(actual)) == 0,"renderer uploaded contextual native reserved fixed bytes");
+    };
+    matches_child(); const auto old_payload = payload(2); const auto child_revision = nodes[2].revision;
+    auto root = nodes[0].transform; root.scale.y = 7;
+    native(isle_game_model_set_transform(f.game,f.native_models[0],0,&root)); f.prepare();
+    matches_child();
+    const auto next_payload = payload(2);
+    require(nodes[2].revision == child_revision &&
+        std::memcmp(&old_payload,&next_payload,sizeof(old_payload)) != 0,
+        "same-child-revision ancestor Y reused a native-revision-only payload");
+    const auto native_root = nodes[0];
+    IsleGameModelTransform placement{{3,4,5},{0.1f,0.2f,0.3f},{2,-3,7}};
+    native(isle_game_model_set_placement(f.game,f.native_models[0],ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
+    f.prepare();
+    const auto placed = payload(2);
+    placement.scale.z = 11;
+    native(isle_game_model_set_placement(f.game,f.native_models[0],ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
+    f.prepare(); const auto replaced = payload(2);
+    require(std::memcmp(&placed,&replaced,sizeof(placed)) != 0 && nodes[0].revision == native_root.revision &&
+        std::memcmp(&nodes[0].fixed,&native_root.fixed,sizeof(native_root.fixed)) == 0,
+        "placement Z did not invalidate source54 or rewrote ordinary local state");
+    const auto ram_before = f.ram; const auto root_before = nodes[0], child_before = nodes[2];
+    const auto world_before = f.kernel->world_nodes(f.handles[0])[2];
+    auto overflow = nodes[0].transform; overflow.position.x = 32768;
+    native(isle_game_model_set_transform(f.game,f.native_models[0],0,&overflow));
+    require(bool(f.kernel->stage(f.bindings())),"finite contextual translation was constrained by old kind28 admission");
+    f.counts.fill(0);
+    require(!f.kernel->encode(0,{one(),{}},f.output),"contextual fixed-output overflow was admitted");
+    f.kernel->commit_pose(); f.kernel->upload(f.ram,1);
+    require(f.ram == ram_before && nodes[0].revision == root_before.revision &&
+        equal(world_before,f.kernel->world_nodes(f.handles[0])[2]),
+        "contextual overflow partially published native/world/RAM state");
+    native(isle_game_model_set_transform(f.game,f.native_models[0],0,&root_before.transform));
+    placement.scale.x = 0;
+    native(isle_game_model_set_placement(f.game,f.native_models[0],ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
+    require(bool(f.kernel->stage(f.bindings())),"finite contextual accepted pose rejected before consumption");
+    f.counts.fill(0);
+    require(!f.kernel->encode(0,{one(),{}},f.output),"source54 incoming zero was silently repaired");
+    f.kernel->commit_pose(); f.kernel->upload(f.ram,1);
+    require(f.ram == ram_before && nodes[0].revision == root_before.revision &&
+        nodes[2].revision == child_before.revision &&
+        equal(world_before,f.kernel->world_nodes(f.handles[0])[2]),
+        "contextual math error published native cache/world/RAM");
+    native(isle_game_model_set_flags(f.game,f.native_models[0],0,2));
+    std::fill_n(f.ram.begin()+0x1000/4,3*16,0xdeadbeef);
+    f.prepare(); // Hidden source traversal must not consume zero inherited XYZ.
+    require(f.ram[0x1000/4] == 0xdeadbeef && f.ram[0x1080/4] == 0xdeadbeef,
+        "hidden source54 uploaded unconsumed scratch/reserved native fixed");
+    placement.scale.x = 2;
+    native(isle_game_model_set_placement(f.game,f.native_models[0],ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
+    native(isle_game_model_set_flags(f.game,f.native_models[0],0,0)); f.prepare();
+    require(f.ram[0x1000/4] != 0xdeadbeef,"same-epoch contextual reveal retained hidden residency");
+    const auto stale = f.handles[0]; f.replace(1); f.prepare(false);
+    require(f.kernel->native_nodes(stale).empty(),"contextual incarnation survived retirement");
+    f.prepare(); f.replace(0); f.prepare();
+    native(isle_game_model_peek_nodes(f.game,f.native_models[0],&nodes,&count));
+    require(nodes[0].matrix_kind == ISLE_GAME_MODEL_CONTEXTUAL_RPY &&
+        f.ram[0x2004/4] == 0x2010,"large-small-large contextual reuse retained short branch/payload state");
+    const auto complete = f.ram;
+    auto active_equal = [&] {
+        for (const auto range : {RamRange{0x1000,192},RamRange{0x1100,192},RamRange{0x2000,16},
+                 RamRange{0x2010,32},RamRange{0x2110,32},RamRange{0x2400,16},
+                 RamRange{0x2410,32},RamRange{0x2510,32}})
+            if (!std::equal(f.ram.begin()+range.offset/4,f.ram.begin()+(range.offset+range.size)/4,
+                    complete.begin()+range.offset/4)) return false;
+        return true;
+    };
+    std::fill(f.ram.begin(),f.ram.end(),0xdeadbeef); f.prepare(true,2);
+    require(active_equal(),"new contextual RAM epoch retained old installation residency");
+    std::vector<std::uint32_t> fresh(rdram_size/4,0xdeadbeef); f.ram.swap(fresh); f.prepare(true,2);
+    require(active_equal(),"contextual RAM pointer replacement reused old scratch residency");
+    const auto cursor = f.arena.cursor; allocation_probe::count = 0; allocation_probe::enabled = true;
+    for (unsigned i = 0; i < 16; ++i) f.prepare();
+    allocation_probe::enabled = false;
+    require(allocation_probe::count == 0 && f.arena.cursor == cursor,"contextual hot traversal allocated");
 }
 }
 int main() {
@@ -557,8 +828,11 @@ int main() {
         lod_and_atomic_rejection(); fractional_lod_above_terminal_key();
         deferred_placement_scopes_and_hide(); immediate_prelist_and_disabled_capacity();
         kind44_placement_inherits_only_x();
+        configured_recipe_selection(); camera_value_context_and_retention();
+        contextual_xyz_siblings_and_hidden(); source48_rows_are_not44();
         kernel_independent_instances_and_order(); kernel_reuse_hidden_residency_and_epoch();
         kernel_late_rejection_is_atomic();
+        kernel_contextual_residency_and_atomicity();
     }
     catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
     return 0;

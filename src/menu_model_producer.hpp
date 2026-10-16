@@ -33,12 +33,13 @@ struct Binding {
 // Title-only native attachment helper. The scene owns the returned model and
 // removes it with its real object lifetime, after graphics/effect retirement.
 Status attach_title_model(IsleGame*, IsleGameObject*, const Model&,
-                          animation::ModelState, IsleGameModel**) noexcept;
+                          animation::ModelState, std::span<IsleGameModelNodeInit> scratch,
+                          IsleGameModel**) noexcept;
 // Title facade over the borrowed kernel. Bindings are actual source render
 // order; neither this facade nor the kernel owns native attachment lifetime.
 class Producer final {
 public:
-    static CreateResult create(IsleGame*, IsleGameCamera*, const Catalog&,
+    static CreateResult create(IsleGame*, IsleGameCamera*, CameraBasisState&, const Catalog&,
         const animation::Runtime&, std::span<const Binding> bindings,
         Layout = {}, std::span<const RamRange> other_reservations = {}) noexcept;
     ~Producer();

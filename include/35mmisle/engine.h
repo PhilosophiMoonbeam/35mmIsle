@@ -235,6 +235,11 @@ IsleGameResult isle_game_camera_parameters(IsleGame* game, IsleGameCamera* camer
  * publishes only dirty entries, with unchanged stable borrow addresses.
  */
 IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* camera);
+/* Nonmutating metadata borrow for transactional preflight. Kind is current;
+ * floating/fixed/revision may be stale while dirty. The stable borrow expires
+ * at camera removal. Compute only after all preparation admission succeeds. */
+IsleGameResult isle_game_camera_peek_matrix(IsleGame* game, IsleGameCamera* camera,
+                                          size_t index, const IsleGameCameraMatrix** output);
 IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
                                       size_t index, const IsleGameCameraMatrix** output);
 /* Same index/cache/revision and lifetime as matrix(); kinds 3/6/8 return
@@ -268,11 +273,15 @@ typedef struct IsleGameModelPlacement {
     uint64_t revision;
 } IsleGameModelPlacement;
 /* Native choices, not serialized console matrix-kind numbers. Selection is
- * immutable for a node's lifetime; both use the same stable revision cache.
+ * immutable for a node's lifetime. Contextual RPY accepts the complete finite
+ * local pose but has NO context-free fixed matrix; the renderer consumes its
+ * source recipe with inherited scale/camera. Its revision tracks accepted-pose
+ * evaluation, with the same stable borrow/lazy revision semantics as locals.
  */
 typedef enum IsleGameModelMatrixKind {
     ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE = 0,
-    ISLE_GAME_MODEL_TRANSLATE = 1
+    ISLE_GAME_MODEL_TRANSLATE = 1,
+    ISLE_GAME_MODEL_CONTEXTUAL_RPY = 2
 } IsleGameModelMatrixKind;
 typedef struct IsleGameModelNodeInit {
     uint32_t parent; /* UINT32_MAX root; otherwise an earlier node index. */
@@ -283,21 +292,25 @@ typedef struct IsleGameModelNode {
     IsleGameModelTransform transform;
     uint32_t parent, first_child, next_sibling; /* UINT32_MAX absent. */
     uint32_t flags;
-    IsleGameFixedMatrix fixed; /* Direct selected GAME integer computation. */
+    IsleGameFixedMatrix fixed; /* Unavailable for CONTEXTUAL_RPY (reserved zeros). */
     uint64_t revision;
     IsleGameModelMatrixKind matrix_kind;
 } IsleGameModelNode;
 
 /* Native type-1 payload: exactly one root, parent-before-child node order.
  * Actual-size arena storage is reused after removal. No mutation/compute
- * allocates. Local matrices compute lazily, only after transform changes;
- * flags do not dirty matrices, and parent changes do not dirty child locals.
- * Node borrows stay stable until model removal/object deletion. Handles expire
- * at removal, including slot reuse. Pointer/count outputs clear on errors.
- * Finite angle, scale*256 and translation*65536 must fit signed int32 before
- * GAME casts; MIPS low-word products and arithmetic shifts are defined explicitly.
- * Translate-only nodes require zero rotation and unit scale; their positions
- * use exact GAME hal_translate without sine-table work or quantization.
+ * allocates. Ordinary local matrices and contextual accepted-pose revisions
+ * evaluate lazily only after transform changes; flags do not dirty them, and
+ * parent changes do not dirty child locals. Node borrows stay stable until
+ * model removal/object deletion. Handles expire at removal, including slot
+ * reuse. Pointer/count outputs clear on errors.
+ * Ordinary RPY angle, scale*256 and translation*65536 must fit signed int32
+ * before GAME casts; MIPS low-word products/arithmetic shifts are explicit.
+ * Translate-only requires zero rotation/unit scale and uses exact hal_translate.
+ * Contextual RPY accepts every finite position/rotation/scale without those
+ * quantization/cast limits. model_nodes never computes ordinary RTS or identity
+ * for it; fixed remains unavailable. Later consumed renderer math has its own
+ * output admission and must not upload this node's reserved fixed bytes.
  */
 IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output);
@@ -314,11 +327,11 @@ IsleGameResult isle_game_model_set_flags(IsleGame* game, IsleGameModel* model,
     size_t index, uint32_t flags);
 /* Nonmutating borrow for transactional preflight: topology, accepted transform,
  * flags and matrix kind are current; fixed/revision caches may still be stale.
- * Do not upload those caches until model_nodes computes them after admission.
- * Borrowed storage expires at model removal, as with model_nodes. */
+ * Do not upload ordinary caches until model_nodes evaluates after admission.
+ * Contextual fixed is never available. Borrow expires at model removal. */
 IsleGameResult isle_game_model_peek_nodes(IsleGame* game, IsleGameModel* model,
     const IsleGameModelNode** output, size_t* count);
-/* Computes dirty ordinary local caches before returning the stable borrow. */
+/* Evaluates dirty local matrices/contextual pose revisions, then borrows nodes. */
 IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
     const IsleGameModelNode** output, size_t* count);
 /* Pure consumed-field preflight, with the same exclusion as validate_transform.

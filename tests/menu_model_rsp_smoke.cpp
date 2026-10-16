@@ -1,6 +1,7 @@
 // Explicit private-ROM, CPU Vulkan canonical RSP->RDP proof. No fixture, Original
 // collector, extracted public payload, or SDK producer implementation is used.
 #include "menu_model_producer.hpp"
+#include "contextual_model_math.h"
 #include "graphics_task.hpp"
 #include "rsp_render.hpp"
 #include <algorithm>
@@ -273,17 +274,19 @@ int run(const std::filesystem::path& input) {
     std::array<menu::animation::SlotCapacity,5> capacities;
     for (std::size_t m = 0; m < capacities.size(); ++m) capacities[m] = menu::animation::slot_capacity(catalog.models()[m]);
     auto animated = menu::animation::Runtime::create(
-        catalog, capacities, {{1500,0,0},{0,0,0},0,30,true,true,0,{}});
+        catalog, capacities, {{1500,0,0},{0,0,0},0,30,true,true,0,{}},{});
     require(bool(animated),"animation creation rejected");
     auto& animation = *animated.runtime;
     std::array<menu::animation::InstanceHandle,5> handles;
     std::array<menu::model::Binding,5> bindings;
+    menu::model::CameraBasisState camera_basis;
+    std::vector<IsleGameModelNodeInit> attachment_scratch(226);
     for (std::size_t m = 0; m < handles.size(); ++m) {
         const auto acquired = animation.acquire(m,m,catalog.models()[m].receives_effect_callback);
         require(bool(acquired),"title instance acquisition rejected"); handles[m] = acquired.handle;
         IsleGameModel* model = nullptr;
         require(bool(menu::model::attach_title_model(world.game,world.objects[m],catalog.models()[m],
-            animation.model(handles[m]),&model)),"title native attachment rejected");
+            animation.model(handles[m]),attachment_scratch,&model)),"title native attachment rejected");
         bindings[m] = {handles[m],world.objects[m],model};
     }
     const std::array<menu::RamRange,5> reserved{{{top,0x10000},{stack,0x10000},
@@ -291,7 +294,7 @@ int run(const std::filesystem::path& input) {
     {
         auto tiny_layout = menu::model::Layout{};
         tiny_layout.lists.size = 64;
-        auto tiny = menu::model::Producer::create(world.game,world.camera,catalog,animation,
+        auto tiny = menu::model::Producer::create(world.game,world.camera,camera_basis,catalog,animation,
             bindings,tiny_layout,reserved);
         require(bool(tiny),"bounded producer construction rejected before capacity exercise");
         const IsleGameCameraMatrix* matrix = nullptr;
@@ -300,10 +303,12 @@ int run(const std::filesystem::path& input) {
         const IsleGamePerspective changed{31,4.0f / 3.0f,47,12800,1};
         native(isle_game_camera_set_perspective(world.game,world.camera,&changed));
         std::vector<std::uint32_t> ram(menu::rdram_size / 4,0x11223344);
+        const auto retained_before = camera_basis.value;
         const auto rejected = tiny.producer->prepare(ram,1);
         require(!rejected && rejected.status.error == menu::model::Error::extent &&
             matrix->revision == revision && tiny.producer->world_nodes(handles[0]).empty() &&
-            std::all_of(ram.begin(),ram.end(),[](auto v) { return v == 0x11223344; }),
+            std::all_of(ram.begin(),ram.end(),[](auto v) { return v == 0x11223344; }) &&
+            std::memcmp(&retained_before,&camera_basis.value,sizeof(retained_before)) == 0,
             "capacity exhaustion published RAM/native camera/world state");
         const IsleGamePerspective restored{30,4.0f / 3.0f,47,12800,1};
         native(isle_game_camera_set_perspective(world.game,world.camera,&restored));
@@ -311,7 +316,7 @@ int run(const std::filesystem::path& input) {
     {
         auto exact_layout = menu::model::Layout{};
         exact_layout.payloads.size = 128 + 292 * 64;
-        auto exact = menu::model::Producer::create(world.game,world.camera,catalog,animation,
+        auto exact = menu::model::Producer::create(world.game,world.camera,camera_basis,catalog,animation,
             bindings,exact_layout,reserved);
         require(bool(exact),"disabled exact-capacity producer construction failed");
         std::vector<std::uint32_t> ram(menu::rdram_size / 4,0x11223344);
@@ -334,7 +339,7 @@ int run(const std::filesystem::path& input) {
         require(bool(exact.producer->prepare(ram,1)) && ram == baseline,
             "disable did not restore exact-capacity admission/old local payload addresses");
     }
-    auto created = menu::model::Producer::create(world.game,world.camera,catalog,animation,bindings,{},reserved);
+    auto created = menu::model::Producer::create(world.game,world.camera,camera_basis,catalog,animation,bindings,{},reserved);
     require(bool(created),"model producer creation rejected");
     auto& producer = *created.producer;
     {
@@ -384,6 +389,12 @@ int run(const std::filesystem::path& input) {
         if (!nodes_before.empty()) require(nodes_before[0].revision == first_revision,"invalid request changed native cache");
         const auto frame = producer.prepare(words,epoch);
         require(bool(frame),"native model prepare rejected");
+        const IsleGameCameraParameters* context_camera = nullptr;
+        native(isle_game_camera_parameters(world.game,world.camera,&context_camera));
+        menu::model::WorldMatrix expected_basis;
+        native(isle_model_source48_basis(context_camera,camera_basis.value.perspective.m,1,expected_basis.m));
+        require(std::memcmp(&expected_basis,&camera_basis.value.basis48,sizeof(expected_basis)) == 0,
+            "native Title camera preparation did not publish its source-derived retained basis");
         unsigned active_placements = 0;
         float placement_x = 1;
         for (std::size_t m = 0; m < 5; ++m) {

@@ -1,5 +1,6 @@
 #include "borrowed_model_kernel.hpp"
 #include "graphics_task.hpp"
+#include "contextual_model_math.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -9,6 +10,7 @@ extern "C" void hal_rotate_rpy_translate_scale_f(float [4][4], float, float, flo
     float, float, float, float, float, float);
 extern "C" void hal_rotate_rpy_translate_f(float [4][4], float, float, float, float, float, float);
 extern "C" void hal_mtx_f2l(float [4][4], IsleGameFixedMatrix*);
+extern "C" void hal_perspective_fast_f(float [4][4], std::uint16_t*, float, float, float, float, float);
 
 namespace isle::menu::model {
 namespace {
@@ -44,6 +46,130 @@ WorldMatrix compose(const WorldMatrix& a, const WorldMatrix& b) {
             a.m[r][2]*b.m[2][c]) + a.m[r][3]*b.m[3][c];
     finite(out); return out;
 }
+}
+std::array<std::uint8_t,3> select_source_matrix_kinds(std::uint32_t flags,
+    std::array<std::uint8_t,3> stored) noexcept {
+    return flags & 0x10u ? stored : std::array<std::uint8_t,3>{28,0,0};
+}
+Status decode_recipe(std::array<std::uint8_t,3> kinds, std::uint32_t depth_flags,
+                     MatrixRecipe& output) noexcept {
+    try {
+        MatrixRecipe recipe;
+        const auto high = depth_flags & 0xf000u;
+        if (!high) {
+            for (auto kind : kinds) if (kind) recipe.operations[recipe.count++] = kind;
+        } else {
+            bool translate = false, scale = false, scaled_translation = false;
+            unsigned rotation = 0;
+            switch (kinds[0]) {
+                case 18: translate = true; break;
+                case 26: rotation = 1; break;
+                case 27: rotation = 1; translate = true; break;
+                case 28: rotation = 1; scale = translate = true; break;
+                case 29: rotation = 2; break;
+                case 30: rotation = 2; translate = true; break;
+                case 31: rotation = 2; scale = translate = true; break;
+                case 32: scale = true; break;
+                case 51: rotation = 1; scaled_translation = scale = translate = true; break;
+                case 52: rotation = 2; scaled_translation = scale = translate = true; break;
+                case 54: rotation = 1; scale = translate = true; break;
+            }
+            if (kinds[1] == 26) rotation = 1;
+            else if (kinds[1] == 29) rotation = 2;
+            else if (kinds[1] == 32) scale = true;
+            if (kinds[2] == 32) scale = true;
+            if (translate) recipe.operations[recipe.count++] = scaled_translation ? 55 : 18;
+            recipe.operations[recipe.count++] = high & 0x4000u ? (rotation == 1 ? 46 : 45) :
+                high & 0x2000u ? (rotation == 1 ? 48 : 47) :
+                high & 0x1000u ? (rotation == 1 ? 50 : 49) :
+                scale ? (rotation == 1 ? 44 : 43) : (rotation == 1 ? 42 : 41);
+        }
+        if (recipe.count == 1 && recipe.operations[0] == 28)
+            recipe.native_kind = ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE;
+        else if (recipe.count == 1 && recipe.operations[0] == 54)
+            recipe.native_kind = ISLE_GAME_MODEL_CONTEXTUAL_RPY;
+        else if ((recipe.count == 1 && recipe.operations[0] == 1) ||
+            (recipe.count == 2 && recipe.operations[0] == 18 &&
+             (recipe.operations[1] == 44 || recipe.operations[1] == 48)))
+            recipe.native_kind = ISLE_GAME_MODEL_TRANSLATE;
+        else require(false); // Selected but not admitted operations never become RTS.
+        output = recipe; return {};
+    } catch (const Failure& f) { return f.status; }
+      catch (...) { return {Error::invalid_input}; }
+}
+Status decode_model_recipe(const Model& source, std::size_t node, MatrixRecipe& output) noexcept {
+    if (node >= source.nodes.size()) return {Error::invalid_input};
+    // The existing World {1,0,0} is a native translate-root proxy, not GAME
+    // matrix kind1. Its appended decoration children remain ordinary kind28.
+    const auto kinds = source.matrix_kinds == std::array<std::uint8_t,3>{1,0,0} && node ?
+        std::array<std::uint8_t,3>{28,0,0} : source.matrix_kinds;
+    return decode_recipe(kinds,source.nodes[node].depth_flags,output);
+}
+Status attach_source_model(IsleGame* game, IsleGameObject* object, const Model& source,
+    animation::ModelState state, RootRecipe root, std::span<IsleGameModelNodeInit> scratch,
+    IsleGameModel** output) noexcept {
+    if (output) *output = nullptr;
+    try {
+        require(game && object && output && bool(state) && !source.nodes.empty() &&
+            state.nodes.size() == source.nodes.size());
+        require(root == RootRecipe::source || root == RootRecipe::translate);
+        require(scratch.size() >= source.nodes.size(),Error::extent);
+        for (std::size_t n = 0; n < source.nodes.size(); ++n) {
+            const auto parent = source.nodes[n].parent;
+            require(n == 0 ? parent == no_index : parent < n);
+            require(state.nodes[n].parent == parent);
+            MatrixRecipe recipe;
+            require(bool(decode_model_recipe(source,n,recipe)));
+            require(n != 0 || root != RootRecipe::translate ||
+                (recipe.count == 1 && (recipe.operations[0] == 1 || recipe.operations[0] == 28)));
+            const bool translated = recipe.native_kind == ISLE_GAME_MODEL_TRANSLATE ||
+                (n == 0 && root == RootRecipe::translate);
+            scratch[n] = {parent == no_index ? UINT32_MAX : static_cast<std::uint32_t>(parent),
+                transform(state.nodes[n].transform,translated),
+                translated ? ISLE_GAME_MODEL_TRANSLATE : recipe.native_kind};
+        }
+        native(isle_game_attach_model(game,object,scratch.data(),source.nodes.size(),output));
+        return {};
+    } catch (const Failure& f) { return f.status; }
+      catch (...) { return {Error::invalid_input}; }
+}
+Status prepare_render_context(const RenderContext& retained,
+    const IsleGameCameraParameters& camera, std::span<const CameraMatrixOperation> matrices,
+    unsigned selector, RenderContext& output) noexcept {
+    try {
+        require(selector <= 7);
+        RenderContext next = retained;
+        unsigned axis = 0;
+        for (const auto operation : matrices) {
+            require(operation.source_cache_state <= 2);
+            if (operation.source_cache_state == 2) continue;
+            switch (operation.kind) {
+                case 1: case 2: break;
+                case 3: {
+                    const auto& p = camera.perspective;
+                    require(std::isfinite(p.near_plane+p.far_plane));
+                    std::uint16_t ignored = 0;
+                    hal_perspective_fast_f(next.perspective.m,&ignored,p.fovy,p.aspect,
+                        p.near_plane,p.far_plane,p.scale);
+                    finite(next.perspective); break;
+                }
+                case 6: case 7: case 12: case 13:
+                    axis = camera.look_at.up[2] < camera.look_at.up[1] ? 1 : 2; break;
+                case 8: case 9: case 14: case 15: axis = 1; break;
+                case 10: case 11: case 16: case 17: axis = 2; break;
+                default: require(false);
+            }
+        }
+        // numMatrices==0 skips the selector and retains source globals too.
+        if (!matrices.empty()) {
+            if (selector == 1 || selector == 4 || selector == 7) axis = 0;
+            else if (selector == 2 || selector == 3) axis = 1;
+            else if (selector == 5 || selector == 6) axis = 2;
+            if (axis) native(isle_model_source48_basis(&camera,next.perspective.m,axis,next.basis48.m));
+        }
+        output = next; return {};
+    } catch (const Failure& f) { return f.status; }
+      catch (...) { return {Error::invalid_input}; }
 }
 Status encode_material(const Material& texture, const animation::MaterialState& state,
                        MaterialCommands& output) noexcept {
@@ -170,33 +296,51 @@ struct HierarchyEncoder {
         require(pending_count < output.pending.size(),Error::extent);
         output.pending[pending_count++] = c;
     }
-    void matrix(std::size_t n, bool push, float parent_scale) {
+    void matrix(std::size_t n, bool push, IsleGameVec3& inherited) {
+        const auto& recipe = input.recipes[n];
+        const bool inline_rows = recipe.count == 2;
+        const auto t = input.native_nodes.empty() || inline_rows ?
+            transform(input.nodes[n].transform,false) : input.native_nodes[n].transform;
         append({push ? 0xda380000u : 0xda380001u,
             input.matrices + static_cast<std::uint32_t>(n * 64)});
-        const auto recipe = input.source.nodes[n].depth_flags & 0xf000u;
-        require(recipe == 0 || recipe == 0x8000u);
-        if (!recipe) return;
-        WorldMatrix matrix;
-        const auto scale = input.nodes[n].transform.scale;
-        const auto x = parent_scale * scale.x;
-        const auto y = scale.y * parent_scale;
-        matrix.m[0][0] = input.projection.m[0][0] * x;
-        matrix.m[1][1] = input.projection.m[1][1] * y;
-        matrix.m[2][2] = input.projection.m[2][2] * x;
-        matrix.m[2][3] = input.projection.m[2][3] * x;
-        for (const auto& row : matrix.m) for (float f : row)
-            require(std::isfinite(f) && double(f * 65536.0f) >= -2147483648.0 &&
-                double(f * 65536.0f) < 2147483648.0);
-        IsleGameFixedMatrix fixed;
-        hal_mtx_f2l(matrix.m,&fixed);
-        append({0xd5000001,0});
-        // Source kind44 replaces three combined-MVP rows, retaining translation.
-        for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
-            append({0xdb000000u | (row * 8 + pair * 4),
-                fixed.m[row / 2][(row % 2) * 2 + pair]});
-        for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
-            append({0xdb000020u | (row * 8 + pair * 4),
-                fixed.m[2 + row / 2][(row % 2) * 2 + pair]});
+        if (recipe.operations[0] == 54) {
+            const float xyz[]{inherited.x,inherited.y,inherited.z};
+            native(isle_model_source54_matrix(&t,xyz,&input.contextual_fixed[n]));
+            input.contextual_consumed[n] = 1;
+            inherited.x *= t.scale.x; inherited.y *= t.scale.y; inherited.z *= t.scale.z;
+        } else if (recipe.operations[0] == 28) inherited.x *= t.scale.x;
+        else if (inline_rows) {
+            const float y = t.scale.y * inherited.x;
+            inherited.x *= t.scale.x;
+            WorldMatrix matrix;
+            if (recipe.operations[1] == 44) {
+                const auto& p = input.context.perspective;
+                matrix.m[0][0] = p.m[0][0] * inherited.x;
+                matrix.m[1][1] = p.m[1][1] * y;
+                matrix.m[2][2] = p.m[2][2] * inherited.x;
+                matrix.m[2][3] = p.m[2][3] * inherited.x;
+            } else {
+                require(recipe.operations[1] == 48);
+                for (unsigned row = 0; row < 3; ++row)
+                    for (unsigned col = 0; col < 4; ++col)
+                        matrix.m[row][col] = input.context.basis48.m[row][col] *
+                            (row == 1 ? y : inherited.x);
+            }
+            for (unsigned row = 0; row < 3; ++row) for (float f : matrix.m[row])
+                require(std::isfinite(f) && double(f * 65536.0f) >= -2147483648.0 &&
+                    double(f * 65536.0f) < 2147483648.0);
+            IsleGameFixedMatrix fixed;
+            hal_mtx_f2l(matrix.m,&fixed);
+            append({0xd5000001,0});
+            // 44/48 replace ONLY rows0..2 of combined MVP; translation survives.
+            for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
+                append({0xdb000000u | (row * 8 + pair * 4),
+                    fixed.m[row / 2][(row % 2) * 2 + pair]});
+            for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
+                append({0xdb000020u | (row * 8 + pair * 4),
+                    fixed.m[2 + row / 2][(row % 2) * 2 + pair]});
+        }
+        require(std::isfinite(inherited.x) && std::isfinite(inherited.y) && std::isfinite(inherited.z));
     }
     void flush(unsigned lane) {
         while (copied[lane] < pending_count) {
@@ -204,7 +348,7 @@ struct HierarchyEncoder {
             command(lane,c.w0,c.w1);
         }
     }
-    void node(std::size_t n, float parent_scale, bool deferred) {
+    void node(std::size_t n, IsleGameVec3 inherited, bool deferred) {
         const auto& pose = input.nodes[n];
         const auto flags = input.native_nodes.empty() ? pose.flags : input.native_nodes[n].flags;
         const auto sibling = input.next_sibling[n], child = input.first_child[n];
@@ -217,7 +361,7 @@ struct HierarchyEncoder {
         const bool placed_root = pose.parent == no_index &&
             input.placement.mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED;
         if (placed_root) append({0xda380000u,input.placement_address});
-        matrix(n,push && !placed_root,parent_scale);
+        matrix(n,push && !placed_root,inherited);
         if (!deferred) flush(0);
         if (!(flags & 1)) for (const auto& payload : input.source.nodes[n].payloads) {
             const auto lane = payload.display_list_id;
@@ -227,12 +371,7 @@ struct HierarchyEncoder {
             if (pose.material_count) command(lane,0xdb060038,input.material_bases[n]);
             call(lane,payload.draw_list);
         }
-        const bool source_scale = input.native_nodes.empty() ||
-            (input.source.nodes[n].depth_flags & 0xf000u) == 0x8000u;
-        const float scale = parent_scale * (source_scale ? pose.transform.scale.x :
-            input.native_nodes[n].transform.scale.x);
-        require(std::isfinite(scale));
-        for (auto c = child; c != UINT32_MAX; c = input.next_sibling[c]) node(c,scale,deferred);
+        for (auto c = child; c != UINT32_MAX; c = input.next_sibling[c]) node(c,inherited,deferred);
         pending_count = saved;
         for (unsigned lane = 0; lane < 4; ++lane) if (copied[lane] > saved) {
             copied[lane] = saved;
@@ -247,25 +386,23 @@ Status encode_hierarchy(const HierarchyInput& input, HierarchyBuffer& output) no
         require(count && input.source.nodes.size() == count && input.first_child.size() == count &&
             input.next_sibling.size() == count && input.material_bases.size() == count &&
             input.nodes[0].parent == no_index &&
-            (input.native_nodes.empty() || input.native_nodes.size() == count));
-        require((input.source.matrix_kinds[0] == 0x1c || input.source.matrix_kinds[0] == 1) &&
-            input.source.matrix_kinds[1] == 0 && input.source.matrix_kinds[2] == 0);
-        for (const auto& node : input.source.nodes) {
-            const auto recipe = node.depth_flags & 0xf000u;
-            require(recipe == 0 || recipe == 0x8000u);
-        }
+            (input.native_nodes.empty() || input.native_nodes.size() == count) &&
+            input.recipes.size() == count && input.contextual_fixed.size() == count &&
+            input.contextual_consumed.size() == count);
         const bool deferred = input.source.render_type == RenderType::d_fogged ||
             input.source.render_type == RenderType::j_fogged;
         HierarchyEncoder encoder{input,output};
         encoder.node(0,input.placement.mode == ISLE_GAME_MODEL_PLACEMENT_RTS ?
-            input.placement.transform.scale.x : 1.0f,deferred);
+            input.placement.transform.scale : IsleGameVec3{1,1,1},deferred);
         return {};
     } catch (const Failure& f) { return f.status; }
       catch (...) { return {Error::invalid_input}; }
 }
 struct BorrowedKernel::Impl {
-    enum class Recipe { rts, kind44 };
-    struct Resource { std::vector<Recipe> recipes; };
+    struct Resource {
+        std::vector<MatrixRecipe> recipes;
+        bool contextual = false;
+    };
     struct Key {
         animation::InstanceHandle instance;
         std::size_t resource = no_index;
@@ -297,6 +434,8 @@ struct BorrowedKernel::Impl {
         std::vector<std::size_t> material_resources, encoded_resources;
         std::vector<IsleGameModelTransform> transforms;
         std::vector<WorldMatrix> world, staged_world;
+        std::vector<IsleGameFixedMatrix> contextual_fixed;
+        std::vector<unsigned char> contextual_consumed;
         std::vector<unsigned char> changed;
         std::vector<MaterialCommands> encoded;
         Slot(KernelSlot p) : plan(p),first(p.capacity.nodes),next(p.capacity.nodes),bases(p.capacity.nodes),
@@ -304,6 +443,7 @@ struct BorrowedKernel::Impl {
             materials(p.capacity.material_attachments),encoded_revisions(p.capacity.material_attachments),
             material_resources(p.capacity.material_attachments,no_index),encoded_resources(p.capacity.material_attachments,no_index),
             transforms(p.capacity.nodes),world(p.capacity.nodes),staged_world(p.capacity.nodes),
+            contextual_fixed(p.capacity.nodes),contextual_consumed(p.capacity.nodes),
             changed(p.capacity.nodes),encoded(p.capacity.material_attachments) {}
         Key staged_key() const { return {staged.state.instance,staged.state.resource_model,
             staged.object,staged.model,staged.pose,staged.root}; }
@@ -324,8 +464,6 @@ struct BorrowedKernel::Impl {
         for (std::size_t r = 0; r < models.size(); ++r) {
             const auto& source = models[r];
             require(!source.nodes.empty());
-            require((source.matrix_kinds[0] == 0x1c || source.matrix_kinds[0] == 1) &&
-                source.matrix_kinds[1] == 0 && source.matrix_kinds[2] == 0);
             require(source.render_type == RenderType::b || source.render_type == RenderType::a_fogged ||
                 source.render_type == RenderType::b_fogged || source.render_type == RenderType::i_fogged ||
                 source.render_type == RenderType::d_fogged || source.render_type == RenderType::j_fogged);
@@ -334,9 +472,11 @@ struct BorrowedKernel::Impl {
             for (std::size_t n = 0; n < source.nodes.size(); ++n) {
                 const auto& node = source.nodes[n];
                 require(n == 0 ? node.parent == no_index : node.parent < n);
-                const auto flags = node.depth_flags & 0xf000u;
-                require(flags == 0 || flags == 0x8000u);
-                recipes.push_back(flags ? Recipe::kind44 : Recipe::rts);
+                MatrixRecipe recipe;
+                require(bool(decode_model_recipe(source,n,recipe)));
+                recipes.push_back(recipe);
+                resources[r].contextual |= recipe.operations[0] == 54 ||
+                    (recipe.count == 2 && recipe.operations[1] == 48);
                 for (auto material : node.materials) require(material < materials.size());
                 for (const auto& payload : node.payloads)
                     require(payload.display_list_id < 4 && payload.draw_list >= 0x80000000u &&
@@ -367,13 +507,13 @@ struct BorrowedKernel::Impl {
         }
     }
     bool baked(const Slot& s, std::size_t n) const {
-        return resources[s.staged.state.resource_model].recipes[n] == Recipe::kind44;
+        return resources[s.staged.state.resource_model].recipes[n].count == 2;
     }
 };
 Status BorrowedKernel::validate_upload(std::span<std::uint32_t> words, std::uint64_t epoch) const noexcept {
     try {
         const auto& p = *impl_;
-        require(p.staged && words.data() && words.size_bytes() == rdram_size && epoch,Error::extent);
+        require(words.data() && words.size_bytes() == rdram_size && epoch,Error::extent);
         const auto begin = reinterpret_cast<std::uintptr_t>(words.data());
         require(begin % alignof(std::uint32_t) == 0 &&
             begin <= std::numeric_limits<std::uintptr_t>::max()-rdram_size,Error::extent);
@@ -389,7 +529,7 @@ Status BorrowedKernel::validate_upload(std::span<std::uint32_t> words, std::uint
         disjoint(p.slots.data(),p.slots.size()*sizeof(Impl::Slot));
         disjoint(p.resources.data(),p.resources.size()*sizeof(Impl::Resource));
         for (const auto& resource : p.resources)
-            disjoint(resource.recipes.data(),resource.recipes.size()*sizeof(Impl::Recipe));
+            disjoint(resource.recipes.data(),resource.recipes.size()*sizeof(MatrixRecipe));
         for (const auto& source : p.models) {
             disjoint(source.tree.bytes.data(),source.tree.bytes.size());
             disjoint(source.nodes.data(),source.nodes.size()*sizeof(Node));
@@ -418,6 +558,8 @@ Status BorrowedKernel::validate_upload(std::span<std::uint32_t> words, std::uint
             disjoint(s.transforms.data(),s.transforms.size()*sizeof(IsleGameModelTransform));
             disjoint(s.world.data(),s.world.size()*sizeof(WorldMatrix));
             disjoint(s.staged_world.data(),s.staged_world.size()*sizeof(WorldMatrix));
+            disjoint(s.contextual_fixed.data(),s.contextual_fixed.size()*sizeof(IsleGameFixedMatrix));
+            disjoint(s.contextual_consumed.data(),s.contextual_consumed.size());
             disjoint(s.changed.data(),s.changed.size()); disjoint(s.encoded.data(),s.encoded.size()*sizeof(MaterialCommands));
             if (s.present) {
                 disjoint(s.staged.runtime,sizeof(*s.staged.runtime));
@@ -455,6 +597,8 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
             const auto& source = p.models[b.state.resource_model];
             require(b.root == (source.matrix_kinds[0] == 1 ? RootRecipe::translate : RootRecipe::source));
             const auto count = source.nodes.size();
+            const auto& resource = p.resources[b.state.resource_model];
+            std::fill(s.contextual_consumed.begin(),s.contextual_consumed.end(),0);
             require(b.state.nodes.size() == count && count <= s.plan.capacity.nodes &&
                 b.state.materials.size() <= s.plan.capacity.material_attachments,Error::extent);
             const IsleGameModelNode* nodes = nullptr; std::size_t native_count = 0;
@@ -463,6 +607,7 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
             native(isle_game_model_placement(p.game,b.model,&s.placement));
             IsleGameObjectMetadata metadata{}; native(isle_game_object_metadata(p.game,b.object,&metadata));
             s.draw = b.draw && !(metadata.flags & 1u) && !(b.state.object_flags & 1u);
+            p.dirty |= resource.contextual && s.draw;
             s.identity_changed = !s.live || s.key != s.staged_key();
             p.dirty |= s.identity_changed || s.draw != s.live_draw;
             const float placement_x = s.placement->mode == ISLE_GAME_MODEL_PLACEMENT_RTS ? s.placement->transform.scale.x : 1;
@@ -497,7 +642,7 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
                 require(nodes[n].parent == (pose.parent == no_index ? UINT32_MAX : pose.parent),Error::native);
                 const bool translate_root = n == 0 && b.root == RootRecipe::translate;
                 require(!translate_root || (b.pose == PoseSource::native && !p.baked(s,n)));
-                const auto kind = p.baked(s,n) || translate_root ? ISLE_GAME_MODEL_TRANSLATE : ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE;
+                const auto kind = resource.recipes[n].native_kind;
                 require(nodes[n].matrix_kind == kind,Error::native);
                 attachment += pose.material_count;
                 const auto t = b.pose == PoseSource::native ? nodes[n].transform : transform(pose.transform,p.baked(s,n));
@@ -510,8 +655,8 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
                 s.changed[n] = local_changed || parent_changed || (n == 0 && placement_changed);
                 p.dirty |= s.flags[n] != flags || (p.baked(s,n) && s.changed[n]);
                 if (!s.changed[n]) continue;
-                // Kind44's native local is translation-only; the float attachment
-                // view deliberately retains its source RTS, matching callbacks.
+                // This single mathematical local-RTS x parent/placement cache
+                // preserves Title effects; it does not prove actor source54 FX.
                 auto matrix = local(b.pose == PoseSource::animation || p.baked(s,n) ? transform(pose.transform,false) : t);
                 if (pose.parent == no_index && s.placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED) {
                     WorldMatrix placement;
@@ -543,17 +688,19 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
     } catch (const Failure& f) { return f.status; }
       catch (...) { return {Error::invalid_input}; }
 }
-Status BorrowedKernel::encode(std::size_t slot, const WorldMatrix& projection, HierarchyBuffer& buffer) const noexcept {
+Status BorrowedKernel::encode(std::size_t slot, const RenderContext& context, HierarchyBuffer& buffer) const noexcept {
     auto& p = *impl_;
     if (!p.staged || slot >= p.slots.size() || !p.slots[slot].present) {
         p.staged = false; return {Error::invalid_input};
     }
-    const auto& s = p.slots[slot]; if (!s.draw) return {};
+    auto& s = p.slots[slot]; if (!s.draw) return {};
     const auto count = s.staged.state.nodes.size();
     const auto status = encode_hierarchy({p.models[s.staged.state.resource_model],s.staged.state.nodes,
         std::span(s.first).first(count),std::span(s.next).first(count),std::span(s.bases).first(count),
-        *s.placement,projection,s.plan.matrices,s.placement_address,
-        s.staged.pose == PoseSource::native ? s.nodes : std::span<const IsleGameModelNode>{}},buffer);
+        *s.placement,context,s.plan.matrices,s.placement_address,
+        s.staged.pose == PoseSource::native ? s.nodes : std::span<const IsleGameModelNode>{},
+        p.resources[s.staged.state.resource_model].recipes,std::span(s.contextual_fixed).first(count),
+        std::span(s.contextual_consumed).first(count)},buffer);
     if (!status) p.staged = false;
     return status;
 }
@@ -599,7 +746,11 @@ void BorrowedKernel::upload(std::span<std::uint32_t> words, std::uint64_t epoch)
         if (s.placement_address && (fresh || s.resident_placement_address != s.placement_address ||
             s.resident_placement_revision != s.placement->revision)) memory.matrix(s.placement_address,s.placement->fixed);
         for (std::size_t n = 0; n < s.nodes.size(); ++n) {
-            if (fresh || s.matrices[n] != s.nodes[n].revision) memory.matrix(s.plan.matrices+static_cast<std::uint32_t>(n*64),s.nodes[n].fixed);
+            if (s.nodes[n].matrix_kind == ISLE_GAME_MODEL_CONTEXTUAL_RPY) {
+                if (s.contextual_consumed[n]) memory.matrix(s.plan.matrices+static_cast<std::uint32_t>(n*64),
+                    s.contextual_fixed[n]);
+            } else if (fresh || s.matrices[n] != s.nodes[n].revision)
+                memory.matrix(s.plan.matrices+static_cast<std::uint32_t>(n*64),s.nodes[n].fixed);
             s.matrices[n] = s.nodes[n].revision;
             const auto& pose = state.nodes[n];
             for (std::size_t j = 0; j < pose.material_count; ++j) {

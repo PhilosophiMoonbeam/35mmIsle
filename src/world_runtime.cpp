@@ -1,6 +1,7 @@
 #include "world_runtime.hpp"
 #include "world_collision.hpp"
 #include "scene_services.hpp"
+#include "borrowed_model_kernel.hpp"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -33,6 +34,7 @@ struct World::Impl {
     std::vector<Binding> bindings;
     std::unique_ptr<menu::animation::Runtime> animation;
     std::unique_ptr<collision::PreparedModels> collisions;
+    std::vector<IsleGameModelNodeInit> attachment_scratch;
     Block* current = nullptr;
     IsleGameObject* sky_object = nullptr;
     IsleGameModel* sky_model = nullptr;
@@ -79,20 +81,14 @@ struct World::Impl {
         } else check(isle_game_add_process(game,o,callback,user,ISLE_GAME_SYNCHRONOUS,priority,&p));
         if (output) *output = p;
     }
-    IsleGameModel* attach(IsleGameObject* object, std::size_t index, bool translate_root) {
+    IsleGameModel* attach(IsleGameObject* object, std::size_t index, bool translate_root,
+                          menu::animation::InstanceHandle instance) {
         if (index >= resources.models.size()) throw std::invalid_argument("World model index escapes resources");
-        const auto& source = resources.models[index];
-        std::vector<IsleGameModelNodeInit> nodes;
-        nodes.reserve(source.nodes.size());
-        for (std::size_t i = 0; i < source.nodes.size(); ++i) {
-            const auto& n = source.nodes[i];
-            const bool translated = i == 0 && translate_root;
-            nodes.push_back({n.parent == menu::no_index ? UINT32_MAX : static_cast<std::uint32_t>(n.parent),
-                {converted(n.position),translated ? Vec3{} : converted(n.rotation),translated ? Vec3{1,1,1} : converted(n.scale)},
-                translated ? ISLE_GAME_MODEL_TRANSLATE : ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE});
-        }
         IsleGameModel* model = nullptr;
-        check(isle_game_attach_model(game,object,nodes.data(),nodes.size(),&model));
+        const auto status = menu::model::attach_source_model(game,object,resources.models[index],
+            animation->model(instance),translate_root ? menu::model::RootRecipe::translate :
+            menu::model::RootRecipe::source,attachment_scratch,&model);
+        if (!status) throw std::runtime_error("World source model attachment rejected");
         return model;
     }
     void visibility(std::uint32_t mask) {
@@ -178,7 +174,10 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
             capacities.push_back(menu::animation::slot_capacity(r.models[block.road_model]));
         }
     }
-    auto animation = menu::animation::Runtime::create({r.models,r.materials,r.animations,menu::no_index,r.paths},capacities,{});
+    std::size_t max_nodes = 0;
+    for (const auto capacity : capacities) max_nodes = std::max(max_nodes,capacity.nodes);
+    s.attachment_scratch.resize(max_nodes);
+    auto animation = menu::animation::Runtime::create({r.models,r.materials,r.animations,menu::no_index,r.paths},capacities,{},{});
     if (!animation) throw std::runtime_error("World native animation resource admission failed");
     s.animation = std::move(animation.runtime);
     s.collisions = std::make_unique<collision::PreparedModels>(r.collision_models);
@@ -208,7 +207,7 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
                 check(acquired.status);
                 b.instance = acquired.handle;
                 b.object = s.object(static_cast<std::uint32_t>(100+i*2));
-                b.model = s.attach(b.object,b.resource->model,true);
+                b.model = s.attach(b.object,b.resource->model,true,b.instance);
                 const auto callback = static_cast<std::uint32_t>(r.models[b.resource->model].render_type);
                 s.render.push_back({b.object,b.model,b.resource->model,b.resource->metadata.display_list_guest,callback,9,3,0x80000000,false,b.instance});
                 s.bindings.push_back({&s,&b,b.instance,b.model,false});
@@ -220,7 +219,7 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
                 check(acquired.status);
                 b.road_instance = acquired.handle;
                 b.road_object = s.object(static_cast<std::uint32_t>(101+i*2));
-                b.road_model = s.attach(b.road_object,b.resource->road_model,false);
+                b.road_model = s.attach(b.road_object,b.resource->road_model,false,b.road_instance);
                 s.render.push_back({b.road_object,b.road_model,b.resource->road_model,0,0x80014f98,9,3,0x80000000,false,b.road_instance});
                 s.bindings.push_back({&s,&b,b.road_instance,b.road_model,true});
                 reset_road(b,b.resource->metadata.reversed ? static_cast<float>(b.resource->metadata.movement_animation_duration) : 0);

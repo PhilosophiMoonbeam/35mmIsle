@@ -1,5 +1,6 @@
 #include "scene_services.hpp"
 #include "menu_scene_bridge.h"
+#include "borrowed_model_kernel.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -44,6 +45,7 @@ struct Services::Impl {
     Services& s;
     isle_arena& arena;
     ResourceView resources;
+    ::isle::menu::model::CameraBasisState camera_basis{};
     ObjectRecord *objects = nullptr, *free_objects = nullptr, *draws = nullptr;
     SpriteRecord* free_sprites = nullptr;
     IsleGameCommandPool commands{};
@@ -213,6 +215,7 @@ struct Services::Impl {
         return false;
     }
 };
+::isle::menu::model::CameraBasisState& Services::camera_basis() noexcept { return impl_->camera_basis; }
 
 Services::Services(IsleGame* owner, isle_arena& arena, ResourceView resources,
     game_input::Service& controls, game_audio::Session& sounds, ::isle::game::State& persistent)

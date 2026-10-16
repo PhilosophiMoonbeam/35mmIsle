@@ -16,6 +16,10 @@
       "git_blob": "b6c98ec45939cd9e59ef16d7e44868eee5dc250d",
       "sha256": "a0f4c47c2428b846a171fbb1fe30e8254f7bf67d69e30cb191ad87439f1f7f77"
     },
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2"
+    },
     "include/sys/mtx.h": {
       "git_blob": "4f0706f10e48d4df55f1e9bf625ede7c9fd7f6c3",
       "sha256": "f9c8b54723daea19b28f66f57bb0c8eaf2001dcf613dac4afce712a7ea51b4e7"
@@ -31,15 +35,40 @@
   },
   "native_support": {
     "src/engine.c": {
-      "sha256": "fb92299df0d49e5271bb4c2b521c970a176f37dedc5ac1d935a3eb8bc6f74d18",
+      "sha256": "829742120cb0c21892585558a06104b2d84af1d9ddf3f541d32ed87c269632d8",
+      "contextual_model_math": {
+        "native_kind": "ISLE_GAME_MODEL_CONTEXTUAL_RPY=2 accepts all nine finite local-pose scalars without kind28 angle/scale/translation cast bounds. Immutable kind, topology, stable borrow, flags and lazy dirty revision semantics remain. Computing model_nodes advances accepted-pose revision only and never invokes RTS/identity math; fixed bytes remain reserved zeros, not a renderable matrix. Renderer owns contextual output admission and residency.",
+        "source54": "Checked wrapper invokes exact privately extracted func_8001EA90 (matrix.c:1717-1759), validates all twelve consumed binary32 float*65536 products, then invokes exact hal_mtx_f2l_fixed_w (306-341). Inherited XYZ is nonzero finite, reciprocals and source expression order are preserved, local zero is valid, inherited zero is not rescued, translation is not inherited-scaled. No heap or intermediate fixed copy; failure leaves output unchanged.",
+        "source48": "Original checked adapter follows own render.c:2433-2452: axis1=XZ distance/eyeY, axis2=XY distance/eyeZ; eyeZ<0.0001f invokes exact hal_scale_f(0,0,0), W=1, without perspective concat. Otherwise exact admitted hal_look_at_f synthetic basis then independently written left-associated binary32 row multiplication; no SDK guMtxCatF body/layout. Validate consumed rows0..2 only, stage complete output for failure/alias atomicity; unused row3 may be nonfinite. Selector and retained-context ownership remain renderer-owned.",
+        "source48_basis_origin": {
+          "path": "src/sys/render.c",
+          "first": 2433,
+          "last": 2452,
+          "source_sha256": "4fcb45bea62f77d1d34107c5a1edc459a65e7d1aeddee7dda241b47b1745f949"
+        },
+        "source48_consumption_origin": {
+          "path": "src/sys/render.c",
+          "first": 690,
+          "last": 720,
+          "source_sha256": "9021e8c44ec817d0b241aff4db0c5b67402992a580ec4d410e0a780a3f2bf940"
+        },
+        "floating_point": "Binary32 C sinf/cosf explicitly substitute only GAME __sinf/__cosf calls in func_8001EA90; not original trig bit parity. Existing isle-engine -frounding-math/-fno-fast-math/-ffp-contract=off or MSVC /fp:strict preserve operation order without FMA/reassociation or rounding-mode changes. Native finite pose admission is separate from renderer-consumed fixed/output admission.",
+        "contracts": "Main all43 contracts passed GCCDebug/GCCRelease/ClangASanUBSan after integration. Native cases cover full finite contextual pose/no fixed/no kind28 casts, stable borrow/revision/flags/reuse, every nonfinite pose channel, unequal inherited XYZ with noncommuting RPY, unscaled translation, unquantized scale/huge finite angles, fixed-W, zero inherited/local scales, signed fixed endpoints, unchanged failures, both basis axes, camera pose changes, aliasing, exact degenerate bypass and unused nonfinite row3. Actual existing Title/World/app consumers preserve behavior; new actor54/48 asset/GPU admission remains separate."
+      },
       "placement": "Embedded disabled/RT/RTS ownership; pure consumed-field preflight and eager atomic fixed/revision/count publication. RT never reads unused scale; disabled has no identity compute. Removal/deferred retirement and capacity-based best-fit reuse retain source local indices/caches and reset placement independently.",
       "transactional_model_borrow": "isle_game_model_peek_nodes validates ownership and borrows current accepted node metadata without dirty-cache computation, revision change or dirty-state clearing. Shared kernel preflight uses the pure query; existing computing model_nodes remains post-admission commit. Main all43 Debug/Release/ASanUBSan contracts passed, including real late material/list rejection preserving native fixed/revision/world/RAM; fresh common/World and actual natural-title/Name/Oak RSP/RDP/LUS consumers passed. Exact bounded evidence in menu-model-inputs integration.native_instance_source_status; no new GAME definition, fabricated fence or general actor-recipe support.",
+      "transactional_camera_borrow": "isle_game_camera_peek_matrix validates owner/index and borrows immutable kind plus possibly stale payload/revision without computing, clearing dirty state or publishing normalization. World preflights camera context, RAM aliases and all model/list/placement capacities before its single atomic compute_all; stable cached addresses are uploaded only after admission.",
       "use": "Original actual-size native camera/model ownership and typed validation; atomic compute-all stages dirty native matrix/reflection/normalization payloads with no partial publication on failure, sharing exact math with individual getters. Kind8 exact GAME look-at-roll validates its consumed fixed Y-up basis independently of unused finite look_at.up; basic6/reflection14 and mixed cameras validate their consumed supplied up, including atomic matrix-attachment rejection. Finite radians and selective eye/at/roll dirtying without kind8 reflection output. Pure model transform preflight, immutable per-node RTS/translate and exact direct GAME hal_translate; numeric RCP light values and photo-world concatenation. Native source object/update metadata and once-only retirement callback after all process joins/payload removals and before node reuse keep generic scene userdata/queues alive through real deferred deletion. Typed one-argument GAME process entries are called directly through their original function identity, separately from synchronous/stackful dispatch adapters and native two-argument contexts; exact-identity ending follows GAME items.c:69-85 using existing OM lists, arena reuse and joined continuation retirement. No SDK implementation."
     },
     "src/engine_math.h": {
-      "sha256": "f787efabd60986b97387afa7927ba8bdd608666b4539de7ec51aab92224038fa",
+      "sha256": "14ce71b4bd39b2d3e1fbea0cca3a44780e17e732ae97615f0ba7965b40de4b6d",
+      "contextual_model_math": "Exact native C prototypes for own func_8001EA90, hal_mtx_f2l_fixed_w and hal_scale_f match their admitted GAME definition signatures; independent public fixed ABI and existing FTOFIX32/COMBINE packing, no SDK header/layout.",
       "placement": "Direct exact own-GAME RT fixed/floating declarations, sharing already defined MIPS multiplication/shift/packing and existing float RPY helper; not RTS with redundant unit-scale multiplication.",
       "use": "Original native matrix/Vec3f/public RCP light numeric seams and checked signed-1.7 conversion; direct GAME hal_look_at_roll_f and hal_translate declarations, C libm binary32 roll trig and shared exact GAME vector rotation, defined MIPS arithmetic. No SDK union, opaque tail/layout import or suppression."
+    },
+    "src/contextual_model_math.h": {
+      "sha256": "b905f435dffd9ed81fac09e518577c93627921031253f6cdb4e6c37ced427253",
+      "use": "Private C-compatible extern-C helper contract for source54 fixed payload and source48 camera basis. Pure checked operations, no ownership/selector/cache allocation; failure-atomic outputs and explicit C-libm/FP/unused-row semantics."
     },
     "src/engine_internal.h": {
       "sha256": "8231ab49ae0fdbca234d195bfd7be4d318743fce33a31380a4702aa768aa0785",
@@ -47,9 +76,11 @@
       "use": "Original actual-size camera/matrix/reflection/model native payload ownership, object retirement callback/userdata and bounded arena free lists, not console or SDK ownership layouts. Native updateUser is distinct from GAME entity userData; allocation and object reuse clear both, and callback replacement preserves actor payload. Process function is the actual callable IsleGameSourceCallback, distinct from native two-argument entry/user and scheduler adapter; zero-initialized arena reuse clears identities."
     },
     "include/35mmisle/engine.h": {
-      "sha256": "756966f45a82f2ecf9ddb1a7191aef6c77e039e47401a066bc963eee05818b5a",
+      "sha256": "ca7dfe8ea9aa01ae47624e7c9ae507fa64895dbd3ea9c0f98930c8a596d7be18",
+      "contextual_model_math": "Explicit immutable CONTEXTUAL_RPY=2 is a full finite accepted local pose, not a context-free fixed matrix. Reserved zero fixed bytes are never uploadable; computing getter evaluates accepted-pose revision without RTS/identity. Quantized/cast constraints apply only to ordinary local kinds; renderer output admission remains distinct.",
       "placement": "Typed native placement enum/record plus validate/set/stable nonmutating view. Explicit separate setter transaction, neutral disabled metadata and independent source-local cache lifetime.",
       "transactional_model_borrow": "Typed pure peek distinguishes accepted current topology/transform/flags/kind from possibly stale fixed/revision caches. Borrow lifetime is native model lifetime; the computing query remains semantically distinct, not a compatibility alias.",
+      "transactional_camera_borrow": "Pure camera metadata peek is distinct from the computing matrix getter; current immutable kind can be checked before any dirty payload/revision/normalization publication, with stable lifetime and cleared outputs on failure.",
       "use": "Native C camera kinds 3/6/8/14 and model ABI with atomic dirty-camera compute-all, finite-radians kind8 fixed-Y-up roll and selective caching, no kind8 reflection fabrication, pure model transform validation, explicit immutable per-node RTS/translate selection and stable revisions. Basic6 roll independence and source kind14 math semantics remain unchanged. Public native object/update metadata, joined/deferred retirement callback and promoted one-source command pool/FIFO/custom-handler API expose no SDK layouts or compatibility aliases. Typed GAME one-argument process creation, original callable identity observation and exact-function ending share existing native OM kind/priority/retirement semantics without callback casts or a parallel registry/scheduler."
     }
   },
@@ -304,6 +335,15 @@
       "changes": []
     },
     {
+      "symbol": "hal_mtx_f2l_fixed_w",
+      "path": "src/sys/matrix.c",
+      "first": 306,
+      "last": 341,
+      "source_sha256": "14ee94be19d3fee055833543e5c6c3685a61eabb9aad3a382e9f91f1fa26146a",
+      "native_sha256": "14ee94be19d3fee055833543e5c6c3685a61eabb9aad3a382e9f91f1fa26146a",
+      "changes": []
+    },
+    {
       "symbol": "hal_look_at_f",
       "path": "src/sys/matrix.c",
       "first": 371,
@@ -414,6 +454,15 @@
           "reason": "Explicit bounded native narrowing; retain original binary32 quantization."
         }
       ]
+    },
+    {
+      "symbol": "hal_scale_f",
+      "path": "src/sys/matrix.c",
+      "first": 930,
+      "last": 945,
+      "source_sha256": "a6b371dc7a56856cb48a123be2e1d3643f24072259f61e8436ae6627e5341ff9",
+      "native_sha256": "a6b371dc7a56856cb48a123be2e1d3643f24072259f61e8436ae6627e5341ff9",
+      "changes": []
     },
     {
       "symbol": "hal_translate",
@@ -602,6 +651,46 @@
           "find": "e1 = (((cosr * cosp) >> 14) * scalez) >> 8;",
           "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosr, cosp), 14), scalez), 8);",
           "reason": "Preserve MIPS low-word multiplication and signed arithmetic shifts using defined native helpers, followed by defined unsigned packing. Intermediate trigonometric sums/differences remain within signed-word range."
+        }
+      ]
+    },
+    {
+      "symbol": "func_8001EA90",
+      "path": "src/sys/matrix.c",
+      "first": 1717,
+      "last": 1759,
+      "source_sha256": "805795f1a5a3f86b095bbbd29406a19d399f60d4109cd3f6e005a4efa4d1ba68",
+      "native_sha256": "946920cdbd1fcc82fc9d1a990cc8727f63b7110165cd060aa260d6274cda3d1d",
+      "changes": [
+        {
+          "find": "__sinf(rotX)",
+          "replace": "sinf(rotX)",
+          "reason": "Explicit native binary32 C-libm seam, not original trigonometric bit parity or an SDK producer input; preserve source reciprocal/expression order under existing strict FP compilation."
+        },
+        {
+          "find": "__cosf(rotX)",
+          "replace": "cosf(rotX)",
+          "reason": "Explicit native binary32 C-libm seam, not original trigonometric bit parity or an SDK producer input; preserve source reciprocal/expression order under existing strict FP compilation."
+        },
+        {
+          "find": "__sinf(rotY)",
+          "replace": "sinf(rotY)",
+          "reason": "Explicit native binary32 C-libm seam, not original trigonometric bit parity or an SDK producer input; preserve source reciprocal/expression order under existing strict FP compilation."
+        },
+        {
+          "find": "__cosf(rotY)",
+          "replace": "cosf(rotY)",
+          "reason": "Explicit native binary32 C-libm seam, not original trigonometric bit parity or an SDK producer input; preserve source reciprocal/expression order under existing strict FP compilation."
+        },
+        {
+          "find": "__sinf(rotZ)",
+          "replace": "sinf(rotZ)",
+          "reason": "Explicit native binary32 C-libm seam, not original trigonometric bit parity or an SDK producer input; preserve source reciprocal/expression order under existing strict FP compilation."
+        },
+        {
+          "find": "__cosf(rotZ)",
+          "replace": "cosf(rotZ)",
+          "reason": "Explicit native binary32 C-libm seam, not original trigonometric bit parity or an SDK producer input; preserve source reciprocal/expression order under existing strict FP compilation."
         }
       ]
     }

@@ -28,8 +28,8 @@ struct ProducerFrame {
 // unused lanes remain empty. Pointer/epoch changes republish active payloads.
 class Producer final {
 public:
-    Producer(IsleGame*, IsleGameCamera*, const Resources&, const World&, ProducerLayout = {},
-             std::span<const menu::RamRange> other_reservations = {});
+    Producer(IsleGame*, IsleGameCamera*, menu::model::CameraBasisState&, const Resources&, const World&,
+             ProducerLayout = {}, std::span<const menu::RamRange> other_reservations = {});
     ~Producer();
     Producer(const Producer&) = delete;
     Producer& operator=(const Producer&) = delete;

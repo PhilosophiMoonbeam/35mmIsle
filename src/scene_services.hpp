@@ -14,6 +14,7 @@
 #include <memory>
 #include <span>
 
+namespace isle::menu::model { struct CameraBasisState; }
 namespace isle::scene {
 struct SpriteHandle { IsleGameObject* object = nullptr; IsleGameSprite* sprite = nullptr; };
 struct FadeView {
@@ -51,6 +52,9 @@ public:
     std::uint8_t& start_flags;
     std::uint32_t raw_game_time = 0;
 
+    // App-lifetime source camera globals; scene/resource retirement never resets
+    // retained matrices. Source render reset changes only the selector.
+    ::isle::menu::model::CameraBasisState& camera_basis() noexcept;
     bool failed() const noexcept;
     const char* error() const noexcept;
     void fail(const char*) noexcept;

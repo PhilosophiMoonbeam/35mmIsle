@@ -14,6 +14,37 @@ struct Status {
     std::uint32_t address = 0;
     explicit operator bool() const noexcept { return error == Error::none; }
 };
+// Effective configured kinds are selected by PokemonInitData flags before tree
+// decoding. High tree flags then decompose/override that sequence, in source order.
+std::array<std::uint8_t,3> select_source_matrix_kinds(std::uint32_t flags,
+    std::array<std::uint8_t,3> stored) noexcept;
+enum class RootRecipe { source, translate };
+struct MatrixRecipe {
+    std::array<std::uint8_t,3> operations{};
+    std::uint8_t count = 0;
+    IsleGameModelMatrixKind native_kind = ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE;
+};
+Status decode_recipe(std::array<std::uint8_t,3>, std::uint32_t depth_flags,
+                     MatrixRecipe&) noexcept;
+Status decode_model_recipe(const Model&, std::size_t node, MatrixRecipe&) noexcept;
+// Scratch is dedicated caller-owned capacity, allocated before spawning. Only
+// its active prefix changes on rejection; no vector allocation or second
+// attachment implementation. translate is the established World root policy.
+Status attach_source_model(IsleGame*, IsleGameObject*, const Model&, animation::ModelState,
+    RootRecipe, std::span<IsleGameModelNodeInit> scratch, IsleGameModel**) noexcept;
+// Explicit values: no camera pointer survives preparation. Basis starts at
+// source BSS zero, not identity/perspective. The caller publishes the staged
+// result only after its whole camera/model/list transaction succeeds.
+struct RenderContext { WorldMatrix perspective, basis48; };
+struct CameraBasisState {
+    RenderContext value{};
+    unsigned selector = 0;
+    void reset_selector() noexcept { selector = 0; } // Source reset retains matrices.
+};
+struct CameraMatrixOperation { std::uint8_t kind = 0, source_cache_state = 0; };
+Status prepare_render_context(const RenderContext& retained,
+    const IsleGameCameraParameters&, std::span<const CameraMatrixOperation>,
+    unsigned selector, RenderContext& output) noexcept;
 // Bounded source renLoadTextures encoder. No output publication on rejection.
 struct MaterialCommands { std::array<Command,32> words{}; std::size_t count = 0; };
 Status encode_material(const Material&, const animation::MaterialState&, MaterialCommands&) noexcept;
@@ -25,10 +56,13 @@ struct HierarchyInput {
     std::span<const animation::NodeState> nodes;
     std::span<const std::uint32_t> first_child, next_sibling, material_bases;
     const IsleGameModelPlacement& placement;
-    const WorldMatrix& projection;
+    const RenderContext& context;
     std::uint32_t matrices = 0, placement_address = 0;
     // Empty for animated pose; World borrows its synchronized native pose.
     std::span<const IsleGameModelNode> native_nodes{};
+    std::span<const MatrixRecipe> recipes;
+    std::span<IsleGameFixedMatrix> contextual_fixed;
+    std::span<unsigned char> contextual_consumed;
 };
 struct HierarchyBuffer {
     std::array<std::span<Command>,4> lanes;
@@ -40,7 +74,6 @@ Status encode_hierarchy(const HierarchyInput&, HierarchyBuffer&) noexcept;
 // The owner supplies actual render order, fresh Runtime views and real native
 // attachments. Neither the kernel nor its destructor creates/deletes owners.
 enum class PoseSource { animation, native };
-enum class RootRecipe { source, translate };
 struct BorrowedBinding {
     std::size_t slot = 0;
     animation::ModelState state;
@@ -57,8 +90,8 @@ struct KernelSlot {
     animation::SlotCapacity capacity;
     std::uint32_t matrices = 0, materials = 0;
 };
-// Recipes are decoded once: source kind28 RTS, admitted World translate roots
-// and exact 0x8000 kind44 only. This is not actor54/48/wrapper/FX admission.
+// One immutable ordered plan and one renderer-owned contextual fixed scratch
+// per slot; no context-free native fixed payload exists for source54.
 class BorrowedKernel final {
 public:
     BorrowedKernel(IsleGame*, std::span<const Model>, std::span<const Material>,
@@ -71,15 +104,18 @@ public:
     // No mutation/callback may intervene before commit_pose/upload.
     Status validate_upload(std::span<std::uint32_t>, std::uint64_t epoch) const noexcept;
     Status stage(std::span<const BorrowedBinding>, std::size_t placement_prefix_bytes = 0) noexcept;
-    Status encode(std::size_t slot, const WorldMatrix&, HierarchyBuffer&) const noexcept;
+    Status encode(std::size_t slot, const RenderContext&, HierarchyBuffer&) const noexcept;
     bool lists_changed() const noexcept;
     bool draws(std::size_t slot) const noexcept;
     // Legal only after all owner camera/list/capacity preflight succeeds.
     void commit_pose() noexcept;
-    // Writes staged ordinary matrices, placement, branch tables and materials.
+    // Writes ordinary/native or consumed renderer-contextual matrices,
+    // placement, branch tables and materials. Never uploads contextual native fixed.
     // Pointer+nonzero epoch identifies the exclusive RAM installation. Hidden
     // bindings retain their old residency key, so reveal always republishes.
     void upload(std::span<std::uint32_t>, std::uint64_t epoch) noexcept;
+    // Mathematical local RTS x parent/placement, not rendered MVP and not a
+    // claim of source54 actor FX or placement/collision equivalence.
     std::span<const WorldMatrix> world_nodes(animation::InstanceHandle) const noexcept;
     std::span<const IsleGameModelNode> native_nodes(animation::InstanceHandle) const noexcept;
 private:

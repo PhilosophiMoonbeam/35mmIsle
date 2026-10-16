@@ -62,10 +62,10 @@ struct Fixture {
         models[0].nodes[0].scale = {1,1,1};
         models[0].nodes[0].animation = 0;
     }
-    a::CreateResult create(std::size_t camera = m::no_index) {
+    a::CreateResult create(std::size_t camera = m::no_index, a::ExecutionCapacity execution = {}) {
         std::vector<a::SlotCapacity> capacities;
         for (const auto& model : models) capacities.push_back(a::slot_capacity(model));
-        auto made = a::Runtime::create({models,materials,animations,camera},capacities,initial_camera);
+        auto made = a::Runtime::create({models,materials,animations,camera},capacities,initial_camera,execution);
         instances.clear();
         if (made) for (std::size_t i = 0; i < models.size(); ++i) {
             const auto acquired = made.runtime->acquire(i,i,models[i].receives_effect_callback);
@@ -400,8 +400,8 @@ void explicit_pool_reuse_and_retirement() {
     fixture.models.push_back(std::move(oversized));
     const std::array<a::SlotCapacity,4> capacities{{{3,2},{3,2},{3,1},{0,0}}};
     const a::Resources resources{fixture.models,fixture.materials,fixture.animations};
-    auto made = a::Runtime::create(resources,capacities,{});
-    auto foreign = a::Runtime::create(resources,capacities,{});
+    auto made = a::Runtime::create(resources,capacities,{},{});
+    auto foreign = a::Runtime::create(resources,capacities,{},{});
     check(bool(made) && bool(foreign),"fixed pool creation with explicit capacities");
     if (!made || !foreign) return;
     auto& r = *made.runtime;
@@ -517,7 +517,7 @@ void explicit_pool_reuse_and_retirement() {
     // this fixture. A destroyed pool's identity must never name a later owner.
     r.retire();
     made.runtime.reset();
-    auto replacement = a::Runtime::create(resources,capacities,{});
+    auto replacement = a::Runtime::create(resources,capacities,{},{});
     check(bool(replacement),"replacement pool creation");
     if (!replacement) return;
     const auto replacement_instance = replacement.runtime->acquire(0,0,true);
@@ -525,6 +525,283 @@ void explicit_pool_reuse_and_retirement() {
           !replacement.runtime->model(h) &&
           replacement.runtime->step_model(h).error == a::Error::handle,
           "destroy/recreate must not recycle an Impl-address identity into a stale handle");
+}
+
+void loop_timers_tracks_receivers_and_reuse() {
+    // The Y track is outside the cycle. SET_ANIMATION must not clear it, even
+    // while the cycle's zero-duration X command retains its old linear rate.
+    Stream stream;
+    stream.cmd(11,16|32,0,{f(0),f(0)});
+    stream.cmd(4,32,2,{f(4)});
+    stream.cmd(3,16,1,{f(2)});
+    stream.cmd(16,0x107,1);
+    stream.cmd(4,16,0,{f(6)});
+    stream.cmd(2,0,1);
+    stream.cmd(14,0,0,{0xa01c}); // callback16, after the initial 28 bytes.
+    Fixture fixture; fixture.models[0].receives_effect_callback = true;
+    fixture.models[0].nodes.resize(2,fixture.models[0].nodes[0]);
+    fixture.models[0].nodes[1].parent = 0;
+    fixture.models.push_back(fixture.models[0]);
+    fixture.animations = {stream.view(m::AnimationKind::model,0xa000)};
+    auto made = fixture.create(m::no_index,{14,5}); // Entire two-node prefix, richest callback boundary.
+    check(bool(made),"prefix plus positive interior SET_ANIMATION cycle admitted"); if (!made) return;
+    auto& r = *made.runtime;
+    const auto h = fixture.instances[0], peer = fixture.instances[1];
+    const auto* nodes = r.model(h).nodes.data();
+    bool ok = true;
+    allocation_probe::count = 0; allocation_probe::enabled = true;
+    for (unsigned frame = 0; frame <= 6; ++frame) ok &= bool(r.step_model(h));
+    // At time3: receiver emits -2 then callback16; node1 emits callback16
+    // without receiving -2. Y is still the unmodified linear track at time3.
+    ok &= r.events().size() == 3 && nodes[0].transform.position.y == 6 &&
+          nodes[1].transform.position.y == 6 && nodes[0].transform.position.x == 4 &&
+          nodes[0].clock.time_passed == 0 &&
+          nodes[0].clock.time_left == 1 && r.model(h).animation_time == 0 &&
+          nodes[0].callback_receiver && !nodes[1].callback_receiver;
+    if (r.events().size() == 3) {
+        ok &= r.events()[0].event_id == -2 && r.events()[0].node == 0 &&
+              r.events()[0].command_address == 0xa02c &&
+              r.events()[1].event_id == 1 && r.events()[1].argument == 7 &&
+              r.events()[2].event_id == 1 && r.events()[2].node == 1 &&
+              r.events()[1].source_order == r.events()[0].source_order+1 &&
+              r.events()[2].source_order == r.events()[1].source_order+1;
+    }
+    ok &= bool(r.set_model_speed(h,-0.5f)) && bool(r.step_model(h)) &&
+          nodes[0].clock.time_passed == -0.5f && nodes[0].clock.time_left == 1.5f &&
+          nodes[0].transform.position.y == 5 && nodes[0].transform.position.x == 3 && r.events().empty();
+    ok &= r.model(peer).nodes[0].transform.position.y == 7 &&
+          r.model(peer).nodes[0].clock.phase == a::Phase::changed &&
+          bool(r.step_model(peer)) && r.model(peer).nodes[0].transform.position.y == 0;
+    const std::array<std::size_t,2> nulls{m::no_index,m::no_index}, bindings{0,0};
+    ok &= bool(r.bind_model(h,nulls)) && bool(r.step_model(h)) &&
+          nodes[0].transform.position.y == 5 && !nodes[0].callback_receiver;
+    ok &= bool(r.bind_model(h,bindings)) && nodes[0].callback_receiver &&
+          bool(r.set_model_speed(h,0.5f)) && bool(r.step_model(h)) &&
+          nodes[0].transform.position.y == 0;
+    ok &= bool(r.begin_retire(h)) && bool(r.release_retired(h));
+    const auto fresh = r.acquire(0,0,false);
+    ok &= bool(fresh) && fresh.handle != h && r.model(fresh.handle).nodes.data() == nodes &&
+          nodes[0].clock.time_passed == 0 && nodes[0].transform.position.y == 7 &&
+          !r.model(h) && bool(r.step_model(fresh.handle)) && r.events().empty();
+    allocation_probe::enabled = false;
+    check(ok,"loop clocks/retained tracks/source -2 receiver/order/signed speed/null binding and fresh slot reuse");
+    check(allocation_probe::count == 0,"cyclic hot updates/binds/reuse allocate nothing");
+}
+
+void loop_overshoot_and_atomic_capacity() {
+    Stream stream;
+    stream.cmd(16,0x103,0); stream.cmd(3,16,2,{f(4)}); stream.cmd(14,0,0,{0xb000});
+    auto configure = [&](Fixture& fixture) {
+        fixture.models[0].receives_effect_callback = true;
+        fixture.animations = {stream.view(m::AnimationKind::model,0xb000)};
+    };
+    Fixture fixture; configure(fixture);
+    auto made = fixture.create(m::no_index,{12,8}); // Exact speed7 maximum: four cycle crossings.
+    check(bool(made),"explicit multi-loop command/event envelope admitted"); if (!made) return;
+    auto& r = *made.runtime; const auto h = fixture.instances[0];
+    allocation_probe::count = 0; allocation_probe::enabled = true;
+    const bool overshoot_ok = bool(r.step_model(h)) && r.events().size() == 1 &&
+        bool(r.set_model_speed(h,7)) && bool(r.step_model(h)) &&
+        r.events().size() == 6 && r.model(h).nodes[0].clock.time_left == 1 &&
+        r.model(h).nodes[0].clock.time_passed == 1 && r.model(h).animation_time == 1 &&
+        r.model(h).nodes[0].transform.position.x == 4;
+    allocation_probe::enabled = false;
+    check(overshoot_ok && allocation_probe::count == 0,
+          "one allocation-free speed7 step crosses three source loops, retaining targets and exact residual clocks");
+    if (r.events().size() == 6) for (std::size_t i = 0; i < 6; ++i)
+        check(r.events()[i].event_id == (i%2 == 0 ? -2 : 1) &&
+              r.events()[i].source_order == i+1,"overshoot emits every -2 and typed callback in source order");
+    allocation_probe::count = 0; allocation_probe::enabled = true;
+    const bool repeated_ok = bool(r.step_model(h)) && r.events().size() == 8 &&
+        r.model(h).nodes[0].clock.time_left == 2 && r.model(h).animation_time == 0 &&
+        bool(r.step_model(h)) && r.events().size() == 6 &&
+        r.model(h).nodes[0].clock.time_left == 1 && r.model(h).animation_time == 1;
+    allocation_probe::enabled = false;
+    check(repeated_ok && allocation_probe::count == 0,
+          "repeated speed7 overshoots alternate four/three complete cycles without truncation, drift or allocation");
+    check(bool(r.restart_model(h,7)) && bool(r.step_model(h)) &&
+          r.events().size() == 7 && r.events()[0].event_id == 1 &&
+          r.model(h).nodes[0].clock.time_left == 1 && r.model(h).animation_time == 1,
+          "nonzero start skip uses eleven commands/seven events, not modulo restart or event dropping");
+    check(bool(r.set_model_speed(h,0.25f)) && bool(r.step_model(h)) &&
+          r.model(h).animation_time == 1.25f && bool(r.set_model_speed(h,-0.5f)) &&
+          bool(r.step_model(h)) && r.model(h).nodes[0].clock.time_passed == 0.75f &&
+          r.model(h).nodes[0].clock.time_left == 1.25f && r.events().empty(),
+          "fractional overshoot and subsequent signed speed preserve binary32 residual timing");
+    for (const auto capacity : {a::ExecutionCapacity{8,7},a::ExecutionCapacity{11,5}}) {
+        Fixture bounded; configure(bounded);
+        auto limited = bounded.create(m::no_index,capacity);
+        check(bool(limited),"bounded cyclic instance admitted"); if (!limited) continue;
+        auto& runtime = *limited.runtime; const auto handle = bounded.instances[0];
+        check(bool(runtime.step_model(handle)) && bool(runtime.set_model_speed(handle,7)),
+              "bounded cycle initial publication");
+        const auto before = runtime.model(handle);
+        const auto clock = before.nodes[0].clock;
+        const auto transform = before.nodes[0].transform;
+        const auto revision = before.nodes[0].revision, generation = runtime.generation();
+        const auto event = runtime.events()[0];
+        const auto* event_data = runtime.events().data();
+        allocation_probe::count = 0; allocation_probe::enabled = true;
+        const auto status = runtime.step_model(handle);
+        allocation_probe::enabled = false;
+        check(status.error == a::Error::capacity && runtime.generation() == generation &&
+              runtime.events().size() == 1 && runtime.events().data() == event_data &&
+              runtime.events()[0].source_order == event.source_order &&
+              before.nodes[0].clock.time_left == clock.time_left &&
+              before.nodes[0].clock.time_passed == clock.time_passed &&
+              before.nodes[0].clock.phase == clock.phase &&
+              before.nodes[0].transform.position.x == transform.position.x &&
+              before.nodes[0].revision == revision && runtime.model(handle).animation_time == before.animation_time &&
+              allocation_probe::count == 0,
+              "command/event bound rejection is allocation-free and preserves clocks/pose/revision/generation/borrowed events");
+        check(bool(runtime.set_model_speed(handle,1)) && bool(runtime.step_model(handle)) &&
+              runtime.model(handle).nodes[0].clock.time_left == 1 &&
+              runtime.model(handle).nodes[0].transform.position.x == 2,
+              "rejected preflight did not advance hidden cursor/tracks");
+    }
+    Fixture large; configure(large);
+    auto large_runtime = large.create(m::no_index,{11,7});
+    check(bool(large_runtime),"large finite-input boundary admitted");
+    if (large_runtime) {
+        auto& runtime = *large_runtime.runtime; const auto handle = large.instances[0];
+        check(bool(runtime.restart_model(handle,std::numeric_limits<float>::max())),
+              "finite-large skip accepted as binding metadata");
+        const auto generation = runtime.generation();
+        check(runtime.step_model(handle).error == a::Error::capacity && runtime.generation() == generation &&
+              runtime.model(handle).nodes[0].clock.phase == a::Phase::changed && runtime.events().empty(),
+              "binary32 cycle stagnation rejects finite-large skip before first mutation");
+        check(bool(runtime.restart_model(handle)) && bool(runtime.step_model(handle)) &&
+              bool(runtime.set_model_speed(handle,std::numeric_limits<float>::max())),
+              "finite-large speed accepted as source speed metadata");
+        const auto event_order = runtime.events()[0].source_order;
+        const auto published = runtime.generation();
+        check(runtime.step_model(handle).error == a::Error::capacity &&
+              runtime.generation() == published && runtime.events().size() == 1 &&
+              runtime.events()[0].source_order == event_order &&
+              runtime.model(handle).nodes[0].clock.time_left == 2,
+              "finite-large speed stagnation preserves prior event borrow and committed state");
+    }
+    Fixture two; configure(two);
+    two.models[0].nodes.resize(2,two.models[0].nodes[0]); two.models[0].nodes[1].parent = 0;
+    auto together = two.create(m::no_index,{17,12});
+    check(bool(together),"two-node shared budget admitted");
+    if (together) {
+        auto& runtime = *together.runtime; const auto handle = two.instances[0];
+        check(bool(runtime.step_model(handle)) && bool(runtime.set_model_speed(handle,7)),"two-node initial state");
+        const auto generation = runtime.generation();
+        check(runtime.step_model(handle).error == a::Error::capacity && runtime.generation() == generation &&
+              runtime.events().size() == 2 && runtime.model(handle).nodes[0].clock.time_left == 2 &&
+              runtime.model(handle).nodes[1].clock.time_left == 2,
+              "late-node overflow rejects the entire model, not just the failing player");
+    }
+    Fixture automatic; configure(automatic);
+    const auto finite_only = automatic.create();
+    const auto mixed = automatic.create(m::no_index,{11,m::no_index});
+    check(!finite_only && finite_only.status.error == a::Error::capacity &&
+          !mixed && mixed.status.error == a::Error::malformed,
+          "cyclic automatic finite certificate and mixed default/explicit capacity reject at construction");
+}
+
+void material_loop_isolation_and_aggregate_work() {
+    Stream model; model.cmd(16,1,0); model.cmd(2,0,2); model.cmd(0,0,0);
+    Stream material; material.cmd(3,2,2,{f(4)}); material.cmd(14,0,0,{0xc100});
+    std::vector<std::byte> material_bytes(0x78);
+    Fixture fixture;
+    fixture.models[0].receives_effect_callback = true;
+    fixture.models[0].nodes[0].materials = {0};
+    fixture.models[0].nodes[0].material_animations = {1};
+    fixture.materials.resize(1); fixture.materials[0].wire = {0xc200,0,material_bytes};
+    fixture.animations = {model.view(m::AnimationKind::model,0xc000),
+                          material.view(m::AnimationKind::texture,0xc100)};
+    auto made = fixture.create(m::no_index,{7,1}); // END1 + three (14,LAST) pairs.
+    check(bool(made),"material loop and finite model admitted together"); if (!made) return;
+    auto& runtime = *made.runtime; const auto handle = fixture.instances[0];
+    check(bool(runtime.step_model(handle)) && runtime.events().size() == 1 &&
+          bool(runtime.set_model_speed(handle,7)) && bool(runtime.set_texture_speed(handle,7)) &&
+          bool(runtime.step_model(handle)) && runtime.events().size() == 1 &&
+          runtime.events()[0].event_id == -1 && runtime.events()[0].command_address == 0xc008 &&
+          runtime.model(handle).animation_time == 7 &&
+          runtime.model(handle).materials[0].clock.time_passed == 1 &&
+          runtime.model(handle).materials[0].clock.time_left == 1 &&
+          runtime.model(handle).materials[0].parameters[0] == 4,
+          "material SET_ANIMATION resets only its own clock and never emits model -2 or resets object animation_time");
+    check(bool(runtime.restart_model(handle)) && bool(runtime.set_model_speed(handle,0.5f)) &&
+          bool(runtime.set_texture_speed(handle,0.5f)) && bool(runtime.step_model(handle)),
+          "aggregate-work rejection setup retains a prior model callback");
+    check(bool(runtime.set_model_speed(handle,7)) && bool(runtime.set_texture_speed(handle,9)),
+          "aggregate-work rejection source speeds");
+    const auto generation = runtime.generation();
+    check(runtime.step_model(handle).error == a::Error::capacity && runtime.generation() == generation &&
+          runtime.events().size() == 1 && runtime.events()[0].event_id == 0 &&
+          runtime.model(handle).nodes[0].clock.phase == a::Phase::running &&
+          runtime.model(handle).nodes[0].clock.time_left == 2 &&
+          runtime.model(handle).materials[0].clock.time_left == 2,
+          "late material overflow rejects model END and material writes atomically with one total instruction budget");
+    check(bool(runtime.set_callback_enabled(handle,false)) &&
+          bool(runtime.set_model_speed(handle,0.5f)) && bool(runtime.set_texture_speed(handle,0.5f)),
+          "silent callbacks preserve source schedule");
+    const std::array<std::size_t,1> null_binding{m::no_index};
+    check(bool(runtime.bind_model(handle,null_binding)) && bool(runtime.bind_materials(handle,null_binding)) &&
+          bool(runtime.step_model(handle)) && runtime.events().empty(),
+          "null model disables independently while null material binding retains its cyclic player");
+    Fixture silent;
+    silent.models[0].nodes[0].animation = m::no_index;
+    silent.models[0].nodes[0].materials = {0};
+    silent.models[0].nodes[0].material_animations = {0};
+    silent.materials = fixture.materials;
+    silent.animations = {material.view(m::AnimationKind::texture,0xc100)};
+    auto no_events = silent.create(m::no_index,{2,0});
+    check(bool(no_events) && bool(no_events.runtime->step_model(silent.instances[0])) &&
+          bool(no_events.runtime->set_texture_speed(silent.instances[0],2)) &&
+          bool(no_events.runtime->step_model(silent.instances[0])) && no_events.runtime->events().empty(),
+          "explicit zero event storage is valid for callback-free material loops");
+    Fixture zero;
+    zero.animations = {model.view(m::AnimationKind::model,0xc000)};
+    auto none = zero.create(m::no_index,{0,0});
+    check(bool(none),"explicit zero command/event budget is not the automatic finite certificate");
+    if (none) {
+        auto& r = *none.runtime; const auto h = zero.instances[0];
+        const auto zero_generation = r.generation();
+        check(r.step_model(h).error == a::Error::capacity && r.generation() == zero_generation &&
+              r.model(h).nodes[0].clock.phase == a::Phase::changed &&
+              bool(r.bind_model(h,null_binding)) && bool(r.step_model(h)) && r.events().empty(),
+              "zero budget atomically rejects active work but permits genuinely disabled zero-work calls");
+    }
+}
+
+void loop_grammar_rejects_unpublished() {
+    auto rejects = [](const Stream& stream, m::AnimationKind kind, a::Error error) {
+        Fixture fixture;
+        fixture.models[0].nodes[0].animation = m::no_index;
+        fixture.animations = {stream.view(kind,0x9000)};
+        const auto made = fixture.create();
+        return !made && !made.runtime && made.status.error == error;
+    };
+    Stream foreign; foreign.cmd(2,0,1); foreign.cmd(14,0,0,{0x9100});
+    Stream operand; operand.cmd(3,16,1,{f(2)}); operand.cmd(14,0,0,{0x9004});
+    Stream unaligned; unaligned.cmd(2,0,1); unaligned.cmd(14,0,0,{0x9001});
+    Stream no_operand; no_operand.cmd(2,0,1); no_operand.cmd(14,0,0);
+    Stream zero; zero.cmd(4,16,12,{f(2)}); zero.cmd(12,16,12); zero.cmd(14,0,0,{0x9000});
+    Stream prefix_only; prefix_only.cmd(2,0,1); prefix_only.cmd(14,0,0,{0x9004});
+    Stream trailing; trailing.cmd(2,0,1); trailing.cmd(14,0,0,{0x9000}); trailing.cmd(0,0,0);
+    Stream camera; camera.cmd(2,0,1); camera.cmd(14,0,0,{0x9000});
+    Stream missing_end; missing_end.cmd(2,0,1);
+    check(rejects(foreign,m::AnimationKind::model,a::Error::malformed) &&
+          rejects(operand,m::AnimationKind::model,a::Error::malformed) &&
+          rejects(unaligned,m::AnimationKind::model,a::Error::malformed) &&
+          rejects(no_operand,m::AnimationKind::model,a::Error::malformed),
+          "SET_ANIMATION raw target must name a same-program instruction boundary with exact operand framing");
+    check(rejects(zero,m::AnimationKind::model,a::Error::malformed) &&
+          rejects(prefix_only,m::AnimationKind::model,a::Error::malformed),
+          "non-LAST duration and track-time shifts do not certify positive cycle wait");
+    check(rejects(trailing,m::AnimationKind::model,a::Error::malformed) &&
+          rejects(missing_end,m::AnimationKind::model,a::Error::malformed) &&
+          rejects(camera,m::AnimationKind::camera,a::Error::unsupported),
+          "single contiguous terminal grammar remains strict and does not invent camera graph admission");
+    Stream raw; raw.cmd(2,0,1); raw.cmd(14,0,0,{0xff800000});
+    Fixture fixture; fixture.animations = {raw.view(m::AnimationKind::model,0xff800000)};
+    auto made = fixture.create(m::no_index,{2,1});
+    check(bool(made),"raw SET_ANIMATION address is not reinterpreted as a nonfinite float");
 }
 
 void malformed_streams_reject_unpublished() {
@@ -542,5 +819,8 @@ int main() {
     materials_and_camera(); rates_and_source_restart(); model_binding_switches_and_instances();
     switched_callbacks_and_atomicity(); material_binding_null_and_initial_reset(); malformed_streams_reject_unpublished();
     explicit_pool_reuse_and_retirement();
+    loop_timers_tracks_receivers_and_reuse();
+    loop_grammar_rejects_unpublished();
+    loop_overshoot_and_atomic_capacity(); material_loop_isolation_and_aggregate_work();
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;
 }

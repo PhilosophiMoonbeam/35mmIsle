@@ -360,6 +360,7 @@ struct HierarchyEncoder {
         matrix(n,push && !placed_root,inherited);
         if (!deferred) flush(0);
         if (!(flags & 1)) for (const auto& payload : input.source.nodes[n].payloads) {
+            if (!payload.draw_list) continue; // GAME I/D/J guard; I pre-only work was already emitted.
             const auto lane = payload.display_list_id;
             require(lane < 4);
             if (deferred && payload.pre_list) call(lane,payload.pre_list);

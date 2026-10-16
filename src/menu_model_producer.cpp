@@ -197,6 +197,7 @@ PrepareResult Producer::prepare(std::span<std::uint32_t> words, std::uint64_t ep
     try {
         auto& p = *impl_; require(!p.retired,Error::retired);
         require(words.data() && words.size_bytes() == rdram_size && epoch,Error::extent);
+        native(isle_game_camera_validate_disjoint(p.game,p.camera,words.data(),words.size_bytes()));
         const auto begin = reinterpret_cast<std::uintptr_t>(words.data());
         require(begin <= std::numeric_limits<std::uintptr_t>::max()-rdram_size,Error::extent);
         for (const auto& span : p.source_spans) {

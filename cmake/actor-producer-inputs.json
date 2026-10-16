@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "implementation": ["src/actor_producer.hpp", "src/actor_producer.cpp"],
+  "consumer": "tests/actor_producer_rsp_smoke.cpp",
+  "source_files": {
+    "src/app_level/player.c": {
+      "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
+      "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b",
+      "spans": [[2872, 2884], [2936, 2975]],
+      "use": "Beach camera uses perspective-fast3 then reflect-roll14 and DL3/4/5. Actual gameplay light direction normalizes camera eye-at in XZ, setsY1 then normalizesXYZ. Reuse existing native lighting update, not the unrelated photo-preview preamble. Caller owns full ordinary reset, global pre-render and source lane order0,2,1,3."
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "spans": [[2101, 2168]],
+      "use": "Default renderer DL5 and explicit DL4 wrappers; source initialization selects effective recipes, separate model-local tree and native placement. Producer does not implement or call the factory; actual caller supplies ordered native bindings, render metadata and accepted placements."
+    },
+    "src/app_level/pokemon_detect.c": {
+      "git_blob": "be633c092754e02a42195f394220c4203fc6aabc",
+      "sha256": "a8f0d6937417d5a63b70a7e6674f64877a8b62e25f8c8865b96420a6f2cdba5b",
+      "spans": [[243, 280]],
+      "use": "Explicit DETECTOR-DISABLED geometry branch only. Actual callback identities8035942c/84/dc/59534 gate fogged I/J/B/D on Pokemon_GetFlag100; source_flag100 is a caller-supplied Pokemon semantic flag, distinct from native GObj hidden flags. Constructor requires DetectorPolicy::disabled and rejects any other value. Enabled SaveRegion/capture, detector prefix owner and photo-focus services are not implemented or silently ignored."
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8",
+      "spans": [[15, 49], [131, 163]],
+      "use": "B/I fog wrappers affect opaque lane0; D/J additionally wrap transparent lane1. Fog color and interval are the actual World values already admitted into ActorResources models, not static Title constants. Plain B80014f98 has no fog wrapper; direct D800a1608 has no Pokemon flag100 wrapper."
+    },
+    "src/beach/563000.c": {
+      "git_blob": "6767e7be06fbd22d95feb129ecd07c08db108d2e",
+      "sha256": "d93896a020941a8222cc58132e2c83951f05f36840a6ca2a4a1cce967d1651ff",
+      "spans": [[359, 361]],
+      "use": "Actual1006 singleton factory uses Pokemon_SpawnDlLink4; private consumer supplies DL4, retaining consecutive lane1 supplier80139470 then consumer80139558. Source actor1003 likewise uses DL4 in app_level/4FE330.c112-114."
+    },
+    "src/app_render/4D400.c": {
+      "git_blob": "f2ab62d614dffc86bbd413f87150ea68ff473fd3",
+      "sha256": "67b399176bfd9884cfa3ab929ed3b8565e6503ec88cb5b540f572d3f490927ca",
+      "spans": [[17, 19]],
+      "use": "Actual Beach global callback800A1A50 calls common light prerender800AEC18."
+    },
+    "src/sys/rdp_reset.c": {
+      "git_blob": "e08f96ecfcfbf11b6e0d818eb3e850dc096d4b1c",
+      "sha256": "2c36586442e7a5d16e9ffb4125a99e4402e7e20a3ac8b4eb7465333b36d1ec4c",
+      "spans": [[19, 43], [68, 83]],
+      "use": "Complete ordinary reset precedes global pre-render: geometry clear/set, clip ratio, identity matrices, SHADE combiner, texture defaults, alpha/render/dither modes. Actor lists may inherit this state."
+    },
+    "include/sys/gtl.h": {
+      "git_blob": "a17ea5a556c505ea432a1a5c800a7e34ef313323",
+      "sha256": "8a24f1d44f97f92cbc2cc5d4950875666e758bd059c3456ecca7512af59cd83b",
+      "spans": [[20, 61]],
+      "use": "Own GAME BufferSetup.fnPreRender offset38 and SceneSetup.gtlSetup offset0 establish the typed ROM callback field, without importing SDK headers."
+    }
+  },
+  "reused_authorities": {
+    "cmake/beach-actor-inputs.json": "Entire actual ActorResources model/material/animation/header/asset closure and effective source recipe facts, including source54, source48, ordinary28 and geometryless1005.",
+    "cmake/menu-model-inputs.json": "Sole BorrowedKernel, attach_source_model, prepare_render_context and bounded source hierarchy/material encoders. ActorResources never enters the Title-only Producer/Catalog/TitleScenePlan.",
+    "cmake/snap-engine-inputs.json": "Privately compiled own-GAME native camera/model/source54/source48 math, strict binary32 and explicit C-libm seam; no SDK layouts or producer bodies imported."
+  },
+  "api": {
+    "constructor": "actor::Producer(game,camera,shared_CameraBasisState,ActorResources,explicit_SlotCapacity_span,stable_ordered_ActorRenderBinding_span,ProducerLayout,complete_other_reservations,DetectorPolicy::disabled)",
+    "bindings": "Caller owns stable ordered span; null object/model/runtime plus empty instance means vacant. Every active binding including hidden, filtered and geometryless validates the actual live Runtime incarnation and native attachment. Slots are explicit capacities, not resource model identities. Multiple live instances of one immutable resource are legal. Producer borrows immutable resources and live native/runtime owners, not copied programs/resources/whole poses.",
+    "layout": "No address defaults. Explicit payload/list/material ranges plus two complete framebuffer ranges; cold image/BSS, all own ranges, framebuffers and every caller complete scene/task/output range checked pairwise and against every actual ActorResources installation span. External ranges exclude own/cold/framebuffer spans and must themselves be disjoint. Caller must additionally admit any World/static scene asset union; this isolated actor consumer does not certify that combined scene.",
+    "prepare": "Pure context/model/native/material/host-alias/capacity/list preflight precedes one failure-atomic camera compute_all, then kernel commit_pose/upload and publication of camera basis/frame revision. No hot-path allocation or second renderer. Native contextual fixed bytes stay zero; only actually consumed renderer-owned source54 payload is uploaded. Source48 output is the sole kernel inline row replacement.",
+    "pass": "prepare_pass matches scene::render::Prepare; validates actual compiled camera, honors Pass::includes links/tags, and publishes genuine EndDL camera plus4 lane sublists. Actual compositor retains lane order0,2,1,3; no internal GPU submission.",
+    "residency_lifetime": "Nonzero epoch plus real RAM pointer, Runtime pool/incarnation and native object/model identities. Reveal/rebind/slot reuse resolved by existing kernel residency. Bindings/resources/camera/basis/native/runtime owners remain stable through actual GPU/readback. Native joins and actual external GPU/completed-memory release precede slot release or producer.retire; no synthetic fence, destructor retirement or native deletion in Producer.",
+    "world_views": "Published kernel mathematical local RTS x parent/placement only. NOT source54 FX-world cache or detector/collision/factory equivalence."
+  },
+  "cmake_integration": {
+    "library": "Within existing native-engine/resource guards: add_library(isle-actor-producer STATIC src/actor_producer.cpp src/actor_producer.hpp); target_link_libraries(isle-actor-producer PUBLIC isle-menu-model-producer isle-beach-actor-resources isle-graphics-task); isle_target_options(isle-actor-producer). Reuse existing BorrowedKernel object from isle-menu-model-producer; do not compile it a second time.",
+    "consumer": "Private-ROM opt-in actor-producer-rsp-smoke links isle-actor-producer, isle-beach-world-resources, isle-canonical-executor and isle-photo-lighting. CLI: PRIVATE_ROM [EMPTY_PRIVATE_CAPTURE_DIRECTORY], or PRIVATE_ROM environment variable. Not a public ROM-dependent CTest.",
+    "worker_validation": "None executed. No worker build/test/lint/format/runtime/ROM/SDK/capture/trace/hardware reads. Main owns integration and actual private-ROM execution after compiled ownership release."
+  },
+  "private_consumer": {
+    "assets": "Full ActorResources constructed with actual world_descriptors fog; shared Runtime compiles animations once, binds actual initial headers, attaches actual source native models and placements. Six diagnostic slots are caller policy, not a renderer limit: Snorlax143, Pikachu25 twice, retained-texture1006, geometryless1005, common1003. Explicit disabled detector policy only.",
+    "ram_plan": "Actual isolated ActorResources/task/output/framebuffer union: payload400000..480000, lists480000..500000, materials500000..600000, depth600000..625800, top626000..628000 including identity627f40 and viewport627f80, stack/yield/task/boot630000..640000, output640000..680000; color3b5000..3da800/3da800..400000; guard7f0000..7f0100; common source lightsaebd0/24bytes and prerenderaec18/64bytes. No unrelated photo-preview bytes. Not combined World/static/actor admission.",
+    "assertions_exercised": "Actual triangle/color/depth unchanged-frame restoration; source local/placement/camera changes; flag100 and native hide remove visible Snorlax54/Pikachu48 RGB5 and depth then exactly restore; pass link/tag filtering; source54 consumed renderer payload versus reserved native zeros; source48 inline rows;1006 retained-TIMG order and visible removal; geometryless1005 no output; complete overlap/detector-policy rejection; native reflection/cache RAM-alias regression; late list/hidden invalid-slot/short-RAM/zero-epoch/native camera-batch atomicity; pointer/epoch/reveal residency; actual GPU/readback completion before native deletion, Runtime retirement/respawn and same-capacity Pikachu48/Snorlax54/Pikachu48 rebind; outside-range guards and native allocation counts. RGB5 ignores framebuffer coverage bit0."
+  },
+  "verification": {
+    "cpu": "46/46 passed GCC Debug raw6929, GCC Release raw6928, Clang ASan+UBSan raw6930.",
+    "actual": {"root": "native-actor-source-cohort-camera-j7alteiy", "seconds": 10.519630680035334, "binary_sha256": "8e2e44066c7f7c322134798eab1732e4a914be7a6c8cb52828bb16b18b2a6bdd", "archive_sha256": "963259509f390c0eff2e8a5e18fea77e78d31a57792516d536df8e3c7badd3e4", "closure": [77,76,78], "Snorlax_RGB5_changed_pixels": 437, "Pikachu_RGB5_changed_pixels": 23, "all_assertions_passed": true, "visual": "Three actual320x240 completed actor surfaces directly inspected: initial, local source mutation,1006 removal."},
+    "final_clean_consumer": {
+      "root": "native-actor-final-rl0o5kto",
+      "seconds": 10.379067089001182,
+      "binary_sha256": "73cc353572765945f597f8f192716e5c9f4c8011399f6b62454ce346295e2a5a",
+      "archive_sha256": "1e9852e8890faf303a85598d9606321316eea235a80fc9af508d97246947202f",
+      "closure": [77,76,78],
+      "all_assertions_passed": true,
+      "surfaces": "All three final PPMs byte-identical to directly inspected successful surfaces; no failed image access.",
+      "cpu": "Reconfigured37+6 exact private GAME definitions and passed46/46 Debug raw6983, Release raw6980 and ClangASanUBSan raw6982."
+    },
+    "ordinary_reset_and_lights": "Typed Beach SceneSetup802cc038/ROM5640a8 field38 ->800a1a50, field SHA256775c00ecf2e4ee93b7e0abd9c6f024007811882a5e764c333ffe8201e6db85c2. Selected common88bytes initialize NumLights1, directional DMA offset48 and ambient72 after full reset.",
+    "LOD_fixture_correction": "Actual Snorlax/Pikachu typed GBI roots contain two RDPHALF_1/BRANCH_Z geometry choices then EndDL: there is a genuine no-geometry far outcome. Both slot31 marker vertices are0,0,0. Raw thresholds Snorlax03f9be22/03fc1cf2, Pikachu03f428ee/03fb7944. Authored camera moved to eye325,800,2600 / target325,200,0; all six actors, source scales/poses/fog/matrices and16million budget retained. Independent planner/reviewer accepted source interpretation; actual RGB5/depth/packet proof followed.",
+    "rejected_roots": "Camera-alias before7amkjvel, original missing-prerequisite GPUy71spqsy, litcup58nf0, reset1l7brbh_, callsy4qp_dlv and intermediatecamera fw6u3dci remain wholly rejected/immutable. No replay, image access, rescan or partial qualification. Temporary pose/call diagnostics removed after successful proof; bounded frozen evidence retained.",
+    "observation": "Successful root closed before sole initial scan: stable complete tree, zero known physical-device attempts/permission errors, exact ROM unchanged. Software CPU Mesa only."
+  },
+  "limits": "Graphics component only. No native actor factory/FSM/player/items/enabled detector capture/focus/gameplay/course-app cutover, source FX cache equivalence, full-port or Original pixel/trig parity. No physical devices or Windows11 ROM runtime qualification."
+}

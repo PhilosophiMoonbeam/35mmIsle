@@ -786,3 +786,30 @@ Fresh existing consumers also passed full World geometry—eight primary/four se
 
 These are actor prerequisites, not playable Beach or a product executable. Native actor ownership/control/factories, source player/items/detector/FX integration, combined-scene RAM layout, actor54/48 GPU, all-course gameplay, Windows11 private-ROM execution and release gates remain open.
 
+## Native actor controls, actual actor GPU and live focus CPU
+
+Six selected GAME C helpers now compile privately from the exact authoritative Git objects: state/random-state, auxiliary start/stop, path replacement and no-interaction flag wait. They use the existing native scheduler and one actual GObj payload; no SDK layouts, callback registry, guest function casts or second scheduler. A native binding marker prevents unrelated `userData` dereference. ASan reproduced the four-byte foreign-payload overflow before correction; fresh/reused-payload regressions pass afterward. The independent reviewer accepted the correction.
+
+The detector CPU component implements two-context source history, full-16-bit 8×8 color comparison, the inclusive 32-pixel threshold, candidate/photo membership, cleanup-before-publication and the conditional 21-pixel red mark. A non-test API consumer exercised real native actor identity, 61 C updates, 59 source path waits and actual joins; authored color inputs produced the exact reduction and mark. This is not GPU focus capture or the complete common1003 FSM.
+
+`isle-actor-producer` reuses the sole borrowed kernel, actual camera3/14, native attachments and complete immutable ActorResources. Callback-specific fog, flag100, native hidden flags, links/tags, residency, transactional admission and completed-work retirement are exercised. The private six-slot GPU consumer preserves actual source scales/initial poses and includes Snorlax54, two Pikachu48 instances, retained-texture1006, geometryless1005 and common1003.
+
+Three integration prerequisites were corrected without changing source math or increasing the 16-million instruction budget:
+
+- Source I/D/J NULL-draw guards precede material binding/calls; valid I pre-only work survives. The focused regression failed before and passes after.
+- The caller supplies complete ordinary `srdpReset` state and the actual Beach global light callback. Typed SceneSetup plus own GAME headers establishes callback800A1A50→800AEC18; only the common 88 lighting bytes are installed.
+- Actual Snorlax/Pikachu roots have two conditional depth-LOD geometry choices followed by EndDL: sufficiently distant objects legitimately draw nothing. Independent planner/reviewer decoding accepted this third outcome. The authored camera moved nearer while retaining the entire cohort, source scales, poses, fog, lists and matrices. This is a fixture correction, not a source54 workaround.
+
+| Exercised component | Observed evidence |
+|---|---|
+| CPU integration | All 46 contracts pass GCC Debug, GCC Release and Clang ASan+UBSan. |
+| Actor GPU | Complete six-slot consumer passed in 10.520s; Snorlax suppression changes 437 RGB5 pixels, Pikachu hide changes 23; both change depth/packets and restore exactly. Local/placement/camera changes, retained texture, rejection, pointer/epoch reuse, joined retirement/respawn and resource rebind pass. Three actual completed surfaces inspected. |
+| Existing World | All eight primary/four secondary blocks pass in 8.650s after shared NULL guard. |
+| Existing app | Startup→Title→Menu→Name→Oak passes 925 canonical/925 LUS frames, 1,169,152 checked dummy PCM frames including 123,632 during GPU waits. Five actual 640×480 surfaces inspected; course0 is a source request, not gameplay. |
+
+All successful runtime trees closed before their sole initial observation: stable complete tasks, zero known physical/permission attempts, unchanged ROM. Rejected camera-alias, prerequisite and distant-fixture roots remain wholly rejected and immutable; none was replayed, rescanned, visually inspected or partially accepted. Temporary diagnostic pose/call dumps were removed after proof. Source/executable/archive identities and scope are in [`actor-control-inputs.json`](../../cmake/actor-control-inputs.json), [`actor-producer-inputs.json`](../../cmake/actor-producer-inputs.json), [`focus-detector-inputs.json`](../../cmake/focus-detector-inputs.json) and [`menu-model-inputs.json`](../../cmake/menu-model-inputs.json).
+
+Published prerequisite commit `a72f332` built the Windows targets but failed three Windows CTests in [CI38905019507](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38905019507): the camera-OOM fixture incorrectly assumed exhausting larger GObjs also exhausts smaller camera/matrix allocations. The fixture now explicitly consumes the remaining public arena tail; replacement hosted acceptance remains pending. This is not an SDK dependency blocker.
+
+Native actor factories/header coordination/full FSMs, concrete source FX/player/items and enabled detector GPU integration, combined World/actor scene RAM, all-course gameplay, product entrypoint, independent Original parity and Windows11 private-ROM execution remain open.
+

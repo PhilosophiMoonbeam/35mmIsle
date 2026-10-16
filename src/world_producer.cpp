@@ -188,6 +188,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     require(!s.retired && !s.world.retired() && words.data() && epoch && words.size_bytes() == beach::rdram_size,
             "World producer preparation requires live exclusive 8MiB owner/epoch");
     require(!pass || pass->camera == s.camera,"World pass camera differs from native producer owner");
+    native(isle_game_camera_validate_disjoint(s.game,s.camera,words.data(),words.size_bytes()));
     s.resources.require_live();
     const auto begin = reinterpret_cast<std::uintptr_t>(words.data()), end = begin+words.size_bytes();
     require(begin <= UINTPTR_MAX-words.size_bytes() && begin%alignof(std::uint32_t) == 0,

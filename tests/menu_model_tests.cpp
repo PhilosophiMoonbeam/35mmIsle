@@ -172,6 +172,32 @@ struct Hierarchy {
             0x1000,0x2000,{},recipes,fixed,consumed},buffer);
     }
 };
+void source_null_draw_guards() {
+    for (const auto type:{RenderType::i_fogged,RenderType::j_fogged}) {
+        Hierarchy h; h.source.render_type=type;
+        for (auto& node:h.source.nodes) node.payloads.clear();
+        const bool immediate=type==RenderType::i_fogged;
+        const unsigned guarded_lane=immediate ? 0u : 1u;
+        h.source.nodes[0].payloads.push_back({{},guarded_lane,0x80003000,0});
+        h.nodes[0].material_count=1; h.materials[0]=0x4000;
+        h.source.nodes[0].materials.push_back(0);
+        h.source.nodes[2].payloads.push_back({{},immediate ? 0u : 2u,0,0x80004000});
+        require(bool(h.encode()),"NULL draw hierarchy rejected valid source node");
+        unsigned pre=0,draws=0;
+        for (unsigned lane=0;lane<4;++lane) for (std::size_t i=0;i<h.counts[lane];++i) {
+            const auto command=h.storage[lane][i];
+            require(command.w0!=0xdb060038,"NULL draw unnecessarily bound material state");
+            if (command.w0!=0xde000000) continue;
+            require(command.w1!=0,"NULL source draw became a branch into RAM zero");
+            if (command.w1==0x80003000) ++pre;
+            else { require(command.w1==0x80004000,"NULL source payload invented a draw target"); ++draws; }
+        }
+        require(pre==(immediate ? 1u : 0u) && draws==1,
+                "TypeI pre-only side effect or deferred NULL pre/draw source guard changed");
+        if (!immediate) require(h.counts[guarded_lane]==0,
+                "Deferred NULL draw flushed matrices/materials/pop into an otherwise unused lane");
+    }
+}
 model::WorldMatrix one() {
     model::WorldMatrix matrix;
     for (unsigned i = 0; i < 4; ++i) matrix.m[i][i] = 1;
@@ -827,6 +853,7 @@ int main() {
         defaults_and_scroll(); palette_and_light_colors();
         lod_and_atomic_rejection(); fractional_lod_above_terminal_key();
         deferred_placement_scopes_and_hide(); immediate_prelist_and_disabled_capacity();
+        source_null_draw_guards();
         kind44_placement_inherits_only_x();
         configured_recipe_selection(); camera_value_context_and_retention();
         contextual_xyz_siblings_and_hidden(); source48_rows_are_not44();

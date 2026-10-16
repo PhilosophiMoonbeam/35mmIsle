@@ -48,8 +48,31 @@ if(NOT _isle_engine_result EQUAL 0)
 endif()
 message(STATUS "${_isle_engine_output}")
 
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/cmake/actor-control-inputs.json"
+    "${PROJECT_SOURCE_DIR}/tools/prepare_actor_control.py"
+    "${PROJECT_SOURCE_DIR}/src/actor_source.h"
+    "${PROJECT_SOURCE_DIR}/src/actor_source_bridge.c"
+    "${PROJECT_SOURCE_DIR}/include/35mmisle/rng.h"
+    "${PROJECT_SOURCE_DIR}/src/rng.c")
+set(_isle_actor_generated "${CMAKE_BINARY_DIR}/_deps/isle-actor-control-private/game.c")
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_actor_control.py"
+        --repository "${_isle_snap_source}"
+        --manifest "${PROJECT_SOURCE_DIR}/cmake/actor-control-inputs.json"
+        --output "${_isle_actor_generated}"
+        --evidence "${CMAKE_BINARY_DIR}/isle-actor-control-inputs.json"
+    RESULT_VARIABLE _isle_actor_result
+    OUTPUT_VARIABLE _isle_actor_output
+    ERROR_VARIABLE _isle_actor_error)
+if(NOT _isle_actor_result EQUAL 0)
+    message(FATAL_ERROR "Private native actor source preparation failed:\n${_isle_actor_output}${_isle_actor_error}")
+endif()
+message(STATUS "${_isle_actor_output}")
+
 add_library(isle-engine STATIC src/engine.c src/engine_internal.h src/engine_math.h
     src/contextual_model_math.h include/35mmisle/engine.h "${_isle_engine_generated}")
+target_sources(isle-engine PRIVATE src/actor_source_bridge.c src/actor_source.h "${_isle_actor_generated}")
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)
@@ -68,6 +91,13 @@ if(BUILD_TESTING)
     isle_target_options(engine-tests)
     add_test(NAME engine-tests COMMAND engine-tests)
     set_tests_properties(engine-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
+
+    add_executable(actor-control-tests tests/actor_control_tests.cpp tests/actor_control_fixture.c)
+    target_link_libraries(actor-control-tests PRIVATE isle-engine)
+    target_include_directories(actor-control-tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
+    isle_target_options(actor-control-tests)
+    add_test(NAME actor-control-tests COMMAND actor-control-tests)
+    set_tests_properties(actor-control-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
 endif()
 
 if(ISLE_BUILD_RSP_PROBE AND ISLE_BUILD_RDP_PROBE)

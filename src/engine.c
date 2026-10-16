@@ -38,7 +38,7 @@ static IsleGameResult access_game(IsleGame* game) {
  * On the owner, that API returns INVALID_STATE and the C-only tick frame is the
  * abort target. Never jump directly from a worker to the owner's environment.
  */
-static void execution_fault(IsleGame* game, const char* text) {
+void isle_native_execution_fault(IsleGame* game, const char* text) {
     IsleContinuationResult result;
     diagnostic(game, text);
     game->fault = ISLE_GAME_EXECUTION_FAILURE;
@@ -307,14 +307,14 @@ void omEndProcess(GObjProcess* process) {
         omD_8004AC54 = 1;
         if (omCurrentProcess != NULL && omCurrentProcess->kind == ISLE_GAME_STACKFUL) {
             if (isle_continuation_finish(game->domain) != ISLE_CONT_OK) {
-                execution_fault(game, "stackful self-end outside its active C continuation");
+                isle_native_execution_fault(game, "stackful self-end outside its active C continuation");
             }
         }
         return;
     }
     if (process->continuation != NULL) {
         if (isle_continuation_destroy(process->continuation) != ISLE_CONT_OK) {
-            execution_fault(game, isle_continuation_error(game->domain));
+            isle_native_execution_fault(game, isle_continuation_error(game->domain));
             return;
         }
         process->continuation = NULL;
@@ -375,7 +375,7 @@ IsleGameResult isle_game_wait(IsleGame* game, uint32_t updates) {
 
 void ohWait(s32 updates) {
     if (updates < 0 || isle_game_wait(active_game, (uint32_t) updates) != ISLE_GAME_OK) {
-        execution_fault(active_game, "invalid wait from selected C game code");
+        isle_native_execution_fault(active_game, "invalid wait from selected C game code");
     }
 }
 
@@ -383,11 +383,11 @@ void isle_native_resume_process(GObjProcess* process) {
     IsleContinuationState state;
     if (isle_continuation_resume(process->continuation) != ISLE_CONT_OK
         || isle_continuation_state(process->continuation, &state) != ISLE_CONT_OK) {
-        execution_fault(process->game, isle_continuation_error(process->game->domain));
+        isle_native_execution_fault(process->game, isle_continuation_error(process->game->domain));
         return;
     }
     if (state == ISLE_CONT_FAILED || state == ISLE_CONT_CANCELLED) {
-        execution_fault(process->game, "unexpected terminal state of selected C game process");
+        isle_native_execution_fault(process->game, "unexpected terminal state of selected C game process");
     } else if (state == ISLE_CONT_COMPLETED && omD_8004AC54 == 0) omD_8004AC54 = 1;
 }
 
@@ -740,6 +740,26 @@ IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* came
         matrix->cached = true;
     }
     camera->normalization = normalization;
+    return ISLE_GAME_OK;
+}
+
+static bool storage_disjoint(uintptr_t start, size_t bytes, const void* owned, size_t owned_bytes) {
+    const uintptr_t address = (uintptr_t)owned;
+    return address <= UINTPTR_MAX - owned_bytes &&
+        (start + bytes <= address || address + owned_bytes <= start);
+}
+IsleGameResult isle_game_camera_validate_disjoint(IsleGame* game, IsleGameCamera* camera,
+                                                const void* storage, size_t bytes) {
+    IsleGameResult result = access_camera(game, camera);
+    const uintptr_t start = (uintptr_t)storage;
+    if (result != ISLE_GAME_OK) return result;
+    if (storage == NULL || bytes == 0 || start > UINTPTR_MAX - bytes) return ISLE_GAME_INVALID_ARGUMENT;
+    if (!storage_disjoint(start, bytes, game, sizeof(*game)) ||
+        !storage_disjoint(start, bytes, camera, sizeof(*camera)) ||
+        !storage_disjoint(start, bytes, camera->obj, sizeof(*camera->obj))) return ISLE_GAME_INVALID_ARGUMENT;
+    for (size_t i = 0; i < camera->numMatrices; ++i)
+        if (!storage_disjoint(start, bytes, camera->matrices[i], sizeof(*camera->matrices[i])))
+            return ISLE_GAME_INVALID_ARGUMENT;
     return ISLE_GAME_OK;
 }
 
@@ -1216,7 +1236,7 @@ void omDeleteGObj(GObj* object) {
         (object->type == 3 && (object->data.cam == NULL ||
           !object->data.cam->alive || object->data.cam->game != game ||
           object->data.cam->obj != object))) {
-        execution_fault(game, "unsupported or invalid native object payload");
+        isle_native_execution_fault(game, "unsupported or invalid native object payload");
         return;
     }
     if (!object->retirementStarted) {

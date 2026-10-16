@@ -110,6 +110,10 @@ add_library(isle-photo-feedback STATIC src/photo_feedback.cpp include/35mmisle/p
 target_include_directories(isle-photo-feedback PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 isle_target_options(isle-photo-feedback)
 
+add_library(isle-focus-detector STATIC src/focus_detector.cpp include/35mmisle/focus_detector.hpp)
+target_include_directories(isle-focus-detector PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-focus-detector)
+
 add_library(isle-photo-score STATIC src/photo_score.cpp include/35mmisle/photo_score.hpp)
 target_link_libraries(isle-photo-score PUBLIC isle-photo-feedback)
 isle_target_options(isle-photo-score)
@@ -310,6 +314,11 @@ if(ISLE_BUILD_GAME_ENGINE)
         target_link_libraries(isle-environment-sound PUBLIC isle-scene isle-source-angles)
         isle_target_options(isle-environment-sound)
 
+        add_library(isle-actor-producer STATIC src/actor_producer.cpp src/actor_producer.hpp)
+        target_link_libraries(isle-actor-producer PUBLIC
+            isle-menu-model-producer isle-beach-actor-resources isle-graphics-task isle-scene)
+        isle_target_options(isle-actor-producer)
+
         add_library(isle-menu-scene STATIC
             src/menu_title_scene.cpp src/menu_title_scene.hpp
             src/menu_ui_scene.cpp src/menu_ui_scene.hpp
@@ -348,7 +357,7 @@ if(ISLE_BUILD_GAME_ENGINE)
         isle_target_options(isle-world)
 
         foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
-                isle-new-game-scene isle-oaks-lab-scene isle-world isle-environment-sound)
+                isle-new-game-scene isle-oaks-lab-scene isle-world isle-environment-sound isle-actor-producer)
             target_compile_options(${_isle_source_math_target} PRIVATE
                 "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
                 "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
@@ -371,6 +380,12 @@ if(BUILD_TESTING)
     target_link_libraries(photo-feedback-tests PRIVATE isle-photo-feedback)
     isle_target_options(photo-feedback-tests)
     add_test(NAME photo-feedback-tests COMMAND photo-feedback-tests)
+
+    add_executable(focus-detector-tests tests/focus_detector_tests.cpp)
+    target_link_libraries(focus-detector-tests PRIVATE isle-focus-detector)
+    isle_target_options(focus-detector-tests)
+    add_test(NAME focus-detector-tests COMMAND focus-detector-tests)
+    set_tests_properties(focus-detector-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
 
     add_executable(photo-score-tests tests/photo_score_tests.cpp)
     target_link_libraries(photo-score-tests PRIVATE isle-photo-score)
@@ -688,6 +703,10 @@ if(TARGET isle-canonical-executor AND TARGET isle-menu-model-producer)
     add_executable(world-producer-rsp-smoke tests/world_producer_rsp_smoke.cpp)
     target_link_libraries(world-producer-rsp-smoke PRIVATE isle-world isle-canonical-executor)
     isle_target_options(world-producer-rsp-smoke)
+    add_executable(actor-producer-rsp-smoke tests/actor_producer_rsp_smoke.cpp)
+    target_link_libraries(actor-producer-rsp-smoke PRIVATE
+        isle-actor-producer isle-beach-world-resources isle-canonical-executor isle-photo-lighting)
+    isle_target_options(actor-producer-rsp-smoke)
 endif()
 
 if(ISLE_BUILD_AUDIO_PROBE)

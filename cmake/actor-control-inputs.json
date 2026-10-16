@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "actor-control-v1",
+  "use": "User-directed private native selected actor C control; no source/SDK/asset redistribution grant. Private selected bodies exist only in caller build output.",
+  "source_files": {
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181"
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096"
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509"
+    }
+  },
+  "native_support": {
+    "src/actor_source.h": {
+      "sha256": "bf5912d7aac70cad73b3c972579eb4a8b7f8b45a8bae4bb64ee3d0965f93475e"
+    },
+    "src/actor_source_bridge.c": {
+      "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
+    },
+    "src/engine.c": {
+      "sha256": "3ff8152dd1eb35187cb631ca269e2c411cb94df3197ac2e054c4869f1028405c"
+    },
+    "src/engine_internal.h": {
+      "sha256": "0bdba4fdc92e4969ba5e4c4bba3351ce22e7e95110ef7d2fbc52bfa1aec3452f"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "2b8e9e0acf1de114aaca6c28e1300171380014832b2358f7eb0353e734a0d5cc"
+    },
+    "include/35mmisle/rng.h": {
+      "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
+    },
+    "src/rng.c": {
+      "sha256": "6c83553a8f38a6eca0d6f6c6e2ceb5fa376f680165da1e9f15a59724fdc2ebfe"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "b48d11d4c787fdd6085268348a1b264955680e23818e2f55699ce3f0631ccca1"
+    }
+  },
+  "transformations": {
+    "preamble": "Private engine_internal.h + actor_source.h; native semantic Pokemon/RandomState typedefs, GET_POKEMON checked real userData accessor, omCreateProcess mapped to typed actual native source creation. Existing C omEndProcess/ohWait are linked unchanged.",
+    "random": "One exact call substitution: randRange(sumWeight) -> isle_actor_source_rand_range(obj, sumWeight), consuming the bound application RNG through existing isle_rng_range.",
+    "failure": "Existing engine C execution_fault is privately promoted to isle_native_execution_fault; all native callers migrated, identical fence semantics. Source control entrypoints require an active C callback; native startup uses returned engine status.",
+    "body_policy": "No source control-flow, priorities, kind, flags, wait masks, publication/end order or actual one-argument callable identity changed."
+  },
+  "semantic_origins": [
+    {
+      "path": "include/enums.h",
+      "first": 393,
+      "last": 398,
+      "source_sha256": "f63a4354bb91dd662f45456c26a48a329ba3505218d2aca1f9a95b2da8b399c3",
+      "use": "Source semantic flags; native numeric constants only, no console layout."
+    },
+    {
+      "path": "include/common_structs.h",
+      "first": 192,
+      "last": 195,
+      "source_sha256": "ab936cb3037a511a8971252cb1d6969c03fde2a6dd627be0c846a13b07f2225e",
+      "use": "Source random-state weight/callable/sentinel semantics; actual native pointer ABI, no imported console size/offset."
+    }
+  ],
+  "definitions": [
+    {
+      "symbol": "Pokemon_SetState",
+      "path": "src/app_level/pokemon.c",
+      "first": 252,
+      "last": 263,
+      "source_sha256": "e77b39f0b5b7e684193f957eff250e8bef5fefc0e2959b1a5ea965d505b44c77",
+      "native_sha256": "e77b39f0b5b7e684193f957eff250e8bef5fefc0e2959b1a5ea965d505b44c77",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_SetStateRandom",
+      "path": "src/app_level/pokemon.c",
+      "first": 265,
+      "last": 288,
+      "source_sha256": "17efde64e3579ee112ccce67a0366332ea0fb66471551e0be905c7d5defdf690",
+      "native_sha256": "fadb4c1c64bdbf8f616593815c5279556c4c8e8b5c9a2fe6341cb30f324442c6",
+      "changes": [
+        {
+          "find": "randRange(sumWeight)",
+          "replace": "isle_actor_source_rand_range(obj, sumWeight)"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_StartAuxProc",
+      "path": "src/app_level/pokemon.c",
+      "first": 291,
+      "last": 296,
+      "source_sha256": "5cabcea448c830e0094394ba70cf2adf88df0b6d9f8aeb1e0900fef17f53d937",
+      "native_sha256": "5cabcea448c830e0094394ba70cf2adf88df0b6d9f8aeb1e0900fef17f53d937",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_StopAuxProc",
+      "path": "src/app_level/pokemon.c",
+      "first": 298,
+      "last": 303,
+      "source_sha256": "90405f60b2ff920ab84337ee9eb2154e160d5c2e8f648ad762c179e053328cec",
+      "native_sha256": "90405f60b2ff920ab84337ee9eb2154e160d5c2e8f648ad762c179e053328cec",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_StartPathProc",
+      "path": "src/app_level/pokemon.c",
+      "first": 305,
+      "last": 318,
+      "source_sha256": "9c2bc9b14f833efafdd8ce0f060620ea88962622c5f6842980b420af184cadc2",
+      "native_sha256": "9c2bc9b14f833efafdd8ce0f060620ea88962622c5f6842980b420af184cadc2",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_WaitForFlagNoInteraction",
+      "path": "src/app_level/pokemon.c",
+      "first": 736,
+      "last": 745,
+      "source_sha256": "5835b02b34682fd502e7973e2bbde6552364190644a2b0aef44af7df0c9d8c7b",
+      "native_sha256": "5835b02b34682fd502e7973e2bbde6552364190644a2b0aef44af7df0c9d8c7b",
+      "changes": []
+    }
+  ],
+  "regression_sources": [
+    "tests/actor_control_tests.cpp",
+    "tests/actor_control_fixture.c",
+    "tests/actor_control_fixture.h"
+  ],
+  "integration_validation": {
+    "cpu": "46/46 passed GCC Debug raw6929, GCC Release raw6928 and Clang ASan+UBSan raw6930.",
+    "payload_guard": "ASan reproduced READ8 beyond a4byte unrelated userData payload before native GObj.actorSourceBound was checked. The native binding marker is published only after successful record/userData publication and clears through actual zeroed GObj allocation/reuse. Fresh and reused foreign payload regressions pass; independent source review accepted the fix.",
+    "failure_route": "Promoted existing native execution fault to private isle_native_execution_fault; every existing callsite migrated. Worker C failure and owner C-tick longjmp remain the sole boundary, not a second scheduler or callback registry.",
+    "actual_API": {"root": "native-control-focus-api-proof-uznt46qi", "binary_sha256": "c45fe45b98c1b709b8c41691ba45bac99c778df210203fa62fc7e653704dbbd2", "archive_sha256": "5fc2250160f8c4eae5f63cfc650218dc5046c0f0572accbf9977aa742f7366b3", "seconds": 0.05148720997385681, "native_ticks": 61, "actual_source_path_waits": 59, "joined_source_processes": true, "after_end_C_statements": 0, "closure": [4,3,5]},
+    "observation": "Actual API root closed once, zero known physical attempts or permission errors; ROM unused. Source bytes selected only through exact Git objects, never the modified decomp worktree.",
+    "limits": "Controls and binding only: demonstration is not the complete common1003 FSM/factory, actor animation coordination, interactions or gameplay."
+  },
+  "scope": "Six selected helpers only; no interaction, standard WaitForFlag, animation, factory, guest function casts, second interpreter/scheduler, console size padding or callback registry."
+}

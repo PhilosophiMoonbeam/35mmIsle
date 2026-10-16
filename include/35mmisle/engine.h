@@ -250,6 +250,12 @@ IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* came
  * at camera removal. Compute only after all preparation admission succeeds. */
 IsleGameResult isle_game_camera_peek_matrix(IsleGame* game, IsleGameCamera* camera,
                                           size_t index, const IsleGameCameraMatrix** output);
+/* Pure exclusion for canonical RAM preparation: covers complete native camera,
+ * matrix/reflection/cache records and their native object/game metadata, not
+ * merely the public result subobjects. Rejects NULL/empty/overflowing ranges.
+ * Does not compute, dirty, normalize or publish any camera state. */
+IsleGameResult isle_game_camera_validate_disjoint(IsleGame*, IsleGameCamera*,
+                                                const void* storage, size_t bytes);
 IsleGameResult isle_game_camera_matrix(IsleGame* game, IsleGameCamera* camera,
                                       size_t index, const IsleGameCameraMatrix** output);
 /* Same index/cache/revision and lifetime as matrix(); kinds 3/6/8 return

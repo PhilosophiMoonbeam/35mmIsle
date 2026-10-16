@@ -66,6 +66,7 @@ struct GObj {
     IsleGame* game;
     bool alive;
     bool retirementStarted;
+    bool actorSourceBound; /* Discriminate userData before interpreting actor state. */
 };
 
 struct SObj {
@@ -160,6 +161,7 @@ void omGObjRemoveSprite(SObj* sprite);
 void func_800E1958_AA0708(SObj* sprite, u16 updates);
 
 /* Original native replacements consumed by the selected game definitions. */
+void isle_native_execution_fault(IsleGame* game, const char* text);
 void isle_native_resume_process(GObjProcess* process);
 void omEndProcess(GObjProcess* process);
 void omDeleteGObj(GObj* object);

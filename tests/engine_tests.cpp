@@ -1058,14 +1058,12 @@ void camera_exhaustion_and_reuse() {
         auto* b = object(world, 2);
         auto* cam = camera(world, a, allocate_matrices);
         auto* first = allocate_matrices ? matrix(world, cam, 0) : nullptr;
-        const auto used_before_exhaustion = world.arena.cursor;
-        std::vector<IsleGameObject*> extras;
-        for (;;) {
-            IsleGameObject* extra = nullptr;
-            const auto result = isle_game_add_object(world.game, 3, 0, 0, nullptr, nullptr, &extra);
-            if (result == ISLE_GAME_EXHAUSTED) break;
-            ok(result); extras.push_back(extra);
-        }
+        // Exhaust actual bytes, not merely the capacity for another GObj:
+        // native camera/matrix sizes are independent of object ABI and padding.
+        const auto remaining=world.arena.storage.size-world.arena.cursor;
+        isle_span tail{};
+        if (remaining) require(isle_arena_allocate(&world.arena,remaining,1,&tail)==ISLE_OK,
+                               "could not reserve the remaining arena bytes");
         IsleGameCamera* failed = cam;
         require(isle_game_attach_camera(world.game, b, &failed) == ISLE_GAME_EXHAUSTED && !failed,
                 "exhausted camera allocation published an owner");
@@ -1073,7 +1071,6 @@ void camera_exhaustion_and_reuse() {
             require(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_PERSPECTIVE_FAST) == ISLE_GAME_EXHAUSTED &&
                     counts(world).matrices == 0, "failed matrix allocation published partial ownership");
         const auto full = world.arena.cursor;
-        require(full >= used_before_exhaustion, "arena cursor regressed");
         ok(isle_game_remove_camera(world.game, cam));
         cam = camera(world, b, allocate_matrices);
         require(world.arena.cursor == full, "camera/matrix pool reuse allocated in exhausted arena");

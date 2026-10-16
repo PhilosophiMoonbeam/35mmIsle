@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Independently authored CPU side of live source focus-color history. No SDK code/cache/queue/opaque layout, photo-depth substitution, game media or Original runtime.",
+  "source_files": {
+    "src/app_level/pokemon_detect.c": {
+      "git_blob": "be633c092754e02a42195f394220c4203fc6aabc",
+      "sha256": "a8f0d6937417d5a63b70a7e6674f64877a8b62e25f8c8865b96420a6f2cdba5b",
+      "definitions": [
+        {
+          "lines": "5,39-62",
+          "facts": "Source20 history regions/two metadata contexts; computed focus and separately copied globals."
+        },
+        {
+          "lines": "70-118",
+          "facts": "Postprocess membership/sign exceptions and source21pixel center red mark; invalid ordinary member does not clear captured photo focus."
+        },
+        {
+          "lines": "150-158",
+          "facts": "Explicit CopyInfo publication boundary."
+        },
+        {
+          "lines": "193-241",
+          "facts": "Draw-time object/id/flag capture; compare successive complete8x8u16 regions;32changedpixels; last eligible source draw wins."
+        },
+        {
+          "lines": "310-324",
+          "facts": "Cleanup clears matching identities in all20rows of both contexts and clears computed has-focus only; published globals wait for CopyInfo."
+        }
+      ]
+    }
+  },
+  "implementation": [
+    "include/35mmisle/focus_detector.hpp",
+    "src/focus_detector.cpp"
+  ],
+  "behavior_tests": [
+    "tests/focus_detector_tests.cpp"
+  ],
+  "contracts": {
+    "input": "Caller stages active metadata/photo12membership at actual draw capture and owns native identity/context reuse. Analyze requires matching realGPU-completed dense128-byte/64-aligned RGBA16 regions in canonical word-swapped RDRAM; no manufactured fence/queue or CPU rasterization.",
+    "reduction": "All16bits including framebuffer coverage-bit changes compare. Source31/32boundary and last qualifying draw retained; normal photo12 membership and1004/1018/1022/1035 exceptions follow source. Source ID/flags and captured-photo focus history are retained/cleared at their actual branches.",
+    "retirement": "Cleanup removes comparison identities in both context arrays before native reuse, does not dereference actor pointers and does not publish early. Native scene must also perform its separate player/photo cleanup/fences.",
+    "mark": "When computed focus is present, direction=-1 and flag4, writeexact0xf801 at21sourcecenterpixels in320x240canonical framebuffer, preserving fourcorners/neighborhalfwords/unrelatedRAM and existingRDP hidden memory. Otherwise framebuffer unused. Rejected positivework extent leaves allRAM unchanged.",
+    "work": "Fixed native metadata arrays; no pixel copying, dynamicallocation or FP math. Source counter/capture capacity20 admits baseline+19subject rows; undefined sourceoverflow is rejectedbeforemutation."
+  },
+  "verification": {
+    "cpu": "46/46 passed GCC Debug raw6929, GCC Release raw6928 and Clang ASan+UBSan raw6930 after the shared source NULL-draw correction.",
+    "api_demo": {
+      "root": "/home/bbferko/35mmisle-native-control-focus-api-proof-uznt46qi",
+      "binary_sha256": "c45fe45b98c1b709b8c41691ba45bac99c778df210203fa62fc7e653704dbbd2",
+      "source_archive_sha256": "5fc2250160f8c4eae5f63cfc650218dc5046c0f0572accbf9977aa742f7366b3",
+      "seconds": 0.05148720997385681,
+      "native_C_updates": 61,
+      "real_source_path_waits": 59,
+      "actual_source_processes_joined": true,
+      "focus_color_inputs": "authored_not_GPU",
+      "exact32_full16bit_changed_pixels": true,
+      "red_center_pixels": 21,
+      "cleanup_then_publication": true,
+      "closure": [
+        4,
+        3,
+        5
+      ],
+      "sole_initial_physical_or_permission_hits": [
+        0,
+        0
+      ],
+      "ROM_not_used": true
+    }
+  },
+  "limits": [
+    "Complete CPU history/reduction/publication/mark component, not source renderer capture emission, original queue/update GObjs, fullPhotoSnapshot collection or actor player integration.",
+    "The API demonstration uses real native actor identity and private compiled GAME control; its color inputs are authored, not actualGPUlivefocus proof.",
+    "No enabled detector/gameplay, Original numerical/hardware parity, physical input/audio or Windows11 runtime qualification."
+  ]
+}

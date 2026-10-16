@@ -227,10 +227,6 @@
       <path d="M17 27 Q-54 35 -60 88 Q-43 65 -32 60 L-34 69 L-20 55 L-15 59 Q8 43 17 27 Z"/>
       <path d="M17 27 Q-21 -34 10 -60 Q10 -38 15 -29 L19 -34 L21 -15 Q28 4 17 27 Z"/>
     </g>
-    <g transform="translate(1109 337) scale(.48) rotate(16)" stroke-width="26">
-      <path d="M17 27 Q53 -30 99 -10 L77 1 L83 6 L60 12 L60 17 Q35 27 17 27 Z"/>
-      <path d="M17 27 Q79 9 112 58 Q92 46 79 44 L81 51 L62 43 L57 47 Q29 44 17 27 Z"/>
-    </g>
     <path d="M588 414 Q551 379 526 405 Q554 405 568 428 Q524 402 501 433 Q532 424 561 449 L627 443 Z" stroke-width="18"/>
     <!-- Shoreline, Film Strip, Wordmarks, Grass, Stone, Ferns & Accents -->
     <path d="M172 661 Q174 623 231 612 L294 625 L366 662 Q532 736 818 706 Q1106 697 1197 609 Q1262 600 1302 654 L1312 708 Q1223 770 919 784 Q419 817 188 735 Z" stroke-width="22"/>
@@ -451,8 +447,10 @@
       <!-- Distant Sea Birds Flock -->
       <path d="M766 173 Q774 164 784 173 Q794 164 802 173 M738 190 Q744 183 751 190 Q759 182 766 188 M818 152 Q823 146 829 152 Q835 146 840 151 M705 172 Q711 165 718 172 Q725 165 731 171" stroke="#5d8576" stroke-width="3"/>
 
-      <!-- Cliffside Palm -->
+      <!-- Cliffside Palm Pair Rooted on the Eastern Bluff -->
+      <use href="#palm" transform="translate(1026 280) scale(.45) rotate(-10)"/>
       <use href="#palm" transform="translate(1061 266) scale(.55) rotate(9)"/>
+      <path d="M1037 359 Q1045 351 1051 359 Q1057 354 1063 363" stroke="#22574b" stroke-width="3.5" fill="none"/>
 
       <!-- 1990s Anime Hexagonal Optical Lens Flare Chain -->
       <g pointer-events="none">
@@ -477,10 +475,9 @@
     <!-- Crisp Inner Bezel Ink Line -->
     <circle cx="840" cy="324" r="263" stroke="#153942" stroke-width="5.5"/>
 
-    <!-- Foreground Canopy Breaking Out of the Lens Frame -->
+    <!-- Foreground Canopy Breaking Out of the Lens Frame (Left Only) -->
     <g filter="url(#layer-shadow)">
       <use href="#palm" transform="translate(611 243) rotate(-18) scale(.93)"/>
-      <use href="#palm" transform="translate(1109 337) scale(.48) rotate(16)"/>
       <path d="M588 414 Q551 379 526 405 Q554 405 568 428 Q524 402 501 433 Q532 424 561 449 L627 443 Z" fill="#316e55" stroke="#163c44" stroke-width="5"/>
       <path d="M538 414 Q567 420 587 439 M522 427 Q548 429 569 442" stroke="#85b66b" stroke-width="3"/>
     </g>
@@ -599,25 +596,19 @@
     <g fill="url(#amber)" stroke="#153b43" stroke-width="5">
       <use href="#number-letters"/><use href="#unit-letters"/>
     </g>
-    <!-- 1990s Anime Horizon-Split Cel Gloss & Diagonal Specular Slashes -->
+    <!-- Flowing Horizon-Wave Cel Gloss & Warm Lower Shade (No Plaid Polygons) -->
     <g clip-path="url(#number-faces)">
-      <path d="M-20 -10 H525 V66 Q255 34 -20 62 Z" fill="#fffce0" opacity="0.38"/>
-      <path d="M-20 12 Q240 -18 520 35 L520 58 Q240 12 -20 38 Z" fill="#ffffff" opacity="0.52"/>
-      <!-- Diagonal Anime Chrome-Gold Light Slashes -->
-      <polygon points="35,-10 72,-10 18,175 -18,175" fill="#ffffff" opacity="0.32"/>
-      <polygon points="185,-10 215,-10 162,175 132,175" fill="#ffffff" opacity="0.28"/>
-      <polygon points="345,-10 378,-10 324,175 292,175" fill="#ffffff" opacity="0.28"/>
-      <path d="M-20 128 Q240 158 520 118 V175 H-20 Z" fill="#b85416" opacity="0.42"/>
+      <path d="M-20 -20 H540 V48 C385 70 165 20 -20 54 Z" fill="#fffdf0" opacity="0.34"/>
+      <path d="M-20 128 C165 106 375 148 540 118 V175 H-20 Z" fill="#b85416" opacity="0.30"/>
       <g transform="translate(1 3)" fill="none" stroke="#fff9d2" stroke-width="4.5">
         <use href="#number-letters"/><use href="#unit-letters"/>
       </g>
     </g>
-    <!-- Crisp Final Face Outline & Corner Star Glints -->
+    <!-- Crisp Final Face Outline & Single Crown Glint on '3' -->
     <g fill="none" stroke="#153b43" stroke-width="4.5">
       <use href="#number-letters"/><use href="#unit-letters"/>
     </g>
-    <use href="#cel-sparkle" transform="translate(98 14) scale(0.85)"/>
-    <use href="#cel-sparkle" transform="translate(246 10) scale(0.7)"/>
+    <use href="#cel-sparkle" transform="translate(20 12) scale(0.65) rotate(-12)"/>
   </g>
 
   <!-- ========================================================================= -->
@@ -641,24 +632,16 @@
     <!-- Main Sculpted Ivory Face -->
     <use href="#isle-letters" fill="url(#ivory)" stroke="#153b43" stroke-width="6"/>
 
-    <!-- 1990s Box-Art Chiseled Cel Shading, Diagonal Gloss & Warm Bounce Light -->
+    <!-- Flowing Wavy Top Highlight & Lower Warm Bounce Shade -->
     <g clip-path="url(#isle-faces)">
-      <path d="M-20 14 Q360 -20 834 68 L831 102 Q366 22 -20 52 Z" fill="#ffffff" opacity="0.58"/>
-      <!-- Diagonal Specular Sheens Across Letter Faces -->
-      <polygon points="55,-15 110,-15 35,295 -20,295" fill="#ffffff" opacity="0.35"/>
-      <polygon points="315,-15 355,-15 280,295 240,295" fill="#ffffff" opacity="0.28"/>
-      <polygon points="510,-15 555,-15 480,295 435,295" fill="#ffffff" opacity="0.32"/>
-      <polygon points="715,-15 765,-15 690,295 640,295" fill="#ffffff" opacity="0.30"/>
-      <!-- Crisp Cel-Cut Lower Bevel Shadow -->
-      <path d="M-20 236 Q404 272 830 214 V304 H-20 Z" fill="#cf9e42" opacity="0.52"/>
-      <path d="M-20 258 Q404 290 830 238 V304 H-20 Z" fill="#b07b28" opacity="0.38"/>
+      <path d="M-20 -20 H840 V92 C610 124 270 36 -20 78 Z" fill="#ffffff" opacity="0.38"/>
+      <path d="M-20 232 C240 202 560 258 840 216 V304 H-20 Z" fill="#c99538" opacity="0.34"/>
       <use href="#isle-letters" transform="translate(2 4)" fill="none" stroke="#ffffff" stroke-width="5"/>
     </g>
-    <!-- Crisp Final Face Outline & 90s Anime Corner Star Glints -->
+    <!-- Crisp Final Face Outline & Varied Asymmetrical Glints -->
     <use href="#isle-letters" fill="none" stroke="#153b43" stroke-width="5.5"/>
-    <use href="#cel-sparkle" transform="translate(182 10) scale(1.05)"/>
-    <use href="#cel-sparkle" transform="translate(526 6) scale(0.9)"/>
-    <use href="#cel-sparkle" transform="translate(772 98) scale(0.85)"/>
+    <use href="#cel-sparkle" transform="translate(524 8) scale(0.95)"/>
+    <use href="#cel-sparkle" transform="translate(792 252) scale(0.52) rotate(18)"/>
   </g>
 
   <!-- ========================================================================= -->

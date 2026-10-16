@@ -124,6 +124,10 @@ IsleGameResult engine_attach_model_with_invalid_kind(IsleGame* game, IsleGameObj
     return isle_game_attach_model(game, owner, invalid, 2, model);
 }
 
+IsleGameResult engine_set_invalid_placement(IsleGame* game, IsleGameModel* model) {
+    return isle_game_model_set_placement(game, model, (IsleGameModelPlacementMode) 99, NULL);
+}
+
 IsleGameResult engine_add_camera_matrix_with_invalid_kind(IsleGame* game, IsleGameCamera* camera) {
     /* Exercise an unknown integer at the C ABI, not an out-of-range C++ enum. */
     return isle_game_camera_add_matrix(game, camera, (IsleGameCameraMatrixKind) 99);

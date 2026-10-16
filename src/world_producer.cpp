@@ -20,6 +20,9 @@ struct Producer::Impl {
         std::size_t render_index;
         std::uint32_t matrices = 0;
         std::span<const IsleGameModelNode> nodes;
+        const IsleGameModelPlacement* placement = nullptr;
+        std::uint32_t placement_matrix = 0, uploaded_placement_matrix = 0;
+        std::uint64_t placement_revision = 0;
         std::vector<std::uint64_t> revisions;
         std::vector<std::uint32_t> material_bases;
         std::vector<menu::model::MaterialCommands> encoded;
@@ -33,6 +36,7 @@ struct Producer::Impl {
     const Resources& resources;
     const World& world;
     ProducerLayout layout;
+    std::size_t local_payload_end = 0;
     std::array<Range,3> owned;
     std::vector<Instance> instances;
     std::array<std::vector<Command>,4> lanes;
@@ -69,7 +73,10 @@ struct Producer::Impl {
     void node(Instance& instance, const menu::Model& model, std::size_t index) {
         const auto& node = instance.nodes[index];
         if (node.flags&2) return;
-        command(0,0xda380000,instance.matrices+static_cast<std::uint32_t>(index*64));
+        const bool placed_root = index == 0 && instance.placement_matrix != 0;
+        if (placed_root) command(0,0xda380000,instance.placement_matrix);
+        command(0,placed_root ? 0xda380001 : 0xda380000,
+                instance.matrices+static_cast<std::uint32_t>(index*64));
         command(0,0xd5000001,0);
         if (!(node.flags&1)) {
             const auto& source = model.nodes[index];
@@ -86,6 +93,30 @@ struct Producer::Impl {
     void node_visit(Instance& instance, const menu::Model& model, std::size_t index) { node(instance,model,index); }
     void stage(const scene::render::Pass* pass) {
         counts.fill(0);
+        // Locals keep their original addresses. Only active placements consume
+        // appended payload slots; lists are rebuilt below even without a tick.
+        // Admit the entire topology before camera computation or any RAM write.
+        std::size_t matrix = local_payload_end;
+        const auto owners = world.render_objects();
+        for (auto& instance : instances) {
+            require(instance.render_index < owners.size(),"World render owners changed before producer retirement");
+            const auto& object = owners[instance.render_index];
+            std::uint32_t address = 0;
+            if (object.object && object.model) {
+                native(isle_game_model_placement(game,object.model,&instance.placement));
+                if (instance.placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED) {
+                    require(matrix <= layout.payloads.offset+layout.payloads.size &&
+                            64 <= layout.payloads.offset+layout.payloads.size-matrix,
+                            "World producer active placement payload reservation exhausted");
+                    address = static_cast<std::uint32_t>(matrix);
+                    matrix += 64;
+                }
+            }
+            // A filtered/hidden instance must also lose residency when slots
+            // move: another placement can overwrite its old address meanwhile.
+            if (instance.placement_matrix != address) instance.uploaded_placement_matrix = 0;
+            instance.placement_matrix = address;
+        }
         const auto render = world.render_objects();
         for (auto& instance : instances) {
             require(instance.render_index < render.size(),"World render owners changed before producer retirement");
@@ -101,7 +132,9 @@ struct Producer::Impl {
             instance.nodes = {nodes,count};
             if (object.sky) {
                 command(0,0xe7000000,0); high(20,2,0); low(3,29,0x00552048); command(0,0xd9fefffe,0);
-                command(0,0xda380000,instance.matrices); command(0,0xd5000001,0); command(0,0xde000000,object.display_list);
+                if (instance.placement_matrix) command(0,0xda380000,instance.placement_matrix);
+                command(0,instance.placement_matrix ? 0xda380001 : 0xda380000,instance.matrices);
+                command(0,0xd5000001,0); command(0,0xde000000,object.display_list);
                 command(0,0xd8380002,64); command(0,0xe7000000,0); command(0,0xd9ffffff,0x00010001);
                 continue;
             }
@@ -157,6 +190,8 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, const Resources& reso
         native(isle_game_model_nodes(game,object.model,&nodes,&count));
         s.instances.emplace_back(i,static_cast<std::uint32_t>(matrix),std::span(nodes,count));
         auto& instance = s.instances.back(); instance.revisions.resize(count);
+        // One possible placement command per model; reserve once, not per frame.
+        ++command_capacity;
         instance.material_bases.resize(count); matrix += count*64;
         if (!object.sky) {
             const auto& source = resources.models()[object.resource_model];
@@ -171,6 +206,7 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, const Resources& reso
     }
     require(matrix <= layout.payloads.offset+layout.payloads.size && material <= layout.materials.offset+layout.materials.size,
             "World producer payload/material reservation exhausted");
+    s.local_payload_end = matrix;
     for (auto& lane : s.lanes) lane.resize(command_capacity);
 }
 Producer::~Producer() = default;
@@ -231,6 +267,13 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
         native(isle_game_object_metadata(s.game,object.object,&metadata));
         if (metadata.flags&1u) continue;
         const bool instance_fresh = !instance.resident;
+        if (instance.placement_matrix &&
+            (instance_fresh || instance.uploaded_placement_matrix != instance.placement_matrix ||
+             instance.placement_revision != instance.placement->revision)) {
+            memory.matrix(instance.placement_matrix,instance.placement->fixed);
+            instance.placement_revision = instance.placement->revision;
+        }
+        instance.uploaded_placement_matrix = instance.placement_matrix;
         for (std::size_t n = 0; n < instance.nodes.size(); ++n) if (instance_fresh || instance.revisions[n] != instance.nodes[n].revision) {
             memory.matrix(instance.matrices+static_cast<std::uint32_t>(n*64),instance.nodes[n].fixed);
             instance.revisions[n] = instance.nodes[n].revision;

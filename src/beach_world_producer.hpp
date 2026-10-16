@@ -39,6 +39,10 @@ struct FrameSettings {
 // Rejected preparation preserves native model records and every published
 // camera matrix/reflection cache as well as RAM. All request/model preflight
 // precedes atomic dirty-camera computation, then same-thread model commits.
+// Both model/object handles stay private; the public const node views cannot
+// enable placement. Only this class changes their ordinary translate locals,
+// so both models remain placement-disabled throughout this diagnostic's life.
+// No per-frame placement query or extra identity matrix is required.
 class StartProducer final {
 public:
     StartProducer(IsleGame* game, IsleGameCamera* camera,

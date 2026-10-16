@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <array>
 #include <filesystem>
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -64,7 +65,7 @@ void top_list(std::span<std::uint32_t> words,const world::ProducerFrame& frame) 
     for(const unsigned lane:std::array<unsigned,4>{0,2,1,3}){cmd(0xde000000,frame.camera.address);cmd(0xde000000,frame.lanes[lane].address);}
     cmd(0xe9000000,0);cmd(0xdf000000,0);
 }
-struct Result { std::vector<std::uint32_t> triangles;std::vector<std::byte> pixels; };
+struct Result { std::vector<std::uint32_t> triangles;std::vector<std::byte> pixels,depths; };
 int run(const std::filesystem::path& path) {
     const auto snapshot=rom::read_snapshot(path);const world::Resources resources(snapshot);Owners owners;
     const auto view=world::ResourceView{&resources.setup(),&resources.sky(),resources.blocks(),resources.primary_count(),resources.models(),
@@ -78,8 +79,9 @@ int run(const std::filesystem::path& path) {
     world::Producer producer(owners.game,owners.camera,resources,component,{},other);
     rsp::CanonicalExecutor executor(true,{16000000,4*1024*1024});
     const auto arena_used=owners.arena.cursor;
-    auto execute=[&](bool cold){
-        auto preparation=executor.begin_preparation();auto words=preparation.words();
+    auto execute=[&](bool cold,std::uint64_t epoch=1,rsp::CanonicalExecutor* alternate=nullptr){
+        auto& active_executor=alternate ? *alternate : executor;
+        auto preparation=active_executor.begin_preparation();auto words=preparation.words();
         if(cold){
             graphics::validate_cold_inputs(words,snapshot,snapshot.canonical().data(),boot);
             std::vector<beach::RamReservation> reserved;reserved.reserve(other.size()+producer.reservations().size()+1);
@@ -87,28 +89,154 @@ int run(const std::filesystem::path& path) {
             for(auto r:producer.reservations())reserved.push_back({r.offset,r.size});
             resources.install(std::as_writable_bytes(words),reserved);graphics::install_cold_inputs(words,snapshot,boot);
             for(unsigned i=0;i<64;++i)words[guard/4+i]=0x13579bdf;
+            // Fresh canonical memory/epoch must not depend on equal native
+            // revisions or old payload bytes surviving in the owner ranges.
+            for(auto r:producer.reservations())
+                std::fill(words.begin()+r.offset/4,words.begin()+(r.offset+r.size)/4,0xdeadbeefu);
         }
         const auto before=std::vector<std::uint32_t>(words.begin(),words.end());
-        bool rejected=false;try{producer.prepare(words.first(words.size()-1),1);}catch(const std::exception&){rejected=true;}
+        bool rejected=false;try{producer.prepare(words.first(words.size()-1),epoch);}catch(const std::exception&){rejected=true;}
         require(rejected&&std::equal(words.begin(),words.end(),before.begin()),"invalid preparation modified RAM");
         scene::render::Pass update_link_only;
         update_link_only.camera=owners.camera;update_link_only.link_mask=std::uint64_t(1)<<9;
-        const auto filtered=producer.prepare(words,1,update_link_only);
+        const auto filtered=producer.prepare(words,epoch,update_link_only);
         for(const auto lane:filtered.lanes) require(lane.commands==1,"update link9 was incorrectly treated as renderDL3");
-        const auto frame=producer.prepare(words,1);
+        const auto frame=producer.prepare(words,epoch);
         for(std::size_t i=0;i<words.size();++i){const auto address=i*4;
             const bool owned=std::any_of(frame.reservations.begin(),frame.reservations.end(),[&](menu::RamRange r){return address>=r.offset&&address<r.offset+r.size;});
             if(!owned)require(words[i]==before[i],"world producer wrote outside its exact owners");}
         top_list(words,frame);const auto task_result=graphics::finish_task(words,snapshot,boot,stack,yield,task,output,output_end,top);
-        auto completed=executor.execute(std::move(preparation),task_result.task,task_result.boot);Result result;
+        auto completed=active_executor.execute(std::move(preparation),task_result.task,task_result.boot);Result result;
         const auto& packets=completed.packets();for(const auto packet:packets.packets()){
             const auto data=packets.words().subspan(packet.offset,packet.count);const auto opcode=(data[0]>>24)&63;
             if(opcode>=8&&opcode<=15)result.triangles.insert(result.triangles.end(),data.begin(),data.end());}
         result.pixels.resize(target_bytes);for(std::size_t i=0;i<target_bytes;++i)result.pixels[i]=completed.rdram()[(color+i)^3];
+        result.depths.resize(target_bytes);for(std::size_t i=0;i<target_bytes;++i)result.depths[i]=completed.rdram()[(depth+i)^3];
         for(unsigned i=0;i<64;++i)require(reinterpret_cast<const std::uint32_t*>(completed.rdram().data())[guard/4+i]==0x13579bdf,"actual consumer changed guard");
-        completed.release();require(executor.quiescent(),"GPU borrow not retired");require(owners.arena.cursor==arena_used,"world frame allocated native storage");return result;
+        completed.release();require(active_executor.quiescent(),"GPU borrow not retired");require(owners.arena.cursor==arena_used,"world frame allocated native storage");return result;
     };
     native(isle_game_tick(owners.game));const auto initial=execute(true);require(!initial.triangles.empty(),"world canonical task emitted no geometry");
+    // Freeze animation: placement-only RT/RTS edits must reach both native
+    // hierarchy and direct sky rendering without rewriting their ordinary roots.
+    const auto objects=component.render_objects();
+    IsleGameModel* hierarchy=nullptr;IsleGameModel* sky=nullptr;
+    struct LocalSnapshot { IsleGameModel* model;std::vector<IsleGameModelNode> nodes; };
+    std::vector<LocalSnapshot> locals;
+    std::size_t local_payload_bytes=256;
+    for(const auto& object:objects){
+        const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
+        native(isle_game_model_nodes(owners.game,object.model,&nodes,&count));
+        locals.push_back({object.model,{nodes,nodes+count}});local_payload_bytes+=count*64;
+        if(object.sky)sky=object.model;
+        else if(!hierarchy&&count>1){
+            IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(owners.game,object.object,&metadata));
+            if(!(metadata.flags&1u))hierarchy=object.model;
+        }
+    }
+    require(hierarchy&&sky,"real hierarchy/sky placement owners missing");
+    auto unchanged_locals=[&]{
+        for(const auto& saved:locals){
+            const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
+            native(isle_game_model_nodes(owners.game,saved.model,&nodes,&count));
+            require(count==saved.nodes.size(),"placement changed source node indices");
+            for(std::size_t n=0;n<count;++n)
+                require(nodes[n].revision==saved.nodes[n].revision&&
+                        std::memcmp(&nodes[n].transform,&saved.nodes[n].transform,sizeof(nodes[n].transform))==0&&
+                        std::memcmp(&nodes[n].fixed,&saved.nodes[n].fixed,sizeof(nodes[n].fixed))==0,
+                        "placement modified ordinary local pose/fixed revision");
+        }
+    };
+    const auto same=[](const Result& a,const Result& b){
+        return a.triangles==b.triangles&&a.pixels==b.pixels&&a.depths==b.depths;
+    };
+    IsleGameCounts baseline_counts{};native(isle_game_counts(owners.game,&baseline_counts));
+    const IsleGameModelTransform terrain_placement{{400,200,-300},{0.08f,0.12f,-0.05f},{1.1f,0.9f,1.2f}};
+    const IsleGameModelTransform sky_placement{{1500,0,-500},{0,0.15f,0},{1,1,1}};
+    native(isle_game_model_set_placement(owners.game,hierarchy,ISLE_GAME_MODEL_PLACEMENT_RTS,&terrain_placement));
+    unchanged_locals();const auto placed_hierarchy=execute(false);
+    require(placed_hierarchy.triangles!=initial.triangles&&placed_hierarchy.depths!=initial.depths,
+            "placement-only hierarchy change did not reach actual geometry/depth");
+    native(isle_game_model_set_placement(owners.game,hierarchy,ISLE_GAME_MODEL_PLACEMENT_RT,&terrain_placement));
+    const auto rt_hierarchy=execute(false);
+    require(!same(placed_hierarchy,rt_hierarchy),"RT/RTS mode change without tick retained stale world output");
+    native(isle_game_model_set_placement(owners.game,hierarchy,ISLE_GAME_MODEL_PLACEMENT_RTS,&terrain_placement));
+    require(same(placed_hierarchy,execute(false)),"RTS restoration without tick changed output");
+    auto moved_terrain=terrain_placement;moved_terrain.position.x+=350;moved_terrain.rotation.y-=0.2f;
+    native(isle_game_model_set_placement(owners.game,hierarchy,ISLE_GAME_MODEL_PLACEMENT_RTS,&moved_terrain));
+    require(!same(placed_hierarchy,execute(false)),"same-mode placement revision without tick retained stale output");
+    native(isle_game_model_set_placement(owners.game,hierarchy,ISLE_GAME_MODEL_PLACEMENT_RTS,&terrain_placement));
+    require(same(placed_hierarchy,execute(false)),"same-mode placement restore did not restore output");
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_RT,&sky_placement));
+    unchanged_locals();const auto placed_both=execute(false);
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
+    require(same(placed_hierarchy,execute(false)),"active hierarchy payload compaction retained stale residency");
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_RT,&sky_placement));
+    require(same(placed_both,execute(false)),"placement topology restoration without tick changed output");
+    require(placed_both.triangles!=placed_hierarchy.triangles,"direct sky branch ignored native placement");
+    // While hierarchy is hidden, compact it away from and back onto its old
+    // slot, letting a later owner overwrite that slot. Re-show must republish,
+    // not trust the pre-hide address/revision pair.
+    IsleGameObject* hierarchy_object=nullptr;IsleGameModel* later_model=nullptr;
+    for(const auto& object:objects){
+        if(object.model==hierarchy)hierarchy_object=object.object;
+        else if(hierarchy_object&&!later_model){
+            IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(owners.game,object.object,&metadata));
+            if(!(metadata.flags&1u))later_model=object.model;
+        }
+    }
+    require(hierarchy_object&&later_model,"real hidden-placement compaction owners missing");
+    IsleGameObjectMetadata hierarchy_metadata{};
+    native(isle_game_object_metadata(owners.game,hierarchy_object,&hierarchy_metadata));
+    native(isle_game_object_set_flags(owners.game,hierarchy_object,hierarchy_metadata.flags|1u));
+    const IsleGameModelTransform neutral_placement{{0,0,0},{0,0,0},{1,1,1}};
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
+    native(isle_game_model_set_placement(owners.game,later_model,ISLE_GAME_MODEL_PLACEMENT_RT,&neutral_placement));
+    execute(false);
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_RT,&sky_placement));
+    native(isle_game_model_set_placement(owners.game,later_model,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
+    execute(false);
+    native(isle_game_object_set_flags(owners.game,hierarchy_object,hierarchy_metadata.flags));
+    require(same(placed_both,execute(false)),"hidden topology churn reused overwritten placement payload");
+    IsleGameCounts active_counts{};native(isle_game_counts(owners.game,&active_counts));
+    require(active_counts.matrices==baseline_counts.matrices+2&&active_counts.model_nodes==baseline_counts.model_nodes,
+            "active world placements changed node indices or matrix count");
+    // One extra64-byte slot succeeds; two active placements exceed it before
+    // canonical RAM or any native camera/model publication can be changed.
+    auto tight_layout=world::ProducerLayout{};tight_layout.payloads.size=local_payload_bytes+64;
+    world::Producer tight(owners.game,owners.camera,resources,component,tight_layout,other);
+    {
+        // This is a CPU admission boundary, not an execution. Never acquire a
+        // canonical preparation lease that would be abandoned on scope exit:
+        // its fail-closed destructor must poison that executor.
+        std::vector<std::uint32_t> admission_ram(beach::rdram_size/4,0x5a3cc3a5u);
+        const auto words=std::span<std::uint32_t>(admission_ram);
+        const auto before=std::vector<std::uint32_t>(words.begin(),words.end());
+        const IsleGameCameraMatrix* camera_before=nullptr;native(isle_game_camera_matrix(owners.game,owners.camera,0,&camera_before));
+        const auto camera_revision=camera_before->revision;
+        bool rejected=false;try{tight.prepare(words,1);}catch(const std::exception&){rejected=true;}
+        require(rejected&&std::equal(words.begin(),words.end(),before.begin())&&camera_before->revision==camera_revision,
+                "placement capacity rejection partially published native/RAM state");
+        native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
+        tight.prepare(words,1); // Exact disabled-local budget plus one active64B.
+    }
+    tight.retire();
+    // Independently exercise canonical epoch residency with poisoned owner
+    // bytes; equal native placement revisions must still republish payloads.
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_RT,&sky_placement));
+    require(same(placed_both,execute(true,2)),"new epoch did not republish active world placement");
+    {
+        rsp::CanonicalExecutor fresh_executor(true,{16000000,4*1024*1024});
+        require(same(placed_both,execute(true,3,&fresh_executor)),"new canonical pointer retained stale placement residency");
+        require(fresh_executor.quiescent(),"fresh-memory execution lease survived completion");
+    }
+    native(isle_game_model_set_placement(owners.game,hierarchy,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
+    const auto placed_sky=execute(false,2);
+    require(placed_sky.triangles!=initial.triangles,"sky-only active placement was lost during payload compaction");
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_DISABLED,nullptr));
+    unchanged_locals();require(same(initial,execute(false,2)),"placement disable did not restore exact baseline");
+    native(isle_game_counts(owners.game,&active_counts));
+    require(active_counts.matrices==baseline_counts.matrices&&active_counts.model_nodes==baseline_counts.model_nodes,
+            "placement disable retained native matrix ownership");
     std::uint32_t original_visibility=0;
     for(const auto& block:component.blocks()) {
         IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(owners.game,block.object,&metadata));
@@ -130,9 +258,13 @@ int run(const std::filesystem::path& path) {
         require(owners.shifts==i&&owners.effect_shifts==i,"native camera/effect translation did not follow each primary entry");
         native(isle_game_tick(owners.game));execute(false);
     }
+    // Retire an enabled World-owned placement only after the actual completed
+    // lease has been released; removal must subtract that matrix exactly once.
+    native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_RTS,&sky_placement));
+    execute(false);
     producer.retire();component.retire();IsleGameCounts counts{};native(isle_game_counts(owners.game,&counts));
-    require(counts.objects==1&&counts.models==0&&counts.processes==0,"world retirement retained native resources");
-    std::cout<<"world_component_rsp_rdp=passed primary=8 secondary=4 visibility=hide_restore native_retirement=joined gameplay=not_claimed\n";return 0;
+    require(counts.objects==1&&counts.models==0&&counts.processes==0&&counts.matrices==2,"world retirement retained native resources");
+    std::cout<<"world_component_rsp_rdp=passed primary=8 secondary=4 placement=hierarchy_sky_rt_rts_restore_fresh visibility=hide_restore native_retirement=joined gameplay=not_claimed\n";return 0;
 }
 }
 #ifdef _WIN32

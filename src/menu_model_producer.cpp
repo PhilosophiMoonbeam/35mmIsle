@@ -10,6 +10,8 @@
 // Existing privately admitted, unchanged GAME math seam (not an SDK body).
 extern "C" void hal_rotate_rpy_translate_scale_f(float [4][4], float, float, float,
     float, float, float, float, float, float);
+extern "C" void hal_rotate_rpy_translate_f(float [4][4], float, float, float,
+    float, float, float);
 extern "C" void hal_perspective_fast_f(float [4][4], std::uint16_t*, float, float, float, float, float);
 extern "C" void hal_mtx_f2l(float [4][4], IsleGameFixedMatrix*);
 
@@ -163,6 +165,101 @@ Status encode_material(const Material& texture, const animation::MaterialState& 
     } catch (const Failure& f) { return f.status; }
       catch (...) { return {Error::invalid_input}; }
 }
+namespace {
+struct HierarchyEncoder {
+    const HierarchyInput& input;
+    HierarchyBuffer& output;
+    std::array<std::size_t,4> copied{};
+    std::size_t pending_count = 0;
+    void command(unsigned lane, std::uint32_t a, std::uint32_t b) {
+        require(lane < 4 && output.counts[lane] < output.lanes[lane].size(),Error::extent);
+        output.lanes[lane][output.counts[lane]++] = {a,b};
+    }
+    void call(unsigned lane, std::uint32_t target) { command(lane,0xde000000,target); }
+    void append(Command c) {
+        require(pending_count < output.pending.size(),Error::extent);
+        output.pending[pending_count++] = c;
+    }
+    void matrix(std::size_t n, bool push, float parent_scale) {
+        append({push ? 0xda380000u : 0xda380001u,
+            input.matrices + static_cast<std::uint32_t>(n * 64)});
+        if (!(input.source.nodes[n].depth_flags & 0xf000u)) return;
+        const auto& pose = input.nodes[n].transform;
+        WorldMatrix matrix;
+        const auto x = parent_scale * pose.scale.x;
+        const auto y = pose.scale.y * parent_scale;
+        matrix.m[0][0] = input.projection.m[0][0] * x;
+        matrix.m[1][1] = input.projection.m[1][1] * y;
+        matrix.m[2][2] = input.projection.m[2][2] * x;
+        matrix.m[2][3] = input.projection.m[2][3] * x;
+        for (const auto& row : matrix.m) for (float f : row)
+            require(std::isfinite(f) && double(f * 65536.0f) >= -2147483648.0 &&
+                double(f * 65536.0f) < 2147483648.0);
+        IsleGameFixedMatrix fixed;
+        hal_mtx_f2l(matrix.m,&fixed);
+        append({0xd5000001,0});
+        // Source kind44 replaces three combined-MVP rows, retaining translation.
+        for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
+            append({0xdb000000u | (row * 8 + pair * 4),
+                fixed.m[row / 2][(row % 2) * 2 + pair]});
+        for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
+            append({0xdb000020u | (row * 8 + pair * 4),
+                fixed.m[2 + row / 2][(row % 2) * 2 + pair]});
+    }
+    void flush(unsigned lane) {
+        while (copied[lane] < pending_count) {
+            const auto c = output.pending[copied[lane]++];
+            command(lane,c.w0,c.w1);
+        }
+    }
+    void node(std::size_t n, float parent_scale, bool deferred) {
+        const auto& pose = input.nodes[n];
+        const auto sibling = input.next_sibling[n], child = input.first_child[n];
+        if (pose.flags & 2) return;
+        const auto saved = pending_count;
+        const bool push = pose.parent == no_index || sibling != UINT32_MAX;
+        if (!deferred && !(pose.flags & 1))
+            for (const auto& payload : input.source.nodes[n].payloads)
+                if (payload.pre_list) call(0,payload.pre_list);
+        const bool placed_root = pose.parent == no_index &&
+            input.placement.mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED;
+        if (placed_root) append({0xda380000u,input.placement_address});
+        matrix(n,push && !placed_root,parent_scale);
+        if (!deferred) flush(0);
+        if (!(pose.flags & 1)) for (const auto& payload : input.source.nodes[n].payloads) {
+            const auto lane = payload.display_list_id;
+            require(lane < 4);
+            if (deferred && payload.pre_list) call(lane,payload.pre_list);
+            if (deferred) flush(lane);
+            if (pose.material_count) command(lane,0xdb060038,input.material_bases[n]);
+            call(lane,payload.draw_list);
+        }
+        const float scale = parent_scale * pose.transform.scale.x;
+        require(std::isfinite(scale));
+        for (auto c = child; c != UINT32_MAX; c = input.next_sibling[c]) node(c,scale,deferred);
+        pending_count = saved;
+        for (unsigned lane = 0; lane < 4; ++lane) if (copied[lane] > saved) {
+            copied[lane] = saved;
+            if (push) command(lane,0xd8380002,64);
+        }
+    }
+};
+}
+Status encode_hierarchy(const HierarchyInput& input, HierarchyBuffer& output) noexcept {
+    try {
+        const auto count = input.nodes.size();
+        require(count && input.source.nodes.size() == count && input.first_child.size() == count &&
+            input.next_sibling.size() == count && input.material_bases.size() == count &&
+            input.nodes[0].parent == no_index);
+        const bool deferred = input.source.render_type == RenderType::d_fogged ||
+            input.source.render_type == RenderType::j_fogged;
+        HierarchyEncoder encoder{input,output};
+        encoder.node(0,input.placement.mode == ISLE_GAME_MODEL_PLACEMENT_RTS ?
+            input.placement.transform.scale.x : 1.0f,deferred);
+        return {};
+    } catch (const Failure& f) { return f.status; }
+      catch (...) { return {Error::invalid_input}; }
+}
 
 struct Producer::Impl {
     struct Instance {
@@ -174,6 +271,11 @@ struct Producer::Impl {
         std::vector<unsigned char> changed;
         std::vector<MaterialCommands> material_commands;
         std::span<const IsleGameModelNode> native_nodes;
+        const IsleGameModelPlacement* placement = nullptr;
+        std::uint64_t placement_revision = 0, resident_placement_revision = 0;
+        IsleGameModelPlacementMode placement_mode = ISLE_GAME_MODEL_PLACEMENT_DISABLED;
+        float placement_scale_x = 1;
+        std::uint32_t placement_address = 0, resident_placement_address = 0;
         std::uint32_t matrices = 0;
         std::uint32_t object_flags = 0;
     };
@@ -184,10 +286,10 @@ struct Producer::Impl {
     Layout layout;
     std::array<RamRange,3> owned;
     std::vector<Instance> instances;
+    std::uint32_t placement_base = 0;
     std::array<std::vector<Command>,4> lanes;
-    std::array<std::size_t,4> counts{}, copied{};
+    std::array<std::size_t,4> counts{};
     std::vector<Command> pending;
-    std::size_t pending_count = 0;
     std::array<ListRange,4> ranges{};
     std::array<std::uint64_t,2> camera_revisions{};
     std::array<const IsleGameCameraMatrix*,2> camera_matrices{};
@@ -215,7 +317,6 @@ struct Producer::Impl {
         require(lane < 4 && counts[lane] < lanes[lane].size(), Error::extent);
         lanes[lane][counts[lane]++] = {a,b};
     }
-    void call(unsigned lane, std::uint32_t target) { command(lane,0xde000000,target); }
     void fog(unsigned lane, const Model& model, bool enable) {
         if (lane > 1) return;
         const bool transparent = lane == 1;
@@ -243,6 +344,13 @@ struct Producer::Impl {
             const auto& source = catalog.models()[m];
             require(state.nodes.size() == source.nodes.size() &&
                 state.materials.size() == instance.material_commands.size());
+            native(isle_game_model_placement(game,instance.handle,&instance.placement));
+            const auto& placement = *instance.placement;
+            const bool placement_changed = placement.revision != instance.placement_revision;
+            const float placement_x = placement.mode == ISLE_GAME_MODEL_PLACEMENT_RTS ?
+                placement.transform.scale.x : 1.0f;
+            if (placement.mode != instance.placement_mode ||
+                placement_x != instance.placement_scale_x) lists_dirty = true;
             if ((state.object_flags ^ instance.object_flags) & 1u) lists_dirty = true;
             for (std::size_t n = 0; n < state.nodes.size(); ++n) {
                 const auto& pose = state.nodes[n];
@@ -255,7 +363,8 @@ struct Producer::Impl {
                     native(isle_game_model_validate_transform(game,instance.handle,n,&local));
                 }
                 const bool parent_changed = pose.parent != no_index && instance.changed[pose.parent];
-                instance.changed[n] = !have_world || instance.pose_revisions[n] != pose.revision || parent_changed;
+                instance.changed[n] = !have_world || instance.pose_revisions[n] != pose.revision ||
+                    parent_changed || (n == 0 && placement_changed);
                 if (pose.flags != instance.flags[n] || (baked(m,n) && instance.changed[n]))
                     lists_dirty = true;
                 if (!instance.changed[n]) continue;
@@ -264,7 +373,20 @@ struct Producer::Impl {
                 hal_rotate_rpy_translate_scale_f(matrix.m,t.position.x,t.position.y,t.position.z,
                     t.rotation.x,t.rotation.y,t.rotation.z,t.scale.x,t.scale.y,t.scale.z);
                 finite(matrix);
-                instance.staged_world[n] = pose.parent == no_index ? matrix :
+                if (pose.parent == no_index) {
+                    if (placement.mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED) {
+                        WorldMatrix placement_world;
+                        const auto& p = placement.transform;
+                        if (placement.mode == ISLE_GAME_MODEL_PLACEMENT_RT)
+                            hal_rotate_rpy_translate_f(placement_world.m,p.position.x,p.position.y,p.position.z,
+                                p.rotation.x,p.rotation.y,p.rotation.z);
+                        else
+                            hal_rotate_rpy_translate_scale_f(placement_world.m,p.position.x,p.position.y,p.position.z,
+                                p.rotation.x,p.rotation.y,p.rotation.z,p.scale.x,p.scale.y,p.scale.z);
+                        finite(placement_world);
+                        instance.staged_world[n] = compose(matrix,placement_world);
+                    } else instance.staged_world[n] = matrix;
+                } else instance.staged_world[n] =
                     compose(matrix,parent_changed ? instance.staged_world[pose.parent] : instance.world[pose.parent]);
             }
             for (std::size_t i = 0; i < state.materials.size(); ++i) {
@@ -302,76 +424,24 @@ struct Producer::Impl {
                 instance.native_nodes = {nodes,count};
             }
             instance.object_flags = state.object_flags;
+            instance.placement_revision = instance.placement->revision;
+            instance.placement_mode = instance.placement->mode;
+            instance.placement_scale_x = instance.placement_mode == ISLE_GAME_MODEL_PLACEMENT_RTS ?
+                instance.placement->transform.scale.x : 1.0f;
         }
         have_world = true;
         synchronized_generation = animation.generation();
     }
-    void append_matrix(std::size_t m, std::size_t n, bool push, float parent_scale) {
-        auto& instance = instances[m];
-        require(pending_count < pending.size(),Error::extent);
-        pending[pending_count++] = {push ? 0xda380000u : 0xda380001u,
-            instance.matrices + static_cast<std::uint32_t>(n * 64)};
-        if (!baked(m,n)) return;
-        const auto& pose = animation.model(m).nodes[n].transform;
-        const auto& projection = staged_projection;
-        WorldMatrix matrix;
-        const auto x = parent_scale * pose.scale.x;
-        const auto y = pose.scale.y * parent_scale;
-        matrix.m[0][0] = projection.m[0][0] * x;
-        matrix.m[1][1] = projection.m[1][1] * y;
-        matrix.m[2][2] = projection.m[2][2] * x;
-        matrix.m[2][3] = projection.m[2][3] * x;
-        for (const auto& row : matrix.m) for (float f : row)
-            require(std::isfinite(f) && double(f * 65536.0f) >= -2147483648.0 &&
-                double(f * 65536.0f) < 2147483648.0);
-        IsleGameFixedMatrix fixed;
-        hal_mtx_f2l(matrix.m,&fixed);
-        require(pending_count + 13 <= pending.size(),Error::extent);
-        pending[pending_count++] = {0xd5000001,0};
-        // Kind44 replaces the first three combined-MVP rows. Translation row
-        // remains the freshly recalculated real modelview x projection result.
-        for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
-            pending[pending_count++] = {0xdb000000u | (row * 8 + pair * 4),
-                fixed.m[row / 2][(row % 2) * 2 + pair]};
-        for (unsigned row = 0; row < 3; ++row) for (unsigned pair = 0; pair < 2; ++pair)
-            pending[pending_count++] = {0xdb000020u | (row * 8 + pair * 4),
-                fixed.m[2 + row / 2][(row % 2) * 2 + pair]};
-    }
-    void flush(unsigned lane) {
-        while (copied[lane] < pending_count) {
-            const auto c = pending[copied[lane]++]; command(lane,c.w0,c.w1);
+    void stage_placement_payloads() {
+        std::size_t cursor = placement_base;
+        for (auto& instance : instances) {
+            const bool active = instance.placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED;
+            const auto at = active ? address(cursor) : 0;
+            if (at != instance.placement_address) lists_dirty = true;
+            instance.placement_address = at;
+            if (active) cursor += 64;
         }
-    }
-    void node(std::size_t m, std::size_t n, float parent_scale, bool deferred) {
-        const auto& source = catalog.models()[m];
-        auto& instance = instances[m];
-        const auto state = animation.model(m);
-        const auto& pose = state.nodes[n];
-        if (pose.flags & 2) return;
-        const auto saved = pending_count;
-        const bool push = pose.parent == no_index || instance.next_sibling[n] != UINT32_MAX;
-        if (!deferred && !(pose.flags & 1))
-            for (const auto& payload : source.nodes[n].payloads)
-                if (payload.pre_list) call(0,payload.pre_list);
-        append_matrix(m,n,push,parent_scale);
-        if (!deferred) flush(0);
-        if (!(pose.flags & 1)) for (const auto& payload : source.nodes[n].payloads) {
-            const auto lane = payload.display_list_id;
-            require(lane < 4);
-            if (deferred && payload.pre_list) call(lane,payload.pre_list);
-            if (deferred) flush(lane);
-            if (pose.material_count) command(lane,0xdb060038,instance.material_bases[n]);
-            call(lane,payload.draw_list);
-        }
-        const float scale = parent_scale * pose.transform.scale.x;
-        require(std::isfinite(scale));
-        for (auto child = instance.first_child[n]; child != UINT32_MAX; child = instance.next_sibling[child])
-            node(m,child,scale,deferred);
-        pending_count = saved;
-        for (unsigned lane = 0; lane < 4; ++lane) if (copied[lane] > saved) {
-            copied[lane] = saved;
-            if (push) command(lane,0xd8380002,64);
-        }
+        require(cursor <= layout.payloads.offset + layout.payloads.size,Error::extent);
     }
     void build_lists() {
         counts.fill(0);
@@ -381,8 +451,13 @@ struct Producer::Impl {
             const bool deferred = source.render_type == RenderType::d_fogged ||
                 source.render_type == RenderType::j_fogged;
             fog(0,source,true); if (deferred) fog(1,source,true);
-            copied.fill(0); pending_count = 0;
-            node(m,0,1.0f,deferred);
+            const auto& instance = instances[m];
+            HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
+                std::span(lanes[2]),std::span(lanes[3])},counts,pending};
+            const auto result = encode_hierarchy({source,animation.model(m).nodes,
+                instance.first_child,instance.next_sibling,instance.material_bases,
+                *instance.placement,staged_projection,instance.matrices,instance.placement_address},buffer);
+            if (!result) throw Failure{result};
             fog(0,source,false); if (deferred) fog(1,source,false);
         }
         std::size_t cursor = layout.lists.offset + 32;
@@ -468,11 +543,13 @@ CreateResult Producer::create(IsleGame* game, IsleGameCamera* camera, const Cata
             std::size_t native_count = 0;
             native(isle_game_model_nodes(game,instance.handle,&nodes,&native_count));
             instance.native_nodes = {nodes,native_count};
+            native(isle_game_model_placement(game,instance.handle,&instance.placement));
         }
         require(node_total == 292);
+        impl->placement_base = static_cast<std::uint32_t>(matrix_cursor);
         // Allocate maximum capacities once; prepare neither grows nor allocates.
         for (auto& lane : impl->lanes) lane.resize(layout.lists.size / 8);
-        impl->pending.resize(node_total * 14);
+        impl->pending.resize(node_total * 14 + objects.size());
         std::size_t camera_count = 0;
         native(isle_game_camera_matrix_count(game,camera,&camera_count));
         require(camera_count == 2,Error::native);
@@ -530,6 +607,7 @@ PrepareResult Producer::prepare(std::span<std::uint32_t> words, std::uint64_t ep
             disjoint(p.pending.data(),p.pending.size() * sizeof(Command));
         }
         p.stage_pose();
+        p.stage_placement_payloads();
         std::size_t camera_count = 0;
         native(isle_game_camera_matrix_count(p.game,p.camera,&camera_count));
         require(camera_count == 2,Error::native);
@@ -586,6 +664,13 @@ PrepareResult Producer::prepare(std::span<std::uint32_t> words, std::uint64_t ep
         for (std::size_t m = 0; m < p.instances.size(); ++m) {
             auto& instance = p.instances[m];
             const auto state = p.animation.model(m);
+            if (instance.placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED &&
+                (fresh || instance.resident_placement_revision != instance.placement->revision ||
+                 instance.resident_placement_address != instance.placement_address)) {
+                memory.matrix(instance.placement_address,instance.placement->fixed);
+                instance.resident_placement_revision = instance.placement->revision;
+                instance.resident_placement_address = instance.placement_address;
+            }
             for (std::size_t n = 0; n < instance.native_nodes.size(); ++n) {
                 const auto& node = instance.native_nodes[n];
                 if (fresh || instance.resident_revisions[n] != node.revision) {
@@ -627,6 +712,10 @@ std::span<const WorldMatrix> Producer::world_nodes(std::size_t model) const noex
 std::span<const IsleGameModelNode> Producer::native_nodes(std::size_t model) const noexcept {
     if (impl_->retired || !impl_->have_world || model >= impl_->instances.size()) return {};
     return impl_->instances[model].native_nodes;
+}
+IsleGameModel* Producer::native_model(std::size_t model) const noexcept {
+    if (impl_->retired || model >= impl_->instances.size()) return nullptr;
+    return impl_->instances[model].handle;
 }
 std::span<const RamRange> Producer::reservations() const noexcept { return impl_->owned; }
 void Producer::retire() noexcept { impl_->retired = true; }

@@ -53,6 +53,12 @@ private:
 // Game, camera, immutable Snapshot AND HdResources remain alive/unmoved through
 // destruction AND final canonical retirement. Calls must not overlap execution
 // or a completed-memory borrow; the caller owns that exclusion.
+// Model/object handles are private and never exposed: const node/unbaked-pose
+// borrows cannot enable placement. Every owned model stays placement-disabled;
+// only this class mutates its ordinary locals. The source photo reconstruction
+// bakes root Euler Y addition and uniform scale before fixed conversion, shared
+// unchanged by normally lit preview and both feedback passes. It is not general
+// actor placement, and needs no per-frame defensive placement getter.
 class PidgeyProducer final {
 public:
     PidgeyProducer(IsleGame* game, IsleGameCamera* camera,

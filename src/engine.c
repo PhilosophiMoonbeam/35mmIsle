@@ -797,7 +797,7 @@ static bool signed_word_range(double value) {
     return isfinite(value) && value >= -2147483648.0 && value < 2147483648.0;
 }
 
-static bool valid_model_transform(const IsleGameModelTransform* t) {
+static bool valid_model_rt_transform(const IsleGameModelTransform* t) {
     if (t == NULL) return false;
     /* Exact GAME ROM kind-28 MUL.S constant, observed at 0x80043DB0:
      * binary32 0x4422F983. Validate the same binary32 products as its casts.
@@ -808,7 +808,10 @@ static bool valid_model_transform(const IsleGameModelTransform* t) {
         signed_word_range(t->position.z * 65536.0f) &&
         signed_word_range(t->rotation.x * angle_factor) &&
         signed_word_range(t->rotation.y * angle_factor) &&
-        signed_word_range(t->rotation.z * angle_factor) &&
+        signed_word_range(t->rotation.z * angle_factor);
+}
+static bool valid_model_transform(const IsleGameModelTransform* t) {
+    return valid_model_rt_transform(t) &&
         signed_word_range(t->scale.x * 256.0f) &&
         signed_word_range(t->scale.y * 256.0f) &&
         signed_word_range(t->scale.z * 256.0f);
@@ -842,7 +845,8 @@ static void remove_model(IsleGameModel* model) {
     model->obj->data.any = NULL;
     --game->counts.models;
     game->counts.model_nodes -= model->count;
-    game->counts.matrices -= model->count;
+    game->counts.matrices -= model->count +
+        (model->placement.mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED);
     model->count = 0;
     model->alive = false;
     model->nextFree = game->free_models;
@@ -890,6 +894,9 @@ IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     model->game = game;
     model->count = count;
     model->alive = true;
+    model->placement = (IsleGameModelPlacement){
+        .mode = ISLE_GAME_MODEL_PLACEMENT_DISABLED, .transform.scale = {1, 1, 1}
+    };
     for (size_t i = 0; i < count; ++i) {
         model->nodes[i] = (IsleGameModelNode){
             .transform = initial[i].transform, .parent = initial[i].parent,
@@ -941,6 +948,59 @@ IsleGameResult isle_game_model_set_transform(IsleGame* game, IsleGameModel* mode
         same_vec3(old->scale, transform->scale)) return ISLE_GAME_OK;
     *old = *transform;
     model_dirty(model)[index] = 1;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_validate_placement(IsleGame* game, IsleGameModel* model,
+    IsleGameModelPlacementMode mode, const IsleGameModelTransform* transform) {
+    IsleGameResult result = access_model(game, model);
+    if (result != ISLE_GAME_OK) return result;
+    if (mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED) return ISLE_GAME_OK;
+    if (mode == ISLE_GAME_MODEL_PLACEMENT_RTS)
+        return valid_model_transform(transform) ? ISLE_GAME_OK : ISLE_GAME_INVALID_ARGUMENT;
+    if (mode != ISLE_GAME_MODEL_PLACEMENT_RT || transform == NULL)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    /* Never read RT's unused scale, including indeterminate source fields. */
+    return valid_model_rt_transform(transform) ? ISLE_GAME_OK : ISLE_GAME_INVALID_ARGUMENT;
+}
+
+IsleGameResult isle_game_model_set_placement(IsleGame* game, IsleGameModel* model,
+    IsleGameModelPlacementMode mode, const IsleGameModelTransform* transform) {
+    IsleGameResult result = isle_game_model_validate_placement(game, model, mode, transform);
+    if (result != ISLE_GAME_OK) return result;
+    IsleGameModelPlacement next = {
+        .mode = mode, .transform.scale = {1, 1, 1}
+    };
+    if (mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED) {
+        next.transform.position = transform->position;
+        next.transform.rotation = transform->rotation;
+        if (mode == ISLE_GAME_MODEL_PLACEMENT_RTS) next.transform.scale = transform->scale;
+    }
+    const IsleGameModelPlacement* old = &model->placement;
+    if (old->mode == mode && same_vec3(old->transform.position, next.transform.position) &&
+        same_vec3(old->transform.rotation, next.transform.rotation) &&
+        same_vec3(old->transform.scale, next.transform.scale)) return ISLE_GAME_OK;
+    const IsleGameModelTransform* t = &next.transform;
+    if (mode == ISLE_GAME_MODEL_PLACEMENT_RT)
+        hal_rotate_rpy_translate(&next.fixed, t->position.x, t->position.y, t->position.z,
+            t->rotation.x, t->rotation.y, t->rotation.z);
+    else if (mode == ISLE_GAME_MODEL_PLACEMENT_RTS)
+        hal_rotate_rpy_translate_scale(&next.fixed, t->position.x, t->position.y, t->position.z,
+            t->rotation.x, t->rotation.y, t->rotation.z, t->scale.x, t->scale.y, t->scale.z);
+    next.revision = old->revision + 1;
+    if (old->mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED) ++game->counts.matrices;
+    if (mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED) --game->counts.matrices;
+    model->placement = next;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_placement(IsleGame* game, IsleGameModel* model,
+    const IsleGameModelPlacement** output) {
+    if (output != NULL) *output = NULL;
+    IsleGameResult result = access_model(game, model);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = &model->placement;
     return ISLE_GAME_OK;
 }
 

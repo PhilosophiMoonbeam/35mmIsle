@@ -19,6 +19,11 @@ struct ProducerFrame {
 // Reusable synchronous scene pass, NOT a Beach handler. Borrows actual World
 // models/process state and the admitted full Resources. No duplicate objects,
 // player/actor substitutes, cold-image writes or independent GPU submission.
+// Public World model handles may enable native RT/RTS placement independently
+// of ordinary terrain/road/sky locals. Active placements append exactly 64 bytes
+// each after unchanged local payload addresses, admitted before writes. Root
+// placement PUSH + local NOPUSH share the existing single root pop on lane 0;
+// unused lanes remain empty. Pointer/epoch changes republish active payloads.
 class Producer final {
 public:
     Producer(IsleGame*, IsleGameCamera*, const Resources&, const World&, ProducerLayout = {},

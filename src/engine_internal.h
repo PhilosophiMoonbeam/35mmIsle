@@ -108,6 +108,7 @@ struct IsleGameModel {
     IsleGame* game;
     size_t count, capacity;
     bool alive;
+    IsleGameModelPlacement placement;
     IsleGameModelNode nodes[];
 };
 

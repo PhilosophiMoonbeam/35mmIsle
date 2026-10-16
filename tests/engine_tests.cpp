@@ -1173,6 +1173,133 @@ void model_hierarchy_math_and_cache() {
     require(world.arena.cursor == used, "model mutations allocated");
 }
 
+void model_placement_atomicity_and_lifecycle() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* replacement = object(world, 2);
+    std::array<IsleGameModelNodeInit, 4> initial{};
+    for (std::size_t i = 0; i < initial.size(); ++i)
+        initial[i] = {i ? 0u : UINT32_MAX, identity_model_transform(),
+            ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
+    initial[0].transform.position = {7, -3, 2};
+    initial[0].transform.rotation = {0.3f, -0.7f, 0.2f};
+    IsleGameModel* model = nullptr;
+    ok(isle_game_attach_model(world.game, owner, initial.data(), initial.size(), &model));
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t count = 0;
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    const std::vector<IsleGameModelNode> original(nodes, nodes + count);
+    const IsleGameModelPlacement* view = nullptr;
+    ok(isle_game_model_placement(world.game, model, &view));
+    const auto* stable = view;
+    const auto used = world.arena.cursor;
+    require(view->mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED && view->revision == 0 &&
+        view->transform.scale.x == 1 && counts(world).matrices == 4,
+        "new model did not start placement-disabled");
+    ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_DISABLED, nullptr));
+    require(view->revision == 0, "disabled no-op advanced placement revision");
+    auto t = identity_model_transform();
+    t.position = {11, -13, 17};
+    t.rotation.y = 1.57079637f;
+    t.scale = {std::numeric_limits<float>::quiet_NaN(),
+        std::numeric_limits<float>::infinity(), std::numeric_limits<float>::max()};
+    ok(isle_game_model_validate_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RT, &t));
+    require(view->revision == 0 && counts(world).matrices == 4 && world.arena.cursor == used,
+        "placement preflight published state or allocated");
+    ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RT, &t));
+    require(view == stable && view->revision == 1 && counts(world).matrices == 5 &&
+        view->transform.scale.x == 1 && view->transform.scale.y == 1 && view->transform.scale.z == 1 &&
+        fixed_lane(view->fixed, 0, 2) == -65536 && fixed_lane(view->fixed, 2, 0) == 65536 &&
+        fixed_lane(view->fixed, 3, 0) == 11 * 65536,
+        "RT consumed unused scale, lost direct RT arithmetic, moved borrow or miscounted");
+    const auto rt = *view;
+    t.scale = {-33, 0, 8388608};
+    ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RT, &t));
+    require(view->revision == rt.revision &&
+        std::memcmp(&view->fixed, &rt.fixed, sizeof(rt.fixed)) == 0,
+        "RT unused scale invalidated placement");
+    t.scale = {-2, 3.5f, 0};
+    ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RTS, &t));
+    require(view->revision == 2 && counts(world).matrices == 5 &&
+        fixed_lane(view->fixed, 0, 2) == 131072 &&
+        fixed_lane(view->fixed, 1, 1) == 229376 && fixed_lane(view->fixed, 2, 0) == 0,
+        "RTS negative/nonuniform/zero scales or enabled-mode count differ");
+    const auto accepted = *view;
+    for (unsigned channel = 0; channel < 6; ++channel) {
+        auto bad = t;
+        if (channel == 0) bad.position.x = std::numeric_limits<float>::quiet_NaN();
+        if (channel == 1) bad.position.y = 32768;
+        if (channel == 2) bad.rotation.z = std::numeric_limits<float>::infinity();
+        if (channel == 3) bad.rotation.x = std::numeric_limits<float>::max();
+        if (channel == 4) bad.scale.x = 8388608;
+        if (channel == 5) bad.scale.z = std::numeric_limits<float>::quiet_NaN();
+        require(isle_game_model_validate_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RTS, &bad) ==
+            ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RTS, &bad) ==
+            ISLE_GAME_INVALID_ARGUMENT, "invalid placement reached GAME casts");
+        require(view->revision == accepted.revision && view->mode == accepted.mode &&
+            std::memcmp(&view->fixed, &accepted.fixed, sizeof(accepted.fixed)) == 0 &&
+            std::memcmp(&view->transform, &accepted.transform, sizeof(accepted.transform)) == 0 &&
+            counts(world).matrices == 5 && world.arena.cursor == used,
+            "rejected placement partially published accepted state/counts");
+    }
+    require(engine_set_invalid_placement(world.game, model) == ISLE_GAME_INVALID_ARGUMENT &&
+        isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RT, nullptr) ==
+        ISLE_GAME_INVALID_ARGUMENT && isle_game_model_placement(world.game, model, nullptr) ==
+        ISLE_GAME_INVALID_ARGUMENT, "unknown mode or null consumed input/output accepted");
+    bool rejected_owner = false;
+    std::thread foreign([&] {
+        const IsleGameModelPlacement* output = stable;
+        rejected_owner = isle_game_model_placement(world.game, model, &output) == ISLE_GAME_WRONG_OWNER &&
+            output == nullptr &&
+            isle_game_model_validate_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RTS, &t) ==
+                ISLE_GAME_WRONG_OWNER &&
+            isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_DISABLED, nullptr) ==
+                ISLE_GAME_WRONG_OWNER;
+    });
+    foreign.join();
+    require(rejected_owner && view->revision == accepted.revision && counts(world).matrices == 5,
+        "foreign placement access mutated state");
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    for (std::size_t n = 0; n < count; ++n)
+        require(nodes[n].revision == original[n].revision &&
+            std::memcmp(&nodes[n].fixed, &original[n].fixed, sizeof(nodes[n].fixed)) == 0 &&
+            nodes[n].parent == original[n].parent && nodes[n].first_child == original[n].first_child &&
+            nodes[n].next_sibling == original[n].next_sibling,
+            "placement changed ordinary local caches or source indices");
+    auto local = initial[0].transform;
+    local.position.x += 1;
+    ok(isle_game_model_set_transform(world.game, model, 0, &local));
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    require(view->revision == accepted.revision && nodes[0].revision == original[0].revision + 1,
+        "ordinary local update dirtied placement");
+    ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_DISABLED, nullptr));
+    require(view->revision == 3 && view->transform.position.x == 0 && view->transform.rotation.y == 0 &&
+        view->transform.scale.x == 1 && counts(world).matrices == 4,
+        "disabled placement did not restore neutral metadata/count");
+    const IsleGameFixedMatrix zero{};
+    require(std::memcmp(&view->fixed, &zero, sizeof(zero)) == 0,
+        "disabled placement computed/stored an identity payload");
+    ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RTS, &t));
+    ok(isle_game_remove_model(world.game, model));
+    require(counts(world).matrices == 0 && counts(world).model_nodes == 0,
+        "active placement removal leaked/double-subtracted a matrix");
+    view = stable;
+    require(isle_game_model_placement(world.game, model, &view) == ISLE_GAME_INVALID_ARGUMENT && !view,
+        "removed placement borrow remained accessible");
+    IsleGameModel* reused = nullptr;
+    ok(isle_game_attach_model(world.game, replacement, initial.data(), 1, &reused));
+    ok(isle_game_model_placement(world.game, reused, &view));
+    require(reused == model && view == stable && view->revision == 0 &&
+        view->mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED && counts(world).matrices == 1 &&
+        world.arena.cursor == used, "smaller best-fit reuse inherited placement or allocated");
+    ok(isle_game_model_nodes(world.game, reused, &nodes, &count));
+    require(count == 1 && nodes[0].revision == 1, "capacity-tail dirty storage lost on smaller reuse");
+    ok(isle_game_model_set_placement(world.game, reused, ISLE_GAME_MODEL_PLACEMENT_RT, &t));
+    ok(isle_game_delete_object(world.game, replacement));
+    require(counts(world).matrices == 0, "reused active placement retirement leaked");
+}
+
 void model_translate_selection_and_cache() {
     World world;
     auto* owner = object(world, 1);
@@ -1387,6 +1514,10 @@ void model_deferred_delete_and_destroy() {
         IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
         IsleGameModel* model = nullptr;
         ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+        auto placement = identity_model_transform();
+        placement.position = {3, 4, 5};
+        ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RT, &placement));
+        require(counts(world).matrices == 2, "deferred owner omitted active placement");
         if (mode != 2) process(world, owner, engine_delete_self, &fixture,
                               mode == 0 ? ISLE_GAME_STACKFUL : ISLE_GAME_SYNCHRONOUS, 5);
         ok(isle_game_tick(world.game));
@@ -1400,6 +1531,8 @@ void model_deferred_delete_and_destroy() {
     IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
     IsleGameModel* model = nullptr;
     ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+    const auto placement = identity_model_transform();
+    ok(isle_game_model_set_placement(world.game, model, ISLE_GAME_MODEL_PLACEMENT_RTS, &placement));
     world.reset();
     auto live = counts(world);
     require(live.objects == 0 && live.models == 0 && live.model_nodes == 0 && live.matrices == 0,
@@ -1429,6 +1562,7 @@ int main() {
         camera_rejection_and_typed_cleanup();
         camera_exhaustion_and_reuse();
         model_hierarchy_math_and_cache();
+        model_placement_atomicity_and_lifecycle();
         model_translate_selection_and_cache();
         model_photo_bake();
         model_rejection_atomicity_and_reuse();

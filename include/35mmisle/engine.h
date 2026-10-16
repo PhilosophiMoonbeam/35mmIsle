@@ -252,6 +252,21 @@ typedef struct IsleGameVec3 { float x, y, z; } IsleGameVec3;
 typedef struct IsleGameModelTransform {
     IsleGameVec3 position, rotation, scale;
 } IsleGameModelTransform;
+/* Independent actor placement, prepended to the ordinary source root matrices.
+ * Disabled consumes no transform. RT consumes only position/rotation and stores
+ * unit scale; RTS also consumes scale. Neither changes any node-local cache.
+ */
+typedef enum IsleGameModelPlacementMode {
+    ISLE_GAME_MODEL_PLACEMENT_DISABLED = 0,
+    ISLE_GAME_MODEL_PLACEMENT_RT,
+    ISLE_GAME_MODEL_PLACEMENT_RTS
+} IsleGameModelPlacementMode;
+typedef struct IsleGameModelPlacement {
+    IsleGameModelPlacementMode mode;
+    IsleGameModelTransform transform;
+    IsleGameFixedMatrix fixed;
+    uint64_t revision;
+} IsleGameModelPlacement;
 /* Native choices, not serialized console matrix-kind numbers. Selection is
  * immutable for a node's lifetime; both use the same stable revision cache.
  */
@@ -299,6 +314,18 @@ IsleGameResult isle_game_model_set_flags(IsleGame* game, IsleGameModel* model,
     size_t index, uint32_t flags);
 IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
     const IsleGameModelNode** output, size_t* count);
+/* Pure consumed-field preflight, with the same exclusion as validate_transform.
+ * Setter eagerly computes once, then atomically publishes the complete record
+ * and live-matrix count. Identical consumed input preserves revision. Disabled
+ * stores neutral metadata/zero fixed bytes without computing an identity.
+ * The getter is nonmutating; its stable const borrow expires at model removal.
+ */
+IsleGameResult isle_game_model_validate_placement(IsleGame*, IsleGameModel*,
+    IsleGameModelPlacementMode, const IsleGameModelTransform*);
+IsleGameResult isle_game_model_set_placement(IsleGame*, IsleGameModel*,
+    IsleGameModelPlacementMode, const IsleGameModelTransform*);
+IsleGameResult isle_game_model_placement(IsleGame*, IsleGameModel*,
+    const IsleGameModelPlacement**);
 /* Alias-safe, noncumulative root-local × photo-world bake. Always pass the
  * unbaked animated root. Photo-world uniform scale is game_model_scale*0.1f.
  * Output is cleared on failure; this pure calculation has no game ownership.

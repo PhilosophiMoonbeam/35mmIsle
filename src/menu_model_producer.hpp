@@ -53,7 +53,8 @@ public:
     // borrow, native mutation, callbacks, or concurrent Runtime step. A new RAM
     // installation/replacement requires a new nonzero epoch. Resources must
     // already be installed; this never copies a cold image or immutable assets.
-    // Rejection changes neither RAM nor published native/cache/world values.
+    // Rejection changes neither RAM nor producer-published native/cache/world
+    // values. Independently accepted engine placement setters are not rolled back.
     PrepareResult prepare(std::span<std::uint32_t> word_swapped_rdram,
                           std::uint64_t exclusive_epoch) noexcept;
     // Update the native pose/world attachment view WITHOUT writing RAM, for
@@ -62,6 +63,8 @@ public:
     Status synchronize() noexcept;
     std::span<const WorldMatrix> world_nodes(std::size_t model) const noexcept;
     std::span<const IsleGameModelNode> native_nodes(std::size_t model) const noexcept;
+    // Borrowed attached model; same lifetime as this producer, no synthetic node.
+    IsleGameModel* native_model(std::size_t model) const noexcept;
     std::span<const RamRange> reservations() const noexcept;
     void retire() noexcept; // After GPU retirement; subsequent prepares reject.
 private:
@@ -80,5 +83,23 @@ struct CreateResult {
 struct MaterialCommands { std::array<Command, 32> words{}; std::size_t count = 0; };
 Status encode_material(const Material&, const animation::MaterialState&,
                        MaterialCommands& output) noexcept;
+// Shared bounded GAME hierarchy encoder used by Producer. Buffers are scratch:
+// failure may change their contents/counts, never native state or canonical RAM.
+// Caller admits child/sibling spans once: valid source indices, parent-before-
+// child and forward siblings, as Producer::create already does. No tree copies.
+struct HierarchyInput {
+    const Model& source;
+    std::span<const animation::NodeState> nodes;
+    std::span<const std::uint32_t> first_child, next_sibling, material_bases;
+    const IsleGameModelPlacement& placement;
+    const WorldMatrix& projection;
+    std::uint32_t matrices = 0, placement_address = 0;
+};
+struct HierarchyBuffer {
+    std::array<std::span<Command>,4> lanes;
+    std::array<std::size_t,4>& counts;
+    std::span<Command> pending;
+};
+Status encode_hierarchy(const HierarchyInput&, HierarchyBuffer&) noexcept;
 } // namespace isle::menu::model
 #endif

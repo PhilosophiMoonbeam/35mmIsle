@@ -31,19 +31,23 @@
   },
   "native_support": {
     "src/engine.c": {
-      "sha256": "4a189ca04a2752fa5c518c08bce650e299eb4cb926cbc82898c1c19c6c6035b7",
+      "sha256": "340bc2219d23052cc62d64282fcbc3bdc5deefeda36eb40598afb4d786822748",
+      "placement": "Embedded disabled/RT/RTS ownership; pure consumed-field preflight and eager atomic fixed/revision/count publication. RT never reads unused scale; disabled has no identity compute. Removal/deferred retirement and capacity-based best-fit reuse retain source local indices/caches and reset placement independently.",
       "use": "Original actual-size native camera/model ownership and typed validation; atomic compute-all stages dirty native matrix/reflection/normalization payloads with no partial publication on failure, sharing exact math with individual getters. Kind8 exact GAME look-at-roll validates its consumed fixed Y-up basis independently of unused finite look_at.up; basic6/reflection14 and mixed cameras validate their consumed supplied up, including atomic matrix-attachment rejection. Finite radians and selective eye/at/roll dirtying without kind8 reflection output. Pure model transform preflight, immutable per-node RTS/translate and exact direct GAME hal_translate; numeric RCP light values and photo-world concatenation. Native source object/update metadata and once-only retirement callback after all process joins/payload removals and before node reuse keep generic scene userdata/queues alive through real deferred deletion. Typed one-argument GAME process entries are called directly through their original function identity, separately from synchronous/stackful dispatch adapters and native two-argument contexts; exact-identity ending follows GAME items.c:69-85 using existing OM lists, arena reuse and joined continuation retirement. No SDK implementation."
     },
     "src/engine_math.h": {
-      "sha256": "ceed2ef41d8398c57c1532a63c825a21942fb2aeb2bea6597e38895866e3f782",
+      "sha256": "f787efabd60986b97387afa7927ba8bdd608666b4539de7ec51aab92224038fa",
+      "placement": "Direct exact own-GAME RT fixed/floating declarations, sharing already defined MIPS multiplication/shift/packing and existing float RPY helper; not RTS with redundant unit-scale multiplication.",
       "use": "Original native matrix/Vec3f/public RCP light numeric seams and checked signed-1.7 conversion; direct GAME hal_look_at_roll_f and hal_translate declarations, C libm binary32 roll trig and shared exact GAME vector rotation, defined MIPS arithmetic. No SDK union, opaque tail/layout import or suppression."
     },
     "src/engine_internal.h": {
-      "sha256": "2b0a81b6468456f9fee25c5faa4c4c447b7684a5898d914f764b72552d2d1656",
+      "sha256": "8231ab49ae0fdbca234d195bfd7be4d318743fce33a31380a4702aa768aa0785",
+      "placement": "One embedded accepted placement record, no separate registry/allocation, no engine floating-world cache and no synthetic DObj/node.",
       "use": "Original actual-size camera/matrix/reflection/model native payload ownership, object retirement callback/userdata and bounded arena free lists, not console or SDK ownership layouts. Native updateUser is distinct from GAME entity userData; allocation and object reuse clear both, and callback replacement preserves actor payload. Process function is the actual callable IsleGameSourceCallback, distinct from native two-argument entry/user and scheduler adapter; zero-initialized arena reuse clears identities."
     },
     "include/35mmisle/engine.h": {
-      "sha256": "cfb7c5e9a1ba74421dbd70bc61e4f8a64a830e0e3ca2d3ce4b24ae0f4ca1a23f",
+      "sha256": "9ddd2237a96af923213652abf00ee995b8f994d3a41587c30c76fb77a37d4348",
+      "placement": "Typed native placement enum/record plus validate/set/stable nonmutating view. Explicit separate setter transaction, neutral disabled metadata and independent source-local cache lifetime.",
       "use": "Native C camera kinds 3/6/8/14 and model ABI with atomic dirty-camera compute-all, finite-radians kind8 fixed-Y-up roll and selective caching, no kind8 reflection fabrication, pure model transform validation, explicit immutable per-node RTS/translate selection and stable revisions. Basic6 roll independence and source kind14 math semantics remain unchanged. Public native object/update metadata, joined/deferred retirement callback and promoted one-source command pool/FIFO/custom-handler API expose no SDK layouts or compatibility aliases. Typed GAME one-argument process creation, original callable identity observation and exact-function ending share existing native OM kind/priority/retirement semantics without callback casts or a parallel registry/scheduler."
     }
   },
@@ -455,6 +459,70 @@
       "source_sha256": "d9d21e1e5f49fa9c49353519fe33005ffb35976a135ccdaaebb9f4be2d82f88e",
       "native_sha256": "d9d21e1e5f49fa9c49353519fe33005ffb35976a135ccdaaebb9f4be2d82f88e",
       "changes": []
+    },
+    {
+      "symbol": "hal_rotate_rpy_translate_f",
+      "path": "src/sys/matrix.c",
+      "first": 1229,
+      "last": 1234,
+      "source_sha256": "356ef927bab1ec56d5a7065d132c62f381ec4bbcf6f8c0cd320dd591d4c3a040",
+      "native_sha256": "356ef927bab1ec56d5a7065d132c62f381ec4bbcf6f8c0cd320dd591d4c3a040",
+      "changes": []
+    },
+    {
+      "symbol": "hal_rotate_rpy_translate",
+      "path": "src/sys/matrix.c",
+      "first": 1236,
+      "last": 1287,
+      "source_sha256": "0dc7fcad9c66eaab3771a4e5f2264c2800c30e362b947a9a1c0603150b1079dd",
+      "native_sha256": "1d1e51d258e5bc8eed55155816b7d196efed6c4f2e47f69886764d818ff7627e",
+      "changes": [
+        {
+          "find": "e1 = (cosp * cosy) >> 14;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(cosp, cosy), 14);",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e2 = (cosp * siny) >> 14;",
+          "replace": "e2 = (u32) isle_game_mips_sar(isle_game_mips_mul(cosp, siny), 14);",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e1 = -sinp * 2;",
+          "replace": "e1 = (u32) isle_game_mips_mul(-sinp, 2);",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e1 = ((((sinr * sinp) >> 15) * cosy) >> 14) - ((cosr * siny) >> 14);",
+          "replace": "e1 = (u32) (isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(sinr, sinp), 15), cosy), 14) - isle_game_mips_sar(isle_game_mips_mul(cosr, siny), 14));",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e2 = ((((sinr * sinp) >> 15) * siny) >> 14) + ((cosr * cosy) >> 14);",
+          "replace": "e2 = (u32) (isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(sinr, sinp), 15), siny), 14) + isle_game_mips_sar(isle_game_mips_mul(cosr, cosy), 14));",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e1 = (sinr * cosp) >> 14;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(sinr, cosp), 14);",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e1 = ((((cosr * sinp) >> 15) * cosy) >> 14) + ((sinr * siny) >> 14);",
+          "replace": "e1 = (u32) (isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosr, sinp), 15), cosy), 14) + isle_game_mips_sar(isle_game_mips_mul(sinr, siny), 14));",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e2 = ((((cosr * sinp) >> 15) * siny) >> 14) - ((sinr * cosy) >> 14);",
+          "replace": "e2 = (u32) (isle_game_mips_sar(isle_game_mips_mul(isle_game_mips_sar(isle_game_mips_mul(cosr, sinp), 15), siny), 14) - isle_game_mips_sar(isle_game_mips_mul(sinr, cosy), 14));",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        },
+        {
+          "find": "e1 = (cosr * cosp) >> 14;",
+          "replace": "e1 = (u32) isle_game_mips_sar(isle_game_mips_mul(cosr, cosp), 14);",
+          "reason": "Defined MIPS low-word multiplication, arithmetic shifts and unsigned fixed packing; trigonometric sums/differences remain in signed-word range."
+        }
+      ]
     },
     {
       "symbol": "hal_rotate_rpy_translate_scale_f",

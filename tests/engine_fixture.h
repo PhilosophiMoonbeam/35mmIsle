@@ -39,6 +39,7 @@ IsleGameResult engine_add_camera_matrix_with_invalid_kind(IsleGame* game, IsleGa
 IsleGameResult engine_attach_model_with_invalid_kind(IsleGame* game, IsleGameObject* owner,
                                                      const IsleGameModelNodeInit nodes[2],
                                                      IsleGameModel** model);
+IsleGameResult engine_set_invalid_placement(IsleGame* game, IsleGameModel* model);
 void engine_bind_actor_payload(IsleGameObject* object, int* payload);
 void engine_actor_context_update(IsleGameObject* object, void* user);
 IsleGameResult engine_replace_actor_update(IsleGame* game, IsleGameObject* object, int* context);

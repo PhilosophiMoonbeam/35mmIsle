@@ -1,5 +1,6 @@
 #include "beach_actor_resources.hpp"
 #include "source_matrix_configuration.hpp"
+#include "model_data_decoder.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -66,7 +67,7 @@ constexpr std::array<std::uint32_t, 79> header_identities{
     0x802cdb84,0x802cdbac,0x802cdbc0,0x802cdbd4,0x802cdbe8,
     0x802cdbfc,0x802cdc10,0x802ce070,0x80388310,
 };
-struct MaterialExtent { std::uint32_t material, table; std::size_t images, slots; };
+using model_assets::MaterialExtent;
 constexpr std::array<MaterialExtent, 33> material_extents{{
     {0x800eb520,0x0,0,0},
     {0x800f07b8,0x800f07b0,1,1},
@@ -140,118 +141,9 @@ struct ActorResourceBuilder {
     ActorResources& out;
     const model_assets::Reader& reader;
     FogProfile fog;
+    model_assets::DataDecoder decoder{reader,out.materials_,out.animations_,material_extents};
     rom::GuestView at(std::uint32_t address, std::size_t bytes, std::size_t alignment = 4) const {
         return reader.view(address,bytes,alignment);
-    }
-    std::size_t material(std::uint32_t address) {
-        for (std::size_t i=0; i<out.materials_.size(); ++i)
-            if (out.materials_[i].wire.guest_address==address) return i;
-        const auto fact = std::find_if(material_extents.begin(),material_extents.end(),
-            [address](const auto& f) { return f.material==address; });
-        require(fact!=material_extents.end(),"Unknown actor Texture identity",address);
-        menu::Material result{};
-        result.wire=at(address,0x78);
-        const auto& w=result.wire;
-        result.format=w.u8(2); result.size_code=w.u8(3);
-        result.scale=w.u16(8); result.image_origin=w.u16(10);
-        result.width=w.u16(12); result.height=w.u16(14);
-        result.flags=w.u16(48); result.auxiliary_format=w.u8(50); result.auxiliary_size_code=w.u8(51);
-        result.block_width=w.u16(52); result.block_height=w.u16(54);
-        result.auxiliary_width=w.u16(56); result.auxiliary_height=w.u16(58);
-        constexpr std::array<std::size_t,9> offsets{20,24,28,32,36,40,60,64,68};
-        for (std::size_t i=0; i<offsets.size(); ++i) result.parameters[i]=finite(w,offsets[i]);
-        for (std::size_t i=0; i<10; ++i) result.color_and_trailing_words[i]=w.u32(80+i*4);
-        require(result.format<=4 && result.size_code<=3 && result.auxiliary_format<=4 &&
-                result.auxiliary_size_code<=3 && w.u32(44)==0 && !(result.flags&4),
-                "Malformed actor Texture/palette ownership",address);
-        require(w.u32(4)==fact->table,"Actor image table identity mismatch",address);
-        if (fact->slots) {
-            result.image_table=at(fact->table,fact->slots*4);
-            result.images.reserve(fact->images);
-            for (std::size_t i=0; i<fact->images; ++i) {
-                const auto image=result.image_table.u32(i*4);
-                at(image,1,8); result.images.push_back(image);
-            }
-            for (std::size_t i=fact->images; i<fact->slots; ++i)
-                require(result.image_table.u32(i*4)==0,"Actor image NULL padding mismatch",address);
-        } else require(!(result.flags&0x17),"NULL images cannot supply image/palette-emitting Texture flags",address);
-        require(!(result.flags&0x10) || result.images.size()>=2,"LOD Texture lacks adjacent images",address);
-        out.materials_.push_back(std::move(result));
-        return out.materials_.size()-1;
-    }
-    std::size_t animation(std::uint32_t address, menu::AnimationKind kind) {
-        if (!address) return actor_no_index;
-        for (std::size_t i=0; i<out.animations_.size(); ++i)
-            if (out.animations_[i].wire.guest_address==address && out.animations_[i].kind==kind) return i;
-        menu::Animation result{}; result.kind=kind;
-        result.callback_installed=kind==menu::AnimationKind::model;
-        const std::size_t limit=kind==menu::AnimationKind::model ? 178 : 67;
-        result.commands.reserve(16);
-        std::size_t bytes=0, positive_wait=0;
-        for (std::size_t i=0; ; ++i) {
-            require(i<limit,"Actor animation exceeds exact admitted framing bound",address);
-            const auto head=at(address+static_cast<std::uint32_t>(bytes),4);
-            const auto word=head.u32(0), opcode=word>>25, mask=(word>>15)&1023u, duration=word&32767u;
-            const auto count=static_cast<std::size_t>(std::popcount(mask));
-            std::size_t words=1; bool floats=false, adds_wait=false;
-            switch (opcode) {
-            case 0: require(word==0,"Malformed actor END",head.guest_address); break;
-            case 2: require(mask==0,"Malformed actor WAIT",head.guest_address); adds_wait=true; break;
-            case 3: case 4: case 7: case 8: case 9: case 10: case 11:
-                words+=count; floats=true; adds_wait=opcode==3 || opcode==8 || opcode==10; break;
-            case 5: case 6: words+=count*2; floats=true; adds_wait=opcode==5; break;
-            case 12: break;
-            case 14:
-                require(mask==0 && duration==0,"Malformed actor SET_ANIMATION",head.guest_address);
-                words=2; break;
-            case 15: case 16:
-                require(kind==menu::AnimationKind::model,"Model-only actor command",head.guest_address);
-                adds_wait=true; break;
-            case 18: case 19: case 20: case 21:
-                require(kind==menu::AnimationKind::texture && !(mask&~31u),
-                        "Invalid actor packed-color mask",head.guest_address);
-                words+=count; adds_wait=opcode==18 || opcode==20; break;
-            default: throw std::runtime_error("Unadmitted actor animation opcode at guest "+std::to_string(head.guest_address));
-            }
-            const auto wire=at(head.guest_address,words*4);
-            if (floats) for (std::size_t j=1; j<words; ++j) finite(wire,j*4);
-            result.commands.push_back({wire,static_cast<std::uint8_t>(opcode),
-                static_cast<std::uint16_t>(mask),static_cast<std::uint16_t>(duration)});
-            bytes+=words*4;
-            if (adds_wait) positive_wait+=duration;
-            if (!opcode) break;
-            if (opcode==14) {
-                // Every admitted actor stream is contiguous and cycles to its
-                // own framed entry. No JUMP1/interior/pointer guess is admitted.
-                require(wire.u32(4)==address && positive_wait>0,
-                        "Actor cycle lacks framed entry/positive wait",wire.guest_address);
-                break;
-            }
-        }
-        result.wire=at(address,bytes);
-        out.animations_.push_back(std::move(result));
-        return out.animations_.size()-1;
-    }
-    void validate_material_animation(std::size_t stream, std::size_t material_index) const {
-        if (stream==actor_no_index) return;
-        const auto& material=out.materials_[material_index];
-        for (const auto& command:out.animations_[stream].commands) {
-            if (command.opcode<3 || command.opcode>11) continue;
-            std::size_t operand=1;
-            for (unsigned bit=0; bit<10; ++bit) if (command.mask&(1u<<bit)) {
-                if (bit==0 || bit==5) {
-                    const auto value=std::trunc(finite(command.wire,operand*4));
-                    require((command.opcode==3 || command.opcode==4 || command.opcode==10 || command.opcode==11) &&
-                            value>=0 && value<static_cast<double>(material.images.size()),
-                            "Actor image channel escapes bounded image entries",command.wire.guest_address);
-                    // LINEAR endpoints and the source initial zero are in the
-                    // domain; STEP is exact. No cubic/rate image assumption.
-                }
-                require(bit!=9,"Unexpected dynamic actor palette channel",command.wire.guest_address);
-                require(bit!=8 || !(material.flags&0x10),"Unadmitted animated actor LOD",command.wire.guest_address);
-                operand+=(command.opcode==5 || command.opcode==6) ? 2 : 1;
-            }
-        }
     }
     void model(const ActorFact& fact) {
         ActorInitialization initialization{};
@@ -271,52 +163,10 @@ struct ActorResourceBuilder {
                 !setup.transition_graph_identity,"Unexpected actor setup identities",setup.wire.guest_address);
         initialization.animations_enabled=setup.wire.u32(0)!=0;
         require(initialization.animations_enabled==(fact.header_count!=0),"Actor setup/header domain mismatch",fact.initialization);
-        menu::Model result{}; result.render_type=render_type(initialization.render_callback_identity);
+        auto result=decoder.model(w.u32(0),w.u32(4),fact.nodes,render_type(initialization.render_callback_identity));
         result.animation_speed=0; // Disabled1005 has no header; enabled models get actual initial speed below.
         result.matrix_kinds=menu::model::select_source_matrix_kinds(initialization.flags,initialization.configured_matrix_kinds);
         result.fog_rgb=fog.rgb; result.fog_min=fog.min; result.fog_max=fog.max;
-        result.tree=at(w.u32(0),(fact.nodes+1)*44); result.nodes.reserve(fact.nodes);
-        if (w.u32(4)) result.material_table=at(w.u32(4),fact.nodes*4);
-        std::array<std::size_t,18> ancestors; ancestors.fill(actor_no_index);
-        for (std::size_t i=0; i<fact.nodes; ++i) {
-            menu::Node node{}; node.wire=at(w.u32(0)+static_cast<std::uint32_t>(i*44),44);
-            node.depth_flags=node.wire.u32(0); const auto depth=node.depth_flags&4095u;
-            require(depth<18 && !(node.depth_flags&0xffff0000u) && ((depth==0)==(i==0)),
-                    "Malformed actor tree depth",node.wire.guest_address);
-            if (depth) { node.parent=ancestors[depth-1]; require(node.parent!=actor_no_index,"Orphan actor node",node.wire.guest_address); }
-            ancestors[depth]=i;
-            for (std::size_t d=depth+1; d<ancestors.size(); ++d) ancestors[d]=actor_no_index;
-            node.position=vector3(node.wire,8); node.rotation=vector3(node.wire,20); node.scale=vector3(node.wire,32);
-            if (const auto payload=node.wire.u32(4)) {
-                if (result.render_type==menu::RenderType::b || result.render_type==menu::RenderType::b_fogged)
-                    node.payloads.push_back({{},0,0,payload});
-                else if (result.render_type==menu::RenderType::i_fogged) {
-                    const auto p=at(payload,8); node.payloads.push_back({p,0,p.u32(0),p.u32(4)});
-                } else {
-                    const std::size_t stride=result.render_type==menu::RenderType::d_fogged ? 8 : 12;
-                    for (std::size_t j=0; ; ++j) {
-                        require(j<5,"Actor payload lacks bounded lane sentinel",payload);
-                        const auto p=at(payload+static_cast<std::uint32_t>(j*stride),stride);
-                        const auto id=p.u32(0);
-                        if (id==4) break;
-                        require(id<4,"Unknown actor model lane",p.guest_address);
-                        node.payloads.push_back({p,id,stride==12 ? p.u32(4) : 0,p.u32(stride==12 ? 8 : 4)});
-                    }
-                }
-            }
-            if (!result.material_table.bytes.empty()) if (const auto list=result.material_table.u32(i*4)) {
-                for (std::size_t j=0; ; ++j) {
-                    require(j<4,"Actor attachment list exceeds exact maximum3 plus NULL",list);
-                    const auto target=at(list+static_cast<std::uint32_t>(j*4),4).u32(0);
-                    if (!target) break;
-                    node.materials.push_back(material(target));
-                }
-            }
-            result.nodes.push_back(std::move(node));
-        }
-        require(result.tree.u32(fact.nodes*44)==18,"Actor tree missing source sentinel",w.u32(0));
-        for (std::size_t i=4; i<44; i+=4)
-            require(result.tree.u32(fact.nodes*44+i)==0,"Actor sentinel contains unrelated fields",w.u32(0));
         initialization.model=out.models_.size();
         out.models_.push_back(std::move(result)); out.initializations_.push_back(std::move(initialization));
         out.visibility_.emplace_back(fact.nodes,std::uint8_t{1});
@@ -339,7 +189,7 @@ struct ActorResourceBuilder {
         for (std::size_t i=0; i<model.nodes.size(); ++i) {
             const auto& node=model.nodes[i]; ActorNodeBinding binding{};
             if (!header.model_animation_table.bytes.empty())
-                binding.model_animation=animation(header.model_animation_table.u32(i*4),menu::AnimationKind::model);
+                binding.model_animation=decoder.animation(header.model_animation_table.u32(i*4),menu::AnimationKind::model);
             if (binding.model_animation!=actor_no_index) for (const auto& command:out.animations_[binding.model_animation].commands) {
                 if (command.opcode==15)
                     out.visibility_[initialization.model][i]|=static_cast<std::uint8_t>(1u<<(command.mask&3u));
@@ -353,8 +203,8 @@ struct ActorResourceBuilder {
                 binding.material_animation_table=at(list,node.materials.size()*4);
                 binding.material_animations.reserve(node.materials.size());
                 for (std::size_t j=0; j<node.materials.size(); ++j) {
-                    const auto stream=animation(binding.material_animation_table.u32(j*4),menu::AnimationKind::texture);
-                    validate_material_animation(stream,node.materials[j]);
+                    const auto stream=decoder.animation(binding.material_animation_table.u32(j*4),menu::AnimationKind::texture);
+                    decoder.validate_material_animation(stream,node.materials[j]);
                     binding.material_animations.push_back(stream); // NULL preserves this slot, never terminates.
                 }
             }

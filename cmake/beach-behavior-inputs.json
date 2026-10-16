@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "issue": "bd_35mmIsle-v4u.10.7.23.3.11.2",
+  "use": "Constructor-only immutable isle::beach::BehaviorResources over the retained unmoved admitted Snapshot. Complete data/reference closure across all thirteen Beach behavior source files and the initialized common control graph, not merely factory/initial-state inventory. Guest function identities are data only. No native callback binding, graph interpreter/admission, guest installation, scheduling, actor FSM, rendering or full-port completion claim.",
+  "rom": {
+    "size": 16777216,
+    "canonical_order": "big-endian z64",
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf"
+  },
+  "source_authority": "Exact immutable own-GAME source stage from git archive/ls-tree at the revision above; never dirty decomp, SDK producer source/header/layout or disassembly. Initialized values are borrowed at construction from the admitted original image, not serialized into public native code or tests.",
+  "source_files": {
+    "include/common_structs.h": {"git_blob":"2f1b52e408dd916f2e002a5efc252684a8bcf6fe","sha256":"bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509"},
+    "src/app_level/pokemon.c": {"git_blob":"ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e","sha256":"fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181"},
+    "src/app_level/4FE330.c": {"git_blob":"442eb2428ed369706fe2f0520e3b9d8834b2bb60","sha256":"05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761"},
+    "src/beach/beach.h": {"git_blob":"0aad5edbe49cd130449874b9b3b55941d3b73042","sha256":"a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc"},
+    "src/beach/55C110.c": {"git_blob":"213859dc00eab1f498c4f76d15fa3aba7bda6656","sha256":"e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77"},
+    "src/beach/55D690.c": {"git_blob":"fb11aab89391a0f904c213fc839aed697d5a5217","sha256":"74e5c8357f3a68f449f9404df2cbaa0d991a52e7904601f9d4ca0240844268c8"},
+    "src/beach/55DCD0.c": {"git_blob":"551a8f0db19547b7a4ceb47564f47e4badbccbb5","sha256":"68cddfc1b6e0bfe09b0b4768eb369e2dff173ac96bf8690a7aff4ad3bf7b0e1f"},
+    "src/beach/55F350.c": {"git_blob":"cf84fff65ff498e43e41580d2183bf61731983ae","sha256":"d25b732838514af48633add85309e475d2301e5f22d3c464155a0316ab470aab"},
+    "src/beach/55FB80.c": {"git_blob":"c7371561341ca5f9fd4de5a38d87b257b54dc6d3","sha256":"abf4de0e0299169ad63734142446444e509b1b608caec2291e16799f7f56c736"},
+    "src/beach/560320.c": {"git_blob":"88f761d674edcb80e50305bc0be70d960693ed25","sha256":"99f3e4ed91755b6db8ae29ddb7cf86393c539e5ec91e9251ba79dd1208530735"},
+    "src/beach/560620.c": {"git_blob":"fe72abeb5b19efe52bf00af9aa8871f52f3d4dd3","sha256":"8c0e9f0847ba8e0575315fa20ac9444529ea1a32ba8cf5ee0d917c3683ece8ce"},
+    "src/beach/560E20.c": {"git_blob":"89d62631f7b7e1111bb90ced6b09d9a6c7fe9436","sha256":"d3ada3eb7725e463c254e6875b3c6e0846902607960236ed4bec75f2274f7357"},
+    "src/beach/5612B0.c": {"git_blob":"6b3a78bf8fdb4b8611ee96ed6c16ef43303ab89c","sha256":"dc9841f64bbb87712c3e3606e12ecc4a1be36341671e8d8155a98d5f8074f74e"},
+    "src/beach/561B30.c": {"git_blob":"e0329cbddc9476e5d18c78c957e055f8eec9726f","sha256":"4d0babdf0b9a78f98d8238f4bec79c1d37437a050e15356d8579aba7212dee21"},
+    "src/beach/562110.c": {"git_blob":"5400237edae3bca52598b4769abfdc1505b23a40","sha256":"674f43396195db5eb464e52c4bbb20866b0c1068e340f0700cd6fddfecfb8064"},
+    "src/beach/562370.c": {"git_blob":"1326b4fd120353bbe005b8bfa8eeddd3da9228b4","sha256":"c45b29e4a8e0980c096b5f46c1388fff50430a52b10d064c59c57d6839ff6085"},
+    "src/beach/562BC0.c": {"git_blob":"c67645665414dfe2a93cbcb038bfb06dd34e46ec","sha256":"f68a107400ca34dab410dd9cb7b0672afffd76131b2e31719e40bfcbb33cbb5e"},
+    "src/beach/563000.c": {"git_blob":"6767e7be06fbd22d95feb129ecd07c08db108d2e","sha256":"d93896a020941a8222cc58132e2c83951f05f36840a6ca2a4a1cce967d1651ff"}
+  },
+  "typed_reader": "Existing model_assets::Reader; only the exact existing initialized-record mappings below. No duplicated raw reader, parser change, code mapping, guest executable installation or native function cast.",
+  "initialized_mappings": [
+    {"guest_begin":"0x802cbe10","rom_begin":"0x563e80","bytes":"0x22e0"},
+    {"guest_begin":"0x80388310","rom_begin":"0x528720","bytes":"0x90"}
+  ],
+  "semantic_authority": {
+    "graph_fields": "include/common_structs.h:10-15: signed32 command@0, guest uint32 state identity@4, float32 value@8, guest uint32 aux identity@12, source initialized-record stride16. These offsets describe bounded own-GAME initialized data, not a native object ABI.",
+    "graph_iteration": "src/app_level/pokemon.c:630-720 and1806-2064: preserve original order, NULL/NULL live entries, strict thresholds and cmd58 terminal. Discrete command matching is first-match except source cmd19 retains its last match. Native data admission/interpreter policy and cmd16 undefined interactionDist are excluded.",
+    "graph_terminal": "Stop on command58; retain the original full16-byte terminal view but do not decode or constrain terminal state/value/aux fields.",
+    "random_state": "include/common_structs.h:192-195; src/app_level/pokemon.c:265-288: source stride8, signed32 weight@0, guest uint32 state identity@4. NULL state alone terminates. Sum live weights in signed32 domain; total positive and nonnegative live weights admit the actual cumulative first sum>draw half-open selection. Do not consume or restrict terminal weight.",
+    "scene_random_state2": "include/common_structs.h:197-200; src/beach/beach.h:20; src/beach/55C110.c:39-65: distinct stride8, uint8 weight@0, guest uint32 function identity@4; bytes1..3 unused. Exactly2 entries, NO sentinel. Include NULL function as a legitimate weighted no-spawn outcome in total. Scene Magikarp-active gate belongs to native scene owner, not this resource."
+  },
+  "closure": {
+    "counts": {"beach_graphs":70,"common_graphs":1,"weighted_state_lists":8,"scene_choosers":1,"scene_choices":2},
+    "method": "Read every full body of all thirteen behavior files below, not truncated top-N results. Crossed every graph reference against beach.h declarations; included C-local802cd064 and copied initializer802cd438; common initialized graph80388324 is retained even though current common state controls publish NULL graphs. Catalogs use ascending initialized guest identity; graph/list entries retain source wire order.",
+    "groups": [
+      {"file":"src/beach/55D690.c","full_body_span":[1,175],"header_spans":[[40,44]],"graph_reference_lines":[31,47,51,61,97,119,141],"graphs":["0x802cc1d4","0x802cc234","0x802cc264","0x802cc294"],"weighted_reference_lines":[33,53],"weighted_states":["0x802cc2c4"]},
+      {"file":"src/beach/55DCD0.c","full_body_span":[1,607],"header_spans":[[56,78]],"graph_reference_lines":[73,85,116,121,132,137,169,191,198,204,233,262,289,338,368,380,405,429,438,449,459,473,500,517,528,542,565,582],"graphs":["0x802cc40c","0x802cc4c4","0x802cc4f4","0x802cc524","0x802cc564","0x802cc594","0x802cc5c4","0x802cc644","0x802cc6b4","0x802cc6e4","0x802cc714","0x802cc784","0x802cc7b4","0x802cc7e4","0x802cc804","0x802cc824","0x802cc854","0x802cc874","0x802cc8a4","0x802cc8d4","0x802cc904","0x802cc934"],"weighted_reference_lines":[75,90,123,140,171,206,235,265],"weighted_states":["0x802cc4ac"]},
+      {"file":"src/beach/55F350.c","full_body_span":[1,207],"header_spans":[[85,94]],"graph_reference_lines":[26,38,63,74,96,121,139,166,189,200],"graphs":["0x802cca10","0x802ccab8","0x802ccae8","0x802ccb28","0x802ccba8","0x802ccbf8","0x802ccc28","0x802ccc68","0x802ccca8"],"weighted_reference_lines":[28,43,126],"weighted_states":["0x802ccaa0"]},
+      {"file":"src/beach/55FB80.c","full_body_span":[1,204],"header_spans":[[99,99],[106,106]],"graph_reference_lines":[29,33,60,113],"graphs":["0x802ccd60","0x802cce1c"],"weighted_states":[]},
+      {"file":"src/beach/560320.c","full_body_span":[1,75],"header_spans":[[113,114]],"graph_reference_lines":[14,27,37],"graphs":["0x802ccf14","0x802ccf44"],"weighted_states":[]},
+      {"file":"src/beach/560620.c","full_body_span":[1,236],"header_spans":[[120,124]],"local_declaration_span":[121,122],"graph_reference_lines":[30,45,48,51,55,78,136,139,143,147,212,225],"graphs":["0x802cd010","0x802cd040","0x802cd064","0x802cd0b4","0x802cd0e4"],"weighted_states":[]},
+      {"file":"src/beach/560E20.c","full_body_span":[1,120],"header_spans":[[132,133]],"graph_reference_lines":[35,39,51,54,57,61,64],"graphs":["0x802cd1e4","0x802cd214"],"weighted_states":[]},
+      {"file":"src/beach/5612B0.c","full_body_span":[1,221],"header_spans":[[144,152]],"copied_template_span":[46,57],"graph_reference_lines":[30,51,53,93,105,130,141,163,169,197],"graphs":["0x802cd35c","0x802cd3f8","0x802cd438","0x802cd478","0x802cd4a8","0x802cd4e8","0x802cd518"],"weighted_reference_lines":[95,110,171],"weighted_states":["0x802cd3dc"]},
+      {"file":"src/beach/561B30.c","full_body_span":[1,165],"header_spans":[[161,166]],"graph_reference_lines":[13,23,33,70,99,120,148],"graphs":["0x802cd634","0x802cd694","0x802cd6c4","0x802cd6f4"],"weighted_reference_lines":[15,25,35,72,150],"weighted_states":["0x802cd764","0x802cd774"]},
+      {"file":"src/beach/562110.c","full_body_span":[1,59],"header_spans":[[170,171]],"graph_reference_lines":[24],"graphs":["0x802cd858"],"weighted_reference_lines":[30],"weighted_states":["0x802cd8b8"]},
+      {"file":"src/beach/562370.c","full_body_span":[1,186],"header_spans":[[180,180]],"graph_reference_lines":[67],"graphs":["0x802cd9d8"],"weighted_states":[]},
+      {"file":"src/beach/562BC0.c","full_body_span":[1,119],"header_spans":[[194,196]],"graph_reference_lines":[42,70,89,93],"graphs":["0x802cdc60","0x802cdc80","0x802cdca0"],"weighted_states":[]},
+      {"file":"src/beach/563000.c","full_body_span":[1,368],"header_spans":[[197,205]],"graph_reference_lines":[14,45,101,112,123,134,159,172,180,186,243,246,251,258,261,263,315,318,321,331],"graphs":["0x802cdcd0","0x802cdd40","0x802cdd80","0x802cde48","0x802cde78","0x802cdef8","0x802cdf98","0x802cdfd8"],"weighted_reference_lines":[103,114,125],"weighted_states":["0x802cde30"]},
+      {"file":"src/app_level/4FE330.c","full_body_span":[1,195],"initialized_graph_span":[23,25],"graphs":["0x80388324"],"weighted_states":[]}
+    ],
+    "scene_chooser": {"identity":"0x802cc004","source_span":"src/beach/55C110.c:39-65","declaration":"src/beach/beach.h:20","entry_count":2}
+  },
+  "lifetime_and_provenance": {
+    "owners": "Noncopyable/nonmovable resource owner; rvalue Snapshot construction deleted; every accessor/lookup requires the original Snapshot still owns the same canonical storage. Caller must not destroy Snapshot before resources or borrowed views. Destroyed-owner detection is not claimed.",
+    "views": "Each graph/list, each live record, and full original sentinel retain exact immutable Snapshot byte pointers, guest address, ROM offset and mapped extent. Scene chooser retains both original records. Aliases remain original borrowed storage, including equivalent/overlapping source tails; no source span is copied or installed.",
+    "bounds": "Sentinel walks stop at the actual remaining complete records in their finite admitted initialized mapping, not arbitrary scan/traversal caps. Every read uses model_assets::Reader and GuestView scalar bounds. Unknown, NULL, interior and misaligned lookup identities throw out_of_range; moved-from Snapshot access throws runtime_error."
+  },
+  "native_files": ["src/beach_behavior_resources.hpp","src/beach_behavior_resources.cpp","tests/beach_behavior_resources_rom_smoke.cpp","cmake/beach-behavior-inputs.json"],
+  "native_support": {
+    "src/beach_behavior_resources.hpp": {
+      "sha256": "02cb1d605e0c00cce92bfb217aae41895dd8d86cb7aa39156388a332ca08855e"
+    },
+    "src/beach_behavior_resources.cpp": {
+      "sha256": "6ec8fee30d58adfe3bea46823e0519e10315e157df7b225fdd578d5d75d1a7b5"
+    },
+    "tests/beach_behavior_resources_rom_smoke.cpp": {
+      "sha256": "ff612625d6372c5548440b5a74893198e7c152a544742635edba9daf6a0ef4a7"
+    },
+    "src/model_asset_closure.hpp": {
+      "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
+    },
+    "src/model_asset_closure.cpp": {
+      "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
+    }
+  },
+  "integration": {
+    "resource_target": "Under if(TARGET isle-rom-snapshot), adjacent to isle-beach-actor-resources: add_library(isle-beach-behavior-resources STATIC src/beach_behavior_resources.cpp src/beach_behavior_resources.hpp); target_link_libraries(isle-beach-behavior-resources PUBLIC isle-model-assets); isle_target_options(isle-beach-behavior-resources). isle-model-assets already publicly supplies the src include path and isle-rom-snapshot.",
+    "private_target": "Integrated EXCLUDE_FROM_ALL beach-behavior-resources-rom-smoke linked to isle-beach-behavior-resources with existing target options. Invoke explicitly with parent-authorized original ROM path; no default CTest, asset packaging, guest callback execution or source interpreter claim.",
+    "consumer": "Construct BehaviorResources(retained_snapshot); graphs()/graph(guest_identity), weighted_states()/weighted_states(guest_identity), scene_chooser()/scene_chooser(0x802cc004) return stable const views/references. Terminal wire is separate from live entries. Parent owns CMake/.gitattributes and proof refresh."
+  },
+  "verification": {
+    "status": "Parent actual admitted Snapshot data-only consumer passed GCC Debug, GCC Release and Clang ASan+UBSan; complete resource/alias/bounds/lookup/weighted-total/NULL-choice/lifetime scope only. Worker performed no execution. No interpreter, selector, callbacks or native FSM admission inferred.",
+    "parent_actual_runs": {"behavior_debug":{"capture_root":"/home/bbferko/35mmisle-beach-behavior-data-cpu-997f4m63","binary_sha256":"82c4af2981fab550737d3245109c7ce144879768a057d15cc76b4eb0215ee782","source_archive_sha256":"2c6fca6244ebb4f87aa4a91aa95792ac9933c0fc00376a9b9001cddd87493535","elapsed_seconds":0.4649787660455331,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"behavior_release":{"capture_root":"/home/bbferko/35mmisle-behavior-release-cpu-crs8pfjf","binary_sha256":"4a788ed6a351873fa7564a6127470f9af3f8769258782ee808a458fbced1171d","source_archive_sha256":"624fee9a15916e49a1f59b43155a5bc5e8ea9f947e2e34f401def7482d0cf18b","elapsed_seconds":0.14028287399560213,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"behavior_asan":{"capture_root":"/home/bbferko/35mmisle-behavior-asan-cpu-76hqictx","binary_sha256":"40e5adc487b5d88f3a4d07d8debdb0a69d1d5b31401fa6b8b18384c6eb243e34","source_archive_sha256":"004f226f9f4aefb82b2a106ddd52341b6e7008d294a44c247f63f02a0137bd04","elapsed_seconds":1.1898809219710529,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}},
+    "parent_scalar_analysis": "Parent-only bounded typed analysis artifact SHA25673ed5f99e5d6f62f4e71ced0aba963c2398ce442e811640b2a4993a34ac30fc2 reports71 graphs/212 live graph records,8 lists/16 live weighted records and2 scene choices:4736 total borrowed bytes including original terminals. Used only as private admission/analysis evidence; not worker ROM access or executed native-consumer verification, and not serialized into source/test fixtures.",
+    "private_consumer": "Actual admitted Snapshot data-only smoke. Visits every independently audited own source graph/list identity and retained live-record alias; checks exact bounded terminal/span relationships, weighted cumulative totals, preserved weighted NULL scene choice, stable exact-head lookup and foreign/interior rejection, independent-owner alias sharing, moved-from access/construction rejection and moved-to rebound storage. Does NOT implement or qualify command dispatch, eligibility, strict thresholds, random selection, callbacks, native FSMs or source scene admission. Test-only pseudo interpreters and scalar-copy echoes were removed after independent planner/reviewer findings; no serialized initialized scalar oracle."
+  }
+}

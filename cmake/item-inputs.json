@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "issue": "bd_35mmIsle-v4u.10.7.23.3.11.3",
+  "use": "Complete immutable source items.c four-family models, materials, animation programs and relational GBI/vertex/image closure; shared cold DataDecoder is also the sole ActorResources tree/material/program decoder. This is not native Item physics/OM owner/FSM, GPU, gameplay or full-port completion.",
+  "rom": {
+    "size": 16777216,
+    "canonical_order": "big-endian z64",
+    "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc"
+  },
+  "source_files": {
+    "src/app_level/items.c": {
+      "git_blob": "5e0f134e533f02d0073228ed82b1145c1e4ee92e",
+      "sha256": "76454a00c7920c769c2551a0b6c88c27df823b968c7030a2773d1c2aa5e48ba5"
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf"
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c"
+    },
+    "include/sys/anim.h": {
+      "git_blob": "1a0178fc52a859eda997ca232e1b063e10f9a4c9",
+      "sha256": "1e0ddc0140d6c05a6d5bb7fdf8db54f1a809fd89cb39be6ce0eb0bde75c5d5dd"
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509"
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd"
+    }
+  },
+  "semantic_origins": {
+    "src/app_level/items.c": [
+      "21-37 all four asset declarations",
+      "276-291 exact source fume object-time cutoff consumer",
+      "293-329 source splash setup and water/lava selection",
+      "1134-1185 source pester/apple setup"
+    ],
+    "src/sys/anim.c": [
+      "39-64 combined versus texture-only speed setters",
+      "132-177 source model/material table NULL semantics",
+      "469-483 END final values and object animationTime publication",
+      "662-664 source model FINISHED disables inside same update",
+      "1157-1159 source material FINISHED disables inside same update",
+      "1930-1977 exact initialized tree/sentinel/high-flags/attachment helper"
+    ],
+    "src/sys/om.c": [
+      "1090 MObj speed1.0f",
+      "1131 DObj speed1.0",
+      "1429 GObj fnAnimCallback NULL initialization"
+    ]
+  },
+  "admitted_initialized_mappings": [
+    {
+      "guest_begin": "0x800e18a0",
+      "rom_begin": 389200,
+      "bytes": 82272
+    },
+    {
+      "guest_begin": "0x800f5d90",
+      "rom_begin": 471472,
+      "bytes": 41472
+    },
+    {
+      "guest_begin": "0x800fff90",
+      "rom_begin": 512944,
+      "bytes": 110784
+    }
+  ],
+  "families": [
+    {
+      "family": "pester_ball",
+      "tree": "0x800e9138",
+      "material_table": "0x800e8eb8",
+      "model_animation_table": "0x00000000",
+      "material_animation_table": "0x800e91c0",
+      "render_type": "b_fogged",
+      "texture_speed": 0.4,
+      "root_scale_assignment": 0.1
+    },
+    {
+      "family": "apple",
+      "tree": "0x800eaed0",
+      "material_table": "0x800eac58",
+      "model_animation_table": "0x00000000",
+      "material_animation_table": "0x800eaf60",
+      "render_type": "b_fogged",
+      "texture_speed": 0.4,
+      "root_scale_assignment": 0.1
+    },
+    {
+      "family": "water_splash",
+      "tree": "0x800eb430",
+      "material_table": "0x800eb510",
+      "model_animation_table": "0x800eafb0",
+      "material_animation_table": "0x800eb0c0",
+      "render_type": "d_fogged",
+      "texture_speed": 0.9,
+      "root_scale_assignment": 0.1
+    },
+    {
+      "family": "lava_splash",
+      "tree": "0x800edab0",
+      "material_table": "0x800edb90",
+      "model_animation_table": "0x800ed5b0",
+      "material_animation_table": "0x800ed6b0",
+      "render_type": "d_fogged",
+      "texture_speed": 0.9,
+      "root_scale_assignment": 0.1
+    }
+  ],
+  "model_data_profile": {
+    "reuse": "model_assets::Reader remaining_bytes is the single finite initialized-range bound. DataDecoder replaces old ActorResourceBuilder tree/material/program implementations; no second mapper/parser/pose owner/clock/renderer. Existing17models/79headers/33materials/1317programs stay in their ActorResources owner.",
+    "bounds": "Mapped source bounds frame tree/material/animation sentinels. Only id18 of a source tree terminator is consumed; no unused trailing40 restriction. Exact source-consumed image domains8(ball) and6(apple), no inferred NULL scan or original array ABI. Source matrix high flags retained; native RTS recipe1c.",
+    "speed": "Own OM defaults DObj/MObj1.0. Ball/apple set only MObj0.4, leaving model1.0. Splash sets both0.9. Definition.texture_speed is applied after Runtime acquisition; source root scale assignment0.1 overwrites root scale, not an extra multiplicative parent or normalized tree.",
+    "callbacks": "Own om.c1429 initializes each GObj fnAnimCallback=NULL; items.c never installs it. Runtime acquisition therefore uses callbacks=false, independently of per-stream callback_installed=false validation metadata. Enabling callbacks at acquisition would request real events and contradict source NULL policy; the initial private consumer did so and was corrected rather than enlarging events0 or changing production emitter behavior. Water root opcode16 must not gain Actor/Pokemon callbacks of identical shared asset bytes.",
+    "closure": "All four source models and all dynamic material image choices pass existing relational Closure; installation_spans requires complete obligations. Original payload views remain Snapshot aliases, no encoded assets in repository.",
+    "lifetime": "Noncopyable/nonmovable Resources; retained unmoved Snapshot must outlive every descriptor/view. Access rejects moved-from storage; source object destruction before owner is a caller-precondition violation, not detected.",
+    "limits": "Selected source family animation profile only; no admission of other arbitrary models, guest functions or missing Item services."
+  },
+  "native_support": {
+    "src/model_data_decoder.hpp": {
+      "sha256": "0561a2a664451ef0ad1649a58e0174438c1715a0ba8a3a9bfb877ce186300068"
+    },
+    "src/model_data_decoder.cpp": {
+      "sha256": "efc2e71a6ac1162458e75f5b7ca27e3f7783fdb16b9121589b79cb2d4ffda744"
+    },
+    "src/model_asset_closure.hpp": {
+      "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
+    },
+    "src/model_asset_closure.cpp": {
+      "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
+    },
+    "src/item_resources.hpp": {
+      "sha256": "c7ad8ffe55920f539db5008fb88fd9b829b8fe14136ba60b1a2ab3fdb8c462cb"
+    },
+    "src/item_resources.cpp": {
+      "sha256": "8ce2614d734b005de29a2fe4738b15e65d128faa3d458f9b32d4228463f3d3ed"
+    },
+    "src/beach_actor_resources.cpp": {
+      "sha256": "f5aeb56a912880c06a0fa1aa4623db8a3e5a78686d084ab124bd4eb446f3896b"
+    },
+    "tests/item_resources_rom_smoke.cpp": {
+      "sha256": "ec43071458c800c395c01241bf6849e61074e3f987210b7a012ebb3071982027"
+    }
+  },
+  "verification": {
+    "status": "Parent actual complete-source API/animator consumer passed GCC Debug, GCC Release and Clang ASan+UBSan after correcting caller NULL callbacks and deleting the invalid persistent-FINISHED assertion. Item physics/native Item owner/GPU/gameplay not claimed.",
+    "rejected_private_consumers": [
+      {"root":"35mmisle-item-source-data-cpu-2o6sfvc_","returncode":1,"binary_sha256":"7ec8e08c4bbdd2ce6eb5ef84ad2afecccc0e894cd72ab770ecc879f6f381cb04","archive_sha256":"e81f1ce2ab47c656c3ab16102850d9113c8f032331fa834de304bc05f71c1351","closed":[1,0,2],"reason":"Caller enabled callbacks despite source NULL policy; production emitter and event capacity unchanged."},
+      {"root":"35mmisle-item-null-callback-cpu-d00an_1o","returncode":1,"binary_sha256":"bcbbc3ab84d59068e8398d889e3eea62ad121650612253bf4925c5a08c84a54a","archive_sha256":"71c1f540a9390cdafa73c5637ec335af18e572bf89c9b090c95df9482cd6044f","closed":[1,0,2],"reason":"Invalid late persistent-FINISHED assertion contradicts own animation disabling within same update; assertion deleted, not repinned."}
+    ],
+    "parent_actual_runs": {"items_debug":{"capture_root":"/home/bbferko/35mmisle-item-source-fume-cpu-u320m41s","binary_sha256":"21899aace7e6986bd3c200b0cbcb92c1b55aa17efd0acb163187a42086204d14","source_archive_sha256":"d0d3abaf4955f608d01e6993cea19d25ab8aaa27951f0cac8b4e54fd5048d592","elapsed_seconds":0.4422159279929474,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"items_release":{"capture_root":"/home/bbferko/35mmisle-items-release-cpu-vuoxta1i","binary_sha256":"b47e49e66ef5ad45f2e7d16eb258939648120595b1f93ab6690e368d504e07c5","source_archive_sha256":"e6fa9f3821ff4cc019ffbe6409a2cb2e7e46457d23fca256a09dac15524ea46c","elapsed_seconds":0.1490999519592151,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"items_asan":{"capture_root":"/home/bbferko/35mmisle-items-asan-cpu-a1e5aa1m","binary_sha256":"f7970b869ca2a224f9e83a1ba3107cb730ba69e07399f6d843af05fe351089f1","source_archive_sha256":"82c67345d534251a1a870078da8fda4287a84e7844423fc652e182f2697b9111","elapsed_seconds":1.3703001480316743,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}},
+    "shared_decoder_unchanged_regressions": {"actors_debug":{"capture_root":"/home/bbferko/35mmisle-shared-decoder-actor-cpu-8yoy0k26","binary_sha256":"2a24fc98bd6ab5b76c27440b9333b7b4cfb7b6409348fe61cdbb4efe6ab0da45","source_archive_sha256":"22b7a1a6ff5e1429309d869ea506a708d35e25a53efafeeb321a7a5ab15b819a","elapsed_seconds":0.7666381829185411,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"actors_asan":{"capture_root":"/home/bbferko/35mmisle-actors-asan-cpu-383b7vc5","binary_sha256":"7d4a19a57e1a04b9ba935cc08e478e0613927c18d4825de7fe8fe0720ea72bc4","source_archive_sha256":"2635f1c506f9f9ccff682b72a67282315f2e4051cfd62cd8e1bc902fe2cf08e2","elapsed_seconds":2.8360258319880813,"terminal_count":1,"created_task_count":0,"absent_tracer_and_task_count":2,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"world_gpu":{"capture_root":"/home/bbferko/35mmisle-world-shared-decoder-gpu-bdybzjxu","binary_sha256":"23de29e3d79024560fd60e9e020c83b3fe06517d0fca70d2d385a79c073c5839","source_archive_sha256":"449bfa947ea423c0744b2bc5bc78bfba22cf52ae146085602b223704b40b2cb0","elapsed_seconds":13.323909382917918,"terminal_count":77,"created_task_count":76,"absent_tracer_and_task_count":78,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"six_actor_gpu":{"capture_root":"/home/bbferko/35mmisle-six-actor-shared-decoder-gpu-rczuddqz","binary_sha256":"425d47824dbc98c104cd9d082645c99811d9c9f71d8d335dfc065cfd3d5e283b","source_archive_sha256":"51162454f588ab53ad50cf89602c77ca8247527f1fc2cf4471677c8be86db90a","elapsed_seconds":17.502159851021133,"terminal_count":77,"created_task_count":76,"absent_tracer_and_task_count":78,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}},
+    "private_scalar_analysis": {
+      "sha256": "ca5943c4bca3b4a1c1aa08ea2be287d341071b27c77de6338176636f34036927",
+      "families": 4,
+      "model_programs": 7,
+      "material_programs": 4,
+      "maximum_finite_source_wait_units": 60,
+      "ball_cycle_wait_units": 16,
+      "apple_cycle_wait_units": 12,
+      "private_only": true,
+      "not_native_runtime_proof": true
+    },
+    "private_consumer": "EXCLUDE_FROM_ALL item-resources-rom-smoke PRIVATE_ROM. Actual World fog, all four genuine families in one existing Runtime, fixed256updates64commands0events, model1/texture0.4/splash0.9 unchanged. All8/6 STEP images, exact own fume60-animationTime<0.9 first cutoff tick66, finite terminal object-time freeze[60,60.9), source NULL callbacks including water root opcode16, root scale assignment, pure-animator retirement and moved Snapshot alias rebinding. Persistent FINISHED phase assertions deleted, not repinned; source disables it within the same update. No native item factory/physics/OM/GPU/audio/device claim.",
+    "fixed_envelope_authority": "Actual source waits: ball16/0.4=40updates per cycle, apple12/0.4=30; every finite splash program60/0.9 about66.67updates. Fixed256 envelope is certified before any run, not advance-until-passing or changed source timing."
+  },
+  "integration": {
+    "production_targets": [
+      "isle-model-data",
+      "isle-item-resources"
+    ],
+    "private_target": "item-resources-rom-smoke EXCLUDE_FROM_ALL; links isle-item-resources isle-menu-animation isle-beach-world-resources; no default CTest or ROM packaging.",
+    "strict_fp": "Shared decoder and private numerical consumer use existing GNU/Clang rounding-math/contract-off/no-fast-math and MSVC fp:strict flags."
+  }
+}

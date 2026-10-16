@@ -17,6 +17,9 @@ public:
     // Authored-data seam uses precisely the same mapping and packet validation.
     Reader(std::span<const std::byte> canonical, std::span<const Mapping>);
     rom::GuestView view(std::uint32_t, std::size_t, std::size_t alignment = 4) const;
+    // Finite initialized-data bound for source-framed sentinel/program readers.
+    // Does not extend mapping authority or install the unconsumed suffix.
+    std::size_t remaining_bytes(std::uint32_t) const;
 private:
     std::span<const std::byte> bytes_;
     std::span<const Mapping> mappings_;

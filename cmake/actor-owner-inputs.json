@@ -131,14 +131,26 @@
     }
   },
   "native_support": {
+    "src/model_data_decoder.hpp": {
+      "sha256": "0561a2a664451ef0ad1649a58e0174438c1715a0ba8a3a9bfb877ce186300068"
+    },
+    "src/model_data_decoder.cpp": {
+      "sha256": "efc2e71a6ac1162458e75f5b7ca27e3f7783fdb16b9121589b79cb2d4ffda744"
+    },
+    "src/model_asset_closure.hpp": {
+      "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
+    },
+    "src/model_asset_closure.cpp": {
+      "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
+    },
     "src/actor_owner.hpp": {
-      "sha256": "3d4de644b3e6aa2e468312a0eae0215520e78eb65cfe0aebf2810f33a73277a7"
+      "sha256": "c247cdf0a2dbbbeab7a5d6fb5691a746114056ae1f789c0284d2fa00f48387d6"
     },
     "src/actor_owner.cpp": {
-      "sha256": "f92b55bea0af4db4161f00b825b427aa87caf48ee1348e6cdba75481fcbbc208"
+      "sha256": "bb7ad61b4fd0f909691f0a637789692c42b9514ee06b906435bd8df5bd1c1768"
     },
     "src/actor_owner_source.h": {
-      "sha256": "d5d3c6ab97529c923339c7eeb51675fbc27d795197db961a50f4be613f77c7f2"
+      "sha256": "c13a8658cb70548d3b84b4ca1ed2175b6047143bd7af1861b33f5a9530755652"
     },
     "src/actor_source.h": {
       "sha256": "4555788cecc2f03190e9f5bb6badbeda627703bd4089191e12c8fdfb04a697e7"
@@ -147,13 +159,13 @@
       "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "89e97e8e7cf9dd49a4b1704d2a9cede3e60c142409cb1e951d2117feb31ee996"
+      "sha256": "c7cf81856e3e211ab278deb672b3f8b652281023262bdf301ec3821a47a73f8e"
     },
     "src/beach_actor_resources.hpp": {
       "sha256": "aeb595bf1a418bfe7999df35b5acfd3b24757a8fab07c50443b7f9752743c16e"
     },
     "src/beach_actor_resources.cpp": {
-      "sha256": "8eab1dea079fae231ed6c318f475a90c43a7d79b304ddb16db434f7d5a24c845"
+      "sha256": "f5aeb56a912880c06a0fa1aa4623db8a3e5a78686d084ab124bd4eb446f3896b"
     },
     "src/scene_services.hpp": {
       "sha256": "39cc870c40af16df6d1aea964124eee8efc7955dd0330963712e7826f03afd1b"
@@ -168,10 +180,10 @@
       "sha256": "e4b1157cfbe03951c67f5a8f4a2be5b657ff5521e7be03529c9c0b0a6b68f4e7"
     },
     "tools/prepare_actor_control.py": {
-      "sha256": "f5d7534a75de99258ea6a9c1131d45555be7d2ce96fbf5fee5a5f69967b91c3c"
+      "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "f4abef9aacc819b1a32187c68af196a8a9c07e92269ce1a01149a5ee0c421abf"
+      "sha256": "698ccd62389d19d8f9011053bfe7506fc8c2f58fb33db09a78a8622fc5aee1cd"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "acb07a79b9f1332c04740e2a42d6e0dbc91813ce0788531bca5ee3ac720d2ee4"
@@ -180,7 +192,8 @@
       "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"
     }
   },
-  "integration_hash_authority": "Main refreshes all cross-file native_support hashes after final integration; this manifest records authored component bytes, not executed proof.",
+  "integration_hash_authority": "Main refreshes current cross-file native_support hashes after ownership release. Historical baseline proofs remain qualified to their archived bytes; current v4 common-source executions are recorded separately here and new Magikarp execution in magikarp-owner-inputs.json.",
+  "current_v4_common_cpu": {"common_debug":{"capture_root":"/home/bbferko/35mmisle-common-source-v4-cpu-j6umxu6r","binary_sha256":"f1ece045056f3b0ba660da83ba88408fd9577e00df77a301b3ae05019346cb02","source_archive_sha256":"97e46b931abc6b450f1ea76fad9ebdefad836129657e544336e9ae219e47dca0","elapsed_seconds":2.3904883021023124,"terminal_count":26,"created_task_count":25,"absent_tracer_and_task_count":27,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"common_asan":{"capture_root":"/home/bbferko/35mmisle-common-asan-cpu-b8xppoxl","binary_sha256":"42127e310e4e84f9a9e9375a962a7cb7a0102ec4576a170db8dda321cc4378f9","source_archive_sha256":"acddc2e42e494fd860ef874588a24e688462138d589adf3d1f5c853ea1b817f2","elapsed_seconds":7.320791418082081,"terminal_count":26,"created_task_count":25,"absent_tracer_and_task_count":27,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}},
   "ownership": {
     "canonical_record": "One guarded IsleActorSource in stable native Owner slot; owner points directly to that slot. Existing full InstanceHandle pool/slot/incarnation is the only generation identity.",
     "resources": "Immutable ActorResources precomputes flat DFS model/material bindings, retaining actual source ARRAY identity and all NULL levels.",
@@ -197,12 +210,12 @@
     "7": "Checked immutable native factory switch enters actual selected common1003 C factory then native core: Services link3/prio80000000, source model recipe/separateRTS, exact spawn/block arithmetic, ground fallback0, source Euler/init.scale*.1 ignoring spawn.scale, initial fields/callback+prio3, forced immediate header, distanceprio8, actual configured initialstateprio7, late resets (loopTarget0), logical linking and actual DL4 wrapper move preserving camera tag-1. No guest callback casts.",
     "8": "Source cache retention metadata40, logical actor-list40, block registry100 and caller native/Runtime capacities are distinct. Exhaustion fails admission explicitly rather than silent partial spawn/unsafe unlink. Actual registered base-block deletion lookup gates cleanup. common1003 block change translates placementXYZ/pos1/target independently from local descent; no ground variant.",
     "9": "Cleanup order hide/Detector/player-focus/dieFIFO/cache+logical/FXdetach/soundfix/realnativeDelete/blockunlink. Fixed sound voices survive but lose comparison identities in the actual joined hook before native addresses can recycle, not at later Runtime collection. Physical release waits actual join and queued source identity release; caller must supply real external graphics exclusion. Failed Services shutdown still erases/joins; failure is not claimed as recoverable successful reset.",
-    "10": "Nine owner selected C bodies plus six engine controls: actual normal/path/hidden/retrigger/factory/ordinaryWait/RunCleanup/Update; path59 subtract-before-realWait, self-end/flags; hidden actual doWait/show allflags0/force/path/wait/selfreplace; checked selected actual trigger position before signal. Source header04 remains unqualified, never duration."
+    "10": "Fifteen owner selected C bodies plus six engine controls: complete actual common normal/path/hidden/retrigger/factory/ordinaryWait/RunCleanup/Update plus genuine Magikarp factory/state/path and E298/E174/AddAtGeo closure. Source59/wait10/strict-ground polling/self-end/flags and shared RNG order retain real native waits. Source header04 remains unqualified, never duration."
   },
   "admission_limits": [
-    "Only actual common1003 configured factory/initial-state/NULLgraph is currently admitted for full native factory/FSM. Other source factory/state/graph identities fail explicit admission; their whole behaviors remain open work.",
+    "Actual common1003 GroundDL4 and Magikarp129 GroundDL5 configured factory/init/render/setup/state/header/NULLgraph tuples are admitted for full native source FSM. Other source species/factory/state/graph identities fail explicit admission. Magikarp has actual802CAB50/802CAC08 and common E298/E174/AddAtGeo same-Owner closure; cmake/magikarp-owner-inputs.json records actual Debug/Release/ClangASanUBSan CPU execution, not combined gated GPU eligibility/focus.",
     "Standalone real native model/Runtime/canonical record contexts can exercise shared actual header/event policy with additional admitted sound-bearing headers; this does not admit another actor FSM or add another coordinated owner.",
-    "Current immutable ActorResources contains source trees. Unrepresented dummy-root/nonGround configurations are not invented or falsely admitted; common1003 is actual GroundDlLink4.",
+    "Current immutable ActorResources contains source trees. Unrepresented dummy-root/nonGround configurations are not invented or falsely admitted; common1003 is GroundDlLink4 and Magikarp129 retains Ground's DL5/tag-1.",
     "Source command16 uninitialized interactionDist bug is neither initialized nor reinterpreted; its nonNULL graph is not admitted in this component.",
     "Native full actor/player/item/photo/course application completion, all courses, Original parity, real private Windows11 execution and combined GPU qualification remain open.",
     "All nine source groups/73 decoded programs contain no admitted B7/B8/BF instructions or initial flag8000. Original-bank local target execution is not claimed; impossible asset-search assertions were removed, not replaced by synthetic source scripts. Generic VM target semantics retain authored behavioral regression coverage.",
@@ -210,7 +223,7 @@
   ],
   "build_recipe": {
     "prepare": "python3 -B tools/prepare_actor_control.py --repository PINNED_GAME_GIT --manifest cmake/actor-control-inputs.json --output BUILD/generated/isle_actor_control.c --owner-output BUILD/generated/isle_actor_owner.c --evidence BUILD/isle-actor-control-inputs.json",
-    "core_target": "Keep original six generated controls + src/actor_source_bridge.c in isle-engine; do NOT compile all15 into the same archive object or create an engine-to-owner link dependency.",
+    "core_target": "Keep original six generated controls + src/actor_source_bridge.c in isle-engine; do NOT compile all21 into the same archive object or create an engine-to-owner link dependency.",
     "owner_target": "add_library(isle-actor-owner STATIC src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h src/actor_source_owner_bridge.c BUILD/generated/isle_actor_owner.c)",
     "public_dependencies": [
       "isle-engine",

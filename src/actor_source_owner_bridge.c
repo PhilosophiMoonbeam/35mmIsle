@@ -75,3 +75,62 @@ IsleGameResult isle_actor_source_validate_model(IsleGame* game, IsleGameObject* 
         object->type != 1 || object->data.model != model) return ISLE_GAME_INVALID_ARGUMENT;
     return isle_game_model_peek_nodes(game, model, &nodes, &count);
 }
+
+void isle_actor_source_yaw(IsleGameObject* object, float yaw) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_yaw(actor, yaw));
+}
+void isle_actor_source_magikarp_active(IsleGameObject* object, int active) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_magikarp_active(actor, active));
+}
+size_t isle_actor_source_ground_node(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    size_t node = 0;
+    checked(actor, isle_actor_owner_ground_node(actor, &node));
+    return node;
+}
+void isle_actor_source_node_world(IsleGameObject* object, size_t node, IsleGameVec3* position, IsleGameVec3* velocity) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_node_world(actor, node, position, velocity));
+}
+void isle_actor_source_ground(IsleGameObject* object, float x, float z, IsleActorGround* ground) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_ground(actor, x, z, ground));
+}
+void* isle_actor_source_current_block(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    void* block = isle_actor_owner_current_block(actor);
+    if (block == NULL) checked(actor, ISLE_GAME_INVALID_STATE);
+    return block;
+}
+IsleGameObject* isle_actor_source_add_one(IsleGameObject* object, void* block, void* reference,
+    const IsleActorGeoSpawn* spawn, const IsleActorGeoDefinition* definition) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleGameObject* child = NULL;
+    checked(actor, isle_actor_owner_add_one(actor, block, reference, spawn, definition, &child));
+    if (child == NULL) checked(actor, ISLE_GAME_EXHAUSTED);
+    return child;
+}
+void isle_actor_source_copy_position(IsleGameObject* object, IsleGameObject* child) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_copy_position(actor, child));
+}
+void isle_actor_source_publish_position(IsleGameObject* object, IsleGameVec3 position) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_trigger_position(actor, position));
+}
+IsleGameResult isle_actor_source_id_in_use(IsleGame* game, uint32_t id, int* output) {
+    IsleGameCounts counts;
+    GObj* object;
+    IsleGameResult result = isle_game_counts(game, &counts);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = 0;
+    /* Actual ohFindByLinkAndId semantics: source link3, not just Owner slots.
+     * A retained joined identity no longer appears in this native live list. */
+    for (object = omGObjListHead[3]; object != NULL; object = object->next) {
+        if (object->game == game && object->id == id) { *output = 1; break; }
+    }
+    return ISLE_GAME_OK;
+}

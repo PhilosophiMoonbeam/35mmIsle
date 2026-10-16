@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "issue": "bd_35mmIsle-v4u.10.7.23.3.11.1",
+  "scope": "Parent-executed genuine native Magikarp129 source FSM/path/Ground factory and same-Owner common1003 AddAtGeo emission passed actual-ROM CPU consumers in GCC Debug/Release and Clang ASan+UBSan. Complete previous common acceptance remains intact. No gated composed GPU eligibility/focus, Item physics, fullgame, Original parity or private Windows11 execution inferred.",
+  "authority": "Exact pinned own-GAME immutable stage / Git object database; no dirty decomp, SDK producer bodies/headers/layouts, disassembly or console object layout imported.",
+  "numeric_policy": {
+    "PI": "Unsuffixed C double literal3.14159265358979323846 in the private generated owner unit; source randRange(360)*PI/180.0f expression/order retained with final float yaw publication.",
+    "public_numeric_authority": "https://dlmf.nist.gov/3.12.E1",
+    "qualification": "Parent-authorized native numeric choice. Original SDK PI macro value/type equivalence is UNPROVEN. Own-GAME constants/common/sys/types/vector/mtx headers do not define PI; own sys/mtx only references it. No SDK alias layer/header import or Original bitmatch claim."
+  },
+  "initialized_scalar_authority": {
+    "origin": "Parent read actual consumed initialized GAME scalar records through existing bounded admitted mapping with unchanged private ROM; worker did not access ROM.",
+    "species": 129,
+    "factory": "0x802cac48",
+    "initialization": "0x802cdaec",
+    "render": "0x803594dc",
+    "setup": "0x802cdad8",
+    "initial_header": "0x802cda8c",
+    "initial_state": "0x802cab50",
+    "state_header": "0x802cdab4",
+    "process_kind": 0,
+    "transition_graph": "NULL",
+    "ground_child_definition": "0x8038837c",
+    "initial_flags": "0x25",
+    "visibility_bypass_flag40": false,
+    "ground_child_species": 1003,
+    "ground_velocity": [0, 0, 0],
+    "ground_velocity_authority": "Own-GAME4FE330.c58 initialized Vec3f, not guessed from movement or animation."
+  },
+  "source_files": {
+    "src/beach/562BC0.c": {
+      "git_blob": "c67645665414dfe2a93cbcb038bfb06dd34e46ec",
+      "sha256": "f68a107400ca34dab410dd9cb7b0672afffd76131b2e31719e40bfcbb33cbb5e",
+      "semantic_origins": [
+        {"first": 4, "last": 32, "source_sha256": "4c8d0791f9b1d45c74fec6bbbff4a8f942d189f53d8cc5a46d79b4411a4f8fdd"}
+      ]
+    },
+    "src/app_level/4FE330.c": {
+      "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761",
+      "semantic_origins": [
+        {"first": 51, "last": 58, "source_sha256": "9ecb3905402d77eea9a3354fd9338bca4e3d0e3d0151e6f9ac84959369e36df5"},
+        {"first": 130, "last": 141, "source_sha256": "2914371a7fabd3ae03d0c23a0240d88b117b5dd48262cd23ea68df855b762177"},
+        {"first": 175, "last": 195, "source_sha256": "cb4e3f8af6c6aa62c57c33b9316361eb449abf1897a6761c446efd813535f176"}
+      ]
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "semantic_origins": [
+        {"first": 793, "last": 826, "source_sha256": "98b9834b561c6dbadc2cf472a24cd6fe3c0508a9920f1304d0b47bb15f3423fc"},
+        {"first": 2119, "last": 2222, "source_sha256": "6b64f93b189d6e02872c6ee45ea6fbfc1ce7907652747a5e76ca4578b5354bd3"}
+      ]
+    },
+    "src/app_level/503C10.c": {
+      "git_blob": "85836484265173a036436390ddcc8961b9e8068b",
+      "sha256": "93549b82330d717e583d71c4628340c0f3b375e652492e9847dc79a0df78ae7a",
+      "semantic_origins": [
+        {"first": 76, "last": 109, "source_sha256": "3d3d46e347f35d8790aba6b5ea899f8bf9abc7c8a64019832a8928ecef97cee0"},
+        {"first": 157, "last": 191, "source_sha256": "aea1c9b0b78b3c045a523292284114a464f15e07fada1b3640e7aa50cc049d07"},
+        {"first": 323, "last": 357, "source_sha256": "4cda71987d780b9258391dd0898acb895a2da76d4373930a6921766ad3c460f2"}
+      ]
+    },
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "semantic_origins": [
+        {"first": 39, "last": 64, "source_sha256": "49058192f24b8f0a49ef9631cdfb85e6f4e685edee9ea943146d7791a5e000b9"},
+        {"first": 79, "last": 84, "source_sha256": "56e810188f9ea0edf2ce98a366f854002110effd3abd215fca7b05d5f73022ee"}
+      ]
+    },
+    "src/world/debug.c": {
+      "git_blob": "db9f6d6201789b91427d2236897deaa4be21f8e9",
+      "sha256": "cd5177677d782ac57f6e056477186928b0bf8af29c9d0cab842b2c95a3dc1a62",
+      "semantic_origins": [
+        {"first": 3, "last": 9, "source_sha256": "23d6f4e473a49c0303ada0d2397347c55c9c27682fb2a6d1288b5d4fe0443078"}
+      ]
+    },
+    "src/app_render/effect.c": {
+      "git_blob": "c14360cf4ce11735598c173dddd3ae57ebd9037b",
+      "sha256": "dc6e8134dc0fa25946134db3a995689a00e9ecd4e23be28967943f6b0df8de2d",
+      "semantic_origins": [
+        {"first": 1277, "last": 1360, "source_sha256": "61901d14bcd289cd865f93aa6003c3f5fc8300161aa6a8ff959c18774003bc4d"}
+      ]
+    }
+  },
+  "selected_source_transforms": "cmake/actor-control-inputs.json contains exact per-definition single-occurrence substitutions and selected/transformed body hashes; tools/prepare_actor_control.py verifies full pinned blobs before private generation. v4 keeps six engine core and fifteen owner definitions isolated; source vectors use explicit IsleGameVec3 declarators/signatures, not a conflicting Vec3f typedef/macro or SDK compatibility layer.",
+  "native_semantics": {
+    "factory": "Actual selected802CAC48 enters full native Pokemon_SpawnOnGround semantics, preserving source object/update/command/animation/distance/state setup, actual initial802CDA8C header and post-header record resets, placement/init scale/collision/flags, logical/block registration, DL5 priority80000000/tag-1. common1003 keeps its genuine DL4 wrapper.",
+    "state": "Actual selected802CAB50 sets802CDAB4, consumes shared source randRange360 for placement yaw, starts actual path802CAC08, NULLgraph, waits native ANIMATION_ENDED, clears canonical CourseState.magikarp_active, schedules real RunCleanup priority4 and SetStateNULL. No alternate timer, pose or paused substitute.",
+    "path": "Actual common175-195 obtains native root.first_child.first_child.next_sibling with real immutable resource/model identity, before ohWait10. Each actual iteration computes raw canonical source world and normalized velocity via source_effect_world (never render fixed/cache), queries current World ground, waits1 while not strictly below, clamps final Y to ground and invokes actual helper130-141. Path clears handle, publishes PATH_ENDED, then native omEndProcessNULL in source order.",
+    "add_at_geo": "Actual selected793-826 uses current World block for both factory arguments, zero translation/Euler, unit spawn scale, inherited path/behavior, real same-Owner common definition8038837C factory and copies parent's AUX position after success. Actual helper then publishes supplied ground-clamped position and behavior0. Child shares existing Runtime, source object pool/slots, canonical model, FX/RNG/audio/World and native scheduler.",
+    "source_ids": "Beach setup79-84 configures IDs0x80..0xE4/link3. Per-Owner source cursor starts0 and increments/wraps exactly as503C10.c87-109, searches both half-open native link3 ranges (including non-Owner objects), returns inclusive max fallback matching world/debug.c3-9. Cursor persists across Owner.reset, as source static does. Source IDs are not physical handles and do not weaken ABA/queued sender retention.",
+    "capacity_failure": "Same supplied cold Runtime/native slot plan, logical40, block registry100 and source prepend/append registration. No arbitrary increased pool, external spawn success hook or hot heap container. C++ nonwaiting leaf failure returns first; C bridge converts unrepresentable exhausted source helper dereference into explicit native fault instead of pretending a child exists. Public/nonwaiting capacity rejection publishes no child and leaves existing actors intact; source cursor still advances as actual source allocation does.",
+    "lifetime": "Existing real joined retirement, queued21/22 per-recipient credits, retained native physical identities, source hide/Detector/focus/dieFIFO/cache/logical/FX/sound/delete/block-unlink order and outside-OM physical collection are retained. No guest callback cast or copied console DObj/Pokemon layout. No owning C++ automatic survives a source C wait, self-replacement or fault.",
+    "scene": "CourseState.magikarp_active is canonical source D_beach_802CC014. Scene chooser must publish true after a successful chosen Magikarp spawn; source factory itself never did that. Genuine state clears after ANIMATION_ENDED before RunCleanup. External cleanup/reset is not silently reinterpreted as that source state transition. Parent owns concrete Item/chooser integration and composed gated subject.",
+    "admission": "Only existing common1003 and actual Magikarp129 complete configured tuples admitted. All other species/nonNULL graphs fail explicitly; native data-only Beach graph resources do not magically admit a callback interpreter."
+  },
+  "native_support": {
+    "src/actor_owner.hpp": {
+      "sha256": "c247cdf0a2dbbbeab7a5d6fb5691a746114056ae1f789c0284d2fa00f48387d6"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "bb7ad61b4fd0f909691f0a637789692c42b9514ee06b906435bd8df5bd1c1768"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "c13a8658cb70548d3b84b4ca1ed2175b6047143bd7af1861b33f5a9530755652"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "c7cf81856e3e211ab278deb672b3f8b652281023262bdf301ec3821a47a73f8e"
+    },
+    "tools/prepare_actor_control.py": {
+      "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
+    },
+    "cmake/actor-control-inputs.json": {
+      "sha256": "698ccd62389d19d8f9011053bfe7506fc8c2f58fb33db09a78a8622fc5aee1cd"
+    },
+    "tests/magikarp_owner_rom_smoke.cpp": {
+      "sha256": "d00ad9f9fb4e850c00687f8e99235eabd1166d6f15791f2445d3a76716683dfc"
+    },
+    "tests/magikarp_owner_probe.c": {
+      "sha256": "55f5b2d5776f863b768e2a796d97fc4f55ff775ea7412529a8acf8adf7f1c23d"
+    },
+    "tests/magikarp_owner_probe.h": {
+      "sha256": "55f64cde7fa7ddb15363cf241bbf44df7dda148e13ecc58d64c1477f0b6e5210"
+    }
+  },
+  "private_consumer": {
+    "sources": ["tests/magikarp_owner_rom_smoke.cpp", "tests/magikarp_owner_probe.c", "tests/magikarp_owner_probe.h"],
+    "mode": "Opt-in EXCLUDE_FROM_ALL target, private ROM + existing empty private profile, never CTest/default discovery or installed app.",
+    "behavior": "Actual factory/header/reset/placement/RNG/native-process/ground emission/scene clear/FIFO lifetime and same-Owner sibling source behavior. Fixed512-frame consumer requires no child before wait10/noncrossing and immediate first-eligible pre-animation3 emission; nonzero canonical velocity uses independent double hypot/dot oracle. Real capacity failures consume cursor through100 before genuine C AddAtGeo wrap; other-link exclusion, half-open second-pass search and occupied inclusive-max fallback pass. Original cohort/source speeds/timers/thresholds/budgets unchanged. Separate native C probe invokes genuine selected Pokemon_AddAtGeo; no mocked FSM, fabricated animator or test-only interpreter. Exact ground equality is not claimed observed.",
+    "executed_cpu": true,
+    "parent_actual_runs": {"magikarp_debug":{"capture_root":"/home/bbferko/35mmisle-magikarp-source-cpu-4coidrhe","binary_sha256":"929784fe8bfc1c9481f364c6ff2616b7871b4b3f12847be6dbfb608dcf30b596","source_archive_sha256":"7dd42170be70f51a438225f5a3a6f0d5f130142549409c5c535e97df6d8e6928","elapsed_seconds":0.7390888050431386,"terminal_count":25,"created_task_count":24,"absent_tracer_and_task_count":26,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"magikarp_release":{"capture_root":"/home/bbferko/35mmisle-magikarp-release-cpu-dug5rcdc","binary_sha256":"f27e3969188b6d1599e025f8a6dd971012d478b4f3aa0033c04795e3a744c903","source_archive_sha256":"0d845c0f75661a28d12a8f944b3bce779e190fb2a15c4d00ae0d73f99e06bbe1","elapsed_seconds":0.26553391001652926,"terminal_count":25,"created_task_count":24,"absent_tracer_and_task_count":26,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"magikarp_asan":{"capture_root":"/home/bbferko/35mmisle-magikarp-asan-cpu-2gdk3ghg","binary_sha256":"62bba96a30b4a81659ae856b2186af4028bd0a74a70fffc96cd1ad9d6a0007d9","source_archive_sha256":"64add219ba298a6098c5729f30da9a0f9e0b7b643a5d11007ddb09ee7d59890f","elapsed_seconds":2.3074766310164705,"terminal_count":25,"created_task_count":24,"absent_tracer_and_task_count":26,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}}
+  },
+  "integration": {
+    "owner_target": "Existing isle-actor-owner consumes updated actor_owner.cpp/.hpp, actor_owner_source.h, actor_source_owner_bridge.c and generated owner unit. No new production target/file or engine-to-owner dependency.",
+    "engine_target": "Keep original six control definitions plus actor_source_bridge.c in isle-engine; do not merge generated owner bodies into its archive object.",
+    "private_target": "add_executable(magikarp-owner-rom-smoke EXCLUDE_FROM_ALL tests/magikarp_owner_rom_smoke.cpp tests/magikarp_owner_probe.c tests/magikarp_owner_probe.h)",
+    "private_link_libraries": ["isle-actor-owner", "isle-actor-producer", "isle-effect-bank-resources", "isle-graphics-task", "isle-rsp"],
+    "private_options": "isle_target_options(magikarp-owner-rom-smoke); strict C/C++ FP GNU/Clang/AppleClang -frounding-math -ffp-contract=off -fno-fast-math, MSVC /fp:strict; gate under TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE exactly like actor-owner-rom-smoke.",
+    "configure_dependencies": ["cmake/actor-control-inputs.json", "cmake/actor-owner-inputs.json", "cmake/magikarp-owner-inputs.json", "tools/prepare_actor_control.py", "src/actor_owner.cpp", "src/actor_owner.hpp", "src/actor_owner_source.h", "src/actor_source_owner_bridge.c", "tests/magikarp_owner_rom_smoke.cpp", "tests/magikarp_owner_probe.c", "tests/magikarp_owner_probe.h"],
+    "parent_owned": "CMakeLists.txt/.gitattributes, docs/current proof refresh and ALL cross-file native_support hashes after all owners release; separate Item resources and real composed gated actor subject. No historical successful verification should be erased.",
+    "qualification_recipe": [
+      "Refresh admitted native_support hashes after all code owners release, then configure existing strict-FP private source build using the clean actor-control-v4 manifest.",
+      "cmake --build BUILD --target magikarp-owner-rom-smoke actor-owner-rom-smoke",
+      "BUILD/magikarp-owner-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PRIVATE_PROFILE_DIRECTORY",
+      "Run unchanged actual common1003 actor-owner-rom-smoke with a separate empty private profile directory.",
+      "Run parent-authorized existing native control/source-effect-world and full ROM-free regression suite once after integration, then authored private consumer under sanitizer configuration.",
+      "Only parent may author/run later real composed gated Magikarp focus/GPU lifetime proof; this private CPU consumer does not claim it."
+    ]
+  },
+  "ownership_release": "NativeMagikarp releases only its assigned owned source/extraction/provenance/private-consumer files at handoff; no CMake/docs/cross-hash refresh or other worker files edited."
+}

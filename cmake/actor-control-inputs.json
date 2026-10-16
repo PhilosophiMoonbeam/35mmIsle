@@ -2,8 +2,13 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "actor-control-v2",
+  "transformation_version": "actor-control-v4",
   "use": "User-directed private native selected actor C control; no source/SDK/asset redistribution grant. Private selected bodies exist only in caller build output.",
+  "numeric_policy": {
+    "PI": "Private generated alias uses unsuffixed C double literal3.14159265358979323846, preserving randRange(360)*PI/180.0f order before final float yaw publication.",
+    "authority": "https://dlmf.nist.gov/3.12.E1",
+    "qualification": "Parent-authorized modern native numeric policy. Pinned own-GAME constants/common/sys/types/vector/mtx headers do not define PI; own sys/mtx only references it. Original SDK PI macro value/type equivalence is UNPROVEN. No Original bitmatch, SDK header/shim import, or disassembly authority is claimed."
+  },
   "source_files": {
     "src/app_level/pokemon.c": {
       "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
@@ -20,6 +25,10 @@
     "src/app_level/4FE330.c": {
       "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
       "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761"
+    },
+    "src/beach/562BC0.c": {
+      "git_blob": "c67645665414dfe2a93cbcb038bfb06dd34e46ec",
+      "sha256": "f68a107400ca34dab410dd9cb7b0672afffd76131b2e31719e40bfcbb33cbb5e"
     }
   },
   "native_support": {
@@ -48,21 +57,24 @@
       "sha256": "b48d11d4c787fdd6085268348a1b264955680e23818e2f55699ce3f0631ccca1"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "89e97e8e7cf9dd49a4b1704d2a9cede3e60c142409cb1e951d2117feb31ee996"
+      "sha256": "c7cf81856e3e211ab278deb672b3f8b652281023262bdf301ec3821a47a73f8e"
     },
     "src/actor_owner_source.h": {
-      "sha256": "d5d3c6ab97529c923339c7eeb51675fbc27d795197db961a50f4be613f77c7f2"
+      "sha256": "c13a8658cb70548d3b84b4ca1ed2175b6047143bd7af1861b33f5a9530755652"
     }
   },
   "transformations": {
-    "preamble": "Private engine_internal.h + actor_owner_source.h; native semantic Pokemon/RandomState typedefs and one enumerated trigger Vec3f-to-IsleGameVec3 signature substitution, GET_POKEMON checked real userData accessor, omCreateProcess mapped to typed actual native source creation. Existing C omEndProcess/ohWait are linked unchanged.",
+    "preamble": "Private engine_internal.h + actor_owner_source.h; native semantic Pokemon/RandomState typedefs, exact single-occurrence own-GAME vector declarator/signature substitutions to IsleGameVec3, native zero vector declaration and no Vec3f typedef/macro collision or SDK compatibility layer. GET_POKEMON checks actual userData; omCreateProcess creates typed real native processes. Existing C omEndProcess/ohWait linked unchanged.",
     "random": "One exact call substitution: randRange(sumWeight) -> isle_actor_source_rand_range(obj, sumWeight), consuming the bound application RNG through existing isle_rng_range.",
     "failure": "Existing engine C execution_fault is privately promoted to isle_native_execution_fault; all native callers migrated, identical fence semantics. Source control entrypoints require an active C callback; native startup uses returned engine status.",
     "body_policy": "Enumerated substitutions preserve waits, priorities, masks and publication/end order. RunInteractions preserves its actual NULL graph early return and substitutes the remaining unadmitted interpreter with the owner admission-failing leaf; cleanup body is native owner ordering, with actual GAME RunCleanup priority4 dispatch.",
     "owner_leaves": "Enumerated exact substitutions in definitions; C leaves report faults only after C++ returns. No guest pointer callback casts.",
     "factory": "Actual common1003 factory lines112-114 unchanged text; preamble aliases WorldBlock/ObjectSpawn/PokemonInitData to native typed owner contexts, static init identity0x80388348, Pokemon_SpawnOnGroundDlLink4 to nonwaiting isle_actor_owner_spawn_ground_dl4. Actual C factory callable identity retained; no guest pointer casts.",
     "trigger": "Actual selected source trigger retains symbol and position-before-misc-signal ordering. Explicit signature change void to IsleGameResult; guarded status-returning source_get replaces active-callback require; native position leaf status checked before signal; success returned after signal. Nonwaiting selected C body safely callable by owner; not byte-identical. Existing active source require guard unchanged.",
-    "translation_units": "Original six control helpers emitted alone under --output; remaining nine owner/FSM/factory/trigger bodies emitted under required --owner-output. No owner preamble or owner leaf references in core unit, avoiding static archive circular dependencies. Separate source hashes in evidence; three destinations required distinct."
+    "translation_units": "Original six control helpers emitted alone under --output; remaining fifteen owner/FSM/factory/trigger/AddAtGeo bodies emitted under required --owner-output. No owner preamble or owner leaf references in core unit, avoiding static archive circular dependencies. Separate source hashes in evidence; three destinations required distinct.",
+    "magikarp": "Actual source129 header802CDAB4/yaw/shared ground-path/NULLgraph/ANIMATION_ENDED/scene flag clear/RunCleanup/SetStateNULL retained. Only native model placement, header, canonical scene flag and raw topology/world/ground leaves replace console accesses. Actual factory return added to source void spelling solely to expose its real Ground result; original factory call otherwise unchanged.",
+    "ground_chain": "Source common175-195 keeps zero velocity initializer, actual child/child/next selection before wait10, strict below-ground test with wait1, height clamp and helper call. Raw source_effect_world computes canonical local TRS + root placement independently of fixed renderer caches; velocity columns normalized as effect.c1277-1360. Helper130-141 retains AddAtGeo then position then behavior0.",
+    "add_at_geo": "Actual Pokemon_AddAtGeo793-826 retains zero translation/euler, unit ignored spawn scale, inherited path/behavior, current World block in both arguments, factory dispatch and parent AUX placement copy before helper override. Source pokemonAddOne/getFreePokemonId semantics are concrete same-Owner leaves with Beach80..E4/link3 configuration, cursor/two scans/inclusive max fallback, native link lookup, unchanged logical40/block100 and physical joined/FIFO retention. NULL or exhausted source child faults in C only after returning from nonwaiting C++ leaves; no fabricated successful child."
   },
   "semantic_origins": [
     {
@@ -294,6 +306,149 @@
           "replace": "    pokemon->miscVars[0].field1 = 1;\n    return ISLE_GAME_OK;"
         }
       ]
+    },
+    {
+      "symbol": "func_beach_802CAB50",
+      "path": "src/beach/562BC0.c",
+      "first": 4,
+      "last": 18,
+      "source_sha256": "d01289400493c392b687cd2ccd380aedd6b25e2de458a6c76656f50abe8e9790",
+      "native_sha256": "827c6a9dfd1c011e4f97ab87ac35fdc4688358f01bdc6972aa64eae822bc0c86",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n    Mtx4Float* rotation = &GET_TRANSFORM(model)->rot;\n",
+          "replace": ""
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CDAB4);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cdab4), 0);"
+        },
+        {
+          "find": "rotation->v.y = randRange(360) * PI / 180.0f;",
+          "replace": "isle_actor_source_yaw(obj, isle_actor_source_rand_range(obj, 360) * PI / 180.0f);"
+        },
+        {
+          "find": "D_beach_802CC014 = false;",
+          "replace": "isle_actor_source_magikarp_active(obj, false);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_beach_802CAC08",
+      "path": "src/beach/562BC0.c",
+      "first": 20,
+      "last": 28,
+      "source_sha256": "b00821136cdf0ee239e631263ccd9dc798a353735ea59d6d76f0150a2461c32c",
+      "native_sha256": "b00821136cdf0ee239e631263ccd9dc798a353735ea59d6d76f0150a2461c32c",
+      "changes": []
+    },
+    {
+      "symbol": "func_beach_802CAC48",
+      "path": "src/beach/562BC0.c",
+      "first": 30,
+      "last": 32,
+      "source_sha256": "a309f727c0951e42ce22696866d8fdfb190a7adc25ec5dc2c452d40673f1b3b7",
+      "native_sha256": "b9a2d97c9839c6ee817fe3282cd9f99e6d361112063046b1bd5d8827e3a8fc30",
+      "changes": [
+        {
+          "find": "void func_beach_802CAC48",
+          "replace": "GObj* func_beach_802CAC48"
+        },
+        {
+          "find": "    Pokemon_SpawnOnGround(",
+          "replace": "    return Pokemon_SpawnOnGround("
+        }
+      ]
+    },
+    {
+      "symbol": "func_8035E298_4FE6A8",
+      "path": "src/app_level/4FE330.c",
+      "first": 175,
+      "last": 195,
+      "source_sha256": "cb4e3f8af6c6aa62c57c33b9316361eb449abf1897a6761c446efd813535f176",
+      "native_sha256": "e335c41679006586f0e9030607504442d6ac60582ea267eb1dc009513ab8e993",
+      "changes": [
+        {
+          "find": "    Vec3f pos;",
+          "replace": "    IsleGameVec3 pos;"
+        },
+        {
+          "find": "    Vec3f vel;",
+          "replace": "    IsleGameVec3 vel;"
+        },
+        {
+          "find": "    DObj* s1;",
+          "replace": "    size_t s1;"
+        },
+        {
+          "find": "s1 = obj->data.dobj->firstChild->firstChild->next;",
+          "replace": "s1 = isle_actor_source_ground_node(obj);"
+        },
+        {
+          "find": "fx_getPosVelDObj(&pos, &vel, s1);",
+          "replace": "isle_actor_source_node_world(obj, s1, &pos, &vel);"
+        },
+        {
+          "find": "getGroundAt(pos.x, pos.z, &sp28);",
+          "replace": "isle_actor_source_ground(obj, pos.x, pos.z, &sp28);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_8035E174_4FE584",
+      "path": "src/app_level/4FE330.c",
+      "first": 130,
+      "last": 141,
+      "source_sha256": "2914371a7fabd3ae03d0c23a0240d88b117b5dd48262cd23ea68df855b762177",
+      "native_sha256": "fc3f825c27931ecbc0fccb17f0b126230d67e216ddf7fde2ea9ad54b97f8f6f7",
+      "changes": [
+        {
+          "find": "Vec3f* arg1",
+          "replace": "IsleGameVec3* arg1"
+        },
+        {
+          "find": "    PokemonTransform* sp2C;\n",
+          "replace": ""
+        },
+        {
+          "find": "    sp2C = GET_TRANSFORM(sp30->data.dobj);\n    sp2C->pos.v.x = arg1->x;\n    sp2C->pos.v.y = arg1->y;\n    sp2C->pos.v.z = arg1->z;",
+          "replace": "    isle_actor_source_publish_position(sp30, *arg1);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_AddAtGeo",
+      "path": "src/app_level/pokemon.c",
+      "first": 793,
+      "last": 826,
+      "source_sha256": "98b9834b561c6dbadc2cf472a24cd6fe3c0508a9920f1304d0b47bb15f3423fc",
+      "native_sha256": "0c589af6e33bab1f6549b2c1b40f0a0b55d3f06dd480b4fe2e2925c9f9ed4693",
+      "changes": [
+        {
+          "find": "PokemonDef* def",
+          "replace": "const PokemonDef* def"
+        },
+        {
+          "find": "    ObjectSpawn spawn;",
+          "replace": "    IsleActorGeoSpawn spawn;"
+        },
+        {
+          "find": "    WorldBlock* block;",
+          "replace": "    void* block;"
+        },
+        {
+          "find": "getCurrentWorldBlock()",
+          "replace": "isle_actor_source_current_block(gobj)"
+        },
+        {
+          "find": "pokemonAddOne(block, block, &spawn, def)",
+          "replace": "isle_actor_source_add_one(gobj, block, block, &spawn, def)"
+        },
+        {
+          "find": "        PokemonTransformBase* transform2 = GET_TRANSFORM_BASE(gobj->data.dobj);\n        PokemonTransformBase* transform1 = GET_TRANSFORM_BASE(pokemonObj->data.dobj);\n\n        transform1->xform.pos.v.x = transform2->xform.pos.v.x;\n        transform1->xform.pos.v.y = transform2->xform.pos.v.y;\n        transform1->xform.pos.v.z = transform2->xform.pos.v.z;",
+          "replace": "        isle_actor_source_copy_position(gobj, pokemonObj);"
+        }
+      ]
     }
   ],
   "regression_sources": [
@@ -378,7 +533,13 @@
         "func_8035DFB0_4FE3C0",
         "func_8035E034_4FE444",
         "func_8035E0D4_4FE4E4",
-        "func_8035E264_4FE674"
+        "func_8035E264_4FE674",
+        "func_beach_802CAB50",
+        "func_beach_802CAC08",
+        "func_beach_802CAC48",
+        "func_8035E298_4FE6A8",
+        "func_8035E174_4FE584",
+        "Pokemon_AddAtGeo"
       ],
       "preamble": "actor_owner_source.h typed nonwaiting leaves/factory contexts"
     }

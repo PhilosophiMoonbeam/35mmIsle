@@ -2,8 +2,9 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "use": "Constructor-only shared World/Actor immutable GBI resource closure. This is typed data analysis, not guest CPU execution, a source factory implementation, a task-entry image-state assumption, or an all-actor GPU acceptance claim.",
+  "use": "Constructor-only shared World/Actor/Item immutable relational GBI resource closure. Reader::remaining_bytes supplies the single finite initialized suffix bound to the shared actor/item cold DataDecoder. Typed resource analysis is not guest CPU execution, a source factory implementation, task-entry image-state assumption or fullgame acceptance.",
   "files": ["src/model_asset_closure.hpp", "src/model_asset_closure.cpp", "tests/model_asset_closure_tests.cpp"],
+  "shared_data_decoder": {"files":["src/model_data_decoder.hpp","src/model_data_decoder.cpp"],"target":"isle-model-data","policy":"One cold tree/material/program decoder shared by existing ActorResources and complete four-family ItemResources; no second mapper, animator, owner clock or renderer. Current all79-header CPU, fullWorld and unchanged six-actor GPU regression identities retained in item-inputs.json; composed12 regression in course-scene-inputs.json."},
   "source_files": {
     "src/sys/render.c": {
       "git_blob": "38e4e802c306971624149d83902767b59eca3214",

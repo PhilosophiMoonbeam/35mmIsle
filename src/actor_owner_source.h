@@ -26,6 +26,44 @@ typedef struct IsleActorFactoryInitialization { uint32_t identity; } IsleActorFa
 IsleGameObject* isle_actor_owner_spawn_ground_dl4(int32_t object_id, uint16_t id,
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
     const IsleActorFactoryInitialization*);
+IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id, uint16_t id,
+    IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
+    const IsleActorFactoryInitialization*);
+IsleGameObject* func_beach_802CAC48(int32_t object_id, uint16_t id,
+    IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*);
+void func_beach_802CAB50(IsleGameObject*);
+void func_beach_802CAC08(IsleGameObject*);
+void func_8035E298_4FE6A8(IsleGameObject*);
+void func_8035E174_4FE584(IsleGameObject*, IsleGameVec3*);
+typedef struct IsleActorGeoDefinition { uint32_t identity; } IsleActorGeoDefinition;
+typedef struct IsleActorGeoSpawn {
+    int32_t id;
+    IsleGameVec3 translation, euler, scale;
+    const void* path;
+    int32_t behavior;
+} IsleActorGeoSpawn;
+typedef struct IsleActorGround { float height; } IsleActorGround;
+IsleGameObject* Pokemon_AddAtGeo(IsleGameObject*, uint16_t, const IsleActorGeoDefinition*);
+IsleGameResult isle_actor_owner_yaw(IsleActorSource*, float);
+IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource*, int);
+IsleGameResult isle_actor_owner_ground_node(IsleActorSource*, size_t*);
+IsleGameResult isle_actor_owner_node_world(IsleActorSource*, size_t, IsleGameVec3*, IsleGameVec3*);
+IsleGameResult isle_actor_owner_ground(IsleActorSource*, float, float, IsleActorGround*);
+void* isle_actor_owner_current_block(IsleActorSource*);
+IsleGameResult isle_actor_owner_add_one(IsleActorSource*, void*, void*, const IsleActorGeoSpawn*,
+    const IsleActorGeoDefinition*, IsleGameObject**);
+IsleGameResult isle_actor_owner_copy_position(IsleActorSource*, IsleGameObject*);
+IsleGameResult isle_actor_source_id_in_use(IsleGame*, uint32_t, int*);
+void isle_actor_source_yaw(IsleGameObject*, float);
+void isle_actor_source_magikarp_active(IsleGameObject*, int);
+size_t isle_actor_source_ground_node(IsleGameObject*);
+void isle_actor_source_node_world(IsleGameObject*, size_t, IsleGameVec3*, IsleGameVec3*);
+void isle_actor_source_ground(IsleGameObject*, float, float, IsleActorGround*);
+void* isle_actor_source_current_block(IsleGameObject*);
+IsleGameObject* isle_actor_source_add_one(IsleGameObject*, void*, void*, const IsleActorGeoSpawn*,
+    const IsleActorGeoDefinition*);
+void isle_actor_source_copy_position(IsleGameObject*, IsleGameObject*);
+void isle_actor_source_publish_position(IsleGameObject*, IsleGameVec3);
 IsleGameObject* func_8035E0D4_4FE4E4(int32_t object_id, uint16_t id,
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*);
 void isle_actor_source_animation_process(IsleGameObject*);

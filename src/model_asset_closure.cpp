@@ -83,6 +83,13 @@ rom::GuestView Reader::view(std::uint32_t address, std::size_t bytes, std::size_
     }
     throw std::runtime_error("Model resource outside initialized mappings: " + std::to_string(address));
 }
+std::size_t Reader::remaining_bytes(std::uint32_t address) const {
+    for (const auto& mapping : mappings_) {
+        if (address >= mapping.guest_begin && address - mapping.guest_begin < mapping.bytes)
+            return mapping.bytes - (address - mapping.guest_begin);
+    }
+    throw std::runtime_error("Model resource outside initialized mappings: " + std::to_string(address));
+}
 
 struct Builder {
     Closure& out;

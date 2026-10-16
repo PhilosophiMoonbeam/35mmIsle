@@ -39,7 +39,12 @@ struct PlayerState {
 // Source pause gates Update's counter only. Execution is checked at the ordinary
 // command-handler tail; neither predicate transition resumes native processes.
 // Actual FIFO commands -2/-3 own object-wide suspension/resumption.
-struct CourseState { bool paused = false, execution_enabled = true, sound_enabled = true; };
+struct CourseState {
+    bool paused = false, execution_enabled = true, sound_enabled = true;
+    // Actual Beach D_beach_802CC014. Scene chooser publishes true after its
+    // successful spawn; the genuine Magikarp state clears it after animation.
+    bool magikarp_active = false;
+};
 struct Membership {
     bool logical = false, registered = false, retiring = false, joined = false;
     std::size_t transform_cache_retained = 0, pokemon_cache_retained = 0;

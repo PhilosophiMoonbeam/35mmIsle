@@ -162,6 +162,7 @@ struct Owner::Impl {
     };
     struct BlockEntry { Slot* slot = nullptr; int next = -1; };
     scene::Services& services;
+    Owner* facade = nullptr;
     const beach::ActorResources& resources;
     world::World& world;
     environment_sound::Environment& sound;
@@ -182,6 +183,9 @@ struct Owner::Impl {
     std::uint64_t insertion = 0;
     PlayerState player;
     CourseState course;
+    // Beach func_beach_802C4340 configures inclusive IDs80..E4/link3.
+    // getFreePokemonId's cursor survives resets, as its source static does.
+    std::uint32_t pokemon_counter = 0;
 
     Impl(scene::Services& s,const beach::ActorResources& r,world::World& w,environment_sound::Environment& e,
          focus::Detector& d,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
@@ -419,7 +423,9 @@ struct SourceAccess {
 };
 Owner::Owner(scene::Services& s,const beach::ActorResources& r,world::World& w,environment_sound::Environment& e,
              focus::Detector& d,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
-             menu::animation::ExecutionCapacity execution) : impl_(std::make_unique<Impl>(s,r,w,e,d,c,banks,execution)) {}
+             menu::animation::ExecutionCapacity execution) : impl_(std::make_unique<Impl>(s,r,w,e,d,c,banks,execution)) {
+    impl_->facade=this;
+}
 Owner::~Owner() {
     if (!reset()) {
         // Failure shutdown is not a successful source reset. Still perform real
@@ -435,12 +441,17 @@ SpawnResult Owner::spawn(const SpawnRequest& request) noexcept {
     if (request.definition>=impl_->resources.definitions().size())
         return {{OwnerError::admission,"actor definition outside admitted resources"},{},nullptr};
     const auto& definition=impl_->resources.definitions()[request.definition];
-    if (definition.factory_identity!=0x8035e0d4u || definition.actor_id!=1003)
+    const bool common=definition.factory_identity==0x8035e0d4u && definition.actor_id==1003;
+    const bool magikarp=definition.factory_identity==0x802cac48u && definition.actor_id==129;
+    if (!common && !magikarp)
         return {{OwnerError::admission,"configured factory identity is not natively admitted"},{},nullptr};
     SpawnResult result{{OwnerError::admission,"source factory did not publish a result"},{},nullptr};
     IsleActorFactoryBlock block{this,request.block,&result},reference{this,request.reference,&result};
     IsleActorFactorySpawn spawn{request.spawn,request.definition};
-    func_8035E0D4_4FE4E4(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    if (common)
+        func_8035E0D4_4FE4E4(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    else
+        func_beach_802CAC48(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
     return result;
 }
 SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
@@ -456,11 +467,20 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     if (definition.initialization>=self.resources.initializations().size()) return reject(OwnerError::admission,"actor definition has no initialization");
     const auto& initialization=self.resources.initializations()[definition.initialization];
     // Immutable actual source callable binding, not guest-pointer casts or a task registry.
-    if (definition.actor_id!=1003 || definition.factory_identity!=0x8035e0d4u || initialization.setup.initial_state_identity!=0x8035df20u ||
-        initialization.setup.transition_graph_identity!=0 || initialization.setup.process_kind!=0)
-        return reject(OwnerError::admission,"configured actor factory/state/graph identity is not yet natively admitted");
+    const bool common=definition.actor_id==1003 && definition.factory_identity==0x8035e0d4u &&
+        initialization.wire.guest_address==0x80388348u && initialization.render_callback_identity==0x800a1608u &&
+        initialization.setup.wire.guest_address==0x80388334u && initialization.setup.initial_state_identity==0x8035df20u;
+    const bool magikarp=definition.actor_id==129 && definition.factory_identity==0x802cac48u &&
+        initialization.wire.guest_address==0x802cdaecu && initialization.render_callback_identity==0x803594dcu &&
+        initialization.setup.wire.guest_address==0x802cdad8u && initialization.setup.initial_state_identity==0x802cab50u;
+    if ((!common && !magikarp) || initialization.setup.transition_graph_identity!=0 ||
+        initialization.setup.unknown_0c_identity!=0 || initialization.setup.process_kind!=0 ||
+        !initialization.animations_enabled)
+        return reject(OwnerError::admission,"configured actor factory/init/render/setup/state/graph tuple is not natively admitted");
     if (initialization.model>=self.resources.models().size() || initialization.setup.initial_header>=self.resources.headers().size())
         return reject(OwnerError::admission,"actor native tree/header missing");
+    if (self.resources.headers()[initialization.setup.initial_header].wire.guest_address!=(common?0x80388310u:0x802cda8cu))
+        return reject(OwnerError::admission,"actor source initial header is not the configured tuple");
     if (request.spawn->id!=static_cast<std::int32_t>(definition.actor_id)) return reject(OwnerError::admission,"actor source spawn ID does not match definition");
     if (request.spawn->path!=world::no_index && request.spawn->path>=self.world.resources().paths.size())
         return reject(OwnerError::admission,"actor source spawn path outside World");
@@ -546,7 +566,7 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     const auto animated=self.animation(*slot,&self.resources.headers()[initialization.setup.initial_header],0,true);
     if (!animated) { rollback(); return {animated,{},nullptr}; }
     if (isle_game_add_source_process(self.services.game,slot->object,isle_actor_source_distance_process,ISLE_GAME_SYNCHRONOUS,8,&process)!=ISLE_GAME_OK ||
-        isle_game_add_source_process(self.services.game,slot->object,func_8035DF20_4FE330,ISLE_GAME_STACKFUL,7,&source.stateProc)!=ISLE_GAME_OK) {
+        isle_game_add_source_process(self.services.game,slot->object,common?func_8035DF20_4FE330:func_beach_802CAB50,ISLE_GAME_STACKFUL,7,&source.stateProc)!=ISLE_GAME_OK) {
         rollback(); return reject(OwnerError::native,"actor distance/initial state process creation");
     }
     // Late factory resets occur only AFTER forced header and immediate events.
@@ -564,9 +584,12 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     entry.slot=slot; entry.next=self.block_heads[request.block->index]; self.block_heads[request.block->index]=registry; slot->registered=true;
     if (self.transform_cache) --self.transform_cache;
     if (self.pokemon_cache) --self.pokemon_cache;
-    slot->render={4,0x80000000u,UINT32_MAX}; // Actual common1003 GroundDlLink4 wrapper preserves source tag-1.
+    // Magikarp keeps Ground's original DL5/tag-1; only common's wrapper moves4.
+    if (common) {
+        slot->render={4,0x80000000u,UINT32_MAX};
+        if (!self.services.set_render(slot->object,slot->render)) { rollback(); return reject(OwnerError::services,"actor source DL4 move"); }
+    }
     slot->insertion=++self.insertion;
-    if (!self.services.set_render(slot->object,slot->render)) { rollback(); return reject(OwnerError::services,"actor source DL4 move"); }
     return {{},slot->instance,slot->object};
 }
 OwnerStatus Owner::set_animation(menu::animation::InstanceHandle h,const beach::ActorAnimationHeader* header,float start,bool force) noexcept {
@@ -734,14 +757,29 @@ IsleGameObject* isle_actor_owner_spawn_ground_dl4(int32_t object_id,uint16_t id,
         static_cast<const isle::world::Spawn*>(spawn->spawn)});
     return result.object;
 }
+IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id,uint16_t id,
+    IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
+    const IsleActorFactoryInitialization* initialization) {
+    if (!block || !reference || !spawn || !initialization || initialization->identity!=0x802cdaecu ||
+        id!=129 || !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
+        return nullptr;
+    auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
+    auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);
+    result=isle::actor::SourceAccess::spawn(owner,{static_cast<uint32_t>(object_id),spawn->definition,
+        static_cast<isle::world::Block*>(block->block),static_cast<isle::world::Block*>(reference->block),
+        static_cast<const isle::world::Spawn*>(spawn->spawn)});
+    return result.object;
+}
 IsleGameResult isle_actor_owner_animation(IsleActorSource* source,uint32_t identity,float start,int force) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     if (!slot) return ISLE_GAME_INVALID_STATE;
     const isle::beach::ActorAnimationHeader* header=nullptr;
     if (identity) {
-        const auto& candidate=slot->owner->resources.headers()[slot->initialization->setup.initial_header];
-        if (candidate.wire.guest_address!=identity) return ISLE_GAME_INVALID_ARGUMENT;
-        header=&candidate;
+        for (const auto& candidate:slot->owner->resources.headers())
+            if (candidate.wire.guest_address==identity && candidate.initialization==slot->definition->initialization) {
+                header=&candidate; break;
+            }
+        if (!header) return ISLE_GAME_INVALID_ARGUMENT;
     }
     return slot->owner->animation(*slot,header,start,force!=0)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
 }
@@ -797,5 +835,123 @@ float isle_actor_owner_animation_time(IsleActorSource* source) {
 int isle_actor_owner_paused(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     return slot && slot->owner->course.paused;
+}
+IsleGameResult isle_actor_owner_yaw(IsleActorSource* source,float yaw) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || source->id!=129) return ISLE_GAME_INVALID_STATE;
+    const IsleGameModelPlacement* current=nullptr;
+    if (isle_game_model_placement(source->game,slot->model,&current)!=ISLE_GAME_OK) return ISLE_GAME_INVALID_STATE;
+    auto placement=current->transform; placement.rotation.y=yaw;
+    return isle_game_model_set_placement(source->game,slot->model,ISLE_GAME_MODEL_PLACEMENT_RTS,&placement);
+}
+IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource* source,int active) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || source->id!=129) return ISLE_GAME_INVALID_STATE;
+    slot->owner->course.magikarp_active=active!=0;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_actor_owner_ground_node(IsleActorSource* source,size_t* output) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || !output || source->id!=129 || slot->initialization->wire.guest_address!=0x802cdaecu)
+        return ISLE_GAME_INVALID_STATE;
+    const auto state=slot->owner->runtime->model(slot->instance);
+    const IsleGameModelNode* nodes=nullptr; size_t count=0;
+    if (!state || state.resource_model!=slot->initialization->model ||
+        isle_game_model_peek_nodes(source->game,slot->model,&nodes,&count)!=ISLE_GAME_OK ||
+        !count || count!=state.nodes.size()) return ISLE_GAME_INVALID_STATE;
+    const auto first=nodes[0].first_child;
+    if (first>=count || nodes[first].parent!=0) return ISLE_GAME_INVALID_STATE;
+    const auto child=nodes[first].first_child;
+    if (child>=count || nodes[child].parent!=first) return ISLE_GAME_INVALID_STATE;
+    const auto next=nodes[child].next_sibling;
+    if (next>=count || nodes[next].parent!=first) return ISLE_GAME_INVALID_STATE;
+    *output=next;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_actor_owner_node_world(IsleActorSource* source,size_t node,IsleGameVec3* position,IsleGameVec3* velocity) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || !position || !velocity) return ISLE_GAME_INVALID_ARGUMENT;
+    isle::menu::EffectWorld world{};
+    if (!isle::menu::model::source_effect_world(source->game,slot->model,node,world)) return ISLE_GAME_EXECUTION_FAILURE;
+    auto& m=world.matrix;
+    // effect.c1335-1360: normalize columns, never transform velocity as a
+    // point or derive it from frame differences/renderer's quantized caches.
+    for (unsigned col=0;col<3;++col) {
+        if (m[0][col]==0 && m[1][col]==0 && m[2][col]==0) continue;
+        const float n=std::sqrt(m[0][col]*m[0][col]+m[1][col]*m[1][col]+m[2][col]*m[2][col]);
+        if (n==0 || !std::isfinite(n) || !std::isfinite(1.0f/n)) return ISLE_GAME_INVALID_ARGUMENT;
+        const float inv=1.0f/n;
+        m[0][col]*=inv; m[1][col]*=inv; m[2][col]*=inv;
+    }
+    const auto v=*velocity;
+    const IsleGameVec3 result{m[0][0]*v.x+m[1][0]*v.y+m[2][0]*v.z,
+        m[0][1]*v.x+m[1][1]*v.y+m[2][1]*v.z,m[0][2]*v.x+m[1][2]*v.y+m[2][2]*v.z};
+    if (!std::isfinite(result.x) || !std::isfinite(result.y) || !std::isfinite(result.z)) return ISLE_GAME_INVALID_ARGUMENT;
+    *position={m[3][0],m[3][1],m[3][2]}; *velocity=result;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_actor_owner_ground(IsleActorSource* source,float x,float z,IsleActorGround* output) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || !output || !std::isfinite(x) || !std::isfinite(z)) return ISLE_GAME_INVALID_ARGUMENT;
+    isle::world::GroundResult ground{};
+    slot->owner->world.ground_at(x,z,ground);
+    output->height=ground.height;
+    return ISLE_GAME_OK;
+}
+void* isle_actor_owner_current_block(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    return slot?slot->owner->world.current():nullptr;
+}
+IsleGameResult isle_actor_owner_add_one(IsleActorSource* source,void* block,void* reference,
+    const IsleActorGeoSpawn* spawn,const IsleActorGeoDefinition* definition,IsleGameObject** output) {
+    if (output) *output=nullptr;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || !spawn || !definition || !output || definition->identity!=0x8038837cu ||
+        spawn->id!=1003 || block!=slot->owner->world.current() || reference!=block || !block)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    auto& self=*slot->owner;
+    isle::world::Spawn descriptor{};
+    descriptor.id=spawn->id; descriptor.behavior=spawn->behavior;
+    descriptor.position={spawn->translation.x,spawn->translation.y,spawn->translation.z};
+    descriptor.rotation=spawn->euler; descriptor.scale={spawn->scale.x,spawn->scale.y,spawn->scale.z};
+    if (spawn->path) {
+        bool found=false;
+        for (size_t i=0;i<self.world.resources().paths.size();++i)
+            if (&self.world.resources().paths[i]==spawn->path) { descriptor.path=i; found=true; break; }
+        if (!found) return ISLE_GAME_INVALID_ARGUMENT;
+    }
+    size_t definition_index=isle::beach::actor_no_index;
+    for (size_t i=0;i<self.resources.definitions().size();++i)
+        if (self.resources.definitions()[i].wire.guest_address==definition->identity) { definition_index=i; break; }
+    if (definition_index==isle::beach::actor_no_index) return ISLE_GAME_INVALID_ARGUMENT;
+    // Exact source cursor/two half-open searches and inclusive max fallback.
+    constexpr uint32_t minimum=0x80,maximum=0xe4;
+    if (++self.pokemon_counter>maximum-minimum) self.pokemon_counter=0;
+    uint32_t id=maximum;
+    for (unsigned pass=0;pass<2 && id==maximum;++pass) {
+        const auto first=pass?minimum:minimum+self.pokemon_counter;
+        const auto last=pass?minimum+self.pokemon_counter:maximum;
+        for (auto candidate=first;candidate<last;++candidate) {
+            int used=0;
+            const auto result=isle_actor_source_id_in_use(source->game,candidate,&used);
+            if (result!=ISLE_GAME_OK) return result;
+            if (!used) { id=candidate; break; }
+        }
+    }
+    const auto child=self.facade->spawn({id,definition_index,static_cast<isle::world::Block*>(block),
+        static_cast<isle::world::Block*>(reference),&descriptor});
+    if (!child) return child.status.error==isle::actor::OwnerError::capacity?ISLE_GAME_EXHAUSTED:ISLE_GAME_EXECUTION_FAILURE;
+    *output=child.object;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_actor_owner_copy_position(IsleActorSource* source,IsleGameObject* child) {
+    auto* parent=isle::actor::SourceAccess::slot(source);
+    IsleActorSource* child_source=nullptr;
+    if (!parent || isle_actor_source_get(source->game,child,&child_source)!=ISLE_GAME_OK) return ISLE_GAME_INVALID_STATE;
+    auto* target=isle::actor::SourceAccess::slot(child_source);
+    if (!target || target->owner!=parent->owner) return ISLE_GAME_INVALID_ARGUMENT;
+    const IsleGameModelPlacement* position=nullptr;
+    if (isle_game_model_placement(source->game,parent->model,&position)!=ISLE_GAME_OK) return ISLE_GAME_INVALID_STATE;
+    return isle_actor_owner_trigger_position(child_source,position->transform.position);
 }
 }

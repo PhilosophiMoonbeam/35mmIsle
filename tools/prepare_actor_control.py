@@ -9,6 +9,7 @@ from prepare_engine import git, publish
 REVISION = "df8815e75f3d79618466e01e0827c6165b93d11c"
 POKEMON = "src/app_level/pokemon.c"
 COMMON = "src/app_level/4FE330.c"
+MAGIKARP = "src/beach/562BC0.c"
 # Ordered, exact, single-occurrence substitutions; native identities are never guest casts.
 DEFINITIONS = (
     (POKEMON, "Pokemon_SetState", 252, 263, ()),
@@ -33,6 +34,38 @@ DEFINITIONS = (
         ("    sp2C = GET_TRANSFORM(obj->data.dobj);\n    sp2C->pos.v.x = arg1->x;\n    sp2C->pos.v.y = arg1->y;\n    sp2C->pos.v.z = arg1->z;", "    result = isle_actor_owner_trigger_position(pokemon, *arg1);\n    if (result != ISLE_GAME_OK) return result;"),
         ("    pokemon->miscVars[0].field1 = 1;", "    pokemon->miscVars[0].field1 = 1;\n    return ISLE_GAME_OK;"),
     )),
+    (MAGIKARP, "func_beach_802CAB50", 4, 18, (
+        ("    DObj* model = obj->data.dobj;\n    Mtx4Float* rotation = &GET_TRANSFORM(model)->rot;\n", ""),
+        ("Pokemon_SetAnimation(obj, &D_beach_802CDAB4);", "isle_actor_source_set_animation(obj, UINT32_C(0x802cdab4), 0);"),
+        ("rotation->v.y = randRange(360) * PI / 180.0f;", "isle_actor_source_yaw(obj, isle_actor_source_rand_range(obj, 360) * PI / 180.0f);"),
+        ("D_beach_802CC014 = false;", "isle_actor_source_magikarp_active(obj, false);"),
+    )),
+    (MAGIKARP, "func_beach_802CAC08", 20, 28, ()),
+    (MAGIKARP, "func_beach_802CAC48", 30, 32, (
+        ("void func_beach_802CAC48", "GObj* func_beach_802CAC48"),
+        ("    Pokemon_SpawnOnGround(", "    return Pokemon_SpawnOnGround("),
+    )),
+    (COMMON, "func_8035E298_4FE6A8", 175, 195, (
+        ("    Vec3f pos;", "    IsleGameVec3 pos;"),
+        ("    Vec3f vel;", "    IsleGameVec3 vel;"),
+        ("    DObj* s1;", "    size_t s1;"),
+        ("s1 = obj->data.dobj->firstChild->firstChild->next;", "s1 = isle_actor_source_ground_node(obj);"),
+        ("fx_getPosVelDObj(&pos, &vel, s1);", "isle_actor_source_node_world(obj, s1, &pos, &vel);"),
+        ("getGroundAt(pos.x, pos.z, &sp28);", "isle_actor_source_ground(obj, pos.x, pos.z, &sp28);"),
+    )),
+    (COMMON, "func_8035E174_4FE584", 130, 141, (
+        ("Vec3f* arg1", "IsleGameVec3* arg1"),
+        ("    PokemonTransform* sp2C;\n", ""),
+        ("    sp2C = GET_TRANSFORM(sp30->data.dobj);\n    sp2C->pos.v.x = arg1->x;\n    sp2C->pos.v.y = arg1->y;\n    sp2C->pos.v.z = arg1->z;", "    isle_actor_source_publish_position(sp30, *arg1);"),
+    )),
+    (POKEMON, "Pokemon_AddAtGeo", 793, 826, (
+        ("PokemonDef* def", "const PokemonDef* def"),
+        ("    ObjectSpawn spawn;", "    IsleActorGeoSpawn spawn;"),
+        ("    WorldBlock* block;", "    void* block;"),
+        ("getCurrentWorldBlock()", "isle_actor_source_current_block(gobj)"),
+        ("pokemonAddOne(block, block, &spawn, def)", "isle_actor_source_add_one(gobj, block, block, &spawn, def)"),
+        ("        PokemonTransformBase* transform2 = GET_TRANSFORM_BASE(gobj->data.dobj);\n        PokemonTransformBase* transform1 = GET_TRANSFORM_BASE(pokemonObj->data.dobj);\n\n        transform1->xform.pos.v.x = transform2->xform.pos.v.x;\n        transform1->xform.pos.v.y = transform2->xform.pos.v.y;\n        transform1->xform.pos.v.z = transform2->xform.pos.v.z;", "        isle_actor_source_copy_position(gobj, pokemonObj);"),
+    )),
 )
 CONTROL_SYMBOLS = frozenset(unit[1] for unit in DEFINITIONS[:6])
 CONTROL_PREAMBLE = '''/* Private selected own-GAME core actor control. */
@@ -52,6 +85,17 @@ typedef IsleActorFactoryBlock WorldBlock;
 typedef IsleActorFactorySpawn ObjectSpawn;
 typedef IsleActorFactoryInitialization PokemonInitData;
 static const PokemonInitData D_80388348_528758 = { UINT32_C(0x80388348) };
+typedef IsleActorGround GroundResult;
+typedef IsleActorGeoDefinition PokemonDef;
+static const PokemonInitData D_beach_802CDAEC = { UINT32_C(0x802cdaec) };
+static const PokemonDef D_8038837C_52878C = { UINT32_C(0x8038837c) };
+static const IsleGameVec3 D_8038838C_52879C = { 0.0f, 0.0f, 0.0f };
+#define PokemonID_1003 1003
+/* Native numeric policy: NIST DLMF3.12.E1 pi, unsuffixed C double.
+ * Original SDK macro spelling/type equivalence is unproven; no SDK import. */
+#define PI 3.14159265358979323846
+#define UNUSED
+#define Pokemon_SpawnOnGround isle_actor_owner_spawn_ground
 #define Pokemon_SpawnOnGroundDlLink4 isle_actor_owner_spawn_ground_dl4
 #define GET_POKEMON(object) isle_actor_source_require(object)
 #define omCreateProcess isle_actor_source_create_process
@@ -75,11 +119,11 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
     manifest_bytes = manifest_path.read_bytes()
     manifest = json.loads(manifest_bytes)
     if (manifest["schema_version"] != 1 or manifest["revision"] != REVISION or
-            manifest["transformation_version"] != "actor-control-v2"):
+            manifest["transformation_version"] != "actor-control-v4"):
         raise ValueError("unsupported actor authority/transformation")
     if git(repository, "cat-file", "-t", REVISION).strip() != b"commit":
         raise ValueError("actor authority is not a commit")
-    if set(manifest["source_files"]) != {POKEMON, COMMON, "include/enums.h", "include/common_structs.h"}:
+    if set(manifest["source_files"]) != {POKEMON, COMMON, MAGIKARP, "include/enums.h", "include/common_structs.h"}:
         raise ValueError("actor source allowlist mismatch")
     sources = {}
     for path, identity in manifest["source_files"].items():

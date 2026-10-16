@@ -246,9 +246,25 @@ if(TARGET isle-rom-snapshot)
     target_link_libraries(isle-model-assets PUBLIC isle-rom-snapshot)
     isle_target_options(isle-model-assets)
 
+    add_library(isle-model-data STATIC src/model_data_decoder.cpp src/model_data_decoder.hpp)
+    target_link_libraries(isle-model-data PUBLIC isle-model-assets)
+    isle_target_options(isle-model-data)
+    target_compile_options(isle-model-data PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
     add_library(isle-beach-actor-resources STATIC src/beach_actor_resources.cpp src/beach_actor_resources.hpp)
-    target_link_libraries(isle-beach-actor-resources PUBLIC isle-model-assets)
+    target_link_libraries(isle-beach-actor-resources PUBLIC isle-model-data)
     isle_target_options(isle-beach-actor-resources)
+
+    add_library(isle-item-resources STATIC src/item_resources.cpp src/item_resources.hpp)
+    target_link_libraries(isle-item-resources PUBLIC isle-model-data)
+    isle_target_options(isle-item-resources)
+
+    add_library(isle-beach-behavior-resources STATIC
+        src/beach_behavior_resources.cpp src/beach_behavior_resources.hpp)
+    target_link_libraries(isle-beach-behavior-resources PUBLIC isle-model-assets)
+    isle_target_options(isle-beach-behavior-resources)
 
     add_library(isle-menu-animation STATIC src/menu_animation.cpp src/menu_animation.hpp
         src/menu_animation_path.cpp)
@@ -586,6 +602,21 @@ if(BUILD_TESTING)
             isle-beach-actor-resources isle-beach-world-resources isle-menu-animation)
         isle_target_options(beach-actor-resources-rom-smoke)
     endif()
+    if(TARGET isle-beach-behavior-resources)
+        add_executable(beach-behavior-resources-rom-smoke EXCLUDE_FROM_ALL
+            tests/beach_behavior_resources_rom_smoke.cpp)
+        target_link_libraries(beach-behavior-resources-rom-smoke PRIVATE isle-beach-behavior-resources)
+        isle_target_options(beach-behavior-resources-rom-smoke)
+    endif()
+    if(TARGET isle-item-resources AND TARGET isle-menu-animation)
+        add_executable(item-resources-rom-smoke EXCLUDE_FROM_ALL tests/item_resources_rom_smoke.cpp)
+        target_link_libraries(item-resources-rom-smoke PRIVATE
+            isle-item-resources isle-menu-animation isle-beach-world-resources)
+        isle_target_options(item-resources-rom-smoke)
+        target_compile_options(item-resources-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
     if(TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE)
         add_executable(actor-owner-rom-smoke EXCLUDE_FROM_ALL tests/actor_owner_rom_smoke.cpp)
         target_link_libraries(actor-owner-rom-smoke PRIVATE
@@ -594,6 +625,16 @@ if(BUILD_TESTING)
         target_compile_options(actor-owner-rom-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_executable(magikarp-owner-rom-smoke EXCLUDE_FROM_ALL
+            tests/magikarp_owner_rom_smoke.cpp tests/magikarp_owner_probe.c tests/magikarp_owner_probe.h)
+        target_link_libraries(magikarp-owner-rom-smoke PRIVATE
+            isle-actor-owner isle-actor-producer isle-effect-bank-resources isle-graphics-task isle-rsp)
+        isle_target_options(magikarp-owner-rom-smoke)
+        target_compile_options(magikarp-owner-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
     endif()
     if(TARGET isle-menu-animation)
         add_executable(menu-animation-tests tests/menu_animation_tests.cpp)

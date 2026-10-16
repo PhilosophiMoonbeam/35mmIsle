@@ -166,7 +166,9 @@
     ]
   },
   "verification": {
-    "status": "Clean Debug and Clang ASan+UBSan actual composed scenes passed after diagnostic removal, genuine sky-follow update and startup storage collision correction. Nongated NULL baseline only; genuine gated species qualification remains open.",
+    "status": "Historical clean Debug/ASan scenes remain retained below; current shared-decoder/native-owner cutover passes unchanged complete12-frame composed GPU cohorts in GCC Debug/Release and Clang ASan+UBSan, five saved surfaces byte-identical and directly inspected. Nongated NULL baseline only, genuine gated source eligibility/focus still open.",
+    "shared_decoder_regression": {"composed_debug":{"capture_root":"/home/bbferko/35mmisle-composed-shared-decoder-gpu-_jfngy6c","binary_sha256":"4ec1f8deb83ef4ab039ba22ed85c1742544c5f9cf6f25fdad5a9f37ee524879a","source_archive_sha256":"9a74f01faff2adc416558b9e866dd202ca2f4ef223d9e84ab8adbe12a097d0ad","elapsed_seconds":11.327996560954489,"terminal_count":44,"created_task_count":43,"absent_tracer_and_task_count":45,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"composed_release":{"capture_root":"/home/bbferko/35mmisle-composed-shared-decoder-release-n4y7ut7g","binary_sha256":"3362fba3040cae3e7d16fcf9baee0c53a75310be365cf60148cffb000409284b","source_archive_sha256":"7681a1928b4022ff18d71f34bf3c451037c4d5a626e29d7dc92d555426ec5f06","elapsed_seconds":10.156683577923104,"terminal_count":44,"created_task_count":43,"absent_tracer_and_task_count":45,"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},"composed_asan":{"capture_root":"/home/bbferko/35mmisle-composed-shared-decoder-asan-9bvn4xqk","binary_sha256":"47c4aea6d698e6306aa39fa317c660b9b2660603bfe3da0e0f2eda4dc9669911","source_archive_sha256":"c62ea623712934478be8bbdb2a7d2c99ad2293dc70e55c8e839041202bf5c566","elapsed_seconds":17.369143301970325,"terminal_count":44,"created_task_count":43,"absent_tracer_and_task_count":45,"software_environment_sha256":"d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9","returncode":0,"rom_unchanged":true,"whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false}},
+    "shared_decoder_surface_sha256": {"actual-world-after-native-cleanup.ppm":"2260e41405cdb853c626f5720cf32d8034fd59d136d6f8ff0c78ca308234dab3","actual-world-next-block-shared-fx.ppm":"2260e41405cdb853c626f5720cf32d8034fd59d136d6f8ff0c78ca308234dab3","actual-world-native-actors-fx.ppm":"e734170e7c7250e22211d53d2855c2503dc01c72366214daa4703203e30ffab2","actual-world-without-hidden-subject.ppm":"2aeec0be2a6e7a77ab09d1152f1ee732a5e848613846e879e271d80a264672cd","actual-world-native-actors.ppm":"2dc882cf02be2b55912e1bacacb4f2588d7615219c5473eeef0e952123d5c451"},
     "prior_debug": {
       "root": "course-source-nongated-baseline-e9711k8f",
       "seconds": 7.980197770055383,
@@ -274,9 +276,9 @@
       "scope": "Real startup/Title/menu/Name/Oak and source course0 request, not gameplay. Owned software input, diagnostic-disabled Host and checked SDL dummy output, no physical/hearing claim."
     },
     "CPU_contracts": {
-      "Debug": {"passed":49,"artifact":"7436"},
-      "Release_full_RDP_enabled": {"passed":49,"artifact":"7437"},
-      "Clang_ASan_UBSan": {"passed":49,"artifact":"7438"}
+      "Debug": {"passed":49,"artifact":"7532"},
+      "Release_full_RDP_enabled": {"passed":49,"artifact":"7560"},
+      "Clang_ASan_UBSan": {"passed":49,"artifact":"7562"}
     },
     "independent_reviews": {
       "native_ownership": "No actionable findings: source-only FIFO/credits/joins/retention/callback/wait/fault/rollback/self-replacement/canonical pose and borrower review.",

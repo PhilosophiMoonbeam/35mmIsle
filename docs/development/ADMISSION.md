@@ -1215,6 +1215,16 @@ families, all courses, gameplay, independent Original parity, private Windows11
 runtime or hardware. CI explicitly builds all23 consumers without a ROM;
 the preceding hosted receipt above remains tied to `6c7e3ca`.
 
+Published `244c950` passed seven hosted jobs, including Linux all23 compilation
+and canonical GPU execution. Three Windows configurations rejected the newly
+hashed species header after automatic CRLF conversion; strict verification
+correctly stopped before compilation. Four explicit LF rules extend the existing
+checkout policy for the new species files. Actual Git checkout filters with
+`core.autocrlf=true` reproduce all four qualified hashes without CRLF. No source
+or expected hash is changed, normalized or bypassed. The native500 snapshot and
+its local runtime receipts remain exact; the Windows fix needs its own hosted
+compiler receipt.
+
 
 ## Independent Detector and framebuffer contexts
 

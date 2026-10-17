@@ -200,3 +200,7 @@ tests/player_commands_rom_fixture.h text eol=lf
 tests/player_commands_rom_fixture.c text eol=lf
 tools/prepare_player_command_reference.py text eol=lf
 src/menu_scene_bridge.h text eol=lf
+src/beach_initial_species_source.h text eol=lf
+src/beach_initial_species.hpp text eol=lf
+src/beach_initial_species.cpp text eol=lf
+tests/beach_initial_species_rom_smoke.cpp text eol=lf

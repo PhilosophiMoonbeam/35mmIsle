@@ -63,7 +63,7 @@
       "sha256": "c9192a1819795bb6c8581871416a7ae807c8439cb2c5bc0c117c368ebb736981"
     },
     "tests/world_runtime_tests.cpp": {
-      "sha256": "6a728390cf234cae6462a4731cad3ee07132bfd79e8ea46d18c2452b03d7e32a"
+      "sha256": "092123b6a631e4110c1ac064adec5289c2d16b251b95d75f860125e0e4b4d619"
     },
     "tests/world_collision_tests.cpp": {
       "sha256": "810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"
@@ -2317,7 +2317,7 @@
         ]
       }
     ],
-    "hosted_evidence_boundary": "Published cdda34c all-ten-job run38995015395 qualifies only that earlier immutable head; this new movement revision still requires its own hosted CI receipt",
+    "hosted_evidence_boundary": "Published7fe551fadfc80f9e56afc37b3fa213b735fef41e workflow38998122181 completed/SUCCESS with allTENjobs individuallySUCCESS, includingMSVCfullstaticLUSaudioRSPRDPnativeengine/eightoptinconsumers andactualLinuxLUSMesaEGL/CPU-Vulkan. https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38998122181 . This qualifies that immutable movement head, not later canonical-C-state/Player changes, privateWindows11ROM/device/fullgame execution.",
     "not_qualified": [
       "All remaining species callback/weighted/initial/transitive closure",
       "Production Player FSM/input/camera/full photo context queue/snapshots/film/UI/save/course/product entrypoint",

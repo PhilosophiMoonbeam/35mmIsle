@@ -120,7 +120,7 @@
     "strictness":"World now delegates to the constructor-only model_assets::Closure shared with ActorResources (cmake/model-asset-inputs.json). PUSH/NOPUSH, E1/04 and both CULL return/visible paths propagate complete TIMG/Segment14/latch alternatives. Models are composed in source node/pre/bind/draw order per lane, independently symbolic at lane entry. Incoming-state consumers remain explicit obligations; installation is unavailable until all are discharged. Exact primary material size is retained. Active cycles, bounded-work exhaustion, unadmitted address-bearing operations and malformed cache/image extents reject. Dynamic segment0x0E calls bind real native attached slots; no guessed image pool, blanket segment installation or partial-complete result."
   },
   "native_component": {
-    "files":["src/world_runtime.hpp","src/world_runtime.cpp","src/world_movement.hpp","src/world_movement.cpp","src/world_collision.hpp","src/world_collision.cpp","src/world_producer.hpp","src/world_producer.cpp","src/borrowed_model_kernel.hpp","src/borrowed_model_kernel.cpp","src/menu_animation_path.cpp"],
+    "files":["src/world_runtime.hpp","src/world_runtime.cpp","src/world_movement_state.h","src/world_movement.hpp","src/world_movement.cpp","src/world_collision.hpp","src/world_collision.cpp","src/world_producer.hpp","src/world_producer.cpp","src/borrowed_model_kernel.hpp","src/borrowed_model_kernel.cpp","src/menu_animation_path.cpp"],
     "production_entry":"World(scene::Services&,const Resources&,Callbacks) uses existing concrete native object/process/command/render/retirement services. Explicit native-game ResourceView construction is an isolated component test seam and requires its typed command consumer.",
     "source_objects":"Sky id99, primary/secondary terrain ids100+2*index, primary road ids101+2*index; update link9 distinct render DL3; source object tagffffffff; sky render priority80000001, terrain/road80000000; sky global clock process priority2, block texture priority1, follow-camera priority0.",
     "source_callbacks":"Actor add/remove/change are nullable exactly as pinned source. Camera binding and effect-position translation are required typed consumers; no default no-op or guest function cast. Transition delta is(previous.worldPos-next.worldPos)*100. Real player/Pokemon/Beach scene assembly belongs to Main and is not implemented by this component.",
@@ -141,7 +141,537 @@
     "authored_checks":["tests/world_runtime_tests.cpp","tests/world_collision_tests.cpp","tests/world_resources_rom_smoke.cpp","tests/world_producer_rsp_smoke.cpp"],
     "private_consumer_scope":"Main executed world_producer_rsp_smoke with the complete-resource native component and actual canonical RSP/RDP, including all8primary/4secondary resources, complete primary traversal, source visibility hide/restore and joined retirement. The camera is explicitly diagnostic: this is not a Beach scene handler, fake player/actor, first-gameplay frame, LUS surface or Original equivalence claim. Frozen executable SHA256 febf6d3be9e9c048ee9879a76462d569d1a0f7bbeb20bef4f1f7e2fc5129eadb; source/executable archive SHA256 29d6442620edfbf3d5e66cb836e13235f1b2c25398f5b9b882004e469673bdf8. Main initial closure39terminal/38created/40tracer+tasks absent, stable traces, sole initial scan0knownphysical/permission attempts, unchanged ROM, exit0.",
     "private_consumer_transition_ownership":"The explicit component-chain consumer initializes through Movement::initialize once, enters each decoded primary exactly once through World::enter_next, restarts the entered road at0, and samples it at0.5 with Movement::update_position before native tick and actual canonical task completion. It must not call Movement::update after explicit entry: pinned world/movement.c250-272 independently enters the next block when moveSpeed+moveTime>1; lines65-72,219 use raw CP scale.x times speedMult, not an assumed maximum0.5 step. World::enter_next preserves block.c329-372 camera/effect shifts and actor-window ordering. Main verified allseven required transition callbacks in the fresh successful consumer. The prior double-transition harness failure remains rejected/frozen; no production World/resource behavior or expected primary/shift count was changed.",
-    "position_sampling_api_regression":"tests/world_runtime_tests.cpp position_sampling_preserves_movement_boundary exercises the genuine Movement_UpdatePos boundary with an authored animated CP: forward/backward signed road seeking updates the actual native model, movement position/rotation and interpolated next-block speed while preserving World::current, MovementState::block and move_time even when carried speed would trigger Movement_Update. Complete-chain orchestration remains covered by the actual full GPU consumer, not a permanent CPU harness-wiring/count regression."
+    "canonical_c_state_wave": {
+      "status": "qualified-local-canonical-C-state-cutover-not-production-Player",
+      "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6.9.5",
+      "source_authority": "df8815e75f3d79618466e01e0827c6165b93d11c",
+      "ROM_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+      "canonical_state": "One IsleWorldMovementState C record/default initializer; World::Movement references actual retained record, uses IsleGameVec3 position/rotation and actual opaque World Block identity. No old MovementState alias, persistent mirror, layout pun or per-field movement getter ABI. Explicit native vector component conversion; unchanged source carry/math/callback/sample ordering.",
+      "opaque_identity": "Resolve current nonNULL state block only against actual retained World blocks before dereference/callback/animation mutation; retired World returns before consumption; record and block identity do not survive World replacement. Real separate same-resource World identity is rejected, and original owner can subsequently carry/transition normally.",
+      "source_declaration": "src/world_movement_state.h; defaults0/.5/NULL/zero vectors/0/1 have one C/C++initializer; originalPlayer init still must write .0005 at its source point when implemented.",
+      "C11_compatibility": {
+        "command": "cc -std=c11 -pedantic-errors -Wall -Wextra -Iinclude -Isrc -x c -fsyntax-only src/world_movement_state.h",
+        "passed": true,
+        "production_C_Player_record_or_original_Player_execution": false
+      },
+      "CPU_contracts": {
+        "Debug": {
+          "passed": 56,
+          "total": 56
+        },
+        "Release": {
+          "passed": 56,
+          "total": 56
+        },
+        "ClangASanUBSan": {
+          "passed": 56,
+          "total": 56
+        }
+      },
+      "full_direct_World_GPU_consumer": "Three complete actual canonical RSP/CPU-Vulkan consumers pass all8primary/4secondary and7shifts, source update_position boundary, native hierarchy/direct-sky/RT/RTS/edit/disable/visibility/residency/RAM epoch/guard/realownership checks; each tree77terminal/76created/78absent. Original ROM-only CLI/camera/poses/capacities/timing/budgets retained. Diagnostic camera is not Player camera/Beach scene qualification.",
+      "full_preserved_consumers_per_profile": 14,
+      "accepted_complete_runs": 42,
+      "closed_terminal_tasks": 2601,
+      "frozen_source_set": {
+        "file_count": 416,
+        "all42_maps_identical": true,
+        "sha256": "5427c339551f607f030941a1e9b24c5ca54e98339ff88740d1326e077d559a1c",
+        "algorithm": "SHA256 UTF8 canonical sorted compact JSON source-path-to-SHA256 map",
+        "archive_boundary": "Executable/source frozen before this later nonexecuting receipt/documentation update"
+      },
+      "saved_surfaces": {
+        "distinct": 21,
+        "profile_images": 63,
+        "all_byte_identical_three_profiles_and_published_7fe_movement_wave": true,
+        "new_full_World_consumer_saved_images": false
+      },
+      "whole_root_gate": {
+        "all_tasks_and_tracers_absent_before_each_sole_initial_scan": true,
+        "trace_identities_stable": true,
+        "ROM_unchanged": true,
+        "physical_attempts": 0,
+        "permission_errors": 0,
+        "failed_root_replay_rescan_or_partial_acceptance": false,
+        "fatal_ASan_UBSan": true,
+        "ptrace_LSan_disabled_not_leak_qualification": true,
+        "separate_CPU_sanitizer_suite_leak_detection_exercised": true
+      },
+      "audio": "Only unchanged explicitly owned CPU Capture/PCM/RSP/drain in the applicable original consumers. Standalone direct World GPU consumer has NONE audio; no SDL3 device/stream or hearing qualification.",
+      "runs": [
+        {
+          "profile": "Debug",
+          "target": "actor-interaction-rom-smoke",
+          "binary_sha256": "a16438a6bd7642ef46aa593e0dae9d92a25f7b45f526869b58254e2ac0892725",
+          "source_archive_sha256": "1fd0a789548b1b3b4bb64e1e64f7954b3d258dcb5f8810ab67284cd3b248afe1",
+          "closed_terminals_created_absent": [
+            274,
+            273,
+            275
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "course-magikarp-rsp-smoke",
+          "binary_sha256": "a8329e56737faf7a27cabb28c19ee912554186ba28be57a6926c9b8d2809386e",
+          "source_archive_sha256": "d1d7fd6d26075dd009f09603267223daf6a01e6d202c7c5726815d808a5d1faa",
+          "closed_terminals_created_absent": [
+            54,
+            53,
+            55
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "actor-collision-rom-smoke",
+          "binary_sha256": "a5ec1ec0564c77f817cf24c85520e24892fc0fff3594ba4d686e8565bbb0c8d9",
+          "source_archive_sha256": "05d1548afaca5ec0624fa2c41d5b121f095559d71611e44972e7064bb44aba6a",
+          "closed_terminals_created_absent": [
+            37,
+            36,
+            38
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "actor-command26-rom-smoke",
+          "binary_sha256": "01809da94ebd3eaedfc5c091ae14af81af739db994150da0ab777cf6035bb884",
+          "source_archive_sha256": "9c8170b72f833d8d352dd57aa66df9c9984245206a6eadf9cb2b00afe42736af",
+          "closed_terminals_created_absent": [
+            33,
+            32,
+            34
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "magikarp-owner-rom-smoke",
+          "binary_sha256": "1514279fe66ce6a52ed2a932bff35ff05a9995e23ab13ee2acee58bfdcd71605",
+          "source_archive_sha256": "29b84aff0237c62817dde91afac7e06fbc1a279809f8a84d290b230671788ade",
+          "closed_terminals_created_absent": [
+            25,
+            24,
+            26
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "beach-magikarp-scene-rom-smoke",
+          "binary_sha256": "d7dcffce95b0fdb41fa3819146ae32836d84cc3faf46a0a5513900681d36658e",
+          "source_archive_sha256": "a30330c9e85d68de9004bdca7ba2a7a829a1c7eefb1391f42bb3a3af1dc17cbe",
+          "closed_terminals_created_absent": [
+            8,
+            7,
+            9
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "item-owner-rom-smoke",
+          "binary_sha256": "88ae5bc88970896e2eb81aa389e0a605f6e7333d1bda808e69afdc6b19f322ea",
+          "source_archive_sha256": "adb87a40c4633d14cf1c0b4c1e3e878b517de90a7e5d2e4d01e4064ea3e32c85",
+          "closed_terminals_created_absent": [
+            37,
+            36,
+            38
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "item-flute-rom-smoke",
+          "binary_sha256": "988115c0fcea751682ca22ede5185e7e0cd36a309ae851a7ba51f45376a1e1f9",
+          "source_archive_sha256": "c9350303eaf4aee9e1ca09e5185743898cdca377995abfde87390ceeefea5a40",
+          "closed_terminals_created_absent": [
+            1,
+            0,
+            2
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "actor-collision-rom-smoke",
+          "binary_sha256": "d2ebb46b8f01d3c581f94f7ecfbb8ce081ddd337e7e87ca46a607346a8e60f8c",
+          "source_archive_sha256": "d74bd64e450ff9179fc810a950f985e2b4b78ee0c3a04dbc97f4d5f0272e2774",
+          "closed_terminals_created_absent": [
+            37,
+            36,
+            38
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "actor-command26-rom-smoke",
+          "binary_sha256": "f64e2394671aa17b085ccc127bd7e3133b09292f22076fb47f00ae3dc5216fcd",
+          "source_archive_sha256": "f4ddfc28ef8597d21120358f1db91c8bd5e05f9e11c4fe32a936a442f84fce47",
+          "closed_terminals_created_absent": [
+            33,
+            32,
+            34
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "magikarp-owner-rom-smoke",
+          "binary_sha256": "d4d66961b1109e77c35d826b3b2b21b4a33502f1d946acc6a365f751f5ec4467",
+          "source_archive_sha256": "395d98860ac9ece1e869acc78bda2fc89ce9a3701b14d507453f2508de95df74",
+          "closed_terminals_created_absent": [
+            25,
+            24,
+            26
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "beach-magikarp-scene-rom-smoke",
+          "binary_sha256": "97adf3980aee0c706e893e92279e6436a3ef063ebe3a322799537bf9dcee0733",
+          "source_archive_sha256": "f1270d2be7b769e4284bde3d8832755662cad8d4af8ab6051dc32dec4ba2551f",
+          "closed_terminals_created_absent": [
+            8,
+            7,
+            9
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "item-owner-rom-smoke",
+          "binary_sha256": "7c103d68e72b11f23b108372f21a44179a656f33109542e015aa7a707c70afa3",
+          "source_archive_sha256": "0f0a5f7c7ff3ed7246ba024492a00c6a156a5899cd85f4a22595a20ca8d27960",
+          "closed_terminals_created_absent": [
+            37,
+            36,
+            38
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "actor-interaction-rom-smoke",
+          "binary_sha256": "63e3265b7f7b692f4a07ae09c1ec441dd1a60c4fb8d26c40a10cf8a2b27a8db0",
+          "source_archive_sha256": "a584aa2227fc510e704c81fa16b29db97f1654f32b9f7ec48bc97c43c3a6a50a",
+          "closed_terminals_created_absent": [
+            274,
+            273,
+            275
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "item-flute-rom-smoke",
+          "binary_sha256": "eb5450b63737217b9c6e7e18cae56bae73f947c087cdb8298c945229de438f0b",
+          "source_archive_sha256": "2da17b07379a49d6d148bbf1e8c20660ed7963f4625fe2706beeae86b6c9330b",
+          "closed_terminals_created_absent": [
+            1,
+            0,
+            2
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "actor-collision-rom-smoke",
+          "binary_sha256": "053a614cce8ca86eac79ecf8c743382fc04d4294b5dd2602882178903600f778",
+          "source_archive_sha256": "bcd7af83065ad3b8e59eb3a5f81ab4623a4b1e507e27927a7e507f907affebd3",
+          "closed_terminals_created_absent": [
+            37,
+            36,
+            38
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "actor-command26-rom-smoke",
+          "binary_sha256": "5d173928e0d2c3bf215e1276b1cbe6858527ca3c47675086bda9ed637a2ca91d",
+          "source_archive_sha256": "9192f33da957e070312f053debbac7cccb44f39230b06186a445888275c24db8",
+          "closed_terminals_created_absent": [
+            33,
+            32,
+            34
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "magikarp-owner-rom-smoke",
+          "binary_sha256": "bf92271aae1f20c880c1e2f5f6b77e0ac2e3427878cf2780c407f12009c23670",
+          "source_archive_sha256": "3fcbe02a4c45176b47f2c8a902acfcaf83107f32cc588cf6408376b961f39965",
+          "closed_terminals_created_absent": [
+            25,
+            24,
+            26
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "beach-magikarp-scene-rom-smoke",
+          "binary_sha256": "cd20111efc22f9a3d51c2f5e9b69f4b72420ab7491fa0e400e0dc38d93023be9",
+          "source_archive_sha256": "3798a7176bf21bc2650fb3e8468311ccde965cb7ce04ba4d8aea09b510575a18",
+          "closed_terminals_created_absent": [
+            8,
+            7,
+            9
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "item-owner-rom-smoke",
+          "binary_sha256": "457ce1fba4020f15d6069106567229568fa1cb0cc370a31f792ddea5083d4ce5",
+          "source_archive_sha256": "31465bf352ab38e80816ded40329783cdb01e34b5adb27d3dad037557852025f",
+          "closed_terminals_created_absent": [
+            37,
+            36,
+            38
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "actor-interaction-rom-smoke",
+          "binary_sha256": "193d4c23ab5fbe4f554d82b2ae3932559b4d8e5113b1f68f20250bf8d5f5712a",
+          "source_archive_sha256": "aaa39cce30a3ec79c01d6996434c4302c69e334bae8bdba5282fa5906763a70a",
+          "closed_terminals_created_absent": [
+            274,
+            273,
+            275
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "item-flute-rom-smoke",
+          "binary_sha256": "8d76546772184c9bccc9bbbf2f33090f712ad29eaea49f13fede4901e8d3e9c1",
+          "source_archive_sha256": "1b17d83c579aad7195ddcf4587b34e0a4d70e99b0febdc44ac9e8a86fbb75b33",
+          "closed_terminals_created_absent": [
+            1,
+            0,
+            2
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "actor-owner-rom-smoke",
+          "binary_sha256": "cca5133675ecb409f9fa8a064c17e5051d526b316b987a92854cb12cb7f6bb95",
+          "source_archive_sha256": "6fc414fdb7cd8df73d9f63776bbc80c5a70610c409da6cc42975bc21f53ab6f4",
+          "closed_terminals_created_absent": [
+            28,
+            27,
+            29
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "actor-owner-rom-smoke",
+          "binary_sha256": "6f80c2009c3e9d0d7d7770b7d9b2cad2a7c8a4ea59387e3a90afcf5b00c1e630",
+          "source_archive_sha256": "d4a49783315f5e554622c2c94aa4cae5bd8997f50265616d43a35a9c30adefd8",
+          "closed_terminals_created_absent": [
+            28,
+            27,
+            29
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "actor-owner-rom-smoke",
+          "binary_sha256": "1be45ae27298aea5949129b551c1b66fb91a7db2a4082e50d78399db5dad591d",
+          "source_archive_sha256": "fdf135f7821d019628cd5689f3c7461ba15c9f7ec67b47edc474ff0f1ba7abfc",
+          "closed_terminals_created_absent": [
+            28,
+            27,
+            29
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "actor-producer-rsp-smoke",
+          "binary_sha256": "06c451e2c9f582c93b45df5cec79c8eb804b3734d7926c81d13a22b67a8eb93d",
+          "source_archive_sha256": "b8aea45ac3872aeea3f77a586605c68cc2c1961cc65f904c14629e748afe813f",
+          "closed_terminals_created_absent": [
+            77,
+            76,
+            78
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "course-scene-rsp-smoke",
+          "binary_sha256": "ffb7616d0b9a05c9ac42f11d9d0cb11037cae0a3023a2ee42bdac526e6f153ee",
+          "source_archive_sha256": "11ae6c28db7661895a66d90a91c79b54b6e2e5c132d892fe46e885e7e97a99e8",
+          "closed_terminals_created_absent": [
+            44,
+            43,
+            45
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "course-collision-rsp-smoke",
+          "binary_sha256": "202c57d586d2b53b165eb1006e787743b417df33068794308db57f9f772e2975",
+          "source_archive_sha256": "492e64c2743408028f8cc4c6ce66bdc7664307b11a0d197e9d820df8c4baeedd",
+          "closed_terminals_created_absent": [
+            45,
+            44,
+            46
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "item-producer-rsp-smoke",
+          "binary_sha256": "b38c165307c7e9c0a02e40dbde7ec102edf3d7692196b27ceffe2735c138ff92",
+          "source_archive_sha256": "a0e3316682b37791d0fb39933fd640109d6874e1da1cbf15fae20916fe2ed93c",
+          "closed_terminals_created_absent": [
+            127,
+            126,
+            128
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "actor-producer-rsp-smoke",
+          "binary_sha256": "5b071ca691400862068f52017d68e66fe26d33d12d467738b8f2dd77e49e7d6f",
+          "source_archive_sha256": "13957370f5e6d24eface120c079ed173f3c8c2a5ff023b50e555569d777c80c8",
+          "closed_terminals_created_absent": [
+            77,
+            76,
+            78
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "course-scene-rsp-smoke",
+          "binary_sha256": "3491383ce27fced1faaa1b3a47463af1f3f11bca5854f02415ef1a8f5e721118",
+          "source_archive_sha256": "74257a147bef7f27afcb9c2e5412eb3d32b0708e1c8f65a74265786225ba8dac",
+          "closed_terminals_created_absent": [
+            44,
+            43,
+            45
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "course-magikarp-rsp-smoke",
+          "binary_sha256": "c4ccb9dc030a4aca945043b19aaf338508354c64a8a51442bf745f01da74c181",
+          "source_archive_sha256": "5971d20bc234262912c0e570a50baf09d22df684eea826782614c472b9b36052",
+          "closed_terminals_created_absent": [
+            54,
+            53,
+            55
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "course-collision-rsp-smoke",
+          "binary_sha256": "08eb9768e1608dee5aeb426c95602036653ff71dd9aaa8a7f50370020955c1e7",
+          "source_archive_sha256": "4fa29bde710527be49ce517a10dabc85e5a2a119b3031dfdb2d6540607a7f453",
+          "closed_terminals_created_absent": [
+            45,
+            44,
+            46
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "item-producer-rsp-smoke",
+          "binary_sha256": "906f6504b07613eba39d34903d207e397fab61c501098c7a0532b8f1af8687d2",
+          "source_archive_sha256": "3214b2d712c156105d271b476df2fa82864f8330bd00e805e0aa8d747e237c35",
+          "closed_terminals_created_absent": [
+            127,
+            126,
+            128
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "actor-producer-rsp-smoke",
+          "binary_sha256": "43b0f601ade496fa2d385026ba91bd4afc1812ed22da569d78c122d1d4b371a9",
+          "source_archive_sha256": "01b74a041fbfc258d3d639ff45cf25bc5695b296fc0d44480320aa7629813528",
+          "closed_terminals_created_absent": [
+            77,
+            76,
+            78
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "course-scene-rsp-smoke",
+          "binary_sha256": "b188876c4282d3771d7cdb5c6ef22a2c400c86f479a632d294f1c6ccb0b8e73b",
+          "source_archive_sha256": "7346b9aca4394673b226e2748d30dfa1460c1ed856247195e200272d1395df5d",
+          "closed_terminals_created_absent": [
+            44,
+            43,
+            45
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "course-magikarp-rsp-smoke",
+          "binary_sha256": "359ae36a1bbe3ad71cfb5c126ef108985ce37e4fd055b3071579e7c91b6afd15",
+          "source_archive_sha256": "a7a963a700490c4fcecb1692150c1c2684b4216f12c7e335b410e0de478b31ed",
+          "closed_terminals_created_absent": [
+            54,
+            53,
+            55
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "course-collision-rsp-smoke",
+          "binary_sha256": "307b7bfc3dcf0a83daa0ad4faf6632fea74dfebd8a0bd0325401418dae1ce24d",
+          "source_archive_sha256": "4c6b9e7e78a05f33f8c715274fa57e74f76086cb2ac1fb1a9115702dda132395",
+          "closed_terminals_created_absent": [
+            45,
+            44,
+            46
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "item-producer-rsp-smoke",
+          "binary_sha256": "91f0a124b8b6fee56ffc68abc93222a93928ad3f408c5b41b8589c549822d0de",
+          "source_archive_sha256": "ab617fddfc5a164bb127646be6332cf44699f024bb4e10f234018b282ff490dc",
+          "closed_terminals_created_absent": [
+            127,
+            126,
+            128
+          ]
+        },
+        {
+          "profile": "Debug",
+          "target": "world-producer-rsp-smoke",
+          "binary_sha256": "2f3a2528bbe73fc0433d9806b673d2707755893e6ddad0ed8633cfdb82f47c9a",
+          "source_archive_sha256": "6693dc0cf4477402d32eb196877d708946cb9c00b8bf668ac9a1a06eae5d5221",
+          "closed_terminals_created_absent": [
+            77,
+            76,
+            78
+          ]
+        },
+        {
+          "profile": "Release",
+          "target": "world-producer-rsp-smoke",
+          "binary_sha256": "9df750e7eb48635c2a437cbd539b5c13a5951e2f577d20f48ff3209c11efa1a2",
+          "source_archive_sha256": "b3533449217ace2102b4f906e2ce7aa750703caf118459e0b5cef33e73b7bd63",
+          "closed_terminals_created_absent": [
+            77,
+            76,
+            78
+          ]
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "target": "world-producer-rsp-smoke",
+          "binary_sha256": "16bfb21df0e5d55819803b43b905eabbaea72361a202a3a83881bf74e50b6ada",
+          "source_archive_sha256": "0a1e7e49e21a44c717d98b686dfe91c6d3fa686259b36fdd7c8b44662f1c5e7d",
+          "closed_terminals_created_absent": [
+            77,
+            76,
+            78
+          ]
+        }
+      ],
+      "hosted_evidence_boundary": "Published7fe551f run38998122181 allTENsuccess qualifies the preceding movement head only. This later canonical-C-state revision requires its own immutable-head hosted result.",
+      "not_qualified": [
+        "ProductionPlayer/sourceInput/camera/photo/UI/completecoursegameplay",
+        "Allremaining speciescallback/transitiveclosure",
+        "OriginalSDK/numeric/hardware equivalence",
+        "Physicaldevices/SDL3audiostream/hearing",
+        "PrivateWindows11ROMruntime",
+        "Fullgamecompletion/release"
+      ]
+    },
+    "position_sampling_api_regression":"tests/world_runtime_tests.cpp position_sampling_preserves_movement_boundary exercises the genuine Movement_UpdatePos boundary with an authored animated CP: forward/backward signed road seeking updates the actual native model, movement position/rotation and interpolated next-block speed while preserving World::current, IsleWorldMovementState::block and move_time even when carried speed would trigger Movement_Update. Complete-chain orchestration remains covered by the actual full GPU consumer, not a permanent CPU harness-wiring/count regression."
   },
   "installation": {
     "target":"Exactly caller-owned word-swapped8MiB RDRAM:dst[(guest-80000000+i)^3]=source[i]",

@@ -116,8 +116,38 @@ additional images cover movement and retirement. The actual Debug six-panel
 initial/horizontal/vertical/turn/scale/restored surface was directly inspected.
 These are native component results, not production Player, complete photography,
 other species/courses, original hardware/numeric equivalence or private
-Windows11 runtime qualification. The earlier published `cdda34c` ten-job CI
-receipt does not qualify this later source revision.
+Windows11 runtime qualification. Published `7fe551f` passed all ten real hosted
+Linux/MSVC jobs in run38998122181, including full static LUS/audio/RSP/RDP/native
+engine and eight opt-in consumer builds. That receipt qualifies its exact
+movement revision, not later canonical-state/Player changes.
+
+## Canonical C-compatible World movement
+
+`IsleWorldMovementState` replaces the former C++ state and every caller outright.
+The existing World algorithm borrows that one retained C record; explicit
+`IsleGameVec3` component conversion replaces vector-type assumptions. One C/C++
+initializer preserves the seven existing fields and defaults. C cannot
+dereference its opaque block identity; native movement resolves actual retained
+World membership before callbacks, sampling or mutation. The record does not
+survive World replacement. A real separate same-resource World regression proves
+foreign rejection leaves both Worlds, state, callbacks and native animation
+unchanged, then verifies subsequent valid carry/transition.
+
+The C11 header check and all 56 CPU contracts per Debug/Release/Clang ASan+UBSan
+passed. Fourteen complete consumers per profile passed in 42 fresh frozen
+captures: 2,601 terminal tasks, identical 416-file source maps, stable closed
+trees, unchanged ROM and zero physical-device attempts or permission errors.
+The direct full World GPU consumer additionally completed all eight primary/
+four secondary resources, seven shifts, original sampling/admission/restoration/
+residency/retirement checks; each tree was 77 terminal / 76 created / 78 absent.
+All 21 saved surfaces/63 profile images remain byte-identical to the preceding
+movement wave. Exact binary/archive/source-set identities are in
+`world-inputs.json`'s `native_component.canonical_c_state_wave`.
+
+This is the shared state prerequisite, not an implemented Player record,
+original-C Player execution, camera/input/photo/UI, complete Beach gameplay or
+Windows11 private-ROM qualification. Its own later immutable-head CI receipt is
+still required; earlier `7fe551f` CI does not qualify this cutover.
 
 ## Native Item and complete C interaction execution
 

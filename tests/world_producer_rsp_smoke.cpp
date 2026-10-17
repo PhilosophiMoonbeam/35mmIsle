@@ -112,7 +112,7 @@ int run(const std::filesystem::path& path) {
         }
     };
     source_terrain_pose();
-    world::MovementState movement_state;world::Movement movement(component,movement_state,{});require(movement.initialize(0),"real road admission");
+    IsleWorldMovementState movement_state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;world::Movement movement(component,movement_state,{});require(movement.initialize(0),"real road admission");
     source_terrain_pose();
     const std::array<menu::RamRange,6> other{{{top,0x10000},{stack,0x10000},{output,output_end-output},
         {color,target_bytes},{depth,target_bytes},{guard,256}}};

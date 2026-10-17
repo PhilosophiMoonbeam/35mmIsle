@@ -11,7 +11,7 @@ Vec3 path_position(const menu::AnimationPath& p, float time) {
 Vec3 path_velocity(const menu::AnimationPath& p, float time) {
     const auto v = menu::animation::path_velocity(p,time); return {v.x,v.y,v.z};
 }
-Movement::Movement(World& world, MovementState& state, MovementCallbacks callbacks)
+Movement::Movement(World& world, IsleWorldMovementState& state, MovementCallbacks callbacks)
     : world_(world),state_(state),callbacks_(callbacks) {}
 bool Movement::initialize(std::size_t index) {
     if (state_.speed_multiplier < 0 || !std::isfinite(state_.speed_multiplier) || index >= 13) return false;
@@ -39,14 +39,18 @@ void Movement::update_position(Block& block, float move, float cp) {
     const float cosine = std::cos(descriptor.yaw), sine = std::sin(descriptor.yaw);
     state_.position = {cosine*sample.position.x+sine*sample.position.z,sample.position.y,
                        -sine*sample.position.x+cosine*sample.position.z};
-    state_.rotation = sample.rotation;
+    state_.rotation = {sample.rotation.x,sample.rotation.y,sample.rotation.z};
     state_.rotation.y += descriptor.yaw;
     if (descriptor.reversed) state_.rotation.y += 3.1415927f;
     state_.move_speed = state_.speed_multiplier*speed;
 }
 void Movement::update() {
-    auto* block = state_.block;
-    if (!block || world_.retired()) return;
+    if (!state_.block || world_.retired()) return;
+    auto blocks = world_.blocks();
+    const auto owned = std::find_if(blocks.begin(),blocks.end(),
+        [identity=state_.block](const Block& candidate) { return &candidate == identity; });
+    if (owned == blocks.end()) throw std::invalid_argument("Foreign world movement block");
+    auto* block = &*owned;
     const float cp = std::clamp(state_.control_time,0.0f,1.0f);
     float move = std::clamp(state_.move_time,0.0f,1.0f);
     if (!std::isfinite(cp) || !std::isfinite(move) || !std::isfinite(state_.move_speed))

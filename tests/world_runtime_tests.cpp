@@ -318,7 +318,7 @@ void movement_boundary_rotation_and_stop() {
     input.blocks[0].metadata.yaw = 1.5707963267948966f;
     input.blocks[0].metadata.reversed = true;
     w::World world(n.game,input.view(),trace.callbacks());
-    w::MovementState state;
+    IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
     w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
     require(movement.initialize(0),"movement init");
     require(std::fabs(state.position.x-30)<0.0001f && std::fabs(state.position.z+10)<0.0001f && state.position.y == 20,
@@ -326,14 +326,41 @@ void movement_boundary_rotation_and_stop() {
     require(std::fabs(state.rotation.y-(0.2f+1.5707963267948966f+3.1415927f))<0.00001f && state.move_speed == 0.25f,
         "reversed yaw or control-node speed lost");
     state.move_time = 0.75f; state.move_speed = 0.25f; movement.update();
-    require(state.block->index == 0 && state.move_time == 1 && trace.exits == 0,"strict greater-than boundary changed");
+    require(state.block == &world.blocks()[0] && state.move_time == 1 && trace.exits == 0,"strict greater-than boundary changed");
     state.move_speed = 0.25f; movement.update();
-    require(state.block->index == 1 && state.move_time == 0.25f && trace.exits == 1,"movement carry/exit/transition order differs");
+    require(state.block == &world.blocks()[1] && state.move_time == 0.25f && trace.exits == 1,"movement carry/exit/transition order differs");
     state.block = world.enter_first(2); state.move_time = 0.9f; state.move_speed = 0.2f;
     movement.update();
-    require(state.block->index == 2 && state.move_time == 0.9f && state.move_speed == 0 && trace.exits == 2,
+    require(state.block == &world.blocks()[2] && state.move_time == 0.9f && state.move_speed == 0 && trace.exits == 2,
         "last block must retain source time, notify exit, and stop");
     state.speed_multiplier = -1; require(!movement.initialize(0),"negative movement multiplier admitted");
+}
+void movement_rejects_foreign_world_before_callbacks() {
+    Native n; Input input; Trace trace, other_trace;
+    w::World world(n.game,input.view(),trace.callbacks());
+    w::World other(n.game,input.view(),other_trace.callbacks());
+    IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
+    w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
+    require(movement.initialize(0),"owned movement admission");
+    auto* current = world.current();
+    auto* foreign = other.enter_first(0);
+    state.block = foreign; state.move_time = 0.75f; state.move_speed = 0.5f;
+    const auto position = state.position, rotation = state.rotation;
+    const auto updates = trace.updates;
+    const auto animation_time = world.animation_model(current->road_instance).animation_time;
+    bool rejected = false;
+    try { movement.update(); } catch (const std::invalid_argument&) { rejected = true; }
+    require(rejected && world.current() == current && other.current() == foreign &&
+        state.block == foreign && state.move_time == 0.75f && state.move_speed == 0.5f &&
+        state.position.x == position.x && state.position.y == position.y && state.position.z == position.z &&
+        state.rotation.x == rotation.x && state.rotation.y == rotation.y && state.rotation.z == rotation.z &&
+        trace.exits == 0 && trace.updates == updates &&
+        world.animation_model(current->road_instance).animation_time == animation_time,
+        "foreign opaque block changed either World, movement, callbacks or native animation before rejection");
+    state.block = current;
+    movement.update();
+    require(state.block == &world.blocks()[1] && state.move_time == 0.25f && trace.exits == 1,
+        "foreign-block rejection damaged subsequent owned carry and transition");
 }
 void position_sampling_preserves_movement_boundary() {
     Native n; Input input; Trace trace;
@@ -356,9 +383,9 @@ void position_sampling_preserves_movement_boundary() {
     input.models[5].nodes[1].scale.x = 2;
     auto resources = input.view(); resources.animations = std::span(&program,1);
     w::World world(n.game,resources,trace.callbacks());
-    w::MovementState state; w::Movement movement(world,state,{});
+    IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER; w::Movement movement(world,state,{});
     require(movement.initialize(0),"position-sampling movement admission");
-    auto* block = state.block; state.move_time = 0.75f;
+    auto* block = world.current(); state.move_time = 0.75f;
     movement.update_position(*block,0.5f,state.control_time);
     require(world.current() == block && state.block == block && state.move_time == 0.75f,
         "position sampling performed a carry-driven block transition or advanced movement time");
@@ -443,12 +470,12 @@ void source_control_line_limits() {
         "source control slice and UV object availability were conflated");
     require(world.sample(world.blocks()[1],0.5f,0.5f).speed == 0,
         "numControlLines4 must have no source control-point sample");
-    w::MovementState state; w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
+    IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER; w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
     require(movement.initialize(0),"control-limit movement init");
     state.move_time = 1; state.move_speed = 0.1f; movement.update();
-    require(state.block->index == 0 && state.move_speed == 0,"null control slice did not stop source transition");
+    require(state.block == &world.blocks()[0] && state.move_speed == 0,"null control slice did not stop source transition");
     state.block = world.enter_first(1); state.move_time = 1; state.move_speed = 0.1f; movement.update();
-    require(state.block->index == 2 && !state.block->road_model,
+    require(state.block == &world.blocks()[2] && !world.blocks()[2].road_model,
         "source nonnull control slice must permit entry even when no UV model exists");
 }
 void same_resource_world_owners_and_clear() {
@@ -562,6 +589,7 @@ void faulted_owner_retirement_joins_before_context_release() {
 int main() {
     try { transitions_and_retirement(); movement_boundary_rotation_and_stop(); position_sampling_preserves_movement_boundary(); required_consumers_and_sky_follow(); path_tracks_callbacks_and_boundaries(); source_control_line_limits();
         same_resource_world_owners_and_clear();
+        movement_rejects_foreign_world_before_callbacks();
         optional_ceiling_output_rules();
         actual_native_ceiling_coordinates_and_defaults();
         actual_native_ceiling_consumed_paths();

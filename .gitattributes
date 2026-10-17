@@ -124,3 +124,4 @@ src/game_save.cpp text eol=lf
 tests/game_save_tests.cpp text eol=lf
 tests/actor_movement_probe.c text eol=lf
 tests/actor_movement_probe.h text eol=lf
+src/world_movement_state.h text eol=lf

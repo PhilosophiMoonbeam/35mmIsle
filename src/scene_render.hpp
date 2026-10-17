@@ -4,6 +4,7 @@
 #include "scene_services.hpp"
 #include <array>
 
+#include "graphics_task.hpp"
 namespace isle::scene::graphics { class SourceControl; }
 
 namespace isle::scene::render {
@@ -66,6 +67,13 @@ struct Input {
     // A camera pass joins real lanes in source order 0,2,1,3.
     std::span<const Pass> passes;
     save::ScreenOffsets screen_offsets{};
+    // Actual included task program, independent of later in-list transitions.
+    // Legacy callers retain their original F3DEX2_NoN_fifo task ID2.
+    ::isle::graphics::SourceProgram program = ::isle::graphics::SourceProgram::f3dex2_non_fifo;
+    // Optional final wire phase under the same real preparation lease, after
+    // every camera callback. This is not an extra camera/pass or submission.
+    Control finalize=nullptr;
+    void* finalize_user=nullptr;
 };
 } // namespace isle::scene::render
 #endif

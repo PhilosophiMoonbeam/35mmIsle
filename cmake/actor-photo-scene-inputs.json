@@ -3,7 +3,7 @@
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.8.11.2",
-  "native_support": {"src/actor_photo_scene.hpp":{"sha256":"9482adfbc0ec41f81704b378b925e7a5e9800b7c0867d2ca1495c0db5a81635a"},"src/actor_photo_scene.cpp":{"sha256":"98a34f5b570750feb15763004f484f5d8b4c3cbf1b9b7a0680f9ec83681c5454"},"src/actor_producer.hpp":{"sha256":"556d3a37d6bdb14922da8efc4ce1a457bd4fa084687b41c63a693261d77d5981"},"src/actor_producer.cpp":{"sha256":"324414f50a01dc40a1af690ce32adc4777588021ec39dd88d9f4e674201a7470"}},
+  "native_support": {"src/actor_photo_scene.hpp":{"sha256":"9482adfbc0ec41f81704b378b925e7a5e9800b7c0867d2ca1495c0db5a81635a"},"src/actor_photo_scene.cpp":{"sha256":"98a34f5b570750feb15763004f484f5d8b4c3cbf1b9b7a0680f9ec83681c5454"},"src/actor_producer.hpp":{"sha256":"cc396119820b9bc0d974c0b9f61ce001a9ad7d6a0e85dcd2909b91da303910f4"},"src/actor_producer.cpp":{"sha256":"4fa34946e9c473fbc975378e71ee8ef6c38a88c3999098d32f2b733b3c2db076"}},
   "implementation": ["src/actor_producer.hpp", "src/actor_producer.cpp", "src/actor_photo_scene.hpp", "src/actor_photo_scene.cpp"],
   "authority": "Own immutable GAME stage /home/bbferko/35mmisle-course-pinned-source-vhh0_3lz and exact pinned Git object database /home/bbferko/repos/pokemonsnap/.git. No dirty source, SDK producer/header/layout, disassembly, runtime or ROM used by worker.",
   "source_files": {

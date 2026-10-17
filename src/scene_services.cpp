@@ -39,6 +39,7 @@ struct Services::Impl {
         void* command_queued_user = nullptr;
         RenderMetadata render{};
         ObjectLifecycle lifecycle{};
+        ObjectLifecycle lifecycle_observer{};
         std::span<IsleGameObject** const> source_fields{};
         SourceBorrows source_borrows{};
         bool source_registered = false;
@@ -139,6 +140,20 @@ struct Services::Impl {
             if (entry->object == object) return entry;
         return nullptr;
     }
+    ObjectRecord* lifecycle_record(IsleGameObject* object) noexcept {
+        auto* record = find(object);
+        if (record == nullptr || record->deleting || record->retired) {
+            s.fail("scene lifecycle owner is unregistered or retiring");
+            return nullptr;
+        }
+        IsleGameObjectMetadata metadata{};
+        const auto validation = isle_game_object_metadata(s.game, record->object, &metadata);
+        if (validation != ISLE_GAME_OK) {
+            s.check(validation, "scene lifecycle owner validation");
+            return nullptr;
+        }
+        return record;
+    }
     SpriteRecord* find_sprite(IsleGameSprite* sprite) noexcept {
         for (auto* object = objects; object != nullptr; object = object->next)
             for (auto* entry = object->sprites; entry != nullptr; entry = entry->next)
@@ -189,12 +204,16 @@ struct Services::Impl {
         // receivers: ordinary 21/22 remain visible at their real FIFO positions.
         entry->owner->close_source_fields(*entry);
         isle_game_commands_release(&entry->owner->commands, &entry->commands);
+        if (entry->lifecycle_observer.retiring != nullptr)
+            entry->lifecycle_observer.retiring(object, entry->lifecycle_observer.user);
         if (entry->lifecycle.retiring != nullptr)
             entry->lifecycle.retiring(object, entry->lifecycle.user);
     }
     static void retired(IsleGameObject* object, void* user) noexcept {
         auto* entry = static_cast<ObjectRecord*>(user);
         entry->retired = true;
+        if (entry->lifecycle_observer.joined != nullptr)
+            entry->lifecycle_observer.joined(object, entry->lifecycle_observer.user);
         if (entry->lifecycle.joined != nullptr)
             entry->lifecycle.joined(object, entry->lifecycle.user);
         auto* owner = entry->owner;
@@ -423,22 +442,42 @@ bool Services::set_update(IsleGameObject* object, IsleGameCallback callback, voi
     return check(isle_menu_set_update(game, record->object, callback, user), "scene source update replacement");
 }
 bool Services::set_lifecycle(IsleGameObject* object, ObjectLifecycle lifecycle) noexcept {
-    auto* record = impl_->find(object);
-    if (record == nullptr || record->deleting || record->retired) {
-        fail("scene lifecycle owner is unregistered or retiring");
-        return false;
-    }
-    IsleGameObjectMetadata metadata{};
-    const auto validation = isle_game_object_metadata(game, record->object, &metadata);
-    if (validation != ISLE_GAME_OK) {
-        check(validation,"scene lifecycle owner validation");
-        return false;
-    }
+    auto* record = impl_->lifecycle_record(object);
+    if (record == nullptr) return false;
     // Failed scenes still must release borrowed observer userdata. Permit only
     // a validated detach; never install new work or clear the sticky failure.
     const bool detach = !lifecycle.retiring && !lifecycle.joined && !lifecycle.user;
     if (failed() && !detach) return false;
     record->lifecycle = lifecycle;
+    return true;
+}
+bool Services::observe_lifecycle(IsleGameObject* object, ObjectLifecycle observer) noexcept {
+    if (object == nullptr) {
+        fail("scene lifecycle observer requires an explicit owner");
+        return false;
+    }
+    auto* record = impl_->lifecycle_record(object);
+    if (record == nullptr || failed()) return false;
+    if (observer.user == nullptr || (!observer.retiring && !observer.joined) ||
+        record->lifecycle_observer.user != nullptr) {
+        fail("scene lifecycle observer requires an unused slot and callback identity");
+        return false;
+    }
+    record->lifecycle_observer = observer;
+    return true;
+}
+bool Services::unobserve_lifecycle(IsleGameObject* object, void* user) noexcept {
+    if (object == nullptr) {
+        fail("scene lifecycle observer detach requires an explicit owner");
+        return false;
+    }
+    auto* record = impl_->lifecycle_record(object);
+    if (record == nullptr) return false;
+    if (user == nullptr || record->lifecycle_observer.user != user) {
+        fail("scene lifecycle observer detach requires its registered identity");
+        return false;
+    }
+    record->lifecycle_observer = {};
     return true;
 }
 bool Services::set_command_handler(IsleGameObject* object, IsleGameCommandHandler callback, void* user) noexcept {

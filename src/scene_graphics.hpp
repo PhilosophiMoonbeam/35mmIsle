@@ -38,6 +38,12 @@ struct CompletedWork {
     void* context = nullptr;
     void (*function)(void*, rsp::CanonicalExecutor::MemoryLease&, std::uint32_t framebuffer) = nullptr;
 };
+// Cold upper bounds for source-controlled composition. The pass-order storage
+// is already fixed at 32; each pass may add one sprite-command reservation.
+struct RenderCapacity {
+    std::size_t sprite_draws = 0;
+    std::size_t resource_reservations = 0;
+};
 struct CreateResult;
 // Synchronous nonowning source-camera capability. Never retain this object,
 // its RAM span or a pointer to either after the control callback returns.
@@ -53,8 +59,28 @@ public:
     std::uint32_t depth() const noexcept;
     void command(std::uint32_t, std::uint32_t);
     void call(render::List);
-    // Prepares/draws the current pass at most once, reading its actual camera
-    // and sprite views now, not before the preceding source-camera dispatch.
+    // Emit the same genuine reset body as the default renderer into a caller's
+    // bounded native cursor, using this actual Frame's targets and payloads.
+    // The sink returns normally; it must not perform checked C transfers.
+    void reset_program_state(void*, void (*)(void*, std::uint32_t, std::uint32_t)) const;
+    // Emits only current native camera/viewport/scissor/flags/targets. No
+    // producer, object or prefix preparation occurs. At most once per dispatch.
+    void initialize_camera();
+    // Restore a populated secondary lane into the caller's bounded cursor.
+    // Reuses the current native viewport/targets and camera encoder, suppressing
+    // depth/background clears. Returns the actual advanced physical cursor.
+    std::uint32_t restore_camera(unsigned lane,std::uint32_t cursor,std::uint32_t end);
+    std::uint32_t initialize_camera_into(std::uint32_t cursor,std::uint32_t end);
+    std::uint32_t draw_into(std::uint32_t cursor,std::uint32_t end);
+    // Finalizer only: validate a genuine owned FullSync/EndDL terminal, call
+    // its source group and let the outer task end without a second FullSync.
+    void finish_task_group(render::List root,render::List terminal);
+    // Compiled passes only: prepares real producer lists without emitting any
+    // camera or lane commands. The borrow expires with this control callback.
+    // At most once; cannot mix either explicit phase with draw().
+    const render::Prepared& prepare();
+    // Initializes/prepares/draws the current pass at most once, reading its
+    // actual camera and sprite views now, not before preceding source dispatch.
     void draw();
 private:
     struct State;
@@ -76,6 +102,11 @@ public:
     ~Frame();
     Frame(const Frame&) = delete;
     Frame& operator=(const Frame&) = delete;
+    // Optional explicit cold plan, before the first begin (including a failed
+    // begin). Source-only callers reserve before dispatch, not by warm-up.
+    // Once installed, excess input fails closed rather than growing storage.
+    // Failure is retained in error()/message(), as for begin().
+    bool reserve_render_capacity(RenderCapacity) noexcept;
     bool begin(render::Input, FrameContext = {}, CompletedWork = {}) noexcept;
     bool begin(startup::View, FrameContext = {}) noexcept;
     Poll poll() noexcept;

@@ -110,6 +110,13 @@ public:
     // the live owner; failure remains set and new observers still reject.
     // Rejection leaves old observers intact.
     bool set_lifecycle(IsleGameObject*, ObjectLifecycle) noexcept;
+    // One independent secondary observer, before the primary owner callbacks.
+    // An explicit live object, callback and non-NULL identity are required;
+    // registration never replaces an existing observer. Same-user detach is
+    // allowed after sticky failure without healing it. Native join is not GPU
+    // completion; observer userdata must outlive both callbacks.
+    bool observe_lifecycle(IsleGameObject*, ObjectLifecycle) noexcept;
+    bool unobserve_lifecycle(IsleGameObject*, void* user) noexcept;
     bool set_command_handler(IsleGameObject*, IsleGameCommandHandler, void*) noexcept;
     // Optional read-only successful-enqueue observation, independent of source
     // ownership. Never throw/wait/mutate OM or enqueue recursively.

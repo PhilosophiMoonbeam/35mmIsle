@@ -1,28 +1,21 @@
 #!/usr/bin/env python3
-"""Prepare three complete pinned own-GAME command witnesses for private tests only."""
+"""Prepare one complete pinned own-GAME empty command witness for private tests."""
 import argparse
 import hashlib
 import json
 from pathlib import Path
-import re
 from prepare_engine import git, publish
 
 REVISION = "df8815e75f3d79618466e01e0827c6165b93d11c"
-VERSION = "player-command-reference-complete-v1"
+VERSION = "player-command-reference-complete-v2"
 SOURCE = "src/app_level/player.c"
 SOURCE_BLOB = "bdca3b88bad38d67936f5956288ae22bd88add95"
 SOURCE_SHA256 = "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b"
-DECLARATION_SOURCE = "src/app_level/app_level.h"
-DECLARATION_BLOB = "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4"
-DECLARATION_SHA256 = "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4"
-BLINK_DECLARATION_SHA256 = "6ba4c53ac761e8c7f8b3916b1d2cbf1fb2c85976913a0b4322e4130b8e525fb0"
-SELECTION_SHA256 = "08e741214f344e2978e393bb6704b99af141bbc8dfb15a195dc7fbdb7ff7ce5b"
-RECIPE_SHA256 = "d1b466586c3324e0c1528236ee575db54812a4f026e3e918da3a0389022bc703"
-OUTPUT_SHA256 = "793bf5f3bb5dd1781d8ec087843162e42a192b7c1c54044173cd6163ccb973af"
-HEADER_SHA256 = "88d9ec4b0479c1dcb434c1b3a2bb70c6d97f5d11510eb54a41caac41f3bf787a"
+SELECTION_SHA256 = "a0e34ba57f6c6524c2bf8860d1abfb5f58a3e5afcf051828080cde50d005bb51"
+RECIPE_SHA256 = "6f729069fbe953b0c14e1690bcce6c0fdf375139a46d6339d30fb3785e2c9068"
+OUTPUT_SHA256 = "aee9e4c6a8635f24ccba443c663c1308ed7e88a250138fc071869a6f03a0f9dd"
+HEADER_SHA256 = "22076a0d19efcb5d9faa866930a10fe8f8162307aef2481cc1b476567ca87557"
 DEFINITIONS = (
-    ("mainCameraHandleCmd", 2887, 2891),
-    ("mainCameraUpdate", 2893, 2895),
     ("func_80356118_4F6528", 2282, 2283),
 )
 SUPPORT = (
@@ -36,7 +29,7 @@ SUPPORT = (
     "src/world_movement_state.h", "cmake/SnapPlayerServices.cmake",
     "tools/prepare_engine.py",
 )
-PREAMBLE = ('/* Three complete pinned own-GAME command witnesses; test-private only. */\n'
+PREAMBLE = ('/* One complete pinned own-GAME empty command witness; test-private only. */\n'
             '#include "player_command_reference.h"\n')
 HEADER_PREAMBLE = ('#ifndef ISLE_PLAYER_COMMAND_REFERENCE_H\n'
                    '#define ISLE_PLAYER_COMMAND_REFERENCE_H\n'
@@ -86,8 +79,6 @@ def prepare(repository, manifest_path, output_path, header_path, evidence_path):
         raise ValueError("command witness authority/version/scope mismatch")
     expected_sources = {
         SOURCE: {"git_blob": SOURCE_BLOB, "sha256": SOURCE_SHA256, "line_count": 2998},
-        DECLARATION_SOURCE: {"git_blob": DECLARATION_BLOB, "sha256": DECLARATION_SHA256,
-                             "line_count": 324},
     }
     if manifest["source_files"] != expected_sources:
         raise ValueError("command witness exact own-GAME source inventory mismatch")
@@ -103,30 +94,15 @@ def prepare(repository, manifest_path, output_path, header_path, evidence_path):
     for path, identity in manifest["native_support"].items():
         if digest((root / path).read_bytes()) != identity["sha256"]:
             raise ValueError("command witness native support identity mismatch: " + path)
-    origin = manifest["blink_declaration"]
-    expected_origin = dict(path=DECLARATION_SOURCE, symbol="CAMERA_CMD_BLINK", first=136, last=136,
-                           source_sha256=BLINK_DECLARATION_SHA256,
-                           source_declaration="#define CAMERA_CMD_BLINK 1",
-                           native_symbol="ISLE_PLAYER_REFERENCE_CAMERA_BLINK", value=1)
-    if origin != expected_origin:
-        raise ValueError("command witness blink declaration inventory mismatch")
-    declaration = "".join(sources[DECLARATION_SOURCE][origin["first"] - 1:origin["last"]])
-    match = re.fullmatch(r"#define CAMERA_CMD_BLINK ([0-9]+)\n", declaration)
-    if (digest(declaration.encode()) != BLINK_DECLARATION_SHA256 or match is None or
-            declaration.strip() != origin["source_declaration"] or
-            int(match.group(1)) != origin["value"]):
-        raise ValueError("command witness source-pinned blink declaration mismatch")
     units = manifest["definitions"]
     selection = [[unit["symbol"], unit["first"], unit["last"]] for unit in units]
     selection_digest = digest(json.dumps(selection, separators=(",", ":")).encode())
-    if (len(units) != 3 or selection != [list(unit) for unit in DEFINITIONS] or
+    if (len(units) != 1 or selection != [list(unit) for unit in DEFINITIONS] or
             selection_digest != SELECTION_SHA256 or
             digest(json.dumps(units, sort_keys=True, separators=(",", ":")).encode()) != RECIPE_SHA256):
-        raise ValueError("command witness requires the three complete frozen definition recipes")
+        raise ValueError("command witness requires the one complete frozen empty-handler recipe")
     output = [PREAMBLE]
-    declarations = [HEADER_PREAMBLE,
-                    "/* Pinned own-GAME CAMERA_CMD_BLINK declaration, not an SDK enum. */\n"
-                    "enum { ISLE_PLAYER_REFERENCE_CAMERA_BLINK = %d };\n" % int(match.group(1))]
+    declarations = [HEADER_PREAMBLE]
     admitted = []
     for unit in units:
         if unit["path"] != SOURCE:

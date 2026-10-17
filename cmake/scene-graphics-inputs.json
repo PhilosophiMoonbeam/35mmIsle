@@ -20,14 +20,26 @@
     "src/sys/gtl.c": {
       "git_blob": "5b7ed17b40804177dacc5dbfb33283cf7f405175",
       "sha256": "572c963eea665c1ce02c6e4470b268d76fe8d8ad15790809b21ead077e6cb931",
-      "spans": [[115,118],[155,174],[447,616]],
-      "facts": "SegmentF selects the current actual source framebuffer. Reset/global pre-render precedes produced display lists. Actual lane assembly order0,2,1,3, with line lanes2/3 empty in this selected title closure. Source camera group joins execute before FX, sprite and fade groups. FullSync terminates the actual RSP task but is not a GPU/device fence."
+      "spans": [[25,38],[57,57],[115,118],[155,174],[325,445],[447,616]],
+      "facts": "SegmentF selects the current actual source framebuffer. Reset/global pre-render precedes produced display lists. Task table has only IDs2 F3DEX2_NoN_fifo and8 L3DEX2_fifo; unincluded task IDs are not native aliases. gtlLoadUcode uses a DISTINCT switch:0..2 load2,3..8 load8,9 explicitly reset-only, followed by the genuine reset-list call. Task text/data DMA sizes0x1000/0x800 differ from complete immutable program extents. CPU camera preparation order0,1,2,3 differs from GPU group order0,2,1,3. Preserve literal gtlCombineAllDLists596: lane1-to3 appends its line reload to gMainGfxPos[0], then branches lane1 to saved lane3; no relocated or healed transition. This camera-group join restores primary program on line exits but does not submit/finish a task. Selected title closure has no populated line lanes; populated source line execution remains separately unqualified. FullSync is not a GPU/device fence."
     },
     "src/sys/rdp_reset.c": {
       "git_blob": "e08f96ecfcfbf11b6e0d818eb3e850dc096d4b1c",
       "sha256": "2c36586442e7a5d16e9ffb4125a99e4402e7e20a3ac8b4eb7465333b36d1ec4c",
       "spans": [[1,83]],
-      "facts": "Public-wire numeric identity, native full viewport, source geometry/clip/texture/combiner/othermode defaults, segment0/F and depth target; global pre-render runs AFTER ordinary lighting clear. Only arithmetic/public ABI facts are independently encoded."
+      "facts": "Public-wire numeric identity, native full viewport, source geometry/clip/texture/combiner/othermode defaults, segment0/F and depth target; global pre-render runs AFTER ordinary lighting clear. Shared graphics_task reset_commands factors the existing30-command numeric reset body without ENDDL; caller-owned callable lists append ENDDL. Static ROM reset body0x419a8..0x41a78 matches the existing state words after relocating viewport/identity to actual Frame payloads. Original wrapper calls its static reset list; native flattening has no material state difference. Only arithmetic/public ABI facts are independently encoded; no SDK implementation or layout is imported."
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "spans": [[26,30],[244,251],[321,325]],
+      "facts": "Main ROM0x1000 maps guest0x80000400; triangle text0x3f3a0..0x40730 and line text0x40730..0x418c0. Triangle data0x45a60..0x45e80 and line data0x45e80..0x46270 precede physicalBSS0x45670. Both complete programs/overlays already lie inside the shared admitted main image; no second upload, copied payload fixture or extra program RAM reservation."
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d",
+      "spans": [[470,474],[705,708]],
+      "facts": "Pinned numeric symbol identities independently agree with splat and strict-ROM gtl table: triangle text/data0x8003e7a0/0x80044e60, line0x8003fb30/0x80045280; original static reset0x80040da8, identity0x80040d68, viewport0x8004a980. Native reset receives actual retained Frame addresses, never guesses these original mutable payload locations."
     },
     "src/sys/vi.c": {
       "git_blob": "3ce0baf687d8a7a323f1123cffc84dd90743616b",
@@ -70,13 +82,45 @@
     "https://hack64.net/wiki/doku.php?id=f3dex2",
     "https://hack64.net/wiki/doku.php?id=rcpstructs",
     "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPMatrix.html",
-    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gdp/gDPSetRenderMode.html"
+    "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gdp/gDPSetRenderMode.html",
+    "https://ultra64.ca/files/documentation/online-manuals/man-v5-1/n64man/gsp/gSPLoadUcode.htm",
+    "https://ultra64.ca/files/documentation/online-manuals/man-v5-1/n64man/gsp/gSPLoadUcodeL.htm",
+    "https://ultra64.ca/files/documentation/online-manuals/man-v5-1/ucode/f3dex2/f3dex2.htm",
+    "https://raw.githubusercontent.com/gonetz/GLideN64/master/src/uCodes/F3DEX.cpp",
+    "https://raw.githubusercontent.com/gonetz/GLideN64/master/src/uCodes/F3DEX2.cpp"
   ],
   "private_data": {
     "snapshot_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
     "fade_display_list": {"guest":"0x800aecb0","rom":"0x5a660","bytes":48},
     "fade_vertex_load": {"guest":"0x800aec70","rom":"0x5a620","bytes":64},
     "handling": "Data-only public GBI/vertex inspection at exact known numeric identity. Runtime borrows admitted Snapshot and hydrates unchanged private selected extents; no extracted Gfx/Vtx arrays or images published."
+  },
+  "source_graphics_programs": {
+    "implementation": ["src/graphics_task.hpp", "src/graphics_task.cpp"],
+    "private_use": "Actual private RSP execution only. ProgramRegion borrows exact immutable Snapshot bytes for provenance/query; public code contains numeric facts and hashes only, no ROM program payload or SDK producer/source body. Pinned Git blobs were extracted with git show and verified against Git blob-header SHA1, not dirty worktree/generated standalone data.",
+    "table": {"guest":"0x80040cfc", "rom":"0x418fc", "entries":11, "stride":8, "nonnull_ids":[2,8]},
+    "programs": [
+      {
+        "id":2, "source_name":"gspF3DEX2_NoN_fifo",
+        "text":{"physical":"0x3e7a0","rom":"0x3f3a0","bytes":5008,"sha256":"7c5af2c77f93ca425cfa260392d7f1d14c4503bb6e87ada59c66ac608731d6f9"},
+        "data":{"physical":"0x44e60","rom":"0x45a60","bytes":1056,"sha256":"4bb87049da7360922981afa8afa5992822d11dec896a42017721f399f28fd06d"},
+        "minimum_fifo_bytes":1040
+      },
+      {
+        "id":8, "source_name":"gspL3DEX2_fifo",
+        "text":{"physical":"0x3fb30","rom":"0x40730","bytes":4496,"sha256":"9e8b57dd563d71d59405f063acf34ec81ceaf3b048e891a1da95fb2ebb76e839"},
+        "data":{"physical":"0x45280","rom":"0x45e80","bytes":1008,"sha256":"ac78d51d34d99cf49a34b9f07e728389b22b8c091dc020838ead7cd74c1a9541"},
+        "minimum_fifo_bytes":1344
+      }
+    ],
+    "initial_task": {"text_bytes":4096,"data_bytes":2048,"commands_bytes":0,"flags":4},
+    "in_list_load": {"maximum_commands":3,"data_dma_bytes":2048,"data_size_encoding":"length-minus-one0x7ff; E1 data address, DD0007ff text address, DE000000 genuine reset list","unsupported":"Task descriptor rejects every ID except2/8. Reload switch admits source cases0..9 only;9 is the explicit reset-only branch, not a fabricated XBUS program. Other reload IDs fail admission rather than a successful unsupported no-op."},
+    "line_data_tail": "The0x800-byte DMA from physical0x45280 extends to0x45a80, including0x410 bytes of already reserved cold-zeroed BSS after the genuine0x3f0-byte immutable data prefix. No ROM bytes from the next overlay are copied as fake line data.",
+    "selection": "SourceProgramSelection preserves gtlInit primary/alternate ID0 and false flags. source_line_program uses alternate only when source alternate_active is true, returns9 for XBUS IDs1/3/5/7/9 and8 by genuine default. source_task_program applies disable_near_clipping ONLY to normal task IDs0-to2 and1-to3; selected unsupported table entries still reject. No task completion is manufactured.",
+    "generation_specific_semantics": "1999 F3DEX2 documentation explicitly preserves DL stack, matrix stack, modelview/projection, segment table, scissor, othermode, perspective normalization and viewport across self-load. GeometryMode, lights, vertex cache and combined MP matrix are not preserved. Source reload then runs actual reset/global pre-render; subsequent source camera initialization restores camera-specific state without repeating depth clear on secondary lanes. Older F3DEX no-return-stack warnings do not apply to this F3DEX2 pair.",
+    "capacity_and_lifetime": "Existing cold main-image/BSS reservation0..0x9a8c0 contains both full programs and their data-DMA tails; validate Snapshot identity/unmoved source and all owner reservations before any install writes. SourcePrograms retains unmoved Snapshot authority and returns bounded immutable spans, never native SDK pointers. Caller retains actual RAM mapping/nonzero owner-reuse epoch, immutable reservation, targets, camera payloads, reset/global-pre-render lists and exclusive preparation/GPU/readback lifetime. A callable reset owns31commands=248bytes including ENDDL; reload owns3commands=24bytes (source9 reset-only owns1command). Count CommandRange in64-bit commands; render::List remains32-bit words. Shared FIFO must fit at least0x540 when either line program is used. No hot ROM install, geometry/list flattening, heap allocation or hidden task completion.",
+    "native_rsp_static_capability": "Existing actual path is present without a new backend: cmake/ParallelRsp.cmake explicitly links original src/rsp_cp0.cpp instead of upstream plugin CP0; RSP_MTC0 returns MODE_HOST_SERVICE through generated normal epilogue; src/rsp.cpp service dispatches DMA_READ_LENGTH, preflights every physical row, writes real IMEM and calls cpu.invalidate_imem AFTER JIT return. Existing private rsp_jit.cpp invalidate_imem marks every compiled block dirty, and CPU::run invalidates cached entries before reentry. This establishes the static mid-list IMEM/DMA/JIT path only, not actual populated line execution.",
+    "qualification": "UNRUN implementation/source-authority work. No build/test/lint/formatter/runtime launch or graphics execution. Parent must exercise real full-populated lanes, literal lane1-to3 placement, reset/global-pre-render order, genuine line RSP execution and restore before any line/source-renderer admission. Prior normal/title proofs do not qualify these changes."
   },
   "ram_layout": {
     "cold_main_and_bss": ["0x400","0x9a8c0"],

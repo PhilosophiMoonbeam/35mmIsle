@@ -115,6 +115,7 @@ struct Producer::Impl {
             if (!object.object || !object.model) continue;
             auto& record = object_frames[1-published_objects][pending_object_count++];
             record = {object.object,{object.render_link,object.priority,UINT32_MAX},{}};
+            record.resets_camera = object.sky && sky_draw;
             const auto first = counts;
             if (object.sky) {
                 if (sky_draw) {
@@ -133,9 +134,11 @@ struct Producer::Impl {
                 require(bool(kernel->encode(instance.slot,context,buffer)),"World shared hierarchy encoder rejected source pose");
                 if (fogged) fog(false);
             }
-            for (unsigned lane = 0; lane < 4; ++lane)
+            for (unsigned lane = 0; lane < 4; ++lane) {
                 record.lanes[lane] = {static_cast<std::uint32_t>(first[lane]),
                     static_cast<std::uint32_t>(counts[lane]-first[lane])};
+                if (record.lanes[lane].commands) command(lane,0,0);
+            }
         }
         std::size_t cursor = layout.lists.offset+camera_commands.size()*8;
         for (unsigned lane = 0; lane < 4; ++lane) {
@@ -146,8 +149,11 @@ struct Producer::Impl {
             cursor += counts[lane]*8;
         }
         for (auto& object : std::span(object_frames[1-published_objects]).first(pending_object_count))
-            for (unsigned lane = 0; lane < 4; ++lane)
-                object.lanes[lane].address = ranges[lane].address+object.lanes[lane].address*8;
+            for (unsigned lane = 0; lane < 4; ++lane) {
+                auto& range = object.lanes[lane];
+                range.address = ranges[lane].address+range.address*8;
+                object.continuation_slots[lane] = range.commands ? range.address+range.commands*8 : 0;
+            }
     }
 };
 Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,

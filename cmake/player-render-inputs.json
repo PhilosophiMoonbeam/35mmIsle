@@ -1,0 +1,826 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "player-render-complete-v1",
+  "scope": "complete-camera-render-component-not-root106",
+  "legal_inputs": {
+    "source": "Immutable own-GAME complete player.c2825-2998 camera tail and app_render/4D400.c98-102 setter only; no SDK headers, bodies, layouts, ASM, ROM code or mutable worktree source.",
+    "output": "Private build _deps/isle-player-render-private. Commands are canonical C-only production ownership; renderer is a separate optional native component, not full106 selection.",
+    "semantics": "Typed scalar camera metadata and four actual bounded native wire lanes. Native camera parameters remain canonical. Exact RGBA5551 black=0x00010001 and max-depth ZDZ=0xFFFCFFFC, source FILL blink then ONE_CYCLE restore, ONE_CYCLE borders; signed inclusive rectangle endpoints.",
+    "normalization": "Native scalar expansion of own-GAME sys/vector.c5-16: source magnitude, zero branch and ordered reciprocal component multiplications. Viewport self-assignment is explicitly unchanged, not an unavailable operation."
+  },
+  "source_files": {
+    "src/app_level/player.c": {
+      "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
+      "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b",
+      "line_count": 2998
+    },
+    "src/app_render/4D400.c": {
+      "git_blob": "f2ab62d614dffc86bbd413f87150ea68ff473fd3",
+      "sha256": "67b399176bfd9884cfa3ab929ed3b8565e6503ec88cb5b540f572d3f490927ca",
+      "line_count": 102
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "src/sys/vector.c": {
+      "git_blob": "99b21e6c073cdbce135abfc10533defc56a05026",
+      "sha256": "f36b6f36e6e1434bd498d41df4b03e63775d8f765dc6337f76a7ccfbb5c9fa57",
+      "line_count": 347
+    }
+  },
+  "generator_sha256": "2f2337424ddfc81e084978880e7ec1eaddb74a69511b11eda113a768def38627",
+  "output_sha256": {
+    "renderer": "a887453f2d8a97016c69105a261ccf42c4ecac47f0349962bfb014ec78a33739",
+    "commands": "e07dde7805141ef8dbba3ae4830594cf5f98b1f85225e46e92867d84ded87b98",
+    "header": "ab794165b3df6b2212d6b50afc99e600bee1e34bd2f4db3ba1a3b7a135101f0f"
+  },
+  "native_support": {
+    "src/player_source.h": {
+      "sha256": "c2a6fd05e7e012c336ffa04a0d5d8ba896e798974bb5c8c5cdaeaad9c552f8c1"
+    },
+    "src/player_render_source.h": {
+      "sha256": "79b7d35fece4ed36100cb957a4ada180c837b30ccace6ea0c33790b33a349c9a"
+    },
+    "src/player_render_source_bridge.c": {
+      "sha256": "c8175ca2bd912555803da2c4057255cffc1146488bb0de6b64d6a560199f49a7"
+    },
+    "src/player_commands_source.h": {
+      "sha256": "16c77e10ffc09089f53779643955a0567a9cd7d498b05e1e8dc3439f48bd2dbc"
+    },
+    "src/player_commands_source.c": {
+      "sha256": "7a2a2ec97c7a8b9084933a91ad12a2d14b5961815b7929cbd14e05de9bc64197"
+    },
+    "src/player_camera_viewport.h": {
+      "sha256": "8862a6310b12000353e17d00e6f78043b5d2b1539960fdcafe3edb00302b4e3e"
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "setMainCameraViewport",
+      "first": 2825,
+      "last": 2843,
+      "owner": "renderer",
+      "source_sha256": "d44e00a0601d1bcaa321f896bcc771da2fad6a1331e3703dd1dfd0b046bfbd3b",
+      "source_declaration": "void setMainCameraViewport(s32 xmin, s32 ymin, s32 xmax, s32 ymax)",
+      "changes": [
+        {
+          "find": "void setMainCameraViewport(s32 xmin, s32 ymin, s32 xmax, s32 ymax)",
+          "replace": "void isle_player_setMainCameraViewport(IslePlayerSource* player, int32_t xmin, int32_t ymin, int32_t xmax, int32_t ymax)",
+          "occurrences": 1
+        },
+        {
+          "find": "MainCameraBorderXmin",
+          "replace": "player->MainCameraBorderXmin",
+          "occurrences": 3
+        },
+        {
+          "find": "MainCameraBorderYmin",
+          "replace": "player->MainCameraBorderYmin",
+          "occurrences": 3
+        },
+        {
+          "find": "MainCameraBorderXmax",
+          "replace": "player->MainCameraBorderXmax",
+          "occurrences": 3
+        },
+        {
+          "find": "MainCameraBorderYmax",
+          "replace": "player->MainCameraBorderYmax",
+          "occurrences": 3
+        },
+        {
+          "find": "D_80382DAC_5231BC",
+          "replace": "player->D_80382DAC_5231BC",
+          "occurrences": 2
+        },
+        {
+          "find": "D_80382DA4_5231B4",
+          "replace": "player->D_80382DA4_5231B4",
+          "occurrences": 2
+        },
+        {
+          "find": "D_80382DB0_5231C0",
+          "replace": "player->D_80382DB0_5231C0",
+          "occurrences": 2
+        },
+        {
+          "find": "D_80382DA8_5231B8",
+          "replace": "player->D_80382DA8_5231B8",
+          "occurrences": 2
+        },
+        {
+          "find": "viScreenWidth",
+          "replace": "isle_player_render_screen_width(player)",
+          "occurrences": 6
+        },
+        {
+          "find": "viScreenHeight",
+          "replace": "isle_player_render_screen_height(player)",
+          "occurrences": 6
+        },
+        {
+          "find": "SCREEN_WIDTH",
+          "replace": "320",
+          "occurrences": 4
+        },
+        {
+          "find": "SCREEN_HEIGHT",
+          "replace": "240",
+          "occurrences": 4
+        }
+      ],
+      "native_sha256": "6d7bb0556e425ef3905918d02f3fdb3df085b851278ebed2b8936bbc34f5d51c",
+      "native_declaration": "void isle_player_setMainCameraViewport(IslePlayerSource* player, int32_t xmin, int32_t ymin, int32_t xmax, int32_t ymax)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "mainCameraSetScissor",
+      "first": 2845,
+      "last": 2851,
+      "owner": "renderer",
+      "source_sha256": "2bf9473b8b8b3b49dff9a8d64892f13652ae4430f9865cf8e18f026a5d233eb7",
+      "source_declaration": "void mainCameraSetScissor(Gfx** gfxPtr)",
+      "changes": [
+        {
+          "find": "void mainCameraSetScissor(Gfx** gfxPtr)",
+          "replace": "void isle_player_mainCameraSetScissor(IslePlayerSource* player, uint32_t lane)",
+          "occurrences": 1
+        },
+        {
+          "find": "    Gfx* gfxPos = *gfxPtr;\n",
+          "replace": "    /* lane borrows the actual bounded native wire cursor. */\n",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPSetScissor(gfxPos++, G_SC_NON_INTERLACE, MainCameraBorderXmin, MainCameraBorderYmin, MainCameraBorderXmax, MainCameraBorderYmax)",
+          "replace": "isle_player_render_scissor(player, lane, player->MainCameraBorderXmin, player->MainCameraBorderYmin, player->MainCameraBorderXmax, player->MainCameraBorderYmax)",
+          "occurrences": 1
+        },
+        {
+          "find": "    *gfxPtr = gfxPos;\n",
+          "replace": "    /* Native wire leaves advance that same cursor in place. */\n",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "61e08a6c6112959b803843f604a48391c8d688d9abe1577a507b7182e4943326",
+      "native_declaration": "void isle_player_mainCameraSetScissor(IslePlayerSource* player, uint32_t lane)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "mainCameraPreRender",
+      "first": 2853,
+      "last": 2855,
+      "owner": "renderer",
+      "source_sha256": "cba9261f97988d23f8c41389bd9fc89a487262cd6747a15f1415dccc4473dd16",
+      "source_declaration": "void mainCameraPreRender(OMCamera* cam, s32 mode)",
+      "changes": [
+        {
+          "find": "void mainCameraPreRender(OMCamera* cam, s32 mode)",
+          "replace": "void isle_player_mainCameraPreRender(IslePlayerSource* player, IsleGameCamera* cam, int32_t mode)",
+          "occurrences": 1
+        },
+        {
+          "find": "mainCameraSetScissor(&gMainGfxPos[mode])",
+          "replace": "isle_player_mainCameraSetScissor(player, (uint32_t) mode)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "f9bf31dcae78f5fd87ef7e495a93aa5d6f6d0fca6f1a86a755173f9903e7ac0a",
+      "native_declaration": "void isle_player_mainCameraPreRender(IslePlayerSource* player, IsleGameCamera* cam, int32_t mode)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "fillBorderBlack",
+      "first": 2857,
+      "last": 2870,
+      "owner": "renderer",
+      "source_sha256": "40784b57cd46cb66005383ba9edcf1398a035771bc9d3bd46e743056ed125c86",
+      "source_declaration": "void fillBorderBlack(Gfx** gfxPtr, s32 xmin, s32 ymin, s32 xmax, s32 ymax)",
+      "changes": [
+        {
+          "find": "void fillBorderBlack(Gfx** gfxPtr, s32 xmin, s32 ymin, s32 xmax, s32 ymax)",
+          "replace": "void isle_player_fillBorderBlack(IslePlayerSource* player, uint32_t lane, int32_t xmin, int32_t ymin, int32_t xmax, int32_t ymax)",
+          "occurrences": 1
+        },
+        {
+          "find": "    Gfx* gfxPos = *gfxPtr;\n",
+          "replace": "    /* lane borrows the actual bounded native wire cursor. */\n",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPFillRectangle(gfxPos++,",
+          "replace": "isle_player_render_fill_rectangle(player, lane,",
+          "occurrences": 4
+        },
+        {
+          "find": "gDPPipeSync(gfxPos++)",
+          "replace": "isle_player_render_pipe_sync(player, lane)",
+          "occurrences": 4
+        },
+        {
+          "find": "    *gfxPtr = gfxPos;\n",
+          "replace": "    /* Native wire leaves advance that same cursor in place. */\n",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "776baa6adf9d5fb47bfc5d6441eaf12b8c5f2257de914092e92045e0fa57b7df",
+      "native_declaration": "void isle_player_fillBorderBlack(IslePlayerSource* player, uint32_t lane, int32_t xmin, int32_t ymin, int32_t xmax, int32_t ymax)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "func_80357FD4_4F83E4",
+      "first": 2872,
+      "last": 2885,
+      "owner": "renderer",
+      "source_sha256": "9b883939e200daac5e9d47770301b6bc8e2245c0b3c03e2420387243afc33125",
+      "source_declaration": "void func_80357FD4_4F83E4(GObj* obj)",
+      "changes": [
+        {
+          "find": "void func_80357FD4_4F83E4(GObj* obj) {",
+          "replace": "void isle_player_func_80357FD4_4F83E4(IsleGameObject* obj) {\n    IslePlayerSource* player = isle_player_source_entry(obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "OMCamera* cam = obj->data.cam;",
+          "replace": "IsleGameCamera* cam = isle_player_render_object_camera(player, obj);\n    const IsleGameCameraParameters* parameters = isle_player_render_parameters(player, cam);",
+          "occurrences": 1
+        },
+        {
+          "find": "Vec3f sp20",
+          "replace": "IsleGameVec3 sp20",
+          "occurrences": 1
+        },
+        {
+          "find": "f32 f2",
+          "replace": "float f2",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.x",
+          "replace": "parameters->look_at.eye[0]",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.x",
+          "replace": "parameters->look_at.at[0]",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.z",
+          "replace": "parameters->look_at.eye[2]",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.z",
+          "replace": "parameters->look_at.at[2]",
+          "occurrences": 1
+        },
+        {
+          "find": "Vec3fNormalize(&sp20);",
+          "replace": "{\n        float magnitude = sqrtf(SQ(sp20.x) + SQ(sp20.y) + SQ(sp20.z));\n        if (magnitude != 0.0f) {\n            sp20.x *= 1.0f / magnitude;\n            sp20.y *= 1.0f / magnitude;\n            sp20.z *= 1.0f / magnitude;\n        }\n    }",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A1E6C(&sp20)",
+          "replace": "isle_player_func_800A1E6C(player, &sp20)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "b258886b76b06006a6ba363b66e9ded46b2033ed508ec3aa3ca0a1f9be50c3c9",
+      "native_declaration": "void isle_player_func_80357FD4_4F83E4(IsleGameObject* obj)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "mainCameraHandleCmd",
+      "first": 2887,
+      "last": 2891,
+      "owner": "commands",
+      "source_sha256": "f4f95dc552bf44dc47454441a594297fc56e12966a87b24e848ee7e00a0690d9",
+      "source_declaration": "void mainCameraHandleCmd(GObjCmdData cmdData)",
+      "changes": [
+        {
+          "find": "void mainCameraHandleCmd(GObjCmdData cmdData)",
+          "replace": "void isle_player_mainCameraHandleCmd(IslePlayerSource* player, IslePlayerCommandData cmdData)",
+          "occurrences": 1
+        },
+        {
+          "find": "CAMERA_CMD_BLINK",
+          "replace": "ISLE_PLAYER_CAMERA_BLINK",
+          "occurrences": 1
+        },
+        {
+          "find": "MainCameraBlinkTimeout",
+          "replace": "player->MainCameraBlinkTimeout",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "5c59b78bea139a3c965b0a86b821bacd6de321972fe74337c547bdf1666d3fcd",
+      "native_declaration": "void isle_player_mainCameraHandleCmd(IslePlayerSource* player, IslePlayerCommandData cmdData)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "mainCameraUpdate",
+      "first": 2893,
+      "last": 2895,
+      "owner": "commands",
+      "source_sha256": "b25000c398f5fc7a97efa4d322b95177153d2862fff5c1fcb4cc0b086c7dd677",
+      "source_declaration": "void mainCameraUpdate(GObj* arg0)",
+      "changes": [
+        {
+          "find": "void mainCameraUpdate(GObj* arg0) {",
+          "replace": "void isle_player_mainCameraUpdate(IsleGameObject* arg0) {\n    IslePlayerSource* player = isle_player_source_entry(arg0);",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdProcessCommands(mainCameraHandleCmd)",
+          "replace": "isle_player_commands_process(player, arg0, isle_player_mainCameraHandleCmd)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "f66cbd89b2104e4a92686c7d282d2c48fd80c2963a591e0e6116e55dd499a0ae",
+      "native_declaration": "void isle_player_mainCameraUpdate(IsleGameObject* arg0)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "mainCameraRender",
+      "first": 2897,
+      "last": 2934,
+      "owner": "renderer",
+      "source_sha256": "f110f4493159c5e5e80ed97753e0cfa389f00ab992e79c1749cb9fc1e93479c6",
+      "source_declaration": "void mainCameraRender(GObj* obj)",
+      "changes": [
+        {
+          "find": "void mainCameraRender(GObj* obj)",
+          "replace": "void isle_player_mainCameraRender(IslePlayerSource* player, IsleGameObject* obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "MainCameraBlinkTimeout",
+          "replace": "player->MainCameraBlinkTimeout",
+          "occurrences": 2
+        },
+        {
+          "find": "MainCameraBorderXmin",
+          "replace": "player->MainCameraBorderXmin",
+          "occurrences": 3
+        },
+        {
+          "find": "MainCameraBorderYmin",
+          "replace": "player->MainCameraBorderYmin",
+          "occurrences": 2
+        },
+        {
+          "find": "MainCameraBorderXmax",
+          "replace": "player->MainCameraBorderXmax",
+          "occurrences": 2
+        },
+        {
+          "find": "MainCameraBorderYmax",
+          "replace": "player->MainCameraBorderYmax",
+          "occurrences": 2
+        },
+        {
+          "find": "renInitCamera(&gMainGfxPos[0], obj->data.cam, 0)",
+          "replace": "isle_player_render_camera_init(player, 0, isle_player_render_object_camera(player, obj), 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPPipeSync(gMainGfxPos[0]++)",
+          "replace": "isle_player_render_pipe_sync(player, 0)",
+          "occurrences": 5
+        },
+        {
+          "find": "gDPSetCycleType(gMainGfxPos[0]++, G_CYC_FILL)",
+          "replace": "isle_player_render_cycle(player, 0, ISLE_PLAYER_RENDER_FILL_CYCLE)",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPSetCycleType(gMainGfxPos[0]++, G_CYC_1CYCLE)",
+          "replace": "isle_player_render_cycle(player, 0, ISLE_PLAYER_RENDER_ONE_CYCLE)",
+          "occurrences": 2
+        },
+        {
+          "find": "gDPSetRenderMode(gMainGfxPos[0]++, G_RM_NOOP, G_RM_NOOP2)",
+          "replace": "isle_player_render_mode(player, 0, ISLE_PLAYER_RENDER_NOOP)",
+          "occurrences": 2
+        },
+        {
+          "find": "gDPSetRenderMode(gMainGfxPos[0]++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2)",
+          "replace": "isle_player_render_mode(player, 0, ISLE_PLAYER_RENDER_AA_ZB_OPAQUE)",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPSetScissor(gMainGfxPos[0]++, G_SC_NON_INTERLACE,",
+          "replace": "isle_player_render_scissor(player, 0,",
+          "occurrences": 2
+        },
+        {
+          "find": "gDPSetFillColor(gMainGfxPos[0]++, (GPACK_RGBA5551(0, 0, 0, 1) << 16) | GPACK_RGBA5551(0, 0, 0, 1))",
+          "replace": "isle_player_render_fill_color(player, 0, UINT32_C(0x00010001))",
+          "occurrences": 2
+        },
+        {
+          "find": "gDPFillRectangle(gMainGfxPos[0]++,",
+          "replace": "isle_player_render_fill_rectangle(player, 0,",
+          "occurrences": 1
+        },
+        {
+          "find": "renCameraPostRender(obj->data.cam)",
+          "replace": "isle_player_render_camera_post(player, isle_player_render_object_camera(player, obj))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80382D10_523120->flags |= GOBJ_FLAG_HIDDEN",
+          "replace": "isle_player_render_object_hidden(player, player->D_80382D10_523120, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80382D10_523120->flags &= ~GOBJ_FLAG_HIDDEN",
+          "replace": "isle_player_render_object_hidden(player, player->D_80382D10_523120, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPSetColorImage(gMainGfxPos[0]++, G_IM_FMT_RGBA, G_IM_SIZ_16b, viScreenWidth, viZBuffer)",
+          "replace": "isle_player_render_color_target(player, 0, ISLE_PLAYER_RENDER_DEPTH_TARGET)",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPSetFillColor(gMainGfxPos[0]++, GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0))",
+          "replace": "isle_player_render_fill_color(player, 0, UINT32_C(0xFFFCFFFC))",
+          "occurrences": 1
+        },
+        {
+          "find": "gDPSetColorImage(gMainGfxPos[0]++, G_IM_FMT_RGBA, viBitDepth, viScreenWidth, 0x0F000000)",
+          "replace": "isle_player_render_color_target(player, 0, ISLE_PLAYER_RENDER_COLOR_TARGET)",
+          "occurrences": 1
+        },
+        {
+          "find": "fillBorderBlack(&gMainGfxPos[0],",
+          "replace": "isle_player_fillBorderBlack(player, 0,",
+          "occurrences": 2
+        },
+        {
+          "find": "mainCameraSetScissor(&gMainGfxPos[0])",
+          "replace": "isle_player_mainCameraSetScissor(player, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "ren_func_800192DC(obj)",
+          "replace": "isle_player_render_camera_render(player, obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_ProcessImage()",
+          "replace": "isle_player_render_process_image(player)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "36f79088b82b25e0739b4fc4ff1d74dbe0d6f02e15c8a25904450e54de2f7e4e",
+      "native_declaration": "void isle_player_mainCameraRender(IslePlayerSource* player, IsleGameObject* obj)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "createMainCameras",
+      "first": 2936,
+      "last": 2986,
+      "owner": "renderer",
+      "source_sha256": "95fea9c20cb652b6282ba0ec2e5c73cdecb80b8722fa1dbecb3eb057027eae71",
+      "source_declaration": "GObj* createMainCameras(s32 bgColor)",
+      "changes": [
+        {
+          "find": "GObj* createMainCameras(s32 bgColor)",
+          "replace": "IsleGameObject* isle_player_createMainCameras(IslePlayerSource* player, int32_t bgColor)",
+          "occurrences": 1
+        },
+        {
+          "find": "GObj* camObj",
+          "replace": "IsleGameObject* camObj",
+          "occurrences": 1
+        },
+        {
+          "find": "OMCamera* cam;",
+          "replace": "IsleGameCamera* cam;\n    const IsleGameCameraParameters* parameters;\n    IsleGamePerspective perspective;\n    IsleGameLookAt look_at;",
+          "occurrences": 1
+        },
+        {
+          "find": "ohCreateCamera(",
+          "replace": "isle_player_render_create_camera(player, ",
+          "occurrences": 2
+        },
+        {
+          "find": "OBJID_MAIN_CAMERA",
+          "replace": "1",
+          "occurrences": 1
+        },
+        {
+          "find": "OBJID_UI_CAMERA",
+          "replace": "3",
+          "occurrences": 1
+        },
+        {
+          "find": "LINK_0",
+          "replace": "0",
+          "occurrences": 2
+        },
+        {
+          "find": "CAM_MASK_DL_LINK_3 | CAM_MASK_DL_LINK_4 | CAM_MASK_DL_LINK_5",
+          "replace": "UINT32_C(0x38)",
+          "occurrences": 1
+        },
+        {
+          "find": "CAM_MASK_DL_LINK_1",
+          "replace": "UINT32_C(0x2)",
+          "occurrences": 1
+        },
+        {
+          "find": "mainCameraUpdate",
+          "replace": "isle_player_mainCameraUpdate",
+          "occurrences": 1
+        },
+        {
+          "find": "mainCameraRender",
+          "replace": "isle_player_mainCameraRender",
+          "occurrences": 1
+        },
+        {
+          "find": "ohUpdateDefault",
+          "replace": "isle_player_render_default_update",
+          "occurrences": 1
+        },
+        {
+          "find": "renSpriteCameraRender",
+          "replace": "isle_player_render_sprite_camera",
+          "occurrences": 1
+        },
+        {
+          "find": "false",
+          "replace": "0",
+          "occurrences": 2
+        },
+        {
+          "find": "omCreateProcess(camObj, func_80357FD4_4F83E4, 1, 1)",
+          "replace": "isle_player_source_add_process(player, camObj, isle_player_func_80357FD4_4F83E4, 1, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "cam = camObj->data.cam",
+          "replace": "cam = isle_player_render_object_camera(player, camObj)",
+          "occurrences": 1
+        },
+        {
+          "find": "gMainCamera = cam",
+          "replace": "player->camera = cam",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->flags |= CAMERA_FLAG_1 | CAMERA_FLAG_4",
+          "replace": "isle_player_render_camera_flags(player, cam, UINT32_C(5))",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->bgColor = bgColor",
+          "replace": "isle_player_render_camera_background(player, cam, (uint32_t) bgColor)",
+          "occurrences": 1
+        },
+        {
+          "find": "MainCameraViewport[",
+          "replace": "player->MainCameraViewport[",
+          "occurrences": 8
+        },
+        {
+          "find": "syRdpSetViewport(&cam->vp, player->MainCameraViewport[0], player->MainCameraViewport[1], player->MainCameraViewport[2], player->MainCameraViewport[3]);",
+          "replace": "isle_player_source_checked(player, isle_player_camera_set_viewport_rect(player->game, cam, player->MainCameraViewport[0], player->MainCameraViewport[1], player->MainCameraViewport[2], player->MainCameraViewport[3]));\n    parameters = isle_player_render_parameters(player, cam);",
+          "occurrences": 1
+        },
+        {
+          "find": "setMainCameraViewport(",
+          "replace": "isle_player_setMainCameraViewport(player, ",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->vp.vp.vtrans",
+          "replace": "parameters->viewport.translate",
+          "occurrences": 4
+        },
+        {
+          "find": "cam->vp.vp.vscale",
+          "replace": "parameters->viewport.scale",
+          "occurrences": 4
+        },
+        {
+          "find": "cam->fnPreRender = mainCameraPreRender",
+          "replace": "isle_player_render_camera_prerender(player, cam, isle_player_mainCameraPreRender)",
+          "occurrences": 1
+        },
+        {
+          "find": "omCameraAddMtx(cam, MTX_TYPE_PERSP_FAST, 0)",
+          "replace": "isle_player_source_checked(player, isle_game_camera_add_matrix(player->game, cam, ISLE_GAME_CAMERA_PERSPECTIVE_FAST))",
+          "occurrences": 1
+        },
+        {
+          "find": "omCameraAddMtx(cam, MTX_TYPE_LOOKAT_REFLECT_ROLL, 0)",
+          "replace": "isle_player_source_checked(player, isle_game_camera_add_matrix(player->game, cam, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL))",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->vp = cam->vp; // required to match",
+          "replace": "/* Source viewport self-assignment leaves the canonical native viewport unchanged. */\n    perspective = parameters->perspective;\n    look_at = parameters->look_at;",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->perspMtx.persp.fovy",
+          "replace": "perspective.fovy",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->perspMtx.persp.near",
+          "replace": "perspective.near_plane",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->perspMtx.persp.far",
+          "replace": "perspective.far_plane",
+          "occurrences": 1
+        },
+        {
+          "find": "perspective.far_plane = 25600.0f;",
+          "replace": "perspective.far_plane = 25600.0f;\n    isle_player_source_checked(player, isle_game_camera_set_perspective(player->game, cam, &perspective));",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.x",
+          "replace": "look_at.eye[0]",
+          "occurrences": 2
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.y",
+          "replace": "look_at.eye[1]",
+          "occurrences": 2
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.z",
+          "replace": "look_at.eye[2]",
+          "occurrences": 2
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.x",
+          "replace": "look_at.at[0]",
+          "occurrences": 2
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.y",
+          "replace": "look_at.at[1]",
+          "occurrences": 2
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.z",
+          "replace": "look_at.at[2]",
+          "occurrences": 2
+        },
+        {
+          "find": "cam->viewMtx.lookAt.up.x",
+          "replace": "look_at.up[0]",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.up.y",
+          "replace": "look_at.up[1]",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.up.z",
+          "replace": "look_at.up[2]",
+          "occurrences": 1
+        },
+        {
+          "find": "look_at.up[2] = 0.0f;",
+          "replace": "look_at.up[2] = 0.0f;\n    isle_player_source_checked(player, isle_game_camera_set_look_at(player->game, cam, &look_at));",
+          "occurrences": 1
+        },
+        {
+          "find": "CameraEyePos",
+          "replace": "player->CameraEyePos",
+          "occurrences": 3
+        },
+        {
+          "find": "CameraAtPos",
+          "replace": "player->CameraAtPos",
+          "occurrences": 3
+        }
+      ],
+      "native_sha256": "aceb1240491cb694ac3b84cafaf70b93cc1f8744f680adb3609bd6c61220e2d5",
+      "native_declaration": "IsleGameObject* isle_player_createMainCameras(IslePlayerSource* player, int32_t bgColor)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "removeMainCamera",
+      "first": 2988,
+      "last": 2990,
+      "owner": "renderer",
+      "source_sha256": "248b62ad78950e88d489a139d2d6c0026df2c968b4c3ff77776b2bf08bf0481b",
+      "source_declaration": "void removeMainCamera(void)",
+      "changes": [
+        {
+          "find": "void removeMainCamera(void)",
+          "replace": "void isle_player_removeMainCamera(IslePlayerSource* player)",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(gMainCamera->obj)",
+          "replace": "isle_player_render_delete_object(player, isle_player_render_camera_object(player, player->camera))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "cdb0c4db3cdc8be1a9a979e58f79ed56885f03834937f19a3ce8f97ad812dd61",
+      "native_declaration": "void isle_player_removeMainCamera(IslePlayerSource* player)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "getMainCameraObj",
+      "first": 2992,
+      "last": 2994,
+      "owner": "renderer",
+      "source_sha256": "ba9d0001211264e277a04961be3e49ec9bc70a6d586ec0c1d2f061004503a1cc",
+      "source_declaration": "GObj* getMainCameraObj(void)",
+      "changes": [
+        {
+          "find": "GObj* getMainCameraObj(void)",
+          "replace": "IsleGameObject* isle_player_getMainCameraObj(IslePlayerSource* player)",
+          "occurrences": 1
+        },
+        {
+          "find": "gMainCamera->obj",
+          "replace": "isle_player_render_camera_object(player, player->camera)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "2beecb695173eb1e6db66177ffcd1d5e7f8c8c7085d06ac661e463bcde984433",
+      "native_declaration": "IsleGameObject* isle_player_getMainCameraObj(IslePlayerSource* player)"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "getMainCamera",
+      "first": 2996,
+      "last": 2998,
+      "owner": "renderer",
+      "source_sha256": "75256397445dd53de6e9426155120a3f9ed98d97f96d273ed99ea0190bcfe6b0",
+      "source_declaration": "OMCamera* getMainCamera(void)",
+      "changes": [
+        {
+          "find": "OMCamera* getMainCamera(void)",
+          "replace": "IsleGameCamera* isle_player_getMainCamera(IslePlayerSource* player)",
+          "occurrences": 1
+        },
+        {
+          "find": "gMainCamera",
+          "replace": "player->camera",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "77c5583f4b800237de4eaee80f1cea8ab0690ab6c7942f834085aeb9f4c06ae0",
+      "native_declaration": "IsleGameCamera* isle_player_getMainCamera(IslePlayerSource* player)"
+    },
+    {
+      "path": "src/app_render/4D400.c",
+      "symbol": "func_800A1E6C",
+      "first": 98,
+      "last": 102,
+      "owner": "renderer",
+      "source_sha256": "3de2d762df67ce4eb466edb8b749e665bbba5665ecc751b73a750fc8ca241057",
+      "source_declaration": "void func_800A1E6C(Vec3f* arg0)",
+      "changes": [
+        {
+          "find": "void func_800A1E6C(Vec3f* arg0)",
+          "replace": "void isle_player_func_800A1E6C(IslePlayerSource* player, IsleGameVec3* arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AEBD0.unk_10 = arg0->x * 127.0f",
+          "replace": "isle_player_render_light_component(player, 0, arg0->x * 127.0f)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AEBD0.unk_11 = arg0->y * 127.0f",
+          "replace": "isle_player_render_light_component(player, 1, arg0->y * 127.0f)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AEBD0.unk_12 = arg0->z * 127.0f",
+          "replace": "isle_player_render_light_component(player, 2, arg0->z * 127.0f)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "42646a8e85b874eadb1998aa0409700e03be842fb8b8de362111660850505f67",
+      "native_declaration": "void isle_player_func_800A1E6C(IslePlayerSource* player, IsleGameVec3* arg0)"
+    }
+  ]
+}

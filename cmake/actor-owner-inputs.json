@@ -171,10 +171,10 @@
       "sha256": "f5aeb56a912880c06a0fa1aa4623db8a3e5a78686d084ab124bd4eb446f3896b"
     },
     "src/scene_services.hpp": {
-      "sha256": "8e5c3eafd14cfc486f410877360d989e04387f11c3be69659ac938836aa452c1"
+      "sha256": "de8c6148ed02a5552fa500fc897cab56a9ffe04bf92feed0330168aeecf2e11b"
     },
     "src/scene_services.cpp": {
-      "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
+      "sha256": "11f63a47eac3fe14dcf63c4776aa27e780fef89ced6666027815043f96a162b4"
     },
     "src/environment_sound.hpp": {
       "sha256": "f9a357994239fd13a48afc845cb3ede88274edeb7bf1e60b56d512fc79e7eb45"

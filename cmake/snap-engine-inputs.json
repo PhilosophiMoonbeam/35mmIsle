@@ -35,7 +35,7 @@
   },
   "native_support": {
     "src/player_source.h": {
-      "sha256": "5d2b57e3dba4cba7ae9c5245b191cdfd61a27b844520ef3b7c5233e4bf63d1f0"
+      "sha256": "c2a6fd05e7e012c336ffa04a0d5d8ba896e798974bb5c8c5cdaeaad9c552f8c1"
     },
     "src/player_source_bridge.c": {
       "sha256": "ef17884658aa078d8387c5035b5e7afc45b57644a8f59b556547a56c787fb908"

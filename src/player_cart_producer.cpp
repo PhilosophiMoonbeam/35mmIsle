@@ -86,8 +86,10 @@ struct Producer::Impl {
                 require(bool(kernel->encode(b.slot,context,buffer)),"Cart source J hierarchy/context/list capacity rejected");
                 fog(0,model,false); fog(1,model,false);
             }
-            for (unsigned lane=0;lane<4;++lane)
+            for (unsigned lane=0;lane<4;++lane) {
                 object.lanes[lane]={static_cast<std::uint32_t>(starts[lane]),static_cast<std::uint32_t>(counts[lane]-starts[lane])};
+                if (object.lanes[lane].commands) command(lane,0,0);
+            }
         }
         std::size_t cursor=layout.lists.offset+camera_commands.size()*8;
         for (unsigned lane=0;lane<4;++lane) {
@@ -95,8 +97,12 @@ struct Producer::Impl {
             require(cursor<=layout.lists.offset+layout.lists.size && counts[lane]*8<=layout.lists.offset+layout.lists.size-cursor,
                 "Cart EndDL sublists exceed explicit list reservation");
             ranges[lane]={static_cast<std::uint32_t>(cursor),static_cast<std::uint32_t>(counts[lane])};
-            for (std::size_t i=0;i<staged_count;++i)
-                staged_objects[i].lanes[lane].address=static_cast<std::uint32_t>(cursor+staged_objects[i].lanes[lane].address*8);
+            for (std::size_t i=0;i<staged_count;++i) {
+                auto& object=staged_objects[i];
+                auto& range=object.lanes[lane];
+                range.address=static_cast<std::uint32_t>(cursor+range.address*8);
+                object.continuation_slots[lane]=range.commands ? range.address+range.commands*8 : 0;
+            }
             cursor+=counts[lane]*8;
         }
     }

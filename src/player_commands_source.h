@@ -20,6 +20,12 @@ typedef struct IslePlayerCommandData {
 } IslePlayerCommandData;
 typedef void (*IslePlayerCommandHandler)(IslePlayerSource*, IslePlayerCommandData);
 
+/* Canonical complete pinned camera command definitions. C-only production
+ * ownership is independent of the optional graphics renderer. */
+enum { ISLE_PLAYER_CAMERA_BLINK = 1 };
+void isle_player_mainCameraHandleCmd(IslePlayerSource*, IslePlayerCommandData);
+void isle_player_mainCameraUpdate(IsleGameObject*);
+
 /* Ordinary C helpers require a retained prepared Source, its active canonical
  * per-game context and an original C OM callback or source_call's local fence.
  * process additionally requires the real synchronous native object-update

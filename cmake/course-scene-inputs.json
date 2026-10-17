@@ -27,10 +27,10 @@
       "sha256": "b294ed61393ed3ec6a33e8cc8d7851aca7610f15096c2626a584f37a352968bc"
     },
     "src/course_model_producer.cpp": {
-      "sha256": "ccecb3b65a6c5492eef958ec9f9a0513da016605bf6a7011f65be2bb69989d51"
+      "sha256": "3961127a37a993238f4ad396913703d3e25134f231ad0835985ed7dffaa90461"
     },
     "src/course_model_producer.hpp": {
-      "sha256": "15955efa96d1c80a54663450e6923d42093fc747f30ed10ced1625f588043563"
+      "sha256": "ad6635e53bc08f58fb2091333a595e3ff102d3cc71e076977bba5a5c685b5042"
     },
     "src/source_effect_camera.cpp": {
       "sha256": "8ef3039e1db89c1eb3fe63a37266e75c91865bc1232a60318180591a4e23b395"
@@ -39,10 +39,10 @@
       "sha256": "6ac71b3e99b556d564eef874de56b502b7bb67a1ac1ee7026a831ae5eccce4c6"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "7487ba7931ba7256570ccd68620408e7fce5e96c0807e85b18e13206448e9fb0"
+      "sha256": "0c04170794c7c74ae4686cbaee54972db2d8f51c333ba70ea2cc199102d45e12"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "fc977209f254e6dafdacd5b2db8406534089faf897355c0d7b939c2db580fbec"
+      "sha256": "fd988feef5a32909dcdc0237cfecb602e867e1a98ae9d62cd00b72f8171152de"
     },
     "src/rsp_render.hpp": {
       "sha256": "280a50d04be2a6413d2fe2807f5af3d4fb05e34d3516ff7b149e80726c268f59"

@@ -27,10 +27,10 @@
       "sha256": "7a16154afa5450b286091a5dda286e6c541a0f0355d3a0917261b02242a94baa"
     },
     "src/scene_services.cpp": {
-      "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
+      "sha256": "11f63a47eac3fe14dcf63c4776aa27e780fef89ced6666027815043f96a162b4"
     },
     "src/scene_services.hpp": {
-      "sha256": "8e5c3eafd14cfc486f410877360d989e04387f11c3be69659ac938836aa452c1"
+      "sha256": "de8c6148ed02a5552fa500fc897cab56a9ffe04bf92feed0330168aeecf2e11b"
     },
     "src/menu_scene_bridge.c": {
       "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
@@ -63,7 +63,7 @@
       "sha256": "bd5afdd961ce6339b5784474b44425407f0f3837022bf66bbff29cec4509440d"
     },
     "tests/scene_services_tests.cpp": {
-      "sha256": "c9192a1819795bb6c8581871416a7ae807c8439cb2c5bc0c117c368ebb736981"
+      "sha256": "2399b918b8c3c84b5ec6e4720bf273c60e4f6be4d1b34094d9c723488cd63d5f"
     },
     "tests/world_runtime_tests.cpp": {
       "sha256": "163eec461df09f383308268891c21ac7536208d0a50f948264b1ea8003ab7bc1"

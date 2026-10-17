@@ -262,6 +262,25 @@ void lifecycle_joined(IsleGameObject* object, void* user) noexcept {
     ++context.joined;
     lifecycle_event(context,40);
 }
+struct SecondaryLifecycle {
+    Lifecycle* primary;
+    unsigned retiring = 0, joined = 0;
+};
+void secondary_retiring(IsleGameObject*, void* user) noexcept {
+    auto& context = *static_cast<SecondaryLifecycle*>(user);
+    check(context.primary->retiring == 0 && context.primary->joined == 0 &&
+          engine_model_alive(context.primary->model),
+          "secondary lifecycle deregisters before primary retirement and native payload removal");
+    ++context.retiring;
+}
+void secondary_joined(IsleGameObject*, void* user) noexcept {
+    auto& context = *static_cast<SecondaryLifecycle*>(user);
+    check(context.primary->retiring == 1 && context.primary->joined == 0 &&
+          !engine_model_alive(context.primary->model) &&
+          engine_process_joined(context.primary->processes[0]),
+          "secondary joined callback sees real join before the primary owner callback");
+    ++context.joined;
+}
 // These process frames retain only trivial state across the native C fence.
 void lifecycle_sleep(IsleGameObject*, void* user) noexcept {
     auto* context = static_cast<Lifecycle*>(user);
@@ -335,6 +354,62 @@ IsleGameObject* lifecycle_object(sc::Services& services, Lifecycle& context) {
           context.started == 1 && context.retiring == 0 && context.joined == 0,
           "real model and parked Services continuation stay active before retirement");
     return object;
+}
+void services_secondary_lifecycle_preserves_owner(const fs::path& parent) {
+    Profile profile(parent);
+    isle::game::State state(profile.path);
+    check(state.initialize(1), "initialize secondary lifecycle profile");
+    if (!state.initialized()) return;
+    AudioOwner audio_owner;
+    auto audio = audio_owner.create();
+    check(bool(audio), "create secondary lifecycle CPU audio owner");
+    if (!audio) return;
+    isle::game_input::Service input;
+    for (int mode : {0, 1, 2, 3}) {
+        sc::Storage native(1024 * 1024);
+        check(native.create() == ISLE_GAME_OK, "create secondary lifecycle native arena");
+        Lifecycle primary{};
+        SecondaryLifecycle secondary{&primary};
+        unsigned foreign_calls = 0;
+        {
+            sc::Services services(native.game(), native.arena(), {{1,1,0,0,0},{}},
+                                  input, *audio.session, state);
+            auto* object = lifecycle_object(services, primary);
+            check(services.observe_lifecycle(object, {secondary_retiring, secondary_joined, &secondary}),
+                  "secondary observer coexists with primary native model/process owner");
+            if (mode == 1) {
+                check(services.unobserve_lifecycle(object, &secondary),
+                      "same-identity detach removes only the secondary observer");
+            } else if (mode == 2) {
+                check(!services.observe_lifecycle(object, {count, count, &foreign_calls}) && services.failed(),
+                      "occupied secondary slot rejects foreign replacement without changing its owner");
+            } else if (mode == 3) {
+                check(!services.unobserve_lifecycle(object, &foreign_calls) && services.failed(),
+                      "foreign identity cannot detach the registered observer");
+                const std::string first_error = services.error();
+                check(services.unobserve_lifecycle(object, &secondary) && services.failed() &&
+                      first_error == services.error(),
+                      "same-identity detach remains possible after sticky failure without healing it");
+            }
+            check(isle_game_delete_object(native.game(), object) == ISLE_GAME_OK &&
+                  primary.retiring == 1 && primary.joined == 1 && primary.continued == 0 &&
+                  engine_process_joined(primary.processes[0]) && foreign_calls == 0,
+                  "real deletion preserves primary retirement and joins the actual parked process");
+            const unsigned expected = mode == 0 || mode == 2 ? 1u : 0u;
+            check(secondary.retiring == expected && secondary.joined == expected,
+                  "only the registered attached secondary receives actual native lifecycle events");
+            if (mode < 2) {
+                auto* reused = services.object(9);
+                check(reused && engine_object_update_context(reused) == primary.native_context,
+                      "ordinary publication actually reuses the joined Services record");
+                services.erase(reused);
+                check(primary.retiring == 1 && primary.joined == 1 &&
+                      secondary.retiring == expected && secondary.joined == expected && !services.failed(),
+                      "reused native record inherits neither primary nor secondary callbacks");
+            }
+        }
+        check(native.destroy() == ISLE_GAME_OK, "destroy secondary lifecycle native arena");
+    }
 }
 struct AbaDispatch {
     sc::Services* services = nullptr;
@@ -935,6 +1010,7 @@ int main(int argc, char** argv) {
         if (argc > 2) throw std::runtime_error("usage: scene-services-tests [existing-owned-parent-directory]");
         services_preserve_state_and_source_metadata(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_lifecycle_composes_delete_paths(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
+        services_secondary_lifecycle_preserves_owner(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_source_owners(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_reject_unregistered_sender(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_prepared_admission_and_native_visibility(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());

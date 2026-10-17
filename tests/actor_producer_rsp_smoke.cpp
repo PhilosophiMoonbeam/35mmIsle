@@ -188,6 +188,11 @@ scene::render::Prepared compose(std::span<std::uint32_t> words,const actor::Prod
                 memory.word(cursor,words[at/4]); memory.word(cursor+4,words[at/4+1]); cursor+=8;
             }
             aggregate+=range.commands*8;
+            if (range.commands) {
+                require(fragment.continuation_slots[lane]==aggregate&&words[aggregate/4]==0&&words[aggregate/4+1]==0,
+                    "raw callback continuation is not its owned fresh NOP tail");
+                aggregate+=8;
+            } else require(!fragment.continuation_slots[lane],"empty raw callback owns a continuation tail");
         }
         require(aggregate+8==source.lanes[lane].address+source.lanes[lane].commands*8 &&
             words[aggregate/4]==0xdf000000u,"fragment composition omitted source commands or EndDL");

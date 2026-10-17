@@ -134,13 +134,26 @@ struct Commands {
     wire::Memory& memory;
     const CoreStorage& core;
     std::uint32_t cursor, end;
+    bool source_final_sync=false;
     Commands(wire::Memory& ram, const CoreStorage& layout, std::uint32_t begin, std::uint32_t limit)
         : memory(ram), core(layout), cursor(begin), end(limit) {}
     void command(std::uint32_t a, std::uint32_t b) {
-        require(cursor <= end - 8, "scene command list exhausted", Error::preparation);
+        require(cursor<=end&&end-cursor>=8,"scene command list exhausted",Error::preparation);
         memory.word(cursor, a); memory.word(cursor + 4, b); cursor += 8;
     }
     void call(std::uint32_t address) { command(0xde000000, address); }
+    template<class Function>
+    std::uint32_t into(std::uint32_t begin,std::uint32_t limit,Function&& function) {
+        require(!(begin&7u)&&!(limit&7u)&&begin<=limit&&limit<=menu::rdram_size,
+                "source command cursor exceeds actual RAM",Error::preparation);
+        struct Restore {
+            Commands& commands;std::uint32_t cursor,end;
+            ~Restore() {commands.cursor=cursor;commands.end=end;}
+        } restore{*this,cursor,end};
+        cursor=begin;end=limit;
+        function();
+        return cursor;
+    }
     void mode(bool high, unsigned shift, unsigned length, std::uint32_t value) {
         command((high ? 0xe3000000u : 0xe2000000u) |
                 ((32 - shift - length) << 8) | (length - 1), value);
@@ -155,42 +168,28 @@ struct Commands {
     }
     void camera(std::uint32_t vp_address, const IsleGameViewport& vp,
                 unsigned flags, std::uint32_t rgba, unsigned lane, std::uint32_t color,
-                bool clip_to_target = false) {
+                bool clip_to_target = false, bool restoring = false) {
         const auto clipped = bounds(vp,clip_to_target); // Source scissor never changes the uploaded viewport.
         command(0xdc080008, vp_address);
         scissor(clipped);
-        if (flags & 1u) {
+        if (!restoring && (flags & 1u)) {
             command(0xe7000000, 0); mode(true, 20, 2, 0x300000);
             mode(false, 3, 29, 0); command(0xff10013f, core.depth);
             command(0xf7000000, 0xfffcfffc); fill(clipped);
         }
         command(0xe7000000, 0); command(0xff10013f, color);
-        if (flags & 2u) {
+        if (!restoring && (flags & 2u)) {
             mode(true, 20, 2, 0x300000); mode(false, 3, 29, 0);
             command(0xf7000000, packed_color(rgba)); fill(clipped);
         }
-        command(0xe7000000, 0); mode(true, 20, 2, 0);
+        if (!restoring) command(0xe7000000, 0);
+        mode(true, 20, 2, 0);
         mode(false, 3, 29, (lane & 1u) ? 0x005049d8u : 0x00552078u);
     }
     void reset(std::uint32_t color, std::uint32_t pre_render) {
-        command(0xdb060000, 0); command(0xdb06003c, color); command(0xfe000000, core.depth);
-        command(0xe7000000, 0); command(0xdc080008, core.reset_viewport);
-        constexpr std::uint32_t cleared = 1u | 4u | 0x600u | 0x10000u | 0x20000u |
-                                          0x40000u | 0x80000u | 0x100000u | 0x200000u;
-        command(0xd9000000u | ((~cleared) & 0xffffffu), 0);
-        command(0xdb040004, 1); command(0xdb04000c, 1);
-        command(0xdb040014, 0xffff); command(0xdb04001c, 0xffff);
-        command(0xd7000000, 0); command(0xd9ffffff, 0x200405);
-        command(0xda380007, core.identity); command(0xda380003, core.identity);
-        mode(true, 20, 2, 0); mode(true, 23, 1, 0);
-        command(0xfcffffff, 0xfffe793c); // Public SHADE combiner in both cycles.
-        mode(true, 16, 1, 0); mode(true, 14, 2, 0); mode(true, 17, 2, 0);
-        mode(true, 19, 1, 0x80000); mode(true, 12, 2, 0x2000);
-        mode(true, 9, 3, 0xc00); mode(true, 8, 1, 0);
-        mode(false, 0, 2, 0); mode(false, 3, 29, 0x0f0a4000);
-        mode(true, 6, 2, 0); command(0xe7000000, 0);
-        scissor({0, 0, int(width), int(height)});
-        call(pre_render); // GAME global callback follows ordinary reset.
+        const auto words = wire::reset_commands(
+            {color, core.depth, core.reset_viewport, core.identity, pre_render});
+        for (std::size_t i = 0; i < words.size(); i += 2) command(words[i], words[i + 1]);
     }
 };
 struct SceneAssets {
@@ -242,21 +241,43 @@ struct SourceControl::State {
     std::span<std::uint32_t> ram;
     std::uint64_t epoch;
     std::uint32_t framebuffer, depth;
+    void* initialize_context;
+    void (*initialize)(void*);
+    void* prepare_context;
+    const render::Prepared& (*prepare)(void*);
     void* draw_context;
     void (*draw)(void*);
     void* call_context;
     void (*call)(void*, render::List);
-    bool drawn = false;
+    wire::ResetInputs reset;
+    void* restore_context;
+    std::uint32_t (*restore)(void*,unsigned,std::uint32_t,std::uint32_t);
+    void* finish_context;
+    void (*finish)(void*,render::List,render::List);
+    bool finalizing=false;
+    bool initialized = false, prepared = false, drawn = false;
 };
 struct SourceControlAccess {
-    template<class Draw, class Call>
+    template<class Initialize, class Prepare, class Draw, class Call, class Restore, class Finish>
     static bool dispatch(render::Control callback, void* user, Commands& commands,
                          std::span<std::uint32_t> ram, std::uint64_t epoch,
-                         std::uint32_t framebuffer, std::uint32_t depth,
-                         Draw& draw, Call& call) {
+                         std::uint32_t framebuffer, std::uint32_t depth, std::uint32_t pre_render,
+                         Initialize& initialize, Prepare& prepare, Draw& draw, Call& call,
+                         Restore& restore, Finish& finish, bool finalizing=false) {
         SourceControl::State state{commands, ram, epoch, framebuffer, depth,
+            &initialize, [](void* context) { (*static_cast<Initialize*>(context))(); },
+            &prepare, [](void* context) -> const render::Prepared& {
+                return (*static_cast<Prepare*>(context))();
+            },
             &draw, [](void* context) { (*static_cast<Draw*>(context))(); },
-            &call, [](void* context, render::List list) { (*static_cast<Call*>(context))(list); }};
+            &call, [](void* context, render::List list) { (*static_cast<Call*>(context))(list); },
+            {framebuffer,depth,commands.core.reset_viewport,commands.core.identity,pre_render},
+            &restore,[](void* context,unsigned lane,std::uint32_t cursor,std::uint32_t end) {
+                return (*static_cast<Restore*>(context))(lane,cursor,end);
+            },&finish,[](void* context,render::List root,render::List terminal) {
+                (*static_cast<Finish*>(context))(root,terminal);
+            }};
+        state.finalizing=finalizing;
         SourceControl control(state);
         return callback(user, control);
     }
@@ -269,8 +290,42 @@ void SourceControl::command(std::uint32_t first, std::uint32_t second) {
     state_->commands.command(first, second);
 }
 void SourceControl::call(render::List list) { state_->call(state_->call_context, list); }
+void SourceControl::reset_program_state(void* context,
+    void (*emit)(void*, std::uint32_t, std::uint32_t)) const {
+    require(emit != nullptr, "source reset requires a bounded native cursor", Error::preparation);
+    const auto words = wire::reset_commands(state_->reset);
+    for (std::size_t i = 0; i < words.size(); i += 2) emit(context, words[i], words[i + 1]);
+}
+std::uint32_t SourceControl::restore_camera(unsigned lane,std::uint32_t cursor,std::uint32_t end) {
+    require(state_->initialized&&!state_->drawn&&lane>0&&lane<4,
+            "source restore requires its initialized actual secondary lane",Error::preparation);
+    return state_->restore(state_->restore_context,lane,cursor,end);
+}
+std::uint32_t SourceControl::initialize_camera_into(std::uint32_t cursor,std::uint32_t end) {
+    return state_->commands.into(cursor,end,[&] {initialize_camera();});
+}
+std::uint32_t SourceControl::draw_into(std::uint32_t cursor,std::uint32_t end) {
+    return state_->commands.into(cursor,end,[&] {draw();});
+}
+void SourceControl::finish_task_group(render::List root,render::List terminal) {
+    require(state_->finalizing,"source task group may finish only after all cameras",Error::preparation);
+    state_->finish(state_->finish_context,root,terminal);
+}
+void SourceControl::initialize_camera() {
+    require(!state_->drawn && !state_->initialized,
+            "source camera initialization cannot replay or mix with draw", Error::preparation);
+    state_->initialized = true;
+    state_->initialize(state_->initialize_context);
+}
+const render::Prepared& SourceControl::prepare() {
+    require(!state_->drawn && !state_->prepared,
+            "source camera preparation cannot replay or mix with draw", Error::preparation);
+    state_->prepared = true;
+    return state_->prepare(state_->prepare_context);
+}
 void SourceControl::draw() {
-    require(!state_->drawn, "source camera pass cannot replay its preparation", Error::preparation);
+    require(!state_->drawn && !state_->initialized && !state_->prepared,
+            "source camera draw cannot replay or mix with explicit phases", Error::preparation);
     state_->drawn = true;
     state_->draw(state_->draw_context);
 }
@@ -288,6 +343,8 @@ struct Frame::Impl {
     std::vector<std::byte> rgba = std::vector<std::byte>(width * height * 4);
     sp::Producer empty_sprites{std::span<const IsleSprite* const>{}, std::span<const sp::BankMapping>{}};
     std::vector<sp::RamRange> composition_reservations, command_reservations;
+    std::optional<RenderCapacity> render_capacity;
+    bool dispatch_started = false;
     std::uint64_t installed_identity = 0;
     sp::Producer* installed_producer = nullptr;
     std::optional<sp::Producer::Borrow> graphics_borrow;
@@ -311,6 +368,7 @@ struct Frame::Impl {
     std::array<char, 512> message{};
     save::ScreenOffsets offsets{};
     std::uint32_t color = 0;
+    wire::SourceProgram program = wire::SourceProgram::f3dex2_non_fifo;
     CompletedWork completion_work{};
     bool cold = true, resident = false, ready = false, retired = false;
 
@@ -370,6 +428,24 @@ struct Frame::Impl {
                                catalog->setup(menu::Scene::title_menu).sprites));
         startup_sprites.reserve(draws.capacity());
     }
+    void reserve_render_capacity(RenderCapacity capacity) {
+        require(!dispatch_started && executor.quiescent(),
+                "scene render capacity must be reserved before first dispatch", Error::preparation);
+        // Both framebuffer contexts plus every possible sprite pass are owned
+        // here; source resource reservations are supplied by the cold caller.
+        const auto overhead = storage.ranges.size() + 2u + 32u;
+        require(capacity.resource_reservations <= composition_reservations.max_size() - overhead,
+                "scene render reservation capacity exceeds storage", Error::resource);
+        const auto count = overhead + capacity.resource_reservations;
+        // Each covering reservation can split into two around a sprite arena.
+        require(count <= command_reservations.max_size() / 2,
+                "scene sprite reservation capacity exceeds storage", Error::resource);
+        draws.reserve(capacity.sprite_draws);
+        startup_sprites.reserve(capacity.sprite_draws);
+        composition_reservations.reserve(count);
+        command_reservations.reserve(count * 2);
+        render_capacity = capacity;
+    }
     void fail(Error value, const char* reason) noexcept {
         for (auto& draw : draws) draw = {};
         draws.clear();
@@ -426,6 +502,8 @@ struct Frame::Impl {
         const auto& screen = catalog->screen(view.resources);
         std::size_t count = 0;
         if (view.resources == menu::Scene::logo) {
+            require(!render_capacity || !view.logo_sprite || render_capacity->sprite_draws >= 1,
+                    "startup sprites exceed cold render capacity", Error::preparation);
             startup_sprites.resize(view.logo_sprite ? 1 : 0);
             if (view.logo_sprite) {
                 IsleSprite* scalar = nullptr;
@@ -441,6 +519,8 @@ struct Frame::Impl {
             }
         } else {
             require(view.services != nullptr, "startup menu services missing");
+            require(!render_capacity || view.services->sprite_count() <= render_capacity->sprite_draws,
+                    "startup sprites exceed cold render capacity", Error::preparation);
             startup_sprites.resize(view.services->sprite_count());
             require(view.services->sprite_draws(startup_sprites, count),
                     "startup ordered native sprite draw borrow failed", Error::native);
@@ -483,6 +563,12 @@ struct Frame::Impl {
                  rsp::CanonicalExecutor::PreparationLease& preparation) {
         require(input.game && context.buffer_index < 2 && input.passes.size() <= 32,
                 "scene graphics requires a native game and bounded source passes");
+        // Reject an unincluded task before mutable producer/RAM publication.
+        static_cast<void>(wire::SourcePrograms(snapshot).descriptor(input.program));
+        program = input.program;
+        require(!render_capacity ||
+                input.resources.reservations.size() <= render_capacity->resource_reservations,
+                "scene resource reservations exceed cold render capacity", Error::preparation);
         for (const auto& pass : input.passes) if (pass.transition_owner)
             require(transition_borrow.retain(pass.transition_owner),
                     "scene transition preparation owner borrow rejected",Error::native);
@@ -554,7 +640,7 @@ struct Frame::Impl {
         Commands commands{memory, storage, storage.top, storage.top_end};
         commands.reset(color, input.resources.pre_render);
         constexpr std::array<unsigned, 4> lanes{0, 2, 1, 3};
-        auto call = [&](render::List list) {
+        auto validate_list = [&](render::List list) {
             if (!list.words) return;
             require(!(list.address & 7u) && list.words >= 2 && !(list.words & 1u) &&
                     list.address <= menu::rdram_size &&
@@ -569,27 +655,66 @@ struct Frame::Impl {
                 covered = covered || (range.address <= extent.address &&
                     std::uint64_t(extent.address) + extent.size <= std::uint64_t(range.address) + range.size);
             require(covered, "compiled sublist has no source producer reservation");
-            commands.call(list.address);
+        };
+        auto call = [&](render::List list) {
+            if(!list.words) return;
+            validate_list(list);commands.call(list.address);
+        };
+        auto finish = [&](render::List root,render::List terminal) {
+            require(!commands.source_final_sync&&root.words&&terminal.words==4,
+                    "source final task group has no unique actual terminal",Error::preparation);
+            validate_list(root);validate_list(terminal);
+            const auto at=terminal.address/4;
+            require(ram[at]==0xe9000000u&&ram[at+1]==0&&ram[at+2]==0xdf000000u&&ram[at+3]==0,
+                    "source task terminal is not actual FullSync/EndDL packets",Error::preparation);
+            commands.call(root.address);commands.source_final_sync=true;
         };
         for (std::size_t n = 0; n < input.passes.size(); ++n) {
             const auto& pass = input.passes[order[n]];
-            auto draw = [&] {
-                const auto vp = pass.camera ? camera_parameters(input.game, pass.camera).viewport : full_viewport();
-                const auto vp_address = storage.reset_viewport + 16u * static_cast<std::uint32_t>(n + 1);
-                const bool transition=pass.transition_owner!=nullptr;
+            IsleGameViewport vp{};
+            sp::Bounds vp_bounds{}, clipped{};
+            const auto vp_address = storage.reset_viewport + 16u * static_cast<std::uint32_t>(n + 1);
+            const bool transition=pass.transition_owner!=nullptr;
+            render::Prepared prepared;
+            auto initialize = [&] {
+                vp = pass.camera ? camera_parameters(input.game, pass.camera).viewport : full_viewport();
                 viewport(memory, vp_address, vp,transition);
                 commands.camera(vp_address, vp, pass.flags, pass.background_rgba, 0, color,transition);
-                const auto vp_bounds = bounds(vp,transition);
-                const sp::Bounds clipped{std::max(vp_bounds.left, pass.scissor.left),
+                vp_bounds = bounds(vp,transition);
+                clipped = {std::max(vp_bounds.left, pass.scissor.left),
                     std::max(vp_bounds.top, pass.scissor.top), std::min(vp_bounds.right, pass.scissor.right),
                     std::min(vp_bounds.bottom, pass.scissor.bottom)};
                 require(clipped.left <= clipped.right && clipped.top <= clipped.bottom,
                         "scene pass scissor is disjoint or reversed");
                 commands.scissor(clipped);
+            };
+            auto restore = [&](unsigned lane,std::uint32_t cursor,std::uint32_t end) {
+                require(pass.camera&&!(cursor&7u)&&!(end&7u)&&cursor<=end&&end<=ram.size_bytes(),
+                        "source secondary camera cursor exceeds actual RAM",Error::preparation);
+                const auto& current=camera_parameters(input.game,pass.camera).viewport;
+                viewport(memory,vp_address,current,transition);
+                Commands secondary{memory,storage,cursor,end};
+                secondary.camera(vp_address,current,pass.flags&~3u,pass.background_rgba,lane,color,transition,true);
+                secondary.command(0xda380003,storage.identity);
+                return secondary.cursor;
+            };
+            auto prepare_compiled = [&]() -> const render::Prepared& {
+                require(pass.kind == render::Kind::compiled && pass.prepare,
+                        "source explicit preparation requires a compiled pass", Error::preparation);
+                require(pass.prepare(pass.userdata, ram, epoch, pass, prepared),
+                        "scene compiled producer rejected preparation", Error::preparation);
+                return prepared;
+            };
+            auto draw = [&] {
+                initialize();
                 if (pass.kind == render::Kind::clear) return;
                 if (pass.kind == render::Kind::sprites) {
                     draws.clear();
-                    for (const auto& sprite : pass.sprites) if (pass.includes(sprite.render)) draws.push_back(sprite.draw);
+                    for (const auto& sprite : pass.sprites) if (pass.includes(sprite.render)) {
+                        require(!render_capacity || draws.size() < render_capacity->sprite_draws,
+                                "scene sprites exceed cold render capacity", Error::preparation);
+                        draws.push_back(sprite.draw);
+                    }
                     command_reservations.clear();
                     const auto command_end = std::uint64_t(pass.sprite_commands.address) + pass.sprite_commands.size;
                     bool covered = false;
@@ -612,9 +737,7 @@ struct Frame::Impl {
                     draws.clear();
                     return;
                 }
-                render::Prepared prepared;
-                require(pass.prepare(pass.userdata, ram, epoch, pass, prepared),
-                        "scene compiled producer rejected preparation", Error::preparation);
+                prepare_compiled();
                 for (const auto lane : lanes) {
                     if (lane && prepared.lanes[lane].words <= 2) continue;
                     if (lane) {
@@ -627,11 +750,26 @@ struct Frame::Impl {
             };
             if (pass.control) {
                 require(SourceControlAccess::dispatch(pass.control, pass.userdata, commands,
-                            ram, epoch, color, storage.depth, draw, call),
+                            ram, epoch, color, storage.depth, input.resources.pre_render,
+                            initialize, prepare_compiled, draw, call, restore, finish),
                         "source camera control rejected dispatch", Error::preparation);
             } else draw();
         }
-        commands.command(0xe9000000, 0); commands.command(0xdf000000, 0);
+        if(input.finalize) {
+            auto no_initialize=[] {throw Failure{Error::preparation,"final wire phase has no camera initialization"};};
+            auto no_prepare=[]() -> const render::Prepared& {
+                throw Failure{Error::preparation,"final wire phase cannot prepare another producer"};
+            };
+            auto no_restore=[](unsigned,std::uint32_t,std::uint32_t) -> std::uint32_t {
+                throw Failure{Error::preparation,"final wire phase cannot restore another camera"};
+            };
+            require(SourceControlAccess::dispatch(input.finalize,input.finalize_user,commands,
+                ram,epoch,color,storage.depth,input.resources.pre_render,no_initialize,no_prepare,
+                no_initialize,call,no_restore,finish,true),
+                "source final task group rejected dispatch",Error::preparation);
+        }
+        if(!commands.source_final_sync) commands.command(0xe9000000,0);
+        commands.command(0xdf000000,0);
         offsets = input.screen_offsets;
     }
 };
@@ -659,12 +797,13 @@ template<class State, class Input>
 bool begin_frame(State& state, Input view, FrameContext context, CompletedWork work = {}) noexcept {
     if (state.error != Error::none || state.retired || state.token != 0) return false;
     state.ready = false;
+    state.dispatch_started = true;
     try {
         auto preparation = state.executor.begin_preparation();
         state.prepare(view, context, preparation);
         const auto& storage = state.storage;
         const auto task = wire::finish_task(preparation.words(), state.snapshot, storage.boot, storage.stack,
-            storage.yield, storage.task, storage.output, storage.output_end, storage.top);
+            storage.yield, storage.task, storage.output, storage.output_end, storage.top, state.program);
         // Native views have ended; only RAM/task packets reach the GPU worker.
         // Raster ownership remains pinned until real GPU completion/readback.
         state.token = state.executor.begin(std::move(preparation), task.task, task.boot);
@@ -677,6 +816,17 @@ bool begin_frame(State& state, Input view, FrameContext context, CompletedWork w
     return false;
 }
 } // namespace
+bool Frame::reserve_render_capacity(RenderCapacity capacity) noexcept {
+    auto& state = *impl_;
+    if (state.error != Error::none || state.retired) return false;
+    try {
+        state.reserve_render_capacity(capacity);
+        return true;
+    } catch (const Failure& e) { state.fail(e.error, e.message); }
+      catch (const std::exception& e) { state.fail(Error::resource, e.what()); }
+      catch (...) { state.fail(Error::resource, "scene render capacity reservation exception"); }
+    return false;
+}
 bool Frame::begin(startup::View view, FrameContext context) noexcept {
     return begin_frame(*impl_, view, context);
 }

@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "player-command-reference-complete-v1",
+  "transformation_version": "player-command-reference-complete-v2",
   "scope": "private-test-only",
   "legal_inputs": {
-    "source": "Only the three complete committed own-GAME Player command bodies and the single blink declaration below; never SDK headers, SDK bodies/layouts, ASM, ROM code, dirty checkout source or public Root definitions.",
-    "output": "Private test fixture only: generated C, declarations and evidence stay under the build _deps/isle-player-command-reference-private directory and are never production library sources or public exports.",
+    "source": "Only the complete committed own-GAME empty Player command body below; camera commands now have canonical C-only production ownership in player-render-inputs.json. Never SDK headers, SDK bodies/layouts, ASM, ROM code, dirty checkout source or public Root definitions.",
+    "output": "Private empty-handler test fixture only: generated C, declarations and evidence stay under build _deps/isle-player-command-reference-private; no duplicated camera bodies or aliases.",
     "semantics": "Native C semantic command data and canonical Player Source; the existing native C FIFO interpreter owns builtin behavior and actual Scene Services owns queue credits and retirement."
   },
   "source_files": {
@@ -13,25 +13,20 @@
       "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
       "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b",
       "line_count": 2998
-    },
-    "src/app_level/app_level.h": {
-      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
-      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
-      "line_count": 324
     }
   },
-  "generator_sha256": "418bf6782b715d0d07bbd4fa120c0a865a63f36a9efe0e854c080eff06b03ed4",
-  "output_sha256": "793bf5f3bb5dd1781d8ec087843162e42a192b7c1c54044173cd6163ccb973af",
-  "header_sha256": "88d9ec4b0479c1dcb434c1b3a2bb70c6d97f5d11510eb54a41caac41f3bf787a",
+  "generator_sha256": "e63a9c3f28c1f1cbbe3314e00d0283ec2308961df91205acbd8d021daee3eada",
+  "output_sha256": "aee9e4c6a8635f24ccba443c663c1308ed7e88a250138fc071869a6f03a0f9dd",
+  "header_sha256": "22076a0d19efcb5d9faa866930a10fe8f8162307aef2481cc1b476567ca87557",
   "native_support": {
     "src/player_commands_source.h": {
-      "sha256": "9548134839fd9263c7ee639c911f902e722421d0daf72f189c3b619bd8a47f1b"
+      "sha256": "16c77e10ffc09089f53779643955a0567a9cd7d498b05e1e8dc3439f48bd2dbc"
     },
     "src/player_commands_source.c": {
       "sha256": "7a2a2ec97c7a8b9084933a91ad12a2d14b5961815b7929cbd14e05de9bc64197"
     },
     "src/player_source.h": {
-      "sha256": "5d2b57e3dba4cba7ae9c5245b191cdfd61a27b844520ef3b7c5233e4bf63d1f0"
+      "sha256": "c2a6fd05e7e012c336ffa04a0d5d8ba896e798974bb5c8c5cdaeaad9c552f8c1"
     },
     "src/player_source_bridge.c": {
       "sha256": "ef17884658aa078d8387c5035b5e7afc45b57644a8f59b556547a56c787fb908"
@@ -46,10 +41,10 @@
       "sha256": "acd9a7312afe5129efcd6e495aa827de1ae667f3810cbe5fba5c3989516a3160"
     },
     "src/scene_services.hpp": {
-      "sha256": "8e5c3eafd14cfc486f410877360d989e04387f11c3be69659ac938836aa452c1"
+      "sha256": "de8c6148ed02a5552fa500fc897cab56a9ffe04bf92feed0330168aeecf2e11b"
     },
     "src/scene_services.cpp": {
-      "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
+      "sha256": "11f63a47eac3fe14dcf63c4776aa27e780fef89ced6666027815043f96a162b4"
     },
     "src/menu_scene_bridge.h": {
       "sha256": "851da4fdc6f7864784e44e8c36b098a0c9f769f0f380cbcc3875845c57daf726"
@@ -70,72 +65,13 @@
       "sha256": "0d231cd3556bc0004abd77bb5d6f97474cf0762ed4fdeacfd0f0af0f928195b3"
     },
     "cmake/SnapPlayerServices.cmake": {
-      "sha256": "2c91ca17af03c424593aa109ff0e5a604b09398012f74d565673e5be0854c29c"
+      "sha256": "c5e700d1bc5e0601ffe3c75ea4c6fe98b91a800bafda4499ff186a3ffbed07d9"
     },
     "tools/prepare_engine.py": {
       "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
     }
   },
-  "blink_declaration": {
-    "path": "src/app_level/app_level.h",
-    "symbol": "CAMERA_CMD_BLINK",
-    "first": 136,
-    "last": 136,
-    "source_sha256": "6ba4c53ac761e8c7f8b3916b1d2cbf1fb2c85976913a0b4322e4130b8e525fb0",
-    "source_declaration": "#define CAMERA_CMD_BLINK 1",
-    "native_symbol": "ISLE_PLAYER_REFERENCE_CAMERA_BLINK",
-    "value": 1
-  },
   "definitions": [
-    {
-      "path": "src/app_level/player.c",
-      "symbol": "mainCameraHandleCmd",
-      "first": 2887,
-      "last": 2891,
-      "source_sha256": "f4f95dc552bf44dc47454441a594297fc56e12966a87b24e848ee7e00a0690d9",
-      "source_declaration": "void mainCameraHandleCmd(GObjCmdData cmdData)",
-      "native_sha256": "64052248e832c14217483072f5afbce9bb6a95de08633d9dbf04262479eb4dc0",
-      "native_declaration": "void player_command_reference_camera_handle(IslePlayerSource* player, IslePlayerCommandData cmdData)",
-      "changes": [
-        {
-          "find": "void mainCameraHandleCmd(GObjCmdData cmdData)",
-          "replace": "void player_command_reference_camera_handle(IslePlayerSource* player, IslePlayerCommandData cmdData)",
-          "occurrences": 1
-        },
-        {
-          "find": "CAMERA_CMD_BLINK",
-          "replace": "ISLE_PLAYER_REFERENCE_CAMERA_BLINK",
-          "occurrences": 1
-        },
-        {
-          "find": "MainCameraBlinkTimeout",
-          "replace": "player->MainCameraBlinkTimeout",
-          "occurrences": 1
-        }
-      ]
-    },
-    {
-      "path": "src/app_level/player.c",
-      "symbol": "mainCameraUpdate",
-      "first": 2893,
-      "last": 2895,
-      "source_sha256": "b25000c398f5fc7a97efa4d322b95177153d2862fff5c1fcb4cc0b086c7dd677",
-      "source_declaration": "void mainCameraUpdate(GObj* arg0)",
-      "native_sha256": "d8a1f68c7f7016aa07b081ac5af5b05ddcf86af2113d06986ed050633a0b834a",
-      "native_declaration": "void player_command_reference_camera_update(IsleGameObject* arg0)",
-      "changes": [
-        {
-          "find": "void mainCameraUpdate(GObj* arg0) {",
-          "replace": "void player_command_reference_camera_update(IsleGameObject* arg0) {\n    IslePlayerSource* player = isle_player_source_entry(arg0);",
-          "occurrences": 1
-        },
-        {
-          "find": "cmdProcessCommands(mainCameraHandleCmd)",
-          "replace": "isle_player_commands_process(player, arg0, player_command_reference_camera_handle)",
-          "occurrences": 1
-        }
-      ]
-    },
     {
       "path": "src/app_level/player.c",
       "symbol": "func_80356118_4F6528",

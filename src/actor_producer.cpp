@@ -113,9 +113,11 @@ struct Producer::Impl {
         capture({0,-1,0});
         auto& fragment = staged_fragments[staged_fragment_count++];
         fragment = {FragmentKind::detector_prefix,nullptr,prefix_render,{}};
-        for (unsigned lane = 0; lane < 4; ++lane)
+        for (unsigned lane = 0; lane < 4; ++lane) {
             fragment.lanes[lane] = {static_cast<std::uint32_t>(starts[lane]),
                 static_cast<std::uint32_t>(counts[lane]-starts[lane])};
+            if (fragment.lanes[lane].commands) command(lane,0,0);
+        }
     }
     void commit_detector() noexcept {
         if (!detector) return;
@@ -135,9 +137,9 @@ struct Producer::Impl {
         }
     }
     void stage(const scene::render::Pass* pass, const menu::model::RenderContext& context,
-               std::uintptr_t ram_begin,std::uintptr_t ram_end) {
+               std::uintptr_t ram_begin,std::uintptr_t ram_end,bool prefix_visible) {
         prefix_staged=false; appended_count=0; current_count=0; staged_fragment_count=0;
-        const bool draw_prefix=detector && (!pass || pass->includes(prefix_render));
+        const bool draw_prefix=detector && prefix_visible && (!pass || pass->includes(prefix_render));
         if (detector) {
             require(detector->context<2,"Actor source detector context is invalid");
             source_context=detector->context;
@@ -222,9 +224,11 @@ struct Producer::Impl {
                 if (p.fog) { fog(0,model,false); if (p.transparent) fog(1,model,false); }
                 if (detector && detector->enabled && p.gate) capture(staged_subjects[i]);
             }
-            for (unsigned lane = 0; lane < 4; ++lane)
+            for (unsigned lane = 0; lane < 4; ++lane) {
                 fragment.lanes[lane] = {static_cast<std::uint32_t>(starts[lane]),
                     static_cast<std::uint32_t>(counts[lane]-starts[lane])};
+                if (fragment.lanes[lane].commands) command(lane,0,0);
+            }
         }
         if (draw_prefix && !prefix_staged) start_prefix();
         std::size_t cursor = layout.lists.offset+camera_commands.size()*8;
@@ -237,8 +241,11 @@ struct Producer::Impl {
             cursor += counts[lane]*8;
         }
         for (auto& fragment : std::span(staged_fragments).first(staged_fragment_count))
-            for (unsigned lane = 0; lane < 4; ++lane)
-                fragment.lanes[lane].address = ranges[lane].address+fragment.lanes[lane].address*8;
+            for (unsigned lane = 0; lane < 4; ++lane) {
+                auto& range = fragment.lanes[lane];
+                range.address = ranges[lane].address+range.address*8;
+                fragment.continuation_slots[lane] = range.commands ? range.address+range.commands*8 : 0;
+            }
     }
 };
 Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,
@@ -305,7 +312,7 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
 }
 Producer::~Producer() = default;
 ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::uint64_t epoch,
-                                        const scene::render::Pass* pass) {
+                                        const scene::render::Pass* pass,bool prefix_visible) {
     auto& s = *impl_;
     require(!s.retired && words.data() && words.size_bytes() == beach::rdram_size && epoch,
             "Actor prepare requires live exclusive canonical RAM and nonzero epoch");
@@ -356,7 +363,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     require(bool(menu::model::prepare_render_context(s.basis.value,*parameters,operations,s.basis.selector,context)),
             "Actor source camera context rejected");
     require(bool(s.kernel->validate_upload(words,epoch)),"Actor kernel fixed scratch aliases RAM");
-    s.stage(pass,context,begin,end);
+    s.stage(pass,context,begin,end,prefix_visible);
     require(bool(s.kernel->validate_upload(words,epoch)),"Actor kernel borrowed pose aliases RAM");
     // Last fallible computation: the native camera batch is failure-atomic.
     // Membership may already have changed canonical visibility flags, including
@@ -405,9 +412,10 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     return {{static_cast<std::uint32_t>(s.layout.lists.offset),static_cast<std::uint32_t>(s.camera_commands.size())},
         s.ranges,s.owned,s.revision,std::span(s.fragments).first(s.fragment_count)};
 }
-ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch) { return prepare_filtered(words,epoch,nullptr); }
-ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch, const scene::render::Pass& pass) {
-    return prepare_filtered(words,epoch,&pass);
+ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch) { return prepare_filtered(words,epoch,nullptr,true); }
+ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch, const scene::render::Pass& pass,
+                               bool prefix_visible) {
+    return prepare_filtered(words,epoch,&pass,prefix_visible);
 }
 bool Producer::prepare_pass(void* user, std::span<std::uint32_t> words, std::uint64_t epoch,
     const scene::render::Pass& pass, scene::render::Prepared& out) {

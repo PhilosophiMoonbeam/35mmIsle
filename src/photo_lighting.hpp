@@ -64,13 +64,21 @@ public:
     }
     std::size_t installed_byte_count() const noexcept;
     std::uint32_t direction_guest() const noexcept { return lights_[0].dma.guest_address + 8; }
+    // Admitted canonical signed bytes, for seeding retained source OM state.
+    LightDirection initial_direction() const noexcept;
 
     // Requires exclusive caller-owned word-swapped 8 MiB RDRAM, disjoint from
     // Snapshot storage, only during prepare after all prior RSP/RDP retirement.
     // Writes only installation_spans(), to (guest - 0x80000000 + i) XOR 3.
-    // Reinstall restores the original direction; update after install for the
-    // current camera and execute the pre-render list before any model vertices.
+    // Reinstall restores the original direction; then either install retained
+    // source bytes or update for the current camera before executing the list.
     void install(std::span<std::byte> word_swapped_rdram) const;
+
+    // Copies exactly the three signed source-owned direction bytes, without
+    // recomputing from a camera or touching any other RAM byte. Same exclusive
+    // preparation, installation and lifetime requirements as update_direction().
+    void install_direction(std::span<std::byte> word_swapped_rdram,
+                           const LightDirection&) const;
 
     // GAME 47380.c:1125-1132 -> vector.c:5-15 -> 4D400.c:98-101:
     // normalize eye-at in XZ, set Y=1, normalize XYZ, truncate each f32*127.

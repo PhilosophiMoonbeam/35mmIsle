@@ -16,6 +16,9 @@ struct ProducerObject {
     scene::RenderMetadata render;
     // Complete callback ranges, including fog setup/restore; no lane EndDL.
     std::array<menu::model::ListRange,4> lanes{};
+    // Absolute byte addresses of owned NOP tails, outside raw 64-bit counts.
+    std::array<std::uint32_t,4> continuation_slots{};
+    bool resets_camera = false; // Direct sky requires camera restoration afterward.
 };
 struct ProducerFrame {
     menu::model::ListRange camera;

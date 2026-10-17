@@ -1222,8 +1222,12 @@ correctly stopped before compilation. Four explicit LF rules extend the existing
 checkout policy for the new species files. Actual Git checkout filters with
 `core.autocrlf=true` reproduce all four qualified hashes without CRLF. No source
 or expected hash is changed, normalized or bypassed. The native500 snapshot and
-its local runtime receipts remain exact; the Windows fix needs its own hosted
-compiler receipt.
+its local runtime receipts remain exact. The correction at
+`c85ca4f808c9a38705c0e37ab982a67236158cdb` passed
+[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39041010654),
+including native MSVC Debug/Release, the full static LUS/audio/RSP/RDP/engine
+composition and all23 opt-in consumer builds without a ROM. That receipt does
+not qualify subsequent original-camera renderer changes or Windows11 runtime.
 
 
 ## Independent Detector and framebuffer contexts
@@ -1934,4 +1938,26 @@ The expanded FIFO consumer proves ten actual address/slot/new-incarnation reuse 
 Three parent qualification roots are wholly rejected. The first CPU-only data run inherited a generic required-GPU scope: its premature acceptance was rescinded, derived inventory deleted, and fresh identical code/parameters ran under explicitly NONE graphics/audio. Two six-actor invocations separately lacked the original CLI arity and required existing empty capture directory. Fresh roots correct only those prerequisites; no production source, binary, cohort, pose, camera, timer, threshold or budget changes. Rejected roots remain immutable after final rejection, with no subsequent access or partial data used in accepted results.
 
 All 53 CPU contracts pass GCC Debug/Release/Clang ASan+UBSan. All 24 accepted complete trees have sole initial closure/physical-permission observations, stable traces, absent tracer/tasks, unchanged ROM and zero known attempts/errors. Fatal address/UB checks remain enabled; ptrace-only leak-scan disable does not qualify leaks. Exact executable/archive/source scopes and both failing-before/passing-after bugs are recorded in [`actor-interaction-inputs.json`](../../cmake/actor-interaction-inputs.json). Full C interaction execution, all source callback/services, actual Item/Player simulation, snapshot/reconstruction, other species/courses, product executable, Original parity and private Windows11 execution remain open.
+
+## Original camera callbacks and native source render phases
+
+Thirteen complete definitions from pinned own-GAME Player/camera/light code compile through the checked C importer. Camera command handlers are promoted from the reference fixture into the production command library, without duplicate definitions or aliases. Native backend leaves return before C failure transfer; re-entry uses nested plain-C fenced calls. No SDK implementation, guest CPU execution or C++ gameplay state machine is introduced.
+
+`player::Renderer` retains scheduling metadata for 32 real camera/helper records, not copied camera poses. Main, returned UI and actual ActorOwner −6/−7 helpers preserve native scheduling priorities, insertion ties and distinct scheduling/projection identities. Visibility is resolved at each dispatch; sprite views are gathered after earlier callbacks. A secondary Services lifecycle observer runs before the primary semantic owner without replacing it. Native join is not GPU completion: camera identity reuse also waits for actual Frame/readback and every Photo ticket.
+
+SourceControl separates camera initialization, producer preparation, bounded packet emission, secondary-lane camera restoration and finalization. Borders retain source ONE_CYCLE/NOOP; blink retains FILL/NOOP followed by ONE_CYCLE/AA-ZB restore. The original light updater computes three signed bytes in native OM; their later upload does not recompute direction from a changed camera. Cold reservations precede first preparation. Sprite command storage occupies 0x780000–0x7d0000, outside the actual Actor assets that correctly rejected the initial 0x150000 arena.
+
+Global composition uses actual Services DL3/4/5 order across World, Actor, Item, Cart and the genuine PhotoScene prefix object. Raw fragments exclude owned continuation slots; unpushed continuations restore camera state after provider changes or actual sky resets. Source composition does not copy hot geometry or append families in a substitute order. The separate three-field diagnostic join remains self-contained because its real consumers re-prepare provider lists before submission. The actual prefix's hidden flag is projected before membership collection/history staging, not merely used to omit GPU commands afterward.
+
+Four source cursors preserve GPU order 0→2→1→3 and the literal lane 1→3 reload appended to lane 0. Per-camera combine returns to current lane 0; final-GTL emits real FullSync/EndDL without an invented normal-program restore or extra camera. Frame finalization validates that tail and avoids a duplicate sync. Actual ROM programs 2/8, their full cold regions, reload packets and reset commands remain strict Snapshot-backed inputs; a selected program 8 task really executes 8. Explicit LINE3D diagnostics use admitted Cart vertices, not a fabricated original line asset. No genuine source-selected ROM line asset has yet been qualified; absence of such assets is not established.
+
+The production Photo Controller uses the sole Photo pending registry. Actual prefix capture precedes history commit; request seals during preparation, before submission. Enqueue adopts the real Frame/token; completed memory, completed poll and later OM CopyInfo remain separate authorities. Detector context/generation is independent of framebuffer context and submission serial. Mutable lighting and immutable effect assets retain the existing ownership convention; collision guards were not weakened to admit the first incorrect fixture.
+
+The 508-file native snapshot `aa0acc082a81eee141323ca5d6a53778dad44db6e565af656b26a10ba0e96417` builds all 24 opt-in consumers and default targets, then passes all 57 CPU contracts in GCC Debug, GCC Release and Clang ASan+UBSan. All 72 complete actual component cases share that snapshot: 71 fresh runs and one already-accepted exact-source/binary Debug Photo proof, never replayed. Their 5,090 terminal tasks, 5,018 created tasks and 5,162 tracer/task absences were established before each tree's sole initial physical/permission observation. Traces are stable, ROM unchanged and known attempts/errors zero. Fatal Address/UB checks remain enabled; ptrace-only leak-scan disable is not leak qualification.
+
+The camera consumer executes normal→FIFO blink→normal, real provider/prefix/FX/UI geometry, hidden-prefix history behavior, Photo publication/lifetimes, actual source failures, independent RAM/epochs, native camera reuse, task 8 and all eight auxiliary-lane combinations in both combine and deferred-finalization paths. Exact known-positive checks preserve all preceding 63 images, 213 Photo files and 12 Cart files; 60 new camera output/report files match the first accepted Debug GPU baseline across all profiles. Normal and blink surfaces were directly inspected: the source blink blacks the scene while independently eligible UI remains visible. No expected output was repinned or obtained from a rejected tree.
+
+All 125 byte-hashed native support paths across 58 manifests have explicit LF policy and retain the exact qualified bytes through actual Git index filtering with Windows `core.autocrlf=true`. Hosted MSVC evidence remains tied to its published revision. This is component evidence, not original initUI/Player 7/full 106-definition execution, complete gameplay, private Windows11 runtime, LUS presentation or hardware/hearing parity.
+
+Camera flags `0x10`/`0x40` remain explicit unsupported mid-frame task boundaries until real native multi-task transactions implement source process/reset semantics. A hidden prefix does not authorize a successful ProcessImage drop: pinned code nonblocking-enqueues the current existing Detector context regardless of a new prefix capture. That retained-snapshot request path remains separately tracked and fail-closed. Neither limit is an external SDK blocker.
 

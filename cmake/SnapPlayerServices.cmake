@@ -79,3 +79,34 @@ execute_process(
 if(NOT _isle_player_cart_result EQUAL 0)
     message(FATAL_ERROR "Private cart owner source preparation failed:\n${_isle_player_cart_output}${_isle_player_cart_error}")
 endif()
+
+# Canonical camera command ownership is materialized alongside the complete
+# render component, but compiled into the C-only commands library separately.
+set(_isle_player_render_private "${CMAKE_BINARY_DIR}/_deps/isle-player-render-private")
+set(_isle_player_render_manifest "${PROJECT_SOURCE_DIR}/cmake/player-render-inputs.json")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/tools/prepare_player_render.py"
+    "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py"
+    "${_isle_player_render_manifest}")
+file(READ "${_isle_player_render_manifest}" _isle_player_render_authority)
+string(JSON _isle_player_render_support_count LENGTH "${_isle_player_render_authority}" native_support)
+if(_isle_player_render_support_count GREATER 0)
+    math(EXPR _isle_player_render_support_last "${_isle_player_render_support_count} - 1")
+    foreach(_isle_player_render_support_index RANGE 0 ${_isle_player_render_support_last})
+        string(JSON _isle_player_render_support_path MEMBER "${_isle_player_render_authority}"
+            native_support ${_isle_player_render_support_index})
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+            "${PROJECT_SOURCE_DIR}/${_isle_player_render_support_path}")
+    endforeach()
+endif()
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_player_render.py"
+        --repository "${_isle_snap_source}"
+        --manifest "${_isle_player_render_manifest}"
+        --output "${_isle_player_render_private}"
+    RESULT_VARIABLE _isle_player_render_result
+    OUTPUT_VARIABLE _isle_player_render_output
+    ERROR_VARIABLE _isle_player_render_error)
+if(NOT _isle_player_render_result EQUAL 0)
+    message(FATAL_ERROR "Private Player renderer source preparation failed:\n${_isle_player_render_output}${_isle_player_render_error}")
+endif()

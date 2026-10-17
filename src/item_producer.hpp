@@ -16,6 +16,8 @@ struct ProducerObject {
     IsleGameObject* object = nullptr;
     scene::RenderMetadata render;
     std::array<menu::model::ListRange,4> lanes{};
+    // Absolute byte addresses of owned NOP tails, outside raw 64-bit counts.
+    std::array<std::uint32_t,4> continuation_slots{};
 };
 struct ProducerFrame {
     menu::model::ListRange camera;

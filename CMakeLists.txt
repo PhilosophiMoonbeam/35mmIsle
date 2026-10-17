@@ -364,9 +364,21 @@ if(ISLE_BUILD_GAME_ENGINE)
 
         add_library(isle-player-commands STATIC
             src/player_commands.cpp src/player_commands.hpp
-            src/player_commands_source.c src/player_commands_source.h)
+            src/player_commands_source.c src/player_commands_source.h
+            "${_isle_player_render_private}/player_camera_commands_original.c")
         target_link_libraries(isle-player-commands PUBLIC isle-scene)
         isle_target_options(isle-player-commands)
+
+        add_library(isle-player-render-source STATIC
+            src/player_render_source.h src/player_render_source_bridge.c
+            "${_isle_player_render_private}/player_render_original.c")
+        target_include_directories(isle-player-render-source PUBLIC
+            "${PROJECT_SOURCE_DIR}/src" "${_isle_player_render_private}")
+        target_link_libraries(isle-player-render-source PUBLIC isle-player-commands)
+        isle_target_options(isle-player-render-source)
+        target_compile_options(isle-player-render-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
 
         add_library(isle-environment-sound STATIC src/environment_sound.cpp src/environment_sound.hpp)
         target_link_libraries(isle-environment-sound PUBLIC isle-scene isle-source-angles)
@@ -531,7 +543,7 @@ if(ISLE_BUILD_GAME_ENGINE)
 
         add_library(isle-course-model-producer STATIC
             src/course_model_producer.cpp src/course_model_producer.hpp)
-        target_link_libraries(isle-course-model-producer PUBLIC isle-world isle-actor-producer isle-item-producer)
+        target_link_libraries(isle-course-model-producer PUBLIC isle-world isle-actor-producer isle-item-producer isle-player-cart)
         isle_target_options(isle-course-model-producer)
 
         foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
@@ -1082,6 +1094,17 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
     if(TARGET isle-player-photo)
         target_link_libraries(isle-player-photo PUBLIC isle-scene-graphics)
     endif()
+    if(TARGET isle-player-render-source AND TARGET isle-player-photo AND TARGET isle-actor-owner
+       AND TARGET isle-player-cart)
+        add_library(isle-player-renderer STATIC src/player_renderer.cpp src/player_renderer.hpp)
+        target_link_libraries(isle-player-renderer PUBLIC
+            isle-player-render-source isle-player-photo isle-actor-owner
+            isle-scene-graphics isle-photo-lighting isle-graphics-task isle-player-cart)
+        isle_target_options(isle-player-renderer)
+        target_compile_options(isle-player-renderer PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
     if(TARGET isle-player-ui)
         add_executable(player-ui-screen-rsp-smoke EXCLUDE_FROM_ALL
             tests/player_ui_screen_rsp_smoke.cpp tests/player_source_fixture.c)
@@ -1103,6 +1126,19 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-player-renderer AND TARGET isle-player-ui AND TARGET isle-course-model-producer
+       AND TARGET isle-player-cart AND TARGET isle-actor-photo-scene)
+        add_executable(player-source-renderer-rsp-smoke EXCLUDE_FROM_ALL
+            tests/player_source_renderer_rsp_smoke.cpp)
+        target_link_libraries(player-source-renderer-rsp-smoke PRIVATE
+            isle-player-renderer isle-player-ui isle-course-model-producer
+            isle-player-cart isle-actor-photo-scene
+            isle-effect-bank-resources isle-effect-graphics-resources isle-rsp)
+        isle_target_options(player-source-renderer-rsp-smoke)
+        target_compile_options(player-source-renderer-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
     if(TARGET isle-player-bump AND TARGET isle-actor-owner AND TARGET isle-effect-bank-resources)

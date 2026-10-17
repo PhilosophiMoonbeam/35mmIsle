@@ -48,6 +48,7 @@ typedef struct IslePlayerSource {
     IsleGameCamera* camera;
     isle_rng* rng;
     void* owner;
+    void* native_renderer; /* Nonowning retained renderer domain; no pose/clock mirror. */
     IsleGameResult status; /* First checked C execution/admission failure. */
     void* nonwaiting_call_frame; /* Private C-only; positive waits are forbidden. */
     IsleWorldMovementState movement;

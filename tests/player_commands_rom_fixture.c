@@ -80,7 +80,7 @@ static void observe_empty(IslePlayerSource* player, IslePlayerCommandData comman
     record(trace, trace->delivered, &trace->delivered_count, omCurrentObject, command.cmd, command.source);
     switch (command.cmd) {
     case PLAYER_COMMANDS_ROM_EMIT:
-        isle_player_commands_send(player, trace->camera, ISLE_PLAYER_REFERENCE_CAMERA_BLINK, NULL);
+        isle_player_commands_send(player, trace->camera, ISLE_PLAYER_CAMERA_BLINK, NULL);
         isle_player_commands_send_to_link(player, trace->broadcast_link, PLAYER_COMMANDS_ROM_BROADCAST, NULL);
         break;
     case PLAYER_COMMANDS_ROM_DELETE:
@@ -103,7 +103,7 @@ static void observe_empty(IslePlayerSource* player, IslePlayerCommandData comman
     case PLAYER_COMMANDS_ROM_FOREIGN_SOURCE:
         ++trace->fault_entered;
         isle_player_commands_send(trace->inactive_source, trace->camera,
-            ISLE_PLAYER_REFERENCE_CAMERA_BLINK, NULL);
+            ISLE_PLAYER_CAMERA_BLINK, NULL);
         ++trace->fault_returned;
         break;
     case PLAYER_COMMANDS_ROM_CREATE:
@@ -179,7 +179,7 @@ IsleGameResult player_commands_rom_topology(IslePlayerSource* player,
         IsleGameObjectMetadata metadata;
         result = isle_game_object_metadata(player->game, camera, &metadata);
         if (result != ISLE_GAME_OK) return result;
-        out->camera_original_update = camera->fnUpdate == player_command_reference_camera_update &&
+        out->camera_original_update = camera->fnUpdate == isle_player_mainCameraUpdate &&
             camera->update == NULL && camera->updateUser == NULL;
         out->camera_none_payload = camera->sourcePayloadKind == ISLE_SOURCE_PAYLOAD_NONE && camera->userData == NULL;
         out->camera_attached = camera->type == 3 && camera->data.cam != NULL && camera->data.cam == player->camera;

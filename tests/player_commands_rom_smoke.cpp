@@ -2,7 +2,7 @@
 // complete Root/reticle implementation, renderer or physical audio claim.
 #include "player_commands.hpp"
 #include "player_commands_rom_fixture.h"
-#include "player_command_reference.h"
+#include "player_commands_source.h"
 #include "actual_audio_driver.hpp"
 #include "scene_services.hpp"
 #include "scene_storage.hpp"
@@ -56,7 +56,7 @@ public:
         auto* object=owner(1,0);
         native(isle_game_attach_camera(services_.game,object,&player_.camera));
         require(services_.source_commands_native(object),"Player FIFO camera native scope admission failed");
-        native(isle_game_object_set_source_update(services_.game,object,player_command_reference_camera_update));
+        native(isle_game_object_set_source_update(services_.game,object,isle_player_mainCameraUpdate));
         trace_.camera=object;
         return object;
     }
@@ -154,11 +154,11 @@ void ordinary(game_audio::Session& audio,game::State& state) {
     native(isle_game_object_set_source_update(services.game,camera,nullptr));
     IsleGameResult foreign_send=ISLE_GAME_OK,foreign_update=ISLE_GAME_OK;
     std::thread foreign([&] {
-        foreign_send=isle_player_commands_backend_send(binding.source(),camera,ISLE_PLAYER_REFERENCE_CAMERA_BLINK,sender);
-        foreign_update=isle_game_object_set_source_update(services.game,camera,player_command_reference_camera_update);
+        foreign_send=isle_player_commands_backend_send(binding.source(),camera,ISLE_PLAYER_CAMERA_BLINK,sender);
+        foreign_update=isle_game_object_set_source_update(services.game,camera,isle_player_mainCameraUpdate);
     });
     foreign.join();
-    send(binding,camera,ISLE_PLAYER_REFERENCE_CAMERA_BLINK,sender);
+    send(binding,camera,ISLE_PLAYER_CAMERA_BLINK,sender);
     send(binding,camera,PLAYER_COMMANDS_ROM_UNKNOWN,sender);
     send(binding,first,-4,sender); send(binding,first,PLAYER_COMMANDS_ROM_UNKNOWN,sender);
     send(binding,first,-2,sender); send(binding,first,PLAYER_COMMANDS_ROM_UNKNOWN,sender);
@@ -179,7 +179,7 @@ void ordinary(game_audio::Session& audio,game::State& state) {
         for (std::size_t i=0;i<4;++i)
             suffix=suffix && trace.delivered[i].retired_sender && trace.delivered[i].sender_id==90;
     }
-    native(isle_game_object_set_source_update(services.game,camera,player_command_reference_camera_update));
+    native(isle_game_object_set_source_update(services.game,camera,isle_player_mainCameraUpdate));
     native(isle_game_tick(services.game));
     const auto restored=topology(source,camera);
     const bool blink=source.MainCameraBlinkTimeout==1 && services.source_owner_borrows(sender).queued==0 &&
@@ -204,7 +204,7 @@ void ordinary(game_audio::Session& audio,game::State& state) {
     }
     if (trace.queued_count==before_emit+3) {
         const auto* events=trace.queued+before_emit;
-        sends=sends && events[0].receiver==camera && events[0].command==ISLE_PLAYER_REFERENCE_CAMERA_BLINK &&
+        sends=sends && events[0].receiver==camera && events[0].command==ISLE_PLAYER_CAMERA_BLINK &&
             events[0].sender==first && events[1].receiver==first && events[2].receiver==second &&
             events[1].command==PLAYER_COMMANDS_ROM_BROADCAST && events[2].command==PLAYER_COMMANDS_ROM_BROADCAST &&
             events[1].sender==first && events[2].sender==first;
@@ -246,7 +246,7 @@ void deletion(game_audio::Session& audio,game::State& state,bool builtin) {
     // The reused native address must own a fresh real FIFO, not the deleted
     // receiver's unknown suffix or its old Source/callback bookkeeping.
     send(binding,reused,PLAYER_COMMANDS_ROM_UNKNOWN,sender);
-    send(binding,camera,ISLE_PLAYER_REFERENCE_CAMERA_BLINK,sender);
+    send(binding,camera,ISLE_PLAYER_CAMERA_BLINK,sender);
     native(isle_game_tick(services.game));
     const auto expected=builtin?1u:2u;
     const bool fresh=trace.delivered_count==expected && trace.handlers_returned==expected &&

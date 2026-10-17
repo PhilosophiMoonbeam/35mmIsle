@@ -83,6 +83,7 @@ public:
     IsleGameResult items(IslePlayerPhotoContext&) noexcept;
     IsleGameResult effects(IslePlayerPhotoContext&) noexcept;
 private:
+    friend class Controller;
     enum class Phase { idle,rejected,captured,prepared,queued,postprocessed,complete };
     struct Pending { IslePlayerPhotoTicket ticket{}; Phase phase=Phase::idle; unsigned borrows=0;
         std::array<IsleGameObject*,33> holds{}; std::size_t held=0; bool history_retained=false;

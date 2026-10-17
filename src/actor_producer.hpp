@@ -44,6 +44,8 @@ struct ProducerFragment {
     IsleGameObject* object = nullptr;
     scene::RenderMetadata render;
     std::array<menu::model::ListRange,4> lanes{};
+    // Absolute byte addresses of owned NOP tails, outside raw 64-bit counts.
+    std::array<std::uint32_t,4> continuation_slots{};
 };
 struct ProducerFrame {
     menu::model::ListRange camera;
@@ -91,7 +93,10 @@ public:
     Producer(const Producer&) = delete;
     Producer& operator=(const Producer&) = delete;
     ProducerFrame prepare(std::span<std::uint32_t>, std::uint64_t exclusive_epoch);
-    ProducerFrame prepare(std::span<std::uint32_t>, std::uint64_t, const scene::render::Pass&);
+    // Source composition projects the actual prefix object's native visibility
+    // immediately before preparation. Hidden prefixes never collect/stage.
+    ProducerFrame prepare(std::span<std::uint32_t>, std::uint64_t, const scene::render::Pass&,
+                          bool prefix_visible = true);
     static bool prepare_pass(void*, std::span<std::uint32_t>, std::uint64_t,
                              const scene::render::Pass&, scene::render::Prepared&);
     std::span<const menu::RamRange> reservations() const noexcept;
@@ -103,7 +108,7 @@ public:
     void retire() noexcept;
 private:
     struct Impl;
-    ProducerFrame prepare_filtered(std::span<std::uint32_t>, std::uint64_t, const scene::render::Pass*);
+    ProducerFrame prepare_filtered(std::span<std::uint32_t>, std::uint64_t, const scene::render::Pass*, bool);
     std::unique_ptr<Impl> impl_;
 };
 } // namespace isle::actor

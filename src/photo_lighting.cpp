@@ -222,6 +222,13 @@ std::size_t LightingInputs::installed_byte_count() const noexcept {
     for (const auto& span : install_) count += span.bytes.size();
     return count;
 }
+LightDirection LightingInputs::initial_direction() const noexcept {
+    LightDirection result{};
+    const auto bytes = lights_[0].dma.bytes.subspan<8, 3>();
+    for (std::size_t i = 0; i < result.size(); ++i)
+        result[i] = std::bit_cast<std::int8_t>(std::to_integer<std::uint8_t>(bytes[i]));
+    return result;
+}
 void LightingInputs::check_destination(std::span<std::byte> ram) const {
     if (ram.size() != lighting_rdram_size)
         throw std::invalid_argument("GAME photo lighting requires exclusive word-swapped 8 MiB RAM");
@@ -239,6 +246,12 @@ void LightingInputs::install(std::span<std::byte> ram) const {
         const auto offset = static_cast<std::size_t>(span.guest_address - ram_base);
         for (std::size_t i = 0; i < span.bytes.size(); ++i) ram[(offset + i) ^ 3u] = span.bytes[i];
     }
+}
+void LightingInputs::install_direction(std::span<std::byte> ram, const LightDirection& direction) const {
+    check_destination(ram);
+    const auto offset = static_cast<std::size_t>(direction_guest() - ram_base);
+    for (std::size_t i = 0; i < direction.size(); ++i)
+        ram[(offset + i) ^ 3u] = std::byte{std::bit_cast<std::uint8_t>(direction[i])};
 }
 LightDirection LightingInputs::update_direction(std::span<std::byte> ram,
                                                 const IsleGameVec3& eye, const IsleGameVec3& at) const {

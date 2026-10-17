@@ -8,7 +8,8 @@
 /* All callbacks that may wait or cross a native C fault fence live in C. These
  * tests drive the real queue, OM updates/processes and continuation ownership. */
 typedef struct CommandFixture {
-    _Alignas(max_align_t) unsigned char storage[128 * 1024];
+    /* Arena allocation aligns absolute addresses, not the backing array type. */
+    unsigned char storage[128 * 1024];
     isle_arena arena;
     IsleGame* game;
     IsleGameObject* receiver;

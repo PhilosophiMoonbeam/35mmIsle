@@ -57,6 +57,8 @@ The optional RSP composition adds coprocessor and required-work lifetime regress
 
 Native preparation retains strict source-byte hashes. `.gitattributes` preserves LF for admitted support inputs even under Windows `core.autocrlf=true`; a real CRLF-policy Git checkout matched all 97 hashed support files and completed Item source preparation. The Linux canonical RDP recipe enables `BUILD_TESTING`, which declares its eight opt-in native consumers; all eight and both coprocessor CLIs built from that separate checkout without a ROM.
 
+C command-ownership fixtures use the native arena’s absolute-address alignment rather than a toolchain-dependent C `max_align_t` declaration. Backing capacity, queue admission, fault propagation and real worker-join checks are unchanged.
+
 Current implemented surfaces are **not a playable Pokémon Snap executable**:
 
 - `35mmisle-rom` / `isle-rom`: read-only exact-US image validation in z64, v64 or n64 byte order, without writing normalized ROM data.

@@ -17,6 +17,9 @@
     "cmake/scene-graphics-inputs.json"
   ],
   "native_support": {
+    "tests/actual_player_source.hpp": {
+      "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
+    },
     "src/effect_graphics_resources.cpp": {
       "sha256": "505774dce1f1d8edda33f169d1deda6caf7aefa04832e5131854893db91d1142"
     },
@@ -45,7 +48,7 @@
       "sha256": "280a50d04be2a6413d2fe2807f5af3d4fb05e34d3516ff7b149e80726c268f59"
     },
     "tests/course_scene_rsp_smoke.cpp": {
-      "sha256": "f16e9408b649f63478ec1f13fec7495c50d4d74013143019743fd63ddf0d8c20"
+      "sha256": "029ef360f5b8004b69f3f2fe78b10bf88d1cc74704c51801ac423d663e36cc66"
     },
     "tests/menu_effects_tests.cpp": {
       "sha256": "64e39fa6b4abb67899b7a0d45e0498f9c0dcdc87b68add722db1599a6ed19541"

@@ -221,7 +221,48 @@ The complete 106-function Player body migration and its 39 real one-argument
 callbacks remain private authoring work, not an admitted native Player target.
 Exact initialization publication, canonical Actor/Item access, all reachable
 course callbacks and full Windows11/Linux gameplay remain open Beads work.
-Hosted `ef98b67` CI does not qualify these later dependencies.
+Published `a248e40` subsequently passed all ten hosted Linux/MSVC jobs in
+[run39012104538](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39012104538),
+including explicit compilation of all nineteen opt-in consumers on Linux and
+the full static-runtime MSVC host. No ROM or private generated assets enter
+public jobs. This receipt qualifies that exact dependency revision, not later
+local canonical Actor/Item changes or private Windows11 gameplay.
+
+## Canonical Actor/Item Player association
+
+The subsequent local cutover removes `PlayerState`, `PlayerBinding`, their
+setters and the independent Course pause/execution fields. Actor and Item
+owners require the same active `IslePlayerSource&`; all affected native and
+diagnostic consumers use that association. Construction prepares storage
+without publishing Root/model. Item initialization and actual consumption
+require the published native identities. Current AUX, camera eye and
+`cam_target` are consumed directly, not reconstructed from Player history.
+The imported `Vec3f` type is the canonical `IsleGameVec3`, not a layout cast.
+
+`IsPaused` gates source counter bookkeeping; the distinct execution predicate
+is `IsPaused == 0 && D_80382D44_523154 == 0`. Neither Boolean transition
+implicitly resumes suspended processes. Focus timer/direction come from Source;
+interaction focus identity remains the Detector's published object even when
+presence is false. Exact pinned Player cleanup clears prior pointer/latch
+only when latch and identity match; it does not reset the focus timer.
+
+Debug, Release and Clang ASan+UBSan each pass 57 CPU contracts and nineteen
+complete private consumers. The 57 accepted cases share an identical
+464-file source set, SHA-256
+`d1a6cc7b947b7e9aa84a046c71fae1102ed31bd52733de7b2df26db0549385a5`.
+Their sole initial closures establish 3,313 terminal tasks, 3,256 created tasks
+and 3,370 absent tracer/task identities, unchanged ROM and zero known
+physical-device attempts or permission errors. All 21 existing surfaces and
+all 71 Photo files per profile remain byte-identical across profiles and both
+preceding qualified snapshots.
+
+One parent launch incorrectly precreated Photo's required-nonexistent output
+directory. That entire early-admission failure remains rejected. The unchanged
+binary passed in a fresh root after correcting only the launch precondition;
+fifteen already accepted cases were neither replayed nor rescanned. This
+cutover is not complete Root106 execution, production input-driven gameplay,
+independent Original equivalence or private Windows11 runtime qualification.
+
 
 ## Native Item and complete C interaction execution
 

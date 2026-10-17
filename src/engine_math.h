@@ -33,7 +33,7 @@ typedef struct {
         } l;
     } l[2];
 } LookAt;
-typedef struct { float x, y, z; } Vec3f;
+typedef IsleGameVec3 Vec3f;
 /* Public signed 1.7 conversion: truncate c*128, upper endpoint saturates at 127.
  * Mathematical unit components are bounded; finite output is checked before
  * conversion in the private GAME extraction.

@@ -1159,6 +1159,16 @@ if(TARGET isle-scene-graphics AND TARGET isle-game-host)
     endif()
 endif()
 
+foreach(_isle_player_consumer IN ITEMS
+        actor-collision-rom-smoke actor-command26-rom-smoke actor-interaction-rom-smoke
+        actor-owner-rom-smoke beach-magikarp-scene-rom-smoke course-collision-rsp-smoke
+        course-magikarp-rsp-smoke course-scene-rsp-smoke item-owner-rom-smoke
+        item-producer-rsp-smoke magikarp-owner-rom-smoke player-bump-rom-smoke)
+    if(TARGET ${_isle_player_consumer})
+        target_sources(${_isle_player_consumer} PRIVATE tests/actual_player_source.hpp)
+    endif()
+endforeach()
+
 include(GNUInstallDirs)
 install(TARGETS 35mmisle-rom RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle-rom-tool")

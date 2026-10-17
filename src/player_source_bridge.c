@@ -123,6 +123,22 @@ IsleGameResult isle_player_source_get(IsleGame* game, IsleGameObject* object,
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_player_source_context(IsleGame* game, IslePlayerSource** output) {
+    IslePlayerSource* source;
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    result = isle_game_status(game);
+    if (result != ISLE_GAME_OK) return result;
+    source = game->playerSource;
+    if (source == NULL) return ISLE_GAME_OK;
+    if (source->game != game || source->owner == NULL || source->rng == NULL)
+        return ISLE_GAME_INVALID_STATE;
+    if (source->status != ISLE_GAME_OK) return source->status;
+    *output = source;
+    return ISLE_GAME_OK;
+}
+
 IslePlayerSource* isle_player_source_current(IsleGameObject* object) {
     IsleGameObjectMetadata metadata;
     IsleGame* game = object->game;

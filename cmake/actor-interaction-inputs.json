@@ -5,6 +5,9 @@
   "scope": "Implemented real shared source lifetime/spatial/optionalceilings/typedbinding plus complete original-C automatic/FIFO interpreters, real11InteractionServices and nativeItemOwner/Flute/graphics; all71speciescallback closure and productionPlayer/productgameplay remainseparatelyopen",
   "authority": "Exact own-GAME immutable stage/blobs and authorized initialized data; no SDK producer/header/layout/disassembly or guest-function casts",
   "native_support": {
+    "tests/actual_player_source.hpp": {
+      "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
+    },
     "src/actor_source.h": {
       "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
     },
@@ -18,10 +21,10 @@
       "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/actor_owner.cpp": {
-      "sha256": "f7fb66502bbfcce3fd5e55f8a6534740b15be5060de03c19cc2e498cf94314ba"
+      "sha256": "81304f1ad28e4a2f8c00f365e4fc60ec5739b7b576a99c6449a6ad26497453b7"
     },
     "src/actor_owner.hpp": {
-      "sha256": "98de14af4680b7a24aaa318f83881eb7a6d646ad93c74ef9a9bf25d963b7a308"
+      "sha256": "7a16154afa5450b286091a5dda286e6c541a0f0355d3a0917261b02242a94baa"
     },
     "src/scene_services.cpp": {
       "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
@@ -72,13 +75,13 @@
       "sha256": "245acee37ce8a1cb80c8d6a3e27e044cffe6a1c5f2ad2cc665c895c56d44941a"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "97782ce39a1abee6c1e14edf86901674ae50d7d9403c0da65ea0dcfe44ad7e25"
+      "sha256": "fafb0655162dbe64f21de5a5e2735ee56b436b8b5bc497aa09dd99d0bda1a9ec"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
-      "sha256": "434d92b0202b9ecc6fb7d94bb2a474b7d4d7f69a1bf84bbdd69afa3e1615f462"
+      "sha256": "6a24fe0b3fe3623524c20689e6ea26a84a7f59146ca757c3d0f9785d5b392fb3"
     },
     "tests/actor_command26_rom_smoke.cpp": {
-      "sha256": "a806f7e2e19aace69d27e0bd1b162b3ba4e2ef1cf405d4d579eeee149acc7b70"
+      "sha256": "06aeaa0f84eaa8ae0981613e1ae2ab2ad86968decc842787d3e5c9c7e4d12c18"
     }
   },
   "source_files": {

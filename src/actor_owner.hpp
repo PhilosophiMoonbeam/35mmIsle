@@ -5,6 +5,7 @@
 #include "environment_sound.hpp"
 #include "menu_effects.hpp"
 #include "world_runtime.hpp"
+#include "player_source.h"
 
 namespace isle::actor {
 class InteractionServices;
@@ -27,21 +28,11 @@ struct SpawnResult {
     IsleGameObject* object = nullptr;
     explicit operator bool() const noexcept { return bool(status); }
 };
-struct PlayerState {
-    IsleGameObject* object = nullptr;
-    IsleGameModel* model = nullptr;
-    IsleGameCamera* camera = nullptr;
-    menu::animation::InstanceHandle previous_focus;
-    IsleGameObject* previous_focus_identity = nullptr;
-    bool focus_latch = false;
-    std::int32_t direction_index = 0;
-    std::uint32_t focus_timer = 0;
-};
 // Source pause gates Update's counter only. Execution is checked at the ordinary
 // command-handler tail; neither predicate transition resumes native processes.
 // Actual FIFO commands -2/-3 own object-wide suspension/resumption.
 struct CourseState {
-    bool paused = false, execution_enabled = true, sound_enabled = true;
+    bool sound_enabled = true;
     // Actual Beach D_beach_802CC014. Scene chooser publishes true after its
     // successful spawn; the genuine Magikarp state clears it after animation.
     bool magikarp_active = false;
@@ -83,7 +74,7 @@ class Owner final {
     friend struct SourceAccess;
 public:
     Owner(scene::Services&, const beach::ActorResources&, world::World&,
-          environment_sound::Environment&, focus::Detector&,
+          environment_sound::Environment&, focus::Detector&, IslePlayerSource&,
           std::span<const menu::animation::SlotCapacity>,
           std::span<const menu::EffectBank* const>,
           menu::animation::ExecutionCapacity = {});
@@ -146,12 +137,9 @@ public:
     // Bind before spawning. The context stays alive through all source work,
     // actual joins and graphics release; successful reset ends this borrow.
     OwnerStatus bind_interactions(InteractionServices&) noexcept;
-    // Local actor association only; Environment listener publication/changes
-    // belong to its explicit initialize/set_listener calls.
-    OwnerStatus set_player(IsleGameObject*, IsleGameModel*, IsleGameCamera*) noexcept;
-    OwnerStatus set_focus(menu::animation::InstanceHandle, bool latch, std::uint32_t timer) noexcept;
-    void set_direction(std::int32_t) noexcept;
-    const PlayerState& player() const noexcept;
+    // Canonical nonowning association; Source outlives all native/graphics borrows.
+    IslePlayerSource& player_source() noexcept;
+    const IslePlayerSource& player_source() const noexcept;
     CourseState& course() noexcept;
     const CourseState& course() const noexcept;
 private:

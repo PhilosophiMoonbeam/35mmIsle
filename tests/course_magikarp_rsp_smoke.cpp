@@ -5,6 +5,7 @@
 #include "beach_magikarp_scene.hpp"
 #include "actor_movement_probe.h"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "course_model_producer.hpp"
 #include "effect_bank_resources.hpp"
 #include "effect_graphics_resources.hpp"
@@ -206,7 +207,7 @@ struct Readback {
             require(source_bound,"actual source hierarchy did not bind the admitted movement placement RAM address");
         }
         const auto hidden=fingerprint(lease.hidden());
-        if(result.computed.present&&(result.computed.flags&4u)&&self.owner.player().direction_index==-1) {
+        if(result.computed.present&&(result.computed.flags&4u)&&self.owner.player_source().gDirectionIndex==-1) {
             auto writable=lease.postprocess_words();
             require(self.detection.history.mark_center(writable,framebuffer,-1)==focus::Error::none,"actual source center writeback rejected");
             for(unsigned y=0;y<height;++y) for(unsigned x=0;x<width;++x) {
@@ -293,6 +294,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
         {
             scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);
             require(!services.failed(),services.error());
+            private_player::Source context(services);
             auto* root=services.object(0,0);auto* camera_object=services.object(1,0);
             require(root&&camera_object,"source root0/camera creation failed");
             IsleGameCamera* camera=nullptr;native(isle_game_attach_camera(services.game,camera_object,&camera));
@@ -315,7 +317,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             const std::array capacities{maximum,maximum};
             ActorMovementProbe movement{}; // Outlives Owner cancellation/join, including exception unwinding.
             {
-                actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});hooks.owner=&owner;
+                actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});hooks.owner=&owner;
                 accepted(owner.publish_effects());
                 WorldLifetime world_lifetime{world,hooks};
                 const auto make_model=[&](std::uint32_t id,std::uint8_t link,IsleGameVec3 position) {
@@ -329,7 +331,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                     IsleGameModelTransform transform{};transform.position=position;transform.scale={1,1,1};
                     native(isle_game_model_set_placement(services.game,player.second,ISLE_GAME_MODEL_PLACEMENT_RT,&transform));
                 };
-                place_player(near_player);accepted(owner.set_player(player.first,player.second,camera));owner.set_direction(-1);
+                place_player(near_player);context.bind(player.first,player.second,camera);context.value.gDirectionIndex=-1;
                 require(environment.set_listener(player.second,camera),"environment listener binding failed");
                 actor::PhotoScene controller(services,owner,root,camera,detection,nullptr);
                 require(controller.active(),"real source photo controller inactive");
@@ -436,7 +438,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 require(detector.history(detection.context).size()==1&&(owner.source(pre.actor.instance)->flags&0x100u)&&
                     (owner.source(post.actor.instance)->flags&0x100u),"disabled actor capture incorrectly disabled source membership/baseline");
                 detection.enabled=true;accepted(owner.reset());accepted(owner.collect_joined());diagnostic_route=false;place_player(near_player);
-                owner.set_direction(-1);readback.genuine_positive=false;
+                context.value.gDirectionIndex=-1;readback.genuine_positive=false;
                 const auto magikarp=spawner.spawn_at({trigger.first,trigger.second});require(bool(magikarp),magikarp.detail);
                 const auto mag_identity=reinterpret_cast<focus::Object>(magikarp.actor.object);const auto mag_handle=magikarp.actor.instance;
                 const auto particle=owner.effects().create_particle(3,0,{500,1233,4000},{});
@@ -695,8 +697,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 controller.retire();
                 require(!controller.active()&&!controller.prefix_object()&&!controller.copy_info_object(),
                         "failed-scope source controller kept native borrowers or callbacks");
-                accepted(owner.set_player(nullptr,nullptr,nullptr));
-                require(environment.set_listener(nullptr,nullptr),"environment listener release failed");services.erase(trigger.first);services.erase(player.first);services.erase(root);
+                require(environment.set_listener(nullptr,nullptr),"environment listener release failed");services.erase(trigger.first);services.erase(root);
                 hooks.owner=nullptr;
             }
             environment.cleanup();

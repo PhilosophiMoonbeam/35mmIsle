@@ -40,9 +40,11 @@ PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* 
         first=isle_menu_next_object(services.game,first);
     }
     require(first==root, "PhotoScene supplied root is not source link0's first id0");
-    const auto& player=owner.player();
+    const auto& player=owner.player_source();
+    IslePlayerSource* active=nullptr;
     const IsleGameCameraParameters* parameters=nullptr;
-    require(player.camera==camera &&
+    require(isle_player_source_context(services.game,&active)==ISLE_GAME_OK && active==&player &&
+            player.camera==camera &&
             isle_game_model_validate_binding(services.game,player.object,player.model)==ISLE_GAME_OK &&
             isle_game_camera_parameters(services.game,camera,&parameters)==ISLE_GAME_OK,
             "PhotoScene requires Owner's actual canonical player/main camera");
@@ -104,7 +106,9 @@ void PhotoScene::fail(const char* detail) noexcept {
 IsleGameResult PhotoScene::prepare_membership(void* user, focus::Photo& output) noexcept {
     if (!user) return ISLE_GAME_INVALID_ARGUMENT;
     auto& self=*static_cast<PhotoScene*>(user);
-    if (!self.active() || self.owner_.player().camera!=self.camera_) {
+    IslePlayerSource* active=nullptr;
+    if (!self.active() || isle_player_source_context(self.services_.game,&active)!=ISLE_GAME_OK ||
+        active!=&self.owner_.player_source() || self.owner_.player_source().camera!=self.camera_) {
         self.fail("PhotoScene prefix preparation outside its live canonical camera scope");
         return ISLE_GAME_INVALID_STATE;
     }

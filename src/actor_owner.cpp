@@ -184,7 +184,7 @@ struct Owner::Impl {
     std::vector<int> block_heads;
     std::size_t transform_cache = 0, pokemon_cache = 0;
     std::uint64_t insertion = 0;
-    PlayerState player;
+    IslePlayerSource& player;
     CourseState course;
     InteractionServices* interactions = nullptr;
     // Beach func_beach_802C4340 configures inclusive IDs80..E4/link3.
@@ -192,11 +192,14 @@ struct Owner::Impl {
     std::uint32_t pokemon_counter = 0;
 
     Impl(scene::Services& s,const beach::ActorResources& r,world::World& w,environment_sound::Environment& e,
-         focus::Detector& d,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
+         focus::Detector& d,IslePlayerSource& p,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
          menu::animation::ExecutionCapacity execution)
         : services(s),resources(r),world(w),sound(e),detector(d),capacities(c.begin(),c.end()),slots(c.size()),bindings(c.size()),
-          fx(banks,s.rng,{this,read_target,write_target}),block_heads(w.blocks().size(),-1) {
+          fx(banks,s.rng,{this,read_target,write_target}),block_heads(w.blocks().size(),-1),player(p) {
         resources.require_live();
+        IslePlayerSource* active=nullptr;
+        if (p.game!=s.game || isle_player_source_context(s.game,&active)!=ISLE_GAME_OK || active!=&p)
+            throw std::invalid_argument("actor owner requires active same-game canonical Player Source");
         if (c.empty() || !fx.status()) throw std::invalid_argument("actor owner needs native capacities and admitted shared FX banks");
         std::size_t maximum_nodes=0;
         for (std::size_t i=0;i<c.size();++i) {
@@ -282,8 +285,8 @@ struct Owner::Impl {
         return apply_source_animation(slot.source,slot.instance,header,start,force,*slot.initialization,resources,event_services(slot));
     }
     void focus_cleanup(Slot& slot) noexcept {
-        if (player.focus_latch && player.previous_focus_identity==slot.object) {
-            player.previous_focus={}; player.previous_focus_identity=nullptr; player.focus_latch=false;
+        if (player.D_80382C3C_52304C && player.gPreviousPokemonInFocus==slot.object) {
+            player.gPreviousPokemonInFocus=nullptr; player.D_80382C3C_52304C=0;
         }
     }
     void unlink_logical(Slot& slot) noexcept {
@@ -371,10 +374,15 @@ struct Owner::Impl {
         return services.failed()?rejected(OwnerError::services,"actor native registered deletion"):OwnerStatus{};
     }
     OwnerStatus distance(Slot& slot) noexcept {
-        if (!player.model) { slot.source.playerDist=maximum_distance; return {}; }
+        IslePlayerSource* active=nullptr;
+        if (isle_player_source_context(services.game,&active)!=ISLE_GAME_OK || active!=&player ||
+            !player.object || !player.model ||
+            isle_game_model_validate_binding(services.game,player.object,player.model)!=ISLE_GAME_OK)
+            return rejected(OwnerError::native,"actor distance requires active published canonical Player");
         const IsleGameModelPlacement *actor_position=nullptr,*player_position=nullptr;
         if (isle_game_model_placement(services.game,slot.model,&actor_position)!=ISLE_GAME_OK ||
-            isle_game_model_placement(services.game,player.model,&player_position)!=ISLE_GAME_OK)
+            isle_game_model_placement(services.game,player.model,&player_position)!=ISLE_GAME_OK ||
+            player_position->mode==ISLE_GAME_MODEL_PLACEMENT_DISABLED)
             return rejected(OwnerError::native,"actor/player source placement distance");
         const float dx=actor_position->transform.position.x-player_position->transform.position.x;
         const float dy=actor_position->transform.position.y-player_position->transform.position.y;
@@ -429,8 +437,8 @@ struct SourceAccess {
     }
 };
 Owner::Owner(scene::Services& s,const beach::ActorResources& r,world::World& w,environment_sound::Environment& e,
-             focus::Detector& d,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
-             menu::animation::ExecutionCapacity execution) : impl_(std::make_unique<Impl>(s,r,w,e,d,c,banks,execution)) {
+             focus::Detector& d,IslePlayerSource& p,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
+             menu::animation::ExecutionCapacity execution) : impl_(std::make_unique<Impl>(s,r,w,e,d,p,c,banks,execution)) {
     impl_->facade=this;
 }
 OwnerStatus Owner::publish_effects() noexcept {
@@ -809,8 +817,7 @@ OwnerStatus Owner::reset() noexcept {
         auto result=self.cleanup(slot); if (!result) return result;
     }
     auto result=collect_joined(); if (!result) return result;
-    self.fx.reset(); self.player.previous_focus={}; self.player.previous_focus_identity=nullptr; self.player.focus_latch=false;
-    self.player.focus_timer=0; self.player.direction_index=0;
+    self.fx.reset();
     self.interactions=nullptr;
     return {};
 }
@@ -859,26 +866,8 @@ OwnerStatus Owner::bind_interactions(InteractionServices& context) noexcept {
     self.interactions=&context;
     return {};
 }
-OwnerStatus Owner::set_player(IsleGameObject* object,IsleGameModel* model,IsleGameCamera* camera) noexcept {
-    if ((object==nullptr)!=(model==nullptr) || (model==nullptr)!=(camera==nullptr))
-        return rejected(OwnerError::admission,"player object/model/camera binding must be genuinely present or absent");
-    const IsleGameModelPlacement* placement=nullptr;
-    const IsleGameCameraParameters* parameters=nullptr;
-    if (object && (isle_game_model_validate_binding(impl_->services.game,object,model)!=ISLE_GAME_OK ||
-        isle_game_model_placement(impl_->services.game,model,&placement)!=ISLE_GAME_OK ||
-        isle_game_camera_parameters(impl_->services.game,camera,&parameters)!=ISLE_GAME_OK))
-        return rejected(OwnerError::native,"actual player binding");
-    impl_->player.object=object; impl_->player.model=model; impl_->player.camera=camera;
-    return {};
-}
-OwnerStatus Owner::set_focus(menu::animation::InstanceHandle h,bool latch,std::uint32_t timer) noexcept {
-    auto* slot=impl_->find(h);
-    if (h && !slot) return rejected(OwnerError::lifetime,"source focus requires current full instance");
-    impl_->player.previous_focus=h; impl_->player.previous_focus_identity=slot?slot->object:nullptr;
-    impl_->player.focus_latch=latch; impl_->player.focus_timer=timer; return {};
-}
-void Owner::set_direction(std::int32_t direction) noexcept { impl_->player.direction_index=direction; }
-const PlayerState& Owner::player() const noexcept { return impl_->player; }
+IslePlayerSource& Owner::player_source() noexcept { return impl_->player; }
+const IslePlayerSource& Owner::player_source() const noexcept { return impl_->player; }
 CourseState& Owner::course() noexcept { return impl_->course; }
 const CourseState& Owner::course() const noexcept { return impl_->course; }
 } // namespace isle::actor
@@ -1073,7 +1062,7 @@ IsleGameResult isle_actor_owner_execution_enabled(IsleActorSource* source,int32_
     if (!output) return ISLE_GAME_INVALID_ARGUMENT;
     auto* slot=isle::actor::SourceAccess::slot(source);
     if (!slot) return ISLE_GAME_INVALID_STATE;
-    *output=slot->owner->course.execution_enabled;
+    *output=slot->owner->player.IsPaused==0 && slot->owner->player.D_80382D44_523154==0;
     return ISLE_GAME_OK;
 }
 IsleGameResult isle_actor_owner_reference_assign(IsleActorSource* source,IsleGameObject** field,IsleGameObject* sender) {
@@ -1121,7 +1110,7 @@ float isle_actor_owner_animation_time(IsleActorSource* source) {
 }
 int isle_actor_owner_paused(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);
-    return slot && slot->owner->course.paused;
+    return slot && slot->owner->player.IsPaused!=0;
 }
 IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource* source,int active) {
     auto* slot=isle::actor::SourceAccess::slot(source);

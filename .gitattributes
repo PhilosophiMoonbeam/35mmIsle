@@ -168,3 +168,4 @@ tools/prepare_player_ui.py text eol=lf
 tools/prepare_screen_transition.py text eol=lf
 tools/prepare_player_photo.py text eol=lf
 tools/prepare_player_bump.py text eol=lf
+tests/actual_player_source.hpp text eol=lf

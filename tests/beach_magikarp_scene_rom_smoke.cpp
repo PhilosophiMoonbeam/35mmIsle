@@ -3,6 +3,7 @@
 #include "beach_magikarp_scene.hpp"
 #include "actor_photo_eligibility.hpp"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
 #include <algorithm>
@@ -55,13 +56,13 @@ struct Consumer {
     const beach::BehaviorResources& behaviors;
     beach::MagikarpScene scene;
     beach::MagikarpTrigger trigger;
-    IsleGameObject* player_object=nullptr;
-    IsleGameModel* player_model=nullptr;
     world::GroundResult ground{};
     std::size_t callback=beach::actor_no_index,null_choice=beach::actor_no_index;
     Consumer(scene::Services& s,actor::Owner& o,environment_sound::Environment& e,world::World& w,const beach::ActorResources& r,
-             const beach::BehaviorResources& b,IsleGameCamera* camera)
+             const beach::BehaviorResources& b,IsleGameCamera* camera,private_player::Source& context)
         :services(s),owner(o),environment(e),world(w),resources(r),behaviors(b),scene(s,o,w,r,b) {
+        IsleGameObject* player_object=nullptr;
+        IsleGameModel* player_model=nullptr;
         const auto make_model=[&](std::uint32_t id,IsleGameObject*& object,IsleGameModel*& model) {
             object=services.object(id,4); require(object,"native scene input allocation failed");
             IsleGameModelNodeInit node{}; node.parent=UINT32_MAX;
@@ -72,7 +73,7 @@ struct Consumer {
         make_model(0x1001,player_object,player_model);
         IsleGameModelTransform player{}; player.position={31,47,59}; player.scale={1,1,1};
         native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RT,&player));
-        accepted(owner.set_player(player_object,player_model,camera));
+        context.bind(player_object,player_model,camera);
         require(environment.set_listener(player_model,camera),"environment listener binding failed");
         // Distinguish trigger DObj position from its unrelated AUX and player
         // AUX from its unrelated DObj. These are real canonical native inputs.
@@ -192,7 +193,7 @@ struct Consumer {
                 close(record->collPosition.z,double(copied.z)+offset.z+(root_offset?double(root.z)*scale.z:0)),
                 "actual source collision field differs from analytic zero-Euler AUX/root/offset composition");
         actor::photo::Camera camera;
-        native(actor::photo::prepare_camera(services.game,owner.player().camera,camera));
+        native(actor::photo::prepare_camera(services.game,owner.player_source().camera,camera));
         bool eligible=false;
         native(actor::photo::admitted(*record,camera,record->collPosition,eligible));
         // Actual caller camera is eye0,at+X,up+Y: view=(worldZ,worldY,-worldX).
@@ -262,14 +263,12 @@ struct Consumer {
         require(animation_ended&&cleared&&retired&&!owner.source(h)&&!owner.object(h)&&!owner.animation().model(h)&&
                 !owner.set_animation(h,nullptr),"source actor failed joined physical retirement/stale handle rejection within512");
         reset();
-        accepted(owner.set_player(nullptr,nullptr,nullptr));
         require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
         services.erase(trigger.object); trigger.object=nullptr;
         const auto seed=services.rng.seed;
         const auto stale=scene.choose(trigger,ground);
         require(!stale&&stale.error==beach::MagikarpSceneError::native&&services.rng.seed==seed,
                 "expired native trigger identity consumed RNG or invented position");
-        services.erase(player_object);
     }
 };
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
@@ -300,6 +299,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
         {
             scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);
             require(!services.failed(),services.error());
+            private_player::Source context(services);
             auto* object=services.object(1,0); require(object,"camera object allocation failed");
             IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,object,&camera));
             const IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&view));
@@ -314,10 +314,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             }
             const std::array capacities{capacity,capacity};
             {
-                actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096}); shift.owner=&owner;
+                actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096}); shift.owner=&owner;
                 accepted(owner.publish_effects());
                 require(world.enter_first(0)!=nullptr,"actual first World admission failed");
-                Consumer consumer(services,owner,environment,world,resources,behaviors,camera);
+                Consumer consumer(services,owner,environment,world,resources,behaviors,camera,context);
                 consumer.boundaries(); consumer.helpers_and_failures(); consumer.lifetime();
                 shift.owner=nullptr;
             }

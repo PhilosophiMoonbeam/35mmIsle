@@ -1,8 +1,9 @@
 // Explicit private-ROM component integration, never CTest or a game entrypoint.
 // Actual common1003 FSM + complete admitted World/Actor assets + sole course FX.
-// No Player/items/photo-snapshot queue/all-courses/Original/Win11 runtime claim.
+// Real native Player Root/AUX only; no Player FSM/items/photo queue/game runtime claim.
 #include "actor_owner.hpp"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "course_model_producer.hpp"
 #include "effect_bank_resources.hpp"
 #include "effect_graphics_resources.hpp"
@@ -233,6 +234,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
         {
             scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);
             require(!services.failed(),services.error());
+            private_player::Source context(services);
             auto* camera_object=services.object(1,0); require(camera_object,"composed main camera object");
             IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
             native(isle_game_camera_add_matrix(services.game,camera,ISLE_GAME_CAMERA_PERSPECTIVE_FAST));
@@ -240,6 +242,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             const IsleGamePerspective perspective{55,4.0f/3.0f,10,25600,1}; native(isle_game_camera_set_perspective(services.game,camera,&perspective));
             const IsleGameLookAt view{{0,1600,6000},{0,500,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&view));
             const IsleGameViewport viewport{{640,480,511,0},{640,480,511,0}}; native(isle_game_camera_set_viewport(services.game,camera,&viewport));
+            context.create(camera);
             environment_sound::Environment environment(services,storage.arena(),sound_resources);
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; focus::RegionCopies copies(capture_layout);
@@ -254,7 +257,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             }
             const std::array capacities{capacity,capacity};
             {
-                actor::Owner owner(services,actor_resources,world,environment,detector,capacities,banks,{32768,4096});
+                actor::Owner owner(services,actor_resources,world,environment,detector,context.value,capacities,banks,{32768,4096});
                 accepted(owner.publish_effects());
                 bindings.owner=&owner; bindings.previous_reference=&world.blocks()[0];
                 WorldOwnerScope world_owner_scope{world,bindings};

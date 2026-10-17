@@ -430,12 +430,11 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
             capacity(actor_resources.models(),actor_capacity);capacity(item_resources.models(),item_capacity);
             const std::array actor_capacities{actor_capacity,actor_capacity};std::array<a::SlotCapacity,8> item_capacities;item_capacities.fill(item_capacity);
             {
-                actor::Owner actors(services,actor_resources,world,environment,detector,actor_capacities,banks,{32768,4096});hooks.actors=&actors;
+                actor::Owner actors(services,actor_resources,world,environment,detector,source,actor_capacities,banks,{32768,4096});hooks.actors=&actors;
                 accepted(actors.publish_effects());
-                accepted(actors.set_player(player_object,player_model,camera));actors.set_direction(-1);
                 require(environment.set_listener(player_model,camera),"environment listener binding failed");
                 items::Globals globals;items::Owner items(services,item_resources,world,actors,globals,
-                    {player_object,player_model,camera,&source.cam_target},item_capacities,{32768,4096});hooks.items=&items;
+                    source,item_capacities,{32768,4096});hooks.items=&items;
                 OwnerLifetime owner_lifetime{actors,items,world,hooks};
                 require(world.enter_first(0)==&world.blocks()[0],"actual photo World first block failed");source.movement.block=world.current();
                 accepted(items.init());accepted(items.set_custom_functions(nullptr,0,nullptr));
@@ -746,12 +745,12 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                 const auto items_collected=items.collect_joined();
                 accepted(actors_retired);accepted(items_retired);accepted(actors_collected);accepted(items_collected);
                 world.retire();
-                accepted(actors.set_player(nullptr,nullptr,nullptr));
                 require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
-                services.erase(trigger);services.erase(root);services.erase(player_object);services.erase(camera_object);
+                services.erase(trigger);services.erase(root);
                 require(!services.failed(),services.error());
             }
             environment.cleanup();source_lifetime.finish();
+            services.erase(player_object);services.erase(camera_object);
         }
         native(storage.destroy());
     }

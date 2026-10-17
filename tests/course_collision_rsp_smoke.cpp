@@ -4,6 +4,7 @@
 // this does not admit Magikarp's distinct nonNULL-graph collision state.
 #include "actor_photo_scene.hpp"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "course_model_producer.hpp"
 #include "effect_bank_resources.hpp"
 #include "photo_lighting.hpp"
@@ -107,6 +108,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
     scene::Storage storage(32*1024*1024);native(storage.create());
     {
         scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);require(!services.failed(),services.error());
+        private_player::Source context(services);
         auto* root=services.object(0,0);auto* camera_object=services.object(1,0);auto* player=services.object(0x1001,0);require(root&&camera_object&&player,"collision GPU native inputs failed");
         IsleGameCamera* camera=nullptr;native(isle_game_attach_camera(services.game,camera_object,&camera));
         native(isle_game_camera_add_matrix(services.game,camera,ISLE_GAME_CAMERA_PERSPECTIVE_FAST));native(isle_game_camera_add_matrix(services.game,camera,ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL));
@@ -116,12 +118,13 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
         IsleGameModelNodeInit node{};node.parent=UINT32_MAX;node.transform.scale={1,1,1};node.matrix_kind=ISLE_GAME_MODEL_CONTEXTUAL_RPY;
         IsleGameModel* player_model=nullptr;native(isle_game_attach_model(services.game,player,&node,1,&player_model));
         IsleGameModelTransform player_pose{};player_pose.position={0,1600,6000};player_pose.scale={1,1,1};native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RT,&player_pose));
+        context.bind(player,player_model,camera);
         environment_sound::Environment environment(services,storage.arena(),sounds);require(environment.initialize(nullptr,camera),"environment source initialization failed");focus::Detector detector;focus::RegionCopies copies(capture_layout);actor::DetectorBinding detection{copies,detector};
         Hooks hooks{services,camera};world::World world(services,world_resources,hooks.callbacks());world.follow_camera(camera);
         a::SlotCapacity maximum{};for(const auto& model:resources.models()) {const auto capacity=a::slot_capacity(model);maximum.nodes=std::max(maximum.nodes,capacity.nodes);maximum.material_attachments=std::max(maximum.material_attachments,capacity.material_attachments);}
         const std::array capacities{maximum,maximum,maximum};
         {
-            actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};accepted(owner.set_player(player,player_model,camera));
+            actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
             require(environment.set_listener(player_model,camera),"environment listener binding failed");
             actor::PhotoScene controller(services,owner,root,camera,detection,nullptr);require(world.enter_first(0)==&world.blocks()[0],"collision GPU first actual World absent");
             std::size_t definition=beach::actor_no_index;for(std::size_t i=0;i<resources.definitions().size();++i)if(resources.definitions()[i].actor_id==129&&resources.definitions()[i].factory_identity==0x802cac48u)definition=i;
@@ -192,7 +195,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             require(after.color==repeat.color&&after.depth==repeat.depth,"actual collision source hide/reveal failed exact completed restoration");
             for(std::size_t i=0;i<after.color.size();++i) {changed_after_collision+=(before.color[i]>>1)!=(after.color[i]>>1);changed_when_hidden+=(after.color[i]>>1)!=(hidden.color[i]>>1);}
             accepted(owner.reset());accepted(owner.collect_joined());tick();draw(repeat,"actual-collision-retired.ppm");
-            require(frame->retire()&&frame->quiescent(),"actual collision GPU failed retirement");actor_producer.retire();world_producer.retire();controller.retire();accepted(owner.set_player(nullptr,nullptr,nullptr));
+            require(frame->retire()&&frame->quiescent(),"actual collision GPU failed retirement");actor_producer.retire();world_producer.retire();controller.retire();
             require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
         }
         environment.cleanup();

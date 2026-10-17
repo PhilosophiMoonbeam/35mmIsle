@@ -10,6 +10,7 @@
 #include "actor_interaction_services.hpp"
 #include "item_owner.hpp"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
 #include <algorithm>
@@ -68,7 +69,7 @@ struct Rows {
 
 // A semantic API fixture owns its actual native identity until join AND all
 // queue/canonical-field credits close. The primary instance is the Player
-// fixture; it is not an Actor/Item payload and set_player is not its owner.
+// fixture; its native PLAYER payload and semantic lifetime are independent.
 // Its one real fixture-owned target field also exercises receiver-side holds.
 struct ApiSourceOwner {
     scene::Services& services;
@@ -251,7 +252,7 @@ struct Consumer {
         p.processFlags=0; p.counter=0; p.loopCount=0; p.pokemonLoopTarget=100;
         p.tangible=1; p.miscVars[0].field1=0;
         native(isle_game_object_set_flags(services.game,subject.object,0x40u));
-        actors.course().paused=false; actors.course().execution_enabled=true;
+        actors.player_source().IsPaused=0; actors.player_source().D_80382D44_523154=0;
     }
     void automatic(const actor::SpawnResult& subject,Rows* rows,IsleGameProcessKind kind=ISLE_GAME_STACKFUL,
                    std::source_location where=std::source_location::current()) {
@@ -668,7 +669,7 @@ struct Consumer {
         prepare(subject);
         // NULL exits before execution-policy suspension, unlike an empty graph.
         native(isle_game_pause_source_processes(services.game,subject.object,isle_actor_source_distance_process,0));
-        actors.course().execution_enabled=false;
+        actors.player_source().D_80382D44_523154=1;
         automatic(subject,nullptr);
         require(probe.returned==1 && actor_interaction_paused_count(subject.object)<actor_interaction_process_count(subject.object),
                 "NULL automatic graph reached the ordinary pause tail");
@@ -677,7 +678,7 @@ struct Consumer {
         automatic(subject,&terminal); no_selection(subject);
         prepare(subject);
         native(isle_game_pause_source_processes(services.game,subject.object,isle_actor_source_distance_process,0));
-        actors.course().execution_enabled=false;
+        actors.player_source().D_80382D44_523154=1;
         automatic(subject,&terminal);
         require(actor_interaction_paused_count(subject.object)==actor_interaction_process_count(subject.object),
                 "nonNULL terminal graph skipped the ordinary automatic pause tail");
@@ -695,13 +696,13 @@ struct Consumer {
                 actor_interaction_aux_before_state(subject.object,descend,hidden) && near(root_y(subject),-.2f),
                 "automatic first winner, aux6-before-state7 creation, or real nonreturning kind0 state replacement differs");
         prepare(subject); source(subject).playerDist=10;
-        actors.course().execution_enabled=false;
+        actors.player_source().D_80382D44_523154=1;
         Rows paused{{16,nullptr,20,descend}};
         automatic(subject,&paused);
         require(probe.returned==1 && source(subject).interactionTarget==player.object && root_y(subject)==0 &&
                 actor_interaction_paused_count(subject.object)==actor_interaction_process_count(subject.object),
                 "ordinary automatic tail did not pause its newly created auxiliary and all native workers");
-        prepare(subject); source(subject).playerDist=10; actors.course().execution_enabled=false;
+        prepare(subject); source(subject).playerDist=10; actors.player_source().D_80382D44_523154=1;
         Rows kind1{{16,hidden,20,descend}};
         automatic(subject,&kind1,ISLE_GAME_SYNCHRONOUS);
         require(probe.returned==1 && source(subject).tangible &&
@@ -796,6 +797,8 @@ struct Consumer {
     }
 
     void cached_player_and_flute(const actor::SpawnResult& subject) {
+        const auto history=actors.player_source().PlayerPos;
+        actors.player_source().PlayerPos={90000,-80000,70000};
         for (float distance:{200.0f,199.0f}) {
             prepare(subject); source(subject).playerDist=distance;
             Rows rows{{16,nullptr,200,descend}}; automatic(subject,&rows);
@@ -835,6 +838,7 @@ struct Consumer {
         automatic(subject,&stopped); no_selection(subject);
         const IsleGameModelTransform origin{{0,0,0},{0,0,0},{1,1,1}};
         native(isle_game_model_set_placement(services.game,player.model,ISLE_GAME_MODEL_PLACEMENT_RTS,&origin));
+        actors.player_source().PlayerPos=history;
     }
 
     void neighbors(const actor::SpawnResult& subject) {
@@ -876,19 +880,20 @@ struct Consumer {
                 {0x80000000u,2147483520.0f,true},{0x80000000u,2147483648.0f,false},
                 {0xffffffffu,4294967296.0f,false},{0xffffffffu,4294967040.0f,true}}}) {
             prepare(subject); publish_focus(subject.object);
-            accepted(actors.set_focus({},false,timer));
+            actors.player_source().sTimerInFocus=timer;
             Rows rows{{23,nullptr,value,descend}}; automatic(subject,&rows);
             if (hit) selected_aux(subject); else no_selection(subject);
         }
         prepare(subject); publish_focus(player.object);
-        accepted(actors.set_focus(subject.instance,true,100));
+        actors.player_source().gPreviousPokemonInFocus=subject.object;
+        actors.player_source().D_80382C3C_52304C=1; actors.player_source().sTimerInFocus=100;
         Rows rows{{23,nullptr,1,descend}}; automatic(subject,&rows); no_selection(subject);
         prepare(subject); publish_focus(subject.object,false);
-        accepted(actors.set_focus({},false,100)); automatic(subject,&rows); selected_aux(subject);
+        actors.player_source().sTimerInFocus=100; automatic(subject,&rows); selected_aux(subject);
         require(!detector.published().present && detector.published().object==reinterpret_cast<focus::Object>(subject.object),
                 "focus fixture failed to retain current pointer with cleared present flag");
         for (auto direction:{-2,-1,0,1}) for (float distance:{100.0f,99.0f}) {
-            prepare(subject); actors.set_direction(direction); source(subject).playerDist=distance;
+            prepare(subject); actors.player_source().gDirectionIndex=direction; source(subject).playerDist=distance;
             Rows negative{{25,nullptr,100,descend}}; automatic(subject,&negative);
             if (direction<0 && distance<100) selected_aux(subject); else no_selection(subject);
         }
@@ -1007,14 +1012,14 @@ struct Consumer {
                 actor_interaction_aux_before_state(subject.object,descend,hidden) &&
                 services.source_owner_borrows(player.object).queued==0 && !p.tangible && near(root_y(subject),-.2f),
                 "NULL-current SetState from native fnUpdate did not continue ordinary tail and remaining FIFO");
-        prepare(subject); actors.course().execution_enabled=false;
+        prepare(subject); actors.player_source().D_80382D44_523154=1;
         Rows ordinary{{8,hidden,0,descend}}; enqueue(subject,8,player.object); fifo(subject,&ordinary);
         require(source(subject).tangible && root_y(subject)==0 &&
                 actor_interaction_paused_count(subject.object)==actor_interaction_process_count(subject.object),
                 "queued ordinary tail did not pause aux6 then new state7 before either ran");
         prepare(subject);
         native(isle_game_pause_source_processes(services.game,subject.object,isle_actor_source_distance_process,0));
-        actors.course().execution_enabled=false;
+        actors.player_source().D_80382D44_523154=1;
         enqueue(subject,58,player.object); fifo(subject,nullptr);
         require(actor_interaction_paused_count(subject.object)==actor_interaction_process_count(subject.object),
                 "ordinary queued NULL graph skipped its pause tail like automatic NULL graph");
@@ -1124,21 +1129,15 @@ struct Consumer {
         if (kind==1 || kind==5) rows.rows[1]={25,func_beach_802CAB50,0,nullptr};
         if (kind==2) rows.graph.count=1; // Missing terminal, not an out-of-bounds read.
         if (kind==3) {
-            accepted(actors.set_player(nullptr,nullptr,nullptr));
             require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
+            native(isle_game_remove_model(services.game,player.model));
+            player.model=nullptr; actors.player_source().model=nullptr;
             rows.rows[1]={58,nullptr,0,nullptr};
         }
         if (kind==4) {
-            auto* unregistered=services.object(60,9);
-            require(unregistered,"unregistered Player negative subject allocation failed");
-            IsleGameModelNodeInit node{}; node.parent=UINT32_MAX;
-            node.transform.scale={1,1,1}; node.matrix_kind=ISLE_GAME_MODEL_CONTEXTUAL_RPY;
-            IsleGameModel* model=nullptr; native(isle_game_attach_model(services.game,unregistered,&node,1,&model));
-            const IsleGameModelTransform placement{{0,0,0},{0,0,0},{1,1,1}};
-            native(isle_game_model_set_placement(services.game,model,ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
-            accepted(actors.set_player(unregistered,model,actors.player().camera));
-            require(environment.set_listener(model,actors.player().camera),"environment listener replacement failed");
-            require(!services.source_owner_registered(unregistered),"set_player incorrectly claimed semantic Player ownership");
+            require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
+            native(isle_game_remove_camera(services.game,actors.player_source().camera));
+            actors.player_source().camera=nullptr;
             rows.rows[1]={58,nullptr,0,nullptr};
         }
         p.transitionGraph=&rows.graph;
@@ -1158,8 +1157,9 @@ struct Consumer {
         Rows invalid{{8,nullptr,0,nullptr},{25,actor_interaction_probe_entry,0,nullptr}};
         if (kind==1 || kind==3) invalid.rows[1]={25,func_beach_802CAB50,0,nullptr};
         if (kind==2) {
-            accepted(actors.set_player(nullptr,nullptr,nullptr));
             require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
+            native(isle_game_remove_model(services.game,player.model));
+            player.model=nullptr; actors.player_source().model=nullptr;
             invalid.rows[1]={16,nullptr,10,descend};
         }
         if (kind==3) require(world.current()==nullptr && p.id==129,
@@ -1231,7 +1231,6 @@ struct Consumer {
         const auto retired=items.retire();
         good=(bool(retired)||(failed_scene&&retired.error==it::OwnerError::services))&&good;
         good=bool(items.collect_joined())&&good;
-        good=bool(actors.set_player(nullptr,nullptr,nullptr))&&good;
         good=environment.set_listener(nullptr,nullptr)&&good;
         for (auto& sender:extra_sources) good=sender->close()&&good;
         shut_down=good;
@@ -1272,11 +1271,14 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
     game_input::Service input; scene::Storage storage(32*1024*1024); native(storage.create());
     {
         scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,audio,state);
+        private_player::Source player_source(services);
         auto* camera_object=services.object(1,0); require(camera_object,"actual selector camera object absent");
         IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
         const IsleGameLookAt look{{0,0,0},{1,0,0},{0,1,0}};
         native(isle_game_camera_set_look_at(services.game,camera,&look));
         ApiSourceOwner player(services,2);
+        player_source.bind(player.object,player.model,camera);
+        player_source.value.cam_target={100,900,300};
         environment_sound::Environment environment(services,storage.arena(),resources.sound);
         require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector; Shift shift{&services,camera};
@@ -1296,13 +1298,13 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
         }
         auto& world=*admitted_world;
         {
-            actor::Owner actors(services,resources.actors,world,environment,detector,resources.actor_capacities,resources.banks,{32768,4096});
+            actor::Owner actors(services,resources.actors,world,environment,detector,player_source.value,resources.actor_capacities,resources.banks,{32768,4096});
             accepted(actors.publish_effects());
-            shift.actors=&actors; accepted(actors.set_player(player.object,player.model,camera));
+            shift.actors=&actors;
             require(environment.set_listener(player.model,camera),"environment listener binding failed");
-            const IsleGameVec3 throw_target{100,900,300}; it::Globals globals;
+            it::Globals globals;
             {
-                it::Owner items(services,resources.items,world,actors,globals,{player.object,player.model,camera,&throw_target},resources.item_capacities,{32768,4096});
+                it::Owner items(services,resources.items,world,actors,globals,player_source.value,resources.item_capacities,{32768,4096});
                 shift.items=&items; accepted(items.init()); accepted(items.set_custom_functions(nullptr,0,nullptr));
                 actor::InteractionServices interactions(services,actors,items,world,detector,*resources.bindings,resources.actors);
                 accepted(actors.bind_interactions(interactions)); // BEFORE any Actor factory.

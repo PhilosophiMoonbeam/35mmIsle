@@ -5,6 +5,7 @@
 #include "actor_owner.hpp"
 #include "actor_interaction_services.h"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
 #include "source_effect_world.hpp"
@@ -105,7 +106,7 @@ struct Consumer {
                 "source ground failure must use0, independently of World fallback-9000");
         require(record->loopCount==0&&record->pokemonLoopTarget==0&&record->lastAnimationFrame==0&&record->processFlags==0,
                 "factory late resets must remain distinct from the header setter's target1 reset");
-        require(record->playerDist==std::numeric_limits<float>::max(),"genuinely absent player did not retain FLOATMAX");
+        require(record->playerDist==std::numeric_limits<float>::max(),"factory did not retain its original pre-Update FLOATMAX distance");
         const IsleGameModelPlacement* placement=nullptr;
         native(isle_game_model_placement(services.game,owner.native_model(result.instance),&placement));
         const auto& init=resources.initializations()[resources.definitions()[common_definition].initialization];
@@ -206,15 +207,25 @@ struct Consumer {
         setter(handle);
         auto* record=owner.source(handle);
         record->counter=2; record->processFlags&=~std::uint32_t(POKEMON_PROCESS_WAIT_ENDED);
-        owner.course().paused=true;
+        owner.player_source().IsPaused=1;
         const auto running=owner.animation().model(handle).animation_time;
-        require(services.send_command(actor.object,58,actor.object),"ordinary paused-course command enqueue failed");
         for (unsigned n=0;n<3;++n) tick();
         require(record->counter==2&&!(record->processFlags&POKEMON_PROCESS_WAIT_ENDED)&&
                 owner.animation().model(handle).animation_time>running,
-                "getIsPaused must gate only Update's counter, not animation or the command tail");
-        owner.course().paused=false;
-        owner.course().execution_enabled=false;
+                "getIsPaused must gate only Update's counter, not suspend native animation without a command");
+        const auto paused_time=owner.animation().model(handle).animation_time;
+        require(services.send_command(actor.object,58,actor.object),"ordinary paused-course command enqueue failed");
+        tick();
+        require(record->counter==2&&!(record->processFlags&POKEMON_PROCESS_WAIT_ENDED)&&
+                owner.animation().model(handle).animation_time==paused_time,
+                "paused source skipped counter gating or ordinary command-tail process suspension");
+        owner.player_source().IsPaused=0;
+        require(services.send_command(actor.object,-3,actor.object),"paused-tail source resume command enqueue failed");
+        tick();
+        require(record->counter==1&&owner.animation().model(handle).animation_time>paused_time,
+                "real FIFO -3 did not resume paused-tail animation and unpaused bookkeeping");
+        record->counter=2;
+        owner.player_source().D_80382D44_523154=1;
         auto time=owner.animation().model(handle).animation_time;
         tick();
         require(record->counter==1&&owner.animation().model(handle).animation_time>time,
@@ -225,7 +236,7 @@ struct Consumer {
         require(record->counter==0&&(record->processFlags&POKEMON_PROCESS_WAIT_ENDED)&&
                 owner.animation().model(handle).animation_time==time,
                 "ordinary command tail did not suspend actual processes after Update bookkeeping");
-        owner.course().execution_enabled=true;
+        owner.player_source().D_80382D44_523154=0;
         for (unsigned n=0;n<2;++n) tick();
         require(owner.animation().model(handle).animation_time==time,
                 "clearing the execution predicate implicitly resumed source processes");
@@ -234,7 +245,7 @@ struct Consumer {
         require(owner.animation().model(handle).animation_time>time,"source FIFO -3 did not resume animation");
         require(services.send_command(actor.object,-2,actor.object),"source suspend command enqueue failed");
         tick(); time=owner.animation().model(handle).animation_time;
-        owner.course().paused=true; tick(); owner.course().paused=false; tick();
+        owner.player_source().IsPaused=1; tick(); owner.player_source().IsPaused=0; tick();
         require(owner.animation().model(handle).animation_time==time,
                 "course predicate transitions overrode a real source FIFO -2 suspension");
         require(services.send_command(actor.object,-3,actor.object),"second source resume command enqueue failed");
@@ -253,7 +264,7 @@ struct Consumer {
         const auto observe=[&](bool paused,std::int32_t counter,std::uint32_t flags,
                                std::int32_t loops,std::int32_t target,float last,
                                std::int32_t expected_counter,std::uint32_t expected_flags) {
-            owner.course().paused=paused;
+            owner.player_source().IsPaused=paused?1:0;
             record->counter=counter; record->processFlags=flags; record->loopCount=loops;
             record->pokemonLoopTarget=target; record->lastAnimationFrame=last;
             require(services.source_reference_assign(actor.object,&record->apple,actor.object)&&
@@ -277,7 +288,7 @@ struct Consumer {
         observe(false,1,path,0,1,animation_time,0,path|wait);
         observe(false,0,path,0,1,animation_time/2,0,path|ended);
         observe(false,0,path,0,1,-1,0,path);
-        owner.course().paused=false;
+        owner.player_source().IsPaused=0;
         accepted(owner.cleanup(handle)); accepted(owner.collect_joined());
     }
     void setter(a::InstanceHandle handle) {
@@ -368,14 +379,42 @@ struct Consumer {
                 record->transitionGraph==&unadmitted_graph&&!services.failed(),
                 "unadmitted typed graph executed or rejection mutated source state");
         record->transitionGraph=old;
-        accepted(owner.set_focus(handle,true,7));
+        auto& player=owner.player_source();
+        player.gPreviousPokemonInFocus=actor.object;
+        player.D_80382C3C_52304C=1;
+        player.sTimerInFocus=7;
         const focus::Subject subject{reinterpret_cast<focus::Object>(actor.object),1003,0};
         require(detector.stage(0,std::span(&subject,1),{})==focus::Error::none,"real Detector metadata staging failed");
         accepted(owner.cleanup(handle)); accepted(owner.collect_joined());
-        require(!owner.player().previous_focus&&!owner.player().previous_focus_identity&&!owner.player().focus_latch&&
+        require(!player.gPreviousPokemonInFocus&&!player.D_80382C3C_52304C&&player.sTimerInFocus==7&&
                 std::none_of(detector.history(0).begin(),detector.history(0).end(),[&](auto x){return x.object==subject.object;}),
-                "actual cleanup retained player focus/latch or Detector identity");
+                "actual matching-latch cleanup retained focus/Detector identity or changed the focus timer");
         tick(); require(!owner.source(handle),"self-replaced hidden state ran after native join");
+        const auto unlatched=spawn(1);
+        player.gPreviousPokemonInFocus=unlatched.object;
+        player.D_80382C3C_52304C=0;
+        player.sTimerInFocus=11;
+        accepted(owner.cleanup(unlatched.instance)); accepted(owner.collect_joined());
+        require(player.gPreviousPokemonInFocus==unlatched.object&&!player.D_80382C3C_52304C&&player.sTimerInFocus==11,
+                "latch-false matching cleanup changed actual focus identity or timer");
+        const auto focused=spawn(1),unfocused=spawn(1);
+        player.gPreviousPokemonInFocus=focused.object;
+        player.D_80382C3C_52304C=1;
+        player.sTimerInFocus=13;
+        accepted(owner.cleanup(unfocused.instance)); accepted(owner.collect_joined());
+        require(player.gPreviousPokemonInFocus==focused.object&&player.D_80382C3C_52304C==1&&player.sTimerInFocus==13,
+                "cleanup of another actor changed actual latched focus state");
+        player.gPreviousPokemonInFocus=player.object;
+        player.IsPaused=1; player.D_80382D44_523154=1; player.gDirectionIndex=3;
+        player.PlayerPos={101,203,307}; player.cam_target={31,47,59};
+        accepted(owner.reset()); accepted(owner.collect_joined());
+        require(player.gPreviousPokemonInFocus==player.object&&player.D_80382C3C_52304C==1&&player.sTimerInFocus==13&&
+                player.object&&player.model&&player.camera&&player.IsPaused==1&&player.D_80382D44_523154==1&&
+                player.gDirectionIndex==3&&player.PlayerPos.x==101&&player.PlayerPos.y==203&&player.PlayerPos.z==307&&
+                player.cam_target.x==31&&player.cam_target.y==47&&player.cam_target.z==59,
+                "Actor reset blanket-cleared unrelated canonical Player state");
+        player.gPreviousPokemonInFocus=nullptr; player.D_80382C3C_52304C=0;
+        player.IsPaused=0; player.D_80382D44_523154=0;
     }
     void capacity_and_reuse() {
         const auto definitions=resources.definitions();
@@ -981,6 +1020,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
         {
             scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);
             require(!services.failed(),services.error());
+            private_player::Source context(services);
             auto* camera_object=services.object(1,0); require(camera_object,"actual camera object failed");
             IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
             const IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&view));
@@ -995,7 +1035,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             {
                 // The real failed-factory/recovery and live-source teardown
                 // must also work when course FX publication was never reached.
-                actor::Owner prepared(services,resources,world,environment,detector,capacities,banks,{32768,4096});
+                actor::Owner prepared(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});
                 Consumer consumer(services,prepared,world,resources,detector);
                 consumer.invalid_placement();
                 consumer.spawn(1); // The unpublished owner's destructor joins it.
@@ -1009,15 +1049,16 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 require(environment.set_listener(nullptr,nullptr),"standalone actual listener release failed");
                 services.erase(listener_object);
             }
+            auto* player_object=services.object(2,9); require(player_object,"actual listener object allocation failed");
+            const IsleGameModelNodeInit player_node{UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE};
+            IsleGameModel* player=nullptr; native(isle_game_attach_model(services.game,player_object,&player_node,1,&player));
+            native(isle_game_model_set_placement(services.game,player,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_node.transform));
+            context.bind(player_object,player,camera);
             {
-                actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096}); shift.owner=&owner;
+                actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096}); shift.owner=&owner;
                 accepted(owner.publish_effects());
                 Consumer consumer(services,owner,world,resources,detector);
                 consumer.normal(); consumer.hidden(); consumer.pause_and_update(); consumer.capacity_and_reuse();
-                auto* player_object=services.object(2,9); require(player_object,"actual listener object allocation failed");
-                const IsleGameModelNodeInit player_node{UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE};
-                IsleGameModel* player=nullptr; native(isle_game_attach_model(services.game,player_object,&player_node,1,&player));
-                accepted(owner.set_player(player_object,player,camera));
                 world::Spawn sound_spawn; sound_spawn.id=1003; sound_spawn.behavior=1;
                 sound_spawn.position={0,0,2};
                 const auto sounding=owner.spawn({30000,consumer.common_definition,&world.blocks()[0],&world.blocks()[0],&sound_spawn});
@@ -1040,8 +1081,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 require(environment.sound_handle(0x34)==voice&&environment.update()&&
                         session.playing_sound(static_cast<unsigned>(voice))==0x34,
                         "cleanup blanket-stopped source voice or retained a freed live-model sound borrow");
-                accepted(owner.set_player(nullptr,nullptr,nullptr));
-                require(environment.set_listener(nullptr,nullptr),"environment listener release failed"); services.erase(player_object);
+                require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
                 attached_lifetime(consumer,banks);
                 native_fx_pause_masks(consumer,banks);
                 auto* particle_owner=owner.particle_object();

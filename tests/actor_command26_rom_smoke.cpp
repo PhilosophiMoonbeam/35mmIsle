@@ -8,6 +8,7 @@
 // Fixtures reuse actor_owner_rom_smoke and the actual_audio_driver RSP/PCM path.
 #include "actor_owner.hpp"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
 #include <algorithm>
@@ -280,7 +281,7 @@ struct Consumer {
         const State state(services,*record); const auto before=counts(services);
         const auto time=owner.animation().model(receiver.instance).animation_time;
         const auto y=owner.animation().model(receiver.instance).nodes[0].transform.position.y;
-        owner.course().execution_enabled=false;
+        owner.player_source().D_80382D44_523154=1;
         tick();
         require(record->counter==1&&owner.animation().model(receiver.instance).animation_time==time&&
                 owner.animation().model(receiver.instance).nodes[0].transform.position.y==y,
@@ -312,7 +313,7 @@ struct Consumer {
         const auto stopped=owner.animation().model(receiver.instance).animation_time;
         const auto stopped_y=owner.animation().model(receiver.instance).nodes[0].transform.position.y;
         require(stopped>time,"source process progress oracle never advanced before26 suspension");
-        owner.course().execution_enabled=true; tick();
+        owner.player_source().D_80382D44_523154=0; tick();
         require(owner.animation().model(receiver.instance).animation_time==stopped&&
                 owner.animation().model(receiver.instance).nodes[0].transform.position.y==stopped_y,
                 "predicate transition implicitly resumed source processes paused by26");
@@ -407,17 +408,19 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             {
                 scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);
                 require(!services.failed(),services.error());
+                private_player::Source context(services);
                 auto* camera_object=services.object(1,0); require(camera_object,"actual camera object creation failed");
                 IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
                 const IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}};
                 native(isle_game_camera_set_look_at(services.game,camera,&view));
+                context.create(camera);
                 environment_sound::Environment environment(services,storage.arena(),sound_resources);
                 require(environment.initialize(nullptr,camera),"environment source initialization failed");
                 focus::Detector detector;
                 private_actor::WorldHooks hooks{services,camera};
                 world::World world(services,world_resources,hooks.callbacks());
                 {
-                    actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});
+                    actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});
                     accepted(owner.publish_effects());
                     hooks.owner=&owner;private_actor::WorldLifetime lifetime{world,hooks};
                     Consumer consumer(services,owner,world,resources); body(consumer); reuse_proofs+=consumer.reuse_proofs;

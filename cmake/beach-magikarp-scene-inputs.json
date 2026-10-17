@@ -3,7 +3,10 @@
   "repository": "https://github.com/ethteck/pokemonsnap",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.11.4",
-  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"a66cf23d965a73c601fea78705cd6a0667dfbf5961f377bb0f1ce6296865039d"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"cfdbf8589df34b07c218886b66c154d978e8356fcb29be95d2eb49bc4a104fe8"}},
+  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"2c475d4505b7344040013b4d1f6362b62f5f81d6fe523a3775f346dbc2e4097f"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"fcae5f3d1b4374dec1122062df7a882e1f0d549c6f91612ff472c04fba60e5fd"}},
+    "tests/actual_player_source.hpp": {
+      "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
+    },
   "parent_actual_runs": {
     "scene_debug":{"capture_root":"/home/bbferko/35mmisle-genuine-scene-photo-cpu-7xbkhcc4","binary_sha256":"eb935087b5d41465687159fd258a47e882b021ced11b28fbea2f385be042acbf","source_archive_sha256":"d6fc51408dc063286c51e29ba08f41fbe6d7d854b004146f611dc7c83c01b61e","elapsed_seconds":0.7270003060111776,"closed":[8,7,9],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
     "mag_debug":{"capture_root":"/home/bbferko/35mmisle-scene-allocator-magikarp-cpu-jorbidha","binary_sha256":"3394e1edaf464a300b6071e3e50c504449df980a2ab9ff42ded314a63be0e533","source_archive_sha256":"4c58880b30f4ab96ac3d0c80d01ce0c744c653fc41a3dc8e0aa4206fafaf45e1","elapsed_seconds":0.7327733350684866,"closed":[25,24,26],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},

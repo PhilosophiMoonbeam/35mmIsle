@@ -14,21 +14,24 @@
     "tests/actor_collision_tests.cpp"
   ],
   "native_support": {
+    "tests/actual_player_source.hpp": {
+      "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
+    },
     "src/actor_collision.hpp": {"sha256":"0f715b72010ab790bd84409e7d2cdf7582adb0631e77fd598acd054139f540f9"},
     "src/actor_collision.cpp": {"sha256":"c49afb97a6867df5bb752c6eb6d49a92e419fb63a20df7a554d933da86c54d61"},
     "tests/actor_collision_tests.cpp": {"sha256":"cdcc7dc05da2c36e758aeec26bb4a7da901a6d2d1a33e307a27d348f9360effd"},
     "src/actor_source.h": {"sha256":"14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"},
-    "src/actor_owner.hpp": {"sha256":"98de14af4680b7a24aaa318f83881eb7a6d646ad93c74ef9a9bf25d963b7a308"},
+    "src/actor_owner.hpp": {"sha256":"7a16154afa5450b286091a5dda286e6c541a0f0355d3a0917261b02242a94baa"},
     "src/actor_owner_source.h": {"sha256":"a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"},
     "src/actor_source_bridge.c": {"sha256":"13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"},
     "src/actor_source_owner_bridge.c": {"sha256":"9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"},
     "src/world_runtime.hpp": {"sha256":"ce18f1ec7e3219a7ba4f3677c82dce0af67486d6c8d4c1968abffb1bcf19ddca"},
     "src/world_runtime.cpp": {"sha256":"4a92f82dfb94d21179fe26059b2fa2b5ce1012a374853fcfaf7b41a8b61d86a6"},
-    "src/actor_owner.cpp": {"sha256":"f7fb66502bbfcce3fd5e55f8a6534740b15be5060de03c19cc2e498cf94314ba"},
-    "tests/actor_collision_rom_smoke.cpp": {"sha256":"bc9657c5cd9043ddfc463473fb14e9205f1cd8108e0d6030c415533b214ffea9"},
-    "tests/actor_command26_rom_smoke.cpp": {"sha256":"a806f7e2e19aace69d27e0bd1b162b3ba4e2ef1cf405d4d579eeee149acc7b70"},
+    "src/actor_owner.cpp": {"sha256":"81304f1ad28e4a2f8c00f365e4fc60ec5739b7b576a99c6449a6ad26497453b7"},
+    "tests/actor_collision_rom_smoke.cpp": {"sha256":"ce1fa7c77b825c7ca1a93c5ddff747036d2eed78a07bb582b1f69514d4d9cdbc"},
+    "tests/actor_command26_rom_smoke.cpp": {"sha256":"06aeaa0f84eaa8ae0981613e1ae2ab2ad86968decc842787d3e5c9c7e4d12c18"},
     "tests/world_collision_tests.cpp": {"sha256":"810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"},
-    "tests/course_collision_rsp_smoke.cpp": {"sha256":"d11a893757946c2e23a6f2eda0f10f87fdb1f1ef98a1626f7c60288471f97041"},
+    "tests/course_collision_rsp_smoke.cpp": {"sha256":"19e56257d4cbf79f65b4d32526357a1c6c070a74fa8bfe2c3bb53824d40ad579"},
     "tests/actual_actor_world_hooks.hpp": {"sha256":"095bf0f177ba2f4b1d6b66ce72612e8737e0d58ac2f46fbf76fdfc00491fab5b"},
     "src/world_collision.cpp": {"sha256":"976022f82ca35e6870f78675a34db6f4580fe1a935d31cfa800b3fe607337be0"}
   },

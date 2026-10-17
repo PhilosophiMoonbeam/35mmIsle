@@ -20,13 +20,6 @@ struct SpawnResult {
     IsleGameObject* object = nullptr;
     explicit operator bool() const noexcept { return bool(status); }
 };
-struct PlayerBinding {
-    IsleGameObject* object = nullptr;
-    IsleGameModel* model = nullptr;
-    IsleGameCamera* camera = nullptr;
-    // Canonical gCamTarget values from the actual Player, NOT camera matrices.
-    const IsleGameVec3* throw_target = nullptr;
-};
 struct PayloadStorage;
 struct Globals {
     IsleItemGlobals source{};
@@ -44,7 +37,7 @@ struct Membership {
     bool logical = false, retiring = false, joined = false;
     std::size_t payload_cache_retained = 0;
 };
-// Every dependency, caller Globals and target values outlives this owner. ALL
+// Every dependency and caller Globals/Source outlives this owner. ALL
 // mutation, retirement and destruction requires real serialized native/command
 // and graphics/preparation/readback exclusion. Native joins are not GPU fences.
 // Physical capacities include held retired Items AND independent fume objects;
@@ -52,13 +45,17 @@ struct Membership {
 class Owner final {
     friend struct SourceAccess;
 public:
+    // Preparation only: canonical Source association precedes original Root
+    // publication. Explicit init() remains the original late Items_Init stage.
     Owner(scene::Services&, const Resources&, world::World&, actor::Owner&,
-          Globals&, PlayerBinding, std::span<const menu::animation::SlotCapacity>,
+          Globals&, IslePlayerSource&, std::span<const menu::animation::SlotCapacity>,
           menu::animation::ExecutionCapacity = {});
     ~Owner();
     Owner(const Owner&) = delete;
     Owner& operator=(const Owner&) = delete;
     OwnerStatus init() noexcept;
+    // Explicit factories retain their original supplied origin/extra velocity;
+    // original Item initialization reads the current Source.cam_target.
     SpawnResult spawn_ball(IsleGameVec3 position, IsleGameVec3 extra_velocity) noexcept;
     SpawnResult spawn_apple(IsleGameVec3 position, IsleGameVec3 extra_velocity) noexcept;
     OwnerStatus delete_item(IsleGameObject*) noexcept;
@@ -80,7 +77,6 @@ public:
     std::span<const RenderBinding> render_bindings() noexcept;
     menu::animation::Runtime& animation() noexcept;
     const menu::animation::Runtime& animation() const noexcept;
-    OwnerStatus set_player(PlayerBinding) noexcept;
     OwnerStatus set_custom_functions(IsleGameSourceCallback, std::uint8_t kind, IsleItemCollisionCallback) noexcept;
     void set_extra_collision(IsleItemCollisionProvider) noexcept;
     // Installs the real decoded/shared-RNG chooser; NULL update reinstates

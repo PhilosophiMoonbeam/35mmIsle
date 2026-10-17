@@ -3,6 +3,7 @@
 // real Magikarp factory actors do not admit the separate nonNULL-graph state.
 #include "actor_photo_scene.hpp"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
 #include <algorithm>
@@ -194,6 +195,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     scene::Storage storage(32*1024*1024);native(storage.create());
     {
         scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);require(!services.failed(),services.error());
+        private_player::Source context(services);
         auto* root=services.object(0,0);auto* camera_object=services.object(1,0);auto* player=services.object(0x1001,0);
         require(root&&camera_object&&player,"actual collision root/camera/player allocation failed");
         IsleGameCamera* camera=nullptr;native(isle_game_attach_camera(services.game,camera_object,&camera));
@@ -203,6 +205,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
         const IsleGameLookAt view{{0,1600,6000},{0,500,0},{0,1,0}};native(isle_game_camera_set_look_at(services.game,camera,&view));
         IsleGameModelNodeInit node{};node.parent=UINT32_MAX;node.transform.scale={1,1,1};node.matrix_kind=ISLE_GAME_MODEL_CONTEXTUAL_RPY;
         IsleGameModel* player_model=nullptr;native(isle_game_attach_model(services.game,player,&node,1,&player_model));
+        native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RTS,&node.transform));
+        context.bind(player,player_model,camera);
         environment_sound::Environment environment(services,storage.arena(),sounds);
         require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector;focus::RegionCopies copies({{0x680000,0x50},{0x680080,0x80},{0x680100,0xa00}});actor::DetectorBinding detection{copies,detector};
@@ -211,14 +215,13 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             maximum.nodes=std::max(maximum.nodes,capacity.nodes);maximum.material_attachments=std::max(maximum.material_attachments,capacity.material_attachments); }
         const std::array capacities{maximum,maximum,maximum};
         {
-            actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
-            accepted(owner.set_player(player,player_model,camera));require(environment.set_listener(player_model,camera),"environment listener binding failed");owner.course().execution_enabled=false;
+            actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
+            require(environment.set_listener(player_model,camera),"environment listener binding failed");context.value.D_80382D44_523154=1;
             require(!world.current(),"analytic source-default-ground fixture unexpectedly entered a block");
             Consumer consumer(services,owner,world,resources);
             consumer.four_movement_cases();consumer.cached_order_and_reuse();consumer.source_heading_boundaries();
             consumer.three_dimensional_and_first_pass();consumer.queued_pair_order();consumer.partial_first_pass_error();
             consumer.actual_priority2(root,camera,detection);
-            accepted(owner.set_player(nullptr,nullptr,nullptr));
             require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
         }
         environment.cleanup();

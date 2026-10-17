@@ -143,6 +143,10 @@ IsleGameResult isle_player_source_activate(IslePlayerSource*);
 IsleGameResult isle_player_source_deactivate(IslePlayerSource*);
 IsleGameResult isle_player_source_bind(IsleGame*, IsleGameObject*, IslePlayerSource*);
 IsleGameResult isle_player_source_get(IsleGame*, IsleGameObject*, IslePlayerSource**);
+/* Returning native-leaf lookup; never faults or interprets object payloads.
+ * Success with NULL means no active context. An active context may precede
+ * original Root/model publication. The caller must retain its real lifetime. */
+IsleGameResult isle_player_source_context(IsleGame*, IslePlayerSource**);
 /* Callback context lookup never casts helper userdata to a Player payload.
  * Only original C process/update entrypoints may use its failure transfer. */
 IslePlayerSource* isle_player_source_current(IsleGameObject*);

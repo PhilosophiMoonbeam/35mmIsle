@@ -100,11 +100,14 @@
     "admission": "Only existing common1003 and actual Magikarp129 complete configured tuples admitted. All other species/nonNULL graphs fail explicitly; native data-only Beach graph resources do not magically admit a callback interpreter."
   },
   "native_support": {
+    "tests/actual_player_source.hpp": {
+      "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
+    },
     "src/actor_owner.hpp": {
-      "sha256": "98de14af4680b7a24aaa318f83881eb7a6d646ad93c74ef9a9bf25d963b7a308"
+      "sha256": "7a16154afa5450b286091a5dda286e6c541a0f0355d3a0917261b02242a94baa"
     },
     "src/actor_owner.cpp": {
-      "sha256": "f7fb66502bbfcce3fd5e55f8a6534740b15be5060de03c19cc2e498cf94314ba"
+      "sha256": "81304f1ad28e4a2f8c00f365e4fc60ec5739b7b576a99c6449a6ad26497453b7"
     },
     "src/actor_owner_source.h": {
       "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
@@ -119,7 +122,7 @@
       "sha256": "668c08c05fb04ef47caee31899b39ef19a13f085c0806b936cb2fc1626efcaf7"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
-      "sha256": "434d92b0202b9ecc6fb7d94bb2a474b7d4d7f69a1bf84bbdd69afa3e1615f462"
+      "sha256": "6a24fe0b3fe3623524c20689e6ea26a84a7f59146ca757c3d0f9785d5b392fb3"
     },
     "tests/magikarp_owner_probe.c": {
       "sha256": "55f5b2d5776f863b768e2a796d97fc4f55ff775ea7412529a8acf8adf7f1c23d"

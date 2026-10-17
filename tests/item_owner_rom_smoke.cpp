@@ -4,6 +4,7 @@
 #include "item_owner.hpp"
 #include "actor_spatial.h"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
 #include <algorithm>
@@ -79,7 +80,7 @@ struct Consumer {
             "source factory or explicit native unwritten-field policy differs");
         require(same(root(spawned.instance).position,{100,1000,200}) && same(root(spawned.instance).scale,{.1f,.1f,.1f}),"source initial root differs");
         float sender_distance=-1;
-        native(isle_actor_spatial_distance(services.game,actors.player().object,spawned.object,&sender_distance));
+        native(isle_actor_spatial_distance(services.game,actors.player_source().object,spawned.object,&sender_distance));
         require(std::abs(sender_distance-std::sqrt((100.0f*100.0f+1000.0f*1000.0f)+200.0f*200.0f))<0.0001f,
                 "Item source distance consumed a fabricated AUX instead of its actual root");
         tick(); source=items.source(spawned.instance);
@@ -92,6 +93,32 @@ struct Consumer {
             same(items.source(spawned.instance)->prevPos,{111,1013,217}),"displacement omitted actual root or canonical previous position");
         accepted(items.resume()); tick(); require(!same(root(spawned.instance).position,paused),"resume failed to continue source movement");
         clear();
+    }
+    void canonical_throw_boundaries() {
+        auto& player=actors.player_source();
+        const auto target=player.cam_target;
+        const auto velocity=player.PlayerVelocity;
+        const IsleGameCameraParameters* parameters=nullptr;
+        native(isle_game_camera_parameters(services.game,player.camera,&parameters));
+        const auto original=parameters->look_at;
+        player.PlayerVelocity={3,4,5};
+        for (bool second:{false,true}) {
+            const IsleGameLookAt view=second?IsleGameLookAt{{-50,60,70},{-50,60,170},{0,1,0}}:
+                IsleGameLookAt{{20,30,40},{20,30,140},{0,1,0}};
+            native(isle_game_camera_set_look_at(services.game,player.camera,&view));
+            player.cam_target=second?IsleGameVec3{50,-40,70}:IsleGameVec3{20,-70,140};
+            native(isle_game_camera_parameters(services.game,player.camera,&parameters));
+            const auto& eye=parameters->look_at.eye;
+            // The original Player supplies current main-camera eye and its
+            // velocity; original Item init consumes the same Source target.
+            const auto item=items.spawn_apple({eye[0],eye[1],eye[2]},player.PlayerVelocity); accepted(item.status);
+            require(same(root(item.instance).position,{eye[0],eye[1],eye[2]}) &&
+                    same(items.source(item.instance)->velocity,second?IsleGameVec3{53,4,5}:IsleGameVec3{3,4,55}),
+                    "throw retained an earlier native camera eye or canonical Source target");
+            clear();
+        }
+        player.cam_target=target; player.PlayerVelocity=velocity;
+        native(isle_game_camera_set_look_at(services.game,player.camera,&original));
     }
     void mixed_oldest_and_iterator() {
         const auto oldest=items.spawn_apple({100,1000,200},{0,0,0}); accepted(oldest.status);
@@ -279,6 +306,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
         game_input::Service input; scene::Storage storage(32*1024*1024); native(storage.create());
         {
             scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);
+            private_player::Source player_source(services);
             auto* camera_object=services.object(1,0); require(camera_object,"native camera allocation failed");
             IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
             const IsleGameLookAt look{{0,0,0},{1,0,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&look));
@@ -287,10 +315,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
             IsleGameModel* player_model=nullptr; native(isle_game_attach_model(services.game,player,&node,1,&player_model));
             const IsleGameModelTransform player_placement{{0,0,0},{0,0,0},{1,1,1}};
             native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_placement));
-            auto* missing_aux_player=services.object(3,9); require(missing_aux_player,"missing-AUX negative subject allocation failed");
-            IsleGameModel* missing_aux_model=nullptr;
-            native(isle_game_attach_model(services.game,missing_aux_player,&node,1,&missing_aux_model));
-            const IsleGameVec3 throw_target{100,900,300};
+            player_source.value.cam_target={100,900,300};
             environment_sound::Environment environment(services,storage.arena(),sound_resources);
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; Shift shift{&services,camera};
@@ -306,20 +331,25 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
                 scenario==Scenario::threshold?std::size_t{6}:item_capacities.size();
             const auto selected_capacities=std::span<const a::SlotCapacity>(item_capacities).first(item_count);
             {
-                actor::Owner actors(services,actor_resources,world,environment,detector,actor_capacities,banks,{32768,4096}); shift.actors=&actors;
+                actor::Owner actors(services,actor_resources,world,environment,detector,player_source.value,actor_capacities,banks,{32768,4096}); shift.actors=&actors;
                 accepted(actors.publish_effects());
-                accepted(actors.set_player(player,player_model,camera));
                 require(environment.set_listener(player_model,camera),"environment listener binding failed");
                 it::Globals globals;
                 {
-                    it::Owner items(services,item_resources,world,actors,globals,{player,player_model,camera,&throw_target},selected_capacities,{32768,4096}); shift.items=&items;
+                    it::Owner items(services,item_resources,world,actors,globals,player_source.value,selected_capacities,{32768,4096}); shift.items=&items;
+                    require(!items.init(),"Item initialization consumed an unpublished Player Root");
+                    player_source.bind(player,player_model,nullptr);
+                    require(!items.init(),"Item initialization consumed an unpublished main camera");
+                    player_source.value.camera=camera;
+                    native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_DISABLED,&player_placement));
+                    require(!items.init(),"Item initialization accepted a Player without current native AUX");
+                    native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_placement));
                     accepted(items.init()); accepted(items.set_custom_functions(nullptr,0,nullptr));
                     require(items.matches(services,world,actors),"Item dependency identity projection rejected its actual services");
-                    require(!items.set_player({missing_aux_player,missing_aux_model,camera,&throw_target}),
-                            "Item accepted a Player without actual source AUX placement");
                     Consumer consumer{services,items,actors,globals};
                     if (scenario==Scenario::complete) {
                         consumer.startup_flight_pause_and_displacement(); consumer.mixed_oldest_and_iterator(); consumer.actual_waiting_splash();
+                        consumer.canonical_throw_boundaries();
                     }
                     std::size_t definition=beach::actor_no_index;
                     for (std::size_t n=0;n<actor_resources.definitions().size();++n) if (actor_resources.definitions()[n].actor_id==1003) definition=n;
@@ -352,7 +382,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
                 const auto cursor=globals.source.object_counter;
                 const auto cache=globals.source.payload_cache;
                 if (scenario==Scenario::complete) {
-                    it::Owner reconstructed(services,item_resources,world,actors,globals,{player,player_model,camera,&throw_target},selected_capacities,{32768,4096});
+                    it::Owner reconstructed(services,item_resources,world,actors,globals,player_source.value,selected_capacities,{32768,4096});
                     require(globals.source.object_counter==cursor && globals.source.payload_cache==cache && globals.source.update==Items_UpdateItemMovement,
                             "wrapper reconstruction reset caller cursor/cache/hooks");
                 }

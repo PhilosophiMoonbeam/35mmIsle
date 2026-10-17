@@ -193,14 +193,19 @@ struct InteractionSourceAccess {
     static IsleGameResult validate(InteractionServices& self, IsleActorSource* source) {
         if (!source || source->game != self.services_.game || self.services_.failed() ||
             self.world_.retired() || !self.world_.error().empty()) return ISLE_GAME_INVALID_STATE;
+        IslePlayerSource* active = nullptr;
+        if (isle_player_source_context(self.services_.game, &active) != ISLE_GAME_OK ||
+            active != &self.actors_.player_source()) return ISLE_GAME_INVALID_STATE;
         self.resources_.require_live();
         self.bindings_.require_live();
         return ISLE_GAME_OK;
     }
 
     static IsleGameResult player(InteractionServices& self, IsleGameObject*& output) noexcept {
-        const auto& player = self.actors_.player();
-        if (!player.object || !player.model || !player.camera ||
+        const auto& player = self.actors_.player_source();
+        IslePlayerSource* active = nullptr;
+        if (isle_player_source_context(self.services_.game, &active) != ISLE_GAME_OK ||
+            active != &player || !player.object || !player.model || !player.camera ||
             !self.services_.source_owner_registered(player.object) ||
             self.services_.source_owner_joined(player.object)) return ISLE_GAME_INVALID_STATE;
         auto result = isle_game_model_validate_binding(self.services_.game, player.object, player.model);
@@ -414,7 +419,7 @@ struct InteractionSourceAccess {
         if (output) *output = nullptr;
         if (!timer || !output) return ISLE_GAME_INVALID_ARGUMENT;
         return context(source, [&](auto& self) {
-            *timer = self.actors_.player().focus_timer;
+            *timer = self.actors_.player_source().sTimerInFocus;
             // Source23 compares identity only, including a published pointer
             // whose present flag was cleared. Never substitute previous focus.
             *output = reinterpret_cast<IsleGameObject*>(self.detector_.published().object);
@@ -424,7 +429,7 @@ struct InteractionSourceAccess {
     static IsleGameResult direction(IsleActorSource* source, std::int32_t* output) noexcept {
         if (!output) return ISLE_GAME_INVALID_ARGUMENT;
         return context(source, [&](auto& self) {
-            *output = self.actors_.player().direction_index;
+            *output = self.actors_.player_source().gDirectionIndex;
             return ISLE_GAME_OK;
         });
     }

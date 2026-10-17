@@ -8,6 +8,7 @@
 #include "effect_bank_resources.hpp"
 #include "course_model_producer.hpp"
 #include "actual_audio_driver.hpp"
+#include "actual_player_source.hpp"
 #include "photo_lighting.hpp"
 #include "scene_graphics.hpp"
 #include "scene_storage.hpp"
@@ -316,6 +317,7 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
     game_input::Service input; scene::Storage storage(32*1024*1024); native(storage.create());
     {
         scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,audio,state);
+        private_player::Source context(services);
         auto* camera_object = services.object(1,0); require(camera_object,"actual Owner camera allocation failed");
         IsleGameCamera* camera = nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
         native(isle_game_camera_add_matrix(services.game,camera,ISLE_GAME_CAMERA_PERSPECTIVE_FAST));
@@ -330,7 +332,7 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         constexpr IsleGameLookAt flight_view{{0,1600,6000},{0,500,0},{0,1,0}};
         constexpr std::array<IsleGameVec3,2> flight_positions{{{-180,1233,4000},{180,1233,4000}}};
         constexpr std::array<IsleGameVec3,2> splash_positions{{{-180,1000,4000},{180,1000,4000}}};
-        constexpr IsleGameVec3 throw_target{0,1133,5000}, actor_position{-600,900,4000};
+        constexpr IsleGameVec3 actor_position{-600,900,4000};
         constexpr unsigned startup_frames = 6, moving_frames = 8, splash_frames = 17;
         native(isle_game_camera_set_look_at(services.game,camera,&flight_view));
         auto* player = services.object(2,9); require(player,"actual Owner API Player allocation failed");
@@ -339,6 +341,7 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         IsleGameModel* player_model = nullptr; native(isle_game_attach_model(services.game,player,&node,1,&player_model));
         const IsleGameModelTransform player_placement{{0,900,4000},{0,0,0},{1,1,1}};
         native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_placement));
+        context.bind(player,player_model,camera);context.value.cam_target={0,1133,5000};
         environment_sound::Environment environment(services,storage.arena(),sound_resources);
         require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector; FixtureShift shift{services,camera};
@@ -359,13 +362,13 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         // Independent fixed physical capacities, never the logical/cache20 bound.
         const std::array actor_capacities{actor_capacity,actor_capacity};
         std::array<a::SlotCapacity,8> item_capacities; item_capacities.fill(item_capacity);
-        actor::Owner actors(services,actor_resources,world,environment,detector,actor_capacities,banks,{32768,4096});
+        actor::Owner actors(services,actor_resources,world,environment,detector,context.value,actor_capacities,banks,{32768,4096});
         accepted(actors.publish_effects());
-        shift.effects = &actors.effects(); accepted(actors.set_player(player,player_model,camera));
+        shift.effects = &actors.effects();
         require(environment.set_listener(player_model,camera),"environment listener binding failed");
         items::Globals globals;
         items::Owner owner(services,item_resources,world,actors,globals,
-            {player,player_model,camera,&throw_target},item_capacities,{32768,4096});
+            context.value,item_capacities,{32768,4096});
         shift.items = &owner;
         OwnerScope owner_scope{actors,owner,world,environment,shift};
         require(world.enter_first(0) == &world.blocks()[0],"actual Owner World initial block absent");

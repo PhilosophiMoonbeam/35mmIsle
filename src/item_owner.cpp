@@ -29,11 +29,24 @@ menu::animation::Transform animated(const IsleGameModelTransform& pose) noexcept
     return {{pose.position.x,pose.position.y,pose.position.z},{pose.rotation.x,pose.rotation.y,pose.rotation.z},
             {pose.scale.x,pose.scale.y,pose.scale.z}};
 }
-IsleGameResult player_aux(IsleGame* game,const PlayerBinding& binding,
+IsleGameResult player_context(IsleGame* game,const IslePlayerSource& source) noexcept {
+    IslePlayerSource* active=nullptr;
+    const auto result=isle_player_source_context(game,&active);
+    if (result!=ISLE_GAME_OK) return result;
+    return active==&source && source.game==game?ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult player_aux(IsleGame* game,const IslePlayerSource& binding,
     const IsleGameModelPlacement** output) noexcept {
     if (output) *output=nullptr;
-    if (!binding.object || !binding.model || !output) return ISLE_GAME_INVALID_ARGUMENT;
-    auto result=isle_game_model_validate_binding(game,binding.object,binding.model);
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto result=player_context(game,binding);
+    if (result!=ISLE_GAME_OK) return result;
+    if (!binding.object || !binding.model) return ISLE_GAME_INVALID_STATE;
+    IslePlayerSource* published=nullptr;
+    result=isle_player_source_get(game,binding.object,&published);
+    if (result!=ISLE_GAME_OK) return result;
+    if (published!=&binding) return ISLE_GAME_INVALID_STATE;
+    result=isle_game_model_validate_binding(game,binding.object,binding.model);
     if (result!=ISLE_GAME_OK) return result;
     const IsleGameModelPlacement* placement=nullptr;
     result=isle_game_model_placement(game,binding.model,&placement);
@@ -43,8 +56,8 @@ IsleGameResult player_aux(IsleGame* game,const PlayerBinding& binding,
     *output=placement;
     return ISLE_GAME_OK;
 }
-IsleGameResult player_binding(IsleGame* game,const PlayerBinding& binding) noexcept {
-    if (!binding.camera || !binding.throw_target) return ISLE_GAME_INVALID_ARGUMENT;
+IsleGameResult published_player(IsleGame* game,const IslePlayerSource& binding) noexcept {
+    if (!binding.camera) return ISLE_GAME_INVALID_STATE;
     const IsleGameModelPlacement* placement=nullptr;
     auto result=player_aux(game,binding,&placement);
     if (result!=ISLE_GAME_OK) return result;
@@ -105,7 +118,7 @@ struct Owner::Impl {
     world::World& world;
     actor::Owner& actors;
     Globals& globals;
-    PlayerBinding player;
+    IslePlayerSource& player;
     std::vector<menu::animation::SlotCapacity> capacities;
     std::vector<Slot> slots;
     PayloadStorage& storage;
@@ -116,7 +129,7 @@ struct Owner::Impl {
     Impl* next=nullptr;
     static Impl* owners;
 
-    Impl(scene::Services& s,const Resources& r,world::World& w,actor::Owner& a,Globals& g,PlayerBinding p,
+    Impl(scene::Services& s,const Resources& r,world::World& w,actor::Owner& a,Globals& g,IslePlayerSource& p,
          std::span<const menu::animation::SlotCapacity> c,menu::animation::ExecutionCapacity execution)
         : services(s),resources(r),world(w),actors(a),globals(g),player(p),capacities(c.begin(),c.end()),
           slots(c.size()),storage(*g.payload_storage),bindings(c.size()) {
@@ -426,10 +439,10 @@ struct SourceAccess {
         return nullptr;
     }
 };
-Owner::Owner(scene::Services& s,const Resources& r,world::World& w,actor::Owner& a,Globals& g,PlayerBinding p,
+Owner::Owner(scene::Services& s,const Resources& r,world::World& w,actor::Owner& a,Globals& g,IslePlayerSource& p,
              std::span<const menu::animation::SlotCapacity> capacities,menu::animation::ExecutionCapacity execution) {
-    if (player_binding(s.game,p)!=ISLE_GAME_OK)
-        throw std::invalid_argument("Item Player requires live source AUX, camera and canonical throw target");
+    if (&a.player_source()!=&p || player_context(s.game,p)!=ISLE_GAME_OK)
+        throw std::invalid_argument("Item owner requires the Actor's active canonical Player Source");
     impl_=std::make_unique<Impl>(s,r,w,a,g,p,capacities,execution);
 }
 Owner::~Owner() {
@@ -444,14 +457,16 @@ Owner::~Owner() {
 }
 OwnerStatus Owner::init() noexcept {
     if (impl_->failed()) return failure(OwnerError::services,"failed Item scene cannot initialize live source state");
+    if (published_player(impl_->services.game,impl_->player)!=ISLE_GAME_OK)
+        return failure(OwnerError::admission,"Item initialization requires the published native Player model and camera");
     Entry entry(impl_->globals.source); Items_Init(&entry.g); return status(entry.g.status);
 }
 SpawnResult Owner::spawn(Family family,IsleGameVec3 position,IsleGameVec3 velocity) noexcept {
     auto& self=*impl_;
     if (self.failed()) return {failure(OwnerError::services,"failed Item scene cannot create source objects"),{},nullptr};
     Entry entry(self.globals.source);
-    if (!entry.g.update || !self.player.object || !self.player.model ||
-        !self.player.camera || !self.player.throw_target) return {failure(OwnerError::admission,"Item factory requires actual Player and configured source update"),{},nullptr};
+    if (!entry.g.update || published_player(self.services.game,self.player)!=ISLE_GAME_OK)
+        return {failure(OwnerError::admission,"Item factory requires published native Player and configured source update"),{},nullptr};
     IsleGameObject* object=nullptr;
     auto result=family==Family::pester_ball?Items_SpawnPesterBall(&entry.g,&position,&velocity,&object):
         Items_SpawnApple(&entry.g,&position,&velocity,&object);
@@ -513,12 +528,6 @@ std::span<const RenderBinding> Owner::render_bindings() noexcept {
 }
 menu::animation::Runtime& Owner::animation() noexcept { return *impl_->runtime; }
 const menu::animation::Runtime& Owner::animation() const noexcept { return *impl_->runtime; }
-OwnerStatus Owner::set_player(PlayerBinding binding) noexcept {
-    if (impl_->failed()) return failure(OwnerError::services,"failed Item scene rejects Player replacement");
-    if (player_binding(impl_->services.game,binding)!=ISLE_GAME_OK)
-        return failure(OwnerError::admission,"Item Player binding lacks actual live source AUX/camera/throw target");
-    impl_->player=binding; return {};
-}
 OwnerStatus Owner::set_custom_functions(IsleGameSourceCallback update,std::uint8_t kind,IsleItemCollisionCallback collide) noexcept {
     if (impl_->failed()) return failure(OwnerError::services,"failed Item scene rejects new Source hooks");
     if (update && kind>1) return failure(OwnerError::admission,"custom Item process kind is neither stackful nor synchronous");
@@ -708,8 +717,10 @@ IsleGameResult isle_item_owner_player_position(IsleItemGlobals* g,IsleGameVec3* 
 }
 IsleGameResult isle_item_owner_target(IsleItemGlobals* g,IsleGameVec3* out) {
     auto* self=isle::items::SourceAccess::impl(g);
-    if (!self || !out || !self->player.throw_target) return ISLE_GAME_INVALID_ARGUMENT;
-    *out=*self->player.throw_target; return ISLE_GAME_OK;
+    if (!self || !out) return ISLE_GAME_INVALID_ARGUMENT;
+    const auto result=isle::items::published_player(g->game,self->player);
+    if (result!=ISLE_GAME_OK) return result;
+    *out=self->player.cam_target; return ISLE_GAME_OK;
 }
 IsleGameResult isle_item_owner_sound(IsleItemGlobals* g,int32_t id,int32_t volume) {
     auto* self=isle::items::SourceAccess::impl(g);

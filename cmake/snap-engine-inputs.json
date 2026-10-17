@@ -35,10 +35,10 @@
   },
   "native_support": {
     "src/player_source.h": {
-      "sha256": "fc585081d09aeb77c7e55fa8d46b47d2c0268a40700729bc55e630b58ec92f33"
+      "sha256": "75ac7f3f218d080b2d5e82beeeda7f64aaa6273ddff6c7eb4c15b66b4c67d10e"
     },
     "src/player_source_bridge.c": {
-      "sha256": "ee2a69f260034157c3fa9a8c0837de813c5636ab6a46943370f5fdbbe71b6414"
+      "sha256": "69ec2c014c17ae4c028f16f0fe66fd88f25e4a3e1bbd1c86c44ef7c15fdd35cc"
     },
     "src/world_movement_state.h": {
       "sha256": "0d231cd3556bc0004abd77bb5d6f97474cf0762ed4fdeacfd0f0af0f928195b3"
@@ -88,7 +88,7 @@
       "use": "Original actual-size native camera/model ownership and typed validation; atomic compute-all stages dirty native matrix/reflection/normalization payloads with no partial publication on failure, sharing exact math with individual getters. Kind8 exact GAME look-at-roll validates its consumed fixed Y-up basis independently of unused finite look_at.up; basic6/reflection14 and mixed cameras validate their consumed supplied up, including atomic matrix-attachment rejection. Finite radians and selective eye/at/roll dirtying without kind8 reflection output. Pure model transform preflight, immutable per-node RTS/translate and exact direct GAME hal_translate; numeric RCP light values and photo-world concatenation. Native source object/update metadata and once-only retirement callback after all process joins/payload removals and before node reuse keep generic scene userdata/queues alive through real deferred deletion. Typed one-argument GAME process entries are called directly through their original function identity, separately from synchronous/stackful dispatch adapters and native two-argument contexts; exact-identity ending follows GAME items.c:69-85 using existing OM lists, arena reuse and joined continuation retirement. No SDK implementation."
     },
     "src/engine_math.h": {
-      "sha256": "14ce71b4bd39b2d3e1fbea0cca3a44780e17e732ae97615f0ba7965b40de4b6d",
+      "sha256": "152c78e5f6decc4d1a4d997beea689e53d29d95ffce2a10e51dab1c0a4ac4c56",
       "contextual_model_math": "Exact native C prototypes for own func_8001EA90, hal_mtx_f2l_fixed_w and hal_scale_f match their admitted GAME definition signatures; independent public fixed ABI and existing FTOFIX32/COMBINE packing, no SDK header/layout.",
       "placement": "Direct exact own-GAME RT fixed/floating declarations, sharing already defined MIPS multiplication/shift/packing and existing float RPY helper; not RTS with redundant unit-scale multiplication.",
       "use": "Original native matrix/Vec3f/public RCP light numeric seams and checked signed-1.7 conversion; direct GAME hal_look_at_roll_f and hal_translate declarations, C libm binary32 roll trig and shared exact GAME vector rotation, defined MIPS arithmetic. No SDK union, opaque tail/layout import or suppression."

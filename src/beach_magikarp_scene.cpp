@@ -83,9 +83,11 @@ MagikarpSceneResult MagikarpScene::choose(MagikarpTrigger trigger, const world::
     IsleGameVec3 position{};
     if (!trigger_position(services_.game,trigger,position))
         return reject(MagikarpSceneError::native,"scene trigger DObj position is not live");
-    const auto& player=owner_.player();
+    const auto& player=owner_.player_source();
+    IslePlayerSource* active=nullptr;
     const IsleGameModelPlacement* placement=nullptr;
-    if (isle_game_model_validate_binding(services_.game,player.object,player.model)!=ISLE_GAME_OK ||
+    if (isle_player_source_context(services_.game,&active)!=ISLE_GAME_OK || active!=&player ||
+        isle_game_model_validate_binding(services_.game,player.object,player.model)!=ISLE_GAME_OK ||
         isle_game_model_placement(services_.game,player.model,&placement)!=ISLE_GAME_OK ||
         placement->mode==ISLE_GAME_MODEL_PLACEMENT_DISABLED)
         return reject(MagikarpSceneError::native,"scene requires the actual canonical player AUX placement");

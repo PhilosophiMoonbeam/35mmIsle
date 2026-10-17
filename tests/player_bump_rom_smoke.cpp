@@ -4,6 +4,7 @@
 #include "player_bump_rom_fixture.h"
 #include "player_bump.hpp"
 #include "actual_actor_world_hooks.hpp"
+#include "actual_player_source.hpp"
 #include "actual_audio_driver.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
@@ -37,12 +38,11 @@ void accepted(actor::OwnerStatus result) { require(bool(result), result.detail);
 // SourceCtx. No queue cancellation/field assignment/borrow count is simulated.
 class Context final {
 public:
-    Context(scene::Services& s, actor::Owner& actors, environment_sound::Environment& e, IsleGameCamera* camera)
-        : services(s), owner(actors), environment(e) {
+    Context(scene::Services& s, actor::Owner& actors, environment_sound::Environment& e,
+            IslePlayerSource& source, IsleGameCamera* camera)
+        : services(s), owner(actors), environment(e), player(source) {
         root = services.object(0x1001, 0);
         require(root, "canonical Player Root allocation failed");
-        native(isle_player_source_prepare(services.game, &player, &services.rng, this, 10));
-        native(isle_player_source_activate(&player)); active = true;
         native(isle_player_source_bind(services.game, root, &player));
         require(services.source_owner_register(root, {}), "canonical Root source registration failed");
         root_registered = true;
@@ -53,7 +53,6 @@ public:
         player.camera = camera;
         const IsleGameModelTransform placement{{0,-9000,0},{0,0,0},{1,1,1}};
         native(isle_game_model_set_placement(services.game, player.model, ISLE_GAME_MODEL_PLACEMENT_RT, &placement));
-        accepted(owner.set_player(root, player.model, camera));
         require(environment.set_listener(player.model,camera),"environment listener binding failed");
         bump = std::make_unique<isle::player::BumpOwner>(services, player);
         fixture.player = &player; fixture.bump = &bump->source();
@@ -68,14 +67,9 @@ public:
         const auto detector = bump ? bump->retire() : ISLE_GAME_OK;
         if (!actors || detector != ISLE_GAME_OK) std::terminate();
         bump.reset();
-        (void)owner.set_player(nullptr, nullptr, nullptr);
         if (!environment.set_listener(nullptr,nullptr)) std::terminate();
         if (root) services.erase(root);
         if (root_registered && !services.source_owner_release(root)) std::terminate();
-        if (active) {
-            const auto result = isle_player_source_deactivate(&player);
-            if (result != ISLE_GAME_OK && result != isle_game_status(services.game)) std::terminate();
-        }
     }
     void call(PlayerBumpRomOperation operation) {
         PlayerBumpRomCall call{operation};
@@ -97,12 +91,12 @@ public:
     scene::Services& services;
     actor::Owner& owner;
     environment_sound::Environment& environment;
-    IslePlayerSource player{};
+    IslePlayerSource& player;
     IsleGameObject* root = nullptr;
     std::unique_ptr<isle::player::BumpOwner> bump;
     PlayerBumpRomFixture fixture{};
 private:
-    bool active = false, root_registered = false;
+    bool root_registered = false;
 };
 
 class Consumer final {
@@ -386,6 +380,7 @@ void run(rom::Snapshot& snapshot, const std::filesystem::path& output) {
         {
             scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,session,state);
             require(!services.failed(),services.error());
+            private_player::Source player_source(services);
             auto* camera_object = services.object(1,0); require(camera_object, "native camera allocation failed");
             IsleGameCamera* camera = nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
             const IsleGameLookAt view{{0,-9000,0},{1,-9000,0},{0,1,0}};
@@ -395,12 +390,12 @@ void run(rom::Snapshot& snapshot, const std::filesystem::path& output) {
             focus::Detector detector; private_actor::WorldHooks hooks{services,camera};
             world::World world(services,world_resources,hooks.callbacks());
             {
-                actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});
+                actor::Owner owner(services,resources,world,environment,detector,player_source.value,capacities,banks,{32768,4096});
                 accepted(owner.publish_effects());
                 hooks.owner = &owner; private_actor::WorldLifetime lifetime{world,hooks};
-                owner.course().execution_enabled = false;
+                player_source.value.D_80382D44_523154 = 1;
                 require(!world.current(), "standalone source-default-ground context unexpectedly entered a course block");
-                Context context(services,owner,environment,camera);
+                Context context(services,owner,environment,player_source.value,camera);
                 if (!mode) {
                     Consumer consumer(context,world,resources);
                     consumer.thresholds_and_admission(); consumer.pause_and_default_dispatch();

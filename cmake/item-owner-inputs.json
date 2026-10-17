@@ -69,13 +69,13 @@
       "sha256": "b053794bcbd06f3eb9df6eb3fc3e213f87653695287e755f98ef8fc9210c1a3f"
     },
     "src/engine.c": {
-      "sha256": "ab4d34de6a736e98063a3bc44d2e4741eada82a28b69a64853a32d973c35bb52"
+      "sha256": "e456488c3010cd66fa285470d190e8027d7be1cf28d356f1257ec79d89fafd03"
     },
     "src/engine_internal.h": {
       "sha256": "f9cad7750574c88ab63904b8ba39bb16402c57f959d2c3ad25d02d850941439e"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "0ecdea2b8b55c634d75aea81e38cfb6c36fa16152d97c31d15c22a80d860e36c"
+      "sha256": "ab9407177648c504fdfc43a29be09f3e0c19af7079ce9311beac132996531210"
     },
     "src/menu_animation.hpp": {
       "sha256": "62520c85ecd72a5b9731d415dc7fb4e1b35164f9649b466ec7c7859b194bf1ca"
@@ -105,7 +105,7 @@
       "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
+      "sha256": "b662ba055a37fc485fe882eb253add47679f14c9d631094932566c11e7d0d466"
     },
     "src/beach_magikarp_scene.hpp": {
       "sha256": "11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"

@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "player-command-reference-complete-v1",
+  "scope": "private-test-only",
+  "legal_inputs": {
+    "source": "Only the three complete committed own-GAME Player command bodies and the single blink declaration below; never SDK headers, SDK bodies/layouts, ASM, ROM code, dirty checkout source or public Root definitions.",
+    "output": "Private test fixture only: generated C, declarations and evidence stay under the build _deps/isle-player-command-reference-private directory and are never production library sources or public exports.",
+    "semantics": "Native C semantic command data and canonical Player Source; the existing native C FIFO interpreter owns builtin behavior and actual Scene Services owns queue credits and retirement."
+  },
+  "source_files": {
+    "src/app_level/player.c": {
+      "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
+      "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b",
+      "line_count": 2998
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    }
+  },
+  "generator_sha256": "418bf6782b715d0d07bbd4fa120c0a865a63f36a9efe0e854c080eff06b03ed4",
+  "output_sha256": "793bf5f3bb5dd1781d8ec087843162e42a192b7c1c54044173cd6163ccb973af",
+  "header_sha256": "88d9ec4b0479c1dcb434c1b3a2bb70c6d97f5d11510eb54a41caac41f3bf787a",
+  "native_support": {
+    "src/player_commands_source.h": {
+      "sha256": "9548134839fd9263c7ee639c911f902e722421d0daf72f189c3b619bd8a47f1b"
+    },
+    "src/player_commands_source.c": {
+      "sha256": "7a2a2ec97c7a8b9084933a91ad12a2d14b5961815b7929cbd14e05de9bc64197"
+    },
+    "src/player_source.h": {
+      "sha256": "d7e4c51e37a33d36c224d7ad0ac6284e8255bbf76b726789e3e9180dce72dd5d"
+    },
+    "src/player_source_bridge.c": {
+      "sha256": "4906604fba43e57c174cd92476fd907f5970222ee3b8e808afda62aa449c9183"
+    },
+    "src/player_commands.hpp": {
+      "sha256": "341b2b687693a41b370ce97f3b20e099e9b4f51c3de808553389446dfc3cc656"
+    },
+    "src/player_commands.cpp": {
+      "sha256": "6239d2a25195e9034a38e1104ef2b26c26a95c84b2a5d45ea7bf4dea8339d064"
+    },
+    "src/source_command_scope.h": {
+      "sha256": "acd9a7312afe5129efcd6e495aa827de1ae667f3810cbe5fba5c3989516a3160"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "8e5c3eafd14cfc486f410877360d989e04387f11c3be69659ac938836aa452c1"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
+    },
+    "src/menu_scene_bridge.h": {
+      "sha256": "851da4fdc6f7864784e44e8c36b098a0c9f769f0f380cbcc3875845c57daf726"
+    },
+    "src/menu_scene_bridge.c": {
+      "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
+    },
+    "src/engine.c": {
+      "sha256": "e456488c3010cd66fa285470d190e8027d7be1cf28d356f1257ec79d89fafd03"
+    },
+    "src/engine_internal.h": {
+      "sha256": "f9cad7750574c88ab63904b8ba39bb16402c57f959d2c3ad25d02d850941439e"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "ab9407177648c504fdfc43a29be09f3e0c19af7079ce9311beac132996531210"
+    },
+    "src/world_movement_state.h": {
+      "sha256": "0d231cd3556bc0004abd77bb5d6f97474cf0762ed4fdeacfd0f0af0f928195b3"
+    },
+    "cmake/SnapPlayerServices.cmake": {
+      "sha256": "2c91ca17af03c424593aa109ff0e5a604b09398012f74d565673e5be0854c29c"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "2f339146b9c930c70b2d7576170a1beb47d2522436d07c3d1abefadc14124e61"
+    }
+  },
+  "blink_declaration": {
+    "path": "src/app_level/app_level.h",
+    "symbol": "CAMERA_CMD_BLINK",
+    "first": 136,
+    "last": 136,
+    "source_sha256": "6ba4c53ac761e8c7f8b3916b1d2cbf1fb2c85976913a0b4322e4130b8e525fb0",
+    "source_declaration": "#define CAMERA_CMD_BLINK 1",
+    "native_symbol": "ISLE_PLAYER_REFERENCE_CAMERA_BLINK",
+    "value": 1
+  },
+  "definitions": [
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "mainCameraHandleCmd",
+      "first": 2887,
+      "last": 2891,
+      "source_sha256": "f4f95dc552bf44dc47454441a594297fc56e12966a87b24e848ee7e00a0690d9",
+      "source_declaration": "void mainCameraHandleCmd(GObjCmdData cmdData)",
+      "native_sha256": "64052248e832c14217483072f5afbce9bb6a95de08633d9dbf04262479eb4dc0",
+      "native_declaration": "void player_command_reference_camera_handle(IslePlayerSource* player, IslePlayerCommandData cmdData)",
+      "changes": [
+        {
+          "find": "void mainCameraHandleCmd(GObjCmdData cmdData)",
+          "replace": "void player_command_reference_camera_handle(IslePlayerSource* player, IslePlayerCommandData cmdData)",
+          "occurrences": 1
+        },
+        {
+          "find": "CAMERA_CMD_BLINK",
+          "replace": "ISLE_PLAYER_REFERENCE_CAMERA_BLINK",
+          "occurrences": 1
+        },
+        {
+          "find": "MainCameraBlinkTimeout",
+          "replace": "player->MainCameraBlinkTimeout",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "mainCameraUpdate",
+      "first": 2893,
+      "last": 2895,
+      "source_sha256": "b25000c398f5fc7a97efa4d322b95177153d2862fff5c1fcb4cc0b086c7dd677",
+      "source_declaration": "void mainCameraUpdate(GObj* arg0)",
+      "native_sha256": "d8a1f68c7f7016aa07b081ac5af5b05ddcf86af2113d06986ed050633a0b834a",
+      "native_declaration": "void player_command_reference_camera_update(IsleGameObject* arg0)",
+      "changes": [
+        {
+          "find": "void mainCameraUpdate(GObj* arg0) {",
+          "replace": "void player_command_reference_camera_update(IsleGameObject* arg0) {\n    IslePlayerSource* player = isle_player_source_entry(arg0);",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdProcessCommands(mainCameraHandleCmd)",
+          "replace": "isle_player_commands_process(player, arg0, player_command_reference_camera_handle)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_level/player.c",
+      "symbol": "func_80356118_4F6528",
+      "first": 2282,
+      "last": 2283,
+      "source_sha256": "718e3b074e165b5c08ec23d541848097884212cf9a4ed5b27328d7ec8961bb01",
+      "source_declaration": "void func_80356118_4F6528(GObjCmdData cmdData)",
+      "native_sha256": "cc6ce9434e89f4bdd9d0dfe3f4fbfccc2dca90ef7de1aef14f1de981350f6081",
+      "native_declaration": "void player_command_reference_empty_handle(IslePlayerSource* player, IslePlayerCommandData cmdData)",
+      "changes": [
+        {
+          "find": "void func_80356118_4F6528(GObjCmdData cmdData)",
+          "replace": "void player_command_reference_empty_handle(IslePlayerSource* player, IslePlayerCommandData cmdData)",
+          "occurrences": 1
+        }
+      ]
+    }
+  ]
+}

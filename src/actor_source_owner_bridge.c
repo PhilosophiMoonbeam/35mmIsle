@@ -280,10 +280,7 @@ IsleGameResult isle_actor_source_install_update(IsleGame* game, IsleGameObject* 
     IsleActorSource* actor = NULL;
     IsleGameResult result = isle_actor_source_get(game,object,&actor);
     if (result != ISLE_GAME_OK) return result;
-    object->update = NULL;
-    object->updateUser = NULL;
-    object->fnUpdate = Pokemon_Update;
-    return ISLE_GAME_OK;
+    return isle_game_object_set_source_update(game,object,Pokemon_Update);
 }
 const IsleActorInteraction* isle_actor_source_interaction_rows(IsleGameObject* object) {
     IsleActorSource* actor = isle_actor_source_require(object);

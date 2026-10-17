@@ -113,13 +113,13 @@
       "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
+      "sha256": "b662ba055a37fc485fe882eb253add47679f14c9d631094932566c11e7d0d466"
     },
     "tools/prepare_actor_control.py": {
       "sha256": "965bcb87d1dde221e0af00ffd5a3d177d185bb2361a59e83b2829131a60220da"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "bfd5e3bb46585b0c06468bd2fa7d19748445e5311f2a41bf577f010583846d22"
+      "sha256": "22cd6504c608f9f09344ada4c48e25e2de9a73bd550a471b11ea339d734052e5"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
       "sha256": "6a24fe0b3fe3623524c20689e6ea26a84a7f59146ca757c3d0f9785d5b392fb3"

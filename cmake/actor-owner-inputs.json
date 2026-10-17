@@ -162,7 +162,7 @@
       "sha256": "833274490aa6e5db682b98e3a8d8bb63969e91ff93dd6981d79e0ca515068105"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
+      "sha256": "b662ba055a37fc485fe882eb253add47679f14c9d631094932566c11e7d0d466"
     },
     "src/beach_actor_resources.hpp": {
       "sha256": "aeb595bf1a418bfe7999df35b5acfd3b24757a8fab07c50443b7f9752743c16e"
@@ -186,7 +186,7 @@
       "sha256": "965bcb87d1dde221e0af00ffd5a3d177d185bb2361a59e83b2829131a60220da"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "bfd5e3bb46585b0c06468bd2fa7d19748445e5311f2a41bf577f010583846d22"
+      "sha256": "22cd6504c608f9f09344ada4c48e25e2de9a73bd550a471b11ea339d734052e5"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "fafb0655162dbe64f21de5a5e2735ee56b436b8b5bc497aa09dd99d0bda1a9ec"

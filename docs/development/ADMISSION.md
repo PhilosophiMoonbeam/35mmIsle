@@ -884,6 +884,95 @@ Private evidence manifest SHA-256 is `029b5bac02f6e3b8367be4d537e2341d6eab394598
 
 GCC Release, full-LUS GCC Debug and Clang ASan+UBSan each passed all twenty-two CPU tests; five actual Linux CLI helps also passed. [Commit `1618ed7`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/1618ed71dee53815edcdffbf0fa0c39af6043bb1) passed all ten hosted jobs in [run 38796577921](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38796577921). Its Windows Server 2022/MSVC 19.44.35229.0 x64 static-runtime build includes LUS, audio, RSP, canonical RDP and the native engine; all twenty-two CPU tests and five CLI helps passed with SDK 10.0.26100.0. This compiles/links the integrated feedback path but does not execute its ROM/graphics/audio path on Windows. The diagnostic is not a C GAME photo consumer or continuation wait, native scene boot, photo fidelity, physical timing/device/hearing proof, Windows 11 runtime or release admission. Genuine scoring still needs writable persistent canonical memory, real photo/world/model reconstruction, pointer/resource relocation, admitted depth/texture-copy commands and original wide/narrow continuation semantics.
 
+## Canonical Player FIFO and native Source updates
+
+`isle-player-commands` binds one active canonical Player Source to its actual
+Scene Services. The binding introduces no queue, interpreter, mutable Player
+mirror or receiver registry. Attachment and dispatch plumbing do not allocate;
+normal enqueue retains the existing arena-backed command-pool behavior.
+Receivers, callbacks, Source and Services remain borrowed until their real
+native joins and semantic/graphics consumers finish. Detach does not manufacture
+those joins.
+
+The typed C bridge invokes `isle_game_commands_checked` directly. A local
+`isle_player_source_call` fence catches checked handler failure; the returning
+C++ backend then closes the actual dispatch before C propagates the first
+error. Cleanup remains available after sticky Source/Services failure.
+Consumed/current sender credits settle once; an ordinary live suffix remains
+owned until real receiver cancellation or retirement. Sends and link broadcasts
+use the existing registered-sender rules, including NULL sender selecting the
+current emitter. Builtins remain native interpreter behavior.
+
+The private witness generator admits three complete original definitions:
+`mainCameraHandleCmd`, `mainCameraUpdate` and the genuinely empty reticle
+handler `func_80356118_4F6528`. The empty body is original behavior, not a stub.
+Pinned own-GAME commit/blob/range/body/declaration/selection hashes, counted
+rewrites, generated C/header identities and seventeen native support identities
+are checked. The blink value comes from the exact own-GAME
+`app_level.h:136` declaration, not a guessed SDK constant. Parent replay
+independently reconstructs all three complete bodies and matches the actual
+compiled private include/header. These test-private exports do not duplicate
+production Root symbols.
+
+`isle_game_object_set_source_update` replaces either updater form with an
+actual one-argument callback; NULL callback disables updates. Object is explicit:
+NULL never selects the current object. Owner/object/fault/retirement guards
+precede mutation, and entity userdata/payload remain unchanged. The Actor source
+installer now uses this API after its existing typed payload validation.
+
+Independent planner/reviewer assessments found no concrete production defect.
+All three consequential acceptance gaps were added to the real consumer:
+
+- A successful builtin prefix precedes a faulting C handler that appends a
+  self-sent suffix. Distinct retired prefix/current/original-suffix senders
+  retain the correct credits. First failure closes only consumed/current
+  credits; original and appended suffixes survive until actual receiver erase.
+- NULL-object replacement rejects inside a real C update. Replacement of a
+  separate live camera and the retiring object rejects during a real retirement
+  observer. The unchanged camera subsequently consumes its queued original
+  blink, and deleted receiver storage joins before reuse.
+- A prepared inactive Source passed from a canonical C handler cannot nominate
+  the failure fence or enqueue a blink. Its complete record remains unchanged;
+  canonical failure closes current credit and retains the real suffix until erase.
+
+Ordinary cases also exercise disabled-update FIFO retention and original-C
+restoration, interleaved builtins/custom commands, actual paused process
+execution, direct/link delivery ordering, NULL-current sender identity, retired
+sender retention, custom/builtin self-deletion, joined address reuse and nested
+C failure-fence restoration. Terminal faults use separate native game/Source
+scopes. The consumer's seven scopes hydrate actual admitted-ROM resources,
+Session and save state; they claim neither audio-device output nor hearing.
+
+| Local profile | All 57 rebuilt CPU tests, seconds | Complete FIFO consumer, seconds |
+|---|---:|---:|
+| GCC Debug / full LUS build | 3.48 | 0.553 |
+| GCC Release | 0.79 | 0.164 |
+| Clang ASan/UBSan | 11.63 | 1.611 |
+
+All 22 opt-in consumers compile and execute in each profile: 66 accepted whole
+cases over one 496-file source set,
+`f3812489a23864006a22d11fa73817b6d45c4d819ecaf2da159a8278bddea81d`
+(SHA256 of compact, key-sorted JSON path→SHA256 records). The accepted reviewed
+Debug FIFO case is reused without replay/rescan; the other 65 use fresh scopes.
+Sole initial closures establish 3,555 terminal tasks, 3,489 created tasks and
+3,621 absent tracer/task identities, stable traces, unchanged ROM, zero known
+physical attempts and zero permission errors. The previous 63 surface images,
+213 Photo files and twelve Cart files remain byte-identical to their preceding
+qualified snapshots.
+
+The opt-in executable is `player-commands-rom-smoke`; arguments are a private
+admitted ROM and an existing empty private profile directory. It is not a
+ROM-bearing CTest or a game entrypoint. Public CI explicitly compiles it without
+a ROM; the preceding published `49d8546` independently passed
+[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39028838977)
+with the then-existing 21 consumers. That prior result is not evidence for a
+later unpublished command revision.
+
+This admits the FIFO/updater component, not execution of the complete original
+main-Player command3–10 handler, full reticle/Root creation, prefix-time
+Photo/camera/FX/UI dispatch, all 106 Root definitions, remaining species,
+complete gameplay, private Windows11 runtime or original/device parity.
+
 ## Independent Detector and framebuffer contexts
 
 Original Detector context flips at its DL5 prefix; graphics context selection

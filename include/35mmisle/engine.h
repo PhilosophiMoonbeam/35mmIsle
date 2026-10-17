@@ -76,6 +76,12 @@ const char* isle_game_error(const IsleGame* game);
 IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
                                    uint32_t priority, IsleGameCallback update,
                                    void* user, IsleGameObject** output);
+/* Replace either updater form on an explicit live object with a one-argument
+ * Source callback. NULL disables updates; NULL object never selects current.
+ * Clears only the prior updater/user pair, not entity userdata or payload.
+ * Owner access, object membership and terminal fault precede retirement guards.
+ * Retirement observers cannot publish a replacement callback. No allocation. */
+IsleGameResult isle_game_object_set_source_update(IsleGame*, IsleGameObject*, IsleGameSourceCallback);
 IsleGameResult isle_game_delete_object(IsleGame* game, IsleGameObject* object);
 IsleGameResult isle_game_pause_updates(IsleGame* game, IsleGameObject* object, int paused);
 IsleGameResult isle_game_object_id(IsleGame* game, IsleGameObject* object, uint32_t* output);

@@ -362,6 +362,12 @@ if(ISLE_BUILD_GAME_ENGINE)
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
+        add_library(isle-player-commands STATIC
+            src/player_commands.cpp src/player_commands.hpp
+            src/player_commands_source.c src/player_commands_source.h)
+        target_link_libraries(isle-player-commands PUBLIC isle-scene)
+        isle_target_options(isle-player-commands)
+
         add_library(isle-environment-sound STATIC src/environment_sound.cpp src/environment_sound.hpp)
         target_link_libraries(isle-environment-sound PUBLIC isle-scene isle-source-angles)
         isle_target_options(isle-environment-sound)
@@ -1196,6 +1202,45 @@ if(TARGET isle-scene-graphics AND TARGET isle-game-host)
             target_link_options(35mmisle-startup-runtime-rom-smoke PRIVATE -municode)
         endif()
     endif()
+endif()
+
+if(TARGET isle-player-commands AND TARGET isle-rsp)
+    set(_isle_player_command_private "${CMAKE_BINARY_DIR}/_deps/isle-player-command-reference-private")
+    set(_isle_player_command_manifest "${PROJECT_SOURCE_DIR}/cmake/player-command-reference-inputs.json")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/tools/prepare_player_command_reference.py"
+        "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py"
+        "${_isle_player_command_manifest}")
+    file(READ "${_isle_player_command_manifest}" _isle_player_command_authority)
+    string(JSON _isle_player_command_support_count LENGTH "${_isle_player_command_authority}" native_support)
+    if(_isle_player_command_support_count GREATER 0)
+        math(EXPR _isle_player_command_support_last "${_isle_player_command_support_count} - 1")
+        foreach(_isle_player_command_support_index RANGE 0 ${_isle_player_command_support_last})
+            string(JSON _isle_player_command_support_path MEMBER "${_isle_player_command_authority}"
+                native_support ${_isle_player_command_support_index})
+            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+                "${PROJECT_SOURCE_DIR}/${_isle_player_command_support_path}")
+        endforeach()
+    endif()
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_player_command_reference.py"
+            --repository "${_isle_snap_source}"
+            --manifest "${_isle_player_command_manifest}"
+            --output "${_isle_player_command_private}/player_command_reference.inc"
+            --header "${_isle_player_command_private}/player_command_reference.h"
+            --evidence "${_isle_player_command_private}/evidence.json"
+        RESULT_VARIABLE _isle_player_command_result
+        OUTPUT_VARIABLE _isle_player_command_output
+        ERROR_VARIABLE _isle_player_command_error)
+    if(NOT _isle_player_command_result EQUAL 0)
+        message(FATAL_ERROR "Private Player command source preparation failed: ${_isle_player_command_output}${_isle_player_command_error}")
+    endif()
+    add_executable(player-commands-rom-smoke EXCLUDE_FROM_ALL
+        tests/player_commands_rom_smoke.cpp tests/player_commands_rom_fixture.c)
+    target_include_directories(player-commands-rom-smoke PRIVATE
+        "${_isle_player_command_private}" "${PROJECT_SOURCE_DIR}/tests")
+    target_link_libraries(player-commands-rom-smoke PRIVATE isle-player-commands isle-rsp)
+    isle_target_options(player-commands-rom-smoke)
 endif()
 
 if(TARGET isle-player-cart-resources AND TARGET isle-player-camera-animation AND

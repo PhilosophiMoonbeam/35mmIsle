@@ -15,7 +15,7 @@
       "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
+      "sha256": "b662ba055a37fc485fe882eb253add47679f14c9d631094932566c11e7d0d466"
     },
     "src/actor_source_bridge.c": {
       "sha256": "833274490aa6e5db682b98e3a8d8bb63969e91ff93dd6981d79e0ca515068105"
@@ -36,7 +36,7 @@
       "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "0ecdea2b8b55c634d75aea81e38cfb6c36fa16152d97c31d15c22a80d860e36c"
+      "sha256": "ab9407177648c504fdfc43a29be09f3e0c19af7079ce9311beac132996531210"
     },
     "src/actor_spatial.h": {
       "sha256": "962287772ecea45dbc4431ec014969c15dab2ba66bdd39e04853c6641326aaf9"

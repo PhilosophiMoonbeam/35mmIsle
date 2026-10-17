@@ -276,6 +276,19 @@ IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_game_object_set_source_update(IsleGame* game, IsleGameObject* object,
+                                                IsleGameSourceCallback callback) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (object->retirementStarted || game->retirement_observer) return ISLE_GAME_INVALID_STATE;
+    object->update = NULL;
+    object->updateUser = NULL;
+    object->fnUpdate = callback;
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_object_metadata(IsleGame* game, IsleGameObject* object, IsleGameObjectMetadata* output) {
     IsleGameResult result = access_game(game);
     if (output != NULL) *output = (IsleGameObjectMetadata){0};

@@ -13,6 +13,7 @@ typedef struct IslePlayerUiSource IslePlayerUiSource;
 typedef struct IslePlayerPhotoSource IslePlayerPhotoSource;
 typedef struct IslePlayerBumpSource IslePlayerBumpSource;
 typedef struct IslePlayerCartSource IslePlayerCartSource;
+typedef struct IslePlayerCommandSource IslePlayerCommandSource;
 
 typedef struct IsleScreenTransitionSource IsleScreenTransitionSource;
 /* Published once before OM. Original idle/pause C may then modify these same
@@ -56,6 +57,7 @@ typedef struct IslePlayerSource {
     IsleScreenTransitionSource* screen;
     IslePlayerBumpSource* bump;
     IslePlayerCartSource* cart;
+    IslePlayerCommandSource* commands;
     IsleGameVec3 cam_target;
 
     int32_t gDirectionIndex;

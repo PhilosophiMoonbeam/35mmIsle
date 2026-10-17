@@ -35,7 +35,7 @@
   },
   "native_support": {
     "src/player_source.h": {
-      "sha256": "3ca0aa3efb07533944d02dde7985120bb4f104dad6b921a8d16a964fb4968113"
+      "sha256": "d7e4c51e37a33d36c224d7ad0ac6284e8255bbf76b726789e3e9180dce72dd5d"
     },
     "src/player_source_bridge.c": {
       "sha256": "4906604fba43e57c174cd92476fd907f5970222ee3b8e808afda62aa449c9183"
@@ -47,7 +47,7 @@
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/engine.c": {
-      "sha256": "ab4d34de6a736e98063a3bc44d2e4741eada82a28b69a64853a32d973c35bb52",
+      "sha256": "e456488c3010cd66fa285470d190e8027d7be1cf28d356f1257ec79d89fafd03",
       "object_lifecycle": {
         "native_order": "Original native pre-retirement observer runs once at the sole validated omDeleteGObj teardown, before any process join or payload removal. Payload corruption rejects before observer/state publication; a failed/incomplete join retains native storage and the started bit without repeating pre-notification. Existing post observer remains after all actual joins, payload removal and unlink/alive=false, before object free-list publication.",
         "source_deferred_order": "Exact own GAME df8815e75f3d79618466e01e0827c6165b93d11c src/sys/om.c:1757-1778 and 1780-1824 retain current-object deletion requests until update return or process yield/return, clear omCurrentObject/omCurrentProcess, then call the native teardown. No source definition/body/identity changes, second scheduler or early self-notification.",
@@ -104,7 +104,7 @@
       "use": "Original actual-size camera/matrix/reflection/model native payload ownership, object retirement callback/userdata and bounded arena free lists, not console or SDK ownership layouts. Native updateUser is distinct from GAME entity userData; allocation and object reuse clear both, and callback replacement preserves actor payload. Process function is the actual callable IsleGameSourceCallback, distinct from native two-argument entry/user and scheduler adapter; zero-initialized arena reuse clears identities."
     },
     "include/35mmisle/engine.h": {
-      "sha256": "0ecdea2b8b55c634d75aea81e38cfb6c36fa16152d97c31d15c22a80d860e36c",
+      "sha256": "ab9407177648c504fdfc43a29be09f3e0c19af7079ce9311beac132996531210",
       "object_lifecycle": "Companion isle_game_object_set_pre_retire_callback preserves existing post API/callers. Pre observer sees validated intact payload/processes at actual teardown, not the current/self request; post observes completed native joins/removal, not renderer retirement. Both observers must not throw, wait or mutate OM; userdata survives the observers and any pending command dispatch. Clearing before teardown is permitted; late pre-observer replacement is rejected.",
       "contextual_model_math": "Explicit immutable CONTEXTUAL_RPY=2 is a full finite accepted local pose, not a context-free fixed matrix. Reserved zero fixed bytes are never uploadable; computing getter evaluates accepted-pose revision without RTS/identity. Quantized/cast constraints apply only to ordinary local kinds; renderer output admission remains distinct.",
       "placement": "Typed native placement enum/record plus validate/set/stable nonmutating view. Explicit separate setter transaction, neutral disabled metadata and independent source-local cache lifetime.",

@@ -135,10 +135,10 @@
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },
     "src/model_data_decoder.hpp": {
-      "sha256": "0561a2a664451ef0ad1649a58e0174438c1715a0ba8a3a9bfb877ce186300068"
+      "sha256": "0d0ce5f506f08135ff5f5749f5f9f25bdebf7d27acb7512f0cdef796727fd05e"
     },
     "src/model_data_decoder.cpp": {
-      "sha256": "efc2e71a6ac1162458e75f5b7ca27e3f7783fdb16b9121589b79cb2d4ffda744"
+      "sha256": "18651dd79f04a298c3eee98a6156dc32c4d0392a7bac898a5c7c8b2d55a58aad"
     },
     "src/model_asset_closure.hpp": {
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
@@ -156,10 +156,10 @@
       "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
     },
     "src/actor_source.h": {
-      "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
+      "sha256": "402ee8c93c37644610977aa8e6f687493e20d435b03bc4cb8eee98621affe61b"
     },
     "src/actor_source_bridge.c": {
-      "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
+      "sha256": "833274490aa6e5db682b98e3a8d8bb63969e91ff93dd6981d79e0ca515068105"
     },
     "src/actor_source_owner_bridge.c": {
       "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
@@ -186,7 +186,7 @@
       "sha256": "965bcb87d1dde221e0af00ffd5a3d177d185bb2361a59e83b2829131a60220da"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "668c08c05fb04ef47caee31899b39ef19a13f085c0806b936cb2fc1626efcaf7"
+      "sha256": "64777b040620f5734488870843d9824b849da36ae7ada26676c6ccd7d81d8d94"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "fafb0655162dbe64f21de5a5e2735ee56b436b8b5bc497aa09dd99d0bda1a9ec"

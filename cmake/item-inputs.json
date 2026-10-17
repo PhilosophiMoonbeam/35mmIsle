@@ -127,10 +127,10 @@
   },
   "native_support": {
     "src/model_data_decoder.hpp": {
-      "sha256": "0561a2a664451ef0ad1649a58e0174438c1715a0ba8a3a9bfb877ce186300068"
+      "sha256": "0d0ce5f506f08135ff5f5749f5f9f25bdebf7d27acb7512f0cdef796727fd05e"
     },
     "src/model_data_decoder.cpp": {
-      "sha256": "efc2e71a6ac1162458e75f5b7ca27e3f7783fdb16b9121589b79cb2d4ffda744"
+      "sha256": "18651dd79f04a298c3eee98a6156dc32c4d0392a7bac898a5c7c8b2d55a58aad"
     },
     "src/model_asset_closure.hpp": {
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"

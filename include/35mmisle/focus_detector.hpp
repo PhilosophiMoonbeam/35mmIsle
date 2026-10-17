@@ -50,6 +50,9 @@ public:
     const Focus& published() const noexcept { return published_; }
     const Photo* photo(std::uint16_t context) const noexcept;
     void publish() noexcept; // Source CopyInfo; analysis does not publish early.
+    // Source missing-actor branch clears only published presence. Identity,
+    // flags/context, staged history and computed/completed results stay intact.
+    void clear_published_presence() noexcept;
     // Production completed-frame publication. The reservation prevents native
     // producers from overwriting a snapshot/history still owned by GPU/readback
     // or a photo consumer. Existing synchronous consumers keep publish().

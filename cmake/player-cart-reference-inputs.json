@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "cart-numeric-reference-v1",
+  "legal_inputs": {
+    "source": "Only exact committed own GAME numeric definitions listed below; never SDK headers, SDK bodies/layouts, ASM, ROM code, dirty checkout source, commands or a second animator.",
+    "data": "Only canonical Snapshot admitted US ROM DATA: guest 0x8011b050 maps ROM 0xa74e0 length 0x952a0; six kind-2/kind-3 paths from fixed model/camera command-13 identities. No rejected roots.",
+    "output": "Generated original numeric C and generation evidence must remain private under the build root. Never publish generated original C or ROM assets.",
+    "floating_point": "IEEE binary32 round-to-nearest ties-to-even; no excess precision, reassociation, fast math, or floating-point contraction; sqrtf."
+  },
+  "source_files": {
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf"
+    },
+    "src/1F960.c": {
+      "git_blob": "caf0e25e5ba3f1f0b313d46eb6a3b3cc6ff8b1d3",
+      "sha256": "d2373fd58df3b7b8c4de8f38d8d6edee435f92889befce920375a2be1842314b"
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/sys/anim.c",
+      "symbol": "animGetAObjInterpValue",
+      "first": 520,
+      "last": 540,
+      "sha256": "3579cd57c3ae38cac741807a30f4ffb0d7e407d207f11434749e31e5560b471f"
+    },
+    {
+      "path": "src/sys/anim.c",
+      "symbol": "model_cubic_expression",
+      "first": 600,
+      "last": 610,
+      "sha256": "c169c7017f07e79f089af4bff426470440b1874f8733fcb4563114b25b2c2825"
+    },
+    {
+      "path": "src/1F960.c",
+      "symbol": "func_8001ED60",
+      "first": 5,
+      "last": 22,
+      "sha256": "1beefc8aa312cfc7f993d4a82f9f4cef78fa591fa56040df8d46a29d9e97c7dd"
+    },
+    {
+      "path": "src/1F960.c",
+      "symbol": "func_8001F030",
+      "first": 41,
+      "last": 60,
+      "sha256": "2fd7183b7c111661fd111e1f3b4d330b377b3872e17b8adc1158d60daac19a2f"
+    },
+    {
+      "path": "src/1F960.c",
+      "symbol": "func_8001F2C4",
+      "first": 84,
+      "last": 105,
+      "sha256": "44d9c031a1c4d23d9c4a0eb74a285d29fbe1b56613646d6d18a1c78212fb6c5d"
+    },
+    {
+      "path": "src/1F960.c",
+      "symbol": "func_8001F4E4",
+      "first": 128,
+      "last": 182,
+      "sha256": "2aef755dc8243c365c76989bac40e13ee8376b87e5dddeb0ad4e0a51eba7289d"
+    },
+    {
+      "path": "src/1F960.c",
+      "symbol": "get_speed_approx",
+      "first": 221,
+      "last": 234,
+      "sha256": "ecdf96f766d4511810ba262411003c3bf1682efc55182a61235b2d1fb631f661"
+    },
+    {
+      "path": "src/1F960.c",
+      "symbol": "interp_integrate",
+      "first": 238,
+      "last": 256,
+      "sha256": "bddb296f2e760253d5029b40a37a3c08f6f47322d16e7f4ba967ddffb6e88e48"
+    },
+    {
+      "path": "src/1F960.c",
+      "symbol": "get_uniform_param",
+      "first": 258,
+      "last": 310,
+      "sha256": "1fc627adcda0361b252dcc8b23ec2d65829e23f6f7d128dfdd0835491e6a2979"
+    }
+  ],
+  "adaptations": [
+    {
+      "symbol": "animGetAObjInterpValue",
+      "find": "animGetAObjInterpValue",
+      "replace": "isle_reference_camera",
+      "count": 1
+    },
+    {
+      "symbol": "model_cubic_expression",
+      "find": "aobj->invDuration",
+      "replace": "invDuration",
+      "count": 3
+    },
+    {
+      "symbol": "model_cubic_expression",
+      "find": "aobj->time",
+      "replace": "time",
+      "count": 3
+    },
+    {
+      "symbol": "model_cubic_expression",
+      "find": "aobj->initialValue",
+      "replace": "initialValue",
+      "count": 1
+    },
+    {
+      "symbol": "model_cubic_expression",
+      "find": "aobj->targetValue",
+      "replace": "targetValue",
+      "count": 1
+    },
+    {
+      "symbol": "model_cubic_expression",
+      "find": "aobj->rate",
+      "replace": "initialRate",
+      "count": 1
+    },
+    {
+      "symbol": "model_cubic_expression",
+      "find": "aobj->targetRate",
+      "replace": "targetRate",
+      "count": 1
+    },
+    {
+      "symbol": "model_cubic_expression",
+      "find": "value =",
+      "replace": "return",
+      "count": 1
+    },
+    {
+      "symbol": "func_8001ED60",
+      "find": "void func_8001ED60(",
+      "replace": "static void func_8001ED60(",
+      "count": 1
+    },
+    {
+      "symbol": "func_8001F030",
+      "find": "void func_8001F030(",
+      "replace": "static void func_8001F030(",
+      "count": 1
+    },
+    {
+      "symbol": "func_8001F2C4",
+      "find": "void func_8001F2C4(",
+      "replace": "static void func_8001F2C4(",
+      "count": 1
+    },
+    {
+      "symbol": "func_8001F4E4",
+      "find": "func_8001F4E4",
+      "replace": "isle_reference_position",
+      "count": 1
+    },
+    {
+      "symbol": "get_speed_approx",
+      "find": "f32 get_speed_approx(",
+      "replace": "static f32 get_speed_approx(",
+      "count": 1
+    },
+    {
+      "symbol": "interp_integrate",
+      "find": "f32 interp_integrate(",
+      "replace": "static f32 interp_integrate(",
+      "count": 1
+    },
+    {
+      "symbol": "get_uniform_param",
+      "find": "get_uniform_param",
+      "replace": "isle_reference_map",
+      "count": 1
+    }
+  ],
+  "semantic_preamble_sha256": "0017d880a969531df40b50fff0a43474d532681c1c73d2afa93f3ad2adbe00a7",
+  "generator_sha256": "8cbdd2d02731bea8573b64ccb9ee194b2be0cdf7b7dc21254f13d7c6d8a86c40",
+  "native_support": {
+    "tests/cart_animation_reference.hpp": { "sha256": "b899ad17d52e8567c4d1c2e5727d0abc96027353617df01e345f6a6ce661b24f" },
+    "tests/cart_animation_reference.cpp": { "sha256": "46c33cf94fbedc7046c74a5efaf57f3748d2662bbf91f078603ce2657979af40" },
+    "tests/cart_animation_reference_numeric.h": { "sha256": "11947fa0ddf33e797bb593c765f2133cb53b83e12ef1950beb02acd69ce99bfc" }
+  },
+  "generated_sha256": "d02df2a3d59d25ef386e89e17118c4194d648c1d24a573483287b46b87f5c151"
+}

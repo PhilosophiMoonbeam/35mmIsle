@@ -7,6 +7,21 @@
  * copies rather than memcpy of guest packed records. */
 #include "player_photo_original.inc"
 
+int32_t isle_player_photo_take_photo(IslePlayerPhotoSource* source, IsleGameObject* subject) {
+    IslePlayerPhotoTicket ticket;
+    IsleGameResult first, released;
+    int32_t value;
+    if (isle_player_photo_borrow_taken(source, &ticket) != ISLE_GAME_OK) return -1;
+    /* Both C++ leaves return normally. Only this plain C frame encloses the
+     * original C body; no owning C++ guard survives any later checked transfer. */
+    value = isle_player_photo_makePhoto(source, subject);
+    first = source->status;
+    released = isle_player_photo_release_taken(source, &ticket);
+    if (first != ISLE_GAME_OK) source->status = first;
+    else if (source->status == ISLE_GAME_OK) source->status = released;
+    return value;
+}
+
 void isle_player_photo_PokemonDetector_CopyInfo(IsleGameObject* object) {
     IslePlayerSource* player = isle_player_source_current(object);
     if (player->photo == NULL)

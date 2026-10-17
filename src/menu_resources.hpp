@@ -147,7 +147,8 @@ struct AnimationCommand {
     rom::GuestView wire; // Exactly this command and its operands, not next data.
     std::uint8_t opcode = 0;
     std::uint16_t mask = 0, duration = 0;
-    std::size_t path_index = no_index; // Opcode13's decoded native path binding.
+    std::size_t path_index = no_index; // Model13 / camera13 eye's decoded path.
+    std::size_t camera_at_path_index = no_index; // Camera13 bit7, independent of bit3.
 };
 struct Animation {
     rom::GuestView wire; // Exact reachable stream words; commands retain operand framing.

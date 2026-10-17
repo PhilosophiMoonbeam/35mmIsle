@@ -243,6 +243,54 @@ void binding_and_native_address_reuse() {
     require(record == &next.actor && old.count == 1, "new actor borrowed the retired actor's semantic state");
 }
 
+void nullable_lookup_distinguishes_absence_from_invalid_ownership() {
+    ActorControlFixture f{}; isle_rng rng{1}; World world;
+    auto* object = bind(world, f, rng);
+    IsleActorSource* output = nullptr;
+    ok(isle_actor_source_get_nullable(world.game, object, &output));
+    require(output == &f.actor, "nullable lookup lost a live canonical actor");
+    f.actor.owner = nullptr;
+    require(isle_actor_source_get_nullable(world.game, object, &output) == ISLE_GAME_INVALID_STATE &&
+            output == nullptr, "corrupt actor ownership was treated as normal absence");
+    f.actor.owner = &f;
+    IsleGameObject* empty = nullptr;
+    ok(isle_game_add_object(world.game, 5, 0, 0, nullptr, nullptr, &empty));
+    output = &f.actor;
+    ok(isle_actor_source_get_nullable(world.game, empty, &output));
+    require(output == nullptr, "missing semantic payload retained an old actor identity");
+    require(isle_actor_source_get(world.game, empty, &output) == ISLE_GAME_INVALID_STATE &&
+            output == nullptr, "nullable query weakened existing required-actor lookup");
+    require(isle_actor_source_get_nullable(world.game, reinterpret_cast<IsleGameObject*>(&f), &output) == ISLE_GAME_INVALID_ARGUMENT &&
+            output == nullptr, "foreign native identity was treated as normal actor absence");
+}
+
+void nullable_lookup_accepts_only_joined_identity_held_absence() {
+    ActorControlFixture f{}; isle_rng rng{1}; World world;
+    auto* object = bind(world, f, rng);
+    ok(isle_game_object_retain_identity(world.game, object));
+    const auto release = [game=world.game](IsleGameObject* held) {
+        if (isle_game_object_release_identity(game, held) != ISLE_GAME_OK) std::abort();
+    };
+    std::unique_ptr<IsleGameObject,decltype(release)> held(object,release);
+    f.mask = 0;
+    f.actor.stateProc = start(world, object, actor_control_wait);
+    ok(isle_game_tick(world.game));
+    auto* waiting = f.actor.stateProc;
+    ok(isle_game_delete_object(world.game, object));
+    require(actor_control_joined(waiting), "retained Actor deletion did not join its real continuation");
+    IsleActorSource* output = &f.actor;
+    require(isle_actor_source_get_nullable(world.game, object, &output) == ISLE_GAME_OK &&
+            output == nullptr, "joined identity-held Actor was not normal nullable absence");
+    require(isle_actor_source_get(world.game, object, &output) == ISLE_GAME_INVALID_ARGUMENT &&
+            output == nullptr, "required Actor lookup accepted joined identity-only storage");
+    IsleGameObject* pressure = nullptr;
+    ok(isle_game_add_object(world.game, 6, 0, 0, nullptr, nullptr, &pressure));
+    require(pressure != object, "Photo-style identity hold allowed native object address reuse");
+    held.reset();
+    require(isle_actor_source_get_nullable(world.game, object, &output) == ISLE_GAME_INVALID_ARGUMENT &&
+            output == nullptr, "unheld stale Actor identity was treated as nullable absence");
+}
+
 void foreign_payload_is_not_an_actor_record() {
     auto payload=std::make_unique<int>(123);
     World world;
@@ -252,6 +300,10 @@ void foreign_payload_is_not_an_actor_record() {
     IsleActorSource sentinel{},*output=&sentinel;
     require(isle_actor_source_get(world.game,object,&output)==ISLE_GAME_INVALID_STATE && output==nullptr && *payload==123,
             "unbound foreign native payload was interpreted as an actor source record");
+    output = &sentinel;
+    require(isle_actor_source_get_nullable(world.game,object,&output)==ISLE_GAME_INVALID_STATE &&
+            output==nullptr && *payload==123,
+            "nullable lookup swallowed a foreign non-Actor payload");
 }
 
 void creation_failure_exits_both_c_fences() {
@@ -300,6 +352,8 @@ int main() {
         waits_observe_any_mask_on_actual_native_updates();
         binding_and_native_address_reuse();
         foreign_payload_is_not_an_actor_record();
+        nullable_lookup_distinguishes_absence_from_invalid_ownership();
+        nullable_lookup_accepts_only_joined_identity_held_absence();
         creation_failure_exits_both_c_fences();
         synchronous_wait_failure_does_not_continue();
         std::cout << "native source actor controls passed\n";

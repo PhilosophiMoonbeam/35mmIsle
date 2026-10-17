@@ -84,6 +84,7 @@ const Photo* Detector::photo(std::uint16_t context) const noexcept {
     return context<contexts_.size() ? &contexts_[context].photo : nullptr;
 }
 void Detector::publish() noexcept { published_=computed_; }
+void Detector::clear_published_presence() noexcept { published_.present=false; }
 bool Detector::context_available(std::uint16_t context) const noexcept {
     return context<contexts_.size() && !contexts_[context].retained;
 }

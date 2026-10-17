@@ -230,8 +230,8 @@ local canonical Actor/Item changes or private Windows11 gameplay.
 
 ## Canonical Actor/Item Player association
 
-The subsequent local cutover removes `PlayerState`, `PlayerBinding`, their
-setters and the independent Course pause/execution fields. Actor and Item
+Published `05b2616` removes `PlayerState`, `PlayerBinding`, their setters and
+the independent Course pause/execution fields. Actor and Item
 owners require the same active `IslePlayerSource&`; all affected native and
 diagnostic consumers use that association. Construction prepares storage
 without publishing Root/model. Item initialization and actual consumption
@@ -263,6 +263,71 @@ fifteen already accepted cases were neither replayed nor rescanned. This
 cutover is not complete Root106 execution, production input-driven gameplay,
 independent Original equivalence or private Windows11 runtime qualification.
 
+That immutable revision passed all ten hosted Linux/MSVC jobs in
+[run39014168220](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39014168220),
+including the full static-runtime LUS/audio/RSP/RDP build and nineteen
+then-current opt-in consumers. Later changes require their own evidence.
+
+## C shutter, published focus and cart numeric resources
+
+The C shutter transaction resolves the actual published ticket for
+`TakenPhotoIndex`, borrows, executes original `makePhoto`, unconditionally
+releases, and returns before Root checks failure. Published-focus queries read
+the Detector's actual publication; presence clearing preserves its identity,
+flags, context and staged work. Nullable Actor lookup returns OK/NULL for
+genuine absence, but does not swallow foreign-identity, ownership or native
+fault errors. Required Actor lookup retains its existing contract.
+
+A completed Photo context can retain an Actor identity after native deletion
+and join. Nullable lookup accepts that retained, fully joined identity as
+absence without dereferencing its former payload. Unheld, foreign or corrupt
+identities remain errors; required lookup remains strict. The regression uses
+a real C continuation, deletion, join and identity hold. The whole Photo
+consumer also exercises the C lookup against a subject verified in its actual
+retained completed context. It does not assume that subject is currently
+published as a live focus or claim a positive GPU-focus result.
+
+Cart resources contain 43 nodes, eight materials, 78 model programs, twelve
+material programs, two Beach camera programs and six paths. Only actually
+reached path commands extend the shared animator; there is no second interpreter.
+Independent Snapshot DATA decoding and private, provenance-pinned GAME C
+numeric functions supply expected trajectories. Generated original C stays
+under the build root; no SDK source/header/layout, ROM code or embedded asset
+payload is admitted.
+
+Ideal-double Hermite is not the source-numeric contract. At intro time28.5,
+the camera-at parameters differ by two binary32 ULPs; the source's
+tolerance-terminated inversion selects neighboring `2^-17` cells. Their Y
+difference is `0.0343017578125`, exceeding the unchanged `0.002` threshold.
+The source reference reproduces the actual native result. A separate executed
+numeric probe also distinguishes wrong path binding, cubic coefficient and
+control-point data. Production interpolation/inversion was not changed to
+make this comparison pass.
+
+All three profiles pass 57 CPU contracts and twenty whole private component
+scenarios: sixty cases over one 473-file recorded source set,
+`6a68fd6c3402c0374a832db6be042015ae053d6e796d773e1749f4b2a938390a`
+(SHA256 of compact, key-sorted JSON path→SHA256 records).
+Their sole initial closures establish 3,318 terminal tasks, 3,258 created tasks
+and 3,378 absent tracer/task identities, unchanged ROM, zero known physical
+attempts and zero permission errors. All 21 prior surfaces/63 images and all
+71 Photo files per profile/213 files remain byte-identical to the preceding
+qualified snapshots. Current World and Photo surfaces were directly inspected.
+
+This cohort includes the final cart behavioral assertions and the reviewed
+joined-Actor fix. The already-qualified whole Debug Photo capture was retained
+without replay or rescan; the other 59 cases used fresh captures. Earlier
+frozen archives retain their original source identities, not this later
+snapshot. Incidental default-value and immediate setter/getter assertions were
+removed rather than repinned; full trajectory, skip, END and control behavior
+remains exercised.
+
+The cart probe deliberately tests retained rebinds; actual Beach outro creates
+a fresh cart. Resource-clip completion is not the original intro's 290-iteration
+wait/skip/blend lifecycle. Complete cart ownership, Root106 execution, remaining
+species, full gameplay and private Windows11 runtime remain unqualified.
+The Linux/MSVC workflow now explicitly compiles all twenty consumers without
+a ROM; configuration is not evidence that a new published CI run has passed.
 
 ## Native Item and complete C interaction execution
 

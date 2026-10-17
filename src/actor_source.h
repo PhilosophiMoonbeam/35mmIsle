@@ -96,6 +96,9 @@ enum {
  * Do not free the record from an enclosing source frame or retirement hook. */
 IsleGameResult isle_actor_source_bind(IsleGame*, IsleGameObject*, IsleActorSource*, isle_rng*, void* owner);
 IsleGameResult isle_actor_source_get(IsleGame*, IsleGameObject*, IsleActorSource**);
+/* Normal absent/retiring or joined identity-held Actor returns OK + NULL;
+ * foreign/unheld identities, corrupt live payloads and native faults remain errors. */
+IsleGameResult isle_actor_source_get_nullable(IsleGame*, IsleGameObject*, IsleActorSource**);
 
 /* Exact privately generated GAME C definitions. These are ONLY for active
  * native C callbacks, not owner-side startup calls. Stackful self replacement,

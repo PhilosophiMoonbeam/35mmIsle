@@ -14,7 +14,22 @@ typedef struct PlayerPhotoRspMake {
 typedef struct PlayerPhotoRspCopies {
     unsigned entered, returned;
 } PlayerPhotoRspCopies;
+typedef struct PlayerPhotoRspRelease {
+    IslePlayerPhotoTicket ticket;
+    IsleGameResult released, status;
+    unsigned entered, returned;
+} PlayerPhotoRspRelease;
+typedef struct PlayerPhotoRspRetiredSubject {
+    IsleGameObject* subject;
+    IslePlayerPhotoFocus before, after;
+    IsleGameResult lookup;
+    unsigned entered, returned, missing, cleared;
+} PlayerPhotoRspRetiredSubject;
 void player_photo_rsp_make(IslePlayerSource*, void*);
+void player_photo_rsp_make_raw(IslePlayerSource*, void*);
+void player_photo_rsp_make_checked(IslePlayerSource*, void*);
+void player_photo_rsp_release_checked(IslePlayerSource*, void*);
+void player_photo_rsp_consume_retired_subject(IslePlayerSource*, void*);
 void player_photo_rsp_copy_info(IsleGameObject*, void*);
 #ifdef __cplusplus
 }

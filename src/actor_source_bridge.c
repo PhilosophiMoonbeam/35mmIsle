@@ -16,21 +16,48 @@ IsleGameResult isle_actor_source_bind(IsleGame* game, IsleGameObject* object,
     return ISLE_GAME_OK;
 }
 
-IsleGameResult isle_actor_source_get(IsleGame* game, IsleGameObject* object, IsleActorSource** output) {
-    IsleGameObjectMetadata metadata;
+static IsleGameResult source_lookup(IsleGame* game, IsleGameObject* object,
+                                   IsleActorSource** output, int nullable) {
     IsleActorSource* actor;
     IsleGameResult result;
     if (output != NULL) *output = NULL;
-    result = isle_game_object_metadata(game, object, &metadata);
-    if (result != ISLE_GAME_OK) return result;
-    if (object == NULL || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
-    if (game->fault != ISLE_GAME_OK) return game->fault;
-    if (object->retirementStarted || object->sourcePayloadKind != ISLE_SOURCE_PAYLOAD_ACTOR || object->userData == NULL) return ISLE_GAME_INVALID_STATE;
+    if (nullable) {
+        result = isle_game_status(game);
+        if (result != ISLE_GAME_OK) return result;
+        if (object == NULL || output == NULL || object->game != game) return ISLE_GAME_INVALID_ARGUMENT;
+        if (!object->alive) {
+            /* A Photo/source identity hold outlives actual join. This is no
+             * longer an Actor payload borrow; do not dereference userData. */
+            if (object->identityHolds != 0 && object->retirementStarted &&
+                object->processListHead == NULL && object->processListTail == NULL &&
+                object->type == 0 && object->data.any == NULL &&
+                object->sourcePayloadKind == ISLE_SOURCE_PAYLOAD_ACTOR)
+                return ISLE_GAME_OK;
+            return ISLE_GAME_INVALID_ARGUMENT;
+        }
+    } else {
+        IsleGameObjectMetadata metadata;
+        result = isle_game_object_metadata(game, object, &metadata);
+        if (result != ISLE_GAME_OK) return result;
+        if (object == NULL || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+        if (game->fault != ISLE_GAME_OK) return game->fault;
+    }
+    if (object->retirementStarted || object->userData == NULL)
+        return nullable ? ISLE_GAME_OK : ISLE_GAME_INVALID_STATE;
+    if (object->sourcePayloadKind != ISLE_SOURCE_PAYLOAD_ACTOR) return ISLE_GAME_INVALID_STATE;
     actor = object->userData;
     if (actor->game != game || actor->object != object || actor->rng == NULL || actor->owner == NULL)
         return ISLE_GAME_INVALID_STATE;
     *output = actor;
     return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_actor_source_get(IsleGame* game, IsleGameObject* object, IsleActorSource** output) {
+    return source_lookup(game, object, output, 0);
+}
+
+IsleGameResult isle_actor_source_get_nullable(IsleGame* game, IsleGameObject* object, IsleActorSource** output) {
+    return source_lookup(game, object, output, 1);
 }
 
 IsleActorSource* isle_actor_source_require(IsleGameObject* object) {

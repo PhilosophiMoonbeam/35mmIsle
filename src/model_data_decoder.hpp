@@ -16,7 +16,8 @@ struct MaterialExtent {
 class DataDecoder final {
 public:
     DataDecoder(const Reader&, std::vector<menu::Material>&,
-                std::vector<menu::Animation>&, std::span<const MaterialExtent>);
+                std::vector<menu::Animation>&, std::span<const MaterialExtent>,
+                std::vector<menu::AnimationPath>* paths = nullptr);
     menu::Model model(std::uint32_t tree, std::uint32_t materials,
                       std::size_t nodes, menu::RenderType);
     std::size_t material(std::uint32_t);
@@ -25,11 +26,13 @@ public:
     void bind_initial_animations(menu::Model&, std::uint32_t models,
                                  std::uint32_t materials, bool model_callback_installed);
     void validate_material_animation(std::size_t stream, std::size_t material) const;
+    std::size_t path(std::uint32_t);
 private:
     const Reader& reader_;
     std::vector<menu::Material>& materials_;
     std::vector<menu::Animation>& animations_;
     std::span<const MaterialExtent> material_extents_;
+    std::vector<menu::AnimationPath>* paths_;
 };
 } // namespace isle::model_assets
 #endif

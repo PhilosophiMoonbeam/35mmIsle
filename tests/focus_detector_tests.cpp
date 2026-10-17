@@ -191,10 +191,46 @@ void capture_before_prefix() {
           detector.computed().object==11 && equal(detector.published(),published),
           "cleanup failed to clear an appended identity without early publication");
 }
+void published_presence_only() {
+    Fixture memory; f::Detector detector;
+    const std::array first{f::Subject{0,-1,0},f::Subject{71,54,0x84}};
+    const std::array second{f::Subject{0,-1,0},f::Subject{82,129,0x45}};
+    memory.fill(0,0); memory.fill(1,0xffff);
+    check(detector.stage(0,first,photo(71))==f::Error::none &&
+          detector.retain_context(0,1)==f::Error::none &&
+          detector.analyze(0,memory.words,Fixture::base)==f::Error::none &&
+          detector.publish_context(0,1)==f::Error::none,"presence-only completed publication setup rejected");
+    const auto published=detector.published();
+    check(published.present && published.object==71,"presence-only setup did not publish a real analyzed hit");
+    check(detector.stage(1,second,photo(82))==f::Error::none &&
+          detector.retain_context(1,2)==f::Error::none &&
+          detector.analyze(1,memory.words,Fixture::base)==f::Error::none,
+          "presence-only staged/computed second context setup rejected");
+    const auto computed=detector.computed();
+    const auto first_photo=*detector.photo(0),second_photo=*detector.photo(1);
+    detector.clear_published_presence();
+    auto cleared=published; cleared.present=false;
+    check(equal(detector.published(),cleared) && equal(detector.computed(),computed) &&
+          detector.photo(0)->objects==first_photo.objects && detector.photo(0)->focus==first_photo.focus &&
+          detector.photo(1)->objects==second_photo.objects && detector.photo(1)->focus==second_photo.focus &&
+          detector.history(0).size()==first.size() && detector.history(0)[1].object==71 &&
+          detector.history(0)[1].pokemon_id==54 && detector.history(0)[1].flags==0x84 &&
+          detector.history(1).size()==second.size() && detector.history(1)[1].object==82 &&
+          detector.history(1)[1].pokemon_id==129 && detector.history(1)[1].flags==0x45 &&
+          !detector.context_available(0) && !detector.context_available(1),
+          "published-presence clearing changed identity/ID/flags/context, computed, staged photo/history or retention");
+    detector.clear_published_presence();
+    check(equal(detector.published(),cleared) && detector.publish_context(0,1)==f::Error::none &&
+          equal(detector.published(),published),"presence clear changed completed metadata or was not idempotent");
+    detector.clear_published_presence();
+    check(detector.publish_context(1,2)==f::Error::none && equal(detector.published(),computed) &&
+          detector.release_context(0,1)==f::Error::none && detector.release_context(1,2)==f::Error::none,
+          "presence clear changed the other completed context or its generation retention");
+}
 } // namespace
 int main() {
     threshold_and_full_color(); last_candidate_and_photo_membership(); snapshot_and_two_context_cleanup();
-    late_rejection_and_capacity(); source_center_mark(); capture_before_prefix();
+    late_rejection_and_capacity(); source_center_mark(); capture_before_prefix(); published_presence_only();
     if (failures) return 1;
     std::cout<<"Source live focus color-history, cleanup/publication and canonical center-mark contracts passed\n";
 }

@@ -23,8 +23,9 @@ menu::Vec3 vector3(const rom::GuestView& wire, std::size_t offset) {
 }
 DataDecoder::DataDecoder(const Reader& reader, std::vector<menu::Material>& materials,
                          std::vector<menu::Animation>& animations,
-                         std::span<const MaterialExtent> extents)
-    : reader_(reader), materials_(materials), animations_(animations), material_extents_(extents) {}
+                         std::span<const MaterialExtent> extents,
+                         std::vector<menu::AnimationPath>* paths)
+    : reader_(reader), materials_(materials), animations_(animations), material_extents_(extents), paths_(paths) {}
 
 std::size_t DataDecoder::material(std::uint32_t address) {
     for (std::size_t i=0; i<materials_.size(); ++i)
@@ -67,6 +68,39 @@ std::size_t DataDecoder::material(std::uint32_t address) {
     return materials_.size()-1;
 }
 
+std::size_t DataDecoder::path(std::uint32_t address) {
+    require(paths_ && address,"Source path requires retained native path storage",address);
+    for (std::size_t i=0; i<paths_->size(); ++i)
+        if ((*paths_)[i].wire.guest_address==address) return i;
+    menu::AnimationPath result{};
+    result.wire=reader_.view(address,24);
+    const auto& w=result.wire;
+    result.kind=w.u8(0);
+    const auto count=std::bit_cast<std::int16_t>(w.u16(2));
+    require((result.kind==2 || result.kind==3) && count>=2,
+            "Unadmitted source interpolation kind/count",address);
+    result.segment_point_count=static_cast<std::size_t>(count);
+    result.tension=finite(w,4); result.duration=finite(w,12);
+    require(result.duration>0,"Invalid source path duration",address);
+    const auto points=reader_.view(w.u32(8),(result.segment_point_count+2)*12);
+    for (std::size_t i=0; i<result.segment_point_count+2; ++i)
+        result.points.push_back(vector3(points,i*12));
+    const auto times=reader_.view(w.u32(16),result.segment_point_count*4);
+    for (std::size_t i=0; i<result.segment_point_count; ++i) {
+        const auto time=finite(times,i*4);
+        require(time>=0 && time<=1 && (i==0 || time>result.timestamps.back()),
+                "Invalid source path timestamp interval",address);
+        result.timestamps.push_back(time);
+    }
+    require(result.timestamps.front()==0 && result.timestamps.back()==1,
+            "Source path lacks exact endpoints",address);
+    const auto speeds=reader_.view(w.u32(20),(result.segment_point_count-1)*20);
+    for (std::size_t i=0; i<(result.segment_point_count-1)*5; ++i)
+        result.speed_polynomials.push_back(finite(speeds,i*4));
+    paths_->push_back(std::move(result));
+    return paths_->size()-1;
+}
+
 std::size_t DataDecoder::animation(std::uint32_t address, menu::AnimationKind kind,
                                    bool model_callback_installed) {
     if (!address) return menu::no_index;
@@ -91,6 +125,12 @@ std::size_t DataDecoder::animation(std::uint32_t address, menu::AnimationKind ki
             words+=count; floats=true; adds_wait=opcode==3 || opcode==8 || opcode==10; break;
         case 5: case 6: words+=count*2; floats=true; adds_wait=opcode==5; break;
         case 12: break;
+        case 13:
+            require(kind==menu::AnimationKind::model || kind==menu::AnimationKind::camera,
+                    "Texture cannot bind an interpolation path",head.guest_address);
+            require(kind==menu::AnimationKind::model ? mask==8 : mask && !(mask&~0x88u),
+                    "Invalid source interpolation mask",head.guest_address);
+            words+=kind==menu::AnimationKind::camera ? count : 1; break;
         case 14:
             require(mask==0 && duration==0,"Malformed source SET_ANIMATION",head.guest_address);
             words=2; break;
@@ -108,6 +148,13 @@ std::size_t DataDecoder::animation(std::uint32_t address, menu::AnimationKind ki
         if (floats) for (std::size_t i=1; i<words; ++i) finite(wire,i*4);
         result.commands.push_back({wire,static_cast<std::uint8_t>(opcode),
             static_cast<std::uint16_t>(mask),static_cast<std::uint16_t>(duration)});
+        if (opcode==13) {
+            auto& command=result.commands.back();
+            std::size_t operand=4;
+            if (mask&8) { command.path_index=path(wire.u32(operand)); operand+=4; }
+            if (kind==menu::AnimationKind::camera && (mask&128))
+                command.camera_at_path_index=path(wire.u32(operand));
+        }
         bytes+=words*4;
         if (adds_wait) positive_wait+=duration;
         if (!opcode) break;

@@ -485,6 +485,16 @@ if(ISLE_BUILD_GAME_ENGINE)
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
+        add_library(isle-player-cart-resources STATIC
+            src/player_cart_resources.cpp src/player_cart_resources.hpp)
+        target_link_libraries(isle-player-cart-resources PUBLIC isle-model-data isle-menu-animation)
+        isle_target_options(isle-player-cart-resources)
+        target_compile_options(isle-player-cart-resources PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+            "${PROJECT_SOURCE_DIR}/cmake/player-cart-inputs.json")
+
         add_library(isle-player-bump STATIC
             src/player_bump.cpp src/player_bump.hpp src/player_bump_source.c src/player_bump_source.h
             "${_isle_player_bump_generated}")
@@ -1157,6 +1167,45 @@ if(TARGET isle-scene-graphics AND TARGET isle-game-host)
             target_link_options(35mmisle-startup-runtime-rom-smoke PRIVATE -municode)
         endif()
     endif()
+endif()
+
+if(TARGET isle-player-cart-resources AND TARGET isle-player-camera-animation AND
+        TARGET isle-beach-world-resources AND TARGET isle-scene)
+    set(_isle_cart_reference_private "${CMAKE_BINARY_DIR}/_deps/isle-cart-reference-private")
+    set(_isle_cart_reference_c "${_isle_cart_reference_private}/numeric.c")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/tools/prepare_cart_animation_reference.py"
+        "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py"
+        "${PROJECT_SOURCE_DIR}/cmake/player-cart-reference-inputs.json"
+        "${PROJECT_SOURCE_DIR}/tests/cart_animation_reference.hpp"
+        "${PROJECT_SOURCE_DIR}/tests/cart_animation_reference.cpp"
+        "${PROJECT_SOURCE_DIR}/tests/cart_animation_reference_numeric.h")
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -B
+            "${PROJECT_SOURCE_DIR}/tools/prepare_cart_animation_reference.py"
+            --repository "${_isle_snap_source}"
+            --manifest "${PROJECT_SOURCE_DIR}/cmake/player-cart-reference-inputs.json"
+            --output "${_isle_cart_reference_c}"
+            --evidence "${_isle_cart_reference_private}/evidence.json"
+        RESULT_VARIABLE _isle_cart_reference_result
+        OUTPUT_VARIABLE _isle_cart_reference_output
+        ERROR_VARIABLE _isle_cart_reference_error)
+    if(NOT _isle_cart_reference_result EQUAL 0)
+        message(FATAL_ERROR "Private cart numeric source admission failed: ${_isle_cart_reference_output}${_isle_cart_reference_error}")
+    endif()
+    add_executable(player-cart-resources-rom-smoke EXCLUDE_FROM_ALL
+        tests/player_cart_resources_rom_smoke.cpp tests/cart_animation_reference.cpp
+        "${_isle_cart_reference_c}")
+    target_link_libraries(player-cart-resources-rom-smoke PRIVATE
+        isle-player-cart-resources isle-player-camera-animation isle-beach-world-resources isle-scene)
+    target_include_directories(player-cart-resources-rom-smoke PRIVATE "${PROJECT_SOURCE_DIR}/tests")
+    isle_target_options(player-cart-resources-rom-smoke)
+    target_compile_options(player-cart-resources-rom-smoke PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+        "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 endif()
 
 foreach(_isle_player_consumer IN ITEMS

@@ -122,7 +122,7 @@ IsleGameResult Photo::detach_snapshot_owner() noexcept {
     snapshot_owner_=nullptr; services_=nullptr;
     return ISLE_GAME_OK;
 }
-Photo::Pending* Photo::matching(Ticket ticket) noexcept {
+Photo::Pending* Photo::matching(IslePlayerPhotoTicket ticket) noexcept {
     if(ticket.context>=2) return nullptr;
     auto& pending=pending_[ticket.context];
     return pending.phase!=Phase::idle && pending.ticket==ticket?&pending:nullptr;
@@ -280,7 +280,7 @@ IsleGameResult Photo::snapshot(std::uint16_t context,std::uint64_t generation) n
     if(result==ISLE_GAME_OK) pending.phase=Phase::prepared;
     return source_.status=result;
 }
-IsleGameResult Photo::postprocess(Ticket ticket,std::span<std::uint32_t> words,
+IsleGameResult Photo::postprocess(IslePlayerPhotoTicket ticket,std::span<std::uint32_t> words,
     std::uint32_t regions,std::uint32_t framebuffer) noexcept {
     auto* pending=matching(ticket);
     if(!pending || pending->phase!=Phase::queued || !count_ || queue_[head_]!=ticket.context)
@@ -294,7 +294,7 @@ IsleGameResult Photo::postprocess(Ticket ticket,std::span<std::uint32_t> words,
         reinterpret_cast<IsleGameObject*>(computed.present?computed.object:0);
     pending->phase=Phase::postprocessed; return ISLE_GAME_OK;
 }
-IsleGameResult Photo::complete(Ticket ticket) noexcept {
+IsleGameResult Photo::complete(IslePlayerPhotoTicket ticket) noexcept {
     auto* pending=matching(ticket);
     if(!pending || pending->phase!=Phase::postprocessed || !count_ || queue_[head_]!=ticket.context)
         return ISLE_GAME_INVALID_STATE;
@@ -311,17 +311,17 @@ IsleGameResult Photo::copy_info() noexcept {
     source_.gPokemonIdInFocus=detector_.history.published().pokemon_id;
     return ISLE_GAME_OK;
 }
-IsleGameResult Photo::borrow(Ticket ticket,const IslePlayerPhotoContext*& output) noexcept {
+IsleGameResult Photo::borrow(IslePlayerPhotoTicket ticket,const IslePlayerPhotoContext*& output) noexcept {
     output=nullptr; auto* pending=matching(ticket);
     if(!pending || pending->phase!=Phase::complete || pending->borrows==UINT32_MAX) return ISLE_GAME_INVALID_STATE;
     ++pending->borrows; output=&source_.PokemonDetector_Photo[ticket.context]; return ISLE_GAME_OK;
 }
-IsleGameResult Photo::release(Ticket ticket) noexcept {
+IsleGameResult Photo::release(IslePlayerPhotoTicket ticket) noexcept {
     auto* pending=matching(ticket);
     if(!pending || !pending->borrows) return ISLE_GAME_INVALID_STATE;
     --pending->borrows; return ISLE_GAME_OK;
 }
-IsleGameResult Photo::retire(Ticket ticket) noexcept {
+IsleGameResult Photo::retire(IslePlayerPhotoTicket ticket) noexcept {
     auto* pending=matching(ticket);
     if(!pending || pending->borrows || (pending->phase!=Phase::complete&&
        pending->phase!=Phase::prepared&&pending->phase!=Phase::rejected))
@@ -459,18 +459,107 @@ extern "C" IsleGameResult isle_player_photo_capture_fx(IslePlayerPhotoSource* so
     return static_cast<isle::player::Photo*>(source->owner)->effects(*output);
 }
 
-IsleGameResult isle::player::Photo::require_taken_context() noexcept {
-    const auto context=source_.PokemonDetector_TakenPhotoIndex;
-    if(context<0 || context>=2 || published_!=context ||
-       detector_.history.published().context!=context) return ISLE_GAME_INVALID_STATE;
-    const auto& pending=pending_[static_cast<std::size_t>(context)];
-    if(pending.phase!=Phase::complete || !pending.borrows) return ISLE_GAME_INVALID_STATE;
+IsleGameResult isle::player::Photo::remember(IsleGameResult result) noexcept {
+    if(source_.status==ISLE_GAME_OK) source_.status=result;
+    return result;
+}
+IsleGameResult isle::player::Photo::source_access(bool cleanup) noexcept {
+    // counts checks the real game/continuation owner without rejecting a sticky
+    // execution fault. In particular, a foreign thread may not change status.
+    IsleGameCounts counts{};
+    auto result=isle_game_counts(player_.game,&counts);
+    if(result!=ISLE_GAME_OK) return result;
+    if(source_.owner!=this || player_.photo!=&source_ || !player_.owner || !player_.rng)
+        return remember(ISLE_GAME_INVALID_STATE);
+    if(cleanup) return ISLE_GAME_OK;
+    if(source_.status!=ISLE_GAME_OK) return source_.status;
+    IslePlayerSource* active=nullptr;
+    result=isle_player_source_context(player_.game,&active);
+    if(result!=ISLE_GAME_OK) return remember(result);
+    return remember(active==&player_?ISLE_GAME_OK:ISLE_GAME_INVALID_STATE);
+}
+IsleGameResult isle::player::Photo::published_focus(IslePlayerPhotoFocus* output) noexcept {
+    if(output) *output={};
+    auto result=source_access();
+    if(result!=ISLE_GAME_OK) return result;
+    if(!output) return remember(ISLE_GAME_INVALID_ARGUMENT);
+    const auto& published=detector_.history.published();
+    *output={published.present?1:0,reinterpret_cast<IsleGameObject*>(published.object),
+        published.pokemon_id,published.flags,published.context};
     return ISLE_GAME_OK;
 }
-extern "C" IsleGameResult isle_player_photo_require_taken_context(IslePlayerPhotoSource* source) {
+IsleGameResult isle::player::Photo::clear_published_presence() noexcept {
+    auto result=source_access();
+    if(result!=ISLE_GAME_OK) return result;
+    detector_.history.clear_published_presence();
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle::player::Photo::borrow_taken(IslePlayerPhotoTicket* output) noexcept {
+    if(output) *output={};
+    auto result=source_access();
+    if(result!=ISLE_GAME_OK) return result;
+    if(!output) return remember(ISLE_GAME_INVALID_ARGUMENT);
+    const auto context=source_.PokemonDetector_TakenPhotoIndex;
+    if(context<0 || context>=2 || published_!=context ||
+       detector_.history.published().context!=context) return remember(ISLE_GAME_INVALID_STATE);
+    const auto ticket=pending_[static_cast<std::size_t>(context)].ticket;
+    if(!ticket.generation || !ticket.submission) return remember(ISLE_GAME_INVALID_STATE);
+    const IslePlayerPhotoContext* borrowed=nullptr;
+    result=borrow(ticket,borrowed);
+    if(result!=ISLE_GAME_OK) return remember(result);
+    *output=ticket;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle::player::Photo::release_taken(const IslePlayerPhotoTicket* ticket) noexcept {
+    auto result=source_access(true);
+    if(result!=ISLE_GAME_OK) return result;
+    if(!ticket) return remember(ISLE_GAME_INVALID_ARGUMENT);
+    // Release the exact borrow even if publication advanced or Source failed.
+    // A successful cleanup must not erase the first Photo failure.
+    return remember(release(*ticket));
+}
+IsleGameResult isle::player::Photo::require_taken_context() noexcept {
+    auto result=source_access();
+    if(result!=ISLE_GAME_OK) return result;
+    const auto context=source_.PokemonDetector_TakenPhotoIndex;
+    if(context<0 || context>=2 || published_!=context ||
+       detector_.history.published().context!=context) return remember(ISLE_GAME_INVALID_STATE);
+    const auto& pending=pending_[static_cast<std::size_t>(context)];
+    return remember(pending.phase==Phase::complete && pending.borrows?
+        ISLE_GAME_OK:ISLE_GAME_INVALID_STATE);
+}
+namespace {
+IsleGameResult photo_owner_failure(IslePlayerPhotoSource* source) noexcept {
     if(!source) return ISLE_GAME_INVALID_ARGUMENT;
-    if(!source->owner) return source->status=ISLE_GAME_INVALID_STATE;
-    return source->status=static_cast<isle::player::Photo*>(source->owner)->require_taken_context();
+    if(source->status==ISLE_GAME_OK) source->status=ISLE_GAME_INVALID_STATE;
+    return source->status;
+}
+}
+extern "C" IsleGameResult isle_player_photo_published_focus(IslePlayerPhotoSource* source,IslePlayerPhotoFocus* output) {
+    if(!source || !source->owner) {
+        if(output) *output={};
+        return photo_owner_failure(source);
+    }
+    return static_cast<isle::player::Photo*>(source->owner)->published_focus(output);
+}
+extern "C" IsleGameResult isle_player_photo_clear_published_presence(IslePlayerPhotoSource* source) {
+    if(!source || !source->owner) return photo_owner_failure(source);
+    return static_cast<isle::player::Photo*>(source->owner)->clear_published_presence();
+}
+extern "C" IsleGameResult isle_player_photo_borrow_taken(IslePlayerPhotoSource* source,IslePlayerPhotoTicket* output) {
+    if(!source || !source->owner) {
+        if(output) *output={};
+        return photo_owner_failure(source);
+    }
+    return static_cast<isle::player::Photo*>(source->owner)->borrow_taken(output);
+}
+extern "C" IsleGameResult isle_player_photo_release_taken(IslePlayerPhotoSource* source,const IslePlayerPhotoTicket* ticket) {
+    if(!source || !source->owner) return photo_owner_failure(source);
+    return static_cast<isle::player::Photo*>(source->owner)->release_taken(ticket);
+}
+extern "C" IsleGameResult isle_player_photo_require_taken_context(IslePlayerPhotoSource* source) {
+    if(!source || !source->owner) return photo_owner_failure(source);
+    return static_cast<isle::player::Photo*>(source->owner)->require_taken_context();
 }
 
 extern "C" int32_t isle_player_photo_checkPlayerFlag(IslePlayerPhotoSource* source,int32_t id) {

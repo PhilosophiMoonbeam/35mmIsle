@@ -5,6 +5,20 @@
 extern "C" {
 #endif
 /* Semantic values only. Wire records are encoded explicitly, never overlaid. */
+typedef struct IslePlayerPhotoTicket {
+    uint16_t context;
+    uint64_t generation, submission;
+#ifdef __cplusplus
+    bool operator==(const IslePlayerPhotoTicket&) const = default;
+#endif
+} IslePlayerPhotoTicket;
+/* Transient published Detector value, never a retained focus authority. */
+typedef struct IslePlayerPhotoFocus {
+    int32_t present;
+    IsleGameObject* object;
+    int32_t pokemon_id;
+    uint16_t flags, context;
+} IslePlayerPhotoFocus;
 typedef struct IslePlayerPokemonPhoto {
     int32_t pokemonID;
     uint8_t unk_00_13, specialID, poseID;
@@ -93,6 +107,15 @@ IsleGameResult isle_player_photo_func_8009C8E4(IslePlayerPhotoSource*, uint16_t 
     uint64_t generation);
 IsleGameResult isle_player_photo_publish_completed(IslePlayerPhotoSource*);
 IsleGameResult isle_player_photo_require_taken_context(IslePlayerPhotoSource*);
+/* Returning owner-thread leaves. Failed borrows clear the output ticket.
+ * Release remains available for real cleanup after a sticky source failure. */
+IsleGameResult isle_player_photo_published_focus(IslePlayerPhotoSource*, IslePlayerPhotoFocus*);
+IsleGameResult isle_player_photo_clear_published_presence(IslePlayerPhotoSource*);
+IsleGameResult isle_player_photo_borrow_taken(IslePlayerPhotoSource*, IslePlayerPhotoTicket*);
+IsleGameResult isle_player_photo_release_taken(IslePlayerPhotoSource*, const IslePlayerPhotoTicket*);
+/* Pure C: borrow, original makePhoto, unconditional release, then return.
+ * Caller checks Photo.status before any source HUD/cooldown continuation. */
+int32_t isle_player_photo_take_photo(IslePlayerPhotoSource*, IsleGameObject*);
 void isle_player_photo_PokemonDetector_CopyInfo(IsleGameObject*);
 int32_t isle_player_photo_func_8009C304(IslePlayerPhotoSource*, IslePlayerItemPhoto*,
     const IslePlayerPhotoItemState*);

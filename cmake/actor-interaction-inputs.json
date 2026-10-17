@@ -9,7 +9,7 @@
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },
     "src/actor_source.h": {
-      "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
+      "sha256": "402ee8c93c37644610977aa8e6f687493e20d435b03bc4cb8eee98621affe61b"
     },
     "src/actor_owner_source.h": {
       "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
@@ -18,7 +18,7 @@
       "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
     },
     "src/actor_source_bridge.c": {
-      "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
+      "sha256": "833274490aa6e5db682b98e3a8d8bb63969e91ff93dd6981d79e0ca515068105"
     },
     "src/actor_owner.cpp": {
       "sha256": "81304f1ad28e4a2f8c00f365e4fc60ec5739b7b576a99c6449a6ad26497453b7"
@@ -72,7 +72,7 @@
       "sha256": "810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"
     },
     "tests/actor_control_tests.cpp": {
-      "sha256": "245acee37ce8a1cb80c8d6a3e27e044cffe6a1c5f2ad2cc665c895c56d44941a"
+      "sha256": "f088e172d254b06063eeede64f8d525a5a300de276943c007776197d554efa80"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "fafb0655162dbe64f21de5a5e2735ee56b436b8b5bc497aa09dd99d0bda1a9ec"

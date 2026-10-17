@@ -31,6 +31,7 @@ struct Command {
     std::uint32_t address = 0;
     std::array<std::uint32_t, 20> operands{};
     std::size_t path = no_index;
+    std::size_t camera_at_path = no_index;
     std::size_t target = no_index;
 };
 struct Program {
@@ -119,18 +120,27 @@ Program compile(const Animation& input, std::span<const AnimationPath> paths) {
         const bool texture = input.kind == AnimationKind::texture;
         require(c.opcode == 0 || c.opcode == 2 || basic ||
                 (model && (c.opcode == 12 || c.opcode == 13 || c.opcode == 15 || c.opcode == 16 || c.opcode == 17)) ||
-                (texture && (extra || c.opcode == 12)) || ((model || texture) && c.opcode == 14), Error::unsupported, address);
+                (texture && (extra || c.opcode == 12)) || ((model || texture) && c.opcode == 14) ||
+                (input.kind == AnimationKind::camera && c.opcode == 13), Error::unsupported, address);
         require(!extra || !(c.mask & ~0x1fu), Error::unsupported, address);
-        if (basic && input.kind == AnimationKind::camera)
-            require(!(c.mask & 0x88u), Error::unsupported, address);
         if (c.opcode == 13) {
-            require(source.path_index < paths.size(), Error::extent, address);
-            c.path = source.path_index;
+            if (model || (c.mask & 8)) {
+                require(source.path_index < paths.size(), Error::extent, address);
+                c.path = source.path_index;
+            }
+            if (!model) {
+                require(c.mask && !(c.mask & ~0x88u), Error::malformed, address);
+                if (c.mask & 128) {
+                    require(source.camera_at_path_index < paths.size(), Error::extent, address);
+                    c.camera_at_path = source.camera_at_path_index;
+                }
+            }
         }
         const unsigned count = (basic || extra || c.opcode == 17) ?
             static_cast<unsigned>(std::popcount(static_cast<unsigned>(c.mask))) : 0;
-        const unsigned operands = (c.opcode == 13 || c.opcode == 14) ? 1 :
-            count * ((c.opcode == 5 || c.opcode == 6) ? 2 : 1);
+        const unsigned operands = c.opcode == 13 ?
+            (model ? 1u : static_cast<unsigned>(std::popcount(static_cast<unsigned>(c.mask)))) :
+            c.opcode == 14 ? 1u : count * ((c.opcode == 5 || c.opcode == 6) ? 2 : 1);
         require(source.wire.bytes.size() == 4u+4u*operands, Error::malformed, address);
         for (unsigned j = 0; j < operands; ++j) {
             c.operands[j] = source.wire.u32(4u+4u*j);
@@ -325,7 +335,11 @@ struct Runtime::Impl {
                     if (c.mask & (1u << channel)) p.tracks[channel].time += duration;
                 continue;
             }
-            if (c.opcode == 13) { p.tracks[3].path = c.path; continue; }
+            if (c.opcode == 13) {
+                if (program.kind == AnimationKind::model || (c.mask & 8)) p.tracks[3].path = c.path;
+                if (program.kind == AnimationKind::camera && (c.mask & 128)) p.tracks[7].path = c.camera_at_path;
+                continue;
+            }
             if (c.opcode == 14) {
                 p.cursor = c.target;
                 clock.time_passed = -clock.time_left;
@@ -755,11 +769,20 @@ Status Runtime::step_camera(std::uint32_t flags) noexcept {
             const auto& a = s.camera_player.tracks[j];
             if (!a.kind) continue;
             const float v = value(a,true);
-            c.written_channels |= static_cast<std::uint16_t>(1u << j);
+            if (j != 3 && j != 7) c.written_channels |= static_cast<std::uint16_t>(1u << j);
             switch (j) {
             case 0: c.eye.x = v; break;
             case 1: c.eye.y = v; break;
             case 2: c.eye.z = v; break;
+            case 3: case 7: {
+                if (a.path >= s.resources.paths.size()) return {Error::extent,0};
+                Vec3 position;
+                try { position = path_position(s.resources.paths[a.path],std::clamp(v,0.0f,1.0f)); }
+                catch (...) { return {Error::malformed,0}; }
+                if (j == 3) { c.eye = position; c.written_channels |= 0x07u; }
+                else { c.at = position; c.written_channels |= 0x70u; }
+                break;
+            }
             case 4: c.at.x = v; break;
             case 5: c.at.y = v; break;
             case 6: c.at.z = v; break;

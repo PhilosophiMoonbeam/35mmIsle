@@ -1,0 +1,1437 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "use": "Complete immutable Snapshot-backed cart model/material/graphics and actual Beach intro/outro model/material/camera DATA prerequisite, using shared Reader/DataDecoder/Closure/Runtime and existing native camera Driver. No original cart C lifecycle/fullRoot/game/audio/device acceptance.",
+  "source_files": {
+    "src/app_level/render_player.c": {
+      "git_blob": "a87c007297022d577f629d5850a8ec76ac69a845",
+      "sha256": "eab269e561e60f85d7bf3c4f6f76c468e89aa6e8666c4a3f2351d9c97b23ffe8",
+      "bytes": 1618,
+      "authority_lines": [
+        "6-17",
+        "20-54"
+      ]
+    },
+    "src/beach/55D1C0.c": {
+      "git_blob": "5f8561a9a6faec5ba4dbd42cdbddfa0c9443b04f",
+      "sha256": "88163d542e69d178a26451f2770ef9e7a0e1b3106f09ef91b1eaec92a3568ccb",
+      "bytes": 3634,
+      "authority_lines": [
+        "79-107"
+      ]
+    },
+    "src/beach/562370.c": {
+      "git_blob": "1326b4fd120353bbe005b8bfa8eeddd3da9228b4",
+      "sha256": "c45b29e4a8e0980c096b5f46c1388fff50430a52b10d064c59c57d6839ff6085",
+      "bytes": 4905,
+      "authority_lines": [
+        "156-174"
+      ]
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf",
+      "bytes": 84072,
+      "authority_lines": [
+        "106-518",
+        "581-666",
+        "668-1200",
+        "2016-2291",
+        "2298-2348"
+      ]
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "bytes": 383749,
+      "authority_lines": [
+        "771-796",
+        "5292-5318",
+        "5631-5653"
+      ]
+    },
+    "src/1F960.c": {
+      "git_blob": "caf0e25e5ba3f1f0b313d46eb6a3b3cc6ff8b1d3",
+      "sha256": "d2373fd58df3b7b8c4de8f38d8d6edee435f92889befce920375a2be1842314b",
+      "bytes": 9563,
+      "authority_lines": [
+        "5-60",
+        "128-182",
+        "221-318"
+      ]
+    }
+  },
+  "implementation_sha256": {
+    "src/player_cart_resources.hpp": "30730ba8eef603404024f78a3e6b52de126c409ae183fe572f3e3bd78c26c486",
+    "src/player_cart_resources.cpp": "57efc457210a6fd56e40e6aac20e0ab156b8bb7b0dd92af89a457fd157731234",
+    "src/model_data_decoder.hpp": "0d0ce5f506f08135ff5f5749f5f9f25bdebf7d27acb7512f0cdef796727fd05e",
+    "src/model_data_decoder.cpp": "18651dd79f04a298c3eee98a6156dc32c4d0392a7bac898a5c7c8b2d55a58aad",
+    "src/menu_resources.hpp": "5910a56aecdd7cdffcd20c34f77bc9da44f93c331e6b0b92b7ec66e32fec211f",
+    "src/menu_animation.cpp": "4a4a5a3587f15a89e63243652cf467294104777a874b9adb79cf58ac9077073a",
+    "tests/player_cart_resources_rom_smoke.cpp": "44a822a409d02ffe1f9fbd72610e4ee79c702cd50c4d3c6c9e251deb4adc4198"
+  },
+  "rom": {
+    "canonical_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "canonical_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "bytes": 16777216,
+    "private_payload": "Caller-owned private initialized data only; no bytes published"
+  },
+  "initialized_mappings": [
+    {
+      "guest_begin": "0x80366BA0",
+      "rom_begin": "0x506FB0",
+      "rom_end_exclusive": "0x54B5D0",
+      "bytes": 280096,
+      "authority": "splat.yaml:5292-5318,5631-5653; app_level initialized DATA only; code/BSS excluded"
+    },
+    {
+      "guest_begin": "0x8011B050",
+      "rom_begin": "0xA74E0",
+      "rom_end_exclusive": "0x13C780",
+      "bytes": 610976,
+      "authority": "splat.yaml:771-796; Beach assets initialized mapping"
+    }
+  ],
+  "caller": {
+    "object_id": 35,
+    "link": 9,
+    "display_link": 3,
+    "render": "renderModelTypeJFogged",
+    "matrix_kinds": [
+      28,
+      0,
+      0
+    ],
+    "process_kind": 1,
+    "process_priority": 1,
+    "object_and_display_priority": "0x80000000",
+    "function_casts": false
+  },
+  "closure": {
+    "models": 1,
+    "nodes": 43,
+    "material_attachments": 8,
+    "materials": 8,
+    "image_entries": 8,
+    "image_table_slots": [
+      2,
+      4,
+      2
+    ],
+    "model_streams": 78,
+    "material_streams": 12,
+    "camera_streams": 2,
+    "paths": 6,
+    "commands_by_kind": {
+      "model": 405,
+      "texture": 564,
+      "camera": 12
+    },
+    "duration_each_actual_program": 150,
+    "visibility": "Initial flags0 union every actual opcode15 low-two-bit choice across both clips, preserving subtree omission semantics",
+    "model_opcodes": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      15
+    ],
+    "texture_opcodes": [
+      0,
+      2,
+      3,
+      4,
+      11,
+      18,
+      20,
+      21
+    ],
+    "camera_opcodes": [
+      0,
+      5,
+      6,
+      8,
+      13
+    ],
+    "path_kinds": [
+      2,
+      3
+    ],
+    "control_policy": "All actual commands decoded; both clips terminate END. No reached JUMP1/SET_ANIMATION14/camera12/camera23; existing interpreter support outside this closure is unchanged. Camera13 binds eye/at independently and channels3/7 clamp to [0,1] before existing path_position; effective native XYZ written masks are published."
+  },
+  "clips": {
+    "intro": {
+      "model_table": "0x8013C580",
+      "material_table": "0x8013CEA0",
+      "camera_stream": "0x8013DA90",
+      "source_speed": 0.5
+    },
+    "outro": {
+      "model_table": "0x8013B030",
+      "material_table": "0x8013BAA0",
+      "camera_stream": "0x8013C530",
+      "source_speed": 0.5
+    }
+  },
+  "rom_objects": [
+    {
+      "name": "cart_tree_including_sentinel",
+      "guest_begin": "0x803AAA30",
+      "rom_begin": "0x54AE40",
+      "rom_end_exclusive": "0x54B5D0",
+      "bytes": 1936,
+      "sha256": "f3d10edfee61a59c346125a315f9c55b8c083fdf40b78639e6922b215813ada3"
+    },
+    {
+      "name": "cart_material_outer_table",
+      "guest_begin": "0x8039D938",
+      "rom_begin": "0x53DD48",
+      "rom_end_exclusive": "0x53DDF4",
+      "bytes": 172,
+      "sha256": "4a51fa55beee403df52c033e252c3f698114b334a58a447d6d450afac081745e"
+    },
+    {
+      "name": "cart_material_attachment_list_node_7",
+      "guest_begin": "0x8039DDC8",
+      "rom_begin": "0x53E1D8",
+      "rom_end_exclusive": "0x53E1E0",
+      "bytes": 8,
+      "sha256": "9a361d04bc41cd1668c697566881f3b18a9764a5e720de45cd99221042aec02c"
+    },
+    {
+      "name": "cart_material_attachment_list_node_13",
+      "guest_begin": "0x8039DDD0",
+      "rom_begin": "0x53E1E0",
+      "rom_end_exclusive": "0x53E1E8",
+      "bytes": 8,
+      "sha256": "d502d9e64f0ff55346d6308559a277bdd5293d9bf3f981cdbe23791799444e52"
+    },
+    {
+      "name": "cart_material_attachment_list_node_19",
+      "guest_begin": "0x8039DDD8",
+      "rom_begin": "0x53E1E8",
+      "rom_end_exclusive": "0x53E1F0",
+      "bytes": 8,
+      "sha256": "744db49a498718bdcbdd28752839ea55034c02acfa7c1fb5c804c63b708b92f5"
+    },
+    {
+      "name": "cart_material_attachment_list_node_32",
+      "guest_begin": "0x8039DDE0",
+      "rom_begin": "0x53E1F0",
+      "rom_end_exclusive": "0x53E1FC",
+      "bytes": 12,
+      "sha256": "e2b602c3e89368b045af9c1a9e3da8458976ab1176885188cc5faacefcdc1fb4"
+    },
+    {
+      "name": "cart_material_attachment_list_node_40",
+      "guest_begin": "0x8039DDEC",
+      "rom_begin": "0x53E1FC",
+      "rom_end_exclusive": "0x53E204",
+      "bytes": 8,
+      "sha256": "b97c42378edec51fc3bd92f6430cd10cfe9cb87b64081a89d955fe1aafaae729"
+    },
+    {
+      "name": "cart_material_attachment_list_node_41",
+      "guest_begin": "0x8039DDF4",
+      "rom_begin": "0x53E204",
+      "rom_end_exclusive": "0x53E20C",
+      "bytes": 8,
+      "sha256": "8cec662c6d6d5f4f88dfdca9a91e84e761a6c867472c3bf7debd061778ce61fd"
+    },
+    {
+      "name": "cart_material_attachment_list_node_42",
+      "guest_begin": "0x8039DDFC",
+      "rom_begin": "0x53E20C",
+      "rom_end_exclusive": "0x53E214",
+      "bytes": 8,
+      "sha256": "25399d9ccd0746dff69302a0077c12f9222a6569557012dba1817e9d1747d583"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DA08",
+      "rom_begin": "0x53DE18",
+      "rom_end_exclusive": "0x53DE90",
+      "bytes": 120,
+      "sha256": "a8b010c42b4185bbd179ccb5fc56eb86fc2d6a77dbff0ef389f0ca150e3f3a5e"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DA80",
+      "rom_begin": "0x53DE90",
+      "rom_end_exclusive": "0x53DF08",
+      "bytes": 120,
+      "sha256": "a8b010c42b4185bbd179ccb5fc56eb86fc2d6a77dbff0ef389f0ca150e3f3a5e"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DAF8",
+      "rom_begin": "0x53DF08",
+      "rom_end_exclusive": "0x53DF80",
+      "bytes": 120,
+      "sha256": "a8b010c42b4185bbd179ccb5fc56eb86fc2d6a77dbff0ef389f0ca150e3f3a5e"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DB70",
+      "rom_begin": "0x53DF80",
+      "rom_end_exclusive": "0x53DFF8",
+      "bytes": 120,
+      "sha256": "f6eaf9deedf5c29c8e0c07e3e31c0bd3f442b87c7f9ce51b828670cb5acdb271"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DBE8",
+      "rom_begin": "0x53DFF8",
+      "rom_end_exclusive": "0x53E070",
+      "bytes": 120,
+      "sha256": "8aa571b1a64f7e948d8564de0135770bd88d02c385887014fa87108efb8011a4"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DC60",
+      "rom_begin": "0x53E070",
+      "rom_end_exclusive": "0x53E0E8",
+      "bytes": 120,
+      "sha256": "99c3193125f0ca3d38883cc69939cfe17651fb7046372efe5d4d0e6e681f8700"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DCD8",
+      "rom_begin": "0x53E0E8",
+      "rom_end_exclusive": "0x53E160",
+      "bytes": 120,
+      "sha256": "6aeab469b41be7c0e411c833630248004e537c56007ae4db69633477350604f1"
+    },
+    {
+      "name": "Texture",
+      "guest_begin": "0x8039DD50",
+      "rom_begin": "0x53E160",
+      "rom_end_exclusive": "0x53E1D8",
+      "bytes": 120,
+      "sha256": "00f4c500e187f6542252179882efcee5be6835077524da08f9b8e390cf467cd6"
+    },
+    {
+      "name": "image_table_exact_not_null_terminated",
+      "guest_begin": "0x8039D9E4",
+      "rom_begin": "0x53DDF4",
+      "rom_end_exclusive": "0x53DDFC",
+      "bytes": 8,
+      "sha256": "828c151931b858680d3571b05776a37005082a7b9874f6adbbb155cfc053d262"
+    },
+    {
+      "name": "image_table_exact_not_null_terminated",
+      "guest_begin": "0x8039D9EC",
+      "rom_begin": "0x53DDFC",
+      "rom_end_exclusive": "0x53DE0C",
+      "bytes": 16,
+      "sha256": "91ec611f5bb3d4f5ba8974683f6bb9edb9479af2b02620795a04457750858fab"
+    },
+    {
+      "name": "image_table_exact_not_null_terminated",
+      "guest_begin": "0x8039D9FC",
+      "rom_begin": "0x53DE0C",
+      "rom_end_exclusive": "0x53DE14",
+      "bytes": 8,
+      "sha256": "1233696fdc5148b920d07942be5bc9749fbe3bcf670f2a06de7209e880094d12"
+    },
+    {
+      "name": "intro_model_table",
+      "guest_begin": "0x8013C580",
+      "rom_begin": "0xC8A10",
+      "rom_end_exclusive": "0xC8ABC",
+      "bytes": 172,
+      "sha256": "3dd4793fda101543e8f2f0764d643226e1ae63354b81ec9e24e25be2ad89bc04"
+    },
+    {
+      "name": "intro_material_table",
+      "guest_begin": "0x8013CEA0",
+      "rom_begin": "0xC9330",
+      "rom_end_exclusive": "0xC93DC",
+      "bytes": 172,
+      "sha256": "be526b3cf143a116195e4e304a37c697588bd12352d3b52e28202b076994fd9f"
+    },
+    {
+      "name": "intro_material_animation_list_node_7",
+      "guest_begin": "0x8013D844",
+      "rom_begin": "0xC9CD4",
+      "rom_end_exclusive": "0xC9CD8",
+      "bytes": 4,
+      "sha256": "681ef6b56df62c6adc1346fd31b7a8555e2dd3bfacbe3df51d9635d02b2badea"
+    },
+    {
+      "name": "intro_material_animation_list_node_13",
+      "guest_begin": "0x8013D848",
+      "rom_begin": "0xC9CD8",
+      "rom_end_exclusive": "0xC9CDC",
+      "bytes": 4,
+      "sha256": "0d409f8d9f07f6499504a7d5dd216156fe671e0665706a13878908aacfd9a062"
+    },
+    {
+      "name": "intro_material_animation_list_node_19",
+      "guest_begin": "0x8013D84C",
+      "rom_begin": "0xC9CDC",
+      "rom_end_exclusive": "0xC9CE0",
+      "bytes": 4,
+      "sha256": "ec9a8fe3652276b4cdfc4a19ca8d52247d87a4fefbbf99de1b4ec52184209822"
+    },
+    {
+      "name": "intro_material_animation_list_node_40",
+      "guest_begin": "0x8013D850",
+      "rom_begin": "0xC9CE0",
+      "rom_end_exclusive": "0xC9CE4",
+      "bytes": 4,
+      "sha256": "4bcef3f404f8d05d8b7b6b41154cf94f008e9f009c600712b47188cff3f1c46a"
+    },
+    {
+      "name": "intro_material_animation_list_node_41",
+      "guest_begin": "0x8013D854",
+      "rom_begin": "0xC9CE4",
+      "rom_end_exclusive": "0xC9CE8",
+      "bytes": 4,
+      "sha256": "1400ab6fd8a5aeab34900b1a9b8be96a332b587ff2970c5e525fc58525ef96eb"
+    },
+    {
+      "name": "intro_material_animation_list_node_42",
+      "guest_begin": "0x8013D858",
+      "rom_begin": "0xC9CE8",
+      "rom_end_exclusive": "0xC9CEC",
+      "bytes": 4,
+      "sha256": "b5a8b183b1cb961b4d3f861168d1fcec0096fcdf53543e7d5639d49683940ce3"
+    },
+    {
+      "name": "outro_model_table",
+      "guest_begin": "0x8013B030",
+      "rom_begin": "0xC74C0",
+      "rom_end_exclusive": "0xC756C",
+      "bytes": 172,
+      "sha256": "17139213eb4aa71761be2bb83ee35f9433373651ccded0d5ade5bd9a89259186"
+    },
+    {
+      "name": "outro_material_table",
+      "guest_begin": "0x8013BAA0",
+      "rom_begin": "0xC7F30",
+      "rom_end_exclusive": "0xC7FDC",
+      "bytes": 172,
+      "sha256": "190e4b2e3ff07a59abee224a64b8545e995f015daa889ef905ff36566ff82425"
+    },
+    {
+      "name": "outro_material_animation_list_node_7",
+      "guest_begin": "0x8013C3FC",
+      "rom_begin": "0xC888C",
+      "rom_end_exclusive": "0xC8890",
+      "bytes": 4,
+      "sha256": "3f23c6c057e518b1588cd5bdb641bdd32a9d7d55ac52bbe4cbb8845d3cc3f2ef"
+    },
+    {
+      "name": "outro_material_animation_list_node_13",
+      "guest_begin": "0x8013C400",
+      "rom_begin": "0xC8890",
+      "rom_end_exclusive": "0xC8894",
+      "bytes": 4,
+      "sha256": "ece2bfdd80ab9f744a246e70d6a444486d787f4c88e37f7c7c9a638990ae40d3"
+    },
+    {
+      "name": "outro_material_animation_list_node_19",
+      "guest_begin": "0x8013C404",
+      "rom_begin": "0xC8894",
+      "rom_end_exclusive": "0xC8898",
+      "bytes": 4,
+      "sha256": "c92f0781e1605d3d40bdbe6ad1c2845de5a0bf41d011da87d8f8f1b4df105072"
+    },
+    {
+      "name": "outro_material_animation_list_node_40",
+      "guest_begin": "0x8013C408",
+      "rom_begin": "0xC8898",
+      "rom_end_exclusive": "0xC889C",
+      "bytes": 4,
+      "sha256": "0c2d91625acf6cea9a0976762808d93edb9dca51920e3e8c91c512d83a71977b"
+    },
+    {
+      "name": "outro_material_animation_list_node_41",
+      "guest_begin": "0x8013C40C",
+      "rom_begin": "0xC889C",
+      "rom_end_exclusive": "0xC88A0",
+      "bytes": 4,
+      "sha256": "1ce07608f3b421c876a6e096a0cffc37da91ada0c26365443b811aebdaef1bd0"
+    },
+    {
+      "name": "outro_material_animation_list_node_42",
+      "guest_begin": "0x8013C410",
+      "rom_begin": "0xC88A0",
+      "rom_end_exclusive": "0xC88A4",
+      "bytes": 4,
+      "sha256": "7e424420b84c15985dffbe3f66701b7651b2878a8b84155fb271bd2aaf59fa9f"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B140",
+      "rom_begin": "0xC75D0",
+      "rom_end_exclusive": "0xC75FC",
+      "bytes": 44,
+      "sha256": "ed6146364e3d42ee41af026272a274853058e1daf1c00cde28407b08b28b3dc8"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B16C",
+      "rom_begin": "0xC75FC",
+      "rom_end_exclusive": "0xC7614",
+      "bytes": 24,
+      "sha256": "194e4d215520ca0da50ec8b0899045372cf4bd2e58a9313b4ea2831a31edd31b"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B184",
+      "rom_begin": "0xC7614",
+      "rom_end_exclusive": "0xC7638",
+      "bytes": 36,
+      "sha256": "528f48f0429a92d6e05b3c270df25db9bf33fd8670a6273409f53416833c6364"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B1A8",
+      "rom_begin": "0xC7638",
+      "rom_end_exclusive": "0xC765C",
+      "bytes": 36,
+      "sha256": "ac082eb4d7572abc577f470948b5e448d59a74cce1eaace87cc2bfa6a4c1262f"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B1CC",
+      "rom_begin": "0xC765C",
+      "rom_end_exclusive": "0xC7674",
+      "bytes": 24,
+      "sha256": "194e4d215520ca0da50ec8b0899045372cf4bd2e58a9313b4ea2831a31edd31b"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B1E4",
+      "rom_begin": "0xC7674",
+      "rom_end_exclusive": "0xC768C",
+      "bytes": 24,
+      "sha256": "194e4d215520ca0da50ec8b0899045372cf4bd2e58a9313b4ea2831a31edd31b"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B1FC",
+      "rom_begin": "0xC768C",
+      "rom_end_exclusive": "0xC76B0",
+      "bytes": 36,
+      "sha256": "c658a73a0a5911095b1c8128c81ce8faa31d1a4da4a8ef31bcd234c528b89682"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B220",
+      "rom_begin": "0xC76B0",
+      "rom_end_exclusive": "0xC76D4",
+      "bytes": 36,
+      "sha256": "208c1f12f53582dc63ce440cbe2111da3e6927ab23ca7a54405ce1f6b3246a17"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B244",
+      "rom_begin": "0xC76D4",
+      "rom_end_exclusive": "0xC7700",
+      "bytes": 44,
+      "sha256": "9d2bed052d12cb70d9de3c0ee934076d4c095e04e3e09e318eeef86200b731fb"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B270",
+      "rom_begin": "0xC7700",
+      "rom_end_exclusive": "0xC7724",
+      "bytes": 36,
+      "sha256": "8311b42fa07080a00581b0258ea6839ae23c512fd186d28e4b4326803940d8be"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B294",
+      "rom_begin": "0xC7724",
+      "rom_end_exclusive": "0xC7750",
+      "bytes": 44,
+      "sha256": "b216122b993a91c3f829af154ac068da348d19ed342a71cdaf285093654a2c3e"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B2C0",
+      "rom_begin": "0xC7750",
+      "rom_end_exclusive": "0xC7768",
+      "bytes": 24,
+      "sha256": "194e4d215520ca0da50ec8b0899045372cf4bd2e58a9313b4ea2831a31edd31b"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B2D8",
+      "rom_begin": "0xC7768",
+      "rom_end_exclusive": "0xC778C",
+      "bytes": 36,
+      "sha256": "c658a73a0a5911095b1c8128c81ce8faa31d1a4da4a8ef31bcd234c528b89682"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B2FC",
+      "rom_begin": "0xC778C",
+      "rom_end_exclusive": "0xC77B0",
+      "bytes": 36,
+      "sha256": "208c1f12f53582dc63ce440cbe2111da3e6927ab23ca7a54405ce1f6b3246a17"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B320",
+      "rom_begin": "0xC77B0",
+      "rom_end_exclusive": "0xC77DC",
+      "bytes": 44,
+      "sha256": "9d2bed052d12cb70d9de3c0ee934076d4c095e04e3e09e318eeef86200b731fb"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B34C",
+      "rom_begin": "0xC77DC",
+      "rom_end_exclusive": "0xC7800",
+      "bytes": 36,
+      "sha256": "8311b42fa07080a00581b0258ea6839ae23c512fd186d28e4b4326803940d8be"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B370",
+      "rom_begin": "0xC7800",
+      "rom_end_exclusive": "0xC782C",
+      "bytes": 44,
+      "sha256": "b216122b993a91c3f829af154ac068da348d19ed342a71cdaf285093654a2c3e"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B39C",
+      "rom_begin": "0xC782C",
+      "rom_end_exclusive": "0xC7844",
+      "bytes": 24,
+      "sha256": "194e4d215520ca0da50ec8b0899045372cf4bd2e58a9313b4ea2831a31edd31b"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B3B4",
+      "rom_begin": "0xC7844",
+      "rom_end_exclusive": "0xC7868",
+      "bytes": 36,
+      "sha256": "c658a73a0a5911095b1c8128c81ce8faa31d1a4da4a8ef31bcd234c528b89682"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B3D8",
+      "rom_begin": "0xC7868",
+      "rom_end_exclusive": "0xC788C",
+      "bytes": 36,
+      "sha256": "83e0564a848626e889ea12d3d8adc1cc4078f2025a235b25b580fc6a8f63678e"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B3FC",
+      "rom_begin": "0xC788C",
+      "rom_end_exclusive": "0xC78B0",
+      "bytes": 36,
+      "sha256": "8311b42fa07080a00581b0258ea6839ae23c512fd186d28e4b4326803940d8be"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B420",
+      "rom_begin": "0xC78B0",
+      "rom_end_exclusive": "0xC78D4",
+      "bytes": 36,
+      "sha256": "a32e7c6014f3290fca50c5fff392a19c395f487eedf6481a3f6516e0d7db7ca0"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B444",
+      "rom_begin": "0xC78D4",
+      "rom_end_exclusive": "0xC7900",
+      "bytes": 44,
+      "sha256": "9002ea9be5fca7dcaf81fa25e207ae91ec8c6da73676ba236d9e2bcdf81ad4fc"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B470",
+      "rom_begin": "0xC7900",
+      "rom_end_exclusive": "0xC79B0",
+      "bytes": 176,
+      "sha256": "a15e2311efb6d98d35178afacef7fc08ced60311aae13c5f9bf7466ba4c6c1df"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B520",
+      "rom_begin": "0xC79B0",
+      "rom_end_exclusive": "0xC79EC",
+      "bytes": 60,
+      "sha256": "d4b9acaacbf1d84c28afc74ca1fe245a1eeaa81585b9bab8dcd47c4d55d2017f"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B55C",
+      "rom_begin": "0xC79EC",
+      "rom_end_exclusive": "0xC7A10",
+      "bytes": 36,
+      "sha256": "bd5aa98a728672ee972c96529e9bc861941251f070aedd3e5e0d00cc8f36dc70"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B580",
+      "rom_begin": "0xC7A10",
+      "rom_end_exclusive": "0xC7A34",
+      "bytes": 36,
+      "sha256": "b9553ce4bc316b43153f33bb7562eb030a32d3cac4c88b810b8b4c85508301f1"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B5A4",
+      "rom_begin": "0xC7A34",
+      "rom_end_exclusive": "0xC7A70",
+      "bytes": 60,
+      "sha256": "ae72c22fd0e43b3d15c23c8464d1340a76bea3cc7e94f6c850a2ac9353edacfb"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B5E0",
+      "rom_begin": "0xC7A70",
+      "rom_end_exclusive": "0xC7A94",
+      "bytes": 36,
+      "sha256": "5d9f432a92ef13b3e1466da8e5ed21dbe344b57cd485984993a258c56d91d9ca"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B604",
+      "rom_begin": "0xC7A94",
+      "rom_end_exclusive": "0xC7AB8",
+      "bytes": 36,
+      "sha256": "dc9d73f3f81e8c8ffbdcc5014cc9f4f582f52b2a705b7173188cfd0095a96fce"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B628",
+      "rom_begin": "0xC7AB8",
+      "rom_end_exclusive": "0xC7B38",
+      "bytes": 128,
+      "sha256": "bb90038810688bbcbba60c410f1b36cbed94344b2ac08b5ae954acb063e5d2f8"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B6A8",
+      "rom_begin": "0xC7B38",
+      "rom_end_exclusive": "0xC7B8C",
+      "bytes": 84,
+      "sha256": "03a7d647beba21683d31b181287b20110f8669bce4f3214124559a9e93b920f6"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B6FC",
+      "rom_begin": "0xC7B8C",
+      "rom_end_exclusive": "0xC7C4C",
+      "bytes": 192,
+      "sha256": "4e840d9ee91997124281b1519a36becc0553b10548538df8981ba81c3a69795d"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B7BC",
+      "rom_begin": "0xC7C4C",
+      "rom_end_exclusive": "0xC7CE8",
+      "bytes": 156,
+      "sha256": "1c637ce641db6ef3f0b9a0d12aa2a7a159cfa749eff93fb24ed77b174575c420"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B858",
+      "rom_begin": "0xC7CE8",
+      "rom_end_exclusive": "0xC7D40",
+      "bytes": 88,
+      "sha256": "52444134c016a667617641ffc819d64695af0a82ba5978490c9de088d07a047f"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B8B0",
+      "rom_begin": "0xC7D40",
+      "rom_end_exclusive": "0xC7D64",
+      "bytes": 36,
+      "sha256": "e5be7b00d3620dda1764ef420ec0aa55470333a5823213d52542390969ee18e6"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B8D4",
+      "rom_begin": "0xC7D64",
+      "rom_end_exclusive": "0xC7DFC",
+      "bytes": 152,
+      "sha256": "4add9d5ea216d2ba7805d31e3d7107da9990230a3a9d8c06a2629e197eb8d044"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B96C",
+      "rom_begin": "0xC7DFC",
+      "rom_end_exclusive": "0xC7E70",
+      "bytes": 116,
+      "sha256": "9c7e9241f8046ae921620bedcc98684559eeca4f81f2e8f72bb3076012adbf9a"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013B9E0",
+      "rom_begin": "0xC7E70",
+      "rom_end_exclusive": "0xC7E94",
+      "bytes": 36,
+      "sha256": "9e0ca15605ed80baa87fd9b56cdb40c407aadba74694e700ff49c845f0c74a58"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013BA04",
+      "rom_begin": "0xC7E94",
+      "rom_end_exclusive": "0xC7EB8",
+      "bytes": 36,
+      "sha256": "893b1e588087505394778491e0431b3363ad29151dd9f3322a84794b922a3f27"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013BA28",
+      "rom_begin": "0xC7EB8",
+      "rom_end_exclusive": "0xC7EDC",
+      "bytes": 36,
+      "sha256": "c658a73a0a5911095b1c8128c81ce8faa31d1a4da4a8ef31bcd234c528b89682"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013BA4C",
+      "rom_begin": "0xC7EDC",
+      "rom_end_exclusive": "0xC7F00",
+      "bytes": 36,
+      "sha256": "c658a73a0a5911095b1c8128c81ce8faa31d1a4da4a8ef31bcd234c528b89682"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013BA70",
+      "rom_begin": "0xC7F00",
+      "rom_end_exclusive": "0xC7F24",
+      "bytes": 36,
+      "sha256": "a32e7c6014f3290fca50c5fff392a19c395f487eedf6481a3f6516e0d7db7ca0"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013BB4C",
+      "rom_begin": "0xC7FDC",
+      "rom_end_exclusive": "0xC8240",
+      "bytes": 612,
+      "sha256": "e003c0cd9468fc085b442141c2bc7bef0564b422af9d4e69922bccae373cd382"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013BDB0",
+      "rom_begin": "0xC8240",
+      "rom_end_exclusive": "0xC84A4",
+      "bytes": 612,
+      "sha256": "e003c0cd9468fc085b442141c2bc7bef0564b422af9d4e69922bccae373cd382"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013C014",
+      "rom_begin": "0xC84A4",
+      "rom_end_exclusive": "0xC8708",
+      "bytes": 612,
+      "sha256": "e003c0cd9468fc085b442141c2bc7bef0564b422af9d4e69922bccae373cd382"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013C278",
+      "rom_begin": "0xC8708",
+      "rom_end_exclusive": "0xC8724",
+      "bytes": 28,
+      "sha256": "b94ff09c04f2a20882154d8d74a21c0b7f21ab2774876896b05f8079a41f068c"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013C294",
+      "rom_begin": "0xC8724",
+      "rom_end_exclusive": "0xC8784",
+      "bytes": 96,
+      "sha256": "62308af31b0be4fdb3b369156cf2e5e6c42667fba9db9813e4eff1cd4e6921a7"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013C2F4",
+      "rom_begin": "0xC8784",
+      "rom_end_exclusive": "0xC888C",
+      "bytes": 264,
+      "sha256": "341e7d6d8ed6c1eb0ca1fd61bf2730f5eaf011b469ec3b4b4b56efef3b91aee0"
+    },
+    {
+      "name": "camera_stream",
+      "guest_begin": "0x8013C530",
+      "rom_begin": "0xC89C0",
+      "rom_end_exclusive": "0xC8A08",
+      "bytes": 72,
+      "sha256": "c9fe7a7b7ffeeabeb0673fcb16da24f4d1e0128cb564f5b5dac565f79e024eb5"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C6B4",
+      "rom_begin": "0xC8B44",
+      "rom_end_exclusive": "0xC8B80",
+      "bytes": 60,
+      "sha256": "4783ce9c3a91be1fd43ad5d64d5b3999d939c756861b16a998b8795d6d6cbf54"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C6F0",
+      "rom_begin": "0xC8B80",
+      "rom_end_exclusive": "0xC8C38",
+      "bytes": 184,
+      "sha256": "887549918d7880d7ebfde1c5e79381e205448b307d3397f46b2dfc0beec0a1eb"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C7A8",
+      "rom_begin": "0xC8C38",
+      "rom_end_exclusive": "0xC8CB4",
+      "bytes": 124,
+      "sha256": "7e543cc07251f32f6e22bc192e7b6df7fe4b594026e06261c68ff1c77b95ddeb"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C824",
+      "rom_begin": "0xC8CB4",
+      "rom_end_exclusive": "0xC8CBC",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C82C",
+      "rom_begin": "0xC8CBC",
+      "rom_end_exclusive": "0xC8CD8",
+      "bytes": 28,
+      "sha256": "c81bf6ae461869d73328e7bc4a2471aea448de82c1935d796b800352b2aa8533"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C848",
+      "rom_begin": "0xC8CD8",
+      "rom_end_exclusive": "0xC8CE0",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C850",
+      "rom_begin": "0xC8CE0",
+      "rom_end_exclusive": "0xC8CE8",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C858",
+      "rom_begin": "0xC8CE8",
+      "rom_end_exclusive": "0xC8D64",
+      "bytes": 124,
+      "sha256": "7e543cc07251f32f6e22bc192e7b6df7fe4b594026e06261c68ff1c77b95ddeb"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C8D4",
+      "rom_begin": "0xC8D64",
+      "rom_end_exclusive": "0xC8D6C",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C8DC",
+      "rom_begin": "0xC8D6C",
+      "rom_end_exclusive": "0xC8D88",
+      "bytes": 28,
+      "sha256": "c81bf6ae461869d73328e7bc4a2471aea448de82c1935d796b800352b2aa8533"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C8F8",
+      "rom_begin": "0xC8D88",
+      "rom_end_exclusive": "0xC8D90",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C900",
+      "rom_begin": "0xC8D90",
+      "rom_end_exclusive": "0xC8D98",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C908",
+      "rom_begin": "0xC8D98",
+      "rom_end_exclusive": "0xC8DF4",
+      "bytes": 92,
+      "sha256": "9b84ebf67d687d724a541024059ad28470dd7df74ef3e73c4929c78dffbbd78c"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C964",
+      "rom_begin": "0xC8DF4",
+      "rom_end_exclusive": "0xC8DFC",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C96C",
+      "rom_begin": "0xC8DFC",
+      "rom_end_exclusive": "0xC8E04",
+      "bytes": 8,
+      "sha256": "3ee11a78c0e14dd8c82a966813753eb52fbe4036d536b5aa0d7f61332d09ed79"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C974",
+      "rom_begin": "0xC8E04",
+      "rom_end_exclusive": "0xC8E20",
+      "bytes": 28,
+      "sha256": "c81bf6ae461869d73328e7bc4a2471aea448de82c1935d796b800352b2aa8533"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C990",
+      "rom_begin": "0xC8E20",
+      "rom_end_exclusive": "0xC8E44",
+      "bytes": 36,
+      "sha256": "036be9c2d9440f9b8e88b8b887c388e751783257ad4c4c5f16dfcbdad38ffa60"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C9B4",
+      "rom_begin": "0xC8E44",
+      "rom_end_exclusive": "0xC8E5C",
+      "bytes": 24,
+      "sha256": "8853a9703d7f380b1f6a37a4241f255e7374ba996a4a74596ecf8c751ba27fce"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C9CC",
+      "rom_begin": "0xC8E5C",
+      "rom_end_exclusive": "0xC8E74",
+      "bytes": 24,
+      "sha256": "3bd5be814723b37a8b001f1b8d070a13dd6d255916809db9b9e5b309291adec2"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C9E4",
+      "rom_begin": "0xC8E74",
+      "rom_end_exclusive": "0xC8E8C",
+      "bytes": 24,
+      "sha256": "2dd4275c881b5c4bf359668cd2752c3e81a74dd1bda405fdb0c4778306f372e3"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013C9FC",
+      "rom_begin": "0xC8E8C",
+      "rom_end_exclusive": "0xC8EA4",
+      "bytes": 24,
+      "sha256": "8bc2376e74edf81e86e1acda5fc0164616d72da683ea14fb318d12f6c77b6f82"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CA14",
+      "rom_begin": "0xC8EA4",
+      "rom_end_exclusive": "0xC8EBC",
+      "bytes": 24,
+      "sha256": "ba8db7fbae4ae684085203fec563c657dbf699cb03935422a2f191e9bc511938"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CA2C",
+      "rom_begin": "0xC8EBC",
+      "rom_end_exclusive": "0xC8ED4",
+      "bytes": 24,
+      "sha256": "7f86b878ebab729200be512f0b67cc88b7e92aab2e5437730947cf35f9430bc5"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CA44",
+      "rom_begin": "0xC8ED4",
+      "rom_end_exclusive": "0xC8FA4",
+      "bytes": 208,
+      "sha256": "980ef85fee805286e58bb7167fe7b5d3d3ffea9dd0bf0f6e7e592b54fee1fdef"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CB14",
+      "rom_begin": "0xC8FA4",
+      "rom_end_exclusive": "0xC8FBC",
+      "bytes": 24,
+      "sha256": "2734c9f1ad6eb8014d96669579deff6eed17c9ead1c4bec128666df147cabd5a"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CB2C",
+      "rom_begin": "0xC8FBC",
+      "rom_end_exclusive": "0xC9060",
+      "bytes": 164,
+      "sha256": "2a6cf0374fa3b2cee034bb75391902e1eaed28ed360aa6c876838caefc8412be"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CBD0",
+      "rom_begin": "0xC9060",
+      "rom_end_exclusive": "0xC9090",
+      "bytes": 48,
+      "sha256": "0dd6e13c602d633d3d19e6afad0d625d4a98cda13924b8076d6c4c287befe313"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CC00",
+      "rom_begin": "0xC9090",
+      "rom_end_exclusive": "0xC9144",
+      "bytes": 180,
+      "sha256": "a645ed576de918b398cc2ed42a9516873b2d93050852406ca02b54e883fb066d"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CCB4",
+      "rom_begin": "0xC9144",
+      "rom_end_exclusive": "0xC915C",
+      "bytes": 24,
+      "sha256": "16f447346ef75317dab9082128fcb602170a26b7d3405294b0d2a9ab8f927183"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CCCC",
+      "rom_begin": "0xC915C",
+      "rom_end_exclusive": "0xC91BC",
+      "bytes": 96,
+      "sha256": "329b3947e6526b71f2270767da1eb1daddc943a0e1e4999db9ca1247026d5b16"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CD2C",
+      "rom_begin": "0xC91BC",
+      "rom_end_exclusive": "0xC927C",
+      "bytes": 192,
+      "sha256": "5ee914b7d59cc555f429d45d550c4880f0b4e72e3b329528bbf19580657ae9d9"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CDEC",
+      "rom_begin": "0xC927C",
+      "rom_end_exclusive": "0xC9294",
+      "bytes": 24,
+      "sha256": "99f03fa7c1fe0997670bbd03c94c714814d7cfe1406fcbcff4db3b34d334da1a"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CE04",
+      "rom_begin": "0xC9294",
+      "rom_end_exclusive": "0xC92AC",
+      "bytes": 24,
+      "sha256": "5613c692b13b58df5341e9f33df1cda94d24b0867ebd53eff0a4506834811c0a"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CE1C",
+      "rom_begin": "0xC92AC",
+      "rom_end_exclusive": "0xC9318",
+      "bytes": 108,
+      "sha256": "4b33cc65df04ee2cc072963677310e92840f30f4ce51822261b634e928af541b"
+    },
+    {
+      "name": "model_stream",
+      "guest_begin": "0x8013CE88",
+      "rom_begin": "0xC9318",
+      "rom_end_exclusive": "0xC9330",
+      "bytes": 24,
+      "sha256": "d73555db21163729b6b395aa65c39363876fee4f943eea70f08a62bb00c158a8"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013CF4C",
+      "rom_begin": "0xC93DC",
+      "rom_end_exclusive": "0xC9640",
+      "bytes": 612,
+      "sha256": "e003c0cd9468fc085b442141c2bc7bef0564b422af9d4e69922bccae373cd382"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013D1B0",
+      "rom_begin": "0xC9640",
+      "rom_end_exclusive": "0xC98A4",
+      "bytes": 612,
+      "sha256": "e003c0cd9468fc085b442141c2bc7bef0564b422af9d4e69922bccae373cd382"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013D414",
+      "rom_begin": "0xC98A4",
+      "rom_end_exclusive": "0xC9B08",
+      "bytes": 612,
+      "sha256": "e003c0cd9468fc085b442141c2bc7bef0564b422af9d4e69922bccae373cd382"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013D678",
+      "rom_begin": "0xC9B08",
+      "rom_end_exclusive": "0xC9B34",
+      "bytes": 44,
+      "sha256": "3110e765e47762503a6f338102bddc3bfa43fb9720872769fd8a6af1c09b2185"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013D6A4",
+      "rom_begin": "0xC9B34",
+      "rom_end_exclusive": "0xC9BBC",
+      "bytes": 136,
+      "sha256": "9b8daa93175942fc6e854c0b9f31aa877b63bc9a63a371c3b9309178c4fa98e1"
+    },
+    {
+      "name": "texture_stream",
+      "guest_begin": "0x8013D72C",
+      "rom_begin": "0xC9BBC",
+      "rom_end_exclusive": "0xC9CD4",
+      "bytes": 280,
+      "sha256": "a4f93a8631206cf1fcd750dded5538259a70d700e91e08539e016ff52b461d53"
+    },
+    {
+      "name": "camera_stream",
+      "guest_begin": "0x8013DA90",
+      "rom_begin": "0xC9F20",
+      "rom_end_exclusive": "0xC9F78",
+      "bytes": 88,
+      "sha256": "7c51eb40d487419ac3032776d8abe46987c1b2c75c84b56a66bac88288e41854"
+    },
+    {
+      "name": "InterpData",
+      "guest_begin": "0x8013B128",
+      "rom_begin": "0xC75B8",
+      "rom_end_exclusive": "0xC75D0",
+      "bytes": 24,
+      "sha256": "3c882f148be6b8ac57ca086915c616786c433aba0506eb4137a6acb72a268ead"
+    },
+    {
+      "name": "path_points",
+      "guest_begin": "0x8013B0DC",
+      "rom_begin": "0xC756C",
+      "rom_end_exclusive": "0xC759C",
+      "bytes": 48,
+      "sha256": "8762b32d0e0fa8168bdfdacb744fd5d290bc3227917d3330f4562f917a3f42ae"
+    },
+    {
+      "name": "path_timestamps",
+      "guest_begin": "0x8013B10C",
+      "rom_begin": "0xC759C",
+      "rom_end_exclusive": "0xC75A4",
+      "bytes": 8,
+      "sha256": "35a329e9a766e1a60f366cf4599a0ecc21be601e310be696c25bb91f31cb475b"
+    },
+    {
+      "name": "path_speed_polynomials",
+      "guest_begin": "0x8013B114",
+      "rom_begin": "0xC75A4",
+      "rom_end_exclusive": "0xC75B8",
+      "bytes": 20,
+      "sha256": "d86d15f5ba3fc48c20057751c4d2bb34f4feea5cbf0eda27c772ac6bddece34b"
+    },
+    {
+      "name": "InterpData",
+      "guest_begin": "0x8013C490",
+      "rom_begin": "0xC8920",
+      "rom_end_exclusive": "0xC8938",
+      "bytes": 24,
+      "sha256": "a6d71c159e6996e1c3665c9a1dba6b108cd81ba9010a4ce5967cdd6ec43af0be"
+    },
+    {
+      "name": "path_points",
+      "guest_begin": "0x8013C420",
+      "rom_begin": "0xC88B0",
+      "rom_end_exclusive": "0xC88EC",
+      "bytes": 60,
+      "sha256": "351093df1fbcdf9fec818fa95ef0f3c636665c13c1dd25efaf470667f78695bf"
+    },
+    {
+      "name": "path_timestamps",
+      "guest_begin": "0x8013C45C",
+      "rom_begin": "0xC88EC",
+      "rom_end_exclusive": "0xC88F8",
+      "bytes": 12,
+      "sha256": "0ff0d1d093c3e6789038b48f75e6a4fc9347862370f7a6640bbb7bf0462ad764"
+    },
+    {
+      "name": "path_speed_polynomials",
+      "guest_begin": "0x8013C468",
+      "rom_begin": "0xC88F8",
+      "rom_end_exclusive": "0xC8920",
+      "bytes": 40,
+      "sha256": "bfdc266ace230c08ac63abac5c4d0efd35a8ef5b5f007e860288aba77329d7e4"
+    },
+    {
+      "name": "InterpData",
+      "guest_begin": "0x8013C518",
+      "rom_begin": "0xC89A8",
+      "rom_end_exclusive": "0xC89C0",
+      "bytes": 24,
+      "sha256": "b10dc422270c6715b75d4c935f9a36b1f98e9285b9fa7e240f2fba80c695d66b"
+    },
+    {
+      "name": "path_points",
+      "guest_begin": "0x8013C4A8",
+      "rom_begin": "0xC8938",
+      "rom_end_exclusive": "0xC8974",
+      "bytes": 60,
+      "sha256": "16af8979c90c04d948ad42b522e08b7794cfd77b19e88664e6cbd15a67a7a838"
+    },
+    {
+      "name": "path_timestamps",
+      "guest_begin": "0x8013C4E4",
+      "rom_begin": "0xC8974",
+      "rom_end_exclusive": "0xC8980",
+      "bytes": 12,
+      "sha256": "ef431878b01a32e28705ac3dfc2a460637f4e2a0db7bdcace1a105dcfd8ca1dd"
+    },
+    {
+      "name": "path_speed_polynomials",
+      "guest_begin": "0x8013C4F0",
+      "rom_begin": "0xC8980",
+      "rom_end_exclusive": "0xC89A8",
+      "bytes": 40,
+      "sha256": "33ffb5e58b0eb209d48135fcf317813e0d3e4d106004902a1345907b17f1ff5d"
+    },
+    {
+      "name": "InterpData",
+      "guest_begin": "0x8013C69C",
+      "rom_begin": "0xC8B2C",
+      "rom_end_exclusive": "0xC8B44",
+      "bytes": 24,
+      "sha256": "4e2ac16d22908927d28a062e680430aab4ed1878239257b9af0dd6413f92174e"
+    },
+    {
+      "name": "path_points",
+      "guest_begin": "0x8013C62C",
+      "rom_begin": "0xC8ABC",
+      "rom_end_exclusive": "0xC8AF8",
+      "bytes": 60,
+      "sha256": "a9095cf0d30977cb85d7502ad488c5023c253baa63b9920cc51906c82a2a97a8"
+    },
+    {
+      "name": "path_timestamps",
+      "guest_begin": "0x8013C668",
+      "rom_begin": "0xC8AF8",
+      "rom_end_exclusive": "0xC8B04",
+      "bytes": 12,
+      "sha256": "9092b5a6fe54ddfad281c003c0fae0668a961d1a4d41a07d271e73e3e5ce9268"
+    },
+    {
+      "name": "path_speed_polynomials",
+      "guest_begin": "0x8013C674",
+      "rom_begin": "0xC8B04",
+      "rom_end_exclusive": "0xC8B2C",
+      "bytes": 40,
+      "sha256": "ee37a3b7036fa53950ab5d6fbe45ec2ce52f4887c8bf63c5ef24d0d912ad2ec9"
+    },
+    {
+      "name": "InterpData",
+      "guest_begin": "0x8013D9A8",
+      "rom_begin": "0xC9E38",
+      "rom_end_exclusive": "0xC9E50",
+      "bytes": 24,
+      "sha256": "b6225a6ea85eb09208461836fe1bab37e5af11bffa91bd4d8e86d86d0faa8a79"
+    },
+    {
+      "name": "path_points",
+      "guest_begin": "0x8013D860",
+      "rom_begin": "0xC9CF0",
+      "rom_end_exclusive": "0xC9D74",
+      "bytes": 132,
+      "sha256": "89c69ad73c19d6d2374feb20621b43040d079840e90d24ed784cb06176c53eec"
+    },
+    {
+      "name": "path_timestamps",
+      "guest_begin": "0x8013D8E4",
+      "rom_begin": "0xC9D74",
+      "rom_end_exclusive": "0xC9D98",
+      "bytes": 36,
+      "sha256": "e5966b1c5aa50f71ddfa5673fd47d5e0ed738aec4a40a525dea3ddc34b5a8e34"
+    },
+    {
+      "name": "path_speed_polynomials",
+      "guest_begin": "0x8013D908",
+      "rom_begin": "0xC9D98",
+      "rom_end_exclusive": "0xC9E38",
+      "bytes": 160,
+      "sha256": "5c7e289e1a8d7ac9e14d786df0315baab8c60e40cef7862bf8fab6acacd60f95"
+    },
+    {
+      "name": "InterpData",
+      "guest_begin": "0x8013DA78",
+      "rom_begin": "0xC9F08",
+      "rom_end_exclusive": "0xC9F20",
+      "bytes": 24,
+      "sha256": "4c94f931acd27afaede2025906897be62633d31252a38806f36bd061944c9d34"
+    },
+    {
+      "name": "path_points",
+      "guest_begin": "0x8013D9C0",
+      "rom_begin": "0xC9E50",
+      "rom_end_exclusive": "0xC9EA4",
+      "bytes": 84,
+      "sha256": "ba7a162f062a4fea8681976a067669a56d1ddac6977a8f566da0da2587cd567c"
+    },
+    {
+      "name": "path_timestamps",
+      "guest_begin": "0x8013DA14",
+      "rom_begin": "0xC9EA4",
+      "rom_end_exclusive": "0xC9EB8",
+      "bytes": 20,
+      "sha256": "8a197e358de3d6a7f5e9ea258f75df3571c59485edebc04216cf1a0db7e38648"
+    },
+    {
+      "name": "path_speed_polynomials",
+      "guest_begin": "0x8013DA28",
+      "rom_begin": "0xC9EB8",
+      "rom_end_exclusive": "0xC9F08",
+      "bytes": 80,
+      "sha256": "fca9e486c0ca5d006164ab1bfcb3b2c9db6e0c09cfa4da15270984cf3a2d77ec"
+    }
+  ],
+  "integration": {
+    "resource_target": "isle-player-cart-resources",
+    "resource_sources": [
+      "src/player_cart_resources.hpp",
+      "src/player_cart_resources.cpp"
+    ],
+    "resource_public_links": [
+      "isle-model-data",
+      "isle-menu-animation"
+    ],
+    "private_consumer_target": "player-cart-resources-rom-smoke",
+    "consumer_source": "tests/player_cart_resources_rom_smoke.cpp",
+    "consumer_links": [
+      "isle-player-cart-resources",
+      "isle-player-camera-animation",
+      "isle-beach-world-resources",
+      "isle-scene"
+    ],
+    "target_policy": "Opt-in EXCLUDE_FROM_ALL; no CTest/default ROM discovery; parent owns CMake integration",
+    "fp_policy": "Existing strict FP on shared Runtime/path and model decoder; apply same strict/no-contract/no-fast-math options to consumer",
+    "slot_capacity": {
+      "nodes": 43,
+      "material_attachments": 8
+    },
+    "execution_capacity": "{} finite-resource certified bounds suffice: every actual program terminates END; no cyclic program",
+    "api": "CartResources(const rom::Snapshot&, CartFogProfile{rgb,min,max}); animation_resources() borrows one canonical Resources pool with no implicitly selected camera; intro()/outro() retain exact per-node model/material lists and flat bindings plus camera index/guest identity; visibility_domains(), graphics/install spans and install(word_swapped8MiB, span<const menu::RamRange> complete_actual_reservation_union). Noncopyable/nonmovable; Snapshot must outlive all borrows; moved-from Snapshot rejects.",
+    "speed_policy": "Title Clock default0.5 unchanged. Future production Player owner must explicitly initialize camera speed1.0; both Beach callers explicitly set0.5 before selecting their real clip.",
+    "ownership": "No native object owner/cart lifecycle created. Parent bead9.12 must implement complete original C lifecycle, intro/skip/outro/callback composition and real joins; data consumer does not imply game completion.",
+    "install_policy": "No fabricated descriptors/images; closure installs only admitted GBI/vertices/images. Every supplied reservation is validated before any write; isolated consumer union is not a qualified production scene layout."
+  },
+  "consumer": {
+    "checks": "Real shared model Runtime and NativeDriver/native camera for both complete clips at0.5, every half-frame through150, independent Hermite parameter/FOV samples, real native path primitives, root visibility boundaries, actual attached material color interpolation, model END callback, native matrices, rebind skips0/59.5/60/60.5/149.5/150/151, flag2 suppression, NULL camera termination, bounded graphics provenance/install and reservation rejection atomicity.",
+    "verification": "Not run: global writer gate. Parent must compile and execute after both writers release; no acceptance closure recorded."
+  }
+}

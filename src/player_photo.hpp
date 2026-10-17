@@ -37,8 +37,6 @@ private:
  * owns GPU/readback; no native join is accepted as completion evidence. */
 class Photo final {
 public:
-    struct Ticket { std::uint16_t context=0; std::uint64_t generation=0,submission=0;
-        friend bool operator==(const Ticket&,const Ticket&)=default; };
     Photo(IslePlayerPhotoSource&, IslePlayerSource&, actor::Owner&, items::Owner&,
           actor::DetectorBinding&, const PhotoResources&, world::World&, int32_t level_id);
     ~Photo();
@@ -47,24 +45,28 @@ public:
     IsleGameResult snapshot(std::uint16_t context,std::uint64_t generation) noexcept;
     // Bind to the concrete executing Frame, which must outlive the ticket.
     // ticket.submission must be Frame::submission().
-    IsleGameResult enqueue(Ticket,const scene::graphics::Frame&) noexcept;
+    IsleGameResult enqueue(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
     IsleGameResult bind_snapshot_owner(scene::Services&,IsleGameObject*) noexcept;
     IsleGameResult require_taken_context() noexcept;
+    IsleGameResult published_focus(IslePlayerPhotoFocus*) noexcept;
+    IsleGameResult clear_published_presence() noexcept;
+    IsleGameResult borrow_taken(IslePlayerPhotoTicket*) noexcept;
+    IsleGameResult release_taken(const IslePlayerPhotoTicket*) noexcept;
     IsleGameResult detach_snapshot_owner() noexcept;
     // Call only from Frame's actual completed-memory callback, before its
     // finish_postprocess. This performs detector analysis and red-center writes.
-    IsleGameResult postprocess(Ticket, std::span<std::uint32_t>,
+    IsleGameResult postprocess(IslePlayerPhotoTicket, std::span<std::uint32_t>,
         std::uint32_t regions,std::uint32_t framebuffer) noexcept;
     // Call only after matching Frame::poll()==completed, including RGBA readback.
-    IsleGameResult complete(Ticket) noexcept;
+    IsleGameResult complete(IslePlayerPhotoTicket) noexcept;
     IsleGameResult copy_info() noexcept;
     // Consumer borrow prevents context reuse even after complete/CopyInfo.
-    IsleGameResult borrow(Ticket,const IslePlayerPhotoContext*&) noexcept;
-    IsleGameResult release(Ticket) noexcept;
-    IsleGameResult retire(Ticket) noexcept;
+    IsleGameResult borrow(IslePlayerPhotoTicket,const IslePlayerPhotoContext*&) noexcept;
+    IsleGameResult release(IslePlayerPhotoTicket) noexcept;
+    IsleGameResult retire(IslePlayerPhotoTicket) noexcept;
     // Never publishes. Requires the same bound Frame's actual failed token
     // and quiescence; queued/postprocessed tickets only, with no active borrow.
-    IsleGameResult retire_failed(Ticket,const scene::graphics::Frame&) noexcept;
+    IsleGameResult retire_failed(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
     bool quiescent() const noexcept;
     // C leaves used by original snapshot bodies.
     IsleGameResult camera(IslePlayerPhotoData&) noexcept;
@@ -73,11 +75,13 @@ public:
     IsleGameResult effects(IslePlayerPhotoContext&) noexcept;
 private:
     enum class Phase { idle,rejected,prepared,queued,postprocessed,complete };
-    struct Pending { Ticket ticket{}; Phase phase=Phase::idle; unsigned borrows=0;
+    struct Pending { IslePlayerPhotoTicket ticket{}; Phase phase=Phase::idle; unsigned borrows=0;
         std::array<IsleGameObject*,33> holds{}; std::size_t held=0;
         const scene::graphics::Frame* frame=nullptr;
     };
-    Pending* matching(Ticket) noexcept;
+    Pending* matching(IslePlayerPhotoTicket) noexcept;
+    IsleGameResult source_access(bool cleanup=false) noexcept;
+    IsleGameResult remember(IsleGameResult) noexcept;
     IsleGameResult hold(Pending&,IsleGameObject*) noexcept;
     IsleGameResult release_pending(Pending&) noexcept;
     IslePlayerPhotoSource& source_;

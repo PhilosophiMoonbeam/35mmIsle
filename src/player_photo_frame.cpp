@@ -1,7 +1,7 @@
 #include "player_photo.hpp"
 
 namespace isle::player {
-IsleGameResult Photo::enqueue(Ticket ticket,const scene::graphics::Frame& frame) noexcept {
+IsleGameResult Photo::enqueue(IslePlayerPhotoTicket ticket,const scene::graphics::Frame& frame) noexcept {
     if(count_==2) return ISLE_GAME_EXHAUSTED;
     if(ticket.context>=2 || !ticket.submission) return ISLE_GAME_INVALID_STATE;
     if(frame.submission()!=ticket.submission || frame.submission_context()!=ticket.context ||
@@ -13,7 +13,7 @@ IsleGameResult Photo::enqueue(Ticket ticket,const scene::graphics::Frame& frame)
     pending.frame=&frame;
     queue_[(head_+count_)%2]=ticket.context; ++count_; return ISLE_GAME_OK;
 }
-IsleGameResult Photo::retire_failed(Ticket ticket,const scene::graphics::Frame& frame) noexcept {
+IsleGameResult Photo::retire_failed(IslePlayerPhotoTicket ticket,const scene::graphics::Frame& frame) noexcept {
     auto* pending=matching(ticket);
     if(!pending || pending->borrows || pending->frame!=&frame ||
        (pending->phase!=Phase::queued && pending->phase!=Phase::postprocessed) ||

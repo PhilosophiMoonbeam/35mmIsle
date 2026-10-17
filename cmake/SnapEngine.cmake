@@ -12,6 +12,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/source_factory_resources.h"
     "${PROJECT_SOURCE_DIR}/src/player_source.h"
     "${PROJECT_SOURCE_DIR}/src/player_source_bridge.c"
+    "${PROJECT_SOURCE_DIR}/src/player_camera_viewport.c"
+    "${PROJECT_SOURCE_DIR}/src/player_camera_viewport.h"
     "${PROJECT_SOURCE_DIR}/src/world_movement_state.h"
     "${PROJECT_SOURCE_DIR}/include/35mmisle/engine.h")
 file(READ "${CMAKE_CURRENT_LIST_DIR}/snap-engine-inputs.json" _isle_engine_manifest)
@@ -116,6 +118,7 @@ target_sources(isle-engine PRIVATE src/actor_source_bridge.c src/actor_source.h 
 target_sources(isle-engine PRIVATE src/item_source_bind.c src/item_source.h)
 target_sources(isle-engine PRIVATE src/source_factory_resources.h)
 target_sources(isle-engine PRIVATE src/player_source_bridge.c src/player_source.h src/world_movement_state.h)
+target_sources(isle-engine PRIVATE src/player_camera_viewport.c src/player_camera_viewport.h)
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)

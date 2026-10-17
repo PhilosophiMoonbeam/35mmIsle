@@ -626,6 +626,32 @@ static IsleGameResult access_camera(IsleGame* game, OMCamera* camera) {
     return game->fault;
 }
 
+IsleGameResult isle_game_object_camera(IsleGame* game, IsleGameObject* object,
+                                      IsleGameCamera** output) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || !valid_object(game, object) || object->type != 3 ||
+        object->data.cam == NULL || object->data.cam->obj != object)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    result = access_camera(game, object->data.cam);
+    if (result != ISLE_GAME_OK) return result;
+    *output = object->data.cam;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_camera_object(IsleGame* game, IsleGameCamera* camera,
+                                      IsleGameObject** output) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_camera(game, camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = camera->obj;
+    return ISLE_GAME_OK;
+}
+
 static void remove_camera(OMCamera* camera) {
     IsleGame* game = camera->game;
     camera->obj->type = 0;

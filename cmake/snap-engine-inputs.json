@@ -47,7 +47,7 @@
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/engine.c": {
-      "sha256": "c6a5d06558bfd12ecf753d24630d6ca3d1ac7e849a68e812f60701415c568a7d",
+      "sha256": "f200f0d98020beb4bdefdac055244d988c5b14fc0a534dbc182ca44dca459524",
       "object_lifecycle": {
         "native_order": "Original native pre-retirement observer runs once at the sole validated omDeleteGObj teardown, before any process join or payload removal. Payload corruption rejects before observer/state publication; a failed/incomplete join retains native storage and the started bit without repeating pre-notification. Existing post observer remains after all actual joins, payload removal and unlink/alive=false, before object free-list publication.",
         "source_deferred_order": "Exact own GAME df8815e75f3d79618466e01e0827c6165b93d11c src/sys/om.c:1757-1778 and 1780-1824 retain current-object deletion requests until update return or process yield/return, clear omCurrentObject/omCurrentProcess, then call the native teardown. No source definition/body/identity changes, second scheduler or early self-notification.",
@@ -104,7 +104,7 @@
       "use": "Original actual-size camera/matrix/reflection/model native payload ownership, object retirement callback/userdata and bounded arena free lists, not console or SDK ownership layouts. Native updateUser is distinct from GAME entity userData; allocation and object reuse clear both, and callback replacement preserves actor payload. Process function is the actual callable IsleGameSourceCallback, distinct from native two-argument entry/user and scheduler adapter; zero-initialized arena reuse clears identities."
     },
     "include/35mmisle/engine.h": {
-      "sha256": "21a74cd3c3d5f5c2a6028b51b4224f66ca199898d7247e06a6b8b73482b168e7",
+      "sha256": "d18f048a59f9b96bf00d2b9cc514fe8fe3f8c939614dec2bb38f2f446f1b1730",
       "object_lifecycle": "Companion isle_game_object_set_pre_retire_callback preserves existing post API/callers. Pre observer sees validated intact payload/processes at actual teardown, not the current/self request; post observes completed native joins/removal, not renderer retirement. Both observers must not throw, wait or mutate OM; userdata survives the observers and any pending command dispatch. Clearing before teardown is permitted; late pre-observer replacement is rejected.",
       "contextual_model_math": "Explicit immutable CONTEXTUAL_RPY=2 is a full finite accepted local pose, not a context-free fixed matrix. Reserved zero fixed bytes are never uploadable; computing getter evaluates accepted-pose revision without RTS/identity. Quantized/cast constraints apply only to ordinary local kinds; renderer output admission remains distinct.",
       "placement": "Typed native placement enum/record plus validate/set/stable nonmutating view. Explicit separate setter transaction, neutral disabled metadata and independent source-local cache lifetime.",

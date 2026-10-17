@@ -613,6 +613,119 @@ IsleGameCamera* camera(World& world, IsleGameObject* owner, bool matrices = true
     return result;
 }
 
+void camera_ownership_tracks_attachment_lifetime() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* next = object(world, 2);
+    auto* sprite_owner = object(world, 3);
+    IsleGameSprite* sprite = nullptr;
+    ok(isle_game_add_sprite(world.game, sprite_owner, nullptr, &sprite));
+    auto* cam = camera(world, owner, false);
+    const auto used = world.arena.cursor;
+    IsleGameCamera* selected = cam;
+    for (auto* invalid : {next, sprite_owner, static_cast<IsleGameObject*>(nullptr)}) {
+        selected = cam;
+        require(isle_game_object_camera(world.game, invalid, &selected) ==
+                    ISLE_GAME_INVALID_ARGUMENT && !selected,
+                "ownership query fabricated a camera for an empty, sprite or null object");
+    }
+    IsleGameObject* selected_owner = owner;
+    require(isle_game_camera_object(world.game, nullptr, &selected_owner) ==
+                ISLE_GAME_INVALID_ARGUMENT && !selected_owner &&
+            isle_game_object_camera(world.game, owner, nullptr) == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_camera_object(world.game, cam, nullptr) == ISLE_GAME_INVALID_ARGUMENT,
+            "ownership query accepted missing input/output");
+    ok(isle_game_object_camera(world.game, owner, &selected));
+    // Use the returned camera to remove the real payload, not just echo it.
+    ok(isle_game_remove_camera(world.game, selected));
+    selected_owner = owner;
+    selected = cam;
+    require(isle_game_camera_object(world.game, cam, &selected_owner) ==
+                ISLE_GAME_INVALID_ARGUMENT && !selected_owner &&
+            isle_game_object_camera(world.game, owner, &selected) ==
+                ISLE_GAME_INVALID_ARGUMENT && !selected,
+            "removed attachment remained accessible in either direction");
+    cam = camera(world, next, false);
+    ok(isle_game_camera_object(world.game, cam, &selected_owner));
+    require(selected_owner == next && world.arena.cursor == used,
+            "recycled camera retained its former owner or ownership lookup allocated");
+    // Deleting the returned owner must retire the canonical camera.
+    ok(isle_game_delete_object(world.game, selected_owner));
+    selected_owner = owner;
+    selected = cam;
+    require(isle_game_camera_object(world.game, cam, &selected_owner) ==
+                ISLE_GAME_INVALID_ARGUMENT && !selected_owner &&
+            isle_game_object_camera(world.game, next, &selected) ==
+                ISLE_GAME_INVALID_ARGUMENT && !selected && counts(world).cameras == 0,
+            "owner deletion left a live bidirectional attachment");
+    IsleSprite* view = nullptr;
+    ok(isle_game_sprite_view(world.game, sprite, &view));
+    require(view != nullptr, "camera ownership traversal damaged unrelated sprite payload");
+}
+
+void camera_ownership_access_and_fault_boundaries() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* empty = object(world, 2);
+    auto* cam = camera(world, owner, false);
+    bool rejected = false;
+    std::thread foreign([&] {
+        IsleGameCamera* camera_output = cam;
+        IsleGameObject* object_output = owner;
+        rejected = isle_game_object_camera(world.game, owner, &camera_output) ==
+                ISLE_GAME_WRONG_OWNER && !camera_output &&
+            isle_game_camera_object(world.game, cam, &object_output) ==
+                ISLE_GAME_WRONG_OWNER && !object_output &&
+            isle_game_object_camera(world.game, nullptr, nullptr) == ISLE_GAME_WRONG_OWNER &&
+            isle_game_camera_object(world.game, nullptr, nullptr) == ISLE_GAME_WRONG_OWNER;
+    });
+    foreign.join();
+    require(rejected, "ownership queries bypassed owner validation or failed to clear outputs");
+    EngineFixture fixture{}; fixture.game = world.game;
+    process(world, owner, engine_invalid_legacy_wait, &fixture, ISLE_GAME_SYNCHRONOUS, 5);
+    require(isle_game_tick(world.game) == ISLE_GAME_EXECUTION_FAILURE,
+            "ownership fault regression did not enter the native C failure fence");
+    IsleGameCamera* camera_output = cam;
+    IsleGameObject* object_output = owner;
+    require(isle_game_object_camera(world.game, owner, &camera_output) ==
+                ISLE_GAME_EXECUTION_FAILURE && !camera_output &&
+            isle_game_camera_object(world.game, cam, &object_output) ==
+                ISLE_GAME_EXECUTION_FAILURE && !object_output,
+            "ownership queries exposed live handles through a latched execution failure");
+    camera_output = cam;
+    object_output = owner;
+    require(isle_game_object_camera(world.game, empty, &camera_output) ==
+                ISLE_GAME_INVALID_ARGUMENT && !camera_output &&
+            isle_game_camera_object(world.game, nullptr, &object_output) ==
+                ISLE_GAME_INVALID_ARGUMENT && !object_output,
+            "ownership queries changed handle-validation precedence after failure");
+    auto* destroyed = world.game;
+    ok(isle_game_destroy(world.game));
+    world.game = nullptr;
+    camera_output = cam;
+    object_output = owner;
+    require(isle_game_object_camera(destroyed, owner, &camera_output) ==
+                ISLE_GAME_INVALID_STATE && !camera_output &&
+            isle_game_camera_object(destroyed, cam, &object_output) ==
+                ISLE_GAME_INVALID_STATE && !object_output,
+            "ownership queries accessed a destroyed game");
+    World other;
+    camera_output = cam;
+    object_output = owner;
+    require(isle_game_object_camera(other.game, owner, &camera_output) ==
+                ISLE_GAME_INVALID_ARGUMENT && !camera_output &&
+            isle_game_camera_object(other.game, cam, &object_output) ==
+                ISLE_GAME_INVALID_ARGUMENT && !object_output,
+            "ownership queries admitted handles from another retained game arena");
+    camera_output = cam;
+    object_output = owner;
+    require(isle_game_object_camera(nullptr, owner, &camera_output) ==
+                ISLE_GAME_INVALID_ARGUMENT && !camera_output &&
+            isle_game_camera_object(nullptr, cam, &object_output) ==
+                ISLE_GAME_INVALID_ARGUMENT && !object_output,
+            "null-game ownership errors retained outputs");
+}
+
 const IsleGameCameraMatrix* matrix(World& world, IsleGameCamera* owner, std::size_t index) {
     const IsleGameCameraMatrix* result = nullptr;
     ok(isle_game_camera_matrix(world.game, owner, index, &result));
@@ -2794,6 +2907,8 @@ int main() {
         deferred_object_deletion();
         actual_intro_fade_and_cold_reset();
         bounded_pool_reuse_and_failure_fence();
+        camera_ownership_tracks_attachment_lifetime();
+        camera_ownership_access_and_fault_boundaries();
         camera_geometry_and_cache();
         camera_roll_geometry_and_cache();
         camera_roll_ignores_unused_up();

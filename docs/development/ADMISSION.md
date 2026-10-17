@@ -304,8 +304,9 @@ numeric probe also distinguishes wrong path binding, cubic coefficient and
 control-point data. Production interpolation/inversion was not changed to
 make this comparison pass.
 
-All three profiles pass 57 CPU contracts and twenty whole private component
-scenarios: sixty cases over one 473-file recorded source set,
+At commit `3e47f6d61e2a625b3ab654c77cead4f5fec1c428`, all three profiles
+passed 57 CPU contracts and twenty whole private component scenarios:
+sixty cases over one 473-file recorded source set,
 `6a68fd6c3402c0374a832db6be042015ae053d6e796d773e1749f4b2a938390a`
 (SHA256 of compact, key-sorted JSON path→SHA256 records).
 Their sole initial closures establish 3,318 terminal tasks, 3,258 created tasks
@@ -326,8 +327,12 @@ The cart probe deliberately tests retained rebinds; actual Beach outro creates
 a fresh cart. Resource-clip completion is not the original intro's 290-iteration
 wait/skip/blend lifecycle. Complete cart ownership, Root106 execution, remaining
 species, full gameplay and private Windows11 runtime remain unqualified.
-The Linux/MSVC workflow now explicitly compiles all twenty consumers without
-a ROM; configuration is not evidence that a new published CI run has passed.
+Published `3e47f6d61e2a625b3ab654c77cead4f5fec1c428` passed
+[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39021360675),
+including explicit compilation of all twenty consumers without a ROM and the
+full static-runtime Windows LUS/audio/RSP/RDP/engine build. This immutable
+compiler/component evidence does not qualify subsequent camera changes or
+private Windows11 gameplay.
 
 ## Native Item and complete C interaction execution
 
@@ -884,6 +889,39 @@ Native type-3 camera ownership uses the existing bounded arena and recycled node
 The additional exact GAME spans are three declarations from `include/sys/mtx.h` (blob `4f0706f10e48d4df55f1e9bf625ede7c9fd7f6c3`) plus fixed-combine macros, the immutable sine table, `hal_mtx_f2l`, `hal_look_at_f` and `hal_perspective_fast_f` from `src/sys/matrix.c` (blob `b6c98ec45939cd9e59ef16d7e44868eee5dc250d`). Every source/adapted span hash and reviewed change is in the manifest. The original C math is compiled privately; camera ownership is original native implementation, not a claim that unadmitted GAME camera/render/animation bodies now execute.
 
 Actual GCC Debug standalone API execution created a camera with photo near10/far25600 and eye(0,0,100), computed FOV30 then60 with normalization5, mapped eye/target correctly and widened projected geometry. Matrix updates did not grow the native arena; object deletion retired all camera/matrix ownership. Permanent engine checks additionally passed geometry/fixed reconstruction, selective caching, invalid/foreign-thread access, exhaustion/reuse, typed cleanup and the two-matrix boundary. No real RSP upload, textured model, render-list emission, photo reconstruction or scoring is established by these CPU results.
+
+Returning `isle_game_object_camera` / `isle_game_camera_object` now expose the
+canonical bidirectional attachment without allocation or a second mapping.
+Wrong-kind, detached, deleted, foreign-thread and faulted access reject with
+cleared outputs; raw handles still expire at removal, including pool reuse.
+
+`isle_player_camera_set_viewport_rect` uses the original binary32 midpoint,
+quarter-pixel scaling, signed truncation and low-sixteen-bit lane semantics.
+It preserves unwritten lanes, resets source depth and delegates native
+admissibility without clamping. Nonfinite or out-of-int32 intermediates reject
+before conversion or mutation. Owner validation precedes coordinate validation.
+All five private Root viewport sites and all camera-owner reads use real native
+APIs; the initial pose publishes once, after all source assignments, avoiding
+invalid intermediate eye/target/up combinations.
+
+After these additions, all 57 CPU contracts pass Debug, Release and Clang
+ASan/UBSan. Three separate actual native programs execute the exact C
+viewport/border, initial-pose and whole-main-object-removal fragments, compute
+real matrices3/14, preserve a distinct UI camera and close all native resources.
+Their 475-file source set is
+`63e4c9fe26124cd9377ef91bc9547734eb65dd3b99ef5c2870c02a75203eca4f`.
+Each sole closure has one terminal task, no created tasks and two absent
+tracer/task identities; ROM hashes remain unchanged, with zero known physical
+attempts or permission errors. The projection witness uses independently read
+pinned GAME sine-table entries341/1365, not ideal continuous trigonometry;
+its expected matrix element is exactly `0.4950297772884369`. Production
+projection mathematics was not changed.
+
+The programs supply explicit logical-screen320×240 inputs; they do not implement
+VI/window policy, camera render registration, command/prerender dispatch or the
+complete106-body Player owner. Full Root remains private, replay-checked
+authoring—not a compiled gameplay claim. The earlier sixty-case archives retain
+their own source identity and are not relabeled as this later source set.
 
 The independent `--no-input` flag suppresses SDL gamepad initialization, ControlDeck construction/initialization, input callbacks and ImGui automatic controller enumeration without disabling rendering. Audio/graphics driver selection remains independent. Actual separately source-qualified Linux SDL3/OpenGL execution completed 120 presentations/122 C updates and 121 visual admissions/terminals. A private source-bound observer read the real default 640×480 front framebuffer before swaps1/60/100, restored GL read/pack state and forwarded every real SDL swap: swap60 showed the original sprite; swap100 was black. Actual GL strings were LLVMpipe LLVM21.1.8/Mesa26.0.8; no Null renderer or fake presentation was used.
 

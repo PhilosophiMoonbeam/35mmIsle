@@ -1,10 +1,12 @@
 #include "player_source_fixture.h"
 #include "actor_source.h"
 #include "item_source.h"
+#include "player_camera_viewport.h"
 #include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <source_location>
 #include <stdexcept>
 #include <string>
@@ -152,13 +154,114 @@ void nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status() {
         require(destroyed,"returned C failure bypassed C++ owner destruction");
     }
 }
+void source_viewport_conversion_retains_quarterpixels_and_signed_low_lanes() {
+    World world;
+    IsleGameCamera* camera=nullptr;
+    ok(isle_game_attach_camera(world.game,world.object(7),&camera));
+    // Non-source depth makes the required reset observable, not a default echo.
+    IsleGameViewport seed{{120,80,100,0},{400,300,200,0}};
+    ok(isle_game_camera_set_viewport(world.game,camera,&seed));
+    struct Case {
+        float ulx,uly,lrx,lry;
+        std::array<std::int16_t,2> scale,translate;
+    };
+    const Case cases[] = {
+        {14,12,305,233,{582,442},{638,490}},
+        {0.3125f,-5.9375f,3.0625f,-1.3125f,{5,9},{6,-14}},
+        {-3.125f,-5.875f,-0.375f,-1.125f,{5,9},{-7,-14}},
+        {8190.25f,-8195.125f,8193.75f,-8191.375f,{7,7},{-32768,32763}},
+        // Conversion wraps before native admission, rather than clamping or
+        // rejecting a rectangle solely for its source width or endpoint order.
+        {0,0,32770,10,{4,20},{4,20}},
+        {32766,0,0,10,{4,20},{-4,20}}
+    };
+    for (const auto& test : cases) {
+        ok(isle_player_camera_set_viewport_rect(world.game,camera,
+            test.ulx,test.uly,test.lrx,test.lry));
+        const IsleGameCameraParameters* parameters=nullptr;
+        ok(isle_game_camera_parameters(world.game,camera,&parameters));
+        const auto& viewport=parameters->viewport;
+        for (std::size_t axis=0;axis<2;++axis)
+            require(viewport.scale[axis] == test.scale[axis] &&
+                    viewport.translate[axis] == test.translate[axis],
+                    "source viewport lost midpoint/truncation or signed low-sixteen-bit semantics");
+        require(viewport.scale[2] == 511 && viewport.translate[2] == 511 &&
+                viewport.scale[3] == seed.scale[3] && viewport.translate[3] == seed.translate[3],
+                "source viewport failed to reset depth or preserve unwritten lanes");
+    }
+}
+
+void source_viewport_rejections_preserve_native_camera_and_owner_errors() {
+    World world;
+    IsleGameCamera* camera=nullptr;
+    ok(isle_game_attach_camera(world.game,world.object(7),&camera));
+    ok(isle_player_camera_set_viewport_rect(world.game,camera,-9.125f,1.375f,31.625f,27.875f));
+    const IsleGameCameraParameters* parameters=nullptr;
+    ok(isle_game_camera_parameters(world.game,camera,&parameters));
+    const IsleGameViewport before=parameters->viewport;
+    const auto unchanged=[&] {
+        const IsleGameCameraParameters* current=nullptr;
+        ok(isle_game_camera_parameters(world.game,camera,&current));
+        for (std::size_t axis=0;axis<4;++axis)
+            require(current->viewport.scale[axis] == before.scale[axis] &&
+                    current->viewport.translate[axis] == before.translate[axis],
+                    "rejected viewport conversion partially mutated the native camera");
+    };
+    const float inf=std::numeric_limits<float>::infinity();
+    const float nan=std::numeric_limits<float>::quiet_NaN();
+    const float largest=std::numeric_limits<float>::max();
+    const std::array<float,4> rejected[] = {
+        {nan,0,320,240}, {0,inf,320,240}, {0,0,-inf,240}, {0,0,320,nan},
+        {largest,0,largest,240}, // finite inputs, overflowing source midpoint
+        {0,0,largest,240},      // finite midpoint, overflowing quarterpixel scale
+        {536870912.0f,0,536870912.0f,240}, // +2^31 must not reach a signed cast
+        {-536870976.0f,0,-536870976.0f,240},
+        {0,0,0.25f,240},        // truncated zero scale rejected by native setter
+        {0,0,20000,240},        // low-sixteen-bit scale is negative
+        {10,0,0,240}            // negative scale is not silently repaired
+    };
+    for (const auto& rect : rejected) {
+        require(isle_player_camera_set_viewport_rect(world.game,camera,
+                    rect[0],rect[1],rect[2],rect[3]) == ISLE_GAME_INVALID_ARGUMENT,
+                "invalid source viewport was accepted or its native error was replaced");
+        unchanged();
+    }
+    // Exercise native setter admission independently: failure must remain a
+    // returning, nonmutating operation rather than a source-side clamp.
+    for (int lane : {0,2,3}) {
+        auto invalid=before;
+        if (lane == 0) invalid.scale[0]=0;
+        else if (lane == 2) invalid.translate[2]=510;
+        else invalid.scale[3]=1;
+        require(isle_game_camera_set_viewport(world.game,camera,&invalid) == ISLE_GAME_INVALID_ARGUMENT,
+                "native viewport setter accepted invalid scale, depth or reserved lane");
+        unchanged();
+    }
+    require(isle_player_camera_set_viewport_rect(world.game,nullptr,0,0,320,240) ==
+                ISLE_GAME_INVALID_ARGUMENT,
+            "source viewport manufactured a camera for a missing owner");
+    bool wrong_owner=false;
+    std::thread foreign([&] {
+        wrong_owner=isle_player_camera_set_viewport_rect(world.game,camera,nan,0,320,240) ==
+                ISLE_GAME_WRONG_OWNER &&
+            isle_player_camera_set_viewport_rect(world.game,nullptr,0,0,320,240) ==
+                ISLE_GAME_WRONG_OWNER;
+    });
+    foreign.join();
+    require(wrong_owner,"source viewport validated coordinates or camera before native owner access");
+    unchanged();
+    require(isle_game_status(world.game) == ISLE_GAME_OK,
+            "returning viewport rejection poisoned native execution status");
+}
 }
 int main() {
     try {
         canonical_root_cannot_alias_actor_item_foreign_or_second_context();
         helper_uses_game_context_across_real_wait_without_payload_cast();
         nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status();
-        std::cout << "Player context ownership, C fences and real continuation boundaries passed\n";
+        source_viewport_conversion_retains_quarterpixels_and_signed_low_lanes();
+        source_viewport_rejections_preserve_native_camera_and_owner_errors();
+        std::cout << "Player context ownership, C fences, continuations and source viewport boundaries passed\n";
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n'; return 1;

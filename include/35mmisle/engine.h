@@ -309,6 +309,19 @@ typedef struct IsleGameCameraReflection {
  */
 IsleGameResult isle_game_attach_camera(IsleGame* game, IsleGameObject* object,
                                       IsleGameCamera** output);
+/* Borrow the actual bidirectional attachment; neither call allocates or copies.
+ * object must be explicit (NULL does not select the current callback object).
+ * Empty and noncamera objects return INVALID_ARGUMENT, never OK with NULL.
+ * Outputs are cleared on every error. Game access precedes handle validation;
+ * valid handles propagate the game's latched execution fault.
+ * Returned raw handles do not retain either owner. Camera handles expire on
+ * removal/deletion; object handles expire on deletion/game destruction.
+ * Pool reuse does not revive an expired handle or permit stale-handle use.
+ */
+IsleGameResult isle_game_object_camera(IsleGame* game, IsleGameObject* object,
+                                      IsleGameCamera** output);
+IsleGameResult isle_game_camera_object(IsleGame* game, IsleGameCamera* camera,
+                                      IsleGameObject** output);
 IsleGameResult isle_game_camera_add_matrix(IsleGame* game, IsleGameCamera* camera,
                                           IsleGameCameraMatrixKind kind);
 IsleGameResult isle_game_camera_set_perspective(IsleGame* game, IsleGameCamera* camera,

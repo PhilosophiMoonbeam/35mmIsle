@@ -177,3 +177,5 @@ tests/cart_animation_reference.hpp text eol=lf
 tests/cart_animation_reference.cpp text eol=lf
 tests/cart_animation_reference_numeric.h text eol=lf
 tools/prepare_cart_animation_reference.py text eol=lf
+src/player_camera_viewport.h text eol=lf
+src/player_camera_viewport.c text eol=lf

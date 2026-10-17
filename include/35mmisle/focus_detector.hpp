@@ -50,6 +50,16 @@ public:
     const Focus& published() const noexcept { return published_; }
     const Photo* photo(std::uint16_t context) const noexcept;
     void publish() noexcept; // Source CopyInfo; analysis does not publish early.
+    // Production completed-frame publication. The reservation prevents native
+    // producers from overwriting a snapshot/history still owned by GPU/readback
+    // or a photo consumer. Existing synchronous consumers keep publish().
+    // Read-only admission for a producer's actual append/stage destinations.
+    // False for invalid or retained contexts; the exclusive owner must prevent
+    // retention changes between this preflight and metadata/GPU publication.
+    bool context_available(std::uint16_t context) const noexcept;
+    Error retain_context(std::uint16_t context, std::uint64_t generation) noexcept;
+    Error release_context(std::uint16_t context, std::uint64_t generation) noexcept;
+    Error publish_context(std::uint16_t context, std::uint64_t generation) noexcept;
     void cleanup(Object) noexcept; // All two-context history rows, then computed flag.
     // Source postprocess draws 21 red pixels in the 320x240 framebuffer only for
     // direction -1 and focused flag4. Canonical words are modified in place;
@@ -62,6 +72,9 @@ private:
         std::array<Subject,history_capacity> subjects{};
         std::size_t count = 0;
         Photo photo{};
+        Focus completed{};
+        std::uint64_t generation = 0;
+        bool retained = false, analyzed = false;
     };
     std::array<Context,2> contexts_{};
     Focus computed_{}, published_{};

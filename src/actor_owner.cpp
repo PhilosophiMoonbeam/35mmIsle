@@ -177,6 +177,7 @@ struct Owner::Impl {
     menu::EffectRuntime fx;
     IsleGameObject* particle_object = nullptr;
     IsleGameObject* effect_object = nullptr;
+    bool effects_publication_started = false;
     std::array<Slot*,40> logical{};
     std::size_t logical_count = 0;
     std::array<BlockEntry,100> block_entries{};
@@ -206,16 +207,6 @@ struct Owner::Impl {
         auto result=menu::animation::Runtime::create({r.models(),r.materials(),r.animations(),menu::no_index,{}},c,{},execution);
         if (!result) throw std::runtime_error("actor animation Runtime admission failed");
         runtime=std::move(result.runtime);
-        particle_object=services.object(static_cast<std::uint32_t>(-6));
-        effect_object=services.object(static_cast<std::uint32_t>(-7));
-        if (!particle_object || !effect_object ||
-            !services.set_lifecycle(particle_object,{nullptr,fx_joined,this}) ||
-            !services.set_lifecycle(effect_object,{nullptr,fx_joined,this}) ||
-            !services.set_update(particle_object,particles_tick,this) || !services.set_update(effect_object,effects_tick,this)) {
-            if (particle_object) services.erase(particle_object);
-            if (effect_object) services.erase(effect_object);
-            throw std::runtime_error("actor shared source FX owner construction failed");
-        }
     }
     Slot* find(menu::animation::InstanceHandle handle,bool retiring=false) noexcept {
         if (!handle || handle.slot>=slots.size()) return nullptr;
@@ -230,12 +221,24 @@ struct Owner::Impl {
         if (self.particle_object==object) self.particle_object=nullptr;
         if (self.effect_object==object) self.effect_object=nullptr;
     }
-    static void particles_tick(IsleGameObject*,void* user) noexcept {
+    static void particles_tick(IsleGameObject* object,void* user) noexcept {
         auto& self=*static_cast<Impl*>(user);
+        IsleGameObjectMetadata metadata{};
+        if (isle_game_object_metadata(self.services.game,object,&metadata)!=ISLE_GAME_OK) {
+            self.services.fail("actor particle owner flags");
+            return;
+        }
+        self.fx.pause_lists(static_cast<std::uint16_t>(metadata.flags>>16));
         if (!self.fx.update_particles()) self.services.fail("actor shared particle update");
     }
-    static void effects_tick(IsleGameObject*,void* user) noexcept {
+    static void effects_tick(IsleGameObject* object,void* user) noexcept {
         auto& self=*static_cast<Impl*>(user);
+        IsleGameObjectMetadata metadata{};
+        if (isle_game_object_metadata(self.services.game,object,&metadata)!=ISLE_GAME_OK) {
+            self.services.fail("actor effect owner flags");
+            return;
+        }
+        self.fx.pause_lists(static_cast<std::uint16_t>(metadata.flags>>16));
         if (!self.fx.update_effects(resolve,&self)) self.services.fail("actor shared effect update");
     }
     static bool resolve(void* user,menu::EffectAttachment attachment,menu::EffectWorld& output) noexcept {
@@ -429,6 +432,34 @@ Owner::Owner(scene::Services& s,const beach::ActorResources& r,world::World& w,e
              focus::Detector& d,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
              menu::animation::ExecutionCapacity execution) : impl_(std::make_unique<Impl>(s,r,w,e,d,c,banks,execution)) {
     impl_->facade=this;
+}
+OwnerStatus Owner::publish_effects() noexcept {
+    auto& self=*impl_;
+    if (self.services.failed())
+        return rejected(OwnerError::services,"actor FX publication requires live Services");
+    if (self.effects_publication_started)
+        return rejected(OwnerError::lifetime,"actor FX helpers already published or publication attempted");
+    self.effects_publication_started=true;
+    const auto publish=[&](std::uint32_t id,IsleGameCallback update,IsleGameObject*& output) {
+        auto* object=self.services.object(id);
+        if (!object) return false;
+        if (!self.services.set_lifecycle(object,{nullptr,Impl::fx_joined,&self})) {
+            // No Impl observer/update was installed; Services retains ownership
+            // through its real deletion even if this operation failed.
+            self.services.erase(object);
+            return false;
+        }
+        output=object;
+        return self.services.set_update(object,update,&self);
+    };
+    if (publish(static_cast<std::uint32_t>(-6),Impl::particles_tick,self.particle_object) &&
+        publish(static_cast<std::uint32_t>(-7),Impl::effects_tick,self.effect_object))
+        return {};
+    // A failed late publication is terminal, not an invented source retry.
+    // Only actual joined callbacks clear handles, including deferred deletion.
+    if (self.particle_object) self.services.erase(self.particle_object);
+    if (self.effect_object) self.services.erase(self.effect_object);
+    return rejected(OwnerError::services,"actor shared source FX publication failed");
 }
 Owner::~Owner() {
     if (!reset()) {
@@ -831,8 +862,12 @@ OwnerStatus Owner::bind_interactions(InteractionServices& context) noexcept {
 OwnerStatus Owner::set_player(IsleGameObject* object,IsleGameModel* model,IsleGameCamera* camera) noexcept {
     if ((object==nullptr)!=(model==nullptr) || (model==nullptr)!=(camera==nullptr))
         return rejected(OwnerError::admission,"player object/model/camera binding must be genuinely present or absent");
-    if ((object && isle_game_model_validate_binding(impl_->services.game,object,model)!=ISLE_GAME_OK) || !impl_->sound.set_listener(model,camera))
-        return rejected(OwnerError::native,"actual player/listener binding");
+    const IsleGameModelPlacement* placement=nullptr;
+    const IsleGameCameraParameters* parameters=nullptr;
+    if (object && (isle_game_model_validate_binding(impl_->services.game,object,model)!=ISLE_GAME_OK ||
+        isle_game_model_placement(impl_->services.game,model,&placement)!=ISLE_GAME_OK ||
+        isle_game_camera_parameters(impl_->services.game,camera,&parameters)!=ISLE_GAME_OK))
+        return rejected(OwnerError::native,"actual player binding");
     impl_->player.object=object; impl_->player.model=model; impl_->player.camera=camera;
     return {};
 }

@@ -1,6 +1,7 @@
 #include "startup_runtime.hpp"
 #include "menu_scene_bridge.h"
 #include "scene_storage.hpp"
+#include "screen_transition_source.h"
 
 #include <algorithm>
 #include <exception>
@@ -24,7 +25,7 @@ struct Runtime::Impl {
     ::isle::save::ScreenOffsets offsets{};
     Exit requested{};
     IsleGameSprite* logo_sprite = nullptr;
-    IsleGameCamera *sprite_camera = nullptr, *fade_camera = nullptr;
+    IsleGameCamera* sprite_camera = nullptr;
     std::unique_ptr<scene::Services> services;
     std::unique_ptr<menu::scene::Title> title;
     std::unique_ptr<menu::scene::Ui> ui;
@@ -197,14 +198,11 @@ struct Runtime::Impl {
             camera(services->object(0xffffffffu),false) == nullptr) return false;
         title = std::make_unique<menu::scene::Title>(*services,catalog);
         sprite_camera = camera(services->object(3),true);
-        fade_camera = camera(services->object(5),true);
-        if (sprite_camera == nullptr || fade_camera == nullptr || services->failed()) {
+        if (!native(isle_screen_transition_func_800A7F68(
+                services->screen_transition_source(),0,1),"source transition camera")) return false;
+        if (sprite_camera == nullptr || services->failed()) {
             fail(Error::native,services->failed() ? services->error() : "main-menu static camera initialization failed"); return false;
         }
-        const IsleGamePerspective projection{45,321.0f/241.0f,8,1024,1};
-        const IsleGameLookAt look{{290,0,0},{0,0,0},{0,0,1}};
-        if (!native(isle_game_camera_set_perspective(storage.game(),fade_camera,&projection),"source fade projection") ||
-            !native(isle_game_camera_set_look_at(storage.game(),fade_camera,&look),"source fade view")) return false;
         ui = std::make_unique<menu::scene::Ui>(*services,*title,catalog);
         if (!ui->start() || services->failed()) { fail(Error::native,services->error()); return false; }
         phase = Phase::title_menu;
@@ -225,7 +223,7 @@ struct Runtime::Impl {
             owner.object = nullptr;
         }
         logo_sprite = nullptr;
-        sprite_camera = fade_camera = nullptr;
+        sprite_camera = nullptr;
         return true;
     }
 };
@@ -304,7 +302,7 @@ View Runtime::view() noexcept {
     auto& self = *impl_;
     if (self.phase != Phase::logo && self.phase != Phase::title_menu) return {};
     return {self.phase == Phase::logo ? menu::Scene::logo : menu::Scene::title_menu,self.storage.game(),
-        self.sprite_camera,self.fade_camera,self.logo_sprite,self.services.get(),self.title.get(),
+        self.sprite_camera,self.logo_sprite,self.services.get(),self.title.get(),
         self.phase == Phase::logo ? 0u : 0x6464b4ffu,self.ui ? self.ui->screen_offsets() : self.offsets};
 }
 Exit Runtime::exit() const noexcept { return impl_->requested; }

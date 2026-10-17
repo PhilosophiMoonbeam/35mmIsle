@@ -536,6 +536,114 @@ void attached_lifetime(Consumer& consumer,std::span<const menu::EffectBank* cons
     owner.effects().reset();
 }
 
+void native_fx_pause_masks(Consumer& consumer,std::span<const menu::EffectBank* const> banks) {
+    auto& owner=consumer.owner;
+    auto& services=consumer.services;
+    auto& effects=owner.effects();
+    IsleGameObjectMetadata particle_metadata{},effect_metadata{};
+    native(isle_game_object_metadata(services.game,owner.particle_object(),&particle_metadata));
+    native(isle_game_object_metadata(services.game,owner.effect_object(),&effect_metadata));
+    const auto flags=[&](bool particles_paused,bool emitters_paused) {
+        native(isle_game_object_set_flags(services.game,owner.particle_object(),
+            particle_metadata.flags|(particles_paused?0xffff0000u:0u)));
+        native(isle_game_object_set_flags(services.game,owner.effect_object(),
+            effect_metadata.flags|(emitters_paused?0xffff0000u:0u)));
+    };
+    effects.reset();
+    flags(false,false);
+    consumer.tick();
+    menu::EffectParticleView frozen{};
+    bool particle_found=false;
+    for (const auto* bank:banks) {
+        for (std::size_t script=0;script<bank->scripts.size();++script) {
+            effects.reset();
+            const auto made=effects.create_particle(static_cast<std::uint16_t>(bank->bank_id),
+                script,{17,23,29},{3,5,7});
+            require(bool(made.status),"real pause particle admission failed");
+            if (effects.particle(0,frozen)&&frozen.lifetime>8) {
+                particle_found=true;
+                break;
+            }
+        }
+        if (particle_found) break;
+    }
+    require(particle_found,"no admitted live particle for native-owner mask boundary");
+    const auto particle_owner=owner.particle_object(),effect_owner=owner.effect_object();
+    const auto publication_seed=services.rng.seed;
+    const auto repeated=owner.publish_effects();
+    require(!repeated&&repeated.error==actor::OwnerError::lifetime&&
+        owner.particle_object()==particle_owner&&owner.effect_object()==effect_owner&&
+        services.rng.seed==publication_seed,
+        "repeated FX publication accepted, replaced live owners or consumed RNG");
+    flags(true,true);
+    const auto paused_seed=services.rng.seed;
+    for (unsigned frame=0;frame<4;++frame) consumer.tick();
+    menu::EffectParticleView held{};
+    const bool particle_held=effects.particle(0,held)&&held.lifetime==frozen.lifetime&&
+        same(held.position,frozen.position)&&same(held.velocity,frozen.velocity)&&
+        held.size==frozen.size&&held.flags==frozen.flags&&held.effect_id==frozen.effect_id&&
+        held.primitive==frozen.primitive&&held.environment==frozen.environment&&
+        held.frame==frozen.frame&&held.texture==frozen.texture;
+    if (!particle_held) std::cerr<<"native FX particle owner mask did not freeze its actual source particle\n";
+    require(particle_held&&services.rng.seed==paused_seed,
+        "actual masked particle owner advanced particle or shared RNG");
+    flags(false,true);
+    consumer.tick();
+    menu::EffectParticleView advanced{};
+    require(!effects.particle(0,advanced)||advanced.lifetime!=frozen.lifetime||
+        !same(advanced.position,frozen.position)||advanced.frame!=frozen.frame||
+        advanced.primitive!=frozen.primitive,
+        "unmasking only particle owner did not resume real particle evolution");
+
+    effects.reset();
+    flags(false,false);
+    consumer.tick();
+    std::uint16_t selected_bank=0;
+    std::size_t selected_script=0;
+    unsigned first_emission=0;
+    isle_rng selected_seed{};
+    for (const auto* bank:banks) {
+        for (std::size_t script=0;script<bank->scripts.size()&&!first_emission;++script) {
+            effects.reset();
+            const auto seed=services.rng;
+            const auto made=effects.create_effect(static_cast<std::uint16_t>(bank->bank_id),script);
+            require(bool(made.status),"real pause emitter admission failed");
+            if (!made.spawned) continue;
+            for (unsigned frame=1;frame<=512&&effects.effect_count();++frame) {
+                accepted(owner.update_effects());
+                menu::EffectParticleView emitted{};
+                if (effects.particle(0,emitted)&&emitted.lifetime>1) {
+                    selected_bank=static_cast<std::uint16_t>(bank->bank_id);
+                    selected_script=script;
+                    first_emission=frame;
+                    selected_seed=seed;
+                    break;
+                }
+            }
+        }
+        if (first_emission) break;
+    }
+    require(first_emission!=0,"no actual bounded emitter program for independent owner mask");
+    effects.reset();
+    services.rng=selected_seed;
+    const auto emitter=effects.create_effect(selected_bank,selected_script);
+    require(bool(emitter.status)&&emitter.spawned,"real selected emitter reinitialization failed");
+    flags(false,true);
+    const auto emitter_seed=services.rng.seed;
+    for (unsigned frame=0;frame<first_emission+2;++frame) consumer.tick();
+    require(effects.effect_count()==1&&effects.particle_count()==0&&services.rng.seed==emitter_seed,
+        "masked emitter consumed its source clock or RNG while particle owner was unmasked");
+    flags(false,false);
+    for (unsigned frame=0;frame<first_emission;++frame) consumer.tick();
+    menu::EffectParticleView emitted{};
+    require(effects.particle(0,emitted)&&emitted.effect_id==emitter.effect_id,
+        "unmasking actual emitter owner did not resume its original source emission");
+    effects.reset();
+    native(isle_game_object_set_flags(services.game,owner.particle_object(),particle_metadata.flags));
+    native(isle_game_object_set_flags(services.game,owner.effect_object(),effect_metadata.flags));
+    std::cout<<"actual_FX_native_owner_independent_high16_masks=passed particle_freeze_resume emitter_clock_RNG_freeze_resume\n";
+}
+
 // Full-handle native pose context for the standalone actual-header scene. Its
 // sole FX owner never resolves through an unrelated Owner/Runtime slot domain.
 struct EventPose {
@@ -621,6 +729,20 @@ bool child_event_emission(IsleActorSource& record,const a::CallbackEvent& event,
     emitted=emitted&&displaced(particles[0].position,particles[1].position,placement_shift)&&
                      displaced(particles[0].position,particles[2].position,child_shift);
     if (emitted) {
+        // This is the event actually emitted by an admitted child animation,
+        // not an invented callback. Neither missing native publication may
+        // allocate an emitter or advance the shared RNG.
+        for (unsigned missing=0;missing<3;++missing) {
+            effects.reset(); record.tangible=1;
+            auto unpublished=context;
+            if (missing!=1) unpublished.particle_owner=nullptr;
+            if (missing!=0) unpublished.effect_owner=nullptr;
+            const auto unpublished_seed=pose.services.rng.seed;
+            accepted(actor::dispatch_event(record,event,unpublished));
+            require(!effects.effect_count()&&!effects.particle_count()&&
+                pose.services.rng.seed==unpublished_seed,
+                "actual child animation event crossed an unpublished FX-owner gate");
+        }
         effects.reset(); record.tangible=0;
         accepted(actor::dispatch_event(record,event,context));
         require(bool(effects.update_effects(EventPose::world,&pose))&&bool(effects.update_particles())&&
@@ -862,13 +984,22 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             auto* camera_object=services.object(1,0); require(camera_object,"actual camera object failed");
             IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
             const IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&view));
-            environment_sound::Environment environment(services,storage.arena(),sound_resources,nullptr,camera);
+            environment_sound::Environment environment(services,storage.arena(),sound_resources);
+            require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector;
             WorldShift shift{&services,camera,nullptr};
             world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,WorldShift::camera_shift,WorldShift::effect_shift,nullptr});
             a::SlotCapacity capacity{};
             for (const auto& model:resources.models()) { const auto c=a::slot_capacity(model); capacity.nodes=std::max(capacity.nodes,c.nodes); capacity.material_attachments=std::max(capacity.material_attachments,c.material_attachments); }
             const std::array capacities{capacity,capacity};
+            {
+                // The real failed-factory/recovery and live-source teardown
+                // must also work when course FX publication was never reached.
+                actor::Owner prepared(services,resources,world,environment,detector,capacities,banks,{32768,4096});
+                Consumer consumer(services,prepared,world,resources,detector);
+                consumer.invalid_placement();
+                consumer.spawn(1); // The unpublished owner's destructor joins it.
+            }
             {
                 auto* listener_object=services.object(2,9); require(listener_object,"standalone actual listener object failed");
                 const IsleGameModelNodeInit listener_node{UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE};
@@ -880,8 +1011,9 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             }
             {
                 actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096}); shift.owner=&owner;
+                accepted(owner.publish_effects());
                 Consumer consumer(services,owner,world,resources,detector);
-                consumer.invalid_placement(); consumer.normal(); consumer.hidden(); consumer.pause_and_update(); consumer.capacity_and_reuse();
+                consumer.normal(); consumer.hidden(); consumer.pause_and_update(); consumer.capacity_and_reuse();
                 auto* player_object=services.object(2,9); require(player_object,"actual listener object allocation failed");
                 const IsleGameModelNodeInit player_node{UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE};
                 IsleGameModel* player=nullptr; native(isle_game_attach_model(services.game,player_object,&player_node,1,&player));
@@ -892,6 +1024,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 accepted(sounding.status);
                 auto* sound_record=owner.source(sounding.instance);
                 sound_record->playerDist=200;
+                require(environment.play({sounding.object,owner.native_model(sounding.instance),&sound_record->playerDist},1,0x34)&&
+                    environment.sound_handle(0x34)==-1,
+                    "Actor Player association implicitly published the environmental listener");
+                require(environment.set_listener(player,camera),"environment listener binding failed");
                 require(environment.play({sounding.object,owner.native_model(sounding.instance),&sound_record->playerDist},1,0x34),
                         "actual source categorized voice setup failed");
                 const auto voice=environment.sound_handle(0x34);
@@ -904,8 +1040,20 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 require(environment.sound_handle(0x34)==voice&&environment.update()&&
                         session.playing_sound(static_cast<unsigned>(voice))==0x34,
                         "cleanup blanket-stopped source voice or retained a freed live-model sound borrow");
-                accepted(owner.set_player(nullptr,nullptr,nullptr)); services.erase(player_object);
+                accepted(owner.set_player(nullptr,nullptr,nullptr));
+                require(environment.set_listener(nullptr,nullptr),"environment listener release failed"); services.erase(player_object);
                 attached_lifetime(consumer,banks);
+                native_fx_pause_masks(consumer,banks);
+                auto* particle_owner=owner.particle_object();
+                services.erase(owner.effect_object());
+                const auto retired_publication=owner.publish_effects();
+                require(!retired_publication&&retired_publication.error==actor::OwnerError::lifetime&&
+                    !owner.effect_object()&&owner.particle_object()==particle_owner,
+                    "actual effect-owner join allowed partial FX republishing");
+                services.erase(particle_owner);
+                require(!owner.particle_object()&&!owner.effect_object()&&!services.failed(),
+                    "actual FX joins did not release owner callback storage");
+                consumer.tick();
                 shift.owner=nullptr;
             }
             world.retire(); environment.cleanup();

@@ -1,0 +1,510 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "player-ui-complete-v1",
+  "generator_sha256": "2a38bd434eee84afa8841aeb8729b9ec7d5f569e6ac99256e8cf3763a6d565c9",
+  "source_files": {
+    "src/app_level/msg.c": {
+      "git_blob": "17403e5e5e3e91b32fa5d2e2363a6b23e8bb2f46",
+      "sha256": "4992336068bb90416face0a60ca924d3f14e230c6d0b20c08dbf8f14ec26c332"
+    },
+    "src/app_level/icons.c": {
+      "git_blob": "e749ab9bd32af6f4e0c8eb720f1ab483182b2de4",
+      "sha256": "aeeec7bd24d5444cd6bf8d77dca6d9e3659102bb5d3384f81e7b2ac0fa8a7a47"
+    },
+    "src/app_level/4FE780.c": {
+      "git_blob": "d5303a749169b1e27111628bbfb6439740060ed8",
+      "sha256": "0fee8f2f1b5553f613aa0c76c7f3da3e05bbdb320888ff2633d28e8292735b17"
+    },
+    "src/app_level/font.c": {
+      "git_blob": "2202affbfe835c9c249c87387e350fbcb788958d",
+      "sha256": "14fa451e1aaab72e102b7e444ea1220f89c2639e6c275cab7c97fb026ded077c"
+    },
+    "src/app_level/player.c": {
+      "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
+      "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b"
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4"
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096"
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d"
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd"
+    }
+  },
+  "native_support": {},
+  "context_globals": [
+    "D_80388204_528614",
+    "D_8038821C_52862C",
+    "D_80388E00_529210",
+    "D_80388F60_529370",
+    "D_803890C0_5294D0",
+    "D_80389220_529630",
+    "D_8038A024_52A434",
+    "D_8038A028_52A438",
+    "D_8038A02C_52A43C",
+    "D_8038A030_52A440",
+    "D_803936B8_533AC8",
+    "D_80393738_533B48",
+    "D_8039379C_533BAC",
+    "D_803AF8BC_54FCCC",
+    "D_803B09D8_550DE8",
+    "D_803B09DC_550DEC",
+    "D_803B0A10_550E20",
+    "D_803B0A14_550E24",
+    "D_803B0A18_550E28",
+    "D_803B0A1C_550E2C",
+    "Icons_ButtonIcons",
+    "Icons_ButtonIconsCopy",
+    "Icons_DashEngineEnabled",
+    "Icons_FluteIsPlayed",
+    "Icons_IconDefs",
+    "Icons_IconObjects",
+    "Icons_IsShown",
+    "Icons_IsZoomedIn",
+    "Icons_ItemFlags",
+    "Icons_MainObject",
+    "Icons_MoveOutCounter",
+    "Icons_NumItemsAvailable",
+    "Icons_TotalMoveOutFrameCounter",
+    "Message_ScaleX",
+    "Message_ScaleY",
+    "Msg_BlinkAlpha",
+    "Msg_BlinkEnabled",
+    "Msg_BlinkFrameCounter",
+    "Msg_BlinkState",
+    "Msg_Camera",
+    "Msg_CameraObject",
+    "Msg_CharOffsetX",
+    "Msg_CharOffsetY",
+    "Msg_CharType",
+    "Msg_FrameCounter",
+    "Msg_ImageIndex",
+    "Msg_IsInteractive",
+    "Msg_IsPrinted",
+    "Msg_LineHeight",
+    "Msg_LineSpacing",
+    "Msg_MessageLength",
+    "Msg_MessageText",
+    "Msg_PosX",
+    "Msg_PosY",
+    "Msg_PrintDelay",
+    "Msg_PrintedText",
+    "Msg_ShadowEnabled",
+    "Msg_SpecialHandler",
+    "Msg_TextColorA",
+    "Msg_TextColorB",
+    "Msg_TextColorG",
+    "Msg_TextColorR",
+    "font_mono_bitmaps",
+    "font_rgb_bitmaps"
+  ],
+  "definitions": [
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_UpdatePrinter",
+      "first": 48,
+      "last": 83,
+      "source_sha256": "abd63f2302de8ae8c2001e31f56dbdf593e7df65a37bc8ba1b44f7a68f3b1b4b"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_GetGlyphWidth",
+      "first": 85,
+      "last": 93,
+      "source_sha256": "19fbe83217aa4fe2f0da4281e54f0c66b974f8b21e302aca87ee6ceef2b10712"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_GetCharParams",
+      "first": 95,
+      "last": 209,
+      "source_sha256": "5c2585b6121ccfafe10b9e9f9a64fa4bb2a1406f7b736891ee62bb5b42719894"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_DrawChar",
+      "first": 211,
+      "last": 238,
+      "source_sha256": "1dcb766f30560a5d0b676b0b0a5582b6c7e9dbf6fb453ff9a8ad0498e1992cd0"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_DrawMessage",
+      "first": 240,
+      "last": 315,
+      "source_sha256": "07f5c690a7dc4ed0ea65c31ddc76012e21718bb4e1af5e9bd8f338aa3cae2c82"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_InitCamera",
+      "first": 317,
+      "last": 327,
+      "source_sha256": "7aa2fdf6fc74527211bb2c95a2edc234cf2ff2503c5bb22bdd26fce9a6a11dd5"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_ShowMessage",
+      "first": 329,
+      "last": 375,
+      "source_sha256": "78e343b4f36ecfd7236b884d44fe818dfa36baaf3f370611567de90b84df1c9a"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_Reset",
+      "first": 377,
+      "last": 380,
+      "source_sha256": "47880f0bd9ae555cc695b43fc32c942942653334d8170babfb56042243fc1eb4"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_SetSpecialHandler",
+      "first": 382,
+      "last": 384,
+      "source_sha256": "f1ae6b608e65b654dcd51ba2e604338aeae76342a643ae64c6c96022387aac4a"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_SetNonInteractive",
+      "first": 386,
+      "last": 388,
+      "source_sha256": "619b68082c1fd699a7c5b78c22891b349d39c32f464889a61214c10ac89875b4"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_SetInteractive",
+      "first": 390,
+      "last": 392,
+      "source_sha256": "fffd8ba101fec6f3f01a365c89b95ddd7e8be7b02f12e9988164c3ac4fed228e"
+    },
+    {
+      "path": "src/app_level/msg.c",
+      "symbol": "Msg_IsMessagePrinted",
+      "first": 394,
+      "last": 396,
+      "source_sha256": "2ed0905cf06361e108fe8f1e64c39bb2ad8bf7b67d3452b0cc3f401ae620b2dc"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_UpdateDefault",
+      "first": 88,
+      "last": 89,
+      "source_sha256": "9c8882c1317f23967511bb45f06665f43a3c98261e73a070712f570c4a67d045"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "func_8035CBB8_4FCFC8",
+      "first": 91,
+      "last": 96,
+      "source_sha256": "bc2a60f10fea9512b51ed70aeaf14cf2b79543c240407808c4043851912a51e1"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_ShakeIcon",
+      "first": 98,
+      "last": 112,
+      "source_sha256": "e538512911450c11b96c445267a499d726bc03791042c17194a046fcdc38357f"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_UpdateDashEngineIcon",
+      "first": 114,
+      "last": 117,
+      "source_sha256": "c78a834f2594c978b53600de442321b50f2a4201979b7aa0da125cd932533330"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_UpdatePhotoIcon",
+      "first": 119,
+      "last": 143,
+      "source_sha256": "a31e849092fc36035b83073db9e217f1e9750a50b120a57a785376ec50fe6e5f"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "func_8035CE74_4FD284",
+      "first": 145,
+      "last": 146,
+      "source_sha256": "599cc306eb4686ebe3e08985ac7342ed50a8f03dc986c2c901c53e49ff142043"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_ShrinkAndRestore",
+      "first": 148,
+      "last": 163,
+      "source_sha256": "0e122a7ecb4e487100c7da1f12f2fc2a1aa8fe262b9acd943f7334fb37416561"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_UpdateAppleIcon",
+      "first": 165,
+      "last": 168,
+      "source_sha256": "d5bcc46f328367a739d964a2e081d1d95f7739c527785eceb423ee6a5bad0d61"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_UpdatePesterBallIcon",
+      "first": 170,
+      "last": 173,
+      "source_sha256": "3c73ff1f3bd0bd4f20f1c853c4d4a13504e9515f71f235396700bf5ac029cce1"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_UpdateFluteIcon",
+      "first": 175,
+      "last": 205,
+      "source_sha256": "ccad764a324d42c59862cb7bcf363f972dfa2095c1ea18e9fc93e29c661361c5"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_Init",
+      "first": 207,
+      "last": 318,
+      "source_sha256": "ff833311cf8d0748dbd62773da853227eaa3e1f9c8bae7c4a1b06ba3e3663f2e"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_SetDashEngineEnabled",
+      "first": 320,
+      "last": 322,
+      "source_sha256": "7e8f31f24888ad4f33469e9e8cc1e36722d153b6e888a433495bac96328819c3"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_MoveIcon",
+      "first": 324,
+      "last": 328,
+      "source_sha256": "adec00973773cd90ef3115683d999e83d6a4d4d82081089d6cc1551f3b917d06"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_ProcessZoomIn",
+      "first": 330,
+      "last": 365,
+      "source_sha256": "48bffa8a6db68725b815c0a3eab7e03b52dde907b545be50e3c530242a86b4b5"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_FinishZoomOut",
+      "first": 367,
+      "last": 407,
+      "source_sha256": "3b299f2507ab4b28d4b06e58437158cfe07c22ae326345d9f3c03d820794b6b3"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_ProcessZoomOut",
+      "first": 409,
+      "last": 444,
+      "source_sha256": "eb908d87b3e78eeb070b557aa56c20e36cdc881e06f43727ba95f64d1cad7b6e"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_FinishZoomIn",
+      "first": 446,
+      "last": 486,
+      "source_sha256": "d088436b19149b0261f1f5099dbd45f4b3d557256dd3232cbd0fb77460245f73"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_ProcessZoom",
+      "first": 488,
+      "last": 498,
+      "source_sha256": "d5f8d0e9ab765386506763c3cf724d75e58ed4b74bdbc0ab96ca4e9bfbdffb77"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_Show",
+      "first": 500,
+      "last": 503,
+      "source_sha256": "a47bc0707e03c00030df84ec193230539f88d026d428f0d316165530219eaacc"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_Hide",
+      "first": 505,
+      "last": 508,
+      "source_sha256": "7ad9be2e044573ad92aecbbf008f959f53d808355ffebbc1808c5a31a0586395"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_ProcessButtonPress",
+      "first": 510,
+      "last": 523,
+      "source_sha256": "f0c3f02085d43b7ea38c182692155c9ac3f3a67a78340e45e679769bf66fb21c"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_ProcessTakePhotoPressed",
+      "first": 525,
+      "last": 527,
+      "source_sha256": "10c92d8ef28f452dc1a2e94758343ac5b55a8adddf0c7e56d74adaa81da52e8b"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_Freeze",
+      "first": 529,
+      "last": 531,
+      "source_sha256": "005fb2fc5853f3de533434774ab2d9be009eb73198fdbc937c66704a177aefb8"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "symbol": "Icons_UnFreeze",
+      "first": 533,
+      "last": 535,
+      "source_sha256": "ad6f7611512f5da4167e735c4fe7ba9c900433c5b8fe11d22d500bce52442e27"
+    },
+    {
+      "path": "src/app_level/4FE780.c",
+      "symbol": "func_8035E370_4FE780",
+      "first": 38,
+      "last": 40,
+      "source_sha256": "8de0a4e40a2b6152413a38f41a083a7c8aa499ae50b932e4fca3ba868d8589e7"
+    },
+    {
+      "path": "src/app_level/4FE780.c",
+      "symbol": "func_8035E37C_4FE78C",
+      "first": 44,
+      "last": 72,
+      "source_sha256": "dcb84fff682f1d6727ee9fc9d5cebaeb16c4ff5d8d7fb7eb84c164f796fcce9a"
+    },
+    {
+      "path": "src/app_level/4FE780.c",
+      "symbol": "func_8035E4D0_4FE8E0",
+      "first": 74,
+      "last": 79,
+      "source_sha256": "681860dab9f0734c802734fcda3a830d2f6b4c910b9b17dc66ab298647134c7d"
+    },
+    {
+      "path": "src/app_level/4FE780.c",
+      "symbol": "func_8035E508_4FE918",
+      "first": 81,
+      "last": 83,
+      "source_sha256": "f873a4ed38aed6c14f96bf5a44c1035b0fc2bce65611502d85be3141f719ad94"
+    },
+    {
+      "path": "src/app_level/4FE780.c",
+      "symbol": "func_8035E52C_4FE93C",
+      "first": 85,
+      "last": 116,
+      "source_sha256": "eea593a9ebf6ecf138f2a820d16b3f7a8ce7bee25316fc5b106917dd8731bbf4"
+    },
+    {
+      "path": "src/app_level/4FE780.c",
+      "symbol": "func_8035E754_4FEB64",
+      "first": 118,
+      "last": 120,
+      "source_sha256": "c554e65ba5acd6b0bec5ef05fa3e3e56d9988ff6f2ce10e6ddd304bbe1b4a34f"
+    },
+    {
+      "path": "src/app_level/4FE780.c",
+      "symbol": "func_8035E764_4FEB74",
+      "first": 122,
+      "last": 124,
+      "source_sha256": "03bff626646e2b3f0340d369109eb3da01c5f6d389e9791afb271a3962c438f7"
+    }
+  ],
+  "semantic_origins": [
+    {
+      "path": "src/app_level/font.c",
+      "label": "complete_font_pixels_descriptors_maps_widths_defaults",
+      "first": 1,
+      "last": 1250,
+      "source_sha256": "14fa451e1aaab72e102b7e444ea1220f89c2639e6c275cab7c97fb026ded077c"
+    },
+    {
+      "path": "src/app_level/icons.c",
+      "label": "icon_storage_and_choreography_definitions",
+      "first": 47,
+      "last": 84,
+      "source_sha256": "691838de828346b612826ff244aa9a753ba5648e68bcab477a9b6ede2ae64400"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "label": "reticle_pause_sprite_identities",
+      "first": 38,
+      "last": 56,
+      "source_sha256": "86353ae755fb8ef896a571d349e7b0469493bac710e36fe780b181fa355f6ca3"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "item_ids",
+      "first": 25,
+      "last": 29,
+      "source_sha256": "dd0cb1ce4a30a963bdf7de42835faac811963711ba6a558ee3ba1244460256d4"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "progress_flags",
+      "first": 57,
+      "last": 74,
+      "source_sha256": "0b285eedca4905a15a78f069391a4934356f8bec6df0d1bf5a4b7c787737bb72"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "object_ids",
+      "first": 283,
+      "last": 299,
+      "source_sha256": "15e9e1530ea1fd54714d87a453ead07b653e753c7e3d5d83f6ff035f23dff5b7"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "message_alignment",
+      "first": 405,
+      "last": 409,
+      "source_sha256": "d2a2cebedb7ffc29bc88a68730022fe02d22b5604039afdef86856f4ec50bccc"
+    },
+    {
+      "path": "tools/symbol_addrs.txt",
+      "label": "message_initialized_addresses",
+      "first": 960,
+      "last": 987,
+      "source_sha256": "1465cd1e4d4fd559b5f2a389d5f33ac310c54b12c3b05dcb63ecc8c78aef9573"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "app_level_initialized_mapping",
+      "first": 5292,
+      "last": 5338,
+      "source_sha256": "09c0fb2790bd0f1211e7f99841c230aefa48dd7cc8721c6205e1120857c95189"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "font_final_mapping",
+      "first": 5625,
+      "last": 5636,
+      "source_sha256": "9384e65eba52d1d45e9a5ab1ba8ff968bbcac522c6604d628f1483579e1cc5dd"
+    }
+  ],
+  "initialized_rom": {
+    "rom_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "rom_begin": 5271472,
+    "rom_end": 5454848,
+    "guest_begin": 2151050144,
+    "sha256": "20905d973b5e9ab5113037cc4ec342261e4ecce8a0b6c93afc203db78fe60654",
+    "font_rgb_root": 2151202832,
+    "font_mono_root": 2151233064,
+    "ascii_mapping": 2151233208,
+    "widths": 2151233336,
+    "wide_mapping": 2151233436,
+    "digit_pixels": [
+      2151191152,
+      2151191504,
+      2151191856,
+      2151192208,
+      2151192560,
+      2151192912,
+      2151193264,
+      2151193616,
+      2151193968,
+      2151194320
+    ]
+  }
+}

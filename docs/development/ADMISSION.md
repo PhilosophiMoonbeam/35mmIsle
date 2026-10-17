@@ -144,10 +144,84 @@ All 21 saved surfaces/63 profile images remain byte-identical to the preceding
 movement wave. Exact binary/archive/source-set identities are in
 `world-inputs.json`'s `native_component.canonical_c_state_wave`.
 
-This is the shared state prerequisite, not an implemented Player record,
-original-C Player execution, camera/input/photo/UI, complete Beach gameplay or
-Windows11 private-ROM qualification. Its own later immutable-head CI receipt is
-still required; earlier `7fe551f` CI does not qualify this cutover.
+This is the shared state prerequisite, not production original-C Player
+execution, complete Beach gameplay or Windows11 private-ROM qualification.
+Published `ef98b67` subsequently passed all ten hosted Linux/MSVC jobs in
+[run39000000091](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39000000091).
+That receipt qualifies this exact canonical-state revision, not the subsequent
+Player dependency implementation below.
+
+## Native Player dependencies and checked C context
+
+The retained `IslePlayerSource` supplies one C state record, shared World
+movement and per-game helper context. Strict payload discrimination remains
+separate from helper lookup. Original C owns nonwaiting failure guards; native
+C++ leaves return before checked transfer, and positive waits reject while
+such a guard is active. Local Debug/Release/Clang ASan+UBSan suites pass
+57 CPU contracts, including actual C callback/resume/cold-entry and ownership
+failure paths. Sanitizer checks use fatal ASan/UBSan and leak detection.
+
+The full native cohort passes 19 complete private consumers in each local
+profile: 57 executions with identical 463-file recorded source sets. The four
+new Player dependency consumers exercise:
+
+| Consumer | Exercised behavior | Explicit boundary |
+|---|---|---|
+| UI/screen | 43 complete message/Icons/film C functions, 15 transition C functions; real ASCII/EUC-JP glyphs, scale/alpha/shadow/controls, FIFO and joined deletion, film bounds, source camera/viewport, solid/offset shapes, three delayed worker waits, actual RSP/RDP color/depth and graphics/readback retention | Authored film count is a roll-boundary diagnostic, not captured photos; no complete Player FSM |
+| Photo | 24 complete C functions; 64 actual GPU Frames, two failed completed callbacks and 73 original-C CopyInfo updates per profile; exact Frame/ticket/context, ordered publication, short borrow, failed-work quiescence, World/Actor/Item/FX snapshot, 60-photo exhaustion/reset/selection, explicit big-endian codec | No production input-driven shutter, full replay/scoring scene or independent Original equivalence |
+| Bump | Five complete C functions; genuine Magikarp129/factory802cac48 radius56, exact 90/60/30/5 boundaries, source tangible/flag20 gates, actual command4 FIFO, default dispatcher, queued then canonical Actor-field sender retention, joined deletion/reinit and audio-RSP/PCM drain | Explicit bounded C receiver, not the production Player interpreter; no graphics/device claim |
+| Native camera | Actual Catalog camera index115/guest803a80d0, mask0x277/end1860; matrices3+14, Set/one Update, NULL/same-clip/new-skip, speed/tracks/flag2, independent analytic samples, fresh written-channel merge, typed errors and sequential owner retirement | Sole admitted title clip, not every course-camera program; no GPU/audio/device claim |
+
+Every accepted case was frozen before launch. Its sole initial closure
+established all traced tasks terminal and absent, stable trace identities,
+unchanged private ROM, zero known physical-device attempts and zero permission
+errors. The complete cohort has 3,297 terminal tasks, 3,240 created tasks and
+3,354 absent tracer/task identities. Its recorded source-set SHA-256 is
+`d131b6e8264bf52389604583e73ce863a08e0fef2db528e31dc69510ebb54419`
+(sorted compact JSON path-to-SHA-256 map). All 21 previously saved surfaces
+remain byte-identical across the three current profiles and the published
+canonical-state baseline. All 71 explicit Photo color/depth, sixty-roll,
+application-reset and failed-publication artifacts also match across profiles.
+Original glyphs, the source-kind-1 signed-offset aperture and the native
+World/Actor/Item/FX Photo surface were directly inspected.
+
+Two failing-before/passing-after defects were corrected without weakening
+assertions or deadlines: the UI generator had inserted a status return at every
+matching closing brace instead of only the function suffix; the Photo harness
+collected Items before retiring Actors whose canonical fields still held them.
+The latter now attempts both real retirements before both collections and
+checks every outcome. Failed captures remain rejected, never partially admitted.
+
+Actor construction now prepares storage without publishing FX helpers;
+`publish_effects()` performs their explicit native-lifetime publication.
+Environment construction likewise prepares storage without publishing its
+listener/list/update process; `initialize()` performs the original operation,
+including distinct repeated initializations. Setting an Actor Player binding
+does not initialize Environment state. Particle and emitter callbacks consume
+their own native object's high-16 pause mask independently; a real
+failing-before/passing-after owner regression covers frozen/resumed clocks,
+particles and RNG.
+
+Photo's concrete Frame methods occupy a separate static-library object, with
+the actual renderer dependency declared when available. An RSP-enabled,
+RDP-disabled full build and both complete core Actor/Photo collision and Actor
+owner consumers pass without fake Frame implementations or per-executable
+link workarounds.
+
+The same source snapshot passes all four actual LUS-window startup scenarios:
+Start-interrupted title/profile reentry, natural title completion/reentry,
+live-VI reset/cold reload, and name entry through Oak's confirmed course-0
+request. They close 459 terminal/455 created/463 absent tracer/task identities,
+with unchanged ROM and zero known physical-device attempts or permission
+errors. Rendering uses CPU Mesa; input is explicitly software-owned, and
+actual audio-RSP PCM reaches a checked, drained SDL dummy stream. This is not
+physical input, hardware/hearing qualification or Beach gameplay.
+
+The complete 106-function Player body migration and its 39 real one-argument
+callbacks remain private authoring work, not an admitted native Player target.
+Exact initialization publication, canonical Actor/Item access, all reachable
+course callbacks and full Windows11/Linux gameplay remain open Beads work.
+Hosted `ef98b67` CI does not qualify these later dependencies.
 
 ## Native Item and complete C interaction execution
 

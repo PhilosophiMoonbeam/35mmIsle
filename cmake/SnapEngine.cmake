@@ -10,6 +10,9 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/contextual_model_math.h"
     "${PROJECT_SOURCE_DIR}/src/engine_internal.h"
     "${PROJECT_SOURCE_DIR}/src/source_factory_resources.h"
+    "${PROJECT_SOURCE_DIR}/src/player_source.h"
+    "${PROJECT_SOURCE_DIR}/src/player_source_bridge.c"
+    "${PROJECT_SOURCE_DIR}/src/world_movement_state.h"
     "${PROJECT_SOURCE_DIR}/include/35mmisle/engine.h")
 file(READ "${CMAKE_CURRENT_LIST_DIR}/snap-engine-inputs.json" _isle_engine_manifest)
 string(JSON _isle_snap_revision GET "${_isle_engine_manifest}" revision)
@@ -112,6 +115,7 @@ add_library(isle-engine STATIC src/engine.c src/engine_internal.h src/engine_mat
 target_sources(isle-engine PRIVATE src/actor_source_bridge.c src/actor_source.h "${_isle_actor_generated}")
 target_sources(isle-engine PRIVATE src/item_source_bind.c src/item_source.h)
 target_sources(isle-engine PRIVATE src/source_factory_resources.h)
+target_sources(isle-engine PRIVATE src/player_source_bridge.c src/player_source.h src/world_movement_state.h)
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)
@@ -144,6 +148,13 @@ if(BUILD_TESTING)
     isle_target_options(item-source-tests)
     add_test(NAME item-source-tests COMMAND item-source-tests)
     set_tests_properties(item-source-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
+
+    add_executable(player-source-tests tests/player_source_tests.cpp tests/player_source_fixture.c)
+    target_link_libraries(player-source-tests PRIVATE isle-engine)
+    target_include_directories(player-source-tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
+    isle_target_options(player-source-tests)
+    add_test(NAME player-source-tests COMMAND player-source-tests)
+    set_tests_properties(player-source-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
 
     add_executable(native-factory-resources-tests
         tests/native_factory_resources_tests.cpp tests/native_factory_resources_fixture.c)

@@ -34,11 +34,20 @@
     }
   },
   "native_support": {
+    "src/player_source.h": {
+      "sha256": "fc585081d09aeb77c7e55fa8d46b47d2c0268a40700729bc55e630b58ec92f33"
+    },
+    "src/player_source_bridge.c": {
+      "sha256": "ee2a69f260034157c3fa9a8c0837de813c5636ab6a46943370f5fdbbe71b6414"
+    },
+    "src/world_movement_state.h": {
+      "sha256": "0d231cd3556bc0004abd77bb5d6f97474cf0762ed4fdeacfd0f0af0f928195b3"
+    },
     "src/source_factory_resources.h": {
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/engine.c": {
-      "sha256": "757323588093862d1358022b80a798f00a454413375bdeafb9a8dd1c55013371",
+      "sha256": "c6a5d06558bfd12ecf753d24630d6ca3d1ac7e849a68e812f60701415c568a7d",
       "object_lifecycle": {
         "native_order": "Original native pre-retirement observer runs once at the sole validated omDeleteGObj teardown, before any process join or payload removal. Payload corruption rejects before observer/state publication; a failed/incomplete join retains native storage and the started bit without repeating pre-notification. Existing post observer remains after all actual joins, payload removal and unlink/alive=false, before object free-list publication.",
         "source_deferred_order": "Exact own GAME df8815e75f3d79618466e01e0827c6165b93d11c src/sys/om.c:1757-1778 and 1780-1824 retain current-object deletion requests until update return or process yield/return, clear omCurrentObject/omCurrentProcess, then call the native teardown. No source definition/body/identity changes, second scheduler or early self-notification.",
@@ -89,7 +98,7 @@
       "use": "Private C-compatible extern-C helper contract for source54 fixed payload and source48 camera basis. Pure checked operations, no ownership/selector/cache allocation; failure-atomic outputs and explicit C-libm/FP/unused-row semantics."
     },
     "src/engine_internal.h": {
-      "sha256": "12748da1cd2c7032546cec7c10dc9ecc6d0691285535e45192d3e315d86731d3",
+      "sha256": "f9cad7750574c88ab63904b8ba39bb16402c57f959d2c3ad25d02d850941439e",
       "object_lifecycle": "Actual native GObj pre-callback/user and retirement-started state accompany the retained post callback/user. Arena allocation/reuse zeroes all observers and state; payload/userData and updateUser remain distinct. No foreign layout, GPU completion boolean, owner registry or per-object allocation.",
       "placement": "One embedded accepted placement record, no separate registry/allocation, no engine floating-world cache and no synthetic DObj/node.",
       "use": "Original actual-size camera/matrix/reflection/model native payload ownership, object retirement callback/userdata and bounded arena free lists, not console or SDK ownership layouts. Native updateUser is distinct from GAME entity userData; allocation and object reuse clear both, and callback replacement preserves actor payload. Process function is the actual callable IsleGameSourceCallback, distinct from native two-argument entry/user and scheduler adapter; zero-initialized arena reuse clears identities."

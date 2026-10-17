@@ -112,7 +112,12 @@ void run(isle::rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}};
             native(isle_game_camera_set_look_at(services.game,camera,&view));
             float distance=200;
-            e::Environment environment(services,storage.arena(),resources,player,camera);
+            e::Environment environment(services,storage.arena(),resources);
+            require(environment.play({source_object,source,&distance},1,0x34)&&
+                environment.play({source_object,source,&distance},1,0x34,0,1)&&
+                environment.sound_handle(0x34)==-1,
+                "source sound escaped preparation before explicit environment initialization");
+            require(environment.initialize(player,camera),"environment source initialization failed");
             lifetime={&services,&environment,0,0,0};
             require(services.set_lifecycle(source_object,{before_retire,after_join,&lifetime}),"real source retirement observer failed");
             require(services.process(source_object,park,&lifetime,ISLE_GAME_STACKFUL,8) &&
@@ -177,6 +182,19 @@ void run(isle::rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             require(energy[2].left>16*energy[2].right,"fixed actual voice followed a changed camera or lost its retired source lifetime");
             require(environment.stop_category(player_object,1) && environment.sound_handle(0x34)==voice,
                     "unrelated native source stopped a detached fixed voice");
+            // Reinitialization is a real new list/update publication, not a
+            // cleanup or an idempotent shortcut. Detached voices keep playing.
+            require(environment.initialize(nullptr,camera)&&environment.sound_handle(0x34)==-1&&
+                session.playing_sound(static_cast<unsigned>(voice))==0x34,
+                "reinitialization retained old list tracking or stopped its detached actual voice");
+            require(environment.set_listener(player,camera),"reinitialized actual listener binding failed");
+            require(environment.play({player_object,player,&distance},1,alternate)&&
+                environment.sound_handle(alternate)>=0&&environment.stop_category(player_object,1)&&
+                environment.sound_handle(alternate)==-1&&
+                session.playing_sound(static_cast<unsigned>(voice))==0x34,
+                "reinitialized source category replaced or stopped an old untracked voice");
+            native(isle_game_tick(services.game));
+            require(!services.failed(),services.error());
             environment.cleanup();
         }
         native(storage.destroy());

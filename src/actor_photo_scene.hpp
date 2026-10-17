@@ -2,6 +2,7 @@
 #define ISLE_ACTOR_PHOTO_SCENE_HPP
 
 #include "actor_owner.hpp"
+struct IslePlayerPhotoSource;
 
 namespace isle::actor {
 // Bounded source focus controller with the complete logical collision pass,
@@ -23,7 +24,7 @@ namespace isle::actor {
 class PhotoScene final {
 public:
     PhotoScene(scene::Services&, Owner&, IsleGameObject* scene_root,
-               IsleGameCamera*, DetectorBinding&);
+               IsleGameCamera*, DetectorBinding&, IslePlayerPhotoSource*);
     ~PhotoScene();
     PhotoScene(const PhotoScene&) = delete;
     PhotoScene& operator=(const PhotoScene&) = delete;
@@ -45,6 +46,8 @@ private:
     Owner& owner_;
     IsleGameCamera* camera_;
     DetectorBinding& binding_;
+    IslePlayerPhotoSource* photo_ = nullptr;
+    bool snapshot_bound_ = false;
     IsleGameObject* root_ = nullptr;
     IsleGameObject* prefix_ = nullptr;
     IsleGameObject* copy_info_ = nullptr;

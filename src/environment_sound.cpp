@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <exception>
 #include <new>
 #include <stdexcept>
 
@@ -25,33 +26,58 @@ Environment::Record* Environment::allocate() noexcept {
     }
     return ::new (static_cast<void*>(storage.data)) Record{};
 }
-Environment::Environment(scene::Services& services,isle_arena& arena,const BeachResources& resources,
-                         IsleGameModel* player,IsleGameCamera* camera)
-    : services_(services),arena_(arena),resources_(resources),player_(player),camera_(camera) {
+Environment::Environment(scene::Services& services,isle_arena& arena,const BeachResources& resources)
+    : services_(services),arena_(arena),resources_(resources) {
     static_cast<void>(resources.descriptors());
-    records_=allocate();
-    if (!records_) throw std::runtime_error("Environmental sound initial record allocation failed");
-    update_object_=services_.object(400,9,1); // GAME OBJID_ENV_SOUND_PLAYER/LINK_PLAYER.
-    if (!update_object_) throw std::runtime_error("Environmental sound update object failed");
-    if (!services_.set_lifecycle(update_object_,{nullptr,joined,this}) ||
-        !services_.process(update_object_,tick,this,ISLE_GAME_SYNCHRONOUS,1)) {
-        services_.erase(update_object_);
-        throw std::runtime_error("Environmental sound update process failed");
+}
+bool Environment::initialize(IsleGameModel* player,IsleGameCamera* camera) noexcept {
+    if (services_.failed()) return false;
+    if (!resources_.angles().live()) {
+        services_.fail("environmental sound resource retired"); return false;
     }
+    const IsleGameModelPlacement* placement=nullptr;
+    const IsleGameCameraParameters* parameters=nullptr;
+    if ((player && !services_.check(isle_game_model_placement(services_.game,player,&placement),
+                                   "environment initialization player placement")) ||
+        (camera && !services_.check(isle_game_camera_parameters(services_.game,camera,&parameters),
+                                   "environment initialization camera parameters"))) return false;
+    // GAME envsound.c117-135 publishes new listeners and a fresh list on EVERY
+    // Init. Earlier voices are not stopped; earlier processes read this new list.
+    player_=player; camera_=camera;
+    records_=allocate();
+    if (!records_) return false;
+    isle_span storage{};
+    if (isle_arena_allocate(&arena_,sizeof(UpdatePublication),alignof(UpdatePublication),&storage)!=ISLE_OK) {
+        services_.fail("environmental sound publication arena exhausted"); return false;
+    }
+    auto* publication=::new (static_cast<void*>(storage.data)) UpdatePublication{};
+    auto* object=services_.object(400,9,1); // GAME OBJID_ENV_SOUND_PLAYER/LINK_PLAYER.
+    if (!object) return false;
+    if (!services_.set_lifecycle(object,{nullptr,joined,publication})) {
+        // No Environment callback was installed, so this object has no borrow
+        // of either owner or publication storage.
+        services_.erase(object); return false;
+    }
+    publication->object=object; publication->next=updates_; updates_=publication;
+    return services_.process(object,tick,this,ISLE_GAME_SYNCHRONOUS,1)!=nullptr;
 }
 Environment::~Environment() {
     cleanup();
-    if (update_object_) services_.erase(update_object_);
+    for (auto* publication=updates_;publication;publication=publication->next) {
+        if (publication->object) services_.erase(publication->object);
+        if (publication->object) std::terminate();
+    }
 }
 void Environment::joined(IsleGameObject* object,void* user) noexcept {
-    auto& owner=*static_cast<Environment*>(user);
-    if (owner.update_object_==object) owner.update_object_=nullptr;
+    auto& publication=*static_cast<UpdatePublication*>(user);
+    if (publication.object==object) publication.object=nullptr;
 }
 void Environment::tick(IsleGameObject*,void* user) noexcept {
     static_cast<Environment*>(user)->update();
 }
 void Environment::cleanup() noexcept { player_=nullptr; camera_=nullptr; }
 bool Environment::set_listener(IsleGameModel* player, IsleGameCamera* camera) noexcept {
+    if (!records_) return false;
     if ((player == nullptr) != (camera == nullptr)) return false;
     if (player) {
         const IsleGameModelPlacement* placement = nullptr;

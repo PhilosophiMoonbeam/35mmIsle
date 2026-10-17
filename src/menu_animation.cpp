@@ -245,6 +245,7 @@ struct Runtime::Impl {
     Status preflight(const Player& player, const Clock& clock, bool receiver,
                      bool callbacks, std::size_t& commands, std::size_t& events) const noexcept {
         if (clock.phase == Phase::disabled) return {};
+        if (player.program == no_index) return {};
         float left = clock.phase == Phase::changed ? -clock.time_passed : clock.time_left-clock.speed;
         if (!std::isfinite(left) ||
             (clock.phase != Phase::changed && !std::isfinite(clock.time_passed+clock.speed)))
@@ -293,6 +294,12 @@ struct Runtime::Impl {
             clock.time_passed += clock.speed;
             if (animation_time) *animation_time = clock.time_passed;
             if (clock.time_left > 0) return;
+        }
+        if (p.program == no_index) {
+            for (auto& a : p.tracks) if (a.kind) a.time += clock.speed + clock.time_left;
+            clock.time_passed = clock.time_left;
+            clock.phase = Phase::finished;
+            return;
         }
         const auto& program = programs[p.program];
         do {
@@ -934,6 +941,25 @@ Status Runtime::restart_camera(float skip) noexcept {
     restart(impl_->camera_player,impl_->camera.clock,skip);
     impl_->event_count = 0;
     ++impl_->generation;
+    return {};
+}
+Status Runtime::bind_camera(std::size_t program, float skip) noexcept {
+    auto& s = *impl_;
+    if (s.retired) return {Error::retired,0};
+    if (!std::isfinite(skip)) return {Error::malformed,0};
+    if (program != no_index && (program >= s.programs.size() ||
+        s.programs[program].kind != AnimationKind::camera)) return {Error::handle,0};
+    s.camera_player.program = program;
+    restart(s.camera_player,s.camera.clock,skip);
+    s.camera.clock.phase = Phase::changed;
+    s.event_count = 0;
+    ++s.generation;
+    return {};
+}
+Status Runtime::set_camera_speed(float speed) noexcept {
+    if (impl_->retired) return {Error::retired,0};
+    if (!std::isfinite(speed)) return {Error::malformed,0};
+    impl_->camera.clock.speed = speed;
     return {};
 }
 Status Runtime::reset(float skip) noexcept {

@@ -1,6 +1,7 @@
 #include "actor_photo_scene.hpp"
 #include "actor_photo_membership.hpp"
 #include "menu_scene_bridge.h"
+#include "player_photo.hpp"
 
 #include <exception>
 #include <stdexcept>
@@ -16,10 +17,11 @@ void require(bool value, const char* detail) {
 }
 }
 PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* root,
-                       IsleGameCamera* camera, DetectorBinding& binding)
-    : services_(services), owner_(owner), camera_(camera), binding_(binding) {
+                       IsleGameCamera* camera, DetectorBinding& binding, IslePlayerPhotoSource* photo)
+    : services_(services), owner_(owner), camera_(camera), binding_(binding), photo_(photo) {
     require(!services.failed() && services.game && root && camera,
             "PhotoScene requires live same-scene owners");
+    require(!photo_ || photo_->owner, "PhotoScene requires an active canonical photo transaction owner");
     require(!isle_menu_current_object(services.game), "PhotoScene construction inside native callback");
     require(!binding.prefix_user && !binding.prepare_membership,
             "PhotoScene membership hook already owned");
@@ -55,6 +57,11 @@ PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* 
         prefix_observed_=true;
         if (!services.set_update(prefix_,nullptr,nullptr) || !services.set_render(prefix_,source_prefix))
             throw std::runtime_error("PhotoScene source prefix metadata installation failed");
+        if (photo_) {
+            if (static_cast<::isle::player::Photo*>(photo_->owner)->bind_snapshot_owner(services_,prefix_)!=ISLE_GAME_OK)
+                throw std::runtime_error("PhotoScene canonical snapshot source ownership registration failed");
+            snapshot_bound_=true;
+        }
         copy_info_=services.object(0,0,0x80000001u);
         if (!copy_info_) throw std::runtime_error("PhotoScene native CopyInfo creation failed");
         if (!services.set_lifecycle(copy_info_,{retiring,joined,this}))
@@ -124,7 +131,10 @@ void PhotoScene::copy_info(IsleGameObject* object, void* user) noexcept {
         return;
     }
     if (object!=self.copy_info_) { self.fail("PhotoScene CopyInfo native identity mismatch"); return; }
-    self.binding_.history.publish();
+    if (self.photo_) {
+        if (isle_player_photo_publish_completed(self.photo_)!=ISLE_GAME_OK)
+            self.fail("PhotoScene CopyInfo rejected incomplete or mismatched photo readback");
+    } else self.binding_.history.publish();
 }
 void PhotoScene::retiring(IsleGameObject* object, void* user) noexcept {
     auto& self=*static_cast<PhotoScene*>(user);
@@ -147,6 +157,7 @@ void PhotoScene::joined(IsleGameObject* object, void* user) noexcept {
 void PhotoScene::retire() noexcept {
     if (retired_) return;
     if (isle_menu_current_object(services_.game)) std::terminate();
+    if (snapshot_bound_ && !static_cast<::isle::player::Photo*>(photo_->owner)->quiescent()) std::terminate();
     retiring_=true; active_=false;
     clear_hook();
     // Only joined callbacks prove a previously retiring object cannot resume.
@@ -168,6 +179,11 @@ void PhotoScene::retire() noexcept {
     };
     erase(copy_info_,copy_observed_);
     erase(prefix_,prefix_observed_);
+    if (snapshot_bound_) {
+        if (static_cast<::isle::player::Photo*>(photo_->owner)->detach_snapshot_owner()!=ISLE_GAME_OK)
+            std::terminate();
+        snapshot_bound_=false;
+    }
     root_=nullptr;
     retired_=true;
 }

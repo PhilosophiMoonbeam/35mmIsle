@@ -32,11 +32,14 @@ struct Source {
 // Resources/Snapshot, Services and arena outlive their borrowers.
 class Environment final {
 public:
-    Environment(scene::Services&, isle_arena&, const BeachResources&,
-                IsleGameModel* player, IsleGameCamera* camera);
+    Environment(scene::Services&, isle_arena&, const BeachResources&);
     ~Environment(); // Outside OM traversal; joins its update before storage ends.
     Environment(const Environment&) = delete;
     Environment& operator=(const Environment&) = delete;
+    // Each source Init replaces the tracked list without stopping its voices
+    // and publishes another update process. Null listeners are independently
+    // valid; playback/update wait for both. Preparation publishes neither.
+    bool initialize(IsleGameModel* player, IsleGameCamera* camera) noexcept;
     // Source descriptor policy plus actual catalog presence, without staging,
     // record allocation, listener/range tests or transient voice admission.
     bool admits_sound(std::int32_t sound) const noexcept;
@@ -49,6 +52,8 @@ public:
     // End comparison identity only after real joined retirement. Fixed voices
     // keep playing, but a recycled native address cannot stop the old voice.
     void release_identity(IsleGameObject*) noexcept;
+    // Explicit listener changes after source initialization, never a substitute
+    // for publishing its descriptors/list/update process.
     bool set_listener(IsleGameModel*, IsleGameCamera*) noexcept;
     int sound_handle(std::int32_t sound) const noexcept;
     void cleanup() noexcept; // Source clears listeners; does not stop voices.
@@ -63,12 +68,16 @@ private:
         std::uint8_t hearing_range = 0, category = 0;
         bool fixed = false, occupied = false;
     };
+    struct UpdatePublication {
+        UpdatePublication* next = nullptr;
+        IsleGameObject* object = nullptr;
+    };
     scene::Services& services_;
     isle_arena& arena_;
     const BeachResources& resources_;
-    IsleGameModel* player_;
-    IsleGameCamera* camera_;
-    IsleGameObject* update_object_ = nullptr;
+    IsleGameModel* player_ = nullptr;
+    IsleGameCamera* camera_ = nullptr;
+    UpdatePublication* updates_ = nullptr;
     Record* records_ = nullptr;
     Record* allocate() noexcept;
     bool volume_pan(Source, std::uint8_t, std::int32_t&, std::int32_t&) noexcept;

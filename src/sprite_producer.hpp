@@ -20,11 +20,16 @@ struct AssetSpan {
 // with its scaled global camera scissor before traversing source object order.
 struct Bounds { std::int32_t left = 0, top = 0, right = 320, bottom = 240; };
 struct Camera { Bounds viewport, scissor; };
+// Msg's original lane0 texture rectangles use integer inclusive-source
+// endpoints (already lowered by its C body) and a decal-alpha button mode.
+enum class DrawMode : std::uint8_t { sprite, message_intensity, message_rgba };
 struct Draw {
     std::size_t resource = 0;
     const IsleSprite* view = nullptr;
     // Required for dynamic slots, preventing stale native bindings after reuse.
     std::uint64_t generation = 0;
+    DrawMode mode = DrawMode::sprite;
+    std::int32_t right = 0, bottom = 0;
 };
 struct Sublist {
     std::uint32_t address = 0;

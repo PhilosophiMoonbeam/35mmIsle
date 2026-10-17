@@ -411,12 +411,14 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
                 const IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}};
                 native(isle_game_camera_set_look_at(services.game,camera,&view));
-                environment_sound::Environment environment(services,storage.arena(),sound_resources,nullptr,camera);
+                environment_sound::Environment environment(services,storage.arena(),sound_resources);
+                require(environment.initialize(nullptr,camera),"environment source initialization failed");
                 focus::Detector detector;
                 private_actor::WorldHooks hooks{services,camera};
                 world::World world(services,world_resources,hooks.callbacks());
                 {
                     actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});
+                    accepted(owner.publish_effects());
                     hooks.owner=&owner;private_actor::WorldLifetime lifetime{world,hooks};
                     Consumer consumer(services,owner,world,resources); body(consumer); reuse_proofs+=consumer.reuse_proofs;
                 }

@@ -49,6 +49,7 @@ struct Shift {
 struct Consumer {
     scene::Services& services;
     actor::Owner& owner;
+    environment_sound::Environment& environment;
     world::World& world;
     const beach::ActorResources& resources;
     const beach::BehaviorResources& behaviors;
@@ -58,9 +59,9 @@ struct Consumer {
     IsleGameModel* player_model=nullptr;
     world::GroundResult ground{};
     std::size_t callback=beach::actor_no_index,null_choice=beach::actor_no_index;
-    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const beach::ActorResources& r,
+    Consumer(scene::Services& s,actor::Owner& o,environment_sound::Environment& e,world::World& w,const beach::ActorResources& r,
              const beach::BehaviorResources& b,IsleGameCamera* camera)
-        :services(s),owner(o),world(w),resources(r),behaviors(b),scene(s,o,w,r,b) {
+        :services(s),owner(o),environment(e),world(w),resources(r),behaviors(b),scene(s,o,w,r,b) {
         const auto make_model=[&](std::uint32_t id,IsleGameObject*& object,IsleGameModel*& model) {
             object=services.object(id,4); require(object,"native scene input allocation failed");
             IsleGameModelNodeInit node{}; node.parent=UINT32_MAX;
@@ -72,6 +73,7 @@ struct Consumer {
         IsleGameModelTransform player{}; player.position={31,47,59}; player.scale={1,1,1};
         native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RT,&player));
         accepted(owner.set_player(player_object,player_model,camera));
+        require(environment.set_listener(player_model,camera),"environment listener binding failed");
         // Distinguish trigger DObj position from its unrelated AUX and player
         // AUX from its unrelated DObj. These are real canonical native inputs.
         IsleGameModelTransform wrong{}; wrong.position={1000,2000,3000}; wrong.scale={1,1,1};
@@ -261,6 +263,7 @@ struct Consumer {
                 !owner.set_animation(h,nullptr),"source actor failed joined physical retirement/stale handle rejection within512");
         reset();
         accepted(owner.set_player(nullptr,nullptr,nullptr));
+        require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
         services.erase(trigger.object); trigger.object=nullptr;
         const auto seed=services.rng.seed;
         const auto stale=scene.choose(trigger,ground);
@@ -300,7 +303,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             auto* object=services.object(1,0); require(object,"camera object allocation failed");
             IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,object,&camera));
             const IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&view));
-            environment_sound::Environment environment(services,storage.arena(),sound_resources,nullptr,camera);
+            environment_sound::Environment environment(services,storage.arena(),sound_resources);
+            require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; Shift shift{&services,camera};
             world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
             a::SlotCapacity capacity{};
@@ -311,8 +315,9 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             const std::array capacities{capacity,capacity};
             {
                 actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096}); shift.owner=&owner;
+                accepted(owner.publish_effects());
                 require(world.enter_first(0)!=nullptr,"actual first World admission failed");
-                Consumer consumer(services,owner,world,resources,behaviors,camera);
+                Consumer consumer(services,owner,environment,world,resources,behaviors,camera);
                 consumer.boundaries(); consumer.helpers_and_failures(); consumer.lifetime();
                 shift.owner=nullptr;
             }

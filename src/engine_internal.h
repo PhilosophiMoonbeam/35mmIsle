@@ -50,7 +50,8 @@ struct GObjProcess {
 enum {
     ISLE_SOURCE_PAYLOAD_NONE = 0,
     ISLE_SOURCE_PAYLOAD_ACTOR = 1,
-    ISLE_SOURCE_PAYLOAD_ITEM = 2
+    ISLE_SOURCE_PAYLOAD_ITEM = 2,
+    ISLE_SOURCE_PAYLOAD_PLAYER = 3
 };
 
 struct GObj {
@@ -130,6 +131,8 @@ struct IsleGameModel {
     IsleGameModelNode nodes[];
 };
 
+struct IslePlayerSource;
+
 struct IsleGame {
     isle_arena* arena;
     IsleContinuationDomain* domain;
@@ -147,6 +150,7 @@ struct IsleGame {
     /* Only the owned synchronous command drain may arm this returning cleanup. */
     void (*command_fault_abort)(void*);
     void* command_fault_context;
+    struct IslePlayerSource* playerSource; /* Nonowning single Player C execution context. */
     IsleGameCounts counts;
     IsleGameResult fault;
     char error[512];

@@ -1753,7 +1753,7 @@ IsleGameResult isle_game_destroy(IsleGame* game) {
     if (result != ISLE_GAME_OK) return result;
     if (game->ticking || omCurrentObject != NULL || omCurrentProcess != NULL ||
         game->callback_depth != 0 || game->held_identities != 0 ||
-        game->factory_objects != NULL) return ISLE_GAME_INVALID_STATE;
+        game->factory_objects != NULL || game->playerSource != NULL) return ISLE_GAME_INVALID_STATE;
     for (size_t link = 0; link < ARRAY_COUNT(omGObjListHead); ++link) {
         while (omGObjListHead[link] != NULL) {
             GObj* before = omGObjListHead[link];

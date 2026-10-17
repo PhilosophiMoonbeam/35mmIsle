@@ -61,18 +61,14 @@ struct Services::Impl {
     std::size_t prepared_objects = 0;
     IsleGameCommandPool commands{};
     std::array<Ramp, 5> volumes{}, pans{};
-    IsleGameObject* fade_object = nullptr;
-    FadeView fade{};
-    const IsleGameModelTransform fade_transform{{0,0,0},{0,0,0},{1,3.2f,2.4f}};
-    float fade_seconds = 0;
-    bool reveal = false, delayed = false;
+    ::isle::screen_transition::Owner transition;
     bool exit = false;
     bool destroying = false;
     std::int32_t result = 0;
     char error[512]{};
 
     explicit Impl(Services& services, isle_arena& storage, ResourceView view)
-        : s(services), arena(storage), resources(view) {
+        : s(services), arena(storage), resources(view), transition(services) {
         commands.arena = &arena;
         for (auto& ramp : volumes) ramp.owner = this;
         for (auto& ramp : pans) { ramp.owner = this; ramp.pan = true; }
@@ -258,25 +254,6 @@ struct Services::Impl {
              (!head && (*at)->render.priority == render.priority))))) at = &(*at)->draw_next;
         entry->draw_next = *at;
         *at = entry;
-    }
-    static void fade_process(IsleGameObject* object, void* user) noexcept {
-        auto& self = *static_cast<Impl*>(user);
-        const float step = static_cast<float>(255.0 / (static_cast<double>(self.fade_seconds) * 60.0));
-        float value = self.reveal ? 255.0f : 0.0f;
-        self.fade.running = true;
-        while (!self.s.failed()) {
-            value = self.reveal ? value - step : value + step;
-            if (self.reveal ? value < 0.0f : value > 255.0f) break;
-            self.fade.alpha = static_cast<std::uint8_t>(value);
-            if (!self.s.wait()) return;
-        }
-        if (self.s.failed()) return;
-        self.fade.alpha = self.reveal ? 0 : 255;
-        self.fade.running = false;
-        if (self.delayed && !self.s.wait(3)) return;
-        self.fade.visible = false;
-        self.fade_object = nullptr;
-        self.s.erase(object);
     }
     static void ramp_process(IsleGameObject* object, void* user) noexcept {
         auto& ramp = *static_cast<Ramp*>(user);
@@ -845,24 +822,26 @@ bool Services::sprite_draws(std::span<SpriteDraw> output, std::size_t& written) 
 std::span<const SpriteResource> Services::sprite_resources() const noexcept { return impl_->resources.sprites; }
 ResourceView Services::resources() const noexcept { return impl_->resources; }
 bool Services::begin_fade(bool reveal, float seconds, std::array<std::uint8_t,3> rgb, bool delayed) noexcept {
+    auto* source=screen_transition_source();
     if (failed()) return false;
-    if (!std::isfinite(seconds) || seconds <= 0 || !std::isfinite(static_cast<float>(255.0 / (static_cast<double>(seconds) * 60.0)))) {
+    if (!std::isfinite(seconds) || seconds<=0 ||
+        !std::isfinite(static_cast<float>(255.0/(static_cast<double>(seconds)*60.0)))) {
         fail("invalid source screen fade duration"); return false;
     }
-    if (impl_->fade_object != nullptr) { erase(impl_->fade_object); impl_->fade_object = nullptr; }
-    impl_->reveal = reveal;
-    impl_->delayed = delayed;
-    impl_->fade_seconds = seconds;
-    impl_->fade = {true, true, rgb, static_cast<std::uint8_t>(reveal ? 255 : 0)};
-    impl_->fade_object = object(2, 1, 1);
-    if (impl_->fade_object == nullptr) return false;
-    if (!check(isle_menu_set_update(game, impl_->fade_object, nullptr, nullptr), "menu fade object update")) return false;
-    return process(impl_->fade_object, Impl::fade_process, impl_.get(), ISLE_GAME_STACKFUL, 0) != nullptr;
+    if (!source->D_800BE2C8 &&
+        !check(isle_screen_transition_func_800A7F68(source,0,1),"source transition camera")) return false;
+    if (!check(isle_screen_transition_func_800A7470(source,rgb[0],rgb[1],rgb[2]),"source transition color")) return false;
+    return check(delayed ? isle_screen_transition_func_800A7918(source,reveal,seconds) :
+        isle_screen_transition_func_800A7860(source,reveal,seconds),"source solid transition");
 }
-FadeView Services::fade() const noexcept { return impl_->fade; }
-const IsleGameModelTransform* Services::fade_transform() const noexcept {
-    return impl_->fade.visible ? &impl_->fade_transform : nullptr;
+FadeView Services::fade() const noexcept {
+    const auto& source=impl_->transition.source;
+    return {impl_->transition.solid()!=nullptr,source.D_800AF050!=0,
+        {static_cast<uint8_t>(source.D_800AF054),static_cast<uint8_t>(source.D_800AF058),
+         static_cast<uint8_t>(source.D_800AF05C)},static_cast<uint8_t>(source.D_800AF060)};
 }
+IsleScreenTransitionSource* Services::screen_transition_source() noexcept { return &impl_->transition.source; }
+::isle::screen_transition::Owner& Services::screen_transition() noexcept { return impl_->transition; }
 int Services::play_sound(std::uint32_t sound, game_audio::Parameters parameters) noexcept {
     int slot = -1;
     if (!check(audio.play_sound(sound, parameters, slot), "menu play sound")) return -1;

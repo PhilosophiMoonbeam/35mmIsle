@@ -19,7 +19,6 @@ struct View {
     menu::Scene resources = menu::Scene::logo;
     IsleGame* game = nullptr;
     IsleGameCamera* sprite_camera = nullptr;
-    IsleGameCamera* fade_camera = nullptr;
     IsleGameSprite* logo_sprite = nullptr;
     scene::Services* services = nullptr;
     menu::scene::Title* title = nullptr;

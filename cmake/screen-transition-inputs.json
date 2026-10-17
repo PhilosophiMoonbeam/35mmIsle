@@ -1,0 +1,779 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "source_path": "src/app_render/52DE0.c",
+  "git_blob": "69f85403fc02060c7d5b2aa0c4428ed4fd1a4aaa",
+  "source_sha256": "cc36ae16113fba51ab053c62893f1bb09979e18d5cc6579c276156903d78479a",
+  "transformation_version": "screen-transition-v1",
+  "initialized_resources": [
+    {
+      "guest_begin": "0x800aec70",
+      "rom_begin": "0x5a620",
+      "bytes": 992,
+      "sha256": "c4ae201d69197fdc9b0c09416db565e9880a5dfa556954e9836a1dbbd2f7410d",
+      "symbols": ["D_800AECB0", "D_800AEEE0", "D_800AF020"],
+      "vertices": ["0x800aec70:64", "0x800aece0:512", "0x800aef80:160"]
+    },
+    {
+      "guest_begin": "0x800af050",
+      "rom_begin": "0x5aa00",
+      "bytes": 20,
+      "values_be_s32": [0, 0, 0, 0, 0]
+    }
+  ],
+  "viewport_definition": {"path": "src/app_render/53AD0.c", "symbol": "func_800A844C", "first": 72, "last": 138, "git_blob": "aa25770661121586cb00b1927a96e147878a3255", "file_sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced", "source_sha256": "5e7c43c4773b5fb0c0d2d3c7e303e974336492f378bc0160113d32416aa4a610", "native_sha256": "1f0ac29eee141f4f65fb5078279c977afea62d55ab82c78adb27c2f1212b0284", "changes": [{"find": "OMCamera* func_800A844C(OMCamera* cam, s32 xMin, s32 yMin, s32 xMax, s32 yMax) {\n    s32 xDiff;\n    s32 xDiffPlus;\n    f32 xDiffHalf;\n    s32 yDiff;\n    s32 yDiffPlus;\n    f32 yDiffHalf;\n    s32 tmp;\n    f64 one;\n\n    one = 1.0; // TODO required to match\n\n    if (xMax < xMin) {\n        tmp = xMin;\n        xMin = xMax;\n        xMax = tmp;\n    } else if (xMin == xMax) {\n        return cam;\n    }\n\n    if (yMax < yMin) {\n        tmp = yMin;\n        yMin = yMax;\n        yMax = tmp;\n    } else if (yMin == yMax) {\n        return cam;\n    }\n\n    xDiff = xMax - xMin;\n    xDiffPlus = xDiff + 1;\n\n    yDiff = yMax - yMin;\n    yDiffPlus = yDiff + 1;\n\n    cam->perspMtx.persp.aspect = ((f32) xDiffPlus / yDiffPlus) * one;\n\n    cam->vp.vp.vscale[0] = (xDiffPlus / 2) * 4;\n    cam->vp.vp.vscale[1] = (yDiffPlus / 2) * 4;\n    cam->vp.vp.vtrans[0] = ((xDiffPlus / 2) + xMin) * 4;\n    cam->vp.vp.vtrans[1] = ((yDiffPlus / 2) + yMin) * 4;\n\n    if (cam->perspMtx.persp.mtx->kind == MTX_TYPE_ORTHO) {\n        xDiffHalf = (f32) xDiff * 0.5;\n        yDiffHalf = (f32) yDiff * 0.5;\n        cam->perspMtx.ortho.l = -xDiffHalf;\n        cam->perspMtx.ortho.r = xDiffHalf;\n        cam->perspMtx.ortho.b = -yDiffHalf;\n        cam->perspMtx.ortho.t = yDiffHalf;\n        cam->perspMtx.ortho.n = -100.0f;\n        cam->perspMtx.ortho.f = 100.0f;\n        cam->perspMtx.ortho.scale = 1.0f;\n\n        cam->viewMtx.lookAt.eye.x = 0.0f;\n        cam->viewMtx.lookAt.eye.y = 0.0f;\n        cam->viewMtx.lookAt.eye.z = 0.0f;\n\n        cam->viewMtx.lookAt.at.x = 0.0f;\n        cam->viewMtx.lookAt.at.y = 0.0f;\n        cam->viewMtx.lookAt.at.z = -1.0f;\n\n        cam->viewMtx.lookAt.up.x = 0.0f;\n        cam->viewMtx.lookAt.up.y = 1.0f;\n        cam->viewMtx.lookAt.up.z = 0.0f;\n    }\n\n    return cam;\n}\n", "replace": "static void isle_screen_transition_func_800A844C(IsleGameCameraParameters* cam, int32_t xMin, int32_t yMin, int32_t xMax, int32_t yMax) {\n    int32_t xDiff;\n    int32_t xDiffPlus;\n    int32_t yDiff;\n    int32_t yDiffPlus;\n    int32_t tmp;\n    double one;\n\n    one = 1.0; /* Preserve original double-expression precision. */\n\n    if (xMax < xMin) {\n        tmp = xMin;\n        xMin = xMax;\n        xMax = tmp;\n    } else if (xMin == xMax) {\n        return;\n    }\n\n    if (yMax < yMin) {\n        tmp = yMin;\n        yMin = yMax;\n        yMax = tmp;\n    } else if (yMin == yMax) {\n        return;\n    }\n\n    xDiff = xMax - xMin;\n    xDiffPlus = xDiff + 1;\n\n    yDiff = yMax - yMin;\n    yDiffPlus = yDiff + 1;\n\n    cam->perspective.aspect = ((float) xDiffPlus / yDiffPlus) * one;\n\n    cam->viewport.scale[0] = (xDiffPlus / 2) * 4;\n    cam->viewport.scale[1] = (yDiffPlus / 2) * 4;\n    cam->viewport.translate[0] = ((xDiffPlus / 2) + xMin) * 4;\n    cam->viewport.translate[1] = ((yDiffPlus / 2) + yMin) * 4;\n\n\n    return;\n}\n", "occurrences": 1}], "admission": "Only actual perspective-kind3 Source7F68 caller admitted; ortho branch proven unreachable by real native matrix kind, no alternate orthographic camera provider."},
+  "definitions": [
+    {
+      "symbol": "func_800A7430",
+      "first": 23,
+      "last": 25,
+      "source_sha256": "9db2e7d67400d0d8aacaeb5a89b3cd465f205bfa56c4dd3437b7795ef363bfd2",
+      "native_sha256": "640b3fd6f5b0b28fa4137b8dc726af1ee62b47b90db2317bc8d5b679fafc85c1",
+      "changes": [
+        {
+          "find": "ABS(arg0)",
+          "replace": "fabsf(arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7430",
+          "replace": "isle_screen_transition_func_800A7430",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 2
+        },
+        {"find": "isle_screen_transition_func_800A7430(float arg0) {\n", "replace": "isle_screen_transition_func_800A7430(IsleScreenTransitionSource* s, float arg0) {\n    (void)s;\n", "occurrences": 1}
+      ]
+    },
+    {
+      "symbol": "func_800A7460",
+      "first": 27,
+      "last": 29,
+      "source_sha256": "650d4e5b9ab93bd67041853d141fed0594c86e8e5ae99557f026f392ab55aae2",
+      "native_sha256": "050b22503baeffb678060bf0621aee769fc14780af560987e12daf21c9ea9a5f",
+      "changes": [
+        {
+          "find": "func_800A7460(",
+          "replace": "func_800A7460(IsleScreenTransitionSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "svoid",
+          "replace": "s",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF050",
+          "replace": "s->D_800AF050",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7460",
+          "replace": "isle_screen_transition_func_800A7460",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7470",
+      "first": 31,
+      "last": 35,
+      "source_sha256": "7b9fc47d6c18aa7c4ae3c7e8ce58b2d56b926e6c409b7f5a4ef335b26fdccb57",
+      "native_sha256": "57941c74e5b55e7506d841a625fa76af8acf68fd52fbac392924e9244575addf",
+      "changes": [
+        {
+          "find": "func_800A7470(",
+          "replace": "func_800A7470(IsleScreenTransitionSource* s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7470",
+          "replace": "IsleGameResult func_800A7470",
+          "occurrences": 1
+        },
+        {
+          "find": "\n}",
+          "replace": "\n    return s->status;\n}",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF054",
+          "replace": "s->D_800AF054",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF058",
+          "replace": "s->D_800AF058",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF05C",
+          "replace": "s->D_800AF05C",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7470",
+          "replace": "isle_screen_transition_func_800A7470",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 3
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A748C",
+      "first": 37,
+      "last": 39,
+      "source_sha256": "6c5dc9a4744d416063fb71422b384c424b4d28fed513329edb495f63f54b903c",
+      "native_sha256": "f1c81db341af37e7dbd337bc50507325a1b4d624c320355c7ec9189b2656d84b",
+      "changes": [
+        {
+          "find": "GObj* func_800A748C(void (*procFunc)(GObj*), Gfx* dobjBP) {\n    return ohCreateModel(2, NULL, 1, 1, renRenderModelTypeA, D_800BE2C0, 1, 1 << D_800BE2C0, dobjBP, 1, 0, procFunc, 0);\n}\n",
+          "replace": "IsleScreenTransitionObject* isle_screen_transition_func_800A748C(IsleScreenTransitionSource* s, IsleGameSourceCallback procFunc, uint32_t dobjBP) {\n    return isle_screen_transition_create(s, procFunc, dobjBP);\n}\n",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A750C",
+      "first": 41,
+      "last": 58,
+      "source_sha256": "4705738a1c1c08b70b49729f50fc984eee82fcf5dc81c65258b77597acfa741e",
+      "native_sha256": "2a9d077f5c6483d92b00d9a11a4d86e03dd76129855ee47f968a1b852ceada14",
+      "changes": [
+        {
+          "find": "void func_800A750C(GObj* gobj) {\n    Gfx* gfx;\n    s32 sp30;\n\n    gfx = gMainGfxPos[1];\n    gDPPipeSync(gfx++);\n    sp30 = renPrepareModelMatrix(&gfx, gobj->data.dobj);\n    renLoadTextures(gobj->data.dobj, &gfx);\n\n    gDPSetPrimColor(gfx++, 0, 0, D_800AF054, D_800AF058, D_800AF05C, D_800AF060);\n    gDPSetRenderMode(gfx++, G_RM_XLU_SURF, G_RM_XLU_SURF2);\n    gSPDisplayList(gfx++, D_800AECB0);\n\n    if (sp30 != 0 && (gobj->data.dobj->parent == (void*) 1 || gobj->data.dobj->next != NULL)) {\n        gSPPopMatrix(gfx++, G_MTX_MODELVIEW);\n    }\n    gMainGfxPos[1] = gfx;\n}\n",
+          "replace": "IsleGameResult isle_screen_transition_func_800A750C(IsleScreenTransitionSource* s, IsleScreenTransitionObject* object, IsleScreenTransitionRender* render) {\n    if (!s || !object || !render || object->source != s || object->joined || object->render_kind != 0) return ISLE_GAME_INVALID_STATE;\n    render->primitive_rgba = (((uint32_t)(s->D_800AF054) & 255u) << 24) | (((uint32_t)(s->D_800AF058) & 255u) << 16) | (((uint32_t)(s->D_800AF05C) & 255u) << 8) | ((uint32_t)(s->D_800AF060) & 255u);\n    render->render_mode = 0x00504240u;\n    render->display_list = 0x800aecb0u;\n    return s->status;\n}\n",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7660",
+      "first": 60,
+      "last": 86,
+      "source_sha256": "ff92f222b179d90ba77d3921596935c6e6d8b34ed3155ba7d1f59ab9b8213326",
+      "native_sha256": "1b47ea9a3908a605008c65aa65cbcb261ba1ef5c2ab915a1afa42edd0cc93af1",
+      "changes": [
+        {
+          "find": "GObj* arg0",
+          "replace": "IsleGameObject* arg0",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7660(IsleGameObject* arg0) {\n",
+          "replace": "void func_800A7660(IsleGameObject* arg0) {\n    IsleScreenTransitionObject* record = isle_screen_transition_current(arg0);\n    IsleScreenTransitionSource* s = record->source;\n",
+          "occurrences": 1
+        },
+        {
+          "find": "FORCE_F32(arg0->userData)",
+          "replace": "record->duration",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, ",
+          "occurrences": 3
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 1);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 1));",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 3);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 3));",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 99);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 99));",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(",
+          "replace": "isle_screen_transition_delete(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF050",
+          "replace": "s->D_800AF050",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800AF060",
+          "replace": "s->D_800AF060",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800BE2CC",
+          "replace": "s->D_800BE2CC",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7660",
+          "replace": "isle_screen_transition_func_800A7660",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 3
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7760",
+      "first": 88,
+      "last": 113,
+      "source_sha256": "12dd3ba940feb54f9f7ec3c7fa6b41801e9518023f708fc5ea5a316527eaa547",
+      "native_sha256": "537a777ee0489175c864c2a5c450373a89018258e1869a3ef8163d9ec9540128",
+      "changes": [
+        {
+          "find": "GObj* arg0",
+          "replace": "IsleGameObject* arg0",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7760(IsleGameObject* arg0) {\n",
+          "replace": "void func_800A7760(IsleGameObject* arg0) {\n    IsleScreenTransitionObject* record = isle_screen_transition_current(arg0);\n    IsleScreenTransitionSource* s = record->source;\n",
+          "occurrences": 1
+        },
+        {
+          "find": "FORCE_F32(arg0->userData)",
+          "replace": "record->duration",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, ",
+          "occurrences": 3
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 1);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 1));",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 3);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 3));",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 99);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 99));",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(",
+          "replace": "isle_screen_transition_delete(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF050",
+          "replace": "s->D_800AF050",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800AF060",
+          "replace": "s->D_800AF060",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800BE2CC",
+          "replace": "s->D_800BE2CC",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7760",
+          "replace": "isle_screen_transition_func_800A7760",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 3
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7860",
+      "first": 115,
+      "last": 132,
+      "source_sha256": "28e07d8d067fef04ddd562acc13dbb968442f638f4f60087734414d2ad8d2576",
+      "native_sha256": "cd116e61185f70cc31bea161e5179f172e288bcc9485fc71a3ac54a67d27770d",
+      "changes": [
+        {
+          "find": "func_800A7860(",
+          "replace": "func_800A7860(IsleScreenTransitionSource* s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7860",
+          "replace": "IsleGameResult func_800A7860",
+          "occurrences": 1
+        },
+        {
+          "find": "\n}",
+          "replace": "\n    return s->status;\n}",
+          "occurrences": 1
+        },
+        {
+          "find": "GObj* gobj;",
+          "replace": "IsleScreenTransitionObject* gobj;\n    IsleGameModelTransform pose;",
+          "occurrences": 1
+        },
+        {
+          "find": "    gobj->fnRender = func_800A750C;",
+          "replace": "    if (!gobj) return s->status;\n    gobj->render_kind = 0;\n    if ((s->status = isle_screen_transition_transform(gobj, &pose, 0)) != ISLE_GAME_OK) return s->status;",
+          "occurrences": 1
+        },
+        {
+          "find": "gobj->data.dobj->scale.v.",
+          "replace": "pose.scale.",
+          "occurrences": 3
+        },
+        {
+          "find": "gobj->userData = FORCE_S32(arg1);",
+          "replace": "gobj->duration = arg1;\n    if ((s->status = isle_screen_transition_transform(gobj, &pose, 1)) != ISLE_GAME_OK) return s->status;",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF050",
+          "replace": "s->D_800AF050",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF060",
+          "replace": "s->D_800AF060",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800BE2CC",
+          "replace": "s->D_800BE2CC",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AECB0",
+          "replace": "0x800aecb0u",
+          "occurrences": 2
+        },
+        {
+          "find": "func_800A748C",
+          "replace": "isle_screen_transition_func_800A748C",
+          "occurrences": 2
+        },
+        {
+          "find": "func_800A7660",
+          "replace": "isle_screen_transition_func_800A7660",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7760",
+          "replace": "isle_screen_transition_func_800A7760",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7860",
+          "replace": "isle_screen_transition_func_800A7860",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_func_800A748C(isle_screen_transition_func_800A7660, 0x800aecb0u)",
+          "replace": "isle_screen_transition_func_800A748C(s, isle_screen_transition_func_800A7660, 0x800aecb0u)",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_func_800A748C(isle_screen_transition_func_800A7760, 0x800aecb0u)",
+          "replace": "isle_screen_transition_func_800A748C(s, isle_screen_transition_func_800A7760, 0x800aecb0u)",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7918",
+      "first": 134,
+      "last": 137,
+      "source_sha256": "3dd34c206fe8dc45d154e9bcfa5ba272a0d4215475b38a3cd0a24500e246e8fe",
+      "native_sha256": "da061709f3a960b46e1f3d65bdf4bb52264eb7d4c33036a86eaa33a9da5414d6",
+      "changes": [
+        {
+          "find": "func_800A7918(",
+          "replace": "func_800A7918(IsleScreenTransitionSource* s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7918",
+          "replace": "IsleGameResult func_800A7918",
+          "occurrences": 1
+        },
+        {
+          "find": "\n}",
+          "replace": "\n    return s->status;\n}",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BE2CC",
+          "replace": "s->D_800BE2CC",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7860",
+          "replace": "isle_screen_transition_func_800A7860",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7918",
+          "replace": "isle_screen_transition_func_800A7918",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_func_800A7860(arg0, arg1)",
+          "replace": "isle_screen_transition_func_800A7860(s, arg0, arg1)",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7948",
+      "first": 139,
+      "last": 158,
+      "source_sha256": "dc2116728528538c138f55c4688a8892d703f83de1ba5bb57a891e5c11120425",
+      "native_sha256": "b487ddf0669a335954bcc74ffeb81290f270fc35c12a2e2b1314e4e7e54a53f7",
+      "changes": [
+        {
+          "find": "void func_800A7948(GObj* gobj) {\n    Gfx* gfx;\n    s32 sp30;\n\n    gfx = gMainGfxPos[1];\n    gDPPipeSync(gfx++);\n    sp30 = renPrepareModelMatrix(&gfx, gobj->data.dobj);\n    renLoadTextures(gobj->data.dobj, &gfx);\n\n    gDPSetPrimColor(gfx++, 0, 0, 0, 0, 0, 0);\n    gDPSetRenderMode(gfx++,\n                     AA_EN | Z_UPD | IM_RD | CLR_ON_CVG | CVG_DST_WRAP | ZMODE_OPA | FORCE_BL | GBL_c1(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_MEM, G_BL_1MA),\n                     AA_EN | Z_UPD | IM_RD | CLR_ON_CVG | CVG_DST_WRAP | ZMODE_OPA | FORCE_BL | GBL_c2(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_MEM, G_BL_1MA));\n    gSPDisplayList(gfx++, gobj->data.dobj->payload.dlist);\n\n    if (sp30 != 0 && (gobj->data.dobj->parent == (void*) 1 || gobj->data.dobj->next != NULL)) {\n        gSPPopMatrix(gfx++, G_MTX_MODELVIEW);\n    }\n    gMainGfxPos[1] = gfx;\n}\n",
+          "replace": "IsleGameResult isle_screen_transition_func_800A7948(IsleScreenTransitionSource* s, IsleScreenTransitionObject* object, IsleScreenTransitionRender* render) {\n    if (!s || !object || !render || object->source != s || object->joined || object->render_kind != 1) return ISLE_GAME_INVALID_STATE;\n    render->primitive_rgba = 0;\n    render->render_mode = 0x005041e8u;\n    render->display_list = object->display_list;\n    return s->status;\n}\n",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7A58",
+      "first": 160,
+      "last": 177,
+      "source_sha256": "5618265f8295f8d8f50a74c6dc3ed83362022b4f18ad22bced64bd548ce14bcb",
+      "native_sha256": "c80428337a530562bca9aedd78ad942aa38f96c382573b1c352db7292a02164e",
+      "changes": [
+        {
+          "find": "void func_800A7A58(GObj* gobj) {\n    Gfx* gfx;\n    s32 sp30;\n\n    gfx = gMainGfxPos[1];\n    gDPPipeSync(gfx++);\n    sp30 = renPrepareModelMatrix(&gfx, gobj->data.dobj);\n    renLoadTextures(gobj->data.dobj, &gfx);\n\n    gDPSetPrimColor(gfx++, 0, 0, D_800AF054, D_800AF058, D_800AF05C, D_800AF060);\n    gDPSetRenderMode(gfx++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);\n    gSPDisplayList(gfx++, D_800AECB0);\n\n    if (sp30 != 0 && (gobj->data.dobj->parent == (void*) 1 || gobj->data.dobj->next != NULL)) {\n        gSPPopMatrix(gfx++, G_MTX_MODELVIEW);\n    }\n    gMainGfxPos[1] = gfx;\n}\n",
+          "replace": "IsleGameResult isle_screen_transition_func_800A7A58(IsleScreenTransitionSource* s, IsleScreenTransitionObject* object, IsleScreenTransitionRender* render) {\n    if (!s || !object || !render || object->source != s || object->joined || object->render_kind != 2) return ISLE_GAME_INVALID_STATE;\n    render->primitive_rgba = (((uint32_t)(s->D_800AF054) & 255u) << 24) | (((uint32_t)(s->D_800AF058) & 255u) << 16) | (((uint32_t)(s->D_800AF05C) & 255u) << 8) | ((uint32_t)(s->D_800AF060) & 255u);\n    render->render_mode = 0x00552078u;\n    render->display_list = 0x800aecb0u;\n    return s->status;\n}\n",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7BAC",
+      "first": 179,
+      "last": 211,
+      "source_sha256": "dd38ddea84a3d6ee9f1e9cffadac1c25aa42a201fbcd9cf26781003d2bb19e7b",
+      "native_sha256": "03f828f7895c7b73177ef5bbf94407ee10f5cb21ecdcd914232afc20f39828c9",
+      "changes": [
+        {
+          "find": "GObj* gobj",
+          "replace": "IsleGameObject* gobj",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7BAC(IsleGameObject* gobj) {\n",
+          "replace": "void func_800A7BAC(IsleGameObject* gobj) {\n    IsleScreenTransitionObject* record = isle_screen_transition_current(gobj);\n    IsleScreenTransitionSource* s = record->source;\n    IsleGameModelTransform pose;\n    isle_screen_transition_checked(s, isle_screen_transition_transform(record, &pose, 0));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "FORCE_F32(gobj->userData)",
+          "replace": "record->duration",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, ",
+          "occurrences": 3
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 1);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 1));",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 3);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 3));",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_checked(s, isle_game_wait(s->game, 99);",
+          "replace": "isle_screen_transition_checked(s, isle_game_wait(s->game, 99));",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(",
+          "replace": "isle_screen_transition_delete(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "gobj->data.dobj->scale.v.",
+          "replace": "pose.scale.",
+          "occurrences": 4
+        },
+        {
+          "find": "        pose.scale.z = var_f20;",
+          "replace": "        pose.scale.z = var_f20;\n        isle_screen_transition_checked(s, isle_screen_transition_transform(record, &pose, 1));",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF050",
+          "replace": "s->D_800AF050",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800BE2CC",
+          "replace": "s->D_800BE2CC",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BE2D0",
+          "replace": "s->D_800BE2D0",
+          "occurrences": 2
+        },
+        {
+          "find": "func_800A7BAC",
+          "replace": "isle_screen_transition_func_800A7BAC",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 4
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7CC4",
+      "first": 213,
+      "last": 257,
+      "source_sha256": "54d81717dba4d8ddd36d6294208af2ec5b109606f95f62d77bf850472563b67b",
+      "native_sha256": "0f52bb85779429a57d9f8ac4cf7d8e3e3d9988abb12c2e3817c2101215dc1836",
+      "changes": [
+        {
+          "find": "func_800A7CC4(",
+          "replace": "func_800A7CC4(IsleScreenTransitionSource* s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7CC4",
+          "replace": "IsleGameResult func_800A7CC4",
+          "occurrences": 1
+        },
+        {
+          "find": "\n}",
+          "replace": "\n    return s->status;\n}",
+          "occurrences": 1
+        },
+        {
+          "find": "GObj* gobj;",
+          "replace": "IsleScreenTransitionObject* gobj;\n    IsleGameModelTransform pose;",
+          "occurrences": 1
+        },
+        {
+          "find": "    gobj->fnRender = func_800A7948;",
+          "replace": "    if (!gobj) return s->status;\n    gobj->render_kind = 1;\n    if ((s->status = isle_screen_transition_transform(gobj, &pose, 0)) != ISLE_GAME_OK) return s->status;",
+          "occurrences": 1
+        },
+        {
+          "find": "gobj->data.dobj->scale.v.",
+          "replace": "pose.scale.",
+          "occurrences": 6
+        },
+        {
+          "find": "gobj->userData = FORCE_S32(arg3);",
+          "replace": "gobj->duration = arg3;\n    if ((s->status = isle_screen_transition_transform(gobj, &pose, 1)) != ISLE_GAME_OK) return s->status;",
+          "occurrences": 1
+        },
+        {
+          "find": "Gfx* var_a1;",
+          "replace": "uint32_t var_a1;",
+          "occurrences": 1
+        },
+        {
+          "find": "gobj->data.dobj->position.v.",
+          "replace": "pose.position.",
+          "occurrences": 3
+        },
+        {
+          "find": "gobj->fnRender = func_800A7A58;",
+          "replace": "if (!gobj) return s->status;\n    gobj->render_kind = 2;\n    if ((s->status = isle_screen_transition_transform(gobj, &pose, 0)) != ISLE_GAME_OK) return s->status;",
+          "occurrences": 1
+        },
+        {
+          "find": "    D_800BE2D0 = gobj;",
+          "replace": "    if ((s->status = isle_screen_transition_transform(gobj, &pose, 1)) != ISLE_GAME_OK) return s->status;\n    D_800BE2D0 = gobj->object;",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BE2CC",
+          "replace": "s->D_800BE2CC",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BE2D0",
+          "replace": "s->D_800BE2D0",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AECB0",
+          "replace": "0x800aecb0u",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AEEE0",
+          "replace": "0x800aeee0u",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800AF020",
+          "replace": "0x800af020u",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7430",
+          "replace": "isle_screen_transition_func_800A7430",
+          "occurrences": 12
+        },
+        {
+          "find": "func_800A748C",
+          "replace": "isle_screen_transition_func_800A748C",
+          "occurrences": 2
+        },
+        {
+          "find": "func_800A7BAC",
+          "replace": "isle_screen_transition_func_800A7BAC",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7CC4",
+          "replace": "isle_screen_transition_func_800A7CC4",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_func_800A748C(NULL, 0x800aecb0u)",
+          "replace": "isle_screen_transition_func_800A748C(s, NULL, 0x800aecb0u)",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_func_800A748C(isle_screen_transition_func_800A7BAC, var_a1)",
+          "replace": "isle_screen_transition_func_800A748C(s, isle_screen_transition_func_800A7BAC, var_a1)",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 6
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        },
+        {"find": "isle_screen_transition_func_800A7430(", "replace": "isle_screen_transition_func_800A7430(s, ", "occurrences": 12}
+      ]
+    },
+    {
+      "symbol": "func_800A7F40",
+      "first": 259,
+      "last": 262,
+      "source_sha256": "50392e323a52291e32f2a5a4408599241f1c8b4e1511f895f48fc1e8cc7aa340",
+      "native_sha256": "cad6f7e91e4f49eb5ff48741f86759af1724a8d9e5ebd9aa1013d23f1d2a96e3",
+      "changes": [
+        {
+          "find": "func_800A7F40(",
+          "replace": "func_800A7F40(IsleScreenTransitionSource* s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_800A7F40",
+          "replace": "IsleGameResult func_800A7F40",
+          "occurrences": 1
+        },
+        {
+          "find": "\n}",
+          "replace": "\n    return s->status;\n}",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BE2CC",
+          "replace": "s->D_800BE2CC",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7CC4",
+          "replace": "isle_screen_transition_func_800A7CC4",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A7F40",
+          "replace": "isle_screen_transition_func_800A7F40",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_screen_transition_func_800A7CC4(arg0, arg1, arg2, arg3)",
+          "replace": "isle_screen_transition_func_800A7CC4(s, arg0, arg1, arg2, arg3)",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 3
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800A7F68",
+      "first": 264,
+      "last": 290,
+      "source_sha256": "1f15d922b5354556872c0d4f0c7aa901b97a1f4042e550cedbe1bc8362397b0c",
+      "native_sha256": "6719252b6620518a4b4b55897e5927183066538f443825290cc3edfa8b74bf72",
+      "changes": [
+        {
+          "find": "void func_800A7F68(s32 arg0, s32 arg1) {\n    D_800BE2C0 = arg0;\n    D_800BE2C8 = ohCreateCamera(5, NULL, 0, 0x80000000, ren_func_800191D8, 1, 1 << arg0, 1 << arg0, 1, 0, NULL, 0, 1)->data.cam;\n    D_800BE2C8->flags = CAMERA_FLAG_4 | CAMERA_FLAG_1;\n    if (arg1 & 0x100) {\n        D_800BE2C8->flags &= ~CAMERA_FLAG_1;\n    }\n    D_800BE2C8->bgColor = 0x10001;\n    D_800BE2C8->perspMtx.persp.fovy = 45.0f;\n    D_800BE2C8->perspMtx.persp.near = 8.0f;\n    D_800BE2C8->perspMtx.persp.far = 1024.0f;\n    D_800BE2C8->perspMtx.persp.scale = 1.0f;\n    D_800BE2C8->viewMtx.lookAt.up.x = 0.0f;\n    D_800BE2C8->viewMtx.lookAt.up.y = 0.0f;\n    D_800BE2C8->viewMtx.lookAt.up.z = 1.0f;\n    func_800A844C(D_800BE2C8, 0, 0, (arg1 & 3) * SCREEN_WIDTH, (arg1 & 3) * SCREEN_HEIGHT);\n    D_800BE2C8->viewMtx.lookAt.eye.x = 290.0f;\n    D_800BE2C8->viewMtx.lookAt.eye.y = 0.0f;\n    D_800BE2C8->viewMtx.lookAt.eye.z = 0.0f;\n    D_800BE2C8->viewMtx.lookAt.at.x = 0.0f;\n    D_800BE2C8->viewMtx.lookAt.at.y = 0.0f;\n    D_800BE2C8->viewMtx.lookAt.at.z = 0.0f;\n    D_800AF054 = 0;\n    D_800AF058 = 0;\n    D_800AF05C = 0;\n    D_800AF050 = 0;\n}\n",
+          "replace": "IsleGameResult isle_screen_transition_func_800A7F68(IsleScreenTransitionSource* s, int32_t arg0, int32_t arg1) {\n    const IsleGameCameraParameters* current;\n    IsleGameCameraParameters camera;\n    if (!s || arg0 < 0 || arg0 >= 32) return ISLE_GAME_INVALID_ARGUMENT;\n    if (s->status != ISLE_GAME_OK) return s->status;\n    s->D_800BE2C0 = arg0;\n    if ((s->status = isle_screen_transition_camera(s, arg0, arg1)) != ISLE_GAME_OK) return s->status;\n    s->camera_mask = s->camera_buffer_mask = 1u << arg0;\n    if ((s->status = isle_game_camera_parameters(s->game, s->D_800BE2C8, &current)) != ISLE_GAME_OK) return s->status;\n    camera = *current;\n    s->camera_flags = 4 | 1;\n    if (arg1 & 0x100) {\n        s->camera_flags &= ~1u;\n    }\n    camera.perspective.fovy = 45.0f;\n    camera.perspective.near_plane = 8.0f;\n    camera.perspective.far_plane = 1024.0f;\n    camera.perspective.scale = 1.0f;\n    camera.look_at.up[0] = 0.0f;\n    camera.look_at.up[1] = 0.0f;\n    camera.look_at.up[2] = 1.0f;\n    isle_screen_transition_func_800A844C(&camera, 0, 0, (arg1 & 3) * 320, (arg1 & 3) * 240);\n    camera.look_at.eye[0] = 290.0f;\n    camera.look_at.eye[1] = 0.0f;\n    camera.look_at.eye[2] = 0.0f;\n    camera.look_at.at[0] = 0.0f;\n    camera.look_at.at[1] = 0.0f;\n    camera.look_at.at[2] = 0.0f;\n    s->D_800AF054 = 0;\n    s->D_800AF058 = 0;\n    s->D_800AF05C = 0;\n    s->D_800AF050 = 0;\n    if ((s->status = isle_game_camera_set_perspective(s->game, s->D_800BE2C8, &camera.perspective)) != ISLE_GAME_OK) return s->status;\n    if ((s->status = isle_game_camera_set_look_at(s->game, s->D_800BE2C8, &camera.look_at)) != ISLE_GAME_OK) return s->status;\n    return s->status = isle_game_camera_set_viewport(s->game, s->D_800BE2C8, &camera.viewport);\n}\n",
+          "occurrences": 1
+        }
+      ]
+    }
+  ]
+}

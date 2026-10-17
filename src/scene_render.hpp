@@ -33,6 +33,8 @@ struct Pass {
     sprite::RamRange sprite_commands{};
     Prepare prepare = nullptr;
     void* userdata = nullptr;
+    // Actual transition owner retained through preparation, GPU and readback.
+    ::isle::screen_transition::Owner* transition_owner = nullptr;
     bool includes(RenderMetadata object) const noexcept {
         return object.link < 64 && ((link_mask >> object.link) & 1u) &&
                (tag_match == TagMatch::equality ? object.camera_tag == camera_tag :

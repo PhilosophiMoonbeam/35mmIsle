@@ -164,7 +164,7 @@ struct Consumer {
     }
     void actual_priority2(IsleGameObject* root,IsleGameCamera* camera,actor::DetectorBinding& detection) {
         const std::array actors{spawn({0,-9000,0},0xa00),spawn({0,-9000,1},0xa00),spawn({0,-9000,1.75f},0xa00)};
-        actor::PhotoScene controller(services,owner,root,camera,detection);
+        actor::PhotoScene controller(services,owner,root,camera,detection,nullptr);
         PairWitness witness{services,owner,actors};auto* process=services.process(root,PairWitness::observe,&witness,ISLE_GAME_SYNCHRONOUS,1);
         require(process,"actual priority1 collision witness allocation failed");
         const auto result=isle_game_tick(services.game);const auto joined=isle_game_end_process(services.game,process);
@@ -203,21 +203,23 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
         const IsleGameLookAt view{{0,1600,6000},{0,500,0},{0,1,0}};native(isle_game_camera_set_look_at(services.game,camera,&view));
         IsleGameModelNodeInit node{};node.parent=UINT32_MAX;node.transform.scale={1,1,1};node.matrix_kind=ISLE_GAME_MODEL_CONTEXTUAL_RPY;
         IsleGameModel* player_model=nullptr;native(isle_game_attach_model(services.game,player,&node,1,&player_model));
-        environment_sound::Environment environment(services,storage.arena(),sounds,nullptr,camera);
+        environment_sound::Environment environment(services,storage.arena(),sounds);
+        require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector;focus::RegionCopies copies({{0x680000,0x50},{0x680080,0x80},{0x680100,0xa00}});actor::DetectorBinding detection{copies,detector};
         Hooks hooks{services,camera};world::World world(services,world_resources,hooks.callbacks());
         a::SlotCapacity maximum{};for(const auto& model:resources.models()) { const auto capacity=a::slot_capacity(model);
             maximum.nodes=std::max(maximum.nodes,capacity.nodes);maximum.material_attachments=std::max(maximum.material_attachments,capacity.material_attachments); }
         const std::array capacities{maximum,maximum,maximum};
         {
-            actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
-            accepted(owner.set_player(player,player_model,camera));owner.course().execution_enabled=false;
+            actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
+            accepted(owner.set_player(player,player_model,camera));require(environment.set_listener(player_model,camera),"environment listener binding failed");owner.course().execution_enabled=false;
             require(!world.current(),"analytic source-default-ground fixture unexpectedly entered a block");
             Consumer consumer(services,owner,world,resources);
             consumer.four_movement_cases();consumer.cached_order_and_reuse();consumer.source_heading_boundaries();
             consumer.three_dimensional_and_first_pass();consumer.queued_pair_order();consumer.partial_first_pass_error();
             consumer.actual_priority2(root,camera,detection);
             accepted(owner.set_player(nullptr,nullptr,nullptr));
+            require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
         }
         environment.cleanup();
     }

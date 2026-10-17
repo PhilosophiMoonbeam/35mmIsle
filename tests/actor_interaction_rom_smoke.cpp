@@ -183,6 +183,7 @@ std::unique_ptr<actor::BehaviorBindings> make_bindings(const beach::BehaviorReso
 struct Consumer {
     scene::Services& services;
     actor::Owner& actors;
+    environment_sound::Environment& environment;
     it::Owner& items;
     it::Globals& globals;
     world::World& world;
@@ -196,10 +197,10 @@ struct Consumer {
     ActorMovementProbe movement{};
     std::uint32_t next_id=10000;
     bool shut_down=false;
-    Consumer(scene::Services& s,actor::Owner& ac,it::Owner& i,it::Globals& g,
+    Consumer(scene::Services& s,actor::Owner& ac,environment_sound::Environment& e,it::Owner& i,it::Globals& g,
              world::World& w,focus::Detector& d,ApiSourceOwner& p,
              const beach::ActorResources& ar,const beach::BehaviorResources& br)
-        : services(s),actors(ac),items(i),globals(g),world(w),detector(d),player(p),resources(ar),behavior(br) {}
+        : services(s),actors(ac),environment(e),items(i),globals(g),world(w),detector(d),player(p),resources(ar),behavior(br) {}
 
     actor::SpawnResult spawn(IsleGameVec3 position={0,0,0},std::uint32_t actor_id=1003) {
         std::size_t definition=beach::actor_no_index;
@@ -1124,6 +1125,7 @@ struct Consumer {
         if (kind==2) rows.graph.count=1; // Missing terminal, not an out-of-bounds read.
         if (kind==3) {
             accepted(actors.set_player(nullptr,nullptr,nullptr));
+            require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
             rows.rows[1]={58,nullptr,0,nullptr};
         }
         if (kind==4) {
@@ -1135,6 +1137,7 @@ struct Consumer {
             const IsleGameModelTransform placement{{0,0,0},{0,0,0},{1,1,1}};
             native(isle_game_model_set_placement(services.game,model,ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
             accepted(actors.set_player(unregistered,model,actors.player().camera));
+            require(environment.set_listener(model,actors.player().camera),"environment listener replacement failed");
             require(!services.source_owner_registered(unregistered),"set_player incorrectly claimed semantic Player ownership");
             rows.rows[1]={58,nullptr,0,nullptr};
         }
@@ -1156,6 +1159,7 @@ struct Consumer {
         if (kind==1 || kind==3) invalid.rows[1]={25,func_beach_802CAB50,0,nullptr};
         if (kind==2) {
             accepted(actors.set_player(nullptr,nullptr,nullptr));
+            require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
             invalid.rows[1]={16,nullptr,10,descend};
         }
         if (kind==3) require(world.current()==nullptr && p.id==129,
@@ -1228,6 +1232,7 @@ struct Consumer {
         good=(bool(retired)||(failed_scene&&retired.error==it::OwnerError::services))&&good;
         good=bool(items.collect_joined())&&good;
         good=bool(actors.set_player(nullptr,nullptr,nullptr))&&good;
+        good=environment.set_listener(nullptr,nullptr)&&good;
         for (auto& sender:extra_sources) good=sender->close()&&good;
         shut_down=good;
         return good;
@@ -1272,7 +1277,8 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
         const IsleGameLookAt look{{0,0,0},{1,0,0},{0,1,0}};
         native(isle_game_camera_set_look_at(services.game,camera,&look));
         ApiSourceOwner player(services,2);
-        environment_sound::Environment environment(services,storage.arena(),resources.sound,nullptr,camera);
+        environment_sound::Environment environment(services,storage.arena(),resources.sound);
+        require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector; Shift shift{&services,camera};
         shift.native_world_pool.arena=&storage.arena();
         std::unique_ptr<world::World> admitted_world;
@@ -1291,14 +1297,16 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
         auto& world=*admitted_world;
         {
             actor::Owner actors(services,resources.actors,world,environment,detector,resources.actor_capacities,resources.banks,{32768,4096});
+            accepted(actors.publish_effects());
             shift.actors=&actors; accepted(actors.set_player(player.object,player.model,camera));
+            require(environment.set_listener(player.model,camera),"environment listener binding failed");
             const IsleGameVec3 throw_target{100,900,300}; it::Globals globals;
             {
                 it::Owner items(services,resources.items,world,actors,globals,{player.object,player.model,camera,&throw_target},resources.item_capacities,{32768,4096});
                 shift.items=&items; accepted(items.init()); accepted(items.set_custom_functions(nullptr,0,nullptr));
                 actor::InteractionServices interactions(services,actors,items,world,detector,*resources.bindings,resources.actors);
                 accepted(actors.bind_interactions(interactions)); // BEFORE any Actor factory.
-                Consumer consumer{services,actors,items,globals,world,detector,player,resources.actors,resources.behavior};
+                Consumer consumer{services,actors,environment,items,globals,world,detector,player,resources.actors,resources.behavior};
                 body(consumer);
                 require(consumer.shutdown(),"actual native/semantic fault cleanup left borrowers or failed real joins");
                 shift.items=nullptr;

@@ -63,9 +63,8 @@ struct MaterialState {
 struct CameraState {
     Vec3 eye{}, at{};
     float roll = 0, fov_y = 0;
-    // Source kind 8 uses fixed Y-up, NOT roll-derived up. Apply through the
-    // existing camera setter: view_dirty changes eye/at/roll only; projection_dirty
-    // changes FOV only. Preserve near=47, far/aspect, viewport, clips, and kind 8.
+    // Dirty fields describe animator changes, not native camera policy. Native
+    // consumers merge written_channels into a fresh camera parameter view.
     bool view_dirty = true, projection_dirty = true;
     std::uint16_t written_channels = 0;
     Clock clock;
@@ -189,6 +188,11 @@ public:
     Status set_model_speed(InstanceHandle, float speed) noexcept;
     Status set_texture_speed(InstanceHandle, float speed) noexcept;
     Status restart_camera(float skip_frames = 0) noexcept;
+    // animSetCameraAnimation: selects a precompiled camera program, clears only
+    // track kinds, retains speed/fields, and sets CHANGED at skip. no_index is
+    // the source NULL list (the next update finishes it). Does not evaluate.
+    Status bind_camera(std::size_t program, float skip_frames = 0) noexcept;
+    Status set_camera_speed(float speed) noexcept;
     // Fresh active scene reentry restores resource bind/material fields, zero/new
     // AObjs, receiver/camera/clocks. Keeps handles and per-instance callback policy.
     Status reset(float skip_frames = 0) noexcept;

@@ -90,6 +90,10 @@ public:
     ~Owner();
     Owner(const Owner&) = delete;
     Owner& operator=(const Owner&) = delete;
+    // Preparation above creates no native FX helpers. Publish once at the
+    // course's original FX stage, after UI and EnvSound initialization.
+    // Repeated/failed attempts reject; real joined callbacks own retirement.
+    OwnerStatus publish_effects() noexcept;
     SpawnResult spawn(const SpawnRequest&) noexcept;
     // Shared source getFreePokemonId cursor/search, including unrelated link3
     // objects and occupied inclusive-max fallback. Allocation failures consume
@@ -142,6 +146,8 @@ public:
     // Bind before spawning. The context stays alive through all source work,
     // actual joins and graphics release; successful reset ends this borrow.
     OwnerStatus bind_interactions(InteractionServices&) noexcept;
+    // Local actor association only; Environment listener publication/changes
+    // belong to its explicit initialize/set_listener calls.
     OwnerStatus set_player(IsleGameObject*, IsleGameModel*, IsleGameCamera*) noexcept;
     OwnerStatus set_focus(menu::animation::InstanceHandle, bool latch, std::uint32_t timer) noexcept;
     void set_direction(std::int32_t) noexcept;

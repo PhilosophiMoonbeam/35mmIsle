@@ -10,6 +10,7 @@
 #include "scene_resources.hpp"
 #include "sprite_producer.hpp"
 #include "source_command_scope.h"
+#include "screen_transition.hpp"
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -186,7 +187,8 @@ public:
     bool begin_fade(bool reveal, float seconds, std::array<std::uint8_t,3> rgb,
                     bool delayed_delete = false) noexcept;
     FadeView fade() const noexcept;
-    const IsleGameModelTransform* fade_transform() const noexcept;
+    IsleScreenTransitionSource* screen_transition_source() noexcept;
+    ::isle::screen_transition::Owner& screen_transition() noexcept;
     int play_sound(std::uint32_t sound, game_audio::Parameters = {}) noexcept;
     bool ramp_sound_volume(int slot, std::uint32_t from, std::uint32_t to, std::int32_t updates) noexcept;
     bool ramp_sound_pan(int slot, std::uint32_t from, std::uint32_t to, std::int32_t updates) noexcept;

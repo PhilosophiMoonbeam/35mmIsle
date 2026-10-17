@@ -240,7 +240,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             const IsleGamePerspective perspective{55,4.0f/3.0f,10,25600,1}; native(isle_game_camera_set_perspective(services.game,camera,&perspective));
             const IsleGameLookAt view{{0,1600,6000},{0,500,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&view));
             const IsleGameViewport viewport{{640,480,511,0},{640,480,511,0}}; native(isle_game_camera_set_viewport(services.game,camera,&viewport));
-            environment_sound::Environment environment(services,storage.arena(),sound_resources,nullptr,camera);
+            environment_sound::Environment environment(services,storage.arena(),sound_resources);
+            require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; focus::RegionCopies copies(capture_layout);
             Bindings bindings{services,camera};
             world::World world(services,world_resources,{&bindings,nullptr,Bindings::remove,Bindings::change,Bindings::camera_shift,Bindings::effect_shift,nullptr});
@@ -254,6 +255,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             const std::array capacities{capacity,capacity};
             {
                 actor::Owner owner(services,actor_resources,world,environment,detector,capacities,banks,{32768,4096});
+                accepted(owner.publish_effects());
                 bindings.owner=&owner; bindings.previous_reference=&world.blocks()[0];
                 WorldOwnerScope world_owner_scope{world,bindings};
                 require(world.enter_first(0)==&world.blocks()[0],"composed source first block entry failed");

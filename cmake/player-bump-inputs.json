@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "player-bump-complete-v1",
+  "generator_sha256": "be962dc4c1aa507e3cf7d9c26f9ade6b5be9c421a8e1cb6f7555a6082c4e8d6d",
+  "source_files": {
+    "src/app_level/bump_detect.c": {
+      "git_blob": "ba9af1e77e10581ea75cbc0f047fe2a51695671d",
+      "sha256": "0149a3dbebafeb902c69f85845b0036482ddda53d870db44457d00a064c9c3fa"
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096"
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4"
+    }
+  },
+  "native_support": {
+    "src/player_bump_source.h": {
+      "sha256": "a1286ae43df2ca0eca856ecd957f481c1260fd4e2ea8e1e79a6bfa1fbf8d6667"
+    },
+    "src/player_bump_source.c": {
+      "sha256": "e0ac6c8ef9a4a3f2cefb150c1633ec06396f5236ce7ebdd871269f5d50b3bb70"
+    },
+    "src/player_bump.hpp": {
+      "sha256": "21fb4595621a0ae459879473c973e812e9742431408ca21f52d2bcff519580a0"
+    },
+    "src/player_bump.cpp": {
+      "sha256": "02f545cb8f133366465b2b45cdd49f6285238c6eda098a4e502f3b26139a8033"
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/app_level/bump_detect.c",
+      "symbol": "BumpDetector_Update",
+      "first": 12,
+      "last": 45,
+      "source_sha256": "dfe19b44a89b57d87eb9ca9f70f94923ea1703af71a8a0663f95f332b3501be6"
+    },
+    {
+      "path": "src/app_level/bump_detect.c",
+      "symbol": "BumpDetector_Init",
+      "first": 47,
+      "last": 52,
+      "source_sha256": "8b6b514eb8307a4e171cd8f84ec1a9ddb7620541597f6b0e31f4ecbaf0eebdde"
+    },
+    {
+      "path": "src/app_level/bump_detect.c",
+      "symbol": "BumpDetector_Disable",
+      "first": 54,
+      "last": 57,
+      "source_sha256": "03970cf7eef75df16b28785b1525f5f3e745957a70f117a4fe58084d74508015"
+    },
+    {
+      "path": "src/app_level/bump_detect.c",
+      "symbol": "BumpDetector_Enable",
+      "first": 59,
+      "last": 62,
+      "source_sha256": "15935c5db405addf206b66ae951a9d131f7c25520f2d1f74a2f4caea2fdeb419"
+    },
+    {
+      "path": "src/app_level/bump_detect.c",
+      "symbol": "BumpDetector_Delete",
+      "first": 64,
+      "last": 69,
+      "source_sha256": "eabd33844b70c59006b5b2cdee0c338a7554608b6c5076590414942559cdaa93"
+    }
+  ],
+  "semantic_origins": [
+    {
+      "path": "src/app_level/bump_detect.c",
+      "label": "canonical_proximity_enabled_and_threshold_initializers",
+      "first": 4,
+      "last": 6,
+      "source_sha256": "1027e4996fef76b12ecdbc3086baf1d9db12ba9b3aab019571ea2f8b16abbb6c"
+    },
+    {
+      "path": "src/app_level/bump_detect.c",
+      "label": "canonical_detector_object",
+      "first": 10,
+      "last": 10,
+      "source_sha256": "bb63d2bfd69b925745ad347d8734c2dbaf4388ebc4d908bc0c8c66385768d6c1"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "actual_native_update_links",
+      "first": 248,
+      "last": 258,
+      "source_sha256": "2a272beabf4128c4f722e2083139998c12177ab589b9637c0039de7b1b273fcd"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "actual_bump_object_identity",
+      "first": 283,
+      "last": 301,
+      "source_sha256": "efc55724acb0e272eedb9dafa6818e34a27e2a029bc2d8c6dbdc879f89be053a"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "actual_actor_tangible_flag",
+      "first": 378,
+      "last": 390,
+      "source_sha256": "985da28617b79ba4773d6f50ba4152b10eb8425eb0c87e83040bfee2460f5d28"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "actual_player_bump_command",
+      "first": 104,
+      "last": 113,
+      "source_sha256": "8464316ad1e94a1171ec7b92a48b79a35ebb5b6e9345aff4c123f10c76acef09"
+    }
+  ]
+}

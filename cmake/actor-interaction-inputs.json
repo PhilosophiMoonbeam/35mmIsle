@@ -18,16 +18,16 @@
       "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/actor_owner.cpp": {
-      "sha256": "d47e656e5cd8439825cf8aa5e5f6fc196bda3eab77b1be63e053b4376e35cf75"
+      "sha256": "f7fb66502bbfcce3fd5e55f8a6534740b15be5060de03c19cc2e498cf94314ba"
     },
     "src/actor_owner.hpp": {
-      "sha256": "bf772ffe65ba441fb9af069bff96b37db09734ef04343e43b7c0f7ad6644afa0"
+      "sha256": "98de14af4680b7a24aaa318f83881eb7a6d646ad93c74ef9a9bf25d963b7a308"
     },
     "src/scene_services.cpp": {
-      "sha256": "3eb7d896d3051f6f868ecd25a2aaacd4e414f17b01eee29ff85b7e7b151020d1"
+      "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
     },
     "src/scene_services.hpp": {
-      "sha256": "3b2df6d34289fb1dcabac6ccf62c84b66ae2bc171938b7f6fe234d7ba209a682"
+      "sha256": "8e5c3eafd14cfc486f410877360d989e04387f11c3be69659ac938836aa452c1"
     },
     "src/menu_scene_bridge.c": {
       "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
@@ -72,13 +72,13 @@
       "sha256": "245acee37ce8a1cb80c8d6a3e27e044cffe6a1c5f2ad2cc665c895c56d44941a"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "5e49b79bfa4cb836154eac914fce940d4ec6ee5d9f26424a9156d6dbfde2d1a9"
+      "sha256": "97782ce39a1abee6c1e14edf86901674ae50d7d9403c0da65ea0dcfe44ad7e25"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
-      "sha256": "fd30566a0aa7c83abd1d7e7927c8c99f04b99c3b94c2ada1d3d5fc6d816d4bc0"
+      "sha256": "434d92b0202b9ecc6fb7d94bb2a474b7d4d7f69a1bf84bbdd69afa3e1615f462"
     },
     "tests/actor_command26_rom_smoke.cpp": {
-      "sha256": "9bdbc7af139fa4cc79a95e7752edec816747c1a7c6407e97b3ab0908ae8ed9f3"
+      "sha256": "a806f7e2e19aace69d27e0bd1b162b3ba4e2ef1cf405d4d579eeee149acc7b70"
     }
   },
   "source_files": {

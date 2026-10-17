@@ -301,7 +301,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             const IsleGamePerspective perspective{55,4.0f/3.0f,10,25600,1};native(isle_game_camera_set_perspective(services.game,camera,&perspective));
             const IsleGameLookAt view{{0,1600,6000},{0,500,0},{0,1,0}};native(isle_game_camera_set_look_at(services.game,camera,&view));
             const IsleGameViewport viewport{{640,480,511,0},{640,480,511,0}};native(isle_game_camera_set_viewport(services.game,camera,&viewport));
-            environment_sound::Environment environment(services,storage.arena(),sounds,nullptr,camera);
+            environment_sound::Environment environment(services,storage.arena(),sounds);
+            require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector;focus::RegionCopies copies(capture_layout);actor::DetectorBinding detection{copies,detector};detection.enabled=true;
             WorldHooks hooks{services,camera};
             world::World world(services,world_resources,{&hooks,nullptr,WorldHooks::remove,nullptr,WorldHooks::camera_shift,WorldHooks::effects_shift,nullptr});
@@ -315,6 +316,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             ActorMovementProbe movement{}; // Outlives Owner cancellation/join, including exception unwinding.
             {
                 actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});hooks.owner=&owner;
+                accepted(owner.publish_effects());
                 WorldLifetime world_lifetime{world,hooks};
                 const auto make_model=[&](std::uint32_t id,std::uint8_t link,IsleGameVec3 position) {
                     auto* object=services.object(id,link);require(object,"native source input object failed");
@@ -328,7 +330,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                     native(isle_game_model_set_placement(services.game,player.second,ISLE_GAME_MODEL_PLACEMENT_RT,&transform));
                 };
                 place_player(near_player);accepted(owner.set_player(player.first,player.second,camera));owner.set_direction(-1);
-                actor::PhotoScene controller(services,owner,root,camera,detection);
+                require(environment.set_listener(player.second,camera),"environment listener binding failed");
+                actor::PhotoScene controller(services,owner,root,camera,detection,nullptr);
                 require(controller.active(),"real source photo controller inactive");
                 PositionWitness witness{services,owner};
                 auto* witness_process=services.process(root,PositionWitness::observe,&witness,ISLE_GAME_SYNCHRONOUS,1);
@@ -692,7 +695,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 controller.retire();
                 require(!controller.active()&&!controller.prefix_object()&&!controller.copy_info_object(),
                         "failed-scope source controller kept native borrowers or callbacks");
-                accepted(owner.set_player(nullptr,nullptr,nullptr));services.erase(trigger.first);services.erase(player.first);services.erase(root);
+                accepted(owner.set_player(nullptr,nullptr,nullptr));
+                require(environment.set_listener(nullptr,nullptr),"environment listener release failed");services.erase(trigger.first);services.erase(player.first);services.erase(root);
                 hooks.owner=nullptr;
             }
             environment.cleanup();

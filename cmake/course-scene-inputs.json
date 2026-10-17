@@ -36,16 +36,16 @@
       "sha256": "6ac71b3e99b556d564eef874de56b502b7bb67a1ac1ee7026a831ae5eccce4c6"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "dc02c859d3b1d2354b7e96a3c9605e980ea7c80f76de4800f870634589684cb0"
+      "sha256": "e739207b01ebf73b2f2a6e30363b30c50f6ca33688316ecea3e9a70b469850c7"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "26b3c29771b4ae1d921410b282f518a470dbd5ce1207c1cfe3c5c38ff3ab5814"
+      "sha256": "0b37682fb746d7f5624aa6fe9906b3736721f6aabec8c8109fd65827b781f212"
     },
     "src/rsp_render.hpp": {
       "sha256": "280a50d04be2a6413d2fe2807f5af3d4fb05e34d3516ff7b149e80726c268f59"
     },
     "tests/course_scene_rsp_smoke.cpp": {
-      "sha256": "01f9543c7fcf1f7d4f39af67384030b666d6b4d89e4444b1513e0b327e63a2ea"
+      "sha256": "f16e9408b649f63478ec1f13fec7495c50d4d74013143019743fd63ddf0d8c20"
     },
     "tests/menu_effects_tests.cpp": {
       "sha256": "64e39fa6b4abb67899b7a0d45e0498f9c0dcdc87b68add722db1599a6ed19541"

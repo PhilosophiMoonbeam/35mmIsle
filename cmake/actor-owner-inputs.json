@@ -144,10 +144,10 @@
       "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
     },
     "src/actor_owner.hpp": {
-      "sha256": "bf772ffe65ba441fb9af069bff96b37db09734ef04343e43b7c0f7ad6644afa0"
+      "sha256": "98de14af4680b7a24aaa318f83881eb7a6d646ad93c74ef9a9bf25d963b7a308"
     },
     "src/actor_owner.cpp": {
-      "sha256": "d47e656e5cd8439825cf8aa5e5f6fc196bda3eab77b1be63e053b4376e35cf75"
+      "sha256": "f7fb66502bbfcce3fd5e55f8a6534740b15be5060de03c19cc2e498cf94314ba"
     },
     "src/actor_owner_source.h": {
       "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
@@ -168,25 +168,25 @@
       "sha256": "f5aeb56a912880c06a0fa1aa4623db8a3e5a78686d084ab124bd4eb446f3896b"
     },
     "src/scene_services.hpp": {
-      "sha256": "3b2df6d34289fb1dcabac6ccf62c84b66ae2bc171938b7f6fe234d7ba209a682"
+      "sha256": "8e5c3eafd14cfc486f410877360d989e04387f11c3be69659ac938836aa452c1"
     },
     "src/scene_services.cpp": {
-      "sha256": "3eb7d896d3051f6f868ecd25a2aaacd4e414f17b01eee29ff85b7e7b151020d1"
+      "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
     },
     "src/environment_sound.hpp": {
-      "sha256": "c9b3988dc93a776e607947b05ad69772225a8dce09eb87fb9b2a0ff0276caf01"
+      "sha256": "f9a357994239fd13a48afc845cb3ede88274edeb7bf1e60b56d512fc79e7eb45"
     },
     "src/environment_sound.cpp": {
-      "sha256": "0532dcff4ac2e978f6e069d75a72469472af9770e829ce152afa3bca6f6bda66"
+      "sha256": "80a3c9cd6fa11adb1acb7a79a50c5a33365c33e298ed73dd8e0020e6aea7af4d"
     },
     "tools/prepare_actor_control.py": {
       "sha256": "965bcb87d1dde221e0af00ffd5a3d177d185bb2361a59e83b2829131a60220da"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "c05187a9706e16cf15370f6ef6cab6eb8c62fa27b08b1eacbb4972fe6a267cb3"
+      "sha256": "668c08c05fb04ef47caee31899b39ef19a13f085c0806b936cb2fc1626efcaf7"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "5e49b79bfa4cb836154eac914fce940d4ec6ee5d9f26424a9156d6dbfde2d1a9"
+      "sha256": "97782ce39a1abee6c1e14edf86901674ae50d7d9403c0da65ea0dcfe44ad7e25"
     },
     "tests/beach_actor_resources_rom_smoke.cpp": {
       "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"

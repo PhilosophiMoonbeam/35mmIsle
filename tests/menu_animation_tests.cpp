@@ -232,6 +232,55 @@ void materials_and_camera() {
     check(bool(r.step_camera()) && r.camera().fov_y == 55,"camera resumes from actual elapsed clock");
     r.retire(); check(r.step_model(fixture.instances[0]).error == a::Error::retired && r.step_camera().error == a::Error::retired && r.events().empty(),"retirement stops all publication");
 }
+void camera_switch_skip_and_atomicity() {
+    Stream eye;
+    eye.cmd(11,1,0,{f(10)}); eye.cmd(3,1,4,{f(18)}); eye.cmd(0,0,0);
+    Stream fov;
+    fov.cmd(11,1u<<9,0,{f(40)}); fov.cmd(3,1u<<9,4,{f(80)}); fov.cmd(0,0,0);
+    Stream wrong; wrong.cmd(0,0,0);
+    const std::array animations{eye.view(m::AnimationKind::camera,0x6400),
+        fov.view(m::AnimationKind::camera,0x6500),wrong.view(m::AnimationKind::model,0x6600)};
+    a::CameraState initial;
+    initial.eye = {1,2,3}; initial.at = {4,5,6}; initial.roll = 7; initial.fov_y = 60;
+    auto made = a::Runtime::create({{},{},animations,0,{}},{},initial,{});
+    check(bool(made),"camera-only multi-program runtime needs no dummy model/slot");
+    if (!made) return;
+    auto& r = *made.runtime;
+    check(bool(r.set_camera_speed(1)) && bool(r.step_camera()) &&
+          bool(r.step_camera()) && r.camera().eye.x == 12,"camera advances actual source speed");
+    const auto before = r.camera();
+    const auto generation = r.generation();
+    check(r.bind_camera(2).error == a::Error::handle &&
+          r.bind_camera(99).error == a::Error::handle &&
+          r.bind_camera(1,std::numeric_limits<float>::quiet_NaN()).error == a::Error::malformed &&
+          r.set_camera_speed(std::numeric_limits<float>::infinity()).error == a::Error::malformed &&
+          same_clock(r.camera().clock,before.clock) && r.generation() == generation &&
+          r.camera().written_channels == before.written_channels,
+          "invalid camera kind/index/skip/speed reject before publication");
+    const auto allocations = allocation_probe::count;
+    allocation_probe::enabled = true;
+    const bool bound = bool(r.bind_camera(1,1));
+    const bool stepped = bool(r.step_camera());
+    allocation_probe::enabled = false;
+    check(bound && stepped && allocation_probe::count == allocations &&
+          r.camera().clock.speed == 1 && r.camera().clock.time_passed == 1 &&
+          r.camera().fov_y == 50 && r.camera().eye.x == 12 &&
+          r.camera().eye.y == 2 && r.camera().at.z == 6 && r.camera().roll == 7 &&
+          r.camera().written_channels == (1u<<9),
+          "camera switch retains speed/fields, clears old kinds, seeks skip without allocation");
+    check(bool(r.step_camera(2)) && r.camera().written_channels == 0 &&
+          r.camera().fov_y == 50 && r.camera().clock.time_passed == 2 &&
+          bool(r.step_camera()) && r.camera().fov_y == 70,
+          "source flag2 suppresses publication but not camera processing");
+    check(bool(r.bind_camera(m::no_index,2)) && r.camera().clock.phase == a::Phase::changed &&
+          r.camera().clock.time_passed == 2 && bool(r.step_camera()) &&
+          r.camera().clock.phase == a::Phase::disabled && r.camera().clock.time_passed == -2 &&
+          r.camera().written_channels == 0 && r.camera().fov_y == 70,
+          "source NULL setter is CHANGED until one update finishes at negative skip without writes");
+    r.retire();
+    check(r.bind_camera(0).error == a::Error::retired &&
+          r.set_camera_speed(1).error == a::Error::retired,"retired camera cannot rebind or change speed");
+}
 void rates_and_source_restart() {
     Stream s;
     s.cmd(11,16,0,{f(2)}); s.cmd(7,16,0,{f(2)});
@@ -1227,6 +1276,7 @@ int main() {
     persistent_linear_and_end(); cubic_wait_flags_and_zero_duration(); callbacks_receivers_and_atomic_errors();
     materials_and_camera(); rates_and_source_restart(); model_binding_switches_and_instances();
     texture_track_time_offset();
+    camera_switch_skip_and_atomicity();
     local_pose_authority_and_waits(); local_pose_animation_overwrite_and_null_binding();
     local_pose_admission_atomicity_and_retirement();
     switched_callbacks_and_atomicity(); material_binding_null_and_initial_reset(); malformed_streams_reject_unpublished();

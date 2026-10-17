@@ -291,7 +291,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
             IsleGameModel* missing_aux_model=nullptr;
             native(isle_game_attach_model(services.game,missing_aux_player,&node,1,&missing_aux_model));
             const IsleGameVec3 throw_target{100,900,300};
-            environment_sound::Environment environment(services,storage.arena(),sound_resources,nullptr,camera);
+            environment_sound::Environment environment(services,storage.arena(),sound_resources);
+            require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; Shift shift{&services,camera};
             world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
             a::SlotCapacity actor_capacity{},item_capacity{};
@@ -306,7 +307,9 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
             const auto selected_capacities=std::span<const a::SlotCapacity>(item_capacities).first(item_count);
             {
                 actor::Owner actors(services,actor_resources,world,environment,detector,actor_capacities,banks,{32768,4096}); shift.actors=&actors;
+                accepted(actors.publish_effects());
                 accepted(actors.set_player(player,player_model,camera));
+                require(environment.set_listener(player_model,camera),"environment listener binding failed");
                 it::Globals globals;
                 {
                     it::Owner items(services,item_resources,world,actors,globals,{player,player_model,camera,&throw_target},selected_capacities,{32768,4096}); shift.items=&items;

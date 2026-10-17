@@ -339,7 +339,8 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         IsleGameModel* player_model = nullptr; native(isle_game_attach_model(services.game,player,&node,1,&player_model));
         const IsleGameModelTransform player_placement{{0,900,4000},{0,0,0},{1,1,1}};
         native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_placement));
-        environment_sound::Environment environment(services,storage.arena(),sound_resources,nullptr,camera);
+        environment_sound::Environment environment(services,storage.arena(),sound_resources);
+        require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector; FixtureShift shift{services,camera};
         world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,
             FixtureShift::camera_shift,FixtureShift::effects_shift,nullptr});
@@ -359,7 +360,9 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         const std::array actor_capacities{actor_capacity,actor_capacity};
         std::array<a::SlotCapacity,8> item_capacities; item_capacities.fill(item_capacity);
         actor::Owner actors(services,actor_resources,world,environment,detector,actor_capacities,banks,{32768,4096});
+        accepted(actors.publish_effects());
         shift.effects = &actors.effects(); accepted(actors.set_player(player,player_model,camera));
+        require(environment.set_listener(player_model,camera),"environment listener binding failed");
         items::Globals globals;
         items::Owner owner(services,item_resources,world,actors,globals,
             {player,player_model,camera,&throw_target},item_capacities,{32768,4096});

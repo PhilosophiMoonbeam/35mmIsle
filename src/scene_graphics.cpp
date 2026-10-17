@@ -3,6 +3,7 @@
 #include "effect_graphics_resources.hpp"
 #include "source_effect_camera.hpp"
 #include "menu_scene_bridge.h"
+#include "screen_transition_resources.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -20,20 +21,19 @@ namespace {
 namespace sp = ::isle::sprite;
 namespace wire = ::isle::graphics;
 constexpr std::uint32_t width = 320, height = 240, target_bytes = width * height * 2;
-constexpr std::uint32_t fade_viewport = 0x1f00c0;
+constexpr std::uint32_t transition_workspace = screen_transition::Resources::workspace.address;
 constexpr sp::RamRange sprite_commands{0x150000, 0x50000};
 constexpr std::uint32_t effect_commands = 0x1a0000, effect_assets = 0x1b0000, effect_end = 0x1f0000;
 static_assert((menu::EffectRuntime::max_render_words + 2) * sizeof(std::uint32_t) <=
               effect_assets - effect_commands, "FX packet plus caller END exceeds command arena");
-constexpr std::uint32_t fade_projection = 0x1f0000, fade_view = 0x1f0040, fade_scale = 0x1f0080;
-constexpr std::uint32_t fade_list = 0xaecb0, fade_vertices = 0xaec70;
+constexpr std::uint32_t transition_vertices = 0xaec70;
 constexpr std::array<sp::RamRange,6> startup_producer_ranges{{
     {0x110000,0x10000}, {0x120000,0x10000}, {0x130000,0x10000},
     sprite_commands, {effect_commands,effect_assets-effect_commands},
-    {fade_projection,0x10000}}};
-constexpr std::array<sp::RamRange,4> startup_fixed_targets{{
+    {transition_workspace,0x10000}}};
+constexpr std::array<sp::RamRange,3> startup_fixed_targets{{
     {0x3b5000,target_bytes}, {0x3da800,target_bytes},
-    {fade_list,0x30}, {fade_vertices,0x40}}};
+    {transition_vertices,0x3e0}}};
 struct Failure { Error error; const char* message; };
 bool intersects(sp::RamRange a, sp::RamRange b) noexcept {
     return a.size && b.size && a.address < std::uint64_t(b.address) + b.size &&
@@ -108,18 +108,23 @@ IsleGameViewport full_viewport() {
     vp.scale[2] = vp.translate[2] = 511;
     return vp;
 }
-sp::Bounds bounds(const IsleGameViewport& vp) {
-    const sp::Bounds result{vp.translate[0] / 4 - vp.scale[0] / 4,
+sp::Bounds bounds(const IsleGameViewport& vp, bool clip_to_target = false) {
+    sp::Bounds result{vp.translate[0] / 4 - vp.scale[0] / 4,
         vp.translate[1] / 4 - vp.scale[1] / 4,
         vp.translate[0] / 4 + vp.scale[0] / 4,
         vp.translate[1] / 4 + vp.scale[1] / 4};
+    if (clip_to_target) {
+        result.left=std::max(result.left,0); result.top=std::max(result.top,0);
+        result.right=std::min(result.right,int(width)); result.bottom=std::min(result.bottom,int(height));
+    }
     require(result.left >= 0 && result.top >= 0 && result.right <= int(width) &&
             result.bottom <= int(height) && result.left < result.right && result.top < result.bottom,
             "startup source viewport exceeds source GPU target", Error::preparation);
     return result;
 }
-void viewport(wire::Memory& memory, std::uint32_t at, const IsleGameViewport& vp) {
-    static_cast<void>(bounds(vp));
+void viewport(wire::Memory& memory, std::uint32_t at, const IsleGameViewport& vp,
+              bool clip_to_target = false) {
+    static_cast<void>(bounds(vp,clip_to_target));
     for (unsigned i = 0; i < 4; ++i) {
         memory.half(at + i * 2, static_cast<std::uint16_t>(vp.scale[i]));
         memory.half(at + 8 + i * 2, static_cast<std::uint16_t>(vp.translate[i]));
@@ -149,8 +154,9 @@ struct Commands {
                 pair(unsigned(b.left) * 4, unsigned(b.top) * 4));
     }
     void camera(std::uint32_t vp_address, const IsleGameViewport& vp,
-                unsigned flags, std::uint32_t rgba, unsigned lane, std::uint32_t color) {
-        const auto clipped = bounds(vp); // Global renCameraScis* are all source-initialized zero.
+                unsigned flags, std::uint32_t rgba, unsigned lane, std::uint32_t color,
+                bool clip_to_target = false) {
+        const auto clipped = bounds(vp,clip_to_target); // Source scissor never changes the uploaded viewport.
         command(0xdc080008, vp_address);
         scissor(clipped);
         if (flags & 1u) {
@@ -238,6 +244,7 @@ struct Frame::Impl {
     const std::byte* source;
     std::array<SceneAssets, 2> scenes;
     std::optional<menu::EffectGraphicsResources> fx_graphics;
+    screen_transition::Resources transitions;
     std::vector<sp::Draw> draws;
     std::vector<scene::SpriteDraw> startup_sprites;
     std::vector<std::byte> rgba = std::vector<std::byte>(width * height * 4);
@@ -246,12 +253,21 @@ struct Frame::Impl {
     std::uint64_t installed_identity = 0;
     sp::Producer* installed_producer = nullptr;
     std::optional<sp::Producer::Borrow> graphics_borrow;
+    struct TransitionBorrow {
+        screen_transition::Owner* owner = nullptr;
+        ~TransitionBorrow() { reset(); }
+        void reset() noexcept { if (owner) owner->release(); owner=nullptr; }
+        bool retain(screen_transition::Owner* value) noexcept {
+            if (owner) return owner==value;
+            if (!value || !value->borrow()) return false;
+            owner=value; return true;
+        }
+    } transition_borrow;
     // The executor dies before immutable source/resource storage is released.
     rsp::CanonicalExecutor executor;
-    IsleGameVec3 cached_fade_scale{};
-    IsleGameFixedMatrix cached_fade_matrix{};
-    bool have_fade_scale = false;
     rsp::CanonicalExecutor::Token token = 0;
+    rsp::CanonicalExecutor::Token failed_token = 0;
+    unsigned submission_context = 0;
     std::uint64_t epoch = 0, ordinal = 0;
     Error error = Error::none;
     std::array<char, 512> message{};
@@ -262,14 +278,10 @@ struct Frame::Impl {
 
     Impl(const menu::Catalog* c, const rom::Snapshot& s, Config config)
         : storage(config.memory, c != nullptr), catalog(c), snapshot(s), source(s.canonical().data()),
-          executor(config.require_cpu, config.limits) {
+          transitions(s), executor(config.require_cpu, config.limits) {
         require(source != nullptr && snapshot.canonical().size() == rom::us_size,
                 "startup graphics requires an admitted stable Snapshot", Error::resource);
         if (!catalog) return;
-        const rom::GuestView fade_wire{0x800aecb0, 0x5a660, snapshot.canonical().subspan(0x5a660, 0x30)};
-        require(fade_wire.u32(24) == 0x01004008 && fade_wire.u32(28) == 0x800aec70 &&
-                fade_wire.u32(40) == 0xdf000000 && fade_wire.u32(44) == 0,
-                "startup private source fade closure is malformed", Error::resource);
         // Startup and course composition share the same alias-preserving packer.
         const std::array<const menu::EffectBank*, 1> selected{&catalog->effects()};
         fx_graphics.emplace(snapshot, selected, menu::RamRange{effect_assets, effect_end - effect_assets});
@@ -303,8 +315,8 @@ struct Frame::Impl {
             for (const auto& span : result.sprites->assets()) result.installation.push_back(span);
             if (scene == menu::Scene::title_menu) {
                 result.installation.insert(result.installation.end(), effect_spans.begin(), effect_spans.end());
-                result.installation.push_back({fade_list, bytes(fade_wire.bytes)});
-                result.installation.push_back({fade_vertices, bytes(snapshot.canonical().subspan(0x5a620, 0x40))});
+                const auto spans=transitions.immutable();
+                result.installation.insert(result.installation.end(),spans.begin(),spans.end());
             }
             disjoint(result.installation);
             for (const auto range : runtime_ranges) {
@@ -327,50 +339,13 @@ struct Frame::Impl {
         startup_sprites.clear();
         ready = false;
         if (error == Error::none) { error = value; diagnostic(message, reason); }
-        if (executor.quiescent()) token = 0;
-        if (executor.quiescent()) graphics_borrow.reset();
-    }
-    void fade(View view, wire::Memory& memory, Commands& commands) {
-        if (view.fade_camera == nullptr || view.services == nullptr) return;
-        const auto state = view.services->fade();
-        if (!state.visible) return;
-        const auto* transform = view.services->fade_transform();
-        require(transform != nullptr, "startup visible fade has no live source pose", Error::native);
-        const auto& parameters = camera_parameters(view.game, view.fade_camera);
-        native(isle_game_camera_compute_all(view.game, view.fade_camera));
-        const IsleGameCameraMatrix *projection = nullptr, *look_at = nullptr;
-        native(isle_game_camera_matrix(view.game, view.fade_camera, 0, &projection));
-        native(isle_game_camera_matrix(view.game, view.fade_camera, 1, &look_at));
-        require(projection && look_at && projection->kind == ISLE_GAME_CAMERA_PERSPECTIVE_FAST &&
-                look_at->kind == ISLE_GAME_CAMERA_LOOK_AT,
-                "startup fade needs actual source kind3/kind6 camera", Error::native);
-        std::uint16_t normalization = 0;
-        native(isle_game_camera_perspective_normalization(view.game, view.fade_camera, &normalization));
-        require(transform->position.x == 0 && transform->position.y == 0 && transform->position.z == 0 &&
-                transform->rotation.x == 0 && transform->rotation.y == 0 && transform->rotation.z == 0 &&
-                std::isfinite(transform->scale.x) && std::isfinite(transform->scale.y) &&
-                std::isfinite(transform->scale.z) && transform->scale.x > 0 &&
-                transform->scale.y > 0 && transform->scale.z > 0,
-                "startup fade separate source T/R/S pose differs", Error::native);
-        // Source uses separate identity translation/rotation and a scale matrix,
-        // NOT kind28's quantized scale*256 combined RTS payload.
-        if (!have_fade_scale || cached_fade_scale.x != transform->scale.x ||
-            cached_fade_scale.y != transform->scale.y || cached_fade_scale.z != transform->scale.z) {
-            native(isle_menu_scale_matrix(&transform->scale, &cached_fade_matrix));
-            cached_fade_scale = transform->scale;
-            have_fade_scale = true;
+        if (executor.quiescent()) {
+            if (token) failed_token = token;
+            token = 0;
+            completion_work = {};
+            graphics_borrow.reset();
+            transition_borrow.reset();
         }
-        memory.matrix(fade_projection, projection->fixed); memory.matrix(fade_view, look_at->fixed);
-        memory.matrix(fade_scale, cached_fade_matrix); viewport(memory, fade_viewport, parameters.viewport);
-        commands.camera(fade_viewport, parameters.viewport, 0, 0, 0, color);
-        commands.command(0xda380007, fade_projection); commands.command(0xdb0e0000, normalization);
-        commands.command(0xda380005, fade_view); commands.command(0xda380003, storage.identity);
-        commands.command(0xe7000000, 0);
-        commands.command(0xda380000, fade_scale); // Source root pushes; caller pops after immutable quad.
-        commands.command(0xfa000000, (std::uint32_t(state.rgb[0]) << 24) |
-            (std::uint32_t(state.rgb[1]) << 16) | (std::uint32_t(state.rgb[2]) << 8) | state.alpha);
-        commands.mode(false, 3, 29, 0x00504240); // XLU_SURF + XLU_SURF2, no Z compare/write.
-        commands.call(fade_list); commands.command(0xd8380002, 64);
     }
     struct StartupPreparation { Impl* owner; View view; };
     static bool title_pass(void* userdata, std::span<std::uint32_t> ram, std::uint64_t epoch,
@@ -403,17 +378,6 @@ struct Frame::Impl {
         memory.word(effect_commands + static_cast<std::uint32_t>(rendered.words * 4), 0xdf000000);
         memory.word(effect_commands + static_cast<std::uint32_t>(rendered.words * 4 + 4), 0);
         result.lanes[0] = {effect_commands, rendered.words + 2};
-        return true;
-    }
-    static bool fade_pass(void* userdata, std::span<std::uint32_t> ram, std::uint64_t,
-                          const render::Pass&, render::Prepared& result) {
-        const auto& context = *static_cast<StartupPreparation*>(userdata);
-        wire::Memory memory(ram);
-        constexpr std::uint32_t begin = 0x1f0100;
-        Commands commands{memory, context.owner->storage, begin, 0x1f1000};
-        context.owner->fade(context.view, memory, commands);
-        commands.command(0xdf000000, 0);
-        result.lanes[0] = {begin, (commands.cursor - begin) / 4};
         return true;
     }
     void prepare(View view, FrameContext context, rsp::CanonicalExecutor::PreparationLease& preparation) {
@@ -465,10 +429,8 @@ struct Frame::Impl {
         sprites.camera_tag = UINT32_MAX; sprites.tag_match = render::TagMatch::equality;
         sprites.sprites = std::span<const scene::SpriteDraw>(startup_sprites).first(count);
         sprites.sprite_commands = sprite_commands;
-        if (view.fade_camera && view.services && view.services->fade().visible) {
-            auto& pass = passes[used++];
-            pass.camera = view.fade_camera; pass.priority = 1;
-            pass.prepare = fade_pass; pass.userdata = &startup;
+        if (view.services && view.services->screen_transition_source()->D_800BE2C8) {
+            passes[used++]=transitions.pass(view.services->screen_transition());
         }
         render::Input input{view.game,
             {index + 1, assets.sprites.get(), assets.installation, assets.reservations,
@@ -483,6 +445,9 @@ struct Frame::Impl {
                  rsp::CanonicalExecutor::PreparationLease& preparation) {
         require(input.game && context.buffer_index < 2 && input.passes.size() <= 32,
                 "scene graphics requires a native game and bounded source passes");
+        for (const auto& pass : input.passes) if (pass.transition_owner)
+            require(transition_borrow.retain(pass.transition_owner),
+                    "scene transition preparation owner borrow rejected",Error::native);
         require(snapshot.canonical().data() == source, "scene graphics Snapshot moved", Error::resource);
         auto* producer = input.resources.sprites ? input.resources.sprites : &empty_sprites;
         auto ram = preparation.words();
@@ -512,7 +477,8 @@ struct Frame::Impl {
             require((pass.camera || pass.kind == render::Kind::clear) &&
                     (pass.kind != render::Kind::compiled || pass.prepare),
                     "scene pass is missing its actual camera/compiled preparation");
-            if (pass.camera) static_cast<void>(bounds(camera_parameters(input.game, pass.camera).viewport));
+            if (pass.camera) static_cast<void>(bounds(camera_parameters(input.game, pass.camera).viewport,
+                                                    pass.transition_owner!=nullptr));
             if (pass.kind == render::Kind::sprites) {
                 for (std::size_t r = 0; r < protected_count; ++r)
                     require(!intersects(pass.sprite_commands, composition_reservations[r]),
@@ -554,9 +520,10 @@ struct Frame::Impl {
             const auto& pass = input.passes[order[n]];
             const auto vp = pass.camera ? camera_parameters(input.game, pass.camera).viewport : full_viewport();
             const auto vp_address = storage.reset_viewport + 16u * static_cast<std::uint32_t>(n + 1);
-            viewport(memory, vp_address, vp);
-            commands.camera(vp_address, vp, pass.flags, pass.background_rgba, 0, color);
-            const auto vp_bounds = bounds(vp);
+            const bool transition=pass.transition_owner!=nullptr;
+            viewport(memory, vp_address, vp,transition);
+            commands.camera(vp_address, vp, pass.flags, pass.background_rgba, 0, color,transition);
+            const auto vp_bounds = bounds(vp,transition);
             const sp::Bounds clipped{std::max(vp_bounds.left, pass.scissor.left),
                 std::max(vp_bounds.top, pass.scissor.top), std::min(vp_bounds.right, pass.scissor.right),
                 std::min(vp_bounds.bottom, pass.scissor.bottom)};
@@ -612,7 +579,7 @@ struct Frame::Impl {
             for (const auto lane : lanes) {
                 if (lane && prepared.lanes[lane].words <= 2) continue;
                 if (lane) {
-                    commands.camera(vp_address, vp, 0, 0, lane, color);
+                    commands.camera(vp_address, vp, 0, 0, lane, color,transition);
                     commands.scissor(clipped);
                 }
                 commands.command(0xda380003, storage.identity);
@@ -656,6 +623,7 @@ bool begin_frame(State& state, Input view, FrameContext context, CompletedWork w
         // Native views have ended; only RAM/task packets reach the GPU worker.
         // Raster ownership remains pinned until real GPU completion/readback.
         state.token = state.executor.begin(std::move(preparation), task.task, task.boot);
+        state.submission_context = context.buffer_index;
         state.completion_work = work;
         return true;
     } catch (const Failure& e) { state.fail(e.error, e.message); }
@@ -709,6 +677,7 @@ Poll Frame::poll() noexcept {
         completed.release();
         require(state.executor.quiescent(), "startup GPU result retained after readback", Error::execution);
         state.graphics_borrow.reset();
+        state.transition_borrow.reset();
         state.token = 0; ++state.ordinal; state.ready = true;
         return Poll::completed;
     } catch (const Failure& e) { state.fail(e.error, e.message); }
@@ -718,6 +687,11 @@ Poll Frame::poll() noexcept {
 }
 bool Frame::busy() const noexcept { return impl_->token != 0 || !impl_->executor.quiescent(); }
 bool Frame::quiescent() const noexcept { return !busy() && impl_->executor.quiescent(); }
+std::uint64_t Frame::submission() const noexcept { return impl_->token; }
+unsigned Frame::submission_context() const noexcept { return impl_->submission_context; }
+bool Frame::failed_submission(std::uint64_t token) const noexcept {
+    return token && impl_->error != Error::none && impl_->failed_token == token && quiescent();
+}
 std::span<const sp::RamRange> Frame::reservations() const noexcept { return impl_->storage.ranges; }
 Error Frame::error() const noexcept { return impl_->error; }
 const char* Frame::message() const noexcept { return impl_->message.data(); }
@@ -728,6 +702,7 @@ Completed Frame::completed() const noexcept {
 bool Frame::retire() noexcept {
     if (busy()) return false;
     impl_->graphics_borrow.reset();
+    impl_->transition_borrow.reset();
     impl_->ready = false; impl_->retired = true;
     return true;
 }

@@ -2,6 +2,7 @@
 // Authored placements/control; real actor GPU focus, not factory/FSM/player/queue/photo snapshot.
 #include "actor_producer.hpp"
 #include "actor_source.h"
+#include "actor_photo_membership.hpp"
 #include "contextual_model_math.h"
 #include "graphics_task.hpp"
 #include "rsp_render.hpp"
@@ -196,7 +197,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         const auto& init = inits[selected[slot]];
         const auto acquired = runtime.acquire(slot,init.model,true); require(bool(acquired),"actual actor Runtime acquisition");
         handles[slot] = acquired.handle; bind_initial(resources,init,runtime,handles[slot]);
-        IsleGameObject* object = nullptr; native(isle_game_add_object(owners.game,100+static_cast<std::uint32_t>(slot),4,0x80000000,nullptr,nullptr,&object));
+        IsleGameObject* object = nullptr; native(isle_game_add_object(owners.game,100+static_cast<std::uint32_t>(slot),3,0x80000000,nullptr,nullptr,&object));
         *sources[slot]={}; // Prior incarnation has already joined before spawn/reuse.
         native(isle_actor_source_bind(owners.game,object,sources[slot],&application_rng,&owners));
         sources[slot]->id=static_cast<std::int32_t>(ids[slot]); sources[slot]->flags=init.flags;
@@ -589,6 +590,135 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         focus_history.history(focus_binding.context).size()==3 &&
         focus_history.computed().object==identity_of(1),"source pre-prefix capture context/order was flattened");
     ordered[2].render.link=5;
+    {
+        // Exercise real producer admission before the real link3 collector can
+        // clear this geometryless actor's visibility flag. No callback mock:
+        // successful retries run the collector and actual RSP/RDP/readback.
+        std::array<std::uint16_t,live_slots> original_flags{};
+        std::array<decltype(IsleActorSource::tangible),live_slots> original_tangible{};
+        for (std::size_t slot=0;slot<live_slots;++slot) {
+            original_flags[slot]=sources[slot]->flags;
+            original_tangible[slot]=sources[slot]->tangible;
+        }
+        for (const auto slot:std::array<std::size_t,4>{0,1,3,4}) {
+            sources[slot]->tangible=1;
+            sources[slot]->flags|=0x40u; // Actual source visibility bypass.
+        }
+        focus_binding.prefix_user=&owners;
+        focus_binding.prepare_membership=[](void* user,focus::Photo& photo) noexcept {
+            const auto& owner=*static_cast<Owners*>(user);
+            return actor::photo::collect_membership(owner.game,owner.camera,photo);
+        };
+        const auto same_subject=[](const focus::Subject& a,const focus::Subject& b) {
+            return a.object==b.object && a.pokemon_id==b.pokemon_id && a.flags==b.flags;
+        };
+        const auto same_focus=[&](const focus::Focus& a,const focus::Focus& b) {
+            return same_subject(a,b) && a.present==b.present && a.context==b.context;
+        };
+        const auto same_photo=[](const focus::Photo& a,const focus::Photo& b) {
+            return a.objects==b.objects && a.focus==b.focus;
+        };
+        std::uint64_t generation=1;
+        for (const bool append:std::array{false,true}) {
+            ordered[2].render.link=append?4:5;
+            const auto source_context=focus_binding.context;
+            const auto destination_context=static_cast<std::uint16_t>(1-source_context);
+            const auto target=append?source_context:destination_context;
+            require(focus_history.retain_context(target,generation)==focus::Error::none,
+                    "actual producer retention target could not be reserved");
+            sources[3]->flags|=0x100u;
+            const auto local_before=runtime.model(handles[0]).nodes[0].transform;
+            auto pending_local=local_before; pending_local.position.x+=180;
+            require(bool(runtime.set_node_transform(handles[0],0,pending_local)),
+                    "retained rejection pending actual pose mutation failed");
+            const auto projection_before=parameters->perspective;
+            auto pending_projection=projection_before; pending_projection.fovy+=1;
+            native(isle_game_camera_set_perspective(owners.game,owners.camera,&pending_projection));
+            const auto ram_before=admission;
+            const std::vector<std::byte> native_before(owners.bytes.begin(),owners.bytes.begin()+owners.arena.cursor);
+            const auto basis_before=basis.value;
+            std::array<std::vector<k::WorldMatrix>,live_slots> world_before;
+            for (std::size_t slot=0;slot<live_slots;++slot) {
+                const auto nodes=capturing.world_nodes(handles[slot]);
+                world_before[slot].assign(nodes.begin(),nodes.end());
+            }
+            const std::array history_before{
+                std::vector<focus::Subject>(focus_history.history(0).begin(),focus_history.history(0).end()),
+                std::vector<focus::Subject>(focus_history.history(1).begin(),focus_history.history(1).end())};
+            const std::array photos_before{*focus_history.photo(0),*focus_history.photo(1)};
+            const auto binding_photo_before=focus_binding.photo;
+            const auto computed_before=focus_history.computed(), published_before=focus_history.published();
+            rejects([&] { capturing.prepare(admission,9,pass); },
+                    append?"retained pre-prefix append context accepted actual producer preparation":
+                           "retained prefix destination accepted actual producer preparation");
+            if (append) {
+                auto append_only=pass; append_only.link_mask=std::uint64_t(1)<<4;
+                rejects([&] { capturing.prepare(admission,9,append_only); },
+                        "filtered-prefix pass accepted its retained actual append context");
+            }
+            require(admission==ram_before &&
+                    std::equal(native_before.begin(),native_before.end(),owners.bytes.begin()) &&
+                    std::memcmp(&basis.value,&basis_before,sizeof(basis_before))==0,
+                    "retained rejection published native membership/pose/camera/RAM/basis");
+            require(focus_binding.context==source_context &&
+                    same_photo(focus_binding.photo,binding_photo_before) &&
+                    same_focus(focus_history.computed(),computed_before) &&
+                    same_focus(focus_history.published(),published_before) &&
+                    !focus_history.context_available(target),
+                    "retained rejection published detector context/photo/focus or changed retention");
+            for (std::uint16_t context=0;context<2;++context) {
+                const auto rows=focus_history.history(context);
+                require(rows.size()==history_before[context].size() &&
+                        std::equal(rows.begin(),rows.end(),history_before[context].begin(),same_subject) &&
+                        same_photo(*focus_history.photo(context),photos_before[context]),
+                        "retained rejection changed authoritative detector history/photo");
+            }
+            for (std::size_t slot=0;slot<live_slots;++slot) {
+                const auto nodes=capturing.world_nodes(handles[slot]);
+                require(nodes.size()==world_before[slot].size() &&
+                        std::memcmp(nodes.data(),world_before[slot].data(),nodes.size_bytes())==0,
+                        "retained rejection published actor world cache");
+            }
+            require(focus_history.release_context(target,generation++)==focus::Error::none,
+                    "actual producer retained context could not be released");
+            const auto retried=execute(false,5);
+            require(retried.triangles!=focused.triangles && !(sources[3]->flags&0x100u) &&
+                    focus_binding.context==destination_context &&
+                    focus_history.computed().object==identity_of(1) &&
+                    focus_history.history(source_context).size()==history_before[source_context].size()+(append?1:0) &&
+                    focus_history.history(destination_context).size()==(append?3:4),
+                    "released producer retry failed actual pose/camera/membership/GPU/context history proof");
+            require(bool(runtime.set_node_transform(handles[0],0,local_before)),
+                    "retention regression actual pose restoration failed");
+            native(isle_game_camera_set_perspective(owners.game,owners.camera,&projection_before));
+            ordered[2].render.link=5;
+            require(focused==execute(false,5),"retained rejection/retry corrupted subsequent actual actor output");
+        }
+        // A retained previous context is not itself a reason to reject: this
+        // pass has no pre-prefix capture and writes only the other context.
+        const auto retained_context=focus_binding.context;
+        const auto retained_rows=std::vector<focus::Subject>(
+            focus_history.history(retained_context).begin(),focus_history.history(retained_context).end());
+        const auto retained_photo=*focus_history.photo(retained_context);
+        require(focus_history.retain_context(retained_context,generation)==focus::Error::none,
+                "previous context availability proof could not retain actual history");
+        require(focused==execute(false,5) && focus_binding.context==1-retained_context &&
+                focus_history.history(retained_context).size()==retained_rows.size() &&
+                std::equal(retained_rows.begin(),retained_rows.end(),
+                    focus_history.history(retained_context).begin(),same_subject) &&
+                same_photo(*focus_history.photo(retained_context),retained_photo),
+                "prefix-only pass rejected or overwrote an untouched retained previous context");
+        require(focus_history.release_context(retained_context,generation)==focus::Error::none,
+                "untouched previous context release failed");
+        focus_binding.prepare_membership=nullptr; focus_binding.prefix_user=nullptr;
+        for (std::size_t slot=0;slot<live_slots;++slot) {
+            sources[slot]->flags=original_flags[slot];
+            sources[slot]->tangible=original_tangible[slot];
+        }
+        std::cout<<"actor_retained_context_admission=passed destinations=prefix_and_preprefix_append "
+            "filtered_prefix=covered rejection=native_RAM_history_photo_basis_world_unchanged "
+            "released_retry=actual_RSP_RDP_readback untouched_previous_context=allowed\n";
+    }
     focus_binding.enabled=false; execute(false,5);
     require(focus_history.history(focus_binding.context).size()==1 && !focus_history.computed().present,
         "disabled per-actor detection omitted source baseline or retained active candidates");

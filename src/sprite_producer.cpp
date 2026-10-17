@@ -85,7 +85,7 @@ Bounds clip(Camera c) {
     return {std::clamp(b.left, 0, 1023), std::clamp(b.top, 0, 1023),
             std::clamp(b.right, 0, 1023), std::clamp(b.bottom, 0, 1023)};
 }
-void modes(Stream& out, const IsleSprite& s, bool copy) {
+void modes(Stream& out, const IsleSprite& s, bool copy, DrawMode mode) {
     const bool z = !copy && (s.attr & ISLE_SP_Z);
     const bool blend = !copy && (s.attr & ISLE_SP_TRANSPARENT);
     // Public othermode: non-perspective rectangles, RGBA16 TLUT for CI,
@@ -94,16 +94,18 @@ void modes(Stream& out, const IsleSprite& s, bool copy) {
                               (s.bmfmt == 2 ? 0x008000u : 0u) | 0xcf0u;
     // Blender (pixel*pixelAlpha + memory*(1-pixelAlpha)); coverage clamp,
     // image read + force blend only for TRANSPARENT, primitive Z when enabled.
-    std::uint32_t low = blend ? 0x00504040u : 0x00000000u;
+    std::uint32_t low = mode == DrawMode::sprite ?
+        (blend ? 0x00504040u : 0x00000000u) : 0x00504240u;
     if (z) low |= 0x34u; // Z source=primitive, compare and update.
     if (s.attr & ISLE_SP_CUTOUT) low |= 1u;
     out.command(0xe7000000, 0);
     out.command(0xef000000 | high, low);
     // Both cycles: (TEXEL0 - 0) * PRIMITIVE + 0, for RGB and alpha.
     out.command(0xfc000000u | (1u << 20) | (3u << 15) | (1u << 12) |
-                    (3u << 9) | (1u << 5) | 3u,
-                (8u << 28) | (8u << 24) | (1u << 21) | (3u << 18) |
-                    (7u << 15) | (7u << 12) | (7u << 9) | (7u << 6) | (7u << 3) | 7u);
+                    ((mode == DrawMode::message_rgba ? 7u : 3u) << 9) | (1u << 5) | 3u,
+                (8u << 28) | (8u << 24) | (1u << 21) | ((mode == DrawMode::message_rgba ? 7u : 3u) << 18) |
+                    (7u << 15) | (7u << 12) | (7u << 9) | (7u << 6) |
+                    ((mode == DrawMode::message_rgba ? 1u : 7u) << 3) | (mode == DrawMode::message_rgba ? 1u : 7u));
     out.command(0xfa000000, (std::uint32_t(s.red) << 24) | (std::uint32_t(s.green) << 16) |
                                    (std::uint32_t(s.blue) << 8) | s.alpha);
     out.command(0xf9000000, 1); // CUTOUT threshold; otherwise unused.
@@ -557,7 +559,13 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
             bool derivatives_ready = false;
             const int t_shift = (s.attr & ISLE_SP_TEXSHIFT ? 16 : 0) +
                                 (s.attr & ISLE_SP_FRACPOS ? int(s.frac_t) : 0);
-            modes(out, s, copy);
+            require(draw.mode == DrawMode::sprite ||
+                    (s.nbitmaps == 1 && s.width == 14 && s.height == 14 &&
+                     s.scalex > 0 && s.scaley > 0 && (s.attr & ISLE_SP_TEXSHUF) &&
+                     s.bitmap[0].width_img == 16 && s.bitmap[0].actualHeight == 13 &&
+                     ((s.bmfmt == 4 && s.bmsiz == 1) || (s.bmfmt == 0 && s.bmsiz == 2))),
+                    "invalid source message draw");
+            modes(out, s, copy, draw.mode);
             if (s.bmfmt == 2) {
                 out.command(0xfd100000, r.palette);
                 out.command(0xe8000000, 0);
@@ -599,7 +607,8 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                     const int tile_t = first_row - load_first;
                     const float x0 = float(s.x) + float(px + column * s.expx) * sx;
                     const float y0 = float(s.y) + float(py + row * s.expy + first_row - b.t) * sy;
-                    const float x1 = x0 + float(w) * sx, y1 = y0 + float(h) * sy;
+                    const float x1 = draw.mode == DrawMode::sprite ? x0 + float(w) * sx : float(draw.right);
+                    const float y1 = draw.mode == DrawMode::sprite ? y0 + float(h) * sy : float(draw.bottom);
                     require(std::isfinite(x0) && std::isfinite(x1) && std::isfinite(y0) && std::isfinite(y1),
                             "sprite placement arithmetic overflow");
                     int left = 0, top = 0, right = 0, bottom = 0;
@@ -691,7 +700,9 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                         // a second interleave. Load bytes as 16-bit, except RGBA32
                         // which must use its hardware split-bank load path.
                         const unsigned load_size = s.bmsiz == 3 ? 3 : 2;
-                        const auto texels = p.row_bytes * std::size_t(rows) / (load_size == 3 ? 4 : 2);
+                        const auto texels = draw.mode == DrawMode::sprite ?
+                            p.row_bytes * std::size_t(rows) / (load_size == 3 ? 4 : 2) :
+                            std::size_t(14 * 14) * (std::size_t(4u << s.bmsiz)) / 16;
                         out.command(0xfd000000 | (std::uint32_t(s.bmfmt) << 21) | (load_size << 19), texture_address);
                         out.command(0xf5000000 | (std::uint32_t(s.bmfmt) << 21) | (load_size << 19), 0x07000000);
                         out.command(0xe6000000, 0);
@@ -711,8 +722,10 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                     out.command(0xe7000000, 0);
                     out.command(0xf5000000 | (std::uint32_t(s.bmfmt) << 21) | (std::uint32_t(s.bmsiz) << 19) |
                                 (std::uint32_t(p.line_words) << 9),
-                                (s.bmfmt == 2 && s.bmsiz == 0 ? std::uint32_t(b.LUToffset) << 20 : 0u) | 0x00080200);
-                    out.command(0xf2000000, xy((b.width_img - 1) * 4, (rows - 1) * 4));
+                                (s.bmfmt == 2 && s.bmsiz == 0 ? std::uint32_t(b.LUToffset) << 20 : 0u) |
+                                (draw.mode == DrawMode::sprite ? 0x00080200u : 0u));
+                    out.command(0xf2000000, draw.mode == DrawMode::sprite ?
+                        xy((b.width_img - 1) * 4, (rows - 1) * 4) : xy(13 * 4, 13 * 4));
                     if (!load_only && right > left && bottom > top && (dx.lower || dy.lower)) {
                         // Exact pinned parallel-rdp 1cecd042 consumer equations:
                         // rdp_device.cpp:735-771, span_setup.comp:111-148,

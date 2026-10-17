@@ -349,6 +349,18 @@ if(ISLE_BUILD_GAME_ENGINE)
         target_link_libraries(isle-scene PUBLIC
             isle-engine isle-sprite-producer isle-game-state isle-game-audio)
         isle_target_options(isle-scene)
+        include(cmake/SnapPlayerServices.cmake)
+        target_sources(isle-scene PRIVATE
+            src/screen_transition.cpp src/screen_transition.hpp
+            src/screen_transition_source.c src/screen_transition_source.h
+            src/screen_transition_resources.cpp src/screen_transition_resources.hpp
+            "${_isle_screen_transition_generated}")
+        target_link_libraries(isle-scene PUBLIC isle-rom-snapshot isle-graphics-task)
+        target_compile_options(isle-scene PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
         add_library(isle-environment-sound STATIC src/environment_sound.cpp src/environment_sound.hpp)
         target_link_libraries(isle-environment-sound PUBLIC isle-scene isle-source-angles)
@@ -439,6 +451,49 @@ if(ISLE_BUILD_GAME_ENGINE)
         isle_target_options(isle-actor-photo-scene)
         target_compile_options(isle-actor-photo-scene PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
+        add_library(isle-player-photo STATIC
+            src/player_photo.cpp src/player_photo_frame.cpp src/player_photo.hpp
+            src/player_photo_source.c src/player_photo_source.h)
+        target_include_directories(isle-player-photo PRIVATE "${_isle_player_photo_private}")
+        target_link_libraries(isle-player-photo PUBLIC isle-actor-owner isle-game-save)
+        isle_target_options(isle-player-photo)
+        target_compile_options(isle-player-photo PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        target_link_libraries(isle-actor-photo-scene PUBLIC isle-player-photo)
+
+        add_library(isle-player-ui STATIC
+            src/player_ui.cpp src/player_ui.hpp src/player_ui_source.c src/player_ui_source.h
+            src/player_ui_resources.cpp src/player_ui_resources.hpp "${_isle_player_ui_generated}")
+        target_link_libraries(isle-player-ui PUBLIC isle-scene isle-player-photo isle-rom-snapshot)
+        isle_target_options(isle-player-ui)
+        target_compile_options(isle-player-ui PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
+        add_library(isle-player-camera-animation STATIC
+            src/player_camera_animation.cpp src/player_camera_animation.hpp src/player_camera_animation_clip.h)
+        target_link_libraries(isle-player-camera-animation PUBLIC isle-engine isle-menu-animation)
+        isle_target_options(isle-player-camera-animation)
+        target_compile_options(isle-player-camera-animation PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
+        add_library(isle-player-bump STATIC
+            src/player_bump.cpp src/player_bump.hpp src/player_bump_source.c src/player_bump_source.h
+            "${_isle_player_bump_generated}")
+        target_link_libraries(isle-player-bump PUBLIC isle-scene)
+        isle_target_options(isle-player-bump)
+        target_compile_options(isle-player-bump PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
         add_library(isle-course-model-producer STATIC
@@ -949,7 +1004,7 @@ if(TARGET isle-canonical-executor AND TARGET isle-menu-model-producer)
     isle_target_options(world-producer-rsp-smoke)
     add_executable(actor-producer-rsp-smoke tests/actor_producer_rsp_smoke.cpp)
     target_link_libraries(actor-producer-rsp-smoke PRIVATE
-        isle-actor-producer isle-beach-world-resources isle-canonical-executor isle-photo-lighting)
+        isle-actor-producer isle-actor-owner isle-beach-world-resources isle-canonical-executor isle-photo-lighting)
     isle_target_options(actor-producer-rsp-smoke)
 endif()
 
@@ -981,6 +1036,53 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
     target_link_libraries(isle-scene-graphics PUBLIC
         isle-menu-scene isle-effect-graphics-resources isle-sprite-producer isle-graphics-task isle-canonical-executor)
     isle_target_options(isle-scene-graphics)
+    if(TARGET isle-player-photo)
+        target_link_libraries(isle-player-photo PUBLIC isle-scene-graphics)
+    endif()
+    if(TARGET isle-player-ui)
+        add_executable(player-ui-screen-rsp-smoke EXCLUDE_FROM_ALL tests/player_ui_screen_rsp_smoke.cpp)
+        target_link_libraries(player-ui-screen-rsp-smoke PRIVATE
+            isle-player-ui isle-scene-graphics isle-photo-lighting isle-rsp)
+        isle_target_options(player-ui-screen-rsp-smoke)
+        target_compile_options(player-ui-screen-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-player-photo AND TARGET isle-actor-photo-scene AND TARGET isle-course-model-producer)
+        add_executable(player-photo-rsp-smoke EXCLUDE_FROM_ALL
+            tests/player_photo_rsp_smoke.cpp tests/player_photo_rsp_fixture.c)
+        target_link_libraries(player-photo-rsp-smoke PRIVATE
+            isle-player-photo isle-actor-photo-scene isle-course-model-producer isle-actor-owner
+            isle-scene-graphics isle-photo-lighting isle-effect-graphics-resources isle-effect-bank-resources isle-rsp)
+        isle_target_options(player-photo-rsp-smoke)
+        target_compile_options(player-photo-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-player-bump AND TARGET isle-actor-owner AND TARGET isle-effect-bank-resources)
+        add_executable(player-bump-rom-smoke EXCLUDE_FROM_ALL
+            tests/player_bump_rom_smoke.cpp tests/player_bump_rom_fixture.c)
+        target_link_libraries(player-bump-rom-smoke PRIVATE
+            isle-player-bump isle-actor-owner isle-effect-bank-resources isle-rsp Threads::Threads)
+        isle_target_options(player-bump-rom-smoke)
+        target_compile_options(player-bump-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-player-camera-animation)
+        add_executable(player-camera-animation-rom-smoke EXCLUDE_FROM_ALL
+            tests/player_camera_animation_rom_smoke.cpp)
+        target_link_libraries(player-camera-animation-rom-smoke PRIVATE
+            isle-player-camera-animation isle-scene)
+        isle_target_options(player-camera-animation-rom-smoke)
+        target_compile_options(player-camera-animation-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
     add_executable(scene-layout-rom-smoke EXCLUDE_FROM_ALL tests/scene_layout_rom_smoke.cpp)
     target_link_libraries(scene-layout-rom-smoke PRIVATE isle-scene-graphics)
     isle_target_options(scene-layout-rom-smoke)

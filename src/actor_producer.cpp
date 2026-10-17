@@ -3,6 +3,7 @@
 #include "graphics_task.hpp"
 
 #include <algorithm>
+#include <exception>
 #include <stdexcept>
 
 // Own GAME authority: df8815e75f3d79618466e01e0827c6165b93d11c.
@@ -109,14 +110,18 @@ struct Producer::Impl {
     }
     void commit_detector() noexcept {
         if (!detector) return;
-        // Context, row counts and all extents were admitted before native/RAM
-        // publication. No callback or concurrent owner may intervene.
-        if (appended_count)
-            static_cast<void>(detector->history.append(source_context,std::span(previous_subjects).first(appended_count)));
+        // Retention was admitted before membership; capture() bounded every
+        // staged row against the authoritative history before native/RAM
+        // publication. Exclusive ownership keeps this a no-fail commit.
+        if (appended_count && detector->history.append(source_context,
+            std::span(previous_subjects).first(appended_count))!=focus::Error::none)
+            std::terminate(); // A violated exclusive-owner preflight cannot report success.
         if (prefix_staged) {
-            detector->context=static_cast<std::uint16_t>(1-source_context);
-            static_cast<void>(detector->history.stage(detector->context,
-                std::span(current_subjects).first(current_count),staged_photo));
+            const auto destination=static_cast<std::uint16_t>(1-source_context);
+            if (detector->history.stage(destination,
+                std::span(current_subjects).first(current_count),staged_photo)!=focus::Error::none)
+                std::terminate();
+            detector->context=destination;
             detector->photo=staged_photo;
         }
     }
@@ -129,6 +134,9 @@ struct Producer::Impl {
             require(detector->context<2,"Actor source detector context is invalid");
             source_context=detector->context;
             previous_count=detector->history.history(source_context).size();
+            if (draw_prefix)
+                require(detector->history.context_available(static_cast<std::uint16_t>(1-source_context)),
+                    "Actor source detector prefix context is retained");
         }
         bool membership_prepared=false;
         const auto prepare_membership = [&] {
@@ -166,6 +174,17 @@ struct Producer::Impl {
             staged_render[active]=binding.render;
             b.draw = b.draw && p.geometry && (!p.gate || !(staged_subjects[active].flags&0x100u)) &&
                 (!pass || pass->includes(binding.render));
+            if (detector && detector->enabled && p.gate && b.draw && !membership_prepared &&
+                !detector->history.context_available(source_context)) {
+                // Only actual pre-prefix captures append to the old context.
+                // Consult native/Runtime visibility, as the kernel does, before
+                // the prefix hook can publish canonical membership flags.
+                IsleGameObjectMetadata metadata{};
+                native(isle_game_object_metadata(game,b.object,&metadata));
+                require((metadata.flags&1u) ||
+                    (b.pose!=menu::model::PoseSource::native && (b.state.object_flags&1u)),
+                    "Actor source detector append context is retained");
+            }
             staged[active++] = b;
         }
         if (draw_prefix && !membership_prepared) prepare_membership();

@@ -13,6 +13,8 @@ Error Detector::stage(std::uint16_t context,std::span<const Subject> subjects,co
     if (context>=contexts_.size()) return Error::invalid_context;
     if (subjects.size()>history_capacity) return Error::extent;
     auto& destination=contexts_[context];
+    if (destination.retained) return Error::invalid_context;
+    destination.analyzed=false;
     std::copy(subjects.begin(),subjects.end(),destination.subjects.begin());
     destination.count=subjects.size();
     destination.photo=photo;
@@ -21,6 +23,7 @@ Error Detector::stage(std::uint16_t context,std::span<const Subject> subjects,co
 Error Detector::append(std::uint16_t context,std::span<const Subject> subjects) noexcept {
     if (context>=contexts_.size()) return Error::invalid_context;
     auto& destination=contexts_[context];
+    if (destination.retained) return Error::invalid_context;
     if (subjects.size()>history_capacity-destination.count) return Error::extent;
     std::copy(subjects.begin(),subjects.end(),destination.subjects.begin()+static_cast<std::ptrdiff_t>(destination.count));
     destination.count+=subjects.size();
@@ -73,17 +76,45 @@ Error Detector::analyze(std::uint16_t context,std::span<const std::uint32_t> wor
     }
     source.photo.focus=photo_focus;
     computed_=result;
+    source.completed=result;
+    source.analyzed=true;
     return Error::none;
 }
 const Photo* Detector::photo(std::uint16_t context) const noexcept {
     return context<contexts_.size() ? &contexts_[context].photo : nullptr;
 }
 void Detector::publish() noexcept { published_=computed_; }
+bool Detector::context_available(std::uint16_t context) const noexcept {
+    return context<contexts_.size() && !contexts_[context].retained;
+}
+Error Detector::retain_context(std::uint16_t context,std::uint64_t generation) noexcept {
+    if(context>=contexts_.size() || !generation) return Error::invalid_context;
+    auto& value=contexts_[context];
+    if(value.retained || generation<=value.generation) return Error::invalid_context;
+    value.generation=generation; value.retained=true;
+    return Error::none;
+}
+Error Detector::release_context(std::uint16_t context,std::uint64_t generation) noexcept {
+    if(context>=contexts_.size()) return Error::invalid_context;
+    auto& value=contexts_[context];
+    if(!value.retained || value.generation!=generation) return Error::invalid_context;
+    value.retained=false;
+    return Error::none;
+}
+Error Detector::publish_context(std::uint16_t context,std::uint64_t generation) noexcept {
+    if(context>=contexts_.size()) return Error::invalid_context;
+    const auto& value=contexts_[context];
+    if(!value.retained || !value.analyzed || value.generation!=generation) return Error::invalid_context;
+    published_=value.completed;
+    return Error::none;
+}
 void Detector::cleanup(Object object) noexcept {
     if (!object) return;
     for (auto& context:contexts_) for (auto& subject:context.subjects)
         if (subject.object==object) subject.object=0;
     if (computed_.present && computed_.object==object) computed_.present=false;
+    for (auto& context:contexts_)
+        if(context.completed.present && context.completed.object==object) context.completed.present=false;
 }
 Error Detector::mark_center(std::span<std::uint32_t> words,std::uint32_t framebuffer,
                             std::int32_t direction) const noexcept {

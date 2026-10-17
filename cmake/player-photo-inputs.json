@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "component": "production-player-photo",
+  "sources": {
+    "src/app_render/47380.c": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+    "src/app_render/score.c": "ae38f419085fa0506c799d06347b4f6e0772ac06819021f07f838735e24cb60c",
+    "src/app_level/5047F0.c": "20749e3eaa523fd5786616e74c18b33d158eabfb8d26b89bc587fc7b4c1ead03",
+    "src/app_level/pokemon_detect.c": "a8f0d6937417d5a63b70a7e6674f64877a8b62e25f8c8865b96420a6f2cdba5b",
+    "src/more_funcs/5BF20.c": "ce66ec4b0fbab3ee4161b6f2713f57dce59853c652592c2b9d715baa1211e333",
+    "src/sys/misc.c": "f6607a602e8479b0647a6e87a8e290af614e3b1b8d5e36295a2ac9c7c45e7f32"
+  },
+  "semantic_header_sha256": {
+    "include/common_structs.h": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509"
+  },
+  "semantic_headers": {
+    "include/common_structs.h": [[229, 277]],
+    "include/enums.h": [[343, 375]]
+  },
+  "application_storage": {
+    "roll": 60,
+    "contexts": 2,
+    "pokemon": 12,
+    "items": 6,
+    "effects": 32,
+    "pending_tickets": 2,
+    "wire_photo_bytes": 928
+  },
+  "admitted_rom_tables": {
+    "segment_rom": 287344,
+    "segment_vram": "0x8009a8c0",
+    "name_pointer_table": "0x800ae284",
+    "names": 152,
+    "report_mapping_table": "0x800ae4e4",
+    "report_mapping_entries": 151,
+    "name_rodata_rom": [372176, 375600],
+    "name_encoding": "original GAME byte strings; special source literals encoded EUC-JP in private generated C",
+    "pokemon_animation_table": "0x800ad4b8",
+    "pokemon_animation_species": 67,
+    "special_animation_table": "0x800ad9a4",
+    "special_animation_species": 16,
+    "entry_words": 3,
+    "pose_count": 164
+  },
+  "exact_unused_read_removal": {
+    "file": "src/app_render/47380.c",
+    "line": 692,
+    "count": 1,
+    "expression": "particle = sp60[count - i - 1].particle; // TODO fake match",
+    "proof": "The assigned local particle is not read in the following count>32 sort branch or depth sort. Every subsequent use at702-710 is dominated by particle=sp60[count-i-1].particle at701. Removing only this decompiler-labelled unused read preserves every consumed source value and avoids an out-of-range presort read."
+  },
+  "support": [
+    "src/player_photo_source.h", "src/player_photo_source.c",
+    "src/player_photo.hpp", "src/player_photo.cpp", "src/player_photo_frame.cpp",
+    "include/35mmisle/focus_detector.hpp", "src/focus_detector.cpp",
+    "src/actor_photo_scene.hpp", "src/actor_photo_scene.cpp",
+    "tools/prepare_player_photo.py"
+  ]
+}

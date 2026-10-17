@@ -58,6 +58,12 @@ public:
     Poll poll() noexcept;
     bool busy() const noexcept;
     bool quiescent() const noexcept;
+    // Actual executor token, valid only while this Frame owns the submission.
+    std::uint64_t submission() const noexcept;
+    unsigned submission_context() const noexcept;
+    // Read-only bounded evidence: the actual failed token is retained only
+    // after executor leases, GPU work, postprocessing and readback have ended.
+    bool failed_submission(std::uint64_t) const noexcept;
     // Actual protected cold/task/command/output/depth ranges; not a GPU fence.
     std::span<const sprite::RamRange> reservations() const noexcept;
     Error error() const noexcept;

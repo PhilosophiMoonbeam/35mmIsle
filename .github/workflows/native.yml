@@ -122,8 +122,8 @@ jobs:
         run: cmake --preset windows-host-release
       - name: Build full LUS, audio, RSP, canonical RDP, native engine and CPU tests with MSVC
         run: cmake --build --preset windows-host-release --parallel 2
-      - name: Build opt-in native actor, Item and full C interaction consumers without a ROM
-        run: cmake --build --preset windows-host-release --target course-magikarp-rsp-smoke actor-command26-rom-smoke actor-collision-rom-smoke course-collision-rsp-smoke item-owner-rom-smoke item-flute-rom-smoke item-producer-rsp-smoke actor-interaction-rom-smoke --parallel 2
+      - name: Build all opt-in native Player, Actor, Item and publication consumers without a ROM
+        run: cmake --build --preset windows-host-release --target actor-collision-rom-smoke actor-command26-rom-smoke actor-interaction-rom-smoke actor-owner-rom-smoke actor-producer-rsp-smoke beach-magikarp-scene-rom-smoke course-collision-rsp-smoke course-magikarp-rsp-smoke course-scene-rsp-smoke environment-sound-rsp-smoke item-flute-rom-smoke item-owner-rom-smoke item-producer-rsp-smoke magikarp-owner-rom-smoke player-bump-rom-smoke player-camera-animation-rom-smoke player-photo-rsp-smoke player-ui-screen-rsp-smoke world-producer-rsp-smoke --parallel 2
       - name: Run all ROMless CPU CTests
         run: ctest --preset windows-host-release
       - name: Exercise help without graphics, audio devices or ROMs
@@ -227,8 +227,8 @@ jobs:
         run: |
           cmake -S . -B build/linux-rdp -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_TESTING=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_GAME_ENGINE=ON
-      - name: Build real renderer and opt-in native actor, Item and full C consumers
-        run: cmake --build build/linux-rdp --target 35mmisle-rdp-probe 35mmisle-rsp-probe course-magikarp-rsp-smoke actor-command26-rom-smoke actor-collision-rom-smoke course-collision-rsp-smoke item-owner-rom-smoke item-flute-rom-smoke item-producer-rsp-smoke actor-interaction-rom-smoke --parallel 2
+      - name: Build real renderer and all opt-in native Player, Actor, Item and publication consumers
+        run: cmake --build build/linux-rdp --target 35mmisle-rdp-probe 35mmisle-rsp-probe actor-collision-rom-smoke actor-command26-rom-smoke actor-interaction-rom-smoke actor-owner-rom-smoke actor-producer-rsp-smoke beach-magikarp-scene-rom-smoke course-collision-rsp-smoke course-magikarp-rsp-smoke course-scene-rsp-smoke environment-sound-rsp-smoke item-flute-rom-smoke item-owner-rom-smoke item-producer-rsp-smoke magikarp-owner-rom-smoke player-bump-rom-smoke player-camera-animation-rom-smoke player-photo-rsp-smoke player-ui-screen-rsp-smoke world-producer-rsp-smoke --parallel 2
       - name: Execute exact packed-depth, coverage and GPU-copy checks
         run: |
           export XDG_CACHE_HOME="$RUNNER_TEMP/rdp-cache"

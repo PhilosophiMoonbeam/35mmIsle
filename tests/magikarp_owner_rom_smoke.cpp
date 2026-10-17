@@ -396,7 +396,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             auto* camera_object=services.object(1,0); require(camera_object,"camera object allocation failed");
             IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
             const IsleGameLookAt view{{0,0,0},{1,0,0},{0,1,0}}; native(isle_game_camera_set_look_at(services.game,camera,&view));
-            environment_sound::Environment environment(services,storage.arena(),sound_resources,nullptr,camera);
+            environment_sound::Environment environment(services,storage.arena(),sound_resources);
+            require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; Shift shift{&services,camera,nullptr};
             world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
             a::SlotCapacity capacity{};
@@ -407,6 +408,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             const std::array capacities{capacity,capacity};
             {
                 actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096}); shift.owner=&owner;
+                accepted(owner.publish_effects());
                 require(world.enter_first(0)!=nullptr,"real World first-block admission failed");
                 Consumer consumer(services,owner,world,resources);
                 consumer.rejects(); consumer.capacity(); consumer.add_at_geo(); consumer.normal(); consumer.id_boundaries();

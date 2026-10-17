@@ -965,8 +965,20 @@ admitted ROM and an existing empty private profile directory. It is not a
 ROM-bearing CTest or a game entrypoint. Public CI explicitly compiles it without
 a ROM; the preceding published `49d8546` independently passed
 [all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39028838977)
-with the then-existing 21 consumers. That prior result is not evidence for a
-later unpublished command revision.
+with the then-existing 21 consumers. That prior result does not qualify the
+subsequent command revision.
+
+Published `588dc41` passed seven jobs in
+[run 39030932112](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39030932112);
+three engine-enabled Windows configurations rejected
+`src/menu_scene_bridge.h` at the strict support hash guard. It was the only one
+of the seventeen command dependencies without an explicit LF attribute.
+The attribute is corrected; no source hash, generator guard or output identity
+is weakened. A real isolated Git checkout of that published revision with
+`core.autocrlf=true` and only the corrected attribute blob matches all seventeen
+support hashes and runs the actual strict generator successfully, reproducing
+the exact generated C/header digests. This exercises checkout/importer behavior,
+not an MSVC compiler or Windows runtime. Corrected hosted qualification is pending.
 
 This admits the FIFO/updater component, not execution of the complete original
 main-Player command3–10 handler, full reticle/Root creation, prefix-time

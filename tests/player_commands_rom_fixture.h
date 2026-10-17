@@ -16,6 +16,9 @@ enum {
     PLAYER_COMMANDS_ROM_BROADCAST = 705,
     PLAYER_COMMANDS_ROM_APPEND_FAULT = 706,
     PLAYER_COMMANDS_ROM_FOREIGN_SOURCE = 707,
+    PLAYER_COMMANDS_ROM_CREATE = 708,
+    PLAYER_COMMANDS_ROM_FOREIGN_CREATE = 709,
+    PLAYER_COMMANDS_ROM_CREATE_FAULT = 710,
     PLAYER_COMMANDS_ROM_TRACE_CAPACITY = 64
 };
 typedef struct PlayerCommandsRomEvent {
@@ -30,6 +33,7 @@ typedef struct PlayerCommandsRomTrace {
     IslePlayerSource* player;
     IsleGameObject* camera;
     IslePlayerSource* inactive_source;
+    IsleGameProcess* child;
     uint8_t broadcast_link;
     PlayerCommandsRomEvent delivered[PLAYER_COMMANDS_ROM_TRACE_CAPACITY];
     PlayerCommandsRomEvent queued[PLAYER_COMMANDS_ROM_TRACE_CAPACITY];
@@ -38,6 +42,7 @@ typedef struct PlayerCommandsRomTrace {
     unsigned process_runs, fault_entered, fault_returned, nested_restored;
     unsigned retiring, joined, join_invalid;
     unsigned probe_update_admission, null_update_probed;
+    unsigned child_created, child_entered, child_after_wait, child_after_end;
     IsleGameResult null_during_update, live_during_retirement, retiring_update;
     IsleGameResult nested_result;
 } PlayerCommandsRomTrace;
@@ -52,6 +57,7 @@ IsleGameResult player_commands_rom_attach(PlayerCommandsRomTrace*);
 IsleGameResult player_commands_rom_detach(PlayerCommandsRomTrace*);
 void player_commands_rom_sprite_update(IsleGameObject*);
 void player_commands_rom_process(IsleGameObject*);
+void player_commands_rom_child(IsleGameObject*);
 void player_commands_rom_queued(IsleGameObject*, int32_t, IsleGameObject*, void*);
 void player_commands_rom_retiring(IsleGameObject*, void*);
 void player_commands_rom_joined(IsleGameObject*, void*);

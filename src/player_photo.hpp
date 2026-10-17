@@ -42,8 +42,16 @@ public:
     ~Photo();
     Photo(const Photo&)=delete;
     Photo& operator=(const Photo&)=delete;
-    IsleGameResult snapshot(std::uint16_t context,std::uint64_t generation) noexcept;
-    // Bind to the concrete executing Frame, which must outlive the ticket.
+    // Called by the actual Actor prefix hook, before history stage/commit.
+    // generation is the target's next committed history generation.
+    // Before submission this is a synchronous single-attempt capability.
+    // Retirement consumes it: never defer cleanup with an old ticket into a
+    // retry, since rejected precommit attempts can share the next generation.
+    IsleGameResult capture_prefix(std::uint16_t context,std::uint64_t generation) noexcept;
+    // Only the matching successful producer commit makes a capture queueable.
+    IsleGameResult seal_history(std::uint16_t context,std::uint64_t generation) noexcept;
+    // Bind to the concrete executing Frame. It must outlive the ticket and
+    // must not begin again or retire until this ticket is retired.
     // ticket.submission must be Frame::submission(). ticket.context identifies
     // Detector history, independently of Frame::submission_context().
     IsleGameResult enqueue(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
@@ -75,9 +83,9 @@ public:
     IsleGameResult items(IslePlayerPhotoContext&) noexcept;
     IsleGameResult effects(IslePlayerPhotoContext&) noexcept;
 private:
-    enum class Phase { idle,rejected,prepared,queued,postprocessed,complete };
+    enum class Phase { idle,rejected,captured,prepared,queued,postprocessed,complete };
     struct Pending { IslePlayerPhotoTicket ticket{}; Phase phase=Phase::idle; unsigned borrows=0;
-        std::array<IsleGameObject*,33> holds{}; std::size_t held=0;
+        std::array<IsleGameObject*,33> holds{}; std::size_t held=0; bool history_retained=false;
         const scene::graphics::Frame* frame=nullptr;
     };
     Pending* matching(IslePlayerPhotoTicket) noexcept;
@@ -85,6 +93,7 @@ private:
     IsleGameResult remember(IsleGameResult) noexcept;
     IsleGameResult hold(Pending&,IsleGameObject*) noexcept;
     IsleGameResult release_pending(Pending&) noexcept;
+    bool capture_rows_available() const noexcept;
     IslePlayerPhotoSource& source_;
     IslePlayerSource& player_;
     actor::Owner& actors_;

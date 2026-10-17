@@ -200,7 +200,7 @@ void isle_player_source_wait(IslePlayerSource* source, int32_t updates) {
     isle_player_source_checked(source, isle_game_wait(source->game, (uint32_t)updates));
 }
 
-static void check_sprite_source(IslePlayerSource* source) {
+static void check_callback_source(IslePlayerSource* source) {
     IsleGame* game = source->game;
     IslePlayerSource* canonical = game->playerSource;
     IslePlayerSource* active = NULL;
@@ -214,10 +214,20 @@ static void check_sprite_source(IslePlayerSource* source) {
         isle_player_source_checked(failure_source, ISLE_GAME_INVALID_STATE);
 }
 
+IsleGameProcess* isle_player_source_add_process(IslePlayerSource* source,
+    IsleGameObject* object, IsleGameSourceCallback function, uint8_t kind,
+    uint32_t priority) {
+    IsleGameProcess* process = NULL;
+    check_callback_source(source);
+    isle_player_source_checked(source, isle_game_add_source_process(source->game,
+        object, function, (IsleGameProcessKind)kind, priority, &process));
+    return process;
+}
+
 IsleGameSprite* isle_player_source_first_sprite(IslePlayerSource* source,
     IsleGameObject* object) {
     IsleGameSprite* sprite = NULL;
-    check_sprite_source(source);
+    check_callback_source(source);
     isle_player_source_checked(source, isle_game_object_sprite(source->game, object, &sprite));
     return sprite;
 }
@@ -225,7 +235,7 @@ IsleGameSprite* isle_player_source_first_sprite(IslePlayerSource* source,
 IsleSprite* isle_player_source_sprite_view(IslePlayerSource* source,
     IsleGameSprite* sprite) {
     IsleSprite* view = NULL;
-    check_sprite_source(source);
+    check_callback_source(source);
     isle_player_source_checked(source, isle_game_sprite_view(source->game, sprite, &view));
     return view;
 }

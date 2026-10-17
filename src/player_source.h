@@ -167,6 +167,13 @@ IsleGameResult isle_player_source_call(IslePlayerSource*, IslePlayerNonwaitingCa
 void isle_player_source_checked(IslePlayerSource*, IsleGameResult);
 void isle_player_source_wait(IslePlayerSource*, int32_t updates);
 
+/* C-only creation follows the canonical callback/failure contract below.
+ * The native object owns the actual process; function identity, kind and
+ * priority are passed unchanged. NULL object uses the native current-object
+ * rule. Retain Source/callback dependencies until actual process join. */
+IsleGameProcess* isle_player_source_add_process(IslePlayerSource*, IsleGameObject*,
+    IsleGameSourceCallback, uint8_t kind, uint32_t priority);
+
 /* C-only checked borrows, not returning setup APIs. source must be a retained,
  * prepared record with a live game; the active canonical per-game Source and
  * an original C OM callback or source_call's local C fence are required.

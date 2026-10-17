@@ -1035,7 +1035,8 @@ if(TARGET isle-canonical-executor AND TARGET isle-menu-model-producer)
     isle_target_options(world-producer-rsp-smoke)
     add_executable(actor-producer-rsp-smoke tests/actor_producer_rsp_smoke.cpp)
     target_link_libraries(actor-producer-rsp-smoke PRIVATE
-        isle-actor-producer isle-actor-owner isle-beach-world-resources isle-canonical-executor isle-photo-lighting)
+        isle-actor-producer isle-actor-owner isle-beach-world-resources isle-canonical-executor isle-photo-lighting
+        isle-scene isle-rsp)
     isle_target_options(actor-producer-rsp-smoke)
 endif()
 

@@ -54,6 +54,16 @@ void player_commands_rom_queued(IsleGameObject* object, int32_t command,
     PlayerCommandsRomTrace* trace = user;
     record(trace, trace->queued, &trace->queued_count, object, command, sender);
 }
+void player_commands_rom_child(IsleGameObject* object) {
+    IslePlayerSource* player = isle_player_source_entry(object);
+    if (active_trace == NULL || active_trace->player != player)
+        isle_player_source_checked(player, ISLE_GAME_INVALID_STATE);
+    ++active_trace->child_entered;
+    isle_player_source_wait(player, 2);
+    ++active_trace->child_after_wait;
+    isle_player_source_checked(player, isle_game_end_process(player->game, NULL));
+    ++active_trace->child_after_end;
+}
 static void wrong_payload(IslePlayerSource* player, void* camera) {
     ++active_trace->fault_entered;
     /* This is the real native wrong-payload leaf on the actual camera, not a
@@ -94,6 +104,20 @@ static void observe_empty(IslePlayerSource* player, IslePlayerCommandData comman
         ++trace->fault_entered;
         isle_player_commands_send(trace->inactive_source, trace->camera,
             ISLE_PLAYER_REFERENCE_CAMERA_BLINK, NULL);
+        ++trace->fault_returned;
+        break;
+    case PLAYER_COMMANDS_ROM_CREATE:
+    case PLAYER_COMMANDS_ROM_CREATE_FAULT:
+        trace->child = isle_player_source_add_process(player, omCurrentObject,
+            player_commands_rom_child, ISLE_GAME_STACKFUL, 2);
+        ++trace->child_created;
+        if (command.cmd == PLAYER_COMMANDS_ROM_CREATE_FAULT)
+            wrong_payload(player, trace->camera);
+        break;
+    case PLAYER_COMMANDS_ROM_FOREIGN_CREATE:
+        ++trace->fault_entered;
+        (void)isle_player_source_add_process(trace->inactive_source, omCurrentObject,
+            player_commands_rom_child, ISLE_GAME_STACKFUL, 2);
         ++trace->fault_returned;
         break;
     default:

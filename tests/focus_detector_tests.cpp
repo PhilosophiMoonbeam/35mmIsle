@@ -196,14 +196,18 @@ void published_presence_only() {
     const std::array first{f::Subject{0,-1,0},f::Subject{71,54,0x84}};
     const std::array second{f::Subject{0,-1,0},f::Subject{82,129,0x45}};
     memory.fill(0,0); memory.fill(1,0xffff);
-    check(detector.stage(0,first,photo(71))==f::Error::none &&
-          detector.retain_context(0,1)==f::Error::none &&
+    check(detector.stage(0,first,photo(71))==f::Error::none,
+          "presence-only first history staging rejected");
+    const auto first_generation=detector.generation(0);
+    check(detector.retain_context(0,first_generation)==f::Error::none &&
           detector.analyze(0,memory.words,Fixture::base)==f::Error::none &&
-          detector.publish_context(0,1)==f::Error::none,"presence-only completed publication setup rejected");
+          detector.publish_context(0,first_generation)==f::Error::none,"presence-only completed publication setup rejected");
     const auto published=detector.published();
     check(published.present && published.object==71,"presence-only setup did not publish a real analyzed hit");
-    check(detector.stage(1,second,photo(82))==f::Error::none &&
-          detector.retain_context(1,2)==f::Error::none &&
+    check(detector.stage(1,second,photo(82))==f::Error::none,
+          "presence-only second history staging rejected");
+    const auto second_generation=detector.generation(1);
+    check(detector.retain_context(1,second_generation)==f::Error::none &&
           detector.analyze(1,memory.words,Fixture::base)==f::Error::none,
           "presence-only staged/computed second context setup rejected");
     const auto computed=detector.computed();
@@ -220,17 +224,56 @@ void published_presence_only() {
           !detector.context_available(0) && !detector.context_available(1),
           "published-presence clearing changed identity/ID/flags/context, computed, staged photo/history or retention");
     detector.clear_published_presence();
-    check(equal(detector.published(),cleared) && detector.publish_context(0,1)==f::Error::none &&
+    check(equal(detector.published(),cleared) && detector.publish_context(0,first_generation)==f::Error::none &&
           equal(detector.published(),published),"presence clear changed completed metadata or was not idempotent");
     detector.clear_published_presence();
-    check(detector.publish_context(1,2)==f::Error::none && equal(detector.published(),computed) &&
-          detector.release_context(0,1)==f::Error::none && detector.release_context(1,2)==f::Error::none,
+    check(detector.publish_context(1,second_generation)==f::Error::none && equal(detector.published(),computed) &&
+          detector.release_context(0,first_generation)==f::Error::none &&
+          detector.release_context(1,second_generation)==f::Error::none,
           "presence clear changed the other completed context or its generation retention");
+}
+void committed_stage_leases() {
+    Fixture memory; f::Detector detector;
+    const std::array first{f::Subject{0,-1,0},f::Subject{71,54,4}};
+    const std::array replacement{f::Subject{0,-1,0},f::Subject{82,129,4}};
+    memory.fill(0,0); memory.fill(1,0xffff);
+    check(detector.stage(0,first,photo(71))==f::Error::none,
+          "committed context could not stage the first actual candidate");
+    const auto first_generation=detector.generation(0);
+    check(detector.retain_context(0,first_generation+1)==f::Error::invalid_context &&
+          detector.retain_context(0,first_generation)==f::Error::none &&
+          detector.analyze(0,memory.words,Fixture::base)==f::Error::none &&
+          detector.publish_context(0,first_generation)==f::Error::none &&
+          detector.published().object==71,
+          "caller-issued future generation retained or first real focus publication failed");
+    const auto published=detector.published();
+    check(detector.stage(0,replacement,photo(82))==f::Error::invalid_context &&
+          detector.append(0,replacement)==f::Error::invalid_context &&
+          detector.release_context(0,first_generation+1)==f::Error::invalid_context &&
+          detector.stage(0,replacement,photo(82))==f::Error::invalid_context &&
+          detector.analyze(0,memory.words,Fixture::base)==f::Error::none &&
+          detector.publish_context(0,first_generation)==f::Error::none &&
+          equal(detector.published(),published),
+          "rejected replacement/stale release changed held history or its actual focus");
+    check(detector.release_context(0,first_generation)==f::Error::none &&
+          detector.stage(0,replacement,photo(82))==f::Error::none,
+          "genuine history release did not admit the replacement candidate");
+    const auto replacement_generation=detector.generation(0);
+    check(detector.retain_context(0,first_generation)==f::Error::invalid_context &&
+          detector.retain_context(0,replacement_generation)==f::Error::none &&
+          detector.analyze(0,memory.words,Fixture::base)==f::Error::none &&
+          detector.publish_context(0,first_generation)==f::Error::invalid_context &&
+          equal(detector.published(),published) &&
+          detector.publish_context(0,replacement_generation)==f::Error::none &&
+          detector.published().object==82 && detector.published().pokemon_id==129 &&
+          detector.release_context(0,replacement_generation)==f::Error::none,
+          "stale committed identity retained/published replacement history or blocked real publication");
 }
 } // namespace
 int main() {
     threshold_and_full_color(); last_candidate_and_photo_membership(); snapshot_and_two_context_cleanup();
     late_rejection_and_capacity(); source_center_mark(); capture_before_prefix(); published_presence_only();
+    committed_stage_leases();
     if (failures) return 1;
     std::cout<<"Source live focus color-history, cleanup/publication and canonical center-mark contracts passed\n";
 }

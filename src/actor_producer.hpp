@@ -34,11 +34,25 @@ struct ActorRenderBinding {
     menu::model::BorrowedBinding model;
     scene::RenderMetadata render;
 };
+enum class FragmentKind { object, detector_prefix };
+// Complete raw source callback ranges, including fog and GPU region copies,
+// without lane EndDL. Hidden/filtered active objects have empty ranges.
+// detector_prefix has no native object: it represents the existing source
+// policy {5,0x80000001u,UINT32_MAX}, not a fabricated native registration.
+struct ProducerFragment {
+    FragmentKind kind = FragmentKind::object;
+    IsleGameObject* object = nullptr;
+    scene::RenderMetadata render;
+    std::array<menu::model::ListRange,4> lanes{};
+};
 struct ProducerFrame {
     menu::model::ListRange camera;
     std::array<menu::model::ListRange,4> lanes;
     std::span<const menu::RamRange> reservations;
     std::uint64_t revision = 0;
+    // Borrowed through preparation/GPU consumption until the next successful
+    // preparation or retirement. Rejection preserves published fragment records.
+    std::span<const ProducerFragment> fragments;
 };
 // Beach main-camera graphics policy: GAME player.c2936-2975 kinds3/14,
 // pokemon.c2101-2150 DL5/default or DL4/wrapper, pokemon_detect.c247-280

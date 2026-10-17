@@ -23,6 +23,7 @@ void valid(Range r, std::size_t alignment) {
             r.offset <= beach::rdram_size && r.size <= beach::rdram_size-r.offset,
             "Actor producer range is empty, unaligned or outside RDRAM");
 }
+constexpr scene::RenderMetadata prefix_render{5,0x80000001u,UINT32_MAX};
 struct Policy { bool fog = false, transparent = false, gate = false, geometry = false; };
 Policy policy(const beach::ActorInitialization& init, const menu::Model& model) {
     Policy p;
@@ -53,6 +54,8 @@ struct Producer::Impl {
     std::vector<menu::model::BorrowedBinding> staged;
     std::vector<scene::RenderMetadata> staged_render;
     std::vector<focus::Subject> staged_subjects;
+    std::vector<ProducerFragment> staged_fragments, fragments;
+    std::size_t staged_fragment_count = 0, fragment_count = 0;
     DetectorBinding* detector;
     std::array<focus::Subject,focus::history_capacity> previous_subjects{}, current_subjects{};
     std::size_t previous_count = 0, appended_count = 0, current_count = 0;
@@ -105,8 +108,14 @@ struct Producer::Impl {
         else previous_subjects[appended_count++]=subject;
     }
     void start_prefix() {
+        const auto starts = counts;
         prefix_staged=true;
         capture({0,-1,0});
+        auto& fragment = staged_fragments[staged_fragment_count++];
+        fragment = {FragmentKind::detector_prefix,nullptr,prefix_render,{}};
+        for (unsigned lane = 0; lane < 4; ++lane)
+            fragment.lanes[lane] = {static_cast<std::uint32_t>(starts[lane]),
+                static_cast<std::uint32_t>(counts[lane]-starts[lane])};
     }
     void commit_detector() noexcept {
         if (!detector) return;
@@ -127,16 +136,19 @@ struct Producer::Impl {
     }
     void stage(const scene::render::Pass* pass, const menu::model::RenderContext& context,
                std::uintptr_t ram_begin,std::uintptr_t ram_end) {
-        prefix_staged=false; appended_count=0; current_count=0;
-        constexpr scene::RenderMetadata prefix{5,0x80000001u,UINT32_MAX};
-        const bool draw_prefix=detector && (!pass || pass->includes(prefix));
+        prefix_staged=false; appended_count=0; current_count=0; staged_fragment_count=0;
+        const bool draw_prefix=detector && (!pass || pass->includes(prefix_render));
         if (detector) {
             require(detector->context<2,"Actor source detector context is invalid");
             source_context=detector->context;
             previous_count=detector->history.history(source_context).size();
-            if (draw_prefix)
-                require(detector->history.context_available(static_cast<std::uint16_t>(1-source_context)),
+            if (draw_prefix) {
+                const auto destination=static_cast<std::uint16_t>(1-source_context);
+                require(detector->history.context_available(destination),
                     "Actor source detector prefix context is retained");
+                require(detector->history.generation(destination)!=UINT64_MAX,
+                    "Actor source detector prefix generation exhausted");
+            }
         }
         bool membership_prepared=false;
         const auto prepare_membership = [&] {
@@ -167,8 +179,8 @@ struct Producer::Impl {
                     "Actor detector bindings are not in source DL/priority order");
             }
             if (draw_prefix && !membership_prepared &&
-                (binding.render.link>prefix.link ||
-                 (binding.render.link==prefix.link && binding.render.priority<=prefix.priority)))
+                (binding.render.link>prefix_render.link ||
+                 (binding.render.link==prefix_render.link && binding.render.priority<=prefix_render.priority)))
                 prepare_membership();
             staged_subjects[active]={reinterpret_cast<focus::Object>(b.object),source->id,source->flags};
             staged_render[active]=binding.render;
@@ -195,17 +207,24 @@ struct Producer::Impl {
             const auto& b = staged[i];
             const auto render=staged_render[i];
             if (draw_prefix && !prefix_staged &&
-                (render.link>prefix.link || (render.link==prefix.link && render.priority<=prefix.priority)))
+                (render.link>prefix_render.link || (render.link==prefix_render.link && render.priority<=prefix_render.priority)))
                 start_prefix();
-            if (!kernel->draws(b.slot)) continue;
-            const auto& p = policies[b.state.resource_model];
-            const auto& model = models[b.state.resource_model];
-            if (p.fog) { fog(0,model,true); if (p.transparent) fog(1,model,true); }
-            menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
-                std::span(lanes[2]),std::span(lanes[3])},counts,pending};
-            require(bool(kernel->encode(b.slot,context,buffer)),"Actor source hierarchy/context/list capacity rejected");
-            if (p.fog) { fog(0,model,false); if (p.transparent) fog(1,model,false); }
-            if (detector && detector->enabled && p.gate) capture(staged_subjects[i]);
+            auto& fragment = staged_fragments[staged_fragment_count++];
+            fragment = {FragmentKind::object,b.object,render,{}};
+            const auto starts = counts;
+            if (kernel->draws(b.slot)) {
+                const auto& p = policies[b.state.resource_model];
+                const auto& model = models[b.state.resource_model];
+                if (p.fog) { fog(0,model,true); if (p.transparent) fog(1,model,true); }
+                menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
+                    std::span(lanes[2]),std::span(lanes[3])},counts,pending};
+                require(bool(kernel->encode(b.slot,context,buffer)),"Actor source hierarchy/context/list capacity rejected");
+                if (p.fog) { fog(0,model,false); if (p.transparent) fog(1,model,false); }
+                if (detector && detector->enabled && p.gate) capture(staged_subjects[i]);
+            }
+            for (unsigned lane = 0; lane < 4; ++lane)
+                fragment.lanes[lane] = {static_cast<std::uint32_t>(starts[lane]),
+                    static_cast<std::uint32_t>(counts[lane]-starts[lane])};
         }
         if (draw_prefix && !prefix_staged) start_prefix();
         std::size_t cursor = layout.lists.offset+camera_commands.size()*8;
@@ -217,6 +236,9 @@ struct Producer::Impl {
             ranges[lane] = {static_cast<std::uint32_t>(cursor),static_cast<std::uint32_t>(counts[lane])};
             cursor += counts[lane]*8;
         }
+        for (auto& fragment : std::span(staged_fragments).first(staged_fragment_count))
+            for (unsigned lane = 0; lane < 4; ++lane)
+                fragment.lanes[lane].address = ranges[lane].address+fragment.lanes[lane].address*8;
     }
 };
 Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,
@@ -276,6 +298,7 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
         Range{matrix,layout.payloads.offset+layout.payloads.size-matrix});
     s.staged.resize(capacities.size());
     s.staged_render.resize(capacities.size()); s.staged_subjects.resize(capacities.size());
+    s.staged_fragments.resize(capacities.size()+1); s.fragments.resize(capacities.size()+1);
     for (auto& lane : s.lanes) lane.resize(layout.lists.size/8);
     // Every node can append a matrix + source48's13 words and a placement.
     s.pending.resize(nodes*15+capacities.size());
@@ -305,6 +328,8 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     disjoint(s.staged.data(),s.staged.size()*sizeof(menu::model::BorrowedBinding));
     disjoint(s.staged_render.data(),s.staged_render.size()*sizeof(scene::RenderMetadata));
     disjoint(s.staged_subjects.data(),s.staged_subjects.size()*sizeof(focus::Subject));
+    disjoint(s.staged_fragments.data(),s.staged_fragments.size()*sizeof(ProducerFragment));
+    disjoint(s.fragments.data(),s.fragments.size()*sizeof(ProducerFragment));
     if (s.detector) {
         disjoint(s.detector,sizeof(*s.detector));
         disjoint(&s.detector->copies,sizeof(s.detector->copies));
@@ -376,8 +401,9 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
         write(s.ranges[lane].address+static_cast<std::uint32_t>(i*8),s.lanes[lane][i]);
     s.ram = words.data(); s.epoch = epoch; s.basis.value = context; ++s.revision;
     s.commit_detector();
+    s.fragments.swap(s.staged_fragments); s.fragment_count = s.staged_fragment_count;
     return {{static_cast<std::uint32_t>(s.layout.lists.offset),static_cast<std::uint32_t>(s.camera_commands.size())},
-        s.ranges,s.owned,s.revision};
+        s.ranges,s.owned,s.revision,std::span(s.fragments).first(s.fragment_count)};
 }
 ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch) { return prepare_filtered(words,epoch,nullptr); }
 ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch, const scene::render::Pass& pass) {

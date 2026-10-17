@@ -261,11 +261,51 @@ void deletion(game_audio::Session& audio,game::State& state,bool builtin) {
         trace.retiring_update==ISLE_GAME_INVALID_STATE,
         "Player FIFO real self/builtin deletion, current/suffix cleanup, join or address-reuse isolation failed");
 }
-enum class Failure { plain, nested, appended, foreign_source };
+void creation(game_audio::Session& audio,game::State& state,bool cancel) {
+    game_input::Service input; scene::Storage storage(4*1024*1024);
+    scene::Services services(create(storage),storage.arena(),{{8,4,4,1,0},{}},input,audio,state);
+    SourceContext context(services); auto& source=context.value;
+    player::commands::Binding binding(services,source);
+    PlayerCommandsRomTrace trace{}; trace.player=&source;
+    NativeLifetime lifetime(services,binding,source,trace); lifetime.attach_trace();
+    auto* receiver=lifetime.sprite(31,5); lifetime.lifecycle(receiver);
+    auto* sender=lifetime.owner(90,6);
+    send(binding,receiver,PLAYER_COMMANDS_ROM_CREATE,sender);
+    lifetime.erase(sender);
+    native(isle_game_tick(services.game));
+    const bool created=trace.child_created==1 && trace.child_entered==1 &&
+        trace.child_after_wait==0 && trace.child_after_end==0 &&
+        services.source_owner_borrows(sender).queued==0 &&
+        services.source_owner_collectable(sender) && topology(source).counts.processes==1;
+    bool settled=false;
+    if (cancel) {
+        lifetime.erase(receiver);
+        native(isle_game_tick(services.game));
+        settled=services.source_owner_joined(receiver) && services.source_owner_collectable(receiver) &&
+            trace.child_after_wait==0 && trace.child_after_end==0 &&
+            topology(source).counts.processes==0 && trace.retiring==1 && trace.joined==1;
+    } else {
+        native(isle_game_pause_source_processes(services.game,receiver,player_commands_rom_child,1));
+        native(isle_game_tick(services.game)); native(isle_game_tick(services.game));
+        const bool paused=trace.child_after_wait==0 && topology(source).counts.processes==1;
+        native(isle_game_pause_source_processes(services.game,receiver,player_commands_rom_child,0));
+        native(isle_game_tick(services.game));
+        const bool waiting=trace.child_after_wait==0;
+        native(isle_game_tick(services.game));
+        settled=paused && waiting && trace.child_after_wait==1 && trace.child_after_end==0 &&
+            topology(source).counts.processes==0;
+    }
+    const bool healthy=source.status==ISLE_GAME_OK && !services.failed() && trace.invalid==0;
+    const bool cleaned=lifetime.finish();
+    require(created && settled && healthy && cleaned && empty(topology(source)) && source.commands==nullptr,
+        "Player C process creation, typed pause/wait/self-end or real receiver cancellation/join failed");
+}
+enum class Failure { plain, nested, appended, foreign_source, foreign_create, created_child };
 void failure(game_audio::Session& audio,game::State& state,Failure mode) {
     // Terminal native faults never share a Source/game scope with later cases.
     const bool nested=mode==Failure::nested, mixed=mode==Failure::appended;
-    const bool foreign=mode==Failure::foreign_source;
+    const bool foreign=mode==Failure::foreign_source || mode==Failure::foreign_create;
+    const bool created_child=mode==Failure::created_child;
     game_input::Service input; scene::Storage storage(4*1024*1024);
     scene::Services services(create(storage),storage.arena(),{{8,4,4,1,0},{}},input,audio,state);
     SourceContext context(services); auto& source=context.value;
@@ -287,7 +327,8 @@ void failure(game_audio::Session& audio,game::State& state,Failure mode) {
         send(binding,receiver,-4,prefix);
         lifetime.erase(prefix);
     }
-    const auto command=foreign?PLAYER_COMMANDS_ROM_FOREIGN_SOURCE:
+    const auto command=mode==Failure::foreign_create?PLAYER_COMMANDS_ROM_FOREIGN_CREATE:
+        created_child?PLAYER_COMMANDS_ROM_CREATE_FAULT:foreign?PLAYER_COMMANDS_ROM_FOREIGN_SOURCE:
         mixed?PLAYER_COMMANDS_ROM_APPEND_FAULT:nested?PLAYER_COMMANDS_ROM_NESTED_FAULT:PLAYER_COMMANDS_ROM_FAULT;
     send(binding,receiver,command,current);
     send(binding,receiver,PLAYER_COMMANDS_ROM_UNKNOWN,suffix);
@@ -309,6 +350,9 @@ void failure(game_audio::Session& audio,game::State& state,Failure mode) {
     const bool inactive_untouched=!foreign ||
         (std::memcmp(inactive_before.data(),&inactive,sizeof(inactive))==0 &&
          source.MainCameraBlinkTimeout==0);
+    const bool creation_owned=faulted.counts.processes==(created_child?1u:0u) &&
+        trace.child_created==(created_child?1u:0u) && trace.child_entered==0 &&
+        trace.child_after_wait==0 && trace.child_after_end==0;
     const bool checked=result==ISLE_GAME_EXECUTION_FAILURE && source.status==first_error &&
         services.failed() && trace.fault_entered==1 && trace.fault_returned==0 &&
         trace.delivered_count==1 && trace.handlers_returned==0 && trace.updates_entered==1 &&
@@ -317,7 +361,7 @@ void failure(game_audio::Session& audio,game::State& state,Failure mode) {
         (trace.nested_result==ISLE_GAME_INVALID_ARGUMENT && trace.nested_restored));
     const bool cleaned=lifetime.finish(); const auto final=topology(source);
     require(cleaned && empty(final) && source.commands==nullptr && checked && current_closed && suffix_owned &&
-        appended_owned && inactive_untouched &&
+        appended_owned && inactive_untouched && creation_owned &&
         idle(faulted) && faulted.camera_original_update && faulted.camera_none_payload && faulted.camera_attached &&
         trace.retiring==1 && trace.joined==1 && trace.join_invalid==0 &&
         source.status==first_error && isle_game_status(services.game)==ISLE_GAME_EXECUTION_FAILURE,
@@ -340,6 +384,8 @@ void run(const std::filesystem::path& filename,const std::filesystem::path& prof
     deletion(*audio.session,state,false); deletion(*audio.session,state,true);
     failure(*audio.session,state,Failure::plain); failure(*audio.session,state,Failure::nested);
     failure(*audio.session,state,Failure::appended); failure(*audio.session,state,Failure::foreign_source);
+    creation(*audio.session,state,false); creation(*audio.session,state,true);
+    failure(*audio.session,state,Failure::foreign_create); failure(*audio.session,state,Failure::created_child);
     std::cout<<"Player FIFO original camera/empty C handlers, actual native updater/builtins/send/link/order, retained retired sender, real deletion/reuse and nested C fault cleanup passed; no full Root/game/device claim\n";
 }
 }

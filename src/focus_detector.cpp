@@ -1,6 +1,7 @@
 #include "35mmisle/focus_detector.hpp"
 
 #include <algorithm>
+#include <limits>
 
 namespace isle::focus {
 namespace {
@@ -13,11 +14,13 @@ Error Detector::stage(std::uint16_t context,std::span<const Subject> subjects,co
     if (context>=contexts_.size()) return Error::invalid_context;
     if (subjects.size()>history_capacity) return Error::extent;
     auto& destination=contexts_[context];
-    if (destination.retained) return Error::invalid_context;
+    if (destination.retained || destination.generation==std::numeric_limits<std::uint64_t>::max())
+        return Error::invalid_context;
     destination.analyzed=false;
     std::copy(subjects.begin(),subjects.end(),destination.subjects.begin());
     destination.count=subjects.size();
     destination.photo=photo;
+    ++destination.generation;
     return Error::none;
 }
 Error Detector::append(std::uint16_t context,std::span<const Subject> subjects) noexcept {
@@ -88,11 +91,14 @@ void Detector::clear_published_presence() noexcept { published_.present=false; }
 bool Detector::context_available(std::uint16_t context) const noexcept {
     return context<contexts_.size() && !contexts_[context].retained;
 }
+std::uint64_t Detector::generation(std::uint16_t context) const noexcept {
+    return context<contexts_.size()?contexts_[context].generation:0;
+}
 Error Detector::retain_context(std::uint16_t context,std::uint64_t generation) noexcept {
     if(context>=contexts_.size() || !generation) return Error::invalid_context;
     auto& value=contexts_[context];
-    if(value.retained || generation<=value.generation) return Error::invalid_context;
-    value.generation=generation; value.retained=true;
+    if(value.retained || generation!=value.generation) return Error::invalid_context;
+    value.retained=true;
     return Error::none;
 }
 Error Detector::release_context(std::uint16_t context,std::uint64_t generation) noexcept {

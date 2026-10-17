@@ -978,12 +978,90 @@ is weakened. A real isolated Git checkout of that published revision with
 `core.autocrlf=true` and only the corrected attribute blob matches all seventeen
 support hashes and runs the actual strict generator successfully, reproducing
 the exact generated C/header digests. This exercises checkout/importer behavior,
-not an MSVC compiler or Windows runtime. Corrected hosted qualification is pending.
+not an MSVC compiler or Windows runtime. Corrected revision
+`d936b02b5a726db93c2bca7f4a0dc7583a9bc45a` subsequently passed
+[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39031651154),
+including explicit compilation of all 22 opt-in consumers and the full static
+LUS/audio/RSP/RDP/engine closure. Subsequent renderer-prefix changes and private
+Windows11/game/device execution require separate qualification.
 
 This admits the FIFO/updater component, not execution of the complete original
 main-Player command3–10 handler, full reticle/Root creation, prefix-time
 Photo/camera/FX/UI dispatch, all 106 Root definitions, remaining species,
 complete gameplay, private Windows11 runtime or original/device parity.
+
+## Native renderer prerequisites: fragments, prefix capture and processes
+
+The 496-file native snapshot
+`e5056805a97576506086a9696c3d2619c5257f9b8e094029720ea240b6c44639`
+adds prerequisites for the original source-controlled camera pass, not the
+complete renderer or Player Root.
+
+`actor::Producer` publishes complete raw per-object callback ranges without
+EndDL and an explicit NULL-object Detector-prefix marker. Empty hidden,
+filtered and geometryless objects remain represented and validated. Cold
+staging/published vectors swap only after success; rejected production preserves
+prior fragments, RAM and history. Actual Services DL registration/order and
+aggregate-versus-fragment triangle/color/depth/capture equivalence are exercised.
+
+`Photo::capture_prefix` executes the complete original C camera/Pokémon/Item/FX
+capture before history staging, acquiring real actor identity holds immediately.
+`seal_history` validates the exact committed context/generation and membership,
+adopts additional history-only holds and then leases history. Rejected unsealed
+captures remain exactly retireable. Shared rows cannot overwrite queued work;
+postprocessed reuse requires the bound Frame to be completed and quiescent.
+The Frame outlives its ticket and cannot be begun, retired or reused until ticket
+retirement. Unsubmitted tickets are synchronous single-attempt capabilities;
+retirement consumes them even when a rejected attempt shares a planned generation.
+
+History staging advances its own generation exactly once on success.
+Appending does not advance it; retain/publish/release require the exact existing
+generation. Real focus tests reject future/stale tokens and held mutation without
+changing publication, then publish a genuine replacement with its new token.
+The unreachable-in-practice generation-overflow guard is not runtime-qualified.
+
+`isle_player_source_add_process` preserves actual native one-argument C callbacks,
+kind, priority, returned process and owner. Eleven complete native scopes cover
+creation during FIFO dispatch, real wait/pause/resume/self-end, receiver
+cancellation/join, wrong Source rejection and created-child cleanup after a later
+C failure. All 44 private Root creators lower to this checked API; independent
+replay preserves every complete original body. That authoring still is not
+compilation or execution of the full 106-definition Root.
+
+Competing Photo assessments found a real first-error publication defect:
+CopyInfo could publish a retained completion or return OK without one, and its
+C++ leaf overwrote the original error. An actual native/GPU run fails before the
+fix. Publication now passes the canonical sticky-error gate before any mutation;
+the returning C leaf does not assign Source status. Both retained-completion and
+no-completion regressions pass after exact cleanup. Two earlier whole scopes
+are rejected because new fault inputs failed native validation too early.
+Corrected inputs exercise actual C Item packing rejection and real bounded
+Actor encoding failure after prefix capture; no validator is weakened.
+
+| Complete actual consumer | GCC Debug seconds | GCC Release seconds | Clang ASan+UBSan seconds |
+|---|---:|---:|---:|
+| Actor aggregate/raw-fragment GPU and native DL order | 14.890974 | 7.352548 | 65.093740 |
+| Prefix Photo/history/GPU/CopyInfo and failure retirement | 10.699296 | 8.889479 | 20.291409 |
+| Checked C process/FIFO ownership, eleven scopes | 0.554276 | 0.158603 | 1.573075 |
+| All 57 CPU contracts after default-target rebuild | 3.50 | 0.80 | 11.87 |
+
+All 22 explicit opt-in targets and default CPU executables build per profile.
+The complete current cohort has 66 accepted cases: 65 fresh executions plus the
+exact-source/binary passing-after Debug Photo scope, never replayed. All 3,588
+terminal tasks and 3,654 tracer/tasks are absent before each sole initial scan;
+traces are stable, ROM unchanged, physical attempts/permission errors zero.
+All 57 support manifests reach an unchanged digest fixed point. Fatal address/UB
+checks remain enabled; ptrace-only leak-scan disable is not leak qualification.
+All 63 previously inspected surface images, 213 Photo files and 12 Cart files
+remain byte-identical, checked only at known positive paths without inventory,
+trace rescans, parameter searches or repinning.
+
+The Photo consumer executes 66 real GPU frames, two actual failed completion
+callbacks and 79 original C CopyInfo updates per profile. These results do not
+admit original global camera/FX/UI dispatch, full Root/initUI/World factory
+closure, remaining species/courses, gameplay, Original capture parity, private
+Windows11 runtime, hearing or hardware. The latest all-ten hosted proof remains
+the separately identified `d936b02` revision above.
 
 ## Independent Detector and framebuffer contexts
 

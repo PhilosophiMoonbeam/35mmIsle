@@ -33,8 +33,9 @@ enum class Error { none, invalid_context, extent };
 // A scene-local identity is compared only; no retired actor pointer is read.
 class Detector final {
 public:
-    // Snapshot active metadata/photo fields, not color pixels. Rejection changes
-    // nothing; unused source history tails remain inaccessible to analysis.
+    // Snapshot active metadata/photo fields, not color pixels. Each successful
+    // stage advances that context's committed generation; overflow or rejection
+    // changes nothing. Unused history tails stay inaccessible to analysis.
     Error stage(std::uint16_t context, std::span<const Subject>, const Photo&) noexcept;
     // Source callbacks before the DL5 detector prefix append to the previous
     // context; the later prefix stages a fresh baseline in the other context.
@@ -60,6 +61,10 @@ public:
     // False for invalid or retained contexts; the exclusive owner must prevent
     // retention changes between this preflight and metadata/GPU publication.
     bool context_available(std::uint16_t context) const noexcept;
+    // Exact committed stage identity, not a caller-issued reservation number.
+    // Zero means invalid or never staged; append does not start a new stage.
+    std::uint64_t generation(std::uint16_t context) const noexcept;
+    // Retain only this exact existing nonzero committed generation.
     Error retain_context(std::uint16_t context, std::uint64_t generation) noexcept;
     Error release_context(std::uint16_t context, std::uint64_t generation) noexcept;
     Error publish_context(std::uint16_t context, std::uint64_t generation) noexcept;

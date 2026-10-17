@@ -154,21 +154,28 @@ IsleGameResult Photo::camera(IslePlayerPhotoData& output) noexcept {
     return ISLE_GAME_OK;
 }
 IsleGameResult Photo::pokemon(IslePlayerPhotoContext& output) noexcept {
-    // Membership is Detector's actual staged prefix record, never recollected
-    // into an independently advanced membership clock.
-    auto context=static_cast<std::uint16_t>(&output-&source_.PokemonDetector_Photo[0]);
-    const auto* members=detector_.history.photo(context);
-    if(!members) return ISLE_GAME_INVALID_STATE;
-    for(std::size_t i=0;i<members->objects.size();++i) {
-        auto* object=reinterpret_cast<IsleGameObject*>(members->objects[i]);
-        output.pokemonObjects[i]=object;
-        if(!object) continue;
+    Pending* pending=nullptr;
+    for(std::size_t i=0;i<pending_.size();++i)
+        if(&output==&source_.PokemonDetector_Photo[i]) pending=&pending_[i];
+    if(!pending || pending->phase!=Phase::rejected || pending->history_retained)
+        return ISLE_GAME_INVALID_STATE;
+    // Own GAME 47380.c460-569: visit the actual link3 list until twelve
+    // successful captures, applying hidden/tangible/visibility/species before
+    // reading animation/AUX. History does not exist yet at this prefix.
+    IsleGameObject* previous=nullptr;
+    std::size_t count=0;
+    while(count<12) {
+        IsleGameObject* object=nullptr;
         IsleActorSource* source=nullptr;
-        auto result=isle_actor_source_get(player_.game,object,&source);
-        if(result!=ISLE_GAME_OK) return result;
         IsleGameModel* model=nullptr;
-        for(const auto& binding:actors_.render_bindings())
-            if(binding.model.object==object) { model=binding.model.model; break; }
+        auto result=isle_actor_source_link3_next(player_.game,previous,&object,&source,&model);
+        if(result!=ISLE_GAME_OK) return result;
+        if(!object) break;
+        previous=object;
+        bool admitted=false;
+        result=actor::photo::admitted(*source,camera_,source->collPosition,admitted);
+        if(result!=ISLE_GAME_OK) return result;
+        if(!admitted) continue;
         IsleGameModelRef reference{};
         result=isle_actor_owner_self_model(source,&reference);
         if(result!=ISLE_GAME_OK) return result;
@@ -182,10 +189,13 @@ IsleGameResult Photo::pokemon(IslePlayerPhotoContext& output) noexcept {
         native.specialPoseID=source->specialPoseID; native.poseID=source->poseID;
         native.animationTime=isle_actor_owner_animation_time(source);
         native.position=placement->position; native.yaw=placement->rotation.y;
-        // The existing prefix collector already performed actual hidden,
-        // tangible and func80364718 admission in source order. No second clock.
-        if(!isle_player_photo_func_8009BF48(&source_,&output.main.pokemons[i],&native))
+        if(!isle_player_photo_func_8009BF48(&source_,&output.main.pokemons[count],&native))
             return ISLE_GAME_INVALID_STATE;
+        output.pokemonObjects[count++]=object;
+        // Acquire as each real source identity is captured: later Item/FX or
+        // producer failure must not discard earlier semantic/native payloads.
+        result=hold(*pending,object);
+        if(result!=ISLE_GAME_OK) return result;
     }
     return ISLE_GAME_OK;
 }
@@ -261,24 +271,32 @@ IsleGameResult Photo::effects(IslePlayerPhotoContext& output) noexcept {
     isle_player_photo_capture_effects(&source_,&output,count?particles.data():nullptr);
     return ISLE_GAME_OK;
 }
-IsleGameResult Photo::snapshot(std::uint16_t context,std::uint64_t generation) noexcept {
-    if(context>=2 || !generation || pending_[context].phase!=Phase::idle) return ISLE_GAME_INVALID_STATE;
+IsleGameResult Photo::seal_history(std::uint16_t context,std::uint64_t generation) noexcept {
+    auto result=source_access();
+    if(result!=ISLE_GAME_OK) return result;
+    if(context>=2 || !generation) return ISLE_GAME_INVALID_STATE;
     auto& pending=pending_[context];
-    if(generation<=pending.ticket.generation) return ISLE_GAME_INVALID_ARGUMENT;
-    if(detector_.history.retain_context(context,generation)!=focus::Error::none) return ISLE_GAME_INVALID_STATE;
-    pending.ticket={context,generation,0}; pending.phase=Phase::rejected;
-    auto& output=source_.PokemonDetector_Photo[context];
-    auto result=isle_player_photo_capture_context(&source_,&output);
-    if(result==ISLE_GAME_OK) for(auto* object:output.pokemonObjects) {
-        result=hold(pending,object); if(result!=ISLE_GAME_OK) break;
+    if(pending.phase!=Phase::captured || pending.ticket!=IslePlayerPhotoTicket{context,generation,0} ||
+       pending.history_retained || detector_.context!=context ||
+       detector_.history.generation(context)!=generation || !detector_.history.context_available(context))
+        return ISLE_GAME_INVALID_STATE;
+    const auto* members=detector_.history.photo(context);
+    if(!members) return ISLE_GAME_INVALID_STATE;
+    const auto& captured=source_.PokemonDetector_Photo[context];
+    for(std::size_t i=0;i<members->objects.size();++i)
+        if(members->objects[i]!=reinterpret_cast<focus::Object>(captured.pokemonObjects[i]))
+            return remember(ISLE_GAME_INVALID_STATE);
+    // Adopt additional actual history identities only after exact commit.
+    // Partial acquisition stays rejected and explicitly retireable.
+    pending.phase=Phase::rejected;
+    for(const auto& subject:detector_.history.history(context)) {
+        result=hold(pending,reinterpret_cast<IsleGameObject*>(subject.object));
+        if(result!=ISLE_GAME_OK) return remember(result);
     }
-    if(result==ISLE_GAME_OK) for(const auto& subject:detector_.history.history(context)) {
-        result=hold(pending,reinterpret_cast<IsleGameObject*>(subject.object)); if(result!=ISLE_GAME_OK) break;
-    }
-    // Rejected snapshots retain their exact storage until explicit retirement;
-    // they cannot enter the GPU queue or become a valid makePhoto context.
-    if(result==ISLE_GAME_OK) pending.phase=Phase::prepared;
-    return source_.status=result;
+    if(detector_.history.retain_context(context,generation)!=focus::Error::none)
+        return remember(ISLE_GAME_INVALID_STATE);
+    pending.history_retained=true; pending.phase=Phase::prepared;
+    return ISLE_GAME_OK;
 }
 IsleGameResult Photo::postprocess(IslePlayerPhotoTicket ticket,std::span<std::uint32_t> words,
     std::uint32_t regions,std::uint32_t framebuffer) noexcept {
@@ -294,19 +312,14 @@ IsleGameResult Photo::postprocess(IslePlayerPhotoTicket ticket,std::span<std::ui
         reinterpret_cast<IsleGameObject*>(computed.present?computed.object:0);
     pending->phase=Phase::postprocessed; return ISLE_GAME_OK;
 }
-IsleGameResult Photo::complete(IslePlayerPhotoTicket ticket) noexcept {
-    auto* pending=matching(ticket);
-    if(!pending || pending->phase!=Phase::postprocessed || !count_ || queue_[head_]!=ticket.context)
-        return ISLE_GAME_INVALID_STATE;
-    pending->phase=Phase::complete; completed_=ticket.context;
-    head_=(head_+1)%2; --count_; return ISLE_GAME_OK;
-}
 IsleGameResult Photo::copy_info() noexcept {
+    const auto access=source_access();
+    if(access!=ISLE_GAME_OK) return access;
     if(completed_<0) return ISLE_GAME_OK;
     auto& pending=pending_[static_cast<std::size_t>(completed_)];
     if(pending.phase!=Phase::complete ||
        detector_.history.publish_context(static_cast<uint16_t>(completed_),pending.ticket.generation)!=focus::Error::none)
-        return ISLE_GAME_INVALID_STATE;
+        return remember(ISLE_GAME_INVALID_STATE);
     published_=completed_;
     source_.gPokemonIdInFocus=detector_.history.published().pokemon_id;
     return ISLE_GAME_OK;
@@ -324,7 +337,7 @@ IsleGameResult Photo::release(IslePlayerPhotoTicket ticket) noexcept {
 IsleGameResult Photo::retire(IslePlayerPhotoTicket ticket) noexcept {
     auto* pending=matching(ticket);
     if(!pending || pending->borrows || (pending->phase!=Phase::complete&&
-       pending->phase!=Phase::prepared&&pending->phase!=Phase::rejected))
+       pending->phase!=Phase::prepared&&pending->phase!=Phase::captured&&pending->phase!=Phase::rejected))
         return ISLE_GAME_INVALID_STATE;
     return release_pending(*pending);
 }
@@ -335,12 +348,15 @@ IsleGameResult Photo::release_pending(Pending& pending) noexcept {
     // retain only dead GObj addresses, not the source storage.
     if(!services_ || !snapshot_owner_ || isle_menu_current_object(player_.game))
         return ISLE_GAME_INVALID_STATE;
+    if(pending.history_retained) {
+        if(detector_.history.release_context(ticket.context,ticket.generation)!=focus::Error::none)
+            return remember(ISLE_GAME_INVALID_STATE);
+        pending.history_retained=false;
+    }
     for(std::size_t i=0;i<pending.held;++i) if(pending.holds[i]) {
         if(!services_->source_reference_assign(snapshot_owner_,&pending.holds[i],nullptr))
-            return ISLE_GAME_INVALID_STATE;
+            return remember(ISLE_GAME_INVALID_STATE);
     }
-    if(detector_.history.release_context(ticket.context,ticket.generation)!=focus::Error::none)
-        return ISLE_GAME_INVALID_STATE;
     pending.held=0; pending.phase=Phase::idle; pending.frame=nullptr;
     if(completed_==ticket.context) completed_=-1;
     if(published_==ticket.context) published_=-1;
@@ -350,13 +366,9 @@ bool Photo::quiescent() const noexcept {
     return count_==0 && std::all_of(pending_.begin(),pending_.end(),[](const auto& p){return p.phase==Phase::idle;});
 }
 } // namespace isle::player
-extern "C" IsleGameResult isle_player_photo_func_8009C8E4(IslePlayerPhotoSource* source,uint16_t context,uint64_t generation) {
-    if(!source || !source->owner) return ISLE_GAME_INVALID_ARGUMENT;
-    return source->status=static_cast<isle::player::Photo*>(source->owner)->snapshot(context,generation);
-}
 extern "C" IsleGameResult isle_player_photo_publish_completed(IslePlayerPhotoSource* source) {
     if(!source || !source->owner) return ISLE_GAME_INVALID_ARGUMENT;
-    return source->status=static_cast<isle::player::Photo*>(source->owner)->copy_info();
+    return static_cast<isle::player::Photo*>(source->owner)->copy_info();
 }
 
 namespace isle::player {

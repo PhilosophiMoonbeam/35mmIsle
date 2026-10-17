@@ -7,9 +7,12 @@
 #include "graphics_task.hpp"
 #include "rsp_render.hpp"
 #include "photo_lighting.hpp"
+#include "actual_audio_driver.hpp"
+#include "scene_services.hpp"
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -17,6 +20,7 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace {
@@ -40,6 +44,19 @@ constexpr focus::CaptureLayout capture_layout{{0x680000,0x50},{0x680080,0x80},{0
 constexpr std::array<menu::RamRange,10> other{{{top,0x2000},{stack,0x10000},
     {output,output_end-output},{depth,plane_bytes},{guard,256},{0xaebd0,24},{0xaec18,64},
     capture_layout.tile_list,capture_layout.copy_list,capture_layout.regions}};
+struct Profile {
+    std::filesystem::path path;
+    Profile() {
+        const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+        for (unsigned sequence = 0; sequence < 100; ++sequence) {
+            auto candidate = std::filesystem::temp_directory_path() /
+                ("35mmisle-actor-fragments-"+std::to_string(stamp)+"-"+std::to_string(sequence));
+            if (std::filesystem::create_directory(candidate)) { path = std::move(candidate); break; }
+        }
+        require(!path.empty(),"cannot create owned private Actor fragment profile");
+    }
+    ~Profile() { std::error_code ignored; std::filesystem::remove_all(path,ignored); }
+};
 struct Owners {
     std::vector<std::byte> bytes = std::vector<std::byte>(16*1024*1024);
     isle_arena arena{};
@@ -64,6 +81,7 @@ struct Owners {
 struct Capture {
     std::vector<std::uint32_t> triangles;
     std::vector<std::byte> pixels, depths;
+    std::vector<std::uint32_t> regions;
     bool operator==(const Capture&) const = default;
 };
 std::size_t rgb5_changes(const Capture& a,const Capture& b) {
@@ -133,6 +151,52 @@ void top_list(std::span<std::uint32_t> words, const scene::render::Prepared& fra
     }
     cmd(0xe9000000,0); cmd(0xdf000000,0);
 }
+bool same_fragment(const actor::ProducerFragment& a,const actor::ProducerFragment& b) {
+    if (a.kind!=b.kind || a.object!=b.object || a.render.link!=b.render.link ||
+        a.render.priority!=b.render.priority || a.render.camera_tag!=b.render.camera_tag) return false;
+    for (unsigned lane=0;lane<4;++lane)
+        if (a.lanes[lane].address!=b.lanes[lane].address ||
+            a.lanes[lane].commands!=b.lanes[lane].commands) return false;
+    return true;
+}
+scene::render::Prepared prepared(const actor::ProducerFrame& source) {
+    scene::render::Prepared frame;
+    frame.camera={source.camera.address,static_cast<std::size_t>(source.camera.commands)*2};
+    for (unsigned lane=0;lane<4;++lane)
+        frame.lanes[lane]={source.lanes[lane].address,static_cast<std::size_t>(source.lanes[lane].commands)*2};
+    return frame;
+}
+// Actual consuming compositor: concatenate the borrowed complete callbacks,
+// preserve the source camera reset per lane, then supply the sole lane EndDL.
+// Scratch is inside the admitted list reservation, beyond all published lists.
+scene::render::Prepared compose(std::span<std::uint32_t> words,const actor::ProducerFrame& source) {
+    auto frame=prepared(source);
+    std::uint32_t cursor=static_cast<std::uint32_t>(layout.lists.offset+layout.lists.size/2);
+    for (const auto& lane:source.lanes)
+        require(lane.address+lane.commands*8<=cursor,"fragment scratch overlaps actual aggregate commands");
+    graphics::Memory memory(words);
+    for (unsigned lane=0;lane<4;++lane) {
+        const auto start=cursor;
+        auto aggregate=source.lanes[lane].address;
+        for (const auto& fragment:source.fragments) {
+            const auto range=fragment.lanes[lane];
+            require(range.address==aggregate,"fragment ranges do not partition actual source callback order");
+            for (std::uint32_t i=0;i<range.commands;++i) {
+                const auto at=range.address+i*8;
+                require(words[at/4]!=0xdf000000u,"raw callback fragment contains a compositor EndDL");
+                require(cursor+8<=layout.lists.offset+layout.lists.size,"fragment consumer scratch exhausted");
+                memory.word(cursor,words[at/4]); memory.word(cursor+4,words[at/4+1]); cursor+=8;
+            }
+            aggregate+=range.commands*8;
+        }
+        require(aggregate+8==source.lanes[lane].address+source.lanes[lane].commands*8 &&
+            words[aggregate/4]==0xdf000000u,"fragment composition omitted source commands or EndDL");
+        require(cursor+8<=layout.lists.offset+layout.lists.size,"fragment consumer EndDL capacity exhausted");
+        memory.word(cursor,0xdf000000u); memory.word(cursor+4,0); cursor+=8;
+        frame.lanes[lane]={start,(cursor-start)/4};
+    }
+    return frame;
+}
 void bind_initial(const beach::ActorResources& resources, const beach::ActorInitialization& init,
                   a::Runtime& runtime, a::InstanceHandle handle) {
     if (!init.animations_enabled) return; // Actual geometryless1005 NULL header.
@@ -157,6 +221,16 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     const auto world = beach::world_descriptors(snapshot);
     const beach::ActorResources resources(snapshot,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
     const photo::LightingInputs lighting(snapshot);
+    Profile profile; game::State state(profile.path);
+    require(state.initialize(1),"actual Actor fragment profile initialization failed");
+    auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"actual Actor Services audio hydration failed");
+    std::array<audio::effects::Section,8> sections; audio::effects::Config effects;
+    require(game_audio::native_startup_effects(hydrated.resources,sections,effects)==audio::Error::none,
+        "actual Actor Services audio configuration failed");
+    private_audio::Capture pcm; private_audio::Execution audio_execution{snapshot,nullptr,{}};
+    auto audio=game_audio::Session::create(std::move(hydrated.resources),effects,pcm.output(),audio_execution.executor());
+    require(bool(audio),"actual Actor Services borrowed audio Session failed");
+    game_input::Service input;
     focus::RegionCopies capture_regions(capture_layout);
     focus::Detector focus_history;
     actor::DetectorBinding focus_binding{capture_regions,focus_history};
@@ -182,7 +256,11 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     auto made = a::Runtime::create({models,resources.materials(),resources.animations(),menu::no_index},capacities,{},{32768,4096});
     require(bool(made),"all actor animations must compile once in shared Runtime"); auto& runtime = *made.runtime;
     isle_rng application_rng{};
-    Owners owners; std::array<a::InstanceHandle,live_slots> handles{};
+    Owners owners;
+    auto services=std::make_unique<scene::Services>(owners.game,owners.arena,
+        scene::ResourceView{{4,6,0,1,2},{}},input,*audio.session,state);
+    require(!services->failed(),services->error());
+    std::array<a::InstanceHandle,live_slots> handles{};
     std::array<actor::ActorRenderBinding,live_slots> bindings{};
     std::array<IsleGameModelTransform,live_slots> placements{};
     std::array<IsleActorSource*,live_slots> sources{};
@@ -197,7 +275,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         const auto& init = inits[selected[slot]];
         const auto acquired = runtime.acquire(slot,init.model,true); require(bool(acquired),"actual actor Runtime acquisition");
         handles[slot] = acquired.handle; bind_initial(resources,init,runtime,handles[slot]);
-        IsleGameObject* object = nullptr; native(isle_game_add_object(owners.game,100+static_cast<std::uint32_t>(slot),3,0x80000000,nullptr,nullptr,&object));
+        auto* object=services->object(100+static_cast<std::uint32_t>(slot),3,0x80000000);
+        require(object,"actual Actor Services native identity allocation failed");
         *sources[slot]={}; // Prior incarnation has already joined before spawn/reuse.
         native(isle_actor_source_bind(owners.game,object,sources[slot],&application_rng,&owners));
         sources[slot]->id=static_cast<std::int32_t>(ids[slot]); sources[slot]->flags=init.flags;
@@ -209,6 +288,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         native(isle_game_model_set_placement(owners.game,model,ISLE_GAME_MODEL_PLACEMENT_RTS,&placements[slot]));
         bindings[slot] = {{slot,runtime.model(handles[slot]),object,model,k::PoseSource::animation,
             k::RootRecipe::source,true,&runtime},{static_cast<std::uint8_t>(slot == 2 || slot == 5 ? 4 : 5),0x80000000,1u<<slot}};
+        require(services->set_render(object,bindings[slot].render),"actual Actor native DL registration failed");
     };
     for (std::size_t slot = 0; slot < live_slots; ++slot) spawn(slot);
     require(handles[1] != handles[4] && runtime.model(handles[1]).resource_model == runtime.model(handles[4]).resource_model,
@@ -274,6 +354,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     std::size_t arena_used = owners.arena.cursor;
     actor::DetectorBinding* postprocess_detector=nullptr;
     bool mark_completed_frame=false;
+    bool compose_fragments=false;
+    actor::ProducerFrame last_frame;
     auto execute = [&](bool cold, std::uint64_t epoch = 1, rsp::CanonicalExecutor* alternate = nullptr) {
         auto& active = alternate ? *alternate : executor;
         auto& frame_owner=*static_cast<actor::Producer*>(pass.userdata);
@@ -301,7 +383,43 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         const auto& eye=light_camera->look_at.eye; const auto& light_at=light_camera->look_at.at;
         lighting.update_direction(std::as_writable_bytes(words),{eye[0],eye[1],eye[2]},{light_at[0],light_at[1],light_at[2]});
         const auto before = std::vector<std::uint32_t>(words.begin(),words.end());
-        scene::render::Prepared frame; require(pass.prepare(pass.userdata,words,epoch,pass,frame),"actual compiled pass adapter");
+        const auto source_context=postprocess_detector?postprocess_detector->context:std::uint16_t{0};
+        const auto previous_rows=postprocess_detector?postprocess_detector->history.history(source_context).size():0;
+        last_frame=frame_owner.prepare(words,epoch,pass);
+        auto frame=prepared(last_frame);
+        if (postprocess_detector) {
+            bool prefix_seen=false;
+            std::size_t previous_row=previous_rows,current_row=0;
+            for (const auto& fragment:last_frame.fragments) {
+                const bool prefix=fragment.kind==actor::FragmentKind::detector_prefix;
+                if (prefix) {
+                    require(!prefix_seen && fragment.object==nullptr,"actual source prefix was duplicated or fabricated as an object");
+                    prefix_seen=true;
+                }
+                const auto range=fragment.lanes[0]; unsigned copies=0;
+                for (std::uint32_t i=0;i<range.commands;++i) {
+                    const auto at=range.address+i*8;
+                    if (words[at/4]!=0xff100007u) continue;
+                    const auto row=prefix_seen?current_row++:previous_row++;
+                    require(++copies==1 && i+3==range.commands &&
+                        words[at/4+1]==capture_regions.region_offset(static_cast<unsigned>(row)),
+                        "raw Actor callback lost its own ordered actual GPU-copy destination");
+                    const auto context=prefix_seen?postprocess_detector->context:source_context;
+                    const auto history=postprocess_detector->history.history(context);
+                    require(row<history.size(),"actual fragment GPU copy has no committed source history row");
+                    const auto subject=history[row];
+                    if (prefix) require(row==0 && subject.object==0 && subject.pokemon_id==-1,
+                        "actual prefix GPU baseline lost its source history sentinel");
+                    else {
+                        IsleActorSource* source=nullptr;
+                        native(isle_actor_source_get(owners.game,fragment.object,&source));
+                        require(subject.object==reinterpret_cast<focus::Object>(fragment.object) &&
+                            subject.pokemon_id==source->id,"raw callback GPU row lost its genuine native identity/source ID");
+                    }
+                }
+                if (prefix) require(copies==1,"actual included prefix omitted its GPU baseline");
+            }
+        }
         for (const auto& list : frame.lanes)
             require(list.words >= 2 && words[(list.address+list.words*4-8)/4] == 0xdf000000,"lane lacks real terminating EndDL");
         require(words[(frame.camera.address+frame.camera.words*4-8)/4] == 0xdf000000,"camera lacks real terminating EndDL");
@@ -325,7 +443,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
                 contextual_upload = true;
             }
         }
-        if (pass.camera_tag == UINT32_MAX && !(sources[0]->flags&0x100u) && bindings[0].model.draw)
+        if (pass.camera_tag == UINT32_MAX && pass.includes(bindings[0].render) &&
+            !(sources[0]->flags&0x100u) && bindings[0].model.draw)
             require(contextual_upload && inline48,"actual source54/source48 outputs missing from GPU lists");
         if (pass.includes(bindings[2].render) && bindings[2].model.draw) {
             // The second1006 sibling consumes its predecessor's retained TIMG.
@@ -344,6 +463,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
                 [&](auto r) { return address >= r.offset && address < r.offset+r.size; });
             if (!owned) require(words[i] == before[i],"actor producer wrote outside exact RAM owners");
         }
+        if (compose_fragments) frame=compose(words,last_frame);
         top_list(words,frame,world.world,lighting.pre_render_guest());
         const auto task_result = graphics::finish_task(words,snapshot,boot,stack,yield,task,output,output_end,top);
         auto completed = active.execute(std::move(preparation),task_result.task,task_result.boot);
@@ -375,6 +495,12 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         result.pixels.resize(plane_bytes); result.depths.resize(plane_bytes);
         for (std::size_t i = 0; i < plane_bytes; ++i) {
             result.pixels[i] = completed.rdram()[(color+i)^3]; result.depths[i] = completed.rdram()[(depth+i)^3];
+        }
+        if (postprocess_detector) {
+            const auto count=postprocess_detector->history.history(postprocess_detector->context).size()*32;
+            const auto* regions=reinterpret_cast<const std::uint32_t*>(completed.rdram().data())+
+                capture_regions.region_offset(0)/4;
+            result.regions.assign(regions,regions+count);
         }
         for (unsigned i = 0; i < 64; ++i)
             require(reinterpret_cast<const std::uint32_t*>(completed.rdram().data())[guard/4+i] == 0x13579bdf,"actual RSP/RDP consumer changed guard");
@@ -418,6 +544,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     const auto initial = execute(true);
     save_capture(output_directory,"actual-actors-initial.ppm",initial);
     require(initial == execute(false),"unchanged actor frame changed actual packets/color/depth");
+    compose_fragments=true;
+    require(initial==execute(false),"raw Actor fragment composition changed actual triangle packets/color/depth");
     bindings[3].model.draw = false; require(initial == execute(false),"geometryless1005 fabricated visible output"); bindings[3].model.draw = true;
     // Per-object source gate, actual native hidden flag, source links and tags.
     sources[0]->flags|=0x100u; const auto gated = execute(false);
@@ -476,6 +604,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     std::uint16_t normalization = 0; native(isle_game_camera_perspective_normalization(owners.game,owners.camera,&normalization));
     const auto retained = basis.value;
     const auto saved_world = std::vector<k::WorldMatrix>(producer.world_nodes(handles[0]).begin(),producer.world_nodes(handles[0]).end());
+    const auto retained_fragments=last_frame.fragments;
+    const std::vector<actor::ProducerFragment> fragment_records(retained_fragments.begin(),retained_fragments.end());
     const auto original_projection = parameters->perspective; auto projection = original_projection; projection.fovy += 1;
     native(isle_game_camera_set_perspective(owners.game,owners.camera,&projection));
     auto tight_layout = layout; tight_layout.lists.size = 104;
@@ -484,6 +614,20 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     require(tight.world_nodes(handles[0]).empty(),"rejected frame published a new world cache"); tight.retire();
     const auto saved_binding = bindings[5]; bindings[5].model.slot = capacities.size(); bindings[5].model.draw = false;
     rejects([&] { producer.prepare(admission,1,pass); },"hidden invalid slot escaped whole-frame admission"); bindings[5] = saved_binding;
+    const auto filtered_binding=bindings[4];
+    bindings[4].model.slot=capacities.size(); bindings[4].render.camera_tag=1u<<31;
+    auto filter_pass=pass; filter_pass.camera_tag=1u;
+    rejects([&] { producer.prepare(admission,1,filter_pass); },"pass-filtered invalid Actor binding escaped admission");
+    bindings[4]=filtered_binding;
+    const auto geometryless_binding=bindings[3]; bindings[3].model.slot=capacities.size();
+    rejects([&] { producer.prepare(admission,1,pass); },"geometryless invalid Actor binding escaped admission");
+    bindings[3]=geometryless_binding;
+    const auto native_hidden_binding=bindings[1];
+    native(isle_game_object_set_flags(owners.game,bindings[1].model.object,1));
+    bindings[1].model.slot=capacities.size();
+    rejects([&] { producer.prepare(admission,1,pass); },"native-hidden invalid Actor binding escaped admission");
+    bindings[1]=native_hidden_binding;
+    native(isle_game_object_set_flags(owners.game,bindings[1].model.object,0));
     rejects([&] { producer.prepare(std::span(admission).first(admission.size()-1),1); },"short RAM accepted");
     rejects([&] { producer.prepare(admission,0); },"zero epoch accepted");
     require(admission == untouched && std::memcmp(camera0,&saved_camera0,sizeof(saved_camera0)) == 0 &&
@@ -500,6 +644,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         std::memcmp(reflection,&saved_reflection,sizeof(saved_reflection)) == 0 &&
         std::memcmp(&basis.value,&retained,sizeof(retained)) == 0,
         "late camera batch failure published projection/reflection/RAM/basis");
+    require(std::equal(retained_fragments.begin(),retained_fragments.end(),fragment_records.begin(),same_fragment),
+        "rejected Actor binding/camera preparation overwrote published fragment identities/metadata/ranges");
     native(isle_game_camera_set_look_at(owners.game,owners.camera,&original_look));
     std::uint16_t after_norm = 0; native(isle_game_camera_perspective_normalization(owners.game,owners.camera,&after_norm));
     require(after_norm == normalization,"rejected preparation changed normalization");
@@ -523,8 +669,12 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     native(isle_game_delete_object(owners.game,bindings[4].model.object)); bindings[4] = {};
     require(bool(runtime.release_retired(retired_handle)),"real joined Runtime release rejected");
     execute(false,4); require(producer.world_nodes(retired_handle).empty(),"retired actor world borrow survived vacating slot");
+    const auto vacant_fragments=last_frame.fragments;
+    const std::vector<actor::ProducerFragment> vacant_records(vacant_fragments.begin(),vacant_fragments.end());
     bindings[4] = stale; bindings[4].model.draw = false;
     rejects([&] { producer.prepare(admission,4); },"copied retired hidden view authorized reused native ownership"); bindings[4] = {};
+    require(std::equal(vacant_fragments.begin(),vacant_fragments.end(),vacant_records.begin(),same_fragment),
+        "rejected retired incarnation republished stale native identity into Actor fragments");
     spawn(4); arena_used = owners.arena.cursor;
     require(handles[4] != retired_handle && initial == execute(false,4),"same-slot respawn reused stale incarnation/payloads");
     // Rebind the same explicit capacity slot across different immutable recipes,
@@ -555,12 +705,35 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         placements[slot].position=focus_positions[slot];
         native(isle_game_model_set_placement(owners.game,bindings[slot].model.model,ISLE_GAME_MODEL_PLACEMENT_RTS,&placements[slot]));
     }
-    std::array ordered{bindings[2],bindings[5],bindings[0],bindings[1],bindings[3],bindings[4]};
+    std::array<actor::ActorRenderBinding,live_slots> ordered{};
+    const auto refresh_order=[&] {
+        std::size_t count=0;
+        for (const auto link:std::array<std::uint8_t,2>{4,5}) {
+            std::array<scene::RenderOrderEntry,live_slots> native_order{};
+            std::size_t written=0;
+            require(services->render_order(link,native_order,written),"actual native Actor DL order could not be collected");
+            for (const auto& entry:std::span(native_order).first(written)) {
+                const auto binding=std::find_if(bindings.begin(),bindings.end(),
+                    [&](const auto& b) { return b.model.object==entry.object; });
+                require(binding!=bindings.end() && count<ordered.size(),"native DL order returned a foreign Actor owner");
+                ordered[count]=*binding; ordered[count++].render=entry.render;
+            }
+        }
+        require(count==ordered.size(),"native Actor DL registration lost an active callback");
+    };
+    refresh_order();
+    const auto move_snorlax=[&](std::uint8_t link,std::uint32_t priority=0x80000000u) {
+        bindings[0].render.link=link; bindings[0].render.priority=priority;
+        require(services->set_render(bindings[0].model.object,bindings[0].render) &&
+            services->move_to_head(bindings[0].model.object),"native Snorlax DL priority change failed");
+        refresh_order();
+    };
     const auto identity_of=[&](std::size_t slot) { return reinterpret_cast<focus::Object>(bindings[slot].model.object); };
     focus_binding.photo.objects[0]=identity_of(0); focus_binding.photo.objects[1]=identity_of(1);
     focus_binding.photo.objects[2]=identity_of(4); focus_binding.enabled=true;
     actor::Producer capturing(owners.game,owners.camera,basis,resources,capacities,ordered,layout,other,&focus_binding);
     pass.userdata=&capturing; postprocess_detector=&focus_binding;
+    compose_fragments=false;
     mark_completed_frame=true; const auto focused=execute(true,5); mark_completed_frame=false;
     save_capture(output_directory,"actual-focus-pikachu.ppm",focused);
     require(focus_history.computed().present && focus_history.computed().object==identity_of(1) &&
@@ -568,6 +741,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         focus_history.history(focus_binding.context).size()==4 && focus_history.published().object==0,
         "genuine per-actor color history did not select actual center Pikachu without early publication");
     require(executor.quiescent(),"completed postprocess ownership survived frame release");
+    compose_fragments=true;
+    require(focused==execute(false,5),"Detector-prefix raw fragments changed actual GPU packets/color/depth/region rows");
     focus_history.publish(); require(focus_history.published().object==identity_of(1),"source explicit CopyInfo lost actual focus");
     sources[1]->flags|=0x100u; const auto focus_hidden=execute(false,5);
     save_capture(output_directory,"actual-focus-without-pikachu.ppm",focus_hidden);
@@ -583,13 +758,69 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     // to the previous context; the later prefix resets only the other context.
     const auto previous_context=focus_binding.context;
     const auto previous_rows=focus_history.history(previous_context).size();
-    ordered[2].render.link=4; execute(false,5);
+    move_snorlax(4); execute(false,5);
     require(focus_binding.context==1-previous_context &&
         focus_history.history(previous_context).size()==previous_rows+1 &&
         focus_history.history(previous_context).back().object==identity_of(0) &&
         focus_history.history(focus_binding.context).size()==3 &&
         focus_history.computed().object==identity_of(1),"source pre-prefix capture context/order was flattened");
-    ordered[2].render.link=5;
+    move_snorlax(5);
+    require(focused==execute(false,5),"actual Services DL restoration changed complete Actor fragments");
+    {
+        const auto full_links=pass.link_mask;
+        pass.link_mask=std::uint64_t(1)<<4;
+        compose_fragments=false;
+        const auto no_prefix=execute(false,5);
+        compose_fragments=true;
+        require(no_prefix==execute(false,5) && no_prefix.triangles!=focused.triangles &&
+            rgb5_changes(no_prefix,focused)!=0,"filtered-prefix raw composition changed or fabricated actual Actor GPU output");
+        require(std::none_of(last_frame.fragments.begin(),last_frame.fragments.end(),
+            [](const auto& fragment) { return fragment.kind==actor::FragmentKind::detector_prefix; }),
+            "filtered source prefix retained a fabricated GPU-copy fragment");
+        pass.link_mask=full_links;
+        require(focused==execute(false,5),"filtered-prefix composition corrupted restored actual GPU/history output");
+    }
+    {
+        // Same genuine Snorlax callback, now before the prefix on its own DL5:
+        // Services, not a test sort, determines descending priority order.
+        move_snorlax(5,0x80000002u);
+        const auto old_context=focus_binding.context;
+        const auto old_rows=focus_history.history(old_context).size();
+        compose_fragments=false;
+        const auto priority_aggregate=execute(false,5);
+        require(focus_history.history(old_context).size()==old_rows+1 &&
+            focus_history.history(old_context).back().object==identity_of(0) &&
+            focus_history.history(old_context).back().pokemon_id==sources[0]->id,
+            "native DL5 priority did not retain the genuine pre-prefix Actor identity/source ID");
+        const auto prefix=std::find_if(last_frame.fragments.begin(),last_frame.fragments.end(),
+            [](const auto& fragment) { return fragment.kind==actor::FragmentKind::detector_prefix; });
+        require(prefix!=last_frame.fragments.end() && prefix!=last_frame.fragments.begin() &&
+            (prefix-1)->object==bindings[0].model.object &&
+            prefix+1!=last_frame.fragments.end() && (prefix+1)->object==bindings[1].model.object &&
+            prefix->object==nullptr && prefix->render.link==5 && prefix->render.priority==0x80000001u &&
+            prefix->render.camera_tag==UINT32_MAX,"real Actor callbacks were not interleaved around the source prefix");
+        compose_fragments=true;
+        require(priority_aggregate==execute(false,5),"native-priority raw fragments changed GPU packets/color/depth/region rows");
+        const auto current=focus_history.history(focus_binding.context);
+        require(current.size()==3 && current[0].object==0 && current[0].pokemon_id==-1 &&
+            current[1].object==identity_of(1) && current[1].pokemon_id==sources[1]->id &&
+            current[2].object==identity_of(4) && current[2].pokemon_id==sources[4]->id,
+            "post-prefix GPU history lost actual source callback identities/order");
+        const auto published=last_frame.fragments;
+        const std::vector<actor::ProducerFragment> records(published.begin(),published.end());
+        const auto ram_before=admission;
+        const auto source_context=focus_binding.context;
+        const auto old_photo=focus_binding.photo;
+        std::swap(ordered[1],ordered[2]); // Genuine DL4 callback now follows DL5.
+        rejects([&] { capturing.prepare(admission,5,pass); },"out-of-native-order Actor bindings were admitted");
+        std::swap(ordered[1],ordered[2]);
+        require(admission==ram_before && focus_binding.context==source_context &&
+            focus_binding.photo.objects==old_photo.objects && focus_binding.photo.focus==old_photo.focus &&
+            std::equal(published.begin(),published.end(),records.begin(),same_fragment),
+            "source-order rejection published RAM/history context or raw fragment metadata");
+        move_snorlax(5);
+        require(focused==execute(false,5),"native-priority/order rejection corrupted subsequent real Actor consumption");
+    }
     {
         // Exercise real producer admission before the real link3 collector can
         // clear this geometryless actor's visibility flag. No callback mock:
@@ -618,12 +849,12 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         const auto same_photo=[](const focus::Photo& a,const focus::Photo& b) {
             return a.objects==b.objects && a.focus==b.focus;
         };
-        std::uint64_t generation=1;
         for (const bool append:std::array{false,true}) {
-            ordered[2].render.link=append?4:5;
+            move_snorlax(append?4:5);
             const auto source_context=focus_binding.context;
             const auto destination_context=static_cast<std::uint16_t>(1-source_context);
             const auto target=append?source_context:destination_context;
+            const auto generation=focus_history.generation(target);
             require(focus_history.retain_context(target,generation)==focus::Error::none,
                     "actual producer retention target could not be reserved");
             sources[3]->flags|=0x100u;
@@ -647,6 +878,9 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
                 std::vector<focus::Subject>(focus_history.history(1).begin(),focus_history.history(1).end())};
             const std::array photos_before{*focus_history.photo(0),*focus_history.photo(1)};
             const auto binding_photo_before=focus_binding.photo;
+            const auto published_fragments=last_frame.fragments;
+            const std::vector<actor::ProducerFragment> rejected_fragment_records(
+                published_fragments.begin(),published_fragments.end());
             const auto computed_before=focus_history.computed(), published_before=focus_history.published();
             rejects([&] { capturing.prepare(admission,9,pass); },
                     append?"retained pre-prefix append context accepted actual producer preparation":
@@ -666,6 +900,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
                     same_focus(focus_history.published(),published_before) &&
                     !focus_history.context_available(target),
                     "retained rejection published detector context/photo/focus or changed retention");
+            require(std::equal(published_fragments.begin(),published_fragments.end(),rejected_fragment_records.begin(),same_fragment),
+                    "retained-context rejection changed published Actor fragment metadata");
             for (std::uint16_t context=0;context<2;++context) {
                 const auto rows=focus_history.history(context);
                 require(rows.size()==history_before[context].size() &&
@@ -679,7 +915,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
                         std::memcmp(nodes.data(),world_before[slot].data(),nodes.size_bytes())==0,
                         "retained rejection published actor world cache");
             }
-            require(focus_history.release_context(target,generation++)==focus::Error::none,
+            require(focus_history.release_context(target,generation)==focus::Error::none,
                     "actual producer retained context could not be released");
             const auto retried=execute(false,5);
             require(retried.triangles!=focused.triangles && !(sources[3]->flags&0x100u) &&
@@ -691,7 +927,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
             require(bool(runtime.set_node_transform(handles[0],0,local_before)),
                     "retention regression actual pose restoration failed");
             native(isle_game_camera_set_perspective(owners.game,owners.camera,&projection_before));
-            ordered[2].render.link=5;
+            move_snorlax(5);
             require(focused==execute(false,5),"retained rejection/retry corrupted subsequent actual actor output");
         }
         // A retained previous context is not itself a reason to reject: this
@@ -700,6 +936,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         const auto retained_rows=std::vector<focus::Subject>(
             focus_history.history(retained_context).begin(),focus_history.history(retained_context).end());
         const auto retained_photo=*focus_history.photo(retained_context);
+        const auto generation=focus_history.generation(retained_context);
         require(focus_history.retain_context(retained_context,generation)==focus::Error::none,
                 "previous context availability proof could not retain actual history");
         require(focused==execute(false,5) && focus_binding.context==1-retained_context &&
@@ -745,6 +982,8 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     focus_history.publish(); require(!focus_history.published().present,"CopyInfo did not publish cleaned focus");
     capturing.retire(); postprocess_detector=nullptr;
     std::cout<<"actor_live_focus_GPU=passed source_contexts=2 full16bit=true baseline_gate_nativehide_cleanup=true red_pixels=21 "
+        "raw_fragments=actual_GPU_equivalent native_Services_DL_priority_prefix=before_and_after "
+        "fragment_admission=hidden_filtered_geometryless_retired_order_atomic "
         "publication=explicit_after_completion photo_snapshot_queue_GObjs_gameplay=not_claimed\n";
     for (std::size_t slot = 0; slot < live_slots; ++slot) {
         focus_history.cleanup(identity_of(slot));
@@ -755,6 +994,21 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     runtime.retire(); IsleGameCounts counts{}; native(isle_game_counts(owners.game,&counts));
     require(counts.objects == 1 && counts.models == 0 && counts.model_nodes == 0 && counts.processes == 0 && counts.matrices == 2,
             "actor retirement leaked native model/placement/process owners");
+    services.reset();
+    require(audio.session->stop()==audio::Error::none,"actual Actor borrowed audio stop failed");
+    for (std::uint64_t n=1;n<=240 && audio.session->state()!=game_audio::Session::State::draining;++n) {
+        require(audio.session->retrace(n,n*1000000000ull/60)==audio::Error::none &&
+            audio.session->submit()==audio::Error::none,"actual Actor borrowed audio retrace/PCM admission failed");
+        audio::TaskView built;
+        require(audio.session->build(built)==audio::Error::none,"actual Actor borrowed audio task admission failed");
+        if (built.token.serial) {
+            private_audio::execute(*audio.session,audio_execution,built);
+            require(audio.session->submit()==audio::Error::none,"actual Actor completed PCM submission failed");
+        }
+    }
+    require(audio.session->state()==game_audio::Session::State::draining && audio.session->service().voices_retired() &&
+        audio.session->poll_drain()==audio::Error::none && audio.session->poll_drain()==audio::Error::none &&
+        audio.session->state()==game_audio::Session::State::drained,"actual Actor borrowed audio owned PCM did not drain");
     std::cout << "actor_native_rsp_rdp=passed recipes=snorlax54_pikachu48_28 retained_texture1006=consumed geometryless1005=skipped "
                  "mutation=local_placement_camera admission=failure_atomic residency=pointer_epoch_hide_respawn factory_fsm_gameplay=not_claimed\n";
     return 0;

@@ -35,10 +35,10 @@
   },
   "native_support": {
     "src/player_source.h": {
-      "sha256": "d7e4c51e37a33d36c224d7ad0ac6284e8255bbf76b726789e3e9180dce72dd5d"
+      "sha256": "b06e34490bd4ad6c3ed5c02667f957226de768df637ef7f8c92cb0962c4fae68"
     },
     "src/player_source_bridge.c": {
-      "sha256": "4906604fba43e57c174cd92476fd907f5970222ee3b8e808afda62aa449c9183"
+      "sha256": "c316812299b48e0e7c53ffd1f824905fafd61954b4ad7c3bfa66051920dbbaf6"
     },
     "src/world_movement_state.h": {
       "sha256": "0d231cd3556bc0004abd77bb5d6f97474cf0762ed4fdeacfd0f0af0f928195b3"

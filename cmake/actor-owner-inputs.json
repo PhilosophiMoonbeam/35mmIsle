@@ -186,7 +186,7 @@
       "sha256": "965bcb87d1dde221e0af00ffd5a3d177d185bb2361a59e83b2829131a60220da"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "d42c13cf7596e4fadf342dbdd86007e152ea90cea6dc6f3048847655dcd3baa4"
+      "sha256": "bfd5e3bb46585b0c06468bd2fa7d19748445e5311f2a41bf577f010583846d22"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "fafb0655162dbe64f21de5a5e2735ee56b436b8b5bc497aa09dd99d0bda1a9ec"

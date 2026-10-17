@@ -882,6 +882,40 @@ Private evidence manifest SHA-256 is `029b5bac02f6e3b8367be4d537e2341d6eab394598
 
 GCC Release, full-LUS GCC Debug and Clang ASan+UBSan each passed all twenty-two CPU tests; five actual Linux CLI helps also passed. [Commit `1618ed7`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/1618ed71dee53815edcdffbf0fa0c39af6043bb1) passed all ten hosted jobs in [run 38796577921](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38796577921). Its Windows Server 2022/MSVC 19.44.35229.0 x64 static-runtime build includes LUS, audio, RSP, canonical RDP and the native engine; all twenty-two CPU tests and five CLI helps passed with SDK 10.0.26100.0. This compiles/links the integrated feedback path but does not execute its ROM/graphics/audio path on Windows. The diagnostic is not a C GAME photo consumer or continuation wait, native scene boot, photo fidelity, physical timing/device/hearing proof, Windows 11 runtime or release admission. Genuine scoring still needs writable persistent canonical memory, real photo/world/model reconstruction, pointer/resource relocation, admitted depth/texture-copy commands and original wide/narrow continuation semantics.
 
+## Canonical Source sprite execution
+
+`isle_game_object_sprite` returns the actual native list head, with the same
+owner, membership, fault and cleared-output conventions as camera ownership.
+Checked C-only Source borrows use the actual active context and its real
+execution fence; another record cannot supply a replacement failure frame.
+Move, scale, tint and attribute operations mutate the native sprite itself.
+Signed coordinate narrowing retains the low sixteen bits without undefined
+or implementation-defined conversion; scale enables only the source SCALE
+attribute, while attribute updates preserve unrelated bits.
+
+All Root sprite SDK calls, SObj sprite-field accesses and `data.sobj` reads
+are migrated in the complete 106-body private authoring. Independently replayed
+source identity is
+`4f4aaa84e4e5cd46a1526b97327ed526db47d1c2e785419f847beee47f56fcaf`;
+the original 64 context helpers, 79 calls and 39 one-argument callbacks remain.
+
+Debug, Release and Clang ASan/UBSan pass all 57 CPU contracts and separate
+actual programs running the complete original `Pause_HideUI` C function,
+source lines 1647–1676. Its real kind-0/priority-9 process controls nine native
+sprites, yields for twenty updates and self-ends on update 21. Every update
+checks original positions, alpha write/clamp, visibility, unrelated channels
+and live counts; actual object deletion closes the joined native ownership.
+The 475-file source set is
+`1fe7b5fc8619398e45bab3b119f10b0836527a199a051e38167de7be1dd95102`.
+Each sole closure contains two terminal tasks, one created task and three
+absent tracer/task identities, stable traces, unchanged ROM, zero known
+physical attempts and zero permission errors.
+
+The sprite records and initial state are explicit owned CPU inputs. No RSP/RDP
+pause-menu surface, whole 106-body Player owner, gameplay or Windows runtime
+is inferred. Earlier camera and sixty-component receipts retain their separate
+source identities.
+
 ## Native camera computation and enumeration-free presentation
 
 Native type-3 camera ownership uses the existing bounded arena and recycled nodes, not SDK camera/object layouts. Empty, sprite and camera payloads have distinct teardown; unsupported payload types fail rather than acting as an unimplemented DObj path. Two same-kind matrices are permitted as in GAME. Configuration invalidates only dependent computed matrices; unchanged poses avoid repeated normalization. Read-only float/fixed borrows remain stable until removal, with no per-update allocation or redundant big-endian matrix cache.

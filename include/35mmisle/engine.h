@@ -237,6 +237,18 @@ IsleGameResult isle_game_wait(IsleGame* game, uint32_t updates);
 IsleGameResult isle_game_add_sprite(IsleGame* game, IsleGameObject* object,
                                    const IsleSprite* initial, IsleGameSprite** output);
 IsleGameResult isle_game_remove_sprite(IsleGame* game, IsleGameSprite* sprite);
+/* Borrow the actual first attached sprite in native insertion order, without
+ * allocating or copying. object is explicit (NULL never selects the current
+ * object); empty and nonsprite objects reject with INVALID_ARGUMENT.
+ * Output is cleared on every error. Game access precedes handle validation,
+ * then a valid attachment propagates the game's latched execution fault.
+ * This does not retain either owner: the handle and its mutable view expire on
+ * removal/object deletion/game destruction, including pool reuse. Existing
+ * pre-retirement observation remains valid until actual attachment removal. */
+IsleGameResult isle_game_object_sprite(IsleGame* game, IsleGameObject* object,
+                                      IsleGameSprite** output);
+/* Borrow the live native scalar record, never a mutable snapshot. The caller
+ * must quiesce every user before removal and must not use an expired borrow. */
 IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite,
                                     IsleSprite** output);
 /* Runs the selected authoritative C fade helper as a genuine stackful process;

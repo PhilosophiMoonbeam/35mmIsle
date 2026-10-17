@@ -608,6 +608,19 @@ IsleGameResult isle_game_remove_sprite(IsleGame* game, IsleGameSprite* sprite) {
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_game_object_sprite(IsleGame* game, IsleGameObject* object,
+                                      IsleGameSprite** output) {
+    if (output != NULL) *output = NULL;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || !valid_object(game, object) || object->type != 2 ||
+        !valid_sprite(game, object->data.sobj) || object->data.sobj->obj != object)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    *output = object->data.sobj;
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite, IsleSprite** output) {
     if (output != NULL) *output = NULL;
     IsleGameResult result = access_game(game);

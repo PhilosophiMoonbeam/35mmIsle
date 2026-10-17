@@ -199,3 +199,33 @@ void isle_player_source_wait(IslePlayerSource* source, int32_t updates) {
     }
     isle_player_source_checked(source, isle_game_wait(source->game, (uint32_t)updates));
 }
+
+static void check_sprite_source(IslePlayerSource* source) {
+    IsleGame* game = source->game;
+    IslePlayerSource* canonical = game->playerSource;
+    IslePlayerSource* active = NULL;
+    /* Only the actual canonical record may supply a local C failure fence.
+     * With no active context, an admitted OM callback still has its native C
+     * fault target; a merely prepared record cannot authorize a borrow. */
+    IslePlayerSource* failure_source = canonical != NULL ? canonical : source;
+    isle_player_source_checked(failure_source, isle_player_source_context(game, &active));
+    if (active != source || (source->nonwaiting_call_frame == NULL &&
+        (!game->ticking || omCurrentObject == NULL)))
+        isle_player_source_checked(failure_source, ISLE_GAME_INVALID_STATE);
+}
+
+IsleGameSprite* isle_player_source_first_sprite(IslePlayerSource* source,
+    IsleGameObject* object) {
+    IsleGameSprite* sprite = NULL;
+    check_sprite_source(source);
+    isle_player_source_checked(source, isle_game_object_sprite(source->game, object, &sprite));
+    return sprite;
+}
+
+IsleSprite* isle_player_source_sprite_view(IslePlayerSource* source,
+    IsleGameSprite* sprite) {
+    IsleSprite* view = NULL;
+    check_sprite_source(source);
+    isle_player_source_checked(source, isle_game_sprite_view(source->game, sprite, &view));
+    return view;
+}

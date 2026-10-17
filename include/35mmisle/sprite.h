@@ -69,4 +69,38 @@ enum {
     ISLE_SP_EXTERN = 0x0400
 };
 
+/* Complete native scalar operations on a caller-owned mutable view. The
+ * caller retains the view's real owner/lifetime; these do not validate handles,
+ * allocate, copy a sprite, or extend bitmap/palette ownership. */
+static inline void isle_sprite_move(IsleSprite* sprite, int32_t x, int32_t y) {
+    /* Decode signed low lanes explicitly: out-of-range signed casts are not
+     * portable, and subtracting in int32_t before narrowing cannot overflow. */
+    uint32_t low_x = (uint32_t)x & UINT32_C(0xffff);
+    uint32_t low_y = (uint32_t)y & UINT32_C(0xffff);
+    sprite->x = (int16_t)(low_x <= INT16_MAX ? (int32_t)low_x : (int32_t)low_x - 65536);
+    sprite->y = (int16_t)(low_y <= INT16_MAX ? (int32_t)low_y : (int32_t)low_y - 65536);
+}
+
+static inline void isle_sprite_scale(IsleSprite* sprite, float x, float y) {
+    sprite->scalex = x;
+    sprite->scaley = y;
+    sprite->attr |= ISLE_SP_SCALE;
+}
+
+static inline void isle_sprite_color(IsleSprite* sprite, uint8_t r, uint8_t g,
+    uint8_t b, uint8_t a) {
+    sprite->red = r;
+    sprite->green = g;
+    sprite->blue = b;
+    sprite->alpha = a;
+}
+
+static inline void isle_sprite_set_attribute(IsleSprite* sprite, uint16_t attributes) {
+    sprite->attr |= attributes;
+}
+
+static inline void isle_sprite_clear_attribute(IsleSprite* sprite, uint16_t attributes) {
+    sprite->attr &= (uint16_t)~attributes;
+}
+
 #endif

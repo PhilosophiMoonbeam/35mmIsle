@@ -163,6 +163,18 @@ IsleGameResult isle_player_source_call(IslePlayerSource*, IslePlayerNonwaitingCa
 void isle_player_source_checked(IslePlayerSource*, IsleGameResult);
 void isle_player_source_wait(IslePlayerSource*, int32_t updates);
 
+/* C-only checked borrows, not returning setup APIs. source must be a retained,
+ * prepared record with a live game; the active canonical per-game Source and
+ * an original C OM callback or source_call's local C fence are required.
+ * All intervening frames must be C: native leaves return before checked()
+ * transfers failure, never across an owning C++ frame. C++ setup uses the raw
+ * returning engine APIs instead. object is explicit; no payload kind is cast.
+ * Returned handles/views are the actual native attachment, not retained copies.
+ * Quiesce users before removal/deletion; no borrow survives owner retirement or
+ * reuse. Reacquire after waits when attachment lifetime is not otherwise held. */
+IsleGameSprite* isle_player_source_first_sprite(IslePlayerSource*, IsleGameObject*);
+IsleSprite* isle_player_source_sprite_view(IslePlayerSource*, IsleGameSprite*);
+
 #ifdef __cplusplus
 }
 #endif

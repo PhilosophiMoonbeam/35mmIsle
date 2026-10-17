@@ -613,6 +613,193 @@ IsleGameCamera* camera(World& world, IsleGameObject* owner, bool matrices = true
     return result;
 }
 
+struct SpriteRetirement {
+    IsleGame* game;
+    int before = 0, after = 0;
+    bool attached_before = false, detached_after = false;
+};
+void sprite_before_retirement(IsleGameObject* owner, void* user) {
+    auto& state = *static_cast<SpriteRetirement*>(user);
+    IsleGameSprite* selected = nullptr;
+    IsleSprite* view = nullptr;
+    ++state.before;
+    state.attached_before = isle_game_object_sprite(state.game, owner, &selected) == ISLE_GAME_OK &&
+        isle_game_sprite_view(state.game, selected, &view) == ISLE_GAME_OK && view->alpha == 91;
+}
+void sprite_after_retirement(IsleGameObject* owner, void* user) {
+    auto& state = *static_cast<SpriteRetirement*>(user);
+    IsleGameSprite* selected = nullptr;
+    ++state.after;
+    state.detached_after = isle_game_object_sprite(state.game, owner, &selected) ==
+        ISLE_GAME_INVALID_ARGUMENT && selected == nullptr;
+}
+
+void sprite_ownership_follows_native_list_and_actual_retirement() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* next_owner = object(world, 2);
+    auto* camera_owner = object(world, 3);
+    camera(world, camera_owner, false);
+    IsleGameSprite *first = nullptr, *middle = nullptr, *last = nullptr;
+    ok(isle_game_add_sprite(world.game, owner, nullptr, &first));
+    ok(isle_game_add_sprite(world.game, owner, nullptr, &middle));
+    ok(isle_game_add_sprite(world.game, owner, nullptr, &last));
+    const auto used = world.arena.cursor;
+    IsleGameSprite* selected = first;
+    for (auto* invalid : {next_owner, camera_owner, static_cast<IsleGameObject*>(nullptr)}) {
+        selected = first;
+        require(isle_game_object_sprite(world.game, invalid, &selected) ==
+                    ISLE_GAME_INVALID_ARGUMENT && !selected,
+                "first-sprite lookup fabricated a member of an empty, non-sprite or null object");
+    }
+    require(isle_game_object_sprite(world.game, owner, nullptr) == ISLE_GAME_INVALID_ARGUMENT,
+            "first-sprite lookup accepted a missing output");
+    // Removing a nonhead member must not change the actual first attachment.
+    ok(isle_game_remove_sprite(world.game, middle));
+    ok(isle_game_object_sprite(world.game, owner, &selected));
+    ok(isle_game_remove_sprite(world.game, selected));
+    IsleSprite* expired = nullptr;
+    require(isle_game_sprite_view(world.game, first, &expired) ==
+                ISLE_GAME_INVALID_ARGUMENT && !expired && counts(world).sprites == 1,
+            "lookup selected a tail/copy or removal left the original head alive");
+    ok(isle_game_object_sprite(world.game, owner, &selected));
+    require(selected == last, "head removal did not expose the surviving native list member");
+    ok(isle_game_remove_sprite(world.game, selected));
+    selected = last;
+    require(isle_game_object_sprite(world.game, owner, &selected) ==
+                ISLE_GAME_INVALID_ARGUMENT && !selected && counts(world).sprites == 0,
+            "removing the final selected sprite left a fabricated attachment");
+    // Released slots may back new handles, but no expired handle is used after
+    // reuse. A new attachment belongs only to its actual new owner.
+    IsleGameSprite* recycled = nullptr;
+    ok(isle_game_add_sprite(world.game, next_owner, nullptr, &recycled));
+    ok(isle_game_object_sprite(world.game, next_owner, &selected));
+    ok(isle_game_remove_sprite(world.game, selected));
+    require(counts(world).sprites == 0 && world.arena.cursor == used,
+            "first-sprite traversal allocated or recycled membership retained an old owner");
+    IsleSprite initial{};
+    initial.alpha = 91;
+    ok(isle_game_add_sprite(world.game, owner, &initial, &first));
+    ok(isle_game_add_sprite(world.game, owner, nullptr, &last));
+    SpriteRetirement retirement{world.game};
+    ok(isle_game_object_set_pre_retire_callback(world.game, owner, sprite_before_retirement, &retirement));
+    ok(isle_game_object_set_retire_callback(world.game, owner, sprite_after_retirement, &retirement));
+    ok(isle_game_delete_object(world.game, owner));
+    expired = nullptr;
+    require(retirement.before == 1 && retirement.after == 1 && retirement.attached_before &&
+                retirement.detached_after && counts(world).sprites == 0 &&
+                isle_game_sprite_view(world.game, first, &expired) == ISLE_GAME_INVALID_ARGUMENT &&
+                !expired && world.arena.cursor == used,
+            "first-sprite ownership changed retirement ordering or survived native teardown");
+}
+
+void sprite_ownership_preserves_access_and_fault_precedence() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* empty = object(world, 2);
+    IsleGameSprite* sprite = nullptr;
+    ok(isle_game_add_sprite(world.game, owner, nullptr, &sprite));
+    bool wrong_owner = false;
+    std::thread foreign([&] {
+        IsleGameSprite* output = sprite;
+        wrong_owner = isle_game_object_sprite(world.game, owner, &output) == ISLE_GAME_WRONG_OWNER &&
+            !output && isle_game_object_sprite(world.game, nullptr, nullptr) == ISLE_GAME_WRONG_OWNER;
+    });
+    foreign.join();
+    require(wrong_owner, "first-sprite access validated handles before native thread ownership");
+    EngineFixture fixture{}; fixture.game = world.game;
+    process(world, owner, engine_invalid_legacy_wait, &fixture, ISLE_GAME_SYNCHRONOUS, 5);
+    require(isle_game_tick(world.game) == ISLE_GAME_EXECUTION_FAILURE,
+            "sprite ownership regression did not reach the native C failure fence");
+    IsleGameSprite* output = sprite;
+    require(isle_game_object_sprite(world.game, owner, &output) ==
+                ISLE_GAME_EXECUTION_FAILURE && !output,
+            "first-sprite lookup exposed an attachment through the terminal fault");
+    output = sprite;
+    require(isle_game_object_sprite(world.game, empty, &output) == ISLE_GAME_INVALID_ARGUMENT &&
+                !output && isle_game_object_sprite(world.game, owner, nullptr) == ISLE_GAME_INVALID_ARGUMENT,
+            "first-sprite lookup changed invalid-handle/output precedence after fault");
+    // Existing raw view/removal leaves remain usable for fault cleanup.
+    IsleSprite* view = nullptr;
+    ok(isle_game_sprite_view(world.game, sprite, &view));
+    ok(isle_game_remove_sprite(world.game, sprite));
+    require(counts(world).sprites == 0, "ownership addition blocked existing fault cleanup");
+    auto* destroyed = world.game;
+    ok(isle_game_destroy(world.game));
+    world.game = nullptr;
+    output = sprite;
+    require(isle_game_object_sprite(destroyed, owner, &output) == ISLE_GAME_INVALID_STATE && !output,
+            "first-sprite lookup accessed a destroyed game");
+    World other;
+    output = sprite;
+    require(isle_game_object_sprite(other.game, owner, &output) == ISLE_GAME_INVALID_ARGUMENT && !output,
+            "first-sprite lookup accepted an object from another retained arena");
+    output = sprite;
+    require(isle_game_object_sprite(nullptr, owner, &output) == ISLE_GAME_INVALID_ARGUMENT && !output,
+            "null-game first-sprite rejection retained its output");
+}
+
+void sprite_scalar_boundaries_preserve_attributes_and_native_consumers() {
+    World world;
+    auto* owner = object(world, 1);
+    const std::array<std::uint8_t,4> palette{1,2,3,4};
+    const IsleBitmap bitmap{7,8,2,3,palette.data(),palette.size(),4,5};
+    IsleSprite initial{};
+    initial.width = 7; initial.height = 4; initial.zdepth = -19;
+    initial.LUT = palette.data(); initial.LUT_bytes = palette.size();
+    initial.bitmap = &bitmap; initial.nbitmaps = 1;
+    initial.attr = 0x8241; // Includes unknown/high bits that operations must retain.
+    IsleGameSprite* sprite = nullptr;
+    ok(isle_game_add_sprite(world.game, owner, &initial, &sprite));
+    IsleGameSprite* selected = nullptr;
+    ok(isle_game_object_sprite(world.game, owner, &selected));
+    IsleSprite* view = nullptr;
+    ok(isle_game_sprite_view(world.game, selected, &view));
+    const auto used = world.arena.cursor;
+    struct Position { std::int32_t x, y; std::int16_t expected_x, expected_y; };
+    const Position positions[] = {
+        {32767,32768,32767,-32768}, {-32769,-32768,32767,-32768},
+        {65536,-65537,0,-1}, {0x12348000,-0x12348001,-32768,32767},
+        {std::numeric_limits<std::int32_t>::max(),std::numeric_limits<std::int32_t>::min(),-1,0}
+    };
+    for (const auto& position : positions) {
+        isle_sprite_move(view,position.x,position.y);
+        require(view->x == position.expected_x && view->y == position.expected_y &&
+                    view->attr == initial.attr,
+                "native sprite move clamped, overflowed or lost signed low-sixteen-bit position");
+    }
+    isle_sprite_clear_attribute(view,ISLE_SP_SCALE | ISLE_SP_HIDDEN);
+    isle_sprite_scale(view,-0.0f,-2.5f);
+    require(std::signbit(view->scalex) && view->scaley == -2.5f && view->attr == 0x8251,
+            "native scale lost source values or replaced unrelated attribute bits");
+    isle_sprite_set_attribute(view,ISLE_SP_HIDDEN | ISLE_SP_SCALE | 0x4000);
+    isle_sprite_set_attribute(view,ISLE_SP_HIDDEN);
+    isle_sprite_clear_attribute(view,ISLE_SP_SCALE | ISLE_SP_TRANSPARENT | 0x4000);
+    // Raw source scale edits do not implicitly re-enable the scale attribute.
+    view->scalex = 3.0f; view->scaley = 0.25f;
+    require(view->attr == 0x8244, "clear/set masks failed repeated or high-bit attribute transitions");
+    isle_sprite_scale(view,1.0f,1.0f);
+    isle_sprite_clear_attribute(view,ISLE_SP_HIDDEN);
+    require(view->attr == 0x8250, "native scale failed to re-enable only its own attribute");
+    const std::int32_t red = 511, green = -1, blue = 256, alpha = -2;
+    isle_sprite_color(view,static_cast<std::uint8_t>(red),static_cast<std::uint8_t>(green),
+        static_cast<std::uint8_t>(blue),static_cast<std::uint8_t>(alpha));
+    require(view->red == 255 && view->green == 255 && view->blue == 0 && view->alpha == 254 &&
+                view->width == 7 && view->height == 4 && view->zdepth == -19 &&
+                view->LUT == palette.data() && view->LUT_bytes == palette.size() &&
+                view->bitmap == &bitmap && view->nbitmaps == 1 && world.arena.cursor == used,
+            "uint8 native tint conversion clamped or scalar operations changed borrowed asset state");
+    IsleGameProcess* fade = nullptr;
+    ok(isle_game_add_intro_fade(world.game,owner,selected,4,5,&fade));
+    ok(isle_game_tick(world.game));
+    IsleSprite* live = nullptr;
+    ok(isle_game_sprite_view(world.game,sprite,&live));
+    require(live == view && live->red == 191 && live->green == 191 && live->blue == 191 &&
+                live->alpha == 254 && live->attr == 0x8250 && live->x == -1 && live->y == 0,
+            "actual C fade consumed a scalar copy or destroyed wrapped alpha/placement/attribute state");
+    ok(isle_game_delete_object(world.game,owner));
+}
+
 void camera_ownership_tracks_attachment_lifetime() {
     World world;
     auto* owner = object(world, 1);
@@ -2907,6 +3094,9 @@ int main() {
         deferred_object_deletion();
         actual_intro_fade_and_cold_reset();
         bounded_pool_reuse_and_failure_fence();
+        sprite_ownership_follows_native_list_and_actual_retirement();
+        sprite_ownership_preserves_access_and_fault_precedence();
+        sprite_scalar_boundaries_preserve_attributes_and_native_consumers();
         camera_ownership_tracks_attachment_lifetime();
         camera_ownership_access_and_fault_boundaries();
         camera_geometry_and_cache();

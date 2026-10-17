@@ -39,6 +39,29 @@ struct CompletedWork {
     void (*function)(void*, rsp::CanonicalExecutor::MemoryLease&, std::uint32_t framebuffer) = nullptr;
 };
 struct CreateResult;
+// Synchronous nonowning source-camera capability. Never retain this object,
+// its RAM span or a pointer to either after the control callback returns.
+// C callers enter through returning C++ leaves and a nested plain-C fence;
+// no checked C transfer may cross these command/preparation frames.
+class SourceControl final {
+public:
+    SourceControl(const SourceControl&) = delete;
+    SourceControl& operator=(const SourceControl&) = delete;
+    std::span<std::uint32_t> ram() const noexcept;
+    std::uint64_t epoch() const noexcept;
+    std::uint32_t framebuffer() const noexcept;
+    std::uint32_t depth() const noexcept;
+    void command(std::uint32_t, std::uint32_t);
+    void call(render::List);
+    // Prepares/draws the current pass at most once, reading its actual camera
+    // and sprite views now, not before the preceding source-camera dispatch.
+    void draw();
+private:
+    struct State;
+    explicit SourceControl(State& state) noexcept : state_(&state) {}
+    State* state_;
+    friend struct SourceControlAccess;
+};
 // Owner-thread source compositor. Catalog and unmoved Snapshot outlive Frame.
 // begin borrows View ONLY while preparing actual RAM. No native/producer view is
 // retained during execution. The owner must poll until !busy() before the next

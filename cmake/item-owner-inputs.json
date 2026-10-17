@@ -90,10 +90,10 @@
       "sha256": "d10861b7ba32a8b565a42e56d7f43748e95bd999c90af9244684d12732881c07"
     },
     "src/world_runtime.hpp": {
-      "sha256": "ce18f1ec7e3219a7ba4f3677c82dce0af67486d6c8d4c1968abffb1bcf19ddca"
+      "sha256": "54befb30b1636a7aa3228cd0664cd093c676ff8feef5128b4dbf4900e00db511"
     },
     "src/world_runtime.cpp": {
-      "sha256": "4a92f82dfb94d21179fe26059b2fa2b5ce1012a374853fcfaf7b41a8b61d86a6"
+      "sha256": "40f975bd55e810f2fd8d9f656e27c780514af0734e10a6a533ad301aab5e43a6"
     },
     "src/actor_owner.hpp": {
       "sha256": "7a16154afa5450b286091a5dda286e6c541a0f0355d3a0917261b02242a94baa"
@@ -114,7 +114,7 @@
       "sha256": "2c475d4505b7344040013b4d1f6362b62f5f81d6fe523a3775f346dbc2e4097f"
     },
     "tools/prepare_engine.py": {
-      "sha256": "2f339146b9c930c70b2d7576170a1beb47d2522436d07c3d1abefadc14124e61"
+      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
     }
   },
   "definitions": [

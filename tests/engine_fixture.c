@@ -509,3 +509,78 @@ int engine_model_after_join(const IsleGameObject* object, const IsleGameModel* m
         object->userData == payload && object->updateUser == context;
 }
 void engine_delete_object_direct(IsleGameObject* object) { omDeleteGObj(object); }
+
+int engine_vector_normalize_regression(void) {
+    Vec3f zero = {-0.0f, 0.0f, -0.0f};
+    if (Vec3fNormalize(&zero) != 0.0f ||
+        !signbit(zero.x) || signbit(zero.y) || !signbit(zero.z)) return 1;
+    Vec3f tiny = {FLT_TRUE_MIN, -FLT_TRUE_MIN, -0.0f};
+    if (Vec3fNormalize(&tiny) != 0.0f || tiny.x != FLT_TRUE_MIN ||
+        tiny.y != -FLT_TRUE_MIN || !signbit(tiny.z)) return 2;
+    Vec3f reciprocal = {2.0f, 3.0f, 6.0f};
+    if (Vec3fNormalize(&reciprocal) != 7.0f ||
+        reciprocal.x != 2.0f * (1.0f / 7.0f) ||
+        reciprocal.y != 3.0f * (1.0f / 7.0f) ||
+        reciprocal.z != 6.0f * (1.0f / 7.0f)) return 3;
+    Vec3f overflow = {FLT_MAX, 1.0f, -1.0f};
+    if (!isinf(Vec3fNormalize(&overflow)) || overflow.x != 0.0f ||
+        overflow.y != 0.0f || overflow.z != 0.0f || !signbit(overflow.z)) return 4;
+    return 0;
+}
+
+int engine_vector_alias_regression(void) {
+    Vec3f left = {2.0f, -3.0f, 5.0f}, right = {-7.0f, 11.0f, 13.0f};
+    if (Vec3fDiff(&left, &left, &right) != &left ||
+        left.x != 9.0f || left.y != -14.0f || left.z != -8.0f) return 1;
+    left = (Vec3f) {2.0f, -3.0f, 5.0f};
+    if (Vec3fDiff(&right, &left, &right) != &right ||
+        right.x != 9.0f || right.y != -14.0f || right.z != -8.0f) return 2;
+    if (Vec3fDiff(&right, &right, &right) != &right ||
+        right.x != 0.0f || right.y != 0.0f || right.z != 0.0f) return 3;
+    if (Vec3fAdd(&left, &left) != &left ||
+        left.x != 4.0f || left.y != -6.0f || left.z != 10.0f) return 4;
+    if (Vec3fAdd(&right, &left) != &right ||
+        right.x != 4.0f || right.y != -6.0f || right.z != 10.0f) return 5;
+    return 0;
+}
+
+int engine_vector_rotation_regression(void) {
+    const float quarter_turn = 1.5707963267948966f;
+    const enum VectorAxisFlags axes[3] = {AXIS_X, AXIS_Y, AXIS_Z};
+    const Vec3f expected[3] = {{2.0f, -5.0f, 3.0f},
+                               {5.0f, 3.0f, -2.0f},
+                               {-3.0f, 2.0f, 5.0f}};
+    const Vec3f basis[3] = {{1.0f, 0.0f, 0.0f},
+                           {0.0f, 1.0f, 0.0f},
+                           {0.0f, 0.0f, 1.0f}};
+    for (unsigned i = 0; i < 3; ++i) {
+        Vec3f euler = {2.0f, 3.0f, 5.0f}, arbitrary = euler, axis = basis[i];
+        if (Vec3fGetEulerRotation(&euler, axes[i], quarter_turn) != &euler ||
+            Vec3f_func_8001A8B8(&arbitrary, &axis, quarter_turn) != &arbitrary) return 1;
+        if (fabsf(euler.x - expected[i].x) > 0.000002f ||
+            fabsf(euler.y - expected[i].y) > 0.000002f ||
+            fabsf(euler.z - expected[i].z) > 0.000002f ||
+            fabsf(arbitrary.x - expected[i].x) > 0.000002f ||
+            fabsf(arbitrary.y - expected[i].y) > 0.000002f ||
+            fabsf(arbitrary.z - expected[i].z) > 0.000002f) return 2;
+    }
+    Vec3f composed = {2.0f, 3.0f, 5.0f};
+    Vec3fGetEulerRotation(&composed, AXIS_X, quarter_turn);
+    Vec3fGetEulerRotation(&composed, AXIS_Y, quarter_turn);
+    if (fabsf(composed.x - 3.0f) > 0.000002f ||
+        fabsf(composed.y + 5.0f) > 0.000002f ||
+        fabsf(composed.z + 2.0f) > 0.000002f) return 3;
+    /* GAME does not normalize or replace a degenerate arbitrary axis. */
+    Vec3f value = {2.0f, 3.0f, 5.0f}, axis = {0.0f, 2.0f, 0.0f};
+    Vec3f_func_8001A8B8(&value, &axis, 0.0f);
+    if (value.x != 8.0f || value.y != 12.0f || value.z != 5.0f) return 4;
+    value = (Vec3f) {2.0f, 3.0f, 5.0f};
+    axis = (Vec3f) {0.0f, 0.0f, 0.0f};
+    Vec3f_func_8001A8B8(&value, &axis, 0.0f);
+    if (value.x != 0.0f || value.y != 3.0f || value.z != 0.0f) return 5;
+    axis = (Vec3f) {0.6f, 0.0f, 0.8f};
+    if (Vec3f_func_8001A8B8(&axis, &axis, 0.37f) != &axis ||
+        fabsf(axis.x - 0.6f) > 0.000002f ||
+        fabsf(axis.y) > 0.000002f || fabsf(axis.z - 0.8f) > 0.000002f) return 6;
+    return 0;
+}

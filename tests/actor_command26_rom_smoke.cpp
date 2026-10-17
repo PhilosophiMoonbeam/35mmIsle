@@ -425,7 +425,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                     hooks.owner=&owner;private_actor::WorldLifetime lifetime{world,hooks};
                     Consumer consumer(services,owner,world,resources); body(consumer); reuse_proofs+=consumer.reuse_proofs;
                 }
-                world.retire(); environment.cleanup();
+                require(world.retire(),"command26 World retirement failed"); environment.cleanup();
             }
             IsleGameCounts empty{}; native(isle_game_counts(storage.game(),&empty));
             require(same_counts(empty,{}),"actual Owner/World/Environment/Services destruction left native borrowers");

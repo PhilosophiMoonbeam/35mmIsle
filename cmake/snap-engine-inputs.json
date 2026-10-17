@@ -88,8 +88,9 @@
       "use": "Original actual-size native camera/model ownership and typed validation; atomic compute-all stages dirty native matrix/reflection/normalization payloads with no partial publication on failure, sharing exact math with individual getters. Kind8 exact GAME look-at-roll validates its consumed fixed Y-up basis independently of unused finite look_at.up; basic6/reflection14 and mixed cameras validate their consumed supplied up, including atomic matrix-attachment rejection. Finite radians and selective eye/at/roll dirtying without kind8 reflection output. Pure model transform preflight, immutable per-node RTS/translate and exact direct GAME hal_translate; numeric RCP light values and photo-world concatenation. Native source object/update metadata and once-only retirement callback after all process joins/payload removals and before node reuse keep generic scene userdata/queues alive through real deferred deletion. Typed one-argument GAME process entries are called directly through their original function identity, separately from synchronous/stackful dispatch adapters and native two-argument contexts; exact-identity ending follows GAME items.c:69-85 using existing OM lists, arena reuse and joined continuation retirement. No SDK implementation."
     },
     "src/engine_math.h": {
-      "sha256": "152c78e5f6decc4d1a4d997beea689e53d29d95ffce2a10e51dab1c0a4ac4c56",
+      "sha256": "62e712e285b7fc59ccc00aea7d00cca54f4d471101b6f9950a748b3ae5793649",
       "contextual_model_math": "Exact native C prototypes for own func_8001EA90, hal_mtx_f2l_fixed_w and hal_scale_f match their admitted GAME definition signatures; independent public fixed ABI and existing FTOFIX32/COMBINE packing, no SDK header/layout.",
+      "root_vector_math": "Independent native float[3][3] Mtx3f, exact GAME vector C prototypes and single-axis constants. Complete unmodified vector.c Normalize/Add/Diff/GetEulerRotation bodies join the already admitted Vec3f_func_8001A8B8 once; SQ is an original private multiplication macro. Preserve binary32 squared magnitude, reciprocal multiplication, zero/underflow/overflow behavior, in-place aliasing and source Euler sign/order. Item-private renamed helpers are unchanged; no SDK types, alternate math or validation defaults.",
       "placement": "Direct exact own-GAME RT fixed/floating declarations, sharing already defined MIPS multiplication/shift/packing and existing float RPY helper; not RTS with redundant unit-scale multiplication.",
       "use": "Original native matrix/Vec3f/public RCP light numeric seams and checked signed-1.7 conversion; direct GAME hal_look_at_roll_f and hal_translate declarations, C libm binary32 roll trig and shared exact GAME vector rotation, defined MIPS arithmetic. No SDK union, opaque tail/layout import or suppression."
     },
@@ -403,6 +404,42 @@
       "last": 19,
       "source_sha256": "c26a0bbc389b0d54c787e47ad39bd5a85e61418ccac118eafc3828042439c05b",
       "native_sha256": "c26a0bbc389b0d54c787e47ad39bd5a85e61418ccac118eafc3828042439c05b",
+      "changes": []
+    },
+    {
+      "symbol": "Vec3fNormalize",
+      "path": "src/sys/vector.c",
+      "first": 5,
+      "last": 16,
+      "source_sha256": "b34dfcbccad6ea186ceb0f9daeb2b786f35666cf99b03766418a6b2c91921750",
+      "native_sha256": "b34dfcbccad6ea186ceb0f9daeb2b786f35666cf99b03766418a6b2c91921750",
+      "changes": []
+    },
+    {
+      "symbol": "Vec3fAdd",
+      "path": "src/sys/vector.c",
+      "first": 22,
+      "last": 28,
+      "source_sha256": "4a13af9f30e91b520abaf5ea2464103c226ef2d1159bdec5f5e1efb98587957c",
+      "native_sha256": "4a13af9f30e91b520abaf5ea2464103c226ef2d1159bdec5f5e1efb98587957c",
+      "changes": []
+    },
+    {
+      "symbol": "Vec3fDiff",
+      "path": "src/sys/vector.c",
+      "first": 38,
+      "last": 44,
+      "source_sha256": "cde2292a63b34c4b67c833403de3a2d517a7461ab46a8bfebb0410a02b54df1e",
+      "native_sha256": "cde2292a63b34c4b67c833403de3a2d517a7461ab46a8bfebb0410a02b54df1e",
+      "changes": []
+    },
+    {
+      "symbol": "Vec3fGetEulerRotation",
+      "path": "src/sys/vector.c",
+      "first": 110,
+      "last": 136,
+      "source_sha256": "821c2881fe7eaaf5cc6983250cbe2843e25bbbe5ef2ec0654f8974e20cfd9c13",
+      "native_sha256": "821c2881fe7eaaf5cc6983250cbe2843e25bbbe5ef2ec0654f8974e20cfd9c13",
       "changes": []
     },
     {

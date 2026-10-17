@@ -2,8 +2,10 @@
 #include "world_collision.hpp"
 #include "scene_services.hpp"
 #include "borrowed_model_kernel.hpp"
+#include "menu_scene_bridge.h"
 #include <algorithm>
 #include <cmath>
+#include <exception>
 #include <stdexcept>
 
 // GAME pin df8815e75f3d79618466e01e0827c6165b93d11c world/block.c,
@@ -45,19 +47,26 @@ struct World::Impl {
     IsleGameCamera* camera = nullptr;
     IsleGameProcess* follow_process = nullptr;
     float timer = 0, sky_speed = 1, sky_yaw = 0;
-    bool retired = false, constructed = false, failed = false;
+    bool retired = false, constructed = false, failed = false, retirement_removed = false;
+    std::size_t retirement_index = 0;
     std::string error_text = "Native world callback failed";
     std::string no_error;
 
     Impl(IsleGame* g, scene::Services* s, ResourceView r, Callbacks c): game(g),services(s),resources(r),callbacks(c) {}
-    void live() const { if (retired) throw std::logic_error("Retired world component"); }
+    void live() const {
+        if (retired) throw std::logic_error("Retired world component");
+    }
+    void callback(bool result) {
+        if (!result) { failed = true; throw std::runtime_error(error_text); }
+    }
     void owns(const Block& b) const {
         live();
         if (b.index >= blocks.size() || &blocks[b.index] != &b) throw std::invalid_argument("Foreign world block");
     }
     static void default_update(IsleGameObject* object, void* user) noexcept {
         auto& s = *static_cast<Impl*>(user);
-        s.callbacks.process_commands(s.callbacks.user,object);
+        if (s.retired || s.failed) return;
+        if (!s.callbacks.process_commands(s.callbacks.user,object)) s.failed = true;
     }
     IsleGameObject* object(std::uint32_t id, std::uint32_t priority = 0x80000000) {
         IsleGameObject* result = nullptr;
@@ -71,10 +80,22 @@ struct World::Impl {
         } else check(isle_game_add_object(game,id,9,priority,default_update,this,&result));
         return result;
     }
-    void erase(IsleGameObject* object) noexcept {
-        if (!object) return;
-        if (services) services->erase(object);
-        else if (isle_game_delete_object(game,object) != ISLE_GAME_OK) failed = true;
+    bool erase(IsleGameObject*& object) noexcept {
+        if (!object) return true;
+        if (services) {
+            services->erase(object);
+            if (services->failed()) failed = true;
+        } else if (isle_game_delete_object(game,object) != ISLE_GAME_OK) failed = true;
+        // A latched native fault can accompany a completed delete. Conversely,
+        // a deferred self-delete or failed join must keep this context alive.
+        IsleGameObjectMetadata metadata{};
+        if (isle_game_object_metadata(game,object,&metadata) == ISLE_GAME_INVALID_ARGUMENT) {
+            for (auto& r : render) if (r.object == object) { r.object = nullptr; r.model = nullptr; }
+            object = nullptr;
+            return true;
+        }
+        failed = true;
+        return false;
     }
     void process(IsleGameObject* o, IsleGameCallback callback, void* user, std::uint32_t priority,
                  IsleGameProcess** output = nullptr) {
@@ -139,6 +160,7 @@ struct World::Impl {
     }
     static void update_timer(IsleGameObject*, void* user) noexcept {
         auto& s = *static_cast<Impl*>(user);
+        if (s.retired || s.failed) return;
         float time = s.timer+s.sky_speed;
         while (time < 0) time += 10000;
         time *= 10000.0f;
@@ -149,7 +171,7 @@ struct World::Impl {
     }
     static void update_follow(IsleGameObject*, void* user) noexcept {
         auto& s = *static_cast<Impl*>(user);
-        if (s.retired || !s.camera || !s.sky_model) return;
+        if (s.retired || s.failed || !s.camera || !s.sky_model) return;
         const IsleGameCameraParameters* p = nullptr;
         if (isle_game_camera_parameters(s.game,s.camera,&p) != ISLE_GAME_OK) { s.failed = true; return; }
         const IsleGameModelTransform t{{p->look_at.eye[0],p->look_at.eye[1],p->look_at.eye[2]},{},{1,1,1}};
@@ -244,9 +266,9 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
         // repeated-first-descriptor loop form). Secondary blocks stay unlinked.
         if (s.blocks[0].road_model) reset_road(s.blocks[0],0);
         s.constructed = true;
-    } catch (...) { retire(); throw; }
+    } catch (...) { if (!retire()) std::terminate(); throw; }
 }
-World::~World() { retire(); }
+World::~World() noexcept { if (!retire()) std::terminate(); }
 std::span<Block> World::blocks() noexcept { return impl_->blocks; }
 std::span<const Block> World::blocks() const noexcept { return impl_->blocks; }
 Block* World::current() const noexcept { return impl_->current; }
@@ -255,9 +277,9 @@ Block* World::enter_first(std::size_t index) {
     if (index >= s.blocks.size()) return nullptr;
     auto& b = s.blocks[index]; s.current = &b; s.relocate(b);
     if (s.callbacks.add) {
-        s.callbacks.add(s.callbacks.user,b,b);
-        if (b.previous) s.callbacks.add(s.callbacks.user,*b.previous,b);
-        if (b.next) s.callbacks.add(s.callbacks.user,*b.next,b);
+        s.callback(s.callbacks.add(s.callbacks.user,b,b));
+        if (b.previous) s.callback(s.callbacks.add(s.callbacks.user,*b.previous,b));
+        if (b.next) s.callback(s.callbacks.add(s.callbacks.user,*b.next,b));
     }
     return &b;
 }
@@ -267,14 +289,15 @@ Block* World::enter_next() {
     if (!old || !old->next) return nullptr;
     auto& next = *old->next; s.current = &next;
     const auto delta = relative(*old,next);
-    s.callbacks.shift_camera(s.callbacks.user,delta);
-    s.callbacks.shift_effects(s.callbacks.user,delta);
+    s.callback(s.callbacks.shift_camera(s.callbacks.user,delta));
+    s.callback(s.callbacks.shift_effects(s.callbacks.user,delta));
     s.relocate(next);
-    if (old->previous && s.callbacks.remove) s.callbacks.remove(s.callbacks.user,*old->previous);
-    if (next.next && s.callbacks.add) s.callbacks.add(s.callbacks.user,*next.next,next);
+    if (old->previous && s.callbacks.remove) s.callback(s.callbacks.remove(s.callbacks.user,*old->previous));
+    if (next.next && s.callbacks.add) s.callback(s.callbacks.add(s.callbacks.user,*next.next,next));
     if (s.callbacks.change) {
-        for (std::size_t i = 0; i <= old->index && i < s.blocks.size(); ++i) s.callbacks.change(s.callbacks.user,s.blocks[i],next);
-        s.callbacks.change(s.callbacks.user,next,next);
+        for (std::size_t i = 0; i <= old->index && i < s.blocks.size(); ++i)
+            s.callback(s.callbacks.change(s.callbacks.user,s.blocks[i],next));
+        s.callback(s.callbacks.change(s.callbacks.user,next,next));
     }
     return &next;
 }
@@ -393,30 +416,47 @@ std::int32_t World::collide(Vec3 position, Vec3 velocity, Vec3& out_position, Ve
 }
 void World::clear_block(Block& b) {
     auto& s = *impl_; s.owns(b);
-    if (s.callbacks.remove) s.callbacks.remove(s.callbacks.user,b);
+    if (s.callbacks.remove) s.callback(s.callbacks.remove(s.callbacks.user,b));
     // Public animation borrows end now. This operation does not claim a joined
     // native/graphics fence and deliberately does not release/reuse either slot.
-    if (b.instance) check(s.animation->begin_retire(b.instance));
-    if (b.road_instance) check(s.animation->begin_retire(b.road_instance));
-    s.erase(b.object); s.erase(b.road_object);
-    for (auto& r : s.render) if (r.object == b.object || r.object == b.road_object) { r.object = nullptr; r.model = nullptr; }
-    b.object = nullptr; b.model = nullptr; b.road_object = nullptr; b.road_model = nullptr;
-    b.instance = {}; b.road_instance = {};
+    if (b.instance) { check(s.animation->begin_retire(b.instance)); b.instance = {}; }
+    if (b.road_instance) { check(s.animation->begin_retire(b.road_instance)); b.road_instance = {}; }
+    if (!s.erase(b.object)) throw std::runtime_error(s.error_text);
+    b.model = nullptr;
+    if (!s.erase(b.road_object)) throw std::runtime_error(s.error_text);
+    b.road_model = nullptr;
 }
-void World::retire() noexcept {
-    if (!impl_ || impl_->retired) return;
+bool World::retire() noexcept {
+    if (!impl_ || impl_->retired) return true;
     auto& s = *impl_;
-    for (auto& b : s.blocks) {
-        if (s.constructed && s.callbacks.remove) s.callbacks.remove(s.callbacks.user,b);
-        if (b.instance && !s.animation->begin_retire(b.instance)) s.failed = true;
-        if (b.road_instance && !s.animation->begin_retire(b.road_instance)) s.failed = true;
-        s.erase(b.object); s.erase(b.road_object);
-        b.object = nullptr; b.model = nullptr; b.road_object = nullptr; b.road_model = nullptr;
+    // This is only a native-traversal rejection, not a graphics completion or
+    // semantic-borrow fence. The owning scene must establish those first.
+    if (isle_menu_current_object(s.game)) return false;
+    for (; s.retirement_index < s.blocks.size(); ++s.retirement_index) {
+        auto& b = s.blocks[s.retirement_index];
+        if (!s.retirement_removed && s.constructed && s.callbacks.remove &&
+            !s.callbacks.remove(s.callbacks.user,b)) { s.failed = true; return false; }
+        s.retirement_removed = true;
+        if (b.instance) {
+            if (!s.animation->begin_retire(b.instance)) { s.failed = true; return false; }
+            b.instance = {};
+        }
+        if (b.road_instance) {
+            if (!s.animation->begin_retire(b.road_instance)) { s.failed = true; return false; }
+            b.road_instance = {};
+        }
+        if (!s.erase(b.object)) return false;
+        b.model = nullptr;
+        if (!s.erase(b.road_object)) return false;
+        b.road_model = nullptr;
+        s.retirement_removed = false;
     }
-    s.erase(s.sky_object); s.sky_object = nullptr; s.sky_model = nullptr; s.follow_process = nullptr;
+    if (!s.erase(s.sky_object)) return false;
+    s.sky_model = nullptr; s.follow_process = nullptr;
     s.render.clear(); s.current = nullptr; s.timer = 0;
     if (s.animation) s.animation->retire();
     s.retired = true;
+    return true;
 }
 bool World::retired() const noexcept { return impl_->retired; }
 const std::string& World::error() const noexcept { return impl_->failed ? impl_->error_text : impl_->no_error; }

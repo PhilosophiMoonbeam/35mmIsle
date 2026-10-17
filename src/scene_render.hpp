@@ -4,6 +4,8 @@
 #include "scene_services.hpp"
 #include <array>
 
+namespace isle::scene::graphics { class SourceControl; }
+
 namespace isle::scene::render {
 struct List { std::uint32_t address = 0; std::size_t words = 0; };
 struct Pass;
@@ -16,6 +18,10 @@ struct Prepared {
 // must filter objects by Pass::includes and return real EndDL sublists only.
 using Prepare = bool (*)(void*, std::span<std::uint32_t>, std::uint64_t,
                         const Pass&, Prepared&);
+// Runs before generic camera emission under the same exclusive preparation
+// lease. A present control owns the whole dispatch: skip, emit source commands,
+// or explicitly draw the current pass after resolving late visibility/views.
+using Control = bool (*)(void*, graphics::SourceControl&);
 enum class Kind { clear, sprites, compiled };
 enum class TagMatch { intersection, equality };
 struct Pass {
@@ -35,6 +41,7 @@ struct Pass {
     void* userdata = nullptr;
     // Actual transition owner retained through preparation, GPU and readback.
     ::isle::screen_transition::Owner* transition_owner = nullptr;
+    Control control = nullptr;
     bool includes(RenderMetadata object) const noexcept {
         return object.link < 64 && ((link_mask >> object.link) & 1u) &&
                (tag_match == TagMatch::equality ? object.camera_tag == camera_tag :

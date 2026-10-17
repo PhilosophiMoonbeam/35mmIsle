@@ -34,19 +34,20 @@ struct Shift {
     scene::Services* services=nullptr;
     IsleGameCamera* camera=nullptr;
     actor::Owner* owner=nullptr;
-    static void camera_shift(void* user,world::Vec3 delta) noexcept {
+    static bool camera_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
         const IsleGameCameraParameters* parameters=nullptr;
-        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"Magikarp camera shift borrow")) return;
+        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"Magikarp camera shift borrow")) return false;
         auto look=parameters->look_at;
         const std::array d{delta.x,delta.y,delta.z};
         for (unsigned i=0;i<3;++i) { look.eye[i]+=d[i]; look.at[i]+=d[i]; }
-        self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&look),"Magikarp camera shift");
+        return self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&look),"Magikarp camera shift");
     }
-    static void effects_shift(void* user,world::Vec3 delta) noexcept {
+    static bool effects_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
-        if (!self.owner) { self.services->fail("Magikarp effects shift without canonical owner"); return; }
+        if (!self.owner) { self.services->fail("Magikarp effects shift without canonical owner"); return false; }
         self.owner->effects().translate({delta.x,delta.y,delta.z});
+        return bool(self.owner->effects().status());
     }
 };
 struct YawObservation {
@@ -417,7 +418,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 consumer.rejects(); consumer.capacity(); consumer.add_at_geo(); consumer.normal(); consumer.id_boundaries();
                 shift.owner=nullptr;
             }
-            world.retire(); environment.cleanup();
+            require(world.retire(),"Magikarp World retirement failed"); environment.cleanup();
         }
         native(storage.destroy());
     }

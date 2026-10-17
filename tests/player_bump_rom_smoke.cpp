@@ -402,7 +402,7 @@ void run(rom::Snapshot& snapshot, const std::filesystem::path& output) {
                     consumer.errors(); consumer.fifo_delete_and_reinit();
                 } else strict_link3(context);
             }
-            world.retire(); environment.cleanup();
+            require(world.retire(),"Player bump World retirement failed"); environment.cleanup();
         }
         IsleGameCounts counts{}; native(isle_game_counts(storage.game(),&counts));
         require(!counts.objects && !counts.processes && !counts.models && !counts.model_nodes &&

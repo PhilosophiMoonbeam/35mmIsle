@@ -20,12 +20,11 @@ bool Movement::initialize(std::size_t index) {
     auto* block = world_.enter_first(index);
     if (!block) return false;
     state_.block = block; state_.move_speed = 0;
-    update_position(*block,move,cp);
-    return true;
+    return update_position(*block,move,cp);
 }
-void Movement::update_position(Block& block, float move, float cp) {
-    if (callbacks_.update) callbacks_.update(callbacks_.user,block.index,move);
-    if (world_.retired()) return;
+bool Movement::update_position(Block& block, float move, float cp) {
+    if (callbacks_.update && !callbacks_.update(callbacks_.user,block.index,move)) return false;
+    if (world_.retired()) return false;
     const auto sample = world_.sample(block,move,cp);
     float speed = sample.speed;
     const auto* next = block.next;
@@ -43,9 +42,11 @@ void Movement::update_position(Block& block, float move, float cp) {
     state_.rotation.y += descriptor.yaw;
     if (descriptor.reversed) state_.rotation.y += 3.1415927f;
     state_.move_speed = state_.speed_multiplier*speed;
+    return true;
 }
-void Movement::update() {
-    if (!state_.block || world_.retired()) return;
+bool Movement::update() {
+    if (world_.retired()) return false;
+    if (!state_.block) return true;
     auto blocks = world_.blocks();
     const auto owned = std::find_if(blocks.begin(),blocks.end(),
         [identity=state_.block](const Block& candidate) { return &candidate == identity; });
@@ -56,18 +57,20 @@ void Movement::update() {
     if (!std::isfinite(cp) || !std::isfinite(move) || !std::isfinite(state_.move_speed))
         throw std::invalid_argument("Nonfinite world movement state");
     if (state_.move_speed+move > 1) {
-        if (callbacks_.exit_block) callbacks_.exit_block(callbacks_.user,*block);
-        if (world_.retired()) { state_.block = nullptr; return; }
+        if (callbacks_.exit_block && !callbacks_.exit_block(callbacks_.user,*block)) return false;
+        if (world_.retired()) { state_.block = nullptr; return false; }
         if (!block->next || !block->next->control_points) {
-            update_position(*block,move,cp); state_.move_speed = 0; return;
+            if (!update_position(*block,move,cp)) return false;
+            state_.move_speed = 0; return true;
         }
         move = state_.move_speed+move-1;
         block = world_.enter_next();
-        if (!block) return;
+        if (!block) return false;
         state_.block = block;
         if (block->road_model && block->resource->metadata.movement_animation_guest) world_.reset_road(*block,0);
     } else move = state_.move_speed+move;
-    update_position(*block,move,cp);
+    if (!update_position(*block,move,cp)) return false;
     state_.move_time = move;
+    return true;
 }
 } // namespace isle::world

@@ -237,6 +237,44 @@ const IsleGameCameraParameters& camera_parameters(IsleGame* game, IsleGameCamera
 }
 } // namespace
 
+struct SourceControl::State {
+    Commands& commands;
+    std::span<std::uint32_t> ram;
+    std::uint64_t epoch;
+    std::uint32_t framebuffer, depth;
+    void* draw_context;
+    void (*draw)(void*);
+    void* call_context;
+    void (*call)(void*, render::List);
+    bool drawn = false;
+};
+struct SourceControlAccess {
+    template<class Draw, class Call>
+    static bool dispatch(render::Control callback, void* user, Commands& commands,
+                         std::span<std::uint32_t> ram, std::uint64_t epoch,
+                         std::uint32_t framebuffer, std::uint32_t depth,
+                         Draw& draw, Call& call) {
+        SourceControl::State state{commands, ram, epoch, framebuffer, depth,
+            &draw, [](void* context) { (*static_cast<Draw*>(context))(); },
+            &call, [](void* context, render::List list) { (*static_cast<Call*>(context))(list); }};
+        SourceControl control(state);
+        return callback(user, control);
+    }
+};
+std::span<std::uint32_t> SourceControl::ram() const noexcept { return state_->ram; }
+std::uint64_t SourceControl::epoch() const noexcept { return state_->epoch; }
+std::uint32_t SourceControl::framebuffer() const noexcept { return state_->framebuffer; }
+std::uint32_t SourceControl::depth() const noexcept { return state_->depth; }
+void SourceControl::command(std::uint32_t first, std::uint32_t second) {
+    state_->commands.command(first, second);
+}
+void SourceControl::call(render::List list) { state_->call(state_->call_context, list); }
+void SourceControl::draw() {
+    require(!state_->drawn, "source camera pass cannot replay its preparation", Error::preparation);
+    state_->drawn = true;
+    state_->draw(state_->draw_context);
+}
+
 struct Frame::Impl {
     const CoreStorage storage;
     const menu::Catalog* catalog;
@@ -516,75 +554,82 @@ struct Frame::Impl {
         Commands commands{memory, storage, storage.top, storage.top_end};
         commands.reset(color, input.resources.pre_render);
         constexpr std::array<unsigned, 4> lanes{0, 2, 1, 3};
+        auto call = [&](render::List list) {
+            if (!list.words) return;
+            require(!(list.address & 7u) && list.words >= 2 && !(list.words & 1u) &&
+                    list.address <= menu::rdram_size &&
+                    list.words <= (menu::rdram_size - list.address) / 4,
+                    "scene compiled sublist exceeds physical RAM", Error::preparation);
+            const sp::RamRange extent{list.address, static_cast<std::uint32_t>(list.words * 4)};
+            for (std::size_t r = 0; r < protected_count; ++r)
+                require(!intersects(extent, composition_reservations[r]),
+                        "compiled sublist overlaps core task/framebuffer storage");
+            bool covered = false;
+            for (const auto range : input.resources.reservations)
+                covered = covered || (range.address <= extent.address &&
+                    std::uint64_t(extent.address) + extent.size <= std::uint64_t(range.address) + range.size);
+            require(covered, "compiled sublist has no source producer reservation");
+            commands.call(list.address);
+        };
         for (std::size_t n = 0; n < input.passes.size(); ++n) {
             const auto& pass = input.passes[order[n]];
-            const auto vp = pass.camera ? camera_parameters(input.game, pass.camera).viewport : full_viewport();
-            const auto vp_address = storage.reset_viewport + 16u * static_cast<std::uint32_t>(n + 1);
-            const bool transition=pass.transition_owner!=nullptr;
-            viewport(memory, vp_address, vp,transition);
-            commands.camera(vp_address, vp, pass.flags, pass.background_rgba, 0, color,transition);
-            const auto vp_bounds = bounds(vp,transition);
-            const sp::Bounds clipped{std::max(vp_bounds.left, pass.scissor.left),
-                std::max(vp_bounds.top, pass.scissor.top), std::min(vp_bounds.right, pass.scissor.right),
-                std::min(vp_bounds.bottom, pass.scissor.bottom)};
-            require(clipped.left <= clipped.right && clipped.top <= clipped.bottom,
-                    "scene pass scissor is disjoint or reversed");
-            commands.scissor(clipped);
-            if (pass.kind == render::Kind::clear) continue;
-            if (pass.kind == render::Kind::sprites) {
-                draws.clear();
-                for (const auto& sprite : pass.sprites) if (pass.includes(sprite.render)) draws.push_back(sprite.draw);
-                command_reservations.clear();
-                const auto command_end = std::uint64_t(pass.sprite_commands.address) + pass.sprite_commands.size;
-                bool covered = false;
-                for (const auto range : composition_reservations) {
-                    const auto end = std::uint64_t(range.address) + range.size;
-                    if (range.address <= pass.sprite_commands.address && command_end <= end) {
-                        covered = true;
-                        if (range.address < pass.sprite_commands.address)
-                            command_reservations.push_back({range.address, pass.sprite_commands.address - range.address});
-                        if (command_end < end)
-                            command_reservations.push_back({static_cast<std::uint32_t>(command_end),
-                                                            static_cast<std::uint32_t>(end - command_end)});
-                    } else command_reservations.push_back(range);
+            auto draw = [&] {
+                const auto vp = pass.camera ? camera_parameters(input.game, pass.camera).viewport : full_viewport();
+                const auto vp_address = storage.reset_viewport + 16u * static_cast<std::uint32_t>(n + 1);
+                const bool transition=pass.transition_owner!=nullptr;
+                viewport(memory, vp_address, vp,transition);
+                commands.camera(vp_address, vp, pass.flags, pass.background_rgba, 0, color,transition);
+                const auto vp_bounds = bounds(vp,transition);
+                const sp::Bounds clipped{std::max(vp_bounds.left, pass.scissor.left),
+                    std::max(vp_bounds.top, pass.scissor.top), std::min(vp_bounds.right, pass.scissor.right),
+                    std::min(vp_bounds.bottom, pass.scissor.bottom)};
+                require(clipped.left <= clipped.right && clipped.top <= clipped.bottom,
+                        "scene pass scissor is disjoint or reversed");
+                commands.scissor(clipped);
+                if (pass.kind == render::Kind::clear) return;
+                if (pass.kind == render::Kind::sprites) {
+                    draws.clear();
+                    for (const auto& sprite : pass.sprites) if (pass.includes(sprite.render)) draws.push_back(sprite.draw);
+                    command_reservations.clear();
+                    const auto command_end = std::uint64_t(pass.sprite_commands.address) + pass.sprite_commands.size;
+                    bool covered = false;
+                    for (const auto range : composition_reservations) {
+                        const auto end = std::uint64_t(range.address) + range.size;
+                        if (range.address <= pass.sprite_commands.address && command_end <= end) {
+                            covered = true;
+                            if (range.address < pass.sprite_commands.address)
+                                command_reservations.push_back({range.address, pass.sprite_commands.address - range.address});
+                            if (command_end < end)
+                                command_reservations.push_back({static_cast<std::uint32_t>(command_end),
+                                                                static_cast<std::uint32_t>(end - command_end)});
+                        } else command_reservations.push_back(range);
+                    }
+                    require(covered, "scene sprite command arena is not reserved");
+                    const auto list = producer->prepare(ram, epoch, draws, {vp_bounds, pass.scissor},
+                                                        pass.sprite_commands, command_reservations);
+                    commands.call(list.address);
+                    commands.mode(true, 19, 1, 0x80000);
+                    draws.clear();
+                    return;
                 }
-                require(covered, "scene sprite command arena is not reserved");
-                const auto list = producer->prepare(ram, epoch, draws, {vp_bounds, pass.scissor},
-                                                    pass.sprite_commands, command_reservations);
-                commands.call(list.address);
-                commands.mode(true, 19, 1, 0x80000);
-                draws.clear();
-                continue;
-            }
-            render::Prepared prepared;
-            require(pass.prepare(pass.userdata, ram, epoch, pass, prepared),
-                    "scene compiled producer rejected preparation", Error::preparation);
-            const auto call = [&](render::List list) {
-                if (!list.words) return;
-                require(!(list.address & 7u) && list.words >= 2 && !(list.words & 1u) &&
-                        list.address <= menu::rdram_size &&
-                        list.words <= (menu::rdram_size - list.address) / 4,
-                        "scene compiled sublist exceeds physical RAM", Error::preparation);
-                const sp::RamRange extent{list.address, static_cast<std::uint32_t>(list.words * 4)};
-                for (std::size_t r = 0; r < protected_count; ++r)
-                    require(!intersects(extent, composition_reservations[r]),
-                            "compiled sublist overlaps core task/framebuffer storage");
-                bool covered = false;
-                for (const auto range : input.resources.reservations)
-                    covered = covered || (range.address <= extent.address &&
-                        std::uint64_t(extent.address) + extent.size <= std::uint64_t(range.address) + range.size);
-                require(covered, "compiled sublist has no source producer reservation");
-                commands.call(list.address);
+                render::Prepared prepared;
+                require(pass.prepare(pass.userdata, ram, epoch, pass, prepared),
+                        "scene compiled producer rejected preparation", Error::preparation);
+                for (const auto lane : lanes) {
+                    if (lane && prepared.lanes[lane].words <= 2) continue;
+                    if (lane) {
+                        commands.camera(vp_address, vp, 0, 0, lane, color,transition);
+                        commands.scissor(clipped);
+                    }
+                    commands.command(0xda380003, storage.identity);
+                    call(prepared.camera); call(prepared.lanes[lane]);
+                }
             };
-            for (const auto lane : lanes) {
-                if (lane && prepared.lanes[lane].words <= 2) continue;
-                if (lane) {
-                    commands.camera(vp_address, vp, 0, 0, lane, color,transition);
-                    commands.scissor(clipped);
-                }
-                commands.command(0xda380003, storage.identity);
-                call(prepared.camera); call(prepared.lanes[lane]);
-            }
+            if (pass.control) {
+                require(SourceControlAccess::dispatch(pass.control, pass.userdata, commands,
+                            ram, epoch, color, storage.depth, draw, call),
+                        "source camera control rejected dispatch", Error::preparation);
+            } else draw();
         }
         commands.command(0xe9000000, 0); commands.command(0xdf000000, 0);
         offsets = input.screen_offsets;

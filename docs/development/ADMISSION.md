@@ -1060,8 +1060,85 @@ The Photo consumer executes 66 real GPU frames, two actual failed completion
 callbacks and 79 original C CopyInfo updates per profile. These results do not
 admit original global camera/FX/UI dispatch, full Root/initUI/World factory
 closure, remaining species/courses, gameplay, Original capture parity, private
-Windows11 runtime, hearing or hardware. The latest all-ten hosted proof remains
-the separately identified `d936b02` revision above.
+Windows11 runtime, hearing or hardware. Published
+`c079c6d490b0b73a3476fb542ef12bc00fac9ddc` subsequently passed
+[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39034124226),
+including the full static-runtime LUS/audio/RSP/RDP/engine closure and explicit
+compilation of all 22 opt-in consumers without a ROM.
+
+## Checked World callbacks, complete vectors and SourceControl
+
+The next 496-file native snapshot is
+`3ec8feddd13afeaf16faa9cf49a41eebc19943b1f9433582a34f03095dc9d6dd`.
+All World and Movement callbacks now return `bool noexcept`. Failed callbacks
+return before checked C++ propagation; subsequent callbacks, sampling and
+dependent publication stop without undoing completed source side effects.
+Movement initialization/update return success explicitly. Native update thunks
+latch failure and return normally. `World::retire()` reports cleanup completion,
+not restored health: failed removal retains remaining objects/resources/context,
+and retries resume without repeating completed removals or clearing the first
+error. Destruction fails closed only when required explicit teardown remains
+incomplete. Root adapters must still supply nested plain-C Source fences and
+return through all C++ frames before an outer checked transfer.
+
+The existing strict private engine recipe now admits 41 complete definitions.
+Four unmodified pinned `vector.c` bodies supply normalize/add/difference/Euler
+rotation; the already admitted arbitrary-axis function is reused once, not
+duplicated. Native float3/float3x3 values and exact prototypes preserve source
+reciprocal arithmetic, signed zero, squared underflow/overflow, aliasing and
+axis/order semantics. A separate actual CLI links the real native engine and
+executes all five functions: magnitude13, normalized `(5,12,0)`, difference/add
+reconstruction, Y-axis quarter-turn `(5,3,-2.00000024)` and aliased unit-axis
+invariance. Temporary source/object/executable are removed. This is not Original
+libm bit-parity or full Root linkage.
+
+`Pass::control` runs synchronously before generic camera emission under the
+actual exclusive preparation lease. Its noncopyable `SourceControl` borrows
+bounded command/list emission, RAM, epoch and real targets; it cannot outlive
+dispatch. A controlled pass explicitly draws at most once or supplies its own
+commands/skips. The NULL-control path remains unchanged. Later UI sprite views
+and actual camera parameters are consumed at explicit draw, not snapshotted
+before an earlier source control.
+
+The actual UI consumer hides a genuine native film object before initial
+gather, then changes its visibility and invokes the real C sprite leaf under a
+Source fence. Dispatch-time re-gather restores that exact object's membership
+and meaningful pixels without changing depth. An actual full-screen black GPU
+fill remains visible rather than being overwritten by generic clearing. A
+separate real Frame rejects a nested C native-metadata failure: first Source
+status/side effects survive, C++ sink scope is destroyed, C fences are restored,
+no token/completion is fabricated and exact failed-Frame retirement succeeds.
+Explicit component recovery resets only the local C-fence status after proving
+native Game fault was never set; it is not production fault healing.
+
+The first whole UI scope is rejected: its fixture incorrectly expected changing
+a sprite's hidden attribute to alter Services object membership. Production
+filters hidden native objects, not those scalar sprite attributes. The corrected
+fixture exercises actual object visibility and exact membership; no production
+filter, pixel threshold or error/lifetime guard is weakened. Rejected scope
+artifacts are neither replayed, inventoried nor partially admitted.
+
+| Complete actual consumer | GCC Debug seconds | GCC Release seconds | Clang ASan+UBSan seconds |
+|---|---:|---:|---:|
+| UI/Screen plus source control, late gather and nested C failure | 5.969765 | 5.289869 | 11.340114 |
+| World/Actor/Item course composition | 6.534028 | 5.856542 | 11.938022 |
+| All 57 CPU contracts after complete default rebuild | 3.48 | 0.79 | 11.83 |
+
+All 22 opt-in targets and default CPU executables build in each profile.
+All 66 component cases pass with one exact-source/binary prequalified Debug UI
+scope reused without replay and 65 fresh executions. Before each sole initial
+scan, all 3,702 terminal tasks and 3,768 tracer/tasks are absent; traces stable,
+ROM unchanged, physical attempts/permission errors zero. All 57 support
+manifests reach an unchanged fixed point. All 63 prior surfaces, 213 Photo files
+and 12 Cart files remain byte-identical at exact known positive paths.
+Address/UB failures remain fatal; ptrace-only leak-scan disable is not leak
+qualification.
+
+This admits callback/math/control prerequisites, not the complete original
+camera functions, global camera/FX/UI scheduling, all 106 Root definitions,
+genuine first-World factory/graph closure, other courses, full gameplay, private
+Windows11 execution, Original capture parity or physical devices. Hosted proof
+above remains tied to `c079c6d`, not these subsequent source changes.
 
 ## Independent Detector and framebuffer contexts
 

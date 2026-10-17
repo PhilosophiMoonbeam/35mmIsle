@@ -118,21 +118,26 @@ struct SourceLifetime {
 };
 struct WorldHooks {
     scene::Services& services;IsleGameCamera* camera;actor::Owner* actors=nullptr;items::Owner* items=nullptr;
-    static void remove(void* user,world::Block& block) noexcept {
+    static bool remove(void* user,world::Block& block) noexcept {
         auto& self=*static_cast<WorldHooks*>(user);
-        if(self.actors&&!self.actors->remove_block(block)) self.services.fail("photo World actor removal failed");
+        if(self.actors&&!self.actors->remove_block(block)) {self.services.fail("photo World actor removal failed");return false;}
+        return true;
     }
-    static void camera_shift(void* user,world::Vec3 delta) noexcept {
+    static bool camera_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<WorldHooks*>(user);const IsleGameCameraParameters* current=nullptr;
-        if(!self.services.check(isle_game_camera_parameters(self.services.game,self.camera,&current),"photo camera shift borrow")) return;
+        if(!self.services.check(isle_game_camera_parameters(self.services.game,self.camera,&current),"photo camera shift borrow")) return false;
         auto view=current->look_at;const std::array shift{delta.x,delta.y,delta.z};
         for(unsigned i=0;i<3;++i) { view.eye[i]+=shift[i];view.at[i]+=shift[i]; }
-        self.services.check(isle_game_camera_set_look_at(self.services.game,self.camera,&view),"photo camera shift");
+        return self.services.check(isle_game_camera_set_look_at(self.services.game,self.camera,&view),"photo camera shift");
     }
-    static void effects_shift(void* user,world::Vec3 delta) noexcept {
+    static bool effects_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<WorldHooks*>(user);
-        if(self.actors) self.actors->effects().translate({delta.x,delta.y,delta.z});
-        if(self.items&&!self.items->displace({delta.x,delta.y,delta.z})) self.services.fail("photo Item shift failed");
+        if(self.actors) {
+            self.actors->effects().translate({delta.x,delta.y,delta.z});
+            if(!self.actors->effects().status()) return false;
+        }
+        if(self.items&&!self.items->displace({delta.x,delta.y,delta.z})) {self.services.fail("photo Item shift failed");return false;}
+        return true;
     }
 };
 struct OwnerLifetime {
@@ -145,7 +150,7 @@ struct OwnerLifetime {
         const auto actors_collected=actors.collect_joined();
         const auto items_collected=items.collect_joined();
         if(!actors_retired||!items_retired||!actors_collected||!items_collected) std::terminate();
-        world.retire();hooks.actors=nullptr;hooks.items=nullptr;
+        if(!world.retire())std::terminate();hooks.actors=nullptr;hooks.items=nullptr;
     }
 };
 struct ModelPass {
@@ -1132,7 +1137,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                 const auto actors_collected=actors.collect_joined();
                 const auto items_collected=items.collect_joined();
                 accepted(actors_retired);accepted(items_retired);accepted(actors_collected);accepted(items_collected);
-                world.retire();
+                require(world.retire(),"photo World retirement failed");
                 require(environment.set_listener(nullptr,nullptr),"environment listener release failed");
                 services.erase(trigger);services.erase(root);
                 require(!services.failed(),services.error());

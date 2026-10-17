@@ -78,9 +78,9 @@ struct Input {
 struct Trace {
     w::Vec3 camera{},effects{};
     std::size_t commands = 0;
-    static void shift_camera(void* p, w::Vec3 d) noexcept { static_cast<Trace*>(p)->camera = d; }
-    static void shift_effects(void* p, w::Vec3 d) noexcept { static_cast<Trace*>(p)->effects = d; }
-    static void process_commands(void* p, IsleGameObject*) noexcept { ++static_cast<Trace*>(p)->commands; }
+    static bool shift_camera(void* p, w::Vec3 d) noexcept { static_cast<Trace*>(p)->camera = d; return true; }
+    static bool shift_effects(void* p, w::Vec3 d) noexcept { static_cast<Trace*>(p)->effects = d; return true; }
+    static bool process_commands(void* p, IsleGameObject*) noexcept { ++static_cast<Trace*>(p)->commands; return true; }
     w::Callbacks callbacks() { return {this,nullptr,nullptr,nullptr,shift_camera,shift_effects,process_commands}; }
 };
 struct Actor {
@@ -190,7 +190,7 @@ void fallback_and_full_ground() {
     }
     {
         Fixture f;
-        f.world.retire(); const auto prior = marker(); auto ground = prior;
+        require(f.world.retire(),"collision World retirement failed"); const auto prior = marker(); auto ground = prior;
         bool found = true;
         const auto status = c::ground_query(f.world,0,0,ground,found);
         require(status.error == a::OwnerError::lifetime && found && same(ground,prior),"retired World changed found/result or became absent-map success");

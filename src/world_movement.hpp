@@ -7,19 +7,23 @@ namespace isle::world {
 struct MovementCallbacks {
     void* user = nullptr;
     // Both nullable in pinned Movement_Init. Invoked in source order, before
-    // transition and before position sampling respectively.
-    void (*exit_block)(void*, Block&) noexcept = nullptr;
-    void (*update)(void*, std::size_t block_index, float move_time) noexcept = nullptr;
+    // transition and before position sampling respectively. False returns
+    // normally and stops later sampling/publication; prior effects stay intact.
+    bool (*exit_block)(void*, Block&) noexcept = nullptr;
+    bool (*update)(void*, std::size_t block_index, float move_time) noexcept = nullptr;
 };
 class Movement final {
 public:
     Movement(World&, IsleWorldMovementState&, MovementCallbacks);
+    // False stops this operation without rolling back completed source effects.
+    // Existing World/native admission exceptions still require a checked C++
+    // caller; no native noexcept callback may let them escape its return leaf.
     bool initialize(std::size_t block_index);
     // Movement_Update owns carry-driven block entry as well as pose sampling.
-    void update();
+    bool update();
     // Movement_UpdatePos only samples this block. Explicit-entry callers keep
     // IsleWorldMovementState::block/move_time synchronized; no chain transition occurs.
-    void update_position(Block&, float move_time, float control_time);
+    bool update_position(Block&, float move_time, float control_time);
 private:
     World& world_;
     IsleWorldMovementState& state_;

@@ -58,6 +58,9 @@ IsleGameResult engine_attach_model_with_invalid_kind(IsleGame* game, IsleGameObj
 IsleGameResult engine_set_invalid_placement(IsleGame* game, IsleGameModel* model);
 void engine_model_use_final_incarnation(IsleGame*);
 int engine_model_free_storage_matches(const IsleGame*, const IsleGameObject*, const IsleGameModel*);
+int engine_vector_normalize_regression(void);
+int engine_vector_alias_regression(void);
+int engine_vector_rotation_regression(void);
 void engine_bind_actor_payload(IsleGameObject* object, int* payload);
 void engine_actor_context_update(IsleGameObject* object, void* user);
 IsleGameResult engine_replace_actor_update(IsleGame* game, IsleGameObject* object, int* context);

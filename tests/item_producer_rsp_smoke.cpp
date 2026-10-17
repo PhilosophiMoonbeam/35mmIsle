@@ -166,26 +166,29 @@ struct FixtureShift {
     IsleGameCamera* camera;
     menu::EffectRuntime* effects = nullptr;
     items::Owner* items = nullptr;
-    static void camera_shift(void* opaque, world::Vec3 delta) noexcept {
+    static bool camera_shift(void* opaque, world::Vec3 delta) noexcept {
         auto& self = *static_cast<FixtureShift*>(opaque);
         const IsleGameCameraParameters* parameters = nullptr;
         if (!self.services.check(isle_game_camera_parameters(self.services.game,self.camera,&parameters),
-                "Item GPU World camera borrow failed")) return;
+                "Item GPU World camera borrow failed")) return false;
         auto look = parameters->look_at;
         for (unsigned axis = 0; axis < 3; ++axis) {
             const auto d = axis == 0 ? delta.x : axis == 1 ? delta.y : delta.z;
             look.eye[axis] += d; look.at[axis] += d;
         }
-        self.services.check(isle_game_camera_set_look_at(self.services.game,self.camera,&look),
-            "Item GPU World camera shift failed");
-        if (self.items && !self.items->displace({delta.x,delta.y,delta.z}))
-            self.services.fail("Item GPU World canonical Item displacement failed");
+        if (!self.services.check(isle_game_camera_set_look_at(self.services.game,self.camera,&look),
+            "Item GPU World camera shift failed")) return false;
+        if (self.items && !self.items->displace({delta.x,delta.y,delta.z})) {
+            self.services.fail("Item GPU World canonical Item displacement failed");return false;
+        }
+        return true;
     }
-    static void effects_shift(void* opaque, world::Vec3 delta) noexcept {
+    static bool effects_shift(void* opaque, world::Vec3 delta) noexcept {
         auto& self = *static_cast<FixtureShift*>(opaque);
-        if (!self.effects) { self.services.fail("Item GPU World FX owner absent"); return; }
+        if (!self.effects) { self.services.fail("Item GPU World FX owner absent"); return false; }
         self.effects->translate({delta.x,delta.y,delta.z});
-        if (!self.effects->status()) self.services.fail("Item GPU World FX translation failed");
+        if (!self.effects->status()) {self.services.fail("Item GPU World FX translation failed");return false;}
+        return true;
     }
 };
 std::size_t rgb5_changes(const Capture& x, const Capture& y) {
@@ -292,7 +295,7 @@ struct OwnerScope {
         const bool item_status = bool(item_retired) || (failed && item_retired.error == items::OwnerError::services);
         if (!actor_status || !item_status || !actors_collected || !items_collected) std::terminate();
         shift.items = nullptr; shift.effects = nullptr;
-        world.retire(); environment.cleanup();
+        if(!world.retire())std::terminate(); environment.cleanup();
     }
 };
 void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
@@ -901,7 +904,7 @@ void run(const std::filesystem::path& filename, const std::filesystem::path& pro
         native(isle_game_tick(services.game));
         require(!draw().triangles.empty(),"same physical slot/new family incarnation failed actual rendering");
         require(frame->retire(),"final actual GPU/readback fence failed");
-        producer.retire(); actors.retire(); world_producer.retire(); world.retire();
+        producer.retire(); actors.retire(); world_producer.retire(); require(world.retire(),"Item GPU World retirement failed");
         for (auto slot : active) {
             services.erase(live[slot].object); accepted(animation.runtime->begin_retire(live[slot].instance));
             accepted(animation.runtime->release_retired(live[slot].instance));

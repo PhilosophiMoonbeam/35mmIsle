@@ -51,10 +51,10 @@
       "sha256": "4ce2b0b29f2b32fb2f87e2c40098040ad5d226cdc392c53a93a1612bd3a37c28"
     },
     "src/world_runtime.hpp": {
-      "sha256": "ce18f1ec7e3219a7ba4f3677c82dce0af67486d6c8d4c1968abffb1bcf19ddca"
+      "sha256": "54befb30b1636a7aa3228cd0664cd093c676ff8feef5128b4dbf4900e00db511"
     },
     "src/world_runtime.cpp": {
-      "sha256": "4a92f82dfb94d21179fe26059b2fa2b5ce1012a374853fcfaf7b41a8b61d86a6"
+      "sha256": "40f975bd55e810f2fd8d9f656e27c780514af0734e10a6a533ad301aab5e43a6"
     },
     "src/world_collision.cpp": {
       "sha256": "976022f82ca35e6870f78675a34db6f4580fe1a935d31cfa800b3fe607337be0"
@@ -66,7 +66,7 @@
       "sha256": "c9192a1819795bb6c8581871416a7ae807c8439cb2c5bc0c117c368ebb736981"
     },
     "tests/world_runtime_tests.cpp": {
-      "sha256": "092123b6a631e4110c1ac064adec5289c2d16b251b95d75f860125e0e4b4d619"
+      "sha256": "163eec461df09f383308268891c21ac7536208d0a50f948264b1ea8003ab7bc1"
     },
     "tests/world_collision_tests.cpp": {
       "sha256": "810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"
@@ -75,13 +75,13 @@
       "sha256": "f088e172d254b06063eeede64f8d525a5a300de276943c007776197d554efa80"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "fafb0655162dbe64f21de5a5e2735ee56b436b8b5bc497aa09dd99d0bda1a9ec"
+      "sha256": "1ed87c0ae9f6d64e38af1f423ab58d05125fc3c1c7727eb267eddde9874644c8"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
-      "sha256": "6a24fe0b3fe3623524c20689e6ea26a84a7f59146ca757c3d0f9785d5b392fb3"
+      "sha256": "1c8b1be281d83bf329851e556dd82a86e68db6aad1bb528c2e61b5d23982ba16"
     },
     "tests/actor_command26_rom_smoke.cpp": {
-      "sha256": "06aeaa0f84eaa8ae0981613e1ae2ab2ad86968decc842787d3e5c9c7e4d12c18"
+      "sha256": "f0fdbf61b4b2b51582d8f63e7648282cf6bf0296d8572d572819e09713908ed4"
     }
   },
   "source_files": {

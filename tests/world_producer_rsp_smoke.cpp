@@ -43,20 +43,22 @@ struct Owners {
         const IsleGameLookAt look{{0,1600,6000},{0,500,0},{0,1,0}}; native(isle_game_camera_set_look_at(game,camera,&look));
     }
     ~Owners() { if (isle_game_destroy(game)!=ISLE_GAME_OK) std::terminate(); }
-    static void command(void* p,IsleGameObject*) noexcept { ++static_cast<Owners*>(p)->commands; }
-    static void shift_camera(void* p,world::Vec3 delta) noexcept {
+    static bool command(void* p,IsleGameObject*) noexcept { ++static_cast<Owners*>(p)->commands; return true; }
+    static bool shift_camera(void* p,world::Vec3 delta) noexcept {
         auto& o=*static_cast<Owners*>(p); const IsleGameCameraParameters* old=nullptr;
-        if (isle_game_camera_parameters(o.game,o.camera,&old)!=ISLE_GAME_OK) std::terminate();
+        if (isle_game_camera_parameters(o.game,o.camera,&old)!=ISLE_GAME_OK) return false;
         auto look=old->look_at; look.eye[0]+=delta.x;look.eye[1]+=delta.y;look.eye[2]+=delta.z;
         look.at[0]+=delta.x;look.at[1]+=delta.y;look.at[2]+=delta.z;
-        if (isle_game_camera_set_look_at(o.game,o.camera,&look)!=ISLE_GAME_OK) std::terminate();
+        if (isle_game_camera_set_look_at(o.game,o.camera,&look)!=ISLE_GAME_OK) return false;
         ++o.shifts;
+        return true;
     }
-    static void shift_effects(void* p,world::Vec3 d) noexcept {
+    static bool shift_effects(void* p,world::Vec3 d) noexcept {
         auto& o=*static_cast<Owners*>(p);
         o.effects.translate({d.x,d.y,d.z});
-        if (!o.effects.status()) std::terminate();
+        if (!o.effects.status()) return false;
         ++o.effect_shifts;
+        return true;
     }
 };
 void top_list(std::span<std::uint32_t> words,const world::ProducerFrame& frame) {
@@ -368,7 +370,7 @@ int run(const std::filesystem::path& path) {
             "World primary entry did not translate the real source effect particle without advancing physics/RNG");
         if(block->road_model&&block->resource->metadata.movement_animation_guest)component.reset_road(*block,0);
         movement_state.block=block;movement_state.move_time=0.5f;
-        movement.update_position(*block,movement_state.move_time,movement_state.control_time);
+        require(movement.update_position(*block,movement_state.move_time,movement_state.control_time),"real road position sample failed");
         require(component.current()==block&&movement_state.block==block,"road sampling changed primary chain ownership");
         require(owners.shifts==i&&owners.effect_shifts==i,"native camera/effect translation did not follow each primary entry");
         native(isle_game_tick(owners.game));source_terrain_pose();execute(false);source_terrain_pose();
@@ -377,7 +379,7 @@ int run(const std::filesystem::path& path) {
     // lease has been released; removal must subtract that matrix exactly once.
     native(isle_game_model_set_placement(owners.game,sky,ISLE_GAME_MODEL_PLACEMENT_RTS,&sky_placement));
     execute(false);
-    producer.retire();component.retire();IsleGameCounts counts{};native(isle_game_counts(owners.game,&counts));
+    producer.retire();require(component.retire(),"World producer component retirement failed");IsleGameCounts counts{};native(isle_game_counts(owners.game,&counts));
     require(counts.objects==1&&counts.models==0&&counts.processes==0&&counts.matrices==2,"world retirement retained native resources");
     effects.reset();
     require(effects.particle_count()==0&&effects.effect_count()==0,"World effect pool survived joined GPU teardown");

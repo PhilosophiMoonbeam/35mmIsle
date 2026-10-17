@@ -3,7 +3,7 @@
   "repository": "https://github.com/ethteck/pokemonsnap",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.11.4",
-  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"2c475d4505b7344040013b4d1f6362b62f5f81d6fe523a3775f346dbc2e4097f"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"fcae5f3d1b4374dec1122062df7a882e1f0d549c6f91612ff472c04fba60e5fd"}},
+  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"2c475d4505b7344040013b4d1f6362b62f5f81d6fe523a3775f346dbc2e4097f"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"6a4a3688d33e80ba11158336c657f8d582715a1b02758027fc1661dda53f9304"}},
     "tests/actual_player_source.hpp": {
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },

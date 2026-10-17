@@ -186,10 +186,10 @@
       "sha256": "965bcb87d1dde221e0af00ffd5a3d177d185bb2361a59e83b2829131a60220da"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "22cd6504c608f9f09344ada4c48e25e2de9a73bd550a471b11ea339d734052e5"
+      "sha256": "67d243b0c1fbc20d5015dcb2539837c18bb1cea8ac065876278bdf7f7621f2db"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "fafb0655162dbe64f21de5a5e2735ee56b436b8b5bc497aa09dd99d0bda1a9ec"
+      "sha256": "1ed87c0ae9f6d64e38af1f423ab58d05125fc3c1c7727eb267eddde9874644c8"
     },
     "tests/beach_actor_resources_rom_smoke.cpp": {
       "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"

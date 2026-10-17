@@ -45,40 +45,45 @@ struct Bindings {
     std::array<a::InstanceHandle,2> actors{};
     std::array<world::Block*,2> bases{};
     unsigned camera_shifts=0,effect_shifts=0,actor_shifts=0;
-    static void camera_shift(void* context,world::Vec3 delta) noexcept {
+    static bool camera_shift(void* context,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Bindings*>(context);
         const IsleGameCameraParameters* parameters=nullptr;
-        if(!self.services.check(isle_game_camera_parameters(self.services.game,self.camera,&parameters),"composed camera shift borrow")) return;
+        if(!self.services.check(isle_game_camera_parameters(self.services.game,self.camera,&parameters),"composed camera shift borrow")) return false;
         auto view=parameters->look_at;
         for(unsigned axis=0;axis<3;++axis) {
             const auto d=axis==0?delta.x:axis==1?delta.y:delta.z;
             view.eye[axis]+=d; view.at[axis]+=d;
         }
-        self.services.check(isle_game_camera_set_look_at(self.services.game,self.camera,&view),"composed source camera shift");
+        if(!self.services.check(isle_game_camera_set_look_at(self.services.game,self.camera,&view),"composed source camera shift")) return false;
         ++self.camera_shifts;
+        return true;
     }
-    static void effect_shift(void* context,world::Vec3 delta) noexcept {
+    static bool effect_shift(void* context,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Bindings*>(context);
-        if(!self.owner) { self.services.fail("composed FX owner missing at real World shift"); return; }
+        if(!self.owner) { self.services.fail("composed FX owner missing at real World shift"); return false; }
         self.owner->effects().translate({delta.x,delta.y,delta.z});
-        if(!self.owner->effects().status()) self.services.fail("composed source FX translation failed");
+        if(!self.owner->effects().status()) {self.services.fail("composed source FX translation failed");return false;}
         ++self.effect_shifts;
+        return true;
     }
-    static void change(void* context,world::Block& block,world::Block& reference) noexcept {
+    static bool change(void* context,world::Block& block,world::Block& reference) noexcept {
         auto& self=*static_cast<Bindings*>(context);
-        if(!self.owner||!self.previous_reference) { self.services.fail("composed actor reference missing"); return; }
+        if(!self.owner||!self.previous_reference) { self.services.fail("composed actor reference missing"); return false; }
         const auto previous=self.previous_reference->resource->metadata.world_position;
         const auto current=reference.resource->metadata.world_position;
         for(std::size_t slot=0;slot<self.actors.size();++slot)
             if(self.bases[slot]==&block&&self.owner->registered(self.actors[slot])) {
-                if(!self.owner->change_block(self.actors[slot],{previous.x,previous.y,previous.z},{current.x,current.y,current.z}))
-                    self.services.fail("composed actual actor block shift failed");
+                if(!self.owner->change_block(self.actors[slot],{previous.x,previous.y,previous.z},{current.x,current.y,current.z})) {
+                    self.services.fail("composed actual actor block shift failed");return false;
+                }
                 ++self.actor_shifts;
             }
+        return true;
     }
-    static void remove(void* context,world::Block& block) noexcept {
+    static bool remove(void* context,world::Block& block) noexcept {
         auto& self=*static_cast<Bindings*>(context);
-        if(!self.owner||!self.owner->remove_block(block)) self.services.fail("composed actual actor block removal failed");
+        if(!self.owner||!self.owner->remove_block(block)) {self.services.fail("composed actual actor block removal failed");return false;}
+        return true;
     }
 };
 // Lifetime ordering only, never a completion fence: later-declared Frame really
@@ -87,7 +92,7 @@ struct Bindings {
 struct WorldOwnerScope {
     world::World& world;
     Bindings& bindings;
-    ~WorldOwnerScope() { world.retire(); bindings.owner=nullptr; }
+    ~WorldOwnerScope() { if(!world.retire())std::terminate(); bindings.owner=nullptr; }
 };
 struct ModelPass {
     course::ModelProducer& producer;
@@ -414,7 +419,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 draw(captures[4],true,false,"actual-world-after-native-cleanup.ppm");
                 require(frame->retire()&&frame->quiescent(),"composed renderer retirement lacked a real release boundary");
                 actor_producer.retire(); world_producer.retire();
-                world.retire(); require(!services.failed(),services.error());
+                require(world.retire(),"composed World retirement failed"); require(!services.failed(),services.error());
                 total_draws=draws;
                 bindings.owner=nullptr;
             }

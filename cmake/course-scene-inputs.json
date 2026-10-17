@@ -39,16 +39,16 @@
       "sha256": "6ac71b3e99b556d564eef874de56b502b7bb67a1ac1ee7026a831ae5eccce4c6"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "e739207b01ebf73b2f2a6e30363b30c50f6ca33688316ecea3e9a70b469850c7"
+      "sha256": "7487ba7931ba7256570ccd68620408e7fce5e96c0807e85b18e13206448e9fb0"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "0b37682fb746d7f5624aa6fe9906b3736721f6aabec8c8109fd65827b781f212"
+      "sha256": "fc977209f254e6dafdacd5b2db8406534089faf897355c0d7b939c2db580fbec"
     },
     "src/rsp_render.hpp": {
       "sha256": "280a50d04be2a6413d2fe2807f5af3d4fb05e34d3516ff7b149e80726c268f59"
     },
     "tests/course_scene_rsp_smoke.cpp": {
-      "sha256": "029ef360f5b8004b69f3f2fe78b10bf88d1cc74704c51801ac423d663e36cc66"
+      "sha256": "687928167ad20ef93822ec2ee25757a676a713160453672d7960f73481a25ebb"
     },
     "tests/menu_effects_tests.cpp": {
       "sha256": "64e39fa6b4abb67899b7a0d45e0498f9c0dcdc87b68add722db1599a6ed19541"

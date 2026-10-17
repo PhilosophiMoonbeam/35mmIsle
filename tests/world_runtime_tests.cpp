@@ -1,6 +1,7 @@
 #include "world_movement.hpp"
 #include "menu_scene_bridge.h"
 #include "source_effect_world.hpp"
+#include "player_source_fixture.h"
 #include <array>
 #include <bit>
 #include <cmath>
@@ -8,6 +9,7 @@
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 // Native own-GAME wait boundary, also exercised by the compiled-C engine tests.
@@ -30,16 +32,23 @@ struct Event { char kind; std::size_t block, reference; };
 struct Trace {
     std::vector<Event> events;
     std::vector<w::Vec3> camera, effects;
+    std::vector<char> calls;
+    char fail_kind = 0;
+    std::size_t fail_at = 1, matching_calls = 0;
     std::size_t command_calls = 0, exits = 0, updates = 0;
-    Trace() { events.reserve(128); camera.reserve(16); effects.reserve(16); }
-    static void add(void* p,w::Block& b,w::Block& r) noexcept { static_cast<Trace*>(p)->events.push_back({'a',b.index,r.index}); }
-    static void remove(void* p,w::Block& b) noexcept { static_cast<Trace*>(p)->events.push_back({'d',b.index,0}); }
-    static void change(void* p,w::Block& b,w::Block& r) noexcept { static_cast<Trace*>(p)->events.push_back({'c',b.index,r.index}); }
-    static void shift_camera(void* p,w::Vec3 d) noexcept { static_cast<Trace*>(p)->camera.push_back(d); }
-    static void shift_effects(void* p,w::Vec3 d) noexcept { static_cast<Trace*>(p)->effects.push_back(d); }
-    static void commands(void* p,IsleGameObject*) noexcept { ++static_cast<Trace*>(p)->command_calls; }
-    static void exit(void* p,w::Block&) noexcept { ++static_cast<Trace*>(p)->exits; }
-    static void update(void* p,std::size_t,float) noexcept { ++static_cast<Trace*>(p)->updates; }
+    Trace() { events.reserve(128); camera.reserve(16); effects.reserve(16); calls.reserve(128); }
+    bool accepted(char kind) noexcept {
+        calls.push_back(kind);
+        return kind != fail_kind || ++matching_calls != fail_at;
+    }
+    static bool add(void* p,w::Block& b,w::Block& r) noexcept { auto& t=*static_cast<Trace*>(p); t.events.push_back({'a',b.index,r.index}); return t.accepted('a'); }
+    static bool remove(void* p,w::Block& b) noexcept { auto& t=*static_cast<Trace*>(p); t.events.push_back({'d',b.index,0}); return t.accepted('d'); }
+    static bool change(void* p,w::Block& b,w::Block& r) noexcept { auto& t=*static_cast<Trace*>(p); t.events.push_back({'c',b.index,r.index}); return t.accepted('c'); }
+    static bool shift_camera(void* p,w::Vec3 d) noexcept { auto& t=*static_cast<Trace*>(p); t.camera.push_back(d); return t.accepted('k'); }
+    static bool shift_effects(void* p,w::Vec3 d) noexcept { auto& t=*static_cast<Trace*>(p); t.effects.push_back(d); return t.accepted('f'); }
+    static bool commands(void* p,IsleGameObject*) noexcept { auto& t=*static_cast<Trace*>(p); ++t.command_calls; return t.accepted('q'); }
+    static bool exit(void* p,w::Block&) noexcept { auto& t=*static_cast<Trace*>(p); ++t.exits; return t.accepted('x'); }
+    static bool update(void* p,std::size_t,float) noexcept { auto& t=*static_cast<Trace*>(p); ++t.updates; return t.accepted('u'); }
     w::Callbacks callbacks() { return {this,add,remove,change,shift_camera,shift_effects,commands}; }
 };
 struct Input {
@@ -99,7 +108,7 @@ void optional_ceiling_output_rules() {
     const bool missing_map = !world.ceiling_at(infinity,infinity,result) && unchanged();
     current->resource = descriptor;
     require(missing_map,"local missing-map arm inspected descriptor before preserving output");
-    world.retire();
+    require(world.retire(),"World retirement failed");
     bool local_rejected = false, global_rejected = false;
     try { world.ceiling_at(0,0,result); } catch (const std::logic_error&) { local_rejected = true; }
     try { world.ceiling_at_global(0,0,result); } catch (const std::logic_error&) { global_rejected = true; }
@@ -212,7 +221,7 @@ void transitions_and_retirement() {
     require(flags.flags == 0x80,"immediate world visibility failed to clear hidden while retaining other native flags");
     ok(isle_game_object_set_flags(n.game,world.blocks()[1].object,0));
     ok(isle_game_tick(n.game)); require(trace.command_calls == 8 && std::fabs(world.global_time()-0.4f)<0.00001f,"native commands/timer not scheduled");
-    world.retire(); world.retire();
+    require(world.retire() && world.retire(),"World retirement failed or was not idempotent");
     ok(isle_game_counts(n.game,&counts));
     require(counts.objects == 0 && counts.models == 0 && counts.processes == 0 && counts.model_nodes == 0,
         "world retirement leaked native objects/processes/models");
@@ -313,6 +322,216 @@ void terrain_canonical_pose_and_source_effect_basis() {
         nodes[1].transform.scale.x == 0.25f,
         "terrain canonical yaw changed ordinary road control poses");
 }
+void callback_failures_stop_world_transitions() {
+    for (std::size_t fail_at = 1; fail_at <= 3; ++fail_at) {
+        Native n; Input input; Trace trace;
+        trace.fail_kind = 'a'; trace.fail_at = fail_at;
+        w::World world(n.game,input.view(),trace.callbacks());
+        bool rejected = false;
+        try { world.enter_first(1); } catch (const std::runtime_error&) { rejected = true; }
+        require(rejected && trace.events.size() == fail_at && trace.calls.size() == fail_at &&
+            world.current() == &world.blocks()[1] && !world.error().empty(),
+            "failed initial add continued neighboring callbacks or rolled back the source current block");
+        const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+        ok(isle_game_model_nodes(n.game,world.blocks()[0].model,&nodes,&count));
+        require(nodes[0].transform.position.x == -1000 && nodes[0].transform.position.y == -200,
+            "failed add rolled back the already completed native terrain relocation");
+    }
+    struct Failure { std::size_t start; char kind; std::size_t occurrence; const char* prefix; bool relocated; };
+    const Failure failures[]{
+        {0,'k',1,"k",false}, {0,'f',1,"kf",false}, {0,'a',1,"kfa",true},
+        {0,'c',1,"kfac",true}, {0,'c',2,"kfacc",true}, {1,'d',1,"kfd",true},
+        {1,'c',1,"kfdc",true}, {1,'c',2,"kfdcc",true}, {1,'c',3,"kfdccc",true}
+    };
+    for (const auto& failure : failures) {
+        Native n; Input input; Trace trace;
+        w::World world(n.game,input.view(),trace.callbacks());
+        require(world.enter_first(failure.start) == &world.blocks()[failure.start],"failure fixture initial entry");
+        trace.calls.clear(); trace.events.clear(); trace.camera.clear(); trace.effects.clear();
+        trace.fail_kind = failure.kind; trace.fail_at = failure.occurrence;
+        bool rejected = false;
+        try { world.enter_next(); } catch (const std::runtime_error&) { rejected = true; }
+        require(rejected && std::string_view(trace.calls.data(),trace.calls.size()) == failure.prefix &&
+            world.current() == &world.blocks()[failure.start+1] && !world.error().empty(),
+            "World failure ran a later shift/add/remove/change or rolled back earlier current publication");
+        const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+        ok(isle_game_model_nodes(n.game,world.blocks()[0].model,&nodes,&count));
+        const auto reference = failure.start + (failure.relocated ? 1 : 0);
+        require(nodes[0].transform.position.x == -1000.0f*float(reference) &&
+            trace.camera.size() == 1 && trace.camera[0].x == -1000 &&
+            trace.effects.size() == (failure.kind == 'k' ? 0u : 1u),
+            "World failure did not preserve exactly the earlier native relocation and callback effects");
+    }
+}
+void failed_clear_preserves_native_and_animation_owners() {
+    Native n; Input input; Trace trace;
+    w::World world(n.game,input.view(),trace.callbacks());
+    auto& block = world.blocks()[0];
+    const auto instance = block.instance, road = block.road_instance;
+    auto* object = block.object; auto* model = block.model;
+    IsleGameCounts before{}, after{}; ok(isle_game_counts(n.game,&before));
+    trace.fail_kind = 'd';
+    bool rejected = false;
+    try { world.clear_block(block); } catch (const std::runtime_error&) { rejected = true; }
+    ok(isle_game_counts(n.game,&after));
+    require(rejected && trace.events.size() == 1 && block.object == object && block.model == model &&
+        world.animation_model(instance) && world.animation_model(road) &&
+        before.objects == after.objects && before.models == after.models && before.processes == after.processes,
+        "failed block removal invalidated animation/native owners or continued dependent destruction");
+    require(world.retire() && !world.error().empty(),"explicit cleanup concealed the original callback failure");
+}
+void failed_retirement_retains_owners_and_allows_explicit_cleanup() {
+    Native n; Input input; Trace trace;
+    w::World world(n.game,input.view(),trace.callbacks());
+    auto& retained = world.blocks()[1];
+    const auto instance = retained.instance, road = retained.road_instance;
+    auto* object = retained.object; auto* model = retained.model;
+    trace.fail_kind = 'd'; trace.fail_at = 2;
+    require(!world.retire() && !world.retired() && !world.error().empty(),
+        "failed retire removal was concealed or completed whole-World destruction");
+    IsleGameCounts counts{}; ok(isle_game_counts(n.game,&counts));
+    require(trace.events.size() == 2 && counts.objects == 6 && counts.models == 5 &&
+        !world.blocks()[0].object && retained.object == object && retained.model == model &&
+        world.animation_model(instance) && world.animation_model(road),
+        "failed retire continued into later blocks or destroyed the failed block's native/animation storage");
+    require(world.retire() && world.retired() && !world.error().empty(),
+        "explicit retirement cleanup could not finish or healed the original callback error");
+    require(trace.events.size() == 5,"retirement retry repeated already-completed block removals");
+    event(trace,0,'d',0); event(trace,1,'d',1); event(trace,2,'d',1); event(trace,3,'d',2); event(trace,4,'d',3);
+    ok(isle_game_counts(n.game,&counts));
+    require(counts.objects == 0 && counts.models == 0 && counts.processes == 0,
+        "successful explicit retirement retry did not actually delete/join every remaining owner");
+}
+void retirement_rejects_active_native_callback_before_destruction() {
+    struct Attempt {
+        w::World& world;
+        bool returned = false, result = true;
+        static void update(IsleGameObject*,void* user) noexcept {
+            auto& self = *static_cast<Attempt*>(user);
+            self.result = self.world.retire();
+            self.returned = true;
+        }
+    };
+    Native n; Input input; Trace trace;
+    w::World world(n.game,input.view(),trace.callbacks()); Attempt attempt{world};
+    IsleGameProcess* process = nullptr;
+    ok(isle_game_add_process(n.game,world.blocks()[0].object,Attempt::update,&attempt,ISLE_GAME_SYNCHRONOUS,0,&process));
+    ok(isle_game_tick(n.game));
+    IsleGameCounts counts{}; ok(isle_game_counts(n.game,&counts));
+    require(attempt.returned && !attempt.result && !world.retired() && trace.events.empty() &&
+        counts.objects == 8 && counts.models == 7 && counts.processes == 2,
+        "retirement inside native traversal destroyed owners/userdata or escaped the noexcept callback");
+    require(world.retire(),"outside-traversal retirement did not complete the real native joins");
+}
+void movement_failures_preserve_completed_source_effects() {
+    for (unsigned scenario = 0; scenario < 6; ++scenario) {
+        Native n; Input input; Trace trace;
+        w::World world(n.game,input.view(),trace.callbacks());
+        IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
+        state.position = {71,72,73}; state.rotation = {81,82,83};
+        w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
+        if (scenario == 0) {
+            state.move_speed = 9; state.move_time = 0.5f; trace.fail_kind = 'u';
+            require(!movement.initialize(0) && state.block == &world.blocks()[0] &&
+                state.move_speed == 0 && state.move_time == 0.5f && state.position.x == 71 &&
+                state.rotation.y == 82 && world.animation_model(world.blocks()[0].road_instance).animation_time == 0,
+                "failed initial movement update sampled/published pose or rolled back its prior block/speed initialization");
+            continue;
+        }
+        require(movement.initialize(scenario == 4 ? 2 : 0),"movement failure fixture initialization");
+        auto* original = static_cast<w::Block*>(state.block);
+        state.move_time = scenario == 1 ? 0.25f : 0.9f; state.move_speed = scenario == 1 ? 0.5f : 0.2f;
+        const auto position = state.position, rotation = state.rotation;
+        world.reset_road(*original,7);
+        if (scenario == 5) world.reset_road(world.blocks()[1],17);
+        trace.calls.clear(); trace.events.clear(); trace.camera.clear(); trace.effects.clear();
+        trace.fail_kind = scenario == 3 ? 'x' : 'u';
+        const bool result = scenario == 2 ? movement.update_position(*original,0.6f,state.control_time) : movement.update();
+        require(!result && state.move_time == (scenario == 1 ? 0.25f : 0.9f) && state.move_speed == (scenario == 1 ? 0.5f : 0.2f) &&
+            state.position.x == position.x && state.position.y == position.y && state.position.z == position.z &&
+            state.rotation.x == rotation.x && state.rotation.y == rotation.y && state.rotation.z == rotation.z,
+            "failed movement callback published later pose/time/speed or terminal-stop state");
+        if (scenario == 5) {
+            require(world.current() == &world.blocks()[1] && state.block == world.current() &&
+                world.animation_model(world.blocks()[1].road_instance).animation_time == 0 &&
+                std::string_view(trace.calls.data(),trace.calls.size()) == "xkfaccu",
+                "failed carried update rolled back the completed transition/road reset or continued work");
+        } else {
+            require(world.current() == original && state.block == original &&
+                world.animation_model(original->road_instance).animation_time == 7 &&
+                std::string_view(trace.calls.data(),trace.calls.size()) == (scenario == 3 ? "x" : scenario == 4 ? "xu" : "u"),
+                "failed movement callback ran a later transition or native road sample");
+        }
+    }
+    Native n; Input input; Trace trace;
+    w::World world(n.game,input.view(),trace.callbacks());
+    IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
+    w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
+    require(movement.initialize(0),"failed World carry fixture initialization");
+    auto* original = state.block; const auto position = state.position;
+    state.move_time = 0.9f; state.move_speed = 0.2f; trace.fail_kind = 'f'; trace.calls.clear();
+    bool rejected = false;
+    try { movement.update(); } catch (const std::runtime_error&) { rejected = true; }
+    require(rejected && world.current() == &world.blocks()[1] && state.block == original &&
+        state.move_time == 0.9f && state.position.x == position.x &&
+        std::string_view(trace.calls.data(),trace.calls.size()) == "xkf",
+        "failed World transition published a dependent movement block/pose/time or resumed sampling");
+}
+void command_failure_returns_without_later_native_updates() {
+    Native n; Input input; Trace trace;
+    w::World world(n.game,input.view(),trace.callbacks());
+    trace.fail_kind = 'q';
+    ok(isle_game_tick(n.game));
+    require(trace.command_calls == 1 && world.global_time() == 0 && !world.error().empty(),
+        "failed native command callback escaped its noexcept thunk or allowed later World commands/timer");
+    ok(isle_game_tick(n.game));
+    require(trace.command_calls == 1 && world.global_time() == 0,
+        "failed native update resumed later World work on the next tick");
+    require(world.retire(),"failed native command owner did not retain a safe cleanup path");
+}
+void nested_c_failures_return_through_cpp_world_and_movement() {
+    struct Fenced {
+        IslePlayerSource source{};
+        isle_rng rng{1};
+        Trace trace;
+        unsigned returned = 0, destroyed = 0;
+        explicit Fenced(Native& n) {
+            ok(isle_player_source_prepare(n.game,&source,&rng,this,10));
+            ok(isle_player_source_activate(&source));
+        }
+        ~Fenced() { if(isle_player_source_deactivate(&source) != ISLE_GAME_OK)std::terminate(); }
+        bool call() noexcept {
+            struct Guard { unsigned& count; ~Guard() { ++count; } } guard{destroyed};
+            const auto result = isle_player_source_call(&source,player_source_nested_failure,nullptr);
+            ++returned;
+            return result == ISLE_GAME_OK;
+        }
+        static bool add(void* p,w::Block&,w::Block&) noexcept { return static_cast<Fenced*>(p)->call(); }
+        static bool update(void* p,std::size_t,float) noexcept { return static_cast<Fenced*>(p)->call(); }
+        static bool camera(void* p,w::Vec3 d) noexcept { return Trace::shift_camera(&static_cast<Fenced*>(p)->trace,d); }
+        static bool effects(void* p,w::Vec3 d) noexcept { return Trace::shift_effects(&static_cast<Fenced*>(p)->trace,d); }
+        static bool commands(void* p,IsleGameObject* o) noexcept { return Trace::commands(&static_cast<Fenced*>(p)->trace,o); }
+    };
+    for (bool initial_add : {true,false}) {
+        Native n; Input input; Fenced fenced(n);
+        const w::Callbacks callbacks{&fenced,initial_add ? Fenced::add : nullptr,nullptr,nullptr,
+            Fenced::camera,Fenced::effects,Fenced::commands};
+        w::World world(n.game,input.view(),callbacks);
+        IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
+        state.position = {71,72,73};
+        w::Movement movement(world,state,{&fenced,nullptr,Fenced::update});
+        bool rejected = false;
+        try { rejected = !movement.initialize(0); } catch (const std::runtime_error&) { rejected = true; }
+        require(rejected && fenced.returned == 1 && fenced.destroyed == 1 &&
+            fenced.source.status == ISLE_GAME_INVALID_ARGUMENT && fenced.source.ThrowItemTimeout == 41 &&
+            fenced.source.nonwaiting_call_frame == nullptr && world.current() == &world.blocks()[0] &&
+            state.block == (initial_add ? nullptr : world.current()) && state.position.x == 71,
+            "nested C failure skipped C++ callback destruction, continued sampling/publication or lost its first error");
+        require(world.retire() && fenced.source.status == ISLE_GAME_INVALID_ARGUMENT &&
+            isle_game_status(n.game) == ISLE_GAME_OK,
+            "nested C callback cleanup failed, healed the Source error or manufactured a native Game fault");
+    }
+}
 void movement_boundary_rotation_and_stop() {
     Native n; Input input; Trace trace;
     input.blocks[0].metadata.yaw = 1.5707963267948966f;
@@ -325,12 +544,12 @@ void movement_boundary_rotation_and_stop() {
         "world movement yaw transform differs");
     require(std::fabs(state.rotation.y-(0.2f+1.5707963267948966f+3.1415927f))<0.00001f && state.move_speed == 0.25f,
         "reversed yaw or control-node speed lost");
-    state.move_time = 0.75f; state.move_speed = 0.25f; movement.update();
+    state.move_time = 0.75f; state.move_speed = 0.25f; require(movement.update(),"boundary movement update failed");
     require(state.block == &world.blocks()[0] && state.move_time == 1 && trace.exits == 0,"strict greater-than boundary changed");
-    state.move_speed = 0.25f; movement.update();
+    state.move_speed = 0.25f; require(movement.update(),"carried movement update failed");
     require(state.block == &world.blocks()[1] && state.move_time == 0.25f && trace.exits == 1,"movement carry/exit/transition order differs");
     state.block = world.enter_first(2); state.move_time = 0.9f; state.move_speed = 0.2f;
-    movement.update();
+    require(movement.update(),"terminal movement update failed");
     require(state.block == &world.blocks()[2] && state.move_time == 0.9f && state.move_speed == 0 && trace.exits == 2,
         "last block must retain source time, notify exit, and stop");
     state.speed_multiplier = -1; require(!movement.initialize(0),"negative movement multiplier admitted");
@@ -358,7 +577,7 @@ void movement_rejects_foreign_world_before_callbacks() {
         world.animation_model(current->road_instance).animation_time == animation_time,
         "foreign opaque block changed either World, movement, callbacks or native animation before rejection");
     state.block = current;
-    movement.update();
+    require(movement.update(),"owned movement did not recover after rejecting foreign block");
     require(state.block == &world.blocks()[1] && state.move_time == 0.25f && trace.exits == 1,
         "foreign-block rejection damaged subsequent owned carry and transition");
 }
@@ -386,7 +605,7 @@ void position_sampling_preserves_movement_boundary() {
     IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER; w::Movement movement(world,state,{});
     require(movement.initialize(0),"position-sampling movement admission");
     auto* block = world.current(); state.move_time = 0.75f;
-    movement.update_position(*block,0.5f,state.control_time);
+    require(movement.update_position(*block,0.5f,state.control_time),"position sampling failed");
     require(world.current() == block && state.block == block && state.move_time == 0.75f,
         "position sampling performed a carry-driven block transition or advanced movement time");
     require(state.position.x == 60 && state.position.y == 20 && state.position.z == 30 &&
@@ -396,7 +615,7 @@ void position_sampling_preserves_movement_boundary() {
     const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
     ok(isle_game_model_nodes(n.game,block->road_model,&nodes,&count));
     require(count == 2 && nodes[1].transform.position.x == state.position.x,"sampled CP pose did not reach the native model");
-    movement.update_position(*block,0.25f,state.control_time);
+    require(movement.update_position(*block,0.25f,state.control_time),"signed position resampling failed");
     require(world.current() == block && state.block == block && state.move_time == 0.75f &&
         state.position.x == 35 && state.move_speed == 1.25f &&
         world.animation_model(block->road_instance).animation_time == 25 && nodes[1].transform.position.x == 35,
@@ -417,7 +636,7 @@ void required_consumers_and_sky_follow() {
     ok(isle_game_model_nodes(n.game,sky.model,&nodes,&count));
     require(nodes[0].transform.position.x == 10 && nodes[0].transform.position.y == 20 && nodes[0].transform.position.z == 30,
         "sky follow is not an actual native priority0 process");
-    world.retire(); ok(isle_game_delete_object(n.game,object));
+    require(world.retire(),"sky World retirement failed"); ok(isle_game_delete_object(n.game,object));
 }
 void path_tracks_callbacks_and_boundaries() {
     m::AnimationPath path;
@@ -472,9 +691,9 @@ void source_control_line_limits() {
         "numControlLines4 must have no source control-point sample");
     IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER; w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
     require(movement.initialize(0),"control-limit movement init");
-    state.move_time = 1; state.move_speed = 0.1f; movement.update();
+    state.move_time = 1; state.move_speed = 0.1f; require(movement.update(),"control-limit movement update failed");
     require(state.block == &world.blocks()[0] && state.move_speed == 0,"null control slice did not stop source transition");
-    state.block = world.enter_first(1); state.move_time = 1; state.move_speed = 0.1f; movement.update();
+    state.block = world.enter_first(1); state.move_time = 1; state.move_speed = 0.1f; require(movement.update(),"UV-less movement entry failed");
     require(state.block == &world.blocks()[2] && !world.blocks()[2].road_model,
         "source nonnull control slice must permit entry even when no UV model exists");
 }
@@ -574,7 +793,7 @@ void faulted_owner_retirement_joins_before_context_release() {
             "faulted helper did not end exactly one process while retaining its owner/context");
     // No graphics have been submitted by this native fixture. World owns its
     // Runtime and keeps it, callback userdata and retiring storage through erase.
-    world.retire();
+    require(world.retire(),"faulted World failed its actual native joins");
     require(context.retired_calls == 1 && context.live_at_retirement == 0 && context.resumed == 0 &&
             !context.world_retired_at_callback && context.runtime_error_at_retirement == m::animation::Error::handle &&
             context.retained_position == 10 && world.retired() && !world.error().empty(),
@@ -595,6 +814,13 @@ int main() {
         actual_native_ceiling_consumed_paths();
         terrain_canonical_pose_and_source_effect_basis();
         faulted_owner_retirement_joins_before_context_release();
+        callback_failures_stop_world_transitions();
+        failed_clear_preserves_native_and_animation_owners();
+        failed_retirement_retains_owners_and_allows_explicit_cleanup();
+        retirement_rejects_active_native_callback_before_destruction();
+        movement_failures_preserve_completed_source_effects();
+        command_failure_returns_without_later_native_updates();
+        nested_c_failures_return_through_cpp_world_and_movement();
         std::cout << "native world lifecycle/movement tests passed\n"; return 0; }
     catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

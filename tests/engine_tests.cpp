@@ -2033,6 +2033,15 @@ void model_contextual_pose_admission_and_cache() {
         "contextual block reuse inherited flags/revision/fixed or allocated");
 }
 
+void private_vector_math_edge_semantics() {
+    require(engine_vector_normalize_regression() == 0,
+        "GAME vector normalization changed reciprocal/zero/underflow/overflow semantics");
+    require(engine_vector_alias_regression() == 0,
+        "GAME vector add/difference lost in-place operand aliasing or returned pointer");
+    require(engine_vector_rotation_regression() == 0,
+        "GAME vector rotation changed axes/order or normalized/repaired arbitrary axis");
+}
+
 void model_source54_math_and_atomicity() {
     auto pose = identity_model_transform();
     pose.position = {1.5f, -2.25f, 3.125f};
@@ -3110,6 +3119,7 @@ int main() {
         camera_exhaustion_and_reuse();
         model_hierarchy_math_and_cache();
         model_contextual_pose_admission_and_cache();
+        private_vector_math_edge_semantics();
         model_source54_math_and_atomicity();
         model_source48_basis_and_atomicity();
         model_placement_atomicity_and_lifecycle();

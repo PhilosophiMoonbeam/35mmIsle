@@ -73,7 +73,8 @@ def prepare(repository, manifest_path, output_path, evidence_path):
             raise ValueError("native support identity mismatch: " + path)
         native_support[path] = identity
     output = ['/* Build-private selected game definitions; see source evidence. */\n',
-              '#include "engine_internal.h"\n\n']
+              '#include "engine_internal.h"\n\n',
+              '#define SQ(value) ((value) * (value))\n\n']
     identities = []
     symbols = set()
     for unit in manifest["definitions"]:

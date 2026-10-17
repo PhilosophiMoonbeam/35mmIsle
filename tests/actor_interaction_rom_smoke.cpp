@@ -127,31 +127,33 @@ struct Shift {
     IsleGameCommandPool native_world_pool{};
     std::array<IsleGameObject*,27> native_world_objects{};
     std::array<IsleGameCommandQueue,27> native_world_queues{};
-    static void camera_shift(void* user,world::Vec3 delta) noexcept {
+    static bool camera_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
         const IsleGameCameraParameters* parameters=nullptr;
-        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"selector camera borrow")) return;
+        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"selector camera borrow")) return false;
         auto look=parameters->look_at;
         for (unsigned n=0;n<3;++n) { const float d=n==0?delta.x:n==1?delta.y:delta.z; look.eye[n]+=d; look.at[n]+=d; }
-        self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&look),"selector camera shift");
-        if (self.items && !self.items->displace(delta)) self.services->fail("selector Item displacement");
+        if (!self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&look),"selector camera shift")) return false;
+        if (self.items && !self.items->displace(delta)) {self.services->fail("selector Item displacement");return false;}
+        return true;
     }
-    static void effects_shift(void* user,world::Vec3 delta) noexcept {
+    static bool effects_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
-        if (!self.actors) { self.services->fail("selector effects owner absent"); return; }
+        if (!self.actors) { self.services->fail("selector effects owner absent"); return false; }
         self.actors->effects().translate({delta.x,delta.y,delta.z});
+        return bool(self.actors->effects().status());
     }
-    static void commands(void* user,IsleGameObject* object) noexcept {
+    static bool commands(void* user,IsleGameObject* object) noexcept {
         auto& self=*static_cast<Shift*>(user);
         for(std::size_t n=0;n<self.native_world_objects.size();++n)
             if(!self.native_world_objects[n] || self.native_world_objects[n]==object) {
                 self.native_world_objects[n]=object; int erase=0;
-                if(self.services->check(isle_game_commands(self.services->game,object,&self.native_world_pool,
-                        &self.native_world_queues[n],nullptr,nullptr,&erase),"semantic World native command drain") && erase)
-                    self.services->check(isle_game_delete_object(self.services->game,object),"semantic World command deletion");
-                return;
+                if(!self.services->check(isle_game_commands(self.services->game,object,&self.native_world_pool,
+                        &self.native_world_queues[n],nullptr,nullptr,&erase),"semantic World native command drain")) return false;
+                return !erase || self.services->check(isle_game_delete_object(self.services->game,object),"semantic World command deletion");
             }
         self.services->fail("bounded semantic World command receiver capacity exceeded");
+        return false;
     }
     ~Shift() {
         for(auto& queue:native_world_queues)isle_game_commands_release(&native_world_pool,&queue);
@@ -1318,7 +1320,7 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
         require(player.close() && !services.source_owner_registered(player.object) &&
                 player.retiring==1 && player.joined==1 && !player.errors,
                 "Player API semantic owner did not join/unregister exactly once after all dependent owners retired");
-        world.retire(); environment.cleanup();
+        require(world.retire(),"semantic World retirement failed"); environment.cleanup();
     }
     native(storage.destroy());
 }

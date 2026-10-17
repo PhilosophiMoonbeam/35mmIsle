@@ -12,6 +12,7 @@
  * after the native caller checks finite signed-16.16 representability.
  */
 typedef float f32;
+typedef float Mtx3f[3][3];
 typedef float Mtx4f[4][4];
 typedef IsleGameFixedMatrix Mtx;
 #define FTOFIX32(value) ((uint32_t) (int32_t) ((value) * 65536.0f))
@@ -34,6 +35,15 @@ typedef struct {
     } l[2];
 } LookAt;
 typedef IsleGameVec3 Vec3f;
+
+/* Native numeric axes, not bitwise-composable Euler rotation requests. The
+ * admitted GAME helper accepts exactly one axis and performs no validation.
+ */
+enum VectorAxisFlags {
+    AXIS_X = 1 << 0,
+    AXIS_Y = 1 << 1,
+    AXIS_Z = 1 << 2
+};
 /* Public signed 1.7 conversion: truncate c*128, upper endpoint saturates at 127.
  * Mathematical unit components are bounded; finite output is checked before
  * conversion in the private GAME extraction.
@@ -49,6 +59,11 @@ static inline bool isle_game_reflection_component(float value) {
 }
 
 /* Native declarations checked against the privately admitted GAME prototypes. */
+f32 Vec3fNormalize(Vec3f* v);
+Vec3f* Vec3fAdd(Vec3f* dst, Vec3f* addend);
+Vec3f* Vec3fDiff(Vec3f* difference, Vec3f* minuend, Vec3f* subtrahend);
+Vec3f* Vec3fGetEulerRotation(Vec3f* v, enum VectorAxisFlags axis, f32 angle);
+Vec3f* Vec3f_func_8001A8B8(Vec3f* arg0, Vec3f* arg1, f32 arg2);
 void hal_mtx_f2l(Mtx4f source, Mtx* destination);
 void hal_mtx_f2l_fixed_w(Mtx4f source, Mtx* destination);
 void hal_scale_f(Mtx4f matrix, f32 x, f32 y, f32 z);

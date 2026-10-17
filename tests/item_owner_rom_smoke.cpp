@@ -38,19 +38,21 @@ struct Shift {
     IsleGameCamera* camera;
     actor::Owner* actors=nullptr;
     it::Owner* items=nullptr;
-    static void camera_shift(void* user,world::Vec3 delta) noexcept {
+    static bool camera_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
         const IsleGameCameraParameters* parameters=nullptr;
-        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"Item fixture camera borrow")) return;
+        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"Item fixture camera borrow")) return false;
         auto look=parameters->look_at;
         for (unsigned n=0;n<3;++n) { const auto d=n==0?delta.x:n==1?delta.y:delta.z; look.eye[n]+=d; look.at[n]+=d; }
-        self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&look),"Item fixture camera shift");
-        if (self.items && !self.items->displace(delta)) self.services->fail("Item fixture world shift");
+        if (!self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&look),"Item fixture camera shift")) return false;
+        if (self.items && !self.items->displace(delta)) {self.services->fail("Item fixture world shift");return false;}
+        return true;
     }
-    static void effects_shift(void* user,world::Vec3 delta) noexcept {
+    static bool effects_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
-        if (!self.actors) { self.services->fail("Item fixture effects owner absent"); return; }
+        if (!self.actors) { self.services->fail("Item fixture effects owner absent"); return false; }
         self.actors->effects().translate({delta.x,delta.y,delta.z});
+        return bool(self.actors->effects().status());
     }
 };
 struct Consumer {
@@ -388,7 +390,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
                 }
                 shift.actors=nullptr;
             }
-            world.retire(); environment.cleanup();
+            require(world.retire(),"Item fixture World retirement failed"); environment.cleanup();
         }
         native(storage.destroy());
     }

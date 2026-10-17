@@ -9,6 +9,7 @@
 #include "scene_storage.hpp"
 #include "photo_lighting.hpp"
 #include "actual_audio_driver.hpp"
+#include "player_source_fixture.h"
 
 #include <algorithm>
 #include <array>
@@ -153,6 +154,68 @@ struct MessagePass {
         return true;
     }
 };
+struct SourceDispatch {
+    scene::Services& services;
+    IslePlayerSource& source;
+    IsleGameObject* film;
+    std::span<scene::SpriteDraw> scratch{};
+    r::Pass* ordinary = nullptr;
+    g::SourceControl* active = nullptr;
+    unsigned cleanups = 0;
+    std::size_t late_count = 0;
+    bool mutate = true, black = false, fail = false, prepared = false;
+    bool early_film_absent = false, late_film_present = false;
+    IsleGameResult result = ISLE_GAME_OK;
+    struct Scope {
+        SourceDispatch& owner;
+        Scope(SourceDispatch& value, g::SourceControl& control) : owner(value) {
+            require(!owner.active,"source control sink was already live");
+            owner.active = &control;
+        }
+        ~Scope() { owner.active = nullptr; ++owner.cleanups; }
+    };
+    static bool before(void* context, g::SourceControl& control) {
+        auto& self = *static_cast<SourceDispatch*>(context);
+        Scope scope(self,control);
+        if (self.fail) {
+            self.result = isle_player_source_call(&self.source,player_source_nested_failure,nullptr);
+            return self.result == ISLE_GAME_OK;
+        }
+        if (self.mutate) {
+            IsleGameObjectMetadata metadata{};
+            native(isle_game_object_metadata(self.services.game,self.film,&metadata));
+            native(isle_game_object_set_flags(self.services.game,self.film,metadata.flags & ~1u));
+            PlayerSpriteBorrow request{self.film,nullptr,nullptr,0,0,0};
+            self.result = isle_player_source_call(&self.source,player_source_sprite_borrow,&request);
+            require(self.result == ISLE_GAME_OK && request.entered == 1 && request.completed == 1,
+                "real C source sprite mutation did not return before camera dispatch");
+        }
+        self.prepared = true;
+        if (self.black) {
+            // Actual inclusive 320x240 RGBA16 fill, not a CPU image edit.
+            control.command(0xe7000000u,0);
+            control.command(0xff10013fu,control.framebuffer());
+            control.command(0xe3000a01u,0x00300000u);
+            control.command(0xf7000000u,0x00010001u);
+            control.command(0xf64fc3bcu,0);
+            control.command(0xe7000000u,0);
+            control.command(0xe3000a01u,0);
+        } else control.draw();
+        return true;
+    }
+    static bool sprites(void* context, g::SourceControl& control) {
+        auto& self = *static_cast<SourceDispatch*>(context);
+        Scope scope(self,control);
+        require(self.prepared && self.ordinary,"UI dispatch preceded source camera control");
+        require(self.services.sprite_draws(self.scratch,self.late_count),
+            "dispatch-time actual native sprite projection failed");
+        self.ordinary->sprites = self.scratch.first(self.late_count);
+        self.late_film_present = std::any_of(self.ordinary->sprites.begin(),self.ordinary->sprites.end(),
+            [&](const auto& draw) { return draw.object == self.film; });
+        control.draw();
+        return true;
+    }
+};
 struct Consumer {
     scene::Services& services;
     player::Ui& ui;
@@ -195,7 +258,8 @@ struct Consumer {
         native(isle_game_tick(services.game)); healthy(); audio.tick();
     }
     void ticks(unsigned count) { while (count--) tick(); }
-    Capture draw(const std::string& name = {}, bool ready_owner_probe = false) {
+    Capture draw(const std::string& name = {}, bool ready_owner_probe = false,
+                 SourceDispatch* source = nullptr) {
         healthy(); require(frame.quiescent(),"previous actual frame has not retired");
         std::size_t count = 0;
         require(services.sprite_draws(native_sprites,count),"actual ordered native sprite projection failed");
@@ -208,6 +272,13 @@ struct Consumer {
         ordinary.camera = sprite_camera; ordinary.priority = 2; ordinary.flags = 8;
         ordinary.link_mask = 2; ordinary.camera_tag = UINT32_MAX; ordinary.tag_match = r::TagMatch::equality;
         ordinary.sprites = std::span(native_sprites).first(count); ordinary.sprite_commands = ordinary_commands;
+        if (source) {
+            source->scratch = native_sprites; source->ordinary = &ordinary;
+            source->early_film_absent = std::none_of(ordinary.sprites.begin(),ordinary.sprites.end(),
+                [&](const auto& draw) { return draw.object == source->film; });
+            clear.control = SourceDispatch::before; clear.userdata = source;
+            ordinary.control = SourceDispatch::sprites; ordinary.userdata = source;
+        }
         std::size_t used = 3;
         auto& owner = services.screen_transition();
         if (owner.source.D_800BE2C8) passes[used++] = transitions.pass(owner);
@@ -217,7 +288,9 @@ struct Consumer {
         const auto calls = message.calls;
         const r::Input input{services.game,{1,&ui.producer(),immutable,producer_ranges,framebuffers,0xaec18},
             std::span(passes).first(used),{}};
-        require(frame.begin(input,{frames&1u},{&readback,Readback::finish}),frame.message());
+        const auto begun = frame.begin(input,{frames&1u},{&readback,Readback::finish});
+        if (source) { source->ordinary = nullptr; source->scratch = {}; }
+        require(begun,frame.message());
         require(frame.busy() && frame.submission() && message.calls == calls+1,
             "actual Frame failed to retain submission or drew Msg more than once");
         if (used == 4) require(!owner.retirement_ready(),"actual Frame preparation failed to retain exact transition Owner");
@@ -503,12 +576,59 @@ void screens(Consumer& c) {
         "round/diamond opposite offsets collapsed to the same actual color/depth output");
     c.evidence("source7F68 ID5 camera; solid reveal/cover alpha and round/diamond signed offsets; 7F40 delayed shape; busyfalse distinct from3OM-wait joined retirement; exact Owner held through completed GPU+readback");
 }
+void source_controls(Consumer& c, IsleGameObject* film) {
+    auto& source = *c.ui.source().player;
+    IsleGameSprite* sprite = nullptr; IsleSprite* view = nullptr;
+    native(isle_game_object_sprite(c.services.game,film,&sprite));
+    native(isle_game_sprite_view(c.services.game,sprite,&view));
+    const auto attributes = view->attr;
+    const std::array color{view->red,view->green,view->blue,view->alpha};
+    const auto timeout = source.ThrowItemTimeout;
+    IsleGameObjectMetadata metadata{};
+    native(isle_game_object_metadata(c.services.game,film,&metadata));
+    native(isle_game_object_set_flags(c.services.game,film,metadata.flags | 1u));
+    isle_sprite_set_attribute(view,ISLE_SP_HIDDEN);
+    const auto hidden = c.draw();
+    SourceDispatch late{c.services,source,film};
+    const auto shown = c.draw({},false,&late);
+    require(late.early_film_absent && late.late_film_present && late.cleanups == 2 && !late.active &&
+        source.ThrowItemTimeout == 42 && !source.nonwaiting_call_frame &&
+        changes(hidden,shown) > 5 && hidden.depth == shown.depth,
+        "late C source visibility was gathered early, crossed a C++ frame, or changed UI depth");
+    SourceDispatch black{c.services,source,film}; black.mutate = false; black.black = true;
+    const auto controlled = c.draw({},false,&black);
+    require(black.cleanups == 2 && !black.active && changes(shown,controlled) > 50000,
+        "source-owned full-screen fill was overwritten by generic camera emission");
+
+    auto created = g::Frame::create(c.audio.execution.snapshot,{true,{12000000,4*1024*1024}});
+    require(bool(created),created.message.data());
+    Consumer rejected(c.services,c.ui,*created.frame,c.transitions,c.audio,c.root,c.report,c.sprite_camera,c.immutable);
+    SourceDispatch failure{c.services,source,film}; failure.fail = true;
+    bool failed = false;
+    try { static_cast<void>(rejected.draw({},false,&failure)); }
+    catch (const std::runtime_error&) { failed = true; }
+    require(failed && failure.result == ISLE_GAME_INVALID_ARGUMENT &&
+        source.status == failure.result && source.ThrowItemTimeout == 41 &&
+        failure.cleanups == 1 && !failure.active && !source.nonwaiting_call_frame &&
+        created.frame->error() == g::Error::preparation && created.frame->quiescent() &&
+        !created.frame->submission() && !created.frame->completed() &&
+        isle_game_status(c.services.game) == ISLE_GAME_OK && created.frame->retire(),
+        "nested C failure escaped C++ sink cleanup, submitted failed work, or erased its first error");
+    // Explicit component recovery from local C-fence status, not Game fault
+    // recovery or production rollback. Native first-fault state was never set.
+    source.status = ISLE_GAME_OK; source.ThrowItemTimeout = timeout;
+    view->attr = attributes;
+    isle_sprite_color(view,color[0],color[1],color[2],color[3]);
+    native(isle_game_object_set_flags(c.services.game,film,metadata.flags));
+    c.evidence("source control before camera; real C mutation and dispatch-time UI re-gather; actual black GPU fill without generic overwrite; nested C failure preserves first status and destroys C++ sink scope before exact failed-Frame retirement");
+}
 void delete_film_and_retire(Consumer& c) {
     auto& ui = c.ui.source(); auto* film = ui.D_803B09D8_550DE8;
     require(film,"film canonical owner disappeared before real -1");
     require(c.services.send_command(film,-5),"film show before deletion failed"); c.tick();
     const auto before = c.services.sprite_count();
     const auto shown = c.draw("film-before-default-minus1");
+    source_controls(c,film);
     require(c.services.send_command(film,-1),"real film -1 enqueue failed"); c.tick();
     require(!ui.D_803B09D8_550DE8 && !ui.D_803B0A14_550E24 && !ui.D_803B0A18_550E28 && !ui.D_803B0A1C_550E2C &&
         c.services.sprite_count()+4 == before,"real builtin -1 failed joined canonical film/digit ownership retirement");

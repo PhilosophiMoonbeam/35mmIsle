@@ -32,19 +32,20 @@ struct Shift {
     scene::Services* services;
     IsleGameCamera* camera;
     actor::Owner* owner=nullptr;
-    static void camera_shift(void* user,world::Vec3 delta) noexcept {
+    static bool camera_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
         const IsleGameCameraParameters* parameters=nullptr;
-        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"scene camera borrow")) return;
+        if (!self.services->check(isle_game_camera_parameters(self.services->game,self.camera,&parameters),"scene camera borrow")) return false;
         auto view=parameters->look_at;
         const std::array d{delta.x,delta.y,delta.z};
         for (unsigned i=0;i<3;++i) { view.eye[i]+=d[i]; view.at[i]+=d[i]; }
-        self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&view),"scene camera shift");
+        return self.services->check(isle_game_camera_set_look_at(self.services->game,self.camera,&view),"scene camera shift");
     }
-    static void effects_shift(void* user,world::Vec3 delta) noexcept {
+    static bool effects_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
-        if (!self.owner) { self.services->fail("scene effects shift without Owner"); return; }
+        if (!self.owner) { self.services->fail("scene effects shift without Owner"); return false; }
         self.owner->effects().translate({delta.x,delta.y,delta.z});
+        return bool(self.owner->effects().status());
     }
 };
 struct Consumer {
@@ -321,7 +322,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 consumer.boundaries(); consumer.helpers_and_failures(); consumer.lifetime();
                 shift.owner=nullptr;
             }
-            world.retire(); environment.cleanup();
+            require(world.retire(),"scene World retirement failed"); environment.cleanup();
         }
         native(storage.destroy());
     }

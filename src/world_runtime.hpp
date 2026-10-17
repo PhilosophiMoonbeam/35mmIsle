@@ -24,15 +24,17 @@ struct Block {
 struct Callbacks {
     void* user = nullptr;
     // Source add/delete/change are nullable. Their userdata survives retirement.
-    void (*add)(void*, Block&, Block& reference) noexcept = nullptr;
-    void (*remove)(void*, Block&) noexcept = nullptr;
-    void (*change)(void*, Block&, Block& reference) noexcept = nullptr;
+    // False returns normally from the callback and stops dependent World work.
+    // Original C callbacks must use their own nested C failure fence.
+    bool (*add)(void*, Block&, Block& reference) noexcept = nullptr;
+    bool (*remove)(void*, Block&) noexcept = nullptr;
+    bool (*change)(void*, Block&, Block& reference) noexcept = nullptr;
     // Real bindCameraNextBlock / fx_translatePosAll consumers are REQUIRED.
-    void (*shift_camera)(void*, Vec3 delta) noexcept = nullptr;
-    void (*shift_effects)(void*, Vec3 delta) noexcept = nullptr;
+    bool (*shift_camera)(void*, Vec3 delta) noexcept = nullptr;
+    bool (*shift_effects)(void*, Vec3 delta) noexcept = nullptr;
     // Required by the explicit native-game constructor; production uses the
     // concrete Services constructor and its existing source command queue.
-    void (*process_commands)(void*, IsleGameObject*) noexcept = nullptr;
+    bool (*process_commands)(void*, IsleGameObject*) noexcept = nullptr;
 };
 struct ResourceView {
     const beach::WorldMetadata* setup = nullptr;
@@ -68,12 +70,14 @@ class World final {
 public:
     World(scene::Services&, const Resources&, Callbacks);
     World(IsleGame*, ResourceView, Callbacks);
-    ~World();
+    ~World() noexcept;
     World(const World&) = delete;
     World& operator=(const World&) = delete;
     std::span<Block> blocks() noexcept;
     std::span<const Block> blocks() const noexcept;
     Block* current() const noexcept;
+    // Callback failure throws only after the callback has returned normally.
+    // A null block means the source index/next block is absent, not failure.
     Block* enter_first(std::size_t);
     Block* enter_next();
     MovementSample sample(Block&, float move_time, float control_time);
@@ -95,7 +99,13 @@ public:
     bool ceiling_at(float x, float z, GroundResult&) const;
     std::int32_t collide(Vec3 position, Vec3 velocity, Vec3& out_position, Vec3& out_velocity) const;
     void clear_block(Block&);
-    void retire() noexcept;
+    // False preserves unjoined storage and stops at the first failed removal.
+    // Explicit cleanup may retry that removal/join; completed work is not
+    // repeated, and the original error is never cleared. This does not supply
+    // the owner's graphics/semantic-borrow fences. The owner must finish those
+    // and retire dependent actors while callback userdata/blocks remain alive.
+    // Destruction terminates if explicit retirement still cannot complete.
+    bool retire() noexcept;
     bool retired() const noexcept;
     const std::string& error() const noexcept;
 private:

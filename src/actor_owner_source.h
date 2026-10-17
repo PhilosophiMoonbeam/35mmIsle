@@ -48,6 +48,9 @@ extern "C" {
 /* Nonwaiting leaves return before the C bridge reports native execution faults.
  * owner in the canonical record points directly to stable ActorOwner slot data. */
 IsleGameResult isle_actor_owner_animation(IsleActorSource*, uint32_t header_identity, float start, int force);
+void isle_actor_source_set_animation(IsleGameObject*, uint32_t header_identity, float start, int force);
+/* Masked native object flags only; Pokemon tangible/flags are unchanged. */
+void isle_actor_source_object_flags(IsleGameObject*, uint32_t mask, uint32_t value);
 /* AUX stores consume only mask-selected inputs and merge against the latest
  * canonical RT/RTS placement. Scale components require RTS. Captured position
  * references preserve both model incarnation and selected ROOT/AUX space;
@@ -78,6 +81,9 @@ void isle_actor_source_path_velocity(IsleGameObject*, const void*, float, IsleGa
 IsleGameVec3 isle_actor_source_current_world_position(IsleGameObject*);
 IsleGameResult isle_actor_owner_step(IsleActorSource*);
 IsleGameResult isle_actor_owner_interaction_context(IsleActorSource*, void**);
+/* Resolve retained native graph storage only after complete family admission. */
+IsleGameResult isle_actor_owner_graph(IsleActorSource*, uint32_t, const IsleActorInteractionGraph**);
+const IsleActorInteractionGraph* isle_actor_source_graph(IsleGameObject*, uint32_t);
 IsleGameResult isle_actor_owner_cleanup(IsleActorSource*);
 IsleGameResult isle_actor_owner_commands_begin(IsleActorSource*, IsleSourceCommandScope*);
 IsleGameResult isle_actor_owner_commands_end(IsleActorSource*, IsleSourceCommandScope*, IsleGameResult, int);
@@ -104,6 +110,10 @@ IsleGameObject* isle_actor_owner_spawn_ground_dl4(int32_t object_id, uint16_t id
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
     const IsleActorFactoryInitialization*);
 IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id, uint16_t id,
+    IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
+    const IsleActorFactoryInitialization*);
+/* Complete ground factory, then the original ordinary late AUX-Y store. */
+IsleGameObject* isle_actor_owner_spawn(int32_t object_id, uint16_t id,
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
     const IsleActorFactoryInitialization*);
 IsleGameObject* func_beach_802CAC48(int32_t object_id, uint16_t id,

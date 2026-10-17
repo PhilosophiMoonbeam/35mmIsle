@@ -3,6 +3,7 @@
 #include "actor_owner.hpp"
 #include "actor_spatial.h"
 #include "item_owner.hpp"
+#include "beach_initial_species_source.h"
 #include "35mmisle/focus_detector.hpp"
 
 #include <limits>
@@ -101,6 +102,19 @@ const beach::ActorInitialization* factory(const beach::ActorResources& resources
     return nullptr;
 }
 
+unsigned initial_species_group(IsleGameSourceCallback function) noexcept {
+    if (function == func_beach_802C7B10 || function == func_beach_802C7BB8 ||
+        function == func_beach_802C7C7C || function == func_beach_802C7CF0 ||
+        function == func_beach_802C7DA0 || function == func_beach_802C7DEC) return 8;
+    if (function == func_beach_802C82B0 || function == func_beach_802C8354 ||
+        function == func_beach_802C83D0 || function == func_beach_802C8438 ||
+        function == func_beach_802C84A4) return 16;
+    return 0;
+}
+bool initial_species_callback(IsleGameSourceCallback function, void* context) noexcept {
+    return initial_species_group(function) == *static_cast<const unsigned*>(context);
+}
+
 bool header_assets(const beach::ActorResources& resources, Owner& actors,
     const beach::ActorInitialization* initialization, std::uint32_t identity) {
     if (!initialization) return false;
@@ -163,9 +177,21 @@ InteractionServices::InteractionServices(scene::Services& services, Owner& actor
         0x80388334u, 0x8035df20u, 0x80388310u);
     magikarp_ = factory(resources, 129, 0x802cac48u, 0x802cdaecu, 0x803594dcu,
         0x802cdad8u, 0x802cab50u, 0x802cda8cu);
+    butterfree_ = factory(resources, 12, 0x802c7e38u, 0x802ccda4u, 0x803594dcu,
+        0x802ccd90u, 0x802c7b10u, 0x802ccd24u);
+    doduo_ = factory(resources, 84, 0x802c8570u, 0x802ccf78u, 0x803594dcu,
+        0x802ccf64u, 0x802c82b0u, 0x802cceb0u);
     common_assets_ = header_assets(resources, actors, common_, 0x80388310u);
     magikarp_assets_ = header_assets(resources, actors, magikarp_, 0x802cda8cu) &&
         header_assets(resources, actors, magikarp_, 0x802cdab4u);
+    butterfree_assets_ = header_assets(resources, actors, butterfree_, 0x802ccd24u) &&
+        header_assets(resources, actors, butterfree_, 0x802ccd38u) &&
+        header_assets(resources, actors, butterfree_, 0x802ccd4cu);
+    doduo_assets_ = header_assets(resources, actors, doduo_, 0x802cceb0u) &&
+        header_assets(resources, actors, doduo_, 0x802ccec4u) &&
+        header_assets(resources, actors, doduo_, 0x802cced8u) &&
+        header_assets(resources, actors, doduo_, 0x802cceecu) &&
+        header_assets(resources, actors, doduo_, 0x802ccf00u);
 }
 
 bool InteractionServices::matches(Owner& actors, scene::Services& services,
@@ -226,6 +252,14 @@ struct InteractionSourceAccess {
     static bool callback_proof(Admission& admission, unsigned group) {
         auto& self = admission.self;
         auto& source = admission.source;
+        if (group == 8 || group == 16) {
+            const auto* init = group == 8 ? self.butterfree_ : self.doduo_;
+            IsleGameVec3 auxiliary;
+            return init && source.id == (group == 8 ? 12 : 84) &&
+                source.initData == init && source.animSetup == &init->setup &&
+                self.admits_initial_species(*init, source.path) &&
+                position(source.game, source.object, Position::auxiliary, auxiliary) == ISLE_GAME_OK;
+        }
         const bool common = self.common_ && source.id == 1003 && source.initData == self.common_ &&
             source.animSetup == &self.common_->setup;
         const bool magikarp = self.magikarp_ && source.id == 129 && source.initData == self.magikarp_ &&
@@ -262,12 +296,27 @@ struct InteractionSourceAccess {
         else if (function == func_8035DF20_4FE330 || function == func_8035E034_4FE444) group = 2;
         else if (function == func_beach_802CAB50 || function == func_beach_802CAC08 ||
                  function == func_8035E298_4FE6A8) group = 4;
-        else return false;
+        else if ((group = initial_species_group(function)) == 0) return false;
         if (!(admission.checked & group)) {
             admission.checked |= group;
             if (callback_proof(admission, group)) admission.admitted |= group;
         }
         return (admission.admitted & group) != 0;
+    }
+
+    static IsleGameResult graph(IsleActorSource* source, std::uint32_t identity,
+        const IsleActorInteractionGraph** output) noexcept {
+        if (output) *output = nullptr;
+        if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+        return context(source, [&](InteractionServices& self) {
+            const unsigned group = identity == 0x802ccd60u ? 8u :
+                (identity == 0x802ccf14u || identity == 0x802ccf44u) ? 16u : 0u;
+            if (!group) return ISLE_GAME_INVALID_ARGUMENT;
+            Admission admission{self, *source};
+            if (!callback_proof(admission, group)) return ISLE_GAME_INVALID_STATE;
+            *output = &self.bindings_.graph(identity);
+            return ISLE_GAME_OK;
+        });
     }
 
     static IsleGameResult rows(IsleActorSource* source, const IsleActorInteraction** output) noexcept {
@@ -434,9 +483,71 @@ struct InteractionSourceAccess {
         });
     }
 };
+
+bool InteractionServices::admits_initial_species(const beach::ActorInitialization& initialization,
+    const void* path) noexcept {
+    try {
+        if (services_.failed() || world_.retired() || !world_.error().empty()) return false;
+        resources_.require_live();
+        bindings_.require_live();
+        const bool butterfree = &initialization == butterfree_ && butterfree_assets_;
+        const bool doduo = &initialization == doduo_ && doduo_assets_;
+        if (!butterfree && !doduo) return false;
+        bool current = false;
+        for (const auto& block : world_.blocks())
+            if (&block == world_.current() && block.resource) { current = true; break; }
+        if (!current) return false;
+        if (path) {
+            bool found = false;
+            for (const auto& candidate : world_.resources().paths)
+                if (&candidate == path) { found = true; break; }
+            if (!found) return false;
+        }
+        // Original Root Movement_Init creates actors before publishing its
+        // Player model and shared FX helpers. Prove the actual prepared Source
+        // provider now; scheduled distance/interaction consumers validate the
+        // published native model/camera when they run, not during allocation.
+        const auto& player = actors_.player_source();
+        IslePlayerSource* active = nullptr;
+        if (player.game != services_.game ||
+            isle_player_source_context(services_.game, &active) != ISLE_GAME_OK ||
+            active != &player) return false;
+        // Include initial/path callbacks even though no interaction row points
+        // to them. Graph-only admission would miss their executable closure.
+        const auto bound = [&](std::uint32_t identity, IsleGameSourceCallback function) {
+            return bindings_.callback(identity) == function;
+        };
+        unsigned group = butterfree ? 8u : 16u;
+        if (butterfree) {
+            if (!bound(0x802c7b10u, func_beach_802C7B10) ||
+                !bound(0x802c7bb8u, func_beach_802C7BB8) ||
+                !bound(0x802c7c7cu, func_beach_802C7C7C) ||
+                !bound(0x802c7cf0u, func_beach_802C7CF0) ||
+                !bound(0x802c7da0u, func_beach_802C7DA0) ||
+                !bound(0x802c7decu, func_beach_802C7DEC)) return false;
+            return bindings_.admits_native_graph(bindings_.graph(0x802ccd60u),
+                initial_species_callback, &group);
+        }
+        if (!bound(0x802c82b0u, func_beach_802C82B0) ||
+            !bound(0x802c8354u, func_beach_802C8354) ||
+            !bound(0x802c83d0u, func_beach_802C83D0) ||
+            !bound(0x802c8438u, func_beach_802C8438) ||
+            !bound(0x802c84a4u, func_beach_802C84A4)) return false;
+        return bindings_.admits_native_graph(bindings_.graph(0x802ccf14u),
+                   initial_species_callback, &group) &&
+            bindings_.admits_native_graph(bindings_.graph(0x802ccf44u),
+                initial_species_callback, &group);
+    } catch (...) {
+        return false;
+    }
+}
 } // namespace isle::actor
 
 extern "C" {
+IsleGameResult isle_actor_owner_graph(IsleActorSource* source, uint32_t identity,
+    const IsleActorInteractionGraph** output) {
+    return isle::actor::InteractionSourceAccess::graph(source, identity, output);
+}
 IsleGameResult isle_actor_owner_target_position_ref(IsleActorSource* source, IsleGameObject* target,
     IsleActorPositionRef* output) {
     if (!output) return ISLE_GAME_INVALID_ARGUMENT;

@@ -47,9 +47,9 @@ DEFINITIONS = (
     (POKEMON, "Pokemon_WaitForFlag", 723, 734, ()),
     (POKEMON, "Pokemon_RunCleanup", 771, 773, ()),
     (POKEMON, "Pokemon_Update", 2066, 2089, (("getIsPaused()", "isle_actor_owner_paused(pokemon)"), ("obj->animationTime", "isle_actor_owner_animation_time(pokemon)"), ("cmdProcessCommands(Pokemon_HandleCommand);", "isle_actor_source_commands(obj);"))),
-    (COMMON, "func_8035DF20_4FE330", 63, 77, (("Pokemon_SetAnimation(obj, &D_80388310_528720);", "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 0);"),)),
+    (COMMON, "func_8035DF20_4FE330", 63, 77, (("Pokemon_SetAnimation(obj, &D_80388310_528720);", "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 0.0f, 0);"),)),
     (COMMON, "func_8035DFB0_4FE3C0", 79, 93, (("    DObj* model = obj->data.dobj;\n", ""), ("model->position.v.y -= 0.2f;", "isle_actor_source_subtract_y(obj, 0.2f);"))),
-    (COMMON, "func_8035E034_4FE444", 95, 110, (("HIDE_POKEMON();", "isle_actor_source_visibility(obj, 1);"), ("SHOW_POKEMON();", "isle_actor_source_visibility(obj, 0);"), ("Pokemon_ForceAnimation(obj, &D_80388310_528720);", "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 1);"))),
+    (COMMON, "func_8035E034_4FE444", 95, 110, (("HIDE_POKEMON();", "isle_actor_source_visibility(obj, 1);"), ("SHOW_POKEMON();", "isle_actor_source_visibility(obj, 0);"), ("Pokemon_ForceAnimation(obj, &D_80388310_528720);", "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 0.0f, 1);"))),
     (COMMON, "func_8035E0D4_4FE4E4", 112, 114, ()),
     (COMMON, "func_8035E264_4FE674", 164, 173, (
         ("void func_8035E264_4FE674", "IsleGameResult func_8035E264_4FE674"),
@@ -61,7 +61,7 @@ DEFINITIONS = (
     )),
     (MAGIKARP, "func_beach_802CAB50", 4, 18, (
         ("    DObj* model = obj->data.dobj;\n    Mtx4Float* rotation = &GET_TRANSFORM(model)->rot;\n", ""),
-        ("Pokemon_SetAnimation(obj, &D_beach_802CDAB4);", "isle_actor_source_set_animation(obj, UINT32_C(0x802cdab4), 0);"),
+        ("Pokemon_SetAnimation(obj, &D_beach_802CDAB4);", "isle_actor_source_set_animation(obj, UINT32_C(0x802cdab4), 0.0f, 0);"),
         ("rotation->v.y = randRange(360) * PI / 180.0f;", "{\n        IsleGameModelRef model = isle_actor_source_self_model(obj);\n        IsleGameModelTransform values;\n        values.rotation.y = isle_actor_source_rand_range(obj, 360) * PI / 180.0f;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);\n    }"),
         ("D_beach_802CC014 = false;", "isle_actor_source_magikarp_active(obj, false);"),
     )),
@@ -260,6 +260,56 @@ MOVEMENT_DEFINITIONS = (
         ("Pokemon_GetGroundAt(x, z)", "Pokemon_GetGroundAt(obj, x, z)"),
     )),
 )
+INITIAL_SPECIES_FILES = ("src/beach/55FB80.c", "src/beach/560320.c")
+INITIAL_SPECIES_UNITS = (
+    (0, "802C7B10", 4, 21), (0, "802C7BB8", 24, 37),
+    (0, "802C7C7C", 39, 48), (0, "802C7CF0", 50, 63),
+    (0, "802C7DA0", 65, 72), (0, "802C7DEC", 74, 81),
+    (0, "802C7E38", 83, 85), (1, "802C82B0", 4, 17),
+    (1, "802C8354", 19, 30), (1, "802C83D0", 32, 41),
+    (1, "802C8438", 43, 52), (1, "802C84A4", 54, 71),
+    (1, "802C8570", 73, 75),
+)
+
+def initial_species_changes(identity):
+    changes = []
+    animations = {
+        "802C7B10": (("obj", "802CCD24", "isle_actor_source_rand_float(obj) * 100.0f"),),
+        "802C7BB8": (("arg0", "802CCD24", None), ("arg0", "802CCD38", None)),
+        "802C7CF0": (("obj", "802CCD4C", None), ("obj", "802CCD24", None)),
+        "802C8354": (("obj", "802CCF00", None),),
+        "802C83D0": (("obj", "802CCEB0", None),),
+        "802C84A4": (("obj", "802CCEC4", None), ("obj", "802CCED8", None), ("obj", "802CCEEC", None)),
+    }
+    for obj, header, start in animations.get(identity, ()):
+        old = (f"Pokemon_SetAnimationAtTime({obj}, &D_beach_{header}, randFloat() * 100.0f)"
+               if start else f"Pokemon_SetAnimation({obj}, &D_beach_{header})")
+        changes.append((old, f"isle_actor_source_set_animation({obj}, UINT32_C(0x{header.lower()}), {start or '0.0f'}, 0)"))
+    if identity == "802C7B10":
+        changes += [
+            ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+            ("    Mtx3Float* position = &GET_TRANSFORM(model)->pos;", "    const IsleGameVec3* position = &isle_actor_source_aux(obj, &model)->position;"),
+            ("position->v.y", "position->y"),
+        ]
+    if identity == "802C7BB8":
+        changes.append(("randRange(600)", "isle_actor_source_rand_range(arg0, 600)"))
+    if identity == "802C7C7C":
+        changes.append(("randFloat()", "isle_actor_source_rand_float(obj)"))
+    graphs = {"802C7BB8": ("802CCD60", 2), "802C7CF0": ("802CCD60", 1),
+              "802C82B0": ("802CCF44", 1), "802C8354": ("802CCF14", 1),
+              "802C83D0": ("802CCF14", 1)}
+    if identity in graphs:
+        graph, count = graphs[identity]
+        changes.append((f"D_beach_{graph}", f"isle_actor_source_graph(obj, UINT32_C(0x{graph.lower()}))" if identity != "802C7BB8" else f"isle_actor_source_graph(arg0, UINT32_C(0x{graph.lower()}))", count))
+    if identity == "802C82B0":
+        changes.append(("obj->flags |= GOBJ_FLAG_HIDDEN;", "isle_actor_source_object_flags(obj, UINT32_C(1), UINT32_C(1));"))
+    if identity == "802C8354":
+        changes.append(("obj->flags = 0;", "isle_actor_source_object_flags(obj, UINT32_MAX, 0);"))
+    return tuple(changes)
+
+DEFINITIONS += tuple((INITIAL_SPECIES_FILES[file], "func_beach_" + identity, first, last,
+                      initial_species_changes(identity))
+                     for file, identity, first, last in INITIAL_SPECIES_UNITS)
 DEFINITIONS += MOVEMENT_DEFINITIONS
 CONTROL_SYMBOLS = frozenset(unit[1] for unit in DEFINITIONS[:6])
 CONTROL_PREAMBLE = '''/* Private selected own-GAME core actor control. */
@@ -273,6 +323,7 @@ typedef IsleActorRandomState RandomState;
 PREAMBLE = '''/* Private transformed own-GAME bodies, not byte-identical source. */
 #include "engine_internal.h"
 #include "actor_owner_source.h"
+#include "beach_initial_species_source.h"
 #include "item_source.h"
 #include <float.h>
 typedef IsleActorInteraction InteractionHandler;
@@ -298,6 +349,9 @@ typedef IsleActorGround GroundResult;
 typedef IsleActorGeoDefinition PokemonDef;
 static const PokemonInitData D_beach_802CDAEC = { UINT32_C(0x802cdaec) };
 static const PokemonDef D_8038837C_52878C = { UINT32_C(0x8038837c) };
+static const PokemonInitData D_beach_802CCDA4 = { UINT32_C(0x802ccda4) };
+static const PokemonInitData D_beach_802CCF78 = { UINT32_C(0x802ccf78) };
+#define POKEMON_FLAG_200 0x200
 static const IsleGameVec3 D_8038838C_52879C = { 0.0f, 0.0f, 0.0f };
 #define PokemonID_1003 1003
 /* QUALIFIED native numeric policy, not established original SDK macro parity.
@@ -320,9 +374,10 @@ enum {
 #define UNUSED
 #define Pokemon_SpawnOnGround isle_actor_owner_spawn_ground
 #define Pokemon_SpawnOnGroundDlLink4 isle_actor_owner_spawn_ground_dl4
+#define Pokemon_Spawn isle_actor_owner_spawn
 #define GET_POKEMON(object) isle_actor_source_require(object)
 #define omCreateProcess isle_actor_source_create_process
-void isle_actor_source_set_animation(IsleGameObject*, uint32_t, int);
+void isle_actor_source_set_animation(IsleGameObject*, uint32_t, float, int);
 void isle_actor_source_subtract_y(IsleGameObject*, float);
 void isle_actor_source_visibility(IsleGameObject*, int);
 void isle_actor_source_commands(IsleGameObject*);
@@ -344,11 +399,11 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
     manifest_bytes = manifest_path.read_bytes()
     manifest = json.loads(manifest_bytes)
     if (manifest["schema_version"] != 1 or manifest["revision"] != REVISION or
-            manifest["transformation_version"] != "actor-control-v6"):
+            manifest["transformation_version"] != "actor-control-v7"):
         raise ValueError("unsupported actor authority/transformation")
     if git(repository, "cat-file", "-t", REVISION).strip() != b"commit":
         raise ValueError("actor authority is not a commit")
-    if set(manifest["source_files"]) != {POKEMON, COMMON, MAGIKARP, "src/app_level/app_level.h", "include/enums.h", "include/common_structs.h"}:
+    if set(manifest["source_files"]) != {POKEMON, COMMON, MAGIKARP, *INITIAL_SPECIES_FILES, "src/app_level/app_level.h", "include/enums.h", "include/common_structs.h"}:
         raise ValueError("actor source allowlist mismatch")
     sources = {}
     for path, identity in manifest["source_files"].items():
@@ -363,7 +418,8 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
                      "src/actor_owner_source.h", "src/engine.c", "src/engine_internal.h",
                      "include/35mmisle/engine.h", "include/35mmisle/rng.h", "src/rng.c", "tools/prepare_engine.py"}
     support_paths.update({"src/actor_interaction_services.h", "src/item_source.h",
-                          "src/source_command_scope.h", "src/source_factory_resources.h"})
+                          "src/source_command_scope.h", "src/source_factory_resources.h",
+                          "src/beach_initial_species_source.h"})
     if set(manifest["native_support"]) != support_paths:
         raise ValueError("actor native support allowlist mismatch")
     for path, identity in manifest["native_support"].items():

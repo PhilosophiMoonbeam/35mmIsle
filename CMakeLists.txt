@@ -436,6 +436,8 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/item_owner.cpp src/item_owner.hpp src/item_owner_source.h
             src/item_source_bridge.c "${_isle_item_generated}"
             src/beach_magikarp_scene.cpp src/beach_magikarp_scene.hpp
+            src/beach_initial_species.cpp src/beach_initial_species.hpp
+            src/beach_initial_species_source.h
             src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
         target_link_libraries(isle-actor-owner PUBLIC
             isle-engine isle-actor-producer isle-world isle-environment-sound
@@ -812,6 +814,14 @@ if(BUILD_TESTING)
             isle-actor-owner isle-effect-bank-resources isle-graphics-task isle-rsp)
         isle_target_options(beach-magikarp-scene-rom-smoke)
         target_compile_options(beach-magikarp-scene-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_executable(beach-initial-species-rom-smoke EXCLUDE_FROM_ALL
+            tests/beach_initial_species_rom_smoke.cpp tests/actor_interaction_probe.c)
+        target_link_libraries(beach-initial-species-rom-smoke PRIVATE
+            isle-actor-owner isle-effect-bank-resources isle-graphics-task isle-rsp)
+        isle_target_options(beach-initial-species-rom-smoke)
+        target_compile_options(beach-initial-species-rom-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
         add_executable(actor-command26-rom-smoke EXCLUDE_FROM_ALL tests/actor_command26_rom_smoke.cpp)

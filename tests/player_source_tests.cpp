@@ -39,10 +39,11 @@ public:
     }
     World(const World&) = delete;
     World& operator=(const World&) = delete;
-    IsleGameObject* object(std::uint32_t id) {
+    IsleGameObject* object(std::uint32_t id, std::uint8_t link=9,
+        std::uint32_t priority=0x80000000u, IsleGameCallback update=nullptr, void* user=nullptr) {
         require(object_count < objects.size(),"fixture object capacity exceeded");
         IsleGameObject* object=nullptr;
-        ok(isle_game_add_object(game,id,9,0x80000000u,nullptr,nullptr,&object));
+        ok(isle_game_add_object(game,id,link,priority,update,user,&object));
         objects[object_count++]=object;
         return object;
     }
@@ -128,6 +129,93 @@ void helper_uses_game_context_across_real_wait_without_payload_cast() {
     IslePlayerSource* output=&world.source;
     require(isle_player_source_get(world.game,helper,&output) == ISLE_GAME_INVALID_STATE && !output,
             "context lookup manufactured a root Player payload for a helper");
+}
+
+void count_native_callback(IsleGameObject*, void* context) {
+    ++*static_cast<unsigned*>(context);
+}
+void object_process_controls_preserve_real_waits_updaters_and_current_context() {
+    World world;
+    auto* root=world.object(7);
+    ok(isle_player_source_bind(world.game,root,&world.source));
+    unsigned updates=0,synchronous=0;
+    auto* helper=world.object(8,9,0x80000000u,count_native_callback,&updates);
+    IsleGameProcess *waiting=nullptr,*ordinary=nullptr,*self=nullptr;
+    ok(isle_game_add_source_process(world.game,helper,player_source_helper_wait,
+        ISLE_GAME_STACKFUL,9,&waiting));
+    ok(isle_game_add_process(world.game,helper,count_native_callback,&synchronous,
+        ISLE_GAME_SYNCHRONOUS,8,&ordinary));
+    ok(isle_game_tick(world.game));
+    require(world.source.ThrowItemTimeout==41 && synchronous==1 && updates==1,
+        "actual mixed native processes did not enter their first update/wait");
+    PlayerObjectControl control{helper,1,0,0,nullptr,0};
+    ok(isle_player_source_call(&world.source,player_source_pause_all,&control));
+    for (unsigned i=0;i<3;++i) ok(isle_game_tick(world.game));
+    require(world.source.ThrowItemTimeout==41 && synchronous==1 && updates==4 && control.completed==1,
+        "object-wide pause advanced waits, missed a process kind, or paused fnUpdate");
+    control.paused=0;
+    ok(isle_player_source_call(&world.source,player_source_pause_all,&control));
+    ok(isle_game_tick(world.game));
+    require(world.source.ThrowItemTimeout==42 && synchronous==2 && updates==5 &&
+        world.counts().processes==1 && control.completed==2,
+        "object-wide resume lost remaining wait, self-end, or synchronous execution");
+    auto* other=world.object(9);
+    ok(isle_game_add_source_process(world.game,other,player_source_pause_current,
+        ISLE_GAME_SYNCHRONOUS,7,&self));
+    ok(isle_game_tick(world.game));
+    require(world.source.ThrowItemTimeout==44,
+        "NULL object failed to resolve actual current callback or stopped its current tail");
+    ok(isle_game_tick(world.game));
+    require(world.source.ThrowItemTimeout==44 && synchronous==4 && updates==7,
+        "self-pause selected canonical Root or unrelated helper instead of current object");
+    control.object=other;
+    ok(isle_player_source_call(&world.source,player_source_pause_all,&control));
+    ok(isle_game_tick(world.game));
+    require(world.source.ThrowItemTimeout==46 && synchronous==5 && updates==8,
+        "resumed actual current-object process failed its same source continuation");
+}
+
+void ordered_source_lookup_preserves_link_priority_absence_and_checked_boundaries() {
+    {
+        World world;
+        world.object(42,9,10);
+        auto* high=world.object(42,9,20);
+        auto* other_link=world.object(42,8,30);
+        PlayerObjectControl query{nullptr,0,9,42,nullptr,0};
+        ok(isle_player_source_call(&world.source,player_source_find_object,&query));
+        require(query.found==high && query.completed==1,
+            "source lookup ignored actual native link/priority order");
+        query.link=8;
+        ok(isle_player_source_call(&world.source,player_source_find_object,&query));
+        require(query.found==other_link && query.completed==2,
+            "source lookup searched a separate owner cache or the wrong update link");
+        query.id=99;
+        ok(isle_player_source_call(&world.source,player_source_find_object,&query));
+        require(!query.found && query.completed==3 && world.source.status==ISLE_GAME_OK,
+            "legal missing source object fabricated a handle or fault");
+        auto* main_camera=world.object(UINT32_MAX,0,0x80000000u);
+        query.link=0; query.id=UINT32_MAX;
+        ok(isle_player_source_call(&world.source,player_source_find_object,&query));
+        require(query.found==main_camera && query.completed==4,
+            "source lookup lost the main camera's unsigned representation of object ID -1");
+    }
+    for (int link : {-1,32}) {
+        World world;
+        auto* object=world.object(42);
+        PlayerObjectControl query{nullptr,0,link,42,object,0};
+        require(isle_player_source_call(&world.source,player_source_find_object,&query)==ISLE_GAME_INVALID_ARGUMENT &&
+            world.source.status==ISLE_GAME_INVALID_ARGUMENT && query.found==object && !query.completed &&
+            !world.source.nonwaiting_call_frame && isle_game_status(world.game)==ISLE_GAME_OK,
+            "invalid source link escaped its C fence, changed output or poisoned native Game");
+    }
+    {
+        World world;
+        world.object(42);
+        PlayerObjectControl control{nullptr,1,0,0,nullptr,0};
+        require(isle_player_source_call(&world.source,player_source_pause_all,&control)==ISLE_GAME_INVALID_ARGUMENT &&
+            !control.completed && !world.source.nonwaiting_call_frame && isle_game_status(world.game)==ISLE_GAME_OK,
+            "cold NULL process target manufactured a current object outside native dispatch");
+    }
 }
 
 void nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status() {
@@ -436,6 +524,8 @@ int main() {
     try {
         canonical_root_cannot_alias_actor_item_foreign_or_second_context();
         helper_uses_game_context_across_real_wait_without_payload_cast();
+        object_process_controls_preserve_real_waits_updaters_and_current_context();
+        ordered_source_lookup_preserves_link_priority_absence_and_checked_boundaries();
         nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status();
         sprite_borrows_reacquire_actual_membership_after_a_real_wait();
         sprite_borrow_failures_use_only_the_canonical_nested_c_fence();

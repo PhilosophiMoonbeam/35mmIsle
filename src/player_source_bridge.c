@@ -224,6 +224,30 @@ IsleGameProcess* isle_player_source_add_process(IslePlayerSource* source,
     return process;
 }
 
+void isle_player_source_pause_object_processes(IslePlayerSource* source,
+    IsleGameObject* object, int paused) {
+    IsleGameObjectMetadata metadata;
+    GObjProcess* process;
+    check_callback_source(source);
+    if (object == NULL) object = omCurrentObject;
+    isle_player_source_checked(source, isle_game_object_metadata(source->game, object, &metadata));
+    for (process = object->processListHead; process != NULL; process = process->next)
+        process->paused = paused ? 1 : 0;
+}
+
+IsleGameObject* isle_player_source_find_object(IslePlayerSource* source,
+    int32_t link, uint32_t id) {
+    GObj* object;
+    check_callback_source(source);
+    if (link < 0 || link >= (int32_t)ARRAY_COUNT(omGObjListHead)) {
+        isle_player_source_checked(source, ISLE_GAME_INVALID_ARGUMENT);
+        return NULL;
+    }
+    for (object = omGObjListHead[link]; object != NULL; object = object->next)
+        if (object->id == id) return object;
+    return NULL;
+}
+
 IsleGameSprite* isle_player_source_first_sprite(IslePlayerSource* source,
     IsleGameObject* object) {
     IsleGameSprite* sprite = NULL;

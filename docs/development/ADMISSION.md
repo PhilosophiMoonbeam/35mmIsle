@@ -1068,7 +1068,7 @@ compilation of all 22 opt-in consumers without a ROM.
 
 ## Checked World callbacks, complete vectors and SourceControl
 
-The next 496-file native snapshot is
+Published `6c7e3ca`'s 496-file native snapshot is
 `3ec8feddd13afeaf16faa9cf49a41eebc19943b1f9433582a34f03095dc9d6dd`.
 All World and Movement callbacks now return `bool noexcept`. Failed callbacks
 return before checked C++ propagation; subsequent callbacks, sampling and
@@ -1137,8 +1137,84 @@ qualification.
 This admits callback/math/control prerequisites, not the complete original
 camera functions, global camera/FX/UI scheduling, all 106 Root definitions,
 genuine first-World factory/graph closure, other courses, full gameplay, private
-Windows11 execution, Original capture parity or physical devices. Hosted proof
-above remains tied to `c079c6d`, not these subsequent source changes.
+Windows11 execution, Original capture parity or physical devices.
+That immutable revision subsequently passed
+[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39036742866),
+including the full static-runtime LUS/audio/RSP/RDP/engine closure and explicit
+compilation of all 22 then-current opt-in consumers without a ROM. Later
+species/helper changes require their own evidence.
+
+## Genuine Butterfree/Doduo and native object helpers
+
+The 500-file source snapshot is
+`d8a794c9928889297f4bb8a39c39add4a6a9b36fa3776bd059b4844d5eca4570`
+(SHA256 of compact, key-sorted JSON path→SHA256 records). Strict
+`actor-control-v7` materialization compiles all thirteen complete pinned GAME
+definitions: eleven Butterfree/Doduo callbacks and two original void factories.
+Original bodies remain private. Immutable typed bindings include direct,
+graph, auxiliary and self-cycle dependencies; missing closure rejects before
+native ownership/RNG mutation.
+
+Butterfree12 uses ordinary `Pokemon_Spawn`: complete ground factory first,
+including forced animation/events, process creation and source resets, then
+only the original late AUX-Y overwrite. Ground `pos1` and cached target fields
+are not replaced. Doduo84 uses `Pokemon_SpawnOnGround`, not the ordinary leaf.
+Both factories accept the active prepared canonical PlayerSource before its
+object/model or FX publication. The same native actors survive later actual
+component Player/FX publication and execute original initial states only under
+the real OM. This proves that ordering capability, not original Root entry.
+
+The clean four-argument animation seam preserves explicit start/force;
+canonical RNG supplies randFloat, seven shared scalar unions supply miscVars,
+and masked native object flags remain distinct from tangible visibility.
+Doduo's hidden-but-tangible wait, real player-distance command16 emergence,
+original hit timer/path cleanup and joined slot reuse execute without forged
+state jumps. Butterfree's path, queued hit, Jump/Fall auxiliaries and actual FIFO
+pause/resume execute. Object fnUpdate continues draining FIFO while attached
+processes pause; the source counter belongs to that independent update.
+
+Checked C Player helpers pause/resume every actual attached process kind without
+pausing fnUpdate; a NULL target means actual OM current object, never an
+invented Player fallback. Link-ID lookup preserves native priority/insertion
+order, unsigned IDs including main-camera−1 and legal NULL absence. Invalid
+links reject without changing outputs or the first failure. Real mixed-kind
+processes, current-object self-pause tails/resumption, independent fnUpdate and
+lookup/fence boundaries pass all three CPU profiles. All four private full106
+Root call sites are migrated and independently source-replayed; that draft
+remains uncompiled and does not count as original Root execution.
+
+| Complete actual consumer | GCC Debug seconds | GCC Release seconds | Clang ASan+UBSan seconds |
+|---|---:|---:|---:|
+| Original-C Butterfree/Doduo and owned audio-RSP drain | 1.228293 | 0.637213 | 2.837121 |
+| All 57 CPU contracts after explicit all23 and default rebuild | 3.51 | 0.81 | 11.73 |
+
+All 23 explicit opt-in targets and complete default CPU executables build in
+each profile. The current cohort has 69 accepted component cases: 68 fresh
+executions plus the exact-source/binary passing Debug species scope, reused
+without replay or rescan. Sole initial closures establish 3,760 terminal tasks,
+3,691 created tasks and 3,829 absent tracer/task identities before physical
+inspection. Traces are stable, ROM unchanged, known physical-device attempts
+and permission errors zero. All 57 support manifests reach an unchanged fixed
+point. Exact known positive paths retain all 63 prior surface images, 213 Photo
+files and 12 Cart files byte-for-byte.
+
+Four initial whole scopes remain rejected. Consumer corrections replace an
+empty-span assumption with actual owners in the fixed-capacity render span,
+an incorrect counter-pause expectation with real attached-process observations,
+and an out-of-range100000 placement with a representable far fixture. Native
+filtering, scheduler policy, fixed16.16 validation, source thresholds and source
+fields are not weakened. Rejected scopes are not replayed, inventoried or
+partially admitted.
+
+The new species consumer performs no GPU/render submission. Audio proof is
+actual private RSP execution and owned CPU PCM/drain, not an exercised SDL
+stream or hearing. Address/UB failures remain fatal; ptrace-only leak-scan
+disable is not leak qualification. These results do not admit complete original
+camera routing, all106 Root bodies, the remaining first-entry25/16/131/1004
+families, all courses, gameplay, independent Original parity, private Windows11
+runtime or hardware. CI explicitly builds all23 consumers without a ROM;
+the preceding hosted receipt above remains tied to `6c7e3ca`.
+
 
 ## Independent Detector and framebuffer contexts
 

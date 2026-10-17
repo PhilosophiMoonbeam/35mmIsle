@@ -21,6 +21,17 @@ void player_source_sprite_nested_borrow(IslePlayerSource*, void*);
 void player_source_sprite_wait(IsleGameObject*);
 void player_source_sprite_delete_self(IsleGameObject*);
 void player_source_sprite_explicit_context(IsleGameObject*, void*);
+typedef struct PlayerObjectControl {
+    IsleGameObject* object;
+    int paused;
+    int32_t link;
+    uint32_t id;
+    IsleGameObject* found;
+    int completed;
+} PlayerObjectControl;
+void player_source_pause_all(IslePlayerSource*, void*);
+void player_source_find_object(IslePlayerSource*, void*);
+void player_source_pause_current(IsleGameObject*);
 #ifdef __cplusplus
 }
 #endif

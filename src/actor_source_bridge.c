@@ -90,3 +90,8 @@ int32_t isle_actor_source_rand_range(IsleGameObject* object, int32_t range) {
     IsleActorSource* actor = isle_actor_source_require(object);
     return isle_rng_range(actor->rng, range);
 }
+
+float isle_actor_source_rand_float(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    return isle_rng_next_float(actor->rng);
+}

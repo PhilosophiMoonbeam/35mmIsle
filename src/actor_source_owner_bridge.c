@@ -73,10 +73,16 @@ IsleGameVec3 isle_actor_source_current_world_position(IsleGameObject* object) {
     checked(actor, isle_actor_owner_current_world_position(actor, &value));
     return value;
 }
-void isle_actor_source_set_animation(IsleGameObject* object, uint32_t identity, int force) {
+void isle_actor_source_set_animation(IsleGameObject* object, uint32_t identity, float start, int force) {
     IsleActorSource* actor = isle_actor_source_require(object);
-    IsleGameResult result = isle_actor_owner_animation(actor, identity, 0.0f, force);
+    IsleGameResult result = isle_actor_owner_animation(actor, identity, start, force);
     checked(actor, result);
+}
+const IsleActorInteractionGraph* isle_actor_source_graph(IsleGameObject* object, uint32_t identity) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    const IsleActorInteractionGraph* graph = NULL;
+    checked(actor, isle_actor_owner_graph(actor, identity, &graph));
+    return graph;
 }
 void isle_actor_source_subtract_y(IsleGameObject* object, float amount) {
     IsleActorSource* actor = isle_actor_source_require(object);
@@ -87,6 +93,13 @@ void isle_actor_source_visibility(IsleGameObject* object, int hidden) {
     IsleActorSource* actor = isle_actor_source_require(object);
     IsleGameResult result = isle_actor_owner_visibility(actor, hidden);
     checked(actor, result);
+}
+void isle_actor_source_object_flags(IsleGameObject* object, uint32_t mask, uint32_t value) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleGameObjectMetadata metadata;
+    checked(actor, isle_game_object_metadata(actor->game, object, &metadata));
+    checked(actor, isle_game_object_set_flags(actor->game, object,
+        (metadata.flags & ~mask) | (value & mask)));
 }
 static IsleGameResult command_admission(IsleGameObject* object, int32_t command,
     IsleGameObject* sender, void* user) {

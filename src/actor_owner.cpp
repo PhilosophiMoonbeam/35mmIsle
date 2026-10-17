@@ -2,6 +2,7 @@
 #include "actor_interaction_services.hpp"
 #include "actor_photo_eligibility.hpp"
 #include "actor_collision.hpp"
+#include "beach_initial_species_source.h"
 #include "source_effect_world.hpp"
 #include <algorithm>
 #include <cmath>
@@ -411,7 +412,39 @@ struct SourceAccess {
         return &slot->source==source && slot->active && slot->object==source->object &&
             slot->owner->services.game==source->game?slot:nullptr;
     }
-    static SpawnResult spawn(Owner& owner,const SpawnRequest& request) noexcept { return owner.spawn_native(request); }
+    static SpawnResult spawn(Owner& owner,const SpawnRequest& request,uint16_t id,uint32_t initialization) noexcept {
+        const auto& resources=owner.impl_->resources;
+        if (request.definition>=resources.definitions().size())
+            return {{OwnerError::admission,"typed source factory definition outside resources"},{},nullptr};
+        const auto& definition=resources.definitions()[request.definition];
+        if (definition.actor_id!=id || definition.initialization>=resources.initializations().size() ||
+            resources.initializations()[definition.initialization].wire.guest_address!=initialization)
+            return {{OwnerError::admission,"typed source factory ID/initialization differs from definition"},{},nullptr};
+        return owner.spawn_native(request);
+    }
+    static SpawnResult spawn_ordinary(Owner& owner,const SpawnRequest& request,uint16_t id,uint32_t initialization) noexcept {
+        auto result=spawn(owner,request,id,initialization);
+        if (!result) return result;
+        auto& self=*owner.impl_;
+        auto* slot=self.find(result.instance);
+        const IsleGameModelPlacement* current=nullptr;
+        if (!slot || isle_game_model_placement(self.services.game,slot->model,&current)!=ISLE_GAME_OK ||
+            !current || current->mode!=ISLE_GAME_MODEL_PLACEMENT_RTS) {
+            self.services.erase(result.object);
+            return {{OwnerError::native,"ordinary source factory late AUX placement read"},{},nullptr};
+        }
+        // pokemon.c2113-2117: complete Ground (including immediate animation
+        // events, processes and canonical source caches), then ONLY AUX Y.
+        auto placement=current->transform;
+        placement.position.y=request.spawn->position.y*100.0f+
+            (request.block->resource->metadata.world_position.y-
+             request.reference->resource->metadata.world_position.y)*100.0f;
+        if (isle_game_model_set_placement(self.services.game,slot->model,current->mode,&placement)!=ISLE_GAME_OK) {
+            self.services.erase(result.object);
+            return {{OwnerError::native,"ordinary source factory late AUX Y store"},{},nullptr};
+        }
+        return result;
+    }
     static const menu::AnimationPath* path(Owner::Impl::Slot& slot,const void* value) noexcept {
         if (!value || slot.owner->world.retired() || !slot.owner->world.error().empty()) return nullptr;
         for (const auto& candidate:slot.owner->world.resources().paths)
@@ -486,13 +519,19 @@ SpawnResult Owner::spawn(const SpawnRequest& request) noexcept {
     const auto& definition=impl_->resources.definitions()[request.definition];
     const bool common=definition.factory_identity==0x8035e0d4u && definition.actor_id==1003;
     const bool magikarp=definition.factory_identity==0x802cac48u && definition.actor_id==129;
-    if (!common && !magikarp)
+    const bool butterfree=definition.factory_identity==0x802c7e38u && definition.actor_id==12;
+    const bool doduo=definition.factory_identity==0x802c8570u && definition.actor_id==84;
+    if (!common && !magikarp && !butterfree && !doduo)
         return {{OwnerError::admission,"configured factory identity is not natively admitted"},{},nullptr};
     SpawnResult result{{OwnerError::admission,"source factory did not publish a result"},{},nullptr};
     IsleActorFactoryBlock block{this,request.block,&result},reference{this,request.reference,&result};
     IsleActorFactorySpawn spawn{request.spawn,request.definition};
     if (common)
         func_8035E0D4_4FE4E4(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    else if (butterfree)
+        func_beach_802C7E38(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    else if (doduo)
+        func_beach_802C8570(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
     else
         func_beach_802CAC48(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
     return result;
@@ -610,17 +649,30 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     const bool magikarp=definition.actor_id==129 && definition.factory_identity==0x802cac48u &&
         initialization.wire.guest_address==0x802cdaecu && initialization.render_callback_identity==0x803594dcu &&
         initialization.setup.wire.guest_address==0x802cdad8u && initialization.setup.initial_state_identity==0x802cab50u;
-    if ((!common && !magikarp) || initialization.setup.transition_graph_identity!=0 ||
+    const bool butterfree=definition.actor_id==12 && definition.factory_identity==0x802c7e38u &&
+        initialization.wire.guest_address==0x802ccda4u && initialization.render_callback_identity==0x803594dcu &&
+        initialization.setup.wire.guest_address==0x802ccd90u && initialization.setup.initial_state_identity==0x802c7b10u;
+    const bool doduo=definition.actor_id==84 && definition.factory_identity==0x802c8570u &&
+        initialization.wire.guest_address==0x802ccf78u && initialization.render_callback_identity==0x803594dcu &&
+        initialization.setup.wire.guest_address==0x802ccf64u && initialization.setup.initial_state_identity==0x802c82b0u;
+    if ((!common && !magikarp && !butterfree && !doduo) || initialization.setup.transition_graph_identity!=0 ||
         initialization.setup.unknown_0c_identity!=0 || initialization.setup.process_kind!=0 ||
         !initialization.animations_enabled)
         return reject(OwnerError::admission,"configured actor factory/init/render/setup/state/graph tuple is not natively admitted");
     if (initialization.model>=self.resources.models().size() || initialization.setup.initial_header>=self.resources.headers().size())
         return reject(OwnerError::admission,"actor native tree/header missing");
-    if (self.resources.headers()[initialization.setup.initial_header].wire.guest_address!=(common?0x80388310u:0x802cda8cu))
+    const auto header_identity=common?0x80388310u:magikarp?0x802cda8cu:butterfree?0x802ccd24u:0x802cceb0u;
+    if (self.resources.headers()[initialization.setup.initial_header].wire.guest_address!=header_identity ||
+        self.resources.headers()[initialization.setup.initial_header].initialization!=definition.initialization)
         return reject(OwnerError::admission,"actor source initial header is not the configured tuple");
     if (request.spawn->id!=static_cast<std::int32_t>(definition.actor_id)) return reject(OwnerError::admission,"actor source spawn ID does not match definition");
     if (request.spawn->path!=world::no_index && request.spawn->path>=self.world.resources().paths.size())
         return reject(OwnerError::admission,"actor source spawn path outside World");
+    if (butterfree || doduo) {
+        const void* path=request.spawn->path==world::no_index?nullptr:&self.world.resources().paths[request.spawn->path];
+        if (!self.interactions || !self.interactions->admits_initial_species(initialization,path))
+            return reject(OwnerError::admission,"actor initial species requires complete native callback/graph/resource/service closure");
+    }
     if (self.logical_count==self.logical.size()) return reject(OwnerError::capacity,"source logical actor-list40 exhausted (not a physical slot cap)");
     int registry=-1;
     for (std::size_t i=0;i<self.block_entries.size();++i) if (!self.block_entries[i].slot) { registry=static_cast<int>(i); break; }
@@ -702,8 +754,10 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     }
     const auto animated=self.animation(*slot,&self.resources.headers()[initialization.setup.initial_header],0,true);
     if (!animated) { rollback(); return {animated,{},nullptr}; }
+    const IsleGameSourceCallback initial_state=common?func_8035DF20_4FE330:magikarp?func_beach_802CAB50:
+        butterfree?func_beach_802C7B10:func_beach_802C82B0;
     if (isle_game_add_source_process(self.services.game,slot->object,isle_actor_source_distance_process,ISLE_GAME_SYNCHRONOUS,8,&process)!=ISLE_GAME_OK ||
-        isle_game_add_source_process(self.services.game,slot->object,common?func_8035DF20_4FE330:func_beach_802CAB50,ISLE_GAME_STACKFUL,7,&source.stateProc)!=ISLE_GAME_OK) {
+        isle_game_add_source_process(self.services.game,slot->object,initial_state,ISLE_GAME_STACKFUL,7,&source.stateProc)!=ISLE_GAME_OK) {
         rollback(); return reject(OwnerError::native,"actor distance/initial state process creation");
     }
     // Late factory resets occur only AFTER forced header and immediate events.
@@ -721,7 +775,7 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     entry.slot=slot; entry.next=self.block_heads[request.block->index]; self.block_heads[request.block->index]=registry; slot->registered=true;
     if (self.transform_cache) --self.transform_cache;
     if (self.pokemon_cache) --self.pokemon_cache;
-    // Magikarp keeps Ground's original DL5/tag-1; only common's wrapper moves4.
+    // Only common's source wrapper moves Ground's initial DL5/tag-1 to DL4.
     if (common) {
         slot->render={4,0x80000000u,UINT32_MAX};
         if (!self.services.set_render(slot->object,slot->render)) { rollback(); return reject(OwnerError::services,"actor source DL4 move"); }
@@ -883,20 +937,35 @@ IsleGameObject* isle_actor_owner_spawn_ground_dl4(int32_t object_id,uint16_t id,
     auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);
     result=isle::actor::SourceAccess::spawn(owner,{static_cast<uint32_t>(object_id),spawn->definition,
         static_cast<isle::world::Block*>(block->block),static_cast<isle::world::Block*>(reference->block),
-        static_cast<const isle::world::Spawn*>(spawn->spawn)});
+        static_cast<const isle::world::Spawn*>(spawn->spawn)},id,initialization->identity);
     return result.object;
 }
 IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id,uint16_t id,
     IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
     const IsleActorFactoryInitialization* initialization) {
-    if (!block || !reference || !spawn || !initialization || initialization->identity!=0x802cdaecu ||
-        id!=129 || !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
+    const bool magikarp=id==129 && initialization && initialization->identity==0x802cdaecu;
+    const bool doduo=id==84 && initialization && initialization->identity==0x802ccf78u;
+    if (!block || !reference || !spawn || (!magikarp && !doduo) ||
+        !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
         return nullptr;
     auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
     auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);
     result=isle::actor::SourceAccess::spawn(owner,{static_cast<uint32_t>(object_id),spawn->definition,
         static_cast<isle::world::Block*>(block->block),static_cast<isle::world::Block*>(reference->block),
-        static_cast<const isle::world::Spawn*>(spawn->spawn)});
+        static_cast<const isle::world::Spawn*>(spawn->spawn)},id,initialization->identity);
+    return result.object;
+}
+IsleGameObject* isle_actor_owner_spawn(int32_t object_id,uint16_t id,
+    IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
+    const IsleActorFactoryInitialization* initialization) {
+    if (!block || !reference || !spawn || !initialization || initialization->identity!=0x802ccda4u ||
+        id!=12 || !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
+        return nullptr;
+    auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
+    auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);
+    result=isle::actor::SourceAccess::spawn_ordinary(owner,{static_cast<uint32_t>(object_id),spawn->definition,
+        static_cast<isle::world::Block*>(block->block),static_cast<isle::world::Block*>(reference->block),
+        static_cast<const isle::world::Spawn*>(spawn->spawn)},id,initialization->identity);
     return result.object;
 }
 IsleGameResult isle_actor_owner_animation(IsleActorSource* source,uint32_t identity,float start,int force) {

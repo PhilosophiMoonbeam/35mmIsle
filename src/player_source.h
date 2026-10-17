@@ -173,6 +173,13 @@ void isle_player_source_wait(IslePlayerSource*, int32_t updates);
  * rule. Retain Source/callback dependencies until actual process join. */
 IsleGameProcess* isle_player_source_add_process(IslePlayerSource*, IsleGameObject*,
     IsleGameSourceCallback, uint8_t kind, uint32_t priority);
+/* Original object-wide suspension affects every process kind, not fnUpdate.
+ * NULL resolves only the actual native current object; never Source.object.
+ * Lookup preserves native update-link priority/insertion order and returns
+ * NULL without failure when no matching live object exists. C-only checked
+ * access uses the same canonical callback/nonwaiting-fence contract. */
+void isle_player_source_pause_object_processes(IslePlayerSource*, IsleGameObject*, int paused);
+IsleGameObject* isle_player_source_find_object(IslePlayerSource*, int32_t link, uint32_t id);
 
 /* C-only checked borrows, not returning setup APIs. source must be a retained,
  * prepared record with a live game; the active canonical per-game Source and

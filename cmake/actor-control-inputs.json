@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "actor-control-v6",
+  "transformation_version": "actor-control-v7",
   "use": "User-directed private native selected actor C control; no source/SDK/asset redistribution grant. Private selected bodies exist only in caller build output.",
   "numeric_policy": {
     "PI": "Private generated alias uses unsuffixed C double literal3.14159265358979323846, preserving randRange(360)*PI/180.0f order before final float yaw publication.",
@@ -42,6 +42,14 @@
     "src/app_level/app_level.h": {
       "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
       "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4"
+    },
+    "src/beach/55FB80.c": {
+      "git_blob": "c7371561341ca5f9fd4de5a38d87b257b54dc6d3",
+      "sha256": "abf4de0e0299169ad63734142446444e509b1b608caec2291e16799f7f56c736"
+    },
+    "src/beach/560320.c": {
+      "git_blob": "88f761d674edcb80e50305bc0be70d960693ed25",
+      "sha256": "99f3e4ed91755b6db8ae29ddb7cf86393c539e5ec91e9251ba79dd1208530735"
     }
   },
   "native_support": {
@@ -49,10 +57,10 @@
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/actor_source.h": {
-      "sha256": "402ee8c93c37644610977aa8e6f687493e20d435b03bc4cb8eee98621affe61b"
+      "sha256": "67371eefa513142eedb04e987c555421e93da0ae7cc48e779608a47c9ae96476"
     },
     "src/actor_source_bridge.c": {
-      "sha256": "833274490aa6e5db682b98e3a8d8bb63969e91ff93dd6981d79e0ca515068105"
+      "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
     },
     "src/engine.c": {
       "sha256": "e456488c3010cd66fa285470d190e8027d7be1cf28d356f1257ec79d89fafd03"
@@ -73,10 +81,10 @@
       "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "b662ba055a37fc485fe882eb253add47679f14c9d631094932566c11e7d0d466"
+      "sha256": "d080f73430a85ed1a5bc570120b4a919b5c2100a92045325187401749604e134"
     },
     "src/actor_owner_source.h": {
-      "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
+      "sha256": "35629333568ad1fed08dcf47336eb25284d572eb362c7d1e1cc5b0849140896a"
     },
     "src/actor_interaction_services.h": {
       "sha256": "7801d6223c224226daeca85214f522bd87ce7108538315e4b9e7a3d9e2d8c9e0"
@@ -86,6 +94,9 @@
     },
     "src/source_command_scope.h": {
       "sha256": "acd9a7312afe5129efcd6e495aa827de1ae667f3810cbe5fba5c3989516a3160"
+    },
+    "src/beach_initial_species_source.h": {
+      "sha256": "aefa7a9c2b7b02818ecc7a4947783018a13e598a70bc33590de8f74fa0e75feb"
     }
   },
   "transformations": {
@@ -96,7 +107,7 @@
     "owner_leaves": "Enumerated exact substitutions in definitions; C leaves report faults only after C++ returns. No guest pointer callback casts.",
     "factory": "Actual common1003 factory lines112-114 unchanged text; preamble aliases WorldBlock/ObjectSpawn/PokemonInitData to native typed owner contexts, static init identity0x80388348, Pokemon_SpawnOnGroundDlLink4 to nonwaiting isle_actor_owner_spawn_ground_dl4. Actual C factory callable identity retained; no guest pointer casts.",
     "trigger": "Actual selected source trigger retains symbol and position-before-misc-signal ordering. Explicit signature change void to IsleGameResult; guarded status-returning source_get replaces active-callback require; native position leaf status checked before signal; success returned after signal. Nonwaiting selected C body safely callable by owner; not byte-identical. Existing active source require guard unchanged.",
-    "translation_units": "Original six control helpers remain alone in isle-engine. Existing seventeen owner definitions plus thirty-two complete common movement/turn/target/path definitions share the existing generated OWNER C unit (49 owner definitions); no engine-to-owner circular link.",
+    "translation_units": "Original six control helpers remain alone in isle-engine. All sixty-two complete owner definitions, including eleven initial-species callbacks and two original void factories, share the existing generated OWNER C unit; no engine-to-owner circular link.",
     "magikarp": "Actual source129 header802CDAB4/yaw/shared ground-path/NULLgraph/ANIMATION_ENDED/scene flag clear/RunCleanup/SetStateNULL retained. The original yaw statement point is a scoped C modelref capture plus selected rotation.y assignment of the original randRange(360)*PI/180.0f RHS and the sole checked AUX masked-store publication; the id129-only yaw wrapper is removed, not aliased. Actual factory return added solely to expose its real Ground result.",
     "ground_chain": "Source common175-195 keeps zero velocity initializer, actual child/child/next selection before wait10, strict below-ground test with wait1, height clamp and helper call. Raw source_effect_world computes canonical local TRS + root placement independently of fixed renderer caches; velocity columns normalized as effect.c1277-1360. Helper130-141 retains AddAtGeo then position then behavior0.",
     "add_at_geo": "Actual Pokemon_AddAtGeo793-826 retains zero translation/euler, unit ignored spawn scale, inherited path/behavior, current World block in both arguments, factory dispatch and parent AUX placement copy before helper override. Source pokemonAddOne/getFreePokemonId semantics are concrete same-Owner leaves with Beach80..E4/link3 configuration, cursor/two scans/inclusive max fallback, native link lookup, unchanged logical40/block100 and physical joined/FIFO retention. NULL or exhausted source child faults in C only after returning from nonwaiting C++ leaves; no fabricated successful child.",
@@ -108,7 +119,10 @@
     "movement_ground": "Pokemon_GetGroundAt gains explicit obj and returns original 0.0f for native query found=false, never collision fallback -9000 and never height-based found inference. FallDownOnGround retains real currGround query/walk, Y publication, velocity update, strict test, wait and final clamp order.",
     "movement_paths": "Path identity is checked by returning leaves against actual World path resources before dereference. C preserves the four-case dispatch using native AnimationPath kind values0linear/1Bezier/2BezierS3/3Catrom; existing menu path evaluator alone supplies samples. ResetPathPos consumes validated current world descriptor position and original XYZ*(-100) arithmetic. FollowPath captures initial duration exactly once after original NULL permanent-wait, samples CURRENT pokemon->path at each original use, preserves invalid-parameter permanent-wait, source pause/cancellation, ON_GROUND height units versus XYZ*100, end-before-single-wrap, and publication of previous-sample subtraction before velocity/turn/new-sample failures. Airborne FollowPath does not request a current block.",
     "movement_abi": "Exact contract modelref/positionref/noderef and nonwaiting owner leaves are declared by actor_owner_source.h. Pokemon_GetGroundAt and func_803623F4_502804 add obj; Pokemon_Turn is bool(obj,IsleGameModelRef,float,float); TurnToModelNode takes IsleActorNodeRef; func_80361FBC_5023CC adds obj and const void* path. Native source vectors are explicit IsleGameVec3, never a Vec3f alias or SDK layout.",
-    "movement_verification": "Implementation recipe authoring only. Workers did not run the generator, builds, tests, formatters or runtime. Main owns strict support digest refresh and all actual C behavioral/engine/world/GPU qualification after all writers release."
+    "movement_verification": "Implementation recipe authoring only. Workers did not run the generator, builds, tests, formatters or runtime. Main owns strict support digest refresh and all actual C behavioral/engine/world/GPU qualification after all writers release.",
+    "initial_species": "Complete pinned55FB80.c4-85 Butterfree and560320.c4-75 Doduo definitions only, split at complete function boundaries. Original void factories call typed ordinary/ground native leaves without body pruning. Ordinary Spawn completes ground factory and only then overwrites canonical AUX-Y, preserving original source position reset and immediate forced animation order. Eleven callback source callable identities and three ROM-decoded graphs form immutable transitive closure with real native paths, RNG, animation, waits, Jump/Fall, interactions and cleanup.",
+    "animation_abi": "All animation seam calls use exact object/header/start/force ABI. Ordinary and force calls pass0.0f; original SetAnimationAtTime passes the complete randFloat()*100.0f source expression and force0. Native original conditional modelAnims rebinding remains authoritative, not an unconditional start-time reset.",
+    "initial_species_fields": "Only native GObj flags change for Doduo hidden/emerge writes (mask1/value1 and UINT32_MAX/value0); tangible is untouched. Butterfree miscVars[0].field0 uses canonical scalar union storage and actual AUX-Y read. Graph identities resolve through checked real native BehaviorBindings; no guest pointer casts or SDK layout."
   },
   "semantic_origins": [
     {
@@ -138,12 +152,26 @@
       "last": 124,
       "source_sha256": "62c0d3ca0428ce994d2fd72cbc77aabd0ca640596f4aab73311b85537c315e2d",
       "use": "Exact own-GAME MovementFlags scalar semantics now declared in the private native owner header; no console type/layout import."
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "first": 360,
+      "last": 413,
+      "source_sha256": "3d7f8ef0d16a0aab372144c92c86736669860881f965d46c65d002c97ed8a07e",
+      "use": "Complete source conditional animation bind/force/start semantics; native four-argument seam, no SDK implementation or layout."
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "first": 2113,
+      "last": 2222,
+      "source_sha256": "bf80c4b946d2a2c7867428ce462b6705223532e1515bf4ad0b6839c018e0808e",
+      "use": "Complete ordinary late AUX-Y versus ground factory ordering, canonical source resets, initial animation/events and process creation; native typed factory implementation, no source body import."
     }
   ],
   "definitions": [
     {
-      "symbol": "Pokemon_SetState",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_SetState",
       "first": 252,
       "last": 263,
       "source_sha256": "e77b39f0b5b7e684193f957eff250e8bef5fefc0e2959b1a5ea965d505b44c77",
@@ -151,8 +179,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_SetStateRandom",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_SetStateRandom",
       "first": 265,
       "last": 288,
       "source_sha256": "17efde64e3579ee112ccce67a0366332ea0fb66471551e0be905c7d5defdf690",
@@ -165,8 +193,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_StartAuxProc",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_StartAuxProc",
       "first": 291,
       "last": 296,
       "source_sha256": "5cabcea448c830e0094394ba70cf2adf88df0b6d9f8aeb1e0900fef17f53d937",
@@ -174,8 +202,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_StopAuxProc",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_StopAuxProc",
       "first": 298,
       "last": 303,
       "source_sha256": "90405f60b2ff920ab84337ee9eb2154e160d5c2e8f648ad762c179e053328cec",
@@ -183,8 +211,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_StartPathProc",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_StartPathProc",
       "first": 305,
       "last": 318,
       "source_sha256": "9c2bc9b14f833efafdd8ce0f060620ea88962622c5f6842980b420af184cadc2",
@@ -192,8 +220,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_WaitForFlagNoInteraction",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_WaitForFlagNoInteraction",
       "first": 736,
       "last": 745,
       "source_sha256": "5835b02b34682fd502e7973e2bbde6552364190644a2b0aef44af7df0c9d8c7b",
@@ -201,8 +229,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_GetClosestItem",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_GetClosestItem",
       "first": 509,
       "last": 533,
       "source_sha256": "f5c7a8d9e9e80959c980f5e5c90337ac5cd7c31ffc638ed5d4976dce7dc4175b",
@@ -231,8 +259,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_RunInteractions",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunInteractions",
       "first": 630,
       "last": 720,
       "source_sha256": "f372c6543793188d3c4ac5a1b8f6d4b1e1bb20541a956ecadc8d6aa8623b5e28",
@@ -278,8 +306,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_HandleCommand",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_HandleCommand",
       "first": 1806,
       "last": 2064,
       "source_sha256": "bc545f99f1a3cb45d1304d767a3b73b6ab5bcfb8238cfe6b139a07d8f52f01d3",
@@ -314,8 +342,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_WaitForFlag",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_WaitForFlag",
       "first": 723,
       "last": 734,
       "source_sha256": "ad0052ee332d0e4b6be7fff61aed182c6f02f0374e04a15d03f16a910cc8c056",
@@ -323,8 +351,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_RunCleanup",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunCleanup",
       "first": 771,
       "last": 773,
       "source_sha256": "ffbfb4beed8903d8f5847b0e719a276c774fee2167002c002f0a05165253a597",
@@ -332,8 +360,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_Update",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_Update",
       "first": 2066,
       "last": 2089,
       "source_sha256": "1ce9268f16c49a42686da3c5f7202b717f877741db0b2cf746199fad386a7b7d",
@@ -354,22 +382,22 @@
       ]
     },
     {
-      "symbol": "func_8035DF20_4FE330",
       "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035DF20_4FE330",
       "first": 63,
       "last": 77,
       "source_sha256": "04c20e400cf745b77078ad41e1fd382e0e29a500ac7486957e5a57c347c41d78",
-      "native_sha256": "b88455e747a058cc0754a67a194048426eeb0fca0342a371dcf9a370e5102194",
+      "native_sha256": "365ab5a3fab5e0629d7771d0fd6cc9ac3700c267c3d0e1298156c2b7c2c55edd",
       "changes": [
         {
           "find": "Pokemon_SetAnimation(obj, &D_80388310_528720);",
-          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 0);"
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 0.0f, 0);"
         }
       ]
     },
     {
-      "symbol": "func_8035DFB0_4FE3C0",
       "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035DFB0_4FE3C0",
       "first": 79,
       "last": 93,
       "source_sha256": "5275d163e8e2cb19043bbe9a733aef60958c5be9d22368eb22f843ddfaf088de",
@@ -386,12 +414,12 @@
       ]
     },
     {
-      "symbol": "func_8035E034_4FE444",
       "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035E034_4FE444",
       "first": 95,
       "last": 110,
       "source_sha256": "9a173b24f101d3cf61b71b6a0553f8cd56d5bcd6d42628167233d50adc461abf",
-      "native_sha256": "2c805d68d750c3af33fb0d392ca2afb720ac45d04d7708720fe65bfa63d874d2",
+      "native_sha256": "d3e0fe3c008ab243def4f389b554e6635b3fe13612676aec70f912449771add3",
       "changes": [
         {
           "find": "HIDE_POKEMON();",
@@ -403,13 +431,13 @@
         },
         {
           "find": "Pokemon_ForceAnimation(obj, &D_80388310_528720);",
-          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 1);"
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x80388310), 0.0f, 1);"
         }
       ]
     },
     {
-      "symbol": "func_8035E0D4_4FE4E4",
       "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035E0D4_4FE4E4",
       "first": 112,
       "last": 114,
       "source_sha256": "35c8fae18d4822f2452d667c80f28bd7da1f2cb2c609fc0ac092915e96747cb4",
@@ -417,8 +445,8 @@
       "changes": []
     },
     {
-      "symbol": "func_8035E264_4FE674",
       "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035E264_4FE674",
       "first": 164,
       "last": 173,
       "source_sha256": "87200370fc436ea4a8ba9f88f5206b2c763f1a6d5403a4efea89bbeacf6cf29c",
@@ -451,12 +479,12 @@
       ]
     },
     {
-      "symbol": "func_beach_802CAB50",
       "path": "src/beach/562BC0.c",
+      "symbol": "func_beach_802CAB50",
       "first": 4,
       "last": 18,
       "source_sha256": "d01289400493c392b687cd2ccd380aedd6b25e2de458a6c76656f50abe8e9790",
-      "native_sha256": "affd78a371faec5d4ab770e8270454388d7f2c262c640ea4729ad7ebba7be70b",
+      "native_sha256": "c8eb27dcef018e45c799e354126790b155910b0229b6ec99b0a781e48424116a",
       "changes": [
         {
           "find": "    DObj* model = obj->data.dobj;\n    Mtx4Float* rotation = &GET_TRANSFORM(model)->rot;\n",
@@ -464,7 +492,7 @@
         },
         {
           "find": "Pokemon_SetAnimation(obj, &D_beach_802CDAB4);",
-          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cdab4), 0);"
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cdab4), 0.0f, 0);"
         },
         {
           "find": "rotation->v.y = randRange(360) * PI / 180.0f;",
@@ -477,8 +505,8 @@
       ]
     },
     {
-      "symbol": "func_beach_802CAC08",
       "path": "src/beach/562BC0.c",
+      "symbol": "func_beach_802CAC08",
       "first": 20,
       "last": 28,
       "source_sha256": "b00821136cdf0ee239e631263ccd9dc798a353735ea59d6d76f0150a2461c32c",
@@ -486,8 +514,8 @@
       "changes": []
     },
     {
-      "symbol": "func_beach_802CAC48",
       "path": "src/beach/562BC0.c",
+      "symbol": "func_beach_802CAC48",
       "first": 30,
       "last": 32,
       "source_sha256": "a309f727c0951e42ce22696866d8fdfb190a7adc25ec5dc2c452d40673f1b3b7",
@@ -504,8 +532,8 @@
       ]
     },
     {
-      "symbol": "func_8035E298_4FE6A8",
       "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035E298_4FE6A8",
       "first": 175,
       "last": 195,
       "source_sha256": "cb4e3f8af6c6aa62c57c33b9316361eb449abf1897a6761c446efd813535f176",
@@ -538,8 +566,8 @@
       ]
     },
     {
-      "symbol": "func_8035E174_4FE584",
       "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035E174_4FE584",
       "first": 130,
       "last": 141,
       "source_sha256": "2914371a7fabd3ae03d0c23a0240d88b117b5dd48262cd23ea68df855b762177",
@@ -560,8 +588,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_AddAtGeo",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_AddAtGeo",
       "first": 793,
       "last": 826,
       "source_sha256": "98b9834b561c6dbadc2cf472a24cd6fe3c0508a9920f1304d0b47bb15f3423fc",
@@ -594,8 +622,226 @@
       ]
     },
     {
-      "symbol": "Pokemon_GetGroundAt",
+      "path": "src/beach/55FB80.c",
+      "symbol": "func_beach_802C7B10",
+      "first": 4,
+      "last": 21,
+      "source_sha256": "779d52556c71d2187e4a12ece5eab1ca017169f091efce5f7caa80a1f4bf968e",
+      "native_sha256": "b7e02dfc1951e24fee758eee1a74abe6a43ddba143a9843774d08254f6c37ac3",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimationAtTime(obj, &D_beach_802CCD24, randFloat() * 100.0f)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802ccd24), isle_actor_source_rand_float(obj) * 100.0f, 0)"
+        },
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    Mtx3Float* position = &GET_TRANSFORM(model)->pos;",
+          "replace": "    const IsleGameVec3* position = &isle_actor_source_aux(obj, &model)->position;"
+        },
+        {
+          "find": "position->v.y",
+          "replace": "position->y"
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55FB80.c",
+      "symbol": "func_beach_802C7BB8",
+      "first": 24,
+      "last": 37,
+      "source_sha256": "4eff64ead3273803afe525435b43e5db4490424b2a26dfa972c366269434355d",
+      "native_sha256": "669b095c0d6f2914e6470b578ccaed28a7b8669251b6ae132afe1743fd0b1b25",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(arg0, &D_beach_802CCD24)",
+          "replace": "isle_actor_source_set_animation(arg0, UINT32_C(0x802ccd24), 0.0f, 0)"
+        },
+        {
+          "find": "Pokemon_SetAnimation(arg0, &D_beach_802CCD38)",
+          "replace": "isle_actor_source_set_animation(arg0, UINT32_C(0x802ccd38), 0.0f, 0)"
+        },
+        {
+          "find": "randRange(600)",
+          "replace": "isle_actor_source_rand_range(arg0, 600)"
+        },
+        {
+          "find": "D_beach_802CCD60",
+          "replace": "isle_actor_source_graph(arg0, UINT32_C(0x802ccd60))",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55FB80.c",
+      "symbol": "func_beach_802C7C7C",
+      "first": 39,
+      "last": 48,
+      "source_sha256": "5f446a9eb380695a920b0b9ea9d5f345a964a1848b8cbbb703bc4379001c3152",
+      "native_sha256": "1916d999006d27cdf8cf13ef8f7e65375e9a648e75c56fc577118cb7a7b33550",
+      "changes": [
+        {
+          "find": "randFloat()",
+          "replace": "isle_actor_source_rand_float(obj)"
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55FB80.c",
+      "symbol": "func_beach_802C7CF0",
+      "first": 50,
+      "last": 63,
+      "source_sha256": "8a4bc1b084099f0cd73c35078918ea0131e7b0f74ed1fe377933190b920c83eb",
+      "native_sha256": "9252f6653a89642f75f4a3a0e80a7ef164465b7c4889f42e6571b390abb4b53e",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CCD4C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802ccd4c), 0.0f, 0)"
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CCD24)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802ccd24), 0.0f, 0)"
+        },
+        {
+          "find": "D_beach_802CCD60",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccd60))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55FB80.c",
+      "symbol": "func_beach_802C7DA0",
+      "first": 65,
+      "last": 72,
+      "source_sha256": "c22ebf6c04bcea232b877713a1a3653375efef10ae5cc58f619144f545dbce22",
+      "native_sha256": "c22ebf6c04bcea232b877713a1a3653375efef10ae5cc58f619144f545dbce22",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55FB80.c",
+      "symbol": "func_beach_802C7DEC",
+      "first": 74,
+      "last": 81,
+      "source_sha256": "1f705ea5e7241983469db417eca3c19560409f1bdb28141f6f1bd2f858cb0bfb",
+      "native_sha256": "1f705ea5e7241983469db417eca3c19560409f1bdb28141f6f1bd2f858cb0bfb",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55FB80.c",
+      "symbol": "func_beach_802C7E38",
+      "first": 83,
+      "last": 85,
+      "source_sha256": "6074c4f6da23164029704d15261cef066d190c1f68098436b8d78a227f73e07b",
+      "native_sha256": "6074c4f6da23164029704d15261cef066d190c1f68098436b8d78a227f73e07b",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560320.c",
+      "symbol": "func_beach_802C82B0",
+      "first": 4,
+      "last": 17,
+      "source_sha256": "1f76dbee12f1b54dde7dceb68547844d2dc766c76bdd8e8473aa84ba76164320",
+      "native_sha256": "7a28d53658f7296318332b7f5dd72dee47a450fc5c60c9338212ea0b3c6405c2",
+      "changes": [
+        {
+          "find": "D_beach_802CCF44",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccf44))",
+          "occurrences": 1
+        },
+        {
+          "find": "obj->flags |= GOBJ_FLAG_HIDDEN;",
+          "replace": "isle_actor_source_object_flags(obj, UINT32_C(1), UINT32_C(1));"
+        }
+      ]
+    },
+    {
+      "path": "src/beach/560320.c",
+      "symbol": "func_beach_802C8354",
+      "first": 19,
+      "last": 30,
+      "source_sha256": "bf9125653c4514acb94cf00c9a6196943feeb2567ebe61b57e4511ef9cbd5e33",
+      "native_sha256": "c6519a9cab5aa020da11ac55298004dda7a3d21a039e228e2254aaf54882392d",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CCF00)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802ccf00), 0.0f, 0)"
+        },
+        {
+          "find": "D_beach_802CCF14",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccf14))",
+          "occurrences": 1
+        },
+        {
+          "find": "obj->flags = 0;",
+          "replace": "isle_actor_source_object_flags(obj, UINT32_MAX, 0);"
+        }
+      ]
+    },
+    {
+      "path": "src/beach/560320.c",
+      "symbol": "func_beach_802C83D0",
+      "first": 32,
+      "last": 41,
+      "source_sha256": "acfd420bfc1ede2043f1542ec9952dd0b5159c08214ce8b137c99ffc45e36d32",
+      "native_sha256": "a7acfd8c98841937646e0799ad281519b3d9b63195c237cbda0bbf8ac45202fc",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CCEB0)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cceb0), 0.0f, 0)"
+        },
+        {
+          "find": "D_beach_802CCF14",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccf14))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/560320.c",
+      "symbol": "func_beach_802C8438",
+      "first": 43,
+      "last": 52,
+      "source_sha256": "5f030b39386e9ca52845a89eb47409b8ff98274f5da3218f2d8f1ffcc5ab491c",
+      "native_sha256": "5f030b39386e9ca52845a89eb47409b8ff98274f5da3218f2d8f1ffcc5ab491c",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560320.c",
+      "symbol": "func_beach_802C84A4",
+      "first": 54,
+      "last": 71,
+      "source_sha256": "6aa0f04e21fdf891da75fc11e71672c7eb9ebab3700543de3da0b781eabd2c35",
+      "native_sha256": "99301a78d657589b31a2986cd082de3f98daa5eb27ed638483bc7a8101e88b62",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CCEC4)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802ccec4), 0.0f, 0)"
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CCED8)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cced8), 0.0f, 0)"
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CCEEC)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cceec), 0.0f, 0)"
+        }
+      ]
+    },
+    {
+      "path": "src/beach/560320.c",
+      "symbol": "func_beach_802C8570",
+      "first": 73,
+      "last": 75,
+      "source_sha256": "7cc758e60b57f1ffc78fe620f43ec720fff28ae1467d1b8a328722d108a79ddf",
+      "native_sha256": "7cc758e60b57f1ffc78fe620f43ec720fff28ae1467d1b8a328722d108a79ddf",
+      "changes": []
+    },
+    {
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_GetGroundAt",
       "first": 425,
       "last": 432,
       "source_sha256": "ae780957640189bc9e38b524960ef76eea92fa8b8de42d62bb3dfe1dc8073b03",
@@ -612,8 +858,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_WrapAngleSum",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_WrapAngleSum",
       "first": 434,
       "last": 442,
       "source_sha256": "e8b090d1bc91f08fa6962eb5fed528b1334312fc75ddb8e3de3bef5354e7027c",
@@ -621,8 +867,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_HeadingBetweenPoints",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_HeadingBetweenPoints",
       "first": 535,
       "last": 558,
       "source_sha256": "4381f7ebc4645547fad7f5c6e585da475a671067178a80f79d92f12e8d0d9d89",
@@ -635,8 +881,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_GetHeadingVector",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_GetHeadingVector",
       "first": 560,
       "last": 588,
       "source_sha256": "444fb25e9cdd4e3d7c8f7a617fa7ae9d27523a9562b9211ea303e457368d247e",
@@ -649,8 +895,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_SetScale",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_SetScale",
       "first": 887,
       "last": 900,
       "source_sha256": "0f2df1d144f163cd41023b8e374c496ba348385b7d6225409dd693dd47ffd0cf",
@@ -685,8 +931,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_MoveXZ",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_MoveXZ",
       "first": 919,
       "last": 929,
       "source_sha256": "5058da0252276dd3fb68604d102172a460f6fbb6c700a61a436c2e99b3e8ae94",
@@ -707,8 +953,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_Jump",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_Jump",
       "first": 931,
       "last": 966,
       "source_sha256": "e6bfff99d6279544ffee8c24744c25b2115447b13c777d4143f7e7359af5bd5d",
@@ -725,8 +971,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_JumpToHeight",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_JumpToHeight",
       "first": 968,
       "last": 999,
       "source_sha256": "a37279b471e45f3b8feea7d1e79d2a9f8230b952e9eadc9a636e4f8d7ed1552c",
@@ -747,8 +993,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_Fall",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_Fall",
       "first": 1001,
       "last": 1035,
       "source_sha256": "e09a9ecb67e9dacd067b32df28e79052979707cfd4a2f566baf8799fa139b54f",
@@ -765,8 +1011,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_FallToHeight",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_FallToHeight",
       "first": 1037,
       "last": 1068,
       "source_sha256": "c9d578eca90218fcfaf5a793c2b9cbc01905cc6a42a43eff62955a8fcdc55b73",
@@ -787,8 +1033,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_FallDownOnGround",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_FallDownOnGround",
       "first": 1121,
       "last": 1144,
       "source_sha256": "463c4b36d820a26387c44d847723fb9cd27fb550e067571e04c75d57ea987b82",
@@ -817,8 +1063,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_StepWalkInDirection",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_StepWalkInDirection",
       "first": 1212,
       "last": 1226,
       "source_sha256": "b0acea5c075aa9d66ab04c2f5685da818137c2f3a179e99ad4568b2678d92024",
@@ -835,8 +1081,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_StepWalkInDirectionFacing",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_StepWalkInDirectionFacing",
       "first": 1228,
       "last": 1243,
       "source_sha256": "ea82814fec8a85422a1e8f461ec0fb437b5d5236b751d555905499c264d50c15",
@@ -857,8 +1103,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_Turn",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_Turn",
       "first": 1245,
       "last": 1269,
       "source_sha256": "ba1fa5a55a82b5cd5e0f708bf2f84769d397a803517f67b319e5847dde60725b",
@@ -883,8 +1129,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_RunInCircles",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunInCircles",
       "first": 1271,
       "last": 1332,
       "source_sha256": "86171c71814aac9bf347725e0b3d6913a2f99848d95652b9a3bffcc2ed39d667",
@@ -932,8 +1178,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_RunInCirclesDefault",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunInCirclesDefault",
       "first": 1334,
       "last": 1336,
       "source_sha256": "8b181f16c0f2be813b6310283f218e91f556ce7c8fa7bb8d7405b028e78db1e8",
@@ -941,8 +1187,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_HearsPokeFlute",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_HearsPokeFlute",
       "first": 1338,
       "last": 1346,
       "source_sha256": "8a9a3fe022c51f7ec602f993b196975c3fb9c74b74ad30d5a488c56975304fa5",
@@ -950,8 +1196,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_TurnToTarget",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_TurnToTarget",
       "first": 1348,
       "last": 1391,
       "source_sha256": "2b0e25d25932405d3a5b3134117fa3f2de4480a8c0fa1d950206645f77b594a0",
@@ -988,8 +1234,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_TurnToModelNode",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_TurnToModelNode",
       "first": 1393,
       "last": 1425,
       "source_sha256": "f31464488795e9b1e13fe72c93de9d8d203dccb9e241d2812accb7eeb120a2f6",
@@ -1026,8 +1272,8 @@
       ]
     },
     {
-      "symbol": "func_80361720_501B30",
       "path": "src/app_level/pokemon.c",
+      "symbol": "func_80361720_501B30",
       "first": 1427,
       "last": 1431,
       "source_sha256": "8e6d895bd4d98ec965d570930eff840f7c03b9398f3120d11690edb0b9627d6c",
@@ -1035,8 +1281,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_RunToTarget",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunToTarget",
       "first": 1433,
       "last": 1483,
       "source_sha256": "883c5e34a340d75a58d0bbbd1d49eeedde56acb0905c6f85bd3aad839f87c14d",
@@ -1069,8 +1315,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_RunAwayFromTarget",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunAwayFromTarget",
       "first": 1485,
       "last": 1534,
       "source_sha256": "1a43b4ae29ad8c6096d1536cac1bdca11672d27616db508178a7281586df8dfb",
@@ -1103,8 +1349,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_RunAwayDefault",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunAwayDefault",
       "first": 1536,
       "last": 1538,
       "source_sha256": "d8fa55a815de538d7d2e71f182287245d06c513e1ca90a30038c41b2e317ad4d",
@@ -1112,8 +1358,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_SetTargetPos",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_SetTargetPos",
       "first": 1540,
       "last": 1545,
       "source_sha256": "0009eefb7612501276c3889818fae3f38f21b66213cedfe8bfb8884ca0ab971b",
@@ -1121,8 +1367,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_StepToTargetPos",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_StepToTargetPos",
       "first": 1547,
       "last": 1608,
       "source_sha256": "70f332d22e4b64005c3f66a31e309359d89d9ca6d0fcc060b4a5938da1a1bfe8",
@@ -1161,8 +1407,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_RunToTargetPos",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunToTargetPos",
       "first": 1610,
       "last": 1614,
       "source_sha256": "18ba18d9fb5b03dd64297609ed81db70394f8a1aeb105c954dea5229e7bf1f4a",
@@ -1170,8 +1416,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_RunToTargetDefault",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_RunToTargetDefault",
       "first": 1616,
       "last": 1618,
       "source_sha256": "74addc237eb453c31d917e4da919ceef8ca887218fbf4544c06c30c3a5c4b574",
@@ -1179,8 +1425,8 @@
       "changes": []
     },
     {
-      "symbol": "Pokemon_TurnToPokeFlute",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_TurnToPokeFlute",
       "first": 1620,
       "last": 1647,
       "source_sha256": "0ab4fc86594f7c81e7aaec7ec682602496e288587a6029f2cf7bf4cea3b3c18f",
@@ -1205,8 +1451,8 @@
       ]
     },
     {
-      "symbol": "func_80361FBC_5023CC",
       "path": "src/app_level/pokemon.c",
+      "symbol": "func_80361FBC_5023CC",
       "first": 1649,
       "last": 1664,
       "source_sha256": "4a214900d6cdfcd816de1656246c0f6e45c28885f4af9d000686432ce5654f38",
@@ -1244,8 +1490,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_ResetPathPos",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_ResetPathPos",
       "first": 1666,
       "last": 1674,
       "source_sha256": "f476e34866a1d50129e551fb5e2a1ac9982bc2365ee72f36515144665ce8a17c",
@@ -1266,8 +1512,8 @@
       ]
     },
     {
-      "symbol": "Pokemon_FollowPath",
       "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_FollowPath",
       "first": 1676,
       "last": 1754,
       "source_sha256": "429122b16879fbb1ff355ae41fb4bb54dd8304d5f800413b682ede7fb37a3cc1",
@@ -1336,8 +1582,8 @@
       ]
     },
     {
-      "symbol": "func_803623F4_502804",
       "path": "src/app_level/pokemon.c",
+      "symbol": "func_803623F4_502804",
       "first": 1756,
       "last": 1758,
       "source_sha256": "e531c468c0a91aa7b9c24f6fd322bcfad9692f36c6a99d7fe2fd2c9a97614f82",

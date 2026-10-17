@@ -30,6 +30,9 @@ public:
 
     bool matches(Owner&, scene::Services&, const beach::ActorResources&,
         world::World&, focus::Detector&) const noexcept;
+    // Complete native family closure, checked before factory allocation/events.
+    // path is NULL or a borrowed canonical World path; no Source is fabricated.
+    bool admits_initial_species(const beach::ActorInitialization&, const void* path) noexcept;
 private:
     friend struct InteractionSourceAccess;
     scene::Services& services_;
@@ -41,7 +44,10 @@ private:
     const beach::ActorResources& resources_;
     const beach::ActorInitialization* common_ = nullptr;
     const beach::ActorInitialization* magikarp_ = nullptr;
+    const beach::ActorInitialization* butterfree_ = nullptr;
+    const beach::ActorInitialization* doduo_ = nullptr;
     bool common_assets_ = false, magikarp_assets_ = false;
+    bool butterfree_assets_ = false, doduo_assets_ = false;
 };
 } // namespace isle::actor
 #endif

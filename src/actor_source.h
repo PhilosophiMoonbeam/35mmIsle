@@ -61,7 +61,7 @@ typedef struct IsleActorSource {
     IsleGameVec3 dirToNeighbors;  /* Sole source neighbor direction, not collision membership. */
     float collisionRadius, playerDist, interactionDist;
     int32_t behavior;
-    struct { int32_t field1; } miscVars[7];
+    union { int32_t field1; float field0; } miscVars[7];
     IsleGameObject* apple;
     IsleGameObject* interactionTarget;
     int32_t unk_18;
@@ -120,6 +120,7 @@ void Pokemon_WaitForFlagNoInteraction(IsleGameObject*, uint32_t flags);
 IsleActorSource* isle_actor_source_require(IsleGameObject*);
 IsleGameProcess* isle_actor_source_create_process(IsleGameObject*, IsleGameSourceCallback, int32_t kind, int32_t priority);
 int32_t isle_actor_source_rand_range(IsleGameObject*, int32_t range);
+float isle_actor_source_rand_float(IsleGameObject*);
 
 #ifdef __cplusplus
 }

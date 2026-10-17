@@ -116,3 +116,20 @@ void player_source_sprite_explicit_context(IsleGameObject* object, void* user) {
     isle_player_source_first_sprite(source, object);
     source->ThrowItemTimeout = 99;
 }
+
+void player_source_pause_all(IslePlayerSource* source, void* user) {
+    PlayerObjectControl* request = user;
+    isle_player_source_pause_object_processes(source, request->object, request->paused);
+    ++request->completed;
+}
+void player_source_find_object(IslePlayerSource* source, void* user) {
+    PlayerObjectControl* request = user;
+    request->found = isle_player_source_find_object(source, request->link, request->id);
+    ++request->completed;
+}
+void player_source_pause_current(IsleGameObject* object) {
+    IslePlayerSource* source = isle_player_source_entry(object);
+    ++source->ThrowItemTimeout;
+    isle_player_source_pause_object_processes(source, NULL, 1);
+    ++source->ThrowItemTimeout;
+}

@@ -125,6 +125,15 @@ IsleGameResult engine_attach_model_with_invalid_kind(IsleGame* game, IsleGameObj
 IsleGameResult engine_set_invalid_placement(IsleGame* game, IsleGameModel* model) {
     return isle_game_model_set_placement(game, model, (IsleGameModelPlacementMode) 99, NULL);
 }
+void engine_model_use_final_incarnation(IsleGame* game) {
+    game->model_incarnation = UINT64_MAX - 1;
+}
+
+int engine_model_free_storage_matches(const IsleGame* game, const IsleGameObject* object,
+    const IsleGameModel* model) {
+    return game->free_objects == object && game->free_models == model &&
+        game->factory_objects == NULL;
+}
 
 IsleGameResult engine_add_camera_matrix_with_invalid_kind(IsleGame* game, IsleGameCamera* camera) {
     /* Exercise an unknown integer at the C ABI, not an out-of-range C++ enum. */

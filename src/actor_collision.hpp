@@ -8,7 +8,10 @@ namespace isle::actor::collision {
 // the caller's C failure fence. The caller supplies its actual World and
 // canonical source/model from the same native game. World/resources and all
 // bindings remain live and excluded from mutation for the complete call.
-OwnerStatus ground_query(world::World&, float x, float z, IsleActorGround&) noexcept;
+// Missing current block/descriptor/map succeeds with found=false and the full
+// source fallback record. A real -9000-height patch still reports found=true.
+// Native errors preserve both output and found; no second terrain query runs.
+OwnerStatus ground_query(world::World&, float x, float z, IsleActorGround&, bool& found) noexcept;
 // An ordinary source rejection succeeds with blocked=true. Errors preserve
 // blocked, but a completed destination query has already updated currGround.
 // A nonNULL forbiddenGround borrows forbiddenGroundCount readable floats;

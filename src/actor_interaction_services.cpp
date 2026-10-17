@@ -12,13 +12,17 @@ namespace isle::actor {
 namespace {
 enum class Position { root, auxiliary, preferred };
 
-IsleGameResult position(IsleGame* game, IsleGameObject* object, Position mode,
-                        IsleGameVec3& output) noexcept {
+IsleGameResult position_ref(IsleGame* game, IsleGameObject* object, Position mode,
+                            IsleActorPositionRef& output) noexcept {
     if (!object) return ISLE_GAME_INVALID_ARGUMENT;
     IsleGameModel* model = nullptr;
     auto result = isle_actor_spatial_object_model(game, object, &model);
     if (result != ISLE_GAME_OK) return result;
     if (!model) return ISLE_GAME_INVALID_STATE;
+    IsleActorPositionRef reference{};
+    result = isle_game_model_reference(game, object, model, &reference.model);
+    if (result != ISLE_GAME_OK) return result;
+    reference.space = ISLE_ACTOR_POSITION_ROOT;
     if (mode != Position::root) {
         const IsleGameModelPlacement* placement = nullptr;
         result = isle_game_model_placement(game, model, &placement);
@@ -27,8 +31,8 @@ IsleGameResult position(IsleGame* game, IsleGameObject* object, Position mode,
         switch (placement->mode) {
         case ISLE_GAME_MODEL_PLACEMENT_RT:
         case ISLE_GAME_MODEL_PLACEMENT_RTS:
-            output = placement->transform.position;
-            return ISLE_GAME_OK;
+            reference.space = ISLE_ACTOR_POSITION_AUX;
+            break;
         case ISLE_GAME_MODEL_PLACEMENT_DISABLED:
             if (mode == Position::auxiliary) return ISLE_GAME_INVALID_STATE;
             break;
@@ -36,13 +40,43 @@ IsleGameResult position(IsleGame* game, IsleGameObject* object, Position mode,
             return ISLE_GAME_INVALID_STATE;
         }
     }
+    output = reference;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult position_read(IsleGame* game, const IsleActorPositionRef& reference,
+                             const IsleGameVec3*& output) noexcept {
+    IsleGameModel* model = nullptr;
+    auto result = isle_game_model_resolve(game, &reference.model, &model);
+    if (result != ISLE_GAME_OK) return result;
+    if (reference.space == ISLE_ACTOR_POSITION_AUX) {
+        const IsleGameModelPlacement* placement = nullptr;
+        result = isle_game_model_placement(game, model, &placement);
+        if (result != ISLE_GAME_OK) return result;
+        if (!placement || (placement->mode != ISLE_GAME_MODEL_PLACEMENT_RT &&
+            placement->mode != ISLE_GAME_MODEL_PLACEMENT_RTS)) return ISLE_GAME_INVALID_STATE;
+        output = &placement->transform.position;
+        return ISLE_GAME_OK;
+    }
+    if (reference.space != ISLE_ACTOR_POSITION_ROOT) return ISLE_GAME_INVALID_ARGUMENT;
     const IsleGameModelNode* nodes = nullptr;
     std::size_t count = 0;
     result = isle_game_model_peek_nodes(game, model, &nodes, &count);
     if (result != ISLE_GAME_OK) return result;
     if (!nodes || !count || nodes[0].parent != UINT32_MAX) return ISLE_GAME_INVALID_STATE;
-    output = nodes[0].transform.position;
+    output = &nodes[0].transform.position;
     return ISLE_GAME_OK;
+}
+
+IsleGameResult position(IsleGame* game, IsleGameObject* object, Position mode,
+                        IsleGameVec3& output) noexcept {
+    IsleActorPositionRef reference{};
+    auto result = position_ref(game, object, mode, reference);
+    if (result != ISLE_GAME_OK) return result;
+    const IsleGameVec3* view = nullptr;
+    result = position_read(game, reference, view);
+    if (result == ISLE_GAME_OK) output = *view;
+    return result;
 }
 
 const beach::ActorInitialization* factory(const beach::ActorResources& resources,
@@ -398,6 +432,24 @@ struct InteractionSourceAccess {
 } // namespace isle::actor
 
 extern "C" {
+IsleGameResult isle_actor_owner_target_position_ref(IsleActorSource* source, IsleGameObject* target,
+    IsleActorPositionRef* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = {};
+    void* context = nullptr;
+    const auto result = isle_actor_owner_interaction_context(source, &context);
+    if (result != ISLE_GAME_OK) return result;
+    return isle::actor::position_ref(source->game, target, isle::actor::Position::preferred, *output);
+}
+IsleGameResult isle_actor_owner_position_read(IsleActorSource* source, const IsleActorPositionRef* reference,
+    const IsleGameVec3** output) {
+    if (output) *output = nullptr;
+    if (!reference || !output) return ISLE_GAME_INVALID_ARGUMENT;
+    void* context = nullptr;
+    const auto result = isle_actor_owner_interaction_context(source, &context);
+    if (result != ISLE_GAME_OK) return result;
+    return isle::actor::position_read(source->game, *reference, *output);
+}
 IsleGameResult isle_actor_interaction_rows(IsleActorSource* source, const IsleActorInteraction** output) {
     return isle::actor::InteractionSourceAccess::rows(source, output);
 }

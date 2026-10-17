@@ -2,14 +2,21 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "actor-control-v5",
+  "transformation_version": "actor-control-v6",
   "use": "User-directed private native selected actor C control; no source/SDK/asset redistribution grant. Private selected bodies exist only in caller build output.",
   "numeric_policy": {
     "PI": "Private generated alias uses unsuffixed C double literal3.14159265358979323846, preserving randRange(360)*PI/180.0f order before final float yaw publication.",
     "authority": "https://dlmf.nist.gov/3.12.E1",
     "qualification": "Parent-authorized modern native numeric policy. Pinned own-GAME constants/common/sys/types/vector/mtx headers do not define PI; own sys/mtx only references it. Original SDK PI macro value/type equivalence is UNPROVEN. No Original bitmatch, SDK header/shim import, or disassembly authority is claimed.",
     "interaction_distance_16": "Defined native correction of own explicit BUG16: use canonical cached playerDist, never uninitialized or previous nonwinning Item interactionDist. The full source automatic C branch/order is otherwise preserved.",
-    "closest_item": "Native C product-of-float-subtractions and left-associated sum implement source SQ uses explicitly; no SDK macro/header import or Original SGI macro/numerical bitmatch is claimed. Self AUX versus each Item root, all20 valid iterator order, strict nearest ties-first and winner-only sqrt/output preserved."
+    "closest_item": "Native C product-of-float-subtractions and left-associated sum implement source SQ uses explicitly; no SDK macro/header import or Original SGI macro/numerical bitmatch is claimed. Self AUX versus each Item root, all20 valid iterator order, strict nearest ties-first and winner-only sqrt/output preserved.",
+    "TAU": "QUALIFIED native macro (2.0 * PI): both constants use the existing unsuffixed C double PI token/value; preserve signed-int truncation and the original subtract/add assignment boundaries, not fmod.",
+    "PI_2": "QUALIFIED native macro (PI / 2.0), a C double expression retained at each original use.",
+    "M_PI_F": "QUALIFIED native macro 3.14159265358979323846f, the binary32-rounded PI value; used only where original Pokemon_StepToTargetPos spells M_PI_F rather than PI.",
+    "SIGN": "QUALIFIED native macro (((value) >= 0) ? 1 : -1), including +1 for both +0.0 and -0.0. No SDK macro inspection or equivalence claim.",
+    "SQ": "QUALIFIED native macro ((value) * (value)); retain each original operand, parenthesized product, left-associated sum, and float assignment/cast boundary. No reassociation, epsilon or contraction introduced.",
+    "ABS": "QUALIFIED native macro (((value) < 0) ? -(value) : (value)); zero is returned with its input sign. Arguments here have no side effects. Original SDK macro/value/type parity is unproven.",
+    "movement_boundaries": "Original unsuffixed 0.033, sqrtf/atan2f/sinf/cosf calls, float compound-assignment and explicit cast boundaries, strict comparisons, signed truncation angle wraps, and M_PI_F-versus-PI distinctions remain in imported C. These admitted native macro policies are NOT proof of original SDK numeric parity."
   },
   "source_files": {
     "src/app_level/pokemon.c": {
@@ -48,13 +55,13 @@
       "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/engine.c": {
-      "sha256": "a6b193ee19dd6fb91e8a34350e3d2074e9447499c56df9a43be05e0e9563573f"
+      "sha256": "757323588093862d1358022b80a798f00a454413375bdeafb9a8dd1c55013371"
     },
     "src/engine_internal.h": {
-      "sha256": "ff3be303b1074177ab6d634f2b79ca1aca8abe014c3c92a84ce5e63ea106c8c9"
+      "sha256": "12748da1cd2c7032546cec7c10dc9ecc6d0691285535e45192d3e315d86731d3"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "de45ddcb732fbc2b32c082b3401a9cd627f533cffd36b0c4d590c503aa4bf2da"
+      "sha256": "21a74cd3c3d5f5c2a6028b51b4224f66ca199898d7247e06a6b8b73482b168e7"
     },
     "include/35mmisle/rng.h": {
       "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
@@ -66,10 +73,10 @@
       "sha256": "be92fc0e5afe40a67ada67418a2504d74a64aa2dc70930f1f2898951f35de3a9"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "c9c39276ba75df7c1c4752480a9b9adc7e3f5dc2cb0d13368a2e11ca23dac9cd"
+      "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
     },
     "src/actor_owner_source.h": {
-      "sha256": "38df0a3f1e5e384018343d451cab0e999e2cc2433d1678f412d192edf40e85d1"
+      "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
     },
     "src/actor_interaction_services.h": {
       "sha256": "7801d6223c224226daeca85214f522bd87ce7108538315e4b9e7a3d9e2d8c9e0"
@@ -89,12 +96,19 @@
     "owner_leaves": "Enumerated exact substitutions in definitions; C leaves report faults only after C++ returns. No guest pointer callback casts.",
     "factory": "Actual common1003 factory lines112-114 unchanged text; preamble aliases WorldBlock/ObjectSpawn/PokemonInitData to native typed owner contexts, static init identity0x80388348, Pokemon_SpawnOnGroundDlLink4 to nonwaiting isle_actor_owner_spawn_ground_dl4. Actual C factory callable identity retained; no guest pointer casts.",
     "trigger": "Actual selected source trigger retains symbol and position-before-misc-signal ordering. Explicit signature change void to IsleGameResult; guarded status-returning source_get replaces active-callback require; native position leaf status checked before signal; success returned after signal. Nonwaiting selected C body safely callable by owner; not byte-identical. Existing active source require guard unchanged.",
-    "translation_units": "Original six control helpers remain alone in isle-engine; all remaining seventeen own C owner/FSM/factory/trigger/nearest/interaction definitions share the native owner archive. No engine-to-owner circular link.",
-    "magikarp": "Actual source129 header802CDAB4/yaw/shared ground-path/NULLgraph/ANIMATION_ENDED/scene flag clear/RunCleanup/SetStateNULL retained. Only native model placement, header, canonical scene flag and raw topology/world/ground leaves replace console accesses. Actual factory return added to source void spelling solely to expose its real Ground result; original factory call otherwise unchanged.",
+    "translation_units": "Original six control helpers remain alone in isle-engine. Existing seventeen owner definitions plus thirty-two complete common movement/turn/target/path definitions share the existing generated OWNER C unit (49 owner definitions); no engine-to-owner circular link.",
+    "magikarp": "Actual source129 header802CDAB4/yaw/shared ground-path/NULLgraph/ANIMATION_ENDED/scene flag clear/RunCleanup/SetStateNULL retained. The original yaw statement point is a scoped C modelref capture plus selected rotation.y assignment of the original randRange(360)*PI/180.0f RHS and the sole checked AUX masked-store publication; the id129-only yaw wrapper is removed, not aliased. Actual factory return added solely to expose its real Ground result.",
     "ground_chain": "Source common175-195 keeps zero velocity initializer, actual child/child/next selection before wait10, strict below-ground test with wait1, height clamp and helper call. Raw source_effect_world computes canonical local TRS + root placement independently of fixed renderer caches; velocity columns normalized as effect.c1277-1360. Helper130-141 retains AddAtGeo then position then behavior0.",
     "add_at_geo": "Actual Pokemon_AddAtGeo793-826 retains zero translation/euler, unit ignored spawn scale, inherited path/behavior, current World block in both arguments, factory dispatch and parent AUX placement copy before helper override. Source pokemonAddOne/getFreePokemonId semantics are concrete same-Owner leaves with Beach80..E4/link3 configuration, cursor/two scans/inclusive max fallback, native link lookup, unchanged logical40/block100 and physical joined/FIFO retention. NULL or exhausted source child faults in C only after returning from nonwaiting C++ leaves; no fabricated successful child.",
     "reference_ownership": "All source apple/interactionTarget assignments in both complete C interpreters call existing adopt-before-release canonical Services assignment, including NULL/Player senders; no copied targets, raw guest calls or post-handler RAII credit repair.",
-    "occurrences": "Each substitution is exact source/native-byte-hashed and must match its explicit positive occurrence count (default1); repeated canonical reference statements use fixed2/11 counts, never unconstrained global replacement."
+    "occurrences": "Each substitution is exact source/native-byte-hashed and must match its explicit positive occurrence count (default1); repeated canonical reference statements use fixed2/11 counts, never unconstrained global replacement.",
+    "movement_source_groups": "Complete pinned pokemon.c groups425-442,535-588,887-900,919-1068,1121-1144,1212-1336,1338-1538,1540-1618,1620-1758, split only at full definition boundaries. Every selected full body has exact source/native SHA256 plus occurrence-checked ordered substitutions. Existing StepWalk remains the sole native engine walker; no second movement/ground/collision/interpolation/effect executor.",
+    "movement_lvalues": "Persistent DObj/PokemonTransform lvalues become trivially copied nonowning IsleGameModelRef values. Each consumed canonical read freshly resolves through the checked AUX leaf; selected component values retain source arithmetic in C and publish only their masks into latest placement. No mutable AUX alias, full-transform snapshot/mirror, root/AUX fallback or owning C++ wait frame. Adjacent X/Z or XYZ stores coalesce only with no intervening original observer/helper/query/wait; every nested MoveXZ/walk and subsequent height test reacquires live reads.",
+    "movement_targets": "Turn helpers capture target object model incarnation and preferred AUX-or-root space once before their loops; fresh reads occur only on original consumed/update branches. The actual registered Player service supplies TURN_TO_PLAYER. Pursuit reselects its target only on the original update branch, keeps targetPos snapshots and reacquires current position after StepWalk and generalized Pokemon_Turn. Every imported Turn call now passes explicit obj plus modelref; TurnToModelNode accepts IsleActorNodeRef.",
+    "movement_ground": "Pokemon_GetGroundAt gains explicit obj and returns original 0.0f for native query found=false, never collision fallback -9000 and never height-based found inference. FallDownOnGround retains real currGround query/walk, Y publication, velocity update, strict test, wait and final clamp order.",
+    "movement_paths": "Path identity is checked by returning leaves against actual World path resources before dereference. C preserves the four-case dispatch using native AnimationPath kind values0linear/1Bezier/2BezierS3/3Catrom; existing menu path evaluator alone supplies samples. ResetPathPos consumes validated current world descriptor position and original XYZ*(-100) arithmetic. FollowPath captures initial duration exactly once after original NULL permanent-wait, samples CURRENT pokemon->path at each original use, preserves invalid-parameter permanent-wait, source pause/cancellation, ON_GROUND height units versus XYZ*100, end-before-single-wrap, and publication of previous-sample subtraction before velocity/turn/new-sample failures. Airborne FollowPath does not request a current block.",
+    "movement_abi": "Exact contract modelref/positionref/noderef and nonwaiting owner leaves are declared by actor_owner_source.h. Pokemon_GetGroundAt and func_803623F4_502804 add obj; Pokemon_Turn is bool(obj,IsleGameModelRef,float,float); TurnToModelNode takes IsleActorNodeRef; func_80361FBC_5023CC adds obj and const void* path. Native source vectors are explicit IsleGameVec3, never a Vec3f alias or SDK layout.",
+    "movement_verification": "Implementation recipe authoring only. Workers did not run the generator, builds, tests, formatters or runtime. Main owns strict support digest refresh and all actual C behavioral/engine/world/GPU qualification after all writers release."
   },
   "semantic_origins": [
     {
@@ -117,6 +131,13 @@
       "last": 102,
       "source_sha256": "aaaab158ee3e7943ea15db04595c4cc77d84af0381f48439377f5b035f04b45e",
       "use": "Actual own-GAME command scalar enum5..58 with absent11; native constants only, no header import or console layout."
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "first": 115,
+      "last": 124,
+      "source_sha256": "62c0d3ca0428ce994d2fd72cbc77aabd0ca640596f4aab73311b85537c315e2d",
+      "use": "Exact own-GAME MovementFlags scalar semantics now declared in the private native owner header; no console type/layout import."
     }
   ],
   "definitions": [
@@ -435,7 +456,7 @@
       "first": 4,
       "last": 18,
       "source_sha256": "d01289400493c392b687cd2ccd380aedd6b25e2de458a6c76656f50abe8e9790",
-      "native_sha256": "827c6a9dfd1c011e4f97ab87ac35fdc4688358f01bdc6972aa64eae822bc0c86",
+      "native_sha256": "affd78a371faec5d4ab770e8270454388d7f2c262c640ea4729ad7ebba7be70b",
       "changes": [
         {
           "find": "    DObj* model = obj->data.dobj;\n    Mtx4Float* rotation = &GET_TRANSFORM(model)->rot;\n",
@@ -447,7 +468,7 @@
         },
         {
           "find": "rotation->v.y = randRange(360) * PI / 180.0f;",
-          "replace": "isle_actor_source_yaw(obj, isle_actor_source_rand_range(obj, 360) * PI / 180.0f);"
+          "replace": "{\n        IsleGameModelRef model = isle_actor_source_self_model(obj);\n        IsleGameModelTransform values;\n        values.rotation.y = isle_actor_source_rand_range(obj, 360) * PI / 180.0f;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);\n    }"
         },
         {
           "find": "D_beach_802CC014 = false;",
@@ -571,6 +592,766 @@
           "replace": "        isle_actor_source_copy_position(gobj, pokemonObj);"
         }
       ]
+    },
+    {
+      "symbol": "Pokemon_GetGroundAt",
+      "path": "src/app_level/pokemon.c",
+      "first": 425,
+      "last": 432,
+      "source_sha256": "ae780957640189bc9e38b524960ef76eea92fa8b8de42d62bb3dfe1dc8073b03",
+      "native_sha256": "de588f251ed0dcec2e27688b8f8095bb7e3de732c8e9e7b93b8c74011e882e12",
+      "changes": [
+        {
+          "find": "Pokemon_GetGroundAt(f32 x, f32 z)",
+          "replace": "Pokemon_GetGroundAt(GObj* obj, f32 x, f32 z)"
+        },
+        {
+          "find": "getGroundAt(x, z, &result)",
+          "replace": "isle_actor_source_ground(obj, x, z, &result)"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_WrapAngleSum",
+      "path": "src/app_level/pokemon.c",
+      "first": 434,
+      "last": 442,
+      "source_sha256": "e8b090d1bc91f08fa6962eb5fed528b1334312fc75ddb8e3de3bef5354e7027c",
+      "native_sha256": "e8b090d1bc91f08fa6962eb5fed528b1334312fc75ddb8e3de3bef5354e7027c",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_HeadingBetweenPoints",
+      "path": "src/app_level/pokemon.c",
+      "first": 535,
+      "last": 558,
+      "source_sha256": "4381f7ebc4645547fad7f5c6e585da475a671067178a80f79d92f12e8d0d9d89",
+      "native_sha256": "8863b0c6dec38f3bbe9b76554f6a042ac51b7640ea315f0226065240ab7dcefb",
+      "changes": [
+        {
+          "find": "Vec3f* pointTo, Vec3f* pointFrom",
+          "replace": "const IsleGameVec3* pointTo, const IsleGameVec3* pointFrom"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_GetHeadingVector",
+      "path": "src/app_level/pokemon.c",
+      "first": 560,
+      "last": 588,
+      "source_sha256": "444fb25e9cdd4e3d7c8f7a617fa7ae9d27523a9562b9211ea303e457368d247e",
+      "native_sha256": "d915c09f1a8ae5193a1e232c57e45f8b00df6f462067d9cd016a0acfe0e31724",
+      "changes": [
+        {
+          "find": "Vec3f* pointTo, Vec3f* pointFrom, Vec3f* outVec",
+          "replace": "const IsleGameVec3* pointTo, const IsleGameVec3* pointFrom, IsleGameVec3* outVec"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_SetScale",
+      "path": "src/app_level/pokemon.c",
+      "first": 887,
+      "last": 900,
+      "source_sha256": "0f2df1d144f163cd41023b8e374c496ba348385b7d6225409dd693dd47ffd0cf",
+      "native_sha256": "f7d58848cf758eca85f53c8013750eb34a3ff4282ff65a7bbd710008231893ec",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    PokemonInitData* initData = pokemon->initData;",
+          "replace": "    IsleActorScaleInitialization initData = isle_actor_source_scale_initialization(obj);\n    IsleGameModelTransform values;"
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->scale.v.x = initData->scale.x * 0.1f * newScale;\n    GET_TRANSFORM(model)->scale.v.y = initData->scale.y * 0.1f * newScale;\n    GET_TRANSFORM(model)->scale.v.z = initData->scale.z * 0.1f * newScale;",
+          "replace": "    values.scale.x = initData.scale.x * 0.1f * newScale;\n    values.scale.y = initData.scale.y * 0.1f * newScale;\n    values.scale.z = initData.scale.z * 0.1f * newScale;\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_SX | ISLE_ACTOR_SY | ISLE_ACTOR_SZ, &values);"
+        },
+        {
+          "find": "initData->collisionCenter",
+          "replace": "initData.collision_center",
+          "occurrences": 3
+        },
+        {
+          "find": "initData->scale",
+          "replace": "initData.scale",
+          "occurrences": 4
+        },
+        {
+          "find": "initData->radius",
+          "replace": "initData.radius"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_MoveXZ",
+      "path": "src/app_level/pokemon.c",
+      "first": 919,
+      "last": 929,
+      "source_sha256": "5058da0252276dd3fb68604d102172a460f6fbb6c700a61a436c2e99b3e8ae94",
+      "native_sha256": "79a3af2b30b9d00e74959a8c5f1c456db541001083faccb45be2431c2b82630f",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "GET_TRANSFORM(model)->rot.v.y",
+          "replace": "isle_actor_source_aux(obj, &model)->rotation.y"
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.x += speedX;\n    GET_TRANSFORM(model)->pos.v.z += speedZ;",
+          "replace": "    IsleGameModelTransform values;\n    values.position.x = isle_actor_source_aux(obj, &model)->position.x;\n    values.position.x += speedX;\n    values.position.z = isle_actor_source_aux(obj, &model)->position.z;\n    values.position.z += speedZ;\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PZ, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_Jump",
+      "path": "src/app_level/pokemon.c",
+      "first": 931,
+      "last": 966,
+      "source_sha256": "e6bfff99d6279544ffee8c24744c25b2115447b13c777d4143f7e7359af5bd5d",
+      "native_sha256": "8ae3c66995d411cdf18a3e675b6db9923d346ba04a48d648d06d26c63c9964a3",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "            transform->pos.v.y += jumpVel;",
+          "replace": "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y += jumpVel;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_JumpToHeight",
+      "path": "src/app_level/pokemon.c",
+      "first": 968,
+      "last": 999,
+      "source_sha256": "a37279b471e45f3b8feea7d1e79d2a9f8230b952e9eadc9a636e4f8d7ed1552c",
+      "native_sha256": "6ab3c638c3108e91bca5e5a7439d9433734c4d26705e6c197ece653952f38aeb",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "            transform->pos.v.y += jumpVel;",
+          "replace": "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y += jumpVel;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        },
+        {
+          "find": "transform->pos.v.y >= maxHeight",
+          "replace": "isle_actor_source_aux(obj, &model)->position.y >= maxHeight"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_Fall",
+      "path": "src/app_level/pokemon.c",
+      "first": 1001,
+      "last": 1035,
+      "source_sha256": "e09a9ecb67e9dacd067b32df28e79052979707cfd4a2f566baf8799fa139b54f",
+      "native_sha256": "1626306ca2e81e04f39fe84d664e08405ba84c951afee2a6b4f3423ddb89cca6",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "            transform->pos.v.y -= fallSpeed;",
+          "replace": "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y -= fallSpeed;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_FallToHeight",
+      "path": "src/app_level/pokemon.c",
+      "first": 1037,
+      "last": 1068,
+      "source_sha256": "c9d578eca90218fcfaf5a793c2b9cbc01905cc6a42a43eff62955a8fcdc55b73",
+      "native_sha256": "58710bfd4c9ef0e8fe39b2e6b0819243aeb0586c098c83a97987f8cda62c75f5",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "            transform->pos.v.y -= fallSpeed;",
+          "replace": "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y -= fallSpeed;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        },
+        {
+          "find": "transform->pos.v.y <= minHeight",
+          "replace": "isle_actor_source_aux(obj, &model)->position.y <= minHeight"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_FallDownOnGround",
+      "path": "src/app_level/pokemon.c",
+      "first": 1121,
+      "last": 1144,
+      "source_sha256": "463c4b36d820a26387c44d847723fb9cd27fb550e067571e04c75d57ea987b82",
+      "native_sha256": "575565ce695417d1daca982d869dec473b8b00c06c2421c2242b8517a039239e",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "getGroundAt(transform->pos.v.x, transform->pos.v.z, &pokemon->currGround)",
+          "replace": "isle_actor_source_ground(obj, isle_actor_source_aux(obj, &model)->position.x, isle_actor_source_aux(obj, &model)->position.z, &pokemon->currGround)"
+        },
+        {
+          "find": "        transform->pos.v.y += jumpVel;",
+          "replace": "        IsleGameModelTransform values;\n        values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n        values.position.y += jumpVel;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        },
+        {
+          "find": "transform->pos.v.y < pokemon->currGround.height",
+          "replace": "isle_actor_source_aux(obj, &model)->position.y < pokemon->currGround.height"
+        },
+        {
+          "find": "    transform->pos.v.y = pokemon->currGround.height;",
+          "replace": "    IsleGameModelTransform values;\n    values.position.y = pokemon->currGround.height;\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_StepWalkInDirection",
+      "path": "src/app_level/pokemon.c",
+      "first": 1212,
+      "last": 1226,
+      "source_sha256": "b0acea5c075aa9d66ab04c2f5685da818137c2f3a179e99ad4568b2678d92024",
+      "native_sha256": "65d69246ffeae0491427cfee4a3f43f93a86a16148cc0a3db90af2d739f4635c",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;\n",
+          "replace": ""
+        },
+        {
+          "find": "Pokemon_StepWalk(obj, velX, velZ, flags)",
+          "replace": "isle_actor_source_step_walk(obj, velX, velZ, flags)"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_StepWalkInDirectionFacing",
+      "path": "src/app_level/pokemon.c",
+      "first": 1228,
+      "last": 1243,
+      "source_sha256": "ea82814fec8a85422a1e8f461ec0fb437b5d5236b751d555905499c264d50c15",
+      "native_sha256": "eed01d02cdbbe477b89ee525b3157651c7d4e214d14f2c09e9474210033b706f",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "GET_TRANSFORM(model)->rot.v.y",
+          "replace": "isle_actor_source_aux(obj, &model)->rotation.y"
+        },
+        {
+          "find": "Pokemon_StepWalk(obj, velX, velZ, flags)",
+          "replace": "isle_actor_source_step_walk(obj, velX, velZ, flags)"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_Turn",
+      "path": "src/app_level/pokemon.c",
+      "first": 1245,
+      "last": 1269,
+      "source_sha256": "ba1fa5a55a82b5cd5e0f708bf2f84769d397a803517f67b319e5847dde60725b",
+      "native_sha256": "cf6a9183252d3de03ac2841d20b8712d3def1c5ad6178107d24ac1923b7fac3f",
+      "changes": [
+        {
+          "find": "Pokemon_Turn(DObj* model, f32 targetYaw, f32 turnSpeed)",
+          "replace": "Pokemon_Turn(GObj* obj, IsleGameModelRef model, f32 targetYaw, f32 turnSpeed)"
+        },
+        {
+          "find": "    yaw = GET_TRANSFORM(model)->rot.v.y;",
+          "replace": "    yaw = isle_actor_source_aux(obj, &model)->rotation.y;"
+        },
+        {
+          "find": "        GET_TRANSFORM(model)->rot.v.y = yaw + sign * turnSpeed;",
+          "replace": "        IsleGameModelTransform values;\n        values.rotation.y = yaw + sign * turnSpeed;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"
+        },
+        {
+          "find": "        GET_TRANSFORM(model)->rot.v.y = targetYaw;",
+          "replace": "        IsleGameModelTransform values;\n        values.rotation.y = targetYaw;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_RunInCircles",
+      "path": "src/app_level/pokemon.c",
+      "first": 1271,
+      "last": 1332,
+      "source_sha256": "86171c71814aac9bf347725e0b3d6913a2f99848d95652b9a3bffcc2ed39d667",
+      "native_sha256": "d7be2527de88899b898061ab1590f073bb1ccb03036a72f6fd36f7346997b962",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    Vec3f centerPos;",
+          "replace": "    IsleGameVec3 centerPos;"
+        },
+        {
+          "find": "randRange(300)",
+          "replace": "isle_actor_source_rand_range(obj, 300)"
+        },
+        {
+          "find": "GET_TRANSFORM(model)->rot.v.y",
+          "replace": "isle_actor_source_aux(obj, &model)->rotation.y",
+          "occurrences": 6
+        },
+        {
+          "find": "GET_TRANSFORM(model)->pos.v.x",
+          "replace": "isle_actor_source_aux(obj, &model)->position.x",
+          "occurrences": 2
+        },
+        {
+          "find": "GET_TRANSFORM(model)->pos.v.z",
+          "replace": "isle_actor_source_aux(obj, &model)->position.z",
+          "occurrences": 2
+        },
+        {
+          "find": "Pokemon_StepWalk(obj, deltaX, deltaZ, MOVEMENT_FLAG_ON_GROUND)",
+          "replace": "isle_actor_source_step_walk(obj, deltaX, deltaZ, MOVEMENT_FLAG_ON_GROUND)"
+        },
+        {
+          "find": "            isle_actor_source_aux(obj, &model)->rotation.y = Pokemon_WrapAngleSum(currentYaw, sign * maxModelTurnSpeed);",
+          "replace": "            IsleGameModelTransform values;\n            values.rotation.y = Pokemon_WrapAngleSum(currentYaw, sign * maxModelTurnSpeed);\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"
+        },
+        {
+          "find": "            isle_actor_source_aux(obj, &model)->rotation.y = nextYaw;",
+          "replace": "            IsleGameModelTransform values;\n            values.rotation.y = nextYaw;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_RunInCirclesDefault",
+      "path": "src/app_level/pokemon.c",
+      "first": 1334,
+      "last": 1336,
+      "source_sha256": "8b181f16c0f2be813b6310283f218e91f556ce7c8fa7bb8d7405b028e78db1e8",
+      "native_sha256": "8b181f16c0f2be813b6310283f218e91f556ce7c8fa7bb8d7405b028e78db1e8",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_HearsPokeFlute",
+      "path": "src/app_level/pokemon.c",
+      "first": 1338,
+      "last": 1346,
+      "source_sha256": "8a9a3fe022c51f7ec602f993b196975c3fb9c74b74ad30d5a488c56975304fa5",
+      "native_sha256": "8a9a3fe022c51f7ec602f993b196975c3fb9c74b74ad30d5a488c56975304fa5",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_TurnToTarget",
+      "path": "src/app_level/pokemon.c",
+      "first": 1348,
+      "last": 1391,
+      "source_sha256": "2b0e25d25932405d3a5b3134117fa3f2de4480a8c0fa1d950206645f77b594a0",
+      "native_sha256": "71b288416835245b7844fac1276d7a9a73372a5c7d83bc36f7af354b975b486b",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    Vec3f* targetPos;\n    Vec3f* currentPos;\n    DObj* targetModel;",
+          "replace": "    const IsleGameVec3* targetPos;\n    const IsleGameVec3* currentPos;\n    IsleActorPositionRef targetPosition;\n    IsleGameObject* targetObject;"
+        },
+        {
+          "find": "targetModel = gPlayerDObj;",
+          "replace": "targetObject = isle_actor_source_player(obj);"
+        },
+        {
+          "find": "targetModel = pokemon->interactionTarget->data.dobj;",
+          "replace": "targetObject = pokemon->interactionTarget;"
+        },
+        {
+          "find": "    if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n        targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n    } else {\n        targetPos = &targetModel->position.v;\n    }\n    currentPos = &GET_TRANSFORM(model)->pos.v;",
+          "replace": "    targetPosition = isle_actor_source_target_position_ref(obj, targetObject);"
+        },
+        {
+          "find": "            if (flags & MOVEMENT_FLAG_TURN_AWAY) {",
+          "replace": "            targetPos = isle_actor_source_position_read(obj, &targetPosition);\n            currentPos = &isle_actor_source_aux(obj, &model)->position;\n            if (flags & MOVEMENT_FLAG_TURN_AWAY) {"
+        },
+        {
+          "find": "Pokemon_Turn(model, targetDir, turnSpeed)",
+          "replace": "Pokemon_Turn(obj, model, targetDir, turnSpeed)"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_TurnToModelNode",
+      "path": "src/app_level/pokemon.c",
+      "first": 1393,
+      "last": 1425,
+      "source_sha256": "f31464488795e9b1e13fe72c93de9d8d203dccb9e241d2812accb7eeb120a2f6",
+      "native_sha256": "1cb5a1bafada08d257f981e837f0d25fb07dec97ee21a98fcb2c97254ff48b7d",
+      "changes": [
+        {
+          "find": "DObj* modelNode",
+          "replace": "IsleActorNodeRef modelNode"
+        },
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    Vec3f* currentPos;\n    Vec3f targetPos;\n    Vec3f vel = { 0, 0, 0 };",
+          "replace": "    const IsleGameVec3* currentPos;\n    IsleGameVec3 targetPos;\n    IsleGameVec3 vel = { 0, 0, 0 };"
+        },
+        {
+          "find": "    currentPos = &GET_TRANSFORM(model)->pos.v;\n",
+          "replace": ""
+        },
+        {
+          "find": "fx_getPosVelDObj(&targetPos, &vel, modelNode)",
+          "replace": "isle_actor_source_node_world_ref(obj, &modelNode, &targetPos, &vel)"
+        },
+        {
+          "find": "            if (flags & MOVEMENT_FLAG_TURN_AWAY) {",
+          "replace": "            currentPos = &isle_actor_source_aux(obj, &model)->position;\n            if (flags & MOVEMENT_FLAG_TURN_AWAY) {"
+        },
+        {
+          "find": "Pokemon_Turn(model, targetDir, turnSpeed)",
+          "replace": "Pokemon_Turn(obj, model, targetDir, turnSpeed)"
+        }
+      ]
+    },
+    {
+      "symbol": "func_80361720_501B30",
+      "path": "src/app_level/pokemon.c",
+      "first": 1427,
+      "last": 1431,
+      "source_sha256": "8e6d895bd4d98ec965d570930eff840f7c03b9398f3120d11690edb0b9627d6c",
+      "native_sha256": "8e6d895bd4d98ec965d570930eff840f7c03b9398f3120d11690edb0b9627d6c",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_RunToTarget",
+      "path": "src/app_level/pokemon.c",
+      "first": 1433,
+      "last": 1483,
+      "source_sha256": "883c5e34a340d75a58d0bbbd1d49eeedde56acb0905c6f85bd3aad839f87c14d",
+      "native_sha256": "2944a22bd07b15ad57f7218ec644a9593602ffe473ab0c73a729f93b3a8b4bad",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    DObj* targetModel;\n    Vec3f* targetPos;",
+          "replace": "    IsleActorPositionRef targetPosition;\n    const IsleGameVec3* targetPos;"
+        },
+        {
+          "find": "    Vec3f* currentPos;\n    Vec3f walkDir;",
+          "replace": "    const IsleGameVec3* currentPos;\n    IsleGameVec3 walkDir;"
+        },
+        {
+          "find": "            targetModel = pokemon->interactionTarget->data.dobj;\n            if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n                targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n                pokemon->targetPos.x = GET_TRANSFORM(targetModel)->pos.v.x;\n                pokemon->targetPos.y = GET_TRANSFORM(targetModel)->pos.v.y;\n                pokemon->targetPos.z = GET_TRANSFORM(targetModel)->pos.v.z;\n            } else {\n                targetPos = &targetModel->position.v;\n                pokemon->targetPos.x = targetModel->position.v.x;\n                pokemon->targetPos.y = targetModel->position.v.y;\n                pokemon->targetPos.z = targetModel->position.v.z;\n            }\n            currentPos = &GET_TRANSFORM(model)->pos.v;",
+          "replace": "            targetPosition = isle_actor_source_target_position_ref(obj, pokemon->interactionTarget);\n            targetPos = isle_actor_source_position_read(obj, &targetPosition);\n            pokemon->targetPos.x = targetPos->x;\n            pokemon->targetPos.y = targetPos->y;\n            pokemon->targetPos.z = targetPos->z;\n            currentPos = &isle_actor_source_aux(obj, &model)->position;"
+        },
+        {
+          "find": "Pokemon_StepWalk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)",
+          "replace": "isle_actor_source_step_walk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)"
+        },
+        {
+          "find": "        Pokemon_Turn(model, targetYaw, turnSpeed);",
+          "replace": "        Pokemon_Turn(obj, model, targetYaw, turnSpeed);\n        currentPos = &isle_actor_source_aux(obj, &model)->position;"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_RunAwayFromTarget",
+      "path": "src/app_level/pokemon.c",
+      "first": 1485,
+      "last": 1534,
+      "source_sha256": "1a43b4ae29ad8c6096d1536cac1bdca11672d27616db508178a7281586df8dfb",
+      "native_sha256": "a49765382a94b6bb64b6955a545d04c3b7af33e083a46d4401fb39a69393756a",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    DObj* targetModel;\n    Vec3f* targetPos;",
+          "replace": "    IsleActorPositionRef targetPosition;\n    const IsleGameVec3* targetPos;"
+        },
+        {
+          "find": "    Vec3f* currentPos;\n    Vec3f walkDir;",
+          "replace": "    const IsleGameVec3* currentPos;\n    IsleGameVec3 walkDir;"
+        },
+        {
+          "find": "            targetModel = pokemon->interactionTarget->data.dobj;\n            if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n                targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n                pokemon->targetPos.x = GET_TRANSFORM(targetModel)->pos.v.x;\n                pokemon->targetPos.y = GET_TRANSFORM(targetModel)->pos.v.y;\n                pokemon->targetPos.z = GET_TRANSFORM(targetModel)->pos.v.z;\n            } else {\n                targetPos = &targetModel->position.v;\n                pokemon->targetPos.x = targetModel->position.v.x;\n                pokemon->targetPos.y = targetModel->position.v.y;\n                pokemon->targetPos.z = targetModel->position.v.z;\n            }\n            currentPos = &GET_TRANSFORM(model)->pos.v;",
+          "replace": "            targetPosition = isle_actor_source_target_position_ref(obj, pokemon->interactionTarget);\n            targetPos = isle_actor_source_position_read(obj, &targetPosition);\n            pokemon->targetPos.x = targetPos->x;\n            pokemon->targetPos.y = targetPos->y;\n            pokemon->targetPos.z = targetPos->z;\n            currentPos = &isle_actor_source_aux(obj, &model)->position;"
+        },
+        {
+          "find": "Pokemon_StepWalk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)",
+          "replace": "isle_actor_source_step_walk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)"
+        },
+        {
+          "find": "        Pokemon_Turn(model, targetYaw, turnSpeed);",
+          "replace": "        Pokemon_Turn(obj, model, targetYaw, turnSpeed);\n        currentPos = &isle_actor_source_aux(obj, &model)->position;"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_RunAwayDefault",
+      "path": "src/app_level/pokemon.c",
+      "first": 1536,
+      "last": 1538,
+      "source_sha256": "d8fa55a815de538d7d2e71f182287245d06c513e1ca90a30038c41b2e317ad4d",
+      "native_sha256": "d8fa55a815de538d7d2e71f182287245d06c513e1ca90a30038c41b2e317ad4d",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_SetTargetPos",
+      "path": "src/app_level/pokemon.c",
+      "first": 1540,
+      "last": 1545,
+      "source_sha256": "0009eefb7612501276c3889818fae3f38f21b66213cedfe8bfb8884ca0ab971b",
+      "native_sha256": "0009eefb7612501276c3889818fae3f38f21b66213cedfe8bfb8884ca0ab971b",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_StepToTargetPos",
+      "path": "src/app_level/pokemon.c",
+      "first": 1547,
+      "last": 1608,
+      "source_sha256": "70f332d22e4b64005c3f66a31e309359d89d9ca6d0fcc060b4a5938da1a1bfe8",
+      "native_sha256": "fc4c2cd63cb9b9e796ddf9d1c1d7c7ff86445dd85c5f163394fc9d5b17d0d4f8",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "GET_TRANSFORM(model)->pos.v.x",
+          "replace": "isle_actor_source_aux(obj, &model)->position.x",
+          "occurrences": 2
+        },
+        {
+          "find": "GET_TRANSFORM(model)->pos.v.z",
+          "replace": "isle_actor_source_aux(obj, &model)->position.z",
+          "occurrences": 2
+        },
+        {
+          "find": "Pokemon_StepWalk(obj, velX, velZ, flags)",
+          "replace": "isle_actor_source_step_walk(obj, velX, velZ, flags)"
+        },
+        {
+          "find": "    currentYaw = GET_TRANSFORM(model)->rot.v.y;",
+          "replace": "    currentYaw = isle_actor_source_aux(obj, &model)->rotation.y;"
+        },
+        {
+          "find": "        GET_TRANSFORM(model)->rot.v.y = currentYaw + sign * turnSpeed;",
+          "replace": "        IsleGameModelTransform values;\n        values.rotation.y = currentYaw + sign * turnSpeed;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"
+        },
+        {
+          "find": "        GET_TRANSFORM(model)->rot.v.y = targetYaw;",
+          "replace": "        IsleGameModelTransform values;\n        values.rotation.y = targetYaw;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_RunToTargetPos",
+      "path": "src/app_level/pokemon.c",
+      "first": 1610,
+      "last": 1614,
+      "source_sha256": "18ba18d9fb5b03dd64297609ed81db70394f8a1aeb105c954dea5229e7bf1f4a",
+      "native_sha256": "18ba18d9fb5b03dd64297609ed81db70394f8a1aeb105c954dea5229e7bf1f4a",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_RunToTargetDefault",
+      "path": "src/app_level/pokemon.c",
+      "first": 1616,
+      "last": 1618,
+      "source_sha256": "74addc237eb453c31d917e4da919ceef8ca887218fbf4544c06c30c3a5c4b574",
+      "native_sha256": "74addc237eb453c31d917e4da919ceef8ca887218fbf4544c06c30c3a5c4b574",
+      "changes": []
+    },
+    {
+      "symbol": "Pokemon_TurnToPokeFlute",
+      "path": "src/app_level/pokemon.c",
+      "first": 1620,
+      "last": 1647,
+      "source_sha256": "0ab4fc86594f7c81e7aaec7ec682602496e288587a6029f2cf7bf4cea3b3c18f",
+      "native_sha256": "053e34195bc8d5045b3d455e8ee6cd94f563dd777bab8c35010c39bc142b2a9d",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    DObj* targetModel;\n    Vec3f* targetPos;\n    Vec3f* currentPos;",
+          "replace": "    IsleActorPositionRef targetPosition;\n    const IsleGameVec3* targetPos;\n    const IsleGameVec3* currentPos;"
+        },
+        {
+          "find": "    targetModel = pokemon->interactionTarget->data.dobj;\n    if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n        targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n    } else {\n        targetPos = &targetModel->position.v;\n    }\n    currentPos = &GET_TRANSFORM(model)->pos.v;",
+          "replace": "    targetPosition = isle_actor_source_target_position_ref(obj, pokemon->interactionTarget);"
+        },
+        {
+          "find": "        Pokemon_Turn(model, Pokemon_HeadingBetweenPoints(targetPos, currentPos), turnSpeed);",
+          "replace": "        targetPos = isle_actor_source_position_read(obj, &targetPosition);\n        currentPos = &isle_actor_source_aux(obj, &model)->position;\n        Pokemon_Turn(obj, model, Pokemon_HeadingBetweenPoints(targetPos, currentPos), turnSpeed);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_80361FBC_5023CC",
+      "path": "src/app_level/pokemon.c",
+      "first": 1649,
+      "last": 1664,
+      "source_sha256": "4a214900d6cdfcd816de1656246c0f6e45c28885f4af9d000686432ce5654f38",
+      "native_sha256": "0915105c706794873bea1be2d74b3bfa298aeb2092b2ba15030869f3622e345d",
+      "changes": [
+        {
+          "find": "func_80361FBC_5023CC(Vec3f* pos, InterpData* path, f32 arg2)",
+          "replace": "func_80361FBC_5023CC(GObj* obj, IsleGameVec3* pos, const void* path, f32 arg2)"
+        },
+        {
+          "find": "switch (path->type)",
+          "replace": "switch (isle_actor_source_path_info(obj, path).kind)"
+        },
+        {
+          "find": "HAL_INTERP_BEZIER_S3",
+          "replace": "ISLE_ACTOR_PATH_BEZIER_S3"
+        },
+        {
+          "find": "HAL_INTERP_BEZIER",
+          "replace": "ISLE_ACTOR_PATH_BEZIER"
+        },
+        {
+          "find": "HAL_INTERP_CATROM",
+          "replace": "ISLE_ACTOR_PATH_CATROM"
+        },
+        {
+          "find": "HAL_INTERP_LINEAR",
+          "replace": "ISLE_ACTOR_PATH_LINEAR"
+        },
+        {
+          "find": "GetInterpolatedPosition(pos, path, arg2)",
+          "replace": "isle_actor_source_path_position(obj, path, arg2, pos)",
+          "occurrences": 4
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_ResetPathPos",
+      "path": "src/app_level/pokemon.c",
+      "first": 1666,
+      "last": 1674,
+      "source_sha256": "f476e34866a1d50129e551fb5e2a1ac9982bc2365ee72f36515144665ce8a17c",
+      "native_sha256": "56706b3d4b5bcdfbb0ca69191db4c27717d88c8a3a7084a64be1a01c427fea4b",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    WorldBlock* block = getCurrentWorldBlock();",
+          "replace": "    IsleGameVec3 worldPosition = isle_actor_source_current_world_position(obj);\n    IsleGameModelTransform values;"
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.x = -(block->descriptor->worldPos.x * 100.0f);\n    GET_TRANSFORM(model)->pos.v.y = -(block->descriptor->worldPos.y * 100.0f);\n    GET_TRANSFORM(model)->pos.v.z = -(block->descriptor->worldPos.z * 100.0f);",
+          "replace": "    values.position.x = -(worldPosition.x * 100.0f);\n    values.position.y = -(worldPosition.y * 100.0f);\n    values.position.z = -(worldPosition.z * 100.0f);\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PY | ISLE_ACTOR_PZ, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_FollowPath",
+      "path": "src/app_level/pokemon.c",
+      "first": 1676,
+      "last": 1754,
+      "source_sha256": "429122b16879fbb1ff355ae41fb4bb54dd8304d5f800413b682ede7fb37a3cc1",
+      "native_sha256": "3b820ac2f82a6027a9325e2f2da8ee84ec591fcb052695a022973e55b9958219",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameModelRef model = isle_actor_source_self_model(obj);"
+        },
+        {
+          "find": "    Vec3f worldPos = { 0, 0, 0 };",
+          "replace": "    IsleGameVec3 worldPos = { 0, 0, 0 };"
+        },
+        {
+          "find": "    Vec3f vel;",
+          "replace": "    IsleGameVec3 vel;"
+        },
+        {
+          "find": "pokemon->path->duration",
+          "replace": "isle_actor_source_path_info(obj, pokemon->path).duration"
+        },
+        {
+          "find": "            GET_TRANSFORM(model)->pos.v.x -= worldPos.x * 100.0f;\n            GET_TRANSFORM(model)->pos.v.z -= worldPos.z * 100.0f;",
+          "replace": "            IsleGameModelTransform values;\n            values.position.x = isle_actor_source_aux(obj, &model)->position.x;\n            values.position.x -= worldPos.x * 100.0f;\n            values.position.z = isle_actor_source_aux(obj, &model)->position.z;\n            values.position.z -= worldPos.z * 100.0f;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PZ, &values);"
+        },
+        {
+          "find": "                    GET_TRANSFORM(model)->pos.v.y -= worldPos.y;",
+          "replace": "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y -= worldPos.y;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        },
+        {
+          "find": "                    GET_TRANSFORM(model)->pos.v.y -= worldPos.y * 100.0f;",
+          "replace": "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y -= worldPos.y * 100.0f;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        },
+        {
+          "find": "GetInterpolatedVelocity(&vel, pokemon->path, pokemon->pathParam)",
+          "replace": "isle_actor_source_path_velocity(obj, pokemon->path, pokemon->pathParam, &vel)"
+        },
+        {
+          "find": "Pokemon_Turn(model, heading, turnSpeed)",
+          "replace": "Pokemon_Turn(obj, model, heading, turnSpeed)"
+        },
+        {
+          "find": "                    GET_TRANSFORM(model)->rot.v.y = heading;",
+          "replace": "                    values.rotation.y = heading;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"
+        },
+        {
+          "find": "func_80361FBC_5023CC(&worldPos, pokemon->path, pokemon->pathParam)",
+          "replace": "func_80361FBC_5023CC(obj, &worldPos, pokemon->path, pokemon->pathParam)"
+        },
+        {
+          "find": "            GET_TRANSFORM(model)->pos.v.x += worldPos.x * 100.0f;\n            GET_TRANSFORM(model)->pos.v.z += worldPos.z * 100.0f;",
+          "replace": "            values.position.x = isle_actor_source_aux(obj, &model)->position.x;\n            values.position.x += worldPos.x * 100.0f;\n            values.position.z = isle_actor_source_aux(obj, &model)->position.z;\n            values.position.z += worldPos.z * 100.0f;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PZ, &values);"
+        },
+        {
+          "find": "Pokemon_GetGroundAt(GET_TRANSFORM(model)->pos.v.x, GET_TRANSFORM(model)->pos.v.z)",
+          "replace": "Pokemon_GetGroundAt(obj, isle_actor_source_aux(obj, &model)->position.x, isle_actor_source_aux(obj, &model)->position.z)"
+        },
+        {
+          "find": "                    GET_TRANSFORM(model)->pos.v.y += worldPos.y;",
+          "replace": "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y += worldPos.y;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        },
+        {
+          "find": "                    GET_TRANSFORM(model)->pos.v.y += worldPos.y * 100.0f;",
+          "replace": "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y += worldPos.y * 100.0f;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"
+        }
+      ]
+    },
+    {
+      "symbol": "func_803623F4_502804",
+      "path": "src/app_level/pokemon.c",
+      "first": 1756,
+      "last": 1758,
+      "source_sha256": "e531c468c0a91aa7b9c24f6fd322bcfad9692f36c6a99d7fe2fd2c9a97614f82",
+      "native_sha256": "ffc52915f8125c1a4b6f3d667d22c7edb8d663390348b5fb52256eff927b3224",
+      "changes": [
+        {
+          "find": "func_803623F4_502804(f32 x, f32 z)",
+          "replace": "func_803623F4_502804(GObj* obj, f32 x, f32 z)"
+        },
+        {
+          "find": "Pokemon_GetGroundAt(x, z)",
+          "replace": "Pokemon_GetGroundAt(obj, x, z)"
+        }
+      ]
     }
   ],
   "regression_sources": [
@@ -606,7 +1387,7 @@
     "ownership": "Actual actor consumer allocates full records in the native arena with shared application RNG/owner; record storage is validated disjoint from canonical8MiBRAM even for hidden/filtered actors. Joined old native work precedes record reset/reuse. Foreign userData is never cast before actual native binding marker validation.",
     "actual_consumer": "Complete actor/focus source-evaluated surface root f3krr9nu passed all6native-actor geometry/lifetime and actual GPU capture/history/gate/nativehide/cleanup/writeback gates; see actor-producer-inputs.json. Debug/Release/ClangASanUBSan each passed49 CPU tests. The source header SHA256 above is the current canonical record, not an SDK layout."
   },
-  "scope": "Complete private C automatic/FIFO interaction algorithms and closest-Item traversal over actual native service leaves; existing common1003/Magikarp native factories/state/path/animation/cleanup remain integrated. Whole uncompiled/unsupported callback/service closures reject admission; all71 graphs/all72 original callbacks, actual Player producer and fullgame remain open, not silently claimed by interpreter completion.",
+  "scope": "Existing complete private C interaction/FIFO/closest-Item and common1003/Magikarp definitions plus complete selected common movement/turn/target/path helper closure over returning canonical native leaves. This is not remaining Beach species, all71 graphs/all72 callbacks, production Player producer or fullgame completion; unsupported closures still reject admission.",
   "build_recipe": {
     "private_sources": {
       "isle-engine": [
@@ -636,7 +1417,8 @@
     "receipt": "cmake/actor-interaction-inputs.json#native_full_C_Item_wave",
     "status": "Complete actual C automatic/FIFO algorithms/Update and all eleven returning native interaction services passed whole Debug/Release/ClangASanUBSan CPU/API/RSP/retained-fault consumers; all original GPU consumers preserved",
     "history": "integration_validation and canonical_render_payload actual_consumer above describe their named earlier bounded roots, not the current full C/Item/56CPU/39runtime proof",
-    "not_claimed": "All71graph/remaining speciescallback closure, productionPlayerFSM/fullphoto/save/course/productgameplay, physical/SDL3transport/Original/privateWindows11"
+    "not_claimed": "All71graph/remaining speciescallback closure, productionPlayerFSM/fullphoto/save/course/productgameplay, physical/SDL3transport/Original/privateWindows11",
+    "movement_import": "New movement import is implemented but not yet runtime-qualified here. Existing interaction qualification remains historical scoped evidence, not movement proof; parent must regenerate and perform the agreed actual C behavioral and native world/GPU consumers."
   },
   "translation_units": {
     "control": {
@@ -672,9 +1454,41 @@
         "func_beach_802CAC48",
         "func_8035E298_4FE6A8",
         "func_8035E174_4FE584",
-        "Pokemon_AddAtGeo"
+        "Pokemon_AddAtGeo",
+        "Pokemon_GetGroundAt",
+        "Pokemon_WrapAngleSum",
+        "Pokemon_HeadingBetweenPoints",
+        "Pokemon_GetHeadingVector",
+        "Pokemon_SetScale",
+        "Pokemon_MoveXZ",
+        "Pokemon_Jump",
+        "Pokemon_JumpToHeight",
+        "Pokemon_Fall",
+        "Pokemon_FallToHeight",
+        "Pokemon_FallDownOnGround",
+        "Pokemon_StepWalkInDirection",
+        "Pokemon_StepWalkInDirectionFacing",
+        "Pokemon_Turn",
+        "Pokemon_RunInCircles",
+        "Pokemon_RunInCirclesDefault",
+        "Pokemon_HearsPokeFlute",
+        "Pokemon_TurnToTarget",
+        "Pokemon_TurnToModelNode",
+        "func_80361720_501B30",
+        "Pokemon_RunToTarget",
+        "Pokemon_RunAwayFromTarget",
+        "Pokemon_RunAwayDefault",
+        "Pokemon_SetTargetPos",
+        "Pokemon_StepToTargetPos",
+        "Pokemon_RunToTargetPos",
+        "Pokemon_RunToTargetDefault",
+        "Pokemon_TurnToPokeFlute",
+        "func_80361FBC_5023CC",
+        "Pokemon_ResetPathPos",
+        "Pokemon_FollowPath",
+        "func_803623F4_502804"
       ],
-      "preamble": "actor_owner_source.h typed nonwaiting leaves/factory contexts"
+      "preamble": "actor_owner_source.h exact typed modelref/positionref/noderef and returning leaves, explicit IsleGameVec3 vectors, qualified native numeric macros, and native World path kind scalar constants; no console/SDK layouts"
     }
   }
 }

@@ -387,7 +387,9 @@ struct SourceAccess {
         IsleActorSource* bound=nullptr;
         if (isle_actor_source_get(source->game,source->object,&bound)!=ISLE_GAME_OK || bound!=source) return nullptr;
         auto* slot=static_cast<Owner::Impl::Slot*>(source->owner);
-        if (&slot->source!=source || !slot->active || slot->retiring || slot->owner->services.game!=source->game) return nullptr;
+        if (&slot->source!=source || !slot->active || slot->retiring || slot->object!=source->object ||
+            slot->owner->services.game!=source->game ||
+            isle_game_model_validate_binding(source->game,slot->object,slot->model)!=ISLE_GAME_OK) return nullptr;
         return slot;
     }
     static Owner::Impl::Slot* retained_scope_slot(IsleActorSource* source) noexcept {
@@ -399,6 +401,29 @@ struct SourceAccess {
             slot->owner->services.game==source->game?slot:nullptr;
     }
     static SpawnResult spawn(Owner& owner,const SpawnRequest& request) noexcept { return owner.spawn_native(request); }
+    static const menu::AnimationPath* path(Owner::Impl::Slot& slot,const void* value) noexcept {
+        if (!value || slot.owner->world.retired() || !slot.owner->world.error().empty()) return nullptr;
+        for (const auto& candidate:slot.owner->world.resources().paths)
+            if (&candidate==value) return &candidate;
+        return nullptr;
+    }
+    static IsleGameResult auxiliary(IsleActorSource* source,const IsleGameModelRef* reference,
+        const IsleGameModelPlacement*& output) noexcept {
+        if (!reference) return ISLE_GAME_INVALID_ARGUMENT;
+        if (!slot(source)) return ISLE_GAME_INVALID_STATE;
+        IsleGameModel* model=nullptr;
+        auto result=isle_game_model_resolve(source->game,reference,&model);
+        if (result!=ISLE_GAME_OK) return result;
+        result=isle_game_model_placement(source->game,model,&output);
+        if (result!=ISLE_GAME_OK) return result;
+        if (!output || (output->mode!=ISLE_GAME_MODEL_PLACEMENT_RT &&
+            output->mode!=ISLE_GAME_MODEL_PLACEMENT_RTS)) return ISLE_GAME_INVALID_STATE;
+        return ISLE_GAME_OK;
+    }
+    static IsleGameResult collision_status(OwnerStatus status) noexcept {
+        if (status) return ISLE_GAME_OK;
+        return status.error==OwnerError::admission?ISLE_GAME_INVALID_ARGUMENT:ISLE_GAME_INVALID_STATE;
+    }
 };
 Owner::Owner(scene::Services& s,const beach::ActorResources& r,world::World& w,environment_sound::Environment& e,
              focus::Detector& d,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
@@ -863,6 +888,118 @@ IsleGameResult isle_actor_owner_animation(IsleActorSource* source,uint32_t ident
     }
     return slot->owner->animation(*slot,header,start,force!=0)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
 }
+IsleGameResult isle_actor_owner_self_model(IsleActorSource* source,IsleGameModelRef* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output={};
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    return isle_game_model_reference(source->game,slot->object,slot->model,output);
+}
+IsleGameResult isle_actor_owner_aux_read(IsleActorSource* source,const IsleGameModelRef* reference,
+    const IsleGameModelTransform** output) {
+    if (output) *output=nullptr;
+    if (!output || !reference) return ISLE_GAME_INVALID_ARGUMENT;
+    const IsleGameModelPlacement* placement=nullptr;
+    const auto result=isle::actor::SourceAccess::auxiliary(source,reference,placement);
+    if (result!=ISLE_GAME_OK) return result;
+    *output=&placement->transform;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_actor_owner_aux_store(IsleActorSource* source,const IsleGameModelRef* reference,
+    uint32_t mask,const IsleGameModelTransform* values) {
+    if (!values || (mask&~0x1ffu)) return ISLE_GAME_INVALID_ARGUMENT;
+    const IsleGameModelPlacement* placement=nullptr;
+    const auto result=isle::actor::SourceAccess::auxiliary(source,reference,placement);
+    if (result!=ISLE_GAME_OK) return result;
+    const auto* latest=&placement->transform;
+    if ((mask&(ISLE_ACTOR_SX|ISLE_ACTOR_SY|ISLE_ACTOR_SZ)) &&
+        placement->mode!=ISLE_GAME_MODEL_PLACEMENT_RTS) return ISLE_GAME_INVALID_STATE;
+    if (!mask) return ISLE_GAME_OK;
+    // RT does not consume scale. Never load unselected caller components.
+    IsleGameModelTransform next{};
+    next.position=latest->position;
+    next.rotation=latest->rotation;
+    if (placement->mode==ISLE_GAME_MODEL_PLACEMENT_RTS) next.scale=latest->scale;
+    if (mask&ISLE_ACTOR_PX) next.position.x=values->position.x;
+    if (mask&ISLE_ACTOR_PY) next.position.y=values->position.y;
+    if (mask&ISLE_ACTOR_PZ) next.position.z=values->position.z;
+    if (mask&ISLE_ACTOR_RX) next.rotation.x=values->rotation.x;
+    if (mask&ISLE_ACTOR_RY) next.rotation.y=values->rotation.y;
+    if (mask&ISLE_ACTOR_RZ) next.rotation.z=values->rotation.z;
+    if (mask&ISLE_ACTOR_SX) next.scale.x=values->scale.x;
+    if (mask&ISLE_ACTOR_SY) next.scale.y=values->scale.y;
+    if (mask&ISLE_ACTOR_SZ) next.scale.z=values->scale.z;
+    return isle_game_model_set_placement(source->game,reference->model,placement->mode,&next);
+}
+IsleGameResult isle_actor_owner_step_walk(IsleActorSource* source,float vx,float vz,uint32_t flags,int32_t* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || slot->owner->services.failed()) return ISLE_GAME_INVALID_STATE;
+    bool blocked=false;
+    const auto result=isle::actor::collision::step_walk(slot->owner->world,*source,slot->model,vx,vz,flags,blocked);
+    if (!result) return isle::actor::SourceAccess::collision_status(result);
+    *output=blocked?1:0;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_actor_owner_scale_initialization(IsleActorSource* source,IsleActorScaleInitialization* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || source->initData!=slot->initialization) return ISLE_GAME_INVALID_STATE;
+    for (const auto& candidate:slot->owner->resources.initializations()) if (&candidate==slot->initialization) {
+        *output={{candidate.scale.x,candidate.scale.y,candidate.scale.z},
+            {candidate.collision_center.x,candidate.collision_center.y,candidate.collision_center.z},candidate.radius};
+        return ISLE_GAME_OK;
+    }
+    return ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_actor_owner_path_info(IsleActorSource* source,const void* value,IsleActorPathInfo* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    const auto* path=isle::actor::SourceAccess::path(*slot,value);
+    if (!path) return ISLE_GAME_INVALID_ARGUMENT;
+    *output={path->kind,path->duration};
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_actor_owner_path_position(IsleActorSource* source,const void* value,float parameter,IsleGameVec3* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    const auto* path=isle::actor::SourceAccess::path(*slot,value);
+    if (!path) return ISLE_GAME_INVALID_ARGUMENT;
+    try {
+        const auto position=isle::menu::animation::path_position(*path,parameter);
+        *output={position.x,position.y,position.z};
+        return ISLE_GAME_OK;
+    } catch (...) { return ISLE_GAME_INVALID_ARGUMENT; }
+}
+IsleGameResult isle_actor_owner_path_velocity(IsleActorSource* source,const void* value,float parameter,IsleGameVec3* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    const auto* path=isle::actor::SourceAccess::path(*slot,value);
+    if (!path) return ISLE_GAME_INVALID_ARGUMENT;
+    try {
+        const auto velocity=isle::menu::animation::path_velocity(*path,parameter);
+        *output={velocity.x,velocity.y,velocity.z};
+        return ISLE_GAME_OK;
+    } catch (...) { return ISLE_GAME_INVALID_ARGUMENT; }
+}
+IsleGameResult isle_actor_owner_current_world_position(IsleActorSource* source,IsleGameVec3* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || slot->owner->world.retired() || !slot->owner->world.error().empty()) return ISLE_GAME_INVALID_STATE;
+    const auto* block=slot->owner->world.current();
+    for (const auto& candidate:slot->owner->world.blocks()) if (&candidate==block) {
+        for (const auto& resource:slot->owner->world.resources().blocks) if (&resource==candidate.resource) {
+            const auto& position=resource.metadata.world_position;
+            *output={position.x,position.y,position.z};
+            return ISLE_GAME_OK;
+        }
+        return ISLE_GAME_INVALID_STATE;
+    }
+    return ISLE_GAME_INVALID_STATE;
+}
 IsleGameResult isle_actor_owner_step(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     return slot && slot->owner->step(*slot)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
@@ -951,14 +1088,6 @@ int isle_actor_owner_paused(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     return slot && slot->owner->course.paused;
 }
-IsleGameResult isle_actor_owner_yaw(IsleActorSource* source,float yaw) {
-    auto* slot=isle::actor::SourceAccess::slot(source);
-    if (!slot || source->id!=129) return ISLE_GAME_INVALID_STATE;
-    const IsleGameModelPlacement* current=nullptr;
-    if (isle_game_model_placement(source->game,slot->model,&current)!=ISLE_GAME_OK) return ISLE_GAME_INVALID_STATE;
-    auto placement=current->transform; placement.rotation.y=yaw;
-    return isle_game_model_set_placement(source->game,slot->model,ISLE_GAME_MODEL_PLACEMENT_RTS,&placement);
-}
 IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource* source,int active) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     if (!slot || source->id!=129) return ISLE_GAME_INVALID_STATE;
@@ -984,10 +1113,21 @@ IsleGameResult isle_actor_owner_ground_node(IsleActorSource* source,size_t* outp
     return ISLE_GAME_OK;
 }
 IsleGameResult isle_actor_owner_node_world(IsleActorSource* source,size_t node,IsleGameVec3* position,IsleGameVec3* velocity) {
-    auto* slot=isle::actor::SourceAccess::slot(source);
-    if (!slot || !position || !velocity) return ISLE_GAME_INVALID_ARGUMENT;
+    IsleActorNodeRef reference{};
+    const auto result=isle_actor_owner_self_model(source,&reference.model);
+    if (result!=ISLE_GAME_OK) return result;
+    reference.node=node;
+    return isle_actor_owner_node_world_ref(source,&reference,position,velocity);
+}
+IsleGameResult isle_actor_owner_node_world_ref(IsleActorSource* source,const IsleActorNodeRef* reference,
+    IsleGameVec3* position,IsleGameVec3* velocity) {
+    if (!reference || !position || !velocity) return ISLE_GAME_INVALID_ARGUMENT;
+    if (!isle::actor::SourceAccess::slot(source)) return ISLE_GAME_INVALID_STATE;
+    IsleGameModel* model=nullptr;
+    const auto resolution=isle_game_model_resolve(source->game,&reference->model,&model);
+    if (resolution!=ISLE_GAME_OK) return resolution;
     isle::menu::EffectWorld world{};
-    if (!isle::menu::model::source_effect_world(source->game,slot->model,node,world)) return ISLE_GAME_EXECUTION_FAILURE;
+    if (!isle::menu::model::source_effect_world(source->game,model,reference->node,world)) return ISLE_GAME_EXECUTION_FAILURE;
     auto& m=world.matrix;
     // effect.c1335-1360: normalize columns, never transform velocity as a
     // point or derive it from frame differences/renderer's quantized caches.
@@ -1005,12 +1145,14 @@ IsleGameResult isle_actor_owner_node_world(IsleActorSource* source,size_t node,I
     *position={m[3][0],m[3][1],m[3][2]}; *velocity=result;
     return ISLE_GAME_OK;
 }
-IsleGameResult isle_actor_owner_ground(IsleActorSource* source,float x,float z,IsleActorGround* output) {
+IsleGameResult isle_actor_owner_ground(IsleActorSource* source,float x,float z,IsleActorGround* output,int32_t* found) {
     auto* slot=isle::actor::SourceAccess::slot(source);
-    if (!slot || !output) return ISLE_GAME_INVALID_ARGUMENT;
-    const auto result=isle::actor::collision::ground_query(slot->owner->world,x,z,*output);
-    if (result) return ISLE_GAME_OK;
-    return result.error==isle::actor::OwnerError::admission?ISLE_GAME_INVALID_ARGUMENT:ISLE_GAME_INVALID_STATE;
+    if (!slot || !output || !found) return ISLE_GAME_INVALID_ARGUMENT;
+    bool queried=false;
+    const auto result=isle::actor::collision::ground_query(slot->owner->world,x,z,*output,queried);
+    if (!result) return isle::actor::SourceAccess::collision_status(result);
+    *found=queried?1:0;
+    return ISLE_GAME_OK;
 }
 IsleGameResult isle_actor_owner_current_block(IsleActorSource* source,void** output) {
     if (output) *output=nullptr;

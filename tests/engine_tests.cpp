@@ -1,5 +1,6 @@
 #include "engine_fixture.h"
 #include "contextual_model_math.h"
+#include "source_factory_resources.h"
 
 #include <algorithm>
 #include <array>
@@ -1349,6 +1350,16 @@ void camera_exhaustion_and_reuse() {
 IsleGameModelTransform identity_model_transform() {
     return {{0, 0, 0}, {0, 0, 0}, {1, 1, 1}};
 }
+float& model_scalar(IsleGameModelTransform& pose, unsigned channel) {
+    auto& vector = channel < 3 ? pose.position : channel < 6 ? pose.rotation : pose.scale;
+    return channel % 3 == 0 ? vector.x : channel % 3 == 1 ? vector.y : vector.z;
+}
+
+std::uint32_t float_bits(float value) {
+    std::uint32_t bits;
+    std::memcpy(&bits, &value, sizeof(bits));
+    return bits;
+}
 
 std::int32_t fixed_lane(const IsleGameFixedMatrix& m, std::size_t row, std::size_t col) {
     const auto pair = row * 2 + col / 2;
@@ -1358,6 +1369,301 @@ std::int32_t fixed_lane(const IsleGameFixedMatrix& m, std::size_t row, std::size
     std::int32_t value;
     std::memcpy(&value, &bits, sizeof(value));
     return value;
+}
+
+void model_references_follow_only_the_live_attachment() {
+    World world;
+    auto* owner = object(world, 1);
+    auto* other = object(world, 2);
+    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(),
+        ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
+    IsleGameModel* model = nullptr;
+    ok(isle_game_attach_model(world.game, owner, &initial, 1, &model));
+    const auto used = world.arena.cursor;
+    IsleGameModelRef first{};
+    ok(isle_game_model_reference(world.game, owner, model, &first));
+    const auto copied = first;
+    require(first.object == owner && first.model == model && first.incarnation != 0,
+        "model identity did not capture the actual attachment");
+    IsleGameModel* resolved = nullptr;
+    ok(isle_game_model_resolve(world.game, &copied, &resolved));
+    auto pose = identity_model_transform();
+    pose.position = {7, 11, 13};
+    ok(isle_game_model_set_transform(world.game, resolved, 0, &pose));
+    ok(isle_game_model_set_placement(world.game, resolved, ISLE_GAME_MODEL_PLACEMENT_RT, &pose));
+    ok(isle_game_model_resolve(world.game, &copied, &resolved));
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t extent = 0;
+    ok(isle_game_model_peek_nodes(world.game, resolved, &nodes, &extent));
+    require(extent == 1 && nodes[0].transform.position.y == 11 && world.arena.cursor == used,
+        "model reference retained a pose snapshot or allocated on resolution");
+    IsleGameModelRef rejected = first;
+    require(isle_game_model_reference(world.game, other, model, &rejected) ==
+            ISLE_GAME_INVALID_ARGUMENT && !rejected.object && !rejected.model && !rejected.incarnation,
+        "model reference accepted a different live object's attachment");
+    auto wrong_association = first;
+    wrong_association.object = other;
+    resolved = model;
+    require(isle_game_model_resolve(world.game, &wrong_association, &resolved) ==
+            ISLE_GAME_INVALID_ARGUMENT && !resolved,
+        "model resolution silently adopted a different object association");
+    bool wrong_owner = false;
+    std::thread foreign([&] {
+        auto reference = first;
+        IsleGameModel* output = model;
+        wrong_owner = isle_game_model_reference(world.game, owner, model, &reference) ==
+                ISLE_GAME_WRONG_OWNER && !reference.model && !reference.object && !reference.incarnation &&
+            isle_game_model_resolve(world.game, &copied, &output) == ISLE_GAME_WRONG_OWNER && !output;
+    });
+    foreign.join();
+    require(wrong_owner, "model references bypassed native owner access");
+    ok(isle_game_remove_model(world.game, model));
+    resolved = model;
+    require(isle_game_model_resolve(world.game, &copied, &resolved) ==
+            ISLE_GAME_INVALID_ARGUMENT && !resolved,
+        "removed model reference exposed retired node storage");
+    IsleGameModel* reincarnated = nullptr;
+    ok(isle_game_attach_model(world.game, owner, &initial, 1, &reincarnated));
+    IsleGameModelRef second{};
+    ok(isle_game_model_reference(world.game, owner, reincarnated, &second));
+    require(reincarnated == model && second.incarnation != copied.incarnation,
+        "same-object model reuse did not mint another attachment incarnation");
+    resolved = reincarnated;
+    require(isle_game_model_resolve(world.game, &copied, &resolved) ==
+            ISLE_GAME_INVALID_ARGUMENT && !resolved,
+        "copied model reference read a recycled slot on the same live object");
+    struct Retirement {
+        IsleGame* game;
+        IsleGameModelRef reference;
+        bool rejected = false;
+        unsigned calls = 0;
+    } retiring{world.game, second};
+    ok(isle_game_object_set_pre_retire_callback(world.game, owner,
+        [](IsleGameObject* object, void* user) {
+            auto& observation = *static_cast<Retirement*>(user);
+            IsleGameModel* output = observation.reference.model;
+            auto reference = observation.reference;
+            observation.rejected = engine_model_alive(output) &&
+                isle_game_model_resolve(observation.game, &observation.reference, &output) ==
+                    ISLE_GAME_INVALID_ARGUMENT && !output &&
+                isle_game_model_reference(observation.game, object, observation.reference.model, &reference) ==
+                    ISLE_GAME_INVALID_ARGUMENT && !reference.model && !reference.object && !reference.incarnation;
+            ++observation.calls;
+        }, &retiring));
+    ok(isle_game_delete_object(world.game, owner));
+    require(retiring.calls == 1 && retiring.rejected,
+        "model identity remained readable once actual retirement began");
+    IsleSourceFactoryResources prepared{};
+    ok(isle_source_factory_prepare(world.game, 1, nullptr, 0, &prepared));
+    require(prepared.object == owner && prepared.model == model,
+        "nonowning model references fenced actual object/model free-list reuse");
+    rejected = second;
+    require(isle_game_model_reference(world.game, prepared.object, prepared.model, &rejected) ==
+            ISLE_GAME_INVALID_ARGUMENT && !rejected.model && !rejected.object && !rejected.incarnation,
+        "unpublished factory reservation minted a live model reference");
+    resolved = model;
+    require(isle_game_model_resolve(world.game, &second, &resolved) ==
+            ISLE_GAME_INVALID_ARGUMENT && !resolved,
+        "factory reservation revived the previous attachment");
+    ok(isle_source_factory_cancel(&prepared));
+    ok(isle_source_factory_prepare(world.game, 1, nullptr, 0, &prepared));
+    IsleGameObject* published = nullptr;
+    ok(isle_source_factory_publish_object(&prepared, 3, 0, 0, nullptr, nullptr, &published));
+    IsleGameModel* published_model = nullptr;
+    ok(isle_source_factory_attach_model(&prepared, published, &initial, 1, &published_model));
+    ok(isle_source_factory_finish(&prepared));
+    IsleGameModelRef third{};
+    ok(isle_game_model_reference(world.game, published, published_model, &third));
+    require(published == owner && published_model == model &&
+        third.incarnation != second.incarnation && third.incarnation != first.incarnation &&
+        world.arena.cursor == used,
+        "factory cancellation/republication reused an old incarnation or retained storage");
+    for (const auto& stale : {first, copied, second}) {
+        resolved = published_model;
+        require(isle_game_model_resolve(world.game, &stale, &resolved) ==
+                ISLE_GAME_INVALID_ARGUMENT && !resolved,
+            "factory-cancelled/recycled attachment exposed stale copied model storage");
+    }
+    ok(isle_game_model_resolve(world.game, &third, &resolved));
+    require(resolved == published_model, "current factory attachment did not resolve");
+    auto* destroyed_game = world.game;
+    ok(isle_game_destroy(world.game));
+    world.game = nullptr;
+    resolved = published_model;
+    require(isle_game_model_resolve(destroyed_game, &third, &resolved) ==
+            ISLE_GAME_INVALID_STATE && !resolved,
+        "nonowning reference retained the game or resolved after destruction");
+    World next_world;
+    auto* next_owner = object(next_world, 4);
+    IsleGameModel* next_model = nullptr;
+    ok(isle_game_attach_model(next_world.game, next_owner, &initial, 1, &next_model));
+    resolved = next_model;
+    require(isle_game_model_resolve(next_world.game, &third, &resolved) ==
+            ISLE_GAME_INVALID_ARGUMENT && !resolved,
+        "model reference crossed into another retained game arena");
+}
+
+void model_incarnation_exhaustion_never_wraps_or_reserves() {
+    for (bool cancel_final_reservation : {false, true}) {
+        World world;
+        auto* owner = object(world, 1);
+        auto* spare = object(world, 2);
+        IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(),
+            ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
+        IsleGameModel* model = nullptr;
+        ok(isle_game_attach_model(world.game, spare, &initial, 1, &model));
+        IsleGameModelRef stale{};
+        ok(isle_game_model_reference(world.game, spare, model, &stale));
+        ok(isle_game_delete_object(world.game, spare));
+        const auto used = world.arena.cursor;
+        engine_model_use_final_incarnation(world.game);
+        IsleGameModelRef final{};
+        if (cancel_final_reservation) {
+            IsleSourceFactoryResources prepared{};
+            ok(isle_source_factory_prepare(world.game, 1, nullptr, 0, &prepared));
+            require(prepared.model == model && prepared.object == spare,
+                "final reservation bypassed reusable model/object storage");
+            ok(isle_source_factory_cancel(&prepared));
+        } else {
+            IsleGameModel* last = nullptr;
+            ok(isle_game_attach_model(world.game, owner, &initial, 1, &last));
+            ok(isle_game_model_reference(world.game, owner, last, &final));
+            require(last == model && final.incarnation == UINT64_MAX,
+                "last representable attachment incarnation was rejected or wrapped");
+            auto pose = identity_model_transform();
+            pose.position.x = 3;
+            ok(isle_game_model_set_placement(world.game, last, ISLE_GAME_MODEL_PLACEMENT_RT, &pose));
+            IsleGameModel* resolved = nullptr;
+            ok(isle_game_model_resolve(world.game, &final, &resolved));
+            require(resolved == last, "incarnation exhaustion invalidated a still-live attachment");
+            ok(isle_game_remove_model(world.game, last));
+        }
+        for (std::size_t requested : {std::size_t{1}, std::size_t{2}}) {
+            std::array<IsleGameModelNodeInit, 2> initial_nodes{initial, initial};
+            initial_nodes[1].parent = 0;
+            IsleGameModel* failed = model;
+            require(isle_game_attach_model(world.game, owner, initial_nodes.data(), requested, &failed) ==
+                    ISLE_GAME_EXHAUSTED && !failed && world.arena.cursor == used &&
+                engine_model_free_storage_matches(world.game, spare, model),
+                "incarnation exhaustion consumed a free block, grew the arena or published an owner");
+            IsleSourceFactoryResources rejected{};
+            require(isle_source_factory_prepare(world.game, requested, nullptr, 0, &rejected) ==
+                    ISLE_GAME_EXHAUSTED && !rejected.active && !rejected.game &&
+                !rejected.object && !rejected.model && world.arena.cursor == used &&
+                engine_model_free_storage_matches(world.game, spare, model),
+                "incarnation exhaustion reserved factory object/model storage or published a ticket");
+        }
+        IsleGameModel* resolved = model;
+        require(isle_game_model_resolve(world.game, &stale, &resolved) ==
+                ISLE_GAME_INVALID_ARGUMENT && !resolved,
+            "exhausted incarnation sequence revived an earlier model reference");
+        if (final.model) {
+            resolved = model;
+            require(isle_game_model_resolve(world.game, &final, &resolved) ==
+                    ISLE_GAME_INVALID_ARGUMENT && !resolved,
+                "removed final incarnation remained readable");
+        }
+        IsleGameSprite* sprite = nullptr;
+        ok(isle_game_add_sprite(world.game, owner, nullptr, &sprite));
+    }
+    World world;
+    auto* owner = object(world, 5);
+    IsleGameModelNodeInit initial{UINT32_MAX, identity_model_transform(),
+        ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE};
+    IsleSourceFactoryResources earlier{};
+    ok(isle_source_factory_prepare(world.game, 1, nullptr, 0, &earlier));
+    engine_model_use_final_incarnation(world.game);
+    IsleGameModel* last = nullptr;
+    ok(isle_game_attach_model(world.game, owner, &initial, 1, &last));
+    IsleGameObject* published = nullptr;
+    ok(isle_source_factory_publish_object(&earlier, 6, 0, 0, nullptr, nullptr, &published));
+    IsleGameModel* reserved = nullptr;
+    ok(isle_source_factory_attach_model(&earlier, published, &initial, 1, &reserved));
+    ok(isle_source_factory_finish(&earlier));
+    IsleGameModelRef reference{};
+    ok(isle_game_model_reference(world.game, published, reserved, &reference));
+    IsleGameModel* resolved = nullptr;
+    ok(isle_game_model_resolve(world.game, &reference, &resolved));
+    require(reference.incarnation != UINT64_MAX && resolved == reserved,
+        "publication reminted a prepared model or rejected its already-reserved incarnation");
+}
+
+void model_signed_zero_is_canonical_state_not_numeric_equality() {
+    for (auto kind : {ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE,
+                     ISLE_GAME_MODEL_TRANSLATE, ISLE_GAME_MODEL_CONTEXTUAL_RPY}) {
+        World world;
+        auto* owner = object(world, 1);
+        std::array<IsleGameModelNodeInit, 2> initial{{
+            {UINT32_MAX, {}, kind},
+            {0, identity_model_transform(), ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE}
+        }};
+        IsleGameModel* model = nullptr;
+        ok(isle_game_attach_model(world.game, owner, initial.data(), initial.size(), &model));
+        const auto used = world.arena.cursor;
+        const IsleGameModelNode* nodes = nullptr;
+        std::size_t extent = 0;
+        ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+        const auto child_revision = nodes[1].revision;
+        const auto fixed = nodes[0].fixed;
+        for (unsigned channel = 0; channel < 9; ++channel) {
+            auto pose = initial[0].transform;
+            model_scalar(pose, channel) = -0.0f;
+            const auto revision = nodes[0].revision;
+            ok(isle_game_model_set_transform(world.game, model, 0, &pose));
+            ok(isle_game_model_peek_nodes(world.game, model, &nodes, &extent));
+            auto accepted = nodes[0].transform;
+            require(float_bits(model_scalar(accepted, channel)) == UINT32_C(0x80000000) &&
+                nodes[0].revision == revision,
+                "signed-zero local publication lost the bit or bypassed lazy cache evaluation");
+            ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+            require(nodes[0].revision == revision + 1 && nodes[1].revision == child_revision &&
+                std::memcmp(&nodes[0].fixed, &fixed, sizeof(fixed)) == 0,
+                "signed-zero local publication skipped revision or dirtied unrelated fixed state");
+            ok(isle_game_model_set_transform(world.game, model, 0, &pose));
+            ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+            require(nodes[0].revision == revision + 1,
+                "bit-identical signed-zero local input was not a no-op");
+            ok(isle_game_model_set_transform(world.game, model, 0, &initial[0].transform));
+            ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+            accepted = nodes[0].transform;
+            require(nodes[0].revision == revision + 2 &&
+                float_bits(model_scalar(accepted, channel)) == 0 && world.arena.cursor == used,
+                "positive-zero local restoration was lost or allocated");
+        }
+        for (auto mode : {ISLE_GAME_MODEL_PLACEMENT_RT, ISLE_GAME_MODEL_PLACEMENT_RTS}) {
+            IsleGameModelTransform neutral{};
+            ok(isle_game_model_set_placement(world.game, model, mode, &neutral));
+            const IsleGameModelPlacement* placement = nullptr;
+            ok(isle_game_model_placement(world.game, model, &placement));
+            const auto placement_fixed = placement->fixed;
+            const auto local_revision = nodes[0].revision;
+            for (unsigned channel = 0; channel < (mode == ISLE_GAME_MODEL_PLACEMENT_RT ? 6u : 9u); ++channel) {
+                auto pose = neutral;
+                model_scalar(pose, channel) = -0.0f;
+                const auto revision = placement->revision;
+                ok(isle_game_model_set_placement(world.game, model, mode, &pose));
+                auto accepted = placement->transform;
+                require(float_bits(model_scalar(accepted, channel)) == UINT32_C(0x80000000) &&
+                    placement->revision == revision + 1 && counts(world).matrices == 3 &&
+                    std::memcmp(&placement->fixed, &placement_fixed, sizeof(placement_fixed)) == 0,
+                    "signed-zero placement publication lost canonical bits, revision or matrix accounting");
+                if (mode == ISLE_GAME_MODEL_PLACEMENT_RT)
+                    pose.scale = {std::numeric_limits<float>::quiet_NaN(),
+                        std::numeric_limits<float>::infinity(), -0.0f};
+                ok(isle_game_model_set_placement(world.game, model, mode, &pose));
+                require(placement->revision == revision + 1,
+                    "identical consumed placement bits or unconsumed RT scale dirtied the cache");
+                ok(isle_game_model_set_placement(world.game, model, mode, &neutral));
+                accepted = placement->transform;
+                require(float_bits(model_scalar(accepted, channel)) == 0 &&
+                    placement->revision == revision + 2 && world.arena.cursor == used,
+                    "positive-zero placement restoration was lost or allocated");
+            }
+            ok(isle_game_model_nodes(world.game, model, &nodes, &extent));
+            require(nodes[0].revision == local_revision && nodes[1].revision == child_revision,
+                "signed-zero placement writes dirtied root or child local caches");
+        }
+    }
 }
 
 void model_contextual_pose_admission_and_cache() {
@@ -2502,6 +2808,9 @@ int main() {
         model_source54_math_and_atomicity();
         model_source48_basis_and_atomicity();
         model_placement_atomicity_and_lifecycle();
+        model_references_follow_only_the_live_attachment();
+        model_incarnation_exhaustion_never_wraps_or_reserves();
+        model_signed_zero_is_canonical_state_not_numeric_equality();
         model_translate_selection_and_cache();
         model_photo_bake();
         model_rejection_atomicity_and_reuse();

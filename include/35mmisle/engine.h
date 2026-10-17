@@ -15,6 +15,11 @@ typedef struct GObjProcess IsleGameProcess;
 typedef struct SObj IsleGameSprite;
 typedef struct OMCamera IsleGameCamera;
 typedef struct IsleGameModel IsleGameModel;
+typedef struct IsleGameModelRef {
+    IsleGameObject* object;
+    IsleGameModel* model;
+    uint64_t incarnation;
+} IsleGameModelRef;
 typedef void (*IsleGameCallback)(IsleGameObject* object, void* user);
 typedef void (*IsleGameSourceCallback)(IsleGameObject* object);
 
@@ -392,7 +397,8 @@ typedef struct IsleGameModelNode {
 /* Native type-1 payload: exactly one root, parent-before-child node order.
  * Actual-size arena storage is reused after removal. No mutation/compute
  * allocates. Ordinary local matrices and contextual accepted-pose revisions
- * evaluate lazily only after transform changes; flags do not dirty them, and
+ * evaluate lazily only after canonical transform bits change (including zero's
+ * sign); flags do not dirty them, and
  * parent changes do not dirty child locals. Node borrows stay stable until
  * model removal/object deletion. Handles expire at removal, including slot
  * reuse. Pointer/count outputs clear on errors.
@@ -413,6 +419,18 @@ IsleGameResult isle_game_remove_model(IsleGame* game, IsleGameModel* model);
 /* Pure actual live object/model association check, including retirement and
  * terminal execution status. It never adopts a foreign model or mutates caches. */
 IsleGameResult isle_game_model_validate_binding(IsleGame*, IsleGameObject*, IsleGameModel*);
+/* Nonowning attachment identities, not retained objects or borrowed poses.
+ * Reference requires the actual live, nonretiring object/model association.
+ * Copies resolve only that incarnation; removal, retirement and slot reuse
+ * invalidate them. Ordinary pose publication does not change the identity.
+ * Both APIs allocate nothing and acquire no holds. Reference outputs clear on
+ * errors, as do resolve's model outputs. The game and its arena storage must
+ * remain retained: refs expire at destroy and never survive arena reset/reuse.
+ * New model allocations/reservations reject with EXHAUSTED rather than wrap
+ * their incarnation sequence, without changing pools or publishing an owner.
+ */
+IsleGameResult isle_game_model_reference(IsleGame*, IsleGameObject*, IsleGameModel*, IsleGameModelRef*);
+IsleGameResult isle_game_model_resolve(IsleGame*, const IsleGameModelRef*, IsleGameModel**);
 /* Pure preflight: owner/index/kind/scalar checks only, no state/cache mutation.
  * With no intervening mutation/callback/thread access, the same setter input
  * cannot subsequently fail. The caller owns that exclusion.
@@ -434,7 +452,8 @@ IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
     const IsleGameModelNode** output, size_t* count);
 /* Pure consumed-field preflight, with the same exclusion as validate_transform.
  * Setter eagerly computes once, then atomically publishes the complete record
- * and live-matrix count. Identical consumed input preserves revision. Disabled
+ * and live-matrix count. Bit-identical consumed input preserves revision;
+ * signed-zero changes publish even when the fixed matrix is unchanged. Disabled
  * stores neutral metadata/zero fixed bytes without computing an identity.
  * The getter is nonmutating; its stable const borrow expires at model removal.
  */

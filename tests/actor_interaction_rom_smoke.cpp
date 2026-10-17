@@ -5,6 +5,7 @@
 // graphics/GPU-fence proof, fullgame or Windows11 qualification. Actual audio
 // RSP tasks and an owned PCM stream are drained at the end; no GPU is required.
 #include "actor_interaction_probe.h"
+#include "actor_movement_probe.h"
 #include "actor_behavior_bindings.hpp"
 #include "actor_interaction_services.hpp"
 #include "item_owner.hpp"
@@ -122,6 +123,9 @@ struct Shift {
     IsleGameCamera* camera;
     actor::Owner* actors=nullptr;
     it::Owner* items=nullptr;
+    IsleGameCommandPool native_world_pool{};
+    std::array<IsleGameObject*,27> native_world_objects{};
+    std::array<IsleGameCommandQueue,27> native_world_queues{};
     static void camera_shift(void* user,world::Vec3 delta) noexcept {
         auto& self=*static_cast<Shift*>(user);
         const IsleGameCameraParameters* parameters=nullptr;
@@ -135,6 +139,21 @@ struct Shift {
         auto& self=*static_cast<Shift*>(user);
         if (!self.actors) { self.services->fail("selector effects owner absent"); return; }
         self.actors->effects().translate({delta.x,delta.y,delta.z});
+    }
+    static void commands(void* user,IsleGameObject* object) noexcept {
+        auto& self=*static_cast<Shift*>(user);
+        for(std::size_t n=0;n<self.native_world_objects.size();++n)
+            if(!self.native_world_objects[n] || self.native_world_objects[n]==object) {
+                self.native_world_objects[n]=object; int erase=0;
+                if(self.services->check(isle_game_commands(self.services->game,object,&self.native_world_pool,
+                        &self.native_world_queues[n],nullptr,nullptr,&erase),"semantic World native command drain") && erase)
+                    self.services->check(isle_game_delete_object(self.services->game,object),"semantic World command deletion");
+                return;
+            }
+        self.services->fail("bounded semantic World command receiver capacity exceeded");
+    }
+    ~Shift() {
+        for(auto& queue:native_world_queues)isle_game_commands_release(&native_world_pool,&queue);
     }
 };
 
@@ -174,6 +193,7 @@ struct Consumer {
     std::vector<actor::SpawnResult> subjects;
     std::vector<std::unique_ptr<ApiSourceOwner>> extra_sources;
     ActorInteractionProbe probe{};
+    ActorMovementProbe movement{};
     std::uint32_t next_id=10000;
     bool shut_down=false;
     Consumer(scene::Services& s,actor::Owner& ac,it::Owner& i,it::Globals& g,
@@ -282,6 +302,365 @@ struct Consumer {
         auto result=apple?items.spawn_apple({x,0,0},{0,0,0}):items.spawn_ball({x,0,0},{0,0,0});
         accepted(result.status); items.source(result.instance)->state=state;
         accepted(items.pause()); suppress(result.object,true); return result;
+    }
+
+    IsleGameModelPlacement placement(const actor::SpawnResult& subject) {
+        const IsleGameModelPlacement* value=nullptr;
+        native(isle_game_model_placement(services.game,actors.native_model(subject.instance),&value));
+        return *value;
+    }
+    void movement_start(const actor::SpawnResult& subject,ActorMovementOperation operation,
+                        float a=0,float b=0,float c=0,float d=0,std::uint32_t flags=0) {
+        require(!movement.process || movement.returned || !actor_interaction_process_alive(movement.process),
+                "movement context reused before real process completion/cancellation");
+        movement.operation=operation; movement.a=a; movement.b=b; movement.c=c; movement.d=d; movement.flags=flags;
+        suppress(subject.object,true);
+        native(actor_movement_probe_start(&movement,&source(subject))); tick();
+        require(movement.entered==1,"original C movement helper did not enter its real process");
+    }
+    void movement_cancel() {
+        require(movement.process && actor_interaction_process_alive(movement.process) && !movement.returned,
+                "permanent/waiting helper unexpectedly completed before cancellation");
+        native(isle_game_end_process(services.game,movement.process));
+        require(!actor_interaction_process_alive(movement.process),"native movement cancellation failed");
+        movement.process=nullptr;
+    }
+    void movement_heading_and_circles(const actor::SpawnResult& subject) {
+        prepare(subject);
+        movement.point_to={3,120,4}; movement.point_from={0,0,0};
+        movement_start(subject,ACTOR_HEADING_VECTOR,10);
+        require(movement.returned && same(movement.vector,{6,0,8}) &&
+                near(movement.scalar,.6435011088f),
+                "heading-vector horizontal normalization consumed vertical distance");
+        movement.point_to={-10,100,0};
+        movement_start(subject,ACTOR_HEADING_VECTOR,-5);
+        require(movement.returned && movement.vector.x==-5 && movement.vector.y==0 &&
+                movement.vector.z==0 && std::signbit(movement.vector.z) &&
+                near(movement.scalar,4.7123889804f),
+                "same-Z heading fallback lost negative-length direction or signed zero");
+
+        prepare(subject); auto& p=source(subject); p.hSpeed=100;
+        p.processFlags=POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED;
+        const std::array<float,1> forbid{4294967296.0f};
+        p.forbiddenGround=forbid.data(); p.forbiddenGroundCount=forbid.size();
+        services.rng.seed=0x12345678u;
+        movement_start(subject,ACTOR_CIRCLES_DEFAULT,50);
+        require(movement.returned && services.rng.seed==0xb3e97b5bu &&
+                same(placement(subject).transform.position,{0,0,0}) &&
+                placement(subject).transform.rotation.y==0 && p.currGround.height==-9000,
+                "blocked circle did not consume one RNG draw before walking or published yaw after rejection");
+        p.forbiddenGround=nullptr; p.forbiddenGroundCount=0;
+        services.rng.seed=0x12345678u;
+        movement_start(subject,ACTOR_CIRCLES,50,.1f);
+        auto first=placement(subject).transform;
+        require(!movement.returned && services.rng.seed==0xb3e97b5bu &&
+                near(first.position.x,-2.8013877869f) && near(first.position.z,1.7430839539f) &&
+                first.position.y==-9000 && near(first.rotation.y,6.1831853072f),
+                "circle source RNG, theoretical arc, shortest turn or caller-only pause distinction differs");
+        first.position={100,77,200}; accepted(actors.set_placement(subject.instance,first));
+        tick();
+        const auto second=placement(subject).transform;
+        require(!movement.returned && services.rng.seed==0xb3e97b5bu &&
+                near(second.position.x,97.3196792603f) && near(second.position.z,201.9240379333f) &&
+                second.position.y==-9000,
+                "circle recentered after a wait, replayed RNG or lost its source theoretical previous point");
+        movement_cancel();
+    }
+    void movement_vertical(const actor::SpawnResult& subject) {
+        prepare(subject); auto& p=source(subject);
+        p.hSpeed=100; p.jumpVel=100;
+        const auto root=borrow_root(subject);
+        movement_start(subject,ACTOR_JUMP,9,0,0,0);
+        require(!movement.returned && same(placement(subject).transform.position,{0,3.3f,3.3f}),
+                "nested original MoveXZ lost the first vertical publication");
+        auto edited=placement(subject).transform;
+        edited.position={11,20,30}; edited.rotation={.25f,0,.5f}; edited.scale={2,3,4};
+        accepted(actors.set_placement(subject.instance,edited));
+        accepted(actors.change_block(subject.instance,{0,0,0},{1,2,3}));
+        const auto relocated=placement(subject).transform;
+        p.processFlags|=POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED; tick();
+        require(same(placement(subject).transform.position,relocated.position) && !movement.returned,
+                "Jump did not preserve external relocation during a paused wait");
+        p.processFlags&=~POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED; tick();
+        auto now=placement(subject);
+        require(near(now.transform.position.y,relocated.position.y+3.3f) &&
+                near(now.transform.position.z,relocated.position.z+3.3f) &&
+                same(now.transform.scale,edited.scale) && same(now.transform.rotation,edited.rotation),
+                "Jump resumed through a stale AUX view or overwrote interleaved fields");
+        tick(); require(movement.returned==1,"Jump accumulated-height terminal boundary did not finish");
+        require(same(borrow_root(subject).transform.position,root.transform.position),
+                "movement modified independent animated root-local position");
+        for (auto op:{ACTOR_JUMP_HEIGHT,ACTOR_FALL,ACTOR_FALL_HEIGHT}) {
+            prepare(subject); p.hSpeed=100; p.jumpVel=100; place(subject,{0,10,0});
+            movement_start(subject,op,op==ACTOR_JUMP_HEIGHT?13.3f:op==ACTOR_FALL_HEIGHT?6.7f:3.3f);
+            require(movement.returned==1 && near(placement(subject).transform.position.z,3.3f) &&
+                    near(placement(subject).transform.position.y,op==ACTOR_JUMP_HEIGHT?13.3f:6.7f),
+                    "absolute/relative vertical boundary or nested horizontal preservation differs");
+        }
+        prepare(subject); p.hSpeed=100; p.processFlags=POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED;
+        movement_start(subject,ACTOR_MOVE_XZ);
+        require(movement.returned && near(placement(subject).transform.position.z,3.3f),
+                "MoveXZ incorrectly acquired the caller-only pause gate");
+        movement_start(subject,ACTOR_STEP_DIRECTION);
+        require(movement.result==0 && near(placement(subject).transform.position.z,3.3f),
+                "direction helper ignored its own pause gate");
+        movement_start(subject,ACTOR_TURN,.5f,.5f);
+        require(movement.result==1 && near(placement(subject).transform.rotation.y,.5f),
+                "Turn equality or per-helper pause distinction differs");
+        movement_start(subject,ACTOR_TURN,1.0f,.25f);
+        require(movement.result==0 && near(placement(subject).transform.rotation.y,.75f),
+                "Turn strict outside-speed boundary differs");
+        prepare(subject);
+        auto wrap_pose=placement(subject).transform; wrap_pose.rotation.y=-.25f;
+        accepted(actors.set_placement(subject.instance,wrap_pose));
+        movement_start(subject,ACTOR_TURN,0,.1f);
+        require(movement.result==0 && near(placement(subject).transform.rotation.y,6.133185307f),
+                "Turn lost signed-truncation normalization or shortest cross-wrap direction");
+        prepare(subject); p.jumpVel=-100; p.processFlags=POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED; place(subject,{0,-8999,0});
+        movement_start(subject,ACTOR_FALL_GROUND,0);
+        require(movement.returned && near(placement(subject).transform.position.y,-9000) &&
+                p.currGround.height==-9000 && near(p.jumpVel,-100),
+                "FallDownOnGround did not consume full missing-ground record independently of scalar helper");
+    }
+
+    void movement_targets(const actor::SpawnResult& subject) {
+        prepare(subject); auto& p=source(subject); p.hSpeed=100;
+        // The Item has a genuine root-local position, unlike Actor/Player AUX.
+        const auto target=item(0); const auto replacement=item(0);
+        auto item_position=[&](const it::SpawnResult& value,IsleGameVec3 position) {
+            const auto* nodes=static_cast<const IsleGameModelNode*>(nullptr); std::size_t count=0;
+            auto* model=items.native_model(value.instance);
+            native(isle_game_model_peek_nodes(services.game,model,&nodes,&count));
+            require(count>0,"actual Item target root absent");
+            auto local=nodes[0].transform; local.position=position;
+            native(isle_game_model_set_transform(services.game,model,0,&local));
+        };
+        item_position(target,{100,0,100}); item_position(replacement,{100,0,100});
+        reference(subject,&p.interactionTarget,target.object);
+        movement_start(subject,ACTOR_TURN_TARGET,.1f,0,0,0,
+                       MOVEMENT_FLAG_UPDATE_TARGET_POS|MOVEMENT_FLAG_STOP_WHEN_TURN_COMPLETED);
+        require(!movement.returned && near(placement(subject).transform.rotation.y,.1f),
+                "Item root target did not enter original waiting turn");
+        reference(subject,&p.interactionTarget,replacement.object);
+        item_position(target,{-100,0,100}); tick();
+        require(near(placement(subject).transform.rotation.y,0),
+                "captured target failed to track original Item movement or retargeted replacement");
+        movement_cancel();
+        prepare(subject);
+        const IsleGameModelTransform player_pose{{100,0,100},{0,0,0},{1,1,1}};
+        native(isle_game_model_set_placement(services.game,player.model,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_pose));
+        movement_start(subject,ACTOR_TURN_TARGET,1,0,0,0,MOVEMENT_FLAG_TURN_TO_PLAYER);
+        require(movement.returned && near(placement(subject).transform.rotation.y,.7853981634f),
+                "registered Player AUX was replaced by its unrelated root-local origin");
+        const auto actor_target=spawn({-100,0,100});
+        prepare(subject); reference(subject,&p.interactionTarget,actor_target.object);
+        movement_start(subject,ACTOR_TURN_TARGET,6);
+        require(movement.returned && near(placement(subject).transform.rotation.y,5.4977871438f),
+                "Actor target did not use canonical AUX");
+        prepare(subject); p.hSpeed=100; p.targetPos={0,0,0};
+        movement_start(subject,ACTOR_STEP_TARGET,.1f);
+        require(movement.result==1 && (p.processFlags&POKEMON_PROCESS_TARGET_REACHED),
+                "already-arrived strict interior did not produce reached1");
+        prepare(subject); p.hSpeed=100; p.targetPos={0,0,6.6f};
+        movement_start(subject,ACTOR_STEP_TARGET,.1f);
+        require(movement.result==0 && !(p.processFlags&POKEMON_PROCESS_TARGET_REACHED) &&
+                near(placement(subject).transform.position.z,3.3f),
+                "exact remaining-step boundary did not remain reached0");
+        movement_start(subject,ACTOR_STEP_TARGET,.1f);
+        require(movement.result==1,"next exact endpoint failed reached1");
+        prepare(subject); p.hSpeed=100; p.targetPos={0,0,100};
+        const std::array<float,1> forbid{4294967296.0f}; p.forbiddenGround=forbid.data(); p.forbiddenGroundCount=forbid.size();
+        movement_start(subject,ACTOR_STEP_TARGET,.1f);
+        require(movement.result==2 && !(p.processFlags&POKEMON_PROCESS_TARGET_REACHED) &&
+                same(placement(subject).transform.position,{0,0,0}),
+                "blocked actual ground step did not return reached2 without arrival");
+        p.forbiddenGround=nullptr; p.forbiddenGroundCount=0;
+        clear_items();
+    }
+
+    void movement_ground_and_null(const actor::SpawnResult& subject) {
+        prepare(subject); require(world.current()==nullptr,"missing-ground diagnostic needs initial NULL World");
+        movement_start(subject,ACTOR_GROUND);
+        require(movement.returned && movement.scalar==0 && movement.result==0 &&
+                movement.ground.height==-9000 && same(movement.ground.normal,{0,1,0}) &&
+                movement.ground.surfaceType==UINT32_MAX,
+                "original scalar missing-ground0 was conflated with full-record -9000");
+        auto& p=source(subject); p.path=nullptr;
+        movement_start(subject,ACTOR_PATH,0,1,1);
+        require(!movement.returned && p.pathParam==0,"initial NULL path did not permanently wait");
+        require(!world.resources().paths.empty(),"actual World has no path for NULL-wait mutation diagnostic");
+        p.path=&world.resources().paths.front(); tick(); tick();
+        require(!movement.returned && p.pathParam==0 && same(placement(subject).transform.position,{0,0,0}),
+                "initial NULL path wait incorrectly resumed after a path appeared");
+        movement_cancel();
+        for (float parameter:{-1.0f,std::numeric_limits<float>::quiet_NaN()}) {
+            prepare(subject); p.path=&world.resources().paths.front();
+            movement_start(subject,ACTOR_PATH,parameter,1,1); tick();
+            require(!movement.returned && same(placement(subject).transform.position,{0,0,0}),
+                    "invalid parameter failed permanent-wait/no-prefix semantics");
+            movement_cancel();
+        }
+    }
+
+    void movement_paths(const actor::SpawnResult& subject) {
+        const auto paths=world.resources().paths;
+        require(paths.size()>=4,"bounded semantic World lacks four authored path kinds");
+        const auto authored=paths.last(4);
+        for (const auto& path:authored) {
+            prepare(subject); movement.path=&path;
+            movement_start(subject,ACTOR_PATH_SAMPLE,1);
+            require(movement.returned && same(movement.vector,{5,6,7}),
+                    "original four-kind C dispatch failed independent affine endpoint");
+        }
+        prepare(subject); auto& p=source(subject); p.path=&authored[0];
+        movement_start(subject,ACTOR_PATH,1,1.1f,1);
+        require(movement.returned && near(p.pathParam,1.25f) &&
+                same(placement(subject).transform.position,{500,600,700}),
+                "FollowPath wrapped before positive end test or lost endpoint XYZ100 units");
+        prepare(subject); p.path=&authored[0];
+        movement_start(subject,ACTOR_PATH,0,0,1);
+        require(!movement.returned && near(p.pathParam,.25f) &&
+                same(placement(subject).transform.position,{100,200,300}),
+                "airborne path incorrectly required current World or initial XYZ100 sample");
+        auto edited=placement(subject).transform; edited.position.y+=17;
+        accepted(actors.set_placement(subject.instance,edited));
+        p.processFlags|=POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED; tick();
+        require(near(p.pathParam,.25f) && near(placement(subject).transform.position.y,217),
+                "FollowPath pause consumed parameter or discarded external height");
+        p.processFlags&=~POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED;
+        // Replacement path has a different duration. Samples use CURRENT path,
+        // but the original captured duration keeps increments at one quarter.
+        p.path=&authored[1]; tick();
+        require(near(p.pathParam,.5f) && same(placement(subject).transform.position,{500,617,700}),
+                "FollowPath failed current-path sampling or recaptured replacement duration after wait");
+        movement_cancel();
+        prepare(subject); p.path=&authored[0];
+        movement_start(subject,ACTOR_PATH,0,0,9);
+        require(!movement.returned && near(p.pathParam,1.25f),
+                "FollowPath replaced original single subtraction with full wrapping");
+        tick(); require(!movement.returned && near(p.pathParam,1.25f),
+                        "single-wrap out-of-range parameter did not enter permanent wait");
+        movement_cancel();
+        prepare(subject); p.path=&authored[0]; place(subject,{0,17,0});
+        movement_start(subject,ACTOR_PATH,1,1,1,0,MOVEMENT_FLAG_ON_GROUND);
+        require(movement.returned && same(placement(subject).transform.position,{500,17,700}),
+                "ON_GROUND path used record -9000 instead of scalar missing-ground0 or multiplied height by100");
+        prepare(subject); p.path=&authored[0]; place(subject,{0,17,0});
+        movement_start(subject,ACTOR_PATH,1,1,1,0,MOVEMENT_FLAG_FIXED_HEIGHT);
+        require(movement.returned && same(placement(subject).transform.position,{500,17,700}),
+                "fixed-height path changed independent canonical Y");
+        require(world.enter_first(1)==&world.blocks()[1],"actual current-block reset prerequisite absent");
+        const auto origin=world.current()->resource->metadata.world_position;
+        prepare(subject); place(subject,{17,19,23});
+        movement_start(subject,ACTOR_RESET_PATH);
+        require(movement.returned && same(placement(subject).transform.position,
+                {-origin.x*100,-origin.y*100,-origin.z*100}),
+                "original ResetPathPos failed actual current descriptor XYZ100 relocation");
+    }
+    void movement_path_fault(const actor::SpawnResult& subject) {
+        prepare(subject); auto& p=source(subject); p.path=&world.resources().paths[world.resources().paths.size()-4];
+        movement_start(subject,ACTOR_PATH,0,0,1);
+        auto edited=placement(subject).transform; edited.position={111,222,333};
+        accepted(actors.set_placement(subject.instance,edited));
+        auto* model=actors.native_model(subject.instance);
+        const IsleGameModelPlacement* observed=nullptr;
+        native(isle_game_model_placement(services.game,model,&observed));
+        p.path=nullptr; // Real current-path mutation, not a forged descriptor/provider.
+        require(isle_game_tick(services.game)==ISLE_GAME_EXECUTION_FAILURE &&
+                movement.entered==1 && !movement.returned &&
+                actor_interaction_model_alive(model) && same(observed->transform.position,{11,22,33}) && near(p.pathParam,.25f),
+                "later current-path fault rolled back/replayed prior-sample subtraction prefix");
+    }
+    void movement_retired_target_fault(const actor::SpawnResult& subject) {
+        prepare(subject); auto& p=source(subject);
+        const auto target=item(100),replacement=item(-100);
+        reference(subject,&p.interactionTarget,target.object);
+        movement_start(subject,ACTOR_TURN_TARGET,.1f,0,0,0,
+                       MOVEMENT_FLAG_UPDATE_TARGET_POS|MOVEMENT_FLAG_STOP_WHEN_TURN_COMPLETED);
+        native(isle_game_pause_source_processes(services.game,subject.object,actor_movement_probe_entry,1));
+        reference(subject,&p.interactionTarget,replacement.object);
+        // Let the genuine Actor update drain deletion broadcasts while only
+        // the captured-reference helper remains suspended. Otherwise queued
+        // sender credits correctly forbid the physical reuse we need to test.
+        suppress(subject.object,false);
+        accepted(items.delete_item(target.object)); tick(); tick(); accepted(items.collect_joined());
+        suppress(subject.object,true);
+        const auto reused=item(300);
+        require(reused.object==target.object,"retired captured target did not reach actual native physical reuse");
+        const auto before=placement(subject).transform;
+        auto* model=actors.native_model(subject.instance);
+        const IsleGameModelPlacement* observed=nullptr;
+        native(isle_game_model_placement(services.game,model,&observed));
+        native(isle_game_pause_source_processes(services.game,subject.object,actor_movement_probe_entry,0));
+        require(isle_game_tick(services.game)==ISLE_GAME_EXECUTION_FAILURE && !movement.returned &&
+                actor_interaction_model_alive(model) && same(observed->transform.rotation,before.rotation),
+                "captured retired incarnation was silently retargeted to physically reused Item model");
+    }
+    void movement_reset_null_fault(const actor::SpawnResult& subject) {
+        prepare(subject); movement.operation=ACTOR_RESET_PATH;
+        native(actor_movement_probe_start(&movement,&source(subject)));
+        auto* model=actors.native_model(subject.instance);
+        const IsleGameModelPlacement* observed=nullptr;
+        native(isle_game_model_placement(services.game,model,&observed));
+        require(isle_game_tick(services.game)==ISLE_GAME_EXECUTION_FAILURE && movement.entered==1 &&
+                !movement.returned && actor_interaction_model_alive(model) && same(observed->transform.position,{0,0,0}),
+                "ResetPathPos accepted initial NULL current descriptor");
+    }
+
+    void movement_pursuit_and_node(const actor::SpawnResult& subject) {
+        prepare(subject); auto& p=source(subject); p.hSpeed=100;
+        const auto target=spawn({0,-9000,100}),replacement=spawn({100,-9000,100});
+        reference(subject,&p.interactionTarget,target.object);
+        movement_start(subject,ACTOR_RUN_TARGET,1,.1f);
+        require(!movement.returned && same(p.targetPos,{0,-9000,100}) &&
+                same(placement(subject).transform.position,{0,-9000,3.3f}),
+                "original pursuit did not sample Actor AUX and perform first real ON_GROUND step");
+        place(target,{100,-9000,100}); reference(subject,&p.interactionTarget,replacement.object);
+        tick();
+        require(same(p.targetPos,{0,-9000,100}) &&
+                same(placement(subject).transform.position,{0,-9000,6.6f}),
+                "snapshot pursuit unexpectedly reselected moved/replacement target");
+        movement_cancel();
+        prepare(subject); p.hSpeed=100; place(target,{0,-9000,100});
+        reference(subject,&p.interactionTarget,target.object);
+        movement_start(subject,ACTOR_RUN_TARGET,1,.1f,0,0,MOVEMENT_FLAG_UPDATE_TARGET_POS);
+        reference(subject,&p.interactionTarget,replacement.object); tick();
+        require(!movement.returned && same(p.targetPos,{100,-9000,100}) &&
+                placement(subject).transform.position.x>0,
+                "updating pursuit failed original reselection branch after canonical target replacement");
+        movement_cancel();
+        prepare(subject); p.hSpeed=100; place(target,{0,-9000,100});
+        reference(subject,&p.interactionTarget,target.object);
+        movement_start(subject,ACTOR_RUN_TARGET,100,.1f,0,0,MOVEMENT_FLAG_UPDATE_TARGET_POS);
+        require(movement.returned && (p.processFlags&POKEMON_PROCESS_TARGET_REACHED),
+                "RunToTarget failed post-step distance arrival flag");
+        prepare(subject); p.hSpeed=100; place(target,{0,-9000,-100});
+        reference(subject,&p.interactionTarget,target.object);
+        movement_start(subject,ACTOR_RUN_AWAY,102,.1f);
+        require(movement.returned && (p.processFlags&POKEMON_PROCESS_TARGET_REACHED) &&
+                same(placement(subject).transform.position,{0,-9000,3.3f}),
+                "RunAwayFromTarget failed real outward step/strict-distance completion");
+        prepare(subject); p.hSpeed=100; p.targetPos={0,-9000,100};
+        movement_start(subject,ACTOR_RUN_POSITION,.1f);
+        require(!movement.returned,"RunToTargetPos did not preserve original per-step wait");
+        p.targetPos=placement(subject).transform.position; tick();
+        require(movement.returned && (p.processFlags&POKEMON_PROCESS_TARGET_REACHED),
+                "waiting RunToTargetPos did not consume current target mutation and terminate");
+        prepare(subject);
+        const IsleGameModelTransform player_pose{{100,0,100},{0,0,0},{1,1,1}};
+        native(isle_game_model_set_placement(services.game,player.model,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_pose));
+        native(isle_game_model_reference(services.game,player.object,player.model,&movement.node.model));
+        movement.node.node=0;
+        movement_start(subject,ACTOR_TURN_NODE,1);
+        require(movement.returned && near(placement(subject).transform.rotation.y,.7853981634f),
+                "original TurnToModelNode failed actual registered Player world node");
+        prepare(subject); p.playerDist=1400; reference(subject,&p.interactionTarget,player.object);
+        require(items.flute().play()==audio::Error::none,"actual movement flute start failed");
+        movement_start(subject,ACTOR_TURN_FLUTE,.1f);
+        require(!movement.returned && near(placement(subject).transform.rotation.y,.1f),
+                "flute helper incorrectly stopped at inclusive1400 boundary");
+        require(items.flute().stop()==audio::Error::none,"actual movement flute stop failed");
+        tick(); require(movement.returned,"waiting flute turn failed actual stop cancellation condition");
     }
 
     void automatic_structure(const actor::SpawnResult& subject) {
@@ -883,7 +1262,8 @@ struct Resources {
 };
 
 template<class Body>
-void with_graph(Resources& resources,game_audio::Session& audio,game::State& state,Body body) {
+void with_graph(Resources& resources,game_audio::Session& audio,game::State& state,Body body,
+                std::span<const menu::AnimationPath> semantic_paths={}) {
     game_input::Service input; scene::Storage storage(32*1024*1024); native(storage.create());
     {
         scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,audio,state);
@@ -894,7 +1274,21 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
         ApiSourceOwner player(services,2);
         environment_sound::Environment environment(services,storage.arena(),resources.sound,nullptr,camera);
         focus::Detector detector; Shift shift{&services,camera};
-        world::World world(services,resources.world,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
+        shift.native_world_pool.arena=&storage.arena();
+        std::unique_ptr<world::World> admitted_world;
+        if (semantic_paths.empty())
+            admitted_world=std::make_unique<world::World>(services,resources.world,
+                world::Callbacks{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
+        else {
+            // CPU-only bounded native semantic path resources. All actual World
+            // models, materials, terrain and services remain the existing ones.
+            const auto& r=resources.world;
+            world::ResourceView view{&r.setup(),&r.sky(),r.blocks(),r.primary_count(),r.models(),
+                r.materials(),r.animations(),semantic_paths,r.static_definitions(),&r.height_map(),r.collision_models()};
+            admitted_world=std::make_unique<world::World>(services.game,view,
+                world::Callbacks{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,Shift::commands});
+        }
+        auto& world=*admitted_world;
         {
             actor::Owner actors(services,resources.actors,world,environment,detector,resources.actor_capacities,resources.banks,{32768,4096});
             shift.actors=&actors; accepted(actors.set_player(player.object,player.model,camera));
@@ -944,6 +1338,27 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             with_graph(resources,session,state,[fault](Consumer& c) { c.rejected_prefix(fault); });
         with_graph(resources,session,state,[](Consumer& c) { c.callback_fault_prefix(); });
         with_graph(resources,session,state,[](Consumer& c) { c.joined_first_fault(); });
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_heading_and_circles(c.spawn()); });
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_vertical(c.spawn()); });
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_targets(c.spawn()); });
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_pursuit_and_node(c.spawn()); });
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_ground_and_null(c.spawn()); });
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_retired_target_fault(c.spawn()); });
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_reset_null_fault(c.spawn()); });
+        // These four backed native semantic descriptors are deliberately NOT
+        // called actual ROM trajectories. They exercise C dispatch/control and
+        // native identity admission, not another interpolation-solver test.
+        std::vector<menu::AnimationPath> paths(resources.world.paths().begin(),resources.world.paths().end());
+        for (int kind=0;kind<4;++kind) {
+            menu::AnimationPath p; p.kind=kind; p.duration=kind==1?8:4; p.tension=.5f;
+            p.segment_point_count=2; p.timestamps={0,1}; p.speed_polynomials={0,0,0,0,16};
+            if (kind==0) p.points={{1,2,3},{5,6,7}};
+            else if (kind==1) p.points={{5,6,7},{5,6,7},{5,6,7},{5,6,7}};
+            else p.points={{-3,-2,-1},{1,2,3},{5,6,7},{9,10,11}};
+            paths.push_back(std::move(p));
+        }
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_paths(c.spawn()); },paths);
+        with_graph(resources,session,state,[](Consumer& c) { c.movement_path_fault(c.spawn()); },paths);
     }
     unsigned audio_tasks=0;
     require(session.retrace(1,1000000000ull/60)==audio::Error::none && session.submit()==audio::Error::none,
@@ -962,7 +1377,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(session.state()==game_audio::Session::State::draining && session.poll_drain()==audio::Error::none &&
             session.poll_drain()==audio::Error::none && capture.finishes==1 && capture.used>0 && audio_tasks>0,
             "actual selector audio client retirement/actual RSP owned PCM drain failed");
-    std::cout<<"native_Actor_actual_C_automatic_FIFO_CPU_API=passed audio_RSP_owned_PCM_drain=passed PlayerFSM_all71graphs_GPU_Original_fullgame_Windows11=not_claimed\n";
+    std::cout<<"native_Actor_actual_C_automatic_FIFO_CPU_API=passed native_original_C_movement_CPU_diagnostics=passed bounded_semantic_four_pathkinds_not_ROM_trajectories=true audio_RSP_owned_PCM_drain=passed PlayerFSM_all71graphs_GPU_Original_fullgame_Windows11=not_claimed\n";
 }
 } // namespace
 int main(int argc,char** argv) {

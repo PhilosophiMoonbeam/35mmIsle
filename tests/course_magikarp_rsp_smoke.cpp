@@ -3,6 +3,7 @@
 // distance/position processes, production membership and native CopyInfo only.
 #include "actor_photo_scene.hpp"
 #include "beach_magikarp_scene.hpp"
+#include "actor_movement_probe.h"
 #include "actual_audio_driver.hpp"
 #include "course_model_producer.hpp"
 #include "effect_bank_resources.hpp"
@@ -14,6 +15,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -40,6 +42,7 @@ void require(bool value,const char* text) { if(!value) throw std::runtime_error(
 void native(IsleGameResult result) { require(result==ISLE_GAME_OK,"native source-focus operation failed"); }
 void accepted(actor::OwnerStatus status) { require(bool(status),status.detail); }
 std::uint32_t physical(std::uint32_t address) { return address&0x1fffffffu; }
+bool near(float actual,float expected) { return std::fabs(actual-expected)<0.0001f; }
 bool same_focus(const focus::Focus& x,const focus::Focus& y) {
     return x.object==y.object&&x.pokemon_id==y.pokemon_id&&x.flags==y.flags&&x.present==y.present&&x.context==y.context;
 }
@@ -142,6 +145,9 @@ struct Readback {
     Capture* target=nullptr;
     unsigned completions=0;
     bool genuine_positive=false;
+    const IsleGameModelPlacement* expected_placement=nullptr;
+    std::uint32_t placement_address=0;
+    std::span<std::uint16_t> unmarked_pixels{};
     static void finish(void* user,rsp::CanonicalExecutor::MemoryLease& lease,std::uint32_t framebuffer) {
         auto& self=*static_cast<Readback*>(user);auto& result=*self.target;
         ++self.completions;require(self.completions==1,"source draw acquired more than one actual completed lease");
@@ -178,6 +184,26 @@ struct Readback {
         self.genuine_positive|=expected&&selected.pokemon_id==129;
         for(std::size_t sample=0;sample<result.pixels.size();++sample) {
             result.pixels[sample]=pixel(framebuffer+sample*2);result.depth[sample]=pixel(frame_layout.depth+sample*2);
+        }
+        if(!self.unmarked_pixels.empty()) {
+            require(self.unmarked_pixels.size()==result.pixels.size(),"movement canonical color extent changed");
+            std::copy(result.pixels.begin(),result.pixels.end(),self.unmarked_pixels.begin());
+        }
+        if(self.expected_placement) {
+            require(self.placement_address%64==0&&self.placement_address>=actor_layout.payloads.offset&&
+                    self.placement_address+64<=actor_layout.payloads.offset+actor_layout.payloads.size,
+                    "source-bound movement placement address escaped actual actor payload allocation");
+            for(unsigned row=0;row<4;++row) for(unsigned col=0;col<4;++col)
+                require(words[self.placement_address/4+row*4+col]==self.expected_placement->fixed.m[row][col],
+                        "completed actual GPU RAM lost canonical C movement placement fixed upload");
+            // Producer's nine camera commands precede the current lane0 list.
+            // Stop at its actual EndDL, never accept a stale later slot's list.
+            bool source_bound=false;
+            for(std::size_t at=actor_layout.lists.offset/4+18;at+1<(actor_layout.lists.offset+actor_layout.lists.size)/4;at+=2) {
+                if(words[at]==0xdf000000u) break;
+                source_bound|=words[at]==0xda380000u&&words[at+1]==self.placement_address;
+            }
+            require(source_bound,"actual source hierarchy did not bind the admitted movement placement RAM address");
         }
         const auto hidden=fingerprint(lease.hidden());
         if(result.computed.present&&(result.computed.flags&4u)&&self.owner.player().direction_index==-1) {
@@ -286,6 +312,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 maximum.material_attachments=std::max(maximum.material_attachments,capacity.material_attachments);
             }
             const std::array capacities{maximum,maximum};
+            ActorMovementProbe movement{}; // Outlives Owner cancellation/join, including exception unwinding.
             {
                 actor::Owner owner(services,resources,world,environment,detector,capacities,banks,{32768,4096});hooks.owner=&owner;
                 WorldLifetime world_lifetime{world,hooks};
@@ -353,6 +380,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 passes[1].camera=fx_camera;passes[1].priority=4;passes[1].camera_tag=UINT32_MAX;passes[1].prepare=EffectPass::prepare;passes[1].userdata=&effect_pass;
                 scene::render::Input scene_input{services.game,{1,nullptr,immutable,reservations,{0x3b5000,0x3da800},physical(lighting.pre_render_guest())},passes,{}};
                 Readback readback{detection,owner};std::array<Capture,3> captures;
+                Capture moved;
+                std::vector<std::uint16_t> actual_color(width*height),control_color(width*height);
                 // Last owner drains real GPU/postprocess before producer/native borrows end.
                 auto frame=std::move(created.frame);
                 bool diagnostic_route=false;
@@ -450,6 +479,175 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                         "ordinary nongated reused slot inherited gated capture/focus");
                 accepted(owner.cleanup(reused.instance));accepted(owner.collect_joined());tick();
                 draw(captures[0],false,nullptr);
+                // Independent original-C helper diagnostic, AFTER the genuine
+                // fixed512 lifecycle and its unchanged ordinary-slot reuse tail.
+                // A fresh single actor keeps real root priority2 live without an
+                // overlapping pair; no source pose/camera/flags/radii are tuned.
+                require(frame->quiescent(),"movement spawn crossed actual GPU/readback ownership");
+                const auto diagnostic=spawner.spawn_at({trigger.first,trigger.second});
+                require(bool(diagnostic),diagnostic.detail);
+                const auto subject=diagnostic.actor;
+                tick(); // One genuine source state7/animation3/distance8 warmup.
+                auto* source=owner.source(subject.instance);
+                require(source&&source->transitionGraph==nullptr&&std::isfinite(source->playerDist)&&source->playerDist<10000&&
+                        !(source->processFlags&POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED),
+                        "fresh source movement warmup lacks real distance/NULL graph/unpaused movement");
+                require(frame->quiescent(),"movement pause crossed actual GPU/readback ownership");
+                native(isle_actor_source_pause_object(source,1));
+                native(isle_game_pause_updates(services.game,subject.object,true));
+                const IsleGameModelPlacement* canonical=nullptr;
+                native(isle_game_model_placement(services.game,owner.native_model(subject.instance),&canonical));
+                require(canonical->mode==ISLE_GAME_MODEL_PLACEMENT_RTS,"fresh actual source movement requires canonical RTS placement");
+                const auto saved=*canonical;
+                const auto saved_hspeed=source->hSpeed,saved_jumpvel=source->jumpVel;
+                const auto saved_offset=source->collisionOffset,saved_collision_position=source->collPosition;
+                const auto saved_radius=source->collisionRadius;
+                const auto saved_process_flags=source->processFlags;
+                // Actor Producer reserves camera256, then EVERY planned slot's
+                // local matrices. BorrowedKernel assigns AUX matrices after that
+                // region in active binding order, not by physical slot number.
+                std::size_t placement_cursor=actor_layout.payloads.offset+256;
+                for(const auto capacity:capacities) placement_cursor+=capacity.nodes*64;
+                unsigned live=0;bool bound=false;
+                for(const auto& binding:owner.render_bindings()) {
+                    if(!binding.model.object) continue;
+                    ++live;
+                    const IsleGameModelPlacement* placement=nullptr;
+                    native(isle_game_model_placement(services.game,binding.model.model,&placement));
+                    if(binding.model.object==subject.object) {
+                        require(binding.model.model==owner.native_model(subject.instance)&&
+                                binding.model.state.instance==subject.instance&&binding.model.slot<capacities.size(),
+                                "fresh diagnostic lost actual source model/incarnation/renderer slot binding");
+                        readback.placement_address=static_cast<std::uint32_t>(placement_cursor);bound=true;
+                    }
+                    if(placement->mode!=ISLE_GAME_MODEL_PLACEMENT_DISABLED) placement_cursor+=64;
+                }
+                require(live==1&&bound,"independent movement diagnostic requires exactly its one genuine live source actor");
+                readback.expected_placement=canonical;
+                draw(captures[0],true,"actual-movement-initial.ppm");
+                const auto local_span=actor_producer.native_nodes(subject.instance);
+                const std::vector<IsleGameModelNode> saved_locals(local_span.begin(),local_span.end());
+                const auto world_span=actor_producer.world_nodes(subject.instance);
+                const std::vector<menu::model::WorldMatrix> saved_world(world_span.begin(),world_span.end());
+                require(saved_world.size()>1&&saved_locals.size()==saved_world.size(),"actual movement model lacks real root/descendant topology");
+                std::vector<menu::model::WorldMatrix> accepted_world(saved_world.size());
+                std::cout<<"source_movement_initial_AUX="<<saved.transform.position.x<<','<<saved.transform.position.y<<','<<saved.transform.position.z
+                         <<" yaw="<<saved.transform.rotation.y<<" scale="<<saved.transform.scale.x<<','<<saved.transform.scale.y<<','<<saved.transform.scale.z
+                         <<" actual_fixed_RAM="<<readback.placement_address<<" single_live_source_actor=true\n";
+                const auto independent_locals=[&] {
+                    const auto locals=actor_producer.native_nodes(subject.instance);
+                    require(locals.size()==saved_locals.size(),"C movement changed actual local topology");
+                    for(std::size_t node=0;node<saved_locals.size();++node)
+                        require(locals[node].revision==saved_locals[node].revision&&
+                                std::memcmp(&locals[node].transform,&saved_locals[node].transform,sizeof(IsleGameModelTransform))==0,
+                                "original C movement changed independent animated root/descendant locals");
+                };
+                const auto publish=[&](const IsleGameModelTransform& transform) {
+                    require(frame->quiescent(),"movement component control crossed actual GPU/readback ownership");
+                    accepted(owner.set_placement(subject.instance,transform));
+                    native(isle_game_model_placement(services.game,owner.native_model(subject.instance),&canonical));
+                    readback.expected_placement=canonical;
+                };
+                const auto step=[&](ActorMovementOperation operation,float first=0,float second=0) {
+                    require(frame->quiescent(),"original C movement process crossed actual GPU/readback ownership");
+                    movement.operation=operation;movement.a=first;movement.b=second;movement.c=0;movement.d=0;movement.flags=0;
+                    native(actor_movement_probe_start(&movement,source));tick();
+                    require(movement.entered==1&&movement.returned==1,"actual original C movement GPU probe did not complete");
+                    native(isle_game_model_placement(services.game,owner.native_model(subject.instance),&canonical));
+                    readback.expected_placement=canonical;
+                };
+                const auto completed_effect=[&](const IsleGameModelTransform& without_component,const char* surface,const char* prerequisite) {
+                    const auto accepted_transform=canonical->transform;
+                    readback.unmarked_pixels=actual_color;draw(moved,true,surface);independent_locals();
+                    const auto actual_world=actor_producer.world_nodes(subject.instance);
+                    require(actual_world.size()==accepted_world.size(),"C movement changed descendant world extent");
+                    std::copy(actual_world.begin(),actual_world.end(),accepted_world.begin());
+                    // NO native tick: source effects/camera/animation and all
+                    // other AUX components stay identical to the actual C step.
+                    publish(without_component);
+                    readback.unmarked_pixels=control_color;draw(captures[1],true,nullptr);
+                    require(actual_color!=control_color&&moved.depth!=captures[1].depth,prerequisite);
+                    const auto counterfactual_world=actor_producer.world_nodes(subject.instance);
+                    require(counterfactual_world.size()==accepted_world.size()&&
+                            std::memcmp(&counterfactual_world[1],&accepted_world[1],sizeof(menu::model::WorldMatrix))!=0,
+                            "component-isolated C movement did not affect actual renderer descendant world");
+                    publish(accepted_transform);draw(captures[1],true,nullptr);independent_locals();
+                    const auto restored_world=actor_producer.world_nodes(subject.instance);
+                    require(actual_color==control_color&&moved.depth==captures[1].depth&&restored_world.size()==accepted_world.size()&&
+                            std::memcmp(restored_world.data(),accepted_world.data(),accepted_world.size()*sizeof(menu::model::WorldMatrix))==0,
+                            "same-state C component control failed exact completed color/depth/descendant restoration");
+                };
+                require(frame->quiescent(),"movement scalar inputs crossed actual GPU/readback ownership");
+                source->hSpeed=1000;source->jumpVel=100;
+                const float horizontal_speed=static_cast<float>(1000.0*0.033);
+                const float dx=std::sin(saved.transform.rotation.y)*horizontal_speed,dz=std::cos(saved.transform.rotation.y)*horizontal_speed;
+                step(ACTOR_MOVE_XZ);
+                require(near(canonical->transform.position.x,saved.transform.position.x+dx)&&
+                        near(canonical->transform.position.z,saved.transform.position.z+dz)&&
+                        near(canonical->transform.position.y,saved.transform.position.y)&&canonical->revision>saved.revision&&
+                        std::memcmp(&canonical->fixed,&saved.fixed,sizeof(saved.fixed))!=0,
+                        "original C MoveXZ lost actual-yaw canonical placement/fixed/revision");
+                auto without_component=canonical->transform;
+                without_component.position.x=saved.transform.position.x;without_component.position.z=saved.transform.position.z;
+                completed_effect(without_component,"actual-movement-horizontal.ppm",
+                    "untouched genuine source MoveXZ pose needs observable canonical color AND depth; camera/pose/magnitude remain untuned");
+                const auto before_jump=*canonical;
+                step(ACTOR_JUMP,3);
+                require(near(canonical->transform.position.x,before_jump.transform.position.x+dx)&&
+                        near(canonical->transform.position.z,before_jump.transform.position.z+dz)&&
+                        near(canonical->transform.position.y,before_jump.transform.position.y+static_cast<float>(100.0*0.033))&&
+                        canonical->revision>before_jump.revision&&std::memcmp(&canonical->fixed,&before_jump.fixed,sizeof(before_jump.fixed))!=0,
+                        "original C nested Jump lost actual-yaw horizontal/vertical canonical placement/fixed/revision");
+                without_component=canonical->transform;without_component.position.y=before_jump.transform.position.y;
+                completed_effect(without_component,"actual-movement-vertical.ppm",
+                    "untouched genuine source Jump pose needs observable Y-only canonical color AND depth; nested XZ cannot stand in for vertical proof");
+                const auto before_turn=*canonical;
+                // Match the declared original-C angle normalization policy,
+                // then request the existing .5 step relative to real source yaw.
+                constexpr double tau=2.0*3.14159265358979323846;
+                float yaw=before_turn.transform.rotation.y;
+                yaw=static_cast<float>(double(yaw)-static_cast<std::int32_t>(double(yaw)/tau)*tau);
+                if(yaw<0) yaw=static_cast<float>(double(yaw)+tau);
+                const float turn_target=yaw+.5f;
+                step(ACTOR_TURN,turn_target,.5f);
+                require(movement.result==int(std::fabs(turn_target-yaw)<=.5f)&&near(canonical->transform.rotation.y,turn_target)&&
+                        canonical->revision>before_turn.revision&&std::memcmp(&canonical->fixed,&before_turn.fixed,sizeof(before_turn.fixed))!=0,
+                        "original C GPU turn lost source-yaw-relative .5 boundary/fixed/revision");
+                without_component=canonical->transform;without_component.rotation.y=before_turn.transform.rotation.y;
+                completed_effect(without_component,"actual-movement-turn.ppm",
+                    "untouched genuine source Turn pose needs observable yaw-only canonical color AND depth; source yaw remains unforced");
+                const auto before_scale=*canonical;
+                step(ACTOR_SCALE,1.5f);
+                IsleActorScaleInitialization initial{};native(isle_actor_owner_scale_initialization(source,&initial));
+                require(near(canonical->transform.scale.x,initial.scale.x*0.1f*1.5f)&&
+                        near(canonical->transform.scale.y,initial.scale.y*0.1f*1.5f)&&
+                        near(canonical->transform.scale.z,initial.scale.z*0.1f*1.5f)&&
+                        near(source->collisionOffset.x,initial.collision_center.x/initial.scale.x*1.5f)&&
+                        near(source->collisionOffset.y,initial.collision_center.y/initial.scale.y*1.5f)&&
+                        near(source->collisionOffset.z,initial.collision_center.z/initial.scale.z*1.5f)&&
+                        near(source->collisionRadius,initial.radius*initial.scale.y*1.5f)&&
+                        canonical->revision>before_scale.revision&&std::memcmp(&canonical->fixed,&before_scale.fixed,sizeof(before_scale.fixed))!=0,
+                        "original C GPU scale lost actual factory initialization/collision semantics/fixed/revision");
+                without_component=canonical->transform;without_component.scale=before_scale.transform.scale;
+                completed_effect(without_component,"actual-movement-scale.ppm",
+                    "untouched genuine source SetScale pose needs observable scale-only canonical color AND depth; initialization and scalar remain untuned");
+                publish(saved.transform);
+                require(frame->quiescent(),"movement source restoration crossed actual GPU/readback ownership");
+                source->hSpeed=saved_hspeed;source->jumpVel=saved_jumpvel;
+                source->collisionOffset=saved_offset;source->collisionRadius=saved_radius;source->collPosition=saved_collision_position;
+                require(source->processFlags==saved_process_flags,"single-actor C movement changed unrelated source process flags");
+                draw(captures[1],true,"actual-movement-restored.ppm");independent_locals();
+                const auto restored_world=actor_producer.world_nodes(subject.instance);
+                require(std::memcmp(&canonical->transform,&saved.transform,sizeof(saved.transform))==0&&
+                        std::memcmp(&canonical->fixed,&saved.fixed,sizeof(saved.fixed))==0&&restored_world.size()==saved_world.size()&&
+                        std::memcmp(restored_world.data(),saved_world.data(),saved_world.size()*sizeof(menu::model::WorldMatrix))==0,
+                        "restored initial source movement pose did not restore canonical fixed/local/descendant semantics");
+                readback.expected_placement=nullptr;readback.unmarked_pixels={};
+                require(frame->quiescent(),"movement retirement crossed actual GPU/readback ownership");
+                native(isle_game_pause_updates(services.game,subject.object,false));native(isle_actor_source_pause_object(source,0));
+                accepted(owner.cleanup(subject.instance));accepted(owner.collect_joined());
+                require(!owner.source(subject.instance),"actual diagnostic actor retained source ownership after joined retirement");
+                tick();draw(captures[0],true,"actual-movement-retired.ppm");
                 require(frame->retire()&&frame->quiescent(),"real source graphics failed retirement");
                 world_producer.retire();world.retire();
                 accepted(owner.reset());accepted(owner.collect_joined());

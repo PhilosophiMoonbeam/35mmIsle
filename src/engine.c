@@ -190,6 +190,35 @@ IsleGameResult isle_game_model_validate_binding(IsleGame* game, IsleGameObject* 
         return ISLE_GAME_INVALID_ARGUMENT;
     return game->fault;
 }
+IsleGameResult isle_game_model_reference(IsleGame* game, IsleGameObject* object,
+    IsleGameModel* model, IsleGameModelRef* output) {
+    if (output != NULL) *output = (IsleGameModelRef){0};
+    IsleGameResult result = isle_game_model_validate_binding(game, object, model);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = (IsleGameModelRef){object, model, model->incarnation};
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_model_resolve(IsleGame* game, const IsleGameModelRef* reference,
+    IsleGameModel** output) {
+    if (output != NULL) *output = NULL;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (reference == NULL || output == NULL || reference->model == NULL ||
+        reference->incarnation == 0) return ISLE_GAME_INVALID_ARGUMENT;
+    IsleGameModel* model = reference->model;
+    /* The retained arena keeps the model header readable after removal. Check
+     * its incarnation first: the saved object may already be a recycled slot.
+     */
+    if (model->game != game || !model->alive ||
+        model->incarnation != reference->incarnation ||
+        model->obj != reference->object) return ISLE_GAME_INVALID_ARGUMENT;
+    result = isle_game_model_validate_binding(game, model->obj, model);
+    if (result != ISLE_GAME_OK) return result;
+    *output = model;
+    return ISLE_GAME_OK;
+}
 
 
 const char* isle_game_error(const IsleGame* game) {
@@ -1093,8 +1122,16 @@ static bool valid_model_matrix_transform(const IsleGameModelTransform* t, IsleGa
         signed_word_range(t->position.z * 65536.0f);
 }
 
+static bool same_float_bits(float a, float b) {
+    uint32_t a_bits, b_bits;
+    memcpy(&a_bits, &a, sizeof(a_bits));
+    memcpy(&b_bits, &b, sizeof(b_bits));
+    return a_bits == b_bits;
+}
+
 static bool same_vec3(IsleGameVec3 a, IsleGameVec3 b) {
-    return a.x == b.x && a.y == b.y && a.z == b.z;
+    return same_float_bits(a.x, b.x) && same_float_bits(a.y, b.y) &&
+        same_float_bits(a.z, b.z);
 }
 
 static IsleGameResult access_model(IsleGame* game, IsleGameModel* model) {
@@ -1137,6 +1174,7 @@ static bool valid_model_initial(const IsleGameModelNodeInit* initial, size_t cou
 static IsleGameModel* allocate_model(IsleGame* game, size_t count) {
     IsleGameModel* model;
     IsleGameModel** best = NULL;
+    if (game->model_incarnation == UINT64_MAX) return NULL;
     /* Best-fit released block, or one actual-size allocation. All rejection
      * precedes free-list/arena mutation and object publication.
      */
@@ -1157,6 +1195,7 @@ static IsleGameModel* allocate_model(IsleGame* game, size_t count) {
     model->obj = NULL;
     model->game = game;
     model->count = 0;
+    model->incarnation = ++game->model_incarnation;
     model->alive = false;
     return model;
 }
@@ -1319,6 +1358,8 @@ IsleGameResult isle_source_factory_prepare(IsleGame* game, size_t nodes,
             descriptor->object->factoryHolds > SIZE_MAX - process_count))
             return ISLE_GAME_INVALID_STATE;
     }
+    /* Incarnation exhaustion must reject before even reserving the raw object. */
+    if (game->model_incarnation == UINT64_MAX) return ISLE_GAME_EXHAUSTED;
     object = allocate_object(game);
     if (object == NULL) return ISLE_GAME_EXHAUSTED;
     resources->game = game;

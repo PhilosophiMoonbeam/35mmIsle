@@ -136,16 +136,18 @@ struct Fixture {
 void fallback_and_full_ground() {
     {
         Fixture f(plane(),{},false);
-        auto ground = marker(); success(c::ground_query(f.world,7,8,ground));
-        require(same(ground,{-9000,{0,1,0},UINT32_MAX}),"no-current fallback lost complete source record");
+        bool found = true;
+        auto ground = marker(); success(c::ground_query(f.world,7,8,ground,found));
+        require(!found && same(ground,{-9000,{0,1,0},UINT32_MAX}),"no-current fallback lost complete source record");
         bool blocked = true; success(f.walk(2,3,1,blocked));
         require(!blocked && same(f.actor.source.currGround,ground) &&
                 same(f.placement().transform.position,{2,-9000,3}),"no current became synthetic blocking ground");
     }
     {
         Fixture f(plane(),{},true,false);
-        auto ground = marker(); success(c::ground_query(f.world,7,8,ground));
-        require(same(ground,{-9000,{0,1,0},UINT32_MAX}),"absent map did not preserve unsigned fallback");
+        bool found = true;
+        auto ground = marker(); success(c::ground_query(f.world,7,8,ground,found));
+        require(!found && same(ground,{-9000,{0,1,0},UINT32_MAX}),"absent map did not preserve unsigned fallback");
         bool blocked = true; success(f.walk(2,3,0,blocked));
         require(!blocked && same(f.placement().transform.position,{2,17,3}),"absent map blocked ordinary airborne walk");
     }
@@ -153,34 +155,45 @@ void fallback_and_full_ground() {
         Fixture f;
         const auto* descriptor = f.world.blocks()[0].resource;
         f.world.blocks()[0].resource = nullptr;
-        auto ground = marker(); const auto status = c::ground_query(f.world,7,8,ground);
+        bool found = true;
+        auto ground = marker(); const auto status = c::ground_query(f.world,7,8,ground,found);
         f.world.blocks()[0].resource = descriptor;
         success(status);
-        require(same(ground,{-9000,{0,1,0},UINT32_MAX}),"absent descriptor did not use source fallback");
+        require(!found && same(ground,{-9000,{0,1,0},UINT32_MAX}),"absent descriptor did not use source fallback");
     }
     {
         auto map = plane(); map.patches[0] = {1,2,2,-8,0x12345678};
         Fixture f(std::move(map),{1,1,-2});
-        auto ground = marker(); success(c::ground_query(f.world,200,300,ground));
-        require(ground.height == 50 && near(ground.normal.x,1.0f/3) &&
+        bool found = false;
+        auto ground = marker(); success(c::ground_query(f.world,200,300,ground,found));
+        require(found && ground.height == 50 && near(ground.normal.x,1.0f/3) &&
                 near(ground.normal.y,2.0f/3) && near(ground.normal.z,2.0f/3) && ground.surfaceType == allowed,
                 "actual translated/sloped World result lost normal, elevation, axis swap or unsigned surface");
     }
     {
         auto map = plane(); map.patches[0] = {0,0,0,-8,allowed<<8};
         Fixture f(std::move(map));
-        auto ground = marker(); success(c::ground_query(f.world,0,0,ground));
-        require(ground.height == 0 && same(ground.normal,{0,0,0}),
+        bool found = false;
+        auto ground = marker(); success(c::ground_query(f.world,0,0,ground,found));
+        require(found && ground.height == 0 && same(ground.normal,{0,0,0}),
                 "defined zero plane C/normal invented a unit normal or a rejection");
         bool blocked = true; success(f.walk(1,0,1,blocked));
         require(!blocked && f.placement().transform.position.y == 0,
                 "defined zero-normal native ground did not remain walkable");
     }
     {
+        Fixture f(plane(allowed,-90.0f));
+        bool found = false;
+        auto ground = marker(); success(c::ground_query(f.world,0,0,ground,found));
+        require(found && ground.height == -9000 && same(ground.normal,{0,1,0}) &&
+                ground.surfaceType == allowed,"valid ground at fallback elevation became absent terrain");
+    }
+    {
         Fixture f;
         f.world.retire(); const auto prior = marker(); auto ground = prior;
-        const auto status = c::ground_query(f.world,0,0,ground);
-        require(status.error == a::OwnerError::lifetime && same(ground,prior),"retired World became absent-map success");
+        bool found = true;
+        const auto status = c::ground_query(f.world,0,0,ground,found);
+        require(status.error == a::OwnerError::lifetime && found && same(ground,prior),"retired World changed found/result or became absent-map success");
         bool blocked = true; const auto walk_status = f.walk(1,0,0,blocked);
         require(walk_status.error == a::OwnerError::lifetime && blocked && same(f.actor.source.currGround,prior),
                 "retired World changed walk output or canonical ground");
@@ -195,8 +208,9 @@ void malformed_and_consumed_map_paths() {
         if (failure == 3) { map.nodes[0].right_patch = w::no_index; map.nodes[0].right_child = 0; }
         Fixture f(std::move(map));
         const auto prior = marker(); auto ground = prior;
-        const auto status = c::ground_query(f.world,0,0,ground);
-        require(status.error == a::OwnerError::admission && same(ground,prior),"malformed/uncovered map became fallback success");
+        bool found = true;
+        const auto status = c::ground_query(f.world,0,0,ground,found);
+        require(status.error == a::OwnerError::admission && found && same(ground,prior),"malformed/uncovered map changed found/result or became fallback success");
         bool blocked = false; const auto walk_status = f.walk(0,0,0,blocked);
         require(walk_status.error == a::OwnerError::admission && !blocked && same(f.actor.source.currGround,prior),
                 "failed initial actual ground lookup changed canonical record or blocked output");
@@ -204,16 +218,18 @@ void malformed_and_consumed_map_paths() {
     {
         auto map = plane(); map.nodes[0].left_patch = w::no_index; map.nodes[0].left_child = 0;
         Fixture f(std::move(map));
-        auto ground = marker(); success(c::ground_query(f.world,0,0,ground));
-        require(ground.height == 100 && ground.surfaceType == allowed,"unused malformed sibling invalidated consumed valid branch");
+        bool found = false;
+        auto ground = marker(); success(c::ground_query(f.world,0,0,ground,found));
+        require(found && ground.height == 100 && ground.surfaceType == allowed,"unused malformed sibling invalidated consumed valid branch");
         const auto prior = ground;
-        require(c::ground_query(f.world,infinity,0,ground).error == a::OwnerError::admission && same(ground,prior),
+        require(c::ground_query(f.world,infinity,0,ground,found).error == a::OwnerError::admission && found && same(ground,prior),
                 "nonfinite consumed ground coordinates published output");
     }
     {
         Fixture f(plane(),{},false);
-        auto ground = marker(); success(c::ground_query(f.world,nan,infinity,ground));
-        require(ground.height == -9000,"fallback started validating unconsumed coordinates");
+        bool found = true;
+        auto ground = marker(); success(c::ground_query(f.world,nan,infinity,ground,found));
+        require(!found && ground.height == -9000,"fallback started validating unconsumed coordinates");
     }
 }
 void default_and_custom_surfaces() {

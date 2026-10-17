@@ -62,7 +62,7 @@ DEFINITIONS = (
     (MAGIKARP, "func_beach_802CAB50", 4, 18, (
         ("    DObj* model = obj->data.dobj;\n    Mtx4Float* rotation = &GET_TRANSFORM(model)->rot;\n", ""),
         ("Pokemon_SetAnimation(obj, &D_beach_802CDAB4);", "isle_actor_source_set_animation(obj, UINT32_C(0x802cdab4), 0);"),
-        ("rotation->v.y = randRange(360) * PI / 180.0f;", "isle_actor_source_yaw(obj, isle_actor_source_rand_range(obj, 360) * PI / 180.0f);"),
+        ("rotation->v.y = randRange(360) * PI / 180.0f;", "{\n        IsleGameModelRef model = isle_actor_source_self_model(obj);\n        IsleGameModelTransform values;\n        values.rotation.y = isle_actor_source_rand_range(obj, 360) * PI / 180.0f;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);\n    }"),
         ("D_beach_802CC014 = false;", "isle_actor_source_magikarp_active(obj, false);"),
     )),
     (MAGIKARP, "func_beach_802CAC08", 20, 28, ()),
@@ -92,6 +92,175 @@ DEFINITIONS = (
         ("        PokemonTransformBase* transform2 = GET_TRANSFORM_BASE(gobj->data.dobj);\n        PokemonTransformBase* transform1 = GET_TRANSFORM_BASE(pokemonObj->data.dobj);\n\n        transform1->xform.pos.v.x = transform2->xform.pos.v.x;\n        transform1->xform.pos.v.y = transform2->xform.pos.v.y;\n        transform1->xform.pos.v.z = transform2->xform.pos.v.z;", "        isle_actor_source_copy_position(gobj, pokemonObj);"),
     )),
 )
+MOVEMENT_DEFINITIONS = (
+    (POKEMON, "Pokemon_GetGroundAt", 425, 432, (
+        ("Pokemon_GetGroundAt(f32 x, f32 z)", "Pokemon_GetGroundAt(GObj* obj, f32 x, f32 z)"),
+        ("getGroundAt(x, z, &result)", "isle_actor_source_ground(obj, x, z, &result)"),
+    )),
+    (POKEMON, "Pokemon_WrapAngleSum", 434, 442, ()),
+    (POKEMON, "Pokemon_HeadingBetweenPoints", 535, 558, (
+        ("Vec3f* pointTo, Vec3f* pointFrom", "const IsleGameVec3* pointTo, const IsleGameVec3* pointFrom"),
+    )),
+    (POKEMON, "Pokemon_GetHeadingVector", 560, 588, (
+        ("Vec3f* pointTo, Vec3f* pointFrom, Vec3f* outVec", "const IsleGameVec3* pointTo, const IsleGameVec3* pointFrom, IsleGameVec3* outVec"),
+    )),
+    (POKEMON, "Pokemon_SetScale", 887, 900, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    PokemonInitData* initData = pokemon->initData;", "    IsleActorScaleInitialization initData = isle_actor_source_scale_initialization(obj);\n    IsleGameModelTransform values;"),
+        ("    GET_TRANSFORM(model)->scale.v.x = initData->scale.x * 0.1f * newScale;\n    GET_TRANSFORM(model)->scale.v.y = initData->scale.y * 0.1f * newScale;\n    GET_TRANSFORM(model)->scale.v.z = initData->scale.z * 0.1f * newScale;", "    values.scale.x = initData.scale.x * 0.1f * newScale;\n    values.scale.y = initData.scale.y * 0.1f * newScale;\n    values.scale.z = initData.scale.z * 0.1f * newScale;\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_SX | ISLE_ACTOR_SY | ISLE_ACTOR_SZ, &values);"),
+        ("initData->collisionCenter", "initData.collision_center", 3),
+        ("initData->scale", "initData.scale", 4),
+        ("initData->radius", "initData.radius"),
+    )),
+    (POKEMON, "Pokemon_MoveXZ", 919, 929, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("GET_TRANSFORM(model)->rot.v.y", "isle_actor_source_aux(obj, &model)->rotation.y"),
+        ("    GET_TRANSFORM(model)->pos.v.x += speedX;\n    GET_TRANSFORM(model)->pos.v.z += speedZ;", "    IsleGameModelTransform values;\n    values.position.x = isle_actor_source_aux(obj, &model)->position.x;\n    values.position.x += speedX;\n    values.position.z = isle_actor_source_aux(obj, &model)->position.z;\n    values.position.z += speedZ;\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PZ, &values);"),
+    )),
+    (POKEMON, "Pokemon_Jump", 931, 966, (
+        ("    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("            transform->pos.v.y += jumpVel;", "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y += jumpVel;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+    )),
+    (POKEMON, "Pokemon_JumpToHeight", 968, 999, (
+        ("    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("            transform->pos.v.y += jumpVel;", "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y += jumpVel;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+        ("transform->pos.v.y >= maxHeight", "isle_actor_source_aux(obj, &model)->position.y >= maxHeight"),
+    )),
+    (POKEMON, "Pokemon_Fall", 1001, 1035, (
+        ("    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("            transform->pos.v.y -= fallSpeed;", "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y -= fallSpeed;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+    )),
+    (POKEMON, "Pokemon_FallToHeight", 1037, 1068, (
+        ("    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("            transform->pos.v.y -= fallSpeed;", "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y -= fallSpeed;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+        ("transform->pos.v.y <= minHeight", "isle_actor_source_aux(obj, &model)->position.y <= minHeight"),
+    )),
+    (POKEMON, "Pokemon_FallDownOnGround", 1121, 1144, (
+        ("    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("getGroundAt(transform->pos.v.x, transform->pos.v.z, &pokemon->currGround)", "isle_actor_source_ground(obj, isle_actor_source_aux(obj, &model)->position.x, isle_actor_source_aux(obj, &model)->position.z, &pokemon->currGround)"),
+        ("        transform->pos.v.y += jumpVel;", "        IsleGameModelTransform values;\n        values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n        values.position.y += jumpVel;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+        ("transform->pos.v.y < pokemon->currGround.height", "isle_actor_source_aux(obj, &model)->position.y < pokemon->currGround.height"),
+        ("    transform->pos.v.y = pokemon->currGround.height;", "    IsleGameModelTransform values;\n    values.position.y = pokemon->currGround.height;\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+    )),
+    (POKEMON, "Pokemon_StepWalkInDirection", 1212, 1226, (
+        ("    DObj* model = obj->data.dobj;\n", ""),
+        ("Pokemon_StepWalk(obj, velX, velZ, flags)", "isle_actor_source_step_walk(obj, velX, velZ, flags)"),
+    )),
+    (POKEMON, "Pokemon_StepWalkInDirectionFacing", 1228, 1243, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("GET_TRANSFORM(model)->rot.v.y", "isle_actor_source_aux(obj, &model)->rotation.y"),
+        ("Pokemon_StepWalk(obj, velX, velZ, flags)", "isle_actor_source_step_walk(obj, velX, velZ, flags)"),
+    )),
+    (POKEMON, "Pokemon_Turn", 1245, 1269, (
+        ("Pokemon_Turn(DObj* model, f32 targetYaw, f32 turnSpeed)", "Pokemon_Turn(GObj* obj, IsleGameModelRef model, f32 targetYaw, f32 turnSpeed)"),
+        ("    yaw = GET_TRANSFORM(model)->rot.v.y;", "    yaw = isle_actor_source_aux(obj, &model)->rotation.y;"),
+        ("        GET_TRANSFORM(model)->rot.v.y = yaw + sign * turnSpeed;", "        IsleGameModelTransform values;\n        values.rotation.y = yaw + sign * turnSpeed;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"),
+        ("        GET_TRANSFORM(model)->rot.v.y = targetYaw;", "        IsleGameModelTransform values;\n        values.rotation.y = targetYaw;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"),
+    )),
+    (POKEMON, "Pokemon_RunInCircles", 1271, 1332, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    Vec3f centerPos;", "    IsleGameVec3 centerPos;"),
+        ("randRange(300)", "isle_actor_source_rand_range(obj, 300)"),
+        ("GET_TRANSFORM(model)->rot.v.y", "isle_actor_source_aux(obj, &model)->rotation.y", 6),
+        ("GET_TRANSFORM(model)->pos.v.x", "isle_actor_source_aux(obj, &model)->position.x", 2),
+        ("GET_TRANSFORM(model)->pos.v.z", "isle_actor_source_aux(obj, &model)->position.z", 2),
+        ("Pokemon_StepWalk(obj, deltaX, deltaZ, MOVEMENT_FLAG_ON_GROUND)", "isle_actor_source_step_walk(obj, deltaX, deltaZ, MOVEMENT_FLAG_ON_GROUND)"),
+        ("            isle_actor_source_aux(obj, &model)->rotation.y = Pokemon_WrapAngleSum(currentYaw, sign * maxModelTurnSpeed);", "            IsleGameModelTransform values;\n            values.rotation.y = Pokemon_WrapAngleSum(currentYaw, sign * maxModelTurnSpeed);\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"),
+        ("            isle_actor_source_aux(obj, &model)->rotation.y = nextYaw;", "            IsleGameModelTransform values;\n            values.rotation.y = nextYaw;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"),
+    )),
+    (POKEMON, "Pokemon_RunInCirclesDefault", 1334, 1336, ()),
+    (POKEMON, "Pokemon_HearsPokeFlute", 1338, 1346, ()),
+    (POKEMON, "Pokemon_TurnToTarget", 1348, 1391, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    Vec3f* targetPos;\n    Vec3f* currentPos;\n    DObj* targetModel;", "    const IsleGameVec3* targetPos;\n    const IsleGameVec3* currentPos;\n    IsleActorPositionRef targetPosition;\n    IsleGameObject* targetObject;"),
+        ("targetModel = gPlayerDObj;", "targetObject = isle_actor_source_player(obj);"),
+        ("targetModel = pokemon->interactionTarget->data.dobj;", "targetObject = pokemon->interactionTarget;"),
+        ("    if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n        targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n    } else {\n        targetPos = &targetModel->position.v;\n    }\n    currentPos = &GET_TRANSFORM(model)->pos.v;", "    targetPosition = isle_actor_source_target_position_ref(obj, targetObject);"),
+        ("            if (flags & MOVEMENT_FLAG_TURN_AWAY) {", "            targetPos = isle_actor_source_position_read(obj, &targetPosition);\n            currentPos = &isle_actor_source_aux(obj, &model)->position;\n            if (flags & MOVEMENT_FLAG_TURN_AWAY) {"),
+        ("Pokemon_Turn(model, targetDir, turnSpeed)", "Pokemon_Turn(obj, model, targetDir, turnSpeed)"),
+    )),
+    (POKEMON, "Pokemon_TurnToModelNode", 1393, 1425, (
+        ("DObj* modelNode", "IsleActorNodeRef modelNode"),
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    Vec3f* currentPos;\n    Vec3f targetPos;\n    Vec3f vel = { 0, 0, 0 };", "    const IsleGameVec3* currentPos;\n    IsleGameVec3 targetPos;\n    IsleGameVec3 vel = { 0, 0, 0 };"),
+        ("    currentPos = &GET_TRANSFORM(model)->pos.v;\n", ""),
+        ("fx_getPosVelDObj(&targetPos, &vel, modelNode)", "isle_actor_source_node_world_ref(obj, &modelNode, &targetPos, &vel)"),
+        ("            if (flags & MOVEMENT_FLAG_TURN_AWAY) {", "            currentPos = &isle_actor_source_aux(obj, &model)->position;\n            if (flags & MOVEMENT_FLAG_TURN_AWAY) {"),
+        ("Pokemon_Turn(model, targetDir, turnSpeed)", "Pokemon_Turn(obj, model, targetDir, turnSpeed)"),
+    )),
+    (POKEMON, "func_80361720_501B30", 1427, 1431, ()),
+    (POKEMON, "Pokemon_RunToTarget", 1433, 1483, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    DObj* targetModel;\n    Vec3f* targetPos;", "    IsleActorPositionRef targetPosition;\n    const IsleGameVec3* targetPos;"),
+        ("    Vec3f* currentPos;\n    Vec3f walkDir;", "    const IsleGameVec3* currentPos;\n    IsleGameVec3 walkDir;"),
+        ("            targetModel = pokemon->interactionTarget->data.dobj;\n            if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n                targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n                pokemon->targetPos.x = GET_TRANSFORM(targetModel)->pos.v.x;\n                pokemon->targetPos.y = GET_TRANSFORM(targetModel)->pos.v.y;\n                pokemon->targetPos.z = GET_TRANSFORM(targetModel)->pos.v.z;\n            } else {\n                targetPos = &targetModel->position.v;\n                pokemon->targetPos.x = targetModel->position.v.x;\n                pokemon->targetPos.y = targetModel->position.v.y;\n                pokemon->targetPos.z = targetModel->position.v.z;\n            }\n            currentPos = &GET_TRANSFORM(model)->pos.v;", "            targetPosition = isle_actor_source_target_position_ref(obj, pokemon->interactionTarget);\n            targetPos = isle_actor_source_position_read(obj, &targetPosition);\n            pokemon->targetPos.x = targetPos->x;\n            pokemon->targetPos.y = targetPos->y;\n            pokemon->targetPos.z = targetPos->z;\n            currentPos = &isle_actor_source_aux(obj, &model)->position;"),
+        ("Pokemon_StepWalk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)", "isle_actor_source_step_walk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)"),
+        ("        Pokemon_Turn(model, targetYaw, turnSpeed);", "        Pokemon_Turn(obj, model, targetYaw, turnSpeed);\n        currentPos = &isle_actor_source_aux(obj, &model)->position;"),
+    )),
+    (POKEMON, "Pokemon_RunAwayFromTarget", 1485, 1534, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    DObj* targetModel;\n    Vec3f* targetPos;", "    IsleActorPositionRef targetPosition;\n    const IsleGameVec3* targetPos;"),
+        ("    Vec3f* currentPos;\n    Vec3f walkDir;", "    const IsleGameVec3* currentPos;\n    IsleGameVec3 walkDir;"),
+        ("            targetModel = pokemon->interactionTarget->data.dobj;\n            if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n                targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n                pokemon->targetPos.x = GET_TRANSFORM(targetModel)->pos.v.x;\n                pokemon->targetPos.y = GET_TRANSFORM(targetModel)->pos.v.y;\n                pokemon->targetPos.z = GET_TRANSFORM(targetModel)->pos.v.z;\n            } else {\n                targetPos = &targetModel->position.v;\n                pokemon->targetPos.x = targetModel->position.v.x;\n                pokemon->targetPos.y = targetModel->position.v.y;\n                pokemon->targetPos.z = targetModel->position.v.z;\n            }\n            currentPos = &GET_TRANSFORM(model)->pos.v;", "            targetPosition = isle_actor_source_target_position_ref(obj, pokemon->interactionTarget);\n            targetPos = isle_actor_source_position_read(obj, &targetPosition);\n            pokemon->targetPos.x = targetPos->x;\n            pokemon->targetPos.y = targetPos->y;\n            pokemon->targetPos.z = targetPos->z;\n            currentPos = &isle_actor_source_aux(obj, &model)->position;"),
+        ("Pokemon_StepWalk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)", "isle_actor_source_step_walk(obj, walkDir.x, walkDir.z, flags | MOVEMENT_FLAG_ON_GROUND)"),
+        ("        Pokemon_Turn(model, targetYaw, turnSpeed);", "        Pokemon_Turn(obj, model, targetYaw, turnSpeed);\n        currentPos = &isle_actor_source_aux(obj, &model)->position;"),
+    )),
+    (POKEMON, "Pokemon_RunAwayDefault", 1536, 1538, ()),
+    (POKEMON, "Pokemon_SetTargetPos", 1540, 1545, ()),
+    (POKEMON, "Pokemon_StepToTargetPos", 1547, 1608, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("GET_TRANSFORM(model)->pos.v.x", "isle_actor_source_aux(obj, &model)->position.x", 2),
+        ("GET_TRANSFORM(model)->pos.v.z", "isle_actor_source_aux(obj, &model)->position.z", 2),
+        ("Pokemon_StepWalk(obj, velX, velZ, flags)", "isle_actor_source_step_walk(obj, velX, velZ, flags)"),
+        ("    currentYaw = GET_TRANSFORM(model)->rot.v.y;", "    currentYaw = isle_actor_source_aux(obj, &model)->rotation.y;"),
+        ("        GET_TRANSFORM(model)->rot.v.y = currentYaw + sign * turnSpeed;", "        IsleGameModelTransform values;\n        values.rotation.y = currentYaw + sign * turnSpeed;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"),
+        ("        GET_TRANSFORM(model)->rot.v.y = targetYaw;", "        IsleGameModelTransform values;\n        values.rotation.y = targetYaw;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"),
+    )),
+    (POKEMON, "Pokemon_RunToTargetPos", 1610, 1614, ()),
+    (POKEMON, "Pokemon_RunToTargetDefault", 1616, 1618, ()),
+    (POKEMON, "Pokemon_TurnToPokeFlute", 1620, 1647, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    DObj* targetModel;\n    Vec3f* targetPos;\n    Vec3f* currentPos;", "    IsleActorPositionRef targetPosition;\n    const IsleGameVec3* targetPos;\n    const IsleGameVec3* currentPos;"),
+        ("    targetModel = pokemon->interactionTarget->data.dobj;\n    if (GET_TRANSFORM_BASE(targetModel) != NULL) {\n        targetPos = &GET_TRANSFORM(targetModel)->pos.v;\n    } else {\n        targetPos = &targetModel->position.v;\n    }\n    currentPos = &GET_TRANSFORM(model)->pos.v;", "    targetPosition = isle_actor_source_target_position_ref(obj, pokemon->interactionTarget);"),
+        ("        Pokemon_Turn(model, Pokemon_HeadingBetweenPoints(targetPos, currentPos), turnSpeed);", "        targetPos = isle_actor_source_position_read(obj, &targetPosition);\n        currentPos = &isle_actor_source_aux(obj, &model)->position;\n        Pokemon_Turn(obj, model, Pokemon_HeadingBetweenPoints(targetPos, currentPos), turnSpeed);"),
+    )),
+    (POKEMON, "func_80361FBC_5023CC", 1649, 1664, (
+        ("func_80361FBC_5023CC(Vec3f* pos, InterpData* path, f32 arg2)", "func_80361FBC_5023CC(GObj* obj, IsleGameVec3* pos, const void* path, f32 arg2)"),
+        ("switch (path->type)", "switch (isle_actor_source_path_info(obj, path).kind)"),
+        ("HAL_INTERP_BEZIER_S3", "ISLE_ACTOR_PATH_BEZIER_S3"),
+        ("HAL_INTERP_BEZIER", "ISLE_ACTOR_PATH_BEZIER"),
+        ("HAL_INTERP_CATROM", "ISLE_ACTOR_PATH_CATROM"),
+        ("HAL_INTERP_LINEAR", "ISLE_ACTOR_PATH_LINEAR"),
+        ("GetInterpolatedPosition(pos, path, arg2)", "isle_actor_source_path_position(obj, path, arg2, pos)", 4),
+    )),
+    (POKEMON, "Pokemon_ResetPathPos", 1666, 1674, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    WorldBlock* block = getCurrentWorldBlock();", "    IsleGameVec3 worldPosition = isle_actor_source_current_world_position(obj);\n    IsleGameModelTransform values;"),
+        ("    GET_TRANSFORM(model)->pos.v.x = -(block->descriptor->worldPos.x * 100.0f);\n    GET_TRANSFORM(model)->pos.v.y = -(block->descriptor->worldPos.y * 100.0f);\n    GET_TRANSFORM(model)->pos.v.z = -(block->descriptor->worldPos.z * 100.0f);", "    values.position.x = -(worldPosition.x * 100.0f);\n    values.position.y = -(worldPosition.y * 100.0f);\n    values.position.z = -(worldPosition.z * 100.0f);\n    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PY | ISLE_ACTOR_PZ, &values);"),
+    )),
+    (POKEMON, "Pokemon_FollowPath", 1676, 1754, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("    Vec3f worldPos = { 0, 0, 0 };", "    IsleGameVec3 worldPos = { 0, 0, 0 };"),
+        ("    Vec3f vel;", "    IsleGameVec3 vel;"),
+        ("pokemon->path->duration", "isle_actor_source_path_info(obj, pokemon->path).duration"),
+        ("            GET_TRANSFORM(model)->pos.v.x -= worldPos.x * 100.0f;\n            GET_TRANSFORM(model)->pos.v.z -= worldPos.z * 100.0f;", "            IsleGameModelTransform values;\n            values.position.x = isle_actor_source_aux(obj, &model)->position.x;\n            values.position.x -= worldPos.x * 100.0f;\n            values.position.z = isle_actor_source_aux(obj, &model)->position.z;\n            values.position.z -= worldPos.z * 100.0f;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PZ, &values);"),
+        ("                    GET_TRANSFORM(model)->pos.v.y -= worldPos.y;", "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y -= worldPos.y;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+        ("                    GET_TRANSFORM(model)->pos.v.y -= worldPos.y * 100.0f;", "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y -= worldPos.y * 100.0f;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+        ("GetInterpolatedVelocity(&vel, pokemon->path, pokemon->pathParam)", "isle_actor_source_path_velocity(obj, pokemon->path, pokemon->pathParam, &vel)"),
+        ("Pokemon_Turn(model, heading, turnSpeed)", "Pokemon_Turn(obj, model, heading, turnSpeed)"),
+        ("                    GET_TRANSFORM(model)->rot.v.y = heading;", "                    values.rotation.y = heading;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_RY, &values);"),
+        ("func_80361FBC_5023CC(&worldPos, pokemon->path, pokemon->pathParam)", "func_80361FBC_5023CC(obj, &worldPos, pokemon->path, pokemon->pathParam)"),
+        ("            GET_TRANSFORM(model)->pos.v.x += worldPos.x * 100.0f;\n            GET_TRANSFORM(model)->pos.v.z += worldPos.z * 100.0f;", "            values.position.x = isle_actor_source_aux(obj, &model)->position.x;\n            values.position.x += worldPos.x * 100.0f;\n            values.position.z = isle_actor_source_aux(obj, &model)->position.z;\n            values.position.z += worldPos.z * 100.0f;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX | ISLE_ACTOR_PZ, &values);"),
+        ("Pokemon_GetGroundAt(GET_TRANSFORM(model)->pos.v.x, GET_TRANSFORM(model)->pos.v.z)", "Pokemon_GetGroundAt(obj, isle_actor_source_aux(obj, &model)->position.x, isle_actor_source_aux(obj, &model)->position.z)"),
+        ("                    GET_TRANSFORM(model)->pos.v.y += worldPos.y;", "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y += worldPos.y;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+        ("                    GET_TRANSFORM(model)->pos.v.y += worldPos.y * 100.0f;", "                    values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n                    values.position.y += worldPos.y * 100.0f;\n                    isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+    )),
+    (POKEMON, "func_803623F4_502804", 1756, 1758, (
+        ("func_803623F4_502804(f32 x, f32 z)", "func_803623F4_502804(GObj* obj, f32 x, f32 z)"),
+        ("Pokemon_GetGroundAt(x, z)", "Pokemon_GetGroundAt(obj, x, z)"),
+    )),
+)
+DEFINITIONS += MOVEMENT_DEFINITIONS
 CONTROL_SYMBOLS = frozenset(unit[1] for unit in DEFINITIONS[:6])
 CONTROL_PREAMBLE = '''/* Private selected own-GAME core actor control. */
 #include "engine_internal.h"
@@ -131,9 +300,23 @@ static const PokemonInitData D_beach_802CDAEC = { UINT32_C(0x802cdaec) };
 static const PokemonDef D_8038837C_52878C = { UINT32_C(0x8038837c) };
 static const IsleGameVec3 D_8038838C_52879C = { 0.0f, 0.0f, 0.0f };
 #define PokemonID_1003 1003
-/* Native numeric policy: NIST DLMF3.12.E1 pi, unsuffixed C double.
- * Original SDK macro spelling/type equivalence is unproven; no SDK import. */
+/* QUALIFIED native numeric policy, not established original SDK macro parity.
+ * PI retains the existing NIST DLMF3.12.E1 unsuffixed double token/value.
+ * TAU/PI_2 are double expressions; M_PI_F is rounded binary32 PI.
+ * SIGN returns +1 for either signed zero. SQ preserves product grouping.
+ * ABS compares with zero, preserving the input zero's sign. */
 #define PI 3.14159265358979323846
+#define TAU (2.0 * PI)
+#define PI_2 (PI / 2.0)
+#define M_PI_F 3.14159265358979323846f
+#define SIGN(value) (((value) >= 0) ? 1 : -1)
+#define SQ(value) ((value) * (value))
+#define ABS(value) (((value) < 0) ? -(value) : (value))
+/* Native World AnimationPath kind values, not an InterpData layout. */
+enum {
+    ISLE_ACTOR_PATH_LINEAR = 0, ISLE_ACTOR_PATH_BEZIER = 1,
+    ISLE_ACTOR_PATH_BEZIER_S3 = 2, ISLE_ACTOR_PATH_CATROM = 3
+};
 #define UNUSED
 #define Pokemon_SpawnOnGround isle_actor_owner_spawn_ground
 #define Pokemon_SpawnOnGroundDlLink4 isle_actor_owner_spawn_ground_dl4
@@ -161,7 +344,7 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
     manifest_bytes = manifest_path.read_bytes()
     manifest = json.loads(manifest_bytes)
     if (manifest["schema_version"] != 1 or manifest["revision"] != REVISION or
-            manifest["transformation_version"] != "actor-control-v5"):
+            manifest["transformation_version"] != "actor-control-v6"):
         raise ValueError("unsupported actor authority/transformation")
     if git(repository, "cat-file", "-t", REVISION).strip() != b"commit":
         raise ValueError("actor authority is not a commit")

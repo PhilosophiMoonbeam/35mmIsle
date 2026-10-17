@@ -35,22 +35,34 @@ OwnerStatus forbidden(const IsleActorSource& actor, const IsleActorGround& groun
 
 }
 
-OwnerStatus ground_query(world::World& world, float x, float z, IsleActorGround& output) noexcept {
+OwnerStatus ground_query(world::World& world, float x, float z, IsleActorGround& output, bool& found) noexcept {
     if (world.retired()) return rejected(OwnerError::lifetime,"actor ground query uses retired World");
     world::GroundResult result;
+    bool queried = false;
     try {
-        if (!world.ground_at(x,z,result)) {
-            const auto* block = world.current();
-            if (block && block->resource && world.resources().height_map)
-                return rejected(OwnerError::admission,"actor ground query has unsafe coordinates or malformed/uncovered map");
-            // Missing current/descriptor/map is the real source fallback;
-            // coordinates remain unconsumed in this arm.
+        const auto* block = world.current();
+        if (block) {
+            bool member = false;
+            for (const auto& candidate : world.blocks()) if (&candidate == block) { member = true; break; }
+            if (!member) return rejected(OwnerError::admission,"actor ground current block is foreign");
+            if (block->resource) {
+                member = false;
+                for (const auto& candidate : world.resources().blocks)
+                    if (&candidate == block->resource) { member = true; break; }
+                if (!member) return rejected(OwnerError::admission,"actor ground block descriptor is foreign");
+            }
         }
+        queried = world.ground_at(x,z,result);
+        if (!queried && block && block->resource && world.resources().height_map)
+            return rejected(OwnerError::admission,"actor ground query has unsafe coordinates or malformed/uncovered map");
+        // Missing current/descriptor/map is the real source fallback;
+        // coordinates remain unconsumed in this arm.
     } catch (...) {
         return rejected(OwnerError::native,"actor native World ground query threw");
     }
     output = {result.height,{result.normal.x,result.normal.y,result.normal.z},
               static_cast<std::uint32_t>(result.surface)};
+    found = queried;
     return {};
 }
 
@@ -73,7 +85,8 @@ OwnerStatus step_walk(world::World& world, IsleActorSource& actor, IsleGameModel
     if (!std::isfinite(next_x) || !std::isfinite(next_z))
         return rejected(OwnerError::admission,"actor walk has nonfinite prospective position");
 
-    auto status = ground_query(world,next_x,next_z,actor.currGround);
+    bool found = false;
+    auto status = ground_query(world,next_x,next_z,actor.currGround,found);
     if (!status) return status;
     bool prohibited = false;
     status = forbidden(actor,actor.currGround,prohibited);
@@ -97,19 +110,19 @@ OwnerStatus step_walk(world::World& world, IsleActorSource& actor, IsleGameModel
     if (!std::isfinite(probe_x) || !std::isfinite(probe_z))
         return rejected(OwnerError::admission,"actor walk has nonfinite radius probe");
     IsleActorGround probe;
-    status = ground_query(world,probe_x,probe_z,probe);
+    status = ground_query(world,probe_x,probe_z,probe,found);
     if (!status) return status;
     status = forbidden(actor,probe,prohibited);
     if (!status) return status;
     if (prohibited) { blocked = true; return {}; }
 
-    if ((flags&0x10u) && std::fabs(old.y-actor.currGround.height) != 0.0f) {
+    if ((flags&MOVEMENT_FLAG_FIXED_HEIGHT) && std::fabs(old.y-actor.currGround.height) != 0.0f) {
         blocked = true; return {};
     }
     auto next = current->transform;
     next.position.x = next_x;
     next.position.z = next_z;
-    if (flags&1u) next.position.y = actor.currGround.height;
+    if (flags&MOVEMENT_FLAG_ON_GROUND) next.position.y = actor.currGround.height;
     if (isle_game_model_set_placement(actor.game,model,current->mode,&next) != ISLE_GAME_OK)
         return rejected(OwnerError::native,"actor walk native placement publication failed");
     blocked = false;

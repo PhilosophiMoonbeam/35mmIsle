@@ -37,8 +37,87 @@ Original services use implementation requirements, public format/algorithm facts
 | `actor_source_owner_bridge.c`, `actor_interaction_services.cpp`, `prepare_actor_control.py` — original-C interaction execution | Complete automatic/FIFO source switches and update over the existing canonical records/shared native queue | Eleven returning service leaves; full reachable callback/resource admission before custom consumption; original row/null/boundary/order semantics, ordinary suffix preservation and C-only fault/wait transfer | Second C++ interpreter/physics, guest function casts, fabricated Player/FX/SFX providers, swallowed native fault, partial row admission or NULL-current-World rejection |
 | `item_flute.cpp/.hpp`, `game_audio.cpp` — source Flute owner | Caller-retained source state and actual shared Session epoch; real private RSP microcode/owned CPU PCM | Only accepted audio builds advance the epoch; natural source flags, retained index and exact source song/command order; task/PCM owners retire before drain | Query/Item tick/retrace masquerading as build, reset of source-retained state, authored PCM or dummy-environment policy called exercised SDL3/hearing |
 | `item_producer.cpp/.hpp`, `borrowed_model_kernel.cpp`, `scene_graphics.cpp` — Item graphics owner | Existing borrowed kernel, actual source ItemOwner/native models, immutable Item resources and source global DL3 | Native visibility for native pose despite paused animator; actual native object/model association for every active binding before filtering; contemporaneous replacement baseline; preparation/GPU/readback/postprocess ownership separate from native join | Cached hidden pose, duplicate-model-only negative test, stale all-hidden baseline, payload/slot reuse before real fences, API-only cohort called source-owned execution |
+| `engine.h`, `engine.c`, `engine_internal.h` — native model lifetime owner | Engine-minted nonowning `IsleGameModelRef` and bit-preserving canonical local/AUX stores | Same retained game/arena lifetime; allocation/reservation/reuse remints incarnation; resolve rejects retirement/reuse before consuming association; ordinary fixed/revision/dirty publication remains authoritative | Raw-handle ABA, ref retaining a retired pose, incarnation wrap or failed preparation mutation, padding comparison, signed-zero loss or reading RT's unused input scale |
+| `actor_owner_source.h`, owner/C bridges and exact movement recipe — original-C movement owner | Thirty-two additional pinned common movement/heading/turn/target/path definitions and actual native World/Items/Player binding | Original arithmetic/order/waits and partial effects stay C; fresh checked borrowed reads, latest-placement masked stores, captured model/position space, one existing walker/interpolator, separate source-ground-found bit | Shadow transform/C++ movement interpreter, implicit target reselection, stale views across waits, ground `-9000` substituted for scalar false→0, whole-path rollback or changed infinite-wait/wrap semantics |
 
 Admission itself is not execution evidence. Independently constructed public fixtures establish only exercised mechanisms. Exact contribution content is reviewed at integration; historical observations below do not automatically cover subsequent changes. No mechanism result establishes full game boot, fidelity, audio, photography, completion, Windows 11 qualification or release readiness.
+
+## Native movement lifetime and original-C execution
+
+`isle_game_model_reference` / `isle_game_model_resolve` identify one actual native
+model attachment, including factory preparation/cancellation and physical pool
+reuse. References allocate nothing, retain no object/model and add no retirement
+fence. They expire with the retained game/arena lifetime; they do not survive an
+arena reset. Native identity retention never promises a live retired model.
+
+Canonical local/AUX no-change comparisons preserve consumed float bits,
+including signed zero, without comparing structure padding or reading RT's
+unused caller scale. An unchanged-engine CPU reproduction dropped requested
+`80000000` to `00000000` in both records and kept AUX revision1. The repaired
+native engine retained `80000000` and advanced AUX revision1→2. Its fresh stopped
+CPU tree was 1 terminal / 0 created / 2 absent identities, with unchanged ROM and
+zero physical-device attempts or permission errors. The repaired archive includes
+the exact diagnostic caller; the earlier archive omitted its then-root-level
+caller, which is separately retained with that limitation. The throwaway caller
+was removed after the successful proof.
+
+All 32 added helpers retain complete original C bodies through exact pinned
+body/hash/occurrence-checked rewrites. Six engine controls remain separate from
+owner-dependent C. Native leaves only bridge canonical storage, actual
+initialization, World/terrain/path identity, existing interpolation and published
+Player/Item services. `Pokemon_GetGroundAt` returns source false→0; callers of the
+full ground query still receive `-9000/up/UINT32_MAX` with found=false. Valid
+terrain at height−9000 remains found=true. Command19's nullable current World is
+unchanged; ResetPathPos independently consumes a valid current descriptor.
+
+The complete extended C interaction/movement consumer passed Debug, Release and
+Clang ASan+UBSan: each closed tree had 274 terminal / 273 created / 275 absent
+identities, stable traces, unchanged ROM and zero physical-device attempts or
+permission errors. It exercises real native waits, interleaved placement/block
+changes, captured target movement/replacement/retirement/physical reuse, source
+pause/arrival boundaries, bounded authored native four-kind path data,
+current-path versus captured-duration behavior, permanent-wait cancellation,
+heading normalization/signed-zero fallback and one-RNG circle blocked/pause/
+across-wait edges. Expected terminal-fault cases inspect an actual
+prefault canonical borrow while its model remains alive; normal public queries
+continue rejecting sticky failure. Traced sanitizer execution is not a leak
+qualification. The semantic Player fixture and authored paths are not production
+Player input or ROM trajectories.
+
+All thirteen complete shared-engine consumers passed in each profile: 39 frozen
+executions, 2,370 closed terminal tasks, identical 415-file source maps, stable
+traces, unchanged ROM and zero physical-device attempts or permission errors.
+The final 56 CPU contracts also passed per profile; the separate sanitizer CPU
+suite exercised leak detection. Exact binary/archive hashes and bounded rejected
+capture history are in `actor-interaction-inputs.json`'s
+`native_common_movement_wave` receipt.
+
+Native PI/TAU/PI_2/M_PI_F/SIGN definitions remain explicitly qualified modern
+policy, not established original SDK macro/type/bit equivalence. No species
+callback registry is widened by these helpers. A live priority2 collision phase
+can overwrite priority7 diagnostic movement before rendering; isolated CPU
+expectations are not valid whole-tick GPU expectations. The rejected combined
+collision/movement capture remains wholly rejected, without replay or image use.
+
+The genuine two-slot Magikarp consumer now completes 47 actual GPU frames in each
+profile, preserving its complete source512 lifecycle, focus, FX and ordinary
+reuse before a separate fresh actual-source single-actor movement phase. Each
+original-C MoveXZ, Jump, Turn and Scale independently changes actual pre-marker
+color **and** packed depth under a same-state component-only counterfactual and
+restores exactly. Checks also cover source-bound fixed-matrix RAM upload and DL
+addressing, independent local nodes, descendant-world coherence and real
+native/GPU/readback/audio teardown. Original camera, spawner, trigger, two-slot
+capacity, priority2 and budgets remain unchanged; no tuning or partial
+failed-consumer acceptance supplies this proof.
+
+All 21 known successful saved surfaces are byte-identical across profiles.
+Fourteen earlier World/FX/genuine-Magikarp/collision surfaces are unchanged; seven
+additional images cover movement and retirement. The actual Debug six-panel
+initial/horizontal/vertical/turn/scale/restored surface was directly inspected.
+These are native component results, not production Player, complete photography,
+other species/courses, original hardware/numeric equivalence or private
+Windows11 runtime qualification. The earlier published `cdda34c` ten-job CI
+receipt does not qualify this later source revision.
 
 ## Native Item and complete C interaction execution
 

@@ -124,6 +124,7 @@ struct IsleGameModel {
     GObj* obj;
     IsleGame* game;
     size_t count, capacity;
+    uint64_t incarnation; /* Minted at allocation/reservation, never pose edits. */
     bool alive;
     IsleGameModelPlacement placement;
     IsleGameModelNode nodes[];
@@ -138,6 +139,7 @@ struct IsleGame {
     OMCamera* free_cameras;
     OMMtx* free_matrices;
     IsleGameModel* free_models;
+    uint64_t model_incarnation; /* Last minted identity; UINT64_MAX never wraps. */
     size_t held_identities;
     GObj* factory_objects; /* Stable caller-owned tickets, rooted by actual raw objects. */
     unsigned callback_depth;

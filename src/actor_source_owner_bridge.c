@@ -7,6 +7,72 @@ static void checked(IsleActorSource* actor, IsleGameResult result) {
     if (result != ISLE_GAME_OK)
         isle_native_execution_fault(actor->game, "native actor owner source leaf failed");
 }
+IsleGameModelRef isle_actor_source_self_model(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleGameModelRef value = {0};
+    checked(actor, isle_actor_owner_self_model(actor, &value));
+    return value;
+}
+const IsleGameModelTransform* isle_actor_source_aux(IsleGameObject* object, const IsleGameModelRef* model) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    const IsleGameModelTransform* value = NULL;
+    checked(actor, isle_actor_owner_aux_read(actor, model, &value));
+    return value;
+}
+void isle_actor_source_aux_store(IsleGameObject* object, const IsleGameModelRef* model,
+    uint32_t mask, const IsleGameModelTransform* values) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_aux_store(actor, model, mask, values));
+}
+int32_t isle_actor_source_step_walk(IsleGameObject* object, float vx, float vz, uint32_t flags) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    int32_t value = 0;
+    checked(actor, isle_actor_owner_step_walk(actor, vx, vz, flags, &value));
+    return value;
+}
+IsleActorScaleInitialization isle_actor_source_scale_initialization(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleActorScaleInitialization value = {0};
+    checked(actor, isle_actor_owner_scale_initialization(actor, &value));
+    return value;
+}
+IsleActorPositionRef isle_actor_source_target_position_ref(IsleGameObject* object, IsleGameObject* target) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleActorPositionRef value = {0};
+    checked(actor, isle_actor_owner_target_position_ref(actor, target, &value));
+    return value;
+}
+const IsleGameVec3* isle_actor_source_position_read(IsleGameObject* object, const IsleActorPositionRef* reference) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    const IsleGameVec3* value = NULL;
+    checked(actor, isle_actor_owner_position_read(actor, reference, &value));
+    return value;
+}
+void isle_actor_source_node_world_ref(IsleGameObject* object, const IsleActorNodeRef* reference,
+    IsleGameVec3* position, IsleGameVec3* velocity) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_node_world_ref(actor, reference, position, velocity));
+}
+IsleActorPathInfo isle_actor_source_path_info(IsleGameObject* object, const void* path) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleActorPathInfo value = {0};
+    checked(actor, isle_actor_owner_path_info(actor, path, &value));
+    return value;
+}
+void isle_actor_source_path_position(IsleGameObject* object, const void* path, float parameter, IsleGameVec3* value) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_path_position(actor, path, parameter, value));
+}
+void isle_actor_source_path_velocity(IsleGameObject* object, const void* path, float parameter, IsleGameVec3* value) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_owner_path_velocity(actor, path, parameter, value));
+}
+IsleGameVec3 isle_actor_source_current_world_position(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleGameVec3 value = {0};
+    checked(actor, isle_actor_owner_current_world_position(actor, &value));
+    return value;
+}
 void isle_actor_source_set_animation(IsleGameObject* object, uint32_t identity, int force) {
     IsleActorSource* actor = isle_actor_source_require(object);
     IsleGameResult result = isle_actor_owner_animation(actor, identity, 0.0f, force);
@@ -88,10 +154,6 @@ IsleGameResult isle_actor_source_pause_object(IsleActorSource* actor, int paused
 }
 
 
-void isle_actor_source_yaw(IsleGameObject* object, float yaw) {
-    IsleActorSource* actor = isle_actor_source_require(object);
-    checked(actor, isle_actor_owner_yaw(actor, yaw));
-}
 void isle_actor_source_magikarp_active(IsleGameObject* object, int active) {
     IsleActorSource* actor = isle_actor_source_require(object);
     checked(actor, isle_actor_owner_magikarp_active(actor, active));
@@ -106,9 +168,11 @@ void isle_actor_source_node_world(IsleGameObject* object, size_t node, IsleGameV
     IsleActorSource* actor = isle_actor_source_require(object);
     checked(actor, isle_actor_owner_node_world(actor, node, position, velocity));
 }
-void isle_actor_source_ground(IsleGameObject* object, float x, float z, IsleActorGround* ground) {
+int32_t isle_actor_source_ground(IsleGameObject* object, float x, float z, IsleActorGround* ground) {
     IsleActorSource* actor = isle_actor_source_require(object);
-    checked(actor, isle_actor_owner_ground(actor, x, z, ground));
+    int32_t found = 0;
+    checked(actor, isle_actor_owner_ground(actor, x, z, ground, &found));
+    return found;
 }
 void* isle_actor_source_current_block(IsleGameObject* object) {
     IsleActorSource* actor = isle_actor_source_require(object);

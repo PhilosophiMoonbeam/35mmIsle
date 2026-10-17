@@ -147,10 +147,10 @@
       "sha256": "bf772ffe65ba441fb9af069bff96b37db09734ef04343e43b7c0f7ad6644afa0"
     },
     "src/actor_owner.cpp": {
-      "sha256": "ef777302dc2bcc1d27df18d63ec15ca28a33eda90e68c82d0e387f89111d5e1b"
+      "sha256": "d47e656e5cd8439825cf8aa5e5f6fc196bda3eab77b1be63e053b4376e35cf75"
     },
     "src/actor_owner_source.h": {
-      "sha256": "38df0a3f1e5e384018343d451cab0e999e2cc2433d1678f412d192edf40e85d1"
+      "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
     },
     "src/actor_source.h": {
       "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
@@ -159,7 +159,7 @@
       "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "c9c39276ba75df7c1c4752480a9b9adc7e3f5dc2cb0d13368a2e11ca23dac9cd"
+      "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
     },
     "src/beach_actor_resources.hpp": {
       "sha256": "aeb595bf1a418bfe7999df35b5acfd3b24757a8fab07c50443b7f9752743c16e"
@@ -180,10 +180,10 @@
       "sha256": "0532dcff4ac2e978f6e069d75a72469472af9770e829ce152afa3bca6f6bda66"
     },
     "tools/prepare_actor_control.py": {
-      "sha256": "8c18eeaae068f390f2726d4969062852ec038f208c902f1d7eb0f8f373d0191c"
+      "sha256": "965bcb87d1dde221e0af00ffd5a3d177d185bb2361a59e83b2829131a60220da"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "b44406b4ca43ff3fb1fe2c566e985d56ec987a58e5de449419c7fd492317eb88"
+      "sha256": "c05187a9706e16cf15370f6ef6cab6eb8c62fa27b08b1eacbb4972fe6a267cb3"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "5e49b79bfa4cb836154eac914fce940d4ec6ee5d9f26424a9156d6dbfde2d1a9"

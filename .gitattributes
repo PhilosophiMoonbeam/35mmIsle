@@ -122,3 +122,5 @@ src/menu_animation.hpp text eol=lf
 include/35mmisle/game_save.hpp text eol=lf
 src/game_save.cpp text eol=lf
 tests/game_save_tests.cpp text eol=lf
+tests/actor_movement_probe.c text eol=lf
+tests/actor_movement_probe.h text eol=lf

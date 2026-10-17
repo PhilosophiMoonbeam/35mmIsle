@@ -9,16 +9,16 @@
       "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
     },
     "src/actor_owner_source.h": {
-      "sha256": "38df0a3f1e5e384018343d451cab0e999e2cc2433d1678f412d192edf40e85d1"
+      "sha256": "a68e2e01f4e97cc1bb327470ef6d17a2dae370bd529977b5538cb550b41a4edd"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "c9c39276ba75df7c1c4752480a9b9adc7e3f5dc2cb0d13368a2e11ca23dac9cd"
+      "sha256": "9f3111e781268064657e7fa409baca0e14b985b08902252d95dc285b4e64a38e"
     },
     "src/actor_source_bridge.c": {
       "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/actor_owner.cpp": {
-      "sha256": "ef777302dc2bcc1d27df18d63ec15ca28a33eda90e68c82d0e387f89111d5e1b"
+      "sha256": "d47e656e5cd8439825cf8aa5e5f6fc196bda3eab77b1be63e053b4376e35cf75"
     },
     "src/actor_owner.hpp": {
       "sha256": "bf772ffe65ba441fb9af069bff96b37db09734ef04343e43b7c0f7ad6644afa0"
@@ -33,7 +33,7 @@
       "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "de45ddcb732fbc2b32c082b3401a9cd627f533cffd36b0c4d590c503aa4bf2da"
+      "sha256": "21a74cd3c3d5f5c2a6028b51b4224f66ca199898d7247e06a6b8b73482b168e7"
     },
     "src/actor_spatial.h": {
       "sha256": "962287772ecea45dbc4431ec014969c15dab2ba66bdd39e04853c6641326aaf9"
@@ -1632,12 +1632,709 @@
     ],
     "workflow": "FournewItem/Cprivate optinconsumersdeclaredalongsidefourexistingLinux/Windowscompiletargets; noROM/runtime/publicupload. Hostedreceiptqualifiesitsnamedimmutableheadonly."
   },
+  "native_common_movement_wave": {
+    "status": "qualified-local-complete-common-C-movement-native-lifetime-and-preserved-full-consumers-not-fullgame",
+    "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6.4.2",
+    "source_authority": "df8815e75f3d79618466e01e0827c6165b93d11c",
+    "ROM_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "source_import": "32 complete pinned common movement/heading/turn/target/path definitions; six engine controls plus 49 owner C definitions; one existing owner/walker/interpolator and shared canonical model/World/Items/Player services; no second C++ movement interpreter or widened species callback registry",
+    "frozen_source_set": {
+      "file_count": 415,
+      "all39_source_maps_identical": true,
+      "sha256": "1e4f447e432f23b9774799376ab1a099beb3a3df895ab97a8ede455a96958fc8",
+      "algorithm": "SHA256(UTF8 JSON source-path-to-SHA256 map, sorted keys, separators comma/colon, no whitespace)",
+      "archive_boundary": "Frozen executable and source inputs precede this nonexecuting evidence/documentation update; archive does not contain its own later receipt"
+    },
+    "complete_consumers_per_profile": 13,
+    "accepted_complete_runs": 39,
+    "total_closed_terminal_tasks": 2370,
+    "CPU_contracts": {
+      "Debug": {
+        "passed": 56,
+        "total": 56
+      },
+      "Release": {
+        "passed": 56,
+        "total": 56
+      },
+      "ClangASanUBSan": {
+        "passed": 56,
+        "total": 56
+      }
+    },
+    "canonical_model_contract": "Nonowning game/arena-lifetime model-incarnation references; minted on reservation/allocation/reuse, invalidated by cancellation/retirement; no allocation/hold/fence or ABA; bit-preserving canonical local/AUX no-op comparisons preserve signed zero without padding or unused RT-scale reads",
+    "C_movement_contract": "Returning checked leaves and latest-placement masked stores; source initialization/ground-found/current-World/path/captured-target identities, exact C wait/order/partial-effect semantics; actual heading signed-zero and one-RNG circle blocked/pause/across-wait edges; semantic Player and authored four-kind path fixtures are not production Player or ROM trajectory execution",
+    "genuine_source_GPU": {
+      "completed_frames_each_profile": 47,
+      "full_two_slot_512_source_lifecycle_and_reuse_preserved": true,
+      "independent_late_fresh_single_actual_actor": "Original camera/spawner/trigger/two-slot capacity/priority2 and budgets retained; one genuine warmup and existing diagnostic process/update pause pattern, no priority/camera/pose/cohort/budget tuning",
+      "per_helper": "Real original-C MoveXZ/Jump/Turn/Scale; same-state component-only undo and exact restore; each independently changes actual pre-marker color AND packed depth, actual source-bound RAM fixed-matrix upload/DL address, unchanged local nodes and coherent descendant world nodes",
+      "real_native_GPU_readback_audio_teardown": "Complete original consumer and real ownership retirement required; join never substitutes for GPU/readback/audio fences"
+    },
+    "saved_surface_gate": {
+      "distinct_surfaces": 21,
+      "profile_copies": 63,
+      "all_three_profile_byte_identical": true,
+      "all14_prior_World_FX_Magikarp_collision_surfaces_unchanged": true,
+      "new_movement_surfaces": 7,
+      "actual_Debug_six_panel_surface_directly_inspected": true,
+      "no_root_rescans": true,
+      "movement_sha256": {
+        "actual-movement-initial.ppm": "46f9594c07076dd80b63fff5b8d399613dd8b5aa7d42c7912765a0e600ca15eb",
+        "actual-movement-horizontal.ppm": "a96f78912464e61b8b828e03265bbe05ed84e57df4284c76fc09a70db6204a51",
+        "actual-movement-vertical.ppm": "dc663766584afe17b027ef069aae988baa8f3b196edd9304349a68b7a4b34b99",
+        "actual-movement-turn.ppm": "cba8a356806f14b733932de464bdf66fa24e6ec39c074c5b981bed647c0b5654",
+        "actual-movement-scale.ppm": "4da278de81628cba5d2ad110aa7184a2909010a3aa40e6fddfbfd94780f64933",
+        "actual-movement-restored.ppm": "e0652093fa509caafd57b01c11c923dd7449a292cf33227926cbff9237417121",
+        "actual-movement-retired.ppm": "f370880ed3f4cc23eb56453207314ca397fc1025cba75fb8ddb1cb8f2daff13b"
+      }
+    },
+    "whole_root_gate": {
+      "each_initial_scan_only_after_tracer_wait_and_all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "ROMunchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "failed_roots_never_replayed_reopened_rescanned_or_partially_accepted": true,
+      "fatal_ASan_UBSan": true,
+      "ptrace_only_LSan_disabled_not_leak_qualification": true,
+      "separate56_CPU_sanitizer_contracts_exercised_leak_detection": true
+    },
+    "audio": "Owned checked CPU private_audio::Capture/RSP/PCM/drain only, including unchanged complete Flute nine-run/828-task workload per profile; not actual SDL3 audio device/stream, hardware or hearing qualification",
+    "before_rejections": {
+      "C_fault_query_fixture": {
+        "status": "whole_rejected_forever_no_partial_acceptance",
+        "root": "/home/bbferko/35mmisle-original-C-movement-Debugm68ay50m",
+        "binary_sha256": "4dbf46f62b1bca81481750a9f683d50a40096f3d3d8ce93d0b57f015c9f4a044",
+        "source_archive_sha256": "3a3b2034acf4b2e932bea6f8aa99f56dd0995802dbb0828ac1ab6682ad559b49",
+        "observed_failure": "C native result=5 Consumer::placement line309; C selector guard: native interaction consumer operation failed; elapsed1.0274767300579697s. Exact initiating source leaf/case not yet identified; do not infer cause from generic sticky-status query.",
+        "closure": {
+          "root": "/home/bbferko/35mmisle-original-C-movement-Debugm68ay50m",
+          "returncode": 1,
+          "tracer_pid": 1142829,
+          "tracer_wait_completed": true,
+          "trace_count": 254,
+          "terminal_count": 254,
+          "created_task_count": 253,
+          "single_initial_root": 1142831,
+          "absent_tracer_and_task_count": 255,
+          "all_tasks_absent": true,
+          "trace_identities_stable": true,
+          "rom_unchanged": true,
+          "original_admission": false
+        },
+        "scan": {
+          "sole_initial_scan": true,
+          "whole_tree_closed_before_scan": true,
+          "known_physical_attempts": 0,
+          "permission_errors": 0,
+          "physical_hits": [],
+          "permission_hits": [],
+          "original_admission": false
+        }
+      },
+      "overlapping_collision_movement_GPU_phase": {
+        "status": "whole_rejected_forever_no_partial_acceptance",
+        "root": "/home/bbferko/35mmisle-original-C-movement-isolated-GPU-Debug-tqhik399",
+        "binary_sha256": "9c66f329aa21935b01892e9f2b4930b6866654b533ea41f180a88d8d332bb461",
+        "source_archive_sha256": "a026b142d053cee8f45633c90fba44e50e911ea49be06f70552ced0ea5013ee4",
+        "observed_failure": "original C MoveXZ lost canonical GPU placement/revision; prior printed collision AUX subjects0=(0,400,3937.5),1=(0,400,4073.09),2=(0,308.806,4264.41). Exact post-helper state not printed; cause not yet localized. CPU Vulkan llvmpipe selected; exit1 after10.38810904091224s.",
+        "closure": {
+          "root": "/home/bbferko/35mmisle-original-C-movement-isolated-GPU-Debug-tqhik399",
+          "returncode": 1,
+          "tracer_pid": 1159061,
+          "tracer_wait_completed": true,
+          "trace_count": 46,
+          "terminal_count": 46,
+          "created_task_count": 45,
+          "single_initial_root": 1159063,
+          "absent_tracer_and_task_count": 47,
+          "all_tasks_absent": true,
+          "trace_identities_stable": true,
+          "rom_unchanged": true,
+          "original_admission": false
+        },
+        "scan": {
+          "sole_initial_scan": true,
+          "whole_tree_closed_before_scan": true,
+          "known_physical_attempts": 0,
+          "permission_errors": 0,
+          "physical_hits": [],
+          "permission_hits": [],
+          "original_admission": false
+        }
+      }
+    },
+    "corrected_boundaries": [
+      "Three expected-terminal-fault cases now borrow actual canonical placement before sticky failure instead of making prohibited public normal-state queries after failure; original initiating generic failure was not dynamically localized; no sticky status suppression",
+      "A live priority2 pair-collision update can overwrite earlier priority7 diagnostic movement. New GPU proof is a separate late fresh actual-source single-actor phase in the genuine two-slot consumer, not a tuned collision cohort or partial old-failure acceptance"
+    ],
+    "accepted_runs": [
+      {
+        "profile": "Debug",
+        "consumer": "full-C-selectors",
+        "target": "actor-interaction-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-complete-Debug-xkgvfixm",
+        "binary_sha256": "a16438a6bd7642ef46aa593e0dae9d92a25f7b45f526869b58254e2ac0892725",
+        "source_archive_sha256": "5752da989c965d40f13ed6d76dd4250685a8ed4b48db872aeac7f110277b8250",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          274,
+          273,
+          275
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "Magikarp-source",
+        "target": "course-magikarp-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-source-GPU-Debug-mc4yxznb",
+        "binary_sha256": "a8329e56737faf7a27cabb28c19ee912554186ba28be57a6926c9b8d2809386e",
+        "source_archive_sha256": "d2861fb0232de7c1e74efd7d696ffd7a859ade2278d369e8532dc2e0a3bf7f67",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          54,
+          53,
+          55
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "collision-manager",
+        "target": "actor-collision-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-collision-manager-2d45wokg",
+        "binary_sha256": "a5ec1ec0564c77f817cf24c85520e24892fc0fff3594ba4d686e8565bbb0c8d9",
+        "source_archive_sha256": "c8513121497abef123ad71e03e5c3b082cfaa2792cccb20975e2c8a4b2bd1623",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "command26",
+        "target": "actor-command26-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-command26-y1t6lvni",
+        "binary_sha256": "01809da94ebd3eaedfc5c091ae14af81af739db994150da0ab777cf6035bb884",
+        "source_archive_sha256": "fb30a69889886d3dfe22dc64f25d426d5eaa6b72602e5a7fc47f290c9d45e5e0",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          33,
+          32,
+          34
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "Magikarp-owner",
+        "target": "magikarp-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-Magikarp-owner-l759_t6i",
+        "binary_sha256": "1514279fe66ce6a52ed2a932bff35ff05a9995e23ab13ee2acee58bfdcd71605",
+        "source_archive_sha256": "4cc5f292a13fa1a2c20d22dc4189ded7065187a41ebe1b6d5435be88b894e307",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          25,
+          24,
+          26
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "Magikarp-scene",
+        "target": "beach-magikarp-scene-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-Magikarp-scene-zcf3qz4n",
+        "binary_sha256": "d7dcffce95b0fdb41fa3819146ae32836d84cc3faf46a0a5513900681d36658e",
+        "source_archive_sha256": "2c1adb78628b912d2d89594b645578c96ca61ee87d55e0f124a803572570c3a4",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "Item-complete7",
+        "target": "item-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-Item-complete7-ffoizhqf",
+        "binary_sha256": "88ae5bc88970896e2eb81aa389e0a605f6e7333d1bda808e69afdc6b19f322ea",
+        "source_archive_sha256": "7b3cd465546961518cfd1b1c0a20a5955e0451e63ceba2df22d510907493d374",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "Flute-RSP",
+        "target": "item-flute-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-Flute-RSP-q8f00f1n",
+        "binary_sha256": "988115c0fcea751682ca22ede5185e7e0cd36a309ae851a7ba51f45376a1e1f9",
+        "source_archive_sha256": "60490450268848e95eee0eeca3788bbbbe9ceb4c3f1f9f9388dbc980b0360d25",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          1,
+          0,
+          2
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "collision-manager",
+        "target": "actor-collision-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-collision-manager-qd_vkko3",
+        "binary_sha256": "d2ebb46b8f01d3c581f94f7ecfbb8ce081ddd337e7e87ca46a607346a8e60f8c",
+        "source_archive_sha256": "3ca1d686d88d47b0f55d8c5c869d1df1814530abf0909f352c4b9a3cfba64fbf",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "command26",
+        "target": "actor-command26-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-command26-hkmewsps",
+        "binary_sha256": "f64e2394671aa17b085ccc127bd7e3133b09292f22076fb47f00ae3dc5216fcd",
+        "source_archive_sha256": "86ccee78eb2fe854b2a88770a275e2a822bda5b925eef9a8e6e50bf02f20ab97",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          33,
+          32,
+          34
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "Magikarp-owner",
+        "target": "magikarp-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-Magikarp-owner-sjlb4sbc",
+        "binary_sha256": "d4d66961b1109e77c35d826b3b2b21b4a33502f1d946acc6a365f751f5ec4467",
+        "source_archive_sha256": "06dc3b268cd01dfe99c2ed2acbeb5fa6c7c76a939fb64d004446d9cc0f21c85d",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          25,
+          24,
+          26
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "Magikarp-scene",
+        "target": "beach-magikarp-scene-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-Magikarp-scene-7zkk6qcn",
+        "binary_sha256": "97adf3980aee0c706e893e92279e6436a3ef063ebe3a322799537bf9dcee0733",
+        "source_archive_sha256": "52237d81febdd8afda5cf545bccfed4c0f14e335247108c454a0f29e7368d8b1",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "Item-complete7",
+        "target": "item-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-Item-complete7-blw38au6",
+        "binary_sha256": "7c103d68e72b11f23b108372f21a44179a656f33109542e015aa7a707c70afa3",
+        "source_archive_sha256": "f5f01fb0614966545ea31f68facaefa87dd0e85976cbb7a405a5aff6446de03e",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "full-C-selectors",
+        "target": "actor-interaction-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-full-C-selectors-um7xiuh5",
+        "binary_sha256": "63e3265b7f7b692f4a07ae09c1ec441dd1a60c4fb8d26c40a10cf8a2b27a8db0",
+        "source_archive_sha256": "3c1cecefa39db682c00c797db24b0bcfdd832d8cd2368cf2a8dbe4ef8926839c",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          274,
+          273,
+          275
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "Flute-RSP",
+        "target": "item-flute-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-Flute-RSP-z64r8yx2",
+        "binary_sha256": "eb5450b63737217b9c6e7e18cae56bae73f947c087cdb8298c945229de438f0b",
+        "source_archive_sha256": "917ce87e0b9b36efe393296f105eef3f3c7992b97337d9488483e40c16e2a3da",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          1,
+          0,
+          2
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "collision-manager",
+        "target": "actor-collision-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-collision-manager-2hn3ey8m",
+        "binary_sha256": "053a614cce8ca86eac79ecf8c743382fc04d4294b5dd2602882178903600f778",
+        "source_archive_sha256": "01914154bf3da0bdcbb906173b2e53ead1008ebc215cd331e29e5341dfedd23f",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "command26",
+        "target": "actor-command26-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-command26-vp_pozer",
+        "binary_sha256": "5d173928e0d2c3bf215e1276b1cbe6858527ca3c47675086bda9ed637a2ca91d",
+        "source_archive_sha256": "764679e26a8a31534563df984dcfccdd3e1dd7f990a61375a52141310c91b87b",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          33,
+          32,
+          34
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "Magikarp-owner",
+        "target": "magikarp-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-Magikarp-owner-b1krlss9",
+        "binary_sha256": "bf92271aae1f20c880c1e2f5f6b77e0ac2e3427878cf2780c407f12009c23670",
+        "source_archive_sha256": "2c4492adaf3c449ca3544b456274822d045c23487ed812e01ca18670abcaa0bd",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          25,
+          24,
+          26
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "Magikarp-scene",
+        "target": "beach-magikarp-scene-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-Magikarp-scene-kq23fnzh",
+        "binary_sha256": "cd20111efc22f9a3d51c2f5e9b69f4b72420ab7491fa0e400e0dc38d93023be9",
+        "source_archive_sha256": "545ec4df3f5fc7a7035b6545e67243105d47ad9af6709597f71eddfffe8ef7f2",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          8,
+          7,
+          9
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "Item-complete7",
+        "target": "item-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-Item-complete7-5zgmm1tm",
+        "binary_sha256": "457ce1fba4020f15d6069106567229568fa1cb0cc370a31f792ddea5083d4ce5",
+        "source_archive_sha256": "7dbb790d51ca752d7f8561296336213ffe9be5c33613af687e6590c4bd405e88",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "full-C-selectors",
+        "target": "actor-interaction-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-full-C-selectors-_92m479q",
+        "binary_sha256": "193d4c23ab5fbe4f554d82b2ae3932559b4d8e5113b1f68f20250bf8d5f5712a",
+        "source_archive_sha256": "d2e62f9200d0dd55d97b8ec86d229c62ec2c7ec7241f73310c5187f457310d22",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          274,
+          273,
+          275
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "Flute-RSP",
+        "target": "item-flute-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-Flute-RSP-5dhkfwiy",
+        "binary_sha256": "8d76546772184c9bccc9bbbf2f33090f712ad29eaea49f13fede4901e8d3e9c1",
+        "source_archive_sha256": "663460d325edb5118be02d28d75b849be0eab9470ac6e53559fb8607e97b0eee",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          1,
+          0,
+          2
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "actor-owner",
+        "target": "actor-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-actor-owner-pbsz7f_5",
+        "binary_sha256": "cca5133675ecb409f9fa8a064c17e5051d526b316b987a92854cb12cb7f6bb95",
+        "source_archive_sha256": "291f0963df065dc4c3f6352996d597e558462dda18d7af7fa7e9da2a2b7e82e2",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          28,
+          27,
+          29
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "actor-owner",
+        "target": "actor-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-actor-owner-dq7t9d17",
+        "binary_sha256": "6f80c2009c3e9d0d7d7770b7d9b2cad2a7c8a4ea59387e3a90afcf5b00c1e630",
+        "source_archive_sha256": "39bf774507739339b7bc5a058849367ff5e61725c4a399916600cd20dec21ca1",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          28,
+          27,
+          29
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "actor-owner",
+        "target": "actor-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-actor-owner-tldtruxa",
+        "binary_sha256": "1be45ae27298aea5949129b551c1b66fb91a7db2a4082e50d78399db5dad591d",
+        "source_archive_sha256": "767cb355945836fce567bc0a265b6b987376f05cec98041986c7da5d2a7b6425",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          28,
+          27,
+          29
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "Actor-producer",
+        "target": "actor-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-Actor-producer-7filiwdc",
+        "binary_sha256": "06c451e2c9f582c93b45df5cec79c8eb804b3734d7926c81d13a22b67a8eb93d",
+        "source_archive_sha256": "851db7c6b50d0f7ce8a26dbc3deb60f164d3e57ac60ab695149b413a9d23b802",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          77,
+          76,
+          78
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "World-common-source",
+        "target": "course-scene-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-World-common-source-6jjkko08",
+        "binary_sha256": "ffb7616d0b9a05c9ac42f11d9d0cb11037cae0a3023a2ee42bdac526e6f153ee",
+        "source_archive_sha256": "d3c8916d3cce6ea68dea683dbd8a88eece45c40c1dbca5e1115550fcdc8f64b1",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          44,
+          43,
+          45
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "pair-collision-source",
+        "target": "course-collision-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-pair-collision-source-lx_1sp81",
+        "binary_sha256": "202c57d586d2b53b165eb1006e787743b417df33068794308db57f9f772e2975",
+        "source_archive_sha256": "8161e710630f050009abcdcff18c31d19a85638396649c424af6e02aa6f7e78a",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          45,
+          44,
+          46
+        ]
+      },
+      {
+        "profile": "Debug",
+        "consumer": "Item-actual-Owner",
+        "target": "item-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Debug-Item-actual-Owner-xxx10390",
+        "binary_sha256": "b38c165307c7e9c0a02e40dbde7ec102edf3d7692196b27ceffe2735c138ff92",
+        "source_archive_sha256": "0643eebd3dd7ccd56efe0416868fd5c297bbae2d7a212fe4a5513de3ee9b82df",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          127,
+          126,
+          128
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "Actor-producer",
+        "target": "actor-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-Actor-producer-t1uobe36",
+        "binary_sha256": "5b071ca691400862068f52017d68e66fe26d33d12d467738b8f2dd77e49e7d6f",
+        "source_archive_sha256": "04ed9ecfc0f93107a513c3c942ab608c2585ccdd5c44a71d3d36d6abccf0a81c",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          77,
+          76,
+          78
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "World-common-source",
+        "target": "course-scene-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-World-common-source-80mamcbn",
+        "binary_sha256": "3491383ce27fced1faaa1b3a47463af1f3f11bca5854f02415ef1a8f5e721118",
+        "source_archive_sha256": "68edacb683d19cb24dcef1293c05fc320782d0eb1bad4e0b52d5f00fabaf0528",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          44,
+          43,
+          45
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "Magikarp-source",
+        "target": "course-magikarp-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-Magikarp-source-6j8gat3p",
+        "binary_sha256": "c4ccb9dc030a4aca945043b19aaf338508354c64a8a51442bf745f01da74c181",
+        "source_archive_sha256": "b1a55fe9e86363dc1df1f04ede5d38c0781ea7f94feedf81d5b2de7433ff64b7",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          54,
+          53,
+          55
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "pair-collision-source",
+        "target": "course-collision-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-pair-collision-source-dalmxmxz",
+        "binary_sha256": "08eb9768e1608dee5aeb426c95602036653ff71dd9aaa8a7f50370020955c1e7",
+        "source_archive_sha256": "d25b2e5da050bc2dfbae4f54c060035767afeb9273d56227e499fbcea310d345",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          45,
+          44,
+          46
+        ]
+      },
+      {
+        "profile": "Release",
+        "consumer": "Item-actual-Owner",
+        "target": "item-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-Release-Item-actual-Owner-ooy6gx4l",
+        "binary_sha256": "906f6504b07613eba39d34903d207e397fab61c501098c7a0532b8f1af8687d2",
+        "source_archive_sha256": "b3885ca9846751349126218973dc99628c2ec836a52627519e7550ef6a4a5d53",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          127,
+          126,
+          128
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "Actor-producer",
+        "target": "actor-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-Actor-producer-4gh5nbrj",
+        "binary_sha256": "43b0f601ade496fa2d385026ba91bd4afc1812ed22da569d78c122d1d4b371a9",
+        "source_archive_sha256": "f88af063b8f443b07f3f615ab642abd67f0228911cab5f126fde7a049d18d639",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          77,
+          76,
+          78
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "World-common-source",
+        "target": "course-scene-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-World-common-source-mzxojubj",
+        "binary_sha256": "b188876c4282d3771d7cdb5c6ef22a2c400c86f479a632d294f1c6ccb0b8e73b",
+        "source_archive_sha256": "92a3d45018cd227d07ea30005fb759cd8c6906d4fd456ce5813473b38cbddeaa",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          44,
+          43,
+          45
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "Magikarp-source",
+        "target": "course-magikarp-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-Magikarp-source-gq2pu94o",
+        "binary_sha256": "359ae36a1bbe3ad71cfb5c126ef108985ce37e4fd055b3071579e7c91b6afd15",
+        "source_archive_sha256": "afcfc3701dd9a09eed6fef02edd4b1f81f4428aa46ee4d23a70f8bb3e4fe4743",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          54,
+          53,
+          55
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "pair-collision-source",
+        "target": "course-collision-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-pair-collision-source-8oxa5mgd",
+        "binary_sha256": "307b7bfc3dcf0a83daa0ad4faf6632fea74dfebd8a0bd0325401418dae1ce24d",
+        "source_archive_sha256": "f4250675b94e6409cb8f2a6d2bd6df4275ef24afa22b806616da00184e417978",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          45,
+          44,
+          46
+        ]
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "Item-actual-Owner",
+        "target": "item-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-original-C-movement-current-ClangASanUBSan-Item-actual-Owner-4a86jblo",
+        "binary_sha256": "91f0a124b8b6fee56ffc68abc93222a93928ad3f408c5b41b8589c549822d0de",
+        "source_archive_sha256": "3a54c1b08bfdc31f953679988616fa71a909d52a3050c881678928036931e94b",
+        "returncode": 0,
+        "closed_terminals_created_absent": [
+          127,
+          126,
+          128
+        ]
+      }
+    ],
+    "hosted_evidence_boundary": "Published cdda34c all-ten-job run38995015395 qualifies only that earlier immutable head; this new movement revision still requires its own hosted CI receipt",
+    "not_qualified": [
+      "All remaining species callback/weighted/initial/transitive closure",
+      "Production Player FSM/input/camera/full photo context queue/snapshots/film/UI/save/course/product entrypoint",
+      "Original numeric macro/type/SDK or hardware bit equivalence",
+      "Actual SDL3 audio device/stream or physical GPU/input/audio/hearing",
+      "Private Windows11 ROM runtime",
+      "Fullgame completion or release"
+    ]
+  },
   "qualification": {
-    "status": "qualified-local-complete-Item-full-C-interpreters-services-and-preserved-GPU-not-fullgame",
+    "status": "qualified-local-common-C-movement-native-model-lifetime-and-complete-preserved-consumers-not-fullgame",
     "accepted_complete_runs": 39,
     "all_sole_initial_whole_tree_closures_stable_tasks_absent_ROMunchanged_zero_known_physical_permission_attempts": true,
-    "pair4_and_genuine5_saved_surfaces_byte_identical_all3profiles_prior_inspected_proof": true,
-    "original3GPUconsumer_source_bytes_unchanged": true,
+    "all21_saved_surfaces_byte_identical_three_profiles": true,
+    "all14_prior_World_FX_genuine_collision_surfaces_unchanged": true,
+    "all4_C_movement_components_independently_affect_premarker_color_and_depth_then_restore": true,
+    "full_genuine_source_lifecycle_and_other_consumers_preserved": true,
     "fatal_ASan_UBSan": true,
     "ptrace_only_LSan_disabled_not_leak_qualification": true,
     "failed_roots_immutable_after_final_rejection_no_subsequent_access_or_partial_results_used": true,

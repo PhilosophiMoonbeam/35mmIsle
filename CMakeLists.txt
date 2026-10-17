@@ -700,7 +700,8 @@ if(BUILD_TESTING)
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
         add_executable(actor-interaction-rom-smoke EXCLUDE_FROM_ALL
-            tests/actor_interaction_rom_smoke.cpp tests/actor_interaction_probe.c)
+            tests/actor_interaction_rom_smoke.cpp tests/actor_interaction_probe.c
+            tests/actor_movement_probe.c)
         target_link_libraries(actor-interaction-rom-smoke PRIVATE
             isle-actor-owner isle-effect-bank-resources isle-graphics-task isle-rsp)
         isle_target_options(actor-interaction-rom-smoke)
@@ -1001,14 +1002,17 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
     if(TARGET isle-actor-photo-scene AND TARGET isle-actor-owner AND TARGET isle-course-model-producer)
-        add_executable(course-magikarp-rsp-smoke EXCLUDE_FROM_ALL tests/course_magikarp_rsp_smoke.cpp)
+        add_executable(course-magikarp-rsp-smoke EXCLUDE_FROM_ALL
+            tests/course_magikarp_rsp_smoke.cpp tests/actor_movement_probe.c)
         target_link_libraries(course-magikarp-rsp-smoke PRIVATE isle-scene-graphics
             isle-course-model-producer isle-actor-photo-scene isle-actor-owner
             isle-photo-lighting isle-effect-graphics-resources isle-effect-bank-resources isle-rsp)
         isle_target_options(course-magikarp-rsp-smoke)
         target_compile_options(course-magikarp-rsp-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
-            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
         add_executable(course-collision-rsp-smoke EXCLUDE_FROM_ALL tests/course_collision_rsp_smoke.cpp)
         target_link_libraries(course-collision-rsp-smoke PRIVATE isle-scene-graphics
             isle-course-model-producer isle-actor-photo-scene isle-photo-lighting

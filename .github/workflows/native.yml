@@ -226,7 +226,7 @@ jobs:
       - name: Configure exact renderer and shader compiler closure
         run: |
           cmake -S . -B build/linux-rdp -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_GAME_ENGINE=ON
+            -DBUILD_TESTING=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_GAME_ENGINE=ON
       - name: Build real renderer and opt-in native actor, Item and full C consumers
         run: cmake --build build/linux-rdp --target 35mmisle-rdp-probe 35mmisle-rsp-probe course-magikarp-rsp-smoke actor-command26-rom-smoke actor-collision-rom-smoke course-collision-rsp-smoke item-owner-rom-smoke item-flute-rom-smoke item-producer-rsp-smoke actor-interaction-rom-smoke --parallel 2
       - name: Execute exact packed-depth, coverage and GPU-copy checks

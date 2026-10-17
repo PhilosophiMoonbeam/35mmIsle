@@ -4,7 +4,7 @@ namespace isle::player {
 IsleGameResult Photo::enqueue(IslePlayerPhotoTicket ticket,const scene::graphics::Frame& frame) noexcept {
     if(count_==2) return ISLE_GAME_EXHAUSTED;
     if(ticket.context>=2 || !ticket.submission) return ISLE_GAME_INVALID_STATE;
-    if(frame.submission()!=ticket.submission || frame.submission_context()!=ticket.context ||
+    if(frame.submission()!=ticket.submission ||
        frame.error()!=scene::graphics::Error::none || !frame.busy())
         return ISLE_GAME_INVALID_STATE;
     auto& pending=pending_[ticket.context];

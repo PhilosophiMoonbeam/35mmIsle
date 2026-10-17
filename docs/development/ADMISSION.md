@@ -884,6 +884,45 @@ Private evidence manifest SHA-256 is `029b5bac02f6e3b8367be4d537e2341d6eab394598
 
 GCC Release, full-LUS GCC Debug and Clang ASan+UBSan each passed all twenty-two CPU tests; five actual Linux CLI helps also passed. [Commit `1618ed7`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/1618ed71dee53815edcdffbf0fa0c39af6043bb1) passed all ten hosted jobs in [run 38796577921](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38796577921). Its Windows Server 2022/MSVC 19.44.35229.0 x64 static-runtime build includes LUS, audio, RSP, canonical RDP and the native engine; all twenty-two CPU tests and five CLI helps passed with SDK 10.0.26100.0. This compiles/links the integrated feedback path but does not execute its ROM/graphics/audio path on Windows. The diagnostic is not a C GAME photo consumer or continuation wait, native scene boot, photo fidelity, physical timing/device/hearing proof, Windows 11 runtime or release admission. Genuine scoring still needs writable persistent canonical memory, real photo/world/model reconstruction, pointer/resource relocation, admitted depth/texture-copy commands and original wide/narrow continuation semantics.
 
+## Independent Detector and framebuffer contexts
+
+Original Detector context flips at its DL5 prefix; graphics context selection
+is independent. A blink skips the prefix, so the two IDs cannot be coupled.
+`Photo::enqueue` now binds Detector history/generation to the actual executing
+Frame and submission without requiring its framebuffer index to equal the
+Detector context. Concrete Frame identity, token, error/busy state, prepared
+phase, generation, queue and failed-submission retirement checks remain.
+
+The actual Photo consumer selects framebuffer context from each concrete
+Frame's completed ordinal, not from the predicted Detector flip. Its former
+incidental equality assertion is deleted. Before the production fix, this
+complete real-GPU case returned failure after actual teardown; its sole
+closure has 81 terminal tasks, 80 created tasks and 82 absent tracer/task
+identities. That rejected scope is not partially admitted or replayed.
+
+After the narrow guard correction:
+
+| Local profile | All 57 CPU tests, seconds | Complete Photo consumer, seconds |
+|---|---:|---:|
+| GCC Debug | 3.50 | 10.996 |
+| GCC Release | 0.81 | 9.079 |
+| Clang ASan/UBSan | 11.91 | 20.269 |
+
+Each complete execution includes 64 actual GPU Frames, two completed-callback
+failures and 73 original-C OM CopyInfo updates. All 21 opt-in targets compile
+in each profile. The three Photo cases share the 487-file source set
+`03ceb188106dc20966ee8f8ab0ac6633e03866c395e2a966dae63fdb258811ae`.
+Their sole initial closures establish 486 terminal tasks, 483 created tasks
+and 489 absent tracer/task identities, stable traces, unchanged ROM, zero
+known physical attempts and zero permission errors. All 71 known positive
+Photo files per profile/213 files remain byte-identical to the preceding
+qualified snapshots.
+
+This fixes context ownership in the existing Photo component. It does not
+establish original prefix-time full snapshots, source-controlled camera/FX/UI
+dispatch, whole Root106, complete gameplay or Windows/device/original parity.
+The following 63-case component cohort retains its separate immutable source set.
+
 ## Original Cart control and native rendering
 
 `isle-player-cart` compiles all four complete original `render_player.c`

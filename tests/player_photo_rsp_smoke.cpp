@@ -528,13 +528,12 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                     readback.photo=photo.get();readback.detection=&detection;readback.frame=&frame;
                     readback.source=&application;
                     actors.render_bindings();items.render_bindings();scene_input.passes=std::span(passes).first(with_fx?2:1);
-                    const auto expected_context=static_cast<unsigned>(1-detection.context);
-                    require(frame.begin(scene_input,{expected_context},{&readback,Readback::finish}),frame.message());
+                    const auto framebuffer_context=static_cast<unsigned>(frame.completed().ordinal&1u);
+                    require(frame.begin(scene_input,{framebuffer_context},{&readback,Readback::finish}),frame.message());
                     // No tick, animation, input publication or source mutation may
                     // intervene between successful begin, snapshot and enqueue.
                     const IslePlayerPhotoTicket ticket{detection.context,++generation,frame.submission()};
                     readback.ticket=ticket;
-                    require(ticket.context==frame.submission_context()&&ticket.submission,"actual staged Detector/Frame context or token mismatch");
                     const IslePlayerPhotoTicket prepared{ticket.context,ticket.generation,0};
                     const auto snapshotted=photo->snapshot(ticket.context,ticket.generation);
                     if(snapshotted!=ISLE_GAME_OK) { static_cast<void>(photo->retire(prepared));native(snapshotted); }

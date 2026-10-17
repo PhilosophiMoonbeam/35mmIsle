@@ -44,7 +44,8 @@ public:
     Photo& operator=(const Photo&)=delete;
     IsleGameResult snapshot(std::uint16_t context,std::uint64_t generation) noexcept;
     // Bind to the concrete executing Frame, which must outlive the ticket.
-    // ticket.submission must be Frame::submission().
+    // ticket.submission must be Frame::submission(). ticket.context identifies
+    // Detector history, independently of Frame::submission_context().
     IsleGameResult enqueue(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
     IsleGameResult bind_snapshot_owner(scene::Services&,IsleGameObject*) noexcept;
     IsleGameResult require_taken_context() noexcept;

@@ -37,6 +37,9 @@ public:
     ~Environment(); // Outside OM traversal; joins its update before storage ends.
     Environment(const Environment&) = delete;
     Environment& operator=(const Environment&) = delete;
+    // Source descriptor policy plus actual catalog presence, without staging,
+    // record allocation, listener/range tests or transient voice admission.
+    bool admits_sound(std::int32_t sound) const noexcept;
     bool play(Source, std::uint8_t category, std::int32_t sound) noexcept;
     bool play(Source, std::uint8_t category, std::int32_t sound,
               std::uint8_t pitch_modifier, std::uint8_t hearing_range) noexcept;

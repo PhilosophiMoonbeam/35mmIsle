@@ -1,5 +1,6 @@
 #include "actor_owner_source.h"
 #include "actor_spatial.h"
+#include "actor_interaction_services.h"
 #include "engine_internal.h"
 
 static void checked(IsleActorSource* actor, IsleGameResult result) {
@@ -21,19 +22,39 @@ void isle_actor_source_visibility(IsleGameObject* object, int hidden) {
     IsleGameResult result = isle_actor_owner_visibility(actor, hidden);
     checked(actor, result);
 }
+static IsleGameResult command_admission(IsleGameObject* object, int32_t command,
+    IsleGameObject* sender, void* user) {
+    const IsleActorInteraction* rows = NULL;
+    (void)object; (void)command; (void)sender;
+    return isle_actor_interaction_rows((IsleActorSource*)user,&rows);
+}
+static IsleGameResult command_status(IsleGameObject* object, int32_t command,
+    IsleGameObject* sender, void* user) {
+    (void)object; (void)command; (void)sender;
+    return isle_actor_owner_command_status((IsleActorSource*)user);
+}
+static void command_body(IsleGameObject* object, int32_t command,
+    IsleGameObject* sender, void* user) {
+    IsleActorCommandData value = {command,sender};
+    (void)object; (void)user;
+    Pokemon_HandleCommand(value);
+}
 void isle_actor_source_commands(IsleGameObject* object) {
     IsleActorSource* actor = isle_actor_source_require(object);
-    IsleGameResult result = isle_actor_owner_commands(actor);
-    checked(actor, result);
+    IsleSourceCommandScope scope = {0};
+    int erase = 0;
+    IsleGameResult result = isle_actor_owner_commands_begin(actor,&scope);
+    IsleGameResult ended;
+    checked(actor,result);
+    result = isle_game_commands_checked(actor->game,object,scope.pool,scope.queue,
+        command_body,NULL,command_admission,command_status,actor,&erase);
+    ended = isle_actor_owner_commands_end(actor,&scope,result,erase);
+    checked(actor,result);
+    checked(actor,ended);
 }
 void Pokemon_Cleanup(IsleGameObject* object) {
     IsleActorSource* actor = isle_actor_source_require(object);
     IsleGameResult result = isle_actor_owner_cleanup(actor);
-    checked(actor, result);
-}
-void isle_actor_source_interactions(IsleGameObject* object) {
-    IsleActorSource* actor = isle_actor_source_require(object);
-    IsleGameResult result = isle_actor_owner_interactions(actor);
     checked(actor, result);
 }
 void isle_actor_source_animation_process(IsleGameObject* object) {
@@ -66,16 +87,6 @@ IsleGameResult isle_actor_source_pause_object(IsleActorSource* actor, int paused
     return ISLE_GAME_OK;
 }
 
-IsleGameResult isle_actor_source_validate_model(IsleGame* game, IsleGameObject* object, IsleGameModel* model) {
-    IsleGameObjectMetadata metadata;
-    const IsleGameModelNode* nodes = NULL;
-    size_t count = 0;
-    IsleGameResult result = isle_game_object_metadata(game, object, &metadata);
-    if (result != ISLE_GAME_OK) return result;
-    if (object == NULL || model == NULL || object->retirementStarted ||
-        object->type != 1 || object->data.model != model) return ISLE_GAME_INVALID_ARGUMENT;
-    return isle_game_model_peek_nodes(game, model, &nodes, &count);
-}
 
 void isle_actor_source_yaw(IsleGameObject* object, float yaw) {
     IsleActorSource* actor = isle_actor_source_require(object);
@@ -101,8 +112,8 @@ void isle_actor_source_ground(IsleGameObject* object, float x, float z, IsleActo
 }
 void* isle_actor_source_current_block(IsleGameObject* object) {
     IsleActorSource* actor = isle_actor_source_require(object);
-    void* block = isle_actor_owner_current_block(actor);
-    if (block == NULL) checked(actor, ISLE_GAME_INVALID_STATE);
+    void* block = NULL;
+    checked(actor, isle_actor_owner_current_block(actor, &block));
     return block;
 }
 IsleGameObject* isle_actor_source_add_one(IsleGameObject* object, void* block, void* reference,
@@ -165,7 +176,7 @@ IsleGameResult isle_actor_source_link3_next(IsleGame* game, IsleGameObject* prev
     if (result != ISLE_GAME_OK) return result;
     if (object->link != 3 || object->type != 1 || object->data.model == NULL)
         return ISLE_GAME_INVALID_STATE;
-    result = isle_actor_source_validate_model(game, object, object->data.model);
+    result = isle_game_model_validate_binding(game, object, object->data.model);
     if (result != ISLE_GAME_OK) return result;
     *out_object = object;
     *out_source = source;
@@ -195,8 +206,97 @@ IsleGameResult isle_actor_spatial_object_model(IsleGame* game, IsleGameObject* o
     if (object->type == 0 && object->data.any == NULL) return ISLE_GAME_OK;
     if (object->type != 1) return ISLE_GAME_INVALID_STATE;
     if (object->data.model == NULL) return ISLE_GAME_OK;
-    result = isle_actor_source_validate_model(game, object, object->data.model);
+    result = isle_game_model_validate_binding(game, object, object->data.model);
     if (result != ISLE_GAME_OK) return result;
     *out_model = object->data.model;
     return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_actor_source_install_update(IsleGame* game, IsleGameObject* object) {
+    IsleActorSource* actor = NULL;
+    IsleGameResult result = isle_actor_source_get(game,object,&actor);
+    if (result != ISLE_GAME_OK) return result;
+    object->update = NULL;
+    object->updateUser = NULL;
+    object->fnUpdate = Pokemon_Update;
+    return ISLE_GAME_OK;
+}
+const IsleActorInteraction* isle_actor_source_interaction_rows(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    const IsleActorInteraction* rows = NULL;
+    checked(actor,isle_actor_interaction_rows(actor,&rows));
+    return rows;
+}
+IsleGameVec3 isle_actor_source_position(IsleGameObject* requester, IsleGameObject* target, int auxiliary) {
+    IsleActorSource* actor = isle_actor_source_require(requester);
+    IsleGameVec3 position;
+    checked(actor,isle_actor_interaction_position(actor,target,auxiliary,&position));
+    return position;
+}
+void isle_actor_source_item_iterator(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor,isle_actor_interaction_item_iterator(actor));
+}
+IsleGameObject* isle_actor_source_item_next(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleGameObject* item = NULL;
+    checked(actor,isle_actor_interaction_item_next(actor,&item));
+    return item;
+}
+IsleItemSource* isle_actor_source_item(IsleGameObject* object, IsleGameObject* target) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleItemSource* item = NULL;
+    checked(actor,isle_actor_interaction_item_source(actor,target,&item));
+    return item;
+}
+int32_t isle_actor_source_flute(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    int32_t command;
+    checked(actor,isle_actor_interaction_flute(actor,&command));
+    return command;
+}
+float isle_actor_source_distance(IsleGameObject* object, IsleGameObject* second) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    float distance;
+    checked(actor,isle_actor_interaction_distance(actor,second,&distance));
+    return distance;
+}
+float isle_actor_source_neighbors(IsleGameObject* object, IsleGameVec3* direction) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    float magnitude;
+    checked(actor,isle_actor_interaction_neighbors(actor,direction,&magnitude));
+    return magnitude;
+}
+IsleGameObject* isle_actor_source_player(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleGameObject* player = NULL;
+    checked(actor,isle_actor_interaction_player(actor,&player));
+    return player;
+}
+IsleActorFocusState isle_actor_source_focus(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleActorFocusState focus;
+    checked(actor,isle_actor_interaction_focus(actor,&focus.timer,&focus.current));
+    return focus;
+}
+int32_t isle_actor_source_direction(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    int32_t direction;
+    checked(actor,isle_actor_interaction_direction(actor,&direction));
+    return direction;
+}
+int32_t isle_actor_source_execution_enabled(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    int32_t enabled;
+    checked(actor,isle_actor_owner_execution_enabled(actor,&enabled));
+    return enabled;
+}
+void isle_actor_source_pause_all(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor,isle_actor_source_pause_object(actor,1));
+}
+void isle_actor_source_reference_assign(IsleGameObject* object, IsleGameObject** field,
+    IsleGameObject* sender) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor,isle_actor_owner_reference_assign(actor,field,sender));
 }

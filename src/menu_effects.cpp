@@ -289,6 +289,11 @@ int EffectRuntime::spawn_effect(std::uint16_t encoded, std::size_t script,
     e.velocity = {s.parameters[2], s.parameters[3], s.parameters[4]};
     return index;
 }
+bool EffectRuntime::has_effect(std::uint16_t encoded, std::size_t script) const noexcept {
+    if (!status_ || encoded >= 128) return false;
+    const auto* selected = bank(encoded);
+    return selected && script < selected->scripts.size();
+}
 EffectSpawnResult EffectRuntime::create_effect(std::uint16_t encoded, std::size_t script,
                                                EffectAttachment attachment) noexcept {
     if (!status_) return {status_};
@@ -307,6 +312,14 @@ EffectsStatus EffectRuntime::configure_effect(EffectHandle handle, Vec3 position
     if (!finite(position) || !finite(velocity)) return {EffectsError::arithmetic};
     effects_[handle.slot].position = position;
     effects_[handle.slot].velocity = velocity;
+    return {};
+}
+EffectsStatus EffectRuntime::set_effect_position(EffectHandle handle, Vec3 position) noexcept {
+    if (!status_) return status_;
+    if (!handle || handle.slot >= effects_.size() || !effects_[handle.slot].live ||
+        effects_[handle.slot].generation != handle.generation) return {EffectsError::attachment};
+    if (!finite(position)) return {EffectsError::arithmetic};
+    effects_[handle.slot].position = position;
     return {};
 }
 int EffectRuntime::spawn_particle(std::uint16_t encoded, std::size_t script, Vec3 position,

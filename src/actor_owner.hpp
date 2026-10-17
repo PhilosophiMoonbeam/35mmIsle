@@ -7,6 +7,7 @@
 #include "world_runtime.hpp"
 
 namespace isle::actor {
+class InteractionServices;
 enum class OwnerError { none, admission, capacity, native, animation, services, lifetime };
 struct OwnerStatus {
     OwnerError error = OwnerError::none;
@@ -34,7 +35,7 @@ struct PlayerState {
     IsleGameObject* previous_focus_identity = nullptr;
     bool focus_latch = false;
     std::int32_t direction_index = 0;
-    float focus_timer = 0;
+    std::uint32_t focus_timer = 0;
 };
 // Source pause gates Update's counter only. Execution is checked at the ordinary
 // command-handler tail; neither predicate transition resumes native processes.
@@ -108,6 +109,9 @@ public:
     OwnerStatus set_placement(menu::animation::InstanceHandle, const IsleGameModelTransform&) noexcept;
     OwnerStatus trigger_common1003(menu::animation::InstanceHandle, menu::Vec3 position) noexcept;
     OwnerStatus cleanup(menu::animation::InstanceHandle) noexcept;
+    // Source Pokemon_SendDieCommand: actual logical list only, matching target
+    // identity. A registered Item sender needs no Actor payload/model.
+    OwnerStatus notify_target_death(IsleGameObject* sender) noexcept;
     OwnerStatus request_cleanup(menu::animation::InstanceHandle) noexcept;
     OwnerStatus change_block(menu::animation::InstanceHandle, menu::Vec3 previous, menu::Vec3 current) noexcept;
     OwnerStatus remove_block(world::Block&) noexcept;
@@ -130,12 +134,16 @@ public:
     menu::animation::Runtime& animation() noexcept;
     const menu::animation::Runtime& animation() const noexcept;
     menu::EffectRuntime& effects() noexcept;
+    const environment_sound::Environment& environment() const noexcept;
     IsleGameObject* particle_object() const noexcept;
     IsleGameObject* effect_object() const noexcept;
     OwnerStatus update_particles() noexcept;
     OwnerStatus update_effects() noexcept;
+    // Bind before spawning. The context stays alive through all source work,
+    // actual joins and graphics release; successful reset ends this borrow.
+    OwnerStatus bind_interactions(InteractionServices&) noexcept;
     OwnerStatus set_player(IsleGameObject*, IsleGameModel*, IsleGameCamera*) noexcept;
-    OwnerStatus set_focus(menu::animation::InstanceHandle, bool latch, float timer) noexcept;
+    OwnerStatus set_focus(menu::animation::InstanceHandle, bool latch, std::uint32_t timer) noexcept;
     void set_direction(std::int32_t) noexcept;
     const PlayerState& player() const noexcept;
     CourseState& course() noexcept;

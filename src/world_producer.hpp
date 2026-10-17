@@ -3,6 +3,7 @@
 #include "world_runtime.hpp"
 #include "borrowed_model_kernel.hpp"
 #include "scene_render.hpp"
+#include "scene_services.hpp"
 
 namespace isle::world {
 struct ProducerLayout {
@@ -10,11 +11,20 @@ struct ProducerLayout {
     menu::RamRange lists{0x180000,0x10000};
     menu::RamRange materials{0x190000,0x10000};
 };
+struct ProducerObject {
+    IsleGameObject* object = nullptr;
+    scene::RenderMetadata render;
+    // Complete callback ranges, including fog setup/restore; no lane EndDL.
+    std::array<menu::model::ListRange,4> lanes{};
+};
 struct ProducerFrame {
     menu::model::ListRange camera;
     std::array<menu::model::ListRange,4> lanes;
     std::span<const menu::RamRange> reservations;
     std::uint64_t revision = 0;
+    // Borrowed until the next successful preparation or producer destruction.
+    // Rejected preparation does not modify the last published object records.
+    std::span<const ProducerObject> objects;
 };
 // Reusable synchronous scene pass, NOT a Beach handler. Borrows actual World
 // models/process state and the admitted full Resources. No duplicate objects,

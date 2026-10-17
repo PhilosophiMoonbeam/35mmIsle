@@ -2,38 +2,38 @@
   "schema_version": 1,
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6",
-  "scope": "Implemented real shared source lifetime, source spatial leaves, optional ceiling semantics and typed callable-data binding; complete C interpreters/native Item/Player/species services are still separately tracked, not claimed by these component proofs",
+  "scope": "Implemented real shared source lifetime/spatial/optionalceilings/typedbinding plus complete original-C automatic/FIFO interpreters, real11InteractionServices and nativeItemOwner/Flute/graphics; all71speciescallback closure and productionPlayer/productgameplay remainseparatelyopen",
   "authority": "Exact own-GAME immutable stage/blobs and authorized initialized data; no SDK producer/header/layout/disassembly or guest-function casts",
   "native_support": {
     "src/actor_source.h": {
       "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
     },
     "src/actor_owner_source.h": {
-      "sha256": "c2a00167ccd34a20c997b2b2233855f4574cc2af32a549ca0812255e8e053908"
+      "sha256": "38df0a3f1e5e384018343d451cab0e999e2cc2433d1678f412d192edf40e85d1"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "7a15395f96420e26a1f474dd7d5033f830bbaad78ce8ef7abe539643c18256ae"
+      "sha256": "c9c39276ba75df7c1c4752480a9b9adc7e3f5dc2cb0d13368a2e11ca23dac9cd"
     },
     "src/actor_source_bridge.c": {
-      "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
+      "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/actor_owner.cpp": {
-      "sha256": "d93b080426ece5dee17220bdc132463e8320b217198b25f798d639239587a5c4"
+      "sha256": "ef777302dc2bcc1d27df18d63ec15ca28a33eda90e68c82d0e387f89111d5e1b"
     },
     "src/actor_owner.hpp": {
-      "sha256": "4558fb6974cc26c7554ab3fdf65dca22bcefca0dbee2c9a5bfe076c12cd0e373"
+      "sha256": "bf772ffe65ba441fb9af069bff96b37db09734ef04343e43b7c0f7ad6644afa0"
     },
     "src/scene_services.cpp": {
-      "sha256": "a264723c2dcbc47ed3ae3a3e4115cf9eb37df18029499bc5a2ee040154d2e7db"
+      "sha256": "3eb7d896d3051f6f868ecd25a2aaacd4e414f17b01eee29ff85b7e7b151020d1"
     },
     "src/scene_services.hpp": {
-      "sha256": "71bfa5982bc66764ca89735cd296446bee32985460d6af2feadbf1d31f8a1c89"
+      "sha256": "3b2df6d34289fb1dcabac6ccf62c84b66ae2bc171938b7f6fe234d7ba209a682"
     },
     "src/menu_scene_bridge.c": {
-      "sha256": "56c37eba980ca385be779cce38e5736a62487ecec41fd62e61a173e5a69863fa"
+      "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "1179c511bc7939dbe789da040afac6828e29a44b768c0a3fae47ade8076d2d7b"
+      "sha256": "de45ddcb732fbc2b32c082b3401a9cd627f533cffd36b0c4d590c503aa4bf2da"
     },
     "src/actor_spatial.h": {
       "sha256": "962287772ecea45dbc4431ec014969c15dab2ba66bdd39e04853c6641326aaf9"
@@ -42,10 +42,10 @@
       "sha256": "96ee40fe4ae80aeae7603a16e7768b4f2ba9f785ba815abac40933bb84acac97"
     },
     "src/actor_behavior_bindings.hpp": {
-      "sha256": "ebe6ace16313da2d3433b2a59dcdae72c47f8d77820d2dcaa427a39afd7de8c9"
+      "sha256": "2850216f955dfad5bc4b8f85d5c314c601c7d693b5fd6c5b93de20164e51f36f"
     },
     "src/actor_behavior_bindings.cpp": {
-      "sha256": "6abe9e894b8c46b8a8a31aad315b7beed2696fca2c40109ae8af14c8ad0a71a2"
+      "sha256": "4ce2b0b29f2b32fb2f87e2c40098040ad5d226cdc392c53a93a1612bd3a37c28"
     },
     "src/world_runtime.hpp": {
       "sha256": "ce18f1ec7e3219a7ba4f3677c82dce0af67486d6c8d4c1968abffb1bcf19ddca"
@@ -60,7 +60,7 @@
       "sha256": "bd5afdd961ce6339b5784474b44425407f0f3837022bf66bbff29cec4509440d"
     },
     "tests/scene_services_tests.cpp": {
-      "sha256": "ac56e38fd0236fe28e8f7e84976c3726013544033f58df041e876e06095cb219"
+      "sha256": "c9192a1819795bb6c8581871416a7ae807c8439cb2c5bc0c117c368ebb736981"
     },
     "tests/world_runtime_tests.cpp": {
       "sha256": "6a728390cf234cae6462a4731cad3ee07132bfd79e8ea46d18c2452b03d7e32a"
@@ -72,13 +72,13 @@
       "sha256": "245acee37ce8a1cb80c8d6a3e27e044cffe6a1c5f2ad2cc665c895c56d44941a"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "ec29810a1ef40308e22846bcc9229aed36e61887368cff7c574413c4a135cd69"
+      "sha256": "5e49b79bfa4cb836154eac914fce940d4ec6ee5d9f26424a9156d6dbfde2d1a9"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
       "sha256": "fd30566a0aa7c83abd1d7e7927c8c99f04b99c3b94c2ada1d3d5fc6d816d4bc0"
     },
     "tests/actor_command26_rom_smoke.cpp": {
-      "sha256": "360f206583313c369cda7c7b16106db3f6e40e138fcf7595c7ab6a89055b7f28"
+      "sha256": "9bdbc7af139fa4cc79a95e7752edec816747c1a7c6407e97b3ab0908ae8ed9f3"
     }
   },
   "source_files": {
@@ -178,7 +178,7 @@
     }
   },
   "additional_source_semantics": {
-    "pokemon.c": "444-484 actual AUX/root distance;590-628 native link3 ordered weighted away-vector;630-720/1806-2064 complete interpreter contract researched but not yet executable native admission",
+    "pokemon.c": "444-484 actual AUX/root distance;590-628 native link3 ordered weighted away-vector;630-720/1806-2064 privately compiled complete original-C interpreters with real native service/callback/resource admission and shared FIFO",
     "ground.c": "89-105 GLOBAL absent ceiling writesdefault;108-133 LOCAL absent ceiling preservesoutput, present missingcurrent/descriptor defaults, nativeworldtranslation retained",
     "ground_int.c": "118-129 normalizeoriginalA/B/C then ground.c swap; vector.c5-16 reciprocalmultiply/zero branch",
     "beach/55C110.c": "79-84 sets height only; no initialized ceiling pointer in WorldBlockSetup, real Beach config NULL; nativegeneric positive ceiling remainsimplemented"
@@ -205,7 +205,7 @@
   },
   "ceilings": "AppendResourceView optionalactualmap; World ceiling_at_global/default vsceiling_at/untouched absentmap semantics; sameoneboundedexistingheighttree, no solver/prewalk/newalwaysfalseprovider. Realnativepositive/sloped/translated/maps/normal/unsignedsurface/cycle/unvisitedbranch/retirement/errorcases qualified",
   "callable_binding": {
-    "native_graph": "TypedIsleActorInteractionGraph immutable rows/count including58/sourceidentity replacesvoid. NativeCallback typeexact; no guestwordcasts. C localgraphlifetimes stillneed eventual executableOwner admission",
+    "native_graph": "Typed IsleActorInteractionGraph immutable rows/count including58/sourceidentity; nativecallback typesexact/no guestwordcasts. Caller-retained C local/registered graphs execute through completeCinterpreters whenwhole reachable callback/resource closure isadmitted; rows remainvalid across sourceprocess waits and ordinarypause",
     "closure": "Constructor translatescomplete requestedcallback/graph/weighteddependencies once; cyclesdeduped; unknownlater/ineligible executablecallbacks rejectwholeconstructedowner. Unknownnonexecutablerow/terminalcallbackwords notexecuted; sourceorder/floatbits/NULLNULL retained; weightedNULLterminal",
     "actual_CPU_only_proof": {
       "graphs": 71,
@@ -221,7 +221,7 @@
       "moved_Snapshot_rejected": true,
       "temporary_consumer_removed_after_proof": true
     },
-    "NOT_claimed": "Executable full71graph/8list factory/services/species closure or complete RunInteractions/HandleCommand/Item/Player/gameplay; openissue.4 andparent remainactive"
+    "NOT_claimed": "Executable full71graph/8list/allremaining nativecallback/species closure, productionPlayerFSM/fullphotoqueue/course/productgameplay; complete C interpreters/11services/Item now separately exercised by native_full_C_Item_wave, prior data-only proof above remains historical"
   },
   "integration_bug_proofs": {
     "unregistered_sender": {
@@ -843,9 +843,798 @@
       "rgb_sha256": "3f9640332541430e8c284e4b84109038c713e3361068f946aff7b96b678b6919"
     }
   },
+  "native_full_C_Item_wave": {
+    "status": "qualified-local-complete-Item-C-interpreters-services-and-preserved-GPU-not-fullgame",
+    "issue": "bd_35mmIsle-v4u.10.7.23.3.11.6",
+    "source_authority": "df8815e75f3d79618466e01e0827c6165b93d11c",
+    "ROM_sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+    "source_import": "53Itemdefinitions+helpers; complete originalC RunInteractions/HandleCommand/Update; one sharednativeFIFO;11returningrealServices; sixcompiledcommon/Magikarpcallbacks, notfull71graphs/productionPlayer",
+    "factory": "Realunpublished object/model/parkedcontinuation/native/Services/Runtime resources preparedbeforeOriginalCsideeffects; consumedatOriginalsites; no counter/cache/cursor/oldest/RNGrollback orhiddenearly replacement. Nativegame_status distinguishesstickyfaultfromrecoverablediagnostictext. Failedsource teardownstillrealjoin+retainedidentities.",
+    "corrected_boundaries": [
+      "ActualnativePlayerRT/RTSAUX required; no syntheticItemAUX/rootdistance bypass",
+      "SourceNULLpayload fume never logicalItem; sourceohUpdateDefault retained",
+      "ActualsourceItemeffectpositiononly preservesrealdecodedbank3velocity",
+      "NativeHIDDEN governs nativepose evenpaused; everyactivebinding validatesactualnativeobject/modelbeforehidden/passfilter",
+      "Unique foreign same-topology GPUdonor rejectsforactualnativebinding; replacementbaseline excludesonlycurrentreplacementat samecompletedstate",
+      "Source command19 acceptsvalidNULLcurrentWorld andLASTmatchinclNULLNULL;Cppbackendstatusseparatefromnullableoutput",
+      "MigratedfullActorOwnerfixture defersactualoutsidecollectuntiljoinedsemanticownerre-adoption/final22delivery; noexpiredhandleadmission"
+    ],
+    "accepted_complete_runs": 39,
+    "complete_consumers_per_profile": 13,
+    "CPU_contracts": {
+      "Debug": {
+        "passed": 56,
+        "total": 56
+      },
+      "Release": {
+        "passed": 56,
+        "total": 56
+      },
+      "ClangASanUBSan": {
+        "passed": 56,
+        "total": 56
+      }
+    },
+    "runtime_accepted": [
+      {
+        "profile": "Debug",
+        "consumer": "actor-collision-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-collision-manager-zfbmywz6",
+        "binary_sha256": "f2ce43022a7f6a3fd7c75a35259a53c8dc3790184203980a350c41528578a4b7",
+        "source_archive_sha256": "cdf5187ea99444b8ab1174691fbfe14134cd0039b3c5f54ae7159c90336eecfa",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "actor-command26-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-command26-f6u2a9ur",
+        "binary_sha256": "5f8cadaed8d4420cecfd89c67ba3dcd3c5866b310f9d66aee0223f73f077d0ba",
+        "source_archive_sha256": "d6af38f4d7bcf2b1ced1a4c49a7c3f3cfc4e03a3e53487b3698601434ac86085",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          33,
+          32,
+          34
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "magikarp-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-Magikarp-owner-7yr4gof1",
+        "binary_sha256": "7585a9de4cc3479a9d8de913a09393a404c8c5a4eba1e84d8bc7a7060f2c0505",
+        "source_archive_sha256": "9af7fc87e7e90b40c1ea6541ee8c8ce37fc9312dfd722dd37db54528c63927e6",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          25,
+          24,
+          26
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "beach-magikarp-scene-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-Magikarp-scene-v9s5r6nr",
+        "binary_sha256": "65c6ac4dd037ad2bdc2fa236d6070d0237e93ef9e3ec20d08bced823eb2ddbd8",
+        "source_archive_sha256": "694ae06ad8a9717c472ffa3ae5db8bbb84cb3004a6bbe5cebda5f053e87a0842",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          8,
+          7,
+          9
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "item-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-Item-complete7-d57zqpyr",
+        "binary_sha256": "c61064f8001a5699ce362a61bb49057d1aeb85e5be62c974c02b04edae977133",
+        "source_archive_sha256": "6b6037703b89d4c3676d027d29057a7f3863b8e511648d29759f8b5d85542856",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "actor-interaction-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-full-C-selectors-inowd83d",
+        "binary_sha256": "dd3c9593f51aa2ff3b278a125efd02bf255b5cd4fd0727ce0d35524e85bd55e8",
+        "source_archive_sha256": "9073f87a4049d546d86e6d2f0faba55a36133dd983552c27c8712e20f5951720",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          212,
+          211,
+          213
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "item-flute-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-Flute-RSP-ux95agub",
+        "binary_sha256": "b1f925c90a3d748a7e0d7ecfe687031bf6d4427c230cb6930528fb836a0178a5",
+        "source_archive_sha256": "73252d1749e7dd2dc2f0f0f428f71defc174f45b1c87ba68a49c08286a3485ff",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          1,
+          0,
+          2
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "actor-collision-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-collision-manager-9hkdffu8",
+        "binary_sha256": "799cf426dd5374bdd616b5bb8df797b6da9b34692c6c3d3f1cdfb541f14b27a8",
+        "source_archive_sha256": "268d5068ec4dc27fbbc2f70a5aeed92efdd9d2839de438db5578ec87ce6aa9eb",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "actor-command26-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-command26-cj6ukw95",
+        "binary_sha256": "8f54e781671ab29da0a3501e96be311ea95500e3ae3cc9fd70701b9bf1e225da",
+        "source_archive_sha256": "34834e5fc2a7bb74bcb4f7d37e94d0dbf305a2f6d54ba8b996c692a78156cdb7",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          33,
+          32,
+          34
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "magikarp-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-Magikarp-owner-csbs_wey",
+        "binary_sha256": "010abf84e1709ab90cf35445805d501dd92c51aaec25af7f25b34c11268903fd",
+        "source_archive_sha256": "0ad6d926f8d70eb45b7d640d2da6b21b0fd8e2593ed1702888155cb9cfe5104a",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          25,
+          24,
+          26
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "beach-magikarp-scene-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-Magikarp-scene-50q_xye0",
+        "binary_sha256": "11ad4891e82d0b000de5bccc577f70f346f7b1801b1d77be1c01e543754c32c5",
+        "source_archive_sha256": "83692532151e3bb500296e693b33371c157b454610fa7a9558c2505cf818b996",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          8,
+          7,
+          9
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "item-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-Item-complete7-jcbji39x",
+        "binary_sha256": "d7112d9b9e66240cac0fb15650bbe337b1dcf8e66fd0bcd50d6d1d821e2e3545",
+        "source_archive_sha256": "2a220b4431b89d445018e26ea66265d92e5b93f6d294c0566656d15a7c193800",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "actor-interaction-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-full-C-selectors-ivjsrt_i",
+        "binary_sha256": "67272e52cd5c9e37853f32a889be3fafb550f72c1c70bb7bfe0f82a416b39e73",
+        "source_archive_sha256": "3cd21263ad69a45d1f07564b2257d6e00949f48a62fdec32c67672d286251176",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          212,
+          211,
+          213
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "item-flute-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-Flute-RSP-je44c7lo",
+        "binary_sha256": "eb5450b63737217b9c6e7e18cae56bae73f947c087cdb8298c945229de438f0b",
+        "source_archive_sha256": "f768e4aab1e714e8329b964311869acd6e44bf1aeb83dbbc48586c39cd7ac69c",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          1,
+          0,
+          2
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "actor-collision-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-collision-manager-biy6ee0f",
+        "binary_sha256": "235041c50c254464dd855285fae97e02c7d5d518c10d0634b90e2fdd51797392",
+        "source_archive_sha256": "0332ec43fa36d4fb56d8daba667de21d13f647fbfa20bf4e2211eed1422dcc5c",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "actor-command26-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-command26-g437vnmf",
+        "binary_sha256": "cf96a2e209866c8e2c838a68ddc6dcdbe636d8f109977e033438780d64841716",
+        "source_archive_sha256": "231353ba62e9aece577c602ce66e9298f997567e850d68222439f8c756bb78c4",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          33,
+          32,
+          34
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "magikarp-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-Magikarp-owner-m2h2j__c",
+        "binary_sha256": "82c50360daf4233b23e6ac5035756306e27090dc0696c06dc312097a034b8e8b",
+        "source_archive_sha256": "4ad10723c63dfa4dd1ec0d04ae15eaba035df1e659ff118027acf18b25cc6ed6",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          25,
+          24,
+          26
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "beach-magikarp-scene-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-Magikarp-scene-xxsdot2m",
+        "binary_sha256": "f790dadbea298a44d1e481dc065f977d74c875ec0fd0a0a97a8231e1bab39b23",
+        "source_archive_sha256": "85945fffd05942efcfecfc9c978a314d47b87150e4be47b884bdae6ab5ddbc92",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          8,
+          7,
+          9
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "item-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-Item-complete7-uli2px0o",
+        "binary_sha256": "a7f482429c2d0aa546e33cfcafdb47ab2f10d06ed50235230dd7187c8431c50a",
+        "source_archive_sha256": "7432f40ff5852913a31a765721a1eabf8754631a8af193fa2ce3a67ce51ea438",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          37,
+          36,
+          38
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "actor-interaction-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-full-C-selectors-elafanl6",
+        "binary_sha256": "46ec545f33e5205f2e4d8e204e0b7c32a7a50ad082713d7cfc41b439efe85db1",
+        "source_archive_sha256": "f8e390b06294f4633f5727718651be7964a13c6e90ed75de8745088c01834413",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          212,
+          211,
+          213
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "item-flute-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-Flute-RSP-52v2xsri",
+        "binary_sha256": "2a6e662c8e1d7db7b90602980c5be496e088dce31318a211f25125d0530d03ac",
+        "source_archive_sha256": "013518afebb88001fe0ecf76a31b4f0e786654575382a7ee41e743d008ecc66a",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          1,
+          0,
+          2
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "actor-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-ActorOwner-heldjoined-after-a58_g97g",
+        "binary_sha256": "04718c6782156f366eb57b6e517553dfec00aa8a073cd414e0860ec4be379d33",
+        "source_archive_sha256": "507734d1ddca15d76d08ab75526224b9ebcd95d9479f66089f3f1acc84a09bc3",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          28,
+          27,
+          29
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "actor-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-ActorOwner-heldjoined-after-ajx82_r9",
+        "binary_sha256": "28b45da696c47cdffcee61228d1ae4c2121508525ec63e1deb378f7fad0053b3",
+        "source_archive_sha256": "8d9c5213e29174e3fa14154cdb15a7d7b64b03bb6e796dfe21016d3399e5988f",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          28,
+          27,
+          29
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "actor-owner-rom-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-ActorOwner-heldjoined-after-1knlzs7w",
+        "binary_sha256": "8d44f45a483d7bcaa4cf91fbbc40a338d8898eeee3f0500ed8960c853b85d5ac",
+        "source_archive_sha256": "4744d6e891b1473c4cb01da0b7fd71eba3620c318aa86eac4e26707f938c2fc0",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          28,
+          27,
+          29
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "actor-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-Actor-producer-z2le86br",
+        "binary_sha256": "cb78a6be23cd96a81aefd48541fe218dd6844dedc15d4c5798958515ffaeb6ef",
+        "source_archive_sha256": "8ff06d2c417585998920d72cc49273bf03a81705194f81c1f162147941f11ea3",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          77,
+          76,
+          78
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "course-scene-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-World-common-source-u7nvb5ct",
+        "binary_sha256": "8263f1ef8bf49838e092392a8e3ef1b2dcdf426125c8c3c60a394ea0367416ae",
+        "source_archive_sha256": "adb8682699fe1c36e7b216f5b05bd25f2f6972bc6a67c86c4c833df51cd6fda3",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          44,
+          43,
+          45
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "course-magikarp-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-genuine-Magikarp-course-mnqdyld8",
+        "binary_sha256": "dd2698f4d1975c368eb206af7b50a8f64403990dfc81c58595d5c9b0d418a014",
+        "source_archive_sha256": "b736cf0f7c7f43642a1a591709f854a77816a8ea61a2dca054ec364f2dcd6781",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          48,
+          47,
+          49
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "course-collision-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-pair-collision-source-8bvqq_b6",
+        "binary_sha256": "409564e5444d76e1029e1bb547376d1272b5b11666da9275dd71859a11c9727c",
+        "source_archive_sha256": "0d569ee4f023e602c8b551447308dd230f62987f5680d38bdf4bacf04b96ea48",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          45,
+          44,
+          46
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Debug",
+        "consumer": "item-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-Item-actual-Owner-x93h4jd3",
+        "binary_sha256": "f242633bdc52bf4a9263dd51aa48f30afe98ca0664515fe8553fa8d0b0553fd7",
+        "source_archive_sha256": "343443740adad7accccf26cda3d056e0175a08f966b3f9468e1e69da917bc6a1",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          127,
+          126,
+          128
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "actor-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-Actor-producer-4q_r5lgk",
+        "binary_sha256": "5293433fb0f155a210e5dcaf19c6ed6cd5ea5ece9e62676c1f13b745c1ebb94c",
+        "source_archive_sha256": "17fe3827a470a54ed2a375df32173130161dc3798320947021d072dc9033218a",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          77,
+          76,
+          78
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "course-scene-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-World-common-source-v29fv_fw",
+        "binary_sha256": "83a302fdaed9c8838f21402ba8bd8f4d72662c4f476b9b9f35d7a6d8c4c7efba",
+        "source_archive_sha256": "88184fd41f13c8102b78bca923c3906e2d7b02678bca7b3c0f3cbf9f22f42b21",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          44,
+          43,
+          45
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "course-magikarp-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-genuine-Magikarp-course-4mtkky9v",
+        "binary_sha256": "a43ae1e9db0b2cb33af2e96a163191104ff7ea1e9d0f891de26ac14c6f61cf9c",
+        "source_archive_sha256": "97a3996a43b2b106e640fbc5d87bc3eb1f92466e3a66fb886b804116ccde1c7d",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          48,
+          47,
+          49
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "course-collision-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-pair-collision-source-0lp9chi3",
+        "binary_sha256": "34000f8f23457112153542000d2f0254081f81f244ad740ea81dc3d649395704",
+        "source_archive_sha256": "b0759ed8e5f5a839704171680a1451a0cc5090f4616bb27505d39b9211145cbd",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          45,
+          44,
+          46
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "Release",
+        "consumer": "item-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-Release-Item-actual-Owner-649a1c5z",
+        "binary_sha256": "62e66bfc4edd109f7f7eed45f648370ab53ed9cc12cd43a691410bb11a486208",
+        "source_archive_sha256": "25a0162f6d9509917337924f0972f1c6ad4990c7fe4fcac8c90aaf293b6848de",
+        "software_environment_sha256": "5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df",
+        "closed_terminals_created_absent": [
+          127,
+          126,
+          128
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "actor-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-Actor-producer-rropf5vu",
+        "binary_sha256": "59f1da7075d32c5befe92d22bebbd72f88bacd100047c2d6893d4a9159f33d73",
+        "source_archive_sha256": "ba330d371603d9773527a7d50c342bb29b2ab6fb804789add356a9dbcbb5bdfb",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          77,
+          76,
+          78
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "course-scene-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-World-common-source-_p35jinw",
+        "binary_sha256": "a873ad49e1ceb7123e0afa4f99b9de79a11e62641b556a9cb3f563d26fe8aa44",
+        "source_archive_sha256": "62b837734b7b118662c2074e15ca0b2906a882ab3b415035975c6f2e69d1827e",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          44,
+          43,
+          45
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "course-magikarp-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-genuine-Magikarp-course-tjw03sys",
+        "binary_sha256": "5700c849c4889c058b5863c54808e0a913ea89c2f999c71711066399d2070b1b",
+        "source_archive_sha256": "cc3d0eeccde90339e94da14122e12e83e5f1f234cc401ee22e5f4740f72050c4",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          48,
+          47,
+          49
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "course-collision-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-pair-collision-source-_i7wq27_",
+        "binary_sha256": "68922c8f84aff927d846680a80b67978fca459f9f5d0d459452a41936d8cd455",
+        "source_archive_sha256": "2f7b1d1f60cdd630be06709b14f5cc8a96385230b31ef85a98bc7c4dca8bf87f",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          45,
+          44,
+          46
+        ],
+        "returncode": 0
+      },
+      {
+        "profile": "ClangASanUBSan",
+        "consumer": "item-producer-rsp-smoke",
+        "capture_root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-Item-actual-Owner-3yxbpsj_",
+        "binary_sha256": "091559ba4ff25484b3cc079c700d783fbe5149dd4909a02d4798272ca1d58a23",
+        "source_archive_sha256": "e6a49e6e977d8a0008307b287a91f69ae13ebea76307ce1af934d9b1592a8ffc",
+        "software_environment_sha256": "d7629a731b09079b488f23ef93288ba4f8f276aad3bfa0c130afdaa605df5af9",
+        "closed_terminals_created_absent": [
+          127,
+          126,
+          128
+        ],
+        "returncode": 0
+      }
+    ],
+    "whole_root_gate": {
+      "each_initial_scan_only_after_tracer_wait_and_all_tasks_absent": true,
+      "trace_identities_stable": true,
+      "ROMunchanged": true,
+      "known_physical_attempts": 0,
+      "permission_errors": 0,
+      "no_replay_reopen_rescan_or_partialacceptance_of_rejectedroots": true,
+      "fatal_ASan_UBSan": true,
+      "ptrace_only_LSan_disabled_not_leakqualification": true
+    },
+    "saved_surface_gate": {
+      "distinct_surfaces": 14,
+      "profile_copies": 42,
+      "all_three_profile_byte_identical": true,
+      "actual_current_World_FX_completed_surface_directly_inspected": true,
+      "no_changes_to_poses_camera_cohort_source_timing_thresholds_viewport_or_existing_GPU_budgets": true
+    },
+    "Flute_each_profile": {
+      "source_songs": [
+        1,
+        3,
+        2
+      ],
+      "source_commands": [
+        5,
+        6,
+        7
+      ],
+      "runs": 9,
+      "actual_audio_RSP_tasks": 828,
+      "direct_song_PCM": "exact",
+      "retained_index_restart_PCM": "exact",
+      "first_changed_samples": [
+        36775,
+        36770,
+        36768
+      ],
+      "restart_changed_samples": [
+        42725,
+        42697,
+        42698
+      ],
+      "counter_epoch": "accepted_audio_build_only",
+      "ownership": "actualtask/checkedownedCPU PCMdrained, notexercisedSDL3transport"
+    },
+    "actual_Item_bank3_motion": {
+      "binary_sha256": "0409ed3fbd46587a63d5c173ed6da5aba6abdccda0b9eb692dac751f4de2625b",
+      "source_archive_sha256": "53594a2214ef07ebd745b816403066579880350c1fa7c415ce2ff2ba2d3d9835",
+      "elapsed_seconds": 0.46753605105914176,
+      "actual_decoded_velocity": [
+        0,
+        6,
+        0
+      ],
+      "actual_effect_lifetime": 20,
+      "actual_particle_lifetime": 30,
+      "source_derived_frames": 52,
+      "exact_motion_observations": 850,
+      "nonzero_particle_velocity_observations": 850,
+      "old_zero_policy_motion_differences": 850,
+      "final_RNG_seed": 145301274,
+      "source_bank_modified": false,
+      "capture_root": "/home/bbferko/35mmisle-actual-Item-bank3-script0-motion-thczejk1",
+      "closed_terminals_created_absent": [
+        1,
+        0,
+        2
+      ]
+    },
+    "actual_Item_bank3_motion_scope": "RealimmutableROMcommonbank3/script0; sourceposition-onlyversusdecodedvelocityreference exactall850motion/color/lifetime/frame/texture andRNG, oldzerooverride differs850. CPUonly, throwawayremovedafterfrozenproof; noGPU/audio/Originalclaim.",
+    "original_GPU_consumers_unchanged": {
+      "tests/course_magikarp_rsp_smoke.cpp": "9aafbad85b36dc74f663dab18003828fce954b9b0448461f1c7e3d220c53b562",
+      "tests/course_scene_rsp_smoke.cpp": "01f9543c7fcf1f7d4f39af67384030b666d6b4d89e4444b1513e0b327e63a2ea",
+      "tests/actor_producer_rsp_smoke.cpp": "8e735c1e02f997b86529cc1df06d8a961e5997649f8036f650149e1e4b9006c8"
+    },
+    "before_and_scope_rejections": {
+      "ActorOwner_expired_fixture_handle": [
+        {
+          "profile": "Debug",
+          "root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-actor-owner-3j77g61h",
+          "returncode": 1,
+          "closed_terminals_created_absent": [
+            19,
+            18,
+            20
+          ],
+          "whole_root_rejected_forever": true
+        },
+        {
+          "profile": "Release",
+          "root": "/home/bbferko/35mmisle-full-Item-C-final-Release-actor-owner-p_nu9tn5",
+          "returncode": 1,
+          "closed_terminals_created_absent": [
+            19,
+            18,
+            20
+          ],
+          "whole_root_rejected_forever": true
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-actor-owner-yg29ifyl",
+          "returncode": 1,
+          "closed_terminals_created_absent": [
+            19,
+            18,
+            20
+          ],
+          "whole_root_rejected_forever": true
+        }
+      ],
+      "C_nullable_World_before": {
+        "status": "whole_rejected_forever_no_partial_acceptance",
+        "binary_sha256": "7fc4370726ba8980f56a37f58f8c04d354f4dea0b655c1b3321769a2879ec513",
+        "source_archive_sha256": "3a58e25968af251335550033c9f9d7b4be844e76f3bcd6fa4af8b489f14f36e1",
+        "elapsed_seconds": 0.7935240989318117,
+        "observed_failure": "C native result=5 function=void {anonymous}::Consumer::queued_clear_world_and_tail(const isle::actor::SpawnResult&) line=607; unchanged queued command19 with NULL current World/baseBlock, last-match NULL/NULL row",
+        "cause_source_evidence": "OwnGAME world/block.c14,224-226 permits NULL current block; pokemon.c1939-1949 compares ordinary nullable equality and selects LAST matching19 row. Native C wrapper incorrectly checked a NULL valid result as INVALID_STATE. Candidate fix separates backend status from nullable output; no source row/oracle/cohort/budget change.",
+        "closure": {
+          "root": "/home/bbferko/35mmisle-actor-full-C-localized-before-v0o6o93j",
+          "returncode": 1,
+          "tracer_pid": 839363,
+          "tracer_wait_completed": true,
+          "trace_count": 182,
+          "terminal_count": 182,
+          "created_task_count": 181,
+          "single_initial_root": 839365,
+          "absent_tracer_and_task_count": 183,
+          "all_tasks_absent": true,
+          "trace_identities_stable": true,
+          "sole_initial_scan_not_yet_performed": true,
+          "rom_unchanged": true,
+          "original_admission": false
+        },
+        "scan": {
+          "sole_initial_scan": true,
+          "whole_tree_closed_before_scan": true,
+          "known_physical_attempts": 0,
+          "permission_errors": 0,
+          "physical_hits": [],
+          "permission_hits": [],
+          "original_admission": false
+        }
+      },
+      "actual_Item_GPU_model_and_visibility_after": {
+        "status": "whole_accepted_complete_GPU_candidate",
+        "binary_sha256": "93bb084816df1be59e0c0402e97237205094d9e6fbbaa23a199a17f8aa51f6fe",
+        "source_archive_sha256": "b2a87df9ab8cf01ac79ebfe3842ae5b47730495b8f46a96824bc61a867babf2c",
+        "elapsed_seconds": 10.237499214010313,
+        "observed": "Complete unchanged four-family API and actual Source ItemOwner mixed World/Actor GPU cohort PASSED: true native visibility despite paused animator, whole-active unique foreign same-topology native model rejection before staging, global DL3, fume/waits, real native21/22 semantic/native/GPU/audio retirement, contemporaneous source-ID/new-incarnation replacement RGB5+depth+geometry. Full consumer exit0, not partialacceptance.",
+        "scope": "Actual graphics RSP and CPU Mesa llvmpipe Vulkan RDP only; owned CPU private_audio::Capture PCM/RSP/drain only, no actual SDL3 device/audio stream/physical GPU/audio/Original/PlayerFSM/fullgame/Win11 qualification. Debug only; Release/SAN and hosted newhead pending.",
+        "closure": {
+          "root": "/home/bbferko/35mmisle-item-Owner-GPU-binding-after-yk57s6i3",
+          "returncode": 0,
+          "tracer_pid": 839360,
+          "tracer_wait_completed": true,
+          "trace_count": 127,
+          "terminal_count": 127,
+          "created_task_count": 126,
+          "single_initial_root": 839362,
+          "absent_tracer_and_task_count": 128,
+          "all_tasks_absent": true,
+          "trace_identities_stable": true,
+          "sole_initial_scan_not_yet_performed": true,
+          "rom_unchanged": true,
+          "original_admission": false
+        },
+        "scan": {
+          "sole_initial_scan": true,
+          "whole_tree_closed_before_scan": true,
+          "known_physical_attempts": 0,
+          "permission_errors": 0,
+          "physical_hits": [],
+          "permission_hits": [],
+          "original_admission": false
+        }
+      },
+      "never_executed_wrong_Magikarp_scope": [
+        {
+          "profile": "Debug",
+          "root": "/home/bbferko/35mmisle-full-Item-C-final-Debug-Magikarp-source-2ndwa8yp",
+          "status": "frozen_but_NEVER_executed_no_capture_or_partialacceptance",
+          "reason": "Parent froze incorrect extra full-six source-owned GPU cohort wording for course-magikarp consumer, which actually uses its existing genuine two-slot Magikarp/common course procedure and prefix/CopyInfo errors. No program/oracle/cohort change; wrong scope never admitted or launched."
+        },
+        {
+          "profile": "Release",
+          "root": "/home/bbferko/35mmisle-full-Item-C-final-Release-Magikarp-source-5pocdwnb",
+          "status": "frozen_but_NEVER_executed_no_capture_or_partialacceptance",
+          "reason": "Parent froze incorrect extra full-six source-owned GPU cohort wording for course-magikarp consumer, which actually uses its existing genuine two-slot Magikarp/common course procedure and prefix/CopyInfo errors. No program/oracle/cohort change; wrong scope never admitted or launched."
+        },
+        {
+          "profile": "ClangASanUBSan",
+          "root": "/home/bbferko/35mmisle-full-Item-C-final-ClangASanUBSan-Magikarp-source-c84z5alo",
+          "status": "frozen_but_NEVER_executed_no_capture_or_partialacceptance",
+          "reason": "Parent froze incorrect extra full-six source-owned GPU cohort wording for course-magikarp consumer, which actually uses its existing genuine two-slot Magikarp/common course procedure and prefix/CopyInfo errors. No program/oracle/cohort change; wrong scope never admitted or launched."
+        }
+      ]
+    },
+    "review": "ActualnativefactoryandCppItemadmissionindependentread-onlyimplementationreviews foundnoactionabledefects; residualOSthreadcreate/join failurecombinations notdirectlyforced. Reviews arenotadditionalruntimeproof.",
+    "not_qualified": [
+      "Full71graph/8weightedlist/allremainingnativecallback/species closure",
+      "ProductionPlayerFSM/input/camera/completephotoqueue/save/course/productentrypoint",
+      "ActualSDL3audio device/stream orphysicalhardware/hearing",
+      "Originalnumeric/hardware equivalence",
+      "PrivateWindows11execution",
+      "Fullgamecompletion orrelease"
+    ],
+    "workflow": "FournewItem/Cprivate optinconsumersdeclaredalongsidefourexistingLinux/Windowscompiletargets; noROM/runtime/publicupload. Hostedreceiptqualifiesitsnamedimmutableheadonly."
+  },
   "qualification": {
-    "status": "qualified-local-real-shared-source-spatial-ceiling-callable-data-and-preserved-full-GPU",
-    "accepted_complete_runs": 24,
+    "status": "qualified-local-complete-Item-full-C-interpreters-services-and-preserved-GPU-not-fullgame",
+    "accepted_complete_runs": 39,
     "all_sole_initial_whole_tree_closures_stable_tasks_absent_ROMunchanged_zero_known_physical_permission_attempts": true,
     "pair4_and_genuine5_saved_surfaces_byte_identical_all3profiles_prior_inspected_proof": true,
     "original3GPUconsumer_source_bytes_unchanged": true,
@@ -853,9 +1642,9 @@
     "ptrace_only_LSan_disabled_not_leak_qualification": true,
     "failed_roots_immutable_after_final_rejection_no_subsequent_access_or_partial_results_used": true,
     "not_qualified": [
-      "complete nonNULL C interpreters/services/all71graph callback closure",
-      "native Item/Player FSM and fullphotoqueue/snapshots",
-      "other species/courses/product entrypoint",
+      "all71graph/8list/allremaining nativecallback/species closure",
+      "productionPlayerFSM and fullphotoqueue/snapshots/save flow",
+      "other courses/product entrypoint/fullgame",
       "Original numerical equivalence",
       "physical devices/hearing",
       "private Windows11 execution"

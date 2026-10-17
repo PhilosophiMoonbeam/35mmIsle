@@ -44,6 +44,13 @@ struct GObjProcess {
     u16 fade_updates;
     unsigned callbackDepth; /* Saved exclusion context across real continuation waits. */
     bool retirementObserver;
+    bool factoryTargetHeld; /* Unpublished process owns only an explicit old identity. */
+};
+
+enum {
+    ISLE_SOURCE_PAYLOAD_NONE = 0,
+    ISLE_SOURCE_PAYLOAD_ACTOR = 1,
+    ISLE_SOURCE_PAYLOAD_ITEM = 2
 };
 
 struct GObj {
@@ -69,7 +76,10 @@ struct GObj {
     IsleGame* game;
     bool alive;
     bool retirementStarted;
-    bool actorSourceBound; /* Discriminate userData before interpreting actor state. */
+    u8 sourcePayloadKind; /* Native discriminator before interpreting entity userdata. */
+    struct IsleSourceFactoryResources* factoryResources;
+    GObj* nextFactory;
+    size_t factoryHolds; /* Private admission pins, never public identity credits. */
 };
 
 struct SObj {
@@ -129,8 +139,12 @@ struct IsleGame {
     OMMtx* free_matrices;
     IsleGameModel* free_models;
     size_t held_identities;
+    GObj* factory_objects; /* Stable caller-owned tickets, rooted by actual raw objects. */
     unsigned callback_depth;
     bool retirement_observer; /* Also covers read-only successful-enqueue observers. */
+    /* Only the owned synchronous command drain may arm this returning cleanup. */
+    void (*command_fault_abort)(void*);
+    void* command_fault_context;
     IsleGameCounts counts;
     IsleGameResult fault;
     char error[512];

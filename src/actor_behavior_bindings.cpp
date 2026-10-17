@@ -69,7 +69,7 @@ BehaviorBindings::BehaviorBindings(const beach::BehaviorResources& resources,
         const auto index=static_cast<std::size_t>(found-registry.begin());
         if (!callbacks_seen[index]) {
             callbacks_seen[index]=1;
-            callbacks_.push_back({identity,(*found)->function});
+            callbacks_.push_back({identity,(*found)->function,{}});
             work.push_back({Kind::callback,index});
         }
         return (*found)->function;
@@ -117,6 +117,39 @@ BehaviorBindings::BehaviorBindings(const beach::BehaviorResources& resources,
     std::sort(callbacks_.begin(),callbacks_.end(),[](const auto& a,const auto& b) {
         return a.identity<b.identity;
     });
+    // Preserve the declared callable-data dependencies after the caller's
+    // temporary binding spans expire. Admission later performs no graph walk
+    // allocation, including for cycles and local mutable graph roots.
+    for (auto& root:callbacks_) {
+        std::vector<std::size_t> pending;
+        std::vector<unsigned char> seen(callbacks_.size());
+        auto enqueue=[&](std::uint32_t identity) {
+            const auto found=std::lower_bound(callbacks_.begin(),callbacks_.end(),identity,
+                [](const auto& candidate,std::uint32_t value) { return candidate.identity<value; });
+            if (found==callbacks_.end() || found->identity!=identity) unresolved(identity,root.identity,0);
+            const auto index=static_cast<std::size_t>(found-callbacks_.begin());
+            if (!seen[index]) { seen[index]=1; pending.push_back(index); }
+        };
+        enqueue(root.identity);
+        for (std::size_t cursor=0;cursor<pending.size();++cursor) {
+            const auto& current=callbacks_[pending[cursor]];
+            if (std::find(root.closure.begin(),root.closure.end(),current.function)==root.closure.end())
+                root.closure.push_back(current.function);
+            const auto found=std::lower_bound(registry.begin(),registry.end(),current.identity,
+                [](const auto* candidate,std::uint32_t value) { return candidate->identity<value; });
+            const auto& binding=**found; // Earlier closure construction resolved this identity.
+            for (const auto identity:binding.callbacks) enqueue(identity);
+            for (const auto identity:binding.graphs) {
+                const auto& dependency=resources.graph(identity);
+                for (const auto& row:dependency.entries) if (executable_command(row.command)) {
+                    if (row.state_identity) enqueue(row.state_identity);
+                    if (row.aux_identity) enqueue(row.aux_identity);
+                }
+            }
+            for (const auto identity:binding.weighted_states)
+                for (const auto& row:resources.weighted_states(identity).entries) enqueue(row.state_identity);
+        }
+    }
 }
 void BehaviorBindings::require_live() const { resources_->require_live(); }
 const IsleActorInteractionGraph& BehaviorBindings::graph(std::uint32_t identity) const {
@@ -148,5 +181,25 @@ bool BehaviorBindings::contains(IsleGameSourceCallback function) const {
     return function && std::any_of(callbacks_.begin(),callbacks_.end(),[&](const auto& callback) {
         return callback.function==function;
     });
+}
+bool BehaviorBindings::admits_native_graph(const IsleActorInteractionGraph& graph,
+    bool (*admit)(IsleGameSourceCallback,void*),void* context) const {
+    require_live();
+    if (!graph.rows || !graph.count || !admit) return false;
+    auto callback=[&](IsleGameSourceCallback function) {
+        if (!function) return true;
+        bool found=false;
+        for (const auto& candidate:callbacks_) if (candidate.function==function) {
+            found=true;
+            for (const auto dependency:candidate.closure) if (!admit(dependency,context)) return false;
+        }
+        return found;
+    };
+    for (std::size_t i=0;i<graph.count;++i) {
+        const auto& row=graph.rows[i];
+        if (row.cmd==58) return true;
+        if (executable_command(row.cmd) && (!callback(row.state) || !callback(row.aux))) return false;
+    }
+    return false;
 }
 } // namespace isle::actor

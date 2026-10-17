@@ -105,6 +105,9 @@ public:
     a::Error bgm_priority(unsigned player, std::uint8_t) noexcept;
     a::Error bgm_extra_reverb(unsigned player, std::int8_t) noexcept;
     a::Error bgm_channel_volume(unsigned player, std::uint8_t, std::int8_t) noexcept;
+    // Resource-only admission. Does not stage commands, steal a voice or depend
+    // on transient output/PCM capacity; resources remain owned until teardown.
+    bool has_sound(std::uint32_t sound) const noexcept;
     a::Error play_sound(std::uint32_t sound, Parameters, int& slot) noexcept;
     a::Error stop_sound(unsigned slot) noexcept;
     a::Error stop_sounds() noexcept;
@@ -147,6 +150,13 @@ public:
     a::Error abandon_pcm() noexcept;
     std::uint32_t native_ai_frames() const noexcept;
     std::uint64_t accepted_frames() const noexcept { return accepted_frames_; }
+    // Native equality-domain translation of GAME's sampled audio-frame time,
+    // not OSTime ticks, nanoseconds, retraces or audible playback position.
+    // Published immediately before the existing admitted AudioService::build
+    // (including bootstrap). No-work build, command/query, retrace, task/PCM
+    // completion, output acceptance and player/effects restart do not advance
+    // it themselves. Compare for equality only; do not derive elapsed time.
+    std::uint64_t source_frame_epoch() const noexcept { return service_serial_; }
 private:
     explicit Session(Resources, Output, Executor) noexcept;
     a::Error register_players() noexcept;

@@ -104,6 +104,12 @@ bool Environment::volume_pan(Source source,std::uint8_t range,std::int32_t& volu
     volume=static_cast<std::int32_t>(result); pan=p;
     return true;
 }
+bool Environment::admits_sound(std::int32_t sound) const noexcept {
+    if (!resources_.angles().live()) return false;
+    for (const auto& descriptor : resources_.descriptors())
+        if (descriptor.sound == sound) return services_.audio.has_sound(static_cast<std::uint32_t>(sound));
+    return true; // The same source policy as play: absent descriptors are ignored.
+}
 bool Environment::play(Source source,std::uint8_t category,std::int32_t sound) noexcept {
     if (!player_ || !camera_ || !records_) return true;
     if (!resources_.angles().live()) { services_.fail("environmental sound resource retired"); return false; }

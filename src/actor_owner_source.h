@@ -1,6 +1,15 @@
 #ifndef ISLE_ACTOR_OWNER_SOURCE_H
 #define ISLE_ACTOR_OWNER_SOURCE_H
 #include "actor_source.h"
+#include "source_command_scope.h"
+typedef struct IsleActorCommandData {
+    int32_t cmd;
+    IsleGameObject* source;
+} IsleActorCommandData;
+typedef struct IsleActorFocusState {
+    uint32_t timer;
+    IsleGameObject* current;
+} IsleActorFocusState;
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,9 +17,13 @@ extern "C" {
  * owner in the canonical record points directly to stable ActorOwner slot data. */
 IsleGameResult isle_actor_owner_animation(IsleActorSource*, uint32_t header_identity, float start, int force);
 IsleGameResult isle_actor_owner_step(IsleActorSource*);
-IsleGameResult isle_actor_owner_interactions(IsleActorSource*);
+IsleGameResult isle_actor_owner_interaction_context(IsleActorSource*, void**);
 IsleGameResult isle_actor_owner_cleanup(IsleActorSource*);
-IsleGameResult isle_actor_owner_commands(IsleActorSource*);
+IsleGameResult isle_actor_owner_commands_begin(IsleActorSource*, IsleSourceCommandScope*);
+IsleGameResult isle_actor_owner_commands_end(IsleActorSource*, IsleSourceCommandScope*, IsleGameResult, int);
+IsleGameResult isle_actor_owner_command_status(IsleActorSource*);
+IsleGameResult isle_actor_owner_execution_enabled(IsleActorSource*, int32_t*);
+IsleGameResult isle_actor_source_install_update(IsleGame*, IsleGameObject*);
 IsleGameResult isle_actor_owner_reference_assign(IsleActorSource*, IsleGameObject** field,
     IsleGameObject* sender);
 /* Settles only the current persistent command token; preserves FIFO suffix.
@@ -23,7 +36,6 @@ IsleGameResult isle_actor_owner_trigger_position(IsleActorSource*, IsleGameVec3)
 float isle_actor_owner_animation_time(IsleActorSource*);
 int isle_actor_owner_paused(IsleActorSource*);
 IsleGameResult isle_actor_source_pause_object(IsleActorSource*, int paused);
-IsleGameResult isle_actor_source_validate_model(IsleGame*, IsleGameObject*, IsleGameModel*);
 /* Typed native factory arguments, never console structures or guest callbacks. */
 typedef struct IsleActorFactoryBlock { void* owner; void* block; void* result; } IsleActorFactoryBlock;
 typedef struct IsleActorFactorySpawn { const void* spawn; size_t definition; } IsleActorFactorySpawn;
@@ -53,7 +65,8 @@ IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource*, int);
 IsleGameResult isle_actor_owner_ground_node(IsleActorSource*, size_t*);
 IsleGameResult isle_actor_owner_node_world(IsleActorSource*, size_t, IsleGameVec3*, IsleGameVec3*);
 IsleGameResult isle_actor_owner_ground(IsleActorSource*, float, float, IsleActorGround*);
-void* isle_actor_owner_current_block(IsleActorSource*);
+/* A live canonical caller may observe NULL before the first World block. */
+IsleGameResult isle_actor_owner_current_block(IsleActorSource*, void**);
 IsleGameResult isle_actor_owner_add_one(IsleActorSource*, void*, void*, const IsleActorGeoSpawn*,
     const IsleActorGeoDefinition*, IsleGameObject**);
 IsleGameResult isle_actor_owner_copy_position(IsleActorSource*, IsleGameObject*);
@@ -85,6 +98,22 @@ void Pokemon_Cleanup(IsleGameObject*);
 void Pokemon_RunCleanup(IsleGameObject*);
 void Pokemon_WaitForFlag(IsleGameObject*, int32_t);
 void Pokemon_RunInteractions(IsleGameObject*);
+void Pokemon_HandleCommand(IsleActorCommandData);
+IsleGameObject* Pokemon_GetClosestItem(IsleGameObject*, float*);
+const IsleActorInteraction* isle_actor_source_interaction_rows(IsleGameObject*);
+IsleGameVec3 isle_actor_source_position(IsleGameObject*, IsleGameObject*, int auxiliary);
+void isle_actor_source_item_iterator(IsleGameObject*);
+IsleGameObject* isle_actor_source_item_next(IsleGameObject*);
+struct IsleItemSource* isle_actor_source_item(IsleGameObject*, IsleGameObject*);
+int32_t isle_actor_source_flute(IsleGameObject*);
+float isle_actor_source_distance(IsleGameObject*, IsleGameObject*);
+float isle_actor_source_neighbors(IsleGameObject*, IsleGameVec3*);
+IsleGameObject* isle_actor_source_player(IsleGameObject*);
+IsleActorFocusState isle_actor_source_focus(IsleGameObject*);
+int32_t isle_actor_source_direction(IsleGameObject*);
+int32_t isle_actor_source_execution_enabled(IsleGameObject*);
+void isle_actor_source_pause_all(IsleGameObject*);
+void isle_actor_source_reference_assign(IsleGameObject*, IsleGameObject**, IsleGameObject*);
 void func_8035DF20_4FE330(IsleGameObject*);
 void func_8035DFB0_4FE3C0(IsleGameObject*);
 void func_8035E034_4FE444(IsleGameObject*);

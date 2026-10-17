@@ -135,17 +135,56 @@ void isle_game_command_finish(IsleGameCommandQueue* queue) {
     if (token != NULL && queue->release != NULL) queue->release(token, queue->borrow_user);
 }
 
+static void close_command_callback(IsleGame* game, IsleGameCommandQueue* queue,
+    int current_callback_frame) {
+    if (!queue->custom_callback_open) return;
+    queue->custom_callback_open = 0;
+    /* Joined abandoned legacy frames have their own saved process depth, not
+     * the retirement observer's currently installed callback depth. */
+    if (current_callback_frame && game != NULL && game->callback_depth != 0)
+        --game->callback_depth;
+}
 
 void isle_game_commands_release(IsleGameCommandPool* pool, IsleGameCommandQueue* queue) {
     if (pool == NULL || queue == NULL) return;
     for (IsleGameCommand* command = queue->head; command != NULL; command = command->next)
         settle_command(queue, command);
-    if (queue->processing) { queue->cancelled = 1; return; }
+    if (queue->processing || queue->custom_callback_open) {
+        queue->cancelled = 1;
+        return;
+    }
     isle_game_command_finish(queue);
     if (queue->tail != NULL) { queue->tail->next = pool->free; pool->free = queue->head; }
-    queue->head = queue->tail = NULL;
-    queue->count = 0;
-    queue->processing = queue->cancelled = 0;
+    queue->head = queue->tail = queue->last_consumed = NULL;
+    queue->count = queue->consumed_count = 0;
+    queue->processing = queue->cancelled = queue->delete_stopped = 0;
+}
+
+void isle_game_commands_abort(IsleGame* game, IsleGameCommandPool* pool,
+    IsleGameCommandQueue* queue, int current_callback_frame) {
+    IsleGameCommand* prefix;
+    IsleGameCommand* last;
+    if (pool == NULL || queue == NULL) return;
+    close_command_callback(game, queue, current_callback_frame);
+    isle_game_command_finish(queue);
+    queue->processing = 0;
+    if (queue->cancelled || queue->delete_stopped) {
+        isle_game_commands_release(pool, queue);
+        return;
+    }
+    prefix = queue->head;
+    last = queue->last_consumed;
+    if (last != NULL) {
+        /* Detach the consumed prefix before its last link becomes a free-list
+         * link. The live suffix and its credits/order are otherwise untouched. */
+        queue->head = last->next;
+        if (queue->head == NULL) queue->tail = NULL;
+        queue->count -= queue->consumed_count;
+        last->next = pool->free;
+        pool->free = prefix;
+    }
+    queue->last_consumed = NULL;
+    queue->consumed_count = 0;
 }
 
 IsleGameResult isle_menu_observe_command_queued(IsleGame* game, IsleGameObject* object,
@@ -163,25 +202,45 @@ IsleGameResult isle_menu_observe_command_queued(IsleGame* game, IsleGameObject* 
     return game->fault;
 }
 
-IsleGameResult isle_game_commands(IsleGame* game, IsleGameObject* object,
+IsleGameResult isle_game_commands_checked(IsleGame* game, IsleGameObject* object,
     IsleGameCommandPool* pool, IsleGameCommandQueue* queue,
-    IsleGameCommandHandler handler, void* user, int* delete_requested) {
+    IsleGameCommandHandler handler, void* handler_user,
+    IsleGameCommandCheck before_custom, IsleGameCommandCheck after_custom,
+    void* check_user, int* delete_requested) {
     IsleGameResult result = access(game);
     if (delete_requested != NULL) *delete_requested = 0;
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL) object = omCurrentObject;
     if (object == NULL || !object->alive || object->game != game || pool == NULL ||
         queue == NULL || delete_requested == NULL) return ISLE_GAME_INVALID_ARGUMENT;
-    if (queue->processing) return ISLE_GAME_INVALID_STATE;
+    if (queue->processing || queue->custom_callback_open || queue->delete_stopped)
+        return ISLE_GAME_INVALID_STATE;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
     queue->processing = 1;
-    for (IsleGameCommand* command = queue->head; command != NULL; command = command->next) {
-        /* In-flight ownership survives manual dispatch and nonreturning C
-         * frames in persistent queue storage, never in C++ RAII. */
+    for (;;) {
+        /* Read the live link after each delivery: handler-appended commands
+         * belong to this same drain, and consumed nodes remain pool-ineligible. */
+        IsleGameCommand* command = queue->last_consumed != NULL ?
+            queue->last_consumed->next : queue->head;
+        if (command == NULL) break;
+        if ((command->command < -5 || command->command > -1) && before_custom != NULL) {
+            result = before_custom(object, command->command, command->source, check_user);
+            if (result == ISLE_GAME_OK) result = game->fault;
+            if (result != ISLE_GAME_OK) {
+                isle_game_commands_abort(game, pool, queue, 1);
+                return result;
+            }
+        }
+        /* Persist consumption BEFORE any builtin or handler effect can escape.
+         * Token settlement is independent of both this cursor and callback life. */
+        queue->last_consumed = command;
+        ++queue->consumed_count;
         queue->active_borrow = command->borrow;
         command->borrow = NULL;
         switch (command->command) {
         case -1:
             queue->processing = 0;
+            queue->delete_stopped = 1;
             *delete_requested = 1;
             return ISLE_GAME_OK;
         case -2: case -3:
@@ -192,21 +251,38 @@ IsleGameResult isle_game_commands(IsleGame* game, IsleGameObject* object,
         case -5: object->flags &= ~UINT32_C(1); break;
         default:
             if (handler != NULL) {
+                queue->custom_callback_open = 1;
                 ++game->callback_depth;
-                handler(object, command->command, command->source, user);
-                --game->callback_depth;
+                handler(object, command->command, command->source, handler_user);
+                close_command_callback(game, queue, 1);
             }
+            result = game->fault;
+            if (result == ISLE_GAME_OK && after_custom != NULL)
+                result = after_custom(object, command->command, command->source, check_user);
+            if (result == ISLE_GAME_OK) result = game->fault;
             break;
+        }
+        if (!object->alive || (object == omCurrentObject && omD_8004AC54 == 2)) {
+            *delete_requested = object->alive && object == omCurrentObject && omD_8004AC54 == 2;
+            queue->cancelled = 1;
+        }
+        if (result != ISLE_GAME_OK) {
+            isle_game_commands_abort(game, pool, queue, 1);
+            return result;
         }
         isle_game_command_finish(queue);
-        if (queue->cancelled || !object->alive || (object == omCurrentObject && omD_8004AC54 == 2)) {
-            *delete_requested = object->alive && object == omCurrentObject && omD_8004AC54 == 2;
-            break;
-        }
+        if (queue->cancelled) break;
     }
     queue->processing = 0;
     isle_game_commands_release(pool, queue);
     return game->fault;
+}
+
+IsleGameResult isle_game_commands(IsleGame* game, IsleGameObject* object,
+    IsleGameCommandPool* pool, IsleGameCommandQueue* queue,
+    IsleGameCommandHandler handler, void* user, int* delete_requested) {
+    return isle_game_commands_checked(game, object, pool, queue, handler, user,
+        NULL, NULL, NULL, delete_requested);
 }
 
 int isle_menu_object_hidden(IsleGame* game, const IsleGameObject* object) {

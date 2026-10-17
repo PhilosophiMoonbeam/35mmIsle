@@ -1,5 +1,7 @@
 #include "engine_internal.h"
 #include "contextual_model_math.h"
+#include "menu_scene_bridge.h"
+#include "source_factory_resources.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -33,6 +35,32 @@ static IsleGameResult access_game(IsleGame* game) {
     if (result != ISLE_CONT_OK || active_game != game) return ISLE_GAME_INVALID_STATE;
     return ISLE_GAME_OK;
 }
+IsleGameResult isle_menu_command_fault_begin(IsleGame* game, IsleGameObject* object,
+    IsleMenuCommandFaultAbort abort, void* context) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL || object->game != game || !object->alive ||
+        abort == NULL || context == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    if (!game->ticking || omCurrentObject != object || omCurrentProcess != NULL ||
+        game->retirement_observer || game->command_fault_abort != NULL)
+        return ISLE_GAME_INVALID_STATE;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    game->command_fault_context = context;
+    game->command_fault_abort = abort;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_menu_command_fault_end(IsleGame* game, void* context) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (context == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->command_fault_abort == NULL || game->command_fault_context != context)
+        return ISLE_GAME_INVALID_STATE;
+    game->command_fault_abort = NULL;
+    game->command_fault_context = NULL;
+    return ISLE_GAME_OK;
+}
+
 
 /* On a worker, fail exits its own saved C frame before C++ transports failure.
  * On the owner, that API returns INVALID_STATE and the C-only tick frame is the
@@ -40,8 +68,16 @@ static IsleGameResult access_game(IsleGame* game) {
  */
 void isle_native_execution_fault(IsleGame* game, const char* text) {
     IsleContinuationResult result;
+    IsleMenuCommandFaultAbort abort = game->command_fault_abort;
+    void* context = game->command_fault_context;
     diagnostic(game, text);
     game->fault = ISLE_GAME_EXECUTION_FAILURE;
+    /* A cleanup may inspect the fault and must see the scope already disarmed.
+     * Its stable record, not a discarded C/C++ stack local, owns queue state.
+     * Manual/parked legacy drains never arm this narrowly owned scope. */
+    game->command_fault_abort = NULL;
+    game->command_fault_context = NULL;
+    if (abort != NULL) abort(context);
     result = isle_continuation_fail(game->domain, game->error);
     if (result == ISLE_CONT_INVALID_STATE && game->ticking) {
         longjmp(game->fault_frame, 1);
@@ -141,12 +177,58 @@ IsleGameResult isle_game_counts(IsleGame* game, IsleGameCounts* output) {
     *output = game->counts;
     return ISLE_GAME_OK;
 }
+IsleGameResult isle_game_status(IsleGame* game) {
+    IsleGameResult result = access_game(game);
+    return result == ISLE_GAME_OK ? game->fault : result;
+}
+IsleGameResult isle_game_model_validate_binding(IsleGame* game, IsleGameObject* object, IsleGameModel* model) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (!valid_object(game, object) || model == NULL || object->retirementStarted ||
+        object->type != 1 || object->data.model != model ||
+        !model->alive || model->game != game || model->obj != object)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    return game->fault;
+}
+
 
 const char* isle_game_error(const IsleGame* game) {
     if (game == NULL) return "null native game";
     if (!game->alive) return "native game destroyed";
     if (isle_continuation_domain_check_access(game->domain) != ISLE_CONT_OK) return "wrong native game owner";
     return game->error;
+}
+
+static GObj* allocate_object(IsleGame* game) {
+    GObj* object = game->free_objects;
+    if (object != NULL) game->free_objects = object->next;
+    else object = allocate(game, sizeof(*object), _Alignof(GObj));
+    if (object != NULL) {
+        *object = (GObj){0};
+        object->game = game;
+    }
+    return object;
+}
+
+static void release_object(IsleGame* game, GObj* object) {
+    if (!object->alive && object->identityHolds == 0 &&
+        object->factoryHolds == 0 && object->factoryResources == NULL) {
+        object->next = game->free_objects;
+        game->free_objects = object;
+    }
+}
+
+static void publish_object(IsleGame* game, GObj* object, uint32_t id, uint8_t link,
+    uint32_t priority, IsleGameCallback update, void* user) {
+    object->id = id;
+    object->link = link;
+    object->priority = priority;
+    object->update = update;
+    object->fnUpdate = update != NULL ? update_entry : NULL;
+    object->updateUser = user;
+    object->alive = true;
+    omLinkGObjAfterSamePriority(object);
+    ++game->counts.objects;
 }
 
 IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
@@ -158,21 +240,9 @@ IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
     if (result != ISLE_GAME_OK) return result;
     if (output == NULL || link >= ARRAY_COUNT(omGObjListHead)) return ISLE_GAME_INVALID_ARGUMENT;
     if (game->fault != ISLE_GAME_OK) return game->fault;
-    object = game->free_objects;
-    if (object != NULL) game->free_objects = object->next;
-    else object = allocate(game, sizeof(*object), _Alignof(GObj));
+    object = allocate_object(game);
     if (object == NULL) return ISLE_GAME_EXHAUSTED;
-    *object = (GObj){0};
-    object->id = id;
-    object->link = link;
-    object->priority = priority;
-    object->update = update;
-    object->fnUpdate = update != NULL ? update_entry : NULL;
-    object->updateUser = user;
-    object->game = game;
-    object->alive = true;
-    omLinkGObjAfterSamePriority(object);
-    ++game->counts.objects;
+    publish_object(game, object, id, link, priority, update, user);
     *output = object;
     return ISLE_GAME_OK;
 }
@@ -219,10 +289,7 @@ IsleGameResult isle_game_object_release_identity(IsleGame* game, IsleGameObject*
           object->type != 0 || object->data.any != NULL))) return ISLE_GAME_INVALID_STATE;
     if (--object->identityHolds == 0) {
         --game->held_identities;
-        if (!object->alive) {
-            object->next = game->free_objects;
-            game->free_objects = object;
-        }
+        release_object(game, object);
     }
     return ISLE_GAME_OK;
 }
@@ -269,21 +336,12 @@ IsleGameResult isle_game_object_id(IsleGame* game, IsleGameObject* object, uint3
     return ISLE_GAME_OK;
 }
 
-static IsleGameResult add_process(IsleGame* game, IsleGameObject* object,
-                                 IsleGameCallback entry, void* user,
-                                 IsleGameSourceCallback function,
-                                 IsleGameProcessKind kind, uint32_t priority,
-                                 IsleGameProcess** output) {
-    GObjProcess* process;
+static IsleGameResult allocate_process(IsleGame* game, GObj* object,
+    IsleGameCallback entry, void* user, IsleGameSourceCallback function,
+    IsleGameProcessKind kind, uint32_t priority, GObjProcess** output) {
+    GObjProcess* process = game->free_processes;
     IsleContinuationResult created;
-    if (output != NULL) *output = NULL;
-    IsleGameResult result = access_game(game);
-    if (result != ISLE_GAME_OK) return result;
-    if (object == NULL) object = omCurrentObject;
-    if (!valid_object(game, object) || (entry == NULL && function == NULL) || output == NULL || priority >= ARRAY_COUNT(omGProcessList)
-        || (kind != ISLE_GAME_STACKFUL && kind != ISLE_GAME_SYNCHRONOUS)) return ISLE_GAME_INVALID_ARGUMENT;
-    if (game->fault != ISLE_GAME_OK) return game->fault;
-    process = game->free_processes;
+    *output = NULL;
     if (process != NULL) game->free_processes = process->next;
     else process = allocate(game, sizeof(*process), _Alignof(GObjProcess));
     if (process == NULL) return ISLE_GAME_EXHAUSTED;
@@ -301,12 +359,41 @@ static IsleGameResult add_process(IsleGame* game, IsleGameObject* object,
             diagnostic(game, isle_continuation_error(game->domain));
             process->next = game->free_processes;
             game->free_processes = process;
-            return created == ISLE_CONT_RESOURCE_FAILURE ? ISLE_GAME_EXHAUSTED : ISLE_GAME_EXECUTION_FAILURE;
+            if (created == ISLE_CONT_RESOURCE_FAILURE) return ISLE_GAME_EXHAUSTED;
+            if (created == ISLE_CONT_WRONG_OWNER) return ISLE_GAME_WRONG_OWNER;
+            if (created == ISLE_CONT_INVALID_STATE) return ISLE_GAME_INVALID_STATE;
+            if (created == ISLE_CONT_INVALID_ARGUMENT) return ISLE_GAME_INVALID_ARGUMENT;
+            return ISLE_GAME_EXECUTION_FAILURE;
         }
     } else process->unk_1C.cb = synchronous_entry;
+    *output = process;
+    return ISLE_GAME_OK;
+}
+
+static void publish_process(IsleGame* game, GObjProcess* process) {
     process->alive = true;
     omLinkProcess(process);
     ++game->counts.processes;
+}
+
+static IsleGameResult add_process(IsleGame* game, IsleGameObject* object,
+                                 IsleGameCallback entry, void* user,
+                                 IsleGameSourceCallback function,
+                                 IsleGameProcessKind kind, uint32_t priority,
+                                 IsleGameProcess** output) {
+    GObjProcess* process;
+    IsleGameResult prepared;
+    if (output != NULL) *output = NULL;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object) || (entry == NULL && function == NULL) || output == NULL || priority >= ARRAY_COUNT(omGProcessList)
+        || (kind != ISLE_GAME_STACKFUL && kind != ISLE_GAME_SYNCHRONOUS)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    prepared = allocate_process(game, object, entry, user, function, kind, priority, &process);
+    if (prepared != ISLE_GAME_OK)
+        return prepared == ISLE_GAME_EXHAUSTED ? prepared : ISLE_GAME_EXECUTION_FAILURE;
+    publish_process(game, process);
     *output = process;
     return ISLE_GAME_OK;
 }
@@ -1033,26 +1120,23 @@ static void remove_model(IsleGameModel* model) {
     game->free_models = model;
 }
 
-IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
-    const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output) {
-    IsleGameModel* model;
-    IsleGameModel** best = NULL;
-    IsleGameResult result;
-    if (output != NULL) *output = NULL;
-    result = access_game(game);
-    if (result != ISLE_GAME_OK) return result;
-    if (object == NULL) object = omCurrentObject;
-    if (output == NULL || !valid_object(game, object) || initial == NULL ||
-        count == 0 || count > UINT32_MAX ||
-        count > (SIZE_MAX - sizeof(IsleGameModel)) / (sizeof(IsleGameModelNode) + 1))
-        return ISLE_GAME_INVALID_ARGUMENT;
-    if (game->fault != ISLE_GAME_OK) return game->fault;
-    if (object->type != 0 || object->data.any != NULL) return ISLE_GAME_INVALID_STATE;
+static bool valid_model_count(size_t count) {
+    return count != 0 && count <= UINT32_MAX &&
+        count <= (SIZE_MAX - sizeof(IsleGameModel)) / (sizeof(IsleGameModelNode) + 1);
+}
+
+static bool valid_model_initial(const IsleGameModelNodeInit* initial, size_t count) {
     for (size_t i = 0; i < count; ++i) {
         if ((i == 0 ? initial[i].parent != UINT32_MAX : initial[i].parent >= i) ||
             !valid_model_matrix_transform(&initial[i].transform, initial[i].matrix_kind))
-            return ISLE_GAME_INVALID_ARGUMENT;
+            return false;
     }
+    return true;
+}
+
+static IsleGameModel* allocate_model(IsleGame* game, size_t count) {
+    IsleGameModel* model;
+    IsleGameModel** best = NULL;
     /* Best-fit released block, or one actual-size allocation. All rejection
      * precedes free-list/arena mutation and object publication.
      */
@@ -1066,12 +1150,20 @@ IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     } else {
         model = allocate(game, sizeof(*model) + count * (sizeof(model->nodes[0]) + 1),
                          _Alignof(IsleGameModel));
-        if (model == NULL) return ISLE_GAME_EXHAUSTED;
+        if (model == NULL) return NULL;
         model->capacity = count;
     }
     model->nextFree = NULL;
-    model->obj = object;
+    model->obj = NULL;
     model->game = game;
+    model->count = 0;
+    model->alive = false;
+    return model;
+}
+
+static void publish_model(IsleGame* game, GObj* object, IsleGameModel* model,
+    const IsleGameModelNodeInit* initial, size_t count) {
+    model->obj = object;
     model->count = count;
     model->alive = true;
     model->placement = (IsleGameModelPlacement){
@@ -1098,7 +1190,242 @@ IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     ++game->counts.models;
     game->counts.model_nodes += count;
     game->counts.matrices += count;
+}
+
+IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
+    const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output) {
+    IsleGameModel* model;
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (output == NULL || !valid_object(game, object) || initial == NULL ||
+        !valid_model_count(count)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (object->type != 0 || object->data.any != NULL) return ISLE_GAME_INVALID_STATE;
+    if (!valid_model_initial(initial, count)) return ISLE_GAME_INVALID_ARGUMENT;
+    model = allocate_model(game, count);
+    if (model == NULL) return ISLE_GAME_EXHAUSTED;
+    publish_model(game, object, model, initial, count);
     *output = model;
+    return ISLE_GAME_OK;
+}
+
+/* The reserved raw object roots the ticket even after its publication and
+ * retirement. Private pins prevent address reuse without adding Source-visible
+ * identity credits, list nodes, callbacks or live-count entries. */
+static IsleGameResult access_factory(IsleSourceFactoryResources* resources) {
+    IsleGameResult result;
+    if (resources == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    if (!resources->active || resources->game == NULL) return ISLE_GAME_INVALID_STATE;
+    result = access_game(resources->game);
+    if (result != ISLE_GAME_OK) return result;
+    for (GObj* object = resources->game->factory_objects; object != NULL; object = object->nextFactory) {
+        if (object->factoryResources == resources)
+            return object == resources->object ? ISLE_GAME_OK : ISLE_GAME_INVALID_STATE;
+    }
+    return ISLE_GAME_INVALID_STATE;
+}
+
+static IsleGameResult factory_reject(IsleSourceFactoryResources* resources, IsleGameResult result) {
+    if ((resources->object_published || resources->model_published || resources->published_processes != 0) &&
+        resources->game->fault == ISLE_GAME_OK) {
+        diagnostic(resources->game, "invalid prepared Source factory publication");
+        resources->game->fault = ISLE_GAME_EXECUTION_FAILURE;
+    }
+    return result;
+}
+
+static void release_factory_target(GObjProcess* process) {
+    if (process->factoryTargetHeld) {
+        GObj* object = process->object;
+        process->factoryTargetHeld = false;
+        --object->factoryHolds;
+        release_object(process->game, object);
+    }
+}
+
+static void release_factory(IsleSourceFactoryResources* resources) {
+    IsleGame* game = resources->game;
+    GObj* object = resources->object;
+    GObj** slot = &game->factory_objects;
+    while (*slot != object) slot = &(*slot)->nextFactory;
+    *slot = object->nextFactory;
+    object->nextFactory = NULL;
+    object->factoryResources = NULL;
+    release_object(game, object);
+    *resources = (IsleSourceFactoryResources){0};
+}
+
+IsleGameResult isle_source_factory_cancel(IsleSourceFactoryResources* resources) {
+    IsleGameResult result = access_factory(resources);
+    IsleGameResult cleanup = ISLE_GAME_OK;
+    IsleGame* game;
+    if (result != ISLE_GAME_OK) return result;
+    game = resources->game;
+    for (size_t i = 0; i < resources->process_count; ++i) {
+        GObjProcess* process = resources->processes[i];
+        if ((resources->published_processes & (UINT32_C(1) << i)) != 0 || process == NULL) continue;
+        if (process->continuation != NULL) {
+            IsleContinuationResult joined = isle_continuation_destroy(process->continuation);
+            if (joined != ISLE_CONT_OK) {
+                diagnostic(game, isle_continuation_error(game->domain));
+                cleanup = joined == ISLE_CONT_WRONG_OWNER ? ISLE_GAME_WRONG_OWNER :
+                    joined == ISLE_CONT_INVALID_STATE ? ISLE_GAME_INVALID_STATE : ISLE_GAME_EXECUTION_FAILURE;
+                continue;
+            }
+            process->continuation = NULL;
+        }
+        release_factory_target(process);
+        process->next = game->free_processes;
+        game->free_processes = process;
+        resources->processes[i] = NULL;
+    }
+    /* A failed join retains the stable ticket and its raw object/model. */
+    if (cleanup != ISLE_GAME_OK) return cleanup;
+    if (!resources->model_published && resources->model != NULL) {
+        resources->model->nextFree = game->free_models;
+        game->free_models = resources->model;
+    }
+    release_factory(resources);
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_source_factory_prepare(IsleGame* game, size_t nodes,
+    const IsleSourceFactoryProcess* descriptors, size_t process_count,
+    IsleSourceFactoryResources* resources) {
+    IsleGameResult result = access_game(game);
+    GObj* object;
+    if (result != ISLE_GAME_OK) return result;
+    if (resources == NULL || !valid_model_count(nodes) ||
+        process_count > ISLE_SOURCE_FACTORY_PROCESS_CAPACITY ||
+        (process_count != 0 && descriptors == NULL)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (resources->active || resources->game != NULL || resources->object != NULL ||
+        resources->model != NULL || resources->process_count != 0 || resources->nodes != 0 ||
+        resources->published_processes != 0 || resources->object_published || resources->model_published)
+        return ISLE_GAME_INVALID_STATE;
+    for (size_t i = 0; i < ISLE_SOURCE_FACTORY_PROCESS_CAPACITY; ++i)
+        if (resources->processes[i] != NULL) return ISLE_GAME_INVALID_STATE;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (game->retirement_observer) return ISLE_GAME_INVALID_STATE;
+    for (size_t i = 0; i < process_count; ++i) {
+        const IsleSourceFactoryProcess* descriptor = &descriptors[i];
+        if (descriptor->function == NULL || descriptor->priority >= ARRAY_COUNT(omGProcessList) ||
+            (descriptor->kind != ISLE_GAME_STACKFUL && descriptor->kind != ISLE_GAME_SYNCHRONOUS) ||
+            (descriptor->object != NULL && !valid_object(game, descriptor->object)))
+            return ISLE_GAME_INVALID_ARGUMENT;
+        if (descriptor->object != NULL && (descriptor->object->retirementStarted ||
+            descriptor->object->factoryHolds > SIZE_MAX - process_count))
+            return ISLE_GAME_INVALID_STATE;
+    }
+    object = allocate_object(game);
+    if (object == NULL) return ISLE_GAME_EXHAUSTED;
+    resources->game = game;
+    resources->object = object;
+    resources->nodes = nodes;
+    resources->process_count = process_count;
+    resources->active = 1;
+    for (size_t i = 0; i < process_count; ++i) resources->descriptors[i] = descriptors[i];
+    object->factoryResources = resources;
+    object->nextFactory = game->factory_objects;
+    game->factory_objects = object;
+    resources->model = allocate_model(game, nodes);
+    result = resources->model != NULL ? ISLE_GAME_OK : ISLE_GAME_EXHAUSTED;
+    for (size_t i = 0; result == ISLE_GAME_OK && i < process_count; ++i) {
+        const IsleSourceFactoryProcess* descriptor = &resources->descriptors[i];
+        result = allocate_process(game, descriptor->object != NULL ? descriptor->object : object,
+            NULL, NULL, descriptor->function, descriptor->kind, descriptor->priority,
+            &resources->processes[i]);
+        if (result == ISLE_GAME_OK && descriptor->object != NULL) {
+            ++descriptor->object->factoryHolds;
+            resources->processes[i]->factoryTargetHeld = true;
+        }
+    }
+    if (result != ISLE_GAME_OK) {
+        IsleGameResult cleanup = isle_source_factory_cancel(resources);
+        return cleanup == ISLE_GAME_OK ? result : cleanup;
+    }
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_source_factory_publish_object(IsleSourceFactoryResources* resources,
+    uint32_t id, uint8_t link, uint32_t priority, IsleGameCallback update,
+    void* user, IsleGameObject** output) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_factory(resources);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || link >= ARRAY_COUNT(omGObjListHead))
+        return factory_reject(resources, ISLE_GAME_INVALID_ARGUMENT);
+    if (resources->game->fault != ISLE_GAME_OK) return resources->game->fault;
+    if (resources->object_published || resources->object->alive)
+        return factory_reject(resources, ISLE_GAME_INVALID_STATE);
+    publish_object(resources->game, resources->object, id, link, priority, update, user);
+    resources->object_published = 1;
+    *output = resources->object;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_source_factory_attach_model(IsleSourceFactoryResources* resources,
+    IsleGameObject* object, const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_factory(resources);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || object != resources->object || initial == NULL || count != resources->nodes ||
+        !valid_model_initial(initial, count))
+        return factory_reject(resources, ISLE_GAME_INVALID_ARGUMENT);
+    if (resources->game->fault != ISLE_GAME_OK) return resources->game->fault;
+    if (!resources->object_published || resources->model_published ||
+        !valid_object(resources->game, object) || object->retirementStarted ||
+        object->type != 0 || object->data.any != NULL || resources->model == NULL)
+        return factory_reject(resources, ISLE_GAME_INVALID_STATE);
+    publish_model(resources->game, object, resources->model, initial, count);
+    resources->model_published = 1;
+    *output = resources->model;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_source_factory_publish_process(IsleSourceFactoryResources* resources,
+    IsleGameObject* object, IsleGameSourceCallback function, IsleGameProcessKind kind,
+    uint32_t priority, IsleGameProcess** output) {
+    IsleGameResult result;
+    if (output != NULL) *output = NULL;
+    result = access_factory(resources);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || !valid_object(resources->game, object) || function == NULL ||
+        priority >= ARRAY_COUNT(omGProcessList) ||
+        (kind != ISLE_GAME_STACKFUL && kind != ISLE_GAME_SYNCHRONOUS))
+        return factory_reject(resources, ISLE_GAME_INVALID_ARGUMENT);
+    if (resources->game->fault != ISLE_GAME_OK) return resources->game->fault;
+    if (object->retirementStarted) return factory_reject(resources, ISLE_GAME_INVALID_STATE);
+    for (size_t i = 0; i < resources->process_count; ++i) {
+        const IsleSourceFactoryProcess* descriptor = &resources->descriptors[i];
+        if ((resources->published_processes & (UINT32_C(1) << i)) == 0 &&
+            (descriptor->object != NULL ? descriptor->object : resources->object) == object &&
+            descriptor->function == function && descriptor->kind == kind && descriptor->priority == priority) {
+            GObjProcess* process = resources->processes[i];
+            if (process == NULL || process->alive || process->object != object)
+                return factory_reject(resources, ISLE_GAME_INVALID_STATE);
+            publish_process(resources->game, process);
+            resources->published_processes |= UINT32_C(1) << i;
+            release_factory_target(process);
+            *output = process;
+            return ISLE_GAME_OK;
+        }
+    }
+    return factory_reject(resources, ISLE_GAME_INVALID_STATE);
+}
+
+IsleGameResult isle_source_factory_finish(IsleSourceFactoryResources* resources) {
+    IsleGameResult result = access_factory(resources);
+    if (result != ISLE_GAME_OK) return result;
+    if (!resources->object_published || !resources->model_published ||
+        resources->published_processes != ((UINT32_C(1) << resources->process_count) - 1))
+        return factory_reject(resources, ISLE_GAME_INVALID_STATE);
+    if (resources->game->fault != ISLE_GAME_OK) return resources->game->fault;
+    release_factory(resources);
     return ISLE_GAME_OK;
 }
 
@@ -1343,10 +1670,7 @@ void omDeleteGObj(GObj* object) {
         game->retirement_observer = previous_observer;
         --game->callback_depth;
     }
-    if (object->identityHolds == 0) {
-        object->next = game->free_objects;
-        game->free_objects = object;
-    }
+    release_object(game, object);
     --game->counts.objects;
 }
 
@@ -1387,7 +1711,8 @@ IsleGameResult isle_game_destroy(IsleGame* game) {
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
     if (game->ticking || omCurrentObject != NULL || omCurrentProcess != NULL ||
-        game->callback_depth != 0 || game->held_identities != 0) return ISLE_GAME_INVALID_STATE;
+        game->callback_depth != 0 || game->held_identities != 0 ||
+        game->factory_objects != NULL) return ISLE_GAME_INVALID_STATE;
     for (size_t link = 0; link < ARRAY_COUNT(omGObjListHead); ++link) {
         while (omGObjListHead[link] != NULL) {
             GObj* before = omGObjListHead[link];

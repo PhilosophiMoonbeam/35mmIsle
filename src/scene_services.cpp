@@ -1,6 +1,7 @@
 #include "scene_services.hpp"
 #include "menu_scene_bridge.h"
 #include "borrowed_model_kernel.hpp"
+#include "source_factory_resources.h"
 
 #include <algorithm>
 #include <cmath>
@@ -42,7 +43,7 @@ struct Services::Impl {
         SourceBorrows source_borrows{};
         bool source_registered = false;
         bool drawing = false, deleting = false, dispatching = false, retired = false;
-        bool dispatch_owner_joined = false;
+        bool native_commands = false;
     };
     struct Ramp {
         Impl* owner = nullptr;
@@ -57,6 +58,7 @@ struct Services::Impl {
     ::isle::menu::model::CameraBasisState camera_basis{};
     ObjectRecord *objects = nullptr, *free_objects = nullptr, *draws = nullptr;
     SpriteRecord* free_sprites = nullptr;
+    std::size_t prepared_objects = 0;
     IsleGameCommandPool commands{};
     std::array<Ramp, 5> volumes{}, pans{};
     IsleGameObject* fade_object = nullptr;
@@ -102,6 +104,39 @@ struct Services::Impl {
         }
         return ::new (static_cast<void*>(storage.data)) T{};
     }
+    IsleGameResult take_object_record(ObjectRecord*& output) noexcept {
+        output = free_objects;
+        if (output) {
+            free_objects = output->next;
+            output->next = nullptr;
+            return ISLE_GAME_OK;
+        }
+        isle_span storage{};
+        if (isle_arena_allocate(&arena,sizeof(ObjectRecord),alignof(ObjectRecord),&storage) != ISLE_OK)
+            return ISLE_GAME_EXHAUSTED;
+        output = ::new (static_cast<void*>(storage.data)) ObjectRecord{};
+        return ISLE_GAME_OK;
+    }
+    void recycle_object_record(ObjectRecord* entry) noexcept {
+        *entry = ObjectRecord{};
+        entry->next = free_objects;
+        free_objects = entry;
+    }
+    void initialize_object_record(ObjectRecord& entry) noexcept {
+        entry.owner = this;
+        entry.commands.acquire = acquire_source;
+        entry.commands.release = release_source;
+        entry.commands.borrow_user = this;
+    }
+    IsleGameResult publish_object_record(ObjectRecord& entry) noexcept {
+        entry.next = objects;
+        objects = &entry;
+        auto result = isle_game_object_set_retire_callback(s.game,entry.object,retired,&entry);
+        if (result == ISLE_GAME_OK)
+            result = isle_game_object_set_pre_retire_callback(s.game,entry.object,retiring,&entry);
+        s.check(result,"scene native retirement callbacks");
+        return result;
+    }
     ObjectRecord* find(IsleGameObject* object) noexcept {
         if (object == nullptr) object = isle_menu_current_object(s.game);
         for (auto* entry = objects; entry != nullptr; entry = entry->next)
@@ -140,6 +175,17 @@ struct Services::Impl {
             *field = nullptr;
         }
     }
+    void close_dispatch(ObjectRecord& entry, int current_callback_frame) noexcept {
+        isle_game_commands_abort(s.game,&commands,&entry.commands,current_callback_frame);
+        entry.dispatching = false;
+        entry.dispatch_owner = nullptr;
+    }
+    static void owned_command_fault(void* context) noexcept {
+        auto& entry = *static_cast<ObjectRecord*>(context);
+        // The native C fault path disarms before calling this returning leaf.
+        // Do not query faulted native access or depend on an abandoned C frame.
+        entry.owner->close_dispatch(entry,1);
+    }
     static void retiring(IsleGameObject* object, void* user) noexcept {
         auto* entry = static_cast<ObjectRecord*>(user);
         entry->deleting = true;
@@ -162,27 +208,17 @@ struct Services::Impl {
         for (auto* dependent = owner->objects; dependent != nullptr;) {
             auto* next = dependent->next;
             if (dependent->dispatching && dependent->dispatch_owner == entry) {
-                dependent->dispatch_owner_joined = true;
-                dependent->dispatch_owner = nullptr;
-                // Actual caller join proves even a live target's abandoned
-                // handler cannot resume its active sender access.
-                isle_game_command_finish(&dependent->commands);
-                if (dependent != entry && dependent->retired && !owner->destroying) {
-                    dependent->dispatching = false;
-                    dependent->commands.processing = 0;
-                    isle_game_commands_release(&owner->commands, &dependent->commands);
+                // The caller has joined, not merely its target. The abandoned
+                // callback cannot resume: remove only its consumed prefix.
+                // Its parked depth is not this retirement observer's depth.
+                owner->close_dispatch(*dependent,0);
+                if (dependent != entry && dependent->retired && !owner->destroying)
                     owner->unlink(dependent);
-                }
             }
             dependent = next;
         }
-        if (entry->dispatching && entry->dispatch_owner_joined) {
-            entry->commands.processing = 0;
-            entry->dispatching = false;
-            isle_game_commands_release(&owner->commands, &entry->commands);
-            owner->unlink(entry);
-        } else if (entry->dispatching) {
-            isle_game_commands_release(&owner->commands, &entry->commands);
+        if (entry->dispatching) {
+            isle_game_commands_release(&owner->commands,&entry->commands);
         } else {
             owner->unlink(entry);
         }
@@ -204,9 +240,7 @@ struct Services::Impl {
             sprite->next = free_sprites;
             free_sprites = sprite;
         }
-        *entry = ObjectRecord{};
-        entry->next = free_objects;
-        free_objects = entry;
+        recycle_object_record(entry);
     }
     void unlink_draw(ObjectRecord* entry) noexcept {
         auto** at = &draws;
@@ -300,7 +334,11 @@ Services::Services(IsleGame* owner, isle_arena& arena, ResourceView resources,
       impl_(std::make_unique<Impl>(*this, arena, resources)) {
     impl_->initialize();
 }
+Services::ObjectPreparation::~ObjectPreparation() {
+    if (owner_ || record_) std::terminate();
+}
 Services::~Services() {
+    if (impl_->prepared_objects) std::terminate();
     // Keep cross-object dispatch records until every registered native caller
     // has really joined. Manual/unregistered callers require their own lifetime
     // boundary; target retirement cannot certify their completion.
@@ -314,7 +352,7 @@ Services::~Services() {
         auto* entry = impl_->objects;
         // Neither failed joins nor still-pending external/manual calls permit
         // releasing callback storage. No synthetic completion or retry.
-        if (!entry->retired || (entry->dispatching && !entry->dispatch_owner_joined))
+        if (!entry->retired || entry->dispatching)
             std::terminate();
         entry->commands.processing = 0;
         if (entry->source_registered) {
@@ -345,35 +383,66 @@ bool Services::wait(std::uint32_t updates) noexcept {
 }
 IsleGameObject* Services::object(std::uint32_t id, std::uint8_t link, std::uint32_t priority) noexcept {
     if (failed()) return nullptr;
-    auto* record = impl_->free_objects;
-    if (record != nullptr) impl_->free_objects = record->next;
-    else record = impl_->allocate<Impl::ObjectRecord>();
-    if (record == nullptr) return nullptr;
-    *record = Impl::ObjectRecord{};
-    record->owner = impl_.get();
-    record->commands.acquire = Impl::acquire_source;
-    record->commands.release = Impl::release_source;
-    record->commands.borrow_user = impl_.get();
+    Impl::ObjectRecord* record = nullptr;
+    if (!check(impl_->take_object_record(record),"menu native bookkeeping arena exhausted")) return nullptr;
+    impl_->initialize_object_record(*record);
     if (!check(isle_game_add_object(game, id, link, priority, Impl::default_update, record,
             &record->object), "menu native object creation")) {
-        record->next = impl_->free_objects;
-        impl_->free_objects = record;
+        impl_->recycle_object_record(record);
         return nullptr;
     }
-    record->next = impl_->objects;
-    impl_->objects = record;
-    if (!check(isle_game_object_set_retire_callback(game, record->object, Impl::retired, record),
-               "scene native retirement callback") ||
-        !check(isle_game_object_set_pre_retire_callback(game, record->object, Impl::retiring, record),
-               "scene native pre-retirement callback")) {
+    if (impl_->publish_object_record(*record) != ISLE_GAME_OK) {
         erase(record->object);
         return nullptr;
     }
     return record->object;
 }
+IsleGameResult Services::prepare_object(ObjectPreparation& preparation) noexcept {
+    if (preparation.owner_ || preparation.record_) return ISLE_GAME_INVALID_STATE;
+    if (failed()) return ISLE_GAME_INVALID_STATE;
+    Impl::ObjectRecord* record = nullptr;
+    const auto result = impl_->take_object_record(record);
+    if (result != ISLE_GAME_OK) return result;
+    preparation.owner_ = this;
+    preparation.record_ = record;
+    ++impl_->prepared_objects;
+    return ISLE_GAME_OK;
+}
+IsleGameResult Services::publish_object(ObjectPreparation& preparation, ::IsleSourceFactoryResources& resources,
+    std::uint32_t id, std::uint8_t link, std::uint32_t priority, IsleGameObject** output) noexcept {
+    if (output) *output = nullptr;
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    if (preparation.owner_ != this) return ISLE_GAME_WRONG_OWNER;
+    if (!preparation.record_ || failed()) return ISLE_GAME_INVALID_STATE;
+    auto* record = static_cast<Impl::ObjectRecord*>(preparation.record_);
+    impl_->initialize_object_record(*record);
+    const auto result = isle_source_factory_publish_object(&resources,id,link,priority,
+        Impl::default_update,record,&record->object);
+    if (!check(result,"scene prepared native object publication")) return result;
+    // Native publication transferred real ownership. A later invariant failure
+    // retains this registered record for ordinary retirement, never cancellation.
+    preparation.record_ = nullptr;
+    preparation.owner_ = nullptr;
+    --impl_->prepared_objects;
+    *output = record->object;
+    const auto callbacks = impl_->publish_object_record(*record);
+    if (callbacks != ISLE_GAME_OK) return callbacks;
+    return ISLE_GAME_OK;
+}
+IsleGameResult Services::cancel_object(ObjectPreparation& preparation) noexcept {
+    if (!preparation.owner_ && !preparation.record_) return ISLE_GAME_INVALID_STATE;
+    if (preparation.owner_ != this) return ISLE_GAME_WRONG_OWNER;
+    if (!preparation.record_) return ISLE_GAME_INVALID_STATE;
+    impl_->recycle_object_record(static_cast<Impl::ObjectRecord*>(preparation.record_));
+    preparation.record_ = nullptr;
+    preparation.owner_ = nullptr;
+    --impl_->prepared_objects;
+    return ISLE_GAME_OK;
+}
 bool Services::set_update(IsleGameObject* object, IsleGameCallback callback, void* user) noexcept {
     auto* record = impl_->find(object);
     if (record == nullptr || record->deleting) { fail("scene update owner is unregistered or retiring"); return false; }
+    if (record->native_commands) { fail("native source update ownership cannot be replaced by a legacy callback"); return false; }
     return check(isle_menu_set_update(game, record->object, callback, user), "scene source update replacement");
 }
 bool Services::set_lifecycle(IsleGameObject* object, ObjectLifecycle lifecycle) noexcept {
@@ -398,6 +467,7 @@ bool Services::set_lifecycle(IsleGameObject* object, ObjectLifecycle lifecycle) 
 bool Services::set_command_handler(IsleGameObject* object, IsleGameCommandHandler callback, void* user) noexcept {
     auto* record = impl_->find(object);
     if (record == nullptr || record->deleting) { fail("scene command owner is unregistered or retiring"); return false; }
+    if (record->native_commands) { fail("native source commands require their C update boundary"); return false; }
     record->handler = callback;
     record->handler_user = user;
     return !failed();
@@ -474,9 +544,66 @@ bool Services::source_owner_release(IsleGameObject* object) noexcept {
     impl_->unlink(record);
     return true;
 }
+bool Services::source_owner_registered(IsleGameObject* object) const noexcept {
+    const auto* record = object ? impl_->find(object) : nullptr;
+    return record && record->source_registered;
+}
+bool Services::source_owner_joined(IsleGameObject* object) const noexcept {
+    const auto* record = object ? impl_->find(object) : nullptr;
+    return record && record->source_registered && record->retired;
+}
+bool Services::source_commands_native(IsleGameObject* object) noexcept {
+    auto* record = object ? impl_->find(object) : nullptr;
+    if (failed() || !record || record->deleting || !record->source_registered ||
+        record->dispatching || record->commands.processing || record->handler) {
+        fail("native source commands require an idle registered owner without a legacy handler");
+        return false;
+    }
+    record->native_commands = true;
+    return true;
+}
+bool Services::source_commands_begin(IsleGameObject* object, IsleSourceCommandScope& scope) noexcept {
+    scope = {};
+    auto* record = object ? impl_->find(object) : nullptr;
+    if (failed() || !record || record->deleting || !record->source_registered ||
+        !record->native_commands || record->dispatching || record->commands.processing) {
+        fail("native source command scope requires its idle live registered owner");
+        return false;
+    }
+    if (!check(isle_menu_command_fault_begin(game,object,Impl::owned_command_fault,record),
+            "native source command scope is not a real synchronous object update")) return false;
+    record->dispatching = true;
+    record->dispatch_owner = record;
+    scope = {&impl_->commands,&record->commands,record};
+    return true;
+}
+bool Services::source_commands_end(IsleSourceCommandScope& scope, IsleGameResult result,
+    int delete_requested) noexcept {
+    Impl::ObjectRecord* record = nullptr;
+    for (auto* entry = impl_->objects; entry; entry = entry->next)
+        if (entry == scope.context) { record = entry; break; }
+    if (!record || scope.pool != &impl_->commands || scope.queue != &record->commands ||
+        !record->native_commands || !record->dispatching) {
+        fail("native source command completion has no matching owned scope");
+        return false;
+    }
+    const auto disarmed = isle_menu_command_fault_end(game,record);
+    scope = {};
+    if (result != ISLE_GAME_OK || disarmed != ISLE_GAME_OK || failed()) {
+        impl_->close_dispatch(*record,1);
+        if (result != ISLE_GAME_OK) fail("native source command admission or execution failed");
+        if (disarmed != ISLE_GAME_OK) fail("native source command fault scope completion failed");
+        return false;
+    }
+    record->dispatching = false;
+    record->dispatch_owner = nullptr;
+    if (record->retired) impl_->unlink(record);
+    else if (delete_requested) erase(record->object);
+    return !failed();
+}
 bool Services::source_command_before_transfer(IsleGameObject* object) noexcept {
     auto* record = object ? impl_->find(object) : nullptr;
-    if (!record || !record->dispatching || !record->commands.processing) {
+    if (!record || !record->dispatching || !record->commands.processing || !record->commands.custom_callback_open) {
         fail("scene source transfer requires the active custom command handler");
         return false;
     }
@@ -486,6 +613,7 @@ bool Services::source_command_before_transfer(IsleGameObject* object) noexcept {
 bool Services::process_commands(IsleGameObject* object) noexcept {
     auto* record = impl_->find(object);
     if (record == nullptr) { fail("scene command processing owner is unregistered"); return false; }
+    if (record->native_commands) { fail("native source commands require their C update boundary"); return false; }
     if (record->deleting) return !failed();
     if (record->dispatching) { fail("recursive scene command dispatch"); return false; }
     int erase_requested = 0;
@@ -494,12 +622,10 @@ bool Services::process_commands(IsleGameObject* object) noexcept {
     // A retained retired record may share an unregistered caller's reused
     // native address. Only a current registration can certify that caller's join.
     record->dispatch_owner = dispatch_owner != nullptr && !dispatch_owner->retired ? dispatch_owner : nullptr;
-    record->dispatch_owner_joined = false;
     const auto status = isle_game_commands(game, record->object, &impl_->commands, &record->commands,
                                            record->handler, record->handler_user, &erase_requested);
     record->dispatching = false;
     record->dispatch_owner = nullptr;
-    record->dispatch_owner_joined = false;
     if (record->retired) impl_->unlink(record);
     else if (erase_requested) erase(record->object);
     return check(status, "scene source command processing");
@@ -544,6 +670,19 @@ bool Services::render_metadata(IsleGameObject* object, RenderMetadata& output) c
     auto* record = impl_->find(object);
     if (record == nullptr || !record->drawing || record->deleting) return false;
     output = record->render;
+    return true;
+}
+bool Services::render_order(std::uint8_t link, std::span<RenderOrderEntry> output,
+                            std::size_t& written) const noexcept {
+    written = 0;
+    if (link >= 32) return false;
+    std::size_t count = 0;
+    for (auto* owner = impl_->draws; owner != nullptr; owner = owner->draw_next)
+        if (owner->drawing && !owner->deleting && owner->render.link == link) ++count;
+    if (output.size() < count) return false;
+    for (auto* owner = impl_->draws; owner != nullptr; owner = owner->draw_next)
+        if (owner->drawing && !owner->deleting && owner->render.link == link)
+            output[written++] = {owner->object,owner->render};
     return true;
 }
 bool Services::move_to_head(IsleGameObject* object) noexcept {

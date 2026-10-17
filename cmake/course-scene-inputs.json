@@ -24,10 +24,10 @@
       "sha256": "b294ed61393ed3ec6a33e8cc8d7851aca7610f15096c2626a584f37a352968bc"
     },
     "src/course_model_producer.cpp": {
-      "sha256": "09184a2395caf14dcc17c6d4bb87c7d0a411bab58fa937bfb15665897f331550"
+      "sha256": "ccecb3b65a6c5492eef958ec9f9a0513da016605bf6a7011f65be2bb69989d51"
     },
     "src/course_model_producer.hpp": {
-      "sha256": "b199cf1c5fa7b1eca6f7349a494047a837fd63e7419b3cc77d0633b9692e01ae"
+      "sha256": "15955efa96d1c80a54663450e6923d42093fc747f30ed10ced1625f588043563"
     },
     "src/source_effect_camera.cpp": {
       "sha256": "8ef3039e1db89c1eb3fe63a37266e75c91865bc1232a60318180591a4e23b395"
@@ -48,7 +48,7 @@
       "sha256": "01f9543c7fcf1f7d4f39af67384030b666d6b4d89e4444b1513e0b327e63a2ea"
     },
     "tests/menu_effects_tests.cpp": {
-      "sha256": "91cb83b16e2bdf4f8a684eb90480773dc909efdc12679fab7f3e72e027b3ecd8"
+      "sha256": "64e39fa6b4abb67899b7a0d45e0498f9c0dcdc87b68add722db1599a6ed19541"
     },
     "tests/scene_layout_rom_smoke.cpp": {
       "sha256": "0fbecf0d492fb0b8e5379f5e0247185f2526446374f2772b7d8afa6022574729"

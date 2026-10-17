@@ -9,10 +9,13 @@
 #include "game_state.hpp"
 #include "scene_resources.hpp"
 #include "sprite_producer.hpp"
+#include "source_command_scope.h"
 #include <array>
 #include <cstdint>
 #include <memory>
 #include <span>
+
+struct IsleSourceFactoryResources;
 
 namespace isle::menu::model { struct CameraBasisState; }
 namespace isle::scene {
@@ -25,6 +28,10 @@ struct FadeView {
 struct RenderMetadata {
     std::uint8_t link = 0;
     std::uint32_t priority = 0x80000000u, camera_tag = 0;
+};
+struct RenderOrderEntry {
+    IsleGameObject* object = nullptr;
+    RenderMetadata render;
 };
 struct SpriteDraw {
     sprite::Draw draw;
@@ -50,6 +57,19 @@ struct SourceBorrows {
 // than free live callback storage. No per-scene audio drain or scheduler.
 class Services final {
 public:
+    // Stable, caller-owned unpublished bookkeeping. Explicit publish/cancel
+    // must release it before either this ticket or its Services is destroyed.
+    class ObjectPreparation final {
+    public:
+        ObjectPreparation() noexcept = default;
+        ~ObjectPreparation();
+        ObjectPreparation(const ObjectPreparation&) = delete;
+        ObjectPreparation& operator=(const ObjectPreparation&) = delete;
+    private:
+        friend class Services;
+        Services* owner_ = nullptr;
+        void* record_ = nullptr;
+    };
     Services(IsleGame*, isle_arena&, ResourceView, game_input::Service&,
              game_audio::Session&, ::isle::game::State&);
     ~Services();
@@ -77,6 +97,12 @@ public:
     bool wait(std::uint32_t updates = 1) noexcept;
     IsleGameObject* object(std::uint32_t id, std::uint8_t update_link = 0,
                           std::uint32_t priority = 0x80000000u) noexcept;
+    IsleGameResult prepare_object(ObjectPreparation&) noexcept;
+    // Output retains the actual object on a terminal postpublication error.
+    IsleGameResult publish_object(ObjectPreparation&, ::IsleSourceFactoryResources&,
+        std::uint32_t id, std::uint8_t link, std::uint32_t priority, IsleGameObject**) noexcept;
+    // Releases only the unpublished record, including after sticky scene failure.
+    IsleGameResult cancel_object(ObjectPreparation&) noexcept;
     bool set_update(IsleGameObject*, IsleGameCallback, void*) noexcept;
     // Registered live owners only, before Services erase/actual retirement.
     // All-null clears observers even after sticky scene failure, after validating
@@ -107,6 +133,16 @@ public:
     // Joined, no queue/field borrowers, outside ALL OM/command/graphics borrowers.
     // Failure preserves registration; callers preserve first-held-slot policy.
     bool source_owner_release(IsleGameObject*) noexcept;
+    // Registration includes joined identities still held by their semantic
+    // owner. joined alone never makes a payload/model live or a GPU fence.
+    bool source_owner_registered(IsleGameObject*) const noexcept;
+    bool source_owner_joined(IsleGameObject*) const noexcept;
+    // Native source update owns C interpretation; legacy/manual dispatch and
+    // handler replacement reject without consuming its FIFO. Begin arms the
+    // command-specific native C fault hook over the existing stable record.
+    bool source_commands_native(IsleGameObject*) noexcept;
+    bool source_commands_begin(IsleGameObject*, IsleSourceCommandScope&) noexcept;
+    bool source_commands_end(IsleSourceCommandScope&, IsleGameResult, int delete_requested) noexcept;
     // Only from the active custom handler, AFTER canonical field adoption and
     // BEFORE genuinely nonreturning C control. Finishes CURRENT credit only,
     // never a FIFO suffix. Ordinary state selection/return needs no call.
@@ -120,6 +156,11 @@ public:
     void erase(IsleGameObject*) noexcept;
     bool set_render(IsleGameObject*, RenderMetadata) noexcept;
     bool render_metadata(IsleGameObject*, RenderMetadata&) const noexcept;
+    // Read-only projection of the actual draw_next list, including hidden
+    // owners. No allocation, native access, sorting or retained second registry.
+    // Invalid link/insufficient output returns false, written=0, output unchanged.
+    bool render_order(std::uint8_t link, std::span<RenderOrderEntry>,
+                      std::size_t& written) const noexcept;
     // Head inserts before equal DL priorities; tail inserts after equal priorities.
     bool move_to_head(IsleGameObject*) noexcept;
     bool move_to_tail(IsleGameObject*) noexcept;

@@ -185,7 +185,7 @@ struct Runtime::Impl {
         std::span<Player> node_players, material_players;
         std::size_t resource_model = no_index;
         std::uint64_t incarnation = 0;
-        enum class Life { free, active, retiring } life = Life::free;
+        enum class Life { free, prepared, active, retiring } life = Life::free;
         bool callback_enabled = false;
         float animation_time = 0;
         std::uint32_t flags = 0;
@@ -208,6 +208,33 @@ struct Runtime::Impl {
     bool valid(InstanceHandle h, ModelStorage::Life life = ModelStorage::Life::active) const noexcept {
         return !retired && h && h.pool == pool && h.slot < models.size() &&
             models[h.slot].incarnation == h.incarnation && models[h.slot].life == life;
+    }
+    Status can_acquire(std::size_t slot, std::size_t resource) const noexcept {
+        if (retired) return {Error::retired,0};
+        if (slot >= models.size() || resource >= resources.models.size()) return {Error::extent,0};
+        const auto& m = models[slot];
+        if (m.life != ModelStorage::Life::free) return {Error::occupied,0};
+        const auto capacity = resource_capacities[resource];
+        if (capacity.nodes > m.node_storage.size() || capacity.material_attachments > m.material_storage.size())
+            return {Error::capacity,0};
+        if (m.incarnation == std::numeric_limits<std::uint64_t>::max()) return {Error::exhausted,0};
+        return {};
+    }
+    AcquireResult activate(std::size_t slot, std::size_t resource, bool callbacks) noexcept {
+        auto& m = models[slot];
+        const auto capacity = resource_capacities[resource];
+        m.nodes = std::span(m.node_storage).first(capacity.nodes);
+        m.node_players = std::span(m.node_player_storage).first(capacity.nodes);
+        m.materials = std::span(m.material_storage).first(capacity.material_attachments);
+        m.material_players = std::span(m.material_player_storage).first(capacity.material_attachments);
+        m.resource_model = resource;
+        m.callback_enabled = callbacks;
+        initialize_model(m,0,true);
+        ++m.incarnation;
+        m.life = ModelStorage::Life::active;
+        event_count = 0;
+        ++generation;
+        return {{},handle(slot)};
     }
     bool retired = false;
     // Admission only: follow the same immutable command boundaries and binary32
@@ -532,27 +559,34 @@ CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> 
       catch (...) { return {{Error::malformed,0},nullptr}; }
 }
 AcquireResult Runtime::acquire(std::size_t slot, std::size_t resource, bool callbacks) noexcept {
-    auto& s = *impl_;
-    if (s.retired) return {{Error::retired,0},{}};
-    if (slot >= s.models.size() || resource >= s.resources.models.size()) return {{Error::extent,0},{}};
-    auto& m = s.models[slot];
-    if (m.life != Impl::ModelStorage::Life::free) return {{Error::occupied,0},{}};
-    const auto capacity = s.resource_capacities[resource];
-    if (capacity.nodes > m.node_storage.size() || capacity.material_attachments > m.material_storage.size())
-        return {{Error::capacity,0},{}};
-    if (m.incarnation == std::numeric_limits<std::uint64_t>::max()) return {{Error::exhausted,0},{}};
-    m.nodes = std::span(m.node_storage).first(capacity.nodes);
-    m.node_players = std::span(m.node_player_storage).first(capacity.nodes);
-    m.materials = std::span(m.material_storage).first(capacity.material_attachments);
-    m.material_players = std::span(m.material_player_storage).first(capacity.material_attachments);
+    const auto status = impl_->can_acquire(slot,resource);
+    if (!status) return {status,{}};
+    return impl_->activate(slot,resource,callbacks);
+}
+Status Runtime::prepare_acquire(std::size_t slot, std::size_t resource, bool callbacks) noexcept {
+    const auto status = impl_->can_acquire(slot,resource);
+    if (!status) return status;
+    auto& m = impl_->models[slot];
     m.resource_model = resource;
     m.callback_enabled = callbacks;
-    s.initialize_model(m,0,true);
-    ++m.incarnation;
-    m.life = Impl::ModelStorage::Life::active;
-    s.event_count = 0;
-    ++s.generation;
-    return {{},s.handle(slot)};
+    m.life = Impl::ModelStorage::Life::prepared;
+    return {};
+}
+AcquireResult Runtime::acquire_prepared(std::size_t slot) noexcept {
+    if (impl_->retired) return {{Error::retired,0},{}};
+    if (slot >= impl_->models.size()) return {{Error::extent,0},{}};
+    const auto& m = impl_->models[slot];
+    if (m.life != Impl::ModelStorage::Life::prepared) return {{Error::handle,0},{}};
+    return impl_->activate(slot,m.resource_model,m.callback_enabled);
+}
+Status Runtime::cancel_prepared(std::size_t slot) noexcept {
+    if (slot >= impl_->models.size()) return {Error::extent,0};
+    auto& m = impl_->models[slot];
+    if (m.life != Impl::ModelStorage::Life::prepared) return {Error::handle,0};
+    m.resource_model = no_index;
+    m.callback_enabled = false;
+    m.life = Impl::ModelStorage::Life::free;
+    return {};
 }
 Status Runtime::begin_retire(InstanceHandle h) noexcept {
     auto& s = *impl_;

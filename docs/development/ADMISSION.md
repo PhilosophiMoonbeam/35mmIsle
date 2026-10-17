@@ -18,7 +18,7 @@ Original services use implementation requirements, public format/algorithm facts
 | `src/host_probe.cpp`, `cmake/Libultraship.cmake` — host owner | Opt-in real pinned LUS, immutable fetch references, procedural geometry and bounded event/render loop; explicit private intro and checked dry-audio modes separately admitted below | No playable/full-scene, original cue/AI or fidelity claim; scripting/TCC/MPQ/DLL-loader and automatic vcpkg disabled; preserve upstream notices; CPU texture owners outlive GPU completion and cache release | Mocked/null renderer success; floating dependency substitution; payload publication; host submission called game fidelity |
 | `continuation.h`, `continuation.cpp`, compiled-C trampoline/fixtures — C boundary owner | Original C ABI over genuine parked/joinable workers, owner rendezvous and stable failure diagnostics | C longjmp fence skips no owning C++ automatic; exceptions retained/rethrown outside C frames; callback-created children use the owner; cancellation joins before storage reuse | Cross-thread jump, C++ exception crossing C, stale callback/user storage or stranded owner request |
 | `sprite.h/.hpp`, `sprite.cpp`, synthetic fixtures — asset owner | Original checked BE Sprite/Bitmap hydration and RGBA/CI/IA/I normalization from format facts | Bank ownership retained; borrowed C views need a live asset owner through renderer completion; short planes use positive actualHeight, zero uses nominal; unsupported external/YUV state fails | Nominal-row overread, unbounded graph/palette/texture access, stale view, or normalization called full RDP parity |
-| `engine.h`, `engine.c`, `engine_internal.h`, `engine_math.h`, `SnapEngine.cmake`, `prepare_engine.py`, `snap-engine-inputs.json` — engine owner | Original native C ownership plus thirty-four reviewed GAME spans; private development/synthetic builds only | Immutable full/source/native/support hashes; narrow declared seams; private generated bodies; native sprite/camera/model sizes and complete typed teardown; separate RT/RTS placement preserves local node caches and logical render scopes; no SDK build/header/body | Mutable fork substitution, hash mismatch, unreviewed definition, cross-thread C jump, published complete GAME bodies or blanket MIT claim |
+| `engine.h`, `engine.c`, `engine_internal.h`, `engine_math.h`, `source_factory_resources.h`, `SnapEngine.cmake`, `prepare_engine.py`, `snap-engine-inputs.json` — engine owner | Original native C ownership plus thirty-seven reviewed GAME definitions; private development/synthetic builds only | Immutable full/source/native/support hashes; narrow declared seams; private generated bodies; native sprite/camera/model sizes and complete typed teardown; separate RT/RTS placement; real unpublished object/model/parked-continuation admission with consuming-side publication and joined cancellation; no SDK build/header/body | Mutable fork substitution, hash mismatch, unreviewed definition, cross-thread C jump, premature source/native publication or reuse, published complete GAME bodies or blanket MIT claim |
 | `menu_animation.hpp/.cpp`, title/World/effect callers — instance-state owner | One existing evaluator/compiled pool over immutable admitted GAME programs; fixed mutable slots with unique pool/slot/incarnation identity | Resource IDs never identify mutable instances; fresh acquisition resets active state, ordinary null/bind/reset preserves source distinctions; owner releases retiring storage only after actual joined/native/graphics/effect fences; currently finite admitted grammar | Cross-instance state/event aliasing, stale-handle reuse, per-actor program/catalog copies, allocator growth in hot operations, boolean completion claims or unimplemented actor-loop support |
 | `borrowed_model_kernel.hpp/.cpp`, title/World producer adapters — model-render owner | One shared bounded hierarchy/material/pose/upload kernel over scene-owned native models | Pure metadata peek during full preflight, computing native query only at commit; actual source order and per-lane scopes; incarnation/revision/RAM-epoch residency; title and World retain distinct camera/sky/fog policy | Third renderer, native GObj/payload ownership in the generic kernel, late-reject native/RAM mutation, stale hidden-slot material branches, fake retirement or recipe54/48 approximated as RTS |
 | `intro_probe.cpp/.h`, `host_clock.cpp/.hpp` — bounded native owner/visual experiment | Exact private-ROM sprite, selected original C dispatcher/fade and independent GAME-derived GTL/context policy | No procedural fallback; dedicated C creator domain, bounded retraces, exact leased command bytes, actual GPU retirement and ordered owner teardown; not the full original intro, genuine GAME photo feedback or physical clocks | Stale/foreign retirement; update driven by presentation; premature C/GPU storage release; native gameplay/audio/photo qualification inferred from the sprite |
@@ -33,8 +33,100 @@ Original services use implementation requirements, public format/algorithm facts
 | `photo_lighting.cpp/.hpp`, `photo-light-inputs.json` — normal preview light owner | Exact private-ROM light/setup views and GAME-derived strict binary32 direction | Three disjoint immutable-input spans, three mutable direction bytes, lighting distinct from score state | Fabricated white light, wrong FRUSTRATIO, changed matrices hidden inside light proof, early Snapshot release |
 | `pidgey_feedback.cpp/.hpp`, `pidgey-feedback-inputs.json` — complete bounded depth graph | Source-ordered real subject draws, exact private GAME GPU-copy list and two camera passes | Independent instance/matrix ownership, one task per FOV, actual completed leases through reductions; inactive B visible-only zero; shared immutable material | Shared scratch aliasing, copying final C as prefix, A copied instead of rendered, per-subject clears, CPU depth copies, hidden reset or full scene/parity inference |
 | `model_preview.cpp/.hpp`, `host_probe.cpp --model-preview` — actual LUS surface | New native lit-model RSP/RDP frames converted into retained preallocated presentation tiles | Exact cache-base invalidation after GL completion, retained declined frames, native/asset storage outlives host/cache retirement | Recorded-image substitution, stale texture cache, first-swap startup mistaken for visible model proof or preview called playable game |
+| `item_source.h`, `item_source_bind.c`, `item_source_bridge.c`, `item_owner.cpp`, `prepare_items.py`, `item-owner-inputs.json` — native Item owner | Fifty-three exact pinned GAME definitions, native source ABI and actual immutable Item/World/Actor/effect/audio resources | Original logical entries/cursor/overall-oldest ordering, real source waits and kind1 suffixes; unpublished real factory resources before side effects; retained canonical storage through command21/22, actual native join and all external fences | Counter rollback, hidden early replacement, fake Item AUX, constructor/diagnostic rejection turned into terminal fault, NULL-payload fumes treated as logical Items, expired source/model access |
+| `actor_source_owner_bridge.c`, `actor_interaction_services.cpp`, `prepare_actor_control.py` — original-C interaction execution | Complete automatic/FIFO source switches and update over the existing canonical records/shared native queue | Eleven returning service leaves; full reachable callback/resource admission before custom consumption; original row/null/boundary/order semantics, ordinary suffix preservation and C-only fault/wait transfer | Second C++ interpreter/physics, guest function casts, fabricated Player/FX/SFX providers, swallowed native fault, partial row admission or NULL-current-World rejection |
+| `item_flute.cpp/.hpp`, `game_audio.cpp` — source Flute owner | Caller-retained source state and actual shared Session epoch; real private RSP microcode/owned CPU PCM | Only accepted audio builds advance the epoch; natural source flags, retained index and exact source song/command order; task/PCM owners retire before drain | Query/Item tick/retrace masquerading as build, reset of source-retained state, authored PCM or dummy-environment policy called exercised SDL3/hearing |
+| `item_producer.cpp/.hpp`, `borrowed_model_kernel.cpp`, `scene_graphics.cpp` — Item graphics owner | Existing borrowed kernel, actual source ItemOwner/native models, immutable Item resources and source global DL3 | Native visibility for native pose despite paused animator; actual native object/model association for every active binding before filtering; contemporaneous replacement baseline; preparation/GPU/readback/postprocess ownership separate from native join | Cached hidden pose, duplicate-model-only negative test, stale all-hidden baseline, payload/slot reuse before real fences, API-only cohort called source-owned execution |
 
 Admission itself is not execution evidence. Independently constructed public fixtures establish only exercised mechanisms. Exact contribution content is reviewed at integration; historical observations below do not automatically cover subsequent changes. No mechanism result establishes full game boot, fidelity, audio, photography, completion, Windows 11 qualification or release readiness.
+
+## Native Item and complete C interaction execution
+
+Current implementation extends the prior shared-source wave; earlier bounded
+receipts remain historical, not claims that the new interpreters or Items are
+unimplemented. Authority remains GAME
+`df8815e75f3d79618466e01e0827c6165b93d11c`. Generated game bodies stay private.
+No SDK producer/header/layout/disassembly or second C++ interpreter/physics is
+admitted by this change.
+
+`Pokemon_RunInteractions`, `Pokemon_HandleCommand` and `Pokemon_Update` execute
+the actual automatic/FIFO source logic. Real World/Item/Audio/Detector/native
+ownership supplies all eleven returning interaction services. Six compiled
+common/Magikarp callbacks are not the complete Beach callback registry.
+Caller-retained typed nonNULL graphs execute only with their full reachable
+native callback/resource closure; all 71 cataloged graphs are not thereby
+executable. Production Player and the remaining species stay open.
+
+`items::Owner` compiles all 53 selected Item/helper definitions. Twenty logical
+entries, cursor0–19/IDs300+i, source overall-oldest threshold ordering,
+NULL-payload fumes, source waits and real command21/22 ownership survive the
+cutover. Actual parked native workers/object/model storage, Services records
+and Runtime admission are prepared without publication; source code consumes
+them at its original sites. Capacity rejection does not replay/undo counters,
+RNG, cache/list mutation or early deletion. Native terminal status is distinct
+from retained diagnostic text; failed teardown still performs real joins and
+retains semantic/native identities until genuine release.
+
+The complete three-profile runtime matrix is recorded in
+`cmake/actor-interaction-inputs.json` under `native_full_C_Item_wave`.
+Every row below passed unchanged whole-consumer acceptance in GCC Debug,
+GCC Release and Clang ASan+UBSan. Counts are terminal trace files / created tasks /
+absent tracer-and-task identities; each profile has the same tuple.
+
+| Complete native consumer | Whole closure in each profile |
+|---|---|
+| ActorOwner source CPU/lifetime | 28 / 27 / 29 |
+| Canonical collision/source-lifetime CPU | 37 / 36 / 38 |
+| Shared source command26 | 33 / 32 / 34 |
+| Magikarp source owner CPU | 25 / 24 / 26 |
+| Magikarp scene chooser CPU | 8 / 7 / 9 |
+| ItemOwner, all seven scenarios | 37 / 36 / 38 |
+| Actual C automatic/FIFO selectors and services | 212 / 211 / 213 |
+| Flute, all nine actual RSP/PCM runs | 1 / 0 / 2 |
+| Existing ActorProducer GPU/focus | 77 / 76 / 78 |
+| Composed World/common-source GPU | 44 / 43 / 45 |
+| Genuine two-slot Magikarp course GPU | 48 / 47 / 49 |
+| Canonical pair-collision GPU | 45 / 44 / 46 |
+| Actual ItemOwner mixed-owner GPU | 127 / 126 / 128 |
+
+All 39 roots had one stopped-tree closure/initial scan: stable trace identities,
+all tasks absent, unchanged ROM and zero known physical-device attempts or
+permission errors. No rejected root was replayed/reopened/rescanned or partially
+accepted. The CPU suites passed 56/56 in each profile. ASan/UBSan remain fatal;
+only ptrace-incompatible LSan is disabled for traced private runs, so this is not
+a leak-qualification claim. Fourteen saved genuine World/Magikarp/collision
+surfaces were byte-identical across all three profiles; a current completed
+World/FX surface was directly inspected. No camera, pose, source cohort,
+threshold, timer, viewport or existing GPU frame budget was tuned.
+
+Three exposed boundaries were corrected without weakening native contracts:
+valid NULL-current-World command19 equality now uses status plus nullable output;
+native-pose visibility reads current native HIDDEN even when animation is paused;
+all-active render admission checks actual native object/model association before
+hidden/pass filtering. The GPU negative oracle uses a unique foreign same-topology
+model, and replacement comparisons exclude only the current replacement at the
+same completed state. A migrated ActorOwner fixture now retains its actual joined
+semantic owner until re-adoption/final22 delivery, rather than collecting and then
+using an expired raw handle.
+
+A separate actual initialized-bank investigation confirmed Item bank3/script0
+velocity `(0,6,0)`, emitter lifetime20 and particle lifetime30. Over the
+source-derived 52 updates, position-only publication matched the decoded-velocity
+reference in all 850 observed particle trajectories and RNG progression; the old
+zero-velocity override differed in all 850. The bank was not modified and no
+authored velocity substituted. The throwaway probe was removed after its frozen
+CPU proof.
+
+Each Flute profile executes 828 actual audio RSP tasks with exact direct-song and
+retained-index restart PCM plus nonzero muted-counterfactual differences.
+Transport evidence is checked owned CPU `private_audio::Capture`, not an exercised
+SDL3 device/stream; dummy-only environment policy alone proves no SDL transport.
+Graphics use actual RSP plus qualified CPU Mesa/Vulkan RDP. These results do not
+qualify physical devices/hearing, Original numerical parity, all species/courses,
+production Player, complete photography/save flow, a playable full game or private
+Windows11 execution. Hosted compile evidence remains tied to its named immutable
+revision; current workflow additionally declares the four Item/C consumers.
+
 
 ## Private development input
 

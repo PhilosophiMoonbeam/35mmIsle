@@ -54,6 +54,9 @@ IsleGameResult isle_game_create(isle_arena* arena, IsleGame** output);
 IsleGameResult isle_game_destroy(IsleGame* game);
 IsleGameResult isle_game_tick(IsleGame* game);
 IsleGameResult isle_game_counts(IsleGame* game, IsleGameCounts* output);
+/* Current terminal execution status, without advancing OM. Diagnostic text may
+ * also describe a recoverable admission rejection; it is not a fault flag. */
+IsleGameResult isle_game_status(IsleGame* game);
 const char* isle_game_error(const IsleGame* game);
 
 /* Updates traverse links 0..31, descending object priority with insertion after
@@ -141,16 +144,40 @@ typedef struct IsleGameCommandQueue {
     IsleGameCommandRelease release;
     void* borrow_user;
     void* active_borrow;
+    /* Consumption is persistent before any command effect. Nodes, including
+     * consumed nodes, stay retained/countable until completion or abort. */
+    IsleGameCommand* last_consumed;
+    size_t consumed_count;
+    uint8_t custom_callback_open, delete_stopped;
 } IsleGameCommandQueue;
 typedef void (*IsleGameCommandHandler)(IsleGameObject*, int32_t command, IsleGameObject* source, void* user);
+typedef IsleGameResult (*IsleGameCommandCheck)(IsleGameObject*, int32_t command,
+    IsleGameObject* source, void* user);
 IsleGameResult isle_game_command_send(IsleGameCommandPool*, IsleGameCommandQueue*, int32_t, IsleGameObject*);
-/* delete_requested stops traversal; caller performs whole-object deletion. */
+/* delete_requested stops traversal; caller performs whole-object deletion.
+ * A delete-stopped queue cannot be dispatched again before release. */
 IsleGameResult isle_game_commands(IsleGame*, IsleGameObject*, IsleGameCommandPool*,
     IsleGameCommandQueue*, IsleGameCommandHandler, void*, int* delete_requested);
+/* Checks run only for custom commands (all except -1..-5). Admission runs
+ * before consumption/token movement; completion runs after handler return and
+ * before the next command. A failing check or native status aborts only the
+ * consumed prefix, unless cancellation/deletion requires whole teardown.
+ * Checks return normally: never wait, fault, transfer or invoke the handler. */
+IsleGameResult isle_game_commands_checked(IsleGame*, IsleGameObject*,
+    IsleGameCommandPool*, IsleGameCommandQueue*, IsleGameCommandHandler,
+    void* handler_user, IsleGameCommandCheck before_custom,
+    IsleGameCommandCheck after_custom, void* check_user, int* delete_requested);
+/* Nonwaiting/nonallocating cleanup after callback return or proven caller
+ * join. Never use target retirement alone as proof an external callback ended.
+ * current_callback_frame=1 closes this queue's open callback-depth contribution;
+ * 0 clears an abandoned joined frame without changing the observer's depth. */
+void isle_game_commands_abort(IsleGame*, IsleGameCommandPool*,
+    IsleGameCommandQueue*, int current_callback_frame);
 void isle_game_commands_release(IsleGameCommandPool*, IsleGameCommandQueue*);
 /* Finish only the currently delivered credit after canonical field adoption,
- * before genuinely nonreturning source control. Never cancels a FIFO suffix.
- * Normal return finishes automatically; repeated finish is harmless. */
+ * before genuinely nonreturning source control. Never moves the cursor, closes
+ * a callback, or cancels a FIFO suffix. Normal return finishes automatically;
+ * repeated finish is harmless, and a NULL token does not mean callback return. */
 void isle_game_command_finish(IsleGameCommandQueue*);
 IsleGameResult isle_game_add_process(IsleGame* game, IsleGameObject* object,
                                     IsleGameCallback entry, void* user,
@@ -383,6 +410,9 @@ typedef struct IsleGameModelNode {
 IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     const IsleGameModelNodeInit* initial, size_t count, IsleGameModel** output);
 IsleGameResult isle_game_remove_model(IsleGame* game, IsleGameModel* model);
+/* Pure actual live object/model association check, including retirement and
+ * terminal execution status. It never adopts a foreign model or mutates caches. */
+IsleGameResult isle_game_model_validate_binding(IsleGame*, IsleGameObject*, IsleGameModel*);
 /* Pure preflight: owner/index/kind/scalar checks only, no state/cache mutation.
  * With no intervening mutation/callback/thread access, the same setter input
  * cannot subsequently fail. The caller owns that exclusion.

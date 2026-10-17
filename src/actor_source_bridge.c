@@ -8,11 +8,11 @@ IsleGameResult isle_actor_source_bind(IsleGame* game, IsleGameObject* object,
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL || actor == NULL || rng == NULL || owner == NULL) return ISLE_GAME_INVALID_ARGUMENT;
     if (game->fault != ISLE_GAME_OK) return game->fault;
-    if (object->retirementStarted || object->actorSourceBound || object->userData != NULL || actor->game != NULL || actor->object != NULL)
+    if (object->retirementStarted || object->sourcePayloadKind != ISLE_SOURCE_PAYLOAD_NONE || object->userData != NULL || actor->game != NULL || actor->object != NULL)
         return ISLE_GAME_INVALID_STATE;
     *actor = (IsleActorSource){.rng = rng, .owner = owner, .game = game, .object = object};
     object->userData = actor;
-    object->actorSourceBound = true;
+    object->sourcePayloadKind = ISLE_SOURCE_PAYLOAD_ACTOR;
     return ISLE_GAME_OK;
 }
 
@@ -25,7 +25,7 @@ IsleGameResult isle_actor_source_get(IsleGame* game, IsleGameObject* object, Isl
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
     if (game->fault != ISLE_GAME_OK) return game->fault;
-    if (object->retirementStarted || !object->actorSourceBound || object->userData == NULL) return ISLE_GAME_INVALID_STATE;
+    if (object->retirementStarted || object->sourcePayloadKind != ISLE_SOURCE_PAYLOAD_ACTOR || object->userData == NULL) return ISLE_GAME_INVALID_STATE;
     actor = object->userData;
     if (actor->game != game || actor->object != object || actor->rng == NULL || actor->owner == NULL)
         return ISLE_GAME_INVALID_STATE;

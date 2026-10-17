@@ -122,7 +122,7 @@ IsleGameResult collision_position(const IsleActorSource& actor, IsleGameModel* m
                                   IsleGameVec3& output) noexcept {
     auto result = bound(actor);
     if (result != ISLE_GAME_OK) return result;
-    result = isle_actor_source_validate_model(actor.game, actor.object, model);
+    result = isle_game_model_validate_binding(actor.game, actor.object, model);
     if (result != ISLE_GAME_OK) return result;
     const IsleGameModelPlacement* placement = nullptr;
     result = isle_game_model_placement(actor.game, model, &placement);

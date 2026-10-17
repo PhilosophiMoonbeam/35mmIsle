@@ -411,6 +411,61 @@ void errors_and_packet_bounds() {
     Fixture invalid; Program q; q.op(0xe0); invalid.add(q); const std::array invalid_banks{&invalid.bank}; EffectRuntime unsupported(invalid_banks,rng); require(!unsupported.status(),"unsupported opcode admission");
     invalid.bank.scripts[0].instructions[0].size=2; EffectRuntime escaped(invalid_banks,rng); require(!escaped.status(),"instruction escaped bytecode");
 }
+void resource_admission_is_independent_of_emitter_capacity() {
+    Fixture fixture;
+    Program program; program.hold(); fixture.add(std::move(program));
+    const std::array banks{&fixture.bank};
+    isle_rng rng{42};
+    EffectRuntime runtime(banks,rng);
+    ok(runtime.status());
+    require(runtime.has_effect(0,0),"admitted effect was unavailable before source spawn");
+    std::array<EffectHandle,10> handles{};
+    for (unsigned i=0;i<handles.size();++i) {
+        const auto created=runtime.create_effect(0,0);
+        ok(created.status);
+        require(created.spawned&&created.effect_id==i+1,"resource admission consumed source IDs or emitter capacity");
+        handles[i]=created.handle;
+    }
+    require(runtime.has_effect(8,0)&&!runtime.has_effect(1,0)&&!runtime.has_effect(0,1)&&
+            !runtime.has_effect(128,0),"resource admission confused encoded list/bank/script with pool availability");
+    const auto full=runtime.create_effect(0,0);
+    ok(full.status);
+    require(!full.spawned&&runtime.effect_count()==10&&rng.seed==42,
+            "full source emitter pool was not an ordinary null spawn or admission consumed RNG");
+    runtime.eject_effect(handles[0]);
+    require(runtime.has_effect(0,0),"released emitter changed immutable resource admission");
+    const auto reused=runtime.create_effect(0,0);
+    ok(reused.status);
+    require(reused.spawned&&reused.effect_id==11&&reused.handle.slot==handles[0].slot&&
+            reused.handle.generation!=handles[0].generation&&rng.seed==42,
+            "resource query stole the released emitter or changed its source ID/incarnation");
+}
+void source_position_store_preserves_emission_motion() {
+    Fixture fixture; Program program; program.hold(); fixture.add(program,{2,3,4});
+    const std::array banks{&fixture.bank};
+    isle_rng source_rng{123},moved_rng=source_rng;
+    EffectRuntime source(banks,source_rng),moved(banks,moved_rng);
+    const auto original=source.create_effect(0,0),positioned=moved.create_effect(0,0);
+    require(original.spawned && positioned.spawned,"position-store emitters were not admitted");
+    ok(moved.set_effect_position(positioned.handle,{10,20,30}));
+    require(moved.set_effect_position(positioned.handle,{std::numeric_limits<float>::infinity(),0,0}).error==EffectsError::arithmetic,
+            "nonfinite source position was accepted");
+    ok(source.update_effects()); ok(moved.update_effects());
+    const auto control=particle(source),translated=particle(moved);
+    require(control.velocity.x!=0 && control.velocity.y!=0 && control.velocity.z!=0,
+            "authored position-store case did not exercise initialized emission motion");
+    vector_near(translated.velocity,control.velocity,"position store erased initialized emission velocity");
+    vector_near(translated.position,{control.position.x+10,control.position.y+20,control.position.z+30},
+                "source position store changed motion or a rejected nonfinite store changed the valid position");
+    require(source_rng.seed==moved_rng.seed,"source position store changed emission RNG progression");
+    const auto stale=positioned.handle;
+    moved.eject_effect(stale);
+    const auto replacement=moved.create_effect(0,0);
+    require(replacement.spawned && replacement.handle.generation!=stale.generation,
+            "position-store fixture did not reuse an emitter with a fresh incarnation");
+    require(moved.set_effect_position(stale,{70,80,90}).error==EffectsError::attachment,
+            "expired position handle changed a new emitter");
+}
 }
 int main() {
     try {
@@ -418,6 +473,8 @@ int main() {
         children_and_lists(); child_emitters_and_sibling_order(); color_masks_and_extended_duration(); operand_bounds();
         regular_child_traversal(); source_id_wrap(); emitter_rng_and_source_order();
         target_local_services(); emitters_pools_and_retirement(); normalized_columns(); errors_and_packet_bounds();
+        resource_admission_is_independent_of_emitter_capacity();
+        source_position_store_preserves_emission_motion();
         std::cout << "shared_effect_authored_cpu=passed Original_parity=unqualified\n"; return 0;
     } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }
 }

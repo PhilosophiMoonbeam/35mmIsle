@@ -1,4 +1,5 @@
 #include "actor_owner.hpp"
+#include "actor_interaction_services.hpp"
 #include "actor_photo_eligibility.hpp"
 #include "actor_collision.hpp"
 #include "source_effect_world.hpp"
@@ -23,7 +24,7 @@ OwnerStatus dispatch_event(IsleActorSource& actor, const menu::animation::Callba
     const IsleGameModelNode* nodes = nullptr;
     std::size_t count = 0;
     if (isle_actor_source_get(context.services.game,actor.object,&bound) != ISLE_GAME_OK || bound != &actor ||
-        isle_actor_source_validate_model(context.services.game,actor.object,context.model)!=ISLE_GAME_OK ||
+        isle_game_model_validate_binding(context.services.game,actor.object,context.model)!=ISLE_GAME_OK ||
         !state || isle_game_model_peek_nodes(context.services.game,context.model,&nodes,&count) != ISLE_GAME_OK ||
         event.node >= count || count != state.nodes.size())
         return rejected(OwnerError::admission,"actor callback context is not a live canonical native pose");
@@ -65,7 +66,7 @@ OwnerStatus step_source_animation(IsleActorSource& source,menu::animation::Insta
     IsleActorSource* bound=nullptr;
     IsleGameObjectMetadata metadata{};
     if (isle_actor_source_get(context.services.game,source.object,&bound)!=ISLE_GAME_OK || bound!=&source ||
-        isle_actor_source_validate_model(context.services.game,source.object,context.model)!=ISLE_GAME_OK ||
+        isle_game_model_validate_binding(context.services.game,source.object,context.model)!=ISLE_GAME_OK ||
         isle_game_object_metadata(context.services.game,source.object,&metadata)!=ISLE_GAME_OK)
         return rejected(OwnerError::native,"actor animation canonical source flags");
     if (!context.animation.set_object_flags(instance,metadata.flags) || !context.animation.step_model(instance))
@@ -103,7 +104,7 @@ OwnerStatus apply_source_animation(IsleActorSource& source,menu::animation::Inst
     if (!std::isfinite(start) || !initialization_member || !header_member || !state ||
         state.resource_model!=initialization.model || (header && header->initialization!=initialization_index) ||
         isle_actor_source_get(context.services.game,source.object,&bound)!=ISLE_GAME_OK || bound!=&source ||
-        isle_actor_source_validate_model(context.services.game,source.object,context.model)!=ISLE_GAME_OK)
+        isle_game_model_validate_binding(context.services.game,source.object,context.model)!=ISLE_GAME_OK)
         return rejected(OwnerError::admission,"actor header/context not admitted for source initialization");
     if (header) {
         if (!source.modelAnims && isle_game_pause_source_processes(context.services.game,source.object,isle_actor_source_animation_process,0)!=ISLE_GAME_OK)
@@ -184,6 +185,7 @@ struct Owner::Impl {
     std::uint64_t insertion = 0;
     PlayerState player;
     CourseState course;
+    InteractionServices* interactions = nullptr;
     // Beach func_beach_802C4340 configures inclusive IDs80..E4/link3.
     // getFreePokemonId's cursor survives resets, as its source static does.
     std::uint32_t pokemon_counter = 0;
@@ -329,21 +331,16 @@ struct Owner::Impl {
         // Sound no longer borrows the joined model. The native identity itself
         // remains held until outside-OM collection also closes command credits.
     }
-    static void update_callback(IsleGameObject* object,void*) noexcept { Pokemon_Update(object); }
-    static void command_callback(IsleGameObject*,std::int32_t command,IsleGameObject* source,void* user) noexcept {
-        auto& slot=*static_cast<Slot*>(user); auto& self=*slot.owner;
-        // 21 and22 perform identity clearing even for a NULL transition graph.
-        // All queued senders, including command26, are comparison identity only.
-        if (command==21 && slot.source.apple==source &&
-            !self.services.source_reference_assign(slot.object,&slot.source.apple,nullptr)) return;
-        if (command==22 && slot.source.interactionTarget==source &&
-            !self.services.source_reference_assign(slot.object,&slot.source.interactionTarget,nullptr)) return;
-        if (slot.source.transitionGraph) { self.services.fail("actor command transition graph is not natively admitted"); return; }
-        // All other source switch cases/default have no action with NULLgraph.
-        if (!self.course.execution_enabled) {
-            if (isle_actor_source_pause_object(&slot.source,1)!=ISLE_GAME_OK)
-                self.services.fail("actor source execution pause");
+    OwnerStatus notify_target_death(IsleGameObject* sender) noexcept {
+        // Source logical Pokemon list, deliberately not all native link3.
+        // Sender may be an Item; identity comparison never reads its payload.
+        for (std::size_t i=0;i<logical_count;++i) {
+            auto& target=*logical[i];
+            if (target.source.interactionTarget==sender &&
+                !services.send_command(target.object,22,sender))
+                return rejected(OwnerError::services,"actor die-command enqueue");
         }
+        return {};
     }
     OwnerStatus cleanup(Slot& slot) noexcept {
         if (slot.cleaned || slot.retiring) return rejected(OwnerError::lifetime,"actor source cleanup already requested");
@@ -356,12 +353,8 @@ struct Owner::Impl {
             return rejected(OwnerError::native,"actor cleanup hide");
         detector.cleanup(reinterpret_cast<focus::Object>(slot.object));
         focus_cleanup(slot);
-        for (std::size_t i=0;i<logical_count;++i) {
-            auto& target=*logical[i];
-            if (target.source.interactionTarget==slot.object) {
-                if (!services.send_command(target.object,22,slot.object)) return rejected(OwnerError::services,"actor die-command enqueue");
-            }
-        }
+        const auto notified=notify_target_death(slot.object);
+        if (!notified) return notified;
         // Source cache metadata retains at most40 freed values, independently
         // of the40 logical entries,100 block entries and caller physical slots.
         transform_cache=std::min<std::size_t>(40,transform_cache+1);
@@ -396,6 +389,14 @@ struct SourceAccess {
         auto* slot=static_cast<Owner::Impl::Slot*>(source->owner);
         if (&slot->source!=source || !slot->active || slot->retiring || slot->owner->services.game!=source->game) return nullptr;
         return slot;
+    }
+    static Owner::Impl::Slot* retained_scope_slot(IsleActorSource* source) noexcept {
+        // Only a begun command scope may use this stable semantic record after
+        // native retirement. Source-owner collection cannot run inside it.
+        if (!source || !source->owner || !source->game || !source->object) return nullptr;
+        auto* slot=static_cast<Owner::Impl::Slot*>(source->owner);
+        return &slot->source==source && slot->active && slot->object==source->object &&
+            slot->owner->services.game==source->game?slot:nullptr;
     }
     static SpawnResult spawn(Owner& owner,const SpawnRequest& request) noexcept { return owner.spawn_native(request); }
 };
@@ -593,10 +594,6 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
         rollback(); return reject(OwnerError::services,"actor native lifecycle callbacks");
     }
     lifecycle_installed=true;
-    if (!self.services.set_update(slot->object,Impl::update_callback,slot) ||
-        !self.services.set_command_handler(slot->object,Impl::command_callback,slot)) {
-        rollback(); return reject(OwnerError::services,"actor native callbacks");
-    }
     slot->render={5,0x80000000u,UINT32_MAX};
     if (!self.services.set_render(slot->object,slot->render)) { rollback(); return reject(OwnerError::services,"actor source initial DL5 link"); }
     if (!menu::model::attach_source_model(self.services.game,slot->object,model,self.runtime->model(slot->instance),
@@ -622,6 +619,10 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
         rollback(); return reject(OwnerError::services,"actor semantic source owner registration");
     }
     slot->source_owned=true;
+    if (!self.services.source_commands_native(slot->object) ||
+        isle_actor_source_install_update(self.services.game,slot->object)!=ISLE_GAME_OK) {
+        rollback(); return reject(OwnerError::native,"actor direct C update/command ownership");
+    }
     auto& source=slot->source;
     source.initData=&initialization; source.animSetup=&initialization.setup;
     source.pos1=placement.position; source.targetPos=placement.position; source.euler=placement.rotation;
@@ -689,6 +690,9 @@ OwnerStatus Owner::trigger_common1003(menu::animation::InstanceHandle h,menu::Ve
 OwnerStatus Owner::cleanup(menu::animation::InstanceHandle h) noexcept {
     auto* slot=impl_->find(h); return slot?impl_->cleanup(*slot):rejected(OwnerError::lifetime,"stale actor cleanup handle");
 }
+OwnerStatus Owner::notify_target_death(IsleGameObject* sender) noexcept {
+    return impl_->notify_target_death(sender);
+}
 OwnerStatus Owner::request_cleanup(menu::animation::InstanceHandle h) noexcept {
     auto* slot=impl_->find(h);
     if (!slot) return rejected(OwnerError::lifetime,"stale actor cleanup request");
@@ -737,25 +741,21 @@ OwnerStatus Owner::collect_joined() noexcept {
 }
 OwnerStatus Owner::reset() noexcept {
     auto& self=*impl_;
-    if (self.services.failed()) {
+    if (self.services.failed() || isle_game_status(self.services.game)!=ISLE_GAME_OK) {
         for (auto& slot:self.slots) if (slot.active && !slot.retiring) self.services.erase(slot.object);
         const auto collected=collect_joined();
         if (!collected) return collected;
         self.fx.reset();
-        return rejected(OwnerError::services,"failed native Services requires application reconstruction, not successful actor reset");
+        self.interactions=nullptr;
+        return rejected(OwnerError::services,"failed native scene requires application reconstruction, not successful actor reset");
     }
-    // Consume actual receiver FIFOs BEFORE retiring them. A queued retiring
-    // source remains comparison-only and cannot name a recycled actor.
-    for (auto& slot:self.slots) if (slot.active && !slot.retiring && !self.services.process_commands(slot.object))
-        return rejected(OwnerError::services,"actor reset command drain");
     for (auto& slot:self.slots) if (slot.active && !slot.retiring) {
         auto result=self.cleanup(slot); if (!result) return result;
-        for (auto& receiver:self.slots) if (receiver.active && !receiver.retiring && !self.services.process_commands(receiver.object))
-            return rejected(OwnerError::services,"actor reset die-command drain");
     }
     auto result=collect_joined(); if (!result) return result;
     self.fx.reset(); self.player.previous_focus={}; self.player.previous_focus_identity=nullptr; self.player.focus_latch=false;
     self.player.focus_timer=0; self.player.direction_index=0;
+    self.interactions=nullptr;
     return {};
 }
 IsleActorSource* Owner::source(menu::animation::InstanceHandle h) noexcept { auto* s=impl_->find(h); return s?&s->source:nullptr; }
@@ -789,20 +789,29 @@ std::span<const ActorRenderBinding> Owner::render_bindings() noexcept {
 menu::animation::Runtime& Owner::animation() noexcept { return *impl_->runtime; }
 const menu::animation::Runtime& Owner::animation() const noexcept { return *impl_->runtime; }
 menu::EffectRuntime& Owner::effects() noexcept { return impl_->fx; }
+const environment_sound::Environment& Owner::environment() const noexcept { return impl_->sound; }
 IsleGameObject* Owner::particle_object() const noexcept { return impl_->particle_object; }
 IsleGameObject* Owner::effect_object() const noexcept { return impl_->effect_object; }
 OwnerStatus Owner::update_particles() noexcept { return impl_->fx.update_particles()?OwnerStatus{}:rejected(OwnerError::services,"actor particles update"); }
 OwnerStatus Owner::update_effects() noexcept { return impl_->fx.update_effects(Impl::resolve,impl_.get())?OwnerStatus{}:rejected(OwnerError::services,"actor effects update"); }
+OwnerStatus Owner::bind_interactions(InteractionServices& context) noexcept {
+    auto& self=*impl_;
+    if (self.interactions || !context.matches(*this,self.services,self.resources,self.world,self.detector))
+        return rejected(OwnerError::admission,"interaction services require this exact unbound source owner");
+    for (const auto& slot:self.slots) if (slot.active)
+        return rejected(OwnerError::lifetime,"interaction services must bind before native actor spawning");
+    self.interactions=&context;
+    return {};
+}
 OwnerStatus Owner::set_player(IsleGameObject* object,IsleGameModel* model,IsleGameCamera* camera) noexcept {
     if ((object==nullptr)!=(model==nullptr) || (model==nullptr)!=(camera==nullptr))
         return rejected(OwnerError::admission,"player object/model/camera binding must be genuinely present or absent");
-    if ((object && isle_actor_source_validate_model(impl_->services.game,object,model)!=ISLE_GAME_OK) || !impl_->sound.set_listener(model,camera))
+    if ((object && isle_game_model_validate_binding(impl_->services.game,object,model)!=ISLE_GAME_OK) || !impl_->sound.set_listener(model,camera))
         return rejected(OwnerError::native,"actual player/listener binding");
     impl_->player.object=object; impl_->player.model=model; impl_->player.camera=camera;
     return {};
 }
-OwnerStatus Owner::set_focus(menu::animation::InstanceHandle h,bool latch,float timer) noexcept {
-    if (!std::isfinite(timer)) return rejected(OwnerError::admission,"source focus timer must be finite");
+OwnerStatus Owner::set_focus(menu::animation::InstanceHandle h,bool latch,std::uint32_t timer) noexcept {
     auto* slot=impl_->find(h);
     if (h && !slot) return rejected(OwnerError::lifetime,"source focus requires current full instance");
     impl_->player.previous_focus=h; impl_->player.previous_focus_identity=slot?slot->object:nullptr;
@@ -858,17 +867,42 @@ IsleGameResult isle_actor_owner_step(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     return slot && slot->owner->step(*slot)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
 }
-IsleGameResult isle_actor_owner_interactions(IsleActorSource* source) {
+IsleGameResult isle_actor_owner_interaction_context(IsleActorSource* source,void** output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output=nullptr;
     auto* slot=isle::actor::SourceAccess::slot(source);
-    return slot && !source->transitionGraph?ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    *output=slot->owner->interactions;
+    return ISLE_GAME_OK;
 }
 IsleGameResult isle_actor_owner_cleanup(IsleActorSource* source) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     return slot && slot->owner->cleanup(*slot)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
 }
-IsleGameResult isle_actor_owner_commands(IsleActorSource* source) {
+IsleGameResult isle_actor_owner_commands_begin(IsleActorSource* source,IsleSourceCommandScope* scope) {
+    if (!scope) return ISLE_GAME_INVALID_ARGUMENT;
+    *scope={};
     auto* slot=isle::actor::SourceAccess::slot(source);
-    return slot && slot->owner->services.process_commands(slot->object)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+    return slot && slot->owner->services.source_commands_begin(slot->object,*scope)?
+        ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_actor_owner_commands_end(IsleActorSource* source,IsleSourceCommandScope* scope,
+    IsleGameResult result,int delete_requested) {
+    if (!scope) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::retained_scope_slot(source);
+    return slot && slot->owner->services.source_commands_end(*scope,result,delete_requested)?
+        ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_actor_owner_command_status(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::retained_scope_slot(source);
+    return slot && !slot->owner->services.failed()?ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_actor_owner_execution_enabled(IsleActorSource* source,int32_t* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    *output=slot->owner->course.execution_enabled;
+    return ISLE_GAME_OK;
 }
 IsleGameResult isle_actor_owner_reference_assign(IsleActorSource* source,IsleGameObject** field,IsleGameObject* sender) {
     auto* slot=isle::actor::SourceAccess::slot(source);
@@ -978,9 +1012,12 @@ IsleGameResult isle_actor_owner_ground(IsleActorSource* source,float x,float z,I
     if (result) return ISLE_GAME_OK;
     return result.error==isle::actor::OwnerError::admission?ISLE_GAME_INVALID_ARGUMENT:ISLE_GAME_INVALID_STATE;
 }
-void* isle_actor_owner_current_block(IsleActorSource* source) {
+IsleGameResult isle_actor_owner_current_block(IsleActorSource* source,void** output) {
+    if (output) *output=nullptr;
     auto* slot=isle::actor::SourceAccess::slot(source);
-    return slot?slot->owner->world.current():nullptr;
+    if (!slot || !output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output=slot->owner->world.current();
+    return ISLE_GAME_OK;
 }
 IsleGameResult isle_actor_owner_add_one(IsleActorSource* source,void* block,void* reference,
     const IsleActorGeoSpawn* spawn,const IsleActorGeoDefinition* definition,IsleGameObject** output) {

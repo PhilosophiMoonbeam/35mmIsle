@@ -2,12 +2,14 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "actor-control-v4",
+  "transformation_version": "actor-control-v5",
   "use": "User-directed private native selected actor C control; no source/SDK/asset redistribution grant. Private selected bodies exist only in caller build output.",
   "numeric_policy": {
     "PI": "Private generated alias uses unsuffixed C double literal3.14159265358979323846, preserving randRange(360)*PI/180.0f order before final float yaw publication.",
     "authority": "https://dlmf.nist.gov/3.12.E1",
-    "qualification": "Parent-authorized modern native numeric policy. Pinned own-GAME constants/common/sys/types/vector/mtx headers do not define PI; own sys/mtx only references it. Original SDK PI macro value/type equivalence is UNPROVEN. No Original bitmatch, SDK header/shim import, or disassembly authority is claimed."
+    "qualification": "Parent-authorized modern native numeric policy. Pinned own-GAME constants/common/sys/types/vector/mtx headers do not define PI; own sys/mtx only references it. Original SDK PI macro value/type equivalence is UNPROVEN. No Original bitmatch, SDK header/shim import, or disassembly authority is claimed.",
+    "interaction_distance_16": "Defined native correction of own explicit BUG16: use canonical cached playerDist, never uninitialized or previous nonwinning Item interactionDist. The full source automatic C branch/order is otherwise preserved.",
+    "closest_item": "Native C product-of-float-subtractions and left-associated sum implement source SQ uses explicitly; no SDK macro/header import or Original SGI macro/numerical bitmatch is claimed. Self AUX versus each Item root, all20 valid iterator order, strict nearest ties-first and winner-only sqrt/output preserved."
   },
   "source_files": {
     "src/app_level/pokemon.c": {
@@ -29,23 +31,30 @@
     "src/beach/562BC0.c": {
       "git_blob": "c67645665414dfe2a93cbcb038bfb06dd34e46ec",
       "sha256": "f68a107400ca34dab410dd9cb7b0672afffd76131b2e31719e40bfcbb33cbb5e"
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4"
     }
   },
   "native_support": {
+    "src/source_factory_resources.h": {
+      "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
+    },
     "src/actor_source.h": {
       "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
     },
     "src/actor_source_bridge.c": {
-      "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
+      "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/engine.c": {
-      "sha256": "8f54f4b0882badd901566d88744ee743054f59935a5d465b714c1fefd0d74eee"
+      "sha256": "a6b193ee19dd6fb91e8a34350e3d2074e9447499c56df9a43be05e0e9563573f"
     },
     "src/engine_internal.h": {
-      "sha256": "0ad836d70b032df4ad873a9829858de70eb458d3a754c21133c5387bd5fa8974"
+      "sha256": "ff3be303b1074177ab6d634f2b79ca1aca8abe014c3c92a84ce5e63ea106c8c9"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "1179c511bc7939dbe789da040afac6828e29a44b768c0a3fae47ade8076d2d7b"
+      "sha256": "de45ddcb732fbc2b32c082b3401a9cd627f533cffd36b0c4d590c503aa4bf2da"
     },
     "include/35mmisle/rng.h": {
       "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
@@ -54,27 +63,38 @@
       "sha256": "6c83553a8f38a6eca0d6f6c6e2ceb5fa376f680165da1e9f15a59724fdc2ebfe"
     },
     "tools/prepare_engine.py": {
-      "sha256": "b48d11d4c787fdd6085268348a1b264955680e23818e2f55699ce3f0631ccca1"
+      "sha256": "be92fc0e5afe40a67ada67418a2504d74a64aa2dc70930f1f2898951f35de3a9"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "7a15395f96420e26a1f474dd7d5033f830bbaad78ce8ef7abe539643c18256ae"
+      "sha256": "c9c39276ba75df7c1c4752480a9b9adc7e3f5dc2cb0d13368a2e11ca23dac9cd"
     },
     "src/actor_owner_source.h": {
-      "sha256": "c2a00167ccd34a20c997b2b2233855f4574cc2af32a549ca0812255e8e053908"
+      "sha256": "38df0a3f1e5e384018343d451cab0e999e2cc2433d1678f412d192edf40e85d1"
+    },
+    "src/actor_interaction_services.h": {
+      "sha256": "7801d6223c224226daeca85214f522bd87ce7108538315e4b9e7a3d9e2d8c9e0"
+    },
+    "src/item_source.h": {
+      "sha256": "ab515ea3a720169f485949b4a7ce9f3eadc34b6cfe99296b2f2c8c6f2b9371f8"
+    },
+    "src/source_command_scope.h": {
+      "sha256": "acd9a7312afe5129efcd6e495aa827de1ae667f3810cbe5fba5c3989516a3160"
     }
   },
   "transformations": {
     "preamble": "Private engine_internal.h + actor_owner_source.h; native semantic Pokemon/RandomState typedefs, exact single-occurrence own-GAME vector declarator/signature substitutions to IsleGameVec3, native zero vector declaration and no Vec3f typedef/macro collision or SDK compatibility layer. GET_POKEMON checks actual userData; omCreateProcess creates typed real native processes. Existing C omEndProcess/ohWait linked unchanged.",
     "random": "One exact call substitution: randRange(sumWeight) -> isle_actor_source_rand_range(obj, sumWeight), consuming the bound application RNG through existing isle_rng_range.",
     "failure": "Existing engine C execution_fault is privately promoted to isle_native_execution_fault; all native callers migrated, identical fence semantics. Source control entrypoints require an active C callback; native startup uses returned engine status.",
-    "body_policy": "Enumerated substitutions preserve waits, priorities, masks and publication/end order. RunInteractions preserves its actual NULL graph early return and substitutes the remaining unadmitted interpreter with the owner admission-failing leaf; cleanup body is native owner ordering, with actual GAME RunCleanup priority4 dispatch.",
+    "body_policy": "Complete own C automatic RunInteractions and queued HandleCommand bodies; no NULL-only C++ selector. Automatic native rows admission precedes interpretation; actual C checked queue preflights every custom node before consumption, including nonwinning/later callback/service closures, while builtins bypass it. Queued rows then read the exact prevalidated descriptor. Source NULL automatic early return, queued21/22 clearing/pause tail, aux6-before-state7 and ordinary suffix continuation remain actual C.",
     "owner_leaves": "Enumerated exact substitutions in definitions; C leaves report faults only after C++ returns. No guest pointer callback casts.",
     "factory": "Actual common1003 factory lines112-114 unchanged text; preamble aliases WorldBlock/ObjectSpawn/PokemonInitData to native typed owner contexts, static init identity0x80388348, Pokemon_SpawnOnGroundDlLink4 to nonwaiting isle_actor_owner_spawn_ground_dl4. Actual C factory callable identity retained; no guest pointer casts.",
     "trigger": "Actual selected source trigger retains symbol and position-before-misc-signal ordering. Explicit signature change void to IsleGameResult; guarded status-returning source_get replaces active-callback require; native position leaf status checked before signal; success returned after signal. Nonwaiting selected C body safely callable by owner; not byte-identical. Existing active source require guard unchanged.",
-    "translation_units": "Original six control helpers emitted alone under --output; remaining fifteen owner/FSM/factory/trigger/AddAtGeo bodies emitted under required --owner-output. No owner preamble or owner leaf references in core unit, avoiding static archive circular dependencies. Separate source hashes in evidence; three destinations required distinct.",
+    "translation_units": "Original six control helpers remain alone in isle-engine; all remaining seventeen own C owner/FSM/factory/trigger/nearest/interaction definitions share the native owner archive. No engine-to-owner circular link.",
     "magikarp": "Actual source129 header802CDAB4/yaw/shared ground-path/NULLgraph/ANIMATION_ENDED/scene flag clear/RunCleanup/SetStateNULL retained. Only native model placement, header, canonical scene flag and raw topology/world/ground leaves replace console accesses. Actual factory return added to source void spelling solely to expose its real Ground result; original factory call otherwise unchanged.",
     "ground_chain": "Source common175-195 keeps zero velocity initializer, actual child/child/next selection before wait10, strict below-ground test with wait1, height clamp and helper call. Raw source_effect_world computes canonical local TRS + root placement independently of fixed renderer caches; velocity columns normalized as effect.c1277-1360. Helper130-141 retains AddAtGeo then position then behavior0.",
-    "add_at_geo": "Actual Pokemon_AddAtGeo793-826 retains zero translation/euler, unit ignored spawn scale, inherited path/behavior, current World block in both arguments, factory dispatch and parent AUX placement copy before helper override. Source pokemonAddOne/getFreePokemonId semantics are concrete same-Owner leaves with Beach80..E4/link3 configuration, cursor/two scans/inclusive max fallback, native link lookup, unchanged logical40/block100 and physical joined/FIFO retention. NULL or exhausted source child faults in C only after returning from nonwaiting C++ leaves; no fabricated successful child."
+    "add_at_geo": "Actual Pokemon_AddAtGeo793-826 retains zero translation/euler, unit ignored spawn scale, inherited path/behavior, current World block in both arguments, factory dispatch and parent AUX placement copy before helper override. Source pokemonAddOne/getFreePokemonId semantics are concrete same-Owner leaves with Beach80..E4/link3 configuration, cursor/two scans/inclusive max fallback, native link lookup, unchanged logical40/block100 and physical joined/FIFO retention. NULL or exhausted source child faults in C only after returning from nonwaiting C++ leaves; no fabricated successful child.",
+    "reference_ownership": "All source apple/interactionTarget assignments in both complete C interpreters call existing adopt-before-release canonical Services assignment, including NULL/Player senders; no copied targets, raw guest calls or post-handler RAII credit repair.",
+    "occurrences": "Each substitution is exact source/native-byte-hashed and must match its explicit positive occurrence count (default1); repeated canonical reference statements use fixed2/11 counts, never unconstrained global replacement."
   },
   "semantic_origins": [
     {
@@ -90,6 +110,13 @@
       "last": 195,
       "source_sha256": "ab936cb3037a511a8971252cb1d6969c03fde2a6dd627be0c846a13b07f2225e",
       "use": "Source random-state weight/callable/sentinel semantics; actual native pointer ABI, no imported console size/offset."
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "first": 47,
+      "last": 102,
+      "source_sha256": "aaaab158ee3e7943ea15db04595c4cc77d84af0381f48439377f5b035f04b45e",
+      "use": "Actual own-GAME command scalar enum5..58 with absent11; native constants only, no header import or console layout."
     }
   ],
   "definitions": [
@@ -153,20 +180,115 @@
       "changes": []
     },
     {
+      "symbol": "Pokemon_GetClosestItem",
+      "path": "src/app_level/pokemon.c",
+      "first": 509,
+      "last": 533,
+      "source_sha256": "f5c7a8d9e9e80959c980f5e5c90337ac5cd7c31ffc638ed5d4976dce7dc4175b",
+      "native_sha256": "3903794aa28f417c0d3763d92cc2133dc4489f3609a65bb771a6334da2d0dc17",
+      "changes": [
+        {
+          "find": "    DObj* model = obj->data.dobj;",
+          "replace": "    IsleGameVec3 source_position = isle_actor_source_position(obj, obj, 1);"
+        },
+        {
+          "find": "    x = GET_TRANSFORM(model)->pos.v.x;\n    y = GET_TRANSFORM(model)->pos.v.y;\n    z = GET_TRANSFORM(model)->pos.v.z;",
+          "replace": "    x = source_position.x;\n    y = source_position.y;\n    z = source_position.z;"
+        },
+        {
+          "find": "Items_InitIterator()",
+          "replace": "isle_actor_source_item_iterator(obj)"
+        },
+        {
+          "find": "Items_NextValidItem()",
+          "replace": "isle_actor_source_item_next(obj)"
+        },
+        {
+          "find": "        Mtx3Float* position = &currItem->data.dobj->position;\n        f32 currDist2 = SQ(x - position->v.x) + SQ(y - position->v.y) + SQ(z - position->v.z);",
+          "replace": "        IsleGameVec3 position = isle_actor_source_position(obj, currItem, 0);\n        f32 currDist2 = (x-position.x)*(x-position.x) + (y-position.y)*(y-position.y) + (z-position.z)*(z-position.z);"
+        }
+      ]
+    },
+    {
       "symbol": "Pokemon_RunInteractions",
       "path": "src/app_level/pokemon.c",
       "first": 630,
       "last": 720,
       "source_sha256": "f372c6543793188d3c4ac5a1b8f6d4b1e1bb20541a956ecadc8d6aa8623b5e28",
-      "native_sha256": "a4a81ecfb42d51ee3362a3f931e9abacaed3fb05345f061c474685dd9a80c112",
+      "native_sha256": "671acc122da1199cdf4867346a9e0760229df0ac26a6520574ff81dff3f017e8",
       "changes": [
         {
-          "find": "    s32 i;\n    s32 continueSearch = true;\n    Vec3f dirToNeighbors;\n    f32 interactionDist;\n    GObj* interactionTarget;\n    GObjFunc stateProc = NULL;\n    GObjFunc auxProc = NULL;\n    InteractionHandler* transitionGraph = pokemon->transitionGraph;",
-          "replace": "    const void* transitionGraph = pokemon->transitionGraph;"
+          "find": "    s32 continueSearch = true;",
+          "replace": "    s32 continueSearch = true;\n    IsleActorFocusState source_focus;"
         },
         {
-          "find": "    for (i = 0; continueSearch && transitionGraph[i].cmd != POKEMON_CMD_58; i++) {\n        if (transitionGraph[i].state == NULL && transitionGraph[i].aux == NULL) {\n            continue;\n        }\n\n        switch (transitionGraph[i].cmd) {\n            case POKEMON_CMD_15:\n                interactionTarget = Pokemon_GetClosestItem(obj, &interactionDist);\n                if (interactionTarget != NULL) {\n                    Item* item = GET_ITEM(interactionTarget);\n                    if (interactionTarget != pokemon->apple && item->itemID == ITEM_ID_APPLE && item->state == ITEM_STATE_STILL && interactionDist < 600.0f) {\n                        pokemon->apple = interactionTarget;\n                        continueSearch = false;\n                        pokemon->interactionDist = interactionDist;\n                        pokemon->interactionTarget = interactionTarget;\n                        stateProc = transitionGraph[i].state;\n                        auxProc = transitionGraph[i].aux;\n                    }\n                }\n                break;\n            case POKEMON_CMD_16:\n                if (pokemon->playerDist < transitionGraph[i].value) {\n                    pokemon->interactionDist = interactionDist; // BUG: interactionDist undefined here, must use 'playerDist'\n                    continueSearch = false;\n                    pokemon->interactionTarget = gObjPlayer;\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                }\n                break;\n            case POKEMON_CMD_17:\n                if (Pokemon_GetDirToNeighbours(obj, &dirToNeighbors) > 0.0f) {\n                    pokemon->dirToNeighbors.x = dirToNeighbors.x;\n                    pokemon->dirToNeighbors.y = dirToNeighbors.y;\n                    pokemon->dirToNeighbors.z = dirToNeighbors.z;\n                    continueSearch = false;\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                }\n                break;\n            case POKEMON_CMD_5:\n            case POKEMON_CMD_6:\n            case POKEMON_CMD_7:\n                if (Items_GetPokeFluteCmd() == transitionGraph[i].cmd && pokemon->playerDist < 1400.0f) {\n                    continueSearch = false;\n                    pokemon->interactionTarget = gObjPlayer;\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                }\n                break;\n            case POKEMON_CMD_23:\n                if (sTimerInFocus > transitionGraph[i].value && obj == gPokemonInFocus) {\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                    continueSearch = false;\n                }\n                break;\n            case POKEMON_CMD_25:\n                if (gDirectionIndex < 0 && pokemon->playerDist < transitionGraph[i].value) {\n                    stateProc = transitionGraph[i].state;\n                    auxProc = transitionGraph[i].aux;\n                    continueSearch = false;\n                }\n                break;\n        }\n    }\n\n    if (auxProc != NULL) {\n        Pokemon_StartAuxProc(obj, auxProc);\n    }\n    if (stateProc != NULL) {\n        Pokemon_SetState(obj, stateProc);\n    }\n    if (!func_80353D68_4F4178()) {\n        ohPauseObjectProcesses(obj);\n    }\n}\n",
-          "replace": "    isle_actor_source_interactions(obj);\n}\n"
+          "find": "    Vec3f dirToNeighbors;",
+          "replace": "    IsleGameVec3 dirToNeighbors;"
+        },
+        {
+          "find": "    InteractionHandler* transitionGraph = pokemon->transitionGraph;",
+          "replace": "    const InteractionHandler* transitionGraph = isle_actor_source_interaction_rows(obj);"
+        },
+        {
+          "find": "Item* item = GET_ITEM(interactionTarget);",
+          "replace": "IsleItemSource* item = isle_actor_source_item(obj, interactionTarget);"
+        },
+        {
+          "find": "pokemon->apple = interactionTarget;",
+          "replace": "isle_actor_source_reference_assign(obj, &pokemon->apple, interactionTarget);"
+        },
+        {
+          "find": "pokemon->interactionTarget = interactionTarget;",
+          "replace": "isle_actor_source_reference_assign(obj, &pokemon->interactionTarget, interactionTarget);"
+        },
+        {
+          "find": "pokemon->interactionTarget = gObjPlayer;",
+          "replace": "isle_actor_source_reference_assign(obj, &pokemon->interactionTarget, gObjPlayer);",
+          "occurrences": 2
+        },
+        {
+          "find": "pokemon->interactionDist = interactionDist; // BUG: interactionDist undefined here, must use 'playerDist'",
+          "replace": "pokemon->interactionDist = pokemon->playerDist; /* Defined native BUG16 correction. */"
+        },
+        {
+          "find": "            case POKEMON_CMD_23:\n                if (sTimerInFocus > transitionGraph[i].value && obj == gPokemonInFocus) {",
+          "replace": "            case POKEMON_CMD_23:\n                source_focus = isle_actor_source_focus(obj);\n                if (source_focus.timer > transitionGraph[i].value && obj == source_focus.current) {"
+        }
+      ]
+    },
+    {
+      "symbol": "Pokemon_HandleCommand",
+      "path": "src/app_level/pokemon.c",
+      "first": 1806,
+      "last": 2064,
+      "source_sha256": "bc545f99f1a3cb45d1304d767a3b73b6ab5bcfb8238cfe6b139a07d8f52f01d3",
+      "native_sha256": "a71130f4e902827cd9ad43c3e6e767eb35e46d9ca8f852e9552fca2c389b3d95",
+      "changes": [
+        {
+          "find": "    InteractionHandler* transitionGraph;",
+          "replace": "    const InteractionHandler* transitionGraph;"
+        },
+        {
+          "find": "    transitionGraph = pokemon->transitionGraph;",
+          "replace": "    transitionGraph = pokemon->transitionGraph != NULL ? pokemon->transitionGraph->rows : NULL;"
+        },
+        {
+          "find": "pokemon->apple = cmdData.source;",
+          "replace": "isle_actor_source_reference_assign(omCurrentObject, &pokemon->apple, cmdData.source);",
+          "occurrences": 2
+        },
+        {
+          "find": "pokemon->interactionTarget = cmdData.source;",
+          "replace": "isle_actor_source_reference_assign(omCurrentObject, &pokemon->interactionTarget, cmdData.source);",
+          "occurrences": 11
+        },
+        {
+          "find": "pokemon->apple = NULL;",
+          "replace": "isle_actor_source_reference_assign(omCurrentObject, &pokemon->apple, NULL);"
+        },
+        {
+          "find": "pokemon->interactionTarget = NULL;",
+          "replace": "isle_actor_source_reference_assign(omCurrentObject, &pokemon->interactionTarget, NULL);"
         }
       ]
     },
@@ -484,7 +606,7 @@
     "ownership": "Actual actor consumer allocates full records in the native arena with shared application RNG/owner; record storage is validated disjoint from canonical8MiBRAM even for hidden/filtered actors. Joined old native work precedes record reset/reuse. Foreign userData is never cast before actual native binding marker validation.",
     "actual_consumer": "Complete actor/focus source-evaluated surface root f3krr9nu passed all6native-actor geometry/lifetime and actual GPU capture/history/gate/nativehide/cleanup/writeback gates; see actor-producer-inputs.json. Debug/Release/ClangASanUBSan each passed49 CPU tests. The source header SHA256 above is the current canonical record, not an SDK layout."
   },
-  "scope": "Private selected GAME control, ordinary wait/update/cleanup dispatch, common1003 normal/path/hidden/retrigger and position-before-signal trigger. Actual common1003 C factory delegates through typed nonwaiting owner registered spawn seam. NonNULL interactions reject admission in owner.",
+  "scope": "Complete private C automatic/FIFO interaction algorithms and closest-Item traversal over actual native service leaves; existing common1003/Magikarp native factories/state/path/animation/cleanup remain integrated. Whole uncompiled/unsupported callback/service closures reject admission; all71 graphs/all72 original callbacks, actual Player producer and fullgame remain open, not silently claimed by interpreter completion.",
   "build_recipe": {
     "private_sources": {
       "isle-engine": [
@@ -501,11 +623,20 @@
       "src/actor_owner_source.h",
       "src/actor_source.h",
       "src/actor_source_bridge.c",
-      "src/actor_source_owner_bridge.c"
+      "src/actor_source_owner_bridge.c",
+      "src/actor_interaction_services.h",
+      "src/source_command_scope.h",
+      "src/item_source.h"
     ],
     "strict_fp": "Compile selected GAME C and source bridge with strict FP: GCC/Clang -fno-fast-math -ffp-contract=off; MSVC /fp:strict. Preserve native source ohWait/omEndProcess symbols. No worker generation or compilation performed.",
     "final_support_hashes": "Main refreshes all native_support hashes after owner/engine sibling changes land, before preparation.",
     "cli": "python3 -B tools/prepare_actor_control.py --repository <pinned-GAME-git> --manifest cmake/actor-control-inputs.json --output <build>/generated/isle_actor_control.c --owner-output <build>/generated/isle_actor_owner.c --evidence <build>/isle-actor-control-inputs.json"
+  },
+  "current_runtime_qualification": {
+    "receipt": "cmake/actor-interaction-inputs.json#native_full_C_Item_wave",
+    "status": "Complete actual C automatic/FIFO algorithms/Update and all eleven returning native interaction services passed whole Debug/Release/ClangASanUBSan CPU/API/RSP/retained-fault consumers; all original GPU consumers preserved",
+    "history": "integration_validation and canonical_render_payload actual_consumer above describe their named earlier bounded roots, not the current full C/Item/56CPU/39runtime proof",
+    "not_claimed": "All71graph/remaining speciescallback closure, productionPlayerFSM/fullphoto/save/course/productgameplay, physical/SDL3transport/Original/privateWindows11"
   },
   "translation_units": {
     "control": {
@@ -525,7 +656,9 @@
       "cli": "--owner-output",
       "target": "isle-actor-owner",
       "definitions": [
+        "Pokemon_GetClosestItem",
         "Pokemon_RunInteractions",
+        "Pokemon_HandleCommand",
         "Pokemon_WaitForFlag",
         "Pokemon_RunCleanup",
         "Pokemon_Update",

@@ -229,11 +229,14 @@ a::Error Session::bgm_channel_volume(unsigned p, std::uint8_t channel, std::int8
     if (p >= songs_.size() || control() != a::Error::none) return a::Error::invalid_parameter;
     return publish(p, service_->sequence_player(csp_[p]).stage_channel_extra_volume(channel, value));
 }
+bool Session::has_sound(std::uint32_t id) const noexcept {
+    const auto& catalog = resources_.sounds.banks()[0]->instruments[0]->sounds;
+    return id < catalog.size() && catalog[id] && id < resources_.priorities.size();
+}
 a::Error Session::play_sound(std::uint32_t id, Parameters parameters, int& slot) noexcept {
     slot = -1;
     if (control() != a::Error::none) return a::Error::invalid_state;
-    const auto& catalog = resources_.sounds.banks()[0]->instruments[0]->sounds;
-    if (id >= catalog.size() || !catalog[id] || !valid(parameters)) return a::Error::invalid_parameter;
+    if (!has_sound(id) || !valid(parameters)) return a::Error::invalid_parameter;
     const auto priority = resources_.priorities[id];
     for (auto& s : sounds_) if (s.idle < 255) ++s.idle;
     int selected = -1;
@@ -484,6 +487,9 @@ a::Error Session::build(a::TaskView& task) noexcept {
     if (service_serial_ == std::numeric_limits<std::uint64_t>::max() ||
         retrace_notifications_ > std::numeric_limits<std::uint64_t>::max() - wait_notifications)
         return fail(a::Error::identity_exhausted);
+    // GAME samples its audio-frame time immediately before alAudioFrame.
+    // Reuse this already-required producer identity as the native equality
+    // epoch at that same boundary, after every no-work/admission return.
     const auto error = service_->build({++service_serial_, lagged_ai_, 0}, task_);
     if (error != a::Error::none) return fail(error);
     // sp70 is sampled at the GAME tick AFTER the task's quota/build. Retain it

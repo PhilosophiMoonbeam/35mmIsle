@@ -64,7 +64,8 @@ def prepare(repository, manifest_path, output_path, evidence_path):
     root = Path(__file__).resolve().parent.parent
     for path, identity in manifest["native_support"].items():
         if path not in ("src/engine.c", "src/engine_math.h", "src/contextual_model_math.h",
-                        "src/engine_internal.h", "include/35mmisle/engine.h"):
+                        "src/engine_internal.h", "src/source_factory_resources.h",
+                        "include/35mmisle/engine.h"):
             raise ValueError("unadmitted native support path: " + path)
         digest = hashlib.sha256((root / path).read_bytes()).hexdigest()
         if digest != identity["sha256"]:

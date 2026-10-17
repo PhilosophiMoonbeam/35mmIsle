@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "scope": "Completed native ActorOwner/common1003 component step under the still-open total native actors/player/items/courses/application port. No runtime, Original or Windows11 proof is claimed.",
+  "scope": "Native ActorOwner/common1003/Magikarp component with complete original-C interaction execution and shared native lifetime; actual current runtime evidence is cmake/actor-interaction-inputs.json native_full_C_Item_wave. Total remaining species/productionPlayer/courses/application, Original parity and privateWindows11 remain open.",
   "source_files": {
     "src/app_level/pokemon.c": {
       "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
@@ -144,22 +144,22 @@
       "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
     },
     "src/actor_owner.hpp": {
-      "sha256": "4558fb6974cc26c7554ab3fdf65dca22bcefca0dbee2c9a5bfe076c12cd0e373"
+      "sha256": "bf772ffe65ba441fb9af069bff96b37db09734ef04343e43b7c0f7ad6644afa0"
     },
     "src/actor_owner.cpp": {
-      "sha256": "d93b080426ece5dee17220bdc132463e8320b217198b25f798d639239587a5c4"
+      "sha256": "ef777302dc2bcc1d27df18d63ec15ca28a33eda90e68c82d0e387f89111d5e1b"
     },
     "src/actor_owner_source.h": {
-      "sha256": "c2a00167ccd34a20c997b2b2233855f4574cc2af32a549ca0812255e8e053908"
+      "sha256": "38df0a3f1e5e384018343d451cab0e999e2cc2433d1678f412d192edf40e85d1"
     },
     "src/actor_source.h": {
       "sha256": "14674320e298acac47be0c632787f2e1107835997ce1a9dbed1b21780329e7c1"
     },
     "src/actor_source_bridge.c": {
-      "sha256": "6e86484024bb7c9cf7931e7a6421d63f694d28688746bb21ab3df64bb0465046"
+      "sha256": "13916a2199a03e512c43760e0f6d1b901b80ef03e6920a7051e3b5d7fd7866bd"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "7a15395f96420e26a1f474dd7d5033f830bbaad78ce8ef7abe539643c18256ae"
+      "sha256": "c9c39276ba75df7c1c4752480a9b9adc7e3f5dc2cb0d13368a2e11ca23dac9cd"
     },
     "src/beach_actor_resources.hpp": {
       "sha256": "aeb595bf1a418bfe7999df35b5acfd3b24757a8fab07c50443b7f9752743c16e"
@@ -168,25 +168,25 @@
       "sha256": "f5aeb56a912880c06a0fa1aa4623db8a3e5a78686d084ab124bd4eb446f3896b"
     },
     "src/scene_services.hpp": {
-      "sha256": "71bfa5982bc66764ca89735cd296446bee32985460d6af2feadbf1d31f8a1c89"
+      "sha256": "3b2df6d34289fb1dcabac6ccf62c84b66ae2bc171938b7f6fe234d7ba209a682"
     },
     "src/scene_services.cpp": {
-      "sha256": "a264723c2dcbc47ed3ae3a3e4115cf9eb37df18029499bc5a2ee040154d2e7db"
+      "sha256": "3eb7d896d3051f6f868ecd25a2aaacd4e414f17b01eee29ff85b7e7b151020d1"
     },
     "src/environment_sound.hpp": {
-      "sha256": "ed68da392f3530ce1506d219f56fb8b6c19495b6882170efcc65833bc1364294"
+      "sha256": "c9b3988dc93a776e607947b05ad69772225a8dce09eb87fb9b2a0ff0276caf01"
     },
     "src/environment_sound.cpp": {
-      "sha256": "e4b1157cfbe03951c67f5a8f4a2be5b657ff5521e7be03529c9c0b0a6b68f4e7"
+      "sha256": "0532dcff4ac2e978f6e069d75a72469472af9770e829ce152afa3bca6f6bda66"
     },
     "tools/prepare_actor_control.py": {
-      "sha256": "882d3433d88dfac8c8cc5b81870f8472bb6c082b775aada6ae269f1bd58960f7"
+      "sha256": "8c18eeaae068f390f2726d4969062852ec038f208c902f1d7eb0f8f373d0191c"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "30082e1c32d148fbd89c3ea1920767ad488f90b8abf80b4916181d8e08191849"
+      "sha256": "b44406b4ca43ff3fb1fe2c566e985d56ec987a58e5de449419c7fd492317eb88"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "ec29810a1ef40308e22846bcc9229aed36e61887368cff7c574413c4a135cd69"
+      "sha256": "5e49b79bfa4cb836154eac914fce940d4ec6ee5d9f26424a9156d6dbfde2d1a9"
     },
     "tests/beach_actor_resources_rom_smoke.cpp": {
       "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"
@@ -205,25 +205,25 @@
     "2": "Shared checked setter uses source ARRAY identities, force/startTime, category0 stop before changed model bind, material start0, NULL outer palette-preserving reset/model-speed-only; current header before immediate evaluation; trailing loop/ENDED/target/frame resets afterward; NULL pauses matching actual source callable without blanket sound stop. Actual GObj flags reach Runtime.",
     "3": "Every scheduled/immediate step native-preflights and publishes accepted Runtime local pose before events. Local path/FX writes use preflight -> Runtime -> native setter without allocation. common1003 subtracts actual root-localY, never placement.",
     "4": "Shared real event policy: -1/-2 loops; signed conversion before root0..3 policy, hidden/sound gate only play not zero category stop; child tangible positive conversion creates attached sharedFX with actual owner validation. Owner full handles resolve raw source world and separate local aim/output writes.",
-    "5": "Concrete optional native player model/object/camera listener, pause/execution/sound globals, focus/latch/direction/timer state and cleanup. Absent player is FLOATMAX. Exact ordinaryWait calls genuine NULLgraph early-return interactions before flags and clears graph; nonNULL graph fails admission without running an invented graph interpreter.",
-    "6": "Actual Services FIFO consumer handles21/22 identity-clearing with NULLgraph; sender is never liveness-filtered/dereferenced. All source21/22 enqueue borrows have per-recipient preallocated physical-slot credits; delivery consumes and actual receiver retirement cancels discarded credits without fake command delivery. Update keeps counter/pause/loop/frame/commands order. Execution pause pauses all actual object processes, not update.",
+    "5": "Concrete optional native player model/object/camera listener, pause/execution/sound globals, focus/latch/direction/timer state and cleanup. Absent player is FLOATMAX. Actual C ordinaryWait/interpreters retain NULLgraph early return and admitted nonNULLgraph branch/order; full reachable native callback/resource closure is checked before custom consumption. Registered Player semantic fixture is not production Player.",
+    "6": "One actual source C Update/HandleCommand consumes the existing shared native FIFO. Canonical Services queue/active/field identity borrows survive join; all source21/22 clear actual fields by held sender identity without liveness filtering/dereference. Retired receiver cancellation does not replay commands or cancel ordinary suffixes. Source counter/pause/loop/frame/command order and real object process pause remain.",
     "7": "Checked immutable native factory switch enters actual selected common1003 C factory then native core: Services link3/prio80000000, source model recipe/separateRTS, exact spawn/block arithmetic, ground fallback0, source Euler/init.scale*.1 ignoring spawn.scale, initial fields/callback+prio3, forced immediate header, distanceprio8, actual configured initialstateprio7, late resets (loopTarget0), logical linking and actual DL4 wrapper move preserving camera tag-1. No guest callback casts.",
     "8": "Source cache retention metadata40, logical actor-list40, block registry100 and caller native/Runtime capacities are distinct. Exhaustion fails admission explicitly rather than silent partial spawn/unsafe unlink. Actual registered base-block deletion lookup gates cleanup. common1003 block change translates placementXYZ/pos1/target independently from local descent; no ground variant.",
     "9": "Cleanup order hide/Detector/player-focus/dieFIFO/cache+logical/FXdetach/soundfix/realnativeDelete/blockunlink. Fixed sound voices survive but lose comparison identities in the actual joined hook before native addresses can recycle, not at later Runtime collection. Physical release waits actual join and queued source identity release; caller must supply real external graphics exclusion. Failed Services shutdown still erases/joins; failure is not claimed as recoverable successful reset.",
-    "10": "Fifteen owner selected C bodies plus six engine controls: complete actual common normal/path/hidden/retrigger/factory/ordinaryWait/RunCleanup/Update plus genuine Magikarp factory/state/path and E298/E174/AddAtGeo closure. Source59/wait10/strict-ground polling/self-end/flags and shared RNG order retain real native waits. Source header04 remains unqualified, never duration."
+    "10": "Seventeen selected owner C definitions plus six engine controls: complete automatic/FIFO switches, closestItem/update/ordinaryWait/RunCleanup, common normal/path/hidden/retrigger/factory and genuine Magikarp factory/state/path plus E298/E174/AddAtGeo closure. Source59/wait10/strict-ground polling/self-end/flags and shared RNG retain real native waits. Source header04 remains unqualified, never duration."
   },
   "admission_limits": [
     "Actual common1003 GroundDL4 and Magikarp129 GroundDL5 configured factory/init/render/setup/state/header/NULLgraph tuples are admitted for full native source FSM. Other source species/factory/state/graph identities fail explicit admission. Magikarp has actual802CAB50/802CAC08 and common E298/E174/AddAtGeo same-Owner closure; cmake/magikarp-owner-inputs.json records actual Debug/Release/ClangASanUBSan CPU execution, not combined gated GPU eligibility/focus.",
     "Standalone real native model/Runtime/canonical record contexts can exercise shared actual header/event policy with additional admitted sound-bearing headers; this does not admit another actor FSM or add another coordinated owner.",
     "Current immutable ActorResources contains source trees. Unrepresented dummy-root/nonGround configurations are not invented or falsely admitted; common1003 is GroundDlLink4 and Magikarp129 retains Ground's DL5/tag-1.",
-    "Source command16 uninitialized interactionDist bug is neither initialized nor reinterpreted; its nonNULL graph is not admitted in this component.",
-    "Native full actor/player/item/photo/course application completion, all courses, Original parity, real private Windows11 execution and combined GPU qualification remain open.",
+    "Source command16 explicit BUG16 has a defined native correction in actor-control-inputs.json: use actual canonical cached playerDist, never uninitialized/prior-Item interactionDist; no Original SDK macro/undefined-behavior numerical parity is inferred.",
+    "Native total remaining species/productionPlayer/fullphotoqueue/save/course/application completion, all courses, Original parity and real privateWindows11 remain open. Current complete CPU/GPU Item/C/common/Magikarp component evidence is separately recorded, not fullgame.",
     "All nine source groups/73 decoded programs contain no admitted B7/B8/BF instructions or initial flag8000. Original-bank local target execution is not claimed; impossible asset-search assertions were removed, not replaced by synthetic source scripts. Generic VM target semantics retain authored behavioral regression coverage.",
     "No builds/tests/lint/format/generator/runtime/ROM/device/capture-root execution was performed by component workers."
   ],
   "build_recipe": {
     "prepare": "python3 -B tools/prepare_actor_control.py --repository PINNED_GAME_GIT --manifest cmake/actor-control-inputs.json --output BUILD/generated/isle_actor_control.c --owner-output BUILD/generated/isle_actor_owner.c --evidence BUILD/isle-actor-control-inputs.json",
-    "core_target": "Keep original six generated controls + src/actor_source_bridge.c in isle-engine; do NOT compile all21 into the same archive object or create an engine-to-owner link dependency.",
+    "core_target": "Keep original six generated controls + src/actor_source_bridge.c in isle-engine; do NOT compile all23 into the same archive object or create an engine-to-owner link dependency.",
     "owner_target": "add_library(isle-actor-owner STATIC src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h src/actor_photo_eligibility.cpp src/actor_photo_eligibility.hpp src/actor_source_owner_bridge.c BUILD/generated/isle_actor_owner.c)",
     "public_dependencies": [
       "isle-engine",

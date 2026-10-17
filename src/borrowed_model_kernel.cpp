@@ -1,6 +1,7 @@
 #include "borrowed_model_kernel.hpp"
 #include "graphics_task.hpp"
 #include "contextual_model_math.h"
+#include "source_factory_resources.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -102,7 +103,7 @@ Status decode_model_recipe(const Model& source, std::size_t node, MatrixRecipe& 
 }
 Status attach_source_model(IsleGame* game, IsleGameObject* object, const Model& source,
     animation::ModelState state, RootRecipe root, std::span<IsleGameModelNodeInit> scratch,
-    IsleGameModel** output) noexcept {
+    IsleGameModel** output, ::IsleSourceFactoryResources* prepared) noexcept {
     if (output) *output = nullptr;
     try {
         require(game && object && output && bool(state) && !source.nodes.empty() &&
@@ -124,7 +125,8 @@ Status attach_source_model(IsleGame* game, IsleGameObject* object, const Model& 
                 transform(state.nodes[n].transform),
                 translated ? ISLE_GAME_MODEL_TRANSLATE : recipe.native_kind};
         }
-        native(isle_game_attach_model(game,object,scratch.data(),source.nodes.size(),output));
+        native(prepared ? isle_source_factory_attach_model(prepared,object,scratch.data(),source.nodes.size(),output) :
+            isle_game_attach_model(game,object,scratch.data(),source.nodes.size(),output));
         return {};
     } catch (const Failure& f) { return f.status; }
       catch (...) { return {Error::invalid_input}; }
@@ -591,6 +593,7 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
             require(b.pose == PoseSource::animation || b.pose == PoseSource::native);
             for (std::size_t j = 0; j < i; ++j) require(bindings[j].slot != b.slot &&
                 bindings[j].state.instance != b.state.instance && bindings[j].object != b.object && bindings[j].model != b.model);
+            native(isle_game_model_validate_binding(p.game,b.object,b.model));
             auto& s = p.slots[b.slot]; s.staged = b; s.present = true;
             require(b.state.resource_model < p.models.size());
             const auto& source = p.models[b.state.resource_model];
@@ -606,7 +609,8 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
             require(native_count == count,Error::native); s.nodes = {nodes,native_count};
             native(isle_game_model_placement(p.game,b.model,&s.placement));
             IsleGameObjectMetadata metadata{}; native(isle_game_object_metadata(p.game,b.object,&metadata));
-            s.draw = b.draw && !(metadata.flags & 1u) && !(b.state.object_flags & 1u);
+            s.draw = b.draw && !(metadata.flags & 1u) &&
+                (b.pose == PoseSource::native || !(b.state.object_flags & 1u));
             p.dirty |= resource.contextual && s.draw;
             s.identity_changed = !s.live || s.key != s.staged_key();
             p.dirty |= s.identity_changed || s.draw != s.live_draw;

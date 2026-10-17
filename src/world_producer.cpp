@@ -39,6 +39,8 @@ struct Producer::Impl {
     std::vector<Command> pending;
     std::array<std::size_t,4> counts{};
     std::array<menu::model::ListRange,4> ranges{};
+    std::array<std::vector<ProducerObject>,2> object_frames;
+    std::size_t published_objects = 0, pending_object_count = 0;
     std::array<Command,9> camera_commands{};
     std::array<std::uint64_t,2> camera_revisions{};
     std::uint64_t reflection_revision = 0, revision = 0, epoch = 0;
@@ -77,6 +79,7 @@ struct Producer::Impl {
     }
     void stage(const scene::render::Pass* pass, const menu::model::RenderContext& context) {
         counts.fill(0); sky_draw = false; sky_model = nullptr; sky_placement_address = 0;
+        pending_object_count = 0;
         const auto owners = world.render_objects(); std::size_t active = 0;
         for (const auto& instance : instances) {
             require(instance.render_index < owners.size(),"World render owners changed before producer retirement");
@@ -110,23 +113,29 @@ struct Producer::Impl {
         for (const auto& instance : instances) {
             const auto& object = owners[instance.render_index];
             if (!object.object || !object.model) continue;
+            auto& record = object_frames[1-published_objects][pending_object_count++];
+            record = {object.object,{object.render_link,object.priority,UINT32_MAX},{}};
+            const auto first = counts;
             if (object.sky) {
-                if (!sky_draw) continue;
-                command(0,0xe7000000,0); high(20,2,0); low(3,29,0x00552048); command(0,0xd9fefffe,0);
-                if (sky_placement_address) command(0,0xda380000,sky_placement_address);
-                command(0,sky_placement_address ? 0xda380001 : 0xda380000,instance.matrices);
-                command(0,0xd5000001,0); command(0,0xde000000,object.display_list);
-                command(0,0xd8380002,64); command(0,0xe7000000,0); command(0,0xd9ffffff,0x00010001);
-                continue;
+                if (sky_draw) {
+                    command(0,0xe7000000,0); high(20,2,0); low(3,29,0x00552048); command(0,0xd9fefffe,0);
+                    if (sky_placement_address) command(0,0xda380000,sky_placement_address);
+                    command(0,sky_placement_address ? 0xda380001 : 0xda380000,instance.matrices);
+                    command(0,0xd5000001,0); command(0,0xde000000,object.display_list);
+                    command(0,0xd8380002,64); command(0,0xe7000000,0); command(0,0xd9ffffff,0x00010001);
+                }
+            } else if (kernel->draws(instance.slot)) {
+                const bool fogged = object.callback_identity == 0x800a1530 || object.callback_identity == 0x800a15d8;
+                require(fogged || object.callback_identity == 0x80014f98,"Unadmitted source world render callback");
+                if (fogged) fog(true);
+                menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
+                    std::span(lanes[2]),std::span(lanes[3])},counts,pending};
+                require(bool(kernel->encode(instance.slot,context,buffer)),"World shared hierarchy encoder rejected source pose");
+                if (fogged) fog(false);
             }
-            if (!kernel->draws(instance.slot)) continue;
-            const bool fogged = object.callback_identity == 0x800a1530 || object.callback_identity == 0x800a15d8;
-            require(fogged || object.callback_identity == 0x80014f98,"Unadmitted source world render callback");
-            if (fogged) fog(true);
-            menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
-                std::span(lanes[2]),std::span(lanes[3])},counts,pending};
-            require(bool(kernel->encode(instance.slot,context,buffer)),"World shared hierarchy encoder rejected source pose");
-            if (fogged) fog(false);
+            for (unsigned lane = 0; lane < 4; ++lane)
+                record.lanes[lane] = {static_cast<std::uint32_t>(first[lane]),
+                    static_cast<std::uint32_t>(counts[lane]-first[lane])};
         }
         std::size_t cursor = layout.lists.offset+camera_commands.size()*8;
         for (unsigned lane = 0; lane < 4; ++lane) {
@@ -136,6 +145,9 @@ struct Producer::Impl {
             ranges[lane] = {static_cast<std::uint32_t>(cursor),static_cast<std::uint32_t>(counts[lane])};
             cursor += counts[lane]*8;
         }
+        for (auto& object : std::span(object_frames[1-published_objects]).first(pending_object_count))
+            for (unsigned lane = 0; lane < 4; ++lane)
+                object.lanes[lane].address = ranges[lane].address+object.lanes[lane].address*8;
     }
 };
 Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,
@@ -180,6 +192,7 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
     require(matrix <= layout.payloads.offset+layout.payloads.size && material <= layout.materials.offset+layout.materials.size,
             "World producer payload/material reservation exhausted");
     s.local_payload_end = matrix; s.bindings.resize(slots.size());
+    for (auto& objects_frame : s.object_frames) objects_frame.resize(s.instances.size());
     s.kernel = std::make_unique<menu::model::BorrowedKernel>(game,resources.models(),resources.materials(),slots,
         Range{matrix,layout.payloads.offset+layout.payloads.size-matrix});
     for (auto& lane : s.lanes) lane.resize(layout.lists.size/8);
@@ -210,6 +223,8 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     disjoint(&s.camera_basis,sizeof(s.camera_basis));
     disjoint(s.instances.data(),s.instances.size()*sizeof(Impl::Instance));
     disjoint(s.bindings.data(),s.bindings.size()*sizeof(menu::model::BorrowedBinding));
+    for (const auto& objects_frame : s.object_frames)
+        disjoint(objects_frame.data(),objects_frame.size()*sizeof(ProducerObject));
     disjoint(s.pending.data(),s.pending.size()*sizeof(Command));
     for (const auto& lane : s.lanes) disjoint(lane.data(),lane.size()*sizeof(Command));
     std::size_t count = 0; native(isle_game_camera_matrix_count(s.game,s.camera,&count));
@@ -280,7 +295,9 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
         write(s.ranges[lane].address+static_cast<std::uint32_t>(i*8),s.lanes[lane][i]);
     s.ram = words.data(); s.epoch = epoch; ++s.revision;
     s.camera_basis.value = context;
-    return {{static_cast<std::uint32_t>(s.layout.lists.offset),static_cast<std::uint32_t>(s.camera_commands.size())},s.ranges,s.owned,s.revision};
+    s.published_objects = 1-s.published_objects;
+    return {{static_cast<std::uint32_t>(s.layout.lists.offset),static_cast<std::uint32_t>(s.camera_commands.size())},
+        s.ranges,s.owned,s.revision,std::span(s.object_frames[s.published_objects]).first(s.pending_object_count)};
 }
 ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch) { return prepare_filtered(words,epoch,nullptr); }
 ProducerFrame Producer::prepare(std::span<std::uint32_t> words, std::uint64_t epoch, const scene::render::Pass& pass) {

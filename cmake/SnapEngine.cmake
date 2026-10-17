@@ -9,6 +9,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/engine_math.h"
     "${PROJECT_SOURCE_DIR}/src/contextual_model_math.h"
     "${PROJECT_SOURCE_DIR}/src/engine_internal.h"
+    "${PROJECT_SOURCE_DIR}/src/source_factory_resources.h"
     "${PROJECT_SOURCE_DIR}/include/35mmisle/engine.h")
 file(READ "${CMAKE_CURRENT_LIST_DIR}/snap-engine-inputs.json" _isle_engine_manifest)
 string(JSON _isle_snap_revision GET "${_isle_engine_manifest}" revision)
@@ -56,6 +57,9 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/actor_source_bridge.c"
     "${PROJECT_SOURCE_DIR}/src/actor_owner_source.h"
     "${PROJECT_SOURCE_DIR}/src/actor_source_owner_bridge.c"
+    "${PROJECT_SOURCE_DIR}/src/actor_interaction_services.h"
+    "${PROJECT_SOURCE_DIR}/src/source_command_scope.h"
+    "${PROJECT_SOURCE_DIR}/src/item_source.h"
     "${PROJECT_SOURCE_DIR}/include/35mmisle/rng.h"
     "${PROJECT_SOURCE_DIR}/src/rng.c")
 set(_isle_actor_generated "${CMAKE_BINARY_DIR}/_deps/isle-actor-control-private/game.c")
@@ -75,9 +79,39 @@ if(NOT _isle_actor_result EQUAL 0)
 endif()
 message(STATUS "${_isle_actor_output}")
 
+# Actor/Item/Beach chooser implementations share one native owner archive:
+# their real source callbacks mutually depend on those owners, not the engine.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/cmake/item-owner-inputs.json"
+    "${PROJECT_SOURCE_DIR}/tools/prepare_items.py")
+file(READ "${PROJECT_SOURCE_DIR}/cmake/item-owner-inputs.json" _isle_item_manifest)
+string(JSON _isle_item_support_count LENGTH "${_isle_item_manifest}" native_support)
+math(EXPR _isle_item_support_last "${_isle_item_support_count} - 1")
+foreach(_isle_item_support_index RANGE 0 ${_isle_item_support_last})
+    string(JSON _isle_item_support_path MEMBER "${_isle_item_manifest}" native_support ${_isle_item_support_index})
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/${_isle_item_support_path}")
+endforeach()
+set(_isle_item_generated "${CMAKE_BINARY_DIR}/_deps/isle-item-owner-private/game.c")
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_items.py"
+        --repository "${_isle_snap_source}"
+        --manifest "${PROJECT_SOURCE_DIR}/cmake/item-owner-inputs.json"
+        --output "${_isle_item_generated}"
+        --evidence "${CMAKE_BINARY_DIR}/isle-item-owner-inputs.json"
+    RESULT_VARIABLE _isle_item_result
+    OUTPUT_VARIABLE _isle_item_output
+    ERROR_VARIABLE _isle_item_error)
+if(NOT _isle_item_result EQUAL 0)
+    message(FATAL_ERROR "Private native Item source preparation failed:\n${_isle_item_output}${_isle_item_error}")
+endif()
+message(STATUS "${_isle_item_output}")
+
 add_library(isle-engine STATIC src/engine.c src/engine_internal.h src/engine_math.h
     src/contextual_model_math.h include/35mmisle/engine.h "${_isle_engine_generated}")
 target_sources(isle-engine PRIVATE src/actor_source_bridge.c src/actor_source.h "${_isle_actor_generated}")
+target_sources(isle-engine PRIVATE src/item_source_bind.c src/item_source.h)
+target_sources(isle-engine PRIVATE src/source_factory_resources.h)
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)
@@ -103,6 +137,21 @@ if(BUILD_TESTING)
     isle_target_options(actor-control-tests)
     add_test(NAME actor-control-tests COMMAND actor-control-tests)
     set_tests_properties(actor-control-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
+
+    add_executable(item-source-tests tests/item_source_tests.cpp tests/item_source_fixture.c)
+    target_link_libraries(item-source-tests PRIVATE isle-engine)
+    target_include_directories(item-source-tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
+    isle_target_options(item-source-tests)
+    add_test(NAME item-source-tests COMMAND item-source-tests)
+    set_tests_properties(item-source-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
+
+    add_executable(native-factory-resources-tests
+        tests/native_factory_resources_tests.cpp tests/native_factory_resources_fixture.c)
+    target_link_libraries(native-factory-resources-tests PRIVATE isle-engine)
+    target_include_directories(native-factory-resources-tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
+    isle_target_options(native-factory-resources-tests)
+    add_test(NAME native-factory-resources-tests COMMAND native-factory-resources-tests)
+    set_tests_properties(native-factory-resources-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
 endif()
 
 if(ISLE_BUILD_RSP_PROBE AND ISLE_BUILD_RDP_PROBE)

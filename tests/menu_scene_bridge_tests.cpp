@@ -1,4 +1,5 @@
 #include "menu_scene_bridge.h"
+#include "owned_command_fixture.h"
 
 #include <array>
 #include <cstddef>
@@ -12,6 +13,11 @@ namespace {
 int failures = 0;
 void check(bool condition, std::string_view meaning) {
     if (!condition) { ++failures; std::cerr << "FAIL: " << meaning << '\n'; }
+}
+void check_native(int source_line, std::string_view meaning) {
+    if (source_line == 0) return;
+    ++failures;
+    std::cerr << "FAIL: " << meaning << " (native C fixture line " << source_line << ")\n";
 }
 struct Fixture {
     std::array<std::byte, 128 * 1024> storage{};
@@ -219,5 +225,29 @@ int main() {
     prefix_reentry_preserves_native_process_order();
     custom_commands_share_the_builtin_fifo();
     deferred_retirement_joins_before_userdata_recycling();
+    check_native(owned_command_admission_regression(),
+                 "custom admission preserves rejected credits and removes only an earlier consumed prefix");
+    check_native(owned_command_completion_regression(),
+                 "handler effects are consumed before status failure; later builtin/custom effects do not run");
+    check_native(owned_command_append_regression(),
+                 "late append runs in the same pass without recycling retained/countable nodes early");
+    check_native(owned_command_delete_regression(),
+                 "builtin deletion bypasses invalid custom admission and cannot replay its retained batch");
+    check_native(owned_command_token_regression(),
+                 "early or NULL token finish cannot close the callback, unlock recursion, tick or identity release");
+    check_native(owned_command_cancel_regression(),
+                 "cancellation retains only the active callback credit until actual handler return");
+    check_native(owned_command_fault_regression(),
+                 "native C fault disarms and returns from consumed-prefix cleanup before leaving its tick fence");
+    check_native(owned_command_scope_regression(),
+                 "owned scope validates actual current receiver/context and null-current end preserves FIFO continuation");
+    check_native(owned_command_legacy_wait_regression(),
+                 "legacy parked callback retains depth and credits across actual native continuation waits");
+    check_native(owned_command_target_retirement_regression(),
+                 "target retirement cannot free an external parked handler's credit before actual return");
+    check_native(owned_command_caller_join_regression(),
+                 "actual caller join abandons only consumed work and preserves a live target's suffix/observer depth");
+    check_native(owned_command_legacy_fault_regression(),
+                 "an unowned legacy native fault does not blanket-abort a callback before its caller joins");
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

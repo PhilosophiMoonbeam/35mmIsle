@@ -23,6 +23,16 @@ int isle_menu_object_hidden(IsleGame*, const IsleGameObject*);
  */
 IsleGameResult isle_menu_observe_command_queued(IsleGame*, IsleGameObject*, int32_t,
     IsleGameObject*, IsleGameCommandHandler, void*);
+/* One owned synchronous native command drain, never a manual/parked handler.
+ * Begin requires the ticking receiver to be the actual current object and no
+ * current process. Context must be stable beyond all faulted C stack frames.
+ * Abort must return without waiting, allocating, faulting or mutating OM.
+ * Native faults disarm first, then call abort before leaving the C fence.
+ * End only disarms the matching context and never invokes abort. */
+typedef void (*IsleMenuCommandFaultAbort)(void*);
+IsleGameResult isle_menu_command_fault_begin(IsleGame*, IsleGameObject*,
+    IsleMenuCommandFaultAbort, void* context);
+IsleGameResult isle_menu_command_fault_end(IsleGame*, void* context);
 /* Active stackful callback only; reuses the retained exact GAME RGB fade. */
 IsleGameResult isle_menu_logo_fade(IsleGame*, IsleGameSprite*, uint16_t updates);
 /* Exact GAME float-to-fixed packing; native scale, no kind28 quantization. */

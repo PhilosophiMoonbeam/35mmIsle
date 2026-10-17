@@ -76,9 +76,14 @@ public:
     EffectRuntime(const EffectRuntime&) = delete;
     EffectRuntime& operator=(const EffectRuntime&) = delete;
     EffectsStatus status() const noexcept { return status_; }
+    // Immutable admitted bank/script presence, independent of the ten-emitter
+    // pool and RNG. A full pool remains an ordinary successful null spawn.
+    bool has_effect(std::uint16_t encoded_bank, std::size_t script) const noexcept;
     EffectSpawnResult create_effect(std::uint16_t encoded_bank, std::size_t script,
                                     EffectAttachment attachment = {}) noexcept;
     EffectsStatus configure_effect(EffectHandle, Vec3 position, Vec3 velocity) noexcept;
+    // Source position stores preserve the script-initialized emission velocity.
+    EffectsStatus set_effect_position(EffectHandle, Vec3 position) noexcept;
     EffectSpawnResult create_particle(std::uint16_t encoded_bank, std::size_t script) noexcept;
     EffectSpawnResult create_particle(std::uint16_t encoded_bank, std::size_t script,
                                       Vec3 position, Vec3 velocity) noexcept;

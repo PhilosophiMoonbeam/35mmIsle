@@ -3,6 +3,8 @@
 #include "scene_storage.hpp"
 #include "audio_fixture.hpp"
 #include "engine_fixture.h"
+#include "source_factory_resources.h"
+#include "borrowed_model_kernel.hpp"
 
 #include <array>
 #include <chrono>
@@ -155,6 +157,38 @@ void services_preserve_state_and_source_metadata(const fs::path& parent) {
         check(services.send_command(first,-4) && isle_game_tick(native.game()) == ISLE_GAME_OK && services.sprite_count() == 1 &&
               services.send_command(first,-5) && isle_game_tick(native.game()) == ISLE_GAME_OK && services.sprite_count() == 2,
               "builtin hidden state controls actual sprite admission");
+        std::array<sc::RenderOrderEntry,4> order{};
+        check(services.render_order(30,order,written) && written == 2 &&
+              order[0].object == first && order[1].object == second,
+              "read-only order projects the existing equal-priority draw list");
+        auto* later_world = services.object(31,9);
+        auto* fume = services.object(32,4);
+        check(later_world && fume && services.set_render(later_world,{30,6,UINT32_MAX}) &&
+              services.set_render(fume,{30,7,UINT32_MAX}) &&
+              services.render_order(30,order,written) && written == 4 &&
+              order[0].object == fume && order[1].object == first &&
+              order[2].object == second && order[3].object == later_world,
+              "mixed source owners use global priority then after-equal insertion, not family order");
+        check(services.send_command(second,-4) && isle_game_tick(native.game()) == ISLE_GAME_OK &&
+              services.render_order(30,order,written) && written == 4 && order[2].object == second &&
+              services.sprite_count() == 1,
+              "hidden active owners remain in render-order projection for complete model preflight");
+        const auto sentinel = order;
+        written = 99;
+        check(!services.render_order(30,std::span(order).first(3),written) && written == 0 &&
+              order[0].object == sentinel[0].object && order[3].object == sentinel[3].object &&
+              !services.failed(),
+              "render-order capacity rejection is atomic and read-only without sticky scene failure");
+        check(!services.render_order(32,order,written) && written == 0 &&
+              services.move_to_head(later_world) && services.render_order(30,order,written) &&
+              order[1].object == later_world && services.move_to_tail(later_world) &&
+              services.render_order(30,order,written) && order[3].object == later_world,
+              "projection rejects invalid links and follows existing head/tail mutations without another registry");
+        services.erase(fume); services.erase(later_world);
+        check(services.send_command(second,-5) && isle_game_tick(native.game()) == ISLE_GAME_OK &&
+              services.render_order(30,order,written) && written == 2 &&
+              order[0].object == first && order[1].object == second,
+              "actual retirement removes mixed owners from the same projected list");
         check(services.send_command(first,70) && services.send_command(first,71) && isle_game_tick(native.game()) == ISLE_GAME_OK &&
               first_commands.count == 2 && first_commands.values[1] == 70 && services.sprite_count() == 1 && !services.failed(),
               "custom self-deletion stops suffix dispatch and joins before queue/record recycling");
@@ -784,6 +818,117 @@ void services_reject_unregistered_sender(const fs::path& parent) {
     }
 }
 
+void services_prepared_admission_and_native_visibility(const fs::path& parent) {
+    namespace animation = isle::menu::animation;
+    namespace model = isle::menu::model;
+    Profile profile(parent);
+    isle::game::State state(profile.path);
+    AudioOwner audio_owner; auto audio = audio_owner.create();
+    if (!state.initialize(1) || !audio) throw std::runtime_error("prepared services fixture");
+    isle::game_input::Service input;
+    sc::Storage native(1024*1024);
+    check(native.create() == ISLE_GAME_OK,"create prepared Services native arena");
+    sc::Services services(native.game(),native.arena(),{{1,1,0,0,0},{}},input,*audio.session,state);
+    std::array<isle::menu::Model,1> sources;
+    sources[0].render_type = isle::menu::RenderType::i_fogged;
+    sources[0].nodes.resize(1);
+    sources[0].nodes[0].scale = {1,1,1};
+    sources[0].nodes[0].payloads.push_back({{},0,0,0x80005000});
+    const std::array capacities{animation::slot_capacity(sources[0])};
+    auto runtime = animation::Runtime::create({sources,{},{}},capacities,{},{});
+    check(bool(runtime),"admit synthetic model for prepared publication"); if (!runtime) return;
+    sc::Services::ObjectPreparation preparation;
+    IsleSourceFactoryResources resources{};
+    IsleGameCounts counts{};
+    check(services.prepare_object(preparation) == ISLE_GAME_OK &&
+          services.prepare_object(preparation) == ISLE_GAME_INVALID_STATE &&
+          !services.failed() && bool(runtime.runtime->prepare_acquire(0,0)) &&
+          isle_source_factory_prepare(native.game(),1,nullptr,0,&resources) == ISLE_GAME_OK &&
+          isle_game_counts(native.game(),&counts) == ISLE_GAME_OK &&
+          counts.objects == 0 && counts.processes == 0,
+          "detached Services/Runtime/native admission exposes no object or callback");
+    const auto acquired = runtime.runtime->acquire_prepared(0);
+    IsleGameObject* object = nullptr;
+    check(bool(acquired) && services.publish_object(preparation,resources,307,5,91,&object) == ISLE_GAME_OK &&
+          object && services.cancel_object(preparation) == ISLE_GAME_INVALID_STATE &&
+          !services.failed(),"consumption transfers the actual object, never unpublished cancellation ownership");
+    if (!object || !acquired) {
+        services.cancel_object(preparation);
+        runtime.runtime->cancel_prepared(0);
+        isle_source_factory_cancel(&resources);
+        return;
+    }
+    IsleGameModel* attached = nullptr;
+    std::array<IsleGameModelNodeInit,1> scratch{};
+    check(bool(model::attach_source_model(native.game(),object,sources[0],runtime.runtime->model(acquired.handle),
+          model::RootRecipe::source,scratch,&attached,&resources)) &&
+          isle_source_factory_finish(&resources) == ISLE_GAME_OK && attached,
+          "shared model recipe consumes reserved real native storage");
+    Commands commands{&services};
+    unsigned retiring = 0, joined = 0;
+    const auto observer = [](IsleGameObject*, void* user) { ++*static_cast<unsigned*>(user); };
+    check(services.set_command_handler(object,handler,&commands) &&
+          services.set_lifecycle(object,{observer,nullptr,&retiring}) &&
+          services.send_command(object,44) && isle_game_tick(native.game()) == ISLE_GAME_OK &&
+          commands.count == 1 && commands.values[0] == 44,
+          "published record owns the normal command FIFO and actual default native update");
+    if (attached) {
+        const std::array<model::KernelSlot,1> plans{{{capacities[0],0x1000,0x2000}}};
+        model::BorrowedKernel kernel(native.game(),sources,{},plans,{0x3000,64});
+        std::array<model::BorrowedBinding,1> bindings{{{0,runtime.runtime->model(acquired.handle),object,attached,
+            model::PoseSource::native,model::RootRecipe::source,true,runtime.runtime.get()}}};
+        std::array<std::array<model::Command,64>,4> lanes{};
+        std::array<model::Command,16> pending{};
+        std::array<std::size_t,4> written{};
+        model::HierarchyBuffer output{{lanes[0],lanes[1],lanes[2],lanes[3]},written,pending};
+        check(bool(runtime.runtime->set_object_flags(acquired.handle,1)) &&
+              bool(kernel.stage(bindings)) && bool(kernel.encode(0,{},output)) && written[0] != 0 &&
+              runtime.runtime->model(acquired.handle).object_flags == 1,
+              "native-visible Source object emits hierarchy despite stale Runtime HIDDEN, without changing animation flags");
+        written.fill(0);
+        check(isle_game_object_set_flags(native.game(),object,1) == ISLE_GAME_OK &&
+              bool(kernel.stage(bindings)) && bool(kernel.encode(0,{},output)) && written[0] == 0,
+              "native HIDDEN suppresses actual hierarchy emission for native pose");
+        check(isle_game_object_set_flags(native.game(),object,0) == ISLE_GAME_OK,"reveal actual native object");
+        bindings[0].pose = model::PoseSource::animation;
+        check(bool(kernel.stage(bindings)) && bool(kernel.encode(0,{},output)) && written[0] == 0,
+              "animation pose retains its established Runtime HIDDEN gate after native reveal");
+        bindings[0].pose = model::PoseSource::native;
+        check(bool(kernel.stage(bindings)) && bool(kernel.encode(0,{},output)) && written[0] != 0,
+              "native reveal resumes actual emission without animation flag synchronization");
+    }
+    check(services.source_owner_register(object,{}),"retain published source identity across actual retirement");
+    services.erase(object);
+    check(retiring == 1 && services.source_owner_joined(object) &&
+          services.source_owner_collectable(object) && services.source_owner_release(object),
+          "prepared record lifetime follows real retirement/join and explicit source collection");
+    auto* replacement = services.object(308);
+    check(replacement && services.set_lifecycle(replacement,{nullptr,observer,&joined}),
+          "collected prepared record is reusable by ordinary object publication");
+    services.erase(replacement);
+    check(joined == 1 && !services.failed(),"ordinary reuse still receives exactly one actual join callback");
+    check(bool(runtime.runtime->begin_retire(acquired.handle)) &&
+          bool(runtime.runtime->release_retired(acquired.handle)),
+          "actual native retirement ends prepared Runtime instance ownership");
+
+    sc::Services::ObjectPreparation held, exhausted;
+    check(services.prepare_object(held) == ISLE_GAME_OK,"hold last recycled Services record detached");
+    isle_span remaining{};
+    const auto bytes = native.arena().storage.size-native.arena().cursor;
+    check(bytes && isle_arena_allocate(&native.arena(),bytes,1,&remaining) == ISLE_OK,
+          "consume genuine remaining bookkeeping arena without rewinding live storage");
+    check(services.prepare_object(exhausted) == ISLE_GAME_EXHAUSTED && !services.failed() &&
+          isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.objects == 0 &&
+          services.cancel_object(held) == ISLE_GAME_OK &&
+          services.prepare_object(exhausted) == ISLE_GAME_OK,
+          "recoverable record exhaustion preserves healthy scene and cancellation restores real reusable storage");
+    services.fail("retained terminal fixture diagnostic");
+    check(services.cancel_object(exhausted) == ISLE_GAME_OK &&
+          services.prepare_object(held) == ISLE_GAME_INVALID_STATE &&
+          std::string_view(services.error()) == "retained terminal fixture diagnostic",
+          "cancellation after failure frees unpublished ownership without clearing or replacing scene error");
+}
+
 } // namespace
 int main(int argc, char** argv) {
     try {
@@ -792,6 +937,7 @@ int main(int argc, char** argv) {
         services_lifecycle_composes_delete_paths(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_source_owners(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_reject_unregistered_sender(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
+        services_prepared_admission_and_native_visibility(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
     } catch (const std::exception& error) { std::cerr << "FAIL: " << error.what() << '\n'; return EXIT_FAILURE; }
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;
 }

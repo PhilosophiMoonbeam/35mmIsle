@@ -83,24 +83,50 @@ struct Consumer {
         const auto result=attempt(); accepted(result.status);
         require(result.object&&owner.registered(result.instance)&&owner.source(result.instance)&&
                 !owner.source(result.instance)->transitionGraph,"real factory/source/NULL-graph publication absent");
+        // Queue/lifetime cases isolate the genuine Update phase, not a manual
+        // handler call. The progress case resumes via the actual FIFO -3.
+        native(isle_actor_source_pause_object(owner.source(result.instance),1));
         return result;
     }
     void send(IsleGameObject* receiver,int command,IsleGameObject* sender) {
         require(services.send_command(receiver,command,sender),"actual Services FIFO enqueue failed");
     }
     void dispatch(IsleGameObject* receiver) {
-        require(services.process_commands(receiver),services.error());
-        require(!services.failed(),services.error());
+        // Own GAME om.c1835-1842: native GObj flag40 suppresses fnUpdate only.
+        // Preserve the old single-receiver lifetime scenarios using that real
+        // gate, while a genuine whole-game tick owns current-object metadata.
+        std::array<IsleGameObject*,4> skipped{};
+        std::array<std::uint32_t,4> previous_flags{};
+        std::size_t count=0;
+        IsleGameObject* previous=nullptr;
+        for (;;) {
+            IsleGameObject* object=nullptr;
+            IsleActorSource* source=nullptr;
+            IsleGameModel* model=nullptr;
+            native(isle_actor_source_link3_next(services.game,previous,&object,&source,&model));
+            if (!object) break;
+            previous=object;
+            if (object==receiver) continue;
+            require(count<skipped.size(),"actual command26 fixture exceeds its declared four native slots");
+            IsleGameObjectMetadata metadata{};
+            native(isle_game_object_metadata(services.game,object,&metadata));
+            skipped[count]=object; previous_flags[count++]=metadata.flags;
+            native(isle_game_object_set_flags(services.game,object,metadata.flags|0x40u));
+        }
+        tick();
+        for (std::size_t i=0;i<count;++i)
+            native(isle_game_object_set_flags(services.game,skipped[i],previous_flags[i]));
     }
     void tick() {
         // No renderer/preparation/readback borrower exists in this CPU consumer.
         // Deliberately do not collect here: held identities are the test oracle.
         native(isle_game_tick(services.game)); require(!services.failed(),services.error());
     }
-    void native_delete(const actor::SpawnResult& actor) {
+    void native_delete(const actor::SpawnResult& actor,IsleGameResult expected=ISLE_GAME_OK) {
         // Do NOT use Owner::cleanup/request_cleanup: they can produce21/22 and
         // hide a missing26 credit. This is actual joined native deletion only.
-        native(isle_game_delete_object(services.game,actor.object));
+        require(isle_game_delete_object(services.game,actor.object)==expected,
+                "native deletion did not preserve its expected terminal scene status");
         const auto membership=owner.membership(actor.instance);
         require(membership.retiring&&membership.joined&&!membership.logical&&!membership.registered&&
                 !owner.source(actor.instance)&&!owner.object(actor.instance)&&!owner.native_model(actor.instance),
@@ -241,6 +267,7 @@ struct Consumer {
     void actual_fifo_pause_tail() {
         const auto sender=spawn(),receiver=spawn();
         auto* record=owner.source(receiver.instance);
+        send(receiver.object,-3,sender.object);
         for (unsigned n=0;n<4&&record->tangible;++n) tick();
         require(!record->tangible&&!record->pathProc,"real behavior1 did not reach hidden source wait");
         accepted(owner.trigger_common1003(receiver.instance,{100,200,300})); tick();
@@ -324,16 +351,17 @@ struct Consumer {
                 services.source_reference_assign(receiver.object,&record->interactionTarget,receiver.object),"adopt self fields");
         const State state(services,*record); const auto before=counts(services);
         send(receiver.object,26,sender.object);
-        require(!services.process_commands(receiver.object)&&services.failed(),
-                "invalid typed graph26 was silently admitted without sticky failure");
+        require(isle_game_tick(services.game)==ISLE_GAME_EXECUTION_FAILURE&&services.failed(),
+                "invalid typed graph26 bypassed native C admission/fault boundary");
         state.unchanged(services,*record);
         require(same_counts(counts(services),before),"rejected graph26 ran native state/process ownership mutation");
         // Sticky failure rejects before successful FIFO enqueue/observer. Keep
         // the receiver alive: cancellation cannot conceal a phantom credit.
         require(!services.send_command(receiver.object,26,sender.object),"failed Services accepted a new26 enqueue");
-        native_delete(sender); accepted(owner.collect_joined());
-        require(owner.registered(receiver.instance),"failed-enqueue proof accidentally canceled its receiver");
-        native_delete(receiver); accepted(owner.collect_joined());
+        native_delete(sender,ISLE_GAME_EXECUTION_FAILURE); held(sender);
+        require(owner.registered(receiver.instance),
+                "pre-consumption graph rejection canceled its receiver or consumed its sender credit");
+        native_delete(receiver,ISLE_GAME_EXECUTION_FAILURE); accepted(owner.collect_joined());
         require(same_counts(counts(services),baseline),"failed graph/enqueue retained a sender credit or native storage");
     }
 };

@@ -18,7 +18,32 @@ DEFINITIONS = (
     (POKEMON, "Pokemon_StopAuxProc", 298, 303, ()),
     (POKEMON, "Pokemon_StartPathProc", 305, 318, ()),
     (POKEMON, "Pokemon_WaitForFlagNoInteraction", 736, 745, ()),
-    (POKEMON, "Pokemon_RunInteractions", 630, 720, (("    s32 i;\n    s32 continueSearch = true;\n    Vec3f dirToNeighbors;\n    f32 interactionDist;\n    GObj* interactionTarget;\n    GObjFunc stateProc = NULL;\n    GObjFunc auxProc = NULL;\n    InteractionHandler* transitionGraph = pokemon->transitionGraph;", "    const void* transitionGraph = pokemon->transitionGraph;"),)),
+    (POKEMON, "Pokemon_GetClosestItem", 509, 533, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameVec3 source_position = isle_actor_source_position(obj, obj, 1);"),
+        ("    x = GET_TRANSFORM(model)->pos.v.x;\n    y = GET_TRANSFORM(model)->pos.v.y;\n    z = GET_TRANSFORM(model)->pos.v.z;", "    x = source_position.x;\n    y = source_position.y;\n    z = source_position.z;"),
+        ("Items_InitIterator()", "isle_actor_source_item_iterator(obj)"),
+        ("Items_NextValidItem()", "isle_actor_source_item_next(obj)"),
+        ("        Mtx3Float* position = &currItem->data.dobj->position;\n        f32 currDist2 = SQ(x - position->v.x) + SQ(y - position->v.y) + SQ(z - position->v.z);", "        IsleGameVec3 position = isle_actor_source_position(obj, currItem, 0);\n        f32 currDist2 = (x-position.x)*(x-position.x) + (y-position.y)*(y-position.y) + (z-position.z)*(z-position.z);"),
+    )),
+    (POKEMON, "Pokemon_RunInteractions", 630, 720, (
+        ("    s32 continueSearch = true;", "    s32 continueSearch = true;\n    IsleActorFocusState source_focus;"),
+        ("    Vec3f dirToNeighbors;", "    IsleGameVec3 dirToNeighbors;"),
+        ("    InteractionHandler* transitionGraph = pokemon->transitionGraph;", "    const InteractionHandler* transitionGraph = isle_actor_source_interaction_rows(obj);"),
+        ("Item* item = GET_ITEM(interactionTarget);", "IsleItemSource* item = isle_actor_source_item(obj, interactionTarget);"),
+        ("pokemon->apple = interactionTarget;", "isle_actor_source_reference_assign(obj, &pokemon->apple, interactionTarget);"),
+        ("pokemon->interactionTarget = interactionTarget;", "isle_actor_source_reference_assign(obj, &pokemon->interactionTarget, interactionTarget);"),
+        ("pokemon->interactionTarget = gObjPlayer;", "isle_actor_source_reference_assign(obj, &pokemon->interactionTarget, gObjPlayer);", 2),
+        ("pokemon->interactionDist = interactionDist; // BUG: interactionDist undefined here, must use 'playerDist'", "pokemon->interactionDist = pokemon->playerDist; /* Defined native BUG16 correction. */"),
+        ("            case POKEMON_CMD_23:\n                if (sTimerInFocus > transitionGraph[i].value && obj == gPokemonInFocus) {", "            case POKEMON_CMD_23:\n                source_focus = isle_actor_source_focus(obj);\n                if (source_focus.timer > transitionGraph[i].value && obj == source_focus.current) {"),
+    )),
+    (POKEMON, "Pokemon_HandleCommand", 1806, 2064, (
+        ("    InteractionHandler* transitionGraph;", "    const InteractionHandler* transitionGraph;"),
+        ("    transitionGraph = pokemon->transitionGraph;", "    transitionGraph = pokemon->transitionGraph != NULL ? pokemon->transitionGraph->rows : NULL;"),
+        ("pokemon->apple = cmdData.source;", "isle_actor_source_reference_assign(omCurrentObject, &pokemon->apple, cmdData.source);", 2),
+        ("pokemon->interactionTarget = cmdData.source;", "isle_actor_source_reference_assign(omCurrentObject, &pokemon->interactionTarget, cmdData.source);", 11),
+        ("pokemon->apple = NULL;", "isle_actor_source_reference_assign(omCurrentObject, &pokemon->apple, NULL);"),
+        ("pokemon->interactionTarget = NULL;", "isle_actor_source_reference_assign(omCurrentObject, &pokemon->interactionTarget, NULL);"),
+    )),
     (POKEMON, "Pokemon_WaitForFlag", 723, 734, ()),
     (POKEMON, "Pokemon_RunCleanup", 771, 773, ()),
     (POKEMON, "Pokemon_Update", 2066, 2089, (("getIsPaused()", "isle_actor_owner_paused(pokemon)"), ("obj->animationTime", "isle_actor_owner_animation_time(pokemon)"), ("cmdProcessCommands(Pokemon_HandleCommand);", "isle_actor_source_commands(obj);"))),
@@ -79,6 +104,21 @@ typedef IsleActorRandomState RandomState;
 PREAMBLE = '''/* Private transformed own-GAME bodies, not byte-identical source. */
 #include "engine_internal.h"
 #include "actor_owner_source.h"
+#include "item_source.h"
+#include <float.h>
+typedef IsleActorInteraction InteractionHandler;
+typedef IsleActorCommandData GObjCmdData;
+#define FLOAT_MAX FLT_MAX
+#define ITEM_ID_APPLE ISLE_ITEM_APPLE
+#define ITEM_STATE_STILL ISLE_ITEM_STILL
+#define Pokemon_GetDistance isle_actor_source_distance
+#define Pokemon_GetDirToNeighbours isle_actor_source_neighbors
+#define Items_GetPokeFluteCmd() isle_actor_source_flute(omCurrentObject)
+#define gObjPlayer isle_actor_source_player(omCurrentObject)
+#define gDirectionIndex isle_actor_source_direction(omCurrentObject)
+#define getCurrentWorldBlock() isle_actor_source_current_block(omCurrentObject)
+#define func_80353D68_4F4178() isle_actor_source_execution_enabled(omCurrentObject)
+#define ohPauseObjectProcesses isle_actor_source_pause_all
 typedef IsleActorSource Pokemon;
 typedef IsleActorRandomState RandomState;
 typedef IsleActorFactoryBlock WorldBlock;
@@ -103,27 +143,29 @@ void isle_actor_source_set_animation(IsleGameObject*, uint32_t, int);
 void isle_actor_source_subtract_y(IsleGameObject*, float);
 void isle_actor_source_visibility(IsleGameObject*, int);
 void isle_actor_source_commands(IsleGameObject*);
-void isle_actor_source_interactions(IsleGameObject*);
+''' + chr(10).join("enum { POKEMON_CMD_%d = %d };" % (value, value)
+    for value in (5, 6, 7, 8, 9, 10, *range(12, 59))) + chr(10) + '''
 '''
 
 def reviewed_changes(path, symbol, first, last, changes, sources):
-    result = list(changes)
-    if symbol == "Pokemon_RunInteractions":
-        # Preserve the genuine NULL-graph early return verbatim. The unadmitted
-        # nonNULL graph interpreter must fail owner admission, never be a no-op.
-        tail = "".join(sources[path][644:720])
-        result.append((tail, "    isle_actor_source_interactions(obj);\n}\n"))
-    return [{"find": old, "replace": new} for old, new in result]
+    result = []
+    for change in changes:
+        old, new = change[:2]
+        entry = {"find": old, "replace": new}
+        if len(change) == 3:
+            entry["occurrences"] = change[2]
+        result.append(entry)
+    return result
 
 def prepare(repository, manifest_path, output_path, owner_output_path, evidence_path):
     manifest_bytes = manifest_path.read_bytes()
     manifest = json.loads(manifest_bytes)
     if (manifest["schema_version"] != 1 or manifest["revision"] != REVISION or
-            manifest["transformation_version"] != "actor-control-v4"):
+            manifest["transformation_version"] != "actor-control-v5"):
         raise ValueError("unsupported actor authority/transformation")
     if git(repository, "cat-file", "-t", REVISION).strip() != b"commit":
         raise ValueError("actor authority is not a commit")
-    if set(manifest["source_files"]) != {POKEMON, COMMON, MAGIKARP, "include/enums.h", "include/common_structs.h"}:
+    if set(manifest["source_files"]) != {POKEMON, COMMON, MAGIKARP, "src/app_level/app_level.h", "include/enums.h", "include/common_structs.h"}:
         raise ValueError("actor source allowlist mismatch")
     sources = {}
     for path, identity in manifest["source_files"].items():
@@ -137,6 +179,8 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
     support_paths = {"src/actor_source.h", "src/actor_source_bridge.c", "src/actor_source_owner_bridge.c",
                      "src/actor_owner_source.h", "src/engine.c", "src/engine_internal.h",
                      "include/35mmisle/engine.h", "include/35mmisle/rng.h", "src/rng.c", "tools/prepare_engine.py"}
+    support_paths.update({"src/actor_interaction_services.h", "src/item_source.h",
+                          "src/source_command_scope.h", "src/source_factory_resources.h"})
     if set(manifest["native_support"]) != support_paths:
         raise ValueError("actor native support allowlist mismatch")
     for path, identity in manifest["native_support"].items():
@@ -157,9 +201,10 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
             raise ValueError("unadmitted actor transformation")
         native = selected
         for change in expected:
-            if native.count(change["find"]) != 1:
-                raise ValueError("actor transformation must match exactly once")
-            native = native.replace(change["find"], change["replace"], 1)
+            occurrences = change.get("occurrences", 1)
+            if occurrences < 1 or native.count(change["find"]) != occurrences:
+                raise ValueError("actor transformation occurrence count differs from its exact authority")
+            native = native.replace(change["find"], change["replace"], occurrences)
         if hashlib.sha256(native.encode()).hexdigest() != unit["native_sha256"]:
             raise ValueError("actor transformed identity mismatch")
         output = control_output if symbol in CONTROL_SYMBOLS else owner_output

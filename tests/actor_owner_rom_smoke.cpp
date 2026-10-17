@@ -3,6 +3,7 @@
 // but GPU/preparation/readback/postprocess lifetime is NOT proved here. Main's
 // combined consumer owns that real boundary. No guest CPU or synthetic FSM runs.
 #include "actor_owner.hpp"
+#include "actor_interaction_services.h"
 #include "actual_audio_driver.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
@@ -117,11 +118,14 @@ struct Consumer {
         agrees(services,owner,result.instance);
         return result;
     }
+    void tick_native() {
+        native(isle_game_tick(services.game));
+        require(!services.failed(),services.error());
+    }
     void tick() {
         // No traversal or graphics borrower survives this call. Collection is
         // intentionally after the native tick, never from a native callback.
-        native(isle_game_tick(services.game));
-        require(!services.failed(),services.error());
+        tick_native();
         accepted(owner.collect_joined());
     }
     void invalid_placement() {
@@ -241,23 +245,9 @@ struct Consumer {
         require(services.send_command(actor.object,-2,actor.object),"Update boundary process suspension enqueue failed");
         tick();
 
-        // Observe the actual selected Pokemon_Update through its real receiver
-        // FIFO. No animation/FSM replacement or fabricated program is admitted.
-        struct Observation {
-            IsleActorSource* record;
-            std::int32_t counter=0,loops=0,target=0;
-            std::uint32_t flags=0;
-            float last=0;
-            bool delivered=false;
-            static void command(IsleGameObject*,std::int32_t command,IsleGameObject*,void* user) noexcept {
-                auto& self=*static_cast<Observation*>(user);
-                if (command!=58) return;
-                self.counter=self.record->counter; self.loops=self.record->loopCount;
-                self.target=self.record->pokemonLoopTarget; self.flags=self.record->processFlags;
-                self.last=self.record->lastAnimationFrame; self.delivered=true;
-            }
-        } observation{record};
-        require(services.set_command_handler(actor.object,Observation::command,&observation),"Update observer registration failed");
+        // Exercise the actual C Update and queued21 path. All source processes
+        // remain genuinely paused, so only Update bookkeeping and FIFO effects
+        // can change these canonical fields during the native frame.
         const auto animation_time=owner.animation().model(handle).animation_time;
         require(animation_time>0,"Update strict-lastFrame subject lacks a real positive source clock");
         const auto observe=[&](bool paused,std::int32_t counter,std::uint32_t flags,
@@ -266,14 +256,14 @@ struct Consumer {
             owner.course().paused=paused;
             record->counter=counter; record->processFlags=flags; record->loopCount=loops;
             record->pokemonLoopTarget=target; record->lastAnimationFrame=last;
-            observation.delivered=false;
-            require(services.send_command(actor.object,58,actor.object),"Update boundary observer enqueue failed");
+            require(services.source_reference_assign(actor.object,&record->apple,actor.object)&&
+                    services.send_command(actor.object,21,actor.object),"Update/queued21 source setup failed");
             tick();
-            require(!services.failed()&&observation.delivered&&observation.counter==expected_counter&&
-                    observation.flags==expected_flags&&observation.loops==loops&&observation.target==target&&
-                    observation.last==last&&record->counter==expected_counter&&record->processFlags==expected_flags&&
+            require(!services.failed()&&!record->apple&&record->counter==expected_counter&&
+                    record->processFlags==expected_flags&&record->loopCount==loops&&
+                    record->pokemonLoopTarget==target&&record->lastAnimationFrame==last&&
                     owner.animation().model(handle).animation_time==animation_time,
-                    "queued observer did not see exact prior Update bookkeeping before command dispatch");
+                    "real C Update/queued21 changed counter, loop, strict-frame or suspension semantics");
         };
         constexpr auto path=std::uint32_t(POKEMON_PROCESS_FLAG_PATH_ENDED);
         constexpr auto wait=std::uint32_t(POKEMON_PROCESS_WAIT_ENDED);
@@ -373,7 +363,9 @@ struct Consumer {
         auto* record=owner.source(handle); const auto old=record->transitionGraph;
         const IsleActorInteractionGraph unadmitted_graph{};
         record->transitionGraph=&unadmitted_graph;
-        require(isle_actor_owner_interactions(record)!=ISLE_GAME_OK&&record->transitionGraph==&unadmitted_graph&&!services.failed(),
+        const IsleActorInteraction* rejected_rows=nullptr;
+        require(isle_actor_interaction_rows(record,&rejected_rows)!=ISLE_GAME_OK&&!rejected_rows&&
+                record->transitionGraph==&unadmitted_graph&&!services.failed(),
                 "unadmitted typed graph executed or rejection mutated source state");
         record->transitionGraph=old;
         accepted(owner.set_focus(handle,true,7));
@@ -404,8 +396,9 @@ struct Consumer {
                 "actual source self-apple borrow failed");
         require(services.send_command(first.object,21,first.object),"live sender identity command enqueue failed");
         const auto second=spawn(1);
-        require(services.process_commands(first.object)&&!owner.source(first.instance)->apple,
-                "queued live sender blockaded available factory capacity or failed actual delivery");
+        tick();
+        require(!owner.source(first.instance)->apple,
+                "queued live sender blockaded available factory capacity or failed actual C delivery");
         world::Spawn descriptor; descriptor.id=1003;
         const auto rejected=owner.spawn({next_id++,common_definition,&world.blocks()[0],&world.blocks()[0],&descriptor});
         require(!rejected&&rejected.status.error==actor::OwnerError::capacity&&owner.registered(first.instance)&&owner.registered(second.instance),
@@ -421,15 +414,21 @@ struct Consumer {
         require(services.source_owner_register(unrelated,{})&&
                 services.source_reference_assign(second.object,&recipient->interactionTarget,unrelated),
                 "unrelated source registration/target borrow failed");
-        require(services.process_commands(second.object)&&recipient->interactionTarget==unrelated,
+        // Retain the joined semantic owner until the later re-adoption and
+        // final command22 delivery; tick() would collect its now-unheld identity.
+        tick_native();
+        require(owner.membership(first.instance).joined&&services.source_owner_collectable(first.object),
+                "actual C did not release the final queued hold of the retained joined sender");
+        require(recipient->interactionTarget==unrelated,
                 "retiring command22 sender aliased/cleared unrelated native C");
         IsleGameObjectMetadata unrelated_metadata{};
         native(isle_game_object_metadata(services.game,unrelated,&unrelated_metadata));
         require(unrelated_metadata.id==unrelated_id,"retiring sender delivery damaged unrelated native C identity");
         require(services.source_reference_assign(second.object,&recipient->interactionTarget,first.object),
                 "held joined source target adoption failed");
-        require(services.send_command(second.object,22,first.object)&&services.process_commands(second.object)&&
-                !recipient->interactionTarget,"actual command22 delivery lost a held joined-dead sender identity");
+        require(services.send_command(second.object,22,first.object),"held sender command22 enqueue failed");
+        tick_native();
+        require(!recipient->interactionTarget,"actual C command22 lost a held joined-dead sender identity");
         services.erase(unrelated);
         require(services.source_owner_release(unrelated),"joined unrelated source still retained semantic borrows");
         accepted(owner.collect_joined());

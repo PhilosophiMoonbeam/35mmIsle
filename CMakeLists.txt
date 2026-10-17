@@ -218,7 +218,8 @@ target_link_libraries(isle-audio PUBLIC isle-audio-sequence)
 isle_target_options(isle-audio)
 
 if(TARGET isle-rom-snapshot)
-    add_library(isle-game-audio STATIC src/game_audio.cpp src/game_audio.hpp)
+    add_library(isle-game-audio STATIC src/game_audio.cpp src/game_audio.hpp
+        src/item_flute.cpp src/item_flute.hpp)
     target_include_directories(isle-game-audio PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(isle-game-audio PUBLIC isle-audio isle-rom-snapshot)
     isle_target_options(isle-game-audio)
@@ -396,6 +397,15 @@ if(ISLE_BUILD_GAME_ENGINE)
             isle-beach-world-resources isle-model-assets isle-menu-model-producer isle-graphics-task)
         isle_target_options(isle-world)
 
+        add_library(isle-item-producer STATIC
+            src/item_producer.cpp src/item_producer.hpp src/item_render_binding.hpp)
+        target_link_libraries(isle-item-producer PUBLIC
+            isle-menu-model-producer isle-item-resources isle-world isle-graphics-task isle-scene)
+        isle_target_options(isle-item-producer)
+        target_compile_options(isle-item-producer PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
         add_library(isle-actor-owner STATIC
             src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h
             src/actor_photo_eligibility.cpp src/actor_photo_eligibility.hpp
@@ -403,11 +413,16 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/actor_collision.cpp src/actor_collision.hpp
             src/actor_spatial.cpp src/actor_spatial.h
             src/actor_behavior_bindings.cpp src/actor_behavior_bindings.hpp
+            src/actor_interaction_services.cpp src/actor_interaction_services.hpp
+            src/actor_interaction_services.h src/source_command_scope.h
+            src/item_owner.cpp src/item_owner.hpp src/item_owner_source.h
+            src/item_source_bridge.c "${_isle_item_generated}"
+            src/beach_magikarp_scene.cpp src/beach_magikarp_scene.hpp
             src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
         target_link_libraries(isle-actor-owner PUBLIC
             isle-engine isle-actor-producer isle-world isle-environment-sound
             isle-menu-effects isle-source-effect-world isle-focus-detector
-            isle-beach-behavior-resources)
+            isle-beach-behavior-resources isle-item-resources)
         target_include_directories(isle-actor-owner PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/include")
         isle_target_options(isle-actor-owner)
@@ -417,14 +432,6 @@ if(ISLE_BUILD_GAME_ENGINE)
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
-        add_library(isle-beach-magikarp-scene STATIC
-            src/beach_magikarp_scene.cpp src/beach_magikarp_scene.hpp)
-        target_link_libraries(isle-beach-magikarp-scene PUBLIC
-            isle-actor-owner isle-beach-behavior-resources)
-        isle_target_options(isle-beach-magikarp-scene)
-        target_compile_options(isle-beach-magikarp-scene PRIVATE
-            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
-            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
         add_library(isle-actor-photo-scene STATIC
             src/actor_photo_scene.cpp src/actor_photo_scene.hpp)
@@ -436,7 +443,7 @@ if(ISLE_BUILD_GAME_ENGINE)
 
         add_library(isle-course-model-producer STATIC
             src/course_model_producer.cpp src/course_model_producer.hpp)
-        target_link_libraries(isle-course-model-producer PUBLIC isle-world isle-actor-producer)
+        target_link_libraries(isle-course-model-producer PUBLIC isle-world isle-actor-producer isle-item-producer)
         isle_target_options(isle-course-model-producer)
 
         foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
@@ -677,6 +684,12 @@ if(BUILD_TESTING)
         add_test(NAME actor-spatial-tests COMMAND actor-spatial-tests)
         set_tests_properties(actor-spatial-tests PROPERTIES
             LABELS "synthetic;private-game-source" TIMEOUT 60)
+        add_executable(item-owner-tests tests/item_owner_tests.cpp)
+        target_link_libraries(item-owner-tests PRIVATE isle-actor-owner)
+        isle_target_options(item-owner-tests)
+        add_test(NAME item-owner-tests COMMAND item-owner-tests)
+        set_tests_properties(item-owner-tests PROPERTIES
+            LABELS "synthetic;private-game-source" TIMEOUT 60)
     endif()
     if(TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE)
         add_executable(actor-owner-rom-smoke EXCLUDE_FROM_ALL tests/actor_owner_rom_smoke.cpp)
@@ -686,6 +699,16 @@ if(BUILD_TESTING)
         target_compile_options(actor-owner-rom-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_executable(actor-interaction-rom-smoke EXCLUDE_FROM_ALL
+            tests/actor_interaction_rom_smoke.cpp tests/actor_interaction_probe.c)
+        target_link_libraries(actor-interaction-rom-smoke PRIVATE
+            isle-actor-owner isle-effect-bank-resources isle-graphics-task isle-rsp)
+        isle_target_options(actor-interaction-rom-smoke)
+        target_compile_options(actor-interaction-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
         add_executable(magikarp-owner-rom-smoke EXCLUDE_FROM_ALL
             tests/magikarp_owner_rom_smoke.cpp tests/magikarp_owner_probe.c tests/magikarp_owner_probe.h)
         target_link_libraries(magikarp-owner-rom-smoke PRIVATE
@@ -699,7 +722,7 @@ if(BUILD_TESTING)
         add_executable(beach-magikarp-scene-rom-smoke EXCLUDE_FROM_ALL
             tests/beach_magikarp_scene_rom_smoke.cpp)
         target_link_libraries(beach-magikarp-scene-rom-smoke PRIVATE
-            isle-beach-magikarp-scene isle-effect-bank-resources isle-graphics-task isle-rsp)
+            isle-actor-owner isle-effect-bank-resources isle-graphics-task isle-rsp)
         isle_target_options(beach-magikarp-scene-rom-smoke)
         target_compile_options(beach-magikarp-scene-rom-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
@@ -716,6 +739,13 @@ if(BUILD_TESTING)
             isle-actor-photo-scene isle-effect-bank-resources isle-graphics-task isle-rsp)
         isle_target_options(actor-collision-rom-smoke)
         target_compile_options(actor-collision-rom-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_executable(item-owner-rom-smoke EXCLUDE_FROM_ALL tests/item_owner_rom_smoke.cpp)
+        target_link_libraries(item-owner-rom-smoke PRIVATE
+            isle-actor-owner isle-effect-bank-resources isle-graphics-task isle-rsp)
+        isle_target_options(item-owner-rom-smoke)
+        target_compile_options(item-owner-rom-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
@@ -748,7 +778,7 @@ if(BUILD_TESTING)
         target_link_libraries(menu-ui-tests PRIVATE isle-menu-scene)
         isle_target_options(menu-ui-tests)
         add_test(NAME menu-ui-tests COMMAND menu-ui-tests)
-        add_executable(menu-scene-bridge-tests tests/menu_scene_bridge_tests.cpp)
+        add_executable(menu-scene-bridge-tests tests/menu_scene_bridge_tests.cpp tests/owned_command_fixture.c)
         target_link_libraries(menu-scene-bridge-tests PRIVATE isle-engine)
         target_include_directories(menu-scene-bridge-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
         isle_target_options(menu-scene-bridge-tests)
@@ -771,6 +801,7 @@ if(BUILD_TESTING)
             set_tests_properties(${_isle_scene_test}-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
         endforeach()
         target_sources(scene-services-tests PRIVATE tests/engine_fixture.c)
+        target_link_libraries(scene-services-tests PRIVATE isle-menu-model-producer)
         foreach(_isle_window_test IN ITEMS memory text element widgets)
             add_executable(window-${_isle_window_test}-tests tests/window_${_isle_window_test}_tests.cpp)
             target_link_libraries(window-${_isle_window_test}-tests PRIVATE isle-window)
@@ -883,6 +914,9 @@ if(TARGET isle-rsp AND TARGET isle-game-audio)
     add_executable(game-audio-rsp-smoke tests/game_audio_rsp_smoke.cpp)
     target_link_libraries(game-audio-rsp-smoke PRIVATE isle-game-audio isle-graphics-task isle-rsp)
     isle_target_options(game-audio-rsp-smoke)
+    add_executable(item-flute-rom-smoke EXCLUDE_FROM_ALL tests/item_flute_rom_smoke.cpp)
+    target_link_libraries(item-flute-rom-smoke PRIVATE isle-game-audio isle-graphics-task isle-rsp)
+    isle_target_options(item-flute-rom-smoke)
 endif()
 if(TARGET isle-rsp AND TARGET isle-environment-sound)
     add_executable(environment-sound-rsp-smoke tests/environment_sound_rsp_smoke.cpp)
@@ -949,6 +983,13 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
     add_executable(scene-layout-rom-smoke EXCLUDE_FROM_ALL tests/scene_layout_rom_smoke.cpp)
     target_link_libraries(scene-layout-rom-smoke PRIVATE isle-scene-graphics)
     isle_target_options(scene-layout-rom-smoke)
+    if(TARGET isle-item-producer AND TARGET isle-course-model-producer AND TARGET isle-actor-owner)
+        add_executable(item-producer-rsp-smoke EXCLUDE_FROM_ALL tests/item_producer_rsp_smoke.cpp)
+        target_link_libraries(item-producer-rsp-smoke PRIVATE
+            isle-item-producer isle-course-model-producer isle-actor-owner isle-effect-bank-resources isle-rsp
+            isle-scene-graphics isle-canonical-executor isle-photo-lighting)
+        isle_target_options(item-producer-rsp-smoke)
+    endif()
     if(TARGET isle-actor-owner AND TARGET isle-course-model-producer)
         add_executable(course-scene-rsp-smoke EXCLUDE_FROM_ALL tests/course_scene_rsp_smoke.cpp)
         target_link_libraries(course-scene-rsp-smoke PRIVATE isle-scene-graphics
@@ -959,10 +1000,10 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
-    if(TARGET isle-actor-photo-scene AND TARGET isle-beach-magikarp-scene AND TARGET isle-course-model-producer)
+    if(TARGET isle-actor-photo-scene AND TARGET isle-actor-owner AND TARGET isle-course-model-producer)
         add_executable(course-magikarp-rsp-smoke EXCLUDE_FROM_ALL tests/course_magikarp_rsp_smoke.cpp)
         target_link_libraries(course-magikarp-rsp-smoke PRIVATE isle-scene-graphics
-            isle-course-model-producer isle-actor-photo-scene isle-beach-magikarp-scene
+            isle-course-model-producer isle-actor-photo-scene isle-actor-owner
             isle-photo-lighting isle-effect-graphics-resources isle-effect-bank-resources isle-rsp)
         isle_target_options(course-magikarp-rsp-smoke)
         target_compile_options(course-magikarp-rsp-smoke PRIVATE

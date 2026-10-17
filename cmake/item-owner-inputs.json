@@ -1,0 +1,590 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "item-owner-v1",
+  "generator_sha256": "6a993f6985397b79c092f620c01f02210939885597b4bf4c340f22bd316acd37",
+  "source_files": {
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096"
+    },
+    "src/app_level/503C10.c": {
+      "git_blob": "85836484265173a036436390ddcc8961b9e8068b",
+      "sha256": "93549b82330d717e583d71c4628340c0f3b375e652492e9847dc79a0df78ae7a"
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4"
+    },
+    "src/app_level/items.c": {
+      "git_blob": "5e0f134e533f02d0073228ed82b1145c1e4ee92e",
+      "sha256": "76454a00c7920c769c2551a0b6c88c27df823b968c7030a2773d1c2aa5e48ba5"
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181"
+    },
+    "src/sys/oh.c": {
+      "git_blob": "b5b871a1b622803c944f5cf83d7624426238edf8",
+      "sha256": "5cd8502eb410caccc1bccd01d9c689d924c6366701d4ac2ba8bc229f8d31b86b"
+    },
+    "src/sys/vector.c": {
+      "git_blob": "99b21e6c073cdbce135abfc10533defc56a05026",
+      "sha256": "f36b6f36e6e1434bd498d41df4b03e63775d8f765dc6337f76a7ccfbb5c9fa57"
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3"
+    }
+  },
+  "native_support": {
+    "src/source_factory_resources.h": {
+      "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
+    },
+    "src/item_owner.hpp": {
+      "sha256": "26f577560adc05d2b49ed310e6907ed11310ca5e6dc2a6e70370830f12017390"
+    },
+    "src/item_owner.cpp": {
+      "sha256": "b86b1f0e1f51554b90d2eadf848c0995851745e984ec4b14bf1c0f17bdb7f67a"
+    },
+    "src/item_owner_source.h": {
+      "sha256": "e9271d1ad7f928ab412eb86bb9fdefba0a9147358a923f330498675447d3e73b"
+    },
+    "src/item_source_bridge.c": {
+      "sha256": "19016fa50453ade999134c93e6afcebd7540c73f18a5845efec45c1d32ad76e4"
+    },
+    "src/item_source.h": {
+      "sha256": "ab515ea3a720169f485949b4a7ce9f3eadc34b6cfe99296b2f2c8c6f2b9371f8"
+    },
+    "src/item_source_bind.c": {
+      "sha256": "d739ecc41705897fe9b978f965e5931f48842b49047d0abab271cdf044bd8efe"
+    },
+    "src/item_render_binding.hpp": {
+      "sha256": "34ac458a9fbf04e70014f527becd8a46035f1d8f3ffdfa39d5384292ac151311"
+    },
+    "src/item_flute.hpp": {
+      "sha256": "0f6a832aad4a7ed67260111c2c074ac10a484d4150e3ca9e1d95e45b73e44bb4"
+    },
+    "src/item_flute.cpp": {
+      "sha256": "b053794bcbd06f3eb9df6eb3fc3e213f87653695287e755f98ef8fc9210c1a3f"
+    },
+    "src/engine.c": {
+      "sha256": "a6b193ee19dd6fb91e8a34350e3d2074e9447499c56df9a43be05e0e9563573f"
+    },
+    "src/engine_internal.h": {
+      "sha256": "ff3be303b1074177ab6d634f2b79ca1aca8abe014c3c92a84ce5e63ea106c8c9"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "de45ddcb732fbc2b32c082b3401a9cd627f533cffd36b0c4d590c503aa4bf2da"
+    },
+    "src/menu_animation.hpp": {
+      "sha256": "231895b8f0de03e40241a6bc3cbfa6f3b42106ccf7d4cb2dacb508486cbf098b"
+    },
+    "src/menu_animation.cpp": {
+      "sha256": "4b1798e99b1a9707a955960a0c1ff0bbacc64104072a950fd0d5b28eaa4af9b9"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "3b2df6d34289fb1dcabac6ccf62c84b66ae2bc171938b7f6fe234d7ba209a682"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "3eb7d896d3051f6f868ecd25a2aaacd4e414f17b01eee29ff85b7e7b151020d1"
+    },
+    "src/world_runtime.hpp": {
+      "sha256": "ce18f1ec7e3219a7ba4f3677c82dce0af67486d6c8d4c1968abffb1bcf19ddca"
+    },
+    "src/world_runtime.cpp": {
+      "sha256": "4a92f82dfb94d21179fe26059b2fa2b5ce1012a374853fcfaf7b41a8b61d86a6"
+    },
+    "src/actor_owner.hpp": {
+      "sha256": "bf772ffe65ba441fb9af069bff96b37db09734ef04343e43b7c0f7ad6644afa0"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "ef777302dc2bcc1d27df18d63ec15ca28a33eda90e68c82d0e387f89111d5e1b"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "38df0a3f1e5e384018343d451cab0e999e2cc2433d1678f412d192edf40e85d1"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "c9c39276ba75df7c1c4752480a9b9adc7e3f5dc2cb0d13368a2e11ca23dac9cd"
+    },
+    "src/beach_magikarp_scene.hpp": {
+      "sha256": "11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"
+    },
+    "src/beach_magikarp_scene.cpp": {
+      "sha256": "a66cf23d965a73c601fea78705cd6a0667dfbf5961f377bb0f1ce6296865039d"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "be92fc0e5afe40a67ada67418a2504d74a64aa2dc70930f1f2898951f35de3a9"
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_DotProduct",
+      "first": 65,
+      "last": 67,
+      "source_sha256": "68f45ed683546fb9c6237ecde41096c6686554edff8c6403dac2bfa6596bee54"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_EndProcessByFunction",
+      "first": 69,
+      "last": 85,
+      "source_sha256": "4cbcfabe35f8d0ad12b16760d3873fa231c8d4b5f1176a6b48708510649518af"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_Init",
+      "first": 87,
+      "last": 109,
+      "source_sha256": "c8e3a12e0cac3ba020f2b1d5121a2e76846e9fd8c3ce40e57ed2bab99cda11f2"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_InitIterator",
+      "first": 111,
+      "last": 114,
+      "source_sha256": "ea5bfb971ef745bc338a885ef58a080e88113ab01e50b984775176a2cc769fe8"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_NextValidItem",
+      "first": 116,
+      "last": 124,
+      "source_sha256": "c5f2658305639ce9c427ec28b653fc8ed0b8bdfe94a516106f278ab743b1f954"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_func_80359900",
+      "first": 126,
+      "last": 134,
+      "source_sha256": "4f19d865cdbb392f5667c1bea5b0cd02d134047719bfedd398964d12da7c195f"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_CheckObjectExists",
+      "first": 136,
+      "last": 145,
+      "source_sha256": "c1a40623b7f5fad1de919fa7c8b94d25132808826c3032156c32827b57510013"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_LinkObject",
+      "first": 147,
+      "last": 168,
+      "source_sha256": "aef856011c17b89ce3b33f31141c7f21d87112e3012a4eb4d050fcfea0099639"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_UnlinkObject",
+      "first": 170,
+      "last": 192,
+      "source_sha256": "acaa5d8decd48a88c5f24647f7ab88a765a9dce5e1bc2e0b4a03509b3ed56547"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_GetFreeObjectID",
+      "first": 194,
+      "last": 214,
+      "source_sha256": "4c494ce0031c6e3131e089724f4e2ec28005e2fff7a1a99f6071adc33941ba45"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_ShowDelayed",
+      "first": 225,
+      "last": 229,
+      "source_sha256": "898c549131ddcced7867680ea971a42d7fc10186292973468849b6e5d0c0a101"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_InitItem",
+      "first": 231,
+      "last": 260,
+      "source_sha256": "2448d5fe942eb0d1df5dfbb658bf37729be1de46da72ab0f95d177f9f0c0241d"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_ProcessCommand",
+      "first": 262,
+      "last": 266,
+      "source_sha256": "18061ffcb5bdaba37e5c0dab8d3d456d5124393bcb35350c34300c4d292836d1"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_UpdateObject",
+      "first": 268,
+      "last": 270,
+      "source_sha256": "57b4cfa8171947f76ea7e7a8b2212da465a5e157eaab64ee071ec51e4ed69157"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_DeleteFume",
+      "first": 272,
+      "last": 274,
+      "source_sha256": "709671f3eca022b42bb4328fc10d73f4309ab57d055b1095bd94159fcf751d93"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_UpdateFume",
+      "first": 276,
+      "last": 291,
+      "source_sha256": "54488af5681a09bdd933fc5b8b0b193a7c050d61f48181304f747dda269b8af2"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_CreateSplash",
+      "first": 293,
+      "last": 322,
+      "source_sha256": "e9cafa739c6fd658939f1b11a1dc6bfa79917a8fbcbae66b394944ce9bc0fd08"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_CreateWaterSplash",
+      "first": 324,
+      "last": 326,
+      "source_sha256": "1b6fc0d103e0f7e9d3ae07006662266ed025c0a1e41185a80910343d945f7a4d"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_CreateLavaSplash",
+      "first": 328,
+      "last": 330,
+      "source_sha256": "385ff48e0c7a24b034e2531b41b2d648b8bf2189338f7ae4578780bb687b0ccd"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_DeleteItemImmediately",
+      "first": 332,
+      "last": 335,
+      "source_sha256": "5f574be2ca14f6f1f9db41be94dcd655bbe189873bf679e7f6d472b869571891"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_PlaySound",
+      "first": 337,
+      "last": 353,
+      "source_sha256": "e33e02d40e95431853497494cb21fbdaa0cb4cf2db8e3fd5c91334baf058a679"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_CollideWithGround",
+      "first": 355,
+      "last": 508,
+      "source_sha256": "37eaf4cf8f462ac1de48038a1f1726212721389e5bd038c4797bc3d3ad13a5a5"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_CollideWithCeiling",
+      "first": 510,
+      "last": 633,
+      "source_sha256": "e371379c376606592afa1053ceb90ee4e410b8444e6530388570db918708d796"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_NotifyItemPosition",
+      "first": 635,
+      "last": 652,
+      "source_sha256": "949ae11272cc81469f42bd20735a6b70cc49796ae9cd68c309d2d4b6aedb6567"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_BounceFromCeiling",
+      "first": 654,
+      "last": 715,
+      "source_sha256": "48f3445db28a23b2095fa335af54be288503d691946abb3064b6b8e00e32502c"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_BounceFromGround",
+      "first": 717,
+      "last": 769,
+      "source_sha256": "2db0b9a77d02999341a2f951b0c3ee2294effa0c3878892cbded812483b7ac13"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_BounceFromCeilingAndGround",
+      "first": 771,
+      "last": 853,
+      "source_sha256": "e2c7ef80d27269b0ce1661a3f8173a20e33a985dc58170378d1d0408d00b306d"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_UpdateItemMovement",
+      "first": 855,
+      "last": 1095,
+      "source_sha256": "16d2dea902a742f1e526f1836bb37af85f1fb0747ed4f713017774a26ae17f5a"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_RemovePesterBall",
+      "first": 1097,
+      "last": 1110,
+      "source_sha256": "89a43800b3691432abf22e9f88281cd74b7290cce1b4d362d68aa89fb6b483d7"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_UpdateNonMovingItem",
+      "first": 1112,
+      "last": 1132,
+      "source_sha256": "ca859c6cd0cb732b4cf2d5bbdf0734444613d594da8078611e1b01030e7c90b3"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_SpawnPesterBall",
+      "first": 1134,
+      "last": 1159,
+      "source_sha256": "a85920a08c259a0c4e88770aea89a3a76493a40f193c222fa2b4f8a8207e633a"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_SpawnApple",
+      "first": 1161,
+      "last": 1186,
+      "source_sha256": "42d30a1ab8bb32251028b3da031c77f18fd630757dcfd18ff5a345b8ec4be936"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_PlayPokeFlute",
+      "first": 1188,
+      "last": 1201,
+      "source_sha256": "7208cb91cefcae52e128f47c3366194a657dd2f9b0c1ba2fd3564d20e8ce1b61"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_StopPokeFlute",
+      "first": 1203,
+      "last": 1211,
+      "source_sha256": "f3bd1c7687a893a923a8fdcfb208b5d9951da99443c8622709dad7c7e5d58f8d"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_GetPokeFluteCmd",
+      "first": 1213,
+      "last": 1219,
+      "source_sha256": "cdb102233dab30129d99f9913cdc76c65de12a866c90cab43f5fe799ef29eb43"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_GetPokeFluteState",
+      "first": 1221,
+      "last": 1227,
+      "source_sha256": "cde8611065c396d0e5dd74bab323266c64fc57ecc70fbcb75ec497c2fce5ce4b"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_DoRemoveItem",
+      "first": 1229,
+      "last": 1233,
+      "source_sha256": "edc2f76b5224bb3f04b36a2b4d8707e0c5c22007b0a931a4833fca11b0130133"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_DeleteItem",
+      "first": 1235,
+      "last": 1258,
+      "source_sha256": "634ddd886545fd216a17f28e6eb28fe5d0ab7ddef9681c8b5630ac98eaa8f6cb"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_SetCustomFunctions",
+      "first": 1260,
+      "last": 1271,
+      "source_sha256": "0d79e15179946f90ca33ef630d7b03ff39dfd71ad6413c2afda93b5a84c9b171"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_func_8035CA1C",
+      "first": 1273,
+      "last": 1275,
+      "source_sha256": "5ef5be5fe827b15677496a107a2b3578dd9114e56d1f2903daf1b2175d0308fe"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_Pause",
+      "first": 1277,
+      "last": 1285,
+      "source_sha256": "efa66b31cc585aa642db0d30d17575b7ce33273c1fd62b258dbdf8967a721ae9"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_UnPause",
+      "first": 1287,
+      "last": 1295,
+      "source_sha256": "5cdfc70c5440e361be075937ba865b50ae9d7498b94b9e82dd93e6940f5a0194"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_RemoveFlyingItems",
+      "first": 1297,
+      "last": 1305,
+      "source_sha256": "7f2f4b751c49eb0e6bab8704dc80e19005bf7152c3a437744d2b920242a13dcd"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "symbol": "Items_DisplaceAllItems",
+      "first": 1307,
+      "last": 1326,
+      "source_sha256": "9f13688e5bbd174f62f2cdf643b05a41103bde5c21fb9a181d2673eb1ed64914"
+    },
+    {
+      "path": "src/sys/vector.c",
+      "symbol": "Vec3fNormalize",
+      "first": 5,
+      "last": 16,
+      "source_sha256": "b34dfcbccad6ea186ceb0f9daeb2b786f35666cf99b03766418a6b2c91921750"
+    },
+    {
+      "path": "src/sys/vector.c",
+      "symbol": "Vec3fAdd",
+      "first": 22,
+      "last": 28,
+      "source_sha256": "4a13af9f30e91b520abaf5ea2464103c226ef2d1159bdec5f5e1efb98587957c"
+    },
+    {
+      "path": "src/sys/vector.c",
+      "symbol": "Vec3fDirection",
+      "first": 46,
+      "last": 52,
+      "source_sha256": "ccbfaa66a76b4783eee8227d8f5cf2598b6d75469b20efdda4af20c18c87e169"
+    },
+    {
+      "path": "src/sys/vector.c",
+      "symbol": "Vec3fScale",
+      "first": 54,
+      "last": 60,
+      "source_sha256": "8a6a653a849c8baf32be1057a25d00ee8396f0c3eb09118baa48d68d495a127e"
+    },
+    {
+      "path": "src/sys/vector.c",
+      "symbol": "Vec3fAddScaled",
+      "first": 72,
+      "last": 78,
+      "source_sha256": "796e0aa19d07ead5ed7553cc05690d9564616e1390c744904119010f25ffdc3c"
+    },
+    {
+      "path": "src/sys/vector.c",
+      "symbol": "Vec3fReflect",
+      "first": 250,
+      "last": 258,
+      "source_sha256": "b26cf36a179b0af5c341557c231eeca2588a1eb3a5ffa7df9db97884b0a1bb61"
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_EatApple",
+      "first": 879,
+      "last": 885,
+      "source_sha256": "5bb54279933fde2776b6c37ea52b4bb0f0b355eec6073194b914bd7e2613dfd6"
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "symbol": "Pokemon_KickItem",
+      "first": 902,
+      "last": 917,
+      "source_sha256": "4d34c20775d2780ba47e5dfa63d31e0a7154e99efa6016193d9de6e3fc95b998"
+    },
+    {
+      "path": "src/app_level/503C10.c",
+      "symbol": "func_80363848_503C58",
+      "first": 43,
+      "last": 52,
+      "source_sha256": "82115b67c06e40e36f7eae36d714e17d00eef282cf050b9e0cd078f64ea97a82"
+    }
+  ],
+  "native_policy": {
+    "unwritten_fields": "Initial prevPos is actual initial root; collisionVelocity is zero. Original unwritten/recycled heap parity is not claimed.",
+    "capacity": "Caller-predeclared physical native/Runtime/payload storage is distinct from logical entries20, IDs300..319, payload cache20, and per-requested-family threshold5. Held semantic/native identities are never reused.",
+    "root": "Consecutive source scalar writes publish Runtime and real native root before the next source action, observer, wait, end or callback. No copied renderer pose or second physics.",
+    "flute": "Four source APIs forward exclusively to shared Flute; caller state and actual audio-build equality epoch are retained.",
+    "retirement": "Logical unlink and cache insertion precede actual native delete; only outside native/command/GPU/preparation/readback exclusion and actual source borrow closure permits physical reuse."
+  },
+  "native_runtime_qualification": {
+    "receipt": "cmake/actor-interaction-inputs.json#native_full_C_Item_wave",
+    "source": "53 exact originalC Item/vector/helper definitions over one canonical native u8 payload-kind ABI and actual native Player RT/RTS AUX, root-only Item spatial semantics, World/Actor/effect/audio services",
+    "complete_source_scenarios": ["complete", "physical", "fume", "threshold", "fault-empty", "fault-live", "fault-collected"],
+    "profiles": ["Debug", "Release", "ClangASanUBSan"],
+    "factory": "Realunpublishednativeobject/model/parkedprocess plusServices/Runtime/Payload admission precedes sourceeffects; consumeonlyatOriginalCsites; no counter/cache/cursor/RNGrollback, noearlyoldestreplacement, realjoin+semantic/nativefences on failedteardown",
+    "effect_motion": "Actual initializedcommonbank3/script0 velocity0/6/0, effectlife20/particlelife30;52source-derivedupdates/850exactmotionandRNGobservations, all850differfromoldzerooverride; originalbankunchanged, throwawayremoved",
+    "Flute": "Eachprofile:actualsource1/3/2 songs,5/6/7 commands,9runs/828realRSPtasks/directsong+restartPCMexact, nonzerocounterfactualdifferences, actualacceptedbuildEpoch; checkedownedCPU audio notexercisedSDL3device/stream",
+    "graphics": "Complete actualSourceItemOwner mixedWorld/Actor/fume/sourceglobalDL3 GPUconsumer: pausednativevisibility/allactiveactualbinding/real21-22holds/fences/sourceID-newincarnation/contemporaneousreplacementRGB5depthgeometry, allthreeprofiles",
+    "not_claimed": "ProductionPlayerFSM/input/fullspecies/all71callbackclosure/fullgame/Original/privateWindows11/physicaldevices or hearing"
+  },
+  "semantic_origins": [
+    {
+      "path": "src/app_level/items.c",
+      "label": "flags_and_logical_storage",
+      "first": 6,
+      "last": 63,
+      "source_sha256": "fc826c4f6d25ab380edb2881658d6e6324220734eb7d272abe3108550ddec58f"
+    },
+    {
+      "path": "src/app_level/items.c",
+      "label": "callback_and_flute_globals",
+      "first": 216,
+      "last": 223,
+      "source_sha256": "2f9c5fe4b9c1117b0468afab72a4deea9b1120b41b681d2bb2025b9ac05e83de"
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "label": "cache_entry",
+      "first": 23,
+      "last": 26,
+      "source_sha256": "5af30e14a7859557d656eb54757d7101604648eb5a56058d6c5a6dca3d2d7fd2"
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "label": "cache_extent",
+      "first": 69,
+      "last": 71,
+      "source_sha256": "4a8cd5453e38f20ae4331fcc5835917cfbb635f1e0baf295cc2e12e152f06f10"
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "label": "cache_init_allocate_free",
+      "first": 211,
+      "last": 250,
+      "source_sha256": "3a4a4120822561f71c10bfcb60a7bab363363ed8e09ad55982a289cedc13c8af"
+    },
+    {
+      "path": "src/sys/vector.c",
+      "label": "dot_macro",
+      "first": 3,
+      "last": 3,
+      "source_sha256": "3058b5c725b1523943126bc862a9651960d83484fd861761fce5a1d4ab3375e8"
+    },
+    {
+      "path": "src/sys/oh.c",
+      "label": "default_update",
+      "first": 100,
+      "last": 102,
+      "source_sha256": "5cd50472f3d52295ed6a77dc1fa6f7d091fcd1db9b8f9a2676336d4064e2012b"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "item_ids_states",
+      "first": 25,
+      "last": 35,
+      "source_sha256": "8af0641cd14872fd542f10b7b45168a04f26df2aa64f9370685e5506d50e6dde"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "command_and_record",
+      "first": 134,
+      "last": 148,
+      "source_sha256": "41dca623997ea05e39fe592a289ebd8a1a47936b28a1f7885e95954c15959cf5"
+    },
+    {
+      "path": "src/world/world.h",
+      "label": "surface_types",
+      "first": 172,
+      "last": 193,
+      "source_sha256": "8890d2bd261a51e7021e381e30b4ed25c917a7059aeec0cf9699009f8ac6e46e"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "native_links",
+      "first": 249,
+      "last": 254,
+      "source_sha256": "6dc12262bcb95015ff5d98fce584464de54cef654acc0b5563a536f67fb6a80a"
+    }
+  ]
+}

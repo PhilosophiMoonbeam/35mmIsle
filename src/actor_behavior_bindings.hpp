@@ -44,6 +44,12 @@ public:
     const BoundWeightedStates& weighted_states(std::uint32_t identity) const;
     IsleGameSourceCallback callback(std::uint32_t identity) const;
     bool contains(IsleGameSourceCallback) const;
+    // Rechecks mutable/caller-retained rows and every executable callback's
+    // constructor-resolved transitive closure. The predicate must additionally
+    // prove actual compiled source, factory/assets and service admission.
+    // No allocation, behavior invocation or guest-function conversion occurs.
+    bool admits_native_graph(const IsleActorInteractionGraph&,
+        bool (*admit)(IsleGameSourceCallback, void*), void*) const;
     void require_live() const;
 private:
     struct Graph {
@@ -54,7 +60,11 @@ private:
         std::vector<IsleActorRandomState> rows;
         BoundWeightedStates view;
     };
-    struct Callback { std::uint32_t identity; IsleGameSourceCallback function; };
+    struct Callback {
+        std::uint32_t identity;
+        IsleGameSourceCallback function;
+        std::vector<IsleGameSourceCallback> closure;
+    };
     const beach::BehaviorResources* resources_;
     std::vector<Graph> graphs_;
     std::vector<Weighted> weighted_;

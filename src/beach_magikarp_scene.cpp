@@ -16,7 +16,7 @@ MagikarpSceneResult reject(MagikarpSceneError error, const char* detail) noexcep
 bool trigger_position(IsleGame* game, MagikarpTrigger trigger, IsleGameVec3& output) noexcept {
     const IsleGameModelNode* nodes=nullptr;
     std::size_t count=0;
-    if (isle_actor_source_validate_model(game,trigger.object,trigger.model)!=ISLE_GAME_OK ||
+    if (isle_game_model_validate_binding(game,trigger.object,trigger.model)!=ISLE_GAME_OK ||
         isle_game_model_peek_nodes(game,trigger.model,&nodes,&count)!=ISLE_GAME_OK ||
         !count || nodes[0].parent!=UINT32_MAX) return false;
     output=nodes[0].transform.position;
@@ -29,7 +29,7 @@ MagikarpScene::MagikarpScene(scene::Services& services, actor::Owner& owner, wor
 MagikarpSceneResult MagikarpScene::spawn_at(MagikarpTrigger trigger) noexcept {
     // Native identity admission does not sample/copy the source position early:
     // source reads that position only AFTER the genuine current/current spawn.
-    if (isle_actor_source_validate_model(services_.game,trigger.object,trigger.model)!=ISLE_GAME_OK)
+    if (isle_game_model_validate_binding(services_.game,trigger.object,trigger.model)!=ISLE_GAME_OK)
         return reject(MagikarpSceneError::native,"scene trigger is not a live native GObj/model pair");
     std::size_t definition=actor_no_index;
     try {
@@ -85,7 +85,7 @@ MagikarpSceneResult MagikarpScene::choose(MagikarpTrigger trigger, const world::
         return reject(MagikarpSceneError::native,"scene trigger DObj position is not live");
     const auto& player=owner_.player();
     const IsleGameModelPlacement* placement=nullptr;
-    if (isle_actor_source_validate_model(services_.game,player.object,player.model)!=ISLE_GAME_OK ||
+    if (isle_game_model_validate_binding(services_.game,player.object,player.model)!=ISLE_GAME_OK ||
         isle_game_model_placement(services_.game,player.model,&placement)!=ISLE_GAME_OK ||
         placement->mode==ISLE_GAME_MODEL_PLACEMENT_DISABLED)
         return reject(MagikarpSceneError::native,"scene requires the actual canonical player AUX placement");

@@ -3,7 +3,7 @@
   "repository": "https://github.com/ethteck/pokemonsnap",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.11.4",
-  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"8bb26fde827615b8a59fda7e954e009a6801f014a43c07b1bd7400bb3c4ed4a6"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"5b1726bb7b321ba053ddf6aec566bd4cd2b9a7d82382b7e5db3d814537864bcd"}},
+  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"a66cf23d965a73c601fea78705cd6a0667dfbf5961f377bb0f1ce6296865039d"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"5b1726bb7b321ba053ddf6aec566bd4cd2b9a7d82382b7e5db3d814537864bcd"}},
   "parent_actual_runs": {
     "scene_debug":{"capture_root":"/home/bbferko/35mmisle-genuine-scene-photo-cpu-7xbkhcc4","binary_sha256":"eb935087b5d41465687159fd258a47e882b021ced11b28fbea2f385be042acbf","source_archive_sha256":"d6fc51408dc063286c51e29ba08f41fbe6d7d854b004146f611dc7c83c01b61e","elapsed_seconds":0.7270003060111776,"closed":[8,7,9],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
     "mag_debug":{"capture_root":"/home/bbferko/35mmisle-scene-allocator-magikarp-cpu-jorbidha","binary_sha256":"3394e1edaf464a300b6071e3e50c504449df980a2ab9ff42ded314a63be0e533","source_archive_sha256":"4c58880b30f4ab96ac3d0c80d01ce0c744c653fc41a3dc8e0aa4206fafaf45e1","elapsed_seconds":0.7327733350684866,"closed":[25,24,26],"software_environment_sha256":"5f0bdc57147d16b3b10f950dd4d6a66514cc6dbf443680caaf682cd38fd869df","returncode":0,"rom_unchanged":true,"stable_whole_tree_closed_before_sole_scan":true,"known_physical_attempts":0,"permission_errors":0,"original_admission":false},
@@ -67,7 +67,7 @@
   "owner_allocator": {
     "exact_existing_api": "actor::SpawnResult actor::Owner::add_one(std::size_t definition, world::Block* block, world::Block* reference, const world::Spawn& spawn) noexcept;",
     "semantics": "Existing C AddAtGeo leaf and scene both use ONE shared Owner::add_one allocator/cursor with exact inclusive wrap, two half-open native link3 searches and occupied inclusive-max fallback. Genuine Owner::spawn returns canonical instance/object/status. All complete prior Magikarp/common consumers pass Debug/Release/ASan after refactor. No separate scene cursor, surrogate1003 or changed latch.",
-    "other_existing_api": "Existing isle_actor_source_validate_model, isle_game_model_peek_nodes root.transform.position and Owner native_model/set_placement/source/player/course suffice; no new engine getter or C bridge needed."
+    "other_existing_api": "The shared isle_game_model_validate_binding, isle_game_model_peek_nodes root.transform.position and Owner native_model/set_placement/source/player/course provide native binding and placement checks. The validator lives in the native engine so rendering does not depend on ActorOwner."
   },
   "private_consumer": {
     "source": "tests/beach_magikarp_scene_rom_smoke.cpp",

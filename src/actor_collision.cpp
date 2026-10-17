@@ -61,7 +61,7 @@ OwnerStatus step_walk(world::World& world, IsleActorSource& actor, IsleGameModel
     // game. There is no second game/world registry or shadow actor binding.
     IsleActorSource* bound = nullptr;
     if (isle_actor_source_get(actor.game,actor.object,&bound) != ISLE_GAME_OK || bound != &actor ||
-        isle_actor_source_validate_model(actor.game,actor.object,model) != ISLE_GAME_OK)
+        isle_game_model_validate_binding(actor.game,actor.object,model) != ISLE_GAME_OK)
         return rejected(OwnerError::native,"actor walk requires canonical native source/model binding");
     const IsleGameModelPlacement* current = nullptr;
     if (isle_game_model_placement(actor.game,model,&current) != ISLE_GAME_OK || !current ||

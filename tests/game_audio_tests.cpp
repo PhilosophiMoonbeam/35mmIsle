@@ -1,4 +1,5 @@
 #include "game_audio.hpp"
+#include "item_flute.hpp"
 #include "audio_fixture.hpp"
 #include <algorithm>
 #include <array>
@@ -10,6 +11,7 @@
 namespace g = isle::game_audio;
 namespace a = isle::audio;
 namespace f = isle::audio_test;
+namespace items = isle::items;
 namespace {
 int failures = 0;
 void check(bool value, std::string_view text) {
@@ -32,12 +34,40 @@ g::Resources resources(std::uint32_t release_us = 6000) {
     r.coefficients = f::coefficients(); r.priorities = {100};
     return r;
 }
+// Authored finite sequences exercise native note/termination and independent
+// players. This CPU fixture acknowledges ownership only; actual song identity
+// and PCM influence are qualified by the private RSP Flute consumer.
+constexpr std::array<std::uint32_t, 4> flute_tempos{240000, 320000, 400000, 480000};
+g::Resources flute_resources(bool short_song = false) {
+    auto result = resources(0);
+    constexpr std::uint32_t table_bytes = 36, payload_bytes = 85, stride = 86;
+    auto bytes = std::make_shared<a::Bytes>(table_bytes + flute_tempos.size() * stride);
+    (*bytes)[0] = std::byte{'S'}; (*bytes)[1] = std::byte{'1'};
+    f::put16(*bytes, 2, static_cast<std::uint16_t>(flute_tempos.size()));
+    for (std::uint32_t song = 0; song < flute_tempos.size(); ++song) {
+        const auto offset = table_bytes + song * stride;
+        f::put32(*bytes, 4 + song * 8, offset);
+        f::put32(*bytes, 8 + song * 8, payload_bytes);
+        f::put32(*bytes, offset, 68); f::put32(*bytes, offset + 64, 48);
+        const auto tempo = flute_tempos[song];
+        const unsigned duration = short_song ? 16 : 127;
+        const std::array<unsigned, 17> track{
+            0, 0xff, 0x51, tempo >> 16, (tempo >> 8) & 255u, tempo & 255u,
+            0, 0xc0, 0, 0, 0x90, 60 + song, 127, duration, duration, 0xff, 0x2f};
+        for (std::size_t i = 0; i < track.size(); ++i)
+            (*bytes)[offset + 68 + i] = std::byte(track[i]);
+    }
+    auto sequences = a::hydrate_sequences(bytes);
+    check(bool(sequences), "four distinct authored flute scheduling sequences hydrate");
+    result.sequences = sequences.asset;
+    return result;
+}
 struct Consumer {
     g::Output::State state = g::Output::State::ready;
     std::uint32_t rate = g::source_rate, limit = 0;
     bool fail_submit = false, fail_finish = false;
     std::uint64_t accepted = 0;
-    std::array<std::int16_t, 32768> storage{};
+    std::array<std::int16_t, 65536> storage{};
     unsigned finishes = 0;
     // CPU-contract-only executor fixture: no RSP readiness or PCM claim.
     const std::uint32_t* borrowed = nullptr;
@@ -78,6 +108,11 @@ g::CreateResult make(Consumer& consumer, std::uint32_t release_us = 6000) {
     const std::array sections{a::effects::Section{0, 160, 1000, -1000, 2000}};
     return g::Session::create(resources(release_us), {a::effects::Routing::network, 512, sections}, consumer.output(), consumer.executor());
 }
+g::CreateResult make_flute(Consumer& consumer, bool short_song = false) {
+    const std::array sections{a::effects::Section{0, 160, 1000, -1000, 2000}};
+    return g::Session::create(flute_resources(short_song), {a::effects::Routing::network, 512, sections},
+                              consumer.output(), consumer.executor());
+}
 // CPU-only ownership acknowledgements: no RSP/PCM-generation claim. Authored
 // sentinels explicitly write the producer's leased PCM range to verify slicing.
 void cpu_complete(g::Session& s, const a::TaskView& task, bool sentinels = false) {
@@ -92,12 +127,14 @@ void cpu_complete(g::Session& s, const a::TaskView& task, bool sentinels = false
     check(s.complete(task.token, true) == a::Error::none, "CPU protocol acknowledges matching task only");
 }
 bool cpu_tick(g::Session& session, std::uint64_t ordinal, std::uint64_t ns) {
+    const auto before = session.source_frame_epoch();
     auto error = session.retrace(ordinal, ns);
     check(error == a::Error::none, "CPU consumer independent scheduler notification succeeds");
     if (error != a::Error::none) return false;
     error = session.submit();
     check(error == a::Error::none, "CPU consumer accepts the preceding source-gated PCM owner");
     if (error != a::Error::none) return false;
+    check(session.source_frame_epoch() == before, "scheduler/output progression alone retains the source equality epoch");
     a::TaskView task;
     error = session.build(task);
     check(error == a::Error::none, "CPU consumer progresses real native command/voice state without terminal generation failure");
@@ -105,12 +142,15 @@ bool cpu_tick(g::Session& session, std::uint64_t ordinal, std::uint64_t ns) {
         if (task.token.serial != 0) session.complete(task.token, false);
         return false;
     }
+    check((task.token.serial != 0) == (session.source_frame_epoch() != before),
+          "CPU service iteration changes source epoch exactly for an actual admitted build");
     if (task.token.serial != 0) {
         cpu_complete(session, task);
         if (session.state() == g::Session::State::failed) return false;
         error = session.submit();
         check(error == a::Error::none, "CPU consumer retains the next source-gated PCM owner");
         if (error != a::Error::none) return false;
+        check(session.source_frame_epoch() == task.service_id, "completion and PCM acceptance retain the actual built service identity");
     }
     return true;
 }
@@ -118,20 +158,28 @@ void local_bootstrap_and_first_update(bool tick_before_build) {
     Consumer sink; sink.limit = 1024;
     auto made = make(sink); if (!made) { check(false, "bootstrap command owner initializes"); return; }
     auto& session = *made.session;
+    const g::Session& source = session;
+    check(source.source_frame_epoch() == 0, "source equality epoch begins before the first actual build");
     int sound = -1;
     check(session.play_sound(0, {}, sound) == a::Error::none && sound == 0, "first source sound request queues before publication");
     if (tick_before_build) check(session.retrace(10, 0) == a::Error::none, "already-running scheduler can queue its first notification before initial build");
     a::TaskView initial;
     check(session.build(initial) == a::Error::none && initial.token.serial != 0, "initial source task publishes exactly once");
+    const auto epoch = source.source_frame_epoch();
+    check(epoch != 0 && initial.service_id == epoch, "bootstrap publishes the existing actual service identity as equality epoch");
     cpu_complete(session, initial);
+    check(source.source_frame_epoch() == epoch, "task completion cannot manufacture another source audio frame");
     if (!tick_before_build) check(session.retrace(10, 0) == a::Error::none, "first source tick supplies the deferred post-initial-build update");
     check(session.submit() == a::Error::none && sink.accepted == 0 && session.native_ai_frames() == 0 &&
           session.service().has_lease(), "ordinal10 is only the session's first notification, never bootstrap output credit");
+    check(source.source_frame_epoch() == epoch, "first scheduler tick and deferred source command update do not advance the build epoch");
     check(session.retrace(15, 16666667) == a::Error::none && session.submit() == a::Error::none &&
           sink.accepted == initial.frame_count && !session.service().has_lease(),
           "second actual notification releases initial PCM independently of external ordinal gaps");
     a::TaskView next;
     check(session.build(next) == a::Error::none && next.token.serial != 0, "next source task consumes first-tick published commands");
+    check(source.source_frame_epoch() != epoch && next.service_id == source.source_frame_epoch(),
+          "only the next admitted actual build publishes a distinct equality epoch");
     cpu_complete(session, next);
     check(session.retrace(16, 33333334) == a::Error::none && session.submit() == a::Error::none &&
           !session.service().has_lease() && !session.service().voices_retired(),
@@ -204,37 +252,49 @@ void readiness_and_failure() {
     auto& session = *made.session;
     a::TaskView task;
     check(session.build(task) == a::Error::none && task.frame_count == 640, "source bootstrap quota derives from 32006/60, sixteen alignment and eighty extra samples");
+    const auto failed_epoch = session.source_frame_epoch();
     auto foreign = task.token; ++foreign.owner;
     check(session.complete(foreign, true) == a::Error::stale_task && session.service().has_lease(), "foreign completion cannot retire real task");
     check(session.complete(task.token, false) == a::Error::execution_failed &&
         session.state() == g::Session::State::failed && !session.initialization_ready(), "actual execution failure is terminal and revokes readiness");
     check(session.build(task) == a::Error::execution_failed, "failure wakes owner through retained concrete error, never fake completion");
+    check(session.source_frame_epoch() == failed_epoch, "stale/failed completion and failed-state build leave the sampled epoch intact");
 }
 void partial_output_and_clock() {
     Consumer sink;
     auto made = make(sink); if (!made) { check(false, "partial owner initializes"); return; }
     auto& s = *made.session;
     a::TaskView first, absent;
+    const g::Session& source = s;
     check(s.build(first) == a::Error::none, "first task builds once");
+    const auto first_epoch = source.source_frame_epoch();
+    check(first_epoch != 0 && first.service_id == first_epoch, "actual bootstrap build publishes its own source epoch");
+    check(s.build(absent) == a::Error::none && absent.token.serial == 0 &&
+          source.source_frame_epoch() == first_epoch, "executing-task no-work build retains the sampled source epoch");
     cpu_complete(s, first, true);
+    check(source.source_frame_epoch() == first_epoch, "PCM completion and copied sentinels leave source epoch unchanged");
     const auto* stable = s.service().rdram_words().data();
     check(s.submit() == a::Error::none && s.service().has_lease() && s.accepted_frames() == 0, "blocked checked consumer retains complete PCM owner");
     check(s.retrace(1, 0) == a::Error::none && s.submit() == a::Error::none &&
         s.accepted_frames() == 0 && s.native_ai_frames() == 0, "first source tick submits no bootstrap PCM or fake AI credit");
     check(s.retrace(2, 16666667) == a::Error::none && s.retrace(3, 33333334) == a::Error::none,
           "scheduler mailbox coalesces independently of blocked output and presentation");
+    check(source.source_frame_epoch() == first_epoch, "coalesced retraces and elapsed monotonic time alone are not source builds");
     check(s.build(absent) == a::Error::none && absent.token.serial == 0, "no task can recycle blocked PCM RAM");
     sink.limit = 7;
     check(s.submit() == a::Error::none && s.accepted_frames() == 7 && s.service().has_lease(), "partial prefix acceptance retains remainder and lease");
     sink.limit = 1024;
     check(s.submit() == a::Error::none && !s.service().has_lease() && s.accepted_frames() == first.frame_count,
           "only complete prefix ownership transfer releases PCM");
+    check(source.source_frame_epoch() == first_epoch, "blocked, partial and complete host PCM acceptance never sample a new source epoch");
     bool ordered = true;
     for (std::uint32_t i = 0; i < first.frame_count * 2; ++i) ordered &= sink.storage[i] == static_cast<std::int16_t>(i + 1);
     check(ordered, "partial consumer sees every stereo sample once in order, never replayed prefix");
     a::TaskView next;
     check(s.build(next) == a::Error::none && next.token.serial == first.token.serial + 1 && next.frame_count == 640,
           "three blocked retraces become one service, with original lagged zero occupancy");
+    const auto next_epoch = source.source_frame_epoch();
+    check(next_epoch != first_epoch && next.service_id == next_epoch, "coalesced ticks publish one epoch at the real build, not one per retrace");
     cpu_complete(s, next);
     check(s.submit() == a::Error::none && s.service().has_lease(), "next completed PCM remains source-tick gated, never submitted early");
     check(s.native_ai_frames() == 640, "AI query is current stereo-frame remainder, not summed SDL queue bytes");
@@ -248,6 +308,7 @@ void partial_output_and_clock() {
     check(s.retrace(4, 50000001) == a::Error::none && s.native_ai_frames() == remainder,
           "free-running monotonic source clock carries empty-bootstrap fractions into its actual534-frame interval");
     check(s.submit() == a::Error::none && !s.service().has_lease(), "next scheduler tick transfers the gated PCM without reexecuting its task");
+    check(source.source_frame_epoch() == next_epoch, "AI consumption and a completed PCM release cannot advance the actual-build epoch");
     check(s.service().rdram_words().data() == stable, "all partial-output transitions preserve borrowed RDRAM allocation");
     a::TaskView final;
     check(s.build(final) == a::Error::none, "post-clock task builds"); cpu_complete(s, final);
@@ -276,16 +337,22 @@ void stop_restart_and_drain() {
         cpu_complete(s, task); check(s.submit() == a::Error::none, "startup PCM ownership transfers");
     }
     check(s.bgm_playing(0) && s.bgm_playing(1), "both source request states reach playing, not one substituted song");
+    const auto before_restart = s.source_frame_epoch();
     check(s.restart() == a::Error::none, "restart requests real client stop rather than synchronous heap clear");
     check(!s.initialization_ready(), "restart cannot announce ready while actual source release is pending");
+    check(s.source_frame_epoch() == before_restart, "player/effects restart request neither resets nor advances the shared source epoch");
     unsigned retirement_tasks = 0;
     bool reset = false;
     for (std::uint64_t tick = 5; tick <= 40; ++tick) {
         check(s.retrace(tick, tick * 16666667) == a::Error::none, "release source retrace");
         check(s.submit() == a::Error::none, "release source-buffer acceptance progresses independently");
+        const auto before_build = s.source_frame_epoch();
         a::TaskView task; check(s.build(task) == a::Error::none, "release/retirement task builds");
+        check((task.token.serial != 0) == (s.source_frame_epoch() != before_build),
+              "restart retirement changes the equality epoch exactly when a real task is built");
         if (task.token.serial != 0) {
             ++retirement_tasks;
+            check(task.service_id == s.source_frame_epoch(), "recreated clients retain the same monotonic service identity domain");
             cpu_complete(s, task);
             check(s.submit() == a::Error::none, "release PCM transfers");
         }
@@ -302,9 +369,207 @@ void stop_restart_and_drain() {
     }
     check(s.state() == g::Session::State::draining && sink.finishes == 1 && s.service().voices_retired(),
           "retired source clients flush checked output exactly once");
+    const auto drained_epoch = s.source_frame_epoch();
+    a::TaskView absent;
+    check(s.build(absent) == a::Error::none && absent.token.serial == 0 && s.source_frame_epoch() == drained_epoch,
+          "draining no-work build neither creates a task nor advances the source epoch");
     check(s.poll_drain() == a::Error::none && s.state() == g::Session::State::draining, "pending actual output drain is not completion");
     sink.state = g::Output::State::drained;
     check(s.poll_drain() == a::Error::none && s.state() == g::Session::State::drained, "only checked downstream drain changes terminal state");
+    check(s.source_frame_epoch() == drained_epoch, "checked downstream drain polling is not another source audio build");
+}
+bool flute_step(g::Session& session, std::uint64_t& tick) {
+    ++tick;
+    return cpu_tick(session, tick, tick * 1000000000ull / 60);
+}
+void flute_finish(g::Session& session, Consumer& sink, std::uint64_t& tick) {
+    check(session.stop() == a::Error::none, "flute API fixture stops the real shared song/voice graph");
+    for (unsigned i = 0; i < 16 && session.state() != g::Session::State::draining; ++i)
+        if (!flute_step(session, tick)) return;
+    check(session.state() == g::Session::State::draining && session.service().voices_retired() &&
+          !session.service().has_lease(), "flute fixture retires actual native clients, physical voices and PCM owners");
+    sink.state = g::Output::State::drained;
+    check(session.poll_drain() == a::Error::none, "flute fixture finishes its checked owned CPU consumer");
+}
+void flute_cycle_and_reconstruction() {
+    Consumer sink; sink.limit = 1024;
+    auto made = make_flute(sink); if (!made) { check(false, "flute cycle fixture initializes"); return; }
+    auto& session = *made.session;
+    items::FluteState retained;
+    items::Flute flute(session, retained);
+    check(flute.command() == 0 && flute.state() == -1 && retained.song_index == 0 && !retained.playing,
+          "initial source flag/index and equal zero timestamp are preserved");
+    check(session.play_song(1, 0) == a::Error::none && flute.play() == a::Error::none,
+          "flute main0 request coexists with an independent secondary music request");
+    check(flute.command() == 5 && flute.state() == -1 && retained.playing && retained.song_index == 0 &&
+          session.bgm_playing(0) && session.bgm_playing(1),
+          "first play requests song1 without advancing index and reports pending BGM status, not audible readiness");
+    const auto requested_epoch = session.source_frame_epoch();
+    for (unsigned i = 0; i < 32; ++i)
+        check(flute.state() == -1 && flute.command() == 5, "same-epoch gameplay polling cannot clear flute uncertainty");
+    check(session.source_frame_epoch() == requested_epoch && retained.song_start_epoch == requested_epoch,
+          "play/command/state calls neither invent a clock nor rewrite the captured source epoch");
+    a::TaskView bootstrap;
+    check(session.build(bootstrap) == a::Error::none && bootstrap.token.serial != 0 && flute.state() == 1,
+          "actual bootstrap build changes equality epoch even before the requested sequence has bound");
+    cpu_complete(session, bootstrap);
+    const auto built_epoch = session.source_frame_epoch();
+    a::TaskView absent;
+    check(session.build(absent) == a::Error::none && absent.token.serial == 0 && flute.state() == 1 &&
+          session.source_frame_epoch() == built_epoch, "no-work build cannot resample the flute timestamp");
+    std::uint64_t tick = 0;
+    if (!flute_step(session, tick)) return;
+    const auto start_epoch = retained.song_start_epoch;
+    {
+        items::Flute reconstructed(session, retained);
+        check(reconstructed.command() == 5 && reconstructed.state() == 1 && retained.song_index == 0 &&
+              retained.playing && retained.song_start_epoch == start_epoch,
+              "wrapper reconstruction preserves the caller's actual source lifetime instead of reinitializing Item globals");
+    }
+    constexpr std::array<std::int32_t, 3> indices{1, 2, 0};
+    constexpr std::array<std::int32_t, 3> commands{6, 7, 5};
+    for (std::size_t i = 0; i < indices.size(); ++i) {
+        items::Flute reconstructed(session, retained);
+        const auto epoch = session.source_frame_epoch();
+        check(reconstructed.play() == a::Error::none && retained.song_index == indices[i] &&
+              reconstructed.command() == commands[i] && reconstructed.state() == -1 &&
+              retained.song_start_epoch == epoch && session.source_frame_epoch() == epoch,
+              "already-playing source flag cycles 1/3/2 with commands5/6/7 and wraps without sampling another epoch");
+        if (!flute_step(session, tick)) return;
+        check(reconstructed.state() == 1 && session.bgm_playing(1),
+              "source command cycling leaves the independent secondary BGM request unchanged");
+    }
+    check(flute.stop() == a::Error::none && flute.command() == 0 && flute.state() == -1 &&
+          !retained.playing && retained.song_index == 0 && !session.bgm_playing(0) && session.bgm_playing(1),
+          "source stop clears only flute main0, retains the current index and timestamps the request");
+    if (!flute_step(session, tick)) return;
+    check(flute.state() == 0, "next build reports real stopped request status, not lingering release voices or flute flag");
+    {
+        items::Flute reconstructed(session, retained);
+        check(reconstructed.play() == a::Error::none && retained.song_index == 0 &&
+              reconstructed.command() == 5 && reconstructed.state() == -1,
+              "stop then reconstructed play restarts the current song without cycling");
+        for (unsigned i = 0; i < 8; ++i) if (!flute_step(session, tick)) return;
+        check(reconstructed.state() == 1,
+              "retained-index restart reports the real main0 BGM request after source builds");
+    }
+    check(flute.stop() == a::Error::none, "retained wrapper remains bound to the same source state");
+    flute_finish(session, sink, tick);
+}
+void flute_natural_completion_and_stopped_timestamp() {
+    Consumer sink; sink.limit = 1024;
+    auto made = make_flute(sink, true); if (!made) { check(false, "finite flute fixture initializes"); return; }
+    auto& session = *made.session;
+    items::FluteState retained;
+    items::Flute flute(session, retained);
+    check(flute.play() == a::Error::none, "finite source song1 starts");
+    std::uint64_t tick = 0;
+    for (unsigned song : {1u, 3u}) {
+        bool bound = false;
+        const auto start = retained.song_start_epoch;
+        for (unsigned i = 0; i < 32 && session.bgm_playing(0); ++i) {
+            if (!flute_step(session, tick)) return;
+            bound |= !session.service().voices_retired();
+        }
+        check(bound && !session.bgm_playing(0) && flute.state() == 0 && retained.playing &&
+              flute.command() == (song == 1 ? 5 : 6) && retained.song_start_epoch == start,
+              "real compact sequence termination changes BGM state without rewriting source play flag, command or start epoch");
+        if (song == 1) {
+            items::Flute reconstructed(session, retained);
+            check(reconstructed.command() == 5 && reconstructed.state() == 0 &&
+                  reconstructed.play() == a::Error::none && retained.song_index == 1 &&
+                  reconstructed.command() == 6 && reconstructed.state() == -1,
+                  "naturally completed audio is still source-playing, so reconstructed play advances to song3");
+        }
+    }
+    check(flute.stop() == a::Error::none && !retained.playing && flute.command() == 0 && flute.state() == -1,
+          "source stop timestamps even after the native sequence has already completed");
+    if (!flute_step(session, tick)) return;
+    check(flute.state() == 0, "a subsequent real audio build releases stopped-source uncertainty");
+    const auto before_stop = retained.song_start_epoch;
+    const auto current = session.source_frame_epoch();
+    check(flute.stop() == a::Error::none && retained.song_start_epoch == current &&
+          retained.song_start_epoch != before_stop && flute.state() == -1 && !retained.playing,
+          "already-stopped stop captures the new current epoch rather than becoming an untimestamped no-op");
+    check(session.play_song(0, 0) == a::Error::none && flute.stop() == a::Error::none &&
+          session.bgm_playing(0) && flute.command() == 0 && flute.state() == -1,
+          "already-stopped flute never stops unrelated main0 music, but still timestamps every stop");
+    if (!flute_step(session, tick)) return;
+    check(flute.state() == 1 && !retained.playing && flute.command() == 0,
+          "state after a new epoch is real main0 BGM status, independent of the source flute-playing flag");
+    if (!flute_step(session, tick)) return;
+    flute_finish(session, sink, tick);
+}
+void flute_checked_audio_errors() {
+    Consumer missing_sink; missing_sink.limit = 1024;
+    auto missing = make(missing_sink);
+    if (!missing) { check(false, "missing-song admission fixture initializes"); return; }
+    items::FluteState missing_state;
+    items::Flute missing_flute(*missing.session, missing_state);
+    check(missing_flute.play() == a::Error::invalid_parameter && !missing_state.playing &&
+          missing_state.song_index == 0 && missing_state.song_start_epoch == 0 && missing_flute.command() == 0,
+          "missing real song1 reports admission error instead of fabricating successful flute playback");
+    Consumer failed_sink; failed_sink.limit = 1024;
+    auto failed = make_flute(failed_sink);
+    if (!failed) { check(false, "failed-audio flute fixture initializes"); return; }
+    auto& session = *failed.session;
+    items::FluteState retained;
+    items::Flute flute(session, retained);
+    check(flute.play() == a::Error::none, "flute error fixture first admits a real source request");
+    const auto start = retained.song_start_epoch;
+    a::TaskView task; check(session.build(task) == a::Error::none, "flute error fixture owns a real audio task");
+    const auto epoch = session.source_frame_epoch();
+    check(session.complete(task.token, false) == a::Error::execution_failed &&
+          flute.stop() == a::Error::invalid_state && retained.playing && retained.song_start_epoch == start,
+          "failed real audio stop propagates its error before publishing source stop success");
+    check(flute.play() == a::Error::invalid_state && retained.song_index == 1 &&
+          retained.song_start_epoch == start && session.source_frame_epoch() == epoch,
+          "failed play preserves source's index-before-stop prefix without inventing a timestamp or successful audio request");
+    std::uint64_t tick = 0;
+    flute_finish(*missing.session, missing_sink, tick);
+}
+void source_epoch_admission_and_equal_timestamps() {
+    for (bool executor_failure : {false, true}) {
+        Consumer sink;
+        auto made = make(sink);
+        if (!made) { check(false, "source admission fixture initializes before endpoint failure"); return; }
+        if (executor_failure) sink.fail_initialize = true;
+        else sink.state = g::Output::State::failed;
+        a::TaskView task;
+        check(made.session->build(task) == a::Error::execution_failed && task.token.serial == 0 &&
+              made.session->source_frame_epoch() == 0,
+              "lost actual executor/output admission fails before publishing any source-frame epoch");
+    }
+    Consumer sink; sink.limit = 1024;
+    auto made = make(sink); if (!made) { check(false, "equal timestamp source fixture initializes"); return; }
+    auto& session = *made.session;
+    a::TaskView initial;
+    check(session.build(initial) == a::Error::none && initial.token.serial != 0, "equal timestamp fixture publishes actual bootstrap");
+    const auto initial_epoch = session.source_frame_epoch();
+    cpu_complete(session, initial);
+    constexpr std::uint64_t timestamp = 9000;
+    check(session.retrace(7, timestamp) == a::Error::none && session.submit() == a::Error::none &&
+          session.service().has_lease() && session.retrace(13, timestamp) == a::Error::none &&
+          session.submit() == a::Error::none && !session.service().has_lease() &&
+          session.source_frame_epoch() == initial_epoch,
+          "equal monotonic timestamps with distinct real retraces release gated PCM without sampling another source epoch");
+    a::TaskView next;
+    check(session.build(next) == a::Error::none && next.token.serial != 0 &&
+          session.source_frame_epoch() != initial_epoch && next.service_id == session.source_frame_epoch(),
+          "a distinct admitted build has a distinct equality epoch even at the same host timestamp; no OSTime value is claimed");
+    cpu_complete(session, next);
+    const auto next_epoch = session.source_frame_epoch();
+    check(session.stop() == a::Error::none && session.source_frame_epoch() == next_epoch,
+          "stop requests do not create audio frame time");
+    std::uint64_t ordinal = 13, ns = timestamp;
+    for (unsigned i = 0; i < 16 && session.state() != g::Session::State::draining; ++i) {
+        ns += 16666667;
+        if (!cpu_tick(session, ++ordinal, ns)) return;
+    }
+    check(session.state() == g::Session::State::draining && !session.service().has_lease(),
+          "equal-timestamp fixture subsequently retires through actual source builds and owned PCM acceptance");
+    sink.state = g::Output::State::drained;
+    check(session.poll_drain() == a::Error::none, "equal-timestamp checked source consumer completes drain");
 }
 void effects_reset_atomicity() {
     f::Fixture fixture; auto bank = fixture.decode(); const std::array owners{bank.asset};
@@ -365,6 +630,8 @@ int main() {
     readiness_and_failure(); partial_output_and_clock(); stop_restart_and_drain();
     local_bootstrap_and_first_update(false); local_bootstrap_and_first_update(true);
     reordered_sfx_descriptor_reuse();
+    flute_cycle_and_reconstruction(); flute_natural_completion_and_stopped_timestamp(); flute_checked_audio_errors();
+    source_epoch_admission_and_equal_timestamps();
     effects_reset_atomicity(); live_priority_steal_retirement();
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

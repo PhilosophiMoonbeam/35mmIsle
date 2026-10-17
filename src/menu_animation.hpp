@@ -120,6 +120,14 @@ public:
     static CreateResult create(Resources, std::span<const SlotCapacity>, CameraState initial_camera,
                                ExecutionCapacity) noexcept;
     AcquireResult acquire(std::size_t slot, std::size_t resource_model, bool callback_enabled) noexcept;
+    // Private slot admission only: no instance, events or generation publication.
+    // The same owner must consume or cancel before relinquishing the slot.
+    Status prepare_acquire(std::size_t slot, std::size_t resource_model,
+                           bool callback_enabled = false) noexcept;
+    AcquireResult acquire_prepared(std::size_t slot) noexcept;
+    // Private cancellation is also valid after whole-runtime retirement; it
+    // cannot release active/retiring instances or alter their borrowed events.
+    Status cancel_prepared(std::size_t slot) noexcept;
     Status begin_retire(InstanceHandle) noexcept;
     // Owner-only precondition: actual native work is joined, graphics/completed
     // memory borrows ended and attached effects detached. Runtime cannot prove

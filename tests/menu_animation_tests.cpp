@@ -1134,6 +1134,85 @@ void loop_grammar_rejects_unpublished() {
     check(bool(made),"raw SET_ANIMATION address is not reinterpreted as a nonfinite float");
 }
 
+void prepared_acquisition_is_private_and_cancelable() {
+    Stream stream;
+    stream.cmd(16,0x105,2); stream.cmd(0,0,0);
+    Fixture fixture;
+    fixture.animations = {stream.view(m::AnimationKind::model,0x7800)};
+    const auto capacity = a::slot_capacity(fixture.models[0]);
+    const std::array<a::SlotCapacity,3> capacities{capacity,capacity,a::SlotCapacity{}};
+    auto made = a::Runtime::create({fixture.models,fixture.materials,fixture.animations},capacities,
+                                   fixture.initial_camera,{});
+    check(bool(made),"prepared acquisition fixture admitted"); if (!made) return;
+    auto& runtime = *made.runtime;
+    const auto first = runtime.acquire(0,0,true);
+    check(bool(first) && bool(runtime.step_model(first.handle)) && runtime.events().size() == 1,
+          "active peer emits a real borrowed callback before admission");
+    if (!first || runtime.events().size() != 1) return;
+    const auto peer = runtime.model(first.handle);
+    const auto node = peer.nodes[0];
+    const auto event = runtime.events()[0];
+    const auto* events = runtime.events().data();
+    const auto generation = runtime.generation();
+    const auto unchanged = [&] {
+        return runtime.generation() == generation && runtime.events().data() == events &&
+            runtime.events().size() == 1 && same_event(runtime.events()[0],event) &&
+            same_node(runtime.model(first.handle).nodes[0],node);
+    };
+    auto unpublished = first.handle; unpublished.slot = 1;
+    check(runtime.prepare_acquire(0,0).error == a::Error::occupied &&
+          runtime.prepare_acquire(2,0).error == a::Error::capacity &&
+          runtime.prepare_acquire(3,0).error == a::Error::extent &&
+          runtime.prepare_acquire(1,1).error == a::Error::extent && unchanged(),
+          "rejected admission preserves active state, callback credit and generation");
+    check(bool(runtime.prepare_acquire(1,0,true)) && !runtime.model(unpublished) &&
+          runtime.acquire(1,0,false).status.error == a::Error::occupied &&
+          runtime.prepare_acquire(1,0).error == a::Error::occupied && unchanged(),
+          "reserved slot is neither publicly fetchable nor independently acquirable");
+    allocation_probe::count = 0;
+    allocation_probe::enabled = true;
+    bool cancelled = bool(runtime.cancel_prepared(1));
+    for (unsigned i = 0; i < 32; ++i)
+        cancelled &= bool(runtime.prepare_acquire(1,0,true)) && bool(runtime.cancel_prepared(1));
+    allocation_probe::enabled = false;
+    check(cancelled && allocation_probe::count == 0 && unchanged() &&
+          runtime.cancel_prepared(0).error == a::Error::handle &&
+          runtime.cancel_prepared(1).error == a::Error::handle,
+          "repeated preparation cancellation allocates nothing and never consumes active peer events");
+    check(bool(runtime.prepare_acquire(1,0,true)),"reserve slot again for actual consumption");
+    const auto acquired = runtime.acquire_prepared(1);
+    check(bool(acquired) && acquired.handle.incarnation == 1 && runtime.events().empty() &&
+          runtime.generation() == generation+1 && runtime.model(acquired.handle).nodes[0].revision == 1,
+          "only consumption publishes one fresh incarnation and normal acquisition event boundary");
+    if (!acquired) return;
+    const auto active_generation = runtime.generation();
+    check(runtime.cancel_prepared(1).error == a::Error::handle &&
+          runtime.acquire_prepared(1).status.error == a::Error::handle &&
+          runtime.generation() == active_generation && bool(runtime.model(acquired.handle)) &&
+          bool(runtime.step_model(acquired.handle)) && runtime.events().size() == 1 &&
+          runtime.events()[0].instance == acquired.handle &&
+          runtime.events()[0].source_order == event.source_order+1,
+          "double consumption/cancellation cannot retire active ownership or reset callback source order");
+    check(bool(runtime.begin_retire(acquired.handle)) &&
+          runtime.cancel_prepared(1).error == a::Error::handle &&
+          bool(runtime.release_retired(acquired.handle)) &&
+          bool(runtime.prepare_acquire(1,0,true)) && bool(runtime.cancel_prepared(1)) &&
+          bool(runtime.prepare_acquire(1,0,true)),
+          "retiring storage is not a reservation; actual release restores admission");
+    const auto reused = runtime.acquire_prepared(1);
+    check(bool(reused) && reused.handle.incarnation == 2 && !runtime.model(acquired.handle),
+          "cancelled admission never spends an incarnation or revives an old handle");
+    if (!reused) return;
+    check(bool(runtime.begin_retire(reused.handle)) && bool(runtime.release_retired(reused.handle)) &&
+          bool(runtime.prepare_acquire(1,0)),"prepare outstanding slot before whole-runtime retirement");
+    runtime.retire();
+    const auto retired_generation = runtime.generation();
+    check(runtime.acquire_prepared(1).status.error == a::Error::retired &&
+          bool(runtime.cancel_prepared(1)) && runtime.generation() == retired_generation &&
+          runtime.events().empty(),
+          "whole-runtime retirement still permits private cancellation without scene recovery");
+}
+
 void malformed_streams_reject_unpublished() {
     Stream valid; valid.cmd(2,0,1); valid.cmd(0,0,0);
     Stream jump; jump.cmd(1,0,0,{0x12345678}); jump.cmd(0,0,0);
@@ -1152,6 +1231,7 @@ int main() {
     local_pose_admission_atomicity_and_retirement();
     switched_callbacks_and_atomicity(); material_binding_null_and_initial_reset(); malformed_streams_reject_unpublished();
     explicit_pool_reuse_and_retirement();
+    prepared_acquisition_is_private_and_cancelable();
     loop_timers_tracks_receivers_and_reuse();
     loop_grammar_rejects_unpublished();
     loop_overshoot_and_atomic_capacity(); material_loop_isolation_and_aggregate_work();

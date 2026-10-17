@@ -4,6 +4,7 @@
 #include "35mmisle/engine.h"
 #include "menu_animation.hpp"
 #include "source_matrix_configuration.hpp"
+struct IsleSourceFactoryResources;
 
 namespace isle::menu::model {
 struct Command { std::uint32_t w0 = 0, w1 = 0; };
@@ -29,8 +30,11 @@ Status decode_model_recipe(const Model&, std::size_t node, MatrixRecipe&) noexce
 // Scratch is dedicated caller-owned capacity, allocated before spawning. Only
 // its active prefix changes on rejection; no vector allocation or second
 // attachment implementation. translate is the established World root policy.
+// A prepared ticket consumes its actual reserved model at this same attach
+// point; recipe validation and NodeInit construction remain shared.
 Status attach_source_model(IsleGame*, IsleGameObject*, const Model&, animation::ModelState,
-    RootRecipe, std::span<IsleGameModelNodeInit> scratch, IsleGameModel**) noexcept;
+    RootRecipe, std::span<IsleGameModelNodeInit> scratch, IsleGameModel**,
+    ::IsleSourceFactoryResources* prepared = nullptr) noexcept;
 // Explicit values: no camera pointer survives preparation. Basis starts at
 // source BSS zero, not identity/perspective. The caller publishes the staged
 // result only after its whole camera/model/list transaction succeeds.

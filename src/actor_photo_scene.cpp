@@ -41,7 +41,7 @@ PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* 
     const auto& player=owner.player();
     const IsleGameCameraParameters* parameters=nullptr;
     require(player.camera==camera &&
-            isle_actor_source_validate_model(services.game,player.object,player.model)==ISLE_GAME_OK &&
+            isle_game_model_validate_binding(services.game,player.object,player.model)==ISLE_GAME_OK &&
             isle_game_camera_parameters(services.game,camera,&parameters)==ISLE_GAME_OK,
             "PhotoScene requires Owner's actual canonical player/main camera");
     require(isle_game_object_metadata(services.game,owner.particle_object(),&metadata)==ISLE_GAME_OK &&

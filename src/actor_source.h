@@ -110,7 +110,7 @@ IsleGameResult isle_actor_source_get_nullable(IsleGame*, IsleGameObject*, IsleAc
  * nonnegative product range). No guest address may be cast to a callback. Callers
  * clear their own completed state/path handles as the GAME behaviors do. */
 void Pokemon_SetState(IsleGameObject*, IsleGameSourceCallback);
-void Pokemon_SetStateRandom(IsleGameObject*, IsleActorRandomState*);
+void Pokemon_SetStateRandom(IsleGameObject*, const IsleActorRandomState*);
 void Pokemon_StartAuxProc(IsleGameObject*, IsleGameSourceCallback);
 void Pokemon_StopAuxProc(IsleGameObject*);
 void Pokemon_StartPathProc(IsleGameObject*, IsleGameSourceCallback);

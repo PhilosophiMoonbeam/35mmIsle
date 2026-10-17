@@ -207,12 +207,20 @@ IsleGameVec3 isle_actor_source_position(IsleGameObject*, IsleGameObject*, int au
 void isle_actor_source_item_iterator(IsleGameObject*);
 IsleGameObject* isle_actor_source_item_next(IsleGameObject*);
 struct IsleItemSource* isle_actor_source_item(IsleGameObject*, IsleGameObject*);
+/* Original Pokemon_EatApple is retained by the Item importer; the native
+ * nonwaiting Item Owner runs that body, including its real deletion path. */
+void isle_actor_source_eat_apple(IsleGameObject*);
+/* Commands enter the shared checked Services queues. Link broadcasts retain
+ * actual native update-list order and sender identity lifetime accounting. */
+void isle_actor_source_send_command(IsleGameObject*, int32_t, IsleGameObject*);
+void isle_actor_source_send_to_link(IsleGameObject*, uint8_t, int32_t, IsleGameObject*);
 int32_t isle_actor_source_flute(IsleGameObject*);
 float isle_actor_source_distance(IsleGameObject*, IsleGameObject*);
 float isle_actor_source_neighbors(IsleGameObject*, IsleGameVec3*);
 IsleGameObject* isle_actor_source_player(IsleGameObject*);
 IsleActorFocusState isle_actor_source_focus(IsleGameObject*);
 int32_t isle_actor_source_direction(IsleGameObject*);
+void isle_actor_source_level_progress(IsleGameObject*, int32_t* block_count, float* block_part);
 int32_t isle_actor_source_execution_enabled(IsleGameObject*);
 void isle_actor_source_pause_all(IsleGameObject*);
 void isle_actor_source_reference_assign(IsleGameObject*, IsleGameObject**, IsleGameObject*);

@@ -3,7 +3,7 @@
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.8.11.1",
-  "native_support": {"src/actor_photo_membership.hpp":{"sha256":"5f9d171cdfee9c30f2922d3377a3a55fbc987a0a247d4faa0bf1aaccbe436077"},"src/actor_photo_membership.cpp":{"sha256":"307c09b1ff89f9d7eb152b04e4bca83ffede8c147c21ad9427fac9296481cacb"},"tests/actor_photo_membership_tests.cpp":{"sha256":"9226b1f1c7bf11bf53a5c26946cdc94812289ea590ddab5dd3034bf9887a1153"},"src/actor_owner_source.h":{"sha256":"35629333568ad1fed08dcf47336eb25284d572eb362c7d1e1cc5b0849140896a"},"src/actor_source_owner_bridge.c":{"sha256":"d080f73430a85ed1a5bc570120b4a919b5c2100a92045325187401749604e134"}},
+  "native_support": {"src/actor_photo_membership.hpp":{"sha256":"5f9d171cdfee9c30f2922d3377a3a55fbc987a0a247d4faa0bf1aaccbe436077"},"src/actor_photo_membership.cpp":{"sha256":"307c09b1ff89f9d7eb152b04e4bca83ffede8c147c21ad9427fac9296481cacb"},"tests/actor_photo_membership_tests.cpp":{"sha256":"9226b1f1c7bf11bf53a5c26946cdc94812289ea590ddab5dd3034bf9887a1153"},"src/actor_owner_source.h":{"sha256":"e79461c921578ae9866f4a0403ae51b94650d992000d3e93a7b9886f2983add4"},"src/actor_source_owner_bridge.c":{"sha256":"5d8d1120d1dda56d20355562ad4e458da984dd0502d8bdb8a15744cff2595413"}},
   "authority": "Immutable own-GAME stage /home/bbferko/35mmisle-course-pinned-source-vhh0_3lz and its blob-verified pinned-source-manifest.json. Source admission/camera leaves retain actor-photo-eligibility-inputs.json authority. No dirty decomp worktree, SDK producer/header/layout, disassembly, ROM, runtime, devices or captures were used by this worker.",
   "native_files": [
     "src/actor_photo_membership.hpp",

@@ -1,11 +1,16 @@
 #include "actor_owner_source.h"
 #include "actor_spatial.h"
 #include "actor_interaction_services.h"
+#include "beach_initial_species_source.h"
 #include "engine_internal.h"
 
 static void checked(IsleActorSource* actor, IsleGameResult result) {
     if (result != ISLE_GAME_OK)
         isle_native_execution_fault(actor->game, "native actor owner source leaf failed");
+}
+void isle_actor_source_level_progress(IsleGameObject* object, int32_t* block_count, float* block_part) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor, isle_actor_interaction_level_progress(actor, block_count, block_part));
 }
 IsleGameModelRef isle_actor_source_self_model(IsleGameObject* object) {
     IsleActorSource* actor = isle_actor_source_require(object);
@@ -323,6 +328,20 @@ IsleItemSource* isle_actor_source_item(IsleGameObject* object, IsleGameObject* t
     checked(actor,isle_actor_interaction_item_source(actor,target,&item));
     return item;
 }
+void isle_actor_source_eat_apple(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor,isle_actor_interaction_eat_apple(actor));
+}
+void isle_actor_source_send_command(IsleGameObject* object, int32_t command,
+    IsleGameObject* sender) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor,isle_actor_interaction_send_command(actor,command,sender));
+}
+void isle_actor_source_send_to_link(IsleGameObject* object, uint8_t link,
+    int32_t command, IsleGameObject* sender) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    checked(actor,isle_actor_interaction_send_to_link(actor,link,command,sender));
+}
 int32_t isle_actor_source_flute(IsleGameObject* object) {
     IsleActorSource* actor = isle_actor_source_require(object);
     int32_t command;
@@ -373,4 +392,22 @@ void isle_actor_source_reference_assign(IsleGameObject* object, IsleGameObject**
     IsleGameObject* sender) {
     IsleActorSource* actor = isle_actor_source_require(object);
     checked(actor,isle_actor_owner_reference_assign(actor,field,sender));
+}
+int32_t* isle_actor_source_scene_counter(IsleGameObject* object, uint32_t identity) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    int32_t* value = NULL;
+    checked(actor,isle_actor_interaction_scene_counter(actor,identity,&value));
+    return value;
+}
+IsleGameVec3 isle_actor_source_pikachu_temporary(IsleGameObject* object) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    IsleGameVec3 value;
+    checked(actor,isle_actor_interaction_pikachu_temporary(actor,&value));
+    return value;
+}
+const IsleActorRandomState* isle_actor_source_weighted(IsleGameObject* object, uint32_t identity) {
+    IsleActorSource* actor = isle_actor_source_require(object);
+    const IsleActorRandomState* value = NULL;
+    checked(actor,isle_actor_interaction_weighted(actor,identity,&value));
+    return value;
 }

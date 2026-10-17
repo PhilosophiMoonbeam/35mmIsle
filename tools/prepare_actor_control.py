@@ -10,10 +10,14 @@ REVISION = "df8815e75f3d79618466e01e0827c6165b93d11c"
 POKEMON = "src/app_level/pokemon.c"
 COMMON = "src/app_level/4FE330.c"
 MAGIKARP = "src/beach/562BC0.c"
+PLAYER = "src/app_level/player.c"
 # Ordered, exact, single-occurrence substitutions; native identities are never guest casts.
 DEFINITIONS = (
     (POKEMON, "Pokemon_SetState", 252, 263, ()),
-    (POKEMON, "Pokemon_SetStateRandom", 265, 288, (("randRange(sumWeight)", "isle_actor_source_rand_range(obj, sumWeight)"),)),
+    (POKEMON, "Pokemon_SetStateRandom", 265, 288, (
+        ("RandomState* stateList", "const RandomState* stateList"),
+        ("randRange(sumWeight)", "isle_actor_source_rand_range(obj, sumWeight)"),
+    )),
     (POKEMON, "Pokemon_StartAuxProc", 291, 296, ()),
     (POKEMON, "Pokemon_StopAuxProc", 298, 303, ()),
     (POKEMON, "Pokemon_StartPathProc", 305, 318, ()),
@@ -260,7 +264,7 @@ MOVEMENT_DEFINITIONS = (
         ("Pokemon_GetGroundAt(x, z)", "Pokemon_GetGroundAt(obj, x, z)"),
     )),
 )
-INITIAL_SPECIES_FILES = ("src/beach/55FB80.c", "src/beach/560320.c")
+INITIAL_SPECIES_FILES = ("src/beach/55FB80.c", "src/beach/560320.c", "src/beach/560620.c", "src/beach/563000.c", "src/beach/562370.c")
 INITIAL_SPECIES_UNITS = (
     (0, "802C7B10", 4, 21), (0, "802C7BB8", 24, 37),
     (0, "802C7C7C", 39, 48), (0, "802C7CF0", 50, 63),
@@ -310,6 +314,175 @@ def initial_species_changes(identity):
 DEFINITIONS += tuple((INITIAL_SPECIES_FILES[file], "func_beach_" + identity, first, last,
                       initial_species_changes(identity))
                      for file, identity, first, last in INITIAL_SPECIES_UNITS)
+
+# Full ordinary25/16/131 executable closure; dead local helpers are excluded.
+ENTRY_SPECIES_UNITS = (
+    ('src/beach/55FB80.c', '802C7E70', 89, 106),
+    ('src/beach/55FB80.c', '802C7F1C', 108, 116),
+    ('src/beach/55FB80.c', '802C7F74', 118, 130),
+    ('src/beach/55FB80.c', '802C8028', 132, 148),
+    ('src/beach/55FB80.c', '802C80BC', 150, 153),
+    ('src/beach/55FB80.c', '802C80F0', 155, 158),
+    ('src/beach/55FB80.c', '802C8124', 160, 164),
+    ('src/beach/55FB80.c', '802C816C', 166, 176),
+    ('src/beach/55FB80.c', '802C81C4', 178, 188),
+    ('src/beach/55FB80.c', '802C821C', 190, 200),
+    ('src/beach/55FB80.c', '802C8274', 202, 204),
+    ('src/beach/560620.c', '802C85B0', 9, 12),
+    ('src/beach/560620.c', '802C85E0', 15, 33),
+    ('src/beach/560620.c', '802C86A8', 35, 58),
+    ('src/beach/560620.c', '802C87BC', 60, 70),
+    ('src/beach/560620.c', '802C8828', 72, 82),
+    ('src/beach/560620.c', '802C8894', 84, 98),
+    ('src/beach/560620.c', '802C8900', 100, 115),
+    ('src/beach/560620.c', '802C8980', 117, 119),
+    ('src/beach/560620.c', '802C89A4', 124, 150),
+    ('src/beach/560620.c', '802C8AAC', 152, 168),
+    ('src/beach/560620.c', '802C8B60', 170, 180),
+    ('src/beach/560620.c', '802C8BC4', 182, 194),
+    ('src/beach/560620.c', '802C8C30', 196, 200),
+    ('src/beach/560620.c', '802C8C58', 202, 206),
+    ('src/beach/560620.c', '802C8C7C', 208, 215),
+    ('src/beach/560620.c', '802C8CC0', 217, 220),
+    ('src/beach/560620.c', '802C8CFC', 222, 228),
+    ('src/beach/560620.c', '802C8D3C', 230, 232),
+    ('src/beach/562BC0.c', '802CAC80', 36, 45),
+    ('src/beach/562BC0.c', '802CACD4', 47, 60),
+    ('src/beach/562BC0.c', '802CAD58', 62, 64),
+    ('src/beach/562BC0.c', '802CAD7C', 66, 73),
+    ('src/beach/562BC0.c', '802CADCC', 75, 81),
+    ('src/beach/562BC0.c', '802CAE14', 83, 96),
+    ('src/beach/562BC0.c', '802CAEB0', 98, 107),
+    ('src/beach/562BC0.c', '802CAF1C', 109, 119),
+    ('src/beach/563000.c', '802CAF90', 9, 17),
+    ('src/beach/563000.c', '802CAFEC', 19, 28),
+    ('src/beach/563000.c', '802CB054', 30, 33),
+    ('src/beach/563000.c', '802CB08C', 35, 48),
+    ('src/beach/563000.c', '802CB128', 50, 65),
+    ('src/beach/563000.c', '802CB194', 69, 90),
+    ('src/beach/563000.c', '802CB2D8', 92, 104),
+    ('src/beach/563000.c', '802CB36C', 106, 115),
+    ('src/beach/563000.c', '802CB3DC', 117, 126),
+    ('src/beach/563000.c', '802CB44C', 128, 137),
+    ('src/beach/563000.c', '802CB520', 153, 162),
+    ('src/beach/563000.c', '802CB594', 165, 189),
+    ('src/beach/563000.c', '802CB6B4', 191, 200),
+    ('src/beach/563000.c', '802CB710', 202, 212),
+    ('src/beach/563000.c', '802CB784', 214, 226),
+    ('src/beach/563000.c', '802CB814', 228, 235),
+    ('src/beach/563000.c', '802CB874', 238, 266),
+    ('src/beach/563000.c', '802CB9E0', 268, 277),
+    ('src/beach/563000.c', '802CBA48', 279, 297),
+    ('src/beach/563000.c', '802CBB34', 299, 308),
+    ('src/beach/563000.c', '802CBB90', 310, 324),
+    ('src/beach/563000.c', '802CBC4C', 326, 334),
+    ('src/beach/563000.c', '802CBCA8', 336, 338),
+)
+ENTRY_ANIMATIONS = {
+    '802C7F74': (('Force', '802CCE08'), ('Force', '802CCDE8')),
+    '802C86A8': (('Set', '802CCFC0'), ('Set', '802CCFD4'), ('Set', '802CCFE8'), ('Set', '802CCFFC')),
+    '802C89A4': (('Set', '802CCFC0'), ('Set', '802CCFD4'), ('Set', '802CCFE8'), ('Set', '802CCFFC')),
+    '802C8AAC': (('Set', '802CCFD4'),),
+    '802CAE14': (('Set', '802CDBAC'), ('Set', '802CDBFC')),
+    '802CAF1C': (('Set', '802CDBC0'),),
+    '802CAF90': (('Force', '802CDBD4'),),
+    '802CAFEC': (('Set', '802CDBC0'),),
+    '802CB08C': (('Force', '802CDB84'),),
+    '802CB2D8': (('Set', '802CDB5C'),),
+    '802CB36C': (('Set', '802CDB5C'),),
+    '802CB3DC': (('Force', '802CDB70'),),
+    '802CB44C': (('Force', '802CDBC0'),),
+    '802CB520': (('Set', '802CDBD4'),),
+    '802CB594': (('Set', '802CDBAC'), ('Set', '802CDC10')),
+    '802CB784': (('Force', '802CDB84'),),
+    '802CB874': (('Force', '802CDB70'), ('Set', '802CDBE8'), ('Set', '802CDBAC'), ('Set', '802CDBD4'), ('Set', '802CDBFC')),
+    '802CB9E0': (('Force', '802CDBC0'),),
+    '802CBB90': (('Force', '802CDBD4'), ('Set', '802CDBFC'), ('Force', '802CDBFC')),
+    '802CBC4C': (('Force', '802CDBC0'),),
+}
+ENTRY_GRAPHS = {
+    '802C7F1C': (('802CCE1C', 1),),
+    '802C85E0': (('802CD040', 1),),
+    '802C86A8': (('802CD010', 4),),
+    '802C8828': (('802CD010', 1),),
+    '802C89A4': (('802CD064', 4),),
+    '802C8C7C': (('802CD0B4', 1),),
+    '802C8CFC': (('802CD0E4', 1),),
+    '802CAC80': (('802CDC60', 1),),
+    '802CAD7C': (('802CDC80', 1),),
+    '802CAE14': (('802CDCA0', 2),),
+    '802CAF90': (('802CDCD0', 1),),
+    '802CB08C': (('802CDD40', 1),),
+    '802CB2D8': (('802CDD80', 1),),
+    '802CB36C': (('802CDD80', 1),),
+    '802CB3DC': (('802CDD80', 1),),
+    '802CB44C': (('802CDE48', 1),),
+    '802CB520': (('802CDE78', 1),),
+    '802CB594': (('802CDEF8', 3),),
+    '802CB874': (('802CDF98', 3), ('802CDFD8', 3)),
+    '802CBB90': (('802CDFD8', 3),),
+    '802CBC4C': (('802CDFD8', 1),),
+}
+def entry_species_changes(identity):
+    changes = []
+    for mode, header in ENTRY_ANIMATIONS.get(identity, ()):
+        changes.append((f"Pokemon_{mode}Animation(obj, &D_beach_{header})",
+                        f"isle_actor_source_set_animation(obj, UINT32_C(0x{header.lower()}), 0.0f, {int(mode == 'Force')})"))
+    for graph, count in ENTRY_GRAPHS.get(identity, ()):
+        object_name = "arg0" if identity == "802C85E0" else "obj"
+        changes.append((f"D_beach_{graph}", f"isle_actor_source_graph({object_name}, UINT32_C(0x{graph.lower()}))", count))
+    if identity in ("802C7E70", "802C7F74", "802CAD7C"):
+        changes.append(("HIDE_POKEMON();", "isle_actor_source_visibility(obj, 1);"))
+    if identity in ("802C7F74", "802CADCC", "802CAE14"):
+        changes.append(("SHOW_POKEMON();", "isle_actor_source_visibility(obj, 0);"))
+    if identity == "802C7F74":
+        changes.append(("randRange(600)", "isle_actor_source_rand_range(obj, 600)"))
+    for address in {"802C80BC": ("802CCDFC",), "802C80F0": ("802CCE00",),
+                    "802C8124": ("802CCE00", "802CCE04"), "802C816C": ("802CCDFC",),
+                    "802C81C4": ("802CCE00",), "802C821C": ("802CCE04",),
+                    "802C8AAC": ("802CD060",)}.get(identity, ()):
+        changes.append((f"D_beach_{address}", f"(*isle_actor_source_scene_counter(obj, UINT32_C(0x{address.lower()})))"))
+    if identity == "802C85B0":
+        changes.append(("arg0->flags |= 1;", "isle_actor_source_object_flags(arg0, UINT32_C(1), UINT32_C(1));"))
+    if identity in ("802C86A8", "802C89A4", "802C8C7C"):
+        changes.append(("obj->flags = 0;", "isle_actor_source_object_flags(obj, UINT32_MAX, 0);"))
+    if identity in ("802CB2D8", "802CB36C", "802CB3DC"):
+        changes.append(("D_beach_802CDE30", "isle_actor_source_weighted(obj, UINT32_C(0x802cde30))"))
+    if identity == "802CB594":
+        changes.append(("Pokemon_EatApple(obj)", "isle_actor_source_eat_apple(obj)"))
+    if identity == "802CB194":
+        changes += [
+            ("    Vec3f sp2C = D_beach_802CE018;", "    IsleGameVec3 sp2C = isle_actor_source_pikachu_temporary(obj);"),
+            ("    WorldBlock* block;", "    IsleGameVec3 worldPosition;"),
+            ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+            ("    block = getCurrentWorldBlock();", "    worldPosition = isle_actor_source_current_world_position(obj);"),
+            ("block->descriptor->worldPos.x", "worldPosition.x"),
+            ("block->descriptor->worldPos.y", "worldPosition.y"),
+            ("block->descriptor->worldPos.z", "worldPosition.z"),
+            ("GetInterpolatedPosition(&sp2C, pokemon->path, 0.99999f)", "isle_actor_source_path_position(obj, pokemon->path, 0.99999f, &sp2C)"),
+            ("GET_TRANSFORM(model)->pos.v.x", "isle_actor_source_aux(obj, &model)->position.x"),
+            ("GET_TRANSFORM(model)->pos.v.z", "isle_actor_source_aux(obj, &model)->position.z"),
+        ]
+    if identity == "802CBA48":
+        changes += [
+            ("    DObj* model;", "    IsleGameModelRef model;"),
+            ("    Vec3f sp34;", "    IsleGameVec3 sp34;"),
+            ("    model = obj->data.dobj;", "    model = isle_actor_source_self_model(obj);"),
+            ("GetInterpolatedVelocity(&sp34, pokemon->path, 0.99999f)", "isle_actor_source_path_velocity(obj, pokemon->path, 0.99999f, &sp34)"),
+            ("Pokemon_Turn(model, temp_f20, 0.13962634f)", "Pokemon_Turn(obj, model, temp_f20, 0.13962634f)"),
+        ]
+    if identity == "802CA300":
+        changes += [
+            ("obj->flags |= GOBJ_FLAG_2;", "isle_actor_source_object_flags(obj, UINT32_C(2), UINT32_C(2));"),
+            ("getLevelProgress(", "isle_actor_source_level_progress(obj, ", 2),
+        ]
+    return tuple(changes)
+
+DEFINITIONS += tuple((path, "func_beach_" + identity, first, last, entry_species_changes(identity))
+                     for path, identity, first, last in ENTRY_SPECIES_UNITS)
+DEFINITIONS += tuple(("src/beach/562370.c", "func_beach_" + identity, first, last,
+                      entry_species_changes(identity))
+                     for identity, first, last in (("802CA300", 10, 50), ("802CA418", 52, 54)))
 DEFINITIONS += MOVEMENT_DEFINITIONS
 CONTROL_SYMBOLS = frozenset(unit[1] for unit in DEFINITIONS[:6])
 CONTROL_PREAMBLE = '''/* Private selected own-GAME core actor control. */
@@ -339,6 +512,9 @@ typedef IsleActorCommandData GObjCmdData;
 #define getCurrentWorldBlock() isle_actor_source_current_block(omCurrentObject)
 #define func_80353D68_4F4178() isle_actor_source_execution_enabled(omCurrentObject)
 #define ohPauseObjectProcesses isle_actor_source_pause_all
+#define LINK_POKEMON 3
+#define cmdSendCommandToLink(link, command, sender) isle_actor_source_send_to_link(sender, link, command, sender)
+#define cmdSendCommand(object, command, sender) isle_actor_source_send_command(object, command, sender)
 typedef IsleActorSource Pokemon;
 typedef IsleActorRandomState RandomState;
 typedef IsleActorFactoryBlock WorldBlock;
@@ -351,7 +527,13 @@ static const PokemonInitData D_beach_802CDAEC = { UINT32_C(0x802cdaec) };
 static const PokemonDef D_8038837C_52878C = { UINT32_C(0x8038837c) };
 static const PokemonInitData D_beach_802CCDA4 = { UINT32_C(0x802ccda4) };
 static const PokemonInitData D_beach_802CCF78 = { UINT32_C(0x802ccf78) };
+static const PokemonInitData D_beach_802CCE50 = { UINT32_C(0x802cce50) };
+static const PokemonInitData D_beach_802CD118 = { UINT32_C(0x802cd118) };
+static const PokemonInitData D_beach_802CE038 = { UINT32_C(0x802ce038) };
+static const PokemonInitData D_beach_802CD948 = { UINT32_C(0x802cd948) };
+#define POKEMON_FLAG_4 0x004
 #define POKEMON_FLAG_200 0x200
+#define POKEMON_FLAG_800 0x800
 static const IsleGameVec3 D_8038838C_52879C = { 0.0f, 0.0f, 0.0f };
 #define PokemonID_1003 1003
 /* QUALIFIED native numeric policy, not established original SDK macro parity.
@@ -399,11 +581,11 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
     manifest_bytes = manifest_path.read_bytes()
     manifest = json.loads(manifest_bytes)
     if (manifest["schema_version"] != 1 or manifest["revision"] != REVISION or
-            manifest["transformation_version"] != "actor-control-v7"):
+            manifest["transformation_version"] != "actor-control-v9"):
         raise ValueError("unsupported actor authority/transformation")
     if git(repository, "cat-file", "-t", REVISION).strip() != b"commit":
         raise ValueError("actor authority is not a commit")
-    if set(manifest["source_files"]) != {POKEMON, COMMON, MAGIKARP, *INITIAL_SPECIES_FILES, "src/app_level/app_level.h", "include/enums.h", "include/common_structs.h"}:
+    if set(manifest["source_files"]) != {POKEMON, COMMON, MAGIKARP, PLAYER, *INITIAL_SPECIES_FILES, "src/app_level/app_level.h", "include/enums.h", "include/common_structs.h"}:
         raise ValueError("actor source allowlist mismatch")
     sources = {}
     for path, identity in manifest["source_files"].items():

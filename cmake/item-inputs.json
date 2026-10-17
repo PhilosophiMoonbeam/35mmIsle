@@ -145,7 +145,7 @@
       "sha256": "8ce2614d734b005de29a2fe4738b15e65d128faa3d458f9b32d4228463f3d3ed"
     },
     "src/beach_actor_resources.cpp": {
-      "sha256": "f5aeb56a912880c06a0fa1aa4623db8a3e5a78686d084ab124bd4eb446f3896b"
+      "sha256": "3d779fbe3a370795de3e7b9ca9a6d464820500ff9d8f22bae8f29b0f5772f657"
     },
     "tests/item_resources_rom_smoke.cpp": {
       "sha256": "ec43071458c800c395c01241bf6849e61074e3f987210b7a012ebb3071982027"

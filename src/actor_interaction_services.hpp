@@ -46,8 +46,14 @@ private:
     const beach::ActorInitialization* magikarp_ = nullptr;
     const beach::ActorInitialization* butterfree_ = nullptr;
     const beach::ActorInitialization* doduo_ = nullptr;
+    const beach::ActorInitialization* lapras_ = nullptr;
+    const beach::ActorInitialization* pidgey_ = nullptr;
+    const beach::ActorInitialization* pikachu_ = nullptr;
+    const beach::ActorInitialization* sign_ = nullptr;
     bool common_assets_ = false, magikarp_assets_ = false;
     bool butterfree_assets_ = false, doduo_assets_ = false;
+    bool lapras_assets_ = false, pidgey_assets_ = false, pikachu_assets_ = false;
+    bool sign_assets_ = false;
 };
 } // namespace isle::actor
 #endif

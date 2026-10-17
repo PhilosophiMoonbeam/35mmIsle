@@ -62,6 +62,14 @@ struct ActorAnimationHeader {
     // retained) when applied; per-node NULL and NULL entries instead preserve.
     bool resets_materials() const noexcept { return material_animation_table.bytes.empty(); }
 };
+// Initial shared scene facts only; mutable counters belong to the scene owner.
+// Lapras order is D_beach_802CCDFC, D_beach_802CCE00, D_beach_802CCE04.
+struct ActorSceneInitialScalars {
+    rom::GuestView lapras_wire, pidgey_wire, pikachu_wire;
+    std::array<std::int32_t, 3> lapras_counters;
+    std::int32_t pidgey_counter;
+    menu::Vec3 pikachu_temporary;
+};
 // Immutable native descriptors borrow the exact admitted Snapshot. No guest
 // callbacks execute, no actor factory/process is fabricated, and construction
 // succeeds only after the shared GBI closure discharges every obligation.
@@ -79,6 +87,7 @@ public:
     std::span<const ActorAnimationHeader> headers() const;
     std::span<const ActorInitialization> initializations() const;
     std::span<const ActorDefinition> definitions() const;
+    const ActorSceneInitialScalars& scene_initial_scalars() const;
     // Each model node's bitset includes initial flags0 and every opcode15
     // choice from all headers, rather than an arbitrary independent hide policy.
     std::span<const std::uint8_t> visibility_domains(std::size_t model) const;
@@ -101,6 +110,7 @@ private:
     std::vector<ActorAnimationHeader> headers_;
     std::vector<ActorInitialization> initializations_;
     std::vector<ActorDefinition> definitions_;
+    ActorSceneInitialScalars scene_initial_scalars_;
     std::vector<std::vector<std::uint8_t>> visibility_;
     std::optional<model_assets::Closure> closure_;
     friend struct ActorResourceBuilder;

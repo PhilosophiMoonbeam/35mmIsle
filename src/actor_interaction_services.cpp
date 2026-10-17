@@ -4,6 +4,7 @@
 #include "actor_spatial.h"
 #include "item_owner.hpp"
 #include "beach_initial_species_source.h"
+#include "beach_initial_species.hpp"
 #include "35mmisle/focus_detector.hpp"
 
 #include <limits>
@@ -109,6 +110,63 @@ unsigned initial_species_group(IsleGameSourceCallback function) noexcept {
     if (function == func_beach_802C82B0 || function == func_beach_802C8354 ||
         function == func_beach_802C83D0 || function == func_beach_802C8438 ||
         function == func_beach_802C84A4) return 16;
+    if (function == func_beach_802C7E70 ||
+        function == func_beach_802C7F1C ||
+        function == func_beach_802C7F74 ||
+        function == func_beach_802C8028 ||
+        function == func_beach_802C80BC ||
+        function == func_beach_802C80F0 ||
+        function == func_beach_802C8124 ||
+        function == func_beach_802C816C ||
+        function == func_beach_802C81C4 ||
+        function == func_beach_802C821C) return 32;
+    if (function == func_beach_802C85B0 ||
+        function == func_beach_802C85E0 ||
+        function == func_beach_802C86A8 ||
+        function == func_beach_802C87BC ||
+        function == func_beach_802C8828 ||
+        function == func_beach_802C8894 ||
+        function == func_beach_802C8900 ||
+        function == func_beach_802C8980 ||
+        function == func_beach_802C89A4 ||
+        function == func_beach_802C8AAC ||
+        function == func_beach_802C8B60 ||
+        function == func_beach_802C8BC4 ||
+        function == func_beach_802C8C30 ||
+        function == func_beach_802C8C58 ||
+        function == func_beach_802C8C7C ||
+        function == func_beach_802C8CC0 ||
+        function == func_beach_802C8CFC) return 64;
+    if (function == func_beach_802CAC80 ||
+        function == func_beach_802CACD4 ||
+        function == func_beach_802CAD58 ||
+        function == func_beach_802CAD7C ||
+        function == func_beach_802CADCC ||
+        function == func_beach_802CAE14 ||
+        function == func_beach_802CAEB0 ||
+        function == func_beach_802CAF1C ||
+        function == func_beach_802CAF90 ||
+        function == func_beach_802CAFEC ||
+        function == func_beach_802CB054 ||
+        function == func_beach_802CB08C ||
+        function == func_beach_802CB128 ||
+        function == func_beach_802CB2D8 ||
+        function == func_beach_802CB36C ||
+        function == func_beach_802CB3DC ||
+        function == func_beach_802CB44C ||
+        function == func_beach_802CB520 ||
+        function == func_beach_802CB594 ||
+        function == func_beach_802CB6B4 ||
+        function == func_beach_802CB710 ||
+        function == func_beach_802CB784 ||
+        function == func_beach_802CB814 ||
+        function == func_beach_802CB874 ||
+        function == func_beach_802CB9E0 ||
+        function == func_beach_802CBA48 ||
+        function == func_beach_802CBB34 ||
+        function == func_beach_802CBB90 ||
+        function == func_beach_802CBC4C) return 128;
+    if (function == func_beach_802CA300) return 256;
     return 0;
 }
 bool initial_species_callback(IsleGameSourceCallback function, void* context) noexcept {
@@ -181,6 +239,14 @@ InteractionServices::InteractionServices(scene::Services& services, Owner& actor
         0x802ccd90u, 0x802c7b10u, 0x802ccd24u);
     doduo_ = factory(resources, 84, 0x802c8570u, 0x802ccf78u, 0x803594dcu,
         0x802ccf64u, 0x802c82b0u, 0x802cceb0u);
+    lapras_ = factory(resources, 131, 0x802c8274u, 0x802cce50u, 0x8035942cu,
+        0x802cce3cu, 0x802c7e70u, 0x802cce08u);
+    pidgey_ = factory(resources, 16, 0x802c8d3cu, 0x802cd118u, 0x8035942cu,
+        0x802cd104u, 0x802c85b0u, 0x802ccfd4u);
+    pikachu_ = factory(resources, 25, 0x802cbca8u, 0x802ce038u, 0x80359484u,
+        0x802ce024u, 0x802cacd4u, 0x802cdb5cu);
+    sign_ = factory(resources, 1004, 0x802ca418u, 0x802cd948u, 0x80359534u,
+        0x802cd934u, 0x802ca300u, 0x802cd920u);
     common_assets_ = header_assets(resources, actors, common_, 0x80388310u);
     magikarp_assets_ = header_assets(resources, actors, magikarp_, 0x802cda8cu) &&
         header_assets(resources, actors, magikarp_, 0x802cdab4u);
@@ -192,6 +258,16 @@ InteractionServices::InteractionServices(scene::Services& services, Owner& actor
         header_assets(resources, actors, doduo_, 0x802cced8u) &&
         header_assets(resources, actors, doduo_, 0x802cceecu) &&
         header_assets(resources, actors, doduo_, 0x802ccf00u);
+    lapras_assets_ = header_assets(resources, actors, lapras_, 0x802ccde8u) &&
+        header_assets(resources, actors, lapras_, 0x802cce08u);
+    pidgey_assets_ = true;
+    for (const auto header : {0x802ccfc0u, 0x802ccfd4u, 0x802ccfe8u, 0x802ccffcu})
+        pidgey_assets_ &= header_assets(resources, actors, pidgey_, header);
+    pikachu_assets_ = true;
+    for (const auto header : {0x802cdb5cu, 0x802cdb70u, 0x802cdb84u, 0x802cdbacu,
+                             0x802cdbc0u, 0x802cdbd4u, 0x802cdbe8u, 0x802cdbfcu, 0x802cdc10u})
+        pikachu_assets_ &= header_assets(resources, actors, pikachu_, header);
+    sign_assets_ = header_assets(resources, actors, sign_, 0x802cd920u);
 }
 
 bool InteractionServices::matches(Owner& actors, scene::Services& services,
@@ -252,13 +328,15 @@ struct InteractionSourceAccess {
     static bool callback_proof(Admission& admission, unsigned group) {
         auto& self = admission.self;
         auto& source = admission.source;
-        if (group == 8 || group == 16) {
-            const auto* init = group == 8 ? self.butterfree_ : self.doduo_;
+        if (group == 8 || group == 16 || group == 32 || group == 64 || group == 128 || group == 256) {
+            const auto* init = group == 8 ? self.butterfree_ : group == 16 ? self.doduo_ :
+                group == 32 ? self.lapras_ : group == 64 ? self.pidgey_ :
+                group == 128 ? self.pikachu_ : self.sign_;
             IsleGameVec3 auxiliary;
-            return init && source.id == (group == 8 ? 12 : 84) &&
+            return init && source.id == static_cast<std::int32_t>(init->actor_id) &&
                 source.initData == init && source.animSetup == &init->setup &&
                 self.admits_initial_species(*init, source.path) &&
-                position(source.game, source.object, Position::auxiliary, auxiliary) == ISLE_GAME_OK;
+                (group == 256 || position(source.game, source.object, Position::auxiliary, auxiliary) == ISLE_GAME_OK);
         }
         const bool common = self.common_ && source.id == 1003 && source.initData == self.common_ &&
             source.animSetup == &self.common_->setup;
@@ -309,8 +387,15 @@ struct InteractionSourceAccess {
         if (output) *output = nullptr;
         if (!output) return ISLE_GAME_INVALID_ARGUMENT;
         return context(source, [&](InteractionServices& self) {
-            const unsigned group = identity == 0x802ccd60u ? 8u :
-                (identity == 0x802ccf14u || identity == 0x802ccf44u) ? 16u : 0u;
+            unsigned group = identity == 0x802ccd60u ? 8u :
+                (identity == 0x802ccf14u || identity == 0x802ccf44u) ? 16u :
+                identity == 0x802cce1cu ? 32u :
+                (identity == 0x802cd010u || identity == 0x802cd040u || identity == 0x802cd064u ||
+                 identity == 0x802cd0b4u || identity == 0x802cd0e4u) ? 64u : 0u;
+            if (!group) for (const auto candidate : {0x802cdc60u, 0x802cdc80u, 0x802cdca0u,
+                    0x802cdcd0u, 0x802cdd40u, 0x802cdd80u, 0x802cde48u, 0x802cde78u,
+                    0x802cdef8u, 0x802cdf98u, 0x802cdfd8u})
+                if (identity == candidate) { group = 128u; break; }
             if (!group) return ISLE_GAME_INVALID_ARGUMENT;
             Admission admission{self, *source};
             if (!callback_proof(admission, group)) return ISLE_GAME_INVALID_STATE;
@@ -421,6 +506,65 @@ struct InteractionSourceAccess {
             return result;
         });
     }
+    static IsleGameResult eat_apple(IsleActorSource* source) noexcept {
+        return context(source, [&](auto& self) { return item_status(self.items_.eat(source->object)); });
+    }
+    static IsleGameResult send_command(IsleActorSource* source, std::int32_t command,
+        IsleGameObject* sender) noexcept {
+        return context(source, [&](auto& self) {
+            return self.services_.send_command(source->object, command, sender)
+                ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE;
+        });
+    }
+    static IsleGameResult send_to_link(IsleActorSource* source, std::uint8_t link,
+        std::int32_t command, IsleGameObject* sender) noexcept {
+        return context(source, [&](auto& self) {
+            return self.services_.send_command_to_link(link, command, sender)
+                ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE;
+        });
+    }
+    static IsleGameResult scene_counter(IsleActorSource* source, std::uint32_t identity,
+        std::int32_t** output) noexcept {
+        if (output) *output = nullptr;
+        if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+        return context(source, [&](auto& self) {
+            Admission admission{self, *source};
+            if (identity == 0x802cd060u) {
+                if (!callback_proof(admission, 64)) return ISLE_GAME_INVALID_STATE;
+                *output = &self.actors_.course().pidgey_counter;
+            } else {
+                if (!callback_proof(admission, 32)) return ISLE_GAME_INVALID_STATE;
+                switch (identity) {
+                case 0x802ccdfcu: *output = &self.actors_.course().lapras_counters[0]; break;
+                case 0x802cce00u: *output = &self.actors_.course().lapras_counters[1]; break;
+                case 0x802cce04u: *output = &self.actors_.course().lapras_counters[2]; break;
+                default: return ISLE_GAME_INVALID_ARGUMENT;
+                }
+            }
+            return ISLE_GAME_OK;
+        });
+    }
+    static IsleGameResult pikachu_temporary(IsleActorSource* source, IsleGameVec3* output) noexcept {
+        if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+        return context(source, [&](auto& self) {
+            Admission admission{self, *source};
+            if (!callback_proof(admission, 128)) return ISLE_GAME_INVALID_STATE;
+            const auto& value = self.resources_.scene_initial_scalars().pikachu_temporary;
+            *output = {value.x, value.y, value.z};
+            return ISLE_GAME_OK;
+        });
+    }
+    static IsleGameResult weighted(IsleActorSource* source, std::uint32_t identity,
+        const IsleActorRandomState** output) noexcept {
+        if (output) *output = nullptr;
+        if (!output || identity != 0x802cde30u) return ISLE_GAME_INVALID_ARGUMENT;
+        return context(source, [&](auto& self) {
+            Admission admission{self, *source};
+            if (!callback_proof(admission, 128)) return ISLE_GAME_INVALID_STATE;
+            *output = self.bindings_.weighted_states(identity).rows.data();
+            return ISLE_GAME_OK;
+        });
+    }
     static IsleGameResult flute(IsleActorSource* source, std::int32_t* output) noexcept {
         if (!output) return ISLE_GAME_INVALID_ARGUMENT;
         return context(source, [&](auto& self) {
@@ -482,6 +626,21 @@ struct InteractionSourceAccess {
             return ISLE_GAME_OK;
         });
     }
+    static IsleGameResult level_progress(IsleActorSource* source, std::int32_t* block_count, float* block_part) noexcept {
+        if (!block_count || !block_part) return ISLE_GAME_INVALID_ARGUMENT;
+        return context(source, [&](auto& self) {
+            const auto& movement = self.actors_.player_source().movement;
+            for (const auto& block : self.world_.blocks()) {
+                if (&block != movement.block) continue;
+                if (block.index > std::size_t(std::numeric_limits<std::int32_t>::max()))
+                    return ISLE_GAME_INVALID_STATE;
+                *block_count = static_cast<std::int32_t>(block.index);
+                *block_part = movement.move_time;
+                return ISLE_GAME_OK;
+            }
+            return ISLE_GAME_INVALID_STATE;
+        });
+    }
 };
 
 bool InteractionServices::admits_initial_species(const beach::ActorInitialization& initialization,
@@ -492,7 +651,11 @@ bool InteractionServices::admits_initial_species(const beach::ActorInitializatio
         bindings_.require_live();
         const bool butterfree = &initialization == butterfree_ && butterfree_assets_;
         const bool doduo = &initialization == doduo_ && doduo_assets_;
-        if (!butterfree && !doduo) return false;
+        const bool lapras = &initialization == lapras_ && lapras_assets_;
+        const bool pidgey = &initialization == pidgey_ && pidgey_assets_;
+        const bool pikachu = &initialization == pikachu_ && pikachu_assets_;
+        const bool sign = &initialization == sign_ && sign_assets_;
+        if (!butterfree && !doduo && !lapras && !pidgey && !pikachu && !sign) return false;
         bool current = false;
         for (const auto& block : world_.blocks())
             if (&block == world_.current() && block.resource) { current = true; break; }
@@ -514,29 +677,33 @@ bool InteractionServices::admits_initial_species(const beach::ActorInitializatio
             active != &player) return false;
         // Include initial/path callbacks even though no interaction row points
         // to them. Graph-only admission would miss their executable closure.
-        const auto bound = [&](std::uint32_t identity, IsleGameSourceCallback function) {
-            return bindings_.callback(identity) == function;
-        };
-        unsigned group = butterfree ? 8u : 16u;
-        if (butterfree) {
-            if (!bound(0x802c7b10u, func_beach_802C7B10) ||
-                !bound(0x802c7bb8u, func_beach_802C7BB8) ||
-                !bound(0x802c7c7cu, func_beach_802C7C7C) ||
-                !bound(0x802c7cf0u, func_beach_802C7CF0) ||
-                !bound(0x802c7da0u, func_beach_802C7DA0) ||
-                !bound(0x802c7decu, func_beach_802C7DEC)) return false;
-            return bindings_.admits_native_graph(bindings_.graph(0x802ccd60u),
-                initial_species_callback, &group);
+        unsigned group = butterfree ? 8u : doduo ? 16u : lapras ? 32u : pidgey ? 64u : pikachu ? 128u : 256u;
+        // The registry includes initial/path/aux callbacks, all branch callbacks,
+        // and every graph/weighted dependency, not merely today's winning row.
+        for (const auto& binding : beach::initial_species_callbacks())
+            if (initial_species_group(binding.function) == group &&
+                bindings_.callback(binding.identity) != binding.function) return false;
+        for (const auto identity : beach::initial_species_graphs()) {
+            const bool family_graph = group == 8 ? identity == 0x802ccd60u :
+                group == 16 ? (identity == 0x802ccf14u || identity == 0x802ccf44u) :
+                group == 32 ? identity == 0x802cce1cu :
+                group == 64 ? (identity == 0x802cd010u || identity == 0x802cd040u ||
+                    identity == 0x802cd064u || identity == 0x802cd0b4u || identity == 0x802cd0e4u) :
+                group == 128 && (identity == 0x802cdc60u || identity == 0x802cdc80u || identity == 0x802cdca0u ||
+                    identity == 0x802cdcd0u || identity == 0x802cdd40u || identity == 0x802cdd80u ||
+                    identity == 0x802cde48u || identity == 0x802cde78u || identity == 0x802cdef8u ||
+                    identity == 0x802cdf98u || identity == 0x802cdfd8u);
+            if (family_graph && !bindings_.admits_native_graph(bindings_.graph(identity),
+                    initial_species_callback, &group)) return false;
         }
-        if (!bound(0x802c82b0u, func_beach_802C82B0) ||
-            !bound(0x802c8354u, func_beach_802C8354) ||
-            !bound(0x802c83d0u, func_beach_802C83D0) ||
-            !bound(0x802c8438u, func_beach_802C8438) ||
-            !bound(0x802c84a4u, func_beach_802C84A4)) return false;
-        return bindings_.admits_native_graph(bindings_.graph(0x802ccf14u),
-                   initial_species_callback, &group) &&
-            bindings_.admits_native_graph(bindings_.graph(0x802ccf44u),
-                initial_species_callback, &group);
+        if (pikachu) {
+            const auto& weighted = bindings_.weighted_states(0x802cde30u);
+            if (weighted.rows.size() != 3 || weighted.total_weight != 2 ||
+                weighted.rows[0].weight != 1 || weighted.rows[0].func != func_beach_802CB36C ||
+                weighted.rows[1].weight != 1 || weighted.rows[1].func != func_beach_802CB3DC ||
+                weighted.rows[2].func != nullptr) return false;
+        }
+        return true;
     } catch (...) {
         return false;
     }
@@ -544,6 +711,24 @@ bool InteractionServices::admits_initial_species(const beach::ActorInitializatio
 } // namespace isle::actor
 
 extern "C" {
+IsleGameResult isle_actor_interaction_eat_apple(IsleActorSource* source) {
+    return isle::actor::InteractionSourceAccess::eat_apple(source);
+}
+IsleGameResult isle_actor_interaction_send_command(IsleActorSource* source, int32_t command, IsleGameObject* sender) {
+    return isle::actor::InteractionSourceAccess::send_command(source, command, sender);
+}
+IsleGameResult isle_actor_interaction_send_to_link(IsleActorSource* source, uint8_t link, int32_t command, IsleGameObject* sender) {
+    return isle::actor::InteractionSourceAccess::send_to_link(source, link, command, sender);
+}
+IsleGameResult isle_actor_interaction_scene_counter(IsleActorSource* source, uint32_t identity, int32_t** output) {
+    return isle::actor::InteractionSourceAccess::scene_counter(source, identity, output);
+}
+IsleGameResult isle_actor_interaction_pikachu_temporary(IsleActorSource* source, IsleGameVec3* output) {
+    return isle::actor::InteractionSourceAccess::pikachu_temporary(source, output);
+}
+IsleGameResult isle_actor_interaction_weighted(IsleActorSource* source, uint32_t identity, const IsleActorRandomState** output) {
+    return isle::actor::InteractionSourceAccess::weighted(source, identity, output);
+}
 IsleGameResult isle_actor_owner_graph(IsleActorSource* source, uint32_t identity,
     const IsleActorInteractionGraph** output) {
     return isle::actor::InteractionSourceAccess::graph(source, identity, output);
@@ -598,5 +783,8 @@ IsleGameResult isle_actor_interaction_focus(IsleActorSource* source, uint32_t* t
 }
 IsleGameResult isle_actor_interaction_direction(IsleActorSource* source, int32_t* output) {
     return isle::actor::InteractionSourceAccess::direction(source, output);
+}
+IsleGameResult isle_actor_interaction_level_progress(IsleActorSource* source, int32_t* block_count, float* block_part) {
+    return isle::actor::InteractionSourceAccess::level_progress(source, block_count, block_part);
 }
 }

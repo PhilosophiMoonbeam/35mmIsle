@@ -37,6 +37,13 @@ IsleGameResult isle_actor_interaction_neighbors(IsleActorSource*, IsleGameVec3*,
 IsleGameResult isle_actor_interaction_player(IsleActorSource*, IsleGameObject**);
 IsleGameResult isle_actor_interaction_focus(IsleActorSource*, uint32_t* timer, IsleGameObject** current);
 IsleGameResult isle_actor_interaction_direction(IsleActorSource*, int32_t*);
+IsleGameResult isle_actor_interaction_level_progress(IsleActorSource*, int32_t* block_count, float* block_part);
+IsleGameResult isle_actor_interaction_eat_apple(IsleActorSource*);
+IsleGameResult isle_actor_interaction_send_command(IsleActorSource*, int32_t, IsleGameObject*);
+IsleGameResult isle_actor_interaction_send_to_link(IsleActorSource*, uint8_t, int32_t, IsleGameObject*);
+IsleGameResult isle_actor_interaction_scene_counter(IsleActorSource*, uint32_t, int32_t**);
+IsleGameResult isle_actor_interaction_pikachu_temporary(IsleActorSource*, IsleGameVec3*);
+IsleGameResult isle_actor_interaction_weighted(IsleActorSource*, uint32_t, const IsleActorRandomState**);
 
 #ifdef __cplusplus
 }

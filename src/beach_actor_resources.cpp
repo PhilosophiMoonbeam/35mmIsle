@@ -145,6 +145,21 @@ struct ActorResourceBuilder {
     rom::GuestView at(std::uint32_t address, std::size_t bytes, std::size_t alignment = 4) const {
         return reader.view(address,bytes,alignment);
     }
+    void scene_initial_scalars() {
+        // Own GAME df8815e75f3d79618466e01e0827c6165b93d11c:
+        // beach.h:102-104,122; 55FB80.c:89-204; 560620.c:9-232;
+        // 563000.c:67-90. Initialized C definitions need not exist at this pin:
+        // the admitted US ROM and existing initialized-record mapping supply
+        // the actual values, never mutable standalone_data.c or assumed zeros.
+        auto& scalars=out.scene_initial_scalars_;
+        scalars.lapras_wire=at(0x802ccdfc,12); // ROM 0x564e6c..0x564e77
+        scalars.pidgey_wire=at(0x802cd060,4); // ROM 0x5650d0..0x5650d3
+        scalars.pikachu_wire=at(0x802ce018,12); // ROM 0x566088..0x566093
+        for (std::size_t i=0; i<scalars.lapras_counters.size(); ++i)
+            scalars.lapras_counters[i]=std::bit_cast<std::int32_t>(scalars.lapras_wire.u32(i*4));
+        scalars.pidgey_counter=std::bit_cast<std::int32_t>(scalars.pidgey_wire.u32(0));
+        scalars.pikachu_temporary=vector3(scalars.pikachu_wire,0);
+    }
     void model(const ActorFact& fact) {
         ActorInitialization initialization{};
         initialization.wire=at(fact.initialization,52); initialization.actor_id=fact.id;
@@ -258,6 +273,7 @@ ActorResources::ActorResources(const rom::Snapshot& snapshot, FogProfile fog)
     headers_.reserve(79); initializations_.reserve(17); definitions_.reserve(22); visibility_.reserve(17);
     const model_assets::Reader reader(snapshot,mappings);
     ActorResourceBuilder builder{*this,reader,fog};
+    builder.scene_initial_scalars();
     for (const auto& fact:actor_facts) builder.model(fact);
     for (std::size_t i=0; i<actor_facts.size(); ++i) {
         const auto& fact=actor_facts[i];
@@ -285,6 +301,9 @@ std::span<const menu::Animation> ActorResources::animations() const { require_li
 std::span<const ActorAnimationHeader> ActorResources::headers() const { require_live(); return headers_; }
 std::span<const ActorInitialization> ActorResources::initializations() const { require_live(); return initializations_; }
 std::span<const ActorDefinition> ActorResources::definitions() const { require_live(); return definitions_; }
+const ActorSceneInitialScalars& ActorResources::scene_initial_scalars() const {
+    require_live(); return scene_initial_scalars_;
+}
 std::span<const std::uint8_t> ActorResources::visibility_domains(std::size_t model) const {
     require_live(); if (model>=visibility_.size()) throw std::out_of_range("Actor visibility model index"); return visibility_[model];
 }

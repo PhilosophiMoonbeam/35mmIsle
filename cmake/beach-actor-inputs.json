@@ -318,6 +318,40 @@
       "bytes": 144
     }
   ],
+  "scene_initial_scalars": {
+    "api": "const ActorSceneInitialScalars& ActorResources::scene_initial_scalars() const",
+    "source_revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+    "authority": "Pinned own-GAME declarations and uses establish identities and types; actual initialized values are decoded from the admitted original big-endian US Snapshot through the existing model_assets::Reader initialized-record mapping. C definitions may be absent at this pin. Mutable standalone_data.c, guessed zero constants, guest execution and SDK layouts are not authority.",
+    "mapping": {"guest_begin":"0x802cbe10","rom_begin":"0x563e80","bytes":"0x22e0"},
+    "lapras": {
+      "source": "src/beach/55FB80.c:89-204",
+      "declarations": "src/beach/beach.h:102-104",
+      "type": "three signed32 counters in source address order",
+      "symbols": ["D_beach_802CCDFC","D_beach_802CCE00","D_beach_802CCE04"],
+      "guests": ["0x802ccdfc","0x802cce00","0x802cce04"],
+      "rom_offsets": ["0x564e6c","0x564e70","0x564e74"],
+      "receipt_bytes": 12
+    },
+    "pidgey": {
+      "source": "src/beach/560620.c:9-232",
+      "declaration": "src/beach/beach.h:122",
+      "type": "signed32 counter",
+      "symbol": "D_beach_802CD060",
+      "guest": "0x802cd060",
+      "rom_offset": "0x5650d0",
+      "receipt_bytes": 4
+    },
+    "pikachu": {
+      "source": "src/beach/563000.c:67-90",
+      "type": "Vec3f copied into func_beach_802CB194 initial temporary before interpolation",
+      "symbol": "D_beach_802CE018",
+      "guest": "0x802ce018",
+      "rom_offset": "0x566088",
+      "receipt_bytes": 12
+    },
+    "ownership": "Resource stores immutable decoded initial facts and exact borrowed GuestView receipts; getter checks Snapshot liveness. Scene owner copies initial counters into its own mutable scene storage. No mutable source globals and no addition to guest installation spans.",
+    "validation": "No new builds, tests, linters, formatters or runtime checks exercised for this receipt change."
+  },
   "initializations": [
     {
       "actor_id": 143,

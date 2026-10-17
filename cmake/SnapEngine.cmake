@@ -63,6 +63,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/actor_owner_source.h"
     "${PROJECT_SOURCE_DIR}/src/actor_source_owner_bridge.c"
     "${PROJECT_SOURCE_DIR}/src/actor_interaction_services.h"
+    "${PROJECT_SOURCE_DIR}/src/beach_initial_species_source.h"
     "${PROJECT_SOURCE_DIR}/src/source_command_scope.h"
     "${PROJECT_SOURCE_DIR}/src/item_source.h"
     "${PROJECT_SOURCE_DIR}/include/35mmisle/rng.h"

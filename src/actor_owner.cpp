@@ -198,6 +198,9 @@ struct Owner::Impl {
         : services(s),resources(r),world(w),sound(e),detector(d),capacities(c.begin(),c.end()),slots(c.size()),bindings(c.size()),
           fx(banks,s.rng,{this,read_target,write_target}),block_heads(w.blocks().size(),-1),player(p) {
         resources.require_live();
+        const auto& scalars=resources.scene_initial_scalars();
+        course.lapras_counters=scalars.lapras_counters;
+        course.pidgey_counter=scalars.pidgey_counter;
         IslePlayerSource* active=nullptr;
         if (p.game!=s.game || isle_player_source_context(s.game,&active)!=ISLE_GAME_OK || active!=&p)
             throw std::invalid_argument("actor owner requires active same-game canonical Player Source");
@@ -521,7 +524,11 @@ SpawnResult Owner::spawn(const SpawnRequest& request) noexcept {
     const bool magikarp=definition.factory_identity==0x802cac48u && definition.actor_id==129;
     const bool butterfree=definition.factory_identity==0x802c7e38u && definition.actor_id==12;
     const bool doduo=definition.factory_identity==0x802c8570u && definition.actor_id==84;
-    if (!common && !magikarp && !butterfree && !doduo)
+    const bool lapras=definition.factory_identity==0x802c8274u && definition.actor_id==131;
+    const bool pidgey=definition.factory_identity==0x802c8d3cu && definition.actor_id==16;
+    const bool pikachu=definition.factory_identity==0x802cbca8u && definition.actor_id==25;
+    const bool sign=definition.factory_identity==0x802ca418u && definition.actor_id==1004;
+    if (!common && !magikarp && !butterfree && !doduo && !lapras && !pidgey && !pikachu && !sign)
         return {{OwnerError::admission,"configured factory identity is not natively admitted"},{},nullptr};
     SpawnResult result{{OwnerError::admission,"source factory did not publish a result"},{},nullptr};
     IsleActorFactoryBlock block{this,request.block,&result},reference{this,request.reference,&result};
@@ -532,6 +539,14 @@ SpawnResult Owner::spawn(const SpawnRequest& request) noexcept {
         func_beach_802C7E38(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
     else if (doduo)
         func_beach_802C8570(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    else if (lapras)
+        func_beach_802C8274(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    else if (pidgey)
+        func_beach_802C8D3C(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    else if (pikachu)
+        func_beach_802CBCA8(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    else if (sign)
+        func_beach_802CA418(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
     else
         func_beach_802CAC48(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
     return result;
@@ -655,20 +670,33 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     const bool doduo=definition.actor_id==84 && definition.factory_identity==0x802c8570u &&
         initialization.wire.guest_address==0x802ccf78u && initialization.render_callback_identity==0x803594dcu &&
         initialization.setup.wire.guest_address==0x802ccf64u && initialization.setup.initial_state_identity==0x802c82b0u;
-    if ((!common && !magikarp && !butterfree && !doduo) || initialization.setup.transition_graph_identity!=0 ||
+    const bool lapras=definition.actor_id==131 && definition.factory_identity==0x802c8274u &&
+        initialization.wire.guest_address==0x802cce50u && initialization.render_callback_identity==0x8035942cu &&
+        initialization.setup.wire.guest_address==0x802cce3cu && initialization.setup.initial_state_identity==0x802c7e70u;
+    const bool pidgey=definition.actor_id==16 && definition.factory_identity==0x802c8d3cu &&
+        initialization.wire.guest_address==0x802cd118u && initialization.render_callback_identity==0x8035942cu &&
+        initialization.setup.wire.guest_address==0x802cd104u && initialization.setup.initial_state_identity==0x802c85b0u;
+    const bool pikachu=definition.actor_id==25 && definition.factory_identity==0x802cbca8u &&
+        initialization.wire.guest_address==0x802ce038u && initialization.render_callback_identity==0x80359484u &&
+        initialization.setup.wire.guest_address==0x802ce024u && initialization.setup.initial_state_identity==0x802cacd4u;
+    const bool sign=definition.actor_id==1004 && definition.factory_identity==0x802ca418u &&
+        initialization.wire.guest_address==0x802cd948u && initialization.render_callback_identity==0x80359534u &&
+        initialization.setup.wire.guest_address==0x802cd934u && initialization.setup.initial_state_identity==0x802ca300u;
+    if ((!common && !magikarp && !butterfree && !doduo && !lapras && !pidgey && !pikachu && !sign) || initialization.setup.transition_graph_identity!=0 ||
         initialization.setup.unknown_0c_identity!=0 || initialization.setup.process_kind!=0 ||
         !initialization.animations_enabled)
         return reject(OwnerError::admission,"configured actor factory/init/render/setup/state/graph tuple is not natively admitted");
     if (initialization.model>=self.resources.models().size() || initialization.setup.initial_header>=self.resources.headers().size())
         return reject(OwnerError::admission,"actor native tree/header missing");
-    const auto header_identity=common?0x80388310u:magikarp?0x802cda8cu:butterfree?0x802ccd24u:0x802cceb0u;
+    const auto header_identity=common?0x80388310u:magikarp?0x802cda8cu:butterfree?0x802ccd24u:
+        doduo?0x802cceb0u:lapras?0x802cce08u:pidgey?0x802ccfd4u:pikachu?0x802cdb5cu:0x802cd920u;
     if (self.resources.headers()[initialization.setup.initial_header].wire.guest_address!=header_identity ||
         self.resources.headers()[initialization.setup.initial_header].initialization!=definition.initialization)
         return reject(OwnerError::admission,"actor source initial header is not the configured tuple");
     if (request.spawn->id!=static_cast<std::int32_t>(definition.actor_id)) return reject(OwnerError::admission,"actor source spawn ID does not match definition");
     if (request.spawn->path!=world::no_index && request.spawn->path>=self.world.resources().paths.size())
         return reject(OwnerError::admission,"actor source spawn path outside World");
-    if (butterfree || doduo) {
+    if (butterfree || doduo || lapras || pidgey || pikachu || sign) {
         const void* path=request.spawn->path==world::no_index?nullptr:&self.world.resources().paths[request.spawn->path];
         if (!self.interactions || !self.interactions->admits_initial_species(initialization,path))
             return reject(OwnerError::admission,"actor initial species requires complete native callback/graph/resource/service closure");
@@ -755,7 +783,9 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     const auto animated=self.animation(*slot,&self.resources.headers()[initialization.setup.initial_header],0,true);
     if (!animated) { rollback(); return {animated,{},nullptr}; }
     const IsleGameSourceCallback initial_state=common?func_8035DF20_4FE330:magikarp?func_beach_802CAB50:
-        butterfree?func_beach_802C7B10:func_beach_802C82B0;
+        butterfree?func_beach_802C7B10:doduo?func_beach_802C82B0:
+        lapras?func_beach_802C7E70:pidgey?func_beach_802C85B0:
+        pikachu?func_beach_802CACD4:func_beach_802CA300;
     if (isle_game_add_source_process(self.services.game,slot->object,isle_actor_source_distance_process,ISLE_GAME_SYNCHRONOUS,8,&process)!=ISLE_GAME_OK ||
         isle_game_add_source_process(self.services.game,slot->object,initial_state,ISLE_GAME_STACKFUL,7,&source.stateProc)!=ISLE_GAME_OK) {
         rollback(); return reject(OwnerError::native,"actor distance/initial state process creation");
@@ -945,7 +975,8 @@ IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id,uint16_t id,
     const IsleActorFactoryInitialization* initialization) {
     const bool magikarp=id==129 && initialization && initialization->identity==0x802cdaecu;
     const bool doduo=id==84 && initialization && initialization->identity==0x802ccf78u;
-    if (!block || !reference || !spawn || (!magikarp && !doduo) ||
+    const bool pikachu=id==25 && initialization && initialization->identity==0x802ce038u;
+    if (!block || !reference || !spawn || (!magikarp && !doduo && !pikachu) ||
         !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
         return nullptr;
     auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
@@ -958,8 +989,12 @@ IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id,uint16_t id,
 IsleGameObject* isle_actor_owner_spawn(int32_t object_id,uint16_t id,
     IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
     const IsleActorFactoryInitialization* initialization) {
-    if (!block || !reference || !spawn || !initialization || initialization->identity!=0x802ccda4u ||
-        id!=12 || !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
+    const bool butterfree=id==12 && initialization && initialization->identity==0x802ccda4u;
+    const bool lapras=id==131 && initialization && initialization->identity==0x802cce50u;
+    const bool pidgey=id==16 && initialization && initialization->identity==0x802cd118u;
+    const bool sign=id==1004 && initialization && initialization->identity==0x802cd948u;
+    if (!block || !reference || !spawn || (!butterfree && !lapras && !pidgey && !sign) ||
+        !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
         return nullptr;
     auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
     auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);

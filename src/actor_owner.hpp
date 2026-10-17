@@ -6,6 +6,8 @@
 #include "menu_effects.hpp"
 #include "world_runtime.hpp"
 #include "player_source.h"
+#include <array>
+#include <cstdint>
 
 namespace isle::actor {
 class InteractionServices;
@@ -36,6 +38,11 @@ struct CourseState {
     // Actual Beach D_beach_802CC014. Scene chooser publishes true after its
     // successful spawn; the genuine Magikarp state clears it after animation.
     bool magikarp_active = false;
+    // Exact initialized Beach CDFC/CE00/CE04 and CD060 source data. Owner
+    // construction hydrates the admitted ROM values once per scene, never once
+    // per interaction-context binding, actor spawn or block retirement.
+    std::array<std::int32_t, 3> lapras_counters;
+    std::int32_t pidgey_counter;
 };
 struct Membership {
     bool logical = false, registered = false, retiring = false, joined = false;

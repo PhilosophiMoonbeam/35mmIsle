@@ -495,6 +495,21 @@ if(ISLE_BUILD_GAME_ENGINE)
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
             "${PROJECT_SOURCE_DIR}/cmake/player-cart-inputs.json")
 
+        add_library(isle-player-cart STATIC
+            src/player_cart.cpp src/player_cart.hpp
+            src/player_cart_source.c src/player_cart_source.h
+            src/player_cart_producer.cpp src/player_cart_producer.hpp
+            src/player_cart_render_binding.hpp)
+        target_include_directories(isle-player-cart PRIVATE "${_isle_player_cart_private}")
+        target_link_libraries(isle-player-cart PUBLIC
+            isle-scene isle-player-cart-resources isle-menu-model-producer)
+        isle_target_options(isle-player-cart)
+        target_compile_options(isle-player-cart PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
         add_library(isle-player-bump STATIC
             src/player_bump.cpp src/player_bump.hpp src/player_bump_source.c src/player_bump_source.h
             "${_isle_player_bump_generated}")
@@ -1091,6 +1106,20 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
         isle_target_options(player-camera-animation-rom-smoke)
         target_compile_options(player-camera-animation-rom-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-player-cart AND TARGET isle-player-camera-animation AND
+            TARGET isle-beach-world-resources)
+        add_executable(player-cart-owner-rsp-smoke EXCLUDE_FROM_ALL
+            tests/player_cart_owner_rsp_smoke.cpp tests/player_cart_owner_rsp_fixture.c)
+        target_link_libraries(player-cart-owner-rsp-smoke PRIVATE
+            isle-player-cart isle-player-camera-animation isle-beach-world-resources
+            isle-scene-graphics isle-photo-lighting isle-rsp)
+        isle_target_options(player-cart-owner-rsp-smoke)
+        target_compile_options(player-cart-owner-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
     add_executable(scene-layout-rom-smoke EXCLUDE_FROM_ALL tests/scene_layout_rom_smoke.cpp)

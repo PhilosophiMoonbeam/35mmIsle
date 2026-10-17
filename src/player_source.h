@@ -12,6 +12,7 @@ extern "C" {
 typedef struct IslePlayerUiSource IslePlayerUiSource;
 typedef struct IslePlayerPhotoSource IslePlayerPhotoSource;
 typedef struct IslePlayerBumpSource IslePlayerBumpSource;
+typedef struct IslePlayerCartSource IslePlayerCartSource;
 
 typedef struct IsleScreenTransitionSource IsleScreenTransitionSource;
 /* Published once before OM. Original idle/pause C may then modify these same
@@ -54,6 +55,7 @@ typedef struct IslePlayerSource {
     IslePlayerPhotoSource* photo;
     IsleScreenTransitionSource* screen;
     IslePlayerBumpSource* bump;
+    IslePlayerCartSource* cart;
     IsleGameVec3 cam_target;
 
     int32_t gDirectionIndex;

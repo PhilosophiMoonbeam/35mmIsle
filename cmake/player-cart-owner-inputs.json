@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "player-cart-owner-complete-v1",
+  "source_path": "src/app_level/render_player.c",
+  "source_git_blob": "a87c007297022d577f629d5850a8ec76ac69a845",
+  "source_sha256": "eab269e561e60f85d7bf3c4f6f76c468e89aa6e8666c4a3f2351d9c97b23ffe8",
+  "generator_sha256": "4ecf7c9d735fc366459f8a727d69a1db1e101ba48e20e9849fc46cfb5e5e7750",
+  "output_sha256": "73403391c95445a704ba6fd6a157e3b323ec82c0111f95b43ab9bfb5c6fc1819",
+  "header_sha256": "b8b448190d40fd19a2c80b5bf8ac089035c06b39d7e5fd4a75d68a2ed540ddad",
+  "native_support": {
+    "src/player_cart_source.h": {
+      "sha256": "a55a8ec2d16a78833aa7deff9c85fe6729bde1fbcb9c386f4dbdf71e419264a5"
+    },
+    "src/player_cart_source.c": {
+      "sha256": "59cde2b1700b1830a6893b414ab80b960c48402da63d40fdfab9086e92191263"
+    },
+    "src/player_source.h": {
+      "sha256": "3ca0aa3efb07533944d02dde7985120bb4f104dad6b921a8d16a964fb4968113"
+    },
+    "src/player_cart.hpp": {
+      "sha256": "11c482b6336ba347a1460f7171100ac575f8cd607d6dad85041eedd84d960337"
+    },
+    "src/player_cart.cpp": {
+      "sha256": "6f408e69aa27a022dfc203b723af91db5dc903fa90b4d32dcd5877f8322a4eaa"
+    },
+    "src/player_cart_producer.hpp": {
+      "sha256": "e220ec28994d4e78564576d06538f1009e03a2c7bf5bb85bf96d5bf931f38cc3"
+    },
+    "src/player_cart_producer.cpp": {
+      "sha256": "0d1b118e8e71e1f696d46de16776aae42c30e912c3c2c5c1fe460c0feec9e5ce"
+    },
+    "src/player_cart_render_binding.hpp": {
+      "sha256": "5dac893862a15ff3c468287281016f014aa083e7cd7e41853574a47cd79ce451"
+    },
+    "cmake/SnapPlayerServices.cmake": {
+      "sha256": "2c91ca17af03c424593aa109ff0e5a604b09398012f74d565673e5be0854c29c"
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/app_level/render_player.c",
+      "symbol": "PlayerModel_Init",
+      "first": 6,
+      "last": 18,
+      "source_sha256": "bcbca9ba70848464b0f86d208ac346156db07f0147a09ea8a158834699912f76",
+      "source_declaration": "GObj* PlayerModel_Init(void)",
+      "native_sha256": "0e57ac94a9b3286cfd74116f27df0778f48064eb28af75a58f73e20aa5cd12b9",
+      "native_declaration": "IsleGameObject* isle_player_cart_PlayerModel_Init(IslePlayerCartSource* source)",
+      "changes": [
+        {
+          "find": "GObj* PlayerModel_Init(void)",
+          "replace": "IsleGameObject* isle_player_cart_PlayerModel_Init(IslePlayerCartSource* source)",
+          "occurrences": 1
+        },
+        {
+          "find": "    GObj* obj;",
+          "replace": "    IsleGameObject* obj;",
+          "occurrences": 1
+        },
+        {
+          "find": "omAddGObj(OBJID_35, ohUpdateDefault, LINK_PLAYER, 0x80000000)",
+          "replace": "cart_try_object(source)",
+          "occurrences": 1
+        },
+        {
+          "find": "omLinkGObjDL(obj, renderModelTypeJFogged, DL_LINK_3, 0x80000000, -1)",
+          "replace": "cart_link_render(source, obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "anim_func_80010230(obj, D_803AAA30_54AE40, D_8039D938_53DD48, 0, 28, 0, 0)",
+          "replace": "cart_attach_model(source, obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(obj, animUpdateModelTreeAnimation, 1, 1)",
+          "replace": "cart_publish_animation_process(source, obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "    cartGObj = obj;",
+          "replace": "    cart_finish_init(source, obj);\n    source->cartGObj = obj;",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_level/render_player.c",
+      "symbol": "PlayerModel_SetAnimation",
+      "first": 20,
+      "last": 33,
+      "source_sha256": "23bd07e4084a204a26c3047dcdebbbd9e9766f90f176f2dfa95d32eab3437e18",
+      "source_declaration": "void PlayerModel_SetAnimation(AnimCmd** modelAnim, AnimCmd*** matAnim, f32 startTime, f32 speed)",
+      "native_sha256": "cc992a895e98d07f9da765e7b2560834786b80dbab541881a02c7756a86be564",
+      "native_declaration": "void isle_player_cart_PlayerModel_SetAnimation(IslePlayerCartSource* source, const IslePlayerCartModelAnimation* modelAnim, const IslePlayerCartMaterialAnimation* matAnim, float startTime, float speed)",
+      "changes": [
+        {
+          "find": "void PlayerModel_SetAnimation(AnimCmd** modelAnim, AnimCmd*** matAnim, f32 startTime, f32 speed)",
+          "replace": "void isle_player_cart_PlayerModel_SetAnimation(IslePlayerCartSource* source, const IslePlayerCartModelAnimation* modelAnim, const IslePlayerCartMaterialAnimation* matAnim, float startTime, float speed)",
+          "occurrences": 1
+        },
+        {
+          "find": "cartGObj",
+          "replace": "source->cartGObj",
+          "occurrences": 5
+        },
+        {
+          "find": "    if (modelAnim != NULL) {",
+          "replace": "    cart_preflight_requested_animations(source, modelAnim, matAnim, startTime, 1, speed);\n    if (modelAnim != NULL) {",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetModelTreeAnimation(",
+          "replace": "cart_bind_model(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetModelAnimationSpeed(",
+          "replace": "cart_set_model_speed(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetModelTreeTextureAnimation(",
+          "replace": "cart_bind_material(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetTextureAnimationSpeed(",
+          "replace": "cart_set_material_speed(source, ",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_level/render_player.c",
+      "symbol": "PlayerModel_ChangeAnimation",
+      "first": 35,
+      "last": 46,
+      "source_sha256": "5c25d0bbe6750c9e0f180b1fdc12ce598ed2a44180d9ea0a6150f26cb5123a89",
+      "source_declaration": "void PlayerModel_ChangeAnimation(AnimCmd** modelAnim, AnimCmd*** matAnim, f32 startTime)",
+      "native_sha256": "56ed7cacbb87e770dbe75502e68ed3b29b43d2d9c5a0b00b58a0292e306f4951",
+      "native_declaration": "void isle_player_cart_PlayerModel_ChangeAnimation(IslePlayerCartSource* source, const IslePlayerCartModelAnimation* modelAnim, const IslePlayerCartMaterialAnimation* matAnim, float startTime)",
+      "changes": [
+        {
+          "find": "void PlayerModel_ChangeAnimation(AnimCmd** modelAnim, AnimCmd*** matAnim, f32 startTime)",
+          "replace": "void isle_player_cart_PlayerModel_ChangeAnimation(IslePlayerCartSource* source, const IslePlayerCartModelAnimation* modelAnim, const IslePlayerCartMaterialAnimation* matAnim, float startTime)",
+          "occurrences": 1
+        },
+        {
+          "find": "cartGObj",
+          "replace": "source->cartGObj",
+          "occurrences": 3
+        },
+        {
+          "find": "    if (modelAnim != NULL) {",
+          "replace": "    cart_preflight_requested_animations(source, modelAnim, matAnim, startTime, 0, 0.0f);\n    if (modelAnim != NULL) {",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetModelTreeAnimation(",
+          "replace": "cart_bind_model(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetModelTreeTextureAnimation(",
+          "replace": "cart_bind_material(source, ",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_level/render_player.c",
+      "symbol": "PlayerModel_SetAnimationSpeed",
+      "first": 48,
+      "last": 55,
+      "source_sha256": "34ca971c70e513ceac834ca1b784c9f2202434671359c2a0e522687a3c6a4e15",
+      "source_declaration": "void PlayerModel_SetAnimationSpeed(f32 speed)",
+      "native_sha256": "dd80c1733d0b54e76de0ba9f2e43b40e0e6c2a59b42f6b8840643e01b2dac3ea",
+      "native_declaration": "void isle_player_cart_PlayerModel_SetAnimationSpeed(IslePlayerCartSource* source, float speed)",
+      "changes": [
+        {
+          "find": "void PlayerModel_SetAnimationSpeed(f32 speed)",
+          "replace": "void isle_player_cart_PlayerModel_SetAnimationSpeed(IslePlayerCartSource* source, float speed)",
+          "occurrences": 1
+        },
+        {
+          "find": "cartGObj",
+          "replace": "source->cartGObj",
+          "occurrences": 3
+        },
+        {
+          "find": "animSetModelAnimationSpeed(",
+          "replace": "cart_set_model_speed(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetTextureAnimationSpeed(",
+          "replace": "cart_set_material_speed(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "    cart_set_model_speed(source, source->cartGObj, speed);",
+          "replace": "    cart_preflight_speed(source, speed);\n    cart_set_model_speed(source, source->cartGObj, speed);",
+          "occurrences": 1
+        }
+      ]
+    }
+  ]
+}

@@ -325,8 +325,10 @@ remains exercised.
 
 The cart probe deliberately tests retained rebinds; actual Beach outro creates
 a fresh cart. Resource-clip completion is not the original intro's 290-iteration
-wait/skip/blend lifecycle. Complete cart ownership, Root106 execution, remaining
-species, full gameplay and private Windows11 runtime remain unqualified.
+wait/skip/blend lifecycle. At this immutable resource checkpoint, complete cart
+ownership, Root106 execution, remaining species, full gameplay and private
+Windows11 runtime remained unqualified. Later Cart Owner evidence is recorded
+separately below.
 Published `3e47f6d61e2a625b3ab654c77cead4f5fec1c428` passed
 [all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39021360675),
 including explicit compilation of all twenty consumers without a ROM and the
@@ -881,6 +883,83 @@ The actual Linux host smoke deliberately retained both visual leases while the o
 Private evidence manifest SHA-256 is `029b5bac02f6e3b8367be4d537e2341d6eab394598d442bd7eaa9180a6ad93b4`. The distinct transport uses [Mesa 26.0.8](https://docs.mesa3d.org/relnotes/26.0.8.html), upstream commit `60e95b787857afbc9a00b693b91c0d9c8923a430`, with a reviewed private six-file patch: disable optional llvmpipe udmabuf export, skip global DRM enumeration under explicit software selection and directly select surfaceless CPU swrast. GBM/GLX/WSI platforms are disabled; real LLVMpipe OpenGL and Lavapipe Vulkan remain. Thirty-four distribution packages were extracted privately without system installation. Actual SDL2 offscreen EGL produced all 4,096 specified RGBA8 pixels exactly. Whole-launcher/descendant traces of that execution and the failed/passing native SDL3/Vulkan runs recorded zero `/dev/dri`, `/dev/input`, `/dev/snd` or `/dev/udmabuf` attempts and zero access denials. The generic EGL force-software warning and successful-compute compilation stalls remain recorded; stdin `/dev/null` terminal-query failures are not a physical-device claim. Old denied captures remain failures, unchanged; no new Original collection is admitted by this transport proof.
 
 GCC Release, full-LUS GCC Debug and Clang ASan+UBSan each passed all twenty-two CPU tests; five actual Linux CLI helps also passed. [Commit `1618ed7`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/1618ed71dee53815edcdffbf0fa0c39af6043bb1) passed all ten hosted jobs in [run 38796577921](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38796577921). Its Windows Server 2022/MSVC 19.44.35229.0 x64 static-runtime build includes LUS, audio, RSP, canonical RDP and the native engine; all twenty-two CPU tests and five CLI helps passed with SDK 10.0.26100.0. This compiles/links the integrated feedback path but does not execute its ROM/graphics/audio path on Windows. The diagnostic is not a C GAME photo consumer or continuation wait, native scene boot, photo fidelity, physical timing/device/hearing proof, Windows 11 runtime or release admission. Genuine scoring still needs writable persistent canonical memory, real photo/world/model reconstruction, pointer/resource relocation, admitted depth/texture-copy commands and original wide/narrow continuation semantics.
+
+## Original Cart control and native rendering
+
+`isle-player-cart` compiles all four complete original `render_player.c`
+functions, source lines 6–18, 20–33, 35–46 and 48–55, from OwnGAME pin
+`df8815e75f3d79618466e01e0827c6165b93d11c`, blob
+`a87c007297022d577f629d5850a8ec76ac69a845`.
+Commit/blob/body/declaration/selection hashes, counted rewrites, generated
+include/header hashes and nine native support identities guard materialization.
+Parent independently replayed every complete transformed body and matched the
+actual compiled include. Original C controls guards, independent model/material
+ordering and final current-cart publication; there is no replacement Cart FSM.
+
+Each Init publishes a new object35, LINK9/priority `0x80000000`, actual default
+FIFO update, J-fogged DL3 metadata, 43 kind-28 nodes/eight materials and the real
+kind-1/priority-1 C animation process. Runtime, Services and native factory
+cohorts are prepared outside OM; actual C creation does not grow the arena.
+Fresh speed1 is observed through advancing native transforms and interpolated
+material output, not default getters. Outer NULL preserves the unrequested
+domain; consumed mixed streams and subsequent ChangeAnimation retain their
+independent speeds. Actual object flag2 advances tracks without pose writes;
+node controls remain separate. Per-object callbacks continue to identify A
+after a later Init makes B current.
+
+C callbacks run only after the C++ step returns. Callback failure, self-deletion
+plus failure and rejected Runtime reentry close the real event lease before
+the first checked failure propagates. Individual retirement does not clear
+`cartGObj`. Joined collection still waits for actual queued-source, caller,
+current-pointer, event and graphics/preparation/readback holds. The consumer
+retires a queued sender before the receiver's real default update, then proves
+physical-slot reuse only after the remaining holds close.
+
+The shared BorrowedKernel emits actual J-fogged source-root/native-pose lists.
+All active bindings validate before hidden/pass filtering; a corrupt hidden
+binding rejects without producer RAM publication. Real Services DL3 reordering
+changes actual triangle-packet order. Raw per-object fragments, including
+zero-length lanes, reproduce aggregate RSP packets, color and depth in both
+orders. Independent canonical RAM mappings exercise A→B→A residency. Two real
+producers sequentially reuse the same workspace, with a second admitted source
+camera sample; returning the unchanged first producer restores its camera and
+matrix payload under the actual renewed epoch. This latter witness does not
+separately establish overwritten-material restoration.
+
+Actual intro and fresh-outro cart geometry reaches canonical RSP/RDP using
+source camera initialization, admitted clip trajectories, World fog and
+lighting—not tuned camera, pose or scale inputs. Hidden, pass-filtered,
+reveal/residency, intro END control2, retained-rebind suppression and fresh-outro
+controls are exercised. Positive intro/outro surfaces were directly inspected.
+The added clear pass is an explicit component framebuffer control, not a change
+to original main-camera flags5 or evidence of the complete course renderer.
+
+Qualification command wall seconds, not gameplay performance:
+
+| Local profile | All 57 CPU tests | Complete Cart C/RSP/RDP consumer |
+|---|---:|---:|
+| GCC Debug / full LUS build | 3.585 | 7.313 |
+| GCC Release | 0.911 | 6.280 |
+| Clang ASan/UBSan | 11.789 | 12.203 |
+
+All 21 opt-in consumers compile in each profile. All 63 actual whole-component
+cases use the identical 487-file source set
+`577fae35a03af479a061977efdd7694bf2ab13fed42be291986eda41e523a719`
+(compact, key-sorted JSON path→SHA256). The accepted Cart Debug case is retained
+without replay/rescan; the other 62 use fresh scopes. Sole initial closures
+establish 3,549 terminal tasks, 3,486 created tasks and 3,612 absent tracer/task
+identities, stable traces, unchanged ROM, zero known physical attempts and zero
+permission errors. All 21 previous surfaces/63 images and all 71 Photo files
+per profile/213 files remain byte-identical to their preceding qualified
+snapshots; all four new Cart files per profile/twelve files agree across profiles.
+
+This admits the four-function Cart prerequisite, not the original Beach intro's
+290-wait/skip/inclusive camera restore or fresh-outro 1200-wait continuation,
+their FX/audio/Player-command services, whole Root106, remaining species, full
+gameplay, private Windows11 execution or original/device/hearing parity. The
+published Source sprite revision `4c009ee` separately passed
+[all ten hosted Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39025174041);
+its twenty-consumer compiler proof does not qualify these subsequent additions.
 
 ## Canonical Source sprite execution
 

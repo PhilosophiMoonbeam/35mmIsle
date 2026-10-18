@@ -502,6 +502,21 @@ if(ISLE_BUILD_GAME_ENGINE)
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_library(isle-rainbow-actor-source OBJECT
+            src/rainbow_actor_source.c src/rainbow_actor_source.h
+            src/rainbow_actor.cpp src/rainbow_actor.hpp "${_isle_rainbow_actor_generated}")
+        target_include_directories(isle-rainbow-actor-source PUBLIC "${PROJECT_SOURCE_DIR}/src")
+        target_link_libraries(isle-rainbow-actor-source PUBLIC isle-engine isle-scene)
+        isle_target_options(isle-rainbow-actor-source)
+        target_compile_options(isle-rainbow-actor-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        # Original C providers and returning native admission hooks share one
+        # actor archive, as the post-course Source/scene owners do below.
+        target_link_libraries(isle-actor-owner PUBLIC isle-rainbow-actor-source)
 
 
         add_library(isle-actor-photo-scene STATIC
@@ -1227,23 +1242,6 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
-    endif()
-    if(TARGET isle-actor-owner)
-        add_library(isle-rainbow-actor-source OBJECT
-            src/rainbow_actor_source.c src/rainbow_actor_source.h
-            src/rainbow_actor.cpp src/rainbow_actor.hpp "${_isle_rainbow_actor_generated}")
-        target_include_directories(isle-rainbow-actor-source PUBLIC "${PROJECT_SOURCE_DIR}/src")
-        target_link_libraries(isle-rainbow-actor-source PUBLIC isle-engine isle-scene)
-        isle_target_options(isle-rainbow-actor-source)
-        target_compile_options(isle-rainbow-actor-source PRIVATE
-            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
-            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
-            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
-            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
-            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
-        # Original C providers and returning native admission hooks share one
-        # actor archive, as the post-course Source/scene owners do below.
-        target_link_libraries(isle-actor-owner PUBLIC isle-rainbow-actor-source)
     endif()
     if(TARGET isle-player-root AND TARGET isle-player-cart)
         add_library(isle-rainbow-lifecycle-source STATIC

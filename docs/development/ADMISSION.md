@@ -2985,3 +2985,39 @@ This is exact Original MIPS compilation and numeric provenance, not MIPS
 execution, native gameplay, complete executable course catalogs or Windows
 qualification. It removes the numeric-authority prerequisite without guessing
 function addresses or using the dirty adjacent fork.
+
+### Clean-checkout hosted build boundaries — 17332ff
+
+Published commit `17332ff4821c1f37838900ed540549e3924b9516` is the first
+public cohort containing the actual native application. Hosted run
+`39124821957` passes Linux full-product compilation, application/interface
+consumer compilation, actual product help, Release-active CPU tests and bounded
+real renderer submission/teardown. Its standalone canonical-RDP job also passes.
+These are hosted Linux build/consumer receipts, not additional ROM gameplay or
+Windows qualification.
+
+The broader matrix reveals two distinct build defects. Windows basic and
+full-host configuration reject `include/35mmisle/continuation.h` at exact native
+support admission: the per-file attributes list omitted transitive hashed inputs,
+so checkout changed their line endings. Four GCC/Clang Debug/Release basic
+builds fail to link Rainbow callbacks because their real provider object target
+was incorrectly confined to the RDP configuration.
+
+Text checkout now has one canonical LF policy with Git's binary detection,
+replacing the obsolete path-by-path list; no input hash check is weakened.
+An actual private Git clone/read-tree/forced checkout with `core.autocrlf=true`
+passes all 615 support identities across 72 manifests and 260 unique files.
+The formerly failing header retains SHA-256
+`10fb58f5f6cebe32ea8662cb7a4f1bfc8e287d88b6355bdd6b30cba22e7f83c9`.
+This exercises real Git checkout behavior on Linux, not a Windows runner.
+
+The existing real Rainbow provider object target now belongs to the native
+ActorOwner scope, independent of optional RDP support. No callback stubs,
+conditional no-ops or fake supported-course results are introduced. The corrected
+actual hosted configuration (`linux-debug` with GAME engine and RSP enabled,
+RDP disabled) builds all targets and passes 57 CPU tests in 3.60 seconds; both
+actual ROM-checker and coprocessor CLI help paths execute successfully. The
+smaller unextended preset separately passes 26 tests but is not substituted for
+that affected configuration. The full LUS product/default and 31 opt-in consumer
+gate also passes, with 57 CPU tests in 4.07 seconds. Fresh hosted Windows/matrix
+qualification remains pending; the earlier failed run is not relabeled as passing.

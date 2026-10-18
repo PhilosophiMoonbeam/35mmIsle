@@ -149,7 +149,9 @@ std::size_t DataDecoder::path(std::uint32_t address) {
     const auto times=reader_.view(w.u32(16),result.segment_point_count*4);
     for (std::size_t i=0; i<result.segment_point_count; ++i) {
         const auto time=finite(times,i*4);
-        require(time>=0 && time<=1 && (i==0 || time>result.timestamps.back()),
+        // Source nonlinear paths retain stationary segments with repeated timestamps.
+        // Linear division is guarded when that interval is actually sampled.
+        require(time>=0 && time<=1 && (i==0 || time>=result.timestamps.back()),
                 "Invalid source path timestamp interval",address);
         result.timestamps.push_back(time);
     }

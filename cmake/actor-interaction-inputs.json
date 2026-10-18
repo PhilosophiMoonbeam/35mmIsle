@@ -87,7 +87,7 @@
       "sha256": "f1963c39b36a1a60f5575d3ebc740e3969d8e37c2a0211660b8810194ff158ee"
     },
     "tests/world_runtime_tests.cpp": {
-      "sha256": "a8fbaca5a41dbd3f03ff2ec0dc7c99bfb7f917156570dd7e9ef687ea5a73bc82"
+      "sha256": "ff112550e9aadfaf0017822e7f072e805c4c61220ff6469166b30866ed14fb10"
     },
     "tests/world_collision_tests.cpp": {
       "sha256": "810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"

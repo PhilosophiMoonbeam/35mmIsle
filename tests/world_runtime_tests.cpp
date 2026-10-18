@@ -940,6 +940,52 @@ void required_consumers_and_sky_follow() {
         "sky follow is not an actual native priority0 process");
     require(world.retire(),"sky World retirement failed"); ok(isle_game_delete_object(n.game,object));
 }
+void repeated_path_timestamps() {
+    m::AnimationPath path;
+    path.kind=3; path.tension=0; path.segment_point_count=3; path.duration=20;
+    path.timestamps={0,0,1};
+    path.points={{-10,0,0},{10,0,0},{10,0,0},{30,0,0},{50,0,0}};
+    path.speed_polynomials={0,0,0,0,0,0,0,0,0,400};
+    const auto sample=[&](const m::AnimationPath& input,float parameter,float expected) {
+        constexpr std::uint32_t guest=0x80300000;
+        std::array<std::byte,20> bytes{};
+        const auto word=[&](std::size_t offset,std::uint32_t value) {
+            for(unsigned i=0;i<4;++i)bytes[offset+i]=std::byte((value>>(24-8*i))&255);
+        };
+        word(0,(13u<<25)|(8u<<15));word(4,0x80310000);
+        word(8,(11u<<25)|(8u<<15));word(12,std::bit_cast<std::uint32_t>(parameter));
+        const auto view=[&](std::size_t offset,std::size_t size) {
+            return isle::rom::GuestView{guest+static_cast<std::uint32_t>(offset),offset,std::span(bytes).subspan(offset,size)};
+        };
+        m::Animation program;program.wire=view(0,20);program.kind=m::AnimationKind::model;
+        program.commands={{view(0,8),13,8,0,0},{view(8,8),11,8,0},{view(16,4),0,0,0}};
+        m::Model model;m::Node node;node.scale={1,1,1};node.animation=0;model.nodes.push_back(node);
+        const std::array capacities{m::animation::slot_capacity(model)};
+        auto made=m::animation::Runtime::create({std::span(&model,1),{},std::span(&program,1),m::no_index,std::span(&input,1)},capacities,{},{});
+        require(bool(made),"repeated-timestamp model program admission failed");
+        const auto acquired=made.runtime->acquire(0,0,true);
+        require(bool(acquired)&&bool(made.runtime->step_model(acquired.handle)),"repeated-timestamp model update failed");
+        require(std::fabs(made.runtime->model(acquired.handle).nodes[0].transform.position.x-expected)<0.0001f,
+            "repeated-timestamp path changed Source segment selection or midpoint mapping");
+    };
+    sample(path,0,10);
+    sample(path,0.25f,13.125f);
+    sample(path,1,30);
+    require(m::animation::path_velocity(path,0).x==0,"stationary spline acquired nonzero velocity");
+    auto distinguish_midpoint=path;
+    distinguish_midpoint.points[2].x=30;
+    sample(distinguish_midpoint,0,20);
+    m::AnimationPath linear;linear.kind=0;linear.segment_point_count=4;
+    linear.timestamps={0,0.5f,0.5f,1};linear.points={{0,0,0},{10,0,0},{100,0,0},{120,0,0}};
+    sample(linear,0.5f,10);
+    sample(linear,0.75f,110);
+    linear.segment_point_count=3;linear.timestamps={0,0,1};linear.points={{0,0,0},{10,0,0},{20,0,0}};
+    bool rejected=false;
+    try {m::animation::path_position(linear,0);}catch(const std::invalid_argument&){rejected=true;}
+    require(rejected,"selected zero-width linear interval was divided or fabricated");
+    sample(linear,0.5f,15);
+    sample(linear,1,20);
+}
 void path_tracks_callbacks_and_boundaries() {
     m::AnimationPath path;
     path.kind = 2; path.segment_point_count = 2; path.duration = 10;
@@ -1111,7 +1157,7 @@ void faulted_owner_retirement_joins_before_context_release() {
 }
 }
 int main() {
-    try { transitions_and_retirement(); movement_boundary_rotation_and_stop(); position_sampling_preserves_movement_boundary(); required_consumers_and_sky_follow(); path_tracks_callbacks_and_boundaries(); source_control_line_limits();
+    try { repeated_path_timestamps(); transitions_and_retirement(); movement_boundary_rotation_and_stop(); position_sampling_preserves_movement_boundary(); required_consumers_and_sky_follow(); path_tracks_callbacks_and_boundaries(); source_control_line_limits();
         canonical_clock_consumers_survive_scene_retirement();
         cyclic_world_texture_admission_and_real_scheduling();
         cyclic_world_road_budget_rejects_before_step_publication();

@@ -159,7 +159,7 @@
       "sha256": "2200777373ce37765949721bb02c0cf24e518c00f20f33254c0672f1d0482af5"
     },
     "src/model_data_decoder.cpp": {
-      "sha256": "76340eceadbeb9d86059f6a08638723e2eb426adf51d70685ccac10783b867d6"
+      "sha256": "a685693ead550dd9e821e13f5199003f1d2ebe9157fa06e2bcbf0ec4f0ca3258"
     },
     "src/model_asset_closure.hpp": {
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"

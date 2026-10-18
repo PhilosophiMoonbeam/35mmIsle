@@ -23,8 +23,9 @@ float uniform(const AnimationPath& p, float t) {
         throw std::invalid_argument("Invalid native GAME interpolation path/parameter");
     if (t == 1) return 1;
     std::size_t segment = 0;
-    while (segment+1 < p.timestamps.size() && p.timestamps[segment+1] < t) ++segment;
-    if (segment+1 >= p.segment_point_count || p.timestamps[segment+1] <= p.timestamps[segment])
+    while (segment+1 < p.segment_point_count && p.timestamps[segment+1] < t) ++segment;
+    if (segment+1 >= p.segment_point_count || p.timestamps[segment+1] < p.timestamps[segment] ||
+        (p.kind == 0 && p.timestamps[segment+1] == p.timestamps[segment]))
         throw std::invalid_argument("Invalid GAME interpolation timestamp interval");
     float mid = 0, low = 0, high = 1;
     if (p.kind == 0) mid = (t-p.timestamps[segment])/(p.timestamps[segment+1]-p.timestamps[segment]);
@@ -66,8 +67,8 @@ Vec3 evaluate(const AnimationPath& p, float parameter, bool derivative) {
         if (p.kind == 3) return p.points.at(count);
         segment = count-2; t = 1;
     }
-    // Source velocity uses the terminal segment at t==1; admission retains its
-    // required trailing spline points rather than silently clamping its read.
+    // Source terminal velocity needs more controls than bounded position data.
+    // Reject that overread instead of consuming unrelated trailing data.
     const auto first = p.kind == 1 ? segment*3 : segment;
     if (first+4 > p.points.size()) throw std::invalid_argument("GAME spline control extent");
     float w0, w1, w2, w3;

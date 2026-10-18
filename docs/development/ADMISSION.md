@@ -3021,3 +3021,100 @@ smaller unextended preset separately passes 26 tests but is not substituted for
 that affected configuration. The full LUS product/default and 31 opt-in consumer
 gate also passes, with 57 CPU tests in 4.07 seconds. Fresh hosted Windows/matrix
 qualification remains pending; the earlier failed run is not relabeled as passing.
+
+### Hosted actual application on Windows x64 — 69b6bae
+
+[Run 39126580987](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39126580987)
+passes all ten jobs at exact public commit
+`69b6bae0cf68ca56ff0e34be1afdc4f047d46d3c`. This is the first hosted
+Windows build containing the actual application, not only earlier components.
+Full-host job `117672874399` uses MSVC C/C++ 19.44.35229.0, SDK 10.0.26100.0,
+static-runtime dependency configuration and the observed Windows Server 2022
+10.0.20348 runner.
+
+MSBuild produces `build/windows-host-release/Release/35mmisle.exe`, the actual
+application-runtime ROM consumer and post-course-interface consumer. All 57
+ROMless CPU tests pass in 2.18 seconds. The product's real `--help` path executes
+successfully after the five component CLIs, without requiring a ROM or opening
+graphics/audio/input devices. Windows Debug/Release basic builds also pass,
+including their real CLI/Unicode input, installation and local tooling-package
+checks. GCC/Clang Debug/Release, standalone canonical RDP and Linux LUS product
+jobs pass; the Linux product retains its actual renderer submission/teardown
+smoke.
+
+The previous CRLF-admission and non-RDP-provider failures are corrected and
+independently exercised; the failed `17332ff` run remains historical. This run
+does not contain a private ROM, execute Windows gameplay, establish Windows11
+device compatibility, qualify the remaining five course owners or authorize a
+binary release. Compiler/runner versions are observed, not newly pinned inputs.
+
+### Source stationary spline intervals and remaining-course data consumers
+
+Actual shared `DataDecoder` admission in 638l rejects Tunnel header
+`D_802F01F0_5ED2C0` at path `0x80141c5c`: the previous timestamp guard
+requires strict increase. The failed capture is permanently rejected with zero
+artifact reads. Fresh typed inspection 638m establishes CATROM, five timestamps
+`[0, 0, 0.1786330044, 0.6666010022, 1]`, zero tension, identical first-segment
+endpoints and an all-zero first speed polynomial. This is a stationary segment,
+not a malformed header or an inferred asset boundary.
+
+Independent planner/reviewer assessments agree with pinned `src/1F960.c:258–309`:
+segment search uses strict `<`; nonlinear parameterization never divides by
+timestamp width. At parameter zero its first midpoint is 0.5, the residual
+tolerance terminates that iteration, and the resulting uniform parameter is
+0.125. No zero-parameter shortcut, duplicate removal or epsilon is equivalent.
+The decoder now retains nondecreasing timestamps. Native evaluation rejects
+decreasing intervals and selected zero-width LINEAR intervals, while nonlinear
+zero-width intervals use the unchanged Source solver. Finite-value, exact
+endpoint, declared coefficient and position-control bounds remain enforced;
+terminal spline-velocity overreads remain explicitly rejected.
+
+The permanent World runtime regression drives real opcode-13 model transforms:
+stationary and distinguishable-midpoint CATROM cases, positive parameters,
+terminal positions, LINEAR equality/duplicate skipping, selected zero-width
+rejection and stationary velocity. The default LUS product, 31 opt-in consumers
+and all 57 CPU tests build/pass; CPU execution takes 3.56 seconds. Existing
+upstream/private-Source conversion warnings remain visible.
+
+Fresh 638o also decodes the exact actual Tunnel path, checks its stationary
+position/velocity, samples its bounded positions, and compiles/binds/steps the
+actual eight-node initialization `0x802f025c` with Source header `0x802f01f0`
+and its actual speed. It qualifies once: one terminal task, no created children,
+two absent task/tracer identities, stable unchanged ROM, zero physical-device
+attempts and permission failures; three retained artifacts total 1,811 bytes.
+Executable SHA256:
+`7a7e92e94edffe4f710ab0ff260caeb19a24996267006337d70e1f713998bb85`.
+Source archive:
+`9c566f8c9cf8d40148bada0b3a23c9d0a3c3be7ec39779fcf6823a92a410fce4`;
+Source map:
+`54206252f3d9a0a049899464b51bd8c04414d3579cf228b655fa2f87e8f41f48`.
+
+Independent 638n cases close these complete shared data-consumer sets:
+
+| Course | Models | Materials | Model streams | Texture streams | Receiver-qualified headers | Paths |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Volcano | 20 | 59 | 1,318 | 254 | 91 | 4 |
+| Cave | 18 | 68 | 1,201 | 316 | 84 | 0 |
+| Valley | 20 | 23 | 1,136 | 85 | 96 | 0 |
+
+Each performs actual bounded `DataDecoder` parsing, Source/all-program material
+extent admission, hierarchy decoding, zero-obligation graphics closure and every
+selected header's real native animator bind/immediate update. Each qualifies
+once with the same task/device/ROM invariants as 638o. Cave retains four header
+identities under both genuine initialization-qualified bindings; Valley's
+Source-used signed list `0x802ecb00` has two live rows. Common1003 is included.
+
+Tunnel and River cases remain rejected with zero artifact reads. The separate
+638o numeric diagnostics establish why: Magnemite's declared four-slot image
+allocation contains a NULL hole at slot1, while its complete STEP pulse selects
+slots2/3 and the initial renderer selects slot0; a contiguous prefix therefore
+overapproximates actual consumption. River's LOD channel uses non-STEP cubic
+commands, for which unrestricted seek/update-domain inference correctly requires
+an explicit sampling capability or independently proven Source allocation.
+Neither failure is suppressed or relabeled as readiness.
+
+These are shared numeric/data-consumer proofs, not activated remaining-course
+Actors, Original callbacks, custom-render effects, GPU presentation or gameplay.
+Volcano's custom renderer identities are retained; shape classification alone
+does not implement their ordered effects. No Windows gameplay or full-game
+completion is established by this cohort.

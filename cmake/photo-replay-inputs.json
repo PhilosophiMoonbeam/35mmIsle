@@ -426,7 +426,7 @@
       "sha256": "2200777373ce37765949721bb02c0cf24e518c00f20f33254c0672f1d0482af5"
     },
     "src/model_data_decoder.cpp": {
-      "sha256": "76340eceadbeb9d86059f6a08638723e2eb426adf51d70685ccac10783b867d6"
+      "sha256": "a685693ead550dd9e821e13f5199003f1d2ebe9157fa06e2bcbf0ec4f0ca3258"
     },
     "src/menu_resources.hpp": {
       "sha256": "8403268bce9dc6909b623c7064f2bc32bfbf1a5f214b217755dc6c3326215b0f"

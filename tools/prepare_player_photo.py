@@ -225,6 +225,31 @@ def registered_materialize(text):
         'first':128,'last':138,'sha256':hashlib.sha256(original.encode()).hexdigest(),
         'rewrites':{old:1 for old,new in changes},'native_sha256':hashlib.sha256(body.encode()).hexdigest()}
 
+def detector_controls_materialize(text):
+    output=[]; records=[]
+    lines=text.splitlines(keepends=True)
+    for name,first,last,enabled in [
+            ('PokemonDetector_Enable',185,187,'true'),
+            ('PokemonDetector_Disable',189,191,'false')]:
+        original=''.join(lines[first-1:last])
+        changes=[
+            ('void '+name+'(void)', 'IsleGameResult isle_player_photo_'+name+'(IslePlayerPhotoSource* source)'),
+            ('    PokemonDetector_IsEnabled = '+enabled+';',
+             '    if (source == NULL || source->owner == NULL) return ISLE_GAME_INVALID_ARGUMENT;\n'
+             '    if (source->status != ISLE_GAME_OK) return source->status;\n'
+             '    source->status = isle_player_photo_native_detector_enabled(source, '+('1' if enabled=='true' else '0')+');\n'
+             '    return source->status;')]
+        body=original
+        for old,new in changes:
+            if body.count(old)!=1: raise ValueError(('Detector control rewrite',name,old))
+            body=body.replace(old,new)
+        output.append(body)
+        records.append({'name':name,'source':'src/app_level/pokemon_detect.c',
+            'first':first,'last':last,'sha256':hashlib.sha256(original.encode()).hexdigest(),
+            'changes':[{'find':old,'replace':new,'occurrences':1} for old,new in changes],
+            'native_sha256':hashlib.sha256(body.encode()).hexdigest()})
+    return '\n'.join(output),records
+
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--source-repo',required=True,type=Path)
@@ -249,6 +274,12 @@ def main():
     registered,record=registered_materialize(saved)
     body+='\n'+registered
     records.append(record)
+    detector=git(args.source_repo,'show',REVISION+':src/app_level/pokemon_detect.c').decode()
+    if hashlib.sha256(detector.encode()).hexdigest()!='a8f0d6937417d5a63b70a7e6674f64877a8b62e25f8c8865b96420a6f2cdba5b':
+        raise ValueError('own Detector controls pin changed')
+    controls,control_records=detector_controls_materialize(detector)
+    body+='\n'+controls
+    records+=control_records
     args.output.mkdir(parents=True,exist_ok=True)
     publish(args.output/'player_photo_original.inc',body)
     publish(args.output/'player-photo-authority.json',(json.dumps({

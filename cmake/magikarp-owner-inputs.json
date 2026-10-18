@@ -100,29 +100,50 @@
     "admission": "Only existing common1003 and actual Magikarp129 complete configured tuples admitted. All other species/nonNULL graphs fail explicitly; native data-only Beach graph resources do not magically admit a callback interpreter."
   },
   "native_support": {
+    "src/actor_course_context.hpp": {
+      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/rainbow_actor.hpp": {
+      "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
+    },
+    "src/rainbow_actor.cpp": {
+      "sha256": "cee34cf3abf985d85ca3031735f477fab0de70b3d445572cba5086aeba84542d"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
     "tests/actual_player_source.hpp": {
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },
     "src/actor_owner.hpp": {
-      "sha256": "6f6ed573d75bde32d5627426a831e020c15ef90d06bdde36bbe3e939aa848e86"
+      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
     },
     "src/actor_owner.cpp": {
-      "sha256": "296f99ca878451334479cf2f98915a749b055d8ab18ab3fb5e07b4a5cc3d0031"
+      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
     },
     "src/actor_owner_source.h": {
-      "sha256": "e79461c921578ae9866f4a0403ae51b94650d992000d3e93a7b9886f2983add4"
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "5d8d1120d1dda56d20355562ad4e458da984dd0502d8bdb8a15744cff2595413"
+      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
     },
     "tools/prepare_actor_control.py": {
       "sha256": "85fe41807542fc4827bd2d1dfd702c4a179514cd80aca65c2ce11671310e1357"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "754ae17cb3b4cb688357e87ec00ef20e45d73f8e4728357c628f331a7e251365"
+      "sha256": "a15f7d2b670900c81f0f8ca88dc04cd7680f414147aae14c2f3ae828c4808a6b"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
-      "sha256": "1c8b1be281d83bf329851e556dd82a86e68db6aad1bb528c2e61b5d23982ba16"
+      "sha256": "3347c4fe853a9abf64df66e3a2a7e0c093cec39158aaf5f5e7d5822ea122da63"
     },
     "tests/magikarp_owner_probe.c": {
       "sha256": "55f5b2d5776f863b768e2a796d97fc4f55ff775ea7412529a8acf8adf7f1c23d"

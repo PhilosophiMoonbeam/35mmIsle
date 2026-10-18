@@ -25,6 +25,7 @@ public:
     std::span<const IsleSprite* const> roots() const noexcept { return roots_; }
     std::span<const sprite::BankMapping> banks() const noexcept { return banks_; }
     void initialize(IslePlayerUiSource&) const noexcept;
+    std::int32_t minimum_photo_interval() const noexcept { return minimum_photo_interval_; }
 private:
     std::uint32_t word(std::uint32_t) const;
     sprite::BankOwner bank_;
@@ -37,6 +38,7 @@ private:
     std::array<IsleBitmap,10> digit_bitmaps_{};
     std::array<std::int16_t,38> wide_{};
     std::array<std::size_t,10> digits_{};
+    std::int32_t minimum_photo_interval_ = 0;
 };
 }
 #endif

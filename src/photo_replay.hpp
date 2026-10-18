@@ -1,0 +1,117 @@
+#ifndef ISLE_PHOTO_REPLAY_HPP
+#define ISLE_PHOTO_REPLAY_HPP
+
+#include "photo_world.hpp"
+#include "world_producer.hpp"
+#include "borrowed_model_producer.hpp"
+#include "graphics_task.hpp"
+#include "rsp_render.hpp"
+#include "player_photo_source.h"
+#include "35mmisle/photo_score.hpp"
+
+namespace isle::photo {
+// The Source owner, not Replay, issues and retains this capability. Every field
+// of data (including inactive records) and the revision must stay unchanged until
+// acknowledge_result or completed cancellation. Revision alone is not a fence.
+struct RecordCapability {
+    const IslePlayerPhotoData* data = nullptr;
+    const std::uint64_t* revision = nullptr;
+    std::uint64_t expected_revision = 0;
+};
+struct ReplayGpuBinding {
+    rsp::CanonicalExecutor* executor = nullptr;
+    const graphics::SourcePrograms* programs = nullptr;
+    std::uint64_t epoch = 0, admission = 0;
+};
+enum class ReplayAcquire { pending, admitted, failed };
+struct ReplayGpuAccess {
+    void* context = nullptr;
+    ReplayAcquire (*acquire)(void*, ReplayGpuBinding&) noexcept = nullptr;
+    bool (*release)(void*, const ReplayGpuBinding&) noexcept = nullptr;
+};
+// Explicit retained physical storage, disjoint from the ordinary display's
+// reservations and every immutable resource. These reservations stay protected
+// across Source waits; the executor itself is borrowed ONLY per GPU stage.
+// workspace: stack[0,4000), yield[4000,6000), task[6000,7000), boot[7000,7100).
+// commands begins with a 0x400-byte reset/root/viewport payload reservation.
+// Source storage aliases intentionally: feedback={color.offset,0x27000},
+// color={base,0x20d00}, depth={base+0x20d00,0x20d00}. Score overwrites color and
+// the first 0x6300 depth bytes. reservations() exports their one 0x41a00 union;
+// do not plan three independent buffers or restore an older preview afterward.
+struct ReplayLayout {
+    menu::RamRange commands{}, workspace{}, output{};
+    world::ProducerLayout world{};
+    menu::model::PacketLayout subjects{}, items{};
+    menu::RamRange feedback{}, preview_color{}, preview_depth{}, effects{}, effect_assets{};
+};
+struct ReplayConfig {
+    ReplayLayout memory;
+    // Ordinary display targets/workspace/producers, excluding cold main/BSS.
+    // Copied cold; caller need not retain the span's storage.
+    std::span<const menu::RamRange> external_reservations;
+    graphics::SourceProgram program = graphics::SourceProgram::f3dex2_non_fifo;
+    // Source's actual D_803A6660/64 backing buffer dimensions, not a crop size.
+    std::uint32_t buffer_width = 320, buffer_height = 210;
+};
+enum class ReplayKind { score, preview };
+struct ReplayRequest {
+    ReplayKind kind = ReplayKind::score;
+    RecordCapability record;
+    bool has_dash_engine = false;
+    // window/847B60.c73-95 clamps the requested viewport, never resamples it.
+    std::int32_t width = 320, height = 210;
+    float preview_scale = 1;
+};
+enum class ReplaySignal {
+    idle, pending, play_sound85, wait60, wait1, result, cancelled, failed
+};
+struct ReplayStep {
+    ReplaySignal signal = ReplaySignal::idle;
+    // An operation-local obligation identity, never a GTL/GPU completion token.
+    std::uint64_t obligation = 0;
+};
+struct ReplayResult {
+    ReplayKind kind = ReplayKind::score;
+    const photo_score::Result* score = nullptr;
+    // Canonical big-endian RGBA5551 bytes, copied ONLY from actually completed
+    // RDRAM. Includes the backing stride; no screenshot/RGBA8 conversion.
+    // Result borrows expire on acknowledgment, cancellation or the next begin.
+    std::span<const std::byte> rgba5551;
+    std::uint32_t width = 0, height = 0, stride_bytes = 0;
+};
+// Same authoritative Game. No callback, OM/GTL tick, Source wait, or gameplay AI
+// is dispatched here. Native operations are returning leaves in the caller's
+// admitted Source context. acquire must grant a real quiescent executor/program
+// and exclusive RAM epoch; release follows actual GPU+mapped read retirement.
+// In particular normal display/World processes remain free during wait60/wait1.
+// Snapshot, Game, world::ModuleState and access.context outlive Replay, including
+// all GPU/readback and native cleanup. Destruction requires retire()==true:
+// silently destroying native callback storage is illegal.
+class Replay final {
+public:
+    Replay(IsleGame*, const rom::Snapshot&, world::ModuleState&, ReplayGpuAccess, ReplayConfig);
+    ~Replay() noexcept;
+    Replay(const Replay&) = delete;
+    Replay& operator=(const Replay&) = delete;
+    bool begin(const ReplayRequest&) noexcept;
+    ReplayStep poll() noexcept;
+    // Caller acknowledges sound only after the actual Source audio call, and
+    // waits only after the original C ohWait returns. Never call Source under
+    // this C++ frame. Wrong/stale acknowledgments are sticky failures.
+    bool acknowledge(std::uint64_t obligation) noexcept;
+    ReplayResult result() const noexcept;
+    bool acknowledge_result() noexcept;
+    void cancel() noexcept;
+    // Nonblocking true native retirement. Call again after genuine native join
+    // progress if false; poll continues draining a submitted GPU on cancellation.
+    bool retire() noexcept;
+    bool busy() const noexcept;
+    bool gpu_busy() const noexcept;
+    const char* error() const noexcept;
+    std::span<const menu::RamRange> reservations() const noexcept;
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl_;
+};
+} // namespace isle::photo
+#endif

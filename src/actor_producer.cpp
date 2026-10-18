@@ -20,12 +20,12 @@ bool overlap(Range a, Range b) {
 }
 void valid(Range r, std::size_t alignment) {
     require(r.size && r.offset%alignment == 0 && r.size%alignment == 0 &&
-            r.offset <= beach::rdram_size && r.size <= beach::rdram_size-r.offset,
+            r.offset <= menu::rdram_size && r.size <= menu::rdram_size-r.offset,
             "Actor producer range is empty, unaligned or outside RDRAM");
 }
 constexpr scene::RenderMetadata prefix_render{5,0x80000001u,UINT32_MAX};
 struct Policy { bool fog = false, transparent = false, gate = false, geometry = false; };
-Policy policy(const beach::ActorInitialization& init, const menu::Model& model) {
+Policy policy(const actor::ActorInitialization& init, const menu::Model& model) {
     Policy p;
     menu::RenderType type;
     switch (init.render_callback_identity) {
@@ -46,7 +46,7 @@ struct Producer::Impl {
     IsleGame* game;
     IsleGameCamera* camera;
     menu::model::CameraBasisState& basis;
-    const beach::ActorResources& resources;
+    const actor::Resources& resources;
     std::span<const ActorRenderBinding> bindings;
     ProducerLayout layout;
     std::array<Range,3> owned;
@@ -73,7 +73,7 @@ struct Producer::Impl {
     const std::uint32_t* ram = nullptr;
     bool retired = false;
     Impl(IsleGame* g, IsleGameCamera* c, menu::model::CameraBasisState& b,
-         const beach::ActorResources& r, std::span<const ActorRenderBinding> bindings_, ProducerLayout l,
+         const actor::Resources& r, std::span<const ActorRenderBinding> bindings_, ProducerLayout l,
          DetectorBinding* detector_)
         : game(g),camera(c),basis(b),resources(r),bindings(bindings_),layout(l),
           owned{l.payloads,l.lists,l.materials},detector(detector_) {}
@@ -249,7 +249,7 @@ struct Producer::Impl {
     }
 };
 Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,
-    const beach::ActorResources& resources, std::span<const menu::animation::SlotCapacity> capacities,
+    const actor::Resources& resources, std::span<const menu::animation::SlotCapacity> capacities,
     std::span<const ActorRenderBinding> bindings, ProducerLayout layout, std::span<const Range> other,
     DetectorBinding* detector)
     : impl_(std::make_unique<Impl>(game,camera,basis,resources,bindings,layout,detector)) {
@@ -263,7 +263,7 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
         }),"Actor complete RAM union omits detector capture storage");
     resources.require_live();
     // Validate the FULL supplied union against assets, including task/output and
-    // framebuffer spans. Isolated ActorResources.install({}) proves no such union.
+    // framebuffer spans. Isolated Resources.install({}) proves no such union.
     std::vector<Range> ranges{{0,graphics::bss_end}};
     for (std::size_t i = 0; i < s.owned.size(); ++i) { valid(s.owned[i],i == 0 ? 64 : 8); ranges.push_back(s.owned[i]); }
     for (const auto r : layout.framebuffers) { valid(r,64); ranges.push_back(r); }
@@ -272,8 +272,8 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
         for (std::size_t j = 0; j < i; ++j)
             require(!overlap(ranges[i],ranges[j]),"Actor complete RAM owner ranges overlap");
         for (const auto& span : resources.installation_spans()) {
-            require(span.guest_address >= 0x80000000 && span.guest_address-0x80000000 <= beach::rdram_size &&
-                    span.bytes.size() <= beach::rdram_size-(span.guest_address-0x80000000),"Actor source asset extent invalid");
+            require(span.guest_address >= 0x80000000 && span.guest_address-0x80000000 <= menu::rdram_size &&
+                    span.bytes.size() <= menu::rdram_size-(span.guest_address-0x80000000),"Actor source asset extent invalid");
             require(!overlap(ranges[i],{span.guest_address-0x80000000,span.bytes.size()}),
                     "Actor complete RAM plan overlaps actual immutable assets");
         }
@@ -314,7 +314,7 @@ Producer::~Producer() = default;
 ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::uint64_t epoch,
                                         const scene::render::Pass* pass,bool prefix_visible) {
     auto& s = *impl_;
-    require(!s.retired && words.data() && words.size_bytes() == beach::rdram_size && epoch,
+    require(!s.retired && words.data() && words.size_bytes() == menu::rdram_size && epoch,
             "Actor prepare requires live exclusive canonical RAM and nonzero epoch");
     require(!pass || (pass->kind == scene::render::Kind::compiled && pass->camera == s.camera),
             "Actor compiled pass camera/policy differs from actual owner");

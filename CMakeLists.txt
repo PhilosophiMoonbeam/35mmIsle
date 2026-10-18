@@ -40,7 +40,7 @@ if(CMAKE_HOST_WIN32 AND (ISLE_BUILD_HOST_PROBE OR ISLE_BUILD_AUDIO_PROBE))
 endif()
 
 project(35mmIsle VERSION 0.1.0
-    DESCRIPTION "35mmIsle original native services, ROM tooling and opt-in libultraship host probe"
+    DESCRIPTION "Pokémon Snap (1999) native port for modern systems with libultraship"
     LANGUAGES C CXX)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
@@ -144,7 +144,7 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE OR (ISLE_BUILD_HOST_PROBE AND 
     isle_target_options(isle-pidgey-resources)
     add_library(isle-beach-world-resources STATIC src/beach_world_resources.cpp src/beach_world_resources.hpp)
     target_include_directories(isle-beach-world-resources PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
-    target_link_libraries(isle-beach-world-resources PUBLIC isle-rom-snapshot)
+    target_link_libraries(isle-beach-world-resources PUBLIC isle-rom-snapshot isle-course-resources)
     isle_target_options(isle-beach-world-resources)
     add_library(isle-photo-lighting STATIC src/photo_lighting.cpp src/photo_lighting.hpp)
     target_include_directories(isle-photo-lighting PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -247,6 +247,10 @@ if(TARGET isle-rom-snapshot)
     target_link_libraries(isle-model-assets PUBLIC isle-rom-snapshot)
     isle_target_options(isle-model-assets)
 
+    add_library(isle-course-resources STATIC src/course_resources.cpp src/course_resources.hpp)
+    target_link_libraries(isle-course-resources PUBLIC isle-model-assets)
+    isle_target_options(isle-course-resources)
+
     add_library(isle-model-data STATIC src/model_data_decoder.cpp src/model_data_decoder.hpp)
     target_link_libraries(isle-model-data PUBLIC isle-model-assets)
     isle_target_options(isle-model-data)
@@ -254,18 +258,24 @@ if(TARGET isle-rom-snapshot)
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
         "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
-    add_library(isle-beach-actor-resources STATIC src/beach_actor_resources.cpp src/beach_actor_resources.hpp)
-    target_link_libraries(isle-beach-actor-resources PUBLIC isle-model-data)
-    isle_target_options(isle-beach-actor-resources)
+    add_library(isle-actor-resources STATIC src/actor_resources.cpp src/actor_resources.hpp
+        src/actor_resource_catalog.cpp src/actor_resource_catalog.hpp
+        src/beach_actor_catalog.cpp src/rainbow_actor_catalog.cpp)
+    target_link_libraries(isle-actor-resources PUBLIC isle-model-data)
+    isle_target_options(isle-actor-resources)
+
+    add_library(isle-beach-actor-scene STATIC src/beach_actor_scene.cpp src/beach_actor_scene.hpp)
+    target_link_libraries(isle-beach-actor-scene PUBLIC isle-model-assets)
+    isle_target_options(isle-beach-actor-scene)
 
     add_library(isle-item-resources STATIC src/item_resources.cpp src/item_resources.hpp)
     target_link_libraries(isle-item-resources PUBLIC isle-model-data)
     isle_target_options(isle-item-resources)
 
-    add_library(isle-beach-behavior-resources STATIC
-        src/beach_behavior_resources.cpp src/beach_behavior_resources.hpp)
-    target_link_libraries(isle-beach-behavior-resources PUBLIC isle-model-assets)
-    isle_target_options(isle-beach-behavior-resources)
+    add_library(isle-actor-behavior-resources STATIC
+        src/actor_behavior_resources.cpp src/actor_behavior_resources.hpp)
+    target_link_libraries(isle-actor-behavior-resources PUBLIC isle-model-assets)
+    isle_target_options(isle-actor-behavior-resources)
 
     add_library(isle-menu-animation STATIC src/menu_animation.cpp src/menu_animation.hpp
         src/menu_animation_path.cpp)
@@ -283,6 +293,13 @@ if(TARGET isle-rom-snapshot)
         src/effect_graphics_resources.cpp src/effect_graphics_resources.hpp)
     target_link_libraries(isle-effect-graphics-resources PUBLIC isle-menu-effects)
     isle_target_options(isle-effect-graphics-resources)
+
+    add_library(isle-photo-effects STATIC src/photo_effects_renderer.cpp src/photo_effects_renderer.hpp)
+    target_link_libraries(isle-photo-effects PUBLIC isle-effect-graphics-resources)
+    isle_target_options(isle-photo-effects)
+    target_compile_options(isle-photo-effects PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
     add_library(isle-focus-capture STATIC src/focus_capture.cpp src/focus_capture.hpp)
     target_link_libraries(isle-focus-capture PUBLIC isle-menu-resources)
@@ -386,7 +403,7 @@ if(ISLE_BUILD_GAME_ENGINE)
 
         add_library(isle-actor-producer STATIC src/actor_producer.cpp src/actor_producer.hpp)
         target_link_libraries(isle-actor-producer PUBLIC
-            isle-menu-model-producer isle-beach-actor-resources isle-graphics-task isle-scene
+            isle-menu-model-producer isle-actor-resources isle-graphics-task isle-scene
             isle-focus-capture isle-focus-detector)
         isle_target_options(isle-actor-producer)
 
@@ -421,23 +438,33 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/world_resources.cpp src/world_resources.hpp
             src/world_collision.cpp src/world_collision.hpp
             src/world_runtime.cpp src/world_runtime.hpp
+            src/world_module.hpp
+            src/photo_world.cpp src/photo_world.hpp
             src/world_movement.cpp src/world_movement.hpp
             src/world_producer.cpp src/world_producer.hpp)
         target_link_libraries(isle-world PUBLIC isle-scene isle-menu-animation
-            isle-beach-world-resources isle-model-assets isle-menu-model-producer isle-graphics-task)
+            isle-beach-world-resources isle-course-resources isle-model-data isle-menu-model-producer isle-graphics-task)
         isle_target_options(isle-world)
 
-        add_library(isle-item-producer STATIC
-            src/item_producer.cpp src/item_producer.hpp src/item_render_binding.hpp)
-        target_link_libraries(isle-item-producer PUBLIC
-            isle-menu-model-producer isle-item-resources isle-world isle-graphics-task isle-scene)
-        isle_target_options(isle-item-producer)
-        target_compile_options(isle-item-producer PRIVATE
+        add_library(isle-borrowed-model-producer STATIC
+            src/borrowed_model_producer.cpp src/borrowed_model_producer.hpp)
+        target_link_libraries(isle-borrowed-model-producer PUBLIC
+            isle-menu-model-producer isle-graphics-task isle-scene)
+        isle_target_options(isle-borrowed-model-producer)
+        target_compile_options(isle-borrowed-model-producer PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
+        add_library(isle-photo-subjects STATIC src/photo_subjects.cpp src/photo_subjects.hpp)
+        target_link_libraries(isle-photo-subjects PUBLIC isle-world isle-model-data isle-borrowed-model-producer)
+        isle_target_options(isle-photo-subjects)
+        target_compile_options(isle-photo-subjects PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
         add_library(isle-actor-owner STATIC
             src/actor_owner.cpp src/actor_owner.hpp src/actor_owner_source.h
+            src/actor_course_context.hpp
             src/actor_photo_eligibility.cpp src/actor_photo_eligibility.hpp
             src/actor_photo_membership.cpp src/actor_photo_membership.hpp
             src/actor_collision.cpp src/actor_collision.hpp
@@ -450,11 +477,23 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/beach_magikarp_scene.cpp src/beach_magikarp_scene.hpp
             src/beach_initial_species.cpp src/beach_initial_species.hpp
             src/beach_initial_species_source.h
+            src/beach_ending_source.c src/beach_ending_source.h "${_isle_beach_ending_generated}"
+            src/beach_snorlax_kangaskhan_source.c src/beach_snorlax_kangaskhan_source.h
+            src/beach_snorlax_kangaskhan.cpp src/beach_snorlax_kangaskhan.hpp
+            "${_isle_beach_snorlax_kangaskhan_generated}"
+            src/beach_meowth_source.c src/beach_meowth_source.h
+            src/beach_meowth.cpp src/beach_meowth.hpp "${_isle_beach_meowth_generated}"
+            src/beach_eevee_chansey_source.c src/beach_eevee_chansey_source.h
+            src/beach_eevee_chansey.cpp src/beach_eevee_chansey.hpp
+            "${_isle_beach_eevee_chansey_generated}"
+            src/beach_scyther_special_source.c src/beach_scyther_special_source.h
+            src/beach_scyther_special.cpp src/beach_scyther_special.hpp
+            "${_isle_beach_scyther_special_generated}"
             src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
         target_link_libraries(isle-actor-owner PUBLIC
             isle-engine isle-actor-producer isle-world isle-environment-sound
             isle-menu-effects isle-source-effect-world isle-focus-detector
-            isle-beach-behavior-resources isle-item-resources)
+            isle-actor-behavior-resources isle-beach-actor-scene isle-item-resources)
         target_include_directories(isle-actor-owner PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/include")
         isle_target_options(isle-actor-owner)
@@ -541,9 +580,44 @@ if(ISLE_BUILD_GAME_ENGINE)
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
+        # Complete remaining Player C; native Root owner/backend is separate.
+        add_library(isle-player-root-source STATIC
+            src/player_root_source.c src/player_root_source.h
+            "${_isle_player_root_private}/player_root_original.c")
+        target_include_directories(isle-player-root-source PUBLIC
+            "${PROJECT_SOURCE_DIR}/src" PRIVATE "${_isle_player_root_private}")
+        target_link_libraries(isle-player-root-source PUBLIC
+            isle-player-ui isle-player-bump isle-player-render-source)
+        isle_target_options(isle-player-root-source)
+        target_compile_options(isle-player-root-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+
+        add_library(isle-application-source STATIC
+            src/application_source.c src/application_source.h
+            "${_isle_application_generated}")
+        target_include_directories(isle-application-source PUBLIC "${PROJECT_SOURCE_DIR}/src"
+            PRIVATE "${CMAKE_BINARY_DIR}/_deps/isle-application-private")
+        target_link_libraries(isle-application-source PUBLIC isle-engine)
+        isle_target_options(isle-application-source)
+        target_compile_options(isle-application-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+
+        add_library(isle-application-manager STATIC
+            src/application_manager.cpp src/application_manager.hpp)
+        target_link_libraries(isle-application-manager PUBLIC isle-application-source
+            isle-game-state isle-game-input isle-game-audio isle-host-clock isle-menu-resources)
+        isle_target_options(isle-application-manager)
+        target_compile_options(isle-application-manager PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+
         add_library(isle-course-model-producer STATIC
             src/course_model_producer.cpp src/course_model_producer.hpp)
-        target_link_libraries(isle-course-model-producer PUBLIC isle-world isle-actor-producer isle-item-producer isle-player-cart)
+        target_link_libraries(isle-course-model-producer PUBLIC isle-world isle-actor-producer isle-borrowed-model-producer isle-player-cart)
         isle_target_options(isle-course-model-producer)
 
         foreach(_isle_source_math_target IN ITEMS isle-scene isle-menu-scene isle-window
@@ -726,16 +800,17 @@ if(BUILD_TESTING)
         target_link_libraries(effect-bank-resources-rom-smoke PRIVATE isle-menu-resources)
         isle_target_options(effect-bank-resources-rom-smoke)
     endif()
-    if(TARGET isle-beach-actor-resources)
+    if(TARGET isle-actor-resources)
         add_executable(beach-actor-resources-rom-smoke tests/beach_actor_resources_rom_smoke.cpp)
         target_link_libraries(beach-actor-resources-rom-smoke PRIVATE
-            isle-beach-actor-resources isle-beach-world-resources isle-menu-animation)
+            isle-actor-resources isle-beach-actor-scene isle-beach-world-resources isle-menu-animation)
         isle_target_options(beach-actor-resources-rom-smoke)
     endif()
-    if(TARGET isle-beach-behavior-resources)
+    if(TARGET isle-actor-behavior-resources)
         add_executable(beach-behavior-resources-rom-smoke EXCLUDE_FROM_ALL
             tests/beach_behavior_resources_rom_smoke.cpp)
-        target_link_libraries(beach-behavior-resources-rom-smoke PRIVATE isle-beach-behavior-resources)
+        target_link_libraries(beach-behavior-resources-rom-smoke PRIVATE
+            isle-actor-behavior-resources isle-beach-actor-scene)
         isle_target_options(beach-behavior-resources-rom-smoke)
     endif()
     if(TARGET isle-item-resources AND TARGET isle-menu-animation)
@@ -1034,6 +1109,11 @@ if(TARGET isle-rsp AND TARGET isle-environment-sound)
         isle-environment-sound isle-graphics-task isle-rsp)
     isle_target_options(environment-sound-rsp-smoke)
 endif()
+if(TARGET isle-canonical-executor)
+    add_executable(canonical-gpu-failure-smoke EXCLUDE_FROM_ALL tests/canonical_gpu_failure_smoke.cpp)
+    target_link_libraries(canonical-gpu-failure-smoke PRIVATE isle-canonical-executor Threads::Threads)
+    isle_target_options(canonical-gpu-failure-smoke)
+endif()
 if(TARGET isle-canonical-executor AND TARGET isle-menu-resources)
     add_executable(menu-effects-rsp-smoke tests/menu_effects_rsp_smoke.cpp)
     target_link_libraries(menu-effects-rsp-smoke PRIVATE
@@ -1099,9 +1179,117 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
         add_library(isle-player-renderer STATIC src/player_renderer.cpp src/player_renderer.hpp)
         target_link_libraries(isle-player-renderer PUBLIC
             isle-player-render-source isle-player-photo isle-actor-owner
-            isle-scene-graphics isle-photo-lighting isle-graphics-task isle-player-cart)
+            isle-scene-graphics isle-photo-lighting isle-graphics-task isle-player-cart isle-player-ui)
         isle_target_options(isle-player-renderer)
         target_compile_options(isle-player-renderer PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-player-root-source AND TARGET isle-player-renderer AND TARGET isle-player-camera-animation)
+        add_library(isle-player-root STATIC src/player_root.cpp src/player_root.hpp)
+        target_link_libraries(isle-player-root PUBLIC
+            isle-player-root-source isle-player-renderer isle-player-camera-animation isle-world)
+        isle_target_options(isle-player-root)
+        target_compile_options(isle-player-root PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-player-root)
+        add_library(isle-beach-music STATIC
+            src/beach_music.hpp src/beach_music.cpp src/beach_music_source.h src/beach_music_source.c
+            "${_isle_beach_music_generated}")
+        target_link_libraries(isle-beach-music PUBLIC isle-player-root)
+        isle_target_options(isle-beach-music)
+        target_compile_options(isle-beach-music PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-beach-music)
+        add_library(isle-beach-ending STATIC src/beach_ending.cpp src/beach_ending.hpp)
+        target_link_libraries(isle-beach-ending PUBLIC
+            isle-beach-music isle-actor-owner isle-player-cart)
+        isle_target_options(isle-beach-ending)
+        target_compile_options(isle-beach-ending PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-beach-music)
+        add_library(isle-beach-lifecycle-source STATIC
+            src/beach_lifecycle_source.c src/beach_lifecycle_source.h
+            "${_isle_beach_lifecycle_generated}")
+        target_include_directories(isle-beach-lifecycle-source PUBLIC "${PROJECT_SOURCE_DIR}/src")
+        target_link_libraries(isle-beach-lifecycle-source PUBLIC isle-beach-music isle-player-cart)
+        isle_target_options(isle-beach-lifecycle-source)
+        target_compile_options(isle-beach-lifecycle-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-actor-owner)
+        add_library(isle-rainbow-actor-source OBJECT
+            src/rainbow_actor_source.c src/rainbow_actor_source.h
+            src/rainbow_actor.cpp src/rainbow_actor.hpp "${_isle_rainbow_actor_generated}")
+        target_include_directories(isle-rainbow-actor-source PUBLIC "${PROJECT_SOURCE_DIR}/src")
+        target_link_libraries(isle-rainbow-actor-source PUBLIC isle-engine isle-scene)
+        isle_target_options(isle-rainbow-actor-source)
+        target_compile_options(isle-rainbow-actor-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        # Original C providers and returning native admission hooks share one
+        # actor archive, as the post-course Source/scene owners do below.
+        target_link_libraries(isle-actor-owner PUBLIC isle-rainbow-actor-source)
+    endif()
+    if(TARGET isle-player-root AND TARGET isle-player-cart)
+        add_library(isle-rainbow-lifecycle-source STATIC
+            src/rainbow_lifecycle_source.c src/rainbow_lifecycle_source.h
+            "${_isle_rainbow_lifecycle_generated}")
+        target_include_directories(isle-rainbow-lifecycle-source PUBLIC "${PROJECT_SOURCE_DIR}/src")
+        target_link_libraries(isle-rainbow-lifecycle-source PUBLIC isle-player-root isle-player-cart)
+        isle_target_options(isle-rainbow-lifecycle-source)
+        target_compile_options(isle-rainbow-lifecycle-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-beach-ending AND TARGET isle-actor-photo-scene AND TARGET isle-course-model-producer)
+        add_library(isle-application-photos STATIC src/application_photos.cpp src/application_photos.hpp)
+        target_link_libraries(isle-application-photos PUBLIC isle-player-photo)
+        isle_target_options(isle-application-photos)
+        add_library(isle-beach-lifecycle STATIC src/beach_lifecycle.cpp src/beach_lifecycle.hpp)
+        target_link_libraries(isle-beach-lifecycle PUBLIC isle-beach-lifecycle-source
+            isle-beach-ending isle-application-manager isle-application-photos
+            isle-actor-photo-scene isle-course-model-producer isle-effect-graphics-resources
+            isle-player-commands)
+        isle_target_options(isle-beach-lifecycle)
+        target_compile_options(isle-beach-lifecycle PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-rainbow-lifecycle-source AND TARGET isle-application-photos
+       AND TARGET isle-actor-photo-scene AND TARGET isle-course-model-producer)
+        add_library(isle-rainbow-lifecycle STATIC src/rainbow_lifecycle.cpp src/rainbow_lifecycle.hpp)
+        target_link_libraries(isle-rainbow-lifecycle PUBLIC isle-rainbow-lifecycle-source
+            isle-application-manager isle-application-photos isle-actor-photo-scene
+            isle-course-model-producer isle-effect-graphics-resources isle-player-commands)
+        isle_target_options(isle-rainbow-lifecycle)
+        target_compile_options(isle-rainbow-lifecycle PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
+    if(TARGET isle-beach-music AND TARGET isle-course-model-producer AND TARGET isle-actor-photo-scene)
+        add_executable(player-root-rsp-smoke EXCLUDE_FROM_ALL tests/player_root_rsp_smoke.cpp)
+        target_link_libraries(player-root-rsp-smoke PRIVATE
+            isle-beach-music isle-player-root isle-player-commands isle-player-ui isle-player-bump
+            isle-course-model-producer isle-player-cart isle-actor-photo-scene
+            isle-effect-bank-resources isle-effect-graphics-resources isle-rsp)
+        isle_target_options(player-root-rsp-smoke)
+        target_compile_options(player-root-rsp-smoke PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
@@ -1180,10 +1368,10 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
     add_executable(scene-layout-rom-smoke EXCLUDE_FROM_ALL tests/scene_layout_rom_smoke.cpp)
     target_link_libraries(scene-layout-rom-smoke PRIVATE isle-scene-graphics)
     isle_target_options(scene-layout-rom-smoke)
-    if(TARGET isle-item-producer AND TARGET isle-course-model-producer AND TARGET isle-actor-owner)
+    if(TARGET isle-borrowed-model-producer AND TARGET isle-course-model-producer AND TARGET isle-actor-owner)
         add_executable(item-producer-rsp-smoke EXCLUDE_FROM_ALL tests/item_producer_rsp_smoke.cpp)
         target_link_libraries(item-producer-rsp-smoke PRIVATE
-            isle-item-producer isle-course-model-producer isle-actor-owner isle-effect-bank-resources isle-rsp
+            isle-borrowed-model-producer isle-course-model-producer isle-actor-owner isle-effect-bank-resources isle-rsp
             isle-scene-graphics isle-canonical-executor isle-photo-lighting)
         isle_target_options(item-producer-rsp-smoke)
     endif()
@@ -1219,17 +1407,169 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
 endif()
+include(GNUInstallDirs)
 if(TARGET libultraship AND TARGET isle-audio-output AND TARGET isle-rsp AND TARGET isle-game-audio)
-    add_library(isle-game-host STATIC src/game_host.cpp src/game_host.hpp)
+    add_library(isle-game-host STATIC src/game_host.cpp src/game_host.hpp src/host_progress.cpp src/host_progress.hpp)
+    file(RELATIVE_PATH ISLE_HOST_INSTALLED_RESOURCES
+        "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_DATADIR}/35mmisle")
     target_compile_definitions(isle-game-host PRIVATE F3DEX_GBI_2
         CVAR_ENABLE_MULTI_VIEWPORTS="${CVAR_ENABLE_MULTI_VIEWPORTS}"
-        ISLE_HOST_RENDERER_RESOURCES="${ISLE_HOST_RENDERER_RESOURCES}")
-    target_link_libraries(isle-game-host PUBLIC isle-game-audio isle-game-input isle-audio-output
+        ISLE_HOST_RENDERER_RESOURCES="${ISLE_HOST_RENDERER_RESOURCES}"
+        ISLE_HOST_INSTALLED_RESOURCES="${ISLE_HOST_INSTALLED_RESOURCES}")
+    target_link_libraries(isle-game-host PUBLIC isle-game-audio isle-game-input isle-audio-output isle-host-clock
         PRIVATE libultraship isle-graphics-task isle-rsp isle-continuation Threads::Threads)
     isle_target_options(isle-game-host)
 endif()
 if(WIN32 AND TARGET isle-game-host)
     enable_language(RC)
+endif()
+
+if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle-game-host)
+    add_library(isle-application-runtime STATIC src/application_runtime.cpp src/application_runtime.hpp)
+    target_link_libraries(isle-application-runtime PUBLIC isle-beach-lifecycle isle-rainbow-lifecycle
+        isle-menu-scene isle-new-game-scene isle-oaks-lab-scene isle-scene-graphics)
+    isle_target_options(isle-application-runtime)
+    target_compile_options(isle-application-runtime PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    add_executable(35mmisle src/game_main.cpp)
+    target_link_libraries(35mmisle PRIVATE isle-application-runtime isle-game-host)
+    isle_target_options(35mmisle)
+    add_executable(35mmisle-application-runtime-rom-smoke EXCLUDE_FROM_ALL
+        tests/application_runtime_rom_smoke.cpp)
+    target_link_libraries(35mmisle-application-runtime-rom-smoke PRIVATE
+        isle-application-runtime isle-game-host)
+    isle_target_options(35mmisle-application-runtime-rom-smoke)
+    if(WIN32)
+        set_source_files_properties(src/game_host.rc PROPERTIES
+            OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/game_host.manifest")
+        foreach(_isle_application_target IN ITEMS 35mmisle 35mmisle-application-runtime-rom-smoke)
+            target_sources(${_isle_application_target} PRIVATE src/game_host.rc)
+            target_include_directories(${_isle_application_target} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+            if(MSVC)
+                target_link_options(${_isle_application_target} PRIVATE /MANIFEST:NO)
+            elseif(MINGW)
+                target_link_options(${_isle_application_target} PRIVATE -municode)
+            endif()
+        endforeach()
+    endif()
+endif()
+if(TARGET isle-window)
+    add_library(isle-post-course-resources STATIC src/post_course_resources.cpp src/post_course_resources.hpp)
+    target_link_libraries(isle-post-course-resources PUBLIC isle-window)
+    isle_target_options(isle-post-course-resources)
+    add_library(isle-post-course-window STATIC
+        src/post_course_window.cpp src/post_course_window.hpp
+        src/post_course_window_source.c src/post_course_window_source.h)
+    target_link_libraries(isle-post-course-window PUBLIC isle-post-course-resources)
+    isle_target_options(isle-post-course-window)
+endif()
+if(TARGET isle-canonical-executor AND TARGET isle-photo-subjects)
+    add_library(isle-photo-replay STATIC src/photo_replay.cpp src/photo_replay.hpp)
+    target_link_libraries(isle-photo-replay PUBLIC isle-photo-subjects isle-photo-effects
+        isle-item-resources isle-photo-lighting isle-photo-score isle-canonical-executor isle-graphics-task)
+    isle_target_options(isle-photo-replay)
+    target_compile_options(isle-photo-replay PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    if(TARGET isle-scene-graphics)
+        add_executable(photo-replay-rsp-smoke EXCLUDE_FROM_ALL tests/photo_replay_rsp_smoke.cpp)
+        target_link_libraries(photo-replay-rsp-smoke PRIVATE isle-photo-replay isle-scene-graphics)
+        isle_target_options(photo-replay-rsp-smoke)
+        if(MINGW)
+            target_link_options(photo-replay-rsp-smoke PRIVATE -municode)
+        endif()
+    endif()
+    if(TARGET isle-application-photos AND TARGET isle-game-host)
+        add_library(isle-post-course-replay STATIC
+            src/post_course_replay.cpp src/post_course_replay.hpp
+            src/post_course_replay_source.c src/post_course_replay_source.h)
+        target_link_libraries(isle-post-course-replay PUBLIC
+            isle-photo-replay isle-application-photos isle-game-host)
+        isle_target_options(isle-post-course-replay)
+    endif()
+endif()
+
+if(TARGET isle-post-course-replay AND TARGET isle-post-course-window)
+    foreach(_isle_post_module IN ITEMS camera_check photo_check)
+        string(REPLACE "_" "-" _isle_post_name "${_isle_post_module}")
+        set(_isle_post_private "${CMAKE_BINARY_DIR}/_deps/isle-${_isle_post_name}-private")
+        if(_isle_post_module STREQUAL "camera_check")
+            set(_isle_post_include "${_isle_post_private}/camera_check_source.inc")
+        else()
+            set(_isle_post_include "${_isle_post_private}/photo_check_original.inc")
+        endif()
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+            "${PROJECT_SOURCE_DIR}/tools/materialize_${_isle_post_module}.py"
+            "${PROJECT_SOURCE_DIR}/cmake/${_isle_post_name}-inputs.json")
+        execute_process(
+            COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/materialize_${_isle_post_module}.py"
+                --source-repo "${_isle_snap_source}"
+                --manifest "${PROJECT_SOURCE_DIR}/cmake/${_isle_post_name}-inputs.json"
+                --output "${_isle_post_include}"
+            RESULT_VARIABLE _isle_post_result ERROR_VARIABLE _isle_post_error)
+        if(NOT _isle_post_result EQUAL 0)
+            message(FATAL_ERROR "Exact ${_isle_post_name} C admission failed: ${_isle_post_error}")
+        endif()
+        # C providers and native hooks mutually call each other. Embed their
+        # objects in one scene archive, without linker-order cycles or shims.
+        add_library(isle-${_isle_post_name}-source OBJECT
+            "src/${_isle_post_module}_source.c" "src/${_isle_post_module}_source.h")
+        target_include_directories(isle-${_isle_post_name}-source PRIVATE "${_isle_post_private}")
+        target_link_libraries(isle-${_isle_post_name}-source PUBLIC
+            isle-post-course-window isle-post-course-replay)
+        isle_target_options(isle-${_isle_post_name}-source)
+        target_compile_options(isle-${_isle_post_name}-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+    endforeach()
+    add_library(isle-post-course-scene STATIC
+        src/post_course_scene.cpp src/post_course_scene.hpp src/post_course_scene_internal.hpp
+        src/post_course_scene_hooks.cpp src/post_course_modules.cpp src/post_course_modules.hpp)
+    target_link_libraries(isle-post-course-scene PUBLIC
+        isle-camera-check-source isle-photo-check-source isle-application-manager
+        isle-application-photos isle-scene-graphics)
+    isle_target_options(isle-post-course-scene)
+    target_compile_options(isle-post-course-scene PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    if(TARGET isle-application-runtime)
+        target_link_libraries(isle-application-runtime PUBLIC isle-post-course-scene)
+    endif()
+endif()
+
+
+if(TARGET isle-beach-lifecycle AND TARGET isle-window AND TARGET isle-rsp)
+    add_executable(post-course-interfaces-rom-smoke EXCLUDE_FROM_ALL
+        tests/post_course_interfaces_rom_smoke.cpp)
+    target_link_libraries(post-course-interfaces-rom-smoke PRIVATE isle-beach-lifecycle isle-window isle-rsp)
+    isle_target_options(post-course-interfaces-rom-smoke)
+    if(MINGW)
+        target_link_options(post-course-interfaces-rom-smoke PRIVATE -municode)
+    endif()
+endif()
+
+if(TARGET isle-post-course-window AND TARGET isle-beach-lifecycle AND TARGET isle-canonical-executor)
+    add_executable(post-course-window-rom-smoke EXCLUDE_FROM_ALL
+        tests/post_course_window_rom_smoke.cpp tests/post_course_window_probe.c)
+    target_link_libraries(post-course-window-rom-smoke PRIVATE
+        isle-post-course-window isle-beach-lifecycle isle-graphics-task isle-canonical-executor isle-rsp)
+    isle_target_options(post-course-window-rom-smoke)
+    if(MINGW)
+        target_link_options(post-course-window-rom-smoke PRIVATE -municode)
+    endif()
+endif()
+
+if(TARGET isle-post-course-replay AND TARGET isle-post-course-window AND TARGET isle-scene-graphics AND TARGET isle-game-host)
+    add_executable(post-course-replay-rom-smoke EXCLUDE_FROM_ALL
+        tests/post_course_replay_rom_smoke.cpp tests/post_course_replay_probe.c)
+    target_link_libraries(post-course-replay-rom-smoke PRIVATE
+        isle-post-course-replay isle-post-course-window isle-scene-graphics isle-game-host)
+    isle_target_options(post-course-replay-rom-smoke)
+    if(MINGW)
+        target_link_options(post-course-replay-rom-smoke PRIVATE -municode)
+    endif()
 endif()
 
 if(TARGET isle-scene-graphics AND TARGET isle-game-host)
@@ -1238,7 +1578,7 @@ if(TARGET isle-scene-graphics AND TARGET isle-game-host)
     target_sources(35mmisle-startup-runtime-rom-smoke PRIVATE
         tests/new_game_scene_rom_smoke.cpp tests/oaks_lab_scene_rom_smoke.cpp)
     target_link_libraries(35mmisle-startup-runtime-rom-smoke PRIVATE isle-scene-graphics isle-game-host
-        isle-host-clock isle-new-game-scene isle-oaks-lab-scene)
+        isle-host-clock isle-application-manager isle-new-game-scene isle-oaks-lab-scene)
     isle_target_options(35mmisle-startup-runtime-rom-smoke)
     if(WIN32)
         target_sources(35mmisle-startup-runtime-rom-smoke PRIVATE src/game_host.rc)
@@ -1254,40 +1594,10 @@ if(TARGET isle-scene-graphics AND TARGET isle-game-host)
 endif()
 
 if(TARGET isle-player-commands AND TARGET isle-rsp)
-    set(_isle_player_command_private "${CMAKE_BINARY_DIR}/_deps/isle-player-command-reference-private")
-    set(_isle_player_command_manifest "${PROJECT_SOURCE_DIR}/cmake/player-command-reference-inputs.json")
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-        "${PROJECT_SOURCE_DIR}/tools/prepare_player_command_reference.py"
-        "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py"
-        "${_isle_player_command_manifest}")
-    file(READ "${_isle_player_command_manifest}" _isle_player_command_authority)
-    string(JSON _isle_player_command_support_count LENGTH "${_isle_player_command_authority}" native_support)
-    if(_isle_player_command_support_count GREATER 0)
-        math(EXPR _isle_player_command_support_last "${_isle_player_command_support_count} - 1")
-        foreach(_isle_player_command_support_index RANGE 0 ${_isle_player_command_support_last})
-            string(JSON _isle_player_command_support_path MEMBER "${_isle_player_command_authority}"
-                native_support ${_isle_player_command_support_index})
-            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-                "${PROJECT_SOURCE_DIR}/${_isle_player_command_support_path}")
-        endforeach()
-    endif()
-    execute_process(
-        COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_player_command_reference.py"
-            --repository "${_isle_snap_source}"
-            --manifest "${_isle_player_command_manifest}"
-            --output "${_isle_player_command_private}/player_command_reference.inc"
-            --header "${_isle_player_command_private}/player_command_reference.h"
-            --evidence "${_isle_player_command_private}/evidence.json"
-        RESULT_VARIABLE _isle_player_command_result
-        OUTPUT_VARIABLE _isle_player_command_output
-        ERROR_VARIABLE _isle_player_command_error)
-    if(NOT _isle_player_command_result EQUAL 0)
-        message(FATAL_ERROR "Private Player command source preparation failed: ${_isle_player_command_output}${_isle_player_command_error}")
-    endif()
     add_executable(player-commands-rom-smoke EXCLUDE_FROM_ALL
         tests/player_commands_rom_smoke.cpp tests/player_commands_rom_fixture.c)
     target_include_directories(player-commands-rom-smoke PRIVATE
-        "${_isle_player_command_private}" "${PROJECT_SOURCE_DIR}/tests")
+        "${PROJECT_SOURCE_DIR}/tests")
     target_link_libraries(player-commands-rom-smoke PRIVATE isle-player-commands isle-rsp)
     isle_target_options(player-commands-rom-smoke)
 endif()
@@ -1341,18 +1651,41 @@ foreach(_isle_player_consumer IN ITEMS
     endif()
 endforeach()
 
-include(GNUInstallDirs)
-install(TARGETS 35mmisle-rom RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle-rom-tool")
+install(TARGETS 35mmisle-rom RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime)
+install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle-rom-tool" COMPONENT Runtime)
 
 set(CPACK_PACKAGE_NAME "35mmisle-rom-tool")
 set(CPACK_PACKAGE_VENDOR "35mmIsle contributors")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Read-only ROM identity checker; no game or assets")
+if(TARGET 35mmisle)
+    install(TARGETS 35mmisle RUNTIME_DEPENDENCY_SET isle-product-runtime
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime)
+    install(RUNTIME_DEPENDENCY_SET isle-product-runtime
+        PRE_EXCLUDE_REGEXES "^[Aa][Pp][Ii]-[Mm][Ss]-" "^[Ee][Xx][Tt]-[Mm][Ss]-"
+        POST_EXCLUDE_REGEXES "^/lib/" "^/lib64/" "^/usr/lib/" "^/usr/lib64/"
+            "/[Ss][Yy][Ss][Tt][Ee][Mm]32/"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/35mmisle" COMPONENT Runtime)
+    if(UNIX AND NOT APPLE)
+        file(RELATIVE_PATH _isle_runtime_libraries
+            "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_LIBDIR}/35mmisle")
+        set_target_properties(35mmisle PROPERTIES INSTALL_RPATH "$ORIGIN/${_isle_runtime_libraries}")
+    endif()
+    install(DIRECTORY "${ISLE_HOST_RENDERER_RESOURCES}/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/35mmisle" COMPONENT Runtime)
+    install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle" COMPONENT Runtime)
+    include(cmake/RuntimeNotices.cmake)
+    set(CPACK_PACKAGE_NAME "35mmisle")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Native Pokemon Snap port; requires a supported user-supplied ROM")
+endif()
+# Do not accidentally package dependency SDK headers, private materializers,
+# source exports, development consumers or legally supplied game assets.
+set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${PROJECT_NAME};Runtime;/")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-64bit")
 set(CPACK_VERBATIM_VARIABLES ON)
-# Only install-listed tooling enters a binary archive; never package the source tree.
+# Only the explicit Runtime component enters a binary archive.
 set(CPACK_SOURCE_GENERATOR "")
 foreach(format IN ITEMS 7Z CYGWIN RPM TBZ2 TGZ TXZ TZ ZIP)
     set(CPACK_SOURCE_${format} OFF)

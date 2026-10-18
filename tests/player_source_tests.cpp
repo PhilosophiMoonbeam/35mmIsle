@@ -32,9 +32,10 @@ public:
         ok(isle_player_source_activate(&source));
     }
     ~World() {
+        const auto fault=isle_game_status(game);
         for (std::size_t i=0;i<object_count;++i)
-            if (isle_game_delete_object(game,objects[i]) != ISLE_GAME_OK) std::abort();
-        if (isle_player_source_deactivate(&source) != ISLE_GAME_OK ||
+            if (isle_game_delete_object(game,objects[i]) != fault) std::abort();
+        if (isle_player_source_deactivate(&source) != fault ||
             isle_game_destroy(game) != ISLE_GAME_OK) std::abort();
     }
     World(const World&) = delete;
@@ -241,6 +242,28 @@ void nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status() {
         }
         require(destroyed,"returned C failure bypassed C++ owner destruction");
     }
+}
+
+void native_fault_returns_without_executing_a_rejected_source_suffix() {
+    World world;
+    auto* root=world.object(7);
+    ok(isle_player_source_bind(world.game,root,&world.source));
+    bool destroyed=false;
+    struct Owner { bool& destroyed; ~Owner() { destroyed=true; } };
+    {
+        Owner owner{destroyed};
+        require(isle_player_source_call(&world.source,
+                    player_source_native_actor_failure,root)==ISLE_GAME_EXECUTION_FAILURE &&
+                world.source.status==ISLE_GAME_EXECUTION_FAILURE &&
+                world.source.ThrowItemTimeout==41 && !world.source.nonwaiting_call_frame &&
+                !destroyed && isle_game_status(world.game)==ISLE_GAME_EXECUTION_FAILURE,
+            "native fault escaped its returning C fence or executed rejected Source code");
+        require(isle_player_source_call(&world.source,
+                    player_source_native_actor_failure,root)==ISLE_GAME_EXECUTION_FAILURE &&
+                world.source.ThrowItemTimeout==41,
+            "a failed native Game reentered Source execution or healed its failure");
+    }
+    require(destroyed,"native fault bypassed its owning C++ destructor");
 }
 
 void sprite_borrows_reacquire_actual_membership_after_a_real_wait() {
@@ -527,6 +550,7 @@ int main() {
         object_process_controls_preserve_real_waits_updaters_and_current_context();
         ordered_source_lookup_preserves_link_priority_absence_and_checked_boundaries();
         nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status();
+        native_fault_returns_without_executing_a_rejected_source_suffix();
         sprite_borrows_reacquire_actual_membership_after_a_real_wait();
         sprite_borrow_failures_use_only_the_canonical_nested_c_fence();
         sprite_self_delete_borrows_end_at_actual_native_retirement();

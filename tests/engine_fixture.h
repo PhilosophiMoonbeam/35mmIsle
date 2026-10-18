@@ -67,6 +67,12 @@ IsleGameResult engine_replace_actor_update(IsleGame* game, IsleGameObject* objec
 void engine_bind_source_payload(IsleGameObject* object, EngineFixture* fixture);
 void engine_source_a(IsleGameObject* object);
 void engine_source_b(IsleGameObject* object);
+void engine_source_stop_update(IsleGameObject* object);
+void engine_native_reject_stop_update(IsleGameObject* object, void* user);
+void engine_source_reject_nested_stop(IsleGameObject* object);
+void engine_source_wait_once(IsleGameObject* object);
+void engine_native_reject_source_wait(IsleGameObject* object, void* user);
+void engine_source_reject_nested_wait(IsleGameObject* object);
 void engine_source_pause_pulse(IsleGameObject* object);
 void engine_native_source_pause_pulse(IsleGameObject* object, void* user);
 void engine_source_pause_wait(IsleGameObject* object);

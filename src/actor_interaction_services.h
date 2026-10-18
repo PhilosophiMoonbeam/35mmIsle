@@ -40,10 +40,14 @@ IsleGameResult isle_actor_interaction_direction(IsleActorSource*, int32_t*);
 IsleGameResult isle_actor_interaction_level_progress(IsleActorSource*, int32_t* block_count, float* block_part);
 IsleGameResult isle_actor_interaction_eat_apple(IsleActorSource*);
 IsleGameResult isle_actor_interaction_send_command(IsleActorSource*, int32_t, IsleGameObject*);
+IsleGameResult isle_actor_interaction_send_addressed(IsleActorSource*, IsleGameObject*, int32_t, IsleGameObject*);
 IsleGameResult isle_actor_interaction_send_to_link(IsleActorSource*, uint8_t, int32_t, IsleGameObject*);
 IsleGameResult isle_actor_interaction_scene_counter(IsleActorSource*, uint32_t, int32_t**);
 IsleGameResult isle_actor_interaction_pikachu_temporary(IsleActorSource*, IsleGameVec3*);
 IsleGameResult isle_actor_interaction_weighted(IsleActorSource*, uint32_t, const IsleActorRandomState**);
+/* Canonical CD3F4 scene-local path slot, admitted initialized ROM value. The
+ * selected native World path and this slot outlive every Eevee/Chansey process. */
+IsleGameResult isle_actor_interaction_scene_path(IsleActorSource*, uint32_t, const void***);
 
 #ifdef __cplusplus
 }

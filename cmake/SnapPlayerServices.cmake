@@ -1,5 +1,7 @@
 # Complete own-GAME service bodies. Materialization never configures the decomp.
-foreach(_isle_player_service IN ITEMS player-ui screen-transition player-bump)
+foreach(_isle_player_service IN ITEMS player-ui screen-transition player-bump beach-music
+        application beach-lifecycle beach-ending beach-snorlax-kangaskhan
+        beach-meowth beach-eevee-chansey beach-scyther-special rainbow-actor rainbow-lifecycle)
     string(REPLACE "-" "_" _isle_player_service_id "${_isle_player_service}")
     set(_isle_player_service_manifest "${PROJECT_SOURCE_DIR}/cmake/${_isle_player_service}-inputs.json")
     set(_isle_player_service_generator "${PROJECT_SOURCE_DIR}/tools/prepare_${_isle_player_service_id}.py")
@@ -22,12 +24,30 @@ foreach(_isle_player_service IN ITEMS player-ui screen-transition player-bump)
     endif()
     set(_isle_${_isle_player_service_id}_generated
         "${CMAKE_BINARY_DIR}/_deps/isle-${_isle_player_service}-private/game.c")
+    set(_isle_player_service_evidence
+        "${CMAKE_BINARY_DIR}/isle-${_isle_player_service}-inputs.json")
+    if(_isle_player_service STREQUAL "application")
+        set(_isle_${_isle_player_service_id}_generated
+            "${CMAKE_BINARY_DIR}/_deps/isle-application-private/application_original.inc")
+    endif()
+    if(_isle_player_service STREQUAL "application" OR
+            _isle_player_service STREQUAL "beach-lifecycle" OR
+            _isle_player_service STREQUAL "beach-ending" OR
+            _isle_player_service STREQUAL "beach-snorlax-kangaskhan" OR
+            _isle_player_service STREQUAL "beach-meowth" OR
+            _isle_player_service STREQUAL "beach-eevee-chansey" OR
+            _isle_player_service STREQUAL "beach-scyther-special" OR
+            _isle_player_service STREQUAL "rainbow-actor" OR
+            _isle_player_service STREQUAL "rainbow-lifecycle")
+        set(_isle_player_service_evidence
+            "${CMAKE_BINARY_DIR}/_deps/isle-${_isle_player_service}-private/evidence.json")
+    endif()
     execute_process(
         COMMAND "${Python3_EXECUTABLE}" -B "${_isle_player_service_generator}"
             --repository "${_isle_snap_source}"
             --manifest "${_isle_player_service_manifest}"
             --output "${_isle_${_isle_player_service_id}_generated}"
-            --evidence "${CMAKE_BINARY_DIR}/isle-${_isle_player_service}-inputs.json"
+            --evidence "${_isle_player_service_evidence}"
         RESULT_VARIABLE _isle_player_service_result
         OUTPUT_VARIABLE _isle_player_service_output
         ERROR_VARIABLE _isle_player_service_error)

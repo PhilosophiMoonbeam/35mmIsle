@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Explicit private-ROM CPU behavioral consumer. NEVER register with CTest or
 // default discovery. No graphics executor is created: exclusion is serialized,
 // but GPU/preparation/readback/postprocess lifetime is NOT proved here. Main's
@@ -82,15 +83,15 @@ struct Consumer {
     scene::Services& services;
     actor::Owner& owner;
     world::World& world;
-    const beach::ActorResources& resources;
+    const actor::Resources& resources;
     focus::Detector& detector;
-    std::size_t common_definition=beach::actor_no_index;
+    std::size_t common_definition=actor::actor_no_index;
     std::uint32_t next_id=10000;
-    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const beach::ActorResources& r,focus::Detector& d)
+    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const actor::Resources& r,focus::Detector& d)
         : services(s),owner(o),world(w),resources(r),detector(d) {
         const auto defs=r.definitions();
         for (std::size_t i=0;i<defs.size();++i) if (defs[i].actor_id==1003) common_definition=i;
-        require(common_definition!=beach::actor_no_index,"admitted common1003 definition absent");
+        require(common_definition!=actor::actor_no_index,"admitted common1003 definition absent");
     }
     actor::SpawnResult spawn(int behavior) {
         world::Spawn descriptor;
@@ -421,7 +422,7 @@ struct Consumer {
         const auto definitions=resources.definitions();
         bool unsupported=false;
         for (std::size_t i=0;i<definitions.size();++i) {
-            if (i==common_definition||definitions[i].initialization==beach::actor_no_index) continue;
+            if (i==common_definition||definitions[i].initialization==actor::actor_no_index) continue;
             const auto& setup=resources.initializations()[definitions[i].initialization].setup;
             if (!setup.initial_state_identity&&!setup.transition_graph_identity) continue;
             world::Spawn descriptor; descriptor.id=static_cast<std::int32_t>(definitions[i].actor_id);
@@ -813,10 +814,10 @@ bool child_event_emission(IsleActorSource& record,const a::CallbackEvent& event,
 template<class Pump>
 void actual_header_events(scene::Services& services,isle_arena& arena,
                           environment_sound::Environment& environment,
-                          const beach::ActorResources& resources,a::SlotCapacity capacity,
+                          const actor::Resources& resources,a::SlotCapacity capacity,
                           std::span<const menu::EffectBank* const> banks,Pump& pump) {
     const std::array capacities{capacity};
-    auto made=a::Runtime::create({resources.models(),resources.materials(),resources.animations(),menu::no_index},
+    auto made=a::Runtime::create({resources.models(),resources.materials(),resources.animations(),menu::no_index,resources.paths()},
                                 capacities,{},{32768,4096});
     require(bool(made),"actual header event Runtime admission failed");
     auto& runtime=*made.runtime;
@@ -995,10 +996,10 @@ void actual_header_events(scene::Services& services,isle_arena& arena,
 }
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"explicit private profile directory must exist and be empty");
-    const world::Resources world_resources(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id);
     const auto& setup=world_resources.setup();
-    const beach::ActorResources resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const environment_sound::BeachResources sound_resources(snapshot);
+    const actor::Resources resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const environment_sound::Resources sound_resources(snapshot,0);
     const menu::EffectResources effect_resources(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"actual shared audio hydration failed");
@@ -1029,14 +1030,18 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector;
             WorldShift shift{&services,camera,nullptr};
-            world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,WorldShift::camera_shift,WorldShift::effect_shift,nullptr});
+            world::ModuleState world_module;
+            world::World world(services,world_resources,world_module,{&shift,nullptr,nullptr,nullptr,WorldShift::camera_shift,WorldShift::effect_shift,nullptr});
             a::SlotCapacity capacity{};
             for (const auto& model:resources.models()) { const auto c=a::slot_capacity(model); capacity.nodes=std::max(capacity.nodes,c.nodes); capacity.material_attachments=std::max(capacity.material_attachments,c.material_attachments); }
             const std::array capacities{capacity,capacity};
             {
                 // The real failed-factory/recovery and live-source teardown
                 // must also work when course FX publication was never reached.
-                actor::Owner prepared(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});
+                beach::ActorSceneResources sceneData(snapshot);
+                std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                beach::ActorSceneState sceneState(sceneData,scene_latch);
+                actor::Owner prepared(services,resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096});
                 Consumer consumer(services,prepared,world,resources,detector);
                 consumer.invalid_placement();
                 consumer.spawn(1); // The unpublished owner's destructor joins it.
@@ -1056,7 +1061,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             native(isle_game_model_set_placement(services.game,player,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_node.transform));
             context.bind(player_object,player,camera);
             {
-                actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096}); shift.owner=&owner;
+                beach::ActorSceneResources sceneData(snapshot);
+                std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                beach::ActorSceneState sceneState(sceneData,scene_latch);
+                actor::Owner owner(services,resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096}); shift.owner=&owner;
                 accepted(owner.publish_effects());
                 Consumer consumer(services,owner,world,resources,detector);
                 consumer.normal(); consumer.hidden(); consumer.pause_and_update(); consumer.capacity_and_reuse();

@@ -2,7 +2,7 @@
 #define ISLE_ACTOR_BEHAVIOR_BINDINGS_HPP
 
 #include "actor_source.h"
-#include "beach_behavior_resources.hpp"
+#include "actor_behavior_resources.hpp"
 
 #include <cstdint>
 #include <span>
@@ -13,6 +13,9 @@ namespace isle::actor {
 // Dependency spans are consumed during construction only. They describe native
 // callback/graph/list references; factory/assets/services require Owner admission
 // in addition to this callable-data closure before any process can execute.
+// For course 6 the compiled Rainbow provider catalog retains numeric utility,
+// animation, collision and factory dependencies in their original typed seams;
+// they are deliberately not admitted as GObj callbacks by this registry.
 struct BehaviorCallbackBinding {
     std::uint32_t identity = 0;
     IsleGameSourceCallback function = nullptr;
@@ -30,7 +33,7 @@ struct BoundWeightedStates {
 // interpretation. Retain resources and its unmoved Snapshot through all users.
 class BehaviorBindings final {
 public:
-    BehaviorBindings(const beach::BehaviorResources&,
+    BehaviorBindings(const BehaviorResources&,
         std::span<const BehaviorCallbackBinding>,
         std::span<const std::uint32_t> graphs,
         std::span<const std::uint32_t> weighted_states = {},
@@ -51,6 +54,7 @@ public:
     bool admits_native_graph(const IsleActorInteractionGraph&,
         bool (*admit)(IsleGameSourceCallback, void*), void*) const;
     void require_live() const;
+    std::int32_t course_id() const noexcept { return resources_->course_id(); }
 private:
     struct Graph {
         std::vector<IsleActorInteraction> rows;
@@ -65,7 +69,7 @@ private:
         IsleGameSourceCallback function;
         std::vector<IsleGameSourceCallback> closure;
     };
-    const beach::BehaviorResources* resources_;
+    const BehaviorResources* resources_;
     std::vector<Graph> graphs_;
     std::vector<Weighted> weighted_;
     std::vector<Callback> callbacks_;

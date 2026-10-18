@@ -5,6 +5,8 @@
 
 #include <memory>
 
+namespace isle::application { class Photos; }
+
 namespace isle::save {
 
 enum class GameErrc { none, unavailable, field_bounds, canonical_image, source_state };
@@ -23,6 +25,7 @@ enum class PhotoSet { report, temporary, album };
 inline constexpr std::size_t game_photo_bytes = 0x3a0;
 inline constexpr std::size_t game_report_count = 69;
 inline constexpr std::size_t game_album_count = 60;
+inline constexpr std::size_t game_temporary_count = 4;
 
 // Owns immutable canonical bytes. Every returned span/view remains valid while
 // this snapshot is retained, including after its session changes or is destroyed.
@@ -61,6 +64,9 @@ struct GameOpenResult;
 class GameSession {
 public:
     GameSession() noexcept;
+    // An application Photos binding pins this object's address/lifetime.
+    // Moving either operand or destroying the session while bound terminates;
+    // destroy Photos first. Unbound sessions retain ordinary noexcept moves.
     ~GameSession();
     GameSession(GameSession&&) noexcept;
     GameSession& operator=(GameSession&&) noexcept;
@@ -85,8 +91,24 @@ public:
     [[nodiscard]] GameError set_unlocked_course(int course);
     [[nodiscard]] GameError set_course_score(std::size_t index, std::int32_t score);
     [[nodiscard]] GameError set_report_score(std::size_t index, std::int32_t score);
+    [[nodiscard]] GameValue<std::int32_t> report_score(std::size_t index) const noexcept;
+    // Source func_800C02EC / func_800C0314: signed index clamps to 0..2
+    // (apple, pester ball, flute). RAM only; true raises the SAME course notice
+    // when possession is false, without granting possession. Reset clears all.
+    [[nodiscard]] GameValue<bool> pending_item_grant(int source_index) const noexcept;
+    [[nodiscard]] GameError set_pending_item_grant(int source_index, bool value) noexcept;
     // Exactly 16 source encoding bytes, no host text conversion or implicit name.
     [[nodiscard]] GameError set_player_name(std::span<const std::byte> name);
+    // Copies exactly one canonical wire record, not a native PhotoData layout.
+    // Report/temporary/album bounds are 69/4/60. Independent of score/comment
+    // writes and disk commit; preserves all outstanding immutable snapshots.
+    [[nodiscard]] GameError set_photo(PhotoSet set, std::size_t index, std::span<const std::byte> photo);
+    // Scoring mutates this source flag byte only; retain every other wire byte.
+    [[nodiscard]] GameError set_photo_flags(PhotoSet set, std::size_t index, std::uint8_t flags);
+    // Borrowed canonical views, valid only until the next session mutation.
+    // Unlike snapshot(), these do not seal/hash the whole image for a read.
+    [[nodiscard]] GameValue<std::span<const std::byte>> photo(PhotoSet set, std::size_t index) const noexcept;
+    [[nodiscard]] GameValue<std::span<const std::byte>> album_comment(std::size_t index) const noexcept;
     [[nodiscard]] GameError remove_photo(PhotoSet set, std::size_t index);
     // Exactly 32 BE16 source characters. These are not host wchar_t values.
     [[nodiscard]] GameError set_album_comment(std::size_t index, std::span<const std::byte> comment);
@@ -97,6 +119,24 @@ public:
     // Source func_800C027C, set by unlock progress beyond selected course.
     [[nodiscard]] bool consume_course_notice() noexcept;
 private:
+    // One application-owned representation cache. Notifications are nonwaiting,
+    // nonthrowing native leaves, never source callbacks or checked transfers.
+    // They must not mutate/reenter session mutation. Session and Photos keep
+    // their existing addresses until the binding is released.
+    struct PhotoProjection {
+        void* owner = nullptr;
+        void (*photo_changed)(void*, PhotoSet, std::size_t, std::span<const std::byte>, bool flags_only) noexcept = nullptr;
+        void (*comment_changed)(void*, std::size_t, std::span<const std::byte>) noexcept = nullptr;
+        void (*reset)(void*) noexcept = nullptr;
+    };
+    [[nodiscard]] GameError bind_photo_projection(PhotoProjection projection) noexcept;
+    void unbind_photo_projection(void* owner) noexcept;
+    // Photos holds one actual replay read across Source waits. Saved mutation
+    // rejects only that slot; a roll borrow still fences whole-session reset.
+    [[nodiscard]] GameError borrow_replay(const void* borrower, bool saved,
+        PhotoSet set, std::size_t index) noexcept;
+    [[nodiscard]] GameError release_replay(const void* borrower) noexcept;
+    friend class ::isle::application::Photos;
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

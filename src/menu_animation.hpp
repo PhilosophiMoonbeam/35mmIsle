@@ -101,6 +101,30 @@ struct Resources {
 // GAME 1F960.c uniform arc-length parameterization and native spline math.
 Vec3 path_position(const AnimationPath&, float parameter);
 Vec3 path_velocity(const AnimationPath&, float parameter);
+struct TextureDomainResult {
+    Status status;
+    std::size_t images = 0, palettes = 0;
+    explicit operator bool() const noexcept { return static_cast<bool>(status); }
+};
+// Cold universal STEP proof: both values are included independently of any
+// binary32 seek/speed arithmetic. Returns unsupported (not a claim of an
+// unbounded domain) when a consumed channel needs time-dependent reasoning.
+// Source owners supply that reasoning as texture_sample_domain capabilities.
+TextureDomainResult texture_domain(const Material&, std::span<const Animation>,
+                                  std::span<const std::size_t> selected_programs,
+                                  std::span<const AnimationPath> paths = {}) noexcept;
+// One first update after kind-only restart, with the indicated source speed.
+// Every binary32 skip in the inclusive interval is admitted, not sampled probes.
+// Later updates require another restart; retained target/rate seeds are closed
+// across the selected programs. The caller owns this scheduling capability.
+struct TextureSample {
+    std::size_t program = no_index;
+    float first = 0, last = 0, speed = 0;
+    bool fresh = false; // New AObjs, as photo reconstruction; no retained seed.
+};
+TextureDomainResult texture_sample_domain(const Material&, std::span<const Animation>,
+                                         std::span<const TextureSample>,
+                                         std::span<const AnimationPath> paths = {}) noexcept;
 struct CreateResult;
 // Pure animator, not a native lifecycle coordinator. Destruction/whole-runtime
 // retirement require the owner to join native callbacks and end every renderer,
@@ -137,9 +161,10 @@ public:
     // Each model call visits all nodes depth-first, model then attached materials.
     // First call after acquire/reset evaluates time 0 (CHANGED); subsequent
     // calls advance the instance's signed source speed. END applies once.
-    // SET_ANIMATION14 follows a validated same-stream boundary and resets source
-    // clocks only, retaining tracks/fields/speeds/receiver. Receiver callbacks
-    // report -2 on model loops; material loops never emit model callbacks.
+    // SET_ANIMATION14 follows a validated reachable command boundary (including
+    // another tape/interior/NULL) and resets source clocks only, retaining tracks,
+    // fields/speeds/receiver. JUMP1 retains clocks. Both notify model receiver -2;
+    // material/camera transfers never emit model callbacks.
     Status step_model(InstanceHandle) noexcept;
     Status step_camera(std::uint32_t object_flags = 0) noexcept;
     // Storage addresses stay stable until destruction; active spans are borrowed

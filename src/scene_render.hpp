@@ -37,6 +37,11 @@ struct Pass {
     // Scissor is intersected with the real native camera viewport.
     sprite::Bounds scissor{};
     std::span<const SpriteDraw> sprites;
+    // Sprite passes naming identical full ranges share a bounded append arena
+    // for each Frame::begin. Other sprite arenas must be disjoint (even when
+    // controls skip drawing); partial overlap is rejected before callbacks.
+    // Ownership is frozen at preflight, but actual draw-time views determine
+    // consumption. Skipped controls consume nothing; empty draws emit a list.
     sprite::RamRange sprite_commands{};
     Prepare prepare = nullptr;
     void* userdata = nullptr;

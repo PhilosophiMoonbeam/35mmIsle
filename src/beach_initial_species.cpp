@@ -1,8 +1,13 @@
 #include "beach_initial_species.hpp"
 #include "beach_initial_species_source.h"
+#include "beach_ending_source.h"
 #include <array>
 namespace isle::beach {
 namespace {
+constexpr std::uint32_t ending_initial[] = {0x802ca474};
+constexpr std::uint32_t ending_graph[] = {0x802cd9d8};
+constexpr std::uint32_t ending_trigger[] = {0x802ca950};
+constexpr std::uint32_t ending_outro[] = {0x802ca5dc, 0x802ca8c4};
 constexpr std::uint32_t butterfly_initial[] = {0x802c7bb8, 0x802c7c7c};
 constexpr std::uint32_t butterfly_wait[] = {0x802c7bb8};
 constexpr std::uint32_t butterfly_hit[] = {0x802c7da0, 0x802c7dec, 0x802c7bb8};
@@ -137,9 +142,15 @@ const actor::BehaviorCallbackBinding callbacks[] = {
     {0x802cbb90, func_beach_802CBB90, entry_802cbb90_callbacks, entry_802cbb90_graphs, {}},
     {0x802cbc4c, func_beach_802CBC4C, entry_802cbc4c_callbacks, entry_802cbc4c_graphs, {}},
     {0x802ca300, func_beach_802CA300, {}, {}, {}},
+    {0x802ca450, func_beach_802CA450, ending_initial, {}, {}},
+    {0x802ca474, func_beach_802CA474, {}, ending_graph, {}},
+    {0x802ca4cc, func_beach_802CA4CC, ending_trigger, {}, {}},
+    {0x802ca5dc, func_beach_802CA5DC, {}, {}, {}},
+    {0x802ca8c4, func_beach_802CA8C4, {}, {}, {}},
+    {0x802ca950, func_beach_802CA950, ending_outro, {}, {}},
 };
-constexpr std::uint32_t graphs[] = {0x802ccd60, 0x802ccf14, 0x802ccf44, 0x802cce1c, 0x802cd040, 0x802cd010, 0x802cd064, 0x802cd0b4, 0x802cd0e4, 0x802cdc60, 0x802cdc80, 0x802cdca0, 0x802cdcd0, 0x802cdd40, 0x802cdd80, 0x802cde48, 0x802cde78, 0x802cdef8, 0x802cdf98, 0x802cdfd8};
-constexpr std::uint32_t roots[] = {0x802c7b10, 0x802c82b0, 0x802c7e70, 0x802c85b0, 0x802cacd4, 0x802ca300};
+constexpr std::uint32_t graphs[] = {0x802ccd60, 0x802ccf14, 0x802ccf44, 0x802cce1c, 0x802cd040, 0x802cd010, 0x802cd064, 0x802cd0b4, 0x802cd0e4, 0x802cdc60, 0x802cdc80, 0x802cdca0, 0x802cdcd0, 0x802cdd40, 0x802cdd80, 0x802cde48, 0x802cde78, 0x802cdef8, 0x802cdf98, 0x802cdfd8, 0x802cd9d8};
+constexpr std::uint32_t roots[] = {0x802c7b10, 0x802c82b0, 0x802c7e70, 0x802c85b0, 0x802cacd4, 0x802ca300, 0x802ca450};
 }
 std::span<const actor::BehaviorCallbackBinding> initial_species_callbacks() { return callbacks; }
 std::span<const std::uint32_t> initial_species_graphs() { return graphs; }

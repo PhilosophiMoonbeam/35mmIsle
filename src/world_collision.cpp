@@ -594,6 +594,21 @@ bool PreparedModels::collision_one(std::size_t index,const StaticObject& o,Vec3 
             return hit(c,t.local_to_global,t.global_to_local,p,v,op,ov);
         });
 }
+bool PreparedModels::collision_model_one(std::size_t index,Vec3 obj,Vec3 rotation,Vec3 p,Vec3 v,Vec3& op,Vec3& ov) const noexcept {
+    if(index>=models_.size()) return false;
+    const auto& prepared=models_[index];
+    const auto& model=*prepared.source;
+    // Authored aggregate fixtures have no Snapshot. Real standalone resources
+    // retain their actual bounded record and reject a moved-from source.
+    if(model.snapshot && (model.snapshot->canonical().data()!=model.source_data ||
+                         model.snapshot->canonical().size()!=rom::us_size)) return false;
+    Vec3fScale(&obj,.01f);
+    return collide(model,prepared.root,obj,rotation,{model.scale,model.scale,model.scale},p,v,op,ov,
+        [&](std::size_t i,const Collider& c,Vec3 p,Vec3 v,Vec3& op,Vec3& ov) {
+            const auto& t=transforms_[prepared.first_transform+i];
+            return hit(c,t.local_to_global,t.global_to_local,p,v,op,ov);
+        });
+}
 
 bool collision_primitive(const Collider& c,Vec3 p,Vec3 v,Vec3& op,Vec3& ov) noexcept {
     return c.has_hitbox&&hit(c,p,v,op,ov);

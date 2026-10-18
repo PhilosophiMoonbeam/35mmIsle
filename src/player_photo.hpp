@@ -48,17 +48,18 @@ public:
     // Retirement consumes it: never defer cleanup with an old ticket into a
     // retry, since rejected precommit attempts can share the next generation.
     IsleGameResult capture_prefix(std::uint16_t context,std::uint64_t generation) noexcept;
-    // Only the matching successful producer commit makes a capture queueable.
+    // Seal an actual producer commit, independently of ProcessImage's ID FIFO.
     IsleGameResult seal_history(std::uint16_t context,std::uint64_t generation) noexcept;
     // Bind to the concrete executing Frame. It must outlive the ticket and
     // must not begin again or retire until this ticket is retired.
     // ticket.submission must be Frame::submission(). ticket.context identifies
     // Detector history, independently of Frame::submission_context().
-    IsleGameResult enqueue(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
+    IsleGameResult bind_submission(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
     IsleGameResult bind_snapshot_owner(scene::Services&,IsleGameObject*) noexcept;
     IsleGameResult require_taken_context() noexcept;
     IsleGameResult published_focus(IslePlayerPhotoFocus*) noexcept;
     IsleGameResult clear_published_presence() noexcept;
+    IsleGameResult detector_enabled(bool) noexcept;
     IsleGameResult borrow_taken(IslePlayerPhotoTicket*) noexcept;
     IsleGameResult release_taken(const IslePlayerPhotoTicket*) noexcept;
     IsleGameResult detach_snapshot_owner() noexcept;
@@ -74,7 +75,7 @@ public:
     IsleGameResult release(IslePlayerPhotoTicket) noexcept;
     IsleGameResult retire(IslePlayerPhotoTicket) noexcept;
     // Never publishes. Requires the same bound Frame's actual failed token
-    // and quiescence; queued/postprocessed tickets only, with no active borrow.
+    // and quiescence; submitted/postprocessed tickets only, with no active borrow.
     IsleGameResult retire_failed(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
     bool quiescent() const noexcept;
     // C leaves used by original snapshot bodies.
@@ -84,7 +85,7 @@ public:
     IsleGameResult effects(IslePlayerPhotoContext&) noexcept;
 private:
     friend class Controller;
-    enum class Phase { idle,rejected,captured,prepared,queued,postprocessed,complete };
+    enum class Phase { idle,rejected,captured,prepared,submitted,postprocessed,complete };
     struct Pending { IslePlayerPhotoTicket ticket{}; Phase phase=Phase::idle; unsigned borrows=0;
         std::array<IsleGameObject*,33> holds{}; std::size_t held=0; bool history_retained=false;
         const scene::graphics::Frame* frame=nullptr;
@@ -94,6 +95,9 @@ private:
     IsleGameResult remember(IsleGameResult) noexcept;
     IsleGameResult hold(Pending&,IsleGameObject*) noexcept;
     IsleGameResult release_pending(Pending&) noexcept;
+    IsleGameResult bind_existing(std::uint16_t,const scene::graphics::Frame&) noexcept;
+    // Only genuine course teardown discards unconsumed Source messages.
+    IsleGameResult teardown_queue() noexcept;
     bool capture_rows_available() const noexcept;
     IslePlayerPhotoSource& source_;
     IslePlayerSource& player_;

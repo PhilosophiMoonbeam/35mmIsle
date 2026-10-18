@@ -55,7 +55,7 @@ struct Input {
     isle::beach::WorldMetadata setup{};
     isle::beach::SkyMetadata sky{};
     std::array<w::BlockResource,4> blocks{};
-    std::array<m::Model,7> models;
+    std::array<m::Model,8> models;
     Input() {
         setup.sky_animation_speed = 0.4f;
         for (std::size_t i = 0; i < blocks.size(); ++i) {
@@ -74,8 +74,12 @@ struct Input {
                 road.nodes.push_back(cp);
             }
         }
+        models[7].render_type = m::RenderType::a;
+        models[7].matrix_kinds = {1,0,0};
+        m::Node sky_root; sky_root.scale = {1,1,1}; models[7].nodes.push_back(sky_root);
     }
-    w::ResourceView view() { return {&setup,&sky,blocks,3,models,{},{},{},{},nullptr,{}}; }
+    w::ResourceView view() { return {&setup,&sky,blocks,3,models,{},{},{},{},nullptr,{},nullptr,
+        sky.display_list_guest ? 7 : w::no_index}; }
 };
 void event(const Trace& trace,std::size_t i,char kind,std::size_t block,std::size_t reference = 0) {
     require(i < trace.events.size() && trace.events[i].kind == kind && trace.events[i].block == block &&
@@ -87,7 +91,8 @@ bool default_ground(const w::GroundResult& result) {
 }
 void optional_ceiling_output_rules() {
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     require(world.resources().ceiling_map == nullptr,"legacy aggregate acquired an invented ceiling map");
     const float infinity = std::numeric_limits<float>::infinity();
     w::GroundResult result{123,{-0.0f,7,-11},42};
@@ -126,7 +131,8 @@ void actual_native_ceiling_coordinates_and_defaults() {
     auto view = input.view(); view.height_map = &ground; view.ceiling_map = &ceiling;
     // Source ceiling queries translate but do not rotate by descriptor yaw.
     input.blocks[1].metadata.yaw = 0.75f;
-    w::World world(n.game,view,trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,view,module,trace.callbacks());
     w::GroundResult result{123,{4,5,6},7};
     require(!world.ceiling_at(200,100,result) && default_ground(result),
         "present ceiling without current block did not reset all result fields");
@@ -175,7 +181,8 @@ void actual_native_ceiling_consumed_paths() {
     for (std::size_t i = 0; i < maps.size(); ++i) {
         Native n; Input input; Trace trace;
         auto view = input.view(); view.ceiling_map = &maps[i];
-        w::World world(n.game,view,trace.callbacks()); world.enter_first(1);
+        w::ModuleState module;
+        w::World world(n.game,view,module,trace.callbacks()); world.enter_first(1);
         w::GroundResult result{123,{4,5,6},7};
         if (i == 0) {
             require(world.ceiling_at_global(2,0,result) && result.height == 9 &&
@@ -190,9 +197,290 @@ void actual_native_ceiling_consumed_paths() {
         }
     }
 }
+void canonical_clock_consumers_survive_scene_retirement() {
+    Native n; Input input; Trace trace;
+    constexpr std::uint32_t guest = 0x80300000;
+    std::array<std::byte,24> bytes{};
+    const auto word = [&](std::size_t offset,std::uint32_t value) {
+        for (unsigned i = 0; i < 4; ++i) bytes[offset+i] = std::byte((value>>(24-8*i))&255);
+    };
+    // Source animSet retains previous AObj targets. Seed the authored ramp
+    // explicitly so every restart represents 0->100, including after wrap.
+    word(0,(11u<<25)|(2u<<15)); word(4,0);
+    word(8,(4u<<25)|(2u<<15)|100u); word(12,std::bit_cast<std::uint32_t>(100.0f));
+    word(16,(2u<<25)|100u); word(20,0);
+    const auto wire = [&](std::size_t offset,std::size_t size) {
+        return isle::rom::GuestView{guest+static_cast<std::uint32_t>(offset),offset,std::span(bytes).subspan(offset,size)};
+    };
+    m::Animation program; program.wire = wire(0,24); program.kind = m::AnimationKind::texture;
+    program.commands = {{wire(0,8),11,2,0},{wire(8,8),4,2,100},{wire(16,4),2,0,100},{wire(20,4),0,0,0}};
+    std::array<std::byte,0x78> material_bytes{};
+    m::Material material; material.wire = {0x80310000,0,material_bytes};
+    input.blocks[0].metadata.texture_animation_guest = guest;
+    input.models[0].nodes[0].materials = {0}; input.models[0].nodes[0].material_animations = {0};
+    input.sky.display_list_guest = 0x8011cc28; input.sky.render_callback_guest = 0x800e1d80;
+    input.sky.animation_guest = guest; input.sky.animation_speed = 9;
+    input.models[7].matrix_kinds = {0x1b,0,0};
+    input.models[7].nodes[0].materials = {0}; input.models[7].nodes[0].material_animations = {0};
+    auto resources = input.view(); resources.animations = std::span(&program,1); resources.materials = std::span(&material,1);
+    w::ModuleState module;
+    for (const auto& road : module.road_events)
+        require(road.animation_time == 0 && road.visibility == 0 && road.unused == 0,
+            "raw WORLD BSS was confused with createWorld's road reset");
+    module.global_timer = 97; module.sky_animation_speed = 3; module.sky_max_angle = 100;
+    float retained = 0;
+    {
+        w::World world(n.game,resources,module,trace.callbacks());
+        for (const auto& road : module.road_events)
+            require(road.animation_time == -1 && road.visibility == 0 && road.unused == 0,
+                "createWorld did not reset the raw road table");
+        const auto sky = world.render_objects().front();
+        const auto terrain = world.blocks()[0].instance;
+        const auto sky_material = [&] { return world.animation_model(sky.instance).materials[0]; };
+        const auto close = [](float a,float b) { return std::fabs(a-b) < 0.0001f; };
+        require(module.global_timer == 97 && module.sky_max_angle == 100 &&
+            sky_material().clock.speed == input.setup.sky_animation_speed,
+            "createWorld reset the retained clock or failed its late setup-to-sky speed write");
+        ok(isle_game_tick(n.game));
+        const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+        ok(isle_game_model_nodes(n.game,sky.model,&nodes,&count));
+        require(close(module.global_timer,97.4f) && world.global_time() == module.global_timer &&
+            close(world.animation_model(terrain).materials[0].parameters[0],module.global_timer) &&
+            close(nodes[0].transform.rotation.y,6.283185482f*module.global_timer/100),
+            "real priority2 timer, terrain texture or priority1 sky yaw used a private clock/maximum");
+        world.set_sky_animation_speed(0);
+        ok(isle_game_tick(n.game));
+        require(close(module.global_timer,97.4f) && sky_material().clock.speed == 0 &&
+            sky_material().parameters[0] == 0,"cutscene freeze did not reach the actual sky animation");
+        world.set_sky_animation_speed(1.25f);
+        ok(isle_game_tick(n.game));
+        require(close(module.global_timer,98.65f) && close(sky_material().parameters[0],1.25f),
+            "restored Source course speed did not advance the actual shared clock and sky texture");
+        ok(isle_game_tick(n.game));
+        require(close(module.global_timer,99.9f),"retained module timer lost Source rounding before wrap");
+        ok(isle_game_tick(n.game));
+        require(close(module.global_timer,1.15f) &&
+            close(world.animation_model(terrain).materials[0].parameters[0],1.15f),
+            "timer wrap or terrain sampling ignored the canonical maximum");
+        retained = module.global_timer;
+        module.road_events[13] = {7,8,9};
+        require(world.request_retire(),"logical World retirement failed");
+        require(module.global_timer == retained && module.sky_animation_speed == 1.25f &&
+            module.sky_max_angle == 100 && module.road_events[13].animation_time == -1 &&
+            module.road_events[13].visibility == 0 && module.road_events[13].unused == 0,
+            "logical destroyWorld reset the clock/speed/max or skipped its road reset");
+        module.road_events[13].unused = 41;
+        ok(isle_game_tick(n.game));
+        require(module.global_timer == retained,"logical retirement left an actual timer writer scheduled");
+        require(world.retire() && world.request_retire() && world.retire() &&
+            module.global_timer == retained && module.road_events[13].unused == 41,
+            "physical collection or repeated retirement rewrote completed module state");
+    }
+    require(module.global_timer == retained && module.road_events[13].unused == 41,
+        "retired World destruction rewrote the application-owned module");
+    {
+        w::World recreated(n.game,resources,module,trace.callbacks());
+        require(recreated.global_time() == retained && module.sky_max_angle == 100 &&
+            module.road_events[13].unused == 0,"scene recreation replaced the retained clock or omitted create's road reset");
+        ok(isle_game_tick(n.game));
+        require(std::fabs(module.global_timer-1.55f) < 0.0001f,
+            "recreated native priority2 process did not continue the retained module clock with setup speed");
+    }
+}
+void cyclic_world_texture_admission_and_real_scheduling() {
+    Native n; Input input; Trace trace;
+    constexpr std::uint32_t guest = 0x80300000;
+    std::array<std::byte,24> bytes{};
+    const auto word = [&](std::size_t offset,std::uint32_t value) {
+        for (unsigned i = 0; i < 4; ++i) bytes[offset+i] = std::byte((value>>(24-8*i))&255);
+    };
+    // Real texture SET, linear LAST and SET_ANIMATION back-edge: each two-frame
+    // cycle resets the target to zero and ramps to four. No finite substitute.
+    word(0,(11u<<25)|(2u<<15)); word(4,0);
+    word(8,(3u<<25)|(2u<<15)|2u); word(12,std::bit_cast<std::uint32_t>(4.0f));
+    word(16,14u<<25); word(20,guest);
+    const auto wire = [&](std::size_t offset,std::size_t size) {
+        return isle::rom::GuestView{guest+static_cast<std::uint32_t>(offset),offset,std::span(bytes).subspan(offset,size)};
+    };
+    m::Animation program; program.wire = wire(0,24); program.kind = m::AnimationKind::texture;
+    program.commands = {{wire(0,8),11,2,0},{wire(8,8),3,2,2},{wire(16,8),14,0,0}};
+    std::array<std::byte,0x78> material_bytes{};
+    m::Material material; material.wire = {0x80310000,0,material_bytes};
+    input.setup.sky_animation_speed = 0.5f;
+    input.blocks[0].metadata.texture_animation_guest = guest;
+    input.models[0].nodes[0].materials = {0}; input.models[0].nodes[0].material_animations = {0};
+    input.sky.display_list_guest = 0x8011cc28; input.sky.animation_guest = guest; input.sky.animation_speed = 9;
+    input.models[7].nodes[0].materials = {0}; input.models[7].nodes[0].material_animations = {0};
+    auto resources = input.view(); resources.animations = std::span(&program,1); resources.materials = std::span(&material,1);
+    w::ModuleState module;
+    module.global_timer = 99.5f; module.sky_animation_speed = 3; module.sky_max_angle = 100;
+    module.road_events[0] = {17,23,29};
+    bool finite_rejected = false;
+    try { w::World finite_only(n.game,resources,module,trace.callbacks()); }
+    catch (const std::runtime_error& e) {
+        const std::string_view message(e.what());
+        finite_rejected = message.find("error=8, address=0x80300010") != std::string_view::npos;
+    }
+    IsleGameCounts counts{}; ok(isle_game_counts(n.game,&counts));
+    require(finite_rejected && counts.objects == 0 && counts.processes == 0 && counts.models == 0 &&
+        trace.command_calls == 0 && trace.events.empty() && module.global_timer == 99.5f &&
+        module.sky_animation_speed == 3 && module.road_events[0].animation_time == 17 &&
+        module.road_events[0].visibility == 23 && module.road_events[0].unused == 29,
+        "default finite-only World lost cyclic capacity/address identity or published before admission");
+    w::World world(n.game,resources,module,trace.callbacks(),m::animation::ExecutionCapacity{32768,4096});
+    const auto sky = world.render_objects().front().instance;
+    const auto terrain = world.blocks()[0].instance;
+    const auto& runtime = world.animation_runtime();
+    auto borrowed = world.render_view();
+    require(borrowed.valid() && runtime.model(sky).materials[0].clock.speed == 0.5f,
+        "explicit cyclic World did not publish its real sky or apply late Source setup speed");
+    for (unsigned i = 0; i < 600; ++i) {
+        ok(isle_game_tick(n.game));
+        const auto sky_material = runtime.model(sky).materials[0];
+        const float residual = static_cast<float>(i%4)*0.5f;
+        const float timer = std::fmod(100.0f+static_cast<float>(i)*0.5f,100.0f);
+        require(world.error().empty() && module.global_timer == timer &&
+            sky_material.clock.phase == m::animation::Phase::running &&
+            sky_material.clock.time_passed == residual && sky_material.clock.time_left == 2-residual &&
+            sky_material.parameters[0] == 2*residual &&
+            runtime.model(terrain).materials[0].parameters[0] == 2*std::fmod(timer,2.0f),
+            "cyclic World native sky step or modulo100 terrain restart changed Source time/texture results");
+    }
+    const auto generation = runtime.generation();
+    const auto retained = runtime.model(sky).materials[0].clock;
+    const auto retained_timer = module.global_timer;
+    require(world.request_retire() && world.retired() && !world.retirement_complete() && !borrowed.valid(),
+        "cyclic World failed logical retirement or retained an available render view");
+    ok(isle_game_tick(n.game));
+    require(runtime.generation() == generation && module.global_timer == retained_timer &&
+        runtime.model(sky).materials[0].clock.time_passed == retained.time_passed &&
+        runtime.model(sky).materials[0].clock.time_left == retained.time_left,
+        "cyclic animation storage was released early or actual processes ran after logical retirement");
+    require(world.retire() && world.retirement_complete() && !runtime.model(sky),
+        "cyclic World failed physical animation retirement");
+    ok(isle_game_counts(n.game,&counts));
+    require(counts.objects == 0 && counts.processes == 0 && counts.models == 0 && counts.model_nodes == 0,
+        "cyclic World leaked native objects/processes/models");
+}
+void cyclic_world_road_budget_rejects_before_step_publication() {
+    Native n; Input input; Trace trace;
+    constexpr std::uint32_t guest = 0x80320000;
+    std::array<std::byte,16> bytes{};
+    const auto word = [&](std::size_t offset,std::uint32_t value) {
+        for (unsigned i = 0; i < 4; ++i) bytes[offset+i] = std::byte((value>>(24-8*i))&255);
+    };
+    word(0,(3u<<25)|(16u<<15)|2u); word(4,std::bit_cast<std::uint32_t>(4.0f));
+    word(8,14u<<25); word(12,guest);
+    const auto wire = [&](std::size_t offset,std::size_t size) {
+        return isle::rom::GuestView{guest+static_cast<std::uint32_t>(offset),offset,std::span(bytes).subspan(offset,size)};
+    };
+    m::Animation program; program.wire = wire(0,16); program.kind = m::AnimationKind::model;
+    program.commands = {{wire(0,8),3,16,2},{wire(8,8),14,0,0}};
+    // The second road gets one initial Source reset; the first road is reset
+    // twice by publish(), which would intentionally retain its prior target.
+    input.models[5].receives_effect_callback = true; input.models[5].nodes[0].animation = 0;
+    auto resources = input.view(); resources.animations = std::span(&program,1);
+    w::ModuleState module;
+    w::World world(n.game,resources,module,trace.callbacks(),m::animation::ExecutionCapacity{2,1});
+    auto& block = world.blocks()[1];
+    const auto& runtime = world.animation_runtime();
+    const auto before = runtime.model(block.road_instance);
+    const auto clock = before.nodes[0].clock;
+    const auto revision = before.nodes[0].revision, generation = runtime.generation();
+    bool rejected = false;
+    try { world.sample(block,1,0); }
+    catch (const std::runtime_error& e) {
+        rejected = std::string_view(e.what()).find("error=8, address=0x80320008") != std::string_view::npos;
+    }
+    const auto after = runtime.model(block.road_instance);
+    const IsleGameModelNode* native_nodes = nullptr; std::size_t native_count = 0;
+    ok(isle_game_model_nodes(n.game,block.road_model,&native_nodes,&native_count));
+    require(rejected && world.error().empty() && runtime.generation() == generation && runtime.events().empty() &&
+        after.animation_time == before.animation_time && after.nodes[0].clock.phase == clock.phase &&
+        after.nodes[0].clock.time_left == clock.time_left && after.nodes[0].clock.time_passed == clock.time_passed &&
+        after.nodes[0].transform.position.x == 0 && after.nodes[0].revision == revision &&
+        native_count == 2 && native_nodes[0].transform.position.x == 0,
+        "World road seek bypassed the configured command budget or published a partial animation/native pose");
+    world.sample(block,0.01f,0);
+    require(runtime.model(block.road_instance).nodes[0].transform.position.x == 2 &&
+        runtime.model(block.road_instance).nodes[0].clock.time_left == 1,
+        "rejected World road seek advanced a hidden cursor or prevented a later bounded real step");
+    world.sample(block,0.02f,0);
+    require(runtime.events().size() == 1 && runtime.events()[0].event_id == -2 &&
+        runtime.events()[0].command_address == guest+8 &&
+        runtime.model(block.road_instance).nodes[0].transform.position.x == 4,
+        "World road cycle lost its original back-edge event or retained-target semantics");
+    require(world.retire(),"budget-rejected World failed physical retirement");
+    IsleGameCounts counts{}; ok(isle_game_counts(n.game,&counts));
+    require(counts.objects == 0 && counts.processes == 0 && counts.models == 0,
+        "budget-rejected World leaked actual native owners");
+}
+void road_callback_fields_and_failed_cleanup_retry() {
+    Native n; Input input;
+    constexpr std::uint32_t guest = 0x80300000;
+    std::array<std::byte,12> bytes{};
+    const auto word = [&](std::size_t offset,std::uint32_t value) {
+        for (unsigned i = 0; i < 4; ++i) bytes[offset+i] = std::byte((value>>(24-8*i))&255);
+    };
+    word(0,(17u<<25)|(1u<<15)|100u); word(4,std::bit_cast<std::uint32_t>(5.0f)); word(8,0);
+    const auto wire = [&](std::size_t offset,std::size_t size) {
+        return isle::rom::GuestView{guest+static_cast<std::uint32_t>(offset),offset,std::span(bytes).subspan(offset,size)};
+    };
+    m::Animation program; program.wire = wire(0,12); program.kind = m::AnimationKind::model; program.callback_installed = true;
+    program.commands = {{wire(0,8),17,1,100},{wire(8,4),0,0,0}};
+    for (std::size_t i : {4u,5u}) {
+        input.models[i].receives_effect_callback = true; input.models[i].nodes[0].animation = 0;
+    }
+    auto resources = input.view(); resources.animations = std::span(&program,1);
+    w::ModuleState module;
+    struct Removal {
+        w::ModuleState& module;
+        w::World* world = nullptr;
+        Trace trace;
+        unsigned calls = 0;
+        bool reset_seen = false, retained = true;
+        static bool remove(void* user,w::Block&) noexcept {
+            auto& self = *static_cast<Removal*>(user);
+            if (++self.calls == 1) {
+                self.reset_seen = true;
+                for (const auto& road : self.module.road_events)
+                    self.reset_seen &= road.animation_time == -1 && road.visibility == 0 && road.unused == 0;
+                self.module.road_events[4].unused = 37;
+                try { self.world->reset_road(self.world->blocks()[1],7); }
+                catch (...) { self.retained = false; }
+                return false;
+            }
+            const auto& road = self.module.road_events[4];
+            self.retained &= road.animation_time == 7 && road.visibility == 5 && road.unused == 37;
+            return true;
+        }
+        static bool camera(void* user,w::Vec3 delta) noexcept { return Trace::shift_camera(&static_cast<Removal*>(user)->trace,delta); }
+        static bool effects(void* user,w::Vec3 delta) noexcept { return Trace::shift_effects(&static_cast<Removal*>(user)->trace,delta); }
+        static bool commands(void* user,IsleGameObject* object) noexcept { return Trace::commands(&static_cast<Removal*>(user)->trace,object); }
+    } removal{module};
+    const w::Callbacks callbacks{&removal,nullptr,Removal::remove,nullptr,Removal::camera,Removal::effects,Removal::commands};
+    w::World world(n.game,resources,module,callbacks); removal.world = &world;
+    require(module.road_events[4].animation_time == 0 && module.road_events[4].visibility == 5 &&
+        module.road_events[4].unused == 0,"first-road restart failed to publish its real Source callback");
+    module.road_events[4].unused = 29;
+    world.reset_road(world.blocks()[1],3);
+    require(module.road_events[4].animation_time == 3 && module.road_events[4].visibility == 5 &&
+        module.road_events[4].unused == 29,"road callback overwrote the third Source field or lost animation time");
+    for (std::size_t i = 0; i < world.blocks().size(); ++i) {
+        IsleGameObjectMetadata metadata{}; ok(isle_game_object_metadata(n.game,world.blocks()[i].object,&metadata));
+        require(bool(metadata.flags&1u) == !(5u&(1u<<i)),"road callback did not apply actual native block visibility");
+    }
+    require(!world.retire() && removal.reset_seen && removal.retained &&
+        module.road_events[4].animation_time == 7 && module.road_events[4].visibility == 5 &&
+        module.road_events[4].unused == 37,"destroy did not reset before removal or rolled back a completed removal callback");
+    require(world.retire() && removal.calls == 5 && removal.retained &&
+        module.road_events[4].animation_time == 7 && module.road_events[4].visibility == 5 &&
+        module.road_events[4].unused == 37,"cleanup retry/collection repeated the reset and erased callback-produced state");
+}
 void transitions_and_retirement() {
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     IsleGameCounts counts{}; ok(isle_game_counts(n.game,&counts));
     require(counts.objects == 8 && counts.models == 7 && counts.processes == 1,"real sky/block/road owners missing");
     require(!world.current() && world.blocks()[3].previous == nullptr && world.blocks()[3].next == nullptr,"secondary blocks joined road");
@@ -243,7 +531,8 @@ void terrain_canonical_pose_and_source_effect_basis() {
     m::Node decoration; decoration.parent = 0; decoration.position = {10,20,30};
     decoration.rotation = {quarter,0,0}; decoration.scale = {2,3,4};
     input.models[0].nodes.push_back(decoration);
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     auto& block = world.blocks()[0];
     const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
     ok(isle_game_model_nodes(n.game,block.model,&nodes,&count));
@@ -326,7 +615,8 @@ void callback_failures_stop_world_transitions() {
     for (std::size_t fail_at = 1; fail_at <= 3; ++fail_at) {
         Native n; Input input; Trace trace;
         trace.fail_kind = 'a'; trace.fail_at = fail_at;
-        w::World world(n.game,input.view(),trace.callbacks());
+        w::ModuleState module;
+        w::World world(n.game,input.view(),module,trace.callbacks());
         bool rejected = false;
         try { world.enter_first(1); } catch (const std::runtime_error&) { rejected = true; }
         require(rejected && trace.events.size() == fail_at && trace.calls.size() == fail_at &&
@@ -345,7 +635,8 @@ void callback_failures_stop_world_transitions() {
     };
     for (const auto& failure : failures) {
         Native n; Input input; Trace trace;
-        w::World world(n.game,input.view(),trace.callbacks());
+        w::ModuleState module;
+        w::World world(n.game,input.view(),module,trace.callbacks());
         require(world.enter_first(failure.start) == &world.blocks()[failure.start],"failure fixture initial entry");
         trace.calls.clear(); trace.events.clear(); trace.camera.clear(); trace.effects.clear();
         trace.fail_kind = failure.kind; trace.fail_at = failure.occurrence;
@@ -365,7 +656,8 @@ void callback_failures_stop_world_transitions() {
 }
 void failed_clear_preserves_native_and_animation_owners() {
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     auto& block = world.blocks()[0];
     const auto instance = block.instance, road = block.road_instance;
     auto* object = block.object; auto* model = block.model;
@@ -382,7 +674,8 @@ void failed_clear_preserves_native_and_animation_owners() {
 }
 void failed_retirement_retains_owners_and_allows_explicit_cleanup() {
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     auto& retained = world.blocks()[1];
     const auto instance = retained.instance, road = retained.road_instance;
     auto* object = retained.object; auto* model = retained.model;
@@ -413,7 +706,8 @@ void retirement_rejects_active_native_callback_before_destruction() {
         }
     };
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks()); Attempt attempt{world};
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks()); Attempt attempt{world};
     IsleGameProcess* process = nullptr;
     ok(isle_game_add_process(n.game,world.blocks()[0].object,Attempt::update,&attempt,ISLE_GAME_SYNCHRONOUS,0,&process));
     ok(isle_game_tick(n.game));
@@ -426,7 +720,8 @@ void retirement_rejects_active_native_callback_before_destruction() {
 void movement_failures_preserve_completed_source_effects() {
     for (unsigned scenario = 0; scenario < 6; ++scenario) {
         Native n; Input input; Trace trace;
-        w::World world(n.game,input.view(),trace.callbacks());
+        w::ModuleState module;
+        w::World world(n.game,input.view(),module,trace.callbacks());
         IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
         state.position = {71,72,73}; state.rotation = {81,82,83};
         w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
@@ -464,7 +759,8 @@ void movement_failures_preserve_completed_source_effects() {
         }
     }
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
     w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
     require(movement.initialize(0),"failed World carry fixture initialization");
@@ -479,7 +775,8 @@ void movement_failures_preserve_completed_source_effects() {
 }
 void command_failure_returns_without_later_native_updates() {
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     trace.fail_kind = 'q';
     ok(isle_game_tick(n.game));
     require(trace.command_calls == 1 && world.global_time() == 0 && !world.error().empty(),
@@ -516,7 +813,8 @@ void nested_c_failures_return_through_cpp_world_and_movement() {
         Native n; Input input; Fenced fenced(n);
         const w::Callbacks callbacks{&fenced,initial_add ? Fenced::add : nullptr,nullptr,nullptr,
             Fenced::camera,Fenced::effects,Fenced::commands};
-        w::World world(n.game,input.view(),callbacks);
+        w::ModuleState module;
+        w::World world(n.game,input.view(),module,callbacks);
         IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
         state.position = {71,72,73};
         w::Movement movement(world,state,{&fenced,nullptr,Fenced::update});
@@ -536,7 +834,8 @@ void movement_boundary_rotation_and_stop() {
     Native n; Input input; Trace trace;
     input.blocks[0].metadata.yaw = 1.5707963267948966f;
     input.blocks[0].metadata.reversed = true;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
     w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
     require(movement.initialize(0),"movement init");
@@ -556,8 +855,9 @@ void movement_boundary_rotation_and_stop() {
 }
 void movement_rejects_foreign_world_before_callbacks() {
     Native n; Input input; Trace trace, other_trace;
-    w::World world(n.game,input.view(),trace.callbacks());
-    w::World other(n.game,input.view(),other_trace.callbacks());
+    w::ModuleState module, other_module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
+    w::World other(n.game,input.view(),other_module,other_trace.callbacks());
     IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER;
     w::Movement movement(world,state,{&trace,Trace::exit,Trace::update});
     require(movement.initialize(0),"owned movement admission");
@@ -601,7 +901,8 @@ void position_sampling_preserves_movement_boundary() {
     auto& cp = input.models[4].nodes[1]; cp.animation = 0; cp.scale.x = 1;
     input.models[5].nodes[1].scale.x = 2;
     auto resources = input.view(); resources.animations = std::span(&program,1);
-    w::World world(n.game,resources,trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,resources,module,trace.callbacks());
     IsleWorldMovementState state = ISLE_WORLD_MOVEMENT_STATE_INITIALIZER; w::Movement movement(world,state,{});
     require(movement.initialize(0),"position-sampling movement admission");
     auto* block = world.current(); state.move_time = 0.75f;
@@ -624,10 +925,11 @@ void position_sampling_preserves_movement_boundary() {
 void required_consumers_and_sky_follow() {
     Native n; Input input; Trace trace;
     auto callbacks = trace.callbacks(); callbacks.shift_effects = nullptr;
-    bool rejected = false; try { w::World world(n.game,input.view(),callbacks); } catch (const std::invalid_argument&) { rejected = true; }
+    w::ModuleState module;
+    bool rejected = false; try { w::World world(n.game,input.view(),module,callbacks); } catch (const std::invalid_argument&) { rejected = true; }
     require(rejected,"required effect consumer silently replaced by noop");
     input.sky.display_list_guest = 0x8011cc28; input.sky.render_callback_guest = 0x800e1ca4;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::World world(n.game,input.view(),module,trace.callbacks());
     IsleGameObject* object = nullptr; IsleGameCamera* camera = nullptr;
     ok(isle_game_add_object(n.game,1,0,0,nullptr,nullptr,&object)); ok(isle_game_attach_camera(n.game,object,&camera));
     IsleGameLookAt look{{10,20,30},{0,0,0},{0,1,0}}; ok(isle_game_camera_set_look_at(n.game,camera,&look));
@@ -683,7 +985,8 @@ void source_control_line_limits() {
     Native n; Input input; Trace trace;
     input.blocks[1].metadata.control_line_count = 4;
     input.blocks[2].metadata.control_line_count = 1;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     require(!world.blocks()[1].control_points && world.blocks()[1].road_model &&
         world.blocks()[2].control_points && !world.blocks()[2].road_model,
         "source control slice and UV object availability were conflated");
@@ -700,7 +1003,8 @@ void source_control_line_limits() {
 void same_resource_world_owners_and_clear() {
     Native n; Input input; Trace trace;
     input.blocks[1].road_model = input.blocks[0].road_model;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     auto& first = world.blocks()[0];
     auto& second = world.blocks()[1];
     const auto first_handle = first.road_instance, second_handle = second.road_instance;
@@ -764,7 +1068,8 @@ struct FaultRetirementContext {
 };
 void faulted_owner_retirement_joins_before_context_release() {
     Native n; Input input; Trace trace;
-    w::World world(n.game,input.view(),trace.callbacks());
+    w::ModuleState module;
+    w::World world(n.game,input.view(),module,trace.callbacks());
     auto& block = world.blocks()[0];
     FaultRetirementContext context;
     context.game = n.game; context.world = &world; context.instance = block.road_instance;
@@ -807,6 +1112,10 @@ void faulted_owner_retirement_joins_before_context_release() {
 }
 int main() {
     try { transitions_and_retirement(); movement_boundary_rotation_and_stop(); position_sampling_preserves_movement_boundary(); required_consumers_and_sky_follow(); path_tracks_callbacks_and_boundaries(); source_control_line_limits();
+        canonical_clock_consumers_survive_scene_retirement();
+        cyclic_world_texture_admission_and_real_scheduling();
+        cyclic_world_road_budget_rejects_before_step_publication();
+        road_callback_fields_and_failed_cleanup_retry();
         same_resource_world_owners_and_clear();
         movement_rejects_foreign_world_before_callbacks();
         optional_ceiling_output_rules();

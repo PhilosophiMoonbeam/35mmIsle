@@ -1,11 +1,12 @@
 #ifndef ISLE_ITEM_OWNER_HPP
 #define ISLE_ITEM_OWNER_HPP
 #include "item_owner_source.h"
-#include "item_render_binding.hpp"
+#include "borrowed_model_producer.hpp"
 #include "item_resources.hpp"
 #include "item_flute.hpp"
 #include "actor_owner.hpp"
 #include "beach_magikarp_scene.hpp"
+#include <optional>
 
 namespace isle::items {
 enum class OwnerError { none, admission, capacity, native, animation, services, lifetime };
@@ -74,11 +75,19 @@ public:
     IsleGameModel* native_model(menu::animation::InstanceHandle) const noexcept;
     menu::animation::InstanceHandle instance(IsleGameObject*) const noexcept;
     Membership membership(menu::animation::InstanceHandle) const noexcept;
-    std::span<const RenderBinding> render_bindings() noexcept;
+    // Canonical live slot identity, including independent water/lava splashes.
+    std::optional<Family> family(menu::animation::InstanceHandle) const noexcept;
+    std::span<const menu::model::PacketBinding> render_bindings() noexcept;
     menu::animation::Runtime& animation() noexcept;
     const menu::animation::Runtime& animation() const noexcept;
     OwnerStatus set_custom_functions(IsleGameSourceCallback, std::uint8_t kind, IsleItemCollisionCallback) noexcept;
-    void set_extra_collision(IsleItemCollisionProvider) noexcept;
+    // The binding Game must be this Owner's Game. Both-null clears, including
+    // failed-scene cleanup; no half-null/contextless provider is accepted.
+    // Serialize replacement with Item execution. Retain context through active
+    // calls and process joins, then clear before context retirement. A new Owner
+    // requires a fresh binding, never a prior wrapper's opaque context.
+    OwnerStatus set_extra_collision(IsleGame* binding_game,
+        IsleItemCollisionProvider, void* context) noexcept;
     // Installs the real decoded/shared-RNG chooser; NULL update reinstates
     // default movement. Passing NULL collision to the generic setter preserves
     // the prior hook, exactly as source. Scene object outlives installed hook.

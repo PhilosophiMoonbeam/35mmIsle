@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "use": "Immutable isle::beach::ActorResources descriptor/catalog data and shared model_assets::Closure. All17 source initializations including common1003 and geometryless1005; all79 headers,33 Texture descriptors,1201 model +116 material programs. Actual shared-animator header evaluation is exercised below; no native actor factory/FSM, camera/task scheduling, actor GPU or full-port completion claim.",
+  "use": "Beach0 immutable actor::Resources descriptor/catalog data and shared model_assets::Closure. The concrete decoder selects closed per-course catalogs; this manifest records Beach facts only. All17 Beach source initializations including common1003 and geometryless1005; all79 headers,33 Texture descriptors,1201 model +116 material programs. Actual shared-animator header evaluation is exercised below; no native actor factory/FSM, camera/task scheduling, actor GPU or full-port completion claim.",
   "rom": {
     "size": 16777216,
     "canonical_order": "big-endian z64",
@@ -319,7 +319,7 @@
     }
   ],
   "scene_initial_scalars": {
-    "api": "const ActorSceneInitialScalars& ActorResources::scene_initial_scalars() const",
+    "api": "const beach::ActorSceneInitialScalars& beach::ActorSceneResources::initial_scalars() const; mutable beach::ActorSceneState borrows the actual lifecycle uint16 latch",
     "source_revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
     "authority": "Pinned own-GAME declarations and uses establish identities and types; actual initialized values are decoded from the admitted original big-endian US Snapshot through the existing model_assets::Reader initialized-record mapping. C definitions may be absent at this pin. Mutable standalone_data.c, guessed zero constants, guest execution and SDK layouts are not authority.",
     "mapping": {"guest_begin":"0x802cbe10","rom_begin":"0x563e80","bytes":"0x22e0"},
@@ -908,8 +908,14 @@
   },
   "integration": {
     "library_sources": [
-      "src/beach_actor_resources.cpp",
-      "src/beach_actor_resources.hpp",
+      "src/actor_resources.cpp",
+      "src/actor_resources.hpp",
+      "src/actor_resource_catalog.cpp",
+      "src/actor_resource_catalog.hpp",
+      "src/beach_actor_catalog.cpp",
+      "src/rainbow_actor_catalog.cpp",
+      "src/beach_actor_scene.cpp",
+      "src/beach_actor_scene.hpp",
       "src/source_matrix_configuration.hpp"
     ],
     "dependencies": [
@@ -917,7 +923,8 @@
       "isle-rom-snapshot"
     ],
     "consumer_dependencies": [
-      "isle-beach-actor-resources",
+      "isle-actor-resources",
+      "isle-beach-actor-scene",
       "isle-beach-world-resources (actual fog metadata)",
       "isle-menu-animation (actual complete catalog and header consumer)"
     ],

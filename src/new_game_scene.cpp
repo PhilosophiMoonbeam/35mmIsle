@@ -121,7 +121,6 @@ struct Scene::Impl {
     scene::SpriteHandle background{}, card{}, caret{};
     Editor editor;
     std::array<std::uint8_t,2> preview{};
-    save::ScreenOffsets offsets{};
     std::uint32_t next_pixels=0x400000;
     bool started=false, retired=false, ready=false, completed=false, result_taken=false;
     std::array<char,512> message{};
@@ -159,11 +158,6 @@ struct Scene::Impl {
     }
     bool setup() {
         if (!resources || !state.initialized()) throw std::invalid_argument("name scene requires initialized persistent State and actual window Resources");
-        const auto snapshot=state.save()->snapshot();
-        if (!snapshot) throw std::runtime_error("name scene persistent snapshot unavailable");
-        const auto saved=snapshot.value.screen_offsets();
-        if (!saved) throw std::runtime_error("name scene saved VI offsets unavailable");
-        offsets=saved.value;
         if (input.reset_scene_menu()!=game_input::Error::none)
             throw std::runtime_error("name source common input initialization");
         const auto sprite_assets=producer->assets();
@@ -303,21 +297,13 @@ struct Scene::Impl {
             self.services->check(self.audio.bgm_volume(0,0,60),"name BGM source fade60");
             if (!self.services->begin_fade(false,1.0f,{0,0,0})) return;
             for (unsigned i=0;i<60;++i) if (!self.services->wait()) return;
-            // Source passes uninitialized by-value offsets here. Defined native
-            // normalization uses the actual checked saved VI values, never UB.
-            self.restore_saved_offsets();
-            if (self.bad()) return;
+            // menu_new_game/A5CC50.c294 passes uninitialized values instead of
+            // output pointers. Preserve the actual live VI rather than inventing
+            // an output write from reset profile RAM or undefined stack bytes.
             self.services->request_exit(11);
             while (self.services->wait()) {}
         } catch (const std::exception& e) { self.fail(e.what()); }
         catch (...) { self.fail("name native continuation failure"); }
-    }
-    void restore_saved_offsets() {
-        const auto snapshot=services->save.snapshot();
-        if (!snapshot) { fail("name completion saved VI snapshot"); return; }
-        const auto saved=snapshot.value.screen_offsets();
-        if (!saved) { fail("name completion saved VI offsets"); return; }
-        offsets=saved.value;
     }
     static void blink_preview(IsleGameObject*,void* owner) noexcept {
         auto& self=*static_cast<Impl*>(owner); int value=10,delta=5;
@@ -380,6 +366,8 @@ bool Scene::start() noexcept {
 scene::render::Input Scene::render_input() noexcept {
     auto& s=*impl_;
     if (!s.services || !s.producer || s.retired || s.bad()) return {};
+    const auto offsets=screen_offsets();
+    if (s.bad()) return {};
     std::size_t count=0;
     if (!s.services->sprite_draws(s.draws,count)) return {};
     auto& clear=s.passes[0]; clear={}; clear.kind=scene::render::Kind::clear; clear.priority=100; clear.flags=6; clear.background_rgba=0xff;
@@ -401,7 +389,7 @@ scene::render::Input Scene::render_input() noexcept {
     return {s.services->game,
             {s.config.resource_identity,s.producer,s.immutable,s.reservations,
              {0x3b5000,0x3da800},s.resources->common_pre_render()},
-            s.passes,s.offsets};
+            s.passes,offsets};
 }
 Observation Scene::observation() const noexcept {
     const auto& s=*impl_; Observation out;
@@ -427,6 +415,11 @@ bool Scene::take_result(std::int32_t& out) noexcept {
     if (!impl_->completed || impl_->result_taken) return false;
     out=11; impl_->result_taken=true; return true;
 }
-save::ScreenOffsets Scene::screen_offsets() const noexcept { return impl_->offsets; }
+save::ScreenOffsets Scene::screen_offsets() const noexcept {
+    save::ScreenOffsets out;
+    if (!impl_->state.screen_offsets().translation(out))
+        impl_->fail("name live VI endpoints cannot be represented by native translation");
+    return out;
+}
 void Scene::retire() noexcept { impl_->retire(); }
 } // namespace isle::new_game

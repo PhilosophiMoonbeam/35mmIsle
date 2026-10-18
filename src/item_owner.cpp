@@ -122,7 +122,7 @@ struct Owner::Impl {
     std::vector<menu::animation::SlotCapacity> capacities;
     std::vector<Slot> slots;
     PayloadStorage& storage;
-    std::vector<RenderBinding> bindings;
+    std::vector<menu::model::PacketBinding> bindings;
     std::vector<IsleGameModelNodeInit> scratch;
     std::unique_ptr<menu::animation::Runtime> runtime;
     std::uint64_t insertion=0;
@@ -136,6 +136,19 @@ struct Owner::Impl {
         resources.require_live();
         if (c.empty() || g.source.owner)
             throw std::invalid_argument("Item owner needs caller physical capacity and released Globals");
+        if (g.source.extra || g.source.extra_context || g.source.extra_active)
+            throw std::invalid_argument("Item owner requires the prior extra collision binding cleared after joins");
+        if (r.definitions().size()!=4 || r.models().size()!=4)
+            throw std::invalid_argument("Item four-family closure changed");
+        for (const auto& definition:r.definitions()) {
+            if (definition.model>=r.models().size())
+                throw std::invalid_argument("Item family model escapes resource owner");
+            const auto& model=r.models()[definition.model];
+            const bool fume=definition.family==Family::water_splash || definition.family==Family::lava_splash;
+            if (model.render_type!=(fume?menu::RenderType::d_fogged:menu::RenderType::b_fogged) ||
+                model.matrix_kinds!=std::array<std::uint8_t,3>{0x1c,0,0})
+                throw std::invalid_argument("Item source fog/hierarchy/root policy changed");
+        }
         if (storage.records.empty()) storage.records.resize(c.size());
         else if (storage.records.size()!=c.size())
             throw std::invalid_argument("retained Item Globals requires its original fixed physical capacity");
@@ -454,6 +467,8 @@ Owner::~Owner() {
         impl_->factory.native.active || impl_->factory.object_prepared || impl_->factory.runtime_prepared ||
         std::any_of(impl_->slots.begin(),impl_->slots.end(),[](const auto& slot) { return slot.active; }))
         std::terminate();
+    if (Items_func_8035CA1C(&impl_->globals.source,impl_->services.game,nullptr,nullptr)!=ISLE_GAME_OK)
+        std::terminate();
 }
 OwnerStatus Owner::init() noexcept {
     if (impl_->failed()) return failure(OwnerError::services,"failed Item scene cannot initialize live source state");
@@ -512,11 +527,20 @@ menu::animation::InstanceHandle Owner::instance(IsleGameObject* o) const noexcep
 Membership Owner::membership(menu::animation::InstanceHandle h) const noexcept {
     auto* s=impl_->find(h,true); return {s && s->payload && exists(s->object),s && s->retiring,s && s->joined,impl_->globals.source.payload_cache};
 }
-std::span<const RenderBinding> Owner::render_bindings() noexcept {
+std::optional<Family> Owner::family(menu::animation::InstanceHandle h) const noexcept {
+    const auto* slot=impl_->find(h);
+    return slot?std::optional<Family>{slot->family}:std::nullopt;
+}
+std::span<const menu::model::PacketBinding> Owner::render_bindings() noexcept {
     std::size_t count=0;
     for (auto& slot:impl_->slots) if (slot.active && !slot.retiring) {
-        RenderBinding binding{{slot.index,impl_->runtime->model(slot.instance),slot.object,slot.model,menu::model::PoseSource::native,
-            menu::model::RootRecipe::source,true,impl_->runtime.get()},slot.family,slot.render};
+        auto state=impl_->runtime->model(slot.instance);
+        if (!state || state.resource_model!=impl_->resources.definition(slot.family).model) {
+            impl_->services.fail("Item stale instance or family/resource mismatch");
+            state={};
+        }
+        menu::model::PacketBinding binding{{slot.index,state,slot.object,slot.model,menu::model::PoseSource::native,
+            menu::model::RootRecipe::source,true,impl_->runtime.get()},slot.render};
         std::size_t at=count;
         while (at && impl_->slots[impl_->bindings[at-1].model.slot].insertion>slot.insertion) {
             impl_->bindings[at]=impl_->bindings[at-1]; --at;
@@ -533,8 +557,12 @@ OwnerStatus Owner::set_custom_functions(IsleGameSourceCallback update,std::uint8
     if (update && kind>1) return failure(OwnerError::admission,"custom Item process kind is neither stackful nor synchronous");
     Items_SetCustomFunctions(&impl_->globals.source,update,kind,collide); return {};
 }
-void Owner::set_extra_collision(IsleItemCollisionProvider provider) noexcept {
-    if (!impl_->failed()) Items_func_8035CA1C(&impl_->globals.source,provider);
+OwnerStatus Owner::set_extra_collision(IsleGame* binding_game,IsleItemCollisionProvider provider,void* context) noexcept {
+    if (binding_game!=impl_->services.game)
+        return failure(OwnerError::admission,"extra collision binding requires this Item Owner's Game");
+    if ((provider || context) && impl_->failed())
+        return failure(OwnerError::services,"failed Item scene rejects new extra collision bindings");
+    return status(Items_func_8035CA1C(&impl_->globals.source,binding_game,provider,context));
 }
 OwnerStatus Owner::set_beach_collision(beach::MagikarpScene& scene) noexcept {
     if (impl_->failed()) return failure(OwnerError::services,"failed Item scene rejects new collision hooks");

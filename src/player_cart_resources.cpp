@@ -10,10 +10,28 @@ constexpr std::uint32_t ram_base=0x80000000;
 constexpr std::array<std::uint8_t,20> admitted_sha1{
     0xed,0xc7,0xc4,0x9c,0xc5,0x68,0xc0,0x45,0xfe,0x48,
     0xbe,0x0d,0x18,0x01,0x1c,0x30,0xf3,0x93,0xcb,0xaf};
-// Pin splat.yaml:5318..5639: initialized DATA only, never app_level code/BSS.
-constexpr std::array<model_assets::Mapping,2> mappings{{
-    {0x80366ba0,0x506fb0,0x44620},
-    {0x8011b050,0xa74e0,0x952a0}}};
+// Source pin df8815e75f3d79618466e01e0827c6165b93d11c; splat.yaml
+// blob d2690bd3d2cb0aeac5c648db20666c5a42e5ba45:5219..5231,5318..5639.
+// Initialized DATA only. Course overlays overlap VRAM and must never be united.
+struct Catalog {
+    std::int32_t course;
+    std::array<model_assets::Mapping,2> mappings;
+    std::array<std::uint32_t,3> intro, outro;
+    std::size_t animations, paths;
+};
+constexpr std::array<Catalog,2> catalogs{{
+    {0, {{{0x80366ba0,0x506fb0,0x44620},{0x8011b050,0xa74e0,0x952a0}}},
+        {0x8013c580,0x8013cea0,0x8013da90},
+        {0x8013b030,0x8013baa0,0x8013c530},92,6},
+    {6, {{{0x80366ba0,0x506fb0,0x44620},{0x800f5d90,0x4a8160,0x43ea0}}},
+        {0x80119ae0,0x8011a970,0x8011b3e0},
+        {0x801183e0,0x80119050,0x80119a8c},100,6}}};
+const Catalog& catalog(std::int32_t course) {
+    const auto found=std::find_if(catalogs.begin(),catalogs.end(),
+        [course](const auto& entry) { return entry.course==course; });
+    if (found==catalogs.end()) throw std::runtime_error("Cart course catalog unavailable");
+    return *found;
+}
 // Exact initialized image-array extents; the repeated fourth LOD image is real,
 // not a NULL terminator. Primitive-only Texture records have no image table.
 constexpr std::array<model_assets::MaterialExtent,8> material_extents{{
@@ -22,18 +40,21 @@ constexpr std::array<model_assets::MaterialExtent,8> material_extents{{
     {0x8039dc60,0,0,0},{0x8039dcd8,0x8039d9fc,2,2},{0x8039dd50,0,0,0}}};
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 }
-CartResources::CartResources(const rom::Snapshot& snapshot, CartFogProfile fog)
-    : snapshot_(&snapshot), source_data_(snapshot.canonical().data()) {
+CartResources::CartResources(const rom::Snapshot& snapshot, std::int32_t courseID, CartFogProfile fog)
+    : course_id_(courseID), snapshot_(&snapshot), source_data_(snapshot.canonical().data()) {
     require(snapshot.canonical().size()==rom::us_size && snapshot.identity().size==rom::us_size &&
             snapshot.identity().sha1==admitted_sha1,"Cart requires admitted US Snapshot");
     require(fog.min<fog.max,"Cart requires actual World fog profile");
-    const model_assets::Reader reader(snapshot,mappings);
+    const auto& selected=catalog(courseID);
+    const model_assets::Reader reader(snapshot,selected.mappings);
     model_assets::DataDecoder decoder(reader,materials_,animations_,material_extents,&paths_);
     models_.push_back(decoder.model(0x803aaa30,0x8039d938,43,menu::RenderType::j_fogged));
     auto& model=models_.front();
     model.matrix_kinds={28,0,0}; model.fog_rgb=fog.rgb; model.fog_min=fog.min; model.fog_max=fog.max;
-    // No animation is implicitly selected; original Beach explicitly binds and
-    // sets both model/material speed to0.5. Player's camera speed1 is owner policy.
+    // Common PlayerModel_Init, render_player.c:3..15 (blob
+    // a87c007297022d577f629d5850a8ec76ac69a845), proves the same full
+    // ZerOnePlayer tree/materials and JFogged matrix recipe for both courses.
+    // No initial animation/speed policy is selected by this DATA resource.
     visibility_.assign(model.nodes.size(),std::uint8_t{1});
     auto clip=[&](CartClip& result, std::uint32_t model_table, std::uint32_t material_table,
                   std::uint32_t camera) {
@@ -64,10 +85,24 @@ CartResources::CartResources(const rom::Snapshot& snapshot, CartFogProfile fog)
         result.camera_identity=camera;
         result.camera_animation=decoder.animation(camera,menu::AnimationKind::camera,false);
     };
-    clip(intro_,0x8013c580,0x8013cea0,0x8013da90);
-    clip(outro_,0x8013b030,0x8013baa0,0x8013c530);
-    require(materials_.size()==8 && animations_.size()==92 && paths_.size()==6,
-            "Incomplete actual cart/Beach resource closure");
+    // Rainbow intro.c:4..6,107..110,155 (blob
+    // 370dd2fb22d8bed3ccc898fc8dd0b0d4c40d9c9d); gate/code.c:7..10,148..157
+    // (blob ee5d0b94feada6dcafa0df3a8b07c36baa5b10d1).
+    // Identity-proven US ROM SHA256
+    // a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc:
+    // intro model/material/camera ROM 4CBEB0/4CCD40/4CD7B0;
+    // outro model/material/camera ROM 4CA7B0/4CB420/4CBE5C.
+    // Full 43-entry DFS tables (including NULL preservation slots), all
+    // attachment streams and camera jump fragments yield 100 programs/6 paths.
+    // Each Rainbow clip: 43 distinct model streams, 6 texture streams, one
+    // camera program and 3 interpolation paths; no stream identity is shared
+    // across these two clips. The common 43-node/8-material model is unchanged.
+    // Rainbow path descriptors: 801184D8,80119A10,80119A74,80119BBC,
+    // 8011B380,8011B3C8. Beach remains 92 programs/6 paths, 8 materials.
+    clip(intro_,selected.intro[0],selected.intro[1],selected.intro[2]);
+    clip(outro_,selected.outro[0],selected.outro[1],selected.outro[2]);
+    require(materials_.size()==8 && animations_.size()==selected.animations &&
+            paths_.size()==selected.paths,"Incomplete actual course cart resource closure");
     const std::array<model_assets::ModelPlan,1> plans{{{&model,visibility_}}};
     closure_.emplace(reader,plans,materials_); closure_->require_complete();
 }

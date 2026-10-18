@@ -5,6 +5,7 @@
 #include <exception>
 #include <limits>
 #include <numeric>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
@@ -65,7 +66,10 @@ struct Stream {
     std::span<std::uint32_t> memory;
     std::size_t cursor = 0, rectangles = 0;
     std::uint32_t address = 0;
+    std::size_t capacity = ram_bytes / 4;
     void command(std::uint32_t a, std::uint32_t b) {
+        require(cursor <= capacity && capacity - cursor >= 2,
+                "sprite display list exceeds caller capacity");
         if (!memory.empty()) {
             memory[address / 4 + cursor] = a;
             memory[address / 4 + cursor + 1] = b;
@@ -271,7 +275,9 @@ RasterBinding Producer::register_raster(std::shared_ptr<Raster> raster) {
     require(generation_ != UINT64_MAX, "dynamic raster generation exhausted");
     for (const auto& item : dynamic_)
         require(item.raster != raster, "dynamic raster already registered");
-    for (const auto& source : raster->sources_) {
+    const unsigned source_count = raster->has_source(RasterSource::alternate) ? 2u : 1u;
+    for (unsigned i = 0; i < source_count; ++i) {
+        const auto& source = raster->sources_[i];
         const auto host = reinterpret_cast<std::uintptr_t>(source.storage.pixels.data());
         for (const auto& bank : banks_) {
             const auto base = reinterpret_cast<std::uintptr_t>(bank.owner->data());
@@ -283,7 +289,8 @@ RasterBinding Producer::register_raster(std::shared_ptr<Raster> raster) {
             require(!intersects(extent, {asset.address, static_cast<std::uint32_t>(asset.bytes.size())}),
                     "dynamic raster overlaps immutable assets");
         for (const auto& item : dynamic_) if (item.raster)
-            for (const auto& previous : item.raster->sources_) {
+            for (unsigned j = 0; j < item.source_count; ++j) {
+                const auto& previous = item.raster->sources_[j];
                 require(!intersects(extent, {previous.storage.address,
                         static_cast<std::uint32_t>(previous.storage.pixels.size())}),
                         "dynamic raster physical allocations overlap");
@@ -298,21 +305,28 @@ RasterBinding Producer::register_raster(std::shared_ptr<Raster> raster) {
     const auto old_resources = resources_.size();
     const auto new_slot = slot == dynamic_.end();
     require(!new_slot || dynamic_.size() < 128, "dynamic raster registration capacity exhausted");
+    std::array<std::size_t, 2> indices{RasterBinding::no_index, RasterBinding::no_index};
+    unsigned assigned = 0;
+    for (std::size_t i = 0; i < resources_.size() && assigned < source_count; ++i)
+        if (!resources_[i].active) indices[assigned++] = i;
+    auto resource_count = old_resources;
+    while (assigned < source_count) indices[assigned++] = resource_count++;
     try {
-        std::array<Resource, 2> compiled{
-            compile(raster->sources_[0].sprite, &raster->sources_[0]),
-            compile(raster->sources_[1].sprite, &raster->sources_[1])};
+        std::array<std::optional<Resource>, 2> compiled;
+        for (unsigned i = 0; i < source_count; ++i)
+            compiled[i].emplace(compile(raster->sources_[i].sprite, &raster->sources_[i]));
+        resources_.resize(resource_count);
         if (new_slot) {
-            resources_.resize(old_resources + 2);
             dynamic_.push_back({});
             slot = dynamic_.end() - 1;
-            slot->resources = {old_resources, old_resources + 1};
         }
         const auto generation = ++generation_;
-        for (unsigned i = 0; i < 2; ++i) {
-            compiled[i].generation = generation;
-            resources_[slot->resources[i]] = compiled[i];
+        for (unsigned i = 0; i < source_count; ++i) {
+            compiled[i]->generation = generation;
+            resources_[indices[i]] = *compiled[i];
         }
+        slot->resources = indices;
+        slot->source_count = source_count;
         slot->first = first;
         slot->capacity = pieces_.size() - first;
         slot->generation = generation;
@@ -332,7 +346,7 @@ void Producer::unregister_raster(RasterBinding binding) {
     });
     require(slot != dynamic_.end(), "stale or foreign dynamic raster binding");
     require(!slot->raster->borrowers_, "raster has other live graphics borrowers");
-    for (const auto resource : slot->resources) resources_[resource].active = false;
+    for (unsigned i = 0; i < slot->source_count; ++i) resources_[slot->resources[i]].active = false;
     const auto first = slot->first, count = slot->capacity;
     const auto erase_first = pieces_.begin() + static_cast<std::ptrdiff_t>(first);
     pieces_.erase(erase_first, erase_first + static_cast<std::ptrdiff_t>(count));
@@ -340,6 +354,8 @@ void Producer::unregister_raster(RasterBinding binding) {
     for (auto& item : dynamic_) if (item.raster && item.first >= first + count) item.first -= count;
     slot->raster.reset(); // Releases actual CPU storage owner after the final borrower.
     slot->capacity = 0;
+    slot->resources = {RasterBinding::no_index, RasterBinding::no_index};
+    slot->source_count = 0;
 }
 
 void Producer::validate_storage(std::span<std::uint32_t> memory,
@@ -357,7 +373,8 @@ void Producer::validate_storage(std::span<std::uint32_t> memory,
         require(begin >= ram_end || begin + asset.bytes.size() <= ram_begin, "sprite source aliases destination RAM");
     }
     for (const auto& item : dynamic_) if (item.raster)
-        for (const auto& source : item.raster->sources_) {
+        for (unsigned i = 0; i < item.source_count; ++i) {
+            const auto& source = item.raster->sources_[i];
             const RamRange extent{source.storage.address, static_cast<std::uint32_t>(source.storage.pixels.size())};
             for (const auto r : reservations)
                 require(!intersects(extent, r), "dynamic raster collides with caller reservation");
@@ -407,7 +424,8 @@ Producer::PreparedResidency Producer::validate_residency(std::span<std::uint32_t
                         "composed immutable union has conflicting physical source identities");
         }
         for (const auto& item : dynamic_) if (item.raster)
-            for (const auto& source : item.raster->sources_) {
+            for (unsigned i = 0; i < item.source_count; ++i) {
+                const auto& source = item.raster->sources_[i];
                 require(!intersects(extent, {source.storage.address,
                         static_cast<std::uint32_t>(source.storage.pixels.size())}),
                         "immutable union overlaps dynamic raster storage");
@@ -474,7 +492,7 @@ void Producer::install_composed(std::span<std::uint32_t> memory, std::uint64_t e
     };
     if (full) for (const auto& span : immutable) copy(span.address, span.bytes);
     for (auto& item : dynamic_) if (item.raster)
-        for (unsigned i = 0; i < 2; ++i) {
+        for (unsigned i = 0; i < item.source_count; ++i) {
             const auto& source = item.raster->sources_[i];
             const auto previous = full ? 0 : item.resident_revisions[i];
             if (previous == source.revision) continue;
@@ -507,7 +525,7 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
         require(!intersects(commands, {asset.address, static_cast<std::uint32_t>(asset.bytes.size())}),
                 "sprite commands overlap immutable texture or TLUT");
     for (const auto& item : dynamic_) if (item.raster)
-        for (unsigned i = 0; i < 2; ++i) {
+        for (unsigned i = 0; i < item.source_count; ++i) {
             const auto& source = item.raster->sources_[i];
             require(item.resident_revisions[i] == source.revision,
                     "dynamic raster publication is not resident");
@@ -522,18 +540,20 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                (begin <= ram_begin && bytes <= ram_begin - begin);
     };
     require(outside_ram(draws.data(), draws.size_bytes()), "sprite draw array aliases output RAM");
-    for (const auto& draw : draws)
-        require(draw.view && outside_ram(draw.view, sizeof(IsleSprite)), "sprite shallow view aliases output RAM");
+    for (const auto& draw : draws) {
+        require(draw.resource < resources_.size() && draw.view, "invalid sprite draw binding");
+        require(outside_ram(draw.view, sizeof(IsleSprite)), "sprite shallow view aliases output RAM");
+        const auto& resource = resources_[draw.resource];
+        require(resource.active && draw.generation == resource.generation, "stale sprite draw generation");
+        require(!resource.generation || borrowers_, "dynamic draw requires graphics retirement borrow");
+    }
     const auto bounds = clip(camera);
     const auto generate = [&](Stream& out) {
         out.command(0xe7000000, 0);
         out.command(0xed000000 | xy(bounds.left * 4, bounds.top * 4),
                     xy(std::max(bounds.left, bounds.right) * 4, std::max(bounds.top, bounds.bottom) * 4));
         if (bounds.left < bounds.right && bounds.top < bounds.bottom) for (const auto& draw : draws) {
-            require(draw.resource < resources_.size() && draw.view, "invalid sprite draw binding");
             const auto& r = resources_[draw.resource];
-            require(r.active && draw.generation == r.generation, "stale sprite draw generation");
-            require(!r.generation || borrowers_, "dynamic draw requires graphics retirement borrow");
             const auto& s = *draw.view;
             const auto& initial = r.original;
             require(s.bitmap == initial.bitmap && s.nbitmaps == initial.nbitmaps &&
@@ -543,7 +563,9 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                     s.nTLUT == initial.nTLUT && s.startTLUT == initial.startTLUT &&
                     ((s.attr ^ initial.attr) & ISLE_SP_TEXSHUF) == 0,
                     "sprite draw changed immutable resource layout");
-            require((s.attr & (ISLE_SP_EXTERN | ISLE_SP_OVERLAP | 0xf800u)) == 0,
+            // SP_OVERLAP is a defined, inert source attribute: the original draw
+            // path never tests it. Preserve it without inventing geometry or modes.
+            require((s.attr & (ISLE_SP_EXTERN | 0xf800u)) == 0,
                     "unsupported external or undefined sprite state");
             require(s.width >= 0 && s.height >= 0 && s.istart >= 0 &&
                     (s.nbitmaps == 0 ? s.istart == 0 : s.istart < s.nbitmaps) && s.istep >= 0 &&
@@ -577,14 +599,36 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                 out.command(0xf0000000, 0x07000000 | (std::uint32_t(s.nTLUT - 1) << 14));
                 out.command(0xe7000000, 0);
             }
+            // Source's previous-buffer cache is local to each Sprite. Native
+            // TMEM windows also depend on the loaded band and render-tile setup:
+            // equal buffer pointers alone cannot prove residency after banding.
+            // Format, size, shuffle mode and DrawMode are fixed for this loop.
+            struct TextureState {
+                std::uint32_t address;
+                int rows, width, line_words, palette;
+                bool operator==(const TextureState&) const = default;
+            };
+            std::optional<TextureState> resident;
             int column = 0, row = 0, px = 0, py = 0;
-            const int step = s.istep ? s.istep : 1;
-            for (int index = s.istart; index < s.nbitmaps; index += step) {
+            // Native nbitmaps is the admitted descriptor inventory, not Source's
+            // bitmap+istart+nbitmaps end pointer. Never walk beyond that inventory.
+            // A zero step advances geometry, but deliberately retains the bitmap.
+            for (int index = s.istart; index < s.nbitmaps; index += s.istep) {
                 const auto& p = pieces_[r.first + std::size_t(index)];
                 const auto& b = p.bitmap;
                 if (!b.width) break;
-                const int used_w = std::min<int>(b.width, s.width - px);
-                const int used_h = std::min<int>(s.bmheight, s.height - py);
+                require(b.width > 0, "sprite bitmap requires positive column progress");
+                require(s.istep > 0 || s.bmheight > 0,
+                        "repeated sprite bitmap requires positive row progress");
+                // Original wraps BEFORE drawing, admitting only complete rows
+                // after a wrap. Neither the right edge nor final row invents a
+                // cropped bitmap. actualHeight is geometry; bmheight is stride.
+                const int used_h = b.actualHeight ? b.actualHeight : s.bmheight;
+                if (px + b.width > s.width) {
+                    px = 0; py += s.bmheight; ++row; column = 0;
+                    if (py + used_h > s.height) break;
+                }
+                const int used_w = b.width;
                 const bool load_only = b.s > b.width_img;
                 if (b.buf && used_w > 0 && used_h > 0) {
                     const int w = std::min<int>(used_w, b.width_img - std::min<int>(b.s, b.width_img));
@@ -605,8 +649,10 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                     const int h = last_row - first_row;
                     if (!load_only && h <= 0) continue;
                     const int tile_t = first_row - load_first;
-                    const float x0 = float(s.x) + float(px + column * s.expx) * sx;
-                    const float y0 = float(s.y) + float(py + row * s.expy + first_row - b.t) * sy;
+                    // Source explosion offsets accumulate in destination pixels,
+                    // after scaling; they are not part of texture-space layout.
+                    const float x0 = float(s.x) + float(px) * sx + float(column * s.expx);
+                    const float y0 = float(s.y) + float(py + first_row - b.t) * sy + float(row * s.expy);
                     const float x1 = draw.mode == DrawMode::sprite ? x0 + float(w) * sx : float(draw.right);
                     const float y1 = draw.mode == DrawMode::sprite ? y0 + float(h) * sy : float(draw.bottom);
                     require(std::isfinite(x0) && std::isfinite(x1) && std::isfinite(y0) && std::isfinite(y1),
@@ -694,7 +740,11 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                     const int rows = std::min<int>(p.load_rows, p.rows - load_first);
                     const auto texture_address = p.address +
                         std::uint32_t(std::size_t(load_first) * p.row_bytes);
+                    const TextureState texture{texture_address, rows, b.width_img, p.line_words,
+                        s.bmfmt == 2 && s.bmsiz == 0 ? b.LUToffset : 0};
+                    const bool reload = !resident || *resident != texture;
                     out.command(0xe7000000, 0);
+                    if (reload) {
                     if (s.attr & ISLE_SP_TEXSHUF) {
                         // Already interleaved odd rows: dxt=0 deliberately avoids
                         // a second interleave. Load bytes as 16-bit, except RGBA32
@@ -726,6 +776,8 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                                 (draw.mode == DrawMode::sprite ? 0x00080200u : 0u));
                     out.command(0xf2000000, draw.mode == DrawMode::sprite ?
                         xy((b.width_img - 1) * 4, (rows - 1) * 4) : xy(13 * 4, 13 * 4));
+                    resident = texture;
+                    }
                     if (!load_only && right > left && bottom > top && (dx.lower || dy.lower)) {
                         // Exact pinned parallel-rdp 1cecd042 consumer equations:
                         // rdp_device.cpp:735-771, span_setup.comp:111-148,
@@ -768,8 +820,7 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                     }
                 }
                 px += b.width; ++column;
-                if (px >= s.width) { px = 0; py += s.bmheight; ++row; column = 0; }
-                if (py >= s.height) break;
+                // The next bitmap, not this one's edge, decides when to wrap.
             }
         }
         out.command(0xe7000000, 0);
@@ -778,9 +829,8 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
         out.command(0xef080cf0, 0);
         out.command(0xdf000000, 0);
     };
-    Stream preflight{}; generate(preflight);
-    require(preflight.cursor <= commands.size / 4, "sprite display list exceeds caller capacity");
-    Stream output{memory, 0, 0, commands.address}; generate(output);
+    Stream preflight{{}, 0, 0, 0, commands.size / 4}; generate(preflight);
+    Stream output{memory, 0, 0, commands.address, commands.size / 4}; generate(output);
     return {commands.address, output.cursor, output.rectangles};
 }
 } // namespace isle::sprite

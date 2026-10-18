@@ -2,6 +2,8 @@
 #include "contextual_model_math.h"
 #include "menu_scene_bridge.h"
 #include "source_factory_resources.h"
+#include "player_source.h"
+#include "post_course_scene_source.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -33,6 +35,14 @@ static IsleGameResult access_game(IsleGame* game) {
     result = isle_continuation_domain_check_access(game->domain);
     if (result == ISLE_CONT_WRONG_OWNER) return ISLE_GAME_WRONG_OWNER;
     if (result != ISLE_CONT_OK || active_game != game) return ISLE_GAME_INVALID_STATE;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_game_require_idle(IsleGame* game) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (game->ticking || omCurrentObject != NULL || omCurrentProcess != NULL ||
+        game->callback_depth != 0 || game->retirement_observer)
+        return ISLE_GAME_INVALID_STATE;
     return ISLE_GAME_OK;
 }
 IsleGameResult isle_menu_command_fault_begin(IsleGame* game, IsleGameObject* object,
@@ -70,7 +80,7 @@ void isle_native_execution_fault(IsleGame* game, const char* text) {
     IsleContinuationResult result;
     IsleMenuCommandFaultAbort abort = game->command_fault_abort;
     void* context = game->command_fault_context;
-    diagnostic(game, text);
+    if (game->fault == ISLE_GAME_OK) diagnostic(game, text);
     game->fault = ISLE_GAME_EXECUTION_FAILURE;
     /* A cleanup may inspect the fault and must see the scope already disarmed.
      * Its stable record, not a discarded C/C++ stack local, owns queue state.
@@ -78,6 +88,14 @@ void isle_native_execution_fault(IsleGame* game, const char* text) {
     game->command_fault_abort = NULL;
     game->command_fault_context = NULL;
     if (abort != NULL) abort(context);
+    /* Returning Source calls own nearer C-only frames. Native leaves have
+     * returned before reaching this boundary; aborting the outer continuation
+     * here would discard the intervening native owner's C++ call. */
+    if (game->playerSource && game->playerSource->nonwaiting_call_frame)
+        isle_player_source_checked(game->playerSource, game->fault);
+    if (game->postCourseSource && game->postCourseSource->nonwaiting_call_frame)
+        isle_post_course_source_checked(game->postCourseSource, game->fault,
+            __func__, game->error, __LINE__);
     result = isle_continuation_fail(game->domain, game->error);
     if (result == ISLE_CONT_INVALID_STATE && game->ticking) {
         longjmp(game->fault_frame, 1);
@@ -158,6 +176,7 @@ IsleGameResult isle_game_tick(IsleGame* game) {
     if (result != ISLE_GAME_OK) return result;
     if (game->ticking || game->callback_depth != 0) return ISLE_GAME_INVALID_STATE;
     if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (game->update_stopped) return ISLE_GAME_STOPPED;
     game->ticking = true;
     if (setjmp(game->fault_frame) == 0) omUpdateAll();
     game->ticking = false;
@@ -167,7 +186,8 @@ IsleGameResult isle_game_tick(IsleGame* game) {
     omCurrentObject = NULL;
     omCurrentProcess = NULL;
     omD_8004AC54 = 0;
-    return game->fault;
+    return game->fault != ISLE_GAME_OK ? game->fault :
+        game->update_stopped ? ISLE_GAME_STOPPED : ISLE_GAME_OK;
 }
 
 IsleGameResult isle_game_counts(IsleGame* game, IsleGameCounts* output) {
@@ -286,6 +306,16 @@ IsleGameResult isle_game_object_set_source_update(IsleGame* game, IsleGameObject
     object->update = NULL;
     object->updateUser = NULL;
     object->fnUpdate = callback;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_game_object_set_userdata(IsleGame* game, IsleGameObject* object, const void* value) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (object->retirementStarted || game->retirement_observer ||
+        object->sourcePayloadKind != ISLE_SOURCE_PAYLOAD_NONE) return ISLE_GAME_INVALID_STATE;
+    object->userData = (void*)value;
     return ISLE_GAME_OK;
 }
 
@@ -532,6 +562,27 @@ IsleGameResult isle_game_pause_source_processes(IsleGame* game, IsleGameObject* 
     return ISLE_GAME_OK;
 }
 
+IsleGameResult isle_game_pause_object_processes(IsleGame* game, IsleGameObject* object, int paused) {
+    GObjProcess* process;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (object == NULL) object = omCurrentObject;
+    if (!valid_object(game, object)) return ISLE_GAME_INVALID_ARGUMENT;
+    for (process = object->processListHead; process != NULL; process = process->next)
+        process->paused = paused ? 1 : 0;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_pause_link_processes(IsleGame* game, uint8_t update_link, int paused) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (update_link >= ARRAY_COUNT(omGObjListHead)) return ISLE_GAME_INVALID_ARGUMENT;
+    for (GObj* object = omGObjListHead[update_link]; object != NULL; object = object->next)
+        for (GObjProcess* process = object->processListHead; process != NULL; process = process->next)
+            process->paused = paused ? 1 : 0;
+    return ISLE_GAME_OK;
+}
+
 IsleGameResult isle_game_pause_process(IsleGame* game, IsleGameProcess* process, int paused) {
     IsleGameResult result = access_game(game);
     if (result != ISLE_GAME_OK) return result;
@@ -547,6 +598,42 @@ IsleGameResult isle_game_wait(IsleGame* game, uint32_t updates) {
     if (!game->ticking || omCurrentProcess == NULL || omCurrentProcess->kind != ISLE_GAME_STACKFUL) return ISLE_GAME_INVALID_STATE;
     if (isle_continuation_wait(game->domain, updates) != ISLE_CONT_OK) return ISLE_GAME_EXECUTION_FAILURE;
     return ISLE_GAME_OK;
+}
+IsleGameResult isle_game_source_wait(IsleGame* game, uint32_t updates) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (!updates) return ISLE_GAME_OK;
+    if (!game->ticking || game->update_stopped || omCurrentProcess == NULL ||
+        omCurrentProcess->kind != ISLE_GAME_STACKFUL || omCurrentProcess->function == NULL ||
+        omCurrentProcess->object != omCurrentObject || game->callback_depth != 0 ||
+        game->retirement_observer || game->command_fault_abort != NULL ||
+        (game->playerSource != NULL && game->playerSource->nonwaiting_call_frame != NULL) ||
+        (game->postCourseSource != NULL && game->postCourseSource->nonwaiting_call_frame != NULL))
+        return ISLE_GAME_INVALID_STATE;
+    return isle_game_wait(game, updates);
+}
+
+IsleGameResult isle_game_stop_update(IsleGame* game) {
+    IsleGameResult result = access_game(game);
+    IsleContinuationResult finished;
+    if (result != ISLE_GAME_OK) return result;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (!game->ticking || game->update_stopped || omCurrentProcess == NULL ||
+        omCurrentProcess->kind != ISLE_GAME_STACKFUL || omCurrentProcess->function == NULL ||
+        omCurrentProcess->object != omCurrentObject || game->callback_depth != 0 ||
+        game->retirement_observer || game->command_fault_abort != NULL ||
+        (game->playerSource != NULL && game->playerSource->nonwaiting_call_frame != NULL) ||
+        (game->postCourseSource != NULL && game->postCourseSource->nonwaiting_call_frame != NULL))
+        return ISLE_GAME_INVALID_STATE;
+    game->update_stopped = true;
+    /* Finish discards only this worker's C stack. The returning owner-side C
+     * resume below then jumps to its own existing OM fence, after C++ returns. */
+    finished = isle_continuation_finish(game->domain);
+    game->update_stopped = false; /* Invalid owner/nonactive context: no stop. */
+    return finished == ISLE_CONT_WRONG_OWNER ? ISLE_GAME_WRONG_OWNER :
+        finished == ISLE_CONT_RESOURCE_FAILURE ? ISLE_GAME_EXHAUSTED :
+        finished == ISLE_CONT_EXECUTION_FAILURE ? ISLE_GAME_EXECUTION_FAILURE : ISLE_GAME_INVALID_STATE;
 }
 
 void ohWait(s32 updates) {
@@ -571,6 +658,13 @@ void isle_native_resume_process(GObjProcess* process) {
         || isle_continuation_state(process->continuation, &state) != ISLE_CONT_OK) {
         isle_native_execution_fault(game, isle_continuation_error(game->domain));
         return;
+    }
+    if (game->update_stopped) {
+        if (state != ISLE_CONT_COMPLETED) {
+            isle_native_execution_fault(game, "stopped Source update did not finish its active C process");
+            return;
+        }
+        longjmp(game->fault_frame, 1);
     }
     if (state == ISLE_CONT_FAILED || state == ISLE_CONT_CANCELLED) {
         isle_native_execution_fault(game, "unexpected terminal state of selected C game process");
@@ -633,6 +727,19 @@ IsleGameResult isle_game_object_sprite(IsleGame* game, IsleGameObject* object,
     *output = object->data.sobj;
     return ISLE_GAME_OK;
 }
+IsleGameResult isle_game_sprite_object(IsleGame* game, IsleGameSprite* sprite,
+                                      IsleGameObject** output) {
+    if (output != NULL) *output = NULL;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (output == NULL || !valid_sprite(game, sprite) ||
+        !valid_object(game, sprite->obj) || sprite->obj->type != 2)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    *output = sprite->obj;
+    return ISLE_GAME_OK;
+}
+
 
 IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite, IsleSprite** output) {
     if (output != NULL) *output = NULL;
@@ -642,6 +749,22 @@ IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite, Isl
     *output = &sprite->sprite;
     return ISLE_GAME_OK;
 }
+IsleGameResult isle_game_sprite_aux_get(IsleGame* game, IsleGameSprite* sprite, int32_t* output) {
+    if (output != NULL) *output = 0;
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (!valid_sprite(game, sprite) || output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = sprite->unk_54;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_game_sprite_aux_set(IsleGame* game, IsleGameSprite* sprite, int32_t value) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (!valid_sprite(game, sprite)) return ISLE_GAME_INVALID_ARGUMENT;
+    sprite->unk_54 = value;
+    return ISLE_GAME_OK;
+}
+
 
 static IsleGameResult access_camera(IsleGame* game, OMCamera* camera) {
     IsleGameResult result = access_game(game);
@@ -763,11 +886,12 @@ IsleGameResult isle_game_camera_add_matrix(IsleGame* game, IsleGameCamera* camer
     IsleGameResult result = access_camera(game, camera);
     if (result != ISLE_GAME_OK) return result;
     if (kind != ISLE_GAME_CAMERA_PERSPECTIVE_FAST && kind != ISLE_GAME_CAMERA_LOOK_AT &&
-        kind != ISLE_GAME_CAMERA_LOOK_AT_ROLL && kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
-        return ISLE_GAME_INVALID_ARGUMENT;
+        kind != ISLE_GAME_CAMERA_LOOK_AT_ROLL && kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT &&
+        kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) return ISLE_GAME_INVALID_ARGUMENT;
     if (kind == ISLE_GAME_CAMERA_LOOK_AT_ROLL &&
         !valid_camera_pose(&camera->parameters.look_at, true, false)) return ISLE_GAME_INVALID_ARGUMENT;
-    if ((kind == ISLE_GAME_CAMERA_LOOK_AT || kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) &&
+    if ((kind == ISLE_GAME_CAMERA_LOOK_AT || kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT ||
+         kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) &&
         !valid_camera_pose(&camera->parameters.look_at, false, true)) return ISLE_GAME_INVALID_ARGUMENT;
     if (camera->numMatrices == ARRAY_COUNT(camera->matrices)) return ISLE_GAME_EXHAUSTED;
     matrix = game->free_matrices;
@@ -821,14 +945,15 @@ IsleGameResult isle_game_camera_set_look_at(IsleGame* game, IsleGameCamera* came
     for (size_t i = 0; i < camera->numMatrices; ++i) {
         const IsleGameCameraMatrixKind kind = camera->matrices[i]->result.kind;
         if (kind == ISLE_GAME_CAMERA_LOOK_AT_ROLL) require_y_up = true;
-        if (kind == ISLE_GAME_CAMERA_LOOK_AT || kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
-            require_supplied_up = true;
+        if (kind == ISLE_GAME_CAMERA_LOOK_AT || kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT ||
+            kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) require_supplied_up = true;
     }
     if (!valid_camera_pose(p, require_y_up, require_supplied_up || !require_y_up))
         return ISLE_GAME_INVALID_ARGUMENT;
     camera->parameters.look_at = *p;
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT);
     if (pose_changed) invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_ROLL);
+    invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT);
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL);
     return ISLE_GAME_OK;
 }
@@ -842,6 +967,10 @@ IsleGameResult isle_game_camera_set_roll(IsleGame* game, IsleGameCamera* camera,
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_ROLL);
     invalidate_camera(camera, ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL);
     return ISLE_GAME_OK;
+}
+
+static bool camera_matrix_reflects(IsleGameCameraMatrixKind kind) {
+    return kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT || kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL;
 }
 
 IsleGameResult isle_game_camera_roll(IsleGame* game, IsleGameCamera* camera, float* output) {
@@ -875,6 +1004,25 @@ IsleGameResult isle_game_camera_parameters(IsleGame* game, IsleGameCamera* camer
     *output = &camera->parameters;
     return ISLE_GAME_OK;
 }
+IsleGameResult isle_game_camera_render_state(IsleGame* game, IsleGameCamera* camera,
+                                            IsleGameCameraRenderState* output) {
+    IsleGameResult result;
+    if (output) *output = (IsleGameCameraRenderState){0};
+    result = access_camera(game,camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = camera->render_state;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_game_camera_set_render_state(IsleGame* game, IsleGameCamera* camera,
+                                                const IsleGameCameraRenderState* value) {
+    IsleGameResult result = access_camera(game,camera);
+    if (result != ISLE_GAME_OK) return result;
+    if (!value) return ISLE_GAME_INVALID_ARGUMENT;
+    if (camera->obj->retirementStarted || game->retirement_observer) return ISLE_GAME_INVALID_STATE;
+    camera->render_state = *value;
+    return ISLE_GAME_OK;
+}
 
 IsleGameResult isle_game_camera_matrix_count(IsleGame* game, IsleGameCamera* camera,
                                             size_t* output) {
@@ -904,7 +1052,12 @@ static IsleGameResult compute_camera_matrix(const OMCamera* camera, const OMMtx*
                               p->fovy, p->aspect, p->near_plane, p->far_plane, p->scale);
     } else {
         const IsleGameLookAt* p = &camera->parameters.look_at;
-        if (matrix->result.kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) {
+        if (matrix->result.kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT) {
+            if (!hal_look_at_reflect_f(floating, &reflection,
+                    p->eye[0], p->eye[1], p->eye[2], p->at[0], p->at[1], p->at[2],
+                    p->up[0], p->up[1], p->up[2]))
+                return ISLE_GAME_INVALID_ARGUMENT;
+        } else if (matrix->result.kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) {
             if (!hal_look_at_reflect_roll_f(floating, &reflection,
                     p->eye[0], p->eye[1], p->eye[2], p->at[0], p->at[1], p->at[2],
                     camera->roll, p->up[0], p->up[1], p->up[2]))
@@ -930,7 +1083,7 @@ static IsleGameResult compute_camera_matrix(const OMCamera* camera, const OMMtx*
     output->revision = matrix->result.revision + 1;
     memcpy(output->floating, floating, sizeof(floating));
     hal_mtx_f2l(floating, &output->fixed);
-    if (output->kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL) {
+    if (camera_matrix_reflects(output->kind)) {
         for (size_t axis = 0; axis < 2; ++axis) {
             memcpy(reflected->direction[axis], reflection.l[axis].l.dir, 3);
             memcpy(reflected->color[axis], reflection.l[axis].l.col, 3);
@@ -960,7 +1113,7 @@ IsleGameResult isle_game_camera_compute_all(IsleGame* game, IsleGameCamera* came
         OMMtx* matrix = camera->matrices[i];
         if (matrix->cached) continue;
         matrix->result = staged[i].matrix;
-        if (matrix->result.kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
+        if (camera_matrix_reflects(matrix->result.kind))
             matrix->reflection = staged[i].reflection;
         matrix->cached = true;
     }
@@ -1025,7 +1178,7 @@ IsleGameResult isle_game_camera_reflection(IsleGame* game, IsleGameCamera* camer
     result = access_camera(game, camera);
     if (result != ISLE_GAME_OK) return result;
     if (output == NULL || index >= camera->numMatrices) return ISLE_GAME_INVALID_ARGUMENT;
-    if (camera->matrices[index]->result.kind != ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL)
+    if (!camera_matrix_reflects(camera->matrices[index]->result.kind))
         return ISLE_GAME_INVALID_STATE;
     result = isle_game_camera_matrix(game, camera, index, &computed);
     if (result != ISLE_GAME_OK) return result;
@@ -1166,6 +1319,8 @@ IsleGameResult isle_model_source48_basis(const IsleGameCameraParameters* camera,
 static bool valid_model_matrix_transform(const IsleGameModelTransform* t, IsleGameModelMatrixKind kind) {
     if (kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE) return valid_model_transform(t);
     if (kind == ISLE_GAME_MODEL_CONTEXTUAL_RPY) return finite_model_transform(t);
+    if (kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE)
+        return finite_model_transform(t) && valid_model_rt_transform(t);
     if (kind != ISLE_GAME_MODEL_TRANSLATE || !finite_model_transform(t)) return false;
     /* Canonical source TRS is independent of this recipe's translation cache.
      * Unconsumed rotation/scale never pass through the ordinary RTS casts. */
@@ -1640,6 +1795,9 @@ IsleGameResult isle_game_model_nodes(IsleGame* game, IsleGameModel* model,
         const IsleGameModelTransform* t = &node->transform;
         if (node->matrix_kind == ISLE_GAME_MODEL_TRANSLATE)
             hal_translate(&node->fixed, t->position.x, t->position.y, t->position.z);
+        else if (node->matrix_kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE)
+            hal_rotate_rpy_translate(&node->fixed, t->position.x, t->position.y, t->position.z,
+                t->rotation.x, t->rotation.y, t->rotation.z);
         else if (node->matrix_kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE)
             hal_rotate_rpy_translate_scale(&node->fixed, t->position.x, t->position.y, t->position.z,
                 t->rotation.x, t->rotation.y, t->rotation.z, t->scale.x, t->scale.y, t->scale.z);

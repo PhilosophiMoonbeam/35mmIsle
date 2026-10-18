@@ -14,7 +14,7 @@ namespace sp = isle::sprite;
 void check(bool value, const char* message) { if (!value) throw std::runtime_error(message); }
 template<class F> void rejects(F&& action, const char* message) {
     bool rejected = false;
-    try { action(); } catch (const std::invalid_argument&) { rejected = true; }
+    try { action(); } catch (const std::exception&) { rejected = true; }
     check(rejected, message);
 }
 struct Fixture {
@@ -74,6 +74,202 @@ void installation_and_transactions() {
           rectangles[3] == 8, "piece placement advances in source row-major order");
     check(ram[(list.address + static_cast<std::uint32_t>(list.words * 4)) / 4] == 0xa5a5a5a5,
           "command end preserves its immediate guard");
+}
+void bitmap_step_preserves_source_geometry() {
+    Fixture f;
+    f.sprite.width = 8; f.sprite.height = 6; f.sprite.istep = 0;
+    const std::array<const IsleSprite*, 1> roots{&f.sprite};
+    const std::array<sp::BankMapping, 1> banks{{{f.bytes, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8 * 1024 * 1024 / 4, 0xa5a5a5a5);
+    producer.install(ram, 1, {});
+    auto view = f.sprite;
+    const std::array<sp::Draw, 1> draws{{{0, &view}}};
+    const auto prepare = [&] {
+        return producer.prepare(ram, 1, draws, {}, {0x150000, 4096});
+    };
+    const auto repeated = prepare();
+    const auto words = std::span(ram).subspan(repeated.address / 4, repeated.words);
+    const auto rectangles = op(words, 0xe4), textures = op(words, 0xfd);
+    const std::vector<std::uint32_t> expected{
+        0xe4010008, 0x00000000, 0xe4020008, 0x00010000,
+        0xe4010010, 0x00000008, 0xe4020010, 0x00010008,
+        0xe4010018, 0x00000010, 0xe4020018, 0x00010010};
+    check(rectangles == expected,
+          "zero bitmap step fills every source tile across the complete 8x6 extent");
+    check(textures == std::vector<std::uint32_t>{0xfd100000, 0x300008},
+          "consecutive repeated tiles share one admitted texture upload and unchanged tile setup");
+    check(repeated.words == 82, "six repeated rectangles use one setup and four commands per subsequent tile");
+    const auto installed = ram;
+    rejects([&] {
+        producer.prepare(ram, 1, draws, {},
+                         {0x150000, static_cast<std::uint32_t>(repeated.words * 4 - 8)});
+    }, "zero-step repetition preflights the entire command extent");
+    check(ram == installed, "zero-step command exhaustion publishes no partial geometry");
+
+    view.istep = 1;
+    const auto advancing = prepare();
+    const auto advancing_words = std::span(ram).subspan(advancing.address / 4, advancing.words);
+    check(op(advancing_words, 0xe4) == std::vector<std::uint32_t>{
+              0xe4010008, 0x00000000, 0xe4020004, 0x00010000},
+          "positive step preserves inventory termination and the short second bitmap height");
+    const auto advancing_textures = op(advancing_words, 0xfd);
+    check(advancing_textures.size() == 4 && advancing_textures[1] == 0x300008 &&
+          advancing_textures[3] == 0x300018,
+          "positive step advances to the next admitted bitmap bytes");
+    view.istep = 2;
+    const auto skipped = prepare();
+    check(op(std::span(ram).subspan(skipped.address / 4, skipped.words), 0xe4) ==
+              std::vector<std::uint32_t>{0xe4010008, 0x00000000},
+          "larger positive bitmap step preserves source inventory skipping");
+    view.istep = 0; view.istart = 1;
+    const auto offset = prepare();
+    const auto offset_words = std::span(ram).subspan(offset.address / 4, offset.words);
+    const auto offset_textures = op(offset_words, 0xfd);
+    check(op(offset_words, 0xe4) == std::vector<std::uint32_t>{
+              0xe4010004, 0x00000000, 0xe4020004, 0x00010000,
+              0xe401000c, 0x00000008, 0xe402000c, 0x00010008,
+              0xe4010014, 0x00000010, 0xe4020014, 0x00010010},
+          "zero step keeps the selected short bitmap and original row stride");
+    check(offset_textures == std::vector<std::uint32_t>{0xfd100000, 0x300018},
+          "zero step honors a nonzero starting bitmap with one consecutive texture upload");
+    view.istep = 1;
+    const auto bounded = prepare();
+    check(bounded.rectangles == 1,
+          "positive step with nonzero start stays inside the admitted native inventory");
+    view.istart = 0; view.istep = 0; view.width = 6; view.height = 3;
+    const auto nondivisible = prepare();
+    check(op(std::span(ram).subspan(nondivisible.address / 4, nondivisible.words), 0xe4) ==
+              std::vector<std::uint32_t>{0xe4010008, 0},
+          "Source pre-draw wrap admits one complete 4x2 bitmap into a 6x3 sprite");
+    view.width = 8; view.height = 6; view.attr |= ISLE_SP_SCALE;
+    view.scalex = 2; view.scaley = 3; view.expx = 3; view.expy = 5;
+    const auto expanded = prepare();
+    const auto expansion = op(std::span(ram).subspan(expanded.address / 4, expanded.words), 0xe4);
+    check(expanded.rectangles == 6 && expansion[2] == 0xe404c018 &&
+          expansion[3] == 0x0002c000 && expansion[4] == 0xe4020044 && expansion[5] == 44,
+          "non-unit scale applies explosion offsets in destination pixels, after scaling, on each column and row");
+}
+void actual_height_is_not_row_stride() {
+    Fixture f;
+    f.sprite.bmheight = 1; f.sprite.width = 4; f.sprite.height = 3; f.sprite.istep = 0;
+    const std::array<const IsleSprite*, 1> roots{&f.sprite};
+    const std::array<sp::BankMapping, 1> banks{{{f.bytes, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8 * 1024 * 1024 / 4);
+    producer.install(ram, 1, {});
+    auto view = f.sprite;
+    const std::array<sp::Draw, 1> draws{{{0, &view}}};
+    const auto list = producer.prepare(ram, 1, draws, {}, {0x150000, 4096});
+    const auto words = std::span(ram).subspan(list.address / 4, list.words);
+    check(op(words, 0xe4) == std::vector<std::uint32_t>{
+              0xe4010008, 0, 0xe401000c, 4},
+          "actualHeight taller than bmheight draws full overlapping pieces, then rejects the next incomplete row");
+    check(op(words, 0xfd).size() == 2,
+          "overlapping source rows do not invalidate an unchanged resident texture");
+    view.height = 1; view.istep = 1; view.nbitmaps = f.sprite.nbitmaps;
+    const auto first = producer.prepare(ram, 1, draws, {}, {0x150000, 4096});
+    check(op(std::span(ram).subspan(first.address / 4, first.words), 0xe4) ==
+              std::vector<std::uint32_t>{0xe4010008, 0},
+          "Source row-fit test occurs after wrapping, not as an invented initial-row crop");
+}
+void consecutive_texture_setup_and_transitions() {
+    auto bank = std::make_shared<sp::Bank>(64, 0xff);
+    const std::array<IsleBitmap, 6> bitmap{{
+        {4,4,0,0,bank->data(),32,4,0},
+        {2,4,1,0,bank->data(),32,4,0},
+        {4,8,0,0,bank->data(),32,2,0},
+        {4,4,0,0,bank->data(),32,4,0},
+        {4,4,0,0,bank->data()+32,32,4,0},
+        {4,4,0,0,bank->data()+32,32,4,0}}};
+    IsleSprite s{};
+    s.width = 22; s.height = s.bmheight = s.bmHreal = 4;
+    s.scalex = s.scaley = 1; s.red = s.green = s.blue = s.alpha = 255;
+    s.bitmap = bitmap.data(); s.nbitmaps = 6; s.istep = 1; s.bmfmt = 0; s.bmsiz = 2;
+    const std::array<const IsleSprite*, 1> roots{&s};
+    const std::array<sp::BankMapping, 1> banks{{{bank, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8 * 1024 * 1024 / 4, 0xa5a5a5a5);
+    producer.install(ram, 1, {});
+    const std::array<sp::Draw, 2> draws{{{0, &s}, {0, &s}}};
+    const auto list = producer.prepare(ram, 1, draws, {}, {0x150000, 4096});
+    const auto words = std::span(ram).subspan(list.address / 4, list.words);
+    const auto images = op(words, 0xfd), tiles = op(words, 0xf2), origins = op(words, 0xe1);
+    check(list.rectangles == 12 && images.size() == 16 && tiles.size() == 16,
+          "equal resident setup reuses TMEM, changed width/height reloads, and every Sprite resets the cache");
+    for (std::size_t i = 0; i < 8; ++i)
+        check(images[i * 2 + 1] == (i % 4 == 3 ? 0x300020u : 0x300000u),
+              "A/A/B/A/C/C texture transition preserves exact address order in both Sprites");
+    check(tiles[1] == 0x0000c00c && tiles[3] == 0x0001c004 && tiles[5] == 0x0000c00c,
+          "same address with a changed TMEM interpretation cannot reuse the preceding render tile");
+    check(origins[3] == 0x00200000,
+          "resident texture reuse still emits the selected descriptor's independent S origin");
+    const auto before = ram;
+    rejects([&] {
+        producer.prepare(ram, 1, draws, {},
+                         {0x150000, static_cast<std::uint32_t>(list.words * 4 - 8)});
+    }, "texture transitions and cache resets participate in complete capacity preflight");
+    check(ram == before, "late cached-list capacity rejection cannot partially write any RAM");
+}
+void camera_sized_repetition_is_compact() {
+    auto bank = std::make_shared<sp::Bank>(16 * 16 * 2, 0xff);
+    IsleBitmap bitmap{16,16,0,0,bank->data(),bank->size(),16,0};
+    IsleSprite s{};
+    s.width = 640; s.height = 480; s.bmheight = s.bmHreal = 16;
+    s.scalex = s.scaley = 1; s.red = s.green = s.blue = s.alpha = 255;
+    s.bitmap = &bitmap; s.nbitmaps = 1; s.istep = 0; s.bmfmt = 0; s.bmsiz = 2;
+    const std::array<const IsleSprite*, 1> roots{&s};
+    const std::array<sp::BankMapping, 1> banks{{{bank, 0x80300000}}};
+    sp::Producer producer(roots, banks);
+    std::vector<std::uint32_t> ram(8 * 1024 * 1024 / 4, 0xa5a5a5a5);
+    producer.install(ram, 1, {});
+    const std::array<sp::Draw, 1> draws{{{0, &s}}};
+    const auto list = producer.prepare(ram, 1, draws, {}, {0x150000, 0x5550});
+    const auto words = std::span(ram).subspan(list.address / 4, list.words);
+    check(list.rectangles == 300 && list.words == 2434 && op(words, 0xfd).size() == 2,
+          "Camera-shaped 16x16 source repetition clips to 300 rectangles with exactly one texture setup");
+    const auto rectangles = op(words, 0xe4);
+    check(rectangles.front() == 0xe4040040 && rectangles[rectangles.size() - 2] == 0xe45003c0 &&
+          rectangles.back() == 0x004c0380,
+          "compact repeated texture commands retain the full decoded first-to-last source rectangle sequence");
+    const auto before = ram;
+    rejects([&] {
+        producer.prepare(ram, 1, draws, {},
+                         {0x150000, static_cast<std::uint32_t>(list.words * 4 - 8)});
+    }, "Camera-shaped compact commands still require their complete exact arena");
+    check(ram == before, "compact Camera-shaped capacity failure preserves RAM atomically");
+}
+void repeated_bitmap_nonprogress_rejects_atomically() {
+    for (const bool invalid_row : {false, true}) {
+        Fixture f;
+        f.sprite.istep = 0;
+        if (invalid_row) f.sprite.bmheight = 0;
+        else { f.bitmap[0].width = -1; f.bitmap[0].buf = nullptr; }
+        const std::array<const IsleSprite*, 1> roots{&f.sprite};
+        const std::array<sp::BankMapping, 1> banks{{{f.bytes, 0x80300000}}};
+        sp::Producer producer(roots, banks);
+        std::vector<std::uint32_t> ram(8 * 1024 * 1024 / 4, 0xa5a5a5a5);
+        producer.install(ram, 1, {});
+        auto hidden = f.sprite; hidden.attr |= ISLE_SP_HIDDEN;
+        const std::array<sp::Draw, 2> draws{{{0, &hidden}, {0, &f.sprite}}};
+        const auto before = ram;
+        rejects([&] { producer.prepare(ram, 1, draws, {}, {0x150000, 4096}); },
+                "nonprogressing repeated bitmap geometry rejects");
+        check(ram == before, "nonprogress rejection preserves every RAM word before publication");
+    }
+    Fixture terminal;
+    terminal.sprite.istep=0; terminal.sprite.bmheight=0;
+    terminal.bitmap[0].width=0; terminal.bitmap[0].buf=nullptr;
+    const std::array<const IsleSprite*,1> roots{&terminal.sprite};
+    const std::array<sp::BankMapping,1> banks{{{terminal.bytes,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4,0xa5a5a5a5);
+    producer.install(ram,1,{});
+    const std::array<sp::Draw,1> draws{{{0,&terminal.sprite}}};
+    const auto stopped=producer.prepare(ram,1,draws,{},{0x150000,4096});
+    const auto words=std::span(ram).subspan(stopped.address/4,stopped.words);
+    check(op(words,0xe4).empty() && op(words,0xfd).empty(),
+          "zero-width bitmap terminates before requiring repeated geometry progress");
 }
 void mutable_state_and_scissor() {
     Fixture f;
@@ -263,6 +459,24 @@ void ci_palette_and_odd_rows() {
     const std::array<const IsleSprite*,1> wrong_roots{&wrong};
     rejects([&]{sp::Producer invalid(wrong_roots,banks);},
             "CI4 palette bank outside the loaded partial TLUT is rejected");
+    std::array<IsleBitmap, 3> palette_pieces{bitmap, bitmap, bitmap};
+    palette_pieces[1].LUToffset = palette_pieces[2].LUToffset = 4;
+    auto palette_sprite = s;
+    palette_sprite.width = 9; palette_sprite.nbitmaps = 3;
+    palette_sprite.bitmap = palette_pieces.data();
+    palette_sprite.nTLUT = 32; palette_sprite.LUT_bytes = 64;
+    const std::array<const IsleSprite*, 1> palette_roots{&palette_sprite};
+    sp::Producer palette_producer(palette_roots, banks);
+    palette_producer.install(ram, 2, {});
+    const std::array<sp::Draw, 1> draws{{{0, &palette_sprite}}};
+    const auto list = palette_producer.prepare(ram, 2, draws, {}, {0x150000,4096});
+    const auto words = std::span(ram).subspan(list.address / 4, list.words);
+    check(list.rectangles == 3 && op(words, 0xf4).size() == 4 && op(words, 0xf2).size() == 4,
+          "CI4 same-buffer palette-bank change invalidates the resident setup, then equal setup reuses it");
+    const auto tiles = op(words, 0xf5);
+    check((tiles[5] & 0x00f00000u) == 0x00300000u &&
+          (tiles[9] & 0x00f00000u) == 0x00400000u,
+          "consecutive CI4 cache keys preserve the exact render-tile palette bank");
 }
 void oversized_bitmap_bands() {
     auto bank = std::make_shared<sp::Bank>(32 * 68 * 2, 0xff);
@@ -292,6 +506,18 @@ void oversized_bitmap_bands() {
           "upper/lower stored borders do not duplicate screen coverage");
     check(origins[1] == 0x0000fff0 && origins[3] == 0x00000030,
           "negative half-texel T samples retained preceding row rather than an artificial band clamp");
+    s.width = 64; s.istep = 0;
+    const auto repeated = producer.prepare(ram, 1, draws, {}, {0x150000,4096});
+    const auto repeated_words = std::span(ram).subspan(repeated.address / 4, repeated.words);
+    const auto repeated_images = op(repeated_words, 0xfd);
+    check(repeated.rectangles == 4 && repeated_images == std::vector<std::uint32_t>{
+              0xfd100000, 0x300000, 0xfd100000, 0x300e80,
+              0xfd100000, 0x300000, 0xfd100000, 0x300e80},
+          "repeating one bitmap must reload its first band after the preceding tile leaves its final band resident");
+    check(op(repeated_words, 0xe1) == std::vector<std::uint32_t>{
+              0xe1000000, 0x0000fff0, 0xe1000000, 0x00000030,
+              0xe1000000, 0x0000fff0, 0xe1000000, 0x00000030},
+          "band reloads preserve source-local origins and filtered-border interpretation on every repetition");
 }
 void rgba32_copy_rejection_is_atomic() {
     auto bank = std::make_shared<sp::Bank>(64, 0xff);
@@ -534,6 +760,11 @@ int main() {
     try {
         installation_and_transactions(); mutable_state_and_scissor(); ci_palette_and_odd_rows();
         derivatives_require_actual_raster_coverage();
+        bitmap_step_preserves_source_geometry();
+        actual_height_is_not_row_stride();
+        consecutive_texture_setup_and_transitions();
+        camera_sized_repetition_is_compact();
+        repeated_bitmap_nonprogress_rejects_atomically();
         minification_axes_and_coordinate_boundaries();
         minified_bands_load_consumed_neighbors();
         oversized_bitmap_bands(); rgba32_copy_rejection_is_atomic();

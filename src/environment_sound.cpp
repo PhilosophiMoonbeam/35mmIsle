@@ -10,14 +10,25 @@ namespace isle::environment_sound {
 namespace {
 std::uintptr_t key(IsleGameObject* object) noexcept { return reinterpret_cast<std::uintptr_t>(object); }
 }
-BeachResources::BeachResources(const rom::Snapshot& snapshot) : angles_(snapshot) {
-    const rom::GuestView table{0x802cbe10,0x563e80,snapshot.canonical().subspan(0x563e80,53*4)};
-    for (std::size_t i=0; i<descriptors_.size(); ++i)
+Resources::Resources(const rom::Snapshot& snapshot, std::int32_t course_id)
+    : angles_(snapshot),course_id_(course_id) {
+    // Source df8815e: app_level/app_level.h EnvSoundData is u16/u8/u8 (four bytes).
+    // beach/55C110.c initializes 0x35 records at D_beach_802CBE10;
+    // rainbow/main.c initializes its nine-record D_8034AB10_82A280 array.
+    // splat.yaml maps these data starts to ROM 0x563e80 and 0x82a280.
+    std::uint32_t wire=0,offset=0;
+    switch (course_id_) {
+    case 0: wire=0x802cbe10; offset=0x563e80; descriptor_count_=53; break;
+    case 6: wire=0x8034ab10; offset=0x82a280; descriptor_count_=9; break;
+    default: throw std::invalid_argument("Environmental sound course is not implemented");
+    }
+    const rom::GuestView table{wire,offset,snapshot.canonical().subspan(offset,descriptor_count_*4)};
+    for (std::size_t i=0; i<descriptor_count_; ++i)
         descriptors_[i]={table.u16(i*4),table.u8(i*4+2),table.u8(i*4+3)};
 }
-std::span<const Descriptor> BeachResources::descriptors() const {
+std::span<const Descriptor> Resources::descriptors() const {
     if (!angles_.live()) throw std::logic_error("Environmental sound borrows moved Snapshot");
-    return descriptors_;
+    return {descriptors_.data(),descriptor_count_};
 }
 Environment::Record* Environment::allocate() noexcept {
     isle_span storage{};
@@ -26,7 +37,7 @@ Environment::Record* Environment::allocate() noexcept {
     }
     return ::new (static_cast<void*>(storage.data)) Record{};
 }
-Environment::Environment(scene::Services& services,isle_arena& arena,const BeachResources& resources)
+Environment::Environment(scene::Services& services,isle_arena& arena,const Resources& resources)
     : services_(services),arena_(arena),resources_(resources) {
     static_cast<void>(resources.descriptors());
 }

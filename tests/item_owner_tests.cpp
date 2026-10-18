@@ -34,11 +34,11 @@ void globals_and_setters() {
     Items_SetCustomFunctions(&g,nullptr,0,nullptr);
     require(g.update==Items_UpdateItemMovement && g.update_kind==1 && g.collide==isle_item_source_beach,
             "NULL update failed to reinstate kind1 movement or erased prior collision hook");
-    Items_func_8035CA1C(&g,nullptr); require(!g.extra,"NULL provider was not a real clear");
 }
 void actual_native_array_iteration() {
     isle::scene::Storage storage(1024*1024); native(storage.create());
     IsleItemGlobals g{}; Items_Init(&g); g.game=storage.game();
+    native(Items_func_8035CA1C(&g,g.game,nullptr,nullptr));
     IsleGameObject *first=nullptr,*second=nullptr,*third=nullptr;
     native(isle_game_add_object(g.game,301,4,0x80000000u,nullptr,nullptr,&first));
     native(isle_game_add_object(g.game,302,4,0x80000000u,nullptr,nullptr,&second));

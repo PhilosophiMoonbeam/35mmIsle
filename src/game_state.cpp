@@ -4,6 +4,11 @@
 #include <utility>
 
 namespace isle::game {
+bool VideoOffsets::translation(::isle::save::ScreenOffsets& out) const noexcept {
+    if (horizontal_start != horizontal_end || vertical_start != vertical_end) return false;
+    out = {horizontal_start, vertical_start};
+    return true;
+}
 State::State(std::filesystem::path profile, std::uint32_t seed)
     : rng{seed}, profile_(std::move(profile)) {}
 State::~State() = default;
@@ -33,9 +38,13 @@ const std::filesystem::path& State::profile_path() const noexcept { return profi
 const ::isle::save::GameOpenResult* State::save_initialization() const noexcept { return attempted_ ? &opened_ : nullptr; }
 ::isle::save::GameSession* State::save() noexcept { return initialized() ? &opened_.session : nullptr; }
 const ::isle::save::GameSession* State::save() const noexcept { return initialized() ? &opened_.session : nullptr; }
+const VideoOffsets& State::screen_offsets() const noexcept { return screen_offsets_; }
+void State::set_screen_offsets(VideoOffsets offsets) noexcept { screen_offsets_ = offsets; }
 void State::select_controller(const game_input::Snapshot& snapshot) noexcept {
     controller = snapshot.indices[0] == 0 ? 0 : -1;
 }
+void State::set_idle_script(const IslePlayerIdleScript* script) noexcept { manager_state_.idle_script = script; }
+const IslePlayerIdleScript* State::idle_script() const noexcept { return manager_state_.idle_script; }
 void State::add_scene_notices(std::uint32_t flags) noexcept { notices_ |= flags; }
 bool State::consume_scene_notices(std::uint32_t flags) noexcept {
     const bool result = (notices_ & flags) != 0;
@@ -44,6 +53,7 @@ bool State::consume_scene_notices(std::uint32_t flags) noexcept {
 }
 void State::clear_scene_notices() noexcept { notices_ = 0; }
 std::uint32_t State::scene_notices() const noexcept { return notices_; }
-void State::set_scene_latch(std::int32_t value) noexcept { scene_latch_ = value; }
-std::int32_t State::scene_latch() const noexcept { return scene_latch_; }
+void State::set_scene_latch(std::int32_t value) noexcept { manager_state_.latch = value; }
+std::int32_t State::scene_latch() const noexcept { return manager_state_.latch; }
+IsleApplicationManagerState& State::manager_state() noexcept { return manager_state_; }
 } // namespace isle::game

@@ -354,10 +354,11 @@ struct Builder {
         require(plan.model && (plan.visibility_domains.empty() || plan.visibility_domains.size() == plan.model->nodes.size()),
                 "Invalid model closure plan");
         const auto type = plan.model->render_type;
-        require(type == menu::RenderType::b || type == menu::RenderType::b_fogged || type == menu::RenderType::a_fogged ||
-                type == menu::RenderType::d_fogged || type == menu::RenderType::i_fogged || type == menu::RenderType::j_fogged,
+        require(type == menu::RenderType::a || type == menu::RenderType::b || type == menu::RenderType::b_fogged || type == menu::RenderType::a_fogged ||
+                type == menu::RenderType::d_fogged || type == menu::RenderType::i_fogged ||
+                type == menu::RenderType::i_no_fog || type == menu::RenderType::j_fogged,
                 "Unsupported model resource render selector");
-        require(type != menu::RenderType::a_fogged || plan.model->nodes.size() == 1,
+        require((type != menu::RenderType::a && type != menu::RenderType::a_fogged) || plan.model->nodes.size() == 1,
                 "TypeA resource renderer consumes exactly one root");
         for (std::size_t i = 0; i < plan.model->nodes.size(); ++i) {
             const auto parent = plan.model->nodes[i].parent;

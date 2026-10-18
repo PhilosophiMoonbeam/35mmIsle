@@ -8,6 +8,7 @@
 #include "game_state.hpp"
 #include "game_host.hpp"
 #include "host_clock.hpp"
+#include "application_manager.hpp"
 #include "new_game_oak_driver.hpp"
 
 #include <SDL3/SDL.h>
@@ -120,7 +121,7 @@ void capture_window(const std::filesystem::path& path) {
 }
 int run(const std::filesystem::path& rom, const std::filesystem::path& root, Scenario scenario) {
     const bool full_title = scenario == Scenario::full_title;
-    const bool reset_offsets = scenario == Scenario::reset_live_offsets;
+    const bool reset_offsets = scenario == Scenario::reset_live_offsets || scenario == Scenario::name_oak;
     const bool name_oak = scenario == Scenario::name_oak;
     for (const auto* name : {"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
         const char* value = std::getenv(name);
@@ -158,17 +159,28 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
     require(input.start(controller.sample()) == in::Error::none,"owned software input initialization failed");
     isle::game::State game_state(root/"profile");
     isle::scene::Storage scene_storage;
+    h::GtlClock clock({1,1,2,true,0});
+    auto application = isle::application::Manager::create(snapshot,game_state,input,*host.audio(),clock,*catalog.catalog);
+    require(bool(application),application.message.data());
+    auto& manager = *application.manager;
+    require(&manager.screen_offsets() == &game_state.screen_offsets(),
+            "Manager must expose the actual stable State-owned four-endpoint VI record");
+    require(manager.resume()==ISLE_GAME_OK,manager.message());
+    const auto* initial_entry=manager.pending_entry();
+    require(initial_entry&&initial_entry->operation==ISLE_APPLICATION_ENTRY_BOOT,
+        "original application manager did not request Boot first");
+    auto entry_borrow=manager.borrow_entry(initial_entry->serial);
+    require(bool(entry_borrow),"actual application Boot entry borrow failed");
     // Reverse destruction order is essential on every thrown failure: actual
     // graphics drain/join, then callbacks/native objects, then host audio/SDL.
     std::unique_ptr<s::Runtime> runtime;
     auto renderer = isle::scene::graphics::Frame::create(*catalog.catalog,snapshot,{true,{12000000,4*1024*1024}});
     require(bool(renderer),renderer.message.data());
     auto& graphics = *renderer.frame;
-    auto started = s::Runtime::create(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
+    auto started = s::Runtime::create_boot(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
     require(bool(started),started.message.data());
     runtime = std::move(started.runtime);
     require(runtime->save_initialization() == nullptr,"save initialization ran before the actual first logo wait");
-    h::GtlClock clock({1,1,2,true,0});
     h::RetraceClock retraces(2250000,37609);
     const auto epoch = std::chrono::steady_clock::now();
     const auto deadline = epoch+std::chrono::seconds(1800);
@@ -179,12 +191,32 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
     bool saw_save_after_wait = false, saw_logo = false, saw_menu = false, queued_menu_ready = false;
     bool logo_capture = false, title_capture = false;
     bool queued_logo_ready = false, queued_title_ready = false;
+    bool calibration_exercised = false;
     std::uint8_t last_logo_rgb = 255;
     unsigned fade_changes = 0, stage = 0;
     std::uint64_t stable_since = 0;
     const auto set_pad = [&](std::uint16_t buttons,std::int8_t x=0,std::int8_t y=0) {
         controller.buttons=buttons; controller.stick_x=x; controller.stick_y=y;
         stable_since=runtime->updates();
+    };
+    const auto expect_live = [&](int horizontal,int vertical) {
+        const auto& live = manager.screen_offsets();
+        require(&live == &game_state.screen_offsets() && live.horizontal_start == horizontal &&
+                live.horizontal_end == horizontal && live.vertical_start == vertical && live.vertical_end == vertical,
+                "actual Source VI service did not publish all four endpoints into canonical State");
+        if (runtime) {
+            const auto view = runtime->view();
+            require(view.screen_offsets.horizontal == horizontal && view.screen_offsets.vertical == vertical,
+                    "Startup render projection did not use canonical live VI");
+        }
+    };
+    const auto expect_saved_calibration = [&] {
+        const auto saved = game_state.save()->snapshot();
+        require(bool(saved),"calibration source settings snapshot unavailable");
+        const auto screen = saved.value.screen_offsets();
+        require(screen && screen.value.horizontal == 8 && screen.value.vertical == -6 &&
+                saved.value.generation() == 1,
+                "live calibration mutated saved settings before actual options exit");
     };
     for (;;) {
         const auto now = std::chrono::steady_clock::now();
@@ -260,6 +292,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                     if (runtime->updates() == 2) {
                         require(runtime->save_initialization() && *runtime->save_initialization(),"source logo did not initialize save after its first wait");
                         saw_save_after_wait = true;
+                        expect_live(0,0);
                     }
                     IsleSprite* sprite = nullptr;
                     require(isle_game_sprite_view(view.game,view.logo_sprite,&sprite) == ISLE_GAME_OK,"live logo sprite state missing");
@@ -270,14 +303,31 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                     }
                 }
                 checked(clock.finish_update());
-                if (step == s::Step::scene_changed) {
+                if (step == s::Step::boot_complete) {
                     require(saw_save_after_wait && runtime->controller() == 0 && fade_changes == 20 && last_logo_rgb == 0,
                             "complete source logo/controller/save/20-step RGB transition was not observed");
                     clock.request_stop(); clock.poll();
                     require(clock.stopped(),"old logo GTL epoch did not actually quiesce");
+                    require(runtime->retire(),runtime->message());
+                    runtime.reset();
+                    const auto boot_serial=entry_borrow.intent().serial;
+                    entry_borrow={};
+                    require(manager.complete_entry(boot_serial,0)==ISLE_GAME_OK,manager.message());
                     checked(clock.reset({1,1,2,true,0}));
-                    first_menu_update = runtime->updates();
-                    saw_menu = true;
+                    require(manager.resume()==ISLE_GAME_OK,manager.message());
+                    const auto* title_entry=manager.pending_entry();
+                    require(title_entry&&title_entry->operation==ISLE_APPLICATION_ENTRY_TITLE&&title_entry->argument==8,
+                        "original application manager did not select the real title entry after Boot");
+                    entry_borrow=manager.borrow_entry(title_entry->serial);
+                    require(bool(entry_borrow),"actual title entry lifetime borrow failed");
+                    expect_live(reset_offsets?8:0,reset_offsets?-6:0);
+                    auto title=s::Runtime::create_title(*catalog.catalog,input,*host.audio(),game_state,scene_storage,
+                        static_cast<std::uint32_t>(h::RetraceClock::guest_ticks(ns)));
+                    require(bool(title),title.message.data());
+                    runtime=std::move(title.runtime);
+                    first_menu_update=runtime->updates();
+                    saw_menu=true;
+                    continue;
                 } else if (step == s::Step::scene_exit) {
                     require(stage == (reset_offsets?17u:9u) &&
                             runtime->exit().scene == isle::menu::scene::SourceScene::beach &&
@@ -300,7 +350,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                 auto* title = view.title;
                 if (title) saw_title |= title->active();
                 if (ui) {
-                    if (reset_offsets)
+                    if (reset_offsets && !(stage >= 100 && stage <= 115))
                         require(ui->screen_offsets().horizontal == 8 && ui->screen_offsets().vertical == -6,
                                 "RAM-only new-game reset incorrectly changed live VI offsets during the source exit wait");
                     const auto state = ui->source_state();
@@ -315,6 +365,9 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                     else if (stage == 6 && runtime->updates()-stable_since >= 30) { controller.buttons = 0x1000; stage = 7; }
                     else if (stage == 7 && state == 3) { controller.buttons = 0; stage = 8; stable_since = runtime->updates(); }
                     else if (stage == 8 && runtime->updates()-stable_since >= 30 && menu_capture) {
+                        if (scenario == Scenario::reset_live_offsets && !calibration_exercised) {
+                            set_pad(0,0,-80); stage=100; // Continue -> Options.
+                        } else
                         if (reset_offsets) { set_pad(0,0,80); stage=10; }
                         else { controller.buttons=0x8000; stage=9; }
                     } else if (stage==10 && runtime->updates()-stable_since>=4) { set_pad(0); stage=11; }
@@ -324,6 +377,30 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                     else if (stage==14 && runtime->updates()-stable_since>=4) { set_pad(0); stage=15; }
                     else if (stage==15 && runtime->updates()-stable_since>=30) { set_pad(0x8000); stage=16; }
                     else if (stage==16 && runtime->updates()-stable_since>=4) { set_pad(0); stage=17; }
+                    else if (stage==100 && runtime->updates()-stable_since>=4) { set_pad(0); stage=101; }
+                    else if (stage==101 && runtime->updates()-stable_since>=30) { set_pad(0x8000); stage=102; }
+                    else if (stage==102 && state==8) { set_pad(0); stage=103; }
+                    else if (stage==103 && runtime->updates()-stable_since>=80) { set_pad(0x8000); stage=104; }
+                    else if (stage==104 && runtime->updates()-stable_since>=4) { set_pad(0); stage=105; }
+                    else if (stage==105 && runtime->updates()-stable_since>=30) { set_pad(0,-80); stage=106; }
+                    else if (stage==106 && runtime->updates()-stable_since>=4) { set_pad(0); stage=107; }
+                    else if (stage==107 && runtime->updates()-stable_since>=4) {
+                        expect_live(7,-6); expect_saved_calibration(); set_pad(0x4000); stage=108;
+                    } else if (stage==108 && runtime->updates()-stable_since>=4) { set_pad(0); stage=109; }
+                    else if (stage==109 && runtime->updates()-stable_since>=40) {
+                        expect_live(8,-6); expect_saved_calibration(); set_pad(0x8000); stage=110;
+                    } else if (stage==110 && runtime->updates()-stable_since>=4) { set_pad(0); stage=111; }
+                    else if (stage==111 && runtime->updates()-stable_since>=30) { set_pad(0x1000); stage=112; }
+                    else if (stage==112 && runtime->updates()-stable_since>=4) { set_pad(0); stage=113; }
+                    else if (stage==113 && runtime->updates()-stable_since>=4) {
+                        expect_live(0,0); expect_saved_calibration(); set_pad(0x4000); stage=114;
+                    } else if (stage==114 && runtime->updates()-stable_since>=4) { set_pad(0); stage=115; }
+                    else if (stage==115 && runtime->updates()-stable_since>=40) {
+                        expect_live(8,-6); expect_saved_calibration(); set_pad(0x4000); stage=116;
+                    } else if (stage==116 && runtime->updates()-stable_since>=4) { set_pad(0); stage=117; }
+                    else if (stage==117 && state==2) {
+                        expect_live(8,-6); calibration_exercised=true; set_pad(0); stage=6;
+                    }
                 }
             } else if (action.kind == h::ActionKind::draw) {
                 require(graphics.begin(runtime->view(),{static_cast<unsigned>(canonical_frames&1)}),graphics.message());
@@ -338,15 +415,25 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
             saw_main_music && greatest_busy_audio_progress != 0,
             "real startup, visible logo/title/menu or independent audio-during-GPU behavior was not exercised");
     if (full_title) require(saw_aux_music,"natural title did not actually start the auxiliary music context");
+    if (scenario == Scenario::reset_live_offsets)
+        require(calibration_exercised,"actual calibration preview/B-cancel/Start reset source path was not exercised");
     require(graphics.quiescent(),graphics.message());
     std::uint64_t reentry_frames = 0;
     isle::private_scene::NameOakMetrics scene_metrics;
     if (name_oak) {
+        const auto title_result=static_cast<std::int32_t>(runtime->exit().scene);
         require(runtime->retire(),runtime->message());
         runtime.reset();
         require(host.cancel_present(),host.message());
+        const auto title_serial=entry_borrow.intent().serial;
+        entry_borrow={};
+        require(manager.complete_entry(title_serial,title_result)==ISLE_GAME_OK,manager.message());
+        checked(clock.reset({1,1,2,true,0}));
+        require(manager.resume()==ISLE_GAME_OK,manager.message());
+        clock.request_stop();clock.poll();
+        require(clock.stopped(),"source manager handoff retained a Name clock context");
         scene_metrics = isle::private_scene::exercise_name_to_oak(snapshot,game_state,scene_storage,
-            input,host,graphics,clock,retraces,ordinal,epoch,deadline,root,capture_window);
+            input,host,graphics,clock,retraces,ordinal,epoch,deadline,root,capture_window,manager);
     } else {
     auto* const persistent_save = game_state.save();
     auto* const initialization_evidence = game_state.save_initialization();
@@ -366,9 +453,10 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
             runtime->logo_counter() == 0 && game_state.save() == persistent_save &&
             game_state.save_initialization() == initialization_evidence,
             "title reentry replayed boot, changed backing or replaced the persistent profile owner");
+    if (reset_offsets) expect_live(8,-6);
     // The retired old wrapper must not destroy new content in borrowed Storage.
     old_runtime.reset();
-    auto boot_again = s::Runtime::create(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
+    auto boot_again = s::Runtime::create_boot(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
     require(!boot_again && scene_storage.game() == native_backing,
             "second boot reused an initialized profile or destroyed the live reentered native scene");
     controller.buttons = 0;
@@ -442,6 +530,8 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
         require(runtime->retire(),runtime->message());
         runtime.reset();
     }
+    entry_borrow={};
+    require(manager.cancel()==ISLE_GAME_OK&&manager.retire()==ISLE_GAME_OK,manager.message());
     const auto stopped_input = input.stop();
     require(stopped_input.error == in::Error::none && !input.running() &&
             std::none_of(stopped_input.cancelled.begin(),stopped_input.cancelled.end(),[](const auto& token) { return bool(token); }),

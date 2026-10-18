@@ -5,26 +5,32 @@
 struct IslePlayerPhotoSource;
 
 namespace isle::actor {
-// Bounded source focus controller with the complete logical collision pass,
-// not a full photo serializer, graph interpreter or Player/Item controller.
-// Native actors own distance8/state7/animation3 processes. This class adds the
-// synchronous priority2 complete collision manager on the actual scene root0.
-//
-// Services, Owner, its canonical player/main camera and DetectorBinding (whose
-// history MUST be the same Detector supplied to Owner) are stable same-scene
-// owners. The caller grants EXCLUSIVE ownership of the root's Services client
-// ObjectLifecycle slot: it must be empty on entry and must not be changed until
-// retire. Engine lifecycle hooks remain Services-owned, never replaced/chained.
-// Construction/destruction/retire run outside OM/command callbacks and AFTER
-// genuine GPU/readback release; the controller must retire before Owner/Services.
-// Services must permit validated all-null lifecycle detachment even after its
-// sticky failure; no new observer is installed into failed Services. Unproven
-// detachment/joins terminate instead of leaving dangling userdata. No history, photo,
-// published focus, player latch or actor identities are eagerly reset here.
+// Original Pokemons_Init collision publication, before Detector_Create.
+class CollisionPass final {
+public:
+    CollisionPass(scene::Services&, Owner&, IsleGameObject* scene_root);
+    ~CollisionPass();
+    CollisionPass(const CollisionPass&)=delete;
+    CollisionPass& operator=(const CollisionPass&)=delete;
+    void retire() noexcept;
+    bool active() const noexcept;
+    IsleGameObject* root() const noexcept { return root_; }
+private:
+    static void update(IsleGameObject*,void*) noexcept;
+    static void retiring(IsleGameObject*,void*) noexcept;
+    static void joined(IsleGameObject*,void*) noexcept;
+    scene::Services& services_;
+    Owner& owner_;
+    IsleGameObject* root_=nullptr;
+    IsleGameProcess* process_=nullptr;
+    bool observed_=false, retiring_=false;
+};
+// Late Detector prefix/CopyInfo publication. An external early collision pass
+// outlives this object; otherwise the controller owns a collision pass itself.
 class PhotoScene final {
 public:
     PhotoScene(scene::Services&, Owner&, IsleGameObject* scene_root,
-               IsleGameCamera*, DetectorBinding&, IslePlayerPhotoSource*);
+               IsleGameCamera*, DetectorBinding&, IslePlayerPhotoSource*, CollisionPass* = nullptr);
     ~PhotoScene();
     PhotoScene(const PhotoScene&) = delete;
     PhotoScene& operator=(const PhotoScene&) = delete;
@@ -36,7 +42,8 @@ public:
     IsleGameObject* copy_info_object() const noexcept { return copy_info_; }
 private:
     static IsleGameResult prepare_membership(void*, focus::Photo&) noexcept;
-    static void update_collisions(IsleGameObject*, void*) noexcept;
+    std::unique_ptr<CollisionPass> owned_collisions_;
+    CollisionPass* collision_pass_=nullptr;
     static void copy_info(IsleGameObject*, void*) noexcept;
     static void retiring(IsleGameObject*, void*) noexcept;
     static void joined(IsleGameObject*, void*) noexcept;
@@ -51,9 +58,8 @@ private:
     IsleGameObject* root_ = nullptr;
     IsleGameObject* prefix_ = nullptr;
     IsleGameObject* copy_info_ = nullptr;
-    IsleGameProcess* collisions_ = nullptr;
-    bool root_observed_ = false, prefix_observed_ = false, copy_observed_ = false;
-    bool root_retiring_ = false, prefix_retiring_ = false, copy_retiring_ = false;
+    bool prefix_observed_ = false, copy_observed_ = false;
+    bool prefix_retiring_ = false, copy_retiring_ = false;
     bool hook_installed_ = false, active_ = false, retiring_ = false, retired_ = false;
 };
 } // namespace isle::actor

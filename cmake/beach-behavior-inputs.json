@@ -3,7 +3,7 @@
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.11.2",
-  "use": "Constructor-only immutable isle::beach::BehaviorResources over the retained unmoved admitted Snapshot. Complete data/reference closure across all thirteen Beach behavior source files and the initialized common control graph, not merely factory/initial-state inventory. Guest function identities are data only. No native callback binding, graph interpreter/admission, guest installation, scheduling, actor FSM, rendering or full-port completion claim.",
+  "use": "Beach0 constructor-only immutable actor::BehaviorResources over the retained unmoved admitted Snapshot; one concrete decoder selects closed course0/6 catalogs. This manifest records the complete Beach data/reference closure across all thirteen Beach behavior source files and the initialized common control graph, not merely factory/initial-state inventory. Guest function identities are data only. No native callback binding, graph interpreter/admission, guest installation, scheduling, actor FSM, rendering or full-port completion claim.",
   "rom": {
     "size": 16777216,
     "canonical_order": "big-endian z64",
@@ -68,28 +68,28 @@
     "views": "Each graph/list, each live record, and full original sentinel retain exact immutable Snapshot byte pointers, guest address, ROM offset and mapped extent. Scene chooser retains both original records. Aliases remain original borrowed storage, including equivalent/overlapping source tails; no source span is copied or installed.",
     "bounds": "Sentinel walks stop at the actual remaining complete records in their finite admitted initialized mapping, not arbitrary scan/traversal caps. Every read uses model_assets::Reader and GuestView scalar bounds. Unknown, NULL, interior and misaligned lookup identities throw out_of_range; moved-from Snapshot access throws runtime_error."
   },
-  "native_files": ["src/beach_behavior_resources.hpp","src/beach_behavior_resources.cpp","tests/beach_behavior_resources_rom_smoke.cpp","cmake/beach-behavior-inputs.json"],
+  "native_files": ["src/actor_behavior_resources.hpp","src/actor_behavior_resources.cpp","src/beach_actor_scene.hpp","src/beach_actor_scene.cpp","tests/beach_behavior_resources_rom_smoke.cpp","cmake/beach-behavior-inputs.json"],
   "native_support": {
-    "src/beach_behavior_resources.hpp": {
-      "sha256": "02cb1d605e0c00cce92bfb217aae41895dd8d86cb7aa39156388a332ca08855e"
+    "src/actor_behavior_resources.hpp": {
+      "sha256": "ee2c6e6121b72d4393cd20cea1255c09e92aa749fafdcc2f5409bdecc48bec0b"
     },
-    "src/beach_behavior_resources.cpp": {
-      "sha256": "6ec8fee30d58adfe3bea46823e0519e10315e157df7b225fdd578d5d75d1a7b5"
+    "src/actor_behavior_resources.cpp": {
+      "sha256": "f69c2b50b631a7ed39be36b2b2235429694ff647b27e296c785c9f92a27e4ff9"
     },
     "tests/beach_behavior_resources_rom_smoke.cpp": {
-      "sha256": "ff612625d6372c5548440b5a74893198e7c152a544742635edba9daf6a0ef4a7"
+      "sha256": "6258365ca9486f0090b8e2effc5a35d995d7abdc7d42124a9baeede49fefbe8a"
     },
     "src/model_asset_closure.hpp": {
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
     },
     "src/model_asset_closure.cpp": {
-      "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
+      "sha256": "88b3b6e2d18bd823d87ecc2f1bc04e3f401f932120c9326c187a42e359b5dfdb"
     }
   },
   "integration": {
-    "resource_target": "Under if(TARGET isle-rom-snapshot), adjacent to isle-beach-actor-resources: add_library(isle-beach-behavior-resources STATIC src/beach_behavior_resources.cpp src/beach_behavior_resources.hpp); target_link_libraries(isle-beach-behavior-resources PUBLIC isle-model-assets); isle_target_options(isle-beach-behavior-resources). isle-model-assets already publicly supplies the src include path and isle-rom-snapshot.",
-    "private_target": "Integrated EXCLUDE_FROM_ALL beach-behavior-resources-rom-smoke linked to isle-beach-behavior-resources with existing target options. Invoke explicitly with parent-authorized original ROM path; no default CTest, asset packaging, guest callback execution or source interpreter claim.",
-    "consumer": "Construct BehaviorResources(retained_snapshot); graphs()/graph(guest_identity), weighted_states()/weighted_states(guest_identity), scene_chooser()/scene_chooser(0x802cc004) return stable const views/references. Terminal wire is separate from live entries. Parent owns CMake/.gitattributes and proof refresh."
+    "resource_target": "Under if(TARGET isle-rom-snapshot): isle-actor-behavior-resources compiles the single src/actor_behavior_resources.cpp decoder and links isle-model-assets. Closed course catalogs0/6 select disjoint overlay mappings; no guest function execution or callback admission.",
+    "private_target": "Integrated EXCLUDE_FROM_ALL beach-behavior-resources-rom-smoke links isle-actor-behavior-resources and isle-beach-actor-scene. Invoke explicitly with parent-authorized original ROM path; no default CTest, asset packaging, guest callback execution or source interpreter claim.",
+    "consumer": "Construct actor::BehaviorResources(retained_snapshot,0) for this Beach consumer; graphs()/graph(guest_identity) and weighted_states()/weighted_states(guest_identity) return stable const views/references. Separate beach::ActorSceneResources owns scene_chooser()/scene_chooser(0x802cc004). Terminal wire remains separate from live entries. Parent owns integration and proof refresh."
   },
   "verification": {
     "status": "Parent actual admitted Snapshot data-only consumer passed GCC Debug, GCC Release and Clang ASan+UBSan; complete resource/alias/bounds/lookup/weighted-total/NULL-choice/lifetime scope only. Worker performed no execution. No interpreter, selector, callbacks or native FSM admission inferred.",

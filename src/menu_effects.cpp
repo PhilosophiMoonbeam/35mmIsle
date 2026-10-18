@@ -4,6 +4,8 @@
 #include <bit>
 #include <cmath>
 #include <limits>
+#include <exception>
+#include <utility>
 
 // Own GAME df8815e75f3d79618466e01e0827c6165b93d11c effect.c/effect.h.
 // Binary32 source expression grouping; compile without fast-math/contraction.
@@ -186,65 +188,100 @@ void interpolate(std::array<std::uint8_t, 4>& c, const std::array<std::uint8_t, 
 bool finite(Vec3 v) noexcept { return std::isfinite(v.x) && std::isfinite(v.y) && std::isfinite(v.z); }
 }
 
+RetainedEffectAttachment::RetainedEffectAttachment(void* context, IsleGameModelRef binding,
+    std::size_t node, Resolve resolve, Release release) noexcept
+    : context_(context), binding_(binding), node_(node), resolve_(resolve), release_(release) {
+    if (!context_ || !binding_.object || !binding_.model || !binding_.incarnation ||
+        node_ == no_index || !resolve_ || !release_) std::terminate();
+}
+RetainedEffectAttachment::~RetainedEffectAttachment() { reset(); }
+RetainedEffectAttachment::RetainedEffectAttachment(RetainedEffectAttachment&& other) noexcept
+    : context_(std::exchange(other.context_, nullptr)), binding_(other.binding_), node_(other.node_),
+      resolve_(other.resolve_), release_(other.release_) {}
+RetainedEffectAttachment& RetainedEffectAttachment::operator=(RetainedEffectAttachment&& other) noexcept {
+    if (this != &other) {
+        reset();
+        context_ = std::exchange(other.context_, nullptr);
+        binding_ = other.binding_; node_ = other.node_;
+        resolve_ = other.resolve_; release_ = other.release_;
+    }
+    return *this;
+}
+void RetainedEffectAttachment::reset() noexcept {
+    if (auto* context = std::exchange(context_, nullptr)) release_(context, binding_, node_);
+}
+bool RetainedEffectAttachment::resolve(EffectWorld& output) const noexcept {
+    return context_ && resolve_(context_, binding_, node_, output);
+}
+
 EffectRuntime::EffectRuntime(std::span<const EffectBank* const> active, isle_rng& rng,
                              EffectTargetServices targets) noexcept
     : rng_(&rng), targets_(targets) {
     reset();
-    if (active.empty()) { status_ = {EffectsError::resource}; return; }
     for (const auto* selected : active) {
-        if (!selected || selected->bank_id >= banks_.size() || banks_[selected->bank_id] ||
-            selected->scripts.empty() || selected->images.empty()) {
-            status_ = {EffectsError::resource}; return;
-        }
-        banks_[selected->bank_id] = selected;
-        for (const auto& image : selected->images) {
-            const bool format = (image.format == 4 && image.size_code <= 1) ||
-                (image.format == 3 && image.size_code == 1) ||
-                (image.format == 2 && image.size_code == 0) ||
-                (image.format == 0 && (image.size_code == 2 || image.size_code == 3));
-            if (!format || !image.width || !image.height || image.width > 64 || image.height > 64 ||
-                image.frames.empty() || image.frames.size() > 256) {
-                status_ = {EffectsError::unsupported}; return;
-            }
-            const std::size_t bytes = (std::size_t(image.width) * image.height * (4u << image.size_code) + 7) / 8;
-            if (bytes > 4096) { status_ = {EffectsError::unsupported}; return; }
-            for (const auto& frame : image.frames) if (frame.bytes.size() != bytes) {
-                status_ = {EffectsError::extent}; return;
-            }
-            const auto palette_count = image.format == 2 ? ((image.flags & 1) ? 1 : image.frames.size()) : 0;
-            if (image.palettes.size() != palette_count) { status_ = {EffectsError::resource}; return; }
-            for (const auto& palette : image.palettes) if (palette.bytes.size() != 32) {
-                status_ = {EffectsError::extent}; return;
-            }
-        }
-        for (std::size_t id = 0; id < selected->scripts.size(); ++id) {
-            const auto& script = selected->scripts[id];
-            // Kind2/flag4 uses parent-coupled table-sine physics, not ordinary
-            // particles. None of the admitted source descriptors has that kind.
-            if ((script.kind != 0 && script.kind != 3) || (script.flags & 4)) {
-                status_ = {EffectsError::unsupported, id}; return;
-            }
-            if ((script.flags & 0x8000) && !targets.write) {
-                status_ = {EffectsError::attachment, id}; return;
-            }
-            if (script.texture >= selected->images.size() || script.instructions.empty()) {
-                status_ = {EffectsError::resource, id}; return;
-            }
-            for (float f : script.parameters) if (!std::isfinite(f)) {
-                status_ = {EffectsError::resource, id}; return;
-            }
-            std::size_t end = 0;
-            for (const auto& ins : script.instructions) {
-                EffectsError error{};
-                if (ins.offset != end || !instruction_shape(script, ins, *selected, targets, error)) {
-                    status_ = {error == EffectsError::none ? EffectsError::resource : error, id, ins.offset};
-                    return;
-                }
-                end = ins.offset + ins.size;
-            }
-            if (!yielding_control(script)) { status_ = {EffectsError::resource, id}; return; }
-        }
+        if (!selected) { status_ = {EffectsError::resource}; return; }
+        status_ = install_bank(*selected);
+        if (!status_) return;
     }
+}
+EffectsStatus EffectRuntime::validate_bank(const EffectBank& selected) const noexcept {
+    if (selected.bank_id >= banks_.size() || selected.scripts.empty() || selected.images.empty())
+        return {EffectsError::resource};
+    for (const auto& image : selected.images) {
+        const bool format = (image.format == 4 && image.size_code <= 1) ||
+            (image.format == 3 && image.size_code == 1) ||
+            (image.format == 2 && image.size_code == 0) ||
+            (image.format == 0 && (image.size_code == 2 || image.size_code == 3));
+        if (!format || !image.width || !image.height || image.width > 64 || image.height > 64 ||
+            image.frames.empty() || image.frames.size() > 256)
+            return {EffectsError::unsupported};
+        const std::size_t bytes = (std::size_t(image.width) * image.height * (4u << image.size_code) + 7) / 8;
+        if (bytes > 4096) return {EffectsError::unsupported};
+        for (const auto& frame : image.frames) if (frame.bytes.size() != bytes)
+            return {EffectsError::extent};
+        const auto palette_count = image.format == 2 ? ((image.flags & 1) ? 1 : image.frames.size()) : 0;
+        if (image.palettes.size() != palette_count) return {EffectsError::resource};
+        for (const auto& palette : image.palettes) if (palette.bytes.size() != 32)
+            return {EffectsError::extent};
+    }
+    for (std::size_t id = 0; id < selected.scripts.size(); ++id) {
+        const auto& script = selected.scripts[id];
+        // Kind2/flag4 uses parent-coupled table-sine physics, not ordinary
+        // particles. None of the admitted source descriptors has that kind.
+        if ((script.kind != 0 && script.kind != 3) || (script.flags & 4))
+            return {EffectsError::unsupported, id};
+        if ((script.flags & 0x8000) && !targets_.write) return {EffectsError::attachment, id};
+        if (script.texture >= selected.images.size() || script.instructions.empty())
+            return {EffectsError::resource, id};
+        for (float f : script.parameters) if (!std::isfinite(f))
+            return {EffectsError::resource, id};
+        std::size_t end = 0;
+        for (const auto& ins : script.instructions) {
+            EffectsError error{};
+            if (ins.offset != end || !instruction_shape(script, ins, selected, targets_, error))
+                return {error == EffectsError::none ? EffectsError::resource : error, id, ins.offset};
+            end = ins.offset + ins.size;
+        }
+        if (!yielding_control(script)) return {EffectsError::resource, id};
+    }
+    return {};
+}
+EffectsStatus EffectRuntime::install_bank(const EffectBank& selected) noexcept {
+    if (!status_) return status_;
+    const auto admitted = validate_bank(selected);
+    if (!admitted) return admitted;
+    if (banks_[selected.bank_id]) return {EffectsError::resource};
+    banks_[selected.bank_id] = &selected;
+    return {};
+}
+EffectsStatus EffectRuntime::reset_bank(std::size_t slot) noexcept {
+    if (slot >= banks_.size()) return {EffectsError::extent};
+    for (const auto& effect : effects_)
+        if (effect.live && (effect.bank_id & 7) == slot) return {EffectsError::resource};
+    for (const auto& particle : particles_)
+        if (particle.live && (particle.value.bank_id & 7) == slot) return {EffectsError::resource};
+    banks_[slot] = nullptr;
+    return {};
 }
 const EffectBank* EffectRuntime::bank(std::uint16_t encoded) const noexcept {
     return encoded < 128 ? banks_[encoded & 7] : nullptr;
@@ -261,6 +298,8 @@ void EffectRuntime::reset() noexcept {
         particles_[i].next = i + 1 < particles_.size() ? int(i + 1) : absent;
     }
     for (std::size_t i = 0; i < effects_.size(); ++i) {
+        effects_[i].retained_attachment = {};
+        effects_[i].attachment = {};
         effects_[i].live = false;
         effects_[i].next = i + 1 < effects_.size() ? int(i + 1) : absent;
     }
@@ -320,6 +359,21 @@ EffectsStatus EffectRuntime::set_effect_position(EffectHandle handle, Vec3 posit
         effects_[handle.slot].generation != handle.generation) return {EffectsError::attachment};
     if (!finite(position)) return {EffectsError::arithmetic};
     effects_[handle.slot].position = position;
+    return {};
+}
+EffectsStatus EffectRuntime::set_effect_attachment(EffectHandle handle, RetainedEffectAttachment attachment) noexcept {
+    if (!status_) return status_;
+    if (!handle || handle.slot >= effects_.size() || !effects_[handle.slot].live ||
+        effects_[handle.slot].generation != handle.generation) return {EffectsError::attachment};
+    if (attachment) {
+        EffectWorld current{};
+        if (!attachment.resolve(current)) return {EffectsError::attachment};
+        for (const auto& row : current.matrix) for (float value : row)
+            if (!std::isfinite(value)) return {EffectsError::arithmetic};
+    }
+    auto& effect = effects_[handle.slot];
+    effect.retained_attachment = std::move(attachment);
+    effect.attachment = {};
     return {};
 }
 int EffectRuntime::spawn_particle(std::uint16_t encoded, std::size_t script, Vec3 position,
@@ -585,6 +639,8 @@ void EffectRuntime::remove_effect(int index, int previous) noexcept {
     auto& e = effects_[index];
     if (previous == absent) effect_head_ = e.next; else effects_[previous].next = e.next;
     e.live = false; e.next = effect_free_; effect_free_ = index;
+    e.attachment = {};
+    e.retained_attachment = {};
 }
 EffectsStatus EffectRuntime::update_effects(EffectWorldResolver resolve, void* context) noexcept {
     if (!status_) return status_;
@@ -605,9 +661,10 @@ EffectsStatus EffectRuntime::update_effects(EffectWorldResolver resolve, void* c
             return status_ = {EffectsError::arithmetic, e.script};
         if (e.accumulator >= 1.0f) {
             // Source evaluates a live DObj only on an actual emission tick.
-            if (e.attachment.instance) {
+            if (e.retained_attachment || e.attachment.instance) {
                 EffectWorld world{};
-                if (!resolve || !resolve(context, e.attachment, world))
+                if (e.retained_attachment ? !e.retained_attachment.resolve(world) :
+                    (!resolve || !resolve(context, e.attachment, world)))
                     return status_ = {EffectsError::attachment, e.script};
                 auto& m = world.matrix;
                 for (const auto& row : m) for (float f : row) if (!std::isfinite(f))

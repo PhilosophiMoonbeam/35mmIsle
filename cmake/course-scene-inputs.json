@@ -27,10 +27,10 @@
       "sha256": "b294ed61393ed3ec6a33e8cc8d7851aca7610f15096c2626a584f37a352968bc"
     },
     "src/course_model_producer.cpp": {
-      "sha256": "3961127a37a993238f4ad396913703d3e25134f231ad0835985ed7dffaa90461"
+      "sha256": "108d2d08715d8ac7ac23e1b91b88f1992c320a2deb435633d61b3b717a83d495"
     },
     "src/course_model_producer.hpp": {
-      "sha256": "ad6635e53bc08f58fb2091333a595e3ff102d3cc71e076977bba5a5c685b5042"
+      "sha256": "654f2994abb6e16a7ecbaaef036a0872f9746adb667225cebe489e75e6deb476"
     },
     "src/source_effect_camera.cpp": {
       "sha256": "8ef3039e1db89c1eb3fe63a37266e75c91865bc1232a60318180591a4e23b395"
@@ -39,16 +39,16 @@
       "sha256": "6ac71b3e99b556d564eef874de56b502b7bb67a1ac1ee7026a831ae5eccce4c6"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "0c04170794c7c74ae4686cbaee54972db2d8f51c333ba70ea2cc199102d45e12"
+      "sha256": "02c1d0c13b244f2d4a811aa3eb033f19a6b6ade05a4709d78f793a8b7a69610e"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "fd988feef5a32909dcdc0237cfecb602e867e1a98ae9d62cd00b72f8171152de"
+      "sha256": "ffac524a883f6e5cbc41407d88bb1d788be923a15a1369576542566ad3f5bf6e"
     },
     "src/rsp_render.hpp": {
-      "sha256": "280a50d04be2a6413d2fe2807f5af3d4fb05e34d3516ff7b149e80726c268f59"
+      "sha256": "5184731e6d375667a1b0ed5c2ea8c35b344dec62722e3ac55d83782b7465deee"
     },
     "tests/course_scene_rsp_smoke.cpp": {
-      "sha256": "687928167ad20ef93822ec2ee25757a676a713160453672d7960f73481a25ebb"
+      "sha256": "a1f5b8a60bddd86a83207c5fcb4b3265021777e468454b41421ae640bdcef45c"
     },
     "tests/menu_effects_tests.cpp": {
       "sha256": "64e39fa6b4abb67899b7a0d45e0498f9c0dcdc87b68add722db1599a6ed19541"

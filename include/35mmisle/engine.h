@@ -29,7 +29,9 @@ typedef enum IsleGameResult {
     ISLE_GAME_WRONG_OWNER,
     ISLE_GAME_INVALID_STATE,
     ISLE_GAME_EXHAUSTED,
-    ISLE_GAME_EXECUTION_FAILURE
+    ISLE_GAME_EXECUTION_FAILURE,
+    /* Intentional abandoned update, not a fault or completed Source scene. */
+    ISLE_GAME_STOPPED
 } IsleGameResult;
 
 typedef enum IsleGameProcessKind {
@@ -58,6 +60,17 @@ typedef struct IsleGameCounts {
 IsleGameResult isle_game_create(isle_arena* arena, IsleGame** output);
 IsleGameResult isle_game_destroy(IsleGame* game);
 IsleGameResult isle_game_tick(IsleGame* game);
+/* Active typed compiled-C stackful process only, after its external consumers
+ * have actually drained. Ends that C invocation and abandons the remainder of
+ * this OM update. Success never returns; no owning C++ frame may intervene.
+ * tick returns STOPPED without clearing/creating a fault; later ticks remain
+ * STOPPED until destruction. Idle teardown remains legal. This does not grant
+ * a scene result, input acknowledgement, GTL update, draw or GPU terminal. */
+IsleGameResult isle_game_stop_update(IsleGame* game);
+/* Returning owner/domain and traversal guard for physical collection. Does not
+ * inspect or clear sticky execution failure, so genuine teardown remains legal.
+ * Not proof of graphics, Photo, model, identity or other consumer retirement. */
+IsleGameResult isle_game_require_idle(IsleGame* game);
 IsleGameResult isle_game_counts(IsleGame* game, IsleGameCounts* output);
 /* Current terminal execution status, without advancing OM. Diagnostic text may
  * also describe a recoverable admission rejection; it is not a fault flag. */
@@ -82,8 +95,19 @@ IsleGameResult isle_game_add_object(IsleGame* game, uint32_t id, uint8_t link,
  * Owner access, object membership and terminal fault precede retirement guards.
  * Retirement observers cannot publish a replacement callback. No allocation. */
 IsleGameResult isle_game_object_set_source_update(IsleGame*, IsleGameObject*, IsleGameSourceCallback);
+/* Original userData is independent of updater/native callback context. Entity
+ * payload-tagged Actor/Item/Player owners cannot be overwritten through this
+ * identity-only service; the pointed record's ownership is not transferred. */
+IsleGameResult isle_game_object_set_userdata(IsleGame*, IsleGameObject*, const void*);
 IsleGameResult isle_game_delete_object(IsleGame* game, IsleGameObject* object);
 IsleGameResult isle_game_pause_updates(IsleGame* game, IsleGameObject* object, int paused);
+/* Pause/resume all actual process kinds in object insertion order. NULL object
+ * selects current; no allocation, join or callback. The current process changes
+ * eligibility on its next dispatch. Legal during logical scene retirement. */
+IsleGameResult isle_game_pause_object_processes(IsleGame*, IsleGameObject*, int paused);
+/* Pause every actual process on one OM update link in native list order.
+ * Does not dispatch processes or alter current object/process identities. */
+IsleGameResult isle_game_pause_link_processes(IsleGame*, uint8_t update_link, int paused);
 IsleGameResult isle_game_object_id(IsleGame* game, IsleGameObject* object, uint32_t* output);
 /* Native ownership metadata, never a console record layout. */
 typedef struct IsleGameObjectMetadata {
@@ -226,6 +250,10 @@ IsleGameResult isle_game_end_process(IsleGame* game, IsleGameProcess* process);
 IsleGameResult isle_game_pause_process(IsleGame* game, IsleGameProcess* process, int paused);
 /* Active stackful callback only. Paused processes consume no waits. */
 IsleGameResult isle_game_wait(IsleGame* game, uint32_t updates);
+/* Positive waits require the genuine C Source stack and reject nested
+ * nonwaiting/native callback/retirement frames before consuming an update.
+ * Zero is a returning no-op on a valid owner; it cannot suspend. */
+IsleGameResult isle_game_source_wait(IsleGame* game, uint32_t updates);
 
 /* NULL object/process selects the current callback's object/process where one
  * exists. Self-object deletion is deferred until callback yield/return. A
@@ -253,10 +281,20 @@ IsleGameResult isle_game_remove_sprite(IsleGame* game, IsleGameSprite* sprite);
  * pre-retirement observation remains valid until actual attachment removal. */
 IsleGameResult isle_game_object_sprite(IsleGame* game, IsleGameObject* object,
                                       IsleGameSprite** output);
+/* Returning read-only owner lookup for a live same-game sprite attachment.
+ * No current-object fallback or retention. Output clears on every error;
+ * validated attachment propagates the existing Game fault without changing it.
+ * Borrow lifetime is identical to object_sprite/view, including pool reuse. */
+IsleGameResult isle_game_sprite_object(IsleGame* game, IsleGameSprite* sprite,
+                                      IsleGameObject** output);
 /* Borrow the live native scalar record, never a mutable snapshot. The caller
  * must quiesce every user before removal and must not use an expired borrow. */
 IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite,
                                     IsleSprite** output);
+/* The actual Source SObj::unk_54 marker state, independent of Sprite scalars.
+ * Owner/liveness checked as sprite_view; failed get clears output to zero. */
+IsleGameResult isle_game_sprite_aux_get(IsleGame* game, IsleGameSprite* sprite, int32_t* output);
+IsleGameResult isle_game_sprite_aux_set(IsleGame* game, IsleGameSprite* sprite, int32_t value);
 /* Runs the selected authoritative C fade helper as a genuine stackful process;
  * this is not full intro entry, persistence initialization, audio or scene boot.
  */
@@ -281,10 +319,16 @@ typedef struct IsleGameCameraParameters {
     IsleGameLookAt look_at;
     IsleGameViewport viewport;
 } IsleGameCameraParameters;
+/* Canonical native camera render metadata, not a console CObj layout.
+ * background_rgba is Source's raw RGBA32 value (viPackRGBA input). */
+typedef struct IsleGameCameraRenderState {
+    uint32_t flags, background_rgba, object_tag;
+} IsleGameCameraRenderState;
 typedef enum IsleGameCameraMatrixKind {
     ISLE_GAME_CAMERA_PERSPECTIVE_FAST = 3,
     ISLE_GAME_CAMERA_LOOK_AT = 6,
     ISLE_GAME_CAMERA_LOOK_AT_ROLL = 8,
+    ISLE_GAME_CAMERA_LOOK_AT_REFLECT = 12,
     ISLE_GAME_CAMERA_LOOK_AT_REFLECT_ROLL = 14
 } IsleGameCameraMatrixKind;
 /* Native numeric words, NOT a host-endian serialized SDK structure. First
@@ -313,9 +357,9 @@ typedef struct IsleGameCameraReflection {
 /* Nonanimated camera payload, type 3, attached only to an empty object. Like
  * GAME omGObjSetCamera it initially has no matrices. Add up to two of any
  * supported kind, as GAME omCameraAddMtx permits; defaults are GAME parameters.
- * Roll defaults to zero finite radians and affects kinds 8 and 14, not kind 6.
- * Kind 8 uses GAME's fixed Y-up axis; kind 6/14 use look_at.up. A kind-8 pose
- * must not look along Y. Up-only edits do not dirty kind 8.
+ * Roll defaults to zero finite radians and affects kinds 8 and 14, not 6/12.
+ * Kind 8 uses GAME's fixed Y-up axis; kinds 6/12/14 use look_at.up. A kind-8 pose
+ * must not look along Y. Up-only edits do not dirty kind 8; roll never dirties 12.
  * No renderer, command, animation or callback interface is implied.
  * All handles/borrows expire on removal or object deletion, including reuse.
  * Borrow addresses stay stable until removal; contents change only on compute
@@ -352,6 +396,9 @@ IsleGameResult isle_game_camera_set_viewport(IsleGame* game, IsleGameCamera* cam
                                             const IsleGameViewport* parameters);
 IsleGameResult isle_game_camera_parameters(IsleGame* game, IsleGameCamera* camera,
                                           const IsleGameCameraParameters** output);
+IsleGameResult isle_game_camera_render_state(IsleGame*, IsleGameCamera*, IsleGameCameraRenderState*);
+/* Render-only edits do not invalidate projection/view/reflection caches. */
+IsleGameResult isle_game_camera_set_render_state(IsleGame*, IsleGameCamera*, const IsleGameCameraRenderState*);
 /* Compute every dirty matrix/reflection as one transaction. Failure leaves all
  * matrix/reflection payloads, revisions and normalization unpublished; success
  * publishes only dirty entries, with unchanged stable borrow addresses.
@@ -409,7 +456,8 @@ typedef struct IsleGameModelPlacement {
 typedef enum IsleGameModelMatrixKind {
     ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE = 0,
     ISLE_GAME_MODEL_TRANSLATE = 1,
-    ISLE_GAME_MODEL_CONTEXTUAL_RPY = 2
+    ISLE_GAME_MODEL_CONTEXTUAL_RPY = 2,
+    ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE = 3
 } IsleGameModelMatrixKind;
 typedef struct IsleGameModelNodeInit {
     uint32_t parent; /* UINT32_MAX root; otherwise an earlier node index. */
@@ -439,6 +487,9 @@ typedef struct IsleGameModelNode {
  * only position via exact hal_translate. Only position*65536 has signed-word
  * bounds; rotation/scale have no unused RTS cast restrictions. Any TRS edit
  * dirties the accepted-pose revision even when the fixed bytes stay identical.
+ * ROTATE_RPY_TRANSLATE is Source node-local kind27, independent of actor placement.
+ * It retains complete finite canonical TRS but consumes only position/rotation
+ * through exact hal_rotate_rpy_translate; scale has no unused kind28 cast bounds.
  * Contextual RPY accepts every finite position/rotation/scale without those
  * quantization/cast limits. model_nodes never computes ordinary RTS or identity
  * for it; fixed remains unavailable. Later consumed renderer math has its own

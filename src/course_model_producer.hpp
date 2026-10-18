@@ -1,14 +1,14 @@
 #ifndef ISLE_COURSE_MODEL_PRODUCER_HPP
 #define ISLE_COURSE_MODEL_PRODUCER_HPP
 #include "actor_producer.hpp"
-#include "item_producer.hpp"
+#include "borrowed_model_producer.hpp"
 #include "world_producer.hpp"
 #include "player_cart_producer.hpp"
 
 namespace isle::course {
 struct ItemComposition {
     scene::Services& services;
-    items::Producer& producer;
+    menu::model::PacketProducer& producer;
     // Explicit projection capacity: DL3 for diagnostic composition, total
     // DL3/4/5 for source composition, including hidden/foreign owners.
     std::size_t render_order_capacity;
@@ -41,7 +41,7 @@ private:
     actor::Producer& actors_;
     menu::RamRange lists_;
     scene::Services* services_ = nullptr;
-    items::Producer* items_ = nullptr;
+    menu::model::PacketProducer* items_ = nullptr;
     std::vector<scene::RenderOrderEntry> source_order_;
     player::cart::Producer* cart_ = nullptr;
     IsleGameObject* prefix_object_ = nullptr;

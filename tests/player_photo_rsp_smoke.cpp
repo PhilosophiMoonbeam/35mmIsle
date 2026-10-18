@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Private admitted-ROM component consumer, never a game entrypoint or CTest.
 // Main alone runs it under the qualified CPU Vulkan/RSP/RDP/audio trace policy.
 // API-authored native Player/camera/trigger inputs; actual source Actor/Item/FX,
@@ -19,6 +20,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <source_location>
 #include <stdexcept>
@@ -35,7 +37,7 @@ constexpr std::size_t width=320,height=240,plane=width*height*2;
 constexpr world::ProducerLayout world_layout{{0x200000,0x10000},{0x210000,0x10000},{0x220000,0x10000}};
 constexpr actor::ProducerLayout actor_layout{{0x400000,0x80000},{0x480000,0x80000},{0x500000,0x100000},
     {{{0x3b5000,plane},{0x3da800,plane}}}};
-constexpr items::ProducerLayout item_layout{{0x230000,0x10000},{0x240000,0x10000},{0x250000,0x10000},
+constexpr menu::model::PacketLayout item_layout{{0x230000,0x10000},{0x240000,0x10000},{0x250000,0x10000},
     {{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr focus::CaptureLayout capture_layout{{0x680000,0x50},{0x680080,0x80},{0x680100,0xa00}};
 constexpr menu::RamRange fx_commands{0x680c00,0x5400},joined_lists{0x686000,0x1000},guard{0x7f0000,256};
@@ -181,7 +183,7 @@ struct ModelPass {
             if(object) require(self.services->source_owner_borrows(object).fields>0,
                 "actual original C prefix did not retain its semantic Actor identities");
         const IslePlayerPhotoContext* absent=&self.source->PokemonDetector_Photo[ticket.context];
-        require(self.photo->enqueue(ticket,*self.frame)==ISLE_GAME_INVALID_STATE&&
+        require(self.photo->bind_submission(ticket,*self.frame)==ISLE_GAME_INVALID_STATE&&
             self.photo->borrow(ticket,absent)==ISLE_GAME_INVALID_STATE&&!absent&&
             self.photos->completed(*self.frame)==ISLE_GAME_INVALID_STATE&&
             self.photo->seal_history(ticket.context,ticket.generation+1)==ISLE_GAME_INVALID_STATE&&
@@ -193,10 +195,10 @@ struct ModelPass {
         native(self.photos->request());
         IslePlayerPhotoTicket unsubmitted{};
         require(!self.detector->history.context_available(ticket.context)&&
-            !self.frame->submission()&&self.photos->request()==ISLE_GAME_INVALID_STATE&&
+            !self.frame->submission()&&self.photos->queued_requests()==1&&
             self.photos->submitted(*self.frame,unsubmitted)==ISLE_GAME_INVALID_STATE&&!unsubmitted.generation&&
             encode(self.source->PokemonDetector_Photo[ticket.context].main)==captured,
-            "production request did not seal before submission or fabricated an executing image request");
+            "production request did not seal/enqueue before submission or fabricated an executing image request");
         ++self.requests;return true;
     }
 };
@@ -220,12 +222,12 @@ struct Capture {
     std::size_t triangles=0;std::uint64_t geometry=14695981039346656037ull;
 };
 struct Readback {
-    enum class Failure { none,before_postprocess,after_postprocess } failure=Failure::none;
+    enum class Failure { none,before_postprocess,after_postprocess,late_reservation,callback_reservation } failure=Failure::none;
     player::Photo* photo=nullptr;player::Controller* photos=nullptr;
     actor::DetectorBinding* detection=nullptr;g::Frame* frame=nullptr;g::Frame* preceding_frame=nullptr;
     IslePlayerPhotoSource* source=nullptr;
     IslePlayerPhotoTicket ticket{};Capture capture;
-    bool check_queue_order=false,queue_order_rejected=false,preceding_completed=false;
+    bool complete_preceding=false,preceding_completed=false;
     unsigned calls=0;bool postprocessed=false;
     static void finish(void* user,rsp::CanonicalExecutor::MemoryLease& lease,std::uint32_t framebuffer) {
         auto& self=*static_cast<Readback*>(user);require(++self.calls==1,"photo acquired multiple actual completed mappings");
@@ -257,13 +259,10 @@ struct Readback {
             throw std::runtime_error("photo intended completed-memory failure before postprocess");
         }
         const auto old_published=self.detection->history.published();
-        if(self.check_queue_order) {
-            require(self.photos->completed_memory(*self.frame,lease,framebuffer)==ISLE_GAME_INVALID_STATE&&
-                !lease.postprocess_active(),
-                "second actual queued photo bypassed the first postprocessed ticket");
-            self.queue_order_rejected=true;
-            // The first concrete Frame already returned poll(completed). Only
-            // now discharge that queue head, then process this actual mapping.
+        if(self.complete_preceding) {
+            // Source removed that FIFO head at its actual callback, even though
+            // the prior Frame's later complete/publication is still outstanding.
+            require(self.photos->queued_requests()==1,"prior callback did not dequeue its Source ID");
             native(self.photos->completed(*self.preceding_frame));self.preceding_completed=true;
         }
         native(self.photos->completed_memory(*self.frame,lease,framebuffer));
@@ -284,6 +283,13 @@ struct Readback {
             encode(self.source->PokemonDetector_Photo[next_context].main)==untouched,
             "postprocessed phase bypassed the actual Frame's still-live completed mapping/readback ownership");
         if(self.failure==Failure::after_postprocess) throw std::runtime_error("photo intended completed-memory failure after postprocess");
+        if(self.failure==Failure::callback_reservation) {
+            require(!self.frame->reserve_render_capacity({0,0})&&self.frame->error()==g::Error::preparation&&
+                self.frame->submission()==self.ticket.submission&&!self.frame->completed()&&
+                !self.frame->failed_submission(self.ticket.submission)&&!self.frame->retire()&&
+                self.photos->retire_failed(*self.frame)==ISLE_GAME_INVALID_STATE,
+                "callback cold-reservation fault released its live actual completed mapping/token");
+        }
     }
 };
 // Cleanup is driven by actual Frame poll/failed-token evidence. This is not a
@@ -302,7 +308,7 @@ struct Frames {
         if(!photos) return;
         for(auto* frame:{primary.get(),secondary.get()}) if(frame) {
             const auto ticket=photos->ticket(*frame);
-            if(!ticket.generation) continue;
+            if(!photos->has_pending(*frame)) continue;
             while(frame->busy()) if(frame->poll()==g::Poll::pending) std::this_thread::yield();
             if(frame->failed_submission(ticket.submission)) {
                 if(photos->retire_failed(*frame)!=ISLE_GAME_OK) std::terminate();
@@ -376,8 +382,10 @@ void verify_snapshot(IslePlayerPhotoSource& source,IslePlayerPhotoTicket ticket,
             if(!binding.model.object) continue;
             const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
             native(isle_game_model_peek_nodes(player.game,binding.model.model,&nodes,&count));
-            const int type=binding.family==items::Family::apple?2:binding.family==items::Family::pester_ball?1:
-                binding.family==items::Family::water_splash?3:4;
+            const auto family=items.family(binding.model.state.instance);
+            require(family.has_value(),"photographed Item retains canonical family identity");
+            const int type=*family==items::Family::apple?2:*family==items::Family::pester_ball?1:
+                *family==items::Family::water_splash?3:4;
             if(count&&item.itemType==type&&same(item.pos,nodes[0].transform.position)) {
                 const auto model=binding.model.runtime->model(binding.model.state.instance);require(bool(model),"actual Item runtime expired");
                 unsigned time=0;
@@ -421,11 +429,10 @@ void verify_snapshot(IslePlayerPhotoSource& source,IslePlayerPhotoTicket ticket,
 void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
     packing_edges();
     const auto profile=output/"profile";std::filesystem::create_directory(profile);
-    const world::Resources world_resources(snapshot);const auto& setup=world_resources.setup();
-    const beach::ActorResources actor_resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const beach::BehaviorResources behaviors(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id);const auto& setup=world_resources.setup();
+    const actor::Resources actor_resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
     const items::Resources item_resources(snapshot,setup.fog_rgb,setup.fog_min,setup.fog_max);
-    const player::PhotoResources photo_resources(snapshot);const environment_sound::BeachResources sounds(snapshot);
+    const player::PhotoResources photo_resources(snapshot);const environment_sound::Resources sounds(snapshot,0);
     const menu::EffectResources effect_resources(snapshot);const photo::LightingInputs lighting(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     const menu::EffectGraphicsResources effect_graphics(snapshot,banks,{0x700000,0x80000});
@@ -476,7 +483,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector;focus::RegionCopies copies(capture_layout);actor::DetectorBinding detection{copies,detector};detection.enabled=true;
             WorldHooks hooks{services,camera};
-            world::World world(services,world_resources,{&hooks,nullptr,WorldHooks::remove,nullptr,WorldHooks::camera_shift,WorldHooks::effects_shift,nullptr});world.follow_camera(camera);
+            world::ModuleState world_module;
+            world::World world(services,world_resources,world_module,{&hooks,nullptr,WorldHooks::remove,nullptr,WorldHooks::camera_shift,WorldHooks::effects_shift,nullptr});world.follow_camera(camera);
             a::SlotCapacity actor_capacity{},item_capacity{};
             const auto capacity=[](auto models,a::SlotCapacity& maximum) {
                 for(const auto& model:models) { const auto c=a::slot_capacity(model);maximum.nodes=std::max(maximum.nodes,c.nodes);
@@ -485,7 +493,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
             capacity(actor_resources.models(),actor_capacity);capacity(item_resources.models(),item_capacity);
             const std::array actor_capacities{actor_capacity,actor_capacity};std::array<a::SlotCapacity,8> item_capacities;item_capacities.fill(item_capacity);
             {
-                actor::Owner actors(services,actor_resources,world,environment,detector,source,actor_capacities,banks,{32768,4096});hooks.actors=&actors;
+                beach::ActorSceneResources sceneData(snapshot);
+                std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                beach::ActorSceneState sceneState(sceneData,scene_latch);
+                actor::Owner actors(services,actor_resources,actor::CourseContext(sceneState),world,environment,detector,source,actor_capacities,banks,{32768,4096});hooks.actors=&actors;
                 accepted(actors.publish_effects());
                 require(environment.set_listener(player_model,camera),"environment listener binding failed");
                 items::Globals globals;items::Owner items(services,item_resources,world,actors,globals,
@@ -498,7 +509,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                 auto* trigger=services.object(0x1000,4);require(trigger,"actual Magikarp trigger root failed");
                 node.transform.position=trigger_position;IsleGameModel* trigger_model=nullptr;
                 native(isle_game_attach_model(services.game,trigger,&node,1,&trigger_model));
-                beach::MagikarpScene spawner(services,actors,world,actor_resources,behaviors);
+                beach::MagikarpScene spawner(services,actors,world,actor_resources,sceneState);
                 auto actor=spawner.spawn_at({trigger,trigger_model});require(bool(actor),actor.detail);
                 std::unique_ptr<player::Photo> photo=std::make_unique<player::Photo>(application,source,actors,items,detection,photo_resources,world,0);
                 std::unique_ptr<actor::PhotoScene> controller=std::make_unique<actor::PhotoScene>(services,actors,root,camera,detection,&application);
@@ -531,9 +542,11 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                 const auto actor_other=others({actor_layout.payloads,actor_layout.lists,actor_layout.materials},true);
                 const auto item_other=others({item_layout.payloads,item_layout.lists,item_layout.materials},true);
                 menu::model::CameraBasisState basis;
-                world::Producer world_producer(services.game,camera,basis,world_resources,world,world_layout,world_other);
+                world::Producer world_producer(services.game,camera,basis,world_resources,world.render_view(),world_layout,world_other);
                 actor::Producer actor_producer(services.game,camera,basis,actor_resources,actor_capacities,actors.render_bindings(),actor_layout,actor_other,&detection);
-                items::Producer item_producer(services.game,camera,basis,item_resources,item_capacities,items.render_bindings(),item_layout,item_other);
+                menu::model::PacketProducer item_producer(services.game,camera,basis,
+                    {item_resources.models(),item_resources.materials(),item_resources.installation_spans()},
+                    item_capacities,items.render_bindings(),item_layout,item_other);
                 course::ItemComposition composition{services,item_producer,128};course::ModelProducer models(world_producer,actor_producer,joined_lists,&composition);
                 ModelPass model_pass{models,copies,lighting,services.game,camera};EffectPass effect_pass{services.game,camera,actors.effects(),effect_graphics};
                 std::vector<sprite::AssetSpan> immutable;
@@ -550,7 +563,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                 passes[0].prepare=ModelPass::prepare;passes[0].userdata=&model_pass;
                 passes[1].camera=fx_camera;passes[1].priority=4;passes[1].camera_tag=UINT32_MAX;passes[1].prepare=EffectPass::prepare;passes[1].userdata=&effect_pass;
                 scene::render::Input scene_input{services.game,{1,nullptr,immutable,reservations,{0x3b5000,0x3da800},physical(lighting.pre_render_guest())},passes,{}};
-                std::array<Readback,4> readbacks;
+                std::array<Readback,6> readbacks;
                 auto primary=std::move(created.frame);std::unique_ptr<g::Frame> secondary;
                 Frames tickets{photo.get(),photo_controller,primary,secondary};
                 const auto boundary=[&] { require(primary->quiescent()&&(!secondary||secondary->quiescent()),"photo native mutation crossed actual GPU/readback ownership"); };
@@ -566,7 +579,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                     auto next=g::Frame::create(snapshot,{true,{16000000,4*1024*1024},frame_layout});require(bool(next),next.message.data());secondary=std::move(next.frame);
                 };
                 const auto begin=[&](g::Frame& frame,Readback& readback,bool with_fx,bool expect_fx) {
-                    require(!photo_controller->ticket(frame).generation,
+                    require(!photo_controller->has_pending(frame),
                         "concrete Frame begin reuse over an outstanding production photo ticket");
                     boundary();IslePlayerPhotoFocus before_focus{};
                     native(isle_player_photo_published_focus(&application,&before_focus));
@@ -606,11 +619,11 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                         "actual prefix capture/seal/enqueue published C focus before native OM CopyInfo");
                     ++gpu_frames;return ticket;
                 };
-                const auto poll=[&](g::Frame& frame,bool failure) {
+                const auto poll=[&](g::Frame& frame,bool failure,g::Error expected_error=g::Error::execution) {
                     g::Poll result;do { result=frame.poll();if(result==g::Poll::pending) std::this_thread::yield(); } while(result==g::Poll::pending);
                     require(frame.quiescent()&&!frame.busy(),"actual photo Frame did not end all GPU/mapping/readback ownership");
                     if(failure) {
-                        require(result==g::Poll::failed&&frame.error()==g::Error::execution&&!frame.completed(),"completed-memory exception did not become an unpublished real failed Frame");
+                        require(result==g::Poll::failed&&frame.error()==expected_error&&!frame.completed(),"actual GPU fault did not become an unpublished real failed Frame");
                         ++failed_frames;
                     } else require(result==g::Poll::completed&&frame.error()==g::Error::none&&bool(frame.completed()),frame.message());
                 };
@@ -652,14 +665,14 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                 require(first.context!=primary->submission_context()&&
                     photo_controller->begin_preparation(*primary)==ISLE_GAME_INVALID_STATE,
                     "production controller conflated Detector/framebuffer contexts or reused an outstanding actual Frame");
-                readbacks[1].check_queue_order=true;
+                readbacks[1].complete_preceding=true;
                 readbacks[1].preceding_frame=primary.get();
                 const auto full=begin(*secondary,readbacks[1],true,true);
                 require(photo_controller->retire(*secondary)==ISLE_GAME_INVALID_STATE,
                     "queued GPU photo retired without failed-token proof");
                 poll(*secondary,false);native(photo_controller->completed(*secondary));
-                require(readbacks[1].queue_order_rejected&&readbacks[1].preceding_completed&&readbacks[1].postprocessed,
-                    "actual two-Frame sequential-GPU photo queue order was not exercised");
+                require(readbacks[1].preceding_completed&&readbacks[1].postprocessed&&photo_controller->queued_requests()==0,
+                    "actual callback FIFO dequeue was incorrectly deferred until completed poll/publication");
                 require(effect_pass.particles&&readbacks[0].capture.geometry==readbacks[1].capture.geometry&&
                     readbacks[0].capture.color!=readbacks[1].capture.color&&readbacks[0].capture.depth==readbacks[1].capture.depth,
                     "qualified actual FX failed paired GPU color-only proof at unchanged native World/Actor/Item pose");
@@ -761,15 +774,15 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                     "retired capture admitted a stale C borrow or hid actual no-ticket published metadata");
                 application.status=ISLE_GAME_OK;
                 require(secondary->retire(),"actual queue Frame retirement failed");secondary.reset();
-                readbacks[1].check_queue_order=false;
+                readbacks[1].complete_preceding=false;
 
                 const auto successful=[&](Readback& readback) {
                     const auto ticket=begin(*primary,readback,true,false);poll(*primary,false);native(photo_controller->completed(*primary));tick();make(ticket);return ticket;
                 };
-                // Both cases use actual GPU completion, then a throwing actual
-                // memory callback. The second throws only after Photo postprocess
-                // and finish_postprocess. No failed ticket uses normal complete.
-                for(unsigned failure_case=0;failure_case<2;++failure_case) {
+                // Real GPU failures before/after postprocess, followed by sticky
+                // cold-reservation faults before poll and inside CompletedWork.
+                // No failed ticket uses normal complete or fabricated GPU joins.
+                for(unsigned failure_case=0;failure_case<4;++failure_case) {
                     const auto previous=successful(readbacks[0]);
                     const auto prior_source=encode(application.PokemonDetector_Photo[previous.context].main);
                     std::array<Encoded,60> prior_roll;for(std::size_t i=0;i<60;++i) prior_roll[i]=encode(application.D_800B0598[i]);
@@ -778,18 +791,34 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                     const auto held_before=services.source_owner_borrows(original_actor.object).fields;
                     require(held_before>0,"completed context retained no actual Actor semantic field borrow");
                     fresh_secondary();auto& failed_readback=readbacks[2+failure_case];
-                    failed_readback.failure=failure_case?Readback::Failure::after_postprocess:Readback::Failure::before_postprocess;
+                    failed_readback.failure=std::array{Readback::Failure::before_postprocess,Readback::Failure::after_postprocess,
+                        Readback::Failure::late_reservation,Readback::Failure::callback_reservation}[failure_case];
                     const auto failed=begin(*secondary,failed_readback,true,false);
+                    if(failure_case==2) {
+                        require(!secondary->reserve_render_capacity({0,0})&&secondary->error()==g::Error::preparation&&
+                            secondary->submission()==failed.submission&&secondary->busy()&&!secondary->quiescent()&&
+                            !secondary->completed()&&failed_readback.calls==0&&!secondary->retire(),
+                            "late cold-reservation fault lost its genuine outstanding token or published a GPU image");
+                    }
                     require(services.source_owner_borrows(original_actor.object).fields>held_before,"failed candidate did not acquire actual Actor semantic/native ownership");
                     require(photo->retire_failed(failed,*secondary)==ISLE_GAME_INVALID_STATE&&
                         !secondary->failed_submission(failed.submission),"nonquiescent executing photo accepted failed retirement");
-                    poll(*secondary,true);
-                    require(failed_readback.calls==1&&failed_readback.capture.triangles&&
-                        failed_readback.postprocessed==(failure_case!=0)&&secondary->failed_submission(failed.submission),
-                        "failure case lacks its exact real completed-GPU/postprocess/failed-token evidence");
-                    const std::string failure_name=failure_case?"failed-after-postprocess":"failed-before-postprocess";
-                    save(output/(failure_name+".rgba16be"),failed_readback.capture.color);
-                    save(output/(failure_name+".depth16be"),failed_readback.capture.depth);
+                    poll(*secondary,true,failure_case<2?g::Error::execution:g::Error::preparation);
+                    require(failed_readback.calls==(failure_case==2?0u:1u)&&
+                        (failure_case==2?!failed_readback.capture.triangles:bool(failed_readback.capture.triangles))&&
+                        failed_readback.postprocessed==(failure_case==1||failure_case==3)&&
+                        secondary->failed_submission(failed.submission)&&!secondary->failed_submission(failed.submission+1)&&
+                        secondary->submission()==0&&!secondary->completed()&&secondary->poll()==g::Poll::failed,
+                        "failure case lacks exact real GPU join, callback, unpublished image, and failed-token evidence");
+                    if(failure_case>=2)
+                        require(std::string(secondary->message())=="scene render capacity must be reserved before first dispatch",
+                            "actual fault drain replaced the first cold-reservation diagnostic");
+                    const std::string failure_name=std::array{"failed-before-postprocess","failed-after-postprocess",
+                        "failed-late-reservation","failed-callback-reservation"}[failure_case];
+                    if(failure_case!=2) {
+                        save(output/(failure_name+".rgba16be"),failed_readback.capture.color);
+                        save(output/(failure_name+".depth16be"),failed_readback.capture.depth);
+                    }
                     save(output/(failure_name+".unpublished-photo.bin"),encode(application.PokemonDetector_Photo[failed.context].main));
                     // Cleanup actually joins the native Actor. Its semantic slot
                     // and native dead identity must remain held by both tickets.
@@ -862,17 +891,46 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                         !actors.membership(original_actor.instance).joined,"actual Actor semantic/native held slot did not collect after exact releases");
                     actor=spawner.spawn_at({trigger,trigger_model});require(bool(actor),actor.detail);tick();
                     native(isle_actor_source_pause_object(actors.source(actor.actor.instance),1));native(isle_game_pause_updates(services.game,actor.actor.object,true));
+                    if(failure_case==0||failure_case==2) {
+                        require(photo_controller->queued_requests()==1,
+                            "failed GPU before Source callback discarded its queued context ID");
+                        // Genuine scene teardown, not failed-token cancellation,
+                        // resets this injected-fault experiment's Source queue.
+                        photo_controller.reset();controller->retire();controller.reset();photo.reset();
+                        photo=std::make_unique<player::Photo>(application,source,actors,items,detection,photo_resources,world,0);
+                        controller=std::make_unique<actor::PhotoScene>(services,actors,root,camera,detection,&application);
+                        photo_controller=std::make_unique<player::Controller>(*photo,detection);
+                        require(services.set_update(controller->copy_info_object(),player_photo_rsp_copy_info,&copy_witness),
+                            "failed-case reentry C CopyInfo installation failed");
+                        tickets.photo=photo.get();
+                    }
                     // The next loop's successful() is the real next GPU after
                     // release; after the final failure it is the first roll fill.
                 }
                 require(tickets.empty()&&photo->quiescent(),"course photo boundary retained tickets");
                 std::array<Encoded,60> retained_roll;for(std::size_t i=0;i<60;++i) retained_roll[i]=encode(application.D_800B0598[i]);
                 const auto retained_count=application.gPhotoCount;
+                const std::array<Encoded,2> retained_contexts{
+                    encode(application.PokemonDetector_Photo[0].main),
+                    encode(application.PokemonDetector_Photo[1].main)};
                 photo_controller.reset();controller->retire();controller.reset();photo.reset();
                 require(!application.owner&&application.gPhotoCount==retained_count,"course Photo/PhotoScene retirement reset application roll ownership/count");
                 for(std::size_t i=0;i<60;++i) require(encode(application.D_800B0598[i])==retained_roll[i],"course photo retirement changed application roll bytes");
+                // A new course owns fresh native history, not a fresh application
+                // Source. Reuse the stable binding address after all old tickets
+                // join, while preserving both actual captured value payloads.
+                detector=focus::Detector{};
                 photo=std::make_unique<player::Photo>(application,source,actors,items,detection,photo_resources,world,0);
                 controller=std::make_unique<actor::PhotoScene>(services,actors,root,camera,detection,&application);
+                require(!detector.generation(0)&&!detector.generation(1)&&
+                    detection.context==1,"fresh course binding invented a native capture stage");
+                for(std::size_t i=0;i<retained_contexts.size();++i) {
+                    const auto& context=application.PokemonDetector_Photo[i];
+                    require(encode(context.main)==retained_contexts[i]&&!context.pokemonInFocus&&
+                        std::all_of(std::begin(context.pokemonObjects),std::end(context.pokemonObjects),
+                            [](IsleGameObject* object){return object==nullptr;}),
+                        "fresh course binding lost retained photo bytes or prior-scene membership reset");
+                }
                 photo_controller=std::make_unique<player::Controller>(*photo,detection);
                 require(services.set_update(controller->copy_info_object(),player_photo_rsp_copy_info,&copy_witness),"reentered actual C CopyInfo installation failed");
                 tickets.photo=photo.get();
@@ -949,7 +1007,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                     IsleGameModel* apple_model=nullptr;IsleGameModelTransform apple_root{};
                     if(failure_case==0) {
                         for(const auto& binding:items.render_bindings())
-                            if(binding.family==items::Family::apple&&binding.model.object) apple_model=binding.model.model;
+                            if(items.family(binding.model.state.instance)==items::Family::apple&&binding.model.object) apple_model=binding.model.model;
                         require(apple_model,"real C capture failure needs the actual live apple");
                         const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
                         native(isle_game_model_peek_nodes(services.game,apple_model,&nodes,&count));
@@ -1056,6 +1114,15 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                     native(isle_actor_source_pause_object(actors.source(actor.actor.instance),1));
                     native(isle_game_pause_updates(services.game,actor.actor.object,true));
                 }
+                require(photo_controller->queued_requests()==1,
+                    "unsubmitted source send was silently cancelled with its preparation lease");
+                photo_controller.reset();controller->retire();controller.reset();photo.reset();
+                photo=std::make_unique<player::Photo>(application,source,actors,items,detection,photo_resources,world,0);
+                controller=std::make_unique<actor::PhotoScene>(services,actors,root,camera,detection,&application);
+                photo_controller=std::make_unique<player::Controller>(*photo,detection);
+                require(services.set_update(controller->copy_info_object(),player_photo_rsp_copy_info,&copy_witness),
+                    "unsubmitted-case reentry C CopyInfo installation failed");
+                tickets.photo=photo.get();
                 // A real visible but intangible native Actor still renders and
                 // contributes detector history, but original C photo admission
                 // excludes it. This identity must be adopted ONLY by seal.
@@ -1113,7 +1180,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
         "actual photo owned PCM drain failed");
     std::ofstream report(output/"photo-proof.txt");require(bool(report),"photo proof report open failed");
     report<<"component=actual-source-photo-World-Actor-Item-FX\n"
-        <<"gpu_frames="<<gpu_frames<<"\nfailed_completed_memory_frames="<<failed_frames<<"\noriginal_C_OM_CopyInfo_updates="<<copy_updates<<'\n'
+        <<"gpu_frames="<<gpu_frames<<"\nfailed_GPU_frames="<<failed_frames<<"\noriginal_C_OM_CopyInfo_updates="<<copy_updates<<'\n'
         <<"actual_prefix_GPU_captures="<<prefix_captures<<'\n'
         <<"roll=60_actual_GPU_captures_then_exhaustion_then_application_reset_then_one_actual_capture\n"
         <<"selection=original_actual_roll_flag_set_clear_restore_then_CE00_clears_it\n"
@@ -1126,21 +1193,22 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
         <<"prefix_rejection_lifetime=actual_native_join_semantic_payload_held_through_real_second_slot_factory_then_exact_release_and_next_actual_GPU\n"
         <<"seal_history_holds=actual_visible_intangible_native_Actor_renders_into_history_but_original_Photo_excludes_it_held_until_exact_Photo_retirement\n"
         <<"shared_rows=queued_and_postprocessed_live_mapping_reject_new_capture_actual_Frame_quiescence_required_before_complete_or_reuse\n"
-        <<"failure_cases=throw_after_GPU_before_postprocess,throw_after_GPU_after_postprocess_and_finish\n"
+        <<"failure_cases=throw_after_GPU_before_postprocess,throw_after_GPU_after_postprocess_and_finish,late_cold_reservation_before_poll,nonthrowing_cold_reservation_inside_actual_completed_callback\n"
         <<"failed_retirement=wrong_Frame_token_generation_context_nonquiescent_rejected_exact_releases_without_publication\n"
         <<"lifetime=retained_completed_preflight_rejection_release_next_actual_GPU_Actor_semantic_native_join_holds\n"
         <<"C_transaction=actual_take_borrow_original_makePhoto_release_before_checked_continuation_for_sixty_roll_reset_and_exhaustion\n"
         <<"C_boundaries=unpublished_unborrowed_wrong_context_generation_submission_foreign_owner_sticky_cleanup_first_failure_preserved\n"
         <<"published_focus=actual_Detector_query_presence_only_clear_keeps_identity_flags_context_computed_staged_and_capture\n"
+        <<"course_reentry=fresh_native_Detector_generation0_retains_both_application_photo_headers_resets_membership_without_minting_stage_then_real_GPU_captures\n"
         <<"wire=60_big_endian_0x3a0_PhotoData_records_plus_post_application_reset_record\n"
         <<"artifacts=photo-full.ppm,photo-full.rgba8,photo-full.rgba16be,photo-full.depth16be,photo-00.bin..photo-59.bin,photo-after-application-reset.bin\n"
-        <<"failure_artifacts=failed-before-postprocess_and_failed-after-postprocess_each_rgba16be_depth16be_unpublished-photo.bin\n"
+        <<"failure_artifacts=failed-before-postprocess_and_failed-after-postprocess_and_failed-callback-reservation_each_rgba16be_depth16be_unpublished-photo.bin;failed-late-reservation_unpublished-photo.bin_only_no_callback_or_readback_copy\n"
         <<"RGBA8=320x240_tightly_packed_RGBA;RGBA16_depth16=320x240_big_endian_halfwords\n"
         <<"limits=one_Beach_World_fixed_legacy55_camera_API_Player_and_trigger_two_Actor_slots_eight_Item_slots\n"
         <<"not_claimed=full_Player_input_gameplay_all_courses_Original_capture_Windows11_or_physical_devices\n";
     require(bool(report),"photo proof report write failed");
     std::cout<<"actual_source_photo_GPU_ticket_roll_failed_retirement=passed gpu_frames="<<gpu_frames
-        <<" actual_failed_completed_callbacks="<<failed_frames<<" original_C_OM_CopyInfo_updates="<<copy_updates
+        <<" actual_failed_GPU_frames="<<failed_frames<<" original_C_OM_CopyInfo_updates="<<copy_updates
         <<" full_Player_game_Original_Windows11=not_claimed\n";
 }
 }

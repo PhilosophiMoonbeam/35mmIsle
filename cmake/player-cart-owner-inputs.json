@@ -16,13 +16,13 @@
       "sha256": "59cde2b1700b1830a6893b414ab80b960c48402da63d40fdfab9086e92191263"
     },
     "src/player_source.h": {
-      "sha256": "c2a6fd05e7e012c336ffa04a0d5d8ba896e798974bb5c8c5cdaeaad9c552f8c1"
+      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
     },
     "src/player_cart.hpp": {
-      "sha256": "11c482b6336ba347a1460f7171100ac575f8cd607d6dad85041eedd84d960337"
+      "sha256": "b2eb86d441ad6df9b12d1209101aeaf9d8ba10775d0f11a9206089ed077d2b45"
     },
     "src/player_cart.cpp": {
-      "sha256": "6f408e69aa27a022dfc203b723af91db5dc903fa90b4d32dcd5877f8322a4eaa"
+      "sha256": "b6f5716d260da47e21b0bd45c15d71927e99d47485ad781a8bcb984105facd15"
     },
     "src/player_cart_producer.hpp": {
       "sha256": "8660d00b7b84286289eb7e79c27bbfcdc1dee92eb561c9c58778a000aae52aed"
@@ -34,7 +34,7 @@
       "sha256": "5dac893862a15ff3c468287281016f014aa083e7cd7e41853574a47cd79ce451"
     },
     "cmake/SnapPlayerServices.cmake": {
-      "sha256": "c5e700d1bc5e0601ffe3c75ea4c6fe98b91a800bafda4499ff186a3ffbed07d9"
+      "sha256": "97fe2fd8cc6a03e7eb7c1395961a482b043cc54a362163e33fc54a0834cb0035"
     }
   },
   "definitions": [

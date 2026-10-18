@@ -94,8 +94,17 @@ bool Detector::context_available(std::uint16_t context) const noexcept {
 std::uint64_t Detector::generation(std::uint16_t context) const noexcept {
     return context<contexts_.size()?contexts_[context].generation:0;
 }
+Error Detector::create_source_contexts() noexcept {
+    for(const auto& value:contexts_)
+        if(value.retained || (!source_created_ && (value.generation || value.count || value.analyzed)))
+            return Error::invalid_context;
+    for(auto& value:contexts_) value.photo={};
+    computed_.present=false;published_.present=false;
+    source_created_=true;
+    return Error::none;
+}
 Error Detector::retain_context(std::uint16_t context,std::uint64_t generation) noexcept {
-    if(context>=contexts_.size() || !generation) return Error::invalid_context;
+    if(context>=contexts_.size() || (!generation && !source_created_)) return Error::invalid_context;
     auto& value=contexts_[context];
     if(value.retained || generation!=value.generation) return Error::invalid_context;
     value.retained=true;

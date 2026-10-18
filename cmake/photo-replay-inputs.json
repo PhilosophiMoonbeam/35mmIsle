@@ -1,0 +1,470 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "scope": "Own native all-course immutable world/recorded subject/effect resource decoding and shared animation/packet implementation; no ROM/GAME/SDK payload embedded in public native sources",
+  "Source_leaf_affinity": "CanonicalExecutor and SDL Host require actual creator OS thread. Every mutating CReplay leaf synchronously uses existing isle_continuation_on_owner from an admitted Source worker, then returns on the SAME resume. No Source callback/wait, OM/GTL update or retrace credit is executed/granted by this handoff. Direct creator calls stay inline; foreign non-Source callers fail without executor access.",
+  "source_files": {
+    "src/app_render/47330.c": {
+      "git_blob": "9f8577ecc21eadb43843afb46b8756c3db918985",
+      "sha256": "8bac0cc251b477cd80cbb6b4bc710dec97816f3469caff31ec21b34c5a30a587",
+      "bytes": 431,
+      "lines": 27
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8",
+      "bytes": 5489,
+      "lines": 239
+    },
+    "src/app_render/4D400.c": {
+      "git_blob": "f2ab62d614dffc86bbd413f87150ea68ff473fd3",
+      "sha256": "67b399176bfd9884cfa3ab929ed3b8565e6503ec88cb5b540f572d3f490927ca",
+      "bytes": 2706,
+      "lines": 102
+    },
+    "src/app_render/52D70.c": {
+      "git_blob": "69e16140e6fcc76a4811ee46aa3311b3daade620",
+      "sha256": "2f79b43516d90dfdd5ccaa8b850213833eab971f37bbb328ca5ac03ff1241bf6",
+      "bytes": 299,
+      "lines": 12
+    },
+    "src/app_render/52DE0.c": {
+      "git_blob": "69f85403fc02060c7d5b2aa0c4428ed4fd1a4aaa",
+      "sha256": "cc36ae16113fba51ab053c62893f1bb09979e18d5cc6579c276156903d78479a",
+      "bytes": 8016,
+      "lines": 290
+    },
+    "src/app_render/53AD0.c": {
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "bytes": 27353,
+      "lines": 1058
+    },
+    "src/app_render/56880.c": {
+      "git_blob": "3085e2497a95d6b6e4ec96c2a8dfcbd573611c1e",
+      "sha256": "edf1b9f32d302e228421c6bd04ac268a18453745851fca384965449da914ae7d",
+      "bytes": 279,
+      "lines": 18
+    },
+    "src/app_render/574F0.c": {
+      "git_blob": "d813035979ca01f69ff71957fbc4e9d89a39fc96",
+      "sha256": "eac13b5042e70f19565fedec4e3e7765484db5d8fe66bb44127cbf4c47a550fe",
+      "bytes": 407,
+      "lines": 28
+    },
+    "src/app_render/app_render.h": {
+      "git_blob": "7ab141ac46a0505ab2ad10a3c5cbba192545585c",
+      "sha256": "1c9438c7672abe6b2a10286f8712d9e147f0bb915dae487dc539931864a8418b",
+      "bytes": 531,
+      "lines": 21
+    },
+    "src/world/60860.c": {
+      "git_blob": "7b5f2ce9a1ccdfc3eeeb9f7a89dd52ef91352671",
+      "sha256": "4fd76933bca72eac56ae1965f82b0c750ad4dabd83b8541f284d4973480811d0",
+      "bytes": 4290,
+      "lines": 118
+    },
+    "src/world/64270.c": {
+      "git_blob": "ac43b44abd5b3c3a75cfbb16122ece783e5a60e0",
+      "sha256": "103b395a8aee147c3bd0aac9f45508454cfa62640376ee3cf5012c04ea6107cf",
+      "bytes": 4355,
+      "lines": 181
+    },
+    "src/world/block.c": {
+      "git_blob": "be2f88ac84fea914d4894e522c76830a47602b04",
+      "sha256": "1cff059a365a3a0ee3bfae553d5198fed4b12c9030c686618f662dcedc40b221",
+      "bytes": 19839,
+      "lines": 682
+    },
+    "src/world/movement.c": {
+      "git_blob": "707ea16b9fd964340e99cb57d2aeb35cb015cfa3",
+      "sha256": "0f4c2b8a47dbd625133d0d84517702d01c262057232e84dcae9b79aed5c1324a",
+      "bytes": 8785,
+      "lines": 314
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "bytes": 7510,
+      "lines": 237
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "bytes": 76570,
+      "lines": 2348
+    },
+    "src/app_render/46270.c": {
+      "git_blob": "bf53f3078a567ac78df51d3ee8d5e6f9fa17c135",
+      "sha256": "152884a39d0621dbbaafb57f292089048014efe70784cd03a72b70a57871d8c7",
+      "bytes": 17956,
+      "lines": 389
+    },
+    "src/app_render/568D0.c": {
+      "git_blob": "fed2e286e73ef66a946ebd7b614f2d2b7b1fca6c",
+      "sha256": "ab288404b621d0b12a51c846f00ae7335905931595ea58ca005f073c3e12b2b3",
+      "bytes": 6359,
+      "lines": 253
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "bytes": 9431,
+      "lines": 343
+    },
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "bytes": 5908,
+      "lines": 191
+    },
+    "src/beach/beach.h": {
+      "git_blob": "0aad5edbe49cd130449874b9b3b55941d3b73042",
+      "sha256": "a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc",
+      "bytes": 12221,
+      "lines": 329
+    },
+    "src/cave/6401B0.c": {
+      "git_blob": "11931cf62762b8abb23f0ea60d3c83b4a6b1c64b",
+      "sha256": "48c030408467829d479d15e2ef781ade2a749b4a6c775273fbfbf6cc7fe3aef7",
+      "bytes": 6257,
+      "lines": 204
+    },
+    "src/cave/cave.h": {
+      "git_blob": "6c1586d07e4fdb0cef03ff77f9f725cbca18648a",
+      "sha256": "db8b4f602f42724a7da6ba2dd8f8f5a1bd76e71a8e18ca4e775f42aca84880f0",
+      "bytes": 608,
+      "lines": 25
+    },
+    "src/rainbow/main.c": {
+      "git_blob": "bee9dab9845cd7ceb6d55c08d623b82ba7a775cf",
+      "sha256": "0d2fa3f6848802e38c88769e3a024149d43270023b2c05a46459d07c32ce3122",
+      "bytes": 10655,
+      "lines": 358
+    },
+    "src/rainbow/rainbow.h": {
+      "git_blob": "df02b3ec07a35faaf7b77af73ccf859fa16b07a8",
+      "sha256": "39eee86f6cf11d0f7fae267a6fa82bea2d56efdbc597b474b3654cf38946949c",
+      "bytes": 1157,
+      "lines": 31
+    },
+    "src/river/6C05E0.c": {
+      "git_blob": "cb9c14fa4baa7590528a7e822d763dcf3aef0ad5",
+      "sha256": "fe46871b5acd19990284edf31b2218118b0327e14dffa45b54fc24975a7a05bf",
+      "bytes": 9912,
+      "lines": 327
+    },
+    "src/river/river.h": {
+      "git_blob": "3e1364cd6a4716abe43790902078e6cee85963e3",
+      "sha256": "3bb153856acbfe16124c555003c90259a75434fdff7a0e2b41ec5b42c94d063a",
+      "bytes": 309,
+      "lines": 15
+    },
+    "src/sys/anim.c": {
+      "git_blob": "477cd1e92ef0bd257caa2f6eb61b2e70955f8cb1",
+      "sha256": "25ea9d57a98eba4007295f440ad0e83163f5f0a220f1cf4609f502ee257d1faf",
+      "bytes": 84072,
+      "lines": 2474
+    },
+    "src/sys/render.c": {
+      "git_blob": "38e4e802c306971624149d83902767b59eca3214",
+      "sha256": "fafaa7eb5b5c81bb7fc5e5b2b687375c5088b0edcc52e56317f4e374418eb9f2",
+      "bytes": 108764,
+      "lines": 2746
+    },
+    "src/tunnel/main.c": {
+      "git_blob": "79cb036b9b50555b41ec3e07510c7b98c987d5ab",
+      "sha256": "1ce9ce6fedb363821153afd33704bb9b40075c6abe9d17e1b57bc5298401f78e",
+      "bytes": 12375,
+      "lines": 392
+    },
+    "src/tunnel/tunnel.h": {
+      "git_blob": "6bdf3af4f1ada4361cd8f518a22eba014a3ca4f3",
+      "sha256": "06f3dd20e4e07d6d697d39fe5b2697582fded799f7c58408c572bc39a85df895",
+      "bytes": 5577,
+      "lines": 147
+    },
+    "src/tunnel/world/world.c": {
+      "git_blob": "828947a9cb09095b44266a9d85e4c5cb928f4db1",
+      "sha256": "75f088807abf35317d4de6d7969e385ac2cacba4069c0898026644178da370b7",
+      "bytes": 12036,
+      "lines": 575
+    },
+    "src/tunnel/world/world_gfx.c": {
+      "git_blob": "2850fa77fb45c7f34d172a5cedc48e8527eff593",
+      "sha256": "b9f0fad87f38f5fb3b9394cdf2bfa39b96201cc848b5d7d8cec33e50c382b7b6",
+      "bytes": 2053,
+      "lines": 99
+    },
+    "src/valley/79F1B0.c": {
+      "git_blob": "63430b57b90aa93384eb5862f19ef398be207194",
+      "sha256": "12e9f6c7dbde1579c1dc7d511455ba5bbaf4582b16f3245b2859e7a9439d0cc3",
+      "bytes": 8917,
+      "lines": 281
+    },
+    "src/valley/valley.h": {
+      "git_blob": "ac187c3ee881c7f4921b4dec0f78544254a4b2cd",
+      "sha256": "41b29eba68b1ebbcbfe107c7c9e129d1ec71be7b0433bae9cb955f8918724fc0",
+      "bytes": 420,
+      "lines": 15
+    },
+    "src/volcano/main.c": {
+      "git_blob": "c2a20ad855628301e73d4bb94c66f5683e5cc4f6",
+      "sha256": "a87c6b455e372316a279bd77b8271f9ba15ebf1871ac3ded579768f8414eece2",
+      "bytes": 21874,
+      "lines": 704
+    },
+    "src/volcano/volcano.h": {
+      "git_blob": "7ba664b6f2fcc672a7532cab46543b22b5c2cc18",
+      "sha256": "02b007475d62a7d56ce569190271131bdcd8fe1efd883cae4e5ef9749fcc9edb",
+      "bytes": 5169,
+      "lines": 113
+    },
+    "src/volcano/world/height_map.c": {
+      "git_blob": "ec628b2be8650a07994b2bbb5df074a07dd11b2d",
+      "sha256": "ac18de0258ff2a58afe7562ae650b916a7e5342ab80d6f1cc09ad3f7120601d9",
+      "bytes": 234,
+      "lines": 11
+    },
+    "src/volcano/world/height_map_data.c": {
+      "git_blob": "cfd89215fde66432ce4e14476a5f3b742facc31a",
+      "sha256": "b33185e850d16008e0e3770d45bdba4b6d93b82073aa1c90d6d022d41af0fcc8",
+      "bytes": 210,
+      "lines": 9
+    },
+    "src/volcano/world/world.c": {
+      "git_blob": "b9da4e529ca7753736ee2cc3d8b35f2f1996182d",
+      "sha256": "c2829557999d107180ff666f0dc481824b6fed98e7ab33cd904e7b41ca6e2e30",
+      "bytes": 449,
+      "lines": 30
+    },
+    "src/volcano/world/world_gfx.c": {
+      "git_blob": "2294f63cacde2b625441ad39805d15947bb4fc02",
+      "sha256": "049722821e3bc86b1abd9c77f3248f84c1d7b954f8303036fc32f46124911548",
+      "bytes": 2923,
+      "lines": 123
+    },
+    "include/common.h": {
+      "git_blob": "17a28698cf046c4c8d15fa32d5ade1827e92098d",
+      "sha256": "0689b47bca0fbcad8fcf2d24e5d9399af1cb461df8366078178138f7b2d5d0bf",
+      "bytes": 258,
+      "lines": 16
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "bytes": 17242,
+      "lines": 591
+    },
+    "include/sys/anim.h": {
+      "git_blob": "1a0178fc52a859eda997ca232e1b063e10f9a4c9",
+      "sha256": "1e0ddc0140d6c05a6d5bb7fdf8db54f1a809fd89cb39be6ce0eb0bde75c5d5dd",
+      "bytes": 1602,
+      "lines": 46
+    },
+    "include/sys/render.h": {
+      "git_blob": "9c2c79f1cc621a6af3c78425910f00d656985c7b",
+      "sha256": "89ef2b4d59a7185de95f5ec0ffee61ddeda9d6b0c2bfb10bd614738c6225714f",
+      "bytes": 995,
+      "lines": 25
+    },
+    "tools/symbol_addrs.txt": {
+      "git_blob": "eeac54e97ff993338a4d9693d22b05f030d8aa27",
+      "sha256": "7ce762cd5736b18c3e3b785dff11a359fb407619e2d8ba682dd4d9ee3d01597d",
+      "bytes": 434360,
+      "lines": 7982
+    },
+    "src/sys/om.c": {
+      "git_blob": "4ca82a764345116a8c924fb3449e4638e0720857",
+      "sha256": "6908d51d68f90b27e3cc0fb795eea0602c7d5d713df1b0d6776719e906420f8c",
+      "bytes": 49619,
+      "lines": 2050
+    },
+    "src/1F960.c": {
+      "git_blob": "caf0e25e5ba3f1f0b313d46eb6a3b3cc6ff8b1d3",
+      "sha256": "d2373fd58df3b7b8c4de8f38d8d6edee435f92889befce920375a2be1842314b",
+      "bytes": 9563,
+      "lines": 318
+    }
+  },
+  "source_contracts": {
+    "course_ids": [
+      "Beach0",
+      "Tunnel1",
+      "Volcano2",
+      "River3",
+      "Cave4",
+      "Valley5",
+      "Rainbow6"
+    ],
+    "primary_secondary_blocks": [
+      [
+        8,
+        4
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        6,
+        1
+      ],
+      [
+        6,
+        4
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "subject_render_rows": 83,
+    "scenery_rows": 13,
+    "normal_special_animation_rows": [
+      67,
+      16
+    ],
+    "subject_scenery_callbacks": [
+      "0x800a15d8",
+      "0x800a1608",
+      "0x800a1650",
+      "0x800a1680",
+      "0x800a16b0"
+    ],
+    "no_second_Game_or_live_AI": true,
+    "recorded_effect_setup_combine_body_boundary": true,
+    "material_domains": "declared bounded pointer allocations or exact Source first-update binary32 sampling capabilities; universal inference is restricted to timing-independent STEP tracks; every actual rendered pose still validates image/palette/LOD indices before writes",
+    "animation_graphs": "bounded fragments and actual JUMP/SET_ANIMATION target/clock/callback semantics",
+    "splines": "source-declared controls; undefined terminal velocity overread remains rejected"
+  },
+  "native_support": {
+    "src/world_module.hpp": {
+      "sha256": "b89283f94e22816c4b08a6196ee694fc0d455765997567760e826f9a0ce66c52"
+    },
+    "tests/post_course_replay_rom_smoke.cpp": {
+      "sha256": "8e903a322db6f205a107d679d6b1cbf711eea143a13ebebebf25b546cf04482e"
+    },
+    "tests/post_course_replay_probe.c": {
+      "sha256": "bf06d48b24eaf220254490ac13483e20180c6aa54a4e0108019491082d7a4730"
+    },
+    "tests/post_course_replay_probe.h": {
+      "sha256": "cc2c272091c95f537ff76b8228a5eb94ce3245d67f2d3f3e8fe2d71048be7fe8"
+    },
+    "src/post_course_replay.hpp": {
+      "sha256": "138267651d319ffdeb56088a66f19a1e25365118ff2d01493460d9a0ff916a61"
+    },
+    "src/post_course_replay.cpp": {
+      "sha256": "b4207878dd1494f3380a2b1738fa40785a14659357b429c63a81b11c8b39c3cb"
+    },
+    "src/post_course_replay_source.h": {
+      "sha256": "6f36e3a05f6b3c472caa5a1b7264d8a3962f6904f230aab4d51706fa00921a23"
+    },
+    "src/post_course_replay_source.c": {
+      "sha256": "092663d31fbeb372ee1316fa540be66ec28101635145a16d0349a091cb0b1e69"
+    },
+    "src/application_photos.hpp": {
+      "sha256": "d8f9f037ce255d5f21f8bac8b63df1112b06d57cbbc6bfccc3775e40a1455d0b"
+    },
+    "src/application_photos.cpp": {
+      "sha256": "17d4935dd224f8c31e6c9cfe90956940846e317d7b98a8a05eec5e89c8383531"
+    },
+    "include/35mmisle/game_save.hpp": {
+      "sha256": "81e28ff9e15b8bd3945f4f31176e6157947c4c35218fdf359d67b4286faee934"
+    },
+    "src/game_save.cpp": {
+      "sha256": "eaf26769d6c05d1ec6e3d851b24ef5a6bcbcaa46365d577ceb8bbf9fd6ceaccd"
+    },
+    "tests/photo_replay_rsp_smoke.cpp": {
+      "sha256": "f5e2fd297dd951655fa9702466af438c8d3d557ec79b7ec3a8e8fb66e7fdd5c0"
+    },
+    "src/photo_replay.hpp": {
+      "sha256": "b36657cea6c4ed6ba3b25dc0a04ef8d15f3de73c04fac10d946a8a87c338d24e"
+    },
+    "src/photo_replay.cpp": {
+      "sha256": "083293bc88958d31e8101fed1386a5f0cf562eb220b09e4542bccf5ec4d65e01"
+    },
+    "src/scene_graphics.hpp": {
+      "sha256": "ffac524a883f6e5cbc41407d88bb1d788be923a15a1369576542566ad3f5bf6e"
+    },
+    "src/scene_graphics.cpp": {
+      "sha256": "02c1d0c13b244f2d4a811aa3eb033f19a6b6ade05a4709d78f793a8b7a69610e"
+    },
+    "src/photo_world.hpp": {
+      "sha256": "0da1db1c7ed84c8f9033c9bf1c4721c3ed860bfe92246bd7dabe62025a81a4b2"
+    },
+    "src/photo_world.cpp": {
+      "sha256": "431b61c67c36ea3d99408561f45c99785ed879be2f06b451bde86ee6d70bdc20"
+    },
+    "src/course_resources.hpp": {
+      "sha256": "5c6d541d63f13b446e3602fe2efa35bc97bd5bb61083ba540b31f0650a2ed5fd"
+    },
+    "src/course_resources.cpp": {
+      "sha256": "7a01bb9b83c9bbb24370810f4b6d4612e0ebd65c22681eda34141b864cc22d35"
+    },
+    "src/beach_world_resources.hpp": {
+      "sha256": "d53848abeb68b5ed7d6f59120dee7210379bf2f96ce03becfe92e8579edf9c76"
+    },
+    "src/beach_world_resources.cpp": {
+      "sha256": "e44b2481122d16d752e316224ccb2de7f2269c7019dcfe25560ec5a51f37b40d"
+    },
+    "src/world_resources.hpp": {
+      "sha256": "9da408cc06716c439e2f67a011ae21571671a310386f0e0ff6ee939be6e20cbb"
+    },
+    "src/world_resources.cpp": {
+      "sha256": "e023221482b1777919afac91602eae373b8a5a91fc620a4ca100b3f81f90bdd2"
+    },
+    "src/model_data_decoder.hpp": {
+      "sha256": "2200777373ce37765949721bb02c0cf24e518c00f20f33254c0672f1d0482af5"
+    },
+    "src/model_data_decoder.cpp": {
+      "sha256": "76340eceadbeb9d86059f6a08638723e2eb426adf51d70685ccac10783b867d6"
+    },
+    "src/menu_resources.hpp": {
+      "sha256": "8403268bce9dc6909b623c7064f2bc32bfbf1a5f214b217755dc6c3326215b0f"
+    },
+    "src/menu_animation.hpp": {
+      "sha256": "cbfbdd13cd15bcd5d1000fba4702db1d92e85083e0c64a624fdbc8a713ffd286"
+    },
+    "src/menu_animation.cpp": {
+      "sha256": "ef6226a3d2b7206e90c0b36f983e06a32861b0109f589e92c42ede7a19497f8d"
+    },
+    "src/borrowed_model_kernel.hpp": {
+      "sha256": "5b486e2b2b528e893c38aabc5d4b676541c20b1d7aa7045e8323b5807eab648c"
+    },
+    "src/borrowed_model_kernel.cpp": {
+      "sha256": "0c87977385ce5ed309eacc84e59e8fd9888596353318dc17252ac137f3d378f4"
+    },
+    "src/borrowed_model_producer.hpp": {
+      "sha256": "8e520ef455ffdb2717fed1872f62bd38945b6071fba169d9d500b3fff8b397a5"
+    },
+    "src/borrowed_model_producer.cpp": {
+      "sha256": "d9bcf96295bf6c3e33d9aeb48ddd6fcd479fca205de3b83cb1b0397dbfb28023"
+    },
+    "src/photo_subjects.hpp": {
+      "sha256": "7eae7953aea3bb2d7daab91049ce8b00d5bcd8e3c0f359a368bf5f70e1421d81"
+    },
+    "src/photo_subjects.cpp": {
+      "sha256": "95776c8e4b4de693a9168b93b1cf97f7e505507ccd3c7de341c4c2711dbb7856"
+    },
+    "src/photo_effects_renderer.hpp": {
+      "sha256": "a9b344063392ba7371d59dc1c2e7a12ec2477cce1a858983b5b71f776b4cf57f"
+    },
+    "src/photo_effects_renderer.cpp": {
+      "sha256": "549f702eef3731b5a2ff2cb4c56cc8769b3e481bb66172509602f257671f78e4"
+    }
+  },
+  "admission": {
+    "static_reviews": "subjects/effects and sampled-domain proof reviewed; real live-stream allocation regression and source-absent ceiling marker corrected; runtime acceptance remains separate",
+    "actual_all_course_GPU_and_Source_scene_acceptance": false,
+    "full_game_hardware_Windows11_acceptance": false
+  }
+}

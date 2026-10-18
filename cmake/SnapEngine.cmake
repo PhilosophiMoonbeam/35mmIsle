@@ -12,6 +12,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/source_factory_resources.h"
     "${PROJECT_SOURCE_DIR}/src/player_source.h"
     "${PROJECT_SOURCE_DIR}/src/player_source_bridge.c"
+    "${PROJECT_SOURCE_DIR}/src/post_course_scene_source.h"
+    "${PROJECT_SOURCE_DIR}/src/post_course_scene_source.c"
     "${PROJECT_SOURCE_DIR}/src/player_camera_viewport.c"
     "${PROJECT_SOURCE_DIR}/src/player_camera_viewport.h"
     "${PROJECT_SOURCE_DIR}/src/world_movement_state.h"
@@ -53,6 +55,35 @@ if(NOT _isle_engine_result EQUAL 0)
     message(FATAL_ERROR "Private native game source preparation failed:\n${_isle_engine_output}${_isle_engine_error}")
 endif()
 message(STATUS "${_isle_engine_output}")
+
+# Full Player ownership is admitted here because two pure canonical bodies are
+# low-level engine support, also used by Actor retirement and CPU-only FIFO.
+set(_isle_player_root_private "${CMAKE_BINARY_DIR}/_deps/isle-player-root-private")
+set(_isle_player_root_manifest "${PROJECT_SOURCE_DIR}/cmake/player-root-inputs.json")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/tools/prepare_player.py" "${_isle_player_root_manifest}")
+file(READ "${_isle_player_root_manifest}" _isle_player_root_authority)
+string(JSON _isle_player_root_support_count LENGTH "${_isle_player_root_authority}" native_support)
+math(EXPR _isle_player_root_support_last "${_isle_player_root_support_count} - 1")
+foreach(_isle_player_root_support_index RANGE 0 ${_isle_player_root_support_last})
+    string(JSON _isle_player_root_support_path MEMBER "${_isle_player_root_authority}"
+        native_support ${_isle_player_root_support_index})
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/${_isle_player_root_support_path}")
+endforeach()
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_player.py"
+        --repository "${_isle_snap_source}" --manifest "${_isle_player_root_manifest}"
+        --output "${_isle_player_root_private}/player_root_original.c"
+        --header "${_isle_player_root_private}/player_root_original.h"
+        --support "${_isle_player_root_private}/player_root_support.c"
+        --evidence "${_isle_player_root_private}/evidence.json"
+    RESULT_VARIABLE _isle_player_root_result
+    OUTPUT_VARIABLE _isle_player_root_output
+    ERROR_VARIABLE _isle_player_root_error)
+if(NOT _isle_player_root_result EQUAL 0)
+    message(FATAL_ERROR "Private complete Player Root preparation failed:\n${_isle_player_root_output}${_isle_player_root_error}")
+endif()
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/cmake/actor-control-inputs.json"
@@ -119,7 +150,10 @@ target_sources(isle-engine PRIVATE src/actor_source_bridge.c src/actor_source.h 
 target_sources(isle-engine PRIVATE src/item_source_bind.c src/item_source.h)
 target_sources(isle-engine PRIVATE src/source_factory_resources.h)
 target_sources(isle-engine PRIVATE src/player_source_bridge.c src/player_source.h src/world_movement_state.h)
+target_sources(isle-engine PRIVATE src/post_course_scene_source.c src/post_course_scene_source.h)
 target_sources(isle-engine PRIVATE src/player_camera_viewport.c src/player_camera_viewport.h)
+target_sources(isle-engine PRIVATE src/player_root_source.h
+    "${_isle_player_root_private}/player_root_support.c")
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)
@@ -178,4 +212,4 @@ if(ISLE_BUILD_RSP_PROBE AND ISLE_BUILD_RDP_PROBE)
     isle_target_options(engine-camera-rsp-smoke)
 endif()
 
-message(STATUS "Native OM/model/intro-fade/camera kinds 3/6/8/14, translate-only, kind-28/photo, RT/RTS placement, source54 fixed-W and source48 basis math are private development inputs, not full scene/audio readiness or a redistribution grant")
+message(STATUS "Native OM/model/intro-fade/camera kinds 3/6/8/12/14, translate-only, genuine scale-free RT27, kind-28/photo, RT/RTS placement, source54 fixed-W and source48 basis math are private development inputs, not full scene/audio readiness or a redistribution grant")

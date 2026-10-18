@@ -39,6 +39,12 @@ WorldMatrix local(const IsleGameModelTransform& t) {
         t.rotation.x,t.rotation.y,t.rotation.z,t.scale.x,t.scale.y,t.scale.z);
     finite(m); return m;
 }
+WorldMatrix local_rt(const IsleGameModelTransform& t) {
+    WorldMatrix m;
+    hal_rotate_rpy_translate_f(m.m,t.position.x,t.position.y,t.position.z,
+        t.rotation.x,t.rotation.y,t.rotation.z);
+    finite(m); return m;
+}
 WorldMatrix compose(const WorldMatrix& a, const WorldMatrix& b) {
     WorldMatrix out;
     for (unsigned r = 0; r < 4; ++r) for (unsigned c = 0; c < 4; ++c)
@@ -82,6 +88,8 @@ Status decode_recipe(std::array<std::uint8_t,3> kinds, std::uint32_t depth_flags
         }
         if (recipe.count == 1 && recipe.operations[0] == 28)
             recipe.native_kind = ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE;
+        else if (recipe.count == 1 && recipe.operations[0] == 27)
+            recipe.native_kind = ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE;
         else if (recipe.count == 1 && recipe.operations[0] == 54)
             recipe.native_kind = ISLE_GAME_MODEL_CONTEXTUAL_RPY;
         else if ((recipe.count == 1 && recipe.operations[0] == 1) ||
@@ -220,8 +228,8 @@ Status encode_material(const Material& texture, const animation::MaterialState& 
             std::int32_t lod;
             if (flags & 0x10) {
                 const auto level = integer(state.lod_level);
-                require(level >= 0 && level < 65535);
-                image = static_cast<unsigned>(level); next = image + 1;
+                image = static_cast<std::uint16_t>(level);
+                next = static_cast<std::uint16_t>(image + 1u);
                 lod = integer((state.lod_level - static_cast<float>(level)) * 256.0f);
             } else lod = integer(state.lod_level * 255.0f);
             const auto minimum = (state.color_and_trailing_words[1] >> 16) & 255;
@@ -346,6 +354,24 @@ struct HierarchyEncoder {
             command(lane,c.w0,c.w1);
         }
     }
+    void root() {
+        const auto& pose = input.nodes[0];
+        const auto flags = input.pose == PoseSource::native ? input.native_nodes[0].flags : pose.flags;
+        if (flags || input.source.nodes[0].payloads.empty()) return;
+        require(input.source.nodes[0].payloads.size() == 1);
+        const auto& payload = input.source.nodes[0].payloads[0];
+        if (!payload.draw_list) return;
+        require(payload.display_list_id == 0 && payload.pre_list == 0);
+        IsleGameVec3 inherited = input.placement.mode == ISLE_GAME_MODEL_PLACEMENT_RTS ?
+            input.placement.transform.scale : IsleGameVec3{1,1,1};
+        if (input.placement.mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED)
+            append({0xda380000u,input.placement_address});
+        matrix(0,input.placement.mode == ISLE_GAME_MODEL_PLACEMENT_DISABLED,inherited);
+        flush(0);
+        if (pose.material_count) command(0,0xdb060038,input.material_bases[0]);
+        call(0,payload.draw_list);
+        command(0,0xd8380002,64);
+    }
     void node(std::size_t n, IsleGameVec3 inherited, bool deferred) {
         const auto& pose = input.nodes[n];
         const auto flags = input.pose == PoseSource::native ? input.native_nodes[n].flags : pose.flags;
@@ -393,7 +419,9 @@ Status encode_hierarchy(const HierarchyInput& input, HierarchyBuffer& output) no
         const bool deferred = input.source.render_type == RenderType::d_fogged ||
             input.source.render_type == RenderType::j_fogged;
         HierarchyEncoder encoder{input,output};
-        encoder.node(0,input.placement.mode == ISLE_GAME_MODEL_PLACEMENT_RTS ?
+        if (input.source.render_type == RenderType::a || input.source.render_type == RenderType::a_fogged)
+            encoder.root();
+        else encoder.node(0,input.placement.mode == ISLE_GAME_MODEL_PLACEMENT_RTS ?
             input.placement.transform.scale : IsleGameVec3{1,1,1},deferred);
         return {};
     } catch (const Failure& f) { return f.status; }
@@ -465,9 +493,11 @@ struct BorrowedKernel::Impl {
         for (std::size_t r = 0; r < models.size(); ++r) {
             const auto& source = models[r];
             require(!source.nodes.empty());
-            require(source.render_type == RenderType::b || source.render_type == RenderType::a_fogged ||
+            require(source.render_type == RenderType::a || source.render_type == RenderType::b ||
+                source.render_type == RenderType::a_fogged ||
                 source.render_type == RenderType::b_fogged || source.render_type == RenderType::i_fogged ||
-                source.render_type == RenderType::d_fogged || source.render_type == RenderType::j_fogged);
+                source.render_type == RenderType::i_no_fog || source.render_type == RenderType::d_fogged ||
+                source.render_type == RenderType::j_fogged);
             auto& recipes = resources[r].recipes;
             recipes.reserve(source.nodes.size());
             for (std::size_t n = 0; n < source.nodes.size(); ++n) {
@@ -658,17 +688,16 @@ Status BorrowedKernel::stage(std::span<const BorrowedBinding> bindings, std::siz
                 s.changed[n] = local_changed || parent_changed || (n == 0 && placement_changed);
                 p.dirty |= s.flags[n] != flags || (p.baked(s,n) && s.changed[n]);
                 if (!s.changed[n]) continue;
-                // This single mathematical local-RTS x parent/placement cache
-                // preserves Title effects; it does not prove actor source54 FX.
-                auto matrix = local(t);
+                // RT27 consumes no local scale, including this mathematical
+                // world cache. Other recipes retain Title's local-RTS convention.
+                auto matrix = kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE ? local_rt(t) : local(t);
                 if (pose.parent == no_index && s.placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED) {
                     WorldMatrix placement;
                     const auto& placement_transform = s.placement->transform;
                     if (s.placement->mode == ISLE_GAME_MODEL_PLACEMENT_RT)
-                        hal_rotate_rpy_translate_f(placement.m,placement_transform.position.x,placement_transform.position.y,placement_transform.position.z,
-                            placement_transform.rotation.x,placement_transform.rotation.y,placement_transform.rotation.z);
+                        placement = local_rt(placement_transform);
                     else placement = local(placement_transform);
-                    finite(placement); matrix = compose(matrix,placement);
+                    matrix = compose(matrix,placement);
                 } else if (pose.parent != no_index) matrix = compose(matrix,
                     parent_changed ? s.staged_world[pose.parent] : s.world[pose.parent]);
                 s.staged_world[n] = matrix;

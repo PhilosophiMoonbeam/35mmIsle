@@ -301,6 +301,173 @@ void signed_axes_thresholds_cache_and_menu_repeat() {
     check(service.stop().error == g::Error::none && service.reset_scene_menu() == g::Error::stopped,
           "scene-entry reset cannot revive stopped acquisition");
 }
+void neutral_view_cache_and_held_input() {
+    g::Service service;
+    auto frame = connected();
+    const auto stopped = service.neutral(0);
+    check(stopped.error == g::Error::stopped && !stopped.input,
+          "neutral view cannot fabricate input while stopped");
+    check(service.start(frame) == g::Error::none, "neutral view service starts");
+    const auto* neutral = service.neutral(-1).input;
+    check(neutral && neutral->not_pressed == 0 && neutral->update == 0,
+          "invalid neutral port returns untouched zeroed BSS");
+    const auto* menu = service.menu(0).input;
+    check(menu != neutral && service.neutral(0).input == neutral &&
+          neutral->not_pressed == 0 && menu->not_pressed == 0xffffffffu,
+          "menu-first cache leaves distinct neutral BSS untouched");
+
+    frame[0].buttons = 0x8000;
+    frame[0].stick_x = 80;
+    frame[0].stick_y = -80;
+    read(service, frame, true);
+    check(service.begin_update() == g::Error::none, "held-input neutral update begins");
+    const auto all_buttons = 0x8000u | g::stick_slow_right | g::stick_right |
+                             g::stick_slow_down | g::stick_down;
+    const auto* last = service.neutral(3).input;
+    check(neutral->current == 0 && neutral->pressed == 0 && neutral->released == 0 &&
+          neutral->not_pressed == 0xffffffffu && neutral->stick_x == 0 &&
+          neutral->stick_y == 0 && neutral->unused_axis == 0 && neutral->update == 1 &&
+          last->not_pressed == 0xffffffffu && last->update == 1,
+          "valid neutral query suppresses held buttons and axes for every counted controller");
+    check(service.snapshot().primary().buttons == 0x8000 &&
+          service.snapshot().primary().pressed == 0x8000 &&
+          service.snapshot().primary().held == 0x8000 &&
+          service.snapshot().primary().stick_x == 80,
+          "neutral suppression never consumes or changes published raw input");
+    check(service.neutral(0).input == neutral && neutral->update == 1 &&
+          service.neutral(4).input == neutral,
+          "repeated and invalid neutral queries keep fixed storage and the same serial");
+    const auto active = *service.menu(0).input;
+    check(active.update == 1 && active.current == all_buttons && active.pressed == all_buttons &&
+          active.released == 0 && active.stick_x == 1 && active.stick_y == -1,
+          "neutral queries neither cache nor suppress the subsequent real menu press");
+    check(service.neutral(0).input->update == 1 && neutral->current == 0,
+          "menu cache gate retains neutral's prior serial, not menu's incremented serial");
+    check(service.begin_update() == g::Error::none &&
+          service.menu(0).input->update == 2 && service.neutral(0).input->update == 1,
+          "menu-first next update returns stale neutral storage exactly as Source");
+    check(service.begin_update() == g::Error::none &&
+          service.neutral(0).input->update == 3 && service.menu(0).input->update == 3 &&
+          service.menu(0).input->current == all_buttons && service.menu(0).input->pressed == 0,
+          "neutral-first later update refreshes serial without generating held-input edges");
+}
+void neutral_count_and_publication_boundaries() {
+    g::Service service;
+    g::HostFrame frame{};
+    frame[3] = connected()[3];
+    check(service.start(frame) == g::Error::none &&
+          service.snapshot().indices[0] == 3 && service.snapshot().controller_count == 1,
+          "neutral sparse fixture has one controller at physical port three");
+    const auto* outside = service.neutral(3).input;
+    const auto* first = service.neutral(-1).input;
+    check(outside->not_pressed == 0 && first->not_pressed == 0xffffffffu &&
+          service.neutral(1).input->not_pressed == 0,
+          "neutral initializes the contiguous count prefix, never healthy physical indices");
+    check(service.menu(3).input->update == 0 && service.begin_update() == g::Error::none,
+          "sparse fixture advances only the actual menu serial");
+    frame = {};
+    frame[1] = connected()[1];
+    frame[2] = connected()[2];
+    frame[1].buttons = 0x4000;
+    read(service, frame);
+    check(service.snapshot().controller_count == 1 && service.needs_publication() &&
+          service.neutral(1).input->not_pressed == 0,
+          "unpublished acquisition cannot extend the neutral prefix");
+    const auto publication = service.update();
+    check(publication.accepted == publication.acknowledged &&
+          service.snapshot().controller_count == 2 &&
+          service.neutral(1).input->not_pressed == 0xffffffffu &&
+          service.neutral(1).input->update == 1 &&
+          service.neutral(2).input->not_pressed == 0,
+          "neutral does not cache itself, so actual publication changes its same-update count prefix");
+    check(service.menu(1).input->pressed == 0x4000 &&
+          service.begin_update() == g::Error::none && service.neutral(1).input->update == 2,
+          "neutral refresh leaves acquired menu edges and serial ownership intact");
+    frame = {};
+    read(service, frame, true);
+    check(service.snapshot().controller_count == 0 &&
+          service.neutral(0).input->update == 2 &&
+          service.neutral(1).input->update == 2,
+          "zero-controller publication leaves old neutral entries untouched");
+    check(service.menu(0).input->update == 2 && service.begin_update() == g::Error::none &&
+          service.neutral(0).input->update == 2,
+          "zero controllers cannot stamp a neutral entry even after cache invalidation");
+    frame[3] = connected()[3];
+    read(service, frame, true);
+    check(service.neutral(0).input->update == 3 && service.neutral(3).input == outside &&
+          outside->not_pressed == 0 && outside->update == 0,
+          "reconnection refreshes counted prefix without remapping or initializing uncounted ports");
+}
+void neutral_repeat_reset_disable_and_reentry() {
+    g::Service service;
+    auto frame = connected();
+    check(service.start(frame) == g::Error::none &&
+          service.menu(0).input->current == 0 &&
+          service.set_menu_repeat(2, 1, 0x8000) == g::Error::none,
+          "neutral repeat fixture primes real menu history");
+    frame[0].buttons = 0x8000;
+    read(service, frame, true);
+    check(service.set_update_every_tick(false) == g::Error::none,
+          "neutral fixture disables only automatic acquisition");
+    for (int update = 0; update < 5; ++update) {
+        check(service.begin_update() == g::Error::none, "neutral repeat OM update begins");
+        const auto* neutral = service.neutral(0).input;
+        check(neutral->update == static_cast<std::uint64_t>(update + 1) &&
+              neutral->current == 0 && neutral->pressed == 0 && neutral->released == 0 &&
+              service.neutral(0).input->update == neutral->update,
+              "repeated neutral calls do not advance shared serial or leak held presses");
+        const auto value = *service.menu(0).input;
+        const bool down = update != 2 && update != 4;
+        const auto pressed = update == 0 || update == 3 ? 0x8000u : 0u;
+        const auto released = update == 2 || update == 4 ? 0x8000u : 0u;
+        check(value.current == (down ? 0x8000u : 0u) && value.pressed == pressed &&
+              value.released == released && value.update == neutral->update &&
+              service.snapshot().primary().held == 0x8000,
+              "neutral preserves exact menu repeat suppression and edges with acquisition disabled");
+        const auto skipped = service.retrace();
+        check(skipped.error == g::Error::none && !skipped.read && !service.pending_read(),
+              "neutral and disabled retrace never acquire a second controller sample");
+    }
+    check(service.set_menu_repeat(0, 1, 0x8000) == g::Error::none,
+          "neutral reset fixture retains a live repeat interval");
+    const auto waiting = service.update();
+    const auto fresh = service.read_and_update();
+    check(waiting.accepted && !waiting.acknowledged && fresh.read &&
+          service.reset_scene_menu() == g::Error::none &&
+          service.pending_update() == waiting.accepted && service.pending_read() == fresh.read &&
+          service.neutral(0).input->update == 5 && service.menu(0).input->update == 5,
+          "scene reset preserves both views, shared cache and outstanding real input tickets");
+    check(service.begin_update() == g::Error::none &&
+          service.neutral(0).input->update == 0 && service.neutral(0).input->pressed == 0,
+          "neutral refresh uses reset serial even during an outstanding acquisition");
+    const auto reset_menu = *service.menu(0).input;
+    check(reset_menu.update == 0 && reset_menu.current == 0x8000 &&
+          reset_menu.pressed == 0x8000 && reset_menu.released == 0,
+          "neutral does not change scene-reset complement history or retained repeat interval");
+    check(service.begin_update() == g::Error::none &&
+          service.neutral(0).input->update == 1 && service.menu(0).input->current == 0 &&
+          service.menu(0).input->released == 0x8000,
+          "zero-delay repeat boundary still suppresses after neutral-first query");
+    const auto cancelled = service.stop();
+    check(cancelled.cancelled[0] == waiting.accepted && cancelled.cancelled[1] == fresh.accepted &&
+          service.neutral(0).error == g::Error::stopped,
+          "stop cancels only actual tickets and makes neutral view unavailable");
+    check(service.start(frame) == g::Error::none && service.update_every_tick() &&
+          service.neutral(9).input->not_pressed == 0 && service.neutral(9).input->update == 0,
+          "reentry restores neutral BSS rather than carrying cached session state");
+    const auto first_menu = *service.menu(0).input;
+    check(first_menu.current == 0 && first_menu.pressed == 0 &&
+          first_menu.released == 0xffffffffu && service.neutral(0).input->not_pressed == 0,
+          "held initialization metadata is not input and menu-first preserves fresh neutral BSS");
+    check(service.begin_update() == g::Error::none &&
+          service.neutral(0).input->not_pressed == 0xffffffffu &&
+          service.neutral(0).input->update == 1,
+          "first neutral refresh after reentry follows the original cache boundary");
+    read(service, frame, true);
+    check(service.menu(0).input->current == 0x8000 &&
+          service.menu(0).input->pressed == 0x8000 && service.neutral(0).input->current == 0,
+          "actual held acquisition after neutral refresh creates only the real menu press");
+}
 void presentation_independent_transfer() {
     g::Service service;
     g::HostTransfer transfer;
@@ -406,6 +573,9 @@ int main() {
     ports_errors_and_reconnect();
     publication_protocol_and_stop();
     signed_axes_thresholds_cache_and_menu_repeat();
+    neutral_view_cache_and_held_input();
+    neutral_count_and_publication_boundaries();
+    neutral_repeat_reset_disable_and_reentry();
     presentation_independent_transfer();
     synchronized_host_acquisition();
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;

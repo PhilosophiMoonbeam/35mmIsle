@@ -68,6 +68,11 @@ struct Ui::Impl {
     bool idle_running = false, started = false, retired = false;
     MenuAvailability available{};
     save::ScreenOffsets offsets{};
+    bool live_offsets(save::ScreenOffsets& out) noexcept {
+        if (s.state.screen_offsets().translation(out)) return true;
+        s.fail("menu live VI endpoints cannot be represented by native translation");
+        return false;
+    }
     std::array<bool, 3> settings{};
     unsigned option = 0, setting_choice = 0;
     // 0 background, 1 stacked logo, 2 logo/copyright, 3/4 scrolling sprites,
@@ -108,7 +113,9 @@ struct Ui::Impl {
     bool save_options() noexcept {
         try {
             constexpr unsigned ids[]{9, 12, 13};
-            if (s.save.set_screen_offsets(offsets.horizontal, offsets.vertical)) {
+            save::ScreenOffsets live;
+            if (!live_offsets(live)) return false;
+            if (s.save.set_screen_offsets(live.horizontal, live.vertical)) {
                 s.fail("menu screen offset mutation failed"); return false;
             }
             for (unsigned i = 0; i < 3; ++i) if (s.save.set_player_flag(ids[i], settings[i])) {
@@ -121,11 +128,11 @@ struct Ui::Impl {
     }
     bool reset_save() noexcept {
         try {
-            const auto live_offsets = offsets;
+            const auto editable_offsets = offsets;
             if (s.save.reset(s.raw_game_time)) { s.fail("menu new-game reset failed"); return false; }
             load_save();
-            // Reset changes saved RAM fields, not the live VI during exit wait.
-            offsets = live_offsets;
+            // Saved RAM defaults and menu editing BSS are not the live VI owner.
+            offsets = editable_offsets;
             return !s.failed();
         } catch (const std::exception& e) { s.fail(e.what()); }
         catch (...) { s.fail("menu reset exception"); }
@@ -538,6 +545,7 @@ struct Ui::Impl {
         }
     }
     bool calibration() noexcept {
+        if (!live_offsets(offsets)) return false;
         const auto original=offsets;
         visible(groups[17],0,true);
         add(groups[24],0x80344388,0,-3);add(groups[24],0x80343b28,0,0);
@@ -558,8 +566,13 @@ struct Ui::Impl {
             else if(p&Right) ++offsets.horizontal;
             offsets.horizontal=std::clamp(offsets.horizontal,-12,12);
             offsets.vertical=std::clamp(offsets.vertical,-12,12);
+            s.state.set_screen_offsets({offsets.horizontal,offsets.horizontal,offsets.vertical,offsets.vertical});
             if(!s.wait()) return false;
         }
+        // A accepts and B restores at the Source post-loop VI service, before
+        // the first exit-animation wait; Start and directional updates publish
+        // inside the loop before their own wait.
+        s.state.set_screen_offsets({offsets.horizontal,offsets.horizontal,offsets.vertical,offsets.vertical});
         for(unsigned n=0;n<24;++n) {
             shift(groups[24],-2);shift(groups[25],2);if(!s.wait()) return false;
         }
@@ -652,7 +665,11 @@ Ui::Ui(::isle::scene::Services& s,Title& t,const Catalog& catalog)
 Ui::~Ui() { retire(); }
 bool Ui::start() noexcept { return impl_->start(); }
 std::uint8_t Ui::source_state() const noexcept { return impl_->state; }
-save::ScreenOffsets Ui::screen_offsets() const noexcept { return impl_->offsets; }
+save::ScreenOffsets Ui::screen_offsets() const noexcept {
+    save::ScreenOffsets out;
+    impl_->live_offsets(out);
+    return out;
+}
 std::uint32_t Ui::entry_flags() const noexcept { return menu_entry_flags(impl_->state); }
 void Ui::retire() noexcept { if(impl_) impl_->retire(); }
 } // namespace isle::menu::scene

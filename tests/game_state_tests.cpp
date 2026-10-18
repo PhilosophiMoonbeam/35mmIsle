@@ -113,6 +113,42 @@ void source_notice_flags_controller_and_latches_are_distinct() {
     check(random == static_cast<std::uint16_t>((1u * 0x343fdu + 0x269ec3u) >> 16) &&
           state.rng.seed == 1u * 0x343fdu + 0x269ec3u,"application State owns the actual source RNG sequence");
 }
+void live_video_is_independent_of_profile_ram() {
+    Profile profile;
+    isle::game::State state(profile.path);
+    const auto* const live = &state.screen_offsets();
+    s::ScreenOffsets translation{99,99};
+    check(live->horizontal_start == 0 && live->horizontal_end == 0 &&
+          live->vertical_start == 0 && live->vertical_end == 0 &&
+          live->translation(translation) && translation.horizontal == 0 && translation.vertical == 0,
+          "actual initial VI is four zero endpoints before Boot opens the profile");
+    check(state.initialize(1),"live video fixture opens the actual profile");
+    if (!state.initialized()) return;
+    check(!state.save()->set_screen_offsets(8,-6),"source settings fixture mutates RAM only");
+    check(live->translation(translation) && translation.horizontal == 0 && translation.vertical == 0,
+          "profile initialization/settings mutation never substitute for actual VI service publication");
+    const auto saved = state.save()->snapshot().value;
+    state.set_screen_offsets({8,8,-6,-6});
+    const auto after_vi = state.save()->snapshot().value;
+    check(&state.screen_offsets() == live && live->translation(translation) &&
+          translation.horizontal == 8 && translation.vertical == -6 &&
+          saved.image().bytes().data() == after_vi.image().bytes().data(),
+          "Source VI publishes into one stable record without any settings mutation or snapshot copy");
+    check(!state.save()->reset(2),"real new-game source reset succeeds");
+    const auto reset = state.save()->snapshot().value.screen_offsets();
+    check(reset && reset.value.horizontal == 0 && reset.value.vertical == 0 &&
+          &state.screen_offsets() == live && live->translation(translation) &&
+          translation.horizontal == 8 && translation.vertical == -6,
+          "new-game RAM defaults do not reset live output at Name/Oak/Beach or later Title entries");
+    state.set_screen_offsets({8,9,-6,-6});
+    check(live->horizontal_start == 8 && live->horizontal_end == 9 &&
+          !live->translation(translation) && translation.horizontal == 8 && translation.vertical == -6,
+          "unequal horizontal endpoints remain canonical and fail translation without partial projection");
+    state.set_screen_offsets({8,8,-6,-5});
+    check(live->vertical_start == -6 && live->vertical_end == -5 &&
+          !live->translation(translation) && translation.horizontal == 8 && translation.vertical == -6,
+          "unequal vertical endpoints also fail explicitly instead of silently collapsing");
+}
 } // namespace
 static_assert(!std::is_copy_constructible_v<isle::game::State> && !std::is_move_constructible_v<isle::game::State>);
 int main(int argc, char** argv) {
@@ -122,6 +158,7 @@ int main(int argc, char** argv) {
         delayed_open_and_persistent_owner();
         rejected_open_retains_evidence_and_lock();
         source_notice_flags_controller_and_latches_are_distinct();
+        live_video_is_independent_of_profile_ram();
     } catch (const std::exception& error) { std::cerr << "FAIL: " << error.what() << '\n'; return EXIT_FAILURE; }
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;
 }

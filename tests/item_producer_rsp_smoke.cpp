@@ -1,9 +1,10 @@
+#include "beach_actor_scene.hpp"
 // Opt-in private admitted-ROM native/RSP/RDP consumer. Main executes; workers do
 // not. The original four-family API cohort is retained unchanged. A separate
 // actual Source ItemOwner/World/Actor cohort follows it, with API-authored Player
 // AUX, camera/throw inputs and explicit private C process entries. Neither
 // cohort is a Player FSM, Original capture, complete game or platform proof.
-#include "item_producer.hpp"
+#include "borrowed_model_producer.hpp"
 #include "item_owner.hpp"
 #include "effect_bank_resources.hpp"
 #include "course_model_producer.hpp"
@@ -33,7 +34,7 @@ namespace g = scene::graphics;
 constexpr std::size_t plane = 320*240*2, slots = 6;
 constexpr menu::RamRange joined{0x680000,0x10000}, guard{0x7f0000,256};
 constexpr world::ProducerLayout world_layout{{0x200000,0x10000},{0x210000,0x10000},{0x220000,0x10000}};
-constexpr items::ProducerLayout item_layout{{0x400000,0x10000},{0x410000,0x10000},{0x420000,0x10000},
+constexpr menu::model::PacketLayout item_layout{{0x400000,0x10000},{0x410000,0x10000},{0x420000,0x10000},
     {{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr actor::ProducerLayout actor_layout{{0x430000,0x10000},{0x440000,0x10000},{0x450000,0x10000},
     {{{0x3b5000,plane},{0x3da800,plane}}}};
@@ -98,7 +99,7 @@ struct ApiSlot {
     }
 };
 struct Prepare {
-    items::Producer& items;
+    menu::model::PacketProducer& items;
     course::ModelProducer& course;
     world::Producer& world;
     scene::Services& services;
@@ -115,7 +116,7 @@ struct Prepare {
         const auto& eye = camera->look_at.eye; const auto& at = camera->look_at.at;
         self.lighting.update_direction(std::as_writable_bytes(words),{eye[0],eye[1],eye[2]},{at[0],at[1],at[2]});
         std::fill_n(words.begin()+guard.offset/4,guard.size/4,0x13579bdfu);
-        if (!self.mixed) return items::Producer::prepare_pass(&self.items,words,epoch,pass,output);
+        if (!self.mixed) return menu::model::PacketProducer::prepare_pass(&self.items,words,epoch,pass,output);
         output = self.course.prepare(words,epoch,pass);
         // Independently reduce the same actual native draw list to expected
         // callback bytes. This checks the consumer-visible ordering, not a
@@ -205,7 +206,7 @@ bool same(IsleGameVec3 x, IsleGameVec3 y) {
 // A fresh idle-boundary snapshot is taken before Frame::begin. No native
 // metadata/Owner mutation is attempted inside its preparation observer.
 struct OwnerPrepare {
-    items::Producer& items;
+    menu::model::PacketProducer& items;
     actor::Producer& actors;
     world::Producer& world;
     course::ModelProducer& course;
@@ -301,9 +302,9 @@ struct OwnerScope {
 void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
     game_audio::Session& audio, private_audio::Execution& execution, private_audio::Capture& pcm,
     const world::Resources& world_resources, const items::Resources& item_resources,
-    const beach::ActorResources& actor_resources, const photo::LightingInputs& lighting) {
+    const actor::Resources& actor_resources, const photo::LightingInputs& lighting) {
     const auto& setup = world_resources.setup();
-    const environment_sound::BeachResources sound_resources(snapshot);
+    const environment_sound::Resources sound_resources(snapshot,0);
     const menu::EffectResources effect_resources(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     std::uint64_t retrace = 0; unsigned audio_tasks = 0;
@@ -348,7 +349,8 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         environment_sound::Environment environment(services,storage.arena(),sound_resources);
         require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector; FixtureShift shift{services,camera};
-        world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,
+        world::ModuleState world_module;
+        world::World world(services,world_resources,world_module,{&shift,nullptr,nullptr,nullptr,
             FixtureShift::camera_shift,FixtureShift::effects_shift,nullptr});
         world.follow_camera(camera);
         a::SlotCapacity actor_capacity{}, item_capacity{};
@@ -365,7 +367,10 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         // Independent fixed physical capacities, never the logical/cache20 bound.
         const std::array actor_capacities{actor_capacity,actor_capacity};
         std::array<a::SlotCapacity,8> item_capacities; item_capacities.fill(item_capacity);
-        actor::Owner actors(services,actor_resources,world,environment,detector,context.value,actor_capacities,banks,{32768,4096});
+        beach::ActorSceneResources sceneData(snapshot);
+        std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+        beach::ActorSceneState sceneState(sceneData,scene_latch);
+        actor::Owner actors(services,actor_resources,actor::CourseContext(sceneState),world,environment,detector,context.value,actor_capacities,banks,{32768,4096});
         accepted(actors.publish_effects());
         shift.effects = &actors.effects();
         require(environment.set_listener(player_model,camera),"environment listener binding failed");
@@ -420,10 +425,11 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         auto actor_other = other({actor_layout.payloads,actor_layout.lists,actor_layout.materials},true);
         auto world_other = other({world_layout.payloads,world_layout.lists,world_layout.materials},false);
         k::CameraBasisState basis;
-        world::Producer world_producer(services.game,camera,basis,world_resources,world,world_layout,world_other);
+        world::Producer world_producer(services.game,camera,basis,world_resources,world.render_view(),world_layout,world_other);
         actor::Producer actor_producer(services.game,camera,basis,actor_resources,actor_capacities,
             actors.render_bindings(),actor_layout,actor_other,nullptr);
-        items::Producer item_producer(services.game,camera,basis,item_resources,item_capacities,
+        menu::model::PacketProducer item_producer(services.game,camera,basis,
+            {item_resources.models(),item_resources.materials(),item_resources.installation_spans()},item_capacities,
             owner.render_bindings(),item_layout,item_other);
         course::ItemComposition composition{services,item_producer,128};
         course::ModelProducer course(world_producer,actor_producer,joined,&composition);
@@ -532,7 +538,7 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         // Full active preflight includes hidden AND pass-filtered native owner
         // identities. These rejected standalone preparations publish no scene
         // lease; no downstream mixed-failure/global-rollback claim is made.
-        std::array<items::RenderBinding,8> invalid{};
+        std::array<menu::model::PacketBinding,8> invalid{};
         const auto active_bindings = owner.render_bindings();
         std::copy(active_bindings.begin(),active_bindings.end(),invalid.begin());
         const auto valid = invalid[0];
@@ -557,7 +563,9 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         invalid[0].model.model = donor_model;
         std::vector<std::uint32_t> admission(menu::rdram_size/4,0x5a3cc3a5u);
         const auto untouched = admission;
-        items::Producer invalid_producer(services.game,camera,basis,item_resources,item_capacities,invalid,item_layout,item_other);
+        menu::model::PacketProducer invalid_producer(services.game,camera,basis,
+            {item_resources.models(),item_resources.materials(),item_resources.installation_spans()},
+            item_capacities,invalid,item_layout,item_other);
         command(valid.model.object,-4); tick();
         const auto retained_basis = basis.value;
         rejects([&] { invalid_producer.prepare(admission,100,pass); },"hidden actual Owner native model mismatch escaped active preflight");
@@ -588,9 +596,12 @@ void run_actual_owner(const rom::Snapshot& snapshot, game::State& state,
         }
         tick();
         std::array<a::InstanceHandle,2> fumes{};
-        for (const auto& binding : owner.render_bindings()) if (binding.model.object &&
-            (binding.family == items::Family::water_splash || binding.family == items::Family::lava_splash)) {
-            const auto n = binding.family == items::Family::water_splash ? 0u : 1u;
+        for (const auto& binding : owner.render_bindings()) if (binding.model.object) {
+            const auto model=binding.model.state.resource_model;
+            const auto water=item_resources.definition(items::Family::water_splash).model;
+            const auto lava=item_resources.definition(items::Family::lava_splash).model;
+            if (model!=water && model!=lava) continue;
+            const auto n=model==water?0u:1u;
             fumes[n] = binding.model.state.instance; preparation.fumes[n] = binding.model.object;
         }
         require(fumes[0] && fumes[1] && globals.source.total == 4 && globals.source.balls == 1 && globals.source.apples == 3,
@@ -677,9 +688,9 @@ void run(const std::filesystem::path& filename, const std::filesystem::path& pro
     require(std::filesystem::is_directory(profile) && std::filesystem::is_empty(profile),
         "private Item graphics profile must exist and be empty");
     const auto snapshot = rom::read_snapshot(filename);
-    const world::Resources world_resources(snapshot); const auto& setup = world_resources.setup();
+    const world::Resources world_resources(snapshot, isle::course::beach_id); const auto& setup = world_resources.setup();
     const items::Resources item_resources(snapshot,setup.fog_rgb,setup.fog_min,setup.fog_max);
-    const beach::ActorResources actor_resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const actor::Resources actor_resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
     const photo::LightingInputs lighting(snapshot);
     const menu::EffectResources api_effect_resources(snapshot);
     const std::array api_banks{&api_effect_resources.bank(menu::EffectGroup::common),
@@ -716,7 +727,7 @@ void run(const std::filesystem::path& filename, const std::filesystem::path& pro
         std::array<a::SlotCapacity,slots> capacities; capacities.fill(maximum);
         auto animation = a::Runtime::create({item_resources.models(),item_resources.materials(),item_resources.animations(),menu::no_index},
             capacities,{},{64,0}); require(bool(animation),"actual four-family Runtime failed");
-        std::array<items::RenderBinding,slots> bindings{};
+        std::array<menu::model::PacketBinding,slots> bindings{};
         std::array<ApiSlot,slots> live{};
         const auto spawn = [&](std::size_t slot, items::Family family, menu::Vec3 position) {
             const auto& definition = item_resources.definition(family);
@@ -733,7 +744,7 @@ void run(const std::filesystem::path& filename, const std::filesystem::path& pro
                 animation.runtime->model(acquired.handle),k::RootRecipe::source,scratch,&model)),"API actual Item model attachment failed");
             live[slot] = {&services,animation.runtime.get(),acquired.handle,object,model};
             bindings[slot] = {{slot,animation.runtime->model(acquired.handle),object,model,k::PoseSource::native,
-                k::RootRecipe::source,true,animation.runtime.get()},family,{3,0x80000000u,UINT32_MAX}};
+                k::RootRecipe::source,true,animation.runtime.get()},{3,0x80000000u,UINT32_MAX}};
             require(services.process(object,ApiSlot::animate,&live[slot],ISLE_GAME_SYNCHRONOUS,3),"API actual priority3 animator failed");
         };
         // Creation order intentionally differs from physical slot/resource order.
@@ -744,7 +755,8 @@ void run(const std::filesystem::path& filename, const std::filesystem::path& pro
         menu::EffectRuntime api_effects(api_banks,services.rng);
         require(bool(api_effects.status()),"API World actual FX owner admission failed");
         FixtureShift api_shift{services,camera,&api_effects};
-        world::World world(services,world_resources,{&api_shift,nullptr,nullptr,nullptr,
+        world::ModuleState world_module;
+        world::World world(services,world_resources,world_module,{&api_shift,nullptr,nullptr,nullptr,
             FixtureShift::camera_shift,FixtureShift::effects_shift,nullptr}); world.follow_camera(camera);
         require(world.enter_first(0) == &world.blocks()[0],"actual World initial block missing");
         spawn(4,items::Family::water_splash,{-180,900,4000});
@@ -781,9 +793,11 @@ void run(const std::filesystem::path& filename, const std::filesystem::path& pro
         const std::array actor_capacities{actor_capacity};
         const std::array<actor::ActorRenderBinding,1> no_actors{};
         menu::model::CameraBasisState basis;
-        world::Producer world_producer(services.game,camera,basis,world_resources,world,world_layout,world_other);
+        world::Producer world_producer(services.game,camera,basis,world_resources,world.render_view(),world_layout,world_other);
         actor::Producer actors(services.game,camera,basis,actor_resources,actor_capacities,no_actors,actor_layout,actor_other,nullptr);
-        items::Producer producer(services.game,camera,basis,item_resources,capacities,bindings,item_layout,item_other);
+        menu::model::PacketProducer producer(services.game,camera,basis,
+            {item_resources.models(),item_resources.materials(),item_resources.installation_spans()},
+            capacities,bindings,item_layout,item_other);
         course::ItemComposition composition{services,producer,128};
         course::ModelProducer models(world_producer,actors,joined,&composition);
         Prepare preparation{producer,models,world_producer,services,lighting,camera};
@@ -877,7 +891,9 @@ void run(const std::filesystem::path& filename, const std::filesystem::path& pro
             "hidden stale rejection partially published native/RAM/basis state");
         bindings[0] = old_binding; hide(0,false);
         auto tight_capacities = capacities; tight_capacities[0].nodes = 1;
-        items::Producer tight(services.game,camera,basis,item_resources,tight_capacities,bindings,item_layout,item_other);
+        menu::model::PacketProducer tight(services.game,camera,basis,
+            {item_resources.models(),item_resources.materials(),item_resources.installation_spans()},
+            tight_capacities,bindings,item_layout,item_other);
         hide(0,true); rejects([&] { tight.prepare(admission,101,pass); },"hidden Item bypassed physical matrix capacity");
         require(admission == before,"hidden Item capacity rejection changed RAM"); hide(0,false); tight.retire();
         preparation.mixed = true;

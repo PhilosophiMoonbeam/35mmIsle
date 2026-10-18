@@ -29,19 +29,13 @@ struct ProducerFrame {
     // Rejected preparation does not modify the last published object records.
     std::span<const ProducerObject> objects;
 };
-// Reusable synchronous scene pass, NOT a Beach handler. Borrows actual World
-// models/process state and the admitted full Resources. No duplicate objects,
-// player/actor substitutes, cold-image writes or independent GPU submission.
-// Ordinary poses/materials/uploads use the same borrowed kernel as title.
-// Camera3/14/reflection, direct sky, fog and pass policy stay in this adapter.
-// Public World model handles may enable native RT/RTS placement independently
-// of ordinary terrain/road/sky locals. Active placements append exactly 64 bytes
-// each after unchanged local payload addresses, admitted before writes. Root
-// placement PUSH + local NOPUSH share the existing single root pop on lane 0;
-// unused lanes remain empty. Pointer/epoch changes republish active payloads.
+// World-specific policy over stable actual resources, Runtime and native model
+// records. The owner invalidates RenderView before releasing any of its storage;
+// producer/graphics consumers must end before native deletion. Camera3/12 or3/14,
+// Type-A one/two-cycle sky wrappers, fog and restoration remain in this adapter.
 class Producer final {
 public:
-    Producer(IsleGame*, IsleGameCamera*, menu::model::CameraBasisState&, const Resources&, const World&,
+    Producer(IsleGame*, IsleGameCamera*, menu::model::CameraBasisState&, const Resources&, RenderView,
              ProducerLayout = {}, std::span<const menu::RamRange> other_reservations = {});
     ~Producer();
     Producer(const Producer&) = delete;

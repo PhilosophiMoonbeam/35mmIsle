@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Private original-ROM component consumer, not the game entrypoint.
 // Frozen legacy camera/limits and native trigger inputs; source helper, native
 // distance/position processes, production membership and native CopyInfo only.
@@ -270,9 +271,9 @@ void save_surface(const std::filesystem::path& path,g::Completed image) {
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std::filesystem::path& output) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"private source profile must exist and be empty");
     std::filesystem::create_directories(output);
-    const world::Resources world_resources(snapshot);const auto& setup=world_resources.setup();
-    const beach::ActorResources resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const beach::BehaviorResources behaviors(snapshot);const environment_sound::BeachResources sounds(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id);const auto& setup=world_resources.setup();
+    const actor::Resources resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const environment_sound::Resources sounds(snapshot,0);
     const menu::EffectResources effect_resources(snapshot);const photo::LightingInputs lighting(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     const menu::EffectGraphicsResources effect_graphics(snapshot,banks,{0x700000,0x80000});
@@ -309,7 +310,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector;focus::RegionCopies copies(capture_layout);actor::DetectorBinding detection{copies,detector};detection.enabled=true;
             WorldHooks hooks{services,camera};
-            world::World world(services,world_resources,{&hooks,nullptr,WorldHooks::remove,nullptr,WorldHooks::camera_shift,WorldHooks::effects_shift,nullptr});
+            world::ModuleState world_module;
+            world::World world(services,world_resources,world_module,{&hooks,nullptr,WorldHooks::remove,nullptr,WorldHooks::camera_shift,WorldHooks::effects_shift,nullptr});
             world.follow_camera(camera);
             a::SlotCapacity maximum{};
             for(const auto& model:resources.models()) {
@@ -319,7 +321,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             const std::array capacities{maximum,maximum};
             ActorMovementProbe movement{}; // Outlives Owner cancellation/join, including exception unwinding.
             {
-                actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});hooks.owner=&owner;
+                beach::ActorSceneResources sceneData(snapshot);
+                std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                beach::ActorSceneState sceneState(sceneData,scene_latch);
+                actor::Owner owner(services,resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096});hooks.owner=&owner;
                 accepted(owner.publish_effects());
                 WorldLifetime world_lifetime{world,hooks};
                 const auto make_model=[&](std::uint32_t id,std::uint8_t link,IsleGameVec3 position) {
@@ -344,7 +349,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 require(world.enter_first(0)==&world.blocks()[0],"source-focus initial World failed");
                 IsleGameCamera* fx_camera=nullptr;native(isle_game_attach_camera(services.game,owner.particle_object(),&fx_camera));
                 native(isle_game_camera_set_viewport(services.game,fx_camera,&viewport));
-                beach::MagikarpScene spawner(services,owner,world,resources,behaviors);
+                beach::MagikarpScene spawner(services,owner,world,resources,sceneState);
                 std::array<actor::ActorRenderBinding,2> bindings{};
                 auto created=g::Frame::create(snapshot,{true,{16000000,4*1024*1024},frame_layout});require(bool(created),created.message.data());
                 std::vector<menu::RamRange> mutable_ranges{world_layout.payloads,world_layout.lists,world_layout.materials,
@@ -367,7 +372,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 auto world_other=other({world_layout.payloads,world_layout.lists,world_layout.materials},false);
                 auto actor_other=other({actor_layout.payloads,actor_layout.lists,actor_layout.materials},true);
                 menu::model::CameraBasisState basis;
-                world::Producer world_producer(services.game,camera,basis,world_resources,world,world_layout,world_other);
+                world::Producer world_producer(services.game,camera,basis,world_resources,world.render_view(),world_layout,world_other);
                 actor::Producer actor_producer(services.game,camera,basis,resources,capacities,bindings,actor_layout,actor_other,&detection);
                 course::ModelProducer models(world_producer,actor_producer,joined_lists);
                 ModelPass model_pass{models,copies,lighting,services.game,camera};EffectPass effect_pass{services.game,camera,owner.effects(),effect_graphics};

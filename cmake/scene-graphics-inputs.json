@@ -1,5 +1,12 @@
 {
   "schema_version": 1,
+  "source_screen_admission": {
+    "flags": ["0x00000a99", "0x00016a99"],
+    "depth": "Required explicit nullable DepthReservation pointer: NULL means original viZBuffer=NULL and reset0/0, not an allocation at zero or implicit core.depth. Real non-NULL capability must belong to this Frame. Private core physical span remains protected in both modes.",
+    "flags_delta": "Pinned sched.c339-361: 0x16000=gammaDitherOFF0x2000|ditherFilterON0x4000|divotON0x10000, VI-only. Same320x240RGBA16 RDP layout; readback does not claim VI-filter equivalence.",
+    "safety": "Selected depth is shared by reset/camera/secondary/SourceControl/finalizer. Depthless actual clears, depth-as-color, visible noncopy Z sprites and unadmitted compiled drawing fail closed; inactive trusted control callbacks may return without drawing. Sprite depth safety rechecked after callback mutation.",
+    "qualification": "Implementation; actual depthless CReplay/Window native consumer pending. Beach retains genuine allocation/capability and existing physical guards."
+  },
   "repository": "https://github.com/ethteck/pokemonsnap.git",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "use": "Independent source-scene pass compositor with a typed startup adapter over actual native views, explicit selected resource inputs, production graphics_task helpers and one CanonicalExecutor. No alternate renderer, legacy Session alias, copied GAME renderer body, Nintendo/SGI producer/header, opaque SDK field/disassembly, fixture task, fake ready event, CPU color overlay, public asset bytes or whole decompressed-bank installation.",

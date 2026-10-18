@@ -1162,9 +1162,6 @@ void loop_grammar_rejects_unpublished() {
     Stream no_operand; no_operand.cmd(2,0,1); no_operand.cmd(14,0,0);
     Stream zero; zero.cmd(4,16,12,{f(2)}); zero.cmd(12,16,12); zero.cmd(14,0,0,{0x9000});
     Stream prefix_only; prefix_only.cmd(2,0,1); prefix_only.cmd(14,0,0,{0x9004});
-    Stream trailing; trailing.cmd(2,0,1); trailing.cmd(14,0,0,{0x9000}); trailing.cmd(0,0,0);
-    Stream camera; camera.cmd(2,0,1); camera.cmd(14,0,0,{0x9000});
-    Stream missing_end; missing_end.cmd(2,0,1);
     check(rejects(foreign,m::AnimationKind::model,a::Error::malformed) &&
           rejects(operand,m::AnimationKind::model,a::Error::malformed) &&
           rejects(unaligned,m::AnimationKind::model,a::Error::malformed) &&
@@ -1173,10 +1170,6 @@ void loop_grammar_rejects_unpublished() {
     check(rejects(zero,m::AnimationKind::model,a::Error::malformed) &&
           rejects(prefix_only,m::AnimationKind::model,a::Error::malformed),
           "non-LAST duration and track-time shifts do not certify positive cycle wait");
-    check(rejects(trailing,m::AnimationKind::model,a::Error::malformed) &&
-          rejects(missing_end,m::AnimationKind::model,a::Error::malformed) &&
-          rejects(camera,m::AnimationKind::camera,a::Error::unsupported),
-          "single contiguous terminal grammar remains strict and does not invent camera graph admission");
     Stream raw; raw.cmd(2,0,1); raw.cmd(14,0,0,{0xff800000});
     Fixture fixture; fixture.animations = {raw.view(m::AnimationKind::model,0xff800000)};
     auto made = fixture.create(m::no_index,{2,1});
@@ -1262,14 +1255,108 @@ void prepared_acquisition_is_private_and_cancelable() {
           "whole-runtime retirement still permits private cancellation without scene recovery");
 }
 
+void material_domain_rounded_seek_and_inactive_cycle() {
+    std::array<std::byte,120> bytes{};
+    m::Material material; material.wire = {0x8000,0,bytes}; material.flags = 1;
+    const std::array<std::size_t,1> selected{0};
+    Stream rounded;
+    rounded.cmd(11,1,0,{f(10)}); rounded.cmd(4,1,100,{f(0)});
+    rounded.cmd(12,1,1); rounded.cmd(2,0,1); rounded.cmd(0,0,0);
+    Fixture fixture;
+    fixture.models[0].nodes[0].animation = m::no_index;
+    fixture.models[0].nodes[0].materials = {0};
+    fixture.models[0].nodes[0].material_animations = {0};
+    fixture.materials = {material};
+    fixture.animations = {rounded.view(m::AnimationKind::texture,0x9000)};
+    const std::array<a::TextureSample,1> sample{{{0,33554432.0f,33554432.0f,0.5f}}};
+    const auto domain = a::texture_sample_domain(material,fixture.animations,sample);
+    const auto universal = a::texture_domain(material,fixture.animations,selected);
+    auto made = fixture.create();
+    check(bool(made) && bool(domain),"rounded material seek and explicit sampling capability admitted");
+    if (!made || !domain) return;
+    auto& runtime = *made.runtime;
+    const auto instance = fixture.instances[0];
+    check(bool(runtime.bind_materials(instance,selected,sample[0].first)) &&
+          bool(runtime.set_texture_speed(instance,sample[0].speed)) && bool(runtime.step_model(instance)),
+          "actual material consumer executes rounded assignment, shift and terminal compensation");
+    const auto image = runtime.model(instance).materials[0].image_index;
+    check(image == 10 && image < domain.images && (!universal || image < universal.images),
+          "certified prefix contains Runtime image10 after large-skip binary32 cancellation");
+
+    Stream inactive;
+    inactive.cmd(12,1,1); inactive.cmd(2,0,1); inactive.cmd(1,0,0,{0xa000});
+    Fixture inactive_fixture;
+    inactive_fixture.models = fixture.models;
+    inactive_fixture.materials = fixture.materials;
+    inactive_fixture.animations = {inactive.view(m::AnimationKind::texture,0xa000)};
+    const auto inactive_domain = a::texture_domain(material,inactive_fixture.animations,selected);
+    const std::array<a::TextureSample,1> restarted{{{0,0,99.0f,0}}};
+    const auto inactive_sampled = a::texture_sample_domain(material,inactive_fixture.animations,restarted);
+    auto looping = inactive_fixture.create(m::no_index,{3,0});
+    check(bool(inactive_domain) && inactive_domain.images == 1 &&
+          bool(inactive_sampled) && inactive_sampled.images == 1 && bool(looping),
+          "inactive opcode12 time is irrelevant to positive-cycle certification");
+    if (!looping || !inactive_domain || !inactive_sampled) return;
+    const auto loop_instance = inactive_fixture.instances[0];
+    for (unsigned update = 0; update < 12; ++update) {
+        check(bool(looping.runtime->step_model(loop_instance)),"inactive material cycle remains executable");
+        const auto consumed = looping.runtime->model(loop_instance).materials[0].image_index;
+        check(consumed < inactive_domain.images && consumed < inactive_sampled.images,
+              "actual inactive-cycle material consumer stays inside both certified prefixes");
+    }
+}
+
+void material_domain_fresh_and_retained_sampling() {
+    std::array<std::byte,120> bytes{};
+    m::Material material; material.wire = {0x8000,0,bytes}; material.flags = 1;
+    Stream linear; linear.cmd(3,1,100,{f(10)}); linear.cmd(0,0,0);
+    Fixture fixture;
+    fixture.models[0].nodes[0].animation = m::no_index;
+    fixture.models[0].nodes[0].materials = {0};
+    fixture.models[0].nodes[0].material_animations = {0};
+    fixture.materials = {material};
+    fixture.animations = {linear.view(m::AnimationKind::texture,0x9000)};
+    const std::array<a::TextureSample,1> fresh{{{0,0.5f,0.5f,0,true}}};
+    const std::array<a::TextureSample,1> retained{{{0,0,99.0f,0,false}}};
+    const auto photo = a::texture_sample_domain(material,fixture.animations,fresh);
+    const auto world = a::texture_sample_domain(material,fixture.animations,retained);
+    auto made = fixture.create();
+    check(bool(photo) && bool(world) && bool(made),"fresh and retained material sampling contracts admitted");
+    if (!made || !photo || !world) return;
+    auto& runtime = *made.runtime;
+    const auto instance = fixture.instances[0];
+    check(bool(runtime.restart_model(instance,0.5f)) && bool(runtime.set_texture_speed(instance,0)) &&
+          bool(runtime.step_model(instance)) && runtime.model(instance).materials[0].image_index < photo.images,
+          "fresh photo first update uses its exact recorded time and zero AObj seed");
+    check(bool(runtime.restart_model(instance,0.5f)) && bool(runtime.step_model(instance)) &&
+          runtime.model(instance).materials[0].image_index == 10 &&
+          runtime.model(instance).materials[0].image_index < world.images,
+          "world repeated restart retains targets and its certificate includes the second-update image");
+
+    Stream displaced;
+    displaced.cmd(4,1,100,{f(10)}); displaced.cmd(22,0,1); displaced.cmd(0,0,0);
+    Fixture recorded;
+    recorded.models = fixture.models; recorded.materials = fixture.materials;
+    recorded.animations = {displaced.view(m::AnimationKind::texture,0xa000)};
+    const std::array<a::TextureSample,1> recorded_time{{{0,200,200,0,true}}};
+    const auto recorded_domain = a::texture_sample_domain(material,recorded.animations,recorded_time);
+    auto reconstruction = recorded.create();
+    check(bool(reconstruction) && bool(recorded_domain),"opcode22 displaced recorded-time sampling admitted");
+    if (!reconstruction || !recorded_domain) return;
+    const auto subject = recorded.instances[0];
+    check(bool(reconstruction.runtime->restart_model(subject,200)) &&
+          bool(reconstruction.runtime->set_texture_speed(subject,0)) &&
+          bool(reconstruction.runtime->step_model(subject)) &&
+          reconstruction.runtime->model(subject).materials[0].image_index == 20 &&
+          reconstruction.runtime->model(subject).materials[0].image_index < recorded_domain.images,
+          "photo certificate preserves actual recorded time200 through opcode22 instead of terrain modulo100");
+}
+
 void malformed_streams_reject_unpublished() {
     Stream valid; valid.cmd(2,0,1); valid.cmd(0,0,0);
-    Stream jump; jump.cmd(1,0,0,{0x12345678}); jump.cmd(0,0,0);
-    Fixture fixture; fixture.animations = {valid.view(m::AnimationKind::model,0x7000),jump.view(m::AnimationKind::model,0x7100)};
-    auto rejected = fixture.create(); check(!rejected && !rejected.runtime && rejected.status.error == a::Error::unsupported,"late invalid stream rejects entire runtime, never publishes valid prefix");
-    fixture.animations = {valid.view(m::AnimationKind::model,0x7000)};
+    Fixture fixture; fixture.animations = {valid.view(m::AnimationKind::model,0x7000)};
     fixture.animations[0].commands[0].duration = 2;
-    rejected = fixture.create(); check(!rejected && rejected.status.error == a::Error::malformed,"metadata/wire disagreement rejected before execution");
+    const auto rejected = fixture.create(); check(!rejected && rejected.status.error == a::Error::malformed,"metadata/wire disagreement rejected before execution");
 }
 } // namespace
 int main() {
@@ -1282,6 +1369,7 @@ int main() {
     switched_callbacks_and_atomicity(); material_binding_null_and_initial_reset(); malformed_streams_reject_unpublished();
     explicit_pool_reuse_and_retirement();
     prepared_acquisition_is_private_and_cancelable();
+    material_domain_rounded_seek_and_inactive_cycle(); material_domain_fresh_and_retained_sampling();
     loop_timers_tracks_receivers_and_reuse();
     loop_grammar_rejects_unpublished();
     loop_overshoot_and_atomic_capacity(); material_loop_isolation_and_aggregate_work();

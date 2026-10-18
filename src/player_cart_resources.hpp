@@ -27,12 +27,13 @@ struct CartClip {
 // borrows and installation. No cart object/process/lifecycle is created here.
 class CartResources final {
 public:
-    CartResources(const rom::Snapshot&, CartFogProfile);
-    CartResources(rom::Snapshot&&, CartFogProfile) = delete;
+    CartResources(const rom::Snapshot&, std::int32_t courseID, CartFogProfile);
+    CartResources(rom::Snapshot&&, std::int32_t courseID, CartFogProfile) = delete;
     CartResources(const CartResources&) = delete;
     CartResources& operator=(const CartResources&) = delete;
     CartResources(CartResources&&) = delete;
     CartResources& operator=(CartResources&&) = delete;
+    std::int32_t course_id() const noexcept { return course_id_; }
     menu::animation::Resources animation_resources() const;
     const CartClip& intro() const;
     const CartClip& outro() const;
@@ -47,6 +48,7 @@ public:
     void install(std::span<std::byte>, std::span<const menu::RamRange>) const;
     void require_live() const;
 private:
+    std::int32_t course_id_;
     const rom::Snapshot* snapshot_;
     const std::byte* source_data_;
     std::vector<menu::Model> models_;

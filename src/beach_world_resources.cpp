@@ -1,8 +1,7 @@
 #include "beach_world_resources.hpp"
+#include "course_resources.hpp"
 
 #include <algorithm>
-#include <bit>
-#include <cmath>
 #include <functional>
 #include <stdexcept>
 #include <string>
@@ -13,11 +12,6 @@ namespace {
 constexpr std::uint32_t ram_base = 0x80000000;
 constexpr std::uint32_t assets_guest = 0x8011b050;
 constexpr std::size_t assets_rom_begin = 0xa74e0, assets_rom_end = 0x13c780;
-constexpr std::size_t max_blocks = 13; // GAME world.h, including both groups.
-constexpr std::array<std::uint8_t, 20> admitted_sha1{
-    0xed, 0xc7, 0xc4, 0x9c, 0xc5, 0x68, 0xc0, 0x45, 0xfe, 0x48,
-    0xbe, 0x0d, 0x18, 0x01, 0x1c, 0x30, 0xf3, 0x93, 0xcb, 0xaf
-};
 void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
@@ -38,52 +32,6 @@ rom::GuestView view(const rom::Snapshot& snapshot, std::uint32_t guest, std::siz
     require(offset <= bytes.size() && size <= bytes.size() - offset,
             "Beach resource extent escapes live Snapshot");
     return {guest, offset, bytes.subspan(offset, size)};
-}
-float finite(const rom::GuestView& wire, std::size_t offset) {
-    const auto value = wire.f32(offset);
-    require(std::isfinite(value), "Nonfinite Beach GAME metadata scalar");
-    return value;
-}
-std::array<std::uint8_t, 3> rgb(const rom::GuestView& wire, std::size_t offset) {
-    return {wire.u8(offset), wire.u8(offset + 1), wire.u8(offset + 2)};
-}
-BlockMetadata block(const rom::Snapshot& snapshot, std::uint32_t guest) {
-    BlockMetadata result{};
-    result.wire = view(snapshot, guest, 0x24);
-    const auto& w = result.wire;
-    result.gfx_wire = view(snapshot, w.u32(0), 0x20);
-    result.world_position = {finite(w, 4), finite(w, 8), finite(w, 12)};
-    result.yaw = finite(w, 16);
-    require(w.u32(20) <= 1, "Invalid Beach GAME boolean");
-    result.reversed = w.u32(20) != 0;
-    result.statics_guest = w.u32(24);
-    result.spawn_guest = w.u32(28);
-    result.static_objects_guest = w.u32(32);
-    const auto& g = result.gfx_wire;
-    result.display_list_guest = g.u32(0);
-    result.materials_guest = g.u32(4);
-    result.texture_animation_guest = g.u32(8);
-    result.render_callback_guest = g.u32(12);
-    result.road_guest = g.u32(16);
-    result.control_line_count = std::bit_cast<std::int32_t>(g.u32(20));
-    result.movement_animation_guest = g.u32(24);
-    result.movement_animation_duration = std::bit_cast<std::int32_t>(g.u32(28));
-    // cpTimeStamps' variable tail and the referenced road/movement streams are
-    // deliberately not read: none belongs to this static-model closure.
-    return result;
-}
-rom::GuestView group(const rom::Snapshot& snapshot, std::uint32_t guest,
-                     std::vector<BlockMetadata>& blocks) {
-    for (std::size_t i = 0; i <= max_blocks; ++i) {
-        const auto item = view(snapshot, guest + static_cast<std::uint32_t>(i * 4), 4);
-        const auto target = item.u32(0);
-        if (target == 0) return view(snapshot, guest, (i + 1) * 4);
-        require(i < max_blocks, "Unterminated Beach descriptor table");
-        for (const auto& previous : blocks)
-            require(previous.wire.guest_address != target, "Cyclic Beach descriptor table");
-        blocks.push_back(block(snapshot, target));
-    }
-    throw std::runtime_error("Unterminated Beach descriptor table");
 }
 std::vector<rom::GuestView> merged(const rom::Snapshot& snapshot, std::vector<rom::GuestView> spans) {
     std::sort(spans.begin(), spans.end(), [](const auto& a, const auto& b) {
@@ -242,43 +190,16 @@ Command DisplayList::command(std::size_t index) const {
     return {wire.u32(index * 8), wire.u32(index * 8 + 4)};
 }
 WorldDescriptors world_descriptors(const rom::Snapshot& snapshot) {
-    WorldDescriptors decoded{};
-    auto& world_ = decoded.world;
-    auto& sky_ = decoded.sky;
-    auto& primary_ = decoded.primary;
-    auto& secondary_ = decoded.secondary;
-    require(snapshot.canonical().size() == rom::us_size && snapshot.identity().size == rom::us_size &&
-            snapshot.identity().sha1 == admitted_sha1,
-            "Beach start resources require live admitted US Snapshot");
-    world_.wire = view(snapshot, 0x8011b914, 0x1e);
-    const auto& w = world_.wire;
-    world_.blocks_setup_guest = w.u32(0);
-    world_.static_definitions_guest = w.u32(4);
-    world_.unk08 = std::bit_cast<std::int32_t>(w.u32(8));
-    world_.collision_models_guest = w.u32(12);
-    world_.sky_animation_speed = finite(w, 16);
-    world_.fog_min = w.u16(20); world_.fog_max = w.u16(22);
-    world_.fog_rgb = rgb(w, 24); world_.background_rgb = rgb(w, 27);
-    require(world_.fog_min < world_.fog_max, "Invalid Beach fog distance interval");
-    world_.blocks_setup_wire = view(snapshot, world_.blocks_setup_guest, 12);
-    const auto& b = world_.blocks_setup_wire;
-    world_.primary_table_wire = group(snapshot, b.u32(0), primary_);
-    world_.secondary_table_wire = group(snapshot, b.u32(4), secondary_);
-    require(!primary_.empty() && primary_.size() + secondary_.size() < max_blocks,
-            "Invalid Beach block group sizes");
-    const auto& first = primary_.front();
-    require(first.gfx_wire.guest_address == 0x8011cd50 && first.display_list_guest == 0x8011cf00 &&
+    auto decoded = course::world_descriptors(snapshot, course::beach_id);
+    const auto& first = decoded.primary.front();
+    require(decoded.primary.size() == 8 && decoded.secondary.size() == 4 &&
+            first.gfx_wire.guest_address == 0x8011cd50 && first.display_list_guest == 0x8011cf00 &&
             first.render_callback_guest == 0x800a1530 && first.materials_guest == 0 &&
             first.texture_animation_guest == 0,
             "Beach start selection is not the admitted static Type-A-fogged model");
-    sky_.wire = view(snapshot, b.u32(8), 20);
-    sky_.display_list_guest = sky_.wire.u32(0);
-    sky_.render_callback_guest = sky_.wire.u32(4);
-    sky_.materials_guest = sky_.wire.u32(8);
-    sky_.animation_guest = sky_.wire.u32(12);
-    sky_.animation_speed = finite(sky_.wire, 16);
-    require(sky_.wire.guest_address == 0x8011b940 && sky_.display_list_guest == 0x8011cc28 &&
-            sky_.render_callback_guest == 0x800e1ca4 && sky_.materials_guest == 0 && sky_.animation_guest == 0,
+    const auto& sky = decoded.sky;
+    require(sky.wire.guest_address == 0x8011b940 && sky.display_list_guest == 0x8011cc28 &&
+            sky.render_callback_guest == 0x800e1ca4 && sky.materials_guest == 0 && sky.animation_guest == 0,
             "Beach sky selection requires an unadmitted callback or dynamic resource producer");
     return decoded;
 }

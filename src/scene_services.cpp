@@ -18,9 +18,17 @@ save::GameSession& require_save(::isle::game::State& state) {
 }
 }
 struct Services::Impl {
+    struct ObjectRecord;
     struct SpriteRecord {
         SpriteRecord* next = nullptr;
+        ObjectRecord* owner = nullptr;
+        SpriteRecord* parent = nullptr;
+        SpriteRecord* child = nullptr;
+        SpriteRecord* child_tail = nullptr;
+        SpriteRecord* sibling = nullptr;
+        IsleSprite prepared{};
         IsleGameSprite* sprite = nullptr;
+        const IsleSprite* local = nullptr;
         std::size_t resource = 0;
         std::uint64_t generation = 0;
     };
@@ -32,6 +40,8 @@ struct Services::Impl {
         IsleGameObject* object = nullptr;
         SpriteRecord* sprites = nullptr;
         SpriteRecord* sprite_tail = nullptr;
+        SpriteRecord* roots = nullptr;
+        SpriteRecord* root_tail = nullptr;
         IsleGameCommandQueue commands{};
         IsleGameCommandHandler handler = nullptr;
         void* handler_user = nullptr;
@@ -155,10 +165,109 @@ struct Services::Impl {
         return record;
     }
     SpriteRecord* find_sprite(IsleGameSprite* sprite) noexcept {
-        for (auto* object = objects; object != nullptr; object = object->next)
+        if (sprite == nullptr) return nullptr;
+        for (auto* object = objects; object != nullptr; object = object->next) {
+            if (object->deleting || object->retired) continue;
             for (auto* entry = object->sprites; entry != nullptr; entry = entry->next)
                 if (entry->sprite == sprite) return entry;
+        }
         return nullptr;
+    }
+    void clear_sprites(ObjectRecord& owner) noexcept {
+        while (owner.sprites != nullptr) {
+            auto* record = owner.sprites;
+            owner.sprites = record->next;
+            *record = SpriteRecord{};
+            record->next = free_sprites;
+            free_sprites = record;
+        }
+        owner.sprite_tail = owner.roots = owner.root_tail = nullptr;
+    }
+    SpriteRecord* attach_sprite(ObjectRecord& owner, SpriteRecord* parent, SpriteRecord* after,
+        std::size_t resource, const IsleSprite& initial, std::uint64_t generation) noexcept {
+        if (lifecycle_record(owner.object) == nullptr) return nullptr;
+        auto* record = free_sprites;
+        if (record != nullptr) free_sprites = record->next;
+        else record = allocate<SpriteRecord>();
+        if (record == nullptr) return nullptr;
+        *record = SpriteRecord{};
+        if (!s.check(isle_game_add_sprite(s.game, owner.object, &initial, &record->sprite),
+                     "scene sprite attachment")) {
+            record->next = free_sprites;
+            free_sprites = record;
+            return nullptr;
+        }
+        record->owner = &owner;
+        record->parent = parent;
+        record->resource = resource;
+        record->generation = generation;
+        if (owner.sprite_tail != nullptr) owner.sprite_tail->next = record;
+        else owner.sprites = record;
+        owner.sprite_tail = record;
+        auto*& head = parent ? parent->child : owner.roots;
+        auto*& tail = parent ? parent->child_tail : owner.root_tail;
+        if (after != nullptr) {
+            record->sibling = after->sibling;
+            after->sibling = record;
+            if (tail == after) tail = record;
+        } else {
+            if (tail != nullptr) tail->sibling = record;
+            else head = record;
+            tail = record;
+        }
+        return record;
+    }
+    const IsleSprite* resource_initial(std::uint32_t identity, std::size_t& index) noexcept {
+        const auto bank = resources.sprites;
+        index = 0;
+        while (index < bank.size() && bank[index].identity != identity) ++index;
+        if (index == bank.size()) { s.fail("unknown menu sprite resource identity"); return nullptr; }
+        const auto* initial = bank[index].sprite.view();
+        if (initial == nullptr) s.fail("scene sprite resource is uninitialized");
+        return initial;
+    }
+    static SpriteRecord* next_sprite(SpriteRecord* record, bool children) noexcept {
+        if (children && record->child != nullptr) return record->child;
+        while (record->sibling == nullptr && record->parent != nullptr) record = record->parent;
+        return record->sibling;
+    }
+    bool prepare_sprites(std::size_t capacity) noexcept {
+        if (s.failed()) return false;
+        if (capacity < s.sprite_count()) { s.fail("scene sprite draw destination too small"); return false; }
+        // Validate all actual attachments, including pruned descendants, before
+        // touching any prepared snapshot or publishing an output element.
+        for (auto* owner = draws; owner != nullptr; owner = owner->draw_next) {
+            if (owner->deleting || isle_menu_object_hidden(s.game, owner->object)) continue;
+            for (auto* record = owner->sprites; record != nullptr; record = record->next) {
+                record->local = s.view(record->sprite);
+                if (record->local == nullptr) return false;
+            }
+        }
+        for (auto* owner = draws; owner != nullptr; owner = owner->draw_next) {
+            if (owner->deleting || isle_menu_object_hidden(s.game, owner->object)) continue;
+            for (auto* record = owner->roots; record != nullptr;) {
+                // Preflight proved every view; native locals are never changed.
+                record->prepared = *record->local;
+                auto& value = record->prepared;
+                const bool visible = !(value.attr & ISLE_SP_HIDDEN);
+                if (visible && record->parent != nullptr) {
+                    const auto& parent = record->parent->prepared;
+                    isle_sprite_move(&value, static_cast<std::int32_t>(value.x) + parent.x,
+                                     static_cast<std::int32_t>(value.y) + parent.y);
+                    if (!(value.attr & 0x4000)) {
+                        value.red = static_cast<std::uint8_t>((value.red * parent.red) / 255);
+                        value.green = static_cast<std::uint8_t>((value.green * parent.green) / 255);
+                        value.blue = static_cast<std::uint8_t>((value.blue * parent.blue) / 255);
+                        value.alpha = static_cast<std::uint8_t>((value.alpha * parent.alpha) / 255);
+                    }
+                }
+                // Window consumes this hierarchy-only bit; the raster producer
+                // must see only its own supported native sprite attributes.
+                value.attr &= ~0x4000;
+                record = next_sprite(record, visible);
+            }
+        }
+        return true;
     }
     static void default_update(IsleGameObject*, void* user) noexcept {
         auto* entry = static_cast<ObjectRecord*>(user);
@@ -216,6 +325,7 @@ struct Services::Impl {
             entry->lifecycle_observer.joined(object, entry->lifecycle_observer.user);
         if (entry->lifecycle.joined != nullptr)
             entry->lifecycle.joined(object, entry->lifecycle.user);
+        entry->owner->clear_sprites(*entry);
         auto* owner = entry->owner;
         // Only the actual join of the native caller proves an abandoned
         // C-fenced command frame cannot resume. Joining its target alone says
@@ -249,12 +359,7 @@ struct Services::Impl {
         while (*at != nullptr && *at != entry) at = &(*at)->draw_next;
         if (*at != nullptr) *at = entry->draw_next;
         isle_game_commands_release(&commands, &entry->commands);
-        while (entry->sprites != nullptr) {
-            auto* sprite = entry->sprites;
-            entry->sprites = sprite->next;
-            sprite->next = free_sprites;
-            free_sprites = sprite;
-        }
+        clear_sprites(*entry);
         recycle_object_record(entry);
     }
     void unlink_draw(ObjectRecord* entry) noexcept {
@@ -333,17 +438,23 @@ Services::Services(IsleGame* owner, isle_arena& arena, ResourceView resources,
 Services::ObjectPreparation::~ObjectPreparation() {
     if (owner_ || record_) std::terminate();
 }
-Services::~Services() {
-    if (impl_->prepared_objects) std::terminate();
-    // Keep cross-object dispatch records until every registered native caller
-    // has really joined. Manual/unregistered callers require their own lifetime
-    // boundary; target retirement cannot certify their completion.
+bool Services::retire_objects() noexcept {
+    if (impl_->prepared_objects || isle_game_require_idle(game) != ISLE_GAME_OK)
+        return false;
+    // Keep cross-object dispatch records until every native caller really
+    // joins. Retiring a target cannot certify an external/manual caller.
     impl_->destroying = true;
     for (auto* entry = impl_->objects; entry != nullptr;) {
         auto* next = entry->next;
         if (!entry->retired) erase(entry->object);
         entry = next;
     }
+    for (const auto* entry = impl_->objects; entry != nullptr; entry = entry->next)
+        if (!entry->retired || entry->dispatching) return false;
+    return true;
+}
+Services::~Services() {
+    if (!retire_objects()) std::terminate();
     while (impl_->objects != nullptr) {
         auto* entry = impl_->objects;
         // Neither failed joins nor still-pending external/manual calls permit
@@ -378,7 +489,7 @@ bool Services::wait(std::uint32_t updates) noexcept {
     return check(isle_game_wait(game, updates), "menu native process wait");
 }
 IsleGameObject* Services::object(std::uint32_t id, std::uint8_t link, std::uint32_t priority) noexcept {
-    if (failed()) return nullptr;
+    if (failed() || impl_->destroying) return nullptr;
     Impl::ObjectRecord* record = nullptr;
     if (!check(impl_->take_object_record(record),"menu native bookkeeping arena exhausted")) return nullptr;
     impl_->initialize_object_record(*record);
@@ -395,7 +506,7 @@ IsleGameObject* Services::object(std::uint32_t id, std::uint8_t link, std::uint3
 }
 IsleGameResult Services::prepare_object(ObjectPreparation& preparation) noexcept {
     if (preparation.owner_ || preparation.record_) return ISLE_GAME_INVALID_STATE;
-    if (failed()) return ISLE_GAME_INVALID_STATE;
+    if (failed() || impl_->destroying) return ISLE_GAME_INVALID_STATE;
     Impl::ObjectRecord* record = nullptr;
     const auto result = impl_->take_object_record(record);
     if (result != ISLE_GAME_OK) return result;
@@ -538,6 +649,29 @@ bool Services::source_reference_assign(IsleGameObject* receiver, IsleGameObject*
     }
     if (sender) ++sender->source_borrows.fields;
     *field = source;
+    if (old) --old->source_borrows.fields;
+    return true;
+}
+bool Services::source_reference_reconcile(IsleGameObject* receiver, IsleGameObject** field,
+    IsleGameObject* previous) noexcept {
+    auto* record = receiver ? impl_->find(receiver) : nullptr;
+    if (!record || !record->source_registered || record->deleting ||
+        std::find(record->source_fields.begin(), record->source_fields.end(), field) == record->source_fields.end()) {
+        fail("scene reference reconciliation requires an actual live registered canonical field");
+        return false;
+    }
+    if (*field == previous) return true;
+    auto* sender = *field ? impl_->find(*field) : nullptr;
+    if (*field && (!sender || !sender->source_registered)) {
+        fail("scene reference reconciliation source is not registered");
+        return false;
+    }
+    auto* old = previous ? impl_->find(previous) : nullptr;
+    if (previous && (!old || !old->source_registered || !old->source_borrows.fields)) {
+        fail("scene reference reconciliation found an unowned previous field");
+        return false;
+    }
+    if (sender) ++sender->source_borrows.fields;
     if (old) --old->source_borrows.fields;
     return true;
 }
@@ -716,7 +850,7 @@ bool Services::move_to_tail(IsleGameObject* object) noexcept {
 IsleGameProcess* Services::process(IsleGameObject* object, IsleGameCallback entry, void* user,
     IsleGameProcessKind kind, std::uint32_t priority) noexcept {
     IsleGameProcess* result = nullptr;
-    if (failed()) return nullptr;
+    if (failed() || impl_->destroying) return nullptr;
     if (!check(isle_game_add_process(game, object, entry, user, kind, priority, &result), "menu native process creation")) return nullptr;
     return result;
 }
@@ -746,35 +880,47 @@ SpriteHandle Services::sprite(std::uint32_t identity, std::uint8_t link, std::ui
 }
 IsleGameSprite* Services::append_sprite(IsleGameObject* object, std::uint32_t identity) noexcept {
     if (failed()) return nullptr;
-    const auto resources = impl_->resources.sprites;
     std::size_t index = 0;
-    while (index < resources.size() && resources[index].identity != identity) ++index;
-    if (index == resources.size()) { fail("unknown menu sprite resource identity"); return nullptr; }
-    const auto* initial = resources[index].sprite.view();
-    if (initial == nullptr) { fail("scene sprite resource is uninitialized"); return nullptr; }
-    return append_sprite(object,index,*initial);
+    const auto* initial = impl_->resource_initial(identity, index);
+    return initial ? append_sprite(object,index,*initial) : nullptr;
 }
 IsleGameSprite* Services::append_sprite(IsleGameObject* object, std::size_t index,
                                       const IsleSprite& initial, std::uint64_t generation) noexcept {
     if (failed()) return nullptr;
     auto* owner = impl_->find(object);
-    if (owner == nullptr || owner->deleting) { fail("scene sprite owner is unregistered or retiring"); return nullptr; }
-    auto* record = impl_->free_sprites;
-    if (record != nullptr) impl_->free_sprites = record->next;
-    else record = impl_->allocate<Impl::SpriteRecord>();
-    if (record == nullptr) return nullptr;
-    *record = Impl::SpriteRecord{};
-    record->resource = index;
-    record->generation = generation;
-    if (!check(isle_game_add_sprite(game, owner->object, &initial, &record->sprite), "scene sprite attachment")) {
-        record->next = impl_->free_sprites;
-        impl_->free_sprites = record;
-        return nullptr;
+    if (owner == nullptr || owner->deleting || owner->retired) {
+        fail("scene sprite owner is unregistered or retiring"); return nullptr;
     }
-    if (owner->sprite_tail != nullptr) owner->sprite_tail->next = record;
-    else owner->sprites = record;
-    owner->sprite_tail = record;
-    return record->sprite;
+    auto* record = impl_->attach_sprite(*owner,nullptr,nullptr,index,initial,generation);
+    return record ? record->sprite : nullptr;
+}
+IsleGameSprite* Services::add_sprite_sibling(IsleGameSprite* existing, std::uint32_t identity) noexcept {
+    if (failed()) return nullptr;
+    std::size_t index = 0;
+    const auto* initial = impl_->resource_initial(identity,index);
+    return initial ? add_sprite_sibling(existing,index,*initial) : nullptr;
+}
+IsleGameSprite* Services::add_sprite_sibling(IsleGameSprite* existing, std::size_t index,
+    const IsleSprite& initial, std::uint64_t generation) noexcept {
+    if (failed()) return nullptr;
+    auto* previous = impl_->find_sprite(existing);
+    if (previous == nullptr) { fail("scene sprite sibling is unregistered or retiring"); return nullptr; }
+    auto* record = impl_->attach_sprite(*previous->owner,previous->parent,previous,index,initial,generation);
+    return record ? record->sprite : nullptr;
+}
+IsleGameSprite* Services::append_sprite_child(IsleGameSprite* parent, std::uint32_t identity) noexcept {
+    if (failed()) return nullptr;
+    std::size_t index = 0;
+    const auto* initial = impl_->resource_initial(identity,index);
+    return initial ? append_sprite_child(parent,index,*initial) : nullptr;
+}
+IsleGameSprite* Services::append_sprite_child(IsleGameSprite* parent, std::size_t index,
+    const IsleSprite& initial, std::uint64_t generation) noexcept {
+    if (failed()) return nullptr;
+    auto* ancestor = impl_->find_sprite(parent);
+    if (ancestor == nullptr) { fail("scene sprite parent is unregistered or retiring"); return nullptr; }
+    auto* record = impl_->attach_sprite(*ancestor->owner,ancestor,nullptr,index,initial,generation);
+    return record ? record->sprite : nullptr;
 }
 bool Services::rebind_sprite(IsleGameSprite* sprite, std::uint32_t identity) noexcept {
     const auto resources = impl_->resources.sprites;
@@ -799,23 +945,58 @@ bool Services::replace_sprite(IsleGameSprite* sprite, std::size_t resource, cons
     record->generation = generation;
     return true;
 }
+bool Services::restore_sprite_after_failure(IsleGameSprite* sprite, std::size_t resource,
+                                           const IsleSprite& replacement, std::uint64_t generation) noexcept {
+    IsleGameCounts counts{};
+    if (!failed() || isle_game_counts(game,&counts) != ISLE_GAME_OK || counts.processes)
+        return false;
+    auto* record = impl_->find_sprite(sprite);
+    if (!record) return false;
+    auto* destination = view(sprite);
+    if (!destination) return false;
+    *destination = replacement;
+    record->resource = resource;
+    record->generation = generation;
+    return true;
+}
 bool Services::remove_sprites(IsleGameObject* object) noexcept {
     auto* owner = impl_->find(object);
-    if (owner == nullptr) { fail("menu sprite removal owner is unregistered"); return false; }
-    while (owner->sprites != nullptr) {
-        auto* record = owner->sprites;
-        if (!check(isle_game_remove_sprite(game, record->sprite), "menu native sprite removal")) return false;
-        owner->sprites = record->next;
-        record->next = impl_->free_sprites;
-        impl_->free_sprites = record;
+    if (owner == nullptr || owner->deleting || owner->retired) {
+        fail("menu sprite removal owner is unregistered or retiring"); return false;
     }
-    owner->sprite_tail = nullptr;
+    if (impl_->lifecycle_record(owner->object) == nullptr) return false;
+    for (auto* record = owner->sprites; record != nullptr; record = record->next)
+        if (view(record->sprite) == nullptr) return false;
+    for (auto* record = owner->sprites; record != nullptr; record = record->next)
+        if (!check(isle_game_remove_sprite(game, record->sprite), "menu native sprite removal")) return false;
+    impl_->clear_sprites(*owner);
     return !failed();
 }
 IsleSprite* Services::view(IsleGameSprite* sprite) noexcept {
     IsleSprite* result = nullptr;
     if (!check(isle_game_sprite_view(game, sprite, &result), "menu sprite mutable view")) return nullptr;
     return result;
+}
+bool Services::sprite_links(IsleGameSprite* sprite, SpriteHandle& owner,
+    IsleGameSprite*& parent, IsleGameSprite*& child, IsleGameSprite*& next,
+    IsleGameSprite*& previous) noexcept {
+    owner={};parent=child=next=previous=nullptr;
+    auto* record=impl_->find_sprite(sprite);
+    if (!record) return false;
+    owner={record->owner->object,record->sprite};
+    parent=record->parent?record->parent->sprite:nullptr;
+    child=record->child?record->child->sprite:nullptr;
+    next=record->sibling?record->sibling->sprite:nullptr;
+    auto* first=record->parent?record->parent->child:record->owner->roots;
+    for (auto* p=first;p && p!=record;p=p->sibling) previous=p->sprite;
+    return true;
+}
+bool Services::sprite_root(IsleGameObject* object, IsleGameSprite*& root) noexcept {
+    root=nullptr;
+    auto* record=impl_->find(object);
+    if (!record || record->deleting || record->retired) return false;
+    root=record->roots?record->roots->sprite:nullptr;
+    return true;
 }
 std::size_t Services::sprite_count() const noexcept {
     std::size_t result = 0;
@@ -827,34 +1008,28 @@ std::size_t Services::sprite_count() const noexcept {
 }
 bool Services::sprite_draws(std::span<::isle::sprite::Draw> output, std::size_t& written) noexcept {
     written = 0;
-    if (failed()) return false;
-    if (output.size() < sprite_count()) { fail("menu sprite draw destination too small"); return false; }
-    // Validate every native borrow before publishing the first draw.
+    if (!impl_->prepare_sprites(output.size())) return false;
     for (auto* owner = impl_->draws; owner != nullptr; owner = owner->draw_next) {
         if (owner->deleting || isle_menu_object_hidden(game, owner->object)) continue;
-        for (auto* sprite = owner->sprites; sprite != nullptr; sprite = sprite->next)
-            if (view(sprite->sprite) == nullptr) return false;
-    }
-    for (auto* owner = impl_->draws; owner != nullptr; owner = owner->draw_next) {
-        if (owner->deleting || isle_menu_object_hidden(game, owner->object)) continue;
-        for (auto* sprite = owner->sprites; sprite != nullptr; sprite = sprite->next)
-            output[written++] = {sprite->resource, view(sprite->sprite), sprite->generation};
+        for (auto* record = owner->roots; record != nullptr;) {
+            const bool visible = !(record->prepared.attr & ISLE_SP_HIDDEN);
+            if (visible) output[written++] = {record->resource, &record->prepared, record->generation};
+            record = Impl::next_sprite(record,visible);
+        }
     }
     return true;
 }
 bool Services::sprite_draws(std::span<SpriteDraw> output, std::size_t& written) noexcept {
     written = 0;
-    if (failed()) return false;
-    if (output.size() < sprite_count()) { fail("scene metadata sprite draw destination too small"); return false; }
+    if (!impl_->prepare_sprites(output.size())) return false;
     for (auto* owner = impl_->draws; owner != nullptr; owner = owner->draw_next) {
         if (owner->deleting || isle_menu_object_hidden(game, owner->object)) continue;
-        for (auto* sprite = owner->sprites; sprite != nullptr; sprite = sprite->next)
-            if (view(sprite->sprite) == nullptr) return false;
-    }
-    for (auto* owner = impl_->draws; owner != nullptr; owner = owner->draw_next) {
-        if (owner->deleting || isle_menu_object_hidden(game, owner->object)) continue;
-        for (auto* sprite = owner->sprites; sprite != nullptr; sprite = sprite->next)
-            output[written++] = {{sprite->resource, view(sprite->sprite), sprite->generation},owner->object,owner->render};
+        for (auto* record = owner->roots; record != nullptr;) {
+            const bool visible = !(record->prepared.attr & ISLE_SP_HIDDEN);
+            if (visible) output[written++] = {
+                {record->resource, &record->prepared, record->generation},owner->object,owner->render};
+            record = Impl::next_sprite(record,visible);
+        }
     }
     return true;
 }

@@ -6,8 +6,8 @@
 
 namespace isle::startup {
 enum class Error { none, invalid, allocation, native, input, audio, profile, retired };
-enum class Phase { logo, title_menu, scene_exit, retired, failed };
-enum class Step { updated, scene_changed, scene_exit, failed };
+enum class Phase { logo, boot_complete, title_menu, scene_exit, retired, failed };
+enum class Step { updated, boot_complete, scene_exit, failed };
 struct Exit {
     menu::scene::SourceScene scene = menu::scene::SourceScene::invalid;
     std::uint32_t entry_flags = 0;
@@ -26,21 +26,20 @@ struct View {
     save::ScreenOffsets screen_offsets{};
 };
 struct CreateResult;
-// Complete source AA0650 logo and A08E30/A0BE70 title/menu scene owner. External
-// scene IDs/entry flags are returned to the game scene manager, not converted
-// into fake gameplay or process completion. Catalog, input, audio, persistent
-// State and application Storage are borrowed stable owners. Only boot logo's
-// continuation initializes State after its first real wait. Runtime retirement
-// joins scene content but never frees Storage backing or closes the profile.
+// Original AA0650 logo and A08E30/A0BE70 title/menu scene owners. Boot completes
+// at its actual GTL-stop boundary; only the original application manager selects
+// the subsequent title entry and applies mixer/output settings. Catalog, input,
+// audio, State and Storage are stable borrowed owners. Logo's first real wait
+// precedes profile initialization. Retirement never closes the profile.
 class Runtime final {
 public:
     // Storage must have no live game: retire prior scene content first. State
     // and Storage outlive Runtime and every preparation/GPU borrow it exposes.
-    static CreateResult create(const menu::Catalog&, game_input::Service&,
+    static CreateResult create_boot(const menu::Catalog&, game_input::Service&,
         game_audio::Session&, game::State&, scene::Storage&,
         std::uint32_t raw_game_time) noexcept;
     // Explicit source title reentry: requires successfully initialized State,
-    // reuses the same profile/RNG/latches, and never runs boot/logo/open again.
+    // reuses profile/RNG/latches/live VI, never reruns Boot's saved-output service.
     static CreateResult create_title(const menu::Catalog&, game_input::Service&,
         game_audio::Session&, game::State&, scene::Storage&,
         std::uint32_t raw_game_time) noexcept;

@@ -1,0 +1,706 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "beach-scyther-special-complete22-v1",
+  "provider": "beach-scyther-special",
+  "stem": "scyther_special",
+  "generator_sha256": "3804a1cbbfcedd195c000113bee0c837a573009ddd41fe714fa4ee07a61ce864",
+  "source_files": {
+    "src/beach/560E20.c": {
+      "git_blob": "89d62631f7b7e1111bb90ced6b09d9a6c7fe9436",
+      "sha256": "d3ada3eb7725e463c254e6875b3c6e0846902607960236ed4bec75f2274f7357",
+      "line_count": 120
+    },
+    "src/beach/562110.c": {
+      "git_blob": "5400237edae3bca52598b4769abfdc1505b23a40",
+      "sha256": "674f43396195db5eb464e52c4bbb20866b0c1068e340f0700cd6fddfecfb8064",
+      "line_count": 59
+    },
+    "src/beach/563000.c": {
+      "git_blob": "6767e7be06fbd22d95feb129ecd07c08db108d2e",
+      "sha256": "d93896a020941a8222cc58132e2c83951f05f36840a6ca2a4a1cce967d1651ff",
+      "line_count": 368
+    },
+    "src/beach/beach.h": {
+      "git_blob": "0aad5edbe49cd130449874b9b3b55941d3b73042",
+      "sha256": "a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc",
+      "line_count": 329
+    },
+    "src/beach/560620.c": {
+      "git_blob": "fe72abeb5b19efe52bf00af9aa8871f52f3d4dd3",
+      "sha256": "8c0e9f0847ba8e0575315fa20ac9444529ea1a32ba8cf5ee0d917c3683ece8ce",
+      "line_count": 236
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/beach/560620.c",
+      "symbol": "func_beach_802C8D74",
+      "first": 234,
+      "last": 236,
+      "source_sha256": "fea2629fa404c8b13da67aab4129522d0bb9822be00cec0adbd079f0f849bc33",
+      "native_sha256": "fea2629fa404c8b13da67aab4129522d0bb9822be00cec0adbd079f0f849bc33",
+      "native_declaration": "void func_beach_802C8D74(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C8DB0",
+      "first": 4,
+      "last": 11,
+      "source_sha256": "0ff6e3bf9e11910a0a566878690cf44c2e9e46638f99dacc9f73c6ccb376d4b6",
+      "native_sha256": "0ff6e3bf9e11910a0a566878690cf44c2e9e46638f99dacc9f73c6ccb376d4b6",
+      "native_declaration": "void func_beach_802C8DB0(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C8DE8",
+      "first": 13,
+      "last": 16,
+      "source_sha256": "29cdccd5f6d05d2bc9a71a3ed178acca79271062daffc65e4a6be9f8f72764f4",
+      "native_sha256": "29cdccd5f6d05d2bc9a71a3ed178acca79271062daffc65e4a6be9f8f72764f4",
+      "native_declaration": "void func_beach_802C8DE8(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C8E20",
+      "first": 18,
+      "last": 27,
+      "source_sha256": "ef465186095bb045ebb3042831ffffff3dc515bf2e393a42b62da037df16dde1",
+      "native_sha256": "ef465186095bb045ebb3042831ffffff3dc515bf2e393a42b62da037df16dde1",
+      "native_declaration": "void func_beach_802C8E20(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C8E90",
+      "first": 30,
+      "last": 42,
+      "source_sha256": "33ddcaa7fe56d19c0884df45ce6805160fec26a27e8bbb4d3bf05c126e2e84c1",
+      "native_sha256": "61acd4865f27846fd3dcba5bd22793582172f23eeeedb021844f14f901241970",
+      "native_declaration": "void func_beach_802C8E90(GObj* arg0)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(arg0, &D_beach_802CD1B8);",
+          "replace": "isle_actor_source_set_animation(arg0, UINT32_C(0x802cd1b8), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(arg0, &D_beach_802CD1CC);",
+          "replace": "isle_actor_source_set_animation(arg0, UINT32_C(0x802cd1cc), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD1E4",
+          "replace": "isle_actor_source_graph(arg0, UINT32_C(0x802cd1e4))",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C8F48",
+      "first": 44,
+      "last": 68,
+      "source_sha256": "c9ea589bfac2f59a0e4532f6ebf82cfd35f49e3988f96a4660744668bca67f83",
+      "native_sha256": "cb7dab9fd7c699015895cb31fa62aac845765f6972835e531047ea1853939fe1",
+      "native_declaration": "void func_beach_802C8F48(GObj* obj)",
+      "changes": [
+        {
+          "find": "obj->flags = 0;",
+          "replace": "isle_actor_source_object_flags(obj, UINT32_MAX, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD168);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd168), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD1A4);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd1a4), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD190);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd190), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD17C);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd17c), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD214",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd214))",
+          "occurrences": 5
+        }
+      ]
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C907C",
+      "first": 70,
+      "last": 80,
+      "source_sha256": "7fc360ebecba6f49443fb7a9e6c790215cec6455b9479be450128ea3c3cfdb7b",
+      "native_sha256": "7fc360ebecba6f49443fb7a9e6c790215cec6455b9479be450128ea3c3cfdb7b",
+      "native_declaration": "void func_beach_802C907C(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C90E0",
+      "first": 82,
+      "last": 96,
+      "source_sha256": "91b149106c99de3c31d2fb0dcb160184ac4c6e32e3110fe49b1d619dc868f362",
+      "native_sha256": "91b149106c99de3c31d2fb0dcb160184ac4c6e32e3110fe49b1d619dc868f362",
+      "native_declaration": "void func_beach_802C90E0(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C914C",
+      "first": 98,
+      "last": 112,
+      "source_sha256": "cd6349cba885fc77143637eb6feb222994962b459859b7c4a93afafefd6dafdb",
+      "native_sha256": "cd6349cba885fc77143637eb6feb222994962b459859b7c4a93afafefd6dafdb",
+      "native_declaration": "void func_beach_802C914C(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C91CC",
+      "first": 114,
+      "last": 116,
+      "source_sha256": "7ab2142af6432152d99c06f4d54ee2dbf1f81aec6b328638927523cb3f182f8c",
+      "native_sha256": "7ab2142af6432152d99c06f4d54ee2dbf1f81aec6b328638927523cb3f182f8c",
+      "native_declaration": "void func_beach_802C91CC(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/560E20.c",
+      "symbol": "func_beach_802C9204",
+      "first": 118,
+      "last": 120,
+      "source_sha256": "72170ca81a5e04e463849c2918241ab2e2f34420f09ff09ceb6660f07ab6686e",
+      "native_sha256": "72170ca81a5e04e463849c2918241ab2e2f34420f09ff09ceb6660f07ab6686e",
+      "native_declaration": "void func_beach_802C9204(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/562110.c",
+      "symbol": "func_beach_802CA0A0",
+      "first": 4,
+      "last": 10,
+      "source_sha256": "78eb03d41c84b705ff6bd06f19caca8b27afdd643a8fb5c21a33e7a392f2c53b",
+      "native_sha256": "78eb03d41c84b705ff6bd06f19caca8b27afdd643a8fb5c21a33e7a392f2c53b",
+      "native_declaration": "void func_beach_802CA0A0(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/562110.c",
+      "symbol": "func_beach_802CA0F4",
+      "first": 12,
+      "last": 18,
+      "source_sha256": "6b36114825cd86a792eb126875a012d098616ba0fc6d87550847e1422e6e06d6",
+      "native_sha256": "6b36114825cd86a792eb126875a012d098616ba0fc6d87550847e1422e6e06d6",
+      "native_declaration": "void func_beach_802CA0F4(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/562110.c",
+      "symbol": "func_beach_802CA148",
+      "first": 20,
+      "last": 27,
+      "source_sha256": "50adc7e645440f7f77484c8a4e875bfc4a4f7655e9b9a8dad3533f792a6e232d",
+      "native_sha256": "5fddbe6fa8e9d29f64a1402f5e8aa08909fbd61d0889435057ce366bfe90dce7",
+      "native_declaration": "void func_beach_802CA148(GObj* obj)",
+      "changes": [
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_actor_source_visibility(obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD858",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd858))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/562110.c",
+      "symbol": "func_beach_802CA198",
+      "first": 29,
+      "last": 31,
+      "source_sha256": "42bbbfbe0b5a1558a5073d7f2d5bb9e737d29e05db4b058734db6304a7121a34",
+      "native_sha256": "bc9780cf2342db7d3c037d115162eae7749a15e34e3a0e5c10a730ffdf1a343b",
+      "native_declaration": "void func_beach_802CA198(GObj* obj)",
+      "changes": [
+        {
+          "find": "D_beach_802CD8B8",
+          "replace": "isle_actor_source_weighted(obj, UINT32_C(0x802cd8b8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/562110.c",
+      "symbol": "func_beach_802CA1BC",
+      "first": 33,
+      "last": 43,
+      "source_sha256": "20cc3ff37412fe6aa817f07df299a74a5a19017a391a61260c36091197efcd04",
+      "native_sha256": "20cc3ff37412fe6aa817f07df299a74a5a19017a391a61260c36091197efcd04",
+      "native_declaration": "void func_beach_802CA1BC(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/562110.c",
+      "symbol": "func_beach_802CA23C",
+      "first": 45,
+      "last": 55,
+      "source_sha256": "b288098f59255d54c2c358b3f79620e207d69a6e703657da4ef51c7fcf3917b7",
+      "native_sha256": "b288098f59255d54c2c358b3f79620e207d69a6e703657da4ef51c7fcf3917b7",
+      "native_declaration": "void func_beach_802CA23C(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/562110.c",
+      "symbol": "func_beach_802CA2BC",
+      "first": 57,
+      "last": 59,
+      "source_sha256": "497a0d3d32d36c009fcd1eb918ce2434177b97839bc6300143ef7075e8e004b0",
+      "native_sha256": "497a0d3d32d36c009fcd1eb918ce2434177b97839bc6300143ef7075e8e004b0",
+      "native_declaration": "void func_beach_802CA2BC(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/563000.c",
+      "symbol": "func_beach_802CBCE0",
+      "first": 340,
+      "last": 342,
+      "source_sha256": "6ba6d81a504363b97bcf9955dd1466436f62d8f01f699fc0813226c7f689c44d",
+      "native_sha256": "6ba6d81a504363b97bcf9955dd1466436f62d8f01f699fc0813226c7f689c44d",
+      "native_declaration": "void func_beach_802CBCE0(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/563000.c",
+      "symbol": "func_beach_802CBD04",
+      "first": 344,
+      "last": 357,
+      "source_sha256": "7c5ca3073ed43ec4243ed0c4320c828689a6a4d1cc5c58124ad22151558d568f",
+      "native_sha256": "7889fc19f0310250b520adc93ae02ccd18303d05938ad33cf99286b5a3956702",
+      "native_declaration": "void func_beach_802CBD04(GObj* obj)",
+      "changes": [
+        {
+          "find": "EnvSound_PlaySound(obj, 1, 0x34);",
+          "replace": "isle_beach_scyther_special_play_sound(obj, 1, 0x34);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_beach_802CE070);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802ce070), 0.0f, 1);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/563000.c",
+      "symbol": "func_beach_802CBDA0",
+      "first": 359,
+      "last": 361,
+      "source_sha256": "030afec9b9e6c9aeab6b616612d13dde6f9343545b640f46336940bebf9e0963",
+      "native_sha256": "030afec9b9e6c9aeab6b616612d13dde6f9343545b640f46336940bebf9e0963",
+      "native_declaration": "void func_beach_802CBDA0(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/563000.c",
+      "symbol": "func_beach_802CBDD8",
+      "first": 363,
+      "last": 368,
+      "source_sha256": "ff470d386ac0083e14580699532cb828dc9e7d6b5e81c2dc1963f33867290615",
+      "native_sha256": "ff470d386ac0083e14580699532cb828dc9e7d6b5e81c2dc1963f33867290615",
+      "native_declaration": "void func_beach_802CBDD8(GObj* obj)",
+      "changes": []
+    }
+  ],
+  "semantic_origins": [
+    {
+      "label": "Alternate Pidgey factory initialization declaration",
+      "path": "src/beach/beach.h",
+      "first": 125,
+      "last": 125,
+      "source_sha256": "e6018541878adbe67b6095446ec59965e2c3abb820d20a98aa6d3d8e9f34efa2"
+    },
+    {
+      "label": "Scyther animation/graph/initialization declarations",
+      "path": "src/beach/beach.h",
+      "first": 126,
+      "last": 134,
+      "source_sha256": "226bc0fc9798e7fa82f9ad1871003a8db75a3b5f22232a3e82b9ba8f87fbe6c7"
+    },
+    {
+      "label": "Special1005 singleton/graph/weighted/initialization declarations",
+      "path": "src/beach/beach.h",
+      "first": 168,
+      "last": 172,
+      "source_sha256": "bc142b6b522f971841860057aac62841f96fb109cd0bde147136b10f41338d3b"
+    },
+    {
+      "label": "Special1006 animation/initialization/singleton declarations",
+      "path": "src/beach/beach.h",
+      "first": 207,
+      "last": 209,
+      "source_sha256": "11b4939a1e361d009cdcb8a4f5053bde03758d91f46ebeda3007e4fb528a037f"
+    }
+  ],
+  "rom_facts": {
+    "rom_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "rom_bytes": 16777216,
+    "initialized_mapping": {
+      "guest_begin": "0x802cbe10",
+      "rom_begin": "0x563e80",
+      "bytes": "0x22e0"
+    },
+    "source": "Existing ActorResources/BehaviorResources decode and retain these exact immutable admitted Snapshot records. No initial scalar is guessed or replaced by a native constant; identity-only tokens below select the typed resource owners.",
+    "ranges": [
+      {
+        "label": "Scyther ordinary definition",
+        "guest_address": "0x802cbf74",
+        "rom_offset": "0x563fe4",
+        "bytes": 16,
+        "sha256": "2eed47294c4648b11da2dc6a6b5a45232b7be7199689d308fb48aae8ed708d30"
+      },
+      {
+        "label": "Special1005 ordinary definition",
+        "guest_address": "0x802cbfc4",
+        "rom_offset": "0x564034",
+        "bytes": 16,
+        "sha256": "1477aced0e1682d1ee4872d34af2dd44eba51e80eaf58e3e8a3e5b283157f5c2"
+      },
+      {
+        "label": "Scyther six animation headers",
+        "guest_address": "0x802cd168",
+        "rom_offset": "0x5651d8",
+        "bytes": 120,
+        "sha256": "f2d1b4261abfd33d4dde3f0b76f3fdf107f59e066019f91e39ac2342cabe1cbc"
+      },
+      {
+        "label": "Scyther idle graph with terminal",
+        "guest_address": "0x802cd1e4",
+        "rom_offset": "0x565254",
+        "bytes": 48,
+        "sha256": "0c94fb7d8e326c9b8534b80e7bffbd6197d0a95062eb5f11ed0e904293f8b741"
+      },
+      {
+        "label": "Scyther jump graph with terminal",
+        "guest_address": "0x802cd214",
+        "rom_offset": "0x565284",
+        "bytes": 48,
+        "sha256": "ba8f9800aa3dfbcce1263a590226d346b74214b2ac24cbd512a5832a439cede5"
+      },
+      {
+        "label": "Scyther setup and initialization",
+        "guest_address": "0x802cd244",
+        "rom_offset": "0x5652b4",
+        "bytes": 72,
+        "sha256": "266110171eaa1906d1b51ae62e9ac2d28e5a335031334170ba154e61289edd61"
+      },
+      {
+        "label": "Special1005 Pidgey and Scyther singleton definitions",
+        "guest_address": "0x802cd838",
+        "rom_offset": "0x5658a8",
+        "bytes": 32,
+        "sha256": "8ae0a2b26bcf8c73ff3664266977cfdd2d1f5465d262c7e016b065b014785e9f"
+      },
+      {
+        "label": "Special1005 trigger graph with terminal",
+        "guest_address": "0x802cd858",
+        "rom_offset": "0x5658c8",
+        "bytes": 96,
+        "sha256": "6da988c48706ca1a1d7072e60e71a80b0e737863006a3944c83b05c6f77c454e"
+      },
+      {
+        "label": "Special1005 weighted states with terminal",
+        "guest_address": "0x802cd8b8",
+        "rom_offset": "0x565928",
+        "bytes": 24,
+        "sha256": "2072f71cbdbb0dcf635aae87ec79822e49683e8caeaf2c8a351a6d3b0ae64e75"
+      },
+      {
+        "label": "Special1005 setup and initialization",
+        "guest_address": "0x802cd8d0",
+        "rom_offset": "0x565940",
+        "bytes": 72,
+        "sha256": "9da79e571fa9dd09913199028ae91504ec11bdc5a8e8adb9ac78855da7baff17"
+      },
+      {
+        "label": "Special1006 animation header",
+        "guest_address": "0x802ce070",
+        "rom_offset": "0x5660e0",
+        "bytes": 20,
+        "sha256": "48e049d01f96b67d66824cf553d0521ab0671c99be2befe20b06e39344aeaf31"
+      },
+      {
+        "label": "Special1006 setup and initialization",
+        "guest_address": "0x802ce094",
+        "rom_offset": "0x566104",
+        "bytes": 72,
+        "sha256": "35c4cb7887898c4493c2254b4d8e0ecc0f82a3309aba57c562166b648e05fde1"
+      },
+      {
+        "label": "Special1006 singleton geo definition",
+        "guest_address": "0x802ce0dc",
+        "rom_offset": "0x56614c",
+        "bytes": 16,
+        "sha256": "c20563d3709f4b2fcb778cdfd3fb6faf5358714d5769c031ccc644505b8e47ee"
+      },
+      {
+        "label": "Reused Pidgey setup and initialization for exact alternate factory",
+        "guest_address": "0x802cd104",
+        "rom_offset": "0x565174",
+        "bytes": 72,
+        "sha256": "4fafd12dc60fc7fd41c0215717525cc545e3d72d8897dee3583d1a176ad4c113"
+      }
+    ]
+  },
+  "ownership": {
+    "new_definition_count": 22,
+    "native_process_count": 16,
+    "complete_sources": [
+      "src/beach/560E20.c:1-120",
+      "src/beach/562110.c:1-59"
+    ],
+    "special1006_tail": "src/beach/563000.c:340-368; parent explicitly extended original through-factory scope to include complete synchronous geo helper802CBDD8",
+    "native_processes": [
+      "func_beach_802C8DB0",
+      "func_beach_802C8DE8",
+      "func_beach_802C8E20",
+      "func_beach_802C8E90",
+      "func_beach_802C8F48",
+      "func_beach_802C907C",
+      "func_beach_802C90E0",
+      "func_beach_802C914C",
+      "func_beach_802CA0A0",
+      "func_beach_802CA0F4",
+      "func_beach_802CA148",
+      "func_beach_802CA198",
+      "func_beach_802CA1BC",
+      "func_beach_802CA23C",
+      "func_beach_802CBCE0",
+      "func_beach_802CBD04"
+    ],
+    "factories": [
+      {
+        "symbol": "func_beach_802C8D74",
+        "actor_id": 16,
+        "initialization": "0x802cd118",
+        "kind": "alternate singleton ordinary",
+        "definition": "0x802cd838"
+      },
+      {
+        "symbol": "func_beach_802C91CC",
+        "actor_id": 123,
+        "initialization": "0x802cd258",
+        "kind": "ordinary",
+        "definition": "0x802cbf74"
+      },
+      {
+        "symbol": "func_beach_802C9204",
+        "actor_id": 123,
+        "initialization": "0x802cd258",
+        "kind": "alternate singleton ordinary",
+        "definition": "0x802cd848"
+      },
+      {
+        "symbol": "func_beach_802CA2BC",
+        "actor_id": 1005,
+        "initialization": "0x802cd8e4",
+        "kind": "ordinary",
+        "definition": "0x802cbfc4"
+      },
+      {
+        "symbol": "func_beach_802CBDA0",
+        "actor_id": 1006,
+        "initialization": "0x802ce0a8",
+        "kind": "ordinary followed by original DL4 transfer",
+        "definition": "0x802ce0dc"
+      }
+    ],
+    "synchronous_geo_helper": "func_beach_802CBDD8; original Pokemon_AddAtGeo1006/CE0DC result becomes behavior0; called by Meowth and not a scheduler callback binding",
+    "singleton_geo_dependencies": [
+      {
+        "definition": "0x802cd838",
+        "actor_id": 16,
+        "factory": "func_beach_802C8D74",
+        "owner": "this provider owns exact alternate factory; actor-control owns Pidgey initial root802C85B0 and complete existing behaviors"
+      },
+      {
+        "definition": "0x802cd848",
+        "actor_id": 123,
+        "factory": "func_beach_802C9204",
+        "owner": "this provider"
+      },
+      {
+        "definition": "0x802ce0dc",
+        "actor_id": 1006,
+        "factory": "func_beach_802CBDA0",
+        "owner": "this provider"
+      }
+    ],
+    "reused_actor_control": {
+      "manifest": "cmake/actor-control-inputs.json",
+      "source": "560620.c:1-232 ordinary Pidgey behavior/factory,563000.c:1-338 ordinary Pikachu and562BC0.c Lapras/Pikachu remain uniquely owned there; no duplicate imports",
+      "common": "Original state/random/path/aux/wait/cleanup/AddAtGeo/jump/fall/movement definitions and checked native Source/World/Services leaves"
+    },
+    "graphs": [
+      "0x802cd1e4",
+      "0x802cd214",
+      "0x802cd858"
+    ],
+    "weighted_states": [
+      "0x802cd8b8"
+    ],
+    "roots": [
+      "0x802c8db0",
+      "0x802ca148",
+      "0x802cbce0"
+    ],
+    "consumed_direct_source_fields": [
+      "miscVars[0].field0",
+      "collisionRadius",
+      "counter",
+      "processFlags",
+      "pathProc",
+      "hSpeed",
+      "jumpVel",
+      "transitionGraph",
+      "behavior (spawned1006 through802CBDD8)"
+    ],
+    "common_native_contracts": [
+      "isle_actor_owner_environment_sound(IsleActorSource*,uint8_t,int32_t) returns actual Environment.play status for canonical object/model/playerDist; C adapter faults only after the native frame returns",
+      "isle_actor_owner_spawn and spawn_dl4 admit exact factory, initialization and singleton definition identities; spawn_dl4 retains original ordinary spawn then DL4 move",
+      "isle_actor_owner_add_one admits CD838/id16,CD848/id123,CE0DC/id1006 and preserves World singleton/getFreePokemonId/native block enrollment, actual geo placement and child lifetime"
+    ],
+    "data_and_lifetime": "Actual typed model/animation/setup/graph/weighted/definition records belong to existing ActorResources and BehaviorBindings over the retained admitted Snapshot. Process state remains canonical IsleActorSource in ActorOwner; no singleton/native object/model/animation is fabricated. Existing actor cleanup closes native queues/field references/model incarnations/node credits and real joins independently of rendering/GPU holds. Environment.play retains its real object/model/distance borrows until source cleanup fixes/stops them. Alternate Pidgey uses its actual existing17-node initializationCD118 and full existing initial-root802C85B0 closure, not a new model or callback alias.",
+    "control_flow": "All original branches, counters, waits, omCreateProcess(kind1,priority1), path/aux completion, exact animation starts/force bits and link3 commands30/37/38 remain complete original C. Special1005 uses the actual70/30 weighted list, creates the chosen geo helper then waits1 before cleanup;1006 broadcasts37, waits1, plays environmental sound0x34/category1, force-animates and waits for completion before38 and cleanup.",
+    "alternate_pidgey_factory": "src/beach/560620.c:234-236 complete original802C8D74, added by explicit parent extension; ordinary802C8D3C and all Pidgey behavior definitions stay actor-control-owned"
+  },
+  "native_support": {
+    "src/actor_course_context.hpp": {
+      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/rainbow_actor.hpp": {
+      "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
+    },
+    "src/rainbow_actor.cpp": {
+      "sha256": "cee34cf3abf985d85ca3031735f477fab0de70b3d445572cba5086aeba84542d"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
+    "src/beach_scyther_special_source.h": {
+      "sha256": "37b5bed6ed6756be83ecfdae3f60f30a8b7f09ca8a2df6d013a8a2d9109b2d4a"
+    },
+    "src/beach_scyther_special_source.c": {
+      "sha256": "a10f73263da7bb999b9aee1c80ff5ecdcdb0c3d3f386af17b3e7ce6390d6ecef"
+    },
+    "src/beach_scyther_special.hpp": {
+      "sha256": "acdb41ad66857c61b28cf196735d9c87da4561b4a4a849fdaf1dee0c9b4e09f7"
+    },
+    "src/beach_scyther_special.cpp": {
+      "sha256": "9c4d27913d8cd848adfeab446de68cc091f066b8de5a9a69e15b29741d8fab59"
+    },
+    "src/actor_owner.hpp": {
+      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
+    },
+    "src/actor_interaction_services.hpp": {
+      "sha256": "9b4274b5dea8584573a639f6315ca57736322c1e463af4bc28355f6fd99cc467"
+    },
+    "src/actor_interaction_services.cpp": {
+      "sha256": "1e0211f4e9b89b43193d0a98a23fe72908f5e07fddf91e09eefe778955f5d3c2"
+    },
+    "src/actor_interaction_services.h": {
+      "sha256": "3ae9ca3cee1e32d2658c969d6b458290783c711de3a8f4c10966d1f24ce00158"
+    },
+    "src/actor_behavior_bindings.hpp": {
+      "sha256": "aff3e08cff850bf85f78f10f6d683ad4d11f1eb8c464fbabc5078f3e0b7fc3c5"
+    },
+    "src/actor_behavior_bindings.cpp": {
+      "sha256": "f48065907d97fe625e39102fbc001219537181ae5316c8f44d1cf1a4231fa278"
+    },
+    "src/beach_initial_species_source.h": {
+      "sha256": "f3b9af4297ab671784d98e8f4180d61a745b3b8e7b4cde58299ce81f5ad55df7"
+    },
+    "src/actor_resources.hpp": {
+      "sha256": "308a6616098f33604e91de5fc1f29a5e218e3ddc44d880ee80aa91bf4bbfc9c6"
+    },
+    "src/actor_resource_catalog.hpp": {
+      "sha256": "67614a3226f94ce82d21d3f9a41ae0767ce591ada76d224d5613312e51394c5d"
+    },
+    "src/beach_actor_scene.hpp": {
+      "sha256": "6b2939a4c2fccc1af5508ea7229185810f2283528c77b0f3ee23b77f9a4a21dc"
+    },
+    "src/actor_resources.cpp": {
+      "sha256": "1c181185d679b63c353a237f477ac39e812f60cfe8d35a55b7a6928db6933faa"
+    },
+    "src/actor_resource_catalog.cpp": {
+      "sha256": "935d9ce4454abfa5779e67493b54bdc5159c95e04cd6bcb1e872375f356ebdcb"
+    },
+    "src/beach_actor_catalog.cpp": {
+      "sha256": "64cef87c78f2f735a8ed2e2d126dc9c3759a9a987b535a8c4fd1fa0e38c9e424"
+    },
+    "src/rainbow_actor_catalog.cpp": {
+      "sha256": "e5cbeede5a05407dacebdfcf9172149cbeb725aeb800a1e48fddcbaa78c3f679"
+    },
+    "src/beach_actor_scene.cpp": {
+      "sha256": "2879ea9d105fde5d6f90565f7a97d73f57c8f20c6500267cfacc59a7b9fea66c"
+    },
+    "src/actor_behavior_resources.hpp": {
+      "sha256": "ee2c6e6121b72d4393cd20cea1255c09e92aa749fafdcc2f5409bdecc48bec0b"
+    },
+    "src/actor_behavior_resources.cpp": {
+      "sha256": "f69c2b50b631a7ed39be36b2b2235429694ff647b27e296c785c9f92a27e4ff9"
+    },
+    "src/environment_sound.hpp": {
+      "sha256": "a20cc9368218c472f43a9315956545cdf83f09939bfbac9037d31a515fc34c60"
+    },
+    "src/environment_sound.cpp": {
+      "sha256": "5d69b9c4d75b745f319c8e43bdfe949ed76540d2f46415ceee237af3837846cd"
+    },
+    "src/engine_internal.h": {
+      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+    }
+  },
+  "output_sha256": "2cdd62d247d7cd9c6868e8475da88d24fbdedee48cb16aebac52f8e8917ad1bb"
+}

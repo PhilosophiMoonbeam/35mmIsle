@@ -2,18 +2,28 @@
 #include "world_collision.hpp"
 #include "scene_services.hpp"
 #include "borrowed_model_kernel.hpp"
-#include "menu_scene_bridge.h"
+#include <array>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <exception>
 #include <stdexcept>
+#include <utility>
 
 // GAME pin df8815e75f3d79618466e01e0827c6165b93d11c world/block.c,
 // world/movement.c and world/60860.c. Native OM records, not SDK object layouts.
 namespace isle::world {
 namespace {
 void check(IsleGameResult r) { if (r != ISLE_GAME_OK) throw std::runtime_error("Native world OM operation failed"); }
-void check(menu::animation::Status s) { if (!s) throw std::runtime_error("Native world animation operation failed"); }
+[[noreturn]] void animation_failure(const char* operation, menu::animation::Status s) {
+    std::array<char,160> message{};
+    std::snprintf(message.data(),message.size(),"%s (error=%u, address=0x%08x)",operation,
+        static_cast<unsigned>(s.error),static_cast<unsigned>(s.address));
+    throw std::runtime_error(message.data());
+}
+void check(menu::animation::Status s) {
+    if (!s) animation_failure("Native world animation operation failed",s);
+}
 Vec3 converted(menu::Vec3 v) { return {v.x,v.y,v.z}; }
 Vec3 relative(const Block& a, const Block& b) {
     const auto x = a.resource->metadata.world_position, y = b.resource->metadata.world_position;
@@ -21,19 +31,22 @@ Vec3 relative(const Block& a, const Block& b) {
 }
 ResourceView view(const Resources& r) {
     r.require_live();
-    // Pinned Beach 55C110.c79-84 installs only its height map. ground.c3-4
-    // initializes sCeilingMap to NULL; neither decoded WorldSetup nor
-    // WorldBlockSetup contains a ceiling pointer. Other courses must supply
-    // their admitted map through ResourceView, not an invented Beach address.
+    // Preserve Source's NULL map absence. Missing ground is not a malformed
+    // present height map; missing ceilings leave caller-owned output intact.
     return {&r.setup(),&r.sky(),r.blocks(),r.primary_count(),r.models(),r.materials(),r.animations(),r.paths(),
-            r.static_definitions(),&r.height_map(),r.collision_models(),nullptr};
+            r.static_definitions(),r.height_map().wire.bytes.empty() ? nullptr : &r.height_map(),r.collision_models(),
+            r.ceiling_map().wire.bytes.empty() ? nullptr : &r.ceiling_map(),r.sky_model_index()};
 }
 }
 struct World::Impl {
-    struct Binding { Impl* owner; Block* block; menu::animation::InstanceHandle instance; IsleGameModel* model; bool road; };
+    struct Binding {
+        Impl* owner; Block* block; menu::animation::InstanceHandle instance; IsleGameModel* model; bool road;
+        IsleGameProcess* process = nullptr;
+    };
     IsleGame* game;
     scene::Services* services;
     ResourceView resources;
+    ModuleState& module;
     Callbacks callbacks;
     std::vector<Block> blocks;
     std::vector<RenderObject> render;
@@ -44,20 +57,37 @@ struct World::Impl {
     Block* current = nullptr;
     IsleGameObject* sky_object = nullptr;
     IsleGameModel* sky_model = nullptr;
+    menu::animation::InstanceHandle sky_instance;
     IsleGameCamera* camera = nullptr;
+    IsleGameProcess* timer_process = nullptr;
     IsleGameProcess* follow_process = nullptr;
-    float timer = 0, sky_speed = 1, sky_yaw = 0;
-    bool retired = false, constructed = false, failed = false, retirement_removed = false;
-    std::size_t retirement_index = 0;
-    std::string error_text = "Native world callback failed";
+    IsleGameProcess* sky_texture_process = nullptr;
+    IsleGameProcess* sky_yaw_process = nullptr;
+    float sky_yaw = 0;
+    bool retired = false, constructed = false, failed = false;
+    bool retirement_requested = false, retirement_running = false, native_stopped = false;
+    bool publication_started = false, publishing = false, destroy_started = false;
+    std::array<bool,13> retirement_removed{};
+    std::size_t retirement_index = 0, logical_retirement_index = 0, callback_depth = 0;
+    std::string error_text = "Native world callback or retirement operation failed";
     std::string no_error;
 
-    Impl(IsleGame* g, scene::Services* s, ResourceView r, Callbacks c): game(g),services(s),resources(r),callbacks(c) {}
+    Impl(IsleGame* g, scene::Services* s, ResourceView r, ModuleState& m, Callbacks c)
+        : game(g),services(s),resources(r),module(m),callbacks(c) {}
     void live() const {
-        if (retired) throw std::logic_error("Retired world component");
+        if (retired || retirement_requested) throw std::logic_error("Retired world component");
+        if (!constructed && !publishing) throw std::logic_error("World native records are not published");
     }
-    void callback(bool result) {
+    template<class Function, class... Args>
+    bool invoke(Function function, Args&&... args) noexcept {
+        ++callback_depth;
+        const bool result = function(callbacks.user,std::forward<Args>(args)...);
+        --callback_depth;
+        return result;
+    }
+    bool callback(bool result) {
         if (!result) { failed = true; throw std::runtime_error(error_text); }
+        return !retirement_requested;
     }
     void owns(const Block& b) const {
         live();
@@ -65,8 +95,8 @@ struct World::Impl {
     }
     static void default_update(IsleGameObject* object, void* user) noexcept {
         auto& s = *static_cast<Impl*>(user);
-        if (s.retired || s.failed) return;
-        if (!s.callbacks.process_commands(s.callbacks.user,object)) s.failed = true;
+        if (s.retired || s.retirement_requested || s.failed) return;
+        if (!s.invoke(s.callbacks.process_commands,object)) s.failed = true;
     }
     IsleGameObject* object(std::uint32_t id, std::uint32_t priority = 0x80000000) {
         IsleGameObject* result = nullptr;
@@ -90,12 +120,88 @@ struct World::Impl {
         // a deferred self-delete or failed join must keep this context alive.
         IsleGameObjectMetadata metadata{};
         if (isle_game_object_metadata(game,object,&metadata) == ISLE_GAME_INVALID_ARGUMENT) {
+            for (auto& binding : bindings)
+                if ((binding.road ? binding.block->road_object : binding.block->object) == object) {
+                    binding.process = nullptr;
+                    binding.model = nullptr;
+                }
             for (auto& r : render) if (r.object == object) { r.object = nullptr; r.model = nullptr; }
             object = nullptr;
             return true;
         }
         failed = true;
         return false;
+    }
+    bool stop_object(IsleGameObject* object) noexcept {
+        if (!object) return true;
+        IsleGameObjectMetadata metadata{};
+        if (isle_game_object_metadata(game,object,&metadata) != ISLE_GAME_OK ||
+            isle_game_object_set_flags(game,object,metadata.flags|1u) != ISLE_GAME_OK ||
+            isle_game_pause_updates(game,object,1) != ISLE_GAME_OK) {
+            failed = true;
+            return false;
+        }
+        return true;
+    }
+    bool stop_native() noexcept {
+        if (native_stopped) return true;
+        // Native objects/models remain live for already-admitted consumers.
+        // Suppress their real scheduling, not merely our C++ callback bodies.
+        for (auto& b : blocks)
+            if (!stop_object(b.object) || !stop_object(b.road_object)) return false;
+        if (!stop_object(sky_object)) return false;
+        for (auto& binding : bindings)
+            if (binding.process && isle_game_pause_process(game,binding.process,1) != ISLE_GAME_OK) {
+                failed = true;
+                return false;
+            }
+        if ((timer_process && isle_game_pause_process(game,timer_process,1) != ISLE_GAME_OK) ||
+            (follow_process && isle_game_pause_process(game,follow_process,1) != ISLE_GAME_OK) ||
+            (sky_texture_process && isle_game_pause_process(game,sky_texture_process,1) != ISLE_GAME_OK) ||
+            (sky_yaw_process && isle_game_pause_process(game,sky_yaw_process,1) != ISLE_GAME_OK)) {
+            failed = true;
+            return false;
+        }
+        native_stopped = true;
+        return true;
+    }
+    void begin_destroy() noexcept {
+        if (publication_started && !destroy_started) {
+            destroy_started = true;
+            module.reset_road_events();
+        }
+    }
+    bool advance_retirement(bool collect) noexcept {
+        auto& index = collect ? retirement_index : logical_retirement_index;
+        for (; index < blocks.size(); ++index) {
+            auto& b = blocks[index];
+            if (!retirement_removed[index] && constructed && callbacks.remove &&
+                !invoke(callbacks.remove,b)) { failed = true; return false; }
+            retirement_removed[index] = true;
+            if (!collect) continue;
+            if (b.instance) {
+                if (!animation->begin_retire(b.instance)) { failed = true; return false; }
+                b.instance = {};
+            }
+            if (b.road_instance) {
+                if (!animation->begin_retire(b.road_instance)) { failed = true; return false; }
+                b.road_instance = {};
+            }
+            // Whole-object deletion performs the actual native process joins.
+            // erase retains an object/context if a join has not completed.
+            if (!erase(b.object)) return false;
+            b.model = nullptr;
+            if (!erase(b.road_object)) return false;
+            b.road_model = nullptr;
+        }
+        if (!collect) return true;
+        if (!erase(sky_object)) return false;
+        sky_model = nullptr; timer_process = nullptr; follow_process = nullptr;
+        sky_texture_process = nullptr; sky_yaw_process = nullptr; sky_instance = {};
+        render.clear(); current = nullptr;
+        if (animation) animation->retire();
+        retired = true;
+        return true;
     }
     void process(IsleGameObject* o, IsleGameCallback callback, void* user, std::uint32_t priority,
                  IsleGameProcess** output = nullptr) {
@@ -141,16 +247,19 @@ struct World::Impl {
             check(isle_game_model_set_transform(game,b.model,i,&transform));
             check(isle_game_model_set_flags(game,b.model,i,n.flags));
         }
-        for (const auto& e : animation->events()) if (e.instance == b.instance && e.event_id >= 0 && e.event_id < 14) {
+        if (b.road) for (const auto& e : animation->events()) if (e.instance == b.instance && e.event_id >= 0 && e.event_id < 14) {
+            auto& road = module.road_events[static_cast<std::size_t>(e.event_id)];
+            road.animation_time = state.animation_time;
+            road.visibility = e.argument;
             visibility(static_cast<std::uint32_t>(e.argument));
         }
     }
     static void update_texture(IsleGameObject*, void* user) noexcept {
         auto& b = *static_cast<Binding*>(user);
         auto& s = *b.owner;
-        if (s.retired || s.failed) return;
+        if (s.retired || s.retirement_requested || s.failed) return;
         try {
-            float time = s.timer;
+            float time = s.module.global_timer;
             while (time >= 100) time -= 100;
             check(s.animation->restart_model(b.instance,time));
             check(s.animation->set_texture_speed(b.instance,0));
@@ -160,21 +269,42 @@ struct World::Impl {
     }
     static void update_timer(IsleGameObject*, void* user) noexcept {
         auto& s = *static_cast<Impl*>(user);
-        if (s.retired || s.failed) return;
-        float time = s.timer+s.sky_speed;
-        while (time < 0) time += 10000;
+        if (s.retired || s.retirement_requested || s.failed) return;
+        float time = s.module.global_timer+s.module.sky_animation_speed;
+        while (time < 0) time += static_cast<float>(s.module.sky_max_angle);
         time *= 10000.0f;
         time = static_cast<float>((static_cast<std::int32_t>(time)+5)/10);
         time /= 1000.0f;
-        while (time >= 10000) time -= 10000;
-        s.timer = time;
+        while (time >= s.module.sky_max_angle) time -= static_cast<float>(s.module.sky_max_angle);
+        s.module.global_timer = time;
+    }
+    static void update_sky_texture(IsleGameObject*, void* user) noexcept {
+        auto& s = *static_cast<Impl*>(user);
+        if (s.retired || s.retirement_requested || s.failed) return;
+        try { check(s.animation->step_model(s.sky_instance)); }
+        catch (...) { s.failed = true; }
+    }
+    static void update_sky_yaw(IsleGameObject*, void* user) noexcept {
+        auto& s = *static_cast<Impl*>(user);
+        if (s.retired || s.retirement_requested || s.failed) return;
+        try {
+            s.sky_yaw = 6.283185482f*s.module.global_timer/static_cast<float>(s.module.sky_max_angle);
+            const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+            check(isle_game_model_peek_nodes(s.game,s.sky_model,&nodes,&count));
+            auto transform = nodes[0].transform;
+            transform.rotation.y = s.sky_yaw;
+            check(isle_game_model_set_transform(s.game,s.sky_model,0,&transform));
+        } catch (...) { s.failed = true; }
     }
     static void update_follow(IsleGameObject*, void* user) noexcept {
         auto& s = *static_cast<Impl*>(user);
-        if (s.retired || s.failed || !s.camera || !s.sky_model) return;
+        if (s.retired || s.retirement_requested || s.failed || !s.camera || !s.sky_model) return;
         const IsleGameCameraParameters* p = nullptr;
         if (isle_game_camera_parameters(s.game,s.camera,&p) != ISLE_GAME_OK) { s.failed = true; return; }
-        const IsleGameModelTransform t{{p->look_at.eye[0],p->look_at.eye[1],p->look_at.eye[2]},{},{1,1,1}};
+        const IsleGameModelNode* nodes = nullptr; std::size_t count = 0;
+        if (isle_game_model_peek_nodes(s.game,s.sky_model,&nodes,&count) != ISLE_GAME_OK) { s.failed = true; return; }
+        auto t = nodes[0].transform;
+        t.position = {p->look_at.eye[0],p->look_at.eye[1],p->look_at.eye[2]};
         if (isle_game_model_set_transform(s.game,s.sky_model,0,&t) != ISLE_GAME_OK) s.failed = true;
     }
     void relocate(Block& reference) {
@@ -187,9 +317,16 @@ struct World::Impl {
         }
     }
 };
-World::World(scene::Services& s, const Resources& r, Callbacks c): World(s.game,&s,view(r),c) {}
-World::World(IsleGame* g, ResourceView r, Callbacks c): World(g,nullptr,r,c) {}
-World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c): impl_(std::make_unique<Impl>(g,services,r,c)) {
+World::World(scene::Services& s, const Resources& r, ModuleState& m, Callbacks c,
+             menu::animation::ExecutionCapacity execution): World(s.game,&s,view(r),m,c,false,execution) {}
+World::World(scene::Services& s, const Resources& r, ModuleState& m, Callbacks c, bool defer_publication,
+             menu::animation::ExecutionCapacity execution)
+    : World(s.game,&s,view(r),m,c,defer_publication,execution) {}
+World::World(IsleGame* g, ResourceView r, ModuleState& m, Callbacks c,
+             menu::animation::ExecutionCapacity execution): World(g,nullptr,r,m,c,false,execution) {}
+World::World(IsleGame* g, scene::Services* services, ResourceView r, ModuleState& m, Callbacks c, bool defer_publication,
+             menu::animation::ExecutionCapacity execution)
+    : impl_(std::make_unique<Impl>(g,services,r,m,c)) {
     if (!g || !r.setup || !r.sky || r.blocks.empty() || r.blocks.size() >= 13 || r.primary_count == 0 ||
         r.primary_count > r.blocks.size() || !c.shift_camera || !c.shift_effects || (!services && !c.process_commands))
         throw std::invalid_argument("World requires source resources, command service and position-shift callbacks");
@@ -206,36 +343,63 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
             capacities.push_back(menu::animation::slot_capacity(r.models[block.road_model]));
         }
     }
+    if (r.sky_model_index != no_index) {
+        if (r.sky_model_index >= r.models.size()) throw std::invalid_argument("World sky escapes resource pool");
+        capacities.insert(capacities.begin(),menu::animation::slot_capacity(r.models[r.sky_model_index]));
+    }
     std::size_t max_nodes = 0;
     for (const auto capacity : capacities) max_nodes = std::max(max_nodes,capacity.nodes);
     s.attachment_scratch.resize(max_nodes);
-    auto animation = menu::animation::Runtime::create({r.models,r.materials,r.animations,menu::no_index,r.paths},capacities,{},{});
-    if (!animation) throw std::runtime_error("World native animation resource admission failed");
+    auto animation = menu::animation::Runtime::create({r.models,r.materials,r.animations,menu::no_index,r.paths},capacities,{},execution);
+    if (!animation) animation_failure("World native animation resource admission failed",animation.status);
     s.animation = std::move(animation.runtime);
     s.collisions = std::make_unique<collision::PreparedModels>(r.collision_models);
     s.blocks.resize(r.blocks.size()); s.bindings.reserve(r.blocks.size()*2); s.render.reserve(r.blocks.size()*2+1);
+    for (std::size_t i = 0; i < s.blocks.size(); ++i) {
+        auto& b = s.blocks[i]; b.index = i; b.resource = &r.blocks[i];
+        b.control_points = i < r.primary_count && b.resource->metadata.control_line_count > 0 &&
+            b.resource->metadata.control_line_count < 4;
+        if (i < r.primary_count) {
+            if (i) b.previous = &s.blocks[i-1];
+            if (i+1 < r.primary_count) b.next = &s.blocks[i+1];
+        }
+    }
+    if (!defer_publication) {
+        try { publish(); } catch (...) { if (!retire()) std::terminate(); throw; }
+    }
+}
+void World::publish() {
+    auto& s = *impl_;
+    if (s.publication_started || s.retired || s.retirement_requested ||
+        isle_game_require_idle(s.game) != ISLE_GAME_OK)
+        throw std::logic_error("World publication requires a prepared, unpublished idle owner");
+    s.publication_started = true;
+    s.publishing = true;
+    s.module.reset_road_events();
+    const auto& r = s.resources;
+    auto* g = s.game;
+    auto* services = s.services;
     try {
         s.sky_object = s.object(99);
-        s.process(s.sky_object,Impl::update_timer,&s,2);
+        s.process(s.sky_object,Impl::update_timer,&s,2,&s.timer_process);
         if (r.sky->display_list_guest) {
-            if (r.sky->render_callback_guest != 0x800e1ca4 || r.sky->materials_guest || r.sky->animation_guest)
-                throw std::invalid_argument("World Beach sky requires admitted one-cycle static source callback");
-            const IsleGameModelNodeInit root{UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE};
-            check(isle_game_attach_model(g,s.sky_object,&root,1,&s.sky_model));
-            s.render.push_back({s.sky_object,s.sky_model,no_index,r.sky->display_list_guest,r.sky->render_callback_guest,9,3,0x80000001,true});
+            if (r.sky_model_index == no_index) throw std::invalid_argument("World sky lacks authoritative catalog model");
+            const auto acquired = s.animation->acquire(0,r.sky_model_index,false);
+            check(acquired.status); s.sky_instance = acquired.handle;
+            s.sky_model = s.attach(s.sky_object,r.sky_model_index,false,s.sky_instance);
+            s.render.push_back({s.sky_object,s.sky_model,r.sky_model_index,r.sky->display_list_guest,r.sky->render_callback_guest,9,3,0x80000001,true,s.sky_instance});
             if (services && !services->set_render(s.sky_object,{3,0x80000001,UINT32_MAX})) throw std::runtime_error("World sky render ordering failed");
-        }
-        s.sky_speed = r.setup->sky_animation_speed;
-        for (std::size_t i = 0; i < s.blocks.size(); ++i) {
-            auto& b = s.blocks[i]; b.index = i; b.resource = &r.blocks[i];
-            b.control_points = i < r.primary_count && b.resource->metadata.control_line_count > 0 &&
-                b.resource->metadata.control_line_count < 4;
-            if (i < r.primary_count) {
-                if (i) b.previous = &s.blocks[i-1];
-                if (i+1 < r.primary_count) b.next = &s.blocks[i+1];
+            if (r.sky->animation_guest) {
+                s.process(s.sky_object,Impl::update_sky_texture,&s,1,&s.sky_texture_process);
+                check(s.animation->set_texture_speed(s.sky_instance,r.sky->animation_speed));
             }
+            if (r.sky->render_callback_guest == 0x800e1d80)
+                s.process(s.sky_object,Impl::update_sky_yaw,&s,1,&s.sky_yaw_process);
+        }
+        for (std::size_t i = 0; i < s.blocks.size(); ++i) {
+            auto& b = s.blocks[i];
             if (b.resource->model != no_index) {
-                const auto acquired = s.animation->acquire(s.bindings.size(),b.resource->model,false);
+                const auto acquired = s.animation->acquire(s.bindings.size()+(s.sky_instance ? 1 : 0),b.resource->model,false);
                 check(acquired.status);
                 b.instance = acquired.handle;
                 // block.c appends the translation recipe before setting the
@@ -243,15 +407,18 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
                 const menu::animation::Transform root{{},{0,b.resource->metadata.yaw,0},{1,1,1}};
                 check(s.animation->set_node_transform(b.instance,0,root));
                 b.object = s.object(static_cast<std::uint32_t>(100+i*2));
-                b.model = s.attach(b.object,b.resource->model,true,b.instance);
-                const auto callback = static_cast<std::uint32_t>(r.models[b.resource->model].render_type);
+                const auto& model = r.models[b.resource->model];
+                b.model = s.attach(b.object,b.resource->model,
+                    model.matrix_kinds == std::array<std::uint8_t,3>{1,0,0},b.instance);
+                const auto callback = model.render_type == menu::RenderType::b_fogged ?
+                    0x800a15d8u : b.resource->metadata.render_callback_guest;
                 s.render.push_back({b.object,b.model,b.resource->model,b.resource->metadata.display_list_guest,callback,9,3,0x80000000,false,b.instance});
                 s.bindings.push_back({&s,&b,b.instance,b.model,false});
                 if (b.resource->metadata.texture_animation_guest)
-                    s.process(b.object,Impl::update_texture,&s.bindings.back(),1);
+                    s.process(b.object,Impl::update_texture,&s.bindings.back(),1,&s.bindings.back().process);
             }
             if (i < r.primary_count && b.resource->metadata.control_line_count >= 2 && b.resource->road_model != no_index) {
-                const auto acquired = s.animation->acquire(s.bindings.size(),b.resource->road_model,false);
+                const auto acquired = s.animation->acquire(s.bindings.size()+(s.sky_instance ? 1 : 0),b.resource->road_model,false);
                 check(acquired.status);
                 b.road_instance = acquired.handle;
                 b.road_object = s.object(static_cast<std::uint32_t>(101+i*2));
@@ -265,9 +432,16 @@ World::World(IsleGame* g, scene::Services* services, ResourceView r, Callbacks c
         // Beach primary list is null-terminated (not the source's optional
         // repeated-first-descriptor loop form). Secondary blocks stay unlinked.
         if (s.blocks[0].road_model) reset_road(s.blocks[0],0);
+        set_sky_animation_speed(r.setup->sky_animation_speed);
         s.constructed = true;
-    } catch (...) { if (!retire()) std::terminate(); throw; }
+        s.publishing = false;
+    } catch (...) {
+        s.publishing = false;
+        s.failed = true;
+        throw;
+    }
 }
+bool World::published() const noexcept { return impl_->constructed && !retired(); }
 World::~World() noexcept { if (!retire()) std::terminate(); }
 std::span<Block> World::blocks() noexcept { return impl_->blocks; }
 std::span<const Block> World::blocks() const noexcept { return impl_->blocks; }
@@ -277,9 +451,9 @@ Block* World::enter_first(std::size_t index) {
     if (index >= s.blocks.size()) return nullptr;
     auto& b = s.blocks[index]; s.current = &b; s.relocate(b);
     if (s.callbacks.add) {
-        s.callback(s.callbacks.add(s.callbacks.user,b,b));
-        if (b.previous) s.callback(s.callbacks.add(s.callbacks.user,*b.previous,b));
-        if (b.next) s.callback(s.callbacks.add(s.callbacks.user,*b.next,b));
+        if (!s.callback(s.invoke(s.callbacks.add,b,b))) return nullptr;
+        if (b.previous && !s.callback(s.invoke(s.callbacks.add,*b.previous,b))) return nullptr;
+        if (b.next && !s.callback(s.invoke(s.callbacks.add,*b.next,b))) return nullptr;
     }
     return &b;
 }
@@ -289,15 +463,17 @@ Block* World::enter_next() {
     if (!old || !old->next) return nullptr;
     auto& next = *old->next; s.current = &next;
     const auto delta = relative(*old,next);
-    s.callback(s.callbacks.shift_camera(s.callbacks.user,delta));
-    s.callback(s.callbacks.shift_effects(s.callbacks.user,delta));
+    if (!s.callback(s.invoke(s.callbacks.shift_camera,delta))) return nullptr;
+    if (!s.callback(s.invoke(s.callbacks.shift_effects,delta))) return nullptr;
     s.relocate(next);
-    if (old->previous && s.callbacks.remove) s.callback(s.callbacks.remove(s.callbacks.user,*old->previous));
-    if (next.next && s.callbacks.add) s.callback(s.callbacks.add(s.callbacks.user,*next.next,next));
+    if (old->previous && s.callbacks.remove &&
+        !s.callback(s.invoke(s.callbacks.remove,*old->previous))) return nullptr;
+    if (next.next && s.callbacks.add &&
+        !s.callback(s.invoke(s.callbacks.add,*next.next,next))) return nullptr;
     if (s.callbacks.change) {
         for (std::size_t i = 0; i <= old->index && i < s.blocks.size(); ++i)
-            s.callback(s.callbacks.change(s.callbacks.user,s.blocks[i],next));
-        s.callback(s.callbacks.change(s.callbacks.user,next,next));
+            if (!s.callback(s.invoke(s.callbacks.change,s.blocks[i],next))) return nullptr;
+        if (!s.callback(s.invoke(s.callbacks.change,next,next))) return nullptr;
     }
     return &next;
 }
@@ -309,8 +485,7 @@ void World::reset_road(Block& b, float skip) {
     check(s.animation->step_model(b.road_instance));
     for (auto& binding : s.bindings) if (binding.model == b.road_model) { s.synchronize(binding); break; }
 }
-namespace {
-MovementSample control_sample(menu::animation::ModelState state, float cp, bool reversed, std::int32_t lines,
+MovementSample sample_control_points(menu::animation::ModelState state, float cp, bool reversed, std::int32_t lines,
                               std::span<const float> timestamps) {
     if (lines < 2 || state.nodes.size() < static_cast<std::size_t>(lines)) return {};
     cp = std::clamp(cp,0.0f,1.0f); if (reversed) cp = 1-cp;
@@ -327,7 +502,6 @@ MovementSample control_sample(menu::animation::ModelState state, float cp, bool 
             {lerp(first.rotation.x,second.rotation.x),lerp(first.rotation.y,second.rotation.y),lerp(first.rotation.z,second.rotation.z)},
             lerp(first.scale.x,second.scale.x)};
 }
-}
 MovementSample World::sample(Block& b, float move, float cp) {
     auto& s = *impl_; s.owns(b);
     if (!b.road_model || !b.control_points || !b.resource->metadata.movement_animation_guest || b.resource->road_model == no_index) return {};
@@ -337,13 +511,13 @@ MovementSample World::sample(Block& b, float move, float cp) {
     check(s.animation->set_model_speed(index,target-s.animation->model(index).animation_time));
     check(s.animation->step_model(index));
     for (auto& binding : s.bindings) if (binding.model == b.road_model) { s.synchronize(binding); break; }
-    return control_sample(s.animation->model(index),cp,b.resource->metadata.reversed,
+    return sample_control_points(s.animation->model(index),cp,b.resource->metadata.reversed,
                           b.resource->metadata.control_line_count,b.resource->control_timestamps);
 }
 float World::next_speed(const Block& b, float cp) const {
     impl_->owns(b);
     if (!b.road_model || !b.control_points || !b.resource->metadata.movement_animation_guest) return 0;
-    return control_sample(impl_->animation->model(b.road_instance),cp,b.resource->metadata.reversed,
+    return sample_control_points(impl_->animation->model(b.road_instance),cp,b.resource->metadata.reversed,
                           b.resource->metadata.control_line_count,b.resource->control_timestamps).speed;
 }
 void World::set_visibility(std::uint32_t mask) {
@@ -366,13 +540,23 @@ void World::set_sky_position(Vec3 position, float yaw, float animation_time) {
 void World::set_sky_animation_speed(float speed) {
     impl_->live();
     if (!std::isfinite(speed) || speed < -10000 || speed > 10000) throw std::invalid_argument("Invalid world sky animation speed");
-    impl_->sky_speed = speed;
+    impl_->module.sky_animation_speed = speed;
+    if (impl_->sky_instance && impl_->resources.sky->animation_guest)
+        check(impl_->animation->set_texture_speed(impl_->sky_instance,speed));
 }
-float World::global_time() const noexcept { return impl_->timer; }
-std::span<const RenderObject> World::render_objects() const noexcept { return impl_->render; }
+float World::global_time() const noexcept { return impl_->module.global_timer; }
+std::span<const RenderObject> World::render_objects() const noexcept {
+    if (impl_->retirement_requested) return {};
+    return impl_->render;
+}
 menu::animation::ModelState World::animation_model(menu::animation::InstanceHandle h) const { impl_->live(); return impl_->animation->model(h); }
 const menu::animation::Runtime& World::animation_runtime() const { impl_->live(); return *impl_->animation; }
 const ResourceView& World::resources() const noexcept { return impl_->resources; }
+RenderView World::render_view() const noexcept {
+    return {&impl_->resources,impl_->animation.get(),impl_->render,this,
+        [](const void* owner) noexcept { return !static_cast<const World*>(owner)->retired() &&
+            static_cast<const World*>(owner)->published() && static_cast<const World*>(owner)->error().empty(); }};
+}
 bool World::ground_at(float x, float z, GroundResult& result) const {
     const auto& s = *impl_; s.live(); result = {};
     if (!s.current || !s.current->resource || !s.resources.height_map) return false;
@@ -416,7 +600,7 @@ std::int32_t World::collide(Vec3 position, Vec3 velocity, Vec3& out_position, Ve
 }
 void World::clear_block(Block& b) {
     auto& s = *impl_; s.owns(b);
-    if (s.callbacks.remove) s.callback(s.callbacks.remove(s.callbacks.user,b));
+    if (s.callbacks.remove && !s.callback(s.invoke(s.callbacks.remove,b))) return;
     // Public animation borrows end now. This operation does not claim a joined
     // native/graphics fence and deliberately does not release/reuse either slot.
     if (b.instance) { check(s.animation->begin_retire(b.instance)); b.instance = {}; }
@@ -426,38 +610,33 @@ void World::clear_block(Block& b) {
     if (!s.erase(b.road_object)) throw std::runtime_error(s.error_text);
     b.road_model = nullptr;
 }
+bool World::request_retire() noexcept {
+    if (!impl_ || impl_->retired) return true;
+    auto& s = *impl_;
+    IsleGameCounts counts{};
+    if (isle_game_counts(s.game,&counts) != ISLE_GAME_OK) { s.failed = true; return false; }
+    s.begin_destroy();
+    s.retirement_requested = true;
+    if (s.retirement_running) return false;
+    s.retirement_running = true;
+    const bool complete = s.stop_native() && s.advance_retirement(false);
+    s.retirement_running = false;
+    return complete;
+}
 bool World::retire() noexcept {
     if (!impl_ || impl_->retired) return true;
     auto& s = *impl_;
-    // This is only a native-traversal rejection, not a graphics completion or
-    // semantic-borrow fence. The owning scene must establish those first.
-    if (isle_menu_current_object(s.game)) return false;
-    for (; s.retirement_index < s.blocks.size(); ++s.retirement_index) {
-        auto& b = s.blocks[s.retirement_index];
-        if (!s.retirement_removed && s.constructed && s.callbacks.remove &&
-            !s.callbacks.remove(s.callbacks.user,b)) { s.failed = true; return false; }
-        s.retirement_removed = true;
-        if (b.instance) {
-            if (!s.animation->begin_retire(b.instance)) { s.failed = true; return false; }
-            b.instance = {};
-        }
-        if (b.road_instance) {
-            if (!s.animation->begin_retire(b.road_instance)) { s.failed = true; return false; }
-            b.road_instance = {};
-        }
-        if (!s.erase(b.object)) return false;
-        b.model = nullptr;
-        if (!s.erase(b.road_object)) return false;
-        b.road_model = nullptr;
-        s.retirement_removed = false;
-    }
-    if (!s.erase(s.sky_object)) return false;
-    s.sky_model = nullptr; s.follow_process = nullptr;
-    s.render.clear(); s.current = nullptr; s.timer = 0;
-    if (s.animation) s.animation->retire();
-    s.retired = true;
-    return true;
+    // Native idle is not proof that GPU, Photo, semantic references or other
+    // admitted consumers released their borrows. The scene owner supplies those
+    // fences before calling this physical collector, never from a callback.
+    if (s.callback_depth || s.retirement_running || isle_game_require_idle(s.game) != ISLE_GAME_OK) return false;
+    s.begin_destroy();
+    s.retirement_running = true;
+    const bool complete = s.advance_retirement(true);
+    s.retirement_running = false;
+    return complete;
 }
-bool World::retired() const noexcept { return impl_->retired; }
+bool World::retired() const noexcept { return impl_->retired || impl_->retirement_requested; }
+bool World::retirement_complete() const noexcept { return impl_->retired; }
 const std::string& World::error() const noexcept { return impl_->failed ? impl_->error_text : impl_->no_error; }
 } // namespace isle::world

@@ -176,7 +176,7 @@ void run(const char* filename) {
     const auto snapshot=isle::rom::read_snapshot(filename);
     const p::reference::CartNumericReference reference(snapshot);
     const auto world=isle::beach::world_descriptors(snapshot);
-    const p::CartResources cart(snapshot,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
+    const p::CartResources cart(snapshot,0,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
     const auto resources=cart.animation_resources();
     require(resources.models.size()==1 && resources.models[0].nodes.size()==43 && resources.materials.size()==8 &&
             resources.animations.size()==92 && resources.paths.size()==6 && resources.camera_animation==m::no_index,

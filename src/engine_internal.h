@@ -110,6 +110,7 @@ struct OMCamera {
     GObj* obj;
     IsleGame* game;
     IsleGameCameraParameters parameters;
+    IsleGameCameraRenderState render_state;
     OMMtx* matrices[2];
     size_t numMatrices;
     u16 normalization;
@@ -151,11 +152,13 @@ struct IsleGame {
     void (*command_fault_abort)(void*);
     void* command_fault_context;
     struct IslePlayerSource* playerSource; /* Nonowning single Player C execution context. */
+    struct IslePostCourseSceneSource* postCourseSource; /* Independent of original object userData. */
     IsleGameCounts counts;
     IsleGameResult fault;
     char error[512];
     jmp_buf fault_frame;
     bool ticking;
+    bool update_stopped; /* Abandoned C traversal; never a successful OM update. */
     bool alive;
 };
 

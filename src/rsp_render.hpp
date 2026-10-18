@@ -70,8 +70,9 @@ public:
 
     explicit CanonicalExecutor(bool require_cpu, Limits limits = {});
     // Preparation writers/result readers must cease access before destruction.
-    // An outstanding GPU-only token is drained without publishing completion;
-    // the worker joins before machine/processor/backing-storage destruction.
+    // An outstanding GPU-only token is drained without publishing completion.
+    // Failure retires the JIT on the owner before the worker drains processor/
+    // RAM; otherwise the worker joins before owner-side machine/processor teardown.
     ~CanonicalExecutor();
     CanonicalExecutor(const CanonicalExecutor&) = delete;
     CanonicalExecutor& operator=(const CanonicalExecutor&) = delete;
@@ -83,13 +84,17 @@ public:
     PreparationLease begin_preparation();
     // RSP execution remains synchronous on the owner thread (shared upstream
     // JIT globals are not qualified for concurrent audio/graphics execution).
-    // Only the actual GPU submission/fence/read mapping runs on one persistent
-    // worker. No native view or preparation writer survives begin().
+    // The actual GPU submission/fence/read mapping and deferred failure drain
+    // use one persistent worker. JIT retirement stays on the creating thread.
+    // No native view or preparation writer survives begin().
     using Token = std::uint64_t;
     Token begin(PreparationLease&& preparation, const Task& task,
                 std::span<const std::byte> boot);
-    // Nonblocking actual GPU completion, not FullSync. A failure drains/poisons
-    // and throws without publishing a result lease. Tokens are single-use.
+    // Nonblocking actual GPU completion, not FullSync. Returns false while work
+    // or failure drain remains pending; failure retires the owner-thread JIT
+    // before the worker drains processor/RAM. Only after that drain does poll
+    // consume the failed token and rethrow the original failure, with no result
+    // lease. Tokens are single-use; true alone does not consume a successful one.
     bool poll(Token token);
     MemoryLease completed(Token token);
     // Blocking shutdown/abandonment fence, not an authored frame completion.

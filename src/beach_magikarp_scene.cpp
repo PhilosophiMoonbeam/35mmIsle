@@ -24,14 +24,16 @@ bool trigger_position(IsleGame* game, MagikarpTrigger trigger, IsleGameVec3& out
 }
 } // namespace
 MagikarpScene::MagikarpScene(scene::Services& services, actor::Owner& owner, world::World& world,
-                           const ActorResources& actors, const BehaviorResources& behaviors) noexcept
-    : services_(services), owner_(owner), world_(world), actors_(actors), behaviors_(behaviors) {}
+                           const actor::Resources& actors, ActorSceneState& state) noexcept
+    : services_(services), owner_(owner), world_(world), actors_(actors), state_(state) {}
 MagikarpSceneResult MagikarpScene::spawn_at(MagikarpTrigger trigger) noexcept {
+    if (actors_.course_id()!=0 || owner_.course_context().course_id()!=0 || &owner_.course_context().beach()!=&state_)
+        return reject(MagikarpSceneError::resources,"scene helper requires the canonical Beach actor state");
     // Native identity admission does not sample/copy the source position early:
     // source reads that position only AFTER the genuine current/current spawn.
     if (isle_game_model_validate_binding(services_.game,trigger.object,trigger.model)!=ISLE_GAME_OK)
         return reject(MagikarpSceneError::native,"scene trigger is not a live native GObj/model pair");
-    std::size_t definition=actor_no_index;
+    std::size_t definition=actor::actor_no_index;
     try {
         const auto definitions=actors_.definitions();
         for (std::size_t i=0;i<definitions.size();++i) {
@@ -44,7 +46,7 @@ MagikarpSceneResult MagikarpScene::spawn_at(MagikarpTrigger trigger) noexcept {
     } catch (const std::exception&) {
         return reject(MagikarpSceneError::resources,"scene ActorResources borrow is not live");
     }
-    if (definition==actor_no_index)
+    if (definition==actor::actor_no_index)
         return reject(MagikarpSceneError::resources,"scene definition802CBFF4 is absent");
     auto* current=world_.current();
     world::Spawn spawn{};
@@ -79,6 +81,8 @@ MagikarpSceneResult MagikarpScene::spawn_at(MagikarpTrigger trigger) noexcept {
     return result;
 }
 MagikarpSceneResult MagikarpScene::choose(MagikarpTrigger trigger, const world::GroundResult& ground) noexcept {
+    if (actors_.course_id()!=0 || owner_.course_context().course_id()!=0 || &owner_.course_context().beach()!=&state_)
+        return reject(MagikarpSceneError::resources,"scene chooser requires the canonical Beach actor state");
     if (ground.surface!=source_surface) return {};
     IsleGameVec3 position{};
     if (!trigger_position(services_.game,trigger,position))
@@ -97,9 +101,9 @@ MagikarpSceneResult MagikarpScene::choose(MagikarpTrigger trigger, const world::
     const float dz=position.z-placement->transform.position.z;
     if (!(std::sqrt(dx*dx+dy*dy+dz*dz)>50.0f)) return {};
     const SceneChooser* chooser=nullptr;
-    try { chooser=&behaviors_.scene_chooser(chooser_identity); }
+    try { chooser=&state_.resources.scene_chooser(chooser_identity); }
     catch (const std::exception&) {
-        return reject(MagikarpSceneError::resources,"scene BehaviorResources borrow is not live");
+        return reject(MagikarpSceneError::resources,"Beach scene resources borrow is not live");
     }
     std::int32_t total=0;
     for (const auto& entry:chooser->entries) total+=entry.weight;
@@ -114,7 +118,7 @@ MagikarpSceneResult MagikarpScene::choose(MagikarpTrigger trigger, const world::
         if (total>result.draw) {
             result.choice=i;
             if (!entry.function_identity) { result.outcome=MagikarpSceneOutcome::null_choice; return result; }
-            if (owner_.course().magikarp_active) { result.outcome=MagikarpSceneOutcome::already_active; return result; }
+            if (state_.magikarp_active) { result.outcome=MagikarpSceneOutcome::already_active; return result; }
             if (entry.function_identity!=helper_identity) {
                 result.error=MagikarpSceneError::resources;
                 result.detail="selected scene callback identity has no native source binding";
@@ -122,7 +126,7 @@ MagikarpSceneResult MagikarpScene::choose(MagikarpTrigger trigger, const world::
             }
             auto spawned=spawn_at(trigger);
             spawned.draw=result.draw; spawned.choice=i;
-            if (spawned) owner_.course().magikarp_active=true;
+            if (spawned) state_.magikarp_active=1;
             return spawned;
         }
     }

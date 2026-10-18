@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "upstream": "https://github.com/ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "implementation": [
+    "src/post_course_resources.hpp",
+    "src/post_course_resources.cpp"
+  ],
+  "scope": "Private admitted-ROM initialized data only; common plus exactly one CameraCheck/PhotoCheck overlay, no code/BSS/GAME payload compiled in native sources",
+  "source_files": {
+    "src/camera_check/87A0B0.c": {
+      "git_blob": "9968a3e8fad92f83328796da2ea7016a66e43566",
+      "sha256": "fb58429190601f3185084e072e968be93e34e7304c04a140d6d6c0b036180e67",
+      "bytes": 3008,
+      "lines": 128
+    },
+    "src/camera_check/87A330.c": {
+      "git_blob": "deeef7f09867b19aa592fe0e26bfb03feb103771",
+      "sha256": "d9c90f3255392612e6d91c8d5f7ceb910d9d364dc605169d015b2e866f6f7970",
+      "bytes": 36169,
+      "lines": 1094
+    },
+    "src/camera_check/87D1A0.c": {
+      "git_blob": "a1c2907c37f7661813930417c0d10f43d8e74c1c",
+      "sha256": "a247987d423f5c7c4ee64b0f02ed4767e44a7e446461bee791189e7c9d89985e",
+      "bytes": 43189,
+      "lines": 1128
+    },
+    "src/camera_check/87FB20.c": {
+      "git_blob": "0208c425d6831271a80bc74b61203b5768d20c2a",
+      "sha256": "35ba28eee0c502387f2779c5913db08a0b00ecc51c19823cec9c1c24bb767db8",
+      "bytes": 21660,
+      "lines": 823
+    },
+    "src/camera_check/camera_check.h": {
+      "git_blob": "47a42e62c7c55b535f5fe751e81330a1841ad062",
+      "sha256": "a73aac79180aedbc56d031cc3cd984646362bd1eec5a90fe5361e0c6ca0a2494",
+      "bytes": 4565,
+      "lines": 123
+    },
+    "src/photo_check/98C330.c": {
+      "git_blob": "4db2840e32f9b52ea72ae64f448a3fd9519d57c6",
+      "sha256": "d779d7f06ca6bc30e777f104e0bf3bea0eca136549ba90efc64af0b674f077be",
+      "bytes": 90244,
+      "lines": 2496
+    },
+    "src/photo_check/98D0F0.c": {
+      "git_blob": "394ac072187c0d53108252b8ea834b92c7f89901",
+      "sha256": "1b3fb99a0a1deecd3b342d06c74055cbf8fe69c9868bba64be4817d71476ee26",
+      "bytes": 5905,
+      "lines": 230
+    },
+    "src/photo_check/993C50.c": {
+      "git_blob": "913c7a56d2131f1eef6aaa43231fad82d9f9e03a",
+      "sha256": "206cee3019344051485d2258b762c24ffdcc1e82fc9932622dcddee543a7550c",
+      "bytes": 2419,
+      "lines": 100
+    },
+    "src/photo_check/993F80.c": {
+      "git_blob": "96c7b4a2cb298374773756a04721530df25184a9",
+      "sha256": "5895584fc50a0d9cdb094799ee731cd7f3ef840e88eacded27653f82d1bbf34f",
+      "bytes": 10211,
+      "lines": 353
+    },
+    "src/photo_check/photo_check.h": {
+      "git_blob": "6efc959c6171696a8b1ab14b554cb91597b4f02d",
+      "sha256": "27ed09f5d508fe25f31a760d92b4a923f8a88227dd34ebd400da21d3ad554a98",
+      "bytes": 1703,
+      "lines": 56
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "bytes": 383749,
+      "lines": 10549
+    }
+  },
+  "banks": {
+    "common": {
+      "rom_begin": "0x848bc0",
+      "rom_end": "0x87a0b0",
+      "guest": "0x80375410"
+    },
+    "camera_check": {
+      "rom_begin": "0x8817e0",
+      "rom_end": "0x8a70e0",
+      "guest": "0x801e3ff0",
+      "BSS_begin": "0x802098f0",
+      "sprite_prototypes": 20
+    },
+    "photo_check": {
+      "rom_begin": "0x994e10",
+      "rom_end": "0x9a6b10",
+      "guest": "0x801e53a0",
+      "BSS_begin": "0x801f70a0",
+      "sprite_prototypes": 9
+    }
+  },
+  "table_contract": {
+    "source_numeric_words_not_native_layout": true,
+    "source_NULL_text_is_absent": true,
+    "stable_native_buttons_not_guest_cast": true,
+    "mutable_data_initialization_owned_by_source_scene": true,
+    "photo_check_string_table_lengths": [
+      13,
+      168,
+      183
+    ],
+    "reached_sprite_roots": {"camera_check": 20, "photo_check": 8},
+    "excluded_unused_non_sprite_extern": "0x801e5840"
+  },
+  "native_support": {
+    "src/post_course_window.hpp": {
+      "sha256": "f470bb1cef65c653ab64e8792a34c2afa379ea3f3870da0eb8f1bedb023967a2"
+    },
+    "src/post_course_window.cpp": {
+      "sha256": "70c4acb7283faec3097a3f481f64fef3cffe61125f019274e44228a27816bde9"
+    },
+    "src/post_course_window_source.h": {
+      "sha256": "a46e2bda105f8e559a26c1884464de4f508faa6ca525089b40d3d7bbfea6bb51"
+    },
+    "src/post_course_window_source.c": {
+      "sha256": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4"
+    },
+    "tests/post_course_window_rom_smoke.cpp": {
+      "sha256": "072977deb3d7021d63fd6f4573ac9da026f6777d30ccaf6b5a642321aebf24c8"
+    },
+    "tests/post_course_window_probe.c": {
+      "sha256": "3d4c8a4b95c287e90030e392ca6e71263246454b8f5d2b1f90309fbb07bd86bb"
+    },
+    "tests/post_course_window_probe.h": {
+      "sha256": "c9abed9c440ffb5dfde84646942cb7b1307fc87881d3667d75b50703fc727f99"
+    },
+    "src/post_course_resources.hpp": {
+      "sha256": "b6de97a64a90b5c248ed345f2016bdda67233153730d3287aecf0eb8ed1942d2"
+    },
+    "src/post_course_resources.cpp": {
+      "sha256": "d6e7594cc4c2ca8ce9def59bacd9d7d99f66065aafe472376aa6a68c3fd7e77c"
+    },
+    "src/window_resources.hpp": {
+      "sha256": "854b76435f0b1e3435f2c0521d3fb9197308cbf5806aea31c02e4fa6d49f5a1f"
+    },
+    "src/window_resources.cpp": {
+      "sha256": "58ae803b8da29230e670e0d0173bc113fe9d44180b1b3d02894c81555e42a4ab"
+    },
+    "src/sprite_producer.hpp": {
+      "sha256": "e4d523633b3e03882a19c42246862296677c82d75d3680ee41facd3a3aa428a7"
+    },
+    "src/sprite_producer.cpp": {
+      "sha256": "1a12a3cd2419d5e9d1285d029ad1bdfe9e48524d00aa2ef60ad938ee7a2978cb"
+    }
+  },
+  "integration": {
+    "target": "isle-post-course-resources",
+    "links": "isle-window",
+    "source_guest_identity_not_installation_relocation": true,
+    "separate_residency_domains": true,
+    "static_independent_review": "Completed; reached roots additionally verified through actual original-ROM hydration and canonical CPU-Vulkan",
+    "actual_reached_prototypes": 28,
+    "actual_canonical_GPU_tasks": 4,
+    "qualified_closed_terminal_tasks": 77,
+    "known_physical_attempts": 0,
+    "permission_errors": 0,
+    "CameraCheck_PhotoCheck_gameplay_or_replay_acceptance": false
+  }
+}

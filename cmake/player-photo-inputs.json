@@ -49,6 +49,12 @@
     "expression": "particle = sp60[count - i - 1].particle; // TODO fake match",
     "proof": "The assigned local particle is not read in the following count>32 sort branch or depth sort. Every subsequent use at702-710 is dominated by particle=sp60[count-i-1].particle at701. Removing only this decompiler-labelled unused read preserves every consumed source value and avoids an out-of-range presort read."
   },
+  "detector_controls": [
+    {"symbol": "PokemonDetector_Enable", "path": "src/app_level/pokemon_detect.c",
+     "first": 185, "last": 187, "source_sha256": "f658c14605b050ea0329702bfd2a9346f69420ff248d0480691dbb0910c4cebf"},
+    {"symbol": "PokemonDetector_Disable", "path": "src/app_level/pokemon_detect.c",
+     "first": 189, "last": 191, "source_sha256": "a6a225fefc6e072bd32fa64de28360bbcbd00d2b971fb91ad98df0a95c101c6d"}
+  ],
   "support": [
     "src/player_photo_source.h", "src/player_photo_source.c",
     "src/player_photo.hpp", "src/player_photo.cpp", "src/player_photo_frame.cpp",

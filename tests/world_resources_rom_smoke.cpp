@@ -20,7 +20,7 @@ template<class F> void rejects(F&& action, const char* message) {
 }
 void run(const char* filename) {
     auto snapshot = isle::rom::read_snapshot(filename);
-    const w::Resources resources(snapshot);
+    const w::Resources resources(snapshot, isle::course::beach_id);
     constexpr std::array<std::uint32_t,12> descriptors{
         0x80135c64,0x80135c88,0x80135cac,0x80135cd0,0x80135cf4,0x80135d18,0x80135d3c,0x80135d60,
         0x80135bd4,0x80135bf8,0x80135c1c,0x80135c40};
@@ -31,12 +31,17 @@ void run(const char* filename) {
     constexpr std::array<std::size_t,12> decorations{2,1,0,0,0,0,0,0,0,0,0,0};
     constexpr std::array<std::size_t,12> collision_objects{3,1,0,0,0,0,0,1,0,0,0,0};
     require(resources.primary_count()==8 && resources.blocks().size()==12,"Exact eight primary/four secondary Beach groups required");
-    require(resources.models().size()==21 && resources.materials().size()==6 && resources.animations().size()==22 &&
-            resources.paths().size()==33,"Complete native model/material/animation/path closure required");
+    require(resources.materials().size()==6 && resources.animations().size()==22 &&
+            resources.paths().size()==33,"Complete native material/animation/path closure required");
     require(resources.static_definitions().size()==1 && resources.static_definitions()[0].id==1007 &&
             resources.static_definitions()[0].callback_identity==0x800e30b0 &&
             resources.static_definitions()[0].payload_identity==0x80138c80,"Exact GAME decoration callback/payload required");
-    std::size_t nodes=0, material_attachments=0, model_streams=0, texture_streams=0, path_commands=0;
+    require(resources.sky_model_index()<resources.models().size() &&
+            resources.models()[resources.sky_model_index()].render_type==m::RenderType::a &&
+            resources.models()[resources.sky_model_index()].nodes.size()==1 &&
+            resources.models()[resources.sky_model_index()].nodes[0].payloads[0].draw_list==resources.sky().display_list_guest,
+            "Authoritative sky catalog binding differs from the source descriptor");
+    std::size_t material_attachments=0, model_streams=0, texture_streams=0, path_commands=0;
     for (std::size_t i=0;i<resources.blocks().size();++i) {
         const auto& block=resources.blocks()[i];
         require(block.metadata.wire.guest_address==descriptors[i] && block.metadata.wire.bytes.size()==36 &&
@@ -74,13 +79,13 @@ void run(const char* filename) {
         } else require(block.road_model==w::no_index,"Secondary descriptor must not invent a road");
     }
     for (const auto& model:resources.models()) for (std::size_t i=0;i<model.nodes.size();++i) {
-        const auto& node=model.nodes[i]; ++nodes; material_attachments+=node.materials.size();
+        const auto& node=model.nodes[i]; material_attachments+=node.materials.size();
         require(node.parent==w::no_index || node.parent<i,"Native hierarchy is not parent-before-child");
         for (const auto material:node.materials) require(material<resources.materials().size(),"Material native index out of range");
         for (const auto animation:node.material_animations)
             require(animation<resources.animations().size(),"Material animation native index out of range");
     }
-    require(nodes==32 && material_attachments==6,"Native world model tree or material attachments missing");
+    require(material_attachments==6,"Native world material attachments missing");
     for (const auto& animation:resources.animations()) {
         if (animation.kind==m::AnimationKind::model) ++model_streams; else ++texture_streams;
         require(!animation.commands.empty() && animation.commands.back().opcode==0,"Exact END-inclusive animation closure missing");

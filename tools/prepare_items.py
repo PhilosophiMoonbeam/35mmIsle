@@ -13,11 +13,11 @@ VECTOR = "src/sys/vector.c"
 POKEMON = "src/app_level/pokemon.c"
 SPATIAL = "src/app_level/503C10.c"
 OH = "src/sys/oh.c"
-VERSION = "item-owner-v1"
+VERSION = "item-owner-v2-context-collision"
 SUPPORT = (
     "src/item_owner.hpp", "src/item_owner.cpp", "src/item_owner_source.h",
     "src/item_source_bridge.c", "src/item_source.h", "src/item_source_bind.c",
-    "src/item_render_binding.hpp", "src/item_flute.hpp", "src/item_flute.cpp",
+    "src/borrowed_model_producer.hpp", "src/item_flute.hpp", "src/item_flute.cpp",
     "src/engine.c", "src/engine_internal.h", "src/source_factory_resources.h", "include/35mmisle/engine.h",
     "src/menu_animation.hpp", "src/menu_animation.cpp",
     "src/scene_services.hpp", "src/scene_services.cpp",
@@ -25,6 +25,9 @@ SUPPORT = (
     "src/actor_owner.hpp", "src/actor_owner.cpp", "src/actor_owner_source.h",
     "src/actor_source_owner_bridge.c", "src/beach_magikarp_scene.hpp",
     "src/beach_magikarp_scene.cpp", "tools/prepare_engine.py",
+    "src/actor_course_context.hpp", "src/rainbow_actor_source.h",
+    "src/rainbow_actor_source.c", "src/rainbow_actor.hpp", "src/rainbow_actor.cpp",
+    "src/rainbow_lifecycle_source.h", "src/player_root.hpp",
 )
 # Full definition inventory, not a selected physics cohort. All service changes
 # below are recorded, ordered and byte-hashed in the authority manifest.
@@ -142,11 +145,13 @@ VECTOR_NAMES = {"Vec3fNormalize": "item_normalize", "Vec3fAdd": "item_add",
 def transform(symbol, original):
     text = original
     changes = []
-    def change(old, new):
+    def change(old, new, expected_count=None):
         nonlocal text
         count = text.count(old)
         if not count:
             raise ValueError("missing reviewed transformation in " + symbol + ": " + old)
+        if expected_count is not None and count != expected_count:
+            raise ValueError("reviewed transformation count mismatch in " + symbol + ": " + old)
         # Every occurrence is independently located in the pinned selected body.
         changes.append({"find_sha256": hashlib.sha256(old.encode()).hexdigest(),
                         "replace_sha256": hashlib.sha256(new.encode()).hexdigest(), "count": count})
@@ -221,6 +226,17 @@ def transform(symbol, original):
         # while avoiding collision with the explicit native Globals parameter.
         change("    f32 g = 1.2f;", "    f32 gravity = 1.2f;")
         change("g * 0.5f", "gravity * 0.5f")
+    elif symbol == "Items_func_8035CA1C":
+        change("void Items_func_8035CA1C(s32 (*arg0)(Vec3f*, Vec3f*, Vec3f*, Vec3f*))",
+               "IsleGameResult Items_func_8035CA1C(IsleGame* binding_game, IsleItemCollisionProvider provider, void* context)", expected_count=1)
+        change("    D_80382EBC_5232CC = arg0;",
+               "    if (g == NULL || binding_game == NULL || (provider == NULL) != (context == NULL))\n"
+               "        return ISLE_GAME_INVALID_ARGUMENT;\n"
+               "    if (binding_game != g->game || g->extra_active != 0)\n"
+               "        return ISLE_GAME_INVALID_STATE;\n"
+               "    D_80382EBC_5232CC = provider;\n"
+               "    g->extra_context = context;\n"
+               "    return ISLE_GAME_OK;", expected_count=1)
     elif symbol == "Items_DeleteItem":
         change("    Items_UnlinkObject(obj);",
                "    Items_UnlinkObject(obj);\n    if (g->status != ISLE_GAME_OK) return;")
@@ -322,8 +338,17 @@ def transform(symbol, original):
     if "omGObjListHead[LINK_ITEM]" in text:
         change("omGObjListHead[LINK_ITEM]", "isle_item_source_link_next(g, NULL, 4)")
         change("ptr = ptr->next", "ptr = isle_item_source_link_next(g, ptr, 4)")
-    if "(g->extra)(&model->position, &vel2, &outPos, &outVel)" in text:
-        change("(g->extra)(&model->position, &vel2, &outPos, &outVel)", "isle_item_source_extra(g, obj, &model->position, &vel2, &outPos, &outVel)")
+    if symbol == "Items_UpdateItemMovement":
+        # Keep the original callback point and hit branch. A nonwaiting failure
+        # must return before either hit effects or the no-collision path.
+        change("    if ((g->extra) != NULL && (g->extra)(&model->position, &vel2, &outPos, &outVel) >= 0) {",
+               "    if ((g->extra) != NULL) {\n"
+               "        somethingID = isle_item_source_extra(g, obj, &model->position, &vel2, &outPos, &outVel);\n"
+               "        if (g->status != ISLE_GAME_OK) return;\n"
+               "    } else {\n"
+               "        somethingID = -1;\n"
+               "    }\n"
+               "    if (somethingID >= 0) {", expected_count=1)
     # Typed FX is created/configured by one real shared effect leaf. Preserve
     # exhaustion as a normal NULL result and preserve its position-before-send.
     text_before_fx = text
@@ -414,6 +439,8 @@ def prepare(repository, manifest_path, output_path, evidence_path):
         admitted.append(dict(unit, native_sha256=hashlib.sha256(native.encode()).hexdigest(), changes=changes))
         output.extend(('#line %d "snap@%s/%s"\n' % (first, REVISION, path), native, "\n"))
     result = "".join(output)
+    if hashlib.sha256(result.encode()).hexdigest() != manifest["transformed_source_sha256"]:
+        raise ValueError("unadmitted Item transformed output")
     evidence = dict(manifest, manifest_sha256=hashlib.sha256(raw).hexdigest(),
                     transformed_definitions=admitted,
                     source_sha256=hashlib.sha256(result.encode()).hexdigest())

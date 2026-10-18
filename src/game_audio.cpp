@@ -104,6 +104,29 @@ a::Error native_startup_effects(const Resources& resources,
     return startup_effects(resources,poles,sections,config);
 }
 
+namespace {
+bool is_custom_program(const Resources& resources, a::effects::Config candidate) noexcept {
+    std::array<a::effects::Section, 8> sections{};
+    a::effects::Config expected;
+    if (native_startup_effects(resources, sections, expected) != a::Error::none ||
+        candidate.routing != expected.routing || candidate.ring_samples != expected.ring_samples ||
+        candidate.sections.size() != expected.sections.size()) return false;
+    for (std::size_t i = 0; i < sections.size(); ++i) {
+        const auto& x = candidate.sections[i];
+        const auto& y = sections[i];
+        if (x.input_samples != y.input_samples || x.output_samples != y.output_samples ||
+            x.feedback != y.feedback || x.feedforward != y.feedforward || x.gain != y.gain ||
+            x.pole.has_value() != y.pole.has_value() ||
+            x.chorus.has_value() != y.chorus.has_value()) return false;
+        if (x.pole && (x.pole->gain != y.pole->gain ||
+                       x.pole->coefficients != y.pole->coefficients)) return false;
+        if (x.chorus && (x.chorus->rate != y.chorus->rate ||
+                         x.chorus->depth != y.chorus->depth)) return false;
+    }
+    return true;
+}
+}
+
 Session::Session(Resources resources, Output output, Executor executor) noexcept
     : resources_(std::move(resources)), output_(output), executor_(executor) {}
 Session::~Session() {
@@ -128,6 +151,7 @@ CreateResult Session::create(Resources resources, a::effects::Config effects, Ou
         auto service = a::AudioService::create(banks, {source_rate, 22, 42}, owner->resources_.coefficients, effects);
         if (!service) return {service.error, nullptr};
         owner->service_ = std::move(service.service);
+        owner->custom_effects_ = is_custom_program(owner->resources_, effects);
         const auto error = owner->register_players();
         if (error != a::Error::none) return {error, nullptr};
         owner->executor_started_ = true;
@@ -472,6 +496,7 @@ a::Error Session::build(a::TaskView& task) noexcept {
         if (restarting_) {
             const auto reset = reconfigure_ ? service_->reset(restart_effects_) : service_->reset();
             if (reset != a::Error::none) return fail(reset);
+            if (reconfigure_) custom_effects_ = pending_custom_effects_;
             sounds_ = {}; songs_ = {}; lagged_ai_ = native_ai_frames();
             reconfigure_ = false;
             const auto registered = register_players();
@@ -571,8 +596,32 @@ a::Error Session::restart(a::effects::Config effects) noexcept {
     std::copy(effects.sections.begin(), effects.sections.end(), restart_sections_.begin());
     restart_effects_ = {effects.routing, effects.ring_samples, std::span(restart_sections_).first(count)};
     const auto requested = restart();
-    if (requested == a::Error::none) reconfigure_ = true;
+    if (requested == a::Error::none) {
+        reconfigure_ = true;
+        pending_custom_effects_ = is_custom_program(resources_, effects);
+    }
     return requested;
+}
+a::Error Session::custom_reverb() noexcept {
+    if (state_ != State::ready) return a::Error::invalid_state;
+    if (restarting_ && (reconfigure_ ? pending_custom_effects_ : custom_effects_))
+        return a::Error::none;
+    if (!restarting_ && custom_effects_) return a::Error::none;
+    std::array<a::effects::Section, 8> sections{};
+    a::effects::Config effects;
+    const auto decoded = native_startup_effects(resources_, sections, effects);
+    if (decoded != a::Error::none) return decoded;
+    if (restarting_) {
+        // The real stop/client/PCM retirement is already in flight. Replace
+        // only its retained target program before reset; never claim it has
+        // completed, restart its executor, or reject a legitimate drain.
+        std::copy(sections.begin(), sections.end(), restart_sections_.begin());
+        restart_effects_ = {effects.routing, effects.ring_samples,
+                           std::span(restart_sections_).first(sections.size())};
+        pending_custom_effects_ = reconfigure_ = true;
+        return a::Error::none;
+    }
+    return restart(effects);
 }
 a::Error Session::poll_drain() noexcept {
     if (state_ == State::failed) return error_;

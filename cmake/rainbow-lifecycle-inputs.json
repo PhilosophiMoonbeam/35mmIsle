@@ -1,0 +1,1973 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "rainbow-lifecycle-complete13-plus8-v1",
+  "generator_sha256": "d6ab1355e969be4e9d809ded74f2f522d4fe15045a95495d6d24bb26c72f0e5e",
+  "source_files": {
+    "src/rainbow/main.c": {
+      "git_blob": "bee9dab9845cd7ceb6d55c08d623b82ba7a775cf",
+      "sha256": "0d2fa3f6848802e38c88769e3a024149d43270023b2c05a46459d07c32ce3122",
+      "line_count": 358
+    },
+    "src/rainbow/intro.c": {
+      "git_blob": "370dd2fb22d8bed3ccc898fc8dd0b0d4c40d9c9d",
+      "sha256": "71ce840c00711f0033be6c420e30982aee7a8102f9b21943070cabd6fca6e25c",
+      "line_count": 161
+    },
+    "src/rainbow/rainbow.h": {
+      "git_blob": "df02b3ec07a35faaf7b77af73ccf859fa16b07a8",
+      "sha256": "39eee86f6cf11d0f7fae267a6fa82bea2d56efdbc597b474b3654cf38946949c",
+      "line_count": 31
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "include/sys/audio.h": {
+      "git_blob": "e4b238fcdb53dec215e044d183908cb09f151ce5",
+      "sha256": "70635d49de63e41c9e66d6d0d4a46dff4730c20e301f43a31860e18fac983f68",
+      "line_count": 36
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "line_count": 237
+    },
+    "include/sys/gtl.h": {
+      "git_blob": "a17ea5a556c505ea432a1a5c800a7e34ef313323",
+      "sha256": "8a24f1d44f97f92cbc2cc5d4950875666e758bd059c3456ecca7512af59cd83b",
+      "line_count": 93
+    },
+    "include/sys/vi.h": {
+      "git_blob": "5a95a8ba8c6e8f5a5c80b7cabf68c0bebe2c658e",
+      "sha256": "f290aa7442c22a0020454ce160ee53c8abd0899155ebc0b6ea398b9addb9f4c2",
+      "line_count": 32
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "line_count": 343
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "line_count": 10549
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8",
+      "line_count": 239
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "line_count": 1723
+    },
+    "src/app_level/503C10.c": {
+      "git_blob": "85836484265173a036436390ddcc8961b9e8068b",
+      "sha256": "93549b82330d717e583d71c4628340c0f3b375e652492e9847dc79a0df78ae7a",
+      "line_count": 357
+    }
+  },
+  "native_support": {
+    "src/rainbow_lifecycle.hpp": {
+      "sha256": "2f917c920677694a810dcaeeb737abb724aa489be84149de8ed7df0f98f9ca4e"
+    },
+    "src/rainbow_lifecycle.cpp": {
+      "sha256": "83055e4436c275412841f5a4a80af2b96a95a02a76b6e7b7f9c0d65da5146165"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/rainbow_lifecycle_source.c": {
+      "sha256": "9b0eb91cd64d0b46114a88d20f13ee399de3af4d51e38798249e76460812d1c5"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/player_source.h": {
+      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
+    },
+    "src/player_root_source.h": {
+      "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"
+    },
+    "src/player_root_source.c": {
+      "sha256": "4af092e1a34bf5220f41a2eb1eb7d6c39bd2032d11bdc835090ac8a9cb5a8e93"
+    },
+    "src/player_cart_source.h": {
+      "sha256": "a55a8ec2d16a78833aa7deff9c85fe6729bde1fbcb9c386f4dbdf71e419264a5"
+    },
+    "src/player_cart_source.c": {
+      "sha256": "59cde2b1700b1830a6893b414ab80b960c48402da63d40fdfab9086e92191263"
+    },
+    "src/player_camera_animation_clip.h": {
+      "sha256": "a1e935a8623e3244e836be03bcf2f1a35a6d9a47d55bb5cd6bc19da4369827d4"
+    },
+    "src/world_movement_state.h": {
+      "sha256": "0d231cd3556bc0004abd77bb5d6f97474cf0762ed4fdeacfd0f0af0f928195b3"
+    },
+    "src/menu_scene_bridge.h": {
+      "sha256": "851da4fdc6f7864784e44e8c36b098a0c9f769f0f380cbcc3875845c57daf726"
+    },
+    "src/engine_internal.h": {
+      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "10fb58f5f6cebe32ea8662cb7a4f1bfc8e287d88b6355bdd6b30cba22e7f83c9"
+    },
+    "include/35mmisle/rng.h": {
+      "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346968_8260D8",
+      "first": 163,
+      "last": 166,
+      "owner": "setup",
+      "source_sha256": "e14d1d87b92e4d2ad5b0c66dc8cbeec842bbf4b8214faaad490c47980a656204",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346968_8260D8(IsleGameObject* arg0)",
+      "changes": [
+        {
+          "find": "void func_80346968_8260D8(s32 arg0)",
+          "replace": "void isle_rainbow_lifecycle_func_80346968_8260D8(IsleGameObject* arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "{\n",
+          "replace": "{\n    IsleRainbowLifecycleSource* s = isle_rainbow_lifecycle_current(arg0);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(1800)",
+          "replace": "isle_player_source_wait(s->player, 1800)",
+          "occurrences": 1
+        },
+        {
+          "find": "omEndProcess(NULL)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_game_end_process(s->player->game, NULL))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "c642945e2338d4540f418242db1d41d5183f0fbf28b306927b6a4919d8763936"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346994_826104",
+      "first": 168,
+      "last": 176,
+      "owner": "setup",
+      "source_sha256": "dcd5fbaf1edc88c11ff98aa29f917e2f698dce5c5f4d0f5ede55f9aa8e0f2798",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346994_826104(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* arg0, IsleRainbowLifecycleBlock* arg1)",
+      "changes": [
+        {
+          "find": "void func_80346994_826104(WorldBlock* arg0, WorldBlock* arg1)",
+          "replace": "void isle_rainbow_lifecycle_func_80346994_826104(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* arg0, IsleRainbowLifecycleBlock* arg1)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803466C0_825E30()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_actor_invoke_spawn(s->actors, 0x803466C0u))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80346898_826008()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_actor_invoke_spawn(s->actors, 0x80346898u))",
+          "occurrences": 1
+        },
+        {
+          "find": "s32 i;",
+          "replace": "int32_t i;",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "8e5fbe412fc1999f6559311174f85714b20c15a81991169b1eae411ae963ec47"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_803469E0_826150",
+      "first": 178,
+      "last": 180,
+      "owner": "setup",
+      "source_sha256": "8cd80f44023fac81c31b43ee4597f4c13b79dc781d44dfd2ee0eb75030a9ecd3",
+      "native_declaration": "void isle_rainbow_lifecycle_func_803469E0_826150(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* arg0, IsleRainbowLifecycleBlock* arg1)",
+      "changes": [
+        {
+          "find": "void func_803469E0_826150(WorldBlock* arg0, WorldBlock* arg1)",
+          "replace": "void isle_rainbow_lifecycle_func_803469E0_826150(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* arg0, IsleRainbowLifecycleBlock* arg1)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonsChangeBlock(arg0, arg1, D_8034AB34_82A2A4)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_pokemon_change(s, arg0, arg1, 0x8034AB34u, s->pokemon_defs, 5))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "ceb8879fc7c7d84447a0c714f0382df389af7b7f1db4c9f655bfffdce92977f4"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346A04_826174",
+      "first": 182,
+      "last": 184,
+      "owner": "setup",
+      "source_sha256": "6c95f293de28e56dc775ada85f912d22f0c917ea065c68875bd17c04d92f0bb1",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346A04_826174(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* arg0)",
+      "changes": [
+        {
+          "find": "void func_80346A04_826174(WorldBlock* arg0)",
+          "replace": "void isle_rainbow_lifecycle_func_80346A04_826174(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonRemove(arg0, D_8034AB34_82A2A4)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_pokemon_remove(s, arg0, 0x8034AB34u, s->pokemon_defs, 5))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "7459d7fef8c2f2cb7440b510af7a2038dc6c2b34215fb4ac34f338eb032cd8c9"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346A28_826198",
+      "first": 186,
+      "last": 190,
+      "owner": "setup",
+      "source_sha256": "a5520131ddf932df23afe5479f90b02025bd30da2ce2174466f9c49ebd657a4a",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346A28_826198(IsleRainbowLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_80346A28_826198(void)",
+          "replace": "void isle_rainbow_lifecycle_func_80346A28_826198(IsleRainbowLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "createWorld(&D_800F5DA0, OBJID_SKYBOX, OBJID_WORLD_BLOCK_MIN, OBJID_WORLD_BLOCK_MAX, LINK_PLAYER, DL_LINK_3, func_80346994_826104, func_80346A04_826174, func_803469E0_826150)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_create_world(s, 0x800F5DA0u, OBJID_SKYBOX, OBJID_WORLD_BLOCK_MIN, OBJID_WORLD_BLOCK_MAX, LINK_PLAYER, DL_LINK_3, isle_rainbow_lifecycle_world_add, isle_rainbow_lifecycle_world_remove, isle_rainbow_lifecycle_world_change, s))",
+          "occurrences": 1
+        },
+        {
+          "find": "setSkyBoxFollowPlayer()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_sky_follow(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80363928_503D38(OBJID_128, OBJID_228, LINK_POKEMON, 5)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_pokemon_registry(s, OBJID_128, OBJID_228, LINK_POKEMON, 5))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "b655163f76c24c03e084977782111bddb005066013e0b8770d6321e4f8ce1f1f"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346AA8_826218",
+      "first": 192,
+      "last": 203,
+      "owner": "setup",
+      "source_sha256": "70ebff1cfdac777b2a21a321c8008a7face00d8f4c4b5ec95700eecf663a6161",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346AA8_826218(IsleRainbowLifecycleSource* s, int32_t endLevelReason)",
+      "changes": [
+        {
+          "find": "void func_80346AA8_826218(s32 endLevelReason)",
+          "replace": "void isle_rainbow_lifecycle_func_80346AA8_826218(IsleRainbowLifecycleSource* s, int32_t endLevelReason)",
+          "occurrences": 1
+        },
+        {
+          "find": "rainbow_endLevelReason",
+          "replace": "s->rainbow_endLevelReason",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A19D8(endLevelReason)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_transition_end(s, endLevelReason))",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Disable()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_detector_disable(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "EnvSound_Cleanup()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_environment_cleanup(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopBGM()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_stop_bgm(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopAllSounds()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_stop_all_sounds(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "destroyWorld()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_destroy_world(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80356FBC_4F73CC()",
+          "replace": "isle_player_func_80356FBC_4F73CC(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "removeMainCamera()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_remove_main_camera(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800067DC()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_exit_scene(s))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "b0b5e1e683a147a9c065371e2f165cc17527e55432afee686bc8b288af36b551"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346B0C_82627C",
+      "first": 205,
+      "last": 215,
+      "owner": "setup",
+      "source_sha256": "cd5deb93c38240fb439f87b542f101beb78e8db5a7d3e4e1d8dd4d9a4f505d2c",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346B0C_82627C(IsleGameObject* arg0)",
+      "changes": [
+        {
+          "find": "void func_80346B0C_82627C(GObj* arg0) {",
+          "replace": "void isle_rainbow_lifecycle_func_80346B0C_82627C(IsleGameObject* arg0) {\n    IsleRainbowLifecycleSource* s = isle_rainbow_lifecycle_current(arg0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Items_GetPokeFluteCmd()",
+          "replace": "isle_rainbow_lifecycle_flute_command(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034ABA4_82A314",
+          "replace": "s->actors->D_8034ABA4_82A314",
+          "occurrences": 3
+        },
+        {
+          "find": "D_8034AB9C_82A30C",
+          "replace": "s->actors->D_8034AB9C_82A30C",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034ABA0_82A310",
+          "replace": "s->actors->D_8034ABA0_82A310",
+          "occurrences": 3
+        },
+        {
+          "find": "auSetBGMTempo(BGM_PLAYER_MAIN, s->actors->D_8034ABA0_82A310)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_bgm_tempo(s, BGM_PLAYER_MAIN, s->actors->D_8034ABA0_82A310))",
+          "occurrences": 1
+        },
+        {
+          "find": "false",
+          "replace": "0",
+          "occurrences": 1
+        },
+        {
+          "find": "true",
+          "replace": "1",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "be4f9dc72943a9068f155692d7e82cbf3aa68746a0356731fdfd9328050e2f3b"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346B94_826304",
+      "first": 217,
+      "last": 223,
+      "owner": "setup",
+      "source_sha256": "ab7f47e7f66df4e577e60bd978d939cd6f5ebfbd8d77b9aa365f44d6c2f35361",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346B94_826304(IsleRainbowLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_80346B94_826304(s32 arg0)",
+          "replace": "void isle_rainbow_lifecycle_func_80346B94_826304(IsleRainbowLifecycleSource* s, int32_t arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "setSkyBoxAnimationSpeed(D_800F5DB0_4A8180)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_sky_speed(s, s->actors->D_800F5DB0_4A8180))",
+          "occurrences": 1
+        },
+        {
+          "find": "setSkyBoxAnimationSpeed(0.0f)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_sky_speed(s, 0.0f))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "6ff0efe0ec6b44025f41e7fb6a88f8276634eb58feb7be29f0371586ca329dbb"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346BD0_826340",
+      "first": 225,
+      "last": 239,
+      "owner": "setup",
+      "source_sha256": "138fc2d8e8d6c987ccdb6a0e39b060aa11f67d0fc9369477c400366a34ee6e57",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346BD0_826340(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* block)",
+      "changes": [
+        {
+          "find": "void func_80346BD0_826340(WorldBlock* block)",
+          "replace": "void isle_rainbow_lifecycle_func_80346BD0_826340(IsleRainbowLifecycleSource* s, IsleRainbowLifecycleBlock* block)",
+          "occurrences": 1
+        },
+        {
+          "find": "WorldBlock* next;",
+          "replace": "IsleRainbowLifecycleBlock* next;",
+          "occurrences": 1
+        },
+        {
+          "find": "rainbow_endLevelReason",
+          "replace": "s->rainbow_endLevelReason",
+          "occurrences": 1
+        },
+        {
+          "find": "block->next",
+          "replace": "isle_rainbow_lifecycle_block_next(s, block)",
+          "occurrences": 2
+        },
+        {
+          "find": "Items_DisplaceAllItems(",
+          "replace": "isle_rainbow_lifecycle_displace_items(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "block->descriptor->worldPos.x",
+          "replace": "isle_rainbow_lifecycle_block_position(s, block).x",
+          "occurrences": 1
+        },
+        {
+          "find": "block->descriptor->worldPos.y",
+          "replace": "isle_rainbow_lifecycle_block_position(s, block).y",
+          "occurrences": 1
+        },
+        {
+          "find": "block->descriptor->worldPos.z",
+          "replace": "isle_rainbow_lifecycle_block_position(s, block).z",
+          "occurrences": 1
+        },
+        {
+          "find": "next->descriptor->worldPos.x",
+          "replace": "isle_rainbow_lifecycle_block_position(s, next).x",
+          "occurrences": 1
+        },
+        {
+          "find": "next->descriptor->worldPos.y",
+          "replace": "isle_rainbow_lifecycle_block_position(s, next).y",
+          "occurrences": 1
+        },
+        {
+          "find": "next->descriptor->worldPos.z",
+          "replace": "isle_rainbow_lifecycle_block_position(s, next).z",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80346AA8_826218(2)",
+          "replace": "isle_rainbow_lifecycle_func_80346AA8_826218(s, 2)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "a1c647d4be2d132b8817c571d343e24cc4d9515eb879789ea1471e34be0d668e"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346C64_8263D4",
+      "first": 241,
+      "last": 258,
+      "owner": "setup",
+      "source_sha256": "173b3e94d72e06735f50d5c6d2becc8b082844438bfb5e9d2510b45f1bb43e9c",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346C64_8263D4(IsleRainbowLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_80346C64_8263D4(void)",
+          "replace": "void isle_rainbow_lifecycle_func_80346C64_8263D4(IsleRainbowLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void* scriptDesc;",
+          "replace": "const IsleRainbowLifecycleAsset* scriptDesc;",
+          "occurrences": 1
+        },
+        {
+          "find": "void* spritesDesc;",
+          "replace": "const IsleRainbowLifecycleAsset* spritesDesc;",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_script_common_ROM_START, (u32) fx_script_common_ROM_END)",
+          "replace": "isle_rainbow_lifecycle_load(s, ISLE_RAINBOW_LIFECYCLE_FX_SCRIPT_COMMON)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_img_common_ROM_START, (u32) fx_img_common_ROM_END)",
+          "replace": "isle_rainbow_lifecycle_load(s, ISLE_RAINBOW_LIFECYCLE_FX_SPRITES_COMMON)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_script_rainbow_ROM_START, (u32) fx_script_rainbow_ROM_END)",
+          "replace": "isle_rainbow_lifecycle_load(s, ISLE_RAINBOW_LIFECYCLE_FX_SCRIPT_RAINBOW)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_img_rainbow_ROM_START, (u32) fx_img_rainbow_ROM_END)",
+          "replace": "isle_rainbow_lifecycle_load(s, ISLE_RAINBOW_LIFECYCLE_FX_SPRITES_RAINBOW)",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setupBankID(3, scriptDesc, spritesDesc)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_fx_setup_bank(s, 3, scriptDesc, spritesDesc))",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setupBankID(0, scriptDesc, spritesDesc)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_fx_setup_bank(s, 0, scriptDesc, spritesDesc))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80382D10_523120 = func_800A2094(4, 100, getMainCamera());",
+          "replace": "s->player->D_80382D10_523120 = isle_rainbow_lifecycle_fx_camera(s, 4, 100, isle_rainbow_lifecycle_camera(s));",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80382D14_523124 = fx_allocEffects(10);",
+          "replace": "s->player->D_80382D14_523124 = isle_rainbow_lifecycle_fx_effects(s, 10);",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setDitherModes(0xC0, 0x30)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_fx_dither(s, 0xC0, 0x30))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "55e2c32c46286a848caeec18e63b718a1f6924ad40a4a903d249d32baa746c9f"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346D50_8264C0",
+      "first": 270,
+      "last": 297,
+      "owner": "setup",
+      "source_sha256": "0f05952204da4a481b418665ede3388b9900fe25ccbc2564042c19653bcb8577",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346D50_8264C0(IsleRainbowLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_80346D50_8264C0(void)",
+          "replace": "void isle_rainbow_lifecycle_func_80346D50_8264C0(IsleRainbowLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "s32 i;",
+          "replace": "size_t i;",
+          "occurrences": 1
+        },
+        {
+          "find": "u8 r, g, b;",
+          "replace": "uint8_t r, g, b;",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034ABDC_82A34C.zBuffer = gtlMalloc(0x25800, 0x40);",
+          "replace": "s->screen.depth_buffer = isle_rainbow_lifecycle_depth_buffer(s, 0x25800, 0x40);",
+          "occurrences": 1
+        },
+        {
+          "find": "viApplyScreenSettings(&D_8034ABDC_82A34C)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_screen(s, &s->screen))",
+          "occurrences": 1
+        },
+        {
+          "find": "ARRAY_COUNT(fx_SpriteBanksNum)",
+          "replace": "isle_rainbow_lifecycle_fx_bank_count(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_ScriptBanksNum[i] = fx_SpriteBanksNum[i] = 0;",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_fx_reset_bank(s, i));",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8009CE00()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_reset_photo_roll(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "omAddGObj(0, func_80346B0C_82627C, 0, 0x80000000)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_create_helper(s, 0, isle_rainbow_lifecycle_func_80346B0C_82627C, 0, 0x80000000u))",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemons_Init()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_pokemons_init(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80346A28_826198()",
+          "replace": "isle_rainbow_lifecycle_func_80346A28_826198(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "getBackgroundColor(&r, &g, &b)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_background(s, &r, &g, &b))",
+          "occurrences": 1
+        },
+        {
+          "find": "createMainCameras(r << 0x18 | g << 0x10 | b << 8)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_create_cameras(s, (uint32_t) r << 0x18 | (uint32_t) g << 0x10 | (uint32_t) b << 8))",
+          "occurrences": 1
+        },
+        {
+          "find": "initUI(func_80346BD0_826340, NULL, NULL, 0, NULL)",
+          "replace": "isle_rainbow_lifecycle_init_ui(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "setEndLevelCallback(func_80346AA8_826218)",
+          "replace": "isle_player_setEndLevelCallback(s->player, isle_rainbow_lifecycle_end_event, s)",
+          "occurrences": 1
+        },
+        {
+          "find": "setPauseCallback(func_80346B94_826304)",
+          "replace": "isle_player_setPauseCallback(s->player, isle_rainbow_lifecycle_pause_event, s)",
+          "occurrences": 1
+        },
+        {
+          "find": "EnvSound_Init(D_8034AB10_82A280, ARRAY_COUNT(D_8034AB10_82A280))",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_environment_init(s, s->environment, 9))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMExtraReverb(0, 25)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_bgm_reverb(s, 0, 25))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetSoundGlobalReverb(40)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_sound_reverb(s, 40))",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySoundWithParams(",
+          "replace": "isle_rainbow_lifecycle_play_sound(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "func_80346C64_8263D4()",
+          "replace": "isle_rainbow_lifecycle_func_80346C64_8263D4(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Create()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_detector_create(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Enable()",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_detector_enable(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8034AABC_82A22C()",
+          "replace": "isle_rainbow_lifecycle_func_8034AABC_82A22C(s)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "fb3be53ac212bdbec3987cf77a0ecd73fd6e71446d9e7ad0779985c945d0f506"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346EE8_826658",
+      "first": 299,
+      "last": 300,
+      "owner": "setup",
+      "source_sha256": "90ae2d277edc80ce2ca335d4edef72969a07601b87a5de9d2367db4b0ae417f6",
+      "native_declaration": "void isle_rainbow_lifecycle_func_80346EE8_826658(int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_80346EE8_826658(s32 arg0)",
+          "replace": "void isle_rainbow_lifecycle_func_80346EE8_826658(int32_t arg0)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "f36a97a39e8a767d89296e164de4bf386e0922a5b029274badf91162397a25da"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346EF0_826660",
+      "first": 342,
+      "last": 358,
+      "owner": "setup",
+      "source_sha256": "29bb6d7a499dc10aeb9b1b91a530dbdded0378fa95ccfee3e11687f2fdfc2204",
+      "native_declaration": "int32_t isle_rainbow_lifecycle_func_80346EF0_826660(IsleRainbowLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "s32 func_80346EF0_826660(s32 arg0)",
+          "replace": "int32_t isle_rainbow_lifecycle_func_80346EF0_826660(IsleRainbowLifecycleSource* s, int32_t arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034ABF8_82A368.gtlSetup.heapSize = (uintptr_t) rainbow_code_VRAM - (uintptr_t) rainbow_assets_VRAM_END;",
+          "replace": "s->scene_setup.heap_size = 0x803466C0u - s->scene_setup.heap_base;",
+          "occurrences": 1
+        },
+        {
+          "find": "gtlSetIntervals(1, 2)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_intervals(s, 1, 2))",
+          "occurrences": 1
+        },
+        {
+          "find": "gtlDisableNearClipping(1)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_near_clipping(s, 1))",
+          "occurrences": 1
+        },
+        {
+          "find": "omSetupScene(&D_8034ABF8_82A368)",
+          "replace": "isle_rainbow_lifecycle_setup_scene(s, &s->scene_setup)",
+          "occurrences": 1
+        },
+        {
+          "find": "rainbow_endLevelReason",
+          "replace": "s->rainbow_endLevelReason",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8009BC68()",
+          "replace": "isle_rainbow_lifecycle_photo_count(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800AAED0(0x10)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_or_notice(s, 0x10))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "91609a8c34b596b49f96cdb2f426faf241ab92f3d6602592b1ed3e0d443c1ef5"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034A520_829C90",
+      "first": 17,
+      "last": 21,
+      "owner": "intro",
+      "source_sha256": "28570950a11cc55944d60ba2fef6286614df51d87655cd5a392e4f700f390bb2",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034A520_829C90(IsleRainbowLifecycleSource* s, IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_8034A520_829C90(GObj* obj)",
+          "replace": "void isle_rainbow_lifecycle_func_8034A520_829C90(IsleRainbowLifecycleSource* s, IsleGameObject* obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803571C4_4F75D4()",
+          "replace": "isle_player_func_803571C4_4F75D4(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803570B0_4F74C0()",
+          "replace": "isle_player_func_803570B0_4F74C0(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80357120_4F7530(obj)",
+          "replace": "isle_player_func_80357120_4F7530(s->player, obj)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "f4eebd73bb4de3fbe9ec4feda78f0aaff80d191f2f9ddfb91666bf76b8bfdf41"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034A550_829CC0",
+      "first": 23,
+      "last": 26,
+      "owner": "intro",
+      "source_sha256": "436280f3ca6e9340ba513dfa794e76d674bee220b67c877241c69e442ee5757d",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034A550_829CC0(IsleRainbowLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_8034A550_829CC0(void)",
+          "replace": "void isle_rainbow_lifecycle_func_8034A550_829CC0(IsleRainbowLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803572B0_4F76C0()",
+          "replace": "isle_player_func_803572B0_4F76C0(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "setBackgroundMusic(SONG_ID_14)",
+          "replace": "isle_player_setBackgroundMusic(s->player, SONG_ID_14)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "97b82d1f2811c10e9a47f2022a5b4ee77d3b2e488b3955841ad64d24b633f8d0"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034A578_829CE8",
+      "first": 28,
+      "last": 44,
+      "owner": "intro",
+      "source_sha256": "7576c11eef626fd7293ab13d7ff104b0866e0d4d7e4ccb93685b2503555266a6",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034A578_829CE8(void* user, const IslePlayerCartNode* dobj, int32_t arg1, float arg2)",
+      "changes": [
+        {
+          "find": "void func_8034A578_829CE8(DObj* dobj, s32 arg1, f32 arg2)",
+          "replace": "void isle_rainbow_lifecycle_func_8034A578_829CE8(void* user, const IslePlayerCartNode* dobj, int32_t arg1, float arg2)",
+          "occurrences": 1
+        },
+        {
+          "find": "    Effect* fx;",
+          "replace": "    IsleRainbowLifecycleSource* s = user;\n    IsleRainbowLifecycleEffect* fx;",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034B670_82ADE0",
+          "replace": "s->D_8034B670_82ADE0",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_createEffect(arg1, temp_a1)",
+          "replace": "isle_rainbow_lifecycle_create_effect(s, arg1, temp_a1)",
+          "occurrences": 1
+        },
+        {
+          "find": "fx->dobj = dobj;",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_attach_effect(s, fx, dobj));",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "ee7166d0f6232c800eb82f5d3b4111f7c273e090ed04da95ca4c8d752b1793d5"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034A5EC_829D5C",
+      "first": 46,
+      "last": 60,
+      "owner": "intro",
+      "source_sha256": "e90ab507c20b8f8940d90224275030dd4184168606e00b8769e93bf53acd9538",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034A5EC_829D5C(IsleRainbowLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_8034A5EC_829D5C(void)",
+          "replace": "void isle_rainbow_lifecycle_func_8034A5EC_829D5C(IsleRainbowLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlayingSound[D_803501E8_82F958]",
+          "replace": "isle_rainbow_lifecycle_sound_identity(s, s->D_803501E8_82F958)",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSound((u32) D_803501E8_82F958)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_stop_sound(s, (uint32_t) s->D_803501E8_82F958))",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlayingSound[D_803501E9_82F959]",
+          "replace": "isle_rainbow_lifecycle_sound_identity(s, s->D_803501E9_82F959)",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSound((u32) D_803501E9_82F959)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_stop_sound(s, (uint32_t) s->D_803501E9_82F959))",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlayingSound[D_803501EA_82F95A]",
+          "replace": "isle_rainbow_lifecycle_sound_identity(s, s->D_803501EA_82F95A)",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSound((u32) D_803501EA_82F95A)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_stop_sound(s, (uint32_t) s->D_803501EA_82F95A))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80357170_4F7580()",
+          "replace": "isle_player_func_80357170_4F7580(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "resetMainCameraSettings()",
+          "replace": "isle_player_resetMainCameraSettings(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8034A550_829CC0()",
+          "replace": "isle_rainbow_lifecycle_func_8034A550_829CC0(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(NULL)",
+          "replace": "isle_rainbow_lifecycle_delete_intro_cart(s)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "8e959aca0b401ef23ec8271c8962bac2e26adc96e6706aef075570d2f2060798"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034A6B4_829E24",
+      "first": 62,
+      "last": 72,
+      "owner": "intro",
+      "source_sha256": "5f16d58e7aa495115fe097fa602bd5cce68d7f99b67aca052d3fc1b57e860078",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034A6B4_829E24(IsleGameObject* arg0)",
+      "changes": [
+        {
+          "find": "void func_8034A6B4_829E24(GObj* arg0) {",
+          "replace": "void isle_rainbow_lifecycle_func_8034A6B4_829E24(IsleGameObject* arg0) {\n    IsleRainbowLifecycleSource* s = isle_rainbow_lifecycle_current(arg0);",
+          "occurrences": 1
+        },
+        {
+          "find": "s32 i;",
+          "replace": "int32_t i;",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(1)",
+          "replace": "isle_player_source_wait(s->player, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySoundWithParams(",
+          "replace": "isle_rainbow_lifecycle_play_sound(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "D_803501E8_82F958",
+          "replace": "s->D_803501E8_82F958",
+          "occurrences": 1
+        },
+        {
+          "find": "D_803501E9_82F959",
+          "replace": "s->D_803501E9_82F959",
+          "occurrences": 1
+        },
+        {
+          "find": "omEndProcess(NULL)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_game_end_process(s->player->game, NULL))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "fd4c8de4aaaa532b17fe001553e497ef5b3ccd75a661b15b1a9021b62ef506a1"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034A748_829EB8",
+      "first": 74,
+      "last": 84,
+      "owner": "intro",
+      "source_sha256": "08a9606133be26c83187310f9df26a1cbd6579ea3d60a362a3172999b123bfbc",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034A748_829EB8(IsleGameObject* arg0)",
+      "changes": [
+        {
+          "find": "void func_8034A748_829EB8(GObj* arg0) {",
+          "replace": "void isle_rainbow_lifecycle_func_8034A748_829EB8(IsleGameObject* arg0) {\n    IsleRainbowLifecycleSource* s = isle_rainbow_lifecycle_current(arg0);",
+          "occurrences": 1
+        },
+        {
+          "find": "s32 i;",
+          "replace": "int32_t i;",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(1)",
+          "replace": "isle_player_source_wait(s->player, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySoundWithParams(",
+          "replace": "isle_rainbow_lifecycle_play_sound(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_803501E8_82F958",
+          "replace": "s->D_803501E8_82F958",
+          "occurrences": 1
+        },
+        {
+          "find": "D_803501EA_82F95A",
+          "replace": "s->D_803501EA_82F95A",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSound(s->D_803501E8_82F958)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_stop_sound(s, s->D_803501E8_82F958))",
+          "occurrences": 1
+        },
+        {
+          "find": "omEndProcess(NULL)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_game_end_process(s->player->game, NULL))",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "e8d5017d4e79c69210273302efd6816bf88a0654fa55036bef3b4e101fdfe075"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034A7C4_829F34",
+      "first": 86,
+      "last": 150,
+      "owner": "intro",
+      "source_sha256": "6ae3b3c8ebd35e565346cb3667fe4ad2aaac2db1b9ea901258ba73a4629ca7bf",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034A7C4_829F34(IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_8034A7C4_829F34(GObj* obj) {",
+          "replace": "void isle_rainbow_lifecycle_func_8034A7C4_829F34(IsleGameObject* obj) {\n    IsleRainbowLifecycleSource* s = isle_rainbow_lifecycle_current(obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "UNUSED s32 pad[7];",
+          "replace": "int32_t pad[7];",
+          "occurrences": 1
+        },
+        {
+          "find": "GObjProcess* proc;",
+          "replace": "IsleGameProcess* proc;",
+          "occurrences": 1
+        },
+        {
+          "find": "GObj* camObj;",
+          "replace": "IsleGameObject* camObj;",
+          "occurrences": 1
+        },
+        {
+          "find": "OMCamera* cam;",
+          "replace": "IsleGameCamera* cam;\n    const IsleGameCameraParameters* camera_view;\n    IsleGameLookAt restore_view;",
+          "occurrences": 1
+        },
+        {
+          "find": "getMainCamera()->obj",
+          "replace": "isle_rainbow_lifecycle_camera_object(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "getMainCamera()",
+          "replace": "isle_rainbow_lifecycle_camera(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "    camObj = isle_rainbow_lifecycle_camera_object(s);",
+          "replace": "    camObj = isle_rainbow_lifecycle_camera_object(s);\n    isle_rainbow_lifecycle_checked(s, isle_game_camera_parameters(s->player->game, cam, &camera_view));",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->animSpeed = 0.5f;",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_camera_speed(s, cam, 0.5f));",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetCameraAnimation(cam, &D_8011B3E0_4CD7B0, 0.0f)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_player_root_native_camera_animation_set(s->player, cam, isle_rainbow_lifecycle_camera_clip(s, 0x8011B3E0u), 0.0f))",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(camObj, animUpdateCameraAnimation, 1, 1)",
+          "replace": "isle_player_source_add_process(s->player, camObj, isle_rainbow_lifecycle_camera_animation_update, 1, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_SetAnimation(&D_80119AE0_4CBEB0, &D_8011A970_4CCD40, 0.0f, 0.5f)",
+          "replace": "isle_player_cart_PlayerModel_SetAnimation(s->player->cart, isle_rainbow_lifecycle_cart_model_clip(s, 0x80119AE0u), isle_rainbow_lifecycle_cart_material_clip(s, 0x8011A970u), 0.0f, 0.5f)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B670_82ADE0",
+          "replace": "s->D_8034B670_82ADE0",
+          "occurrences": 2
+        },
+        {
+          "find": "obj->fnAnimCallback = func_8034A578_829CE8;",
+          "replace": "isle_player_cart_source_set_callback(s->player->cart, obj, isle_rainbow_lifecycle_cart_event, s);",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(obj, func_8034A6B4_829E24, 0, 1)",
+          "replace": "isle_player_source_add_process(s->player, obj, isle_rainbow_lifecycle_func_8034A6B4_829E24, 0, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(obj, func_8034A748_829EB8, 0, 1)",
+          "replace": "isle_player_source_add_process(s->player, obj, isle_rainbow_lifecycle_func_8034A748_829EB8, 0, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "gContInputPressedButtons",
+          "replace": "s->player->input.pressed_buttons",
+          "occurrences": 2
+        },
+        {
+          "find": "omEndProcess(proc)",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_game_end_process(s->player->game, proc))",
+          "occurrences": 2
+        },
+        {
+          "find": "func_8034A5EC_829D5C()",
+          "replace": "isle_rainbow_lifecycle_func_8034A5EC_829D5C(s)",
+          "occurrences": 3
+        },
+        {
+          "find": "ohWait(1)",
+          "replace": "isle_player_source_wait(s->player, 1)",
+          "occurrences": 3
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.eye.x = ((i * eyeDiffX) / 10.0f) + eyeX;",
+          "replace": "        restore_view.eye[0] = ((i * eyeDiffX) / 10.0f) + eyeX;",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.x",
+          "replace": "camera_view->look_at.eye[0]",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.eye.y = ((i * eyeDiffY) / 10.0f) + eyeY;",
+          "replace": "        restore_view.eye[1] = ((i * eyeDiffY) / 10.0f) + eyeY;",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.y",
+          "replace": "camera_view->look_at.eye[1]",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.eye.z = ((i * eyeDiffZ) / 10.0f) + eyeZ;",
+          "replace": "        restore_view.eye[2] = ((i * eyeDiffZ) / 10.0f) + eyeZ;",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.z",
+          "replace": "camera_view->look_at.eye[2]",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.at.x = ((i * atDiffX) / 10.0f) + atX;",
+          "replace": "        restore_view.at[0] = ((i * atDiffX) / 10.0f) + atX;",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.x",
+          "replace": "camera_view->look_at.at[0]",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.at.y = ((i * atDiffY) / 10.0f) + atY;",
+          "replace": "        restore_view.at[1] = ((i * atDiffY) / 10.0f) + atY;",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.y",
+          "replace": "camera_view->look_at.at[1]",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.at.z = ((i * atDiffZ) / 10.0f) + atZ;",
+          "replace": "        restore_view.at[2] = ((i * atDiffZ) / 10.0f) + atZ;",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.z",
+          "replace": "camera_view->look_at.at[2]",
+          "occurrences": 2
+        },
+        {
+          "find": "        restore_view.eye[0] =",
+          "replace": "        restore_view = camera_view->look_at;\n        restore_view.eye[0] =",
+          "occurrences": 1
+        },
+        {
+          "find": "        restore_view.at[2] = ((i * atDiffZ) / 10.0f) + atZ;",
+          "replace": "        restore_view.at[2] = ((i * atDiffZ) / 10.0f) + atZ;\n        isle_rainbow_lifecycle_checked(s, isle_game_camera_set_look_at(s->player->game, cam, &restore_view));",
+          "occurrences": 1
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 6
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "8ddca73b07ea4cc4457e4f39a93676f08c0b5717816f29c89aa0549fd585aff2"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "symbol": "func_8034AABC_82A22C",
+      "first": 152,
+      "last": 161,
+      "owner": "intro",
+      "source_sha256": "b455b0fd18c7f4ff3c1e33996cd144c9867bd723c0909c71fdcab395d4f32fa8",
+      "native_declaration": "void isle_rainbow_lifecycle_func_8034AABC_82A22C(IsleRainbowLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_8034AABC_82A22C(void)",
+          "replace": "void isle_rainbow_lifecycle_func_8034AABC_82A22C(IsleRainbowLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "GObj* playerObj;",
+          "replace": "IsleGameObject* playerObj;",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_Init()",
+          "replace": "isle_player_cart_PlayerModel_Init(s->player->cart)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B674_82ADE4 = playerObj;",
+          "replace": "isle_rainbow_lifecycle_checked(s, isle_rainbow_lifecycle_native_store_cart(s, playerObj));",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(playerObj, func_8034A7C4_829F34, 0, 1)",
+          "replace": "isle_player_source_add_process(s->player, playerObj, isle_rainbow_lifecycle_func_8034A7C4_829F34, 0, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8034A520_829C90(playerObj)",
+          "replace": "isle_rainbow_lifecycle_func_8034A520_829C90(s, playerObj)",
+          "occurrences": 1
+        }
+      ],
+      "native_sha256": "217912450d5aea719fc24372edec6f4b409a3a3cba5acff83958c46d5c8a824e"
+    }
+  ],
+  "constant_names": [
+    "SCENE_RAINBOW",
+    "SCENE_CAMERA_CHECK",
+    "SCENE_OAKS_LAB_2",
+    "OBJID_SKYBOX",
+    "OBJID_WORLD_BLOCK_MIN",
+    "OBJID_WORLD_BLOCK_MAX",
+    "LINK_PLAYER",
+    "DL_LINK_3",
+    "OBJID_128",
+    "OBJID_228",
+    "LINK_POKEMON",
+    "END_LEVEL_REASON_RETRY",
+    "BGM_PLAYER_MAIN",
+    "SONG_ID_14",
+    "SOUND_ID_63",
+    "SOUND_ID_39",
+    "SOUND_ID_21",
+    "SOUND_ID_15"
+  ],
+  "semantic_origins": [
+    {
+      "path": "src/rainbow/main.c",
+      "label": "initialized_environment_complete_five_definition_table_and_shared_actor_globals",
+      "first": 7,
+      "last": 47,
+      "source_sha256": "38a74312b36e20115752b422ab0aac676db9ab0ebe8dbfc8416373f7ccb451bc"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "label": "original_end_reason_initialized_declaration",
+      "first": 161,
+      "last": 161,
+      "source_sha256": "db9aac1e56c83446ecd85842677277c037a9004b8dec3bf44755dea2ab4c1365"
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "label": "complete_main_lifecycle_not_actor_helpers",
+      "first": 163,
+      "last": 358,
+      "source_sha256": "c30b5786c8b80c7c56009f8317985a0609b1fbc872ea57528648a9be90fdda59"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "label": "exact_Rainbow_camera_cart_clip_and_initialized_state_declarations",
+      "first": 4,
+      "last": 9,
+      "source_sha256": "d920f3ceed5d89e5d7bdc5450f0b1b3d3b212ead0db9cce9fa061fd2f16292ac"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "label": "original_separate_intro_BSS",
+      "first": 11,
+      "last": 15,
+      "source_sha256": "76c1b26a0632e9ee0bc35392eb5eefa77c600834419f633959109b9dcbf74790"
+    },
+    {
+      "path": "src/rainbow/intro.c",
+      "label": "complete_eight_intro_definitions",
+      "first": 17,
+      "last": 161,
+      "source_sha256": "13c6b5ff2bdec052d80ef7f657f0a8e13814e1798c95ba7a36e98837a5cbfbe7"
+    },
+    {
+      "path": "include/sys/gtl.h",
+      "label": "own_GAME_BufferSetup_and_SceneSetup_wire_fields",
+      "first": 21,
+      "last": 61,
+      "source_sha256": "a133df25459abce388ff41c3b643c633db7c225db3e8bfb207ab5f7ac5a51225"
+    },
+    {
+      "path": "include/sys/vi.h",
+      "label": "own_GAME_ScreenSettings_wire_fields",
+      "first": 7,
+      "last": 15,
+      "source_sha256": "4760c2112cd0fcdb02bc2fac8d6cb5f42e224f484593f83ef181411c11285728"
+    },
+    {
+      "path": "include/common_structs.h",
+      "label": "own_GAME_PokemonDef_wire_fields",
+      "first": 206,
+      "last": 211,
+      "source_sha256": "e9ac217c424845d3541d28f0bf3d33e69cd01463496460a4a46cca5ef172b227"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "environment_four_byte_wire_fields",
+      "first": 159,
+      "last": 163,
+      "source_sha256": "cb49de46f5ba62116a221724391f3a53de8c93a02c9eb7104e324c4753e92d77"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "exact_end_reason_enum",
+      "first": 37,
+      "last": 45,
+      "source_sha256": "cdd61a43876dd2ccd568840b99b6536e4f897ff5f0f520e7fc920a3c6d886d49"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "Rainbow_assets_mapping_heap_end_including_BSS",
+      "first": 5219,
+      "last": 5237,
+      "source_sha256": "2a01fbf05d8781a700c42abd77170db9adb9e355eeaa499ea687abfb33546cce"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "Rainbow_overlay_code_data_and_intro_mapping",
+      "first": 9827,
+      "last": 9857,
+      "source_sha256": "1a0f8cf62c8d4f55d6aadf2e07a87319a7099d37c3687db7c7202c3ba7148bcc"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "Rainbow_actor_and_intro_separate_BSS_mapping",
+      "first": 9951,
+      "last": 9952,
+      "source_sha256": "cfe4827f99502cb3b11a57d634fd308f68394051d46bf41991bedb209a10ab0b"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "common_FX_asset_ROM_ranges",
+      "first": 10469,
+      "last": 10475,
+      "source_sha256": "2aedfff129a19acba3af88b4acb5cce3f51bca6d607420fe28967e1d57d401ca"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "Rainbow_FX_asset_ROM_ranges",
+      "first": 10490,
+      "last": 10496,
+      "source_sha256": "a4c2f8ce2d65a27589668550c0a86439aa743b44959d34152f596196ac2838b6"
+    },
+    {
+      "path": "src/app_render/4CDB0.c",
+      "label": "exact_transition_end_state_and_colors",
+      "first": 228,
+      "last": 235,
+      "source_sha256": "75aa4602948511bb9479966fc82dc216505dfd6c8f32dc5becc0a08130f94fc6"
+    },
+    {
+      "path": "src/app_render/47380.c",
+      "label": "actual_total_photo_count_not_selected_count",
+      "first": 385,
+      "last": 387,
+      "source_sha256": "3bdb0f5cbae9c9433d7042d011b7956951b6e70db9880d4c1abfdddb7459bf0e"
+    },
+    {
+      "path": "src/app_render/47380.c",
+      "label": "exact_application_photo_roll_reset",
+      "first": 853,
+      "last": 868,
+      "source_sha256": "3d69f18840aa1845a81768fbe5a2097172720072d2c14e7d0899daaf776d0a18"
+    },
+    {
+      "path": "src/app_level/503C10.c",
+      "label": "pokemon_registry_configuration_not_fog",
+      "first": 74,
+      "last": 80,
+      "source_sha256": "fecdb521391595b915877fa73d1318b47591234a1f08f91da030c46bb1f827ba"
+    }
+  ],
+  "rom_facts": {
+    "rom_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "rom_bytes": 16777216,
+    "mapping": {
+      "guest_base": "0x803466c0",
+      "rom_offset": "0x825e30"
+    },
+    "ranges": [
+      {
+        "label": "all_nine_environment_rows",
+        "guest_address": "0x8034ab10",
+        "rom_offset": "0x82a280",
+        "bytes": 36,
+        "sha256": "c102f73cc8a919b598fd4c2504b1fa44d2428f5995b15f3f6888e40491539477",
+        "storage_authority": "lifecycle_prepare"
+      },
+      {
+        "label": "complete_five_PokemonDef_rows",
+        "guest_address": "0x8034ab34",
+        "rom_offset": "0x82a2a4",
+        "bytes": 80,
+        "sha256": "8c50992b3ae4be5a1ca7fbbe6ee63d23902b38fe3c7c9cd6491b7dd316910b1d",
+        "storage_authority": "lifecycle_prepare"
+      },
+      {
+        "label": "separate_four_word_zero_PokemonDef_terminal",
+        "guest_address": "0x8034ab84",
+        "rom_offset": "0x82a2f4",
+        "bytes": 16,
+        "sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "storage_authority": "lifecycle_prepare"
+      },
+      {
+        "label": "shared_actor_object_and_BGM_initial_words",
+        "guest_address": "0x8034ab94",
+        "rom_offset": "0x82a304",
+        "bytes": 20,
+        "sha256": "6f96a94c0a005117d250555abbb15c1c17330f3a23e079c805293e371b65b713",
+        "storage_authority": "actor_prepare_ONLY"
+      },
+      {
+        "label": "original_end_reason",
+        "guest_address": "0x8034abd8",
+        "rom_offset": "0x82a348",
+        "bytes": 4,
+        "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "storage_authority": "lifecycle_prepare"
+      },
+      {
+        "label": "ScreenSettings",
+        "guest_address": "0x8034abdc",
+        "rom_offset": "0x82a34c",
+        "bytes": 28,
+        "sha256": "214ef5ad4f15024ee12684ed751aac9b702fecf05e355d0acb903208b3951e87",
+        "storage_authority": "lifecycle_prepare"
+      },
+      {
+        "label": "SceneSetup",
+        "guest_address": "0x8034abf8",
+        "rom_offset": "0x82a368",
+        "bytes": 140,
+        "sha256": "cd6e273dcb99dc33e28c2cb869969d8098a356150217f4d34589ba842c01d007",
+        "storage_authority": "lifecycle_prepare"
+      },
+      {
+        "label": "intro_completion_latch_and_cart_reference",
+        "guest_address": "0x8034b670",
+        "rom_offset": "0x82ade0",
+        "bytes": 8,
+        "sha256": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+        "storage_authority": "lifecycle_prepare"
+      },
+      {
+        "label": "shared_original_sky_speed",
+        "guest_address": "0x800f5db0",
+        "rom_offset": "0x4a8180",
+        "bytes": 4,
+        "sha256": "de620abd6d3615746360c1d15ce3a56291236d37424124054a49d25e947ffc4d",
+        "storage_authority": "actor_prepare_ONLY"
+      }
+    ],
+    "environment": [
+      [
+        349,
+        1,
+        22
+      ],
+      [
+        350,
+        1,
+        22
+      ],
+      [
+        351,
+        1,
+        22
+      ],
+      [
+        352,
+        1,
+        22
+      ],
+      [
+        147,
+        0,
+        25
+      ],
+      [
+        145,
+        0,
+        22
+      ],
+      [
+        148,
+        0,
+        35
+      ],
+      [
+        154,
+        2,
+        22
+      ],
+      [
+        155,
+        2,
+        22
+      ]
+    ],
+    "pokemon_definitions": [
+      [
+        151,
+        2150926648,
+        2151038396,
+        2151039616
+      ],
+      [
+        1037,
+        2150932152,
+        2151038396,
+        2151039616
+      ],
+      [
+        1001,
+        2150928312,
+        2151038396,
+        2151039616
+      ],
+      [
+        1002,
+        2150932580,
+        2151038396,
+        2151039616
+      ],
+      [
+        1038,
+        2150933736,
+        2151038396,
+        2151039616
+      ]
+    ],
+    "terminal_words": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "screen_words": [
+      2151370752,
+      2151524352,
+      0,
+      0,
+      320,
+      240,
+      2713
+    ],
+    "scene_setup_words": [
+      0,
+      2147528700,
+      2147528096,
+      2148768848,
+      0,
+      1,
+      2,
+      20480,
+      4096,
+      1024,
+      0,
+      51200,
+      131072,
+      16384,
+      2148145744,
+      2147502176,
+      0,
+      768,
+      0,
+      0,
+      0,
+      0,
+      92,
+      0,
+      0,
+      2150919912,
+      0,
+      0,
+      0,
+      136,
+      0,
+      88,
+      0,
+      144,
+      2150919504
+    ],
+    "heap": {
+      "base": "0x80139c50",
+      "upper_bound": "0x803466c0",
+      "bytes": 2148976,
+      "expression": "rainbow_code_VRAM - rainbow_assets_VRAM_END"
+    },
+    "initialized_latches": {
+      "rainbow_endLevelReason": 0,
+      "D_8034B670_82ADE0": 0,
+      "D_8034B674_82ADE4": 0
+    },
+    "shared_actor_owned_words": {
+      "D_8034AB94_82A304": 0,
+      "D_8034AB98_82A308": 0,
+      "D_8034AB9C_82A30C": 483839,
+      "D_8034ABA0_82A310": 483839,
+      "D_8034ABA4_82A314": 0,
+      "D_800F5DB0_4A8180_bits": 1065353216
+    },
+    "original_intro_BSS": {
+      "guest_base": "0x803501e0",
+      "fields": {
+        "D_803501E0_82F8E0": 8,
+        "D_803501E8_82F958": 1,
+        "D_803501E9_82F959": 1,
+        "D_803501EA_82F95A": 1
+      },
+      "source_origin": "src/rainbow/intro.c:11-15; splat.yaml:9952; no ROM bytes or synthetic execution state"
+    },
+    "asset_ranges": {
+      "FX_SCRIPT_COMMON": [
+        "0xab5860",
+        "0xab5980"
+      ],
+      "FX_SPRITES_COMMON": [
+        "0xab5980",
+        "0xab85e0"
+      ],
+      "FX_SCRIPT_RAINBOW": [
+        "0xadd310",
+        "0xadd5d0"
+      ],
+      "FX_SPRITES_RAINBOW": [
+        "0xadd5d0",
+        "0xadec60"
+      ]
+    },
+    "native_clip_identities": {
+      "camera": "0x8011b3e0",
+      "cart_model": "0x80119ae0",
+      "cart_material": "0x8011a970"
+    },
+    "world_identity": "0x800f5da0",
+    "definition_table_identity": "0x8034ab34"
+  },
+  "callback_dependencies": {
+    "func_80346968_8260D8": {
+      "calls": [
+        "player_source_wait",
+        "game_end_process"
+      ],
+      "source_argument": "unused s32; transported as actual GObj callback argument; no semantic value read",
+      "registered_by": []
+    },
+    "func_80346994_826104": {
+      "calls": [
+        "actor_invoke_spawn:0x803466c0",
+        "actor_invoke_spawn:0x80346898"
+      ],
+      "registered_by": [
+        "func_80346A28_826198:createWorld:add"
+      ]
+    },
+    "func_803469E0_826150": {
+      "calls": [
+        "native_pokemon_change:complete_five_defs"
+      ],
+      "registered_by": [
+        "func_80346A28_826198:createWorld:change"
+      ]
+    },
+    "func_80346A04_826174": {
+      "calls": [
+        "native_pokemon_remove:complete_five_defs"
+      ],
+      "registered_by": [
+        "func_80346A28_826198:createWorld:remove"
+      ]
+    },
+    "func_80346A28_826198": {
+      "calls": [
+        "native_create_world",
+        "native_sky_follow",
+        "native_pokemon_registry"
+      ],
+      "callbacks": [
+        "func_80346994_826104",
+        "func_80346A04_826174",
+        "func_803469E0_826150"
+      ]
+    },
+    "func_80346AA8_826218": {
+      "calls": [
+        "native_transition_end",
+        "native_detector_disable",
+        "native_environment_cleanup",
+        "native_stop_bgm",
+        "native_stop_all_sounds",
+        "native_destroy_world",
+        "player_func_80356FBC_4F73CC",
+        "native_remove_main_camera",
+        "native_exit_scene"
+      ],
+      "registered_by": [
+        "func_80346D50_8264C0:setEndLevelCallback"
+      ]
+    },
+    "func_80346B0C_82627C": {
+      "calls": [
+        "native_flute_command",
+        "native_bgm_tempo"
+      ],
+      "registered_by": [
+        "func_80346D50_8264C0:omAddGObj:0:0:0x80000000"
+      ],
+      "shared_state": "actors canonical BGM words"
+    },
+    "func_80346B94_826304": {
+      "calls": [
+        "native_sky_speed"
+      ],
+      "registered_by": [
+        "func_80346D50_8264C0:setPauseCallback"
+      ],
+      "shared_state": "actors canonical sky speed"
+    },
+    "func_80346BD0_826340": {
+      "calls": [
+        "native_block_next",
+        "native_block_position",
+        "native_displace_items",
+        "func_80346AA8_826218"
+      ],
+      "registered_by": [
+        "func_80346D50_8264C0:initUI:exit_block"
+      ]
+    },
+    "func_80346C64_8263D4": {
+      "calls": [
+        "native_load:four_exact_FX_ranges",
+        "native_fx_setup_bank:3:0",
+        "native_fx_camera:4:100",
+        "native_fx_effects:10",
+        "native_fx_dither:0xc0:0x30"
+      ]
+    },
+    "func_80346D50_8264C0": {
+      "calls": [
+        "native_depth_buffer",
+        "native_screen",
+        "native_fx_reset_bank",
+        "native_reset_photo_roll",
+        "native_create_helper",
+        "native_pokemons_init",
+        "func_80346A28_826198",
+        "native_background",
+        "native_create_cameras",
+        "player_initUI",
+        "player_setEndLevelCallback",
+        "player_setPauseCallback",
+        "native_environment_init:9",
+        "native_bgm_reverb:0:25",
+        "native_sound_reverb:40",
+        "native_play_sound:63:two",
+        "func_80346C64_8263D4",
+        "native_detector_create",
+        "native_detector_enable",
+        "func_8034AABC_82A22C"
+      ],
+      "callbacks": [
+        "func_80346B0C_82627C",
+        "func_80346BD0_826340",
+        "func_80346AA8_826218",
+        "func_80346B94_826304"
+      ],
+      "registered_by": [
+        "SceneSetup:postInit"
+      ]
+    },
+    "func_80346EE8_826658": {
+      "calls": [],
+      "registered_by": [
+        "SceneSetup:dynamic_store_identity"
+      ],
+      "exact_original_empty_body": true
+    },
+    "func_80346EF0_826660": {
+      "calls": [
+        "native_intervals:1:2",
+        "native_near_clipping:1",
+        "setup_scene:independent_entry_domain",
+        "native_photo_count",
+        "native_or_notice:0x10"
+      ],
+      "post_init": "func_80346D50_8264C0",
+      "return_routes": {
+        "retry": 6,
+        "has_photos": 9,
+        "otherwise": 13
+      }
+    },
+    "func_8034A520_829C90": {
+      "calls": [
+        "player_func_803571C4_4F75D4",
+        "player_func_80357120_4F7530",
+        "player_func_803570B0_4F74C0"
+      ]
+    },
+    "func_8034A550_829CC0": {
+      "calls": [
+        "player_func_803572B0_4F76C0",
+        "player_setBackgroundMusic:14"
+      ]
+    },
+    "func_8034A578_829CE8": {
+      "calls": [
+        "native_create_effect",
+        "native_attach_effect:actual_Cart_node_credit"
+      ],
+      "registered_by": [
+        "func_8034A7C4_829F34:fnAnimCallback"
+      ],
+      "events_minus_two_minus_one": "set actual intro completion latch"
+    },
+    "func_8034A5EC_829D5C": {
+      "calls": [
+        "native_sound_identity",
+        "native_stop_sound:39:21:15",
+        "player_func_80357170_4F7580",
+        "player_resetMainCameraSettings",
+        "func_8034A550_829CC0",
+        "delete_intro_cart:cancel_both_delay_processes_then_stop_self"
+      ]
+    },
+    "func_8034A6B4_829E24": {
+      "calls": [
+        "player_source_wait:60",
+        "native_play_sound:21:39",
+        "game_end_process"
+      ],
+      "registered_by": [
+        "func_8034A7C4_829F34:omCreateProcess:0:1"
+      ]
+    },
+    "func_8034A748_829EB8": {
+      "calls": [
+        "player_source_wait:170",
+        "native_play_sound:15",
+        "native_stop_sound:39_handle",
+        "game_end_process"
+      ],
+      "registered_by": [
+        "func_8034A7C4_829F34:omCreateProcess:0:1"
+      ]
+    },
+    "func_8034A7C4_829F34": {
+      "calls": [
+        "native_camera_clip:0x8011b3e0",
+        "player_root_camera_animation_set",
+        "player_cart_PlayerModel_SetAnimation:0x80119ae0:0x8011a970",
+        "player_cart_source_set_callback",
+        "game_end_process:camera",
+        "func_8034A5EC_829D5C",
+        "game_camera_parameters",
+        "game_camera_set_look_at",
+        "player_source_wait"
+      ],
+      "callbacks": [
+        "camera_animation_update:kind1:priority1",
+        "func_8034A578_829CE8:cart_event",
+        "func_8034A6B4_829E24:kind0:priority1",
+        "func_8034A748_829EB8:kind0:priority1"
+      ],
+      "registered_by": [
+        "func_8034AABC_82A22C:omCreateProcess:0:1"
+      ],
+      "source_wait_bounds": {
+        "intro_max": 290,
+        "restore_frames": 11
+      }
+    },
+    "func_8034AABC_82A22C": {
+      "calls": [
+        "player_cart_PlayerModel_Init",
+        "native_store_cart:exact_lifecycle_field",
+        "func_8034A520_829C90"
+      ],
+      "callbacks": [
+        "func_8034A7C4_829F34:kind0:priority1"
+      ]
+    }
+  },
+  "output_sha256": "8d1d31805f2cc0a20fd41af2c14272a257d5b289ac60358429ff1e46a25c36c8",
+  "admission_scope": "Exact pinned lifecycle Source C providers and typed returning native boundary contracts only; no concrete native-owner execution/readiness claim",
+  "ownership": {
+    "lifecycle": "all thirteen main.c lifecycle definitions and all eight intro.c definitions",
+    "actor_exclusions": [
+      "func_803466C0_825E30",
+      "func_803467A4_825F14",
+      "func_80346898_826008"
+    ],
+    "actor_shared_state": "One fixed-address canonical IsleRainbowActorSource beside the independent entry, outside sceneStorage; exact actor prepare alone hydrates ROM/BSS once; all Source-mutated BGM/sky scalars remain visible after detachment",
+    "intro_state": "Lifecycle owns original completion latch, retained Cart field and explicitly declared intro BSS",
+    "entry_protocol": "Independent compiled-C entry requires actors PREPARED with the same independent owner and no Game/services; request_scene is setup intent only; host creates actual sceneStorage afterward, binds canonical native Actor/Player/Cart sources and activates that same record before Source init; actual scene borrowers join before actor DETACHED and complete_scene",
+    "binding_phases": "One-way UNPREPARED -> PREPARED -> ACTIVE -> DETACHED; no zero-record bypass, early native Storage, reset, clone, rehydrate or rebind; invoke_init and all scene callback fences positively require ACTIVE and actual same-Game source/Cart bindings",
+    "scene_completion": "Existing native_scene_joined must consume the independent owner's retained real native/Source/GPU/readback/photo/audio/semantic/model-credit closure receipt without touching old Player/Game/sceneStorage; only then complete_scene clears scene borrows and publishes completion_ready; process count/STOPPED/exit intent are not join proof",
+    "cancellation": "First lifecycle/actor/caller failure remains terminal; complete_scene returns that failure including STOPPED and an intentionally cancelled independent entry never publishes completed/output_scene; host must not acknowledge cancellation with OK",
+    "post_scene_access": "Only after the genuine join receipt and actor DETACHED does original entry read retained lifecycle scalars and application-owned photo/notice operations; it never invokes detached Actor services or accesses destroyed native scene storage",
+    "source_empty_callback": "func_80346EE8_826658 is an exact original empty dynamic-store callback, not a fallback or replacement",
+    "build_recipe": "Public translation recipes/numeric metadata only; no SDK bodies, asset bytes, generated Original C or ROM bytes",
+    "native_owner_support": "Parent adds its actually implemented new native lifecycle owners to this closed support list and refreshes affected native hashes before full owner admission"
+  }
+}

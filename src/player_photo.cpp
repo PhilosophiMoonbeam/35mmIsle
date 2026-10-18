@@ -109,15 +109,26 @@ IsleGameResult Photo::bind_snapshot_owner(scene::Services& services,IsleGameObje
     if(result!=ISLE_GAME_OK) return result;
     if(metadata.id!=0 || metadata.update_link!=9 || metadata.priority!=0x80000000u)
         return ISLE_GAME_INVALID_ARGUMENT;
+    // Original Create preserves the application-owned serialized photo headers
+    // across course owners. It resets membership/focus and recreates the FIFO;
+    // a fresh native Detector does not turn retained value data into a stage.
+    if(detector_.history.create_source_contexts()!=focus::Error::none)
+        return ISLE_GAME_INVALID_STATE;
     std::size_t count=0;
     for(auto& pending:pending_) for(auto& field:pending.holds) hold_fields_[count++]=&field;
-    if(!services.source_owner_register(object,hold_fields_)) return ISLE_GAME_INVALID_STATE;
+    if(!services.source_owner_register(object,hold_fields_)) {
+        detector_.history.source_created_=false;
+        return ISLE_GAME_INVALID_STATE;
+    }
     services_=&services; snapshot_owner_=object;
+    detector_.context=1;
     return ISLE_GAME_OK;
 }
 IsleGameResult Photo::detach_snapshot_owner() noexcept {
     if(!services_ || !snapshot_owner_ || !quiescent() ||
        !services_->source_owner_joined(snapshot_owner_)) return ISLE_GAME_INVALID_STATE;
+    const auto discarded=teardown_queue();
+    if(discarded!=ISLE_GAME_OK) return discarded;
     if(!services_->source_owner_release(snapshot_owner_)) return ISLE_GAME_INVALID_STATE;
     snapshot_owner_=nullptr; services_=nullptr;
     return ISLE_GAME_OK;
@@ -223,10 +234,12 @@ IsleGameResult Photo::items(IslePlayerPhotoContext& output) noexcept {
             if(!binding.model.runtime) return ISLE_GAME_INVALID_STATE;
             const auto state=binding.model.runtime->model(binding.model.state.instance);
             if(!state) return ISLE_GAME_INVALID_STATE;
+            const auto family=items_.family(binding.model.state.instance);
+            if(!family) return ISLE_GAME_INVALID_STATE;
             IslePlayerPhotoItemState native{};
             native.position=root->position; native.scale=root->scale.x;
             native.model_time=state.animation_time;
-            switch(binding.family) {
+            switch(*family) {
             case items::Family::water_splash: native.family=2; break;
             case items::Family::lava_splash: native.family=3; break;
             case items::Family::pester_ball:
@@ -234,7 +247,7 @@ IsleGameResult Photo::items(IslePlayerPhotoContext& output) noexcept {
                 if(state.nodes.size()<2 || state.nodes[1].material_count==0 ||
                    state.nodes[1].first_material>=state.materials.size()) return ISLE_GAME_INVALID_STATE;
                 native.material_time=state.materials[state.nodes[1].first_material].clock.time_passed;
-                native.family=binding.family==items::Family::pester_ball?0:1; break;
+                native.family=*family==items::Family::pester_ball?0:1; break;
             }
             const float consumed_time=native.family<2?native.material_time:native.model_time;
             if(!fits(consumed_time,-2147483648.0f,2147483648.0f) ||
@@ -301,8 +314,8 @@ IsleGameResult Photo::seal_history(std::uint16_t context,std::uint64_t generatio
 IsleGameResult Photo::postprocess(IslePlayerPhotoTicket ticket,std::span<std::uint32_t> words,
     std::uint32_t regions,std::uint32_t framebuffer) noexcept {
     auto* pending=matching(ticket);
-    if(!pending || pending->phase!=Phase::queued || !count_ || queue_[head_]!=ticket.context)
-        return ISLE_GAME_INVALID_STATE;
+    if(!pending || pending->phase!=Phase::submitted || !pending->frame ||
+       pending->frame->submission()!=ticket.submission) return ISLE_GAME_INVALID_STATE;
     if(regions!=detector_.copies.region_offset(0)) return ISLE_GAME_INVALID_ARGUMENT;
     if(detector_.history.analyze(ticket.context,words,regions)!=focus::Error::none) return ISLE_GAME_INVALID_STATE;
     if(detector_.history.mark_center(words,framebuffer,player_.gDirectionIndex)!=focus::Error::none)
@@ -363,7 +376,14 @@ IsleGameResult Photo::release_pending(Pending& pending) noexcept {
     return ISLE_GAME_OK;
 }
 bool Photo::quiescent() const noexcept {
-    return count_==0 && std::all_of(pending_.begin(),pending_.end(),[](const auto& p){return p.phase==Phase::idle;});
+    return std::all_of(pending_.begin(),pending_.end(),[](const auto& p){return p.phase==Phase::idle;});
+}
+IsleGameResult Photo::teardown_queue() noexcept {
+    const auto access=source_access(true);
+    if(access!=ISLE_GAME_OK) return access;
+    if(!quiescent()) return ISLE_GAME_INVALID_STATE;
+    head_=0;count_=0;
+    return ISLE_GAME_OK;
 }
 } // namespace isle::player
 extern "C" IsleGameResult isle_player_photo_publish_completed(IslePlayerPhotoSource* source) {
@@ -506,6 +526,12 @@ IsleGameResult isle::player::Photo::clear_published_presence() noexcept {
     detector_.history.clear_published_presence();
     return ISLE_GAME_OK;
 }
+IsleGameResult isle::player::Photo::detector_enabled(bool enabled) noexcept {
+    const auto result=source_access();
+    if(result!=ISLE_GAME_OK) return result;
+    detector_.enabled=enabled;
+    return ISLE_GAME_OK;
+}
 IsleGameResult isle::player::Photo::borrow_taken(IslePlayerPhotoTicket* output) noexcept {
     if(output) *output={};
     auto result=source_access();
@@ -515,7 +541,7 @@ IsleGameResult isle::player::Photo::borrow_taken(IslePlayerPhotoTicket* output) 
     if(context<0 || context>=2 || published_!=context ||
        detector_.history.published().context!=context) return remember(ISLE_GAME_INVALID_STATE);
     const auto ticket=pending_[static_cast<std::size_t>(context)].ticket;
-    if(!ticket.generation || !ticket.submission) return remember(ISLE_GAME_INVALID_STATE);
+    if(!ticket.submission) return remember(ISLE_GAME_INVALID_STATE);
     const IslePlayerPhotoContext* borrowed=nullptr;
     result=borrow(ticket,borrowed);
     if(result!=ISLE_GAME_OK) return remember(result);
@@ -557,6 +583,10 @@ extern "C" IsleGameResult isle_player_photo_published_focus(IslePlayerPhotoSourc
 extern "C" IsleGameResult isle_player_photo_clear_published_presence(IslePlayerPhotoSource* source) {
     if(!source || !source->owner) return photo_owner_failure(source);
     return static_cast<isle::player::Photo*>(source->owner)->clear_published_presence();
+}
+extern "C" IsleGameResult isle_player_photo_native_detector_enabled(IslePlayerPhotoSource* source,int enabled) {
+    if(!source || !source->owner) return photo_owner_failure(source);
+    return static_cast<isle::player::Photo*>(source->owner)->detector_enabled(enabled!=0);
 }
 extern "C" IsleGameResult isle_player_photo_borrow_taken(IslePlayerPhotoSource* source,IslePlayerPhotoTicket* output) {
     if(!source || !source->owner) {

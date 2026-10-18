@@ -5,6 +5,7 @@
 #include "rsp_render.hpp"
 #include "scene_render.hpp"
 
+namespace isle::graphics { class SourcePrograms; }
 namespace isle::scene::graphics {
 enum class Error { none, invalid, resource, native, preparation, execution, retired };
 enum class Poll { idle, pending, completed, failed };
@@ -21,6 +22,20 @@ struct Config {
     bool require_cpu = false;
     rsp::Limits limits{12000000, 4 * 1024 * 1024};
     Layout memory{};
+};
+// Native source-screen semantics, not a console VI/ScreenSettings layout.
+// The supported 0xa99 mode scans two 320x240 RGBA16 source buffers. Guest
+// identities are preserved here; only their validated physical spans reach RDP.
+struct SourceScreen {
+    std::uint32_t width = 320, height = 240, flags = 0xa99;
+    std::array<std::uint32_t, 3> framebuffer_identity{0x803b5000, 0x803da800, 0};
+};
+// A capability naming this Frame's actual protected RDRAM depth storage.
+// Never a host pixel allocation, a GPU completion token or a console pointer.
+// Its address remains stable until Frame destruction; copies are not admitted.
+struct DepthReservation {
+    sprite::RamRange memory;
+    std::uint32_t alignment;
 };
 // The two actual source RGBA16 contexts; this is not a presentation image index.
 struct FrameContext { unsigned buffer_index = 0; };
@@ -88,6 +103,13 @@ private:
     State* state_;
     friend struct SourceControlAccess;
 };
+enum class SourceGpuAcquire { pending, admitted, failed };
+struct SourceGpuBinding {
+    rsp::CanonicalExecutor* executor = nullptr;
+    const ::isle::graphics::SourcePrograms* programs = nullptr;
+    std::uint64_t epoch = 0, admission = 0;
+};
+
 // Owner-thread source compositor. Catalog and unmoved Snapshot outlive Frame.
 // begin borrows View ONLY while preparing actual RAM. No native/producer view is
 // retained during execution. The owner must poll until !busy() before the next
@@ -107,6 +129,21 @@ public:
     // Once installed, excess input fails closed rather than growing storage.
     // Failure is retained in error()/message(), as for begin().
     bool reserve_render_capacity(RenderCapacity) noexcept;
+    // Original Source depth allocation and screen application are separate
+    // cold operations. A non-NULL capability names this Frame's actual target;
+    // NULL explicitly preserves Source viZBuffer=NULL, not private core depth.
+    const DepthReservation* reserve_source_depth(std::uint32_t bytes,
+                                                std::uint32_t alignment) noexcept;
+    bool configure_source_screen(const SourceScreen&, const DepthReservation*) noexcept;
+    // Cold persistent Source replay storage, independent of this Frame's own
+    // reservations(). Protected from normal display writes across Source waits.
+    // Reserve before first begin; caller includes it in other producer plans.
+    bool reserve_source_gpu_storage(std::span<const sprite::RamRange>) noexcept;
+    // One exclusive real executor/RAM stage, never a display/GTL token.
+    // Release only after actual GPU, readback and mapped-RAM leases have ended.
+    // Retained semantic replay ownership must not hold this across Source waits.
+    SourceGpuAcquire acquire_source_gpu(SourceGpuBinding&) noexcept;
+    bool release_source_gpu(const SourceGpuBinding&) noexcept;
     bool begin(render::Input, FrameContext = {}, CompletedWork = {}) noexcept;
     bool begin(startup::View, FrameContext = {}) noexcept;
     Poll poll() noexcept;
@@ -118,7 +155,8 @@ public:
     // Read-only bounded evidence: the actual failed token is retained only
     // after executor leases, GPU work, postprocessing and readback have ended.
     bool failed_submission(std::uint64_t) const noexcept;
-    // Actual protected cold/task/command/output/depth ranges; not a GPU fence.
+    // Actual protected cold/task/command/output/depth ranges and, after explicit
+    // source-screen setup, its two physical framebuffer spans. Not a GPU fence.
     std::span<const sprite::RamRange> reservations() const noexcept;
     Error error() const noexcept;
     const char* message() const noexcept;

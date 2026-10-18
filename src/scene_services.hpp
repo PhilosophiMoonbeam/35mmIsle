@@ -127,7 +127,8 @@ public:
     // Opt-in source owners only; unrelated menu objects are not retained.
     // Register while live, before publishing any source reference. The borrowed
     // span contains unique addresses of actual NULL canonical fields and stays
-    // valid until release. All subsequent writes MUST use reference_assign.
+    // valid until release. Subsequent native writes use reference_assign;
+    // exact original C stores are immediately accounted for by reconcile.
     // One native identity hold and this same Services record survive real join
     // until outside-OM release; no model/payload liveness is implied.
     bool source_owner_register(IsleGameObject*, std::span<IsleGameObject** const>) noexcept;
@@ -136,6 +137,11 @@ public:
     // adopts the new borrow before releasing the old one; NULL works after fail.
     bool source_reference_assign(IsleGameObject* receiver, IsleGameObject** field,
                                  IsleGameObject* sender) noexcept;
+    // Capture previous immediately before a serialized original C store. This
+    // accounts for that completed store without repeating it or its source
+    // branch. No intervening field mutation or retirement is allowed.
+    bool source_reference_reconcile(IsleGameObject* receiver, IsleGameObject** field,
+                                    IsleGameObject* previous) noexcept;
     SourceBorrows source_owner_borrows(IsleGameObject*) const noexcept;
     bool source_owner_collectable(IsleGameObject*) const noexcept;
     // Joined, no queue/field borrowers, outside ALL OM/command/graphics borrowers.
@@ -162,6 +168,11 @@ public:
     void end_process(IsleGameProcess*) noexcept;
     void end_processes(IsleGameObject*) noexcept;
     void erase(IsleGameObject*) noexcept;
+    // Terminal native-object joins, outside OM and after all GPU/Photo borrowers.
+    // Callback owners and Services stay alive; Source identities remain their
+    // semantic owner's responsibility. False retains incomplete joins/dispatch.
+    // Once started, closes object/process admission; never heals failure.
+    bool retire_objects() noexcept;
     bool set_render(IsleGameObject*, RenderMetadata) noexcept;
     bool render_metadata(IsleGameObject*, RenderMetadata&) const noexcept;
     // Read-only projection of the actual draw_next list, including hidden
@@ -179,13 +190,38 @@ public:
     IsleGameSprite* append_sprite(IsleGameObject*, std::uint32_t identity) noexcept;
     IsleGameSprite* append_sprite(IsleGameObject*, std::size_t producer_resource,
                                  const IsleSprite&, std::uint64_t generation = 0) noexcept;
+    // Semantic window hierarchy; native attachments remain flat on the same
+    // registered live object. Siblings insert immediately after existing;
+    // children append after the parent's last child. No native local pose changes.
+    IsleGameSprite* add_sprite_sibling(IsleGameSprite* existing, std::uint32_t identity) noexcept;
+    IsleGameSprite* add_sprite_sibling(IsleGameSprite* existing, std::size_t producer_resource,
+                                     const IsleSprite&, std::uint64_t generation = 0) noexcept;
+    IsleGameSprite* append_sprite_child(IsleGameSprite* parent, std::uint32_t identity) noexcept;
+    IsleGameSprite* append_sprite_child(IsleGameSprite* parent, std::size_t producer_resource,
+                                      const IsleSprite&, std::uint64_t generation = 0) noexcept;
     // Full source descriptor replacement. Explicit producer resource index also
     // admits a registered dynamic Raster view without mutating immutable banks.
     bool rebind_sprite(IsleGameSprite*, std::uint32_t identity) noexcept;
     bool replace_sprite(IsleGameSprite*, std::size_t producer_resource, const IsleSprite&, std::uint64_t generation = 0) noexcept;
+    // Joined fault retirement only: restore canonical resource/descriptor after
+    // the caller has released actual Producer GPU borrows. Requires failed()
+    // and zero native processes; never clears failure or resumes Source.
+    bool restore_sprite_after_failure(IsleGameSprite*, std::size_t, const IsleSprite&, std::uint64_t generation = 0) noexcept;
     bool remove_sprites(IsleGameObject*) noexcept;
     IsleSprite* view(IsleGameSprite*) noexcept;
+    // Canonical semantic hierarchy, borrowed until actual attachment removal.
+    // NULL/foreign/retiring handles reject; absent links return NULL.
+    bool sprite_links(IsleGameSprite*, SpriteHandle& owner, IsleGameSprite*& parent,
+                      IsleGameSprite*& child, IsleGameSprite*& next,
+                      IsleGameSprite*& previous) noexcept;
+    bool sprite_root(IsleGameObject*, IsleGameSprite*&) noexcept;
     std::size_t sprite_count() const noexcept;
+    // Count is a capacity upper bound, including locally hidden subtrees.
+    // Draw views are stable scene-owned prepared snapshots, not mutable native
+    // locals. Retain Services, resources and attachments through actual frame
+    // retirement; only then prepare again, remove sprites or destroy the owner.
+    // Preparation traverses roots/children/siblings depth-first, pruning hidden
+    // subtrees and composing signed-16 position and integer RGBA inheritance.
     bool sprite_draws(std::span<::isle::sprite::Draw>, std::size_t& written) noexcept;
     bool sprite_draws(std::span<SpriteDraw>, std::size_t& written) noexcept;
     std::span<const SpriteResource> sprite_resources() const noexcept;

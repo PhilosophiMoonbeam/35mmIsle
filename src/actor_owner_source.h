@@ -58,6 +58,9 @@ void isle_actor_source_object_flags(IsleGameObject*, uint32_t mask, uint32_t val
 IsleGameResult isle_actor_owner_self_model(IsleActorSource*, IsleGameModelRef*);
 IsleGameResult isle_actor_owner_aux_read(IsleActorSource*, const IsleGameModelRef*, const IsleGameModelTransform**);
 IsleGameResult isle_actor_owner_aux_store(IsleActorSource*, const IsleGameModelRef*, uint32_t, const IsleGameModelTransform*);
+IsleGameResult isle_actor_owner_root_position_store(IsleActorSource*, const IsleGameModelRef*, const IsleGameVec3*);
+IsleGameResult isle_actor_owner_block_indices(IsleActorSource*, int32_t* current, int32_t* base);
+IsleGameResult isle_actor_owner_schedule_cleanup(IsleActorSource*);
 IsleGameResult isle_actor_owner_step_walk(IsleActorSource*, float, float, uint32_t, int32_t*);
 IsleGameResult isle_actor_owner_scale_initialization(IsleActorSource*, IsleActorScaleInitialization*);
 IsleGameResult isle_actor_owner_target_position_ref(IsleActorSource*, IsleGameObject*, IsleActorPositionRef*);
@@ -98,14 +101,38 @@ IsleGameResult isle_actor_owner_command_before_transfer(IsleActorSource*);
 IsleGameResult isle_actor_owner_distance(IsleActorSource*);
 IsleGameResult isle_actor_owner_local_subtract_y(IsleActorSource*, float);
 IsleGameResult isle_actor_owner_visibility(IsleActorSource*, int hidden);
+IsleGameResult isle_actor_owner_environment_sound(IsleActorSource*, uint8_t category, int32_t sound);
 IsleGameResult isle_actor_owner_trigger_position(IsleActorSource*, IsleGameVec3);
 float isle_actor_owner_animation_time(IsleActorSource*);
 int isle_actor_owner_paused(IsleActorSource*);
 IsleGameResult isle_actor_source_pause_object(IsleActorSource*, int paused);
 /* Typed native factory arguments, never console structures or guest callbacks. */
 typedef struct IsleActorFactoryBlock { void* owner; void* block; void* result; } IsleActorFactoryBlock;
-typedef struct IsleActorFactorySpawn { const void* spawn; size_t definition; } IsleActorFactorySpawn;
+typedef struct IsleActorFactorySpawn {
+    const void* spawn;
+    size_t definition;
+    /* Optional borrow, present only for the original Meowth factory read. */
+    const int32_t* behavior;
+    size_t automatic_definition;
+} IsleActorFactorySpawn;
 typedef struct IsleActorFactoryInitialization { uint32_t identity; } IsleActorFactoryInitialization;
+int32_t isle_actor_factory_behavior(const IsleActorFactorySpawn*);
+/* Actual native Game/domain fault plus abandoned-update STOPPED state. */
+IsleGameResult isle_actor_source_execution_status(IsleGame*);
+/* Original Pokemon_RemovePokemons, shared by course providers. The returning
+ * C fence requires the actual current Actor to remain in the terminated list;
+ * cleanup therefore cannot discard its owning native service call. */
+void isle_actor_remove_pokemons(IsleGameObject*, const uint16_t*);
+IsleGameResult isle_actor_source_remove_pokemons_call(IsleGame*,
+    IsleGameObject*, const uint16_t*, size_t count);
+typedef IsleGameObject* (*IsleActorReturningFactory)(int32_t, uint16_t,
+    IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*);
+typedef void (*IsleActorVoidFactory)(int32_t, uint16_t,
+    IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*);
+/* Returning C-only fence. Source faults never cross the C++ caller. */
+IsleGameResult isle_actor_source_factory_call(IsleGame*, IsleActorReturningFactory,
+    IsleActorVoidFactory, int32_t, uint16_t, IsleActorFactoryBlock*,
+    IsleActorFactoryBlock*, IsleActorFactorySpawn*, IsleGameObject**);
 IsleGameObject* isle_actor_owner_spawn_ground_dl4(int32_t object_id, uint16_t id,
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
     const IsleActorFactoryInitialization*);
@@ -173,7 +200,7 @@ IsleGameResult isle_actor_owner_current_block(IsleActorSource*, void**);
 IsleGameResult isle_actor_owner_add_one(IsleActorSource*, void*, void*, const IsleActorGeoSpawn*,
     const IsleActorGeoDefinition*, IsleGameObject**);
 IsleGameResult isle_actor_owner_copy_position(IsleActorSource*, IsleGameObject*);
-IsleGameResult isle_actor_source_id_in_use(IsleGame*, uint32_t, int*);
+IsleGameResult isle_actor_source_id_in_use_link(IsleGame*, uint8_t link, uint32_t, int*);
 /* Checked, nonwaiting native link3 cursor. NULL previous starts at the head;
  * otherwise previous must still be a live same-game link3 object. Each returned
  * object has its identical canonical bound record and actual attached model.
@@ -213,6 +240,10 @@ void isle_actor_source_eat_apple(IsleGameObject*);
 /* Commands enter the shared checked Services queues. Link broadcasts retain
  * actual native update-list order and sender identity lifetime accounting. */
 void isle_actor_source_send_command(IsleGameObject*, int32_t, IsleGameObject*);
+/* Requester supplies the admitted Actor context; destination may be the real
+ * Player or another Actor. Destination never masquerades as the requester. */
+void isle_actor_source_send_addressed(IsleGameObject* requester, IsleGameObject* destination,
+    int32_t command, IsleGameObject* sender);
 void isle_actor_source_send_to_link(IsleGameObject*, uint8_t, int32_t, IsleGameObject*);
 int32_t isle_actor_source_flute(IsleGameObject*);
 float isle_actor_source_distance(IsleGameObject*, IsleGameObject*);

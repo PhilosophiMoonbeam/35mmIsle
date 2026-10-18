@@ -31,6 +31,9 @@ public:
     bool collision_one(std::size_t model_index, const StaticObject&,
                        Vec3 position, Vec3 velocity,
                        Vec3& out_position, Vec3& out_velocity) const noexcept;
+    bool collision_model_one(std::size_t model_index, Vec3 object_position, Vec3 rotation,
+                             Vec3 position, Vec3 velocity,
+                             Vec3& out_position, Vec3& out_velocity) const noexcept;
 private:
     struct Transform {
         float local_to_global[4][4];

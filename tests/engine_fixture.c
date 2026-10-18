@@ -1,6 +1,7 @@
 #include "engine_fixture.h"
 #include "../src/engine_internal.h"
 #include "../src/menu_scene_bridge.h"
+#include "../src/player_source.h"
 
 
 static void record(EngineFixture* fixture, int value) {
@@ -157,6 +158,56 @@ IsleGameResult engine_replace_actor_update(IsleGame* game, IsleGameObject* objec
 
 void engine_bind_source_payload(IsleGameObject* object, EngineFixture* fixture) {
     object->userData = fixture;
+}
+
+void engine_source_stop_update(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    record(fixture, 480);
+    fixture->local_result = isle_game_stop_update(fixture->game);
+    ++fixture->after_finish;
+    record(fixture, 481);
+}
+void engine_native_reject_stop_update(IsleGameObject* object, void* user) {
+    EngineFixture* fixture = user;
+    (void)object;
+    if (isle_game_stop_update(fixture->game) != ISLE_GAME_INVALID_STATE) ++fixture->failures;
+    record(fixture, 479);
+}
+static void nested_stop(IslePlayerSource* source, void* user) {
+    EngineFixture* fixture = user;
+    if (isle_game_stop_update(source->game) != ISLE_GAME_INVALID_STATE) ++fixture->failures;
+    record(fixture, 483);
+}
+void engine_source_reject_nested_stop(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    IslePlayerSource* source = object->game->playerSource;
+    require_ok(fixture, isle_player_source_call(source,nested_stop,fixture));
+    if (source->nonwaiting_call_frame != NULL) ++fixture->failures;
+    record(fixture, 484);
+}
+
+void engine_source_wait_once(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    record(fixture, 500);
+    fixture->local_result = isle_game_source_wait(fixture->game, 1);
+    record(fixture, 501);
+}
+void engine_native_reject_source_wait(IsleGameObject* object, void* user) {
+    EngineFixture* fixture = user;
+    (void)object;
+    if (isle_game_source_wait(fixture->game, 1) != ISLE_GAME_INVALID_STATE) ++fixture->failures;
+    record(fixture, 502);
+}
+static void nested_source_wait(IslePlayerSource* source, void* user) {
+    EngineFixture* fixture = user;
+    if (isle_game_source_wait(source->game, 1) != ISLE_GAME_INVALID_STATE) ++fixture->failures;
+    require_ok(fixture, isle_game_source_wait(source->game, 0));
+    record(fixture, 504);
+}
+void engine_source_reject_nested_wait(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    require_ok(fixture, isle_player_source_call(object->game->playerSource,nested_source_wait,fixture));
+    record(fixture, 505);
 }
 
 void engine_source_a(IsleGameObject* object) {

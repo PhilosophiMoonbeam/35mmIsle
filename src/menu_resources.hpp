@@ -91,10 +91,11 @@ struct BankFacts {
 };
 struct Vec3 { float x, y, z; };
 enum class RenderType : std::uint32_t {
+    a = 0x80014d60,
     b = 0x80014f98,
     a_fogged = 0x800a1530,
     b_fogged = 0x800a15d8, d_fogged = 0x800a1608,
-    i_fogged = 0x800a1650, j_fogged = 0x800a16b0
+    i_fogged = 0x800a1650, i_no_fog = 0x800a1680, j_fogged = 0x800a16b0
 };
 struct Payload {
     rom::GuestView wire;
@@ -151,10 +152,13 @@ struct AnimationCommand {
     std::size_t camera_at_path_index = no_index; // Camera13 bit7, independent of bit3.
 };
 struct Animation {
-    rom::GuestView wire; // Exact reachable stream words; commands retain operand framing.
+    rom::GuestView wire; // Entry fragment (legacy contiguous streams use only this).
     AnimationKind kind{};
     bool callback_installed = false; // Source fnAnimCallback may be NULL even with opcode16.
     std::vector<AnimationCommand> commands;
+    // Exact disjoint reachable fragments in traversal order. Empty retains the
+    // original single-wire representation; never includes skipped tape words.
+    std::vector<rom::GuestView> fragments;
 };
 struct DisplayList { rom::GuestView wire; };
 struct VertexLoad {

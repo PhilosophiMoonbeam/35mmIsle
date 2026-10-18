@@ -77,7 +77,7 @@ void top_list(std::span<std::uint32_t> words,const world::ProducerFrame& frame) 
 }
 struct Result { std::vector<std::uint32_t> triangles;std::vector<std::byte> pixels,depths; };
 int run(const std::filesystem::path& path) {
-    const auto snapshot=rom::read_snapshot(path);const world::Resources resources(snapshot);
+    const auto snapshot=rom::read_snapshot(path);const world::Resources resources(snapshot, isle::course::beach_id);
     const menu::EffectResources effect_resources(snapshot);
     const std::array effect_banks{&effect_resources.bank(menu::EffectGroup::common),
         &effect_resources.bank(menu::EffectGroup::beach)};
@@ -88,10 +88,11 @@ int run(const std::filesystem::path& path) {
     require(bool(initial_effect.status)&&initial_effect.spawned,"real common-bank particle did not remain live");
     Owners owners(effects);
     const auto view=world::ResourceView{&resources.setup(),&resources.sky(),resources.blocks(),resources.primary_count(),resources.models(),
-        resources.materials(),resources.animations(),resources.paths(),resources.static_definitions(),&resources.height_map(),resources.collision_models()};
+        resources.materials(),resources.animations(),resources.paths(),resources.static_definitions(),&resources.height_map(),resources.collision_models(),&resources.ceiling_map(),resources.sky_model_index()};
     world::Callbacks callbacks;callbacks.user=&owners;callbacks.shift_camera=Owners::shift_camera;
     callbacks.shift_effects=Owners::shift_effects;callbacks.process_commands=Owners::command;
-    world::World component(owners.game,view,callbacks);component.follow_camera(owners.camera);
+    world::ModuleState world_module;
+    world::World component(owners.game,view,world_module,callbacks);component.follow_camera(owners.camera);
     const auto source_terrain_pose=[&]{
         for(const auto& block:component.blocks())if(block.model){
             const IsleGameModelNode* nodes=nullptr;std::size_t count=0;
@@ -119,7 +120,7 @@ int run(const std::filesystem::path& path) {
     const std::array<menu::RamRange,6> other{{{top,0x10000},{stack,0x10000},{output,output_end-output},
         {color,target_bytes},{depth,target_bytes},{guard,256}}};
     menu::model::CameraBasisState camera_basis;
-    world::Producer producer(owners.game,owners.camera,camera_basis,resources,component,{},other);
+    world::Producer producer(owners.game,owners.camera,camera_basis,resources,component.render_view(),{},other);
     rsp::CanonicalExecutor executor(true,{16000000,4*1024*1024});
     const auto arena_used=owners.arena.cursor;
     auto execute=[&](bool cold,std::uint64_t epoch=1,rsp::CanonicalExecutor* alternate=nullptr){
@@ -293,7 +294,7 @@ int run(const std::filesystem::path& path) {
     // One extra64-byte slot succeeds; two active placements exceed it before
     // canonical RAM or any native camera/model publication can be changed.
     auto tight_layout=world::ProducerLayout{};tight_layout.payloads.size=local_payload_bytes+64;
-    world::Producer tight(owners.game,owners.camera,camera_basis,resources,component,tight_layout,other);
+    world::Producer tight(owners.game,owners.camera,camera_basis,resources,component.render_view(),tight_layout,other);
     {
         // This is a CPU admission boundary, not an execution. Never acquire a
         // canonical preparation lease that would be abandoned on scope exit:

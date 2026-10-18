@@ -45,6 +45,7 @@ public:
     bool running() const noexcept;
     Error error() const noexcept;
     const char* message() const noexcept; // First failure, retained through shutdown.
+    const std::filesystem::path& data_directory() const noexcept;
     // Commands from serialized GAME continuations inspect the actual endpoint
     // through the continuation owner-service fence; endpoint I/O stays on main.
     game_audio::Session* audio() noexcept;

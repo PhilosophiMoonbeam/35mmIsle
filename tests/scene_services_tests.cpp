@@ -5,6 +5,7 @@
 #include "engine_fixture.h"
 #include "source_factory_resources.h"
 #include "borrowed_model_kernel.hpp"
+#include "sprite_producer.hpp"
 
 #include <array>
 #include <chrono>
@@ -16,6 +17,8 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <thread>
+#include <vector>
 
 namespace a = isle::audio;
 namespace f = isle::audio_test;
@@ -1004,6 +1007,292 @@ void services_prepared_admission_and_native_visibility(const fs::path& parent) {
           "cancellation after failure frees unpublished ownership without clearing or replacing scene error");
 }
 
+void services_sprite_hierarchy(const fs::path& parent) {
+    Profile profile(parent);
+    isle::game::State state(profile.path);
+    check(state.initialize(1),"initialize persistent hierarchy fixture");
+    if (!state.initialized()) return;
+    AudioOwner audio_owner;
+    auto audio = audio_owner.create();
+    check(bool(audio),"initialize hierarchy fixture audio owner");
+    if (!audio) return;
+    isle::game_input::Service input;
+    // One genuine authored I8 texel and its BE Bitmap descriptor. Identity
+    // overloads use the same immutable capability as ordinary scene sprites.
+    auto bytes = std::make_shared<isle::sprite::Bank>(17,0);
+    (*bytes)[1] = 1; (*bytes)[3] = 1;
+    (*bytes)[8] = 1; (*bytes)[11] = 16; (*bytes)[13] = 1;
+    (*bytes)[16] = 213;
+    IsleSprite initial{};
+    initial.x = 1; initial.y = 2; initial.width = initial.height = 1;
+    initial.scalex = initial.scaley = 1;
+    initial.red = initial.green = initial.blue = initial.alpha = 255;
+    initial.bmfmt = 4; initial.bmsiz = 1; initial.bmheight = initial.bmHreal = 1;
+    const isle::sprite::BankOwner immutable = std::move(bytes);
+    auto hydrated = isle::sprite::hydrate_bitmaps(immutable,0x01000000,initial,0x01000000,1);
+    check(bool(hydrated),"hydrate bounded hierarchy resource and real bitmap bytes");
+    if (!hydrated) return;
+    const std::array bank{sc::SpriteResource{700,hydrated.asset}};
+    initial = *hydrated.asset.view();
+    sc::Storage native(1024*1024);
+    check(native.create() == ISLE_GAME_OK,"create actual native hierarchy arena");
+    {
+        sc::Services services(native.game(),native.arena(),{{2,0,13,0,0},bank},input,*audio.session,state);
+        auto root = services.sprite(700,30,6);
+        auto* other = services.object(32);
+        check(root.sprite && other && services.set_render(other,{30,5,0x12345678}),
+              "publish actual native sprite owners with distinct render metadata");
+        if (!root.sprite || !other) return;
+        IsleSprite root_local = initial;
+        root_local.x = 32760; root_local.y = -32760;
+        root_local.red = 128; root_local.green = 129; root_local.blue = 130; root_local.alpha = 131;
+        root_local.attr = ISLE_SP_SCALE | ISLE_SP_FRACPOS;
+        root_local.scalex = 1.5f; root_local.scaley = 0.75f;
+        root_local.expx = 3; root_local.expy = -4; root_local.zdepth = 17;
+        root_local.frac_s = 9; root_local.frac_t = 10;
+        check(services.replace_sprite(root.sprite,100,root_local,1),"bind explicit root producer resource and generation");
+        auto* tail = services.append_sprite(root.object,109,initial,10);
+        IsleSprite child_local = initial;
+        child_local.x = 20; child_local.y = -20;
+        child_local.red = 127; child_local.green = 128; child_local.blue = 129; child_local.alpha = 130;
+        auto* child = services.append_sprite_child(root.sprite,101,child_local,2);
+        IsleSprite grand_local = initial;
+        grand_local.x = -20; grand_local.y = 20;
+        grand_local.red = 201; grand_local.green = 202; grand_local.blue = 203; grand_local.alpha = 204;
+        auto* grand = services.append_sprite_child(child,102,grand_local,3);
+        IsleSprite excluded_local = initial;
+        excluded_local.x = -3; excluded_local.y = 4; excluded_local.attr = 0x4000;
+        excluded_local.red = 11; excluded_local.green = 22; excluded_local.blue = 33; excluded_local.alpha = 44;
+        auto* excluded = services.append_sprite_child(root.sprite,105,excluded_local,6);
+        IsleSprite descendant_local = initial;
+        descendant_local.x = 8; descendant_local.y = -10;
+        descendant_local.red = 200; descendant_local.green = 190; descendant_local.blue = 180; descendant_local.alpha = 170;
+        auto* descendant = services.append_sprite_child(excluded,106,descendant_local,7);
+        auto* middle1 = services.add_sprite_sibling(child,103,initial,4);
+        auto* middle2 = services.add_sprite_sibling(child,104,initial,5);
+        IsleSprite hidden_local = initial; hidden_local.attr = ISLE_SP_HIDDEN;
+        auto* hidden = services.append_sprite_child(root.sprite,107,hidden_local,8);
+        auto* hidden_child = services.append_sprite_child(hidden,108,initial,9);
+        auto* inserted = services.add_sprite_sibling(root.sprite,700);
+        auto* inserted_child = services.append_sprite_child(inserted,700);
+        auto* other_sprite = services.append_sprite(other,110,initial,11);
+        check(tail && child && grand && excluded && descendant && middle1 && middle2 &&
+              hidden && hidden_child && inserted && inserted_child && other_sprite && !services.failed(),
+              "root and child sibling insertion retain one flat actual attachment per semantic node");
+        if (services.failed()) return;
+        const std::array handles{root.sprite,tail,child,grand,excluded,descendant,middle1,middle2,
+                                 hidden,hidden_child,inserted,inserted_child,other_sprite};
+        std::array<IsleSprite,13> locals{};
+        for (std::size_t i = 0; i < handles.size(); ++i) locals[i] = *services.view(handles[i]);
+        IsleGameSprite* native_root = nullptr;
+        IsleGameCounts counts{};
+        check(isle_game_object_sprite(native.game(),root.object,&native_root) == ISLE_GAME_OK &&
+              native_root == root.sprite && isle_game_counts(native.game(),&counts) == ISLE_GAME_OK &&
+              counts.sprites == 13 && services.sprite_count() == 13,
+              "semantic links do not replace native root ownership or allocate duplicate native sprites");
+        std::array<sc::SpriteDraw,13> draws{};
+        std::size_t written = 0;
+        check(services.sprite_draws(draws,written) && written == 11,
+              "native hierarchy preparation prunes the hidden parent and its otherwise-visible child");
+        const std::array<std::size_t,11> expected{100,101,102,104,103,105,106,0,0,109,110};
+        bool ordered = written == expected.size();
+        for (std::size_t i = 0; i < written && i < expected.size(); ++i) ordered &= draws[i].draw.resource == expected[i];
+        check(ordered,"consumer draw order is depth-first with immediate-after siblings and appended children");
+        check(draws[0].object == root.object && draws[9].object == root.object &&
+              draws[0].render.link == 30 && draws[0].render.priority == 6 &&
+              draws[0].render.camera_tag == 0xffffffffu && draws[10].object == other &&
+              draws[10].render.camera_tag == 0x12345678 && draws[6].draw.generation == 7,
+              "hierarchy preparation preserves actual native owner, render metadata and dynamic generation");
+        const auto& composed_child = *draws[1].draw.view;
+        const auto& composed_grand = *draws[2].draw.view;
+        check(composed_child.x == -32756 && composed_child.y == 32756 &&
+              composed_child.red == 63 && composed_child.green == 64 &&
+              composed_child.blue == 65 && composed_child.alpha == 66 &&
+              composed_grand.x == 32760 && composed_grand.y == -32760 &&
+              composed_grand.red == 49 && composed_grand.green == 50 &&
+              composed_grand.blue == 51 && composed_grand.alpha == 52,
+              "each nesting level assigns signed-16 position and floors RGBA before descendant inheritance");
+        const auto& composed_excluded = *draws[5].draw.view;
+        const auto& composed_descendant = *draws[6].draw.view;
+        check(composed_excluded.x == 32757 && composed_excluded.y == -32756 &&
+              composed_excluded.red == 11 && composed_excluded.green == 22 &&
+              composed_excluded.blue == 33 && composed_excluded.alpha == 44 &&
+              composed_descendant.x == 32765 && composed_descendant.y == -32766 &&
+              composed_descendant.red == 8 && composed_descendant.green == 16 &&
+              composed_descendant.blue == 23 && composed_descendant.alpha == 29 &&
+              draws[8].draw.view->x == 2 && draws[8].draw.view->y == 4,
+              "0x4000 excludes only inherited RGBA and descendants inherit the actual excluded parent's channels");
+        bool unchanged = true;
+        for (std::size_t i = 0; i < handles.size(); ++i) {
+            const auto& actual = *services.view(handles[i]);
+            const auto& before = locals[i];
+            unchanged &= actual.x == before.x && actual.y == before.y &&
+                actual.red == before.red && actual.green == before.green &&
+                actual.blue == before.blue && actual.alpha == before.alpha &&
+                actual.attr == before.attr && actual.scalex == before.scalex && actual.scaley == before.scaley &&
+                actual.expx == before.expx && actual.expy == before.expy && actual.zdepth == before.zdepth &&
+                actual.frac_s == before.frac_s && actual.frac_t == before.frac_t &&
+                actual.bitmap == before.bitmap && actual.LUT == before.LUT;
+        }
+        check(unchanged && draws[0].draw.view != services.view(root.sprite) &&
+              draws[0].draw.view->bitmap == initial.bitmap && draws[0].draw.view->scalex == 1.5f,
+              "prepared hierarchy snapshots retain all noncomposed state without mutating any native local descriptor");
+        const auto* retained = draws[1].draw.view;
+        services.view(child)->x = 99;
+        services.view(child)->red = 1;
+        check(retained->x == -32756 && retained->red == 63,
+              "borrowed prepared descriptors stay stable while native local state changes");
+        // End the CPU draw-view borrow before the next preparation.
+        *services.view(child) = child_local;
+        std::array<isle::sprite::Draw,13> plain{};
+        check(services.sprite_draws(plain,written) && written == 11 &&
+              plain[1].view == retained && plain[1].view->x == -32756 &&
+              plain[1].generation == 2 && plain[6].resource == 106,
+              "both consumer APIs use the same stable-capacity prepared hierarchy records");
+        services.view(hidden)->attr &= static_cast<std::uint16_t>(~ISLE_SP_HIDDEN);
+        check(services.sprite_draws(plain,written) && written == 13 &&
+              plain[7].resource == 107 && plain[8].resource == 108 &&
+              plain[8].view->x == 32762 && plain[8].view->y == -32756,
+              "unhiding a parent restores its subtree in place with newly composed descendant offsets");
+        check(services.remove_sprites(root.object) && services.sprite_count() == 1 &&
+              isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.sprites == 1 &&
+              services.sprite_draws(plain,written) && written == 1 && plain[0].resource == 110,
+              "remove_sprites removes every actual flat attachment, not only semantic roots");
+        auto* reused = services.append_sprite(root.object,120,initial,12);
+        auto* reused_child = services.append_sprite_child(reused,121,initial,13);
+        auto* reused_sibling = services.add_sprite_sibling(reused,122,initial,14);
+        check(reused && reused_child && reused_sibling && services.sprite_draws(plain,written) &&
+              written == 4 && plain[0].resource == 120 && plain[1].resource == 121 &&
+              plain[2].resource == 122 && plain[3].resource == 110 && plain[1].view->x == 2 &&
+              isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.sprites == 4,
+              "native allocation reuse has no stale parent, children or sibling links");
+        services.erase(root.object);
+        auto* replacement = services.object(33);
+        auto* replacement_sprite = services.append_sprite(replacement,130,initial,15);
+        check(replacement_sprite && services.set_render(replacement,{30,6,0xabcdef01}) &&
+              services.sprite_draws(draws,written) && written == 2 && draws[0].draw.resource == 130 &&
+              draws[0].draw.view->x == 1 && draws[0].render.camera_tag == 0xabcdef01 &&
+              isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.sprites == 2,
+              "actual whole-object join clears hierarchy before native object and sprite allocation reuse");
+    }
+    IsleGameCounts counts{};
+    check(isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.sprites == 0 && counts.objects == 0,
+          "hierarchy owner destruction leaves no actual native attachment alive");
+    {
+        sc::Services services(native.game(),native.arena(),{{1,0,2,0,0},bank},input,*audio.session,state);
+        const auto root=services.sprite(700);
+        auto* child=services.append_sprite_child(root.sprite,700);
+        check(root.sprite && child,"create actual renderable hierarchy exclusion case");
+        if (!root.sprite || !child) return;
+        auto* root_view=services.view(root.sprite);
+        root_view->x=2;root_view->y=3;
+        root_view->red=root_view->green=root_view->blue=root_view->alpha=128;
+        auto* child_view=services.view(child);
+        child_view->x=4;child_view->y=5;child_view->attr|=0x4000;
+        child_view->red=64;child_view->green=128;child_view->blue=192;child_view->alpha=224;
+        std::array<isle::sprite::Draw,2> output{};
+        std::size_t written=0;
+        check(services.sprite_draws(output,written) && written==2,"compose actual sprites for the native packet producer");
+        const std::array<const IsleSprite*,1> roots{hydrated.asset.view()};
+        const std::array<isle::sprite::BankMapping,1> mapping{{{immutable,0}}};
+        isle::sprite::Producer producer(roots,mapping);
+        std::vector<std::uint32_t> ram((8u<<20)/4);
+        constexpr isle::sprite::RamRange commands{0x1000,0x1000};
+        const std::array reservations{commands};
+        producer.install(ram,1,reservations);
+        const auto list=producer.prepare(ram,1,std::span(output).first(written),{},commands);
+        bool excluded_color=false;
+        for(std::size_t i=0;i+1<list.words;i+=2)
+            excluded_color|=ram[list.address/4+i]==0xfa000000u && ram[list.address/4+i+1]==0x4080c0e0u;
+        check(list.rectangles==2 && excluded_color && child_view->x==4 && child_view->y==5 &&
+            (child_view->attr&0x4000) && output[1].view->x==6 && output[1].view->y==8,
+            "hierarchy exclusion reaches real sprite packets without losing local state or inherited position");
+    }
+    check(native.destroy() == ISLE_GAME_OK,"retire positive hierarchy engine before creating another authoritative world");
+    for (int trial = 0; trial != 24; ++trial) {
+        const int mode = trial / 2;
+        const bool sibling = (trial & 1) != 0;
+        sc::Storage storage(1024*1024);
+        check(storage.create() == ISLE_GAME_OK,"create actual hierarchy rejection arena");
+        sc::Services services(storage.game(),storage.arena(),{{2,0,2,0,0},bank},input,*audio.session,state);
+        auto root = services.sprite(700);
+        auto* child = services.append_sprite_child(root.sprite,701,initial,1);
+        std::array<sc::SpriteDraw,2> draws{};
+        std::size_t written = 0;
+        check(root.sprite && child && services.sprite_draws(draws,written) && written == 2,
+              "prepare genuine native hierarchy before rejected operation");
+        const auto* retained = draws[0].draw.view;
+        IsleGameObject* unregistered = nullptr;
+        IsleGameSprite* target = root.sprite;
+        std::unique_ptr<sc::Services> foreign_services;
+        if (mode == 0) {
+            target = nullptr;
+        } else if (mode == 1 || mode == 10) {
+            check(isle_game_add_object(storage.game(),55,0,0,nullptr,nullptr,&unregistered) == ISLE_GAME_OK &&
+                  isle_game_add_sprite(storage.game(),unregistered,&initial,&target) == ISLE_GAME_OK,
+                  "create same-engine native attachment outside Services registration");
+        } else if (mode == 2) {
+            auto* foreign_game = storage.game();
+            auto* foreign_arena = &storage.arena();
+            foreign_services = std::make_unique<sc::Services>(
+                foreign_game,*foreign_arena,sc::ResourceView{{1,0,1,0,0},bank},input,*audio.session,state);
+            target = foreign_services->sprite(700).sprite;
+            check(target != nullptr,"create registered sprite belonging to a different Services owner");
+        } else if (mode == 4) {
+            check(services.remove_sprites(root.object),"actually remove parent before stale-parent rejection");
+        } else if (mode == 5 || mode == 11) {
+            if (mode == 11)
+                check(services.source_owner_register(root.object,{}),"retain real source owner identity through native join");
+            services.erase(root.object);
+        } else if (mode == 8 || mode == 9) {
+            services.view(root.sprite)->x = 99;
+            if (mode == 9)
+                check(isle_game_remove_sprite(storage.game(),child) == ISLE_GAME_OK,
+                      "invalidate a later actual attachment to exercise complete draw preflight");
+        }
+        IsleGameCounts before{}, after{};
+        check(isle_game_counts(storage.game(),&before) == ISLE_GAME_OK,"read native counts before rejected hierarchy operation");
+        draws[0].draw.resource = 999;
+        draws[0].object = nullptr;
+        written = 99;
+        if (mode == 6) {
+            check(services.add_sprite_sibling(target,0xffffffffu) == nullptr,
+                  "unknown sibling resource cannot publish a native attachment");
+        } else if (mode == 7) {
+            check(services.append_sprite_child(target,0xffffffffu) == nullptr,
+                  "unknown child resource cannot publish a native attachment");
+        } else if (mode == 8 || mode == 9) {
+            const auto output = mode == 8 ? std::span(draws).first(1) : std::span(draws);
+            check(!services.sprite_draws(output,written) && written == 0 &&
+                  draws[0].draw.resource == 999 && draws[0].object == nullptr &&
+                  retained->x == initial.x && retained->red == initial.red,
+                  "capacity and later-native-borrow rejection preserve all outputs and previous prepared snapshots");
+        } else if (mode == 10) {
+            check(services.append_sprite(unregistered,702,initial,2) == nullptr,
+                  "explicit root attachment rejects same-engine unregistered owners");
+        } else if (mode == 3) {
+            IsleGameSprite* rejected = root.sprite;
+            std::thread foreign([&] {
+                rejected = sibling ? services.add_sprite_sibling(target,703,initial,3) :
+                                     services.append_sprite_child(target,702,initial,2);
+            });
+            foreign.join();
+            check(rejected == nullptr,"foreign thread cannot attach a child or sibling to the authoritative world");
+        } else {
+            auto* rejected = sibling ? services.add_sprite_sibling(target,703,initial,3) :
+                                       services.append_sprite_child(target,702,initial,2);
+            check(rejected == nullptr,
+                  "null, unregistered, foreign and actually-dead parents reject without a flat-child fallback");
+        }
+        check(services.failed() && isle_game_counts(storage.game(),&after) == ISLE_GAME_OK &&
+              before.sprites == after.sprites && before.objects == after.objects,
+              "rejected hierarchy mutation retains native state and sets the existing sticky Services diagnostic");
+        if (unregistered != nullptr)
+            check(isle_game_delete_object(storage.game(),unregistered) == ISLE_GAME_OK,
+                  "retire actual fixture-owned unregistered object and its attachment");
+    }
+}
+
 } // namespace
 int main(int argc, char** argv) {
     try {
@@ -1014,6 +1303,7 @@ int main(int argc, char** argv) {
         services_source_owners(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_reject_unregistered_sender(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_prepared_admission_and_native_visibility(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
+        services_sprite_hierarchy(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
     } catch (const std::exception& error) { std::cerr << "FAIL: " << error.what() << '\n'; return EXIT_FAILURE; }
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;
 }

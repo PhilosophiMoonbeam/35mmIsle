@@ -752,6 +752,11 @@ const char* Scene::error() const noexcept{return impl_->s.error();}
 void Scene::retire() noexcept{if(impl_)impl_->retire();}
 scene::render::Input Scene::render_input() {
     auto& p=*impl_;if(p.retired)throw std::logic_error("Oak render after retirement");
+    save::ScreenOffsets offsets;
+    if (!p.s.state.screen_offsets().translation(offsets)) {
+        p.s.fail("Oak live VI endpoints cannot be represented by native translation");
+        throw std::runtime_error(p.s.error());
+    }
     std::size_t count=0;if(!p.s.sprite_draws(p.draws,count))throw std::runtime_error(p.s.error());
     auto& shell=p.passes[0];
     shell={};
@@ -777,6 +782,6 @@ scene::render::Input Scene::render_input() {
     return {p.s.game,
             {p.config.resource_identity,&p.producer,p.immutable,p.reservations,
              {0x3b5000,0x3da800},p.r->window()->common_pre_render()},
-            p.passes,p.saved.screen_offsets().value};
+            p.passes,offsets};
 }
 } // namespace isle::oaks_lab

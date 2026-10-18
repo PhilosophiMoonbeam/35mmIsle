@@ -131,68 +131,107 @@
     }
   },
   "native_support": {
+    "src/actor_course_context.hpp": {
+      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/rainbow_actor.hpp": {
+      "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
+    },
+    "src/rainbow_actor.cpp": {
+      "sha256": "cee34cf3abf985d85ca3031735f477fab0de70b3d445572cba5086aeba84542d"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
     "tests/actual_player_source.hpp": {
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },
     "src/model_data_decoder.hpp": {
-      "sha256": "0d0ce5f506f08135ff5f5749f5f9f25bdebf7d27acb7512f0cdef796727fd05e"
+      "sha256": "2200777373ce37765949721bb02c0cf24e518c00f20f33254c0672f1d0482af5"
     },
     "src/model_data_decoder.cpp": {
-      "sha256": "18651dd79f04a298c3eee98a6156dc32c4d0392a7bac898a5c7c8b2d55a58aad"
+      "sha256": "76340eceadbeb9d86059f6a08638723e2eb426adf51d70685ccac10783b867d6"
     },
     "src/model_asset_closure.hpp": {
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
     },
     "src/model_asset_closure.cpp": {
-      "sha256": "5636656bd2c1fe14b39ae7090d348916e86c5290db62bb03a7d0f42ec4cc3a9b"
+      "sha256": "88b3b6e2d18bd823d87ecc2f1bc04e3f401f932120c9326c187a42e359b5dfdb"
     },
     "src/actor_owner.hpp": {
-      "sha256": "6f6ed573d75bde32d5627426a831e020c15ef90d06bdde36bbe3e939aa848e86"
+      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
     },
     "src/actor_owner.cpp": {
-      "sha256": "296f99ca878451334479cf2f98915a749b055d8ab18ab3fb5e07b4a5cc3d0031"
+      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
     },
     "src/actor_owner_source.h": {
-      "sha256": "e79461c921578ae9866f4a0403ae51b94650d992000d3e93a7b9886f2983add4"
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
     },
     "src/actor_source.h": {
-      "sha256": "4a52e350c3cd5654e7dfac46a168c201c212263e8ba8c5ad6a561b44fb01fe37"
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
     },
     "src/actor_source_bridge.c": {
       "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "5d8d1120d1dda56d20355562ad4e458da984dd0502d8bdb8a15744cff2595413"
+      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
     },
-    "src/beach_actor_resources.hpp": {
-      "sha256": "bc850d7ba16abdd7bcf3e349e63374dda17f67fc058bee9cfcc6ec58ff5a9f57"
+    "src/actor_resources.hpp": {
+      "sha256": "308a6616098f33604e91de5fc1f29a5e218e3ddc44d880ee80aa91bf4bbfc9c6"
     },
-    "src/beach_actor_resources.cpp": {
-      "sha256": "3d779fbe3a370795de3e7b9ca9a6d464820500ff9d8f22bae8f29b0f5772f657"
+    "src/actor_resource_catalog.hpp": {
+      "sha256": "67614a3226f94ce82d21d3f9a41ae0767ce591ada76d224d5613312e51394c5d"
+    },
+    "src/beach_actor_scene.hpp": {
+      "sha256": "6b2939a4c2fccc1af5508ea7229185810f2283528c77b0f3ee23b77f9a4a21dc"
+    },
+    "src/actor_resources.cpp": {
+      "sha256": "1c181185d679b63c353a237f477ac39e812f60cfe8d35a55b7a6928db6933faa"
+    },
+    "src/actor_resource_catalog.cpp": {
+      "sha256": "935d9ce4454abfa5779e67493b54bdc5159c95e04cd6bcb1e872375f356ebdcb"
+    },
+    "src/beach_actor_catalog.cpp": {
+      "sha256": "64cef87c78f2f735a8ed2e2d126dc9c3759a9a987b535a8c4fd1fa0e38c9e424"
+    },
+    "src/rainbow_actor_catalog.cpp": {
+      "sha256": "e5cbeede5a05407dacebdfcf9172149cbeb725aeb800a1e48fddcbaa78c3f679"
+    },
+    "src/beach_actor_scene.cpp": {
+      "sha256": "2879ea9d105fde5d6f90565f7a97d73f57c8f20c6500267cfacc59a7b9fea66c"
     },
     "src/scene_services.hpp": {
-      "sha256": "de8c6148ed02a5552fa500fc897cab56a9ffe04bf92feed0330168aeecf2e11b"
+      "sha256": "4b4fafd05a7eee03880cff975c5f8a2d1b987d6c4a32c7d3cd2c331d7cba6354"
     },
     "src/scene_services.cpp": {
-      "sha256": "11f63a47eac3fe14dcf63c4776aa27e780fef89ced6666027815043f96a162b4"
+      "sha256": "f90298ec84783876a970ce150bb1c0901e8da5c4e562de8b1d742de53a5494e8"
     },
     "src/environment_sound.hpp": {
-      "sha256": "f9a357994239fd13a48afc845cb3ede88274edeb7bf1e60b56d512fc79e7eb45"
+      "sha256": "a20cc9368218c472f43a9315956545cdf83f09939bfbac9037d31a515fc34c60"
     },
     "src/environment_sound.cpp": {
-      "sha256": "80a3c9cd6fa11adb1acb7a79a50c5a33365c33e298ed73dd8e0020e6aea7af4d"
+      "sha256": "5d69b9c4d75b745f319c8e43bdfe949ed76540d2f46415ceee237af3837846cd"
     },
     "tools/prepare_actor_control.py": {
       "sha256": "85fe41807542fc4827bd2d1dfd702c4a179514cd80aca65c2ce11671310e1357"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "754ae17cb3b4cb688357e87ec00ef20e45d73f8e4728357c628f331a7e251365"
+      "sha256": "a15f7d2b670900c81f0f8ca88dc04cd7680f414147aae14c2f3ae828c4808a6b"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "1ed87c0ae9f6d64e38af1f423ab58d05125fc3c1c7727eb267eddde9874644c8"
+      "sha256": "87ebc8e5a3cafbfead09be68aeafccdc4642c6260e295012a8be809ce85da79c"
     },
     "tests/beach_actor_resources_rom_smoke.cpp": {
-      "sha256": "25a07eb6bf65ae3a1c18bc0a309f4b19211ea7196b12c8a2a0b45e0799944961"
+      "sha256": "72226d90f43a05b34d706583e223d32925cd976d09ccbff3a14fb8deb252d2b7"
     }
   },
   "integration_hash_authority": "Main refreshes current native_support hashes after release; every historical proof qualifies its exact archived bytes. Pre-collision v4 common proofs are retained below; current canonical-record/shared-allocator complete Debug/Release/ASan common and Magikarp regressions are in beach-magikarp-scene-inputs.json.",

@@ -102,13 +102,25 @@ public:
     [[nodiscard]] const Snapshot& snapshot() const noexcept { return snapshot_; }
     // Source func_800AA81C invalidates once before each OM update, NOT per pad
     // publication. menu() computes ALL ports once and caches across publications.
+    // neutral() shares that cache gate, but never populates it.
     [[nodiscard]] Error begin_update() noexcept;
     [[nodiscard]] MenuResult menu(int physical_port) noexcept;
+    // Source func_800AA740 returns separate stable storage, never pad/menu data.
+    // Unless menu() already populated this update's cache, a valid query zeros
+    // axes/current/pressed/released, sets not_pressed to ~0, and stamps the current
+    // menu serial for the contiguous prefix [0, snapshot().controller_count).
+    // Remaining entries retain their old/BSS values, regardless of physical
+    // connection indices. Invalid ports return neutral port zero without writes.
+    // No acquisition, serial increment, cache fill, edge or repeat-state changes.
+    [[nodiscard]] MenuResult neutral(int physical_port) noexcept;
     // Source AAE28 scene entry resets delay clocks only. Preserve the cached
     // samples, repeat intervals and every acquisition/publication ticket.
     [[nodiscard]] Error reset_scene_menu() noexcept;
     [[nodiscard]] Error set_menu_repeat(std::int32_t delay, std::int32_t interval,
                                         std::uint32_t mask) noexcept;
+    // Source AA85C and AA870 are independent writes, not parameter resets.
+    [[nodiscard]] Error set_menu_repeat(std::int32_t delay, std::int32_t interval) noexcept;
+    [[nodiscard]] Error set_menu_mask(std::uint32_t mask) noexcept;
     [[nodiscard]] Error set_menu_scale(std::uint32_t value) noexcept;
     [[nodiscard]] std::uint32_t menu_scale() const noexcept { return menu_scale_ * 8u; }
 private:
@@ -126,6 +138,7 @@ private:
     HostFrame ports_{};
     Snapshot snapshot_{};
     std::array<MenuInput, port_count> menu_{};
+    std::array<MenuInput, port_count> neutral_{};
     std::array<std::array<std::int32_t, 24>, port_count> menu_delay_{}, menu_interval_{};
     std::uint64_t generation_ = 0, serial_ = 0, menu_update_ = 0;
     std::int32_t hold_delay_ = 30, hold_interval_ = 5;

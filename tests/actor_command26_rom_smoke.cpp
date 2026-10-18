@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 #include "actual_actor_world_hooks.hpp"
 // Explicit opt-in actual-ROM CPU/private-native-API consumer; never CTest or
 // default discovery. No graphics borrower/executor is created. This proves the
@@ -63,17 +64,17 @@ struct Consumer {
     scene::Services& services;
     actor::Owner& owner;
     world::World& world;
-    const beach::ActorResources& resources;
+    const actor::Resources& resources;
     const IsleGameCounts baseline;
-    std::size_t definition=beach::actor_no_index;
+    std::size_t definition=actor::actor_no_index;
     std::uint32_t next_id=10000;
     unsigned reuse_proofs=0;
     const IsleActorInteractionGraph invalid_graph{};
-    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const beach::ActorResources& r)
+    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const actor::Resources& r)
         : services(s),owner(o),world(w),resources(r),baseline(counts(s)) {
         const auto definitions=resources.definitions();
         for (std::size_t i=0;i<definitions.size();++i) if (definitions[i].actor_id==1003) definition=i;
-        require(definition!=beach::actor_no_index,"actual admitted common1003 definition absent");
+        require(definition!=actor::actor_no_index,"actual admitted common1003 definition absent");
     }
     actor::SpawnResult attempt() {
         world::Spawn descriptor; descriptor.id=1003; descriptor.behavior=1;
@@ -369,9 +370,9 @@ struct Consumer {
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),
             "explicit private profile directory must exist and be empty");
-    const world::Resources world_resources(snapshot); const auto& setup=world_resources.setup();
-    const beach::ActorResources resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const environment_sound::BeachResources sound_resources(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id); const auto& setup=world_resources.setup();
+    const actor::Resources resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const environment_sound::Resources sound_resources(snapshot,0);
     const menu::EffectResources effect_resources(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"actual shared audio hydration failed");
@@ -418,9 +419,13 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
                 require(environment.initialize(nullptr,camera),"environment source initialization failed");
                 focus::Detector detector;
                 private_actor::WorldHooks hooks{services,camera};
-                world::World world(services,world_resources,hooks.callbacks());
+                world::ModuleState world_module;
+                world::World world(services,world_resources,world_module,hooks.callbacks());
                 {
-                    actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});
+                    beach::ActorSceneResources sceneData(snapshot);
+                    std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                    beach::ActorSceneState sceneState(sceneData,scene_latch);
+                    actor::Owner owner(services,resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096});
                     accepted(owner.publish_effects());
                     hooks.owner=&owner;private_actor::WorldLifetime lifetime{world,hooks};
                     Consumer consumer(services,owner,world,resources); body(consumer); reuse_proofs+=consumer.reuse_proofs;

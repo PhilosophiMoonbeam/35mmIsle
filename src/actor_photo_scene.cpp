@@ -16,8 +16,55 @@ void require(bool value, const char* detail) {
     if (!value) throw std::invalid_argument(detail);
 }
 }
+CollisionPass::CollisionPass(scene::Services& services, Owner& owner, IsleGameObject* root)
+    :services_(services),owner_(owner),root_(root) {
+    IsleGameObjectMetadata metadata{};
+    require(!isle_menu_current_object(services.game) &&
+        isle_game_object_metadata(services.game,root,&metadata)==ISLE_GAME_OK &&
+        metadata.id==0 && metadata.update_link==0 && metadata.priority==0x80000000u,
+        "collision pass requires genuine helper0 outside traversal");
+    require(services.observe_lifecycle(root,{retiring,joined,this}),
+        "collision helper secondary observer already owned");
+    observed_=true;
+    process_=services.process(root,update,this,ISLE_GAME_SYNCHRONOUS,2);
+    if (!process_) {
+        if (!services.unobserve_lifecycle(root,this)) std::terminate();
+        observed_=false;
+        throw std::runtime_error("original priority2 collision publication failed");
+    }
+}
+CollisionPass::~CollisionPass() { retire(); }
+bool CollisionPass::active() const noexcept { return root_ && process_ && !retiring_ && !services_.failed(); }
+void CollisionPass::update(IsleGameObject* object,void* user) noexcept {
+    auto& self=*static_cast<CollisionPass*>(user);
+    if (!self.active() || object!=self.root_) {
+        self.services_.fail("collision pass lost actual helper0 scope"); return;
+    }
+    const auto result=self.owner_.update_collisions();
+    if (!result) self.services_.fail(result.detail);
+}
+void CollisionPass::retiring(IsleGameObject* object,void* user) noexcept {
+    auto& self=*static_cast<CollisionPass*>(user);
+    if (object!=self.root_) std::terminate();
+    self.retiring_=true;
+}
+void CollisionPass::joined(IsleGameObject* object,void* user) noexcept {
+    auto& self=*static_cast<CollisionPass*>(user);
+    if (object!=self.root_) std::terminate();
+    self.root_=nullptr; self.process_=nullptr; self.observed_=false;
+}
+void CollisionPass::retire() noexcept {
+    if (isle_menu_current_object(services_.game)) std::terminate();
+    if (observed_) {
+        if (retiring_ || !services_.unobserve_lifecycle(root_,this)) std::terminate();
+        observed_=false;
+    }
+    if (process_ && isle_game_end_process(services_.game,process_)!=ISLE_GAME_OK) std::terminate();
+    process_=nullptr; root_=nullptr;
+}
 PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* root,
-                       IsleGameCamera* camera, DetectorBinding& binding, IslePlayerPhotoSource* photo)
+                       IsleGameCamera* camera, DetectorBinding& binding, IslePlayerPhotoSource* photo,
+                       CollisionPass* collisions)
     : services_(services), owner_(owner), camera_(camera), binding_(binding), photo_(photo) {
     require(!services.failed() && services.game && root && camera,
             "PhotoScene requires live same-scene owners");
@@ -71,13 +118,15 @@ PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* 
         copy_observed_=true;
         if (!services.set_update(copy_info_,copy_info,this))
             throw std::runtime_error("PhotoScene source CopyInfo update installation failed");
-        collisions_=services.process(root,update_collisions,this,ISLE_GAME_SYNCHRONOUS,2);
-        if (!collisions_) throw std::runtime_error("PhotoScene root priority2 process creation failed");
-        // Last fallible installation. No failure after successful assignment
-        // can escape construction with a borrowed root observer still installed.
-        if (!services.set_lifecycle(root,{retiring,joined,this}))
-            throw std::runtime_error("PhotoScene exclusive root lifecycle installation failed");
-        root_=root; root_observed_=true;
+        if (collisions) {
+            require(collisions->active() && collisions->root()==root,
+                "Detector requires the original early collision pass");
+            collision_pass_=collisions;
+        } else {
+            owned_collisions_=std::make_unique<CollisionPass>(services,owner,root);
+            collision_pass_=owned_collisions_.get();
+        }
+        root_=root;
         binding.prefix_user=this; binding.prepare_membership=prepare_membership;
         hook_installed_=true; active_=true;
     } catch (...) {
@@ -88,6 +137,7 @@ PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* 
 PhotoScene::~PhotoScene() { retire(); }
 bool PhotoScene::active() const noexcept {
     return active_ && !services_.failed() && !retired_ && root_ && prefix_ && copy_info_ &&
+        collision_pass_ && collision_pass_->active() &&
         binding_.prefix_user==this && binding_.prepare_membership==prepare_membership;
 }
 void PhotoScene::clear_hook() noexcept {
@@ -118,16 +168,6 @@ IsleGameResult PhotoScene::prepare_membership(void* user, focus::Photo& output) 
     if (result!=ISLE_GAME_OK) self.fail("PhotoScene native membership collection failed");
     return result;
 }
-void PhotoScene::update_collisions(IsleGameObject* object, void* user) noexcept {
-    auto& self=*static_cast<PhotoScene*>(user);
-    if (!self.active()) {
-        if (self.active_) self.fail("PhotoScene priority2 process lost live scope");
-        return;
-    }
-    if (object!=self.root_) { self.fail("PhotoScene collision process is not on root0"); return; }
-    const auto result=self.owner_.update_collisions();
-    if (!result) self.fail(result.detail);
-}
 void PhotoScene::copy_info(IsleGameObject* object, void* user) noexcept {
     auto& self=*static_cast<PhotoScene*>(user);
     if (!self.active()) {
@@ -142,17 +182,14 @@ void PhotoScene::copy_info(IsleGameObject* object, void* user) noexcept {
 }
 void PhotoScene::retiring(IsleGameObject* object, void* user) noexcept {
     auto& self=*static_cast<PhotoScene*>(user);
-    if (object==self.root_) self.root_retiring_=true;
-    else if (object==self.prefix_) self.prefix_retiring_=true;
+    if (object==self.prefix_) self.prefix_retiring_=true;
     else if (object==self.copy_info_) self.copy_retiring_=true;
     else std::terminate();
     if (!self.retiring_) self.fail("PhotoScene native owner retired outside controller teardown");
 }
 void PhotoScene::joined(IsleGameObject* object, void* user) noexcept {
     auto& self=*static_cast<PhotoScene*>(user);
-    if (object==self.root_) {
-        self.root_=nullptr; self.collisions_=nullptr; self.root_observed_=false;
-    } else if (object==self.prefix_) {
+    if (object==self.prefix_) {
         self.prefix_=nullptr; self.prefix_observed_=false;
     } else if (object==self.copy_info_) {
         self.copy_info_=nullptr; self.copy_observed_=false;
@@ -165,20 +202,23 @@ void PhotoScene::retire() noexcept {
     retiring_=true; active_=false;
     clear_hook();
     // Only joined callbacks prove a previously retiring object cannot resume.
-    if ((root_ && root_retiring_) || (prefix_ && prefix_retiring_) ||
-        (copy_info_ && copy_retiring_)) std::terminate();
-    if (root_observed_) {
-        if (!services_.set_lifecycle(root_,{})) std::terminate();
-        root_observed_=false;
-    }
-    if (collisions_) {
-        if (isle_game_end_process(services_.game,collisions_)!=ISLE_GAME_OK) std::terminate();
-        collisions_=nullptr;
-    }
+    if ((prefix_ && prefix_retiring_) || (copy_info_ && copy_retiring_)) std::terminate();
+    owned_collisions_.reset(); collision_pass_=nullptr;
     const auto erase = [this](IsleGameObject*& object, bool observed) {
         if (!object) return;
-        if (isle_game_delete_object(services_.game,object)!=ISLE_GAME_OK) std::terminate();
-        if (observed && object) std::terminate();
+        auto* identity=object;
+        const auto prior_fault=isle_game_status(services_.game);
+        const auto result=isle_game_delete_object(services_.game,identity);
+        // Deletion returns the retained Game fault even after a genuine join.
+        // Never clear it or confuse it with proof that deletion was skipped.
+        if (result!=ISLE_GAME_OK && result!=prior_fault) std::terminate();
+        if (observed) {
+            if (object) std::terminate();
+        } else {
+            IsleGameObjectMetadata metadata{};
+            if (isle_game_object_metadata(services_.game,identity,&metadata)!=ISLE_GAME_INVALID_ARGUMENT)
+                std::terminate();
+        }
         object=nullptr;
     };
     erase(copy_info_,copy_observed_);

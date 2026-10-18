@@ -78,7 +78,7 @@ scene::render::Prepared ModelProducer::prepare(std::span<std::uint32_t> words, s
         prefix_visible = !(metadata.flags&1u);
     }
     const auto world = world_.prepare(words,epoch,pass);
-    const auto items = items_ ? items_->prepare(words,epoch,pass) : ::isle::items::ProducerFrame{};
+    const auto items = items_ ? items_->prepare(words,epoch,pass) : menu::model::PacketFrame{};
     const auto actors = actors_.prepare(words,epoch,pass,prefix_visible);
     const auto cart = cart_ ? cart_->prepare(words,epoch,pass) : player::cart::ProducerFrame{};
     graphics::Memory memory(words);

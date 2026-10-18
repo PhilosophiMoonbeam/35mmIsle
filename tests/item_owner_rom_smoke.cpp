@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Explicit private-ROM native CPU consumer; never CTest/default discovery.
 // Caller-authored Player binding/collision inputs below are API fixtures, NOT a
 // Player FSM, Original capture, GPU-fence proof, or complete game qualification.
@@ -60,6 +61,7 @@ struct Consumer {
     it::Owner& items;
     actor::Owner& actors;
     it::Globals& globals;
+    const it::Resources& resources;
     void tick(unsigned count=1) {
         for (unsigned i=0;i<count;++i) { native(isle_game_tick(services.game)); require(!services.failed(),services.error()); }
     }
@@ -170,7 +172,8 @@ struct Consumer {
         native(isle_game_add_source_process(services.game,trigger.object,Items_CreateWaterSplash,ISLE_GAME_STACKFUL,7,&process));
         tick();
         IsleGameObject* fume=nullptr; a::InstanceHandle fume_instance;
-        for (const auto& binding:items.render_bindings()) if (binding.model.object && binding.family==it::Family::water_splash) {
+        for (const auto& binding:items.render_bindings()) if (binding.model.object &&
+            binding.model.state.resource_model==resources.definition(it::Family::water_splash).model) {
             fume=binding.model.object; fume_instance=items.instance(fume);
         }
         require(fume && !items.source(fume) && globals.source.total==1,"fume acquired a logical Item payload/count or was not spawned");
@@ -255,7 +258,8 @@ struct Consumer {
         native(isle_game_add_source_process(services.game,trigger.object,Items_CreateWaterSplash,ISLE_GAME_STACKFUL,7,&process));
         tick();
         IsleGameObject* fume=nullptr;
-        for (const auto& binding:items.render_bindings()) if (binding.family==it::Family::water_splash) fume=binding.model.object;
+        for (const auto& binding:items.render_bindings()) if (binding.model.object &&
+            binding.model.state.resource_model==resources.definition(it::Family::water_splash).model) fume=binding.model.object;
         require(fume && !items.source(fume),"independent source fume absent");
         accepted(items.delete_item(trigger.object)); tick(2); accepted(items.collect_joined());
         require(items.instance(fume) && !items.exists(fume) && globals.source.total==0,
@@ -290,10 +294,10 @@ struct Consumer {
 };
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario scenario) {
     require(std::filesystem::is_directory(profile) && std::filesystem::is_empty(profile),"private profile must exist and be empty");
-    const world::Resources world_resources(snapshot); const auto& setup=world_resources.setup();
-    const beach::ActorResources actor_resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const world::Resources world_resources(snapshot, isle::course::beach_id); const auto& setup=world_resources.setup();
+    const actor::Resources actor_resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
     const it::Resources item_resources(snapshot,setup.fog_rgb,setup.fog_min,setup.fog_max);
-    const environment_sound::BeachResources sound_resources(snapshot);
+    const environment_sound::Resources sound_resources(snapshot,0);
     const menu::EffectResources effect_resources(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"actual audio hydration failed");
@@ -321,7 +325,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
             environment_sound::Environment environment(services,storage.arena(),sound_resources);
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; Shift shift{&services,camera};
-            world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
+            world::ModuleState world_module;
+            world::World world(services,world_resources,world_module,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
             a::SlotCapacity actor_capacity{},item_capacity{};
             for (const auto& model:actor_resources.models()) { const auto c=a::slot_capacity(model); actor_capacity.nodes=std::max(actor_capacity.nodes,c.nodes); actor_capacity.material_attachments=std::max(actor_capacity.material_attachments,c.material_attachments); }
             for (const auto& model:item_resources.models()) { const auto c=a::slot_capacity(model); item_capacity.nodes=std::max(item_capacity.nodes,c.nodes); item_capacity.material_attachments=std::max(item_capacity.material_attachments,c.material_attachments); }
@@ -333,7 +338,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
                 scenario==Scenario::threshold?std::size_t{6}:item_capacities.size();
             const auto selected_capacities=std::span<const a::SlotCapacity>(item_capacities).first(item_count);
             {
-                actor::Owner actors(services,actor_resources,world,environment,detector,player_source.value,actor_capacities,banks,{32768,4096}); shift.actors=&actors;
+                beach::ActorSceneResources sceneData(snapshot);
+                std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                beach::ActorSceneState sceneState(sceneData,scene_latch);
+                actor::Owner actors(services,actor_resources,actor::CourseContext(sceneState),world,environment,detector,player_source.value,actor_capacities,banks,{32768,4096}); shift.actors=&actors;
                 accepted(actors.publish_effects());
                 require(environment.set_listener(player_model,camera),"environment listener binding failed");
                 it::Globals globals;
@@ -348,14 +356,14 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
                     native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RTS,&player_placement));
                     accepted(items.init()); accepted(items.set_custom_functions(nullptr,0,nullptr));
                     require(items.matches(services,world,actors),"Item dependency identity projection rejected its actual services");
-                    Consumer consumer{services,items,actors,globals};
+                    Consumer consumer{services,items,actors,globals,item_resources};
                     if (scenario==Scenario::complete) {
                         consumer.startup_flight_pause_and_displacement(); consumer.mixed_oldest_and_iterator(); consumer.actual_waiting_splash();
                         consumer.canonical_throw_boundaries();
                     }
-                    std::size_t definition=beach::actor_no_index;
+                    std::size_t definition=actor::actor_no_index;
                     for (std::size_t n=0;n<actor_resources.definitions().size();++n) if (actor_resources.definitions()[n].actor_id==1003) definition=n;
-                    require(definition!=beach::actor_no_index,"actual common1003 definition absent");
+                    require(definition!=actor::actor_no_index,"actual common1003 definition absent");
                     world::Spawn spawn; spawn.id=1003; spawn.behavior=1; spawn.scale={1,1,1};
                     const auto actor=actors.spawn({10000,definition,&world.blocks()[0],&world.blocks()[0],&spawn}); accepted(actor.status);
                     if (scenario==Scenario::complete) consumer.kind1_actor_tail_and_real_target_retention(actor);

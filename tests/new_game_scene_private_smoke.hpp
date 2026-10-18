@@ -21,6 +21,9 @@ struct Hooks {
     // Required for the intentional raster-admission error regression: resolve
     // any real failed/held graphics task and readback before native retirement.
     bool (*fence)(void*) noexcept = nullptr;
+    // Optional forwarding of the actual once-consumed Source result to the
+    // application-manager integration caller; never a fabricated scene ID.
+    std::int32_t* completed_result = nullptr;
 };
 // Source-only opt-in consumer. Requires a genuinely fresh RAM new-game session,
 // actual private Resources and Main's real scheduler/render/audio owners. It

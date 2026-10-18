@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Private ROM native initial-species consumer. Player input is component-only, not Root admission.
 #include "beach_initial_species.hpp"
 #include "beach_initial_species_source.h"
@@ -148,19 +149,20 @@ struct Consumer {
 };
 struct Resources {
     world::Resources world;
-    beach::ActorResources actors;
+    beach::ActorSceneResources sceneData;
+    actor::Resources actors;
     it::Resources items;
-    beach::BehaviorResources behavior;
-    environment_sound::BeachResources sound;
+    actor::BehaviorResources behavior;
+    environment_sound::Resources sound;
     menu::EffectResources effects;
     std::array<const menu::EffectBank*,2> banks;
     std::array<a::SlotCapacity,8> actor_capacities{};
     std::array<a::SlotCapacity,32> item_capacities{};
     std::unique_ptr<actor::BehaviorBindings> bindings;
     explicit Resources(const rom::Snapshot& snapshot)
-        : world(snapshot),actors(snapshot,{world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max}),
+        : world(snapshot, isle::course::beach_id),sceneData(snapshot),actors(snapshot,0,{world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max}),
           items(snapshot,world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max),
-          behavior(snapshot),sound(snapshot),effects(snapshot),
+          behavior(snapshot,0),sound(snapshot,0),effects(snapshot),
           banks{&effects.bank(menu::EffectGroup::common),&effects.bank(menu::EffectGroup::beach)},
           bindings(std::make_unique<actor::BehaviorBindings>(behavior,beach::initial_species_callbacks(),beach::initial_species_graphs(),std::span<const std::uint32_t>{},beach::initial_species_roots())) {
         a::SlotCapacity ac{},ic{};
@@ -186,10 +188,14 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
         environment_sound::Environment environment(services,storage.arena(),resources.sound);
         require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector; Shift shift{&services,camera};
-        world::World world(services,resources.world,
+        world::ModuleState world_module;
+        world::World world(services,resources.world,world_module,
             world::Callbacks{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
         {
-            actor::Owner actors(services,resources.actors,world,environment,detector,player_source.value,resources.actor_capacities,resources.banks,{32768,4096});
+            const auto& sceneData=resources.sceneData;
+            std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+            beach::ActorSceneState sceneState(sceneData,scene_latch);
+            actor::Owner actors(services,resources.actors,actor::CourseContext(sceneState),world,environment,detector,player_source.value,resources.actor_capacities,resources.banks,{32768,4096});
             shift.actors=&actors;
             it::Globals globals;
             {
@@ -211,11 +217,11 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
                 for(std::size_t n=0;n<rows.size();++n) {
                     const auto [block,row_index]=rows[n];
                     const auto& row=resources.world.blocks()[block].spawns[row_index];
-                    std::size_t definition=beach::actor_no_index;
+                    std::size_t definition=actor::actor_no_index;
                     for(std::size_t i=0;i<resources.actors.definitions().size();++i)
                         if(!resources.actors.definitions()[i].singleton&&
                            resources.actors.definitions()[i].actor_id==static_cast<std::uint32_t>(row.id)) definition=i;
-                    require(definition!=beach::actor_no_index,"pre-Player ROM species tuple absent");
+                    require(definition!=actor::actor_no_index,"pre-Player ROM species tuple absent");
                     auto staged=actors.spawn({static_cast<std::uint32_t>(9000+n),definition,&world.blocks()[block],&world.blocks()[0],&row});
                     accepted(staged.status);
                     auto* source=actors.source(staged.instance);
@@ -284,11 +290,11 @@ actor::SpawnResult Consumer::spawn_row(std::size_t block,std::size_t row) {
     return spawn_row(block,resources.world.blocks()[block].spawns[row]);
 }
 actor::SpawnResult Consumer::spawn_row(std::size_t block,const world::Spawn& row) {
-    std::size_t definition=beach::actor_no_index;
+    std::size_t definition=actor::actor_no_index;
     for(std::size_t n=0;n<resources.actors.definitions().size();++n)
         if(!resources.actors.definitions()[n].singleton&&
            resources.actors.definitions()[n].actor_id==static_cast<std::uint32_t>(row.id)) definition=n;
-    require(definition!=beach::actor_no_index,"ordinary ROM species definition absent");
+    require(definition!=actor::actor_no_index,"ordinary ROM species definition absent");
     auto result=actors.spawn({next_id++,definition,&world.blocks()[block],world.current(),&row});
     accepted(result.status);
     require(result.object&&actors.native_model(result.instance)&&actors.source(result.instance),
@@ -621,10 +627,10 @@ void Consumer::exercise() {
         });
     };
     auto spawn=[&](std::int32_t id) {
-        std::size_t def=beach::actor_no_index;
+        std::size_t def=actor::actor_no_index;
         for(std::size_t n=0;n<resources.actors.definitions().size();++n)
             if(resources.actors.definitions()[n].actor_id==static_cast<std::uint32_t>(id)) def=n;
-        require(def!=beach::actor_no_index,"ROM species definition absent");
+        require(def!=actor::actor_no_index,"ROM species definition absent");
         const auto& rows=resources.world.blocks()[0].spawns;
         const auto row=std::find_if(rows.begin(),rows.end(),[&](const auto& x){return x.id==id;});
         require(row!=rows.end()&&row->path!=world::no_index,"ROM initial species path absent");

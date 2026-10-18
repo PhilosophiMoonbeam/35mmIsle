@@ -34,6 +34,9 @@ public:
     Status set_speed(float) noexcept;
     Status update(std::uint32_t actual_object_flags) noexcept;
     const menu::animation::CameraState& state() const noexcept { return runtime_->camera(); }
+    bool matches(IsleGame* game, IsleGameCamera* camera) const noexcept {
+        return !retired_ && game_ == game && camera_ == camera && game && camera;
+    }
     void retire() noexcept;
 private:
     NativeDriver(IsleGame*, IsleGameCamera*, menu::animation::Resources,

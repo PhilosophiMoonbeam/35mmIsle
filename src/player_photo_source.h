@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 /* Semantic values only. Wire records are encoded explicitly, never overlaid. */
+/* generation0 is the genuine Source Create/BSS context, never a prefix capture.
+ * A ticket exists only through its bound Controller/Photo capability; testing
+ * generation alone is not an existence check. submission is the real GPU token. */
 typedef struct IslePlayerPhotoTicket {
     uint16_t context;
     uint64_t generation, submission;
@@ -102,6 +105,10 @@ int32_t isle_player_photo_makePhoto(IslePlayerPhotoSource*, IsleGameObject*);
 void isle_player_photo_func_8009CDC0(IslePlayerPhotoSource*, uint8_t*, int32_t);
 int32_t isle_player_photo_func_8009CDE4(IslePlayerPhotoSource*, uint8_t*);
 void isle_player_photo_func_8009CE00(IslePlayerPhotoSource*);
+/* Complete original course controls; Create itself leaves capture disabled. */
+IsleGameResult isle_player_photo_PokemonDetector_Enable(IslePlayerPhotoSource*);
+IsleGameResult isle_player_photo_PokemonDetector_Disable(IslePlayerPhotoSource*);
+IsleGameResult isle_player_photo_native_detector_enabled(IslePlayerPhotoSource*, int);
 /* Parent render boundary: explicit status, no wait/fault across C++ owners. */
 IsleGameResult isle_player_photo_func_8009C8E4(IslePlayerPhotoSource*, uint16_t context,
     uint64_t generation);

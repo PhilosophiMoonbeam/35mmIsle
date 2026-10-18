@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 #include "actual_actor_world_hooks.hpp"
 // Separate opt-in native physics API/canonical GPU consumer. Three genuine
 // factory actors have explicitly authored collision flags/radii/list inputs;
@@ -87,9 +88,9 @@ void save(const std::filesystem::path& path,g::Completed image) {
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std::filesystem::path& output) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"collision GPU profile must exist and be empty");
     std::filesystem::create_directories(output);
-    const world::Resources world_resources(snapshot);const auto& setup=world_resources.setup();
-    const beach::ActorResources resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const environment_sound::BeachResources sounds(snapshot);const menu::EffectResources effects_data(snapshot);const photo::LightingInputs lighting(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id);const auto& setup=world_resources.setup();
+    const actor::Resources resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const environment_sound::Resources sounds(snapshot,0);const menu::EffectResources effects_data(snapshot);const photo::LightingInputs lighting(snapshot);
     const std::array banks{&effects_data.bank(menu::EffectGroup::common),&effects_data.bank(menu::EffectGroup::beach)};
     auto hydrated=game_audio::hydrate(snapshot);require(bool(hydrated),"collision GPU audio hydrate failed");
     std::array<audio::effects::Section,8> sections;audio::effects::Config effects;
@@ -120,15 +121,19 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
         IsleGameModelTransform player_pose{};player_pose.position={0,1600,6000};player_pose.scale={1,1,1};native(isle_game_model_set_placement(services.game,player_model,ISLE_GAME_MODEL_PLACEMENT_RT,&player_pose));
         context.bind(player,player_model,camera);
         environment_sound::Environment environment(services,storage.arena(),sounds);require(environment.initialize(nullptr,camera),"environment source initialization failed");focus::Detector detector;focus::RegionCopies copies(capture_layout);actor::DetectorBinding detection{copies,detector};
-        Hooks hooks{services,camera};world::World world(services,world_resources,hooks.callbacks());world.follow_camera(camera);
+        world::ModuleState world_module;
+        Hooks hooks{services,camera};world::World world(services,world_resources,world_module,hooks.callbacks());world.follow_camera(camera);
         a::SlotCapacity maximum{};for(const auto& model:resources.models()) {const auto capacity=a::slot_capacity(model);maximum.nodes=std::max(maximum.nodes,capacity.nodes);maximum.material_attachments=std::max(maximum.material_attachments,capacity.material_attachments);}
         const std::array capacities{maximum,maximum,maximum};
         {
-            actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
+            beach::ActorSceneResources sceneData(snapshot);
+            std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+            beach::ActorSceneState sceneState(sceneData,scene_latch);
+            actor::Owner owner(services,resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
             require(environment.set_listener(player_model,camera),"environment listener binding failed");
             actor::PhotoScene controller(services,owner,root,camera,detection,nullptr);require(world.enter_first(0)==&world.blocks()[0],"collision GPU first actual World absent");
-            std::size_t definition=beach::actor_no_index;for(std::size_t i=0;i<resources.definitions().size();++i)if(resources.definitions()[i].actor_id==129&&resources.definitions()[i].factory_identity==0x802cac48u)definition=i;
-            require(definition!=beach::actor_no_index,"collision GPU genuine factory absent");
+            std::size_t definition=actor::actor_no_index;for(std::size_t i=0;i<resources.definitions().size();++i)if(resources.definitions()[i].actor_id==129&&resources.definitions()[i].factory_identity==0x802cac48u)definition=i;
+            require(definition!=actor::actor_no_index,"collision GPU genuine factory absent");
             std::array<actor::SpawnResult,3> actors;
             constexpr std::array<float,3> initial_z{4000,4100,4175};
             static constexpr std::array<float,1> allowed{0};
@@ -155,7 +160,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 return result;
             };
             auto world_other=other({world_layout.payloads,world_layout.lists,world_layout.materials},false),actor_other=other({actor_layout.payloads,actor_layout.lists,actor_layout.materials},true);
-            menu::model::CameraBasisState basis;world::Producer world_producer(services.game,camera,basis,world_resources,world,world_layout,world_other);
+            menu::model::CameraBasisState basis;world::Producer world_producer(services.game,camera,basis,world_resources,world.render_view(),world_layout,world_other);
             actor::Producer actor_producer(services.game,camera,basis,resources,capacities,bindings,actor_layout,actor_other,&detection);
             course::ModelProducer models(world_producer,actor_producer,joined_lists);ModelPass model_pass{models,copies,lighting,services.game,camera};
             std::vector<sprite::AssetSpan> immutable;const auto append=[&](auto spans){for(const auto& span:spans)immutable.push_back({physical(span.guest_address),{reinterpret_cast<const std::uint8_t*>(span.bytes.data()),span.bytes.size()}});};

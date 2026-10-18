@@ -3,6 +3,94 @@
 #include "actor_interaction_services.h"
 #include "beach_initial_species_source.h"
 #include "engine_internal.h"
+#include "player_source.h"
+#include "menu_scene_bridge.h"
+IsleGameResult isle_actor_source_execution_status(IsleGame* game) {
+    IsleGameResult result = isle_game_status(game);
+    return result == ISLE_GAME_OK && game->update_stopped ? ISLE_GAME_STOPPED : result;
+}
+
+int32_t isle_actor_factory_behavior(const IsleActorFactorySpawn* spawn) {
+    /* Owner's Meowth admission proves this actual written-field borrow before
+     * the original C factory executes; absent fields have no invented value. */
+    return *spawn->behavior;
+}
+typedef struct ActorFactoryCall {
+    IsleActorReturningFactory returning;
+    IsleActorVoidFactory nonreturning;
+    int32_t object_id;
+    uint16_t actor_id;
+    IsleActorFactoryBlock* block;
+    IsleActorFactoryBlock* reference;
+    IsleActorFactorySpawn* spawn;
+    IsleGameObject* object;
+} ActorFactoryCall;
+static void actor_factory_call(IslePlayerSource* player, void* context) {
+    ActorFactoryCall* call = context;
+    if (call->returning)
+        call->object = call->returning(call->object_id, call->actor_id,
+            call->block, call->reference, call->spawn);
+    else
+        call->nonreturning(call->object_id, call->actor_id,
+            call->block, call->reference, call->spawn);
+    /* Native leaves have returned: the returning Player C fence alone owns
+     * any failure transfer, never an intervening C++ allocation frame. */
+    isle_player_source_checked(player, isle_actor_source_execution_status(player->game));
+}
+IsleGameResult isle_actor_source_factory_call(IsleGame* game,
+    IsleActorReturningFactory returning, IsleActorVoidFactory nonreturning,
+    int32_t object_id, uint16_t actor_id, IsleActorFactoryBlock* block,
+    IsleActorFactoryBlock* reference, IsleActorFactorySpawn* spawn,
+    IsleGameObject** output) {
+    IslePlayerSource* player = NULL;
+    IsleGameResult result;
+    ActorFactoryCall call;
+    if (output) *output = NULL;
+    if (!output || !block || !reference || !spawn ||
+        (!!returning == !!nonreturning)) return ISLE_GAME_INVALID_ARGUMENT;
+    result = isle_player_source_context(game, &player);
+    if (result != ISLE_GAME_OK) return result;
+    if (!player || player->game != game) return ISLE_GAME_INVALID_STATE;
+    call = (ActorFactoryCall){returning, nonreturning, object_id, actor_id,
+        block, reference, spawn, NULL};
+    result = isle_player_source_call(player, actor_factory_call, &call);
+    if (result == ISLE_GAME_OK) *output = call.object;
+    return result;
+}
+typedef struct ActorRemoveCall {
+    IsleGameObject* requester;
+    const uint16_t* exceptions;
+} ActorRemoveCall;
+static void actor_remove_call(IslePlayerSource* player, void* context) {
+    const ActorRemoveCall* call = context;
+    isle_actor_remove_pokemons(call->requester, call->exceptions);
+    isle_player_source_checked(player, isle_actor_source_execution_status(player->game));
+}
+IsleGameResult isle_actor_source_remove_pokemons_call(IsleGame* game,
+    IsleGameObject* requester, const uint16_t* exceptions, size_t count) {
+    IsleActorSource* actor = NULL;
+    IslePlayerSource* player = NULL;
+    IsleGameResult result;
+    size_t i;
+    int retained = 0;
+    ActorRemoveCall call;
+    if (!requester || !exceptions || !count) return ISLE_GAME_INVALID_ARGUMENT;
+    result = isle_actor_source_execution_status(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (!game->ticking || omCurrentObject != requester) return ISLE_GAME_INVALID_STATE;
+    result = isle_actor_source_get(game, requester, &actor);
+    if (result != ISLE_GAME_OK) return result;
+    for (i = 0; i < count; ++i) {
+        if (!exceptions[i]) break;
+        if (actor->id == exceptions[i]) retained = 1;
+    }
+    if (i != count - 1 || !retained) return ISLE_GAME_INVALID_ARGUMENT;
+    result = isle_player_source_context(game, &player);
+    if (result != ISLE_GAME_OK) return result;
+    call = (ActorRemoveCall){requester, exceptions};
+    return isle_player_source_call(player, actor_remove_call, &call);
+}
+
 
 static void checked(IsleActorSource* actor, IsleGameResult result) {
     if (result != ISLE_GAME_OK)
@@ -214,16 +302,16 @@ void isle_actor_source_publish_position(IsleGameObject* object, IsleGameVec3 pos
     IsleActorSource* actor = isle_actor_source_require(object);
     checked(actor, isle_actor_owner_trigger_position(actor, position));
 }
-IsleGameResult isle_actor_source_id_in_use(IsleGame* game, uint32_t id, int* output) {
+IsleGameResult isle_actor_source_id_in_use_link(IsleGame* game, uint8_t link, uint32_t id, int* output) {
     IsleGameCounts counts;
     GObj* object;
     IsleGameResult result = isle_game_counts(game, &counts);
     if (result != ISLE_GAME_OK) return result;
-    if (output == NULL) return ISLE_GAME_INVALID_ARGUMENT;
+    if (output == NULL || link >= 32) return ISLE_GAME_INVALID_ARGUMENT;
     *output = 0;
-    /* Actual ohFindByLinkAndId semantics: source link3, not just Owner slots.
-     * A retained joined identity no longer appears in this native live list. */
-    for (object = omGObjListHead[3]; object != NULL; object = object->next) {
+    /* Actual ohFindByLinkAndId semantics over the configured native update
+     * link, not just Owner slots. Joined identities are absent from this list. */
+    for (object = omGObjListHead[link]; object != NULL; object = object->next) {
         if (object->game == game && object->id == id) { *output = 1; break; }
     }
     return ISLE_GAME_OK;
@@ -336,6 +424,11 @@ void isle_actor_source_send_command(IsleGameObject* object, int32_t command,
     IsleGameObject* sender) {
     IsleActorSource* actor = isle_actor_source_require(object);
     checked(actor,isle_actor_interaction_send_command(actor,command,sender));
+}
+void isle_actor_source_send_addressed(IsleGameObject* requester, IsleGameObject* destination,
+    int32_t command, IsleGameObject* sender) {
+    IsleActorSource* actor = isle_actor_source_require(requester);
+    checked(actor,isle_actor_interaction_send_addressed(actor,destination,command,sender));
 }
 void isle_actor_source_send_to_link(IsleGameObject* object, uint8_t link,
     int32_t command, IsleGameObject* sender) {

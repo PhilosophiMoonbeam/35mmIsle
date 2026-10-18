@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Explicit opt-in private-ROM CPU consumer; never CTest/default discovery.
 // Uses actual selected GAME FSM/path/factories, canonical Runtime/native models,
 // World/ground, shared FX/RNG/audio and real OM retirement. No GPU proof here.
@@ -69,9 +70,9 @@ struct Consumer {
     scene::Services& services;
     actor::Owner& owner;
     world::World& world;
-    const beach::ActorResources& resources;
-    std::size_t magikarp=beach::actor_no_index,common=beach::actor_no_index,unsupported=beach::actor_no_index;
-    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const beach::ActorResources& r)
+    const actor::Resources& resources;
+    std::size_t magikarp=actor::actor_no_index,common=actor::actor_no_index,unsupported=actor::actor_no_index;
+    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const actor::Resources& r)
         :services(s),owner(o),world(w),resources(r) {
         for (std::size_t i=0;i<r.definitions().size();++i) {
             const auto& d=r.definitions()[i];
@@ -79,7 +80,7 @@ struct Consumer {
             else if (d.wire.guest_address==0x8038837c) common=i;
             else if (d.actor_id!=1003) unsupported=i;
         }
-        require(magikarp!=beach::actor_no_index&&common!=beach::actor_no_index&&unsupported!=beach::actor_no_index,
+        require(magikarp!=actor::actor_no_index&&common!=actor::actor_no_index&&unsupported!=actor::actor_no_index,
                 "actual source definition identities absent");
     }
     world::Spawn descriptor() const {
@@ -113,7 +114,7 @@ struct Consumer {
             record->counter==0&&record->lastAnimationFrame==0&&record->unk_18==-1&&record->unk_E4==255&&
             record->poseID==0&&record->specialPoseID==0&&record->jumpVel==0&&record->hSpeed==0&&record->facingYaw==0,
             "Magikarp Ground factory lost configured tuple or source late resets");
-        require(static_cast<const beach::ActorAnimationHeader*>(record->animHeader)->wire.guest_address==0x802cda8c,
+        require(static_cast<const actor::ActorAnimationHeader*>(record->animHeader)->wire.guest_address==0x802cda8c,
             "factory substituted state header for genuine initial802cda8c");
         const IsleGameModelPlacement* placement=nullptr;
         native(isle_game_model_placement(services.game,owner.native_model(result.instance),&placement));
@@ -144,7 +145,7 @@ struct Consumer {
         require(!result&&result.status.error==actor::OwnerError::admission&&!result.object&&!result.instance,
             "unimplemented species/graph falsely admitted");
         native(isle_game_counts(services.game,&after));
-        require(counts_equal(before,after)&&original_rng.seed==services.rng.seed&&!services.failed()&&!owner.course().magikarp_active,
+        require(counts_equal(before,after)&&original_rng.seed==services.rng.seed&&!services.failed()&&!owner.course_context().beach().magikarp_active,
             "rejected tuple mutated canonical owner/native/RNG/scene state");
         for (const auto& binding:owner.render_bindings()) require(!binding.model.object,"rejected factory published render borrower");
     }
@@ -199,14 +200,14 @@ struct Consumer {
         // The real link3 lookup must notice a live object outside this Owner.
         auto* occupied=services.object(0x83,3); require(occupied,"source ID collision subject allocation failed");
         const auto parent=spawn(); const auto handle=parent.instance;
-        owner.course().magikarp_active=true; // Actual scene chooser publication.
+        owner.course_context().beach().magikarp_active=true; // Actual scene chooser publication.
         YawObservation yaw{&services}; IsleGameProcess* observation=nullptr;
         native(isle_game_add_process(services.game,parent.object,YawObservation::capture,&yaw,ISLE_GAME_SYNCHRONOUS,8,&observation));
         native(isle_game_tick(services.game)); require(!services.failed(),services.error());
         native(isle_game_end_process(services.game,observation));
         auto* record=owner.source(handle); require(record&&record->pathProc,"genuine initial state did not start native path5");
-        require(static_cast<const beach::ActorAnimationHeader*>(record->animHeader)->wire.guest_address==0x802cdab4&&
-            record->pokemonLoopTarget==1&&record->transitionGraph==nullptr&&owner.course().magikarp_active,
+        require(static_cast<const actor::ActorAnimationHeader*>(record->animHeader)->wire.guest_address==0x802cdab4&&
+            record->pokemonLoopTarget==1&&record->transitionGraph==nullptr&&owner.course_context().beach().magikarp_active,
             "actual state header/wait/scene publication missing");
         const IsleGameModelPlacement* placement=nullptr;
         native(isle_game_model_placement(services.game,owner.native_model(handle),&placement));
@@ -261,7 +262,7 @@ struct Consumer {
             animation_ended|=(membership.process_flags&POKEMON_PROCESS_FLAG_ANIMATION_ENDED)!=0;
             if (auto* current=owner.source(handle)) {
                 require(!path_ended||!current->pathProc,"source path end retained a native process handle");
-                if (!animation_ended) require(owner.course().magikarp_active,"scene flag cleared before genuine ANIMATION_ENDED");
+                if (!animation_ended) require(owner.course_context().beach().magikarp_active,"scene flag cleared before genuine ANIMATION_ENDED");
             }
             for (const auto& binding:owner.render_bindings()) if (binding.model.object&&binding.model.object!=parent.object) {
                 IsleActorSource* child=nullptr; native(isle_actor_source_get(services.game,binding.model.object,&child));
@@ -291,7 +292,7 @@ struct Consumer {
             require(!awaiting_child || (child_object!=nullptr)==should_emit,
                     "source ground poll skipped first eligible tick or emitted during initial wait/noncrossing");
             if (membership.retiring) {
-                require(membership.joined&&!membership.logical&&!membership.registered&&!owner.course().magikarp_active&&animation_ended,
+                require(membership.joined&&!membership.logical&&!membership.registered&&!owner.course_context().beach().magikarp_active&&animation_ended,
                     "source wait/scene clear/RunCleanup/native join ordering changed");
                 joined=true;
                 const auto collected=owner.collect_joined();
@@ -313,7 +314,7 @@ struct Consumer {
         }
         require(!owner.source(child_handle)&&!owner.animation().model(child_handle),"emitted common1003 did not execute actual normal cleanup");
         for (unsigned n=0;n<4;++n) { native(isle_game_tick(services.game)); require(!services.failed(),services.error()); }
-        require(!owner.course().magikarp_active&&!owner.set_animation(handle,nullptr)&&!owner.set_animation(child_handle,nullptr),
+        require(!owner.course_context().beach().magikarp_active&&!owner.set_animation(handle,nullptr)&&!owner.set_animation(child_handle,nullptr),
             "ended source ran again or admitted stale native mutation");
         for (const auto& binding:owner.render_bindings()) require(!binding.model.object,"retired sibling retained live rendering borrower");
         services.erase(occupied); accepted(owner.reset()); accepted(owner.collect_joined());
@@ -369,10 +370,10 @@ struct Consumer {
 };
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"private profile directory must exist and be empty");
-    const world::Resources world_resources(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id);
     const auto& setup=world_resources.setup();
-    const beach::ActorResources resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const environment_sound::BeachResources sound_resources(snapshot);
+    const actor::Resources resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const environment_sound::Resources sound_resources(snapshot,0);
     const menu::EffectResources effect_resources(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"actual audio hydration failed");
@@ -403,7 +404,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             environment_sound::Environment environment(services,storage.arena(),sound_resources);
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; Shift shift{&services,camera,nullptr};
-            world::World world(services,world_resources,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
+            world::ModuleState world_module;
+            world::World world(services,world_resources,world_module,{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
             a::SlotCapacity capacity{};
             for (const auto& model:resources.models()) {
                 const auto c=a::slot_capacity(model); capacity.nodes=std::max(capacity.nodes,c.nodes);
@@ -411,7 +413,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
             }
             const std::array capacities{capacity,capacity};
             {
-                actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096}); shift.owner=&owner;
+                beach::ActorSceneResources sceneData(snapshot);
+                std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                beach::ActorSceneState sceneState(sceneData,scene_latch);
+                actor::Owner owner(services,resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096}); shift.owner=&owner;
                 accepted(owner.publish_effects());
                 require(world.enter_first(0)!=nullptr,"real World first-block admission failed");
                 Consumer consumer(services,owner,world,resources);

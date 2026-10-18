@@ -64,6 +64,7 @@ Error Service::start(const HostFrame& initial) noexcept {
     snapshot_.ports = initial;
     indices(snapshot_, initial);
     menu_ = {};
+    neutral_ = {};
     menu_delay_ = {};
     menu_interval_ = {};
     menu_update_ = 0;
@@ -243,12 +244,42 @@ MenuResult Service::menu(int physical_port) noexcept {
     }
     return {Error::none, &menu_[static_cast<std::size_t>(physical_port)]};
 }
+MenuResult Service::neutral(int physical_port) noexcept {
+    if (!running_) return {Error::stopped, nullptr};
+    if (physical_port < 0 || physical_port >= static_cast<int>(port_count))
+        return {Error::none, &neutral_[0]};
+    // Source AA740 shares AA38C's cache gate, but neither sets it nor advances
+    // its serial/repeat clocks. gNumControllers is a count, not a port mapping.
+    if (!menu_cached_) {
+        for (std::size_t i = 0; i < snapshot_.controller_count; ++i) {
+            auto& output = neutral_[i];
+            output.stick_x = output.stick_y = output.unused_axis = 0;
+            output.current = output.pressed = output.released = 0;
+            output.not_pressed = ~std::uint32_t{0};
+            output.update = menu_update_;
+        }
+    }
+    return {Error::none, &neutral_[static_cast<std::size_t>(physical_port)]};
+}
 Error Service::set_menu_repeat(std::int32_t delay, std::int32_t interval,
                                 std::uint32_t mask) noexcept {
     if (!running_) return Error::stopped;
     if (delay < 0 || interval < 0 || mask > 0xffffffu) return Error::invalid_parameter;
     menu_hold_delay_ = delay;
     menu_hold_interval_ = interval;
+    menu_mask_ = mask;
+    return Error::none;
+}
+Error Service::set_menu_repeat(std::int32_t delay, std::int32_t interval) noexcept {
+    if (!running_) return Error::stopped;
+    if (delay < 0 || interval < 0) return Error::invalid_parameter;
+    menu_hold_delay_ = delay;
+    menu_hold_interval_ = interval;
+    return Error::none;
+}
+Error Service::set_menu_mask(std::uint32_t mask) noexcept {
+    if (!running_) return Error::stopped;
+    if (mask > 0xffffffu) return Error::invalid_parameter;
     menu_mask_ = mask;
     return Error::none;
 }

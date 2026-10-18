@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 #include "actual_actor_world_hooks.hpp"
 // Opt-in actual-ROM native collision API consumer. Authored collision inputs on
 // real Magikarp factory actors do not admit the separate nonNULL-graph state.
@@ -47,12 +48,12 @@ struct PairWitness {
 };
 struct Consumer {
     scene::Services& services;actor::Owner& owner;world::World& world;
-    const beach::ActorResources& resources;std::size_t definition=beach::actor_no_index;
+    const actor::Resources& resources;std::size_t definition=actor::actor_no_index;
     std::uint32_t next_id=0x7000;
-    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const beach::ActorResources& r):services(s),owner(o),world(w),resources(r) {
+    Consumer(scene::Services& s,actor::Owner& o,world::World& w,const actor::Resources& r):services(s),owner(o),world(w),resources(r) {
         for(std::size_t i=0;i<r.definitions().size();++i)
             if(r.definitions()[i].actor_id==129&&r.definitions()[i].factory_identity==0x802cac48u)definition=i;
-        require(definition!=beach::actor_no_index,"real Magikarp factory definition absent");
+        require(definition!=actor::actor_no_index,"real Magikarp factory definition absent");
     }
     Actor spawn(IsleGameVec3 position,std::uint16_t flags=0x200,float radius=1) {
         world::Spawn input{};input.id=129;input.scale={1,1,1};input.path=world::no_index;
@@ -175,9 +176,9 @@ struct Consumer {
 };
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"private collision profile must exist and be empty");
-    const world::Resources world_resources(snapshot);const auto& setup=world_resources.setup();
-    const beach::ActorResources resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const environment_sound::BeachResources sounds(snapshot);const menu::EffectResources effects_data(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id);const auto& setup=world_resources.setup();
+    const actor::Resources resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const environment_sound::Resources sounds(snapshot,0);const menu::EffectResources effects_data(snapshot);
     const std::array banks{&effects_data.bank(menu::EffectGroup::common),&effects_data.bank(menu::EffectGroup::beach)};
     auto hydrated=game_audio::hydrate(snapshot);require(bool(hydrated),"actual collision audio hydration failed");
     std::array<audio::effects::Section,8> sections;audio::effects::Config effects;
@@ -210,12 +211,16 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
         environment_sound::Environment environment(services,storage.arena(),sounds);
         require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector;focus::RegionCopies copies({{0x680000,0x50},{0x680080,0x80},{0x680100,0xa00}});actor::DetectorBinding detection{copies,detector};
-        Hooks hooks{services,camera};world::World world(services,world_resources,hooks.callbacks());
+        world::ModuleState world_module;
+        Hooks hooks{services,camera};world::World world(services,world_resources,world_module,hooks.callbacks());
         a::SlotCapacity maximum{};for(const auto& model:resources.models()) { const auto capacity=a::slot_capacity(model);
             maximum.nodes=std::max(maximum.nodes,capacity.nodes);maximum.material_attachments=std::max(maximum.material_attachments,capacity.material_attachments); }
         const std::array capacities{maximum,maximum,maximum};
         {
-            actor::Owner owner(services,resources,world,environment,detector,context.value,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
+            beach::ActorSceneResources sceneData(snapshot);
+            std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+            beach::ActorSceneState sceneState(sceneData,scene_latch);
+            actor::Owner owner(services,resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096});accepted(owner.publish_effects());hooks.owner=&owner;WorldLifetime lifetime{world,hooks};
             require(environment.set_listener(player_model,camera),"environment listener binding failed");context.value.D_80382D44_523154=1;
             require(!world.current(),"analytic source-default-ground fixture unexpectedly entered a block");
             Consumer consumer(services,owner,world,resources);

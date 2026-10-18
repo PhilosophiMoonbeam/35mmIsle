@@ -22,7 +22,6 @@ struct Runtime::Impl {
     std::uint64_t updates = 0;
     bool logo_exit = false;
     bool native_owned = false;
-    ::isle::save::ScreenOffsets offsets{};
     Exit requested{};
     IsleGameSprite* logo_sprite = nullptr;
     IsleGameCamera* sprite_camera = nullptr;
@@ -65,19 +64,6 @@ struct Runtime::Impl {
     }
     bool wait(std::uint32_t ticks = 1) noexcept {
         return native(isle_game_wait(storage.game(),ticks),"startup continuation wait failed");
-    }
-    bool reset_mixer() noexcept {
-        // Source app_render/568D0.c:16–28, before logo and each menu entry.
-        if (!sound(audio.global_sound_reverb(0),"startup global reverb reset") ||
-            !sound(audio.bgm_extra_reverb(0,0),"startup main extra reverb reset") ||
-            !sound(audio.bgm_extra_reverb(1,0),"startup auxiliary extra reverb reset") ||
-            !sound(audio.stop_bgm(),"startup BGM stop") ||
-            !sound(audio.bgm_volume(0,0x7f00),"startup main volume reset") ||
-            !sound(audio.bgm_volume(1,0x7f00),"startup auxiliary volume reset") ||
-            !sound(audio.global_sound_volume(0x7f),"startup global sound volume reset")) return false;
-        for (std::uint8_t channel = 0; channel < 16; ++channel)
-            if (!sound(audio.bgm_channel_volume(0,channel,0x7f),"startup main channel volume reset")) return false;
-        return true;
     }
     bool create_world() noexcept {
         if (!native(storage.create(),"startup native world creation failed")) return false;
@@ -149,8 +135,7 @@ struct Runtime::Impl {
         do { ++self.logo_ticks; } while (self.wait());
     }
     bool start_logo() {
-        if (!native(storage.reset(),"startup closed arena reset failed") ||
-            !reset_mixer() || !create_world()) return false;
+        if (!native(storage.reset(),"startup closed arena reset failed") || !create_world()) return false;
         const auto& setup = catalog.setup(menu::Scene::logo);
         if (!native(isle_menu_reserve_pools(storage.game(),&arena,setup.objects,setup.processes,
                 setup.sprites,setup.cameras,setup.matrices),"logo native initial pools failed")) return false;
@@ -173,17 +158,10 @@ struct Runtime::Impl {
     }
     bool start_menu() {
         if (!state.initialized()) { fail(Error::profile,"persistent State has no writable save session"); return false; }
-        const auto snapshot = state.save()->snapshot();
-        if (!snapshot) { fail(Error::profile,"post-logo canonical save snapshot unavailable"); return false; }
-        const auto quality = snapshot.value.player_flag(9);
-        const auto screen = snapshot.value.screen_offsets();
-        if (!quality || !screen) { fail(Error::profile,"post-logo saved output settings invalid"); return false; }
-        audio.high_quality(!quality.value);
-        offsets = screen.value;
         if (!release_scene() || storage.reset() != ISLE_GAME_OK) {
-            fail(Error::native,"logo GTL/native retirement failed"); return false;
+            fail(Error::native,"main-menu native retirement failed"); return false;
         }
-        if (!reset_mixer() || !create_world()) return false;
+        if (!create_world()) return false;
         const auto& setup = catalog.setup(menu::Scene::title_menu);
         const scene::ResourceView resources{{setup.objects,setup.processes,setup.sprites,setup.cameras,setup.matrices},
                                             catalog.sprites(menu::Scene::title_menu)};
@@ -229,7 +207,7 @@ struct Runtime::Impl {
 };
 Runtime::Runtime(std::unique_ptr<Impl> value) noexcept : impl_(std::move(value)) {}
 Runtime::~Runtime() = default;
-CreateResult Runtime::create(const menu::Catalog& catalog, game_input::Service& input,
+CreateResult Runtime::create_boot(const menu::Catalog& catalog, game_input::Service& input,
     game_audio::Session& audio, ::isle::game::State& persistent,
     scene::Storage& storage, std::uint32_t now) noexcept {
     CreateResult result;
@@ -271,6 +249,7 @@ CreateResult Runtime::create_title(const menu::Catalog& catalog, game_input::Ser
 Step Runtime::tick(std::uint32_t raw_time) noexcept {
     auto& self = *impl_;
     if (self.phase == Phase::scene_exit) return Step::scene_exit;
+    if (self.phase == Phase::boot_complete) return Step::boot_complete;
     if (self.phase == Phase::retired || self.error != Error::none) return Step::failed;
     self.raw_time = raw_time;
     if (self.services) self.services->raw_game_time = raw_time;
@@ -278,10 +257,8 @@ Step Runtime::tick(std::uint32_t raw_time) noexcept {
     ++self.updates;
     if (self.services && self.services->failed()) { self.fail(Error::native,self.services->error()); return Step::failed; }
     if (self.phase == Phase::logo && self.logo_exit) {
-        try { if (self.start_menu()) return Step::scene_changed; }
-        catch (const std::exception& e) { self.fail(Error::allocation,e.what()); }
-        catch (...) { self.fail(Error::allocation,"main-menu native initialization exception"); }
-        return Step::failed;
+        self.phase = Phase::boot_complete;
+        return Step::boot_complete;
     }
     if (self.ui && self.services->exit_requested()) {
         self.requested = {static_cast<menu::scene::SourceScene>(self.services->exit_result()),self.ui->entry_flags()};
@@ -301,9 +278,14 @@ const menu::scene::Ui* Runtime::menu_ui() const noexcept { return impl_->ui.get(
 View Runtime::view() noexcept {
     auto& self = *impl_;
     if (self.phase != Phase::logo && self.phase != Phase::title_menu) return {};
+    save::ScreenOffsets offsets;
+    if (!self.state.screen_offsets().translation(offsets)) {
+        self.fail(Error::native,"startup live VI endpoints cannot be represented by native translation");
+        return {};
+    }
     return {self.phase == Phase::logo ? menu::Scene::logo : menu::Scene::title_menu,self.storage.game(),
         self.sprite_camera,self.logo_sprite,self.services.get(),self.title.get(),
-        self.phase == Phase::logo ? 0u : 0x6464b4ffu,self.ui ? self.ui->screen_offsets() : self.offsets};
+        self.phase == Phase::logo ? 0u : 0x6464b4ffu,offsets};
 }
 Exit Runtime::exit() const noexcept { return impl_->requested; }
 const ::isle::save::GameOpenResult* Runtime::save_initialization() const noexcept {

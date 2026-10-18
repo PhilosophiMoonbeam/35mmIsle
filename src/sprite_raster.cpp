@@ -9,11 +9,6 @@ namespace {
 void require(bool value, const char* message) {
     if (!value) throw std::invalid_argument(message);
 }
-unsigned index(RasterSource source) {
-    const auto i = static_cast<unsigned>(source);
-    require(i < 2, "invalid raster source");
-    return i;
-}
 }
 Raster::Raster(const IsleSprite& prototype, std::span<const RasterPiece> pieces,
                std::array<RasterStorage, 2> sources) {
@@ -27,6 +22,8 @@ Raster::Raster(const IsleSprite& prototype, std::span<const RasterPiece> pieces,
             "dynamic raster cannot alias an immutable palette");
     for (unsigned i = 0; i < 2; ++i) {
         auto& storage = sources[i];
+        if (i == 1 && !storage.lifetime && !storage.pixels.data() &&
+            storage.pixels.empty() && !storage.address) continue;
         require(storage.lifetime && storage.pixels.data() && !storage.pixels.empty() &&
                 storage.pixels.size() <= 2 * 1024 * 1024 && !(storage.address & 7u) &&
                 storage.address <= 8 * 1024 * 1024 &&
@@ -46,7 +43,9 @@ Raster::Raster(const IsleSprite& prototype, std::span<const RasterPiece> pieces,
         out.sprite = prototype;
         out.sprite.bitmap = out.bitmaps.data();
         out.changed.assign(out.storage.pixels.size(), 1);
+        out.revision = 1;
     }
+    if (!has_source(RasterSource::alternate)) return;
     const auto& a = sources_[0].storage;
     const auto& b = sources_[1].storage;
     require(std::uint64_t(a.address) + a.pixels.size() <= b.address ||
@@ -57,15 +56,25 @@ Raster::Raster(const IsleSprite& prototype, std::span<const RasterPiece> pieces,
     require(ah + a.pixels.size() <= bh || bh + b.pixels.size() <= ah,
             "dynamic source variants overlap CPU storage");
 }
+bool Raster::has_source(RasterSource source) const noexcept {
+    const auto i = static_cast<unsigned>(source);
+    return i < sources_.size() && bool(sources_[i].storage.lifetime);
+}
+unsigned Raster::index(RasterSource source) const {
+    const auto i = static_cast<unsigned>(source);
+    require(i < sources_.size(), "invalid raster source");
+    require(has_source(source), "raster source is absent");
+    return i;
+}
 const IsleSprite& Raster::view(RasterSource source) const { return sources_[index(source)].sprite; }
 std::span<std::uint8_t> Raster::pixels(RasterSource source) {
-    require(!borrowers_, "dynamic raster is borrowed by graphics");
+    if (borrowers_) throw std::logic_error("dynamic raster is borrowed by graphics");
     return sources_[index(source)].storage.pixels;
 }
 std::uint32_t Raster::address(RasterSource source) const { return sources_[index(source)].storage.address; }
 std::uint64_t Raster::revision(RasterSource source) const { return sources_[index(source)].revision; }
 void Raster::publish(RasterSource source, std::size_t offset, std::size_t size) {
-    require(!borrowers_, "cannot publish a borrowed dynamic raster");
+    if (borrowers_) throw std::logic_error("cannot publish a borrowed dynamic raster");
     auto& out = sources_[index(source)];
     require(offset <= out.changed.size() && size <= out.changed.size() - offset,
             "dynamic raster publication exceeds fixed storage");

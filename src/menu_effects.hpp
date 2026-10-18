@@ -2,6 +2,7 @@
 #define ISLE_MENU_EFFECTS_HPP
 
 #include "menu_animation.hpp"
+#include "35mmisle/engine.h"
 #include "35mmisle/rng.h"
 
 #include <array>
@@ -18,6 +19,31 @@ struct EffectAttachment { animation::InstanceHandle instance; std::size_t node =
 // Raw row-vector GAME world matrix. The runtime normalizes velocity columns.
 struct EffectWorld { std::array<std::array<float, 4>, 4> matrix{}; };
 using EffectWorldResolver = bool (*)(void*, EffectAttachment, EffectWorld&) noexcept;
+// A live model-incarnation/node credit, not an event pointer or pose snapshot.
+// The issuing owner outlives this move-only value and defers model retirement
+// until release. Resolution reads its current native pose; animation may advance.
+class RetainedEffectAttachment final {
+public:
+    using Resolve = bool (*)(void*, const IsleGameModelRef&, std::size_t, EffectWorld&) noexcept;
+    using Release = void (*)(void*, const IsleGameModelRef&, std::size_t) noexcept;
+    RetainedEffectAttachment() noexcept = default;
+    // Adopts one credit already acquired by the issuing owner.
+    RetainedEffectAttachment(void*, IsleGameModelRef, std::size_t, Resolve, Release) noexcept;
+    ~RetainedEffectAttachment();
+    RetainedEffectAttachment(RetainedEffectAttachment&&) noexcept;
+    RetainedEffectAttachment& operator=(RetainedEffectAttachment&&) noexcept;
+    RetainedEffectAttachment(const RetainedEffectAttachment&) = delete;
+    RetainedEffectAttachment& operator=(const RetainedEffectAttachment&) = delete;
+    explicit operator bool() const noexcept { return context_ != nullptr; }
+    bool resolve(EffectWorld&) const noexcept;
+private:
+    void reset() noexcept;
+    void* context_ = nullptr;
+    IsleGameModelRef binding_{};
+    std::size_t node_ = no_index;
+    Resolve resolve_ = nullptr;
+    Release release_ = nullptr;
+};
 // Source B7/B8 read local DObj position; BF writes local position. These are
 // separate registrations, not world-matrix lookups or renderer-cache accesses.
 struct EffectTargetServices {
@@ -64,18 +90,23 @@ struct EffectSpawnResult {
     std::uint16_t effect_id = 0;
     EffectHandle handle{};
 };
-// One scene pool/RNG/source-ID domain across immutable active bank slots. Banks,
-// their Snapshot and RNG outlive this owner; no hot bank replacement is exposed.
-// Exhaustion is a successful null spawn; newly created particles tick immediately.
+// One scene pool/RNG/source-ID domain across eight independently installed bank
+// slots. Banks, their Snapshot and RNG outlive this owner. A used bank cannot be
+// reset/replaced; exhaustion is a successful null spawn, with immediate ticking.
 class EffectRuntime final {
 public:
     // Setup7 + 100*(TLUT6+LUT1+load7+color3+blend1+alpha1+Z1+rect3) + endLUT1.
     static constexpr std::size_t max_render_words = 4616;
+    static constexpr std::size_t bank_count = 8;
     EffectRuntime(std::span<const EffectBank* const> banks, isle_rng& rng,
                   EffectTargetServices targets = {}) noexcept;
     EffectRuntime(const EffectRuntime&) = delete;
     EffectRuntime& operator=(const EffectRuntime&) = delete;
     EffectsStatus status() const noexcept { return status_; }
+    // Empty construction stages the original reset-all/install-common3/Beach0
+    // sequence. Existing callers may still supply their complete admitted banks.
+    EffectsStatus reset_bank(std::size_t slot) noexcept;
+    EffectsStatus install_bank(const EffectBank&) noexcept;
     // Immutable admitted bank/script presence, independent of the ten-emitter
     // pool and RNG. A full pool remains an ordinary successful null spawn.
     bool has_effect(std::uint16_t encoded_bank, std::size_t script) const noexcept;
@@ -84,6 +115,9 @@ public:
     EffectsStatus configure_effect(EffectHandle, Vec3 position, Vec3 velocity) noexcept;
     // Source position stores preserve the script-initialized emission velocity.
     EffectsStatus set_effect_position(EffectHandle, Vec3 position) noexcept;
+    // Replaces the actual generation-checked emitter attachment. The incoming
+    // credit is consumed even on rejection; an empty value explicitly detaches.
+    EffectsStatus set_effect_attachment(EffectHandle, RetainedEffectAttachment) noexcept;
     EffectSpawnResult create_particle(std::uint16_t encoded_bank, std::size_t script) noexcept;
     EffectSpawnResult create_particle(std::uint16_t encoded_bank, std::size_t script,
                                       Vec3 position, Vec3 velocity) noexcept;
@@ -123,11 +157,12 @@ private:
         std::uint32_t generation = 0;
         std::size_t script = 0;
         EffectAttachment attachment{};
+        RetainedEffectAttachment retained_attachment;
         std::uint16_t id = 0, bank_id = 0, lifetime = 0, flags = 0;
         Vec3 position{}, velocity{};
         float accumulator = 0;
     };
-    std::array<const EffectBank*, 8> banks_{};
+    std::array<const EffectBank*, bank_count> banks_{};
     isle_rng* rng_;
     EffectTargetServices targets_;
     EffectsStatus status_{};
@@ -141,6 +176,7 @@ private:
     std::uint16_t current_id_ = 0, paused_lists_ = 0;
     std::uint8_t color_dither_ = 0xc0, alpha_dither_ = 0x30;
     const EffectBank* bank(std::uint16_t encoded) const noexcept;
+    EffectsStatus validate_bank(const EffectBank&) const noexcept;
     int spawn_effect(std::uint16_t encoded, std::size_t script, EffectAttachment) noexcept;
     int spawn_particle(std::uint16_t encoded, std::size_t script, Vec3 position,
                        Vec3 velocity, int parent, int effect) noexcept;

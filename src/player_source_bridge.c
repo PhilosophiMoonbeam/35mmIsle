@@ -62,7 +62,7 @@ IsleGameResult isle_player_source_activate(IslePlayerSource* source) {
     result = isle_game_status(game);
     if (result != ISLE_GAME_OK) return result;
     if (source->status != ISLE_GAME_OK) return source->status;
-    if (game->ticking || game->callback_depth != 0 || game->playerSource != NULL ||
+    if (game->ticking || game->callback_depth != 0 || game->playerSource != NULL || game->postCourseSource != NULL ||
         source->nonwaiting_call_frame != NULL) return ISLE_GAME_INVALID_STATE;
     game->playerSource = source;
     return ISLE_GAME_OK;

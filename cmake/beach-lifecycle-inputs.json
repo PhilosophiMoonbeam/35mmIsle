@@ -1,0 +1,1908 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "beach-lifecycle-complete14-plus7-v2",
+  "generator_sha256": "49b8a14fa211af963e4695db9cc1f76c143b9147e58819624cb5a10adfd99bf0",
+  "source_files": {
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "line_count": 191
+    },
+    "src/beach/55D1C0.c": {
+      "git_blob": "5f8561a9a6faec5ba4dbd42cdbddfa0c9443b04f",
+      "sha256": "88163d542e69d178a26451f2770ef9e7a0e1b3106f09ef91b1eaec92a3568ccb",
+      "line_count": 132
+    },
+    "src/beach/beach.h": {
+      "git_blob": "0aad5edbe49cd130449874b9b3b55941d3b73042",
+      "sha256": "a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc",
+      "line_count": 329
+    },
+    "src/app_render/4CDB0.c": {
+      "git_blob": "598a04df549f0df99ad0922dffa4c0a3fb735218",
+      "sha256": "e7e03631f8c864667ee3ce0a42bc102a6e64bb44f4bb337bfc065dd61b0780e8",
+      "line_count": 239
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "line_count": 591
+    },
+    "include/sys/gtl.h": {
+      "git_blob": "a17ea5a556c505ea432a1a5c800a7e34ef313323",
+      "sha256": "8a24f1d44f97f92cbc2cc5d4950875666e758bd059c3456ecca7512af59cd83b",
+      "line_count": 93
+    },
+    "include/sys/vi.h": {
+      "git_blob": "5a95a8ba8c6e8f5a5c80b7cabf68c0bebe2c658e",
+      "sha256": "f290aa7442c22a0020454ce160ee53c8abd0899155ebc0b6ea398b9addb9f4c2",
+      "line_count": 32
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "line_count": 237
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "line_count": 10549
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "line_count": 343
+    },
+    "src/app_render/46270.c": {
+      "git_blob": "bf53f3078a567ac78df51d3ee8d5e6f9fa17c135",
+      "sha256": "152884a39d0621dbbaafb57f292089048014efe70784cd03a72b70a57871d8c7",
+      "line_count": 389
+    },
+    "src/app_render/47380.c": {
+      "git_blob": "2e52c79c20708e855d132178c9ea51e6ca71ebe6",
+      "sha256": "b416fa9d9c6126c2beb936ba373b9dbf8479e1600292b510c2d432b89cd21936",
+      "line_count": 1723
+    },
+    "src/app_level/503C10.c": {
+      "git_blob": "85836484265173a036436390ddcc8961b9e8068b",
+      "sha256": "93549b82330d717e583d71c4628340c0f3b375e652492e9847dc79a0df78ae7a",
+      "line_count": 357
+    },
+    "src/beach/562BC0.c": {
+      "git_blob": "c67645665414dfe2a93cbcb038bfb06dd34e46ec",
+      "sha256": "f68a107400ca34dab410dd9cb7b0672afffd76131b2e31719e40bfcbb33cbb5e",
+      "line_count": 119
+    },
+    "src/app_level/player.c": {
+      "git_blob": "bdca3b88bad38d67936f5956288ae22bd88add95",
+      "sha256": "229ba02d3a49c41300cb31023847ddcb86fa9ae11ba6f201fce48ead3368298b",
+      "line_count": 2998
+    },
+    "include/sys/cont.h": {
+      "git_blob": "ba5f7dfb8f8bdd9138b6928b131e24b675d61f56",
+      "sha256": "fd4f46e43ec0698d98dacb65b57b3e3016bc2745d7657508376b35b1b26e442d",
+      "line_count": 34
+    },
+    "src/app_level/4FE330.c": {
+      "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761",
+      "line_count": 195
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "line_count": 2348
+    }
+  },
+  "native_support": {
+    "src/world_module.hpp": {
+      "sha256": "b89283f94e22816c4b08a6196ee694fc0d455765997567760e826f9a0ce66c52"
+    },
+    "src/beach_lifecycle_source.h": {
+      "sha256": "4063f0c9b7e4843ca3fb19c7137b007eea82015eb80b9ce5f5b6ff08601075f3"
+    },
+    "src/beach_lifecycle_source.c": {
+      "sha256": "b490ccd33995d5b625deefd671824a83b62bd0543defe422c7009d159695058f"
+    },
+    "src/beach_lifecycle.hpp": {
+      "sha256": "cc6ff8465b2f0c60359ec3fca43b37bf12242ed324df97241db82601d3f8e87f"
+    },
+    "src/beach_lifecycle.cpp": {
+      "sha256": "a1721c3f7792fc87a7094064d6252b4b3181e192d7debcf628304e0e34dc4494"
+    },
+    "src/application_photos.hpp": {
+      "sha256": "d8f9f037ce255d5f21f8bac8b63df1112b06d57cbbc6bfccc3775e40a1455d0b"
+    },
+    "src/application_photos.cpp": {
+      "sha256": "17d4935dd224f8c31e6c9cfe90956940846e317d7b98a8a05eec5e89c8383531"
+    },
+    "src/application_photos_source.h": {
+      "sha256": "d1ff5bcd9c696f420471ae9b7954355d7f445a4b38694cefabe5237e345872cb"
+    },
+    "src/actor_photo_scene.hpp": {
+      "sha256": "ffd12dcf00a1a8e07d2df2e2a40c74fe0f6f691798fd159377dccd844812d069"
+    },
+    "src/actor_photo_scene.cpp": {
+      "sha256": "d740473aace8c6d4f50ef9f9503cdbb1c9ff8217f001ea521d77b10bc780e07b"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
+    "src/player_root.cpp": {
+      "sha256": "d3ec7a8810fa66ed021ad7edaf70423f37dbf358d5fc3863046322d020e0849e"
+    },
+    "src/beach_music.hpp": {
+      "sha256": "56f6b2999fb6078477ff69d02854ccddb5b6657fb63b72780cc2263952d6cc7e"
+    },
+    "src/beach_music.cpp": {
+      "sha256": "066229806a77a51e55452fc1cb4b012117cf8263a602a3f7dcc8503041c5046f"
+    },
+    "src/menu_scene_bridge.h": {
+      "sha256": "851da4fdc6f7864784e44e8c36b098a0c9f769f0f380cbcc3875845c57daf726"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/player_source.h": {
+      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
+    },
+    "src/player_root_source.h": {
+      "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"
+    },
+    "src/player_cart_source.h": {
+      "sha256": "a55a8ec2d16a78833aa7deff9c85fe6729bde1fbcb9c386f4dbdf71e419264a5"
+    },
+    "src/player_camera_animation_clip.h": {
+      "sha256": "a1e935a8623e3244e836be03bcf2f1a35a6d9a47d55bb5cd6bc19da4369827d4"
+    },
+    "src/beach_music_source.h": {
+      "sha256": "e5027d208c913a34d3a3ef6f4f5e24ea2d776ef4f57b1ffa30c34dab3ad29037"
+    },
+    "src/engine_internal.h": {
+      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "10fb58f5f6cebe32ea8662cb7a4f1bfc8e287d88b6355bdd6b30cba22e7f83c9"
+    },
+    "include/35mmisle/rng.h": {
+      "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+    }
+  },
+  "constant_names": [
+    "SCENE_BEACH",
+    "SCENE_MAIN_MENU",
+    "SCENE_CAMERA_CHECK",
+    "SCENE_OAKS_LAB_2",
+    "PokemonID_MAGIKARP",
+    "SURFACE_TYPE_337FB2"
+  ],
+  "definitions": [
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "beachSpawnMagikarpAtGObj",
+      "first": 10,
+      "last": 37,
+      "owner": "setup",
+      "source_sha256": "db42084c749a2591829738d50ee794010bd544c161eaa8d42a16996b3132e717",
+      "native_sha256": "d6d083345f9841aa5bb02f466f5fb6fa6bf81242bdf4b35060c13cf96ae2b372",
+      "native_declaration": "void isle_beach_lifecycle_beachSpawnMagikarpAtGObj(IsleBeachLifecycleSource* s, IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void beachSpawnMagikarpAtGObj(GObj* obj) {",
+          "replace": "void isle_beach_lifecycle_beachSpawnMagikarpAtGObj(IsleBeachLifecycleSource* s, IsleGameObject* obj) {",
+          "occurrences": 1
+        },
+        {
+          "find": "DObj* a0;",
+          "replace": "IsleGameModel* a0;",
+          "occurrences": 1
+        },
+        {
+          "find": "Mtx3Float* position;",
+          "replace": "IsleGameVec3 position;",
+          "occurrences": 1
+        },
+        {
+          "find": "ObjectSpawn spawn;",
+          "replace": "IsleBeachLifecycleSpawn spawn;",
+          "occurrences": 1
+        },
+        {
+          "find": "WorldBlock* roomA;",
+          "replace": "IsleBeachLifecycleBlock* roomA;",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDef def = D_beach_802CBFF4;",
+          "replace": "IsleBeachLifecyclePokemonDef def = s->magikarp;",
+          "occurrences": 1
+        },
+        {
+          "find": "getCurrentWorldBlock()",
+          "replace": "isle_beach_lifecycle_current_block(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAddOne(roomA, roomA, &spawn, &def)",
+          "replace": "isle_beach_lifecycle_add_one(s, roomA, roomA, &spawn, &def)",
+          "occurrences": 1
+        },
+        {
+          "find": "position = &obj->data.dobj->position;",
+          "replace": "position = isle_beach_lifecycle_model_position(s, isle_beach_lifecycle_model(s, obj), 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "a0 = pokemonObj->data.dobj;",
+          "replace": "a0 = isle_beach_lifecycle_model(s, pokemonObj);",
+          "occurrences": 1
+        },
+        {
+          "find": "GET_TRANSFORM(a0)->pos.v.x = position->v.x;",
+          "replace": "isle_beach_lifecycle_set_position_component(s, a0, 0, position.x);",
+          "occurrences": 1
+        },
+        {
+          "find": "GET_TRANSFORM(a0)->pos.v.y = position->v.y;",
+          "replace": "isle_beach_lifecycle_set_position_component(s, a0, 1, position.y);",
+          "occurrences": 1
+        },
+        {
+          "find": "GET_TRANSFORM(a0)->pos.v.z = position->v.z;",
+          "replace": "isle_beach_lifecycle_set_position_component(s, a0, 2, position.z);",
+          "occurrences": 1
+        },
+        {
+          "find": "GObj*",
+          "replace": "IsleGameObject*",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C416C",
+      "first": 39,
+      "last": 65,
+      "owner": "setup",
+      "source_sha256": "1ecec8c3000310524ca158094cdee33e07940d0ba034d8e656663cd76ee9e77a",
+      "native_sha256": "9e058ef3d5e013fdca1612a74d96841e9c01dd47c374345ec05d85a3388ebeb2",
+      "native_declaration": "void isle_beach_lifecycle_func_802C416C(IsleBeachLifecycleSource* s, IsleGameObject* obj, const IsleActorGround* groundResult)",
+      "changes": [
+        {
+          "find": "void func_beach_802C416C(GObj* obj, GroundResult* groundResult) {",
+          "replace": "void isle_beach_lifecycle_func_802C416C(IsleBeachLifecycleSource* s, IsleGameObject* obj, const IsleActorGround* groundResult) {",
+          "occurrences": 1
+        },
+        {
+          "find": "DObj* model = obj->data.dobj;",
+          "replace": "IsleGameModel* model = isle_beach_lifecycle_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    Item* item = GET_ITEM(obj);\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "Vec3fDistance(&GET_TRANSFORM(gPlayerDObj)->pos.v, &model->position.v)",
+          "replace": "isle_beach_lifecycle_distance_from_player(s, model)",
+          "occurrences": 1
+        },
+        {
+          "find": "randRange(sumWeight)",
+          "replace": "isle_rng_range(s->player->rng, sumWeight)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC004[i].func(obj)",
+          "replace": "D_beach_802CC004[i].func(s, obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC004",
+          "replace": "s->D_beach_802CC004",
+          "occurrences": 5
+        },
+        {
+          "find": "D_beach_802CC014",
+          "replace": "s->D_beach_802CC014",
+          "occurrences": 2
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 4
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "beachPokemonAdd",
+      "first": 67,
+      "last": 69,
+      "owner": "setup",
+      "source_sha256": "5eb721499dcb8e5837c19ac90b08b932843a36ff7397b6902a488e53179d52aa",
+      "native_sha256": "ad0aadb04fa2d1b19c4ae654b29dff3caba3f5829f552986a30a58ab5ca8ecb5",
+      "native_declaration": "void isle_beach_lifecycle_beachPokemonAdd(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* param_1, IsleBeachLifecycleBlock* param_2)",
+      "changes": [
+        {
+          "find": "void beachPokemonAdd(WorldBlock* param_1, WorldBlock* param_2) {",
+          "replace": "void isle_beach_lifecycle_beachPokemonAdd(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* param_1, IsleBeachLifecycleBlock* param_2) {",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAdd(param_1, param_2, beachPokemonData)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_pokemon_add(s, param_1, param_2, 0x802CBEE4u))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C42F8",
+      "first": 71,
+      "last": 73,
+      "owner": "setup",
+      "source_sha256": "60284372be42fb27e3263567773cd0b5c57ad0843bf69eddd85ee66980a06dca",
+      "native_sha256": "e9614181b099f7dd5b790667f525a863373705f52c5f2207a405f2cba449174e",
+      "native_declaration": "void isle_beach_lifecycle_func_802C42F8(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* param_1, IsleBeachLifecycleBlock* param_2)",
+      "changes": [
+        {
+          "find": "void func_beach_802C42F8(WorldBlock* param_1, WorldBlock* param_2) {",
+          "replace": "void isle_beach_lifecycle_func_802C42F8(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* param_1, IsleBeachLifecycleBlock* param_2) {",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonsChangeBlock(param_1, param_2, beachPokemonData)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_pokemon_change(s, param_1, param_2, 0x802CBEE4u))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C431C",
+      "first": 75,
+      "last": 77,
+      "owner": "setup",
+      "source_sha256": "8645e7b3fea790457fb8ee022a6dbae4c3d4d3230dab231d69d37741b6244a66",
+      "native_sha256": "5bdc94f11149707dbe97847caf9614d752cc88181c7da10de740cf6db61e86c8",
+      "native_declaration": "void isle_beach_lifecycle_func_802C431C(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* arg0)",
+      "changes": [
+        {
+          "find": "void func_beach_802C431C(WorldBlock* arg0) {",
+          "replace": "void isle_beach_lifecycle_func_802C431C(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* arg0) {",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonRemove(arg0, beachPokemonData)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_pokemon_remove(s, arg0, 0x802CBEE4u))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C4340",
+      "first": 79,
+      "last": 84,
+      "owner": "setup",
+      "source_sha256": "56e810188f9ea0edf2ce98a366f854002110effd3abd215fca7b05d5f73022ee",
+      "native_sha256": "914126d9bde1de7fedb8c8afb1dbb68e60d3850c0a3f5707259cec8f8d3cb504",
+      "native_declaration": "void isle_beach_lifecycle_func_802C4340(IsleBeachLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_beach_802C4340(void) {",
+          "replace": "void isle_beach_lifecycle_func_802C4340(IsleBeachLifecycleSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "setHeightMap(&D_beach_80318F00)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_height_map(s, 0x80318F00u))",
+          "occurrences": 1
+        },
+        {
+          "find": "createWorld(&D_8011B914, 99, 100, 126, 9, 3, beachPokemonAdd, func_beach_802C431C, func_beach_802C42F8)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_create_world(s, 0x8011B914u, 99, 100, 126, 9, 3, isle_beach_lifecycle_world_add, isle_beach_lifecycle_world_remove, isle_beach_lifecycle_world_change, s))",
+          "occurrences": 1
+        },
+        {
+          "find": "setSkyBoxFollowPlayer()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_sky_follow(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80363928_503D38(0x80, 0xE4, 3, 5)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_pokemon_registry(s, 0x80, 0xE4, 3, 5))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C43CC",
+      "first": 86,
+      "last": 97,
+      "owner": "setup",
+      "source_sha256": "d168013e2b5eb823ff9b7dad12074afd642856679ec0ace35e32a2de59527028",
+      "native_sha256": "fd1bf6cb9eac2b26b8a0a51cca4c64b5083797e541294009201cfb483f4ec22c",
+      "native_declaration": "void isle_beach_lifecycle_func_802C43CC(IsleBeachLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_beach_802C43CC(s32 arg0) {",
+          "replace": "void isle_beach_lifecycle_func_802C43CC(IsleBeachLifecycleSource* s, int32_t arg0) {",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A19D8(arg0)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_transition_end(s, arg0))",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Disable()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_detector_disable(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "EnvSound_Cleanup()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_environment_cleanup(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopBGM()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_player_root_native_stop_bgm(s->player))",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopAllSounds()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_player_root_native_stop_all_sounds(s->player))",
+          "occurrences": 1
+        },
+        {
+          "find": "destroyWorld()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_destroy_world(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80356FBC_4F73CC()",
+          "replace": "isle_player_func_80356FBC_4F73CC(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "removeMainCamera()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_remove_main_camera(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800067DC()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_exit_scene(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC018",
+          "replace": "s->D_beach_802CC018",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C4430",
+      "first": 99,
+      "last": 100,
+      "owner": "setup",
+      "source_sha256": "8b5051eb4d364309c3bbb65adeaaefdb5e1ae665607faf4413facc1e070b1141",
+      "native_sha256": "3ad5858ce80b566d18548535c937195318ad5c50cec019af6b68948667f2c605",
+      "native_declaration": "void isle_beach_lifecycle_func_802C4430(IsleGameObject* arg0)",
+      "changes": [
+        {
+          "find": "void func_beach_802C4430(GObj* arg0) {",
+          "replace": "void isle_beach_lifecycle_func_802C4430(IsleGameObject* arg0) {",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C4438",
+      "first": 102,
+      "last": 103,
+      "owner": "setup",
+      "source_sha256": "2ae352f372de03958e416b01fbe5cfa973c427daa73e428abd4cbcae46c1b27b",
+      "native_sha256": "6d1864f66ce664c3f644829c28c62c19be8f08f6c333c04d9d70fb5451423268",
+      "native_declaration": "void isle_beach_lifecycle_func_802C4438(IsleBeachLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_beach_802C4438(s32 arg0) {",
+          "replace": "void isle_beach_lifecycle_func_802C4438(IsleBeachLifecycleSource* s, int32_t arg0) {",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C4440",
+      "first": 105,
+      "last": 119,
+      "owner": "setup",
+      "source_sha256": "3397145ceaeca5f606e9c3e3f7dcf1451340445e696c524fb50af6843ad6a092",
+      "native_sha256": "601c70e3341c8bf192bbb279d095bdc4911645e0deca07819ef36d24a6d48656",
+      "native_declaration": "void isle_beach_lifecycle_func_802C4440(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* arg0)",
+      "changes": [
+        {
+          "find": "void func_beach_802C4440(WorldBlock* arg0) {",
+          "replace": "void isle_beach_lifecycle_func_802C4440(IsleBeachLifecycleSource* s, IsleBeachLifecycleBlock* arg0) {",
+          "occurrences": 1
+        },
+        {
+          "find": "WorldBlock* next;",
+          "replace": "IsleBeachLifecycleBlock* next;",
+          "occurrences": 1
+        },
+        {
+          "find": "arg0->next",
+          "replace": "isle_beach_lifecycle_block_next(s, arg0)",
+          "occurrences": 2
+        },
+        {
+          "find": "arg0->descriptor->worldPos.x",
+          "replace": "isle_beach_lifecycle_block_component(s, arg0, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "next->descriptor->worldPos.x",
+          "replace": "isle_beach_lifecycle_block_component(s, next, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "arg0->descriptor->worldPos.y",
+          "replace": "isle_beach_lifecycle_block_component(s, arg0, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "next->descriptor->worldPos.y",
+          "replace": "isle_beach_lifecycle_block_component(s, next, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "arg0->descriptor->worldPos.z",
+          "replace": "isle_beach_lifecycle_block_component(s, arg0, 2)",
+          "occurrences": 1
+        },
+        {
+          "find": "next->descriptor->worldPos.z",
+          "replace": "isle_beach_lifecycle_block_component(s, next, 2)",
+          "occurrences": 1
+        },
+        {
+          "find": "Items_DisplaceAllItems(",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_displace_items(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "100.0f);",
+          "replace": "100.0f));",
+          "occurrences": 1
+        },
+        {
+          "find": "func_beach_802C43CC(2)",
+          "replace": "isle_beach_lifecycle_func_802C43CC(s, 2)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC018",
+          "replace": "s->D_beach_802CC018",
+          "occurrences": 1
+        },
+        {
+          "find": "    IsleBeachLifecycleBlock* next;",
+          "replace": "    IsleBeachLifecycleBlock* next;\n    IsleGameVec3 currentPosition, nextPosition;",
+          "occurrences": 1
+        },
+        {
+          "find": "            next = isle_beach_lifecycle_block_next(s, arg0);",
+          "replace": "            next = isle_beach_lifecycle_block_next(s, arg0);\n            currentPosition = isle_beach_lifecycle_block_position(s, arg0);\n            nextPosition = isle_beach_lifecycle_block_position(s, next);",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_block_component(s, arg0, 0)",
+          "replace": "currentPosition.x",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_block_component(s, next, 0)",
+          "replace": "nextPosition.x",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_block_component(s, arg0, 1)",
+          "replace": "currentPosition.y",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_block_component(s, next, 1)",
+          "replace": "nextPosition.y",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_block_component(s, arg0, 2)",
+          "replace": "currentPosition.z",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_block_component(s, next, 2)",
+          "replace": "nextPosition.z",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C44D4",
+      "first": 121,
+      "last": 138,
+      "owner": "setup",
+      "source_sha256": "076ea73c5cdcb2ff05068b2a2353835af694dc6fab4e7c2d36bd9199d7d67214",
+      "native_sha256": "50f6cd38ce98f68b1811258b40960f575ef85593adc0eb24f95782c331eb8d75",
+      "native_declaration": "void isle_beach_lifecycle_func_802C44D4(IsleBeachLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_beach_802C44D4(void) {",
+          "replace": "void isle_beach_lifecycle_func_802C44D4(IsleBeachLifecycleSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "void* scriptDesc;",
+          "replace": "const IsleBeachLifecycleAsset* scriptDesc;",
+          "occurrences": 1
+        },
+        {
+          "find": "void* spritesDesc;",
+          "replace": "const IsleBeachLifecycleAsset* spritesDesc;",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_script_common_ROM_START, (u32) fx_script_common_ROM_END)",
+          "replace": "isle_beach_lifecycle_load(s, ISLE_BEACH_LIFECYCLE_FX_SCRIPT_COMMON)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_img_common_ROM_START, (u32) fx_img_common_ROM_END)",
+          "replace": "isle_beach_lifecycle_load(s, ISLE_BEACH_LIFECYCLE_FX_SPRITES_COMMON)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_script_beach_ROM_START, (u32) fx_script_beach_ROM_END)",
+          "replace": "isle_beach_lifecycle_load(s, ISLE_BEACH_LIFECYCLE_FX_SCRIPT_BEACH)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((u32) fx_img_beach_ROM_START, (u32) fx_img_beach_ROM_END)",
+          "replace": "isle_beach_lifecycle_load(s, ISLE_BEACH_LIFECYCLE_FX_SPRITES_BEACH)",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setupBankID(3, scriptDesc, spritesDesc)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_fx_setup_bank(s, 3, scriptDesc, spritesDesc))",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setupBankID(0, scriptDesc, spritesDesc)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_fx_setup_bank(s, 0, scriptDesc, spritesDesc))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80382D10_523120 = func_800A2094(4, 100, getMainCamera());",
+          "replace": "s->player->D_80382D10_523120 = isle_beach_lifecycle_fx_camera(s, 4, 100, isle_beach_lifecycle_camera(s));",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80382D14_523124 = fx_allocEffects(10);",
+          "replace": "s->player->D_80382D14_523124 = isle_beach_lifecycle_fx_effects(s, 10);",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setDitherModes(0xC0, 0x30)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_fx_dither(s, 0xC0, 0x30))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C45C0",
+      "first": 140,
+      "last": 167,
+      "owner": "setup",
+      "source_sha256": "69c11da55ee4645b052379330b49afa440595ebac20d3a3f2b1972d0232f5c9f",
+      "native_sha256": "0f074a6cd21a674ff1a452ccb5ab1b9b0e74629089970ae388396ea4e0182ac5",
+      "native_declaration": "void isle_beach_lifecycle_func_802C45C0(IsleBeachLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_beach_802C45C0(void) {",
+          "replace": "void isle_beach_lifecycle_func_802C45C0(IsleBeachLifecycleSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC01C.zBuffer = gtlMalloc(0x25800, 0x40)",
+          "replace": "s->screen.depth_buffer = isle_beach_lifecycle_depth_buffer(s, 0x25800, 0x40)",
+          "occurrences": 1
+        },
+        {
+          "find": "viApplyScreenSettings(&D_beach_802CC01C)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_screen(s, &s->screen))",
+          "occurrences": 1
+        },
+        {
+          "find": "ARRAY_COUNT(fx_SpriteBanksNum)",
+          "replace": "isle_beach_lifecycle_fx_bank_count(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_ScriptBanksNum[i] = fx_SpriteBanksNum[i] = 0",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_fx_reset_bank(s, i))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8009CE00()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_reset_photo_roll(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "omAddGObj(0, func_beach_802C4430, 0, 0x80000000)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_create_helper(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemons_Init()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_pokemons_init(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "getBackgroundColor(&r, &g, &b)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_background(s, &r, &g, &b))",
+          "occurrences": 1
+        },
+        {
+          "find": "createMainCameras(r << 0x18 | g << 0x10 | b << 8)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_create_cameras(s, (uint32_t) r << 0x18 | (uint32_t) g << 0x10 | (uint32_t) b << 8))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8009A8E4()",
+          "replace": "isle_beach_lifecycle_idle_enabled(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "setIdleScript(func_800A73C0((u32) idle_script_beach_ROM_START, (u32) idle_script_beach_ROM_END))",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_idle_script(s, isle_beach_lifecycle_load(s, ISLE_BEACH_LIFECYCLE_IDLE_SCRIPT)))",
+          "occurrences": 1
+        },
+        {
+          "find": "initUI(func_beach_802C4440, func_beach_802C4800, NULL, 0, func_beach_802C416C)",
+          "replace": "isle_beach_lifecycle_init_ui(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "setEndLevelCallback(func_beach_802C43CC)",
+          "replace": "isle_player_setEndLevelCallback(s->player, isle_beach_lifecycle_end_event, s)",
+          "occurrences": 1
+        },
+        {
+          "find": "setPauseCallback(func_beach_802C4438)",
+          "replace": "isle_player_setPauseCallback(s->player, isle_beach_lifecycle_pause_event, s)",
+          "occurrences": 1
+        },
+        {
+          "find": "EnvSound_Init(&D_beach_802CBE10, 0x35)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_environment_init(s, s->environment, 0x35))",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Create()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_detector_create(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Enable()",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_detector_enable(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "func_beach_802C4340()",
+          "replace": "isle_beach_lifecycle_func_802C4340(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_beach_802C44D4()",
+          "replace": "isle_beach_lifecycle_func_802C44D4(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_beach_802C55CC()",
+          "replace": "isle_beach_lifecycle_func_802C55CC(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        },
+        {
+          "find": "u8",
+          "replace": "uint8_t",
+          "occurrences": 1
+        },
+        {
+          "find": "    int32_t i;",
+          "replace": "    int32_t i;\n    size_t numFxBanks;",
+          "occurrences": 1
+        },
+        {
+          "find": "    for (i = 0; i < isle_beach_lifecycle_fx_bank_count(s); i++)",
+          "replace": "    numFxBanks = isle_beach_lifecycle_fx_bank_count(s);\n    for (i = 0; i < numFxBanks; i++)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C4738",
+      "first": 169,
+      "last": 170,
+      "owner": "setup",
+      "source_sha256": "18949e6d78c76ce4da57ff0e9867048ee8565f659496b5258c6d400659aa89ca",
+      "native_sha256": "8292426292668015486e446eb048dbfaa1c878fff12fecc18ce3cd209daa7d8d",
+      "native_declaration": "void isle_beach_lifecycle_func_802C4738(IsleBeachLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_beach_802C4738(s32 arg0) {",
+          "replace": "void isle_beach_lifecycle_func_802C4738(IsleBeachLifecycleSource* s, int32_t arg0) {",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "symbol": "func_beach_802C4740",
+      "first": 172,
+      "last": 191,
+      "owner": "setup",
+      "source_sha256": "a28b76e10391f207ac1ef65ad2d2e1168b6627d8d596bbafea8f18a863402625",
+      "native_sha256": "6cfcfeb177c391601b3e123dab9396b41429667d5ce3c8bbb29fcaff78e7634b",
+      "native_declaration": "int32_t isle_beach_lifecycle_func_802C4740(IsleBeachLifecycleSource* s, int32_t sceneID)",
+      "changes": [
+        {
+          "find": "s32 func_beach_802C4740(s32 sceneID) {",
+          "replace": "int32_t isle_beach_lifecycle_func_802C4740(IsleBeachLifecycleSource* s, int32_t sceneID) {",
+          "occurrences": 1
+        },
+        {
+          "find": "gtlSetIntervals(1, 2)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_intervals(s, 1, 2))",
+          "occurrences": 1
+        },
+        {
+          "find": "gtlDisableNearClipping(1)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_near_clipping(s, 1))",
+          "occurrences": 1
+        },
+        {
+          "find": "omSetupScene(&D_beach_802CC038)",
+          "replace": "isle_beach_lifecycle_setup_scene(s, &s->scene_setup)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8009BC68()",
+          "replace": "isle_beach_lifecycle_photo_count(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800AAED0(0x10)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_or_notice(s, 0x10))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC038.gtlSetup.heapSize = (uintptr_t) beach_code_VRAM - (uintptr_t) beach_assets_VRAM_END",
+          "replace": "s->scene_setup.heap_size = UINT32_C(0x802C40A0) - UINT32_C(0x801B0310)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC018",
+          "replace": "s->D_beach_802CC018",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "symbol": "func_beach_802C5150",
+      "first": 13,
+      "last": 17,
+      "owner": "intro",
+      "source_sha256": "6308c2e28af02398f68658f4f4e94b66a171002f05b143fafaf533a11abd9870",
+      "native_sha256": "5e4b44fe3bf97d6934609c1852aeaacd395c64a5d14d97efb455ee5c5d3e26ed",
+      "native_declaration": "void isle_beach_lifecycle_func_802C5150(IsleBeachLifecycleSource* s, IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_beach_802C5150)",
+          "replace": "void isle_beach_lifecycle_func_802C5150(IsleBeachLifecycleSource* s, IsleGameObject* obj) {",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803571C4_4F75D4()",
+          "replace": "isle_player_func_803571C4_4F75D4(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803570B0_4F74C0()",
+          "replace": "isle_player_func_803570B0_4F74C0(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80357120_4F7530(obj)",
+          "replace": "isle_player_func_80357120_4F7530(s->player, obj)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "symbol": "func_beach_802C5180",
+      "first": 19,
+      "last": 21,
+      "owner": "intro",
+      "source_sha256": "098e08f5b16fe2409102dfa6cbe375aa768239bafa084280aa55631bfc115c75",
+      "native_sha256": "a44f52c73ba4239b044c2719c48c2e4d2c2e25e7adb320e29e95321bb5f626d1",
+      "native_declaration": "void isle_beach_lifecycle_func_802C5180(IsleBeachLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_beach_802C5180(void) {",
+          "replace": "void isle_beach_lifecycle_func_802C5180(IsleBeachLifecycleSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803572B0_4F76C0()",
+          "replace": "isle_player_func_803572B0_4F76C0(s->player)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "symbol": "func_beach_802C51A0",
+      "first": 23,
+      "last": 34,
+      "owner": "intro",
+      "source_sha256": "e78df5fe8715593a57996446f634447341fe4da903faf8279ce42656336fd444",
+      "native_sha256": "a61a716f0997ca1fb9b44df8b5914cd711eb42d1300046ae1394fae03723ba13",
+      "native_declaration": "void isle_beach_lifecycle_func_802C51A0(void* user, const IslePlayerCartNode* dobj, int32_t arg1, float arg2)",
+      "changes": [
+        {
+          "find": "void func_beach_802C51A0(DObj* dobj, s32 arg1, f32 arg2) {",
+          "replace": "void isle_beach_lifecycle_func_802C51A0(void* user, const IslePlayerCartNode* dobj, int32_t arg1, float arg2) {\n    IsleBeachLifecycleSource* s = user;",
+          "occurrences": 1
+        },
+        {
+          "find": "Effect* fx;",
+          "replace": "IsleBeachLifecycleEffect* fx;",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_createEffect(arg1, (s32) arg2 - 1)",
+          "replace": "isle_beach_lifecycle_create_effect(s, arg1, (int32_t) arg2 - 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "fx->dobj = dobj;",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_attach_effect(s, fx, dobj));",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC0E0",
+          "replace": "s->D_beach_802CC0E0",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "symbol": "func_beach_802C5214",
+      "first": 36,
+      "last": 44,
+      "owner": "intro",
+      "source_sha256": "744b4500a6fc44124816415df54e3bed943d73a9bb0892e83add8e0126ab995f",
+      "native_sha256": "0948a88b705e594c87fefb451bc7fb12b1ff0258fc246c9eb703f15b3d10b908",
+      "native_declaration": "void isle_beach_lifecycle_func_802C5214(IsleBeachLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_beach_802C5214(void) {",
+          "replace": "void isle_beach_lifecycle_func_802C5214(IsleBeachLifecycleSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80357170_4F7580()",
+          "replace": "isle_player_func_80357170_4F7580(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "resetMainCameraSettings()",
+          "replace": "isle_player_resetMainCameraSettings(s->player)",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlayingSound[D_beach_80347588]",
+          "replace": "isle_beach_lifecycle_sound_identity(s, D_beach_80347588)",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSound(D_beach_80347588)",
+          "replace": "isle_beach_music_stop(s->music, D_beach_80347588)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_beach_802C5180()",
+          "replace": "isle_beach_lifecycle_func_802C5180(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_80347588",
+          "replace": "s->D_beach_80347588",
+          "occurrences": 2
+        },
+        {
+          "find": "omDeleteGObj(NULL)",
+          "replace": "isle_beach_lifecycle_delete_intro_cart(s)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "symbol": "func_beach_802C527C",
+      "first": 46,
+      "last": 55,
+      "owner": "intro",
+      "source_sha256": "c411fb8ea8b440d969f494c1c98956150687034bbbe70a28b84c76b1cbbf76b9",
+      "native_sha256": "a96595eecf142461687fe4ca85b1beb4969cdec05bcfde76c8fad180f22ada45",
+      "native_declaration": "void isle_beach_lifecycle_func_802C527C(IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_beach_802C527C(GObj* obj) {",
+          "replace": "void isle_beach_lifecycle_func_802C527C(IsleGameObject* obj) {\n    IsleBeachLifecycleSource* s = isle_beach_lifecycle_current(obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(1)",
+          "replace": "isle_player_source_wait(s->player, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySoundWithParams(",
+          "replace": "isle_beach_music_play_sound(s->music, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_80347588",
+          "replace": "s->D_beach_80347588",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "symbol": "func_beach_802C52EC",
+      "first": 57,
+      "last": 121,
+      "owner": "intro",
+      "source_sha256": "bbf8a49c3e0058c50b72573261163c3fc3e1d86e0893ce685a13737df235b300",
+      "native_sha256": "aee7a923e6a72d86bf2b2dbb0bc8b992f872abd93f7c90501222ed4b32ef5925",
+      "native_declaration": "void isle_beach_lifecycle_func_802C52EC(IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_beach_802C52EC(GObj* obj) {",
+          "replace": "void isle_beach_lifecycle_func_802C52EC(IsleGameObject* obj) {\n    IsleBeachLifecycleSource* s = isle_beach_lifecycle_current(obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(1)",
+          "replace": "isle_player_source_wait(s->player, 1)",
+          "occurrences": 3
+        },
+        {
+          "find": "OMCamera* cam;",
+          "replace": "IsleGameCamera* cam;",
+          "occurrences": 1
+        },
+        {
+          "find": "GObjProcess* proc;",
+          "replace": "IsleGameProcess* proc;",
+          "occurrences": 1
+        },
+        {
+          "find": "getMainCamera()->obj",
+          "replace": "isle_beach_lifecycle_camera_object(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "getMainCamera()",
+          "replace": "isle_beach_lifecycle_camera(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->animSpeed = 0.5f;",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_camera_speed(s, cam, 0.5f));",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetCameraAnimation(cam, &D_8013DA90_C9F20, 0.0f)",
+          "replace": "isle_beach_lifecycle_checked(s, isle_player_root_native_camera_animation_set(s->player, cam, isle_beach_lifecycle_camera_clip(s, 0x8013DA90u), 0.0f))",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(gobj, animUpdateCameraAnimation, 1, 1)",
+          "replace": "isle_player_source_add_process(s->player, gobj, isle_beach_lifecycle_camera_animation_update, 1, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_SetAnimation(&D_8013C580_C8A10, &D_8013CEA0_C9330, 0.0f, 0.5f)",
+          "replace": "isle_player_cart_PlayerModel_SetAnimation(s->player->cart, isle_beach_lifecycle_cart_model_clip(s, 0x8013C580u), isle_beach_lifecycle_cart_material_clip(s, 0x8013CEA0u), 0.0f, 0.5f)",
+          "occurrences": 1
+        },
+        {
+          "find": "obj->fnAnimCallback = func_beach_802C51A0;",
+          "replace": "isle_player_cart_source_set_callback(s->player->cart, obj, isle_beach_lifecycle_cart_event, s);",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(obj, func_beach_802C527C, 0, 1)",
+          "replace": "isle_player_source_add_process(s->player, obj, isle_beach_lifecycle_func_802C527C, 0, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "gContInputPressedButtons",
+          "replace": "s->player->input.pressed_buttons",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.eye.x = (((f32) i * (startEyeX - baseEyeX)) / 10.0f) + baseEyeX;",
+          "replace": "        isle_beach_lifecycle_set_camera_component(s, cam, 0, 0, (((f32) i * (startEyeX - baseEyeX)) / 10.0f) + baseEyeX);",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.x",
+          "replace": "isle_beach_lifecycle_camera_component(s, cam, 0, 0)",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.eye.y = (((f32) i * (startEyeY - baseEyeY)) / 10.0f) + baseEyeY;",
+          "replace": "        isle_beach_lifecycle_set_camera_component(s, cam, 0, 1, (((f32) i * (startEyeY - baseEyeY)) / 10.0f) + baseEyeY);",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.y",
+          "replace": "isle_beach_lifecycle_camera_component(s, cam, 0, 1)",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.eye.z = (((f32) i * (startEyeZ - baseEyeZ)) / 10.0f) + baseEyeZ;",
+          "replace": "        isle_beach_lifecycle_set_camera_component(s, cam, 0, 2, (((f32) i * (startEyeZ - baseEyeZ)) / 10.0f) + baseEyeZ);",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.eye.z",
+          "replace": "isle_beach_lifecycle_camera_component(s, cam, 0, 2)",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.at.x = (((f32) i * (startAtX - baseAtX)) / 10.0f) + baseAtX;",
+          "replace": "        isle_beach_lifecycle_set_camera_component(s, cam, 1, 0, (((f32) i * (startAtX - baseAtX)) / 10.0f) + baseAtX);",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.x",
+          "replace": "isle_beach_lifecycle_camera_component(s, cam, 1, 0)",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.at.y = (((f32) i * (startAtY - baseAtY)) / 10.0f) + baseAtY;",
+          "replace": "        isle_beach_lifecycle_set_camera_component(s, cam, 1, 1, (((f32) i * (startAtY - baseAtY)) / 10.0f) + baseAtY);",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.y",
+          "replace": "isle_beach_lifecycle_camera_component(s, cam, 1, 1)",
+          "occurrences": 2
+        },
+        {
+          "find": "        cam->viewMtx.lookAt.at.z = (((f32) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ;",
+          "replace": "        isle_beach_lifecycle_set_camera_component(s, cam, 1, 2, (((f32) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ);",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->viewMtx.lookAt.at.z",
+          "replace": "isle_beach_lifecycle_camera_component(s, cam, 1, 2)",
+          "occurrences": 2
+        },
+        {
+          "find": "func_beach_802C5214()",
+          "replace": "isle_beach_lifecycle_func_802C5214(s)",
+          "occurrences": 3
+        },
+        {
+          "find": "D_beach_802CC0E0",
+          "replace": "s->D_beach_802CC0E0",
+          "occurrences": 2
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 2
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 11
+        },
+        {
+          "find": "GObj*",
+          "replace": "IsleGameObject*",
+          "occurrences": 1
+        },
+        {
+          "find": "    IsleGameCamera* cam;",
+          "replace": "    IsleGameCamera* cam;\n    const IsleGameCameraParameters* camera_view;\n    IsleGameLookAt restore_view;",
+          "occurrences": 1
+        },
+        {
+          "find": "    gobj = isle_beach_lifecycle_camera_object(s);",
+          "replace": "    gobj = isle_beach_lifecycle_camera_object(s);\n    isle_beach_lifecycle_checked(s, isle_game_camera_parameters(s->player->game, cam, &camera_view));",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_camera_component(s, cam, 0, 0)",
+          "replace": "camera_view->look_at.eye[0]",
+          "occurrences": 2
+        },
+        {
+          "find": "        isle_beach_lifecycle_set_camera_component(s, cam, 0, 0, (((float) i * (startEyeX - baseEyeX)) / 10.0f) + baseEyeX);",
+          "replace": "        restore_view.eye[0] = (((float) i * (startEyeX - baseEyeX)) / 10.0f) + baseEyeX;",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_camera_component(s, cam, 0, 1)",
+          "replace": "camera_view->look_at.eye[1]",
+          "occurrences": 2
+        },
+        {
+          "find": "        isle_beach_lifecycle_set_camera_component(s, cam, 0, 1, (((float) i * (startEyeY - baseEyeY)) / 10.0f) + baseEyeY);",
+          "replace": "        restore_view.eye[1] = (((float) i * (startEyeY - baseEyeY)) / 10.0f) + baseEyeY;",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_camera_component(s, cam, 0, 2)",
+          "replace": "camera_view->look_at.eye[2]",
+          "occurrences": 2
+        },
+        {
+          "find": "        isle_beach_lifecycle_set_camera_component(s, cam, 0, 2, (((float) i * (startEyeZ - baseEyeZ)) / 10.0f) + baseEyeZ);",
+          "replace": "        restore_view.eye[2] = (((float) i * (startEyeZ - baseEyeZ)) / 10.0f) + baseEyeZ;",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_camera_component(s, cam, 1, 0)",
+          "replace": "camera_view->look_at.at[0]",
+          "occurrences": 2
+        },
+        {
+          "find": "        isle_beach_lifecycle_set_camera_component(s, cam, 1, 0, (((float) i * (startAtX - baseAtX)) / 10.0f) + baseAtX);",
+          "replace": "        restore_view.at[0] = (((float) i * (startAtX - baseAtX)) / 10.0f) + baseAtX;",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_camera_component(s, cam, 1, 1)",
+          "replace": "camera_view->look_at.at[1]",
+          "occurrences": 2
+        },
+        {
+          "find": "        isle_beach_lifecycle_set_camera_component(s, cam, 1, 1, (((float) i * (startAtY - baseAtY)) / 10.0f) + baseAtY);",
+          "replace": "        restore_view.at[1] = (((float) i * (startAtY - baseAtY)) / 10.0f) + baseAtY;",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_beach_lifecycle_camera_component(s, cam, 1, 2)",
+          "replace": "camera_view->look_at.at[2]",
+          "occurrences": 2
+        },
+        {
+          "find": "        isle_beach_lifecycle_set_camera_component(s, cam, 1, 2, (((float) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ);",
+          "replace": "        restore_view.at[2] = (((float) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ;",
+          "occurrences": 1
+        },
+        {
+          "find": "        restore_view.eye[0] =",
+          "replace": "        restore_view = camera_view->look_at;\n        restore_view.eye[0] =",
+          "occurrences": 1
+        },
+        {
+          "find": "        restore_view.at[2] = (((float) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ;",
+          "replace": "        restore_view.at[2] = (((float) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ;\n        isle_beach_lifecycle_checked(s, isle_game_camera_set_look_at(s->player->game, cam, &restore_view));",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "symbol": "func_beach_802C55CC",
+      "first": 123,
+      "last": 132,
+      "owner": "intro",
+      "source_sha256": "5b5d0e4a41f30cf600abbc63857e0226cf9b4f0e601969588b0d9eba4c4ba7b6",
+      "native_sha256": "d8f01fed7c4852b83f33053702ed250e05ec40c09a3ea680181bbae7684147fc",
+      "native_declaration": "void isle_beach_lifecycle_func_802C55CC(IsleBeachLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_beach_802C55CC(void) {",
+          "replace": "void isle_beach_lifecycle_func_802C55CC(IsleBeachLifecycleSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_Init()",
+          "replace": "isle_player_cart_PlayerModel_Init(s->player->cart)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CC0E4 = obj;",
+          "replace": "isle_beach_lifecycle_checked(s, isle_beach_lifecycle_native_store_cart(s, obj));",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(obj, func_beach_802C52EC, 0, 1)",
+          "replace": "isle_player_source_add_process(s->player, obj, isle_beach_lifecycle_func_802C52EC, 0, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_beach_802C5150(obj)",
+          "replace": "isle_beach_lifecycle_func_802C5150(s, obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "GObj*",
+          "replace": "IsleGameObject*",
+          "occurrences": 1
+        }
+      ]
+    }
+  ],
+  "semantic_origins": [
+    {
+      "path": "src/beach/55C110.c",
+      "label": "complete_setup_end_world_item_definitions",
+      "first": 10,
+      "last": 191,
+      "source_sha256": "180d10075150dde58b4908f3a2567c658ad838e3ce610ee3b6f8edf1b9af40fc"
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "label": "intro_original_bss",
+      "first": 5,
+      "last": 11,
+      "source_sha256": "b61ef58ffcec496006aa1ce01fb00c9b4856c8a51f6a70723dc813dec9b867e6"
+    },
+    {
+      "path": "src/beach/55D1C0.c",
+      "label": "complete_intro_definitions",
+      "first": 13,
+      "last": 132,
+      "source_sha256": "610b80cdc2188f2553f4f9226928ad515592edb35444e5867a94df8cd51ddaad"
+    },
+    {
+      "path": "src/beach/beach.h",
+      "label": "initialized_lifecycle_declarations",
+      "first": 17,
+      "last": 29,
+      "source_sha256": "87f53eaac1bdfbb18713852245bef69a46b00b2a427ba430c4b2af6c5d5bbb05"
+    },
+    {
+      "path": "src/beach/beach.h",
+      "label": "world_heightmap_and_complete17_actor_table",
+      "first": 209,
+      "last": 219,
+      "source_sha256": "8a5dbe636b60cccf369062d275cb8e49158c71a73b7920dd7bf1f57878fd466f"
+    },
+    {
+      "path": "include/sys/gtl.h",
+      "label": "own_GAME_scene_wire_field_declarations",
+      "first": 21,
+      "last": 61,
+      "source_sha256": "a133df25459abce388ff41c3b643c633db7c225db3e8bfb207ab5f7ac5a51225"
+    },
+    {
+      "path": "include/sys/vi.h",
+      "label": "own_GAME_screen_wire_field_declarations",
+      "first": 7,
+      "last": 15,
+      "source_sha256": "4760c2112cd0fcdb02bc2fac8d6cb5f42e224f484593f83ef181411c11285728"
+    },
+    {
+      "path": "include/common_structs.h",
+      "label": "own_GAME_spawn_fields",
+      "first": 68,
+      "last": 75,
+      "source_sha256": "8e5ae938fa076863d1983582c2f1080075f55bf380728709206a3b2eee40f3d2"
+    },
+    {
+      "path": "include/common_structs.h",
+      "label": "own_GAME_weighted_callback_and_definition_fields",
+      "first": 197,
+      "last": 211,
+      "source_sha256": "35a8f5a3e3dcb5b15837a18e29c26447a901a7e29eeb3ebcc87dfd8f15913b9f"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "original_macro_alias_preamble_unused_by_5150",
+      "first": 11,
+      "last": 16,
+      "source_sha256": "862ad4a14103a0c993d2aa66cbdba02cb92ef6abfb35a4c68f92d9358853a540"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "label": "environment4byte_descriptor_fields",
+      "first": 159,
+      "last": 163,
+      "source_sha256": "cb49de46f5ba62116a221724391f3a53de8c93a02c9eb7104e324c4753e92d77"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "Beach_assets_heap_end_including_bss",
+      "first": 770,
+      "last": 794,
+      "source_sha256": "700ac8634366fda42764b729455d80babaaa556c8ff40baaa6e9f44151385b88"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "Beach_overlay_mapping",
+      "first": 5944,
+      "last": 5957,
+      "source_sha256": "7ba5c98952716d91913156f7e35da37a9bf25bd377f59be935552f31c2619f22"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "Beach_initialized_data_mapping",
+      "first": 5972,
+      "last": 5984,
+      "source_sha256": "44ab35bfcbe04dcdefc346831b79a9c9b8a8f6e6501ca1fff0d377c681e226f3"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "intro_separate_BSS_scope",
+      "first": 6607,
+      "last": 6609,
+      "source_sha256": "d0ab88c5e9c680009deec5984d4294e1ba4220f1531ee2a68ad9fb0c4b8655d3"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "original_idle_and_effect_asset_ROM_ranges",
+      "first": 10469,
+      "last": 10479,
+      "source_sha256": "dee1416af0ab9d6541515b7244b12c220ca14e6ddc897b06407d74693185c93b"
+    },
+    {
+      "path": "src/app_render/4CDB0.c",
+      "label": "exact_transition_end_state_and_color_semantics",
+      "first": 228,
+      "last": 235,
+      "source_sha256": "75aa4602948511bb9479966fc82dc216505dfd6c8f32dc5becc0a08130f94fc6"
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "label": "actual_idle_mode_selector",
+      "first": 60,
+      "last": 62,
+      "source_sha256": "4f4799b495ff3c9816bf1a8668bc7600a4a1b159bb0c24775f94a7c2b440cd82"
+    },
+    {
+      "path": "src/app_render/47380.c",
+      "label": "total_PhotoCount_not_selected_photos",
+      "first": 385,
+      "last": 387,
+      "source_sha256": "3bdb0f5cbae9c9433d7042d011b7956951b6e70db9880d4c1abfdddb7459bf0e"
+    },
+    {
+      "path": "src/app_render/47380.c",
+      "label": "exact_photo_roll_reset",
+      "first": 853,
+      "last": 868,
+      "source_sha256": "3d69f18840aa1845a81768fbe5a2097172720072d2c14e7d0899daaf776d0a18"
+    },
+    {
+      "path": "src/app_level/503C10.c",
+      "label": "pokemon_registry_configuration_not_fog",
+      "first": 74,
+      "last": 80,
+      "source_sha256": "fecdb521391595b915877fa73d1318b47591234a1f08f91da030c46bb1f827ba"
+    },
+    {
+      "path": "src/beach/562BC0.c",
+      "label": "complete_Magikarp_unconsumed_behavior_path_closure",
+      "first": 4,
+      "last": 32,
+      "source_sha256": "4c8d0791f9b1d45c74fec6bbbff4a8f942d189f53d8cc5a46d79b4411a4f8fdd"
+    },
+    {
+      "path": "src/app_level/player.c",
+      "label": "actual_idle_input_count_and_consumption",
+      "first": 287,
+      "last": 337,
+      "source_sha256": "6827e574850722973c9a1883918507aea877103256bb69eaca65092ead919631"
+    },
+    {
+      "path": "include/sys/cont.h",
+      "label": "own_GAME_ten_byte_idle_input_fields",
+      "first": 7,
+      "last": 14,
+      "source_sha256": "a3911579b9c7a5c506f503ef27fe052ea710ef8a9f0f8b5a6088eca0222e2372"
+    },
+    {
+      "path": "include/common_structs.h",
+      "label": "own_GAME_idle_header_fields",
+      "first": 316,
+      "last": 322,
+      "source_sha256": "5dbd474cc39d584796a77d0159b58e3f507540ebc444f1360cf2e0649757c466"
+    },
+    {
+      "path": "src/app_level/4FE330.c",
+      "label": "Magikarp_ground_path",
+      "first": 175,
+      "last": 195,
+      "source_sha256": "cb4e3f8af6c6aa62c57c33b9316361eb449abf1897a6761c446efd813535f176"
+    },
+    {
+      "path": "src/app_level/4FE330.c",
+      "label": "Magikarp_child_behavior_overwritten_before_any_dispatch",
+      "first": 130,
+      "last": 141,
+      "source_sha256": "2914371a7fabd3ae03d0c23a0240d88b117b5dd48262cd23ea68df855b762177"
+    },
+    {
+      "path": "src/app_level/4FE330.c",
+      "label": "common1003_child_never_reads_inherited_path",
+      "first": 63,
+      "last": 110,
+      "source_sha256": "fff4683f762baa6680371ebc23c24e8355aabe7ef10798711a18f86b0199aaf4"
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "label": "original_AddAtGeo_dead_inherited_optional_copies",
+      "first": 793,
+      "last": 826,
+      "source_sha256": "98b9834b561c6dbadc2cf472a24cd6fe3c0508a9920f1304d0b47bb15f3423fc"
+    }
+  ],
+  "rom_facts": {
+    "rom_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "rom_bytes": 16777216,
+    "mapping": {
+      "guest_base": "0x802cbe10",
+      "rom_offset": "0x563e80"
+    },
+    "ranges": [
+      {
+        "label": "all53_environment_descriptors",
+        "guest_address": "0x802cbe10",
+        "rom_offset": "0x563e80",
+        "bytes": 212,
+        "sha256": "768d3e523938b6b010f129554f82015830f22a924b61e5948b806101952dcd07"
+      },
+      {
+        "label": "complete17_PokemonDef_table",
+        "guest_address": "0x802cbee4",
+        "rom_offset": "0x563f54",
+        "bytes": 272,
+        "sha256": "ec8b5a7871fdf5fd49f7b1762739718c879b2d37ff745fbf6bdfbc8739ae8b2d"
+      },
+      {
+        "label": "standalone_Magikarp_definition",
+        "guest_address": "0x802cbff4",
+        "rom_offset": "0x564064",
+        "bytes": 16,
+        "sha256": "1bcd2226a9dadb865d0fdaf257ab7c0c94b4712eaee3c26800f6fcc12dbfb7fd"
+      },
+      {
+        "label": "weighted_item_spawn_callbacks",
+        "guest_address": "0x802cc004",
+        "rom_offset": "0x564074",
+        "bytes": 16,
+        "sha256": "d3e5bc2aa167deddb891c585ca189504355c07ddb17d36ed808d4585b01a6c47"
+      },
+      {
+        "label": "item_spawn_latch",
+        "guest_address": "0x802cc014",
+        "rom_offset": "0x564084",
+        "bytes": 2,
+        "sha256": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7"
+      },
+      {
+        "label": "end_reason",
+        "guest_address": "0x802cc018",
+        "rom_offset": "0x564088",
+        "bytes": 4,
+        "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+      },
+      {
+        "label": "screen",
+        "guest_address": "0x802cc01c",
+        "rom_offset": "0x56408c",
+        "bytes": 28,
+        "sha256": "214ef5ad4f15024ee12684ed751aac9b702fecf05e355d0acb903208b3951e87"
+      },
+      {
+        "label": "scene_setup",
+        "guest_address": "0x802cc038",
+        "rom_offset": "0x5640a8",
+        "bytes": 140,
+        "sha256": "4019e9f28372d25c04d70b91412d09a616289a2bcbbfab85989bd94e3f775b67"
+      },
+      {
+        "label": "intro_animation_done",
+        "guest_address": "0x802cc0e0",
+        "rom_offset": "0x564150",
+        "bytes": 4,
+        "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+      },
+      {
+        "label": "retained_cart_initial_NULL",
+        "guest_address": "0x802cc0e4",
+        "rom_offset": "0x564154",
+        "bytes": 4,
+        "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+      },
+      {
+        "label": "actual_Beach_idle_script",
+        "rom_offset": "0xaaa660",
+        "bytes": 28176,
+        "sha256": "d1b9e9e287c40b395c1dd19f16700d6718c5cc20a2730bc373da8292d7d0842f"
+      }
+    ],
+    "heap": {
+      "base": "0x801b0310",
+      "end": "0x802c40a0",
+      "bytes": 1129872
+    },
+    "screen": {
+      "width": 320,
+      "height": 240,
+      "flags": "0xa99",
+      "framebuffers": [
+        "0x803b5000",
+        "0x803da800",
+        "0x0"
+      ],
+      "depth_initial": "0x0",
+      "depth_allocation_bytes": "0x25800",
+      "depth_alignment": "0x40"
+    },
+    "scene_setup_words": [
+      "0x0",
+      "0x8000affc",
+      "0x8000ada0",
+      "0x801b0310",
+      "0x0",
+      "0x1",
+      "0x2",
+      "0x5000",
+      "0xc00",
+      "0x400",
+      "0x0",
+      "0xc800",
+      "0x20000",
+      "0x4000",
+      "0x800a1a50",
+      "0x80004860",
+      "0x0",
+      "0x440",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x5c",
+      "0x0",
+      "0x0",
+      "0x802c4738",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x88",
+      "0x0",
+      "0x58",
+      "0x0",
+      "0x90",
+      "0x802c45c0"
+    ],
+    "intro_clips": {
+      "camera": "0x8013da90",
+      "cart_model": "0x8013c580",
+      "cart_material": "0x8013cea0",
+      "speed": 0.5
+    },
+    "bss": {
+      "path": "src/beach/55D1C0.c",
+      "first": 5,
+      "last": 11,
+      "bytes": 208,
+      "scope": "one-retained-scene-context-not-global",
+      "fields": [
+        {
+          "symbol": "D_beach_80347580",
+          "bytes": 8
+        },
+        {
+          "symbol": "D_beach_80347588",
+          "bytes": 1
+        },
+        {
+          "symbol": "D_beach_80347589",
+          "bytes": 1
+        },
+        {
+          "symbol": "D_beach_8034758A",
+          "bytes": 2
+        },
+        {
+          "symbol": "D_beach_8034758C",
+          "bytes": 4
+        },
+        {
+          "symbol": "D_beach_80347590",
+          "bytes": 192
+        }
+      ]
+    },
+    "initialized_state": {
+      "magikarp": {
+        "id": 129,
+        "initialize_identity": "0x802cac48",
+        "update_identity": "0x80363eb4",
+        "remove_identity": "0x80364280"
+      },
+      "item_weights": [
+        3,
+        7
+      ],
+      "item_function_identities": [
+        "0x802c40a0",
+        "0x0"
+      ],
+      "item_spawn_latch": 0,
+      "end_reason": 0,
+      "intro_animation_done": 0,
+      "retained_cart_identity": "0x0"
+    },
+    "world": {
+      "heightmap_identity": "0x80318f00",
+      "setup_identity": "0x8011b914",
+      "complete_pokemon_table_identity": "0x802cbee4",
+      "complete_pokemon_definitions": 17,
+      "create_arguments": [
+        99,
+        100,
+        126,
+        9,
+        3
+      ],
+      "pokemon_registry_arguments": [
+        128,
+        228,
+        3,
+        5
+      ]
+    },
+    "fx": {
+      "common_bank": 3,
+      "beach_bank": 0,
+      "camera_arguments": [
+        4,
+        100
+      ],
+      "effects": 10,
+      "dither_arguments": [
+        192,
+        48
+      ],
+      "asset_ranges": [
+        [
+          "0xab5860",
+          "0xab5980"
+        ],
+        [
+          "0xab5980",
+          "0xab85e0"
+        ],
+        [
+          "0xab85e0",
+          "0xab8780"
+        ],
+        [
+          "0xab8780",
+          "0xabe7a0"
+        ]
+      ]
+    },
+    "intro": {
+      "delayed_sound_waits": 120,
+      "delayed_sound_arguments": [
+        21,
+        24576,
+        64,
+        1.0,
+        30
+      ],
+      "animation_done_events": [
+        -2,
+        -1
+      ],
+      "animation_bound": 290,
+      "skip_button_mask": "0x9000",
+      "restore_i_first": 0,
+      "restore_i_last_inclusive": 10,
+      "camera_process_kind": 1,
+      "intro_process_kind": 0,
+      "delayed_sound_process_kind": 0,
+      "all_process_priorities": 1
+    }
+  },
+  "output_sha256": "8aec92a1c56229bff0b235e8d96d1603fbc8b5a206a6796646574c8a7c88161d",
+  "ownership_counts": {
+    "setup": 14,
+    "intro": 7
+  },
+  "excluded_ownership": [
+    "src/beach/55C870.c: already-owned movement music",
+    "src/beach/562370.c:10-54 already-owned sign1004",
+    "src/beach/562370.c:58-186 separately-required ending1001 actor closure"
+  ],
+  "native_execution_contract": {
+    "lifecycle": "application-owned independent compiled-C continuation survives native scene domain drain; host consumes request after resume and supplies actual completion after all borrowers close",
+    "callbacks": "nonwaiting local C fences return failure to native World/Movement; no nonlocal transfer crosses their C++ traversal frames",
+    "native": "returning typed real backend leaves owned by nonmovable beach::Lifecycle; application host supplies real input/retrace/time, GPU completion and presentation",
+    "initialized_state": "decoded exactly once from identity-admitted canonical ROM, never guessed menu setup or dirty generated data",
+    "intro": "all seven unchanged original algorithms, native typed handles only; positive waits exclusively in real C OM processes",
+    "retirement": "logical World/Root/camera/FX effects preserve original statement order; outside-callback physical destruction follows actual native joins and independent GPU/Photo/FIFO/semantic/model-node closure; scene-local audio references close, application Audio/PCM neither stop nor drain"
+  },
+  "source_alias_adaptation": [
+    "Original unused Item* local in416C is a pure unused payload alias; omit it rather than import console Item layout.",
+    "POKEMON_FUNC5150 unused model/position/rotation/pokemon macro aliases are not expanded into SDK-layout references; complete original executable body is retained.",
+    "Six original camera interpolation stores execute in original order in one transient native look-at value, published once before the unchanged wait; no intervening Source call can observe an intermediate pose.",
+    "Original Magikarp local ObjectSpawn writes neither behavior nor path. Omit only those dead optional copies for exact standaloneCBFF4/129: its root never branches on them, AddAtGeo child behavior is overwritten0 before dispatch, and the complete common1003 child closure never consumes inherited path. Native valueinitialized bookkeeping is not claimed as original ROM data.",
+    "Original intro omDeleteGObj(NULL) requests actual Cart retirement through a returning native leaf, then the plain C adapter cancels the actual delayed sound and current intro processes. Model destruction remains deferred only by genuine retained FX node credits."
+  ],
+  "prior_authoring_tool": "OwnBeachLifecycleSource: verified git blobs at the fixed GAME pin; private ROM inspected as data only; no build/lint/test/runtime exercised"
+}

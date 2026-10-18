@@ -118,8 +118,8 @@ public:
     // Pointer+nonzero epoch identifies the exclusive RAM installation. Hidden
     // bindings retain their old residency key, so reveal always republishes.
     void upload(std::span<std::uint32_t>, std::uint64_t epoch) noexcept;
-    // Mathematical local RTS x parent/placement, not rendered MVP and not a
-    // claim of source54 actor FX or placement/collision equivalence.
+    // Mathematical local RTS (RT for Source27) x parent/placement, not rendered
+    // MVP and not a claim of source54 actor FX or placement/collision equivalence.
     std::span<const WorldMatrix> world_nodes(animation::InstanceHandle) const noexcept;
     std::span<const IsleGameModelNode> native_nodes(animation::InstanceHandle) const noexcept;
 private:

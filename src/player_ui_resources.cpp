@@ -24,6 +24,9 @@ UiResources::UiResources(const rom::Snapshot& rom) {
  auto writable=std::make_shared<sprite::Bank>(rom_end-rom_begin);
  std::memcpy(writable->data(),input.data()+rom_begin,writable->size());
  bank_=std::move(writable); banks_[0]={bank_,bank_base};
+ // Pinned symbol_addrs.txt:830: sMinTimeBetweenPhotos=80366BA0,
+ // app_level initialized ROM506FB0. Share this admitted bank with UI.
+ minimum_photo_interval_=std::bit_cast<std::int32_t>(word(bank_base));
  resources_.reserve(std::size(source_roots));
  for(auto address:source_roots) {
   auto result=sprite::hydrate(bank_,bank_base,address);

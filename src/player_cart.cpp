@@ -1,5 +1,6 @@
 #include "player_cart.hpp"
 #include "source_factory_resources.h"
+#include "source_effect_world.hpp"
 #include <algorithm>
 #include <bit>
 #include <cmath>
@@ -35,7 +36,7 @@ IsleGameModelTransform pose(const menu::animation::Transform& value) noexcept {
 struct Owner::Impl {
     struct Slot {
         Impl* owner=nullptr;
-        std::size_t index=0,caller_holds=0;
+        std::size_t index=0,caller_holds=0,effect_node_holds=0;
         scene::Services::ObjectPreparation preparation;
         IsleSourceFactoryResources factory{};
         menu::animation::InstanceHandle instance;
@@ -45,6 +46,7 @@ struct Owner::Impl {
         void* callback_user=nullptr;
         bool runtime_prepared=false,object_prepared=false,prepared=false;
         bool active=false,retiring=false,native_retiring=false,joined=false,source_owned=false,runtime_retiring=false;
+        bool animation_stopped=false;
     };
     scene::Services& services;
     const CartResources& resources;
@@ -127,6 +129,27 @@ struct Owner::Impl {
             bool(runtime->model(slot.instance)) &&
             isle_game_model_validate_binding(services.game,slot.object,slot.model)==ISLE_GAME_OK;
     }
+    static bool same_binding(const IsleGameModelRef& a,const IsleGameModelRef& b) noexcept {
+        return a.object==b.object && a.model==b.model && a.incarnation==b.incarnation;
+    }
+    static bool resolve_effect_node(void* context,const IsleGameModelRef& binding,std::size_t node,
+        menu::EffectWorld& output) noexcept {
+        auto& slot=*static_cast<Slot*>(context); auto& self=*slot.owner;
+        if (!slot.active || !slot.effect_node_holds || slot.runtime_retiring || slot.native_retiring ||
+            slot.object!=binding.object || slot.model!=binding.model) return false;
+        IsleGameModel* model=nullptr;
+        if (isle_game_model_resolve(self.services.game,&binding,&model)!=ISLE_GAME_OK || model!=slot.model) return false;
+        const auto state=self.runtime->model(slot.instance);
+        if (!state || node>=state.nodes.size()) return false;
+        return bool(menu::model::source_effect_world(self.services.game,model,node,output));
+    }
+    static void release_effect_node(void* context,const IsleGameModelRef& binding,std::size_t) noexcept {
+        auto& slot=*static_cast<Slot*>(context); auto& self=*slot.owner;
+        if (!slot.active || !slot.effect_node_holds || slot.object!=binding.object || slot.model!=binding.model)
+            std::terminate();
+        --slot.effect_node_holds;
+        self.flush_retirements();
+    }
     const CartClip* descriptor(const IslePlayerCartModelAnimation* value) const noexcept {
         for (const auto& candidate:model_descriptors) if (value==&candidate) return candidate.clip;
         return nullptr;
@@ -176,7 +199,8 @@ struct Owner::Impl {
     static void on_retiring(IsleGameObject*,void* opaque) noexcept {
         auto& slot=*static_cast<Slot*>(opaque); auto& self=*slot.owner;
         slot.retiring=true; slot.native_retiring=true;
-        if (slot.instance && self.dispatch!=&slot && !self.borrows && !slot.runtime_retiring) {
+        if (slot.effect_node_holds) self.services.fail("Cart native deletion bypassed retained FX retirement");
+        if (slot.instance && self.dispatch!=&slot && !self.borrows && !slot.effect_node_holds && !slot.runtime_retiring) {
             if (self.runtime->begin_retire(slot.instance)) slot.runtime_retiring=true;
             else self.services.fail("Cart Runtime retirement failed");
         }
@@ -184,9 +208,23 @@ struct Owner::Impl {
     static void on_joined(IsleGameObject*,void* opaque) noexcept {
         auto& slot=*static_cast<Slot*>(opaque); slot.joined=true; slot.model=nullptr;
     }
+    IsleGameResult stop_animation(Slot& slot) noexcept {
+        if (slot.animation_stopped || slot.native_retiring) return ISLE_GAME_OK;
+        // This exact process is synchronous; ending it cannot checked-transfer
+        // across a native C++ leaf. Other stackful processes belong to Source.
+        const auto result=isle_game_end_source_processes(services.game,slot.object,
+            isle_player_cart_source_update);
+        if (result==ISLE_GAME_OK) slot.animation_stopped=true;
+        else services.fail("Cart retained-FX animator retirement failed");
+        return result;
+    }
     IsleGameResult flush_retirements() noexcept {
         if (dispatch || borrows) return ISLE_GAME_OK;
         for (auto& slot:slots) if (slot.active && slot.retiring) {
+            if (slot.effect_node_holds) {
+                stop_animation(slot);
+                continue;
+            }
             if (slot.instance && !slot.runtime_retiring) {
                 if (!runtime->begin_retire(slot.instance)) services.fail("Cart deferred Runtime retirement failed");
                 else slot.runtime_retiring=true;
@@ -361,7 +399,8 @@ IsleGameModel* Owner::native_model(menu::animation::InstanceHandle h) const noex
 menu::animation::InstanceHandle Owner::instance(IsleGameObject* object) const noexcept { const auto* slot=impl_->find(object); return slot?slot->instance:menu::animation::InstanceHandle{}; }
 Membership Owner::membership(menu::animation::InstanceHandle h) const noexcept {
     const auto* slot=impl_->find(h,true);
-    return {slot && !slot->retiring,slot && slot->retiring,slot && slot->joined,slot && slot->prepared,slot?slot->caller_holds:0};
+    return {slot && !slot->retiring,slot && slot->retiring,slot && slot->joined,slot && slot->prepared,
+        slot?slot->caller_holds:0,slot?slot->effect_node_holds:0};
 }
 const menu::animation::Runtime& Owner::animation() const noexcept { return *impl_->runtime; }
 std::span<const RenderBinding> Owner::render_bindings(std::span<scene::RenderOrderEntry> order) noexcept {
@@ -411,6 +450,31 @@ Owner::Reference Owner::retain(IsleGameObject* object) noexcept {
 void Owner::release_reference(IsleGameObject* object) noexcept {
     auto* slot=impl_->find(object,true); if (!slot || !slot->caller_holds) std::terminate(); --slot->caller_holds;
 }
+menu::RetainedEffectAttachment Owner::retain_effect_node(const IslePlayerCartNode* node) noexcept {
+    auto& self=*impl_; auto* slot=self.dispatch;
+    if (!node || !slot || !self.lease || !self.context() || self.failed() || self.closing ||
+        !self.valid(*slot) || slot->effect_node_holds==SIZE_MAX) return {};
+    bool issued=false;
+    for (std::size_t i=0;i<self.dispatch_count;++i)
+        if (node==&self.events[i].node) { issued=true; break; }
+    if (!issued) return {};
+    IsleGameModelRef current{};
+    const auto state=self.runtime->model(slot->instance);
+    if (!state || node->node>=state.nodes.size() ||
+        isle_game_model_reference(self.services.game,slot->object,slot->model,&current)!=ISLE_GAME_OK ||
+        !Impl::same_binding(current,node->binding)) return {};
+    menu::EffectWorld world{};
+    if (!menu::model::source_effect_world(self.services.game,slot->model,node->node,world)) return {};
+    ++slot->effect_node_holds;
+    return {slot,current,node->node,Impl::resolve_effect_node,Impl::release_effect_node};
+}
+OwnerStatus Owner::request_retire(IsleGameObject* object) noexcept {
+    auto* slot=impl_->find(object,true);
+    if (!slot || slot->native_retiring)
+        return failure(OwnerError::admission,"Cart logical retirement requires its live retained identity");
+    slot->retiring=true;
+    return status(impl_->stop_animation(*slot));
+}
 OwnerStatus Owner::retire(IsleGameObject* object) noexcept {
     auto* slot=impl_->find(object,true); if (!slot) return failure(OwnerError::admission,"Cart retire requires its retained object identity");
     slot->retiring=true; impl_->flush_retirements();
@@ -426,9 +490,14 @@ OwnerStatus Owner::retire() noexcept {
     return status(first);
 }
 OwnerStatus Owner::collect_joined() noexcept {
-    auto& self=*impl_; bool held=self.dispatch || self.borrows || self.building;
+    auto& self=*impl_;
+    if (isle_game_require_idle(self.services.game)!=ISLE_GAME_OK)
+        return failure(OwnerError::lifetime,"Cart physical collection requires idle native traversal");
+    self.flush_retirements();
+    bool held=self.dispatch || self.borrows || self.building;
     for (auto& slot:self.slots) if (slot.active && slot.retiring) {
-        if (!slot.joined || slot.caller_holds || self.source.cartGObj==slot.object || self.dispatch==&slot || self.borrows ||
+        if (!slot.joined || slot.caller_holds || slot.effect_node_holds || self.source.cartGObj==slot.object ||
+            self.dispatch==&slot || self.borrows ||
             (slot.source_owned && !self.services.source_owner_collectable(slot.object))) { held=true; continue; }
         if (slot.source_owned) {
             if (!self.services.source_owner_release(slot.object)) { held=true; continue; }
@@ -437,8 +506,9 @@ OwnerStatus Owner::collect_joined() noexcept {
         if (slot.instance && (!slot.runtime_retiring || !self.runtime->release_retired(slot.instance))) { held=true; continue; }
         slot.instance={}; slot.object=nullptr; slot.model=nullptr; slot.callback=nullptr; slot.callback_user=nullptr;
         slot.active=false; slot.retiring=false; slot.native_retiring=false; slot.joined=false; slot.runtime_retiring=false;
+        slot.animation_stopped=false;
     }
-    return held?failure(OwnerError::lifetime,"Cart current/caller/native/source/event/graphics ownership remains"):OwnerStatus{};
+    return held?failure(OwnerError::lifetime,"Cart current/caller/FX-node/native/source/event/graphics ownership remains"):OwnerStatus{};
 }
 } // namespace isle::player::cart
 

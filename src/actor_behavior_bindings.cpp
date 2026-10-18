@@ -1,4 +1,5 @@
 #include "actor_behavior_bindings.hpp"
+#include "rainbow_actor.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -19,9 +20,22 @@ bool executable_command(std::int32_t command) noexcept {
         static_cast<unsigned>(identity),static_cast<unsigned>(graph),row);
     throw std::invalid_argument(message);
 }
+// Provider dependencies retain these exact typed seams. They must never be
+// resolved through the GObj callback registry or cast to its signature.
+bool typed_rainbow_dependency(std::uint32_t identity) noexcept {
+    if (identity == 0x803466c0u || identity == 0x80346898u ||
+        identity == 0x803484f0u) return true;
+    for (const auto& binding : rainbow::actor_factories())
+        if (binding.factory == identity) return true;
+    for (const auto& binding : rainbow::actor_animation_callbacks())
+        if (binding.identity == identity) return true;
+    for (const auto& binding : rainbow::actor_collision_callbacks())
+        if (binding.identity == identity) return true;
+    return false;
+}
 } // namespace
 
-BehaviorBindings::BehaviorBindings(const beach::BehaviorResources& resources,
+BehaviorBindings::BehaviorBindings(const BehaviorResources& resources,
     std::span<const BehaviorCallbackBinding> bindings,
     std::span<const std::uint32_t> graph_heads,
     std::span<const std::uint32_t> weighted_heads,
@@ -81,7 +95,9 @@ BehaviorBindings::BehaviorBindings(const beach::BehaviorResources& resources,
         const auto current=work[cursor];
         if (current.kind==Kind::callback) {
             const auto& binding=*registry[current.index];
-            for (const auto identity:binding.callbacks) callback(identity,binding.identity,0);
+            for (const auto identity:binding.callbacks)
+                if (resources.course_id()!=6 || !typed_rainbow_dependency(identity))
+                    callback(identity,binding.identity,0);
             for (const auto identity:binding.graphs) graph(identity);
             for (const auto identity:binding.weighted_states) weighted(identity);
         } else if (current.kind==Kind::graph) {
@@ -138,7 +154,8 @@ BehaviorBindings::BehaviorBindings(const beach::BehaviorResources& resources,
             const auto found=std::lower_bound(registry.begin(),registry.end(),current.identity,
                 [](const auto* candidate,std::uint32_t value) { return candidate->identity<value; });
             const auto& binding=**found; // Earlier closure construction resolved this identity.
-            for (const auto identity:binding.callbacks) enqueue(identity);
+            for (const auto identity:binding.callbacks)
+                if (resources.course_id()!=6 || !typed_rainbow_dependency(identity)) enqueue(identity);
             for (const auto identity:binding.graphs) {
                 const auto& dependency=resources.graph(identity);
                 for (const auto& row:dependency.entries) if (executable_command(row.command)) {

@@ -2,12 +2,15 @@
 #define ISLE_ACTOR_OWNER_HPP
 #include "actor_producer.hpp"
 #include "actor_owner_source.h"
+#include "actor_course_context.hpp"
 #include "environment_sound.hpp"
 #include "menu_effects.hpp"
 #include "world_runtime.hpp"
 #include "player_source.h"
 #include <array>
 #include <cstdint>
+#include "beach_ending_source.h"
+
 
 namespace isle::actor {
 class InteractionServices;
@@ -19,30 +22,19 @@ struct OwnerStatus {
 };
 struct SpawnRequest {
     std::uint32_t object_id = 0;
-    std::size_t definition = beach::actor_no_index;
+    std::size_t definition = actor::actor_no_index;
     world::Block* block = nullptr;
     world::Block* reference = nullptr;
     const world::Spawn* spawn = nullptr;
+    // Source automatic definitions retain their real function/line origin;
+    // definition still names the initialized resource family, never a fake wire.
+    std::size_t automatic_definition = actor::actor_no_index;
 };
 struct SpawnResult {
     OwnerStatus status;
     menu::animation::InstanceHandle instance;
     IsleGameObject* object = nullptr;
     explicit operator bool() const noexcept { return bool(status); }
-};
-// Source pause gates Update's counter only. Execution is checked at the ordinary
-// command-handler tail; neither predicate transition resumes native processes.
-// Actual FIFO commands -2/-3 own object-wide suspension/resumption.
-struct CourseState {
-    bool sound_enabled = true;
-    // Actual Beach D_beach_802CC014. Scene chooser publishes true after its
-    // successful spawn; the genuine Magikarp state clears it after animation.
-    bool magikarp_active = false;
-    // Exact initialized Beach CDFC/CE00/CE04 and CD060 source data. Owner
-    // construction hydrates the admitted ROM values once per scene, never once
-    // per interaction-context binding, actor spawn or block retirement.
-    std::array<std::int32_t, 3> lapras_counters;
-    std::int32_t pidgey_counter;
 };
 struct Membership {
     bool logical = false, registered = false, retiring = false, joined = false;
@@ -68,10 +60,10 @@ struct EventServices {
 OwnerStatus dispatch_event(IsleActorSource&, const menu::animation::CallbackEvent&, EventServices) noexcept;
 OwnerStatus step_source_animation(IsleActorSource&, menu::animation::InstanceHandle, EventServices) noexcept;
 OwnerStatus apply_source_animation(IsleActorSource&, menu::animation::InstanceHandle,
-    const beach::ActorAnimationHeader*, float start, bool force,
-    const beach::ActorInitialization&, const beach::ActorResources&, EventServices) noexcept;
+    const actor::ActorAnimationHeader*, float start, bool force,
+    const actor::ActorInitialization&, const actor::Resources&, EventServices) noexcept;
 // Sole source coordinator, not a second animator/scheduler/renderer. Services,
-// World, immutable resources, Environment and Detector outlive this owner.
+// World, immutable resources, borrowed typed course state, Environment and Detector outlive this owner.
 // ALL mutation/tick/cleanup/collection/destruction requires the caller's real
 // serialized native+command and GPU/preparation/readback/postprocess exclusion.
 // In graphics scenes the actual CanonicalExecutor must be quiescent BEFORE the
@@ -80,7 +72,7 @@ OwnerStatus apply_source_animation(IsleActorSource&, menu::animation::InstanceHa
 class Owner final {
     friend struct SourceAccess;
 public:
-    Owner(scene::Services&, const beach::ActorResources&, world::World&,
+    Owner(scene::Services&, const actor::Resources&, CourseContext, world::World&,
           environment_sound::Environment&, focus::Detector&, IslePlayerSource&,
           std::span<const menu::animation::SlotCapacity>,
           std::span<const menu::EffectBank* const>,
@@ -88,17 +80,45 @@ public:
     ~Owner();
     Owner(const Owner&) = delete;
     Owner& operator=(const Owner&) = delete;
-    // Preparation above creates no native FX helpers. Publish once at the
-    // course's original FX stage, after UI and EnvSound initialization.
-    // Repeated/failed attempts reject; real joined callbacks own retirement.
+    // Preparation creates no native FX helpers. Each original allocation is a
+    // separate one-shot publication; real joined callbacks own handle retirement.
+    // Renderer must adopt the corresponding canonical field before C stores it.
+    OwnerStatus publish_particle_camera() noexcept;
+    OwnerStatus publish_effect_emitters() noexcept;
+    // Existing all-at-once consumers retain the same two-object operation.
     OwnerStatus publish_effects() noexcept;
+    // Original Beach17 plus Pidgey/Scyther alternates and all five Rainbow
+    // factories dispatch through compiled C; ordinary/ground/DL4 own placement.
+    // Native admission retains exact setup/header tuples, including 1005's NULL
+    // header and its real, paused priority3 animation process.
     SpawnResult spawn(const SpawnRequest&) noexcept;
-    // Shared source getFreePokemonId cursor/search, including unrelated link3
-    // objects and occupied inclusive-max fallback. Allocation failures consume
-    // the cursor; reset does not reset it. No alternate scene allocator.
+    // Sole compiled factory/init/model/render/setup/header/state admission.
+    const ActorInitialization* admitted_factory(std::uint32_t actor_id,
+        std::uint32_t factory_identity) const noexcept;
+    InteractionServices* bound_interactions() const noexcept;
+    // Original503C10 registry configuration, before actor publication. Clears
+    // the100 actual registry entries, not the source getFreePokemonId cursor.
+    OwnerStatus configure_registry(std::int32_t minimum, std::int32_t maximum,
+                                   std::int32_t link, std::int32_t arg3) noexcept;
+    // Shared source getFreePokemonId cursor/search, including unrelated native
+    // objects on the configured link and occupied inclusive-max fallback.
+    // Allocation failures consume the cursor; reset never resets it.
+    // Source AddAtGeo uses the decoded singleton definition, current World block
+    // and canonical inherited path; its C caller retains behavior/position stores.
     SpawnResult add_one(std::size_t definition, world::Block*, world::Block* reference,
                         const world::Spawn&) noexcept;
-    OwnerStatus set_animation(menu::animation::InstanceHandle, const beach::ActorAnimationHeader*, float start = 0, bool force = false) noexcept;
+    // Standalone Beach CBFF4 writes only transforms. Its complete129 behavior
+    // closure never consumes copied behavior/path; do not invent their values.
+    SpawnResult add_one_magikarp_unwritten(std::size_t definition, world::Block*,
+        world::Block* reference, IsleGameVec3 translation, IsleGameVec3 euler,
+        IsleGameVec3 scale) noexcept;
+    // Five exact Source helpers: three automatic function/line origins and two
+    // initialized singletons. Only id/transforms (mask0x3ff) are Source-written.
+    SpawnResult add_one_rainbow(const IsleRainbowDefinition&,
+        const IsleRainbowAutomaticSpawn&, world::Block*, world::Block* reference) noexcept;
+    OwnerStatus block_members(const world::Block&,
+        std::span<menu::animation::InstanceHandle>, std::size_t& written) const noexcept;
+    OwnerStatus set_animation(menu::animation::InstanceHandle, const actor::ActorAnimationHeader*, float start = 0, bool force = false) noexcept;
     OwnerStatus step_animation(menu::animation::InstanceHandle) noexcept;
     // Complete source logical-order position/flag80 + pair/command26 manager.
     // Caller owns the sole priority2 scene boundary and real graphics exclusion.
@@ -116,6 +136,7 @@ public:
     OwnerStatus notify_target_death(IsleGameObject* sender) noexcept;
     OwnerStatus request_cleanup(menu::animation::InstanceHandle) noexcept;
     OwnerStatus change_block(menu::animation::InstanceHandle, menu::Vec3 previous, menu::Vec3 current) noexcept;
+    OwnerStatus change_block_ground(menu::animation::InstanceHandle, menu::Vec3 previous, menu::Vec3 current) noexcept;
     OwnerStatus remove_block(world::Block&) noexcept;
     OwnerStatus reset() noexcept;
     // Outside all OM/command traversal, after actual joins and external graphics
@@ -144,11 +165,18 @@ public:
     // Bind before spawning. The context stays alive through all source work,
     // actual joins and graphics release; successful reset ends this borrow.
     OwnerStatus bind_interactions(InteractionServices&) noexcept;
+    // Complete returning binding only, once before spawn. Ending scalars stay
+    // in this owner; late services/context outlive all their actual callbacks.
+    OwnerStatus bind_ending(IsleBeachEndingServices, IsleBeachMusicSource&, const rom::Snapshot&) noexcept;
+    // Outside OM/commands/graphics after reset and the provider's independent
+    // native/cart/camera joins, before dependent collection/destruction.
+    OwnerStatus release_ending() noexcept;
+    // Canonical original ending state; owner-phase borrow, no state snapshot.
+    const IsleBeachEndingSource& ending_source() const noexcept;
     // Canonical nonowning association; Source outlives all native/graphics borrows.
     IslePlayerSource& player_source() noexcept;
     const IslePlayerSource& player_source() const noexcept;
-    CourseState& course() noexcept;
-    const CourseState& course() const noexcept;
+    const CourseContext& course_context() const noexcept;
 private:
     SpawnResult spawn_native(const SpawnRequest&) noexcept;
     struct Impl;

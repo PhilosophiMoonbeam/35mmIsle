@@ -9,16 +9,23 @@ struct Descriptor {
     std::uint16_t sound;
     std::uint8_t pitch_modifier, hearing_range;
 };
-// Beach initializes exactly53 own-GAME EnvSoundData records. The native table
-// stores scalar descriptors only; the signed-angle lookup keeps its ROM borrow.
-class BeachResources final {
+// Course 0/6 initialize exactly 53/9 own-GAME EnvSoundData records. Only
+// scalar descriptors are owned; the signed-angle lookup keeps its ROM borrow.
+class Resources final {
 public:
-    explicit BeachResources(const rom::Snapshot&);
-    BeachResources(rom::Snapshot&&) = delete;
+    explicit Resources(const rom::Snapshot&, std::int32_t course_id);
+    Resources(rom::Snapshot&&, std::int32_t) = delete;
+    Resources(const Resources&) = delete;
+    Resources& operator=(const Resources&) = delete;
+    Resources(Resources&&) = delete;
+    Resources& operator=(Resources&&) = delete;
+    std::int32_t course_id() const noexcept { return course_id_; }
     std::span<const Descriptor> descriptors() const;
     const source_math::Angles& angles() const noexcept { return angles_; }
 private:
     source_math::Angles angles_;
+    std::int32_t course_id_;
+    std::size_t descriptor_count_ = 0;
     std::array<Descriptor,53> descriptors_{};
 };
 struct Source {
@@ -32,7 +39,7 @@ struct Source {
 // Resources/Snapshot, Services and arena outlive their borrowers.
 class Environment final {
 public:
-    Environment(scene::Services&, isle_arena&, const BeachResources&);
+    Environment(scene::Services&, isle_arena&, const Resources&);
     ~Environment(); // Outside OM traversal; joins its update before storage ends.
     Environment(const Environment&) = delete;
     Environment& operator=(const Environment&) = delete;
@@ -74,7 +81,7 @@ private:
     };
     scene::Services& services_;
     isle_arena& arena_;
-    const BeachResources& resources_;
+    const Resources& resources_;
     IsleGameModel* player_ = nullptr;
     IsleGameCamera* camera_ = nullptr;
     UpdatePublication* updates_ = nullptr;

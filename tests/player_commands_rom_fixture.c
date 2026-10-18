@@ -1,7 +1,6 @@
 #include "player_commands_rom_fixture.h"
-#include "player_command_reference.h"
+#include "player_root_source.h"
 #include "engine_internal.h"
-#include "player_command_reference.inc"
 
 /* The native runtime admits one active game. This is borrowed observation
  * storage only, attached outside OM and detached after every actual join. No
@@ -76,7 +75,7 @@ static void observe_empty(IslePlayerSource* player, IslePlayerCommandData comman
     PlayerCommandsRomTrace* trace = active_trace;
     if (trace == NULL || trace->player != player)
         isle_player_source_checked(player, ISLE_GAME_INVALID_STATE);
-    player_command_reference_empty_handle(player, command);
+    isle_player_func_80356118_4F6528(player, command);
     record(trace, trace->delivered, &trace->delivered_count, omCurrentObject, command.cmd, command.source);
     switch (command.cmd) {
     case PLAYER_COMMANDS_ROM_EMIT:

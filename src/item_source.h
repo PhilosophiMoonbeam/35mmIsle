@@ -33,11 +33,15 @@ typedef struct IsleItemSource {
 } IsleItemSource;
 
 /* Actual typed C callbacks; no guest function word or process adapter identity.
- * A collision callback may mutate the result. The four-vector provider may
- * mutate its inputs even on a negative return; source preserves those effects. */
+ * Collision providers return operation status separately from the Source hit
+ * ID. On success, a negative hit still preserves every vector/Source mutation.
+ * The caller retains context through all active calls and Item process joins,
+ * then clears the paired binding before retiring context. Providers return
+ * without waiting or faulting; the caller's C fence checks status afterward. */
 typedef void (*IsleItemCollisionCallback)(IsleGameObject*, IsleActorGround*);
-typedef int32_t (*IsleItemCollisionProvider)(IsleGameVec3*, IsleGameVec3*,
-    IsleGameVec3*, IsleGameVec3*);
+typedef IsleGameResult (*IsleItemCollisionProvider)(void* context,
+    IsleGameVec3* position, IsleGameVec3* velocity, IsleGameVec3* out_position,
+    IsleGameVec3* out_velocity, int32_t* hit);
 
 /* Owner-side bind/get return status and never fault or wait. get clears output
  * on error and rejects wrong-kind/unbound/retired/wrong-game objects. Bind

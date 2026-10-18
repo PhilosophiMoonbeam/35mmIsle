@@ -204,6 +204,12 @@ private:
         ++frames_;
         if (!host_.presentation_pending()) {
             const auto completed = graphics_.completed();
+            save::ScreenOffsets live;
+            check(services_.state.screen_offsets().translation(live),
+                  "actual scene output cannot collapse unequal live VI endpoints");
+            check(completed.screen_offsets.horizontal == live.horizontal &&
+                  completed.screen_offsets.vertical == live.vertical,
+                  "actual scene graphics used profile/editor VI instead of canonical live output");
             check(host_.queue_present(completed.rgba,completed.screen_offsets),host_.message());
             queued_capture_ready_ = capture_ready_(scene_);
         }

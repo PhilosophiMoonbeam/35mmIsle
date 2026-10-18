@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Explicit private-ROM CPU/API selector consumer, excluded from default/CTest.
 // Actual Source23 automatic/FIFO C executes under native OM fences. Player,
 // graphs, cached distances, detector pixels and poses are fixed API-authored
@@ -38,19 +39,23 @@ namespace it = items;
 constexpr auto descend = func_8035DFB0_4FE3C0;
 constexpr auto hidden = func_8035E034_4FE444;
 constexpr float untouched_distance = -123.0f;
-void require(bool value,const char* text) {
+void require(bool value,const char* text,std::source_location where=std::source_location::current()) {
     if (!value) {
-        std::cerr<<"C selector guard: "<<text<<'\n';
+        std::cerr<<"C selector guard: "<<text<<" function="<<where.function_name()<<" line="<<where.line()<<'\n';
         throw std::runtime_error(text);
     }
 }
 void native(IsleGameResult value,std::source_location where=std::source_location::current()) {
     if (value!=ISLE_GAME_OK)
         std::cerr<<"C native result="<<static_cast<int>(value)<<" function="<<where.function_name()<<" line="<<where.line()<<'\n';
-    require(value==ISLE_GAME_OK,"native interaction consumer operation failed");
+    require(value==ISLE_GAME_OK,"native interaction consumer operation failed",where);
 }
-void accepted(actor::OwnerStatus value) { require(bool(value),value.detail); }
-void accepted(it::OwnerStatus value) { require(bool(value),value.detail); }
+void accepted(actor::OwnerStatus value,std::source_location where=std::source_location::current()) {
+    require(bool(value),value.detail,where);
+}
+void accepted(it::OwnerStatus value,std::source_location where=std::source_location::current()) {
+    require(bool(value),value.detail,where);
+}
 bool near(float x,float y) { return std::abs(x-y)<0.0001f; }
 bool same(IsleGameVec3 x,IsleGameVec3 y) { return near(x.x,y.x)&&near(x.y,y.y)&&near(x.z,y.z); }
 
@@ -76,10 +81,15 @@ struct ApiSourceOwner {
     IsleGameObject* object=nullptr;
     IsleGameModel* model=nullptr;
     IsleGameObject* held_target=nullptr;
-    std::array<IsleGameObject**,1> fields{{&held_target}};
+    IsleGameObject** focus_field=nullptr;
+    std::array<IsleGameObject**,2> fields{{&held_target,nullptr}};
     unsigned retiring=0,joined=0,errors=0;
     bool released=false;
-    ApiSourceOwner(scene::Services& s,std::uint32_t id,bool camera_sender=false) : services(s) {
+    ApiSourceOwner(scene::Services& s,std::uint32_t id,bool camera_sender=false,
+                   IsleGameObject** canonical_focus=nullptr) : services(s),focus_field(canonical_focus) {
+        // The Player's real Source focus field is independent of this fixture's
+        // Item hold. Its address must outlive every Actor cleanup and real join.
+        fields[1]=focus_field;
         object=services.object(id,9); require(object,"API semantic source allocation failed");
         if (camera_sender) {
             IsleGameCamera* camera=nullptr;
@@ -92,7 +102,8 @@ struct ApiSourceOwner {
             native(isle_game_model_set_placement(services.game,model,ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
         }
         require(services.set_lifecycle(object,{before,after,this}) &&
-                services.source_owner_register(object,fields),"API semantic source ownership admission failed");
+                services.source_owner_register(object,std::span(fields).first(focus_field?2u:1u)),
+                "API semantic source ownership admission failed");
     }
     ApiSourceOwner(const ApiSourceOwner&)=delete;
     ApiSourceOwner& operator=(const ApiSourceOwner&)=delete;
@@ -100,7 +111,8 @@ struct ApiSourceOwner {
         auto& self=*static_cast<ApiSourceOwner*>(user); ++self.retiring;
         if (self.retiring!=1 || self.joined || object!=self.object ||
             !actor_interaction_object_alive(object) ||
-            (self.model && !actor_interaction_model_alive(self.model)) || self.held_target) ++self.errors;
+            (self.model && !actor_interaction_model_alive(self.model)) || self.held_target ||
+            (self.focus_field && *self.focus_field)) ++self.errors;
     }
     static void after(IsleGameObject* object,void* user) noexcept {
         auto& self=*static_cast<ApiSourceOwner*>(user); ++self.joined;
@@ -160,7 +172,7 @@ struct Shift {
     }
 };
 
-std::unique_ptr<actor::BehaviorBindings> make_bindings(const beach::BehaviorResources& resources,
+std::unique_ptr<actor::BehaviorBindings> make_bindings(const actor::BehaviorResources& resources,
     std::span<const std::uint32_t> graphs={},std::span<const std::uint32_t> weighted={}) {
     // These are the actual compiled six-function closure, not mappings for any
     // uncompiled pinned callback. Constructor consumes these temporary spans.
@@ -192,8 +204,8 @@ struct Consumer {
     world::World& world;
     focus::Detector& detector;
     ApiSourceOwner& player;
-    const beach::ActorResources& resources;
-    const beach::BehaviorResources& behavior;
+    const actor::Resources& resources;
+    const actor::BehaviorResources& behavior;
     std::vector<actor::SpawnResult> subjects;
     std::vector<std::unique_ptr<ApiSourceOwner>> extra_sources;
     ActorInteractionProbe probe{};
@@ -202,14 +214,14 @@ struct Consumer {
     bool shut_down=false;
     Consumer(scene::Services& s,actor::Owner& ac,environment_sound::Environment& e,it::Owner& i,it::Globals& g,
              world::World& w,focus::Detector& d,ApiSourceOwner& p,
-             const beach::ActorResources& ar,const beach::BehaviorResources& br)
+             const actor::Resources& ar,const actor::BehaviorResources& br)
         : services(s),actors(ac),environment(e),items(i),globals(g),world(w),detector(d),player(p),resources(ar),behavior(br) {}
 
     actor::SpawnResult spawn(IsleGameVec3 position={0,0,0},std::uint32_t actor_id=1003) {
-        std::size_t definition=beach::actor_no_index;
+        std::size_t definition=actor::actor_no_index;
         for (std::size_t n=0;n<resources.definitions().size();++n)
             if (resources.definitions()[n].actor_id==actor_id) definition=n;
-        require(definition!=beach::actor_no_index,"actual requested Actor definition absent");
+        require(definition!=actor::actor_no_index,"actual requested Actor definition absent");
         world::Spawn descriptor; descriptor.id=actor_id; descriptor.behavior=1;
         descriptor.position={0,0,0}; descriptor.scale={1,1,1};
         auto result=actors.spawn({next_id++,definition,&world.blocks()[0],&world.blocks()[0],&descriptor});
@@ -222,7 +234,12 @@ struct Consumer {
     }
     void suppress(IsleGameObject* object,bool value) { native(isle_game_pause_updates(services.game,object,value)); }
     void tick(std::source_location where=std::source_location::current()) {
-        native(isle_game_tick(services.game),where); require(!services.failed(),services.error());
+        const auto result=isle_game_tick(services.game);
+        if (result!=ISLE_GAME_OK || services.failed())
+            std::cerr<<"C Source tick: native="<<std::string_view(isle_game_error(services.game)).substr(0,256)
+                     <<" scene="<<std::string_view(services.error()).substr(0,256)
+                     <<" function="<<where.function_name()<<" line="<<where.line()<<'\n';
+        native(result,where); require(!services.failed(),services.error(),where);
     }
     void place(const actor::SpawnResult& subject,IsleGameVec3 position) {
         const IsleGameModelTransform value{position,{0,0,0},{1,1,1}};
@@ -887,7 +904,8 @@ struct Consumer {
             if (hit) selected_aux(subject); else no_selection(subject);
         }
         prepare(subject); publish_focus(player.object);
-        actors.player_source().gPreviousPokemonInFocus=subject.object;
+        require(services.source_reference_assign(player.object,&actors.player_source().gPreviousPokemonInFocus,subject.object),
+                "Player focus fixture could not retain its actual canonical Actor field");
         actors.player_source().D_80382C3C_52304C=1; actors.player_source().sTimerInFocus=100;
         Rows rows{{23,nullptr,1,descend}}; automatic(subject,&rows); no_selection(subject);
         prepare(subject); publish_focus(subject.object,false);
@@ -923,6 +941,22 @@ struct Consumer {
             selected_aux(subject,live?player.object:subject.object);
             require(services.source_owner_borrows(player.object).queued==0,
                     "28..57 FIFO did not settle its consumed sender credit");
+        }
+        {
+            const auto recipient=spawn();
+            prepare(subject);prepare(recipient);
+            Rows recipient_rows{{28,nullptr,0,descend}};
+            native(isle_actor_interaction_send_addressed(&source(subject),recipient.object,28,subject.object));
+            require(services.source_owner_borrows(subject.object).queued==1,
+                    "addressed command failed to retain its genuine sender");
+            fifo(subject,nullptr);
+            require(root_y(subject)==0 && !source(subject).interactionTarget &&
+                    services.source_owner_borrows(subject.object).queued==1,
+                    "addressed command was incorrectly delivered to its requester");
+            fifo(recipient,&recipient_rows);
+            selected_aux(recipient,subject.object);
+            require(services.source_owner_borrows(subject.object).queued==0 && root_y(subject)==0,
+                    "addressed destination failed to consume sender credit independently of requester");
         }
         for (int command:{14,10,20}) {
             const float threshold=command==10?150.0f:600.0f;
@@ -1041,12 +1075,20 @@ struct Consumer {
         enqueue(subject,-2,player.object); fifo(subject,&invalid);
         require(actor_interaction_paused_count(subject.object)==actor_interaction_process_count(subject.object),"real FIFO -2 failed to suspend every native process");
         const auto victim=spawn();
+        auto& player_source=actors.player_source();
+        require(services.source_reference_assign(player.object,&player_source.gPreviousPokemonInFocus,victim.object),
+                "Player focus could not replace its actual canonical Actor hold");
+        player_source.D_80382C3C_52304C=1;
+        require(services.source_owner_borrows(victim.object).fields==1,
+                "focused Actor was not retained independently of command sender credits");
         source(victim).transitionGraph=&invalid.graph;
         enqueue(victim,-1,player.object); enqueue(victim,8,player.object); enqueue(victim,-5,player.object);
         suppress(victim.object,false); tick();
         require(actors.membership(victim.instance).joined && !actors.registered(victim.instance) &&
-                services.source_owner_borrows(player.object).queued==0,
-                "-1 did not bypass invalid custom tail, join receiver, and cancel remaining sender credits");
+                services.source_owner_borrows(player.object).queued==0 &&
+                !player_source.gPreviousPokemonInFocus && !player_source.D_80382C3C_52304C &&
+                services.source_owner_borrows(victim.object).fields==0,
+                "-1 did not join/cancel the FIFO or run genuine Source focus cleanup before releasing its canonical Actor hold");
         accepted(actors.collect_joined());
     }
 
@@ -1243,19 +1285,20 @@ struct Consumer {
 
 struct Resources {
     world::Resources world;
-    beach::ActorResources actors;
+    beach::ActorSceneResources sceneData;
+    actor::Resources actors;
     it::Resources items;
-    beach::BehaviorResources behavior;
-    environment_sound::BeachResources sound;
+    actor::BehaviorResources behavior;
+    environment_sound::Resources sound;
     menu::EffectResources effects;
     std::array<const menu::EffectBank*,2> banks;
     std::array<a::SlotCapacity,8> actor_capacities{};
     std::array<a::SlotCapacity,32> item_capacities{};
     std::unique_ptr<actor::BehaviorBindings> bindings;
     explicit Resources(const rom::Snapshot& snapshot)
-        : world(snapshot),actors(snapshot,{world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max}),
+        : world(snapshot, isle::course::beach_id),sceneData(snapshot),actors(snapshot,0,{world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max}),
           items(snapshot,world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max),
-          behavior(snapshot),sound(snapshot),effects(snapshot),
+          behavior(snapshot,0),sound(snapshot,0),effects(snapshot),
           banks{&effects.bank(menu::EffectGroup::common),&effects.bank(menu::EffectGroup::beach)},
           bindings(make_bindings(behavior)) {
         a::SlotCapacity ac{},ic{};
@@ -1278,29 +1321,33 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
         IsleGameCamera* camera=nullptr; native(isle_game_attach_camera(services.game,camera_object,&camera));
         const IsleGameLookAt look{{0,0,0},{1,0,0},{0,1,0}};
         native(isle_game_camera_set_look_at(services.game,camera,&look));
-        ApiSourceOwner player(services,2);
+        ApiSourceOwner player(services,2,false,&player_source.value.gPreviousPokemonInFocus);
         player_source.bind(player.object,player.model,camera);
         player_source.value.cam_target={100,900,300};
         environment_sound::Environment environment(services,storage.arena(),resources.sound);
         require(environment.initialize(nullptr,camera),"environment source initialization failed");
         focus::Detector detector; Shift shift{&services,camera};
         shift.native_world_pool.arena=&storage.arena();
+        world::ModuleState world_module;
         std::unique_ptr<world::World> admitted_world;
         if (semantic_paths.empty())
-            admitted_world=std::make_unique<world::World>(services,resources.world,
+            admitted_world=std::make_unique<world::World>(services,resources.world,world_module,
                 world::Callbacks{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,nullptr});
         else {
             // CPU-only bounded native semantic path resources. All actual World
             // models, materials, terrain and services remain the existing ones.
             const auto& r=resources.world;
             world::ResourceView view{&r.setup(),&r.sky(),r.blocks(),r.primary_count(),r.models(),
-                r.materials(),r.animations(),semantic_paths,r.static_definitions(),&r.height_map(),r.collision_models()};
-            admitted_world=std::make_unique<world::World>(services.game,view,
+                r.materials(),r.animations(),semantic_paths,r.static_definitions(),&r.height_map(),r.collision_models(),&r.ceiling_map(),r.sky_model_index()};
+            admitted_world=std::make_unique<world::World>(services.game,view,world_module,
                 world::Callbacks{&shift,nullptr,nullptr,nullptr,Shift::camera_shift,Shift::effects_shift,Shift::commands});
         }
         auto& world=*admitted_world;
         {
-            actor::Owner actors(services,resources.actors,world,environment,detector,player_source.value,resources.actor_capacities,resources.banks,{32768,4096});
+            const auto& sceneData=resources.sceneData;
+            std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+            beach::ActorSceneState sceneState(sceneData,scene_latch);
+            actor::Owner actors(services,resources.actors,actor::CourseContext(sceneState),world,environment,detector,player_source.value,resources.actor_capacities,resources.banks,{32768,4096});
             accepted(actors.publish_effects());
             shift.actors=&actors;
             require(environment.set_listener(player.model,camera),"environment listener binding failed");

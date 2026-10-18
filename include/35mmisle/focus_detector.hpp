@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <span>
 
+namespace isle::player { class Photo; }
 namespace isle::focus {
 using Object = std::uintptr_t;
 inline constexpr std::size_t history_capacity = 20, photo_capacity = 12;
@@ -62,9 +63,10 @@ public:
     // retention changes between this preflight and metadata/GPU publication.
     bool context_available(std::uint16_t context) const noexcept;
     // Exact committed stage identity, not a caller-issued reservation number.
-    // Zero means invalid or never staged; append does not start a new stage.
+    // Zero is never staged; only canonical Source Create may admit an uncommitted
+    // context, whose application-owned serialized header may survive a course.
     std::uint64_t generation(std::uint16_t context) const noexcept;
-    // Retain only this exact existing nonzero committed generation.
+    // Retain the exact committed generation (or Source-created unstaged context).
     Error retain_context(std::uint16_t context, std::uint64_t generation) noexcept;
     Error release_context(std::uint16_t context, std::uint64_t generation) noexcept;
     Error publish_context(std::uint16_t context, std::uint64_t generation) noexcept;
@@ -76,6 +78,8 @@ public:
     Error mark_center(std::span<std::uint32_t> words, std::uint32_t framebuffer,
                       std::int32_t direction) const noexcept;
 private:
+    friend class isle::player::Photo;
+    Error create_source_contexts() noexcept;
     struct Context {
         std::array<Subject,history_capacity> subjects{};
         std::size_t count = 0;
@@ -86,6 +90,7 @@ private:
     };
     std::array<Context,2> contexts_{};
     Focus computed_{}, published_{};
+    bool source_created_ = false;
 };
 } // namespace isle::focus
 #endif

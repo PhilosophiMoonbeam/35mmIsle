@@ -112,6 +112,7 @@ bool exercise(Scene& scene,game::State& state,Hooks hooks,Scenario scenario,unsi
     if (!scene.take_result(result) || result!=11 || scene.take_result(result) || scene.complete_scene()) {
         error="source Oak11 result was not emitted exactlyonce"; return false;
     }
+    if (hooks.completed_result) *hooks.completed_result=result;
     const auto after=state.save()->snapshot();
     if (!after || after.value.generation()!=generation || state.scene_notices()!=notices ||
         !std::equal(after.value.player_name().begin(),after.value.player_name().end(),reinterpret_cast<const std::byte*>(confirmed.name.data()))) {

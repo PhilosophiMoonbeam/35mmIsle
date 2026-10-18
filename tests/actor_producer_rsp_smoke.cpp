@@ -1,6 +1,8 @@
+#include "beach_actor_scene.hpp"
 // Opt-in actual PRIVATE_ROM RSP/RDP consumer. Main executes; workers do not.
 // Authored placements/control; real actor GPU focus, not factory/FSM/player/queue/photo snapshot.
 #include "actor_producer.hpp"
+#include "beach_world_resources.hpp"
 #include "actor_source.h"
 #include "actor_photo_membership.hpp"
 #include "contextual_model_math.h"
@@ -202,7 +204,7 @@ scene::render::Prepared compose(std::span<std::uint32_t> words,const actor::Prod
     }
     return frame;
 }
-void bind_initial(const beach::ActorResources& resources, const beach::ActorInitialization& init,
+void bind_initial(const actor::Resources& resources, const actor::ActorInitialization& init,
                   a::Runtime& runtime, a::InstanceHandle handle) {
     if (!init.animations_enabled) return; // Actual geometryless1005 NULL header.
     const auto& header = resources.headers()[init.setup.initial_header];
@@ -224,7 +226,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
             std::filesystem::is_empty(output_directory)),"private capture directory must exist and be empty");
     const auto snapshot = rom::read_snapshot(path);
     const auto world = beach::world_descriptors(snapshot);
-    const beach::ActorResources resources(snapshot,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
+    const actor::Resources resources(snapshot,0,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
     const photo::LightingInputs lighting(snapshot);
     Profile profile; game::State state(profile.path);
     require(state.initialize(1),"actual Actor fragment profile initialization failed");
@@ -258,7 +260,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         require(found != inits.end(),"actual actor source initialization missing");
         selected[slot] = static_cast<std::size_t>(found-inits.begin());
     }
-    auto made = a::Runtime::create({models,resources.materials(),resources.animations(),menu::no_index},capacities,{},{32768,4096});
+    auto made = a::Runtime::create({models,resources.materials(),resources.animations(),menu::no_index,resources.paths()},capacities,{},{32768,4096});
     require(bool(made),"all actor animations must compile once in shared Runtime"); auto& runtime = *made.runtime;
     isle_rng application_rng{};
     Owners owners;
@@ -320,9 +322,9 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         actor::Producer empty(owners.game,owners.camera,basis,resources,empty_capacity,vacant,layout,other,nullptr);
         auto* start=reinterpret_cast<std::uint32_t*>(const_cast<IsleGameCameraReflection*>(reflection));
         require(reinterpret_cast<std::byte*>(start)>=owners.bytes.data() &&
-                reinterpret_cast<std::byte*>(start)+beach::rdram_size<=owners.bytes.data()+owners.bytes.size(),
+                reinterpret_cast<std::byte*>(start)+menu::rdram_size<=owners.bytes.data()+owners.bytes.size(),
                 "Actual native camera alias witness exceeds owned arena storage");
-        const std::span alias(start,beach::rdram_size/4);
+        const std::span alias(start,menu::rdram_size/4);
         const std::vector<std::uint32_t> unchanged(alias.begin(),alias.end());
         rejects([&] { empty.prepare(alias,1); },
                 "Actor preparation accepted RAM aliasing native reflection/cache after its matrix result");
@@ -334,9 +336,9 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     actor::Producer producer(owners.game,owners.camera,basis,resources,capacities,bindings,layout,other,nullptr);
     {
         auto* start=reinterpret_cast<std::uint32_t*>(sources[0]);
-        require(reinterpret_cast<std::byte*>(start)+beach::rdram_size<=owners.bytes.data()+owners.bytes.size(),
+        require(reinterpret_cast<std::byte*>(start)+menu::rdram_size<=owners.bytes.data()+owners.bytes.size(),
                 "Actual canonical source alias witness exceeds owned native arena");
-        const std::span alias(start,beach::rdram_size/4);
+        const std::span alias(start,menu::rdram_size/4);
         const std::vector<std::uint32_t> unchanged(alias.begin(),alias.end());
         rejects([&] { producer.prepare(alias,1); },"Actor preparation accepted RAM aliasing actual source payload");
         require(std::equal(alias.begin(),alias.end(),unchanged.begin()),"Rejected source payload alias mutated native/RAM");
@@ -368,7 +370,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
         auto preparation = active.begin_preparation(); auto words = preparation.words();
         if (cold) {
             graphics::validate_cold_inputs(words,snapshot,snapshot.canonical().data(),boot);
-            std::vector<beach::RamReservation> reservations{{0,graphics::bss_end}};
+            std::vector<menu::RamRange> reservations{{0,graphics::bss_end}};
             for (auto r : frame_owner.reservations()) reservations.push_back({r.offset,r.size});
             for (auto r : layout.framebuffers) reservations.push_back({r.offset,r.size});
             for (auto r : other) reservations.push_back({r.offset,r.size});
@@ -601,7 +603,7 @@ int run(const std::filesystem::path& path,const std::filesystem::path& output_di
     require(camera_changed.triangles != initial.triangles && camera_changed.depths != initial.depths,"camera3/14/source48 change failed actual GPU/depth consumer");
     native(isle_game_camera_set_look_at(owners.game,owners.camera,&original_look)); require(initial == execute(false),"camera restore failed");
     // Admission failures use independent host RAM, not an abandoned real lease.
-    std::vector<std::uint32_t> admission(beach::rdram_size/4,0x5a3cc3a5); const auto untouched = admission;
+    std::vector<std::uint32_t> admission(menu::rdram_size/4,0x5a3cc3a5); const auto untouched = admission;
     const IsleGameCameraMatrix* camera0 = nullptr; const IsleGameCameraMatrix* camera1 = nullptr;
     native(isle_game_camera_matrix(owners.game,owners.camera,0,&camera0)); native(isle_game_camera_matrix(owners.game,owners.camera,1,&camera1));
     const IsleGameCameraReflection* reflection = nullptr; native(isle_game_camera_reflection(owners.game,owners.camera,1,&reflection));

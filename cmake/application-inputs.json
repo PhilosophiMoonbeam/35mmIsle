@@ -1,0 +1,1364 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "source_path": "src/app_render/46270.c",
+  "transformation_version": "application-manager-complete10-v1",
+  "use": "Complete uniquely owned private compiled-C manager, same-file state/asset/printer helpers, and mixer reset. No original generated C, SDK bodies/layout, assets or ROM payload is redistributed. This is source ownership evidence, not native runtime qualification.",
+  "generator_sha256": "aac18d90352ab4ab28524da73549566d0499610f3dff5df5832ca9c9fc031ca2",
+  "source_files": {
+    "src/app_render/46270.c": {
+      "git_blob": "bf53f3078a567ac78df51d3ee8d5e6f9fa17c135",
+      "sha256": "152884a39d0621dbbaafb57f292089048014efe70784cd03a72b70a57871d8c7",
+      "line_count": 389
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "include/sys/audio.h": {
+      "git_blob": "e4b238fcdb53dec215e044d183908cb09f151ce5",
+      "sha256": "70635d49de63e41c9e66d6d0d4a46dff4730c20e301f43a31860e18fac983f68",
+      "line_count": 36
+    },
+    "src/app_render/568D0.c": {
+      "git_blob": "fed2e286e73ef66a946ebd7b614f2d2b7b1fca6c",
+      "sha256": "ab288404b621d0b12a51c846f00ae7335905931595ea58ca005f073c3e12b2b3",
+      "line_count": 253
+    },
+    "src/app_render/47330.c": {
+      "git_blob": "9f8577ecc21eadb43843afb46b8756c3db918985",
+      "sha256": "8bac0cc251b477cd80cbb6b4bc710dec97816f3469caff31ec21b34c5a30a587",
+      "line_count": 27
+    },
+    "src/more_funcs/5BF20.c": {
+      "git_blob": "a223a8933886f1b2b9ebf77c72aab51225474791",
+      "sha256": "ce66ec4b0fbab3ee4161b6f2713f57dce59853c652592c2b9d715baa1211e333",
+      "line_count": 683
+    },
+    "src/AA0650.c": {
+      "git_blob": "d6263d3d6e1ff1f913e7620d402ed70c4d399acc",
+      "sha256": "62e01867df443487283155a3c8d07d01c4922b7425c3788d2033ec4ef2ad43bf",
+      "line_count": 163
+    },
+    "src/AA18E0.c": {
+      "git_blob": "c49dd1573ace8cd1c58940bbd60def2149125164",
+      "sha256": "650df306cb91d47858371a0ce7e5e10de4145465d7f4b8ef0cb23543c48443a3",
+      "line_count": 200
+    },
+    "include/functions.h": {
+      "git_blob": "30439638dff6b462da6f22bda252c91614df806d",
+      "sha256": "32746510cbd508dcdb3a45d3f0f5572142d1c5f7caa4579eac7a4ff596df44aa",
+      "line_count": 149
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "setIdleScript",
+      "owner": "application_source",
+      "first": 48,
+      "last": 50,
+      "source_sha256": "ccd5cf5246f1410ba8447505eee3c82c0ea8909a64fbfcd3847785097e0d8d9d",
+      "native_sha256": "30eb2b10485aea19166f62392b1deb6e616788918d862e34dc05e76f835702b8",
+      "native_declaration": "void isle_application_setIdleScript(IsleApplicationSource* source, const IslePlayerIdleScript* arg0)",
+      "changes": [
+        {
+          "find": "void\\ setIdleScript\\(IdleScript\\*\\ arg0\\)",
+          "replace": "void isle_application_setIdleScript(IsleApplicationSource* source, IdleScript* arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bD_800B0578\\b",
+          "replace": "source->state->idle_script",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bIdleScript\\b",
+          "replace": "const IslePlayerIdleScript",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "getIdleScript",
+      "owner": "application_source",
+      "first": 52,
+      "last": 54,
+      "source_sha256": "c97474a92930b37fa80177f5a0813b39386d847202df5ff53729dfe193abc2e4",
+      "native_sha256": "587e2cc25e4cd0ec3f13cb89bbcbc08f5e2cc259f9ed0bb7b6a1434ebabe3131",
+      "native_declaration": "const IslePlayerIdleScript* isle_application_getIdleScript(IsleApplicationSource* source)",
+      "changes": [
+        {
+          "find": "IdleScript\\*\\ getIdleScript\\(void\\)",
+          "replace": "IdleScript* isle_application_getIdleScript(IsleApplicationSource* source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bD_800B0578\\b",
+          "replace": "source->state->idle_script",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bIdleScript\\b",
+          "replace": "const IslePlayerIdleScript",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "func_8009A8D8",
+      "owner": "application_source",
+      "first": 56,
+      "last": 58,
+      "source_sha256": "0f945a26b61217037dc776a686ebb336e6c05fff06fcfae912673096b55bd77b",
+      "native_sha256": "4aaf35b6f34524db603930c345eb1abf6e9fa81ddf2b34da045ee729ecedc575",
+      "native_declaration": "void isle_application_func_8009A8D8(IsleApplicationSource* source, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void\\ func_8009A8D8\\(s32\\ arg0\\)",
+          "replace": "void isle_application_func_8009A8D8(IsleApplicationSource* source, s32 arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bD_800AC00C\\b",
+          "replace": "source->state->latch",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bs32\\b",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "func_8009A8E4",
+      "owner": "application_source",
+      "first": 60,
+      "last": 62,
+      "source_sha256": "4f4799b495ff3c9816bf1a8668bc7600a4a1b159bb0c24775f94a7c2b440cd82",
+      "native_sha256": "0e896b47e4bbe0b699346dd41f2a418110db1e01ce47c42f742427e464edd511",
+      "native_declaration": "int32_t isle_application_func_8009A8E4(IsleApplicationSource* source)",
+      "changes": [
+        {
+          "find": "s32\\ func_8009A8E4\\(void\\)",
+          "replace": "s32 isle_application_func_8009A8E4(IsleApplicationSource* source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bD_800AC00C\\b",
+          "replace": "source->state->latch",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bs32\\b",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "func_8009A8F0",
+      "owner": "application_source",
+      "first": 64,
+      "last": 123,
+      "source_sha256": "b658a759947f2aeb9174a99f564266b106a2a29de77083ccc7c53940b91a6573",
+      "native_sha256": "36e0136d9afdbdf9c860f52f5f784f26f942da8e1d562231c2ca4297c01c70bc",
+      "native_declaration": "void isle_application_func_8009A8F0(IsleApplicationSource* source, int32_t levelID)",
+      "changes": [
+        {
+          "find": "void\\ func_8009A8F0\\(s32\\ levelID\\)",
+          "replace": "void isle_application_func_8009A8F0(IsleApplicationSource* source, s32 levelID)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayBeachAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_BEACH_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayTunnelAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_TUNNEL_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayCaveAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_CAVE_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayRiverAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_RIVER_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayVolcanoAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_VOLCANO_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayValleyAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_VALLEY_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayRainbowAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_RAINBOW_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(beach_extra_ROM_START,\\ beach_extra_VRAM,\\ beach_extra_ROM_END\\ \\-\\ beach_extra_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_BEACH_EXTRA)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(magikarp_textures_ROM_START,\\ magikarp_textures_VRAM,\\ magikarp_textures_ROM_END\\ \\-\\ magikarp_textures_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_MAGIKARP_TEXTURES)",
+          "occurrences": 6
+        },
+        {
+          "find": "dmaReadRom\\(magikarp_model_hd_ROM_START,\\ magikarp_model_hd_VRAM,\\ magikarp_model_hd_ROM_END\\ \\-\\ magikarp_model_hd_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_MAGIKARP_MODEL_HD)",
+          "occurrences": 6
+        },
+        {
+          "find": "dmaReadRom\\(pikachu1_ROM_START,\\ pikachu1_VRAM,\\ pikachu1_ROM_END\\ \\-\\ pikachu1_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_PIKACHU1)",
+          "occurrences": 4
+        },
+        {
+          "find": "dmaReadRom\\(pikachu_model_hd_ROM_START,\\ pikachu_model_hd_VRAM,\\ pikachu_model_hd_ROM_END\\ \\-\\ pikachu_model_hd_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_PIKACHU_MODEL_HD)",
+          "occurrences": 4
+        },
+        {
+          "find": "dmaReadRom\\(tunnel_extra_ROM_START,\\ tunnel_extra_VRAM,\\ tunnel_extra_ROM_END\\ \\-\\ tunnel_extra_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_TUNNEL_EXTRA)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(zubat1_ROM_START,\\ zubat1_VRAM,\\ zubat1_ROM_END\\ \\-\\ zubat1_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_ZUBAT1)",
+          "occurrences": 2
+        },
+        {
+          "find": "dmaReadRom\\(zubat_model_hd_ROM_START,\\ zubat_model_hd_VRAM,\\ zubat_model_hd_ROM_END\\ \\-\\ zubat_model_hd_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_ZUBAT_MODEL_HD)",
+          "occurrences": 2
+        },
+        {
+          "find": "dmaReadRom\\(cave_extra_ROM_START,\\ cave_extra_VRAM,\\ cave_extra_ROM_END\\ \\-\\ cave_extra_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_CAVE_EXTRA)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(bulbasaur1_ROM_START,\\ bulbasaur1_VRAM,\\ bulbasaur1_ROM_END\\ \\-\\ bulbasaur1_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_BULBASAUR1)",
+          "occurrences": 2
+        },
+        {
+          "find": "dmaReadRom\\(bulbasaur_model_hd_ROM_START,\\ bulbasaur_model_hd_VRAM,\\ bulbasaur_model_hd_ROM_END\\ \\-\\ bulbasaur_model_hd_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_BULBASAUR_MODEL_HD)",
+          "occurrences": 2
+        },
+        {
+          "find": "dmaReadRom\\(river_extra_ROM_START,\\ river_extra_VRAM,\\ river_extra_ROM_END\\ \\-\\ river_extra_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_RIVER_EXTRA)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(volcano_extra_ROM_START,\\ volcano_extra_VRAM,\\ volcano_extra_ROM_END\\ \\-\\ volcano_extra_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_VOLCANO_EXTRA)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(valley_extra_ROM_START,\\ valley_extra_VRAM,\\ valley_extra_ROM_END\\ \\-\\ valley_extra_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_VALLEY_EXTRA)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(rainbow_extra_ROM_START,\\ rainbow_extra_VRAM,\\ rainbow_extra_ROM_END\\ \\-\\ rainbow_extra_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_RAINBOW_EXTRA)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bs32\\b",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "func_8009AE0C",
+      "owner": "application_source",
+      "first": 125,
+      "last": 186,
+      "source_sha256": "d6961f9d4e8b706979c9e745b5fb29bba124c44f49b8699367d4a7f3a9bac1d0",
+      "native_sha256": "24aeb73c56fb3e119f75ba64b064937663d9bd2d1046c2ca8a641c58df395130",
+      "native_declaration": "void isle_application_func_8009AE0C(IsleApplicationSource* source, uint32_t sceneId)",
+      "changes": [
+        {
+          "find": "void\\ func_8009AE0C\\(u32\\ sceneId\\)",
+          "replace": "void isle_application_func_8009AE0C(IsleApplicationSource* source, u32 sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&D_800ABDC8\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_APP_LEVEL)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayWorld\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_WORLD)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayBeachAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_BEACH_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayBeach\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_BEACH_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayTunnelAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_TUNNEL_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayTunnel\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_TUNNEL_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayCaveAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_CAVE_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayCave\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_CAVE_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayRiverAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_RIVER_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayRiver\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_RIVER_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayVolcanoAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_VOLCANO_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayVolcano\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_VOLCANO_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayValleyAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_VALLEY_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayValley\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_VALLEY_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayRainbowAssets\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_RAINBOW_ASSETS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayRainbow\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_RAINBOW_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadRom\\(magikarp_textures_ROM_START,\\ magikarp_textures_VRAM,\\ magikarp_textures_ROM_END\\ \\-\\ magikarp_textures_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_MAGIKARP_TEXTURES)",
+          "occurrences": 6
+        },
+        {
+          "find": "dmaReadRom\\(pikachu1_ROM_START,\\ pikachu1_VRAM,\\ pikachu1_ROM_END\\ \\-\\ pikachu1_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_PIKACHU1)",
+          "occurrences": 4
+        },
+        {
+          "find": "dmaReadRom\\(zubat1_ROM_START,\\ zubat1_VRAM,\\ zubat1_ROM_END\\ \\-\\ zubat1_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_ZUBAT1)",
+          "occurrences": 2
+        },
+        {
+          "find": "dmaReadRom\\(bulbasaur1_ROM_START,\\ bulbasaur1_VRAM,\\ bulbasaur1_ROM_END\\ \\-\\ bulbasaur1_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_BULBASAUR1)",
+          "occurrences": 2
+        },
+        {
+          "find": "dmaReadRom\\(magikarp_model_ROM_START,\\ magikarp_model_VRAM,\\ magikarp_model_ROM_END\\ \\-\\ magikarp_model_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_MAGIKARP_MODEL)",
+          "occurrences": 6
+        },
+        {
+          "find": "dmaReadRom\\(pikachu_model_ROM_START,\\ pikachu_model_VRAM,\\ pikachu_model_ROM_END\\ \\-\\ pikachu_model_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_PIKACHU_MODEL)",
+          "occurrences": 4
+        },
+        {
+          "find": "dmaReadRom\\(zubat_model_ROM_START,\\ zubat_model_VRAM,\\ zubat_model_ROM_END\\ \\-\\ zubat_model_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_ZUBAT_MODEL)",
+          "occurrences": 2
+        },
+        {
+          "find": "dmaReadRom\\(bulbasaur_model_ROM_START,\\ bulbasaur_model_VRAM,\\ bulbasaur_model_ROM_END\\ \\-\\ bulbasaur_model_ROM_START\\)",
+          "replace": "application_rom(source, ISLE_APPLICATION_ROM_BULBASAUR_MODEL)",
+          "occurrences": 2
+        },
+        {
+          "find": "\\bu32\\b",
+          "replace": "uint32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "func_8009B2BC",
+      "owner": "application_source",
+      "first": 190,
+      "last": 220,
+      "source_sha256": "32fec1177939790c7c303f4b7bf7e61254d1e3966cc09d3618220af0d5664ab3",
+      "native_sha256": "90d3fc9fbed68a702699d9f73ff67428fcaf76e7b3abca7963c9efe3c8a04cc2",
+      "native_declaration": "int32_t isle_application_func_8009B2BC(IsleApplicationSource* source)",
+      "changes": [
+        {
+          "find": "s32\\ func_8009B2BC\\(void\\)",
+          "replace": "s32 isle_application_func_8009B2BC(IsleApplicationSource* source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bcontIsPrinterAvailable\\(\\)",
+          "replace": "application_printer_available(source)",
+          "occurrences": 1
+        },
+        {
+          "find": "osWritebackDCache\\(VRAM_START,\\ 0x400000\\)",
+          "replace": "application_cache(source, ISLE_APPLICATION_CACHE_WRITEBACK, &memory, 0x400000)",
+          "occurrences": 2
+        },
+        {
+          "find": "osInvalDCache\\(VRAM_START,\\ 0x400000\\)",
+          "replace": "application_cache(source, ISLE_APPLICATION_CACHE_INVALIDATE, &memory, 0x400000)",
+          "occurrences": 2
+        },
+        {
+          "find": "\\bVRAM_START\\b",
+          "replace": "memory.words",
+          "occurrences": 4
+        },
+        {
+          "find": "\\bVRAM_END\\b",
+          "replace": "(memory.words + memory.word_count)",
+          "occurrences": 4
+        },
+        {
+          "find": "u32\\*\\ it;",
+          "replace": "u32* it;\n    IsleApplicationPrinterMemory memory;",
+          "occurrences": 1
+        },
+        {
+          "find": "return\\ \\-3;\\\n\\ \\ \\ \\ \\}",
+          "replace": "return -3;\n    }\n\n    memory = application_printer_memory(source);",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bs32\\b",
+          "replace": "int32_t",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bu32\\b",
+          "replace": "uint32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "func_8009B40C",
+      "owner": "application_source",
+      "first": 224,
+      "last": 236,
+      "source_sha256": "a9d79529b813c1ca692142c3ab4ffcaf4c194a82a3c1d4917ae5c3de7e8c854f",
+      "native_sha256": "709adb74739edb008e7fec8d91c59162aaa23c4f39960a749b85208fe059e085",
+      "native_declaration": "void isle_application_func_8009B40C(IsleApplicationSource* source)",
+      "changes": [
+        {
+          "find": "void\\ func_8009B40C\\(void\\)",
+          "replace": "void isle_application_func_8009B40C(IsleApplicationSource* source)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&D_800ABBD0\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayWorld\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_WORLD)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_801DD010_AA2050\\(i\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_PRINTER_DIAGNOSTIC, i)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bPANIC\\(\\)",
+          "replace": "application_panic(source)",
+          "occurrences": 2
+        },
+        {
+          "find": "\\bs32\\b",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/568D0.c",
+      "symbol": "func_800AAF20",
+      "owner": "application_source",
+      "first": 16,
+      "last": 28,
+      "source_sha256": "f8013606e2fb0a10dfd2e90695a7e725864bda6578cb59135883f9ecfa0b0a63",
+      "native_sha256": "fb3b23ebb845066b459e6718f9262e68a9ab43ba7a1b6974a5122006347bd353",
+      "native_declaration": "void isle_application_func_800AAF20(IsleApplicationSource* source)",
+      "changes": [
+        {
+          "find": "void\\ func_800AAF20\\(void\\)",
+          "replace": "void isle_application_func_800AAF20(IsleApplicationSource* source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bauSetSoundGlobalReverb\\(",
+          "replace": "application_sound_global_reverb(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bauSetBGMExtraReverb\\(",
+          "replace": "application_bgm_extra_reverb(source, ",
+          "occurrences": 2
+        },
+        {
+          "find": "\\bauStopBGM\\(\\)",
+          "replace": "application_stop_bgm(source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bauSetBGMVolume\\(",
+          "replace": "application_bgm_volume(source, ",
+          "occurrences": 2
+        },
+        {
+          "find": "\\bauSetSoundGlobalVolume\\(",
+          "replace": "application_sound_global_volume(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bauSetBGMChannelVolume\\(",
+          "replace": "application_bgm_channel_volume(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bs32\\b",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "symbol": "start_scene_manager",
+      "owner": "application_source",
+      "first": 238,
+      "last": 389,
+      "source_sha256": "a483afae13280adee910fd46df0f4595d597873e6f738b4510436a3538922ae7",
+      "native_sha256": "47f0a664298f8e10d7342ddb6e288f2895540c37074a2d8ece23ea1efbbfe3f0",
+      "native_declaration": "void isle_application_start_scene_manager(IsleApplicationSource* source, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void\\ start_scene_manager\\(s32\\ arg0\\)",
+          "replace": "void isle_application_start_scene_manager(IsleApplicationSource* source, s32 arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bD_800AC010\\b",
+          "replace": "source->state->attract_alternator",
+          "occurrences": 3
+        },
+        {
+          "find": "\\bsetIdleScript\\(",
+          "replace": "isle_application_setIdleScript(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bfunc_8009A8D8\\(",
+          "replace": "isle_application_func_8009A8D8(source, ",
+          "occurrences": 2
+        },
+        {
+          "find": "\\bfunc_8009AE0C\\(",
+          "replace": "isle_application_func_8009AE0C(source, ",
+          "occurrences": 7
+        },
+        {
+          "find": "\\bfunc_8009B2BC\\(\\)",
+          "replace": "isle_application_func_8009B2BC(source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bfunc_8009B40C\\(\\)",
+          "replace": "isle_application_func_8009B40C(source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bfunc_800AAF20\\(\\)",
+          "replace": "isle_application_func_800AAF20(source)",
+          "occurrences": 17
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayWindow\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_WINDOW)",
+          "occurrences": 9
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayCameraCheck\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_CAMERA_CHECK)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayOaksLab\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_OAKS_LAB)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayPokemonAlbum\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_POKEMON_ALBUM)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayPokemonReport\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_POKEMON_REPORT)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayPhotoCheck\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_PHOTO_CHECK)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayGallery\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_GALLERY)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&D_800ABCF0\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_UNK_END_LEVEL_8)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&D_800ABD14\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_MORE_FUNCS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayMainMenu\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_MAIN_MENU)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayMenuNewGame\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_MENU_NEW_GAME)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayCredits\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_CREDITS)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&D_800ABDA4\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_INTRO_CODE)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaLoadOverlay\\(\\&overlayWorld\\)",
+          "replace": "application_overlay(source, ISLE_APPLICATION_OVERLAY_WORLD)",
+          "occurrences": 7
+        },
+        {
+          "find": "dmaReadVPK0\\(\\(u32\\*\\)\\ intro_code_vpk0_ROM_START,\\ VPK_VRAM\\)",
+          "replace": "application_vpk(source, ISLE_APPLICATION_VPK_INTRO_CODE_VPK0)",
+          "occurrences": 1
+        },
+        {
+          "find": "dmaReadVPK0\\(\\(u32\\*\\)\\ main_menu_vpk0_ROM_START,\\ VPK_VRAM\\)",
+          "replace": "application_vpk(source, ISLE_APPLICATION_VPK_MAIN_MENU_VPK0)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800E1C5C_AA0A0C\\(\\)",
+          "replace": "(void)application_enter(source, ISLE_APPLICATION_ENTRY_BOOT, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_beach_802C4740\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_BEACH, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "tunnel_Start\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_TUNNEL, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802BE3B0_640860\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_CAVE, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802D9210_6C0FF0\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_RIVER, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "volcano_Start\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_VOLCANO, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802C6544_79FAD4\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_VALLEY, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80346EF0_826660\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_RAINBOW, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_camera_check_801DCACC\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_CAMERA_CHECK, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_oaks_lab_800E1AD8\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_OAKS_LAB, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "album_Start\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_ALBUM, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_801DCC74_9D35E4\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_REPORT, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_801DCC74_98C6E4\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_PHOTO_CHECK, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_801DCEBC_9FAB7C\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_GALLERY, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_801DD09C_A08C8C\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_END_LEVEL_8, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_credits_801DCB24\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_CREDITS, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800E4830_A0BDC0\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_TITLE, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "menu_new_game_entry\\(sceneId\\)",
+          "replace": "application_enter(source, ISLE_APPLICATION_ENTRY_NAME, sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetReverbType\\(AL_FX_CUSTOM\\)",
+          "replace": "application_reverb_custom(source)",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bcheckPlayerFlag\\(",
+          "replace": "application_check_flag(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bfunc_800BFC18_5CAB8\\(",
+          "replace": "application_saved_offsets(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bauSetSoundQuality\\(",
+          "replace": "application_sound_quality(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bviSetScreenOffsets\\(",
+          "replace": "application_screen_offsets(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bgtlSetIntervals\\(",
+          "replace": "application_intervals(source, ",
+          "occurrences": 1
+        },
+        {
+          "find": "\\bsetLevelId\\(",
+          "replace": "application_set_level(source, ",
+          "occurrences": 8
+        },
+        {
+          "find": "\\bs32\\b",
+          "replace": "int32_t",
+          "occurrences": 3
+        },
+        {
+          "find": "\\bu32\\b",
+          "replace": "uint32_t",
+          "occurrences": 1
+        }
+      ]
+    }
+  ],
+  "semantic_origins": [
+    {
+      "path": "src/app_render/46270.c",
+      "label": "typed_overlay_identity_declarations",
+      "first": 9,
+      "last": 38,
+      "ownership": "typed_resource_identifiers_only",
+      "source_sha256": "fc983ae7758dbae4e8ad889d780c07b52152a33b83cdab71a2377daccee32915"
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "label": "initialized_manager_words",
+      "first": 41,
+      "last": 42,
+      "ownership": "single_canonical_application_state_record",
+      "source_sha256": "c70da97a1782c152128cbc7a26f46c95b7659401d3a6a2d4c73e6950cf012408"
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "label": "idle_script_BSS",
+      "first": 44,
+      "last": 46,
+      "ownership": "single_canonical_application_state_record",
+      "source_sha256": "ccac0ccfee59f71fcad153fc7cb61d10aba1e3ed22295978426ca01498b10109"
+    },
+    {
+      "path": "src/app_render/46270.c",
+      "label": "printer_test_exclusive_memory_bounds",
+      "first": 188,
+      "last": 189,
+      "ownership": "native_allocation_fact_not_guest_pointer",
+      "source_sha256": "4099d75cd77c6b4e5d066d718a18cb85da33da32db0d3827b834f4bd3e066ca2"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "all_25_original_scene_IDs",
+      "first": 4,
+      "last": 30,
+      "ownership": "private_constants",
+      "source_sha256": "866c6b82351bcd6a4bb88c2606dc66949d0649a6a8d8066de0630f9957bde33a"
+    },
+    {
+      "path": "include/enums.h",
+      "label": "saved_sound_quality_flag_ID",
+      "first": 42,
+      "last": 42,
+      "ownership": "private_constant",
+      "source_sha256": "e4098d544ce150f0036bcc387ecf3564de0944a2e27e3aa45273705892f6d61f"
+    },
+    {
+      "path": "include/sys/audio.h",
+      "label": "source_BGM_player_IDs",
+      "first": 8,
+      "last": 11,
+      "ownership": "private_constants",
+      "source_sha256": "ca1f1e83a9e65e66dc8f3774981994ae027ab393579d0c10f5fe8d70ad7f0538"
+    },
+    {
+      "path": "src/more_funcs/5BF20.c",
+      "label": "saved_offsets_canonical_native_decoder",
+      "first": 382,
+      "last": 389,
+      "ownership": "existing_GameSnapshot_screen_offsets_not_rematerialized",
+      "source_sha256": "c9420204f6ad94905281ac48e5ddc4cfbb49a8cfe17d452867220493f0c08008"
+    },
+    {
+      "path": "src/app_render/47330.c",
+      "label": "existing_canonical_level_ID_initializer_and_setter",
+      "first": 3,
+      "last": 3,
+      "ownership": "existing_game_State_native_fact",
+      "source_sha256": "3a2348753ce9dcf0a28528005ba9348cf5f015baa272349d99d3d666819e03f7"
+    },
+    {
+      "path": "src/app_render/47330.c",
+      "label": "existing_canonical_level_ID_setter",
+      "first": 18,
+      "last": 20,
+      "ownership": "existing_game_State_native_service",
+      "source_sha256": "859a37b195d3a31a0d2e89424507208d3fb39640c7d1c6b6ee4d23315595d287"
+    },
+    {
+      "path": "src/AA0650.c",
+      "label": "actual_Boot_entry_boundary",
+      "first": 159,
+      "last": 163,
+      "ownership": "outside_owner_real_native_scene",
+      "source_sha256": "62318b89e807b469119fad67640a48c07ebfc8fbf21bae4daf329dc1def92745"
+    },
+    {
+      "path": "src/AA18E0.c",
+      "label": "actual_printer_diagnostic_entry_boundary",
+      "first": 194,
+      "last": 200,
+      "ownership": "outside_owner_real_native_scene",
+      "source_sha256": "de9652c6db29514bf54e16a054e9e4e6bad9989c1215b3a60dd69d4498d275f3"
+    }
+  ],
+  "constant_names": [
+    "BGM_PLAYER_AUX",
+    "BGM_PLAYER_MAIN",
+    "PFID_9",
+    "SCENE_10",
+    "SCENE_16",
+    "SCENE_21",
+    "SCENE_24",
+    "SCENE_7",
+    "SCENE_ALBUM",
+    "SCENE_BEACH",
+    "SCENE_CAMERA_CHECK",
+    "SCENE_CAVE",
+    "SCENE_CREDITS_17",
+    "SCENE_CREDITS_18",
+    "SCENE_CREDITS_19",
+    "SCENE_CREDITS_20",
+    "SCENE_GALLERY",
+    "SCENE_GALLERY_2",
+    "SCENE_MAIN_MENU",
+    "SCENE_OAKS_LAB",
+    "SCENE_OAKS_LAB_2",
+    "SCENE_PHOTO_CHECK",
+    "SCENE_RAINBOW",
+    "SCENE_REPORT",
+    "SCENE_RIVER",
+    "SCENE_TUNNEL",
+    "SCENE_VALLEY",
+    "SCENE_VOLCANO"
+  ],
+  "resource_identities": {
+    "overlays": [
+      {
+        "source_symbol": "D_800ABBD0",
+        "source_segment": "unk_segment_AA18E0",
+        "native_token": "ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0"
+      },
+      {
+        "source_symbol": "overlayWindow",
+        "source_segment": "window",
+        "native_token": "ISLE_APPLICATION_OVERLAY_WINDOW"
+      },
+      {
+        "source_symbol": "overlayCameraCheck",
+        "source_segment": "camera_check",
+        "native_token": "ISLE_APPLICATION_OVERLAY_CAMERA_CHECK"
+      },
+      {
+        "source_symbol": "overlayOaksLab",
+        "source_segment": "oaks_lab",
+        "native_token": "ISLE_APPLICATION_OVERLAY_OAKS_LAB"
+      },
+      {
+        "source_symbol": "overlayPokemonAlbum",
+        "source_segment": "pokemon_album",
+        "native_token": "ISLE_APPLICATION_OVERLAY_POKEMON_ALBUM"
+      },
+      {
+        "source_symbol": "overlayPokemonReport",
+        "source_segment": "pokemon_report",
+        "native_token": "ISLE_APPLICATION_OVERLAY_POKEMON_REPORT"
+      },
+      {
+        "source_symbol": "overlayPhotoCheck",
+        "source_segment": "photo_check",
+        "native_token": "ISLE_APPLICATION_OVERLAY_PHOTO_CHECK"
+      },
+      {
+        "source_symbol": "overlayGallery",
+        "source_segment": "gallery",
+        "native_token": "ISLE_APPLICATION_OVERLAY_GALLERY"
+      },
+      {
+        "source_symbol": "D_800ABCF0",
+        "source_segment": "unk_end_level_8",
+        "native_token": "ISLE_APPLICATION_OVERLAY_UNK_END_LEVEL_8"
+      },
+      {
+        "source_symbol": "D_800ABD14",
+        "source_segment": "more_funcs",
+        "native_token": "ISLE_APPLICATION_OVERLAY_MORE_FUNCS"
+      },
+      {
+        "source_symbol": "overlayMainMenu",
+        "source_segment": "main_menu",
+        "native_token": "ISLE_APPLICATION_OVERLAY_MAIN_MENU"
+      },
+      {
+        "source_symbol": "overlayMenuNewGame",
+        "source_segment": "menu_new_game",
+        "native_token": "ISLE_APPLICATION_OVERLAY_MENU_NEW_GAME"
+      },
+      {
+        "source_symbol": "overlayCredits",
+        "source_segment": "credits",
+        "native_token": "ISLE_APPLICATION_OVERLAY_CREDITS"
+      },
+      {
+        "source_symbol": "D_800ABDA4",
+        "source_segment": "intro_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_INTRO_CODE"
+      },
+      {
+        "source_symbol": "D_800ABDC8",
+        "source_segment": "app_level",
+        "native_token": "ISLE_APPLICATION_OVERLAY_APP_LEVEL"
+      },
+      {
+        "source_symbol": "overlayWorld",
+        "source_segment": "world",
+        "native_token": "ISLE_APPLICATION_OVERLAY_WORLD"
+      },
+      {
+        "source_symbol": "overlayBeachAssets",
+        "source_segment": "beach_assets",
+        "native_token": "ISLE_APPLICATION_OVERLAY_BEACH_ASSETS"
+      },
+      {
+        "source_symbol": "overlayBeach",
+        "source_segment": "beach_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_BEACH_CODE"
+      },
+      {
+        "source_symbol": "overlayTunnelAssets",
+        "source_segment": "tunnel_assets",
+        "native_token": "ISLE_APPLICATION_OVERLAY_TUNNEL_ASSETS"
+      },
+      {
+        "source_symbol": "overlayTunnel",
+        "source_segment": "tunnel_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_TUNNEL_CODE"
+      },
+      {
+        "source_symbol": "overlayCaveAssets",
+        "source_segment": "cave_assets",
+        "native_token": "ISLE_APPLICATION_OVERLAY_CAVE_ASSETS"
+      },
+      {
+        "source_symbol": "overlayCave",
+        "source_segment": "cave_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_CAVE_CODE"
+      },
+      {
+        "source_symbol": "overlayRiverAssets",
+        "source_segment": "river_assets",
+        "native_token": "ISLE_APPLICATION_OVERLAY_RIVER_ASSETS"
+      },
+      {
+        "source_symbol": "overlayRiver",
+        "source_segment": "river_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_RIVER_CODE"
+      },
+      {
+        "source_symbol": "overlayVolcanoAssets",
+        "source_segment": "volcano_assets",
+        "native_token": "ISLE_APPLICATION_OVERLAY_VOLCANO_ASSETS"
+      },
+      {
+        "source_symbol": "overlayVolcano",
+        "source_segment": "volcano_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_VOLCANO_CODE"
+      },
+      {
+        "source_symbol": "overlayValleyAssets",
+        "source_segment": "valley_assets",
+        "native_token": "ISLE_APPLICATION_OVERLAY_VALLEY_ASSETS"
+      },
+      {
+        "source_symbol": "overlayValley",
+        "source_segment": "valley_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_VALLEY_CODE"
+      },
+      {
+        "source_symbol": "overlayRainbowAssets",
+        "source_segment": "rainbow_assets",
+        "native_token": "ISLE_APPLICATION_OVERLAY_RAINBOW_ASSETS"
+      },
+      {
+        "source_symbol": "overlayRainbow",
+        "source_segment": "rainbow_code",
+        "native_token": "ISLE_APPLICATION_OVERLAY_RAINBOW_CODE"
+      }
+    ],
+    "rom": [
+      {
+        "source_segment": "beach_extra",
+        "native_token": "ISLE_APPLICATION_ROM_BEACH_EXTRA"
+      },
+      {
+        "source_segment": "magikarp_textures",
+        "native_token": "ISLE_APPLICATION_ROM_MAGIKARP_TEXTURES"
+      },
+      {
+        "source_segment": "magikarp_model_hd",
+        "native_token": "ISLE_APPLICATION_ROM_MAGIKARP_MODEL_HD"
+      },
+      {
+        "source_segment": "pikachu1",
+        "native_token": "ISLE_APPLICATION_ROM_PIKACHU1"
+      },
+      {
+        "source_segment": "pikachu_model_hd",
+        "native_token": "ISLE_APPLICATION_ROM_PIKACHU_MODEL_HD"
+      },
+      {
+        "source_segment": "tunnel_extra",
+        "native_token": "ISLE_APPLICATION_ROM_TUNNEL_EXTRA"
+      },
+      {
+        "source_segment": "zubat1",
+        "native_token": "ISLE_APPLICATION_ROM_ZUBAT1"
+      },
+      {
+        "source_segment": "zubat_model_hd",
+        "native_token": "ISLE_APPLICATION_ROM_ZUBAT_MODEL_HD"
+      },
+      {
+        "source_segment": "cave_extra",
+        "native_token": "ISLE_APPLICATION_ROM_CAVE_EXTRA"
+      },
+      {
+        "source_segment": "bulbasaur1",
+        "native_token": "ISLE_APPLICATION_ROM_BULBASAUR1"
+      },
+      {
+        "source_segment": "bulbasaur_model_hd",
+        "native_token": "ISLE_APPLICATION_ROM_BULBASAUR_MODEL_HD"
+      },
+      {
+        "source_segment": "river_extra",
+        "native_token": "ISLE_APPLICATION_ROM_RIVER_EXTRA"
+      },
+      {
+        "source_segment": "volcano_extra",
+        "native_token": "ISLE_APPLICATION_ROM_VOLCANO_EXTRA"
+      },
+      {
+        "source_segment": "valley_extra",
+        "native_token": "ISLE_APPLICATION_ROM_VALLEY_EXTRA"
+      },
+      {
+        "source_segment": "rainbow_extra",
+        "native_token": "ISLE_APPLICATION_ROM_RAINBOW_EXTRA"
+      },
+      {
+        "source_segment": "magikarp_model",
+        "native_token": "ISLE_APPLICATION_ROM_MAGIKARP_MODEL"
+      },
+      {
+        "source_segment": "pikachu_model",
+        "native_token": "ISLE_APPLICATION_ROM_PIKACHU_MODEL"
+      },
+      {
+        "source_segment": "zubat_model",
+        "native_token": "ISLE_APPLICATION_ROM_ZUBAT_MODEL"
+      },
+      {
+        "source_segment": "bulbasaur_model",
+        "native_token": "ISLE_APPLICATION_ROM_BULBASAUR_MODEL"
+      }
+    ],
+    "vpk": [
+      {
+        "source_segment": "intro_code_vpk0",
+        "native_token": "ISLE_APPLICATION_VPK_INTRO_CODE_VPK0"
+      },
+      {
+        "source_segment": "main_menu_vpk0",
+        "native_token": "ISLE_APPLICATION_VPK_MAIN_MENU_VPK0"
+      }
+    ]
+  },
+  "state_origins": [
+    {
+      "source_symbol": "D_800AC00C",
+      "member": "latch",
+      "kind": "initialized_data",
+      "initializer": 0,
+      "source_line": 41
+    },
+    {
+      "source_symbol": "D_800AC010",
+      "member": "attract_alternator",
+      "kind": "initialized_data",
+      "initializer": 0,
+      "source_line": 42
+    },
+    {
+      "source_symbol": "D_800B0578",
+      "member": "idle_script",
+      "kind": "BSS",
+      "initializer": "null_pointer",
+      "source_line": 45
+    }
+  ],
+  "native_support": {
+    "src/application_source.h": {
+      "sha256": "949ecadfd4f239db6d4e054747dc702deb5ab7314a8342de9ec9c85d5931404f"
+    },
+    "src/application_source.c": {
+      "sha256": "26b1de5c3d03f4caa464e428a582de0f46475dfe527a9f3de727a11a3aeee1ce"
+    },
+    "src/player_source.h": {
+      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "10fb58f5f6cebe32ea8662cb7a4f1bfc8e287d88b6355bdd6b30cba22e7f83c9"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
+    },
+    "include/35mmisle/game_save.hpp": {
+      "sha256": "81e28ff9e15b8bd3945f4f31176e6157947c4c35218fdf359d67b4286faee934"
+    },
+    "src/game_save.cpp": {
+      "sha256": "eaf26769d6c05d1ec6e3d851b24ef5a6bcbcaa46365d577ceb8bbf9fd6ceaccd"
+    },
+    "cmake/game-save-inputs.json": {
+      "sha256": "8a4a5418b4d9fc3c66b73bfe2899e8d521ba81db2fcad661f97c5bf2c4dc95ef"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+    },
+    "src/application_manager.hpp": {
+      "sha256": "ac8c7e9152d4a7f4b5c7f0c2e45f1e2d0cb1fd55427eb744cca1a2351426aca3"
+    },
+    "src/application_manager.cpp": {
+      "sha256": "50175d2271aed5d49a0825150e64618fc3cada5155da691e9ca03271e850e7f0"
+    },
+    "src/game_state.hpp": {
+      "sha256": "e6373dd5b3ea3f2c38ab34d2180f984656490542167fcc7447f9780730c15f73"
+    },
+    "src/game_state.cpp": {
+      "sha256": "6f77eb00c42c269581a5d6e1172b806dcedfd94bd2d40b5c3bdf54a9a44fd410"
+    },
+    "src/game_audio.hpp": {
+      "sha256": "13703dbf4e73508eee533164f213db5f91d7e60fd08d01f4c6d63123674effd1"
+    },
+    "src/game_audio.cpp": {
+      "sha256": "ed5e5144f038a673a9a6b0202f82e4c7063774ff57710561eb1858f410c49d3a"
+    },
+    "src/host_clock.hpp": {
+      "sha256": "4ca56a806ffac2e2c36a0239d2142536eb774d6ad8b911a9559ec9de6dbba4ba"
+    },
+    "src/host_clock.cpp": {
+      "sha256": "e9cf3932229019f65ca03d701a54d669fd74e91467ec505055bdc5fa47ae3b43"
+    },
+    "include/35mmisle/game_input.hpp": {
+      "sha256": "7a4bf8cc03e3e745580d4b51d7fe54ee812851663f5fc57f18ad6436347c0bf2"
+    },
+    "src/game_input.cpp": {
+      "sha256": "aa8ee6dda25bfe06f7d2c3462ca66257c29b47b534508a69ee40c862c5281ba0"
+    },
+    "src/menu_resources.hpp": {
+      "sha256": "8403268bce9dc6909b623c7064f2bc32bfbf1a5f214b217755dc6c3326215b0f"
+    },
+    "src/menu_resources.cpp": {
+      "sha256": "78b718fe45bff0152800c0f25d5c800f3fdb343d5c5c2550a73f3dfbbd813fc8"
+    }
+  },
+  "output_sha256": "891fbaef498644816241985f716ad31fd4ece9e657c080e23e6bf0e6fd083ee6",
+  "ownership_counts": {
+    "total": 10,
+    "manager_file": 9,
+    "mixer_helper": 1
+  },
+  "original_body_line_count": 343,
+  "counted_rewrite_occurrences": 236,
+  "retained_source_behavior": {
+    "raw_routes": "All original raw routes0 through24 remain in the complete original switch; original7/10/16 bodies remain no-ops, not synthetic scene entries.",
+    "nested_menu": "Title receives raw8; only its real raw0 result immediately enters Name with raw0, before latch clearing. The manager routes the actual Name result, including Oaks Lab, without a host-side switch.",
+    "attract": "Retain D_800AC010 across all scene lifetimes; Source sets latch1, selects Beach/Tunnel from old value, then updates modulo2.",
+    "per_loop": "Source calls gtlSetIntervals(1,1) then clears the canonical idle pointer at every original loop iteration.",
+    "gallery": "Source22 performs AAF20 reset before falling through to Gallery;23 omits reset;24 loads its distinct end-level overlay and omits reset.",
+    "boot_settings": "Custom reverb, complete AAF20 reset, more_funcs overlay, intro overlay, intro VPK, actual Boot completion, full printer test/diagnostic behavior, saved sound quality and canonical saved offsets precede raw8 selection."
+  },
+  "native_backend_contract": {
+    "implementation": "application_manager.cpp supplies the concrete returning services over canonical State, admitted Snapshot/Catalog residency, Input, Audio and GtlClock. Its independent original-C continuation publishes typed entry intents; actual native scenes remain host-owned and unsupported operations cannot complete successfully.",
+    "source_entry_owner": "An independent application continuation/domain and its plain-C Source/context survive every sceneStorage reset, native scene retirement, graphics/photo/RSP/RDP/readback and PCM fence.",
+    "request_only": "native_request_entry publishes operation/argument and returns. It does not call Source, construct or tick a scene. application_enter performs a positive wait in C only after that leaf has returned.",
+    "outside_completion": "Host consumes intent only after manager resume returns; creates/drives/retires the real scene outside callbacks; supplies actual signed Source result once through native_entry_result. Zero remains a real result, not a default routing alias.",
+    "cancellation_failure": "Use the existing continuation wait/cancel/join/fail contract. Cancellation never returns to discarded C state. Checked native failures retain the first IsleGameResult and terminate through isle_continuation_fail after all native leaves have returned.",
+    "state_migration": "Embed exactly one IsleApplicationManagerState in existing game::State; migrate/remove its existing scene_latch_ and idle_script_ storage. Never mirror latch or attract state. Idle uses the existing const IslePlayerIdleScript pointer type verbatim. Menu entry_flags/scene notice masks remain separate from the scene-manager latch.",
+    "save_reuse": "native_saved_offsets calls existing canonical GameSnapshot::screen_offsets; the 5BF20 getter is provenance only and is not separately materialized. native_check_flag and set_level reuse canonical State/save storage.",
+    "mixer_cutover": "Remove the old C++ startup_runtime.cpp reset_mixer algorithm from the integrated manager path; all manager-owned reset ordering now executes the complete private568D0.c16\u201328 body.",
+    "resources": "Overlay/ROM/VPK enum values are typed identity tokens only. Resolve their exact original source segments through real resource/catalog owners, never SDK overlays or guest memory/function pointers.",
+    "printer": "Availability is a real native capability fact. When present, supply a retained writable4MiB native allocation; original exclusive memory loop touches exactly0xffffc words and uses real writeback/invalidate services over0x400000 bytes. PANIC remains an execution failure; diagnostic entries require real outside-owner completion.",
+    "frame": "Each independently reserved course uses a new cold Frame; never reuse a dispatched Boot/Title Frame for Beach reserve."
+  },
+  "integration": {
+    "private_directory": "_deps/isle-application-private",
+    "generated_include": "application_original.inc",
+    "evidence": "evidence.json",
+    "materializer_arguments": [
+      "--repository",
+      "--manifest",
+      "--output",
+      "--evidence"
+    ],
+    "compile": "Compile src/application_source.c as C, adding the private materialization directory to its private include path; do not compile application_original.inc separately.",
+    "link": "Existing native engine/public types and continuation C ABI plus the parent real application-native leaf implementation; no sceneStorage-owned manager object.",
+    "verification": "Not run: no materializer execution, compilation, build, tests, lint, formatter or runtime checks in this slice. Parent validates once after writers release."
+  }
+}

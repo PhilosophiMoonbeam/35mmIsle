@@ -1,6 +1,7 @@
 #include "engine_fixture.h"
 #include "contextual_model_math.h"
 #include "source_factory_resources.h"
+#include "player_source.h"
 
 #include <algorithm>
 #include <array>
@@ -70,6 +71,116 @@ void trace(const EngineFixture& fixture, std::initializer_list<int> expected) {
     require(fixture.count == expected.size(), "authoritative dispatch trace extent differs");
     std::size_t index = 0;
     for (int value : expected) require(fixture.events[index++] == value, "authoritative dispatch order differs");
+}
+
+void source_stop_abandons_only_an_authorized_update() {
+    {
+        World world;
+        EngineFixture fixture{};fixture.game=world.game;
+        auto* owner=object(world,480);
+        engine_bind_source_payload(owner,&fixture);
+        IsleGameProcess* synchronous=nullptr;
+        ok(isle_game_add_source_process(world.game,owner,engine_source_stop_update,
+            ISLE_GAME_SYNCHRONOUS,8,&synchronous));
+        ok(isle_game_tick(world.game));
+        trace(fixture,{480,481});
+        require(fixture.after_finish==1 && fixture.local_result==ISLE_GAME_INVALID_STATE,
+            "synchronous Source stop did not reject and return without fault");
+    }
+    World world;
+    EngineFixture fixture{};fixture.game=world.game;
+    require(isle_game_stop_update(world.game)==ISLE_GAME_INVALID_STATE,
+        "idle owner authorized a compiled-C update stop");
+    auto* owner=object(world,480);
+    engine_bind_source_payload(owner,&fixture);
+    process(world,owner,engine_native_reject_stop_update,&fixture,ISLE_GAME_STACKFUL,10);
+    IsleGameProcess* stopping=nullptr;
+    ok(isle_game_add_source_process(world.game,owner,engine_source_stop_update,
+        ISLE_GAME_STACKFUL,8,&stopping));
+    EngineRecord later{&fixture,482};
+    process(world,owner,engine_record_process,&later,ISLE_GAME_SYNCHRONOUS,1);
+    require(isle_game_tick(world.game)==ISLE_GAME_STOPPED,
+        "genuine C stop was credited as a complete or failed OM update");
+    trace(fixture,{479,480});
+    require(fixture.after_finish==0 && isle_game_status(world.game)==ISLE_GAME_OK,
+        "C code resumed after stop or normal quit became an execution fault");
+    require(isle_game_tick(world.game)==ISLE_GAME_STOPPED,
+        "abandoned OM world allowed later gameplay updates");
+    trace(fixture,{479,480});
+    ok(isle_game_require_idle(world.game));
+    ok(isle_game_delete_object(world.game,owner));
+    require(counts(world).objects==0 && counts(world).processes==0,
+        "stopped Source process did not actually join during idle teardown");
+    world.reset();
+    ok(isle_game_tick(world.game));
+}
+
+void source_stop_preserves_nested_player_fence() {
+    World world;
+    EngineFixture fixture{};fixture.game=world.game;
+    IslePlayerSource source{};
+    isle_rng rng{};
+    ok(isle_player_source_prepare(world.game,&source,&rng,&fixture,10));
+    ok(isle_player_source_activate(&source));
+    auto* owner=object(world,483);
+    engine_bind_source_payload(owner,&fixture);
+    IsleGameProcess* callback=nullptr;
+    ok(isle_game_add_source_process(world.game,owner,engine_source_reject_nested_stop,
+        ISLE_GAME_STACKFUL,8,&callback));
+    const auto tick=isle_game_tick(world.game);
+    // A discarded fence is a real inability to retire, not success to repair in
+    // the fixture. Deactivate before any assertion can unwind the Source owner.
+    ok(isle_player_source_deactivate(&source));
+    ok(tick);
+    trace(fixture,{483,484});
+    require(source.nonwaiting_call_frame==nullptr && source.status==ISLE_GAME_OK &&
+        isle_game_status(world.game)==ISLE_GAME_OK,
+        "nested stop discarded its returning Player fence or faulted gameplay");
+}
+
+void source_wait_preserves_returning_boundaries() {
+    {
+        World world;
+        EngineFixture fixture{};fixture.game=world.game;
+        require(isle_game_source_wait(world.game,1)==ISLE_GAME_INVALID_STATE,
+            "idle owner suspended a Source update");
+        ok(isle_game_source_wait(world.game,0));
+        auto* owner=object(world,500);
+        engine_bind_source_payload(owner,&fixture);
+        process(world,owner,engine_native_reject_source_wait,&fixture,ISLE_GAME_STACKFUL,10);
+        IsleGameProcess* callback=nullptr;
+        ok(isle_game_add_source_process(world.game,owner,engine_source_wait_once,ISLE_GAME_STACKFUL,8,&callback));
+        EngineRecord later{&fixture,503};
+        process(world,owner,engine_record_process,&later,ISLE_GAME_SYNCHRONOUS,1);
+        ok(isle_game_tick(world.game));trace(fixture,{502,500,503});
+        ok(isle_game_tick(world.game));trace(fixture,{502,500,503,501,503});
+        require(fixture.local_result==ISLE_GAME_OK,"genuine Source wait did not resume after its update");
+    }
+    {
+        World world;
+        EngineFixture fixture{};fixture.game=world.game;
+        auto* owner=object(world,500);
+        engine_bind_source_payload(owner,&fixture);
+        IsleGameProcess* callback=nullptr;
+        ok(isle_game_add_source_process(world.game,owner,engine_source_wait_once,ISLE_GAME_SYNCHRONOUS,8,&callback));
+        ok(isle_game_tick(world.game));trace(fixture,{500,501});
+        require(fixture.local_result==ISLE_GAME_INVALID_STATE,
+            "synchronous Source wait suspended instead of returning rejection");
+    }
+    World world;
+    EngineFixture fixture{};fixture.game=world.game;
+    IslePlayerSource source{};isle_rng rng{};
+    ok(isle_player_source_prepare(world.game,&source,&rng,&fixture,10));
+    ok(isle_player_source_activate(&source));
+    auto* owner=object(world,504);engine_bind_source_payload(owner,&fixture);
+    IsleGameProcess* callback=nullptr;
+    ok(isle_game_add_source_process(world.game,owner,engine_source_reject_nested_wait,ISLE_GAME_STACKFUL,8,&callback));
+    const auto tick=isle_game_tick(world.game);
+    ok(isle_player_source_deactivate(&source));
+    ok(tick);trace(fixture,{504,505});
+    require(source.nonwaiting_call_frame==nullptr && source.status==ISLE_GAME_OK &&
+        isle_game_status(world.game)==ISLE_GAME_OK,
+        "nested Source wait consumed an update or discarded its returning Player fence");
 }
 
 void update_and_process_order() {
@@ -1321,6 +1432,65 @@ void camera_roll_batch_failure_is_atomic() {
     }
 }
 
+void camera_reflection_no_roll_uses_supplied_up() {
+    World world;
+    auto* cam = camera(world, object(world, 1), false);
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT));
+    ok(isle_game_camera_add_matrix(world.game, cam, ISLE_GAME_CAMERA_LOOK_AT_REFLECT));
+    IsleGameLookAt pose{{10, 20, 30}, {10, 20, 29}, {1, 1, 0}};
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    ok(isle_game_camera_set_roll(world.game, cam, 0.73f));
+    ok(isle_game_camera_compute_all(world.game, cam));
+    const auto* basic = matrix(world, cam, 0);
+    const auto* view = matrix(world, cam, 1);
+    const auto* reflected = reflection(world, cam, 1);
+    require(view->kind == ISLE_GAME_CAMERA_LOOK_AT_REFLECT &&
+        std::memcmp(view->floating, basic->floating, sizeof(view->floating)) == 0 &&
+        std::memcmp(&view->fixed, &basic->fixed, sizeof(view->fixed)) == 0,
+        "kind12 did not preserve the supplied-up no-roll view");
+    const float diagonal = std::sqrt(0.5f);
+    close_to(view->floating[0][0], diagonal); close_to(view->floating[1][0], -diagonal);
+    close_to(view->floating[0][1], diagonal); close_to(view->floating[1][1], diagonal);
+    require(reflected->direction[0][0] == 90 && reflected->direction[0][1] == -90 &&
+        reflected->direction[1][0] == 90 && reflected->direction[1][1] == 90 &&
+        reflected->direction[0][2] == 0 && reflected->direction[1][2] == 0 &&
+        reflected->revision == view->revision,
+        "kind12 reflection did not quantize its real no-roll basis");
+    for (unsigned axis = 0; axis < 2; ++axis) for (unsigned c = 0; c < 3; ++c)
+        require(reflected->color[axis][c] == (axis == 1 && c == 1 ? 128 : 0) &&
+            reflected->color_copy[axis][c] == reflected->color[axis][c],
+            "kind12 omitted Source reflection light colors");
+    const auto stable = *view;
+    const auto stable_reflection = *reflected;
+    const auto used = world.arena.cursor;
+    for (float roll : {-1.3f, 0.0f, 2.7f}) {
+        ok(isle_game_camera_set_roll(world.game, cam, roll));
+        ok(isle_game_camera_compute_all(world.game, cam));
+        require(matrix(world, cam, 1) == view && reflection(world, cam, 1) == reflected &&
+            same_camera_values(stable, *view) && same_reflection_values(stable_reflection, *reflected),
+            "kind12 consumed roll or republished an unchanged cache");
+    }
+    pose.up[0] = -1;
+    ok(isle_game_camera_set_look_at(world.game, cam, &pose));
+    ok(isle_game_camera_compute_all(world.game, cam));
+    require(view->revision == stable.revision + 1 && reflected->revision == view->revision &&
+        reflected->direction[0][1] == 90 && reflected->direction[1][0] == -90,
+        "up-only edit did not dirty kind12 matrix and reflection together");
+    const auto accepted = *view;
+    const auto accepted_reflection = *reflected;
+    const IsleGameLookAt parallel{{0,0,5},{0,0,0},{0,0,1}};
+    require(isle_game_camera_set_look_at(world.game, cam, &parallel) == ISLE_GAME_INVALID_ARGUMENT &&
+        same_camera_values(accepted, *view) && same_reflection_values(accepted_reflection, *reflected),
+        "kind12 admitted a degenerate supplied-up basis or mutated rejected state");
+    const IsleGameLookAt overflow{{0,0,40000},{0,0,39999},{0,1,0}};
+    ok(isle_game_camera_set_look_at(world.game, cam, &overflow));
+    const IsleGameCameraReflection* failed = reflected;
+    require(isle_game_camera_reflection(world.game, cam, 1, &failed) == ISLE_GAME_INVALID_ARGUMENT &&
+        failed == nullptr && same_camera_values(accepted, *view) &&
+        same_reflection_values(accepted_reflection, *reflected) && world.arena.cursor == used,
+        "kind12 fixed-range failure partially published reflection or allocated");
+}
+
 void camera_reflection_roll_geometry_and_state() {
     World world;
     auto* owner = object(world, 1);
@@ -2252,6 +2422,63 @@ void model_hierarchy_math_and_cache() {
     require(world.arena.cursor == used, "model mutations allocated");
 }
 
+void model_local_rt_preserves_scale_without_consuming_it() {
+    World world;
+    std::array<IsleGameModelNodeInit,2> initial{{
+        {UINT32_MAX,{{1.5f,-2.25f,3.125f},{0,1.57079637f,0},
+            {std::numeric_limits<float>::max(),-7,0}},ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE},
+        {0,identity_model_transform(),ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE_SCALE}}};
+    IsleGameModel* model = nullptr;
+    ok(isle_game_attach_model(world.game, object(world, 1), initial.data(), initial.size(), &model));
+    const IsleGameModelNode* nodes = nullptr;
+    std::size_t count = 0;
+    ok(isle_game_model_nodes(world.game, model, &nodes, &count));
+    require(count == 2 && nodes[0].matrix_kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE &&
+        fixed_lane(nodes[0].fixed,0,2) == -65536 && fixed_lane(nodes[0].fixed,2,0) == 65536 &&
+        fixed_lane(nodes[0].fixed,1,1) == 65536 &&
+        fixed_lane(nodes[0].fixed,3,0) == 98304 && fixed_lane(nodes[0].fixed,3,1) == -147456 &&
+        fixed_lane(nodes[0].fixed,3,2) == 204800,
+        "node-local RT did not use exact Source27 rotation/translation math");
+    const auto original = nodes[0];
+    const auto child_revision = nodes[1].revision;
+    const auto used = world.arena.cursor;
+    auto pose = initial[0].transform;
+    pose.scale = {-std::numeric_limits<float>::max(),0,-19};
+    ok(isle_game_model_validate_transform(world.game, model, 0, &pose));
+    ok(isle_game_model_set_transform(world.game, model, 0, &pose));
+    const IsleGameModelNode* peek = nullptr;
+    ok(isle_game_model_peek_nodes(world.game, model, &peek, &count));
+    require(peek == nodes && nodes[0].revision == original.revision &&
+        nodes[0].transform.scale.x == pose.scale.x && nodes[0].transform.scale.z == -19,
+        "RT scale mutation erased canonical fields or eagerly evaluated the cache");
+    ok(isle_game_model_nodes(world.game, model, &peek, &count));
+    require(peek == nodes && nodes[0].revision == original.revision + 1 &&
+        nodes[1].revision == child_revision &&
+        std::memcmp(&nodes[0].fixed,&original.fixed,sizeof(original.fixed)) == 0,
+        "RT scale-only mutation changed matrix bytes or dirtied a child local");
+    const auto accepted = nodes[0];
+    for (unsigned boundary = 0; boundary < 3; ++boundary) {
+        auto invalid = pose;
+        if (boundary == 0) invalid.position.x = 32768;
+        else if (boundary == 1) invalid.rotation.y = 1.0e30f;
+        else invalid.scale.z = std::numeric_limits<float>::quiet_NaN();
+        require(isle_game_model_set_transform(world.game, model, 0, &invalid) == ISLE_GAME_INVALID_ARGUMENT,
+            "RT ignored a consumed cast boundary or admitted a nonfinite canonical scale");
+    }
+    ok(isle_game_model_set_transform(world.game, model, 0, &pose));
+    ok(isle_game_model_nodes(world.game, model, &peek, &count));
+    require(nodes[0].revision == accepted.revision &&
+        std::memcmp(&nodes[0].fixed,&accepted.fixed,sizeof(accepted.fixed)) == 0 &&
+        world.arena.cursor == used,"unchanged/rejected RT mutations recomputed or allocated");
+    pose.position.x = -32768;
+    pose.rotation = {};
+    ok(isle_game_model_set_transform(world.game, model, 0, &pose));
+    ok(isle_game_model_nodes(world.game, model, &peek, &count));
+    require(fixed_lane(nodes[0].fixed,3,0) == INT32_MIN && fixed_lane(nodes[0].fixed,0,0) == 65536 &&
+        nodes[0].transform.scale.x == pose.scale.x && nodes[1].revision == child_revision,
+        "RT lower endpoint or scale-independent zero-angle matrix differs");
+}
+
 void model_placement_atomicity_and_lifecycle() {
     World world;
     auto* owner = object(world, 1);
@@ -3091,6 +3318,9 @@ int main() {
         update_and_process_order();
         actor_payload_and_update_context_are_independent();
         source_function_identity_and_reuse();
+        source_stop_abandons_only_an_authorized_update();
+        source_stop_preserves_nested_player_fence();
+        source_wait_preserves_returning_boundaries();
         source_function_pause_matches_actual_callables();
         source_function_pause_preserves_real_waits();
         source_function_pause_current_callback_rules();
@@ -3114,10 +3344,12 @@ int main() {
         camera_roll_boundaries_and_reuse();
         camera_roll_batch_failure_is_atomic();
         camera_reflection_roll_geometry_and_state();
+        camera_reflection_no_roll_uses_supplied_up();
         camera_batch_failure_is_atomic();
         camera_rejection_and_typed_cleanup();
         camera_exhaustion_and_reuse();
         model_hierarchy_math_and_cache();
+        model_local_rt_preserves_scale_without_consuming_it();
         model_contextual_pose_admission_and_cache();
         private_vector_math_edge_semantics();
         model_source54_math_and_atomicity();

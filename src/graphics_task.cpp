@@ -174,9 +174,14 @@ ProgramLoad SourcePrograms::load(SourceProgram program, CommandRange reset) cons
               0xde000000, reset.address}}, 6};
 }
 std::array<std::uint32_t, reset_command_words> reset_commands(ResetInputs inputs) {
-    constexpr std::uint32_t target_bytes = 320 * 240 * 2;
-    validate_range(inputs.framebuffer, target_bytes, 8, "Invalid source reset framebuffer");
-    validate_range(inputs.depth, target_bytes, 8, "Invalid source reset depth target");
+    require(inputs.framebuffer_bytes && !(inputs.framebuffer_bytes & 1u),
+            "Invalid source reset owned 16-bit framebuffer extent");
+    require((!inputs.depth && !inputs.depth_bytes) ||
+            (inputs.depth && inputs.depth_bytes && !(inputs.depth_bytes & 1u)),
+            "Invalid source reset nullable 16-bit depth extent");
+    validate_range(inputs.framebuffer, inputs.framebuffer_bytes, 8, "Invalid source reset framebuffer");
+    if (inputs.depth_bytes)
+        validate_range(inputs.depth, inputs.depth_bytes, 8, "Invalid source reset depth target");
     validate_range(inputs.viewport, 16, 8, "Invalid source reset viewport");
     validate_range(inputs.identity, 64, 8, "Invalid source reset identity matrix");
     validate_range(inputs.pre_render, 8, 8, "Invalid source reset global pre-render head");

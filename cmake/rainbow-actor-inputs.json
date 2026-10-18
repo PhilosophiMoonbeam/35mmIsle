@@ -1,0 +1,3998 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "rainbow-actor-complete77-v2",
+  "provider": "rainbow-actor",
+  "source_files": {
+    "src/rainbow/main.c": {
+      "git_blob": "bee9dab9845cd7ceb6d55c08d623b82ba7a775cf",
+      "sha256": "0d2fa3f6848802e38c88769e3a024149d43270023b2c05a46459d07c32ce3122",
+      "line_count": 358
+    },
+    "src/rainbow/rainbow.h": {
+      "git_blob": "df02b3ec07a35faaf7b77af73ccf859fa16b07a8",
+      "sha256": "39eee86f6cf11d0f7fae267a6fa82bea2d56efdbc597b474b3654cf38946949c",
+      "line_count": 31
+    },
+    "src/rainbow/mew/code.c": {
+      "git_blob": "40455edb782421b6add1b1107a61586854989633",
+      "sha256": "e2b2178a22c760f0708bfd8fc5d3082f2b5621671aa9dac4d77e6d4843e89a1b",
+      "line_count": 659
+    },
+    "src/rainbow/gate/code.c": {
+      "git_blob": "ee5d0b94feada6dcafa0df3a8b07c36baa5b10d1",
+      "sha256": "9c8a147a746ea1dc41a2126c65ec14662f6df8a034594fb2adb87d5ee458f58c",
+      "line_count": 224
+    },
+    "src/rainbow/pkmn_1037/code.c": {
+      "git_blob": "03f323a788a58896889f78aed3e1efaa207711f7",
+      "sha256": "81525136b4e5eb4ea61145d80a584ab4399784ca54a72dfb76219149da8d621f",
+      "line_count": 324
+    },
+    "src/rainbow/evolution_controller/code.c": {
+      "git_blob": "603722c803dea37983a783ca5200f8a8c2d96bca",
+      "sha256": "6be5989dacd8d037d82d9d1a6b1aca85c4862496034a3b538727f4bcae3a29e9",
+      "line_count": 65
+    },
+    "src/rainbow/pkmn_1038/code.c": {
+      "git_blob": "b0519e04b178d5ed8b2096713045a6948e342bc6",
+      "sha256": "79f0716a6d9da3d69a0b4820441c4ff74e85ff2cd5d488ceec6634cc947735b7",
+      "line_count": 65
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "line_count": 2348
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "line_count": 10549
+    },
+    "include/sys/audio.h": {
+      "git_blob": "e4b238fcdb53dec215e044d183908cb09f151ce5",
+      "sha256": "70635d49de63e41c9e66d6d0d4a46dff4730c20e301f43a31860e18fac983f68",
+      "line_count": 36
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "line_count": 343
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "line_count": 237
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_803466C0_825E30",
+      "first": 49,
+      "last": 85,
+      "source_sha256": "6e8546171e8abb6fba352ebe1fefad2a97db2afa0af7922b4420cad5988253d0",
+      "native_sha256": "177f63dc3149dfa30af54f0f236c6517abcd3e9258d4ded41bc2080715783172",
+      "native_declaration": "void func_803466C0_825E30(IsleRainbowActorSource* s)",
+      "changes": [
+        {
+          "find": "(void) {",
+          "replace": "(IsleRainbowActorSource* s) {\n    isle_rainbow_actor_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "    PokemonDef def = {\n        PokemonID_MEW,\n        func_80348938_8280A8,\n        pokemonChangeBlock,\n        pokemonRemoveOne\n    };",
+          "replace": "    const IsleRainbowDefinition def = { UINT32_C(0x00000000), UINT32_C(0x803466c0), 151, UINT32_C(0x80348938), UINT32_C(0x80363dbc), UINT32_C(0x80364280), UINT32_C(0x8034ae90) };",
+          "occurrences": 1
+        },
+        {
+          "find": "    ObjectSpawn spawn;",
+          "replace": "    IsleRainbowAutomaticSpawn spawn;\n    spawn.helper_identity = UINT32_C(0x803466c0);\n    spawn.written_fields = ISLE_RAINBOW_SPAWN_ID_TRANSFORMS;",
+          "occurrences": 1
+        },
+        {
+          "find": "    WorldBlock* block;",
+          "replace": "    void* block;",
+          "occurrences": 1
+        },
+        {
+          "find": "getCurrentWorldBlock()",
+          "replace": "isle_rainbow_actor_current_block(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAddOne(block, block, &spawn, &def)",
+          "replace": "isle_rainbow_actor_add_one(s, block, block, &spawn, &def)",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* model;",
+          "replace": "    IsleGameModelRef model;",
+          "occurrences": 1
+        },
+        {
+          "find": "    Mtx3Float* position;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "    position = &GET_TRANSFORM(model)->pos;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "model = obj->data.dobj;",
+          "replace": "model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.x = 0.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, 0.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.y = 100.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, 100.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.z = 500.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, 500.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "GET_POKEMON(",
+          "replace": "isle_rainbow_actor_source(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB94_82A304 = obj;",
+          "replace": "isle_rainbow_actor_reference(s, &s->D_8034AB94_82A304, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    pokemon = isle_rainbow_actor_source(s, D_8034AB94_82A304);\n",
+          "replace": "    pokemon = isle_rainbow_actor_source(s, s->D_8034AB94_82A304);\n",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_803467A4_825F14",
+      "first": 87,
+      "last": 124,
+      "source_sha256": "11f638cc7dbf87b82c8735c2a136f6a3c1ba8b63974f4e6085f9b318792f8910",
+      "native_sha256": "285d558664d667c9638b918e179d59151076a7180170e32ef975a96be46714dd",
+      "native_declaration": "void func_803467A4_825F14(GObj* baseObj)",
+      "changes": [
+        {
+          "find": "(GObj* baseObj) {",
+          "replace": "(GObj* baseObj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(baseObj->game);\n    IsleGameModelRef base_model = isle_rainbow_actor_model(s, baseObj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    PokemonDef def = {\n        PokemonID_1037,\n        func_80349EB8_829628,\n        pokemonChangeBlock,\n        pokemonRemoveOne\n    };",
+          "replace": "    const IsleRainbowDefinition def = { UINT32_C(0x00000000), UINT32_C(0x803467a4), 1037, UINT32_C(0x80349eb8), UINT32_C(0x80363dbc), UINT32_C(0x80364280), UINT32_C(0x8034b554) };",
+          "occurrences": 1
+        },
+        {
+          "find": "    ObjectSpawn spawn;",
+          "replace": "    IsleRainbowAutomaticSpawn spawn;\n    spawn.helper_identity = UINT32_C(0x803467a4);\n    spawn.written_fields = ISLE_RAINBOW_SPAWN_ID_TRANSFORMS;",
+          "occurrences": 1
+        },
+        {
+          "find": "    WorldBlock* block;",
+          "replace": "    void* block;",
+          "occurrences": 1
+        },
+        {
+          "find": "getCurrentWorldBlock()",
+          "replace": "isle_rainbow_actor_current_block(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAddOne(block, block, &spawn, &def)",
+          "replace": "isle_rainbow_actor_add_one(s, block, block, &spawn, &def)",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* model;",
+          "replace": "    IsleGameModelRef model;",
+          "occurrences": 1
+        },
+        {
+          "find": "    Mtx3Float* position;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "model = obj->data.dobj;",
+          "replace": "model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    position = &GET_TRANSFORM(baseObj->data.dobj)->pos;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.x = position->v.x;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, isle_rainbow_actor_aux(s, &base_model)->position.x);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.y = position->v.y;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, isle_rainbow_actor_aux(s, &base_model)->position.y);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.z = position->v.z;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &base_model)->position.z);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "GET_POKEMON(",
+          "replace": "isle_rainbow_actor_source(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308 = obj;",
+          "replace": "isle_rainbow_actor_reference(s, &s->D_8034AB98_82A308, obj);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/main.c",
+      "symbol": "func_80346898_826008",
+      "first": 126,
+      "last": 159,
+      "source_sha256": "7a8c4bbf38c616721790d71e9e4948e86d3de260d52bad953bbdd79ec5d2840f",
+      "native_sha256": "16854215e03a4875314cd7e35c7c3810a1cd2826175cd0ad79fe73055c70cce9",
+      "native_declaration": "void func_80346898_826008(IsleRainbowActorSource* s)",
+      "changes": [
+        {
+          "find": "(void) {",
+          "replace": "(IsleRainbowActorSource* s) {\n    isle_rainbow_actor_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "    PokemonDef def = {\n        PokemonID_1038,\n        func_8034A4E8_829C58,\n        pokemonChangeBlock,\n        pokemonRemoveOne\n    };",
+          "replace": "    const IsleRainbowDefinition def = { UINT32_C(0x00000000), UINT32_C(0x80346898), 1038, UINT32_C(0x8034a4e8), UINT32_C(0x80363dbc), UINT32_C(0x80364280), UINT32_C(0x8034b638) };",
+          "occurrences": 1
+        },
+        {
+          "find": "    ObjectSpawn spawn;",
+          "replace": "    IsleRainbowAutomaticSpawn spawn;\n    spawn.helper_identity = UINT32_C(0x80346898);\n    spawn.written_fields = ISLE_RAINBOW_SPAWN_ID_TRANSFORMS;",
+          "occurrences": 1
+        },
+        {
+          "find": "    WorldBlock* block;",
+          "replace": "    void* block;",
+          "occurrences": 1
+        },
+        {
+          "find": "getCurrentWorldBlock()",
+          "replace": "isle_rainbow_actor_current_block(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAddOne(block, block, &spawn, &def)",
+          "replace": "isle_rainbow_actor_add_one(s, block, block, &spawn, &def)",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* model;",
+          "replace": "    IsleGameModelRef model;",
+          "occurrences": 1
+        },
+        {
+          "find": "model = obj->data.dobj;",
+          "replace": "model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.x = 0.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, 0.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.y = 0.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, 0.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.z = 0.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, 0.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "GET_POKEMON(",
+          "replace": "isle_rainbow_actor_source(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB94_82A304",
+          "replace": "s->D_8034AB94_82A304",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80346FA0_826710",
+      "first": 169,
+      "last": 192,
+      "source_sha256": "f88f3b248127eea24d72a15d523d0c7ac164734f693bd08564a96dba30d66f5f",
+      "native_sha256": "43bb372b28347a8c9f92c27d5b9553e0dbd1390caa2915dac44eeff92615731b",
+      "native_declaration": "void func_80346FA0_826710(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80346FA0_826710)",
+          "replace": "void func_80346FA0_826710(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(obj, RAINBOW_CMD_35, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, obj, RAINBOW_CMD_35, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB9C_82A30C",
+          "replace": "s->D_8034AB9C_82A30C",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034AE5C_82A5CC",
+          "replace": "s->D_8034AE5C_82A5CC",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AF38_82A6A8",
+          "replace": "s->D_8034AF38_82A6A8",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_803470CC_82683C",
+      "first": 194,
+      "last": 206,
+      "source_sha256": "c1fa19ecf18337a24a832c05e939100fdb7004081184d88db9d04a7bab9e9876",
+      "native_sha256": "f0fc98de11761d10db680032b639d0491ade04ee485fec5c1fe42e14a612760c",
+      "native_declaration": "void func_803470CC_82683C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803470CC_82683C)",
+          "replace": "void func_803470CC_82683C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.y",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.y",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350188_82F8F8",
+          "replace": "s->D_80350188_82F8F8",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8035018C_82F8FC",
+          "replace": "s->D_8035018C_82F8FC",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347188_8268F8",
+      "first": 208,
+      "last": 213,
+      "source_sha256": "478f2d27375a41dcd3d10e76483ab9f9c3a0a0802d42215737308d1eb7ef3b59",
+      "native_sha256": "5ce5b4466baea30fdb737bf5d818f2f83a122940c11f0e4b225b5b8be47f7e29",
+      "native_declaration": "void func_80347188_8268F8(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347188_8268F8)",
+          "replace": "void func_80347188_8268F8(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_803471D4_826944",
+      "first": 215,
+      "last": 236,
+      "source_sha256": "bd084acd1c7c8286d94a088e6def3f0e030554b85184a2628dc90b1865b2b8e3",
+      "native_sha256": "e85f5d08b162f92adafb8cf7856a97cc45544461d6d2764987b0ee18fa79e366",
+      "native_declaration": "void func_803471D4_826944(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803471D4_826944)",
+          "replace": "void func_803471D4_826944(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034ACD8_82A448)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034acd8), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE10_82A580",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ae10))",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034AD50_82A4C0",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ad50))",
+          "occurrences": 1
+        },
+        {
+          "find": "randRange(",
+          "replace": "isle_actor_source_rand_range(obj, ",
+          "occurrences": 2
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_30, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_30, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE50_82A5C0",
+          "replace": "s->D_8034AE50_82A5C0",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE58_82A5C8",
+          "replace": "s->D_8034AE58_82A5C8",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347334_826AA4",
+      "first": 238,
+      "last": 245,
+      "source_sha256": "aecf16de01af5843b9e975546bb31e7cf22e301294e3bf517ec86886e29315c3",
+      "native_sha256": "5973ae641d2324437862a01ea4f3c54ec5c533f3336804dbde8cad1101774d2d",
+      "native_declaration": "void func_80347334_826AA4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347334_826AA4)",
+          "replace": "void func_80347334_826AA4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034ACB0_82A420)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034acb0), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AD50_82A4C0",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ad50))",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetStateRandom(obj, D_8034AE30_82A5A0)",
+          "replace": "Pokemon_SetStateRandom(obj, isle_rainbow_actor_weighted(obj, UINT32_C(0x8034ae30)))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350190_82F900",
+          "replace": "s->D_80350190_82F900",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347398_826B08",
+      "first": 247,
+      "last": 268,
+      "source_sha256": "65c8e4ed1c281c402993fa31fc3a414c302549f8871e01781f0b528527f7e41c",
+      "native_sha256": "64a963091144402bd5791416697d17f5e6e4704cdd8e1cab70be73f07c320a33",
+      "native_declaration": "void func_80347398_826B08(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347398_826B08)",
+          "replace": "void func_80347398_826B08(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.x = sinf(D_8034AE50_82A5C0) * 200.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, sinf(D_8034AE50_82A5C0) * 200.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.z = sinf(D_8034AE58_82A5C8) * 150.0f + D_8035018C_82F8FC;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, sinf(D_8034AE58_82A5C8) * 150.0f + D_8035018C_82F8FC);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "randFloat()",
+          "replace": "isle_actor_source_rand_float(obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE50_82A5C0",
+          "replace": "s->D_8034AE50_82A5C0",
+          "occurrences": 4
+        },
+        {
+          "find": "D_8034AE58_82A5C8",
+          "replace": "s->D_8034AE58_82A5C8",
+          "occurrences": 4
+        },
+        {
+          "find": "D_8035018C_82F8FC",
+          "replace": "s->D_8035018C_82F8FC",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347574_826CE4",
+      "first": 270,
+      "last": 276,
+      "source_sha256": "9757631e6f7dc1dca551bfc20c928ade79ba38ff44122ef090c62d87b822e13e",
+      "native_sha256": "de18e2e7c0bc125e7b44a188a61b323eefcf2b2cea142807f8d3aec49c4bd27b",
+      "native_declaration": "void func_80347574_826CE4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347574_826CE4)",
+          "replace": "void func_80347574_826CE4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034ACC4_82A434)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034acc4), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AD50_82A4C0",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ad50))",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetStateRandom(obj, D_8034AE30_82A5A0)",
+          "replace": "Pokemon_SetStateRandom(obj, isle_rainbow_actor_weighted(obj, UINT32_C(0x8034ae30)))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_803475D0_826D40",
+      "first": 278,
+      "last": 301,
+      "source_sha256": "53f498e100b9aff4a55cb6d35bc756d311380e42a83be0f34146f535d575f0d9",
+      "native_sha256": "6d3c90dd1a44ad3a453dd0758a519354e0cd814ff4fea107dfee3d528ca3b4b3",
+      "native_declaration": "void func_803475D0_826D40(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803475D0_826D40)",
+          "replace": "void func_803475D0_826D40(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 2
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034ACEC_82A45C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034acec), 0.0f, 0)",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034AE10_82A580",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ae10))",
+          "occurrences": 2
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 4
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_28, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_28, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "occurrences": 2
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_29, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_29, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 4
+        },
+        {
+          "find": "D_8034AE48_82A5B8",
+          "replace": "s->D_8034AE48_82A5B8",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350190_82F900",
+          "replace": "s->D_80350190_82F900",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347724_826E94",
+      "first": 303,
+      "last": 334,
+      "source_sha256": "3b3e62730ebe8c5cfc23e3fc3ba2810c514001c1a93ca8ad729fb0fee7d77247",
+      "native_sha256": "b272e62fa9803cd0fa23fe806f18821d319a85eb2ad73029e239f2e9e7b81cb1",
+      "native_declaration": "void func_80347724_826E94(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347724_826E94)",
+          "replace": "void func_80347724_826E94(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.z = (randRange(50) + 80) * 10.0f + 200.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, (randRange(50) + 80) * 10.0f + 200.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034ACD8_82A448)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034acd8), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE10_82A580",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ae10))",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034AD90_82A500",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ad90))",
+          "occurrences": 1
+        },
+        {
+          "find": "randRange(",
+          "replace": "isle_actor_source_rand_range(obj, ",
+          "occurrences": 3
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_30, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_30, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE50_82A5C0",
+          "replace": "s->D_8034AE50_82A5C0",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE54_82A5C4",
+          "replace": "s->D_8034AE54_82A5C4",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350190_82F900",
+          "replace": "s->D_80350190_82F900",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347900_827070",
+      "first": 336,
+      "last": 339,
+      "source_sha256": "0e39fd1aa62315e55ed2af18705a407b051eec9d31bc85205d41be17f509979e",
+      "native_sha256": "e82229a97dc0f3811e29d8d9e1ce6e21ffa43fca0ce32611f54c1335f5111342",
+      "native_declaration": "void func_80347900_827070(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347900_827070)",
+          "replace": "void func_80347900_827070(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347940_8270B0",
+      "first": 341,
+      "last": 347,
+      "source_sha256": "c6c553ad24e633375b13719ae9651e8a78cfcfd88efb4367ad463e29b150415f",
+      "native_sha256": "7ea74685e1f8acf70fc8877bbfb22a0a6a935a2c24c0c7ef569d6afe1121c09e",
+      "native_declaration": "void func_80347940_8270B0(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347940_8270B0)",
+          "replace": "void func_80347940_8270B0(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034ACB0_82A420)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034acb0), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AD90_82A500",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ad90))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_8034799C_82710C",
+      "first": 349,
+      "last": 369,
+      "source_sha256": "a0e92e6f2685c3d54a057157052679f769fc0541d3592d52436c88718aa55bdf",
+      "native_sha256": "e6da1b28d5cdc6f8ebed17403e5e8176645a96cb15829ec9fab5af46973246c2",
+      "native_declaration": "void func_8034799C_82710C(GObj* obj)",
+      "changes": [
+        {
+          "find": "pokemon->pathProc = FALSE;",
+          "replace": "pokemon->pathProc = NULL;",
+          "occurrences": 1
+        },
+        {
+          "find": "POKEMON_FUNC(func_8034799C_82710C)",
+          "replace": "void func_8034799C_82710C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.x = sinf(D_8034AE50_82A5C0) * 300.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, sinf(D_8034AE50_82A5C0) * 300.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.z -= 10.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &model)->position.z - (10.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.y = sinf(D_8034AE54_82A5C4) * 20.0f + D_80350188_82F8F8;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, sinf(D_8034AE54_82A5C4) * 20.0f + D_80350188_82F8F8);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE50_82A5C0",
+          "replace": "s->D_8034AE50_82A5C0",
+          "occurrences": 4
+        },
+        {
+          "find": "D_8034AE54_82A5C4",
+          "replace": "s->D_8034AE54_82A5C4",
+          "occurrences": 4
+        },
+        {
+          "find": "D_80350188_82F8F8",
+          "replace": "s->D_80350188_82F8F8",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347B88_8272F8",
+      "first": 371,
+      "last": 392,
+      "source_sha256": "6764f9e372f12b97ad1ecff67da78925ad1942b40ecf692348f69b56acffae79",
+      "native_sha256": "bb564fdc41add3653892ad92195085e8bb8c282e10a65bbccb813dd9d70985f5",
+      "native_declaration": "void func_80347B88_8272F8(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347B88_8272F8)",
+          "replace": "void func_80347B88_8272F8(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034ACEC_82A45C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034acec), 0.0f, 0)",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034AE10_82A580",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ae10))",
+          "occurrences": 2
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 4
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_28, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_28, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "occurrences": 2
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_29, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_29, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 4
+        },
+        {
+          "find": "D_8034AE4C_82A5BC",
+          "replace": "s->D_8034AE4C_82A5BC",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350190_82F900",
+          "replace": "s->D_80350190_82F900",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347CC8_827438",
+      "first": 394,
+      "last": 409,
+      "source_sha256": "82edc07c6c0e9aabe33fe9f4be188f05f30ae211e89c73a0ea0150dfea289d4f",
+      "native_sha256": "bf5b84d9b348c5190d81cb02b54fb78caf9ce2ce764d2d7d6afda7ceea7285dd",
+      "native_declaration": "void func_80347CC8_827438(GObj* obj)",
+      "changes": [
+        {
+          "find": "pokemon->pathProc = FALSE;",
+          "replace": "pokemon->pathProc = NULL;",
+          "occurrences": 1
+        },
+        {
+          "find": "POKEMON_FUNC(func_80347CC8_827438)",
+          "replace": "void func_80347CC8_827438(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.z += 10.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &model)->position.z + (10.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.y = sinf(D_8034AE54_82A5C4) * 50.0f + D_80350188_82F8F8;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, sinf(D_8034AE54_82A5C4) * 50.0f + D_80350188_82F8F8);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE54_82A5C4",
+          "replace": "s->D_8034AE54_82A5C4",
+          "occurrences": 4
+        },
+        {
+          "find": "D_80350188_82F8F8",
+          "replace": "s->D_80350188_82F8F8",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347E0C_82757C",
+      "first": 411,
+      "last": 414,
+      "source_sha256": "551c4e127c5a7dc26b2d481bad0c3fd601909e7f1665dfc535aefa96ddbf23f9",
+      "native_sha256": "8a5075c375fc8c33cce40ddd7f8c6d3cca508f9b2b3477fe164b72b63a920a88",
+      "native_declaration": "void func_80347E0C_82757C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347E0C_82757C)",
+          "replace": "void func_80347E0C_82757C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80347E44_8275B4",
+      "first": 416,
+      "last": 445,
+      "source_sha256": "942d8ace3bad8f294bdacea870a53c781495a01cf9ca9569f444a9ab4436ebcd",
+      "native_sha256": "41650964a20f9f599629d03a2cb493cfccb6e3dd0fc3ab1c3eb178de152b245e",
+      "native_declaration": "void func_80347E44_8275B4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80347E44_8275B4)",
+          "replace": "void func_80347E44_8275B4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.y = 100.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, 100.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.z = 200.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, 200.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.x = randRange(2) != 0 ? ((D_80350194_82F904 * 60.0f) + 100.0f) : -((D_80350194_82F904 * 60.0f) + 100.0f);\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, randRange(2) != 0 ? ((D_80350194_82F904 * 60.0f) + 100.0f) : -((D_80350194_82F904 * 60.0f) + 100.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034AD28_82A498)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034ad28), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE10_82A580",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034ae10))",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034ADD0_82A540",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034add0))",
+          "occurrences": 1
+        },
+        {
+          "find": "randRange(",
+          "replace": "isle_actor_source_rand_range(obj, ",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_30, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_30, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE54_82A5C4",
+          "replace": "s->D_8034AE54_82A5C4",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350194_82F904",
+          "replace": "s->D_80350194_82F904",
+          "occurrences": 3
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_8034800C_82777C",
+      "first": 447,
+      "last": 460,
+      "source_sha256": "3c1a5d579c66b3467fefa5decdab6d63ee261bcb63e7e86b6e892e64fa94cd0e",
+      "native_sha256": "1ed6626a67580fd64c493727957a063f685e6fc742ac2d7b4bcda322bfb876a4",
+      "native_declaration": "void func_8034800C_82777C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034800C_82777C)",
+          "replace": "void func_8034800C_82777C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034AD00_82A470)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034ad00), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034AD14_82A484)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034ad14), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034ADD0_82A540",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034add0))",
+          "occurrences": 1
+        },
+        {
+          "find": "randRange(",
+          "replace": "isle_actor_source_rand_range(obj, ",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_34, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_34, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE4C_82A5BC",
+          "replace": "s->D_8034AE4C_82A5BC",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350198_82F908",
+          "replace": "s->D_80350198_82F908",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_803480C0_827830",
+      "first": 462,
+      "last": 474,
+      "source_sha256": "9e40bf6f43effc7ab1963a15c05a7221b09b889842398c53b0edf17329a88357",
+      "native_sha256": "a4537830eb2f53a417add1d0761af13efa92ae83f62a6c48c5c01be91e63d8af",
+      "native_declaration": "void func_803480C0_827830(GObj* obj)",
+      "changes": [
+        {
+          "find": "pokemon->pathProc = FALSE;",
+          "replace": "pokemon->pathProc = NULL;",
+          "occurrences": 1
+        },
+        {
+          "find": "POKEMON_FUNC(func_803480C0_827830)",
+          "replace": "void func_803480C0_827830(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.z += 5.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &model)->position.z + (5.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.y = sinf(D_8034AE54_82A5C4) * 50.0f + D_80350188_82F8F8;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, sinf(D_8034AE54_82A5C4) * 50.0f + D_80350188_82F8F8);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE54_82A5C4",
+          "replace": "s->D_8034AE54_82A5C4",
+          "occurrences": 4
+        },
+        {
+          "find": "D_80350188_82F8F8",
+          "replace": "s->D_80350188_82F8F8",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80348208_827978",
+      "first": 476,
+      "last": 495,
+      "source_sha256": "1c609f86661e21354596e0d173152a5d4eab51eb18859138ee8b280625e40b95",
+      "native_sha256": "c453e37695d2677a2c95777ab99a163c84e07c2032b2bcdfe96fa9ed0d4cc5ee",
+      "native_declaration": "void func_80348208_827978(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348208_827978)",
+          "replace": "void func_80348208_827978(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034AD3C_82A4AC)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034ad3c), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034ADD0_82A540",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034add0))",
+          "occurrences": 2
+        },
+        {
+          "find": "D_80350194_82F904",
+          "replace": "s->D_80350194_82F904",
+          "occurrences": 2
+        },
+        {
+          "find": "D_80350198_82F908",
+          "replace": "s->D_80350198_82F908",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_803482EC_827A5C",
+      "first": 497,
+      "last": 539,
+      "source_sha256": "eea28f35922216cf8882fb9409cbfaf0f85fe8c3c5e2ecff557b95867faf0060",
+      "native_sha256": "675cd0c6ec3b7934118458066f3cf0e98d50fa22a5779a972dd2cf1d4cc28727",
+      "native_declaration": "void func_803482EC_827A5C(GObj* obj)",
+      "changes": [
+        {
+          "find": "pokemon->pathProc = FALSE;",
+          "replace": "pokemon->pathProc = NULL;",
+          "occurrences": 1
+        },
+        {
+          "find": "POKEMON_FUNC(func_803482EC_827A5C)",
+          "replace": "void func_803482EC_827A5C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "                position->v.z -= 2.0f;\n",
+          "replace": "                isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &model)->position.z - (2.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.y = sinf(D_8034AE54_82A5C4) * 10.0f + D_80350188_82F8F8;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, sinf(D_8034AE54_82A5C4) * 10.0f + D_80350188_82F8F8);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.x = f20;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, f20);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.x",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.x",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_31, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE50_82A5C0",
+          "replace": "s->D_8034AE50_82A5C0",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE54_82A5C4",
+          "replace": "s->D_8034AE54_82A5C4",
+          "occurrences": 4
+        },
+        {
+          "find": "D_80350188_82F8F8",
+          "replace": "s->D_80350188_82F8F8",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_803484F0_827C60",
+      "first": 541,
+      "last": 549,
+      "source_sha256": "3db959e14a65c40386b44b803f2ed52008ba1b5b9b3e75d69babe53589f1562f",
+      "native_sha256": "3db959e14a65c40386b44b803f2ed52008ba1b5b9b3e75d69babe53589f1562f",
+      "native_declaration": "void func_803484F0_827C60(s32 arg0, s32* arg1)",
+      "changes": []
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80348540_827CB0",
+      "first": 551,
+      "last": 595,
+      "source_sha256": "1fb68f6e0a091435b9ee4feb93c3ab0382a8cb62ea64bd83772ea2d878f5f88f",
+      "native_sha256": "47bf22222b90f0e9fc0e71d549bdedcbfb0295222a561047f715669b79f046c5",
+      "native_declaration": "void func_80348540_827CB0(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348540_827CB0)",
+          "replace": "void func_80348540_827CB0(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSong(BGM_PLAYER_AUX)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_stop(s, BGM_PLAYER_AUX))",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySong(BGM_PLAYER_AUX, SONG_ID_28)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_play(s, BGM_PLAYER_AUX, SONG_ID_28))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMVolume(BGM_PLAYER_MAIN, 0x7F00)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_volume(s, BGM_PLAYER_MAIN, 0x7F00))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMChannelVolume(BGM_PLAYER_MAIN, sp50[i], sp40)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_channel_volume(s, BGM_PLAYER_MAIN, sp50[i], sp40))",
+          "occurrences": 3
+        },
+        {
+          "find": "auSetBGMChannelVolume(BGM_PLAYER_MAIN, sp4C[i], 0)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_channel_volume(s, BGM_PLAYER_MAIN, sp4C[i], 0))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMChannelVolume(BGM_PLAYER_MAIN, sp4C[i], sp38)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_channel_volume(s, BGM_PLAYER_MAIN, sp4C[i], sp38))",
+          "occurrences": 1
+        },
+        {
+          "find": "Items_GetPokeFluteCmd()",
+          "replace": "isle_actor_source_flute(obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350198_82F908",
+          "replace": "s->D_80350198_82F908",
+          "occurrences": 3
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_8034877C_827EEC",
+      "first": 597,
+      "last": 602,
+      "source_sha256": "7fad064d44369b635974177b3bb03d47218499129fef567b21e5c7e3ea96c062",
+      "native_sha256": "f1a327beaf9e0378f7357899809bc6d4030cf2aac399803bd43d10975d1d04cf",
+      "native_declaration": "void func_8034877C_827EEC(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034877C_827EEC)",
+          "replace": "void func_8034877C_827EEC(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE5C_82A5CC",
+          "replace": "s->D_8034AE5C_82A5CC",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_803487CC_827F3C",
+      "first": 604,
+      "last": 613,
+      "source_sha256": "0d46d36c206ea75ff09a80d8ccb3a25e34a8afa66cbfb5de16f08cc4f1d74bb2",
+      "native_sha256": "884061f5d94fe9cbe5d0688c0d8049d8715c1e1cd3cb90c62ca5d38bcd68e4a9",
+      "native_declaration": "void func_803487CC_827F3C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803487CC_827F3C)",
+          "replace": "void func_803487CC_827F3C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034AD3C_82A4AC)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034ad3c), 0.0f, 1)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80348850_827FC0",
+      "first": 615,
+      "last": 631,
+      "source_sha256": "4b8c0cc5215e0e54d3f3f3ee582912eafc1abeffff31b40e67b13f518e5d3c7c",
+      "native_sha256": "f84283a5eea19d6a6f18f4b0beccf408fb06885dabddc2969bdab1a7139449fe",
+      "native_declaration": "void func_80348850_827FC0(GObj* obj)",
+      "changes": [
+        {
+          "find": "pokemon->pathProc = FALSE;",
+          "replace": "pokemon->pathProc = NULL;",
+          "occurrences": 1
+        },
+        {
+          "find": "POKEMON_FUNC(func_80348850_827FC0)",
+          "replace": "void func_80348850_827FC0(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.y = 100.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, 100.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.z = 660.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, 660.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.y += 5.0f / 3.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, isle_rainbow_actor_aux(s, &model)->position.y + (5.0f / 3.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        rotation->v.y += PI / 18.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_RY, isle_rainbow_actor_aux(s, &model)->rotation.y + (PI / 18.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.y",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.y",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/mew/code.c",
+      "symbol": "func_80348938_8280A8",
+      "first": 657,
+      "last": 659,
+      "source_sha256": "406d141224114d453388e65808b8f6cefef44a0fd90dfe6bd080f4369e09d7ba",
+      "native_sha256": "83decf9326d5d706e9981e296cc64889e366d95901e8db9bf79f29eb40926d1b",
+      "native_declaration": "GObj* func_80348938_8280A8(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn)",
+      "changes": [
+        {
+          "find": "&D_8034AE90_82A600",
+          "replace": "&(const IsleActorFactoryInitialization){UINT32_C(0x8034ae90)}",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348970_8280E0",
+      "first": 30,
+      "last": 32,
+      "source_sha256": "83d9bdd80b3cca5c48cd8ee6550882ef20148252db5f1de3a550345aef9ca984",
+      "native_sha256": "bcc56050f80d788921cf7e9111b9626fc0efeb5004eb5e15d84c741282661662",
+      "native_declaration": "void func_80348970_8280E0(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348970_8280E0)",
+          "replace": "void func_80348970_8280E0(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348994_828104",
+      "first": 34,
+      "last": 41,
+      "source_sha256": "cbe3eca29cc87edd8ce10e2069ea18c23c0e6e300b3a732e1074c50e1fd3a69d",
+      "native_sha256": "f331ae267b2d99709132bd1c6c4a87b8f75590dfd6dda30e74eb60197831f40e",
+      "native_declaration": "void func_80348994_828104(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348994_828104)",
+          "replace": "void func_80348994_828104(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034AED0_82A640)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034aed0), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AF3C_82A6AC",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034af3c))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348A04_828174",
+      "first": 43,
+      "last": 70,
+      "source_sha256": "1eb94982cac95703e33f8529eac4cb1fc238ae5d66938d08f02b1d4aa7902399",
+      "native_sha256": "9f87e0f675dbacdeb0e097074436ffc8aca0582f7fe2dfe3e484c88a43740063",
+      "native_declaration": "void func_80348A04_828174(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348A04_828174)",
+          "replace": "void func_80348A04_828174(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySound(",
+          "replace": "isle_rainbow_actor_sound(s, ",
+          "occurrences": 3
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034AEE4_82A654)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034aee4), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034AEF8_82A668)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034aef8), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034AF0C_82A67C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034af0c), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "gObjPlayer",
+          "replace": "isle_actor_source_player(obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(isle_actor_source_player(obj), PLAYER_CMD_9, NULL);",
+          "replace": "isle_actor_source_send_addressed(obj, isle_actor_source_player(obj), PLAYER_CMD_9, NULL);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AF30_82A6A0",
+          "replace": "s->D_8034AF30_82A6A0",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348B34_8282A4",
+      "first": 72,
+      "last": 80,
+      "source_sha256": "bdf0f4bde6453d9af509ba38bc6db75fecd83336325ef6e6234b831a2f977f24",
+      "native_sha256": "19fdba3237de7377753f18cb670452d2741106a827b094a5f8ed916331a8138e",
+      "native_declaration": "void func_80348B34_8282A4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348B34_8282A4)",
+          "replace": "void func_80348B34_8282A4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.z -= 5.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &model)->position.z - (5.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348BDC_82834C",
+      "first": 82,
+      "last": 86,
+      "source_sha256": "38a86ddbebba17dc80be51c1a70cf18b09ab6199d9ebe8f17cf7fce6219a71a3",
+      "native_sha256": "8b1123e1b848fd0ecd9418cc5dcb05a331a9e0e81747fd1bf80bc670ce3d3529",
+      "native_declaration": "void func_80348BDC_82834C(IsleRainbowActorSource* s, const IsleGameModelRef* arg0, s32 arg1, f32 arg2)",
+      "changes": [
+        {
+          "find": "(DObj* arg0, s32 arg1, f32 arg2) {",
+          "replace": "(IsleRainbowActorSource* s, const IsleGameModelRef* arg0, s32 arg1, f32 arg2) {\n    isle_rainbow_actor_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AF34_82A6A4",
+          "replace": "s->D_8034AF34_82A6A4",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348C08_828378",
+      "first": 88,
+      "last": 107,
+      "source_sha256": "393e3b91608cfe77d14a1c4797ebcff70c882955c05f734c3e438dbda81e7e6a",
+      "native_sha256": "d734639e0494b3eb3ae3d60ad2139c1be1eaf16c0218400d1c68bcace408d654",
+      "native_declaration": "void func_80348C08_828378(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348C08_828378)",
+          "replace": "void func_80348C08_828378(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMVolume(0, vol)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_volume(s, 0, vol))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMVolume(1, vol)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_volume(s, 1, vol))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMVolume(0, 0)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_volume(s, 0, 0))",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMVolume(1, 0)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->bgm_volume(s, 1, 0))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348D48_8284B8",
+      "first": 109,
+      "last": 122,
+      "source_sha256": "2bc366f28a154402b2674ea5d810a2366e7af6171d0ea73b68fe89f5edc91a38",
+      "native_sha256": "3ff0820aa6054bf4299e04fb5e9f6efad0b7289738fe301913423cf00828e15e",
+      "native_declaration": "void func_80348D48_8284B8(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348D48_8284B8)",
+          "replace": "void func_80348D48_8284B8(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSound(D_8034AF30_82A6A0)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->sound_stop(s, D_8034AF30_82A6A0))",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySound(",
+          "replace": "isle_rainbow_actor_sound(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlayingSound[D_8034AF30_82A6A0] != -1",
+          "replace": "isle_rainbow_actor_sound_active(s, D_8034AF30_82A6A0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AF30_82A6A0",
+          "replace": "s->D_8034AF30_82A6A0",
+          "occurrences": 3
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348DD4_828544",
+      "first": 124,
+      "last": 169,
+      "source_sha256": "e43d06c2bfe94395e382a0704de4dec2939c02123414d0144c93027328cb5a44",
+      "native_sha256": "adb1b809bab4394e2c63cd348eda00bcdcf6d2864d68b0dfc3a19c3f774743d9",
+      "native_declaration": "void func_80348DD4_828544(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80348DD4_828544)",
+          "replace": "void func_80348DD4_828544(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    Unks16 sp30;",
+          "replace": "    int16_t sp30[3];",
+          "occurrences": 1
+        },
+        {
+          "find": "    sp30 = D_8034AF5C_82A6CC;",
+          "replace": "    memcpy(sp30, s->D_8034AF5C_82A6CC, sizeof(sp30));",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_RemovePokemons(&sp30)",
+          "replace": "s->services->remove_pokemon(s, sp30)",
+          "occurrences": 1
+        },
+        {
+          "find": "    OMCamera* cam;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "    cam = getMainCamera();\n    camObj = cam->obj;",
+          "replace": "    camObj = isle_rainbow_actor_main_camera(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "cam->animSpeed = 0.5f;",
+          "replace": "isle_rainbow_actor_checked(s, s->services->camera_speed(s, camObj, 0.5f));",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetCameraAnimation(cam, &D_80119A8C_4CBE5C, 0.0f)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->camera_animation(s, camObj, UINT32_C(0x80119a8c), 0.0f))",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(camObj, animUpdateCameraAnimation, 1, 1)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->camera_animation_process(s, camObj, 1, 1))",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_Init()",
+          "replace": "isle_rainbow_actor_player_model(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_SetAnimation(&D_801183E0_4CA7B0, &D_80119050_4CB420, 0.0f, 0.5f)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->player_model_animation(s, UINT32_C(0x801183e0), UINT32_C(0x80119050), 0.0f, 0.5f))",
+          "occurrences": 1
+        },
+        {
+          "find": "playerObj->fnAnimCallback = func_80348BDC_82834C;",
+          "replace": "isle_rainbow_actor_checked(s, s->services->animation_callback(s, playerObj, func_80348BDC_82834C));",
+          "occurrences": 1
+        },
+        {
+          "find": "Items_RemoveFlyingItems()",
+          "replace": "isle_rainbow_actor_checked(s, s->services->remove_flying_items(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "resetMainCameraSettings()",
+          "replace": "isle_rainbow_actor_checked(s, s->services->reset_camera(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "Msg_Reset()",
+          "replace": "isle_rainbow_actor_checked(s, s->services->reset_messages(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopAllSounds()",
+          "replace": "isle_rainbow_actor_checked(s, s->services->sound_stop_all(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "ohResumeObjectProcesses(D_8034AB94_82A304)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->resume_processes(s, D_8034AB94_82A304))",
+          "occurrences": 1
+        },
+        {
+          "find": "ohPauseObjectProcesses(camObj)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->pause_processes(s, camObj))",
+          "occurrences": 1
+        },
+        {
+          "find": "setSkyBoxAnimationSpeed(D_800F5DB0_4A8180)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->sky_speed(s, D_800F5DB0_4A8180))",
+          "occurrences": 1
+        },
+        {
+          "find": "Camera_StartCutScene(obj, NULL, 0.0f)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->cutscene_start(s, obj, 0.0f))",
+          "occurrences": 1
+        },
+        {
+          "find": "s->services->remove_pokemon(s, sp30);",
+          "replace": "isle_rainbow_actor_checked(s, s->services->remove_pokemon(s, sp30));",
+          "occurrences": 1
+        },
+        {
+          "find": "gObjPlayer",
+          "replace": "isle_actor_source_player(obj)",
+          "occurrences": 2
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 2
+        },
+        {
+          "find": "isle_actor_source_send_command(isle_actor_source_player(obj), PLAYER_CMD_7, NULL);",
+          "replace": "isle_actor_source_send_addressed(obj, isle_actor_source_player(obj), PLAYER_CMD_7, NULL);",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(isle_actor_source_player(obj), PLAYER_CMD_FINISH, NULL);",
+          "replace": "isle_actor_source_send_addressed(obj, isle_actor_source_player(obj), PLAYER_CMD_FINISH, NULL);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB94_82A304",
+          "replace": "s->D_8034AB94_82A304",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034AF34_82A6A4",
+          "replace": "s->D_8034AF34_82A6A4",
+          "occurrences": 2
+        },
+        {
+          "find": "D_8034AF38_82A6A8",
+          "replace": "s->D_8034AF38_82A6A8",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800F5DB0_4A8180",
+          "replace": "s->D_800F5DB0_4A8180",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348FB8_828728",
+      "first": 171,
+      "last": 173,
+      "source_sha256": "ef31adc3931fd208410a7499d17f2c3d837881c688b750da0659398e94b70867",
+      "native_sha256": "c5b4988049ebad6e35f11fa3395d1871e736c31b41e4c623f2f20299df28ac31",
+      "native_declaration": "GObj* func_80348FB8_828728(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn)",
+      "changes": [
+        {
+          "find": "&D_8034AF78_82A6E8",
+          "replace": "&(const IsleActorFactoryInitialization){UINT32_C(0x8034af78)}",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80348FF0_828760",
+      "first": 175,
+      "last": 191,
+      "source_sha256": "3154104dc7b0b41eb88aaa4cadf6835a09c51badbd0f884a5d2a31060e9b28ad",
+      "native_sha256": "a1b57c060343b7297317be0f478f6e2b36138f288da6c11f66d5537b2280372e",
+      "native_declaration": "s32 func_80348FF0_828760(IsleRainbowActorSource* s, Vec3f* arg0, Vec3f* arg1, Vec3f* arg2, Vec3f* arg3)",
+      "changes": [
+        {
+          "find": "(Vec3f* arg0, Vec3f* arg1, Vec3f* arg2, Vec3f* arg3) {",
+          "replace": "(IsleRainbowActorSource* s, Vec3f* arg0, Vec3f* arg1, Vec3f* arg2, Vec3f* arg3) {\n    isle_rainbow_actor_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* model;",
+          "replace": "    IsleGameModelRef model;",
+          "occurrences": 1
+        },
+        {
+          "find": "    Mtx3Float* position;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "    Mtx4Float* rotation;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "    position = &GET_TRANSFORM(model)->pos;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "    rotation = &GET_TRANSFORM(model)->rot;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "StaticObject_CollideOne(arg0, arg1, arg2, arg3, &D_8034AF20_82A690, position->v, rotation->v)",
+          "replace": "isle_rainbow_actor_collide(s, arg0, arg1, arg2, arg3, &model)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AF2C_82A69C",
+          "replace": "s->D_8034AF2C_82A69C",
+          "occurrences": 2
+        },
+        {
+          "find": "model = s->D_8034AF2C_82A69C->data.dobj;",
+          "replace": "model = s->gate_model;",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/gate/code.c",
+      "symbol": "func_80349084_8287F4",
+      "first": 193,
+      "last": 224,
+      "source_sha256": "1bab684a6d15778a9ea69ec4383e161d295d5005419240c2927381fd413956f3",
+      "native_sha256": "45da337035c0f7c3e4d4c8151e9bcaa94b6800713c2bfca24ef1998e5b63f339",
+      "native_declaration": "void func_80349084_8287F4(GObj* obj)",
+      "changes": [
+        {
+          "find": "(GObj* obj) {",
+          "replace": "(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);",
+          "occurrences": 1
+        },
+        {
+          "find": "    PokemonDef def = D_8034AFAC_82A71C;",
+          "replace": "    const IsleRainbowDefinition def = { UINT32_C(0x8034afac), UINT32_C(0x80349084), 1001, UINT32_C(0x80348fb8), UINT32_C(0x80363dbc), UINT32_C(0x80364280), UINT32_C(0x8034af78) };",
+          "occurrences": 1
+        },
+        {
+          "find": "    ObjectSpawn spawn;",
+          "replace": "    IsleRainbowAutomaticSpawn spawn;\n    spawn.helper_identity = UINT32_C(0x80349084);\n    spawn.written_fields = ISLE_RAINBOW_SPAWN_ID_TRANSFORMS;",
+          "occurrences": 1
+        },
+        {
+          "find": "    WorldBlock* block;",
+          "replace": "    void* block;",
+          "occurrences": 1
+        },
+        {
+          "find": "getCurrentWorldBlock()",
+          "replace": "isle_rainbow_actor_current_block(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAddOne(block, block, &spawn, &def)",
+          "replace": "isle_rainbow_actor_add_one(s, block, block, &spawn, &def)",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* model;",
+          "replace": "    IsleGameModelRef model;",
+          "occurrences": 1
+        },
+        {
+          "find": "model = pokemonObj->data.dobj;",
+          "replace": "model = isle_rainbow_actor_model(s, pokemonObj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.x = 0.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, 0.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.y = 0.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, 0.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.z = 10000.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, 10000.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "InitOneCollisionModel(&D_8034AF20_82A690)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->collision_initialize(s, &s->D_8034AF20_82A690))",
+          "occurrences": 1
+        },
+        {
+          "find": "Items_func_8035CA1C(&func_80348FF0_828760)",
+          "replace": "isle_rainbow_actor_checked(s, s->services->collision_callback(s, func_80348FF0_828760))",
+          "occurrences": 1
+        },
+        {
+          "find": "GET_POKEMON(",
+          "replace": "isle_rainbow_actor_source(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AF2C_82A69C = pokemonObj;",
+          "replace": "isle_rainbow_actor_reference(s, &s->D_8034AF2C_82A69C, pokemonObj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB94_82A304",
+          "replace": "s->D_8034AB94_82A304",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349180_8288F0",
+      "first": 48,
+      "last": 53,
+      "source_sha256": "319c1f27a2f40ca0ef247d7ea63995eddc937b3ff47d6976ac7e2ed0da3e7fd4",
+      "native_sha256": "5adbd815ff0b90508ae81cb6313ff1b7ecc351ede94f65f2ad40fb6d3a1fc720",
+      "native_declaration": "void func_80349180_8288F0(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349180_8288F0)",
+          "replace": "void func_80349180_8288F0(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_803491D4_828944",
+      "first": 55,
+      "last": 71,
+      "source_sha256": "7140625507c74730ff8171e1e6f01d296f97e0357a5e4f137ae734c8d141832f",
+      "native_sha256": "a5ea9eb514a4c75c99bd741fda23eb605af82ecfe69ea4a9e5b25c4f40445dc7",
+      "native_declaration": "void func_803491D4_828944(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803491D4_828944)",
+          "replace": "void func_803491D4_828944(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* node;",
+          "replace": "    IsleActorNodeRef node;",
+          "occurrences": 1
+        },
+        {
+          "find": "node = D_8034AB94_82A304->data.dobj->firstChild->firstChild;",
+          "replace": "node = isle_rainbow_actor_mew_node(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_getPosVelDObj(",
+          "replace": "isle_rainbow_actor_node_world(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_rainbow_actor_node_world(s, &pos, &vel, node)",
+          "replace": "isle_rainbow_actor_node_world(s, &node, &pos, &vel)",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.x = pos.x;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, pos.x);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.y = pos.y;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, pos.y);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "            position->v.z = pos.z;\n",
+          "replace": "            isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, pos.z);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        rotation->v.y = atan2f(pos.x, pos.z) + PI;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_RY, atan2f(pos.x, pos.z) + PI);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80350190_82F900",
+          "replace": "s->D_80350190_82F900",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B528_82AC98",
+          "replace": "s->D_8034B528_82AC98",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_8034930C_828A7C",
+      "first": 73,
+      "last": 78,
+      "source_sha256": "bc3256bd017da89b2073e05dd939bb600cadff96f024c1c8001c54f9d2ed94fb",
+      "native_sha256": "acf70623e52f901d45c284ece35435bccc9e832839339384d610c5d9b1fa222f",
+      "native_declaration": "void func_8034930C_828A7C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034930C_828A7C)",
+          "replace": "void func_8034930C_828A7C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B188_82A8F8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b188))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_8034935C_828ACC",
+      "first": 80,
+      "last": 92,
+      "source_sha256": "50ac5790a00e9b31c3dce697e6f9e16e315b62fa11bfa8cb1c0382f55595b27a",
+      "native_sha256": "332d50db98070befc5a1ea34b0f9bc552e0548237d9361ac0348b765310c7249",
+      "native_declaration": "void func_8034935C_828ACC(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034935C_828ACC)",
+          "replace": "void func_8034935C_828ACC(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B0FC_82A86C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0fc), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B0C0_82A830)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0c0), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B1A8_82A918",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b1a8))",
+          "occurrences": 1
+        },
+        {
+          "find": "gDirectionIndex",
+          "replace": "isle_actor_source_direction(obj)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_803493F4_828B64",
+      "first": 94,
+      "last": 104,
+      "source_sha256": "fa63ff9f7783be736fa8c7b3e0adc59ebff99bdffeb29e63771d075b18a07110",
+      "native_sha256": "e45f11152d7e111f74dc427f90842dafcbeef9ffb0eb824854f5f034da356c73",
+      "native_declaration": "void func_803493F4_828B64(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803493F4_828B64)",
+          "replace": "void func_803493F4_828B64(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034B098_82A808)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b098), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034B0AC_82A81C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0ac), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B1A8_82A918",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b1a8))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE48_82A5B8",
+          "replace": "s->D_8034AE48_82A5B8",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349480_828BF0",
+      "first": 106,
+      "last": 116,
+      "source_sha256": "081e3129944b817071942996153666e75e0aed4569253954d9641029cc474599",
+      "native_sha256": "1ce44a0bfbf531e8c89ff13bea005754e2be78559adc7568448ebd9a844b37e3",
+      "native_declaration": "void func_80349480_828BF0(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349480_828BF0)",
+          "replace": "void func_80349480_828BF0(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034B0AC_82A81C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0ac), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B208_82A978",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b208))",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349514_828C84",
+      "first": 118,
+      "last": 123,
+      "source_sha256": "b4a7ea5caea7eccda8bce2396d6f53fad85e607dec70572ec401b0473779738f",
+      "native_sha256": "cf67f1fbb567711544b9312f9091b8e6481e858ecdbabc54ed2416045a5db085",
+      "native_declaration": "void func_80349514_828C84(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349514_828C84)",
+          "replace": "void func_80349514_828C84(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B0FC_82A86C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0fc), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B238_82A9A8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b238))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_8034956C_828CDC",
+      "first": 125,
+      "last": 134,
+      "source_sha256": "a00f43b49f23cdac00962f17489830fe5ec12730d189997ce944fcfcc892b7f8",
+      "native_sha256": "0aa672aa388c3b2706f15cb71d86b583369e7b7f1aaf8023936752153c27e959",
+      "native_declaration": "void func_8034956C_828CDC(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034956C_828CDC)",
+          "replace": "void func_8034956C_828CDC(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B0AC_82A81C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0ac), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B268_82A9D8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b268))",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_803495FC_828D6C",
+      "first": 136,
+      "last": 141,
+      "source_sha256": "a70817a1dbf6236ccbddfd16a23ef74f6a4aaf5d935ad3a5b3b6b5b264b2981e",
+      "native_sha256": "c4986821ec0064c1c878cf4392643b9d8f2d501645de07f72a48279160a66d44",
+      "native_declaration": "void func_803495FC_828D6C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803495FC_828D6C)",
+          "replace": "void func_803495FC_828D6C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B0FC_82A86C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0fc), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B298_82AA08",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b298))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349654_828DC4",
+      "first": 143,
+      "last": 151,
+      "source_sha256": "4e0af111f7d7406440ee04b21f44186af6d1614bbc429f27f72403fcda999981",
+      "native_sha256": "c3dc93ac525d802a526f144d14a7d75a198cb364a62c4a997ec9f71d558ef90f",
+      "native_declaration": "void func_80349654_828DC4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349654_828DC4)",
+          "replace": "void func_80349654_828DC4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B0E8_82A858)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0e8), 0.0f, 0)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_803496BC_828E2C",
+      "first": 153,
+      "last": 158,
+      "source_sha256": "4107f9028d8a2eadee0d22ccd6dd97a3becbb2a0bbb3a18cfbdf4f98d1e10281",
+      "native_sha256": "50419b174326333efa331d3f6de9951e672ecc92743fecaf7a9ccb702c65a203",
+      "native_declaration": "void func_803496BC_828E2C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803496BC_828E2C)",
+          "replace": "void func_803496BC_828E2C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B0FC_82A86C)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b0fc), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B2C8_82AA38",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b2c8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349714_828E84",
+      "first": 160,
+      "last": 166,
+      "source_sha256": "303d473270da23dc550387679f6da10e09b8117a684bc02e4751bf9825f22ea5",
+      "native_sha256": "6af9cf5befc68078760c6e062c41d8991ef5c9f302a7b87e0095ddc6ac8f107f",
+      "native_declaration": "void func_80349714_828E84(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349714_828E84)",
+          "replace": "void func_80349714_828E84(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B328_82AA98",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b328))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_8034977C_828EEC",
+      "first": 168,
+      "last": 179,
+      "source_sha256": "4c552d773e0f89358679db4c38f020bc8a7669ad72b8812d26b9356643ed73f7",
+      "native_sha256": "776d875cdf6d6b7a14b1837e0f6cb83f73be75e98b16bedf53cf88dd5cef8a8c",
+      "native_declaration": "void func_8034977C_828EEC(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034977C_828EEC)",
+          "replace": "void func_8034977C_828EEC(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B174_82A8E4)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b174), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B138_82A8A8)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b138), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B348_82AAB8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b348))",
+          "occurrences": 1
+        },
+        {
+          "find": "gDirectionIndex",
+          "replace": "isle_actor_source_direction(obj)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349814_828F84",
+      "first": 181,
+      "last": 191,
+      "source_sha256": "b172eb6981725e50ae55545ac9049078fb7a0abeb27a4b2fa937acc810b4d0e1",
+      "native_sha256": "975ba19050e6f7a267e726bc10c547a14e53a48398ce7c63aeea7aa0f0b85f13",
+      "native_declaration": "void func_80349814_828F84(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349814_828F84)",
+          "replace": "void func_80349814_828F84(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034B110_82A880)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b110), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034B124_82A894)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b124), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B348_82AAB8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b348))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AE4C_82A5BC",
+          "replace": "s->D_8034AE4C_82A5BC",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_803498A0_829010",
+      "first": 193,
+      "last": 203,
+      "source_sha256": "bd83450aec5fa3bb6453b7ce0246e59179c25d51f065ef4522d77e5e66ceacd7",
+      "native_sha256": "97c22960ba50f99f2a19699570a83dfe440f297719b65074d8c99f44a0b55a1a",
+      "native_declaration": "void func_803498A0_829010(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_803498A0_829010)",
+          "replace": "void func_803498A0_829010(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034B124_82A894)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b124), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B3B8_82AB28",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b3b8))",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349934_8290A4",
+      "first": 205,
+      "last": 210,
+      "source_sha256": "e09d9c85e47c768fb69905441b9b97a438d1992cb64ec04fc3d32c012960fbd2",
+      "native_sha256": "9e20709d215dfcbad892f54d3a429894be85a1b9b91b1bb06c76413d876108d3",
+      "native_declaration": "void func_80349934_8290A4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349934_8290A4)",
+          "replace": "void func_80349934_8290A4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B174_82A8E4)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b174), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B3E8_82AB58",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b3e8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_8034998C_8290FC",
+      "first": 212,
+      "last": 221,
+      "source_sha256": "e6f9ab51f1d2d7bcf5e2a3cf23c25b3ec725a446e901de2773a573a3451d6e32",
+      "native_sha256": "68a37e55e38bcf518bfc9649f8f2fc7abb4f621e54934d8ecee1d36a9b3e3ffb",
+      "native_declaration": "void func_8034998C_8290FC(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034998C_8290FC)",
+          "replace": "void func_8034998C_8290FC(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B124_82A894)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b124), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B418_82AB88",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b418))",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349A1C_82918C",
+      "first": 223,
+      "last": 228,
+      "source_sha256": "5865bf8a752926d52590755cb885d2a619bcb8a4a83d90fa7b95667f05d52a73",
+      "native_sha256": "da24e106a5dad61c2d42dd8491a554a1391dace446ef7e1cf2819823a3dbe9e8",
+      "native_declaration": "void func_80349A1C_82918C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349A1C_82918C)",
+          "replace": "void func_80349A1C_82918C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B174_82A8E4)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b174), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B448_82ABB8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b448))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349A74_8291E4",
+      "first": 230,
+      "last": 238,
+      "source_sha256": "6ec4da534a06c6316acdcffb75698c01e9e013c7b1495ec3d72bd3b0a8d057d9",
+      "native_sha256": "f2e279121d4358b525523289ab67031e617e81f7d0abd99e0cb4359a35237d1a",
+      "native_declaration": "void func_80349A74_8291E4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349A74_8291E4)",
+          "replace": "void func_80349A74_8291E4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B160_82A8D0)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b160), 0.0f, 0)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349ADC_82924C",
+      "first": 240,
+      "last": 245,
+      "source_sha256": "67f914203a0d41f23f24f8d1cfb805b88052bd35b6c3a707d2bfb7ced66bea1d",
+      "native_sha256": "0a0590cd3494d18e2461306b34a15c316ad7040d040ac81a6e1a1df47abcdc1e",
+      "native_declaration": "void func_80349ADC_82924C(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349ADC_82924C)",
+          "replace": "void func_80349ADC_82924C(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B174_82A8E4)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b174), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B478_82ABE8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b478))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349B34_8292A4",
+      "first": 247,
+      "last": 253,
+      "source_sha256": "a086e88c0c643c2bd047289c050c999af39c2c071d6d02203bec328d68cab044",
+      "native_sha256": "226b6177e78be1525c6f1a123c84a8c7be3b4ed71a10079e4f39044c066cd09f",
+      "native_declaration": "void func_80349B34_8292A4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349B34_8292A4)",
+          "replace": "void func_80349B34_8292A4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B4E8_82AC58",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b4e8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349B98_829308",
+      "first": 255,
+      "last": 262,
+      "source_sha256": "943cd0b7aaaba0e9a611c26640f26e400a55e4b9107472be80ba4d73e7082ad0",
+      "native_sha256": "467416ae7b0d9b2eebbcc8221601dd863cb8d050902ea621df00517362393f6d",
+      "native_declaration": "void func_80349B98_829308(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349B98_829308)",
+          "replace": "void func_80349B98_829308(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B174_82A8E4)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b174), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B4E8_82AC58",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b4e8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349C18_829388",
+      "first": 264,
+      "last": 288,
+      "source_sha256": "f696b1811d9c27a3ccd9592cf3878aa7db3233a71cd71e32730883d384b942e1",
+      "native_sha256": "52ae4abccb3fdb2cd6cca26603637dfc9aec211526879f91ea9dc7a69231a1ed",
+      "native_declaration": "void func_80349C18_829388(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349C18_829388)",
+          "replace": "void func_80349C18_829388(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* node;",
+          "replace": "    IsleActorNodeRef node;",
+          "occurrences": 1
+        },
+        {
+          "find": "node = D_8034AB94_82A304->data.dobj->firstChild->firstChild;",
+          "replace": "node = isle_rainbow_actor_mew_node(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_getPosVelDObj(",
+          "replace": "isle_rainbow_actor_node_world(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "isle_rainbow_actor_node_world(s, &sp48, &sp3C, node)",
+          "replace": "isle_rainbow_actor_node_world(s, &node, &sp48, &sp3C)",
+          "occurrences": 2
+        },
+        {
+          "find": "    position->v.z = sp48.z;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, sp48.z);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.x = sp48.x;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, sp48.x);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.y = sp48.y;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, sp48.y);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.z += 15.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &model)->position.z + (15.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B534_82ACA4",
+          "replace": "s->D_8034B534_82ACA4",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349D40_8294B0",
+      "first": 290,
+      "last": 296,
+      "source_sha256": "bbb1d1f5ef7eef018345decf8fa79f9a999c8283a671a684a16bdbb3f527593d",
+      "native_sha256": "bda5f889ec6b46b3df66518a890a52ea9bb063e36afc484ffa940b1e16cca3f7",
+      "native_declaration": "void func_80349D40_8294B0(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349D40_8294B0)",
+          "replace": "void func_80349D40_8294B0(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B110_82A880)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b110), 0.0f, 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034B4E8_82AC58",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x8034b4e8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349DB0_829520",
+      "first": 298,
+      "last": 301,
+      "source_sha256": "31fc1876dc09bc9451768a6c6f03f7871612fd0e5f2dac70dbce8a22d6857043",
+      "native_sha256": "463fcc8fd6325989ff4948d7a81e930f97407f03ba5e61b1ab11cec1762a1718",
+      "native_declaration": "void func_80349DB0_829520(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349DB0_829520)",
+          "replace": "void func_80349DB0_829520(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB94_82A304, POKEMON_CMD_9, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB94_82A304, POKEMON_CMD_9, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB94_82A304",
+          "replace": "s->D_8034AB94_82A304",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349DE8_829558",
+      "first": 303,
+      "last": 306,
+      "source_sha256": "96b2ef27ddd4c7b07769ecb019afde53d491a2eb97e69f1692cb9ea59f237e6b",
+      "native_sha256": "b2891bd5d0a3e04c66669025ea991d47a7500f8257e4ccad138954799ef5ca15",
+      "native_declaration": "void func_80349DE8_829558(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349DE8_829558)",
+          "replace": "void func_80349DE8_829558(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB94_82A304, POKEMON_CMD_13, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB94_82A304, POKEMON_CMD_13, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB94_82A304",
+          "replace": "s->D_8034AB94_82A304",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349E28_829598",
+      "first": 311,
+      "last": 320,
+      "source_sha256": "d267b5597786dd0b81a250dfd3df7537b565307716c284ed91a01ef132130ca4",
+      "native_sha256": "18fd0f7c074547447e6912dddfdf084552941c4a7b9babd7ccf64842fd4c8387",
+      "native_declaration": "void func_80349E28_829598(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349E28_829598)",
+          "replace": "void func_80349E28_829598(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "gDirectionIndex",
+          "replace": "isle_actor_source_direction(obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 2
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_32, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_32, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(D_8034AB98_82A308, RAINBOW_CMD_33, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, D_8034AB98_82A308, RAINBOW_CMD_33, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_8034AB98_82A308",
+          "replace": "s->D_8034AB98_82A308",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "symbol": "func_80349EB8_829628",
+      "first": 322,
+      "last": 324,
+      "source_sha256": "7da59e3d9f34a98488b257262ece38dde8878caab9fc577368c5ad6727f57b4c",
+      "native_sha256": "71f6e7a05a0c882415675e9650ace00f66d0d2a4e32b5f9eb77a9e3653b24ce8",
+      "native_declaration": "GObj* func_80349EB8_829628(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn)",
+      "changes": [
+        {
+          "find": "&D_8034B554_82ACC4",
+          "replace": "&(const IsleActorFactoryInitialization){UINT32_C(0x8034b554)}",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/evolution_controller/code.c",
+      "symbol": "func_80349F00_829670",
+      "first": 9,
+      "last": 18,
+      "source_sha256": "6c46cc7788db8802727d77a94404efe2657957d2a33f8c4139403555414737fa",
+      "native_sha256": "18c48aaf9267fe5473c4e6b93f8e5c5bc223b697c9554451a168ae86925bd1c6",
+      "native_declaration": "void func_80349F00_829670(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349F00_829670)",
+          "replace": "void func_80349F00_829670(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_8034B590_82AD00)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b590), 0.0f, 1)",
+          "occurrences": 1
+        },
+        {
+          "find": "gObjPlayer",
+          "replace": "isle_actor_source_player(obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "cmdSendCommand(",
+          "replace": "isle_actor_source_send_command(",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_send_command(isle_actor_source_player(obj), PLAYER_CMD_SHAKE_CAMERA, obj);",
+          "replace": "isle_actor_source_send_addressed(obj, isle_actor_source_player(obj), PLAYER_CMD_SHAKE_CAMERA, obj);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/evolution_controller/code.c",
+      "symbol": "func_80349F88_8296F8",
+      "first": 20,
+      "last": 31,
+      "source_sha256": "df0eab5424396b27c4dd82d096fbe403314ccf655014322d91675062b1a22bec",
+      "native_sha256": "5f10000c23d17b226c428a9356b81c5a3e8aa726580b3416856494d414a03026",
+      "native_declaration": "void func_80349F88_8296F8(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_80349F88_8296F8)",
+          "replace": "void func_80349F88_8296F8(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    Mtx3Float* scale = &GET_TRANSFORM(model)->scale;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "        scale->v.x *= 1.1;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_SX, isle_rainbow_actor_aux(s, &model)->scale.x * (1.1));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        scale->v.y *= 1.1;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_SY, isle_rainbow_actor_aux(s, &model)->scale.y * (1.1));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        scale->v.z *= 1.1;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_SZ, isle_rainbow_actor_aux(s, &model)->scale.z * (1.1));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        rotation->v.y += 3.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_RY, isle_rainbow_actor_aux(s, &model)->rotation.y + (3.0f));\n",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/evolution_controller/code.c",
+      "symbol": "func_8034A064_8297D4",
+      "first": 33,
+      "last": 35,
+      "source_sha256": "bdf167782b4887b3588cbb70072199e6168f9106a9901b13070bcbbde650cb19",
+      "native_sha256": "cccfb593d6dd30fa5274c0f495ee7f2ab2d878b8c370c7d5ac8ad5ab54053d27",
+      "native_declaration": "GObj* func_8034A064_8297D4(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn)",
+      "changes": [
+        {
+          "find": "&D_8034B5B8_82AD28",
+          "replace": "&(const IsleActorFactoryInitialization){UINT32_C(0x8034b5b8)}",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/evolution_controller/code.c",
+      "symbol": "func_8034A09C_82980C",
+      "first": 37,
+      "last": 65,
+      "source_sha256": "e6e39c29725cec5573c4d65c52c3431264ca648bd1f0da2b5937e25a6a6921df",
+      "native_sha256": "82767b79283473b1837e19eea0eccc691752457c035fe618f9667226d0d810da",
+      "native_declaration": "void func_8034A09C_82980C(GObj* obj)",
+      "changes": [
+        {
+          "find": "(GObj* obj) {",
+          "replace": "(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);",
+          "occurrences": 1
+        },
+        {
+          "find": "    PokemonDef def = D_8034B5EC_82AD5C;",
+          "replace": "    const IsleRainbowDefinition def = { UINT32_C(0x8034b5ec), UINT32_C(0x8034a09c), 1002, UINT32_C(0x8034a064), UINT32_C(0x80363dbc), UINT32_C(0x80364280), UINT32_C(0x8034b5b8) };",
+          "occurrences": 1
+        },
+        {
+          "find": "    ObjectSpawn spawn;",
+          "replace": "    IsleRainbowAutomaticSpawn spawn;\n    spawn.helper_identity = UINT32_C(0x8034a09c);\n    spawn.written_fields = ISLE_RAINBOW_SPAWN_ID_TRANSFORMS;",
+          "occurrences": 1
+        },
+        {
+          "find": "    WorldBlock* block;",
+          "replace": "    void* block;",
+          "occurrences": 1
+        },
+        {
+          "find": "getCurrentWorldBlock()",
+          "replace": "isle_rainbow_actor_current_block(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAddOne(block, block, &spawn, &def)",
+          "replace": "isle_rainbow_actor_add_one(s, block, block, &spawn, &def)",
+          "occurrences": 1
+        },
+        {
+          "find": "    DObj* model;",
+          "replace": "    IsleGameModelRef model;",
+          "occurrences": 1
+        },
+        {
+          "find": "    Mtx3Float* position;\n",
+          "replace": "",
+          "occurrences": 1
+        },
+        {
+          "find": "model = pokemonObj->data.dobj;",
+          "replace": "model = isle_rainbow_actor_model(s, pokemonObj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    position = &GET_TRANSFORM(obj->data.dobj)->pos;",
+          "replace": "    IsleGameModelRef base_model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.x = position->v.x;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, isle_rainbow_actor_aux(s, &base_model)->position.x);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.y = position->v.y;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, isle_rainbow_actor_aux(s, &base_model)->position.y);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->pos.v.z = position->v.z;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &base_model)->position.z);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    GET_TRANSFORM(model)->rot.v.x = 90.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_RX, 90.0f);\n",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1038/code.c",
+      "symbol": "func_8034A190_829900",
+      "first": 9,
+      "last": 22,
+      "source_sha256": "574e707f8d3ca9cfac3210355640b8685954c1cde1a7d476cf4dd8f4cf3487d2",
+      "native_sha256": "9b7b4049aa1be17ae78676f2d9f5f5d6c789dc690508d5249a55b499ce4ecc65",
+      "native_declaration": "void func_8034A190_829900(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034A190_829900)",
+          "replace": "void func_8034A190_829900(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.x = 750.0f - randFloat() * 1500.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, 750.0f - randFloat() * 1500.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.y = 50.0f + randFloat() * 400.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, 50.0f + randFloat() * 400.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.z = 5000.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, 5000.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "obj->flags |= GOBJ_FLAG_2;",
+          "replace": "isle_actor_source_object_flags(obj, 2u, 2u);",
+          "occurrences": 1
+        },
+        {
+          "find": "obj->flags &= ~GOBJ_FLAG_2;",
+          "replace": "isle_actor_source_object_flags(obj, 2u, 0u);",
+          "occurrences": 1
+        },
+        {
+          "find": "randRange(",
+          "replace": "isle_actor_source_rand_range(obj, ",
+          "occurrences": 1
+        },
+        {
+          "find": "randFloat()",
+          "replace": "isle_actor_source_rand_float(obj)",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1038/code.c",
+      "symbol": "func_8034A27C_8299EC",
+      "first": 24,
+      "last": 33,
+      "source_sha256": "c38383979f63e835eb6c3e7ce0fdba7625229a5b72f512c291f6c4d088c7f60f",
+      "native_sha256": "ff84a806b410437967f419ab026407abe52e92f3d6c257443bc5f31cf4a03018",
+      "native_declaration": "void func_8034A27C_8299EC(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034A27C_8299EC)",
+          "replace": "void func_8034A27C_8299EC(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.x = 750.0f - randFloat() * 1500.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, 750.0f - randFloat() * 1500.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.y = 50.0f + randFloat() * 400.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PY, 50.0f + randFloat() * 400.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "    position->v.z = 5000.0f;\n",
+          "replace": "    isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, 5000.0f);\n",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "randFloat()",
+          "replace": "isle_actor_source_rand_float(obj)",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1038/code.c",
+      "symbol": "func_8034A334_829AA4",
+      "first": 35,
+      "last": 42,
+      "source_sha256": "b45136a5ad7c520d2c61165da1eea02353802ad933f665e37ccd3a7cbfcf2e33",
+      "native_sha256": "196873f8956b174a9174207514cb01d094e5da6ab3af4f347729fb70f7f96fb7",
+      "native_declaration": "void func_8034A334_829AA4(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034A334_829AA4)",
+          "replace": "void func_8034A334_829AA4(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_8034B600_82AD70)",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x8034b600), 0.0f, 0)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1038/code.c",
+      "symbol": "func_8034A3A0_829B10",
+      "first": 44,
+      "last": 61,
+      "source_sha256": "c122fce2aaf4da68b224027f79e36f7de8adb211015feb27e9c9ea4b8201ae93",
+      "native_sha256": "da423e55d8d18c7dbead3c568475104fd20fa01ea8eadbe43f4a3e1bd2f134d8",
+      "native_declaration": "void func_8034A3A0_829B10(GObj* obj)",
+      "changes": [
+        {
+          "find": "POKEMON_FUNC(func_8034A3A0_829B10)",
+          "replace": "void func_8034A3A0_829B10(GObj* obj) {\n    IsleRainbowActorSource* s = isle_rainbow_actor_require(obj->game);\n    Pokemon* pokemon = isle_rainbow_actor_source(s, obj);\n    IsleGameModelRef model = isle_rainbow_actor_model(s, obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.z -= 200.0f;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PZ, isle_rainbow_actor_aux(s, &model)->position.z - (200.0f));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "        position->v.x += f26;\n",
+          "replace": "        isle_rainbow_actor_store(s, &model, ISLE_ACTOR_PX, isle_rainbow_actor_aux(s, &model)->position.x + (f26));\n",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.z",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.z",
+          "occurrences": 1
+        },
+        {
+          "find": "position->v.y",
+          "replace": "isle_rainbow_actor_aux(s, &model)->position.y",
+          "occurrences": 1
+        },
+        {
+          "find": "HIDE_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "SHOW_POKEMON();",
+          "replace": "isle_rainbow_actor_visibility(s, pokemon, obj, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "randFloat()",
+          "replace": "isle_actor_source_rand_float(obj)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/rainbow/pkmn_1038/code.c",
+      "symbol": "func_8034A4E8_829C58",
+      "first": 63,
+      "last": 65,
+      "source_sha256": "6335e842d0ce52ab0a9339da5521ec62677f9f1d4fae35784979e8d36686fbdf",
+      "native_sha256": "0b61d80847d18d4c5a40338649637a0a928ba95d76b0f33c276484e9abf798a8",
+      "native_declaration": "GObj* func_8034A4E8_829C58(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn)",
+      "changes": [
+        {
+          "find": "&D_8034B638_82ADA8",
+          "replace": "&(const IsleActorFactoryInitialization){UINT32_C(0x8034b638)}",
+          "occurrences": 1
+        }
+      ]
+    }
+  ],
+  "semantic_origins": [
+    {
+      "label": "source-pokemon-macro-operands",
+      "path": "src/app_level/app_level.h",
+      "first": 8,
+      "last": 25,
+      "source_sha256": "ecbe76e9251cb9c54fe302d7c23ecb35b9663572ceb17fce0b7f0a56f79009be"
+    },
+    {
+      "label": "source-command-values",
+      "path": "src/app_level/app_level.h",
+      "first": 43,
+      "last": 113,
+      "source_sha256": "2d5ed192f53ef4931c8c939ed9ef4ff704ac39a1579f5bf9c9b603b8abf284c1"
+    },
+    {
+      "label": "source-sound-and-song-values",
+      "path": "include/enums.h",
+      "first": 70,
+      "last": 245,
+      "source_sha256": "5b61c05cd613af1cd34292aee9459e4fb2463867557f5b78551e26af09a217cc"
+    },
+    {
+      "label": "source-bgm-players",
+      "path": "include/sys/audio.h",
+      "first": 8,
+      "last": 11,
+      "source_sha256": "ca1f1e83a9e65e66dc8f3774981994ae027ab393579d0c10f5fe8d70ad7f0538"
+    },
+    {
+      "label": "source-automatic-spawn-layout",
+      "path": "include/common_structs.h",
+      "first": 68,
+      "last": 75,
+      "source_sha256": "8e5ae938fa076863d1983582c2f1080075f55bf380728709206a3b2eee40f3d2"
+    },
+    {
+      "label": "source-collision-record",
+      "path": "src/world/world.h",
+      "first": 51,
+      "last": 55,
+      "source_sha256": "31895c0204bb0054a5c6e42757a4f7aea64467095bb6d4537bc419f6dfceab2a"
+    },
+    {
+      "label": "source-main-initialized-state-and-definitions",
+      "path": "src/rainbow/main.c",
+      "first": 19,
+      "last": 47,
+      "source_sha256": "35c6f79f95b6ea5836a5b10072d4d7385913843b28c4a0150ea2b35e5f61e2f5"
+    },
+    {
+      "label": "source-mew-initialized-and-bss-state",
+      "path": "src/rainbow/mew/code.c",
+      "first": 49,
+      "last": 167,
+      "source_sha256": "3c6caddd73fddd648ec4852e1a0251efd4877b6abe719bde7708e12b73aa8df1"
+    },
+    {
+      "label": "source-gate-record-declarations",
+      "path": "src/rainbow/gate/code.c",
+      "first": 17,
+      "last": 28,
+      "source_sha256": "ee19b6d83690faa3c7e2f0dbe2166f935d9a09912f225453a717c769bf6b3591"
+    },
+    {
+      "label": "source-shield-record-declarations",
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "first": 14,
+      "last": 46,
+      "source_sha256": "1167eb30bde9bdc0b83ee8679266c4f6c056357cc97311a4cb14446c5d79d6f4"
+    },
+    {
+      "label": "source-common-factory-optional-copies",
+      "path": "src/app_level/pokemon.c",
+      "first": 2101,
+      "last": 2224,
+      "source_sha256": "c673aeb4bc14171d04f23abbd94ec12ee81166869245af5b9f753ac5054354a3"
+    },
+    {
+      "label": "source-rainbow-assets-mapping",
+      "path": "splat.yaml",
+      "first": 5219,
+      "last": 5231,
+      "source_sha256": "8b808fcb287c0a8df8f786132459e1426c3206ad467878898f4bb0df6d90b16b"
+    },
+    {
+      "label": "source-rainbow-code-mapping",
+      "path": "splat.yaml",
+      "first": 9827,
+      "last": 9858,
+      "source_sha256": "830dd05079260f3fe370b143dba0f34fdfda10eb3862f425648ef7e613df1806"
+    },
+    {
+      "label": "source-rainbow-bss-mapping",
+      "path": "splat.yaml",
+      "first": 9948,
+      "last": 9953,
+      "source_sha256": "14ba0a9921cd797b6a61cb5a66c29acd187497a4d14cca57f25a863d99415d67"
+    },
+    {
+      "label": "unreachable-original-empty-static-not-callback",
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "first": 308,
+      "last": 309,
+      "source_sha256": "8a13dccdddd3f44827a482a881e2e7a2cead4eddd1839d478140816dfd17e4fc"
+    }
+  ],
+  "rom_facts": {
+    "canonical_rom": {
+      "bytes": 16777216,
+      "sha256": "a1d5d816db7f8557ee04c35a011326d058b2c1fbca76b57b352b1d705a1ec1cc",
+      "sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf"
+    },
+    "code_mapping": {
+      "rom": 8543792,
+      "vram": 2150917824,
+      "initialized_data_rom": 8561280,
+      "initialized_data_vram": 2150935312,
+      "bss_vram": 2150957424,
+      "bss_bytes": 128
+    },
+    "assets_mapping": {
+      "rom": 4882784,
+      "vram": 2148490640
+    },
+    "initialized": [
+      {
+        "symbol": "D_8034AB94_82A304",
+        "vram": 2150935444,
+        "rom": 8561412,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AB98_82A308",
+        "vram": 2150935448,
+        "rom": 8561416,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AB9C_82A30C",
+        "vram": 2150935452,
+        "rom": 8561420,
+        "kind": "word_bits",
+        "values": [
+          483839
+        ]
+      },
+      {
+        "symbol": "D_8034ABA0_82A310",
+        "vram": 2150935456,
+        "rom": 8561424,
+        "kind": "word_bits",
+        "values": [
+          483839
+        ]
+      },
+      {
+        "symbol": "D_8034ABA4_82A314",
+        "vram": 2150935460,
+        "rom": 8561428,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AE48_82A5B8",
+        "vram": 2150936136,
+        "rom": 8562104,
+        "kind": "word_bits",
+        "values": [
+          3
+        ]
+      },
+      {
+        "symbol": "D_8034AE4C_82A5BC",
+        "vram": 2150936140,
+        "rom": 8562108,
+        "kind": "word_bits",
+        "values": [
+          3
+        ]
+      },
+      {
+        "symbol": "D_8034AE50_82A5C0",
+        "vram": 2150936144,
+        "rom": 8562112,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AE54_82A5C4",
+        "vram": 2150936148,
+        "rom": 8562116,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AE58_82A5C8",
+        "vram": 2150936152,
+        "rom": 8562120,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AE5C_82A5CC",
+        "vram": 2150936156,
+        "rom": 8562124,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AF2C_82A69C",
+        "vram": 2150936364,
+        "rom": 8562332,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AF30_82A6A0",
+        "vram": 2150936368,
+        "rom": 8562336,
+        "kind": "word_bits",
+        "values": [
+          4294967295
+        ]
+      },
+      {
+        "symbol": "D_8034AF34_82A6A4",
+        "vram": 2150936372,
+        "rom": 8562340,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AF38_82A6A8",
+        "vram": 2150936376,
+        "rom": 8562344,
+        "kind": "word_bits",
+        "values": [
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034AF5C_82A6CC",
+        "vram": 2150936412,
+        "rom": 8562380,
+        "kind": "i16[3]",
+        "values": [
+          151,
+          1001,
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034B528_82AC98",
+        "vram": 2150937896,
+        "rom": 8563864,
+        "kind": "f32_bits[3]",
+        "values": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "symbol": "D_8034B534_82ACA4",
+        "vram": 2150937908,
+        "rom": 8563876,
+        "kind": "f32_bits[3]",
+        "values": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "symbol": "D_800F5DB0_4A8180",
+        "vram": 2148490672,
+        "rom": 4882816,
+        "kind": "word_bits",
+        "values": [
+          1065353216
+        ]
+      },
+      {
+        "symbol": "D_8034AF20_82A690",
+        "vram": 2150936352,
+        "rom": 8562320,
+        "kind": "collision_id_tree_scale_bits",
+        "values": [
+          1001,
+          2148458360,
+          1065353216
+        ]
+      }
+    ],
+    "bss": [
+      {
+        "symbol": "D_80350170_82F8E0",
+        "vram": 2150957424,
+        "bytes": 24,
+        "kind": "u8",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      },
+      {
+        "symbol": "D_80350188_82F8F8",
+        "vram": 2150957448,
+        "bytes": 4,
+        "kind": "f32",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      },
+      {
+        "symbol": "D_8035018C_82F8FC",
+        "vram": 2150957452,
+        "bytes": 4,
+        "kind": "f32",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      },
+      {
+        "symbol": "D_80350190_82F900",
+        "vram": 2150957456,
+        "bytes": 4,
+        "kind": "bool/s32",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      },
+      {
+        "symbol": "D_80350194_82F904",
+        "vram": 2150957460,
+        "bytes": 4,
+        "kind": "s32",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      },
+      {
+        "symbol": "D_80350198_82F908",
+        "vram": 2150957464,
+        "bytes": 4,
+        "kind": "s32",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      },
+      {
+        "symbol": "D_8035019C_82F90C",
+        "vram": 2150957468,
+        "bytes": 4,
+        "kind": "u32",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      },
+      {
+        "symbol": "D_803501A0_82F910",
+        "vram": 2150957472,
+        "bytes": 64,
+        "kind": "u8",
+        "origin": "src/rainbow/mew/code.c159-167",
+        "initialization": "actual BSS zero"
+      }
+    ],
+    "automatic_spawns": [
+      {
+        "helper": 2150917824,
+        "definition_identity": 0,
+        "definition_origin": "source-automatic typed definition; no guest identity",
+        "actor_id": 151,
+        "factory": 2150926648,
+        "change_block": 2151038396,
+        "remove": 2151039616,
+        "initialization": 2150936208,
+        "written_fields": [
+          "id",
+          "translation.x",
+          "translation.y",
+          "translation.z",
+          "euler.x",
+          "euler.y",
+          "euler.z",
+          "scale.x",
+          "scale.y",
+          "scale.z"
+        ],
+        "unwritten_fields": [
+          "behavior",
+          "path"
+        ]
+      },
+      {
+        "helper": 2150918052,
+        "definition_identity": 0,
+        "definition_origin": "source-automatic typed definition; no guest identity",
+        "actor_id": 1037,
+        "factory": 2150932152,
+        "change_block": 2151038396,
+        "remove": 2151039616,
+        "initialization": 2150937940,
+        "written_fields": [
+          "id",
+          "translation.x",
+          "translation.y",
+          "translation.z",
+          "euler.x",
+          "euler.y",
+          "euler.z",
+          "scale.x",
+          "scale.y",
+          "scale.z"
+        ],
+        "unwritten_fields": [
+          "behavior",
+          "path"
+        ]
+      },
+      {
+        "helper": 2150918296,
+        "definition_identity": 0,
+        "definition_origin": "source-automatic typed definition; no guest identity",
+        "actor_id": 1038,
+        "factory": 2150933736,
+        "change_block": 2151038396,
+        "remove": 2151039616,
+        "initialization": 2150938168,
+        "written_fields": [
+          "id",
+          "translation.x",
+          "translation.y",
+          "translation.z",
+          "euler.x",
+          "euler.y",
+          "euler.z",
+          "scale.x",
+          "scale.y",
+          "scale.z"
+        ],
+        "unwritten_fields": [
+          "behavior",
+          "path"
+        ]
+      },
+      {
+        "helper": 2150928516,
+        "definition_identity": 2150936492,
+        "definition_origin": "initialized singleton copied into automatic",
+        "actor_id": 1001,
+        "factory": 2150928312,
+        "change_block": 2151038396,
+        "remove": 2151039616,
+        "initialization": 2150936440,
+        "written_fields": [
+          "id",
+          "translation.x",
+          "translation.y",
+          "translation.z",
+          "euler.x",
+          "euler.y",
+          "euler.z",
+          "scale.x",
+          "scale.y",
+          "scale.z"
+        ],
+        "unwritten_fields": [
+          "behavior",
+          "path"
+        ]
+      },
+      {
+        "helper": 2150932636,
+        "definition_identity": 2150938092,
+        "definition_origin": "initialized singleton copied into automatic",
+        "actor_id": 1002,
+        "factory": 2150932580,
+        "change_block": 2151038396,
+        "remove": 2151039616,
+        "initialization": 2150938040,
+        "written_fields": [
+          "id",
+          "translation.x",
+          "translation.y",
+          "translation.z",
+          "euler.x",
+          "euler.y",
+          "euler.z",
+          "scale.x",
+          "scale.y",
+          "scale.z"
+        ],
+        "unwritten_fields": [
+          "behavior",
+          "path"
+        ]
+      }
+    ],
+    "factory_roots": [
+      {
+        "factory": 2150926648,
+        "initialization": 2150936208,
+        "initial_state": 2150920396
+      },
+      {
+        "factory": 2150928312,
+        "initialization": 2150936440,
+        "initial_state": 2150926704
+      },
+      {
+        "factory": 2150932152,
+        "initialization": 2150937940,
+        "initial_state": 2150928768
+      },
+      {
+        "factory": 2150932580,
+        "initialization": 2150938040,
+        "initial_state": 2150932224
+      },
+      {
+        "factory": 2150933736,
+        "initialization": 2150938168,
+        "initial_state": 2150932880
+      }
+    ],
+    "unwritten_optional_fields": {
+      "source": "src/app_level/pokemon.c",
+      "path_copy_line": 2213,
+      "behavior_copy_line": 2215,
+      "source_layout": "include/common_structs.h:68-75",
+      "five_family_path_reads": 0,
+      "five_family_behavior_reads": 0,
+      "policy": "Transforms-only native transport preserves unspecified optional source storage; do not decode, invent, or treat zero-initialized transport as Source initialization. Complete compiled Rainbow callback closure never consumes path/behavior.",
+      "unwritten_fields": [
+        "path",
+        "behavior"
+      ]
+    },
+    "native_numeric_policy": {
+      "pi": "3.14159265358979323846 (double)",
+      "tau": "2.0 * PI",
+      "math": "Existing common actor native libm policy; no SDK numeric bit-parity or execution claim."
+    },
+    "native_pointer_null_stores": {
+      "path": "src/rainbow/mew/code.c",
+      "find": "pokemon->pathProc = FALSE;",
+      "replace": "pokemon->pathProc = NULL;",
+      "occurrences_per_function": 1,
+      "functions": [
+        {
+          "symbol": "func_8034799C_82710C",
+          "first": 349,
+          "last": 369,
+          "source_line": 367
+        },
+        {
+          "symbol": "func_80347CC8_827438",
+          "first": 394,
+          "last": 409,
+          "source_line": 407
+        },
+        {
+          "symbol": "func_803480C0_827830",
+          "first": 462,
+          "last": 474,
+          "source_line": 472
+        },
+        {
+          "symbol": "func_803482EC_827A5C",
+          "first": 497,
+          "last": 539,
+          "source_line": 537
+        },
+        {
+          "symbol": "func_80348850_827FC0",
+          "first": 615,
+          "last": 631,
+          "source_line": 629
+        }
+      ],
+      "policy": "Five exact counted pointer stores, not a FALSE macro or SDK header dependency. Original Source bodies and source/blob identities remain unchanged."
+    }
+  },
+  "ownership": {
+    "canonical_record": "One fixed-address IsleRainbowActorSource beside the independent lifecycle entry, outside disposable scene Storage; all five families and lifecycle borrow it. UNPREPARED -> PREPARED -> ACTIVE -> DETACHED only, no rehydrate/rebind or parallel copies. Independent owner and Source-mutated scalars survive native detachment.",
+    "definitions": 77,
+    "gobj_callbacks": 67,
+    "factory_callbacks": 5,
+    "animation_callbacks": 1,
+    "collision_callbacks": 1,
+    "numeric_utilities": 1,
+    "explicit_scene_helpers": 2,
+    "graphs": 20,
+    "weighted_lists": 1,
+    "weighted_rows": 2,
+    "graph_rows": 54,
+    "child_factory_helpers": 5,
+    "required_services": [
+      "reference_assign",
+      "current_block",
+      "add_one",
+      "sound_play",
+      "sound_active",
+      "sound_stop",
+      "sound_stop_all",
+      "bgm_play",
+      "bgm_stop",
+      "bgm_volume",
+      "bgm_channel_volume",
+      "remove_flying_items",
+      "reset_camera",
+      "reset_messages",
+      "remove_pokemon",
+      "cutscene_start",
+      "resume_processes",
+      "main_camera",
+      "pause_processes",
+      "camera_speed",
+      "camera_animation",
+      "camera_animation_process",
+      "sky_speed",
+      "player_model_init",
+      "player_model_animation",
+      "animation_callback",
+      "collision_initialize",
+      "collision_query",
+      "collision_callback"
+    ],
+    "original_empty_static": {
+      "path": "src/rainbow/pkmn_1037/code.c",
+      "first": 308,
+      "last": 309,
+      "symbol": "nullsub",
+      "exclusion": "Original empty static has no Source references and no admitted graph/list callbacks. Not an invented callback or provider."
+    },
+    "native_boundary": "All services return to plain C before checks; waits, stops, jumps and faults occur only in C. invoke_spawn, invoke_animation and invoke_collision establish nonwaiting C fences. No source wait under C++.",
+    "phases": "prepare(owner,rom,bytes) performs exact ROM/BSS preparation without Game/services. activate(actualGame,all29services) requires healthy accessible idle Game and same canonical Root/ActorOwner typed context, provisionally binds nativeGame/services, publishes ACTIVE last and never resets Source fields. require, callbacks and all three returning invoke fences require ACTIVE. deactivate is host-only after native/Source/GPU/Photo/audio/semantic/model-credit joins, enforces observable idle/process-zero/null-GObj/empty-ModelRef/null-native-collider guards, preserves owner/scalars/first-fault including STOPPED, then clears native bindings and publishes DETACHED. Process counts are not external-consumer proof.",
+    "addressed_commands": "Every original cmdSendCommand site uses requester-contextual isle_actor_source_send_addressed(requester,destination,command,sender), preserving destination/sender. The genuine existing three-argument self-send API remains unchanged.",
+    "completion": "Unlinked Source provider and complete service contract only; no ActorAI readiness or standalone Rainbow execution claim.",
+    "support_handoff": "Parent must refresh closed native_support hashes after shared owner, neutral catalog and integration edits; generator and recipe admission must remain closed."
+  },
+  "output_sha256": "78130cd819b8feee8ba67385ff8244c768fb6d71081d17496732c4f3b828041e",
+  "native_support": {
+    "src/actor_course_context.hpp": {
+      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/rainbow_actor.hpp": {
+      "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
+    },
+    "src/rainbow_actor.cpp": {
+      "sha256": "cee34cf3abf985d85ca3031735f477fab0de70b3d445572cba5086aeba84542d"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
+    },
+    "src/actor_source_bridge.c": {
+      "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
+    },
+    "src/actor_owner.hpp": {
+      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
+    },
+    "src/actor_interaction_services.h": {
+      "sha256": "3ae9ca3cee1e32d2658c969d6b458290783c711de3a8f4c10966d1f24ce00158"
+    },
+    "src/actor_interaction_services.hpp": {
+      "sha256": "9b4274b5dea8584573a639f6315ca57736322c1e463af4bc28355f6fd99cc467"
+    },
+    "src/actor_interaction_services.cpp": {
+      "sha256": "1e0211f4e9b89b43193d0a98a23fe72908f5e07fddf91e09eefe778955f5d3c2"
+    },
+    "src/actor_behavior_bindings.hpp": {
+      "sha256": "aff3e08cff850bf85f78f10f6d683ad4d11f1eb8c464fbabc5078f3e0b7fc3c5"
+    },
+    "src/actor_behavior_bindings.cpp": {
+      "sha256": "f48065907d97fe625e39102fbc001219537181ae5316c8f44d1cf1a4231fa278"
+    },
+    "src/actor_resources.hpp": {
+      "sha256": "308a6616098f33604e91de5fc1f29a5e218e3ddc44d880ee80aa91bf4bbfc9c6"
+    },
+    "src/actor_resources.cpp": {
+      "sha256": "1c181185d679b63c353a237f477ac39e812f60cfe8d35a55b7a6928db6933faa"
+    },
+    "src/actor_behavior_resources.hpp": {
+      "sha256": "ee2c6e6121b72d4393cd20cea1255c09e92aa749fafdcc2f5409bdecc48bec0b"
+    },
+    "src/actor_behavior_resources.cpp": {
+      "sha256": "f69c2b50b631a7ed39be36b2b2235429694ff647b27e296c785c9f92a27e4ff9"
+    },
+    "src/actor_resource_catalog.hpp": {
+      "sha256": "67614a3226f94ce82d21d3f9a41ae0767ce591ada76d224d5613312e51394c5d"
+    },
+    "src/actor_resource_catalog.cpp": {
+      "sha256": "935d9ce4454abfa5779e67493b54bdc5159c95e04cd6bcb1e872375f356ebdcb"
+    },
+    "src/rainbow_actor_catalog.cpp": {
+      "sha256": "e5cbeede5a05407dacebdfcf9172149cbeb725aeb800a1e48fddcbaa78c3f679"
+    },
+    "src/engine_internal.h": {
+      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+    }
+  },
+  "generator_sha256": "b67c234b45660daadb9489b080b452ad7e05d472c7d2e5bcf3c0f1983c288e9e"
+}

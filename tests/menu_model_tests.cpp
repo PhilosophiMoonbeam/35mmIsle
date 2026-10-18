@@ -199,6 +199,47 @@ void source_null_draw_guards() {
                 "Deferred NULL draw flushed matrices/materials/pop into an otherwise unused lane");
     }
 }
+void type_a_draws_only_an_enabled_root() {
+    for (const auto type : {RenderType::a,RenderType::a_fogged}) {
+        Hierarchy h;
+        h.source.render_type = type;
+        h.source.matrix_kinds = {27,0,0};
+        h.source.nodes[0].payloads.push_back({{},0,0,0x80001800});
+        h.nodes[0].material_count = 1;
+        h.materials[0] = 0x4000;
+        for (bool placed : {false,true}) {
+            h.placement.mode = placed ? ISLE_GAME_MODEL_PLACEMENT_RT : ISLE_GAME_MODEL_PLACEMENT_DISABLED;
+            require(bool(h.encode()),"TypeA root draw rejected");
+            unsigned depth = 0, draws = 0, bindings = 0;
+            for (unsigned lane = 0; lane < 4; ++lane) for (std::size_t i = 0; i < h.counts[lane]; ++i) {
+                const auto command = h.storage[lane][i];
+                require(lane == 0,"TypeA traversed a child display lane");
+                if ((command.w0 >> 24) == 0xda) {
+                    require(command.w1 == 0x1000 || (placed && command.w1 == 0x2000),
+                        "TypeA consumed a descendant matrix");
+                    if (!(command.w0 & 1u)) ++depth;
+                } else if ((command.w0 >> 24) == 0xd8) {
+                    require(depth != 0,"TypeA popped an absent root scope"); --depth;
+                } else if (command.w0 == 0xde000000) {
+                    require(command.w1 == 0x80001800 && depth == 1,"TypeA drew a child or escaped its root scope");
+                    ++draws;
+                } else if (command.w0 == 0xdb060038) {
+                    require(command.w1 == 0x4000,"TypeA bound another node's materials"); ++bindings;
+                }
+            }
+            require(depth == 0 && draws == 1 && bindings == 1,"TypeA lost root material/draw/scope semantics");
+        }
+        for (auto flags : {1u,2u,4u,0x4000u}) {
+            h.nodes[0].flags = flags;
+            require(bool(h.encode()) && std::all_of(h.counts.begin(),h.counts.end(),[](auto n) { return n == 0; }),
+                "TypeA nonzero root flags still traversed children or emitted root work");
+        }
+        h.nodes[0].flags = 0;
+        h.source.nodes[0].payloads[0].draw_list = 0;
+        require(bool(h.encode()) && std::all_of(h.counts.begin(),h.counts.end(),[](auto n) { return n == 0; }),
+            "TypeA null root payload traversed children or bound materials");
+    }
+}
 model::WorldMatrix one() {
     model::WorldMatrix matrix;
     for (unsigned i = 0; i < 4; ++i) matrix.m[i][i] = 1;
@@ -554,7 +595,8 @@ struct KernelFixture {
     std::array<std::size_t,4> counts{};
     model::HierarchyBuffer output{{storage[0],storage[1],storage[2],storage[3]},counts,pending};
     bool native_pose = false;
-    explicit KernelFixture(bool contextual = false, std::uint32_t row_flags = 0) {
+    explicit KernelFixture(bool contextual = false, std::uint32_t row_flags = 0,
+                           std::uint8_t ordinary_kind = 28) {
         require(isle_arena_init(&arena,arena_bytes.data(),arena_bytes.size()) == ISLE_OK,"kernel arena initialization");
         native(isle_game_create(&arena,&game));
         for (std::size_t i = 0; i < materials.size(); ++i) {
@@ -567,6 +609,7 @@ struct KernelFixture {
         materials[2].flags = 0x20; materials[2].parameters[0] = 1.0e30f;
         for (std::size_t r = 0; r < models.size(); ++r) {
             auto& source = models[r]; source.render_type = RenderType::i_fogged;
+            source.matrix_kinds = {ordinary_kind,0,0};
             source.nodes.resize(r ? 1 : 3);
             for (std::size_t n = 0; n < source.nodes.size(); ++n) {
                 auto& node = source.nodes[n]; node.parent = n ? 0 : no_index;
@@ -657,6 +700,56 @@ void translation_payload(const IsleGameFixedMatrix& m, IsleGameVec3 position) {
         const auto expected = row == 3 && col < 3 ? xyz[col] : row == col ? 1.0f : 0.0f;
         require(fixed_component(m,row,col) == expected,"contextual node uploaded more than its translation cache");
     }
+}
+void kernel_rt_local_scale_and_residency() {
+    KernelFixture f(false,0,27);
+    animation::Transform pose{{1.5f,-2.25f,3.125f},{0,1.57079637f,0},
+        {std::numeric_limits<float>::max(),-7,0}};
+    require(bool(f.runtime->set_node_transform(f.handles[0],0,pose)),"RT animation pose rejected");
+    f.prepare();
+    auto nodes = f.kernel->native_nodes(f.handles[0]);
+    require(nodes[0].matrix_kind == ISLE_GAME_MODEL_ROTATE_RPY_TRANSLATE &&
+        nodes[0].transform.scale.x == pose.scale.x &&
+        fixed_component(nodes[0].fixed,0,2) == -1 && fixed_component(nodes[0].fixed,2,0) == 1 &&
+        fixed_component(nodes[0].fixed,1,1) == 1 && fixed_component(nodes[0].fixed,3,0) == 1.5f,
+        "kernel attachment/upload did not consume actual Source27 math");
+    const auto original_fixed = nodes[0].fixed;
+    const auto original_world = f.kernel->world_nodes(f.handles[0])[0];
+    const auto original_revision = nodes[0].revision;
+    require(std::abs(original_world.m[0][2]+1) < 0.0001f &&
+        std::abs(original_world.m[2][0]-1) < 0.0001f && original_world.m[1][1] == 1 &&
+        original_world.m[3][0] == 1.5f,"RT world projection consumed canonical scale");
+    auto resident = [&] {
+        return std::memcmp(f.ram.data()+0x1000/4,&nodes[0].fixed,sizeof(nodes[0].fixed)) == 0;
+    };
+    require(resident(),"RT native fixed cache did not reach canonical RAM");
+    pose.scale = {-std::numeric_limits<float>::max(),0,37};
+    require(bool(f.runtime->set_node_transform(f.handles[0],0,pose)),"RT scale-only animation edit rejected");
+    f.prepare();
+    require(nodes[0].revision == original_revision+1 && nodes[0].transform.scale.z == 37 &&
+        std::memcmp(&nodes[0].fixed,&original_fixed,sizeof(original_fixed)) == 0 &&
+        equal(original_world,f.kernel->world_nodes(f.handles[0])[0]) && resident(),
+        "RT scale-only edit erased fields or changed fixed/world matrix bytes");
+    f.native_pose = true;
+    auto native_pose = nodes[0].transform;
+    native_pose.position.x = 13;
+    native_pose.scale = {29,31,41};
+    native(isle_game_model_set_transform(f.game,f.native_models[0],0,&native_pose));
+    std::fill_n(f.ram.begin()+0x1000/4,16,0xdeadbeefu);
+    f.prepare(false);
+    require(nodes[0].transform.position.x == 13 && f.ram[0x1000/4] == 0xdeadbeefu,
+        "hidden RT binding overwrote RAM or restored divergent Runtime pose");
+    f.prepare();
+    require(resident() && fixed_component(nodes[0].fixed,3,0) == 13 &&
+        f.kernel->world_nodes(f.handles[0])[0].m[3][0] == 13,
+        "revealed RT binding reused old matrix residency");
+    const auto revision = nodes[0].revision;
+    std::fill_n(f.ram.begin()+0x1000/4,16,0xdeadbeefu);
+    f.prepare(true,2);
+    require(resident() && nodes[0].revision == revision,"RT new RAM epoch did not republish the stable cache");
+    std::vector<std::uint32_t> fresh(rdram_size/4,0xdeadbeef); f.ram.swap(fresh);
+    f.prepare(true,2);
+    require(resident() && nodes[0].revision == revision,"RT replacement RAM inherited stale residency");
 }
 void contextual_child_rows(const KernelFixture& f, const model::RenderContext& context,
     bool source48, const IsleGameModelTransform& root, const IsleGameModelTransform& child) {
@@ -1041,11 +1134,13 @@ int main() {
         lod_and_atomic_rejection(); fractional_lod_above_terminal_key();
         deferred_placement_scopes_and_hide(); immediate_prelist_and_disabled_capacity();
         source_null_draw_guards();
+        type_a_draws_only_an_enabled_root();
         kind44_placement_inherits_only_x();
         configured_recipe_selection(); camera_value_context_and_retention();
         contextual_xyz_siblings_and_hidden(); source48_rows_are_not44();
         kernel_independent_instances_and_order(); kernel_reuse_hidden_residency_and_epoch();
         kernel_late_rejection_is_atomic();
+        kernel_rt_local_scale_and_residency();
         kernel_contextual_pose_authority();
         kernel_contextual_residency_and_atomicity();
     }

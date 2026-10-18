@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Explicit private-ROM component integration, never CTest or a game entrypoint.
 // Actual common1003 FSM + complete admitted World/Actor assets + sole course FX.
 // Real native Player Root/AUX only; no Player FSM/items/photo queue/game runtime claim.
@@ -209,9 +210,9 @@ void ppm(const std::filesystem::path& path,g::Completed image) {
 void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std::filesystem::path& output) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"private composed profile must be empty");
     std::filesystem::create_directories(output);
-    const world::Resources world_resources(snapshot); const auto& setup=world_resources.setup();
-    const beach::ActorResources actor_resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const environment_sound::BeachResources sound_resources(snapshot);
+    const world::Resources world_resources(snapshot, isle::course::beach_id); const auto& setup=world_resources.setup();
+    const actor::Resources actor_resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const environment_sound::Resources sound_resources(snapshot,0);
     const menu::EffectResources effect_resources(snapshot); const photo::LightingInputs lighting(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     const menu::EffectGraphicsResources effect_graphics(snapshot,banks,{0x700000,0x80000});
@@ -252,7 +253,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             require(environment.initialize(nullptr,camera),"environment source initialization failed");
             focus::Detector detector; focus::RegionCopies copies(capture_layout);
             Bindings bindings{services,camera};
-            world::World world(services,world_resources,{&bindings,nullptr,Bindings::remove,Bindings::change,Bindings::camera_shift,Bindings::effect_shift,nullptr});
+            world::ModuleState world_module;
+            world::World world(services,world_resources,world_module,{&bindings,nullptr,Bindings::remove,Bindings::change,Bindings::camera_shift,Bindings::effect_shift,nullptr});
             world.follow_camera(camera);
             a::SlotCapacity capacity{};
             for(const auto& model:actor_resources.models()) {
@@ -262,7 +264,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
             }
             const std::array capacities{capacity,capacity};
             {
-                actor::Owner owner(services,actor_resources,world,environment,detector,context.value,capacities,banks,{32768,4096});
+                beach::ActorSceneResources sceneData(snapshot);
+                std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+                beach::ActorSceneState sceneState(sceneData,scene_latch);
+                actor::Owner owner(services,actor_resources,actor::CourseContext(sceneState),world,environment,detector,context.value,capacities,banks,{32768,4096});
                 accepted(owner.publish_effects());
                 bindings.owner=&owner; bindings.previous_reference=&world.blocks()[0];
                 WorldOwnerScope world_owner_scope{world,bindings};
@@ -299,7 +304,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,const std:
                 auto world_other=excluding({world_layout.payloads,world_layout.lists,world_layout.materials},false);
                 auto actor_other=excluding({actor_layout.payloads,actor_layout.lists,actor_layout.materials},true);
                 menu::model::CameraBasisState basis;
-                world::Producer world_producer(services.game,camera,basis,world_resources,world,world_layout,world_other);
+                world::Producer world_producer(services.game,camera,basis,world_resources,world.render_view(),world_layout,world_other);
                 actor::DetectorBinding detection{copies,detector}; detection.enabled=true;
                 detection.photo.objects[0]=reinterpret_cast<focus::Object>(hidden.object);
                 actor::Producer actor_producer(services.game,camera,basis,actor_resources,capacities,owner.render_bindings(),actor_layout,actor_other,&detection);

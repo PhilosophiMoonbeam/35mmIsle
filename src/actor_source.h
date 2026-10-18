@@ -73,6 +73,9 @@ typedef struct IsleActorSource {
     void* owner;                   /* The actual native actor owner. */
     IsleGame* game;
     IsleGameObject* object;
+    /* Plain-C local return fence for original nonwaiting block relocation.
+     * Never retained across a wait or exposed as original GAME state. */
+    void* block_change_call_frame;
 } IsleActorSource;
 
 typedef struct IsleActorRandomState {

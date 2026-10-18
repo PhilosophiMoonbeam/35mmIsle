@@ -108,10 +108,11 @@ struct Fixture {
     Native native_game;
     Input input;
     Trace trace;
+    w::ModuleState world_module;
     w::World world;
     Actor actor;
     Fixture(w::HeightMap map = plane(), w::Vec3 origin = {}, bool enter = true, bool present = true)
-        : input(std::move(map),origin,present),world(native_game.game,input.view(),trace.callbacks()) {
+        : input(std::move(map),origin,present),world(native_game.game,input.view(),world_module,trace.callbacks()) {
         if (enter) world.enter_first(0);
         actor.create(native_game.game);
     }

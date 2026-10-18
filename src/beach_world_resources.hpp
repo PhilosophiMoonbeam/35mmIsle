@@ -25,9 +25,9 @@ struct WorldMetadata {
     std::uint16_t fog_min, fog_max;
     std::array<std::uint8_t, 3> fog_rgb, background_rgb;
 };
-// Metadata only for both null-terminated descriptor groups. Only primary[0]'s
-// model is hydrated. No road, movement, static-object, actor or spawn data is
-// installed, nor any other block's geometry/material/animation data.
+// Shared immutable GAME descriptor shape. The first-block diagnostic hydrates
+// only primary[0]; course::world_descriptors and world::Resources reuse the same
+// metadata for every original course without installing these records as RAM.
 struct BlockMetadata {
     rom::GuestView wire, gfx_wire; // Exact 0x24 descriptor and 0x20 fixed GFX header.
     Vec3 world_position;
@@ -48,8 +48,8 @@ struct WorldDescriptors {
     SkyMetadata sky;
     std::vector<BlockMetadata> primary, secondary;
 };
-// Metadata-only admission shared by the full native world and the independent
-// first-block diagnostic. Does not scan/install any GBI or runtime records.
+// Beach first-block selection, using the shared course descriptor decoder.
+// Does not scan/install any GBI or runtime records.
 WorldDescriptors world_descriptors(const rom::Snapshot&);
 struct Command { std::uint32_t w0, w1; };
 struct DisplayList {

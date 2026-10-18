@@ -73,11 +73,13 @@ struct AudioClock {
 struct Capture {
     std::vector<std::byte> rgba, color, depth;
     std::size_t triangle_packets = 0, rectangle_packets = 0;
+    std::array<std::uint32_t,3> shared_list_bytes{};
 };
 struct Readback {
     Capture& capture;
     screen_transition::Owner* transition = nullptr;
     unsigned calls = 0;
+    std::uint32_t shared_capacity = 0;
     static void finish(void* opaque, rsp::CanonicalExecutor::MemoryLease& lease, std::uint32_t color) {
         auto& self = *static_cast<Readback*>(opaque);
         require(++self.calls == 1,"surface did not receive exactly one real completed mapping");
@@ -89,6 +91,21 @@ struct Readback {
         for (std::size_t i = 0; i < plane; ++i) {
             self.capture.color[i] = ram[(color+i)^3u];
             self.capture.depth[i] = ram[(0x600000+i)^3u];
+        }
+        if (self.shared_capacity) {
+            auto cursor = ordinary_commands.address;
+            const auto end = cursor + self.shared_capacity;
+            for (auto& bytes : self.capture.shared_list_bytes) {
+                const auto begin = cursor;
+                bool terminated = false;
+                while (cursor + 8 <= end) {
+                    const auto opcode = ram[cursor ^ 3u];
+                    cursor += 8;
+                    if (opcode == std::byte{0xdf}) { terminated = true; break; }
+                }
+                require(terminated,"shared arena lost an independently retained EndDL list");
+                bytes = cursor - begin;
+            }
         }
         const auto& packets = lease.packets();
         for (const auto packet : packets.packets()) {
@@ -259,11 +276,13 @@ struct Consumer {
     }
     void ticks(unsigned count) { while (count--) tick(); }
     Capture draw(const std::string& name = {}, bool ready_owner_probe = false,
-                 SourceDispatch* source = nullptr) {
+                 SourceDispatch* source = nullptr, bool shared_arena = false,
+                 std::uint32_t shared_capacity = ordinary_commands.size / 2,
+                 bool expected_failure = false, unsigned overlap = 0) {
         healthy(); require(frame.quiescent(),"previous actual frame has not retired");
         std::size_t count = 0;
         require(services.sprite_draws(native_sprites,count),"actual ordered native sprite projection failed");
-        std::array<r::Pass,4> passes{};
+        std::array<r::Pass,8> passes{};
         auto& clear = passes[0]; clear.kind = r::Kind::clear; clear.priority = 100;
         clear.flags = 3; clear.background_rgba = background;
         auto& msg = passes[1]; msg.camera = ui.source().Msg_Camera; msg.priority = 3;
@@ -280,20 +299,64 @@ struct Consumer {
             ordinary.control = SourceDispatch::sprites; ordinary.userdata = source;
         }
         std::size_t used = 3;
+        if (shared_arena && source) {
+            // A real earlier empty dispatch consumes the same arena before
+            // Source mutates and re-gathers the later ordinary inventory.
+            passes[3] = ordinary; passes[3].sprites = {};
+            passes[3].control = nullptr; passes[3].priority = 3;
+            used = 4;
+        } else if (shared_arena) {
+            require(count >= 3,"shared arena regression requires ordered native sprite inventory");
+            const auto inventory = ordinary.sprites;
+            const auto first = count / 3, second = count * 2 / 3;
+            ordinary.sprites = inventory.first(first);
+            ordinary.sprite_commands = {ordinary_commands.address,shared_capacity};
+            passes[3] = ordinary;
+            passes[3].sprites = inventory.subspan(first,second-first);
+            passes[3].sprite_commands = {ordinary_commands.address + ordinary_commands.size / 2,
+                                        ordinary_commands.size / 2};
+            if (overlap) {
+                const auto base = ordinary_commands.address;
+                passes[3].sprite_commands = overlap == 1 ?
+                    sp::RamRange{base + 8,shared_capacity} :
+                    sp::RamRange{base,shared_capacity - 8};
+                if (overlap == 3)
+                    std::swap(ordinary.sprite_commands,passes[3].sprite_commands);
+            }
+            passes[4] = ordinary;
+            passes[4].sprites = inventory.subspan(second);
+            // Actual empty draws still append a complete list. A skipped
+            // dispatch must not consume capacity or overwrite prior lists.
+            passes[5] = ordinary; passes[5].sprites = {};
+            passes[6] = ordinary;
+            passes[6].control = +[](void*,g::SourceControl&) { return true; };
+            if (overlap) for (std::size_t i = 2; i <= 6; ++i)
+                passes[i].control = +[](void*,g::SourceControl&) { return true; };
+            used = 7;
+        }
         auto& owner = services.screen_transition();
-        if (owner.source.D_800BE2C8) passes[used++] = transitions.pass(owner);
+        const bool transitioning = owner.source.D_800BE2C8 != nullptr;
+        if (transitioning) passes[used++] = transitions.pass(owner);
         if (ready_owner_probe) require(owner.retirement_ready(),"joined transition Owner was not ready before submission");
         Capture capture;
-        Readback readback{capture,used == 4 ? &owner : nullptr};
+        Readback readback{capture,transitioning ? &owner : nullptr};
+        readback.shared_capacity = shared_arena && !source ? shared_capacity : 0;
         const auto calls = message.calls;
         const r::Input input{services.game,{1,&ui.producer(),immutable,producer_ranges,framebuffers,0xaec18},
             std::span(passes).first(used),{}};
         const auto begun = frame.begin(input,{frames&1u},{&readback,Readback::finish});
         if (source) { source->ordinary = nullptr; source->scratch = {}; }
+        if (expected_failure) {
+            require(!begun && !frame.submission() && !frame.busy(),
+                    "failed shared arena preparation submitted a GPU task");
+            require(message.calls == calls + (overlap ? 0 : 1),
+                    "arena overlap was not rejected before compiled callback side effects");
+            return capture;
+        }
         require(begun,frame.message());
         require(frame.busy() && frame.submission() && message.calls == calls+1,
             "actual Frame failed to retain submission or drew Msg more than once");
-        if (used == 4) require(!owner.retirement_ready(),"actual Frame preparation failed to retain exact transition Owner");
+        if (transitioning) require(!owner.retirement_ready(),"actual Frame preparation failed to retain exact transition Owner");
         require(!frame.retire(),"actual executing Frame accepted premature retirement");
         const auto deadline = std::chrono::steady_clock::now()+std::chrono::minutes(5);
         for (;;) {
@@ -590,7 +653,7 @@ void source_controls(Consumer& c, IsleGameObject* film) {
     isle_sprite_set_attribute(view,ISLE_SP_HIDDEN);
     const auto hidden = c.draw();
     SourceDispatch late{c.services,source,film};
-    const auto shown = c.draw({},false,&late);
+    const auto shown = c.draw({},false,&late,true);
     require(late.early_film_absent && late.late_film_present && late.cleanups == 2 && !late.active &&
         source.ThrowItemTimeout == 42 && !source.nonwaiting_call_frame &&
         changes(hidden,shown) > 5 && hidden.depth == shown.depth,
@@ -646,6 +709,49 @@ void delete_film_and_retire(Consumer& c) {
     c.evidence("real Services default -1 native OM deletion; canonical film and digit pointers NULL; actual GPU/readback retired before Ui joined retirement");
 }
 
+void terminal_scene_objects(Consumer& c) {
+    struct Publication {
+        scene::Services* services;
+        bool entered = false, rejected_inside_update = false;
+        static void update(IsleGameObject*, void* user) {
+            auto& self = *static_cast<Publication*>(user);
+            self.entered = true;
+            self.rejected_inside_update = !self.services->retire_objects();
+        }
+    } publication{&c.services};
+    auto* object = c.services.object(0x7ffffffdu,9,1);
+    require(object && c.services.process(object,Publication::update,&publication,
+                ISLE_GAME_SYNCHRONOUS,1),
+            "terminal scene publication/process creation failed");
+    auto& owner = c.services.screen_transition();
+    native(isle_screen_transition_func_800A7918(&owner.source,0,0.1f));
+    auto* worker = last_worker(owner);
+    require(worker && worker->callback == isle_screen_transition_func_800A7660,
+            "terminal scene regression lost the actual Original black-fade worker");
+    for (unsigned updates = 0; !publication.entered ||
+            isle_screen_transition_func_800A7460(&owner.source); ++updates) {
+        require(updates < 32,"terminal scene Source fade did not finish");
+        c.tick();
+    }
+    require(publication.rejected_inside_update && !worker->joined &&
+                !owner.retirement_ready(),
+            "native update retired Services or Source busy=false forged a worker join");
+    require(c.services.retire_objects(),
+            "terminal Services sweep did not genuinely join live scene publications");
+    IsleGameCounts counts{};
+    native(isle_game_counts(c.services.game,&counts));
+    require(!counts.objects && !counts.processes && !counts.models &&
+                !counts.sprites && !counts.cameras && worker->joined &&
+                owner.retirement_ready(),
+            "terminal Services join left native callbacks/model or unjoined Source fade");
+    scene::Services::ObjectPreparation prepared;
+    require(!c.services.object(0x7ffffffeu,9,1) &&
+                c.services.prepare_object(prepared) == ISLE_GAME_INVALID_STATE &&
+                !c.services.failed() && isle_game_status(c.services.game) == ISLE_GAME_OK,
+            "terminal Services reopened native admission or invented a failure");
+    c.evidence("terminal Services joins a live native publication and Original delayed black-fade worker after GPU retirement; rejects sweep inside OM and closes new admission without destroying callback owners");
+}
+
 void run(const std::filesystem::path& romfile, const std::filesystem::path& root) {
     require(root.is_absolute() && std::filesystem::is_directory(root) && !std::filesystem::is_symlink(root) &&
         std::filesystem::is_empty(root),"output must be an existing absolute empty nonsymlink directory; never reuse a failed root");
@@ -697,8 +803,45 @@ void run(const std::filesystem::path& romfile, const std::filesystem::path& root
         auto created = g::Frame::create(snapshot,{true,{12000000,4*1024*1024}});
         require(bool(created),created.message.data());
         Consumer consumer(services,ui,*created.frame,transitions,audio_clock,root,report,ordinary_camera,immutable);
-        messages(consumer); icons_and_film(consumer); screens(consumer); delete_film_and_retire(consumer);
+        messages(consumer); icons_and_film(consumer);
+        auto& ui_source = ui.source();
+        native(isle_player_ui_Icons_Show(&ui_source));
+        require(services.send_command(ui_source.D_803B09D8_550DE8,-5),
+                "film show before shared-arena regression enqueue failed");
+        consumer.tick();
+        const auto unshared = consumer.draw();
+        std::uint32_t exact_shared_capacity = 0;
+        for (unsigned repeat = 0; repeat < 3; ++repeat) {
+            const auto shared = consumer.draw({},false,nullptr,true);
+            require(shared.rgba == unshared.rgba && shared.color == unshared.color &&
+                    shared.depth == unshared.depth &&
+                    shared.rectangle_packets == unshared.rectangle_packets,
+                    "interleaved shared sprite lists lost ordered contents or failed per-frame cursor reset");
+            exact_shared_capacity = 0;
+            for (const auto bytes : shared.shared_list_bytes) exact_shared_capacity += bytes;
+        }
+        consumer.evidence("shared sprite arena: ordered A/B/A native inventory, actual empty draw, skipped control, repeated preparations across both framebuffer contexts match disjoint GPU color/depth/rectangles");
+        const auto exact = consumer.draw({},false,nullptr,true,exact_shared_capacity);
+        require(exact.rgba == unshared.rgba && exact.color == unshared.color &&
+                exact.depth == unshared.depth,"exact-fit shared arena changed GPU output");
+        // Failed Frames are sticky; isolate each failure in an actual Frame
+        // with the same native consumers rather than retrying a failed one.
+        for (const unsigned overlap : {0u,1u,2u,3u}) {
+            auto isolated = g::Frame::create(snapshot,{true,{12000000,4*1024*1024}});
+            require(bool(isolated),isolated.message.data());
+            Consumer rejected(services,ui,*isolated.frame,transitions,audio_clock,root,report,
+                              ordinary_camera,immutable);
+            rejected.draw({},false,nullptr,true,
+                          overlap ? ordinary_commands.size / 2 : exact_shared_capacity - 8,
+                          true,overlap);
+        }
+        native(isle_player_ui_Icons_Hide(&ui_source));
+        require(services.send_command(ui_source.D_803B09D8_550DE8,-4),
+                "film hide after shared-arena regression enqueue failed");
+        consumer.tick();
+        screens(consumer); delete_film_and_retire(consumer);
         require(services.screen_transition().retirement_ready(),"source screen workers/Owner did not actually retire");
+        terminal_scene_objects(consumer);
         report << "completed_frames\t" << consumer.frames << '\n';
     } // Services joins all remaining camera/root/native callbacks, THEN deactivate.
     native(storage.destroy());

@@ -1,0 +1,1361 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "beach-eevee-chansey-complete38-v1",
+  "generator_sha256": "3adbd2b32b0bde4cfc3f51e6036c0952f2d431b137d18a5a4cfed7b914cdb352",
+  "source_files": {
+    "src/beach/55F350.c": {
+      "git_blob": "cf84fff65ff498e43e41580d2183bf61731983ae",
+      "sha256": "d25b732838514af48633add85309e475d2301e5f22d3c464155a0316ab470aab",
+      "line_count": 207
+    },
+    "src/beach/5612B0.c": {
+      "git_blob": "6b3a78bf8fdb4b8611ee96ed6c16ef43303ab89c",
+      "sha256": "dc9841f64bbb87712c3e3606e12ecc4a1be36341671e8d8155a98d5f8074f74e",
+      "line_count": 221
+    },
+    "src/beach/beach.h": {
+      "git_blob": "0aad5edbe49cd130449874b9b3b55941d3b73042",
+      "sha256": "a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc",
+      "line_count": 329
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C72E0",
+      "first": 4,
+      "last": 18,
+      "source_sha256": "53c9ca5dcef7d488cccad821917732de64c802eb67aced6102bee28ae4b9082a",
+      "native_sha256": "a9e4410d71f426af8f06950f496d089139216d68fcb83e7f6b3ccf27f0f34390",
+      "native_declaration": "void func_beach_802C72E0(GObj* obj)",
+      "changes": [
+        {
+          "find": "D_beach_802CD3F4",
+          "replace": "(*isle_beach_eevee_chansey_scene_path(obj))",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C737C",
+      "first": 20,
+      "last": 29,
+      "source_sha256": "508601310d9e7f6ab3ba4fdb7fd310a910a5fe98e17240ba1c63adfe15481931",
+      "native_sha256": "cea54fd8d30fefc3ba0e22b1c75cd768fb1bf132be520ad4cd90ac4aa419aba3",
+      "native_declaration": "void func_beach_802C737C(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9AC);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9ac), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCA10",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cca10))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCAA0",
+          "replace": "isle_actor_source_weighted(obj, UINT32_C(0x802ccaa0))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C73EC",
+      "first": 31,
+      "last": 44,
+      "source_sha256": "4def530b17a4dd73fb9a41f6b6b423e89db89c2a16786b52a3c9d23b0e36428e",
+      "native_sha256": "4953082ce1e86e09357870ab79812df39c9247fb9b60ca36eedcf15be97760cc",
+      "native_declaration": "void func_beach_802C73EC(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9C0);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9c0), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCA10",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cca10))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCAA0",
+          "replace": "isle_actor_source_weighted(obj, UINT32_C(0x802ccaa0))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C7490",
+      "first": 46,
+      "last": 55,
+      "source_sha256": "b5e76414b6cca58de2837d5c503f10e09682adb5eb7384ac5ef67421c0cdc170",
+      "native_sha256": "b5e76414b6cca58de2837d5c503f10e09682adb5eb7384ac5ef67421c0cdc170",
+      "native_declaration": "void func_beach_802C7490(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C74EC",
+      "first": 57,
+      "last": 66,
+      "source_sha256": "a9d2465152d688f3a2a395d10a915b9d13c18f966b00d418e15b7d7e7eba7782",
+      "native_sha256": "ca4de2a9ed25b327ddbb53ed3525a830304f60a4d12ff99a87de8c2de8718633",
+      "native_declaration": "void func_beach_802C74EC(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_beach_802CC9E8);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9e8), 0.0f, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCAB8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccab8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C755C",
+      "first": 68,
+      "last": 77,
+      "source_sha256": "01dea467d98d0c9e4261d46e140dba3a96d026688b4a608eed646964f722908d",
+      "native_sha256": "f7ba5b1072dcb5321d1335003c09841d39852a6337236fa477ba37a31145c3b9",
+      "native_declaration": "void func_beach_802C755C(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9D4);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9d4), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCAE8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccae8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C75D0",
+      "first": 79,
+      "last": 88,
+      "source_sha256": "e589507db5045aca20a29d2ca1c94c01945e7633785ef75477268e4de2e24a77",
+      "native_sha256": "e589507db5045aca20a29d2ca1c94c01945e7633785ef75477268e4de2e24a77",
+      "native_declaration": "void func_beach_802C75D0(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C762C",
+      "first": 90,
+      "last": 102,
+      "source_sha256": "687037fc1b00eb45e3d787c4f5b2153f9d782f353cfa056e299c42e3e3d1ddfb",
+      "native_sha256": "7658d0843327b715f66da2d1695a4ee9b7f972353dee397a6f7842c753f346de",
+      "native_declaration": "void func_beach_802C762C(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9C0);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9c0), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCB28",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccb28))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C76C4",
+      "first": 104,
+      "last": 114,
+      "source_sha256": "8effddba4985248351888cc807e6d2c0e17d7d2382de36651c276f3d9ddd6607",
+      "native_sha256": "5b363359ef10138bd21ad126ad07fd4471c0ac4ebbeb16933159792ee2529ab5",
+      "native_declaration": "void func_beach_802C76C4(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9D4);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9d4), 0.0f, 0);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C7748",
+      "first": 116,
+      "last": 127,
+      "source_sha256": "7a40f6d4b1c98edcff27b7f9fcba65acd61db1fccb81e0a926c0a78e9ec018aa",
+      "native_sha256": "b155fbaa4f664afc6d43a4551ed5de0e66bad51d69bb31b560e158bc23626a30",
+      "native_declaration": "void func_beach_802C7748(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9FC);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9fc), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCBA8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccba8))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCAA0",
+          "replace": "isle_actor_source_weighted(obj, UINT32_C(0x802ccaa0))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C77CC",
+      "first": 129,
+      "last": 131,
+      "source_sha256": "8fea10bf00cfb13f03fe558b0bbf2f51d680123870fc4f7ef0bd8bf5bc08d2a7",
+      "native_sha256": "8fea10bf00cfb13f03fe558b0bbf2f51d680123870fc4f7ef0bd8bf5bc08d2a7",
+      "native_declaration": "void func_beach_802C77CC(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C77F0",
+      "first": 133,
+      "last": 142,
+      "source_sha256": "551da44279021fc962b9f5a58394b06510e4c864a563ed30150a7958143970a4",
+      "native_sha256": "fcf6fca9d78c4cdf7c668bcdfe4a1ddfaa90887818334b34af0a2564aee583fd",
+      "native_declaration": "void func_beach_802C77F0(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9C0);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9c0), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCBF8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccbf8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C7864",
+      "first": 144,
+      "last": 152,
+      "source_sha256": "34a90368e1cd043be7c364f61fb64f36c746b4b9fe97b7b4791425981a3bf441",
+      "native_sha256": "34a90368e1cd043be7c364f61fb64f36c746b4b9fe97b7b4791425981a3bf441",
+      "native_declaration": "void func_beach_802C7864(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C78B0",
+      "first": 154,
+      "last": 157,
+      "source_sha256": "2e6ba3b758d62db9b0e44cda5195ddcc239ee26f3b992285922fcb841d40fe35",
+      "native_sha256": "2e6ba3b758d62db9b0e44cda5195ddcc239ee26f3b992285922fcb841d40fe35",
+      "native_declaration": "void func_beach_802C78B0(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C78E8",
+      "first": 159,
+      "last": 169,
+      "source_sha256": "8f534233aebbc3133aa80aa41e5559affee9ae3917bc845d256b9a8256b9c348",
+      "native_sha256": "9aa06d7235a19b9e92559a2ad6c4a4a19518a02f05ffddc2f888a24757e2a38f",
+      "native_declaration": "void func_beach_802C78E8(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9D4);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9d4), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCC28",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccc28))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C796C",
+      "first": 171,
+      "last": 180,
+      "source_sha256": "fd8b9b191bda0f24ea0be8ac1c07b0fd860b8b709b0bacf16ccb45cdaa289091",
+      "native_sha256": "fd8b9b191bda0f24ea0be8ac1c07b0fd860b8b709b0bacf16ccb45cdaa289091",
+      "native_declaration": "void func_beach_802C796C(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C79DC",
+      "first": 182,
+      "last": 192,
+      "source_sha256": "64b57f6c302a41ff7dfad52aeea20123c63fcba83fddc75f71c1f0e725884587",
+      "native_sha256": "9073db7fb770920d13ee4e221ff773d5b3eb7d6370c106666ea65ad72a63bcac",
+      "native_declaration": "void func_beach_802C79DC(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_ForceAnimation(obj, &D_beach_802CC9E8);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9e8), 0.0f, 1);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCC68",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccc68))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C7A60",
+      "first": 194,
+      "last": 203,
+      "source_sha256": "62a3dc7b602037423bcf1c2252920e1ae90c02edfb39938736464dc96e345080",
+      "native_sha256": "dee50831495d37fc2110a9ca374d554f1d1144f9a0c21134ad9532f7454075e8",
+      "native_declaration": "void func_beach_802C7A60(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CC9FC);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cc9fc), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CCCA8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802ccca8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/55F350.c",
+      "symbol": "func_beach_802C7AD0",
+      "first": 205,
+      "last": 207,
+      "source_sha256": "9fe721d71945500fed190965e60fd6dfa181da69d7fd4caf479dabd801f90540",
+      "native_sha256": "9fe721d71945500fed190965e60fd6dfa181da69d7fd4caf479dabd801f90540",
+      "native_declaration": "void func_beach_802C7AD0(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9240",
+      "first": 6,
+      "last": 11,
+      "source_sha256": "ff99afbac570cbc5af06f0b76912055feb231e0276f70875218b68d0f09d380d",
+      "native_sha256": "f44abd151d9489f2d29a59ca4dbadc346ac3edc45e511b3fe81c04e59b74bbc2",
+      "native_declaration": "void func_beach_802C9240(GObj* obj)",
+      "changes": [
+        {
+          "find": "D_beach_802CD3F4",
+          "replace": "(*isle_beach_eevee_chansey_scene_path(obj))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9274",
+      "first": 13,
+      "last": 19,
+      "source_sha256": "671819d5e145b2d3281f37c1698434b7388f669e4f0f7d2796ef9188b1f3572d",
+      "native_sha256": "671819d5e145b2d3281f37c1698434b7388f669e4f0f7d2796ef9188b1f3572d",
+      "native_declaration": "void func_beach_802C9274(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C92BC",
+      "first": 21,
+      "last": 33,
+      "source_sha256": "d1822982ce74cf734a7199610647b39daa7e610d0e5e50a58c1ba1b89e44efaa",
+      "native_sha256": "1edfa9b9a85a335a925942c05dea7f7450cc36631d73f4b6747d1258a1befae6",
+      "native_declaration": "void func_beach_802C92BC(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD2A8);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd2a8), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD3F8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd3f8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9348",
+      "first": 35,
+      "last": 44,
+      "source_sha256": "ee41634410a9c5a670f98b43bbeb6f863652e362e51ebff393581f88a153e40d",
+      "native_sha256": "ee41634410a9c5a670f98b43bbeb6f863652e362e51ebff393581f88a153e40d",
+      "native_declaration": "void func_beach_802C9348(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C93B8",
+      "first": 46,
+      "last": 57,
+      "source_sha256": "5107145cadeb6e3887922cec3c2ef7dadf86923e3e021223413e74fe500da2ab",
+      "native_sha256": "c7d15a9bac89312735ef73fb23450957bba76cf8896c8e1fcedcb4d9d84ba49a",
+      "native_declaration": "void func_beach_802C93B8(GObj* obj)",
+      "changes": [
+        {
+          "find": "    // TODO: potentially include data\n    InteractionHandler sp18[4] = D_beach_802CD438;",
+          "replace": "    /* Original automatic initializer retains all four admitted typed rows. */\n    InteractionHandler sp18_rows[4];\n    IsleActorInteractionGraph sp18 = isle_beach_eevee_chansey_local_graph(obj, sp18_rows);",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemon->transitionGraph = sp18;",
+          "replace": "pokemon->transitionGraph = &sp18;",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C943C",
+      "first": 59,
+      "last": 73,
+      "source_sha256": "ba0a9a1d7054871a72eaf182715ecbc2007f218dd4bcf2c6b5bd0ab214f430cf",
+      "native_sha256": "22b0d77bb3400b470a7ed323b8e6d8d44d38336173ca9f476fc5b96ea1c4e540",
+      "native_declaration": "// clang-format off\nvoid func_beach_802C943C(GObj* arg0)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(arg0, &D_beach_802CD2D0);",
+          "replace": "isle_actor_source_set_animation(arg0, UINT32_C(0x802cd2d0), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(arg0, &D_beach_802CD348);",
+          "replace": "isle_actor_source_set_animation(arg0, UINT32_C(0x802cd348), 0.0f, 0);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C94F0",
+      "first": 75,
+      "last": 85,
+      "source_sha256": "ea8c0a395c6bd29225a93d1602a84e1dd2936407b6954d59f1f151134fa31401",
+      "native_sha256": "ea8c0a395c6bd29225a93d1602a84e1dd2936407b6954d59f1f151134fa31401",
+      "native_declaration": "void func_beach_802C94F0(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9580",
+      "first": 87,
+      "last": 96,
+      "source_sha256": "55ede702f310b768783bf2e59200223a460d3a6b6961f92eeca43244d3f546dc",
+      "native_sha256": "f2df153f08114ca730a022e1c59e90b7de07e67411699630145fe58d6199f7ac",
+      "native_declaration": "void func_beach_802C9580(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD2E4);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd2e4), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD35C",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd35c))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD3DC",
+          "replace": "isle_actor_source_weighted(obj, UINT32_C(0x802cd3dc))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C95F0",
+      "first": 98,
+      "last": 111,
+      "source_sha256": "f1265de29ec5b0c7c06c1829a933576975ec823557d0c52883d922bd628fa98b",
+      "native_sha256": "a573e6552f89702edc602bb614af315fd254fc7424c60ad207cc6cb8e0587c71",
+      "native_declaration": "void func_beach_802C95F0(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD2F8);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd2f8), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD35C",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd35c))",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD3DC",
+          "replace": "isle_actor_source_weighted(obj, UINT32_C(0x802cd3dc))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9694",
+      "first": 113,
+      "last": 122,
+      "source_sha256": "716d255ae0ee0fab418d634d8690d17421115402e11c03b35164420c2de867c3",
+      "native_sha256": "716d255ae0ee0fab418d634d8690d17421115402e11c03b35164420c2de867c3",
+      "native_declaration": "void func_beach_802C9694(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C96F0",
+      "first": 124,
+      "last": 133,
+      "source_sha256": "5f92dd35a45e57f1adf024b0d4ca6f84b516fd898ed23b56a0881c06a92865c5",
+      "native_sha256": "8cd255b3e9939f17d0b1cc04cac078e876286ca9a5c20e0dd272421cbc83fd14",
+      "native_declaration": "void func_beach_802C96F0(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD30C);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd30c), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD478",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd478))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9760",
+      "first": 135,
+      "last": 144,
+      "source_sha256": "844c03fefa16724005546ed0b869e72b8aba4985e7c49ab446c4c745c2205599",
+      "native_sha256": "8f4a7dd16a457d62af4fcbe2a97651ef2a3bc0e98b21db8ef17803afc953663f",
+      "native_declaration": "void func_beach_802C9760(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD320);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd320), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD4A8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd4a8))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C97D4",
+      "first": 146,
+      "last": 155,
+      "source_sha256": "ea4576cef852c7cf55fc78abef806d958519f11d0012d316d32cb74e00cc63d6",
+      "native_sha256": "ea4576cef852c7cf55fc78abef806d958519f11d0012d316d32cb74e00cc63d6",
+      "native_declaration": "void func_beach_802C97D4(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9830",
+      "first": 157,
+      "last": 172,
+      "source_sha256": "308be14913c571d7852320ceb4fb722105d302212d9b2321fa70707fedec377c",
+      "native_sha256": "74bc49a2b584588f08c7c9b0d23c40beb71a2df8c07cb1ede8d6aba62c56881f",
+      "native_declaration": "void func_beach_802C9830(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD2F8);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd2f8), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD334);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd334), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD4E8",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd4e8))",
+          "occurrences": 2
+        },
+        {
+          "find": "D_beach_802CD3DC",
+          "replace": "isle_actor_source_weighted(obj, UINT32_C(0x802cd3dc))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C98F4",
+      "first": 174,
+      "last": 185,
+      "source_sha256": "582388635cc89171a092132b3012f696aaf4e4e7d6341ebb07930e1f05bca95c",
+      "native_sha256": "de28ebc8670e8ba0368e64726df3c52e156442d878e18e83431db6283b0fd9a5",
+      "native_declaration": "void func_beach_802C98F4(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD320);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd320), 0.0f, 0);",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9978",
+      "first": 187,
+      "last": 189,
+      "source_sha256": "6522133bb466f641fe70cb27eb172116355bab9f6904605f9d3788e06047012e",
+      "native_sha256": "6522133bb466f641fe70cb27eb172116355bab9f6904605f9d3788e06047012e",
+      "native_declaration": "void func_beach_802C9978(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C999C",
+      "first": 191,
+      "last": 200,
+      "source_sha256": "f4ce70d99c4169b56ddd29ea2263c622089338c24c6fc5557c4399d4411205c9",
+      "native_sha256": "a974027960651d5004cec8db996981daa99ec58a74cf29bafabdf2065391de97",
+      "native_declaration": "void func_beach_802C999C(GObj* obj)",
+      "changes": [
+        {
+          "find": "Pokemon_SetAnimation(obj, &D_beach_802CD2BC);",
+          "replace": "isle_actor_source_set_animation(obj, UINT32_C(0x802cd2bc), 0.0f, 0);",
+          "occurrences": 1
+        },
+        {
+          "find": "D_beach_802CD518",
+          "replace": "isle_actor_source_graph(obj, UINT32_C(0x802cd518))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9A10",
+      "first": 202,
+      "last": 217,
+      "source_sha256": "79387a2acd06d32e1f64e7e3628706a4df4d750da679be15f9c6d1a05e89262c",
+      "native_sha256": "79387a2acd06d32e1f64e7e3628706a4df4d750da679be15f9c6d1a05e89262c",
+      "native_declaration": "void func_beach_802C9A10(GObj* obj)",
+      "changes": []
+    },
+    {
+      "path": "src/beach/5612B0.c",
+      "symbol": "func_beach_802C9A7C",
+      "first": 219,
+      "last": 221,
+      "source_sha256": "1fdc555cdce3624b4e01cf4ccbfeea0b19e126aa516d86fee646659f7f7dfbee",
+      "native_sha256": "1fdc555cdce3624b4e01cf4ccbfeea0b19e126aa516d86fee646659f7f7dfbee",
+      "native_declaration": "void func_beach_802C9A7C(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "changes": []
+    }
+  ],
+  "semantic_origins": [
+    {
+      "path": "src/beach/beach.h",
+      "first": 80,
+      "last": 95,
+      "label": "Complete Eevee animation/graph/weighted/initializer declarations",
+      "source_sha256": "dde1cbe5693d640f736c0a10a986bde053a23e2af29bffafb36a1101b90d0780"
+    },
+    {
+      "path": "src/beach/beach.h",
+      "first": 135,
+      "last": 153,
+      "label": "Complete Chansey declarations and shared typed path / automatic graph initializer",
+      "source_sha256": "032a34b24c9b80af2846b30b662bec3ee1a5bf374506efeca2a347dea5c67a89"
+    },
+    {
+      "path": "include/enums.h",
+      "first": 248,
+      "last": 258,
+      "label": "Native link3 command destination identity",
+      "source_sha256": "2a272beabf4128c4f722e2083139998c12177ab589b9637c0039de7b1b273fcd"
+    },
+    {
+      "path": "include/enums.h",
+      "first": 378,
+      "last": 403,
+      "label": "Pokemon flag bits and source process flag semantics",
+      "source_sha256": "52ca77b0eb54a0061dcd01851c767e96dc93c5597e3f0cccf9e9643a0d3f4753"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "first": 47,
+      "last": 102,
+      "label": "Cross-actor command32/33/34 identities and graph terminator",
+      "source_sha256": "aaaab158ee3e7943ea15db04595c4cc77d84af0381f48439377f5b035f04b45e"
+    },
+    {
+      "path": "src/app_level/app_level.h",
+      "first": 115,
+      "last": 124,
+      "label": "Shared original movement flag bits",
+      "source_sha256": "62c0d3ca0428ce994d2fd72cbc77aabd0ca640596f4aab73311b85537c315e2d"
+    }
+  ],
+  "rom_facts": {
+    "rom_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "rom_bytes": 16777216,
+    "mapping": {
+      "guest_begin": "0x802cbe10",
+      "rom_begin": "0x563e80",
+      "bytes": "0x22e0"
+    },
+    "authority": "Only the admitted original US ROM supplies initialized data; repository pins establish own-GAME declarations and complete behavior bodies. ROM is private runtime data, never a materialization/build prerequisite or public payload. Native ActorResources/BehaviorResources retain the actual Snapshot receipt.",
+    "ranges": [
+      {
+        "label": "Initial shared Chansey path slot",
+        "guest_address": "0x802cd3f4",
+        "rom_offset": "0x565464",
+        "bytes": 4,
+        "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "initial_word": 0,
+        "native_initialization": "Decode admitted null guest identity to nullptr, then retain the real native World AnimationPath borrowed from Chansey Source.path; never cast guest identity to a pointer."
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cca10",
+        "rom_offset": "0x564a80",
+        "bytes": 144,
+        "sha256": "31216dd07f75654182761e70ab584e405ab354b00259684174b9ef9e10dd3367",
+        "row_count": 9
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccab8",
+        "rom_offset": "0x564b28",
+        "bytes": 48,
+        "sha256": "f7ba5235ca2ee1425b7bc34ff480b8d6d7a5c502db6035dc38acbb76af73f450",
+        "row_count": 3
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccae8",
+        "rom_offset": "0x564b58",
+        "bytes": 64,
+        "sha256": "b2849b968d94822112530810936c9102c504f310f21a07afb046feacefcdfa07",
+        "row_count": 4
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccb28",
+        "rom_offset": "0x564b98",
+        "bytes": 128,
+        "sha256": "1b44866b7c7fc3457d8da90f3951f3f4a9144dec3929c6585c954584b987d1b0",
+        "row_count": 8
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccba8",
+        "rom_offset": "0x564c18",
+        "bytes": 80,
+        "sha256": "582fb250abc1f8ff8a90316287122ef023f8fbaf3dbd2ed1c7951a21aee6c2e1",
+        "row_count": 5
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccbf8",
+        "rom_offset": "0x564c68",
+        "bytes": 48,
+        "sha256": "f7ba5235ca2ee1425b7bc34ff480b8d6d7a5c502db6035dc38acbb76af73f450",
+        "row_count": 3
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccc28",
+        "rom_offset": "0x564c98",
+        "bytes": 64,
+        "sha256": "3b4bee88fc1de6df060c6d75fc00b84299229c602369a3884bdc391e12b945d4",
+        "row_count": 4
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccc68",
+        "rom_offset": "0x564cd8",
+        "bytes": 64,
+        "sha256": "3b4bee88fc1de6df060c6d75fc00b84299229c602369a3884bdc391e12b945d4",
+        "row_count": 4
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802ccca8",
+        "rom_offset": "0x564d18",
+        "bytes": 48,
+        "sha256": "f7ba5235ca2ee1425b7bc34ff480b8d6d7a5c502db6035dc38acbb76af73f450",
+        "row_count": 3
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cd35c",
+        "rom_offset": "0x5653cc",
+        "bytes": 128,
+        "sha256": "85bea1d9885dba2ee03e706f7bd4ba0fe6fe440492352512002333472c7c1a1d",
+        "row_count": 8
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cd3f8",
+        "rom_offset": "0x565468",
+        "bytes": 64,
+        "sha256": "6d9a7acd8e36579aaead1810e8c40b5e4d7b113e64ae051531c0aa00083309bc",
+        "row_count": 4
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cd438",
+        "rom_offset": "0x5654a8",
+        "bytes": 64,
+        "sha256": "d6455d4b78f5efe108dadc50fe7092d1f2e3ba19d068cc3a742777b20c509ed9",
+        "row_count": 4
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cd478",
+        "rom_offset": "0x5654e8",
+        "bytes": 48,
+        "sha256": "787daa6f06e88b4c0c5825f760d69bad9d90b00e3eaa44259e0b20a82a6754d8",
+        "row_count": 3
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cd4a8",
+        "rom_offset": "0x565518",
+        "bytes": 64,
+        "sha256": "732ee423f0408d247e8357106f5b65ed76d2864e57ba34a2d4d1326d5b8b3489",
+        "row_count": 4
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cd4e8",
+        "rom_offset": "0x565558",
+        "bytes": 48,
+        "sha256": "787daa6f06e88b4c0c5825f760d69bad9d90b00e3eaa44259e0b20a82a6754d8",
+        "row_count": 3
+      },
+      {
+        "label": "Complete ordered interaction graph including command58",
+        "guest_address": "0x802cd518",
+        "rom_offset": "0x565588",
+        "bytes": 48,
+        "sha256": "787daa6f06e88b4c0c5825f760d69bad9d90b00e3eaa44259e0b20a82a6754d8",
+        "row_count": 3
+      },
+      {
+        "label": "Complete original weighted states including null terminal",
+        "guest_address": "0x802ccaa0",
+        "rom_offset": "0x564b10",
+        "bytes": 24,
+        "sha256": "eb0f3a3b3833e28381ff94acaf4ff969df2651dc9478385cecfa269e5133597e",
+        "row_count": 3,
+        "total_weight": 200
+      },
+      {
+        "label": "Complete original weighted states including null terminal",
+        "guest_address": "0x802cd3dc",
+        "rom_offset": "0x56544c",
+        "bytes": 24,
+        "sha256": "33a472f32fda2bffc4da47ef0b684f3625453acaa1ec2d6add43352edc9d44ea",
+        "row_count": 3,
+        "total_weight": 200
+      },
+      {
+        "label": "Complete actor initialization",
+        "guest_address": "0x802cccec",
+        "rom_offset": "0x564d5c",
+        "bytes": 52,
+        "sha256": "3e28af8c7fd339ebc3c3a1f66e6b16093747410c1b62f13796cb17be93893b2d",
+        "actor_id": 133
+      },
+      {
+        "label": "Complete actor animation setup",
+        "guest_address": "0x802cccd8",
+        "rom_offset": "0x564d48",
+        "bytes": 20,
+        "sha256": "310076f53b7e0624515cf23e6be202f3650cdc1902fbb4c74d182333171567c1",
+        "actor_id": 133
+      },
+      {
+        "label": "Complete actor initialization",
+        "guest_address": "0x802cd55c",
+        "rom_offset": "0x5655cc",
+        "bytes": 52,
+        "sha256": "0b41e0df0498fcc0b2d1894e848626a192042cb1bcd46168fedbb84421ca8941",
+        "actor_id": 113
+      },
+      {
+        "label": "Complete actor animation setup",
+        "guest_address": "0x802cd548",
+        "rom_offset": "0x5655b8",
+        "bytes": 20,
+        "sha256": "45b9d9a51729fb1932ab241a70b83a55a4ccfb9984495c890087d72d0c40c037",
+        "actor_id": 113
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cc9ac",
+        "rom_offset": "0x564a1c",
+        "bytes": 20,
+        "sha256": "e2de37bfb2b5cbc62e725f0e06d5c8c81ae67785e98265e1594caf0e3ffc7573"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cc9c0",
+        "rom_offset": "0x564a30",
+        "bytes": 20,
+        "sha256": "6bef7bfd531100118b3147e2740ad8e28037e88f85ff34d9ef0b6280bce3aee5"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cc9d4",
+        "rom_offset": "0x564a44",
+        "bytes": 20,
+        "sha256": "66ff26f3f53770e1a8af7c594d29bc9a2faba1ce8968927beb6e983e47b6e6c9"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cc9e8",
+        "rom_offset": "0x564a58",
+        "bytes": 20,
+        "sha256": "249e67d86f2cfc0a0f69e639aea9845bcc75d153bee82f9eb10ec6594401f23a"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cc9fc",
+        "rom_offset": "0x564a6c",
+        "bytes": 20,
+        "sha256": "b22d5ca45dfa6292df76520734dd0928cafee04ccf6ff489b95d0d7896ad60c5"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd2a8",
+        "rom_offset": "0x565318",
+        "bytes": 20,
+        "sha256": "d1ab963df244f9d782cfd81db30fe0c8bfcb83346a941acd82059ec82a0c3606"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd2bc",
+        "rom_offset": "0x56532c",
+        "bytes": 20,
+        "sha256": "22e9de3b141ab4a4404170c08af897b3d6afa18c74d99e0744a76211d76990f1"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd2d0",
+        "rom_offset": "0x565340",
+        "bytes": 20,
+        "sha256": "1ea70ddc0f43870039cd95e4578591bc3c9819fbc5cda26280506501237e4b7c"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd2e4",
+        "rom_offset": "0x565354",
+        "bytes": 20,
+        "sha256": "9412f72296508a8a1b6cd4e18ab6bdf512507da3f75c7af6258f90460beb99bf"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd2f8",
+        "rom_offset": "0x565368",
+        "bytes": 20,
+        "sha256": "bcdbbfcb04fcd6ee2aaa30ebb3faed24dcf2b0d11aa643723759c8381ba650f7"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd30c",
+        "rom_offset": "0x56537c",
+        "bytes": 20,
+        "sha256": "6e77fac164a49b1683e5aedc16dab71739f93195e12cd162939607784ee1623b"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd320",
+        "rom_offset": "0x565390",
+        "bytes": 20,
+        "sha256": "c421b84079c84ba8ef3c3913ad41ce79a4416e4e88f3191d0da3e2bffabb64ec"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd334",
+        "rom_offset": "0x5653a4",
+        "bytes": 20,
+        "sha256": "e8a4884863c62210c3a7f3502a8c7e3e6ab32733eab1cbb833e183511813a897"
+      },
+      {
+        "label": "Actual animation variant header",
+        "guest_address": "0x802cd348",
+        "rom_offset": "0x5653b8",
+        "bytes": 20,
+        "sha256": "51a8d0c44100ee4f674676845164b699d85a282afc2227e480350c42701019bc"
+      }
+    ],
+    "factories": [
+      {
+        "actor_id": 133,
+        "factory": "0x802c7ad0",
+        "initialization": "0x802cccec",
+        "model": "0x80324ba0",
+        "materials": "0x803200d0",
+        "render": "0x803594dc",
+        "setup": "0x802cccd8",
+        "initial_header": "0x802cc9ac",
+        "initial_state": "0x802c72e0",
+        "setup_word8": "0x00000000",
+        "setup_unknown0c": "0x00000000",
+        "setup_graph": "0x00000000"
+      },
+      {
+        "actor_id": 113,
+        "factory": "0x802c9a7c",
+        "initialization": "0x802cd55c",
+        "model": "0x80335878",
+        "materials": "0x803329a0",
+        "render": "0x8035942c",
+        "setup": "0x802cd548",
+        "initial_header": "0x802cd2e4",
+        "initial_state": "0x802c9240",
+        "setup_word8": "0x00000000",
+        "setup_unknown0c": "0x00000000",
+        "setup_graph": "0x00000000"
+      }
+    ]
+  },
+  "ownership": {
+    "provider": "beach-eevee-chansey",
+    "module_stem": "eevee_chansey",
+    "owned_source_files": [
+      "src/beach/55F350.c",
+      "src/beach/5612B0.c"
+    ],
+    "definition_count": 38,
+    "behavior_callback_count": 36,
+    "factory_count": 2,
+    "complete_file_coverage": "All complete function definitions in pinned 55F350.c (207 lines) and 5612B0.c (221 lines); only original includes, whitespace and redundant 94F0 forward declaration are supplied through native preamble/header instead.",
+    "unique_symbols": [
+      "func_beach_802C72E0",
+      "func_beach_802C737C",
+      "func_beach_802C73EC",
+      "func_beach_802C7490",
+      "func_beach_802C74EC",
+      "func_beach_802C755C",
+      "func_beach_802C75D0",
+      "func_beach_802C762C",
+      "func_beach_802C76C4",
+      "func_beach_802C7748",
+      "func_beach_802C77CC",
+      "func_beach_802C77F0",
+      "func_beach_802C7864",
+      "func_beach_802C78B0",
+      "func_beach_802C78E8",
+      "func_beach_802C796C",
+      "func_beach_802C79DC",
+      "func_beach_802C7A60",
+      "func_beach_802C7AD0",
+      "func_beach_802C9240",
+      "func_beach_802C9274",
+      "func_beach_802C92BC",
+      "func_beach_802C9348",
+      "func_beach_802C93B8",
+      "func_beach_802C943C",
+      "func_beach_802C94F0",
+      "func_beach_802C9580",
+      "func_beach_802C95F0",
+      "func_beach_802C9694",
+      "func_beach_802C96F0",
+      "func_beach_802C9760",
+      "func_beach_802C97D4",
+      "func_beach_802C9830",
+      "func_beach_802C98F4",
+      "func_beach_802C9978",
+      "func_beach_802C999C",
+      "func_beach_802C9A10",
+      "func_beach_802C9A7C"
+    ],
+    "original_common_definitions": "All original app_level movement/control/animation helpers remain uniquely owned by the existing actor-control provider. No duplicate helper bodies or SDK implementation/layout copying.",
+    "native_module_exports": [
+      "eevee_chansey_callbacks",
+      "eevee_chansey_graphs",
+      "eevee_chansey_roots"
+    ],
+    "roots": [
+      "0x802c72e0",
+      "0x802c9240"
+    ],
+    "graphs": [
+      "0x802cca10",
+      "0x802ccab8",
+      "0x802ccae8",
+      "0x802ccb28",
+      "0x802ccba8",
+      "0x802ccbf8",
+      "0x802ccc28",
+      "0x802ccc68",
+      "0x802ccca8",
+      "0x802cd35c",
+      "0x802cd3f8",
+      "0x802cd438",
+      "0x802cd478",
+      "0x802cd4a8",
+      "0x802cd4e8",
+      "0x802cd518"
+    ],
+    "weighted_states": [
+      "0x802ccaa0",
+      "0x802cd3dc"
+    ],
+    "integration": "Parent merges the module spans into the real registry/graph/root closure, registers the two unchanged void ground factories and canonical initializers, implements common_requirements in shared scene storage/services, adds both native and private generated C to CMake, and refreshes strict native_support/aggregate receipts after all shared writers freeze.",
+    "semantics": "Preserve every original state/path/aux factory body, all animation variants, flag ordering, waits including infinite-mask0, random weighting, stack locals, behavior1 branch, path assignment, command33/34/32 cross-actor signaling and real helper calls. No C++ behavior FSM, fake completion, supported-spawn filter, synthetic clock or SDK layout."
+  },
+  "common_requirements": {
+    "canonical_actor_fields": [
+      "behavior",
+      "flags",
+      "hSpeed",
+      "interactionTarget",
+      "path",
+      "pathProc",
+      "pokemonLoopTarget",
+      "processFlags",
+      "transitionGraph"
+    ],
+    "scene_path": {
+      "identity": "0x802cd3f4",
+      "native_leaf": "IsleGameResult isle_actor_interaction_scene_path(IsleActorSource*, uint32_t, const void***)",
+      "storage": "One scene-local const void* canonical slot shared by Eevee133 and Chansey113. Initialize once from ActorResources admitted four-byte ROM receipt, not a guessed zero. Scene owner retains slot and native World path through both species actual native joins. Do not reset between actor creations, context bind/rebind, or block changes.",
+      "access": "Return address only for live canonical callers admitted as actual Eevee133 or Chansey113, exact identity only. Clear output on every error. Returning, nonwaiting, no behavior invocation or C fault; local C adapter faults only after return.",
+      "source_uses": [
+        "55F350.c:7-10 waits for nonnull and adopts that exact path",
+        "5612B0.c:9 publishes the actual Chansey path before its first state transfer"
+      ]
+    },
+    "weighted_admission": {
+      "native_leaf": "isle_actor_interaction_weighted / existing isle_actor_source_weighted",
+      "lists": [
+        {
+          "identity": "0x802ccaa0",
+          "actor_id": 133
+        },
+        {
+          "identity": "0x802cd3dc",
+          "actor_id": 113
+        }
+      ],
+      "implementation": "Extend exact family/source factory admission and return the existing typed BehaviorBindings weighted rows; no duplicate Source helper body, guest callback casts, hardcoded replacement list or separate RNG."
+    },
+    "callback_admission": "Add all36 bindings to actual Source proof/factory admission for their corresponding actor families; full graph/weighted dependency closure is mandatory before spawns.",
+    "existing_common_GAME_helpers": [
+      "Pokemon_FollowPath",
+      "Pokemon_HearsPokeFlute",
+      "Pokemon_ResetPathPos",
+      "Pokemon_RunAwayFromTarget",
+      "Pokemon_RunInCircles",
+      "Pokemon_RunToTarget",
+      "Pokemon_SetScale",
+      "Pokemon_SetState",
+      "Pokemon_SetStateRandom",
+      "Pokemon_SpawnOnGround",
+      "Pokemon_StartAuxProc",
+      "Pokemon_StartPathProc",
+      "Pokemon_StopAuxProc",
+      "Pokemon_TurnToTarget",
+      "Pokemon_WaitForFlag"
+    ],
+    "existing_native_services": [
+      "isle_actor_owner_spawn_ground",
+      "isle_actor_source_set_animation",
+      "isle_actor_source_graph",
+      "isle_actor_source_send_to_link",
+      "isle_actor_source_weighted"
+    ],
+    "automatic_graph": "Source func_beach_802C93B8 copies exactly four typed admitted CD438 rows onto its actual C stack and retains the local descriptor across the original wait; no static replacement or one-row command special case.",
+    "cross_actor_signals": [
+      "func_beach_802C78E8 broadcasts command34 on link3 with the original Eevee sender",
+      "func_beach_802C79DC broadcasts command33 on link3 with the original Eevee sender",
+      "func_beach_802C943C broadcasts command32 on link3 with the original Chansey sender; preserve actual Services link order, sender retention and command tokens."
+    ],
+    "factory_assets": [
+      {
+        "actor_id": 133,
+        "factory": "0x802c7ad0",
+        "initialization": "0x802cccec",
+        "model": "0x80324ba0",
+        "materials": "0x803200d0",
+        "render": "0x803594dc",
+        "setup": "0x802cccd8",
+        "initial_header": "0x802cc9ac",
+        "initial_state": "0x802c72e0",
+        "setup_word8": "0x00000000",
+        "setup_unknown0c": "0x00000000",
+        "setup_graph": "0x00000000"
+      },
+      {
+        "actor_id": 113,
+        "factory": "0x802c9a7c",
+        "initialization": "0x802cd55c",
+        "model": "0x80335878",
+        "materials": "0x803329a0",
+        "render": "0x8035942c",
+        "setup": "0x802cd548",
+        "initial_header": "0x802cd2e4",
+        "initial_state": "0x802c9240",
+        "setup_word8": "0x00000000",
+        "setup_unknown0c": "0x00000000",
+        "setup_graph": "0x00000000"
+      }
+    ]
+  },
+  "native_support": {
+    "src/actor_course_context.hpp": {
+      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/rainbow_actor.hpp": {
+      "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
+    },
+    "src/rainbow_actor.cpp": {
+      "sha256": "cee34cf3abf985d85ca3031735f477fab0de70b3d445572cba5086aeba84542d"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
+    "src/beach_eevee_chansey_source.h": {
+      "sha256": "8208fdd589c38578544553a4e956855bc7df173bdcb8f4cb0ae6a1cb51ecaf44"
+    },
+    "src/beach_eevee_chansey_source.c": {
+      "sha256": "cd14061a1c6fd708a2c53c4c826c237b49250ffb45be9c1fd822c3e34e749f23"
+    },
+    "src/beach_eevee_chansey.hpp": {
+      "sha256": "03cffb47bfbd246aa5e4798e014df0725be596316f7f4898e1df4f4f27088a89"
+    },
+    "src/beach_eevee_chansey.cpp": {
+      "sha256": "f079398617bb4c726953c8134c79673de6542a3a62c9fa5a0ce6a87ad9146469"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/actor_source_bridge.c": {
+      "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
+    },
+    "src/actor_owner.hpp": {
+      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
+    },
+    "src/actor_interaction_services.h": {
+      "sha256": "3ae9ca3cee1e32d2658c969d6b458290783c711de3a8f4c10966d1f24ce00158"
+    },
+    "src/actor_interaction_services.hpp": {
+      "sha256": "9b4274b5dea8584573a639f6315ca57736322c1e463af4bc28355f6fd99cc467"
+    },
+    "src/actor_interaction_services.cpp": {
+      "sha256": "1e0211f4e9b89b43193d0a98a23fe72908f5e07fddf91e09eefe778955f5d3c2"
+    },
+    "src/actor_behavior_bindings.hpp": {
+      "sha256": "aff3e08cff850bf85f78f10f6d683ad4d11f1eb8c464fbabc5078f3e0b7fc3c5"
+    },
+    "src/actor_behavior_bindings.cpp": {
+      "sha256": "f48065907d97fe625e39102fbc001219537181ae5316c8f44d1cf1a4231fa278"
+    },
+    "src/beach_initial_species_source.h": {
+      "sha256": "f3b9af4297ab671784d98e8f4180d61a745b3b8e7b4cde58299ce81f5ad55df7"
+    },
+    "src/actor_resources.hpp": {
+      "sha256": "308a6616098f33604e91de5fc1f29a5e218e3ddc44d880ee80aa91bf4bbfc9c6"
+    },
+    "src/actor_resource_catalog.hpp": {
+      "sha256": "67614a3226f94ce82d21d3f9a41ae0767ce591ada76d224d5613312e51394c5d"
+    },
+    "src/beach_actor_scene.hpp": {
+      "sha256": "6b2939a4c2fccc1af5508ea7229185810f2283528c77b0f3ee23b77f9a4a21dc"
+    },
+    "src/actor_resources.cpp": {
+      "sha256": "1c181185d679b63c353a237f477ac39e812f60cfe8d35a55b7a6928db6933faa"
+    },
+    "src/actor_resource_catalog.cpp": {
+      "sha256": "935d9ce4454abfa5779e67493b54bdc5159c95e04cd6bcb1e872375f356ebdcb"
+    },
+    "src/beach_actor_catalog.cpp": {
+      "sha256": "64cef87c78f2f735a8ed2e2d126dc9c3759a9a987b535a8c4fd1fa0e38c9e424"
+    },
+    "src/rainbow_actor_catalog.cpp": {
+      "sha256": "e5cbeede5a05407dacebdfcf9172149cbeb725aeb800a1e48fddcbaa78c3f679"
+    },
+    "src/beach_actor_scene.cpp": {
+      "sha256": "2879ea9d105fde5d6f90565f7a97d73f57c8f20c6500267cfacc59a7b9fea66c"
+    },
+    "src/actor_behavior_resources.hpp": {
+      "sha256": "ee2c6e6121b72d4393cd20cea1255c09e92aa749fafdcc2f5409bdecc48bec0b"
+    },
+    "src/actor_behavior_resources.cpp": {
+      "sha256": "f69c2b50b631a7ed39be36b2b2235429694ff647b27e296c785c9f92a27e4ff9"
+    },
+    "src/source_command_scope.h": {
+      "sha256": "acd9a7312afe5129efcd6e495aa827de1ae667f3810cbe5fba5c3989516a3160"
+    },
+    "src/engine.c": {
+      "sha256": "0ca899ae1dbe75f5614c9375afad08e97b9e33cacb5abfc2e28c9c3ab9e08681"
+    },
+    "src/engine_internal.h": {
+      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
+    },
+    "include/35mmisle/rng.h": {
+      "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
+    },
+    "src/rng.c": {
+      "sha256": "6c83553a8f38a6eca0d6f6c6e2ceb5fa376f680165da1e9f15a59724fdc2ebfe"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+    }
+  },
+  "output_sha256": "bdddb05c81bc93902b13f5d135c9ab4efde6345a0f676d6a7c0305ea07f3900b"
+}

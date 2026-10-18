@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "implementation": ["src/game_host.hpp", "src/game_host.cpp"],
+  "implementation": ["src/game_host.hpp", "src/game_host.cpp", "src/host_progress.hpp", "src/host_progress.cpp"],
   "use": "Complete bounded platform owner for a caller-owned native scene lifecycle. Not a product entry point, a renamed diagnostic probe, a gameplay scene registry, a physical-device qualification, or a whole-game port.",
   "upstream": {
     "repository": "https://github.com/Kenix3/libultraship.git",

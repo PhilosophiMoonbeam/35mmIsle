@@ -49,6 +49,29 @@ private:
 };
 class Element final {
 public:
+    // Retain this record, Element, Text, encoded bytes and callback backing
+    // until done/cancel. One print per Element and per Text. While live, do not
+    // swap/replace raster storage or move its writable plane; cursors and pixel
+    // data remain borrowed. No source callback runs inside begin/step/cancel.
+    // Native raster publication/button fallback is performed before returning
+    // the corresponding optional external event. Cancel does not undo pixels.
+    class PrintOperation final {
+    public:
+        PrintOperation() noexcept = default;
+        PrintOperation(const PrintOperation&) = delete;
+        PrintOperation& operator=(const PrintOperation&) = delete;
+        const TextEvent& event() const noexcept { return text_operation_.event(); }
+    private:
+        friend class Element;
+        Element* owner_ = nullptr;
+        Text* text_ = nullptr;
+        Text::PrintOperation text_operation_{};
+        TextEvents events_{};
+        StepResult result_{};
+        bool internal_event_ = false;
+        sprite::RasterSource source_ = sprite::RasterSource::primary;
+        std::size_t origin_ = 0;
+    };
     static std::shared_ptr<Element> create(std::shared_ptr<Heap>, ElementList&, int x, int y,
         int width, int height, std::uint32_t flags, std::array<std::uint32_t,2> physical,
         const ElementDefaults& = {});
@@ -56,6 +79,7 @@ public:
     Element(const Element&) = delete;
     Element& operator=(const Element&) = delete;
     std::shared_ptr<sprite::Raster> raster() const noexcept { return raster_; }
+    scene::SpriteHandle attachment() const noexcept { return attachment_; }
     std::span<std::uint8_t> image();
     std::span<const std::uint8_t> image() const;
     const IsleSprite& descriptor() const noexcept { return displayed_; }
@@ -85,6 +109,10 @@ public:
     void scroll(int amount, unsigned direction);
     void vertical_scroll(int amount, unsigned direction, int x1, int y1, int x2, int y2);
     void draw_image(int x, int y, int width, int height, std::span<const std::uint8_t>);
+    StepResult begin_print(PrintOperation&, Text&, std::string_view, TextEvents = {},
+        TextEncoding = TextEncoding::source) noexcept;
+    StepResult step_print(PrintOperation&, bool resume = false) noexcept;
+    void cancel_print(PrintOperation&) noexcept;
     bool print(Text&, std::string_view, TextHooks = {});
     void print_ascii(Text&, std::string_view, TextHooks = {});
     bool print_format(Text&, TextHooks, const char* format, ...);
@@ -96,7 +124,7 @@ public:
     void set_visible(bool visible);
     void set_scale(float x, float y);
     void set_sprite_color(Color);
-    // Caller registers raster first, then supplies its two producer indices.
+    // Register the raster first; the binding has an index only for each present plane.
     // Attachment is a real native object/sprite, not a rendering callback shim.
     bool attach(scene::Services&, sprite::RasterBinding);
     void detach() noexcept;
@@ -106,11 +134,9 @@ private:
     TextSurface surface();
     void fill_storage(int x1, int y1, int x2, int y2, Color);
     void copy_pixel(std::size_t destination, std::size_t source);
-    static bool wait_hook(void*, std::uint32_t);
-    static void character_hook(void*, std::uint16_t);
-    static void button_hook(void*, int, int, char, int);
-    static void changed_hook(void*, std::size_t, std::size_t);
-    TextHooks active_hooks_{};
+    StepResult finish_print(PrintOperation&, StepError = StepError::none) noexcept;
+    bool run_print(Text&, std::string_view, TextHooks, TextEncoding);
+    PrintOperation* active_print_ = nullptr;
     Buttons* buttons_ = nullptr;
     std::shared_ptr<sprite::Raster> raster_;
     ElementList* list_ = nullptr;

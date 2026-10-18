@@ -1,4 +1,5 @@
-#include "beach_behavior_resources.hpp"
+#include "beach_actor_scene.hpp"
+#include "actor_behavior_resources.hpp"
 #include "model_asset_closure.hpp"
 
 #include <algorithm>
@@ -64,7 +65,7 @@ void borrowed(const r::Snapshot& snapshot,const r::GuestView& wire) {
     require(mapping!=mappings.end() && wire.rom_offset==mapping->rom_begin+wire.guest_address-mapping->guest_begin &&
             wire.bytes.size()<=mapping->bytes-(wire.guest_address-mapping->guest_begin),"Behavior view escaped admitted mapping");
 }
-void consume_graph(const b::BehaviorResources& resources,const r::Snapshot& snapshot,
+void consume_graph(const isle::actor::BehaviorResources& resources,const r::Snapshot& snapshot,
                    const isle::model_assets::Reader& reader,std::uint32_t identity) {
     const auto& graph=resources.graph(identity);
     require(&graph==&resources.graph(identity),"Graph identity lookup is not stable");
@@ -85,7 +86,7 @@ void consume_graph(const b::BehaviorResources& resources,const r::Snapshot& snap
     if (!graph.entries.empty())
         rejects<std::out_of_range>([&] { static_cast<void>(resources.graph(graph.terminator.guest_address)); },"Graph terminal mistaken for admitted graph head");
 }
-void consume_states(const b::BehaviorResources& resources,const r::Snapshot& snapshot,
+void consume_states(const isle::actor::BehaviorResources& resources,const r::Snapshot& snapshot,
                     const isle::model_assets::Reader& reader,std::uint32_t identity) {
     const auto& states=resources.weighted_states(identity);
     require(&states==&resources.weighted_states(identity),"State-list lookup is not stable");
@@ -105,7 +106,7 @@ void consume_states(const b::BehaviorResources& resources,const r::Snapshot& sna
     require(cumulative==states.total_weight && cumulative>0,"Source random total changed");
     rejects<std::out_of_range>([&] { static_cast<void>(resources.weighted_states(identity+4)); },"Interior state identity accepted");
 }
-void consume_chooser(const b::BehaviorResources& resources,const r::Snapshot& snapshot,
+void consume_chooser(const isle::beach::ActorSceneResources& resources,const r::Snapshot& snapshot,
                      const isle::model_assets::Reader& reader) {
     const auto& chooser=resources.scene_chooser(0x802cc004);
     require(&chooser==&resources.scene_chooser(),"Scene chooser lookup is not stable");
@@ -125,7 +126,8 @@ void consume_chooser(const b::BehaviorResources& resources,const r::Snapshot& sn
 }
 void run(const char* filename) {
     auto snapshot=r::read_snapshot(filename);
-    b::BehaviorResources resources(snapshot);
+    isle::actor::BehaviorResources resources(snapshot,0);
+    isle::beach::ActorSceneResources sceneData(snapshot);
     const isle::model_assets::Reader reader(snapshot,mappings);
     for (std::size_t i=0;i<source_graphs.size();++i) {
         require(&resources.graph(source_graphs[i])==&resources.graphs()[i],"Graph catalog identity/order differs from source closure");
@@ -135,26 +137,26 @@ void run(const char* filename) {
         require(&resources.weighted_states(source_states[i])==&resources.weighted_states()[i],"Weighted catalog identity/order differs from source closure");
         consume_states(resources,snapshot,reader,source_states[i]);
     }
-    consume_chooser(resources,snapshot,reader);
+    consume_chooser(sceneData,snapshot,reader);
     require(resources.graph(0x80388324).entries.empty(),"Own common cmd58-only graph gained executable entries");
     require(resources.graph(0x802cd438).wire.bytes.size()==4*16,"Chansey copied graph template lost its exact source extent");
     for (const auto identity:std::array<std::uint32_t,8>{0,1,0x802cbe10,0x802cc004,0x802cc2f0,0x802ce0f0,0x80388310,0xffffffff}) {
         rejects<std::out_of_range>([&] { static_cast<void>(resources.graph(identity)); },"Unknown graph identity accepted");
         rejects<std::out_of_range>([&] { static_cast<void>(resources.weighted_states(identity)); },"Unknown weighted identity accepted");
     }
-    rejects<std::out_of_range>([&] { static_cast<void>(resources.scene_chooser(0)); },"NULL scene identity accepted");
-    rejects<std::out_of_range>([&] { static_cast<void>(resources.scene_chooser(0x802cc00c)); },"Interior scene choice mistaken for chooser");
+    rejects<std::out_of_range>([&] { static_cast<void>(sceneData.scene_chooser(0)); },"NULL scene identity accepted");
+    rejects<std::out_of_range>([&] { static_cast<void>(sceneData.scene_chooser(0x802cc00c)); },"Interior scene choice mistaken for chooser");
     // Borrowing survives repeat lookups and construction of another owner.
     const auto* graph=&resources.graph(0x802cd438);
     const auto* alias=graph->wire.bytes.data();
-    b::BehaviorResources other(snapshot);
+    isle::actor::BehaviorResources other(snapshot,0);
     require(other.graph(0x802cd438).wire.bytes.data()==alias && &resources.graph(0x802cd438)==graph,
             "Independent metadata owners copied/moved original initialized bytes");
     auto moved=std::move(snapshot);
     rejects([&] { static_cast<void>(resources.graph(0x802cc1d4)); },"Moved Snapshot graph lookup accepted");
-    rejects([&] { b::BehaviorResources invalid(snapshot); },"Construction from moved-from Snapshot accepted");
+    rejects([&] { isle::actor::BehaviorResources invalid(snapshot,0); },"Construction from moved-from Snapshot accepted");
     rejects([&] { other.require_live(); },"Second owner's moved Snapshot lifetime accepted");
-    b::BehaviorResources rebound(moved);
+    isle::actor::BehaviorResources rebound(moved,0);
     require(rebound.graph(0x802cd438).wire.bytes.data()==alias,"New owner failed to borrow moved-to Snapshot storage");
 }
 } // namespace

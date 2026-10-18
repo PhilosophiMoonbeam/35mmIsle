@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "beach-music-complete-v1",
+  "scope": "complete-original-Beach-movement-music-not-full-course-intro-or-game",
+  "source_files": {
+    "src/beach/55C870.c": {
+      "git_blob": "2dd46c1a0bc0a360adc91e578b654e818483e794",
+      "sha256": "688c1b4bc4a71d0fdf8648427f3d44814ae1ac7edad1cc1d230767eef61da266",
+      "line_count": 113
+    },
+    "src/beach/55C110.c": {
+      "git_blob": "213859dc00eab1f498c4f76d15fa3aba7bda6656",
+      "sha256": "e6e79a9cae04506d0f35d9ddbafa14593e565c50463174c6ebaa2cab915d7d77",
+      "line_count": 191
+    },
+    "src/beach/beach.h": {
+      "git_blob": "0aad5edbe49cd130449874b9b3b55941d3b73042",
+      "sha256": "a6ac77fd76c0368f28990771f0b8050f7a4c34c113b8d27497d699eda8601edc",
+      "line_count": 329
+    },
+    "splat.yaml": {
+      "git_blob": "d2690bd3d2cb0aeac5c648db20666c5a42e5ba45",
+      "sha256": "24a476315ea9e2de573c11b5bc4662480d23109180a4ed29c01141c882ceadcd",
+      "line_count": 10549
+    },
+    "src/sys/audio.c": {
+      "git_blob": "a617f2ee04ad0851e0db46d31a6cf034e1eb0355",
+      "sha256": "99e092ee4faf2707b312740d235257fad16616d062b350cacdc9924348777dd8",
+      "line_count": 1612
+    }
+  },
+  "definition": {
+    "path": "src/beach/55C870.c",
+    "symbol": "func_beach_802C4800",
+    "first": 12,
+    "last": 113,
+    "source_sha256": "a28a4324eebccdb9d2afed58c341c3990df1ef6666d245c33a98b368387ac080",
+    "native_sha256": "a4840bfa593ee0f4c20b20c10782157fae7fadc786792c04b7c2b37fef99509e"
+  },
+  "semantic_origins": [
+    {
+      "path": "src/beach/55C870.c",
+      "label": "course_sound_handle_and_volume_BSS",
+      "first": 4,
+      "last": 10,
+      "source_sha256": "afe0457d1fcbaddb6b87ef395c0dbf2aa704e64050d233a27644ad0c6c590f43"
+    },
+    {
+      "path": "src/beach/beach.h",
+      "label": "initialized_signed_music_stage_words",
+      "first": 25,
+      "last": 27,
+      "source_sha256": "3a6351aee308175e35aad1258195e76353b63e322eeffc05bede082e0fabae3e"
+    },
+    {
+      "path": "splat.yaml",
+      "label": "actual_Beach_overlay_mapping_and_symbol_name_format",
+      "first": 5944,
+      "last": 5957,
+      "source_sha256": "7ba5c98952716d91913156f7e35da37a9bf25bd377f59be935552f31c2619f22"
+    },
+    {
+      "path": "src/beach/55C110.c",
+      "label": "original_movement_callback_and_late_detector_stage",
+      "first": 158,
+      "last": 165,
+      "source_sha256": "8af97c09d6ebdb6dc154b6362754571ac183b4c03ed8ff7049e430f6777c2c0d"
+    },
+    {
+      "path": "src/sys/audio.c",
+      "label": "actual_parameterized_sound_request",
+      "first": 1318,
+      "last": 1335,
+      "source_sha256": "cdaeb76bcf106d188631da9139f0149ade8acb670a56b130c1e885e664aac5e4"
+    },
+    {
+      "path": "src/sys/audio.c",
+      "label": "actual_sound_volume_request",
+      "first": 1359,
+      "last": 1374,
+      "source_sha256": "98bc1a59668ac1a3cd1384c5d2d7642126309e52619ec79eb34d0da9cb6ae137"
+    },
+    {
+      "path": "src/sys/audio.c",
+      "label": "actual_sound_stop_request",
+      "first": 1418,
+      "last": 1427,
+      "source_sha256": "e17c4b739a7b647f1443b6c63c07fb07630684b19e59bff968a24bc400555412"
+    }
+  ],
+  "initialized_ROM_words": {
+    "ram_base": "0x802cc0d0",
+    "rom_offset": "0x564140",
+    "count": 3,
+    "type": "signed-big-endian-32",
+    "hydration": "once-per-course-not-per-movement-or-bind",
+    "consumed_BSS": "four-u8-handles-one-u16-volume-zero-on-owner-construction"
+  },
+  "generator_sha256": "30007b176c8ca86fd691fba77bf7a107f02ebdee5eb0a814b5af7e1490f04456",
+  "output_sha256": "c9cfbf003f5d36c10edc7d4398092eb5e1f400f0c1900b2788644c74f26b57b9",
+  "native_support": {
+    "src/beach_music.hpp": {
+      "sha256": "56f6b2999fb6078477ff69d02854ccddb5b6657fb63b72780cc2263952d6cc7e"
+    },
+    "src/beach_music.cpp": {
+      "sha256": "066229806a77a51e55452fc1cb4b012117cf8263a602a3f7dcc8503041c5046f"
+    },
+    "src/beach_music_source.h": {
+      "sha256": "e5027d208c913a34d3a3ef6f4f5e24ea2d776ef4f57b1ffa30c34dab3ad29037"
+    },
+    "src/beach_music_source.c": {
+      "sha256": "868060d97d4f9ad0426c55a25fc33a25d8e8f83af89c539a654a755aab035c96"
+    },
+    "src/rom_snapshot.hpp": {
+      "sha256": "429d4844b3cd6c4218a0a76c7edcf8c2aa0aa5644e508833ffef8a10746b15e7"
+    },
+    "src/rom_view.hpp": {
+      "sha256": "6ca279f4565b2ed7c5bb43ee68cc245416ffb4faaade0a899b5582335fd77879"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "4b4fafd05a7eee03880cff975c5f8a2d1b987d6c4a32c7d3cd2c331d7cba6354"
+    },
+    "src/game_audio.hpp": {
+      "sha256": "13703dbf4e73508eee533164f213db5f91d7e60fd08d01f4c6d63123674effd1"
+    },
+    "src/player_source.h": {
+      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
+    },
+    "src/player_source_bridge.c": {
+      "sha256": "859f1608c7d681e797047ed47fa906e6c712d8845bd24a50d0fca175df2bda63"
+    },
+    "src/player_root_source.h": {
+      "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"
+    },
+    "cmake/player-root-inputs.json": {
+      "sha256": "581564dd51f1f5a6210446ac1895ca2a40697cb848a4844ce26370b46ab6ce69"
+    }
+  }
+}

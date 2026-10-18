@@ -98,6 +98,9 @@ public:
     a::Error stop_song(unsigned player) noexcept;
     a::Error stop_bgm() noexcept;
     bool bgm_playing(unsigned player) const noexcept;
+    // Resource-only admission; original auPlaySong rejects an absent sequence
+    // without changing its player request or treating it as an execution fault.
+    bool has_song(std::uint32_t song) const noexcept { return song < resources_.sequences.sequences().size(); }
     a::Error bgm_volume(unsigned player, std::uint32_t volume, std::uint32_t retraces = 0) noexcept;
     a::Error bgm_tempo(unsigned player, std::uint32_t us_per_quarter) noexcept;
     a::Error get_bgm_tempo(unsigned player, std::uint32_t& value) const noexcept;
@@ -144,6 +147,11 @@ public:
     // waits for complete acceptance + native client retirement before resetting.
     a::Error restart() noexcept;
     a::Error restart(a::effects::Config) noexcept;
+    // Select the actual retained GAME eight-section custom program. An equal
+    // installed program does not discard voices/tails. Otherwise requests the
+    // normal asynchronous restart; initialization_ready() remains false until
+    // the real task/PCM/client retirement and reset have completed.
+    a::Error custom_reverb() noexcept;
     a::Error poll_drain() noexcept;
     // Explicit abort/discard of already completed PCM, never a successful drain.
     // An executing task must first deliver its actual terminal/cancellation.
@@ -204,6 +212,7 @@ private:
     bool executor_started_ = false;
     bool high_quality_ = true, restarting_ = false;
     bool reconfigure_ = false;
+    bool custom_effects_ = false, pending_custom_effects_ = false;
     State state_ = State::ready;
     a::Error error_ = a::Error::none;
 };

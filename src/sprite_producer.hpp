@@ -36,7 +36,9 @@ struct Sublist {
     std::size_t words = 0, rectangles = 0;
 };
 struct RasterBinding {
-    std::array<std::size_t, 2> resources{};
+    static constexpr std::size_t no_index = static_cast<std::size_t>(-1);
+    // An absent variant has no resource and cannot be selected for drawing.
+    std::array<std::size_t, 2> resources{no_index, no_index};
     std::uint64_t generation = 0;
 };
 
@@ -46,6 +48,15 @@ struct RasterBinding {
 // Resources, bitmap arrays and shallow views must remain immutable except for
 // the view's placement/scale/color/alpha/attr/z/frac fields. Draw order is exactly
 // caller order. A copied view never transfers ownership of its bitmap array.
+// Geometry preserves Source's pre-draw horizontal wrap, post-wrap full-row
+// admission, actualHeight destination extent, bmheight row stride and unscaled
+// explosion offsets. nbitmaps remains the bounded native descriptor inventory;
+// istep zero repeats the selected descriptor, and width zero terminates it.
+// Consecutive identical texture/band/tile setups reuse TMEM within one Sprite,
+// never across Sprites or passes. Dry-run planning has the same bounded command
+// capacity and resident-state transitions as the subsequent allocation-free write.
+// Destination quantization and signed/overflowing derivative lowering retain
+// the native RDP sample contract, not Source's integer-edge rounding arithmetic.
 //
 // The caller holds an exclusive graphics preparation lease for install/prepare,
 // and retains this owner AND all source descriptors until actual GPU retirement.
@@ -95,8 +106,9 @@ public:
 
     std::span<const AssetSpan> assets() const noexcept { return assets_; }
     // At most 128 live/high-water registration slots and 4096 pieces per source.
-    // Both variants are compiled once. Rebind selects the matching resource and
-    // descriptor view; it never edits an immutable bank or reconstructs Producer.
+    // Present variants are compiled once; absent variants have no_index.
+    // Rebind selects the matching resource and descriptor view; it never edits
+    // an immutable bank or reconstructs Producer.
     RasterBinding register_raster(std::shared_ptr<Raster>);
     void unregister_raster(RasterBinding);
     Borrow borrow();
@@ -144,9 +156,10 @@ private:
     };
     struct Dynamic {
         std::shared_ptr<Raster> raster;
-        std::array<std::size_t, 2> resources{};
+        std::array<std::size_t, 2> resources{RasterBinding::no_index, RasterBinding::no_index};
         std::array<std::uint64_t, 2> resident_revisions{};
         std::size_t first = 0, capacity = 0;
+        unsigned source_count = 0; // Raster topology is fixed for the registration lifetime.
         std::uint64_t generation = 0;
     };
     std::uint32_t resolve(const std::uint8_t*, std::size_t, const Raster::Source*);

@@ -40,6 +40,7 @@ bool Text::initialize(scene::Services& services) {
     services_=&services;input_object_=object;set_print_delay(0);return true;
 }
 void Text::detach() noexcept {
+    if (active_print_) cancel_print(*active_print_);
     if (services_) services_->erase(input_object_);
     services_=nullptr;input_object_=nullptr;
 }
@@ -141,84 +142,193 @@ int Text::draw_glyph(TextSurface& s, int x, int y, std::uint16_t ch) {
     }
     return n + shadow_offset_;
 }
-void Text::publish_glyph(const TextSurface& s,int x,int y,TextHooks hooks) const {
-    if (!hooks.changed || !wrote_glyph_) return;
-    const auto bytes=static_cast<std::size_t>(s.bpp==4?4:2);
-    const int columns=std::min(glyph_size(),s.width-x);
-    for (int row=0;row<glyph_size() && y+row<s.height;++row) {
-        for (int step=0;step<=shadow_offset_;++step) {
-            if (s.bpp!=4 && (y+row+step>=s.height || x+step>=s.width)) continue;
-            const int count=s.bpp==4?columns:std::min(columns,s.width-x-step);
-            if (count<=0) continue;
-            const auto offset=(static_cast<std::size_t>(y+row+step)*s.width+static_cast<std::size_t>(x+step))*bytes;
-            hooks.changed(hooks.userdata,offset,static_cast<std::size_t>(count)*bytes);
-        }
-    }
+StepResult Text::begin_print(PrintOperation& op, TextSurface surface, int& x, int& y,
+                            std::string_view bytes, TextEvents events, TextEncoding encoding) noexcept {
+    if (active_print_ || (op.owner_ && op.result_.status!=StepStatus::done && op.result_.status!=StepStatus::error))
+        return {StepStatus::error,StepError::busy};
+    op.owner_=this;op.surface_=surface;op.x_=&x;op.y_=&y;op.bytes_=bytes;
+    op.events_=events;op.encoding_=encoding;op.index_=0;op.phase_=PrintOperation::Phase::next;
+    op.result_={StepStatus::more};op.event_={};active_print_=&op;
+    return op.result_;
 }
-bool Text::print(TextSurface& surface, int& x, int& y, std::string_view s, TextHooks h) {
-    // Only trivial automatic state crosses h.wait; all fonts/palettes/pixels and
-    // callback userdata are retained by their scene-lifetime owners.
-    for (std::size_t i = 0; i < s.size() && s[i];) {
-        const auto c = next_character(data_, s, i); i += c.length;
-        auto ch = c.value;
-        bool advance = true, newline = false;
+StepResult Text::finish_print(PrintOperation& op,StepError error) noexcept {
+    op.result_={error==StepError::none?StepStatus::done:StepStatus::error,error};
+    op.event_={};
+    op.surface_={};op.bytes_={};op.x_=op.y_=nullptr;
+    if (active_print_==&op) active_print_=nullptr;
+    return op.result_;
+}
+void Text::cancel_print(PrintOperation& op) noexcept {
+    if (op.owner_==this && active_print_==&op) finish_print(op,StepError::cancelled);
+}
+StepResult Text::step_print(PrintOperation& op,bool resume) noexcept {
+    if (op.owner_!=this) return {StepStatus::error,StepError::invalid_operation};
+    if (op.result_.status==StepStatus::done || op.result_.status==StepStatus::error) return op.result_;
+    if (active_print_!=&op) return {StepStatus::error,StepError::invalid_operation};
+    if (op.result_.status==StepStatus::event || op.result_.status==StepStatus::needs_source_wait) {
+        if (!resume) return op.result_;
+        op.result_={StepStatus::more};op.event_={};
+    } else if (resume) return {StepStatus::error,StepError::invalid_operation};
+    try { return step_print_impl(op); }
+    catch (const std::invalid_argument&) { return finish_print(op,StepError::invalid_surface); }
+    catch (const std::out_of_range&) { return finish_print(op,StepError::surface_boundary); }
+    catch (...) { return finish_print(op,StepError::native_failure); }
+}
+StepResult Text::step_print_impl(PrintOperation& op) {
+    using Phase=PrintOperation::Phase;
+    auto& surface=op.surface_;
+    auto& x=*op.x_;auto& y=*op.y_;
+    const auto event=[&op](TextEvent value) {
+        op.event_=value;op.result_={StepStatus::event};return op.result_;
+    };
+    switch (op.phase_) {
+    case Phase::next: {
+        if (op.index_>=op.bytes_.size() || !op.bytes_[op.index_]) {
+            if (op.encoding_==TextEncoding::source) delay_disabled_=false;
+            return finish_print(op);
+        }
+        op.advance_=true;op.newline_=false;op.escape_=false;
+        op.phase_=Phase::delay;op.waits_=0;
+        if (op.encoding_==TextEncoding::ascii) {
+            const auto c=static_cast<unsigned char>(op.bytes_[op.index_++]);
+            if (c>32 && c<127) {
+                op.character_=data_.ascii(c);op.position_=x;op.draw_y_=y;
+                draw_glyph(surface,x,y,op.character_);
+                op.row_=op.shadow_step_=0;
+                op.columns_=std::min(glyph_size(),surface.width-x);
+                op.phase_=op.events_.changed && wrote_glyph_?Phase::changed:Phase::advance;
+            } else op.phase_=Phase::advance;
+            return op.result_;
+        }
+        const auto first=static_cast<unsigned char>(op.bytes_[op.index_]);
+        if (first!='\n' && first!=' ' && !(first>32 && first<127 && first!='\\') &&
+            op.index_+1>=op.bytes_.size()) return finish_print(op,StepError::invalid_text);
+        const auto c=next_character(data_,op.bytes_,op.index_);op.index_+=c.length;
+        auto ch=c.value;op.character_=ch;
         if (button_code(ch)) {
-            if (!h.button) throw std::logic_error("button escape requires native button owner");
-            h.button(h.userdata, x + surface.screen_x, y + surface.screen_y, static_cast<char>(ch), glyph_size());
-        } else switch (ch) {
-        case 0x5c65: palettes({255,0,0,255},background_); advance=false; break;
-        case 0x5c68: palettes({255,255,0,255},background_); advance=false; break;
-        case 0x5c70: palettes({255,255,255,255},background_); advance=false; break;
-        case 0x5c77: delay_disabled_=false; skip_enabled_=false; advance=false; break;
-        case 0x5c74: skip_enabled_=true; advance=false; break;
-        case 0x5c67: proportional_=true; advance=false; break;
-        case 0x5c69: proportional_=false; advance=false; break;
-        case 0x5c6a: set_font(0); advance=false; break;
-        case 0x5c6b: set_font(1); advance=false; break;
-        case 0x0a: case 0x5c6e: case 0xa2a1: newline=true; advance=false; break;
+            if (!op.events_.button) return finish_print(op,StepError::missing_button);
+            return event({TextEvent::Kind::button,0,x+surface.screen_x,y+surface.screen_y,glyph_size(),static_cast<char>(ch)});
+        }
+        switch (ch) {
+        case 0x5c65: palettes({255,0,0,255},background_);op.advance_=false;break;
+        case 0x5c68: palettes({255,255,0,255},background_);op.advance_=false;break;
+        case 0x5c70: palettes({255,255,255,255},background_);op.advance_=false;break;
+        case 0x5c77: delay_disabled_=false;skip_enabled_=false;op.advance_=false;break;
+        case 0x5c74: skip_enabled_=true;op.advance_=false;break;
+        case 0x5c67: proportional_=true;op.advance_=false;break;
+        case 0x5c69: proportional_=false;op.advance_=false;break;
+        case 0x5c6a: set_font(0);op.advance_=false;break;
+        case 0x5c6b: set_font(1);op.advance_=false;break;
+        case 0x0a: case 0x5c6e: case 0xa2a1: op.newline_=true;op.advance_=false;break;
         case 0xa1a1: break;
         default:
-            if (c.first == '\\') {
-                if (delay_ != 0 && h.character && !delay_disabled_) h.character(h.userdata,ch);
-                advance=false; break;
+            if (c.first=='\\') {
+                op.escape_=true;op.advance_=false;op.phase_=Phase::character;break;
             }
-            if (ch == 0xa1dd) ch=0xa1bc;
-            {
-                const int position=proportional_?x:x+static_cast<int>(((charset_?9:6)-data_.widths[charset_][data_.index(ch)])*.5+.5);
-                draw_glyph(surface,position,y,ch);
-                publish_glyph(surface,position,y,h);
-            }
-            if (h.character && !delay_disabled_) h.character(h.userdata,ch);
+            if (ch==0xa1dd) ch=0xa1bc;
+            op.character_=ch;
+            op.position_=proportional_?x:x+static_cast<int>(((charset_?9:6)-data_.widths[charset_][data_.index(ch)])*.5+.5);
+            draw_glyph(surface,op.position_,y,ch);
+            op.draw_y_=y;
+            op.row_=op.shadow_step_=0;
+            op.columns_=std::min(glyph_size(),surface.width-op.position_);
+            op.phase_=op.events_.changed && wrote_glyph_?Phase::changed:Phase::character;
             break;
         }
-        if (advance) {
-            for (int wait = delay_; wait > 0 && !delay_disabled_; --wait) {
-                if (!h.wait) throw std::logic_error("typewriter requires native process wait");
-                if (!h.wait(h.userdata,1)) return false;
-            }
-            x += proportional_ ? (ch == 0xa1a1 ? (charset_ ? 4 : 2) : data_.widths[charset_][data_.index(ch)] + 1) : (charset_ ? 9 : 6);
-            newline = x > surface.width - horizontal_interval_;
-        }
-        if (newline) {
-            x = 0; y += vertical_interval_;
-            if (y > surface.height - glyph_size() - shadow_offset_) y = 0;
-        }
+        return op.result_;
     }
-    delay_disabled_ = false;
-    return true;
+    case Phase::changed:
+        // Publish the exact original row/diagonal ranges, one deferred event at
+        // a time. No event queue/allocation or callbacks under the native leaf.
+        while (op.row_<glyph_size() && op.draw_y_+op.row_<surface.height) {
+            if (op.shadow_step_>shadow_offset_) {++op.row_;op.shadow_step_=0;continue;}
+            const int step=op.shadow_step_++;
+            if (surface.bpp!=4 && (op.draw_y_+op.row_+step>=surface.height || op.position_+step>=surface.width)) continue;
+            const int count=surface.bpp==4?op.columns_:std::min(op.columns_,surface.width-op.position_-step);
+            if (count<=0) continue;
+            const auto bytes=static_cast<std::size_t>(surface.bpp==4?4:2);
+            TextEvent value;value.kind=TextEvent::Kind::changed;
+            value.offset=(static_cast<std::size_t>(op.draw_y_+op.row_+step)*surface.width+static_cast<std::size_t>(op.position_+step))*bytes;
+            value.size=static_cast<std::size_t>(count)*bytes;
+            return event(value);
+        }
+        op.phase_=op.encoding_==TextEncoding::ascii?Phase::advance:Phase::character;
+        return op.result_;
+    case Phase::character:
+        op.phase_=Phase::delay;
+        if (op.events_.character && !delay_disabled_ && (!op.escape_ || delay_!=0))
+            return event({TextEvent::Kind::character,op.character_});
+        return op.result_;
+    case Phase::delay:
+        // Snapshot delay only after the callback, just like the source loop.
+        // The negative sentinel distinguishes initialization from later waits.
+        if (op.waits_==0) op.waits_=delay_>0?delay_:-1;
+        if (op.advance_ && op.waits_>0 && !delay_disabled_) {
+            --op.waits_;
+            if (!op.waits_) op.waits_=-1;
+            op.result_={StepStatus::needs_source_wait,StepError::none,1};
+            return op.result_;
+        }
+        op.phase_=Phase::advance;
+        return op.result_;
+    case Phase::advance:
+        if (op.encoding_==TextEncoding::ascii) {
+            x+=horizontal_interval_;
+            op.newline_=x>surface.width-horizontal_interval_;
+        } else if (op.advance_) {
+            const auto ch=op.character_;
+            x+=proportional_?(ch==0xa1a1?(charset_?4:2):data_.widths[charset_][data_.index(ch)]+1):(charset_?9:6);
+            op.newline_=x>surface.width-horizontal_interval_;
+        }
+        if (op.newline_) {
+            x=0;y+=vertical_interval_;
+            if (y>surface.height-glyph_size()-shadow_offset_) y=0;
+        }
+        op.phase_=Phase::next;
+        return op.result_;
+    }
+    return finish_print(op,StepError::invalid_operation);
 }
-void Text::print_ascii(TextSurface& s, int& x, int& y, std::string_view text, TextHooks hooks) {
-    for (unsigned char c : text) {
-        if (!c) break;
-        if (c > 32 && c < 127) {
-            draw_glyph(s,x,y,data_.ascii(c));
-            publish_glyph(s,x,y,hooks);
+bool Text::run_print(TextSurface& surface,int& x,int& y,std::string_view bytes,TextHooks hooks,TextEncoding encoding) {
+    PrintOperation op;
+    auto result=begin_print(op,surface,x,y,bytes,
+        {hooks.character!=nullptr,hooks.button!=nullptr,hooks.changed!=nullptr},encoding);
+    try {
+        for (;;) {
+            switch (result.status) {
+            case StepStatus::more: result=step_print(op);break;
+            case StepStatus::event: {
+                const auto value=op.event();
+                switch (value.kind) {
+                case TextEvent::Kind::character: hooks.character(hooks.userdata,value.character);break;
+                case TextEvent::Kind::button: hooks.button(hooks.userdata,value.x,value.y,value.button,value.scale);break;
+                case TextEvent::Kind::changed: hooks.changed(hooks.userdata,value.offset,value.size);break;
+                case TextEvent::Kind::none: break;
+                }
+                result=step_print(op,true);break;
+            }
+            case StepStatus::needs_source_wait:
+                if (!hooks.wait) throw std::logic_error("typewriter requires native process wait");
+                if (!hooks.wait(hooks.userdata,result.updates)) {cancel_print(op);return false;}
+                result=step_print(op,true);break;
+            case StepStatus::done: return true;
+            case StepStatus::error:
+                switch (result.error) {
+                case StepError::cancelled: return false;
+                case StepError::invalid_text: throw std::invalid_argument("truncated source text character");
+                case StepError::invalid_surface: throw std::invalid_argument("window text surface");
+                case StepError::surface_boundary: throw std::out_of_range("source glyph/shadow allocation boundary");
+                case StepError::missing_button: throw std::logic_error("button escape requires native button owner");
+                default: throw std::logic_error("window text operation failed");
+                }
+            }
         }
-        x += horizontal_interval_;
-        if (x > s.width - horizontal_interval_) {
-            x=0; y+=vertical_interval_;
-            if (y > s.height - glyph_size() - shadow_offset_) y=0;
-        }
-    }
+    } catch (...) {cancel_print(op);throw;}
+}
+bool Text::print(TextSurface& surface,int& x,int& y,std::string_view bytes,TextHooks hooks) {
+    return run_print(surface,x,y,bytes,hooks,TextEncoding::source);
+}
+void Text::print_ascii(TextSurface& surface,int& x,int& y,std::string_view bytes,TextHooks hooks) {
+    run_print(surface,x,y,bytes,{hooks.userdata,nullptr,nullptr,nullptr,hooks.changed},TextEncoding::ascii);
 }
 } // namespace isle::window

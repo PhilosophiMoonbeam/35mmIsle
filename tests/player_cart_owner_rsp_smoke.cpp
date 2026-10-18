@@ -499,7 +499,7 @@ void run(const std::filesystem::path& filename,const std::filesystem::path& prof
     require(std::filesystem::is_directory(profile) && std::filesystem::is_empty(profile),"Cart private profile must exist and be empty");
     require(std::filesystem::is_directory(output) && std::filesystem::is_empty(output),"Cart capture directory must exist and be empty");
     const auto snapshot=rom::read_snapshot(filename); const auto world=beach::world_descriptors(snapshot);
-    const player::CartResources resources(snapshot,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
+    const player::CartResources resources(snapshot,0,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
     const photo::LightingInputs lighting(snapshot);
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"Cart borrowed Services audio resource admission failed");
     std::array<audio::effects::Section,8> sections; audio::effects::Config effects;

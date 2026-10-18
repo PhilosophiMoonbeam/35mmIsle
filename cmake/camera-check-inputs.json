@@ -1,0 +1,1524 @@
+{
+  "schema": 1,
+  "native_support": {
+    "src/world_module.hpp": {
+      "sha256": "b89283f94e22816c4b08a6196ee694fc0d455765997567760e826f9a0ce66c52"
+    },
+    "src/camera_check_source.h": {
+      "sha256": "dfa429290156d757c7ebe8ea5368fd71f2572091404b7e32592683f8469bc0b7"
+    },
+    "src/camera_check_source.c": {
+      "sha256": "bfff788bb1ffe98bf3d3143cd009ee0913b0e0eb6a155dc1592d65fcecd0fc73"
+    },
+    "tools/materialize_camera_check.py": {
+      "sha256": "4810e5bf041b12971a0d2b2f3ea63c21149c8966c7818e09c90508311d0f4948"
+    },
+    "src/post_course_scene_source.h": {
+      "sha256": "3ffa3b3255063d23c9c0882f7b342d72951fb2ef46f9024c2b5f1b3204ca0f5e"
+    },
+    "src/post_course_scene_source.c": {
+      "sha256": "54dc3b6d0ad1cc3717a68f2220de761d6125420bdf1021942818dc6db9933ae8"
+    },
+    "src/post_course_scene.cpp": {
+      "sha256": "b0afe863d35427698fe7ea5c5de0a05ea471817056516ec287c08d7aca1bff8e"
+    },
+    "src/post_course_scene.hpp": {
+      "sha256": "459b4fa5a790779c20245732c9f5bf6442fd2b439055949fc9afa3d0c23f540a"
+    },
+    "src/post_course_scene_internal.hpp": {
+      "sha256": "bb56438ed411f72daafb1ad25bf897dab001bfb81d1c651b1d4afd170ffc382f"
+    },
+    "src/post_course_scene_hooks.cpp": {
+      "sha256": "2ff7fd3e6944104be56427260d7ca920782577fc94afa05378df3fd649488d47"
+    },
+    "src/post_course_modules.cpp": {
+      "sha256": "8c2a19e27616f5ebc2ab5d96f064521ec1ce4c1239c652c8cdd681596f79e2df"
+    },
+    "src/post_course_modules.hpp": {
+      "sha256": "3e0a436840cf5628ed8dca9549b14116d12181d471040db4fd96fba3d95c5eb9"
+    }
+  },
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "commit": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "inputs": [
+    {
+      "path": "src/sys/oh.c",
+      "sha256": "5cd8502eb410caccc1bccd01d9c689d924c6366701d4ac2ba8bc229f8d31b86b",
+      "git_blob": "b5b871a1b622803c944f5cf83d7624426238edf8"
+    },
+    {
+      "path": "include/enums.h",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07"
+    },
+    {
+      "path": "src/camera_check/87A0B0.c",
+      "sha256": "fb58429190601f3185084e072e968be93e34e7304c04a140d6d6c0b036180e67",
+      "git_blob": "9968a3e8fad92f83328796da2ea7016a66e43566"
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "sha256": "d9c90f3255392612e6d91c8d5f7ceb910d9d364dc605169d015b2e866f6f7970",
+      "git_blob": "deeef7f09867b19aa592fe0e26bfb03feb103771"
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "sha256": "a247987d423f5c7c4ee64b0f02ed4767e44a7e446461bee791189e7c9d89985e",
+      "git_blob": "a1c2907c37f7661813930417c0d10f43d8e74c1c"
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "sha256": "35ba28eee0c502387f2779c5913db08a0b00ecc51c19823cec9c1c24bb767db8",
+      "git_blob": "0208c425d6831271a80bc74b61203b5768d20c2a"
+    },
+    {
+      "path": "src/camera_check/camera_check.h",
+      "sha256": "a73aac79180aedbc56d031cc3cd984646362bd1eec5a90fe5361e0c6ca0a2494",
+      "git_blob": "47a42e62c7c55b535f5fe751e81330a1841ad062"
+    },
+    {
+      "path": "src/sys/misc.c",
+      "sha256": "f6607a602e8479b0647a6e87a8e290af614e3b1b8d5e36295a2ac9c7c45e7f32",
+      "git_blob": "84be12339c2f266dcfb5e2ae7ccd6a73cbe2a46b"
+    },
+    {
+      "path": "src/window/8486E0.c",
+      "sha256": "67bc8e26889891abec021e0303b58d8a9b791321db2ca8ec1658b81d8d7437ed",
+      "git_blob": "a822b0a8a2148ccda8b4557707f81d3a71dc19d8"
+    },
+    {
+      "path": "src/window/window.h",
+      "sha256": "b0140107b3fe440dd3ae5ddde311ebe89fa38b8e51ec2d95a1f9aff10764cdba",
+      "git_blob": "c7490b352a5c4b99e570f26ba9a556cb20afb305"
+    },
+    {
+      "path": "src/window/847B60.c",
+      "sha256": "ebf90093586fafd8649b225a6ea472a472612da0be8a5d0a372daac246c8cda8",
+      "git_blob": "fc5d3d1debc0fd5ceb21dd394005611b23947ea2"
+    },
+    {
+      "path": "src/window/845160.c",
+      "sha256": "6c14410daf46fe248212637b8cd7e3b668affb91515cb13d3e7c3177a9267295",
+      "git_blob": "ed4574ddfae2ad871c931f42ef01816e44f5b625"
+    },
+    {
+      "path": "src/app_render/53AD0.c",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255"
+    }
+  ],
+  "roots": [
+    "func_camera_check_801DCACC",
+    "func_camera_check_801DCA60",
+    "func_camera_check_801DF938",
+    "func_camera_check_801DF2D8",
+    "func_camera_check_801DC8D0"
+  ],
+  "definitions": [
+    {
+      "path": "src/camera_check/87A0B0.c",
+      "name": "func_camera_check_801DC8D0",
+      "sha256": "4c95f7a40d99eef6e9112d4780e793c187992dc42129285d977295d9b5824e54",
+      "line": 79,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A0B0.c",
+      "name": "func_camera_check_801DC910",
+      "sha256": "50dfa8696176aea963f69278f3cdfcbc3d49bffbba13f428ccf79a40e6e2b485",
+      "line": 85,
+      "rewrites": [],
+      "native_body": "{\n    GObj* camera = NULL;\n    IsleGameProcess* process = NULL;\n    cc_checked(ctx, isle_camera_check_native_camera(ctx, &camera));\n    cc_checked(ctx, isle_game_add_source_process(ctx->common.game, camera,\n        func_camera_check_801DC8D0, ISLE_GAME_STACKFUL, 0, &process));\n}"
+    },
+    {
+      "path": "src/camera_check/87A0B0.c",
+      "name": "func_camera_check_801DCA60",
+      "sha256": "e52de6f20bade962f951fedca02d66623b29d9747c0db69b7eb7bc467c093bc5",
+      "line": 109,
+      "rewrites": [
+        {
+          "old": "    UIMem_CreateHeap(D_camera_check_802098F0, sizeof(D_camera_check_802098F0));",
+          "new": "    cc_ui_heap(ctx, 0x40000);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A0B0.c",
+      "name": "func_camera_check_801DCACC",
+      "sha256": "13d2c9e1352b56a957deb8f209ffbb7558708e9acc18fd58248692fd85ea5042",
+      "line": 121,
+      "rewrites": [],
+      "native_body": "{\n    int complete = 0;\n    int32_t result = 0;\n    cc_checked(ctx, isle_camera_check_native_setup_begin(ctx, arg0,\n        0x801E4060, 0x801E407C, 0x16A99, 1, 1, 2));\n    for (;;) {\n        cc_checked(ctx, isle_camera_check_native_setup_poll(ctx, &complete, &result));\n        if (complete) return result;\n        if (isle_continuation_wait(ctx->common.domain, 1) != ISLE_CONT_OK)\n            cc_checked(ctx, ISLE_GAME_EXECUTION_FAILURE);\n    }\n}"
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DCB40",
+      "sha256": "ae1fefda017cddcf45871148667b0c8b5b689bc5693d76bd8d346405cc56404c",
+      "line": 23,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DCB58",
+      "sha256": "31dc092bb99e3e40b237a0d0637034afd41932cb4b87f6b5cb828132172f7a42",
+      "line": 32,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DCC0C",
+      "sha256": "570c90d7afd6efa2e221ac712c866313ad51e8ccc3f2ae978bcdfdb6b8077df3",
+      "line": 61,
+      "rewrites": [
+        {
+          "old": "&D_camera_check_801FD5C8",
+          "new": "0x801fd5c8",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FD6A8",
+          "new": "0x801fd6a8",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FD4E8",
+          "new": "0x801fd4e8",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FD408",
+          "new": "0x801fd408",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DCD00",
+      "sha256": "0ade4dfb514f660d2708a40bc7f4e6a09470ba4052854762b06d09a9ff46ac8d",
+      "line": 93,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DCF9C",
+      "sha256": "61c91a4001c06518894d1bbdc4d953d0c0556884c78d5c1042f4c65874750626",
+      "line": 102,
+      "rewrites": [
+        {
+          "old": "    u8* dest;\n    Bitmap* sp24;\n    s32 x;\n    u8* src;",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    sp24 = UIMem_Allocate(0x30);\n    dest = UIMem_Allocate(0xFD8);\n    src = sobj->sprite.bitmap->buf;\n    *sp24 = *sobj->sprite.bitmap;\n    sp24->buf = dest;\n    sobj->sprite.bitmap = sp24;\n\n    for (x = 0xFD8; x > 0; src++, dest++, x--) {\n        *dest = *src;\n    }\n\n",
+          "new": "    cc_bind_thumbnail(ctx, sobj, 0x80201520);\n\n",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FE318",
+          "new": "0x801fe318",
+          "count": 2
+        },
+        {
+          "old": "&D_camera_check_801FE448",
+          "new": "0x801fe448",
+          "count": 2
+        },
+        {
+          "old": "&D_camera_check_801FCE78",
+          "new": "0x801fce78",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_80201520",
+          "new": "0x80201520",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FD088",
+          "new": "0x801fd088",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FFB08",
+          "new": "0x801ffb08",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FFC88",
+          "new": "0x801ffc88",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_802004E8",
+          "new": "0x802004e8",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DD1F0",
+      "sha256": "f0a5032d4b52f61b15230d98c598c6b1f657e53dd5be0d3db9d16d510e8a4c6f",
+      "line": 180,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DD238",
+      "sha256": "407242bc624796177778991dc93d1d70df387555ebfd22f123d051f07d02c893",
+      "line": 189,
+      "rewrites": [
+        {
+          "old": "arg0->unk_14->unk_54 = 0;",
+          "new": "cc_set_aux(ctx, arg0->unk_14, 0);",
+          "count": 2
+        },
+        {
+          "old": "arg0->unk_14->unk_54 = 1;",
+          "new": "cc_set_aux(ctx, arg0->unk_14, 1);",
+          "count": 1
+        },
+        {
+          "old": "arg0->unk_14->unk_54 = 2;",
+          "new": "cc_set_aux(ctx, arg0->unk_14, 2);",
+          "count": 1
+        },
+        {
+          "old": "arg0->unk_10->unk_54 = 0;",
+          "new": "cc_set_aux(ctx, arg0->unk_10, 0);",
+          "count": 2
+        },
+        {
+          "old": "arg0->unk_10->unk_54 = 1;",
+          "new": "cc_set_aux(ctx, arg0->unk_10, 1);",
+          "count": 1
+        },
+        {
+          "old": "arg0->unk_10->unk_54 = 2;",
+          "new": "cc_set_aux(ctx, arg0->unk_10, 2);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DD630",
+      "sha256": "3bd95823d291c7265355c33bad0b9cd7b0594cbd5face2dce4960e97e817bd75",
+      "line": 303,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DD6D0",
+      "sha256": "0bf94d59d7355dfa9c328c714a9c751f1709c986f3dc9584f2b7bc1402c116b6",
+      "line": 311,
+      "rewrites": [
+        {
+          "old": "            osWritebackDCache(&D_camera_check_802499C0[i].unk_00->data.sobj->sprite, 0x44);",
+          "new": "            /* Coherent native live Sprite view; no guest cache operation. */",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DD93C",
+      "sha256": "c18bbed845ff9b3bcdbd4ffc831f1f779dcb3647dcbf962a9e86a72f65433c02",
+      "line": 347,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDA44",
+      "sha256": "25376fd461a242e01413c5e30126e3e3a7ecdd570cce9b96221047a7de208733",
+      "line": 357,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDAD8",
+      "sha256": "8cb5a3086ef153c4cfea788d9d2f4b94664a1548cd9ce5683002799971852f51",
+      "line": 378,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDB08",
+      "sha256": "338bbf51bb8a9028d8ff09c27a21a8c1cbf2979e95c28b84ee66c51747c5a7d5",
+      "line": 383,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDB80",
+      "sha256": "192a3bb8fd592761bd9d6a8392df11dd87b3c63e614391695ee28aa6cebc7c4e",
+      "line": 397,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDD28",
+      "sha256": "e05e7b08db5827bbed1c74210142166f182089a165eaff3b2ca00bc4085bb8c7",
+      "line": 443,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDDA4",
+      "sha256": "9454388ebfca3463a6ce1447497a28fe813f4f44b5d791dad6215fa010b883fb",
+      "line": 459,
+      "rewrites": [
+        {
+          "old": "sobj->unk_54",
+          "new": "cc_aux(ctx, sobj)",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDF28",
+      "sha256": "9faaa9037cb47b1d8a4193ae896e6ade05d6c728dee698fde07598600fb6904f",
+      "line": 487,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DDFC4",
+      "sha256": "398c44c88eb11145564fbd160e694cdb5835959afc8c3c16e6aaefc8ac29daa0",
+      "line": 501,
+      "rewrites": [
+        {
+          "old": "    D_camera_check_802498F0.unk_0C = sobj;",
+          "new": "    D_camera_check_802498F0.unk_0C = sobj;\n    cc_bind_thumbnail(ctx, sobj, 0x80208900);",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FDDB8",
+          "new": "0x801fddb8",
+          "count": 2
+        },
+        {
+          "old": "&D_camera_check_801FE160",
+          "new": "0x801fe160",
+          "count": 2
+        },
+        {
+          "old": "&D_camera_check_801FD9E0",
+          "new": "0x801fd9e0",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_80208900",
+          "new": "0x80208900",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FD088",
+          "new": "0x801fd088",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FF128",
+          "new": "0x801ff128",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801FF988",
+          "new": "0x801ff988",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_802004E8",
+          "new": "0x802004e8",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DE288",
+      "sha256": "835d4974094e43a81683b61f8adce9e1c05e14dd784655bc48884eaaf45e0057",
+      "line": 582,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DE59C",
+      "sha256": "64ad3d32204cd1be11fa82d69d05f3e5fa81b116ace3d11b10489b41a01d64d7",
+      "line": 635,
+      "rewrites": [
+        {
+          "old": "    s32 sp6C; // BUG: never set?",
+          "new": "    s32 sp6C = cc_caption(ctx, arg0); /* ROM scratchpointer evidence, not score. */",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DE80C",
+      "sha256": "f5182cb7fd9ba0fd3e8a36e81abe769e97352ca091b838538154aec79238a6d8",
+      "line": 677,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DE934",
+      "sha256": "47deff9cf1c5c0b26607f64c4b3ba85e7ea00f6c6f611e869ed84dc0836b7cb2",
+      "line": 702,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DEA20",
+      "sha256": "f9b183d399411c608a7b66bdaefda39187500368a357ad5b008b2869d4a62400",
+      "line": 730,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DECCC",
+      "sha256": "a70d83ca4b68706235419c1263e5445e0405167ef3267a62d76c6e2a34327136",
+      "line": 813,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DEDEC",
+      "sha256": "92c89868e8c6b70e5137a5f5057e48a03627e839793f3952345cfd0bfb836bc4",
+      "line": 846,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DF0D4",
+      "sha256": "d86454e60dfeb1c0c05eebcf5c2cfb35de31bac9d20845d04a11280c99241a8c",
+      "line": 894,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DF2D8",
+      "sha256": "bb099c17168cb77ddb7366bfbc0ad6d27a3e17e6336ce9012ff45dc16fee8890",
+      "line": 925,
+      "rewrites": [
+        {
+          "old": "        func_80374F30_8486E0(temp_s0, true);\n        func_camera_check_801DF0D4",
+          "new": "        cc_ack_at(ctx, temp_s0, true, 1025);\n        func_camera_check_801DF0D4",
+          "count": 1
+        },
+        {
+          "old": "        func_80374F30_8486E0(temp_s0, true);\n        UIElement_Draw(temp_s0);",
+          "new": "        cc_ack_at(ctx, temp_s0, true, 1031);\n        UIElement_Draw(temp_s0);",
+          "count": 1
+        },
+        {
+          "old": "    func_80374F30_8486E0(temp_s0, true);\n    UIElement_SetState(new_var, UI_HIDDEN);",
+          "new": "    cc_ack_at(ctx, temp_s0, true, 1039);\n    UIElement_SetState(new_var, UI_HIDDEN);",
+          "count": 1
+        },
+        {
+          "old": "    if (temp_s0 && temp_s0 && temp_s0) {\n        // TODO fake match - fixes regalloc\n    }",
+          "new": "    /* Empty decompiler register-allocation artifact has no Source effect. */",
+          "count": 1
+        },
+        {
+          "old": "&D_camera_check_801F0560",
+          "new": "0x801f0560",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87A330.c",
+      "name": "func_camera_check_801DF938",
+      "sha256": "9fcd2a5ae53cdd11e12ae99238c4f1af87e39d791ee1b2a56302bf15bed30260",
+      "line": 1083,
+      "rewrites": [
+        {
+          "old": "&D_camera_check_801FCC58",
+          "new": "0x801fcc58",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801DF9B0",
+      "sha256": "6ca2464aedd196afd10a4b8643394713c6077b21472dbfe944c91fa3a9555a75",
+      "line": 37,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801DFA4C",
+      "sha256": "b52e92cf4d4f0cda442012cd58eb4acac70916bdec44f5c3e809f012a28168f9",
+      "line": 56,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801DFA80",
+      "sha256": "1e06f546fe87b0daa7cc9b3c2351fdd56f06ed8f46d0e99b850460aabd694ee1",
+      "line": 64,
+      "rewrites": [
+        {
+          "old": "D_camera_check_80249AA8[*arg1].id",
+          "new": "cc_slot(ctx, *arg1)",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801DFCD4",
+      "sha256": "d045e4b6433b0d5bb0564a1b117b9aa39a552fae3bc0016cf0a9fdc2b40f92d4",
+      "line": 119,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0034",
+      "sha256": "eb326d31ab91404939a0aa68885e6c337a36d6263de7d35a29fd3260074797fe",
+      "line": 202,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0118",
+      "sha256": "b43a0b26a9331684101c304a291e2a195481623860813b943be6a568604d6db9",
+      "line": 229,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E01C0",
+      "sha256": "697730d17409649fb94a82d0f3fe6d8b9a35a8759d17678fe6661fbc92eae6e9",
+      "line": 250,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0258",
+      "sha256": "634c8e77ed1690e54d7cb2852124ba0191c93c26a63876f800965e24d0cdadb3",
+      "line": 278,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E02D0",
+      "sha256": "eb455454a767ecb89d9d94a8af848bdbd7754e0648e964ba32f2354f97e516cd",
+      "line": 288,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0330",
+      "sha256": "69cbbf587f0e2e11bab1a024c299be3b90bc69d33bd5257881af2fb75f44a235",
+      "line": 297,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0374",
+      "sha256": "ba55bec82ceaba5bb841541c3526e11ba16e38de95a9a5ab169d9a54dae8a4d9",
+      "line": 304,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E03EC",
+      "sha256": "b0175899f9ca66dd161f16144953915728a8327eee8bdf471feda6a260ec9de4",
+      "line": 317,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0480",
+      "sha256": "360728b1a9cf052e6f556c8b129874e0319d07fd8f1700af1962a45514cb9978",
+      "line": 330,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E04B0",
+      "sha256": "df62583e477be9db21de7a0199d7af5fc230b9f25dfa865e89a8d533313d2dca",
+      "line": 338,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E04F4",
+      "sha256": "9cf9a6cae80b4e40378293b4f305b60e2001a6376506c581d8c37acb55c6912b",
+      "line": 350,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0B5C",
+      "sha256": "abc46dcca649c166198014a0ff582fcec4b182d7f9854acbc8e5e8df1647ef97",
+      "line": 533,
+      "rewrites": [
+        {
+          "old": "            if (!var_s0->unk_00) {\n            } // todo required to match",
+          "new": "            /* Empty register-allocation artifact: no canonical read. */",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E0F10",
+      "sha256": "7a840444c11e4f1667e76ad91ffd39c3dc6ab33cb9479e9ff12e4b8602c5f5cb",
+      "line": 655,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E15B4",
+      "sha256": "4a7cb934eac691e6702a60bf3bbf513aab05dd0d44d9d0d014876ae874772373",
+      "line": 811,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E1918",
+      "sha256": "82df652ae48875edf7b995ba3d7f8dfdd2fbbcc8e36e5659311abfc1f4dc71e3",
+      "line": 901,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E1BD4",
+      "sha256": "cb1a09e7bed64bdd72b67308891a49c72696043732f3163509bee10955966998",
+      "line": 963,
+      "rewrites": [
+        {
+          "old": "D_camera_check_80249AA8[sp38].id",
+          "new": "cc_slot(ctx, sp38)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E1EA4",
+      "sha256": "30f8e95160814977fda31a0a4a54e4a913bbb58ba4228362dcac9c159d3877f4",
+      "line": 1032,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87D1A0.c",
+      "name": "func_camera_check_801E21E8",
+      "sha256": "47a3e9eb5dbe5b06f08e0543246167c1bd4902a07d6606a9c51e1b83d26e156e",
+      "line": 1086,
+      "rewrites": [
+        {
+          "old": "    D_camera_check_80249AA8 = UILayout_GetButtons();",
+          "new": "    /* Retain this context as live Layout selector; cc_slot queries Window. */",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2330",
+      "sha256": "f24bc151ec1f99b5259957392bfd66f5d4cc8b51c81b00c1c2bab3f11ba91468",
+      "line": 13,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E23A8",
+      "sha256": "84f0c12408532aabae430b0bbefe7c6716fb9e2dad0b4368765de554a4991e37",
+      "line": 22,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E246C",
+      "sha256": "e88a003796e3fa2c802135873ddfceb903b2900a840d720e060b2cbfe4897d5d",
+      "line": 37,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2478",
+      "sha256": "d1d3f1e03dbff12c474ff84a5c9c40fb3a7cd241535d6f0d11fcc6fb4ddb94c9",
+      "line": 41,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2484",
+      "sha256": "4a18f560459d004afcfe08749b961197d308a5d71f5b9d82546e5d1e7ff06997",
+      "line": 45,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E24D8",
+      "sha256": "d95b82bedafe64d8be947373eb1c73bf372ea4f499d5d4b4d773eaf54cdf02ef",
+      "line": 53,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2534",
+      "sha256": "5b8246f683fa3bf90b0ab7aaf0f65aa717f0b552a91b86039ab24e639559303a",
+      "line": 61,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2540",
+      "sha256": "14d6e0c091aa175b74f82c38670077dcba090ccd39356e88f44340bb2636f664",
+      "line": 65,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E27FC",
+      "sha256": "4149f4f881027e4121bd4d37ace0926775782ac3de672dc8b235ecc626825ee3",
+      "line": 112,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E286C",
+      "sha256": "5336c162e337a4bc72b4b2bd47057476d1cf72ae4138fd004189e24275689fc2",
+      "line": 127,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E28E4",
+      "sha256": "5e6130db9b875bd353e30dcc9287141919366ce561e9ae5cab63e199fbf50c67",
+      "line": 141,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2948",
+      "sha256": "4741616cdfccc33684464d607f2bf670e708144fc9a26a4a2e98b5eeb176fa2c",
+      "line": 158,
+      "rewrites": [
+        {
+          "old": "    temp = (uintptr_t) arg0 - (uintptr_t) &D_camera_check_80249B30;\n    return (temp / 28) - D_camera_check_8024A1C0;",
+          "new": "    return (s32)(arg0 - D_camera_check_80249B30) - D_camera_check_8024A1C0;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2984",
+      "sha256": "89d50862fa0e75b7be0d48bc18597b5ded5ac31dce00a5ab99d0b24b5a6fff5d",
+      "line": 169,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2A00",
+      "sha256": "a523d2a72334299cfe3444e204696c849d17024003b2ef2f832b5ee1ee62bf2e",
+      "line": 189,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2B60",
+      "sha256": "8a96702d59eba177142efd3cd6a0fac5afc3ddcf49786b200725921c14674c58",
+      "line": 221,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2CC0",
+      "sha256": "0712683e7325c1b24c6d1b283cac83a58bb23917c7c5e148de06eb92672c259b",
+      "line": 253,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2E04",
+      "sha256": "4a68228aa9645d7862f9f34ff1e721a7a1f37f6cafb3be833aab6188ea1732f3",
+      "line": 291,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2E5C",
+      "sha256": "ef5cb1da4392b16212e93585392b3ab29762a17e575b12ab40de48ec5fbcb5ea",
+      "line": 305,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2EA0",
+      "sha256": "a3cf174cb1c7f96f957b32993b97c6dfdf5f04bb8a23bd3796577bcf11e597b2",
+      "line": 313,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2EC0",
+      "sha256": "1c185aa40edd07c53a26e175e7ef364b6e42e7ae47d40dd93a70f5d6da11d120",
+      "line": 317,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2EF4",
+      "sha256": "1454c89d194a92deca37908bcaa84f20bd72776fbefdfbc97623e3c23234a9d3",
+      "line": 329,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E2F58",
+      "sha256": "bdb33b8d1663413f5f1aacf6ee8a8737ee807b7822d2abbe13d0874f6a796913",
+      "line": 345,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E30CC",
+      "sha256": "29ca288333f03d7faf2a849ec719a2f2786a3409cc27d261bd6889efbb03c3b7",
+      "line": 402,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3140",
+      "sha256": "ab3e216b08715cf8b9487c4d7739621309195a8b1974cffe1d7bd04304aff45f",
+      "line": 418,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E31E4",
+      "sha256": "c81be470021d9be42520b30604aa867b70939f7314d0e6c494d2d096be651f96",
+      "line": 438,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E32E0",
+      "sha256": "aea0c5e4dd3a75534e74ec42304aed04f9ecde1dfc5f7a7f5f1b3db67e1561d5",
+      "line": 466,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3420",
+      "sha256": "a9bfe83ffce1c3e8bde445f5c6d3de917c6781cee9ef831003e9379c8dffaa2a",
+      "line": 497,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3620",
+      "sha256": "269ce15b4fd81b5c28fa0654f695a4ddd025b76a7476d80fa0bbf436f802342e",
+      "line": 527,
+      "rewrites": [
+        {
+          "old": "rhs->unk_00 < lhs->unk_00",
+          "new": "cc_photo_order(ctx, rhs->unk_00, lhs->unk_00) < 0",
+          "count": 1
+        },
+        {
+          "old": "rhs->unk_00 > lhs->unk_00",
+          "new": "cc_photo_order(ctx, rhs->unk_00, lhs->unk_00) > 0",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3658",
+      "sha256": "bfa08fd354318eae04157701606456c3beecc1a9df7c23fa3e770c66a0a4ae48",
+      "line": 542,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E36DC",
+      "sha256": "aaacc184cf5ae7eb303c7767ca6c8c816218ead441f86a84a96866559fa48b8c",
+      "line": 560,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3758",
+      "sha256": "7c4c77b943a4319d68fc4d867495d5312767f736fb2e83c180bc0216d34215d0",
+      "line": 578,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E37E4",
+      "sha256": "1611bb3f911d5223518a75296a2fe006851f5d70d12a155ab1dd41d2614ed15a",
+      "line": 596,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3870",
+      "sha256": "8f58629333dad06a4669b0d1f7b13f269994d1f791f8cc9be5e2de6d0cb85dcb",
+      "line": 614,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3910",
+      "sha256": "3ea41ecfa419ad9260a0848ee5ea2c77efd215be3a782bf2d91d0e2e803696f2",
+      "line": 632,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3AF4",
+      "sha256": "71bb8509cbda75a225ade6e2c8b69e4ab23a3f5d0e983edd7f199096ef15996c",
+      "line": 673,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3C24",
+      "sha256": "6fcc81c635a9ba18d33ac98f538c3a64f8ef8c165fb16764ab509b94d451a1fa",
+      "line": 710,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3CE8",
+      "sha256": "1f19bec5a87920b3c34cf48694e1f10e75c63727b9f8ece87ac140933ff998b8",
+      "line": 736,
+      "rewrites": []
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3D8C",
+      "sha256": "a878b241bfdd811a0eda3e7afae228141eb01d153e628dddd4b864ac94dcfed7",
+      "line": 756,
+      "rewrites": [
+        {
+          "old": "arg1->unk_04 = NULL;",
+          "new": "arg1->unk_04 = 0;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/camera_check/87FB20.c",
+      "name": "func_camera_check_801E3EEC",
+      "sha256": "b0c1eb23d0d567901a04a70ae67e945f09e44d088e93dc98ff3d2d43c55a46a3",
+      "line": 796,
+      "rewrites": []
+    },
+    {
+      "path": "src/window/8486E0.c",
+      "name": "func_80374F30_8486E0",
+      "line": 12,
+      "sha256": "22851119b10667af62364a0fe8bc29674913b061f6589aa9657fedf8687a0652",
+      "rewrites": []
+    },
+    {
+      "path": "src/window/8486E0.c",
+      "name": "func_80375224_8489D4",
+      "line": 122,
+      "sha256": "425a59cab94cf9cda19e8f76da7694a4b0557917953a6b006e3f8eb174d5d9e3",
+      "rewrites": []
+    },
+    {
+      "path": "src/window/8486E0.c",
+      "name": "func_80375284_848A34",
+      "line": 133,
+      "sha256": "635523b512a947338f6619fbf753aa5870c3f080ea0d37b504f28a459f5562b1",
+      "rewrites": []
+    },
+    {
+      "path": "src/sys/misc.c",
+      "name": "swap",
+      "line": 148,
+      "sha256": "b8fbecfce095655eca58afb5223d22432539bf7aa6e38ce9090011a982dc68af",
+      "rewrites": []
+    },
+    {
+      "path": "src/sys/misc.c",
+      "name": "qsortInternal",
+      "line": 156,
+      "sha256": "5c5b837d09583c381b950055668cff104252e6b014727282841458332552810b",
+      "rewrites": [
+        {
+          "old": "void qsortInternal(u8* first, u8* last)",
+          "new": "void qsortInternal(u8* first, u8* last, u32 itemSize, IsleCameraCheckCompare compare)",
+          "count": 1
+        },
+        {
+          "old": "qsortCompareFunc(",
+          "new": "compare(ctx, ",
+          "count": 2
+        },
+        {
+          "old": "qsortItemSize",
+          "new": "itemSize",
+          "count": 10
+        },
+        {
+          "old": "qsortInternal(s1 + itemSize, last);",
+          "new": "qsortInternal(s1 + itemSize, last, itemSize, compare);",
+          "count": 1
+        },
+        {
+          "old": "last = s1 - itemSize;",
+          "new": "if (s1 == first) break;\n            last = s1 - itemSize;",
+          "count": 1
+        },
+        {
+          "old": "qsortInternal(first, s1 - itemSize);",
+          "new": "if (s1 > first) qsortInternal(first, s1 - itemSize, itemSize, compare);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/sys/misc.c",
+      "name": "qsort2",
+      "line": 198,
+      "sha256": "8f9fa781003c5976c668ca5bf3303a90ae6383e6ddd3e2882f491cbd10fec270",
+      "rewrites": [
+        {
+          "old": "s32 (*compare)(const void*, const void*)",
+          "new": "IsleCameraCheckCompare compare",
+          "count": 1
+        },
+        {
+          "old": "compare(curr, next)",
+          "new": "compare(ctx, curr, next)",
+          "count": 1
+        },
+        {
+          "old": "        qsortItemSize = itemSize;\n        qsortCompareFunc = compare;\n        qsortInternal(base, base + ((count - 1) * qsortItemSize));",
+          "new": "        qsortInternal(base, base + ((count - 1) * itemSize), itemSize, compare);",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "source_functions": [
+    "func_camera_check_801DC8D0",
+    "func_camera_check_801DC910",
+    "func_camera_check_801DCA60",
+    "func_camera_check_801DCACC",
+    "func_camera_check_801DCB40",
+    "func_camera_check_801DCB58",
+    "func_camera_check_801DCC0C",
+    "func_camera_check_801DCD00",
+    "func_camera_check_801DCF9C",
+    "func_camera_check_801DD1F0",
+    "func_camera_check_801DD238",
+    "func_camera_check_801DD630",
+    "func_camera_check_801DD6D0",
+    "func_camera_check_801DD93C",
+    "func_camera_check_801DDA44",
+    "func_camera_check_801DDAD8",
+    "func_camera_check_801DDB08",
+    "func_camera_check_801DDB80",
+    "func_camera_check_801DDD28",
+    "func_camera_check_801DDDA4",
+    "func_camera_check_801DDF28",
+    "func_camera_check_801DDFC4",
+    "func_camera_check_801DE288",
+    "func_camera_check_801DE59C",
+    "func_camera_check_801DE80C",
+    "func_camera_check_801DE934",
+    "func_camera_check_801DEA20",
+    "func_camera_check_801DECCC",
+    "func_camera_check_801DEDEC",
+    "func_camera_check_801DF0D4",
+    "func_camera_check_801DF2D8",
+    "func_camera_check_801DF938",
+    "func_camera_check_801DF9B0",
+    "func_camera_check_801DFA4C",
+    "func_camera_check_801DFA80",
+    "func_camera_check_801DFCD4",
+    "func_camera_check_801E0034",
+    "func_camera_check_801E0118",
+    "func_camera_check_801E01C0",
+    "func_camera_check_801E0258",
+    "func_camera_check_801E02D0",
+    "func_camera_check_801E0330",
+    "func_camera_check_801E0374",
+    "func_camera_check_801E03EC",
+    "func_camera_check_801E0480",
+    "func_camera_check_801E04B0",
+    "func_camera_check_801E04F4",
+    "func_camera_check_801E0B5C",
+    "func_camera_check_801E0F10",
+    "func_camera_check_801E15B4",
+    "func_camera_check_801E1918",
+    "func_camera_check_801E1BD4",
+    "func_camera_check_801E1EA4",
+    "func_camera_check_801E21E8",
+    "func_camera_check_801E2330",
+    "func_camera_check_801E23A8",
+    "func_camera_check_801E246C",
+    "func_camera_check_801E2478",
+    "func_camera_check_801E2484",
+    "func_camera_check_801E24D8",
+    "func_camera_check_801E2534",
+    "func_camera_check_801E2540",
+    "func_camera_check_801E27FC",
+    "func_camera_check_801E286C",
+    "func_camera_check_801E28E4",
+    "func_camera_check_801E2948",
+    "func_camera_check_801E2984",
+    "func_camera_check_801E2A00",
+    "func_camera_check_801E2B60",
+    "func_camera_check_801E2CC0",
+    "func_camera_check_801E2E04",
+    "func_camera_check_801E2E5C",
+    "func_camera_check_801E2EA0",
+    "func_camera_check_801E2EC0",
+    "func_camera_check_801E2EF4",
+    "func_camera_check_801E2F58",
+    "func_camera_check_801E30CC",
+    "func_camera_check_801E3140",
+    "func_camera_check_801E31E4",
+    "func_camera_check_801E32E0",
+    "func_camera_check_801E3420",
+    "func_camera_check_801E3620",
+    "func_camera_check_801E3658",
+    "func_camera_check_801E36DC",
+    "func_camera_check_801E3758",
+    "func_camera_check_801E37E4",
+    "func_camera_check_801E3870",
+    "func_camera_check_801E3910",
+    "func_camera_check_801E3AF4",
+    "func_camera_check_801E3C24",
+    "func_camera_check_801E3CE8",
+    "func_camera_check_801E3D8C",
+    "func_camera_check_801E3EEC",
+    "func_80374F30_8486E0",
+    "func_80375224_8489D4",
+    "func_80375284_848A34",
+    "swap",
+    "qsortInternal",
+    "qsort2"
+  ],
+  "callbacks": [
+    "func_camera_check_801DC8D0",
+    "func_camera_check_801DF2D8",
+    "func_camera_check_801DDF28",
+    "func_80375224_8489D4"
+  ],
+  "globals": [
+    "D_camera_check_80208944",
+    "D_camera_check_80208948",
+    "D_camera_check_80208950",
+    "D_camera_check_80208960",
+    "D_camera_check_80208964",
+    "D_camera_check_8020896C",
+    "D_camera_check_80208994",
+    "D_camera_check_802089BC",
+    "D_camera_check_802089E4",
+    "D_camera_check_802089E8",
+    "D_camera_check_802089EC",
+    "D_camera_check_802089F0",
+    "D_camera_check_802089F4",
+    "D_camera_check_802498F0",
+    "D_camera_check_80249910",
+    "D_camera_check_80249914",
+    "D_camera_check_80249918",
+    "D_camera_check_8024991C",
+    "D_camera_check_80249920",
+    "D_camera_check_80249928",
+    "D_camera_check_802499A8",
+    "D_camera_check_802499B0",
+    "D_camera_check_802499B4",
+    "D_camera_check_802499B8",
+    "D_camera_check_802499BC",
+    "D_camera_check_802499C0",
+    "D_camera_check_80249AA0",
+    "D_camera_check_80249AA4",
+    "D_camera_check_80249AB0",
+    "D_camera_check_80249B30",
+    "D_camera_check_8024A1C0",
+    "D_camera_check_8024A1C4",
+    "D_camera_check_8024A1C8",
+    "D_camera_check_8024A1D4",
+    "D_camera_check_8024A1D8"
+  ],
+  "music_globals": {
+    "D_803A66BC_879E6C": "countdown",
+    "D_803A66C0_879E70": "song",
+    "D_803A66C4_879E74": "mode",
+    "D_803A66C8_879E78": "object"
+  },
+  "services": {
+    "ohWait": "cc_wait",
+    "FocusMark_Create": "cc_focus_create",
+    "FocusMark_MoveFront": "cc_focus_front",
+    "FocusMark_Show": "cc_focus_show",
+    "FocusMark_SetPos": "cc_focus_position",
+    "FocusMark_SetSize": "cc_focus_size",
+    "FocusMark_SetTargetPos": "cc_focus_target_position",
+    "FocusMark_SetTargetSize": "cc_focus_target_size",
+    "UIButtonImage_DeleteAll": "cc_buttons_clear",
+    "UIElement_Create": "cc_element_create",
+    "UIElement_Delete": "cc_element_delete",
+    "UIElement_Draw": "cc_element_clear",
+    "UIElement_DrawBackground": "cc_element_background",
+    "UIElement_FillRect": "cc_element_fill",
+    "UIElement_FillRectDefault": "cc_element_fill_default",
+    "UIElement_PrintText": "cc_print",
+    "UIElement_SetColor": "cc_element_color",
+    "UIElement_SetFont": "cc_element_font",
+    "UIElement_SetState": "cc_element_state",
+    "UIElement_SetTextPos": "cc_element_position",
+    "UIFrame_Create": "cc_frame_create",
+    "UIFrame_FadeIn": "cc_fade_in",
+    "UIFrame_FadeOut": "cc_fade_out",
+    "UIFrame_GetBackgroundColor": "cc_frame_color",
+    "UIFrame_SetPos": "cc_frame_position",
+    "UIFrame_SetStyle": "cc_frame_style",
+    "UIFrame_Show": "cc_frame_show",
+    "UILayout_CreateButtons": "cc_layout_create",
+    "UILayout_DisableAllButtonsExcept": "cc_disable_except",
+    "UILayout_DisableButton": "cc_disable",
+    "UILayout_GetButtonText": "cc_button_text",
+    "UILayout_HideButtons": "cc_layout_hide",
+    "UILayout_HideHeaderElement": "cc_header_hide",
+    "UILayout_Init": "cc_layout_init",
+    "UILayout_SetHeaderFlags": "cc_header_flags",
+    "UILayout_ShowHeaderElement": "cc_header_show",
+    "UILayout_ShowPanel": "cc_panel",
+    "UILayout_WaitPanelTransitionComplete": "cc_layout_wait",
+    "UIText_GetStringWidth": "cc_width",
+    "UIText_Initialize": "cc_text_init",
+    "UIText_SetPrintDelay": "cc_delay",
+    "UIText_SetShadowOffset": "cc_shadow",
+    "UIText_SetSpacing": "cc_spacing",
+    "func_8036EB80_842330": "cc_skip",
+    "func_80371C68_845418": "cc_sprite_object",
+    "func_80371D14_8454C4": "cc_plain_sprite",
+    "func_80371DC0_845570": "cc_sibling",
+    "func_80371E68_845618": "cc_child",
+    "func_8037452C_847CDC": "cc_score",
+    "func_803746B4_847E64": "cc_roll",
+    "func_80374714_847EC4": "cc_preview",
+    "func_80374D20_8484D0": "cc_replay_cleanup",
+    "func_80374D40_8484F0": "cc_replay_init",
+    "func_8037519C_84894C": "cc_printf",
+    "func_803751F8_8489A8": "cc_challenge",
+    "func_8009BB4C": "cc_report_index",
+    "func_8009BC68": "cc_roll_count",
+    "func_800A85E8": "cc_process_owner",
+    "func_800A86A4": "cc_sync_owner",
+    "func_800AA38C": "cc_input",
+    "func_800AA740": "cc_neutral",
+    "func_800AA85C": "cc_repeat",
+    "func_800AA870": "cc_mask",
+    "func_800AADF0": "cc_transition",
+    "func_800AAE28": "cc_input_initialize",
+    "func_800AAED0": "cc_notice",
+    "func_800BF3D4_5C274": "cc_report_present",
+    "func_800BF710_5C5B0": "cc_report",
+    "func_800BF864_5C704": "cc_report_count",
+    "func_800BFABC_5C95C": "cc_select",
+    "func_800C0224_5D0C4": "cc_course_score",
+    "func_800C0254_5D0F4": "cc_set_course_score",
+    "auPlaySong": "cc_song",
+    "auPlaySound": "cc_sound",
+    "auPlaySoundWithParams": "cc_sound_params",
+    "auSetBGMVolume": "cc_volume",
+    "auSetBGMVolumeSmooth": "cc_volume_smooth",
+    "checkPlayerFlag": "cc_flag",
+    "setPlayerFlag": "cc_set_flag",
+    "getAlbumPhoto": "cc_album",
+    "getLevelId": "cc_level",
+    "getLevelName": "cc_level_name",
+    "getPlayerName": "cc_player_name",
+    "getPokemonName": "cc_pokemon_name",
+    "omDeleteGObj": "cc_delete_object"
+  },
+  "button_tables": [
+    "D_camera_check_8020896C",
+    "D_camera_check_80208994",
+    "D_camera_check_802089BC"
+  ],
+  "callback_registrations": [
+    {
+      "symbol": "func_camera_check_801DC8D0",
+      "kind": 0,
+      "priority": 0,
+      "creation": "801DC910 / ohCreateCamera"
+    },
+    {
+      "symbol": "func_camera_check_801DF2D8",
+      "kind": 0,
+      "priority": 0,
+      "creation": "801DF938 / 800A85E8"
+    },
+    {
+      "symbol": "func_camera_check_801DDF28",
+      "kind": 1,
+      "priority": 0,
+      "creation": "801DDFC4 / 80371C68"
+    },
+    {
+      "symbol": "func_80375224_8489D4",
+      "kind": 1,
+      "priority": 0,
+      "creation": "8486E0.c139 / 800A86A4"
+    }
+  ],
+  "data_contract": {
+    "roll_records": 60,
+    "small_thumbnail_groups": 7,
+    "large_thumbnail_groups": 1,
+    "thumbnail_prototypes": [
+      "0x80201520",
+      "0x80208900"
+    ],
+    "report_index_bits": 69,
+    "challenge_scores": 7,
+    "initialized_button_tables": [
+      5,
+      5,
+      5
+    ],
+    "transient_formatted_bytes": 400,
+    "canonical_mutations": [
+      "selected queue reset",
+      "selected queue append ordinary OR sign,second=false,album flag",
+      "photo score flags through Replay",
+      "player flags",
+      "course high score"
+    ],
+    "no_report_writes": true,
+    "entry_screen_address": "0x801E4060",
+    "entry_setup_address": "0x801E407C",
+    "screen_flags": "0x16A99",
+    "canonical_owners": [
+      "Photos",
+      "Window",
+      "Replay",
+      "game::Input",
+      "game::Audio",
+      "game::State"
+    ],
+    "preview_scale": "canonical Window D_803A6668_879E18 via typed owner leaf; never guessed1.0"
+  },
+  "intentional_translations": [
+    "Source globals and initialized function statics become context fields; no ambient source pointer",
+    "Context-first comparator and progress callback signatures; native qsort bytes/index semantics preserve order",
+    "Signed one-bit original flags remain signed; shifts operate unsigned before original mask",
+    "Guest UnkIndigoHalibut /28 pointer arithmetic becomes native array difference",
+    "Guest scalar Sprite and SObj aux accesses borrow actual live native Window records",
+    "Seven small and one large prototype child get actual mutable native bitmap planes",
+    "Source strings UTF-8 spelling converted to explicit EUC-JP octal byte escapes; original embedded NUL unchanged",
+    "Caption populated branch follows immediately previous nonzero pokemonInFocus scratchpointer proof; zero totalScore retained",
+    "Zero-focus Report caption requires explicit native policy leaf; no guessed stack emulation",
+    "Empty decompiler register-allocation artifacts dropped without evaluating uninitialized/dangling pointers",
+    "qsort recursion guards exclude only empty out-of-array pointer ranges; source comparisons/swaps unchanged",
+    "Independent entry continuation suspends at actual setup/retirement, never using game wait credit",
+    "Screen and camera guest-layout settings translated to explicit typed returning owner leaves",
+    "Native UI heap is owned by real Window; no UIMem/SDK body imported",
+    "Formatting uses native va_list and 400-byte stable Source backing"
+  ],
+  "constants": {
+    "A_BUTTON": 32768,
+    "B_BUTTON": 16384,
+    "START_BUTTON": 4096,
+    "Z_TRIG": 8192,
+    "STICK_SLOW_UP": 65536,
+    "STICK_SLOW_DOWN": 131072,
+    "STICK_SLOW_RIGHT": 262144,
+    "STICK_SLOW_LEFT": 524288,
+    "STICK_RIGHT": 4194304,
+    "STICK_LEFT": 8388608,
+    "PFID_HAS_DASH_ENGINE": 5,
+    "PFID_6": 6,
+    "PFID_HAS_FINISHED_TUTORIAL": 8,
+    "PFID_11": 11,
+    "PFID_18": 18,
+    "POKEDEX_MAX": 151,
+    "PokemonID_500": 500,
+    "PokemonID_MOLTRES_EGG": 600,
+    "PokemonID_601": 601,
+    "PokemonID_ZAPDOS_EGG": 602,
+    "PokemonID_1004": 1004,
+    "PokemonID_1010": 1010,
+    "PokemonID_1018": 1018,
+    "PokemonID_1022": 1022,
+    "PokemonID_KOFFING_SMOKE": 1028,
+    "PokemonID_1035": 1035,
+    "SOUND_ID_65": 65,
+    "SOUND_ID_66": 66,
+    "SOUND_ID_67": 67,
+    "SOUND_ID_69": 69,
+    "SOUND_ID_71": 71,
+    "SOUND_ID_74": 74,
+    "SOUND_ID_75": 75,
+    "SCENE_PHOTO_CHECK": 15,
+    "SCENE_16": 16,
+    "SCENE_OAKS_LAB_2": 13,
+    "LINK_6": 6,
+    "DL_LINK_0": 0,
+    "BUTTON_23": 23,
+    "BUTTON_24": 24,
+    "BUTTON_22": 22,
+    "FRAME_STYLE_0": 0,
+    "UI_BACKGROUND": 0,
+    "UI_FOREGROUND": 1,
+    "UI_NORMAL": 0,
+    "UI_HIDDEN": 1,
+    "FONT_8": 8,
+    "FONT_12": 12,
+    "UI_FLAG_10": 16,
+    "BUTTON_SPLITTER": 34,
+    "BUTTON_NONE": 35,
+    "HEADER_PREV": 1,
+    "HEADER_NEXT": 2,
+    "HEADER_TITLE": 4
+  },
+  "constant_authority": {
+    "window": "src/window/window.h:4-61",
+    "species_flags_scenes_stick": "include/enums.h",
+    "n64_buttons": "published controller bit masks (A8000/B4000/Z2000/START1000)",
+    "sound": "original SOUND_ID numeric enum identities",
+    "source_types": "src/camera_check/camera_check.h:6-36"
+  },
+  "support_allowlist": [
+    "src/window/8486E0.c:12-42",
+    "src/window/8486E0.c:122-170",
+    "src/sys/misc.c:148-229"
+  ],
+  "service_semantics_authority": [
+    "src/window/845160.c:53-131",
+    "src/window/847B60.c:20-55,59-96,114-177",
+    "src/app_render/53AD0.c:140-177",
+    "src/sys/oh.c:327-348,368-390"
+  ],
+  "private_evidence": {
+    "caption": [
+      "native-post-course-comparison-caption-ROM-instructions.json",
+      "native-post-course-comparison-caption-callframe-ROM-instructions.json"
+    ],
+    "screen_setup": "native-camera-check-screen-setup-ROM-data.json",
+    "shared_window": "native-post-course-shared-Window-initialized-state-ROM-data.json",
+    "setup_heap_start": "0x8024A1E0",
+    "window_music_initial_mode": 3,
+    "window_music_initial_countdown": 0,
+    "window_music_initial_song": 0,
+    "window_music_initial_object": 0,
+    "window_preview_scale_initial": 1.0,
+    "window_reset_boundary": "Actual WINDOW overlay load event only; these are provenance facts, never Camera-owned resets"
+  }
+}

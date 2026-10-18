@@ -3,7 +3,16 @@
 #include "actor_photo_eligibility.hpp"
 #include "actor_collision.hpp"
 #include "beach_initial_species_source.h"
+#include "beach_meowth_source.h"
+#include "beach_snorlax_kangaskhan_source.h"
+#include "beach_eevee_chansey_source.h"
+#include "beach_scyther_special_source.h"
 #include "source_effect_world.hpp"
+#include "player_root_source.h"
+#include "player_root.hpp"
+#include "actor_resource_catalog.hpp"
+#include "rainbow_actor.hpp"
+#include <bit>
 #include <algorithm>
 #include <cmath>
 #include <exception>
@@ -18,6 +27,67 @@ IsleGameModelTransform native(const menu::animation::Transform& t) noexcept {
     return {{t.position.x,t.position.y,t.position.z},{t.rotation.x,t.rotation.y,t.rotation.z},{t.scale.x,t.scale.y,t.scale.z}};
 }
 constexpr float maximum_distance = std::numeric_limits<float>::max();
+enum class FactoryWrapper { ground, ordinary, ground_dl4, ordinary_dl4, meowth };
+struct FactorySpec {
+    std::uint32_t actor_id = 0, identity = 0;
+    FactoryWrapper wrapper = FactoryWrapper::ground;
+    IsleActorReturningFactory returning = nullptr;
+    IsleActorVoidFactory nonreturning = nullptr;
+    IsleGameSourceCallback initial_state = nullptr;
+};
+// Callable authority: real typed C definitions, never guest-function casts.
+// Numeric model/init/setup/header authority remains the same closed compiled
+// CourseCatalog that decoded Resources; there is no second tuple registry.
+const FactorySpec beach_factories[] = {
+    {1003,0x8035e0d4,FactoryWrapper::ground_dl4,func_8035E0D4_4FE4E4,nullptr,func_8035DF20_4FE330},
+    {129,0x802cac48,FactoryWrapper::ground,func_beach_802CAC48,nullptr,func_beach_802CAB50},
+    {12,0x802c7e38,FactoryWrapper::ordinary,nullptr,func_beach_802C7E38,func_beach_802C7B10},
+    {84,0x802c8570,FactoryWrapper::ground,nullptr,func_beach_802C8570,func_beach_802C82B0},
+    {131,0x802c8274,FactoryWrapper::ordinary,nullptr,func_beach_802C8274,func_beach_802C7E70},
+    {16,0x802c8d3c,FactoryWrapper::ordinary,nullptr,func_beach_802C8D3C,func_beach_802C85B0},
+    {16,0x802c8d74,FactoryWrapper::ordinary,nullptr,func_beach_802C8D74,func_beach_802C85B0},
+    {25,0x802cbca8,FactoryWrapper::ground,nullptr,func_beach_802CBCA8,func_beach_802CACD4},
+    {1004,0x802ca418,FactoryWrapper::ordinary,nullptr,func_beach_802CA418,func_beach_802CA300},
+    {1001,0x802cab14,FactoryWrapper::ordinary_dl4,nullptr,func_beach_802CAB14,func_beach_802CA450},
+    {143,0x802c5c28,FactoryWrapper::ground,nullptr,func_beach_802C5C28,func_beach_802C56C8},
+    {52,0x802c7270,FactoryWrapper::meowth,nullptr,func_beach_802C7270,func_beach_802C5DAC},
+    {133,0x802c7ad0,FactoryWrapper::ground,nullptr,func_beach_802C7AD0,func_beach_802C72E0},
+    {123,0x802c91cc,FactoryWrapper::ordinary,nullptr,func_beach_802C91CC,func_beach_802C8DB0},
+    {123,0x802c9204,FactoryWrapper::ordinary,nullptr,func_beach_802C9204,func_beach_802C8DB0},
+    {113,0x802c9a7c,FactoryWrapper::ground,nullptr,func_beach_802C9A7C,func_beach_802C9240},
+    {115,0x802ca05c,FactoryWrapper::ground,nullptr,func_beach_802CA05C,func_beach_802C9AC0},
+    {1005,0x802ca2bc,FactoryWrapper::ordinary,nullptr,func_beach_802CA2BC,func_beach_802CA148},
+    {1006,0x802cbda0,FactoryWrapper::ordinary_dl4,nullptr,func_beach_802CBDA0,func_beach_802CBCE0},
+};
+FactorySpec compiled_factory(std::int32_t course,std::uint32_t id,std::uint32_t factory) noexcept {
+    if (course==0) {
+        for (const auto& spec:beach_factories)
+            if (spec.actor_id==id && spec.identity==factory) return spec;
+    } else if (course==6) {
+        for (const auto& binding:rainbow::actor_factories()) {
+            if (binding.actor_id!=id || binding.factory!=factory) continue;
+            for (const auto& callback:rainbow::actor_callbacks())
+                if (callback.identity==binding.initial_state)
+                    return {id,factory,binding.wrapper==rainbow::ActorFactoryWrapper::ground ?
+                        FactoryWrapper::ground:FactoryWrapper::ordinary_dl4,
+                        binding.function,nullptr,callback.function};
+        }
+    }
+    return {};
+}
+bool initialized_definition(const actor::Resources& resources,const ActorDefinition& definition) {
+    if (definition.wire.bytes.size()!=16 || definition.wire.u32(0)!=definition.actor_id ||
+        definition.wire.u32(4)!=definition.factory_identity ||
+        definition.wire.u32(8)!=definition.change_block_identity ||
+        definition.wire.u32(12)!=definition.remove_identity) return false;
+    for (const auto& fact:detail::course_catalog(resources.course_id()).definitions)
+        if (fact.identity==definition.wire.guest_address && fact.actor_id==definition.actor_id &&
+            fact.factory_identity==definition.factory_identity && fact.initialization==definition.initialization &&
+            fact.change_block_identity==definition.change_block_identity &&
+            fact.remove_identity==definition.remove_identity && fact.singleton==definition.singleton)
+            return fact.actor_id!=0;
+    return false;
+}
 }
 OwnerStatus dispatch_event(IsleActorSource& actor, const menu::animation::CallbackEvent& event, EventServices context) noexcept {
     IsleActorSource* bound = nullptr;
@@ -42,7 +112,7 @@ OwnerStatus dispatch_event(IsleActorSource& actor, const menu::animation::Callba
     const auto category = static_cast<std::uint8_t>(event.event_id);
     if (nodes[event.node].parent == UINT32_MAX) {
         if (value == 0) return context.sound.stop_category(actor.object,category) ? OwnerStatus{} : rejected(OwnerError::services,"actor sound category stop");
-        const auto* header = static_cast<const beach::ActorAnimationHeader*>(actor.animHeader);
+        const auto* header = static_cast<const actor::ActorAnimationHeader*>(actor.animHeader);
         if (!header) return rejected(OwnerError::admission,"root sound callback without current header");
         if (header->sound_ids.empty()) return {};
         if (value < 1 || static_cast<std::size_t>(value) > header->sound_ids.size())
@@ -92,8 +162,8 @@ OwnerStatus step_source_animation(IsleActorSource& source,menu::animation::Insta
     return {};
 }
 OwnerStatus apply_source_animation(IsleActorSource& source,menu::animation::InstanceHandle instance,
-    const beach::ActorAnimationHeader* header,float start,bool force,const beach::ActorInitialization& initialization,
-    const beach::ActorResources& resources,EventServices context) noexcept {
+    const actor::ActorAnimationHeader* header,float start,bool force,const actor::ActorInitialization& initialization,
+    const actor::Resources& resources,EventServices context) noexcept {
     bool initialization_member=false,header_member=!header;
     std::size_t initialization_index=0;
     for (std::size_t i=0;i<resources.initializations().size();++i) if (&resources.initializations()[i]==&initialization) {
@@ -155,18 +225,20 @@ struct Owner::Impl {
         menu::animation::InstanceHandle instance;
         IsleGameObject* object = nullptr;
         IsleGameModel* model = nullptr;
-        const beach::ActorInitialization* initialization = nullptr;
-        const beach::ActorDefinition* definition = nullptr;
+        const actor::ActorInitialization* initialization = nullptr;
+        const actor::ActorDefinition* definition = nullptr;
+        const actor::AutomaticActorDefinition* automatic_definition = nullptr;
+        std::uint32_t spawn_helper = 0, spawn_written_fields = 0;
         scene::RenderMetadata render{};
         std::uint64_t insertion = 0;
-        std::array<IsleGameObject**,2> source_fields{};
+        std::array<IsleGameObject**,3> source_fields{};
         bool active = false, retiring = false, joined = false, cleaned = false, source_owned = false;
         bool logical = false, registered = false;
     };
     struct BlockEntry { Slot* slot = nullptr; int next = -1; };
     scene::Services& services;
     Owner* facade = nullptr;
-    const beach::ActorResources& resources;
+    const actor::Resources& resources;
     world::World& world;
     environment_sound::Environment& sound;
     focus::Detector& detector;
@@ -178,7 +250,7 @@ struct Owner::Impl {
     menu::EffectRuntime fx;
     IsleGameObject* particle_object = nullptr;
     IsleGameObject* effect_object = nullptr;
-    bool effects_publication_started = false;
+    bool particle_publication_started = false, effect_publication_started = false;
     std::array<Slot*,40> logical{};
     std::size_t logical_count = 0;
     std::array<BlockEntry,100> block_entries{};
@@ -186,21 +258,41 @@ struct Owner::Impl {
     std::size_t transform_cache = 0, pokemon_cache = 0;
     std::uint64_t insertion = 0;
     IslePlayerSource& player;
-    CourseState course;
+    CourseContext course_context;
+    bool sound_enabled = true;
     InteractionServices* interactions = nullptr;
-    // Beach func_beach_802C4340 configures inclusive IDs80..E4/link3.
-    // getFreePokemonId's cursor survives resets, as its source static does.
+    IsleBeachEndingServices ending_services{};
+    IsleBeachEndingSource ending{};
+    // Preserve existing standalone course callers; the original lifecycle
+    // publishes its actual registry configuration at503D38 before actors exist.
+    std::int32_t minimum_pokemon_id = 0x80, maximum_pokemon_id = 0xe4;
+    std::int32_t pokemon_link = 3, registry_arg3 = 5;
+    // getFreePokemonId's source static survives resets and reconfiguration.
     std::uint32_t pokemon_counter = 0;
+    // Synchronous factory transport capability; never retained by a process.
+    // No optional spawn field is read while this exact record is issued.
+    const world::Spawn* transforms_only_spawn=nullptr;
+    std::size_t transforms_only_definition=actor_no_index, transforms_only_automatic=actor_no_index;
+    std::uint32_t transforms_only_helper=0, transforms_only_written_fields=0;
+    const IsleActorFactorySpawn* factory_transport=nullptr;
+    // Cold proof over immutable copied capacities and admitted resource shapes;
+    // never records occupancy, Source state or future child reservations.
+    bool rainbow_capacity_shape=false;
 
-    Impl(scene::Services& s,const beach::ActorResources& r,world::World& w,environment_sound::Environment& e,
+    Impl(scene::Services& s,const actor::Resources& r,CourseContext state,world::World& w,environment_sound::Environment& e,
          focus::Detector& d,IslePlayerSource& p,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
          menu::animation::ExecutionCapacity execution)
         : services(s),resources(r),world(w),sound(e),detector(d),capacities(c.begin(),c.end()),slots(c.size()),bindings(c.size()),
-          fx(banks,s.rng,{this,read_target,write_target}),block_heads(w.blocks().size(),-1),player(p) {
+          fx(banks,s.rng,{this,read_target,write_target}),block_heads(w.blocks().size(),-1),player(p),course_context(state) {
         resources.require_live();
-        const auto& scalars=resources.scene_initial_scalars();
-        course.lapras_counters=scalars.lapras_counters;
-        course.pidgey_counter=scalars.pidgey_counter;
+        course_context.require_live();
+        const auto setup_identity=course_context.course_id()==0?0x8011b914u:0x800f5da0u;
+        if (resources.course_id()!=course_context.course_id() || !w.resources().setup ||
+            w.resources().setup->wire.guest_address!=setup_identity)
+            throw std::invalid_argument("actor owner requires matching typed course resources and actual World setup");
+        if (course_context.course_id()==6 && course_context.rainbow().actors.nativeGame &&
+            course_context.rainbow().actors.nativeGame!=s.game)
+            throw std::invalid_argument("Rainbow actor state is bound to another native Game");
         IslePlayerSource* active=nullptr;
         if (p.game!=s.game || isle_player_source_context(s.game,&active)!=ISLE_GAME_OK || active!=&p)
             throw std::invalid_argument("actor owner requires active same-game canonical Player Source");
@@ -211,7 +303,7 @@ struct Owner::Impl {
             maximum_nodes=std::max(maximum_nodes,c[i].nodes);
         }
         scratch.resize(maximum_nodes);
-        auto result=menu::animation::Runtime::create({r.models(),r.materials(),r.animations(),menu::no_index,{}},c,{},execution);
+        auto result=menu::animation::Runtime::create({r.models(),r.materials(),r.animations(),menu::no_index,r.paths()},c,{},execution);
         if (!result) throw std::runtime_error("actor animation Runtime admission failed");
         runtime=std::move(result.runtime);
     }
@@ -222,6 +314,23 @@ struct Owner::Impl {
     }
     const Slot* find(menu::animation::InstanceHandle handle,bool retiring=false) const noexcept {
         return const_cast<Impl*>(this)->find(handle,retiring);
+    }
+    OwnerStatus publish_fx(bool& started,std::uint32_t id,IsleGameCallback update,IsleGameObject*& output) noexcept {
+        if (services.failed())
+            return rejected(OwnerError::services,"actor FX publication requires live Services");
+        if (started)
+            return rejected(OwnerError::lifetime,"actor FX helper already published or publication attempted");
+        started=true;
+        auto* object=services.object(id);
+        if (!object) return rejected(OwnerError::services,"actor FX native allocation failed");
+        if (!services.set_lifecycle(object,{nullptr,fx_joined,this})) {
+            services.erase(object);
+            return rejected(OwnerError::services,"actor FX join observer installation failed");
+        }
+        output=object;
+        if (services.set_update(object,update,this)) return {};
+        services.erase(object);
+        return rejected(OwnerError::services,"actor FX native update publication failed");
     }
     static void fx_joined(IsleGameObject* object,void* user) noexcept {
         auto& self=*static_cast<Impl*>(user);
@@ -280,18 +389,13 @@ struct Owner::Impl {
         return {};
     }
     EventServices event_services(Slot& slot) noexcept {
-        return {services,sound,fx,*runtime,slot.model,course.sound_enabled,particle_object,effect_object};
+        return {services,sound,fx,*runtime,slot.model,sound_enabled,particle_object,effect_object};
     }
     OwnerStatus step(Slot& slot) noexcept {
         return step_source_animation(slot.source,slot.instance,event_services(slot));
     }
-    OwnerStatus animation(Slot& slot,const beach::ActorAnimationHeader* header,float start,bool force) noexcept {
+    OwnerStatus animation(Slot& slot,const actor::ActorAnimationHeader* header,float start,bool force) noexcept {
         return apply_source_animation(slot.source,slot.instance,header,start,force,*slot.initialization,resources,event_services(slot));
-    }
-    void focus_cleanup(Slot& slot) noexcept {
-        if (player.D_80382C3C_52304C && player.gPreviousPokemonInFocus==slot.object) {
-            player.gPreviousPokemonInFocus=nullptr; player.D_80382C3C_52304C=0;
-        }
     }
     void unlink_logical(Slot& slot) noexcept {
         if (!slot.logical) return;
@@ -317,6 +421,13 @@ struct Owner::Impl {
             if (entry.slot==&slot) { *link=entry.next; entry={}; slot.registered=false; return; }
             link=&entry.next;
         }
+    }
+    void focus_cleanup(Slot& slot) noexcept {
+        auto* const previous_focus=player.gPreviousPokemonInFocus;
+        isle_player_func_80357428_4F7838(&player,slot.object);
+        if (services.source_owner_registered(player.object) &&
+            !services.source_reference_reconcile(player.object,&player.gPreviousPokemonInFocus,previous_focus))
+            services.fail("actor Player focus cleanup reference reconciliation");
     }
     void invalidate(Slot& slot) noexcept {
         detector.cleanup(reinterpret_cast<focus::Object>(slot.object));
@@ -397,6 +508,82 @@ struct Owner::Impl {
 };
 
 struct SourceAccess {
+    static IsleGameResult rainbow_context(IsleGame* game,IsleRainbowActorSource** output,
+        Owner** admitted_owner=nullptr) noexcept {
+        if (output) *output=nullptr;
+        if (admitted_owner) *admitted_owner=nullptr;
+        if (!game || !output) return ISLE_GAME_INVALID_ARGUMENT;
+        const auto status=isle_actor_source_execution_status(game);
+        if (status!=ISLE_GAME_OK) return status;
+        IslePlayerSource* player=nullptr;
+        const auto read=isle_player_source_context(game,&player);
+        if (read!=ISLE_GAME_OK) return read;
+        if (!player || player->game!=game || player->status!=ISLE_GAME_OK ||
+            !player->owner || !player->native_root) return ISLE_GAME_INVALID_STATE;
+        auto& root=*static_cast<isle::player::Root*>(player->native_root);
+        if (&root.source()!=player) return ISLE_GAME_INVALID_STATE;
+        auto* owner=root.bound_actors();
+        if (!owner || &owner->player_source()!=player) return ISLE_GAME_INVALID_STATE;
+        try {
+            auto& self=*owner->impl_;
+            // Original destroyWorld marks logical retirement before invoking
+            // removal/cleanup callbacks. Their retained canonical association
+            // remains valid until detach; new-work entry points close separately.
+            if (self.services.game!=game || self.services.failed() ||
+                !self.world.error().empty() ||
+                self.course_context.course_id()!=6 || self.resources.course_id()!=6 ||
+                !self.world.resources().setup ||
+                self.world.resources().setup->wire.guest_address!=0x800f5da0u)
+                return ISLE_GAME_INVALID_STATE;
+            self.resources.require_live();
+            auto& state=self.course_context.rainbow();
+            auto& source=state.actors;
+            const auto& lifecycle=state.source;
+            if (!source.owner || lifecycle.owner!=source.owner || lifecycle.actors!=&source ||
+                !lifecycle.domain || lifecycle.status!=ISLE_GAME_OK ||
+                (lifecycle.player && lifecycle.player!=player) || source.status!=ISLE_GAME_OK ||
+                source.nativeGame!=game || !source.services ||
+                (source.phase!=ISLE_RAINBOW_ACTOR_ACTIVE && source.phase!=ISLE_RAINBOW_ACTOR_PREPARED))
+                return ISLE_GAME_INVALID_STATE;
+            if (source.phase==ISLE_RAINBOW_ACTOR_PREPARED) {
+                // Only activate's provisional nonexecuting lookup is allowed.
+                // require_live intentionally rejects these provisional fields.
+                if (source.nonwaiting_call_frame || isle_game_require_idle(game)!=ISLE_GAME_OK)
+                    return ISLE_GAME_INVALID_STATE;
+            } else state.require_live();
+            if (self.interactions &&
+                !self.interactions->matches(*owner,self.services,self.resources,self.world,self.detector))
+                return ISLE_GAME_INVALID_STATE;
+            *output=&source;
+            if (admitted_owner) *admitted_owner=owner;
+            return ISLE_GAME_OK;
+        } catch (...) { return ISLE_GAME_INVALID_STATE; }
+    }
+    static IsleGameResult rainbow_admission(IsleRainbowActorSource* source) noexcept {
+        if (!source) return ISLE_GAME_INVALID_ARGUMENT;
+        if (source->phase!=ISLE_RAINBOW_ACTOR_ACTIVE || !source->nativeGame)
+            return ISLE_GAME_INVALID_STATE;
+        IsleRainbowActorSource* canonical=nullptr;
+        Owner* owner=nullptr;
+        const auto context=rainbow_context(source->nativeGame,&canonical,&owner);
+        if (context!=ISLE_GAME_OK) return context;
+        if (canonical!=source || source->phase!=ISLE_RAINBOW_ACTOR_ACTIVE)
+            return ISLE_GAME_INVALID_STATE;
+        if (!owner) return ISLE_GAME_INVALID_STATE;
+        auto& self=*owner->impl_;
+        if (!self.rainbow_capacity_shape || !self.interactions || !self.interactions->admits_source())
+            return ISLE_GAME_INVALID_STATE;
+        return ISLE_GAME_OK;
+    }
+    static Owner::Impl::Slot* ending_slot(IsleActorSource* source) noexcept {
+        auto* result=slot(source);
+        if (!result || source->id!=1001 || !result->owner->ending_services.context ||
+            source->initData!=result->initialization ||
+            result->initialization->wire.guest_address!=0x802cda10u) return nullptr;
+        auto& self=*result->owner;
+        return self.ending.player==&self.player &&
+            self.ending_services.validate(self.ending_services.context,&self.ending)==ISLE_GAME_OK ? result : nullptr;
+    }
     static Owner::Impl::Slot* slot(IsleActorSource* source) noexcept {
         if (!source || !source->owner || !source->game || !source->object) return nullptr;
         IsleActorSource* bound=nullptr;
@@ -405,6 +592,10 @@ struct SourceAccess {
         if (&slot->source!=source || !slot->active || slot->retiring || slot->object!=source->object ||
             slot->owner->services.game!=source->game ||
             isle_game_model_validate_binding(source->game,slot->object,slot->model)!=ISLE_GAME_OK) return nullptr;
+        if (slot->owner->course_context.course_id()==6) {
+            auto& course_source=slot->owner->course_context.rainbow().actors;
+            if (rainbow_admission(&course_source)!=ISLE_GAME_OK) return nullptr;
+        }
         return slot;
     }
     static Owner::Impl::Slot* retained_scope_slot(IsleActorSource* source) noexcept {
@@ -448,6 +639,48 @@ struct SourceAccess {
         }
         return result;
     }
+    static IsleGameObject* factory(std::int32_t object_id,std::uint16_t id,
+        IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
+        const IsleActorFactoryInitialization* initialization,FactoryWrapper wrapper) noexcept {
+        if (!block || !reference || !spawn || !initialization || !block->owner ||
+            reference->owner!=block->owner || !block->result || reference->result!=block->result) return nullptr;
+        auto& owner=*static_cast<Owner*>(block->owner);
+        auto& self=*owner.impl_;
+        auto& result=*static_cast<SpawnResult*>(block->result);
+        const auto fail=[&]() {
+            result={{OwnerError::admission,"source wrapper differs from issued compiled factory proof"},{},nullptr};
+            return static_cast<IsleGameObject*>(nullptr);
+        };
+        if (self.factory_transport!=spawn || spawn->definition>=self.resources.definitions().size()) return fail();
+        const auto& definition=self.resources.definitions()[spawn->definition];
+        const auto* init=owner.admitted_factory(id,definition.factory_identity);
+        if (!init || definition.actor_id!=id || init->wire.guest_address!=initialization->identity ||
+            definition.initialization>=self.resources.initializations().size() ||
+            &self.resources.initializations()[definition.initialization]!=init) return fail();
+        const auto spec=compiled_factory(self.resources.course_id(),id,definition.factory_identity);
+        auto expected=spec.wrapper;
+        const auto* descriptor=static_cast<const world::Spawn*>(spawn->spawn);
+        if (expected==FactoryWrapper::meowth) {
+            if (!descriptor || descriptor==self.transforms_only_spawn || spawn->behavior!=&descriptor->behavior) return fail();
+            expected=*spawn->behavior==1?FactoryWrapper::ordinary:FactoryWrapper::ground;
+        } else if (spawn->behavior) return fail();
+        if (expected!=wrapper) return fail();
+        const SpawnRequest request{static_cast<std::uint32_t>(object_id),spawn->definition,
+            static_cast<world::Block*>(block->block),static_cast<world::Block*>(reference->block),
+            descriptor,spawn->automatic_definition};
+        result=wrapper==FactoryWrapper::ordinary || wrapper==FactoryWrapper::ordinary_dl4 ?
+            spawn_ordinary(owner,request,id,initialization->identity):SourceAccess::spawn(owner,request,id,initialization->identity);
+        if (result && (wrapper==FactoryWrapper::ground_dl4 || wrapper==FactoryWrapper::ordinary_dl4)) {
+            auto* slot=self.find(result.instance);
+            if (!slot) return fail();
+            slot->render={4,0x80000000u,UINT32_MAX};
+            if (!self.services.set_render(slot->object,slot->render)) {
+                self.services.erase(slot->object);
+                result={{OwnerError::services,"actor source late DL4 move"},{},nullptr};
+            }
+        }
+        return result.object;
+    }
     static const menu::AnimationPath* path(Owner::Impl::Slot& slot,const void* value) noexcept {
         if (!value || slot.owner->world.retired() || !slot.owner->world.error().empty()) return nullptr;
         for (const auto& candidate:slot.owner->world.resources().paths)
@@ -472,38 +705,97 @@ struct SourceAccess {
         return status.error==OwnerError::admission?ISLE_GAME_INVALID_ARGUMENT:ISLE_GAME_INVALID_STATE;
     }
 };
-Owner::Owner(scene::Services& s,const beach::ActorResources& r,world::World& w,environment_sound::Environment& e,
+OwnerStatus Owner::bind_ending(IsleBeachEndingServices services, IsleBeachMusicSource& music,
+    const rom::Snapshot& snapshot) noexcept {
+    auto& self=*impl_;
+    if (self.ending_services.context || self.services.failed() || music.player!=&self.player ||
+        !services.context || !services.validate || !services.release || !services.remove_items ||
+        !services.reset_message || !services.reset_camera || !services.start_cutscene ||
+        !services.camera || !services.cart_init || !services.cart_animation ||
+        !services.cart_retain || !services.cart_callback ||
+        std::any_of(self.slots.begin(),self.slots.end(),[](const auto& slot) { return slot.active; }))
+        return rejected(OwnerError::admission,"ending requires a complete stable service binding before spawn");
+    const auto bytes=snapshot.canonical();
+    // Snapshot construction already admits the exact US identity; an empty
+    // canonical view identifies a moved-from owner without rehashing/copying.
+    if (bytes.size()!=rom::us_size)
+        return rejected(OwnerError::admission,"ending data requires admitted US Snapshot");
+    const auto u16=[&](std::size_t at) { return static_cast<std::uint16_t>(
+        std::to_integer<unsigned>(bytes[at])*256u+std::to_integer<unsigned>(bytes[at+1])); };
+    const auto u32=[&](std::size_t at) { return static_cast<std::uint32_t>(u16(at))*65536u+u16(at+2); };
+    // Exact Beach .data offset = guest-0x802cc004+ROM0x564074.
+    const auto signed32=[](std::uint32_t value) { return value<=INT32_MAX?
+        static_cast<std::int32_t>(value):-1-static_cast<std::int32_t>(UINT32_MAX-value); };
+    self.ending.D_beach_802CD9D0=signed32(u32(0x565a40));
+    self.ending.D_beach_802CD9D4=signed32(u32(0x565a44));
+    self.ending.exceptions[0]=u16(0x565a68);
+    self.ending.exceptions[1]=u16(0x565a6a);
+    self.ending.sky_speed=std::bit_cast<float>(u32(0xa7db4));
+    if (self.ending.exceptions[0]!=1001 || self.ending.exceptions[1]!=0 ||
+        !std::isfinite(self.ending.sky_speed))
+        return rejected(OwnerError::admission,"ending exception/sky source data is invalid");
+    self.ending.player=&self.player;
+    self.ending.music=&music;
+    if (services.validate(services.context,&self.ending)!=ISLE_GAME_OK)
+        return rejected(OwnerError::admission,"ending provider does not match canonical course domains");
+    self.ending_services=services;
+    return {};
+}
+OwnerStatus Owner::release_ending() noexcept {
+    auto& self=*impl_;
+    if (!self.ending_services.context) return {};
+    for (const auto& slot:self.slots) if (slot.active)
+        return rejected(OwnerError::lifetime,"ending release requires actor reset/native joins");
+    if (self.ending_services.release(self.ending_services.context)!=ISLE_GAME_OK)
+        return rejected(OwnerError::lifetime,"ending provider native/cart/camera joins remain");
+    self.ending.D_beach_80347658=nullptr;
+    self.ending_services={};
+    return {};
+}
+Owner::Owner(scene::Services& s,const actor::Resources& r,CourseContext state,world::World& w,environment_sound::Environment& e,
              focus::Detector& d,IslePlayerSource& p,std::span<const menu::animation::SlotCapacity> c,std::span<const menu::EffectBank* const> banks,
-             menu::animation::ExecutionCapacity execution) : impl_(std::make_unique<Impl>(s,r,w,e,d,p,c,banks,execution)) {
+             menu::animation::ExecutionCapacity execution) : impl_(std::make_unique<Impl>(s,r,state,w,e,d,p,c,banks,execution)) {
     impl_->facade=this;
+    if (state.course_id()==6) {
+        impl_->rainbow_capacity_shape=[this]() {
+            for (const auto& factory:rainbow::actor_factories()) {
+                const auto* init=admitted_factory(factory.actor_id,factory.factory);
+                if (!init || init->model>=impl_->resources.models().size()) return false;
+                const auto required=menu::animation::slot_capacity(impl_->resources.models()[init->model]);
+                bool fits=false;
+                for (const auto& capacity:impl_->capacities) {
+                    if (capacity.nodes>=required.nodes && capacity.material_attachments>=required.material_attachments) {
+                        fits=true;
+                        break;
+                    }
+                }
+                if (!fits) return false;
+            }
+            return true;
+        }();
+    }
+}
+OwnerStatus Owner::publish_particle_camera() noexcept {
+    auto& self=*impl_;
+    return self.publish_fx(self.particle_publication_started,static_cast<std::uint32_t>(-6),
+        Impl::particles_tick,self.particle_object);
+}
+OwnerStatus Owner::publish_effect_emitters() noexcept {
+    auto& self=*impl_;
+    return self.publish_fx(self.effect_publication_started,static_cast<std::uint32_t>(-7),
+        Impl::effects_tick,self.effect_object);
 }
 OwnerStatus Owner::publish_effects() noexcept {
     auto& self=*impl_;
-    if (self.services.failed())
-        return rejected(OwnerError::services,"actor FX publication requires live Services");
-    if (self.effects_publication_started)
-        return rejected(OwnerError::lifetime,"actor FX helpers already published or publication attempted");
-    self.effects_publication_started=true;
-    const auto publish=[&](std::uint32_t id,IsleGameCallback update,IsleGameObject*& output) {
-        auto* object=self.services.object(id);
-        if (!object) return false;
-        if (!self.services.set_lifecycle(object,{nullptr,Impl::fx_joined,&self})) {
-            // No Impl observer/update was installed; Services retains ownership
-            // through its real deletion even if this operation failed.
-            self.services.erase(object);
-            return false;
-        }
-        output=object;
-        return self.services.set_update(object,update,&self);
-    };
-    if (publish(static_cast<std::uint32_t>(-6),Impl::particles_tick,self.particle_object) &&
-        publish(static_cast<std::uint32_t>(-7),Impl::effects_tick,self.effect_object))
-        return {};
-    // A failed late publication is terminal, not an invented source retry.
-    // Only actual joined callbacks clear handles, including deferred deletion.
+    // Reject mixed/repeated bulk use without deleting a separately owned helper.
+    if (self.particle_publication_started || self.effect_publication_started)
+        return rejected(OwnerError::lifetime,"actor bulk FX publication already started");
+    auto result=publish_particle_camera();
+    if (result) result=publish_effect_emitters();
+    if (result) return {};
     if (self.particle_object) self.services.erase(self.particle_object);
     if (self.effect_object) self.services.erase(self.effect_object);
-    return rejected(OwnerError::services,"actor shared source FX publication failed");
+    return result;
 }
 Owner::~Owner() {
     if (!reset()) {
@@ -512,50 +804,122 @@ Owner::~Owner() {
         for (auto& slot:impl_->slots) if (slot.active && !slot.retiring) impl_->services.erase(slot.object);
         if (!collect_joined()) std::terminate();
     }
+    if (!release_ending()) std::terminate();
     if (impl_->particle_object) impl_->services.erase(impl_->particle_object);
     if (impl_->effect_object) impl_->services.erase(impl_->effect_object);
     if (impl_->particle_object || impl_->effect_object) std::terminate();
 }
+const ActorInitialization* Owner::admitted_factory(std::uint32_t id,std::uint32_t factory) const noexcept {
+    try {
+        const auto& self=*impl_;
+        self.resources.require_live();
+        if (self.resources.course_id()!=self.course_context.course_id() ||
+            !self.world.resources().setup || self.world.resources().setup->wire.guest_address!=
+                detail::course_catalog(self.resources.course_id()).world_setup_identity) return nullptr;
+        const auto spec=compiled_factory(self.resources.course_id(),id,factory);
+        if (!spec.identity || !spec.initial_state || (!!spec.returning==!!spec.nonreturning)) return nullptr;
+        const auto& catalog=detail::course_catalog(self.resources.course_id());
+        for (std::size_t i=0;i<catalog.initializations.size();++i) {
+            const auto& fact=catalog.initializations[i];
+            if (fact.actor_id!=id) continue;
+            if (i>=self.resources.initializations().size()) return nullptr;
+            const auto& init=self.resources.initializations()[i];
+            if (init.actor_id!=id || init.wire.guest_address!=fact.identity || init.wire.bytes.size()!=52 ||
+                init.wire.u32(0)!=fact.model_identity || init.wire.u32(4)!=fact.material_table_identity ||
+                init.wire.u32(8)!=fact.render_identity || init.wire.u32(12)!=fact.setup_identity ||
+                init.render_callback_identity!=fact.render_identity || init.model>=self.resources.models().size() ||
+                init.textures_present!=(fact.material_table_identity!=0) ||
+                init.setup.wire.guest_address!=fact.setup_identity || init.setup.wire.bytes.size()!=20 ||
+                init.setup.initial_state_identity!=fact.initial_state_identity ||
+                init.setup.process_kind!=fact.process_kind || init.setup.unknown_0c_identity!=fact.unknown_0c_identity ||
+                init.setup.transition_graph_identity!=fact.transition_graph_identity ||
+                init.setup.wire.u32(0)!=fact.initial_header_identity ||
+                init.setup.wire.u32(4)!=fact.initial_state_identity ||
+                std::bit_cast<std::int8_t>(init.setup.wire.u8(8))!=fact.process_kind ||
+                init.setup.wire.u32(12)!=fact.unknown_0c_identity ||
+                init.setup.wire.u32(16)!=fact.transition_graph_identity) return nullptr;
+            const auto& model=self.resources.models()[init.model];
+            if (model.tree.guest_address!=fact.model_identity || model.nodes.size()!=fact.nodes ||
+                model.material_table.guest_address!=fact.material_table_identity) return nullptr;
+            if (!fact.initial_header_identity) {
+                if (init.animations_enabled || init.setup.initial_header!=actor_no_index) return nullptr;
+            } else {
+                if (!init.animations_enabled || init.setup.initial_header>=self.resources.headers().size()) return nullptr;
+                const auto& header=self.resources.headers()[init.setup.initial_header];
+                if (header.wire.guest_address!=fact.initial_header_identity || header.initialization!=i) return nullptr;
+            }
+            if (self.resources.course_id()==6) {
+                bool matched=false;
+                for (const auto& binding:rainbow::actor_factories())
+                    if (binding.actor_id==id && binding.factory==factory &&
+                        binding.initialization==fact.identity && binding.initial_state==fact.initial_state_identity &&
+                        binding.function==spec.returning) matched=true;
+                if (!matched) return nullptr;
+            }
+            return &init;
+        }
+    } catch (...) {}
+    return nullptr;
+}
+InteractionServices* Owner::bound_interactions() const noexcept { return impl_->interactions; }
 SpawnResult Owner::spawn(const SpawnRequest& request) noexcept {
-    if (request.definition>=impl_->resources.definitions().size())
+    auto& self=*impl_;
+    if (self.world.retired())
+        return {{OwnerError::admission,"actor factory cannot enter a retiring World"},{},nullptr};
+    if (request.definition>=self.resources.definitions().size())
         return {{OwnerError::admission,"actor definition outside admitted resources"},{},nullptr};
-    const auto& definition=impl_->resources.definitions()[request.definition];
-    const bool common=definition.factory_identity==0x8035e0d4u && definition.actor_id==1003;
-    const bool magikarp=definition.factory_identity==0x802cac48u && definition.actor_id==129;
-    const bool butterfree=definition.factory_identity==0x802c7e38u && definition.actor_id==12;
-    const bool doduo=definition.factory_identity==0x802c8570u && definition.actor_id==84;
-    const bool lapras=definition.factory_identity==0x802c8274u && definition.actor_id==131;
-    const bool pidgey=definition.factory_identity==0x802c8d3cu && definition.actor_id==16;
-    const bool pikachu=definition.factory_identity==0x802cbca8u && definition.actor_id==25;
-    const bool sign=definition.factory_identity==0x802ca418u && definition.actor_id==1004;
-    if (!common && !magikarp && !butterfree && !doduo && !lapras && !pidgey && !pikachu && !sign)
-        return {{OwnerError::admission,"configured factory identity is not natively admitted"},{},nullptr};
+    const auto& definition=self.resources.definitions()[request.definition];
+    if (!initialized_definition(self.resources,definition) ||
+        !admitted_factory(definition.actor_id,definition.factory_identity))
+        return {{OwnerError::admission,"configured source factory tuple/origin is not admitted"},{},nullptr};
+    if (self.course_context.course_id()==6) {
+        auto& source=self.course_context.rainbow().actors;
+        if (SourceAccess::rainbow_admission(&source)!=ISLE_GAME_OK)
+            return {{OwnerError::admission,"Rainbow factory requires ACTIVE canonical complete Source closure"},{},nullptr};
+    }
+    const auto spec=compiled_factory(self.resources.course_id(),definition.actor_id,definition.factory_identity);
+    const bool unwritten=request.spawn && request.spawn==self.transforms_only_spawn;
+    if (spec.wrapper==FactoryWrapper::meowth && (!request.spawn || unwritten))
+        return {{OwnerError::admission,"original Meowth factory requires its actual written behavior borrow"},{},nullptr};
+    if (self.factory_transport)
+        return {{OwnerError::admission,"source factory transport is already in use"},{},nullptr};
     SpawnResult result{{OwnerError::admission,"source factory did not publish a result"},{},nullptr};
     IsleActorFactoryBlock block{this,request.block,&result},reference{this,request.reference,&result};
-    IsleActorFactorySpawn spawn{request.spawn,request.definition};
-    if (common)
-        func_8035E0D4_4FE4E4(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
-    else if (butterfree)
-        func_beach_802C7E38(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
-    else if (doduo)
-        func_beach_802C8570(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
-    else if (lapras)
-        func_beach_802C8274(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
-    else if (pidgey)
-        func_beach_802C8D3C(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
-    else if (pikachu)
-        func_beach_802CBCA8(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
-    else if (sign)
-        func_beach_802CA418(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
-    else
-        func_beach_802CAC48(static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),&block,&reference,&spawn);
+    IsleActorFactorySpawn spawn{request.spawn,request.definition,
+        spec.wrapper==FactoryWrapper::meowth?&request.spawn->behavior:nullptr,request.automatic_definition};
+    IsleGameObject* returned=nullptr;
+    self.factory_transport=&spawn;
+    const auto called=isle_actor_source_factory_call(self.services.game,spec.returning,spec.nonreturning,
+        static_cast<int32_t>(request.object_id),static_cast<uint16_t>(definition.actor_id),
+        &block,&reference,&spawn,&returned);
+    self.factory_transport=nullptr;
+    if (called!=ISLE_GAME_OK)
+        return {{OwnerError::native,"original C factory fence failed"},{},nullptr};
+    if (spec.returning && returned!=result.object)
+        return {{OwnerError::native,"original C factory returned a different publication"},{},nullptr};
     return result;
+}
+OwnerStatus Owner::configure_registry(std::int32_t minimum,std::int32_t maximum,
+    std::int32_t link,std::int32_t arg3) noexcept {
+    auto& self=*impl_;
+    if (self.services.failed()) return rejected(OwnerError::services,"registry configuration requires live Services");
+    if (minimum<0 || maximum<minimum || link<0 || link>=32)
+        return rejected(OwnerError::admission,"source registry ID range/native link is invalid");
+    for (const auto& slot:self.slots) if (slot.active)
+        return rejected(OwnerError::lifetime,"source registry configuration precedes all actor publication");
+    self.minimum_pokemon_id=minimum;
+    self.maximum_pokemon_id=maximum;
+    self.pokemon_link=link;
+    self.registry_arg3=arg3;
+    self.block_entries.fill({});
+    return {};
 }
 SpawnResult Owner::add_one(std::size_t definition,world::Block* block,world::Block* reference,
                            const world::Spawn& descriptor) noexcept {
     auto& self=*impl_;
     // Exact source cursor/two half-open searches and inclusive max fallback.
-    constexpr std::uint32_t minimum=0x80,maximum=0xe4;
+    const auto minimum=static_cast<std::uint32_t>(self.minimum_pokemon_id);
+    const auto maximum=static_cast<std::uint32_t>(self.maximum_pokemon_id);
     if (++self.pokemon_counter>maximum-minimum) self.pokemon_counter=0;
     std::uint32_t id=maximum;
     for (unsigned pass=0;pass<2 && id==maximum;++pass) {
@@ -563,12 +927,131 @@ SpawnResult Owner::add_one(std::size_t definition,world::Block* block,world::Blo
         const auto last=pass?minimum+self.pokemon_counter:maximum;
         for (auto candidate=first;candidate<last;++candidate) {
             int used=0;
-            if (isle_actor_source_id_in_use(self.services.game,candidate,&used)!=ISLE_GAME_OK)
+            if (isle_actor_source_id_in_use_link(self.services.game,static_cast<std::uint8_t>(self.pokemon_link),candidate,&used)!=ISLE_GAME_OK)
                 return {{OwnerError::native,"source native ID search failed"},{},nullptr};
             if (!used) { id=candidate; break; }
         }
     }
-    return spawn({id,definition,block,reference,&descriptor});
+    return spawn({id,definition,block,reference,&descriptor,
+        &descriptor==self.transforms_only_spawn?self.transforms_only_automatic:actor_no_index});
+}
+SpawnResult Owner::add_one_magikarp_unwritten(std::size_t definition,world::Block* block,
+    world::Block* reference,IsleGameVec3 translation,IsleGameVec3 euler,IsleGameVec3 scale) noexcept {
+    auto& self=*impl_;
+    if (self.course_context.course_id()!=0 || definition>=self.resources.definitions().size() || self.transforms_only_spawn)
+        return {{OwnerError::admission,"unwritten Magikarp factory transport invalid"},{},nullptr};
+    const auto& def=self.resources.definitions()[definition];
+    if (def.wire.guest_address!=0x802cbff4u || def.actor_id!=129 || def.factory_identity!=0x802cac48u ||
+        !initialized_definition(self.resources,def) || !admitted_factory(def.actor_id,def.factory_identity))
+        return {{OwnerError::admission,"unwritten fields belong only to standalone original CBFF4"},{},nullptr};
+    world::Spawn spawn{};
+    spawn.id=129;
+    spawn.position={translation.x,translation.y,translation.z};
+    spawn.rotation={euler.x,euler.y,euler.z};
+    spawn.scale={scale.x,scale.y,scale.z};
+    self.transforms_only_spawn=&spawn;
+    self.transforms_only_definition=definition;
+    self.transforms_only_helper=0x802cbff4u;
+    self.transforms_only_written_fields=ISLE_RAINBOW_SPAWN_ID_TRANSFORMS;
+    const auto result=add_one(definition,block,reference,spawn);
+    self.transforms_only_spawn=nullptr;
+    self.transforms_only_definition=actor_no_index;
+    self.transforms_only_helper=0;
+    self.transforms_only_written_fields=0;
+    return result;
+}
+SpawnResult Owner::add_one_rainbow(const IsleRainbowDefinition& definition,
+    const IsleRainbowAutomaticSpawn& written,world::Block* block,world::Block* reference) noexcept {
+    auto& self=*impl_;
+    const auto reject=[](const char* detail) {
+        return SpawnResult{{OwnerError::admission,detail},{},nullptr};
+    };
+    if (self.course_context.course_id()!=6 || self.transforms_only_spawn ||
+        !block || block!=self.world.current() || reference!=block ||
+        written.written_fields!=ISLE_RAINBOW_SPAWN_ID_TRANSFORMS ||
+        written.id<0 || static_cast<std::uint32_t>(written.id)!=definition.actor_id)
+        return reject("Rainbow child requires its current canonical block and exact written-field mask");
+    if (SourceAccess::rainbow_admission(&self.course_context.rainbow().actors)!=ISLE_GAME_OK)
+        return reject("Rainbow child requires ACTIVE complete canonical Source admission");
+    bool origin=false;
+    for (const auto& child:rainbow::actor_child_factories()) {
+        const auto& fact=child.definition;
+        if (child.helper_identity==written.helper_identity && child.written_fields==written.written_fields &&
+            fact.identity==definition.identity && fact.origin==definition.origin &&
+            fact.actor_id==definition.actor_id && fact.factory==definition.factory &&
+            fact.change_block==definition.change_block && fact.remove==definition.remove &&
+            fact.initialization==definition.initialization) origin=true;
+    }
+    const auto* initialization=admitted_factory(definition.actor_id,definition.factory);
+    if (!origin || !initialization || initialization->wire.guest_address!=definition.initialization)
+        return reject("Rainbow child helper/definition/factory/init origin differs from compiled Source");
+    std::size_t automatic=actor_no_index;
+    if (!definition.identity) {
+        const auto facts=detail::rainbow_catalog().automatic_definitions;
+        const auto actual=self.resources.automatic_definitions();
+        for (std::size_t i=0;i<facts.size() && i<actual.size();++i) {
+            const auto& fact=facts[i]; const auto& candidate=actual[i];
+            if (fact.origin.function_identity==definition.origin &&
+                candidate.origin.function_identity==fact.origin.function_identity &&
+                candidate.origin.line==fact.origin.line && candidate.actor_id==definition.actor_id &&
+                candidate.factory_identity==definition.factory && candidate.change_block_identity==definition.change_block &&
+                candidate.remove_identity==definition.remove && candidate.initialization==fact.initialization &&
+                candidate.initialization<self.resources.initializations().size() &&
+                &self.resources.initializations()[candidate.initialization]==initialization)
+                automatic=i;
+        }
+        if (automatic==actor_no_index) return reject("Rainbow automatic Source function/line origin is not admitted");
+    }
+    std::size_t index=actor_no_index;
+    for (std::size_t i=0;i<self.resources.definitions().size();++i) {
+        const auto& candidate=self.resources.definitions()[i];
+        if ((definition.identity ? candidate.wire.guest_address==definition.identity && candidate.singleton : !candidate.singleton) &&
+            candidate.actor_id==definition.actor_id && candidate.factory_identity==definition.factory &&
+            candidate.change_block_identity==definition.change_block && candidate.remove_identity==definition.remove &&
+            candidate.initialization<self.resources.initializations().size() &&
+            &self.resources.initializations()[candidate.initialization]==initialization &&
+            initialized_definition(self.resources,candidate)) { index=i; break; }
+    }
+    if (index==actor_no_index) return reject("Rainbow child has no exact initialized resource family");
+    world::Spawn descriptor{};
+    descriptor.id=written.id;
+    descriptor.position={written.translation.x,written.translation.y,written.translation.z};
+    descriptor.rotation=written.euler;
+    descriptor.scale={written.scale.x,written.scale.y,written.scale.z};
+    self.transforms_only_spawn=&descriptor;
+    self.transforms_only_definition=index;
+    self.transforms_only_automatic=automatic;
+    self.transforms_only_helper=written.helper_identity;
+    self.transforms_only_written_fields=written.written_fields;
+    const auto result=add_one(index,block,reference,descriptor);
+    self.transforms_only_spawn=nullptr;
+    self.transforms_only_definition=actor_no_index;
+    self.transforms_only_automatic=actor_no_index;
+    self.transforms_only_helper=0;
+    self.transforms_only_written_fields=0;
+    return result;
+}
+OwnerStatus Owner::block_members(const world::Block& block,
+    std::span<menu::animation::InstanceHandle> output,std::size_t& written) const noexcept {
+    written=0;
+    const auto& self=*impl_;
+    if (block.index>=self.block_heads.size() || &self.world.blocks()[block.index]!=&block)
+        return rejected(OwnerError::admission,"block membership requires this World's canonical block");
+    std::size_t count=0;
+    for (int i=self.block_heads[block.index];i!=-1;) {
+        if (i<0 || static_cast<std::size_t>(i)>=self.block_entries.size() || ++count>self.block_entries.size())
+            return rejected(OwnerError::lifetime,"source block membership list is corrupt");
+        const auto& entry=self.block_entries[static_cast<std::size_t>(i)];
+        if (!entry.slot || !entry.slot->registered || !entry.slot->logical || entry.slot->retiring)
+            return rejected(OwnerError::lifetime,"source block list names a nonlogical actor");
+        i=entry.next;
+    }
+    if (count>output.size()) return rejected(OwnerError::capacity,"block membership output exhausted");
+    for (int i=self.block_heads[block.index];i!=-1;) {
+        const auto& entry=self.block_entries[static_cast<std::size_t>(i)];
+        output[written++]=entry.slot->instance; i=entry.next;
+    }
+    return {};
 }
 OwnerStatus Owner::step_walk(menu::animation::InstanceHandle handle, float velocity_x, float velocity_z,
                             std::uint32_t flags, bool& blocked) noexcept {
@@ -648,6 +1131,8 @@ OwnerStatus Owner::update_collisions() noexcept {
 SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     auto& self=*impl_;
     const auto reject=[](OwnerError error,const char* detail) { return SpawnResult{{error,detail},{},nullptr}; };
+    if (self.world.retired())
+        return reject(OwnerError::admission,"native actor factory cannot enter a retiring World");
     if (!request.block || !request.block->resource || !request.reference || !request.reference->resource || !request.spawn ||
         request.definition>=self.resources.definitions().size() || request.block->index>=self.block_heads.size())
         return reject(OwnerError::admission,"actor factory requires admitted definition, block, reference and spawn");
@@ -657,49 +1142,45 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     const auto& definition=self.resources.definitions()[request.definition];
     if (definition.initialization>=self.resources.initializations().size()) return reject(OwnerError::admission,"actor definition has no initialization");
     const auto& initialization=self.resources.initializations()[definition.initialization];
-    // Immutable actual source callable binding, not guest-pointer casts or a task registry.
-    const bool common=definition.actor_id==1003 && definition.factory_identity==0x8035e0d4u &&
-        initialization.wire.guest_address==0x80388348u && initialization.render_callback_identity==0x800a1608u &&
-        initialization.setup.wire.guest_address==0x80388334u && initialization.setup.initial_state_identity==0x8035df20u;
-    const bool magikarp=definition.actor_id==129 && definition.factory_identity==0x802cac48u &&
-        initialization.wire.guest_address==0x802cdaecu && initialization.render_callback_identity==0x803594dcu &&
-        initialization.setup.wire.guest_address==0x802cdad8u && initialization.setup.initial_state_identity==0x802cab50u;
-    const bool butterfree=definition.actor_id==12 && definition.factory_identity==0x802c7e38u &&
-        initialization.wire.guest_address==0x802ccda4u && initialization.render_callback_identity==0x803594dcu &&
-        initialization.setup.wire.guest_address==0x802ccd90u && initialization.setup.initial_state_identity==0x802c7b10u;
-    const bool doduo=definition.actor_id==84 && definition.factory_identity==0x802c8570u &&
-        initialization.wire.guest_address==0x802ccf78u && initialization.render_callback_identity==0x803594dcu &&
-        initialization.setup.wire.guest_address==0x802ccf64u && initialization.setup.initial_state_identity==0x802c82b0u;
-    const bool lapras=definition.actor_id==131 && definition.factory_identity==0x802c8274u &&
-        initialization.wire.guest_address==0x802cce50u && initialization.render_callback_identity==0x8035942cu &&
-        initialization.setup.wire.guest_address==0x802cce3cu && initialization.setup.initial_state_identity==0x802c7e70u;
-    const bool pidgey=definition.actor_id==16 && definition.factory_identity==0x802c8d3cu &&
-        initialization.wire.guest_address==0x802cd118u && initialization.render_callback_identity==0x8035942cu &&
-        initialization.setup.wire.guest_address==0x802cd104u && initialization.setup.initial_state_identity==0x802c85b0u;
-    const bool pikachu=definition.actor_id==25 && definition.factory_identity==0x802cbca8u &&
-        initialization.wire.guest_address==0x802ce038u && initialization.render_callback_identity==0x80359484u &&
-        initialization.setup.wire.guest_address==0x802ce024u && initialization.setup.initial_state_identity==0x802cacd4u;
-    const bool sign=definition.actor_id==1004 && definition.factory_identity==0x802ca418u &&
-        initialization.wire.guest_address==0x802cd948u && initialization.render_callback_identity==0x80359534u &&
-        initialization.setup.wire.guest_address==0x802cd934u && initialization.setup.initial_state_identity==0x802ca300u;
-    if ((!common && !magikarp && !butterfree && !doduo && !lapras && !pidgey && !pikachu && !sign) || initialization.setup.transition_graph_identity!=0 ||
-        initialization.setup.unknown_0c_identity!=0 || initialization.setup.process_kind!=0 ||
-        !initialization.animations_enabled)
-        return reject(OwnerError::admission,"configured actor factory/init/render/setup/state/graph tuple is not natively admitted");
-    if (initialization.model>=self.resources.models().size() || initialization.setup.initial_header>=self.resources.headers().size())
-        return reject(OwnerError::admission,"actor native tree/header missing");
-    const auto header_identity=common?0x80388310u:magikarp?0x802cda8cu:butterfree?0x802ccd24u:
-        doduo?0x802cceb0u:lapras?0x802cce08u:pidgey?0x802ccfd4u:pikachu?0x802cdb5cu:0x802cd920u;
-    if (self.resources.headers()[initialization.setup.initial_header].wire.guest_address!=header_identity ||
-        self.resources.headers()[initialization.setup.initial_header].initialization!=definition.initialization)
-        return reject(OwnerError::admission,"actor source initial header is not the configured tuple");
+    const auto* admitted=admitted_factory(definition.actor_id,definition.factory_identity);
+    if (admitted!=&initialization || !initialized_definition(self.resources,definition))
+        return reject(OwnerError::admission,"configured actor factory full tuple/origin is not natively admitted");
+    const auto spec=compiled_factory(self.resources.course_id(),definition.actor_id,definition.factory_identity);
+    const bool beach=self.course_context.course_id()==0;
+    const bool common=beach && definition.actor_id==1003;
+    const bool magikarp=beach && definition.actor_id==129;
+    const bool ending=beach && definition.actor_id==1001;
+    const actor::ActorAnimationHeader* initial_header=initialization.animations_enabled ?
+        &self.resources.headers()[initialization.setup.initial_header]:nullptr;
+    if (!beach) {
+        IsleRainbowActorSource* canonical=nullptr;
+        const auto& source=self.course_context.rainbow().actors;
+        if (source.phase!=ISLE_RAINBOW_ACTOR_ACTIVE ||
+            isle_rainbow_actor_native_context(self.services.game,&canonical)!=ISLE_GAME_OK || canonical!=&source)
+            return reject(OwnerError::admission,"Rainbow native factory requires ACTIVE canonical Source");
+    }
     if (request.spawn->id!=static_cast<std::int32_t>(definition.actor_id)) return reject(OwnerError::admission,"actor source spawn ID does not match definition");
-    if (request.spawn->path!=world::no_index && request.spawn->path>=self.world.resources().paths.size())
+    const bool unwritten=request.spawn==self.transforms_only_spawn;
+    if (unwritten && (self.transforms_only_definition!=request.definition ||
+        self.transforms_only_automatic!=request.automatic_definition ||
+        self.transforms_only_written_fields!=ISLE_RAINBOW_SPAWN_ID_TRANSFORMS ||
+        (beach && (!magikarp || definition.wire.guest_address!=0x802cbff4u ||
+                   self.transforms_only_helper!=0x802cbff4u))))
+        return reject(OwnerError::admission,"unwritten optional fields lack their exact issued Source origin");
+    if (request.automatic_definition!=actor_no_index &&
+        (!unwritten || beach || request.automatic_definition>=self.resources.automatic_definitions().size()))
+        return reject(OwnerError::admission,"automatic Source definition requires the exact transforms-only helper capability");
+    if (!unwritten && request.spawn->path!=world::no_index && request.spawn->path>=self.world.resources().paths.size())
         return reject(OwnerError::admission,"actor source spawn path outside World");
-    if (butterfree || doduo || lapras || pidgey || pikachu || sign) {
-        const void* path=request.spawn->path==world::no_index?nullptr:&self.world.resources().paths[request.spawn->path];
+    if (ending && (!self.ending_services.context || !self.interactions ||
+        self.ending_services.validate(self.ending_services.context,&self.ending)!=ISLE_GAME_OK ||
+        !self.interactions->admits_ending(initialization)))
+        return reject(OwnerError::admission,"ending requires complete native course/callback/resource closure");
+    if (!common && !magikarp && !ending) {
+        const void* path=unwritten || request.spawn->path==world::no_index ?
+            nullptr:&self.world.resources().paths[request.spawn->path];
         if (!self.interactions || !self.interactions->admits_initial_species(initialization,path))
-            return reject(OwnerError::admission,"actor initial species requires complete native callback/graph/resource/service closure");
+            return reject(OwnerError::admission,"actor native species requires complete native callback/graph/resource/service closure");
     }
     if (self.logical_count==self.logical.size()) return reject(OwnerError::capacity,"source logical actor-list40 exhausted (not a physical slot cap)");
     int registry=-1;
@@ -714,6 +1195,10 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     const auto acquired=self.runtime->acquire(slot->index,initialization.model,true);
     if (!acquired) return reject(OwnerError::animation,"actor Runtime instance acquire");
     slot->instance=acquired.handle; slot->active=true; slot->initialization=&initialization; slot->definition=&definition;
+    slot->automatic_definition=request.automatic_definition==actor_no_index ?
+        nullptr:&self.resources.automatic_definitions()[request.automatic_definition];
+    slot->spawn_helper=unwritten?self.transforms_only_helper:0;
+    slot->spawn_written_fields=unwritten?self.transforms_only_written_fields:0;
     bool lifecycle_installed=false;
     const auto rollback=[&]() {
         if (slot->object) {
@@ -758,8 +1243,9 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
         isle_actor_source_bind(self.services.game,slot->object,&slot->source,&self.services.rng,slot)!=ISLE_GAME_OK) {
         rollback(); return reject(OwnerError::native,"actor source placement/record binding");
     }
-    slot->source_fields={&slot->source.apple,&slot->source.interactionTarget};
-    if (!self.services.source_owner_register(slot->object,slot->source_fields)) {
+    slot->source_fields={&slot->source.apple,&slot->source.interactionTarget,&self.ending.D_beach_80347658};
+    if (!self.services.source_owner_register(slot->object,
+        std::span(slot->source_fields).first(ending?3u:2u))) {
         rollback(); return reject(OwnerError::services,"actor semantic source owner registration");
     }
     slot->source_owned=true;
@@ -780,12 +1266,11 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     if (isle_game_add_source_process(self.services.game,slot->object,isle_actor_source_animation_process,ISLE_GAME_SYNCHRONOUS,3,&process)!=ISLE_GAME_OK) {
         rollback(); return reject(OwnerError::native,"actor animation priority3 process");
     }
-    const auto animated=self.animation(*slot,&self.resources.headers()[initialization.setup.initial_header],0,true);
+    // pokemon.c2194–2195 creates this process even for NULL: the original
+    // ForceAnimation(NULL) path pauses it and clears the source animation fields.
+    const auto animated=self.animation(*slot,initial_header,0,true);
     if (!animated) { rollback(); return {animated,{},nullptr}; }
-    const IsleGameSourceCallback initial_state=common?func_8035DF20_4FE330:magikarp?func_beach_802CAB50:
-        butterfree?func_beach_802C7B10:doduo?func_beach_802C82B0:
-        lapras?func_beach_802C7E70:pidgey?func_beach_802C85B0:
-        pikachu?func_beach_802CACD4:func_beach_802CA300;
+    const IsleGameSourceCallback initial_state=spec.initial_state;
     if (isle_game_add_source_process(self.services.game,slot->object,isle_actor_source_distance_process,ISLE_GAME_SYNCHRONOUS,8,&process)!=ISLE_GAME_OK ||
         isle_game_add_source_process(self.services.game,slot->object,initial_state,ISLE_GAME_STACKFUL,7,&source.stateProc)!=ISLE_GAME_OK) {
         rollback(); return reject(OwnerError::native,"actor distance/initial state process creation");
@@ -795,25 +1280,21 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     source.transitionGraph=nullptr; source.pokemonLoopTarget=0; source.lastAnimationFrame=0;
     source.jumpVel=0; source.hSpeed=0; source.facingYaw=0;
     source.transitionGraph=nullptr; source.unk_E4=255;
-    if (spawn.path!=world::no_index) {
-        source.path=&self.world.resources().paths[spawn.path];
+    if (!unwritten) {
+        if (spawn.path!=world::no_index) source.path=&self.world.resources().paths[spawn.path];
+        source.behavior=spawn.behavior;
     }
-    source.pathParam=0; source.behavior=spawn.behavior; source.eggGeo=nullptr; source.poseID=0; source.specialPoseID=0;
+    source.pathParam=0; source.eggGeo=nullptr; source.poseID=0; source.specialPoseID=0;
     source.playerDist=maximum_distance;
     self.logical[self.logical_count++]=slot; slot->logical=true;
     auto& entry=self.block_entries[static_cast<std::size_t>(registry)];
     entry.slot=slot; entry.next=self.block_heads[request.block->index]; self.block_heads[request.block->index]=registry; slot->registered=true;
     if (self.transform_cache) --self.transform_cache;
     if (self.pokemon_cache) --self.pokemon_cache;
-    // Only common's source wrapper moves Ground's initial DL5/tag-1 to DL4.
-    if (common) {
-        slot->render={4,0x80000000u,UINT32_MAX};
-        if (!self.services.set_render(slot->object,slot->render)) { rollback(); return reject(OwnerError::services,"actor source DL4 move"); }
-    }
     slot->insertion=++self.insertion;
     return {{},slot->instance,slot->object};
 }
-OwnerStatus Owner::set_animation(menu::animation::InstanceHandle h,const beach::ActorAnimationHeader* header,float start,bool force) noexcept {
+OwnerStatus Owner::set_animation(menu::animation::InstanceHandle h,const actor::ActorAnimationHeader* header,float start,bool force) noexcept {
     auto* slot=impl_->find(h); return slot?impl_->animation(*slot,header,start,force):rejected(OwnerError::lifetime,"stale actor animation handle");
 }
 OwnerStatus Owner::step_animation(menu::animation::InstanceHandle h) noexcept {
@@ -851,15 +1332,16 @@ OwnerStatus Owner::request_cleanup(menu::animation::InstanceHandle h) noexcept {
 OwnerStatus Owner::change_block(menu::animation::InstanceHandle h,menu::Vec3 previous,menu::Vec3 current) noexcept {
     auto* slot=impl_->find(h);
     if (!slot || !slot->registered) return rejected(OwnerError::lifetime,"unregistered actor block change");
-    const IsleGameModelPlacement* old=nullptr;
-    if (isle_game_model_placement(impl_->services.game,slot->model,&old)!=ISLE_GAME_OK) return rejected(OwnerError::native,"actor block placement");
-    auto placement=old->transform;
-    const float dx=(previous.x-current.x)*100.0f,dy=(previous.y-current.y)*100.0f,dz=(previous.z-current.z)*100.0f;
-    placement.position.x+=dx; placement.position.y+=dy; placement.position.z+=dz;
-    auto result=set_placement(h,placement); if (!result) return result;
-    slot->source.pos1.x+=dx; slot->source.pos1.y+=dy; slot->source.pos1.z+=dz;
-    slot->source.targetPos.x+=dx; slot->source.targetPos.y+=dy; slot->source.targetPos.z+=dz;
-    return {};
+    return isle_meowth_source_call_change_block(slot->object,previous.x,previous.y,previous.z,
+        current.x,current.y,current.z,0)==ISLE_GAME_OK?OwnerStatus{}:
+        rejected(OwnerError::native,"original nonground block change failed");
+}
+OwnerStatus Owner::change_block_ground(menu::animation::InstanceHandle h,menu::Vec3 previous,menu::Vec3 current) noexcept {
+    auto* slot=impl_->find(h);
+    if (!slot || !slot->registered) return rejected(OwnerError::lifetime,"unregistered actor ground block change");
+    return isle_meowth_source_call_change_block(slot->object,previous.x,previous.y,previous.z,
+        current.x,current.y,current.z,1)==ISLE_GAME_OK?OwnerStatus{}:
+        rejected(OwnerError::native,"original ground block change failed");
 }
 OwnerStatus Owner::remove_block(world::Block& block) noexcept {
     if (block.index>=impl_->block_heads.size()) return rejected(OwnerError::admission,"actor removal block index");
@@ -939,6 +1421,7 @@ menu::EffectRuntime& Owner::effects() noexcept { return impl_->fx; }
 const environment_sound::Environment& Owner::environment() const noexcept { return impl_->sound; }
 IsleGameObject* Owner::particle_object() const noexcept { return impl_->particle_object; }
 IsleGameObject* Owner::effect_object() const noexcept { return impl_->effect_object; }
+const IsleBeachEndingSource& Owner::ending_source() const noexcept { return impl_->ending; }
 OwnerStatus Owner::update_particles() noexcept { return impl_->fx.update_particles()?OwnerStatus{}:rejected(OwnerError::services,"actor particles update"); }
 OwnerStatus Owner::update_effects() noexcept { return impl_->fx.update_effects(Impl::resolve,impl_.get())?OwnerStatus{}:rejected(OwnerError::services,"actor effects update"); }
 OwnerStatus Owner::bind_interactions(InteractionServices& context) noexcept {
@@ -952,61 +1435,38 @@ OwnerStatus Owner::bind_interactions(InteractionServices& context) noexcept {
 }
 IslePlayerSource& Owner::player_source() noexcept { return impl_->player; }
 const IslePlayerSource& Owner::player_source() const noexcept { return impl_->player; }
-CourseState& Owner::course() noexcept { return impl_->course; }
-const CourseState& Owner::course() const noexcept { return impl_->course; }
+const CourseContext& Owner::course_context() const noexcept { return impl_->course_context; }
 } // namespace isle::actor
 
 extern "C" {
+IsleGameResult isle_rainbow_actor_native_context(IsleGame* game,IsleRainbowActorSource** output) {
+    return isle::actor::SourceAccess::rainbow_context(game,output);
+}
+IsleGameResult isle_rainbow_actor_native_admission(IsleRainbowActorSource* source) {
+    return isle::actor::SourceAccess::rainbow_admission(source);
+}
 IsleGameObject* isle_actor_owner_spawn_ground_dl4(int32_t object_id,uint16_t id,
     IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
     const IsleActorFactoryInitialization* initialization) {
-    if (!block || !reference || !spawn || !initialization || initialization->identity!=0x80388348u ||
-        id!=1003 || !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
-        return nullptr;
-    auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
-    auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);
-    result=isle::actor::SourceAccess::spawn(owner,{static_cast<uint32_t>(object_id),spawn->definition,
-        static_cast<isle::world::Block*>(block->block),static_cast<isle::world::Block*>(reference->block),
-        static_cast<const isle::world::Spawn*>(spawn->spawn)},id,initialization->identity);
-    return result.object;
+    return isle::actor::SourceAccess::factory(object_id,id,block,reference,spawn,initialization,
+        isle::actor::FactoryWrapper::ground_dl4);
 }
 IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id,uint16_t id,
     IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
     const IsleActorFactoryInitialization* initialization) {
-    const bool magikarp=id==129 && initialization && initialization->identity==0x802cdaecu;
-    const bool doduo=id==84 && initialization && initialization->identity==0x802ccf78u;
-    const bool pikachu=id==25 && initialization && initialization->identity==0x802ce038u;
-    if (!block || !reference || !spawn || (!magikarp && !doduo && !pikachu) ||
-        !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
-        return nullptr;
-    auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
-    auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);
-    result=isle::actor::SourceAccess::spawn(owner,{static_cast<uint32_t>(object_id),spawn->definition,
-        static_cast<isle::world::Block*>(block->block),static_cast<isle::world::Block*>(reference->block),
-        static_cast<const isle::world::Spawn*>(spawn->spawn)},id,initialization->identity);
-    return result.object;
+    return isle::actor::SourceAccess::factory(object_id,id,block,reference,spawn,initialization,
+        isle::actor::FactoryWrapper::ground);
 }
 IsleGameObject* isle_actor_owner_spawn(int32_t object_id,uint16_t id,
     IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
     const IsleActorFactoryInitialization* initialization) {
-    const bool butterfree=id==12 && initialization && initialization->identity==0x802ccda4u;
-    const bool lapras=id==131 && initialization && initialization->identity==0x802cce50u;
-    const bool pidgey=id==16 && initialization && initialization->identity==0x802cd118u;
-    const bool sign=id==1004 && initialization && initialization->identity==0x802cd948u;
-    if (!block || !reference || !spawn || (!butterfree && !lapras && !pidgey && !sign) ||
-        !block->owner || reference->owner!=block->owner || !block->result || reference->result!=block->result)
-        return nullptr;
-    auto& owner=*static_cast<isle::actor::Owner*>(block->owner);
-    auto& result=*static_cast<isle::actor::SpawnResult*>(block->result);
-    result=isle::actor::SourceAccess::spawn_ordinary(owner,{static_cast<uint32_t>(object_id),spawn->definition,
-        static_cast<isle::world::Block*>(block->block),static_cast<isle::world::Block*>(reference->block),
-        static_cast<const isle::world::Spawn*>(spawn->spawn)},id,initialization->identity);
-    return result.object;
+    return isle::actor::SourceAccess::factory(object_id,id,block,reference,spawn,initialization,
+        isle::actor::FactoryWrapper::ordinary);
 }
 IsleGameResult isle_actor_owner_animation(IsleActorSource* source,uint32_t identity,float start,int force) {
     auto* slot=isle::actor::SourceAccess::slot(source);
     if (!slot) return ISLE_GAME_INVALID_STATE;
-    const isle::beach::ActorAnimationHeader* header=nullptr;
+    const isle::actor::ActorAnimationHeader* header=nullptr;
     if (identity) {
         for (const auto& candidate:slot->owner->resources.headers())
             if (candidate.wire.guest_address==identity && candidate.initialization==slot->definition->initialization) {
@@ -1015,6 +1475,32 @@ IsleGameResult isle_actor_owner_animation(IsleActorSource* source,uint32_t ident
         if (!header) return ISLE_GAME_INVALID_ARGUMENT;
     }
     return slot->owner->animation(*slot,header,start,force!=0)?ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+IsleGameResult isle_actor_owner_environment_sound(IsleActorSource* source,uint8_t category,int32_t sound) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || slot->owner->services.failed()) return ISLE_GAME_INVALID_STATE;
+    return slot->owner->sound.play({slot->object,slot->model,&source->playerDist},category,sound)?
+        ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+IsleGameResult isle_actor_owner_root_position_store(IsleActorSource* source,const IsleGameModelRef* reference,
+    const IsleGameVec3* position) {
+    if (!reference || !position) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || slot->owner->services.failed()) return ISLE_GAME_INVALID_STATE;
+    IsleGameModel* model=nullptr;
+    const auto resolved=isle_game_model_resolve(source->game,reference,&model);
+    if (resolved!=ISLE_GAME_OK) return resolved;
+    if (reference->object!=slot->object || model!=slot->model) return ISLE_GAME_INVALID_ARGUMENT;
+    const IsleGameModelNode* nodes=nullptr;
+    std::size_t count=0;
+    const auto read=isle_game_model_peek_nodes(source->game,model,&nodes,&count);
+    if (read!=ISLE_GAME_OK) return read;
+    if (!count || nodes[0].parent!=UINT32_MAX) return ISLE_GAME_INVALID_STATE;
+    const auto& current=nodes[0].transform;
+    isle::menu::animation::Transform pose{{position->x,position->y,position->z},
+        {current.rotation.x,current.rotation.y,current.rotation.z},
+        {current.scale.x,current.scale.y,current.scale.z}};
+    return isle::actor::SourceAccess::collision_status(slot->owner->local(*slot,0,pose));
 }
 IsleGameResult isle_actor_owner_self_model(IsleActorSource* source,IsleGameModelRef* output) {
     if (!output) return ISLE_GAME_INVALID_ARGUMENT;
@@ -1218,8 +1704,8 @@ int isle_actor_owner_paused(IsleActorSource* source) {
 }
 IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource* source,int active) {
     auto* slot=isle::actor::SourceAccess::slot(source);
-    if (!slot || source->id!=129) return ISLE_GAME_INVALID_STATE;
-    slot->owner->course.magikarp_active=active!=0;
+    if (!slot || source->id!=129 || slot->owner->course_context.course_id()!=0) return ISLE_GAME_INVALID_STATE;
+    slot->owner->course_context.beach().magikarp_active=active?1:0;
     return ISLE_GAME_OK;
 }
 IsleGameResult isle_actor_owner_ground_node(IsleActorSource* source,size_t* output) {
@@ -1293,10 +1779,16 @@ IsleGameResult isle_actor_owner_add_one(IsleActorSource* source,void* block,void
     const IsleActorGeoSpawn* spawn,const IsleActorGeoDefinition* definition,IsleGameObject** output) {
     if (output) *output=nullptr;
     auto* slot=isle::actor::SourceAccess::slot(source);
-    if (!slot || !spawn || !definition || !output || definition->identity!=0x8038837cu ||
-        spawn->id!=1003 || block!=slot->owner->world.current() || reference!=block || !block)
+    if (!slot || !spawn || !definition || !output ||
+        block!=slot->owner->world.current() || reference!=block || !block)
         return ISLE_GAME_INVALID_ARGUMENT;
     auto& self=*slot->owner;
+    const bool common=definition->identity==0x8038837cu && spawn->id==1003;
+    const bool pidgey=definition->identity==0x802cd838u && spawn->id==16;
+    const bool scyther=definition->identity==0x802cd848u && spawn->id==123;
+    const bool special_ending=definition->identity==0x802ce0dcu && spawn->id==1006;
+    if (!common && !pidgey && !scyther && !special_ending) return ISLE_GAME_INVALID_ARGUMENT;
+    const auto factory_identity=common?0x8035e0d4u:pidgey?0x802c8d74u:scyther?0x802c9204u:0x802cbda0u;
     isle::world::Spawn descriptor{};
     descriptor.id=spawn->id; descriptor.behavior=spawn->behavior;
     descriptor.position={spawn->translation.x,spawn->translation.y,spawn->translation.z};
@@ -1307,10 +1799,16 @@ IsleGameResult isle_actor_owner_add_one(IsleActorSource* source,void* block,void
             if (&self.world.resources().paths[i]==spawn->path) { descriptor.path=i; found=true; break; }
         if (!found) return ISLE_GAME_INVALID_ARGUMENT;
     }
-    size_t definition_index=isle::beach::actor_no_index;
-    for (size_t i=0;i<self.resources.definitions().size();++i)
-        if (self.resources.definitions()[i].wire.guest_address==definition->identity) { definition_index=i; break; }
-    if (definition_index==isle::beach::actor_no_index) return ISLE_GAME_INVALID_ARGUMENT;
+    size_t definition_index=isle::actor::actor_no_index;
+    for (size_t i=0;i<self.resources.definitions().size();++i) {
+        const auto& candidate=self.resources.definitions()[i];
+        if (candidate.wire.guest_address==definition->identity && candidate.singleton &&
+            candidate.actor_id==static_cast<uint32_t>(spawn->id) && candidate.factory_identity==factory_identity &&
+            candidate.change_block_identity==0x80363dbcu && candidate.remove_identity==0x80364280u) {
+            definition_index=i; break;
+        }
+    }
+    if (definition_index==isle::actor::actor_no_index) return ISLE_GAME_INVALID_ARGUMENT;
     const auto child=self.facade->add_one(definition_index,static_cast<isle::world::Block*>(block),
         static_cast<isle::world::Block*>(reference),descriptor);
     if (!child) return child.status.error==isle::actor::OwnerError::capacity?ISLE_GAME_EXHAUSTED:ISLE_GAME_EXECUTION_FAILURE;
@@ -1327,4 +1825,137 @@ IsleGameResult isle_actor_owner_copy_position(IsleActorSource* source,IsleGameOb
     if (isle_game_model_placement(source->game,parent->model,&position)!=ISLE_GAME_OK) return ISLE_GAME_INVALID_STATE;
     return isle_actor_owner_trigger_position(child_source,position->transform.position);
 }
+IsleGameObject* isle_actor_owner_spawn_dl4(int32_t object_id,uint16_t id,
+    IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,IsleActorFactorySpawn* spawn,
+    const IsleActorFactoryInitialization* initialization) {
+    return isle::actor::SourceAccess::factory(object_id,id,block,reference,spawn,initialization,
+        isle::actor::FactoryWrapper::ordinary_dl4);
+}
+IsleGameResult isle_beach_ending_native_source(IsleActorSource* source,IsleBeachEndingSource** output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output=nullptr;
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    *output=&slot->owner->ending;
+    return ISLE_GAME_OK;
+}
+IsleGameResult isle_beach_ending_native_remove_items(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    return slot?slot->owner->ending_services.remove_items(slot->owner->ending_services.context):ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_beach_ending_native_reset_message(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    return slot?slot->owner->ending_services.reset_message(slot->owner->ending_services.context):ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_beach_ending_native_camera(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    return slot?slot->owner->ending_services.camera(slot->owner->ending_services.context):ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_beach_ending_native_cart_init(IsleActorSource* source,IsleGameObject** output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output=nullptr;
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    return slot?slot->owner->ending_services.cart_init(slot->owner->ending_services.context,output):ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_beach_ending_native_cart_animation(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    return slot?slot->owner->ending_services.cart_animation(slot->owner->ending_services.context):ISLE_GAME_INVALID_STATE;
+}
+IsleGameResult isle_beach_ending_native_cart_publish(IsleActorSource* source,IsleGameObject* object) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot || !object) return ISLE_GAME_INVALID_STATE;
+    auto& self=*slot->owner;
+    const auto held=self.ending_services.cart_retain(self.ending_services.context,object);
+    if (held!=ISLE_GAME_OK) return held;
+    return self.services.source_reference_assign(slot->object,&self.ending.D_beach_80347658,object)?
+        ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+IsleGameResult isle_beach_ending_native_cart_callback(IsleActorSource* source,IsleGameObject* object) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot || slot->owner->ending.D_beach_80347658!=object) return ISLE_GAME_INVALID_STATE;
+    auto& self=*slot->owner;
+    return self.ending_services.cart_callback(self.ending_services.context,object,&self.ending);
+}
+IsleGameResult isle_beach_ending_native_sound_volume(IsleActorSource* source,int32_t handle,uint32_t volume) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot || handle<0) return ISLE_GAME_INVALID_ARGUMENT;
+    return slot->owner->services.audio.sound_volume(static_cast<unsigned>(handle),volume)==isle::audio::Error::none?
+        ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+IsleGameResult isle_beach_ending_native_playing_sound(IsleActorSource* source,int32_t handle,int32_t* output) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot || !output || handle<0) return ISLE_GAME_INVALID_ARGUMENT;
+    *output=slot->owner->services.audio.playing_sound(static_cast<unsigned>(handle));
+    return ISLE_GAME_OK;
+}
+}
+extern "C" IsleGameResult isle_beach_ending_native_command(IsleActorSource* source,int32_t command) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot || !slot->owner->player.object || (command!=6 && command!=7 && command!=9))
+        return ISLE_GAME_INVALID_ARGUMENT;
+    return slot->owner->services.send_command(slot->owner->player.object,command,nullptr)?
+        ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+extern "C" IsleGameResult isle_beach_ending_native_play_sound(IsleActorSource* source,int32_t sound,int32_t* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output=-1;
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    *output=slot->owner->services.play_sound(static_cast<uint32_t>(sound));
+    return slot->owner->services.failed()?ISLE_GAME_EXECUTION_FAILURE:ISLE_GAME_OK;
+}
+extern "C" IsleGameResult isle_beach_ending_native_bgm_volume(IsleActorSource* source,int32_t player,int32_t volume) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot || player<0 || volume<0) return ISLE_GAME_INVALID_ARGUMENT;
+    return slot->owner->services.audio.bgm_volume(static_cast<unsigned>(player),static_cast<uint32_t>(volume))==isle::audio::Error::none?
+        ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+extern "C" IsleGameResult isle_beach_ending_native_stop_sound(IsleActorSource* source,int32_t handle) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot || handle<0) return ISLE_GAME_INVALID_ARGUMENT;
+    return slot->owner->services.audio.stop_sound(static_cast<unsigned>(handle))==isle::audio::Error::none?
+        ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+extern "C" IsleGameResult isle_beach_ending_native_stop_sounds(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    return slot->owner->services.audio.stop_sounds()==isle::audio::Error::none?
+        ISLE_GAME_OK:ISLE_GAME_EXECUTION_FAILURE;
+}
+extern "C" IsleGameResult isle_beach_ending_native_sky_speed(IsleActorSource* source,float speed) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    slot->owner->world.set_sky_animation_speed(speed);
+    return ISLE_GAME_OK;
+}
+extern "C" IsleGameResult isle_beach_ending_native_reset_camera(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    return slot?slot->owner->ending_services.reset_camera(slot->owner->ending_services.context):ISLE_GAME_INVALID_STATE;
+}
+extern "C" IsleGameResult isle_beach_ending_native_start_cutscene(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::ending_slot(source);
+    return slot?slot->owner->ending_services.start_cutscene(slot->owner->ending_services.context,source->object):ISLE_GAME_INVALID_STATE;
+}
+extern "C" IsleGameResult isle_actor_owner_block_indices(IsleActorSource* source,
+    int32_t* current_output,int32_t* base_output) {
+    if (!current_output || !base_output) return ISLE_GAME_INVALID_ARGUMENT;
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot) return ISLE_GAME_INVALID_STATE;
+    auto& world=slot->owner->world;
+    const auto* current=world.current();
+    const auto* base=static_cast<const isle::world::Block*>(source->baseBlock);
+    bool current_found=false,base_found=false;
+    for (const auto& block:world.blocks()) {
+        current_found|=&block==current; base_found|=&block==base;
+    }
+    if (!current_found || !base_found || current->index>INT32_MAX || base->index>INT32_MAX)
+        return ISLE_GAME_INVALID_STATE;
+    *current_output=static_cast<int32_t>(current->index);
+    *base_output=static_cast<int32_t>(base->index);
+    return ISLE_GAME_OK;
+}
+extern "C" IsleGameResult isle_actor_owner_schedule_cleanup(IsleActorSource* source) {
+    auto* slot=isle::actor::SourceAccess::slot(source);
+    if (!slot || !slot->owner->facade) return ISLE_GAME_INVALID_STATE;
+    return isle::actor::SourceAccess::collision_status(slot->owner->facade->request_cleanup(slot->instance));
 }

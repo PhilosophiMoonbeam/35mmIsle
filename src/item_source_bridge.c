@@ -82,11 +82,24 @@ int32_t isle_item_source_collide(IsleItemGlobals* g, IsleGameVec3* position, Isl
 }
 int32_t isle_item_source_extra(IsleItemGlobals* g, IsleGameObject* object, IsleGameVec3* position,
                               IsleGameVec3* velocity, IsleGameVec3* out_position, IsleGameVec3* out_velocity) {
-    /* Provider input mutation survives a negative result. It runs in C, without
-     * an owning C++ frame; publish before any subsequent hook/sound/FX/wait. */
-    int32_t result = g->extra(position, velocity, out_position, out_velocity);
+    int32_t hit = -1;
+    IsleGameResult result;
+    if (g == NULL || g->extra == NULL || g->extra_context == NULL) {
+        isle_item_source_checked(g, ISLE_GAME_INVALID_STATE);
+        return -1;
+    }
+    /* This direct C dispatch has no owning C++ frame. The borrowed context
+     * cannot be replaced while active; the provider returns before C checks
+     * its status. A failed operation is never a Source hit/miss decision. */
+    ++g->extra_active;
+    result = g->extra(g->extra_context, position, velocity, out_position, out_velocity, &hit);
+    --g->extra_active;
+    isle_item_source_checked(g, result);
+    if (result != ISLE_GAME_OK) return -1;
+    /* Input mutation survives a legitimate negative hit, and is visible in the
+     * Runtime/native root before any subsequent Source hook/sound/FX/wait. */
     isle_item_source_publish(g, object);
-    return result;
+    return hit;
 }
 void isle_item_source_effect(IsleItemGlobals* g, IsleGameObject* object) {
     isle_item_source_checked(g, isle_item_owner_effect(g, object));

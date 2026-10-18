@@ -253,7 +253,13 @@ struct Host::Impl {
         }
         std::filesystem::create_directories(options.data_directory);
         configuration_path = options.data_directory / "35mmIsle.json";
-        if (options.renderer_resources.empty()) options.renderer_resources = std::filesystem::path(ISLE_HOST_RENDERER_RESOURCES);
+        if (options.renderer_resources.empty()) {
+            const char* base=SDL_GetBasePath();
+            require(base!=nullptr,SDL_GetError());
+            const auto installed=std::filesystem::path(base)/ISLE_HOST_INSTALLED_RESOURCES;
+            options.renderer_resources=std::filesystem::is_regular_file(installed/"shaders/opengl/default.shader.glsl")?
+                installed:std::filesystem::path(ISLE_HOST_RENDERER_RESOURCES);
+        }
         require(std::filesystem::is_regular_file(options.renderer_resources / "shaders/opengl/default.shader.glsl"),
                 "Pinned LUS OpenGL shader resources are missing");
         context = Ship::Context::CreateInstance("35mmIsle", "35mmIsle");
@@ -479,6 +485,7 @@ CreateResult Host::create(const rom::Snapshot& snapshot, Config config) noexcept
 bool Host::running() const noexcept { return !impl_->stopped && impl_->error == Error::none && impl_->window && impl_->window->IsRunning(); }
 Error Host::error() const noexcept { return impl_->error; }
 const char* Host::message() const noexcept { return impl_->message.data(); }
+const std::filesystem::path& Host::data_directory() const noexcept { return impl_->options.data_directory; }
 game_audio::Session* Host::audio() noexcept { return impl_->audio_session.get(); }
 const Output::Info& Host::audio_info() const noexcept { return impl_->output.info(); }
 bool Host::pump_events() noexcept {

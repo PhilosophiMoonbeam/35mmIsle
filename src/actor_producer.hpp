@@ -1,7 +1,7 @@
 #ifndef ISLE_ACTOR_PRODUCER_HPP
 #define ISLE_ACTOR_PRODUCER_HPP
 
-#include "beach_actor_resources.hpp"
+#include "actor_resources.hpp"
 #include "borrowed_model_kernel.hpp"
 #include "scene_render.hpp"
 #include "focus_capture.hpp"
@@ -86,7 +86,7 @@ public:
     // excluding cold image/BSS, framebuffers and these three producer ranges.
     // It is validated against every actual actor asset, not just own uploads.
     Producer(IsleGame*, IsleGameCamera*, menu::model::CameraBasisState&,
-             const beach::ActorResources&, std::span<const menu::animation::SlotCapacity>,
+             const actor::Resources&, std::span<const menu::animation::SlotCapacity>,
              std::span<const ActorRenderBinding> ordered_bindings, ProducerLayout,
              std::span<const menu::RamRange> other_reservations, DetectorBinding*);
     ~Producer();

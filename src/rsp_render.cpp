@@ -100,6 +100,9 @@ const char* error_name(Error error) noexcept {
 } // namespace
 
 struct CanonicalExecutor::Impl {
+    enum class GpuPhase { pending, failure_needs_owner, draining, ready };
+    enum class GpuWork { none, execute, drain };
+
     Impl(bool require_cpu, Limits requested) : limits(requested), packets(requested.packet_words) {
         context.set_notification_callback([this](const char* message) { errors.record(message); });
         initialize_context(context, require_cpu);
@@ -138,12 +141,26 @@ struct CanonicalExecutor::Impl {
 
     void run_gpu() noexcept {
         for (;;) {
+            GpuWork work;
             {
                 std::unique_lock lock(gpu_mutex);
-                gpu_condition.wait(lock, [this] { return gpu_requested || gpu_stopping; });
+                gpu_condition.wait(lock, [this] { return gpu_work != GpuWork::none || gpu_stopping; });
                 if (gpu_stopping) return;
-                gpu_requested = false;
+                work = std::exchange(gpu_work, GpuWork::none);
             }
+            if (work == GpuWork::drain) {
+                // The creating thread has already destroyed the RAM-borrowing
+                // JIT. Keep all backend dependencies alive through this drain.
+                processor.reset();
+                completed_rdram = completed_hidden = nullptr;
+                {
+                    std::lock_guard lock(gpu_mutex);
+                    gpu_phase.store(GpuPhase::ready, std::memory_order_release);
+                }
+                gpu_condition.notify_one();
+                continue;
+            }
+            auto phase = GpuPhase::ready;
             try {
                 errors.require_clean();
                 // CPU preparation and the real RSP have ceased all RAM access.
@@ -162,10 +179,13 @@ struct CanonicalExecutor::Impl {
                 errors.require_clean();
             } catch (...) {
                 gpu_failure = std::current_exception();
+                // Stop using the processor before requesting owner-side JIT
+                // retirement. Failure is not ready until the later drain job.
+                phase = GpuPhase::failure_needs_owner;
             }
             {
                 std::lock_guard lock(gpu_mutex);
-                gpu_ready.store(true, std::memory_order_release);
+                gpu_phase.store(phase, std::memory_order_release);
             }
             gpu_condition.notify_one();
         }
@@ -178,6 +198,38 @@ struct CanonicalExecutor::Impl {
     void require_creator_noexcept() const noexcept {
         if (creator != std::this_thread::get_id()) std::terminate();
     }
+    void begin_failure_drain() noexcept {
+        require_creator_noexcept();
+        poisoned = true;
+        // Only the owner may touch the shared upstream JIT globals. The worker
+        // published failure_needs_owner after leaving all processor accesses,
+        // and cannot destroy its RAM until this owner-to-worker handoff.
+        machine.reset();
+        {
+            std::lock_guard lock(gpu_mutex);
+            gpu_phase.store(GpuPhase::draining, std::memory_order_release);
+            gpu_work = GpuWork::drain;
+        }
+        gpu_condition.notify_one();
+    }
+
+    void wait_for_gpu() {
+        require_creator();
+        for (;;) {
+            const auto phase = gpu_phase.load(std::memory_order_acquire);
+            if (phase == GpuPhase::ready) return;
+            if (phase == GpuPhase::failure_needs_owner) {
+                begin_failure_drain();
+                continue;
+            }
+            std::unique_lock lock(gpu_mutex);
+            gpu_condition.wait(lock, [this] {
+                const auto phase = gpu_phase.load(std::memory_order_acquire);
+                return phase == GpuPhase::ready || phase == GpuPhase::failure_needs_owner;
+            });
+        }
+    }
+
     void poison() noexcept {
         poisoned = true;
         // The JIT retains the mapped RAM pointer. Destroy it BEFORE the actual
@@ -206,8 +258,9 @@ struct CanonicalExecutor::Impl {
     std::mutex gpu_mutex;
     std::condition_variable gpu_condition;
     std::thread gpu_worker;
-    std::atomic<bool> gpu_ready{false};
-    bool gpu_requested = false, gpu_stopping = false;
+    std::atomic<GpuPhase> gpu_phase{GpuPhase::pending};
+    GpuWork gpu_work = GpuWork::none;
+    bool gpu_stopping = false;
     std::exception_ptr gpu_failure;
     const std::byte *completed_rdram = nullptr, *completed_hidden = nullptr;
     std::uint64_t next_token = 0, active_token = 0;
@@ -423,10 +476,10 @@ CanonicalExecutor::Token CanonicalExecutor::begin(
         state.completed_rdram = nullptr;
         state.completed_hidden = nullptr;
         state.gpu_failure = nullptr;
-        state.gpu_ready.store(false, std::memory_order_relaxed);
+        state.gpu_phase.store(Impl::GpuPhase::pending, std::memory_order_relaxed);
         {
             std::lock_guard lock(state.gpu_mutex);
-            state.gpu_requested = true;
+            state.gpu_work = Impl::GpuWork::execute;
         }
         state.gpu_condition.notify_one();
         return state.active_token;
@@ -444,12 +497,17 @@ bool CanonicalExecutor::poll(Token token) {
     state.require_creator();
     require(token != 0 && token == state.active_token && state.executing,
             "canonical completion requires the outstanding execution token");
-    if (!state.gpu_ready.load(std::memory_order_acquire)) return false;
+    const auto phase = state.gpu_phase.load(std::memory_order_acquire);
+    if (phase == Impl::GpuPhase::failure_needs_owner) {
+        state.begin_failure_drain();
+        return false;
+    }
+    if (phase != Impl::GpuPhase::ready) return false;
     if (state.gpu_failure) {
         const auto failure = state.gpu_failure;
-        // The GPU worker has left every processor call. Destruction drains any
-        // partial queued backend work before retiring RAM and reporting failure.
-        state.poison();
+        // The persistent worker has now destroyed/drained the processor, after
+        // owner-only JIT retirement. No failed mapping or live storage escapes.
+        state.words = {};
         state.active_token = 0;
         state.executing = false;
         std::rethrow_exception(failure);
@@ -472,12 +530,7 @@ void CanonicalExecutor::retire(Token token) {
     state.require_creator();
     require(token != 0 && token == state.active_token && state.executing,
             "canonical retirement requires the outstanding execution token");
-    {
-        std::unique_lock lock(state.gpu_mutex);
-        state.gpu_condition.wait(lock, [&state] {
-            return state.gpu_ready.load(std::memory_order_acquire);
-        });
-    }
+    state.wait_for_gpu();
     auto lease = completed(token);
     lease.release();
 }
@@ -485,12 +538,7 @@ void CanonicalExecutor::retire(Token token) {
 CanonicalExecutor::MemoryLease CanonicalExecutor::execute(
     PreparationLease&& preparation, const Task& task, std::span<const std::byte> boot) {
     const auto token = begin(std::move(preparation), task, boot);
-    {
-        std::unique_lock lock(impl_->gpu_mutex);
-        impl_->gpu_condition.wait(lock, [this] {
-            return impl_->gpu_ready.load(std::memory_order_acquire);
-        });
-    }
+    impl_->wait_for_gpu();
     return completed(token);
 }
 } // namespace isle::rsp

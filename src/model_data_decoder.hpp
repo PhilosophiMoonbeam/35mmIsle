@@ -2,16 +2,20 @@
 #define ISLE_MODEL_DATA_DECODER_HPP
 
 #include "model_asset_closure.hpp"
+#include "menu_animation.hpp"
 
 namespace isle::model_assets {
-// Exact source-consumed image entries, with any separately admitted NULL slots.
-// This is bounded initialized GAME data, not a native Texture or console ABI.
+// Renderer-admitted image/palette prefixes, with separately admitted trailing
+// NULL slots. The original four image fields keep their aggregate initializer
+// order; palette authority is optional for existing non-paletted resources.
 struct MaterialExtent {
     std::uint32_t material, table;
     std::size_t images, slots;
+    std::uint32_t palette_table = 0;
+    std::size_t palettes = 0, palette_slots = 0;
 };
-// Shared cold decoder for the admitted Actor and Item model families. Reader
-// owns mapping authority; callers retain all referenced storage. No installation,
+// Shared cold decoder for bounded initialized GAME model resources. Reader owns
+// mapping authority; callers retain all referenced storage. No installation,
 // animation clock, model instance, callback execution or render cache is created.
 class DataDecoder final {
 public:
@@ -21,10 +25,27 @@ public:
     menu::Model model(std::uint32_t tree, std::uint32_t materials,
                       std::size_t nodes, menu::RenderType);
     std::size_t material(std::uint32_t);
+    std::size_t material(std::uint32_t, const MaterialExtent&);
+    // Derive a universal renderer-consumed image/palette prefix, including
+    // initial indices and LOD's adjacent image. Supply every selected texture
+    // program for this identity; NULL programs (no_index) are ignored. No table
+    // sentinel or mapping-size guess; nonconstant timing needs sampled_material.
+    MaterialExtent describe_material(std::uint32_t,
+                                     std::span<const std::size_t> texture_streams = {}) const;
+    // Source-owned first-update capability. Every later use of these stream
+    // bindings must obey these exact samples (or restart intervals). This does
+    // not authorize arbitrary live playback. Explicit MaterialExtent admission
+    // and its separately proven trailing NULL slots remain unchanged.
+    std::size_t sampled_material(std::uint32_t,
+                                 std::span<const menu::animation::TextureSample>,
+                                 std::span<const std::size_t> universal_streams = {});
     std::size_t animation(std::uint32_t, menu::AnimationKind,
                           bool model_callback_installed = true);
     void bind_initial_animations(menu::Model&, std::uint32_t models,
                                  std::uint32_t materials, bool model_callback_installed);
+    // Declared allocation facts validate independently of playback timing;
+    // inferred extents require the matching sampled/universal proof. Actual
+    // per-pose image/palette bounds remain mandatory in the packet producer.
     void validate_material_animation(std::size_t stream, std::size_t material) const;
     std::size_t path(std::uint32_t);
 private:
@@ -33,6 +54,8 @@ private:
     std::vector<menu::Animation>& animations_;
     std::span<const MaterialExtent> material_extents_;
     std::vector<menu::AnimationPath>* paths_;
+    struct SampledBinding { std::uint32_t material; std::size_t stream; };
+    std::vector<SampledBinding> sampled_bindings_;
 };
 } // namespace isle::model_assets
 #endif

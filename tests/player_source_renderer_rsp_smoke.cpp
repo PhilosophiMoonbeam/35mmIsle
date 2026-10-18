@@ -1,3 +1,4 @@
+#include "beach_actor_scene.hpp"
 // Opt-in private-ROM COMPONENT consumer. This executes the complete original-C
 // camera component, not original initUI/Root106, a second Player FSM, game entry,
 // physical-device probe, or a claim of hardware/Windows parity.
@@ -20,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <source_location>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -35,7 +37,7 @@ constexpr menu::RamRange line_arena{0x7d0000,0x2000};
 constexpr world::ProducerLayout world_layout{{0x200000,0x10000},{0x210000,0x10000},{0x220000,0x10000}};
 constexpr actor::ProducerLayout actor_layout{{0x400000,0x80000},{0x480000,0x80000},{0x500000,0x100000},
     {{{0x3b5000,plane},{0x3da800,plane}}}};
-constexpr items::ProducerLayout item_layout{{0x230000,0x10000},{0x240000,0x10000},{0x250000,0x10000},
+constexpr menu::model::PacketLayout item_layout{{0x230000,0x10000},{0x240000,0x10000},{0x250000,0x10000},
     {{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr player::cart::ProducerLayout cart_layout{{0x260000,0x10000},{0x270000,0x10000},{0x2a0000,0x10000},
     {{{0x3b5000,plane},{0x3da800,plane}}}};
@@ -44,10 +46,19 @@ constexpr menu::RamRange fx_commands{0x680c00,0x5400},joined_lists{0x686000,0x28
 constexpr sprite::RamRange lanes{0x690000,0x40000},sprite_commands{0x780000,0x50000};
 constexpr g::Layout frame_layout{{0x626000,0x2000},{0x630000,0x10000},{0x640000,0x40000},0x600000};
 constexpr IsleGameLookAt view{{0,1600,6000},{0,500,0},{0,1,0}};
-void require(bool value,const char* message) {if(!value) throw std::runtime_error(message);}
+void require(bool value,const char* message) {
+    if(!value) {
+        std::cerr<<"source renderer requirement: "<<message<<'\n';
+        throw std::runtime_error(message);
+    }
+}
 void native(IsleGameResult result,std::source_location location=std::source_location::current()) {
-    if(result!=ISLE_GAME_OK) throw std::runtime_error(std::string(location.file_name())+":"+
-        std::to_string(location.line())+" source renderer result="+std::to_string(int(result)));
+    if(result!=ISLE_GAME_OK) {
+        const auto message=std::string(location.file_name())+":"+
+            std::to_string(location.line())+" source renderer result="+std::to_string(int(result));
+        std::cerr<<message<<'\n';
+        throw std::runtime_error(message);
+    }
 }
 template<class Status> void accepted(Status value) {require(bool(value),value.detail);}
 std::uint32_t physical(std::uint32_t value) {return value&0x1fffffffu;}
@@ -93,7 +104,16 @@ struct Owners {
     ~Owners() {
         const auto actor_retired=actors.reset();const auto items_retired=items.retire();const auto cart_retired=cart.retire();
         const auto actor_joined=actors.collect_joined();const auto item_joined=items.collect_joined();const auto cart_joined=cart.collect_joined();
-        if(!actor_retired||!items_retired||!cart_retired||!actor_joined||!item_joined||!cart_joined||!world.retire()) std::terminate();
+        if(!actor_retired||!items_retired||!cart_retired||!actor_joined||!item_joined||!cart_joined) {
+            std::cerr<<"source renderer owner retirement/join failure: actors="<<bool(actor_retired)<<'/'<<bool(actor_joined)
+                <<" items="<<bool(items_retired)<<'/'<<bool(item_joined)
+                <<" cart="<<bool(cart_retired)<<'/'<<bool(cart_joined)<<'\n';
+            std::terminate();
+        }
+        if(!world.retire()) {
+            std::cerr<<"source renderer World retirement failure\n";
+            std::terminate();
+        }
     }
 };
 struct Content {
@@ -302,6 +322,188 @@ void hidden_prefix_regression(scene::Services& services,g::Frame& frame,Content&
     require(detection.context==next&&detector.generation(next)==generations[next]+1,
         "restored actual prefix visibility did not stage the genuine membership/history context on actual GPU preparation");
 }
+template<class Tick>
+void source_queue_cases(scene::Services& services,g::Frame& frame,
+    player::Renderer& renderer,player::Controller& controller,player::Photo& photo,
+    IslePlayerSource& source,IslePlayerPhotoSource& application,actor::PhotoScene& photo_scene,
+    actor::DetectorBinding& detection,focus::Detector& detector,std::span<IsleGameObject* const> cameras,
+    const std::filesystem::path& output,Tick&& tick) {
+    const auto encoded=[&](std::uint16_t context) {
+        std::array<std::byte,0x3a0> bytes{};
+        player::encode_photo(application.PokemonDetector_Photo[context].main,bytes);return bytes;
+    };
+    const auto same=[](const focus::Focus& a,const focus::Focus& b) {
+        return a.present==b.present&&a.object==b.object&&a.pokemon_id==b.pokemon_id&&
+            a.flags==b.flags&&a.context==b.context;
+    };
+    auto* prefix=photo_scene.prefix_object();IsleGameObjectMetadata prefix_metadata{};
+    native(isle_game_object_metadata(services.game,prefix,&prefix_metadata));
+    const auto hide_prefix=[&](bool hidden) {
+        native(isle_game_object_set_flags(services.game,prefix,prefix_metadata.flags|(hidden?1u:0u)));
+    };
+    struct SharedRows {
+        const std::string& name;focus::Detector& detector;IslePlayerPhotoSource& source;
+        focus::Focus before{};std::uint16_t context=0;bool analyze=true;unsigned calls=0;
+        static void complete(void* user,rsp::CanonicalExecutor::MemoryLease& lease,std::uint32_t) {
+            auto& self=*static_cast<SharedRows*>(user);
+            require(++self.calls==1,"source FIFO draw acquired multiple completed mappings");
+            auto expected=self.before;
+            if(self.analyze) {
+                expected.context=self.context;expected.present=false;
+                const auto ram=lease.rdram();const auto subjects=self.detector.history(self.context);
+                const auto pixel=[&](std::size_t row,std::size_t i) {
+                    const auto address=static_cast<std::uint32_t>(capture_layout.regions.offset+row*128+i*2);
+                    const auto value=word(ram,address&~3u);return (value>>((address&2u)?0u:16u))&0xffffu;
+                };
+                for(std::size_t row=1;row<subjects.size();++row) if(subjects[row].object) {
+                    unsigned changed=0;for(std::size_t i=0;i<64;++i) changed+=pixel(row-1,i)!=pixel(row,i);
+                    if(changed>=32) {static_cast<focus::Subject&>(expected)=subjects[row];expected.present=true;}
+                }
+                if(expected.present&&expected.object) {
+                    const auto id=expected.pokemon_id;const auto& photo=self.source.PokemonDetector_Photo[self.context];
+                    const bool sign=id==1004||id==1018||id==1022||id==1035;
+                    const bool member=std::any_of(std::begin(photo.pokemonObjects),std::end(photo.pokemonObjects),
+                        [&](IsleGameObject* object){return reinterpret_cast<focus::Object>(object)==expected.object;});
+                    if(!sign&&!member) {expected.present=false;expected.object=0;}
+                } else {expected.present=false;expected.object=0;}
+            }
+            const auto& actual=self.detector.computed();
+            const bool matches=actual.present==expected.present&&actual.object==expected.object&&actual.pokemon_id==expected.pokemon_id&&
+                actual.flags==expected.flags&&actual.context==expected.context;
+            if(!matches) std::cerr<<"source FIFO observer case: "<<self.name<<'\n';
+            require(matches,"actual callback did not analyze latest context metadata against THIS completed shared 20-region RAM");
+            require(!lease.postprocess_active(),"source FIFO draw retained an exclusive Photo mapping");
+        }
+    };
+    const auto draw=[&](const std::string& name,bool analyze=true,std::uint16_t head=UINT16_MAX,bool remove_at_submit=false) {
+        const auto before=std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter());
+        // Queue/counter observations also cover genuine presentation-only
+        // blink callbacks; they do not require a 3D camera's light/DL payload.
+        SharedRows rows{name,detector,application,detector.computed(),head,analyze};
+        require(renderer.begin(frame,{0},{&rows,SharedRows::complete}),renderer.message());
+        if(head==UINT16_MAX) rows.context=detection.context;
+        if(remove_at_submit) native(renderer.set_postprocess(false));
+        require(frame.busy()&&std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter())==before+1u,
+            "signed source counter did not advance once after whole draw returned before GPU completion");
+        const auto admitted=renderer.drawn_frame_counter();
+        g::Poll result;do {result=renderer.poll();if(result==g::Poll::pending) std::this_thread::yield();} while(result==g::Poll::pending);
+        if(result!=g::Poll::completed) std::cerr<<"source FIFO draw failed in "<<name<<": "<<renderer.message()<<'\n';
+        require(result==g::Poll::completed&&rows.calls==1&&renderer.drawn_frame_counter()==admitted,
+            "actual GPU completion failed or advanced the independent Source draw counter");
+        save(output/(name+".rgba8"),frame.completed().rgba);
+        return controller.ticket(frame);
+    };
+    const auto publish_release=[&](IslePlayerPhotoTicket ticket) {
+        const auto before=renderer.drawn_frame_counter();tick();
+        require(renderer.drawn_frame_counter()==before&&detector.published().context==ticket.context,
+            "later original OM CopyInfo changed draw counter or published the wrong analyzed context");
+        application.PokemonDetector_TakenPhotoIndex=ticket.context;
+        IslePlayerPhotoTicket borrowed{};native(isle_player_photo_borrow_taken(&application,&borrowed));
+        require(borrowed==ticket&&renderer.release_completed()==ISLE_GAME_INVALID_STATE,
+            "Source shutter borrow did not retain the actual analyzed metadata/history until release");
+        native(isle_player_photo_release_taken(&application,&borrowed));native(renderer.release_completed());
+    };
+    // Genuine Create/BSS context1: no prefix capture, no actor-region saves.
+    require(detection.context==1&&!detector.generation(0)&&!detector.generation(1),
+        "empty-context scenario was not entered from actual Create/BSS");
+    detection.enabled=false;hide_prefix(true);
+    const auto empty=draw("source-initial-empty");
+    const auto empty_metadata=encoded(1);
+    require(empty.context==1&&!empty.generation&&empty.submission&&controller.has_pending(frame)&&
+        !detector.generation(0)&&!detector.generation(1)&&detector.history(1).empty()&&
+        !detector.computed().present&&controller.queued_requests()==0&&
+        std::all_of(empty_metadata.begin(),empty_metadata.end(),[](std::byte value){return value==std::byte{0};}),
+        "initial ProcessImage fabricated a capture/generation or lost its real empty-context request");
+    publish_release(empty);
+    // Capture once, then process the unchanged canonical context after the live
+    // camera changes while the real prefix stays hidden.
+    detection.enabled=true;hide_prefix(false);const auto seeded=draw("source-existing-seed");
+    const auto snapshot=encoded(seeded.context);publish_release(seeded);
+    const std::array generations{detector.generation(0),detector.generation(1)};
+    const auto original=source.camera;const IsleGameCameraParameters* parameters=nullptr;
+    native(isle_game_camera_parameters(services.game,original,&parameters));const auto old_view=parameters->look_at;
+    auto changed=old_view;changed.eye[0]+=200;changed.at[0]+=200;
+    native(isle_game_camera_set_look_at(services.game,original,&changed));
+    detection.enabled=false;hide_prefix(true);const auto existing=draw("source-existing-no-prefix");
+    require(existing.context==seeded.context&&existing.generation==seeded.generation&&
+        existing.submission!=seeded.submission&&encoded(existing.context)==snapshot&&
+        detector.generation(0)==generations[0]&&detector.generation(1)==generations[1],
+        "no-prefix ProcessImage recaptured changed live camera state or conflated GPU and metadata identities");
+    publish_release(existing);
+    // Remove ONLY the callback. Four real draws fill the two-ID NOBLOCK FIFO,
+    // overwrite both unbound CPU contexts and reuse the actual Frame/RAM.
+    detection.enabled=true;hide_prefix(false);
+    const auto prior_computed=detector.computed(),prior_published=detector.published();
+    std::uint16_t first_context=0;std::uint64_t first_generation=0;std::array<std::byte,0x3a0> first_metadata{};
+    for(unsigned n=0;n<4;++n) {
+        changed=old_view;changed.eye[0]+=float(10*(n+1));changed.at[0]+=float(10*(n+1));
+        native(isle_game_camera_set_look_at(services.game,original,&changed));
+        draw("source-callback-removed-"+std::to_string(n),false,UINT16_MAX,n==0);
+        if(!n) {first_context=detection.context;first_generation=detector.generation(first_context);first_metadata=encoded(first_context);}
+        require(controller.queued_requests()==std::min<std::size_t>(n+1,2)&&!controller.has_pending(frame)&&
+            photo.quiescent()&&detector.context_available(0)&&detector.context_available(1)&&
+            same(detector.computed(),prior_computed)&&same(detector.published(),prior_published),
+            "callback removal analyzed/dropped a request, disabled captures or stranded successful GPU/history holds");
+    }
+    require(detector.generation(first_context)==first_generation+1&&encoded(first_context)!=first_metadata,
+        "queued ID pinned its obsolete enqueue-generation metadata instead of allowing genuine Source overwrite");
+    const auto latest=encoded(first_context);const auto latest_generation=detector.generation(first_context);
+    // No matching Source task means no callback, not last retired token replay.
+    struct NoSourceTask {
+        player::Renderer& renderer;std::span<IsleGameObject* const> cameras;
+        std::array<std::uint64_t,4> epochs{};unsigned calls=0;
+        static void complete(void* user,rsp::CanonicalExecutor::MemoryLease& lease,std::uint32_t) {
+            auto& self=*static_cast<NoSourceTask*>(user);
+            require(++self.calls==1,"no-source GPU draw acquired multiple completed mappings");
+            for(std::size_t n=0;n<self.cameras.size();++n) {
+                player::Renderer::Dispatch last{};native(self.renderer.dispatch_metadata(self.cameras[n],last));
+                require(last.epoch==self.epochs[n],"hidden camera fabricated a new Source dispatch");
+            }
+            require(!lease.postprocess_active(),"no-source draw retained an exclusive Photo mapping");
+        }
+    } no_source{renderer,cameras};
+    native(renderer.set_postprocess(true));std::array<std::uint32_t,4> flags{};
+    require(cameras.size()==flags.size(),"no-task scenario needs every actual scheduling camera");
+    for(std::size_t n=0;n<cameras.size();++n) {
+        player::Renderer::Dispatch last{};native(renderer.dispatch_metadata(cameras[n],last));
+        no_source.epochs[n]=last.epoch;
+        IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(services.game,cameras[n],&metadata));
+        flags[n]=metadata.flags;native(isle_game_object_set_flags(services.game,cameras[n],metadata.flags|1u));
+    }
+    // No Source camera ran: its light installation/main-camera payload is not
+    // this task's contract. Observe genuine GPU completion and unchanged last
+    // Source dispatches instead; the queued IDs must survive the GFX_END.
+    const auto before_empty=std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter());
+    require(renderer.begin(frame,{0},{&no_source,NoSourceTask::complete}),renderer.message());
+    require(frame.busy()&&std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter())==before_empty+1u,
+        "whole no-source draw did not advance its independent counter before GPU completion");
+    const auto empty_counter=renderer.drawn_frame_counter();
+    g::Poll empty_result;do {empty_result=renderer.poll();if(empty_result==g::Poll::pending) std::this_thread::yield();} while(empty_result==g::Poll::pending);
+    require(empty_result==g::Poll::completed&&no_source.calls==1&&renderer.drawn_frame_counter()==empty_counter,
+        "no-source GPU completion failed or advanced the independent draw counter");
+    save(output/"source-no-matching-task.rgba8",frame.completed().rgba);
+    require(controller.queued_requests()==2&&!controller.has_pending(frame)&&same(detector.computed(),prior_computed),
+        "GFX_END without a matching Source task reused an old token/callback and consumed Detector FIFO");
+    for(std::size_t n=0;n<cameras.size();++n) native(isle_game_object_set_flags(services.game,cameras[n],flags[n]));
+    // The current context differs from FIFO head; callback consumes latest head
+    // metadata against the one shared 20-region array in this actual mapping.
+    detection.enabled=false;hide_prefix(true);changed.eye[0]+=700;
+    native(isle_game_camera_set_look_at(services.game,original,&changed));
+    const auto resumed=draw("source-callback-reenabled",true,first_context);
+    require(resumed.context==first_context&&resumed.context!=detection.context&&
+        resumed.generation==latest_generation&&encoded(first_context)==latest&&
+        detector.computed().context==first_context&&controller.queued_requests()==1,
+        "re-enabled actual callback froze old metadata/pixels or consumed current context instead of FIFO head ID");
+    publish_release(resumed);
+    // A genuine original blink emits a presentation task but no ProcessImage.
+    // Its eligible callback can drain the second old ID without a new prefix.
+    require(services.send_command(cameras[0],ISLE_PLAYER_CAMERA_BLINK),"queued-drain blink FIFO enqueue failed");tick();
+    const auto drained=draw("source-queued-blink-callback");
+    require(drained.context==detection.context&&controller.queued_requests()==0,
+        "registered presentation callback did not drain queued Source ID during a no-request blink draw");
+    publish_release(drained);
+    native(isle_game_camera_set_look_at(services.game,original,&old_view));hide_prefix(false);detection.enabled=true;
+}
 struct LateUi {
     scene::Services& services;player::Ui& ui;g::Frame& frame;
     std::vector<sprite::RamRange> protected_ranges;
@@ -447,22 +649,31 @@ struct GraphicsLifetime {
     const std::unique_ptr<g::Frame>& secondary;
     ~GraphicsLifetime() {
         while(frame.busy()||(secondary&&secondary->busy())) {if(renderer.poll()==g::Poll::pending) std::this_thread::yield();}
-        for(auto* current:{&frame,secondary.get()}) if(current&&controller.ticket(*current).generation&&
-            current->completed()&&renderer.release_completed()!=ISLE_GAME_OK) std::terminate();
+        for(auto* current:{&frame,secondary.get()}) if(current&&controller.has_pending(*current)&&current->completed()) {
+            const auto released=renderer.release_completed();
+            if(released!=ISLE_GAME_OK) {
+                std::cerr<<"source renderer completed ticket retirement failure: "<<int(released)<<' '<<renderer.message()<<'\n';
+                std::terminate();
+            }
+        }
         photo_scene.retire();
-        if(renderer.detach()!=ISLE_GAME_OK) std::terminate();
+        const auto detached=renderer.detach();
+        if(detached!=ISLE_GAME_OK) {
+            std::cerr<<"source renderer receiver retirement failure: "<<int(detached)<<' '<<renderer.message()<<'\n';
+            std::terminate();
+        }
     }
 };
-enum class Failure {none,after_prefix,after_seal,completed_memory,nested_wire};
+enum class Failure {none,after_prefix,after_seal,completed_memory,nested_wire,source_queue,removed_callback_memory};
 void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure failure,unsigned independent) {
     require(std::filesystem::create_directory(output),"source scenario directory already exists");
     require(std::filesystem::create_directory(output/"profile"),"source scenario profile creation failed");
-    const world::Resources world_resources(snapshot);const auto& setup=world_resources.setup();
-    const beach::ActorResources actor_resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
-    const beach::BehaviorResources behaviors(snapshot);const items::Resources item_resources(snapshot,setup.fog_rgb,setup.fog_min,setup.fog_max);
-    const player::CartResources cart_resources(snapshot,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const world::Resources world_resources(snapshot, isle::course::beach_id);const auto& setup=world_resources.setup();
+    const actor::Resources actor_resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
+    const items::Resources item_resources(snapshot,setup.fog_rgb,setup.fog_min,setup.fog_max);
+    const player::CartResources cart_resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
     const player::UiResources ui_resources(snapshot);const player::PhotoResources photo_resources(snapshot);
-    const environment_sound::BeachResources sounds(snapshot);const menu::EffectResources effect_resources(snapshot);
+    const environment_sound::Resources sounds(snapshot,0);const menu::EffectResources effect_resources(snapshot);
     const photo::LightingInputs lighting(snapshot);const graphics::SourcePrograms programs(snapshot);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     const menu::EffectGraphicsResources effect_graphics(snapshot,banks,{0x700000,0x80000});
@@ -475,6 +686,13 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
     auto audio=game_audio::Session::create(std::move(hydrated.resources),audio_effects,pcm.output(),execution.executor());
     require(bool(audio),"source renderer audio Session failed");Audio clock{*audio.session,execution};
     game::State state(output/"profile");require(state.initialize(1)&&state.save(),"source renderer private save initialization failed");
+    // Isolated host entry performs the manager's post-Boot VI service once;
+    // scene rendering must not implicitly recover this output from profile RAM.
+    {
+        const auto initial_settings=state.save()->snapshot();require(bool(initial_settings),"source renderer entry settings unavailable");
+        const auto initial_vi=initial_settings.value.screen_offsets();require(bool(initial_vi),"source renderer entry VI unavailable");
+        state.set_screen_offsets({initial_vi.value.horizontal,initial_vi.value.horizontal,initial_vi.value.vertical,initial_vi.value.vertical});
+    }
     IslePlayerPhotoSource application{};native(photo_resources.bind(application,*state.save()));isle_player_photo_func_8009CE00(&application);
     game_input::Service input;scene::Storage storage(32*1024*1024);native(storage.create());
     {
@@ -532,7 +750,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
         native(isle_game_camera_set_look_at(services.game,source.camera,&view));
         auto* root=services.object(0,0);require(root,"real PhotoScene root creation failed");
         environment_sound::Environment environment(services,storage.arena(),sounds);require(environment.initialize(nullptr,source.camera),"source environment initialization failed");
-        Hooks hooks{services,source.camera};world::World world(services,world_resources,{&hooks,nullptr,Hooks::remove,nullptr,Hooks::camera_shift,Hooks::effects_shift,nullptr});world.follow_camera(source.camera);
+        world::ModuleState world_module;
+        Hooks hooks{services,source.camera};world::World world(services,world_resources,world_module,{&hooks,nullptr,Hooks::remove,nullptr,Hooks::camera_shift,Hooks::effects_shift,nullptr});world.follow_camera(source.camera);
         a::SlotCapacity actor_capacity{},item_capacity{};
         const auto capacity=[](auto models,a::SlotCapacity& maximum) {for(const auto& model:models) {const auto value=a::slot_capacity(model);
             maximum.nodes=std::max(maximum.nodes,value.nodes);maximum.material_attachments=std::max(maximum.material_attachments,value.material_attachments);}};
@@ -540,7 +759,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
         const std::array actor_capacities{actor_capacity,actor_capacity};std::array<a::SlotCapacity,8> item_capacities;item_capacities.fill(item_capacity);
         const auto cart_capacity=a::slot_capacity(cart_resources.animation_resources().models[0]);const std::array cart_capacities{cart_capacity,cart_capacity};
         {
-            actor::Owner actors(services,actor_resources,world,environment,detector,source,actor_capacities,banks,{32768,4096});hooks.actors=&actors;
+            beach::ActorSceneResources sceneData(snapshot);
+            std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
+            beach::ActorSceneState sceneState(sceneData,scene_latch);
+            actor::Owner actors(services,actor_resources,actor::CourseContext(sceneState),world,environment,detector,source,actor_capacities,banks,{32768,4096});hooks.actors=&actors;
             accepted(actors.publish_effects());native(renderer.adopt_effects(actors));
             require(source.D_80382D10_523120==actors.particle_object()&&source.D_80382D14_523124==actors.effect_object(),"source globals did not adopt actual ActorOwner -6/-7");
             require(environment.set_listener(source.model,source.camera),"actual Player/model listener binding failed");
@@ -553,7 +775,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
             auto* trigger=services.object(0x1000,4);require(trigger,"actual Magikarp trigger creation failed");
             IsleGameModelNodeInit node{};node.parent=UINT32_MAX;node.matrix_kind=ISLE_GAME_MODEL_CONTEXTUAL_RPY;node.transform.scale={1,1,1};node.transform.position={0,1233,4000};
             IsleGameModel* trigger_model=nullptr;native(isle_game_attach_model(services.game,trigger,&node,1,&trigger_model));
-            beach::MagikarpScene spawner(services,actors,world,actor_resources,behaviors);const auto actor=spawner.spawn_at({trigger,trigger_model});require(bool(actor),actor.detail);
+            beach::MagikarpScene spawner(services,actors,world,actor_resources,sceneState);const auto actor=spawner.spawn_at({trigger,trigger_model});require(bool(actor),actor.detail);
             player::Photo photo(application,source,actors,items,detection,photo_resources,world,0);
             actor::PhotoScene photo_scene(services,actors,root,source.camera,detection,&application);
             player::Controller controller(photo,detection);native(renderer.bind_photos(controller));
@@ -573,9 +795,11 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
             const auto ao=others({actor_layout.payloads,actor_layout.lists,actor_layout.materials},true);
             const auto io=others({item_layout.payloads,item_layout.lists,item_layout.materials},true);
             const auto co=others({cart_layout.payloads,cart_layout.lists,cart_layout.materials},true);
-            world::Producer worlds(services.game,source.camera,services.camera_basis(),world_resources,world,world_layout,wo);
+            world::Producer worlds(services.game,source.camera,services.camera_basis(),world_resources,world.render_view(),world_layout,wo);
             actor::Producer actor_producer(services.game,source.camera,services.camera_basis(),actor_resources,actor_capacities,actors.render_bindings(),actor_layout,ao,&detection);
-            items::Producer item_producer(services.game,source.camera,services.camera_basis(),item_resources,item_capacities,items.render_bindings(),item_layout,io);
+            menu::model::PacketProducer item_producer(services.game,source.camera,services.camera_basis(),
+                {item_resources.models(),item_resources.materials(),item_resources.installation_spans()},
+                item_capacities,items.render_bindings(),item_layout,io);
             player::cart::Producer carts(services.game,source.camera,services.camera_basis(),cart_resources,cart_capacities,cart.render_bindings(content.cart_order),cart_layout,co);
             course::ItemComposition composition{services,item_producer,128,&carts,photo_scene.prefix_object(),true};
             course::ModelProducer models(worlds,actor_producer,joined_lists,&composition);
@@ -589,15 +813,24 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
             const auto particle=actors.effects().create_particle(3,0,{500,1233,4000},{});require(bool(particle.status)&&particle.spawned,"actual shared common3 FX did not spawn");tick();tick();
             native(isle_actor_source_pause_object(actors.source(actor.actor.instance),1));native(isle_game_pause_updates(services.game,actor.actor.object,true));
             native(isle_player_render_invoke_viewport(&source,8,0,312,232));
+            if(failure==Failure::source_queue) {
+                const std::array ordinary{main_object,actual_ui,retained_ui,actors.particle_object()};
+                source_queue_cases(services,frame,renderer,controller,photo,source,application,
+                    photo_scene,detection,detector,ordinary,output,tick);
+            } else {
             content.fail_after_prefix=failure==Failure::after_prefix;
             const auto before=detector.generation(static_cast<std::uint16_t>(1-detection.context));
-            Evidence evidence{lighting,renderer,main_object};evidence.fail_completed=failure==Failure::completed_memory;
+            Evidence evidence{lighting,renderer,main_object};
+            evidence.fail_completed=failure==Failure::completed_memory||failure==Failure::removed_callback_memory;
+            if(failure==Failure::removed_callback_memory) native(renderer.set_postprocess(false));
             auto changed=view;changed.eye[0]+=300;
             native(isle_game_camera_set_look_at(services.game,source.camera,&changed));
             require(renderer.light_direction()==evidence.expected,"native camera change unexpectedly recomputed source-owned OM light bytes");
             const bool begun=renderer.begin(frame,{detection.context},{&evidence,Evidence::complete});
+            require(renderer.drawn_frame_counter()==(begun?1:0),
+                "failed/skipped whole source draw fabricated a counter advance or actual dispatch did not advance");
             if(failure==Failure::after_prefix||failure==Failure::after_seal||failure==Failure::nested_wire) {
-                require(!begun&&!frame.submission()&&frame.quiescent()&&!controller.ticket(frame).generation&&photo.quiescent(),
+                require(!begun&&!frame.submission()&&frame.quiescent()&&!controller.has_pending(frame)&&photo.quiescent(),
                     "source preparation failure retained sink/ticket or fabricated a GPU submission/completion");
                 require(content.calls==(failure==Failure::nested_wire?0u:1u),"source failure crossed the wrong real prefix/history phase");
                 require(failure!=Failure::nested_wire||source.status==ISLE_GAME_EXHAUSTED,"nested C GBI failure did not preserve exact exhaustion status");
@@ -609,9 +842,17 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                     "actual GPU/Photo ownership allowed camera slot reuse or deletion");
                 const auto actual_token=frame.submission();
                 g::Poll result;do {result=renderer.poll();if(result==g::Poll::pending) std::this_thread::yield();} while(result==g::Poll::pending);
-                if(failure==Failure::completed_memory) {
-                    require(result==g::Poll::failed&&frame.failed_submission(actual_token)&&!controller.ticket(frame).generation&&photo.quiescent(),
+                if(failure==Failure::completed_memory||failure==Failure::removed_callback_memory) {
+                    require(result==g::Poll::failed&&frame.failed_submission(actual_token)&&!controller.has_pending(frame)&&photo.quiescent(),
                         "actual completed-memory failure did not retire its exact failed ticket");
+                    require(controller.queued_requests()==(failure==Failure::removed_callback_memory?1u:0u),
+                        "failed completion erased an unconsumed Source ID or restored an already-received message");
+                    const auto first_error=renderer.status();native(renderer.set_postprocess(false));
+                    require(renderer.status()==first_error,"SC removal cleanup erased the first Renderer failure");
+                    if(failure==Failure::removed_callback_memory) {
+                        photo_scene.retire();
+                        require(controller.queued_requests()==0,"genuine Source teardown retained its old message FIFO");
+                    }
                 } else {
                     require(result==g::Poll::completed&&evidence.calls==1&&evidence.triangles&&evidence.rectangles,"normal original C camera did not execute actual geometry and UI");
                     const auto ticket=controller.ticket(frame);require(!detector.published().present,"source Photo published before native OM CopyInfo");
@@ -660,7 +901,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                     const auto timeout=source.MainCameraBlinkTimeout;const auto prefix_calls=content.calls;
                     Evidence blink{lighting,renderer,main_object};require(renderer.begin(frame,{1},{&blink,Evidence::complete}),renderer.message());
                     do {result=renderer.poll();if(result==g::Poll::pending) std::this_thread::yield();} while(result==g::Poll::pending);
-                    require(result==g::Poll::completed&&source.MainCameraBlinkTimeout==timeout-1&&content.calls==prefix_calls&&!controller.ticket(frame).generation,
+                    require(result==g::Poll::completed&&source.MainCameraBlinkTimeout==timeout-1&&content.calls==prefix_calls&&!controller.has_pending(frame),
                         "original blink prepared geometry/prefix/request or lost its timeout decrement");
                     IsleGameObjectMetadata fx{};native(isle_game_object_metadata(services.game,actors.particle_object(),&fx));
                     require(fx.flags&1u,"blink did not hide actual -6 before its dispatch");
@@ -700,6 +941,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                     services.erase(while_held);services.erase(after_release);
                 }
             }
+            }
         }
         native(ui.retire());native(renderer.detach());native(commands.detach());
     }
@@ -731,6 +973,8 @@ int main(int argc,char** argv) {
         run(snapshot,output/"failed-seal",Failure::after_seal,3);
         run(snapshot,output/"failed-completed-memory",Failure::completed_memory,4);
         run(snapshot,output/"failed-nested-wire",Failure::nested_wire,5);
+        run(snapshot,output/"source-context-queue",Failure::source_queue,6);
+        run(snapshot,output/"failed-removed-callback",Failure::removed_callback_memory,7);
         std::cout<<"original-C-source-renderer-component passed; originalRoot/fullgame/hardware/Windows11 not claimed\n";return 0;
     } catch(const std::exception& error) {std::cerr<<"player-source-renderer-rsp-smoke: "<<error.what()<<'\n';return 1;}
 }

@@ -63,9 +63,10 @@ std::shared_ptr<Element> Element::create(std::shared_ptr<Heap> heap, ElementList
     const int tile_height = 4096 / bpp / stride;
     const int tiles = (total_height + tile_height - 1) / tile_height;
     const auto plane_bytes = static_cast<std::size_t>(stride * tile_height * tiles * bpp);
+    const auto image_bytes = plane_bytes * (flags & use_alt_image ? 2u : 1u);
     const auto element_bytes = (sizeof(Element) + 7u) & ~std::size_t{7};
     auto allocation = std::make_shared<Allocation>(); allocation->heap = std::move(heap);
-    allocation->block = allocation->heap->allocate(element_bytes + plane_bytes * 2);
+    allocation->block = allocation->heap->allocate(element_bytes + image_bytes);
     if (!allocation->block) return {};
     auto* e = ::new (allocation->block) Element;
     std::shared_ptr<Element> result(e, [allocation](Element* value) { value->~Element(); });
@@ -74,7 +75,7 @@ std::shared_ptr<Element> Element::create(std::shared_ptr<Heap> heap, ElementList
     e->font_=defaults.font; e->text_mode_=defaults.mode; e->alt_x_=x;
     e->id_=list.next_id_++;
     auto* pixels = reinterpret_cast<std::uint8_t*>(allocation->block) + element_bytes;
-    std::memset(pixels,0,plane_bytes*2);
+    std::memset(pixels,0,image_bytes);
     IsleSprite prototype{};
     prototype.x=static_cast<std::int16_t>(x-edge); prototype.y=static_cast<std::int16_t>(y-edge);
     // Native bitmap placement wraps at visible width; padding is storage-only.
@@ -94,8 +95,9 @@ std::shared_ptr<Element> Element::create(std::shared_ptr<Heap> heap, ElementList
         bitmap.actualHeight=static_cast<std::int16_t>(actual); bitmap.byte_count=static_cast<std::size_t>(stride*actual*bpp);
         pieces.push_back({bitmap,static_cast<std::size_t>(i*stride*tile_height*bpp)});
     }
-    e->raster_=std::make_shared<sprite::Raster>(prototype,pieces,std::array<sprite::RasterStorage,2>{{
-        {allocation,{pixels,plane_bytes},physical[0]}, {allocation,{pixels+plane_bytes,plane_bytes},physical[1]}}});
+    std::array<sprite::RasterStorage,2> sources{{{allocation,{pixels,plane_bytes},physical[0]}, {}}};
+    if (flags & use_alt_image) sources[1]={allocation,{pixels+plane_bytes,plane_bytes},physical[1]};
+    e->raster_=std::make_shared<sprite::Raster>(prototype,pieces,std::move(sources));
     e->primary_=e->raster_->view(sprite::RasterSource::primary);
     if (flags & use_alt_image) e->display_source_=sprite::RasterSource::alternate;
     e->primary_.bitmap=e->raster_->view(e->display_source_).bitmap;
@@ -226,43 +228,120 @@ TextSurface Element::surface() {
     const auto offset=static_cast<std::size_t>(stride_*border_+border_)*static_cast<std::size_t>(bpp_);
     return {image().subspan(offset),stride_,height_,bpp_,x_+border_,y_+border_};
 }
-bool Element::wait_hook(void* p,std::uint32_t updates) {
-    auto& e=*static_cast<Element*>(p);
-    if (e.active_hooks_.wait) return e.active_hooks_.wait(e.active_hooks_.userdata,updates);
-    if (e.services_) return e.services_->wait(updates);
-    throw std::logic_error("window typewriter requires actual native continuation");
+StepResult Element::begin_print(PrintOperation& op,Text& text,std::string_view bytes,
+                                TextEvents events,TextEncoding encoding) noexcept {
+    if (active_print_ || (op.owner_ && op.result_.status!=StepStatus::done && op.result_.status!=StepStatus::error))
+        return {StepStatus::error,StepError::busy};
+    try {
+        const auto result=text.begin_print(op.text_operation_,surface(),text_x_,text_y_,bytes,
+            {events.character,events.button || buttons_!=nullptr,true},encoding);
+        if (result.status==StepStatus::error) return result;
+        op.owner_=this;op.text_=&text;op.events_=events;op.result_=result;op.internal_event_=false;
+        op.source_=write_source_;
+        op.origin_=static_cast<std::size_t>(stride_*border_+border_)*static_cast<std::size_t>(bpp_);
+        active_print_=&op;
+        text.set_font(font_);
+        text.palettes(flags_&grayscale?Color{255,255,255,foreground_.a}:foreground_,
+                      flags_&grayscale?Color{255,255,255,background_.a}:background_);
+        return op.result_;
+    } catch (...) { return {StepStatus::error,StepError::native_failure}; }
 }
-void Element::character_hook(void* p,std::uint16_t ch) {
-    auto& e=*static_cast<Element*>(p);
-    if (e.active_hooks_.character) e.active_hooks_.character(e.active_hooks_.userdata,ch);
+StepResult Element::finish_print(PrintOperation& op,StepError error) noexcept {
+    const auto text_result=op.text_operation_.result();
+    if (text_result.status!=StepStatus::done && text_result.status!=StepStatus::error)
+        op.text_->cancel_print(op.text_operation_);
+    op.result_={error==StepError::none?StepStatus::done:StepStatus::error,error};
+    op.text_=nullptr;
+    if (active_print_==&op) active_print_=nullptr;
+    return op.result_;
 }
-void Element::button_hook(void* p,int x,int y,char name,int scale) {
-    auto& e=*static_cast<Element*>(p);
-    if (e.active_hooks_.button) e.active_hooks_.button(e.active_hooks_.userdata,x,y,name,scale);
-    else if (e.buttons_) e.buttons_->create(x,y,name,scale);
-    else throw std::logic_error("window button escape requires native Buttons owner");
+void Element::cancel_print(PrintOperation& op) noexcept {
+    if (op.owner_==this && active_print_==&op) finish_print(op,StepError::cancelled);
 }
-void Element::changed_hook(void* p,std::size_t offset,std::size_t size) {
-    auto& e=*static_cast<Element*>(p);
-    const auto origin=static_cast<std::size_t>(e.stride_*e.border_+e.border_)*static_cast<std::size_t>(e.bpp_);
-    e.raster_->publish(e.write_source_,origin+offset,size);
-    if (e.active_hooks_.changed) e.active_hooks_.changed(e.active_hooks_.userdata,offset,size);
+StepResult Element::step_print(PrintOperation& op,bool resume) noexcept {
+    if (op.owner_!=this) return {StepStatus::error,StepError::invalid_operation};
+    if (op.result_.status==StepStatus::done || op.result_.status==StepStatus::error) return op.result_;
+    if (active_print_!=&op) return {StepStatus::error,StepError::invalid_operation};
+    const bool pending=op.result_.status==StepStatus::event || op.result_.status==StepStatus::needs_source_wait;
+    // Text::detach/retire may have cancelled the underlying operation.
+    const auto text_result=op.text_operation_.result();
+    if (text_result.status==StepStatus::error) return finish_print(op,text_result.error);
+    if (pending && !resume) return op.result_;
+    if (!pending && resume) return {StepStatus::error,StepError::invalid_operation};
+    if (write_source_!=op.source_) return finish_print(op,StepError::invalid_operation);
+    try {
+        op.result_=op.text_->step_print(op.text_operation_,resume || op.internal_event_);
+        op.internal_event_=false;
+        if (op.result_.status==StepStatus::event) {
+            const auto& value=op.event();
+            switch (value.kind) {
+            case TextEvent::Kind::changed:
+                raster_->publish(op.source_,op.origin_+value.offset,value.size);
+                op.internal_event_=!op.events_.changed;
+                break;
+            case TextEvent::Kind::button:
+                if (!op.events_.button) {
+                    if (!buttons_) return finish_print(op,StepError::missing_button);
+                    buttons_->create(value.x,value.y,value.button,value.scale);
+                    op.internal_event_=true;
+                }
+                break;
+            case TextEvent::Kind::character: case TextEvent::Kind::none: break;
+            }
+            if (op.internal_event_) op.result_={StepStatus::more};
+        }
+        if (op.result_.status==StepStatus::done || op.result_.status==StepStatus::error)
+            return finish_print(op,op.result_.error);
+        return op.result_;
+    } catch (...) { return finish_print(op,StepError::native_failure); }
 }
-bool Element::print(Text& text,std::string_view str,TextHooks hooks) {
-    active_hooks_=hooks;text.set_font(font_);
-    text.palettes(flags_&grayscale?Color{255,255,255,foreground_.a}:foreground_,flags_&grayscale?Color{255,255,255,background_.a}:background_);
-    // TextSurface and TextHooks are trivial borrows. No owning automatic C++
-    // state survives a native stackful wait inside Text::print.
-    auto target=surface();
-    return text.print(target,text_x_,text_y_,str,{this,wait_hook,
-        active_hooks_.character?character_hook:nullptr,active_hooks_.button||buttons_?button_hook:nullptr,changed_hook});
+bool Element::run_print(Text& text,std::string_view bytes,TextHooks hooks,TextEncoding encoding) {
+    PrintOperation op;
+    auto result=begin_print(op,text,bytes,
+        {hooks.character!=nullptr,hooks.button!=nullptr,hooks.changed!=nullptr},encoding);
+    try {
+        for (;;) {
+            switch (result.status) {
+            case StepStatus::more: result=step_print(op);break;
+            case StepStatus::event: {
+                const auto value=op.event();
+                switch (value.kind) {
+                case TextEvent::Kind::character: hooks.character(hooks.userdata,value.character);break;
+                case TextEvent::Kind::button: hooks.button(hooks.userdata,value.x,value.y,value.button,value.scale);break;
+                case TextEvent::Kind::changed: hooks.changed(hooks.userdata,value.offset,value.size);break;
+                case TextEvent::Kind::none: break;
+                }
+                result=step_print(op,true);break;
+            }
+            case StepStatus::needs_source_wait:
+                if (hooks.wait) {
+                    if (!hooks.wait(hooks.userdata,result.updates)) {cancel_print(op);return false;}
+                } else if (services_) {
+                    if (!services_->wait(result.updates)) {cancel_print(op);return false;}
+                } else throw std::logic_error("window typewriter requires actual native continuation");
+                result=step_print(op,true);break;
+            case StepStatus::done: return true;
+            case StepStatus::error:
+                switch (result.error) {
+                case StepError::cancelled: return false;
+                case StepError::invalid_text: throw std::invalid_argument("truncated source text character");
+                case StepError::invalid_surface: throw std::invalid_argument("window text surface");
+                case StepError::surface_boundary: throw std::out_of_range("source glyph/shadow allocation boundary");
+                case StepError::missing_button: throw std::logic_error("window button escape requires native Buttons owner");
+                default: throw std::runtime_error("window element text operation failed");
+                }
+            }
+        }
+    } catch (...) {cancel_print(op);throw;}
 }
-void Element::print_ascii(Text& text,std::string_view str,TextHooks hooks) {
-    active_hooks_=hooks;text.set_font(font_);
-    text.palettes(flags_&grayscale?Color{255,255,255,foreground_.a}:foreground_,flags_&grayscale?Color{255,255,255,background_.a}:background_);
-    auto target=surface();text.print_ascii(target,text_x_,text_y_,str,{this,nullptr,nullptr,nullptr,changed_hook});
+bool Element::print(Text& text,std::string_view bytes,TextHooks hooks) {
+    return run_print(text,bytes,hooks,TextEncoding::source);
+}
+void Element::print_ascii(Text& text,std::string_view bytes,TextHooks hooks) {
+    run_print(text,bytes,{hooks.userdata,nullptr,nullptr,nullptr,hooks.changed},TextEncoding::ascii);
 }
 bool Element::print_format(Text& text, TextHooks hooks, const char* format, ...) {
+    if (active_print_) throw std::logic_error("window text operation already active");
     if (!format) throw std::invalid_argument("window text format");
     va_list arguments;
     va_start(arguments,format);
@@ -273,6 +352,7 @@ bool Element::print_format(Text& text, TextHooks hooks, const char* format, ...)
     return print(text,{format_buffer_.data(),static_cast<std::size_t>(size)},hooks);
 }
 void Element::swap_images() {
+    if (active_print_) throw std::logic_error("cannot swap images during window text operation");
     if (flags_&use_alt_image) {
         const auto from=image();const auto to=raster_->pixels(other(write_source_));
         std::copy(from.begin(),from.end(),to.begin());
@@ -280,7 +360,7 @@ void Element::swap_images() {
         display_source_=write_source_;write_source_=other(write_source_);
     } else display_source_=write_source_;
     primary_.bitmap=raster_->view(display_source_).bitmap;
-    displayed_=primary_; // Source swap always restores the primary descriptor, even with SHOW_ALT set.
+    displayed_=primary_; // Source's no-alt branch also restores primary, without copying or switching planes.
     if (services_) services_->replace_sprite(attachment_.sprite,binding_.resources[source_index(display_source_)],displayed_,binding_.generation);
 }
 void Element::set_pos(int x,int y) {
@@ -329,6 +409,7 @@ bool Element::attach(scene::Services& services,sprite::RasterBinding binding) {
     services_=&services;binding_=binding;attachment_={object,native};return true;
 }
 void Element::detach() noexcept {
+    if (active_print_) cancel_print(*active_print_);
     if (services_) services_->erase(attachment_.object);
     services_=nullptr;attachment_={};
 }

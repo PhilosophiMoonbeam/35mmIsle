@@ -10,7 +10,9 @@
 
 namespace isle::actor { class Owner; }
 namespace isle::player::cart { class Owner; }
+namespace isle::screen_transition { class Resources; class Owner; }
 namespace isle::player {
+class Ui;
 // Retained camera scheduling/render metadata, not another Player, camera pose,
 // clock, Detector transaction registry or original Root entrypoint. Services,
 // Source, providers, ROM and resources outlive detach().
@@ -20,6 +22,7 @@ namespace isle::player {
 // the actual final-GTL phase. No extra camera, fake task or completion is used.
 class Renderer final {
 public:
+    // Includes adopted Source message and transition scheduling cameras.
     static constexpr std::size_t camera_capacity = 32;
     struct Config {
         scene::render::Resources resources;
@@ -70,14 +73,35 @@ public:
     // Complete original C constructor; output is its actual returned UI object.
     IsleGameResult create_main(std::int32_t background,IsleGameObject** ui) noexcept;
     // Register another genuine scheduling camera without replacing its update
-    // or primary semantic owner's lifecycle. Equal priorities are head-inserted,
-    // as the original camera list. Projection and scheduling identities differ.
+    // or primary semantic owner's lifecycle. Original camera insertion appends
+    // after equal priorities. Projection and scheduling identities differ.
     IsleGameResult attach(const Camera&) noexcept;
+    // Individually adopt each original FX factory result BEFORE it is returned
+    // to the C canonical-field assignment. Each exact field is registered once
+    // by the actual main-camera receiver and credited here before publication.
+    IsleGameResult adopt_particle(actor::Owner&,IsleGameObject*) noexcept;
+    IsleGameResult adopt_effect(actor::Owner&,IsleGameObject*) noexcept;
     IsleGameResult adopt_effects(actor::Owner&) noexcept;
+    // Changes the real GTL task selector, never the camera near-plane scalar.
+    // Rejects outstanding preparation/GPU/Photo ownership before changing it.
+    IsleGameResult set_near_clipping_disabled(bool) noexcept;
     // Cold attachment after original camera creation and PhotoScene binding.
     // The sole production Controller owns all capture identities.
     IsleGameResult bind_photos(Controller&) noexcept;
     IsleGameResult bind_cart(cart::Owner&,std::span<scene::RenderOrderEntry> cold_order_scratch) noexcept;
+    // Bind immediately after original Msg_InitCamera, before any later genuine
+    // priority3 camera and before reserve/first begin. Ordinary Ui sprites stay
+    // Services-owned; Ui survives primary-owner/secondary-observer collection.
+    // Caller supplies the arena from its complete, asset-disjoint RAM plan.
+    IsleGameResult bind_ui(Ui&,sprite::RamRange message_commands) noexcept;
+    // Bind cold, before reserve/first begin; the Source camera may not exist yet.
+    // One of the same32 slots is reserved, not another camera registry. Resources
+    // and Owner outlive this same Frame's preparation, GPU and readback.
+    IsleGameResult bind_transition(screen_transition::Resources&,screen_transition::Owner&) noexcept;
+    // Source SC callback registration, independent of per-actor capture enable.
+    IsleGameResult set_postprocess(bool enabled) noexcept;
+    // Standard whole Source draw dispatches, not OM/GPU/audio epochs.
+    std::int32_t drawn_frame_counter() const noexcept;
     IsleGameObject* ui_camera_object() const noexcept;
     IsleGameResult metadata(IsleGameObject*,Camera&) const noexcept;
     IsleGameResult dispatch_metadata(IsleGameObject*,Dispatch&) const noexcept;
@@ -89,7 +113,20 @@ public:
     // Completed Photo tickets deliberately survive poll, OM CopyInfo and
     // shutter use. This releases their real holds before Frame/camera reuse.
     IsleGameResult release_completed() noexcept;
+    // Logical request is safe inside OM and while consumers retain the camera.
+    // Immediately pauses its actual updater/processes and hides its scheduling
+    // object, preventing later camera work in the same OM/preparation traversal.
+    // Does not clear Source fields, delete payloads, join or complete GPU/Photo.
+    // No new begin is admitted after the request. Physical Source deletion is
+    // performed only by service_main_removal at a proven idle owner boundary.
     IsleGameResult remove_main() noexcept;
+    IsleGameResult service_main_removal() noexcept;
+    // Cancellation-only main-camera teardown, without entering a Source fence
+    // or clearing its failure. Requires real idle/GPU/Photo closure; immediately
+    // stops and actually erases/joins only the main object, retaining records
+    // for later collection. No published main object is a successful no-op.
+    IsleGameResult abort_main() noexcept;
+    bool main_removal_pending() const noexcept;
     IsleGameResult collect_joined() noexcept;
     // Delete/join scheduling helpers through their real composed owners.
     // Rejects outstanding GPU/readback/Photo borrows and active C dispatch.

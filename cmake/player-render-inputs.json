@@ -44,7 +44,7 @@
   },
   "native_support": {
     "src/player_source.h": {
-      "sha256": "c2a6fd05e7e012c336ffa04a0d5d8ba896e798974bb5c8c5cdaeaad9c552f8c1"
+      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
     },
     "src/player_render_source.h": {
       "sha256": "79b7d35fece4ed36100cb957a4ada180c837b30ccace6ea0c33790b33a349c9a"

@@ -1,8 +1,9 @@
 {
   "schema_version": 1,
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "item-owner-v1",
-  "generator_sha256": "6a993f6985397b79c092f620c01f02210939885597b4bf4c340f22bd316acd37",
+  "transformation_version": "item-owner-v2-context-collision",
+  "generator_sha256": "5d91fffbba9c44b90f4fb3be463a208fa564fda4ae0e053de70de14a73dad610",
+  "transformed_source_sha256": "abdef2c8c01eaf1c3200a839b1dd9c63cd829a4625eea9f77fbd9e4b6c4aa41e",
   "source_files": {
     "include/enums.h": {
       "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
@@ -38,29 +39,50 @@
     }
   },
   "native_support": {
+    "src/actor_course_context.hpp": {
+      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/rainbow_actor.hpp": {
+      "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
+    },
+    "src/rainbow_actor.cpp": {
+      "sha256": "cee34cf3abf985d85ca3031735f477fab0de70b3d445572cba5086aeba84542d"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
     "src/source_factory_resources.h": {
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/item_owner.hpp": {
-      "sha256": "d610d21a688d7cb0cb83725159cd4d2128138ab71890a1dc3eb525941acf80b0"
+      "sha256": "19a62f645a35e475ec463865b0118b1fa550251740b26dbaf9938bcc28884d20"
     },
     "src/item_owner.cpp": {
-      "sha256": "bfc7421d00498ea308ce5e3706ed7816bd26a4bc66c39aaf69fe8f5b4f799ac1"
+      "sha256": "809edce92f435da2088d5d33fb4e82f0d8acdb897947c34f98189b8c1243971f"
     },
     "src/item_owner_source.h": {
-      "sha256": "e9271d1ad7f928ab412eb86bb9fdefba0a9147358a923f330498675447d3e73b"
+      "sha256": "1842121e7052322c9acd84d9f49bd8f4d466ca2ea4e04aff46691a9de58b3662"
     },
     "src/item_source_bridge.c": {
-      "sha256": "19016fa50453ade999134c93e6afcebd7540c73f18a5845efec45c1d32ad76e4"
+      "sha256": "b7bc9d912e9f88f4bdf37fbb9ed0682f978e0a586634e1459698bd3d6171c883"
     },
     "src/item_source.h": {
-      "sha256": "ab515ea3a720169f485949b4a7ce9f3eadc34b6cfe99296b2f2c8c6f2b9371f8"
+      "sha256": "afb404b3a5ac475fb1541ae6d5fe4fe5f3f38cf9b69e2f59e30c727f1cfdab5a"
     },
     "src/item_source_bind.c": {
       "sha256": "d739ecc41705897fe9b978f965e5931f48842b49047d0abab271cdf044bd8efe"
     },
-    "src/item_render_binding.hpp": {
-      "sha256": "34ac458a9fbf04e70014f527becd8a46035f1d8f3ffdfa39d5384292ac151311"
+    "src/borrowed_model_producer.hpp": {
+      "sha256": "8e520ef455ffdb2717fed1872f62bd38945b6071fba169d9d500b3fff8b397a5"
     },
     "src/item_flute.hpp": {
       "sha256": "0f6a832aad4a7ed67260111c2c074ac10a484d4150e3ca9e1d95e45b73e44bb4"
@@ -69,49 +91,49 @@
       "sha256": "b053794bcbd06f3eb9df6eb3fc3e213f87653695287e755f98ef8fc9210c1a3f"
     },
     "src/engine.c": {
-      "sha256": "e456488c3010cd66fa285470d190e8027d7be1cf28d356f1257ec79d89fafd03"
+      "sha256": "0ca899ae1dbe75f5614c9375afad08e97b9e33cacb5abfc2e28c9c3ab9e08681"
     },
     "src/engine_internal.h": {
-      "sha256": "f9cad7750574c88ab63904b8ba39bb16402c57f959d2c3ad25d02d850941439e"
+      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "ab9407177648c504fdfc43a29be09f3e0c19af7079ce9311beac132996531210"
+      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
     },
     "src/menu_animation.hpp": {
-      "sha256": "62520c85ecd72a5b9731d415dc7fb4e1b35164f9649b466ec7c7859b194bf1ca"
+      "sha256": "cbfbdd13cd15bcd5d1000fba4702db1d92e85083e0c64a624fdbc8a713ffd286"
     },
     "src/menu_animation.cpp": {
-      "sha256": "4a4a5a3587f15a89e63243652cf467294104777a874b9adb79cf58ac9077073a"
+      "sha256": "ef6226a3d2b7206e90c0b36f983e06a32861b0109f589e92c42ede7a19497f8d"
     },
     "src/scene_services.hpp": {
-      "sha256": "de8c6148ed02a5552fa500fc897cab56a9ffe04bf92feed0330168aeecf2e11b"
+      "sha256": "4b4fafd05a7eee03880cff975c5f8a2d1b987d6c4a32c7d3cd2c331d7cba6354"
     },
     "src/scene_services.cpp": {
-      "sha256": "11f63a47eac3fe14dcf63c4776aa27e780fef89ced6666027815043f96a162b4"
+      "sha256": "f90298ec84783876a970ce150bb1c0901e8da5c4e562de8b1d742de53a5494e8"
     },
     "src/world_runtime.hpp": {
-      "sha256": "54befb30b1636a7aa3228cd0664cd093c676ff8feef5128b4dbf4900e00db511"
+      "sha256": "f8c75f19fe010624088615ec745dcfaaec07ca36724bb25ed1241eb91b8c7aa0"
     },
     "src/world_runtime.cpp": {
-      "sha256": "40f975bd55e810f2fd8d9f656e27c780514af0734e10a6a533ad301aab5e43a6"
+      "sha256": "b21496bec89c7a979044c5fff9e1ea298016643f32ddff97e6f5b144e8df2047"
     },
     "src/actor_owner.hpp": {
-      "sha256": "6f6ed573d75bde32d5627426a831e020c15ef90d06bdde36bbe3e939aa848e86"
+      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
     },
     "src/actor_owner.cpp": {
-      "sha256": "296f99ca878451334479cf2f98915a749b055d8ab18ab3fb5e07b4a5cc3d0031"
+      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
     },
     "src/actor_owner_source.h": {
-      "sha256": "e79461c921578ae9866f4a0403ae51b94650d992000d3e93a7b9886f2983add4"
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "5d8d1120d1dda56d20355562ad4e458da984dd0502d8bdb8a15744cff2595413"
+      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
     },
     "src/beach_magikarp_scene.hpp": {
-      "sha256": "11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"
+      "sha256": "7774ba3e4e59d84692d1553df23b36f0d8e91d2b8a4632e4ceffcc004fee3a1b"
     },
     "src/beach_magikarp_scene.cpp": {
-      "sha256": "2c475d4505b7344040013b4d1f6362b62f5f81d6fe523a3775f346dbc2e4097f"
+      "sha256": "625837894dd98025b11b0b7d84370ffb81b53e8f0e9e295981ac20182d9d663e"
     },
     "tools/prepare_engine.py": {
       "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
@@ -494,6 +516,7 @@
     "unwritten_fields": "Initial prevPos is actual initial root; collisionVelocity is zero. Original unwritten/recycled heap parity is not claimed.",
     "capacity": "Caller-predeclared physical native/Runtime/payload storage is distinct from logical entries20, IDs300..319, payload cache20, and per-requested-family threshold5. Held semantic/native identities are never reused.",
     "root": "Consecutive source scalar writes publish Runtime and real native root before the next source action, observer, wait, end or callback. No copied renderer pose or second physics.",
+    "extra_collision": "One same-Game callback/context pair; status is distinct from hit ID. The caller retains context through active calls and Item process joins, serializes paired set/clear with execution, and clears before context retirement. C invokes directly, checks status after return, and publishes successful vector/Source changes even on hit -1 before the next Source action. Half-null, wrong-Game and reentrant replacement fail without mutation; terminal cleanup may clear. Native course adapters additionally validate their canonical Source context and active phase.",
     "flute": "Four source APIs forward exclusively to shared Flute; caller state and actual audio-build equality epoch are retained.",
     "retirement": "Logical unlink and cache insertion precede actual native delete; only outside native/command/GPU/preparation/readback exclusion and actual source borrow closure permits physical reuse."
   },
@@ -506,7 +529,7 @@
     "effect_motion": "Actual initializedcommonbank3/script0 velocity0/6/0, effectlife20/particlelife30;52source-derivedupdates/850exactmotionandRNGobservations, all850differfromoldzerooverride; originalbankunchanged, throwawayremoved",
     "Flute": "Eachprofile:actualsource1/3/2 songs,5/6/7 commands,9runs/828realRSPtasks/directsong+restartPCMexact, nonzerocounterfactualdifferences, actualacceptedbuildEpoch; checkedownedCPU audio notexercisedSDL3device/stream",
     "graphics": "Complete actualSourceItemOwner mixedWorld/Actor/fume/sourceglobalDL3 GPUconsumer: pausednativevisibility/allactiveactualbinding/real21-22holds/fences/sourceID-newincarnation/contemporaneousreplacementRGB5depthgeometry, allthreeprofiles",
-    "not_claimed": "ProductionPlayerFSM/input/fullspecies/all71callbackclosure/fullgame/Original/privateWindows11/physicaldevices or hearing"
+    "not_claimed": "ProductionPlayerFSM/input/fullspecies/all71callbackclosure/fullgame/Original/privateWindows11/physicaldevices or hearing; the source-only context/result collision ABI cutover and NativeRainbow callback integration are not qualified by these pre-cutover runtime observations"
   },
   "semantic_origins": [
     {

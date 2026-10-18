@@ -3,7 +3,7 @@
   "repository": "https://github.com/ethteck/pokemonsnap",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.11.4",
-  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"11b12818d690adc22ba4a77b60f900809d6280e1256a97b453d1ff43f0bda43b"},"src/beach_magikarp_scene.cpp":{"sha256":"2c475d4505b7344040013b4d1f6362b62f5f81d6fe523a3775f346dbc2e4097f"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"6a4a3688d33e80ba11158336c657f8d582715a1b02758027fc1661dda53f9304"}},
+  "native_support": {"src/beach_magikarp_scene.hpp":{"sha256":"7774ba3e4e59d84692d1553df23b36f0d8e91d2b8a4632e4ceffcc004fee3a1b"},"src/beach_magikarp_scene.cpp":{"sha256":"625837894dd98025b11b0b7d84370ffb81b53e8f0e9e295981ac20182d9d663e"},"tests/beach_magikarp_scene_rom_smoke.cpp":{"sha256":"2affeaf880c6599bfad92910221d549eb63c4a40aa61c0b029f5cfb51797fbb4"}},
     "tests/actual_player_source.hpp": {
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },
@@ -86,7 +86,7 @@
     "executed_cpu": true
   },
   "integration": {
-    "production": "Integrated isle-beach-magikarp-scene STATIC src/beach_magikarp_scene.cpp/.hpp, PUBLIC existing isle-actor-owner and isle-beach-behavior-resources; strict source FP. Existing Owner compiles actor_photo_eligibility.cpp/.hpp once, no duplicate math/runtime/renderer/scheduler or dependency cycle.",
+    "production": "Integrated isle-beach-magikarp-scene STATIC src/beach_magikarp_scene.cpp/.hpp, PUBLIC existing isle-actor-owner. Its one borrowed beach::ActorSceneState supplies the exact same latch and immutable isle-beach-actor-scene chooser; no generic resource owner decodes Beach scene state. Strict source FP. Existing Owner compiles actor_photo_eligibility.cpp/.hpp once, no duplicate math/runtime/renderer/scheduler or dependency cycle.",
     "private_target": "add_executable(beach-magikarp-scene-rom-smoke EXCLUDE_FROM_ALL tests/beach_magikarp_scene_rom_smoke.cpp)",
     "private_link_libraries": ["isle-beach-magikarp-scene", "isle-effect-bank-resources", "isle-graphics-task", "isle-rsp"],
     "private_options": "Same actual-ROM target gate as magikarp-owner-rom-smoke: TARGET isle-actor-owner AND ISLE_BUILD_RSP_PROBE; isle_target_options; strict FP -frounding-math -ffp-contract=off -fno-fast-math or /fp:strict.",

@@ -21,8 +21,8 @@ MenuTransition menu_transition(MenuAvailability, std::uint8_t state, unsigned se
 
 // UI owns native control/cosmetic processes and mutable sprite copies only.
 // Services, Title and their resource/service borrowers must outlive this owner.
-// Parent owns GTL, global camera/VI application and every GPU lease. In
-// particular screen_offsets() is the live VI preview, not a save-only value.
+// Parent owns GTL, global cameras and every GPU lease. State alone owns live VI;
+// calibration writes it at Source service calls, independently of editing BSS.
 class Ui final {
 public:
     Ui(::isle::scene::Services&, Title&, const Catalog&);
@@ -31,6 +31,8 @@ public:
     Ui& operator=(const Ui&) = delete;
     bool start() noexcept;
     std::uint8_t source_state() const noexcept;
+    // Translation projection of State, not editable/saved offsets. Unsupported
+    // unequal endpoints fail Services; callers must honor failed() on Services.
     save::ScreenOffsets screen_offsets() const noexcept;
     std::uint32_t entry_flags() const noexcept;
     void retire() noexcept;

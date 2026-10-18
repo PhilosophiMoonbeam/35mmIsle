@@ -71,6 +71,7 @@ public:
     // PFID16 and result11 exactly once. Services/State must still be alive.
     bool complete_scene() noexcept;
     bool take_result(std::int32_t&) noexcept;
+    // Live State projection. Unequal endpoints fail the scene, never collapse.
     save::ScreenOffsets screen_offsets() const noexcept;
     // Same external fence prerequisite. Abort retirement does not set PFID16.
     void retire() noexcept;

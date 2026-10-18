@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cstring>
+#include <exception>
 #include <utility>
 
 namespace isle::save {
@@ -26,7 +28,7 @@ struct PhotoRegion { std::size_t offset; std::size_t count; std::size_t stride; 
 PhotoRegion region(PhotoSet set) noexcept {
     switch (set) {
     case PhotoSet::report: return {0x180, game_report_count, game_photo_bytes};
-    case PhotoSet::temporary: return {0xfba0, 4, game_photo_bytes};
+    case PhotoSet::temporary: return {0xfba0, game_temporary_count, game_photo_bytes};
     case PhotoSet::album: return {0x10a20, game_album_count, 0x3e0};
     }
     return {};
@@ -110,6 +112,15 @@ struct GameSession::Impl {
     bool initialization_notice = false;
     bool initialization_notice_secondary = false;
     bool course_notice = false;
+    std::array<bool, 3> pending_item_grants{};
+    PhotoProjection projection{};
+    const void* replay_borrower = nullptr;
+    PhotoSet replay_set = PhotoSet::report;
+    std::size_t replay_index = 0;
+    bool replay_saved = false;
+    bool borrowed(PhotoSet set, std::size_t index) const noexcept {
+        return replay_borrower && replay_saved && replay_set == set && replay_index == index;
+    }
     bool dirty = false;
     bool writable = false;
     GameSnapshot::Data& mutate() {
@@ -117,11 +128,22 @@ struct GameSession::Impl {
         dirty = true;
         return *data;
     }
+    void photo_changed(PhotoSet set, std::size_t index, bool flags_only = false) noexcept {
+        if (!projection.owner) return;
+        const auto r = region(set);
+        projection.photo_changed(projection.owner, set, index,
+            std::span<const std::byte>(data->bytes).subspan(r.offset + index * r.stride, game_photo_bytes), flags_only);
+    }
+    void comment_changed(std::size_t index) noexcept {
+        if (projection.owner) projection.comment_changed(projection.owner, index,
+            std::span<const std::byte>(data->bytes).subspan(0x10a20 + index * 0x3e0 + game_photo_bytes, 64));
+    }
     GameError initialize(std::uint32_t time) noexcept {
         auto& state = *data;
         state.bytes.fill(std::byte{0});
         state.transient_flag = false;
         course_notice = false;
+        pending_item_grants.fill(false);
         // Wire-format constants/field facts, never host pointers or raw structs.
         constexpr std::array<unsigned char, 16> version{
             0x48,0x41,0x4c,0x5f,0x53,0x4e,0x41,0x50,0x5f,0x56,0x31,0x2e,0x30,0x2d,0x31,0x00,
@@ -148,9 +170,19 @@ struct GameSession::Impl {
     }
 };
 GameSession::GameSession() noexcept = default;
-GameSession::~GameSession() = default;
-GameSession::GameSession(GameSession&&) noexcept = default;
-GameSession& GameSession::operator=(GameSession&&) noexcept = default;
+GameSession::~GameSession() {
+    if (impl_ && impl_->projection.owner) std::terminate();
+}
+GameSession::GameSession(GameSession&& other) noexcept {
+    if (other.impl_ && other.impl_->projection.owner) std::terminate();
+    impl_ = std::move(other.impl_);
+}
+GameSession& GameSession::operator=(GameSession&& other) noexcept {
+    if ((impl_ && impl_->projection.owner) || (other.impl_ && other.impl_->projection.owner))
+        std::terminate();
+    impl_ = std::move(other.impl_);
+    return *this;
+}
 GameSession::operator bool() const noexcept { return impl_ && impl_->data && impl_->writable; }
 GameOpenResult GameSession::open(const std::filesystem::path& directory, std::uint32_t time) {
     GameOpenResult result;
@@ -190,6 +222,7 @@ GameOpenResult GameSession::open(const std::filesystem::path& directory, std::ui
 }
 GameError GameSession::reset(std::uint32_t time) {
     if (!*this) return unavailable;
+    if (impl_->replay_borrower) return {GameErrc::source_state};
     if (impl_->data.use_count() != 1) {
         // A reset replaces every byte; preserve snapshots without first copying
         // their payload only to overwrite it with defaults.
@@ -197,7 +230,9 @@ GameError GameSession::reset(std::uint32_t time) {
         replacement->generation = impl_->data->generation;
         impl_->data = std::move(replacement);
     }
-    return impl_->initialize(time);
+    const auto error = impl_->initialize(time);
+    if (!error && impl_->projection.owner) impl_->projection.reset(impl_->projection.owner);
+    return error;
 }
 GameValue<GameSnapshot> GameSession::snapshot() {
     if (!*this) return {{}, unavailable};
@@ -208,6 +243,44 @@ GameValue<GameSnapshot> GameSession::snapshot() {
     result.image_ = impl_->image;
     result.data_ = impl_->data;
     return {std::move(result)};
+}
+GameError GameSession::bind_photo_projection(PhotoProjection projection) noexcept {
+    if (!*this) return unavailable;
+    if (impl_->projection.owner || !projection.owner || !projection.photo_changed ||
+        !projection.comment_changed || !projection.reset) return {GameErrc::source_state};
+    impl_->projection = projection;
+    return {};
+}
+void GameSession::unbind_photo_projection(void* owner) noexcept {
+    if (impl_ && impl_->projection.owner == owner) impl_->projection = {};
+}
+GameError GameSession::borrow_replay(const void* borrower, bool saved,
+    PhotoSet set, std::size_t index) noexcept {
+    if (!*this) return unavailable;
+    if (!borrower || impl_->replay_borrower || (saved && index >= region(set).count))
+        return {GameErrc::source_state};
+    impl_->replay_borrower = borrower;
+    impl_->replay_saved = saved;
+    impl_->replay_set = set;
+    impl_->replay_index = index;
+    return {};
+}
+GameError GameSession::release_replay(const void* borrower) noexcept {
+    if (!impl_ || !borrower || impl_->replay_borrower != borrower) return {GameErrc::source_state};
+    impl_->replay_borrower = nullptr;
+    impl_->replay_saved = false;
+    return {};
+}
+GameValue<std::span<const std::byte>> GameSession::photo(PhotoSet set, std::size_t index) const noexcept {
+    if (!*this) return {{}, unavailable};
+    const auto r = region(set);
+    if (index >= r.count) return {{}, bounds};
+    return {std::span<const std::byte>(impl_->data->bytes).subspan(r.offset + index * r.stride, game_photo_bytes)};
+}
+GameValue<std::span<const std::byte>> GameSession::album_comment(std::size_t index) const noexcept {
+    if (!*this) return {{}, unavailable};
+    if (index >= game_album_count) return {{}, bounds};
+    return {std::span<const std::byte>(impl_->data->bytes).subspan(0x10a20 + index * 0x3e0 + game_photo_bytes, 64)};
 }
 GameError GameSession::set_player_flag(unsigned id, bool value) {
     if (!*this) return unavailable;
@@ -254,6 +327,24 @@ GameError GameSession::set_report_score(std::size_t index, std::int32_t score) {
     write32(impl_->mutate().bytes.data() + 0x6c + index * 4, std::bit_cast<std::uint32_t>(score));
     return {};
 }
+GameValue<std::int32_t> GameSession::report_score(std::size_t index) const noexcept {
+    if (!*this) return {{}, unavailable};
+    if (index >= game_report_count) return {{}, bounds};
+    return {std::bit_cast<std::int32_t>(read32(impl_->data->bytes.data() + 0x6c + index * 4))};
+}
+GameValue<bool> GameSession::pending_item_grant(int source_index) const noexcept {
+    if (!*this) return {{}, unavailable};
+    return {impl_->pending_item_grants[static_cast<std::size_t>(std::clamp(source_index, 0, 2))]};
+}
+GameError GameSession::set_pending_item_grant(int source_index, bool value) noexcept {
+    if (!*this) return unavailable;
+    const auto index = static_cast<unsigned>(std::clamp(source_index, 0, 2));
+    impl_->pending_item_grants[index] = value;
+    // Source possession IDs 0/1/2 map to wire bits 15/14/13.
+    if (value && !(read32(impl_->data->bytes.data() + 0x64) & (std::uint32_t{1} << flag_bits[index])))
+        impl_->course_notice = true;
+    return {};
+}
 GameError GameSession::set_player_name(std::span<const std::byte> name) {
     if (!*this) return unavailable;
     if (name.size() != 16) return bounds;
@@ -261,13 +352,42 @@ GameError GameSession::set_player_name(std::span<const std::byte> name) {
     std::copy(name.begin(), name.end(), data.bytes.begin() + 0x54);
     return {};
 }
+GameError GameSession::set_photo(PhotoSet set, std::size_t index, std::span<const std::byte> photo) {
+    if (!*this) return unavailable;
+    const auto r = region(set);
+    if (index >= r.count || photo.size() != game_photo_bytes) return bounds;
+    if (impl_->borrowed(set, index)) return {GameErrc::source_state};
+    if (photo.data() == impl_->data->bytes.data() + r.offset + index * r.stride) return {};
+    auto& data = impl_->mutate();
+    // memmove also permits a borrowed canonical record as the input.
+    std::memmove(data.bytes.data() + r.offset + index * r.stride, photo.data(), game_photo_bytes);
+    impl_->photo_changed(set, index);
+    return {};
+}
+GameError GameSession::set_photo_flags(PhotoSet set, std::size_t index, std::uint8_t flags) {
+    if (!*this) return unavailable;
+    const auto r = region(set);
+    if (index >= r.count) return bounds;
+    if (impl_->borrowed(set, index)) return {GameErrc::source_state};
+    if (impl_->data->bytes[r.offset + index * r.stride + 1] == std::byte{flags}) return {};
+    auto& data = impl_->mutate();
+    data.bytes[r.offset + index * r.stride + 1] = std::byte{flags};
+    impl_->photo_changed(set, index, true);
+    return {};
+}
 GameError GameSession::remove_photo(PhotoSet set, std::size_t index) {
     if (!*this) return unavailable;
     const auto r = region(set);
     if (index >= r.count) return bounds;
+    if (impl_->borrowed(set, index)) return {GameErrc::source_state};
     auto* photo = impl_->mutate().bytes.data() + r.offset + index * r.stride;
     write32(photo + 4, 0xffffffffu);
-    if (set == PhotoSet::album) { photo[game_photo_bytes] = std::byte{0}; photo[game_photo_bytes + 1] = std::byte{0}; }
+    impl_->photo_changed(set, index);
+    if (set == PhotoSet::album) {
+        photo[game_photo_bytes] = std::byte{0};
+        photo[game_photo_bytes + 1] = std::byte{0};
+        impl_->comment_changed(index);
+    }
     return {};
 }
 GameError GameSession::set_album_comment(std::size_t index, std::span<const std::byte> comment) {
@@ -275,6 +395,7 @@ GameError GameSession::set_album_comment(std::size_t index, std::span<const std:
     if (index >= game_album_count || comment.size() != 64) return bounds;
     auto& data = impl_->mutate();
     std::copy(comment.begin(), comment.end(), data.bytes.begin() + 0x10a20 + index * 0x3e0 + game_photo_bytes);
+    impl_->comment_changed(index);
     return {};
 }
 CommitResult GameSession::commit(std::uint32_t time) {

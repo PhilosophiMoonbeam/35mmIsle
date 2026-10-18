@@ -5,38 +5,59 @@
   "scope": "Implemented real shared source lifetime/spatial/optionalceilings/typedbinding plus complete original-C automatic/FIFO interpreters, real11InteractionServices and nativeItemOwner/Flute/graphics; all71speciescallback closure and productionPlayer/productgameplay remainseparatelyopen",
   "authority": "Exact own-GAME immutable stage/blobs and authorized initialized data; no SDK producer/header/layout/disassembly or guest-function casts",
   "native_support": {
+    "src/actor_course_context.hpp": {
+      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+    },
+    "src/rainbow_actor_source.h": {
+      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+    },
+    "src/rainbow_actor_source.c": {
+      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+    },
+    "src/rainbow_actor.hpp": {
+      "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
+    },
+    "src/rainbow_actor.cpp": {
+      "sha256": "cee34cf3abf985d85ca3031735f477fab0de70b3d445572cba5086aeba84542d"
+    },
+    "src/rainbow_lifecycle_source.h": {
+      "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
+    },
+    "src/player_root.hpp": {
+      "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"
+    },
     "tests/actual_player_source.hpp": {
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },
     "src/actor_source.h": {
-      "sha256": "4a52e350c3cd5654e7dfac46a168c201c212263e8ba8c5ad6a561b44fb01fe37"
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
     },
     "src/actor_owner_source.h": {
-      "sha256": "e79461c921578ae9866f4a0403ae51b94650d992000d3e93a7b9886f2983add4"
+      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "5d8d1120d1dda56d20355562ad4e458da984dd0502d8bdb8a15744cff2595413"
+      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
     },
     "src/actor_source_bridge.c": {
       "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
     },
     "src/actor_owner.cpp": {
-      "sha256": "296f99ca878451334479cf2f98915a749b055d8ab18ab3fb5e07b4a5cc3d0031"
+      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
     },
     "src/actor_owner.hpp": {
-      "sha256": "6f6ed573d75bde32d5627426a831e020c15ef90d06bdde36bbe3e939aa848e86"
+      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
     },
     "src/scene_services.cpp": {
-      "sha256": "11f63a47eac3fe14dcf63c4776aa27e780fef89ced6666027815043f96a162b4"
+      "sha256": "f90298ec84783876a970ce150bb1c0901e8da5c4e562de8b1d742de53a5494e8"
     },
     "src/scene_services.hpp": {
-      "sha256": "de8c6148ed02a5552fa500fc897cab56a9ffe04bf92feed0330168aeecf2e11b"
+      "sha256": "4b4fafd05a7eee03880cff975c5f8a2d1b987d6c4a32c7d3cd2c331d7cba6354"
     },
     "src/menu_scene_bridge.c": {
       "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "ab9407177648c504fdfc43a29be09f3e0c19af7079ce9311beac132996531210"
+      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
     },
     "src/actor_spatial.h": {
       "sha256": "962287772ecea45dbc4431ec014969c15dab2ba66bdd39e04853c6641326aaf9"
@@ -45,28 +66,28 @@
       "sha256": "96ee40fe4ae80aeae7603a16e7768b4f2ba9f785ba815abac40933bb84acac97"
     },
     "src/actor_behavior_bindings.hpp": {
-      "sha256": "2850216f955dfad5bc4b8f85d5c314c601c7d693b5fd6c5b93de20164e51f36f"
+      "sha256": "aff3e08cff850bf85f78f10f6d683ad4d11f1eb8c464fbabc5078f3e0b7fc3c5"
     },
     "src/actor_behavior_bindings.cpp": {
-      "sha256": "4ce2b0b29f2b32fb2f87e2c40098040ad5d226cdc392c53a93a1612bd3a37c28"
+      "sha256": "f48065907d97fe625e39102fbc001219537181ae5316c8f44d1cf1a4231fa278"
     },
     "src/world_runtime.hpp": {
-      "sha256": "54befb30b1636a7aa3228cd0664cd093c676ff8feef5128b4dbf4900e00db511"
+      "sha256": "f8c75f19fe010624088615ec745dcfaaec07ca36724bb25ed1241eb91b8c7aa0"
     },
     "src/world_runtime.cpp": {
-      "sha256": "40f975bd55e810f2fd8d9f656e27c780514af0734e10a6a533ad301aab5e43a6"
+      "sha256": "b21496bec89c7a979044c5fff9e1ea298016643f32ddff97e6f5b144e8df2047"
     },
     "src/world_collision.cpp": {
-      "sha256": "976022f82ca35e6870f78675a34db6f4580fe1a935d31cfa800b3fe607337be0"
+      "sha256": "8bc5f0ed125a6f1dbad8438231d8d23d2d1370310b96b100bdafec881f489e74"
     },
     "tests/actor_spatial_tests.cpp": {
       "sha256": "bd5afdd961ce6339b5784474b44425407f0f3837022bf66bbff29cec4509440d"
     },
     "tests/scene_services_tests.cpp": {
-      "sha256": "2399b918b8c3c84b5ec6e4720bf273c60e4f6be4d1b34094d9c723488cd63d5f"
+      "sha256": "f1963c39b36a1a60f5575d3ebc740e3969d8e37c2a0211660b8810194ff158ee"
     },
     "tests/world_runtime_tests.cpp": {
-      "sha256": "163eec461df09f383308268891c21ac7536208d0a50f948264b1ea8003ab7bc1"
+      "sha256": "a8fbaca5a41dbd3f03ff2ec0dc7c99bfb7f917156570dd7e9ef687ea5a73bc82"
     },
     "tests/world_collision_tests.cpp": {
       "sha256": "810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"
@@ -75,13 +96,13 @@
       "sha256": "f088e172d254b06063eeede64f8d525a5a300de276943c007776197d554efa80"
     },
     "tests/actor_owner_rom_smoke.cpp": {
-      "sha256": "1ed87c0ae9f6d64e38af1f423ab58d05125fc3c1c7727eb267eddde9874644c8"
+      "sha256": "87ebc8e5a3cafbfead09be68aeafccdc4642c6260e295012a8be809ce85da79c"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
-      "sha256": "1c8b1be281d83bf329851e556dd82a86e68db6aad1bb528c2e61b5d23982ba16"
+      "sha256": "3347c4fe853a9abf64df66e3a2a7e0c093cec39158aaf5f5e7d5822ea122da63"
     },
     "tests/actor_command26_rom_smoke.cpp": {
-      "sha256": "f0fdbf61b4b2b51582d8f63e7648282cf6bf0296d8572d572819e09713908ed4"
+      "sha256": "5f03fda1896950d0865693564d11a6b5e1a8a661ee2bb291832ab709e63e3493"
     }
   },
   "source_files": {

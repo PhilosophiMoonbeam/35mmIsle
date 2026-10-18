@@ -20,6 +20,8 @@ typedef struct IsleItemGlobals {
     IsleGameSourceCallback update;
     IsleItemCollisionCallback collide;
     IsleItemCollisionProvider extra;
+    void* extra_context; /* One borrowed callback/context pair, local to game. */
+    unsigned extra_active;
     size_t payload_cache;
     void* owner;
     IsleGame* game;
@@ -122,7 +124,12 @@ IsleGameResult Items_SpawnApple(IsleItemGlobals*, IsleGameVec3*, IsleGameVec3*, 
 void Items_DoRemoveItem(IsleGameObject*);
 void Items_DeleteItem(IsleGameObject*);
 void Items_SetCustomFunctions(IsleItemGlobals*, IsleGameSourceCallback, uint8_t, IsleItemCollisionCallback);
-void Items_func_8035CA1C(IsleItemGlobals*, IsleItemCollisionProvider);
+/* Nonwaiting paired set/clear. binding_game must equal globals->game;
+ * (NULL,NULL) clears, half-null pairs and replacement during a call fail
+ * without mutation. Serialize with Item execution; retain the context through
+ * active calls and process joins, and clear before context retirement. */
+IsleGameResult Items_func_8035CA1C(IsleItemGlobals*, IsleGame* binding_game,
+    IsleItemCollisionProvider, void* context);
 void Items_Pause(IsleItemGlobals*);
 void Items_UnPause(IsleItemGlobals*);
 void Items_RemoveFlyingItems(IsleItemGlobals*);

@@ -1,5 +1,6 @@
 #include "player_source_fixture.h"
 #include "engine_internal.h"
+#include "actor_source.h"
 
 void player_source_helper_userdata(IsleGameObject* object, void* value) {
     object->userData = value;
@@ -46,6 +47,14 @@ void player_source_forbidden_wait(IslePlayerSource* source, void* user) {
     isle_player_source_wait(source, 1);
     source->ThrowItemTimeout = 99;
 }
+void player_source_native_actor_failure(IslePlayerSource* source, void* object) {
+    source->ThrowItemTimeout = 41;
+    /* A real native Actor precondition faults: the actual Player root is not
+     * an Actor. The owning C call must catch that fault even outside a tick. */
+    (void)isle_actor_source_require(object);
+    source->ThrowItemTimeout = 99;
+}
+
 
 void player_source_sprite_borrow(IslePlayerSource* source, void* user) {
     PlayerSpriteBorrow* request = user;

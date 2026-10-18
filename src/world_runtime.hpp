@@ -2,6 +2,7 @@
 #define ISLE_WORLD_RUNTIME_HPP
 
 #include "world_resources.hpp"
+#include "world_module.hpp"
 #include "menu_animation.hpp"
 #include <memory>
 #include <string>
@@ -50,6 +51,7 @@ struct ResourceView {
     std::span<const CollisionModel> collision_models;
     // Optional source sCeilingMap, independent of the ground height map.
     const HeightMap* ceiling_map = nullptr;
+    std::size_t sky_model_index = no_index;
 };
 struct RenderObject {
     IsleGameObject* object = nullptr;
@@ -61,15 +63,45 @@ struct RenderObject {
     bool sky = false;
     menu::animation::InstanceHandle instance;
 };
+// Stable borrowed owner view. All pointers/spans and callback userdata outlive
+// the producer; availability invalidates preparation before native/RAM mutation.
+struct RenderView {
+    const ResourceView* resources = nullptr;
+    const menu::animation::Runtime* animation = nullptr;
+    std::span<const RenderObject> objects;
+    const void* owner = nullptr;
+    bool (*available)(const void*) noexcept = nullptr;
+    bool valid() const noexcept {
+        return resources && animation && owner && available && available(owner);
+    }
+};
 struct MovementSample { Vec3 position{}, rotation{}; float speed = 0; };
+MovementSample sample_control_points(menu::animation::ModelState, float control_time,
+    bool reversed, std::int32_t lines, std::span<const float> timestamps);
 struct GroundResult { float height = -9000; Vec3 normal{0, 1, 0}; std::int32_t surface = -1; };
-// Application owns game, immutable resources, callback userdata and camera. They
-// outlive World and every prepared renderer borrow. retire() is only legal at
-// the owner's outside-traversal, graphics-completed scene boundary.
+// Application owns game, immutable resources, module state, callback userdata and
+// camera. They outlive World and every prepared renderer borrow. Logical
+// retirement may be requested from a callback; physical retire() requires the
+// owner's idle native, graphics-completed and semantic-consumer-released boundary.
 class World final {
 public:
-    World(scene::Services&, const Resources&, Callbacks);
-    World(IsleGame*, ResourceView, Callbacks);
+    // {} retains resource-certified finite-only admission. Cyclic owners must
+    // supply their per-call physical execution budget; Runtime preflights every
+    // real step/seek and rejects overflow before animation state publication.
+    World(scene::Services&, const Resources&, ModuleState&, Callbacks,
+          menu::animation::ExecutionCapacity = {});
+    // Cold preparation for original lifecycle setup ordering: admit/preallocate
+    // resources and stable block links without publishing native World records.
+    // With defer_publication=true, the owner must call publish() at createWorld.
+    // Cold ownership never writes the module; publish resets only road events
+    // before native creation and applies setup speed after block initialization.
+    World(scene::Services&, const Resources&, ModuleState&, Callbacks, bool defer_publication,
+          menu::animation::ExecutionCapacity = {});
+    // One native publication attempt, outside traversal. Failure retains any
+    // partial publication for explicit retire(); it cannot be retried/replayed.
+    void publish();
+    bool published() const noexcept;
+    World(IsleGame*, ResourceView, ModuleState&, Callbacks, menu::animation::ExecutionCapacity = {});
     ~World() noexcept;
     World(const World&) = delete;
     World& operator=(const World&) = delete;
@@ -77,7 +109,8 @@ public:
     std::span<const Block> blocks() const noexcept;
     Block* current() const noexcept;
     // Callback failure throws only after the callback has returned normally.
-    // A null block means the source index/next block is absent, not failure.
+    // A null block means absent source index/next block, or logical retirement
+    // requested by a completed callback; retired()/error() distinguish the latter.
     Block* enter_first(std::size_t);
     Block* enter_next();
     MovementSample sample(Block&, float move_time, float control_time);
@@ -92,6 +125,7 @@ public:
     menu::animation::ModelState animation_model(menu::animation::InstanceHandle) const;
     const menu::animation::Runtime& animation_runtime() const;
     const ResourceView& resources() const noexcept;
+    RenderView render_view() const noexcept;
     bool ground_at(float x, float z, GroundResult&) const;
     // GAME ground.c89-133: global absence defaults the result; local absence
     // leaves it untouched. A present map uses the same height-tree solver.
@@ -99,18 +133,34 @@ public:
     bool ceiling_at(float x, float z, GroundResult&) const;
     std::int32_t collide(Vec3 position, Vec3 velocity, Vec3& out_position, Vec3& out_velocity) const;
     void clear_block(Block&);
-    // False preserves unjoined storage and stops at the first failed removal.
-    // Explicit cleanup may retry that removal/join; completed work is not
-    // repeated, and the original error is never cleared. This does not supply
-    // the owner's graphics/semantic-borrow fences. The owner must finish those
-    // and retire dependent actors while callback userdata/blocks remain alive.
-    // Destruction terminates if explicit retirement still cannot complete.
+    // Returning logical destroyWorld operation, legal during native traversal.
+    // Road events reset once at logical destroy entry, before removal callbacks;
+    // timer, speed and maximum retain their application-module lifetime.
+    // Immediately makes retired() true, hides/pauses native World objects and
+    // pauses their actual processes, then invokes original block removals in
+    // order. No native model/object/process, animation or callback storage is
+    // released here. Existing borrows must close before physical retire().
+    // False preserves progress/storage; retry resumes the first incomplete
+    // removal. A reentrant request returns false while its outer call finishes.
+    // Completed removals never repeat and errors remain latched after cleanup.
+    bool request_retire() noexcept;
+    // Outside native traversal AND every World callback, finalize real native
+    // deletion/process joins, then animation storage. Without a prior request,
+    // preserves ordinary per-block remove/delete ordering and retry behavior.
+    // This does not establish graphics/semantic-borrow fences: the owner must
+    // finish those and retire dependent actors while userdata/blocks stay alive.
+    // False preserves unjoined storage; destruction terminates if it persists.
     bool retire() noexcept;
+    // Logical unavailability, including a pending explicit retirement request.
+    // Movement's existing post-callback guards stop before another road step.
     bool retired() const noexcept;
+    // Only this reports completed physical collection; retired() is not a join.
+    bool retirement_complete() const noexcept;
     const std::string& error() const noexcept;
 private:
     struct Impl;
-    World(IsleGame*, scene::Services*, ResourceView, Callbacks);
+    World(IsleGame*, scene::Services*, ResourceView, ModuleState&, Callbacks, bool defer_publication,
+          menu::animation::ExecutionCapacity);
     std::unique_ptr<Impl> impl_;
 };
 } // namespace isle::world

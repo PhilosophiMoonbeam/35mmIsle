@@ -1,4 +1,6 @@
-#include "beach_actor_resources.hpp"
+#include "beach_actor_scene.hpp"
+#include "actor_resources.hpp"
+#include "beach_world_resources.hpp"
 #include "menu_animation.hpp"
 #include "source_matrix_configuration.hpp"
 
@@ -22,7 +24,7 @@ template<class F> void rejects(F&& action, const char* message) {
     try { action(); } catch (const std::exception&) { rejected=true; }
     require(rejected,message);
 }
-void consume_animations(const b::ActorResources& resources) {
+void consume_animations(const isle::actor::Resources& resources) {
     const auto models=resources.models();
     std::vector<a::SlotCapacity> capacities;
     capacities.reserve(models.size());
@@ -30,7 +32,7 @@ void consume_animations(const b::ActorResources& resources) {
         const auto capacity=a::slot_capacity(model);
         capacities.push_back(capacity);
     }
-    auto made=a::Runtime::create({models,resources.materials(),resources.animations(),m::no_index},
+    auto made=a::Runtime::create({models,resources.materials(),resources.animations(),m::no_index,resources.paths()},
                                 capacities,{},{32768,4096});
     require(bool(made),"Complete actual actor catalog must compile in the shared animator");
     auto& runtime=*made.runtime;
@@ -79,15 +81,15 @@ void run(const char* filename) {
     auto snapshot=isle::rom::read_snapshot(filename);
     // Actual World metadata supplies fog; no Title defaults are borrowed.
     const auto world=b::world_descriptors(snapshot);
-    const b::FogProfile fog{world.world.fog_rgb,world.world.fog_min,world.world.fog_max};
-    const b::ActorResources resources(snapshot,fog);
+    const isle::actor::FogProfile fog{world.world.fog_rgb,world.world.fog_min,world.world.fog_max};
+    const isle::actor::Resources resources(snapshot,0,fog);
     const auto initializations=resources.initializations();
     const auto models=resources.models(); const auto headers=resources.headers();
     const auto materials=resources.materials(); const auto animations=resources.animations();
     require(initializations.size()==17 && models.size()==17 && headers.size()==79 &&
             materials.size()==33 && animations.size()==1317,"Complete17/79/33/1317 actor catalog required");
     constexpr std::array<std::uint32_t,17> ids{143,52,133,12,131,84,16,123,113,115,1005,1004,1001,129,25,1006,1003};
-    std::size_t empty=b::actor_no_index, common=b::actor_no_index, actor1006=b::actor_no_index;
+    std::size_t empty=isle::actor::actor_no_index, common=isle::actor::actor_no_index, actor1006=isle::actor::actor_no_index;
     for (std::size_t i=0; i<initializations.size(); ++i) {
         const auto& init=initializations[i];
         require(init.actor_id==ids[i] && init.model==i && init.wire.bytes.size()==52 &&
@@ -105,7 +107,7 @@ void run(const char* filename) {
         require(visibility.size()==model.nodes.size(),"Missing per-node visibility domains");
         for (std::size_t j=0; j<model.nodes.size(); ++j) {
             const auto& node=model.nodes[j];
-            require((node.parent==b::actor_no_index || node.parent<j) && (visibility[j]&1),
+            require((node.parent==isle::actor::actor_no_index || node.parent<j) && (visibility[j]&1),
                     "Actor parent/initial flags0 not preserved");
             if (!model.material_table.bytes.empty() && model.material_table.u32(j*4)) {
                 require(!node.materials.empty(),"Empty non-NULL actor attachment list");
@@ -116,16 +118,16 @@ void run(const char* filename) {
             require(init.setup.initial_header<headers.size() && headers[init.setup.initial_header].initialization==i &&
                     headers[init.setup.initial_header].wire.guest_address==init.setup.wire.u32(0),
                     "Initial header must come from actual setup, not first-address order");
-        } else require(init.setup.initial_header==b::actor_no_index && init.setup.wire.u32(0)==0,
+        } else require(init.setup.initial_header==isle::actor::actor_no_index && init.setup.wire.u32(0)==0,
                        "NULL initial header must remain explicitly disabled");
         if (init.actor_id==1005) empty=i;
         if (init.actor_id==1003) common=i;
         if (init.actor_id==1006) actor1006=i;
     }
-    require(empty!=b::actor_no_index && !initializations[empty].animations_enabled &&
+    require(empty!=isle::actor::actor_no_index && !initializations[empty].animations_enabled &&
             models[empty].nodes.size()==1 && models[empty].nodes[0].payloads.empty(),
             "Geometryless1005 must remain present rather than excluded");
-    require(common!=b::actor_no_index && models[common].nodes.size()==4 &&
+    require(common!=isle::actor::actor_no_index && models[common].nodes.size()==4 &&
             initializations[common].wire.guest_address==0x80388348 &&
             (models[common].nodes[1].depth_flags&0x2000),"Common1003 exact tree/high flags missing");
     std::size_t preserved_null_slots=0, null_material_nodes=0, reset_headers=0;
@@ -145,17 +147,17 @@ void run(const char* filename) {
         for (std::size_t i=0; i<header.nodes.size(); ++i) {
             const auto& binding=header.nodes[i]; const auto& node=model.nodes[i];
             const auto model_guest=header.model_animation_table.bytes.empty() ? 0 : header.model_animation_table.u32(i*4);
-            require((binding.model_animation==b::actor_no_index)==(model_guest==0),"Model animation NULL binding changed");
+            require((binding.model_animation==isle::actor::actor_no_index)==(model_guest==0),"Model animation NULL binding changed");
             require(header.model_bindings[i]==binding.model_animation,
                     "Flattened model binding changed DFS slot/NULL semantics");
-            if (binding.model_animation!=b::actor_no_index) {
+            if (binding.model_animation!=isle::actor::actor_no_index) {
                 require(binding.model_animation<animations.size() && animations[binding.model_animation].wire.guest_address==model_guest,
                         "Unrelocated model animation header binding");
                 for (const auto& command:animations[binding.model_animation].commands) {
                     if (command.opcode==15)
                         require(resources.visibility_domains(initializations[header.initialization].model)[i]&(1u<<(command.mask&3u)),
                                 "Noninitial header visibility choice missing");
-                    if (command.opcode==16 && node.parent==b::actor_no_index && (command.mask>>8)<=3 && (command.mask&255))
+                    if (command.opcode==16 && node.parent==isle::actor::actor_no_index && (command.mask>>8)<=3 && (command.mask&255))
                         sound_count=std::max(sound_count,static_cast<std::size_t>(command.mask&255));
                 }
             }
@@ -169,7 +171,7 @@ void run(const char* filename) {
                 for (std::size_t j=0; j<node.materials.size(); ++j) {
                     const auto guest=binding.material_animation_table.u32(j*4);
                     const auto index=binding.material_animations[j];
-                    require((guest==0)==(index==b::actor_no_index),"NULL material animation entry terminated or replaced binding");
+                    require((guest==0)==(index==isle::actor::actor_no_index),"NULL material animation entry terminated or replaced binding");
                     if (!guest) ++preserved_null_slots;
                     else require(index<animations.size() && animations[index].wire.guest_address==guest &&
                                  animations[index].kind==m::AnimationKind::texture,"Invalid material program native binding");
@@ -178,7 +180,7 @@ void run(const char* filename) {
             if (!header.resets_materials()) {
                 for (std::size_t j=0; j<node.materials.size(); ++j) {
                     require(attachment<header.material_bindings.size() &&
-                            header.material_bindings[attachment]==(inner ? binding.material_animations[j] : b::actor_no_index),
+                            header.material_bindings[attachment]==(inner ? binding.material_animations[j] : isle::actor::actor_no_index),
                             "Flattened material binding changed attachment order/NULL preservation");
                     ++attachment;
                 }
@@ -200,7 +202,7 @@ void run(const char* filename) {
         else { ++material_programs; material_commands+=animation.commands.size(); }
         std::size_t bytes=0, wait=0;
         for (const auto& command:animation.commands) {
-            require(command.wire.guest_address==animation.wire.guest_address+bytes && command.path_index==b::actor_no_index,
+            require(command.wire.guest_address==animation.wire.guest_address+bytes && command.path_index==isle::actor::actor_no_index,
                     "Animation framing includes unrelated words/invented paths");
             bytes+=command.wire.bytes.size();
             if (command.opcode==2 || command.opcode==3 || command.opcode==5 || command.opcode==8 || command.opcode==10 ||
@@ -228,7 +230,7 @@ void run(const char* filename) {
         require(material.palettes.empty() && material.wire.u32(44)==0,"Unexpected dynamic palette table");
     }
     require(image_entries==94 && images.size()==74 && primitive_only==4 && null_images==5,"Exact33 Texture image extents missing");
-    require(actor1006!=b::actor_no_index && resources.visibility_domains(actor1006)[1]==1 &&
+    require(actor1006!=isle::actor::actor_no_index && resources.visibility_domains(actor1006)[1]==1 &&
             resources.visibility_domains(actor1006)[2]==1,"Invented independent1006 supplier omission");
     const auto& gate=models[actor1006];
     const auto has_root=[](const m::Node& node,std::uint32_t root) {
@@ -241,7 +243,7 @@ void run(const char* filename) {
                load.format==4 && load.source_size_code==2 && load.source_width==1;
     }),"1006 local predecessor TIMG failed to discharge actual384-byte consumer");
     const auto definitions=resources.definitions();
-    require(definitions.size()==22 && definitions[16].actor_id==0 && definitions[16].initialization==b::actor_no_index &&
+    require(definitions.size()==22 && definitions[16].actor_id==0 && definitions[16].initialization==isle::actor::actor_no_index &&
             definitions.back().factory_identity==0x8035e0d4 && definitions.back().initialization==common,
             "Primary definition terminator/singletons/common returning factory missing");
     consume_animations(resources);
@@ -254,15 +256,15 @@ void run(const char* filename) {
     }
     std::vector<std::byte> ram(b::rdram_size,std::byte{0x5a}); const auto untouched=ram;
     const auto& last=spans.back();
-    const std::array<b::RamReservation,1> late{{{last.guest_address-0x80000000,last.bytes.size()}}};
+    const std::array<m::RamRange,1> late{{{last.guest_address-0x80000000,last.bytes.size()}}};
     rejects([&] { resources.install(ram,late); },"Late caller collision accepted");
     require(ram==untouched,"Late reservation failure partially installed actor assets");
-    const std::array<b::RamReservation,1> old_world{{{0x170000,0x20000}}};
+    const std::array<m::RamRange,1> old_world{{{0x170000,0x20000}}};
     require(std::any_of(spans.begin(),spans.end(),[](const auto& span) {
         return span.guest_address<0x80190000 && static_cast<std::uint64_t>(span.guest_address)+span.bytes.size()>0x80170000;
     }),"Actual actor assets must expose old World dynamic-buffer overlap");
     rejects([&] { resources.install(ram,old_world); },"Old World dynamic buffers silently overwrite actor assets");
-    const std::array<b::RamReservation,1> invalid{{{b::rdram_size,1}}};
+    const std::array<m::RamRange,1> invalid{{{b::rdram_size,1}}};
     rejects([&] { resources.install(ram,invalid); },"Invalid reservation accepted");
     rejects([&] { resources.install(std::span(ram).first(ram.size()-1)); },"Short RAM accepted");
     auto alias=std::span(const_cast<std::byte*>(snapshot.canonical().data()),b::rdram_size);

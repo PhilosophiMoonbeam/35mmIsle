@@ -2,6 +2,7 @@
 #define ISLE_PLAYER_CART_HPP
 #include "player_cart_source.h"
 #include "player_cart_render_binding.hpp"
+#include "menu_effects.hpp"
 
 namespace isle::player::cart {
 enum class OwnerError { none, capacity, admission, native, animation, services, lifetime };
@@ -19,6 +20,7 @@ struct InitResult {
 struct Membership {
     bool live = false, retiring = false, joined = false, prepared = false;
     std::size_t caller_holds = 0;
+    std::size_t effect_node_holds = 0;
 };
 // All dependencies, Source, borrowed views and caller records outlive this owner.
 // prepare/refill and destruction occur outside OM. The caller provides physical
@@ -26,9 +28,9 @@ struct Membership {
 class Owner final {
     friend struct SourceAccess;
 public:
-    // A real preparation/GPU/readback/effect exclusion borrow. Keep it through
-    // actual completion; dropping it is not itself a GPU fence. Mutation rejects
-    // while borrowed, and requested retirement defers native deletion until end.
+    // A real preparation/GPU/readback exclusion borrow. Keep it through actual
+    // completion; dropping it is not itself a GPU fence. Mutation rejects while
+    // borrowed, and requested retirement defers native deletion until end.
     class Borrow final {
     public:
         Borrow() noexcept = default;
@@ -89,11 +91,24 @@ public:
     std::span<const RenderBinding> render_bindings(std::span<scene::RenderOrderEntry>) noexcept;
     Borrow borrow() noexcept;
     Reference retain(IsleGameObject*) noexcept;
+    // Adopt only an actual node pointer in the currently dispatched event batch.
+    // The returned credit stores the native incarnation/index, never that pointer;
+    // it permits animation updates but defers both native and Runtime retirement.
+    // Move it into EffectRuntime::set_effect_attachment before leaving the leaf.
+    menu::RetainedEffectAttachment retain_effect_node(const IslePlayerCartNode*) noexcept;
+    // Returning native leaf: hide logical membership and join only the known
+    // synchronous animator. Never deletes the object/Runtime or ends arbitrary
+    // stackful callers. Original C must end its delayed/current processes AFTER
+    // this call returns; the host performs physical retirement outside traversal.
+    OwnerStatus request_retire(IsleGameObject*) noexcept;
     // Individual retirement deliberately does NOT clear source()->cartGObj.
     OwnerStatus retire(IsleGameObject*) noexcept;
+    // Outside native traversal. Flushes pending requests before collecting, but
+    // still requires separate Source/FIFO/reference/FX-node/GPU closure and joins.
     OwnerStatus collect_joined() noexcept;
     // Explicit overlay/Owner teardown: closes admission, retires every cart and
-    // releases current only after real borrowers end. Caller References remain.
+    // releases current after real borrowers end. References and FX credits remain;
+    // actual effects must end/eject/reset before physical Cart collection.
     OwnerStatus retire() noexcept;
 private:
     void end_borrow() noexcept;

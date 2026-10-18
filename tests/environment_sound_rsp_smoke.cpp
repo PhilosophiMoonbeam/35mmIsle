@@ -48,7 +48,7 @@ IsleGameModel* model(sc::Services& services,IsleGameObject* object,float z) {
     native(isle_game_model_set_placement(services.game,result,ISLE_GAME_MODEL_PLACEMENT_RTS,&placement));
     return result;
 }
-void angles(const e::BeachResources& resources) {
+void angles(const e::Resources& resources) {
     struct Case { float y,x; std::uint16_t angle; };
     constexpr std::array cases{Case{0,1,0},Case{1,1,0x1000},Case{1,0,0x2000},Case{1,-1,0x3000},
         Case{0,-1,0x4000},Case{-1,-1,0x5000},Case{-1,0,0x6000},Case{-1,1,0x7000},Case{0.75f,0.5f,0},
@@ -71,7 +71,7 @@ void angles(const e::BeachResources& resources) {
 }
 void run(isle::rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(std::filesystem::is_directory(profile) && std::filesystem::is_empty(profile),"explicit private profile directory must exist and be empty");
-    e::BeachResources resources(snapshot); angles(resources);
+    e::Resources resources(snapshot,0); angles(resources);
     auto hydrated=g::hydrate(snapshot); require(bool(hydrated),"actual audio resource hydration failed");
     std::array<a::effects::Section,8> sections;
     a::effects::Config effects;

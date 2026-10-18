@@ -1,6 +1,7 @@
 #include "window_widgets.hpp"
 #include "window_widget_math.hpp"
 #include <algorithm>
+#include <limits>
 namespace isle::window {
 struct Layout::Impl {
  scene::Services& s;const Resources& r;
@@ -10,7 +11,8 @@ struct Layout::Impl {
  std::array<float,33> phase{},base{};
  std::array<Button,9> slots{};
  std::span<const Button> active{};
- int state=2,frames=3,flags=0;bool instant=false,horizontal=false,panel=false;
+ Operation* operation=nullptr;
+ int state=2,frames=3,flags=0;bool instant=false,horizontal=false,panel=false,active_complete=false;
  float panel_x=-180;std::array<float,3> header_y{-40,-40,-40};std::array<int,2> counter{};
  Impl(scene::Services& ss,const Resources& rr):s(ss),r(rr){}
  scene::SpriteHandle make(std::uint32_t id){scene::SpriteHandle h;h.object=s.object(1u<<6,6,6);if(h.object){h.sprite=s.append_sprite(h.object,id);s.set_render(h.object,{30,6,0x40000000});}return h;}
@@ -68,57 +70,144 @@ bool Layout::initialize() noexcept {
 void Layout::retire() noexcept {
  if(!p_)return;
  auto& p=*p_;
+ if(p.operation)cancel(*p.operation);
  // Whole-object erase joins each process before Impl or its aliases can die.
  for(auto& h:p.objects){if(h.object)p.s.erase(h.object);h={};}
  for(auto& h:p.furniture){if(h.object)p.s.erase(h.object);h={};}
  p.arrows={};
  p.slots.fill({});
  p.active={};
+ p.active_complete=false;
  p.state=2;
 }
-bool Layout::wait_transition() noexcept {while(p_->state!=2)if(!p_->s.wait())return false;return true;}
-bool Layout::hide_buttons() noexcept {
+StepResult Layout::begin(Operation& op,Operation::Kind kind,std::span<const Button> list) noexcept {
  auto& p=*p_;
- if(p.active.empty())return true;
- if(!wait_transition())return false;
- float phase=static_cast<float>(p.frames+1)*detail::button_half_pi;
- const float stagger=static_cast<float>(p.frames*90.0/9.0)*detail::button_pi/180.0f;
- for(auto b:p.active){
-  if(b.id==35)break;
-  if(b.id<0||b.id>32)continue;
+ if(p.operation || (op.owner_ && op.result_.status!=StepStatus::done && op.result_.status!=StepStatus::error))
+  return {StepStatus::error,StepError::busy};
+ if(!p.objects[0].sprite || list.size()>static_cast<std::size_t>(std::numeric_limits<int>::max()-8))
+  return {StepStatus::error,StepError::invalid_operation};
+ op.owner_=this;op.kind_=kind;op.phase_=Operation::Phase::start;op.list_=list;
+ op.result_={StepStatus::more};op.cursor_=0;p.operation=&op;return op.result_;
+}
+StepResult Layout::begin_wait_transition(Operation& op) noexcept {return begin(op,Operation::Kind::wait,{});}
+StepResult Layout::begin_hide_buttons(Operation& op) noexcept {return begin(op,Operation::Kind::hide,{});}
+StepResult Layout::begin_create_buttons(Operation& op,std::span<const Button> list) noexcept {return begin(op,Operation::Kind::create,list);}
+StepResult Layout::finish(Operation& op,StepError error) noexcept {
+ op.result_={error==StepError::none?StepStatus::done:StepStatus::error,error};
+ op.list_={};
+ if(p_->operation==&op)p_->operation=nullptr;
+ return op.result_;
+}
+void Layout::cancel(Operation& op) noexcept {
+ if(op.owner_==this && p_->operation==&op)finish(op,StepError::cancelled);
+}
+StepResult Layout::step(Operation& op,bool resume) noexcept {
+ auto& p=*p_;
+ if(op.owner_!=this)return {StepStatus::error,StepError::invalid_operation};
+ if(op.result_.status==StepStatus::done || op.result_.status==StepStatus::error)return op.result_;
+ if(p.operation!=&op)return {StepStatus::error,StepError::invalid_operation};
+ if(op.result_.status==StepStatus::needs_source_wait){
+  if(!resume)return op.result_;
+  op.result_={StepStatus::more};
+ }else if(resume)return {StepStatus::error,StepError::invalid_operation};
+ if(p.s.failed())return finish(op,StepError::native_failure);
+ using Kind=Operation::Kind;using Phase=Operation::Phase;
+ switch(op.phase_){
+ case Phase::start:
+  if(op.kind_==Kind::hide && p.active.empty())return finish(op);
+  if(op.kind_==Kind::create){
+   if(p.active_complete && p.active.data()==op.list_.data() && p.active.size()==op.list_.size())return finish(op);
+   if(p.active.empty()){
+    p.slots.fill({});op.count_=op.split_=op.index_=0;op.cursor_=0;op.phase_=Phase::scan;
+    return op.result_;
+   }
+  }
+  op.phase_=Phase::wait_previous;return op.result_;
+ case Phase::wait_previous:
+  if(p.state!=2){op.result_={StepStatus::needs_source_wait,StepError::none,1};return op.result_;}
+  if(op.kind_==Kind::wait)return finish(op);
+  op.phase_value_=static_cast<float>(p.frames+1)*detail::button_half_pi;
+  p.active_complete=false;
+  op.stagger_=static_cast<float>(p.frames*90.0/9.0)*detail::button_pi/180.0f;
+  op.cursor_=0;op.phase_=Phase::hide;return op.result_;
+ case Phase::hide: {
+  if(op.cursor_>=p.active.size() || p.active[op.cursor_].id==35){
+   p.state=0;p.active={};
+   if(op.kind_==Kind::hide)return finish(op);
+   op.phase_=Phase::wait_hidden;return op.result_;
+  }
+  const auto& b=p.active[op.cursor_++];
+  if(b.id<0 || b.id>32)return op.result_;
   auto* v=p.s.view(p.objects[b.id].sprite);
+  if(!v)return finish(op,StepError::native_failure);
   v->attr|=ISLE_SP_SCALE;
   if(p.horizontal)v->scalex=1;else v->scaley=1;
   p.base[b.id]=p.horizontal?v->x:v->y;
   if(p.instant)p.phase[b.id]=0;
-  else{p.phase[b.id]=phase;phase-=stagger;}
+  else{p.phase[b.id]=op.phase_value_;op.phase_value_-=op.stagger_;}
+  return op.result_;
  }
- p.state=0;
- p.active={};
- return true;
-}
-bool Layout::create_buttons(std::span<const Button> list) noexcept {
- auto& p=*p_;if(!p.active.empty()){if(p.active.data()==list.data())return true;if(!hide_buttons()||!wait_transition())return false;}
- p.slots.fill({});int count=0,split=0,index=0;for(auto b:list){if(b.id==35)break;if(b.id>=0&&b.id<=32)++count;if(b.id==34)split=index;++index;}
- float phase=0;
- const float stagger=static_cast<float>(p.frames*90.0/9.0)*detail::button_pi/180.0f;
- index=0;
- for(auto b:list){
-  if(b.id==35)break;
-  if(b.id==34){index=split-count+8;continue;}
-  if(b.id<0||b.id>32)continue;
+ case Phase::wait_hidden:
+  if(p.state!=2){op.result_={StepStatus::needs_source_wait,StepError::none,1};return op.result_;}
+  p.slots.fill({});op.count_=op.split_=op.index_=0;op.cursor_=0;op.phase_=Phase::scan;
+  return op.result_;
+ case Phase::scan:
+  if(op.cursor_>=op.list_.size() || op.list_[op.cursor_].id==35){
+   op.phase_value_=0;
+   op.stagger_=static_cast<float>(p.frames*90.0/9.0)*detail::button_pi/180.0f;
+   op.index_=0;op.cursor_=0;op.phase_=Phase::build;return op.result_;
+  }else{
+   const auto& b=op.list_[op.cursor_++];
+   if(b.id>=0 && b.id<=32)++op.count_;
+   if(b.id==34)op.split_=op.index_;
+   ++op.index_;return op.result_;
+  }
+ case Phase::build: {
+  if(op.cursor_>=op.list_.size() || op.list_[op.cursor_].id==35){
+   p.state=1;p.active=op.list_;p.active_complete=true;return finish(op);
+  }
+  const auto& b=op.list_[op.cursor_++];
+  if(b.id==34){op.index_=op.split_-op.count_+8;return op.result_;}
+  if(b.id<0 || b.id>32)return op.result_;
   auto* v=p.s.view(p.objects[b.id].sprite);
+  if(!v)return finish(op,StepError::native_failure);
   v->attr|=ISLE_SP_SCALE|ISLE_SP_HIDDEN;
   if(p.horizontal)v->scalex=1;else v->scaley=1;
   v->x=0;
-  v->y=static_cast<std::int16_t>(25+index*24);
+  v->y=static_cast<std::int16_t>(25+op.index_*24);
   p.base[b.id]=p.horizontal?v->x:v->y;
   if(p.instant){p.phase[b.id]=detail::button_half_pi;v->attr&=~ISLE_SP_HIDDEN;}
-  else{p.phase[b.id]=phase;phase-=stagger;}
-  if(index>=0&&index<8)p.slots[index].id=b.id;
-  ++index;
+  else{p.phase[b.id]=op.phase_value_;op.phase_value_-=op.stagger_;}
+  if(op.index_>=0 && op.index_<8)p.slots[op.index_].id=b.id;
+  // Preserve ownership if the C caller cancels before the next build step.
+  // An incomplete prefix is not an already-created table, even at equal size.
+  p.active=op.list_.first(op.cursor_);p.active_complete=false;
+  ++op.index_;return op.result_;
  }
- p.state=1;p.active=list;return true;
+ }
+ return finish(op,StepError::invalid_operation);
+}
+bool Layout::run(Operation& op) noexcept {
+ auto result=op.result_;
+ for(;;){
+  switch(result.status){
+  case StepStatus::more:result=step(op);break;
+  case StepStatus::needs_source_wait:
+   if(!p_->s.wait(result.updates)){cancel(op);return false;}
+   result=step(op,true);break;
+  case StepStatus::done:return true;
+  case StepStatus::event:case StepStatus::error:cancel(op);return false;
+  }
+ }
+}
+bool Layout::wait_transition() noexcept {
+ Operation op;if(begin_wait_transition(op).status==StepStatus::error)return false;return run(op);
+}
+bool Layout::hide_buttons() noexcept {
+ Operation op;if(begin_hide_buttons(op).status==StepStatus::error)return false;return run(op);
+}
+bool Layout::create_buttons(std::span<const Button> list) noexcept {
+ Operation op;if(begin_create_buttons(op,list).status==StepStatus::error)return false;return run(op);
 }
 void Layout::set_instant_transition(bool b) noexcept {p_->instant=b;}
 void Layout::toggle_animation_direction() noexcept {p_->horizontal=!p_->horizontal;}

@@ -560,6 +560,105 @@ TextureDomainResult domain_impl(const Material& material, std::span<const Animat
       catch (const std::bad_alloc&) { return {{Error::allocation,0},0,0}; }
       catch (...) { return {{Error::malformed,material.wire.guest_address},0,0}; }
 }
+// Deliberately small lifetime language: every observable segment assigns LOD
+// with LINEAR_LAST; transfers preserve the wait/track and only reset the source
+// elapsed clock. A zero-duration assignment is never itself a publication.
+TextureDomainResult playback_domain(const Material& material, std::span<const Program> programs,
+                                    std::span<const TexturePlayback> capabilities) {
+    const auto address = material.wire.guest_address;
+    require(material.wire.bytes.size() >= 0x78,Error::extent,address);
+    require(material.flags == 0x10 && !capabilities.empty(),Error::unsupported,address);
+    DomainObserver observer{8,0,address};
+    Track initial;
+    initial.kind = 2;
+    initial.initial = static_cast<float>(material.color_and_trailing_words[1] >> 24)/255.0f;
+    observer.sample(initial,0);
+    std::vector<float> seeds{0};
+    float minimum = std::numeric_limits<float>::infinity(), maximum = 0;
+    bool zero = false;
+    for (const auto& capability : capabilities) {
+        require(capability.program < programs.size() && !capability.speeds.empty(),
+                Error::malformed,address);
+        for (const auto speed : capability.speeds) {
+            require(std::isfinite(speed) && speed >= 0,Error::unsupported,address);
+            zero |= speed == 0;
+            if (speed > 0) minimum = std::min(minimum,speed);
+            maximum = std::max(maximum,speed);
+        }
+    }
+    // Taking the union is conservative: permits even switches between speed
+    // sets belonging to different programs, but never assumes an owner clock.
+    require(zero && maximum > 0,Error::unsupported,address);
+    for (const auto& capability : capabilities) {
+        const auto& program = programs[capability.program];
+        require(program.kind == AnimationKind::texture && program.cyclic,Error::unsupported,address);
+        for (const auto& c : program.commands) {
+            require((c.opcode == 3 && c.mask == 256) ||
+                    (c.opcode == 14 && c.target != no_index),Error::unsupported,c.address);
+            if (!c.duration) continue;
+            require(maximum < static_cast<float>(c.duration),Error::unsupported,c.address);
+            const auto target = std::bit_cast<float>(c.operands[0]);
+            if (std::find(seeds.begin(),seeds.end(),target) == seeds.end()) seeds.push_back(target);
+        }
+    }
+    // Compile already proves complete reachability and a positive wait in the
+    // cycle. Thus every zero-assignment/transfer chain ends at a positive
+    // assignment, before any fields or retained seeds can be published.
+    // A rebind can retain only a published positive assignment's target (or
+    // fresh target0). Its old kind/rate/time cannot affect the next publication:
+    // the next positive assignment resets all three with shared assign_tracks.
+    // Testing every such seed under every program therefore closes both
+    // arbitrary rebind sequences and loop reentry, not merely the first cycle.
+    for (const auto starting_target : seeds) for (const auto& capability : capabilities) {
+        const auto& program = programs[capability.program];
+        Player player;
+        player.tracks[8].target = starting_target;
+        std::vector<float> entries;
+        auto cursor = std::size_t{0};
+        for (;;) {
+            auto& track = player.tracks[8];
+            if (cursor == program.cycle_entry) {
+                if (std::find(entries.begin(),entries.end(),track.target) != entries.end()) break;
+                entries.push_back(track.target);
+            }
+            const auto& c = program.commands[cursor];
+            cursor = c.target;
+            if (c.opcode != 3) continue;
+            assign_tracks(player,c,0); // Exact Runtime coefficients, including RN division.
+            if (!c.duration) continue;
+            observer.address = c.address;
+            constexpr float epsilon = std::numeric_limits<float>::epsilon();
+            constexpr float tiny = std::numeric_limits<float>::denorm_min();
+            const auto duration = static_cast<float>(c.duration);
+            // For left in (0,D], RN(left-s) decreases by at least this
+            // amount. The extra update covers the segment-entry publication.
+            // Zero updates are exact identities, not charged against this bound.
+            const auto error = (point(duration)+point(maximum))*point(epsilon)+point(tiny);
+            const auto decrement = rounded_down(static_cast<double>(minimum)-error.high);
+            require(decrement > 0,Error::unsupported,c.address);
+            const auto updates = std::ceil(std::nextafter(static_cast<double>(duration)/decrement,
+                std::numeric_limits<double>::infinity()))+1;
+            require(std::isfinite(updates) && updates*epsilon < 1,Error::unsupported,c.address);
+            // At assignment, x=-left is in [0,max_speed]. Monotonic RN gives
+            // RN(RN(x-s)+s)>=0, and the two roundings add at most 2 errors.
+            // Thereafter gamma_n bounds all positive additions, with no
+            // frame/cycle horizon. Every assignment establishes this anew.
+            const auto count = point(static_cast<float>(updates)); // Integer < 2^23, exact.
+            const auto entry = point(maximum)+point(2)*(point(epsilon)*(point(2)*point(maximum))+point(tiny));
+            const auto numerator = entry+count*point(maximum)+count*point(tiny);
+            const auto denominator = point(1)-count*point(epsilon);
+            require(denominator.low > 0,Error::unsupported,c.address);
+            const auto upper = rounded_up(std::nextafter(static_cast<double>(numerator.high)/denominator.low,
+                std::numeric_limits<double>::infinity()));
+            const Interval time{0,upper};
+            std::size_t prefix = 0;
+            require(std::isfinite(track.rate) &&
+                    index_prefix(track_interval(track,time),8,prefix),Error::extent,c.address);
+            observer.prefix = std::max(observer.prefix,prefix);
+        }
+    }
+    return {{},observer.prefix,0};
+}
 } // namespace
 TextureDomainResult texture_domain(const Material& material, std::span<const Animation> animations,
                                   std::span<const std::size_t> selected,
@@ -570,6 +669,21 @@ TextureDomainResult texture_sample_domain(const Material& material, std::span<co
                                          std::span<const TextureSample> samples,
                                          std::span<const AnimationPath> paths) noexcept {
     return domain_impl(material,animations,{},paths,samples,true);
+}
+TextureDomainResult texture_playback_domain(const Material& material, std::span<const Animation> animations,
+                                           std::span<const TexturePlayback> capabilities,
+                                           std::span<const AnimationPath> paths) noexcept {
+    try {
+        std::vector<Program> programs(animations.size());
+        for (const auto& capability : capabilities) {
+            require(capability.program < animations.size(),Error::malformed,material.wire.guest_address);
+            auto& program = programs[capability.program];
+            if (program.commands.empty()) program = compile(animations[capability.program],paths);
+        }
+        return playback_domain(material,programs,capabilities);
+    } catch (const Invalid& e) { return {e.status,0,0}; }
+      catch (const std::bad_alloc&) { return {{Error::allocation,0},0,0}; }
+      catch (...) { return {{Error::malformed,material.wire.guest_address},0,0}; }
 }
 SlotCapacity slot_capacity(const Model& model) noexcept {
     SlotCapacity result{model.nodes.size(), 0};
@@ -596,6 +710,26 @@ struct Runtime::Impl {
     CameraState initial_camera, camera;
     Player camera_player;
     std::vector<Program> programs;
+    // Cold-certified per-material capabilities; speed spans retain the Resources
+    // immutable borrowed lifetime. No allocation occurs on warm mutation paths.
+    std::vector<std::vector<TexturePlayback>> material_playbacks;
+    bool capped(std::size_t material) const noexcept {
+        return !material_playbacks[material].empty();
+    }
+    bool playback_program(std::size_t material, std::size_t program) const noexcept {
+        if (!capped(material) || program == no_index) return true;
+        for (const auto& capability : material_playbacks[material])
+            if (capability.program == program) return true;
+        return false;
+    }
+    bool playback_speed(std::size_t material, std::size_t program, float speed) const noexcept {
+        if (!capped(material)) return true;
+        for (const auto& capability : material_playbacks[material]) {
+            if (program != no_index && capability.program != program) continue;
+            for (const auto allowed : capability.speeds) if (same(allowed,speed)) return true;
+        }
+        return false;
+    }
     std::vector<SlotCapacity> resource_capacities;
     std::vector<ModelStorage> models;
     std::vector<CallbackEvent> event_storage;
@@ -874,6 +1008,21 @@ CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> 
         impl->pool = identity;
         require(capacities.size() <= UINT32_MAX,Error::extent);
         for (const auto& input : resources.animations) impl->programs.push_back(compile(input,resources.paths));
+        impl->material_playbacks.resize(resources.materials.size());
+        for (const auto& playback : resources.playbacks) {
+            require(playback.material < resources.materials.size(),Error::extent);
+            impl->material_playbacks[playback.material].push_back(playback.capability);
+        }
+        for (std::size_t i = 0; i < resources.materials.size(); ++i) {
+            require(!resources.materials[i].requires_playback_capability || impl->capped(i),
+                    Error::unsupported,resources.materials[i].wire.guest_address);
+            if (impl->capped(i)) {
+                const auto domain=playback_domain(resources.materials[i],impl->programs,impl->material_playbacks[i]);
+                require(domain.images<=resources.materials[i].images.size() &&
+                        domain.palettes<=resources.materials[i].palettes.size(),
+                        Error::extent,resources.materials[i].wire.guest_address);
+            }
+        }
         require((execution.commands == no_index) == (execution.events == no_index),Error::malformed);
         const bool finite_certificate = execution.commands == no_index;
         for (const auto& program : impl->programs)
@@ -922,6 +1071,8 @@ CreateResult Runtime::create(Resources resources, std::span<const SlotCapacity> 
                     require(node.materials[j] < resources.materials.size(), Error::extent);
                     require(resources.materials[node.materials[j]].wire.bytes.size() >= 0x78,Error::extent);
                     if (!node.material_animations.empty()) check_program(node.material_animations[j],AnimationKind::texture);
+                    const auto program = node.material_animations.empty() ? no_index : node.material_animations[j];
+                    require(impl->playback_program(node.materials[j],program),Error::unsupported);
                 }
             }
             impl->resource_capacities[mi] = {source.nodes.size(),materials};
@@ -1027,6 +1178,16 @@ Status Runtime::step_model(InstanceHandle h) noexcept {
     if (!s.valid(h)) return {Error::handle,0};
     const auto index = h.slot;
     auto& model = s.models[index];
+    // Capability admission precedes even model callbacks, borrowed-event
+    // invalidation and generation changes. Binding at disabled reset speed1 is
+    // harmless; only the speed that will actually be evaluated is constrained.
+    for (std::size_t i = 0; i < model.materials.size(); ++i) {
+        const auto& material = model.materials[i];
+        const auto& player = model.material_players[i];
+        if (material.clock.phase == Phase::disabled || player.program == no_index) continue;
+        if (!s.playback_speed(material.resource,player.program,material.clock.speed))
+            return {Error::unsupported,0};
+    }
     std::size_t commands = 0, events = 0;
     if (s.needs_preflight) for (std::size_t ni = 0; ni < model.nodes.size(); ++ni) {
         const auto& node = model.nodes[ni];
@@ -1222,6 +1383,9 @@ Status Runtime::restart_model(InstanceHandle h, float skip) noexcept {
     const auto index = h.slot;
     if (!std::isfinite(skip)) return {Error::malformed,0};
     auto& m = s.models[index];
+    if (skip != 0) for (std::size_t i = 0; i < m.materials.size(); ++i)
+        if (s.capped(m.materials[i].resource) && m.material_players[i].program != no_index)
+            return {Error::unsupported,0};
     for (std::size_t i = 0; i < m.nodes.size(); ++i) restart(m.node_players[i],m.nodes[i].clock,skip);
     for (std::size_t i = 0; i < m.materials.size(); ++i) {
         // animSetModelTreeTextureAnimation leaves null entries untouched.
@@ -1284,6 +1448,11 @@ Status Runtime::bind_materials(InstanceHandle h, std::span<const std::size_t> bi
         if (program != no_index && (program >= s.programs.size() || s.programs[program].kind != AnimationKind::texture))
             return {Error::malformed,0};
     for (std::size_t i = 0; i < bindings.size(); ++i) {
+        if (bindings[i] == no_index) continue; // NULL must not constrain preserved clocks.
+        if (!s.playback_program(m.materials[i].resource,bindings[i]) ||
+            (s.capped(m.materials[i].resource) && skip != 0)) return {Error::unsupported,0};
+    }
+    for (std::size_t i = 0; i < bindings.size(); ++i) {
         if (bindings[i] == no_index) continue;
         auto& p = m.material_players[i];
         p.program = bindings[i];
@@ -1305,6 +1474,13 @@ Status Runtime::reset_materials(InstanceHandle h, std::span<const std::size_t> b
         if (resource == no_index) continue;
         if (resource >= s.resources.materials.size()) return {Error::extent,0};
         if (s.resources.materials[resource].wire.bytes.size() < 0x78) return {Error::extent,0};
+    }
+    if (!bindings.empty()) for (std::size_t i = 0; i < bindings.size(); ++i) {
+        const auto resource = bindings[i], previous = m.materials[i].resource;
+        if (resource == no_index || resource == previous) continue;
+        // A reset cannot discard a certificate or transplant fresh AObjs onto
+        // a capped resource through an originally unrestricted attachment.
+        if (s.capped(previous) || s.capped(resource)) return {Error::unsupported,0};
     }
     for (std::size_t ni = 0; ni < m.nodes.size(); ++ni) {
         const auto& n = m.nodes[ni];
@@ -1335,6 +1511,10 @@ Status Runtime::set_texture_speed(InstanceHandle h, float speed) noexcept {
     if (!s.valid(h)) return {Error::handle,0};
     const auto index = h.slot;
     if (!std::isfinite(speed)) return {Error::malformed,0};
+    const auto& model = s.models[index];
+    for (std::size_t i = 0; i < model.materials.size(); ++i)
+        if (!s.playback_speed(model.materials[i].resource,model.material_players[i].program,speed))
+            return {Error::unsupported,0};
     for (auto& m : s.models[index].materials) m.clock.speed = speed;
     return {};
 }
@@ -1368,6 +1548,13 @@ Status Runtime::set_camera_speed(float speed) noexcept {
 Status Runtime::reset(float skip) noexcept {
     if (impl_->retired) return {Error::retired,0};
     if (!std::isfinite(skip)) return {Error::malformed,0};
+    if (skip != 0) for (const auto& active : impl_->models) {
+        if (active.life != Impl::ModelStorage::Life::active) continue;
+        for (const auto& node : impl_->resources.models[active.resource_model].nodes)
+            for (std::size_t i = 0; i < node.materials.size(); ++i)
+                if (impl_->capped(node.materials[i]) && !node.material_animations.empty() &&
+                    node.material_animations[i] != no_index) return {Error::unsupported,0};
+    }
     impl_->initialize(skip);
     ++impl_->generation;
     return {};

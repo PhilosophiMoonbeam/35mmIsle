@@ -156,22 +156,22 @@
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },
     "src/model_data_decoder.hpp": {
-      "sha256": "2200777373ce37765949721bb02c0cf24e518c00f20f33254c0672f1d0482af5"
+      "sha256": "11a58c849e0088d444b0a5cddc00f51518641bc5ff98b79e2fe0ebaf1e0cff1b"
     },
     "src/model_data_decoder.cpp": {
-      "sha256": "a685693ead550dd9e821e13f5199003f1d2ebe9157fa06e2bcbf0ec4f0ca3258"
+      "sha256": "f2bf7780e7eab8863f0c4d4dc84eec3bdcedc006cd006f3b4dda6bdf880b7c9f"
     },
     "src/model_asset_closure.hpp": {
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
     },
     "src/model_asset_closure.cpp": {
-      "sha256": "88b3b6e2d18bd823d87ecc2f1bc04e3f401f932120c9326c187a42e359b5dfdb"
+      "sha256": "09d1eb52b5e4d241eb14a08e2fc05188b6f91af812a49727878e56e7f09b26e3"
     },
     "src/actor_owner.hpp": {
       "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
     },
     "src/actor_owner.cpp": {
-      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
+      "sha256": "0b5d1447fcee27995a67ce2246f31f205a1981c2856b15d87c9e8c10ded8b42e"
     },
     "src/actor_owner_source.h": {
       "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
@@ -186,19 +186,34 @@
       "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
     },
     "src/actor_resources.hpp": {
-      "sha256": "308a6616098f33604e91de5fc1f29a5e218e3ddc44d880ee80aa91bf4bbfc9c6"
+      "sha256": "485d0fe35bb856a392f80b3fb636c92a977a589cf1403205eb80cc97b00d232f"
     },
     "src/actor_resource_catalog.hpp": {
-      "sha256": "67614a3226f94ce82d21d3f9a41ae0767ce591ada76d224d5613312e51394c5d"
+      "sha256": "9dfff955c92646aa46f9459ee42deb116542626f15a40c568e8dd672ad82c3b8"
     },
     "src/beach_actor_scene.hpp": {
       "sha256": "6b2939a4c2fccc1af5508ea7229185810f2283528c77b0f3ee23b77f9a4a21dc"
     },
+    "src/river_actor_catalog.cpp": {
+      "sha256": "84148f70d02b394a026aea035e761f35f27e4dca6fae73ecb9be1f8737171a44"
+    },
+    "src/tunnel_actor_catalog.cpp": {
+      "sha256": "8cfb7f78e0663c63d2964a49363960b0f180f1b6ec03f2653047a4328402c6e6"
+    },
+    "src/volcano_actor_catalog.cpp": {
+      "sha256": "96aa4888c39a2d054dc7a2ffa8e64d899a92214f97267bbc4584bca3fe492d6f"
+    },
+    "src/cave_actor_catalog.cpp": {
+      "sha256": "9750187937683989c259280ff91e6939ea700dce5a963039c3ff269c78c8f77e"
+    },
+    "src/valley_actor_catalog.cpp": {
+      "sha256": "048c287f8f8cc8651da0097064bd35bc38054ddeb3aed3da50ed8c33de1cf047"
+    },
     "src/actor_resources.cpp": {
-      "sha256": "1c181185d679b63c353a237f477ac39e812f60cfe8d35a55b7a6928db6933faa"
+      "sha256": "0051adc3217710ee25f95d19799cc6e09ce17ea1323b05bced746848ff6de96b"
     },
     "src/actor_resource_catalog.cpp": {
-      "sha256": "935d9ce4454abfa5779e67493b54bdc5159c95e04cd6bcb1e872375f356ebdcb"
+      "sha256": "c4de558a2f6661907f98b8f49e2a2cd9237501509266ba70e3d6af3d643d8445"
     },
     "src/beach_actor_catalog.cpp": {
       "sha256": "64cef87c78f2f735a8ed2e2d126dc9c3759a9a987b535a8c4fd1fa0e38c9e424"
@@ -225,7 +240,7 @@
       "sha256": "85fe41807542fc4827bd2d1dfd702c4a179514cd80aca65c2ce11671310e1357"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "a15f7d2b670900c81f0f8ca88dc04cd7680f414147aae14c2f3ae828c4808a6b"
+      "sha256": "009dbf70edfef2d92d55866be285a69f8d7febc8b3af52b961a41eb9e1ec7222"
     },
     "tests/actor_owner_rom_smoke.cpp": {
       "sha256": "87ebc8e5a3cafbfead09be68aeafccdc4642c6260e295012a8be809ce85da79c"

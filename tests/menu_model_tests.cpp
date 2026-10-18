@@ -56,6 +56,24 @@ void defaults_and_scroll() {
         commands.words[1].w1 == ((92u << 12) | 44u) && commands.words[2].w1 == 0x8000ffff,
         "animated tile scroll/scale lost source grouping or upper saturation");
 }
+void sparse_image_indices_and_atomic_rejection() {
+    Input input;input.material.flags=1;
+    input.material.images={0x80310000,0,0x80312000,0x80313000};
+    model::MaterialCommands commands;
+    for(const unsigned index:{0u,2u,3u}) {
+        input.state.image_index=static_cast<std::uint16_t>(index);
+        require(bool(model::encode_material(input.material,input.state,commands)) &&
+            commands.words[0].w0==0xfd100000 && commands.words[0].w1==input.material.images[index],
+            "Source sparse image table was compacted or selected the wrong payload");
+    }
+    const auto saved=commands;
+    input.state.image_index=1;
+    require(!model::encode_material(input.material,input.state,commands),"selected Source NULL image became a payload or fallback");
+    require(commands.count==saved.count,"NULL image rejection changed command extent");
+    for(std::size_t i=0;i<commands.words.size();++i)
+        require(commands.words[i].w0==saved.words[i].w0 && commands.words[i].w1==saved.words[i].w1,
+            "NULL image rejection partially published commands");
+}
 void palette_and_light_colors() {
     Input input;
     input.material.flags = 0x3007;
@@ -1130,6 +1148,7 @@ void kernel_contextual_residency_and_atomicity() {
 }
 int main() {
     try {
+        sparse_image_indices_and_atomic_rejection();
         defaults_and_scroll(); palette_and_light_colors();
         lod_and_atomic_rejection(); fractional_lod_above_terminal_key();
         deferred_placement_scopes_and_hide(); immediate_prelist_and_disabled_capacity();

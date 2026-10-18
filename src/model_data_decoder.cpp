@@ -56,11 +56,19 @@ std::size_t DataDecoder::material(std::uint32_t address) {
 
 std::size_t DataDecoder::material(std::uint32_t address, const MaterialExtent& fact) {
     require(fact.material==address,"Source Texture identity mismatch",address);
+    for (std::size_t i=0; i<fact.null_image_slots.size(); ++i)
+        require(fact.null_image_slots[i]<fact.images &&
+                (!i || fact.null_image_slots[i-1]<fact.null_image_slots[i]),
+                "Invalid Source Texture NULL image slot authority",address);
     for (std::size_t i=0; i<materials_.size(); ++i)
         if (materials_[i].wire.guest_address==address) {
             require(materials_[i].images.size()==fact.images && materials_[i].palettes.size()==fact.palettes &&
                     materials_[i].wire.u32(4)==fact.table && materials_[i].wire.u32(44)==fact.palette_table,
                     "Source Texture was admitted with a different domain",address);
+            require(static_cast<std::size_t>(std::count(materials_[i].images.begin(),materials_[i].images.end(),0u))==
+                    fact.null_image_slots.size(),"Source Texture was admitted with different NULL image authority",address);
+            for (const auto slot : fact.null_image_slots)
+                require(materials_[i].images[slot]==0,"Source Texture NULL image authority mismatch",address);
             return i;
         }
     auto result=metadata(reader_,address);
@@ -69,21 +77,27 @@ std::size_t DataDecoder::material(std::uint32_t address, const MaterialExtent& f
             w.u32(44)==fact.palette_table && fact.palettes<=fact.palette_slots,
             "Source Texture pointer table identity/extent mismatch",address);
     auto table=[&](std::uint32_t pointer, std::size_t entries, std::size_t slots,
-                   rom::GuestView& wire, std::vector<std::uint32_t>& values) {
+                   rom::GuestView& wire, std::vector<std::uint32_t>& values,
+                   std::span<const std::size_t> null_slots) {
         if (!slots) { require(!entries,"Empty source Texture table domain",pointer); return; }
         require(slots<=reader_.remaining_bytes(pointer)/4,
                 "Source Texture table escapes initialized mapping",pointer);
         wire=reader_.view(pointer,slots*4);
         values.reserve(entries);
+        auto null_slot=null_slots.begin();
         for (std::size_t i=0; i<entries; ++i) {
             const auto value=wire.u32(i*4);
-            reader_.view(value,1,8); values.push_back(value);
+            const bool expected_null=null_slot!=null_slots.end() && *null_slot==i;
+            require((value==0)==expected_null,"Source Texture indexed slot NULL mismatch",pointer);
+            if (expected_null) ++null_slot;
+            else reader_.view(value,1,8);
+            values.push_back(value);
         }
         for (std::size_t i=entries; i<slots; ++i)
             require(!wire.u32(i*4),"Source Texture NULL slot mismatch",pointer);
     };
-    table(fact.table,fact.images,fact.slots,result.image_table,result.images);
-    table(fact.palette_table,fact.palettes,fact.palette_slots,result.palette_table,result.palettes);
+    table(fact.table,fact.images,fact.slots,result.image_table,result.images,fact.null_image_slots);
+    table(fact.palette_table,fact.palettes,fact.palette_slots,result.palette_table,result.palettes,{});
     const auto initial=describe_material(address);
     require(fact.images>=initial.images && fact.palettes>=initial.palettes,
             "Source Texture lacks initial renderer-consumed entries",address);
@@ -122,6 +136,23 @@ std::size_t DataDecoder::sampled_material(std::uint32_t address,
         std::none_of(sampled_bindings_.begin(),sampled_bindings_.end(),
             [&](const auto& binding) { return binding.material==address && binding.stream==sample.program; }))
         sampled_bindings_.push_back({address,sample.program});
+    return index;
+}
+
+std::size_t DataDecoder::playback_material(std::uint32_t address,
+    std::span<const menu::animation::TexturePlayback> playbacks) {
+    const auto value=metadata(reader_,address);
+    const auto domain=menu::animation::texture_playback_domain(value,animations_,playbacks,
+        paths_ ? std::span<const menu::AnimationPath>(*paths_) : std::span<const menu::AnimationPath>{});
+    require(static_cast<bool>(domain),"Source live material clock/domain proof failed",domain.status.address);
+    const MaterialExtent extent{address,value.wire.u32(4),domain.images,domain.images,
+        value.wire.u32(44),domain.palettes,domain.palettes};
+    const auto index=material(address,extent);
+    materials_[index].requires_playback_capability=true;
+    for (const auto& playback : playbacks)
+        if (std::none_of(playback_bindings_.begin(),playback_bindings_.end(),
+            [&](const auto& binding) { return binding.material==address && binding.stream==playback.program; }))
+            playback_bindings_.push_back({address,playback.program});
     return index;
 }
 
@@ -288,6 +319,10 @@ void DataDecoder::validate_material_animation(std::size_t stream, std::size_t in
         [&](const auto& binding) {
             return binding.material==material.wire.guest_address && binding.stream==stream;
         })) return; // Already proved under this cold owner's explicit capability.
+    if (std::any_of(playback_bindings_.begin(),playback_bindings_.end(),
+        [&](const auto& binding) {
+            return binding.material==material.wire.guest_address && binding.stream==stream;
+        })) return; // Runtime must enforce the retained full-lifetime clock proof.
     const std::array<std::size_t,1> streams{stream};
     const auto domain=describe_material(material.wire.guest_address,streams);
     require(domain.images<=material.images.size() && domain.palettes<=material.palettes.size(),

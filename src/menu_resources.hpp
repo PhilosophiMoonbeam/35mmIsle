@@ -131,6 +131,8 @@ struct Material {
     std::uint16_t flags = 0, scale = 0, image_origin = 0;
     std::uint16_t width = 0, height = 0, block_width = 0, block_height = 0;
     std::uint16_t auxiliary_width = 0, auxiliary_height = 0;
+    // Playback-inferred image bounds require the matching Runtime clock proof.
+    bool requires_playback_capability = false;
     std::array<float, 9> parameters{}; // 14,18,1c,20,24,28,3c,40,44
     std::array<std::uint32_t, 10> color_and_trailing_words{}; // 50..74
 };

@@ -100,10 +100,10 @@
       "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
     },
     "src/menu_animation.hpp": {
-      "sha256": "cbfbdd13cd15bcd5d1000fba4702db1d92e85083e0c64a624fdbc8a713ffd286"
+      "sha256": "be4014a8284537debbf18691fa8977b464a3410e4bf54bb0f03d4adc6db06780"
     },
     "src/menu_animation.cpp": {
-      "sha256": "ef6226a3d2b7206e90c0b36f983e06a32861b0109f589e92c42ede7a19497f8d"
+      "sha256": "d85627bdcca32133b4f93181588e7d4896ea3fdc9c7fe07ce833744aed4a5ac6"
     },
     "src/scene_services.hpp": {
       "sha256": "4b4fafd05a7eee03880cff975c5f8a2d1b987d6c4a32c7d3cd2c331d7cba6354"
@@ -121,7 +121,7 @@
       "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
     },
     "src/actor_owner.cpp": {
-      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
+      "sha256": "0b5d1447fcee27995a67ce2246f31f205a1981c2856b15d87c9e8c10ded8b42e"
     },
     "src/actor_owner_source.h": {
       "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
@@ -136,7 +136,7 @@
       "sha256": "625837894dd98025b11b0b7d84370ffb81b53e8f0e9e295981ac20182d9d663e"
     },
     "tools/prepare_engine.py": {
-      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+      "sha256": "b5b31702ed3682fd875253234c6a212c6f6a63621f749df08008eabdc57a014e"
     }
   },
   "definitions": [

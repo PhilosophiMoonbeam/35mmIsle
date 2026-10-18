@@ -303,7 +303,7 @@ struct Owner::Impl {
             maximum_nodes=std::max(maximum_nodes,c[i].nodes);
         }
         scratch.resize(maximum_nodes);
-        auto result=menu::animation::Runtime::create({r.models(),r.materials(),r.animations(),menu::no_index,r.paths()},c,{},execution);
+        auto result=menu::animation::Runtime::create({r.models(),r.materials(),r.animations(),menu::no_index,r.paths(),r.material_playbacks()},c,{},execution);
         if (!result) throw std::runtime_error("actor animation Runtime admission failed");
         runtime=std::move(result.runtime);
     }

@@ -66,6 +66,7 @@ def prepare(repository, manifest_path, output_path, evidence_path):
         if path not in ("src/engine.c", "src/engine_math.h", "src/contextual_model_math.h",
                         "src/engine_internal.h", "src/source_factory_resources.h",
                         "src/player_source.h", "src/player_source_bridge.c", "src/world_movement_state.h",
+                        "src/course_actor_source.h", "src/course_actor_source.c",
                         "include/35mmisle/engine.h"):
             raise ValueError("unadmitted native support path: " + path)
         digest = hashlib.sha256((root / path).read_bytes()).hexdigest()

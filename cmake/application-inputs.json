@@ -1279,7 +1279,7 @@
       "sha256": "8a4a5418b4d9fc3c66b73bfe2899e8d521ba81db2fcad661f97c5bf2c4dc95ef"
     },
     "tools/prepare_engine.py": {
-      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+      "sha256": "b5b31702ed3682fd875253234c6a212c6f6a63621f749df08008eabdc57a014e"
     },
     "src/application_manager.hpp": {
       "sha256": "ac8c7e9152d4a7f4b5c7f0c2e45f1e2d0cb1fd55427eb744cca1a2351426aca3"
@@ -1312,7 +1312,7 @@
       "sha256": "aa8ee6dda25bfe06f7d2c3462ca66257c29b47b534508a69ee40c862c5281ba0"
     },
     "src/menu_resources.hpp": {
-      "sha256": "8403268bce9dc6909b623c7064f2bc32bfbf1a5f214b217755dc6c3326215b0f"
+      "sha256": "43c1677bdbbddb01a00623f26c61863880cad948eb2f9f13b0814c6dfb85e8aa"
     },
     "src/menu_resources.cpp": {
       "sha256": "78b718fe45bff0152800c0f25d5c800f3fdb343d5c5c2550a73f3dfbbd813fc8"

@@ -33,10 +33,20 @@ struct WeightedStates {
     std::vector<WeightedState> entries;
     std::int32_t total_weight = 0;
 };
+// Source RandomState2 is counted, not NULL-terminated. NULL is a real outcome.
+struct CountedStateOption {
+    rom::GuestView wire;
+    std::uint8_t weight = 0;
+    std::uint32_t callback_identity = 0;
+};
+struct CountedStateOptions {
+    rom::GuestView wire;
+    std::vector<CountedStateOption> entries;
+};
 namespace detail { struct BehaviorCatalog; }
 
-// Constructor-only immutable data for a closed course catalog (Beach 0 or
-// Rainbow 6). Retain the original, unmoved Snapshot until this owner and every
+// Constructor-only immutable data for a closed course catalog (course IDs 0 through
+// 6). Retain the original, unmoved Snapshot until this owner and every
 // borrowed view/reference are finished. Moving the Snapshot invalidates access;
 // destroying it first violates the borrowed lifetime contract. Data decoding
 // grants no factory, callback, interpreter or live ActorAI admission. Beach's
@@ -53,10 +63,12 @@ public:
     std::int32_t course_id() const noexcept;
     std::span<const InteractionGraph> graphs() const;
     std::span<const WeightedStates> weighted_states() const;
+    std::span<const CountedStateOptions> counted_state_options() const;
     // Exact admitted roots only: NULL, interior records and other guest
     // addresses throw out_of_range. Repeated lookups return the same object.
     const InteractionGraph& graph(std::uint32_t identity) const;
     const WeightedStates& weighted_states(std::uint32_t identity) const;
+    const CountedStateOptions& counted_state_options(std::uint32_t identity) const;
     void require_live() const;
 private:
     const rom::Snapshot* snapshot_;
@@ -64,6 +76,7 @@ private:
     const detail::BehaviorCatalog* catalog_;
     std::vector<InteractionGraph> graphs_;
     std::vector<WeightedStates> weighted_states_;
+    std::vector<CountedStateOptions> counted_state_options_;
 };
 } // namespace isle::actor
 #endif

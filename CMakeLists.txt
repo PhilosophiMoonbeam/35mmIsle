@@ -260,7 +260,10 @@ if(TARGET isle-rom-snapshot)
 
     add_library(isle-actor-resources STATIC src/actor_resources.cpp src/actor_resources.hpp
         src/actor_resource_catalog.cpp src/actor_resource_catalog.hpp
-        src/beach_actor_catalog.cpp src/rainbow_actor_catalog.cpp)
+        src/beach_actor_catalog.cpp src/rainbow_actor_catalog.cpp
+        src/tunnel_actor_catalog.cpp src/volcano_actor_catalog.cpp
+        src/river_actor_catalog.cpp
+        src/cave_actor_catalog.cpp src/valley_actor_catalog.cpp)
     target_link_libraries(isle-actor-resources PUBLIC isle-model-data)
     isle_target_options(isle-actor-resources)
 

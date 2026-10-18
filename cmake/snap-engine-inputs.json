@@ -34,6 +34,12 @@
     }
   },
   "native_support": {
+    "src/course_actor_source.h": {
+      "sha256": "e642f3b7333ac8f0d42b50467b309d87073bbdd5dca842101e73045ffddd3522"
+    },
+    "src/course_actor_source.c": {
+      "sha256": "e6fbef2ed7f926d64e5f0492dbac2ec25ed15636c51706b7a44d8b95c552e24e"
+    },
     "src/player_source.h": {
       "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
     },

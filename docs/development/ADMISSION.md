@@ -3118,3 +3118,189 @@ Actors, Original callbacks, custom-render effects, GPU presentation or gameplay.
 Volcano's custom renderer identities are retained; shape classification alone
 does not implement their ordered effects. No Windows gameplay or full-game
 completion is established by this cohort.
+
+### All-course actor/behavior data and C-only Source fault fences
+
+Authority remains GAME `df8815e75f3d79618466e01e0827c6165b93d11c` and
+matching-map SHA256
+`545866faf5fb44abf47d2f455ff7cad75580dc15320c357ac8dadc3359cb1a00`.
+The 646-file native-resource cohort builds the real default LUS application and
+31 opt-in consumers; all 58 CPU tests pass (3.57 s). Original callbacks for the
+remaining five courses are **not activated by this data admission**.
+
+#### Actual production resource consumers
+
+Qualified 638v consumes Beach/Tunnel/Volcano/Cave/Valley/Rainbow; corrected 638w
+consumes River. Each constructs the actual `world::Resources`, takes its owned
+fog, constructs the production `actor::Resources`, closes all model/material/
+animation/GBI dependencies, installs the exact closure into isolated 8-MiB RAM,
+and binds/steps every receiver-qualified header in the actual native Runtime.
+These are not standalone facsimiles of the production constructor.
+
+| Course | Models | Materials | Model + texture programs | Receiver-qualified headers |
+|---|---:|---:|---:|---:|
+| Beach 0 | 17 | 33 | 1317 | 79 |
+| Tunnel 1 | 21 | 65 | 937 | 70 |
+| Volcano 2 | 20 | 59 | 1572 | 91 |
+| River 3 | 23 | 40 | 1510 | 105 |
+| Cave 4 | 18 | 68 | 1517 | 84 |
+| Valley 5 | 20 | 23 | 1221 | 96 |
+| Rainbow 6 | 5 | 14 | 374 | 26 |
+
+Each course selects its own exact mappings; overlapping overlays are never
+combined. Fixed cold closure scratch now admits at most 23 models and five
+paths. Numeric callback identities remain data. Registry order, both genuine
+River 1003 rows, singleton tuples and automatic containing-function/declaration
+origins remain distinct. Cave's four shared headers retain both Init receivers.
+`ActorOwner` now forwards retained live material capabilities to its Runtime;
+this does not close its remaining-course Source provider/automatic-spawn gates.
+Volcano custom renderer identity/shape admission does not execute its ordered
+pre/post GBI effects.
+
+Three previously rejected consumption shapes now have Source-correct contracts:
+
+- **Sparse image tables.** `MaterialExtent::null_image_slots` names exact,
+  sorted, unique Source NULL slots separately from trailing NULLs. Magnemite's
+  four entries retain `[eye0, NULL, eye1, eye2]`; indices never compact. The
+  decoder checks the declared holes against wire bytes, closure skips only
+  those nonexistent payloads, and selecting a NULL image rejects the complete
+  packet before publication. Qualified 638p consumes all Tunnel data and 64
+  actual pulse packets (Source indices 2/3); 638v verifies the literal NULL slot
+  in installed RAM. Permanent packet coverage checks unaffected indices and
+  whole-packet rejection, not a renderer skip/fallback.
+- **No-MObj nodes.** Source `sys/anim.c:153–175` advances the outer texture list
+  but only dereferences its inner list while an MObj exists. The shared actor
+  builder now follows that conditional, while retaining the full outer wire
+  view. Corrected Cave 638s and 638v consume all 84 headers. Failed 638r Cave is
+  permanently rejected; its partial artifacts were never read.
+- **Initially disabled, later animated.** River Init `802e3ea4` has a genuine
+  NULL setup header and three later Source headers (`802e3e04/18/2c`). The old
+  equivalence between initial animation enablement and a nonempty reachable
+  header domain was invalid and removed; exact initial-header-presence
+  validation remains. Qualified 638w explicitly rejects a fabricated initial
+  header and consumes all three later receiver-qualified bindings. Failed
+  638v River remains rejected with zero artifact reads.
+
+#### Sequential LOD authority is not an allocation or seek proof
+
+Three River materials (`80145ce0`, `80146030`, `80146380`) use actual texture
+programs `80145ed8`, `80146228`, `80146578`. Their Source two-header families
+bind the same programs at speed `.7f`, then freeze at `0`; material restart skip
+is zero. The tapes use `LINEAR_LAST` channel 8 and `SET_ANIMATION`, not cubic
+interpolation. No image-table boundary or neighboring label supplies authority.
+
+The cold `texture_playback_domain` verifier proves a complete positive-wait
+cycle with outward-rounded wait-decrement/track-time bounds and correlated
+value/rate domains. For these programs, each duration-50 segment permits at
+most 73 positive updates and a track time below 52. The inductive loop/rebind
+bound keeps LOD in `(-1,4)`; truncation plus the adjacent image requires exactly
+five image entries. This is a lifetime proof, not a finite-frame extrapolation.
+The existing unrestricted STEP-domain and first-update sample contracts remain
+separate and unchanged.
+
+`DataDecoder::playback_material` retains a live `(material, program)` binding,
+marks `requires_playback_capability`, and never registers the five-entry prefix
+as a declared array allocation. `actor::Resources` retains the typed immutable
+speed/program capabilities and exposes them in its Runtime resource view.
+Runtime creation rejects omission, duplicate/incorrect bindings and insufficient
+material prefixes; binding/restart/reset/speed/evaluation guard the admitted
+clock before model/material/event/generation publication. Independent reviews
+found a missing required-prefix-versus-material-size check; that check and a
+consumer-visible regression are now included. Arbitrary seek/speed is not
+silently accepted as sequential playback.
+
+Qualified 638t binds all three actual Source families through the decoder and
+Runtime: 400 updates at `.7`, 64 frozen updates and one legal reset/rebind/update
+per family produce 1,395 packets and 2,790 exact Original-derived image transfers.
+Observed LOD is 0 through 2.99401. Those finite counts are smoke only; the cold
+inductive verifier supplies lifetime authority. Qualified 638u closes all River
+standalone data consumers; 638w additionally proves the production resource
+owner retains/forwards all three capabilities and consumes all 105 headers.
+The failed 638s River packet oracle used raw image fields instead of Source
+`render.c:989–993`'s LOD-derived indices; only the private oracle was corrected.
+That failed capture remains rejected with zero artifact reads.
+
+#### Actual behavior records, distinct random-list grammars
+
+Qualified 638x constructs production `BehaviorResources` for all seven courses,
+checks every decoded row and terminator, and exercises stable exact-root lookup
+and unknown/interior-root rejection. New-course words use independent qualified
+638k/638n numeric records; unchanged Beach/Rainbow use independent big-endian
+Snapshot reads through their original mappings, not a separate historical oracle.
+
+| Course | Graphs / live rows | Signed lists / live rows | Counted lists / rows |
+|---|---:|---:|---:|
+| Beach 0 | 71 / 212 | 8 / 16 | 0 / 0 |
+| Tunnel 1 | 69 / 167 | 4 / 8 | 1 / 2 |
+| Volcano 2 | 82 / 294 | 12 / 36 | 1 / 2 |
+| River 3 | 59 / 143 | 13 / 36 | 1 / 3 |
+| Cave 4 | 49 / 142 | 5 / 13 | 1 / 2 |
+| Valley 5 | 63 / 115 | 12 / 31 | 1 / 4 |
+| Rainbow 6 | 20 / 54 | 1 / 2 | 0 / 0 |
+
+The 317 own-course graph roots exclude common `80388324`; its genuine empty
+cmd-58 graph is added to each of courses 1–5. Valley also includes signed root
+`802ecb00`. `RandomState2` is independently counted: pinned
+`include/common_structs.h:197–200` places its u8 weight at 0 and callback word at
+4, stride 8. All five lists/13 rows retain real NULL outcomes and ignore padding;
+they are not signed sentinel lists. No chooser, RNG, callback binding or
+executable provider readiness is inferred by this decoder.
+
+#### Real C-only failure transfers
+
+The native engine now compiles `course_actor_source.{h,c}`. Each remaining
+course embeds the exact shared `IsleCourseActorBase`; only phase/status/lifetime
+and returning C fault-fence mechanics are common. Typed canonical Source/owner/
+receiver admission remains mandatory. The live-stack C fence restores nested
+Source and Player links, preserves first failure, and rejects detached access
+without inspecting an old Game/Player borrow. It never jumps through a C++ leaf.
+Lifecycle pre-Game/post-detach execution still requires a separate independent
+record/domain/fence, not this active-actor helper.
+
+The permanent real-Game/Player regression covers nested success/fault paths,
+skipped postfailure work, actual native execution failure, restored links,
+canonical-Player absence, phase/course boundaries and detached invocation after
+Game destruction. A separate ASan command compiles the new fence and consumer
+with instrumentation and runs the same actual native lifetimes successfully;
+supporting engine archives were not rebuilt with ASan. This is not a live
+remaining-course gameplay or pending-Photo fault-injection proof.
+
+#### Qualification and hosted-build boundaries
+
+All successful 638v/638w/638x captures qualify once with one terminal process,
+zero created tasks, tracer+process absent, stable tree, unchanged ROM, zero known
+physical-device attempts and zero permission failures. Retained outputs remain
+outside permanently closed capture trees. 638w takes 0.4544 s and retains three
+artifacts/5,826 B; 638x takes 0.4167 s and retains two artifacts/469 B.
+
+- 638w binary: `43d4b6c70e1a6ba84ce903c7a9a222e2c323dfab8fc254cbcfe8837c89881594`.
+- 638w archive: `4444515f977bbd1ab3456a74a487975bd7bf07004915c870f26f2a4a3134a40e`.
+- 638x binary: `82a57f0b99a57eb2dbde639125c0adea12190d88da81fafe9a694d5a65f7e851`.
+- 638x archive: `f098b7a41e5e791f6800393e84341950b212f316bd43ca57a5822faea948c4ca`.
+- 638w source-map: `f9ad1038895534a5ceed851d5a79c8ac4a2c19233c9843324f72bfec67ae5f54`.
+- 638x source-map: `ddc3864bda54a03ea5b191857f76f1caffd8afa89ebb50b57e5745912ff5946e`.
+
+Qualified 638z separately recovers 550 actual initialized fields, 194 static
+World spawn rows and the exact 19-word Dugtrio factory return path. The prior
+638y query incorrectly treated Valley `D_8034C8C8` as ROM data; its actual
+`7A00C0.c:8` definition is BSS `u8[8]`, prepared zero once, never a ROM mirror.
+638y is rejected forever with zero artifact reads. The corrected 638z run
+qualifies once with the same zero-device/permission/unchanged-ROM conditions.
+These static spawn rows are not complete dynamic behavior-reachability proof.
+Dugtrio's single `jal` targets actual `Pokemon_SpawnOnGround`; no following
+instruction writes v0 before `jr ra` and its NOP delay. This proves the native
+explicit return may preserve the actual machine result despite the decompiled
+C's missing return. It does not yet constitute a native Dugtrio factory run.
+
+Hosted commit `1efb1828de0ae2f0b23f6d3f48475260bbb22bab` passes all ten jobs,
+including the real Windows x64 application, Source/post-course consumers, CPU
+suite and `--help`: [run 39132219406](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39132219406).
+That hosted cohort precedes the new 58-test/resource changes and contains no
+private ROM. Server-2022 compilation is not Windows11 execution or gameplay.
+
+The five actual Original-C actor/lifecycle provider pairs and shared native
+mechanical host are separate implementation work. Source policies, custom GBI,
+actual animation receivers, natural completion/Retry/STOPPED, queue/reference/
+model/Photo/GPU/audio joins and remaining menu owners must all close before a
+full-game claim. No new seven-playable-course, audible-output, hardware parity,
+Windows11-runtime or binary-release qualification is established here.

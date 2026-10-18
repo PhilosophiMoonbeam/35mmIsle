@@ -16,6 +16,10 @@ EXPECTED = ('func_beach_802C5C60', 'func_beach_802C5DAC', 'func_beach_802C5E88',
 EXPECTED += ('func_80363D8C_50419C', 'pokemonChangeBlock', 'pokemonChangeBlockOnGround', 'Pokemon_ChangeBlockAndRemove')
 PREAMBLE = '/* Complete pinned own-GAME Meowth closure; no SDK bodies or layouts. */\n#include "engine_internal.h"\n#include "menu_scene_bridge.h"\n#include "beach_meowth_source.h"\ntypedef IsleActorSource Pokemon;\ntypedef IsleActorGround GroundResult;\ntypedef IsleActorFactoryBlock WorldBlock;\ntypedef IsleActorFactorySpawn ObjectSpawn;\n#define UNUSED\n#define GET_POKEMON(object) isle_actor_source_require(object)\n#define Pokemon_Spawn isle_actor_owner_spawn\n#define Pokemon_SpawnOnGround isle_actor_owner_spawn_ground\nstatic const IsleActorFactoryInitialization D_beach_802CC968 = { UINT32_C(0x802cc968) };\n'
 
+SUPPORT += ('src/tunnel_actor_catalog.cpp', 'src/volcano_actor_catalog.cpp',
+            'src/river_actor_catalog.cpp',
+            'src/cave_actor_catalog.cpp', 'src/valley_actor_catalog.cpp')
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()

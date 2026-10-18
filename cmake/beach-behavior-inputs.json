@@ -71,10 +71,10 @@
   "native_files": ["src/actor_behavior_resources.hpp","src/actor_behavior_resources.cpp","src/beach_actor_scene.hpp","src/beach_actor_scene.cpp","tests/beach_behavior_resources_rom_smoke.cpp","cmake/beach-behavior-inputs.json"],
   "native_support": {
     "src/actor_behavior_resources.hpp": {
-      "sha256": "ee2c6e6121b72d4393cd20cea1255c09e92aa749fafdcc2f5409bdecc48bec0b"
+      "sha256": "5fa4c4583519f7aa02fc68c9309c325fb417cf922a286741dd2bdad64c527936"
     },
     "src/actor_behavior_resources.cpp": {
-      "sha256": "f69c2b50b631a7ed39be36b2b2235429694ff647b27e296c785c9f92a27e4ff9"
+      "sha256": "b40a45f38b34a248d36df085b62cbb057732bc2ef7f9fe6274e0a1c15967a213"
     },
     "tests/beach_behavior_resources_rom_smoke.cpp": {
       "sha256": "6258365ca9486f0090b8e2effc5a35d995d7abdc7d42124a9baeede49fefbe8a"
@@ -83,7 +83,7 @@
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
     },
     "src/model_asset_closure.cpp": {
-      "sha256": "88b3b6e2d18bd823d87ecc2f1bc04e3f401f932120c9326c187a42e359b5dfdb"
+      "sha256": "09d1eb52b5e4d241eb14a08e2fc05188b6f91af812a49727878e56e7f09b26e3"
     }
   },
   "integration": {

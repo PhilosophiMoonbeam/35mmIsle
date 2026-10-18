@@ -26,6 +26,11 @@ struct DefinitionTableSpec {
 struct DescriptorCounts {
     std::size_t models, materials, model_animations, material_animations, headers, definitions, paths;
 };
+// Source-owned sequential playback authority, never a pointer-array allocation.
+struct MaterialPlaybackSpec {
+    std::uint32_t material, program;
+    std::span<const float> speeds;
+};
 struct CourseCatalog {
     std::int32_t course_id;
     std::uint32_t world_setup_identity;
@@ -37,12 +42,18 @@ struct CourseCatalog {
     std::span<const DefinitionTableSpec> tables;
     std::span<const AutomaticActorDefinition> automatic_definitions;
     DescriptorCounts expected;
+    std::span<const MaterialPlaybackSpec> material_playbacks{};
 };
-// Maximum of the two closed catalogs: fixed cold closure scratch, no temporary
+// Exact maxima of the closed catalogs: fixed cold closure scratch, no temporary
 // heap allocation and no aggregate overlay mappings.
-inline constexpr std::size_t max_catalog_models = 17;
-inline constexpr std::size_t max_catalog_paths = 1;
+inline constexpr std::size_t max_catalog_models = 23;
+inline constexpr std::size_t max_catalog_paths = 5;
 const CourseCatalog& beach_catalog() noexcept;
+const CourseCatalog& tunnel_catalog() noexcept;
+const CourseCatalog& volcano_catalog() noexcept;
+const CourseCatalog& river_catalog() noexcept;
+const CourseCatalog& cave_catalog() noexcept;
+const CourseCatalog& valley_catalog() noexcept;
 const CourseCatalog& rainbow_catalog() noexcept;
 const CourseCatalog& course_catalog(std::int32_t course_id);
 } // namespace isle::actor::detail

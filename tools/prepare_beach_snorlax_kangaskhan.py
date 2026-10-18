@@ -15,6 +15,10 @@ SUPPORT = ('src/beach_snorlax_kangaskhan_source.h', 'src/beach_snorlax_kangaskha
 EXPECTED_SYMBOLS = ('func_beach_802C5620', 'func_beach_802C56C8', 'func_beach_802C5700', 'func_beach_802C5768', 'func_beach_802C5828', 'func_beach_802C5884', 'func_beach_802C58B8', 'func_beach_802C58EC', 'func_beach_802C594C', 'func_beach_802C59C0', 'func_beach_802C5A20', 'func_beach_802C5A94', 'func_beach_802C5AF4', 'func_beach_802C5B68', 'func_beach_802C5BD4', 'func_beach_802C5C28', 'func_beach_802C9AC0', 'func_beach_802C9AE4', 'func_beach_802C9B40', 'func_beach_802C9B9C', 'func_beach_802C9BF8', 'func_beach_802C9C88', 'func_beach_802C9CF8', 'func_beach_802C9D68', 'func_beach_802C9D70', 'func_beach_802C9DCC', 'func_beach_802C9E70', 'func_beach_802C9EBC', 'func_beach_802C9F30', 'func_beach_802C9F9C', 'func_beach_802CA010', 'func_beach_802CA05C')
 PREAMBLE = '/* Complete pinned own-GAME Snorlax/Kangaskhan; no SDK bodies or layouts. */\n#include "engine_internal.h"\n#include "beach_snorlax_kangaskhan_source.h"\ntypedef IsleActorSource Pokemon;\ntypedef IsleActorFactoryBlock WorldBlock;\ntypedef IsleActorFactorySpawn ObjectSpawn;\n#define UNUSED\n#define GET_POKEMON(object) isle_actor_source_require(object)\n#define POKEMON_FLAG_8 0x008\n#define Pokemon_SpawnOnGround isle_actor_owner_spawn_ground\n'
 
+SUPPORT += ('src/tunnel_actor_catalog.cpp', 'src/volcano_actor_catalog.cpp',
+            'src/river_actor_catalog.cpp',
+            'src/cave_actor_catalog.cpp', 'src/valley_actor_catalog.cpp')
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()

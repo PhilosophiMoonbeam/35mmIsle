@@ -2,7 +2,7 @@
   "schema_version": 1,
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "transformation_version": "beach-eevee-chansey-complete38-v1",
-  "generator_sha256": "3adbd2b32b0bde4cfc3f51e6036c0952f2d431b137d18a5a4cfed7b914cdb352",
+  "generator_sha256": "ee03df839ce8cccddccbc9b1ca61678790f9f7296aeff345de567525e2d92f1f",
   "source_files": {
     "src/beach/55F350.c": {
       "git_blob": "cf84fff65ff498e43e41580d2183bf61731983ae",
@@ -1285,7 +1285,7 @@
       "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
     },
     "src/actor_owner.cpp": {
-      "sha256": "deef56c93e759c4c6a51c7af5012a56faf7f7c19f66bbaba66784a5b3ed3ff73"
+      "sha256": "0b5d1447fcee27995a67ce2246f31f205a1981c2856b15d87c9e8c10ded8b42e"
     },
     "src/actor_interaction_services.h": {
       "sha256": "3ae9ca3cee1e32d2658c969d6b458290783c711de3a8f4c10966d1f24ce00158"
@@ -1306,19 +1306,34 @@
       "sha256": "f3b9af4297ab671784d98e8f4180d61a745b3b8e7b4cde58299ce81f5ad55df7"
     },
     "src/actor_resources.hpp": {
-      "sha256": "308a6616098f33604e91de5fc1f29a5e218e3ddc44d880ee80aa91bf4bbfc9c6"
+      "sha256": "485d0fe35bb856a392f80b3fb636c92a977a589cf1403205eb80cc97b00d232f"
     },
     "src/actor_resource_catalog.hpp": {
-      "sha256": "67614a3226f94ce82d21d3f9a41ae0767ce591ada76d224d5613312e51394c5d"
+      "sha256": "9dfff955c92646aa46f9459ee42deb116542626f15a40c568e8dd672ad82c3b8"
     },
     "src/beach_actor_scene.hpp": {
       "sha256": "6b2939a4c2fccc1af5508ea7229185810f2283528c77b0f3ee23b77f9a4a21dc"
     },
+    "src/river_actor_catalog.cpp": {
+      "sha256": "84148f70d02b394a026aea035e761f35f27e4dca6fae73ecb9be1f8737171a44"
+    },
+    "src/tunnel_actor_catalog.cpp": {
+      "sha256": "8cfb7f78e0663c63d2964a49363960b0f180f1b6ec03f2653047a4328402c6e6"
+    },
+    "src/volcano_actor_catalog.cpp": {
+      "sha256": "96aa4888c39a2d054dc7a2ffa8e64d899a92214f97267bbc4584bca3fe492d6f"
+    },
+    "src/cave_actor_catalog.cpp": {
+      "sha256": "9750187937683989c259280ff91e6939ea700dce5a963039c3ff269c78c8f77e"
+    },
+    "src/valley_actor_catalog.cpp": {
+      "sha256": "048c287f8f8cc8651da0097064bd35bc38054ddeb3aed3da50ed8c33de1cf047"
+    },
     "src/actor_resources.cpp": {
-      "sha256": "1c181185d679b63c353a237f477ac39e812f60cfe8d35a55b7a6928db6933faa"
+      "sha256": "0051adc3217710ee25f95d19799cc6e09ce17ea1323b05bced746848ff6de96b"
     },
     "src/actor_resource_catalog.cpp": {
-      "sha256": "935d9ce4454abfa5779e67493b54bdc5159c95e04cd6bcb1e872375f356ebdcb"
+      "sha256": "c4de558a2f6661907f98b8f49e2a2cd9237501509266ba70e3d6af3d643d8445"
     },
     "src/beach_actor_catalog.cpp": {
       "sha256": "64cef87c78f2f735a8ed2e2d126dc9c3759a9a987b535a8c4fd1fa0e38c9e424"
@@ -1330,10 +1345,10 @@
       "sha256": "2879ea9d105fde5d6f90565f7a97d73f57c8f20c6500267cfacc59a7b9fea66c"
     },
     "src/actor_behavior_resources.hpp": {
-      "sha256": "ee2c6e6121b72d4393cd20cea1255c09e92aa749fafdcc2f5409bdecc48bec0b"
+      "sha256": "5fa4c4583519f7aa02fc68c9309c325fb417cf922a286741dd2bdad64c527936"
     },
     "src/actor_behavior_resources.cpp": {
-      "sha256": "f69c2b50b631a7ed39be36b2b2235429694ff647b27e296c785c9f92a27e4ff9"
+      "sha256": "b40a45f38b34a248d36df085b62cbb057732bc2ef7f9fe6274e0a1c15967a213"
     },
     "src/source_command_scope.h": {
       "sha256": "acd9a7312afe5129efcd6e495aa827de1ae667f3810cbe5fba5c3989516a3160"
@@ -1354,7 +1369,7 @@
       "sha256": "6c83553a8f38a6eca0d6f6c6e2ceb5fa376f680165da1e9f15a59724fdc2ebfe"
     },
     "tools/prepare_engine.py": {
-      "sha256": "7075a8fa8d90fe8c6891c8ee13d197d6a41c86615a4e1d070c4f0de7c351dc02"
+      "sha256": "b5b31702ed3682fd875253234c6a212c6f6a63621f749df08008eabdc57a014e"
     }
   },
   "output_sha256": "bdddb05c81bc93902b13f5d135c9ab4efde6345a0f676d6a7c0305ea07f3900b"

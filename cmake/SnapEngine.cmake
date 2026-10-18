@@ -12,6 +12,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/source_factory_resources.h"
     "${PROJECT_SOURCE_DIR}/src/player_source.h"
     "${PROJECT_SOURCE_DIR}/src/player_source_bridge.c"
+    "${PROJECT_SOURCE_DIR}/src/course_actor_source.h"
+    "${PROJECT_SOURCE_DIR}/src/course_actor_source.c"
     "${PROJECT_SOURCE_DIR}/src/post_course_scene_source.h"
     "${PROJECT_SOURCE_DIR}/src/post_course_scene_source.c"
     "${PROJECT_SOURCE_DIR}/src/player_camera_viewport.c"
@@ -150,6 +152,7 @@ target_sources(isle-engine PRIVATE src/actor_source_bridge.c src/actor_source.h 
 target_sources(isle-engine PRIVATE src/item_source_bind.c src/item_source.h)
 target_sources(isle-engine PRIVATE src/source_factory_resources.h)
 target_sources(isle-engine PRIVATE src/player_source_bridge.c src/player_source.h src/world_movement_state.h)
+target_sources(isle-engine PRIVATE src/course_actor_source.c src/course_actor_source.h)
 target_sources(isle-engine PRIVATE src/post_course_scene_source.c src/post_course_scene_source.h)
 target_sources(isle-engine PRIVATE src/player_camera_viewport.c src/player_camera_viewport.h)
 target_sources(isle-engine PRIVATE src/player_root_source.h
@@ -193,6 +196,13 @@ if(BUILD_TESTING)
     isle_target_options(player-source-tests)
     add_test(NAME player-source-tests COMMAND player-source-tests)
     set_tests_properties(player-source-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
+
+    add_executable(course-actor-source-tests tests/course_actor_source_tests.cpp tests/course_actor_source_fixture.c)
+    target_link_libraries(course-actor-source-tests PRIVATE isle-engine)
+    target_include_directories(course-actor-source-tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
+    isle_target_options(course-actor-source-tests)
+    add_test(NAME course-actor-source-tests COMMAND course-actor-source-tests)
+    set_tests_properties(course-actor-source-tests PROPERTIES LABELS "synthetic;private-game-source" TIMEOUT 60)
 
     add_executable(native-factory-resources-tests
         tests/native_factory_resources_tests.cpp tests/native_factory_resources_fixture.c)

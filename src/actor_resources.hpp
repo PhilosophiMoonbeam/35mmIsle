@@ -2,6 +2,7 @@
 #define ISLE_ACTOR_RESOURCES_HPP
 
 #include "model_asset_closure.hpp"
+#include "menu_animation.hpp"
 #include <optional>
 
 namespace isle::actor {
@@ -27,6 +28,7 @@ struct ActorInitialization {
     std::uint16_t flags = 0;
     std::array<std::uint8_t, 3> configured_matrix_kinds{};
     ActorSetup setup;
+    // Initial setup header only; a NULL setup may still have later Source headers.
     bool animations_enabled = false;
     // Actual initialization textures outer pointer, not inferred attachments.
     bool textures_present = false;
@@ -75,7 +77,8 @@ struct ActorAnimationHeader {
 namespace detail { struct CourseCatalog; }
 // Immutable descriptors borrow the exact admitted, unmoved Snapshot. No guest
 // callback executes and no factory or ActorAI readiness is established. Only
-// closed course 0/6 catalogs are selected; graphics obligations must all close.
+// read-only closed catalogs for all seven courses are selected; all graphics
+// data obligations must close. This does not activate an Actor/gameplay scene.
 class Resources final {
 public:
     Resources(const rom::Snapshot&, std::int32_t course_id, FogProfile);
@@ -91,12 +94,13 @@ public:
     // Retained once during decoding; immutable path indices/storage are shared
     // by every animator borrowing this owner, never copied for a frame.
     std::span<const menu::AnimationPath> paths() const;
+    // Source-qualified live clocks remain distinct from allocation/seek proofs.
+    std::span<const menu::animation::MaterialPlayback> material_playbacks() const;
     std::span<const ActorAnimationHeader> headers() const;
     std::span<const ActorInitialization> initializations() const;
     std::span<const ActorDefinition> definitions() const;
     std::span<const AutomaticActorDefinition> automatic_definitions() const;
     // Exact initialized identities only, with references stable for this owner.
-    const ActorAnimationHeader& header(std::uint32_t identity) const;
     const ActorInitialization& initialization(std::uint32_t identity) const;
     const ActorDefinition& definition(std::uint32_t identity) const;
     // Each model node's bitset includes initial flags0 and every opcode15
@@ -119,6 +123,7 @@ private:
     std::vector<menu::Material> materials_;
     std::vector<menu::Animation> animations_;
     std::vector<menu::AnimationPath> paths_;
+    std::vector<menu::animation::MaterialPlayback> material_playbacks_;
     std::vector<ActorAnimationHeader> headers_;
     std::vector<ActorInitialization> initializations_;
     std::vector<ActorDefinition> definitions_;

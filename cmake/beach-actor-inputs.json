@@ -914,6 +914,11 @@
       "src/actor_resource_catalog.hpp",
       "src/beach_actor_catalog.cpp",
       "src/rainbow_actor_catalog.cpp",
+      "src/tunnel_actor_catalog.cpp",
+      "src/volcano_actor_catalog.cpp",
+      "src/river_actor_catalog.cpp",
+      "src/cave_actor_catalog.cpp",
+      "src/valley_actor_catalog.cpp",
       "src/beach_actor_scene.cpp",
       "src/beach_actor_scene.hpp",
       "src/source_matrix_configuration.hpp"

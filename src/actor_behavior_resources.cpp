@@ -17,7 +17,7 @@ struct BehaviorRecord {
 struct BehaviorCatalog {
     std::int32_t course_id;
     std::span<const model_assets::Mapping> mappings;
-    std::span<const BehaviorRecord> graphs, weighted_states;
+    std::span<const BehaviorRecord> graphs, weighted_states, counted_state_options;
 };
 } // namespace detail
 namespace {
@@ -96,14 +96,190 @@ constexpr std::array<detail::BehaviorRecord, 1> rainbow_weighted_states{{
     {0x8034ae30,2},
 }};
 constexpr detail::BehaviorCatalog beach_catalog{
-    0,beach_mappings,beach_graphs,beach_weighted_states
+    0,beach_mappings,beach_graphs,beach_weighted_states,{}
 };
 constexpr detail::BehaviorCatalog rainbow_catalog{
-    6,rainbow_mappings,rainbow_graphs,rainbow_weighted_states
+    6,rainbow_mappings,rainbow_graphs,rainbow_weighted_states,{}
+};
+// Pinned GAME df8815e75f3d79618466e01e0827c6165b93d11c.
+// Qualified 638k graph_root/weighted_root/option records, plus qualified 638n
+// Valley 802ecb00. Preserve Source row order; these are data, not callbacks.
+// common app_level/4FE330.c:23-25 declares the genuine empty cmd58 graph.
+// Each course has its own initialized overlay mapping; never union overlays.
+constexpr std::array<model_assets::Mapping, 2> tunnel_mappings{{
+    {0x802edf00,0x5eafd0,0x551e0},
+    {0x80388310,0x528720,0x90},
+}};
+constexpr std::array<detail::BehaviorRecord, 69> tunnel_graphs{{
+    {0x802ee2a4,9},{0x802ee354,3},{0x802ee394,3},{0x802ee3d4,7},
+    {0x802ee454,6},{0x802ee4c4,2},{0x802ee4f4,2},{0x802ee524,3},
+    {0x802ee564,4},{0x802ee5cc,3},{0x802ee6b8,3},{0x802ee718,2},
+    {0x802ee748,2},{0x802ee778,0},{0x802ee83c,4},{0x802ee88c,1},
+    {0x802ee8b0,4},{0x802ee900,3},{0x802ee9f8,1},{0x802eea18,1},
+    {0x802eea38,1},{0x802eea58,1},{0x802eeb28,1},{0x802eeb48,1},
+    {0x802eeb68,1},{0x802eeb88,1},{0x802eec1c,2},{0x802eec4c,1},
+    {0x802eec6c,1},{0x802eec8c,3},{0x802eeccc,1},{0x802eecec,3},
+    {0x802eeed8,9},{0x802ef0a0,10},{0x802ef150,3},{0x802ef190,4},
+    {0x802ef1e0,3},{0x802ef220,3},{0x802ef260,1},{0x802ef280,1},
+    {0x802ef3ec,5},{0x802ef464,1},{0x802ef48c,5},{0x802ef4ec,2},
+    {0x802ef51c,2},{0x802ef54c,4},{0x802ef59c,2},{0x802ef5cc,4},
+    {0x802ef61c,2},{0x802ef64c,3},{0x802ef68c,1},{0x802ef6b0,4},
+    {0x802ef778,0},{0x802ef788,1},{0x802efac8,1},{0x802efba8,1},
+    {0x802efbc8,2},{0x802efc5c,1},{0x802efc7c,2},{0x802efcac,1},
+    {0x802efccc,2},{0x802efe48,1},{0x802eff2c,1},{0x802eff4c,1},
+    {0x802efffc,1},{0x802f009c,1},{0x802f0168,1},{0x802f0228,1},
+    {0x80388324,0},
+}};
+constexpr std::array<detail::BehaviorRecord, 4> tunnel_weighted_states{{
+    {0x802ee344,1},{0x802ee6f8,3},{0x802eef78,2},{0x802ef44c,2},
+}};
+constexpr std::array<detail::BehaviorRecord, 1> tunnel_counted_states{{
+    {0x802ee120,2},
+}};
+constexpr detail::BehaviorCatalog tunnel_catalog{
+    1,tunnel_mappings,tunnel_graphs,tunnel_weighted_states,tunnel_counted_states
+};
+constexpr std::array<model_assets::Mapping, 2> volcano_mappings{{
+    {0x802e0c80,0x731e80,0x6d330},
+    {0x80388310,0x528720,0x90},
+}};
+constexpr std::array<detail::BehaviorRecord, 82> volcano_graphs{{
+    {0x802e10a4,1},{0x802e10c4,8},{0x802e1154,9},{0x802e11f4,9},
+    {0x802e1294,8},{0x802e1324,4},{0x802e1374,4},{0x802e13c4,2},
+    {0x802e13f4,3},{0x802e1434,4},{0x802e14a4,1},{0x802e15b8,8},
+    {0x802e1648,7},{0x802e16c8,4},{0x802e1718,2},{0x802e1748,2},
+    {0x802e1778,3},{0x802e17b8,3},{0x802e1818,5},{0x802e1878,4},
+    {0x802e1a34,13},{0x802e1b14,8},{0x802e1ba4,9},{0x802e1c44,3},
+    {0x802e1c84,3},{0x802e1cc4,4},{0x802e1d14,8},{0x802e1da4,4},
+    {0x802e1df4,6},{0x802e1e90,1},{0x802e1eb0,1},{0x802e1ed0,1},
+    {0x802e1ef0,4},{0x802e1f40,1},{0x802e1f60,1},{0x802e1f80,1},
+    {0x802e2098,7},{0x802e2118,5},{0x802e2178,5},{0x802e21d8,2},
+    {0x802e2208,2},{0x802e2238,3},{0x802e2278,5},{0x802e2304,3},
+    {0x802e2444,10},{0x802e24f4,7},{0x802e2574,7},{0x802e25f4,2},
+    {0x802e2624,2},{0x802e2654,3},{0x802e2694,3},{0x802e2804,10},
+    {0x802e28b4,7},{0x802e2934,4},{0x802e2984,2},{0x802e29b4,2},
+    {0x802e29e4,3},{0x802e2a24,3},{0x802e2ba0,3},{0x802e2be0,1},
+    {0x802e2c00,3},{0x802e2ca4,5},{0x802e2d24,2},{0x802e2d54,4},
+    {0x802e2da4,4},{0x802e2ec8,3},{0x802e2f08,1},{0x802e2fa4,1},
+    {0x802e3038,2},{0x802e314c,1},{0x802e317c,1},{0x802e3230,0},
+    {0x802e32a4,0},{0x802e3378,1},{0x802e3398,1},{0x802e3454,1},
+    {0x802e3474,1},{0x802e354c,2},{0x802e3648,0},{0x802e3708,1},
+    {0x802e3794,0},{0x80388324,0},
+}};
+constexpr std::array<detail::BehaviorRecord, 12> volcano_weighted_states{{
+    {0x802e1484,3},{0x802e17f8,3},{0x802e1e64,4},{0x802e22d8,3},
+    {0x802e26d4,4},{0x802e2a64,4},{0x802e2c40,5},{0x802e2c70,2},
+    {0x802e2c88,2},{0x802e2d04,3},{0x802e2f28,2},{0x802e33b8,1},
+}};
+constexpr std::array<detail::BehaviorRecord, 1> volcano_counted_states{{
+    {0x802e0ea4,2},
+}};
+constexpr detail::BehaviorCatalog volcano_catalog{
+    2,volcano_mappings,volcano_graphs,volcano_weighted_states,volcano_counted_states
+};
+constexpr std::array<model_assets::Mapping, 2> river_mappings{{
+    {0x802e2620,0x6ca400,0x5cee0},
+    {0x80388310,0x528720,0x90},
+}};
+constexpr std::array<detail::BehaviorRecord, 59> river_graphs{{
+    {0x802e2ac4,5},{0x802e2b3c,3},{0x802e2b7c,1},{0x802e2b9c,1},
+    {0x802e2ca8,6},{0x802e2d40,3},{0x802e2d80,3},{0x802e2dc0,2},
+    {0x802e2e58,2},{0x802e2e88,1},{0x802e2f34,0},{0x802e3028,1},
+    {0x802e30e0,2},{0x802e324c,3},{0x802e328c,2},{0x802e32e8,1},
+    {0x802e3494,3},{0x802e34d4,2},{0x802e351c,4},{0x802e3584,4},
+    {0x802e35ec,1},{0x802e360c,1},{0x802e362c,1},{0x802e39b8,2},
+    {0x802e39e8,4},{0x802e3a38,4},{0x802e3a88,4},{0x802e3ad8,4},
+    {0x802e3b28,4},{0x802e3b78,4},{0x802e3c28,2},{0x802e3c58,2},
+    {0x802e3d34,1},{0x802e3e40,2},{0x802e3e70,1},{0x802e3f6c,5},
+    {0x802e3fcc,3},{0x802e400c,2},{0x802e403c,2},{0x802e406c,2},
+    {0x802e4234,6},{0x802e42a4,1},{0x802e42c4,4},{0x802e4314,1},
+    {0x802e4334,2},{0x802e4478,1},{0x802e4518,1},{0x802e45a8,1},
+    {0x802e4638,1},{0x802e4838,7},{0x802e48b8,4},{0x802e4908,2},
+    {0x802e4938,3},{0x802e49a0,3},{0x802e49e0,2},{0x802e4a10,2},
+    {0x802e4a40,1},{0x802e4b14,1},{0x80388324,0},
+}};
+constexpr std::array<detail::BehaviorRecord, 13> river_weighted_states{{
+    {0x802e2b24,2},{0x802e2d18,4},{0x802e3048,2},{0x802e32bc,3},
+    {0x802e3474,3},{0x802e3504,2},{0x802e356c,2},{0x802e35d4,2},
+    {0x802e3748,3},{0x802e3bc8,3},{0x802e3be8,3},{0x802e3c08,3},
+    {0x802e4978,4},
+}};
+constexpr std::array<detail::BehaviorRecord, 1> river_counted_states{{
+    {0x802e2908,3},
+}};
+constexpr detail::BehaviorCatalog river_catalog{
+    3,river_mappings,river_graphs,river_weighted_states,river_counted_states
+};
+constexpr std::array<model_assets::Mapping, 2> cave_mappings{{
+    {0x802c6150,0x648600,0x77fe0},
+    {0x80388310,0x528720,0x90},
+}};
+constexpr std::array<detail::BehaviorRecord, 49> cave_graphs{{
+    {0x802c65e8,8},{0x802c6678,7},{0x802c66f8,2},{0x802c6728,4},
+    {0x802c6778,2},{0x802c67a8,3},{0x802c6924,3},{0x802c697c,2},
+    {0x802c6aa8,2},{0x802c6ad8,2},{0x802c6b08,1},{0x802c6be0,2},
+    {0x802c6c10,1},{0x802c6c30,1},{0x802c6d60,2},{0x802c6d90,1},
+    {0x802c6db0,5},{0x802c6e10,4},{0x802c6e60,4},{0x802c6eb0,4},
+    {0x802c6fd4,3},{0x802c70f0,2},{0x802c72b0,6},{0x802c7320,3},
+    {0x802c7360,3},{0x802c73a0,3},{0x802c73e0,2},{0x802c741c,5},
+    {0x802c748c,5},{0x802c74ec,2},{0x802c751c,2},{0x802c754c,2},
+    {0x802c7614,1},{0x802c7634,3},{0x802c7674,1},{0x802c7694,3},
+    {0x802c76d4,3},{0x802c7984,3},{0x802c79d0,7},{0x802c7a50,4},
+    {0x802c7b50,1},{0x802c7c40,5},{0x802c7d94,3},{0x802c7ddc,3},
+    {0x802c7e1c,2},{0x802c7e4c,2},{0x802c7e7c,2},{0x802c7fc8,1},
+    {0x80388324,0},
+}};
+constexpr std::array<detail::BehaviorRecord, 5> cave_weighted_states{{
+    {0x802c67e8,4},{0x802c6964,2},{0x802c6b28,3},{0x802c7014,2},
+    {0x802c7120,2},
+}};
+constexpr std::array<detail::BehaviorRecord, 1> cave_counted_states{{
+    {0x802c6368,2},
+}};
+constexpr detail::BehaviorCatalog cave_catalog{
+    4,cave_mappings,cave_graphs,cave_weighted_states,cave_counted_states
+};
+constexpr std::array<model_assets::Mapping, 2> valley_mappings{{
+    {0x802d2740,0x7abcd0,0x7a160},
+    {0x80388310,0x528720,0x90},
+}};
+constexpr std::array<detail::BehaviorRecord, 63> valley_graphs{{
+    {0x802d2b94,1},{0x802d2bb4,1},{0x802d2bd4,1},{0x802d2c10,2},
+    {0x802d2c40,2},{0x802d2c70,2},{0x802d2d7c,2},{0x802d2dac,1},
+    {0x802d2ed8,1},{0x802d2ef8,1},{0x802d2ff8,1},{0x802d3224,4},
+    {0x802d3294,1},{0x802d32b4,1},{0x802d32d4,2},{0x802d3304,2},
+    {0x802d3334,3},{0x802d3374,3},{0x802d33b4,2},{0x802d3568,9},
+    {0x802d363c,2},{0x802d366c,2},{0x802d369c,2},{0x802d36cc,3},
+    {0x802d370c,1},{0x802d372c,1},{0x802d374c,1},{0x802d376c,1},
+    {0x802d378c,1},{0x802d3850,2},{0x802d3880,1},{0x802d38a0,3},
+    {0x802d38e0,1},{0x802d3994,1},{0x802d39d0,1},{0x802d39f0,1},
+    {0x802d3a10,1},{0x802d3b38,2},{0x802d3b68,2},{0x802d3b98,2},
+    {0x802d3bc8,2},{0x802d3d24,5},{0x802d3da4,1},{0x802d3dc4,1},
+    {0x802d3de4,2},{0x802d3e14,2},{0x802d3e44,4},{0x802d3e94,4},
+    {0x802d3ee4,3},{0x802d3ffc,1},{0x802d401c,2},{0x802d404c,1},
+    {0x802d4070,2},{0x802d40b0,1},{0x802d40d0,3},{0x802d41a8,1},
+    {0x802ec658,1},{0x802ec718,1},{0x802ec898,1},{0x802ec8b8,1},
+    {0x802ec8e4,2},{0x802ec9d0,1},{0x80388324,0},
+}};
+constexpr std::array<detail::BehaviorRecord, 12> valley_weighted_states{{
+    {0x802d2b74,2},{0x802d2dcc,2},{0x802d2ec0,2},{0x802d30c0,3},
+    {0x802d3274,3},{0x802d3608,5},{0x802d39b4,2},{0x802d3d84,3},
+    {0x802d40a0,1},{0x802ec870,3},{0x802ec9f0,3},{0x802ecb00,2},
+}};
+constexpr std::array<detail::BehaviorRecord, 1> valley_counted_states{{
+    {0x802d29b4,4},
+}};
+constexpr detail::BehaviorCatalog valley_catalog{
+    5,valley_mappings,valley_graphs,valley_weighted_states,valley_counted_states
 };
 const detail::BehaviorCatalog& catalog_for(std::int32_t course_id) {
     switch (course_id) {
     case 0: return beach_catalog;
+    case 1: return tunnel_catalog;
+    case 2: return volcano_catalog;
+    case 3: return river_catalog;
+    case 4: return cave_catalog;
+    case 5: return valley_catalog;
     case 6: return rainbow_catalog;
     default: throw std::invalid_argument("Unsupported actor behavior course catalog");
     }
@@ -155,6 +331,23 @@ WeightedStates read_states(const model_assets::Reader& reader, detail::BehaviorR
     require(states.total_weight>0,"Behavior state list has no positive source weight total");
     return states;
 }
+// Pinned include/common_structs.h:197-200 explicitly specifies RandomState2:
+// u8 weight at 0, GObjFunc identity at 4, sizeof 8. Bytes 1..3 are padding,
+// not a signed32 weight. tunnel/main.c:151-154 and volcano/main.c:149-152
+// initialize two outcomes including NULL; cave/6401B0.c:17,58 and
+// valley/79F1B0.c:12,186 declare/consume counts 2 and 4. River's declared
+// array in river/6C05E0.c:18 is qualified by 638k's three consumed options.
+// Counts are closed catalog facts; callback identities never authorize calls.
+CountedStateOptions read_options(const model_assets::Reader& reader, detail::BehaviorRecord record) {
+    CountedStateOptions options{};
+    options.wire=reader.view(record.identity,record.entries*8);
+    options.entries.reserve(record.entries);
+    for (std::size_t i=0;i<record.entries;++i) {
+        const auto wire=reader.view(record.identity+static_cast<std::uint32_t>(i*8),8);
+        options.entries.push_back({wire,wire.u8(0),wire.u32(4)});
+    }
+    return options;
+}
 template<class T> const T& lookup(const std::vector<T>& values, std::uint32_t identity) {
     const auto found=std::lower_bound(values.begin(),values.end(),identity,
         [](const T& value,std::uint32_t key) { return value.wire.guest_address<key; });
@@ -172,6 +365,8 @@ BehaviorResources::BehaviorResources(const rom::Snapshot& snapshot, std::int32_t
     const model_assets::Reader reader(snapshot,catalog_->mappings);
     graphs_.reserve(catalog_->graphs.size());
     weighted_states_.reserve(catalog_->weighted_states.size());
+    counted_state_options_.reserve(catalog_->counted_state_options.size());
+    for (const auto record:catalog_->counted_state_options) counted_state_options_.push_back(read_options(reader,record));
     for (const auto record:catalog_->graphs) graphs_.push_back(read_graph(reader,record));
     for (const auto record:catalog_->weighted_states) weighted_states_.push_back(read_states(reader,record));
 }
@@ -185,4 +380,6 @@ std::span<const InteractionGraph> BehaviorResources::graphs() const { require_li
 std::span<const WeightedStates> BehaviorResources::weighted_states() const { require_live(); return weighted_states_; }
 const InteractionGraph& BehaviorResources::graph(std::uint32_t identity) const { require_live(); return lookup(graphs_,identity); }
 const WeightedStates& BehaviorResources::weighted_states(std::uint32_t identity) const { require_live(); return lookup(weighted_states_,identity); }
+std::span<const CountedStateOptions> BehaviorResources::counted_state_options() const { require_live(); return counted_state_options_; }
+const CountedStateOptions& BehaviorResources::counted_state_options(std::uint32_t identity) const { require_live(); return lookup(counted_state_options_,identity); }
 } // namespace isle::actor

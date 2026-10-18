@@ -127,16 +127,16 @@
   },
   "native_support": {
     "src/model_data_decoder.hpp": {
-      "sha256": "2200777373ce37765949721bb02c0cf24e518c00f20f33254c0672f1d0482af5"
+      "sha256": "11a58c849e0088d444b0a5cddc00f51518641bc5ff98b79e2fe0ebaf1e0cff1b"
     },
     "src/model_data_decoder.cpp": {
-      "sha256": "a685693ead550dd9e821e13f5199003f1d2ebe9157fa06e2bcbf0ec4f0ca3258"
+      "sha256": "f2bf7780e7eab8863f0c4d4dc84eec3bdcedc006cd006f3b4dda6bdf880b7c9f"
     },
     "src/model_asset_closure.hpp": {
       "sha256": "6c5b822af5f3e4019475be74ca4c9f20729e1244ad05abcad0c62a0e000b8f92"
     },
     "src/model_asset_closure.cpp": {
-      "sha256": "88b3b6e2d18bd823d87ecc2f1bc04e3f401f932120c9326c187a42e359b5dfdb"
+      "sha256": "09d1eb52b5e4d241eb14a08e2fc05188b6f91af812a49727878e56e7f09b26e3"
     },
     "src/item_resources.hpp": {
       "sha256": "c7ad8ffe55920f539db5008fb88fd9b829b8fe14136ba60b1a2ab3fdb8c462cb"
@@ -144,11 +144,26 @@
     "src/item_resources.cpp": {
       "sha256": "8ce2614d734b005de29a2fe4738b15e65d128faa3d458f9b32d4228463f3d3ed"
     },
+    "src/river_actor_catalog.cpp": {
+      "sha256": "84148f70d02b394a026aea035e761f35f27e4dca6fae73ecb9be1f8737171a44"
+    },
+    "src/tunnel_actor_catalog.cpp": {
+      "sha256": "8cfb7f78e0663c63d2964a49363960b0f180f1b6ec03f2653047a4328402c6e6"
+    },
+    "src/volcano_actor_catalog.cpp": {
+      "sha256": "96aa4888c39a2d054dc7a2ffa8e64d899a92214f97267bbc4584bca3fe492d6f"
+    },
+    "src/cave_actor_catalog.cpp": {
+      "sha256": "9750187937683989c259280ff91e6939ea700dce5a963039c3ff269c78c8f77e"
+    },
+    "src/valley_actor_catalog.cpp": {
+      "sha256": "048c287f8f8cc8651da0097064bd35bc38054ddeb3aed3da50ed8c33de1cf047"
+    },
     "src/actor_resources.cpp": {
-      "sha256": "1c181185d679b63c353a237f477ac39e812f60cfe8d35a55b7a6928db6933faa"
+      "sha256": "0051adc3217710ee25f95d19799cc6e09ce17ea1323b05bced746848ff6de96b"
     },
     "src/actor_resource_catalog.cpp": {
-      "sha256": "935d9ce4454abfa5779e67493b54bdc5159c95e04cd6bcb1e872375f356ebdcb"
+      "sha256": "c4de558a2f6661907f98b8f49e2a2cd9237501509266ba70e3d6af3d643d8445"
     },
     "src/beach_actor_catalog.cpp": {
       "sha256": "64cef87c78f2f735a8ed2e2d126dc9c3759a9a987b535a8c4fd1fa0e38c9e424"

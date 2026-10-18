@@ -156,7 +156,12 @@ struct Builder {
             const auto& material = materials[state.identity];
             const auto& sources = state.source == Source::images ? material.images : material.palettes;
             require(!sources.empty(), "Consumed material has no bounded image domain");
-            for (const auto address : sources) record(address);
+            for (const auto address : sources) {
+                // Source-declared image holes have no payload allocation.
+                // The packet kernel still rejects actually selecting NULL.
+                if (!address && state.source==Source::images) continue;
+                record(address);
+            }
         }
     }
     State material(Command command, State state) {

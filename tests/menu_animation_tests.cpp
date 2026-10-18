@@ -1358,8 +1358,153 @@ void malformed_streams_reject_unpublished() {
     fixture.animations[0].commands[0].duration = 2;
     const auto rejected = fixture.create(); check(!rejected && rejected.status.error == a::Error::malformed,"metadata/wire disagreement rejected before execution");
 }
+void sequential_lod_playback_capability() {
+    // Qualified Source shape: actual entry is the zero LINEAR_LAST, not the
+    // following positive segment. Addresses here are independent test storage.
+    Stream loop;
+    loop.cmd(3,256,0,{f(0)}); loop.cmd(3,256,50,{f(3)});
+    loop.cmd(3,256,50,{f(0)}); loop.cmd(14,0,0,{0xb000});
+    Stream retained;
+    retained.cmd(3,256,50,{f(3)}); retained.cmd(3,256,50,{f(0)});
+    retained.cmd(14,0,0,{0xc000});
+    Stream foreign;
+    foreign.cmd(3,256,50,{f(2)}); foreign.cmd(14,0,0,{0xd000});
+    Stream model;
+    model.cmd(16,1,0); model.cmd(3,16,100,{f(50)}); model.cmd(0,0,0);
+    std::array<std::byte,120> bytes{};
+    m::Material material;
+    material.wire = {0x8000,0,bytes}; material.flags = 0x10;
+    material.color_and_trailing_words[1] = 0x80000000;
+    material.images={0x80310000,0x80311000,0x80312000,0x80313000,0x80314000};
+    Fixture fixture;
+    fixture.models[0].animation_speed = 0.7f;
+    fixture.models[0].receives_effect_callback = true;
+    fixture.models[0].nodes[0].animation = 3;
+    fixture.models[0].nodes[0].materials = {0};
+    fixture.models[0].nodes[0].material_animations = {0};
+    fixture.materials = {material,material};
+    fixture.animations = {loop.view(m::AnimationKind::texture,0xb000),
+        retained.view(m::AnimationKind::texture,0xc000),
+        foreign.view(m::AnimationKind::texture,0xd000),model.view(m::AnimationKind::model,0xe000)};
+    const std::array<float,2> speeds{0.7f,0};
+    const std::array<a::TexturePlayback,2> capabilities{{{0,speeds},{1,speeds}}};
+    const auto domain = a::texture_playback_domain(material,fixture.animations,capabilities);
+    check(bool(domain) && domain.images == 5 && domain.palettes == 0,
+          "lifetime LOD proof includes entire loop, adjacent index and retained cross-program rebinds");
+    const std::array<std::size_t,1> selected{0};
+    check(a::texture_domain(material,fixture.animations,selected).status.error == a::Error::unsupported,
+          "lifetime certificate does not weaken universal nonSTEP semantics");
+    const std::array<a::TextureSample,1> sample{{{0,0,0,0.7f}}};
+    const auto first = a::texture_sample_domain(material,fixture.animations,sample);
+    check(bool(first) && first.images == 2,"first-update sampling remains distinct from lifetime LOD prefix");
+    const std::array<float,2> backwards{0,-0.7f}, excessive{0,100}, stationary{0,0};
+    for (const auto invalid : {std::span<const float>(backwards),std::span<const float>(excessive),
+                               std::span<const float>(stationary)}) {
+        const std::array<a::TexturePlayback,1> rejected{{{0,invalid}}};
+        check(!a::texture_playback_domain(material,fixture.animations,rejected),
+              "unsupported signed, over-segment or nonprogressing playback speeds reject");
+    }
+    Stream exposed;
+    exposed.cmd(3,256,0,{f(2)}); exposed.cmd(2,0,50); exposed.cmd(14,0,0,{0xf000});
+    const std::array<m::Animation,1> exposed_program{exposed.view(m::AnimationKind::texture,0xf000)};
+    const std::array<a::TexturePlayback,1> one{{{0,speeds}}};
+    check(!a::texture_playback_domain(material,exposed_program,one),
+          "zero-duration retained-rate assignment cannot publish through an unsupported wait");
+    const std::array<a::MaterialPlayback,2> bindings{{{0,capabilities[0]},{0,capabilities[1]}}};
+    const std::array<a::SlotCapacity,1> capacity{a::slot_capacity(fixture.models[0])};
+    a::Resources resources{fixture.models,fixture.materials,fixture.animations,m::no_index,{},bindings};
+    Stream larger;
+    larger.cmd(3,256,50,{f(6)});larger.cmd(3,256,50,{f(0)});larger.cmd(14,0,0,{0x11000});
+    auto mismatched_programs=fixture.animations;
+    mismatched_programs.push_back(larger.view(m::AnimationKind::texture,0x11000));
+    const std::array<a::MaterialPlayback,3> mismatched_bindings{{bindings[0],bindings[1],{0,{4,speeds}}}};
+    const auto mismatched=a::Runtime::create(
+        {fixture.models,fixture.materials,mismatched_programs,m::no_index,{},mismatched_bindings},
+        capacity,fixture.initial_camera,{32,16});
+    check(!mismatched && mismatched.status.error==a::Error::extent,
+          "forwarding a certified larger playback domain cannot escape the admitted image table");
+    auto made = a::Runtime::create(resources,capacity,fixture.initial_camera,{32,16});
+    check(bool(made),"native Runtime stores full-lifetime playback certificate"); if (!made) return;
+    auto& r = *made.runtime;
+    const auto acquired = r.acquire(0,0,true);
+    check(bool(acquired),"certified attachment acquires"); if (!acquired) return;
+    const auto h = acquired.handle;
+    check(bool(r.step_model(h)) && r.model(h).materials[0].lod_level == 0 && r.events().size() == 1,
+          "initial native update overwrites zero-duration seed before publishing LOD and model callback");
+    auto rejects_atomically = [&](auto operation, std::string_view meaning) {
+        const auto state = r.model(h);
+        const auto before_node = state.nodes[0];
+        const auto before_material = state.materials[0];
+        const auto time = state.animation_time;
+        const auto generation = r.generation();
+        const auto events = std::vector<a::CallbackEvent>(r.events().begin(),r.events().end());
+        check(!operation(),meaning);
+        bool equal_events = events.size() == r.events().size();
+        for (std::size_t i = 0; equal_events && i < events.size(); ++i)
+            equal_events = same_event(events[i],r.events()[i]);
+        check(same_node(before_node,r.model(h).nodes[0]) &&
+              same_material(before_material,r.model(h).materials[0]) &&
+              f(time) == f(r.model(h).animation_time) && r.generation() == generation && equal_events,
+              "rejection preserves all state, binding-visible effects, borrowed events and generation");
+    };
+    rejects_atomically([&] { return r.set_texture_speed(h,-0.7f); },"negative speed rejects before mutation");
+    rejects_atomically([&] { return r.set_texture_speed(h,10); },"foreign positive speed rejects before mutation");
+    const std::array<std::size_t,1> original{0}, alternative{1}, unauthorized{2}, alternate_resource{1}, null{m::no_index};
+    rejects_atomically([&] { return r.bind_materials(h,original,1); },"nonzero material skip rejects");
+    rejects_atomically([&] { return r.restart_model(h,1); },"whole-tree material restart skip rejects");
+    rejects_atomically([&] { return r.reset(1); },"fresh reset cannot escape playback skip envelope");
+    rejects_atomically([&] { return r.bind_materials(h,unauthorized); },"foreign entry/program rejects");
+    rejects_atomically([&] { return r.reset_materials(h,alternate_resource); },"alternate resource cannot erase provenance");
+    check(bool(r.step_model(h)) && r.model(h).materials[0].lod_level == 0.7f*(3.0f/50.0f),
+          "rejected foreign binding did not replace source linear program");
+    for (unsigned i = 0; i < 20; ++i) check(bool(r.step_model(h)),"native LOD progresses at Source .7 speed");
+    check(bool(r.set_texture_speed(h,0)),"Source successor freezes the same material array");
+    const auto frozen = r.model(h).materials[0];
+    check(bool(r.bind_materials(h,null,900)) && same_material(frozen,r.model(h).materials[0]),
+          "NULL material entry preserves prior kind and clock even with independent skip");
+    const std::array<std::size_t,1> model_binding{3};
+    check(bool(r.bind_model(h,model_binding,200)) && bool(r.set_model_speed(h,-2)),
+          "model-only seek and signed road clock are independent of material capability");
+    bool frozen_updates = true;
+    allocation_probe::count = 0; allocation_probe::enabled = true;
+    for (unsigned i = 0; i < 400; ++i) frozen_updates &= bool(r.step_model(h));
+    allocation_probe::enabled = false;
+    check(frozen_updates && allocation_probe::count == 0 && same_material(frozen,r.model(h).materials[0]),
+          "unlimited zero-speed updates freeze exact material state without warm allocations");
+    check(bool(r.set_texture_speed(h,0.7f)),"same phase resumes at allowed Source speed");
+    bool rising = false, falling = false;
+    float previous = r.model(h).materials[0].lod_level;
+    for (unsigned i = 0; i < 1600; ++i) {
+        check(bool(r.step_model(h)),"native certified loop remains executable across repeated cycles");
+        const auto lod = r.model(h).materials[0].lod_level;
+        check(lod > -1 && lod < 4,"every native publication remains in certified adjacent-image prefix");
+        rising |= lod > previous; falling |= lod < previous; previous = lod;
+        if (i % 173 == 0) check(bool(r.bind_materials(h,alternative)),"retained cross-program rebind closes");
+        if (i % 227 == 0) check(bool(r.restart_model(h)),"kind-only zero-skip restart remains closed");
+    }
+    check(rising && falling,"native loop executes both Source linear directions");
+    check(bool(r.reset_materials(h)) && r.model(h).materials[0].clock.speed == 1 &&
+          r.model(h).materials[0].clock.phase == a::Phase::disabled,
+          "texture reset preserves Source disabled speed1 intermediate state");
+    check(bool(r.bind_materials(h,original)),"header binds before its .7 speed setter");
+    rejects_atomically([&] { return r.step_model(h); },"evaluation at temporary speed1 rejects before model/event publication");
+    check(bool(r.set_texture_speed(h,0.7f)) && bool(r.step_model(h)) &&
+          r.model(h).materials[0].lod_level == 0,"Source reset/bind/speed/update sequence restarts exact phase");
+    check(bool(r.reset()) && bool(r.step_model(h)) && r.model(h).materials[0].lod_level == 0,
+          "fresh runtime reentry retains certificate and legal initial playback");
+    made.runtime.reset();
+    fixture.materials[0].requires_playback_capability = true;
+    resources.playbacks = {};
+    check(!a::Runtime::create(resources,capacity,fixture.initial_camera,{32,16}),
+          "source playback-derived material cannot silently omit capability forwarding");
+    resources.playbacks = bindings;
+    fixture.models[0].nodes[0].material_animations[0] = 2;
+    check(!a::Runtime::create(resources,capacity,fixture.initial_camera,{32,16}),
+          "arbitrary matching material certificate cannot authorize an uncovered default program");
+}
 } // namespace
 int main() {
+    sequential_lod_playback_capability();
     persistent_linear_and_end(); cubic_wait_flags_and_zero_duration(); callbacks_receivers_and_atomic_errors();
     materials_and_camera(); rates_and_source_restart(); model_binding_switches_and_instances();
     texture_track_time_offset();

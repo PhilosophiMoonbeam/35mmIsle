@@ -91,12 +91,26 @@ struct ModelState {
 // nested vector and wire owner must outlive Runtime and all outstanding views.
 // Production owners supply typed Snapshot-backed catalog views; this interface
 // borrows them and does not confer admission on reconstructed private tables.
+// Full sequential playback capability, distinct from universal STEP and the
+// single-update TextureSample certificate. Borrowed speed sets are immutable.
+struct TexturePlayback {
+    std::size_t program = no_index;
+    std::span<const float> speeds;
+};
+struct MaterialPlayback {
+    std::size_t material = no_index;
+    TexturePlayback capability;
+};
 struct Resources {
     std::span<const Model> models;
     std::span<const Material> materials;
     std::span<const Animation> animations;
     std::size_t camera_animation = no_index;
     std::span<const AnimationPath> paths{};
+    // Enforced at every Runtime entrypoint, including source-derived materials
+    // marked requires_playback_capability. Omission never grants unrestricted
+    // clocks to such materials; uncapped resources keep ordinary signed clocks.
+    std::span<const MaterialPlayback> playbacks{};
 };
 // GAME 1F960.c uniform arc-length parameterization and native spline math.
 Vec3 path_position(const AnimationPath&, float parameter);
@@ -125,6 +139,12 @@ struct TextureSample {
 TextureDomainResult texture_sample_domain(const Material&, std::span<const Animation>,
                                          std::span<const TextureSample>,
                                          std::span<const AnimationPath> paths = {}) noexcept;
+// Cold lifetime proof for supported deterministic LINEAR_LAST LOD loops.
+// Includes fresh fields, retained rebind seeds and every allowed speed switch;
+// no finite frame horizon or unrestricted-seek claim is made.
+TextureDomainResult texture_playback_domain(const Material&, std::span<const Animation>,
+                                           std::span<const TexturePlayback>,
+                                           std::span<const AnimationPath> paths = {}) noexcept;
 struct CreateResult;
 // Pure animator, not a native lifecycle coordinator. Destruction/whole-runtime
 // retirement require the owner to join native callbacks and end every renderer,
@@ -184,6 +204,7 @@ public:
     Status set_node_transform(InstanceHandle, std::size_t node, const Transform&) noexcept;
     // Source animSet semantics: clear track kinds but retain allocated track
     // values/rates and current fields/flags; skip is source skipFrames.
+    // Capped material restarts require zero skip; bind_model remains independent.
     Status restart_model(InstanceHandle, float skip_frames = 0) noexcept;
     // Program indices refer to the immutable Resources::animations pool. Model
     // bindings have exactly one entry per DFS node. Non-null entries clear track
@@ -200,6 +221,9 @@ public:
     // array; no_index is a null entry: both preserve existing bindings/tracks/
     // clocks/fields. Non-null entries use kind-only restart at skip. Like GAME's
     // texture tree setter, even an all-null array sets object animation_time.
+    // Capped attachments admit only certified programs and zero non-null skip.
+    // Binding does not validate temporary speed1; step_model validates the
+    // evaluated program/speed atomically before any model/event publication.
     Status bind_materials(InstanceHandle, std::span<const std::size_t> programs,
                           float skip_frames = 0) noexcept;
     // Pokemon_SetTextures primitive: empty span restores every original attached
@@ -208,9 +232,12 @@ public:
     // texture fields and image indices, disables clock at time0/speed1, but keeps
     // palette_index (GAME Pokemon_SetTexture does not assign it). No evaluation.
     // All binding/reset arguments validate before any state/event publication.
+    // A capped attachment cannot change resource identity through this API.
     Status reset_materials(InstanceHandle, std::span<const std::size_t> resources = {}) noexcept;
     // Source speed setters permit signed deltas when movement seeks the road.
     Status set_model_speed(InstanceHandle, float speed) noexcept;
+    // Texture capabilities, when present, restrict this setter to their exact
+    // binary32 speed set. Uncapped textures retain signed Source behavior.
     Status set_texture_speed(InstanceHandle, float speed) noexcept;
     Status restart_camera(float skip_frames = 0) noexcept;
     // animSetCameraAnimation: selects a precompiled camera program, clears only

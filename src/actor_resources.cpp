@@ -31,10 +31,17 @@ menu::Vec3 vector3(const rom::GuestView& wire, std::size_t offset) {
 menu::RenderType render_type(std::uint32_t identity) {
     switch (identity) {
     case 0x80014f98: return menu::RenderType::b;
-    case 0x803594dc: return menu::RenderType::b_fogged;
+    case 0x800a15d8: case 0x803594dc: return menu::RenderType::b_fogged;
     case 0x800a1608: case 0x80359534: return menu::RenderType::d_fogged;
     case 0x8035942c: return menu::RenderType::i_fogged;
     case 0x80359484: return menu::RenderType::j_fogged;
+    case 0x8035958c: return menu::RenderType::i_no_fog;
+    // Pinned volcano/moltres/code.c:186-196 delegates the hierarchy to
+    // renderPokemonModelTypeI; volcano_smoke/code.c:62-66 delegates to
+    // renderModelTypeDFogged. Classify payload shape only: the raw callbacks
+    // remain in ActorInitialization and neither custom wrapper executes here.
+    case 0x802de26c: return menu::RenderType::i_no_fog;
+    case 0x802dfae4: return menu::RenderType::d_fogged;
     default: throw std::runtime_error("Unknown actor render callback identity");
     }
 }
@@ -88,9 +95,8 @@ struct ActorResourceBuilder {
                 setup.transition_graph_identity==fact.transition_graph_identity,
                 "Actor setup differs from closed course catalog",fact.setup_identity);
         initialization.animations_enabled=setup.wire.u32(0)!=0;
-        require(initialization.animations_enabled==(fact.header_count!=0),"Actor setup/header domain mismatch",fact.identity);
         auto result=decoder.model(w.u32(0),w.u32(4),fact.nodes,render_type(initialization.render_callback_identity));
-        result.animation_speed=0; // Headerless models stay disabled; enabled models get their actual initial speed below.
+        result.animation_speed=0; // A NULL initial header starts disabled; Source may bind a reachable header later.
         result.matrix_kinds=menu::model::select_source_matrix_kinds(initialization.flags,initialization.configured_matrix_kinds);
         result.fog_rgb=fog.rgb; result.fog_min=fog.min; result.fog_max=fog.max;
         initialization.model=out.models_.size();
@@ -124,8 +130,9 @@ struct ActorResourceBuilder {
                     if (argument) sound_count=std::max(sound_count,static_cast<std::size_t>(argument));
                 }
             }
-            if (!header.material_animation_table.bytes.empty()) if (const auto list=header.material_animation_table.u32(i*4)) {
-                require(!node.materials.empty(),"Actor material animation without MObj",list);
+            // Source advances the outer array, but never dereferences a list
+            // when this DObj has no attached MObjs (anim.c:160-171).
+            if (!header.material_animation_table.bytes.empty() && !node.materials.empty()) if (const auto list=header.material_animation_table.u32(i*4)) {
                 binding.material_animation_table=at(list,node.materials.size()*4);
                 binding.material_animations.reserve(node.materials.size());
                 for (std::size_t j=0; j<node.materials.size(); ++j) {
@@ -199,10 +206,12 @@ struct ActorResourceBuilder {
                 "Unbound automatic Source actor definition",fact.origin.function_identity);
         const auto found=std::find_if(out.definitions_.begin(),out.definitions_.end(),[&](const auto& value) {
             return value.initialization==fact.initialization && value.actor_id==fact.actor_id &&
-                   value.factory_identity==fact.factory_identity && value.change_block_identity==fact.change_block_identity &&
-                   value.remove_identity==fact.remove_identity;
+                   value.factory_identity==fact.factory_identity;
         });
-        require(found!=out.definitions_.end(),"Automatic Source actor definition lacks initialized family tuple",
+        // Automatic C values have no ROM record. Their immutable Source origin
+        // and closed factory/initialization family are required, but their exact
+        // change/remove tuple may intentionally differ from initialized rows.
+        require(found!=out.definitions_.end(),"Automatic Source actor definition lacks initialized factory family",
                 fact.origin.function_identity);
     }
 };
@@ -215,15 +224,29 @@ Resources::Resources(const rom::Snapshot& snapshot, std::int32_t course_id, FogP
     const auto& expected=catalog_->expected;
     require(expected.models==catalog_->initializations.size() && expected.models<=detail::max_catalog_models &&
             expected.headers==catalog_->headers.size() && expected.definitions==catalog_->definitions.size() &&
-            expected.materials==catalog_->material_extents.size() && expected.paths<=detail::max_catalog_paths,
+            expected.materials>=catalog_->material_playbacks.size() &&
+            expected.materials-catalog_->material_playbacks.size()==catalog_->material_extents.size() &&
+            expected.paths<=detail::max_catalog_paths,
             "Invalid closed actor catalog extents");
     models_.reserve(expected.models); materials_.reserve(expected.materials);
     animations_.reserve(expected.model_animations+expected.material_animations);
     paths_.reserve(expected.paths);
+    material_playbacks_.reserve(catalog_->material_playbacks.size());
     headers_.reserve(expected.headers); initializations_.reserve(expected.models);
     definitions_.reserve(expected.definitions); visibility_.reserve(expected.models);
     const model_assets::Reader reader(snapshot,catalog_->mappings);
     ActorResourceBuilder builder{*this,reader,fog};
+    for (const auto& fact:catalog_->material_playbacks) {
+        require(std::none_of(catalog_->material_extents.begin(),catalog_->material_extents.end(),
+                    [&](const auto& extent) { return extent.material==fact.material; }) &&
+                std::none_of(material_playbacks_.begin(),material_playbacks_.end(),
+                    [&](const auto& playback) { return materials_[playback.material].wire.guest_address==fact.material; }),
+                "Source material playback authority duplicates an allocation or binding",fact.material);
+        const auto program=builder.decoder.animation(fact.program,menu::AnimationKind::texture);
+        const std::array<menu::animation::TexturePlayback,1> capabilities{{{program,fact.speeds}}};
+        const auto material=builder.decoder.playback_material(fact.material,capabilities);
+        material_playbacks_.push_back({material,capabilities[0]});
+    }
     for (const auto& fact:catalog_->initializations) builder.model(fact);
     std::size_t next_header=0;
     for (std::size_t i=0; i<catalog_->initializations.size(); ++i) {
@@ -274,11 +297,11 @@ std::span<const menu::Model> Resources::models() const { require_live(); return 
 std::span<const menu::Material> Resources::materials() const { require_live(); return materials_; }
 std::span<const menu::Animation> Resources::animations() const { require_live(); return animations_; }
 std::span<const menu::AnimationPath> Resources::paths() const { require_live(); return paths_; }
+std::span<const menu::animation::MaterialPlayback> Resources::material_playbacks() const { require_live(); return material_playbacks_; }
 std::span<const ActorAnimationHeader> Resources::headers() const { require_live(); return headers_; }
 std::span<const ActorInitialization> Resources::initializations() const { require_live(); return initializations_; }
 std::span<const ActorDefinition> Resources::definitions() const { require_live(); return definitions_; }
 std::span<const AutomaticActorDefinition> Resources::automatic_definitions() const { require_live(); return catalog_->automatic_definitions; }
-const ActorAnimationHeader& Resources::header(std::uint32_t identity) const { require_live(); return lookup(headers_,identity); }
 const ActorInitialization& Resources::initialization(std::uint32_t identity) const { require_live(); return lookup(initializations_,identity); }
 const ActorDefinition& Resources::definition(std::uint32_t identity) const { require_live(); return lookup(definitions_,identity); }
 std::span<const std::uint8_t> Resources::visibility_domains(std::size_t model) const {

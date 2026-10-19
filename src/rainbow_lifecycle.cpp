@@ -1532,15 +1532,10 @@ const IsleRainbowActorServices Lifecycle::Impl::actor_services{
             result=isle_actor_owner_aux_read(gate,&s->gate_model,&current);
             if (result!=ISLE_GAME_OK) return result;
             if (position!=&current->position || rotation!=&current->rotation) return ISLE_GAME_INVALID_ARGUMENT;
-            world::Vec3 output_position{c->x,c->y,c->z},output_velocity{d->x,d->y,d->z};
-            const bool collided=self.gate_collision.collision_model_one(0,
-                {position->x,position->y,position->z},{rotation->x,rotation->y,rotation->z},
-                {a->x,a->y,a->z},{b->x,b->y,b->z},output_position,output_velocity);
-            // Negative results can still mutate outputs in the original
-            // primitive solver; do not condition these stores on a hit.
-            *c={output_position.x,output_position.y,output_position.z};
-            *d={output_velocity.x,output_velocity.y,output_velocity.z};
-            *hit=collided?1001:-1;
+            // StaticObject_CollideOne returns a boolean; the Original gate
+            // callback alone maps it to actor ID1001 or miss -1. Its output
+            // vectors are output-only and may still be unwritten on a miss.
+            *hit=self.gate_collision.collision_model_one(0,*position,*rotation,*a,*b,*c,*d);
             return ISLE_GAME_OK;
         });
     },

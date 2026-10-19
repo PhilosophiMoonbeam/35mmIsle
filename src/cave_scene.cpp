@@ -189,6 +189,16 @@ IsleCaveLifecycleServices make_lifecycle_services() noexcept {
         .camera_process=+[](IsleCaveLifecycleSource* p0,IsleGameObject* p1,int32_t p2,int32_t p3,IsleGameProcess** p4) noexcept -> IsleGameResult {
             return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active() || p2!=1 || p3!=1 || !p4) return ISLE_GAME_INVALID_ARGUMENT; IsleCaveCamera* camera=nullptr; auto result=a.actor_services.main_camera(&a.actors,&camera); IsleGameObject* object=nullptr; if (result==ISLE_GAME_OK) result=a.actor_services.camera_object(&a.actors,camera,&object); if (result!=ISLE_GAME_OK) return result; if (p1!=object) return ISLE_GAME_INVALID_ARGUMENT; return a.native.process(object,isle_course_scene_camera_update,p2,p3,p4); });
         },
+        .player_process=+[](IsleCaveLifecycleSource* source,IsleGameObject* object,IsleGameSourceCallback callback,int32_t kind,int32_t priority,IsleGameProcess** output) noexcept -> IsleGameResult {
+            return Adapter::invoke(source,[&](Adapter& a) {
+                if (!a.active() || !output || kind!=0 || priority!=1 ||
+                    object!=a.actors.D_802C8044_64A4F4 || !a.native.host->cart() ||
+                    !a.native.host->cart()->instance(object) ||
+                    (callback!=func_802C5DFC_6482AC && callback!=func_802C5CEC_64819C &&
+                     callback!=func_802C5D80_648230)) return ISLE_GAME_INVALID_ARGUMENT;
+                return a.native.process(object,callback,kind,priority,output);
+            });
+        },
         .effect_create=+[](IsleCaveLifecycleSource* p0,int32_t p1,int32_t p2,IsleCaveEffect** p3) noexcept -> IsleGameResult {
             return Adapter::invoke(p0,[&](Adapter& a) { if (!p3) return ISLE_GAME_INVALID_ARGUMENT; *p3=nullptr; course::SceneEffect* effect=nullptr; auto result=a.native.effect(p1,p2,&effect); if (result==ISLE_GAME_OK && effect) *p3=reinterpret_cast<IsleCaveEffect*>(effect); return result; });
         },

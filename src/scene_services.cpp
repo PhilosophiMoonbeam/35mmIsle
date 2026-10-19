@@ -54,7 +54,7 @@ struct Services::Impl {
         std::span<IsleGameObject** const> source_fields{};
         SourceBorrows source_borrows{};
         bool source_registered = false;
-        bool drawing = false, deleting = false, dispatching = false, retired = false;
+        bool drawing = false, deleting = false, dispatching = false, retired = false, native_retiring = false;
         bool native_commands = false;
     };
     Services& s;
@@ -328,6 +328,7 @@ struct Services::Impl {
     static void retiring(IsleGameObject* object, void* user) noexcept {
         auto* entry = static_cast<ObjectRecord*>(user);
         entry->deleting = true;
+        entry->native_retiring = true;
         // Close this receiver's owned references, not references in other live
         // receivers: ordinary 21/22 remain visible at their real FIFO positions.
         entry->owner->close_source_fields(*entry);
@@ -917,9 +918,16 @@ IsleGameResult Services::erase(IsleGameObject* object) noexcept {
     if (record == nullptr) { fail("menu erasing an unregistered native object"); return ISLE_GAME_INVALID_ARGUMENT; }
     object = record->object;
     if (record->deleting && isle_menu_current_object(game) == object) return ISLE_GAME_OK;
+    const auto prior_fault = isle_game_status(game);
     record->deleting = true;
     const auto result = isle_game_delete_object(game, object);
-    check(result, "scene native whole-object deletion");
+    // Native deletion retains the Game fault after accepting retirement. Do not
+    // turn that earlier fault into a new Services failure: real observers, not
+    // the requested-deletion flag, prove admission or joined record removal.
+    const auto* remaining = impl_->find(object);
+    if (prior_fault == ISLE_GAME_OK || result != prior_fault ||
+        (remaining && !remaining->native_retiring))
+        check(result, "scene native whole-object deletion");
     return result;
 }
 SpriteHandle Services::sprite(std::uint32_t identity, std::uint8_t link, std::uint32_t priority,

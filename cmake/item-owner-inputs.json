@@ -109,7 +109,7 @@
       "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
     },
     "src/scene_services.cpp": {
-      "sha256": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f"
+      "sha256": "ce621f752a484688158fb42f9527461bc815e7745985dfda968819ac8dec06dc"
     },
     "src/world_runtime.hpp": {
       "sha256": "f8c75f19fe010624088615ec745dcfaaec07ca36724bb25ed1241eb91b8c7aa0"

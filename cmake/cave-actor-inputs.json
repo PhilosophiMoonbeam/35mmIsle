@@ -2,9 +2,9 @@
   "schema_version": 1,
   "provider": "cave-actor",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "cave-source235-common-egg6-v2",
-  "generator_sha256": "27154350c37f7f6947e3f5801f7e0ae63683fbab6a1aecb82eb9be706282b463",
-  "transformer_sha256": "27154350c37f7f6947e3f5801f7e0ae63683fbab6a1aecb82eb9be706282b463",
+  "transformation_version": "cave-source235-common-egg6-v3",
+  "generator_sha256": "18ade93b25c14a14d7d0c5ce1f9309c7ed949655fe638a877211a83cdf028537",
+  "transformer_sha256": "18ade93b25c14a14d7d0c5ce1f9309c7ed949655fe638a877211a83cdf028537",
   "source_files": {
     "src/cave/1F5E70.c": {
       "git_blob": "c27aac57e2c36a93c69a4a6d6a02d7ce13e4a6be",
@@ -3699,16 +3699,16 @@
       "sha256": "8b992e81bf89f4759cbfd8a06214c4c392f884a5ffef9b65d6c5531d37bce03c"
     },
     "src/cave_lifecycle_source.h": {
-      "sha256": "15fc95de6e1b7412890321451bd6f06a4203b151f38fc674dd8bfdf56f48eeed"
+      "sha256": "3d93099f12c4292073932ec52ac58b748027060cb1a6d4eaab448cb9412c469d"
     },
     "src/cave_lifecycle_source.c": {
-      "sha256": "fbcfa101d0c349779cc3e5e7a3663306497f7132a401db817543e066ee9b7a70"
+      "sha256": "0f7f89456b99aa737085fee06ab867720a8d1fe4135dc75c3552e4e95bcc7dfa"
     },
     "src/course_actor_source.h": {
       "sha256": "e642f3b7333ac8f0d42b50467b309d87073bbdd5dca842101e73045ffddd3522"
     },
     "tools/prepare_cave_actor.py": {
-      "sha256": "27154350c37f7f6947e3f5801f7e0ae63683fbab6a1aecb82eb9be706282b463"
+      "sha256": "18ade93b25c14a14d7d0c5ce1f9309c7ed949655fe638a877211a83cdf028537"
     },
     "tools/prepare_cave_lifecycle.py": {
       "sha256": "e77f7a7608909ae7d466afef7ac295c9b76bda602cc6987b6c7ced2236309c82"

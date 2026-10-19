@@ -543,8 +543,9 @@ OwnerStatus Owner::retire() noexcept {
         const auto result=self.cancel(slot); if (first==ISLE_GAME_OK) first=result;
         if (slot.active) slot.retiring=true;
     }
-    const auto retired=self.flush_retirements(); if (first==ISLE_GAME_OK) first=retired;
-    return status(first);
+    const auto retired=self.flush_retirements();
+    if (first!=ISLE_GAME_OK) return status(first);
+    return self.services.failed()?failure(OwnerError::services,"Cart retirement retains terminal Services failure"):status(retired);
 }
 OwnerStatus Owner::collect_joined() noexcept {
     auto& self=*impl_;

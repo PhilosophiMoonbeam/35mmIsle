@@ -772,7 +772,9 @@ IsleGameResult NativeHost::publish_effect_emitters(IsleGameObject** output) noex
 }
 IsleGameResult NativeHost::bind_item_collision(IsleItemCollisionProvider callback, void* user) noexcept {
     auto& self = *impl_;
-    if (!self.setup() || !callback || self.collision_bound || !self.items) return ISLE_GAME_INVALID_STATE;
+    // Original may first publish the gate callback from a later live World block.
+    const bool admitted=self.setup() || (self.initialized && execution_open());
+    if (!admitted || !callback || self.collision_bound || !self.items) return ISLE_GAME_INVALID_STATE;
     if (!self.items->set_extra_collision(self.services->game,callback,user)) return ISLE_GAME_INVALID_STATE;
     self.collision_bound = true; return ISLE_GAME_OK;
 }

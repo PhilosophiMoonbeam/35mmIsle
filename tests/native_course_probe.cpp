@@ -8,6 +8,7 @@
 #include "valley_scene.hpp"
 #include "player_photo_source.h"
 #include "player_ui_source.h"
+#include "actor_owner_source.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -129,6 +130,42 @@ std::int8_t stick(float value) {
     if(std::abs(value)<6)return 0;
     return static_cast<std::int8_t>(std::clamp(value,-80.0f,80.0f));
 }
+struct VolcanoActor {
+    bool present=false,tangible=false,interactive=false,path=false;
+    std::uint16_t flags=0;
+    float distance=0,radius=0;
+    IsleGameVec3 position{},collision{};
+};
+struct VolcanoTargets {VolcanoActor egg,moltres;};
+VolcanoTargets volcano_targets(const IsleVolcanoActorSource& source) {
+    VolcanoTargets targets;
+    auto* game=source.base.nativeGame;
+    require(game,"actual Volcano actor game missing");
+    IsleGameObject* previous=nullptr;
+    for(;;) {
+        IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
+        require(isle_actor_source_link3_next(game,previous,&object,&actor,&model)==ISLE_GAME_OK,
+            "actual Volcano actor catalog traversal rejected");
+        if(!object)break;
+        previous=object;
+        // Actual Volcano factories:600 is moltres_egg_Spawn;146 is moltres_Spawn.
+        // The cursor validates the canonical record and attached native model.
+        if(actor->id!=600 && actor->id!=146)continue;
+        auto& target=actor->id==600?targets.egg:targets.moltres;
+        require(!target.present,"duplicate actual Volcano puzzle actor");
+        const IsleGameModelPlacement* placement=nullptr;
+        require(isle_game_model_placement(game,model,&placement)==ISLE_GAME_OK && placement &&
+            placement->mode!=ISLE_GAME_MODEL_PLACEMENT_DISABLED,"actual Volcano model placement borrow rejected");
+        target={true,actor->tangible!=0,actor->transitionGraph!=nullptr,actor->pathProc!=nullptr,
+            actor->flags,actor->playerDist,actor->collisionRadius,placement->transform.position,actor->collPosition};
+    }
+    // Scalar observations only: no object, model, semantic reference or pose
+    // borrow survives this serialized owner-side traversal.
+    return targets;
+}
+bool different(const IsleGameVec3& first,const IsleGameVec3& second) {
+    return first.x!=second.x || first.y!=second.y || first.z!=second.z;
+}
 }
 
 void seed_progress(game::State& state,std::int32_t course) {
@@ -170,6 +207,14 @@ struct Probe::Impl {
     bool tutorial_followup=false,tutorial_clear=false,tutorial_stick=false,unshielded_photo=false;
     bool mew_shielded_seen=false,mew_progress_seen=false,mew_shields_broken=false;
     int mew_initial_hits1=0,mew_initial_hits2=0;
+    enum class VolcanoStage {travel,aim_egg,egg_falling,photograph_moltres,travel_after_egg};
+    VolcanoStage volcano_stage=VolcanoStage::travel;
+    VolcanoTargets volcano_snapshot{};
+    IsleGameVec3 volcano_gate_position{},volcano_egg_position{};
+    int pending_volcano_slot=-1,pending_volcano_qualified=0,volcano_throws=0,volcano_ordinary_photos=0;
+    int volcano_cart_stopped=0,volcano_throw_timeout=0;
+    bool volcano_gate_stopped=false,volcano_throw_consumed=false,volcano_egg_transition=false;
+    bool volcano_gate_released=false,volcano_moltres_seen=false,volcano_moltres_photo=false;
     struct FrameTag {std::uint64_t ordinal=0,serial=0,update=0;int photos=0,reason=0;unsigned phase=0;};
     std::array<FrameTag,2> tags{};
     explicit Impl(std::int32_t id,private_post_course::Controller pad,const std::filesystem::path& root):course(id),controller(pad) {
@@ -179,7 +224,7 @@ struct Probe::Impl {
         ledger.open(root/("course-"+std::to_string(course)+"-source.tsv"),std::ios::out|std::ios::trunc);
         row("scope\tauthored unlocked canonical profile; actual Runtime/Manager course Source and owned inputs; not natural save progression or N64 parity");
         row("bounds\t27 primary world IDs *2667 minimum-speed updates +2400 intro/end; Rainbow7200+1800+2000+1200+120+1200;131072 rows;2 scalar frame tags;no images");
-        row("kind\tcourse\tserial\tupdates\tframes\tpresents\tphotos\tqualified\tend_reason\tintro_done\tending\tbuttons\tx\ty\tfocus\thits1\thits2\tmew_mode\tmovement\tvalue\tcontrols\tdisabled\tdirection\tzoom_target\tcooldown\tconsumed_buttons\tpressed_buttons\tmove_time\tposition_x\tposition_y\tposition_z");
+        row("kind\tcourse\tserial\tupdates\tframes\tpresents\tphotos\tqualified\tend_reason\tintro_done\tending\tbuttons\tx\ty\tfocus\thits1\thits2\tmew_mode\tmovement\tvalue\tcontrols\tdisabled\tdirection\tzoom_target\tcooldown\tconsumed_buttons\tpressed_buttons\tmove_time\tposition_x\tposition_y\tposition_z\tvolcano_stage\tegg_present\tegg_distance\tegg_radius\tegg_x\tegg_y\tegg_z\tegg_graph\tegg_path\tcart_stopped\tthrow_timeout\tvolcano_throws\tvolcano_throw_consumed\tvolcano_egg_transition\tvolcano_gate_released\tmoltres_tangible\tvolcano_moltres_photo");
     }
     void set(std::uint16_t pad=0,std::int8_t sx=0,std::int8_t sy=0) noexcept {
         buttons=pad;x=sx;y=sy;controller.set(controller.owner,pad,sx,sy);
@@ -193,7 +238,12 @@ struct Probe::Impl {
             <<'\t'<<buttons<<'\t'<<int(x)<<'\t'<<int(y)<<'\t'<<focus_id<<'\t'<<hits1<<'\t'<<hits2
             <<'\t'<<mew_mode<<'\t'<<movement<<'\t'<<value<<'\t'<<controls<<'\t'<<disabled<<'\t'<<direction
             <<'\t'<<zoom_target<<'\t'<<cooldown<<'\t'<<consumed_buttons<<'\t'<<pressed_buttons<<'\t'<<move_time
-            <<'\t'<<previous.x<<'\t'<<previous.y<<'\t'<<previous.z;row(text.str());
+            <<'\t'<<previous.x<<'\t'<<previous.y<<'\t'<<previous.z<<'\t'<<int(volcano_stage)
+            <<'\t'<<volcano_snapshot.egg.present<<'\t'<<volcano_snapshot.egg.distance<<'\t'<<volcano_snapshot.egg.radius
+            <<'\t'<<volcano_snapshot.egg.position.x<<'\t'<<volcano_snapshot.egg.position.y<<'\t'<<volcano_snapshot.egg.position.z
+            <<'\t'<<volcano_snapshot.egg.interactive<<'\t'<<volcano_snapshot.egg.path<<'\t'<<volcano_cart_stopped
+            <<'\t'<<volcano_throw_timeout<<'\t'<<volcano_throws<<'\t'<<volcano_throw_consumed<<'\t'<<volcano_egg_transition
+            <<'\t'<<volcano_gate_released<<'\t'<<volcano_snapshot.moltres.tangible<<'\t'<<volcano_moltres_photo;row(text.str());
     }
     [[noreturn]] void fail(const char* why) {
         note("failure");ledger.flush();set();
@@ -201,7 +251,11 @@ struct Probe::Impl {
             <<" photos="<<photos<<" qualified="<<qualified<<" reason="<<reason<<" focus="<<focus_id
             <<" hits="<<hits1<<','<<hits2<<" mew_mode="<<mew_mode<<" intro="<<intro_done<<" ending="<<ending_seen
             <<" controls="<<controls<<" disabled="<<disabled<<" direction="<<direction<<" zoom_target="<<zoom_target
-            <<" cooldown="<<cooldown<<" consumed_buttons="<<consumed_buttons<<" move_time="<<move_time;
+            <<" cooldown="<<cooldown<<" consumed_buttons="<<consumed_buttons<<" move_time="<<move_time
+            <<" volcano_stage="<<int(volcano_stage)<<" egg="<<volcano_snapshot.egg.present
+            <<" egg_distance/radius="<<volcano_snapshot.egg.distance<<'/'<<volcano_snapshot.egg.radius
+            <<" volcano_throws="<<volcano_throws<<" egg_transition="<<volcano_egg_transition
+            <<" gate_released="<<volcano_gate_released<<" moltres_photo="<<volcano_moltres_photo;
         throw std::runtime_error(text.str());
     }
     void observe(const Sample& s) {
@@ -232,6 +286,13 @@ struct Probe::Impl {
                 std::any_of(std::begin(captured.pokemons),std::end(captured.pokemons),
                     [](const auto& subject){return subject.pokemonID==151;});
             pending_mew_slot=-1;
+        }
+        if(pending_volcano_slot>=0 && photos>pending_volcano_slot) {
+            const auto& captured=player.photo->D_800B0598[pending_volcano_slot];
+            volcano_moltres_photo|=qualified>pending_volcano_qualified && captured.levelID==2 &&
+                std::any_of(std::begin(captured.pokemons),std::end(captured.pokemons),
+                    [](const auto& subject){return subject.pokemonID==146;});
+            pending_volcano_slot=-1;
         }
         const auto position=player.movement.position;
         if(have_position && (position.x!=previous.x || position.y!=previous.y || position.z!=previous.z))++movement;
@@ -269,7 +330,7 @@ struct Probe::Impl {
             sy=stick((player.ViewPitch-pitch)*80/.015f);return;
         }
         const IsleGameCameraParameters* camera=nullptr;
-        require(isle_game_camera_parameters(player.game,player.camera,&camera)==ISLE_GAME_OK && camera,"actual Rainbow camera parameters rejected");
+        require(isle_game_camera_parameters(player.game,player.camera,&camera)==ISLE_GAME_OK && camera,"actual course camera parameters rejected");
         const auto& look=camera->look_at;
         float fx=look.at[0]-look.eye[0],fy=look.at[1]-look.eye[1],fz=look.at[2]-look.eye[2];
         const float norm=std::sqrt(fx*fx+fy*fy+fz*fz);require(norm>0,"actual course camera direction degenerate");fx/=norm;fy/=norm;fz/=norm;
@@ -285,6 +346,89 @@ struct Probe::Impl {
         const float error_x=px-player.ReticleScreenX,error_y=py-player.ReticleScreenY;
         sx=std::abs(error_x)<6?0:stick(error_x*(player.gDirectionIndex==0?-16.0f:16.0f));
         sy=std::abs(error_y)<6?0:stick(error_y*8);
+    }
+    bool control_volcano(const IsleVolcanoActorSource& actors,const IslePlayerSource& player,
+        const IslePlayerPhotoFocus& focus,std::uint16_t prior) {
+        volcano_snapshot=volcano_targets(actors);
+        const auto& egg=volcano_snapshot.egg;const auto& moltres=volcano_snapshot.moltres;
+        volcano_cart_stopped=player.IsCartStopped;volcano_throw_timeout=player.ThrowItemTimeout;
+        if(volcano_stage==VolcanoStage::travel) {
+            // df8815e: BumpDetector stops at playerDist-radius<=5 for FLAG20.
+            // Egg Hit chooses FallIntoLava only below1200; farther hits merely
+            // jump and return to Idle. Wait for this genuine blocking encounter,
+            // after the ordinary/tutorial photographs, rather than force travel.
+            if(!egg.present || !egg.tangible || !(egg.flags&0x20u) || !egg.interactive ||
+               !player.IsCartStopped || egg.distance-egg.radius>5 || egg.distance>=1200 || qualified<3)return false;
+            volcano_gate_stopped=true;volcano_ordinary_photos=qualified;
+            volcano_gate_position=player.movement.position;volcano_egg_position=egg.position;
+            volcano_stage=VolcanoStage::aim_egg;note("volcano_actual_egg_gate");
+        }
+        if(volcano_gate_stopped && volcano_egg_transition && !volcano_gate_released &&
+           !player.IsCartStopped && different(player.movement.position,volcano_gate_position)) {
+            volcano_gate_released=true;note("volcano_actual_cart_resumed");
+        }
+        if(volcano_stage==VolcanoStage::aim_egg) {
+            if(!volcano_throw_consumed && volcano_throws>0 && (player.input.pressed_buttons&b) && player.ThrowItemTimeout>0) {
+                volcano_throw_consumed=true;note("volcano_egg_throw_consumed");
+            }
+            if(volcano_throw_consumed && egg.present && !egg.interactive && egg.path &&
+               different(egg.position,volcano_egg_position)) {
+                volcano_egg_transition=true;volcano_stage=VolcanoStage::egg_falling;
+                note("volcano_actual_egg_falling");
+            } else {
+                if(!egg.present)fail("actual Volcano egg disappeared without an observed projectile transition");
+                // Releasing Z lets the actual Player finish zooming out. Item
+                // buttons are never delivered through the photo input mode.
+                if(player.gDirectionIndex<0 || player.TurnToDirSpeed!=0 || !egg.interactive)return true;
+                const auto& position=egg.collision;
+                const float distance=std::hypot(position.x-player.CameraEyePos.x,
+                    position.y-player.CameraEyePos.y,position.z-player.CameraEyePos.z);
+                const float ray=std::hypot(player.cam_target.x-player.CameraEyePos.x,
+                    player.cam_target.y-player.CameraEyePos.y,player.cam_target.z-player.CameraEyePos.z);
+                const float flight=distance/25.0f;
+                auto aimed=position;
+                // The actual Source collision center (not the egg's ground
+                // origin) receives items.c's50 launch, half-step, .6 velocity
+                // gravity and +100 ray bias. Account for actual PlayerVelocity.
+                aimed.x-=.5f*flight*player.PlayerVelocity.x;
+                aimed.y-=.5f*flight*player.PlayerVelocity.y;
+                aimed.z-=.5f*flight*player.PlayerVelocity.z;
+                if(ray>0)aimed.y+=.15f*flight*(flight+1)-100*distance/ray;
+                std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy);
+                std::uint16_t pad=0;
+                if(!sx && !sy && ray>0 && player.ThrowItemTimeout==0 && !(prior&b) && !(player.input.current_buttons&b)) {
+                    pad=b;++throws;++volcano_throws;
+                }
+                set(pad,sx,sy);
+                if(pad)note("volcano_egg_throw_requested");
+                return true;
+            }
+        }
+        if(volcano_stage==VolcanoStage::egg_falling && moltres.present && moltres.tangible) {
+            // Only Original egg DrownInLava ->100 waits ->6 waits ->command
+            // makes the ordinary hidden Moltres tangible. No callback is run here.
+            volcano_moltres_seen=true;volcano_stage=VolcanoStage::photograph_moltres;
+            note("volcano_actual_moltres_appeared");
+        }
+        if(volcano_stage==VolcanoStage::egg_falling || volcano_stage==VolcanoStage::photograph_moltres) {
+            if(volcano_moltres_photo && !egg.present && volcano_gate_released) {
+                volcano_stage=VolcanoStage::travel_after_egg;note("volcano_actual_puzzle_photo");return true;
+            }
+            std::int8_t sx=0,sy=0;
+            // Follow only tangible actual actors, reborrowing each placement.
+            // Existing aim() drives the Source camera/reticle via the owned pad.
+            const auto* target=moltres.present && moltres.tangible?&moltres:egg.present && egg.tangible?&egg:nullptr;
+            if(target && player.gDirectionIndex==-1)aim(player,target->collision,true,sx,sy);
+            std::uint16_t pad=z;
+            if(volcano_stage==VolcanoStage::photograph_moltres && !volcano_moltres_photo && pending_volcano_slot<0 &&
+               focus.present && focus.object && focus.pokemon_id==146 && (focus.flags&4u) && !(focus.flags&8u) &&
+               player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
+               !(prior&a) && !(player.input.current_buttons&a) && photos<60) {
+                pad|=a;++shutters;pending_volcano_slot=photos;pending_volcano_qualified=qualified;
+            }
+            set(pad,sx,sy);return true;
+        }
+        return true;
     }
     void control(const application::RuntimeView& view,const Sample& s) {
         const auto prior=buttons;set();
@@ -348,12 +492,18 @@ struct Probe::Impl {
                 !(prior&a) && !(player.input.current_buttons&a)) {pad|=a;++shutters;}
             set(pad);return;
         }
-        if(player.IsTutorialEnabled && !player.D_803AE516_54E926) {
+        // Original player.c:2516–2527 creates updateTutorialMain ONLY for Beach.
+        // IsTutorialEnabled is a profile choice on every course, not proof of
+        // an owned tutorial/follow-up process that Volcano could acknowledge.
+        if(course==0 && player.IsTutorialEnabled && !player.D_803AE516_54E926) {
             const bool message=followup(player.ui);
             set(message && !(prior&a) && !(player.input.current_buttons&a)?a:0,tutorial_followup && !tutorial_stick?8:0);return;
         }
         if(player.IsInputDisabled)return;
-        if(photos>=4)return;
+        if(course==2 && control_volcano(view.volcano->actors_source(),player,focus,prior))return;
+        // Reserve the post-puzzle shutter for actual Moltres, not another
+        // ordinary subject; tutorial qualification and Mew's cap stay unchanged.
+        if(course==2?qualified>=3:photos>=4)return;
         std::uint16_t pad=z;
         if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
             !(prior&a) && !(player.input.current_buttons&a) && (subject || photos==0)) {pad|=a;++shutters;}
@@ -397,6 +547,10 @@ void Probe::retired(application::SceneRetirementView view) {
        !p.photos || !p.shutters || !p.travel_presentations)
         p.fail("actual natural course/Original result9/join receipt rejected");
     if(p.course==0 && (!p.ending_wait || !p.ending_terminal))p.fail("actual Beach ending Cart handshake not observed");
+    if(p.course==2 && (p.volcano_stage!=Impl::VolcanoStage::travel_after_egg || p.volcano_ordinary_photos<3 ||
+       !p.volcano_gate_stopped || !p.volcano_throw_consumed || !p.volcano_egg_transition || !p.volcano_gate_released ||
+       !p.volcano_moltres_seen || !p.volcano_moltres_photo || !p.volcano_throws))
+        p.fail("actual Volcano egg/projectile/Moltres photo/cart-resume handshake not observed");
     if(p.course==6 && (!p.ending_wait || !p.ending_terminal || !p.unshielded_photo || !p.mew_shields_broken || !p.throws))
         p.fail("actual Rainbow shield/Mew capture/gate Cart handshake not observed");
     p.retirement=true;p.note("joined_original_result9",view.source_result);p.ledger.flush();

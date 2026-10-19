@@ -23,6 +23,7 @@ static int services_complete(const IsleCaveLifecycleServices* p) { return p && p
     p->main_camera &&
     p->player_model_init &&
     p->camera_process &&
+    p->player_process &&
     p->effect_create &&
     p->effect_model &&
     p->camera_read &&
@@ -571,6 +572,11 @@ IsleGameObject* isle_cave_lifecycle_player_model_init(IsleCaveLifecycleSource* s
 IsleGameProcess* isle_cave_lifecycle_camera_process(IsleCaveLifecycleSource* s, IsleGameObject* object, int32_t kind, int32_t priority) {
     IsleGameProcess* output = {0};
     isle_cave_lifecycle_checked(s, s->services->camera_process(s, object, kind, priority, &output));
+    return output;
+}
+IsleGameProcess* isle_cave_lifecycle_player_process(IsleCaveLifecycleSource* s, IsleGameObject* object, IsleGameSourceCallback callback, int32_t kind, int32_t priority) {
+    IsleGameProcess* output = {0};
+    isle_cave_lifecycle_checked(s, s->services->player_process(s, object, callback, kind, priority, &output));
     return output;
 }
 IsleCaveEffect* isle_cave_lifecycle_effect_create(IsleCaveLifecycleSource* s, int32_t bank, int32_t id) {

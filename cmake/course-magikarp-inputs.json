@@ -4,7 +4,7 @@
   "game_repository": "https://github.com/ethteck/pokemonsnap",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "issue": "bd_35mmIsle-v4u.10.7.23.3.8.8.1",
-  "native_support": {"tests/course_magikarp_rsp_smoke.cpp":{"sha256":"62591ab0d71a1748c98988cb274ada38a226652df2dd0027db67a6b1dfc3d72f"},"src/scene_services.hpp":{"sha256":"d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"},"src/scene_services.cpp":{"sha256":"371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f"},"tests/scene_services_tests.cpp":{"sha256":"f1963c39b36a1a60f5575d3ebc740e3969d8e37c2a0211660b8810194ff158ee"}},
+  "native_support": {"tests/course_magikarp_rsp_smoke.cpp":{"sha256":"62591ab0d71a1748c98988cb274ada38a226652df2dd0027db67a6b1dfc3d72f"},"src/scene_services.hpp":{"sha256":"d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"},"src/scene_services.cpp":{"sha256":"ce621f752a484688158fb42f9527461bc815e7745985dfda968819ac8dec06dc"},"tests/scene_services_tests.cpp":{"sha256":"21e10bc31ea8a7d92d9bcf354fbda5dd5943a32aa165bbf414212ad28d397277"}},
     "tests/actual_player_source.hpp": {
       "sha256": "4c626b50eb642cc9eba5dae5fb4058dd7e0e08d36b4c306c50b557040435600c"
     },

@@ -3508,9 +3508,12 @@ Course Gfx join reservations derive from the actual render-order bound:
 four lanes, two commands per entry, one terminal per lane, eight bytes per
 command; total `64N + 32` bytes. Address-window, overlap, overflow, executor and
 runtime write bounds remain enforced. No Item or Actor capacity was reduced.
-Actual Tunnel and River runs now reach presented course surfaces. Subsequent
-Source failures and cancellation termination remain open; neither course is
-qualified as a complete natural exit. Cave and Valley also remain unqualified.
+Actual Tunnel, River and Cave runs reach presented course surfaces. Cave's three
+lifecycle Cart processes now use their exact whitelisted Source callbacks and
+the real Cart35 receiver, not the Actor-only process bridge. Its generated SDK
+substitutions change; immutable Original bodies and data do not. Cave later
+fails in a Player leaf after 9,931 updates. Tunnel, River and Valley retain
+distinct execution failures. None is qualified through natural exit.
 
 The repeated-throw reclamation fix passes the original seven private Item CPU
 cases, including physical exhaustion, incarnation protection and three fault
@@ -3524,8 +3527,15 @@ submissions/terminals and retires native, Input, SDL-dummy audio and Host owners
 The unlocked profile is authored; photos, Source results and exits are not.
 Camera9 admission does not claim its presented UI or subsequent Photo15 flow.
 
-A separate earlier run failed at update9512 with native Game text
-“native Item source leaf failed”; that rare rejection remains under investigation.
+A separate earlier Rainbow run failed at update9512 with native Game text
+“native Item source leaf failed”. Actual debugger values prove the cause:
+the gate's inner single-model collision callback returned Source object ID1001
+or -1 where Original expects Boolean1/0, then maps that Boolean to1001/-1.
+A miss became a hit and copied unwritten stack outputs into Item position and
+velocity. Tunnel's analogous1009 adapter had the same defect. Both inner
+adapters now return Boolean results and pass output-only vectors directly,
+without reading or defaulting them; outer Original ID mapping is unchanged.
+The corrected actual Rainbow route passes again.
 Debugger evidence proves its subsequent abort came from `CollisionPass::retire`:
 native process termination removed the synchronous process but returned the
 retained Game fault. Retirement now requires native idle, preserves that fault
@@ -3534,13 +3544,47 @@ handle. Shared/Rainbow error latches retain the originating Game diagnostic.
 Rainbow cancellation now joins its actual main camera before World-reference
 collection. Complete fixed-fault retirement still requires runtime proof.
 
+Further fault cleanup proves genuine World retirement and Cart native join,
+but `Services::erase` recorded the retained Game fault as a new Services failure.
+It now distinguishes a requested deletion from the real native retiring
+observer and joined record removal. The SDK result and original Game fault
+remain unchanged; no join, collection or sender-credit guard is bypassed.
+The existing real synchronous-fault lifecycle case now checks explicit erase,
+actual continuation joins and absence of a spurious Services failure. Cart's
+all-owner retirement also preserves the existing Services error classification
+after successful factory-ticket cancellation, matching per-object retirement;
+genuine cancellation errors retain their native classification.
+
+An actual failed Tunnel run now retains the original factory failure and exits1,
+while joining all native/GPU/Photo/Manager, Input, SDL-dummy Audio and Host
+ownership: 2,136 submissions, terminals and releases; no retirement deadline.
+This is failure-path closure, not natural course completion. The consumer now
+invalidates a prior cold-stop receipt at each close and reports a retirement
+deadline independently from the original Source failure. Older failed reports
+with a reused cold-stop flag do not prove final scene closure. Failed Rainbow
+full-stack qualification remains open.
+
+The Tunnel factory failure is traced to Original gate1009 first registering its
+collision callback from a later World block. The shared binder incorrectly
+required cold, uninitialized, idle setup. It now also admits the initialized,
+open execution closure, retaining single-binding and active-collision guards.
+There is no callback whitelist, capacity or Source-body expansion.
+The corrected actual route advances beyond the former update1751 failure to
+4,243 updates/2,121 presentations, then reaches a distinct Actor-owner SDK
+failure. All 3,382 whole-route GPU submissions, terminals and releases balance;
+native, Input, Audio and Host owners close with no retirement deadline.
+
 Hosted run39184563281 exposed Clang aggregate link narrowing, MSVC strict-FP
 static initializer folding and Linux archive-verifier path truncation. Existing
 World/Replay link admission already requires all links below32; publication and
 presentation now use explicit bounded byte conversions. Five Volcano fields use
 the exact binary32 value `0x43a6aaab` in place of constant `1000.0 / 3.0`.
 Original datum/function provenance remains unchanged; derived portable output
-and recipe seals change deliberately. Hosted MSVC confirmation remains pending.
+and recipe seals change deliberately. Hosted run39188839244 confirms these five
+MSVC initializer errors are gone; Windows then rejects descriptor `.count`
+selection in a generic lambda. Counted-table admission now tests an explicit
+dependent descriptor type, preserving all canonical row/callback checks.
+Confirmation by the next hosted MSVC build remains pending.
 
 The Linux verifier now retains complete `ldd` paths, including spaces and
 Unicode. The actual relocated archive passes 12 ELF closure checks, 18
@@ -3550,3 +3594,22 @@ all 31 retained consumers and all 58 tests pass. A separate fresh Clang21.1.8
 native/RSP build also passes all 58 tests and both actual CLI help commands.
 These checks do not substitute for complete course gameplay or Windows11
 qualification.
+
+The uploaded Linux Release product from run39188839244 is also exercised, not
+just the local Debug archive. The raw TGZ contains136 members and passes10 ELF
+closure checks,12 application-dependency references and both installed CLI
+help commands after relocation under a Unicode/space-containing path, with
+loader overrides unset. Actual product Boot→Title renders from the private ROM
+with explicitly disabled Input and SDL-dummy Audio; a real window-close event
+exits0 after18.36 seconds. This proves hosted Linux product composition and
+shutdown, not physical Audio, controller operation or Windows11 execution.
+
+Volcano's finite private controller now targets the real egg/projectile/Moltres
+transition before accepting natural exit. Its first attempt remained neutral:
+the generic three-photo follow-up incorrectly waited on Beach-only tutorial
+acknowledgement. Original initializes the profile tutorial flag on every course
+but creates `updateTutorialMain` only for Beach. The acknowledgement gate now
+matches that ownership. The corrected actual run consumes43 throws, observes
+the egg transition, resumes Cart travel and observes tangible Moltres, reaching
+5,341 updates/2,670 presentations before a native Actor SDK failure. It has
+three qualifying photos but no Moltres photo, natural9 or Camera9 acceptance.

@@ -293,9 +293,10 @@ LEAF(collision_query,(S* s,IsleGameVec3* a,IsleGameVec3* b,IsleGameVec3* c,IsleG
     auto* native=h.tunnel_actor_state();
     if (!native || collision!=&s->D_802EF9E4_5ECAB4 || collision->native!=&native->native_gate ||
         collision->native->resource!=&native->gate_resource || collision->native->prepared!=&native->gate) return state_error;
-    IsleGameVec3 out_position=*c,out_velocity=*d;
-    const bool result=native->gate.collision_model_one(0,*position,*rotation,*a,*b,out_position,out_velocity);
-    *c=out_position; *d=out_velocity; *hit=result ? 1009 : -1; return ISLE_GAME_OK;)
+    // The Original callback maps this boolean to actor ID1009 or miss -1.
+    // Pass output-only vectors directly, including partial primitive miss writes.
+    *hit=native->gate.collision_model_one(0,*position,*rotation,*a,*b,*c,*d);
+    return ISLE_GAME_OK;)
 LEAF(collision_callback,(S* s,IsleTunnelCollisionCallback callback),
     if (callback!=func_802EAE7C_5E7F4C) return invalid;
     auto* native=h.tunnel_actor_state(); if (!native || s->D_802EF9E4_5ECAB4.native!=&native->native_gate) return state_error;

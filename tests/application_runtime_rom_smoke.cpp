@@ -169,6 +169,7 @@ struct Evidence {
     bool boot_wait = false,boot_complete = false,menu_result = false,name_confirming = false,name_confirmed = false;
     bool oak_result = false,frame_hold = false,stop_while_held = false,native_retired = false,input_stopped = false;
     bool audio_drained = false,host_released = false,main_music = false;
+    bool native_retirement_deadline = false;
 };
 // Synchronous borrowed inspection after real native/Photo retirement and the
 // original post-omSetupScene return. Never retain pointers or reenter Runtime.
@@ -303,6 +304,7 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
         << "native_GPU_Photo_Manager_retired=" << e.native_retired << " Input_Service_stopped=" << e.input_stopped
         << " SDL_audio_stream_drained=" << e.audio_drained << " Host_owners_released=" << e.host_released
         << " accepted_dummy_PCM_frames=" << e.accepted_pcm << '\n';
+    out << "native_retirement_deadline=" << e.native_retirement_deadline << '\n';
     if (menu_mode(e.mode)) {
         out << "mode=" << (credit_argument(e.mode)?"credits":"menus")
             << " credits_argument=" << credit_argument(e.mode) << '\n'
@@ -517,6 +519,7 @@ void remember_failure(std::string& failure,const char* message) {
 void close_application(std::unique_ptr<app::Runtime>& application,h::GtlClock& clock,
         in::Service& input,SoftwareController& controller,Timeline& timeline,
         const std::filesystem::path& root,Evidence& evidence,std::string& failure) {
+    evidence.native_retired=false; // A prior cold-stop scope cannot certify this Runtime.
     if (!application) return;
     application->request_stop();
     controller.buttons=0;
@@ -526,8 +529,13 @@ void close_application(std::unique_ptr<app::Runtime>& application,h::GtlClock& c
         "actual Runtime shutdown deadline: native/GPU/Photo owners remain live");
     while (!application->stopped()) {
         if (timeline.progress.deadline_expired()) {
+            evidence.native_retirement_deadline=true;
             remember_failure(failure,"actual Runtime shutdown deadline: native/GPU/Photo owners remain live");
-            std::cerr << failure << "; Runtime: " << application->message() << '\n';
+            evidence.submissions+=clock.stats().submissions;
+            evidence.terminals+=clock.stats().terminals;
+            evidence.dropped_retraces+=clock.stats().dropped_retraces;
+            std::cerr << "actual Runtime shutdown deadline: native/GPU/Photo owners remain live; first failure: "
+                      << failure << "; Runtime: " << application->message() << '\n';
             try { write_report(root,evidence,failure); } catch (...) {}
             // There is no legal Runtime destructor before stopped(). A broken
             // retirement must fail visibly, not terminate during unwinding or

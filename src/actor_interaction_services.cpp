@@ -552,11 +552,12 @@ bool InteractionServices::prove_native_closure(const menu::EffectResources& effe
             }
         }
     }
-    auto counted=[&](const auto& descriptors) {
+    auto counted=[&]<class Descriptor>(const std::span<const Descriptor>& descriptors) {
+        constexpr bool has_rows=requires(const Descriptor& value) { value.rows; };
         for (const auto& descriptor:descriptors) {
             const auto& list=bindings_.counted_state_options(descriptor.identity);
             std::size_t count;
-            if constexpr (requires { descriptor.rows; }) count=descriptor.rows.size();
+            if constexpr (has_rows) count=descriptor.rows.size();
             else count=descriptor.count;
             if (list.rows.size()!=count) return false;
             unsigned total=0;
@@ -564,14 +565,15 @@ bool InteractionServices::prove_native_closure(const menu::EffectResources& effe
                 const auto& row=list.rows[i];
                 if (row.function && !native_callback(row.function,const_cast<std::int32_t*>(&course))) return false;
                 total+=row.weight;
-                if constexpr (requires { descriptor.rows; }) {
+                if constexpr (has_rows) {
                     const auto& original=descriptor.rows[i];
+                    using Original=std::remove_cvref_t<decltype(original)>;
                     if (original.weight!=row.weight) return false;
-                    if constexpr (requires { original.function; }) {
+                    if constexpr (requires(const Original& value) { value.function; }) {
                         if (original.function!=row.function) return false;
-                    } else if constexpr (requires { original.func; }) {
+                    } else if constexpr (requires(const Original& value) { value.func; }) {
                         if (original.func!=row.function) return false;
-                    } else if constexpr (requires { original.callback; }) {
+                    } else if constexpr (requires(const Original& value) { value.callback; }) {
                         if constexpr (std::is_pointer_v<decltype(original.callback)>) {
                             if (original.callback!=row.function) return false;
                         } else if ((original.callback ? bindings_.callback(original.callback) : nullptr)!=row.function) return false;

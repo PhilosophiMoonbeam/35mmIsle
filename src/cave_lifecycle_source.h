@@ -57,6 +57,7 @@ typedef struct IsleCaveLifecycleServices {
     IsleGameResult (*main_camera)(IsleCaveLifecycleSource*, IsleCaveCamera** output);
     IsleGameResult (*player_model_init)(IsleCaveLifecycleSource*, IsleGameObject** output);
     IsleGameResult (*camera_process)(IsleCaveLifecycleSource*, IsleGameObject* object, int32_t kind, int32_t priority, IsleGameProcess** output);
+    IsleGameResult (*player_process)(IsleCaveLifecycleSource*, IsleGameObject* object, IsleGameSourceCallback callback, int32_t kind, int32_t priority, IsleGameProcess** output);
     IsleGameResult (*effect_create)(IsleCaveLifecycleSource*, int32_t bank, int32_t id, IsleCaveEffect** output);
     IsleGameResult (*effect_model)(IsleCaveLifecycleSource*, IsleCaveEffect* effect, IsleActorNodeRef model);
     IsleGameResult (*camera_read)(IsleCaveLifecycleSource*, IsleCaveCamera* camera, uint32_t component, float* output);
@@ -170,6 +171,7 @@ void isle_cave_lifecycle_animation_callback(IsleCaveLifecycleSource* s, IsleGame
 IsleCaveCamera* isle_cave_lifecycle_main_camera(IsleCaveLifecycleSource* s);
 IsleGameObject* isle_cave_lifecycle_player_model_init(IsleCaveLifecycleSource* s);
 IsleGameProcess* isle_cave_lifecycle_camera_process(IsleCaveLifecycleSource* s, IsleGameObject* object, int32_t kind, int32_t priority);
+IsleGameProcess* isle_cave_lifecycle_player_process(IsleCaveLifecycleSource* s, IsleGameObject* object, IsleGameSourceCallback callback, int32_t kind, int32_t priority);
 IsleCaveEffect* isle_cave_lifecycle_effect_create(IsleCaveLifecycleSource* s, int32_t bank, int32_t id);
 void isle_cave_lifecycle_effect_model(IsleCaveLifecycleSource* s, IsleCaveEffect* effect, IsleActorNodeRef model);
 float isle_cave_lifecycle_camera_read(IsleCaveLifecycleSource* s, IsleCaveCamera* camera, uint32_t component);

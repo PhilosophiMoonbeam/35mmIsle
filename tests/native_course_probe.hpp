@@ -13,6 +13,9 @@ namespace isle::private_course {
 void seed_progress(game::State&,std::int32_t course);
 // Borrows the actual typed Runtime owners only. Never creates/advances Source,
 // owns a native Scene, changes a transform, or requests an exit/Manager entry.
+// Volcano additionally requires the observed Source egg cart stop, a consumed
+// controller item throw, natural egg/Moltres transition, captured species146 and
+// resumed cart travel. Actor/placement observations never mutate native state.
 class Probe final {
 public:
     Probe(std::int32_t course,private_post_course::Controller,const std::filesystem::path& proofRoot);

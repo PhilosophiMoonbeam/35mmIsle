@@ -599,6 +599,13 @@ void services_lifecycle_composes_delete_paths(const fs::path& parent) {
                       "native callback failure leaves Services owner/payload intact until actual fault destruction");
             }
             check(services.send_command(object,22),"retain queued userdata until real destructor retirement");
+            if (fault) {
+                check(services.erase(object) == ISLE_GAME_EXECUTION_FAILURE &&
+                      isle_game_status(native.game()) == ISLE_GAME_EXECUTION_FAILURE && !services.failed() &&
+                      context.retiring == 1 && context.joined == 1 &&
+                      engine_process_joined(context.processes[0]) && engine_process_joined(context.processes[1]),
+                      "actual faulted-game erase must join native ownership, preserve its original fault and not invent a Services failure");
+            }
         }
         IsleGameCounts counts{};
         check(context.retiring == 1 && context.joined == 1 && context.custom == 0 && context.continued == 0 &&

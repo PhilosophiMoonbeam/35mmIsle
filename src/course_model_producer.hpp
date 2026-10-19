@@ -4,8 +4,18 @@
 #include "borrowed_model_producer.hpp"
 #include "world_producer.hpp"
 #include "player_cart_producer.hpp"
+#include <limits>
+#include <stdexcept>
 
 namespace isle::course {
+// Four lanes, each with at most a camera call and an unpushed callback branch
+// per Services entry, then one EndDL. Provider callback bodies/tails are separate.
+constexpr std::size_t source_join_bytes(std::size_t render_order_capacity) {
+    constexpr std::size_t entry_bytes = 4*2*8, terminal_bytes = 4*8;
+    if (render_order_capacity > (std::numeric_limits<std::size_t>::max()-terminal_bytes)/entry_bytes)
+        throw std::overflow_error("course source join size overflows");
+    return render_order_capacity*entry_bytes+terminal_bytes;
+}
 struct ItemComposition {
     scene::Services& services;
     menu::model::PacketProducer& producer;

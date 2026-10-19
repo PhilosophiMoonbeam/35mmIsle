@@ -168,6 +168,8 @@ struct Probe::Impl {
     bool entered=false,have_position=false,intro_seen=false,intro_done=false,travel_seen=false;
     bool ending_seen=false,ending_wait=false,ending_terminal=false,retirement=false,post=false,surface=false;
     bool tutorial_followup=false,tutorial_clear=false,tutorial_stick=false,unshielded_photo=false;
+    bool mew_shielded_seen=false,mew_progress_seen=false,mew_shields_broken=false;
+    int mew_initial_hits1=0,mew_initial_hits2=0;
     struct FrameTag {std::uint64_t ordinal=0,serial=0,update=0;int photos=0,reason=0;unsigned phase=0;};
     std::array<FrameTag,2> tags{};
     explicit Impl(std::int32_t id,private_post_course::Controller pad,const std::filesystem::path& root):course(id),controller(pad) {
@@ -212,6 +214,15 @@ struct Probe::Impl {
         controls=player.D_80382D04_523114;disabled=player.IsInputDisabled;direction=player.gDirectionIndex;
         zoom_target=player.TargetDirectionZoomedIn;cooldown=player.sTimerAfterPhotoTaken;
         consumed_buttons=player.input.current_buttons;pressed_buttons=player.input.pressed_buttons;move_time=player.movement.move_time;
+        if(course==6 && s.running && s.intro_done && controls) {
+            if(!mew_shielded_seen && hits1>0 && hits2>0) {
+                mew_initial_hits1=hits1;mew_initial_hits2=hits2;mew_shielded_seen=true;
+            }
+            if(mew_shielded_seen) {
+                mew_progress_seen|=hits1<mew_initial_hits1 || hits2<mew_initial_hits2;
+                mew_shields_broken|=hits1<=0 && hits2<=0;
+            }
+        }
         require(player.status==ISLE_GAME_OK && player.photo && player.photo->status==ISLE_GAME_OK,"canonical actual Player/Photo Source failed");
         photos=player.photo->gPhotoCount;qualified=player.photo->D_800AE27C;
         require(photos>=qualified && qualified>=0 && photos<=60,"actual captured roll counters invalid");
@@ -225,7 +236,10 @@ struct Probe::Impl {
         const auto position=player.movement.position;
         if(have_position && (position.x!=previous.x || position.y!=previous.y || position.z!=previous.z))++movement;
         previous=position;have_position=true;
-        travel_seen|=s.running && intro_done && player.D_80382D04_523114 && movement>0;
+        // Rainbow's original Player position is stationary. Its real shield
+        // progression, not invented cart movement, proves playable travel.
+        travel_seen|=s.running && intro_done && player.D_80382D04_523114 &&
+            (course==6?mew_progress_seen:movement>0);
         const bool message=followup(player.ui);
         tutorial_followup|=message;tutorial_clear|=tutorial_followup && !message;
         tutorial_stick|=tutorial_clear && (std::abs(player.input.stick_x)>=6 || std::abs(player.input.stick_y)>=6);
@@ -379,10 +393,11 @@ void Probe::retired(application::SceneRetirementView view) {
     p.observe(s);p.set();
     if(!p.entered || p.retirement || !view.entry || view.entry->serial!=p.serial || view.entry->argument!=std::uint32_t(p.course) ||
        !s.retired || !s.joined || !s.source_complete || !s.closed || s.input!=p.course || s.output!=9 || view.source_result!=9 ||
-       s.reason!=2 || !p.intro_seen || !p.intro_done || !p.travel_seen || !p.movement || !p.photos || !p.shutters || !p.travel_presentations)
+       s.reason!=2 || !p.intro_seen || !p.intro_done || !p.travel_seen || (p.course!=6 && !p.movement) ||
+       !p.photos || !p.shutters || !p.travel_presentations)
         p.fail("actual natural course/Original result9/join receipt rejected");
     if(p.course==0 && (!p.ending_wait || !p.ending_terminal))p.fail("actual Beach ending Cart handshake not observed");
-    if(p.course==6 && (!p.ending_wait || !p.ending_terminal || !p.unshielded_photo || p.hits1>0 || p.hits2>0 || !p.throws))
+    if(p.course==6 && (!p.ending_wait || !p.ending_terminal || !p.unshielded_photo || !p.mew_shields_broken || !p.throws))
         p.fail("actual Rainbow shield/Mew capture/gate Cart handshake not observed");
     p.retirement=true;p.note("joined_original_result9",view.source_result);p.ledger.flush();
 }

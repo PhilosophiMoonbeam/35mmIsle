@@ -390,13 +390,16 @@ jobs:
             [[ -f "$library" && "$(patchelf --print-rpath "$library")" == "\$ORIGIN" ]]
             images+=("$library")
           done
+          application_dependency='^[[:space:]]*(lib(SDL3|zip|tinyxml2|spdlog|fmt|bz2|z|crypto|lzma|zstd)\.so(\.[0-9]+)*)[[:space:]]+=>[[:space:]]+(.*)[[:space:]]+\(0x[[:xdigit:]]+\)[[:space:]]*$'
           for image in "${images[@]}"; do
             closure="$(ldd "$image")"
             printf '%s\n' "$closure"
             [[ "$closure" != *"not found"* ]]
-            while read -r name arrow resolved rest; do
-              if [[ "$name" =~ ^lib(SDL3|zip|tinyxml2|spdlog|fmt|bz2|z|crypto|lzma|zstd)\.so(\.[0-9]+)*$ ]]; then
-                [[ "$arrow" == '=>' && "$(realpath -- "$resolved")" == "$libraries/"* ]] ||
+            while IFS= read -r dependency; do
+              if [[ "$dependency" =~ $application_dependency ]]; then
+                name="${BASH_REMATCH[1]}"
+                resolved="${BASH_REMATCH[4]}"
+                [[ "$(realpath -- "$resolved")" == "$libraries/"* ]] ||
                   { echo "Application dependency escapes Runtime archive: $name => $resolved" >&2; exit 1; }
               fi
             done <<< "$closure"

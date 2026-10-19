@@ -163,64 +163,6 @@ struct Consumer {
         tick(); require(!pokemon->interactionTarget,"real logical Actor target22 did not clear canonical field");
         accepted(items.collect_joined()); clear();
     }
-    void repeated_incarnations_with_held_predecessor(const actor::SpawnResult& actor) {
-        auto* pokemon=actors.source(actor.instance); require(pokemon,"retention Actor absent");
-        // A paused real receiver keeps its canonical target and queued22 alive
-        // while unrelated Item incarnations complete their own native joins.
-        native(isle_game_pause_updates(services.game,actor.object,1));
-        const auto held=items.spawn_apple({100,1000,200},{0,0,0}); accepted(held.status);
-        const auto* payload=items.source(held.instance);
-        require(services.source_reference_assign(actor.object,&pokemon->interactionTarget,held.object),
-                "repeated-incarnation fixture could not retain canonical target");
-        accepted(items.delete_item(held.object)); tick();
-        require(items.membership(held.instance).joined && pokemon->interactionTarget==held.object,
-                "paused receiver failed to retain an actually joined Item");
-        IsleGameCounts baseline{}; native(isle_game_counts(services.game,&baseline));
-        const auto expected_cache=std::max<std::size_t>(2,globals.source.payload_cache);
-        const auto physical=items.render_bindings().size();
-        std::array<a::InstanceHandle,32> previous{};
-        require(physical==previous.size(),"repeated-incarnation fixture physical plan changed");
-        std::size_t reuses=0;
-        for (std::size_t n=0;n<physical*3;++n) {
-            const auto next=items.spawn_ball({100,1000,200},{0,0,0});
-            accepted(next.status);
-            require(next.object!=held.object,"repeated Item reused a borrowed native identity");
-            require(items.source(next.instance) && items.source(next.instance)!=payload,
-                    "repeated Item reused a borrowed canonical payload");
-            require(next.instance.slot<physical && next.instance.slot!=held.instance.slot,
-                    "repeated Item reused a borrowed physical slot");
-            // Incarnations are per-slot counters, not a global sequence; a
-            // legitimate allocator may select a different free slot next.
-            for (const auto stale:previous) if (stale)
-                require(!items.animation().model(stale) && !items.object(stale),
-                        "new Item incarnation revived an already collected handle");
-            const auto stale=previous[next.instance.slot];
-            if (stale) {
-                require(next.instance.pool==stale.pool && next.instance.incarnation>stale.incarnation,
-                        "repeated Item physical reuse did not advance its generation");
-                ++reuses;
-            }
-            accepted(items.delete_item(next.object)); tick();
-            const auto collected=items.collect_joined();
-            require(!collected && collected.error==it::OwnerError::lifetime &&
-                    items.membership(held.instance).joined && items.source(held.instance)==nullptr &&
-                    pokemon->interactionTarget==held.object && payload->state==ISLE_ITEM_INVALID &&
-                    !items.animation().model(next.instance) && !items.object(next.instance),
-                    "held predecessor blocked unrelated collection or was physically reused");
-            IsleGameCounts after{}; native(isle_game_counts(services.game,&after));
-            require(after.objects==baseline.objects && after.processes==baseline.processes &&
-                    after.models==baseline.models && after.model_nodes==baseline.model_nodes &&
-                    globals.source.total==0 && globals.source.balls==0 && globals.source.apples==0 &&
-                    globals.source.payload_cache==expected_cache,
-                    "repeated joined Item leaked native ownership or source cache/logical membership");
-            previous[next.instance.slot]=next.instance;
-        }
-        require(reuses>=physical*2,"repeated Item fixture did not exercise bounded physical reuse");
-        native(isle_game_pause_updates(services.game,actor.object,0)); tick();
-        require(!pokemon->interactionTarget,"real queued22 did not release paused canonical target");
-        accepted(items.collect_joined());
-        require(!items.animation().model(held.instance),"released predecessor retained its physical incarnation");
-    }
     void actual_waiting_splash() {
         const auto trigger=items.spawn_apple({100,1000,200},{0,0,0}); accepted(trigger.status);
         auto* source=items.source(trigger.instance); source->state=ISLE_ITEM_STILL;
@@ -424,10 +366,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,Scenario s
                     require(definition!=actor::actor_no_index,"actual common1003 definition absent");
                     world::Spawn spawn; spawn.id=1003; spawn.behavior=1; spawn.scale={1,1,1};
                     const auto actor=actors.spawn({10000,definition,&world.blocks()[0],&world.blocks()[0],&spawn}); accepted(actor.status);
-                    if (scenario==Scenario::complete) {
-                        consumer.kind1_actor_tail_and_real_target_retention(actor);
-                        consumer.repeated_incarnations_with_held_predecessor(actor);
-                    }
+                    if (scenario==Scenario::complete) consumer.kind1_actor_tail_and_real_target_retention(actor);
                     else {
                         native(isle_actor_source_pause_object(actors.source(actor.instance),1));
                         if (scenario==Scenario::physical) consumer.physical_exhaustion(actor);

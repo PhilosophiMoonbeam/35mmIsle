@@ -43,8 +43,11 @@ constexpr actor::ProducerLayout actor_layout{{0x400000,0x80000},{0x480000,0x8000
 constexpr menu::model::PacketLayout item_layout{{0x230000,0x10000},{0x240000,0x10000},{0x250000,0x10000},{{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr player::cart::ProducerLayout cart_layout{{0x260000,0x10000},{0x270000,0x10000},{0x2a0000,0x10000},{{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr focus::CaptureLayout capture_layout{{0x680000,0x50},{0x680080,0x80},{0x680100,0xa00}};
-constexpr menu::RamRange fx_commands{0x680c00,0x5400},joined_lists{0x686000,0x5000};
+constexpr std::size_t render_order_capacity=256;
+constexpr menu::RamRange fx_commands{0x680c00,0x5400},
+    joined_lists{0x686000,course::source_join_bytes(render_order_capacity)};
 constexpr sprite::RamRange lanes{0x690000,0x40000},sprite_commands{0x780000,0x50000},message_commands{0x6d0000,0x30000};
+static_assert(joined_lists.size<=lanes.address-joined_lists.offset);
 constexpr g::Layout frame_layout{{0x626000,0x2000},{0x630000,0x10000},{0x640000,0x40000},0x600000};
 std::uint32_t physical(std::uint32_t value) { return value&0x1fffffffu; }
 void require(bool value,const char* message) { if (!value) throw std::runtime_error(message); }
@@ -138,7 +141,7 @@ struct Lifecycle::Impl {
     std::unique_ptr<player::cart::Producer> carts;
     std::unique_ptr<course::ItemComposition> composition;
     std::unique_ptr<course::ModelProducer> models;
-    std::array<scene::RenderOrderEntry,256> cart_order{};
+    std::array<scene::RenderOrderEntry,render_order_capacity> cart_order{};
     IsleGameObject* helper=nullptr;
     IsleGameObject* input_object=nullptr;
     a::InstanceHandle intro_instance;
@@ -163,7 +166,11 @@ struct Lifecycle::Impl {
     }
     IsleGameResult fail(IsleGameResult result,const char* text) noexcept {
         if (result==ISLE_GAME_OK) return result;
-        if (error==ISLE_GAME_OK) { error=result; std::snprintf(message.data(),message.size(),"%s",text); }
+        if (error==ISLE_GAME_OK) {
+            error=result;
+            if (text && text[0]) std::snprintf(message.data(),message.size(),"%s",text);
+            else std::snprintf(message.data(),message.size(),"Rainbow operation failed (%u)",static_cast<unsigned>(result));
+        }
         status=LifecycleStatus::failed;
         return error;
     }
@@ -351,7 +358,7 @@ void Lifecycle::Impl::producers() {
     carts=std::make_unique<player::cart::Producer>(services->game,source.player->camera,services->camera_basis(),
         cart_resources,cart_capacities,cart->render_bindings(cart_order),cart_layout,co);
     composition=std::make_unique<course::ItemComposition>(course::ItemComposition{
-        *services,*item_producer,256,carts.get(),photo_scene->prefix_object(),true});
+        *services,*item_producer,render_order_capacity,carts.get(),photo_scene->prefix_object(),true});
     models=std::make_unique<course::ModelProducer>(*worlds,*actor_producer,joined_lists,composition.get());
     native(renderer->bind_cart(*cart,cart_order),renderer->message());
     native(renderer->bind_transition(transition_resources,services->screen_transition()),renderer->message());
@@ -440,7 +447,9 @@ IsleGameResult Lifecycle::update(std::uint32_t raw_game_time) noexcept {
     if (result==ISLE_GAME_OK && self.services->failed()) result=ISLE_GAME_INVALID_STATE;
     if (result==ISLE_GAME_OK) result=self.source.status;
     if (result==ISLE_GAME_OK) result=self.root->source().status;
-    if (result!=ISLE_GAME_OK) return self.fail(result,self.services->error());
+    if (result!=ISLE_GAME_OK) return self.fail(result,
+        isle_game_status(self.services->game)!=ISLE_GAME_OK ?
+            isle_game_error(self.services->game) : self.services->error());
     if (self.exit_requested) self.status=LifecycleStatus::retiring;
     return ISLE_GAME_OK;
 }
@@ -532,6 +541,7 @@ bool Lifecycle::Impl::close_scene() noexcept {
             result.error!=actor::OwnerError::services) return false;
     }
     if (root && root->retire_objects()!=ISLE_GAME_OK) return false;
+    if (cancelling && renderer && renderer->abort_main()!=ISLE_GAME_OK) return false;
     if (world && !world->retire()) return false;
     if (items) {
         const auto result=items->retire();
@@ -569,13 +579,9 @@ bool Lifecycle::Impl::close_scene() noexcept {
         const auto result=actors->reset();
         if (!result && !(cancelling && result.error==actor::OwnerError::services)) return false;
     }
-    if (renderer) {
-        if (cancelling) {
-            if (renderer->abort_main()!=ISLE_GAME_OK) return false;
-        } else if (source.player && source.player->camera &&
-            (renderer->remove_main()!=ISLE_GAME_OK ||
-             renderer->service_main_removal()!=ISLE_GAME_OK)) return false;
-    }
+    if (!cancelling && renderer && source.player && source.player->camera &&
+        (renderer->remove_main()!=ISLE_GAME_OK ||
+         renderer->service_main_removal()!=ISLE_GAME_OK)) return false;
     if (source.player && (source.player->D_80382D10_523120 ||
         source.player->D_80382D14_523124)) return false;
     if (root && root->collect_joined()!=ISLE_GAME_OK) return false;

@@ -35,6 +35,7 @@ course::NativeDescription Adapter::description() {
     result.player={3,end,this,pause,this,{this,exit_block,movement},nullptr,0,func_802D8E98_6C0C78};
     result.world={this,add,remove,change,nullptr,nullptr,nullptr};
     result.input={1u<<9,9,0,9,isle_course_scene_input_update};
+    result.initial_helper={0,0x80000000u,0,func_802D895C_6C073C};
     result.callbacks=actor_callbacks(); result.graphs=actor_graphs(); result.weighted_states=actor_weighted_states(); result.roots=actor_roots();
     result.retained_fields={retained}; result.reference_fields=reference_fields;
     return result;

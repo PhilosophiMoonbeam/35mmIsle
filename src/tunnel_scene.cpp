@@ -38,6 +38,7 @@ course::NativeDescription Adapter::description() {
     result.player={1,end,this,pause,this,{this,exit_block,movement},nullptr,0,isle_course_scene_tunnel_item};
     result.world={this,add,remove,change,nullptr,nullptr,nullptr};
     result.input={1u<<9,9,0,9,isle_tunnel_lifecycle_input_update};
+    result.initial_helper={0,0x80000000u,0,isle_tunnel_lifecycle_func_802E28A4_5DF974};
     result.callbacks=actor_callbacks(); result.graphs=actor_graphs(); result.weighted_states=actor_weighted_states(); result.roots=actor_roots();
     result.retained_fields={retained}; result.reference_fields=reference_fields;
     result.source_vertices=egg_geometry.publications();

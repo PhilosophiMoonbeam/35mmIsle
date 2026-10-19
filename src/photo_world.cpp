@@ -257,7 +257,7 @@ bool World::publish() noexcept {
             // Control roads retain their real source DL registration/state, but
             // are not terrain submissions in the replay borrowed render view.
             if (!b.road) s.render.push_back({b.object,b.model,b.model_index,b.sky ? s.resources.sky().display_list_guest : s.blocks[b.block].resource->metadata.display_list_guest,
-                callback,s.object_link,s.dl_link,b.sky ? 0x80000001u : 0x80000000u,b.sky,b.instance});
+                callback,static_cast<std::uint8_t>(s.object_link),static_cast<std::uint8_t>(s.dl_link),b.sky ? 0x80000001u : 0x80000000u,b.sky,b.instance});
             if (b.sky) {
                 if (s.resources.sky().animation_guest) {
                     s.process(b.object,Impl::update_sky,&b,1);

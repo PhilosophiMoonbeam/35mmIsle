@@ -390,7 +390,7 @@
       "sha256": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693"
     },
     "src/photo_replay.cpp": {
-      "sha256": "acd95c2ac272975b2a714bc57b5f6302ff90cdf75ecca1f4332dffb19e3374a3"
+      "sha256": "39e3a2dbab3a671984dc87a097bb8a802546c856e2d7fcf59bf33f3739be3b6a"
     },
     "src/scene_graphics.hpp": {
       "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
@@ -402,7 +402,7 @@
       "sha256": "3855a6553c5af94d74810a980aa9bd1e1c8fee7c01365bb6ec6840da2f1f2f18"
     },
     "src/photo_world.cpp": {
-      "sha256": "1ad1a1f050db79fca8e8f8069ae9c1106102d0ca72f529b08f79fb1caf47e8c5"
+      "sha256": "dc4f9b8696872502dc21842d8f4989d6f8c9729e3c7b1da0bdef408b798e92ed"
     },
     "src/course_resources.hpp": {
       "sha256": "5c6d541d63f13b446e3602fe2efa35bc97bd5bb61083ba540b31f0650a2ed5fd"

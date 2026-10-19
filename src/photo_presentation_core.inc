@@ -166,7 +166,7 @@ struct Presentation::Impl {
         finite(p->record.unk_08); finite(p->record.unk_14);
         p->world_resource_owner=p->course->resources;
         p->resources=std::make_unique<subjects::Resources>(snapshot,*p->world_resource_owner,p->record);
-        p->subjects=std::make_unique<subjects::Reconstruction>(game,*p->resources,subjects::LinkOwnership{config.photo_object_link,config.dl_link,UINT32_MAX});
+        p->subjects=std::make_unique<subjects::Reconstruction>(game,*p->resources,subjects::LinkOwnership{static_cast<std::uint8_t>(config.photo_object_link),static_cast<std::uint8_t>(config.dl_link),UINT32_MAX});
         p->items=std::make_unique<RecordedItems>(game,*p->course->items,p->record,config.photo_object_link,config.dl_link);
         if(!p->resources->instances().empty()) p->subject_producer=std::make_unique<menu::model::PacketProducer>(game,camera,basis,
             p->resources->packet_resources(),p->resources->capacities(),p->subjects->bindings(),config.memory.subjects,subject_other);
@@ -350,7 +350,7 @@ struct Presentation::Impl {
             for(unsigned lane=0;lane<4;++lane) raw(lane,object.lanes[lane],object.reservations,words);
             if(object.resets_camera) command(0,0xde000000,wf.camera.address);
         }
-        if(pass.includes({config.dl_link,0,UINT32_MAX})) {
+        if(pass.includes({static_cast<std::uint8_t>(config.dl_link),0,UINT32_MAX})) {
             command(0,0xde000000,fx.packet.setup().address);
             command(3,0xde000000,fx.packet.body().address);
         }

@@ -54,12 +54,21 @@ void CollisionPass::joined(IsleGameObject* object,void* user) noexcept {
     self.root_=nullptr; self.process_=nullptr; self.observed_=false;
 }
 void CollisionPass::retire() noexcept {
-    if (isle_menu_current_object(services_.game)) std::terminate();
+    if (isle_game_require_idle(services_.game)!=ISLE_GAME_OK) std::terminate();
     if (observed_) {
         if (retiring_ || !services_.unobserve_lifecycle(root_,this)) std::terminate();
         observed_=false;
     }
-    if (process_ && isle_game_end_process(services_.game,process_)!=ISLE_GAME_OK) std::terminate();
+    if (process_) {
+        const auto prior_fault=isle_game_status(services_.game);
+        const auto ended=isle_game_end_process(services_.game,process_);
+        IsleGameSourceCallback callback=nullptr;
+        // End returns the retained Game fault after removing this synchronous
+        // process. Only disappearance of its exact registration proves retirement.
+        if ((ended!=ISLE_GAME_OK && ended!=prior_fault) ||
+            isle_game_process_source_function(services_.game,process_,&callback)!=ISLE_GAME_INVALID_ARGUMENT)
+            std::terminate();
+    }
     process_=nullptr; root_=nullptr;
 }
 PhotoScene::PhotoScene(scene::Services& services, Owner& owner, IsleGameObject* root,

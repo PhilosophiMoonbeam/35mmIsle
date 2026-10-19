@@ -27,10 +27,10 @@
       "sha256": "b294ed61393ed3ec6a33e8cc8d7851aca7610f15096c2626a584f37a352968bc"
     },
     "src/course_model_producer.cpp": {
-      "sha256": "108d2d08715d8ac7ac23e1b91b88f1992c320a2deb435633d61b3b717a83d495"
+      "sha256": "59e7f5b94a758da22166ff61aee2dc34b1c9e2d94cdccf2914d26c484595632f"
     },
     "src/course_model_producer.hpp": {
-      "sha256": "654f2994abb6e16a7ecbaaef036a0872f9746adb667225cebe489e75e6deb476"
+      "sha256": "e16b2fe8346413a021d0ae50dbe65e4a525d09b0f855906bba95b369f880f5d0"
     },
     "src/source_effect_camera.cpp": {
       "sha256": "8ef3039e1db89c1eb3fe63a37266e75c91865bc1232a60318180591a4e23b395"

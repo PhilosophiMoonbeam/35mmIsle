@@ -30,11 +30,15 @@ Policy policy(const actor::ActorInitialization& init, const menu::Model& model) 
     menu::RenderType type;
     switch (init.render_callback_identity) {
     case 0x80014f98: type = menu::RenderType::b; break;
+    // Direct Original wrapper: lane0 fog, no Pokemon flag100/capture gate.
+    // Valley1033/1034/1032 bind this exact callback, not the detector wrapper.
+    case 0x800a15d8: type = menu::RenderType::b_fogged; p.fog = true; break;
     case 0x803594dc: type = menu::RenderType::b_fogged; p.fog = p.gate = true; break;
     case 0x800a1608: type = menu::RenderType::d_fogged; p.fog = p.transparent = true; break;
     case 0x80359534: type = menu::RenderType::d_fogged; p.fog = p.transparent = p.gate = true; break;
     case 0x8035942c: type = menu::RenderType::i_fogged; p.fog = p.gate = true; break;
     case 0x80359484: type = menu::RenderType::j_fogged; p.fog = p.transparent = p.gate = true; break;
+    case 0x8035958c: type = menu::RenderType::i_no_fog; p.gate = true; break;
     case 0x802de26c: type = menu::RenderType::i_no_fog; p.source_callback = init.render_callback_identity; break;
     case 0x802dfae4: type = menu::RenderType::d_fogged; p.source_callback = init.render_callback_identity; break;
     default: throw std::invalid_argument("Unadmitted actual actor source render callback");

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "provider": "volcano-actor",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
-  "transformation_version": "volcano-complete312-typed-v1",
+  "transformation_version": "volcano-complete312-typed-v2",
   "source_files": {
     "src/volcano/arcanine/anim/material/eat.c": {
       "git_blob": "d05c3c389f3df81ff831792e287c80bc339bd34b",
@@ -20201,8 +20201,8 @@
       "last": 128,
       "symbol": "arcanine_tg_Normal",
       "source_sha256": "8db8d86c87c1f500ad5d7ffd2742bc4aca5a4b8d652c695e0bbc12a88bb2f77d",
-      "native_sha256": "b02591987f1f0f64b7d6063c7a5ed6467e7e84a8a64f67041a7914cfec647dfc",
-      "native": "const IsleActorInteraction arcanine_tg_Normal_rows[] = {\n    { 9, arcanine_HitByPesterBall, 0, NULL },\n    { 13, arcanine_HitByApple, 0, NULL },\n    { 10, arcanine_AffectedByPesterBall, 0, NULL },\n    { 14, arcanine_AppleNearby, 0, NULL },\n    { 15, arcanine_SearchApple, 0, NULL },\n    { 5, arcanine_Dance, 0, NULL },\n    { 6, arcanine_Dance, 0, NULL },\n    { 7, arcanine_Dance, 0, NULL },\n    { 16, arcanine_RunAwayFromPlayer, 1000.0 / 3.0, NULL },\n    { 23, arcanine_PhotoTaken, 60, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph arcanine_tg_Normal_graph={arcanine_tg_Normal_rows,11,0x802e2804u};"
+      "native_sha256": "1028961a9b8906096e25fd32035890b9eebdfcd174020ef970f5cd6759f3ad4c",
+      "native": "const IsleActorInteraction arcanine_tg_Normal_rows[] = {\n    { 9, arcanine_HitByPesterBall, 0, NULL },\n    { 13, arcanine_HitByApple, 0, NULL },\n    { 10, arcanine_AffectedByPesterBall, 0, NULL },\n    { 14, arcanine_AppleNearby, 0, NULL },\n    { 15, arcanine_SearchApple, 0, NULL },\n    { 5, arcanine_Dance, 0, NULL },\n    { 6, arcanine_Dance, 0, NULL },\n    { 7, arcanine_Dance, 0, NULL },\n    { 16, arcanine_RunAwayFromPlayer, 333.333343505859375f, NULL },\n    { 23, arcanine_PhotoTaken, 60, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph arcanine_tg_Normal_graph={arcanine_tg_Normal_rows,11,0x802e2804u};"
     },
     {
       "path": "src/volcano/arcanine/code.c",
@@ -20282,8 +20282,8 @@
       "last": 171,
       "symbol": "charmander_tg_Normal",
       "source_sha256": "6fd2caad87c296170afbc78f4adf3f988085c32334615fc0b3a4f3c756fcc42a",
-      "native_sha256": "ea035949f2ad8400dcf7416aeeac5e6edffe7ed65ca668bd0511cc1cb42e429f",
-      "native": "const IsleActorInteraction charmander_tg_Normal_rows[] = {\n    { 9, charmander_HitOrBurnt, 0, NULL },\n    { 37, charmander_HitOrBurnt, 0, NULL },\n    { 13, charmander_HitByApple, 0, NULL },\n    { 10, charmander_RunAway, 0, NULL },\n    { 14, charmander_AppleNearby, 0, NULL },\n    { 15, charmander_SearchApple, 0, NULL },\n    { 5, charmander_Dance, 0, NULL },\n    { 6, charmander_Dance, 0, NULL },\n    { 7, charmander_Dance, 0, NULL },\n    { 16, charmander_Roar, 1000.0 / 3.0, NULL },\n    { 36, charmander_RunAway, 0, NULL },\n    { 42, NULL, 0, charmander_HowlingEnded },\n    { 43, charmander_HowlInResponse, 0, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph charmander_tg_Normal_graph={charmander_tg_Normal_rows,14,0x802e1a34u};"
+      "native_sha256": "5304723f951024705b03f8eff0dc162c7883195b2b7e50477bf8bfcc01ec0275",
+      "native": "const IsleActorInteraction charmander_tg_Normal_rows[] = {\n    { 9, charmander_HitOrBurnt, 0, NULL },\n    { 37, charmander_HitOrBurnt, 0, NULL },\n    { 13, charmander_HitByApple, 0, NULL },\n    { 10, charmander_RunAway, 0, NULL },\n    { 14, charmander_AppleNearby, 0, NULL },\n    { 15, charmander_SearchApple, 0, NULL },\n    { 5, charmander_Dance, 0, NULL },\n    { 6, charmander_Dance, 0, NULL },\n    { 7, charmander_Dance, 0, NULL },\n    { 16, charmander_Roar, 333.333343505859375f, NULL },\n    { 36, charmander_RunAway, 0, NULL },\n    { 42, NULL, 0, charmander_HowlingEnded },\n    { 43, charmander_HowlInResponse, 0, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph charmander_tg_Normal_graph={charmander_tg_Normal_rows,14,0x802e1a34u};"
     },
     {
       "path": "src/volcano/charmander/code.c",
@@ -20516,8 +20516,8 @@
       "last": 128,
       "symbol": "growlithe_tg_Normal",
       "source_sha256": "69729106ef0a0980f9e3f6675190eeee069647d99c37e6e5e7f202220c05c42f",
-      "native_sha256": "4a9cb7b9182751de9ba48e56bce7da69b7688940745fb1d55b15b33adcc1eab8",
-      "native": "const IsleActorInteraction growlithe_tg_Normal_rows[] = {\n    { 9, growlithe_HitByPesterBall, 0, NULL },\n    { 13, growlithe_HitByApple, 0, NULL },\n    { 10, growlithe_AffectedByPesterBall, 0, NULL },\n    { 14, growlithe_AppleNearby, 0, NULL },\n    { 15, growlithe_SearchApple, 0, NULL },\n    { 5, growlithe_Dance, 0, NULL },\n    { 6, growlithe_Dance, 0, NULL },\n    { 7, growlithe_Dance, 0, NULL },\n    { 16, growlithe_RunAwayFromPlayer, 1000.0 / 3.0, NULL },\n    { 23, growlithe_PhotoTaken, 60, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph growlithe_tg_Normal_graph={growlithe_tg_Normal_rows,11,0x802e2444u};"
+      "native_sha256": "eb8eb5fe0f032657bcf3927cbf02c6e3eb801fd904b0d53da8c40c16b34fda2e",
+      "native": "const IsleActorInteraction growlithe_tg_Normal_rows[] = {\n    { 9, growlithe_HitByPesterBall, 0, NULL },\n    { 13, growlithe_HitByApple, 0, NULL },\n    { 10, growlithe_AffectedByPesterBall, 0, NULL },\n    { 14, growlithe_AppleNearby, 0, NULL },\n    { 15, growlithe_SearchApple, 0, NULL },\n    { 5, growlithe_Dance, 0, NULL },\n    { 6, growlithe_Dance, 0, NULL },\n    { 7, growlithe_Dance, 0, NULL },\n    { 16, growlithe_RunAwayFromPlayer, 333.333343505859375f, NULL },\n    { 23, growlithe_PhotoTaken, 60, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph growlithe_tg_Normal_graph={growlithe_tg_Normal_rows,11,0x802e2444u};"
     },
     {
       "path": "src/volcano/growlithe/code.c",
@@ -20858,8 +20858,8 @@
       "last": 121,
       "symbol": "vulpix_tg_Normal",
       "source_sha256": "0401ada31a7b3f65bfb1e013bcbe19f6fca4ef79f8278851934d93cc7ef93f50",
-      "native_sha256": "fe8c96c1c4f12dfb281e3188774661e6ecb156d1617edded103e665c6a4e2da9",
-      "native": "const IsleActorInteraction vulpix_tg_Normal_rows[] = {\n    { 9, vulpix_HitByPesterBall, 0, NULL },\n    { 13, vulpix_HitByApple, 0, NULL },\n    { 10, vulpix_AffectedByPesterBall, 0, NULL },\n    { 14, vulpix_AppleNearby, 0, NULL },\n    { 15, vulpix_SearchApple, 0, NULL },\n    { 16, vulpix_RunAwayFromPlayer, 1000.0 / 3.0, NULL },\n    { 44, vulpix_RunAlongPath, 0, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph vulpix_tg_Normal_graph={vulpix_tg_Normal_rows,8,0x802e2098u};"
+      "native_sha256": "ba42cac068a893933163bb139cece7170be3acc6642905717c6bceeffd3d5101",
+      "native": "const IsleActorInteraction vulpix_tg_Normal_rows[] = {\n    { 9, vulpix_HitByPesterBall, 0, NULL },\n    { 13, vulpix_HitByApple, 0, NULL },\n    { 10, vulpix_AffectedByPesterBall, 0, NULL },\n    { 14, vulpix_AppleNearby, 0, NULL },\n    { 15, vulpix_SearchApple, 0, NULL },\n    { 16, vulpix_RunAwayFromPlayer, 333.333343505859375f, NULL },\n    { 44, vulpix_RunAlongPath, 0, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph vulpix_tg_Normal_graph={vulpix_tg_Normal_rows,8,0x802e2098u};"
     },
     {
       "path": "src/volcano/vulpix/code.c",
@@ -20876,8 +20876,8 @@
       "last": 139,
       "symbol": "vulpix_tg_Eating",
       "source_sha256": "f0775eea10467b7eb63e2455b71df89962a84d51889905311c017233d4e96c28",
-      "native_sha256": "e57216fb79a64480e6c891a3b14c144eddccc345f6600add4bf2c2ba1d48d6ae",
-      "native": "const IsleActorInteraction vulpix_tg_Eating_rows[] = {\n    { 9, vulpix_HitByPesterBall, 0, NULL },\n    { 13, vulpix_HitByApple, 0, NULL },\n    { 10, vulpix_AffectedByPesterBall, 0, NULL },\n    { 14, vulpix_AppleNearby, 0, NULL },\n    { 16, vulpix_RunAwayFromPlayer, 1000.0 / 3.0, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph vulpix_tg_Eating_graph={vulpix_tg_Eating_rows,6,0x802e2178u};"
+      "native_sha256": "f8f0ea4461e09e9ba299bc4e9a5537256676ec8589e9f81355f3ac231bd18e41",
+      "native": "const IsleActorInteraction vulpix_tg_Eating_rows[] = {\n    { 9, vulpix_HitByPesterBall, 0, NULL },\n    { 13, vulpix_HitByApple, 0, NULL },\n    { 10, vulpix_AffectedByPesterBall, 0, NULL },\n    { 14, vulpix_AppleNearby, 0, NULL },\n    { 16, vulpix_RunAwayFromPlayer, 333.333343505859375f, NULL },\n    { 58, NULL, 0, NULL },\n};\nconst IsleActorInteractionGraph vulpix_tg_Eating_graph={vulpix_tg_Eating_rows,6,0x802e2178u};"
     },
     {
       "path": "src/volcano/vulpix/code.c",
@@ -49315,6 +49315,31 @@
       ],
       "consumed_prefix": "Original main.c380 resets every8 actual bank count words of both arrays."
     },
+    "interaction_static_initializer_fold": {
+      "source_schema": {
+        "path": "include/common_structs.h",
+        "first": 10,
+        "last": 15,
+        "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+        "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+        "field": "InteractionHandler.value: f32"
+      },
+      "native_field": "IsleActorInteraction.value: float",
+      "symbols": [
+        "arcanine_tg_Normal",
+        "charmander_tg_Normal",
+        "growlithe_tg_Normal",
+        "vulpix_tg_Normal",
+        "vulpix_tg_Eating"
+      ],
+      "command": 16,
+      "occurrences": 5,
+      "source_expression": "1000.0 / 3.0",
+      "native_literal": "333.333343505859375f",
+      "binary32_bits": "0x43a6aaab",
+      "rounding_proof": "1000/3 lies in [256,512), whose binary32 ULP is 1/32768. (1000/3)*32768 = 10922666 + 2/3, so nearest-even rounds to 10922667/32768 = 333.333343505859375. Binary64 division followed by binary32 initialization rounds to the same value.",
+      "portability": "Exact finite typed-data fold of these five command16 value fields only. MSVC /fp:strict cannot constant-fold the division in static C initializers (C2099); an exact binary32 decimal literal needs no arithmetic. Commands, callbacks, NULL pointer fields, graph identities and all Original function/data provenance hashes remain unchanged."
+    },
     "missing_initializer_queries": [],
     "rom": "No ROM reads/build/gates here. Runtime assets/resources require parent canonical admitted Snapshot, exact course2 catalog/WorldSetup, all headers, materials, paths, callbacks, cold factories and lifetime proof. Plain course words are Source literals or actual BSS zeros, not inferred neighbor extents."
   },
@@ -54896,6 +54921,6 @@
       "sha256": "e6fbef2ed7f926d64e5f0492dbac2ec25ed15636c51706b7a44d8b95c552e24e"
     }
   },
-  "output_sha256": "bdfdea0dd4dc061229308bedc6680f3ca82fb1b236874ba6467e7e477af809c2",
-  "generator_sha256": "71b78ac4a1e779c541b6425e5a6602ab14cf7a780fa1ddf1adb92a041579bb97"
+  "output_sha256": "5174afc2a0ab62c50549809b72a0cc3e013fb4b663980d4e06d71b3e444cc1bb",
+  "generator_sha256": "ec8548dccf1f01e13304238dc8389c50c0cb0016f6e2c57784b30e8e7adebc7a"
 }

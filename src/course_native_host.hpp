@@ -52,6 +52,11 @@ struct NativeCapacity {
     std::size_t helpers = 0, render_order = 0, sprite_draws = 0;
     menu::animation::ExecutionCapacity world_execution{}, actor_execution{}, item_execution{}, cart_execution{}, camera_execution{};
 };
+struct NativeHelper {
+    std::uint32_t id = 0, priority = 0;
+    std::uint8_t link = 0;
+    IsleGameSourceCallback callback = nullptr;
+};
 struct NativeInput {
     std::uint32_t id = 0, priority = 0, process_priority = 0;
     std::uint8_t link = 0;
@@ -64,6 +69,9 @@ struct NativeDescription {
     player::Root::Config player{};
     world::Callbacks world{};
     NativeInput input;
+    // Exact initial Original omAddGObj recipe, independent of Actor callbacks.
+    // Admission consumes it once during setup; it never authorizes live helpers.
+    NativeHelper initial_helper;
     std::span<const actor::BehaviorCallbackBinding> callbacks;
     std::span<const std::uint32_t> graphs, weighted_states, roots;
     actor::RetainedFieldOptions retained_fields{};
@@ -287,15 +295,16 @@ public:
         initializing_ = true;
         try {
             host_ = std::make_unique<NativeHost>(snapshot_,manager_,state_,input_,audio_,clock_,photos_,module_,adapter_.description(),cpu_);
+            const char* stage = "typed native near-clipping initialization failed";
             auto error = host_->near_clipping(near_disabled_);
-            if (error == ISLE_GAME_OK) error = host_->prepare(adapter_.context());
-            if (error == ISLE_GAME_OK) error = adapter_.bind_scene(*host_);
-            if (error == ISLE_GAME_OK) error = adapter_.activate(*host_);
-            if (error == ISLE_GAME_OK) error = adapter_.invoke_init();
-            if (error == ISLE_GAME_OK) error = adapter_.source_status();
-            if (error == ISLE_GAME_OK) error = host_->finish_initialization();
+            if (error == ISLE_GAME_OK) { stage = "typed native closure preparation failed"; error = host_->prepare(adapter_.context()); }
+            if (error == ISLE_GAME_OK) { stage = "typed Source scene binding failed"; error = adapter_.bind_scene(*host_); }
+            if (error == ISLE_GAME_OK) { stage = "typed Source activation failed"; error = adapter_.activate(*host_); }
+            if (error == ISLE_GAME_OK) { stage = "typed Original initialization invocation failed"; error = adapter_.invoke_init(); }
+            if (error == ISLE_GAME_OK) { stage = "typed Original initialization Source status failed"; error = adapter_.source_status(); }
+            if (error == ISLE_GAME_OK) { stage = "typed native producer initialization failed"; error = host_->finish_initialization(); }
             initializing_ = false;
-            if (error != ISLE_GAME_OK) return fail(error,host_->error() == ISLE_GAME_OK ? "typed Original scene initialization failed" : host_->message());
+            if (error != ISLE_GAME_OK) return fail(error,host_->error() == ISLE_GAME_OK ? stage : host_->message());
             status_ = host_->exit_requested() ? LifecycleStatus::retiring : LifecycleStatus::running;
             return ISLE_GAME_OK;
         } catch (const std::exception& e) { initializing_ = false; return fail(ISLE_GAME_INVALID_STATE,e.what()); }

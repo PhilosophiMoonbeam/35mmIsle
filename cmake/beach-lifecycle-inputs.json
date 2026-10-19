@@ -119,7 +119,7 @@
       "sha256": "cc6ff8465b2f0c60359ec3fca43b37bf12242ed324df97241db82601d3f8e87f"
     },
     "src/beach_lifecycle.cpp": {
-      "sha256": "34695d3a0d801f6bb44c837f058584a58917a50ef0a1c8ae81db921f2ba1f8c2"
+      "sha256": "a374b7777eb6e6ffdc10d43cfa1b4d7656c06800baceef346eea520b8c48c533"
     },
     "src/application_photos.hpp": {
       "sha256": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333"
@@ -134,7 +134,7 @@
       "sha256": "ffd12dcf00a1a8e07d2df2e2a40c74fe0f6f691798fd159377dccd844812d069"
     },
     "src/actor_photo_scene.cpp": {
-      "sha256": "d740473aace8c6d4f50ef9f9503cdbb1c9ff8217f001ea521d77b10bc780e07b"
+      "sha256": "038c3bb76dfe99748e9b4119cb08b50fd123ce24998fe1dd1116924225c4ed6c"
     },
     "src/player_root.hpp": {
       "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"

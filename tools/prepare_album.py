@@ -3,7 +3,7 @@
 import argparse,ast,hashlib,json,re,subprocess,tempfile,os
 from pathlib import Path
 REVISION = "df8815e75f3d79618466e01e0827c6165b93d11c"
-RECIPE_SHA256 = "e37e09504a5762cc42caf06353287801639d771976caf72924294730c2fed82a"
+RECIPE_SHA256 = "8f965afb22227f447e72f313f63b705afa5ab0780454e5eae03bbedc164439eb"
 PRIMARY_SOURCES = ('src/pokemon_album/9A6B10.c','src/pokemon_album/9A6F70.c','src/pokemon_album/9ABB50.c','src/pokemon_album/9ADAD0.c')
 SOURCE_FILES = {
     'src/pokemon_album/9A6B10.c': {'blob': '001d38eaa9957fbb147277302be90ab5b8f27e59', 'sha256': '46f319b13b49fe7c1ad78202ed679002bd086021ee97fc47980e4a5b073f64f8', 'bytes': 3609},

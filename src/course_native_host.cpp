@@ -34,7 +34,7 @@ constexpr actor::ProducerLayout actor_layout{{0x400000,0x80000},{0x480000,0x8000
 constexpr menu::model::PacketLayout item_layout{{0x230000,0x10000},{0x240000,0x10000},{0x250000,0x10000},{{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr player::cart::ProducerLayout cart_layout{{0x260000,0x10000},{0x270000,0x10000},{0x2a0000,0x10000},{{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr focus::CaptureLayout capture_layout{{0x680000,0x50},{0x680080,0x80},{0x680100,0xa00}};
-constexpr menu::RamRange fx_commands{0x680c00,0x5400}, joined_lists{0x686000,0x5000};
+constexpr menu::RamRange fx_commands{0x680c00,0x5400};
 constexpr sprite::RamRange lanes{0x690000,0x40000}, sprite_commands{0x780000,0x50000}, message_commands{0x6d0000,0x30000};
 constexpr g::Layout frame_layout{{0x626000,0x2000},{0x630000,0x10000},{0x640000,0x40000},0x600000};
 std::uint32_t physical(std::uint32_t value) noexcept { return value & 0x1fffffffu; }
@@ -73,6 +73,7 @@ struct NativeHost::Impl {
     application::Photos& photos;
     world::ModuleState& module;
     NativeDescription description;
+    const menu::RamRange joined_lists;
     bool cpu = false, prepared = false, initialized = false, exiting = false;
     bool cancelling = false, closing = false, retired = false, detach_authorized = false;
     bool detached = false, references_released = false, scene_cleared = false;
@@ -153,7 +154,8 @@ struct NativeHost::Impl {
         host::GtlClock& cl, application::Photos& ph, world::ModuleState& mod,
         NativeDescription desc, bool require_cpu)
         : owner(host), snapshot(rom), manager(m), state(s), input(i), audio(au), clock(cl),
-          photos(ph), module(mod), description(desc), cpu(require_cpu),
+          photos(ph), module(mod), description(desc),
+          joined_lists{0x686000,source_join_bytes(desc.capacity.render_order)}, cpu(require_cpu),
           world_resources(rom,desc.course_id),
           actor_resources(rom,desc.course_id,{world_resources.setup().fog_rgb,world_resources.setup().fog_min,world_resources.setup().fog_max}),
           behavior_resources(rom,desc.course_id),
@@ -175,6 +177,8 @@ struct NativeHost::Impl {
         require(cap.arena_bytes && cap.pools.objects && cap.pools.processes && cap.pools.cameras &&
             cap.command_nodes && cap.actors && cap.items && cap.carts && cap.helpers &&
             cap.render_order && cap.sprite_draws,"missing cold native physical capacity");
+        require(joined_lists.size <= lanes.address-joined_lists.offset,
+            "native course source join exceeds its disjoint RAM window");
         require(explicit_execution(cap.world_execution) && explicit_execution(cap.actor_execution) &&
             explicit_execution(cap.item_execution) && explicit_execution(cap.cart_execution) &&
             explicit_execution(cap.camera_execution),"native execution envelopes must be explicit cold capacities");
@@ -266,7 +270,8 @@ IsleGameResult NativeHost::fail(IsleGameResult result, const char* text) noexcep
     auto& self = *impl_;
     if (result != ISLE_GAME_OK && self.error == ISLE_GAME_OK) {
         self.error = result;
-        std::snprintf(self.message.data(),self.message.size(),"%s",text ? text : "native course failure");
+        if (text && text[0]) std::snprintf(self.message.data(),self.message.size(),"%s",text);
+        else std::snprintf(self.message.data(),self.message.size(),"native course operation failed (%u)",static_cast<unsigned>(result));
     }
     return self.error;
 }
@@ -422,7 +427,9 @@ IsleGameResult NativeHost::update(std::uint32_t raw_game_time) noexcept {
             result==ISLE_GAME_OK) result=ISLE_GAME_INVALID_STATE;
     if (result == ISLE_GAME_OK && self.services->failed()) result = ISLE_GAME_INVALID_STATE;
     if (result == ISLE_GAME_OK) result = self.root->source().status;
-    return result == ISLE_GAME_OK ? result : fail(result,self.services->error());
+    return result == ISLE_GAME_OK ? result : fail(result,
+        isle_game_status(self.services->game)!=ISLE_GAME_OK ?
+            isle_game_error(self.services->game) : self.services->error());
 }
 bool NativeHost::draw(g::FrameContext context) noexcept {
     auto& self = *impl_;
@@ -507,6 +514,9 @@ bool NativeHost::retire_scene(bool cancelling, RetirementHooks hooks, SceneJoinR
                 result.error != actor::OwnerError::services) return false;
         }
         if (self.root && self.root->retire_objects() != ISLE_GAME_OK) return false;
+        // The real main-camera owner releases Player FX field credits. This
+        // must precede World's/reference hooks, which require those joins.
+        if (self.cancelling && self.renderer && self.renderer->abort_main() != ISLE_GAME_OK) return false;
         if (self.world && !self.world->retire()) return false;
         if (self.items) {
             const auto result = self.items->retire();
@@ -539,12 +549,8 @@ bool NativeHost::retire_scene(bool cancelling, RetirementHooks hooks, SceneJoinR
             const auto result = self.actors->reset();
             if (!result && !(self.cancelling && result.error == actor::OwnerError::services)) return false;
         }
-        if (self.renderer) {
-            if (self.cancelling) {
-                if (self.renderer->abort_main() != ISLE_GAME_OK) return false;
-            } else if (self.root && self.root->source().camera &&
-                (self.renderer->remove_main() != ISLE_GAME_OK || self.renderer->service_main_removal() != ISLE_GAME_OK)) return false;
-        }
+        if (self.renderer && !self.cancelling && self.root && self.root->source().camera &&
+            (self.renderer->remove_main() != ISLE_GAME_OK || self.renderer->service_main_removal() != ISLE_GAME_OK)) return false;
         if (self.root && (self.root->source().D_80382D10_523120 || self.root->source().D_80382D14_523124)) return false;
         if (self.root && self.root->collect_joined() != ISLE_GAME_OK) return false;
         if (self.items && !self.items->collect_joined()) return false;
@@ -667,8 +673,12 @@ IsleGameResult NativeHost::create_helper(std::uint32_t id, IsleGameSourceCallbac
         current && self.services->source_owner_registered(current) &&
         !self.services->source_owner_joined(current) &&
         isle_actor_source_execution_status(self.services->game)==ISLE_GAME_OK;
+    const auto& initial = self.description.initial_helper;
+    const bool initial_update = self.setup() && !self.references && update &&
+        update == initial.callback && id == initial.id &&
+        link == initial.link && priority == initial.priority;
     if ((!self.setup() && !running_source) || link>31 ||
-        (update && (!self.bindings || !self.bindings->contains(update)))) return ISLE_GAME_INVALID_STATE;
+        (update && !initial_update && (!self.bindings || !self.bindings->contains(update)))) return ISLE_GAME_INVALID_STATE;
     for (auto& helper : self.helpers) if (!helper.object) {
         const auto fields = self.references ? std::span<IsleGameObject** const>{} : self.description.reference_fields;
         const auto result = self.publish_helper(helper,id,link,priority,update,fields);

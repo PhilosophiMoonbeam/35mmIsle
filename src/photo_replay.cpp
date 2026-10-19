@@ -189,7 +189,7 @@ public:
                 animation(runtime_->set_node_transform(slot.instance,0,root));
             }
             auto& binding = slot.binding;
-            binding.render = {dl_link_,0x80000000u,UINT32_MAX};
+            binding.render = {static_cast<std::uint8_t>(dl_link_),0x80000000u,UINT32_MAX};
             binding.model.slot = i; binding.model.runtime = runtime_.get();
             binding.model.state = runtime_->model(slot.instance);
             binding.model.pose = menu::model::PoseSource::native;
@@ -483,7 +483,7 @@ struct Replay::Impl {
         if (!prepare_course_resources(record.levelID)) return false;
         require(world->reconstruct({record.unk_00_16,record.unk_04.f32,record.unk_08}),"Replay World reconstruction rejected");
         if (!subject_resources) subject_resources = std::make_unique<subjects::Resources>(snapshot,*world_resources,record);
-        subjects = std::make_unique<subjects::Reconstruction>(game,*subject_resources,subjects::LinkOwnership{config.photo_object_link,config.dl_link,UINT32_MAX});
+        subjects = std::make_unique<subjects::Reconstruction>(game,*subject_resources,subjects::LinkOwnership{static_cast<std::uint8_t>(config.photo_object_link),static_cast<std::uint8_t>(config.dl_link),UINT32_MAX});
         native(subjects->publish());
         items = std::make_unique<RecordedItems>(game,*item_resources,record,config.photo_object_link,config.dl_link); items->publish();
         // Actual Source recorded effect GObj, created after the item objects.

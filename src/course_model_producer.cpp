@@ -31,7 +31,7 @@ ModelProducer::ModelProducer(world::Producer& world, actor::Producer& actors, me
         // Four lanes, at most one camera call plus one unpushed branch per
         // Services entry, followed by one EndDL. No hot command-vector growth.
         if (global_source_order_)
-            require(items->render_order_capacity <= (lists.size/8-4)/8,
+            require(source_join_bytes(items->render_order_capacity) <= lists.size,
                 "course source continuation storage is below cold worst-case plan");
         if (cart_) for (auto range : cart_->reservations())
             require(!overlaps(lists,range),"course join overlaps Cart producer");

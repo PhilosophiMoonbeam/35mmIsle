@@ -40,8 +40,11 @@ constexpr actor::ProducerLayout actor_layout{{0x400000,0x80000},{0x480000,0x8000
 constexpr menu::model::PacketLayout item_layout{{0x230000,0x10000},{0x240000,0x10000},{0x250000,0x10000},{{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr player::cart::ProducerLayout cart_layout{{0x260000,0x10000},{0x270000,0x10000},{0x2a0000,0x10000},{{{0x3b5000,plane},{0x3da800,plane}}}};
 constexpr focus::CaptureLayout capture_layout{{0x680000,0x50},{0x680080,0x80},{0x680100,0xa00}};
-constexpr menu::RamRange fx_commands{0x680c00,0x5400},joined_lists{0x686000,0x5000};
+constexpr std::size_t render_order_capacity=256;
+constexpr menu::RamRange fx_commands{0x680c00,0x5400},
+    joined_lists{0x686000,course::source_join_bytes(render_order_capacity)};
 constexpr sprite::RamRange lanes{0x690000,0x40000},sprite_commands{0x780000,0x50000},message_commands{0x6d0000,0x30000};
+static_assert(joined_lists.size<=lanes.address-joined_lists.offset);
 constexpr g::Layout frame_layout{{0x626000,0x2000},{0x630000,0x10000},{0x640000,0x40000},0x600000};
 std::uint32_t physical(std::uint32_t value) { return value&0x1fffffffu; }
 void require(bool value,const char* message) { if (!value) throw std::runtime_error(message); }
@@ -130,7 +133,7 @@ struct Lifecycle::Impl {
     std::unique_ptr<player::cart::Producer> carts;
     std::unique_ptr<course::ItemComposition> composition;
     std::unique_ptr<course::ModelProducer> models;
-    std::array<scene::RenderOrderEntry,256> cart_order{};
+    std::array<scene::RenderOrderEntry,render_order_capacity> cart_order{};
     IsleGameObject* helper=nullptr;
     a::InstanceHandle intro_instance;
     std::array<IsleGameObject**,1> helper_fields{{&source.D_beach_802CC0E4}};
@@ -322,7 +325,7 @@ void Lifecycle::Impl::producers() {
     carts=std::make_unique<player::cart::Producer>(services->game,source.player->camera,services->camera_basis(),
         cart_resources,cart_capacities,cart->render_bindings(cart_order),cart_layout,co);
     composition=std::make_unique<course::ItemComposition>(course::ItemComposition{
-        *services,*item_producer,256,carts.get(),photo_scene->prefix_object(),true});
+        *services,*item_producer,render_order_capacity,carts.get(),photo_scene->prefix_object(),true});
     models=std::make_unique<course::ModelProducer>(*worlds,*actor_producer,joined_lists,composition.get());
     native(renderer->bind_cart(*cart,cart_order),renderer->message());
     native(renderer->bind_transition(transition_resources,services->screen_transition()),renderer->message());

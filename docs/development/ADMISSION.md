@@ -3489,3 +3489,64 @@ save session; Store's no-follow, lock, evidence-preservation and recovery checks
 remain unchanged. The proof uses the local SDK composition, not the pending
 hosted Ubuntu Release or Windows ZIP. Hosted Windows import/relocated-help
 gates do not claim Windows11 gameplay.
+
+### Typed course admission and compiler portability
+
+Original course initialization creates World Actors before installing common
+FX bank3 and course bank0. Cold interaction admission now validates the canonical
+decoded banks through the same runtime interpreter validator without installing
+them or consuming RNG, emitter identities or pools. Source still performs the
+actual bank installation. Live effect lookup semantics are unchanged.
+
+Tunnel, Volcano, River and Cave lifecycle update helpers are admitted by their
+exact Original callback/id/link/priority recipes, separately from Actor callback
+tables. Cave passes 18 definition rows: 17 live tuples plus a zero terminator.
+Its adapter validates that complete Source array against the canonical live
+catalog and terminal; add/change/remove retain the 17-live-row range.
+
+Course Gfx join reservations derive from the actual render-order bound:
+four lanes, two commands per entry, one terminal per lane, eight bytes per
+command; total `64N + 32` bytes. Address-window, overlap, overflow, executor and
+runtime write bounds remain enforced. No Item or Actor capacity was reduced.
+Actual Tunnel and River runs now reach presented course surfaces. Subsequent
+Source failures and cancellation termination remain open; neither course is
+qualified as a complete natural exit. Cave and Valley also remain unqualified.
+
+The repeated-throw reclamation fix passes the original seven private Item CPU
+cases, including physical exhaustion, incarnation protection and three fault
+states. An added stress fixture was deleted: genuine collision commands8/9
+retained each Item as sender while its target Actor was paused. Those Items were
+correctly uncollectable. The fix does not reclaim outstanding sender credits.
+Actual Rainbow completes 11,029 Original updates and 5,514 course presentations:
+real shield/projectile progression, four photos, normal Source reason2/result9,
+and actual Manager Camera9 admission. The complete route balances 6,835 GPU
+submissions/terminals and retires native, Input, SDL-dummy audio and Host owners.
+The unlocked profile is authored; photos, Source results and exits are not.
+Camera9 admission does not claim its presented UI or subsequent Photo15 flow.
+
+A separate earlier run failed at update9512 with native Game text
+“native Item source leaf failed”; that rare rejection remains under investigation.
+Debugger evidence proves its subsequent abort came from `CollisionPass::retire`:
+native process termination removed the synchronous process but returned the
+retained Game fault. Retirement now requires native idle, preserves that fault
+and proves disappearance of the exact process registration before releasing its
+handle. Shared/Rainbow error latches retain the originating Game diagnostic.
+Rainbow cancellation now joins its actual main camera before World-reference
+collection. Complete fixed-fault retirement still requires runtime proof.
+
+Hosted run39184563281 exposed Clang aggregate link narrowing, MSVC strict-FP
+static initializer folding and Linux archive-verifier path truncation. Existing
+World/Replay link admission already requires all links below32; publication and
+presentation now use explicit bounded byte conversions. Five Volcano fields use
+the exact binary32 value `0x43a6aaab` in place of constant `1000.0 / 3.0`.
+Original datum/function provenance remains unchanged; derived portable output
+and recipe seals change deliberately. Hosted MSVC confirmation remains pending.
+
+The Linux verifier now retains complete `ldd` paths, including spaces and
+Unicode. The actual relocated archive passes 12 ELF closure checks, 18
+application-dependency references and both installed CLI help commands with
+loader overrides unset. `actionlint` passes. The integrated production build,
+all 31 retained consumers and all 58 tests pass. A separate fresh Clang21.1.8
+native/RSP build also passes all 58 tests and both actual CLI help commands.
+These checks do not substitute for complete course gameplay or Windows11
+qualification.

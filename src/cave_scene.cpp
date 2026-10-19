@@ -38,6 +38,7 @@ course::NativeDescription Adapter::description() {
     result.player={4,end,this,pause,this,{this,exit_block,movement},nullptr,0,func_802BDDCC_64027C};
     result.world={this,add,remove,change,nullptr,nullptr,nullptr};
     result.input={1u<<9,9,0,9,isle_course_scene_input_update};
+    result.initial_helper={0,0x80000000u,0,func_802BE09C_64054C};
     result.callbacks=actor_callbacks(); result.graphs=actor_graphs(); result.weighted_states=actor_weighted_states(); result.roots=actor_roots();
     result.retained_fields={retained}; result.reference_fields=reference_fields;
     result.source_vertices=egg_geometry.publications();
@@ -133,6 +134,14 @@ IsleGameResult Adapter::block_remove(IsleCourseActorBase* base,std::uint32_t ide
     return ISLE_GAME_INVALID_ARGUMENT;
 }
 namespace {
+bool valid_definitions(const Adapter& adapter,const IsleCaveLifecycleDefinition* rows,std::size_t count) noexcept {
+    if (rows!=adapter.source.definitions || count!=std::size(adapter.source.definitions)) return false;
+    // Source passes all 18 rows; the ROM catalog stores 17 live rows and
+    // validates the zero terminator separately from its live definition span.
+    const auto& terminal=rows[count-1];
+    return !terminal.id && !terminal.initialize_identity && !terminal.update_identity &&
+        !terminal.remove_identity && adapter.native.definitions(rows,count-1,0x802c6234u);
+}
 IsleCaveLifecycleServices make_lifecycle_services() noexcept {
     return {
         .reference=+[](IsleCaveLifecycleSource* p0,IsleGameObject** p1,IsleGameObject* p2) noexcept -> IsleGameResult {
@@ -332,13 +341,13 @@ IsleCaveLifecycleServices make_lifecycle_services() noexcept {
             return Adapter::invoke(p0,[&](Adapter& a) { if (a.actors.base.phase!=ISLE_COURSE_ACTOR_PREPARED || a.source.scene_setup.heap_size!=1109776u) return ISLE_GAME_INVALID_STATE; return a.native.request(p1,&a.source.scene_setup); });
         },
         .pokemon_add=+[](IsleCaveLifecycleSource* p0,IsleCaveWorldBlock* p1,IsleCaveWorldBlock* p2,const IsleCaveLifecycleDefinition* p3,size_t p4) noexcept -> IsleGameResult {
-            return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active()) return ISLE_GAME_INVALID_STATE; if (p3!=a.source.definitions || p4!=17 || !a.native.definitions(p3,p4,0x802c6234u)) return ISLE_GAME_INVALID_ARGUMENT; return a.native.pokemon_add(block(p1),block(p2),0x802c6234u,17); });
+            return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active()) return ISLE_GAME_INVALID_STATE; if (!valid_definitions(a,p3,p4)) return ISLE_GAME_INVALID_ARGUMENT; return a.native.pokemon_add(block(p1),block(p2),0x802c6234u,17); });
         },
         .pokemon_change=+[](IsleCaveLifecycleSource* p0,IsleCaveWorldBlock* p1,IsleCaveWorldBlock* p2,const IsleCaveLifecycleDefinition* p3,size_t p4) noexcept -> IsleGameResult {
-            return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active()) return ISLE_GAME_INVALID_STATE; if (p3!=a.source.definitions || p4!=17 || !a.native.definitions(p3,p4,0x802c6234u)) return ISLE_GAME_INVALID_ARGUMENT; return a.native.pokemon_change(block(p1),block(p2),0x802c6234u,17,&a.actors.base,Adapter::block_change); });
+            return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active()) return ISLE_GAME_INVALID_STATE; if (!valid_definitions(a,p3,p4)) return ISLE_GAME_INVALID_ARGUMENT; return a.native.pokemon_change(block(p1),block(p2),0x802c6234u,17,&a.actors.base,Adapter::block_change); });
         },
         .pokemon_remove=+[](IsleCaveLifecycleSource* p0,IsleCaveWorldBlock* p1,const IsleCaveLifecycleDefinition* p2,size_t p3) noexcept -> IsleGameResult {
-            return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active()) return ISLE_GAME_INVALID_STATE; if (p2!=a.source.definitions || p3!=17 || !a.native.definitions(p2,p3,0x802c6234u)) return ISLE_GAME_INVALID_ARGUMENT; return a.native.pokemon_remove(block(p1),0x802c6234u,17,&a.actors.base,Adapter::block_remove); });
+            return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active()) return ISLE_GAME_INVALID_STATE; if (!valid_definitions(a,p2,p3)) return ISLE_GAME_INVALID_ARGUMENT; return a.native.pokemon_remove(block(p1),0x802c6234u,17,&a.actors.base,Adapter::block_remove); });
         },
         .fx_manager_assign=+[](IsleCaveLifecycleSource* p0,IsleGameObject* p1) noexcept -> IsleGameResult {
             return Adapter::invoke(p0,[&](Adapter& a) { return a.native.fx_publish(0x80382d10u,p1); });

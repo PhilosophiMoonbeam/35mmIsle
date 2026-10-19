@@ -7,6 +7,7 @@
 #include "cave_scene.hpp"
 #include "valley_scene.hpp"
 #include "player_photo_source.h"
+#include "player_photo.hpp"
 #include "player_ui_source.h"
 #include "actor_owner_source.h"
 #include <algorithm>
@@ -165,6 +166,31 @@ VolcanoTargets volcano_targets(const IsleVolcanoActorSource& source) {
     // borrow survives this serialized owner-side traversal.
     return targets;
 }
+bool photo_target(const IslePlayerSource& player,IsleGameVec3& target) {
+    IsleGameObject* previous=nullptr;
+    float nearest=10000.0f;
+    bool found=false;
+    for(;;) {
+        IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
+        require(isle_actor_source_link3_next(player.game,previous,&object,&actor,&model)==ISLE_GAME_OK,
+            "actual course photo-target traversal rejected");
+        if(!object)break;
+        previous=object;
+        if(!model || actor->id<=0 || actor->id>151 || !actor->tangible || !(actor->flags&4u) ||
+           !(actor->playerDist>=0 && actor->playerDist<=nearest))continue;
+        IsleGameObjectMetadata metadata{};
+        require(isle_game_object_metadata(player.game,object,&metadata)==ISLE_GAME_OK,
+            "actual course photo-target visibility unavailable");
+        if(metadata.flags&1u)continue;
+        const auto& position=actor->collPosition;
+        const float pitch=std::atan2(position.y-player.CameraEyePos.y,
+            std::hypot(position.x-player.CameraEyePos.x,position.z-player.CameraEyePos.z));
+        if(!(pitch>=player.MinPitch && pitch<=player.MaxPitch))continue;
+        target=position;nearest=actor->playerDist;found=true;
+    }
+    // Only a scalar collision center survives this owner-side observation.
+    return found;
+}
 bool different(const IsleGameVec3& first,const IsleGameVec3& second) {
     return first.x!=second.x || first.y!=second.y || first.z!=second.z;
 }
@@ -189,10 +215,14 @@ void seed_progress(game::State& state,std::int32_t course) {
 
 struct Probe::Impl {
     std::int32_t course;
+    CaptureGoal goal;
     private_post_course::Controller controller;
     std::ofstream ledger;
     std::uint64_t rows=0,serial=0,updates=0,last_external=0,frames=0,presents=0,varied=0,movement=0,shutters=0,throws=0;
     std::uint64_t travel_presentations=0;
+    const IslePlayerPhotoData* captured_roll=nullptr;
+    std::array<std::uint64_t,60> captured_digests{};
+    int captured_count=0;
     int photos=0,qualified=0,reason=0,focus_id=0,hits1=3,hits2=3,mew_mode=0;
     int pending_mew_slot=-1,pending_mew_qualified=0;
     int controls=0,disabled=0,direction=0,zoom_target=0,cooldown=0;
@@ -219,12 +249,15 @@ struct Probe::Impl {
     bool volcano_gate_released=false,volcano_moltres_seen=false,volcano_moltres_photo=false;
     struct FrameTag {std::uint64_t ordinal=0,serial=0,update=0;int photos=0,reason=0;unsigned phase=0;};
     std::array<FrameTag,2> tags{};
-    explicit Impl(std::int32_t id,private_post_course::Controller pad,const std::filesystem::path& root):course(id),controller(pad) {
+    explicit Impl(std::int32_t id,private_post_course::Controller pad,const std::filesystem::path& root,CaptureGoal capture)
+        :course(id),goal(capture),controller(pad) {
         require(course>=0 && course<7 && controller.owner && controller.set,"actual course and owned controller required");
         std::filesystem::create_directories(root);
         ledger.exceptions(std::ios::badbit|std::ios::failbit);
         ledger.open(root/("course-"+std::to_string(course)+"-source.tsv"),std::ios::out|std::ios::trunc);
         row("scope\tauthored unlocked canonical profile; actual Runtime/Manager course Source and owned inputs; not natural save progression or N64 parity");
+        row(goal==CaptureGoal::empty_roll?"objective\tgenuine empty Source roll; natural Oak13 admission":
+            "objective\tgenuine Source photographs; natural CameraCheck9 admission");
         row("bounds\t27 primary world IDs *2667 minimum-speed updates +2400 intro/end; Rainbow7200+1800+2000+1200+120+1200;131072 rows;2 scalar frame tags;no images");
         row("kind\tcourse\tserial\tupdates\tframes\tpresents\tphotos\tqualified\tend_reason\tintro_done\tending\tbuttons\tx\ty\tfocus\thits1\thits2\tmew_mode\tmovement\tvalue\tcontrols\tdisabled\tdirection\tzoom_target\tcooldown\tconsumed_buttons\tpressed_buttons\tmove_time\tposition_x\tposition_y\tposition_z\tvolcano_stage\tegg_present\tegg_distance\tegg_radius\tegg_x\tegg_y\tegg_z\tegg_graph\tegg_path\tcart_stopped\tthrow_timeout\tvolcano_throws\tvolcano_throw_consumed\tvolcano_egg_transition\tvolcano_gate_released\tmoltres_tangible\tvolcano_moltres_photo");
     }
@@ -282,6 +315,19 @@ struct Probe::Impl {
         require(player.status==ISLE_GAME_OK && player.photo && player.photo->status==ISLE_GAME_OK,"canonical actual Player/Photo Source failed");
         photos=player.photo->gPhotoCount;qualified=player.photo->D_800AE27C;
         require(photos>=qualified && qualified>=0 && photos<=60,"actual captured roll counters invalid");
+        require(!captured_roll || captured_roll==player.photo->D_800B0598,"actual course roll owner changed");
+        require(photos>=captured_count,"actual captured roll count regressed");
+        captured_roll=player.photo->D_800B0598;
+        for(;captured_count<photos;++captured_count) {
+            const auto& photo=captured_roll[captured_count];
+            require(photo.levelID==course,"actual captured photograph belongs to a different course");
+            std::array<std::byte,0x3a0> bytes;
+            isle::player::encode_photo(photo,bytes);
+            bytes[1]=std::byte{0};
+            std::uint64_t hash=14695981039346656037ull;
+            for(const auto byte:bytes) {hash^=std::to_integer<std::uint8_t>(byte);hash*=1099511628211ull;}
+            captured_digests[static_cast<std::size_t>(captured_count)]=hash;
+        }
         if(pending_mew_slot>=0 && photos>pending_mew_slot && qualified>pending_mew_qualified) {
             const auto& captured=player.photo->D_800B0598[pending_mew_slot];
             unshielded_photo|=captured.levelID==6 &&
@@ -349,8 +395,17 @@ struct Probe::Impl {
         sx=std::abs(error_x)<6?0:stick(error_x*(player.gDirectionIndex==0?-16.0f:16.0f));
         sy=std::abs(error_y)<6?0:stick(error_y*8);
     }
+    void search_photo(const IslePlayerSource& player,bool subject,std::uint16_t pad) {
+        std::int8_t sx=0,sy=0;
+        if(!subject && player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn) {
+            IsleGameVec3 target{};
+            if(photo_target(player,target))aim(player,target,true,sx,sy);
+            else sx=24;
+        }
+        set(pad,sx,sy);
+    }
     bool control_volcano(const IsleVolcanoActorSource& actors,const IslePlayerSource& player,
-        std::uint16_t prior) {
+        const IslePlayerPhotoFocus& focus,std::uint16_t prior) {
         volcano_snapshot=volcano_targets(actors);
         const auto& egg=volcano_snapshot.egg;const auto& moltres=volcano_snapshot.moltres;
         volcano_cart_stopped=player.IsCartStopped;volcano_throw_timeout=player.ThrowItemTimeout;
@@ -421,14 +476,9 @@ struct Probe::Impl {
             // Existing aim() drives the Source camera/reticle via the owned pad.
             const auto* target=moltres.present && moltres.tangible?&moltres:egg.present && egg.tangible?&egg:nullptr;
             if(target && player.gDirectionIndex==-1)aim(player,target->collision,true,sx,sy);
-            // Original moltres_Render draws the hierarchy without a detector
-            // subject. Aim through the pad; the captured Source roll below,
-            // not an impossible focus146 assertion, must prove the photo.
-            const bool moltres_centered=target==&moltres &&
-                std::abs(int(sx))<=12 && std::abs(int(sy))<=12;
             std::uint16_t pad=z;
             if(volcano_stage==VolcanoStage::photograph_moltres && !volcano_moltres_photo && pending_volcano_slot<0 &&
-               moltres_centered && (moltres.flags&4u) && !(moltres.flags&8u) &&
+               focus.present && focus.object && focus.pokemon_id==146 && (focus.flags&4u) && !(focus.flags&8u) &&
                player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
                !(prior&a) && !(player.input.current_buttons&a) && photos<60) {
                 pad|=a;++shutters;pending_volcano_slot=photos;pending_volcano_qualified=qualified;
@@ -439,6 +489,7 @@ struct Probe::Impl {
     }
     void control(const application::RuntimeView& view,const Sample& s) {
         const auto prior=buttons;set();
+        if(goal==CaptureGoal::empty_roll)return;
         if(!s.running || !s.player || !s.intro_done || !s.player->D_80382D04_523114 || s.ending)return;
         const auto& player=*s.player;
         IslePlayerPhotoFocus focus{};
@@ -497,10 +548,9 @@ struct Probe::Impl {
             std::uint16_t pad=z;
             if(subject && player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
                 !(prior&a) && !(player.input.current_buttons&a)) {pad|=a;++shutters;}
-            // Eggs/effects are not qualifying subjects. Search with the same
-            // actual camera input used below rather than holding that view
-            // for the entire course without ever requesting a photograph.
-            set(pad,!subject?24:0);return;
+            // Use actual eligible Actor collision centers, including pitch;
+            // a level-only yaw sweep can miss every low Valley subject.
+            search_photo(player,subject,pad);return;
         }
         // Original player.c:2516–2527 creates updateTutorialMain ONLY for Beach.
         // IsTutorialEnabled is a profile choice on every course, not proof of
@@ -510,29 +560,30 @@ struct Probe::Impl {
             set(message && !(prior&a) && !(player.input.current_buttons&a)?a:0,tutorial_followup && !tutorial_stick?8:0);return;
         }
         if(player.IsInputDisabled)return;
-        if(course==2 && control_volcano(view.volcano->actors_source(),player,prior))return;
+        if(course==2 && control_volcano(view.volcano->actors_source(),player,focus,prior))return;
         // Reserve the post-puzzle shutter for actual Moltres, not another
         // ordinary subject; tutorial qualification and Mew's cap stay unchanged.
         if(course==2?qualified>=3:photos>=4)return;
         std::uint16_t pad=z;
         if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
             !(prior&a) && !(player.input.current_buttons&a) && (subject || photos==0)) {pad|=a;++shutters;}
-        // Search by actual camera heading, never transform writes. Stop once a
-        // published qualifying subject exists; movement remains Source-owned.
-        set(pad,!subject && photos>0?24:0);
+        // The same owned-input search serves qualification and ordinary shots.
+        search_photo(player,subject,pad);
     }
 };
 
-Probe::Probe(std::int32_t course,private_post_course::Controller controller,const std::filesystem::path& root)
-    :p_(std::make_unique<Impl>(course,controller,root)) {}
+Probe::Probe(std::int32_t course,private_post_course::Controller controller,const std::filesystem::path& root,CaptureGoal goal)
+    :p_(std::make_unique<Impl>(course,controller,root,goal)) {}
 Probe::~Probe()=default;
 void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpdates) {
     auto& p=*p_;Sample s;
     if(!selected(view,p.course,s)) {
-        if(p.retirement && !p.post && view.post && view.entry) {
-            require(view.entry->operation==ISLE_APPLICATION_ENTRY_CAMERA_CHECK && view.entry->argument==9,
-                "natural captured course did not enter actual CameraCheck9");
-            p.post=true;p.note("actual_post9",view.entry->serial);p.ledger.flush();
+        if(p.retirement && !p.post && view.entry) {
+            const bool empty=p.goal==CaptureGoal::empty_roll;
+            require(empty?(view.oak && view.entry->operation==ISLE_APPLICATION_ENTRY_OAKS_LAB && view.entry->argument==13):
+                (view.post && view.entry->operation==ISLE_APPLICATION_ENTRY_CAMERA_CHECK && view.entry->argument==9),
+                "natural course result did not enter its actual Original empty-roll Oak13 or photographed CameraCheck9 owner");
+            p.post=true;p.note(empty?"actual_empty_post13":"actual_post9",view.entry->serial);p.ledger.flush();
         }
         return;
     }
@@ -551,11 +602,14 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
 void Probe::retired(application::SceneRetirementView view) {
     auto& p=*p_;Sample s;if(!selected(view,p.course,s))return;
     p.observe(s);p.set();
+    const bool empty=p.goal==CaptureGoal::empty_roll;
+    const auto expected=empty?13:9;
+    const bool captures=empty?(p.photos==0 && p.qualified==0 && p.shutters==0):(p.photos>0 && p.shutters>0);
     if(!p.entered || p.retirement || !view.entry || view.entry->serial!=p.serial || view.entry->argument!=std::uint32_t(p.course) ||
-       !s.retired || !s.joined || !s.source_complete || !s.closed || s.input!=p.course || s.output!=9 || view.source_result!=9 ||
+       !s.retired || !s.joined || !s.source_complete || !s.closed || s.input!=p.course || s.output!=expected || view.source_result!=expected ||
        s.reason!=2 || !p.intro_seen || !p.intro_done || !p.travel_seen || (p.course!=6 && !p.movement) ||
-       !p.photos || !p.shutters || !p.travel_presentations)
-        p.fail("actual natural course/Original result9/join receipt rejected");
+       !captures || !p.travel_presentations)
+        p.fail("actual natural course/Original photographed9 or empty13/join receipt rejected");
     if(p.course==0 && (!p.ending_wait || !p.ending_terminal))p.fail("actual Beach ending Cart handshake not observed");
     if(p.course==2 && (p.volcano_stage!=Impl::VolcanoStage::travel_after_egg || p.volcano_ordinary_photos<3 ||
        !p.volcano_gate_stopped || !p.volcano_throw_consumed || !p.volcano_egg_transition || !p.volcano_gate_released ||
@@ -563,7 +617,7 @@ void Probe::retired(application::SceneRetirementView view) {
         p.fail("actual Volcano egg/projectile/Moltres photo/cart-resume handshake not observed");
     if(p.course==6 && (!p.ending_wait || !p.ending_terminal || !p.unshielded_photo || !p.mew_shields_broken || !p.throws))
         p.fail("actual Rainbow shield/Mew capture/gate Cart handshake not observed");
-    p.retirement=true;p.note("joined_original_result9",view.source_result);p.ledger.flush();
+    p.retirement=true;p.note(empty?"joined_original_empty_result13":"joined_original_result9",view.source_result);p.ledger.flush();
 }
 void Probe::frame(const application::RuntimeView& view,std::uint64_t ordinal) {
     auto& p=*p_;Sample s;if(!selected(view,p.course,s))return;
@@ -590,4 +644,9 @@ void Probe::presented(std::int32_t course,std::uint64_t ordinal,std::uint64_t di
     tag={};
 }
 bool Probe::completed() const noexcept {return p_->retirement && p_->post;}
+bool Probe::captured_photo(std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t normalizedDigest) const noexcept {
+    const auto& p=*p_;
+    return slot>=0 && slot<p.captured_count && photo==p.captured_roll+slot &&
+        normalizedDigest==p.captured_digests[static_cast<std::size_t>(slot)];
+}
 }

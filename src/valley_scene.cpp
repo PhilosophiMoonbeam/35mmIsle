@@ -294,6 +294,16 @@ extern "C" IsleGameResult isle_valley_lifecycle_native_request_scene(IsleValleyL
     return isle::valley::Adapter::invoke(source,[&](isle::valley::Adapter& a) { return a.actors.base.phase==ISLE_COURSE_ACTOR_PREPARED && a.source.scene_setup.heap_size==0x13f110u ? a.native.request(setup,&a.source.scene_setup) : ISLE_GAME_INVALID_STATE; });
 }
 extern "C" IsleGameResult isle_valley_lifecycle_native_scene_joined(IsleValleyLifecycleSource* source) { return isle::valley::Adapter::invoke(source,[](isle::valley::Adapter& a) { return a.native.joined(); }); }
+extern "C" IsleGameResult isle_valley_lifecycle_native_or_notice(IsleValleyLifecycleSource* source,uint32_t flags) {
+    if (!source || !source->domain) return ISLE_GAME_INVALID_ARGUMENT;
+    if (isle_continuation_domain_check_access(source->domain)!=ISLE_CONT_OK)
+        return ISLE_GAME_INVALID_STATE;
+    return isle::valley::Adapter::invoke(source,[&](isle::valley::Adapter& a) {
+        if (!a.native.state) return ISLE_GAME_INVALID_STATE;
+        a.native.state->add_scene_notices(flags);
+        return ISLE_GAME_OK;
+    });
+}
 extern "C" IsleGameResult isle_course_scene_valley_owner_transition(IsleValleyLifecycleSource* source,int32_t reason) {
     return isle::valley::Adapter::invoke(source,[&](isle::valley::Adapter& a) { return a.active() ? a.native.manager->transition_end(reason) : ISLE_GAME_INVALID_STATE; });
 }

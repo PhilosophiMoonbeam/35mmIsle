@@ -2,7 +2,7 @@
   "schema_version": 1,
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "provider": "valley-actor",
-  "transformation_version": "valley-complete309-typed-v1",
+  "transformation_version": "valley-complete309-typed-v2",
   "source_files": {
     "src/valley/79F1B0.c": {
       "git_blob": "63430b57b90aa93384eb5862f19ef398be207194",
@@ -13310,7 +13310,7 @@
       "source_byte_start": 14843,
       "source_byte_end_exclusive": 15219,
       "source_sha256": "cb2ce175466f6e154aaeb0918029d9db5bba4e200f35f75331b4d7446c6b7c19",
-      "native_sha256": "37cff451526a149008c845fb1779ce968ad381d92a035436b73acfab8f4a4786",
+      "native_sha256": "cfa712334a3b55a0c6c65f9c1f684b43504538b10600a976d12c6d8343e50152",
       "native_declaration": "void func_802CC320_7A58B0(IsleGameObject* obj)",
       "source_abi": "POKEMON_FUNC(func_802CC320_7A58B0)",
       "rewrites": [
@@ -13375,9 +13375,9 @@
           "replace": "), 0.0f, 0"
         },
         {
-          "first_codepoint": 267,
-          "last_codepoint_exclusive": 267,
-          "replace": "a->"
+          "first_codepoint": 238,
+          "last_codepoint_exclusive": 285,
+          "replace": "isle_actor_source_reference_assign(pokemon->object, &pokemon->interactionTarget, a->D_802D3FF0_7AD580);"
         }
       ]
     },
@@ -34533,7 +34533,7 @@
     }
   ],
   "preamble": "/* Complete pinned Valley Original C closure; no SDK layouts or asset bodies. */\n#include \"engine_internal.h\"\n#include \"valley_actor_source.h\"\n#include <math.h>\n#include <float.h>\n#include <stdio.h>\n#include <string.h>\n#define PI 3.14159265358979323846\n#define TAU (2.0 * PI)\n#define M_PI_F 3.14159265358979323846f\n#define FLOAT_MAX FLT_MAX\n#define FLOAT_NEG_MAX (-FLT_MAX)\n#define ABS(value) (((value)<0)?-(value):(value))\n#define SIGN(value) (((value)>=0)?1:-1)\n#define SQ(value) ((value)*(value))\n#define UNUSED\n#define A_BUTTON 0x8000u\n#define B_BUTTON 0x4000u\n#define START_BUTTON 0x1000u\nenum {\n    BGM_PLAYER_AUX=1,\n    BGM_PLAYER_MAIN=0,\n    END_LEVEL_REASON_FINISH=2,\n    GOBJ_FLAG_2=2,\n    GOBJ_FLAG_HIDDEN=1,\n    ITEM_ID_PESTER_BALL=162,\n    LINK_0=0,\n    OBJID_0=0,\n    PFID_HAS_DASH_ENGINE=5,\n    PLAYER_CMD_FINISH=6,\n    POKEMON_FLAG_200=512,\n    POKEMON_FLAG_800=2048,\n    POKEMON_PROCESS_FLAG_1000=4096,\n    PokemonID_ARTICUNO=147,\n    PokemonID_GOLDEEN=118,\n    PokemonID_MAGIKARP=129,\n    PokemonID_STARMIE=121,\n    PokemonID_STARYU=120,\n    SCENE_CAMERA_CHECK=9,\n    SCENE_OAKS_LAB_2=13,\n    SCENE_VALLEY=5,\n    SONG_ID_19=19,\n    SONG_ID_20=20,\n    SOUND_ID_114=114,\n    SOUND_ID_162=162,\n    SOUND_ID_174=174,\n    SOUND_ID_21=21,\n    SOUND_ID_30=30,\n    SOUND_ID_33=33,\n    SOUND_ID_36=36,\n    SOUND_ID_38=38,\n    SOUND_ID_39=39,\n    SOUND_ID_40=40,\n    SOUND_ID_41=41,\n    SOUND_ID_77=77,\n    SOUND_ID_83=83,\n    SURFACE_TYPE_0019FF=6655,\n    SURFACE_TYPE_007F66=32614,\n    SURFACE_TYPE_337FB2=3375026,\n};\n",
-  "output_sha256": "170e708b3832b6aca2b4dc0f75729fc1b392ff351bd372b97dc4eec421eb8cf2",
+  "output_sha256": "473abd80a7626a8f6fde7a8e5ec757ef91b7850786acbddac6a8ff9b918aa6ba",
   "field_ownership": [
     {
       "symbol": "D_802D2828_7ABDB8",
@@ -36603,7 +36603,7 @@
     "resource_data_exclusion": "The24 model C files have0 functions; their data assets are already handled by the selected native Valley catalog/real decoders, not copied as console layouts. No selector excluded.",
     "original_empty_functions": "Both file-local nullsub definitions compiled with separate exact file/function/line provenance and no fabricated global guest identity."
   },
-  "generator_sha256": "f1e1bd2d1424468cd2c6184d193dab370f7f0cbd74a37be2c1b7f8770f4bb99d",
+  "generator_sha256": "d81859e3ef5e7c8037c9aee36d7908009dd5158cd3c5127c9b4c99689a91ad4e",
   "native_support": {
     "src/valley_actor_source.h": {
       "sha256": "18dce3f0957433095b63c0bd0145a5b0d875304eac820942bec04c930fca6975"
@@ -36618,7 +36618,7 @@
       "sha256": "775dd1eccff5b5a43c3eba8fb9c5b899939a20777baf6fb95850e77dbdd14674"
     },
     "src/valley_lifecycle_source.h": {
-      "sha256": "1d3eace70d5021802635bc018f35df12e2f752e2205585b72e411ed61bd6ff4f"
+      "sha256": "1599afa1dc18121cb44ec2c4226a2a701aa2edcc1deb54fac3e69da81199f0d6"
     },
     "src/valley_lifecycle_source.c": {
       "sha256": "6bdb0135b97c2b69c3f277794e5fd185f3066e4c17d0fb0f6b61849fd01dbf17"

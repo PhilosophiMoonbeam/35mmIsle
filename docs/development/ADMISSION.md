@@ -3678,11 +3678,14 @@ broker previously treated that address as a scene global. It now checks the
 registered scene-field span first, then routes only the existing Actor
 `apple`/`interactionTarget` fields through their real Source owner. Tunnel's
 duplicate routing is removed; reference credits and native joins remain real.
-Actual Volcano completes8,616 updates/4,307 course presentations with26 captured
-photos, four qualifying photos, genuine egg/projectile/Moltres/cart-resume
-receipts, Original result9 and Manager Camera9 admission. All5,580 whole-runtime
-GPU submissions/terminals/releases balance and native/Input/Audio/Host owners
-close. Neither course receipt yet claims rendered Camera Check or assessment.
+With the nested render contract corrected, strict actual Volcano qualification
+completes 8,187 updates/4,093 course presentations and four qualifying photos.
+The fourth photograph follows genuine published focus146, stored-photo146,
+egg/projectile/cart-resume receipts, Original result9 and Manager Camera9
+admission. All 5,366 whole-runtime GPU submissions/terminals/releases balance;
+native/Input/Audio/Host owners close. This supersedes the earlier relaxed
+26-photo membership-only run. Neither course receipt claims rendered Camera
+Check or assessment.
 
 Valley's requested intro camera `0x80121d30` already exists at canonical index49.
 Its native adapter now lazily fills the existing three stable clip slots by
@@ -3704,6 +3707,39 @@ and native retirement, where a genuine scene-global reference-credit failure
 blocks closure. That run expires its independent retirement deadline; it does
 not certify native/Input/Audio/Host cleanup.
 
+The reference failure was one uncredited Original assignment in
+`valley/7A4610.c:456`, `func_802CC320_7A58B0`. Independent exhaustive audits
+cover 36 Actor object-field stores/clears; this was the sole missing broker
+call. Its exact statement now uses the existing
+`isle_actor_source_reference_assign` veneer. The reviewed Valley Actor recipe
+advances to v2; immutable Source identity, selectors, reference-credit guards
+and physical capacities remain unchanged. No per-tick reconciliation is added.
+
+Actual retirement then exposed a separate empty-roll defect: the independent
+Original entry calls notice16 after its native Actor services detach. That
+statement now uses the lifecycle's application-lifetime notice hook, checking
+entry-domain access before mutating adapter status. The reviewed lifecycle
+recipe advances to v2 without changing the Original photo-count/result branch.
+The active Actor dash-notice hook remains separate and unchanged.
+
+The private owned-pad search now aims at real ordinary Actor collision centers,
+including feasible pitch, rather than only sweeping level yaw. Native model
+visibility, tangibility, Source flags, detector focus and actual shutter
+consumption still govern photographs; no Actor pose or Source state is written.
+A separate `native5-empty` objective sends no shutters and preserves the genuine
+zero-photo result13 branch instead of hiding it behind successful photography.
+
+| Actual Valley objective | Source updates | Course frames/presentations | Photos/qualified | Original result / Manager admission | Whole GPU submissions/terminals/releases |
+|---|---:|---:|---:|---|---:|
+| Photographed | 11,447 | 5,723 | 4/4 | 9 / Camera Check9 | 7,032/7,032/7,032 |
+| Empty roll | 11,520 | 5,759 | 0/0 | 13 / Oak13 | 7,068/7,068/7,068 |
+
+Both actual runs exit0 with fresh native/Photo/Manager/Input/Audio/Host closure
+and no retirement deadline. The Valley X11 surface is inspected. These are
+authored-unlock, software-input, dummy-audio Linux proofs, not natural unlock
+progression, completed post-course UI/save, physical playback, Windows gameplay
+or hardware/pixel parity.
+
 Cave's natural finish reaches the Player's EndLevel callback from a real OM
 worker. Its lifecycle adapter incorrectly required the separately suspended
 entry-domain thread. It now uses the existing Volcano pattern: retain that
@@ -3719,11 +3755,56 @@ submissions/terminals/releases balance; native/Input/Audio/Host owners close.
 The private controller also no longer mistakes Player's shared
 `D_80382D9C_5231AC` BUMP/FINISH deduplication latch for level completion.
 Its generic ending predicate uses the course's Original end reason; ordinary
-bump recovery therefore cannot disable subsequent Moltres aiming. Original
-`moltres_Render` deliberately draws without a detector-subject hook. An actual
+bump recovery therefore cannot disable subsequent Moltres aiming. An actual
 paused view shows centered Moltres and canonical photo membership146, while
-depth-subject history contains only Magmar126. The private shutter driver now
-uses ordinary pad-driven centered aim, not an impossible focus146 prerequisite.
-Success still requires an actual stored Source photo containing146 and a real
-qualifying-count increase; no renderer/Source acceptance rule is changed.
-Source-owned Input-disabled checks and failure bounds remain intact.
+detector history contains only Magmar126. The initial conclusion that Moltres
+deliberately lacks a detector hook was wrong: `moltres_Render` delegates to
+`renderPokemonModelTypeI`, whose Original `pokemon_detect.c:283–289` gates
+visibility and captures a region after drawing. The custom SDK had emitted
+bare geometry instead. Its nested call now owns that gate/capture; custom
+setup/restore packets still execute, no second outer capture is added, and bare
+smoke rendering stays unchanged. The stricter focus146 shutter prerequisite is
+restored alongside actual stored-photo146 and qualifying-count receipts.
+Source-owned Input-disabled checks and failure bounds remain intact. The strict
+actual rerun acquires focus146 and captures its qualifying photograph on the
+first post-emergence shutter, rather than substituting another focused species.
+
+### Genuine roll continuity and active Oak print retirement
+
+The private native-course consumer now continues through the existing Camera
+Check and Photo Check input driver to a separately rendered returned Oak.
+Each new course photograph records a canonical, flag-normalized wire digest
+once; Camera selection verifies that same application-owned roll address,
+slot and digest after native course detachment. It chooses a real positive-score
+ordinary photograph by captured roll index through Source-filtered grid input.
+No native object/model borrow, authored photograph or score crosses that seam.
+
+Actual Volcano's selected roll0 is Ponyta78. Source evaluation saves score2000
+and the exact non-flag photo bytes to Report slot28; marked, selected and Report
+digests agree. The distinct course puzzle proof still requires actual Moltres
+focus146, qualifying capture146, the consumed egg throw and resumed cart travel.
+
+| Actual owner boundary | Source updates | Frames/LUS presentations | Original result |
+|---|---:|---:|---|
+| Volcano | 8,033 | 4,016 | 9 |
+| Camera Check9 | 312 | 155 | 15 |
+| Photo Check15 | 510 | 509 | 13 |
+| Returned Oak13 | 130 | 65 | Cancelled during visible dialogue; no result fabricated |
+
+This cancellation first exposed an actual lifetime fault:
+`Element::active_print_` still pointed into the suspended Oak Source worker's
+unmapped stack. Oak had joined that worker before detaching its dialog.
+Retirement now detaches the Element and Text operation borrows before joining
+Source workers, then retains the existing native object/raster release order.
+The same actual route subsequently exits0: all6,018 GPU submissions/terminals/
+releases balance, native/Photo/Manager/Input/Audio/Host owners close, and the
+independent retirement deadline remains clear.
+
+External inspection of the owned X11 window verifies the returned Oak room,
+menu and printing dialogue. Its internal `GL_FRONT` PPM is black under this
+EGL/Xvfb setup despite the valid X11 surface; that artifact is not accepted as
+visible proof. This bounded receipt does not yet establish Oak Save, durable
+reopen, Source continuation or natural campaign progression. Valley's four
+qualified captures independently reach Camera Check but currently yield no
+positive-score ordinary candidate; that replay/capture boundary remains under
+investigation without weakening score or identity acceptance.

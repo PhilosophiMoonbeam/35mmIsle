@@ -721,11 +721,15 @@ struct Scene::Impl {
     void retire() noexcept {
         if (retired) return;
         retired=true;
+        // PrintOperation values live on the suspended Source worker's stack.
+        // Release their Element/Text borrows before joining that worker unmaps
+        // its stack; detaching afterwards dereferences an abandoned operation.
+        if(dialog)dialog->detach();
+        text.detach();
         if(owner)s.end_processes(owner);
         if (input_object) s.end_processes(input_object);
         for(auto& handle:art)if(handle.object)s.end_processes(handle.object);
-        text.detach();button_images.clear();layout.retire();focus.retire();frame.retire();
-        if(dialog)dialog->detach();
+        button_images.clear();layout.retire();focus.retire();frame.retire();
         for(auto& handle:art)if(handle.object){s.erase(handle.object);handle={};}
         if(fade_sprite.object){s.erase(fade_sprite.object);fade_sprite={};}
         for(auto*& camera:cameras)if(camera){s.erase(camera);camera=nullptr;}

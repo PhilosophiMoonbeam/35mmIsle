@@ -39,7 +39,7 @@ Policy policy(const actor::ActorInitialization& init, const menu::Model& model) 
     case 0x8035942c: type = menu::RenderType::i_fogged; p.fog = p.gate = true; break;
     case 0x80359484: type = menu::RenderType::j_fogged; p.fog = p.transparent = p.gate = true; break;
     case 0x8035958c: type = menu::RenderType::i_no_fog; p.gate = true; break;
-    case 0x802de26c: type = menu::RenderType::i_no_fog; p.source_callback = init.render_callback_identity; break;
+    case 0x802de26c: type = menu::RenderType::i_no_fog; p.gate = true; p.source_callback = init.render_callback_identity; break;
     case 0x802dfae4: type = menu::RenderType::d_fogged; p.source_callback = init.render_callback_identity; break;
     default: throw std::invalid_argument("Unadmitted actual actor source render callback");
     }
@@ -197,9 +197,12 @@ struct Producer::Impl {
                 prepare_membership();
             staged_subjects[active]={reinterpret_cast<focus::Object>(b.object),source->id,source->flags};
             staged_render[active]=binding.render;
-            b.draw = b.draw && p.geometry && (!p.gate || !(staged_subjects[active].flags&0x100u)) &&
+            const bool wrapper_visible=!p.gate || !(staged_subjects[active].flags&0x100u);
+            // A custom wrapper still executes its setup/restore packets when
+            // its nested Pokemon wrapper skips geometry and detector capture.
+            b.draw = b.draw && p.geometry && (p.source_callback || wrapper_visible) &&
                 (!pass || pass->includes(binding.render));
-            if (detector && detector->enabled && p.gate && b.draw && !membership_prepared &&
+            if (detector && detector->enabled && p.gate && wrapper_visible && b.draw && !membership_prepared &&
                 !detector->history.context_available(source_context)) {
                 // Only actual pre-prefix captures append to the old context.
                 // Consult native/Runtime visibility, as the kernel does, before
@@ -242,7 +245,7 @@ struct Producer::Impl {
                     require(bool(kernel->encode(b.slot,context,buffer)),"Actor source hierarchy/context/list capacity rejected");
                     if (p.fog) { fog(0,model,false); if (p.transparent) fog(1,model,false); }
                 }
-                if (detector && detector->enabled && p.gate) capture(staged_subjects[i]);
+                if (detector && detector->enabled && p.gate && !p.source_callback) capture(staged_subjects[i]);
             }
             for (unsigned lane = 0; lane < 4; ++lane) {
                 fragment.lanes[lane] = {static_cast<std::uint32_t>(starts[lane]),
@@ -352,12 +355,21 @@ IsleGameResult Producer::source_hierarchy(IsleGameObject* object,menu::RenderTyp
     const auto& model = s.resources.models()[b.state.resource_model];
     if (model.render_type != type ||
         (type != menu::RenderType::i_no_fog && type != menu::RenderType::d_fogged)) return ISLE_GAME_INVALID_ARGUMENT;
+    const auto& policy = s.policies[b.state.resource_model];
+    const auto& subject = s.staged_subjects[std::size_t(&b-s.staged.data())];
+    // Moltres calls renderPokemonModelTypeI, not bare renRenderModelTypeI:
+    // pokemon_detect.c283-289 owns visibility and capture inside the wrapper.
+    if (policy.gate && (subject.flags&0x100u)) {
+        s.source_encoded = true;
+        return ISLE_GAME_OK;
+    }
     try {
         if (type == menu::RenderType::d_fogged) { s.fog(0,model,true); s.fog(1,model,true); }
         menu::model::HierarchyBuffer buffer{{std::span(s.lanes[0]),std::span(s.lanes[1]),
             std::span(s.lanes[2]),std::span(s.lanes[3])},s.counts,s.pending};
         if (!s.kernel->encode(b.slot,*s.source_context_view,buffer)) return ISLE_GAME_EXHAUSTED;
         if (type == menu::RenderType::d_fogged) { s.fog(0,model,false); s.fog(1,model,false); }
+        if (s.detector && s.detector->enabled && policy.gate) s.capture(subject);
         s.source_encoded = true;
         return ISLE_GAME_OK;
     } catch (...) { return ISLE_GAME_EXHAUSTED; }

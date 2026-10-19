@@ -7,11 +7,11 @@ from pathlib import Path
 from prepare_engine import git, publish
 REVISION = 'df8815e75f3d79618466e01e0827c6165b93d11c'
 PROVIDER = 'valley-lifecycle'
-VERSION = 'valley-complete309-typed-v1'
+VERSION = 'valley-complete309-typed-v2'
 SOURCE_INVENTORY_SHA256 = '8acfd1257e923f92a0b43fac185699ea7bf713f625fcab9af994e0b9ae63eb6a'
 SELECTION_SHA256 = 'fe229b134357b51e3ccd7ad6ea2a1df4f8c625e354c727b16598b04629a8b274'
-RECIPE_SHA256 = '4f96d67d5006a8baf8dd3bf2c741d1586cedbdece9329605a878809938f9c0b3'
-OUTPUT_SHA256 = '402fcb475aaf2ef75d420b8eef936f00587afcf6c45bcf60b0595d48a3a4bf70'
+RECIPE_SHA256 = 'a4bb10396591cdfff2ecad07c5351db860ddb0eeb3be7ee289d6f279b0837eff'
+OUTPUT_SHA256 = '2648199586b59d34bcd080b0d3ad4ee86d3783cb5256cdd0eb1f87403463edb0'
 SUPPORT = ('src/valley_actor_source.h', 'src/valley_actor_source.c', 'src/valley_actor.hpp', 'src/valley_actor.cpp', 'src/valley_lifecycle_source.h', 'src/valley_lifecycle_source.c', 'src/course_actor_source.h', 'src/course_actor_source.c', 'src/actor_source.h', 'src/actor_owner_source.h', 'src/actor_source_bridge.c', 'src/actor_source_owner_bridge.c', 'src/actor_owner.cpp', 'src/actor_behavior_bindings.hpp', 'src/actor_behavior_bindings.cpp', 'src/valley_actor_catalog.cpp', 'src/engine_internal.h', 'src/engine_math.h', 'src/item_source.h', 'include/35mmisle/engine.h', 'include/35mmisle/continuation.h', 'include/35mmisle/rng.h', 'tools/prepare_engine.py')
 DEFINITION_COUNT = 19
 RECIPE_KEYS = ('definitions', 'preamble', 'field_ownership', 'native_services',

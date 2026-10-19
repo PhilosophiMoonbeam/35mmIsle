@@ -5,12 +5,14 @@
 #include <filesystem>
 #include <memory>
 
+struct IslePlayerPhotoData;
 namespace isle::game { class State; }
 namespace isle::application { struct RuntimeView; struct SceneRetirementView; }
 namespace isle::private_course {
 // Explicit authored unlocked profile, AFTER real Name confirmation and BEFORE
 // Oak construction. Preserves Name; does not manufacture natural progression.
 void seed_progress(game::State&,std::int32_t course);
+enum class CaptureGoal { photographs,empty_roll };
 // Borrows the actual typed Runtime owners only. Never creates/advances Source,
 // owns a native Scene, changes a transform, or requests an exit/Manager entry.
 // Volcano additionally requires the observed Source egg cart stop, a consumed
@@ -18,7 +20,7 @@ void seed_progress(game::State&,std::int32_t course);
 // resumed cart travel. Actor/placement observations never mutate native state.
 class Probe final {
 public:
-    Probe(std::int32_t course,private_post_course::Controller,const std::filesystem::path& proofRoot);
+    Probe(std::int32_t course,private_post_course::Controller,const std::filesystem::path& proofRoot,CaptureGoal);
     ~Probe();
     Probe(const Probe&)=delete;
     Probe& operator=(const Probe&)=delete;
@@ -31,6 +33,9 @@ public:
     // Only after real Host/LUS presentation completed for that same copied Frame.
     void presented(std::int32_t course,std::uint64_t ordinal,std::uint64_t pixelDigest,bool varied);
     bool completed() const noexcept;
+    // Canonical application roll survives course closure; no native object or
+    // pose borrow is retained. Scorer-owned flag byte is excluded from identity.
+    bool captured_photo(std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
 private:
     struct Impl;
     std::unique_ptr<Impl> p_;

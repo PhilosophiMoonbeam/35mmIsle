@@ -103,6 +103,7 @@ IsleGameResult isle_valley_lifecycle_native_context(IsleGame*, IsleGameObject*, 
 IsleGameResult isle_valley_lifecycle_native_admission(const IsleValleyLifecycleSource*);
 IsleGameResult isle_valley_lifecycle_native_request_scene(IsleValleyLifecycleSource*, const IsleValleyLifecycleSceneSetup*);
 IsleGameResult isle_valley_lifecycle_native_scene_joined(IsleValleyLifecycleSource*);
+IsleGameResult isle_valley_lifecycle_native_or_notice(IsleValleyLifecycleSource*, uint32_t);
 IsleValleyLifecycleSource* isle_valley_lifecycle_current(IsleGameObject*);
 void isle_valley_lifecycle_checked(IsleValleyLifecycleSource*, IsleGameResult);
 void isle_valley_lifecycle_setup_scene(IsleValleyLifecycleSource*, const IsleValleyLifecycleSceneSetup*);

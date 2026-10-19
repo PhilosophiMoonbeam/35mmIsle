@@ -1,0 +1,4352 @@
+{
+  "schema": 1,
+  "provider": "report-14-original-c",
+  "repository": "ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "definitions": [
+    {
+      "name": "func_801DC8C0_9D3230",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 76,
+      "last": 78,
+      "sha256": "c89f34f1c1345ac0e317d78c47cc4a74f2e8703d2025fa6b7d4263f123429407"
+    },
+    {
+      "name": "func_801DC904_9D3274",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 80,
+      "last": 93,
+      "sha256": "d713ab496fc98cbbd0e187d32cef3e9711ffce1c2bd7e9757685d863694308d5"
+    },
+    {
+      "name": "func_801DCA14_9D3384",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 95,
+      "last": 101,
+      "sha256": "34273a019aa353132d5e4b60e3909679bef4fd3af9fbbebde17941c5fc4f3f59"
+    },
+    {
+      "name": "func_801DCA48_9D33B8",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 103,
+      "last": 125,
+      "sha256": "3e9668db9c17449b0a218839f31c8b449e8b5ccb6e2a1d89b7dc299cf9719738"
+    },
+    {
+      "name": "func_801DCBF4_9D3564",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 127,
+      "last": 139,
+      "sha256": "4779d1a75d27f3de32c6514eacc74ce44e7785f514e7a39b9a6abb24551a85cb"
+    },
+    {
+      "name": "func_801DCC74_9D35E4",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 141,
+      "last": 151,
+      "sha256": "22538541d3e617a1bb404623d217816c7484467011b6c455875b9adf90b56df4"
+    },
+    {
+      "name": "func_801DCCF0_9D3660",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 74,
+      "last": 79,
+      "sha256": "71fb5b746c24e56ff24fc35fdddf87daa6780334c227a51ae8c41c1e961c5c53"
+    },
+    {
+      "name": "func_801DCD30_9D36A0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 81,
+      "last": 85,
+      "sha256": "98042a8948ea1b9ab0d330d6894a4f33569a81e1c8eda4a5ed750ed28c7cbf32"
+    },
+    {
+      "name": "func_801DCD78_9D36E8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 87,
+      "last": 103,
+      "sha256": "faaa5ddb07332564fcbe7b937cfe3b795fc663b2e1c6b920ea4711bea71383d9"
+    },
+    {
+      "name": "func_801DCE3C_9D37AC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 105,
+      "last": 115,
+      "sha256": "fe3cc69903bb3c3b55ab93e90536cc1773c9f575a9417ba800c4f59f4b7851c1"
+    },
+    {
+      "name": "func_801DCEA8_9D3818",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 117,
+      "last": 129,
+      "sha256": "ea1b005a77db70c8df8ce809810bc6cf6df0d1f28f0fce8bba95c93ac9fdc701"
+    },
+    {
+      "name": "func_801DCF40_9D38B0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 131,
+      "last": 133,
+      "sha256": "f495ecaf02e88e85c291b027c1b4ff24a27e011c3fe3d17c413ad9906e11a2f5"
+    },
+    {
+      "name": "func_801DCF5C_9D38CC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 135,
+      "last": 177,
+      "sha256": "4eaada6afde5c7a37ca47f7d120ccfb077abf3a7a6d54c7774f23d4302782898"
+    },
+    {
+      "name": "func_801DD12C_9D3A9C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 179,
+      "last": 185,
+      "sha256": "57ba438e346ed62c902a604caca0e966866da244082249a91e9f4d6058f66ad0"
+    },
+    {
+      "name": "func_801DD164_9D3AD4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 187,
+      "last": 320,
+      "sha256": "60fabca299af32f864f735e533f315b83f714cfee4d5504b2e70a5f950e8867d"
+    },
+    {
+      "name": "func_801DDCD4_9D4644",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 322,
+      "last": 330,
+      "sha256": "1234194ab38fae5bbd8b873db7c9cad0938e1dec018325c152b3c448248ffe7a"
+    },
+    {
+      "name": "func_801DDD58_9D46C8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 332,
+      "last": 372,
+      "sha256": "4804fb21a35a7e1285c819e7b1a477d71e36027230fb1dec581cd660016f13eb"
+    },
+    {
+      "name": "func_801DE078_9D49E8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 374,
+      "last": 389,
+      "sha256": "014a46c8cffc38cbfab99082d8c6cb2b3296498a6a311c6830067a8369e72483"
+    },
+    {
+      "name": "func_801DE118_9D4A88",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 391,
+      "last": 401,
+      "sha256": "4f3f1d17044f06781c8b4a2f75a10bb9c8b5122377eadfb23e433a17befa77d4"
+    },
+    {
+      "name": "func_801DE18C_9D4AFC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 403,
+      "last": 410,
+      "sha256": "c47ae09d903458288aae4bea9df6000208a9915632cec4011d42a2f96f7e0ba3"
+    },
+    {
+      "name": "func_801DE204_9D4B74",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 412,
+      "last": 429,
+      "sha256": "dac3a4ac9f1343ef07a4ee79648e652f4736765f59515b9e4ab5b219f51dcd99"
+    },
+    {
+      "name": "func_801DE318_9D4C88",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 431,
+      "last": 446,
+      "sha256": "37038613379f8d75c78e1c173497ab20eb87e791153165c7d625af9b50cd42de"
+    },
+    {
+      "name": "func_801DE414_9D4D84",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 448,
+      "last": 463,
+      "sha256": "dea45d337298f2083447c32c49774c98fc0738cd9294ae8d15496855d70de78b"
+    },
+    {
+      "name": "func_801DE5A8_9D4F18",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 489,
+      "last": 524,
+      "sha256": "7a7df10f736849137c87911e2c8b800810a8ae108dc0128828f77f16ab5e866b"
+    },
+    {
+      "name": "func_801DE7F8_9D5168",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 526,
+      "last": 535,
+      "sha256": "7d84b3a2cbb3205b282dd4801b687b63c63e869d8daa49512afa8c82c0803f3c"
+    },
+    {
+      "name": "func_801DE898_9D5208",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 537,
+      "last": 596,
+      "sha256": "a7b04ff74a89c92cb8986a03d24196d318bd8b2d058241634a16b19c36f0251a"
+    },
+    {
+      "name": "func_801DEC60_9D55D0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 598,
+      "last": 661,
+      "sha256": "d222f1e61bb34174885c0ef6838fc4190e4178d3fcf5f429921d7c04fd420164"
+    },
+    {
+      "name": "func_801DEFC8_9D5938",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 663,
+      "last": 670,
+      "sha256": "176ea95fb9533fb115c132a0b5e281b88f9336c1c4797c9f5b3a467c32d82de7"
+    },
+    {
+      "name": "func_801DF020_9D5990",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 672,
+      "last": 743,
+      "sha256": "a5b0da30e58969ca7d6cfe960e8b4243eab5475026fe7901ac63c289cc875f96"
+    },
+    {
+      "name": "func_801DF47C_9D5DEC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 745,
+      "last": 747,
+      "sha256": "326e402013ad2b173c69496c0fc7e0aee72c42483a8d45244d83a3add1431962"
+    },
+    {
+      "name": "func_801DF4AC_9D5E1C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 749,
+      "last": 792,
+      "sha256": "b2bedbce27115e2897521a3be6865a75a8448c55b6aa75dc633f0d8d9b8799b9"
+    },
+    {
+      "name": "func_801DF704_9D6074",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 794,
+      "last": 800,
+      "sha256": "85d273add59144c4c691dce5ce7ca0ad91993973ff10afa06e52fe9c738777d9"
+    },
+    {
+      "name": "func_801DF744_9D60B4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 802,
+      "last": 812,
+      "sha256": "71b8802a2a674dae081ad76ae4cfaf38429197e3b3ff04e0beeda7a1e6e84460"
+    },
+    {
+      "name": "func_801DF7F0_9D6160",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 814,
+      "last": 824,
+      "sha256": "e8bfb39d97db912b80d72bf98c4b94d86e03efd75123f7a1a02c5ff22742dfe4"
+    },
+    {
+      "name": "func_801DF884_9D61F4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 826,
+      "last": 859,
+      "sha256": "781dce8947f7ea853cc0d03099223414e90c4eb7da1b0bbe47832f26589be9a5"
+    },
+    {
+      "name": "func_801DFB10_9D6480",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 861,
+      "last": 871,
+      "sha256": "2406928f22653a10af4a8ccdb988e8406ba3b4f8a9b2e62e1a1df2f656d61423"
+    },
+    {
+      "name": "func_801DFB68_9D64D8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 873,
+      "last": 883,
+      "sha256": "828ea3ebf78bcb4ae6965acb617726e24d6ecd26656883b567d108ff1773baba"
+    },
+    {
+      "name": "func_801DFBD0_9D6540",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 885,
+      "last": 891,
+      "sha256": "fffe762427ac1e69584245636e9c484f3d07ed9afb887d845eb9013bf7c18c7f"
+    },
+    {
+      "name": "func_801DFC20_9D6590",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 893,
+      "last": 902,
+      "sha256": "e1272388df6de634d5252212ca34386fc48ff2a4b0343ee546ca2312c1d2ff55"
+    },
+    {
+      "name": "func_801DFD24_9D6694",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 904,
+      "last": 910,
+      "sha256": "80003de35f6aab6f4b24b7d2e4caf572dc9d474762511bb481492f80f08e4dae"
+    },
+    {
+      "name": "func_801DFD68_9D66D8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 912,
+      "last": 941,
+      "sha256": "fc34706c3225a22dc8b7e32495b30cb9b2988b8de6e485c293b4d7f06864fc12"
+    },
+    {
+      "name": "func_801DFE9C_9D680C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 943,
+      "last": 974,
+      "sha256": "a5040ec87714402492b0f99dba9ada2d0c4cfe8bba9e0c50622e01297c7f9ce5"
+    },
+    {
+      "name": "func_801E00E0_9D6A50",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 976,
+      "last": 994,
+      "sha256": "8c9246f72b32dd9f1574e7e03847a00e7cfcf8c53d24153cfaaeb317f8a6aafb"
+    },
+    {
+      "name": "func_801E01C4_9D6B34",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 996,
+      "last": 1020,
+      "sha256": "d48e722c20df3e4cab6dfbe6e4af38b10c46431f3bdaa8bb032e9c8531ea47c1"
+    },
+    {
+      "name": "func_801E02F4_9D6C64",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1022,
+      "last": 1056,
+      "sha256": "50694be05dd66592e7cd40ac64059c621d08b823360cce06521313a1ee3b4598"
+    },
+    {
+      "name": "func_801E0480_9D6DF0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1058,
+      "last": 1112,
+      "sha256": "1ad7090696f013ce08ba3d4c0508ff63c6805fa395fc8df7cfcc9bbefb5e5f1c"
+    },
+    {
+      "name": "func_801E072C_9D709C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1114,
+      "last": 1130,
+      "sha256": "6bc81399db75ec6ef4758a1c92ec39fd10433804a48fdf3157a0388f037c7588"
+    },
+    {
+      "name": "func_801E07C0_9D7130",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1132,
+      "last": 1197,
+      "sha256": "5dfce1820db68defed0c4af643e2e340e6bd330a57ca17acdf59e412827cccf0"
+    },
+    {
+      "name": "func_801E0B8C_9D74FC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1199,
+      "last": 1214,
+      "sha256": "851bc6983e9e6e2320dfc5992d107b7abbef5a8434ce749129ab97bf64f38033"
+    },
+    {
+      "name": "func_801E0C3C_9D75AC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1216,
+      "last": 1233,
+      "sha256": "91a8ae7c4d50dd6fa1c5269c9526937e1a5eb487db220ad3b3b546917ada662d"
+    },
+    {
+      "name": "func_801E0D54_9D76C4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1235,
+      "last": 1238,
+      "sha256": "f6898e3594489ae0fc3360893f9bea72c661540d03ca262bf0ca5eb408fadbf7"
+    },
+    {
+      "name": "func_801E0D84_9D76F4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1240,
+      "last": 1243,
+      "sha256": "186a8839fae949dd0e4d0f6c5a66850e36847ad45a21be46ffb05fef0d4a687e"
+    },
+    {
+      "name": "func_801E0DB4_9D7724",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1245,
+      "last": 1313,
+      "sha256": "1599184e34f571b35b5c111c2f137e8135818ddee718c600736194e99fb2139c"
+    },
+    {
+      "name": "func_801E1378_9D7CE8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1315,
+      "last": 1359,
+      "sha256": "77c8dfb4f19160135196cc30f7edb135e1c31b7e9055797acdd2b487d0b6f6a0"
+    },
+    {
+      "name": "func_801E1568_9D7ED8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1361,
+      "last": 1394,
+      "sha256": "26a042f1389439a58d75be5ad9bb45345ff1639d1e9d5f50a26b9bf7d4f0b2f3"
+    },
+    {
+      "name": "func_801E16DC_9D804C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1396,
+      "last": 1464,
+      "sha256": "1ea3cc463cae16e4bef4580b19979872acefb918dd399fbf10295a45a9f7e667"
+    },
+    {
+      "name": "func_801E1AC4_9D8434",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1466,
+      "last": 1493,
+      "sha256": "f20d1b955bd678504d5a5f7fc9c22515a8fb92d84c379521604f4317475415ab"
+    },
+    {
+      "name": "func_801E1BEC_9D855C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1495,
+      "last": 1555,
+      "sha256": "0340569373c33ce3c815d8ae762703b02ec58f0a662353f7b2fef8df5062898e"
+    },
+    {
+      "name": "func_801E1F20_9D8890",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1557,
+      "last": 1587,
+      "sha256": "c17018b3def638d3b04224e4b922b26cd63876c63cc52e1fad176288485cacae"
+    },
+    {
+      "name": "func_801E20B4_9D8A24",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1589,
+      "last": 1632,
+      "sha256": "81e80213f0062500da3930eb82ae704b474b46334c8967725695c9ec764ba54d"
+    },
+    {
+      "name": "func_801E2340_9D8CB0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1634,
+      "last": 1661,
+      "sha256": "bfc10109e15bbfc2099c04601a89b6248020ad8df98db81fdf9474639e275e3f"
+    },
+    {
+      "name": "func_801E24B4_9D8E24",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1663,
+      "last": 1731,
+      "sha256": "ff2ca3bd73de5d7bf5c7e8bff2251f61e9aa1f1a9fd7cc443c155af0735a45d3"
+    },
+    {
+      "name": "func_801E2790_9D9100",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1733,
+      "last": 1749,
+      "sha256": "7c5ee66e9a37cc04598d720ecda424b06398d13bdaeea39c7f4561831c63fe5a"
+    },
+    {
+      "name": "func_801E2850_9D91C0",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 33,
+      "last": 39,
+      "sha256": "04c46e2cd73084ad668af4b8dae2fe51991c29b60d9108753253b52fb6a49c35"
+    },
+    {
+      "name": "func_801E28A0_9D9210",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 41,
+      "last": 47,
+      "sha256": "af20cc9cde0f10396f0e87fcef02dc6f534deb6cb7e7eef638e0553b120e8132"
+    },
+    {
+      "name": "func_801E28D8_9D9248",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 49,
+      "last": 80,
+      "sha256": "f7ef55525cc70dce969c4888cea0947d6ecb3c33e561bafc92f20f68a1d78779"
+    },
+    {
+      "name": "func_801E2AC0_9D9430",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 82,
+      "last": 114,
+      "sha256": "cef229691549ac7c70fda9211a44d21a88fd682ab7b9d79368e05fa6dd0fcb3f"
+    },
+    {
+      "name": "func_801E2CF8_9D9668",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 116,
+      "last": 146,
+      "sha256": "769b46207fab436485356270a6be7a079b5b02ee9d27c9f1e5b158db9bb79b31"
+    },
+    {
+      "name": "func_801E2EB0_9D9820",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 148,
+      "last": 182,
+      "sha256": "37b0cc1ed193c0d322b843608d10c41926dd2dc30797233cbaaa51f5653c78a8"
+    },
+    {
+      "name": "func_801E3000_9D9970",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 184,
+      "last": 337,
+      "sha256": "c61ebdd4b7d6b00a0815b5ab0adc662bfefd1b0d66714dfc42d2f3d6d399a27a"
+    },
+    {
+      "name": "func_801E3604_9D9F74",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 339,
+      "last": 413,
+      "sha256": "a5c676ad198783298b5e0e6dbe56ab20a0c5a072ec0362e5c886266f8570b81c"
+    },
+    {
+      "name": "func_801E38DC_9DA24C",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 415,
+      "last": 476,
+      "sha256": "7e435666fcad911f3a75a949c0ed9dc772dc1f318e906a31832d48d810bea34a"
+    },
+    {
+      "name": "func_801E3B18_9DA488",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 478,
+      "last": 508,
+      "sha256": "e68a0b54e83b63dc95177059a42ddb72249f571a4436f8eed75eb5f3f4c67148"
+    },
+    {
+      "name": "func_80374F30_8486E0",
+      "source": "src/window/8486E0.c",
+      "first": 12,
+      "last": 42,
+      "sha256": "8a3390e892e60246c1622d500b6a51e072ef17b6fcb2a359c8ad6b44956cef84"
+    }
+  ],
+  "source_files": {
+    "include/enums.h": {
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07"
+    },
+    "src/pokemon_report/9D3230.c": {
+      "sha256": "6a170cb9c07561b9cd3b104d1f3c87cb7a4bba2dbacaa369795c0df83a4c5bec",
+      "blob": "386fdd3e8ea9508e51a7c572ad7c20c58af157ea"
+    },
+    "src/pokemon_report/9D3660.c": {
+      "sha256": "f2eb8795750e78283a75815ef233b85111b3f758c4fae16d5cf31e434c4e95cb",
+      "blob": "37c400327c65d749ef82d5562a61769344f375a8"
+    },
+    "src/pokemon_report/9D91C0.c": {
+      "sha256": "2e81608214151c058f53b3f2e7ce236a5269a05280bab7bf88ba051a01424cb6",
+      "blob": "4535a346782982a86a4cc479eae3ab549ec6a79f"
+    },
+    "src/pokemon_report/pokemon_report.h": {
+      "sha256": "0643b6dadc0ff67277274de6859d25c88ae3042086172e95f7695f90b8408e5a",
+      "blob": "101e84693ab5fbe811b87b53af382af8da4de040"
+    },
+    "src/sys/misc.c": {
+      "sha256": "f6607a602e8479b0647a6e87a8e290af614e3b1b8d5e36295a2ac9c7c45e7f32",
+      "blob": "84be12339c2f266dcfb5e2ae7ccd6a73cbe2a46b"
+    },
+    "src/window/8486E0.c": {
+      "sha256": "67bc8e26889891abec021e0303b58d8a9b791321db2ca8ec1658b81d8d7437ed",
+      "blob": "a822b0a8a2148ccda8b4557707f81d3a71dc19d8"
+    },
+    "src/window/window.h": {
+      "sha256": "b0140107b3fe440dd3ae5ddde311ebe89fa38b8e51ec2d95a1f9aff10764cdba",
+      "blob": "c7490b352a5c4b99e570f26ba9a556cb20afb305"
+    }
+  },
+  "primary_body_count": 73,
+  "assets": {
+    "D_801E3F48_9DA8B8": 2149465928,
+    "D_801EDD60_9E46D0": 2149506400,
+    "D_801EDEF0_9E4860": 2149506800,
+    "D_801E8F70_9DF8E0": 2149486448,
+    "D_801EE150_9E4AC0": 2149507408,
+    "D_801EF7D0_9E6140": 2149513168,
+    "D_801F0E50_9E77C0": 2149518928,
+    "D_801F2278_9E8BE8": 2149524088,
+    "D_801F36A0_9EA010": 2149529248,
+    "D_801F3860_9EA1D0": 2149529696,
+    "D_801F3A10_9EA380": 2149530128,
+    "D_801F3B90_9EA500": 2149530512,
+    "D_801F4D48_9EB6B8": 2149535048,
+    "D_801F5120_9EBA90": 2149536032,
+    "D_801F54C8_9EBE38": 2149536968,
+    "D_801F5680_9EBFF0": 2149537408,
+    "D_801F57B0_9EC120": 2149537712,
+    "D_80202CE8_9F9658": 2149592296
+  },
+  "bridge": {
+    "FocusMark_Create": "rp_focus_create",
+    "FocusMark_MoveFront": "rp_focus_front",
+    "FocusMark_SetPos": "rp_focus_position",
+    "FocusMark_SetSize": "rp_focus_size",
+    "FocusMark_SetTargetPos": "rp_focus_target",
+    "FocusMark_SetTargetSize": "rp_focus_target_size",
+    "FocusMark_Show": "rp_focus_show",
+    "UIElement_Create": "rp_element_create",
+    "UIElement_Delete": "rp_element_delete",
+    "UIElement_Draw": "rp_element_draw",
+    "UIElement_DrawBackground": "rp_element_background",
+    "UIElement_PrintText": "rp_print_source",
+    "UIElement_SetColor": "rp_element_color",
+    "UIElement_SetFont": "rp_element_font",
+    "UIElement_SetSpriteColor": "rp_element_sprite_color",
+    "UIElement_SetState": "rp_element_state",
+    "UIElement_SetTextPos": "rp_element_position",
+    "UIFrame_Create": "rp_frame_create",
+    "UIFrame_FadeIn": "rp_frame_fade_in",
+    "UIFrame_FadeOut": "rp_frame_fade_out",
+    "UIFrame_GetBackgroundColor": "rp_frame_color",
+    "UIFrame_SetPos": "rp_frame_position",
+    "UIFrame_SetStyle": "rp_frame_style",
+    "UIFrame_Show": "rp_frame_show",
+    "UILayout_CreateButtons": "rp_layout_create",
+    "UILayout_GetButtons": "rp_selector",
+    "UILayout_HideButtons": "rp_layout_hide",
+    "UILayout_HideHeaderElement": "rp_layout_hide_header",
+    "UILayout_Init": "rp_layout_initialize",
+    "UILayout_SetHeaderFlags": "rp_layout_header",
+    "UILayout_ShowHeaderElement": "rp_layout_show_header",
+    "UILayout_ShowPanel": "rp_layout_panel",
+    "UILayout_WaitPanelTransitionComplete": "rp_layout_wait",
+    "UIText_GetStringWidth": "rp_width",
+    "UIText_Initialize": "rp_text_initialize",
+    "UIText_SetPrintDelay": "rp_text_delay",
+    "UIText_SetShadowOffset": "rp_text_shadow",
+    "UIText_SetSpacing": "rp_text_spacing",
+    "func_8036EB80_842330": "rp_text_skip",
+    "auPlaySong": "rp_song",
+    "auPlaySound": "rp_sound",
+    "auSetBGMVolume": "rp_volume",
+    "auSetBGMVolumeSmooth": "rp_volume_smooth",
+    "checkPlayerFlag": "rp_flag",
+    "func_8009BB4C": "rp_pokemon_index",
+    "func_800A7F68": "rp_aux_camera",
+    "func_800A85E8": "rp_process",
+    "func_800AA38C": "rp_input",
+    "func_800AA85C": "rp_repeat",
+    "func_800AA870": "rp_input_mask",
+    "func_800AADF0": "rp_scene_result",
+    "func_800AAE28": "rp_input_initialize",
+    "func_800BF3D4_5C274": "rp_report_present",
+    "func_800BF710_5C5B0": "rp_report",
+    "func_800BF818_5C6B8": "rp_report_score",
+    "func_800BF864_5C704": "rp_report_count",
+    "func_800BFC5C_5CAFC": "rp_selected_course",
+    "func_8036D4B4_840C64": "rp_window_mode",
+    "func_80371C68_845418": "rp_sprite_synchronous",
+    "func_80371D14_8454C4": "rp_sprite_stackful",
+    "func_80371DC0_845570": "rp_sibling",
+    "func_80371E68_845618": "rp_child",
+    "func_8037452C_847CDC": "rp_score",
+    "func_80374714_847EC4": "rp_preview",
+    "func_80374D40_8484F0": "rp_replay_initialize",
+    "func_8037501C_8487CC": "rp_number",
+    "func_8037519C_84894C": "rp_formatted",
+    "getLevelName": "rp_level_name",
+    "getPlayerName": "rp_player_name",
+    "getPokemonName": "rp_pokemon_name",
+    "ohRemoveSprite": "rp_remove",
+    "ohWait": "rp_wait",
+    "omDeleteGObj": "rp_delete",
+    "omGObjAddSprite": "rp_add",
+    "qsort2": "rp_qsort"
+  },
+  "constants": {
+    "SCREEN_WIDTH": "320",
+    "SCREEN_HEIGHT": "240",
+    "POKEDEX_MAX": "151",
+    "PokemonID_BULBASAUR": "1",
+    "A_BUTTON": "0x8000",
+    "B_BUTTON": "0x4000",
+    "START_BUTTON": "0x1000",
+    "STICK_SLOW_UP": "0x10000",
+    "STICK_SLOW_DOWN": "0x20000",
+    "STICK_SLOW_RIGHT": "0x40000",
+    "STICK_SLOW_LEFT": "0x80000",
+    "LINK_6": "6",
+    "DL_LINK_0": "0",
+    "SCENE_OAKS_LAB_2": "13",
+    "PFID_HAS_APPLE": "0",
+    "PFID_HAS_PESTER_BALL": "1",
+    "PFID_HAS_FLUTE": "2",
+    "PFID_HAS_DASH_ENGINE": "5",
+    "PFID_14": "14",
+    "SP_HIDDEN": "ISLE_SP_HIDDEN",
+    "SP_TRANSPARENT": "ISLE_SP_TRANSPARENT",
+    "SP_SCALE": "ISLE_SP_SCALE",
+    "UI_FLAG_32BIT": "0x400",
+    "PokemonID_MEW": "151",
+    "PokemonID_KOFFING_SMOKE": "1028",
+    "PokemonID_1004": "1004",
+    "PokemonID_1010": "1010",
+    "PokemonID_1018": "1018",
+    "PokemonID_1022": "1022",
+    "PokemonID_1035": "1035",
+    "SOUND_ID_65": "65",
+    "SOUND_ID_66": "66",
+    "SOUND_ID_67": "67",
+    "SOUND_ID_69": "69",
+    "SOUND_ID_71": "71",
+    "SOUND_ID_75": "75"
+  },
+  "read_only": {
+    "D_80202D34_9F96A4": "source->data->sign_ids",
+    "D_80202D4C_9F96BC": "source->data->poses",
+    "D_80202DD0_9F9740": "source->data->sign_sprites",
+    "D_80202DE8_9F9758": "source->data->sign_pixels",
+    "D_80202E8C_9F97FC": "source->data->captions",
+    "D_80202EA4_9F9814": "(source->data->captions+6)",
+    "D_80202EC8_9F9838": "source->data->buttons[0]",
+    "D_80202EF8_9F9868": "source->data->buttons[1]",
+    "D_80202F20_9F9890": "source->data->buttons[2]",
+    "D_80202F48_9F98B8": "source->data->buttons[3]",
+    "D_80202F68_9F98D8": "source->data->buttons[4]",
+    "D_80202F88_9F98F8": "source->data->buttons[5]",
+    "D_80202FA8_9F9918": "source->data->buttons[6]",
+    "D_80202FC0_9F9930": "source->data->buttons[7]"
+  },
+  "context_fields": [
+    "D_80230C10_A27580",
+    "D_80230C14_A27584",
+    "D_80230C18_A27588",
+    "D_80230C1C_A2758C",
+    "D_80230C20_A27590",
+    "D_80230C24_A27594",
+    "D_80230C28_A27598",
+    "D_80230C2C_A2759C",
+    "D_80230C30_A275A0",
+    "D_80230C34_A275A4",
+    "D_80230C38_A275A8",
+    "D_80230C3C_A275AC",
+    "D_80230C40_A275B0",
+    "D_80230C48_A275B8",
+    "D_80230C60_A275D0",
+    "D_80230C68_A275D8",
+    "D_80230C70_A275E0",
+    "D_80230C74_A275E4",
+    "D_80230C78_A275E8",
+    "D_80230C80_A275F0",
+    "D_80230CA8_A27618",
+    "D_80230CAC_A2761C",
+    "D_80230CB0_A27620",
+    "D_80230DAC_A2771C",
+    "D_80230DB0_A27720",
+    "D_80230DB4_A27724",
+    "D_80230DB8_A27728",
+    "D_80230DBC_A2772C",
+    "D_80230DC0_A27730",
+    "D_80230DC8_A27738",
+    "D_80202D30_9F96A0",
+    "D_80202EC0_9F9830",
+    "D_80202EC4_9F9834",
+    "D_80202FF8_9F9968",
+    "D_80202FFC_9F996C",
+    "D_80203000_9F9970",
+    "D_80203004_9F9974",
+    "D_80203008_9F9978",
+    "D_8020300C_9F997C",
+    "D_80203014_9F9984",
+    "D_80202D2C_9F969C",
+    "D_80230E10_A27780",
+    "D_80230E14_A27784"
+  ],
+  "window_enum_declarations": "enum { FONT_8=8, FONT_12=12, UI_BACKGROUND=0, UI_FOREGROUND=1, UI_NORMAL=0, UI_HIDDEN=1, FRAME_STYLE_1=1, HEADER_PREV=1, HEADER_NEXT=2, HEADER_TITLE=4 };",
+  "entry": "func_801DCC74_9D35E4",
+  "callbacks": [
+    "func_801DCA14_9D3384",
+    "func_801E24B4_9D8E24"
+  ],
+  "support_allowlist": {
+    "src/window/8486E0.c": [
+      "func_80374F30_8486E0"
+    ]
+  },
+  "native_support": {
+    "src/report_source.h": {
+      "sha256": "a44e4d35662b15b5fdc69acb4fd81de5b46a4e226dff259b4a1ae85b20fca510"
+    },
+    "src/report_source.c": {
+      "sha256": "8221da200aaccd72c64a1041b142412e22e061485338b9f2462373b341b09e25"
+    },
+    "src/original_sort_source.h": {
+      "sha256": "78aa12828d95f258d2d01fd450f6879e9f9ced9792eaa13f2bd0beee2cf8981e"
+    },
+    "tools/prepare_report.py": {
+      "sha256": "d0917bfdf2910be85ce5f179744a102228577a9b33a314ac59a811720047f357"
+    },
+    "src/post_course_scene_source.h": {
+      "sha256": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9"
+    },
+    "src/post_course_window_source.h": {
+      "sha256": "9a7b3c5cf0b1cdef3c56417450750c83281e1d5454b14107b4e3a41526894499"
+    },
+    "src/post_course_replay_source.h": {
+      "sha256": "f047ac1b6c1389f9d845eddce542303cadf1a7fb2d0ce28d82ac76c6d26295be"
+    },
+    "src/application_photos_source.h": {
+      "sha256": "23dc5f2f6c5ceeb53dcd6e4eab608ea70ade7c77448fe90a5cee7f93e772660c"
+    },
+    "src/player_photo_source.h": {
+      "sha256": "add7554170c42d72f34d14a82f5b1e8a0802aa7213318066affeb6c91aaab815"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    },
+    "include/35mmisle/process.hpp": {
+      "sha256": "181fb1d0bfa32f3dc37ff8093fce7ce970509e765ceab2bf87efb860f71eda40"
+    },
+    "src/application_photos.cpp": {
+      "sha256": "ac46cce27e9728a507417f9ce8e032ab592dcc2f30d1a1aea596278a05faf6ab"
+    },
+    "src/application_photos.hpp": {
+      "sha256": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333"
+    },
+    "src/application_runtime.cpp": {
+      "sha256": "489e0f1d6818e0ea77aae780343e4df9ce0fa2b7a2d3eea6f3a29639f04eaede"
+    },
+    "src/application_runtime.hpp": {
+      "sha256": "2a721ab816cdd79b0031da9f2d17a7d9d1794a3420ae87fe9e4c8f882522768c"
+    },
+    "src/continuation.cpp": {
+      "sha256": "e4cc5bb6cf678d4c4eae24ada2dcf7c805f01ce5fbcd843e4b822e29bd952526"
+    },
+    "src/engine.c": {
+      "sha256": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "src/game_state.hpp": {
+      "sha256": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa"
+    },
+    "src/photo_presentation.cpp": {
+      "sha256": "d6501cc4efa5b2aeae64afd6024115f0350c2807e2b095d3bf1938f43a575f75"
+    },
+    "src/photo_presentation.h": {
+      "sha256": "fadb5b59c890b69d5f34e6020cd23bd6388e8adb64bb702d4ab66afb2e45b627"
+    },
+    "src/photo_presentation.hpp": {
+      "sha256": "11c76061978365eccad4386d8b15b7d3c19e4aff49835a06431f0f5a25af64eb"
+    },
+    "src/photo_presentation_core.inc": {
+      "sha256": "edb1670c6d0aff66526126ff71499c95ee5c9d9b742eaee6e0f483431d37cc61"
+    },
+    "src/photo_replay.cpp": {
+      "sha256": "acd95c2ac272975b2a714bc57b5f6302ff90cdf75ecca1f4332dffb19e3374a3"
+    },
+    "src/photo_replay.hpp": {
+      "sha256": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693"
+    },
+    "src/post_course_native_helpers.hpp": {
+      "sha256": "5e070c3050766af3d5c6848464496a3f885b7258bf4edf521e974c421c97c246"
+    },
+    "src/post_course_replay.cpp": {
+      "sha256": "eff1e10d86e907e1368ce6e9776dc472ab0742811b8af53ff172e732186cb1aa"
+    },
+    "src/post_course_replay.hpp": {
+      "sha256": "138267651d319ffdeb56088a66f19a1e25365118ff2d01493460d9a0ff916a61"
+    },
+    "src/post_course_replay_source.c": {
+      "sha256": "ade22ad042863bac85a9ef258f4d80aa4c2288d594e43fd073840617a8ef8208"
+    },
+    "src/post_course_resources.cpp": {
+      "sha256": "50a18de187e272422d5969cbd696d43b0167ea61f4f86fb6908d3578e73ce296"
+    },
+    "src/post_course_resources.hpp": {
+      "sha256": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467"
+    },
+    "src/post_course_scene.cpp": {
+      "sha256": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87"
+    },
+    "src/post_course_scene.hpp": {
+      "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
+    },
+    "src/post_course_scene_hooks.cpp": {
+      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
+    },
+    "src/post_course_scene_internal.hpp": {
+      "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
+    },
+    "src/post_course_scene_render.cpp": {
+      "sha256": "dab4324654527127f86bf968c449d0b5df59fbfef2d39b5235fd936b724f1825"
+    },
+    "src/post_course_scene_source.c": {
+      "sha256": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b"
+    },
+    "src/post_course_window.cpp": {
+      "sha256": "955cf52a5bc68117783e031a4df7c5ee3d1b9920eeb4a98951af5b86047e1453"
+    },
+    "src/post_course_window.hpp": {
+      "sha256": "bc6d1a25eb5614baa099a2154f5656683f8574d723e276cd50b650d6b523d1cf"
+    },
+    "src/post_course_window_source.c": {
+      "sha256": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4"
+    },
+    "src/process.cpp": {
+      "sha256": "b2e8294b61d096588f37f8c17dfeffbf7dac8507d0f844d2bb43a8577417b7b5"
+    },
+    "src/report_scene_native.cpp": {
+      "sha256": "793ee076a47ffd0b85f508906863a7f496d25a31a2dee50e027f8e1644636276"
+    },
+    "src/report_scene_native.hpp": {
+      "sha256": "84cebd5ac2d142065c9e7fc0980f745c480e6923cf4837a516dd5a8c8760e842"
+    },
+    "src/scene_graphics.cpp": {
+      "sha256": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4"
+    },
+    "src/scene_graphics.hpp": {
+      "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
+    },
+    "src/screen_transition_resources.cpp": {
+      "sha256": "0bb5fdab19fb2ffc9147f0e5f2d282f049a1b5d07f8c45a2b39672aea71b6b46"
+    },
+    "src/screen_transition_resources.hpp": {
+      "sha256": "98c5beeca3fc08be62d313110e5aac260a8e09407594ec03eb1bbbebbafedf74"
+    },
+    "src/window_memory.cpp": {
+      "sha256": "b47ef38233dc7c7e29a9d6b282ccdf0bcc7d3ce66e2f479192ac26e52c64a9d5"
+    },
+    "src/window_memory.hpp": {
+      "sha256": "95e417a8f9aed17474ef3213054fb094a652e7c147741c61190a457df51ed9e1"
+    }
+  },
+  "native_definitions": [
+    {
+      "name": "func_801DC8C0_9D3230",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 76,
+      "last": 78,
+      "sha256": "c89f34f1c1345ac0e317d78c47cc4a74f2e8703d2025fa6b7d4263f123429407",
+      "native_sha256": "8fb3e924de7107a31bb5e7ddd300562a4c603b0757f81d434e715c830d38e2e4",
+      "rewrites": [
+        {
+          "operation": "native actual display-list append",
+          "origin": "9D3230.c76-78"
+        }
+      ]
+    },
+    {
+      "name": "func_801DC904_9D3274",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 80,
+      "last": 93,
+      "sha256": "d713ab496fc98cbbd0e187d32cef3e9711ffce1c2bd7e9757685d863694308d5",
+      "native_sha256": "d0dfebaaa3a289c3c67bdad7cf31f7f382567a4cfc2c022386769b69ccef66ea",
+      "rewrites": [
+        {
+          "operation": "native actual render state",
+          "origin": "9D3230.c80-93"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCA14_9D3384",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 95,
+      "last": 101,
+      "sha256": "34273a019aa353132d5e4b60e3909679bef4fd3af9fbbebde17941c5fc4f3f59",
+      "native_sha256": "8077d29676da069ca7e408a255d9481e87b16bad53ff92588d3cf2b974b98048",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DCA48_9D33B8",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 103,
+      "last": 125,
+      "sha256": "3e9668db9c17449b0a218839f31c8b449e8b5ccb6e2a1d89b7dc299cf9719738",
+      "native_sha256": "f7d11908e6c4c241e4bc36a348796bd98a7129844a6590c950b123ae33e03ac2",
+      "rewrites": [
+        {
+          "operation": "returning native camera; exact C idle registration",
+          "origin": "9D3230.c103-125"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCBF4_9D3564",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 127,
+      "last": 139,
+      "sha256": "4779d1a75d27f3de32c6514eacc74ce44e7785f514e7a39b9a6abb24551a85cb",
+      "native_sha256": "aed9f4502850583a8b40522c165b259371b3f89f51091a1bc58a415f63a6032c",
+      "rewrites": [
+        {
+          "operation": "exact",
+          "find": "UIMem_CreateHeap(D_80203C10_9FA580, sizeof(D_80203C10_9FA580));",
+          "replace": "rp_check(source, source->native->ui_heap(source, 0x2D000));",
+          "count": 1
+        },
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_initialize",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_song",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_volume",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_aux_camera",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_input_initialize",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_replay_initialize",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCA48_9D33B8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2790_9D9100",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DCC74_9D35E4",
+      "source": "src/pokemon_report/9D3230.c",
+      "first": 141,
+      "last": 151,
+      "sha256": "22538541d3e617a1bb404623d217816c7484467011b6c455875b9adf90b56df4",
+      "native_sha256": null,
+      "rewrites": [
+        {
+          "operation": "independent C entry",
+          "implementation": "isle_report_source_entry",
+          "notice_after_setup_return": 2097152
+        }
+      ]
+    },
+    {
+      "name": "func_801DCCF0_9D3660",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 74,
+      "last": 79,
+      "sha256": "71fb5b746c24e56ff24fc35fdddf87daa6780334c227a51ae8c41c1e961c5c53",
+      "native_sha256": "050a65656b1a787cca820ad363e7e6dfafe7c4889b43ccc2cd26236393ae2348",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DCD30_9D36A0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 81,
+      "last": 85,
+      "sha256": "98042a8948ea1b9ab0d330d6894a4f33569a81e1c8eda4a5ed750ed28c7cbf32",
+      "native_sha256": "e0f1a7f36a7d9f4f2df192b076554db73c662bc7b8bec8f6d1efb4db16a47d81",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_sprite_color",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DCD78_9D36E8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 87,
+      "last": 103,
+      "sha256": "faaa5ddb07332564fcbe7b937cfe3b795fc663b2e1c6b920ea4711bea71383d9",
+      "native_sha256": "fb066716861425ab6b3776d6b5fe501ea68a5d2eb951e7c92ea9029fd849b1b0",
+      "rewrites": [
+        {
+          "operation": "actual mutable sprite view",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "name": "func_801DCE3C_9D37AC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 105,
+      "last": 115,
+      "sha256": "fe3cc69903bb3c3b55ab93e90536cc1773c9f575a9417ba800c4f59f4b7851c1",
+      "native_sha256": "f2cd06427f576aff8bc7aa318127b944f0101bb875900841c09de0073b4889cf",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_remove",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DCEA8_9D3818",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 117,
+      "last": 129,
+      "sha256": "ea1b005a77db70c8df8ce809810bc6cf6df0d1f28f0fce8bba95c93ac9fdc701",
+      "native_sha256": "e212b34d4396a4115489ec772bcd2118461cb778b2b14becd99324ff087f9278",
+      "rewrites": [
+        {
+          "operation": "actual mutable sprite view",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DCF40_9D38B0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 131,
+      "last": 133,
+      "sha256": "f495ecaf02e88e85c291b027c1b4ff24a27e011c3fe3d17c413ad9906e11a2f5",
+      "native_sha256": "78e932dededd44ce7392cf9e2a82acc3cdcb63c4c54943c2e16b9520943de61c",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DCF5C_9D38CC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 135,
+      "last": 177,
+      "sha256": "4eaada6afde5c7a37ca47f7d120ccfb077abf3a7a6d54c7774f23d4302782898",
+      "native_sha256": "184c70fb9c0ce8c545888a36522eb62fdecc8391636692acfd745991dd0022e4",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 7
+        },
+        {
+          "operation": "explicit C context rp_report_score",
+          "count": 7
+        }
+      ]
+    },
+    {
+      "name": "func_801DD12C_9D3A9C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 179,
+      "last": 185,
+      "sha256": "57ba438e346ed62c902a604caca0e966866da244082249a91e9f4d6058f66ad0",
+      "native_sha256": "77a8a6ade5d956953d8e2318e59f49e4e4d63fef25d946f8cf8b4cc65397af0d",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD164_9D3AD4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 187,
+      "last": 320,
+      "sha256": "60fabca299af32f864f735e533f315b83f714cfee4d5504b2e70a5f950e8867d",
+      "native_sha256": "ef1d7bd53beac8077428cd70d7b1d451c3fa2be657978c2cc52ff13c95c3521b",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_pokemon_name",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_level_name",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_player_name",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_score",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_score",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_pokemon_name",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_pokemon_index",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DDCD4_9D4644",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 322,
+      "last": 330,
+      "sha256": "1234194ab38fae5bbd8b873db7c9cad0938e1dec018325c152b3c448248ffe7a",
+      "native_sha256": "c4e8d25df8ad9d789b0270c59d2e4f8fa1e53b301242d982c01bc32bac71b674",
+      "rewrites": [
+        {
+          "operation": "actual mutable sprite view",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "name": "func_801DDD58_9D46C8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 332,
+      "last": 372,
+      "sha256": "4804fb21a35a7e1285c819e7b1a477d71e36027230fb1dec581cd660016f13eb",
+      "native_sha256": "078a1b1de08dffe1c6eade2a1c0ae59fdd35354e626b5d273091d7d7003081b4",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_window_mode",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_window_mode",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_pokemon_name",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_window_mode",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_level_name",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_number",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_score",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_window_mode",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE078_9D49E8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 374,
+      "last": 389,
+      "sha256": "014a46c8cffc38cbfab99082d8c6cb2b3296498a6a311c6830067a8369e72483",
+      "native_sha256": "6ebf997830411a90c02f6404f310de26303560662080d46e409a3ef1167564c4",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_layout_hide_header",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_layout_show_header",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE118_9D4A88",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 391,
+      "last": 401,
+      "sha256": "4f3f1d17044f06781c8b4a2f75a10bb9c8b5122377eadfb23e433a17befa77d4",
+      "native_sha256": "ae078cbafa4f89b175fc04cf29042bed37cd85959e4557ba282ae8442aab71ec",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE18C_9D4AFC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 403,
+      "last": 410,
+      "sha256": "c47ae09d903458288aae4bea9df6000208a9915632cec4011d42a2f96f7e0ba3",
+      "native_sha256": "d5ada0acbef3ddaa4866377bffccc4fa9d5418323d961734cc7392a1872c8157",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_pokemon_name",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DE204_9D4B74",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 412,
+      "last": 429,
+      "sha256": "dac3a4ac9f1343ef07a4ee79648e652f4736765f59515b9e4ab5b219f51dcd99",
+      "native_sha256": "238b3d748c0d759747818213b8c9f4fcf77b938aac3d510236d33a28ae2d54f1",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE118_9D4A88",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE318_9D4C88",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 431,
+      "last": 446,
+      "sha256": "37038613379f8d75c78e1c173497ab20eb87e791153165c7d625af9b50cd42de",
+      "native_sha256": "aafd1bfc391fd52686e7a8a843e05b58a15c680592950130b026b6302aacf1af",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_report_score",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE118_9D4A88",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE414_9D4D84",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 448,
+      "last": 463,
+      "sha256": "dea45d337298f2083447c32c49774c98fc0738cd9294ae8d15496855d70de78b",
+      "native_sha256": "265dc66049e0a9a86f7482c34e65a90b64a1ae35db634f3deb7ade3fdcc97dee",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE5A8_9D4F18",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 489,
+      "last": 524,
+      "sha256": "7a7df10f736849137c87911e2c8b800810a8ae108dc0128828f77f16ab5e866b",
+      "native_sha256": "6a3c835de75cbdd6cca647af0b302d148f47d13dd3f65619b433f6981bf008b8",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_qsort",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DDD58_9D46C8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE414_9D4D84",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE7F8_9D5168",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 526,
+      "last": 535,
+      "sha256": "7d84b3a2cbb3205b282dd4801b687b63c63e869d8daa49512afa8c82c0803f3c",
+      "native_sha256": "5a934ee37dd879f94234931836ec08168de209225a0ccd18e6367cdda3ebfabf",
+      "rewrites": [
+        {
+          "operation": "actual mutable sprite view",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCEA8_9D3818",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DD164_9D3AD4",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DE898_9D5208",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 537,
+      "last": 596,
+      "sha256": "a7b04ff74a89c92cb8986a03d24196d318bd8b2d058241634a16b19c36f0251a",
+      "native_sha256": "83d4906b73bb44274b17f712aa9659f4fc616c107b6f9dcf5c4e6c4b2add0212",
+      "rewrites": [
+        {
+          "operation": "preview takes actual native child",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_element_delete",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 6
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context rp_layout_create",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_layout_hide_header",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_layout_show_header",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_layout_wait",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_preview",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCEA8_9D3818",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DDCD4_9D4644",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DDD58_9D46C8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE7F8_9D5168",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E28A0_9D9210",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DEC60_9D55D0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 598,
+      "last": 661,
+      "sha256": "d222f1e61bb34174885c0ef6838fc4190e4178d3fcf5f429921d7c04fd420164",
+      "native_sha256": "876f3047366c6fdaa8240a9241f73509421aba6e6649ed0116a7bd6a332a7ee9",
+      "rewrites": [
+        {
+          "operation": "preview takes actual native child",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_hide_header",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_layout_show_header",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context rp_preview",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE7F8_9D5168",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DEFC8_9D5938",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 663,
+      "last": 670,
+      "sha256": "176ea95fb9533fb115c132a0b5e281b88f9336c1c4797c9f5b3a467c32d82de7",
+      "native_sha256": "92dadc1abad7e84fcb8e1909d0c2e24bab3148b2614f4ccba1dbc09ee4aedd28",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_delete",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DF020_9D5990",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 672,
+      "last": 743,
+      "sha256": "a5b0da30e58969ca7d6cfe960e8b4243eab5475026fe7901ac63c289cc875f96",
+      "native_sha256": "c86aa5a7f17c1f2b880724b86517b05961c300db48d7bce04859187094be51c6",
+      "rewrites": [
+        {
+          "operation": "actual mutable sprite view",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 7
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DDD58_9D46C8",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "name": "func_801DF47C_9D5DEC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 745,
+      "last": 747,
+      "sha256": "326e402013ad2b173c69496c0fc7e0aee72c42483a8d45244d83a3add1431962",
+      "native_sha256": "3546aaa9d06be9275cb171e12e682b7f37edf1ea109e9024a11eb63013e4badf",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DF4AC_9D5E1C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 749,
+      "last": 792,
+      "sha256": "b2bedbce27115e2897521a3be6865a75a8448c55b6aa75dc633f0d8d9b8799b9",
+      "native_sha256": "d72169a260c3fa8f4470707f85023fc24dbf54087e8931e3bd5c4ed8464aca9b",
+      "rewrites": [
+        {
+          "operation": "exact",
+          "find": "u8* src;",
+          "replace": "const u8* src;",
+          "count": 1
+        },
+        {
+          "operation": "exact",
+          "find": "dest = (u8*) UIMem_Allocate(0xFD8);",
+          "replace": "dest = rp_thumbnail(source, arg0, sobj);",
+          "count": 1
+        },
+        {
+          "operation": "exact",
+          "find": "sobj->sprite.bitmap->buf = D_80230DC8_A27738[arg0].unk_08 = dest;",
+          "replace": "D_80230DC8_A27738[arg0].unk_08 = dest;",
+          "count": 1
+        },
+        {
+          "operation": "exact",
+          "find": "    return gobj;\n}",
+          "replace": "    rp_check(source, isle_report_native_thumbnail_publish(source, arg0));\n    return gobj;\n}",
+          "count": 1
+        },
+        {
+          "operation": "native owned bitmap backing; original exact 0xFD8 C copy loop retained"
+        },
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 10
+        },
+        {
+          "operation": "prototype D_801F5680_9EBFF0",
+          "count": 2
+        },
+        {
+          "operation": "prototype D_801F57B0_9EC120",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_sprite_synchronous",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sibling",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_child",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DF704_9D6074",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 794,
+      "last": 800,
+      "sha256": "85d273add59144c4c691dce5ce7ca0ad91993973ff10afa06e52fe9c738777d9",
+      "native_sha256": "4aa6ef546f2176a13bec431cb1191adb2f20ce01c8ba6c549383e0e3bf83a7a1",
+      "rewrites": [
+        {
+          "operation": "explicit C context isle_report_func_801DF4AC_9D5E1C",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DF744_9D60B4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 802,
+      "last": 812,
+      "sha256": "71b8802a2a674dae081ad76ae4cfaf38429197e3b3ff04e0beeda7a1e6e84460",
+      "native_sha256": "3d290eb345c1dce7a03333d86caa2a20c962f03058c3c5b0d7fce6fb9689916a",
+      "rewrites": [
+        {
+          "operation": "preview takes actual native child",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_preview",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DF7F0_9D6160",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 814,
+      "last": 824,
+      "sha256": "e8bfb39d97db912b80d72bf98c4b94d86e03efd75123f7a1a02c5ff22742dfe4",
+      "native_sha256": "bc60263d41ef556a47e1dae32983ac3ee05266ea1dfcc65ed8e81098fdb2621d",
+      "rewrites": [
+        {
+          "operation": "actual root sprite view",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DF884_9D61F4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 826,
+      "last": 859,
+      "sha256": "781dce8947f7ea853cc0d03099223414e90c4eb7da1b0bbe47832f26589be9a5",
+      "native_sha256": "2300aa76af616eda49701660395112939e1e7d3ac75490a0895150bbb59e2cb9",
+      "rewrites": [
+        {
+          "operation": "exact",
+          "find": "sobj->sprite = *D_80202DD0_9F9740[arg0];",
+          "replace": "rp_rebind(source, sobj, D_80202DD0_9F9740[arg0]);",
+          "count": 1
+        },
+        {
+          "operation": "exact",
+          "find": "sobj->sprite.bitmap->buf = D_80202DE8_9F9758[arg0];",
+          "replace": "rp_bitmap(source, sobj, arg0);",
+          "count": 1
+        },
+        {
+          "operation": "prototype rebind",
+          "count": 4
+        },
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 13
+        },
+        {
+          "operation": "actual first child",
+          "count": 1
+        },
+        {
+          "operation": "actual sibling",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "func_801DFB10_9D6480",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 861,
+      "last": 871,
+      "sha256": "2406928f22653a10af4a8ccdb988e8406ba3b4f8a9b2e62e1a1df2f656d61423",
+      "native_sha256": "04f60586d11f6f9cc4a332158dc53b3ee8e67e937b744305c5cad9e4edadfe1a",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF7F0_9D6160",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF884_9D61F4",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DFB68_9D64D8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 873,
+      "last": 883,
+      "sha256": "828ea3ebf78bcb4ae6965acb617726e24d6ecd26656883b567d108ff1773baba",
+      "native_sha256": "4f45e1c6e6de56d5be3cd58df85f6c24ebec40e8a347a801b75b356b1abc0f70",
+      "rewrites": [
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "func_801DFBD0_9D6540",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 885,
+      "last": 891,
+      "sha256": "fffe762427ac1e69584245636e9c484f3d07ed9afb887d845eb9013bf7c18c7f",
+      "native_sha256": "bcfdb8c808450ba3537c93d94435fab1467063376eca149f5a53909f5272acb3",
+      "rewrites": [
+        {
+          "operation": "actual root sprite view",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DFC20_9D6590",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 893,
+      "last": 902,
+      "sha256": "e1272388df6de634d5252212ca34386fc48ff2a4b0343ee546ca2312c1d2ff55",
+      "native_sha256": "b304a955a439c979c127997b1645cbbde54fbd7bbe98955a508b3c48329b1ceb",
+      "rewrites": [
+        {
+          "operation": "prototype rebind",
+          "count": 1
+        },
+        {
+          "operation": "preview takes actual native child",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_preview",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DFD24_9D6694",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 904,
+      "last": 910,
+      "sha256": "80003de35f6aab6f4b24b7d2e4caf572dc9d474762511bb481492f80f08e4dae",
+      "native_sha256": "2f80a132fedeb9447f161d8168bcca6c29dd9be4d6135c6b1e6190bd58899a55",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "actual root sprite view",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "func_801DFD68_9D66D8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 912,
+      "last": 941,
+      "sha256": "fc34706c3225a22dc8b7e32495b30cb9b2988b8de6e485c293b4d7f06864fc12",
+      "native_sha256": "c342a55e1a2be75ca9d0ae881b0447c058b3186e745acb6b62f8178937cc6876",
+      "rewrites": [
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 11
+        },
+        {
+          "operation": "prototype D_801F5120_9EBA90",
+          "count": 2
+        },
+        {
+          "operation": "prototype D_801F54C8_9EBE38",
+          "count": 2
+        },
+        {
+          "operation": "prototype D_80202CE8_9F9658",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sprite_synchronous",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sibling",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_child",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DFE9C_9D680C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 943,
+      "last": 974,
+      "sha256": "a5040ec87714402492b0f99dba9ada2d0c4cfe8bba9e0c50622e01297c7f9ce5",
+      "native_sha256": "ba4f18299636dd446f8be6d38d8184c6afca8a6778d2b348efc57cfaa6f68742",
+      "rewrites": [
+        {
+          "operation": "prototype rebind",
+          "count": 5
+        },
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 11
+        },
+        {
+          "operation": "actual first child",
+          "count": 1
+        },
+        {
+          "operation": "actual sibling",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "func_801E00E0_9D6A50",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 976,
+      "last": 994,
+      "sha256": "8c9246f72b32dd9f1574e7e03847a00e7cfcf8c53d24153cfaaeb317f8a6aafb",
+      "native_sha256": "be6133a380bbfa9df74ff1c7f751827e1b8606db6dc17d01f48811f607a618a0",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_report_score",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCEA8_9D3818",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DD164_9D3AD4",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E01C4_9D6B34",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 996,
+      "last": 1020,
+      "sha256": "d48e722c20df3e4cab6dfbe6e4af38b10c46431f3bdaa8bb032e9c8531ea47c1",
+      "native_sha256": "f135cb8d81b32754a35ace0826e69abdbea7b86c1fadcb2c21bacbdbe738455d",
+      "rewrites": [
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 8
+        },
+        {
+          "operation": "prototype D_801EDD60_9E46D0",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801EDEF0_9E4860",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801E8F70_9DF8E0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sprite_stackful",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sibling",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801E02F4_9D6C64",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1022,
+      "last": 1056,
+      "sha256": "50694be05dd66592e7cd40ac64059c621d08b823360cce06521313a1ee3b4598",
+      "native_sha256": "7d31cf3c585857f3f6ef63ced29f0e25c78f0d288ff13e3a40e9d750cdaaf46d",
+      "rewrites": [
+        {
+          "operation": "actual mutable sprite view",
+          "count": 11
+        },
+        {
+          "operation": "actual child detach",
+          "count": 2
+        },
+        {
+          "operation": "actual parent detach",
+          "count": 2
+        },
+        {
+          "operation": "prototype D_801E3F48_9DA8B8",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801EDD60_9E46D0",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801EDEF0_9E4860",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801E8F70_9DF8E0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sibling",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_add",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801E0480_9D6DF0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1058,
+      "last": 1112,
+      "sha256": "1ad7090696f013ce08ba3d4c0508ff63c6805fa395fc8df7cfcc9bbefb5e5f1c",
+      "native_sha256": "816a7eaddb069b283e1054842a98141738ab27c9b9200cc2a40e436a5be9bf39",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 22
+        },
+        {
+          "operation": "actual child detach",
+          "count": 2
+        },
+        {
+          "operation": "actual parent detach",
+          "count": 2
+        },
+        {
+          "operation": "prototype D_801EE150_9E4AC0",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801F3860_9EA1D0",
+          "count": 3
+        },
+        {
+          "operation": "prototype D_801F3A10_9EA380",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801F3B90_9EA500",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801F4D48_9EB6B8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sprite_stackful",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sibling",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_add",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFE9C_9D680C",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E072C_9D709C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1114,
+      "last": 1130,
+      "sha256": "6bc81399db75ec6ef4758a1c92ec39fd10433804a48fdf3157a0388f037c7588",
+      "native_sha256": "7f24b8f9e90c4740c5a3537ecce8eedfc4e86f88a77780f9d7a63bab94783090",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 3
+        },
+        {
+          "operation": "actual child detach",
+          "count": 1
+        },
+        {
+          "operation": "actual parent detach",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801EE150_9E4AC0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_add",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF744_9D60B4",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF7F0_9D6160",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFE9C_9D680C",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E07C0_9D7130",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1132,
+      "last": 1197,
+      "sha256": "5dfce1820db68defed0c4af643e2e340e6bd330a57ca17acdf59e412827cccf0",
+      "native_sha256": "07ee2b1230d083914665442ebb6fce9761a9cb176f854665327e546b6bdd25d5",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "prototype rebind",
+          "count": 5
+        },
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 23
+        },
+        {
+          "operation": "actual child detach",
+          "count": 2
+        },
+        {
+          "operation": "actual parent detach",
+          "count": 2
+        },
+        {
+          "operation": "actual first child",
+          "count": 1
+        },
+        {
+          "operation": "actual sibling",
+          "count": 3
+        },
+        {
+          "operation": "prototype D_801EE150_9E4AC0",
+          "count": 1
+        },
+        {
+          "operation": "prototype D_801F3860_9EA1D0",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_sibling",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_add",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801E0B8C_9D74FC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1199,
+      "last": 1214,
+      "sha256": "851bc6983e9e6e2320dfc5992d107b7abbef5a8434ce749129ab97bf64f38033",
+      "native_sha256": "57ff9872df5cb321698d2041b32013f48cfd29724b3aac531bad515944d3cd9b",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_delay",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_80374F30_8486E0",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E0C3C_9D75AC",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1216,
+      "last": 1233,
+      "sha256": "91a8ae7c4d50dd6fa1c5269c9526937e1a5eb487db220ad3b3b546917ada662d",
+      "native_sha256": "b0adfe87df8dd38ff3e4ddd5243964f8336d962cc0ce354942200aa6755a7910",
+      "rewrites": [
+        {
+          "operation": "exact",
+          "find": "ARRAY_COUNT(D_80202E8C_9F97FC)",
+          "replace": "6",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_delay",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCF5C_9D38CC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E0B8C_9D74FC",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E0D54_9D76C4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1235,
+      "last": 1238,
+      "sha256": "f6898e3594489ae0fc3360893f9bea72c661540d03ca262bf0ca5eb408fadbf7",
+      "native_sha256": "70c2da03355cb4eb6508aa69c1485c73fd00500cab13967396a2ee650dd1b2c2",
+      "rewrites": [
+        {
+          "operation": "explicit C context isle_report_func_801DF7F0_9D6160",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E0D84_9D76F4",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1240,
+      "last": 1243,
+      "sha256": "186a8839fae949dd0e4d0f6c5a66850e36847ad45a21be46ffb05fef0d4a687e",
+      "native_sha256": "d4eaa2dfae88f2ea66af41fd5d321c53d6205296bdfd7bdf2b9cbf2cfb5326f4",
+      "rewrites": [
+        {
+          "operation": "explicit C context isle_report_func_801DF7F0_9D6160",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E0DB4_9D7724",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1245,
+      "last": 1313,
+      "sha256": "1599184e34f571b35b5c111c2f137e8135818ddee718c600736194e99fb2139c",
+      "native_sha256": "553c9fcfa5afbe5f811dad2087fb3e1e34ca6109e602f233b7e71a66c903c438",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_flag",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_flag",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_selected_course",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_flag",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 6
+        },
+        {
+          "operation": "explicit C context rp_selected_course",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_flag",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_selected_course",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_flag",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_selected_course",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_selected_course",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_flag",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_selected_course",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E1378_9D7CE8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1315,
+      "last": 1359,
+      "sha256": "77c8dfb4f19160135196cc30f7edb135e1c31b7e9055797acdd2b487d0b6f6a0",
+      "native_sha256": "2299f4a03e892289c05c6b8055b5f645eccbf8dc5c77101550c4cc38d6ba99d7",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_layout_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_panel",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_delay",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD30_9D36A0",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCF5C_9D38CC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E02F4_9D6C64",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E0DB4_9D7724",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2850_9D91C0",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E1568_9D7ED8",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1361,
+      "last": 1394,
+      "sha256": "26a042f1389439a58d75be5ad9bb45345ff1639d1e9d5f50a26b9bf7d4f0b2f3",
+      "native_sha256": "faa5f37c522df099e39596ae07b722e2eaaadd9be4853c36f7425716051fe477",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_delete",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_hide",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_header",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_panel",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_volume_smooth",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD30_9D36A0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCE3C_9D37AC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCF5C_9D38CC",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E16DC_9D804C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1396,
+      "last": 1464,
+      "sha256": "1ea3cc463cae16e4bef4580b19979872acefb918dd399fbf10295a45a9f7e667",
+      "native_sha256": "be6ab939f6d163711937cd6ba19949894cdd620525dce0a19a9bd32cd0f38ef8",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E0480_9D6DF0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_sprite_color",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context rp_layout_show_header",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_panel",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_delay",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD30_9D36A0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DDD58_9D46C8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE078_9D49E8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE414_9D4D84",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E1AC4_9D8434",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1466,
+      "last": 1493,
+      "sha256": "f20d1b955bd678504d5a5f7fc9c22515a8fb92d84c379521604f4317475415ab",
+      "native_sha256": "9422cfcd2900d7bc7e437db1ea15a905098e9f96cd9237fb2ac3cea8703907b2",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_delete",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_layout_hide",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_header",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_panel",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD30_9D36A0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCE3C_9D37AC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DEFC8_9D5938",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E1BEC_9D855C",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1495,
+      "last": 1555,
+      "sha256": "0340569373c33ce3c815d8ae762703b02ec58f0a662353f7b2fef8df5062898e",
+      "native_sha256": "932f7573eb7c45287f9892f828a4114ed6d3c516ca0dcd62c4a12749ad30b41d",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_frame_color",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_width",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_song",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_volume_smooth",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E072C_9D709C",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_frame_fade_in",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_show_header",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_panel",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_delay",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCF5C_9D38CC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF7F0_9D6160",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFB68_9D64D8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_formatted",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E1F20_9D8890",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1557,
+      "last": 1587,
+      "sha256": "c17018b3def638d3b04224e4b922b26cd63876c63cc52e1fad176288485cacae",
+      "native_sha256": "5f439d23c8cbf49e974366f8c61c5638401c512dea6fd6d8522510d4fcd5a986",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_delete",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_frame_fade_out",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_hide",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_header",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_song",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_volume_smooth",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCE3C_9D37AC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF7F0_9D6160",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFB68_9D64D8",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801E20B4_9D8A24",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1589,
+      "last": 1632,
+      "sha256": "81e80213f0062500da3930eb82ae704b474b46334c8967725695c9ec764ba54d",
+      "native_sha256": "7fc67922b7e0f321d3556175376803f393289b43c4c2416e9eff8762b15e394c",
+      "rewrites": [
+        {
+          "operation": "preview takes actual native child",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_layout_panel",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_delay",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_song",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_volume_smooth",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_score",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_preview",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFD24_9D6694",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E00E0_9D6A50",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E07C0_9D7130",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E2340_9D8CB0",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1634,
+      "last": 1661,
+      "sha256": "bfc10109e15bbfc2099c04601a89b6248020ad8df98db81fdf9474639e275e3f",
+      "native_sha256": "8dcf8d9f5b795e2109eaa8df52c77abb25d4ee67b48d53ca0859f4b917d651d5",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_delete",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_layout_hide",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_header",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_song",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_volume_smooth",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCE3C_9D37AC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFBD0_9D6540",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFD24_9D6694",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801E24B4_9D8E24",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1663,
+      "last": 1731,
+      "sha256": "ff2ca3bd73de5d7bf5c7e8bff2251f61e9aa1f1a9fd7cc443c155af0735a45d3",
+      "native_sha256": "b4f2e1f9129b0fb830339f77d7fbeeee4cef06638f10c3b11283770a33800573",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_background",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_color",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_element_font",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_state",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_frame_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_frame_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_frame_style",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_frame_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_initialize",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_header",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_panel",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_layout_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_shadow",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_spacing",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_scene_result",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD30_9D36A0",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCF5C_9D38CC",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF704_9D6074",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF7F0_9D6160",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFD68_9D66D8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E0DB4_9D7724",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2850_9D91C0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E3B18_9DA488",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E2790_9D9100",
+      "source": "src/pokemon_report/9D3660.c",
+      "first": 1733,
+      "last": 1749,
+      "sha256": "7c5ee66e9a37cc04598d720ecda424b06398d13bdaeea39c7f4561831c63fe5a",
+      "native_sha256": "d7a3bbca5870fe8673755e149caf421e5c8d375c1f0778c26d314ab72b56206d",
+      "rewrites": [
+        {
+          "operation": "actual root handle",
+          "count": 1
+        },
+        {
+          "operation": "actual mutable sprite view",
+          "count": 3
+        },
+        {
+          "operation": "prototype D_801E3F48_9DA8B8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_process",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sprite_stackful",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCD78_9D36E8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E01C4_9D6B34",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E2850_9D91C0",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 33,
+      "last": 39,
+      "sha256": "04c46e2cd73084ad668af4b8dae2fe51991c29b60d9108753253b52fb6a49c35",
+      "native_sha256": "bbf3a648457a9fa502f28687a829e265349319cb63f48d2dea0bace706994f86",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_flag",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E28A0_9D9210",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 41,
+      "last": 47,
+      "sha256": "af20cc9cde0f10396f0e87fcef02dc6f534deb6cb7e7eef638e0553b120e8132",
+      "native_sha256": "167ea37364f654a5b31dc2288a98a443cef5a069a55fb615082108d9444fa7f9",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E28D8_9D9248",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 49,
+      "last": 80,
+      "sha256": "f7ef55525cc70dce969c4888cea0947d6ecb3c33e561bafc92f20f68a1d78779",
+      "native_sha256": "cac4117673719ca9a5a2309be6639a0c66d2875b55c8125b6c11d4d1cfc767e7",
+      "rewrites": [
+        {
+          "operation": "canonical live Layout selector",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_focus_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_size",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_target",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_target_size",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "func_801E2AC0_9D9430",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 82,
+      "last": 114,
+      "sha256": "cef229691549ac7c70fda9211a44d21a88fd682ab7b9d79368e05fa6dd0fcb3f",
+      "native_sha256": "3b5f9f4785545ca1c4bdc42a6168fda9d1c2a71ecc373465c64ffbe4b8c9e160",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_focus_target",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E2CF8_9D9668",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 116,
+      "last": 146,
+      "sha256": "769b46207fab436485356270a6be7a079b5b02ee9d27c9f1e5b158db9bb79b31",
+      "native_sha256": "5217199aa7e85d77a40cbc77a6650c62d0a0224318e228e43aaacf83ed92eba7",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE078_9D49E8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DF020_9D5990",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "name": "func_801E2EB0_9D9820",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 148,
+      "last": 182,
+      "sha256": "37b0cc1ed193c0d322b843608d10c41926dd2dc30797233cbaaa51f5653c78a8",
+      "native_sha256": "7c286bfd727255d177d74406c87f51f5cdd728935a35a6cad865b07d63e28a8b",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "canonical live Layout selector",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_target_size",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_input",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_repeat",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E1378_9D7CE8",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E1568_9D7ED8",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2850_9D91C0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E28D8_9D9248",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E3000_9D9970",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 184,
+      "last": 337,
+      "sha256": "c61ebdd4b7d6b00a0815b5ab0adc662bfefd1b0d66714dfc42d2f3d6d399a27a",
+      "native_sha256": "7fa18b418b06a2e7b683eebed433a0fb5ffcef561e1391532647f9d1a349b493",
+      "rewrites": [
+        {
+          "operation": "canonical live Layout selector",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_focus_target",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_focus_target_size",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context rp_layout_create",
+          "count": 6
+        },
+        {
+          "operation": "explicit C context rp_layout_wait",
+          "count": 6
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 8
+        },
+        {
+          "operation": "explicit C context rp_input",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_repeat",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_report_count",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DDCD4_9D4644",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE078_9D49E8",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE5A8_9D4F18",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE7F8_9D5168",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DE898_9D5208",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DEC60_9D55D0",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E16DC_9D804C",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E1AC4_9D8434",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E28D8_9D9248",
+          "count": 7
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2CF8_9D9668",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "name": "func_801E3604_9D9F74",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 339,
+      "last": 413,
+      "sha256": "a5c676ad198783298b5e0e6dbe56ab20a0c5a072ec0362e5c886266f8570b81c",
+      "native_sha256": "7969621ec769f3cc05809b71b91421d0e73fa61df60de526961d97605af69eb9",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 2
+        },
+        {
+          "operation": "canonical live Layout selector",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_target_size",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_create",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 4
+        },
+        {
+          "operation": "explicit C context rp_input",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_report_present",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCCF0_9D3660",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DCF40_9D38B0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFB10_9D6480",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801DFC20_9D6590",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E0C3C_9D75AC",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E0D54_9D76C4",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E0D84_9D76F4",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E1BEC_9D855C",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E1F20_9D8890",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E28D8_9D9248",
+          "count": 5
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2AC0_9D9430",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801E38DC_9DA24C",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 415,
+      "last": 476,
+      "sha256": "7e435666fcad911f3a75a949c0ed9dc772dc1f318e906a31832d48d810bea34a",
+      "native_sha256": "731a66a03d5fc1a77f1ad844f374c762c8c0b750d79e7987d45a7cf56728e26a",
+      "rewrites": [
+        {
+          "operation": "canonical live Layout selector",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_target",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_focus_target_size",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_show",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_layout_create",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_layout_wait",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 3
+        },
+        {
+          "operation": "explicit C context rp_input",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E00E0_9D6A50",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E20B4_9D8A24",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2340_9D8CB0",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E28D8_9D9248",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "name": "func_801E3B18_9DA488",
+      "source": "src/pokemon_report/9D91C0.c",
+      "first": 478,
+      "last": 508,
+      "sha256": "e68a0b54e83b63dc95177059a42ddb72249f571a4436f8eed75eb5f3f4c67148",
+      "native_sha256": "dbca3c532b3409da62e14590be819c0f851c343a9aef5443d739fb386b3cebf8",
+      "rewrites": [
+        {
+          "operation": "matching-only stack padding",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_focus_front",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_selector",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_repeat",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_input_mask",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2850_9D91C0",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E2EB0_9D9820",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E3000_9D9970",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E3604_9D9F74",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context isle_report_func_801E38DC_9DA24C",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_80374F30_8486E0",
+      "source": "src/window/8486E0.c",
+      "first": 12,
+      "last": 42,
+      "sha256": "8a3390e892e60246c1622d500b6a51e072ef17b6fcb2a359c8ad6b44956cef84",
+      "native_sha256": "1418dcdb4e681d63661f87ed23dbc0c3755e9db5203f93111484b0b5a83ca9c4",
+      "rewrites": [
+        {
+          "operation": "explicit C context rp_print_source",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_position",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_element_draw",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_text_skip",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_sound",
+          "count": 1
+        },
+        {
+          "operation": "explicit C context rp_input",
+          "count": 2
+        },
+        {
+          "operation": "explicit C context rp_wait",
+          "count": 3
+        }
+      ]
+    }
+  ],
+  "native_outputs": {
+    "game.c": "8221da200aaccd72c64a1041b142412e22e061485338b9f2462373b341b09e25",
+    "report_original.inc": "4d17a7cbeb1195a8f0c0511dd6cfe661fbe435156d7ca35449fc4b1c1731f37d",
+    "report_declarations.inc": "2707364af61a96a9a018cbb0aa263a8389555ccb8adb80c7b376e145471adfe5"
+  },
+  "shared_dependencies": [
+    "isle_original_source_qsort2",
+    "isle_original_source_name_compare"
+  ],
+  "shared_provider_manifest": "cmake/original-sort-inputs.json"
+}

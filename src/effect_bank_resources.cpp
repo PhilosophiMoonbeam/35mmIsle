@@ -1,4 +1,5 @@
 #include "effect_bank_resources.hpp"
+#include "course_resources.hpp"
 
 #include <algorithm>
 #include <bit>
@@ -299,6 +300,18 @@ void EffectResources::require_live() const {
 }
 const EffectBank& EffectResources::bank(EffectGroup group) const {
     require_live(); return banks_[index(group)];
+}
+EffectGroup effect_group(std::int32_t id) {
+    switch(id) {
+    case course::beach_id: return EffectGroup::beach;
+    case course::tunnel_id: return EffectGroup::tunnel;
+    case course::volcano_id: return EffectGroup::volcano;
+    case course::river_id: return EffectGroup::river;
+    case course::cave_id: return EffectGroup::cave;
+    case course::valley_id: return EffectGroup::valley;
+    case course::rainbow_id: return EffectGroup::rainbow;
+    default: throw std::runtime_error("Effect resources course is not an original course");
+    }
 }
 std::span<const rom::GuestView> EffectResources::installation_spans(EffectGroup group) const {
     require_live(); return installation_[index(group)];

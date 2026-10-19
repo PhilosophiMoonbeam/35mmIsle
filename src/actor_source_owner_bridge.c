@@ -5,15 +5,40 @@
 #include "engine_internal.h"
 #include "player_source.h"
 #include "menu_scene_bridge.h"
+#include "tunnel_actor_source.h"
+#include "volcano_actor_source.h"
+#include "river_actor_source.h"
+#include "cave_actor_source.h"
+#include "valley_actor_source.h"
+
+#include <stdlib.h>
 IsleGameResult isle_actor_source_execution_status(IsleGame* game) {
     IsleGameResult result = isle_game_status(game);
     return result == ISLE_GAME_OK && game->update_stopped ? ISLE_GAME_STOPPED : result;
 }
 
 int32_t isle_actor_factory_behavior(const IsleActorFactorySpawn* spawn) {
-    /* Owner's Meowth admission proves this actual written-field borrow before
-     * the original C factory executes; absent fields have no invented value. */
+    /* Owner proves the actual authored Meowth/Valley borrow, or the exact
+     * automatic Valley portability-repaired effective input, before this real
+     * conditional factory executes. This never reads a Source-unwritten word. */
     return *spawn->behavior;
+}
+void isle_actor_source_factory_checked(const IsleActorFactoryBlock* block,
+    const IsleActorFactoryBlock* reference, const IsleActorFactorySpawn* spawn,
+    IsleGameResult result) {
+    IsleGame* game = NULL;
+    IslePlayerSource* player;
+    if (result == ISLE_GAME_OK) return;
+    /* This returning native leaf is gone before the live C fence transfers.
+     * No Source output or receiver exists on every factory admission failure. */
+    if (isle_actor_owner_factory_game(block, reference, spawn, &game) != ISLE_GAME_OK ||
+        game == NULL) abort();
+    /* Unlike the fallible context accessor, canonical identity is still
+     * available after Game/Player has latched the failure being propagated. */
+    player = game->playerSource;
+    if (player == NULL || player->game != game || player->owner == NULL ||
+        player->rng == NULL || player->nonwaiting_call_frame == NULL) abort();
+    isle_player_source_checked(player, result);
 }
 typedef struct ActorFactoryCall {
     IsleActorReturningFactory returning;
@@ -503,4 +528,223 @@ const IsleActorRandomState* isle_actor_source_weighted(IsleGameObject* object, u
     const IsleActorRandomState* value = NULL;
     checked(actor,isle_actor_interaction_weighted(actor,identity,&value));
     return value;
+}
+
+IsleGameResult isle_actor_owner_associated_player(IsleGame* game, IslePlayerSource** output) {
+    IsleGameCounts counts;
+    IsleGameResult result;
+    if (output) *output=NULL;
+    if (!game || !output) return ISLE_GAME_INVALID_ARGUMENT;
+    /* counts validates the actual owner/thread without discarding a legitimate
+     * association merely because Game has already latched its first fault. */
+    result=isle_game_counts(game,&counts);
+    if (result!=ISLE_GAME_OK) return result;
+    if (!game->playerSource || game->playerSource->game!=game) return ISLE_GAME_INVALID_STATE;
+    *output=game->playerSource;
+    return ISLE_GAME_OK;
+}
+typedef IsleGameObject* (*IsleActorSixFactory)(int32_t,uint16_t,IsleActorFactoryBlock*,
+    IsleActorFactoryBlock*,IsleActorFactorySpawn*,IsleActorFactoryInitialization*);
+typedef struct ActorSixFactoryCall {
+    IsleActorSixFactory function;
+    int32_t object_id; uint16_t actor_id;
+    IsleActorFactoryBlock* block; IsleActorFactoryBlock* reference;
+    IsleActorFactorySpawn* spawn; IsleActorFactoryInitialization* initialization;
+    IsleGameObject* object;
+} ActorSixFactoryCall;
+static void actor_six_factory_call(IslePlayerSource* player,void* value) {
+    ActorSixFactoryCall* call=value;
+    call->object=call->function(call->object_id,call->actor_id,call->block,
+        call->reference,call->spawn,call->initialization);
+    isle_player_source_checked(player,isle_actor_source_execution_status(player->game));
+}
+IsleGameResult isle_actor_source_factory_six_call(IsleGame* game,IsleActorSixFactory function,
+    int32_t object_id,uint16_t actor_id,IsleActorFactoryBlock* block,IsleActorFactoryBlock* reference,
+    IsleActorFactorySpawn* spawn,IsleActorFactoryInitialization* initialization,IsleGameObject** output) {
+    IslePlayerSource* player=NULL; IsleGameResult result; ActorSixFactoryCall call;
+    if (output) *output=NULL;
+    if (!function || !block || !reference || !spawn || !initialization || !output)
+        return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_player_source_context(game,&player);
+    if (result!=ISLE_GAME_OK) return result;
+    call=(ActorSixFactoryCall){function,object_id,actor_id,block,reference,spawn,initialization,NULL};
+    result=isle_player_source_call(player,actor_six_factory_call,&call);
+    if (result==ISLE_GAME_OK) *output=call.object;
+    return result;
+}
+typedef void (*IsleActorBlockChange)(IsleGameObject*,float,float,float,float,float,float);
+typedef struct ActorBlockCallbackCall {
+    IsleActorBlockChange function; IsleGameObject* object;
+    IsleCourseActorBase* source;
+    float px,py,pz,cx,cy,cz;
+} ActorBlockCallbackCall;
+static void actor_block_callback_body(void* value) {
+    const ActorBlockCallbackCall* call=value;
+    call->function(call->object,call->px,call->py,call->pz,call->cx,call->cy,call->cz);
+}
+static void actor_block_callback_call(IslePlayerSource* player,void* value) {
+    ActorBlockCallbackCall* call=value;
+    isle_player_source_checked(player,isle_course_actor_invoke(call->source,actor_block_callback_body,call));
+    isle_player_source_checked(player,isle_actor_source_execution_status(player->game));
+}
+IsleGameResult isle_actor_source_block_callback_call(IsleGame* game,IsleCourseActorBase* source,IsleActorBlockChange function,
+    IsleGameObject* object,float px,float py,float pz,float cx,float cy,float cz) {
+    IslePlayerSource* player=NULL; IsleGameResult result; ActorBlockCallbackCall call;
+    if (!function || !object || !source || source->nativeGame!=game) return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_player_source_context(game,&player);
+    if (result!=ISLE_GAME_OK) return result;
+    call=(ActorBlockCallbackCall){function,object,source,px,py,pz,cx,cy,cz};
+    return isle_player_source_call(player,actor_block_callback_call,&call);
+}
+typedef struct TunnelNativeAnimationCall {
+    IsleTunnelActorSource* source; IsleTunnelAnimationCallback function;
+    const IsleActorNodeRef* node; int32_t event; float argument;
+} TunnelNativeAnimationCall;
+static void tunnel_native_animation_call(void* value) {
+    const TunnelNativeAnimationCall* call=value;
+    call->function(call->source,&call->node->model,call->event,call->argument);
+}
+IsleGameResult isle_actor_native_tunnel_animation_event(IsleTunnelActorSource* source,
+    IsleTunnelAnimationCallback function,const IsleActorNodeRef* node,int32_t event,float argument) {
+    IsleTunnelActorSource* canonical=NULL;
+    IsleGameModel* model=NULL; const IsleGameModelNode* nodes=NULL; size_t count=0;
+    IsleGameResult result;
+    TunnelNativeAnimationCall call;
+    if (!source || !function || !node || !node->model.object) return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_tunnel_actor_native_context(source->base.nativeGame,node->model.object,&canonical);
+    if (result!=ISLE_GAME_OK) return result;
+    if (canonical!=source) return ISLE_GAME_INVALID_STATE;
+    result=isle_tunnel_actor_native_admission(source,source->base.nativeGame,source->services);
+    if (result==ISLE_GAME_OK) result=isle_game_model_resolve(source->base.nativeGame,&node->model,&model);
+    if (result==ISLE_GAME_OK) result=isle_game_model_peek_nodes(source->base.nativeGame,model,&nodes,&count);
+    if (result!=ISLE_GAME_OK) return result;
+    if (!nodes || node->node>=count) return ISLE_GAME_INVALID_ARGUMENT;
+    call=(TunnelNativeAnimationCall){source,function,node,event,argument};
+    return isle_course_actor_invoke(&source->base,tunnel_native_animation_call,&call);
+}
+typedef struct VolcanoNativeAnimationCall {
+    IsleVolcanoActorSource* source; IsleVolcanoAnimationCallback function;
+    const IsleActorNodeRef* node; int32_t event; float argument;
+} VolcanoNativeAnimationCall;
+static void volcano_native_animation_call(void* value) {
+    const VolcanoNativeAnimationCall* call=value;
+    call->function(call->source,&call->node->model,call->event,call->argument);
+}
+IsleGameResult isle_actor_native_volcano_animation_event(IsleVolcanoActorSource* source,
+    IsleVolcanoAnimationCallback function,const IsleActorNodeRef* node,int32_t event,float argument) {
+    IsleVolcanoActorSource* canonical=NULL;
+    IsleGameModel* model=NULL; const IsleGameModelNode* nodes=NULL; size_t count=0;
+    IsleGameResult result;
+    VolcanoNativeAnimationCall call;
+    if (!source || !function || !node || !node->model.object) return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_volcano_actor_native_context(source->base.nativeGame,node->model.object,&canonical);
+    if (result!=ISLE_GAME_OK) return result;
+    if (canonical!=source) return ISLE_GAME_INVALID_STATE;
+    result=isle_volcano_actor_native_admission(source,source->base.nativeGame,source->services);
+    if (result==ISLE_GAME_OK) result=isle_game_model_resolve(source->base.nativeGame,&node->model,&model);
+    if (result==ISLE_GAME_OK) result=isle_game_model_peek_nodes(source->base.nativeGame,model,&nodes,&count);
+    if (result!=ISLE_GAME_OK) return result;
+    if (!nodes || node->node>=count) return ISLE_GAME_INVALID_ARGUMENT;
+    call=(VolcanoNativeAnimationCall){source,function,node,event,argument};
+    return isle_course_actor_invoke(&source->base,volcano_native_animation_call,&call);
+}
+typedef struct RiverNativeAnimationCall {
+    IsleRiverActorSource* source; IsleRiverAnimationCallback function;
+    const IsleActorNodeRef* node; int32_t event; float argument;
+} RiverNativeAnimationCall;
+static void river_native_animation_call(void* value) {
+    const RiverNativeAnimationCall* call=value;
+    call->function(call->source,call->node,call->event,call->argument);
+}
+IsleGameResult isle_actor_native_river_animation_event(IsleRiverActorSource* source,
+    IsleRiverAnimationCallback function,const IsleActorNodeRef* node,int32_t event,float argument) {
+    IsleRiverActorSource* canonical=NULL;
+    IsleGameModel* model=NULL; const IsleGameModelNode* nodes=NULL; size_t count=0;
+    IsleGameResult result;
+    RiverNativeAnimationCall call;
+    if (!source || !function || !node || !node->model.object) return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_river_actor_native_context(source->base.nativeGame,node->model.object,&canonical);
+    if (result!=ISLE_GAME_OK) return result;
+    if (canonical!=source) return ISLE_GAME_INVALID_STATE;
+    result=isle_river_actor_native_admission(source,source->base.nativeGame,source->services);
+    if (result==ISLE_GAME_OK) result=isle_game_model_resolve(source->base.nativeGame,&node->model,&model);
+    if (result==ISLE_GAME_OK) result=isle_game_model_peek_nodes(source->base.nativeGame,model,&nodes,&count);
+    if (result!=ISLE_GAME_OK) return result;
+    if (!nodes || node->node>=count) return ISLE_GAME_INVALID_ARGUMENT;
+    call=(RiverNativeAnimationCall){source,function,node,event,argument};
+    return isle_course_actor_invoke(&source->base,river_native_animation_call,&call);
+}
+typedef struct CaveNativeAnimationCall {
+    IsleCaveActorSource* source; IsleCaveAnimationCallback function;
+    const IsleActorNodeRef* node; int32_t event; float argument;
+} CaveNativeAnimationCall;
+static void cave_native_animation_call(void* value) {
+    const CaveNativeAnimationCall* call=value;
+    call->function(call->source,&call->node->model,call->event,call->argument);
+}
+IsleGameResult isle_actor_native_cave_animation_event(IsleCaveActorSource* source,
+    IsleCaveAnimationCallback function,const IsleActorNodeRef* node,int32_t event,float argument) {
+    IsleCaveActorSource* canonical=NULL;
+    IsleGameModel* model=NULL; const IsleGameModelNode* nodes=NULL; size_t count=0;
+    IsleGameResult result;
+    CaveNativeAnimationCall call;
+    if (!source || !function || !node || !node->model.object) return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_cave_actor_native_context(source->base.nativeGame,node->model.object,&canonical);
+    if (result!=ISLE_GAME_OK) return result;
+    if (canonical!=source) return ISLE_GAME_INVALID_STATE;
+    result=isle_cave_actor_native_admission(source,source->base.nativeGame,source->services);
+    if (result==ISLE_GAME_OK) result=isle_game_model_resolve(source->base.nativeGame,&node->model,&model);
+    if (result==ISLE_GAME_OK) result=isle_game_model_peek_nodes(source->base.nativeGame,model,&nodes,&count);
+    if (result!=ISLE_GAME_OK) return result;
+    if (!nodes || node->node>=count) return ISLE_GAME_INVALID_ARGUMENT;
+    call=(CaveNativeAnimationCall){source,function,node,event,argument};
+    return isle_course_actor_invoke(&source->base,cave_native_animation_call,&call);
+}
+typedef struct ValleyNativeAnimationCall {
+    IsleValleyActorSource* source; IsleValleyAnimationCallback function;
+    const IsleActorNodeRef* node; int32_t event; float argument;
+} ValleyNativeAnimationCall;
+static void valley_native_animation_call(void* value) {
+    const ValleyNativeAnimationCall* call=value;
+    call->function(call->source,call->node,call->event,call->argument);
+}
+IsleGameResult isle_actor_native_valley_animation_event(IsleValleyActorSource* source,
+    IsleValleyAnimationCallback function,const IsleActorNodeRef* node,int32_t event,float argument) {
+    IsleValleyActorSource* canonical=NULL;
+    IsleGameModel* model=NULL; const IsleGameModelNode* nodes=NULL; size_t count=0;
+    IsleGameResult result;
+    ValleyNativeAnimationCall call;
+    if (!source || !function || !node || !node->model.object) return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_valley_actor_native_context(source->base.nativeGame,node->model.object,&canonical);
+    if (result!=ISLE_GAME_OK) return result;
+    if (canonical!=source) return ISLE_GAME_INVALID_STATE;
+    result=isle_valley_actor_native_admission(source,source->base.nativeGame,source->services);
+    if (result==ISLE_GAME_OK) result=isle_game_model_resolve(source->base.nativeGame,&node->model,&model);
+    if (result==ISLE_GAME_OK) result=isle_game_model_peek_nodes(source->base.nativeGame,model,&nodes,&count);
+    if (result!=ISLE_GAME_OK) return result;
+    if (!nodes || node->node>=count) return ISLE_GAME_INVALID_ARGUMENT;
+    call=(ValleyNativeAnimationCall){source,function,node,event,argument};
+    return isle_course_actor_invoke(&source->base,valley_native_animation_call,&call);
+}
+
+typedef struct ActorAddGeoCall {
+    IsleGameObject* parent; uint16_t requested; const IsleActorGeoDefinition* definition;
+    IsleGameObject* object;
+} ActorAddGeoCall;
+static void actor_add_geo_call(IslePlayerSource* player,void* value) {
+    ActorAddGeoCall* call=value;
+    call->object=Pokemon_AddAtGeo(call->parent,call->requested,call->definition);
+    isle_player_source_checked(player,isle_actor_source_execution_status(player->game));
+}
+IsleGameResult isle_actor_source_add_geo_call(IsleGame* game,IsleGameObject* parent,
+    uint16_t requested,const IsleActorGeoDefinition* definition,IsleGameObject** output) {
+    IslePlayerSource* player=NULL; IsleGameResult result; ActorAddGeoCall call;
+    if (output) *output=NULL;
+    if (!parent || !definition || !output) return ISLE_GAME_INVALID_ARGUMENT;
+    result=isle_player_source_context(game,&player);
+    if (result!=ISLE_GAME_OK) return result;
+    call=(ActorAddGeoCall){parent,requested,definition,NULL};
+    result=isle_player_source_call(player,actor_add_geo_call,&call);
+    if (result==ISLE_GAME_OK) *output=call.object;
+    return result;
 }

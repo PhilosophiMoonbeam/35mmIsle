@@ -13,19 +13,43 @@ constexpr std::array<std::uint8_t,20> admitted_sha1{
 // Source pin df8815e75f3d79618466e01e0827c6165b93d11c; splat.yaml
 // blob d2690bd3d2cb0aeac5c648db20666c5a42e5ba45:5219..5231,5318..5639.
 // Initialized DATA only. Course overlays overlap VRAM and must never be united.
+struct ClipSpec { std::uint32_t model, material, camera; };
+constexpr std::array<ClipSpec,2> beach_clips{{
+    {0x8013c580,0x8013cea0,0x8013da90},{0x8013b030,0x8013baa0,0x8013c530}}};
+constexpr std::array<ClipSpec,3> tunnel_clips{{
+    {0x8013d920,0x8013e3d0,0x8013ee60},{0x8013c230,0x8013ceb0,0x8013d8d0},
+    {0x8013eee0,0x8013fdd0,0x801419e4}}};
+constexpr std::array<ClipSpec,2> volcano_clips{{
+    {0x801174e0,0x801182f0,0x80118d90},{0x80115e80,0x80116a80,0x8011749c}}};
+constexpr std::array<ClipSpec,3> river_clips{{
+    {0x8014a660,0x8014b450,0x8014bf30},{0x8014bfb0,0x8014cec0,0x8014ea10},
+    {0x80148f30,0x80149be0,0x8014a600}}};
+constexpr std::array<ClipSpec,2> cave_clips{{
+    {0x80147540,0x80148420,0x80148ea0},{0x80145e30,0x80146ab0,0x801474ec}}};
+constexpr std::array<ClipSpec,3> valley_clips{{
+    {0x80120520,0x801212a0,0x80121d30},{0x8011c5a0,0x8011cfb0,0x8011da1c},
+    {0x8011da60,0x8011ea20,0x801204a0}}};
+constexpr std::array<std::uint32_t,1> valley_cameras{{0x8011c550}};
+constexpr std::array<ClipSpec,2> rainbow_clips{{
+    {0x80119ae0,0x8011a970,0x8011b3e0},{0x801183e0,0x80119050,0x80119a8c}}};
 struct Catalog {
     std::int32_t course;
     std::array<model_assets::Mapping,2> mappings;
-    std::array<std::uint32_t,3> intro, outro;
+    std::span<const ClipSpec> clips;
+    std::span<const std::uint32_t> cameras;
     std::size_t animations, paths;
 };
-constexpr std::array<Catalog,2> catalogs{{
-    {0, {{{0x80366ba0,0x506fb0,0x44620},{0x8011b050,0xa74e0,0x952a0}}},
-        {0x8013c580,0x8013cea0,0x8013da90},
-        {0x8013b030,0x8013baa0,0x8013c530},92,6},
-    {6, {{{0x80366ba0,0x506fb0,0x44620},{0x800f5d90,0x4a8160,0x43ea0}}},
-        {0x80119ae0,0x8011a970,0x8011b3e0},
-        {0x801183e0,0x80119050,0x80119a8c},100,6}}};
+// Only selected initialized DATA is admitted. New courses are closed by their
+// actual Source-requested tables/streams/paths, not guessed inventory counts.
+// Old Beach/Rainbow numerical inventory checks stay unchanged.
+constexpr std::array<Catalog,7> catalogs{{
+    {0, {{{0x80366ba0,0x506fb0,0x44620},{0x8011b050,0xa74e0,0x952a0}}},beach_clips,{},92,6},
+    {1, {{{0x80366ba0,0x506fb0,0x44620},{0x8011cb60,0x162cc0,0x1d1d90-0x162cc0}}},tunnel_clips,{},menu::no_index,menu::no_index},
+    {2, {{{0x80366ba0,0x506fb0,0x44620},{0x800fffa0,0x326c20,0x3d0560-0x326c20}}},volcano_clips,{},menu::no_index,menu::no_index},
+    {3, {{{0x80366ba0,0x506fb0,0x44620},{0x8012a0d0,0x29a1a0,0x30af90-0x29a1a0}}},river_clips,{},menu::no_index,menu::no_index},
+    {4, {{{0x80366ba0,0x506fb0,0x44620},{0x8012a0d0,0x1f5e80,0x27ab80-0x1f5e80}}},cave_clips,{},menu::no_index,menu::no_index},
+    {5, {{{0x80366ba0,0x506fb0,0x44620},{0x800fffa0,0x3f63e0,0x47cf30-0x3f63e0}}},valley_clips,valley_cameras,menu::no_index,menu::no_index},
+    {6, {{{0x80366ba0,0x506fb0,0x44620},{0x800f5d90,0x4a8160,0x43ea0}}},rainbow_clips,{},100,6}}};
 const Catalog& catalog(std::int32_t course) {
     const auto found=std::find_if(catalogs.begin(),catalogs.end(),
         [course](const auto& entry) { return entry.course==course; });
@@ -56,6 +80,16 @@ CartResources::CartResources(const rom::Snapshot& snapshot, std::int32_t courseI
     // ZerOnePlayer tree/materials and JFogged matrix recipe for both courses.
     // No initial animation/speed policy is selected by this DATA resource.
     visibility_.assign(model.nodes.size(),std::uint8_t{1});
+    require(selected.clips.size()>=2,"Cart requires actual intro/outro tables");
+    clips_.resize(selected.clips.size());
+    cameras_.reserve(selected.clips.size()+selected.cameras.size());
+    auto camera_program=[&](std::uint32_t identity) {
+        for (const auto& existing:cameras_) if (existing.identity==identity) return existing.animation;
+        const auto animation=decoder.animation(identity,menu::AnimationKind::camera,false);
+        require(identity && animation!=menu::no_index,"Cart camera identity must name a real program");
+        cameras_.push_back({identity,animation});
+        return animation;
+    };
     auto clip=[&](CartClip& result, std::uint32_t model_table, std::uint32_t material_table,
                   std::uint32_t camera) {
         result.model_animation_table=reader.view(model_table,model.nodes.size()*4);
@@ -83,7 +117,7 @@ CartResources::CartResources(const rom::Snapshot& snapshot, std::int32_t courseI
             result.nodes.push_back(std::move(binding));
         }
         result.camera_identity=camera;
-        result.camera_animation=decoder.animation(camera,menu::AnimationKind::camera,false);
+        result.camera_animation=camera_program(camera);
     };
     // Rainbow intro.c:4..6,107..110,155 (blob
     // 370dd2fb22d8bed3ccc898fc8dd0b0d4c40d9c9d); gate/code.c:7..10,148..157
@@ -99,10 +133,16 @@ CartResources::CartResources(const rom::Snapshot& snapshot, std::int32_t courseI
     // across these two clips. The common 43-node/8-material model is unchanged.
     // Rainbow path descriptors: 801184D8,80119A10,80119A74,80119BBC,
     // 8011B380,8011B3C8. Beach remains 92 programs/6 paths, 8 materials.
-    clip(intro_,selected.intro[0],selected.intro[1],selected.intro[2]);
-    clip(outro_,selected.outro[0],selected.outro[1],selected.outro[2]);
-    require(materials_.size()==8 && animations_.size()==selected.animations &&
-            paths_.size()==selected.paths,"Incomplete actual course cart resource closure");
+    for (std::size_t i=0;i<selected.clips.size();++i) {
+        const auto& spec=selected.clips[i];
+        clip(clips_[i],spec.model,spec.material,spec.camera);
+        require(clips_[i].nodes.size()==43,"Incomplete actual Cart DFS table");
+    }
+    for (const auto identity:selected.cameras) camera_program(identity);
+    require(model.nodes.size()==43 && materials_.size()==8,"Incomplete common Cart tree/material closure");
+    if (selected.animations!=menu::no_index)
+        require(animations_.size()==selected.animations && paths_.size()==selected.paths,
+                "Incomplete actual course cart resource closure");
     const std::array<model_assets::ModelPlan,1> plans{{{&model,visibility_}}};
     closure_.emplace(reader,plans,materials_); closure_->require_complete();
 }
@@ -113,8 +153,14 @@ void CartResources::require_live() const {
 menu::animation::Resources CartResources::animation_resources() const {
     require_live(); return {models_,materials_,animations_,menu::no_index,paths_};
 }
-const CartClip& CartResources::intro() const { require_live(); return intro_; }
-const CartClip& CartResources::outro() const { require_live(); return outro_; }
+const CartClip& CartResources::intro() const { require_live(); return clips_[0]; }
+const CartClip& CartResources::outro() const { require_live(); return clips_[1]; }
+std::span<const CartClip> CartResources::clips() const { require_live(); return clips_; }
+std::size_t CartResources::camera_animation(std::uint32_t identity) const {
+    require_live();
+    for (const auto& camera:cameras_) if (camera.identity==identity) return camera.animation;
+    return menu::no_index;
+}
 std::span<const std::uint8_t> CartResources::visibility_domains() const { require_live(); return visibility_; }
 std::span<const menu::DisplayList> CartResources::display_lists() const { require_live(); return closure_->display_lists(); }
 std::span<const menu::VertexLoad> CartResources::vertex_loads() const { require_live(); return closure_->vertex_loads(); }

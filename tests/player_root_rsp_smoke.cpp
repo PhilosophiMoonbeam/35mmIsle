@@ -693,7 +693,7 @@ struct Case {
         cart=std::make_unique<player::cart::Owner>(*services,cart_resources,source(),cart_capacities,a::ExecutionCapacity{});
         behavior_bindings=std::make_unique<actor::BehaviorBindings>(behaviors,beach::initial_species_callbacks(),
             beach::initial_species_graphs(),std::span<const std::uint32_t>{},beach::initial_species_roots());
-        interactions=std::make_unique<actor::InteractionServices>(*services,*actors,*items,*world,detector,*behavior_bindings,actor_resources);
+        interactions=std::make_unique<actor::InteractionServices>(*services,*actors,*items,*world,detector,*behavior_bindings,actor_resources,effect_resources);
         accepted(actors->bind_interactions(*interactions));
         magikarp=std::make_unique<beach::MagikarpScene>(*services,*actors,*world,actor_resources,sceneState);
         accepted(items->set_beach_collision(*magikarp));

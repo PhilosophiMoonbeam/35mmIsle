@@ -37,6 +37,8 @@ public:
     menu::animation::Resources animation_resources() const;
     const CartClip& intro() const;
     const CartClip& outro() const;
+    std::span<const CartClip> clips() const;
+    std::size_t camera_animation(std::uint32_t identity) const;
     std::span<const std::uint8_t> visibility_domains() const;
     std::span<const menu::DisplayList> display_lists() const;
     std::span<const menu::VertexLoad> vertex_loads() const;
@@ -56,7 +58,9 @@ private:
     std::vector<menu::Animation> animations_;
     std::vector<menu::AnimationPath> paths_;
     std::vector<std::uint8_t> visibility_;
-    CartClip intro_, outro_;
+    struct CameraProgram { std::uint32_t identity; std::size_t animation; };
+    std::vector<CartClip> clips_;
+    std::vector<CameraProgram> cameras_;
     std::optional<model_assets::Closure> closure_;
 };
 } // namespace isle::player

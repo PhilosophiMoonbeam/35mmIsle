@@ -154,7 +154,7 @@ IsleContinuationResult owner_state(IsleContinuation* node,
     }
 }
 
-enum class Operation { create, cancel, destroy, state, invoke };
+enum class Operation { create, cancel, destroy, state, invoke, invoke_dispatch };
 struct Request {
     Operation operation;
     IsleContinuationDomain* domain;
@@ -184,6 +184,7 @@ void service(void* payload) noexcept {
         request->result = owner_state(request->node, request->state);
         break;
     case Operation::invoke:
+    case Operation::invoke_dispatch:
         try {
             request->entry(request->user);
             request->result = ISLE_CONT_OK;
@@ -205,7 +206,9 @@ IsleContinuationResult dispatch(Request* request) noexcept {
                      "continuation operations require the owner or its active callback");
     }
     try {
-        active_context->yield->on_owner(service, request);
+        if(request->operation==Operation::invoke_dispatch)
+            active_context->yield->on_owner_dispatch(service,request);
+        else active_context->yield->on_owner(service,request);
         return request->result;
     } catch (...) {
         active_context->pending_exception = std::current_exception();
@@ -302,6 +305,15 @@ isle_continuation_on_owner(IsleContinuationEntry entry, void* user) {
     if (entry == nullptr) return ISLE_CONT_INVALID_ARGUMENT;
     if (active_context == nullptr) return ISLE_CONT_INVALID_STATE;
     Request request{Operation::invoke,active_context->domain,active_context,entry,user,
+                    nullptr,nullptr,ISLE_CONT_OK};
+    return dispatch(&request);
+}
+
+extern "C" IsleContinuationResult
+isle_continuation_on_owner_dispatch(IsleContinuationEntry entry, void* user) {
+    if(entry==nullptr)return ISLE_CONT_INVALID_ARGUMENT;
+    if(active_context==nullptr)return ISLE_CONT_INVALID_STATE;
+    Request request{Operation::invoke_dispatch,active_context->domain,active_context,entry,user,
                     nullptr,nullptr,ISLE_CONT_OK};
     return dispatch(&request);
 }

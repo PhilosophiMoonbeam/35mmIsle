@@ -16,7 +16,7 @@ VERSION = "player-root-complete106-v1"
 SOURCE_INVENTORY_SHA256 = "162f71bade9b13002b64faa26c1689ce055e4601f6912d84704dee1b32e22b55"
 RECIPE_SHA256 = "b20092986b6fa45acb126bd879f8f91652c1e7a5ff5ec24458e49efc56e0ee41"
 OUTPUT_SHA256 = {
-    "root": "203c3d0a3b70c8607b3535196c182dcebc24fc09e5d860f3cc84d5e864571b84",
+    "root": "be5098adc6d3d677024d90a1736bc2d912dffed1322d65ce0dc1a580f9e0baee",
     "support": "28e2dd821d5ee132ea11c87146547ef746cce5b932030d946a98d9eef9b25f50",
     "header": "0b041c5f39e3253d93ef762f7c13c5f6067cfc8e384124d972ccf92a2700eb22",
 }
@@ -49,11 +49,11 @@ PREAMBLE = '''/* Private complete own-GAME Player Root bodies; no SDK implementa
 #include "player_render_source.h"
 #include <stdio.h>
 #define ABS(x) ((x) < 0 ? -(x) : (x))
-#define SIGN(x) ((x) >= 0 ? 1 : -1)
+#define SIGN(x) ((x) < 0 ? -1 : 1)
 #define SQ(x) ((x) * (x))
-#define PI 3.14159265358979323846
-#define TAU (2.0 * PI)
-#define PI_2 (PI / 2.0)
+#define PI 3.1415927f
+#define TAU 6.2831855f
+#define PI_2 1.5707964f
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define A_BUTTON 0x8000u

@@ -4,37 +4,57 @@
 #include <bit>
 #include <exception>
 #include <stdexcept>
+#include <limits>
 namespace isle::application {
-Photos::Photos(const rom::Snapshot& snapshot, save::GameSession& save) : save_(save), resources_(snapshot) {
-    if (resources_.bind(source_,save)!=ISLE_GAME_OK)
-        throw std::invalid_argument("application photo roll requires admitted tables and live save");
-    // Own GAME common_structs IdleScript, sys/cont ControllerInput, and the
-    // player.c287-337 consuming body. The admitted section is uncompressed.
-    const auto bytes=snapshot.canonical().subspan(0xaaa660,0xab1470-0xaaa660);
+namespace {
+enum class IdleTail { complete, tunnel_unwritten };
+IslePlayerIdleScript decode_idle(std::span<const std::byte> bytes, std::vector<IslePlayerInput>& inputs,
+    IdleTail tail = IdleTail::complete) {
+    if (bytes.size()<16) throw std::invalid_argument("idle script header exceeds admitted section");
     const auto u16=[&](std::size_t p) {
         return std::uint32_t(std::to_integer<unsigned>(bytes[p])<<8 |
             std::to_integer<unsigned>(bytes[p+1]));
     };
     const auto u32=[&](std::size_t p) { return u16(p)<<16 | u16(p+2); };
-    const auto size=u32(0);
-    // Original updateIdle truncates dataSize/sizeof(ControllerInput). Beach's
-    // genuine word6E06 has six trailing count bytes, never consumed as inputs.
-    if (size/10>(bytes.size()-16)/10)
-        throw std::invalid_argument("Beach idle inputs exceed admitted original section");
-    beach_inputs_.resize(size/10);
-    for (std::size_t n=0;n<beach_inputs_.size();++n) {
+    // Preserve Original updateIdle's dataSize/sizeof(ControllerInput), including
+    // Tunnel's final partial record. Its exact-size Original ROM allocation has
+    // no releasedButtons/stickX/stickY payload for that record. Like the finite
+    // Source-unwritten spawn repair, native playback supplies neutral values for
+    // only those three fields; this is not matching N64 residual-heap evidence.
+    const auto count=u32(0)/10;
+    const auto complete=std::min<std::size_t>(count,(bytes.size()-16)/10);
+    const bool unwritten=count>complete;
+    if (unwritten && (tail!=IdleTail::tunnel_unwritten || count!=1738 ||
+        bytes.size()!=17392 || complete!=1737))
+        throw std::invalid_argument("idle inputs exceed admitted original section");
+    inputs.resize(count);
+    for (std::size_t n=0;n<complete;++n) {
         const auto p=16+n*10;
-        beach_inputs_[n]={u16(p),u16(p+2),u16(p+4),u16(p+6),
+        inputs[n]={u16(p),u16(p+2),u16(p+4),u16(p+6),
             float(std::bit_cast<std::int8_t>(std::to_integer<std::uint8_t>(bytes[p+8]))),
             float(std::bit_cast<std::int8_t>(std::to_integer<std::uint8_t>(bytes[p+9])))};
     }
-    beach_idle_={beach_inputs_.data(),beach_inputs_.size(),u32(8),u32(12)};
+    if (unwritten) {
+        const auto p=16+complete*10;
+        inputs.back()={u16(p),u16(p+2),u16(p+4),0,0.0f,0.0f};
+    }
+    return {inputs.data(),inputs.size(),u32(8),u32(12)};
+}
+}
+Photos::Photos(const rom::Snapshot& snapshot, save::GameSession& save) : save_(save), resources_(snapshot) {
+    if (resources_.bind(source_,save)!=ISLE_GAME_OK)
+        throw std::invalid_argument("application photo roll requires admitted tables and live save");
+    // Distinct admitted assets share application lifetime: State retains the
+    // selected Source pointer after its disposable native entry/scene retires.
+    beach_idle_=decode_idle(snapshot.canonical().subspan(0xaaa660,0xab1470-0xaaa660),beach_inputs_);
+    tunnel_idle_=decode_idle(snapshot.canonical().subspan(0xab1470,0xab5860-0xab1470),tunnel_inputs_,
+        IdleTail::tunnel_unwritten);
     roll_revisions_.fill(1);
     if (save_.bind_photo_projection({this, photo_changed, comment_changed, session_reset}))
         throw std::invalid_argument("application photo store requires an exclusive stable save binding");
 }
 Photos::~Photos() {
-    if (source_.owner || replay_borrower_) std::terminate();
+    if (source_.owner || replay_borrower_ || working_owners_) std::terminate();
     save_.unbind_photo_projection(this);
 }
 IsleGameResult Photos::reset() noexcept {
@@ -154,7 +174,7 @@ save::GameError Photos::set_photo(save::PhotoSet set, std::size_t index, const I
 }
 save::GameError Photos::apply_photo_flags(const IslePhotoRecord& record, std::uint8_t flags) {
     if (record.owner != native_source()) return {save::GameErrc::source_state};
-    if (replay_borrower_ && replay_record_.storage == record.storage &&
+    if (replay_borrower_ && !replay_working_ && replay_record_.storage == record.storage &&
         replay_record_.index == record.index) return {save::GameErrc::source_state};
     const auto current = this->record(record.storage, record.index);
     if (!current) return current.error;
@@ -193,6 +213,8 @@ save::GameError Photos::acquire_replay(const IslePhotoRecord& record, const void
 save::GameError Photos::release_replay(const void* borrower) noexcept {
     if (!borrower || replay_borrower_ != borrower) return {save::GameErrc::source_state};
     if (const auto error = save_.release_replay(borrower)) return error;
+    if (replay_working_) replay_working_->borrower_ = nullptr;
+    replay_working_ = nullptr;
     replay_borrower_ = nullptr;
     replay_record_ = {};
     return {};
@@ -218,6 +240,24 @@ save::GameError Photos::set_album_comment(std::size_t index, const std::uint16_t
         wire[i * 2 + 1] = std::byte(comment[i]);
     }
     return save_.set_album_comment(index, wire);
+}
+save::GameError Photos::set_album_comment_char(std::size_t index,
+    std::size_t character, std::uint16_t value) {
+    if (index >= comments_.size() || character >= 32) return {save::GameErrc::field_bounds};
+    const auto current = save_.album_comment(index);
+    if (!current) return current.error;
+    std::array<std::byte, 64> wire;
+    std::copy(current.value.begin(), current.value.end(), wire.begin());
+    wire[character * 2] = std::byte(value >> 8);
+    wire[character * 2 + 1] = std::byte(value);
+    return save_.set_album_comment(index, wire);
+}
+save::GameError Photos::set_working(save::PhotoSet set, std::size_t index,
+    const PhotoWorking& working) {
+    if (!saved_photo(set, index)) return {save::GameErrc::field_bounds};
+    if (&working.photos_ != this || !working.valid_ || source_.owner)
+        return {save::GameErrc::source_state};
+    return save_.set_photo(set, index, working.wire_);
 }
 save::GameError Photos::set_album(std::size_t index, const IslePlayerPhotoData* photo,
     const std::uint16_t* comment) {
@@ -262,6 +302,97 @@ void Photos::reset_projection() noexcept {
 }
 void Photos::session_reset(void* owner) noexcept {
     static_cast<Photos*>(owner)->reset_projection();
+}
+
+PhotoWorking::PhotoWorking(Photos& photos) noexcept
+    : handle_(reinterpret_cast<IslePhotoWorking*>(this)), photos_(photos) {
+    photo_.unk_04.f32 = -1.0f;
+    ++photos_.working_owners_;
+}
+PhotoWorking::~PhotoWorking() noexcept {
+    if (borrower_ || photos_.replay_working_ == this) std::terminate();
+    --photos_.working_owners_;
+}
+bool PhotoWorking::mutable_now() const noexcept {
+    return !borrower_ && !photos_.source_.owner &&
+        revision_ != std::numeric_limits<std::uint64_t>::max();
+}
+save::GameError PhotoWorking::copy_record(const IslePhotoRecord& record) noexcept {
+    if (!mutable_now() || record.owner != photos_.native_source() || !record.photo)
+        return {save::GameErrc::source_state};
+    const auto current = photos_.record(record.storage, record.index);
+    if (!current) return current.error;
+    if (current.value.photo != record.photo || current.value.revision != record.revision)
+        return {save::GameErrc::source_state};
+    if (record.storage == ISLE_PHOTO_ROLL) {
+        // The native captured roll has semantic storage only; this is its
+        // canonical Source wire encoding, not a round-trip of a saved record.
+        player::encode_photo(*record.photo, wire_);
+    } else {
+        const auto set = record.storage == ISLE_PHOTO_REPORT ? save::PhotoSet::report :
+            record.storage == ISLE_PHOTO_TEMPORARY ? save::PhotoSet::temporary : save::PhotoSet::album;
+        const auto bytes = photos_.save_.photo(set, static_cast<std::size_t>(record.index));
+        if (!bytes) return bytes.error;
+        std::copy(bytes.value.begin(), bytes.value.end(), wire_.begin());
+    }
+    player::decode_photo(wire_, photo_);
+    ++revision_;
+    valid_ = true;
+    return {};
+}
+save::GameError PhotoWorking::copy(const PhotoWorking& other) noexcept {
+    if (!mutable_now() || &photos_ != &other.photos_ || !other.valid_)
+        return {save::GameErrc::source_state};
+    if (this != &other) {
+        wire_ = other.wire_;
+        photo_ = other.photo_;
+    }
+    ++revision_;
+    valid_ = true;
+    return {};
+}
+save::GameError PhotoWorking::clear() noexcept {
+    if (!mutable_now()) return {save::GameErrc::source_state};
+    // Original writes only its semantic presence sentinel. Old bytes remain
+    // private and inaccessible to saved writes/reads until a genuine copy.
+    photo_.unk_04.f32 = -1.0f;
+    valid_ = false;
+    ++revision_;
+    return {};
+}
+IslePhotoWorkingRead PhotoWorking::describe() const noexcept {
+    return {source(), photos_.native_source(), valid_ ? &photo_ : nullptr,
+        &revision_, revision_, nullptr};
+}
+save::GameError Photos::acquire_working_replay(PhotoWorking& working,const void* borrower,
+    IslePhotoWorkingRead& output) noexcept {
+    if (!borrower || !working.valid_ || working.borrower_ || source_.owner || replay_borrower_)
+        return {save::GameErrc::source_state};
+    if (const auto error = save_.borrow_replay(borrower, false, save::PhotoSet::album, 0))
+        return error;
+    replay_borrower_ = borrower;
+    replay_record_ = {};
+    replay_working_ = &working;
+    working.borrower_ = borrower;
+    output = working.describe();
+    output.borrower = borrower;
+    return {};
+}
+save::GameError PhotoWorking::acquire(const void* borrower, IslePhotoWorkingRead& output) noexcept {
+    return photos_.acquire_working_replay(*this,borrower,output);
+}
+bool PhotoWorking::validates(const IslePhotoWorkingRead& read) const noexcept {
+    return valid_ && borrower_ && read.owner == source() &&
+        read.photos == photos_.native_source() && read.photo == &photo_ &&
+        read.revision_address == &revision_ && read.revision == revision_ &&
+        read.borrower == borrower_ && photos_.replay_borrower_ == borrower_ &&
+        photos_.replay_working_ == this && !photos_.source_.owner;
+}
+save::GameError PhotoWorking::release(IslePhotoWorkingRead& read) noexcept {
+    if (!validates(read)) return {save::GameErrc::source_state};
+    if (const auto error = photos_.release_replay(borrower_)) return error;
+    read = {};
+    return {};
 }
 }
 
@@ -534,5 +665,83 @@ extern "C" IsleGameResult isle_application_photos_identify(IsleApplicationPhotos
         if (!value) return photo_result(value.error);
         *output = value.value;
         return ISLE_GAME_OK;
+    });
+}
+
+extern "C" IsleGameResult isle_photo_working_copy_record(IslePhotoWorking* owner,
+    const IslePhotoRecord* record) {
+    if (!owner || !record) return ISLE_GAME_INVALID_ARGUMENT;
+    return photo_result(reinterpret_cast<isle::application::PhotoWorking*>(owner)->copy_record(*record));
+}
+extern "C" IsleGameResult isle_photo_working_copy(IslePhotoWorking* owner,
+    const IslePhotoWorking* other) {
+    if (!owner || !other) return ISLE_GAME_INVALID_ARGUMENT;
+    return photo_result(reinterpret_cast<isle::application::PhotoWorking*>(owner)->copy(
+        *reinterpret_cast<const isle::application::PhotoWorking*>(other)));
+}
+extern "C" IsleGameResult isle_photo_working_clear(IslePhotoWorking* owner) {
+    if (!owner) return ISLE_GAME_INVALID_ARGUMENT;
+    return photo_result(reinterpret_cast<isle::application::PhotoWorking*>(owner)->clear());
+}
+extern "C" IsleGameResult isle_photo_working_photo(const IslePhotoWorking* owner,
+    const IslePlayerPhotoData** output) {
+    if (output) *output = nullptr;
+    if (!owner || !output) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = reinterpret_cast<const isle::application::PhotoWorking*>(owner)->photo();
+    return ISLE_GAME_OK;
+}
+extern "C" IsleGameResult isle_photo_working_describe(const IslePhotoWorking* owner,
+    IslePhotoWorkingRead* output) {
+    if (!output) return ISLE_GAME_INVALID_ARGUMENT;
+    if (output->borrower) return ISLE_GAME_INVALID_STATE;
+    *output = {};
+    if (!owner) return ISLE_GAME_INVALID_ARGUMENT;
+    *output = reinterpret_cast<const isle::application::PhotoWorking*>(owner)->describe();
+    return ISLE_GAME_OK;
+}
+extern "C" IsleGameResult isle_photo_working_acquire_read(IslePhotoWorking* owner,
+    const void* borrower, IslePhotoWorkingRead* output) {
+    if (!owner || !output || !borrower) return ISLE_GAME_INVALID_ARGUMENT;
+    // An output already holding a lease must not be cleared/reused. Other
+    // failed admissions leave a zero descriptor, never a fabricated borrow.
+    if (output->borrower) return ISLE_GAME_INVALID_STATE;
+    *output = {};
+    return photo_result(reinterpret_cast<isle::application::PhotoWorking*>(owner)->acquire(borrower, *output));
+}
+extern "C" IsleGameResult isle_photo_working_validate_read(const IslePhotoWorkingRead* read) {
+    if (!read || !read->owner) return ISLE_GAME_INVALID_ARGUMENT;
+    return reinterpret_cast<const isle::application::PhotoWorking*>(read->owner)->validates(*read) ?
+        ISLE_GAME_OK : ISLE_GAME_INVALID_STATE;
+}
+extern "C" IsleGameResult isle_photo_working_release_read(IslePhotoWorkingRead* read) {
+    if (!read || !read->owner) return ISLE_GAME_INVALID_ARGUMENT;
+    return photo_result(reinterpret_cast<isle::application::PhotoWorking*>(read->owner)->release(*read));
+}
+extern "C" IsleGameResult isle_application_photos_set_temporary_working(IsleApplicationPhotos* owner,
+    int32_t index, const IslePhotoWorking* working) {
+    return photo_leaf(owner, [&](NativePhotos& self) {
+        if (!photo_slot(index, isle::save::game_temporary_count) || !working) return ISLE_GAME_OK;
+        return photo_result(self.set_working(PhotoSet::temporary, static_cast<std::size_t>(index),
+            *reinterpret_cast<const isle::application::PhotoWorking*>(working)));
+    });
+}
+extern "C" IsleGameResult isle_application_photos_set_album_working(IsleApplicationPhotos* owner,
+    int32_t index, const IslePhotoWorking* working, const uint16_t* comment) {
+    return photo_leaf(owner, [&](NativePhotos& self) {
+        if (!photo_slot(index, isle::save::game_album_count)) return ISLE_GAME_OK;
+        if (working) {
+            if (const auto error = self.set_working(PhotoSet::album, static_cast<std::size_t>(index),
+                *reinterpret_cast<const isle::application::PhotoWorking*>(working))) return photo_result(error);
+        }
+        return photo_result(self.set_album_comment(static_cast<std::size_t>(index), comment));
+    });
+}
+extern "C" IsleGameResult isle_application_photos_set_album_comment_char(IsleApplicationPhotos* owner,
+    int32_t index, int32_t character, uint16_t value) {
+    return photo_leaf(owner, [&](NativePhotos& self) {
+        if (!photo_slot(index, isle::save::game_album_count) || !photo_slot(character, 32))
+            return ISLE_GAME_INVALID_ARGUMENT;
+        return photo_result(self.set_album_comment_char(static_cast<std::size_t>(index),
+            static_cast<std::size_t>(character), value));
     });
 }

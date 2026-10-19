@@ -9,8 +9,8 @@ struct Descriptor {
     std::uint16_t sound;
     std::uint8_t pitch_modifier, hearing_range;
 };
-// Course 0/6 initialize exactly 53/9 own-GAME EnvSoundData records. Only
-// scalar descriptors are owned; the signed-angle lookup keeps its ROM borrow.
+// Source course0..6 initialize exactly 53/43/49/62/57/58/9 own-GAME records.
+// Only scalar descriptors are owned; the signed-angle lookup keeps its ROM borrow.
 class Resources final {
 public:
     explicit Resources(const rom::Snapshot&, std::int32_t course_id);
@@ -26,7 +26,7 @@ private:
     source_math::Angles angles_;
     std::int32_t course_id_;
     std::size_t descriptor_count_ = 0;
-    std::array<Descriptor,53> descriptors_{};
+    std::array<Descriptor,62> descriptors_{};
 };
 struct Source {
     IsleGameObject* identity;

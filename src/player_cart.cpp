@@ -57,8 +57,8 @@ struct Owner::Impl {
     std::vector<IsleGameModelNodeInit> scratch;
     std::vector<IslePlayerCartEvent> events;
     std::unique_ptr<menu::animation::Runtime> runtime;
-    IslePlayerCartModelAnimation model_descriptors[2];
-    IslePlayerCartMaterialAnimation material_descriptors[2];
+    std::vector<IslePlayerCartModelAnimation> model_descriptors;
+    std::vector<IslePlayerCartMaterialAnimation> material_descriptors;
     Slot* building=nullptr;
     Slot* dispatch=nullptr;
     std::size_t borrows=0,dispatch_count=0;
@@ -67,9 +67,14 @@ struct Owner::Impl {
     Impl(scene::Services& s,const CartResources& r,IslePlayerSource& p,
          std::span<const menu::animation::SlotCapacity> c,menu::animation::ExecutionCapacity execution)
         : services(s),resources(r),player(p),slots(c.size()),bindings(c.size()),
-          model_descriptors{{&r.intro()},{&r.outro()}},
-          material_descriptors{{&r.intro()},{&r.outro()}} {
+          model_descriptors(r.clips().size()),material_descriptors(r.clips().size()) {
         resources.require_live();
+        const auto clips=r.clips();
+        if (clips.size()<2) throw std::invalid_argument("Cart needs actual intro/outro descriptors");
+        for (std::size_t i=0;i<clips.size();++i) {
+            model_descriptors[i]={&clips[i]};
+            material_descriptors[i]={&clips[i]};
+        }
         IslePlayerSource* canonical=nullptr;
         if (c.empty() || p.cart || p.game!=s.game || isle_player_source_context(s.game,&canonical)!=ISLE_GAME_OK || canonical!=&p)
             throw std::invalid_argument("Cart requires caller physical slots and the active canonical Player Source");
@@ -105,7 +110,7 @@ struct Owner::Impl {
             count=callbacks*maximum+1;
         }
         events.resize(count);
-        source={&player,this,nullptr}; player.cart=&source;
+        source={&player,this,nullptr,nullptr}; player.cart=&source;
     }
     bool failed() const noexcept { return services.failed() || player.status!=ISLE_GAME_OK || isle_game_status(services.game)!=ISLE_GAME_OK; }
     bool mutable_now() const noexcept { return !failed() && !closing && !borrows && !dispatch; }
@@ -394,6 +399,18 @@ const IslePlayerCartModelAnimation* Owner::intro_model() const noexcept { return
 const IslePlayerCartMaterialAnimation* Owner::intro_material() const noexcept { return &impl_->material_descriptors[0]; }
 const IslePlayerCartModelAnimation* Owner::outro_model() const noexcept { return &impl_->model_descriptors[1]; }
 const IslePlayerCartMaterialAnimation* Owner::outro_material() const noexcept { return &impl_->material_descriptors[1]; }
+const IslePlayerCartModelAnimation* Owner::model_animation(std::uint32_t identity) const noexcept {
+    if (!identity) return nullptr;
+    for (const auto& descriptor:impl_->model_descriptors)
+        if (descriptor.clip->model_animation_table.guest_address==identity) return &descriptor;
+    return nullptr;
+}
+const IslePlayerCartMaterialAnimation* Owner::material_animation(std::uint32_t identity) const noexcept {
+    if (!identity) return nullptr;
+    for (const auto& descriptor:impl_->material_descriptors)
+        if (descriptor.clip->material_animation_table.guest_address==identity) return &descriptor;
+    return nullptr;
+}
 IsleGameObject* Owner::object(menu::animation::InstanceHandle h) const noexcept { const auto* slot=impl_->find(h); return slot?slot->object:nullptr; }
 IsleGameModel* Owner::native_model(menu::animation::InstanceHandle h) const noexcept { const auto* slot=impl_->find(h); return slot?slot->model:nullptr; }
 menu::animation::InstanceHandle Owner::instance(IsleGameObject* object) const noexcept { const auto* slot=impl_->find(object); return slot?slot->instance:menu::animation::InstanceHandle{}; }
@@ -452,12 +469,10 @@ void Owner::release_reference(IsleGameObject* object) noexcept {
 }
 menu::RetainedEffectAttachment Owner::retain_effect_node(const IslePlayerCartNode* node) noexcept {
     auto& self=*impl_; auto* slot=self.dispatch;
+    if (!self.source.current_event || node!=&self.source.current_event->node) return {};
     if (!node || !slot || !self.lease || !self.context() || self.failed() || self.closing ||
         !self.valid(*slot) || slot->effect_node_holds==SIZE_MAX) return {};
-    bool issued=false;
-    for (std::size_t i=0;i<self.dispatch_count;++i)
-        if (node==&self.events[i].node) { issued=true; break; }
-    if (!issued) return {};
+    if (!issued_effect_node(node->binding,node->node)) return {};
     IsleGameModelRef current{};
     const auto state=self.runtime->model(slot->instance);
     if (!state || node->node>=state.nodes.size() ||
@@ -467,6 +482,48 @@ menu::RetainedEffectAttachment Owner::retain_effect_node(const IslePlayerCartNod
     if (!menu::model::source_effect_world(self.services.game,slot->model,node->node,world)) return {};
     ++slot->effect_node_holds;
     return {slot,current,node->node,Impl::resolve_effect_node,Impl::release_effect_node};
+}
+bool Owner::issued_effect_node(const IsleGameModelRef& binding,std::size_t node) const noexcept {
+    const auto& self=*impl_;
+    if (!self.dispatch || !self.lease || !self.source.current_event || !self.context() ||
+        self.failed() || self.closing || !self.valid(*self.dispatch)) return false;
+    for (std::size_t i=0;i<self.dispatch_count;++i) {
+        const auto& event=self.events[i];
+        if (&event!=self.source.current_event) continue;
+        if (event.node.node!=node || !Impl::same_binding(event.node.binding,binding)) return false;
+        IsleGameModelRef current{};
+        const auto state=self.runtime->model(self.dispatch->instance);
+        return state && node<state.nodes.size() &&
+            isle_game_model_reference(self.services.game,self.dispatch->object,self.dispatch->model,&current)==ISLE_GAME_OK &&
+            Impl::same_binding(current,binding);
+    }
+    return false;
+}
+menu::RetainedEffectAttachment Owner::retain_effect_node(const IsleGameModelRef& binding,std::size_t node) noexcept {
+    if (!issued_effect_node(binding,node)) return {};
+    return retain_effect_node(&impl_->source.current_event->node);
+}
+bool Owner::callback_matches(IsleGameObject* object,IslePlayerCartCallback callback,void* user) const noexcept {
+    const auto& self=*impl_;
+    auto* slot=self.dispatch;
+    return callback && slot && slot->object==object && slot->callback==callback &&
+        slot->callback_user==user && self.source.current_event &&
+        issued_effect_node(self.source.current_event->node.binding,self.source.current_event->node.node);
+}
+OwnerStatus Owner::set_node_time_left(const IsleGameModelRef& binding,std::size_t node,float value) noexcept {
+    auto& self=*impl_;
+    if (!issued_effect_node(binding,node) || self.borrows)
+        return failure(OwnerError::lifetime,"Cart node timeLeft store requires the exact current event lease");
+    auto& slot=*self.dispatch;
+    IsleGameModel* model=nullptr; const IsleGameModelNode* nodes=nullptr; std::size_t count=0;
+    auto result=isle_game_model_resolve(self.services.game,&binding,&model);
+    if (result==ISLE_GAME_OK) result=isle_game_model_peek_nodes(self.services.game,model,&nodes,&count);
+    if (result!=ISLE_GAME_OK) return status(result);
+    const auto state=self.runtime->model(slot.instance);
+    if (model!=slot.model || binding.object!=slot.object ||
+        !state || !nodes || count!=state.nodes.size() || node>=count)
+        return failure(OwnerError::admission,"Cart node timeLeft store lost its native/Runtime node identity");
+    return status(native(self.runtime->set_node_time_left(slot.instance,node,value)));
 }
 OwnerStatus Owner::request_retire(IsleGameObject* object) noexcept {
     auto* slot=impl_->find(object,true);

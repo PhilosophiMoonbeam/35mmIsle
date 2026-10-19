@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# Hosted runners only. Synthetic/procedural inputs; no ROMs or artifact uploads.
+# Hosted runners only. No ROMs; only Runtime-component product archives are uploaded.
 jobs:
   linux:
     name: Linux ${{ matrix.compiler.name }} / ${{ matrix.preset }}
@@ -122,8 +122,20 @@ jobs:
         run: cmake --preset windows-host-release
       - name: Build actual product, full LUS, audio, RSP, canonical RDP, native engine and CPU tests with MSVC
         run: cmake --build --preset windows-host-release --parallel 2
-      - name: Build all opt-in native Player, Actor, Item and publication consumers without a ROM
-        run: cmake --build --preset windows-host-release --target actor-collision-rom-smoke actor-command26-rom-smoke actor-interaction-rom-smoke actor-owner-rom-smoke actor-producer-rsp-smoke beach-initial-species-rom-smoke beach-magikarp-scene-rom-smoke course-collision-rsp-smoke course-magikarp-rsp-smoke course-scene-rsp-smoke environment-sound-rsp-smoke item-flute-rom-smoke item-owner-rom-smoke item-producer-rsp-smoke magikarp-owner-rom-smoke player-bump-rom-smoke player-camera-animation-rom-smoke player-cart-owner-rsp-smoke player-cart-resources-rom-smoke player-commands-rom-smoke player-photo-rsp-smoke player-root-rsp-smoke player-source-renderer-rsp-smoke player-ui-screen-rsp-smoke world-producer-rsp-smoke --parallel 2
+      - name: Build all 31 native Player, Actor, Item and publication consumers without a ROM
+        run: >-
+          cmake --build --preset windows-host-release --target
+          actor-collision-rom-smoke actor-command26-rom-smoke actor-interaction-rom-smoke
+          actor-owner-rom-smoke actor-producer-rsp-smoke beach-behavior-resources-rom-smoke
+          beach-initial-species-rom-smoke beach-magikarp-scene-rom-smoke
+          course-collision-rsp-smoke course-magikarp-rsp-smoke course-scene-rsp-smoke
+          environment-sound-rsp-smoke item-flute-rom-smoke item-owner-rom-smoke
+          item-producer-rsp-smoke item-resources-rom-smoke magikarp-owner-rom-smoke
+          photo-replay-rsp-smoke player-bump-rom-smoke player-camera-animation-rom-smoke
+          player-cart-owner-rsp-smoke player-cart-resources-rom-smoke player-commands-rom-smoke
+          player-photo-rsp-smoke player-root-rsp-smoke player-source-renderer-rsp-smoke
+          player-ui-screen-rsp-smoke post-course-replay-rom-smoke post-course-window-rom-smoke
+          scene-layout-rom-smoke world-producer-rsp-smoke --parallel 2
       - name: Build actual application and post-course interface consumers without ROMs
         run: cmake --build --preset windows-host-release --target 35mmisle-application-runtime-rom-smoke post-course-interfaces-rom-smoke --parallel 2
       - name: Run all ROMless CPU CTests
@@ -136,7 +148,112 @@ jobs:
           }
           & "./build/windows-host-release/Release/35mmisle.exe" --help
           if ($LASTEXITCODE -ne 0) { throw "Native product help failed" }
-      # No ROM/private payload, executable artifact upload or binary-release admission.
+      - name: Package and check the portable Windows x64 Runtime archive
+        id: runtime-package
+        run: |
+          $packageDirectory = Join-Path $env:RUNNER_TEMP "35mmisle-runtime-windows"
+          # CPackConfig selects Runtime only, including dependency DLLs, renderer resources and notices.
+          cpack --config build/windows-host-release/CPackConfig.cmake -C Release -B $packageDirectory
+          if ($LASTEXITCODE -ne 0) { throw "Runtime CPack failed" }
+          $archives = @(Get-ChildItem -LiteralPath $packageDirectory -File -Filter '35mmisle-*-Windows-64bit.zip')
+          if ($archives.Count -ne 1) { throw "Expected exactly one product Runtime ZIP" }
+          $root = [System.IO.Path]::GetFileNameWithoutExtension($archives[0].Name)
+          $entries = @(& cmake -E tar tf $archives[0].FullName)
+          if ($LASTEXITCODE -ne 0) { throw "Cannot inspect Runtime ZIP" }
+          foreach ($relative in @('bin/35mmisle.exe', 'bin/35mmisle-rom.exe',
+              'share/35mmisle/LICENSE', 'share/35mmisle/fast-renderer-LICENSE.txt',
+              'share/licenses/35mmisle/LICENSE', 'share/licenses/35mmisle-rom-tool/LICENSE')) {
+            if ($entries -cnotcontains "$root/$relative") { throw "Runtime ZIP missing $relative" }
+          }
+          foreach ($relative in @('share/35mmisle/shaders/opengl/',
+              'share/licenses/35mmisle/dependencies/libultraship/')) {
+            if (-not ($entries | Where-Object { $_.StartsWith("$root/$relative") -and -not $_.EndsWith('/') })) {
+              throw "Runtime ZIP missing files under $relative"
+            }
+          }
+          foreach ($port in @('sdl3', 'glew', 'libzip', 'nlohmann-json', 'tinyxml2', 'spdlog', 'fmt', 'zlib', 'bzip2')) {
+            if ($entries -cnotcontains "$root/share/licenses/35mmisle/dependencies/vcpkg/$port/copyright") {
+              throw "Runtime ZIP missing selected dependency notice: $port"
+            }
+          }
+          $unpack = Join-Path $env:RUNNER_TEMP ("35mmIsle unpack 路径 " + [guid]::NewGuid().ToString('N'))
+          Expand-Archive -LiteralPath $archives[0].FullName -DestinationPath $unpack -ErrorAction Stop
+          $product = Join-Path $unpack $root
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $visualStudio = @(& $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
+          if ($LASTEXITCODE -ne 0 -or $visualStudio.Count -ne 1) { throw "Cannot locate selected Visual Studio x64 tools" }
+          $toolVersion = (Get-Content -LiteralPath (Join-Path $visualStudio[0] 'VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt') -Raw).Trim()
+          $dumpbin = Join-Path $visualStudio[0] "VC/Tools/MSVC/$toolVersion/bin/Hostx64/x64/dumpbin.exe"
+          if (-not (Test-Path -LiteralPath $dumpbin -PathType Leaf)) { throw "Missing x64 PE import inspector" }
+          # Explicit Windows platform boundary, not every redistributable found in System32.
+          $platformDlls = @('kernel32.dll', 'kernelbase.dll', 'ntdll.dll', 'user32.dll', 'gdi32.dll',
+            'advapi32.dll', 'shell32.dll', 'shlwapi.dll', 'ole32.dll', 'oleaut32.dll', 'combase.dll',
+            'comdlg32.dll', 'comctl32.dll', 'imm32.dll', 'version.dll', 'winmm.dll', 'setupapi.dll',
+            'cfgmgr32.dll', 'hid.dll', 'dinput8.dll', 'xinput1_4.dll', 'xinput9_1_0.dll', 'bthprops.cpl',
+            'dwmapi.dll', 'uxtheme.dll', 'shcore.dll', 'msimg32.dll', 'propsys.dll', 'powrprof.dll',
+            'ws2_32.dll', 'mswsock.dll', 'iphlpapi.dll', 'dnsapi.dll', 'crypt32.dll', 'bcrypt.dll',
+            'ncrypt.dll', 'secur32.dll', 'sspicli.dll', 'wintrust.dll', 'normaliz.dll', 'userenv.dll',
+            'rpcrt4.dll', 'wtsapi32.dll', 'avrt.dll', 'opengl32.dll', 'glu32.dll', 'dxgi.dll',
+            'd3d11.dll', 'd3d12.dll', 'd3dcompiler_47.dll', 'dbghelp.dll', 'imagehlp.dll',
+            'winhttp.dll', 'wininet.dll')
+          $images = @(Get-ChildItem -LiteralPath $product -Recurse -File |
+            Where-Object { $_.Extension -in @('.exe', '.dll') })
+          foreach ($image in $images) {
+            $headers = @(& $dumpbin /NOLOGO /HEADERS $image.FullName)
+            if ($LASTEXITCODE -ne 0 -or -not ($headers -match '^\s*8664\s+machine\b')) {
+              throw "Runtime image is not inspected AMD64 PE: $($image.FullName)"
+            }
+            $imports = @(& $dumpbin /NOLOGO /IMPORTS $image.FullName)
+            if ($LASTEXITCODE -ne 0) { throw "Cannot inspect Runtime PE imports: $($image.FullName)" }
+            $dependencies = @($imports | ForEach-Object {
+              if ($_ -match '(?i)^\s*([a-z0-9_.-]+\.(dll|cpl|ocx|drv))\s*$') { $Matches[1].ToLowerInvariant() }
+            } | Sort-Object -Unique)
+            if (-not $dependencies.Count) { throw "No import metadata for compiled Runtime image: $($image.FullName)" }
+            foreach ($dependency in $dependencies) {
+              if ($dependency -match '^(vcruntime|msvcp|msvcr|concrt|vcomp|vccorlib)[0-9].*\.dll$|^(msvcrt|ucrtbase|ucrtbased)\.dll$|^api-ms-win-crt-.*\.dll$') {
+                throw "Static-runtime product unexpectedly imports redistributable CRT: $dependency"
+              }
+              if ($dependency -match '^(api-ms-win-|ext-ms-win-)') { continue }
+              if (Test-Path -LiteralPath (Join-Path $image.DirectoryName $dependency) -PathType Leaf) { continue }
+              if ($dependency -notin $platformDlls -or
+                  -not (Test-Path -LiteralPath (Join-Path "$env:SystemRoot/System32" $dependency) -PathType Leaf)) {
+                throw "Unbundled nonplatform dependency $dependency in $($image.Name)"
+              }
+            }
+            Write-Host "$($image.Name) AMD64 imports: $($dependencies -join ', ')"
+          }
+          $emptyDirectory = Join-Path $unpack 'empty-working-directory'
+          New-Item -ItemType Directory -Path $emptyDirectory -ErrorAction Stop | Out-Null
+          foreach ($name in @('35mmisle.exe', '35mmisle-rom.exe')) {
+            $start = [System.Diagnostics.ProcessStartInfo]::new()
+            $start.FileName = Join-Path $product "bin/$name"
+            $start.WorkingDirectory = $emptyDirectory
+            $start.UseShellExecute = $false
+            $start.ArgumentList.Add('--help')
+            $start.Environment.Clear()
+            foreach ($variable in @('SystemRoot', 'WINDIR', 'TEMP', 'TMP')) {
+              $start.Environment[$variable] = [System.Environment]::GetEnvironmentVariable($variable)
+            }
+            $start.Environment['PATH'] = "$env:SystemRoot\System32"
+            $process = [System.Diagnostics.Process]::Start($start)
+            if (-not $process.WaitForExit(30000)) {
+              $process.Kill($true); $process.WaitForExit()
+              throw "Extracted Runtime executable timed out: $name"
+            }
+            if ($process.ExitCode -ne 0) { throw "Extracted Runtime executable failed: $name ($($process.ExitCode))" }
+            $process.Dispose()
+          }
+          "archive=$($archives[0].FullName)" >> $env:GITHUB_OUTPUT
+      - name: Upload only the portable Windows x64 Runtime ZIP
+        # actions/upload-artifact v7.0.2, verified with upstream git ls-remote.
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          path: ${{ steps.runtime-package.outputs.archive }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false
+      # Compiler/package proof only; no Windows 11 gameplay or release qualification.
 
   linux-host:
     name: Linux native product / LUS / SDL3 / canonical RSP-RDP
@@ -167,7 +284,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
-            ninja-build pkg-config libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev \
+            ninja-build pkg-config patchelf binutils libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev \
             libgl-dev libopengl-dev libegl1-mesa-dev libgles2-mesa-dev libvulkan1 \
             libasound2-dev libpulse-dev \
             libgl1-mesa-dri libglx-mesa0 libegl-mesa0 \
@@ -190,9 +307,23 @@ jobs:
             -DBUILD_TESTING=ON -DISLE_BUILD_HOST_PROBE=ON -DISLE_LUS_SOURCE_DIR= \
             -DISLE_BUILD_GAME_ENGINE=ON -DISLE_SNAP_SOURCE_DIR= \
             -DISLE_BUILD_AUDIO_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON \
-            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/host-prefix"
+            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/host-prefix" -DCMAKE_INSTALL_LIBDIR=lib
       - name: Build actual product, host and original services
         run: cmake --build build/linux-host --parallel 2
+      - name: Build all 31 native Player, Actor, Item and publication consumers without a ROM
+        run: >-
+          cmake --build build/linux-host --target
+          actor-collision-rom-smoke actor-command26-rom-smoke actor-interaction-rom-smoke
+          actor-owner-rom-smoke actor-producer-rsp-smoke beach-behavior-resources-rom-smoke
+          beach-initial-species-rom-smoke beach-magikarp-scene-rom-smoke
+          course-collision-rsp-smoke course-magikarp-rsp-smoke course-scene-rsp-smoke
+          environment-sound-rsp-smoke item-flute-rom-smoke item-owner-rom-smoke
+          item-producer-rsp-smoke item-resources-rom-smoke magikarp-owner-rom-smoke
+          photo-replay-rsp-smoke player-bump-rom-smoke player-camera-animation-rom-smoke
+          player-cart-owner-rsp-smoke player-cart-resources-rom-smoke player-commands-rom-smoke
+          player-photo-rsp-smoke player-root-rsp-smoke player-source-renderer-rsp-smoke
+          player-ui-screen-rsp-smoke post-course-replay-rom-smoke post-course-window-rom-smoke
+          scene-layout-rom-smoke world-producer-rsp-smoke --parallel 2
       - name: Build actual application and post-course interface consumers without ROMs
         run: cmake --build build/linux-host --target 35mmisle-application-runtime-rom-smoke post-course-interfaces-rom-smoke --parallel 2
       - name: Exercise native product help without devices or ROMs
@@ -215,6 +346,77 @@ jobs:
           [[ "$probe_output" == *"Submitted 240 real-renderer frames;"* ]]
           [[ "$probe_output" == *"HOST_OWNERS_RELEASED:"* ]]
           # Submission/lifetime markers are not pixel or game-fidelity assertions.
+      - name: Package and check the portable Linux x64 Runtime archive
+        id: runtime-package
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_directory="$RUNNER_TEMP/35mmisle-runtime-linux"
+          # Keep the selected SDL3 prefix available to CPack's runtime dependency resolver.
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/host-prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          cpack --config build/linux-host/CPackConfig.cmake -C Release -B "$package_directory"
+          shopt -s nullglob
+          archives=("$package_directory"/35mmisle-*-Linux-64bit.tar.gz)
+          ((${#archives[@]} == 1)) || { echo "Expected exactly one product Runtime TGZ" >&2; exit 1; }
+          root="$(basename "${archives[0]}" .tar.gz)"
+          entries="$(cmake -E tar tf "${archives[0]}")"
+          for relative in bin/35mmisle bin/35mmisle-rom \
+            share/35mmisle/LICENSE share/35mmisle/fast-renderer-LICENSE.txt \
+            share/licenses/35mmisle/LICENSE share/licenses/35mmisle-rom-tool/LICENSE; do
+            [[ "$entries" == *"$root/$relative"$'\n'* || "$entries" == *"$root/$relative" ]] ||
+              { echo "Runtime TGZ missing $relative" >&2; exit 1; }
+          done
+          for relative in share/35mmisle/shaders/opengl/ share/licenses/35mmisle/dependencies/libultraship/ lib/35mmisle/; do
+            found=false
+            while IFS= read -r entry; do
+              if [[ "$entry" == "$root/$relative"* && "$entry" != */ ]]; then found=true; break; fi
+            done <<< "$entries"
+            "$found" || { echo "Runtime TGZ missing files under $relative" >&2; exit 1; }
+          done
+          unpack="$RUNNER_TEMP/35mmIsle unpack 路径-$RANDOM-$RANDOM"
+          mkdir -- "$unpack"
+          tar -xzf "${archives[0]}" -C "$unpack"
+          portable="$unpack/$root"
+          libraries="$portable/lib/35mmisle"
+          unset LD_LIBRARY_PATH LD_PRELOAD
+          for family in SDL3 zip tinyxml2 spdlog fmt; do
+            matches=("$libraries/lib$family.so"*)
+            ((${#matches[@]} > 0)) || { echo "Missing bundled application family: $family" >&2; exit 1; }
+          done
+          [[ "$(patchelf --print-rpath "$portable/bin/35mmisle")" == "\$ORIGIN/../lib/35mmisle" ]]
+          images=("$portable/bin/35mmisle" "$portable/bin/35mmisle-rom")
+          for library in "$libraries"/*.so*; do
+            [[ -L "$library" ]] && continue
+            [[ -f "$library" && "$(patchelf --print-rpath "$library")" == "\$ORIGIN" ]]
+            images+=("$library")
+          done
+          for image in "${images[@]}"; do
+            closure="$(ldd "$image")"
+            printf '%s\n' "$closure"
+            [[ "$closure" != *"not found"* ]]
+            while read -r name arrow resolved rest; do
+              if [[ "$name" =~ ^lib(SDL3|zip|tinyxml2|spdlog|fmt|bz2|z|crypto|lzma|zstd)\.so(\.[0-9]+)*$ ]]; then
+                [[ "$arrow" == '=>' && "$(realpath -- "$resolved")" == "$libraries/"* ]] ||
+                  { echo "Application dependency escapes Runtime archive: $name => $resolved" >&2; exit 1; }
+              fi
+            done <<< "$closure"
+          done
+          copyrights=("$portable/share/licenses/35mmisle/dependencies/debian/"*/copyright)
+          ((${#copyrights[@]} > 0)) || { echo "Missing bundled apt dependency copyright mapping" >&2; exit 1; }
+          for copyright in "${copyrights[@]}"; do [[ -s "$copyright" ]]; done
+          [[ "$entries" != *'license_check_docker.sh'* && "$entries" != *'license_check.sh'* && "$entries" != *'license-checker.cfg'* ]]
+          (cd "$unpack" && "$portable/bin/35mmisle-rom" --help && "$portable/bin/35mmisle" --help)
+          printf 'archive=%s\n' "${archives[0]}" >> "$GITHUB_OUTPUT"
+      - name: Upload only the portable Linux x64 Runtime TGZ
+        # actions/upload-artifact v7.0.2; upload the existing archive without repacking.
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          path: ${{ steps.runtime-package.outputs.archive }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false
+      # System loader/graphics/audio drivers remain host prerequisites, not bundled SDKs.
 
   linux-rdp:
     name: Linux canonical RDP / actual CPU Vulkan

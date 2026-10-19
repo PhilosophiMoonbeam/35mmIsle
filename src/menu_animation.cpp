@@ -1376,6 +1376,29 @@ Status Runtime::set_node_transform(InstanceHandle h, std::size_t node, const Tra
     }
     return {};
 }
+Status Runtime::set_node_flags(InstanceHandle h, std::size_t node, std::uint32_t flags) noexcept {
+    auto& s = *impl_;
+    if (s.retired) return {Error::retired,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    auto& m = s.models[h.slot];
+    if (node >= m.nodes.size()) return {Error::extent,0};
+    auto& n = m.nodes[node];
+    if (n.flags != flags) {
+        n.flags = flags;
+        ++n.revision;
+        ++s.generation;
+    }
+    return {};
+}
+Status Runtime::set_node_time_left(InstanceHandle h, std::size_t node, float value) noexcept {
+    auto& s = *impl_;
+    if (s.retired) return {Error::retired,0};
+    if (!s.valid(h)) return {Error::handle,0};
+    if (node >= s.models[h.slot].nodes.size()) return {Error::extent,0};
+    if (!std::isfinite(value)) return {Error::malformed,0};
+    s.models[h.slot].nodes[node].clock.time_left = value;
+    return {};
+}
 Status Runtime::restart_model(InstanceHandle h, float skip) noexcept {
     auto& s = *impl_;
     if (s.retired) return {Error::retired,0};

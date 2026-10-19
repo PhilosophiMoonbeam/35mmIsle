@@ -1,0 +1,343 @@
+{
+  "schema_version": 1,
+  "provider": "common-egg",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "common-egg-original6-v1",
+  "source_files": {
+    "src/app_render/568D0.c": {
+      "git_blob": "fed2e286e73ef66a946ebd7b614f2d2b7b1fca6c",
+      "sha256": "ab288404b621d0b12a51c846f00ae7335905931595ea58ca005f073c3e12b2b3",
+      "bytes": 6359,
+      "line_count": 253
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "bytes": 76570,
+      "line_count": 2348
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "bytes": 9431,
+      "line_count": 343
+    }
+  },
+  "semantic_origins": [
+    {
+      "path": "include/common_structs.h",
+      "first": 111,
+      "last": 128,
+      "source_sha256": "90d11bf3fc182d01ca2eadd4996a6bc1aab0ea33fdc566c3f1484101ea56990b",
+      "label": "Original 16-byte vertex and EggStruct fields"
+    }
+  ],
+  "definitions": [
+    {
+      "path": "src/app_render/568D0.c",
+      "symbol": "func_800AAFB0",
+      "first": 30,
+      "last": 32,
+      "source_sha256": "cf477e312b49fc2e0d1406ad88be29a222b5cb5c7e260aa441162dd42c486cf2",
+      "source_abi": "s8 func_800AAFB0(s16 arg0, s16 arg1, f32 arg2)",
+      "native_symbol": "isle_egg_original_func_800AAFB0",
+      "identity": 2148183984,
+      "changes": [
+        {
+          "find": "func_800AAFB0",
+          "replace": "isle_egg_original_func_800AAFB0",
+          "occurrences": 1
+        },
+        {
+          "find": "s8 ",
+          "replace": "int8_t ",
+          "occurrences": 1
+        },
+        {
+          "find": "s16 ",
+          "replace": "int16_t ",
+          "occurrences": 2
+        },
+        {
+          "find": "f32 ",
+          "replace": "float ",
+          "occurrences": 1
+        },
+        {
+          "find": "(f32)",
+          "replace": "(float)",
+          "occurrences": 2
+        }
+      ],
+      "native_declaration": "int8_t isle_egg_original_func_800AAFB0(int16_t arg0, int16_t arg1, float arg2)",
+      "native_sha256": "fdcd12987334878fc87fd3bd935e74170c8b704999b3b8c324d318f9a5733a89"
+    },
+    {
+      "path": "src/app_render/568D0.c",
+      "symbol": "func_800AB000",
+      "first": 34,
+      "last": 36,
+      "source_sha256": "6eacc489a1076121b84287e3b78adc5b3a43554e8be4736d5d64fcac8664a974",
+      "source_abi": "s16 func_800AB000(s16 arg0, s16 arg1, f32 arg2)",
+      "native_symbol": "isle_egg_original_func_800AB000",
+      "identity": 2148184064,
+      "changes": [
+        {
+          "find": "func_800AB000",
+          "replace": "isle_egg_original_func_800AB000",
+          "occurrences": 1
+        },
+        {
+          "find": "s16 ",
+          "replace": "int16_t ",
+          "occurrences": 3
+        },
+        {
+          "find": "f32 ",
+          "replace": "float ",
+          "occurrences": 1
+        },
+        {
+          "find": "(f32)",
+          "replace": "(float)",
+          "occurrences": 2
+        }
+      ],
+      "native_declaration": "int16_t isle_egg_original_func_800AB000(int16_t arg0, int16_t arg1, float arg2)",
+      "native_sha256": "8921906046ff41c8e4c7ee7477adc4211dcd0f4bcd6224df9ae2411a836d4c2c"
+    },
+    {
+      "path": "src/app_render/568D0.c",
+      "symbol": "func_800AB050",
+      "first": 38,
+      "last": 49,
+      "source_sha256": "c533c3ae98d51eb8bab8f525e68d2ef7cfed750b95eceaeea833caddcc05ef00",
+      "source_abi": "void func_800AB050(f32 arg0, s32 arg1, Struct_800AB050* arg2, Struct_800AB050* arg3, Struct_800AB050* arg4)",
+      "native_symbol": "isle_egg_original_func_800AB050",
+      "identity": 2148184144,
+      "changes": [
+        {
+          "find": "func_800AAFB0",
+          "replace": "isle_egg_original_func_800AAFB0",
+          "occurrences": 3
+        },
+        {
+          "find": "func_800AB000",
+          "replace": "isle_egg_original_func_800AB000",
+          "occurrences": 3
+        },
+        {
+          "find": "func_800AB050",
+          "replace": "isle_egg_original_func_800AB050",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800AB050",
+          "replace": "IsleEggVertex",
+          "occurrences": 3
+        },
+        {
+          "find": "s32 ",
+          "replace": "int32_t ",
+          "occurrences": 2
+        },
+        {
+          "find": "f32 ",
+          "replace": "float ",
+          "occurrences": 1
+        }
+      ],
+      "native_declaration": "void isle_egg_original_func_800AB050(float arg0, int32_t arg1, IsleEggVertex* arg2, IsleEggVertex* arg3, IsleEggVertex* arg4)",
+      "native_sha256": "e024ef5f90124fb1debfa878ddaae3fb133c7f4a139bd3f274fb7e54517e1ecf"
+    },
+    {
+      "path": "src/app_render/568D0.c",
+      "symbol": "func_800AB138",
+      "first": 51,
+      "last": 65,
+      "source_sha256": "96fcaf192c0c87cfbf9c012f163ddb0a0e21e531e04346a3b06af8462f11ebc6",
+      "source_abi": "s32 func_800AB138(EggStruct* arg0, f32 arg1)",
+      "native_symbol": "isle_egg_original_func_800AB138",
+      "identity": 2148184376,
+      "changes": [
+        {
+          "find": "func_800AB050",
+          "replace": "isle_egg_original_func_800AB050",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800AB138",
+          "replace": "isle_egg_original_func_800AB138",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800AB050",
+          "replace": "IsleEggVertex",
+          "occurrences": 1
+        },
+        {
+          "find": "EggStruct",
+          "replace": "IsleEgg",
+          "occurrences": 1
+        },
+        {
+          "find": "s32 ",
+          "replace": "int32_t ",
+          "occurrences": 2
+        },
+        {
+          "find": "f32 ",
+          "replace": "float ",
+          "occurrences": 1
+        },
+        {
+          "find": "(s32)",
+          "replace": "(int32_t)",
+          "occurrences": 1
+        },
+        {
+          "find": "->tempBuffer",
+          "replace": "->temp_buffer",
+          "occurrences": 2
+        },
+        {
+          "find": "->vertexCount",
+          "replace": "->vertex_count",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_egg_original_func_800AB050(arg0->timer - n, arg0->vertex_count, arg0->data, arg0->temp_buffer[n], next);",
+          "replace": "isle_egg_original_func_800AB050(arg0->timer - n, arg0->vertex_count, arg0->data, arg0->temp_buffer[n], next);\n    isle_egg_source_commit(arg0);",
+          "occurrences": 1
+        }
+      ],
+      "native_declaration": "int32_t isle_egg_original_func_800AB138(IsleEgg* arg0, float arg1)",
+      "native_sha256": "bf964488d730f26688e795305d3f3613a0e6172a043b262c1da467e145aad4ba"
+    },
+    {
+      "path": "src/app_render/568D0.c",
+      "symbol": "func_800AB1F8",
+      "first": 67,
+      "last": 70,
+      "source_sha256": "c3fd3ea4917b92ff018c74ef99c779a50474931472f7fe7c5ce4fc1cbef320c3",
+      "source_abi": "void func_800AB1F8(EggStruct* arg0)",
+      "native_symbol": "isle_egg_original_func_800AB1F8",
+      "identity": 2148184568,
+      "changes": [
+        {
+          "find": "func_800AB1F8",
+          "replace": "isle_egg_original_func_800AB1F8",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800AB050",
+          "replace": "IsleEggVertex",
+          "occurrences": 1
+        },
+        {
+          "find": "EggStruct",
+          "replace": "IsleEgg",
+          "occurrences": 1
+        },
+        {
+          "find": "->tempBuffer",
+          "replace": "->temp_buffer",
+          "occurrences": 1
+        },
+        {
+          "find": "->vertexCount",
+          "replace": "->vertex_count",
+          "occurrences": 1
+        }
+      ],
+      "native_declaration": "void isle_egg_original_func_800AB1F8(IsleEgg* arg0)",
+      "native_sha256": "763454e40d141c02c3f421315cb23769a2575f0c87c6c0c8bfc81eb8212b9d3d"
+    },
+    {
+      "path": "src/app_level/pokemon.c",
+      "symbol": "func_80362414_502824",
+      "first": 1760,
+      "last": 1766,
+      "source_sha256": "bbe5e351430a6d6cbe962bc7c38e816c8c0eb26f4b461ccb44e1c7294e06bf2c",
+      "source_abi": "void func_80362414_502824(Pokemon* obj, EggStruct* egg, f32 arg2)",
+      "native_symbol": "isle_egg_original_func_80362414_502824",
+      "identity": 2151031828,
+      "changes": [
+        {
+          "find": "func_800AB138",
+          "replace": "isle_egg_original_func_800AB138",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800AB1F8",
+          "replace": "isle_egg_original_func_800AB1F8",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80362414_502824",
+          "replace": "isle_egg_original_func_80362414_502824",
+          "occurrences": 1
+        },
+        {
+          "find": "EggStruct",
+          "replace": "IsleEgg",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemon*",
+          "replace": "IsleActorSource*",
+          "occurrences": 1
+        },
+        {
+          "find": "f32 ",
+          "replace": "float ",
+          "occurrences": 1
+        },
+        {
+          "find": "obj->eggGeo = egg;",
+          "replace": "obj->eggGeo = egg;\n    isle_egg_source_bind(obj, egg);",
+          "occurrences": 1
+        }
+      ],
+      "native_declaration": "void isle_egg_original_func_80362414_502824(IsleActorSource* obj, IsleEgg* egg, float arg2)",
+      "native_sha256": "fcace7ecb5e2909671b1c79ffc65a678966d9b7af2768a0fe854a0782788d562"
+    }
+  ],
+  "definition_count": 6,
+  "preamble": "/* The six pinned Original Egg C definitions, compiled exactly once.\n * Mechanical Source-width lowering only; real Original timer order and waits. */\n#include \"engine_internal.h\"\n#include \"egg_source.h\"\n#include <string.h>\n\n",
+  "native_support": {
+    "src/egg_source.h": {
+      "sha256": "e6d87f3fbaa5473f8a95532683231a08d31448b653149ee7109128c13b315d37"
+    },
+    "src/egg_source.c": {
+      "sha256": "b199a8228d44ce623862b6ec15a56d845a0e142e01fc33b00cb75c76687829fc"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/course_actor_source.h": {
+      "sha256": "e642f3b7333ac8f0d42b50467b309d87073bbdd5dca842101e73045ffddd3522"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    }
+  },
+  "ownership": {
+    "compiled_provider": "common-egg",
+    "compiled_definition_count": 6,
+    "consumers": [
+      "tunnel-actor",
+      "cave-actor"
+    ],
+    "linkage": "One build-private C translation unit in isle-engine; neither course emits these six definitions.",
+    "algorithm": "Original C only; Source-width types and shared native names. AB050 has exactly five arguments and no context or publication.",
+    "publication": "AB138 calls isle_egg_source_commit immediately after AB050 returns and before the genuine timer update; the checked C bridge advances revision.",
+    "driver": "Preserve obj->eggGeo store, insert checked isle_egg_source_bind, retain the genuine Original initialization, loop, and ohWait(1).",
+    "mutable_storage": "One bound IsleEgg in each course Source and native 16-byte vertex arrays. No aliases, service-mediated algorithm, guest overlay, C++ clone, or owning C++ object across waits."
+  },
+  "output_sha256": "98f8a8746d8b0aa6369dba16542a1e9e1522430850359925e9178d1f93b8b4cb",
+  "generator_sha256": "2b213eea62dfd1e1f65296d976aacf38224af2cd238572e9f3f5fdfb23522787"
+}

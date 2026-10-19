@@ -75,7 +75,8 @@ def prepare(repository, manifest_path, output_path, evidence_path):
         native_support[path] = identity
     output = ['/* Build-private selected game definitions; see source evidence. */\n',
               '#include "engine_internal.h"\n\n',
-              '#define SQ(value) ((value) * (value))\n\n']
+              '#define SQ(value) ((value) * (value))\n',
+              '#define VEC_DOT(v, w) ((v->x * w->x) + (v->y * w->y) + (v->z * w->z))\n\n']
     identities = []
     symbols = set()
     for unit in manifest["definitions"]:

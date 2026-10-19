@@ -177,6 +177,7 @@ IsleGameResult isle_game_tick(IsleGame* game) {
     if (game->ticking || game->callback_depth != 0) return ISLE_GAME_INVALID_STATE;
     if (game->fault != ISLE_GAME_OK) return game->fault;
     if (game->update_stopped) return ISLE_GAME_STOPPED;
+    game->has_updated = true;
     game->ticking = true;
     if (setjmp(game->fault_frame) == 0) omUpdateAll();
     game->ticking = false;
@@ -251,7 +252,7 @@ const char* isle_game_error(const IsleGame* game) {
 static GObj* allocate_object(IsleGame* game) {
     GObj* object = game->free_objects;
     if (object != NULL) game->free_objects = object->next;
-    else object = allocate(game, sizeof(*object), _Alignof(GObj));
+    else if (!game->native_capacity_frozen) object = allocate(game, sizeof(*object), _Alignof(GObj));
     if (object != NULL) {
         *object = (GObj){0};
         object->game = game;
@@ -415,7 +416,7 @@ static IsleGameResult allocate_process(IsleGame* game, GObj* object,
     IsleContinuationResult created;
     *output = NULL;
     if (process != NULL) game->free_processes = process->next;
-    else process = allocate(game, sizeof(*process), _Alignof(GObjProcess));
+    else if (!game->native_capacity_frozen) process = allocate(game, sizeof(*process), _Alignof(GObjProcess));
     if (process == NULL) return ISLE_GAME_EXHAUSTED;
     *process = (GObjProcess){0};
     process->game = game;
@@ -675,7 +676,7 @@ SObj* omGetSObj(void) {
     IsleGame* game = active_game;
     SObj* sprite = game->free_sprites;
     if (sprite != NULL) game->free_sprites = sprite->nextFree;
-    else sprite = allocate(game, sizeof(*sprite), _Alignof(SObj));
+    else if (!game->native_capacity_frozen) sprite = allocate(game, sizeof(*sprite), _Alignof(SObj));
     if (sprite == NULL) return NULL;
     *sprite = (SObj){0};
     sprite->game = game;
@@ -764,6 +765,26 @@ IsleGameResult isle_game_sprite_aux_set(IsleGame* game, IsleGameSprite* sprite, 
     sprite->unk_54 = value;
     return ISLE_GAME_OK;
 }
+IsleGameResult isle_game_sprite_clear_display_cache(IsleGame* game, IsleGameSprite* sprite) {
+    IsleGameResult result = access_game(game);
+    SObj* member = NULL;
+    if (result != ISLE_GAME_OK) return result;
+    /* Resolve only actual attached native SObjs before reading the supplied
+     * address. A foreign or removed raw pointer is not an ownership proof. */
+    for (size_t link = 0; link < ARRAY_COUNT(omGObjListHead) && member == NULL; ++link) {
+        for (GObj* object = omGObjListHead[link]; object != NULL && member == NULL; object = object->next) {
+            if (!valid_object(game, object) || object->type != 2) continue;
+            for (SObj* current = object->data.sobj; current != NULL; current = current->next) {
+                if (current == sprite && current->obj == object) { member = current; break; }
+            }
+        }
+    }
+    if (member == NULL || !valid_sprite(game, member)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    member->unk_58 = NULL;
+    member->unk_5C = NULL;
+    return ISLE_GAME_OK;
+}
 
 
 static IsleGameResult access_camera(IsleGame* game, OMCamera* camera) {
@@ -831,7 +852,7 @@ IsleGameResult isle_game_attach_camera(IsleGame* game, IsleGameObject* object,
     if (object->type != 0 || object->data.any != NULL) return ISLE_GAME_INVALID_STATE;
     camera = game->free_cameras;
     if (camera != NULL) game->free_cameras = camera->nextFree;
-    else camera = allocate(game, sizeof(*camera), _Alignof(OMCamera));
+    else if (!game->native_capacity_frozen) camera = allocate(game, sizeof(*camera), _Alignof(OMCamera));
     if (camera == NULL) return ISLE_GAME_EXHAUSTED;
     *camera = (OMCamera){0};
     camera->obj = object;
@@ -896,7 +917,7 @@ IsleGameResult isle_game_camera_add_matrix(IsleGame* game, IsleGameCamera* camer
     if (camera->numMatrices == ARRAY_COUNT(camera->matrices)) return ISLE_GAME_EXHAUSTED;
     matrix = game->free_matrices;
     if (matrix != NULL) game->free_matrices = matrix->nextFree;
-    else matrix = allocate(game, sizeof(*matrix), _Alignof(OMMtx));
+    else if (!game->native_capacity_frozen) matrix = allocate(game, sizeof(*matrix), _Alignof(OMMtx));
     if (matrix == NULL) return ISLE_GAME_EXHAUSTED;
     *matrix = (OMMtx){0};
     matrix->result.kind = kind;
@@ -1364,10 +1385,6 @@ static void remove_model(IsleGameModel* model) {
     game->free_models = model;
 }
 
-static bool valid_model_count(size_t count) {
-    return count != 0 && count <= UINT32_MAX &&
-        count <= (SIZE_MAX - sizeof(IsleGameModel)) / (sizeof(IsleGameModelNode) + 1);
-}
 
 static bool valid_model_initial(const IsleGameModelNodeInit* initial, size_t count) {
     for (size_t i = 0; i < count; ++i) {
@@ -1392,12 +1409,13 @@ static IsleGameModel* allocate_model(IsleGame* game, size_t count) {
     if (best != NULL) {
         model = *best;
         *best = model->nextFree;
-    } else {
+    } else if (!game->native_capacity_frozen) {
         model = allocate(game, sizeof(*model) + count * (sizeof(model->nodes[0]) + 1),
                          _Alignof(IsleGameModel));
         if (model == NULL) return NULL;
         model->capacity = count;
     }
+    else return NULL;
     model->nextFree = NULL;
     model->obj = NULL;
     model->game = game;
@@ -1447,7 +1465,7 @@ IsleGameResult isle_game_attach_model(IsleGame* game, IsleGameObject* object,
     if (result != ISLE_GAME_OK) return result;
     if (object == NULL) object = omCurrentObject;
     if (output == NULL || !valid_object(game, object) || initial == NULL ||
-        !valid_model_count(count)) return ISLE_GAME_INVALID_ARGUMENT;
+        !isle_native_model_count_valid(count)) return ISLE_GAME_INVALID_ARGUMENT;
     if (game->fault != ISLE_GAME_OK) return game->fault;
     if (object->type != 0 || object->data.any != NULL) return ISLE_GAME_INVALID_STATE;
     if (!valid_model_initial(initial, count)) return ISLE_GAME_INVALID_ARGUMENT;
@@ -1544,7 +1562,7 @@ IsleGameResult isle_source_factory_prepare(IsleGame* game, size_t nodes,
     IsleGameResult result = access_game(game);
     GObj* object;
     if (result != ISLE_GAME_OK) return result;
-    if (resources == NULL || !valid_model_count(nodes) ||
+    if (resources == NULL || !isle_native_model_count_valid(nodes) ||
         process_count > ISLE_SOURCE_FACTORY_PROCESS_CAPACITY ||
         (process_count != 0 && descriptors == NULL)) return ISLE_GAME_INVALID_ARGUMENT;
     if (resources->active || resources->game != NULL || resources->object != NULL ||
@@ -1963,7 +1981,8 @@ IsleGameResult isle_game_destroy(IsleGame* game) {
     if (result != ISLE_GAME_OK) return result;
     if (game->ticking || omCurrentObject != NULL || omCurrentProcess != NULL ||
         game->callback_depth != 0 || game->held_identities != 0 ||
-        game->factory_objects != NULL || game->playerSource != NULL) return ISLE_GAME_INVALID_STATE;
+        game->factory_objects != NULL || game->playerSource != NULL ||
+        game->soundRampSource != NULL) return ISLE_GAME_INVALID_STATE;
     for (size_t link = 0; link < ARRAY_COUNT(omGObjListHead); ++link) {
         while (omGObjListHead[link] != NULL) {
             GObj* before = omGObjListHead[link];

@@ -3,6 +3,12 @@
 #include "post_course_scene.hpp"
 #include "post_course_window.hpp"
 #include "scene_storage.hpp"
+#include "album_scene_native.hpp"
+#include "report_scene_native.hpp"
+#include "gallery_scene_native.hpp"
+#include "end_level_8_scene_native.hpp"
+#include "credits_scene_native.hpp"
+#include "photo_presentation.hpp"
 #include <array>
 #include <cstring>
 #include <exception>
@@ -12,6 +18,7 @@
 #include <vector>
 
 #include <utility>
+#include <type_traits>
 
 namespace isle::post_course {
 struct Scene::Impl {
@@ -29,14 +36,18 @@ struct Scene::Impl {
     std::int32_t argument;
     bool require_cpu;
     const std::thread::id creator = std::this_thread::get_id();
-    std::variant<std::monostate,IsleCameraCheckSource,IslePhotoCheckSource> context;
-    IslePhotoCheckEntry photo_entry{};
+    std::variant<std::monostate,IsleCameraCheckSource,IslePhotoCheckSource,
+        IsleAlbumSource,IsleReportSource,IsleGallerySource,IsleEndLevel8Source,IsleCreditsSource> context;
+    std::variant<std::monostate,IslePhotoCheckEntry,IsleAlbumEntry,IsleReportEntry,
+        IsleGalleryEntry,IsleEndLevel8Entry> entry_context;
     IsleContinuationDomain* domain = nullptr;
     IsleContinuation* entry = nullptr;
     SceneStatus phase = SceneStatus::ready;
     IsleGameResult failure = ISLE_GAME_OK;
     std::array<char,512> diagnostic{};
     bool requested = false, native_retired = false, cancelling = false;
+    bool setup_returned = false, source_initialized = false, entry_returned = false;
+    bool entry_resuming = false, callbacks_active = false, native_pumping = false;
     bool near_clipping_disabled = false;
     std::uint32_t requested_screen = 0, requested_setup = 0;
     std::array<std::uint32_t,7> screen_words{};
@@ -45,6 +56,17 @@ struct Scene::Impl {
 
     struct Native {
         Impl& owner;
+        // Created only by an actual native SDK UI-cache allocation producer.
+        // Current arena-backed native models create no such allocations.
+        struct UiAllocation {
+            Impl* owner = nullptr;
+            Native* allocation = nullptr;
+            IsleCreditsSource* source = nullptr;
+            void* payload = nullptr;
+            std::size_t bytes = 0;
+            std::uint64_t generation = 0;
+        };
+        std::vector<UiAllocation> ui_allocations;
         scene::Storage storage;
         std::shared_ptr<const window::Resources> common;
         std::shared_ptr<const Resources> resources;
@@ -61,10 +83,18 @@ struct Scene::Impl {
         std::unique_ptr<scene::graphics::Frame> graphics;
         std::unique_ptr<photo::Replay> pipeline;
         std::unique_ptr<Replay> replay;
-        std::array<WindowRasterSlot,4> element_slots{};
+        std::unique_ptr<photo::Presentation> presentation;
+        std::variant<std::monostate,AlbumSceneNative,ReportSceneNative,GallerySceneNative,
+            EndLevel8SceneNative,CreditsSceneNative> menu;
+        IsleGameObject* preview_object = nullptr;
+        IsleGameCamera* preview_camera = nullptr;
+        std::vector<WindowRasterSlot> element_slots;
         std::vector<WindowRasterSlot> thumbnail_slots;
         std::vector<sprite::RamRange> reservations;
         std::vector<sprite::AssetSpan> immutable;
+        std::size_t base_immutable_count = 0;
+        std::uint64_t presentation_revision = 0;
+        std::vector<sprite::RamRange> frame_reservations;
         std::array<scene::SpriteDraw,1024> draws{};
         std::array<scene::render::Pass,8> passes{};
         std::size_t pass_count = 0;
@@ -83,6 +113,7 @@ struct Scene::Impl {
         void add_camera(IsleGameObject*,IsleGameCamera*,std::uint32_t priority,
                         std::uint64_t link_mask,std::uint32_t camera_tag);
         bool retire() noexcept;
+        bool join_setup() noexcept;
     };
     std::unique_ptr<Native> native;
 
@@ -96,6 +127,10 @@ struct Scene::Impl {
     IsleGameResult request_stop() noexcept;
     IsleGameResult fail(IsleGameResult,const char*) noexcept;
     IsleGameResult prepare_entry() noexcept;
+    IsleGameResult admit_layout() noexcept;
+    IsleGameResult prepare_menu() noexcept;
+    IsleGameResult accept_entry_result() noexcept;
+    IsleGameResult background_color(std::uint32_t*) const noexcept;
     // Returning intent publication only; original C remains on its independent
     // entry stack. Camera applies intervals1/2; Photo preserves inherited1/1.
     IsleGameResult setup_begin(std::int32_t,std::uint32_t screen,std::uint32_t setup,
@@ -103,6 +138,7 @@ struct Scene::Impl {
                                int update_interval,int draw_interval) noexcept;
     IsleGameResult setup_poll(int*,std::int32_t*) noexcept;
     IsleGameResult initialize_replay() noexcept;
+    IsleGameResult initialize_presentation() noexcept;
     IsleGameResult cleanup_replay() noexcept;
     IsleGameResult request_exit(std::int32_t) noexcept;
     // Actual GPU/readback/display/native service only. The outer callback owns
@@ -115,22 +151,74 @@ struct Scene::Impl {
 struct SceneAccess {
     template<class F>
     static IsleGameResult invoke(IslePostCourseSceneSource* source,F&& function) noexcept {
-        if (!source || !source->owner) return ISLE_GAME_INVALID_ARGUMENT;
-        auto& owner = *static_cast<Scene::Impl*>(source->owner);
-        if (&owner.source() != source || owner.domain != source->domain)
-            return ISLE_GAME_INVALID_STATE;
-        const auto access = source->game ? isle_game_status(source->game) :
-            (isle_continuation_domain_check_access(source->domain)==ISLE_CONT_OK ? ISLE_GAME_OK : ISLE_GAME_WRONG_OWNER);
-        if (access != ISLE_GAME_OK) return access;
-        try { return function(owner); }
-        catch (const std::exception& error) { return owner.fail(ISLE_GAME_INVALID_STATE,error.what()); }
-        catch (...) { return owner.fail(ISLE_GAME_INVALID_STATE,"post-course native leaf threw"); }
+        return call(source,std::forward<F>(function),false);
+    }
+    template<class F>
+    static IsleGameResult invoke_retiring(IslePostCourseSceneSource* source,F&& function) noexcept {
+        return call(source,std::forward<F>(function),true);
     }
     template<class F>
     static IsleGameResult invoke_owner(void* raw,F&& function) noexcept {
         if (!raw) return ISLE_GAME_INVALID_ARGUMENT;
-        auto& owner = *static_cast<Scene::Impl*>(raw);
+        auto& owner=*static_cast<Scene::Impl*>(raw);
         return invoke(&owner.source(),std::forward<F>(function));
+    }
+    template<class O>
+    static IsleGameResult deallocate_native(O& owner,void* allocation) noexcept {
+        if (!allocation) return ISLE_GAME_INVALID_ARGUMENT;
+        if (!owner.native || !owner.native->heap || !owner.native->heap_admitted)
+            return ISLE_GAME_INVALID_STATE;
+        for(auto& metadata:owner.native->ui_allocations) {
+            if(allocation!=&metadata)continue;
+            if(metadata.owner!=&owner || metadata.allocation!=owner.native.get() ||
+               metadata.source!=std::get_if<IsleCreditsSource>(&owner.context) ||
+               metadata.generation!=owner.modules.window_generation || !metadata.payload ||
+               !owner.native->heap->owns_allocation(metadata.payload,metadata.bytes))
+                return ISLE_GAME_INVALID_ARGUMENT;
+            if(!owner.native->heap->deallocate_checked(metadata.payload))return ISLE_GAME_INVALID_ARGUMENT;
+            metadata.payload=nullptr;metadata.bytes=0;
+            return ISLE_GAME_OK;
+        }
+        return owner.native->heap->deallocate_checked(allocation) ?
+            ISLE_GAME_OK : ISLE_GAME_INVALID_ARGUMENT;
+    }
+    static IsleGameResult credits_cleanup_context(void*,IsleCreditsSource**) noexcept;
+    static IsleGameResult credits_display_context(IsleCreditsDisplayListCursor**,IsleCreditsSource**) noexcept;
+private:
+    template<class F>
+    static IsleGameResult call(IslePostCourseSceneSource* source,F&& function,bool retiring) noexcept {
+        if (!source || !source->owner) return ISLE_GAME_INVALID_ARGUMENT;
+        auto& owner=*static_cast<Scene::Impl*>(source->owner);
+        if (&owner.source()!=source || owner.domain!=source->domain) return ISLE_GAME_INVALID_STATE;
+        if (owner.creator!=std::this_thread::get_id()) {
+            using Function=std::remove_reference_t<F>;
+            struct Call {
+                IslePostCourseSceneSource* source;
+                Function* function;
+                bool retiring;
+                IsleGameResult result=ISLE_GAME_INVALID_STATE;
+            } request{source,&function,retiring};
+            const auto routed=isle_continuation_on_owner([](void* raw) {
+                auto& request=*static_cast<Call*>(raw);
+                request.result=call(request.source,*request.function,request.retiring);
+            },&request);
+            return routed==ISLE_CONT_OK ? request.result : ISLE_GAME_WRONG_OWNER;
+        }
+        IsleGameResult access=ISLE_GAME_OK;
+        if (retiring) {
+            if (isle_continuation_domain_check_access(source->domain)!=ISLE_CONT_OK)
+                access=ISLE_GAME_WRONG_OWNER;
+            if (access==ISLE_GAME_OK && source->game) {
+                IsleGameCounts counts{};
+                access=isle_game_counts(source->game,&counts);
+            }
+        } else access=source->game ? isle_game_status(source->game) :
+            (isle_continuation_domain_check_access(source->domain)==ISLE_CONT_OK ?
+                ISLE_GAME_OK : ISLE_GAME_WRONG_OWNER);
+        if (access!=ISLE_GAME_OK) return access;
+        try { return function(owner); }
+        catch (const std::exception& error) { return owner.fail(ISLE_GAME_INVALID_STATE,error.what()); }
+        catch (...) { return owner.fail(ISLE_GAME_INVALID_STATE,"post-course native leaf threw"); }
     }
 };
 }

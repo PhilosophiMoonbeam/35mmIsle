@@ -3,6 +3,7 @@
 #include "player_photo.hpp"
 #include "application_photos_source.h"
 namespace isle::application {
+class PhotoWorking;
 // One application roll and its admitted tables, independent of scene Storage.
 class Photos final {
 public:
@@ -21,6 +22,7 @@ public:
     // Immutable admitted attract inputs share application lifetime because
     // canonical State retains the original setIdleScript pointer across scenes.
     const IslePlayerIdleScript& beach_idle_script() const noexcept { return beach_idle_; }
+    const IslePlayerIdleScript& tunnel_idle_script() const noexcept { return tunnel_idle_; }
     IsleGameResult reset() noexcept;
     std::int32_t count() const noexcept { return source_.gPhotoCount; }
     IsleApplicationPhotos* native_source() noexcept {
@@ -53,10 +55,17 @@ public:
     [[nodiscard]] save::GameError set_photo(save::PhotoSet, std::size_t index, const IslePlayerPhotoData&);
     [[nodiscard]] save::GameValue<const std::uint16_t*> album_comment(std::size_t index) noexcept;
     [[nodiscard]] save::GameError set_album_comment(std::size_t index, const std::uint16_t* comment);
+    [[nodiscard]] save::GameError set_album_comment_char(std::size_t index,
+        std::size_t character, std::uint16_t value);
+    [[nodiscard]] save::GameError set_working(save::PhotoSet, std::size_t,
+        const PhotoWorking&);
     // NULL operands are independent no-ops; comment is 32 numeric source chars.
     [[nodiscard]] save::GameError set_album(std::size_t index, const IslePlayerPhotoData*,
         const std::uint16_t* comment);
 private:
+    friend class PhotoWorking;
+    [[nodiscard]] save::GameError acquire_working_replay(PhotoWorking&,const void*,
+        IslePhotoWorkingRead&) noexcept;
     struct SavedPhoto {
         IslePlayerPhotoData photo{};
         std::uint64_t revision = 1;
@@ -77,6 +86,8 @@ private:
     IslePlayerPhotoSource source_{};
     std::vector<IslePlayerInput> beach_inputs_;
     IslePlayerIdleScript beach_idle_{};
+    std::vector<IslePlayerInput> tunnel_inputs_;
+    IslePlayerIdleScript tunnel_idle_{};
     std::array<IsleSelectedPhoto, 60> selected_{};
     std::int32_t selected_count_ = 0;
     std::array<std::uint64_t, 60> roll_revisions_{};
@@ -86,6 +97,39 @@ private:
     std::array<AlbumComment, save::game_album_count> comments_{};
     const void* replay_borrower_ = nullptr;
     IslePhotoRecord replay_record_{};
+    PhotoWorking* replay_working_ = nullptr;
+    std::size_t working_owners_ = 0;
+};
+// Cold fixed storage for an Original PhotoData assignment. It is not a saved
+// slot: saved inputs retain every wire byte, including reserved bytes, while
+// the semantic view is separately decoded. Photos must outlive this owner.
+class PhotoWorking final {
+public:
+    explicit PhotoWorking(Photos&) noexcept;
+    ~PhotoWorking() noexcept;
+    PhotoWorking(const PhotoWorking&) = delete;
+    PhotoWorking& operator=(const PhotoWorking&) = delete;
+    PhotoWorking(PhotoWorking&&) = delete;
+    PhotoWorking& operator=(PhotoWorking&&) = delete;
+    IslePhotoWorking* source() const noexcept { return handle_; }
+    [[nodiscard]] save::GameError copy_record(const IslePhotoRecord&) noexcept;
+    [[nodiscard]] save::GameError copy(const PhotoWorking&) noexcept;
+    [[nodiscard]] save::GameError clear() noexcept;
+    const IslePlayerPhotoData* photo() const noexcept { return &photo_; }
+    IslePhotoWorkingRead describe() const noexcept;
+    [[nodiscard]] save::GameError acquire(const void*, IslePhotoWorkingRead&) noexcept;
+    bool validates(const IslePhotoWorkingRead&) const noexcept;
+    [[nodiscard]] save::GameError release(IslePhotoWorkingRead&) noexcept;
+private:
+    friend class Photos;
+    IslePhotoWorking* const handle_;
+    bool mutable_now() const noexcept;
+    Photos& photos_;
+    std::array<std::byte, save::game_photo_bytes> wire_{};
+    IslePlayerPhotoData photo_{};
+    std::uint64_t revision_ = 1;
+    const void* borrower_ = nullptr;
+    bool valid_ = false;
 };
 }
 #endif

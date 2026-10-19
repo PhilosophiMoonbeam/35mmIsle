@@ -7,7 +7,19 @@
 extern "C" {
 #endif
 
-enum { ISLE_POST_COURSE_CAMERA_CHECK = 9, ISLE_POST_COURSE_PHOTO_CHECK = 15 };
+enum {
+    ISLE_POST_COURSE_CAMERA_CHECK = 9,
+    ISLE_POST_COURSE_ALBUM = 12,
+    ISLE_POST_COURSE_REPORT = 14,
+    ISLE_POST_COURSE_PHOTO_CHECK = 15,
+    ISLE_POST_COURSE_CREDITS_17 = 17,
+    ISLE_POST_COURSE_CREDITS_18 = 18,
+    ISLE_POST_COURSE_CREDITS_19 = 19,
+    ISLE_POST_COURSE_CREDITS_20 = 20,
+    ISLE_POST_COURSE_GALLERY_22 = 22,
+    ISLE_POST_COURSE_GALLERY_23 = 23,
+    ISLE_POST_COURSE_END_LEVEL_8 = 24
+};
 /* One actual overlay execution context. Its owner and entry domain outlive
  * sceneStorage. Services below are borrowed only while the real scene exists.
  * Original GObj::userData remains available to original C; it is not this link.
@@ -71,6 +83,9 @@ IsleGameResult isle_post_course_source_join_processes(IslePostCourseSceneSource*
  * Install only after the allocation-only input initializer has returned. */
 IsleGameResult isle_post_course_source_install_input(IslePostCourseSceneSource*);
 IsleGameResult isle_post_course_native_input_invalidate(IslePostCourseSceneSource*);
+/* Returning creator-routed native service only. Pending C drivers own their
+ * retries; this does not grant an OM update, GTL interval or Source wait. */
+IsleGameResult isle_post_course_native_progress(IslePostCourseSceneSource*);
 #ifdef __cplusplus
 }
 #endif

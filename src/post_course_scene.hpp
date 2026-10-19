@@ -6,6 +6,11 @@
 #include "post_course_resources.hpp"
 #include "scene_graphics.hpp"
 #include "photo_check_source.h"
+#include "album_source.h"
+#include "report_source.h"
+#include "gallery_source.h"
+#include "end_level_8_source.h"
+#include "credits_source.h"
 #include <memory>
 #include <optional>
 
@@ -13,7 +18,8 @@ namespace isle::post_course {
 struct SceneCreateResult;
 struct SceneAccess;
 enum class SceneStatus { ready, setup_pending, running, retiring, completed, cancelled, failed, retired };
-/* Actual original CameraCheck9/PhotoCheck15 C entry and scene owner. Entry
+/* Shared actual original CameraCheck9, PhotoCheck15, Album12, Report14,
+ * Gallery22/23, EndLevel8=24 and Credits17..20 C entry and scene owner. Entry
  * continuation/context survive disposable sceneStorage and return only after
  * joined graphics/native/Window/Replay retirement. Manager retains its real
  * EntryBorrow; this owner never selects the application's next entry. */
@@ -49,6 +55,11 @@ public:
     const IslePostCourseSceneSource& source() const noexcept;
     const IsleCameraCheckSource* camera_source() const noexcept;
     const IslePhotoCheckSource* photo_source() const noexcept;
+    const IsleAlbumSource* album_source() const noexcept;
+    const IsleReportSource* report_source() const noexcept;
+    const IsleGallerySource* gallery_source() const noexcept;
+    const IsleEndLevel8Source* end_level_8_source() const noexcept;
+    const IsleCreditsSource* credits_source() const noexcept;
     // Last input actually returned to original CameraCheck, not a new
     // menu/neutral derivation. Null until Source reads it, or after retirement.
     // Read-only borrow; serialized native updates may replace its values.

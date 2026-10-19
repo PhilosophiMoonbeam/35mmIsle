@@ -24,7 +24,7 @@ void valid(Range r, std::size_t alignment) {
             "Actor producer range is empty, unaligned or outside RDRAM");
 }
 constexpr scene::RenderMetadata prefix_render{5,0x80000001u,UINT32_MAX};
-struct Policy { bool fog = false, transparent = false, gate = false, geometry = false; };
+struct Policy { bool fog = false, transparent = false, gate = false, geometry = false; std::uint32_t source_callback = 0; };
 Policy policy(const actor::ActorInitialization& init, const menu::Model& model) {
     Policy p;
     menu::RenderType type;
@@ -35,6 +35,8 @@ Policy policy(const actor::ActorInitialization& init, const menu::Model& model) 
     case 0x80359534: type = menu::RenderType::d_fogged; p.fog = p.transparent = p.gate = true; break;
     case 0x8035942c: type = menu::RenderType::i_fogged; p.fog = p.gate = true; break;
     case 0x80359484: type = menu::RenderType::j_fogged; p.fog = p.transparent = p.gate = true; break;
+    case 0x802de26c: type = menu::RenderType::i_no_fog; p.source_callback = init.render_callback_identity; break;
+    case 0x802dfae4: type = menu::RenderType::d_fogged; p.source_callback = init.render_callback_identity; break;
     default: throw std::invalid_argument("Unadmitted actual actor source render callback");
     }
     require(model.render_type == type,"Actor callback and source hierarchy disagree");
@@ -57,6 +59,11 @@ struct Producer::Impl {
     std::vector<ProducerFragment> staged_fragments, fragments;
     std::size_t staged_fragment_count = 0, fragment_count = 0;
     DetectorBinding* detector;
+    SourceRender source_render;
+    std::unique_ptr<source_geometry::Publisher> source_vertices;
+    const menu::model::BorrowedBinding* source_binding = nullptr;
+    const menu::model::RenderContext* source_context_view = nullptr;
+    bool source_encoded = false;
     std::array<focus::Subject,focus::history_capacity> previous_subjects{}, current_subjects{};
     std::size_t previous_count = 0, appended_count = 0, current_count = 0;
     std::uint16_t source_context = 0;
@@ -74,9 +81,9 @@ struct Producer::Impl {
     bool retired = false;
     Impl(IsleGame* g, IsleGameCamera* c, menu::model::CameraBasisState& b,
          const actor::Resources& r, std::span<const ActorRenderBinding> bindings_, ProducerLayout l,
-         DetectorBinding* detector_)
+         DetectorBinding* detector_, SourceRender source_render_)
         : game(g),camera(c),basis(b),resources(r),bindings(bindings_),layout(l),
-          owned{l.payloads,l.lists,l.materials},detector(detector_) {}
+          owned{l.payloads,l.lists,l.materials},detector(detector_),source_render(source_render_) {}
     std::uint32_t payload(std::size_t offset) const { return static_cast<std::uint32_t>(layout.payloads.offset+offset); }
     void command(unsigned lane, std::uint32_t a, std::uint32_t b) {
         require(lane < 4 && counts[lane] < lanes[lane].size(),"Actor producer command capacity exceeded");
@@ -217,11 +224,20 @@ struct Producer::Impl {
             if (kernel->draws(b.slot)) {
                 const auto& p = policies[b.state.resource_model];
                 const auto& model = models[b.state.resource_model];
-                if (p.fog) { fog(0,model,true); if (p.transparent) fog(1,model,true); }
-                menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
-                    std::span(lanes[2]),std::span(lanes[3])},counts,pending};
-                require(bool(kernel->encode(b.slot,context,buffer)),"Actor source hierarchy/context/list capacity rejected");
-                if (p.fog) { fog(0,model,false); if (p.transparent) fog(1,model,false); }
+                if (p.source_callback) {
+                    require(source_render.invoke && !source_binding,"Actor custom Source callback lacks its exclusive native fence");
+                    source_binding = &b; source_context_view = &context; source_encoded = false;
+                    const auto result = source_render.invoke(source_render.user,b.object,p.source_callback);
+                    source_binding = nullptr; source_context_view = nullptr;
+                    native(result);
+                    require(source_encoded,"Actor custom Source callback omitted its actual hierarchy");
+                } else {
+                    if (p.fog) { fog(0,model,true); if (p.transparent) fog(1,model,true); }
+                    menu::model::HierarchyBuffer buffer{{std::span(lanes[0]),std::span(lanes[1]),
+                        std::span(lanes[2]),std::span(lanes[3])},counts,pending};
+                    require(bool(kernel->encode(b.slot,context,buffer)),"Actor source hierarchy/context/list capacity rejected");
+                    if (p.fog) { fog(0,model,false); if (p.transparent) fog(1,model,false); }
+                }
                 if (detector && detector->enabled && p.gate) capture(staged_subjects[i]);
             }
             for (unsigned lane = 0; lane < 4; ++lane) {
@@ -251,8 +267,9 @@ struct Producer::Impl {
 Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBasisState& basis,
     const actor::Resources& resources, std::span<const menu::animation::SlotCapacity> capacities,
     std::span<const ActorRenderBinding> bindings, ProducerLayout layout, std::span<const Range> other,
-    DetectorBinding* detector)
-    : impl_(std::make_unique<Impl>(game,camera,basis,resources,bindings,layout,detector)) {
+    DetectorBinding* detector, SourceRender source_render,
+    std::span<const source_geometry::VertexPublication> source_vertices)
+    : impl_(std::make_unique<Impl>(game,camera,basis,resources,bindings,layout,detector,source_render)) {
     auto& s = *impl_;
     require(!detector || detector->context<2,"Actor source detector context is invalid");
     require(game && camera && !capacities.empty() && !bindings.empty() && !other.empty(),
@@ -283,6 +300,8 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
     for (const auto& init : resources.initializations()) {
         require(init.model < models.size() && !seen[init.model],"Actor source initialization/model identity changed");
         s.policies[init.model] = policy(init,models[init.model]); seen[init.model] = true;
+        require(!s.policies[init.model].source_callback || source_render.invoke,
+            "Actor custom Source callback requires its real returning C fence");
     }
     require(std::all_of(seen.begin(),seen.end(),[](bool v) { return v; }),"Actor model lacks actual source callback policy");
     for (const auto& model : models) {
@@ -309,8 +328,36 @@ Producer::Producer(IsleGame* game, IsleGameCamera* camera, menu::model::CameraBa
     for (auto& lane : s.lanes) lane.resize(layout.lists.size/8);
     // Every node can append a matrix + source48's13 words and a placement.
     s.pending.resize(nodes*15+capacities.size());
+    if (!source_vertices.empty())
+        s.source_vertices = std::make_unique<source_geometry::Publisher>(source_vertices,resources,ranges);
 }
 Producer::~Producer() = default;
+IsleGameResult Producer::source_packet(std::uint32_t lane,std::uint32_t first,std::uint32_t second) noexcept {
+    auto& s = *impl_;
+    if (s.retired || !s.source_binding || !s.source_context_view) return ISLE_GAME_INVALID_STATE;
+    if (lane >= s.lanes.size()) return ISLE_GAME_INVALID_ARGUMENT;
+    if (s.counts[lane] >= s.lanes[lane].size()) return ISLE_GAME_EXHAUSTED;
+    s.lanes[lane][s.counts[lane]++] = {first,second};
+    return ISLE_GAME_OK;
+}
+IsleGameResult Producer::source_hierarchy(IsleGameObject* object,menu::RenderType type) noexcept {
+    auto& s = *impl_;
+    if (s.retired || !s.source_binding || !s.source_context_view || s.source_encoded ||
+        s.source_binding->object != object) return ISLE_GAME_INVALID_STATE;
+    const auto& b = *s.source_binding;
+    const auto& model = s.resources.models()[b.state.resource_model];
+    if (model.render_type != type ||
+        (type != menu::RenderType::i_no_fog && type != menu::RenderType::d_fogged)) return ISLE_GAME_INVALID_ARGUMENT;
+    try {
+        if (type == menu::RenderType::d_fogged) { s.fog(0,model,true); s.fog(1,model,true); }
+        menu::model::HierarchyBuffer buffer{{std::span(s.lanes[0]),std::span(s.lanes[1]),
+            std::span(s.lanes[2]),std::span(s.lanes[3])},s.counts,s.pending};
+        if (!s.kernel->encode(b.slot,*s.source_context_view,buffer)) return ISLE_GAME_EXHAUSTED;
+        if (type == menu::RenderType::d_fogged) { s.fog(0,model,false); s.fog(1,model,false); }
+        s.source_encoded = true;
+        return ISLE_GAME_OK;
+    } catch (...) { return ISLE_GAME_EXHAUSTED; }
+}
 ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::uint64_t epoch,
                                         const scene::render::Pass* pass,bool prefix_visible) {
     auto& s = *impl_;
@@ -346,6 +393,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
     if (pass) disjoint(pass,sizeof(*pass));
     for (const auto& lane : s.lanes) disjoint(lane.data(),lane.size()*sizeof(Command));
     for (const auto& span : s.resources.installation_spans()) disjoint(span.bytes.data(),span.bytes.size());
+    if (s.source_vertices) s.source_vertices->validate(words,epoch);
     std::size_t count = 0; native(isle_game_camera_matrix_count(s.game,s.camera,&count));
     require(count == 2,"Actor Beach camera requires source kinds3/14");
     native(isle_game_camera_validate_disjoint(s.game,s.camera,words.data(),words.size_bytes()));
@@ -397,6 +445,7 @@ ProducerFrame Producer::prepare_filtered(std::span<std::uint32_t> words, std::ui
         }
         s.reflection_revision = reflection->revision;
     }
+    if (s.source_vertices) s.source_vertices->publish(words,epoch);
     s.kernel->upload(words,epoch);
     const auto write = [&](std::uint32_t at, Command c) {
         if (fresh || words[at/4] != c.w0) memory.word(at,c.w0);

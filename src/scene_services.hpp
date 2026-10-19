@@ -94,6 +94,14 @@ public:
     void fail(const char*) noexcept;
     bool check(IsleGameResult, const char*) noexcept;
     bool check(::isle::audio::Error, const char*) noexcept;
+    // Native physical capacity, separate from Source logical pool counts.
+    // Reserve actual-size model blocks and command nodes; freeze every native
+    // pool once before first update/callback. Failed reservation publishes none.
+    IsleGameResult reserve_native_capacity(std::size_t command_nodes,
+        std::span<const IsleGameModelCapacity> models = {}) noexcept;
+    // Runs the real OM update, then releases actually joined sound identities
+    // outside every Source continuation/callback. Preserves STOPPED/first fault.
+    IsleGameResult tick() noexcept;
     // Active native stackful process only; no owning C++ locals across wait.
     bool wait(std::uint32_t updates = 1) noexcept;
     IsleGameObject* object(std::uint32_t id, std::uint8_t update_link = 0,
@@ -139,7 +147,8 @@ public:
                                  IsleGameObject* sender) noexcept;
     // Capture previous immediately before a serialized original C store. This
     // accounts for that completed store without repeating it or its source
-    // branch. No intervening field mutation or retirement is allowed.
+    // branch. A current deleting receiver may clear its own actual field before
+    // native join; no new reference or foreign post-retirement store is admitted.
     bool source_reference_reconcile(IsleGameObject* receiver, IsleGameObject** field,
                                     IsleGameObject* previous) noexcept;
     SourceBorrows source_owner_borrows(IsleGameObject*) const noexcept;
@@ -167,7 +176,7 @@ public:
                             std::uint32_t priority = 1) noexcept;
     void end_process(IsleGameProcess*) noexcept;
     void end_processes(IsleGameObject*) noexcept;
-    void erase(IsleGameObject*) noexcept;
+    IsleGameResult erase(IsleGameObject*) noexcept;
     // Terminal native-object joins, outside OM and after all GPU/Photo borrowers.
     // Callback owners and Services stay alive; Source identities remain their
     // semantic owner's responsibility. False retains incomplete joins/dispatch.
@@ -188,6 +197,11 @@ public:
                         std::uint32_t render_priority = 0x80000000u,
                         std::uint32_t source_object_id = 31) noexcept;
     IsleGameSprite* append_sprite(IsleGameObject*, std::uint32_t identity) noexcept;
+    // Hidden actual native SObj, without a Producer resource or invented bitmap.
+    // A complete Source descriptor copy is bound by replace_sprite before draw.
+    IsleGameSprite* append_empty_sprite(IsleGameObject*) noexcept;
+    // Borrow the live handle whose canonical mutable view has this exact address.
+    IsleGameSprite* sprite_from_view(const IsleSprite*) noexcept;
     IsleGameSprite* append_sprite(IsleGameObject*, std::size_t producer_resource,
                                  const IsleSprite&, std::uint64_t generation = 0) noexcept;
     // Semantic window hierarchy; native attachments remain flat on the same
@@ -215,6 +229,10 @@ public:
                       IsleGameSprite*& child, IsleGameSprite*& next,
                       IsleGameSprite*& previous) noexcept;
     bool sprite_root(IsleGameObject*, IsleGameSprite*&) noexcept;
+    // Exact NULL stores reached on a fresh root; reject severing live links.
+    bool clear_sprite_link(IsleGameSprite*,bool parent) noexcept;
+    // Album root reset preserves allocated detached children and their fields.
+    bool clear_sprite_root_links(IsleGameSprite*) noexcept;
     std::size_t sprite_count() const noexcept;
     // Count is a capacity upper bound, including locally hidden subtrees.
     // Draw views are stable scene-owned prepared snapshots, not mutable native
@@ -233,9 +251,12 @@ public:
     IsleScreenTransitionSource* screen_transition_source() noexcept;
     ::isle::screen_transition::Owner& screen_transition() noexcept;
     int play_sound(std::uint32_t sound, game_audio::Parameters = {}) noexcept;
-    bool ramp_sound_volume(int slot, std::uint32_t from, std::uint32_t to, std::int32_t updates) noexcept;
-    bool ramp_sound_pan(int slot, std::uint32_t from, std::uint32_t to, std::int32_t updates) noexcept;
-    void stop_sound_ramps() noexcept;
+    IsleGameResult ramp_sound_volume(int slot, std::uint32_t from, std::uint32_t to,
+        std::int32_t updates, std::int32_t* source_result) noexcept;
+    IsleGameResult ramp_sound_pan(int slot, std::uint32_t from, std::uint32_t to,
+        std::int32_t updates, std::int32_t* source_result) noexcept;
+    IsleGameResult reset_sound_ramps() noexcept;
+    IsleGameResult stop_sound_ramps() noexcept;
     bool fade_all_sounds(std::int32_t updates) noexcept;
     void request_exit(std::int32_t source_result) noexcept;
     bool exit_requested() const noexcept;

@@ -8,28 +8,28 @@
       "sha256": "dfa429290156d757c7ebe8ea5368fd71f2572091404b7e32592683f8469bc0b7"
     },
     "src/camera_check_source.c": {
-      "sha256": "bfff788bb1ffe98bf3d3143cd009ee0913b0e0eb6a155dc1592d65fcecd0fc73"
+      "sha256": "4f30ef7e8363f1950a59ea2ddede06b3086e38200dede03a9b3b5a1c4db6fd3b"
     },
     "tools/materialize_camera_check.py": {
       "sha256": "4810e5bf041b12971a0d2b2f3ea63c21149c8966c7818e09c90508311d0f4948"
     },
     "src/post_course_scene_source.h": {
-      "sha256": "3ffa3b3255063d23c9c0882f7b342d72951fb2ef46f9024c2b5f1b3204ca0f5e"
+      "sha256": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9"
     },
     "src/post_course_scene_source.c": {
-      "sha256": "54dc3b6d0ad1cc3717a68f2220de761d6125420bdf1021942818dc6db9933ae8"
+      "sha256": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "b0afe863d35427698fe7ea5c5de0a05ea471817056516ec287c08d7aca1bff8e"
+      "sha256": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87"
     },
     "src/post_course_scene.hpp": {
-      "sha256": "459b4fa5a790779c20245732c9f5bf6442fd2b439055949fc9afa3d0c23f540a"
+      "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
     },
     "src/post_course_scene_internal.hpp": {
-      "sha256": "bb56438ed411f72daafb1ad25bf897dab001bfb81d1c651b1d4afd170ffc382f"
+      "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
     },
     "src/post_course_scene_hooks.cpp": {
-      "sha256": "2ff7fd3e6944104be56427260d7ca920782577fc94afa05378df3fd649488d47"
+      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
     },
     "src/post_course_modules.cpp": {
       "sha256": "8c2a19e27616f5ebc2ab5d96f064521ec1ce4c1239c652c8cdd681596f79e2df"

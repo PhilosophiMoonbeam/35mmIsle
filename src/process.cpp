@@ -11,8 +11,8 @@
 namespace isle {
 namespace {
 
-// Only owner-side service code sets this. A service may manage parked workers,
-// but must not dispatch a second gameplay callback during the rendezvous.
+// Ordinary owner services cannot dispatch gameplay. The explicit scheduler
+// rendezvous parks its caller while a different process runs serially.
 thread_local Process* owner_service_source = nullptr;
 
 bool terminal(Process::State state) noexcept {
@@ -31,7 +31,11 @@ void Yield::wait(std::uint64_t iterations) {
 }
 
 void Yield::on_owner(void (*action)(void*), void* payload) {
-    process_.on_owner(action, payload);
+    process_.on_owner(action, payload, false);
+}
+
+void Yield::on_owner_dispatch(void (*action)(void*), void* payload) {
+    process_.on_owner(action, payload, true);
 }
 
 Process::Process(Callback callback)
@@ -96,18 +100,20 @@ Process::State Process::resume() {
                 const auto action = owner_action_;
                 void* const payload = owner_payload_;
                 lock.unlock();
-                owner_service_source = this;
+                Process* const previous_service = owner_service_source;
+                owner_service_source = owner_dispatch_ ? nullptr : this;
                 std::exception_ptr failure;
                 try {
                     action(payload);
                 } catch (...) {
                     failure = std::current_exception();
                 }
-                owner_service_source = nullptr;
+                owner_service_source = previous_service;
                 lock.lock();
                 owner_failure_ = std::move(failure);
                 owner_action_ = nullptr;
                 owner_payload_ = nullptr;
+                owner_dispatch_ = false;
                 changed_.notify_one();
             }
         }
@@ -176,7 +182,7 @@ void Process::wait(std::uint64_t iterations) {
     throw Finished{};
 }
 
-void Process::on_owner(void (*action)(void*), void* payload) {
+void Process::on_owner(void (*action)(void*), void* payload, bool dispatch) {
     require_worker();
     if (action == nullptr) {
         throw std::invalid_argument("an owner action requires a function");
@@ -186,6 +192,7 @@ void Process::on_owner(void (*action)(void*), void* payload) {
         throw Cancelled{};
     }
     owner_payload_ = payload;
+    owner_dispatch_ = dispatch;
     owner_action_ = action;
     changed_.notify_one();
     changed_.wait(lock, [this] { return owner_action_ == nullptr; });

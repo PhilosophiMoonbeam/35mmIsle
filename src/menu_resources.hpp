@@ -2,6 +2,7 @@
 #define ISLE_MENU_RESOURCES_HPP
 
 #include "scene_resources.hpp"
+#include "35mmisle/engine.h"
 #include "rom_snapshot.hpp"
 #include "rom_view.hpp"
 
@@ -89,7 +90,7 @@ struct BankFacts {
     std::size_t rom_begin = 0, rom_end = 0, compressed_bytes_consumed = 0;
     std::uint32_t guest_begin = bank_guest;
 };
-struct Vec3 { float x, y, z; };
+using Vec3 = IsleGameVec3;
 enum class RenderType : std::uint32_t {
     a = 0x80014d60,
     b = 0x80014f98,

@@ -21,7 +21,8 @@ struct WorldRecord {
 // sticky. Destructor does not attempt to delete live callback storage.
 class World final {
 public:
-    World(IsleGame*, const world::Resources&, world::ModuleState&);
+    World(IsleGame*, const world::Resources&, world::ModuleState&,
+          std::uint32_t object_link = 18, std::uint32_t dl_link = 19);
     ~World() noexcept;
     World(const World&) = delete;
     World& operator=(const World&) = delete;
@@ -29,6 +30,8 @@ public:
     bool reconstruct(const WorldRecord&) noexcept;
     bool request_clear() noexcept;
     bool clear() noexcept;
+    // Reuse admitted CPU resources after real native joins; never resets module.
+    bool rearm() noexcept;
     bool available() const noexcept;
     bool cleared() const noexcept;
     const std::string& error() const noexcept;

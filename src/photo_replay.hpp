@@ -52,6 +52,10 @@ struct ReplayConfig {
     graphics::SourceProgram program = graphics::SourceProgram::f3dex2_non_fifo;
     // Source's actual D_803A6660/64 backing buffer dimensions, not a crop size.
     std::uint32_t buffer_width = 320, buffer_height = 210;
+    std::uint32_t dl_link = 19, world_object_link = 18, photo_object_link = 17;
+    // Actual application-lifetime GAME color bytes, when this component is
+    // hosted by the application. Standalone GPU consumers own no such state.
+    std::array<std::uint8_t,3>* background_rgb = nullptr;
 };
 enum class ReplayKind { score, preview };
 struct ReplayRequest {
@@ -87,9 +91,20 @@ struct ReplayResult {
 // Snapshot, Game, world::ModuleState and access.context outlive Replay, including
 // all GPU/readback and native cleanup. Destruction requires retire()==true:
 // silently destroying native callback storage is illegal.
+struct ReplayWorldHandoff {
+    // Immutable Resources may also be retained by admitted cold record caches.
+    // The sole World still moves without moving its native callback storage;
+    // member order destroys it before releasing its resource hold.
+    std::shared_ptr<world::Resources> resources;
+    std::unique_ptr<World> world;
+};
 class Replay final {
 public:
     Replay(IsleGame*, const rom::Snapshot&, world::ModuleState&, ReplayGpuAccess, ReplayConfig);
+    // Actual Source80374D40 creates this same owned camera before any record.
+    // Its ordinary display callback remains disabled outside real Replay work.
+    bool initialize_preview_camera(std::uint32_t background_rgba,
+        IsleGameObject**,IsleGameCamera**) noexcept;
     ~Replay() noexcept;
     Replay(const Replay&) = delete;
     Replay& operator=(const Replay&) = delete;
@@ -105,6 +120,16 @@ public:
     // Nonblocking true native retirement. Call again after genuine native join
     // progress if false; poll continues draining a submitted GPU on cancellation.
     bool retire() noexcept;
+    // Returning native half of Source 8009FC38; caller owns real prior-GFX
+    // join and canonical record lease. Only idle requests may prepare a course.
+    // False is pending native retirement unless error() is nonempty.
+    bool prepare_course(std::int32_t level) noexcept;
+    // Closed mechanical ownership handoff to the one retained Presentation.
+    // Original thumbnail and full-photo paths must never own duplicate Worlds.
+    ReplayAcquire take_presentation_world(IsleGame*, const void* borrower,
+        std::int32_t level, std::uint32_t dl_link, std::uint32_t world_link,
+        std::uint32_t photo_link, ReplayWorldHandoff&) noexcept;
+    bool return_presentation_world(const void* borrower, ReplayWorldHandoff&&) noexcept;
     bool busy() const noexcept;
     bool gpu_busy() const noexcept;
     const char* error() const noexcept;

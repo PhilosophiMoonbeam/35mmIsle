@@ -16,6 +16,10 @@ public:
     Heap& operator=(const Heap&) = delete;
     void* allocate(std::size_t bytes) noexcept;
     void deallocate(void* data) noexcept;
+    // Resolve only actual allocated payload starts by walking this heap's
+    // chunk chain. Foreign/interior/already-free pointers are never dereferenced.
+    bool deallocate_checked(void* data) noexcept;
+    bool owns_allocation(const void* data, std::size_t bytes = 0) const noexcept;
     void* reallocate(void* data, std::size_t bytes) noexcept;
     std::size_t allocated() const noexcept;
     std::size_t capacity() const noexcept { return size_; }
@@ -34,6 +38,7 @@ private:
     Chunk* split(Chunk*, std::size_t) noexcept;
     void merge(Chunk*) noexcept;
     Chunk* next(Chunk*) const noexcept;
+    Chunk* find_allocation(const void*) const noexcept;
     std::unique_ptr<std::max_align_t[]> owned_;
     std::byte* base_ = nullptr;
     std::size_t size_ = 0;

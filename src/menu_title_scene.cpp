@@ -204,6 +204,7 @@ struct Title::Impl {
         return s.play_sound(id, {volume, pan, reverb, pitch});
     }
     void audio_tick() noexcept {
+        std::int32_t source_result = -1;
         switch (counter) {
         case 1:
             s.check(s.audio.play_song(0, 0x19), "title main song");
@@ -213,15 +214,15 @@ struct Title::Impl {
             break;
         case 2:
             s.check(s.audio.bgm_volume(1, 0x6400, 60), "title auxiliary swell");
-            s.ramp_sound_volume(ambient, 0x2000, 0x4800, 60);
+            s.ramp_sound_volume(ambient, 0x2000, 0x4800, 60, &source_result);
             break;
         case 70:
-            s.ramp_sound_volume(ambient, 0x4800, 0x2000, 600);
-            s.ramp_sound_pan(ambient, 0x40, 0, 400);
+            s.ramp_sound_volume(ambient, 0x4800, 0x2000, 600, &source_result);
+            s.ramp_sound_pan(ambient, 0x40, 0, 400, &source_result);
             break;
         case 750:
             sound(0x18, 0x3800, 0, 1.0f, 0);
-            s.ramp_sound_volume(ambient, 0x2000, 0x400, 90);
+            s.ramp_sound_volume(ambient, 0x2000, 0x400, 90, &source_result);
             break;
         case 792: sound(0x18, 0x6800, 0x40, 1.0f, 0); break;
         case 840:
@@ -236,14 +237,14 @@ struct Title::Impl {
             voice = sound(0x12, 0x6800, 0x14, 1.0f, 10);
             s.check(s.audio.bgm_volume(1, 0, 30), "title auxiliary duck");
             break;
-        case 1700: s.ramp_sound_pan(voice, 0x18, 0x5e, 30); break;
+        case 1700: s.ramp_sound_pan(voice, 0x18, 0x5e, 30, &source_result); break;
         case 1740: wing = sound(0x75, 0x3800, 40, 1.0f, 30); break;
-        case 1750: s.ramp_sound_pan(wing, 0x2c, 0x7c, 20); break;
+        case 1750: s.ramp_sound_pan(wing, 0x2c, 0x7c, 20, &source_result); break;
         case 1830: sound(0x12, 0x4000, 0x40, 0.9f, 20); break;
         case 1900: case 1960: case 2020: case 2140: case 2200: case 2260:
             sound(0, 0x7fff, 0x40, 1.0f, 10); break;
         case 2320: voice = sound(0x9b, 0x6000, 0x36, 0.7f, 40); break;
-        case 2330: s.ramp_sound_pan(voice, 0x36, 0x0e, 40); break;
+        case 2330: s.ramp_sound_pan(voice, 0x36, 0x0e, 40, &source_result); break;
         case 2370: sound(0x9b, 0x4800, 0x18, 0.7f, 20); break;
         case 2410: sound(0x9b, 0x3c00, 0x5e, 1.0f, 30); break;
         case 2450: sound(0x9b, 0x2c00, 0x0e, 0.7f, 30); break;
@@ -256,7 +257,7 @@ struct Title::Impl {
     }
     static void audio_process(IsleGameObject*, void* context) noexcept {
         auto& self = *static_cast<Impl*>(context);
-        self.s.stop_sound_ramps();
+        if (!self.s.check(self.s.reset_sound_ramps(), "title Original sound reset")) return;
         if (!self.s.check(self.s.audio.bgm_volume(0, 0x7f00), "title initial main volume") ||
             !self.s.check(self.s.audio.bgm_volume(1, 0x7f00), "title initial auxiliary volume")) return;
         while (!self.s.failed()) {

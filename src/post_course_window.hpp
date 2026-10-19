@@ -4,11 +4,12 @@
 #include "post_course_window_source.h"
 #include "window_element.hpp"
 #include <memory>
+namespace isle::scene::graphics { class Frame; }
 
 namespace isle::post_course {
-/* Each slot reserves two disjoint physical ranges, including all native tile
- * padding. The caller excludes every bank/task/framebuffer/other producer and
- * holds real graphics retirement before any mutation, deletion or teardown. */
+/* Each slot reserves a primary physical range and, when nonzero, a disjoint
+ * alternate range. Source single-image Elements need no alternate reservation.
+ * The caller holds real graphics retirement before mutation or teardown. */
 struct WindowRasterSlot {
     std::array<std::uint32_t,2> physical{};
     std::size_t plane_capacity=0;
@@ -49,6 +50,8 @@ public:
     Window& operator=(const Window&)=delete;
     IslePostCourseWindow* source() noexcept;
     IsleGameResult retire() noexcept;
+    // Cold binding to the actual Frame; it outlives this Window.
+    IsleGameResult bind_graphics_frame(scene::graphics::Frame&) noexcept;
     // Read-only native borrows, never Source execution calls or failure latches.
     // The caller excludes Source, GPU and all mutation; views expire before the
     // next tick/attachment removal. Null or retired owned Elements return null;

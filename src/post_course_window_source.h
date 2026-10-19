@@ -109,6 +109,14 @@ IsleGameResult isle_post_window_sprite_links(IslePostCourseWindow*,IsleGameSprit
 IsleGameResult isle_post_window_sprite_sibling(IslePostCourseWindow*,IsleGameSprite*,uint32_t,IsleGameSprite**);
 IsleGameResult isle_post_window_sprite_child(IslePostCourseWindow*,IsleGameSprite*,uint32_t,IsleGameSprite**);
 IsleGameResult isle_post_window_sprite_rebind(IslePostCourseWindow*,IsleGameSprite*,uint32_t);
+/* Album's complete preview descriptor/resource copy retains its real raster
+ * until the cloned attachment joins and the bound graphics Frame is quiescent. */
+IsleGameResult isle_post_window_sprite_assign_thumbnail(IslePostCourseWindow*,IsleGameSprite*,IsleGameSprite*);
+IsleGameResult isle_post_window_sprite_clear_root_links(IslePostCourseWindow*,IsleGameSprite*);
+/* Report's existing native object attachments and exact NULL hierarchy stores. */
+IsleGameResult isle_post_window_sprite_add(IslePostCourseWindow*,IsleGameObject*,uint32_t,IsleGameSprite**);
+IsleGameResult isle_post_window_sprite_remove(IslePostCourseWindow*,IsleGameObject*);
+IsleGameResult isle_post_window_sprite_clear_link(IslePostCourseWindow*,IsleGameSprite*,int);
 /* Concrete native equivalents of func_80371C68_845418/func_80371D14_8454C4.
  * The returning create leaf installs no Source process; the C driver installs
  * the exact typed callback after the leaf returns. Scene-owned objects join
@@ -122,8 +130,10 @@ IsleGameResult isle_post_window_sprite_aux_set(IslePostCourseWindow*,IsleGameSpr
 /* Existing Photo-image child only: independent copies of the real RGBA16
  * prototype, including every bitmap piece and its actual pixel-buffer offset,
  * registered in Producer with a real generation. Admitted prototypes are
- * CameraCheck 0x80201520/0x80208900 and PhotoCheck 0x801F3B10. No Element or
- * immutable-bank mutation. All calls require actual graphics retirement.
+ * CameraCheck 0x80201520/0x80208900, PhotoCheck 0x801F3B10, Album's two photo
+ * roots, Report's six sign roots/detail root, and Gallery 0x801EA1B0.
+ * No immutable-bank mutation.
+ * All calls require actual graphics retirement.
  * write_photo accepts ONLY the completed source Photo replay's canonical BE
  * RGBA16 image at exactly twice the target dimensions; stride is in bytes.
  * It performs original AVG_PIXEL, using first-bitmap width_img/actualHeight
@@ -138,9 +148,17 @@ IsleGameResult isle_post_window_thumbnail_create(IslePostCourseWindow*,IsleGameS
 IsleGameResult isle_post_window_thumbnail_write_photo(IslePostCourseWindow*,IslePostCourseThumbnail,const uint8_t*,size_t,size_t);
 IsleGameResult isle_post_window_thumbnail_clear(IslePostCourseWindow*,IslePostCourseThumbnail);
 IsleGameResult isle_post_window_thumbnail_release(IslePostCourseWindow*,IslePostCourseThumbnail);
+/* Returning mutable/publication leaves for the original Report C copy loop.
+ * select preserves a registered cached raster while displaying another root. */
+IsleGameResult isle_post_window_thumbnail_pixels(IslePostCourseWindow*,IslePostCourseThumbnail,uint8_t**,size_t*);
+IsleGameResult isle_post_window_thumbnail_publish(IslePostCourseWindow*,IslePostCourseThumbnail,size_t,size_t);
+IsleGameResult isle_post_window_thumbnail_select(IslePostCourseWindow*,IslePostCourseThumbnail,uint32_t);
 
 IsleGameResult isle_post_window_frame_create(IslePostCourseWindow*,IslePostCourseFrame*);
 IsleGameResult isle_post_window_frame_delete(IslePostCourseWindow*,IslePostCourseFrame);
+/* Actual nine-owner retirement, only after the fade is complete, every sprite
+ * is hidden, no fade operation survives, and the bound Frame is quiescent. */
+IsleGameResult isle_post_window_frame_retire_hidden(IslePostCourseWindow*,IslePostCourseFrame);
 IsleGameResult isle_post_window_frame_style(IslePostCourseWindow*,IslePostCourseFrame,int);
 IsleGameResult isle_post_window_frame_position(IslePostCourseWindow*,IslePostCourseFrame,int,int);
 IsleGameResult isle_post_window_frame_size(IslePostCourseWindow*,IslePostCourseFrame,int,int);

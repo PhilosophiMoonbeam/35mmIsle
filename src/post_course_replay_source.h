@@ -37,8 +37,8 @@ typedef struct IslePostCourseReplayStep {
     uint64_t obligation;
 } IslePostCourseReplayStep;
 /* Completed native big-endian RGBA5551, including the real backing stride.
- * The borrow expires at acknowledge_preview/cancel/retirement. Width/height
- * are the Source-clamped viewport, not a resampled screenshot. */
+ * The borrow expires at acknowledge_preview or actual cancellation retirement.
+ * Width/height are the Source-clamped viewport, not a resampled screenshot. */
 typedef struct IslePostCoursePreview {
     const uint8_t* rgba5551;
     size_t size, stride_bytes;
@@ -49,11 +49,12 @@ typedef struct IslePostCoursePreview {
  * The real raster owner consumes/copies pixels before returning success. */
 typedef IsleGameResult (*IslePostCoursePreviewConsumer)(void*, const IslePostCoursePreview*);
 
-/* All leaves return normally. The single operation record and canonical read
- * lease survive actual Source waits; no C++ frame invokes Source/OM/GTL. A
- * stale/foreign handle or obligation is a sticky error and cancels native work.
- * begin accepts canonical retained pointers only; NULL is absent, not failure.
- * Source callers obtaining an absent saved record pass its genuine NULL photo.
+/* All leaves return normally. The single operation and its canonical OR
+ * explicit working read lease survive actual Source waits; no C++ frame
+ * invokes Source/OM/GTL. A stale/foreign handle or obligation is a sticky error
+ * and cancels native work. Canonical begin still accepts canonical pointers
+ * only. working_begin uses ONLY its typed owner, never identify/slot aliases.
+ * NULL or an explicitly cleared working owner is the Original absent branch.
  * No second operation may overlap, including an absent one. */
 IsleGame* isle_post_replay_game(IslePostCourseReplay*);
 IsleGameResult isle_post_replay_status(IslePostCourseReplay*);
@@ -61,6 +62,7 @@ const char* isle_post_replay_error(IslePostCourseReplay*);
 IsleGameResult isle_post_replay_fail(IslePostCourseReplay*, IsleGameResult);
 IslePostCourseReplayStep isle_post_replay_score_begin(IslePostCourseReplay*, const IslePlayerPhotoData*, IslePostCourseReplayOperation*);
 IslePostCourseReplayStep isle_post_replay_preview_begin(IslePostCourseReplay*, const IslePlayerPhotoData*, int32_t width, int32_t height, float scale, IslePostCourseReplayOperation*);
+IslePostCourseReplayStep isle_post_replay_preview_working_begin(IslePostCourseReplay*, IslePhotoWorking*, int32_t width, int32_t height, float scale, IslePostCourseReplayOperation*);
 IslePostCourseReplayStep isle_post_replay_poll(IslePostCourseReplay*, IslePostCourseReplayOperation);
 IsleGameResult isle_post_replay_sound85(IslePostCourseReplay*, IslePostCourseReplayOperation, uint64_t obligation);
 IsleGameResult isle_post_replay_acknowledge(IslePostCourseReplay*, IslePostCourseReplayOperation, uint64_t obligation);
@@ -86,6 +88,7 @@ IsleGameResult isle_post_replay_retire(IslePostCourseReplay*, int* retired);
  * output pointers/callback backing remain owned by the suspended Source stack. */
 IsleGameResult isle_post_replay_score(IslePostCourseReplay*, const IslePlayerPhotoData*, IslePostCourseScoredPhoto*, int* present);
 IsleGameResult isle_post_replay_preview(IslePostCourseReplay*, const IslePlayerPhotoData*, int32_t width, int32_t height, float scale, IslePostCoursePreviewConsumer, void*);
+IsleGameResult isle_post_replay_preview_working(IslePostCourseReplay*, IslePhotoWorking*, int32_t width, int32_t height, float scale, IslePostCoursePreviewConsumer, void*);
 /* Explicit Source-only stop fence: drain returning leaves, THEN abandon the
  * interrupted update in C. Successful stop does not return or publish a scene
  * result. The parent still retires this context outside Source traversal. */

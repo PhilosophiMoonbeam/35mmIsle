@@ -1,4 +1,5 @@
 #include "actor_interaction_services.hpp"
+#include "effect_bank_resources.hpp"
 #include "actor_behavior_bindings.hpp"
 #include "actor_owner.hpp"
 #include "actor_spatial.h"
@@ -12,10 +13,19 @@
 #include "beach_scyther_special.hpp"
 #include "35mmisle/focus_detector.hpp"
 #include "rainbow_actor.hpp"
+#include "actor_native_context.hpp"
+#include "actor_resource_catalog.hpp"
+#include "tunnel_actor.hpp"
+#include "volcano_actor.hpp"
+#include "river_actor.hpp"
+#include "cave_actor.hpp"
+#include "valley_actor.hpp"
+
 #include "player_root.hpp"
 
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 #include <algorithm>
 namespace isle::actor {
@@ -253,8 +263,9 @@ bool initial_species_callback(IsleGameSourceCallback function, void* context) no
     return initial_species_group(function) == *static_cast<const unsigned*>(context);
 }
 
+template<class EffectPresence>
 bool header_assets(const Resources& resources, Owner& actors,
-    const ActorInitialization* initialization, std::uint32_t identity) {
+    const ActorInitialization* initialization, std::uint32_t identity, const EffectPresence& effect_present) {
     if (!initialization) return false;
     const auto initializations = resources.initializations();
     const auto models = resources.models();
@@ -277,7 +288,7 @@ bool header_assets(const Resources& resources, Owner& actors,
                     if (header.sound_ids.empty()) continue; // Genuine source no-op.
                     if (value > header.sound_ids.size() ||
                         !actors.environment().admits_sound(header.sound_ids[value - 1])) return false;
-                } else if (!actors.effects().has_effect(static_cast<std::uint16_t>(category), value - 1)) {
+                } else if (!effect_present(static_cast<std::uint16_t>(category),value-1)) {
                     return false;
                 }
             }
@@ -292,6 +303,13 @@ bool header_assets(const Resources& resources, Owner& actors,
     }
     return false;
 }
+bool header_assets(const Resources& resources, Owner& actors,
+    const ActorInitialization* initialization, std::uint32_t identity) {
+    return header_assets(resources,actors,initialization,identity,
+        [&actors](std::uint16_t bank,std::size_t script) {
+            return actors.effects().has_effect(bank,script);
+        });
+}
 
 IsleGameResult item_status(items::OwnerStatus status) noexcept {
     if (status) return ISLE_GAME_OK;
@@ -305,6 +323,15 @@ bool rainbow_callback(IsleGameSourceCallback function, void*) noexcept {
     for (const auto& binding : rainbow::actor_callbacks())
         if (binding.function == function) return true;
     return false;
+}
+
+bool native_callback(IsleGameSourceCallback function, void* context) noexcept {
+    if (!context) return false;
+    const auto course=*static_cast<const std::int32_t*>(context);
+    for (const auto& binding:course_callbacks(course))
+        if (binding.function==function) return true;
+    return course>=1 && course<=5 && (function==func_8035DF20_4FE330 ||
+        function==func_8035DFB0_4FE3C0 || function==func_8035E034_4FE444);
 }
 
 bool rainbow_services(const IsleRainbowActorServices* s) noexcept {
@@ -324,14 +351,14 @@ bool rainbow_services(const IsleRainbowActorServices* s) noexcept {
 
 InteractionServices::InteractionServices(scene::Services& services, Owner& actors,
     items::Owner& items, world::World& world, focus::Detector& detector,
-    const BehaviorBindings& bindings, const Resources& resources)
+    const BehaviorBindings& bindings, const Resources& resources, const menu::EffectResources& effects)
     : services_(services), actors_(actors), items_(items), world_(world), detector_(detector),
       bindings_(bindings), resources_(resources) {
     resources.require_live();
     bindings.require_live();
     const auto& course = actors.course_context();
     course.require_live();
-    const auto setup = course.course_id()==0 ? 0x8011b914u : 0x800f5da0u;
+    const auto setup = detail::course_catalog(course.course_id()).world_setup_identity;
     IslePlayerSource* player = nullptr;
     if (resources.course_id()!=course.course_id() || bindings.course_id()!=course.course_id() ||
         !world.resources().setup || world.resources().setup->wire.guest_address!=setup ||
@@ -340,6 +367,12 @@ InteractionServices::InteractionServices(scene::Services& services, Owner& actor
         isle_player_source_context(services.game, &player)!=ISLE_GAME_OK ||
         player!=&actors.player_source())
         throw std::invalid_argument("Actor interactions require matching course and canonical native owners");
+    if (course.course_id()>=1 && course.course_id()<=5) {
+        if (!prove_native_closure(effects))
+            throw std::invalid_argument("typed interactions require complete compiled Source callable/resource closure");
+        native_closed_=true;
+        return;
+    }
     if (course.course_id()==6) {
         auto& source = course.rainbow().actors;
         IsleRainbowActorSource* canonical = nullptr;
@@ -402,9 +435,248 @@ bool InteractionServices::matches(Owner& actors, scene::Services& services,
         bindings_.course_id()==resources.course_id() && items_.matches(services, world, actors);
 }
 
+bool InteractionServices::admits_proposed_source() const noexcept {
+    try {
+        const auto& course=actors_.course_context();
+        if (!native_closed_ || course.course_id()<1 || course.course_id()>5 ||
+            services_.failed() || !world_.error().empty() ||
+            !items_.matches(services_,world_,actors_)) return false;
+        course.require_live(); resources_.require_live(); bindings_.require_live();
+        const auto& player=actors_.player_source();
+        IslePlayerSource* canonical=nullptr;
+        if (isle_player_source_context(services_.game,&canonical)!=ISLE_GAME_OK ||
+            canonical!=&player || !player.native_root) return false;
+        auto& root=*static_cast<isle::player::Root*>(player.native_root);
+        if (&root.source()!=&player || root.bound_actors()!=&actors_) return false;
+        switch (course.course_id()) {
+        case 1: { const auto& state=course.tunnel();
+            return state.actors.base.phase==ISLE_COURSE_ACTOR_PREPARED &&
+                !state.actors.base.nativeGame && !state.actors.services &&
+                native_services_complete(&state.actor_services); }
+        case 2: { const auto& state=course.volcano();
+            return state.actors.base.phase==ISLE_COURSE_ACTOR_PREPARED &&
+                !state.actors.base.nativeGame && !state.actors.services &&
+                native_services_complete(&state.actor_services); }
+        case 3: { const auto& state=course.river();
+            return state.actors.base.phase==ISLE_COURSE_ACTOR_PREPARED &&
+                !state.actors.base.nativeGame && !state.actors.services &&
+                native_services_complete(&state.actor_services); }
+        case 4: { const auto& state=course.cave();
+            return state.actors.base.phase==ISLE_COURSE_ACTOR_PREPARED &&
+                !state.actors.base.nativeGame && !state.actors.services &&
+                native_services_complete(&state.actor_services); }
+        case 5: { const auto& state=course.valley();
+            return state.actors.base.phase==ISLE_COURSE_ACTOR_PREPARED &&
+                !state.actors.base.nativeGame && !state.actors.services &&
+                native_services_complete(&state.actor_services); }
+        }
+    } catch (...) {}
+    return false;
+}
+bool InteractionServices::admits_native_path(const void* path) const {
+    if (world_.retired() || !admits_source()) return false;
+    bool current=false;
+    for (const auto& block:world_.blocks()) current |= &block==world_.current() && block.resource;
+    if (!current) return false;
+    if (!path) return true;
+    for (const auto& candidate:world_.resources().paths) if (&candidate==path) return true;
+    return false;
+}
+bool InteractionServices::prove_native_closure(const menu::EffectResources& effects) {
+    const auto course=resources_.course_id();
+    const auto& common=effects.bank(menu::EffectGroup::common);
+    const auto& selected=effects.bank(menu::effect_group(course));
+    const auto& runtime=actors_.effects();
+    if(!runtime.status() || common.bank_id!=3 || selected.bank_id!=0 ||
+       !runtime.validate_bank(common) || !runtime.validate_bank(selected))return false;
+    const auto effect_present=[&](std::uint16_t encoded,std::size_t script) {
+        if(encoded>=128)return false;
+        const auto slot=encoded&7u;
+        if(slot==common.bank_id)return script<common.scripts.size();
+        if(slot==selected.bank_id)return script<selected.scripts.size();
+        return false;
+    };
+    const auto callbacks=course_callbacks(course);
+    if (callbacks.empty() || native_initializations_.size()<resources_.initializations().size()) return false;
+    switch (course) {
+    case 1: if (!native_services_complete(&actors_.course_context().tunnel().actor_services)) return false; break;
+    case 2: if (!native_services_complete(&actors_.course_context().volcano().actor_services)) return false; break;
+    case 3: if (!native_services_complete(&actors_.course_context().river().actor_services)) return false; break;
+    case 4: if (!native_services_complete(&actors_.course_context().cave().actor_services)) return false; break;
+    case 5: if (!native_services_complete(&actors_.course_context().valley().actor_services)) return false; break;
+    default: return false;
+    }
+    for (const auto& binding:callbacks)
+        if (!binding.function || bindings_.callback(binding.identity)!=binding.function) return false;
+    for (const auto identity:course_graphs(course))
+        if (!bindings_.admits_native_graph(bindings_.graph(identity),native_callback,
+            const_cast<std::int32_t*>(&course))) return false;
+    for (const auto identity:course_weighted_states(course)) {
+        const auto& list=bindings_.weighted_states(identity);
+        if (list.rows.empty() || list.rows.back().func || list.rows.back().weight || list.total_weight<=0) return false;
+        std::int64_t total=0;
+        for (std::size_t i=0;i+1<list.rows.size();++i) {
+            const auto& row=list.rows[i];
+            if (row.weight<=0 || !native_callback(row.func,const_cast<std::int32_t*>(&course))) return false;
+            total+=row.weight;
+        }
+        if (total!=list.total_weight) return false;
+    }
+    // Descriptor factories retain distinct Original five/six/void ABIs. Every
+    // decoded family must have that exact compiled factory before any ACTIVE.
+    for (const auto& initialization:resources_.initializations()) {
+        bool factory=false;
+        for (const auto& definition:resources_.definitions())
+            if (definition.initialization<resources_.initializations().size() &&
+                &resources_.initializations()[definition.initialization]==&initialization &&
+                actors_.admitted_factory(definition.actor_id,definition.factory_identity)==&initialization)
+                factory=true;
+        if (!factory) return false;
+        native_initializations_[native_initialization_count_++]=&initialization;
+    }
+    for (const auto& header:resources_.headers()) {
+        if (header.initialization>=resources_.initializations().size() ||
+            !header_assets(resources_,actors_,&resources_.initializations()[header.initialization],
+                header.wire.guest_address,effect_present)) return false;
+    }
+    if (course==3) {
+        // River6C9680.c reads points[numPoints], the genuine extra endpoint.
+        const auto& world=world_.resources();
+        for (const auto& block:world_.blocks()) {
+            if (!block.resource) return false;
+            for (const auto& spawn:block.resource->spawns) {
+                if (spawn.id!=1 || spawn.behavior!=1) continue;
+                if (spawn.path>=world.paths.size()) return false;
+                const auto& path=world.paths[spawn.path];
+                if (path.segment_point_count>=path.points.size()) return false;
+            }
+        }
+    }
+    auto counted=[&](const auto& descriptors) {
+        for (const auto& descriptor:descriptors) {
+            const auto& list=bindings_.counted_state_options(descriptor.identity);
+            std::size_t count;
+            if constexpr (requires { descriptor.rows; }) count=descriptor.rows.size();
+            else count=descriptor.count;
+            if (list.rows.size()!=count) return false;
+            unsigned total=0;
+            for (std::size_t i=0;i<count;++i) {
+                const auto& row=list.rows[i];
+                if (row.function && !native_callback(row.function,const_cast<std::int32_t*>(&course))) return false;
+                total+=row.weight;
+                if constexpr (requires { descriptor.rows; }) {
+                    const auto& original=descriptor.rows[i];
+                    if (original.weight!=row.weight) return false;
+                    if constexpr (requires { original.function; }) {
+                        if (original.function!=row.function) return false;
+                    } else if constexpr (requires { original.func; }) {
+                        if (original.func!=row.function) return false;
+                    } else if constexpr (requires { original.callback; }) {
+                        if constexpr (std::is_pointer_v<decltype(original.callback)>) {
+                            if (original.callback!=row.function) return false;
+                        } else if ((original.callback ? bindings_.callback(original.callback) : nullptr)!=row.function) return false;
+                    }
+                }
+            }
+            if (!total) return false;
+        }
+        return true;
+    };
+    switch (course) {
+    case 1: return counted(tunnel::actor_counted_options());
+    case 2: return counted(volcano::actor_counted_options());
+    case 3: {
+        if (!counted(river::actor_counted_options())) return false;
+        const auto& list=bindings_.counted_state_options(0x802e2908u);
+        if (list.rows.size()!=river_counted_.size()) return false;
+        for (std::size_t i=0;i<list.rows.size();++i)
+            river_counted_[i]={list.rows[i].weight,list.rows[i].function};
+        return true;
+    }
+    case 4: return counted(cave::actor_counted_options());
+    case 5: return counted(valley::actor_counted_options());
+    }
+    return false;
+}
+const IsleActorInteractionGraph& InteractionServices::native_graph(std::uint32_t identity) const {
+    if (!admits_source()) throw std::invalid_argument("native graph requires canonical ACTIVE Source");
+    const auto values=course_graphs(resources_.course_id());
+    if (std::find(values.begin(),values.end(),identity)==values.end())
+        throw std::out_of_range("native graph is outside selected Source provider");
+    return bindings_.graph(identity);
+}
+const BoundWeightedStates& InteractionServices::native_weighted(std::uint32_t identity) const {
+    if (!admits_source()) throw std::invalid_argument("native list requires canonical ACTIVE Source");
+    const auto values=course_weighted_states(resources_.course_id());
+    if (std::find(values.begin(),values.end(),identity)==values.end())
+        throw std::out_of_range("native list is outside selected Source provider");
+    return bindings_.weighted_states(identity);
+}
+std::span<const IsleRiverCountedOption> InteractionServices::river_counted(std::uint32_t identity) const {
+    if (resources_.course_id()!=3 || identity!=0x802e2908u || !admits_source())
+        throw std::invalid_argument("River counted options require exact canonical ACTIVE Source list");
+    return river_counted_;
+}
+const BoundCountedStates& InteractionServices::native_counted(std::uint32_t identity) const {
+    if (!admits_source()) throw std::invalid_argument("native options require canonical ACTIVE Source");
+    return bindings_.counted_state_options(identity);
+}
 bool InteractionServices::admits_source() const noexcept {
     try {
         const auto& course = actors_.course_context();
+        if (course.course_id()>=1 && course.course_id()<=5) {
+            if (!native_closed_ || services_.failed() || !world_.error().empty() ||
+                !items_.matches(services_,world_,actors_)) return false;
+            course.require_live(); resources_.require_live(); bindings_.require_live();
+            switch (course.course_id()) {
+            case 1: { auto& state=course.tunnel();
+                IslePlayerSource* player=nullptr;
+                if (isle_player_source_context(services_.game,&player)!=ISLE_GAME_OK ||
+                    player!=&actors_.player_source() || !player->native_root) return false;
+                auto& root=*static_cast<isle::player::Root*>(player->native_root);
+                return &root.source()==player && root.bound_actors()==&actors_ &&
+                    state.actors.base.phase==ISLE_COURSE_ACTOR_ACTIVE &&
+                    state.actors.base.nativeGame==services_.game &&
+                    state.actors.services==&state.actor_services && native_services_complete(state.actors.services); }
+            case 2: { auto& state=course.volcano();
+                IslePlayerSource* player=nullptr;
+                if (isle_player_source_context(services_.game,&player)!=ISLE_GAME_OK ||
+                    player!=&actors_.player_source() || !player->native_root) return false;
+                auto& root=*static_cast<isle::player::Root*>(player->native_root);
+                return &root.source()==player && root.bound_actors()==&actors_ &&
+                    state.actors.base.phase==ISLE_COURSE_ACTOR_ACTIVE &&
+                    state.actors.base.nativeGame==services_.game &&
+                    state.actors.services==&state.actor_services && native_services_complete(state.actors.services); }
+            case 3: { auto& state=course.river();
+                IslePlayerSource* player=nullptr;
+                if (isle_player_source_context(services_.game,&player)!=ISLE_GAME_OK ||
+                    player!=&actors_.player_source() || !player->native_root) return false;
+                auto& root=*static_cast<isle::player::Root*>(player->native_root);
+                return &root.source()==player && root.bound_actors()==&actors_ &&
+                    state.actors.base.phase==ISLE_COURSE_ACTOR_ACTIVE &&
+                    state.actors.base.nativeGame==services_.game &&
+                    state.actors.services==&state.actor_services && native_services_complete(state.actors.services); }
+            case 4: { auto& state=course.cave();
+                IslePlayerSource* player=nullptr;
+                if (isle_player_source_context(services_.game,&player)!=ISLE_GAME_OK ||
+                    player!=&actors_.player_source() || !player->native_root) return false;
+                auto& root=*static_cast<isle::player::Root*>(player->native_root);
+                return &root.source()==player && root.bound_actors()==&actors_ &&
+                    state.actors.base.phase==ISLE_COURSE_ACTOR_ACTIVE &&
+                    state.actors.base.nativeGame==services_.game &&
+                    state.actors.services==&state.actor_services && native_services_complete(state.actors.services); }
+            case 5: { auto& state=course.valley();
+                IslePlayerSource* player=nullptr;
+                if (isle_player_source_context(services_.game,&player)!=ISLE_GAME_OK ||
+                    player!=&actors_.player_source() || !player->native_root) return false;
+                auto& root=*static_cast<isle::player::Root*>(player->native_root);
+                return &root.source()==player && root.bound_actors()==&actors_ &&
+                    state.actors.base.phase==ISLE_COURSE_ACTOR_ACTIVE &&
+                    state.actors.base.nativeGame==services_.game &&
+                    state.actors.services==&state.actor_services && native_services_complete(state.actors.services); }
+            }
+            return false;
+        }
         if (!rainbow_closed_ || course.course_id()!=6 || services_.failed() ||
             !world_.error().empty() ||
             !items_.matches(services_, world_, actors_)) return false;
@@ -568,7 +840,7 @@ struct InteractionSourceAccess {
     static IsleGameResult validate(InteractionServices& self, IsleActorSource* source) {
         if (!source || source->game != self.services_.game || self.services_.failed() ||
             self.world_.retired() || !self.world_.error().empty()) return ISLE_GAME_INVALID_STATE;
-        if (self.actors_.course_context().course_id()==6)
+        if (self.actors_.course_context().course_id()!=0)
             return self.admits_source() ? ISLE_GAME_OK : ISLE_GAME_INVALID_STATE;
         IslePlayerSource* active = nullptr;
         if (isle_player_source_context(self.services_.game, &active) != ISLE_GAME_OK ||
@@ -684,8 +956,9 @@ struct InteractionSourceAccess {
 
     static bool callback(IsleGameSourceCallback function, void* context) {
         auto& admission = *static_cast<Admission*>(context);
-        if (admission.self.actors_.course_context().course_id()==6) {
-            if (!rainbow_callback(function, nullptr)) return false;
+        if (admission.self.actors_.course_context().course_id()!=0) {
+            auto course=admission.self.resources_.course_id();
+            if (course==6 ? !rainbow_callback(function,nullptr) : !native_callback(function,&course)) return false;
             if (!(admission.checked & 1u)) {
                 admission.checked |= 1u;
                 for (const auto& init : admission.self.resources_.initializations())
@@ -717,8 +990,8 @@ struct InteractionSourceAccess {
         if (output) *output = nullptr;
         if (!output) return ISLE_GAME_INVALID_ARGUMENT;
         return context(source, [&](InteractionServices& self) {
-            if (self.actors_.course_context().course_id()==6) {
-                const auto graphs = rainbow::actor_graphs();
+            if (self.actors_.course_context().course_id()!=0) {
+                const auto graphs = course_graphs(self.resources_.course_id());
                 if (std::find(graphs.begin(), graphs.end(), identity)==graphs.end())
                     return ISLE_GAME_INVALID_ARGUMENT;
                 bool admitted = false;
@@ -913,9 +1186,11 @@ struct InteractionSourceAccess {
         if (output) *output = nullptr;
         if (!output) return ISLE_GAME_INVALID_ARGUMENT;
         return context(source, [&](auto& self) {
-            if (self.actors_.course_context().course_id()==6) {
-                if (identity!=0x8034ae30u) return ISLE_GAME_INVALID_ARGUMENT;
-                if (!self.admits_rainbow(source->path)) return ISLE_GAME_INVALID_STATE;
+            if (self.actors_.course_context().course_id()!=0) {
+                const auto values=course_weighted_states(self.resources_.course_id());
+                if (std::find(values.begin(),values.end(),identity)==values.end()) return ISLE_GAME_INVALID_ARGUMENT;
+                if (self.resources_.course_id()==6 ? !self.admits_rainbow(source->path) :
+                    !self.admits_native_path(source->path)) return ISLE_GAME_INVALID_STATE;
                 *output = self.bindings_.weighted_states(identity).rows.data();
                 return ISLE_GAME_OK;
             }
@@ -1045,6 +1320,12 @@ bool InteractionServices::admits_initial_species(const ActorInitialization& init
         if (services_.failed() || world_.retired() || !world_.error().empty()) return false;
         resources_.require_live();
         bindings_.require_live();
+        if (actors_.course_context().course_id()>=1 && actors_.course_context().course_id()<=5) {
+            bool admitted=false;
+            for (std::size_t i=0;i<native_initialization_count_;++i)
+                admitted |= native_initializations_[i]==&initialization;
+            return admitted && admits_native_path(path);
+        }
         if (actors_.course_context().course_id()==6) {
             bool admitted = false;
             for (const auto* admitted_initialization : rainbow_initializations_)

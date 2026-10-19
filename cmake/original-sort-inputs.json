@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "provider": "original-shared-sort-c",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "source_files": {
+    "src/sys/misc.c": {
+      "sha256": "f6607a602e8479b0647a6e87a8e290af614e3b1b8d5e36295a2ac9c7c45e7f32",
+      "blob": "84be12339c2f266dcfb5e2ae7ccd6a73cbe2a46b"
+    },
+    "src/window/8486E0.c": {
+      "sha256": "67bc8e26889891abec021e0303b58d8a9b791321db2ca8ec1658b81d8d7437ed",
+      "blob": "a822b0a8a2148ccda8b4557707f81d3a71dc19d8"
+    }
+  },
+  "definitions": [
+    {
+      "name": "swap",
+      "source": "src/sys/misc.c",
+      "first": 148,
+      "last": 154,
+      "sha256": "4efebb97538d813633527ec1e72af6d2bd7603bdbf2007a5f0152f7e79df3298"
+    },
+    {
+      "name": "qsortInternal",
+      "source": "src/sys/misc.c",
+      "first": 156,
+      "last": 196,
+      "sha256": "9fa4339fa213b626f23b0daec442d44098848acc58222654c395ba4c9938fbc6"
+    },
+    {
+      "name": "qsort2",
+      "source": "src/sys/misc.c",
+      "first": 198,
+      "last": 229,
+      "sha256": "a3d33b2e05da15163a8b48e74fff22c504381cc8b62474b1050a7f0e61140e1a"
+    },
+    {
+      "name": "func_803750CC_84887C",
+      "source": "src/window/8486E0.c",
+      "first": 65,
+      "last": 86,
+      "sha256": "370b8b77c66dfae263fa9249117b121b12adc02f97b5f834878f838de9dff541"
+    }
+  ],
+  "native_support": {
+    "src/original_sort_source.h": {
+      "sha256": "78aa12828d95f258d2d01fd450f6879e9f9ced9792eaa13f2bd0beee2cf8981e"
+    },
+    "src/original_sort_source.c": {
+      "sha256": "007cb65b47e09c110e379ef702c306a49d94d85798d91fdc44bd108a3d7cd301"
+    },
+    "tools/prepare_original_sort.py": {
+      "sha256": "42364399b6b78b023ce393d3cd3b141b930229dcd8ecbfee3ddc037771ca4294"
+    }
+  },
+  "native_definitions": [
+    {
+      "name": "swap",
+      "source": "src/sys/misc.c",
+      "first": 148,
+      "last": 154,
+      "sha256": "4efebb97538d813633527ec1e72af6d2bd7603bdbf2007a5f0152f7e79df3298",
+      "native_sha256": "d3a898d8c224338460462e2949860002c49b931e235b850dfee1a90250464eae",
+      "rewrites": [
+        {
+          "find": "void swap(",
+          "replace": "static void isle_original_swap(",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "qsortInternal",
+      "source": "src/sys/misc.c",
+      "first": 156,
+      "last": 196,
+      "sha256": "9fa4339fa213b626f23b0daec442d44098848acc58222654c395ba4c9938fbc6",
+      "native_sha256": "5f4bf7777887a9398d24e731aff94cffb3ef33f829d0142f1437f0552333e8cd",
+      "rewrites": [
+        {
+          "find": "void qsortInternal(",
+          "replace": "static void isle_original_qsort_internal(IsleOriginalSortCall* sort, ",
+          "count": 1
+        },
+        {
+          "find": "qsortInternal(",
+          "replace": "isle_original_qsort_internal(sort, ",
+          "count": 2
+        },
+        {
+          "find": "swap(",
+          "replace": "isle_original_swap(",
+          "count": 2
+        },
+        {
+          "find": "qsortCompareFunc(",
+          "replace": "sort->compare(sort->context, ",
+          "count": 2
+        },
+        {
+          "find": "qsortItemSize",
+          "replace": "sort->item_size",
+          "count": 10
+        },
+        {
+          "find": "            last = s1 - sort->item_size;",
+          "replace": "            if (s1 == first) break;\n            last = s1 - sort->item_size;",
+          "count": 1
+        },
+        {
+          "find": "            isle_original_qsort_internal(sort, first, s1 - sort->item_size);",
+          "replace": "            if (s1 > first) isle_original_qsort_internal(sort, first, s1 - sort->item_size);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "qsort2",
+      "source": "src/sys/misc.c",
+      "first": 198,
+      "last": 229,
+      "sha256": "a3d33b2e05da15163a8b48e74fff22c504381cc8b62474b1050a7f0e61140e1a",
+      "native_sha256": "aac56e5eaae17df0cd36ca5aa6b00d8195129c568506f79de46212ef49e37169",
+      "rewrites": [
+        {
+          "find": "void qsort2(void* _base, u32 count, u32 itemSize, s32 (*compare)(const void*, const void*)) {",
+          "replace": "void isle_original_source_qsort2(void* context, void* _base, uint32_t count, uint32_t itemSize, IsleOriginalSourceCompare compare) {\n    IsleOriginalSortCall call = {context, itemSize, compare};\n    IsleOriginalSortCall* sort = &call;\n    if (count < 2) return;",
+          "count": 1
+        },
+        {
+          "find": "compare(curr, next)",
+          "replace": "compare(context, curr, next)",
+          "count": 1
+        },
+        {
+          "find": "qsortItemSize",
+          "replace": "sort->item_size",
+          "count": 2
+        },
+        {
+          "find": "qsortCompareFunc",
+          "replace": "sort->compare",
+          "count": 1
+        },
+        {
+          "find": "qsortInternal(",
+          "replace": "isle_original_qsort_internal(sort, ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_803750CC_84887C",
+      "source": "src/window/8486E0.c",
+      "first": 65,
+      "last": 86,
+      "sha256": "370b8b77c66dfae263fa9249117b121b12adc02f97b5f834878f838de9dff541",
+      "native_sha256": "ddd73be0cca5e53c80bef92cd5096509c95663159c32d518542971b9b28d5f6d",
+      "rewrites": [
+        {
+          "find": "s32 func_803750CC_84887C(char* arg0, char* arg1)",
+          "replace": "int32_t isle_original_source_name_compare(const char* arg0, const char* arg1)",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "native_outputs": {
+    "game.c": "007cb65b47e09c110e379ef702c306a49d94d85798d91fdc44bd108a3d7cd301",
+    "original_sort_original.inc": "988860a6cf4a4b468ca9124eb2b7d332f82f4dc4d6bbed49cfdd46027685c8ef"
+  }
+}

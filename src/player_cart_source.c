@@ -110,7 +110,10 @@ void isle_player_cart_source_update(IsleGameObject* object) {
     if (first == ISLE_GAME_OK && batch.callback != NULL) {
         for (index = 0; index < batch.count; ++index) {
             CartCallbackCall call = {batch.callback, batch.user, &batch.events[index]};
+            if (source->current_event != NULL) { first = ISLE_GAME_INVALID_STATE; break; }
+            source->current_event = call.event;
             first = isle_player_source_call(player, cart_dispatch_callback, &call);
+            source->current_event = NULL;
             if (first != ISLE_GAME_OK) break;
         }
     }

@@ -8,14 +8,19 @@
 namespace isle::post_course {
 class Resources final {
 public:
-    enum class Kind { camera_check, photo_check };
+    enum class Kind { camera_check, photo_check, album, report, gallery, end_level_8, credits };
+    struct Origin {
+        std::size_t rom_begin, rom_end;
+        std::uint32_t guest_begin;
+    };
+    static Origin origin(Kind);
     static std::shared_ptr<const Resources> load(const rom::Snapshot&,
         std::shared_ptr<const window::Resources>, Kind);
     Kind kind() const noexcept { return kind_; }
     const std::shared_ptr<const window::Resources>& window() const noexcept { return window_; }
     scene::ResourceView view() const noexcept;
     // Source identities, NOT relocated compositor addresses. Exactly common +
-    // the selected overlay; never install CameraCheck and PhotoCheck together.
+    // the selected initialized overlay; never combine mutually exclusive banks.
     std::span<const sprite::BankMapping> banks() const noexcept { return banks_; }
     std::span<const IsleSprite* const> roots() const noexcept { return roots_; }
     // Raw initialized ROM only. Mutable source state belongs to the consumer.

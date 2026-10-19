@@ -440,6 +440,27 @@ void resource_admission_is_independent_of_emitter_capacity() {
             reused.handle.generation!=handles[0].generation&&rng.seed==42,
             "resource query stole the released emitter or changed its source ID/incarnation");
 }
+void cold_validation_preserves_source_bank_installation() {
+    Fixture course; Program course_program; course_program.hold(); course.add(course_program);
+    Fixture common; Program common_program; common_program.hold(); common.add(common_program);
+    common.bank.bank_id=3;
+    isle_rng rng{0x13579bdf};
+    EffectRuntime runtime({},rng);
+    ok(runtime.status());
+    ok(runtime.validate_bank(common.bank)); ok(runtime.validate_bank(course.bank));
+    require(!runtime.has_effect(3,0) && !runtime.has_effect(0,0) &&
+        runtime.effect_count()==0 && runtime.particle_count()==0 && rng.seed==0x13579bdf,
+        "cold capability proof installed a bank or advanced live FX state");
+    ok(runtime.reset_bank(3)); ok(runtime.install_bank(common.bank));
+    require(runtime.has_effect(3,0) && !runtime.has_effect(0,0),
+        "common Source installation published an uninstalled course bank");
+    ok(runtime.reset_bank(0)); ok(runtime.install_bank(course.bank));
+    require(runtime.has_effect(0,0) && runtime.has_effect(3,0),
+        "canonical Source course/common installations lost distinct slot identity");
+    const auto created=runtime.create_effect(0,0);
+    require(created.spawned && created.effect_id==1,
+        "cold capability proof consumed an Original emitter identity");
+}
 void source_position_store_preserves_emission_motion() {
     Fixture fixture; Program program; program.hold(); fixture.add(program,{2,3,4});
     const std::array banks{&fixture.bank};
@@ -474,6 +495,7 @@ int main() {
         regular_child_traversal(); source_id_wrap(); emitter_rng_and_source_order();
         target_local_services(); emitters_pools_and_retirement(); normalized_columns(); errors_and_packet_bounds();
         resource_admission_is_independent_of_emitter_capacity();
+        cold_validation_preserves_source_bank_installation();
         source_position_store_preserves_emission_motion();
         std::cout << "shared_effect_authored_cpu=passed Original_parity=unqualified\n"; return 0;
     } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }

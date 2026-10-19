@@ -6,7 +6,7 @@
   "authority": "Exact own-GAME immutable stage/blobs and authorized initialized data; no SDK producer/header/layout/disassembly or guest-function casts",
   "native_support": {
     "src/actor_course_context.hpp": {
-      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+      "sha256": "ac0d2a1cb760ebe216bf220f1529b988ec63fe280180d981d9c5353d65e6b931"
     },
     "src/rainbow_actor_source.h": {
       "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
@@ -33,31 +33,31 @@
       "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
     },
     "src/actor_owner_source.h": {
-      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
+      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
+      "sha256": "6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"
     },
     "src/actor_source_bridge.c": {
       "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
     },
     "src/actor_owner.cpp": {
-      "sha256": "0b5d1447fcee27995a67ce2246f31f205a1981c2856b15d87c9e8c10ded8b42e"
+      "sha256": "9889d22618a966c65b2250b5421f6ea687884f689c0913d1d82160b11bffb42b"
     },
     "src/actor_owner.hpp": {
-      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
+      "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
     },
     "src/scene_services.cpp": {
-      "sha256": "f90298ec84783876a970ce150bb1c0901e8da5c4e562de8b1d742de53a5494e8"
+      "sha256": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f"
     },
     "src/scene_services.hpp": {
-      "sha256": "4b4fafd05a7eee03880cff975c5f8a2d1b987d6c4a32c7d3cd2c331d7cba6354"
+      "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
     },
     "src/menu_scene_bridge.c": {
-      "sha256": "d607f07e8a85036c3e915ca1372e33361b5232be68f8e8acd7a5cee7db2da5c8"
+      "sha256": "2b533bfd3978e239dbd5743052fb877ba98defcd1cd074b36e3978077e323088"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
     },
     "src/actor_spatial.h": {
       "sha256": "962287772ecea45dbc4431ec014969c15dab2ba66bdd39e04853c6641326aaf9"
@@ -66,10 +66,10 @@
       "sha256": "96ee40fe4ae80aeae7603a16e7768b4f2ba9f785ba815abac40933bb84acac97"
     },
     "src/actor_behavior_bindings.hpp": {
-      "sha256": "aff3e08cff850bf85f78f10f6d683ad4d11f1eb8c464fbabc5078f3e0b7fc3c5"
+      "sha256": "5eb20328bba03118cdd4bd1be8c8d9367cb2e7d53c165e379f0bd5c654bf2e59"
     },
     "src/actor_behavior_bindings.cpp": {
-      "sha256": "f48065907d97fe625e39102fbc001219537181ae5316c8f44d1cf1a4231fa278"
+      "sha256": "d5d7bb3d2ed33152694d1a1006ed733ece61583c640cf78c2e77ce01f1b36ad1"
     },
     "src/world_runtime.hpp": {
       "sha256": "f8c75f19fe010624088615ec745dcfaaec07ca36724bb25ed1241eb91b8c7aa0"

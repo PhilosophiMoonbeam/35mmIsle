@@ -9,6 +9,11 @@
 #include "oaks_lab_resources.hpp"
 #include "startup_runtime.hpp"
 #include "post_course_scene.hpp"
+#include "tunnel_scene.hpp"
+#include "volcano_scene.hpp"
+#include "river_scene.hpp"
+#include "cave_scene.hpp"
+#include "valley_scene.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <exception>
@@ -16,6 +21,7 @@
 #include <new>
 #include <utility>
 #include <vector>
+#include <variant>
 
 namespace isle::application {
 namespace {
@@ -69,6 +75,10 @@ struct Runtime::Impl {
     std::unique_ptr<WindowScene> window;
     std::unique_ptr<beach::Lifecycle> beach;
     std::unique_ptr<rainbow::Lifecycle> rainbow;
+    using NativeCourses=std::variant<std::unique_ptr<tunnel::Lifecycle>,
+        std::unique_ptr<volcano::Lifecycle>,std::unique_ptr<river::Lifecycle>,
+        std::unique_ptr<cave::Lifecycle>,std::unique_ptr<valley::Lifecycle>>;
+    NativeCourses courses;
     std::unique_ptr<post_course::Scene> post;
     post_course::Modules post_modules;
     host::Progress* progress = nullptr;
@@ -98,6 +108,36 @@ struct Runtime::Impl {
         // This admits code; original C alone chooses what actually executes.
         roots.reserve(callbacks.size());
         for (const auto& callback:callbacks) roots.push_back(callback.identity);
+    }
+    bool has_course() const noexcept {
+        return std::visit([](const auto& value) { return bool(value); },courses);
+    }
+    template<class F> decltype(auto) with_course(F&& function) noexcept {
+        return std::visit([&](auto& value)->decltype(auto) { return function(*value); },courses);
+    }
+    template<class F> decltype(auto) with_course(F&& function) const noexcept {
+        return std::visit([&](const auto& value)->decltype(auto) { return function(*value); },courses);
+    }
+    template<class C> C* course_pointer() const noexcept {
+        const auto* value=std::get_if<std::unique_ptr<C>>(&courses);
+        return value ? value->get() : nullptr;
+    }
+    template<class C> bool checked_course(C& current,IsleGameResult value) noexcept {
+        const auto error=current.error();
+        if (error!=ISLE_GAME_OK && error!=ISLE_GAME_STOPPED) return fail(error,current.message());
+        if (value==ISLE_GAME_STOPPED || error==ISLE_GAME_STOPPED ||
+            current.status()==course::LifecycleStatus::cancelled) {
+            request_stop(); return false;
+        }
+        return checked(value,current.message());
+    }
+    template<class C> void observe_course_join(C& current,IsleGameResult value) noexcept {
+        const auto error=current.error();
+        if (value==ISLE_GAME_STOPPED || error==ISLE_GAME_STOPPED ||
+            current.status()==course::LifecycleStatus::cancelled) request_stop();
+        if (error!=ISLE_GAME_OK && error!=ISLE_GAME_STOPPED) fail(error,current.message());
+        else if (value!=ISLE_GAME_OK && value!=ISLE_GAME_STOPPED && value!=ISLE_GAME_INVALID_STATE)
+            fail(value,current.message());
     }
     void request_stop() noexcept {
         stopping=true;clock.request_stop();
@@ -132,15 +172,18 @@ struct Runtime::Impl {
         else if (value!=ISLE_GAME_OK&&value!=ISLE_GAME_STOPPED&&value!=ISLE_GAME_INVALID_STATE)
             fail(value,rainbow->message());
     }
-    bool active() const noexcept { return bool(startup)||bool(window)||bool(beach)||bool(rainbow)||bool(post); }
+    bool active() const noexcept { return has_course()||bool(startup)||bool(window)||bool(beach)||bool(rainbow)||bool(post); }
     bool busy() const noexcept {
+        if (has_course()) return with_course([](const auto& current) { return current.graphics_busy(); });
         return post?post->graphics_busy():rainbow?rainbow->graphics_busy():beach?beach->graphics_busy():graphics&&graphics->busy();
     }
     const char* graphics_message() const noexcept {
+        if (has_course()) return with_course([](const auto& current) { return current.message(); });
         return post?post->message():rainbow?rainbow->message():beach?beach->message():graphics->message();
     }
     scene::graphics::Completed completed() const noexcept {
         if (!completed_hold) return {};
+        if (has_course()) return with_course([](const auto& current) { return current.completed_frame(); });
         return post?post->completed_frame():rainbow?rainbow->completed_frame():beach?beach->completed_frame():graphics->completed();
     }
     bool terminal(host::Terminal value) noexcept {
@@ -152,12 +195,25 @@ struct Runtime::Impl {
     }
     bool poll_graphics() noexcept {
         if (!executing||completed_hold) return true;
-        const auto polled=post?post->poll():rainbow?rainbow->poll():beach?beach->poll():graphics->poll();
+        const auto polled=has_course()?with_course([](auto& current) { return current.poll(); }):
+            post?post->poll():rainbow?rainbow->poll():beach?beach->poll():graphics->poll();
         if (polled==scene::graphics::Poll::pending) return true;
         if (polled==scene::graphics::Poll::completed) {
             completed_hold=true;
             return true;
         }
+        if (has_course()) return with_course([&](auto& current) {
+            const auto error=current.error();
+            if (error==ISLE_GAME_STOPPED || current.status()==course::LifecycleStatus::cancelled) request_stop();
+            else fail(error==ISLE_GAME_OK?ISLE_GAME_EXECUTION_FAILURE:error,current.message());
+            if (current.graphics_busy()) return true;
+            if (current.release_completed()!=ISLE_GAME_OK) {
+                observe_course_join(current,current.cancel());
+                if (!current.retire_scene()) { observe_course_join(current,ISLE_GAME_OK); return true; }
+            }
+            observe_course_join(current,ISLE_GAME_OK);
+            return terminal(failure==ISLE_GAME_OK?host::Terminal::cancelled:host::Terminal::failed);
+        });
         if (rainbow) {
             const auto error=rainbow->error();
             if (error==ISLE_GAME_STOPPED||rainbow->status()==rainbow::LifecycleStatus::cancelled)
@@ -243,6 +299,23 @@ struct Runtime::Impl {
         window->oak.emplace(*window->services,oak_resources,*window->producer,options);
         return window->oak->start()||fail(ISLE_GAME_EXECUTION_FAILURE,window->oak->error());
     }
+    template<class C> bool create_course(const EntryIntent& request) {
+        if (!state.save()) return fail(ISLE_GAME_INVALID_STATE,"course requested before actual boot profile initialization");
+        if (!photos) photos=std::make_unique<Photos>(snapshot,*state.save());
+        auto made=C::create(snapshot,*manager,state,input,audio,clock,*photos,post_modules.world,
+            static_cast<std::int32_t>(request.argument),config.require_cpu_renderer,
+            course::EntryNativeProfile::hosted_canonical_image);
+        if (!made) {
+            if (made.error==ISLE_GAME_STOPPED) { request_stop(); return true; }
+            return fail(made.error,made.message.data());
+        }
+        courses=std::move(made.lifecycle);
+        auto& current=*std::get<std::unique_ptr<C>>(courses);
+        if (!checked_course(current,current.resume())) return failure==ISLE_GAME_OK;
+        if (!current.pending_setup())
+            return fail(ISLE_GAME_INVALID_STATE,"Original course omitted its actual scene setup");
+        return checked_course(current,current.initialize_scene()) || failure==ISLE_GAME_OK;
+    }
     bool enter(std::uint32_t raw_time) {
         const auto* request=manager->pending_entry();
         if (!request) return true;
@@ -293,13 +366,33 @@ struct Runtime::Impl {
             if (!checked_rainbow(rainbow->initialize_scene())) return failure==ISLE_GAME_OK;
             return true;
         }
+        case ISLE_APPLICATION_ENTRY_TUNNEL: return create_course<tunnel::Lifecycle>(*request);
+        case ISLE_APPLICATION_ENTRY_VOLCANO: return create_course<volcano::Lifecycle>(*request);
+        case ISLE_APPLICATION_ENTRY_RIVER: return create_course<river::Lifecycle>(*request);
+        case ISLE_APPLICATION_ENTRY_CAVE: return create_course<cave::Lifecycle>(*request);
+        case ISLE_APPLICATION_ENTRY_VALLEY: return create_course<valley::Lifecycle>(*request);
         case ISLE_APPLICATION_ENTRY_CAMERA_CHECK:
-        case ISLE_APPLICATION_ENTRY_PHOTO_CHECK: {
-            if (!progress||!native_service.service||!photos)
-                return fail(ISLE_GAME_INVALID_STATE,"post-course entry requires canonical Photos and bound actual Host progress");
+        case ISLE_APPLICATION_ENTRY_PHOTO_CHECK:
+        case ISLE_APPLICATION_ENTRY_ALBUM:
+        case ISLE_APPLICATION_ENTRY_REPORT:
+        case ISLE_APPLICATION_ENTRY_GALLERY:
+        case ISLE_APPLICATION_ENTRY_END_LEVEL_8:
+        case ISLE_APPLICATION_ENTRY_CREDITS: {
+            if (!progress||!native_service.service)
+                return fail(ISLE_GAME_INVALID_STATE,"post-course entry requires bound actual Host progress");
+            if (!photos) photos=std::make_unique<Photos>(snapshot,*state.save());
             post_modules.observe_window(snapshot,manager->resources());
-            const auto kind=request->operation==ISLE_APPLICATION_ENTRY_CAMERA_CHECK?
-                post_course::Resources::Kind::camera_check:post_course::Resources::Kind::photo_check;
+            post_course::Resources::Kind kind;
+            switch (request->operation) {
+            case ISLE_APPLICATION_ENTRY_CAMERA_CHECK: kind=post_course::Resources::Kind::camera_check; break;
+            case ISLE_APPLICATION_ENTRY_PHOTO_CHECK: kind=post_course::Resources::Kind::photo_check; break;
+            case ISLE_APPLICATION_ENTRY_ALBUM: kind=post_course::Resources::Kind::album; break;
+            case ISLE_APPLICATION_ENTRY_REPORT: kind=post_course::Resources::Kind::report; break;
+            case ISLE_APPLICATION_ENTRY_GALLERY: kind=post_course::Resources::Kind::gallery; break;
+            case ISLE_APPLICATION_ENTRY_END_LEVEL_8: kind=post_course::Resources::Kind::end_level_8; break;
+            case ISLE_APPLICATION_ENTRY_CREDITS: kind=post_course::Resources::Kind::credits; break;
+            default: return fail(ISLE_GAME_INVALID_STATE,"post-course entry has no native resource kind");
+            }
             auto made=post_course::Scene::create(snapshot,*manager,state,input,audio,clock,*photos,
                 *progress,{this,service_post_course},post_modules,kind,
                 static_cast<std::int32_t>(request->argument),config.require_cpu_renderer);
@@ -320,6 +413,14 @@ struct Runtime::Impl {
         }
     }
     bool update(std::uint32_t raw_time) noexcept {
+        if (has_course()) {
+            const bool advanced=with_course([&](auto& current) {
+                if (!checked_course(current,current.update(raw_time))) return false;
+                transition=current.status()==course::LifecycleStatus::retiring || clock.stopping();
+                return true;
+            });
+            if (!advanced) return failure==ISLE_GAME_OK;
+        } else
         if (startup) {
             const auto step=startup->tick(raw_time);
             if (step==startup::Step::failed) return fail(ISLE_GAME_EXECUTION_FAILURE,startup->message());
@@ -328,7 +429,7 @@ struct Runtime::Impl {
             transition=result.has_value();
         } else if (window) {
             window->services->raw_game_time=raw_time;
-            const auto updated=isle_game_tick(storage.game());
+            const auto updated=window->services->tick();
             if (updated==ISLE_GAME_STOPPED) { request_stop();return true; }
             if (!checked(updated,"native window OM update failed")) return false;
             if (window->services->failed()) return fail(ISLE_GAME_EXECUTION_FAILURE,window->services->error());
@@ -357,9 +458,15 @@ struct Runtime::Impl {
         return true;
     }
     bool draw(host::FrameToken token) noexcept {
-        const bool begun=post?post->draw({token.context}):rainbow?rainbow->draw({token.context}):beach?beach->draw({token.context}):startup?
+        const bool begun=has_course()?with_course([&](auto& current) { return current.draw({token.context}); }):
+            post?post->draw({token.context}):rainbow?rainbow->draw({token.context}):beach?beach->draw({token.context}):startup?
             graphics->begin(startup->view(),{token.context}):
             graphics->begin(window->name?window->name->render_input():window->oak->render_input(),{token.context});
+        if (!begun && has_course()) with_course([&](auto& current) {
+            const auto error=current.error();
+            if (error==ISLE_GAME_STOPPED || current.status()==course::LifecycleStatus::cancelled) request_stop();
+            else fail(error==ISLE_GAME_OK?ISLE_GAME_EXECUTION_FAILURE:error,current.message());
+        });
         if (!begun&&rainbow) {
             const auto error=rainbow->error();
             if (error==ISLE_GAME_STOPPED||rainbow->status()==rainbow::LifecycleStatus::cancelled)
@@ -368,16 +475,33 @@ struct Runtime::Impl {
         }
         if (!begun&&!busy()) {
             (void)checked(clock.abandon_draw(token),"unadmitted graphics context abandonment failed");
-            return rainbow?failure==ISLE_GAME_OK:fail(ISLE_GAME_EXECUTION_FAILURE,graphics_message());
+            return (rainbow||has_course())?failure==ISLE_GAME_OK:fail(ISLE_GAME_EXECUTION_FAILURE,graphics_message());
         }
         executing=token;
         const auto accepted=clock.accept_draw(token);
         draw_accepted=accepted==host::ClockError::none;
         if (!checked(accepted,"actual graphics admission lost its GTL context")) return false;
-        return begun||(rainbow?failure==ISLE_GAME_OK:fail(ISLE_GAME_EXECUTION_FAILURE,graphics_message()));
+        return begun||((rainbow||has_course())?failure==ISLE_GAME_OK:fail(ISLE_GAME_EXECUTION_FAILURE,graphics_message()));
     }
     bool retire_scene(bool completed_source) noexcept {
         if (executing||completed_hold||updating) return false;
+        if (has_course()) {
+            const bool joined=with_course([&](auto& current) {
+                if (!completed_source) observe_course_join(current,current.cancel());
+                if (!current.retire_scene()) { observe_course_join(current,ISLE_GAME_OK); return false; }
+                if (completed_source) {
+                    if (!checked_course(current,ISLE_GAME_OK)) return false;
+                    if (!result) {
+                        if (!checked_course(current,current.resume())) return false;
+                        result=current.result();
+                        if (!result) return fail(ISLE_GAME_INVALID_STATE,"course retired without its Original post-scene result");
+                    }
+                }
+                observe_course_join(current,current.retire());
+                return current.status()==course::LifecycleStatus::retired;
+            });
+            if (!joined) return false;
+        }
         if (post) {
             if (!completed_source) {
                 const auto cancelled=post->cancel();
@@ -443,11 +567,14 @@ struct Runtime::Impl {
         if (completed_source&&stopping) return false;
         if (completed_source&&config.scene_retired) {
             if (!entry||!result) return fail(ISLE_GAME_INVALID_STATE,"retired scene lost its original entry/result");
-            config.scene_retired(config.retirement_user,{&entry.intent(),*result,beach.get(),post.get(),rainbow.get()});
+            config.scene_retired(config.retirement_user,{&entry.intent(),*result,beach.get(),post.get(),rainbow.get(),
+                course_pointer<tunnel::Lifecycle>(),course_pointer<volcano::Lifecycle>(),course_pointer<river::Lifecycle>(),
+                course_pointer<cave::Lifecycle>(),course_pointer<valley::Lifecycle>()});
         }
         beach.reset();
         rainbow.reset();
         post.reset();
+        courses=NativeCourses{};
         return true;
     }
     bool finish_transition() noexcept {
@@ -588,6 +715,8 @@ const char* Runtime::message() const noexcept { return impl_->diagnostic.data();
 RuntimeView Runtime::view() const noexcept {
     return {impl_->entry?&impl_->entry.intent():nullptr,impl_->startup.get(),
         impl_->window&&impl_->window->name?&*impl_->window->name:nullptr,
-        impl_->window&&impl_->window->oak?&*impl_->window->oak:nullptr,impl_->beach.get(),impl_->post.get(),impl_->rainbow.get()};
+        impl_->window&&impl_->window->oak?&*impl_->window->oak:nullptr,impl_->beach.get(),impl_->post.get(),impl_->rainbow.get(),
+        impl_->course_pointer<tunnel::Lifecycle>(),impl_->course_pointer<volcano::Lifecycle>(),
+        impl_->course_pointer<river::Lifecycle>(),impl_->course_pointer<cave::Lifecycle>(),impl_->course_pointer<valley::Lifecycle>()};
 }
 }

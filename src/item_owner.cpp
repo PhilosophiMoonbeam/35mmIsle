@@ -624,9 +624,12 @@ OwnerStatus Owner::collect_joined() noexcept {
     auto& self=*impl_;
     if (self.factory.phase!=Impl::Factory::Phase::idle)
         return failure(OwnerError::lifetime,"Item unpublished factory ownership remains");
+    bool pending=false;
     for (auto& slot:self.slots) if (slot.active && slot.retiring) {
-        if (!slot.joined || (slot.source_owned && !self.services.source_owner_collectable(slot.object)))
-            return failure(OwnerError::lifetime,"Item native join/source sender or field borrows remain");
+        if (!slot.joined || (slot.source_owned && !self.services.source_owner_collectable(slot.object))) {
+            pending=true;
+            continue;
+        }
         if (slot.source_owned) {
             if (!self.services.source_owner_release(slot.object))
                 return failure(OwnerError::lifetime,"Item identity release requires outside native/command traversal");
@@ -636,7 +639,7 @@ OwnerStatus Owner::collect_joined() noexcept {
         if (slot.payload) { slot.payload->source={}; slot.payload->used=false; slot.payload->held=false; }
         const auto index=slot.index; slot=Impl::Slot{}; slot.owner=&self; slot.index=index;
     }
-    return {};
+    return pending?failure(OwnerError::lifetime,"Item native join/source sender or field borrows remain"):OwnerStatus{};
 }
 } // namespace isle::items
 

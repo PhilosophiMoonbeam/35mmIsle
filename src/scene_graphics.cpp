@@ -352,6 +352,9 @@ struct Frame::Impl {
     std::vector<sp::RamRange> source_gpu_storage;
     std::uint64_t source_gpu_admission = 0;
     bool source_gpu_active = false;
+    const void* source_display_owner = nullptr;
+    std::vector<sp::RamRange> source_display_storage, source_display_protected;
+    bool source_display_active = false;
     std::array<SceneAssets, 2> scenes;
     std::optional<menu::EffectGraphicsResources> fx_graphics;
     screen_transition::Resources transitions;
@@ -392,9 +395,12 @@ struct Frame::Impl {
     Impl(const menu::Catalog* c, const rom::Snapshot& s, Config config)
         : storage(config.memory, c != nullptr), source_depth{storage.ranges[4], 0x40},
           catalog(c), snapshot(s), source(s.canonical().data()),
-          transitions(s), executor(config.require_cpu, config.limits) {
+          transitions(s,config.transition_memory), executor(config.require_cpu, config.limits) {
         require(source != nullptr && snapshot.canonical().size() == rom::us_size,
                 "startup graphics requires an admitted stable Snapshot", Error::resource);
+        require(!catalog || (config.transition_memory.address==screen_transition::Resources::workspace.address &&
+                config.transition_memory.size==screen_transition::Resources::workspace.size),
+                "Catalog transition storage must retain its admitted fixed plan",Error::resource);
         if (!catalog) return;
         // Startup and course composition share the same alias-preserving packer.
         const std::array<const menu::EffectBank*, 1> selected{&catalog->effects()};
@@ -467,6 +473,31 @@ struct Frame::Impl {
                     "Source GPU storage reservations overlap",Error::resource);
         source_gpu_storage=std::move(candidate);
         if (render_capacity) reserve_render_capacity(*render_capacity);
+    }
+    void register_source_display_storage(const void* owner,std::span<const sp::RamRange> ranges) {
+        require(owner && !ranges.empty() && !source_display_owner && !dispatch_started &&
+                !retired && !source_gpu_active && executor.quiescent(),
+                "Source display storage needs one cold retained owner",Error::preparation);
+        std::vector<sp::RamRange> loan(ranges.begin(),ranges.end()), protected_ranges;
+        protected_ranges.reserve(source_gpu_storage.size());
+        for(std::size_t i=0;i<loan.size();++i) {
+            const auto range=loan[i];
+            bool found=false;
+            for(const auto retained:source_gpu_storage)
+                if(range.address==retained.address && range.size==retained.size)found=true;
+            require(found,"Source display loan is not an exact retained Replay range",Error::resource);
+            for(std::size_t j=0;j<i;++j)
+                require(!intersects(range,loan[j]),"Source display loan ranges overlap",Error::resource);
+        }
+        for(const auto retained:source_gpu_storage) {
+            bool lent=false;
+            for(const auto range:loan)
+                if(range.address==retained.address && range.size==retained.size)lent=true;
+            if(!lent)protected_ranges.push_back(retained);
+        }
+        source_display_storage=std::move(loan);
+        source_display_protected=std::move(protected_ranges);
+        source_display_owner=owner;
     }
     void source_configuration_ready() {
         require(!dispatch_started && !render_capacity && !retired && !source_gpu_active && executor.quiescent(),
@@ -665,7 +696,15 @@ struct Frame::Impl {
         wire::validate_cold_inputs(ram, snapshot, source, storage.boot);
         composition_reservations.clear();
         composition_reservations.insert(composition_reservations.end(), storage.ranges.begin(), storage.ranges.end());
-        composition_reservations.insert(composition_reservations.end(),source_gpu_storage.begin(),source_gpu_storage.end());
+        if(source_display_active) {
+            bool owner_present=false;
+            for(const auto& pass:input.passes)
+                if(pass.userdata==source_display_owner && pass.kind==render::Kind::compiled)
+                    owner_present=true;
+            require(owner_present,"Source display loan lacks its actual compiled owner",Error::resource);
+        }
+        const auto& retained=source_display_active?source_display_protected:source_gpu_storage;
+        composition_reservations.insert(composition_reservations.end(),retained.begin(),retained.end());
         for (const auto framebuffer : targets) {
             require(!(framebuffer & 7u) && framebuffer <= menu::rdram_size &&
                     target_bytes <= menu::rdram_size - framebuffer,
@@ -699,8 +738,8 @@ struct Frame::Impl {
             if (pass.camera) static_cast<void>(bounds(camera_parameters(input.game, pass.camera).viewport));
             require(!depthless || pass.control || !(pass.flags & 1u),
                     "depthless Source pass requested an actual depth clear",Error::resource);
-            require(!depthless || pass.control || pass.kind != render::Kind::compiled,
-                    "depthless Source compiled drawing has not been admitted",Error::resource);
+            require(!depthless || pass.control || pass.kind != render::Kind::compiled || !pass.requires_depth,
+                    "depthless Source compiled pass requires an actual depth target",Error::resource);
             if (pass.kind == render::Kind::sprites) {
                 if (depthless) for (const auto& sprite : pass.sprites) if (pass.includes(sprite.render))
                     validate_depthless_sprite(sprite.draw);
@@ -823,11 +862,14 @@ struct Frame::Impl {
                 return secondary.cursor;
             };
             auto prepare_compiled = [&]() -> const render::Prepared& {
-                require(!depthless,"depthless Source compiled drawing has not been admitted",Error::resource);
+                require(!depthless || !pass.requires_depth,
+                        "depthless Source compiled pass requires an actual depth target",Error::resource);
                 require(pass.kind == render::Kind::compiled && pass.prepare,
                         "source explicit preparation requires a compiled pass", Error::preparation);
                 require(pass.prepare(pass.userdata, ram, epoch, pass, prepared),
                         "scene compiled producer rejected preparation", Error::preparation);
+                require(!depthless || !prepared.requires_depth,
+                        "depthless Source compiled producer prepared depth-dependent drawing",Error::resource);
                 return prepared;
             };
             auto draw = [&] {
@@ -995,12 +1037,49 @@ bool Frame::reserve_source_gpu_storage(std::span<const sprite::RamRange> ranges)
       catch (...) { state.fail(Error::resource,"Source GPU storage reservation exception"); }
     return false;
 }
+bool Frame::register_source_display_storage(const void* owner,
+    std::span<const sprite::RamRange> ranges) noexcept {
+    auto& state=*impl_;
+    if(state.error!=Error::none || state.retired)return false;
+    try {state.register_source_display_storage(owner,ranges);return true;}
+    catch(const Failure& e) {state.fail(e.error,e.message);}
+    catch(const std::exception& e) {state.fail(Error::resource,e.what());}
+    catch(...) {state.fail(Error::resource,"Source display storage registration exception");}
+    return false;
+}
+bool Frame::begin_source_display_storage(const void* owner) noexcept {
+    auto& state=*impl_;
+    if(!owner || owner!=state.source_display_owner || state.source_display_active ||
+       state.error!=Error::none || state.retired || !quiescent() ||
+       state.graphics_borrow || state.transition_borrow.owner)return false;
+    state.source_display_active=true;
+    state.resident=false;
+    return true;
+}
+bool Frame::end_source_display_storage(const void* owner) noexcept {
+    auto& state=*impl_;
+    // Sticky preparation/execution failure does not revoke cleanup authority.
+    if(!owner || owner!=state.source_display_owner || !state.source_display_active ||
+       !quiescent() || state.graphics_borrow || state.transition_borrow.owner)return false;
+    state.source_display_active=false;
+    state.resident=false;
+    return true;
+}
+render::Pass Frame::transition_pass(::isle::screen_transition::Owner& owner) noexcept {
+    return impl_->transitions.pass(owner);
+}
+std::span<const sprite::AssetSpan> Frame::transition_immutable() const noexcept {
+    return impl_->transitions.immutable();
+}
+sprite::RamRange Frame::transition_workspace() const noexcept {
+    return impl_->transitions.memory();
+}
 SourceGpuAcquire Frame::acquire_source_gpu(SourceGpuBinding& output) noexcept {
     output={};
     auto& state=*impl_;
     if (state.error!=Error::none || state.retired || state.source_gpu_storage.empty())
         return SourceGpuAcquire::failed;
-    if (state.source_gpu_active || state.token || !state.executor.quiescent() ||
+    if (state.source_display_active || state.source_gpu_active || state.token || !state.executor.quiescent() ||
         state.graphics_borrow || state.transition_borrow.owner) return SourceGpuAcquire::pending;
     if (state.epoch==std::numeric_limits<std::uint64_t>::max() ||
         state.source_gpu_admission==std::numeric_limits<std::uint64_t>::max()) {
@@ -1120,7 +1199,7 @@ Completed Frame::completed() const noexcept {
     return {impl_->rgba, width, height, width * 4, impl_->offsets, impl_->ordinal};
 }
 bool Frame::retire() noexcept {
-    if (busy()) return false;
+    if (busy() || impl_->source_display_active) return false;
     impl_->graphics_borrow.reset();
     impl_->transition_borrow.reset();
     impl_->ready = false; impl_->retired = true;

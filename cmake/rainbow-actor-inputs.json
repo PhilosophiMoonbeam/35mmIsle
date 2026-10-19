@@ -3910,10 +3910,10 @@
     "completion": "Unlinked Source provider and complete service contract only; no ActorAI readiness or standalone Rainbow execution claim.",
     "support_handoff": "Parent must refresh closed native_support hashes after shared owner, neutral catalog and integration edits; generator and recipe admission must remain closed."
   },
-  "output_sha256": "78130cd819b8feee8ba67385ff8244c768fb6d71081d17496732c4f3b828041e",
+  "output_sha256": "4002748d9f83b603fb9bbf8f6dd9178f752e0d7f7abbf8ba0d585d2c4b65a4f0",
   "native_support": {
     "src/actor_course_context.hpp": {
-      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+      "sha256": "ac0d2a1cb760ebe216bf220f1529b988ec63fe280180d981d9c5353d65e6b931"
     },
     "src/rainbow_lifecycle_source.h": {
       "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
@@ -3937,34 +3937,34 @@
       "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
     },
     "src/actor_owner_source.h": {
-      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
+      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
     },
     "src/actor_source_bridge.c": {
       "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "43d708f52f9bbcf0045b468eae3a196cbda28afc95d4e5bd7d977c69c541da3a"
+      "sha256": "6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"
     },
     "src/actor_owner.hpp": {
-      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
+      "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
     },
     "src/actor_owner.cpp": {
-      "sha256": "0b5d1447fcee27995a67ce2246f31f205a1981c2856b15d87c9e8c10ded8b42e"
+      "sha256": "9889d22618a966c65b2250b5421f6ea687884f689c0913d1d82160b11bffb42b"
     },
     "src/actor_interaction_services.h": {
       "sha256": "3ae9ca3cee1e32d2658c969d6b458290783c711de3a8f4c10966d1f24ce00158"
     },
     "src/actor_interaction_services.hpp": {
-      "sha256": "9b4274b5dea8584573a639f6315ca57736322c1e463af4bc28355f6fd99cc467"
+      "sha256": "27c5393ed67dde862fd2787155aec0a82b9b511c6243f3399ac965ef27471f9d"
     },
     "src/actor_interaction_services.cpp": {
-      "sha256": "1e0211f4e9b89b43193d0a98a23fe72908f5e07fddf91e09eefe778955f5d3c2"
+      "sha256": "d3d05631173ff0639c98fbbdd1bcd52a09e825981488977f2f60e9f7ff0bfea0"
     },
     "src/actor_behavior_bindings.hpp": {
-      "sha256": "aff3e08cff850bf85f78f10f6d683ad4d11f1eb8c464fbabc5078f3e0b7fc3c5"
+      "sha256": "5eb20328bba03118cdd4bd1be8c8d9367cb2e7d53c165e379f0bd5c654bf2e59"
     },
     "src/actor_behavior_bindings.cpp": {
-      "sha256": "f48065907d97fe625e39102fbc001219537181ae5316c8f44d1cf1a4231fa278"
+      "sha256": "d5d7bb3d2ed33152694d1a1006ed733ece61583c640cf78c2e77ce01f1b36ad1"
     },
     "src/actor_resources.hpp": {
       "sha256": "485d0fe35bb856a392f80b3fb636c92a977a589cf1403205eb80cc97b00d232f"
@@ -4003,11 +4003,11 @@
       "sha256": "e5cbeede5a05407dacebdfcf9172149cbeb725aeb800a1e48fddcbaa78c3f679"
     },
     "src/engine_internal.h": {
-      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
     },
     "tools/prepare_engine.py": {
-      "sha256": "b5b31702ed3682fd875253234c6a212c6f6a63621f749df08008eabdc57a014e"
+      "sha256": "bf0ecd0c670c55c2fc38ea5d147669f36267058eb52b6150b270d6bf31932ca0"
     }
   },
-  "generator_sha256": "7ff2bfe243dc1b4770a95e4b1fe326501200c6b7fecabce8712b49b85f20c972"
+  "generator_sha256": "e02f226299ae08463adc889f025df103c64218b7909e8fa3fd0dd4fb6b1c9d45"
 }

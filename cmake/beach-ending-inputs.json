@@ -501,7 +501,7 @@
   },
   "native_support": {
     "src/actor_course_context.hpp": {
-      "sha256": "3583a813e51aa1b5d7a226db33cf06170432f527090ec67269ec3aa2d08cf07b"
+      "sha256": "ac0d2a1cb760ebe216bf220f1529b988ec63fe280180d981d9c5353d65e6b931"
     },
     "src/rainbow_actor_source.h": {
       "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
@@ -534,19 +534,19 @@
       "sha256": "d99af6f654e2b9061eb36db2f5432596d7fd9b71453dce3a3a237dab98f81e19"
     },
     "src/actor_owner.hpp": {
-      "sha256": "9d908a3c9a83dc82252a4755a166c9ca413ee087139af3a168f2a76eb943e941"
+      "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
     },
     "src/actor_owner.cpp": {
-      "sha256": "0b5d1447fcee27995a67ce2246f31f205a1981c2856b15d87c9e8c10ded8b42e"
+      "sha256": "9889d22618a966c65b2250b5421f6ea687884f689c0913d1d82160b11bffb42b"
     },
     "src/actor_owner_source.h": {
-      "sha256": "d07a2fadc3d02cd2bf7f9ebb1fdddc3ffec35e12355fcbc5875068c9bef89b89"
+      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
     },
     "src/actor_interaction_services.hpp": {
-      "sha256": "9b4274b5dea8584573a639f6315ca57736322c1e463af4bc28355f6fd99cc467"
+      "sha256": "27c5393ed67dde862fd2787155aec0a82b9b511c6243f3399ac965ef27471f9d"
     },
     "src/actor_interaction_services.cpp": {
-      "sha256": "1e0211f4e9b89b43193d0a98a23fe72908f5e07fddf91e09eefe778955f5d3c2"
+      "sha256": "d3d05631173ff0639c98fbbdd1bcd52a09e825981488977f2f60e9f7ff0bfea0"
     },
     "src/beach_initial_species.cpp": {
       "sha256": "9fdcc5751394a562153ffc3616a9a9a136eb092c8d9fbebc38a929d3bfbe8721"
@@ -555,19 +555,19 @@
       "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
     },
     "src/player_cart_source.h": {
-      "sha256": "a55a8ec2d16a78833aa7deff9c85fe6729bde1fbcb9c386f4dbdf71e419264a5"
+      "sha256": "2907f48a3cfb643a767317ab6d6c76a479032eeae4633b070a875c7b68a851bb"
     },
     "src/player_root_source.h": {
       "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"
     },
     "src/menu_scene_bridge.h": {
-      "sha256": "851da4fdc6f7864784e44e8c36b098a0c9f769f0f380cbcc3875845c57daf726"
+      "sha256": "0a7f7e6e8b17c37e3f6bbb270603ce70107b9f092ace7fd5c260423a7656efc9"
     },
     "src/engine_internal.h": {
-      "sha256": "59386212896671eeb7fc8c9203c2b462822ee8697a0d3326d33bdffa7face0f9"
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
     },
     "tools/prepare_engine.py": {
-      "sha256": "b5b31702ed3682fd875253234c6a212c6f6a63621f749df08008eabdc57a014e"
+      "sha256": "bf0ecd0c670c55c2fc38ea5d147669f36267058eb52b6150b270d6bf31932ca0"
     }
   },
   "output_sha256": "fe5117ccbef91ec91d36f3149c572b8d7d0ce3f316873a463a2a310a7499eb99"

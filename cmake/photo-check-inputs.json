@@ -5,37 +5,46 @@
       "sha256": "b89283f94e22816c4b08a6196ee694fc0d455765997567760e826f9a0ce66c52"
     },
     "src/photo_check_source.h": {
-      "sha256": "c89cdbaaec48d38bc017371d83c9750e32528a9a8e25052f4798834a10e6910a"
+      "sha256": "5df51c99e327f525aee860822b8dfc8fb12f6e705d429da1f6f43ba338851c6b"
     },
     "src/photo_check_source.c": {
-      "sha256": "41c13af4bcd87d3f91cf2ee97fe39d6f2329f8238f1cd5bef7ba02ab4a2d20bd"
+      "sha256": "ec7578f100317af66f5d9aa165bc35f5069b6a637c8f338892cc56a9169c4fb7"
     },
     "tools/materialize_photo_check.py": {
-      "sha256": "3521f50a0e6193bccaeae1e2cc26c9d35b4fc6b70f5f0a54aee4af68e9664624"
+      "sha256": "de71afa30ace2ec56c3ae3057fc0beef635cfa0e019b9bef087fb3aaf1ef1c3d"
     },
     "src/post_course_scene_source.h": {
-      "sha256": "3ffa3b3255063d23c9c0882f7b342d72951fb2ef46f9024c2b5f1b3204ca0f5e"
+      "sha256": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9"
     },
     "src/post_course_scene_source.c": {
-      "sha256": "54dc3b6d0ad1cc3717a68f2220de761d6125420bdf1021942818dc6db9933ae8"
+      "sha256": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "b0afe863d35427698fe7ea5c5de0a05ea471817056516ec287c08d7aca1bff8e"
+      "sha256": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87"
     },
     "src/post_course_scene.hpp": {
-      "sha256": "459b4fa5a790779c20245732c9f5bf6442fd2b439055949fc9afa3d0c23f540a"
+      "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
     },
     "src/post_course_scene_internal.hpp": {
-      "sha256": "bb56438ed411f72daafb1ad25bf897dab001bfb81d1c651b1d4afd170ffc382f"
+      "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
     },
     "src/post_course_scene_hooks.cpp": {
-      "sha256": "2ff7fd3e6944104be56427260d7ca920782577fc94afa05378df3fd649488d47"
+      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
     },
     "src/post_course_modules.cpp": {
       "sha256": "8c2a19e27616f5ebc2ab5d96f064521ec1ce4c1239c652c8cdd681596f79e2df"
     },
     "src/post_course_modules.hpp": {
       "sha256": "3e0a436840cf5628ed8dca9549b14116d12181d471040db4fd96fba3d95c5eb9"
+    },
+    "src/original_sort_source.h": {
+      "sha256": "78aa12828d95f258d2d01fd450f6879e9f9ced9792eaa13f2bd0beee2cf8981e"
+    },
+    "src/original_sort_source.c": {
+      "sha256": "007cb65b47e09c110e379ef702c306a49d94d85798d91fdc44bd108a3d7cd301"
+    },
+    "tools/prepare_original_sort.py": {
+      "sha256": "42364399b6b78b023ce393d3cd3b141b930229dcd8ecbfee3ddc037771ca4294"
     }
   },
   "provider": "photo-check-15-original-c",
@@ -85,10 +94,6 @@
     "src/photo_check/photo_check.h": {
       "sha256": "27ed09f5d508fe25f31a760d92b4a923f8a88227dd34ebd400da21d3ad554a98",
       "blob": "6efc959c6171696a8b1ab14b554cb91597b4f02d"
-    },
-    "src/sys/misc.c": {
-      "sha256": "f6607a602e8479b0647a6e87a8e290af614e3b1b8d5e36295a2ac9c7c45e7f32",
-      "blob": "84be12339c2f266dcfb5e2ae7ccd6a73cbe2a46b"
     },
     "src/window/8486E0.c": {
       "sha256": "67bc8e26889891abec021e0303b58d8a9b791321db2ca8ec1658b81d8d7437ed",
@@ -489,27 +494,6 @@
       "sha256": "34b28565a147ae2b261c03567a0b4887aa8a66ccdb30349ef389c7b964580821"
     },
     {
-      "name": "swap",
-      "source": "src/sys/misc.c",
-      "first": 148,
-      "last": 154,
-      "sha256": "4efebb97538d813633527ec1e72af6d2bd7603bdbf2007a5f0152f7e79df3298"
-    },
-    {
-      "name": "qsortInternal",
-      "source": "src/sys/misc.c",
-      "first": 156,
-      "last": 196,
-      "sha256": "9fa4339fa213b626f23b0daec442d44098848acc58222654c395ba4c9938fbc6"
-    },
-    {
-      "name": "qsort2",
-      "source": "src/sys/misc.c",
-      "first": 198,
-      "last": 229,
-      "sha256": "a3d33b2e05da15163a8b48e74fff22c504381cc8b62474b1050a7f0e61140e1a"
-    },
-    {
       "name": "func_80374F30_8486E0",
       "source": "src/window/8486E0.c",
       "first": 12,
@@ -525,7 +509,6 @@
     "func_801E4428_993E98"
   ],
   "support_allowlist": [
-    "src/sys/misc.c",
     "src/window/8486E0.c"
   ],
   "data_origins": [
@@ -565,7 +548,8 @@
     "photo_check_original.inc",
     "photo_check_declarations.inc",
     "photo_check_data.inc",
-    "photo_check_original.inc.manifest.json"
+    "photo_check_original.inc.manifest.json",
+    "game.c"
   ],
   "native_contract": "src/photo_check_source.h",
   "window_enum_declarations": "enum { FONT_8=8, FONT_12=12, UI_BACKGROUND=0, UI_FOREGROUND=1, UI_NORMAL=0, UI_HIDDEN=1, FRAME_STYLE_1=1, HEADER_PREV=1, HEADER_NEXT=2, HEADER_TITLE=4 };",
@@ -581,5 +565,2453 @@
     "model_and_camera_process_priority": "src/sys/oh.c327-345,368-384; kind0/priority0",
     "preview_scale": "native actual shared Window D803A6668; initial ROM word 3f800000; no provider default"
   },
-  "verification": "Parent-owned; materializer emits evidence, no original bodies or assets in public repository."
+  "verification": "Parent-owned; materializer emits evidence, no original bodies or assets in public repository.",
+  "native_definitions": [
+    {
+      "name": "func_801DCA14_98C484",
+      "source": "src/photo_check/98C330.c",
+      "first": 347,
+      "last": 353,
+      "sha256": "be846db618f669300e639014fe90050acbba74f81204548363732892cfea07e3",
+      "native_sha256": "868af324e4f795c81f674a8833aeef1fbc6424f0c2002ad239f024191a9953d9",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 1,
+            "bridge:ohWait": 1,
+            "context-call:pc_wait": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "868af324e4f795c81f674a8833aeef1fbc6424f0c2002ad239f024191a9953d9"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCA48_98C4B8",
+      "source": "src/photo_check/98C330.c",
+      "first": 355,
+      "last": 377,
+      "sha256": "5f778a47641c29235c68ffa29bf98496e8802ca26d49e021023c6c03b87ccba7",
+      "native_sha256": "87b908313b910621d4e3a344785c64beada1135758ac96554ad52ab5fadaa75a",
+      "rewrites": [
+        {
+          "kind": "native-camera",
+          "span": "98C330.c355-377",
+          "contract": "isle_photo_check_native_camera; C registers exact idle kind0/priority0 after return"
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {},
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "87b908313b910621d4e3a344785c64beada1135758ac96554ad52ab5fadaa75a"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCBF4_98C664",
+      "source": "src/photo_check/98C330.c",
+      "first": 379,
+      "last": 391,
+      "sha256": "a866db5014d83e50738f9d8677af274af8bf9b2de5d527d5607ee55c245bf704",
+      "native_sha256": "d0e5070292db8b18e79a7e8dcb216892436c5443a64f31dcd9c6b3519463fd5e",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DCBF4_98C664",
+          "find": "UIMem_CreateHeap(D_801F70A0_9A6B10, sizeof(D_801F70A0_9A6B10));",
+          "replace": "pc_check(source, isle_photo_check_native_ui_heap(source, 0x32000));",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 1,
+            "function:func_801DCA48_98C4B8": 1,
+            "function:func_801E3FFC_993A6C": 1,
+            "bridge:UIText_Initialize": 1,
+            "bridge:auPlaySong": 1,
+            "bridge:auSetBGMVolume": 1,
+            "bridge:func_800A7F68": 1,
+            "bridge:func_800AAE28": 1,
+            "bridge:func_80374D40_8484F0": 1,
+            "context-call:pc_text_initialize": 1,
+            "empty-call:pc_text_initialize": 1,
+            "context-call:pc_song": 1,
+            "context-call:pc_volume": 1,
+            "context-call:pc_aux_camera": 1,
+            "context-call:pc_input_initialize": 1,
+            "empty-call:pc_input_initialize": 1,
+            "context-call:pc_replay_initialize": 1,
+            "empty-call:pc_replay_initialize": 1,
+            "context-call:isle_photo_check_func_801DCA48_98C4B8": 1,
+            "empty-call:isle_photo_check_func_801DCA48_98C4B8": 1,
+            "context-call:isle_photo_check_func_801E3FFC_993A6C": 1,
+            "empty-call:isle_photo_check_func_801E3FFC_993A6C": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "d0e5070292db8b18e79a7e8dcb216892436c5443a64f31dcd9c6b3519463fd5e"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCC74_98C6E4",
+      "source": "src/photo_check/98C330.c",
+      "first": 393,
+      "last": 401,
+      "sha256": "9319301f02eb047c9c900856255c0f6a42471dc5480b00bde142c220fd82e1de",
+      "native_sha256": null,
+      "rewrites": [
+        {
+          "kind": "native-entry",
+          "implementation": "isle_photo_check_func_801DCC74_98C6E4",
+          "source": "src/photo_check_source.c",
+          "operations": [
+            "viApplyScreenSettings(801e5410)",
+            "arena_extent=80369f80-80229840",
+            "gtlDisableNearClipping(1)",
+            "omSetupScene(801e542c)",
+            "return actual D800AF3C0 after retirement"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "func_801DCCE0_98C750",
+      "source": "src/photo_check/98C330.c",
+      "first": 405,
+      "last": 407,
+      "sha256": "b017a2615e02e6f728f3a2cb09e8fa133730a70fb43003c6b77815b688c75f43",
+      "native_sha256": "ab6b96f0351d10e852fb391506b7b328eb157795bb4f85b09af5e62be9319633",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "context-field:D_802290DC_9D8B4C": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "ab6b96f0351d10e852fb391506b7b328eb157795bb4f85b09af5e62be9319633"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCCFC_98C76C",
+      "source": "src/photo_check/98C330.c",
+      "first": 409,
+      "last": 439,
+      "sha256": "76387d4bacc2667c46bb7fabf55147a476e77449932bcb2ad505553cb450efe8",
+      "native_sha256": "1544ba4047c853f97650a0c34047953df388c43a6cad8067fc878083acea26ee",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 7,
+            "bridge:UIFrame_SetOpacity": 1,
+            "bridge:UIFrame_SetPos": 2,
+            "bridge:UIFrame_SetSize": 2,
+            "bridge:UIFrame_SetStyle": 1,
+            "bridge:UIFrame_ShowBackground": 1,
+            "bridge:ohWait": 1,
+            "context-field:D_801F3E38_9A38A8": 6,
+            "context-call:pc_frame_opacity": 1,
+            "context-call:pc_frame_position": 2,
+            "context-call:pc_frame_size": 2,
+            "context-call:pc_frame_style": 1,
+            "context-call:pc_frame_background": 1,
+            "context-call:pc_wait": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "1544ba4047c853f97650a0c34047953df388c43a6cad8067fc878083acea26ee"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCF4C_98C9BC",
+      "source": "src/photo_check/98C330.c",
+      "first": 441,
+      "last": 446,
+      "sha256": "b6556f358e5b4d3c887a7dc5a0312d3888ee061c7713b8214f6c6e207e5d77f0",
+      "native_sha256": "9d9be38f0470f94ce1b0aa328f85b8dbb60cbdd031eebac79b05a97652df585f",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:func_801DCCFC_98C76C": 1,
+            "bridge:UIFrame_SetOpacity": 1,
+            "bridge:UIFrame_Show": 1,
+            "bridge:UIFrame_ShowBackground": 1,
+            "context-call:pc_frame_opacity": 1,
+            "context-call:pc_frame_show": 1,
+            "context-call:pc_frame_background": 1,
+            "context-call:isle_photo_check_func_801DCCFC_98C76C": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "9d9be38f0470f94ce1b0aa328f85b8dbb60cbdd031eebac79b05a97652df585f"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCFA0_98CA10",
+      "source": "src/photo_check/98C330.c",
+      "first": 448,
+      "last": 452,
+      "sha256": "aea867becc330dfd781f14e4ef7d845105643db2b1750ff588bedfbe614ae31b",
+      "native_sha256": "6637635f5dfc9d4c59b122e272e81a4fa677507783cc45cc3d1ba2de836bd4bd",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:func_801DCCFC_98C76C": 1,
+            "bridge:UIFrame_Show": 1,
+            "bridge:UIFrame_ShowBackground": 1,
+            "context-call:pc_frame_show": 1,
+            "context-call:pc_frame_background": 1,
+            "context-call:isle_photo_check_func_801DCCFC_98C76C": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "6637635f5dfc9d4c59b122e272e81a4fa677507783cc45cc3d1ba2de836bd4bd"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCFE8_98CA58",
+      "source": "src/photo_check/98C330.c",
+      "first": 454,
+      "last": 463,
+      "sha256": "83eb2b69aef9b9842476eb1390b0f63baf9314fdc912544d635d8dae8f54e178",
+      "native_sha256": "65c5abc7a2e737562de6a0244889fe1b3b17d92403e737a0e6c9c02e5572d4af",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "bridge:checkPlayerFlag": 1,
+            "bridge:func_800BF3D4_5C274": 1,
+            "context-field:D_801F3E28_9A3898": 2,
+            "semantic-token:PFID_14": 1,
+            "semantic-token:PokemonID_MEW": 1,
+            "context-call:pc_flag": 1,
+            "context-call:pc_report_present": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "65c5abc7a2e737562de6a0244889fe1b3b17d92403e737a0e6c9c02e5572d4af"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD05C_98CACC",
+      "source": "src/photo_check/98C330.c",
+      "first": 465,
+      "last": 497,
+      "sha256": "5f99116b2315cd98d87e549aacf3157d8053b5a1a1b360cd05392e8eb39d6d09",
+      "native_sha256": "666dd2373b133d880bcf99bd66edf5ae5b1fa0c0e023ceafd733afd3944cea42",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 3,
+            "bridge:UIElement_PrintText": 2,
+            "bridge:UIElement_SetTextPos": 2,
+            "context-call:pc_print_source": 2,
+            "context-call:pc_element_position": 2,
+            "bridge:auPlaySound": 1,
+            "bridge:func_800AA38C": 2,
+            "bridge:func_8036EB80_842330": 2,
+            "bridge:ohWait": 3,
+            "semantic-token:A_BUTTON": 3,
+            "semantic-token:B_BUTTON": 3,
+            "semantic-token:START_BUTTON": 2,
+            "context-call:pc_sound": 1,
+            "context-call:pc_input": 2,
+            "context-call:pc_text_skip": 2,
+            "context-call:pc_wait": 3,
+            "bridge:UIButtonImage_DeleteAll": 1,
+            "context-call:pc_buttons_clear": 1,
+            "empty-call:pc_buttons_clear": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "666dd2373b133d880bcf99bd66edf5ae5b1fa0c0e023ceafd733afd3944cea42"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD1A8_98CC18",
+      "source": "src/photo_check/98C330.c",
+      "first": 499,
+      "last": 517,
+      "sha256": "92687340ede16fff9e50c6c544960259f6481f89b601ab07b27266af03147bd8",
+      "native_sha256": "b4a25136c0fbab0626ce4be5f8a6f652446cea21221d0abeba6b6f05b7523704",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 4,
+            "bridge:func_800AA38C": 1,
+            "bridge:ohWait": 1,
+            "semantic-token:A_BUTTON": 2,
+            "semantic-token:B_BUTTON": 2,
+            "context-call:pc_input": 1,
+            "context-call:pc_wait": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "b4a25136c0fbab0626ce4be5f8a6f652446cea21221d0abeba6b6f05b7523704"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD25C_98CCCC",
+      "source": "src/photo_check/98C330.c",
+      "first": 519,
+      "last": 532,
+      "sha256": "0929a2cbd5fcbb61863f0d65c787b8300c5f2e4261cb8dc491fce7bc3032d97c",
+      "native_sha256": "ece5bd4c650751333a688b10b779c0e5c97863ca97bc5dcdc11bc69882ae80fb",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 4,
+            "function:func_801DD1A8_98CC18": 1,
+            "context-field:D_801F3E2C_9A389C": 1,
+            "context-field:D_801F3E30_9A38A0": 1,
+            "semantic-token:B_BUTTON": 1,
+            "context-call:isle_photo_check_func_801DD1A8_98CC18": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "ece5bd4c650751333a688b10b779c0e5c97863ca97bc5dcdc11bc69882ae80fb"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD2D4_98CD44",
+      "source": "src/photo_check/98C330.c",
+      "first": 534,
+      "last": 569,
+      "sha256": "ba5b3b5e2309749ad4cc694bfa1c5075c98809534649085401834c4624975a6b",
+      "native_sha256": "8680d8b15f388685784c11c1fc5ad1952bb2616e2d6258a49a38940089b6c486",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "bridge:auPlaySoundWithParams": 10,
+            "context-call:pc_sound_params": 10
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "8680d8b15f388685784c11c1fc5ad1952bb2616e2d6258a49a38940089b6c486"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD46C_98CEDC",
+      "source": "src/photo_check/98C330.c",
+      "first": 571,
+      "last": 586,
+      "sha256": "6fd0dc30045533705825a03385d5d7f70e9a63630b0116786ce9d6da4300c841",
+      "native_sha256": "abe90e74fed4e81b75282a70f1d48d5ea193563b6821bd14cb61be05d38c0fc7",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-sprite-view": 6,
+            "semantic-token:s32": 2,
+            "context-field:D_80229168_9D8BD8": 3,
+            "context-field:D_80229170_9D8BE0": 5
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "abe90e74fed4e81b75282a70f1d48d5ea193563b6821bd14cb61be05d38c0fc7"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD528_98CF98",
+      "source": "src/photo_check/98C330.c",
+      "first": 588,
+      "last": 590,
+      "sha256": "42c1ae0d5454febade9f0b0ddc3e44004affb625d651ff5d8e51b360d697c24f",
+      "native_sha256": "965ede898ab2d56a11c34de983ea08926f40ec7893d759d4e33bd3b4c2d98cab",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-sprite-view": 3,
+            "semantic-token:s32": 1,
+            "context-field:D_80229180_9D8BF0": 3
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "965ede898ab2d56a11c34de983ea08926f40ec7893d759d4e33bd3b4c2d98cab"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD568_98CFD8",
+      "source": "src/photo_check/98C330.c",
+      "first": 592,
+      "last": 602,
+      "sha256": "c5dad12416acedb07f28fec8a12112329463ed54f43b9edc88f23ce6c4041442",
+      "native_sha256": "08436989c642c8702bb2f9be20893c024cdcd82199ecde4f46a676e38e317931",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-root-handle": 1,
+            "actual-sprite-view": 5,
+            "prototype:D_801F29F0_9A2460": 1,
+            "bridge:func_80371D14_8454C4": 1,
+            "context-field:D_80229170_9D8BE0": 1,
+            "semantic-token:SCREEN_WIDTH": 1,
+            "context-call:pc_sprite_stackful": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "08436989c642c8702bb2f9be20893c024cdcd82199ecde4f46a676e38e317931"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD5F0_98D060",
+      "source": "src/photo_check/98C330.c",
+      "first": 604,
+      "last": 610,
+      "sha256": "ad111dd24d25b588ed8e1f3034ade0afab71db6448ed6a637e71d882c165a4e3",
+      "native_sha256": "94543c1fc7e5f342aa42236360b9a2b35ec63f70e5e86818278550ffaf11c7a4",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-sprite-view": 2,
+            "semantic-token:s32": 1,
+            "context-field:D_80229180_9D8BF0": 2,
+            "semantic-token:SP_HIDDEN": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "94543c1fc7e5f342aa42236360b9a2b35ec63f70e5e86818278550ffaf11c7a4"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD638_98D0A8",
+      "source": "src/photo_check/98C330.c",
+      "first": 612,
+      "last": 618,
+      "sha256": "33c50109d6fa73ce7ff354d01e4c8a1977fb81d54527bf8e5a7bb178480de748",
+      "native_sha256": "c474118ea7d2e3ac6b315e92b97c3a7b67d35e54742c19c457962aedcf524f05",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-sprite-view": 2,
+            "semantic-token:s32": 1,
+            "context-field:D_80229184_9D8BF4": 2,
+            "semantic-token:SP_HIDDEN": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "c474118ea7d2e3ac6b315e92b97c3a7b67d35e54742c19c457962aedcf524f05"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD680_98D0F0",
+      "source": "src/photo_check/98C330.c",
+      "first": 620,
+      "last": 627,
+      "sha256": "e365579a12f44ad134036c48c0edb1d848c1f030283532f0a16f6778530a7b2c",
+      "native_sha256": "33121abdc4a56c12ffa5df56a576d99d3a13d6b7ccd71edf4d4f8b70afb80543",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-root-sprite-view": 2,
+            "context-field:D_802290A0_9D8B10": 3,
+            "semantic-token:s32": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "33121abdc4a56c12ffa5df56a576d99d3a13d6b7ccd71edf4d4f8b70afb80543"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD720_98D190",
+      "source": "src/photo_check/98C330.c",
+      "first": 629,
+      "last": 666,
+      "sha256": "f774ed00e91068dfaa7c7c5dbd641245a86e5a245bf5a1b45e30184a61991464",
+      "native_sha256": "cd1e742811293c980c8504a6c5a45c26572563aa341987f3af8f90637d19eaf1",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DD720_98D190",
+          "find": "    Bitmap* sp24;\n    u8* sp20;\n    u8* sp1C;\n",
+          "replace": "",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801DD720_98D190",
+          "find": "    sp24 = UIMem_Allocate(0x30);\n    sp20 = UIMem_Allocate(0xFD8);\n    sp1C = sobj->sprite.bitmap->buf;\n    *sp24 = *sobj->sprite.bitmap;\n    sp24->buf = sp20;\n    sobj->sprite.bitmap = sp24;\n\n    for (i = 0xFD8; i > 0; sp1C++, sp20++, i--) {\n        *sp20 = *sp1C;\n    }\n",
+          "replace": "    pc_thumbnail(source, idx, sobj);\n",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 1,
+            "actual-root-handle": 1,
+            "actual-sprite-view": 8,
+            "prototype:D_801E5DB0_995820": 2,
+            "prototype:D_801E5EE0_995950": 2,
+            "prototype:D_801F3B10_9A3580": 1,
+            "semantic-token:s32": 2,
+            "bridge:func_80371C68_845418": 1,
+            "bridge:func_80371DC0_845570": 3,
+            "bridge:func_80371E68_845618": 1,
+            "context-field:D_802290A0_9D8B10": 2,
+            "context-call:pc_sprite_synchronous": 1,
+            "context-call:pc_sibling": 3,
+            "context-call:pc_child": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "cd1e742811293c980c8504a6c5a45c26572563aa341987f3af8f90637d19eaf1"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD8F4_98D364",
+      "source": "src/photo_check/98C330.c",
+      "first": 668,
+      "last": 676,
+      "sha256": "4349a82be3acb442a9e2a607f26553525344943cd165ef598c8fe981cd224f27",
+      "native_sha256": "9fd3082d194bc31f48b8deed2f8eee9214cad4861fdee17cc242d0d8ed0c3122",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-root-sprite-view": 2,
+            "function:func_801DD720_98D190": 1,
+            "context-field:D_802290A0_9D8B10": 3,
+            "semantic-token:s32": 1,
+            "context-call:isle_photo_check_func_801DD720_98D190": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "9fd3082d194bc31f48b8deed2f8eee9214cad4861fdee17cc242d0d8ed0c3122"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD964_98D3D4",
+      "source": "src/photo_check/98C330.c",
+      "first": 678,
+      "last": 686,
+      "sha256": "4bcd02df148e238fb65622cd96717cec61cf73c25b1964505a17e9132f0fb7e4",
+      "native_sha256": "a502ee3ecb687942b3acb5c27659b0e9e19da3fd1b3baa881b6e0180b68737c0",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-root-sprite-view": 3,
+            "semantic-token:s32": 2,
+            "context-field:D_802290A0_9D8B10": 4
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "a502ee3ecb687942b3acb5c27659b0e9e19da3fd1b3baa881b6e0180b68737c0"
+        }
+      ]
+    },
+    {
+      "name": "func_801DD9E4_98D454",
+      "source": "src/photo_check/98C330.c",
+      "first": 688,
+      "last": 698,
+      "sha256": "18b420314ec63708f41fd521ca12b3e66559770450e4a6691d59a9dd4a5332db",
+      "native_sha256": "9e6016548260fa7c1f12857fb1d60803b0be07c0ea3b6d7e0373889b31e18e84",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-root-sprite-view": 2,
+            "semantic-token:s32": 2,
+            "context-field:D_802290A0_9D8B10": 3,
+            "semantic-token:SP_HIDDEN": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "9e6016548260fa7c1f12857fb1d60803b0be07c0ea3b6d7e0373889b31e18e84"
+        }
+      ]
+    },
+    {
+      "name": "func_801DDA68_98D4D8",
+      "source": "src/photo_check/98C330.c",
+      "first": 700,
+      "last": 710,
+      "sha256": "4adfa593ee687457924158339cedc2e83e2a3e4d4574175c8cef0e2ac4dee8b9",
+      "native_sha256": "015b7b32ab0650b6ab765c5f7ef914cdbb3c8e20026439593b21ff56cb50b15f",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "bridge:UIElement_SetState": 2,
+            "context-field:D_802290E0_9D8B50": 3,
+            "context-call:pc_element_state": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "015b7b32ab0650b6ab765c5f7ef914cdbb3c8e20026439593b21ff56cb50b15f"
+        }
+      ]
+    },
+    {
+      "name": "func_801DDAD8_98D548",
+      "source": "src/photo_check/98C330.c",
+      "first": 712,
+      "last": 742,
+      "sha256": "eb5f966d367fc2e24168439363ee9b6bfa5317849b9efd2acce2bc5cc6477411",
+      "native_sha256": "d38a65c071462ebf9835c8db99e33b0398d1e192b0787dfeac42a11bae776bfd",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 2,
+            "bridge:UIElement_FillRect": 1,
+            "bridge:UIElement_SetColor": 2,
+            "bridge:UIElement_SetFont": 1,
+            "bridge:UIElement_SetTextPos": 3,
+            "bridge:UIText_GetStringWidth": 1,
+            "bridge:UIText_SetPrintDelay": 5,
+            "bridge:UIText_SetShadowOffset": 4,
+            "bridge:UIText_SetSpacing": 4,
+            "context-field:D_802290E0_9D8B50": 10,
+            "semantic-token:SCREEN_WIDTH": 1,
+            "context-call:pc_element_fill": 1,
+            "context-call:pc_element_color": 2,
+            "context-call:pc_element_font": 1,
+            "context-call:pc_element_position": 3,
+            "context-call:pc_width": 1,
+            "context-call:pc_text_delay": 5,
+            "context-call:pc_text_shadow": 4,
+            "context-call:pc_text_spacing": 4,
+            "bridge:UIElement_PrintText": 1,
+            "context-call:pc_print_source": 1,
+            "context-field:D_801F3E34_9A38A4": 1,
+            "context-field:D_801F3E60_9A38D0": 1,
+            "bridge:UIElement_PrintAsciiString": 2,
+            "context-call:pc_print_ascii": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "d38a65c071462ebf9835c8db99e33b0398d1e192b0787dfeac42a11bae776bfd"
+        }
+      ]
+    },
+    {
+      "name": "func_801DDCF8_98D768",
+      "source": "src/photo_check/98C330.c",
+      "first": 744,
+      "last": 809,
+      "sha256": "a24241326f96dcfad2983aba69d716e17169fbd496479e977e8f916826cdc6d4",
+      "native_sha256": "d02b857703349fb2d65a5e744cb8dfb08a8b656c7164aa77483eaf1fbb5e36bc",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DDCF8_98D768",
+          "find": "    s32 sp2C;\n",
+          "replace": "",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "remove-dead-unused-pointer-to-int-read",
+          "find": "    sp2C = (s32) arg0->userData;\n",
+          "replace": "",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-root-handle": 1,
+            "actual-sprite-view": 10,
+            "bridge:auPlaySoundWithParams": 2,
+            "bridge:ohWait": 3,
+            "bridge:omDeleteGObj": 1,
+            "context-field:D_801F3E2C_9A389C": 4,
+            "context-field:D_801F3E34_9A38A4": 1,
+            "context-field:D_802290A0_9D8B10": 1,
+            "context-field:D_8022918C_9D8BFC": 3,
+            "semantic-token:s32": 1,
+            "semantic-token:f32": 2,
+            "semantic-token:SP_HIDDEN": 4,
+            "context-call:pc_sound_params": 2,
+            "context-call:pc_wait": 3,
+            "context-call:pc_delete": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "d02b857703349fb2d65a5e744cb8dfb08a8b656c7164aa77483eaf1fbb5e36bc"
+        }
+      ]
+    },
+    {
+      "name": "func_801DE02C_98DA9C",
+      "source": "src/photo_check/98C330.c",
+      "first": 811,
+      "last": 847,
+      "sha256": "fba4e55285b6ebebefc337ef5dbafdaab6e8e7c1f5a4c30e27eed47359834509",
+      "native_sha256": "4be951edb400b8927e5df89d0fe43849643889dc1838503aef286de3e8762bc6",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-sprite-view": 9,
+            "bridge:ohWait": 2,
+            "bridge:omDeleteGObj": 1,
+            "context-field:D_801F3E30_9A38A0": 4,
+            "context-field:D_80229188_9D8BF8": 9,
+            "semantic-token:f32": 1,
+            "semantic-token:SP_HIDDEN": 2,
+            "context-call:pc_wait": 2,
+            "context-call:pc_delete": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "4be951edb400b8927e5df89d0fe43849643889dc1838503aef286de3e8762bc6"
+        }
+      ]
+    },
+    {
+      "name": "func_801DE204_98DC74",
+      "source": "src/photo_check/98C330.c",
+      "first": 849,
+      "last": 1832,
+      "sha256": "c1574961167ca4301e293185bdc7b8f6fd722290f8296d84357b0cf8eef49af9",
+      "native_sha256": "892d3352f8e85163c1b031af68444b10f2edbbd443b643c8a55df9105545bd75",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "intentional-dead-sign-arithmetic-correction",
+          "find": "    sp210 += sp1FA;",
+          "replace": "    if (!isPokemonSign) sp210 += sp1FA;",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "move-poor-return-outside-skip-guard",
+          "find": "            sp1EC = 0;\n            UIElement_Draw(D_802290E4_9D8B54);",
+          "replace": "            UIElement_Draw(D_802290E4_9D8B54);",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "intentional-new-poor-return-zero-on-both-paths",
+          "find": "        if (sp204 == 0) {\n            if (!isPokemonSign)",
+          "replace": "        if (sp204 != 0) sp1EC = 0; /* INTENTIONAL original missing-assignment correction. */\n        if (sp204 == 0) {\n            if (!isPokemonSign)",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801DE204_98DC74",
+          "find": "if (sp3C != NULL)",
+          "replace": "if (sp3C != 0)",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-userdata-set": 3,
+            "semantic-token:s32": 14,
+            "function:func_801DD638_98D0A8": 2,
+            "function:func_801DDCF8_98D768": 3,
+            "bridge:UIElement_FillRect": 1,
+            "bridge:func_800A85E8": 5,
+            "bridge:func_800BF3D4_5C274": 1,
+            "bridge:func_800BF710_5C5B0": 4,
+            "bridge:func_8037452C_847CDC": 1,
+            "bridge:ohWait": 10,
+            "context-field:D_801F3E2C_9A389C": 6,
+            "context-field:D_801F3E34_9A38A4": 81,
+            "context-field:D_801F3E60_9A38D0": 11,
+            "context-field:D_801F3E64_9A38D4": 23,
+            "context-field:D_802290DC_9D8B4C": 131,
+            "context-field:D_802290E0_9D8B50": 116,
+            "semantic-token:u32": 5,
+            "semantic-token:u16": 4,
+            "semantic-token:f32": 3,
+            "semantic-token:LINK_6": 5,
+            "semantic-token:DL_LINK_0": 5,
+            "semantic-token:PokemonID_1004": 1,
+            "context-call:pc_element_fill": 1,
+            "context-call:pc_process": 5,
+            "context-call:pc_report_present": 1,
+            "context-call:pc_report": 4,
+            "context-call:pc_score": 1,
+            "context-call:pc_wait": 10,
+            "context-call:isle_photo_check_func_801DD638_98D0A8": 2,
+            "bridge:UIElement_Draw": 31,
+            "context-call:pc_element_draw": 31,
+            "bridge:UIElement_PrintText": 67,
+            "bridge:UIText_SetShadowOffset": 95,
+            "bridge:UIText_SetSpacing": 95,
+            "context-call:pc_print_source": 67,
+            "context-call:pc_text_shadow": 95,
+            "context-call:pc_text_spacing": 95,
+            "bridge:UIElement_SetColor": 8,
+            "bridge:auPlaySoundWithParams": 8,
+            "semantic-token:SpecialPokemonNames": 2,
+            "context-call:pc_element_color": 8,
+            "context-call:pc_sound_params": 8,
+            "function:func_801DD05C_98CACC": 20,
+            "bridge:UIElement_SetFont": 16,
+            "bridge:UIElement_SetTextPos": 72,
+            "bridge:UIText_GetStringWidth": 15,
+            "bridge:UIText_SetPrintDelay": 75,
+            "semantic-token:SCREEN_WIDTH": 11,
+            "semantic-token:B_BUTTON": 16,
+            "context-call:pc_element_font": 16,
+            "context-call:pc_element_position": 72,
+            "context-call:pc_width": 15,
+            "context-call:pc_text_delay": 75,
+            "context-call:isle_photo_check_func_801DD05C_98CACC": 20,
+            "bridge:UIElement_PrintAsciiString": 23,
+            "bridge:func_8037519C_84894C": 13,
+            "context-call:pc_print_ascii": 23,
+            "context-call:pc_formatted": 13,
+            "bridge:auPlaySound": 34,
+            "context-call:pc_sound": 34,
+            "function:func_801DE02C_98DA9C": 2,
+            "bridge:getPokemonName": 3,
+            "context-field:D_801F3E30_9A38A0": 4,
+            "context-field:D_802290E4_9D8B54": 14,
+            "context-call:pc_pokemon_name": 3,
+            "function:func_801DD1A8_98CC18": 6,
+            "function:func_801DDAD8_98D548": 10,
+            "context-call:isle_photo_check_func_801DD1A8_98CC18": 6,
+            "context-call:isle_photo_check_func_801DDAD8_98D548": 10,
+            "bridge:UIElement_VertScroll": 9,
+            "context-call:pc_element_scroll": 9,
+            "semantic-token:D_801F3E3C_9A38AC": 4,
+            "semantic-token:SOUND_ID_94": 2,
+            "semantic-token:PhotoComments": 1,
+            "bridge:func_8037501C_8487CC": 1,
+            "context-call:pc_number": 1,
+            "semantic-token:SOUND_ID_85": 2,
+            "bridge:auPlaySong": 2,
+            "context-call:pc_song": 2,
+            "function:func_801DCFE8_98CA58": 3,
+            "context-call:isle_photo_check_func_801DCFE8_98CA58": 3,
+            "function:func_801E41FC_993C6C": 2,
+            "bridge:FocusMark_Show": 1,
+            "bridge:func_800AA38C": 1,
+            "semantic-token:A_BUTTON": 1,
+            "context-call:pc_focus_show": 1,
+            "context-call:pc_input": 1,
+            "context-call:isle_photo_check_func_801E41FC_993C6C": 2,
+            "bridge:UIButtonImage_DeleteAll": 1,
+            "context-call:pc_buttons_clear": 1,
+            "empty-call:pc_buttons_clear": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "892d3352f8e85163c1b031af68444b10f2edbbd443b643c8a55df9105545bd75"
+        }
+      ]
+    },
+    {
+      "name": "func_801E1FA8_991A18",
+      "source": "src/photo_check/98C330.c",
+      "first": 1834,
+      "last": 1922,
+      "sha256": "a3bf30f848d9542fe60a023295d506735204058ba47b603285104390bd7a4d0e",
+      "native_sha256": "81f3ec719d0f2bc86ae4f480f32b928345833be01c1d6ff1f6c1075f9f586f2e",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "thumbnail-child-not-sprite-pointer": 4,
+            "actual-root-handle": 2,
+            "actual-sprite-view": 12,
+            "semantic-token:s32": 8,
+            "function:func_801DD1A8_98CC18": 1,
+            "function:func_801DE204_98DC74": 1,
+            "bridge:UIText_SetPrintDelay": 2,
+            "bridge:auPlaySoundWithParams": 1,
+            "bridge:func_800BF3D4_5C274": 2,
+            "bridge:func_800BF710_5C5B0": 2,
+            "bridge:func_8036EB80_842330": 2,
+            "bridge:func_80374714_847EC4": 4,
+            "bridge:ohWait": 5,
+            "context-field:D_801F3E2C_9A389C": 1,
+            "context-field:D_801F3E30_9A38A0": 1,
+            "context-field:D_801F3E34_9A38A4": 2,
+            "context-field:D_802290A0_9D8B10": 7,
+            "semantic-token:f32": 2,
+            "semantic-token:B_BUTTON": 1,
+            "semantic-token:SP_HIDDEN": 6,
+            "context-call:pc_text_delay": 2,
+            "context-call:pc_sound_params": 1,
+            "context-call:pc_report_present": 2,
+            "context-call:pc_report": 2,
+            "context-call:pc_text_skip": 2,
+            "context-call:pc_preview": 4,
+            "context-call:pc_wait": 5,
+            "context-call:isle_photo_check_func_801DD1A8_98CC18": 1,
+            "context-call:isle_photo_check_func_801DE204_98DC74": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "81f3ec719d0f2bc86ae4f480f32b928345833be01c1d6ff1f6c1075f9f586f2e"
+        }
+      ]
+    },
+    {
+      "name": "func_801E2454_991EC4",
+      "source": "src/photo_check/98C330.c",
+      "first": 1930,
+      "last": 2031,
+      "sha256": "b9595725895ef259473a0b585fc7984d12d174f2bcc9662ecf12c7c4bcded006",
+      "native_sha256": "a8330b06204569b4090d84a1d4f07eaa92b239c16068dd8bdefb961ce330009f",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "proven-entry-PANIC-exclusion",
+          "find": "            if (sp54 != 0) {\n                func_801E1FA8_991A18(photo, 0, sp54);\n            } else {\n                func_801E242C_991E9C(photo->unk_0, 0, 0);\n            }",
+          "replace": "            func_801E1FA8_991A18(photo, 0, sp54); /* sp54=-26; PANIC branch unreachable. */",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E2454_991EC4",
+          "find": "    char* sp48;",
+          "replace": "    const char* sp48;",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 2,
+            "function:func_801E459C_99400C": 3,
+            "bridge:UIElement_FillRect": 2,
+            "bridge:UIElement_SetFont": 3,
+            "bridge:UIText_SetShadowOffset": 3,
+            "bridge:UIText_SetSpacing": 3,
+            "bridge:func_800BF3D4_5C274": 1,
+            "context-field:D_802290E0_9D8B50": 2,
+            "context-field:D_802290E8_9D8B58": 2,
+            "semantic-token:s32": 4,
+            "semantic-token:PokemonID_1004": 2,
+            "context-call:pc_element_fill": 2,
+            "context-call:pc_element_font": 3,
+            "context-call:pc_text_shadow": 3,
+            "context-call:pc_text_spacing": 3,
+            "context-call:pc_report_present": 1,
+            "context-call:isle_photo_check_func_801E459C_99400C": 3,
+            "function:func_801E1FA8_991A18": 2,
+            "bridge:UIElement_Draw": 8,
+            "bridge:UIElement_PrintAsciiString": 1,
+            "bridge:UIElement_PrintText": 2,
+            "bridge:UIElement_SetState": 2,
+            "bridge:UIElement_SetTextPos": 3,
+            "bridge:UIText_GetStringWidth": 1,
+            "bridge:getPokemonName": 1,
+            "context-field:D_802290DC_9D8B4C": 3,
+            "context-field:D_802290E4_9D8B54": 11,
+            "semantic-token:SCREEN_WIDTH": 1,
+            "context-call:pc_element_draw": 8,
+            "context-call:pc_print_ascii": 1,
+            "context-call:pc_print_source": 2,
+            "context-call:pc_element_state": 2,
+            "context-call:pc_element_position": 3,
+            "context-call:pc_width": 1,
+            "context-call:pc_pokemon_name": 1,
+            "context-call:isle_photo_check_func_801E1FA8_991A18": 2,
+            "context-field:D_801F3E2C_9A389C": 1,
+            "context-field:D_801F3E30_9A38A0": 1,
+            "bridge:UIButtonImage_DeleteAll": 1,
+            "context-call:pc_buttons_clear": 1,
+            "empty-call:pc_buttons_clear": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "a8330b06204569b4090d84a1d4f07eaa92b239c16068dd8bdefb961ce330009f"
+        }
+      ]
+    },
+    {
+      "name": "func_801E28CC_99233C",
+      "source": "src/photo_check/98C330.c",
+      "first": 2033,
+      "last": 2071,
+      "sha256": "bdd4f576d8d92170d2f12e71b15682cb9d7da3b96011c3a3bf6d1ae55fe71c6d",
+      "native_sha256": "14d7d1a9b92ca579c4f0b8ad8347d3acf004975c79891f20d371fad04c6d2a10",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 5,
+            "bridge:func_800BF3D4_5C274": 7,
+            "bridge:func_800BF818_5C6B8": 7,
+            "semantic-token:POKEDEX_MAX": 1,
+            "semantic-token:PokemonID_KOFFING_SMOKE": 1,
+            "semantic-token:PokemonID_1004": 1,
+            "semantic-token:PokemonID_1010": 1,
+            "semantic-token:PokemonID_1018": 1,
+            "semantic-token:PokemonID_1022": 1,
+            "semantic-token:PokemonID_1035": 1,
+            "context-call:pc_report_present": 7,
+            "context-call:pc_report_score": 7
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "14d7d1a9b92ca579c4f0b8ad8347d3acf004975c79891f20d371fad04c6d2a10"
+        }
+      ]
+    },
+    {
+      "name": "func_801E2A68_9924D8",
+      "source": "src/photo_check/98C330.c",
+      "first": 2073,
+      "last": 2083,
+      "sha256": "ae5b88d284f33539eb2df4832e429a3f4c7199cb7d0e0f45915c0f09083fd35d",
+      "native_sha256": "a80c3ce230750abeaec15e00ddbed409d1028afa87e0a35707274c31e63b6c4e",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 2,
+            "bridge:getAlbumCapacity": 1,
+            "bridge:getAlbumPhoto": 1,
+            "context-call:pc_album_capacity": 1,
+            "empty-call:pc_album_capacity": 1,
+            "context-call:pc_album": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "a80c3ce230750abeaec15e00ddbed409d1028afa87e0a35707274c31e63b6c4e"
+        }
+      ]
+    },
+    {
+      "name": "func_801E2AE8_992558",
+      "source": "src/photo_check/98C330.c",
+      "first": 2086,
+      "last": 2126,
+      "sha256": "3a669cac9543ac43506d7895b37710dad2cbdae78fb5cf00e502df320bdccd3a",
+      "native_sha256": "9a9d9b83831f5efe326f8a2a5923709733d452afd54074134c6a096d8a19a723",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 1,
+            "semantic-token:s32": 3,
+            "bridge:UIElement_Draw": 1,
+            "bridge:UIElement_SetFont": 1,
+            "bridge:UIElement_SetTextPos": 12,
+            "bridge:UIText_SetPrintDelay": 1,
+            "bridge:UIText_SetShadowOffset": 1,
+            "bridge:UIText_SetSpacing": 1,
+            "bridge:func_8037519C_84894C": 8,
+            "context-field:D_802290E0_9D8B50": 26,
+            "context-call:pc_element_draw": 1,
+            "context-call:pc_element_font": 1,
+            "context-call:pc_element_position": 12,
+            "context-call:pc_text_delay": 1,
+            "context-call:pc_text_shadow": 1,
+            "context-call:pc_text_spacing": 1,
+            "context-call:pc_formatted": 8,
+            "bridge:UIElement_PrintText": 4,
+            "context-call:pc_print_source": 4,
+            "function:func_801E2A68_9924D8": 4,
+            "context-call:isle_photo_check_func_801E2A68_9924D8": 4,
+            "empty-call:isle_photo_check_func_801E2A68_9924D8": 4,
+            "bridge:getAlbumCapacity": 2,
+            "context-call:pc_album_capacity": 2,
+            "empty-call:pc_album_capacity": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "9a9d9b83831f5efe326f8a2a5923709733d452afd54074134c6a096d8a19a723"
+        }
+      ]
+    },
+    {
+      "name": "func_801E2ED4_992944",
+      "source": "src/photo_check/98C330.c",
+      "first": 2128,
+      "last": 2303,
+      "sha256": "65cde336735add85472ab957e95b39045024b2a43ff9cb3ac090ee4af32bfadf",
+      "native_sha256": "76aecb1f4f66971f9a2e03887c694ad6d8feca0ec613a5252b2db4758bc4fb9d",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "native-save-ack-callsite-observation",
+          "find": "    func_80374F30_8486E0(D_802290DC_9D8B4C, true);\n    auPlaySound(0x4E);",
+          "replace": "    pc_ack_at(source, D_802290DC_9D8B4C, true, 2197);\n    auPlaySound(0x4E);",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "native-final-ack-callsite-observation",
+          "find": "    func_80374F30_8486E0(D_802290DC_9D8B4C, true);\n}",
+          "replace": "    pc_ack_at(source, D_802290DC_9D8B4C, true, 2302);\n}",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 2,
+            "semantic-token:s32": 11,
+            "bridge:UIElement_Create": 1,
+            "bridge:UIElement_Delete": 1,
+            "bridge:UIElement_Draw": 3,
+            "bridge:UIElement_DrawBackground": 1,
+            "bridge:UIElement_SetFont": 2,
+            "bridge:UIElement_SetState": 1,
+            "bridge:UIElement_SetTextPos": 3,
+            "bridge:UIText_GetStringWidth": 1,
+            "bridge:UIText_SetShadowOffset": 3,
+            "bridge:UIText_SetSpacing": 3,
+            "context-field:D_802290DC_9D8B4C": 25,
+            "context-field:D_802290E0_9D8B50": 6,
+            "context-field:D_802290E4_9D8B54": 4,
+            "semantic-token:SCREEN_WIDTH": 1,
+            "context-call:pc_element_create": 1,
+            "context-call:pc_element_delete": 1,
+            "context-call:pc_element_draw": 3,
+            "context-call:pc_element_background": 1,
+            "context-call:pc_element_font": 2,
+            "context-call:pc_element_state": 1,
+            "context-call:pc_element_position": 3,
+            "context-call:pc_width": 1,
+            "context-call:pc_text_shadow": 3,
+            "context-call:pc_text_spacing": 3,
+            "bridge:UIElement_PrintText": 4,
+            "context-call:pc_print_source": 4,
+            "function:func_801E28CC_99233C": 2,
+            "function:func_801E2AE8_992558": 2,
+            "function:func_801E459C_99400C": 1,
+            "function:func_801E4E04_994874": 1,
+            "bridge:UIText_SetPrintDelay": 2,
+            "context-call:pc_text_delay": 2,
+            "context-call:isle_photo_check_func_801E28CC_99233C": 2,
+            "context-call:isle_photo_check_func_801E2AE8_992558": 2,
+            "context-call:isle_photo_check_func_801E459C_99400C": 1,
+            "context-call:isle_photo_check_func_801E4E04_994874": 1,
+            "empty-call:isle_photo_check_func_801E4E04_994874": 1,
+            "bridge:auPlaySound": 1,
+            "bridge:checkPlayerFlag": 10,
+            "bridge:func_800AAED0": 1,
+            "bridge:func_800AAEE8": 1,
+            "bridge:func_800BF3D4_5C274": 7,
+            "bridge:func_800BFC5C_5CAFC": 13,
+            "bridge:func_800C0290_5D130": 1,
+            "bridge:func_800C02A0_5D140": 4,
+            "bridge:func_800C0314_5D1B4": 3,
+            "bridge:func_8037519C_84894C": 17,
+            "context-field:D_801F3E28_9A3898": 9,
+            "semantic-token:PFID_HAS_APPLE": 2,
+            "semantic-token:PFID_HAS_PESTER_BALL": 2,
+            "semantic-token:PFID_HAS_FLUTE": 2,
+            "semantic-token:PFID_HAS_DASH_ENGINE": 2,
+            "semantic-token:PFID_14": 2,
+            "semantic-token:PokemonID_KOFFING_SMOKE": 1,
+            "semantic-token:PokemonID_1004": 1,
+            "semantic-token:PokemonID_1010": 1,
+            "semantic-token:PokemonID_1018": 1,
+            "semantic-token:PokemonID_1022": 1,
+            "semantic-token:PokemonID_1035": 1,
+            "context-call:pc_sound": 1,
+            "context-call:pc_flag": 10,
+            "context-call:pc_notices_or": 1,
+            "context-call:pc_notices_test": 1,
+            "context-call:pc_report_present": 7,
+            "context-call:pc_selected_course": 13,
+            "empty-call:pc_selected_course": 13,
+            "context-call:pc_unlock_progress": 1,
+            "empty-call:pc_unlock_progress": 1,
+            "context-call:pc_unlock_set": 4,
+            "context-call:pc_pending_item": 3,
+            "context-call:pc_formatted": 17,
+            "bridge:getPlayerName": 7,
+            "context-call:pc_player_name": 7,
+            "empty-call:pc_player_name": 7,
+            "semantic-token:PokemonID_MEW": 1,
+            "bridge:func_8037501C_8487CC": 7,
+            "context-call:pc_number": 7,
+            "function:func_801E4510_993F80": 2,
+            "context-call:isle_photo_check_func_801E4510_993F80": 2,
+            "empty-call:isle_photo_check_func_801E4510_993F80": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "76aecb1f4f66971f9a2e03887c694ad6d8feca0ec613a5252b2db4758bc4fb9d"
+        }
+      ]
+    },
+    {
+      "name": "func_801E3934_9933A4",
+      "source": "src/photo_check/98C330.c",
+      "first": 2306,
+      "last": 2324,
+      "sha256": "8531b96a0653ab61d1a7a2e998025344447c08dbb648e54b4d1c85d4ec7e1e4c",
+      "native_sha256": "a0cdd6fd4024ec9ecd64c25a76fc6e42c7dad223d3728b7582d1abb07b2871c1",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 2,
+            "function:func_801DD9E4_98D454": 1,
+            "function:func_801E2454_991EC4": 1,
+            "function:func_801E2ED4_992944": 1,
+            "bridge:FocusMark_Show": 1,
+            "bridge:UIElement_SetState": 3,
+            "bridge:func_800AAED0": 1,
+            "context-field:D_801F3E28_9A3898": 3,
+            "context-field:D_802290DC_9D8B4C": 2,
+            "context-field:D_802290E0_9D8B50": 1,
+            "context-field:D_802290E4_9D8B54": 1,
+            "semantic-token:s32": 1,
+            "context-call:pc_focus_show": 1,
+            "context-call:pc_element_state": 3,
+            "context-call:pc_notices_or": 1,
+            "context-call:isle_photo_check_func_801DD9E4_98D454": 1,
+            "context-call:isle_photo_check_func_801E2454_991EC4": 1,
+            "empty-call:isle_photo_check_func_801E2454_991EC4": 1,
+            "context-call:isle_photo_check_func_801E2ED4_992944": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "a0cdd6fd4024ec9ecd64c25a76fc6e42c7dad223d3728b7582d1abb07b2871c1"
+        }
+      ]
+    },
+    {
+      "name": "func_801E39DC_99344C",
+      "source": "src/photo_check/98C330.c",
+      "first": 2326,
+      "last": 2456,
+      "sha256": "a99a99f6f7c40836f6b0311dc2df869a1f1a6aa1e3d184bcdf7bae9b156c8a38",
+      "native_sha256": "fb469d9fdc678fbfc2a05d83451c6e05d01a47153d996fdcfb64e85f23cefbc2",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "intentional-current-evaluation-handle-correction",
+          "find": "        sp48 = func_801E4428_993E98();",
+          "replace": "        sp48 = func_801E4428_993E98();\n        sp3C = D_802290E0_9D8B50; /* Summary replaced the evaluation element. */",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E39DC_99344C",
+          "find": "    char* levelName;",
+          "replace": "    const char* levelName;",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 2,
+            "semantic-token:s32": 3,
+            "function:func_801E5030_994AA0": 1,
+            "bridge:FocusMark_Create": 1,
+            "bridge:FocusMark_Show": 2,
+            "bridge:UIElement_Create": 4,
+            "bridge:UIElement_DrawBackground": 4,
+            "bridge:UIElement_SetColor": 8,
+            "bridge:UIElement_SetFont": 5,
+            "bridge:UIElement_SetState": 8,
+            "bridge:UILayout_Init": 1,
+            "bridge:UIText_SetShadowOffset": 4,
+            "bridge:UIText_SetSpacing": 4,
+            "bridge:getLevelId": 1,
+            "bridge:getLevelName": 1,
+            "context-field:D_801F3E28_9A3898": 1,
+            "context-field:D_802290E4_9D8B54": 1,
+            "context-call:pc_focus_create": 1,
+            "empty-call:pc_focus_create": 1,
+            "context-call:pc_focus_show": 2,
+            "context-call:pc_element_create": 4,
+            "context-call:pc_element_background": 4,
+            "context-call:pc_element_color": 8,
+            "context-call:pc_element_font": 5,
+            "context-call:pc_element_state": 8,
+            "context-call:pc_layout_initialize": 1,
+            "empty-call:pc_layout_initialize": 1,
+            "context-call:pc_text_shadow": 4,
+            "context-call:pc_text_spacing": 4,
+            "context-call:pc_level_id": 1,
+            "empty-call:pc_level_id": 1,
+            "context-call:pc_level_name": 1,
+            "context-call:isle_photo_check_func_801E5030_994AA0": 1,
+            "empty-call:isle_photo_check_func_801E5030_994AA0": 1,
+            "context-field:D_802290E8_9D8B58": 2,
+            "function:func_801DCF4C_98C9BC": 1,
+            "function:func_801DD46C_98CEDC": 4,
+            "function:func_801DD528_98CF98": 2,
+            "bridge:UIElement_PrintText": 2,
+            "bridge:UIElement_SetTextPos": 2,
+            "bridge:UIFrame_Create": 1,
+            "bridge:UIFrame_GetBackgroundColor": 1,
+            "bridge:UIFrame_SetPos": 1,
+            "bridge:UIFrame_SetStyle": 1,
+            "bridge:UIFrame_Show": 1,
+            "bridge:UILayout_SetHeaderFlags": 2,
+            "bridge:UILayout_ShowPanel": 1,
+            "bridge:UIText_SetPrintDelay": 3,
+            "bridge:ohWait": 7,
+            "context-field:D_802290D8_9D8B48": 1,
+            "context-field:D_802290DC_9D8B4C": 2,
+            "context-field:D_802290E0_9D8B50": 5,
+            "context-call:pc_print_source": 2,
+            "context-call:pc_element_position": 2,
+            "context-call:pc_frame_create": 1,
+            "empty-call:pc_frame_create": 1,
+            "context-call:pc_frame_color": 1,
+            "context-call:pc_frame_position": 1,
+            "context-call:pc_frame_style": 1,
+            "context-call:pc_frame_show": 1,
+            "context-call:pc_layout_header": 2,
+            "context-call:pc_layout_panel": 1,
+            "context-call:pc_text_delay": 3,
+            "context-call:pc_wait": 7,
+            "context-call:isle_photo_check_func_801DCF4C_98C9BC": 1,
+            "context-call:isle_photo_check_func_801DD46C_98CEDC": 4,
+            "context-call:isle_photo_check_func_801DD528_98CF98": 2,
+            "function:func_801DD5F0_98D060": 1,
+            "function:func_801DD8F4_98D364": 1,
+            "function:func_801DD9E4_98D454": 1,
+            "function:func_801E4428_993E98": 1,
+            "function:func_80374F30_8486E0": 1,
+            "bridge:UIElement_Delete": 1,
+            "context-call:pc_element_delete": 1,
+            "context-call:isle_photo_check_func_801DD5F0_98D060": 1,
+            "context-call:isle_photo_check_func_801DD8F4_98D364": 1,
+            "empty-call:isle_photo_check_func_801DD8F4_98D364": 1,
+            "context-call:isle_photo_check_func_801DD9E4_98D454": 1,
+            "context-call:isle_photo_check_func_801E4428_993E98": 1,
+            "empty-call:isle_photo_check_func_801E4428_993E98": 1,
+            "context-call:isle_photo_check_func_80374F30_8486E0": 1,
+            "function:func_801DCFA0_98CA10": 1,
+            "function:func_801DD964_98D3D4": 2,
+            "bridge:UILayout_HideButtons": 1,
+            "bridge:UILayout_WaitPanelTransitionComplete": 1,
+            "bridge:auSetBGMVolumeSmooth": 1,
+            "bridge:func_800AADF0": 2,
+            "bridge:func_800AAED0": 2,
+            "bridge:func_80374D20_8484D0": 1,
+            "bridge:omDeleteGObj": 1,
+            "semantic-token:SCENE_OAKS_LAB_2": 1,
+            "context-call:pc_layout_hide": 1,
+            "empty-call:pc_layout_hide": 1,
+            "context-call:pc_layout_wait": 1,
+            "empty-call:pc_layout_wait": 1,
+            "context-call:pc_volume_smooth": 1,
+            "context-call:pc_scene_result": 2,
+            "context-call:pc_notices_or": 2,
+            "context-call:pc_replay_cleanup": 1,
+            "empty-call:pc_replay_cleanup": 1,
+            "context-call:pc_delete": 1,
+            "context-call:isle_photo_check_func_801DCFA0_98CA10": 1,
+            "context-call:isle_photo_check_func_801DD964_98D3D4": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "fb469d9fdc678fbfc2a05d83451c6e05d01a47153d996fdcfb64e85f23cefbc2"
+        }
+      ]
+    },
+    {
+      "name": "func_801E3FFC_993A6C",
+      "source": "src/photo_check/98C330.c",
+      "first": 2458,
+      "last": 2496,
+      "sha256": "307166b61fdf0e6f879efbdf1c96eebda530c43805fa775e196bc03507938e41",
+      "native_sha256": "4e2bb98e6091e44561ed6479c14e2b2c616d901a540e5732ca7d5a22944b8e79",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-root-handle": 4,
+            "actual-sprite-view": 14,
+            "prototype:D_801F2378_9A1DE8": 1,
+            "prototype:D_801F26B0_9A2120": 1,
+            "prototype:D_801F2910_9A2380": 1,
+            "prototype:D_801F2AD0_9A2540": 1,
+            "function:func_801DD2D4_98CD44": 1,
+            "function:func_801DD46C_98CEDC": 1,
+            "function:func_801DD528_98CF98": 1,
+            "function:func_801DD568_98CFD8": 1,
+            "function:func_801DD5F0_98D060": 1,
+            "function:func_801DD638_98D0A8": 1,
+            "function:func_801E39DC_99344C": 1,
+            "bridge:func_800A85E8": 1,
+            "bridge:func_8036EB8C_84233C": 1,
+            "bridge:func_80371D14_8454C4": 4,
+            "context-field:D_80229168_9D8BD8": 1,
+            "context-field:D_80229180_9D8BF0": 3,
+            "context-field:D_80229184_9D8BF4": 3,
+            "context-field:D_80229188_9D8BF8": 8,
+            "semantic-token:SCREEN_WIDTH": 1,
+            "semantic-token:SCREEN_HEIGHT": 2,
+            "semantic-token:LINK_6": 1,
+            "semantic-token:DL_LINK_0": 1,
+            "semantic-token:SP_HIDDEN": 1,
+            "semantic-token:SP_TRANSPARENT": 1,
+            "context-call:pc_process": 1,
+            "context-call:pc_character_register": 1,
+            "context-call:pc_sprite_stackful": 4,
+            "context-call:isle_photo_check_func_801DD46C_98CEDC": 1,
+            "context-call:isle_photo_check_func_801DD528_98CF98": 1,
+            "context-call:isle_photo_check_func_801DD568_98CFD8": 1,
+            "empty-call:isle_photo_check_func_801DD568_98CFD8": 1,
+            "context-call:isle_photo_check_func_801DD5F0_98D060": 1,
+            "context-call:isle_photo_check_func_801DD638_98D0A8": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "4e2bb98e6091e44561ed6479c14e2b2c616d901a540e5732ca7d5a22944b8e79"
+        }
+      ]
+    },
+    {
+      "name": "func_801E41E0_993C50",
+      "source": "src/photo_check/993C50.c",
+      "first": 23,
+      "last": 25,
+      "sha256": "adf3f7f41c4195bde5e7cbd81daa1e558f530512f47bbdbceda538f3ee238044",
+      "native_sha256": "7dd9ae901ead361404e118069ed57ac95e6adf13401ea82a4ce22c6afc8a99c4",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E41E0_993C50",
+          "find": "void* func_801E41E0_993C50",
+          "replace": "const void* func_801E41E0_993C50",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:D_801F4150_9A3BC0": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "7dd9ae901ead361404e118069ed57ac95e6adf13401ea82a4ce22c6afc8a99c4"
+        }
+      ]
+    },
+    {
+      "name": "func_801E41FC_993C6C",
+      "source": "src/photo_check/993C50.c",
+      "first": 27,
+      "last": 47,
+      "sha256": "2ab44462383a61998120ab92e89de0340b07aa5bb4c18d268edc41507d1cdb0d",
+      "native_sha256": "9c58f8a5d191f3e46bc9f2a7e6deb2457b32f58f59f438c64c9922e9f36aff56",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 2,
+            "bridge:FocusMark_SetPos": 1,
+            "bridge:FocusMark_SetSize": 1,
+            "bridge:FocusMark_SetTargetPos": 1,
+            "bridge:FocusMark_Show": 1,
+            "bridge:auPlaySound": 1,
+            "context-field:D_801F4180_9A3BF0": 3,
+            "semantic-token:STICK_SLOW_RIGHT": 1,
+            "semantic-token:STICK_SLOW_LEFT": 1,
+            "semantic-token:SOUND_ID_69": 1,
+            "context-call:pc_focus_position": 1,
+            "context-call:pc_focus_size": 1,
+            "context-call:pc_focus_target": 1,
+            "context-call:pc_focus_show": 1,
+            "context-call:pc_sound": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "9c58f8a5d191f3e46bc9f2a7e6deb2457b32f58f59f438c64c9922e9f36aff56"
+        }
+      ]
+    },
+    {
+      "name": "func_801E433C_993DAC",
+      "source": "src/photo_check/993C50.c",
+      "first": 49,
+      "last": 59,
+      "sha256": "e39fb7c7440efba23e14d9d4df7366a00b6f22c281f6937e6a5cdddb4c9381f5",
+      "native_sha256": "dd7a97f54b7b556b8cf526d4fb8a4d07c74c4544183d443b01087b99b07e9103",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "function:func_801DCCE0_98C750": 1,
+            "bridge:UIButtonImage_DeleteAll": 1,
+            "bridge:UIElement_Draw": 1,
+            "bridge:UIElement_SetFont": 1,
+            "bridge:UIElement_SetTextPos": 1,
+            "bridge:UIText_SetShadowOffset": 1,
+            "bridge:UIText_SetSpacing": 1,
+            "context-call:pc_buttons_clear": 1,
+            "empty-call:pc_buttons_clear": 1,
+            "context-call:pc_element_draw": 1,
+            "context-call:pc_element_font": 1,
+            "context-call:pc_element_position": 1,
+            "context-call:pc_text_shadow": 1,
+            "context-call:pc_text_spacing": 1,
+            "context-call:isle_photo_check_func_801DCCE0_98C750": 1,
+            "empty-call:isle_photo_check_func_801DCCE0_98C750": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "dd7a97f54b7b556b8cf526d4fb8a4d07c74c4544183d443b01087b99b07e9103"
+        }
+      ]
+    },
+    {
+      "name": "func_801E43AC_993E1C",
+      "source": "src/photo_check/993C50.c",
+      "first": 61,
+      "last": 65,
+      "sha256": "82aac5cbd9c46cef7e3deae84241de523bc031300a6aca7af5f90ff81d892e71",
+      "native_sha256": "ebd77c0a3e9de40532520b9d5bc8034ff1fd52346cb96df49c0b1e1836b2d89f",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:func_801DD9E4_98D454": 1,
+            "function:func_801DDA68_98D4D8": 1,
+            "bridge:UILayout_HideHeaderElement": 1,
+            "context-call:pc_layout_hide_header": 1,
+            "context-call:isle_photo_check_func_801DD9E4_98D454": 1,
+            "context-call:isle_photo_check_func_801DDA68_98D4D8": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "ebd77c0a3e9de40532520b9d5bc8034ff1fd52346cb96df49c0b1e1836b2d89f"
+        }
+      ]
+    },
+    {
+      "name": "func_801E43E4_993E54",
+      "source": "src/photo_check/993C50.c",
+      "first": 67,
+      "last": 74,
+      "sha256": "006bb70eb8e25f532d05871c98073ef51265890f412e7346d44358dd64d2b87b",
+      "native_sha256": "b945fa48681a79d738d1d45859a60898ef4fcd1ed116978ed51ecca679a44daf",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 1,
+            "semantic-token:s32": 1,
+            "function:func_801E3934_9933A4": 1,
+            "function:func_801E43AC_993E1C": 1,
+            "bridge:FocusMark_SetPos": 1,
+            "context-call:pc_focus_position": 1,
+            "context-call:isle_photo_check_func_801E3934_9933A4": 1,
+            "empty-call:isle_photo_check_func_801E3934_9933A4": 1,
+            "context-call:isle_photo_check_func_801E43AC_993E1C": 1,
+            "empty-call:isle_photo_check_func_801E43AC_993E1C": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "b945fa48681a79d738d1d45859a60898ef4fcd1ed116978ed51ecca679a44daf"
+        }
+      ]
+    },
+    {
+      "name": "func_801E4428_993E98",
+      "source": "src/photo_check/993C50.c",
+      "first": 76,
+      "last": 100,
+      "sha256": "1db5c628eab583fd4641ceae6fb135f4c8bd26e2bfe05194b84aa5152b5383ba",
+      "native_sha256": "4b4f83acd8945ca75e8b22177e7910923499f5f1db8c812a4ba3b547a3282e2d",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "typed-button-table": 1,
+            "semantic-token:s32": 2,
+            "function:func_801E433C_993DAC": 1,
+            "function:func_801E43E4_993E54": 1,
+            "function:func_801E4BA0_994610": 1,
+            "bridge:FocusMark_MoveFront": 1,
+            "bridge:UILayout_GetButtons": 1,
+            "bridge:func_800AA85C": 1,
+            "bridge:func_800AA870": 1,
+            "bridge:func_800BFB84_5CA24": 1,
+            "bridge:ohWait": 1,
+            "context-field:D_801F4144_9A3BB4": 1,
+            "context-field:D_801F4148_9A3BB8": 1,
+            "context-field:D_80229190_9D8C00": 1,
+            "context-field:D_80229194_9D8C04": 1,
+            "semantic-token:D_801F4150_9A3BC0": 1,
+            "context-call:pc_focus_front": 1,
+            "empty-call:pc_focus_front": 1,
+            "context-call:pc_selector": 1,
+            "empty-call:pc_selector": 1,
+            "context-call:pc_repeat": 1,
+            "context-call:pc_input_mask": 1,
+            "context-call:pc_selected_count": 1,
+            "empty-call:pc_selected_count": 1,
+            "context-call:pc_wait": 1,
+            "context-call:isle_photo_check_func_801E433C_993DAC": 1,
+            "context-call:isle_photo_check_func_801E43E4_993E54": 1,
+            "empty-call:isle_photo_check_func_801E43E4_993E54": 1,
+            "context-call:isle_photo_check_func_801E4BA0_994610": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "4b4f83acd8945ca75e8b22177e7910923499f5f1db8c812a4ba3b547a3282e2d"
+        }
+      ]
+    },
+    {
+      "name": "func_801E4510_993F80",
+      "source": "src/photo_check/993F80.c",
+      "first": 60,
+      "last": 62,
+      "sha256": "f9474a585ff544fd7f5e7537734cab020c13e673a7fd71b9e8262d36a9914597",
+      "native_sha256": "6fe5cc86346d3b1423f2c4d534a4bd2023b0cad9f55df22137dd92fd7a9a4027",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "context-field:D_801F4194_9A3C04": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "6fe5cc86346d3b1423f2c4d534a4bd2023b0cad9f55df22137dd92fd7a9a4027"
+        }
+      ]
+    },
+    {
+      "name": "func_801E452C_993F9C",
+      "source": "src/photo_check/993F80.c",
+      "first": 64,
+      "last": 69,
+      "sha256": "cd62e942e86df26e6b9be00d253e1d596ae81e9b49c2c992872f66d1fd3bdec9",
+      "native_sha256": "d80db62ee361a9e8b746e381844f83ef62698e9bde5a1829162e5cae036d04ed",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "bridge:func_800BFB84_5CA24": 1,
+            "context-field:D_802291A0_9D8C10": 1,
+            "context-call:pc_selected_count": 1,
+            "empty-call:pc_selected_count": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "d80db62ee361a9e8b746e381844f83ef62698e9bde5a1829162e5cae036d04ed"
+        }
+      ]
+    },
+    {
+      "name": "func_801E459C_99400C",
+      "source": "src/photo_check/993F80.c",
+      "first": 71,
+      "last": 76,
+      "sha256": "d5267a95f8c56d384b4e725632ccbb02a5e97677e36d6dcd0aeb34ba0054cf48",
+      "native_sha256": "673a0cf08420763a070bb32cc13ac4815f01c5a787bcc58ec8f65e4853995eed",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "bridge:func_800BFB84_5CA24": 1,
+            "context-field:D_802291A0_9D8C10": 1,
+            "context-call:pc_selected_count": 1,
+            "empty-call:pc_selected_count": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "673a0cf08420763a070bb32cc13ac4815f01c5a787bcc58ec8f65e4853995eed"
+        }
+      ]
+    },
+    {
+      "name": "func_801E460C_99407C",
+      "source": "src/photo_check/993F80.c",
+      "first": 78,
+      "last": 96,
+      "sha256": "90e6bd72b5941027b8e20fb475bcc3e293c279655bb50ebf4d67e78b4a747302",
+      "native_sha256": "f598e83635c4ed2b009a46ecac151cad5c6d39f322b7a0d7612130c226a20cdc",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E460C_99407C",
+          "find": "char* arg0, char* arg1",
+          "replace": "const char* arg0, const char* arg1",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 2
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "f598e83635c4ed2b009a46ecac151cad5c6d39f322b7a0d7612130c226a20cdc"
+        }
+      ]
+    },
+    {
+      "name": "func_801E4690_994100",
+      "source": "src/photo_check/993F80.c",
+      "first": 98,
+      "last": 109,
+      "sha256": "1994d31aee07f6f238e160e39846896c213c28c100e4e9fee17bee96af98a711",
+      "native_sha256": "94c3728334cf9f07a63ecdba758e0331b79c4858266643bb5b7cb03ab8c8f3d0",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "94c3728334cf9f07a63ecdba758e0331b79c4858266643bb5b7cb03ab8c8f3d0"
+        }
+      ]
+    },
+    {
+      "name": "func_801E4704_994174",
+      "source": "src/photo_check/993F80.c",
+      "first": 111,
+      "last": 126,
+      "sha256": "68becdc7d133a6b90a5f9972328535d1ab1ce748417d941d6d3494f34c8c22c8",
+      "native_sha256": "d68169c1dbf5efc059d20ae8bbc3a9e93075779eef82072ff39f2279b158247f",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "function:func_801E4690_994100": 1,
+            "function:func_801E4704_994174": 1,
+            "context-field:D_801F4198_9A3C08": 3,
+            "context-call:isle_photo_check_func_801E4690_994100": 1,
+            "context-comparator:source->D_801F4198_9A3C08": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "d68169c1dbf5efc059d20ae8bbc3a9e93075779eef82072ff39f2279b158247f"
+        }
+      ]
+    },
+    {
+      "name": "func_801E47F0_994260",
+      "source": "src/photo_check/993F80.c",
+      "first": 128,
+      "last": 143,
+      "sha256": "241f36c0961331347c5fcb5bfd7de662581e326733d30f24713361564d5d0e6e",
+      "native_sha256": "2cab12bb6bc146960bdebe28e7f0be04555fa8967d99a46c0f0cff69ffab867b",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "function:func_801E4690_994100": 1,
+            "function:func_801E47F0_994260": 1,
+            "context-field:D_801F4198_9A3C08": 3,
+            "context-call:isle_photo_check_func_801E4690_994100": 1,
+            "context-comparator:source->D_801F4198_9A3C08": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "2cab12bb6bc146960bdebe28e7f0be04555fa8967d99a46c0f0cff69ffab867b"
+        }
+      ]
+    },
+    {
+      "name": "func_801E48CC_99433C",
+      "source": "src/photo_check/993F80.c",
+      "first": 145,
+      "last": 159,
+      "sha256": "71ed25ba3021fd53e8431513fad4c9b6f9563b5e3e7ce43b45e985a76ede5c09",
+      "native_sha256": "638259702bd43cfaa03b0562b96a63549dc27eebc2d125b513a112dd8ff96607",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 2,
+            "function:func_801E460C_99407C": 1,
+            "function:func_801E4690_994100": 1,
+            "function:func_801E48CC_99433C": 1,
+            "bridge:getPokemonName": 2,
+            "context-field:D_801F4198_9A3C08": 3,
+            "context-call:pc_pokemon_name": 2,
+            "context-call:isle_photo_check_func_801E460C_99407C": 1,
+            "context-call:isle_photo_check_func_801E4690_994100": 1,
+            "context-comparator:source->D_801F4198_9A3C08": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "638259702bd43cfaa03b0562b96a63549dc27eebc2d125b513a112dd8ff96607"
+        }
+      ]
+    },
+    {
+      "name": "func_801E49A8_994418",
+      "source": "src/photo_check/993F80.c",
+      "first": 161,
+      "last": 176,
+      "sha256": "9c63377abe143f2562aef610c4acca2a911a00d0a11999bb9e41a18a4521ea90",
+      "native_sha256": "7882e60a71fb4e60a6d8f7ca8fcaa0f555d4389700368f372edb1ffce31abcc1",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "function:func_801E4690_994100": 1,
+            "function:func_801E49A8_994418": 1,
+            "context-field:D_801F4198_9A3C08": 3,
+            "context-call:isle_photo_check_func_801E4690_994100": 1,
+            "context-comparator:source->D_801F4198_9A3C08": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "7882e60a71fb4e60a6d8f7ca8fcaa0f555d4389700368f372edb1ffce31abcc1"
+        }
+      ]
+    },
+    {
+      "name": "func_801E4AA4_994514",
+      "source": "src/photo_check/993F80.c",
+      "first": 178,
+      "last": 193,
+      "sha256": "7e2edad7be2d6302965e86c7533a5dd4b246002985c65e1c32ccbe035f736788",
+      "native_sha256": "56c073775cbcd03ae268d7475dc84ece0a04de8f6a9c70f5b7be466efc11e564",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 1,
+            "function:func_801E4690_994100": 1,
+            "function:func_801E4AA4_994514": 1,
+            "context-field:D_801F4198_9A3C08": 3,
+            "context-call:isle_photo_check_func_801E4690_994100": 1,
+            "context-comparator:source->D_801F4198_9A3C08": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "56c073775cbcd03ae268d7475dc84ece0a04de8f6a9c70f5b7be466efc11e564"
+        }
+      ]
+    },
+    {
+      "name": "func_801E4BA0_994610",
+      "source": "src/photo_check/993F80.c",
+      "first": 195,
+      "last": 234,
+      "sha256": "76f5baa929b9620631576e1fb388eb7c041971ff6ba6e34b3060861685a2169d",
+      "native_sha256": "1fc5310aae2d83c946bbc7fd25339f14b71e92f5bed57fe47ff056d0a306cd61",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:u32": 1,
+            "function:func_801E4690_994100": 3,
+            "function:func_801E4704_994174": 3,
+            "function:func_801E47F0_994260": 3,
+            "function:func_801E48CC_99433C": 3,
+            "function:func_801E49A8_994418": 3,
+            "function:func_801E4AA4_994514": 3,
+            "bridge:qsort2": 6,
+            "bridge:func_800BFB84_5CA24": 6,
+            "context-field:D_801F4198_9A3C08": 12,
+            "context-field:D_802291A0_9D8C10": 6,
+            "context-call:pc_qsort": 6,
+            "context-call:pc_selected_count": 6,
+            "empty-call:pc_selected_count": 6
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "1fc5310aae2d83c946bbc7fd25339f14b71e92f5bed57fe47ff056d0a306cd61"
+        }
+      ]
+    },
+    {
+      "name": "func_801E4E04_994874",
+      "source": "src/photo_check/993F80.c",
+      "first": 236,
+      "last": 285,
+      "sha256": "55c19cc48ace1691d58e96b88f4c0e84cb8220886443152273ce676fcb0c4dac",
+      "native_sha256": "6713d53cd911d5439082f1fb78cc0670207dda2efc80e69e5bfab0624f1d1a48",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E4E04_994874",
+          "find": "    Foo2* sp24;",
+          "replace": "    const IsleSelectedPhoto* sp24;",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E4E04_994874",
+          "find": "sp24->var_0",
+          "replace": "sp24->photo",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E4E04_994874",
+          "find": "sp24->unk4_29",
+          "replace": "sp24->for_album",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "bridge:func_800BF690_5C530": 1,
+            "bridge:func_800BF7D4_5C674": 1,
+            "bridge:func_800BFB84_5CA24": 1,
+            "bridge:getAlbumPhoto": 4,
+            "context-field:D_802291A0_9D8C10": 1,
+            "context-field:D_80229838_9D92A8": 2,
+            "semantic-token:s32": 5,
+            "context-call:pc_set_report": 1,
+            "context-call:pc_set_report_score": 1,
+            "context-call:pc_selected_count": 1,
+            "empty-call:pc_selected_count": 1,
+            "context-call:pc_album": 4,
+            "bridge:func_800BF5D8_5C478": 1,
+            "bridge:func_800BF954_5C7F4": 1,
+            "bridge:func_800BFB50_5C9F0": 1,
+            "context-call:pc_set_temporary": 1,
+            "context-call:pc_set_album": 1,
+            "context-call:pc_selected": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "6713d53cd911d5439082f1fb78cc0670207dda2efc80e69e5bfab0624f1d1a48"
+        }
+      ]
+    },
+    {
+      "name": "func_801E5030_994AA0",
+      "source": "src/photo_check/993F80.c",
+      "first": 287,
+      "last": 353,
+      "sha256": "34b28565a147ae2b261c03567a0b4887aa8a66ccdb30349ef389c7b964580821",
+      "native_sha256": "fa04dd4c5c744e8e55d21148647890881cbed48e1ccc87584194cce97bac5af8",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E5030_994AA0",
+          "find": "    Foo2* sp24;",
+          "replace": "    const IsleSelectedPhoto* sp24;",
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E5030_994AA0",
+          "find": "sp24->var_0",
+          "replace": "sp24->photo",
+          "count": 3
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E5030_994AA0",
+          "find": "sp24->unk4_31",
+          "replace": "sp24->for_oak",
+          "count": 2
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E5030_994AA0",
+          "find": "sp24->unk4_30",
+          "replace": "sp24->source_second_flag",
+          "count": 2
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E5030_994AA0",
+          "find": "sp24->unk4_29",
+          "replace": "sp24->for_album",
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "remove-matching-only-padding": 3,
+            "semantic-token:s32": 4,
+            "bridge:func_800BF3D4_5C274": 1,
+            "bridge:func_800BF574_5C414": 1,
+            "bridge:func_800BFB50_5C9F0": 1,
+            "bridge:func_800BFB84_5CA24": 1,
+            "bridge:func_8037452C_847CDC": 1,
+            "context-field:D_801F4194_9A3C04": 2,
+            "context-field:D_802291A0_9D8C10": 1,
+            "context-field:D_80229838_9D92A8": 2,
+            "context-call:pc_report_present": 1,
+            "context-call:pc_temporary": 1,
+            "context-call:pc_selected": 1,
+            "context-call:pc_selected_count": 1,
+            "empty-call:pc_selected_count": 1,
+            "context-call:pc_score": 1
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "fa04dd4c5c744e8e55d21148647890881cbed48e1ccc87584194cce97bac5af8"
+        }
+      ]
+    },
+    {
+      "name": "func_80374F30_8486E0",
+      "source": "src/window/8486E0.c",
+      "first": 12,
+      "last": 42,
+      "sha256": "8a3390e892e60246c1622d500b6a51e072ef17b6fcb2a359c8ad6b44956cef84",
+      "native_sha256": "5429b7c331cab31812617a619bdc3d1a4e46c98c38eb36ab5cf1e6ffcedc465b",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "semantic-token:s32": 2,
+            "bridge:UIElement_PrintText": 1,
+            "bridge:UIElement_SetTextPos": 1,
+            "context-call:pc_print_source": 1,
+            "context-call:pc_element_position": 1,
+            "bridge:UIElement_Draw": 1,
+            "bridge:auPlaySound": 1,
+            "bridge:func_800AA38C": 2,
+            "bridge:func_8036EB80_842330": 2,
+            "bridge:ohWait": 3,
+            "semantic-token:A_BUTTON": 3,
+            "semantic-token:B_BUTTON": 3,
+            "semantic-token:START_BUTTON": 2,
+            "context-call:pc_element_draw": 1,
+            "context-call:pc_sound": 1,
+            "context-call:pc_input": 2,
+            "context-call:pc_text_skip": 2,
+            "context-call:pc_wait": 3
+          },
+          "operations": [
+            "typed context and globals",
+            "native signed-bit working records",
+            "actual Window handles/sprite views",
+            "canonical Photos getters/mutations",
+            "typed returning owner hooks",
+            "original callback identities",
+            "source-byte strings"
+          ],
+          "native_sha256": "5429b7c331cab31812617a619bdc3d1a4e46c98c38eb36ab5cf1e6ffcedc465b"
+        }
+      ]
+    }
+  ],
+  "native_outputs": {
+    "body_sha256": "c0974288b5c145e3a6ba9a4af7e10934258b1344b409735689bcdf62070c1090",
+    "declarations_sha256": "a7fb7b3742bc4054a1cffae9a8c25b4732880dce1a01ec5968b5b7d520794a37",
+    "data_sha256": "545dc6d97437a710e2825f9510de4301a2ff7a8d922fe1abc00a2ce1119b51ee",
+    "game_sha256": "0536da492d038ea4468c8dfdf67543200c42cf0ec7fefe2187668410536caa85"
+  },
+  "shared_dependencies": [
+    "isle_original_source_qsort2"
+  ],
+  "shared_provider_manifest": "cmake/original-sort-inputs.json"
 }

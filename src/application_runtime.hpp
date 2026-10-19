@@ -10,6 +10,12 @@ namespace isle::new_game { class Scene; }
 namespace isle::oaks_lab { class Scene; }
 namespace isle::post_course { class Scene; struct ReplayNativeProgress; }
 namespace isle::host { class Progress; }
+namespace isle::course { template<class Adapter> class Lifecycle; }
+namespace isle::tunnel { struct Adapter; }
+namespace isle::volcano { struct Adapter; }
+namespace isle::river { struct Adapter; }
+namespace isle::cave { struct Adapter; }
+namespace isle::valley { struct Adapter; }
 namespace isle::application {
 struct RuntimeCreateResult;
 struct SceneRetirementView {
@@ -18,6 +24,11 @@ struct SceneRetirementView {
     const beach::Lifecycle* beach = nullptr;
     const post_course::Scene* post = nullptr;
     const rainbow::Lifecycle* rainbow = nullptr;
+    const course::Lifecycle<tunnel::Adapter>* tunnel = nullptr;
+    const course::Lifecycle<volcano::Adapter>* volcano = nullptr;
+    const course::Lifecycle<river::Adapter>* river = nullptr;
+    const course::Lifecycle<cave::Adapter>* cave = nullptr;
+    const course::Lifecycle<valley::Adapter>* valley = nullptr;
 };
 struct RuntimeConfig {
     bool require_cpu_renderer = false;
@@ -37,6 +48,11 @@ struct RuntimeView {
     const beach::Lifecycle* beach = nullptr;
     const post_course::Scene* post = nullptr;
     const rainbow::Lifecycle* rainbow = nullptr;
+    const course::Lifecycle<tunnel::Adapter>* tunnel = nullptr;
+    const course::Lifecycle<volcano::Adapter>* volcano = nullptr;
+    const course::Lifecycle<river::Adapter>* river = nullptr;
+    const course::Lifecycle<cave::Adapter>* cave = nullptr;
+    const course::Lifecycle<valley::Adapter>* valley = nullptr;
 };
 // Application scheduling/ownership only. Original C Manager chooses every
 // entry/result; the actual scene owners implement their native Source bodies.

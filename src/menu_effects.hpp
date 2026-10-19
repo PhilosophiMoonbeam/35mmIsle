@@ -107,6 +107,9 @@ public:
     // sequence. Existing callers may still supply their complete admitted banks.
     EffectsStatus reset_bank(std::size_t slot) noexcept;
     EffectsStatus install_bank(const EffectBank&) noexcept;
+    // Cold interpreter/resource capability check only. No installation, pool
+    // mutation or RNG advancement; live bank presence remains has_effect().
+    EffectsStatus validate_bank(const EffectBank&) const noexcept;
     // Immutable admitted bank/script presence, independent of the ten-emitter
     // pool and RNG. A full pool remains an ordinary successful null spawn.
     bool has_effect(std::uint16_t encoded_bank, std::size_t script) const noexcept;
@@ -176,7 +179,6 @@ private:
     std::uint16_t current_id_ = 0, paused_lists_ = 0;
     std::uint8_t color_dither_ = 0xc0, alpha_dither_ = 0x30;
     const EffectBank* bank(std::uint16_t encoded) const noexcept;
-    EffectsStatus validate_bank(const EffectBank&) const noexcept;
     int spawn_effect(std::uint16_t encoded, std::size_t script, EffectAttachment) noexcept;
     int spawn_particle(std::uint16_t encoded, std::size_t script, Vec3 position,
                        Vec3 velocity, int parent, int effect) noexcept;

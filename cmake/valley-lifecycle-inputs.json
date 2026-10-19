@@ -1,0 +1,6297 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "provider": "valley-lifecycle",
+  "transformation_version": "valley-complete309-typed-v1",
+  "source_files": {
+    "src/valley/79F1B0.c": {
+      "git_blob": "63430b57b90aa93384eb5862f19ef398be207194",
+      "sha256": "12e9f6c7dbde1579c1dc7d511455ba5bbaf4582b16f3245b2859e7a9439d0cc3",
+      "line_count": 281
+    },
+    "src/valley/79FB70.c": {
+      "git_blob": "5509d03d5c27ba10936e0f5282495824e76df8bc",
+      "sha256": "c07254b134cfd26bfd412c74754c25dc33c9a40595fc7fbf0b0486e397666e50",
+      "line_count": 138
+    },
+    "src/valley/7A00C0.c": {
+      "git_blob": "b33327d1a3451427e7210964af3f9c93c6af98bc",
+      "sha256": "32f3688818ae055d54d73f01451a17723c3349ac1574f92f84593e842ba8c76f",
+      "line_count": 204
+    },
+    "src/valley/7A1850.c": {
+      "git_blob": "e1a07b310e0779869ddf50669a41fee6a4558b6c",
+      "sha256": "c8c30e9663ee8650fdf913f0c07d8758ff4be47856059943a04ebf4f56fbe8dd",
+      "line_count": 428
+    },
+    "src/valley/7A2B50.c": {
+      "git_blob": "c0e5bc5c778ff5afc7b14d37eb70b9b3cc77cb16",
+      "sha256": "bbd04fca81e7ce79a616de1dcbc637678e4b1ad1bdabcab9125aeb2c9e61724b",
+      "line_count": 70
+    },
+    "src/valley/7A2DD0.c": {
+      "git_blob": "10702d22400d65c790fadfff80b264fae22f7ae0",
+      "sha256": "3c50e5806b805d800133d550b2e7dd34c5a72276cbb47fbaddbf5f19eede2710",
+      "line_count": 176
+    },
+    "src/valley/7A3560.c": {
+      "git_blob": "fcd961bc0f0b926b8e9b8c69058207e15a27ce5d",
+      "sha256": "767181f2974aa32ba0d369410aa1371bba5cd9a10bc3a73affa9b13132a54f12",
+      "line_count": 79
+    },
+    "src/valley/7A3800.c": {
+      "git_blob": "ba11ecfcf7a30c477c001edd480e16c4e829564e",
+      "sha256": "b967f56108d2ec7b62ff50c25b5f9b176a0d11f964eb7c073c0d422336533039",
+      "line_count": 113
+    },
+    "src/valley/7A3C50.c": {
+      "git_blob": "3f11c0dcd0c4a5888454c16c81fb8e9be3bdf8f6",
+      "sha256": "902a605194007925bca9375c1d433393c9c2744fb4d9854f113088e2da3bb85b",
+      "line_count": 222
+    },
+    "src/valley/7A4610.c": {
+      "git_blob": "c1e10736141c19f1f12fecfc5e9a590f79336b59",
+      "sha256": "451f7e2bbe63100d37ae2f85853e1f4c59f9c2de109fccf0f2561107d00e325e",
+      "line_count": 573
+    },
+    "src/valley/7A5F10.c": {
+      "git_blob": "69401d9dca429f92cd7b6a649098ba8eb178f9e6",
+      "sha256": "811edbf0ff882d0cb5750ef60e8f668fc2eb93943a01c299a337f8cb2658e457",
+      "line_count": 314
+    },
+    "src/valley/7A6D50.c": {
+      "git_blob": "198805a1c8602d97ed308f52acdee5d7dd00185e",
+      "sha256": "3de3e441218f7c0c882bb33ff0bbf8ed10a1558c80cf2409909320a03583a1b4",
+      "line_count": 144
+    },
+    "src/valley/7A7410.c": {
+      "git_blob": "17d9fb42f2f71f4e824c1aae2d37dcbe45414374",
+      "sha256": "ef148990762d3fecd23a5aaf715a0f69afbba9ece0cb2bc9db6898de86e502c6",
+      "line_count": 90
+    },
+    "src/valley/7A7790.c": {
+      "git_blob": "dddf6b8a163d459c923795a2750dac59a739d8a6",
+      "sha256": "25a19cb9012908fd4210ecb393d2091bb4a4b5e5697a09662d61e311df5fe938",
+      "line_count": 200
+    },
+    "src/valley/7A8030.c": {
+      "git_blob": "151fcff0b6bfa877d32e0026aec93eafc0138e1d",
+      "sha256": "c9a6565ae57f57ccf3ab710a4d4b6f447181c9cce9a6bc616945a9498cdb78c8",
+      "line_count": 301
+    },
+    "src/valley/7A8DD0.c": {
+      "git_blob": "3cc9e6e81be9f3322be463de61ba5d29305732ed",
+      "sha256": "eba49bd67855ed3560ad1faf48f4cc43763b37161d061c7d075ba1d669a181d3",
+      "line_count": 475
+    },
+    "src/valley/7AA110.c": {
+      "git_blob": "e66953c7b989d4f1bfde94beb059ec7a73e61f61",
+      "sha256": "3ad106ae6dd4dbd67e8f5d9a1e1bea266636e08a575ce9317a24f5d5d0ebab44",
+      "line_count": 140
+    },
+    "src/valley/7AA720.c": {
+      "git_blob": "495ab372df8ae0ad9b878047adcfe21870882195",
+      "sha256": "80782be018c1a0b9cad9e26ad4c4db6c465ee505d7ab388307f415f87bd4e3c7",
+      "line_count": 9
+    },
+    "src/valley/7AA790.c": {
+      "git_blob": "6fc8e6d1cd52a69e351dd345a2956fa5a205d86b",
+      "sha256": "c3e7fe04774f7e23f92e3e481bf94e157dfa08d0c4a743e766a15eb3441bd084",
+      "line_count": 367
+    },
+    "src/valley/7AB7C0.c": {
+      "git_blob": "e068a0e8ec8ab29188d3b726158065a3ec2a5069",
+      "sha256": "87244949054c88d8f7a74118385ccb014b31f2979ba6fff6ed7f964bd72f39f2",
+      "line_count": 85
+    },
+    "src/valley/7ABB10.c": {
+      "git_blob": "83ec1acf57b5dd974de57ea4b2c48d02bc551da2",
+      "sha256": "027f98d27f98e4a48b4fe4e02de31309a2ccb8f8d5be0ef205507aeec5d6102d",
+      "line_count": 38
+    },
+    "src/valley/dragonite/model.c": {
+      "git_blob": "bc0d8e3c772edae2b78ac8564bf441e4d6a5777c",
+      "sha256": "9c5636d864f529bd61684b38bc39233ffe0869df6b07296100bd5cf18d5066f0",
+      "line_count": 235
+    },
+    "src/valley/dragonite/model_hd.c": {
+      "git_blob": "af647dc239a77531dbb74be462c317883398f83e",
+      "sha256": "7dbcd851a55daf0af2d391834895c0e650f52211a3e6640da8ca006444fae072",
+      "line_count": 205
+    },
+    "src/valley/dratini/model.c": {
+      "git_blob": "40ff57ae234c0863bce0cc2512e1f3dd6de88e06",
+      "sha256": "c21bcb90100b2c52f9a7a73b927ce186e531e9fdbee762af973bd085356e7270",
+      "line_count": 215
+    },
+    "src/valley/dratini/model_hd.c": {
+      "git_blob": "64fdb12ee400276dc560f0b85156f78cee20b5d1",
+      "sha256": "ae3c4108ff527c47c572450b4fc9bc2b2b913fec45c249d78059587ec6cd421c",
+      "line_count": 199
+    },
+    "src/valley/geodude/model.c": {
+      "git_blob": "93c820f7f9bc6d688017ca793c47972df5fac6e8",
+      "sha256": "d38a354e8dc5d554000b5215338af34788073f6424c2780bab25cafa8774ad7d",
+      "line_count": 237
+    },
+    "src/valley/geodude/model_hd.c": {
+      "git_blob": "c38a2b2de5232e3a016132fc6099ed8e7047e129",
+      "sha256": "5dae7d4a5f21ccccfa857d96f28ea3f3ba1b3b50ee2adf25036e9e779466e267",
+      "line_count": 197
+    },
+    "src/valley/goldeen/model.c": {
+      "git_blob": "003bdca0dad4755aef6eec5a45eeb915ebbc1607",
+      "sha256": "67fd27f01c3093e0d75ade2a63a7eb09618c3fb42743bcc498780db99eb08d82",
+      "line_count": 275
+    },
+    "src/valley/goldeen/model_hd.c": {
+      "git_blob": "93b26ebbfc67bfb7b87859413b6bfbfcb70ccd6a",
+      "sha256": "7c5756d21321dee486db125e69b5244534b56cbffca22d43d442b5987875521e",
+      "line_count": 258
+    },
+    "src/valley/graveler/model.c": {
+      "git_blob": "3014cee217e0f2119fd5d4771a6788e7ffc06ec0",
+      "sha256": "12f3be75127429e7015ab7e9a4621dfc6123ddcff11750a3a00ed1e7e5616d61",
+      "line_count": 229
+    },
+    "src/valley/graveler/model_hd.c": {
+      "git_blob": "754fe21a80ce30694573c887bfc9a1ed1dc2b1ef",
+      "sha256": "c89390fbab5a9df2d23419100068728166619672942f232af4393a4bc235b7d3",
+      "line_count": 219
+    },
+    "src/valley/gyarados/model.c": {
+      "git_blob": "c94a479c81e3f724e3c5c3afaa1a22e46754b25e",
+      "sha256": "8fb77d90450ea3f90eea9e9ca578f318a5edd4a994e9ec1094afc3b83d1acedc",
+      "line_count": 275
+    },
+    "src/valley/gyarados/model_hd.c": {
+      "git_blob": "ecc7f3ecef5941ccdc96cfd27c51b8d63129ccda",
+      "sha256": "50e79d5b1aad581918fb0d2bbae311e64109e904508e0020dbdf10c31d7e9389",
+      "line_count": 258
+    },
+    "src/valley/mankey/model.c": {
+      "git_blob": "54f500f7cc98081c3c75f96aaba6284f54a669db",
+      "sha256": "9cc5496796c80b2b4105c45313c196331337557bf8509ed8f51122f15578b3be",
+      "line_count": 331
+    },
+    "src/valley/mankey/model_hd.c": {
+      "git_blob": "a7415388ead602914452ab69487de72ebd9d5b96",
+      "sha256": "a79ea558351a25387dfcb3d1d66386bece0a8df890759e116f1cd39feb7f6642",
+      "line_count": 291
+    },
+    "src/valley/sandshrew/model.c": {
+      "git_blob": "149605cf5a4f43d00f958f8920b98c50af5f27e0",
+      "sha256": "c62e888c3ea7372ba1548e74a701272ef49fc7177d69f2e26bcfa0feb6c76551",
+      "line_count": 225
+    },
+    "src/valley/sandshrew/model_hd.c": {
+      "git_blob": "d852c81c4138617b10bac24c6e9f5cf749b62e0a",
+      "sha256": "35f0d0d5366afca338633d8b982f6b7e44ac4f0c34ddcadb53ed422aee9bee86",
+      "line_count": 198
+    },
+    "src/valley/sandslash/model.c": {
+      "git_blob": "8bee377486594f3ffa8bf0be6f7c3ef95fc99f27",
+      "sha256": "8139da9825ce6ccd30e992c6c9f1a60e8b04fee198efae9f2ca999752b51026e",
+      "line_count": 276
+    },
+    "src/valley/sandslash/model_hd.c": {
+      "git_blob": "fe018630f16844387536236d0dfc3fb6bfe142ca",
+      "sha256": "e47e9c77821e47af9e1714c015bccdfa527e05688ae5a891af02d83d367c4c8a",
+      "line_count": 223
+    },
+    "src/valley/squirtle/model.c": {
+      "git_blob": "6f5e9d43484c89fef53e700729fe9fdad3d73dd1",
+      "sha256": "ba0c87d41bf1371d46cc8869fff27983cda2bcedc6697016a69e8fca0bf2e0b9",
+      "line_count": 240
+    },
+    "src/valley/squirtle/model_hd.c": {
+      "git_blob": "f232355df6693545f8ab70fbb464c4898ac8d37e",
+      "sha256": "f6db02eb6d7109312bcf464d0667576c660f58937bd6b56c5cd049577613cf1e",
+      "line_count": 220
+    },
+    "src/valley/starmie/model.c": {
+      "git_blob": "392c1ecb75e6c5a4edce757081c087052dacdda9",
+      "sha256": "5355bef5d5a5718c8eecf5513dde82ad5cb84c693382de91303d28e96bdf399c",
+      "line_count": 358
+    },
+    "src/valley/starmie/model_hd.c": {
+      "git_blob": "d832781497751945440fe592edfc6f8546060dd2",
+      "sha256": "5b8eda08365b4346bee585c2d2fbd5e280be96e8fb8986f177d5f74695badd79",
+      "line_count": 300
+    },
+    "src/valley/staryu/model.c": {
+      "git_blob": "d7a66c8e0dd5929112700d70f8c1c3b4b550f376",
+      "sha256": "149232f70708a0d8cb340f6805fd23bc1e839be95d4c27e1ee404e8150819528",
+      "line_count": 232
+    },
+    "src/valley/staryu/model_hd.c": {
+      "git_blob": "6d6be4b2698a9a08b6d2ea6b7c8c76bd868dc434",
+      "sha256": "bd4da8dadcb4e8d1509245ffc25659e91f9461f4d33c245b1ff9a54ef56e0ab0",
+      "line_count": 196
+    },
+    "src/valley/valley.h": {
+      "git_blob": "ac187c3ee881c7f4921b4dec0f78544254a4b2cd",
+      "sha256": "41b29eba68b1ebbcbfe107c7c9e129d1ec71be7b0433bae9cb955f8918724fc0",
+      "line_count": 15
+    },
+    "include/functions.h": {
+      "git_blob": "30439638dff6b462da6f22bda252c91614df806d",
+      "sha256": "32746510cbd508dcdb3a45d3f0f5572142d1c5f7caa4579eac7a4ff596df44aa",
+      "line_count": 149
+    },
+    "include/constants.h": {
+      "git_blob": "53cbd9337ced13925f34f7a80168b9ac0bebd612",
+      "sha256": "9854e30df0750583ae5f4eadabc1c8c0fe8a74842857ecd43288288ae57b0b26",
+      "line_count": 8
+    },
+    "include/types.h": {
+      "git_blob": "c7e29e2b16ef978d9c077a43c540b5371a56d8e5",
+      "sha256": "33082990aab6c18243b86371c4f58d4a3b89b96c73ece6fa68d1851b222716bb",
+      "line_count": 36
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    },
+    "include/variables.h": {
+      "git_blob": "a45d6d34d577f19cf229207ea04b91fc80334f6e",
+      "sha256": "11a971b4b2607d7afafd753a03d193c71f8ee600244c9fb0d9dd6f6606e11665",
+      "line_count": 46
+    },
+    "include/sys/audio.h": {
+      "git_blob": "e4b238fcdb53dec215e044d183908cb09f151ce5",
+      "sha256": "70635d49de63e41c9e66d6d0d4a46dff4730c20e301f43a31860e18fac983f68",
+      "line_count": 36
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "line_count": 591
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "line_count": 343
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "line_count": 237
+    },
+    "include/sys/gtl.h": {
+      "git_blob": "a17ea5a556c505ea432a1a5c800a7e34ef313323",
+      "sha256": "8a24f1d44f97f92cbc2cc5d4950875666e758bd059c3456ecca7512af59cd83b",
+      "line_count": 93
+    },
+    "include/sys/vi.h": {
+      "git_blob": "5a95a8ba8c6e8f5a5c80b7cabf68c0bebe2c658e",
+      "sha256": "f290aa7442c22a0020454ce160ee53c8abd0899155ebc0b6ea398b9addb9f4c2",
+      "line_count": 32
+    },
+    "include/sys/anim.h": {
+      "git_blob": "1a0178fc52a859eda997ca232e1b063e10f9a4c9",
+      "sha256": "1e0ddc0140d6c05a6d5bb7fdf8db54f1a809fd89cb39be6ce0eb0bde75c5d5dd",
+      "line_count": 46
+    },
+    "include/sys/cont.h": {
+      "git_blob": "ba5f7dfb8f8bdd9138b6928b131e24b675d61f56",
+      "sha256": "fd4f46e43ec0698d98dacb65b57b3e3016bc2745d7657508376b35b1b26e442d",
+      "line_count": 34
+    },
+    "include/sys/cmd.h": {
+      "git_blob": "bfa75541db068ae17f7f8e025559a6cc281f6ef1",
+      "sha256": "d72dcb094d43824dfc7d40b6c29a4bbdf22027c5f12fb236b63f6a026c44aef4",
+      "line_count": 30
+    },
+    "src/app_render/effect.h": {
+      "git_blob": "665b175675d4764d5034b38a8094d686108c9054",
+      "sha256": "0f138ccc1c6a4596bd6a10db0d6e5849ade7f879fc2e3d170ade552089540f83",
+      "line_count": 92
+    },
+    "include/sys/oh.h": {
+      "git_blob": "8fe4f5051cd76e251ea0a2f5111b6edf7a15ed2a",
+      "sha256": "b8972f1a31ea53614471061fca23ffbf2a5f4a4680648cbf8bb4e9c15e19fe89",
+      "line_count": 28
+    },
+    "include/sys/interpolation.h": {
+      "git_blob": "bb9e129275a30ce093c7b154167948a6be6a74d7",
+      "sha256": "88a824dfa85c0d2b44841685465dd8c990607fad88697c4b86d09e2f7b5c0cd8",
+      "line_count": 31
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C5C20_79F1B0",
+      "native_symbol": "func_802C5C20_79F1B0",
+      "first": 20,
+      "last": 22,
+      "source_byte_start": 562,
+      "source_byte_end_exclusive": 675,
+      "source_sha256": "7b98680a72466c907461491e222c60ef45f8905cd30d6bc8528e68415f7cf064",
+      "native_sha256": "a339f602f399a2f88caae407f776bf954640e25b6dbfd396e37d0f6297a749a8",
+      "native_declaration": "void func_802C5C20_79F1B0(IsleValleyLifecycleSource* s, IsleValleyWorldBlock* arg0, IsleValleyWorldBlock* arg1)",
+      "source_abi": "void func_802C5C20_79F1B0(WorldBlock* arg0, WorldBlock* arg1)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "IsleValleyLifecycleSource* s, IsleValley"
+        },
+        {
+          "first_codepoint": 44,
+          "last_codepoint_exclusive": 44,
+          "replace": "IsleValley"
+        },
+        {
+          "first_codepoint": 68,
+          "last_codepoint_exclusive": 68,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    isle_valley_lifecycle_"
+        },
+        {
+          "first_codepoint": 75,
+          "last_codepoint_exclusive": 76,
+          "replace": "_a"
+        },
+        {
+          "first_codepoint": 79,
+          "last_codepoint_exclusive": 79,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 91,
+          "last_codepoint_exclusive": 93,
+          "replace": "UINT32"
+        },
+        {
+          "first_codepoint": 94,
+          "last_codepoint_exclusive": 94,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 97,
+          "last_codepoint_exclusive": 98,
+          "replace": "d"
+        },
+        {
+          "first_codepoint": 101,
+          "last_codepoint_exclusive": 109,
+          "replace": "c)"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C5C44_79F1D4",
+      "native_symbol": "func_802C5C44_79F1D4",
+      "first": 24,
+      "last": 26,
+      "source_byte_start": 677,
+      "source_byte_end_exclusive": 799,
+      "source_sha256": "23d8a11b688c303eb87b25399c248f4b18e54cf766af5eabaf73e5bcbaa0b0e1",
+      "native_sha256": "899491a7116d5f7764779115d1bae24cd036b92ff900213bea03ac40cf7c801e",
+      "native_declaration": "void func_802C5C44_79F1D4(IsleValleyLifecycleSource* s, IsleValleyWorldBlock* arg0, IsleValleyWorldBlock* arg1)",
+      "source_abi": "void func_802C5C44_79F1D4(WorldBlock* arg0, WorldBlock* arg1)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "IsleValleyLifecycleSource* s, IsleValley"
+        },
+        {
+          "first_codepoint": 44,
+          "last_codepoint_exclusive": 44,
+          "replace": "IsleValley"
+        },
+        {
+          "first_codepoint": 68,
+          "last_codepoint_exclusive": 68,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    isle_valley_lifecycle_"
+        },
+        {
+          "first_codepoint": 75,
+          "last_codepoint_exclusive": 77,
+          "replace": "_c"
+        },
+        {
+          "first_codepoint": 82,
+          "last_codepoint_exclusive": 87,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 88,
+          "last_codepoint_exclusive": 88,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 100,
+          "last_codepoint_exclusive": 102,
+          "replace": "UINT32"
+        },
+        {
+          "first_codepoint": 103,
+          "last_codepoint_exclusive": 103,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 106,
+          "last_codepoint_exclusive": 107,
+          "replace": "d"
+        },
+        {
+          "first_codepoint": 110,
+          "last_codepoint_exclusive": 118,
+          "replace": "c)"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C5C68_79F1F8",
+      "native_symbol": "func_802C5C68_79F1F8",
+      "first": 28,
+      "last": 30,
+      "source_byte_start": 801,
+      "source_byte_end_exclusive": 893,
+      "source_sha256": "af276ea173cdd62c3baa317b3cea033a1953eb00456bba43f232d49db626662c",
+      "native_sha256": "2b5cf836e99aa68398f5f34c1aacdd6e9b53c0aaed0308bc0ab607e449cd6dae",
+      "native_declaration": "void func_802C5C68_79F1F8(IsleValleyLifecycleSource* s, IsleValleyWorldBlock* arg0)",
+      "source_abi": "void func_802C5C68_79F1F8(WorldBlock* arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "IsleValleyLifecycleSource* s, IsleValley"
+        },
+        {
+          "first_codepoint": 50,
+          "last_codepoint_exclusive": 50,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    isle_valley_lifecycle_"
+        },
+        {
+          "first_codepoint": 57,
+          "last_codepoint_exclusive": 58,
+          "replace": "_r"
+        },
+        {
+          "first_codepoint": 64,
+          "last_codepoint_exclusive": 64,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 70,
+          "last_codepoint_exclusive": 72,
+          "replace": "UINT32"
+        },
+        {
+          "first_codepoint": 73,
+          "last_codepoint_exclusive": 73,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 76,
+          "last_codepoint_exclusive": 77,
+          "replace": "d"
+        },
+        {
+          "first_codepoint": 80,
+          "last_codepoint_exclusive": 88,
+          "replace": "c)"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C5C8C_79F21C",
+      "native_symbol": "func_802C5C8C_79F21C",
+      "first": 32,
+      "last": 37,
+      "source_byte_start": 895,
+      "source_byte_end_exclusive": 1164,
+      "source_sha256": "50662e6130d319ea182593444928e4c6f525140f554fc5ef774baf36030a09cf",
+      "native_sha256": "c965c4be3d556ce6cd066c00c9c071f6034bfe9ced13218e5ecb4923446ff7dc",
+      "native_declaration": "void func_802C5C8C_79F21C(IsleValleyLifecycleSource* s)",
+      "source_abi": "void func_802C5C8C_79F21C(void)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 27,
+          "replace": "IsleValleyLifecycleS"
+        },
+        {
+          "first_codepoint": 28,
+          "last_codepoint_exclusive": 30,
+          "replace": "urce* s"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 38,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 39,
+          "last_codepoint_exclusive": 39,
+          "replace": "l"
+        },
+        {
+          "first_codepoint": 40,
+          "last_codepoint_exclusive": 40,
+          "replace": "ValleyAc"
+        },
+        {
+          "first_codepoint": 41,
+          "last_codepoint_exclusive": 42,
+          "replace": "orSource* a = s->actors;\n    isle_valley_lifecycle_h"
+        },
+        {
+          "first_codepoint": 47,
+          "last_codepoint_exclusive": 48,
+          "replace": "_m"
+        },
+        {
+          "first_codepoint": 51,
+          "last_codepoint_exclusive": 53,
+          "replace": "s, UINT32"
+        },
+        {
+          "first_codepoint": 54,
+          "last_codepoint_exclusive": 54,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 58,
+          "last_codepoint_exclusive": 59,
+          "replace": "f"
+        },
+        {
+          "first_codepoint": 60,
+          "last_codepoint_exclusive": 61,
+          "replace": "c"
+        },
+        {
+          "first_codepoint": 62,
+          "last_codepoint_exclusive": 69,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 76,
+          "last_codepoint_exclusive": 76,
+          "replace": "isle_valley_lifecycle_world_"
+        },
+        {
+          "first_codepoint": 82,
+          "last_codepoint_exclusive": 87,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 88,
+          "last_codepoint_exclusive": 90,
+          "replace": "s, UINT32"
+        },
+        {
+          "first_codepoint": 91,
+          "last_codepoint_exclusive": 91,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 99,
+          "last_codepoint_exclusive": 99,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 199,
+          "last_codepoint_exclusive": 199,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 200,
+          "last_codepoint_exclusive": 200,
+          "replace": "l"
+        },
+        {
+          "first_codepoint": 201,
+          "last_codepoint_exclusive": 203,
+          "replace": "_valley_lifecycle_s"
+        },
+        {
+          "first_codepoint": 205,
+          "last_codepoint_exclusive": 209,
+          "replace": "_f"
+        },
+        {
+          "first_codepoint": 214,
+          "last_codepoint_exclusive": 220,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 221,
+          "last_codepoint_exclusive": 221,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 228,
+          "last_codepoint_exclusive": 228,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 229,
+          "last_codepoint_exclusive": 230,
+          "replace": "ecycle_pokemo"
+        },
+        {
+          "first_codepoint": 231,
+          "last_codepoint_exclusive": 232,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 233,
+          "last_codepoint_exclusive": 248,
+          "replace": "registry"
+        },
+        {
+          "first_codepoint": 249,
+          "last_codepoint_exclusive": 249,
+          "replace": "s, "
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C5D18_79F2A8",
+      "native_symbol": "func_802C5D18_79F2A8",
+      "first": 39,
+      "last": 50,
+      "source_byte_start": 1166,
+      "source_byte_end_exclusive": 1448,
+      "source_sha256": "110b69bc11cdc9df6f5018c6ef17307c6c98fdbf73af9c7d75361488692ca4c8",
+      "native_sha256": "baf38ba82906cd39e9e2c16cac6ae1125915af748695e4c00adc92e8cd813ba0",
+      "native_declaration": "void func_802C5D18_79F2A8(IsleValleyLifecycleSource* s, int32_t arg0)",
+      "source_abi": "void func_802C5D18_79F2A8(s32 arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 27,
+          "last_codepoint_exclusive": 27,
+          "replace": "leValleyLifecycleSource* s, int"
+        },
+        {
+          "first_codepoint": 29,
+          "last_codepoint_exclusive": 29,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 42,
+          "last_codepoint_exclusive": 42,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    a->"
+        },
+        {
+          "first_codepoint": 72,
+          "last_codepoint_exclusive": 72,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 73,
+          "last_codepoint_exclusive": 74,
+          "replace": "ecycle_tra"
+        },
+        {
+          "first_codepoint": 75,
+          "last_codepoint_exclusive": 76,
+          "replace": "sition"
+        },
+        {
+          "first_codepoint": 77,
+          "last_codepoint_exclusive": 85,
+          "replace": "end"
+        },
+        {
+          "first_codepoint": 86,
+          "last_codepoint_exclusive": 86,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 97,
+          "last_codepoint_exclusive": 100,
+          "replace": "isl"
+        },
+        {
+          "first_codepoint": 101,
+          "last_codepoint_exclusive": 105,
+          "replace": "_valley_lifecycle_d"
+        },
+        {
+          "first_codepoint": 113,
+          "last_codepoint_exclusive": 114,
+          "replace": "d"
+        },
+        {
+          "first_codepoint": 121,
+          "last_codepoint_exclusive": 121,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 128,
+          "last_codepoint_exclusive": 129,
+          "replace": "isle_valley_lifecycle_e"
+        },
+        {
+          "first_codepoint": 131,
+          "last_codepoint_exclusive": 132,
+          "replace": "ir"
+        },
+        {
+          "first_codepoint": 133,
+          "last_codepoint_exclusive": 134,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 135,
+          "last_codepoint_exclusive": 136,
+          "replace": "ment"
+        },
+        {
+          "first_codepoint": 137,
+          "last_codepoint_exclusive": 138,
+          "replace": "c"
+        },
+        {
+          "first_codepoint": 145,
+          "last_codepoint_exclusive": 145,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 152,
+          "last_codepoint_exclusive": 152,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 153,
+          "last_codepoint_exclusive": 155,
+          "replace": "lley_actor_bgm_s"
+        },
+        {
+          "first_codepoint": 158,
+          "last_codepoint_exclusive": 161,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 162,
+          "last_codepoint_exclusive": 162,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 169,
+          "last_codepoint_exclusive": 169,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 170,
+          "last_codepoint_exclusive": 172,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 174,
+          "last_codepoint_exclusive": 179,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 183,
+          "last_codepoint_exclusive": 183,
+          "replace": "_"
+        },
+        {
+          "first_codepoint": 184,
+          "last_codepoint_exclusive": 184,
+          "replace": "top_all"
+        },
+        {
+          "first_codepoint": 185,
+          "last_codepoint_exclusive": 185,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 192,
+          "last_codepoint_exclusive": 192,
+          "replace": "isle_valley_lifecycle_world_"
+        },
+        {
+          "first_codepoint": 199,
+          "last_codepoint_exclusive": 204,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 205,
+          "last_codepoint_exclusive": 205,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 212,
+          "last_codepoint_exclusive": 212,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 213,
+          "last_codepoint_exclusive": 213,
+          "replace": "ecycle_world_clean"
+        },
+        {
+          "first_codepoint": 214,
+          "last_codepoint_exclusive": 232,
+          "replace": "p"
+        },
+        {
+          "first_codepoint": 233,
+          "last_codepoint_exclusive": 233,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 240,
+          "last_codepoint_exclusive": 240,
+          "replace": "isle_valley_lifecycle_camera_"
+        },
+        {
+          "first_codepoint": 246,
+          "last_codepoint_exclusive": 256,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 257,
+          "last_codepoint_exclusive": 257,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 264,
+          "last_codepoint_exclusive": 264,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 265,
+          "last_codepoint_exclusive": 266,
+          "replace": "ecycle_sce"
+        },
+        {
+          "first_codepoint": 267,
+          "last_codepoint_exclusive": 268,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 269,
+          "last_codepoint_exclusive": 277,
+          "replace": "exit"
+        },
+        {
+          "first_codepoint": 278,
+          "last_codepoint_exclusive": 278,
+          "replace": "s"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C5DCC_79F35C",
+      "native_symbol": "func_802C5DCC_79F35C",
+      "first": 59,
+      "last": 60,
+      "source_byte_start": 1617,
+      "source_byte_end_exclusive": 1656,
+      "source_sha256": "39e348886692be4d8daf33260415a4ec78cb59b971fe3b27ce8afb6911d3c1f1",
+      "native_sha256": "bbdc200dcad90fffcb62b1910dda44e88a98d888406097597985e86deae5a283",
+      "native_declaration": "void func_802C5DCC_79F35C(IsleValleyLifecycleSource* s, int32_t arg0)",
+      "source_abi": "void func_802C5DCC_79F35C(s32 arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 27,
+          "last_codepoint_exclusive": 27,
+          "replace": "leValleyLifecycleSource* s, int"
+        },
+        {
+          "first_codepoint": 29,
+          "last_codepoint_exclusive": 29,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 38,
+          "replace": "    IsleValleyActorSource* a = s->actors;\n"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C5DD4_79F364",
+      "native_symbol": "func_802C5DD4_79F364",
+      "first": 62,
+      "last": 76,
+      "source_byte_start": 1658,
+      "source_byte_end_exclusive": 2220,
+      "source_sha256": "0d3ccc3685cb66d7cd509352a05ddb51fdf48865df0324ad18012f8a27b4767c",
+      "native_sha256": "8b4219ed8f7fc8ec6def00f288bc4193aa3b0586a9fdd05434463f0c36818b09",
+      "native_declaration": "void func_802C5DD4_79F364(IsleValleyLifecycleSource* s, IsleValleyWorldBlock* arg0)",
+      "source_abi": "void func_802C5DD4_79F364(WorldBlock* arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "IsleValleyLifecycleSource* s, IsleValley"
+        },
+        {
+          "first_codepoint": 50,
+          "last_codepoint_exclusive": 50,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    IsleValley"
+        },
+        {
+          "first_codepoint": 77,
+          "last_codepoint_exclusive": 77,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 180,
+          "last_codepoint_exclusive": 181,
+          "replace": "isle_valley_lifecycle_i"
+        },
+        {
+          "first_codepoint": 186,
+          "last_codepoint_exclusive": 187,
+          "replace": "d"
+        },
+        {
+          "first_codepoint": 194,
+          "last_codepoint_exclusive": 201,
+          "replace": "("
+        },
+        {
+          "first_codepoint": 202,
+          "last_codepoint_exclusive": 219,
+          "replace": ","
+        },
+        {
+          "first_codepoint": 291,
+          "last_codepoint_exclusive": 307,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 379,
+          "last_codepoint_exclusive": 395,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 519,
+          "last_codepoint_exclusive": 519,
+          "replace": "s, "
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C6300_79F890",
+      "native_symbol": "func_802C6300_79F890",
+      "first": 220,
+      "last": 237,
+      "source_byte_start": 6696,
+      "source_byte_end_exclusive": 7529,
+      "source_sha256": "f9e54383011ac25569bf238e45e86f0f005135205b1b3510bf359a21045c1c62",
+      "native_sha256": "6f55404785e7c0698da6e61bd67c0f1c122938b1300fe802555efb04c8a8394c",
+      "native_declaration": "void func_802C6300_79F890(IsleValleyLifecycleSource* s)",
+      "source_abi": "void func_802C6300_79F890(void)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 27,
+          "replace": "IsleValleyLifecycleS"
+        },
+        {
+          "first_codepoint": 28,
+          "last_codepoint_exclusive": 30,
+          "replace": "urce* s"
+        },
+        {
+          "first_codepoint": 33,
+          "last_codepoint_exclusive": 33,
+          "replace": "\n    IsleValleyActorSource* a = s->actors;"
+        },
+        {
+          "first_codepoint": 97,
+          "last_codepoint_exclusive": 97,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 98,
+          "last_codepoint_exclusive": 100,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 101,
+          "last_codepoint_exclusive": 101,
+          "replace": "ycle"
+        },
+        {
+          "first_codepoint": 102,
+          "last_codepoint_exclusive": 120,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 121,
+          "last_codepoint_exclusive": 125,
+          "replace": "se"
+        },
+        {
+          "first_codepoint": 127,
+          "last_codepoint_exclusive": 128,
+          "replace": "l"
+        },
+        {
+          "first_codepoint": 129,
+          "last_codepoint_exclusive": 143,
+          "replace": "ad(s"
+        },
+        {
+          "first_codepoint": 147,
+          "last_codepoint_exclusive": 147,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 149,
+          "last_codepoint_exclusive": 149,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 151,
+          "last_codepoint_exclusive": 152,
+          "replace": "UINT32_C(0"
+        },
+        {
+          "first_codepoint": 153,
+          "last_codepoint_exclusive": 153,
+          "replace": "ab5860), (uint32"
+        },
+        {
+          "first_codepoint": 154,
+          "last_codepoint_exclusive": 159,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 160,
+          "last_codepoint_exclusive": 160,
+          "replace": ") UINT32"
+        },
+        {
+          "first_codepoint": 161,
+          "last_codepoint_exclusive": 175,
+          "replace": "C(0xab5980)"
+        },
+        {
+          "first_codepoint": 196,
+          "last_codepoint_exclusive": 196,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 197,
+          "last_codepoint_exclusive": 199,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 200,
+          "last_codepoint_exclusive": 200,
+          "replace": "ycle"
+        },
+        {
+          "first_codepoint": 201,
+          "last_codepoint_exclusive": 209,
+          "replace": "asset_load"
+        },
+        {
+          "first_codepoint": 210,
+          "last_codepoint_exclusive": 239,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 243,
+          "last_codepoint_exclusive": 243,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 245,
+          "last_codepoint_exclusive": 245,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 247,
+          "last_codepoint_exclusive": 248,
+          "replace": "UINT32_C(0"
+        },
+        {
+          "first_codepoint": 249,
+          "last_codepoint_exclusive": 249,
+          "replace": "ab5980), (uint32"
+        },
+        {
+          "first_codepoint": 250,
+          "last_codepoint_exclusive": 253,
+          "replace": "t) UINT32"
+        },
+        {
+          "first_codepoint": 254,
+          "last_codepoint_exclusive": 268,
+          "replace": "C(0xab85e0)"
+        },
+        {
+          "first_codepoint": 332,
+          "last_codepoint_exclusive": 332,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 333,
+          "last_codepoint_exclusive": 334,
+          "replace": "ecycle"
+        },
+        {
+          "first_codepoint": 335,
+          "last_codepoint_exclusive": 336,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 337,
+          "last_codepoint_exclusive": 337,
+          "replace": "ffec"
+        },
+        {
+          "first_codepoint": 338,
+          "last_codepoint_exclusive": 341,
+          "replace": "_b"
+        },
+        {
+          "first_codepoint": 344,
+          "last_codepoint_exclusive": 346,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 347,
+          "last_codepoint_exclusive": 347,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 399,
+          "last_codepoint_exclusive": 422,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 423,
+          "last_codepoint_exclusive": 428,
+          "replace": "le"
+        },
+        {
+          "first_codepoint": 436,
+          "last_codepoint_exclusive": 439,
+          "replace": "lifecycle"
+        },
+        {
+          "first_codepoint": 440,
+          "last_codepoint_exclusive": 445,
+          "replace": "asset_load(s"
+        },
+        {
+          "first_codepoint": 449,
+          "last_codepoint_exclusive": 449,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 451,
+          "last_codepoint_exclusive": 451,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 453,
+          "last_codepoint_exclusive": 454,
+          "replace": "UINT32_C(0"
+        },
+        {
+          "first_codepoint": 455,
+          "last_codepoint_exclusive": 455,
+          "replace": "ad0e00), (uint32"
+        },
+        {
+          "first_codepoint": 456,
+          "last_codepoint_exclusive": 461,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 462,
+          "last_codepoint_exclusive": 462,
+          "replace": ") UINT32"
+        },
+        {
+          "first_codepoint": 463,
+          "last_codepoint_exclusive": 464,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 465,
+          "last_codepoint_exclusive": 477,
+          "replace": "d1640)"
+        },
+        {
+          "first_codepoint": 498,
+          "last_codepoint_exclusive": 521,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 522,
+          "last_codepoint_exclusive": 524,
+          "replace": "sle"
+        },
+        {
+          "first_codepoint": 532,
+          "last_codepoint_exclusive": 535,
+          "replace": "lifecycle"
+        },
+        {
+          "first_codepoint": 536,
+          "last_codepoint_exclusive": 541,
+          "replace": "asset_load(s"
+        },
+        {
+          "first_codepoint": 545,
+          "last_codepoint_exclusive": 545,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 547,
+          "last_codepoint_exclusive": 547,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 549,
+          "last_codepoint_exclusive": 550,
+          "replace": "UINT32_C(0"
+        },
+        {
+          "first_codepoint": 551,
+          "last_codepoint_exclusive": 551,
+          "replace": "ad1640), (uint32"
+        },
+        {
+          "first_codepoint": 552,
+          "last_codepoint_exclusive": 555,
+          "replace": "t) UINT32"
+        },
+        {
+          "first_codepoint": 556,
+          "last_codepoint_exclusive": 557,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 558,
+          "last_codepoint_exclusive": 570,
+          "replace": "dd310)"
+        },
+        {
+          "first_codepoint": 638,
+          "last_codepoint_exclusive": 638,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 639,
+          "last_codepoint_exclusive": 640,
+          "replace": "ecycle"
+        },
+        {
+          "first_codepoint": 641,
+          "last_codepoint_exclusive": 642,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 643,
+          "last_codepoint_exclusive": 643,
+          "replace": "ffec"
+        },
+        {
+          "first_codepoint": 644,
+          "last_codepoint_exclusive": 647,
+          "replace": "_b"
+        },
+        {
+          "first_codepoint": 650,
+          "last_codepoint_exclusive": 652,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 653,
+          "last_codepoint_exclusive": 653,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 692,
+          "last_codepoint_exclusive": 693,
+          "replace": "isle"
+        },
+        {
+          "first_codepoint": 694,
+          "last_codepoint_exclusive": 702,
+          "replace": "valley"
+        },
+        {
+          "first_codepoint": 703,
+          "last_codepoint_exclusive": 709,
+          "replace": "lifecycle_effect_camera_publish(s,"
+        },
+        {
+          "first_codepoint": 710,
+          "last_codepoint_exclusive": 711,
+          "replace": "isle_valley_lifecycle_effect_camera(s,"
+        },
+        {
+          "first_codepoint": 712,
+          "last_codepoint_exclusive": 726,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 734,
+          "last_codepoint_exclusive": 735,
+          "replace": "isl"
+        },
+        {
+          "first_codepoint": 736,
+          "last_codepoint_exclusive": 736,
+          "replace": "_valley_ac"
+        },
+        {
+          "first_codepoint": 737,
+          "last_codepoint_exclusive": 742,
+          "replace": "or_c"
+        },
+        {
+          "first_codepoint": 748,
+          "last_codepoint_exclusive": 748,
+          "replace": "a)"
+        },
+        {
+          "first_codepoint": 756,
+          "last_codepoint_exclusive": 757,
+          "replace": "isle"
+        },
+        {
+          "first_codepoint": 758,
+          "last_codepoint_exclusive": 766,
+          "replace": "valley"
+        },
+        {
+          "first_codepoint": 767,
+          "last_codepoint_exclusive": 773,
+          "replace": "lifecycle_effects_publish(s,"
+        },
+        {
+          "first_codepoint": 774,
+          "last_codepoint_exclusive": 776,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 777,
+          "last_codepoint_exclusive": 778,
+          "replace": "ecycle_effects"
+        },
+        {
+          "first_codepoint": 784,
+          "last_codepoint_exclusive": 787,
+          "replace": "at"
+        },
+        {
+          "first_codepoint": 788,
+          "last_codepoint_exclusive": 790,
+          "replace": "("
+        },
+        {
+          "first_codepoint": 791,
+          "last_codepoint_exclusive": 792,
+          "replace": ", "
+        },
+        {
+          "first_codepoint": 794,
+          "last_codepoint_exclusive": 794,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 801,
+          "last_codepoint_exclusive": 801,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 802,
+          "last_codepoint_exclusive": 803,
+          "replace": "ecycle"
+        },
+        {
+          "first_codepoint": 804,
+          "last_codepoint_exclusive": 804,
+          "replace": "effect"
+        },
+        {
+          "first_codepoint": 805,
+          "last_codepoint_exclusive": 808,
+          "replace": "_d"
+        },
+        {
+          "first_codepoint": 813,
+          "last_codepoint_exclusive": 817,
+          "replace": "("
+        },
+        {
+          "first_codepoint": 818,
+          "last_codepoint_exclusive": 819,
+          "replace": ", "
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C63EC_79F97C",
+      "native_symbol": "func_802C63EC_79F97C",
+      "first": 239,
+      "last": 262,
+      "source_byte_start": 7531,
+      "source_byte_end_exclusive": 8447,
+      "source_sha256": "0d8ef167fb08189e7d4d43a3d353e371210942cc572119d7926663c510814dbb",
+      "native_sha256": "d2f475a0f748dcbd875297b5c60053e6787337686ad0f5ac5ccd0e7cf30c7c21",
+      "native_declaration": "void func_802C63EC_79F97C(IsleValleyLifecycleSource* s)",
+      "source_abi": "void func_802C63EC_79F97C(void)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 27,
+          "replace": "IsleValleyLifecycleS"
+        },
+        {
+          "first_codepoint": 28,
+          "last_codepoint_exclusive": 30,
+          "replace": "urce* s"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 38,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 39,
+          "last_codepoint_exclusive": 39,
+          "replace": "leValleyActorSource* a = s->actors;\n    int"
+        },
+        {
+          "first_codepoint": 41,
+          "last_codepoint_exclusive": 41,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 50,
+          "last_codepoint_exclusive": 50,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 51,
+          "last_codepoint_exclusive": 51,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 66,
+          "last_codepoint_exclusive": 67,
+          "replace": "s->screen.depth"
+        },
+        {
+          "first_codepoint": 68,
+          "last_codepoint_exclusive": 86,
+          "replace": "b"
+        },
+        {
+          "first_codepoint": 94,
+          "last_codepoint_exclusive": 95,
+          "replace": "isle_valley_lifecycle_dep"
+        },
+        {
+          "first_codepoint": 96,
+          "last_codepoint_exclusive": 98,
+          "replace": "h_"
+        },
+        {
+          "first_codepoint": 103,
+          "last_codepoint_exclusive": 103,
+          "replace": "ate"
+        },
+        {
+          "first_codepoint": 104,
+          "last_codepoint_exclusive": 104,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 124,
+          "last_codepoint_exclusive": 124,
+          "replace": "isle_"
+        },
+        {
+          "first_codepoint": 125,
+          "last_codepoint_exclusive": 125,
+          "replace": "alley_l"
+        },
+        {
+          "first_codepoint": 126,
+          "last_codepoint_exclusive": 129,
+          "replace": "fecyc"
+        },
+        {
+          "first_codepoint": 130,
+          "last_codepoint_exclusive": 132,
+          "replace": "e_s"
+        },
+        {
+          "first_codepoint": 137,
+          "last_codepoint_exclusive": 138,
+          "replace": "_apply(s, &s->scr"
+        },
+        {
+          "first_codepoint": 139,
+          "last_codepoint_exclusive": 142,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 143,
+          "last_codepoint_exclusive": 164,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 195,
+          "last_codepoint_exclusive": 195,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 196,
+          "last_codepoint_exclusive": 216,
+          "replace": "ecycle"
+        },
+        {
+          "first_codepoint": 217,
+          "last_codepoint_exclusive": 223,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 224,
+          "last_codepoint_exclusive": 225,
+          "replace": "fect"
+        },
+        {
+          "first_codepoint": 226,
+          "last_codepoint_exclusive": 233,
+          "replace": "b"
+        },
+        {
+          "first_codepoint": 237,
+          "last_codepoint_exclusive": 240,
+          "replace": "_reset(s"
+        },
+        {
+          "first_codepoint": 242,
+          "last_codepoint_exclusive": 300,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 328,
+          "last_codepoint_exclusive": 328,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 329,
+          "last_codepoint_exclusive": 331,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 332,
+          "last_codepoint_exclusive": 332,
+          "replace": "ycle"
+        },
+        {
+          "first_codepoint": 333,
+          "last_codepoint_exclusive": 341,
+          "replace": "game_state_reset"
+        },
+        {
+          "first_codepoint": 342,
+          "last_codepoint_exclusive": 342,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 349,
+          "last_codepoint_exclusive": 349,
+          "replace": "isle_valley_act"
+        },
+        {
+          "first_codepoint": 350,
+          "last_codepoint_exclusive": 352,
+          "replace": "r_object_a"
+        },
+        {
+          "first_codepoint": 354,
+          "last_codepoint_exclusive": 358,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 359,
+          "last_codepoint_exclusive": 359,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 415,
+          "last_codepoint_exclusive": 416,
+          "replace": "isle_valley_lifecycle_p"
+        },
+        {
+          "first_codepoint": 424,
+          "last_codepoint_exclusive": 425,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 429,
+          "last_codepoint_exclusive": 429,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 457,
+          "last_codepoint_exclusive": 457,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 464,
+          "last_codepoint_exclusive": 465,
+          "replace": "isl"
+        },
+        {
+          "first_codepoint": 466,
+          "last_codepoint_exclusive": 468,
+          "replace": "_valley_lifecycle_b"
+        },
+        {
+          "first_codepoint": 477,
+          "last_codepoint_exclusive": 478,
+          "replace": "_c"
+        },
+        {
+          "first_codepoint": 483,
+          "last_codepoint_exclusive": 483,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 500,
+          "last_codepoint_exclusive": 500,
+          "replace": "isle_valley_lifecycle_cameras_"
+        },
+        {
+          "first_codepoint": 506,
+          "last_codepoint_exclusive": 516,
+          "replace": "("
+        },
+        {
+          "first_codepoint": 517,
+          "last_codepoint_exclusive": 518,
+          "replace": ", "
+        },
+        {
+          "first_codepoint": 556,
+          "last_codepoint_exclusive": 556,
+          "replace": "sle_valley_lifecycle_ui_i"
+        },
+        {
+          "first_codepoint": 559,
+          "last_codepoint_exclusive": 561,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 562,
+          "last_codepoint_exclusive": 562,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 642,
+          "last_codepoint_exclusive": 642,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 643,
+          "last_codepoint_exclusive": 643,
+          "replace": "l"
+        },
+        {
+          "first_codepoint": 644,
+          "last_codepoint_exclusive": 646,
+          "replace": "_valley_lifecycle_e"
+        },
+        {
+          "first_codepoint": 648,
+          "last_codepoint_exclusive": 654,
+          "replace": "_c"
+        },
+        {
+          "first_codepoint": 662,
+          "last_codepoint_exclusive": 662,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 689,
+          "last_codepoint_exclusive": 689,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 690,
+          "last_codepoint_exclusive": 690,
+          "replace": "l"
+        },
+        {
+          "first_codepoint": 691,
+          "last_codepoint_exclusive": 693,
+          "replace": "_valley_lifecycle_p"
+        },
+        {
+          "first_codepoint": 697,
+          "last_codepoint_exclusive": 698,
+          "replace": "_c"
+        },
+        {
+          "first_codepoint": 706,
+          "last_codepoint_exclusive": 706,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 733,
+          "last_codepoint_exclusive": 734,
+          "replace": "isle_valley_lifecycle_e"
+        },
+        {
+          "first_codepoint": 736,
+          "last_codepoint_exclusive": 737,
+          "replace": "ir"
+        },
+        {
+          "first_codepoint": 738,
+          "last_codepoint_exclusive": 739,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 740,
+          "last_codepoint_exclusive": 741,
+          "replace": "ment"
+        },
+        {
+          "first_codepoint": 742,
+          "last_codepoint_exclusive": 743,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 747,
+          "last_codepoint_exclusive": 764,
+          "replace": "s, s->environment"
+        },
+        {
+          "first_codepoint": 778,
+          "last_codepoint_exclusive": 795,
+          "replace": "s->environment"
+        },
+        {
+          "first_codepoint": 824,
+          "last_codepoint_exclusive": 824,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 831,
+          "last_codepoint_exclusive": 834,
+          "replace": "isl"
+        },
+        {
+          "first_codepoint": 835,
+          "last_codepoint_exclusive": 839,
+          "replace": "_valley_lifecycle_d"
+        },
+        {
+          "first_codepoint": 847,
+          "last_codepoint_exclusive": 848,
+          "replace": "c"
+        },
+        {
+          "first_codepoint": 854,
+          "last_codepoint_exclusive": 854,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 861,
+          "last_codepoint_exclusive": 864,
+          "replace": "isl"
+        },
+        {
+          "first_codepoint": 865,
+          "last_codepoint_exclusive": 869,
+          "replace": "_valley_lifecycle_d"
+        },
+        {
+          "first_codepoint": 877,
+          "last_codepoint_exclusive": 878,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 884,
+          "last_codepoint_exclusive": 884,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 912,
+          "last_codepoint_exclusive": 912,
+          "replace": "s"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C653C_79FACC",
+      "native_symbol": "func_802C653C_79FACC",
+      "first": 264,
+      "last": 265,
+      "source_byte_start": 8449,
+      "source_byte_end_exclusive": 8488,
+      "source_sha256": "e81ce82394b719c20c049c4ca022c55a1e25db56ce1f339f875a851421d7fbb8",
+      "native_sha256": "4c9035c8b77499475c71bb9898dac8cf4a3235aadf48898c286f40e06c895e9d",
+      "native_declaration": "void func_802C653C_79FACC(IsleValleyLifecycleSource* s, int32_t arg0)",
+      "source_abi": "void func_802C653C_79FACC(s32 arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 27,
+          "last_codepoint_exclusive": 27,
+          "replace": "leValleyLifecycleSource* s, int"
+        },
+        {
+          "first_codepoint": 29,
+          "last_codepoint_exclusive": 29,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 38,
+          "replace": "    IsleValleyActorSource* a = s->actors;\n"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79F1B0.c",
+      "symbol": "func_802C6544_79FAD4",
+      "native_symbol": "func_802C6544_79FAD4",
+      "first": 267,
+      "last": 281,
+      "source_byte_start": 8490,
+      "source_byte_end_exclusive": 8916,
+      "source_sha256": "a2a2159fafdd0343663ab136b65d0a87fe68645d42581e4ed4e18235b9bf0f60",
+      "native_sha256": "28536fd4048dd6674e9b6eeeed13cc7bf34431519597d8baddca4b4e28dc6df0",
+      "native_declaration": "int32_t func_802C6544_79FAD4(IsleValleyLifecycleSource* s, int32_t arg0)",
+      "source_abi": "s32 func_802C6544_79FAD4(s32 arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 0,
+          "last_codepoint_exclusive": 1,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 3,
+          "last_codepoint_exclusive": 3,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 25,
+          "last_codepoint_exclusive": 25,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "leValleyLifecycleSource* s, int"
+        },
+        {
+          "first_codepoint": 28,
+          "last_codepoint_exclusive": 28,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 41,
+          "last_codepoint_exclusive": 62,
+          "replace": "IsleV"
+        },
+        {
+          "first_codepoint": 67,
+          "last_codepoint_exclusive": 68,
+          "replace": "A"
+        },
+        {
+          "first_codepoint": 69,
+          "last_codepoint_exclusive": 69,
+          "replace": "t"
+        },
+        {
+          "first_codepoint": 70,
+          "last_codepoint_exclusive": 71,
+          "replace": "rSource* a = s->actors;\n    s->scen"
+        },
+        {
+          "first_codepoint": 73,
+          "last_codepoint_exclusive": 89,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 92,
+          "last_codepoint_exclusive": 92,
+          "replace": "up.heap_"
+        },
+        {
+          "first_codepoint": 93,
+          "last_codepoint_exclusive": 93,
+          "replace": "ize = UINT32"
+        },
+        {
+          "first_codepoint": 94,
+          "last_codepoint_exclusive": 102,
+          "replace": "C(0x13f110)"
+        },
+        {
+          "first_codepoint": 138,
+          "last_codepoint_exclusive": 140,
+          "replace": "is"
+        },
+        {
+          "first_codepoint": 141,
+          "last_codepoint_exclusive": 142,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 143,
+          "last_codepoint_exclusive": 145,
+          "replace": "_valley_lifecycle_i"
+        },
+        {
+          "first_codepoint": 154,
+          "last_codepoint_exclusive": 154,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 165,
+          "last_codepoint_exclusive": 169,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 171,
+          "last_codepoint_exclusive": 173,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 175,
+          "last_codepoint_exclusive": 176,
+          "replace": "_valley_lifecycle_n"
+        },
+        {
+          "first_codepoint": 179,
+          "last_codepoint_exclusive": 180,
+          "replace": "_c"
+        },
+        {
+          "first_codepoint": 188,
+          "last_codepoint_exclusive": 188,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 196,
+          "last_codepoint_exclusive": 199,
+          "replace": "isle_valley_lifecycle_s"
+        },
+        {
+          "first_codepoint": 203,
+          "last_codepoint_exclusive": 204,
+          "replace": "_s"
+        },
+        {
+          "first_codepoint": 209,
+          "last_codepoint_exclusive": 209,
+          "replace": "s, "
+        },
+        {
+          "first_codepoint": 210,
+          "last_codepoint_exclusive": 211,
+          "replace": "s->scene"
+        },
+        {
+          "first_codepoint": 212,
+          "last_codepoint_exclusive": 227,
+          "replace": "setup"
+        },
+        {
+          "first_codepoint": 238,
+          "last_codepoint_exclusive": 238,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 307,
+          "last_codepoint_exclusive": 307,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 308,
+          "last_codepoint_exclusive": 308,
+          "replace": "ecycle_photo_co"
+        },
+        {
+          "first_codepoint": 310,
+          "last_codepoint_exclusive": 320,
+          "replace": "t"
+        },
+        {
+          "first_codepoint": 321,
+          "last_codepoint_exclusive": 321,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 375,
+          "last_codepoint_exclusive": 377,
+          "replace": "isle_valley_actor_applicatio"
+        },
+        {
+          "first_codepoint": 378,
+          "last_codepoint_exclusive": 378,
+          "replace": "_noti"
+        },
+        {
+          "first_codepoint": 379,
+          "last_codepoint_exclusive": 388,
+          "replace": "e"
+        },
+        {
+          "first_codepoint": 389,
+          "last_codepoint_exclusive": 389,
+          "replace": "a, "
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79FB70.c",
+      "symbol": "func_802C65E0_79FB70",
+      "native_symbol": "func_802C65E0_79FB70",
+      "first": 15,
+      "last": 19,
+      "source_byte_start": 338,
+      "source_byte_end_exclusive": 467,
+      "source_sha256": "62c4ea14cc5c9a13bc0d3e1c1aa84b67479c6bd8fd4afaee88949072a907d443",
+      "native_sha256": "356a861f2c166584c8797bb8759f212d307b3913f77277746024af4c21171839",
+      "native_declaration": "void func_802C65E0_79FB70(IsleGameObject* arg0)",
+      "source_abi": "void func_802C65E0_79FB70(GObj* arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "Isle"
+        },
+        {
+          "first_codepoint": 27,
+          "last_codepoint_exclusive": 27,
+          "replace": "ame"
+        },
+        {
+          "first_codepoint": 30,
+          "last_codepoint_exclusive": 30,
+          "replace": "ect"
+        },
+        {
+          "first_codepoint": 44,
+          "last_codepoint_exclusive": 44,
+          "replace": "IsleValleyLi"
+        },
+        {
+          "first_codepoint": 45,
+          "last_codepoint_exclusive": 45,
+          "replace": "ecycleSo"
+        },
+        {
+          "first_codepoint": 46,
+          "last_codepoint_exclusive": 46,
+          "replace": "rce* s = isle_valley_lifecycle_curre"
+        },
+        {
+          "first_codepoint": 47,
+          "last_codepoint_exclusive": 92,
+          "replace": "t"
+        },
+        {
+          "first_codepoint": 104,
+          "last_codepoint_exclusive": 104,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    isle_valley_li"
+        },
+        {
+          "first_codepoint": 105,
+          "last_codepoint_exclusive": 106,
+          "replace": "ecycle_i"
+        },
+        {
+          "first_codepoint": 107,
+          "last_codepoint_exclusive": 107,
+          "replace": "tro_prepare(s);\n    isle_valley_life"
+        },
+        {
+          "first_codepoint": 108,
+          "last_codepoint_exclusive": 108,
+          "replace": "ycle"
+        },
+        {
+          "first_codepoint": 109,
+          "last_codepoint_exclusive": 110,
+          "replace": "intro_object(s, arg"
+        },
+        {
+          "first_codepoint": 111,
+          "last_codepoint_exclusive": 117,
+          "replace": ");\n    isle"
+        },
+        {
+          "first_codepoint": 118,
+          "last_codepoint_exclusive": 124,
+          "replace": "valley_lifecycle_intro_initialize"
+        },
+        {
+          "first_codepoint": 125,
+          "last_codepoint_exclusive": 125,
+          "replace": "s"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79FB70.c",
+      "symbol": "func_802C6610_79FBA0",
+      "native_symbol": "func_802C6610_79FBA0",
+      "first": 21,
+      "last": 23,
+      "source_byte_start": 469,
+      "source_byte_end_exclusive": 532,
+      "source_sha256": "c77e1d65f018ecf364c40531aace6c1e3c4213be0f1e8493eda6bf91ebc715a4",
+      "native_sha256": "894dd3779b584c4ec320b376626e0fd8018684e86e6a07cd66072d0c7d24fb1f",
+      "native_declaration": "void func_802C6610_79FBA0(IsleValleyLifecycleSource* s)",
+      "source_abi": "void func_802C6610_79FBA0(void)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 27,
+          "replace": "IsleValleyLifecycleS"
+        },
+        {
+          "first_codepoint": 28,
+          "last_codepoint_exclusive": 30,
+          "replace": "urce* s"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 38,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    isle_valley_li"
+        },
+        {
+          "first_codepoint": 39,
+          "last_codepoint_exclusive": 40,
+          "replace": "ecycle_i"
+        },
+        {
+          "first_codepoint": 41,
+          "last_codepoint_exclusive": 42,
+          "replace": "tro"
+        },
+        {
+          "first_codepoint": 43,
+          "last_codepoint_exclusive": 58,
+          "replace": "finish"
+        },
+        {
+          "first_codepoint": 59,
+          "last_codepoint_exclusive": 59,
+          "replace": "s"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79FB70.c",
+      "symbol": "func_802C6630_79FBC0",
+      "native_symbol": "func_802C6630_79FBC0",
+      "first": 25,
+      "last": 40,
+      "source_byte_start": 534,
+      "source_byte_end_exclusive": 888,
+      "source_sha256": "ae357a0052371d6d4c13789043e512ea6a0c2c1eebe09d5894c5d7eff71b21e1",
+      "native_sha256": "44413c8616cd4cb770cafe857838c0a76e79fb169fcdb0f36edd0280c1147c18",
+      "native_declaration": "void func_802C6630_79FBC0(IsleValleyLifecycleSource* s, const IsleActorNodeRef* dobj, int32_t arg1, float arg2)",
+      "source_abi": "void func_802C6630_79FBC0(DObj* dobj, s32 arg1, f32 arg2)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 30,
+          "replace": "IsleValleyLifecycleSource* s, const IsleActorNodeRef"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 39,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 41,
+          "last_codepoint_exclusive": 41,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 49,
+          "last_codepoint_exclusive": 51,
+          "replace": "loat"
+        },
+        {
+          "first_codepoint": 64,
+          "last_codepoint_exclusive": 64,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    IsleValley"
+        },
+        {
+          "first_codepoint": 80,
+          "last_codepoint_exclusive": 81,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 83,
+          "last_codepoint_exclusive": 83,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 138,
+          "last_codepoint_exclusive": 138,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 198,
+          "last_codepoint_exclusive": 199,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 201,
+          "last_codepoint_exclusive": 201,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 250,
+          "last_codepoint_exclusive": 250,
+          "replace": "isle_valley_actor_e"
+        },
+        {
+          "first_codepoint": 251,
+          "last_codepoint_exclusive": 252,
+          "replace": "fect"
+        },
+        {
+          "first_codepoint": 259,
+          "last_codepoint_exclusive": 265,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 266,
+          "last_codepoint_exclusive": 266,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 320,
+          "last_codepoint_exclusive": 320,
+          "replace": "isle_valley_actor_effect_attach(a, "
+        },
+        {
+          "first_codepoint": 322,
+          "last_codepoint_exclusive": 324,
+          "replace": ", *"
+        },
+        {
+          "first_codepoint": 328,
+          "last_codepoint_exclusive": 335,
+          "replace": ")"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79FB70.c",
+      "symbol": "valley_stopIntro",
+      "native_symbol": "valley_stopIntro",
+      "first": 42,
+      "last": 53,
+      "source_byte_start": 890,
+      "source_byte_end_exclusive": 1245,
+      "source_sha256": "720c7e4076ad572464407bb48d4c29f4b5ef46c434c3a7a28c36cee410603ab6",
+      "native_sha256": "79562e7787c11aa8b9d0010ecd3fdc9fda12240a9ccbc6d3f6b7507c748480b5",
+      "native_declaration": "void valley_stopIntro(IsleValleyLifecycleSource* s)",
+      "source_abi": "void valley_stopIntro(void)",
+      "rewrites": [
+        {
+          "first_codepoint": 22,
+          "last_codepoint_exclusive": 23,
+          "replace": "IsleValleyLifecycleS"
+        },
+        {
+          "first_codepoint": 24,
+          "last_codepoint_exclusive": 26,
+          "replace": "urce* s"
+        },
+        {
+          "first_codepoint": 29,
+          "last_codepoint_exclusive": 29,
+          "replace": "\n    IsleValleyActorSource* a = s->actors;"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 38,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 39,
+          "last_codepoint_exclusive": 41,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 42,
+          "last_codepoint_exclusive": 42,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 43,
+          "last_codepoint_exclusive": 48,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 52,
+          "last_codepoint_exclusive": 53,
+          "replace": "_active(a, a->"
+        },
+        {
+          "first_codepoint": 70,
+          "last_codepoint_exclusive": 71,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 98,
+          "last_codepoint_exclusive": 98,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 99,
+          "last_codepoint_exclusive": 101,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 103,
+          "last_codepoint_exclusive": 105,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 109,
+          "last_codepoint_exclusive": 109,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 110,
+          "last_codepoint_exclusive": 110,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 144,
+          "last_codepoint_exclusive": 144,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 145,
+          "last_codepoint_exclusive": 147,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 148,
+          "last_codepoint_exclusive": 148,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 149,
+          "last_codepoint_exclusive": 154,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 158,
+          "last_codepoint_exclusive": 159,
+          "replace": "_active(a, a->"
+        },
+        {
+          "first_codepoint": 176,
+          "last_codepoint_exclusive": 177,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 205,
+          "last_codepoint_exclusive": 205,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 206,
+          "last_codepoint_exclusive": 208,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 210,
+          "last_codepoint_exclusive": 212,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 216,
+          "last_codepoint_exclusive": 216,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 217,
+          "last_codepoint_exclusive": 217,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 247,
+          "last_codepoint_exclusive": 247,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 248,
+          "last_codepoint_exclusive": 249,
+          "replace": "ecycle_i"
+        },
+        {
+          "first_codepoint": 250,
+          "last_codepoint_exclusive": 251,
+          "replace": "tro"
+        },
+        {
+          "first_codepoint": 252,
+          "last_codepoint_exclusive": 267,
+          "replace": "stop"
+        },
+        {
+          "first_codepoint": 268,
+          "last_codepoint_exclusive": 268,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 275,
+          "last_codepoint_exclusive": 275,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 280,
+          "last_codepoint_exclusive": 285,
+          "replace": "_c"
+        },
+        {
+          "first_codepoint": 290,
+          "last_codepoint_exclusive": 298,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 299,
+          "last_codepoint_exclusive": 299,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 327,
+          "last_codepoint_exclusive": 327,
+          "replace": "s"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79FB70.c",
+      "symbol": "func_802C673C_79FCCC",
+      "native_symbol": "func_802C673C_79FCCC",
+      "first": 55,
+      "last": 68,
+      "source_byte_start": 1247,
+      "source_byte_end_exclusive": 1602,
+      "source_sha256": "b2ab91f551274a4aabaae33ae6ceca891f60dd675bf39c3df812fa035b2ae1eb",
+      "native_sha256": "2ce977a9933abe55a9c4f8ddbeca344fae0d8ce8e7381f8bc38f8327daf8c4f2",
+      "native_declaration": "void func_802C673C_79FCCC(IsleGameObject* arg0)",
+      "source_abi": "void func_802C673C_79FCCC(GObj* arg0)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "Isle"
+        },
+        {
+          "first_codepoint": 27,
+          "last_codepoint_exclusive": 27,
+          "replace": "ame"
+        },
+        {
+          "first_codepoint": 30,
+          "last_codepoint_exclusive": 30,
+          "replace": "ect"
+        },
+        {
+          "first_codepoint": 44,
+          "last_codepoint_exclusive": 44,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 45,
+          "last_codepoint_exclusive": 45,
+          "replace": "leValleyLifecycleSource* s = isle_valley_lifecycle_current(arg0);\n    IsleValleyActorSource* a = s->actors;\n    int"
+        },
+        {
+          "first_codepoint": 47,
+          "last_codepoint_exclusive": 47,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 112,
+          "last_codepoint_exclusive": 112,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 132,
+          "last_codepoint_exclusive": 132,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 133,
+          "last_codepoint_exclusive": 135,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 136,
+          "last_codepoint_exclusive": 136,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 137,
+          "last_codepoint_exclusive": 139,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 143,
+          "last_codepoint_exclusive": 148,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 154,
+          "last_codepoint_exclusive": 154,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 249,
+          "last_codepoint_exclusive": 249,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 269,
+          "last_codepoint_exclusive": 269,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 270,
+          "last_codepoint_exclusive": 272,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 273,
+          "last_codepoint_exclusive": 273,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 274,
+          "last_codepoint_exclusive": 276,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 280,
+          "last_codepoint_exclusive": 285,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 291,
+          "last_codepoint_exclusive": 291,
+          "replace": "a, "
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79FB70.c",
+      "symbol": "func_802C67F4_79FD84",
+      "native_symbol": "func_802C67F4_79FD84",
+      "first": 70,
+      "last": 127,
+      "source_byte_start": 1604,
+      "source_byte_end_exclusive": 3694,
+      "source_sha256": "ab9473d9b3c356a786e253032f13b2050fbc9e4b57ff71d0af5da60497331744",
+      "native_sha256": "c8256477239ffe582586b0864aac210e92d62ecfafbb75e459c71db0e14cd0cc",
+      "native_declaration": "void func_802C67F4_79FD84(IsleGameObject* obj)",
+      "source_abi": "void func_802C67F4_79FD84(GObj* obj)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "Isle"
+        },
+        {
+          "first_codepoint": 27,
+          "last_codepoint_exclusive": 27,
+          "replace": "ame"
+        },
+        {
+          "first_codepoint": 30,
+          "last_codepoint_exclusive": 30,
+          "replace": "ect"
+        },
+        {
+          "first_codepoint": 43,
+          "last_codepoint_exclusive": 43,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 44,
+          "last_codepoint_exclusive": 44,
+          "replace": "leValleyLifecycleSource* s = isle_valley_lifecycle_current(obj);\n    IsleValleyActorSource* a = s->actors;\n    int"
+        },
+        {
+          "first_codepoint": 46,
+          "last_codepoint_exclusive": 46,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 62,
+          "last_codepoint_exclusive": 63,
+          "replace": "int"
+        },
+        {
+          "first_codepoint": 65,
+          "last_codepoint_exclusive": 65,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 73,
+          "last_codepoint_exclusive": 75,
+          "replace": "IsleValley"
+        },
+        {
+          "first_codepoint": 92,
+          "last_codepoint_exclusive": 93,
+          "replace": "isl"
+        },
+        {
+          "first_codepoint": 94,
+          "last_codepoint_exclusive": 94,
+          "replace": "_valley_ac"
+        },
+        {
+          "first_codepoint": 95,
+          "last_codepoint_exclusive": 100,
+          "replace": "or_c"
+        },
+        {
+          "first_codepoint": 106,
+          "last_codepoint_exclusive": 106,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 113,
+          "last_codepoint_exclusive": 113,
+          "replace": "Isle"
+        },
+        {
+          "first_codepoint": 114,
+          "last_codepoint_exclusive": 114,
+          "replace": "ame"
+        },
+        {
+          "first_codepoint": 117,
+          "last_codepoint_exclusive": 117,
+          "replace": "ect"
+        },
+        {
+          "first_codepoint": 128,
+          "last_codepoint_exclusive": 129,
+          "replace": "isl"
+        },
+        {
+          "first_codepoint": 130,
+          "last_codepoint_exclusive": 130,
+          "replace": "_valley_ac"
+        },
+        {
+          "first_codepoint": 131,
+          "last_codepoint_exclusive": 132,
+          "replace": "or_c"
+        },
+        {
+          "first_codepoint": 133,
+          "last_codepoint_exclusive": 133,
+          "replace": "mera_object(a, "
+        },
+        {
+          "first_codepoint": 134,
+          "last_codepoint_exclusive": 136,
+          "replace": "sle_valley_actor_c"
+        },
+        {
+          "first_codepoint": 142,
+          "last_codepoint_exclusive": 142,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 143,
+          "last_codepoint_exclusive": 148,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 155,
+          "last_codepoint_exclusive": 157,
+          "replace": "loat"
+        },
+        {
+          "first_codepoint": 193,
+          "last_codepoint_exclusive": 195,
+          "replace": "loat"
+        },
+        {
+          "first_codepoint": 228,
+          "last_codepoint_exclusive": 230,
+          "replace": "loat"
+        },
+        {
+          "first_codepoint": 254,
+          "last_codepoint_exclusive": 256,
+          "replace": "loat"
+        },
+        {
+          "first_codepoint": 276,
+          "last_codepoint_exclusive": 276,
+          "replace": "Isle"
+        },
+        {
+          "first_codepoint": 277,
+          "last_codepoint_exclusive": 280,
+          "replace": "ame"
+        },
+        {
+          "first_codepoint": 315,
+          "last_codepoint_exclusive": 315,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 321,
+          "last_codepoint_exclusive": 321,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 323,
+          "last_codepoint_exclusive": 338,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 341,
+          "last_codepoint_exclusive": 343,
+          "replace": "[0]"
+        },
+        {
+          "first_codepoint": 360,
+          "last_codepoint_exclusive": 360,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 366,
+          "last_codepoint_exclusive": 366,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 368,
+          "last_codepoint_exclusive": 383,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 386,
+          "last_codepoint_exclusive": 388,
+          "replace": "[1]"
+        },
+        {
+          "first_codepoint": 405,
+          "last_codepoint_exclusive": 405,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 411,
+          "last_codepoint_exclusive": 411,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 413,
+          "last_codepoint_exclusive": 428,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 431,
+          "last_codepoint_exclusive": 433,
+          "replace": "[2]"
+        },
+        {
+          "first_codepoint": 449,
+          "last_codepoint_exclusive": 449,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 455,
+          "last_codepoint_exclusive": 455,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 457,
+          "last_codepoint_exclusive": 472,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 474,
+          "last_codepoint_exclusive": 476,
+          "replace": "[0]"
+        },
+        {
+          "first_codepoint": 492,
+          "last_codepoint_exclusive": 492,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 498,
+          "last_codepoint_exclusive": 498,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 500,
+          "last_codepoint_exclusive": 515,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 517,
+          "last_codepoint_exclusive": 519,
+          "replace": "[1]"
+        },
+        {
+          "first_codepoint": 535,
+          "last_codepoint_exclusive": 535,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 541,
+          "last_codepoint_exclusive": 545,
+          "replace": "_r"
+        },
+        {
+          "first_codepoint": 546,
+          "last_codepoint_exclusive": 558,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 559,
+          "last_codepoint_exclusive": 567,
+          "replace": "d(a,"
+        },
+        {
+          "first_codepoint": 574,
+          "last_codepoint_exclusive": 574,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 577,
+          "last_codepoint_exclusive": 592,
+          "replace": "t[2]"
+        },
+        {
+          "first_codepoint": 598,
+          "last_codepoint_exclusive": 598,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 599,
+          "last_codepoint_exclusive": 603,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 604,
+          "last_codepoint_exclusive": 604,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 605,
+          "last_codepoint_exclusive": 606,
+          "replace": "or_c"
+        },
+        {
+          "first_codepoint": 611,
+          "last_codepoint_exclusive": 612,
+          "replace": "_speed(a, camera, 0.5f);\n    isle_valley_actor_camera_a"
+        },
+        {
+          "first_codepoint": 621,
+          "last_codepoint_exclusive": 621,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 629,
+          "last_codepoint_exclusive": 630,
+          "replace": "UINT32"
+        },
+        {
+          "first_codepoint": 631,
+          "last_codepoint_exclusive": 631,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 636,
+          "last_codepoint_exclusive": 637,
+          "replace": "d"
+        },
+        {
+          "first_codepoint": 639,
+          "last_codepoint_exclusive": 646,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 667,
+          "last_codepoint_exclusive": 667,
+          "replace": "isle_valley_act"
+        },
+        {
+          "first_codepoint": 668,
+          "last_codepoint_exclusive": 670,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 671,
+          "last_codepoint_exclusive": 678,
+          "replace": "_"
+        },
+        {
+          "first_codepoint": 679,
+          "last_codepoint_exclusive": 702,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 707,
+          "last_codepoint_exclusive": 708,
+          "replace": "_a"
+        },
+        {
+          "first_codepoint": 716,
+          "last_codepoint_exclusive": 716,
+          "replace": "_process(a, camObj"
+        },
+        {
+          "first_codepoint": 729,
+          "last_codepoint_exclusive": 730,
+          "replace": "isle_valley_actor_p"
+        },
+        {
+          "first_codepoint": 735,
+          "last_codepoint_exclusive": 736,
+          "replace": "_m"
+        },
+        {
+          "first_codepoint": 741,
+          "last_codepoint_exclusive": 745,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 754,
+          "last_codepoint_exclusive": 755,
+          "replace": "a, UINT32"
+        },
+        {
+          "first_codepoint": 756,
+          "last_codepoint_exclusive": 756,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 764,
+          "last_codepoint_exclusive": 771,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 773,
+          "last_codepoint_exclusive": 774,
+          "replace": "UINT32"
+        },
+        {
+          "first_codepoint": 775,
+          "last_codepoint_exclusive": 775,
+          "replace": "C(0x"
+        },
+        {
+          "first_codepoint": 781,
+          "last_codepoint_exclusive": 782,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 783,
+          "last_codepoint_exclusive": 790,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 806,
+          "last_codepoint_exclusive": 806,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 837,
+          "last_codepoint_exclusive": 842,
+          "replace": "isle_valley_li"
+        },
+        {
+          "first_codepoint": 843,
+          "last_codepoint_exclusive": 845,
+          "replace": "ecycle_a"
+        },
+        {
+          "first_codepoint": 848,
+          "last_codepoint_exclusive": 849,
+          "replace": "ation_c"
+        },
+        {
+          "first_codepoint": 856,
+          "last_codepoint_exclusive": 856,
+          "replace": "(s,"
+        },
+        {
+          "first_codepoint": 857,
+          "last_codepoint_exclusive": 858,
+          "replace": "obj,"
+        },
+        {
+          "first_codepoint": 879,
+          "last_codepoint_exclusive": 879,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 885,
+          "last_codepoint_exclusive": 885,
+          "replace": "isle_valley_act"
+        },
+        {
+          "first_codepoint": 886,
+          "last_codepoint_exclusive": 888,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 889,
+          "last_codepoint_exclusive": 894,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 901,
+          "last_codepoint_exclusive": 901,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 953,
+          "last_codepoint_exclusive": 953,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 1002,
+          "last_codepoint_exclusive": 1004,
+          "replace": "isle_valley_act"
+        },
+        {
+          "first_codepoint": 1005,
+          "last_codepoint_exclusive": 1008,
+          "replace": "r_i"
+        },
+        {
+          "first_codepoint": 1012,
+          "last_codepoint_exclusive": 1013,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 1019,
+          "last_codepoint_exclusive": 1026,
+          "replace": "(a)"
+        },
+        {
+          "first_codepoint": 1123,
+          "last_codepoint_exclusive": 1123,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 1202,
+          "last_codepoint_exclusive": 1202,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1208,
+          "last_codepoint_exclusive": 1208,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 1210,
+          "last_codepoint_exclusive": 1225,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 1228,
+          "last_codepoint_exclusive": 1230,
+          "replace": "[0]"
+        },
+        {
+          "first_codepoint": 1243,
+          "last_codepoint_exclusive": 1243,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1249,
+          "last_codepoint_exclusive": 1249,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 1251,
+          "last_codepoint_exclusive": 1266,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 1269,
+          "last_codepoint_exclusive": 1271,
+          "replace": "[1]"
+        },
+        {
+          "first_codepoint": 1284,
+          "last_codepoint_exclusive": 1284,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1290,
+          "last_codepoint_exclusive": 1290,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 1292,
+          "last_codepoint_exclusive": 1307,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 1310,
+          "last_codepoint_exclusive": 1312,
+          "replace": "[2]"
+        },
+        {
+          "first_codepoint": 1324,
+          "last_codepoint_exclusive": 1324,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1330,
+          "last_codepoint_exclusive": 1330,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 1332,
+          "last_codepoint_exclusive": 1347,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 1349,
+          "last_codepoint_exclusive": 1351,
+          "replace": "[0]"
+        },
+        {
+          "first_codepoint": 1363,
+          "last_codepoint_exclusive": 1363,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1369,
+          "last_codepoint_exclusive": 1369,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 1371,
+          "last_codepoint_exclusive": 1386,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 1388,
+          "last_codepoint_exclusive": 1390,
+          "replace": "[1]"
+        },
+        {
+          "first_codepoint": 1402,
+          "last_codepoint_exclusive": 1402,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1408,
+          "last_codepoint_exclusive": 1408,
+          "replace": "_read(a, camera)"
+        },
+        {
+          "first_codepoint": 1410,
+          "last_codepoint_exclusive": 1425,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 1427,
+          "last_codepoint_exclusive": 1429,
+          "replace": "[2]"
+        },
+        {
+          "first_codepoint": 1475,
+          "last_codepoint_exclusive": 1477,
+          "replace": "isle_valley_act"
+        },
+        {
+          "first_codepoint": 1478,
+          "last_codepoint_exclusive": 1481,
+          "replace": "r_i"
+        },
+        {
+          "first_codepoint": 1485,
+          "last_codepoint_exclusive": 1486,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 1492,
+          "last_codepoint_exclusive": 1499,
+          "replace": "(a)"
+        },
+        {
+          "first_codepoint": 1560,
+          "last_codepoint_exclusive": 1560,
+          "replace": "s"
+        },
+        {
+          "first_codepoint": 1581,
+          "last_codepoint_exclusive": 1581,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1587,
+          "last_codepoint_exclusive": 1591,
+          "replace": "_compon"
+        },
+        {
+          "first_codepoint": 1592,
+          "last_codepoint_exclusive": 1594,
+          "replace": "n"
+        },
+        {
+          "first_codepoint": 1595,
+          "last_codepoint_exclusive": 1604,
+          "replace": "(a, cam"
+        },
+        {
+          "first_codepoint": 1605,
+          "last_codepoint_exclusive": 1609,
+          "replace": "ra,"
+        },
+        {
+          "first_codepoint": 1610,
+          "last_codepoint_exclusive": 1611,
+          "replace": "0, 0,"
+        },
+        {
+          "first_codepoint": 1648,
+          "last_codepoint_exclusive": 1648,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 1658,
+          "last_codepoint_exclusive": 1658,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1664,
+          "last_codepoint_exclusive": 1668,
+          "replace": "_compon"
+        },
+        {
+          "first_codepoint": 1669,
+          "last_codepoint_exclusive": 1671,
+          "replace": "n"
+        },
+        {
+          "first_codepoint": 1672,
+          "last_codepoint_exclusive": 1681,
+          "replace": "(a, cam"
+        },
+        {
+          "first_codepoint": 1682,
+          "last_codepoint_exclusive": 1686,
+          "replace": "ra,"
+        },
+        {
+          "first_codepoint": 1687,
+          "last_codepoint_exclusive": 1688,
+          "replace": "0, 1,"
+        },
+        {
+          "first_codepoint": 1725,
+          "last_codepoint_exclusive": 1725,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 1735,
+          "last_codepoint_exclusive": 1735,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1741,
+          "last_codepoint_exclusive": 1745,
+          "replace": "_compon"
+        },
+        {
+          "first_codepoint": 1746,
+          "last_codepoint_exclusive": 1748,
+          "replace": "n"
+        },
+        {
+          "first_codepoint": 1749,
+          "last_codepoint_exclusive": 1758,
+          "replace": "(a, cam"
+        },
+        {
+          "first_codepoint": 1759,
+          "last_codepoint_exclusive": 1763,
+          "replace": "ra,"
+        },
+        {
+          "first_codepoint": 1764,
+          "last_codepoint_exclusive": 1765,
+          "replace": "0, 2,"
+        },
+        {
+          "first_codepoint": 1802,
+          "last_codepoint_exclusive": 1802,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 1812,
+          "last_codepoint_exclusive": 1812,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1818,
+          "last_codepoint_exclusive": 1822,
+          "replace": "_compon"
+        },
+        {
+          "first_codepoint": 1823,
+          "last_codepoint_exclusive": 1825,
+          "replace": "n"
+        },
+        {
+          "first_codepoint": 1826,
+          "last_codepoint_exclusive": 1835,
+          "replace": "("
+        },
+        {
+          "first_codepoint": 1836,
+          "last_codepoint_exclusive": 1839,
+          "replace": ","
+        },
+        {
+          "first_codepoint": 1840,
+          "last_codepoint_exclusive": 1841,
+          "replace": "camera, 1, 0,"
+        },
+        {
+          "first_codepoint": 1875,
+          "last_codepoint_exclusive": 1875,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 1885,
+          "last_codepoint_exclusive": 1885,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1891,
+          "last_codepoint_exclusive": 1895,
+          "replace": "_compon"
+        },
+        {
+          "first_codepoint": 1896,
+          "last_codepoint_exclusive": 1898,
+          "replace": "n"
+        },
+        {
+          "first_codepoint": 1899,
+          "last_codepoint_exclusive": 1908,
+          "replace": "("
+        },
+        {
+          "first_codepoint": 1909,
+          "last_codepoint_exclusive": 1912,
+          "replace": ","
+        },
+        {
+          "first_codepoint": 1913,
+          "last_codepoint_exclusive": 1914,
+          "replace": "camera, 1, 1,"
+        },
+        {
+          "first_codepoint": 1948,
+          "last_codepoint_exclusive": 1948,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 1958,
+          "last_codepoint_exclusive": 1958,
+          "replace": "isle_valley_actor_"
+        },
+        {
+          "first_codepoint": 1964,
+          "last_codepoint_exclusive": 1968,
+          "replace": "_compon"
+        },
+        {
+          "first_codepoint": 1969,
+          "last_codepoint_exclusive": 1971,
+          "replace": "n"
+        },
+        {
+          "first_codepoint": 1972,
+          "last_codepoint_exclusive": 1981,
+          "replace": "("
+        },
+        {
+          "first_codepoint": 1982,
+          "last_codepoint_exclusive": 1985,
+          "replace": ","
+        },
+        {
+          "first_codepoint": 1986,
+          "last_codepoint_exclusive": 1987,
+          "replace": "camera, 1, 2,"
+        },
+        {
+          "first_codepoint": 2021,
+          "last_codepoint_exclusive": 2021,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 2071,
+          "last_codepoint_exclusive": 2071,
+          "replace": "s"
+        }
+      ]
+    },
+    {
+      "path": "src/valley/79FB70.c",
+      "symbol": "func_802C6AD4_7A0064",
+      "native_symbol": "func_802C6AD4_7A0064",
+      "first": 129,
+      "last": 138,
+      "source_byte_start": 3696,
+      "source_byte_end_exclusive": 3964,
+      "source_sha256": "3fade2b04564d29f52d86b70223ef5641bd105eb5f3f65e68ab8234f2b8c7f44",
+      "native_sha256": "65f0b876eae0f7d4a7b6d4b09c3237931f98cf23163ccc2bfff34f252a55af86",
+      "native_declaration": "void func_802C6AD4_7A0064(IsleValleyLifecycleSource* s)",
+      "source_abi": "void func_802C6AD4_7A0064(void)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 27,
+          "replace": "IsleValleyLifecycleS"
+        },
+        {
+          "first_codepoint": 28,
+          "last_codepoint_exclusive": 30,
+          "replace": "urce* s"
+        },
+        {
+          "first_codepoint": 38,
+          "last_codepoint_exclusive": 38,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    Isle"
+        },
+        {
+          "first_codepoint": 39,
+          "last_codepoint_exclusive": 39,
+          "replace": "ame"
+        },
+        {
+          "first_codepoint": 42,
+          "last_codepoint_exclusive": 42,
+          "replace": "ect"
+        },
+        {
+          "first_codepoint": 72,
+          "last_codepoint_exclusive": 73,
+          "replace": "isle_valley_actor_p"
+        },
+        {
+          "first_codepoint": 78,
+          "last_codepoint_exclusive": 79,
+          "replace": "_m"
+        },
+        {
+          "first_codepoint": 84,
+          "last_codepoint_exclusive": 85,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 89,
+          "last_codepoint_exclusive": 89,
+          "replace": "a"
+        },
+        {
+          "first_codepoint": 96,
+          "last_codepoint_exclusive": 96,
+          "replace": "isle_valley_actor_reference_assign(a, &a->"
+        },
+        {
+          "first_codepoint": 113,
+          "last_codepoint_exclusive": 115,
+          "replace": ","
+        },
+        {
+          "first_codepoint": 125,
+          "last_codepoint_exclusive": 125,
+          "replace": ")"
+        },
+        {
+          "first_codepoint": 164,
+          "last_codepoint_exclusive": 164,
+          "replace": "isle_valley_act"
+        },
+        {
+          "first_codepoint": 165,
+          "last_codepoint_exclusive": 167,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 168,
+          "last_codepoint_exclusive": 173,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 180,
+          "last_codepoint_exclusive": 180,
+          "replace": "a, "
+        }
+      ]
+    },
+    {
+      "path": "src/valley/7A00C0.c",
+      "symbol": "func_802C6B30_7A00C0",
+      "native_symbol": "func_802C6B30_7A00C0",
+      "first": 10,
+      "last": 204,
+      "source_byte_start": 143,
+      "source_byte_end_exclusive": 7892,
+      "source_sha256": "8e5b21af6572c7807a9848fc10e2077f0a840f5b3b8f3869f2b14b0a469df9df",
+      "native_sha256": "a45fb8de8874b916f3028bab2ab774884236d589a4fe0e0bb2250f961ec10a9d",
+      "native_declaration": "void func_802C6B30_7A00C0(IsleValleyLifecycleSource* s, int32_t arg0, float arg1)",
+      "source_abi": "void func_802C6B30_7A00C0(s32 arg0, f32 arg1)",
+      "rewrites": [
+        {
+          "first_codepoint": 26,
+          "last_codepoint_exclusive": 26,
+          "replace": "I"
+        },
+        {
+          "first_codepoint": 27,
+          "last_codepoint_exclusive": 27,
+          "replace": "leValleyLifecycleSource* s, int"
+        },
+        {
+          "first_codepoint": 29,
+          "last_codepoint_exclusive": 29,
+          "replace": "_t"
+        },
+        {
+          "first_codepoint": 37,
+          "last_codepoint_exclusive": 39,
+          "replace": "loat"
+        },
+        {
+          "first_codepoint": 52,
+          "last_codepoint_exclusive": 52,
+          "replace": "IsleValleyActorSource* a = s->actors;\n    "
+        },
+        {
+          "first_codepoint": 60,
+          "last_codepoint_exclusive": 60,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 109,
+          "last_codepoint_exclusive": 109,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 132,
+          "last_codepoint_exclusive": 132,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 133,
+          "last_codepoint_exclusive": 135,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 136,
+          "last_codepoint_exclusive": 136,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 137,
+          "last_codepoint_exclusive": 139,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 143,
+          "last_codepoint_exclusive": 148,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 154,
+          "last_codepoint_exclusive": 154,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 196,
+          "last_codepoint_exclusive": 196,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 308,
+          "last_codepoint_exclusive": 308,
+          "replace": "i"
+        },
+        {
+          "first_codepoint": 309,
+          "last_codepoint_exclusive": 309,
+          "replace": "l"
+        },
+        {
+          "first_codepoint": 310,
+          "last_codepoint_exclusive": 310,
+          "replace": "_valley_ac"
+        },
+        {
+          "first_codepoint": 311,
+          "last_codepoint_exclusive": 312,
+          "replace": "or_b"
+        },
+        {
+          "first_codepoint": 321,
+          "last_codepoint_exclusive": 322,
+          "replace": "_m"
+        },
+        {
+          "first_codepoint": 327,
+          "last_codepoint_exclusive": 327,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 347,
+          "last_codepoint_exclusive": 347,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 500,
+          "last_codepoint_exclusive": 500,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 501,
+          "last_codepoint_exclusive": 503,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 504,
+          "last_codepoint_exclusive": 504,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 505,
+          "last_codepoint_exclusive": 506,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 510,
+          "last_codepoint_exclusive": 511,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 517,
+          "last_codepoint_exclusive": 517,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 654,
+          "last_codepoint_exclusive": 654,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 655,
+          "last_codepoint_exclusive": 657,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 658,
+          "last_codepoint_exclusive": 658,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 659,
+          "last_codepoint_exclusive": 660,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 664,
+          "last_codepoint_exclusive": 665,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 671,
+          "last_codepoint_exclusive": 671,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 718,
+          "last_codepoint_exclusive": 718,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 871,
+          "last_codepoint_exclusive": 871,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 872,
+          "last_codepoint_exclusive": 874,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 875,
+          "last_codepoint_exclusive": 875,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 876,
+          "last_codepoint_exclusive": 877,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 881,
+          "last_codepoint_exclusive": 882,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 888,
+          "last_codepoint_exclusive": 888,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 1026,
+          "last_codepoint_exclusive": 1026,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 1027,
+          "last_codepoint_exclusive": 1029,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 1030,
+          "last_codepoint_exclusive": 1030,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 1031,
+          "last_codepoint_exclusive": 1032,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 1036,
+          "last_codepoint_exclusive": 1037,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 1043,
+          "last_codepoint_exclusive": 1043,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 1090,
+          "last_codepoint_exclusive": 1090,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 1243,
+          "last_codepoint_exclusive": 1243,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 1244,
+          "last_codepoint_exclusive": 1246,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 1247,
+          "last_codepoint_exclusive": 1247,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 1248,
+          "last_codepoint_exclusive": 1249,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 1253,
+          "last_codepoint_exclusive": 1254,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 1260,
+          "last_codepoint_exclusive": 1260,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 1397,
+          "last_codepoint_exclusive": 1397,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 1398,
+          "last_codepoint_exclusive": 1400,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 1401,
+          "last_codepoint_exclusive": 1401,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 1402,
+          "last_codepoint_exclusive": 1403,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 1407,
+          "last_codepoint_exclusive": 1408,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 1414,
+          "last_codepoint_exclusive": 1414,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 1461,
+          "last_codepoint_exclusive": 1461,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 1615,
+          "last_codepoint_exclusive": 1615,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 1616,
+          "last_codepoint_exclusive": 1618,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 1619,
+          "last_codepoint_exclusive": 1619,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 1620,
+          "last_codepoint_exclusive": 1621,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 1625,
+          "last_codepoint_exclusive": 1626,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 1632,
+          "last_codepoint_exclusive": 1632,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 1770,
+          "last_codepoint_exclusive": 1770,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 1771,
+          "last_codepoint_exclusive": 1773,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 1774,
+          "last_codepoint_exclusive": 1774,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 1775,
+          "last_codepoint_exclusive": 1776,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 1780,
+          "last_codepoint_exclusive": 1781,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 1787,
+          "last_codepoint_exclusive": 1787,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 1834,
+          "last_codepoint_exclusive": 1834,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 1988,
+          "last_codepoint_exclusive": 1988,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 1989,
+          "last_codepoint_exclusive": 1991,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 1992,
+          "last_codepoint_exclusive": 1992,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 1993,
+          "last_codepoint_exclusive": 1994,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 1998,
+          "last_codepoint_exclusive": 1999,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 2005,
+          "last_codepoint_exclusive": 2005,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 2143,
+          "last_codepoint_exclusive": 2143,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 2144,
+          "last_codepoint_exclusive": 2146,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 2147,
+          "last_codepoint_exclusive": 2147,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 2148,
+          "last_codepoint_exclusive": 2149,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 2153,
+          "last_codepoint_exclusive": 2154,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 2160,
+          "last_codepoint_exclusive": 2160,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 2207,
+          "last_codepoint_exclusive": 2207,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 2361,
+          "last_codepoint_exclusive": 2361,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 2362,
+          "last_codepoint_exclusive": 2364,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 2365,
+          "last_codepoint_exclusive": 2365,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 2366,
+          "last_codepoint_exclusive": 2367,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 2371,
+          "last_codepoint_exclusive": 2372,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 2378,
+          "last_codepoint_exclusive": 2378,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 2519,
+          "last_codepoint_exclusive": 2519,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 2520,
+          "last_codepoint_exclusive": 2522,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 2523,
+          "last_codepoint_exclusive": 2523,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 2524,
+          "last_codepoint_exclusive": 2525,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 2529,
+          "last_codepoint_exclusive": 2530,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 2536,
+          "last_codepoint_exclusive": 2536,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 2583,
+          "last_codepoint_exclusive": 2583,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 2710,
+          "last_codepoint_exclusive": 2710,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 2802,
+          "last_codepoint_exclusive": 2802,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 2825,
+          "last_codepoint_exclusive": 2825,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 2826,
+          "last_codepoint_exclusive": 2828,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 2829,
+          "last_codepoint_exclusive": 2829,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 2830,
+          "last_codepoint_exclusive": 2832,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 2836,
+          "last_codepoint_exclusive": 2841,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 2847,
+          "last_codepoint_exclusive": 2847,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 2896,
+          "last_codepoint_exclusive": 2896,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 3086,
+          "last_codepoint_exclusive": 3086,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 3087,
+          "last_codepoint_exclusive": 3089,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 3090,
+          "last_codepoint_exclusive": 3090,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 3091,
+          "last_codepoint_exclusive": 3092,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 3096,
+          "last_codepoint_exclusive": 3097,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 3103,
+          "last_codepoint_exclusive": 3103,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 3229,
+          "last_codepoint_exclusive": 3229,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 3230,
+          "last_codepoint_exclusive": 3232,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 3234,
+          "last_codepoint_exclusive": 3236,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 3240,
+          "last_codepoint_exclusive": 3240,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 3241,
+          "last_codepoint_exclusive": 3241,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 3280,
+          "last_codepoint_exclusive": 3280,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 3406,
+          "last_codepoint_exclusive": 3406,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 3429,
+          "last_codepoint_exclusive": 3429,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 3430,
+          "last_codepoint_exclusive": 3432,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 3433,
+          "last_codepoint_exclusive": 3433,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 3434,
+          "last_codepoint_exclusive": 3436,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 3440,
+          "last_codepoint_exclusive": 3445,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 3451,
+          "last_codepoint_exclusive": 3451,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 3495,
+          "last_codepoint_exclusive": 3495,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 3621,
+          "last_codepoint_exclusive": 3621,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 3622,
+          "last_codepoint_exclusive": 3624,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 3625,
+          "last_codepoint_exclusive": 3625,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 3626,
+          "last_codepoint_exclusive": 3627,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 3631,
+          "last_codepoint_exclusive": 3632,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 3638,
+          "last_codepoint_exclusive": 3638,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 3740,
+          "last_codepoint_exclusive": 3740,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 3741,
+          "last_codepoint_exclusive": 3743,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 3744,
+          "last_codepoint_exclusive": 3744,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 3745,
+          "last_codepoint_exclusive": 3746,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 3750,
+          "last_codepoint_exclusive": 3751,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 3757,
+          "last_codepoint_exclusive": 3757,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 3804,
+          "last_codepoint_exclusive": 3804,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 3958,
+          "last_codepoint_exclusive": 3958,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 3959,
+          "last_codepoint_exclusive": 3961,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 3962,
+          "last_codepoint_exclusive": 3962,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 3963,
+          "last_codepoint_exclusive": 3964,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 3968,
+          "last_codepoint_exclusive": 3969,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 3975,
+          "last_codepoint_exclusive": 3975,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 4104,
+          "last_codepoint_exclusive": 4104,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 4105,
+          "last_codepoint_exclusive": 4107,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 4109,
+          "last_codepoint_exclusive": 4111,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 4115,
+          "last_codepoint_exclusive": 4115,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 4116,
+          "last_codepoint_exclusive": 4116,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 4155,
+          "last_codepoint_exclusive": 4155,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 4282,
+          "last_codepoint_exclusive": 4282,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 4305,
+          "last_codepoint_exclusive": 4305,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 4306,
+          "last_codepoint_exclusive": 4308,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 4309,
+          "last_codepoint_exclusive": 4309,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 4310,
+          "last_codepoint_exclusive": 4312,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 4316,
+          "last_codepoint_exclusive": 4321,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 4327,
+          "last_codepoint_exclusive": 4327,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 4371,
+          "last_codepoint_exclusive": 4371,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 4498,
+          "last_codepoint_exclusive": 4498,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 4499,
+          "last_codepoint_exclusive": 4501,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 4502,
+          "last_codepoint_exclusive": 4502,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 4503,
+          "last_codepoint_exclusive": 4504,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 4508,
+          "last_codepoint_exclusive": 4509,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 4515,
+          "last_codepoint_exclusive": 4515,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 4615,
+          "last_codepoint_exclusive": 4615,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 4616,
+          "last_codepoint_exclusive": 4618,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 4619,
+          "last_codepoint_exclusive": 4619,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 4620,
+          "last_codepoint_exclusive": 4621,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 4625,
+          "last_codepoint_exclusive": 4626,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 4632,
+          "last_codepoint_exclusive": 4632,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 4679,
+          "last_codepoint_exclusive": 4679,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 4832,
+          "last_codepoint_exclusive": 4832,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 4833,
+          "last_codepoint_exclusive": 4835,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 4836,
+          "last_codepoint_exclusive": 4836,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 4837,
+          "last_codepoint_exclusive": 4838,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 4842,
+          "last_codepoint_exclusive": 4843,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 4849,
+          "last_codepoint_exclusive": 4849,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 4975,
+          "last_codepoint_exclusive": 4975,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 4976,
+          "last_codepoint_exclusive": 4978,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 4980,
+          "last_codepoint_exclusive": 4982,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 4986,
+          "last_codepoint_exclusive": 4986,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 4987,
+          "last_codepoint_exclusive": 4987,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 5026,
+          "last_codepoint_exclusive": 5026,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 5155,
+          "last_codepoint_exclusive": 5155,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 5178,
+          "last_codepoint_exclusive": 5178,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 5179,
+          "last_codepoint_exclusive": 5181,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 5182,
+          "last_codepoint_exclusive": 5182,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 5183,
+          "last_codepoint_exclusive": 5185,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 5189,
+          "last_codepoint_exclusive": 5194,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 5200,
+          "last_codepoint_exclusive": 5200,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 5244,
+          "last_codepoint_exclusive": 5244,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 5373,
+          "last_codepoint_exclusive": 5373,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 5374,
+          "last_codepoint_exclusive": 5376,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 5377,
+          "last_codepoint_exclusive": 5377,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 5378,
+          "last_codepoint_exclusive": 5379,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 5383,
+          "last_codepoint_exclusive": 5384,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 5390,
+          "last_codepoint_exclusive": 5390,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 5493,
+          "last_codepoint_exclusive": 5493,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 5494,
+          "last_codepoint_exclusive": 5496,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 5497,
+          "last_codepoint_exclusive": 5497,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 5498,
+          "last_codepoint_exclusive": 5499,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 5503,
+          "last_codepoint_exclusive": 5504,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 5510,
+          "last_codepoint_exclusive": 5510,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 5557,
+          "last_codepoint_exclusive": 5557,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 5713,
+          "last_codepoint_exclusive": 5713,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 5714,
+          "last_codepoint_exclusive": 5716,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 5717,
+          "last_codepoint_exclusive": 5717,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 5718,
+          "last_codepoint_exclusive": 5719,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 5723,
+          "last_codepoint_exclusive": 5724,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 5730,
+          "last_codepoint_exclusive": 5730,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 5861,
+          "last_codepoint_exclusive": 5861,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 5862,
+          "last_codepoint_exclusive": 5864,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 5866,
+          "last_codepoint_exclusive": 5868,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 5872,
+          "last_codepoint_exclusive": 5872,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 5873,
+          "last_codepoint_exclusive": 5873,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 5912,
+          "last_codepoint_exclusive": 5912,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 6041,
+          "last_codepoint_exclusive": 6041,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 6064,
+          "last_codepoint_exclusive": 6064,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 6065,
+          "last_codepoint_exclusive": 6067,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 6068,
+          "last_codepoint_exclusive": 6068,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 6069,
+          "last_codepoint_exclusive": 6071,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 6075,
+          "last_codepoint_exclusive": 6080,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 6086,
+          "last_codepoint_exclusive": 6086,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 6130,
+          "last_codepoint_exclusive": 6130,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 6259,
+          "last_codepoint_exclusive": 6259,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 6260,
+          "last_codepoint_exclusive": 6262,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 6263,
+          "last_codepoint_exclusive": 6263,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 6264,
+          "last_codepoint_exclusive": 6265,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 6269,
+          "last_codepoint_exclusive": 6270,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 6276,
+          "last_codepoint_exclusive": 6276,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 6408,
+          "last_codepoint_exclusive": 6408,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 6564,
+          "last_codepoint_exclusive": 6564,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 6565,
+          "last_codepoint_exclusive": 6567,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 6568,
+          "last_codepoint_exclusive": 6568,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 6569,
+          "last_codepoint_exclusive": 6570,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 6574,
+          "last_codepoint_exclusive": 6575,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 6581,
+          "last_codepoint_exclusive": 6581,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 6712,
+          "last_codepoint_exclusive": 6712,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 6713,
+          "last_codepoint_exclusive": 6715,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 6717,
+          "last_codepoint_exclusive": 6719,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 6723,
+          "last_codepoint_exclusive": 6723,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 6724,
+          "last_codepoint_exclusive": 6724,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 6763,
+          "last_codepoint_exclusive": 6763,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 6892,
+          "last_codepoint_exclusive": 6892,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 6915,
+          "last_codepoint_exclusive": 6915,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 6916,
+          "last_codepoint_exclusive": 6918,
+          "replace": ""
+        },
+        {
+          "first_codepoint": 6919,
+          "last_codepoint_exclusive": 6919,
+          "replace": "ley_"
+        },
+        {
+          "first_codepoint": 6920,
+          "last_codepoint_exclusive": 6922,
+          "replace": "ctor_s"
+        },
+        {
+          "first_codepoint": 6926,
+          "last_codepoint_exclusive": 6931,
+          "replace": "_p"
+        },
+        {
+          "first_codepoint": 6937,
+          "last_codepoint_exclusive": 6937,
+          "replace": "a, "
+        },
+        {
+          "first_codepoint": 6981,
+          "last_codepoint_exclusive": 6981,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 7110,
+          "last_codepoint_exclusive": 7110,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 7111,
+          "last_codepoint_exclusive": 7113,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 7114,
+          "last_codepoint_exclusive": 7114,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 7115,
+          "last_codepoint_exclusive": 7116,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 7120,
+          "last_codepoint_exclusive": 7121,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 7127,
+          "last_codepoint_exclusive": 7127,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 7230,
+          "last_codepoint_exclusive": 7230,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 7231,
+          "last_codepoint_exclusive": 7233,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 7234,
+          "last_codepoint_exclusive": 7234,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 7235,
+          "last_codepoint_exclusive": 7236,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 7240,
+          "last_codepoint_exclusive": 7241,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 7247,
+          "last_codepoint_exclusive": 7247,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 7294,
+          "last_codepoint_exclusive": 7294,
+          "replace": "a->"
+        },
+        {
+          "first_codepoint": 7450,
+          "last_codepoint_exclusive": 7450,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 7451,
+          "last_codepoint_exclusive": 7453,
+          "replace": "ll"
+        },
+        {
+          "first_codepoint": 7454,
+          "last_codepoint_exclusive": 7454,
+          "replace": "y_ac"
+        },
+        {
+          "first_codepoint": 7455,
+          "last_codepoint_exclusive": 7456,
+          "replace": "or_s"
+        },
+        {
+          "first_codepoint": 7460,
+          "last_codepoint_exclusive": 7461,
+          "replace": "_v"
+        },
+        {
+          "first_codepoint": 7467,
+          "last_codepoint_exclusive": 7467,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 7598,
+          "last_codepoint_exclusive": 7598,
+          "replace": "isle_v"
+        },
+        {
+          "first_codepoint": 7599,
+          "last_codepoint_exclusive": 7601,
+          "replace": "lley_ac"
+        },
+        {
+          "first_codepoint": 7603,
+          "last_codepoint_exclusive": 7605,
+          "replace": "r_s"
+        },
+        {
+          "first_codepoint": 7609,
+          "last_codepoint_exclusive": 7609,
+          "replace": "_stop"
+        },
+        {
+          "first_codepoint": 7610,
+          "last_codepoint_exclusive": 7610,
+          "replace": "a, a->"
+        },
+        {
+          "first_codepoint": 7649,
+          "last_codepoint_exclusive": 7649,
+          "replace": "a->"
+        }
+      ]
+    }
+  ],
+  "preamble": "/* Complete pinned Valley Original C closure; no SDK layouts or asset bodies. */\n#include \"engine_internal.h\"\n#include \"valley_lifecycle_source.h\"\n#include <math.h>\n#include <float.h>\n#include <stdio.h>\n#include <string.h>\n#define PI 3.14159265358979323846\n#define TAU (2.0 * PI)\n#define M_PI_F 3.14159265358979323846f\n#define FLOAT_MAX FLT_MAX\n#define FLOAT_NEG_MAX (-FLT_MAX)\n#define ABS(value) (((value)<0)?-(value):(value))\n#define SIGN(value) (((value)>=0)?1:-1)\n#define SQ(value) ((value)*(value))\n#define UNUSED\n#define A_BUTTON 0x8000u\n#define B_BUTTON 0x4000u\n#define START_BUTTON 0x1000u\nenum {\n    BGM_PLAYER_AUX=1,\n    BGM_PLAYER_MAIN=0,\n    END_LEVEL_REASON_FINISH=2,\n    GOBJ_FLAG_2=2,\n    GOBJ_FLAG_HIDDEN=1,\n    ITEM_ID_PESTER_BALL=162,\n    LINK_0=0,\n    OBJID_0=0,\n    PFID_HAS_DASH_ENGINE=5,\n    PLAYER_CMD_FINISH=6,\n    POKEMON_FLAG_200=512,\n    POKEMON_FLAG_800=2048,\n    POKEMON_PROCESS_FLAG_1000=4096,\n    PokemonID_ARTICUNO=147,\n    PokemonID_GOLDEEN=118,\n    PokemonID_MAGIKARP=129,\n    PokemonID_STARMIE=121,\n    PokemonID_STARYU=120,\n    SCENE_CAMERA_CHECK=9,\n    SCENE_OAKS_LAB_2=13,\n    SCENE_VALLEY=5,\n    SONG_ID_19=19,\n    SONG_ID_20=20,\n    SOUND_ID_114=114,\n    SOUND_ID_162=162,\n    SOUND_ID_174=174,\n    SOUND_ID_21=21,\n    SOUND_ID_30=30,\n    SOUND_ID_33=33,\n    SOUND_ID_36=36,\n    SOUND_ID_38=38,\n    SOUND_ID_39=39,\n    SOUND_ID_40=40,\n    SOUND_ID_41=41,\n    SOUND_ID_77=77,\n    SOUND_ID_83=83,\n    SURFACE_TYPE_0019FF=6655,\n    SURFACE_TYPE_007F66=32614,\n    SURFACE_TYPE_337FB2=3375026,\n};\n",
+  "output_sha256": "402fcb475aaf2ef75d420b8eef936f00587afcf6c45bcf60b0595d48a3a4bf70",
+  "field_ownership": [
+    {
+      "symbol": "D_802D2828_7ABDB8",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:5-5"
+    },
+    {
+      "symbol": "D_802D297C_7ABF0C",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:7-7"
+    },
+    {
+      "symbol": "D_802D2980_7ABF10",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:8-8"
+    },
+    {
+      "symbol": "D_802D2984_7ABF14",
+      "source_type": "PokemonDef",
+      "native_type": "IsleValleyDefinition",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:9-9"
+    },
+    {
+      "symbol": "D_802D2994_7ABF24",
+      "source_type": "PokemonDef",
+      "native_type": "IsleValleyDefinition",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:10-10"
+    },
+    {
+      "symbol": "D_802D29A4_7ABF34",
+      "source_type": "PokemonDef",
+      "native_type": "IsleValleyDefinition",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:11-11"
+    },
+    {
+      "symbol": "D_802D29B4_7ABF44",
+      "source_type": "RandomState2",
+      "native_type": "IsleValleyCountedOption",
+      "extents": [
+        "4"
+      ],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:12-12"
+    },
+    {
+      "symbol": "D_802D3B34_7AD0C4",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79F1B0.c:16-16"
+    },
+    {
+      "symbol": "D_802D2A80_7AC010",
+      "source_type": "bool",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79FB70.c:7-7"
+    },
+    {
+      "symbol": "D_802D2A84_7AC014",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/79FB70.c:8-8"
+    },
+    {
+      "symbol": "D_8034C8A0_825E30",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [
+        "0x18"
+      ],
+      "bss": true,
+      "Source": "src/valley/79FB70.c:11-11"
+    },
+    {
+      "symbol": "D_8034C8B8_825E48",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/79FB70.c:12-12"
+    },
+    {
+      "symbol": "D_8034C8B9_825E49",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/79FB70.c:13-13"
+    },
+    {
+      "symbol": "D_802D2A90_7AC020",
+      "source_type": "u32",
+      "native_type": "uint32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A00C0.c:3-3"
+    },
+    {
+      "symbol": "D_802D2A94_7AC024",
+      "source_type": "u32",
+      "native_type": "uint32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A00C0.c:4-4"
+    },
+    {
+      "symbol": "D_8034C8C0_825E30",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [
+        "0x8"
+      ],
+      "bss": true,
+      "Source": "src/valley/7A00C0.c:7-7"
+    },
+    {
+      "symbol": "D_8034C8C8_825E58",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [
+        "8"
+      ],
+      "bss": true,
+      "Source": "src/valley/7A00C0.c:8-8"
+    },
+    {
+      "symbol": "D_802D2B8C_7AC11C",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A1850.c:12-12"
+    },
+    {
+      "symbol": "D_802D2B90_7AC120",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A1850.c:13-13"
+    },
+    {
+      "symbol": "D_802D2BF4_7AC184",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A1850.c:17-17"
+    },
+    {
+      "symbol": "D_802D2BF8_7AC188",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A1850.c:18-18"
+    },
+    {
+      "symbol": "D_802D2BFC_7AC18C",
+      "source_type": "Vec3f",
+      "native_type": "IsleGameVec3",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A1850.c:19-19"
+    },
+    {
+      "symbol": "D_802D2C08_7AC198",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A1850.c:20-20"
+    },
+    {
+      "symbol": "D_802D2C0C_7AC19C",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A1850.c:21-21"
+    },
+    {
+      "symbol": "D_8034C8D0_825E30",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [
+        "0x8"
+      ],
+      "bss": true,
+      "Source": "src/valley/7A1850.c:28-28"
+    },
+    {
+      "symbol": "D_8034C8D8_825E68",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A1850.c:29-29"
+    },
+    {
+      "symbol": "D_8034C8DC_825E6C",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A1850.c:30-30"
+    },
+    {
+      "symbol": "D_8034C8E0_825E70",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [
+        "0x17A0"
+      ],
+      "bss": true,
+      "Source": "src/valley/7A1850.c:31-31"
+    },
+    {
+      "symbol": "D_802D2D74_7AC304",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A2B50.c:8-8"
+    },
+    {
+      "symbol": "D_802D2D78_7AC308",
+      "source_type": "u16",
+      "native_type": "uint16_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A2B50.c:9-9"
+    },
+    {
+      "symbol": "D_802D2FF0_7AC580",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A3560.c:8-8"
+    },
+    {
+      "symbol": "D_802D2FF4_7AC584",
+      "source_type": "u16",
+      "native_type": "uint16_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A3560.c:9-9"
+    },
+    {
+      "symbol": "D_802D30E0_7AC670",
+      "source_type": "Vec3f",
+      "native_type": "IsleGameVec3",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A3800.c:9-9"
+    },
+    {
+      "symbol": "D_802D3638_7ACBC8",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A4610.c:25-25"
+    },
+    {
+      "symbol": "D_802D3FF0_7AD580",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A4610.c:36-36"
+    },
+    {
+      "symbol": "D_802D3844_7ACDD4",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A5F10.c:6-6"
+    },
+    {
+      "symbol": "D_802D3848_7ACDD8",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A5F10.c:7-7"
+    },
+    {
+      "symbol": "D_802D384C_7ACDDC",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A5F10.c:8-8"
+    },
+    {
+      "symbol": "D_802D39CC_7ACF5C",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A6D50.c:8-8"
+    },
+    {
+      "symbol": "D_802D3FF4_7AD584",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8030.c:9-9"
+    },
+    {
+      "symbol": "D_802D3FF8_7AD588",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8030.c:10-10"
+    },
+    {
+      "symbol": "D_802D406C_7AD5FC",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8030.c:14-14"
+    },
+    {
+      "symbol": "D_802D41A4_7AD734",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8030.c:20-20"
+    },
+    {
+      "symbol": "D_802EC644_7C5BD4",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8030.c:21-21"
+    },
+    {
+      "symbol": "D_802D41C8_7AD758",
+      "source_type": "Vec3f",
+      "native_type": "IsleGameVec3",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:16-16"
+    },
+    {
+      "symbol": "D_802EC5E8_7C5B78",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:23-23"
+    },
+    {
+      "symbol": "D_802EC5EC_7C5B7C",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:24-24"
+    },
+    {
+      "symbol": "D_802EC638_7C5BC8",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [
+        "3"
+      ],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:28-28"
+    },
+    {
+      "symbol": "D_802EC648_7C5BD8",
+      "source_type": "OMCamera*",
+      "native_type": "IsleValleyCamera*",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:30-30"
+    },
+    {
+      "symbol": "D_802EC64C_7C5BDC",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:31-31"
+    },
+    {
+      "symbol": "D_802EC650_7C5BE0",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:32-32"
+    },
+    {
+      "symbol": "D_802EC654_7C5BE4",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7A8DD0.c:33-33"
+    },
+    {
+      "symbol": "D_8034E080_827610",
+      "source_type": "char",
+      "native_type": "char",
+      "extents": [
+        "32"
+      ],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:40-40"
+    },
+    {
+      "symbol": "D_8034E0A0_827630",
+      "source_type": "SObj*",
+      "native_type": "IsleGameSprite*",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:41-41"
+    },
+    {
+      "symbol": "D_8034E0A4_827634",
+      "source_type": "SObj*",
+      "native_type": "IsleGameSprite*",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:42-42"
+    },
+    {
+      "symbol": "D_8034E0A8_827638",
+      "source_type": "GObj*",
+      "native_type": "IsleGameObject*",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:43-43"
+    },
+    {
+      "symbol": "D_8034E0AC_82763C",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:44-44"
+    },
+    {
+      "symbol": "D_8034E0B0_827640",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:45-45"
+    },
+    {
+      "symbol": "D_8034E0B1_827641",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:46-46"
+    },
+    {
+      "symbol": "D_8034E0B2_827642",
+      "source_type": "u16",
+      "native_type": "uint16_t",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:47-47"
+    },
+    {
+      "symbol": "D_8034E0B4_827644",
+      "source_type": "u32",
+      "native_type": "uint32_t",
+      "extents": [],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:48-48"
+    },
+    {
+      "symbol": "D_8034E0B8_827648",
+      "source_type": "u8",
+      "native_type": "uint8_t",
+      "extents": [
+        "0x68"
+      ],
+      "bss": true,
+      "Source": "src/valley/7A8DD0.c:49-49"
+    },
+    {
+      "symbol": "D_80100730_3F6B70",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA110.c:7-7"
+    },
+    {
+      "symbol": "D_802EC710_7C5CA0",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA110.c:15-15"
+    },
+    {
+      "symbol": "D_802EC714_7C5CA4",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA110.c:16-16"
+    },
+    {
+      "symbol": "D_802EC738_7C5CC8",
+      "source_type": "SomeS16s",
+      "native_type": "IsleValleyS16Pair",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA110.c:18-18"
+    },
+    {
+      "symbol": "D_802EC868_7C5DF8",
+      "source_type": "u16",
+      "native_type": "uint16_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA790.c:12-12"
+    },
+    {
+      "symbol": "D_802EC86C_7C5DFC",
+      "source_type": "u16",
+      "native_type": "uint16_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA790.c:13-13"
+    },
+    {
+      "symbol": "D_802EC890_7C5E20",
+      "source_type": "s32",
+      "native_type": "int32_t",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA790.c:15-15"
+    },
+    {
+      "symbol": "D_802EC894_7C5E24",
+      "source_type": "f32",
+      "native_type": "float",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA790.c:16-16"
+    },
+    {
+      "symbol": "D_802EC8D8_7C5E68",
+      "source_type": "Vec3f",
+      "native_type": "IsleGameVec3",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA790.c:19-19"
+    },
+    {
+      "symbol": "D_802EC914_7C5EA4",
+      "source_type": "Vec3f",
+      "native_type": "IsleGameVec3",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AA790.c:21-21"
+    },
+    {
+      "symbol": "D_802ECA10_7C5FA0",
+      "source_type": "Vec3f",
+      "native_type": "IsleGameVec3",
+      "extents": [],
+      "bss": false,
+      "Source": "src/valley/7AB7C0.c:9-9"
+    },
+    {
+      "symbol": "extraStaryuDef",
+      "source_type": "PokemonDef",
+      "native_type": "IsleValleyDefinition",
+      "extents": [],
+      "bss": false,
+      "Source": "undeclared Source root proved by exact call and matching map"
+    },
+    {
+      "symbol": "extraStarmieDef",
+      "source_type": "PokemonDef",
+      "native_type": "IsleValleyDefinition",
+      "extents": [],
+      "bss": false,
+      "Source": "undeclared Source root proved by exact call and matching map"
+    }
+  ],
+  "native_services": {
+    "intervals": [
+      "void",
+      [
+        [
+          "uint16_t",
+          "update"
+        ],
+        [
+          "uint16_t",
+          "draw"
+        ]
+      ]
+    ],
+    "near_clipping": [
+      "void",
+      [
+        [
+          "int32_t",
+          "disabled"
+        ]
+      ]
+    ],
+    "photo_count": [
+      "int32_t",
+      []
+    ],
+    "height_map": [
+      "int32_t",
+      [
+        [
+          "uint32_t",
+          "identity"
+        ]
+      ]
+    ],
+    "world_create": [
+      "int32_t",
+      [
+        [
+          "uint32_t",
+          "identity"
+        ],
+        [
+          "int32_t",
+          "sky"
+        ],
+        [
+          "int32_t",
+          "minimum"
+        ],
+        [
+          "int32_t",
+          "maximum"
+        ],
+        [
+          "int32_t",
+          "link"
+        ],
+        [
+          "int32_t",
+          "draw_link"
+        ],
+        [
+          "IsleValleyWorldPair",
+          "add"
+        ],
+        [
+          "IsleValleyWorldSingle",
+          "remove"
+        ],
+        [
+          "IsleValleyWorldPair",
+          "change"
+        ]
+      ]
+    ],
+    "sky_follow": [
+      "void",
+      []
+    ],
+    "pokemon_registry": [
+      "void",
+      [
+        [
+          "int32_t",
+          "minimum"
+        ],
+        [
+          "int32_t",
+          "maximum"
+        ],
+        [
+          "int32_t",
+          "link"
+        ],
+        [
+          "int32_t",
+          "course"
+        ]
+      ]
+    ],
+    "pokemon_add": [
+      "void",
+      [
+        [
+          "IsleValleyWorldBlock*",
+          "a"
+        ],
+        [
+          "IsleValleyWorldBlock*",
+          "b"
+        ],
+        [
+          "uint32_t",
+          "registry"
+        ]
+      ]
+    ],
+    "pokemon_change": [
+      "void",
+      [
+        [
+          "IsleValleyWorldBlock*",
+          "a"
+        ],
+        [
+          "IsleValleyWorldBlock*",
+          "b"
+        ],
+        [
+          "uint32_t",
+          "registry"
+        ]
+      ]
+    ],
+    "pokemon_remove": [
+      "void",
+      [
+        [
+          "IsleValleyWorldBlock*",
+          "block"
+        ],
+        [
+          "uint32_t",
+          "registry"
+        ]
+      ]
+    ],
+    "items_displace": [
+      "void",
+      [
+        [
+          "float",
+          "x"
+        ],
+        [
+          "float",
+          "y"
+        ],
+        [
+          "float",
+          "z"
+        ]
+      ]
+    ],
+    "transition_end": [
+      "void",
+      [
+        [
+          "int32_t",
+          "reason"
+        ]
+      ]
+    ],
+    "detector_disable": [
+      "void",
+      []
+    ],
+    "environment_cleanup": [
+      "void",
+      []
+    ],
+    "world_destroy": [
+      "void",
+      []
+    ],
+    "world_cleanup": [
+      "void",
+      []
+    ],
+    "camera_remove": [
+      "void",
+      []
+    ],
+    "scene_exit": [
+      "void",
+      []
+    ],
+    "depth_allocate": [
+      "void*",
+      [
+        [
+          "size_t",
+          "bytes"
+        ],
+        [
+          "size_t",
+          "alignment"
+        ]
+      ]
+    ],
+    "screen_apply": [
+      "void",
+      [
+        [
+          "const IsleValleyLifecycleScreen*",
+          "screen"
+        ]
+      ]
+    ],
+    "effect_banks_reset": [
+      "void",
+      []
+    ],
+    "game_state_reset": [
+      "void",
+      []
+    ],
+    "pokemons_init": [
+      "void",
+      []
+    ],
+    "background_color": [
+      "void",
+      [
+        [
+          "uint8_t*",
+          "r"
+        ],
+        [
+          "uint8_t*",
+          "g"
+        ],
+        [
+          "uint8_t*",
+          "b"
+        ]
+      ]
+    ],
+    "cameras_create": [
+      "IsleGameObject*",
+      [
+        [
+          "int32_t",
+          "color"
+        ]
+      ]
+    ],
+    "ui_init": [
+      "IsleGameObject*",
+      [
+        [
+          "IsleValleyWorldSingle",
+          "exit"
+        ],
+        [
+          "IsleValleyMovementCallback",
+          "movement"
+        ],
+        [
+          "IsleGameSourceCallback",
+          "items"
+        ],
+        [
+          "uint8_t",
+          "kind"
+        ],
+        [
+          "IsleValleyItemCollisionCallback",
+          "collision"
+        ]
+      ]
+    ],
+    "end_callback": [
+      "void",
+      [
+        [
+          "IsleValleyEndCallback",
+          "callback"
+        ]
+      ]
+    ],
+    "pause_callback": [
+      "void",
+      [
+        [
+          "IsleValleyEndCallback",
+          "callback"
+        ]
+      ]
+    ],
+    "environment_init": [
+      "void",
+      [
+        [
+          "const IsleValleyEnvironment*",
+          "rows"
+        ],
+        [
+          "size_t",
+          "count"
+        ]
+      ]
+    ],
+    "asset_load": [
+      "void*",
+      [
+        [
+          "uint32_t",
+          "begin"
+        ],
+        [
+          "uint32_t",
+          "end"
+        ]
+      ]
+    ],
+    "effect_bank": [
+      "void",
+      [
+        [
+          "int32_t",
+          "id"
+        ],
+        [
+          "void*",
+          "script"
+        ],
+        [
+          "void*",
+          "sprites"
+        ]
+      ]
+    ],
+    "effect_camera": [
+      "IsleGameObject*",
+      [
+        [
+          "int32_t",
+          "id"
+        ],
+        [
+          "int32_t",
+          "count"
+        ],
+        [
+          "IsleValleyCamera*",
+          "camera"
+        ]
+      ]
+    ],
+    "effects_allocate": [
+      "void*",
+      [
+        [
+          "int32_t",
+          "count"
+        ]
+      ]
+    ],
+    "effects_dither": [
+      "void",
+      [
+        [
+          "uint32_t",
+          "color"
+        ],
+        [
+          "uint32_t",
+          "alpha"
+        ]
+      ]
+    ],
+    "detector_create": [
+      "void",
+      []
+    ],
+    "detector_enable": [
+      "void",
+      []
+    ],
+    "intro_initialize": [
+      "void",
+      []
+    ],
+    "intro_object": [
+      "void",
+      [
+        [
+          "IsleGameObject*",
+          "object"
+        ]
+      ]
+    ],
+    "intro_finish": [
+      "void",
+      []
+    ],
+    "intro_prepare": [
+      "void",
+      []
+    ],
+    "intro_stop": [
+      "void",
+      []
+    ],
+    "animation_callback": [
+      "void",
+      [
+        [
+          "IsleGameObject*",
+          "object"
+        ],
+        [
+          "IsleValleyLifecycleAnimationCallback",
+          "callback"
+        ]
+      ]
+    ],
+    "effect_camera_publish": [
+      "void",
+      [
+        [
+          "IsleGameObject*",
+          "object"
+        ]
+      ]
+    ],
+    "effects_publish": [
+      "void",
+      [
+        [
+          "void*",
+          "effects"
+        ]
+      ]
+    ]
+  },
+  "native_lifetime": "fixed-address owner outside native Storage; actual admission/retirement and independent lifecycle joins required",
+  "no_emitted_file_local_helpers": [],
+  "Source_function_count": 19,
+  "native_execution": "NOT_CLAIMED: parent owns actual host integration and all gates",
+  "extra_signed_root": {
+    "symbol": "D_802ECB00_7C6090",
+    "identity": 2150550272,
+    "rows": [
+      [
+        70,
+        2150442500
+      ],
+      [
+        30,
+        2150442628
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "authority": "qualified-638n-valley-real-consumers.tsv4-7"
+  },
+  "counted_four_options": {
+    "identity": 2150443444,
+    "rows": [
+      [
+        10,
+        2150391400
+      ],
+      [
+        10,
+        2150391664
+      ],
+      [
+        10,
+        2150391916
+      ],
+      [
+        70,
+        0
+      ]
+    ],
+    "authority": "qualified-638k-course-typed-root-metadata.tsv4028-4032"
+  },
+  "semantic_origins": {
+    "course_source_inventory": {
+      "path": "valley-source-inventory.json",
+      "sha256": "57cced92f97f2e2c09f3c654d38dab117798ce1a2bfc521a6d8dd3cf3e0aec59",
+      "selectors": 309,
+      "C_files": 45,
+      "headers": 1
+    },
+    "typed_dependency_authority": {
+      "path": "remaining-course-typed-provider-dependencies.json",
+      "map_sha256": "545866faf5fb44abf47d2f455ff7cad75580dc15320c357ac8dadc3359cb1a00",
+      "all_Source_events_retained": true
+    },
+    "initialized_word_bits": {
+      "path": "qualified-638z-valley-initial-fields-and-static-spawns.tsv",
+      "sha256": "f7416babc13c1de53d69864434f2854797f61d2f8687e7fc80a980d8d21b01c6",
+      "scope": "qualified initialized word bits only; static World rows do not prove dynamic reachability"
+    },
+    "shared_layouts": {
+      "scene": "include/sys/gtl.h SceneSetup0x8c",
+      "screen": "include/sys/vi.h ScreenSettings0x1c",
+      "environment": "src/app_level/app_level.h EnvSoundData4",
+      "dialogue": "src/valley/7A8DD0.c3-9 SomeC12; +8 decoded by actual format as int32/text semantic alternative",
+      "item_direction": "src/app_level/app_level.h Item.collisionVelocity+0x14"
+    },
+    "canonical_aliases": {
+      "D_802D2980_7ABF10": "ONE IsleGameObject*; integer-zero writes use semantic NULL; actual initialized guest word qualified0",
+      "D_802D2FF4_7AC584": "ONE uint16 word; Source7A3560 signed reads cast int16, Source7A3800 unsigned reads direct",
+      "D_8034C8C8_825E58": "ONE uint8[8] BSS at7A00C0.c8; scalar users read element0; no ROM hydration",
+      "D_802D2A00_7ABF90": "ONE lifecycle.scene_setup.heap_size, alias SourceSceneSetup+0x10"
+    },
+    "entry_heap_size": {
+      "value": 1306896,
+      "expression": "valley_code_VRAM - valley_assets_VRAM_END",
+      "printed_map_values": [
+        2150390816,
+        2149083920
+      ],
+      "authority": "authoritative-df8815e7-evaluated-linker-symbols.json"
+    },
+    "forbidden_ground_lists": {
+      "roots": [
+        "D_802D2C0C_7AC19C",
+        "D_802D3638_7ACBC8",
+        "D_802D384C_7ACDDC",
+        "D_802EC894_7C5E24"
+      ],
+      "prefix_slots_each": 1,
+      "bits": 0,
+      "consumer": "pinned app_level/pokemon.c1146-1171",
+      "policy": "NONNULL empty override accepts all; identity0 is NULL/default; canonical float fields borrowed with count1"
+    },
+    "automatic_factory_id_transport": {
+      "Source": "pinned src/app_level/503C10.c157-191, call177",
+      "rule": "factory id argument is def->id/family; ObjectSpawn.id is a distinct transport field. Qualified639d proves the ARTICUNO-labeled Source helper requests147 and family147; no144exception.",
+      "matching_MIPS_authority": {
+        "path": "qualified-639d-automatic-spawn-matching-MIPS.tsv",
+        "words": [
+          [
+            "0x802c5fd0",
+            "0x240a0093"
+          ],
+          [
+            "0x802c5fd4",
+            "0xafaa002c"
+          ],
+          [
+            "0x802c5fe0",
+            "0x27a6002c"
+          ],
+          [
+            "0x802c6008",
+            "0x0c0d8f12"
+          ]
+        ],
+        "meaning": "147 stored at spawn.id; same spawn passed to actual pokemonAddOne; behavior/path remain unwritten"
+      }
+    },
+    "shared_original_C_helpers": {
+      "existing": "func_8035E174,func_8035E264,func_8035E298 from existing shared importer",
+      "required_parent_additions": [
+        "src/app_level/4FE330.c143-157 func_8035E1D4_4FE5E4",
+        "src/app_level/4FE330.c159-163 func_8035E238_4FE648"
+      ],
+      "rule": "typed common_child1/2 native leaves must call actual compiled C bodies through returning C fence, never reimplement spawn policy"
+    },
+    "abi_roles": {
+      "callbacks": 255,
+      "graphs": 62,
+      "signed_weighted_lists": 12,
+      "counted_lists": 1,
+      "counted_rows": 4,
+      "factories": 21,
+      "child_factories": 5,
+      "dependencies": 309,
+      "typed_utilities": 27,
+      "actor_animation": 3,
+      "lifecycle_animation": 1,
+      "item_collision": 1,
+      "block_change": 1
+    },
+    "resource_data_exclusion": "The24 model C files have0 functions; their data assets are already handled by the selected native Valley catalog/real decoders, not copied as console layouts. No selector excluded.",
+    "original_empty_functions": "Both file-local nullsub definitions compiled with separate exact file/function/line provenance and no fabricated global guest identity."
+  },
+  "generator_sha256": "0b5095b9eaaa8b1c2497ec6f32ad1137b4a281275edb1e5f30659844c3e92f06",
+  "native_support": {
+    "src/valley_actor_source.h": {
+      "sha256": "18dce3f0957433095b63c0bd0145a5b0d875304eac820942bec04c930fca6975"
+    },
+    "src/valley_actor_source.c": {
+      "sha256": "549961904b587337edf12367a6c85f712804e9fca23333794a6444b611b1b782"
+    },
+    "src/valley_actor.hpp": {
+      "sha256": "05723fbe55898d70b12c9b7ba8b6e130c4780d7232f015ab93ea3b0d9ca2a36e"
+    },
+    "src/valley_actor.cpp": {
+      "sha256": "775dd1eccff5b5a43c3eba8fb9c5b899939a20777baf6fb95850e77dbdd14674"
+    },
+    "src/valley_lifecycle_source.h": {
+      "sha256": "1d3eace70d5021802635bc018f35df12e2f752e2205585b72e411ed61bd6ff4f"
+    },
+    "src/valley_lifecycle_source.c": {
+      "sha256": "6bdb0135b97c2b69c3f277794e5fd185f3066e4c17d0fb0f6b61849fd01dbf17"
+    },
+    "src/course_actor_source.h": {
+      "sha256": "e642f3b7333ac8f0d42b50467b309d87073bbdd5dca842101e73045ffddd3522"
+    },
+    "src/course_actor_source.c": {
+      "sha256": "e6fbef2ed7f926d64e5f0492dbac2ec25ed15636c51706b7a44d8b95c552e24e"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
+    },
+    "src/actor_source_bridge.c": {
+      "sha256": "d8c0cac0f380cd334f2bd48a4b12de4d4101a968671029e7ff1591eff2fdb5d3"
+    },
+    "src/actor_source_owner_bridge.c": {
+      "sha256": "6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"
+    },
+    "src/actor_owner.cpp": {
+      "sha256": "9889d22618a966c65b2250b5421f6ea687884f689c0913d1d82160b11bffb42b"
+    },
+    "src/actor_behavior_bindings.hpp": {
+      "sha256": "5eb20328bba03118cdd4bd1be8c8d9367cb2e7d53c165e379f0bd5c654bf2e59"
+    },
+    "src/actor_behavior_bindings.cpp": {
+      "sha256": "d5d7bb3d2ed33152694d1a1006ed733ece61583c640cf78c2e77ce01f1b36ad1"
+    },
+    "src/valley_actor_catalog.cpp": {
+      "sha256": "048c287f8f8cc8651da0097064bd35bc38054ddeb3aed3da50ed8c33de1cf047"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "src/engine_math.h": {
+      "sha256": "411a9cb40f003b8c17549c8dc126069016bae19965e069313e0043021cf254f4"
+    },
+    "src/item_source.h": {
+      "sha256": "afb404b3a5ac475fb1541ae6d5fe4fe5f3f38cf9b69e2f59e30c727f1cfdab5a"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"
+    },
+    "include/35mmisle/rng.h": {
+      "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "bf0ecd0c670c55c2fc38ea5d147669f36267058eb52b6150b270d6bf31932ca0"
+    }
+  }
+}

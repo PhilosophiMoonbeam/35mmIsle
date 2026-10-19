@@ -1,5 +1,6 @@
 #include "photo_subjects.hpp"
 #include "course_resources.hpp"
+#include "egg_source.h"
 #include "model_data_decoder.hpp"
 
 #include <algorithm>
@@ -85,54 +86,73 @@ void decode_animation_sets(const model_assets::Reader& reader, std::uint32_t add
         output.push_back(std::move(set));
     }
 }
-std::int16_t s16(const std::vector<std::byte>& bytes, std::size_t at) {
-    return std::bit_cast<std::int16_t>(static_cast<std::uint16_t>(
-        (std::to_integer<unsigned>(bytes[at])<<8)|std::to_integer<unsigned>(bytes[at+1])));
-}
 void put16(std::vector<std::byte>& bytes, std::size_t at, std::int16_t value) {
     const auto bits = static_cast<std::uint16_t>(value);
     bytes[at] = std::byte(bits>>8); bytes[at+1] = std::byte(bits&255);
 }
-// GAME func_800AB000/800AAFB0 truncate then retain the MIPS low signed
-// halfword/byte, rather than saturating a normal/color component.
-std::int32_t interpolate(std::int32_t a, std::int32_t b, float amount) {
-    volatile float difference = float(b)-float(a);
-    volatile float product = difference*amount;
-    const float value = product+float(a);
-    require(std::isfinite(value) && double(value) >= double(INT32_MIN) && double(value) <= double(INT32_MAX),
-            "Egg interpolation escapes source signed conversion");
-    return static_cast<std::int32_t>(value);
-}
-void egg_patch(std::vector<VertexPatch>& patches, const model_assets::Reader& reader,
-               std::uint32_t destination, std::uint32_t endpoint, std::size_t vertices,
-               bool morph, float time) {
-    auto it = std::find_if(patches.begin(),patches.end(),[destination](const auto& p) { return p.guest == destination; });
-    if (it == patches.end()) {
-        const auto original = reader.view(destination,vertices*16,8);
-        patches.push_back({destination,{original.bytes.begin(),original.bytes.end()}});
-        it = patches.end()-1;
+void decode_egg_vertices(const rom::GuestView& wire, std::span<IsleEggVertex> vertices) {
+    for (std::size_t i = 0; i < vertices.size(); ++i) {
+        const auto at = i*16;
+        auto& vertex = vertices[i];
+        vertex.unk_00 = std::bit_cast<std::int16_t>(wire.u16(at));
+        vertex.unk_02 = std::bit_cast<std::int16_t>(wire.u16(at+2));
+        vertex.unk_04 = std::bit_cast<std::int16_t>(wire.u16(at+4));
+        for (std::size_t j = 0; j < 6; ++j) vertex.unk_06[j] = wire.u8(at+6+j);
+        vertex.unk_0C = std::bit_cast<std::int8_t>(wire.u8(at+12));
+        vertex.unk_0D = std::bit_cast<std::int8_t>(wire.u8(at+13));
+        vertex.unk_0E = std::bit_cast<std::int8_t>(wire.u8(at+14));
+        vertex.unk_0F = wire.u8(at+15);
     }
-    // The original scratch copy is seeded once at course creation, not from a
-    // prior photographed morph. Every same-ID record overwrites the same target.
-    const auto base = reader.view(destination,vertices*16,8);
-    std::copy(base.bytes.begin(),base.bytes.end(),it->bytes.begin());
-    if (!morph) return;
-    const auto end = reader.view(endpoint,vertices*16,8);
-    float amount = time < 0 || time > 60.0f ? 1.0f : time/60.0f;
-    if (amount < 0) amount = 0;
-    if (amount > 1) amount = 1;
+}
+struct EggReplayScratch {
+    std::array<IsleEggVertex,336> base, endpoint, destination;
+    std::size_t patch;
+    bool endpoint_ready = false;
+    EggReplayScratch(const model_assets::Reader& reader, std::uint32_t guest,
+                     std::size_t count, std::size_t patch_index)
+        : patch(patch_index) {
+        decode_egg_vertices(reader.view(guest,count*16,8),std::span(base).first(count));
+    }
+};
+void egg_patch(std::vector<VertexPatch>& patches, std::optional<EggReplayScratch>& scratch,
+               const model_assets::Reader& reader, std::uint32_t destination,
+               std::uint32_t endpoint, std::size_t vertices, bool morph, float time) {
+    if (!scratch) {
+        scratch.emplace(reader,destination,vertices,patches.size());
+        patches.push_back({destination,std::vector<std::byte>(vertices*16)});
+    }
+    auto& work = *scratch;
+    const IsleEggVertex* output = work.base.data();
+    if (morph) {
+        if (!work.endpoint_ready) {
+            decode_egg_vertices(reader.view(endpoint,vertices*16,8),std::span(work.endpoint).first(vertices));
+            // AB050 leaves opaque6/tail untouched; seed those exactly once.
+            std::copy_n(work.base.begin(),vertices,work.destination.begin());
+            work.endpoint_ready = true;
+        }
+        // Original GAME 47380.c1202-1235 consumes the recorded GObj clock,
+        // not the live Egg timer (which advances at different course rates).
+        float amount = time < 0 || time > 60.0f ? 1.0f : time/60.0f;
+        if (amount < 0.0f) amount = 0.0f;
+        if (amount > 1.0f) amount = 1.0f;
+        isle_egg_original_func_800AB050(amount,static_cast<std::int32_t>(vertices),
+            work.destination.data(),work.base.data(),work.endpoint.data());
+        output = work.destination.data();
+    }
+    // No SDK/guest overlay: CPU Source-width semantics become canonical BE
+    // positions, unchanged opaque6, signed normal3 bit patterns and tail.
+    auto& bytes = patches[work.patch].bytes;
     for (std::size_t i = 0; i < vertices; ++i) {
-        for (std::size_t j : {std::size_t(0),std::size_t(2),std::size_t(4)}) {
-            const auto at = i*16+j;
-            const auto b = std::bit_cast<std::int16_t>(end.u16(at));
-            put16(it->bytes,at,std::bit_cast<std::int16_t>(static_cast<std::uint16_t>(interpolate(s16(it->bytes,at),b,amount))));
-        }
-        for (std::size_t j = 12; j < 15; ++j) {
-            const auto at = i*16+j;
-            const auto a = std::bit_cast<std::int8_t>(std::to_integer<std::uint8_t>(base.bytes[at]));
-            const auto b = std::bit_cast<std::int8_t>(end.u8(at));
-            it->bytes[at] = std::byte(static_cast<std::uint8_t>(interpolate(a,b,amount)));
-        }
+        const auto at = i*16;
+        const auto& vertex = output[i];
+        put16(bytes,at,vertex.unk_00);
+        put16(bytes,at+2,vertex.unk_02);
+        put16(bytes,at+4,vertex.unk_04);
+        for (std::size_t j = 0; j < 6; ++j) bytes[at+6+j] = std::byte(vertex.unk_06[j]);
+        bytes[at+12] = std::byte(static_cast<std::uint8_t>(vertex.unk_0C));
+        bytes[at+13] = std::byte(static_cast<std::uint8_t>(vertex.unk_0D));
+        bytes[at+14] = std::byte(static_cast<std::uint8_t>(vertex.unk_0E));
+        bytes[at+15] = std::byte(vertex.unk_0F);
     }
 }
 IsleGameModelTransform transform(const menu::animation::Transform& t) {
@@ -227,6 +247,10 @@ Resources::Resources(const rom::Snapshot& snapshot, const world::Resources& worl
             hydrate(*found,instance,found->model_animations,found->model_animations ? found->material_animations : 0);
         }
     }
+    // GAME 47380.c988/998 saves the freshly loaded course data once. These
+    // cold semantic arrays model those immutable replay bases, not live Egg
+    // frame0 BSS or a preceding record's residual morph destination.
+    std::array<std::optional<EggReplayScratch>,2> egg_scratch;
     for (std::size_t i = 0; i < 12; ++i) {
         const auto& recorded = record.pokemons[i];
         if (recorded.pokemonID < 0) break;
@@ -248,10 +272,10 @@ Resources::Resources(const rom::Snapshot& snapshot, const world::Resources& worl
             instance.half_scale = identities_[0].variants[recorded.unk_00_13].u32(0) == 0x80186e20;
         if (instance.id == 602) {
             const bool morph = identities_[2].variants[recorded.unk_00_13].u32(0) == 0x80188cb0;
-            egg_patch(patches_,reader,0x80188d28,0x8018a6f0,0x150,morph,instance.time);
+            egg_patch(patches_,egg_scratch[0],reader,0x80188d28,0x8018a6f0,0x150,morph,instance.time);
         } else if (instance.id == 601) {
             const bool morph = identities_[1].variants[recorded.unk_00_13].u32(0) == 0x8017a710;
-            egg_patch(patches_,reader,0x8017a780,0x8017c090,0x144,morph,instance.time);
+            egg_patch(patches_,egg_scratch[1],reader,0x8017a780,0x8017c090,0x144,morph,instance.time);
         }
         hydrate(*found,instance,models,materials);
     }
@@ -617,6 +641,13 @@ IsleGameResult Reconstruction::clear() noexcept {
     }
     s.score_count = 0;
     return ISLE_GAME_OK;
+}
+bool Reconstruction::rearm() noexcept {
+    auto& s = *impl_;
+    if (!cleared() || s.failure != ISLE_GAME_OK) return false;
+    for (auto& owner : s.native_owners) owner = {&s,owner.index};
+    s.started = s.clearing = false;
+    return true;
 }
 bool Reconstruction::clearing() const noexcept { return impl_->clearing; }
 bool Reconstruction::cleared() const noexcept { return impl_->clearing && impl_->count == 0; }

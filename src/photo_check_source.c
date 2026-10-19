@@ -1,4 +1,5 @@
 #include "photo_check_source.h"
+#include "original_sort_source.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -146,6 +147,7 @@ static void pc_element_background(Context* source, UIElement* element) {
     pc_check(source, isle_post_window_element_background(source->common.window, element->handle));
 }
 static void pc_element_state(Context* source, UIElement* element, int state) {
+    if (element == NULL) return; /* Original UIElement_SetState accepts NULL. */
     pc_check(source, isle_post_window_element_visible(source->common.window, element->handle, state == UI_NORMAL));
 }
 static void pc_element_font(Context* source, UIElement* element, int font) {
@@ -372,6 +374,16 @@ static void pc_camera_create(Context* source) {
  * Rendering/setup SDK syntax is translated to typed actual native owner leaves.
  */
 static int32_t pc_ack_at(Context*,UIElement*,int32_t,int32_t);
+static int32_t pc_shared_compare(void* user,const void* a,const void* b) {
+    Context* source=(Context*)user;
+    return source->qsortCompareFunc(source,a,b);
+}
+static void pc_qsort(Context* source,void* base,uint32_t count,uint32_t item_size,IslePhotoCheckCompare compare) {
+    if(!compare||!item_size||source->qsortCompareFunc) pc_check(source,ISLE_GAME_INVALID_ARGUMENT);
+    source->qsortCompareFunc=compare;
+    isle_original_source_qsort2(source,base,count,item_size,pc_shared_compare);
+    source->qsortCompareFunc=NULL;
+}
 #include "photo_check_original.inc"
 static int32_t pc_ack_at(Context* source,UIElement* element,int32_t sound,int32_t line) {
     int32_t result;

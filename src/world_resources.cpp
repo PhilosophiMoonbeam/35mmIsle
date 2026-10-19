@@ -67,6 +67,25 @@ CollisionModel decode_collision(const model_assets::Reader& reader, const rom::G
 }
 } // namespace
 
+CollisionModel tunnel_gate_collision(const rom::Snapshot& snapshot) {
+    // The exact independently initialized CollisionModel in Tunnel1009/code.c;
+    // not the World collision_models array and not Rainbow's gate resource.
+    constexpr std::array<std::uint8_t,20> sha1{
+        0xed,0xc7,0xc4,0x9c,0xc5,0x68,0xc0,0x45,0xfe,0x48,
+        0xbe,0x0d,0x18,0x01,0x1c,0x30,0xf3,0x93,0xcb,0xaf};
+    require(snapshot.canonical().size()==rom::us_size &&
+            snapshot.identity().size==rom::us_size && snapshot.identity().sha1==sha1,
+            "Tunnel gate collision requires admitted US Snapshot");
+    const model_assets::Reader reader(snapshot,course::layout(1).mappings);
+    auto model=decode_collision(reader,reader.view(0x802ef9e4u,12));
+    require(model.id==1009 && model.scale==1 && model.wire.rom_offset==0x5ecab4u &&
+            model.wire.u32(4)==0x802ef908u && model.tree_wire.guest_address==0x802ef908u,
+            "Tunnel1009 collision record/tree differs from qualified Source tuple");
+    model.snapshot=&snapshot;
+    model.source_data=snapshot.canonical().data();
+    return model;
+}
+
 RainbowGateCollision::RainbowGateCollision(const rom::Snapshot& snapshot) {
     // df8815e75f3d79618466e01e0827c6165b93d11c gate/code.c
     // blob ee5d0b94feada6dcafa0df3a8b07c36baa5b10d1: InitOneCollisionModel

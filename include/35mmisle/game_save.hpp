@@ -79,6 +79,11 @@ public:
     [[nodiscard]] static GameOpenResult open(const std::filesystem::path& directory,
                                              std::uint32_t raw_game_time);
     [[nodiscard]] GameValue<GameSnapshot> snapshot();
+    // Nonsealing canonical RAM read; Source flag 15 remains transient state.
+    [[nodiscard]] GameValue<bool> player_flag(unsigned source_id) const noexcept;
+    // Borrow the actual 20 bytes beginning at Source getPlayerName(), including
+    // the four bytes after its 16-byte PlayerName. Expires on session mutation.
+    [[nodiscard]] std::span<const std::byte> source_player_name_prefix() const noexcept;
     // Explicit source func_800C042C reset: RAM-only defaults and native sealing.
     // Preserves the Store lock/generation, owning snapshots and both existing
     // startup notices; clears transient PFID15 and the course notice. Only a

@@ -1,0 +1,3777 @@
+{
+  "provider": "isle-album-private",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "scene_id": 12,
+  "resource_kind": 2,
+  "expected_definition_count": 100,
+  "source_files": {
+    "src/pokemon_album/9A6B10.c": {
+      "blob": "001d38eaa9957fbb147277302be90ab5b8f27e59",
+      "sha256": "46f319b13b49fe7c1ad78202ed679002bd086021ee97fc47980e4a5b073f64f8",
+      "bytes": 3609
+    },
+    "src/pokemon_album/9A6F70.c": {
+      "blob": "fe2b0e71cb5bab99b393ce1bee05747647ee1255",
+      "sha256": "841bc70a06db446e29823e31f56047952ed4c9735d051da4226a164325d78609",
+      "bytes": 49495
+    },
+    "src/pokemon_album/9ABB50.c": {
+      "blob": "e2f76f70561cbd8e88d2e2d0f2c2868ce660ebcc",
+      "sha256": "fd31c23a302dc80b08f358dfba73bbca4937a3da9ec53db0e90cab8106100220",
+      "bytes": 26687
+    },
+    "src/pokemon_album/9ADAD0.c": {
+      "blob": "0891bf965bcea0059b702a322f6f0590d69736ff",
+      "sha256": "7c09f315410a70b265bf815901cd8e0ae1a0b94bfefa5894695cf187dc318bbc",
+      "bytes": 6269
+    },
+    "src/pokemon_album/pokemon_album.h": {
+      "blob": "1d242aa1d85f66acad12abd42f5d3bee90de7c01",
+      "sha256": "1576b9e234dab811abb34372e92efc79529a22f14c1dedec43399924e8e7b6e4",
+      "bytes": 2061
+    },
+    "include/common_structs.h": {
+      "blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "bytes": 9431
+    },
+    "include/enums.h": {
+      "blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "bytes": 9833
+    },
+    "src/window/window.h": {
+      "blob": "c7490b352a5c4b99e570f26ba9a556cb20afb305",
+      "sha256": "b0140107b3fe440dd3ae5ddde311ebe89fa38b8e51ec2d95a1f9aff10764cdba",
+      "bytes": 6585
+    },
+    "src/window/8486E0.c": {
+      "blob": "a822b0a8a2148ccda8b4557707f81d3a71dc19d8",
+      "sha256": "67bc8e26889891abec021e0303b58d8a9b791321db2ca8ec1658b81d8d7437ed",
+      "bytes": 4374
+    },
+    "src/window/text.c": {
+      "blob": "3189fdc9bed7cbaf6b841c3899051b52b4b0097b",
+      "sha256": "1e2785fd42cda4941a9a28f301dc24f7fbfe47bde045619d6593d19ae8742151",
+      "bytes": 23076
+    }
+  },
+  "definitions": [
+    {
+      "source": "src/pokemon_album/9A6B10.c",
+      "name": "func_801DC8C0_9A6B10",
+      "first": 75,
+      "last": 77,
+      "sha256": "4c9bf7dd6e070d9a072333c15e9e8d4f56dd93f0f8014d7d1c544efc1e63d5e0",
+      "native_sha256": "50ba59038cb065fea801d6a545a630e173dd1b21a56c7a1b775a277094324f60",
+      "rewrites": [
+        {
+          "kind": "typed-native-lowering",
+          "implementation": "isle_album_source_display_list"
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6B10.c",
+      "name": "func_801DC904_9A6B54",
+      "first": 79,
+      "last": 92,
+      "sha256": "fe6a39308d8125871f531e064e1a31105a529fb469e51db607bd019bea6ec847",
+      "native_sha256": "cd3d70684c1a3e27c41c1ae820b9be5ee34296c15c9ef852b3bce21e5918e872",
+      "rewrites": [
+        {
+          "kind": "typed-native-lowering",
+          "implementation": "isle_album_source_render_state"
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6B10.c",
+      "name": "func_801DCA14_9A6C64",
+      "first": 94,
+      "last": 100,
+      "sha256": "67a4e894b64a4790b98d250242a4c6017eeaa6f36b9fddefad887d14bd71d6cc",
+      "native_sha256": "2b2f8e8543bde2f147c403094b8c86e3927bce57bb569525e38693ad9e2ed39e",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "function:ohWait": 1,
+            "context:ab_wait": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6B10.c",
+      "name": "album_InitCamera",
+      "first": 102,
+      "last": 124,
+      "sha256": "d8399ad7ce6ec2fefe844aab7ff8fb3482cd4fb5bad44facbe316778ca5abac6",
+      "native_sha256": "91b55352d1daf1256256bc3e2e4d1978464fd145b8689e4b6a2ef39f7a9ef7cc",
+      "rewrites": [
+        {
+          "kind": "typed-native-lowering",
+          "implementation": "ab_camera_create"
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6B10.c",
+      "name": "album_Init",
+      "first": 126,
+      "last": 138,
+      "sha256": "460a652231b45d2c61d55380a94728d0f0af6c2f9fab3809255766987a10196d",
+      "native_sha256": "91b7dfc6e4bc150cd0907cac90912f681b7f1e34af88a42e8cf92c82c9497d6e",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_Init",
+          "find_sha256": "311976089007677e30eaa9b63b8df62fc63cd52206b7f7b4a9b1cd35244b211c",
+          "replace_sha256": "97f611a776634c334b9d76a87b0d110ca56bffa2370c6b07902ff7eb9e53cb3e",
+          "find_bytes": 49,
+          "replace_bytes": 59,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "function:UIText_Initialize": 1,
+            "function:auPlaySong": 1,
+            "function:auSetBGMVolume": 1,
+            "function:func_800A7F68": 1,
+            "function:func_800AAE28": 1,
+            "function:func_80374D40_8484F0": 1,
+            "function:album_CreateUI": 1,
+            "function:album_InitCamera": 1,
+            "token:BGM_PLAYER_MAIN": 1,
+            "token:SONG_ID_10": 1,
+            "context:ab_text_initialize": 1,
+            "empty:ab_text_initialize": 1,
+            "context:ab_song": 1,
+            "context:ab_volume": 1,
+            "context:ab_aux_camera": 1,
+            "context:ab_input_initialize": 1,
+            "empty:ab_input_initialize": 1,
+            "context:ab_replay_initialize": 1,
+            "empty:ab_replay_initialize": 1,
+            "context:isle_album_album_CreateUI": 1,
+            "empty:isle_album_album_CreateUI": 1,
+            "context:ab_camera_create": 1,
+            "empty:ab_camera_create": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6B10.c",
+      "name": "func_801DCC74_9A6EC4",
+      "first": 140,
+      "last": 142,
+      "sha256": "35f4e8dd0f243eaeb18c2def358fcc5f896b168f237cfae9a0e2ffea0569ced9",
+      "native_sha256": "52716c5c0bc8f480e03119ab80f4f833da6a1737c05fde8faf8bec0e1e2ddfb2",
+      "rewrites": [
+        {
+          "kind": "typed-native-lowering",
+          "implementation": "isle_album_func_801DCC74_9A6EC4"
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6B10.c",
+      "name": "album_Start",
+      "first": 144,
+      "last": 154,
+      "sha256": "2c5c737aa5db1938f4858c1e5e9912ef65234787c8e103e0481dcd19baf7b179",
+      "native_sha256": "1e73c196339442688f0c0a21eb6209fc289ab6ecd7bb30650a99660efee1fe7a",
+      "rewrites": [
+        {
+          "kind": "typed-native-lowering",
+          "implementation": "isle_album_source_entry"
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_GetCurrentPage",
+      "first": 96,
+      "last": 98,
+      "sha256": "da316b72eb2281868fd148e21d530f3a2adf7dae88c0d60c4dcc1eaa18d1dc9e",
+      "native_sha256": "8970e7552d5222c272d29b5bd1b33b540e3f28580e735e9c5c32730a6d7c4d4f",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "field:album_AlbumPage": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DCD3C_9A6F8C",
+      "first": 100,
+      "last": 105,
+      "sha256": "dc53f3d054d70419378dae1ea9ad49ab54ea7b71bc50517cc095a22d4fe8111b",
+      "native_sha256": "66fb41984a450b398f5c58613c7c508e5ce445f2610fca4c05d2941089beffaf",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_GetCommentTextWidth",
+      "first": 107,
+      "last": 136,
+      "sha256": "17b01e13a743f1ba1b5f9bb5be4f288c97fb533300e59f0f65e45e760e20fb76",
+      "native_sha256": "5ec3089d8d2b14f3328903ea1167c9c2c90ef049537c327385bab62162d6ee1d",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_GetCommentTextWidth",
+          "find_sha256": "d43e18fd0a0e482280394d47a795faf08e4795737b3f45fb803c86f14f259f78",
+          "replace_sha256": "c4d00b67eba623f189e30896bdc0583e32763e45c1d35ed15e1c0c529cd5a78b",
+          "find_bytes": 785,
+          "replace_bytes": 55,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-comment": 1,
+            "token:s32": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_BlinkCursor",
+      "first": 138,
+      "last": 155,
+      "sha256": "90049c1b037e04499b5b78ebb02936db338a99eb12ae1b393cd364b64f8e7f76",
+      "native_sha256": "d82a2496597b7218a605ac4801a72a50b3fcb68356a907906e64bb4addff5af6",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 1,
+            "function:ohWait": 2,
+            "function:omDeleteGObj": 1,
+            "field:album_IsEditingComment": 1,
+            "field:album_CursorAlpha": 6,
+            "field:album_CursorAlphaRate": 3,
+            "field:album_Cursor": 1,
+            "context:ab_wait": 2,
+            "context:ab_delete": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_BlinkLetter",
+      "first": 157,
+      "last": 175,
+      "sha256": "aa827b29b88721e40bbcdd97b78b0704793e6c9df4a8e992e3c23cfa16c4f03a",
+      "native_sha256": "82e19b19be3d0683ce89ccae99b981adac234bba007bfda61f6d9adf6b94446a",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:UIElement_SetSpriteColor": 1,
+            "function:ohWait": 2,
+            "function:omDeleteGObj": 1,
+            "field:album_IsEditingComment": 1,
+            "field:album_LetterAlpha": 6,
+            "field:album_LetterAlphaRate": 3,
+            "field:album_UiCommentActiveLetter": 1,
+            "context:ab_element_tint": 1,
+            "context:ab_wait": 2,
+            "context:ab_delete": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_GetCursorPos",
+      "first": 177,
+      "last": 179,
+      "sha256": "4d30f597409e99e744bc1f1f12992e2c30ec805f3008dc55e4917f05c817b503",
+      "native_sha256": "7ea51112a6a5c7491847924356796b61769194ed437d2e26d809cf81bc0e1dfe",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s16": 1,
+            "field:album_CommentCursorPos": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DD0E8_9A7338",
+      "first": 181,
+      "last": 188,
+      "sha256": "cb45edcfb1ecac66628d9124f3e6e19b78fa1613599ebfc5c6d911ff138f32be",
+      "native_sha256": "275e3674d7a6ca8368065a5efaccebd0242e2a7817cd7aef63e71bfc07171fd3",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-text": 1,
+            "token:bool": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_GetPhotoParam",
+      "first": 190,
+      "last": 257,
+      "sha256": "39bee8d8113bedeaa7a3a268cf8019e4d232fcfc9c7ea1c1f60fbc820c940ab1",
+      "native_sha256": "112a27f991f3584241451fdda73e9374ec664689b8600c008590a55e960d726a",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-text": 1,
+            "token:u32": 1,
+            "field:D_80208B88_9D2DD8": 6,
+            "function:func_8037501C_8487CC": 7,
+            "context:ab_number": 7,
+            "function:func_801DD0E8_9A7338": 3,
+            "context:isle_album_func_801DD0E8_9A7338": 3,
+            "token:s32": 1,
+            "token:f32": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_SetCoverColor",
+      "first": 259,
+      "last": 271,
+      "sha256": "25048fee644e112dcc0f2092985a832585c7186dcd304f25cb75d84ea68a8636",
+      "native_sha256": "9c3aa51439e62e961f15dd79dbe8281aaae27b3e2fe40bcc40f13689fcfd26bc",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "bounded-cover-read": 4,
+            "mutable-sprite-view": 6,
+            "token:s32": 2,
+            "field:album_BackgroundSObj": 3,
+            "field:album_CoverTitleSObj": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_SetCommentBackgroundColor",
+      "first": 273,
+      "last": 275,
+      "sha256": "5646cb562be245aca55b6de2c75fe78cc81e3aa69729c3465bbf4834c0d10790",
+      "native_sha256": "8ec02f048ba29b1b93d5531eea9fe9f92beab4f835f45e65902b212ef8424d79",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 3,
+            "token:u32": 1,
+            "field:album_CommentBackground": 3
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DD500_9A7750",
+      "first": 277,
+      "last": 283,
+      "sha256": "e7514f0e6cbc0f905c24d2ef3cc46cf0da409085fa3b77ce2655e5d87ae76a2f",
+      "native_sha256": "c4b69a2f5e26f481855150aa69bcf45e532afdd79a72dd5b5a56d8f0195553af",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 3,
+            "mutable-sprite-view": 3,
+            "token:s32": 2,
+            "field:album_Photos": 4
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DD5A0_9A77F0",
+      "first": 285,
+      "last": 293,
+      "sha256": "857de32b1ddd102fd148e02c990f110dd0a5aeb30b536a08c88461e9d39b58e8",
+      "native_sha256": "1de9f8d5856678bab4519ec82242e5330f2ddc578d930db97096772f7317c9f5",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 3,
+            "token:s32": 2,
+            "field:album_PhotoCorners": 5
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DD638_9A7888",
+      "first": 295,
+      "last": 297,
+      "sha256": "21f4971d9176eac7277e2db4ee3969bb7362bf4f17e6be8fb1200e7a7c3dca27",
+      "native_sha256": "0a7eb86c43b0f5b20f5ecc81ca86a96739b82ece9ca46d151731fa8f88e13e13",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 3,
+            "mutable-sprite-view": 3,
+            "token:s32": 1,
+            "field:album_D_80250108_A1A358": 3
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DD684_9A78D4",
+      "first": 299,
+      "last": 301,
+      "sha256": "306c82a121a60f00511770daa224e2c9758a86ee08279f5da76b4f45a388d5a1",
+      "native_sha256": "0545043538c2e87788ba9c2d9f570c22665265ef9e7bf221e0bfb80458af7c5b",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "function:UIElement_SetSpriteColor": 1,
+            "context:ab_element_tint": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreatePhoto",
+      "first": 303,
+      "last": 349,
+      "sha256": "08fd6350a28bbece8b6f5eeadae7be8105dcb8f7633cd469314fbded2ca58f73",
+      "native_sha256": "8d4d924b5860af8562431140531fcddf9a55b92ba5da63c31270ecf32520864f",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_CreatePhoto",
+          "find_sha256": "5c420187793183a2b0befb8b9f080f2c057a61a1170c91914e392bf82197e40e",
+          "replace_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "find_bytes": 47,
+          "replace_bytes": 0,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "album_CreatePhoto",
+          "find_sha256": "5dfc447ededcda325cb7aa394769edeb28f00549bd7bc122fb3eed1ec972caac",
+          "replace_sha256": "35459712130f3ccfa8eb02e9ee1926170792202de0569b63e8087f094cb41261",
+          "find_bytes": 300,
+          "replace_bytes": 44,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 10,
+            "asset:D_802005B8_9CA808": 2,
+            "asset:D_802006E8_9CA938": 2,
+            "asset:D_80201728_9CB978": 1,
+            "token:s32": 3,
+            "function:func_80371C68_845418": 1,
+            "function:func_80371DC0_845570": 3,
+            "function:func_80371E68_845618": 1,
+            "field:album_Photos": 2,
+            "token:LINK_6": 1,
+            "context:ab_sprite_synchronous": 1,
+            "context:ab_sibling": 3,
+            "context:ab_child": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreatePhotos",
+      "first": 351,
+      "last": 357,
+      "sha256": "3acc8a99c4e83718897bd5448113ced6d405f425c1ceb6b6304d21c4df6d0c24",
+      "native_sha256": "78d8b746d5c8d6318a009132cfa239e067dae0e4b5a5a2c812bc54d34e4927b4",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:album_CreatePhoto": 1,
+            "field:album_Photos": 1,
+            "token:s32": 1,
+            "context:isle_album_album_CreatePhoto": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_DrawAlbumPage",
+      "first": 359,
+      "last": 385,
+      "sha256": "ddca4a0aa8c368ad558ae99235c4485f1d740413e86b6081912eb1ce7449ec5c",
+      "native_sha256": "dd4a4ea91765439ac3154eaede3a820b9c6283dc3b21a7def0c66e25b5465ff5",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-thumbnail-handle": 1,
+            "root-handle": 2,
+            "mutable-sprite-view": 2,
+            "token:s32": 2,
+            "function:UIElement_Draw": 1,
+            "function:UIElement_PrintText": 2,
+            "function:UIElement_SetTextPos": 2,
+            "function:UIText_SetPrintDelay": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:func_80374714_847EC4": 1,
+            "function:album_GetAlbumPhoto": 1,
+            "field:album_UiPageNumber": 6,
+            "field:album_AlbumPage": 2,
+            "field:album_Photos": 6,
+            "token:SP_HIDDEN": 2,
+            "context:ab_element_draw": 1,
+            "context:ab_print_source": 2,
+            "context:ab_element_position": 2,
+            "context:ab_text_delay": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:ab_preview": 1,
+            "context:isle_album_album_GetAlbumPhoto": 1,
+            "function:UIElement_SetState": 1,
+            "function:UIText_GetStringWidth": 1,
+            "context:ab_element_state": 1,
+            "context:ab_width": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DDB54_9A7DA4",
+      "first": 387,
+      "last": 398,
+      "sha256": "e1daabf9bd7b1447c059a086094254d83dd658abcfec505beaa69580404ad400",
+      "native_sha256": "04bd6f9d356c17ff86479dc2fdeb9c540fc169eb50a016c0e9188dfbfbbb53c9",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-thumbnail-handle": 1,
+            "root-handle": 2,
+            "mutable-sprite-view": 2,
+            "token:s32": 2,
+            "function:func_80374714_847EC4": 1,
+            "function:album_GetAlbumPhoto": 1,
+            "field:album_Photos": 6,
+            "token:SP_HIDDEN": 2,
+            "context:ab_preview": 1,
+            "context:isle_album_album_GetAlbumPhoto": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DDC70_9A7EC0",
+      "first": 400,
+      "last": 410,
+      "sha256": "5834f3a56fe25c6069d8e8956d6e50e3c180cb1fe80e1ff7e8ad2ab4ad19d22c",
+      "native_sha256": "be9ce334924bf7ec174c8a0664197a072112bd25a27fde9bca8f0ff0f0a3a1ba",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DDC70_9A7EC0",
+          "find_sha256": "e43d23d88131a2ad37401d52aff42a41bbea7e07a1b893a14ceaa6f5161ebc73",
+          "replace_sha256": "f8044bd983124df63028bd26f073d9bbc32cb071790dda0f7c7a8fe3a5b32843",
+          "find_bytes": 31,
+          "replace_bytes": 28,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 2,
+            "mutable-sprite-view": 2,
+            "token:bool": 1,
+            "field:album_Photos": 4,
+            "token:s32": 1,
+            "token:SP_HIDDEN": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DDD28_9A7F78",
+      "first": 412,
+      "last": 420,
+      "sha256": "68290b618cb9d9fe07709aa3878ddd7531673db041ab7f3eecf7f61f06a071c9",
+      "native_sha256": "8b071f633a9948e3d32ebdd4d1d6dab8a275cf87bd40e2174651506ac95c9d32",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 4,
+            "mutable-sprite-view": 4,
+            "token:s32": 1,
+            "token:bool": 1,
+            "field:album_Photos": 8,
+            "token:SP_HIDDEN": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DDDF8_9A8048",
+      "first": 422,
+      "last": 432,
+      "sha256": "7e37fb501e78e9ad8b02005308b189fb1b192991f8eb18d311e6115354f45a3e",
+      "native_sha256": "6bae6d660f5472db90751b0172cdee3974a3ec035d87cacc5a04fb2a85cf5083",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 4,
+            "token:s32": 2,
+            "field:album_DraggedPhotoGObj": 1,
+            "token:SP_HIDDEN": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DDE64_9A80B4",
+      "first": 434,
+      "last": 477,
+      "sha256": "83a8bf53815c303b235940bb738dbd2447107821c7290e84c6c32c5d3533bbd8",
+      "native_sha256": "10292c20ee0991386742f53e0db61d66e7fe0bc690e11b3d7241d21143f78387",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DDE64_9A80B4",
+          "find_sha256": "5c420187793183a2b0befb8b9f080f2c057a61a1170c91914e392bf82197e40e",
+          "replace_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "find_bytes": 47,
+          "replace_bytes": 0,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801DDE64_9A80B4",
+          "find_sha256": "6274a2ce8f8da8335a304389ea1a5bb0a981bbf0e3c4d9fdaf74b4fabd4d8e89",
+          "replace_sha256": "35459712130f3ccfa8eb02e9ee1926170792202de0569b63e8087f094cb41261",
+          "find_bytes": 300,
+          "replace_bytes": 44,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 11,
+            "asset:D_802005B8_9CA808": 2,
+            "asset:D_802006E8_9CA938": 2,
+            "asset:D_80201728_9CB978": 1,
+            "function:func_80371C68_845418": 1,
+            "function:func_80371DC0_845570": 3,
+            "function:func_80371E68_845618": 1,
+            "field:album_DraggedPhotoGObj": 1,
+            "field:album_DraggedPhotoSObj": 1,
+            "token:s32": 1,
+            "token:LINK_6": 1,
+            "token:SP_HIDDEN": 1,
+            "context:ab_sprite_synchronous": 1,
+            "context:ab_sibling": 3,
+            "context:ab_child": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE03C_9A828C",
+      "first": 479,
+      "last": 488,
+      "sha256": "3b66943362d60cb21ec377ac29d1e400d86f5d0be6d4b92fed2b5c113a15e090",
+      "native_sha256": "2d3e0645ac0ec9933fa7c3ec2857e3aa41923d9e995fae0872741c60459ed131",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DE03C_9A828C",
+          "find_sha256": "99e1f000a0a8a99eaac20893533c3c5e532341e099b1b03318586d4cbd72b68b",
+          "replace_sha256": "0832b3dce61cc2858881589200a5965721b95634b8906cdd7bc13cb439aaf649",
+          "find_bytes": 14,
+          "replace_bytes": 41,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 2,
+            "token:bool": 1,
+            "token:SP_HIDDEN": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE080_9A82D0",
+      "first": 490,
+      "last": 492,
+      "sha256": "d5aa4b7093df340c75e49d6f60981b25ad774a8b0942d8161e9751a914d1d7bf",
+      "native_sha256": "a24fd3dc6316620ba088d5d7e97927ed59548a089a5d57e915c01a383db85380",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DE080_9A82D0",
+          "find_sha256": "4b22a0ec1c73bbfb0af2e3810464ad7a98ca33e422160c158c438ccb4b10e88b",
+          "replace_sha256": "492ba2c76e0e7f87c1d59ab91bf15e7749ebbe44c1f72b70e7718269fb69b907",
+          "find_bytes": 78,
+          "replace_bytes": 86,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "field:album_DraggedPhotoSObj": 1,
+            "field:album_D_80250170_A1A3C0": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE0C8_9A8318",
+      "first": 494,
+      "last": 525,
+      "sha256": "248fb31a4bdb6249414ce6bfa15bd63ef859bebc377755797ee6b28d8f64e10e",
+      "native_sha256": "6f27777a4925f02cfc7419c5e61b338684b86bc123debb957fdda09017a9e77d",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DE0C8_9A8318",
+          "find_sha256": "212f326d7f64bad105a7c6b315917bb07ab7cfadb21b5e86bb071aee4437c30a",
+          "replace_sha256": "2d54f27d0286394c67bf186a0fe8678968aea40b0fc763036379407ea49453c7",
+          "find_bytes": 35,
+          "replace_bytes": 79,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "root-handle": 1,
+            "mutable-sprite-view": 11,
+            "asset:D_80200058_9CA2A8": 2,
+            "asset:D_80200400_9CA650": 2,
+            "asset:D_80208B10_9D2D60": 1,
+            "function:func_80371C68_845418": 1,
+            "function:func_80371DC0_845570": 3,
+            "function:func_80371E68_845618": 1,
+            "field:album_D_80250108_A1A358": 1,
+            "field:album_D_8025010C_A1A35C": 1,
+            "token:LINK_6": 1,
+            "token:SP_HIDDEN": 1,
+            "context:ab_sprite_synchronous": 1,
+            "context:ab_sibling": 3,
+            "context:ab_child": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_PrintPhotoComment",
+      "first": 527,
+      "last": 541,
+      "sha256": "e1223b01420c9964c2d7597d84b0dd60ab4b0ab1d15e122b3ead88d4ab5781b1",
+      "native_sha256": "4214630bcbbad8f0fd6dd2c2aba914f486c0dc12b973a4a5e445018b50062f35",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "function:UIElement_Draw": 1,
+            "function:UIElement_PrintText": 1,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetState": 1,
+            "function:UIElement_SetTextPos": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:album_GetCommentTextWidth": 1,
+            "function:album_GetPhotoComment": 2,
+            "field:album_UiPhotoComment": 5,
+            "context:ab_element_draw": 1,
+            "context:ab_print_source": 1,
+            "context:ab_element_font": 1,
+            "context:ab_element_state": 1,
+            "context:ab_element_position": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:isle_album_album_GetCommentTextWidth": 1,
+            "context:isle_album_album_GetPhotoComment": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE2BC_9A850C",
+      "first": 543,
+      "last": 551,
+      "sha256": "e7b40927f68daa862a3507f04652054075f2bf369cbc4e83a1459897b59c5bc7",
+      "native_sha256": "1a26ba988e57d01b27aab6892d981f37c1e4b6d250dc8f9df37c8e01de00d0ce",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "actual-thumbnail-handle": 1,
+            "token:s32": 1,
+            "function:UIElement_SetState": 2,
+            "function:func_80374714_847EC4": 1,
+            "function:album_PrintPhotoComment": 1,
+            "function:album_GetAlbumPhoto": 1,
+            "field:D_80208B54_9D2DA4": 2,
+            "field:album_UiPhotoComment": 2,
+            "field:album_D_8025010C_A1A35C": 1,
+            "context:ab_element_state": 2,
+            "context:ab_preview": 1,
+            "context:isle_album_album_PrintPhotoComment": 1,
+            "context:isle_album_album_GetAlbumPhoto": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE350_9A85A0",
+      "first": 553,
+      "last": 562,
+      "sha256": "59d7605b3a93e33819e2b78eb839154aa095da45d452731e5f37bde7e8d6566d",
+      "native_sha256": "09e388028860844eb1f23bb5ba7fca57e0c22693e0f400f0b2167f1f97dc1530",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 2,
+            "mutable-sprite-view": 2,
+            "token:s32": 1,
+            "token:bool": 1,
+            "function:UIElement_SetState": 1,
+            "function:auPlaySound": 1,
+            "function:func_801DE2BC_9A850C": 1,
+            "field:album_UiPageNumber": 1,
+            "field:album_D_80250108_A1A358": 2,
+            "token:SP_HIDDEN": 2,
+            "token:SOUND_ID_71": 1,
+            "context:ab_element_state": 1,
+            "context:ab_sound": 1,
+            "context:isle_album_func_801DE2BC_9A850C": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreatePhotoCorners",
+      "first": 564,
+      "last": 607,
+      "sha256": "a031e39b023702fcca2f0a1a54d0ba14268808a661fc4c8e5d317d83417d021d",
+      "native_sha256": "24c151b7142c8f5543048ae8927a6272d8991045da78970a0a86773a13ec40c9",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 2,
+            "mutable-sprite-view": 18,
+            "asset:D_801F3108_9BD358": 2,
+            "asset:D_801F3288_9BD4D8": 2,
+            "asset:D_801F3408_9BD658": 2,
+            "asset:D_801F3588_9BD7D8": 2,
+            "function:func_80371C68_845418": 2,
+            "function:func_80371DC0_845570": 4,
+            "function:func_80371E68_845618": 2,
+            "field:album_PhotoCorners": 2,
+            "token:s32": 2,
+            "token:LINK_6": 2,
+            "token:SP_HIDDEN": 2,
+            "context:ab_sprite_synchronous": 2,
+            "context:ab_sibling": 4,
+            "context:ab_child": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE620_9A8870",
+      "first": 609,
+      "last": 634,
+      "sha256": "affab93890706ad81f7426d67232c256c73f541ae0f97d895aef7c08cf4cfe87",
+      "native_sha256": "925e7458c08b6153212a80ae7f43646625b9d582c7c707e2209c2a47724848a3",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 6,
+            "token:s32": 3,
+            "field:album_PhotoCorners": 12,
+            "token:SP_HIDDEN": 6
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreateCommentBackground",
+      "first": 636,
+      "last": 649,
+      "sha256": "8a3ed0d46be87292b214ff07a364a3172ec4248fa4f6a41131304b5ce2d886ec",
+      "native_sha256": "a18ea95cd8950759250ca9737bd102dc2f1aae044180dfe2b0895e600dc5da6a",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 3,
+            "asset:D_801F6B50_9C0DA0": 1,
+            "function:func_80371C68_845418": 1,
+            "field:album_CommentBackground": 1,
+            "token:LINK_6": 1,
+            "token:SP_HIDDEN": 1,
+            "context:ab_sprite_synchronous": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_ShowCommentBackground",
+      "first": 651,
+      "last": 657,
+      "sha256": "be5ffff17384f87f0f115af65f5d82427a2fae737b61a42b79b618ad3cf2c389",
+      "native_sha256": "1b2dfa2605b531bf3c91f956c5b96a833807c97030ea7de620514b3716c8d8f5",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 2,
+            "token:bool": 1,
+            "field:album_CommentBackground": 2,
+            "token:SP_HIDDEN": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreateCommentTextBox",
+      "first": 659,
+      "last": 683,
+      "sha256": "9acb5252e90e79434ed4ca00819d4615e33974247856995b38ba2202a5f0ec8f",
+      "native_sha256": "cef840fcb52495c60b7398c312ae93d1c52a496d329822d14b2da688379cd964",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 3,
+            "asset:D_801FFC80_9C9ED0": 1,
+            "function:UIElement_Create": 1,
+            "function:UIElement_DrawBackground": 1,
+            "function:UIElement_SetColor": 2,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetState": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:func_800A85E8": 2,
+            "function:func_80371C68_845418": 1,
+            "function:album_BlinkCursor": 1,
+            "function:album_BlinkLetter": 1,
+            "field:album_IsEditingComment": 1,
+            "field:album_UiCommentActiveLetter": 6,
+            "field:album_Cursor": 1,
+            "token:LINK_6": 3,
+            "token:DL_LINK_0": 2,
+            "token:SP_HIDDEN": 1,
+            "token:SP_TRANSPARENT": 1,
+            "token:UI_FLAG_32BIT": 1,
+            "context:ab_element_create": 1,
+            "context:ab_element_background": 1,
+            "context:ab_element_color": 2,
+            "context:ab_element_font": 1,
+            "context:ab_element_state": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:ab_process": 2,
+            "context:ab_sprite_synchronous": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE998_9A8BE8",
+      "first": 685,
+      "last": 687,
+      "sha256": "cca7f7acc1df7bdbf984eb8103025cb89b47b034f6761d7dc3503922b6bcbe2b",
+      "native_sha256": "ac38e7e1b834531f2e82cf542824239468512de5de86664f8c0b2186ec82adb5",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:bool": 1,
+            "field:album_D_8024FFE8_A1A238": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DE9B0_9A8C00",
+      "first": 689,
+      "last": 700,
+      "sha256": "97ec7bebf0c59b27a59e33f0768e96b70af872dba84c4b00ba75e8a7c46e1752",
+      "native_sha256": "0d05206aa3dd3de2918860a528fdf93a4e425b0b267129110be6e78abbd840af",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 2,
+            "token:bool": 1,
+            "function:UIElement_SetState": 2,
+            "field:album_D_8024FFE8_A1A238": 1,
+            "field:album_UiCommentActiveLetter": 2,
+            "field:album_Cursor": 2,
+            "token:SP_HIDDEN": 2,
+            "context:ab_element_state": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DEA4C_9A8C9C",
+      "first": 702,
+      "last": 748,
+      "sha256": "7c26f2c423a27b56fbad5e36beda9e2c858a4fd42ef1ebc2061b3491a87883d5",
+      "native_sha256": "c5ad72a47caa49762000c0cdbb7c2200ac4124bda582009512e863a7d3706a1b",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DEA4C_9A8C9C",
+          "find_sha256": "d343f56838a1e182ab8ea570400859842fb6d6be92731a9902e180827d9daefc",
+          "replace_sha256": "4a92bd2cfd86b89a2f5a8e3d2bd760f485e2e8282afd24d5f71e4e8d9d5e852e",
+          "find_bytes": 17,
+          "replace_bytes": 55,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801DEA4C_9A8C9C",
+          "find_sha256": "ee0ae9080af624ef856d115d637f11f214e9f6ac2fb5bf35e1cbf376fd67ec01",
+          "replace_sha256": "9ac5ef95674c854cdf037d83d6ed03cc1de04614a8e1e7bbe1523cd085709f6e",
+          "find_bytes": 33,
+          "replace_bytes": 60,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801DEA4C_9A8C9C",
+          "find_sha256": "bbae17de13eb2b0519604f6bc3925a9d343216298a83ecf31e858483fc082163",
+          "replace_sha256": "d8b6fe7c546197cf0410313fe9d1a163ec276bc7ba10410c289a374e72786ed4",
+          "find_bytes": 24,
+          "replace_bytes": 52,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "finite-character-grid": 2,
+            "mutable-sprite-view": 4,
+            "readonly-comment": 1,
+            "token:s32": 3,
+            "token:bool": 1,
+            "function:UIElement_Draw": 1,
+            "function:UIElement_PrintText": 1,
+            "function:album_GetPhotoComment": 1,
+            "field:D_80208B54_9D2DA4": 2,
+            "field:album_D_8024FFE8_A1A238": 2,
+            "field:album_UiCommentActiveLetter": 6,
+            "field:album_CharGridId": 2,
+            "field:album_CommentCursorPos": 5,
+            "context:ab_element_draw": 1,
+            "context:ab_print_source": 1,
+            "context:isle_album_album_GetPhotoComment": 1,
+            "function:UIElement_SetPos": 1,
+            "function:UIElement_SetState": 3,
+            "function:album_GetCommentTextWidth": 1,
+            "field:album_Cursor": 4,
+            "token:SP_HIDDEN": 3,
+            "context:ab_element_absolute": 1,
+            "context:ab_element_state": 3,
+            "context:isle_album_album_GetCommentTextWidth": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreatePhotoDescBackground",
+      "first": 750,
+      "last": 763,
+      "sha256": "8bbcf2d1286730425f9d75a6b6be2319b6ccbd469573e6d198a1f93c86c3eb14",
+      "native_sha256": "b746de39518877d78b7ef10df6840a6f37836ba7a941041d98944fa2e1683979",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 3,
+            "asset:D_801FB1D0_9C5420": 1,
+            "function:func_80371C68_845418": 1,
+            "field:album_PhotoDescBackground": 1,
+            "token:LINK_6": 1,
+            "token:SP_HIDDEN": 1,
+            "context:ab_sprite_synchronous": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_ShowPhotoDescBackground",
+      "first": 765,
+      "last": 771,
+      "sha256": "82f6999f1b700b5c52adaec3facf2bbc7df827d7176f6e7d026a39971a5d09a3",
+      "native_sha256": "8aa9c684e6a33205e9b7f8e5bb844a07449a76b369c94bc84f1dd86caec78359",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 2,
+            "token:bool": 1,
+            "field:album_PhotoDescBackground": 2,
+            "token:SP_HIDDEN": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DEDB0_9A9000",
+      "first": 773,
+      "last": 786,
+      "sha256": "d224b92e8bb9a0aeab2d1e1ec36c937c36534b8bc8988b7aa3f9e83525edacfd",
+      "native_sha256": "387db2fd367a6fb20024406fe1941ef7e2cbd0b7fbc33b23abb281076231a58d",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:UIElement_Create": 1,
+            "function:UIElement_DrawBackground": 1,
+            "function:UIElement_SetColor": 2,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetState": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "field:album_UiRows": 6,
+            "token:s32": 1,
+            "token:UI_FLAG_32BIT": 1,
+            "context:ab_element_create": 1,
+            "context:ab_element_background": 1,
+            "context:ab_element_color": 2,
+            "context:ab_element_font": 1,
+            "context:ab_element_state": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DEF1C_9A916C",
+      "first": 788,
+      "last": 794,
+      "sha256": "7ffd4d9b9b5c075a1a72a0ba979c35028939e8daa90eea0c0fa8665a7d2db617",
+      "native_sha256": "f6621de7ecf723f6a403e86740387b2dd9ee42344b9a509159756250e79d7f6e",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:UIElement_Delete": 1,
+            "field:album_UiRows": 1,
+            "token:s32": 1,
+            "context:ab_element_delete": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DEF6C_9A91BC",
+      "first": 796,
+      "last": 808,
+      "sha256": "2a7fc334b4acee1af524643c4c53a1c3fa6ea6a52c9351b6732ded0bce072e5d",
+      "native_sha256": "3e1a306212bb6311ef96d93dc2f57cc9980a77cbea788a31b1aec43150c65ee6",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:bool": 1,
+            "function:UIElement_SetState": 2,
+            "field:album_UiRows": 2,
+            "token:s32": 1,
+            "context:ab_element_state": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DF00C_9A925C",
+      "first": 810,
+      "last": 817,
+      "sha256": "53934bc3ada62c5d78201653016836dc67a1799231d95d420f3500bed2b3dca5",
+      "native_sha256": "3861d026f8e91a9a21ea0e7905b4da8aeb9008e9ca98efa13b0af237734d69f7",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 2,
+            "function:UIElement_SetPos": 2,
+            "field:album_UiRows": 2,
+            "context:ab_element_absolute": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DF0D0_9A9320",
+      "first": 819,
+      "last": 825,
+      "sha256": "e16a57181a8522026f0c62bb016aa70732f2def1ab807aa7d8ff8d1a772bf591",
+      "native_sha256": "cf746003f68cbd6a2ab15623ef575697d9e4548732d247b67e9f8d047c200549",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:UIElement_Draw": 1,
+            "field:album_UiRows": 1,
+            "token:s32": 1,
+            "context:ab_element_draw": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DF120_9A9370",
+      "first": 827,
+      "last": 845,
+      "sha256": "439aa186788c9c2b38c401b51e6b1f6412068184d845edeecf29df6e4e4ca46f",
+      "native_sha256": "4f770c7c4ebb18e118cb0483e139e32e41f6c3f2a8b91d1bcc16b30d8c1c509e",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DF120_9A9370",
+          "find_sha256": "2665fa9a9db3e342277410418d7d3611af358b704310697a1db3fda4226b8b90",
+          "replace_sha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+          "find_bytes": 37,
+          "replace_bytes": 1,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "bounded-cover-read": 3,
+            "root-handle": 2,
+            "mutable-sprite-view": 4,
+            "token:bool": 1,
+            "field:album_BackgroundGObj": 2,
+            "token:s32": 1,
+            "token:SP_HIDDEN": 4
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreateCoverUI",
+      "first": 847,
+      "last": 866,
+      "sha256": "0fd3b9b31afebbce526fee69e418b417ee061dcde7cbedf3a9f8b8c7f75656f0",
+      "native_sha256": "bcfb5500ce92dda71443a2f22d3548dc6b7c83fbf39df6d1f4636d896260542a",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "bounded-cover-store": 4,
+            "root-handle": 1,
+            "mutable-sprite-view": 6,
+            "asset:D_801ED550_9B77A0": 1,
+            "asset:D_801F2D28_9BCF78": 1,
+            "function:func_80371D14_8454C4": 1,
+            "function:func_80371DC0_845570": 1,
+            "field:album_CoverTitleGObj": 1,
+            "token:LINK_6": 1,
+            "token:SP_TRANSPARENT": 1,
+            "context:ab_sprite_stackful": 1,
+            "context:ab_sibling": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DF2E0_9A9530",
+      "first": 868,
+      "last": 892,
+      "sha256": "74336a6da9de44ba1293253d6b3fe79de285a9f9d426b22cccc58180d0c93ba1",
+      "native_sha256": "592645a6f3cf868b008e7ae9e953e8f6a8a23b3fe8f750a340872c8cd930ffc1",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801DF2E0_9A9530",
+          "find_sha256": "e87092e0b7b09c69cb348c1b7da8dbe2e29b341b8b01bc17203d61c9ed28d2f7",
+          "replace_sha256": "afb773071f5a3adbb307ab5378ffad81717cb3c0b240e21296d4638fe695920d",
+          "find_bytes": 37,
+          "replace_bytes": 40,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801DF2E0_9A9530",
+          "find_sha256": "51132feff43299482394a61e8d7e5df3c03f1715f3c523b2aa9761b36c063869",
+          "replace_sha256": "03ccea7803672c22a05ea87eeb25a32afd11c53195ae64e37457daa4c1f68998",
+          "find_bytes": 37,
+          "replace_bytes": 40,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801DF2E0_9A9530",
+          "find_sha256": "25fe82407320d6aef382fcb90475934cb4633c0af24c2ecb98b80eb6122f6aa6",
+          "replace_sha256": "9456176398b62b34df8f8ce3cb66aab130e870884b4740a8ec7f597416e2fb61",
+          "find_bytes": 49,
+          "replace_bytes": 71,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "bounded-cover-store": 4,
+            "bounded-cover-read": 2,
+            "mutable-sprite-view": 6,
+            "token:SP_TRANSPARENT": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_PrintPhotoDescription",
+      "first": 894,
+      "last": 936,
+      "sha256": "99024a6804bae7a8f22cadaefad106bb363ebfdb82fd37c575ff86e0ef940981",
+      "native_sha256": "40374bad253ddcaf8888c4c7840f19ad17165da45e52ee6150df3c9a5b75f4ad",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 3,
+            "function:UIElement_PrintText": 4,
+            "function:UIElement_SetTextPos": 7,
+            "function:UIText_SetFont": 1,
+            "function:func_8037452C_847CDC": 1,
+            "function:func_801DF0D0_9A9320": 2,
+            "function:album_GetAlbumPhoto": 1,
+            "field:album_UiRows": 15,
+            "context:ab_print_source": 4,
+            "context:ab_element_position": 7,
+            "context:ab_text_font": 1,
+            "context:ab_score": 1,
+            "context:isle_album_func_801DF0D0_9A9320": 2,
+            "empty:isle_album_func_801DF0D0_9A9320": 2,
+            "context:isle_album_album_GetAlbumPhoto": 1,
+            "function:UIText_GetStringWidth": 3,
+            "function:func_8037519C_84894C": 4,
+            "function:getAlbumPhoto": 1,
+            "function:getLevelName": 1,
+            "context:ab_width": 3,
+            "context:ab_formatted": 4,
+            "context:ab_album": 1,
+            "context:ab_level_name": 1,
+            "function:getPlayerName": 1,
+            "context:ab_player_name": 1,
+            "empty:ab_player_name": 1,
+            "function:getPokemonName": 1,
+            "token:POKEDEX_MAX": 1,
+            "context:ab_pokemon_name": 1,
+            "function:album_GetPhotoParam": 2,
+            "context:isle_album_album_GetPhotoParam": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DF744_9A9994",
+      "first": 938,
+      "last": 1009,
+      "sha256": "489edc813a3bee4307582598f377d5b692e75890c6c85e08fa5580c1ee3e22b0",
+      "native_sha256": "cf0324a31f8950c92f2743631e75c01a534e0f7fba3b6d4f5d90ece7f7842860",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 6,
+            "mutable-sprite-view": 12,
+            "token:s32": 3,
+            "function:FocusMark_Show": 1,
+            "function:UIElement_Create": 1,
+            "function:UIElement_Delete": 1,
+            "function:UIElement_DrawBackground": 1,
+            "function:UIElement_SetColor": 2,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetPos": 4,
+            "function:UIElement_SetTextPos": 1,
+            "function:UILayout_HideButtons": 1,
+            "function:UILayout_SetHeaderFlags": 1,
+            "function:UILayout_ShowHeaderElement": 1,
+            "function:UILayout_ShowPanel": 2,
+            "function:UILayout_WaitPanelTransitionComplete": 1,
+            "function:UIText_GetStringWidth": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:ohWait": 5,
+            "function:album_ShowPhotoDescBackground": 2,
+            "function:func_801DEDB0_9A9000": 1,
+            "function:func_801DEF1C_9A916C": 1,
+            "function:func_801DEF6C_9A91BC": 1,
+            "function:func_801DF00C_9A925C": 3,
+            "function:album_PrintPhotoDescription": 2,
+            "field:album_D_8024EFE0_A19230": 4,
+            "field:album_UiAlbumHeader": 9,
+            "field:album_UiPhotoComment": 4,
+            "field:album_BackgroundGObj": 4,
+            "field:album_PhotoCorners": 2,
+            "field:album_CommentBackground": 2,
+            "field:album_PhotoDescBackground": 2,
+            "field:album_D_802500B8_A1A308": 1,
+            "field:album_D_80250108_A1A358": 2,
+            "token:SCREEN_WIDTH": 1,
+            "context:ab_focus_show": 1,
+            "context:ab_element_create": 1,
+            "context:ab_element_delete": 1,
+            "context:ab_element_background": 1,
+            "context:ab_element_color": 2,
+            "context:ab_element_font": 1,
+            "context:ab_element_absolute": 4,
+            "context:ab_element_position": 1,
+            "context:ab_layout_hide": 1,
+            "empty:ab_layout_hide": 1,
+            "context:ab_layout_header": 1,
+            "context:ab_layout_show_header": 1,
+            "context:ab_layout_panel": 2,
+            "context:ab_layout_wait": 1,
+            "empty:ab_layout_wait": 1,
+            "context:ab_width": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:ab_wait": 5,
+            "context:isle_album_album_ShowPhotoDescBackground": 2,
+            "context:isle_album_func_801DEDB0_9A9000": 1,
+            "empty:isle_album_func_801DEDB0_9A9000": 1,
+            "context:isle_album_func_801DEF1C_9A916C": 1,
+            "empty:isle_album_func_801DEF1C_9A916C": 1,
+            "context:isle_album_func_801DEF6C_9A91BC": 1,
+            "context:isle_album_func_801DF00C_9A925C": 3,
+            "context:isle_album_album_PrintPhotoDescription": 2,
+            "function:UIElement_PrintText": 1,
+            "context:ab_print_source": 1,
+            "function:UIElement_SetState": 1,
+            "context:ab_element_state": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DFB48_9A9D98",
+      "first": 1011,
+      "last": 1035,
+      "sha256": "cdc33bca2e7cc7d015bed7cb4348629f0eee76346bdfcb736b5445214c4e2b3a",
+      "native_sha256": "d133eb22a9ac54f53c82300505e5f63b2b5bcc3f90f593a048adab3131d4f1af",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:UIElement_Create": 2,
+            "function:UIElement_DrawBackground": 2,
+            "function:UIElement_SetColor": 4,
+            "function:UIElement_SetFont": 2,
+            "function:UIElement_SetState": 2,
+            "function:UIText_SetShadowOffset": 2,
+            "function:UIText_SetSpacing": 2,
+            "field:album_UiRows": 12,
+            "token:s32": 1,
+            "context:ab_element_create": 2,
+            "context:ab_element_background": 2,
+            "context:ab_element_color": 4,
+            "context:ab_element_font": 2,
+            "context:ab_element_state": 2,
+            "context:ab_text_shadow": 2,
+            "context:ab_text_spacing": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DFDA0_9A9FF0",
+      "first": 1037,
+      "last": 1043,
+      "sha256": "fff4386cc9ae58d3a26030ed0fa9ea05af2b46d6beb628fed6835a3db91cf50e",
+      "native_sha256": "bfd6e0f760d4f048f21810379a76918f3e32e8cce1d4b6f82d4c323607f91dcd",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:UIElement_Delete": 1,
+            "field:album_UiRows": 1,
+            "token:s32": 1,
+            "context:ab_element_delete": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_DrawCharacterGrid",
+      "first": 1045,
+      "last": 1071,
+      "sha256": "54aac38bdbd9755d12eed20f23883e7dcf0a7a63579e5c748ed51c2a4f16b207",
+      "native_sha256": "75644a59f895bcce2364f5835047fbf7b6630a50a8a83e1c72bbcffcdaf80b87",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "finite-character-grid": 2,
+            "token:s32": 3,
+            "function:UIElement_Draw": 2,
+            "function:UIElement_PrintText": 4,
+            "function:UIElement_SetTextPos": 4,
+            "function:func_8036D4B4_840C64": 2,
+            "field:album_UiRows": 18,
+            "context:ab_element_draw": 2,
+            "context:ab_print_source": 4,
+            "context:ab_element_position": 4,
+            "context:ab_font_option": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801DFFEC_9AA23C",
+      "first": 1073,
+      "last": 1085,
+      "sha256": "695137b348fa83d0a310844f74dd0bbc4571567d62db742765a277368b496f1f",
+      "native_sha256": "7c1085b9bc8f556b0784ba0686b6b0da051dda0e0c76df5d76bf59be408dafda",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 2,
+            "function:UIElement_SetState": 2,
+            "field:album_UiRows": 2,
+            "context:ab_element_state": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801E008C_9AA2DC",
+      "first": 1087,
+      "last": 1111,
+      "sha256": "decba70377a89d7b591ee8ec04ea50186a5eb0c7ba7c632fb6dedf61d5b79a0c",
+      "native_sha256": "e0e8d59bd87f848e5a7905d6e3c722c9c63d6a2ff0b4280c52f21543603f7344",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "mutable-sprite-view": 1,
+            "readonly-comment": 1,
+            "token:s32": 2,
+            "function:UIElement_Draw": 1,
+            "function:UIElement_PrintText": 1,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetPos": 1,
+            "function:UIElement_SetTextPos": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:album_GetCommentTextWidth": 1,
+            "function:func_801DE9B0_9A8C00": 1,
+            "field:album_UiCommentActiveLetter": 1,
+            "field:album_UiPhotoComment": 4,
+            "field:album_Cursor": 1,
+            "field:album_CommentCursorPos": 1,
+            "context:ab_element_draw": 1,
+            "context:ab_print_source": 1,
+            "context:ab_element_font": 1,
+            "context:ab_element_absolute": 1,
+            "context:ab_element_position": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:isle_album_album_GetCommentTextWidth": 1,
+            "context:isle_album_func_801DE9B0_9A8C00": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_SwitchCharacterGridPage",
+      "first": 1113,
+      "last": 1148,
+      "sha256": "87adab020fab9048e4f5935c5c9592197491e866d27f46a62f933d6cfd4cf260",
+      "native_sha256": "e8cba86a2a883e1b11233b247f7b1bc366eb3c667f6d85262c2aaa8bde7e4c84",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "token:u32": 1,
+            "function:func_801DE9B0_9A8C00": 1,
+            "function:func_801DFB48_9A9D98": 1,
+            "function:func_801DFDA0_9A9FF0": 1,
+            "function:album_DrawCharacterGrid": 6,
+            "function:func_801DFFEC_9AA23C": 1,
+            "field:album_CharGridId": 14,
+            "context:isle_album_func_801DE9B0_9A8C00": 1,
+            "context:isle_album_func_801DFB48_9A9D98": 1,
+            "empty:isle_album_func_801DFB48_9A9D98": 1,
+            "context:isle_album_func_801DFDA0_9A9FF0": 1,
+            "empty:isle_album_func_801DFDA0_9A9FF0": 1,
+            "context:isle_album_album_DrawCharacterGrid": 6,
+            "context:isle_album_func_801DFFEC_9AA23C": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_DeleteCharInComment",
+      "first": 1150,
+      "last": 1162,
+      "sha256": "686187c7377e7e1974351961270641d3f5b5016780dfae1efc4a363826eda1ef",
+      "native_sha256": "4fae8cb343a2dcd29f1f3bb4953e2104808d5f8c47edd5c12ff681297dce1f92",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_DeleteCharInComment",
+          "find_sha256": "5004fe21e34ab135e6806c35f038c127c56595fb0e0c321dbe96c92141a7b503",
+          "replace_sha256": "7fe4a46a1024fc525601db2d3dcb9c071b28bef590cd038d19a2b921a97cbdb4",
+          "find_bytes": 46,
+          "replace_bytes": 81,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-comment": 1,
+            "function:func_801E008C_9AA2DC": 1,
+            "function:album_GetPhotoComment": 1,
+            "field:D_80208B54_9D2DA4": 2,
+            "field:album_CommentCursorPos": 3,
+            "context:isle_album_func_801E008C_9AA2DC": 1,
+            "context:isle_album_album_GetPhotoComment": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_PressedCharacterInGrid",
+      "first": 1164,
+      "last": 1224,
+      "sha256": "af0e2e1aa2d37f940b8b43839be3c762930a2a1dcd933cf6667270ac9c012c62",
+      "native_sha256": "9e1f061ae322d0a3a014a2588a8c76d50e8b03821a99d3301edad3eed23b12c4",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_PressedCharacterInGrid",
+          "find_sha256": "89f20e571b8f151d99a6e30edc9b691b553848ad851bad65c5a7f689f3b0f863",
+          "replace_sha256": "4a92bd2cfd86b89a2f5a8e3d2bd760f485e2e8282afd24d5f71e4e8d9d5e852e",
+          "find_bytes": 20,
+          "replace_bytes": 55,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "album_PressedCharacterInGrid",
+          "find_sha256": "5d9a49b146cc07dece6b229d80171359a45c0778013c4f3f6b7ff2a3fa30146a",
+          "replace_sha256": "b0add4e1a2018df90396459d96b958bd32d285d9d61e167154559bafc7a5e073",
+          "find_bytes": 60,
+          "replace_bytes": 95,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "album_PressedCharacterInGrid",
+          "find_sha256": "88774a3efd59c9f8d568d47caa67cffba3e754cc6c0046d0218773a04a1a65bd",
+          "replace_sha256": "080be5824512833efcc3498bd78f189ceaf7bc76e689042856177b3bc9cbc31e",
+          "find_bytes": 36,
+          "replace_bytes": 71,
+          "count": 2
+        },
+        {
+          "kind": "exact",
+          "label": "album_PressedCharacterInGrid",
+          "find_sha256": "58c538a3cb6ac89e96008304871076dcc1c8cc5699489e31640c84fe6a1ebbf0",
+          "replace_sha256": "d9ae0cd90b86be95745958215b24f1e8119ea6471997ea88bc7fbc78b88ebcf7",
+          "find_bytes": 38,
+          "replace_bytes": 73,
+          "count": 2
+        },
+        {
+          "kind": "exact",
+          "label": "album_PressedCharacterInGrid",
+          "find_sha256": "22972752d9565e22fcd4ceff981175633f6f8f28a07e0598645cc22acf47c2c7",
+          "replace_sha256": "848b0291c81850916d4dbf8cc4bebf24c4ba4871176184c161a7ab0e773b45cc",
+          "find_bytes": 211,
+          "replace_bytes": 204,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-comment": 1,
+            "readonly-text": 1,
+            "token:s32": 2,
+            "function:album_GetPhotoComment": 1,
+            "field:D_80208B54_9D2DA4": 8,
+            "field:album_CommentCursorPos": 16,
+            "context:isle_album_album_GetPhotoComment": 1,
+            "function:auPlaySound": 5,
+            "function:album_DeleteCharInComment": 1,
+            "token:SOUND_ID_74": 1,
+            "context:ab_sound": 5,
+            "context:isle_album_album_DeleteCharInComment": 1,
+            "empty:isle_album_album_DeleteCharInComment": 1,
+            "function:ohWait": 2,
+            "function:album_GetCommentTextWidth": 2,
+            "token:SOUND_ID_66": 2,
+            "token:SOUND_ID_85": 2,
+            "context:ab_wait": 2,
+            "context:isle_album_album_GetCommentTextWidth": 2,
+            "function:func_801E008C_9AA2DC": 2,
+            "context:isle_album_func_801E008C_9AA2DC": 2,
+            "field:album_CharGridId": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_SetBackgroundTexture",
+      "first": 1226,
+      "last": 1242,
+      "sha256": "7805a9668b0839aabe0c4b02da6d9449d4875d72fe6f6a291390f9e2eacfb19c",
+      "native_sha256": "d2e0c563c0ee1a1aedac4e7592a90bb3843f5f1608b90118ace354502fbf4eb6",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_SetBackgroundTexture",
+          "find_sha256": "91ead9bb16292299cb01a6105d6dfccf5e1304f1b760ae39c93540a3d69944aa",
+          "replace_sha256": "62a5cd3a1a43eb2377a6ced05f5cf3687a0300284511e90af5b86caf3bdc73c8",
+          "find_bytes": 41,
+          "replace_bytes": 44,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "album_SetBackgroundTexture",
+          "find_sha256": "22aafabb3c7188d12d6bf9a48262fec75a697b01d33d1617153f627b5fafd4ca",
+          "replace_sha256": "be1387a58e620fb5484fc56f28e5bcb6be4005bad6a45e5074af33a9ae8cb0cd",
+          "find_bytes": 41,
+          "replace_bytes": 44,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "album_SetBackgroundTexture",
+          "find_sha256": "25fe82407320d6aef382fcb90475934cb4633c0af24c2ecb98b80eb6122f6aa6",
+          "replace_sha256": "9456176398b62b34df8f8ce3cb66aab130e870884b4740a8ec7f597416e2fb61",
+          "find_bytes": 49,
+          "replace_bytes": 71,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 3,
+            "token:bool": 1,
+            "field:album_BackgroundSObj": 1,
+            "field:album_BackgroundGObj": 1,
+            "token:SCREEN_WIDTH": 1,
+            "token:SCREEN_HEIGHT": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreateCoverPage",
+      "first": 1244,
+      "last": 1295,
+      "sha256": "5633fdbeb663364af26d768d1464e8f8556bfc38bccb6da54daf997227ca902d",
+      "native_sha256": "c05c98c9ba39c24d5fb27a691adf6dbd812fe092d785d3e9a9b1eb1fb15afddd",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "function:UIElement_Create": 1,
+            "function:UIElement_DrawBackground": 1,
+            "function:UIElement_SetColor": 2,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetTextPos": 2,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:func_8037519C_84894C": 2,
+            "function:album_SetCoverColor": 3,
+            "function:album_SetCommentBackgroundColor": 1,
+            "function:func_801DD500_9A7750": 1,
+            "function:func_801DD5A0_9A77F0": 1,
+            "function:func_801DF120_9A9370": 1,
+            "function:func_801DF2E0_9A9530": 1,
+            "function:album_SetBackgroundTexture": 1,
+            "token:s32": 2,
+            "token:UI_FLAG_32BIT": 1,
+            "context:ab_element_create": 1,
+            "context:ab_element_background": 1,
+            "context:ab_element_color": 2,
+            "context:ab_element_font": 1,
+            "context:ab_element_position": 2,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:ab_formatted": 2,
+            "context:isle_album_album_SetCoverColor": 3,
+            "context:isle_album_album_SetCommentBackgroundColor": 1,
+            "context:isle_album_func_801DD500_9A7750": 1,
+            "context:isle_album_func_801DD5A0_9A77F0": 1,
+            "context:isle_album_func_801DF120_9A9370": 1,
+            "context:isle_album_func_801DF2E0_9A9530": 1,
+            "empty:isle_album_func_801DF2E0_9A9530": 1,
+            "context:isle_album_album_SetBackgroundTexture": 1,
+            "function:album_GetPhotoCount": 2,
+            "context:isle_album_album_GetPhotoCount": 2,
+            "empty:isle_album_album_GetPhotoCount": 2,
+            "function:FocusMark_Show": 1,
+            "function:UIElement_SetState": 2,
+            "function:UILayout_CreateButtons": 1,
+            "function:UILayout_SetHeaderFlags": 1,
+            "function:UILayout_ShowPanel": 1,
+            "function:UILayout_WaitPanelTransitionComplete": 1,
+            "function:UIText_SetPrintDelay": 1,
+            "function:ohWait": 4,
+            "function:func_801DD684_9A78D4": 1,
+            "function:album_GetCoverButtons": 1,
+            "field:album_UiAlbumStats": 3,
+            "context:ab_focus_show": 1,
+            "context:ab_element_state": 2,
+            "context:ab_layout_create": 1,
+            "context:ab_layout_header": 1,
+            "context:ab_layout_panel": 1,
+            "context:ab_layout_wait": 1,
+            "empty:ab_layout_wait": 1,
+            "context:ab_text_delay": 1,
+            "context:ab_wait": 4,
+            "context:isle_album_func_801DD684_9A78D4": 1,
+            "context:isle_album_album_GetCoverButtons": 1,
+            "empty:isle_album_album_GetCoverButtons": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801E09A0_9AABF0",
+      "first": 1297,
+      "last": 1324,
+      "sha256": "b45cb2a70eafc1116acee407a0f1f2a1c2996ac23f3899ab075e8223e681c118",
+      "native_sha256": "04a7e4ddbb5e4e9ec1d1cb48e9098de1ff2465191a76198bbb4cb484b610cd78",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "token:s32": 3,
+            "function:FocusMark_Show": 1,
+            "function:UIElement_Delete": 1,
+            "function:UILayout_HideButtons": 1,
+            "function:UILayout_SetHeaderFlags": 1,
+            "function:UILayout_ShowPanel": 1,
+            "function:UILayout_WaitPanelTransitionComplete": 1,
+            "function:auSetBGMVolumeSmooth": 1,
+            "function:ohWait": 1,
+            "function:album_SetCoverColor": 2,
+            "function:func_801DD684_9A78D4": 1,
+            "function:func_801DF120_9A9370": 1,
+            "field:album_UiAlbumStats": 2,
+            "context:ab_focus_show": 1,
+            "context:ab_element_delete": 1,
+            "context:ab_layout_hide": 1,
+            "empty:ab_layout_hide": 1,
+            "context:ab_layout_header": 1,
+            "context:ab_layout_panel": 1,
+            "context:ab_layout_wait": 1,
+            "empty:ab_layout_wait": 1,
+            "context:ab_volume_smooth": 1,
+            "context:ab_wait": 1,
+            "context:isle_album_album_SetCoverColor": 2,
+            "context:isle_album_func_801DD684_9A78D4": 1,
+            "context:isle_album_func_801DF120_9A9370": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801E0AF0_9AAD40",
+      "first": 1326,
+      "last": 1392,
+      "sha256": "a5db82ab0d7943d1c6ad0306041db61bb8c39df2d8436d2dc779ce0f2b110d4f",
+      "native_sha256": "b96aca8e91e432c7ad679f7c3549c84221c4d0dcccd54bc06263b7b298c29ab6",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:UIElement_Create": 3,
+            "function:UIElement_Draw": 1,
+            "function:UIElement_DrawBackground": 3,
+            "function:UIElement_PrintText": 2,
+            "function:UIElement_SetColor": 6,
+            "function:UIElement_SetFont": 3,
+            "function:UIText_SetShadowOffset": 2,
+            "function:UIText_SetSpacing": 2,
+            "function:album_SetCoverColor": 3,
+            "function:album_SetCommentBackgroundColor": 2,
+            "function:func_801DD500_9A7750": 3,
+            "function:func_801DD5A0_9A77F0": 3,
+            "function:func_801DE620_9A8870": 1,
+            "function:album_ShowCommentBackground": 1,
+            "function:album_ShowPhotoDescBackground": 1,
+            "function:album_SetBackgroundTexture": 1,
+            "token:s32": 2,
+            "token:UI_FLAG_32BIT": 2,
+            "context:ab_element_create": 3,
+            "context:ab_element_draw": 1,
+            "context:ab_element_background": 3,
+            "context:ab_print_source": 2,
+            "context:ab_element_color": 6,
+            "context:ab_element_font": 3,
+            "context:ab_text_shadow": 2,
+            "context:ab_text_spacing": 2,
+            "context:isle_album_album_SetCoverColor": 3,
+            "context:isle_album_album_SetCommentBackgroundColor": 2,
+            "context:isle_album_func_801DD500_9A7750": 3,
+            "context:isle_album_func_801DD5A0_9A77F0": 3,
+            "context:isle_album_func_801DE620_9A8870": 1,
+            "context:isle_album_album_ShowCommentBackground": 1,
+            "context:isle_album_album_ShowPhotoDescBackground": 1,
+            "context:isle_album_album_SetBackgroundTexture": 1,
+            "function:UIElement_SetState": 4,
+            "function:UIElement_SetTextPos": 1,
+            "function:UIText_GetStringWidth": 1,
+            "field:album_UiPageNumber": 1,
+            "context:ab_element_state": 4,
+            "context:ab_element_position": 1,
+            "context:ab_width": 1,
+            "function:UILayout_ShowHeaderElement": 1,
+            "function:UILayout_ShowPanel": 1,
+            "function:ohWait": 4,
+            "function:album_DrawAlbumPage": 1,
+            "function:album_GetSelectedPhoto": 2,
+            "field:album_UiAlbumHeader": 2,
+            "field:album_UiPhotoComment": 1,
+            "context:ab_layout_show_header": 1,
+            "context:ab_layout_panel": 1,
+            "context:ab_wait": 4,
+            "context:isle_album_album_DrawAlbumPage": 1,
+            "context:isle_album_album_GetSelectedPhoto": 2,
+            "empty:isle_album_album_GetSelectedPhoto": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801E0E58_9AB0A8",
+      "first": 1394,
+      "last": 1428,
+      "sha256": "b385ef4bbbe94140b62efab2344f7e0cba17c6151b7f131e24ee89c53261c221",
+      "native_sha256": "d4955ebad1bf446412779f3199b60092a3a1a6f9cef4383f9f2eaa70a879b3e4",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:FocusMark_Show": 1,
+            "function:UIElement_Delete": 3,
+            "function:UIElement_SetState": 1,
+            "function:UILayout_HideButtons": 1,
+            "function:UILayout_SetHeaderFlags": 1,
+            "function:UILayout_ShowPanel": 1,
+            "function:UILayout_WaitPanelTransitionComplete": 1,
+            "function:ohWait": 2,
+            "function:album_SetCoverColor": 2,
+            "function:album_SetCommentBackgroundColor": 2,
+            "function:func_801DD500_9A7750": 2,
+            "function:func_801DD5A0_9A77F0": 2,
+            "function:func_801DDC70_9A7EC0": 1,
+            "function:func_801DE620_9A8870": 1,
+            "function:album_ShowCommentBackground": 1,
+            "function:album_ShowPhotoDescBackground": 1,
+            "function:func_801DF120_9A9370": 1,
+            "function:func_801E41AC_9AE3FC": 1,
+            "field:album_UiAlbumHeader": 2,
+            "field:album_UiPhotoComment": 1,
+            "field:album_UiPageNumber": 1,
+            "token:s32": 2,
+            "context:ab_focus_show": 1,
+            "context:ab_element_delete": 3,
+            "context:ab_element_state": 1,
+            "context:ab_layout_hide": 1,
+            "empty:ab_layout_hide": 1,
+            "context:ab_layout_header": 1,
+            "context:ab_layout_panel": 1,
+            "context:ab_layout_wait": 1,
+            "empty:ab_layout_wait": 1,
+            "context:ab_wait": 2,
+            "context:isle_album_album_SetCoverColor": 2,
+            "context:isle_album_album_SetCommentBackgroundColor": 2,
+            "context:isle_album_func_801DD500_9A7750": 2,
+            "context:isle_album_func_801DD5A0_9A77F0": 2,
+            "context:isle_album_func_801DDC70_9A7EC0": 1,
+            "context:isle_album_func_801DE620_9A8870": 1,
+            "context:isle_album_album_ShowCommentBackground": 1,
+            "context:isle_album_album_ShowPhotoDescBackground": 1,
+            "context:isle_album_func_801DF120_9A9370": 1,
+            "context:isle_album_func_801E41AC_9AE3FC": 1,
+            "empty:isle_album_func_801E41AC_9AE3FC": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801E0F90_9AB1E0",
+      "first": 1430,
+      "last": 1443,
+      "sha256": "5c59130a1a13e68b6ec2fbffaa9e3ea89763d16c128e58171a4caf4f4bec5899",
+      "native_sha256": "538a841f9a4c335c3d18cbbe809e2cbce9247e3c87935c508b045f7a7868222c",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 2,
+            "function:FocusMark_Show": 1,
+            "function:UIElement_SetState": 1,
+            "function:UILayout_ShowPanel": 1,
+            "function:UIText_SetPrintDelay": 1,
+            "function:ohWait": 1,
+            "function:func_801DE350_9A85A0": 1,
+            "function:func_801DE620_9A8870": 1,
+            "field:album_UiAlbumStats": 1,
+            "context:ab_focus_show": 1,
+            "context:ab_element_state": 1,
+            "context:ab_layout_panel": 1,
+            "context:ab_text_delay": 1,
+            "context:ab_wait": 1,
+            "context:isle_album_func_801DE350_9A85A0": 1,
+            "context:isle_album_func_801DE620_9A8870": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801E0FFC_9AB24C",
+      "first": 1445,
+      "last": 1458,
+      "sha256": "bb4f0944fa523a84c90699e5836cc9d6cb28dad0e75e37290dddee43a41ab6eb",
+      "native_sha256": "275eceff175573a0bb1ce0a93c51525eb5b22e0bbce9f0fe1989c6523d232e5b",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "function:album_DrawAlbumPage": 1,
+            "function:func_801DDC70_9A7EC0": 1,
+            "function:func_801DE350_9A85A0": 2,
+            "function:func_801DE620_9A8870": 2,
+            "function:album_GetSelectedPhoto": 3,
+            "context:isle_album_album_DrawAlbumPage": 1,
+            "context:isle_album_func_801DDC70_9A7EC0": 1,
+            "context:isle_album_func_801DE350_9A85A0": 2,
+            "context:isle_album_func_801DE620_9A8870": 2,
+            "context:isle_album_album_GetSelectedPhoto": 3,
+            "empty:isle_album_album_GetSelectedPhoto": 3
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "func_801E10D0_9AB320",
+      "first": 1460,
+      "last": 1474,
+      "sha256": "f4ebeb65b04f9110287060f2fb4b03e1a6d8c40a7306b0d7ff72e6fabc1f84f0",
+      "native_sha256": "7a19f2dabfd1d28ae3a9f3ccc897b8e72c8c353d710ecf09ca52f310513fc028",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 5,
+            "asset:D_801FFA10_9C9C60": 1,
+            "function:func_80371C68_845418": 1,
+            "field:album_D_8025009C_A1A2EC": 1,
+            "token:LINK_6": 1,
+            "token:SP_HIDDEN": 1,
+            "context:ab_sprite_synchronous": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_DrawDeletePhotoPrompt",
+      "first": 1476,
+      "last": 1511,
+      "sha256": "9438dc89ac0fa9c7c6e2d46cc9a50849be710aafab7050722553aae0a4c03a82",
+      "native_sha256": "5487ad3be7f0a480e697ea6d69b930eeb65174d8f1a254147b85a42abc4c0198",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "token:bool": 1,
+            "function:UIElement_Create": 1,
+            "function:UIElement_DrawBackground": 1,
+            "function:UIElement_PrintText": 2,
+            "function:UIElement_SetColor": 2,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetState": 2,
+            "function:UIElement_SetTextPos": 2,
+            "function:UIFrame_Create": 1,
+            "function:UIFrame_SetPos": 1,
+            "function:UIFrame_Show": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:ohWait": 3,
+            "field:album_D_80250000_A1A250": 3,
+            "field:album_D_8025005C_A1A2AC": 2,
+            "context:ab_element_create": 1,
+            "context:ab_element_background": 1,
+            "context:ab_print_source": 2,
+            "context:ab_element_color": 2,
+            "context:ab_element_font": 1,
+            "context:ab_element_state": 2,
+            "context:ab_element_position": 2,
+            "context:ab_frame_create": 1,
+            "empty:ab_frame_create": 1,
+            "context:ab_frame_position": 1,
+            "context:ab_frame_show": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:ab_wait": 3,
+            "function:UIFrame_FadeIn": 1,
+            "function:UIText_SetPrintDelay": 1,
+            "token:FRAME_STYLE_0": 1,
+            "context:ab_frame_fade_in": 1,
+            "context:ab_text_delay": 1,
+            "function:UIElement_Delete": 1,
+            "function:UIElement_Draw": 1,
+            "function:UIFrame_FadeOut": 1,
+            "context:ab_element_delete": 1,
+            "context:ab_element_draw": 1,
+            "context:ab_frame_fade_out": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_DeletePhoto",
+      "first": 1513,
+      "last": 1560,
+      "sha256": "bdd9cc2bd3c14f86382fa9fbe0000eb959fb433724fb1d36f577f94477d71148",
+      "native_sha256": "45d59144e7b7a49249aa1a290555513281a65bb07ec26099d36c4d8ab47c972d",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_DeletePhoto",
+          "find_sha256": "fc7583aa94a4000e1fc7d2be3912bfe38aecb266102df2c78e0e3ad19e1c460d",
+          "replace_sha256": "ae234c46e191a510e359d75c2620438a8ee185ae7280848026d7e99592cbf2dd",
+          "find_bytes": 51,
+          "replace_bytes": 59,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 5,
+            "mutable-sprite-view": 14,
+            "asset:D_80200058_9CA2A8": 2,
+            "asset:D_80200400_9CA650": 2,
+            "asset:D_80208B10_9D2D60": 1,
+            "token:s32": 2,
+            "function:UIElement_SetState": 1,
+            "function:auPlaySound": 2,
+            "function:func_80371C68_845418": 1,
+            "function:func_80371DC0_845570": 3,
+            "function:func_80371E68_845618": 1,
+            "function:ohWait": 3,
+            "function:omDeleteGObj": 1,
+            "function:func_801DE350_9A85A0": 1,
+            "function:func_801E0FFC_9AB24C": 1,
+            "function:album_DeleteAlbumPhoto": 1,
+            "field:D_80208B54_9D2DA4": 2,
+            "field:album_UiPhotoComment": 1,
+            "field:album_D_8025010C_A1A35C": 1,
+            "token:LINK_6": 1,
+            "token:SOUND_ID_74": 1,
+            "token:SOUND_ID_94": 1,
+            "context:ab_element_state": 1,
+            "context:ab_sound": 2,
+            "context:ab_sprite_synchronous": 1,
+            "context:ab_sibling": 3,
+            "context:ab_child": 1,
+            "context:ab_wait": 3,
+            "context:ab_delete": 1,
+            "context:isle_album_func_801DE350_9A85A0": 1,
+            "context:isle_album_func_801E0FFC_9AB24C": 1,
+            "context:isle_album_album_DeleteAlbumPhoto": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreateAlbumUI",
+      "first": 1562,
+      "last": 1630,
+      "sha256": "4df431d91adc19d750156c12dd30970f00afa0694167accdb323829b1497fcf9",
+      "native_sha256": "9dc8c7f07df7c715f1d9bc64047d33a741d509a11386714f048a9116ba636abf",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 4,
+            "function:FocusMark_Create": 1,
+            "function:FocusMark_Show": 2,
+            "function:UIElement_Create": 1,
+            "function:UIElement_DrawBackground": 1,
+            "function:UIElement_SetColor": 2,
+            "function:UIElement_SetFont": 1,
+            "function:UIElement_SetTextPos": 2,
+            "function:UILayout_Init": 1,
+            "function:UIText_SetShadowOffset": 1,
+            "function:UIText_SetSpacing": 1,
+            "function:func_8037519C_84894C": 2,
+            "function:func_801DD500_9A7750": 1,
+            "function:album_CreatePhotos": 1,
+            "function:func_801DDC70_9A7EC0": 1,
+            "function:func_801DDE64_9A80B4": 1,
+            "function:func_801DE03C_9A828C": 1,
+            "function:func_801DE0C8_9A8318": 1,
+            "function:album_CreatePhotoCorners": 1,
+            "function:album_CreateCommentBackground": 1,
+            "function:album_CreateCommentTextBox": 1,
+            "function:album_CreatePhotoDescBackground": 1,
+            "function:func_801E10D0_9AB320": 1,
+            "function:func_801E4084_9AE2D4": 1,
+            "token:s32": 2,
+            "token:UI_FLAG_32BIT": 1,
+            "context:ab_focus_create": 1,
+            "empty:ab_focus_create": 1,
+            "context:ab_focus_show": 2,
+            "context:ab_element_create": 1,
+            "context:ab_element_background": 1,
+            "context:ab_element_color": 2,
+            "context:ab_element_font": 1,
+            "context:ab_element_position": 2,
+            "context:ab_layout_initialize": 1,
+            "empty:ab_layout_initialize": 1,
+            "context:ab_text_shadow": 1,
+            "context:ab_text_spacing": 1,
+            "context:ab_formatted": 2,
+            "context:isle_album_func_801DD500_9A7750": 1,
+            "context:isle_album_album_CreatePhotos": 1,
+            "empty:isle_album_album_CreatePhotos": 1,
+            "context:isle_album_func_801DDC70_9A7EC0": 1,
+            "context:isle_album_func_801DDE64_9A80B4": 1,
+            "empty:isle_album_func_801DDE64_9A80B4": 1,
+            "context:isle_album_func_801DE03C_9A828C": 1,
+            "context:isle_album_func_801DE0C8_9A8318": 1,
+            "empty:isle_album_func_801DE0C8_9A8318": 1,
+            "context:isle_album_album_CreatePhotoCorners": 1,
+            "empty:isle_album_album_CreatePhotoCorners": 1,
+            "context:isle_album_album_CreateCommentBackground": 1,
+            "empty:isle_album_album_CreateCommentBackground": 1,
+            "context:isle_album_album_CreateCommentTextBox": 1,
+            "empty:isle_album_album_CreateCommentTextBox": 1,
+            "context:isle_album_album_CreatePhotoDescBackground": 1,
+            "empty:isle_album_album_CreatePhotoDescBackground": 1,
+            "context:isle_album_func_801E10D0_9AB320": 1,
+            "empty:isle_album_func_801E10D0_9AB320": 1,
+            "context:isle_album_func_801E4084_9AE2D4": 1,
+            "empty:isle_album_func_801E4084_9AE2D4": 1,
+            "function:album_GetPhotoCount": 2,
+            "context:isle_album_album_GetPhotoCount": 2,
+            "empty:isle_album_album_GetPhotoCount": 2,
+            "function:UIElement_SetState": 2,
+            "function:UILayout_CreateButtons": 1,
+            "function:UILayout_SetHeaderFlags": 1,
+            "function:UILayout_ShowPanel": 2,
+            "function:UILayout_WaitPanelTransitionComplete": 1,
+            "function:UIText_SetPrintDelay": 1,
+            "function:func_800AADF0": 1,
+            "function:func_80374D20_8484D0": 1,
+            "function:ohWait": 4,
+            "function:album_SetCoverColor": 2,
+            "function:func_801DD684_9A78D4": 1,
+            "function:album_GetCoverButtons": 1,
+            "function:album_Update": 1,
+            "field:album_IsEditingComment": 1,
+            "field:album_UiAlbumStats": 3,
+            "token:SCENE_OAKS_LAB_2": 1,
+            "context:ab_element_state": 2,
+            "context:ab_layout_create": 1,
+            "context:ab_layout_header": 1,
+            "context:ab_layout_panel": 2,
+            "context:ab_layout_wait": 1,
+            "empty:ab_layout_wait": 1,
+            "context:ab_text_delay": 1,
+            "context:ab_scene_result": 1,
+            "context:ab_replay_cleanup": 1,
+            "empty:ab_replay_cleanup": 1,
+            "context:ab_wait": 4,
+            "context:isle_album_album_SetCoverColor": 2,
+            "context:isle_album_func_801DD684_9A78D4": 1,
+            "context:isle_album_album_GetCoverButtons": 1,
+            "empty:isle_album_album_GetCoverButtons": 1,
+            "context:isle_album_album_Update": 1,
+            "empty:isle_album_album_Update": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9A6F70.c",
+      "name": "album_CreateUI",
+      "first": 1632,
+      "last": 1646,
+      "sha256": "097ad3bf4e83d6eb0d8f524fce587145bafee1da0803530e92ef02ca1d809d62",
+      "native_sha256": "0dd9c483a5566fcd2961e519f02819c1dd7c6dbc9c5e3347d0191bdac321d6ce",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "root-handle": 1,
+            "mutable-sprite-view": 3,
+            "asset:D_801E4518_9AE768": 1,
+            "function:func_800A85E8": 1,
+            "function:func_80371D14_8454C4": 1,
+            "function:album_SetCoverColor": 1,
+            "function:album_CreateCoverUI": 1,
+            "function:album_CreateAlbumUI": 1,
+            "field:album_BackgroundSObj": 1,
+            "field:album_BackgroundGObj": 1,
+            "token:SCREEN_WIDTH": 1,
+            "token:SCREEN_HEIGHT": 1,
+            "token:LINK_6": 2,
+            "token:DL_LINK_0": 1,
+            "context:ab_process": 1,
+            "context:ab_sprite_stackful": 1,
+            "context:isle_album_album_SetCoverColor": 1,
+            "context:isle_album_album_CreateCoverUI": 1,
+            "empty:isle_album_album_CreateCoverUI": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_GetCoverButtons",
+      "first": 42,
+      "last": 44,
+      "sha256": "1737cbcced0dee82f4191a54887a33466ea13c7d03cc60345a388a0fc9e927b7",
+      "native_sha256": "5ffc1918e3d8705cc1abc3df31518db208a8ed3b626fda0dcb0c1ef9bd3d94b3",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-buttons": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_GetSelectedPhoto",
+      "first": 46,
+      "last": 48,
+      "sha256": "e1f50f8a9b54ab24337d09d5caae91479cbade9216d9e4c5828bd19e9e73480a",
+      "native_sha256": "9b4b5798a387be6734bd87a3271c39db3531beb85d078ffd7cf9c8759147eb28",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "field:album_SelectedPhoto": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_GetNextPhotoIndex",
+      "first": 50,
+      "last": 60,
+      "sha256": "53f672c65c9ed9149e0f3b63b5418520778803b7a4e6828d57fe555067ed7ac0",
+      "native_sha256": "166b57dcaf75396fe8fad6ac7d5be80754679bba559982beda719ff1450d55ce",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 3,
+            "function:album_GetAlbumPhoto": 1,
+            "function:album_GetLastPhotoIndex": 1,
+            "context:isle_album_album_GetAlbumPhoto": 1,
+            "context:isle_album_album_GetLastPhotoIndex": 1,
+            "empty:isle_album_album_GetLastPhotoIndex": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_GetPreviousPhotoIndex",
+      "first": 62,
+      "last": 72,
+      "sha256": "eeaea912c9436c10129d0a3ea7a02ef7e7abbe7c03bfd0015e0949cc3cc660f3",
+      "native_sha256": "3022a18f4e7aed0d6d2d308d100903a77a85d622aa6edaa430f5e2848c38b011",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 3,
+            "function:album_GetAlbumPhoto": 1,
+            "function:album_GetFirstPhotoIndex": 1,
+            "context:isle_album_album_GetAlbumPhoto": 1,
+            "context:isle_album_album_GetFirstPhotoIndex": 1,
+            "empty:isle_album_album_GetFirstPhotoIndex": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_UpdateButtonSelection",
+      "first": 74,
+      "last": 104,
+      "sha256": "c244d8c4dc25f4cdb190a5b2ac9ec247f4e41972d8473b743588fdcd5a059d2e",
+      "native_sha256": "f388774054940c905a13fc47fc3559475ce3c443489e76b11fe7302b632afcbe",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "live-layout-slot": 2,
+            "token:s32": 2,
+            "function:FocusMark_SetPos": 1,
+            "function:FocusMark_SetSize": 1,
+            "function:FocusMark_SetTargetPos": 1,
+            "function:FocusMark_SetTargetSize": 1,
+            "function:auPlaySound": 2,
+            "field:D_80208C18_9D2E68": 1,
+            "token:B_BUTTON": 1,
+            "token:STICK_SLOW_UP": 1,
+            "token:STICK_SLOW_DOWN": 1,
+            "token:STICK_SLOW_RIGHT": 2,
+            "token:STICK_SLOW_LEFT": 2,
+            "token:SOUND_ID_65": 2,
+            "token:BUTTON_NONE": 2,
+            "context:ab_focus_position": 1,
+            "context:ab_focus_size": 1,
+            "context:ab_focus_target": 1,
+            "context:ab_focus_target_size": 1,
+            "context:ab_sound": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_UpdatePhotoSelection",
+      "first": 106,
+      "last": 153,
+      "sha256": "d7872f6801aa47d249faadb00561677f7353ecd7135c243d581872a953baff44",
+      "native_sha256": "d08749489911e5cee5298b8359ba9b51c917ca9d13a9155772a9b99c0fc4794f",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 3,
+            "function:FocusMark_SetPos": 2,
+            "function:auPlaySound": 3,
+            "function:getAlbumCapacity": 1,
+            "function:album_DrawAlbumPage": 2,
+            "function:album_PrintPhotoComment": 2,
+            "field:album_SelectedPhoto": 15,
+            "field:album_CurrentColumn": 5,
+            "field:album_CurrentRow": 3,
+            "token:STICK_SLOW_UP": 1,
+            "token:STICK_SLOW_DOWN": 1,
+            "token:STICK_SLOW_RIGHT": 1,
+            "token:STICK_SLOW_LEFT": 1,
+            "token:SOUND_ID_75": 2,
+            "context:ab_focus_position": 2,
+            "context:ab_sound": 3,
+            "context:ab_album_capacity": 1,
+            "empty:ab_album_capacity": 1,
+            "context:isle_album_album_DrawAlbumPage": 2,
+            "context:isle_album_album_PrintPhotoComment": 2,
+            "function:FocusMark_SetTargetPos": 1,
+            "token:SOUND_ID_69": 1,
+            "context:ab_focus_target": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_DragPhoto",
+      "first": 155,
+      "last": 208,
+      "sha256": "74f7bbf168e760f76219bc9915f466d21f97eb53aa5fb77c980dcc9a4b03f20c",
+      "native_sha256": "8714699ce4663d626a8129d418b1c15173aa092345b04995066c3b13b99b6087",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 4,
+            "function:FocusMark_SetPos": 2,
+            "function:auPlaySound": 3,
+            "function:getAlbumCapacity": 1,
+            "function:album_DrawAlbumPage": 2,
+            "function:func_801E3880_9ADAD0": 1,
+            "field:album_SelectedPhoto": 14,
+            "field:album_DraggedPhotoColumn": 5,
+            "field:album_DraggedPhotoRow": 3,
+            "token:STICK_SLOW_UP": 1,
+            "token:STICK_SLOW_DOWN": 1,
+            "token:STICK_SLOW_RIGHT": 1,
+            "token:STICK_SLOW_LEFT": 1,
+            "token:SOUND_ID_75": 2,
+            "context:ab_focus_position": 2,
+            "context:ab_sound": 3,
+            "context:ab_album_capacity": 1,
+            "empty:ab_album_capacity": 1,
+            "context:isle_album_album_DrawAlbumPage": 2,
+            "context:isle_album_func_801E3880_9ADAD0": 1,
+            "empty:isle_album_func_801E3880_9ADAD0": 1,
+            "function:FocusMark_SetTargetPos": 2,
+            "function:func_801DDDF8_9A8048": 2,
+            "function:album_PrintPhotoComment": 1,
+            "token:SOUND_ID_69": 1,
+            "context:ab_focus_target": 2,
+            "context:isle_album_func_801DDDF8_9A8048": 2,
+            "context:isle_album_album_PrintPhotoComment": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_EditComment",
+      "first": 210,
+      "last": 287,
+      "sha256": "f0e98150da57a38ddb65e89a03dc4799f12a11353256db66a2c74cb5567fc85c",
+      "native_sha256": "f8c58ebd889541d4aa29be09a868ef71ad577affa012f39153871210dd6ed0b3",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 3,
+            "function:func_801DEA4C_9A8C9C": 3,
+            "function:func_801E3880_9ADAD0": 1,
+            "field:D_80208C2C_9D2E7C": 7,
+            "field:D_80208C30_9D2E80": 5,
+            "token:STICK_SLOW_UP": 1,
+            "token:STICK_SLOW_DOWN": 1,
+            "token:STICK_SLOW_RIGHT": 1,
+            "token:STICK_SLOW_LEFT": 1,
+            "context:isle_album_func_801DEA4C_9A8C9C": 3,
+            "context:isle_album_func_801E3880_9ADAD0": 1,
+            "empty:isle_album_func_801E3880_9ADAD0": 1,
+            "function:FocusMark_SetTargetPos": 3,
+            "function:FocusMark_SetTargetSize": 3,
+            "function:auPlaySound": 2,
+            "function:func_801DE998_9A8BE8": 2,
+            "token:SOUND_ID_65": 1,
+            "token:SOUND_ID_69": 1,
+            "context:ab_focus_target": 3,
+            "context:ab_focus_target_size": 3,
+            "context:ab_sound": 2,
+            "context:isle_album_func_801DE998_9A8BE8": 2
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_UpdateCoverPage",
+      "first": 289,
+      "last": 323,
+      "sha256": "5d4e9f3bde9733e34c234af54cc5512bcc46f60bb01a0369b5bbb435e287adce",
+      "native_sha256": "fdd8233cc25a07ed80ad5ec2d94c4aee3bde0edd66dc92b2e44832d9734bb93e",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "live-layout-slot": 1,
+            "token:s32": 2,
+            "function:FocusMark_SetTargetSize": 1,
+            "function:FocusMark_Show": 1,
+            "function:UILayout_CreateButtons": 1,
+            "function:UILayout_HideButtons": 1,
+            "function:auPlaySound": 2,
+            "function:func_800AA38C": 1,
+            "function:ohWait": 1,
+            "function:album_CreateCoverPage": 1,
+            "function:func_801E09A0_9AABF0": 3,
+            "function:album_UpdateButtonSelection": 1,
+            "field:D_80208B90_9D2DE0": 2,
+            "token:A_BUTTON": 1,
+            "token:SOUND_ID_66": 1,
+            "token:SOUND_ID_67": 1,
+            "token:BUTTON_GO_TO_LAB": 1,
+            "token:BUTTON_OPEN": 1,
+            "context:ab_focus_target_size": 1,
+            "context:ab_focus_show": 1,
+            "context:ab_layout_create": 1,
+            "context:ab_layout_hide": 1,
+            "empty:ab_layout_hide": 1,
+            "context:ab_sound": 2,
+            "context:ab_input": 1,
+            "context:ab_wait": 1,
+            "context:isle_album_album_CreateCoverPage": 1,
+            "empty:isle_album_album_CreateCoverPage": 1,
+            "context:isle_album_func_801E09A0_9AABF0": 3,
+            "context:isle_album_album_UpdateButtonSelection": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_UpdateAlbumPage",
+      "first": 325,
+      "last": 663,
+      "sha256": "14bab016245f607b51be13b106f6f8a64077b4c0525a5356c8da38fc3905ed54",
+      "native_sha256": "9dc08a8948f1d0393d27138aff46825e56182c460bd6bd6a255102776de66150",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "live-layout-slot": 2,
+            "token:s32": 10,
+            "function:FocusMark_SetTargetPos": 5,
+            "function:FocusMark_SetTargetSize": 9,
+            "function:FocusMark_Show": 11,
+            "function:FocusMark_StopAnimation": 3,
+            "function:UILayout_CreateButtons": 7,
+            "function:UILayout_HideButtons": 1,
+            "function:UILayout_HideHeaderElement": 15,
+            "function:UILayout_ShowHeaderElement": 8,
+            "function:UILayout_WaitPanelTransitionComplete": 1,
+            "function:auPlaySound": 20,
+            "function:func_800AA38C": 1,
+            "function:func_800AA85C": 2,
+            "function:getAlbumCapacity": 3,
+            "function:ohWait": 5,
+            "function:album_GetCursorPos": 2,
+            "function:func_801DDDF8_9A8048": 1,
+            "function:func_801DE2BC_9A850C": 2,
+            "function:func_801DE998_9A8BE8": 1,
+            "function:func_801DEA4C_9A8C9C": 1,
+            "function:func_801DF744_9A9994": 2,
+            "function:album_SwitchCharacterGridPage": 2,
+            "function:album_DeleteCharInComment": 1,
+            "function:album_PressedCharacterInGrid": 1,
+            "function:func_801E0AF0_9AAD40": 1,
+            "function:func_801E0E58_9AB0A8": 2,
+            "function:func_801E0FFC_9AB24C": 6,
+            "function:album_DrawDeletePhotoPrompt": 6,
+            "function:album_DeletePhoto": 2,
+            "function:album_GetNextPhotoIndex": 1,
+            "function:album_GetPreviousPhotoIndex": 1,
+            "function:album_UpdateButtonSelection": 11,
+            "function:album_UpdatePhotoSelection": 8,
+            "function:album_DragPhoto": 3,
+            "function:album_EditComment": 2,
+            "function:func_801E3880_9ADAD0": 2,
+            "function:album_GetAlbumPhoto": 2,
+            "function:album_GetLastPhotoIndex": 2,
+            "function:album_GetFirstPhotoIndex": 2,
+            "function:func_801E3B34_9ADD84": 1,
+            "function:func_801E3F00_9AE150": 1,
+            "field:album_SelectedPhoto": 36,
+            "token:u32": 1,
+            "token:A_BUTTON": 10,
+            "token:B_BUTTON": 8,
+            "token:START_BUTTON": 1,
+            "token:STICK_SLOW_RIGHT": 1,
+            "token:STICK_SLOW_LEFT": 1,
+            "token:SOUND_ID_65": 2,
+            "token:SOUND_ID_66": 9,
+            "token:SOUND_ID_67": 6,
+            "token:SOUND_ID_69": 2,
+            "token:SOUND_ID_74": 1,
+            "token:BUTTON_RETURN": 1,
+            "token:BUTTON_DELETE": 2,
+            "token:BUTTON_ENLARGE": 1,
+            "token:BUTTON_ARRANGE": 1,
+            "token:BUTTON_COMMENT": 1,
+            "token:BUTTON_CHECK": 1,
+            "token:BUTTON_RETURN_TO_COVER": 1,
+            "context:ab_focus_target": 5,
+            "context:ab_focus_target_size": 9,
+            "context:ab_focus_show": 11,
+            "context:ab_focus_stop": 3,
+            "context:ab_layout_create": 7,
+            "context:ab_layout_hide": 1,
+            "empty:ab_layout_hide": 1,
+            "context:ab_layout_hide_header": 15,
+            "context:ab_layout_show_header": 8,
+            "context:ab_layout_wait": 1,
+            "empty:ab_layout_wait": 1,
+            "context:ab_sound": 20,
+            "context:ab_input": 1,
+            "context:ab_repeat": 2,
+            "context:ab_album_capacity": 3,
+            "empty:ab_album_capacity": 3,
+            "context:ab_wait": 5,
+            "context:isle_album_album_GetCursorPos": 2,
+            "empty:isle_album_album_GetCursorPos": 2,
+            "context:isle_album_func_801DDDF8_9A8048": 1,
+            "context:isle_album_func_801DE2BC_9A850C": 2,
+            "context:isle_album_func_801DE998_9A8BE8": 1,
+            "context:isle_album_func_801DEA4C_9A8C9C": 1,
+            "context:isle_album_func_801DF744_9A9994": 2,
+            "context:isle_album_album_SwitchCharacterGridPage": 2,
+            "context:isle_album_album_DeleteCharInComment": 1,
+            "empty:isle_album_album_DeleteCharInComment": 1,
+            "context:isle_album_album_PressedCharacterInGrid": 1,
+            "context:isle_album_func_801E0AF0_9AAD40": 1,
+            "empty:isle_album_func_801E0AF0_9AAD40": 1,
+            "context:isle_album_func_801E0E58_9AB0A8": 2,
+            "empty:isle_album_func_801E0E58_9AB0A8": 2,
+            "context:isle_album_func_801E0FFC_9AB24C": 6,
+            "context:isle_album_album_DrawDeletePhotoPrompt": 6,
+            "context:isle_album_album_DeletePhoto": 2,
+            "context:isle_album_album_GetNextPhotoIndex": 1,
+            "context:isle_album_album_GetPreviousPhotoIndex": 1,
+            "context:isle_album_album_UpdateButtonSelection": 11,
+            "context:isle_album_album_UpdatePhotoSelection": 8,
+            "context:isle_album_album_DragPhoto": 3,
+            "context:isle_album_album_EditComment": 2,
+            "context:isle_album_func_801E3880_9ADAD0": 2,
+            "empty:isle_album_func_801E3880_9ADAD0": 2,
+            "context:isle_album_album_GetAlbumPhoto": 2,
+            "context:isle_album_album_GetLastPhotoIndex": 2,
+            "empty:isle_album_album_GetLastPhotoIndex": 2,
+            "context:isle_album_album_GetFirstPhotoIndex": 2,
+            "empty:isle_album_album_GetFirstPhotoIndex": 2,
+            "context:isle_album_func_801E3B34_9ADD84": 1,
+            "context:isle_album_func_801E3F00_9AE150": 1,
+            "empty:isle_album_func_801E3F00_9AE150": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ABB50.c",
+      "name": "album_Update",
+      "first": 665,
+      "last": 689,
+      "sha256": "2e06c82ec23a5ecbfa6cc0c353c2e594a319c62f96efd41c23f1acaa182c60cf",
+      "native_sha256": "4a041fac34eb546ffb3abd742ab130ea0d1c4b5b9cad8f63c585717b2e7b8ff2",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "function:FocusMark_MoveFront": 1,
+            "function:UILayout_GetButtons": 1,
+            "function:func_800AA85C": 1,
+            "function:func_800AA870": 1,
+            "function:album_UpdateCoverPage": 1,
+            "function:album_UpdateAlbumPage": 1,
+            "field:album_SelectedPhoto": 1,
+            "field:album_CoverButtons": 1,
+            "field:album_PanelButtons": 1,
+            "token:s32": 1,
+            "context:ab_focus_front": 1,
+            "empty:ab_focus_front": 1,
+            "context:ab_selector": 1,
+            "empty:ab_selector": 1,
+            "context:ab_repeat": 1,
+            "context:ab_input_mask": 1,
+            "context:isle_album_album_UpdateCoverPage": 1,
+            "empty:isle_album_album_UpdateCoverPage": 1,
+            "context:isle_album_album_UpdateAlbumPage": 1,
+            "empty:isle_album_album_UpdateAlbumPage": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "func_801E3880_9ADAD0",
+      "first": 22,
+      "last": 24,
+      "sha256": "defbc8422f31912f2d71f31dfe49e86746a7670922c4e4ff6a158fb2c32d04b7",
+      "native_sha256": "5b20915bfb381029cb779f962d05f501dfb15afccd340e6f5d92130af2cd9e76",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "field:album_D_80208C40_9D2E90": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_CopyComment",
+      "first": 26,
+      "last": 32,
+      "sha256": "f2817b9bc86ed2e1d39648b851a78c442788678b04e2ffac60ad9817ba88df26",
+      "native_sha256": "02e5cf0e678e82717b1cffee5e328023e48a290b2da157cc7c4babe19f62c800",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_GetAlbumPhoto",
+      "first": 34,
+      "last": 36,
+      "sha256": "fc78583024c1079778f2aa81f0c8f6d6e6b946ea05cb4026cc5609ef404dbccb",
+      "native_sha256": "ed8b52d7b61c3d5e14a8205ce98420a8901c4a6bc4de5b4acb7fabaabd05fc44",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-photo": 1,
+            "token:s32": 1,
+            "function:getAlbumPhoto": 1,
+            "context:ab_album": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_DeleteAlbumPhoto",
+      "first": 38,
+      "last": 56,
+      "sha256": "5613559e4591f547e0a1100727b1224971b275cde4089282c4b8a4a9f587e8e0",
+      "native_sha256": "164da3cc25eb7901a11a4c3ddf967b3554a4d8a8150a8fce6d6aad2d01c2377d",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "function:getAlbumPhoto": 2,
+            "function:setAlbumComment": 1,
+            "function:removeAlbumPhoto": 1,
+            "field:album_EmptyComment": 1,
+            "field:album_PhotoCount": 1,
+            "field:album_LastPhotoIndex": 2,
+            "field:album_FirstPhotoIndex": 2,
+            "context:ab_album": 2,
+            "context:ab_set_comment": 1,
+            "context:ab_remove_album": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_GetPhotoComment",
+      "first": 58,
+      "last": 64,
+      "sha256": "9db886c569b810a0bc0855ff9ef627daef6684f9279a0bf4e9f2045fc7095f3b",
+      "native_sha256": "24d4fac4f87f4ca0f489a797f68faae10362a7a1eaec392040e4f80a59b447e0",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "album_GetPhotoComment",
+          "find_sha256": "8bf91571e8704e085ecef4bafcc3c6c886d1c6ae877bef5c3f05df25fdb5527a",
+          "replace_sha256": "21719c912a116869ab1ded18040fb148f9563e4f5e19f2aeaa2c061e5b195be3",
+          "find_bytes": 34,
+          "replace_bytes": 31,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-comment": 1,
+            "token:s32": 1,
+            "function:getAlbumPhoto": 1,
+            "context:ab_album": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_GetLastPhotoIndex",
+      "first": 66,
+      "last": 68,
+      "sha256": "016e08f2350dfd4245384f4e30112c15fd003d5dfe14e0403e519e1ca979e721",
+      "native_sha256": "d280057b6f2254112a20e80e23374fa48f7ae30b6899d399b3ce679811a72902",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "field:album_LastPhotoIndex": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_GetFirstPhotoIndex",
+      "first": 70,
+      "last": 72,
+      "sha256": "c6e48cf95fa8baf7fe3eb77a1bf6ea67b9125c21a69b252b29d8663b8a9bd252",
+      "native_sha256": "163e01eeb4f39e58adaf3a5bbb32f9466ffb54bf7370a01b9e82dbdb4870bc28",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "field:album_FirstPhotoIndex": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_GetPhotoCount",
+      "first": 74,
+      "last": 76,
+      "sha256": "ef7e6d1e085fbb4f528a0d300c1f37ac544f0df7b8cfdecfdc5c2fe9a02943ad",
+      "native_sha256": "88173dad5dd793626f4c46fc3968c370a0d639ba92cff7887067e54d68c84bd3",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 1,
+            "field:album_PhotoCount": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "album_IsOnCurrentPage",
+      "first": 78,
+      "last": 86,
+      "sha256": "dc70bb33647e2716f13db5293cbc452c1154e6037ad77c99059f4fbd7262fa3e",
+      "native_sha256": "89ad129c7da0fd128755bc1ebc2bb3060c218284496763230de0c8b606cdcd8b",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "token:s32": 3,
+            "function:album_GetCurrentPage": 1,
+            "context:isle_album_album_GetCurrentPage": 1,
+            "empty:isle_album_album_GetCurrentPage": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "func_801E3B34_9ADD84",
+      "first": 88,
+      "last": 146,
+      "sha256": "3b2aadb4bbc7fbefc286680a94166ac673f08eea0c8a1ff23d5a5ce44d9645f0",
+      "native_sha256": "8d85b23dab1e79b067acde687382f0f3ce8271dd5d19af84355f439965b52ab3",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E3B34_9ADD84",
+          "find_sha256": "d5c28594e4a1bd0dc7601571e714e53566d2cdbe37d1b0dbada3f21c97b6a772",
+          "replace_sha256": "a4552acec6f0f9b3054185363d1f2a3a747cfea8640606d73d0ded9608e3cd34",
+          "find_bytes": 58,
+          "replace_bytes": 65,
+          "count": 2
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E3B34_9ADD84",
+          "find_sha256": "3451d38cbd40ff0ad3084f14e197e616d6ec07923519b1fd211909073a8c2a51",
+          "replace_sha256": "a3b04076c14a28507e4e732ca099ddb81aa36acb326d48630a1086ab5ffa1db0",
+          "find_bytes": 53,
+          "replace_bytes": 78,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E3B34_9ADD84",
+          "find_sha256": "658affb79da6258d5a75882b3a72bf52d55398f6a2512364fbe59411b52a1f89",
+          "replace_sha256": "1f9aad5396a8c4337e872d415d50036e9d14dcfef48e116e590f6e919ab5a1eb",
+          "find_bytes": 70,
+          "replace_bytes": 112,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-photo": 1,
+            "token:s32": 2,
+            "function:auPlaySound": 2,
+            "function:getAlbumPhoto": 4,
+            "function:getAlbumComment": 2,
+            "function:setAlbumComment": 1,
+            "function:removeAlbumPhoto": 1,
+            "function:func_800BF954_5C7F4": 2,
+            "function:func_801DDB54_9A7DA4": 2,
+            "function:func_801DDD28_9A7F78": 1,
+            "function:func_801DE080_9A82D0": 2,
+            "function:album_CopyComment": 3,
+            "function:album_IsOnCurrentPage": 1,
+            "field:album_EmptyComment": 1,
+            "field:album_D_80250170_A1A3C0": 10,
+            "field:album_D_80250550_A1A7A0": 2,
+            "field:album_D_80250558_A1A7A8": 4,
+            "field:album_PhotoCount": 2,
+            "field:album_LastPhotoIndex": 4,
+            "field:album_FirstPhotoIndex": 4,
+            "token:SOUND_ID_94": 1,
+            "context:ab_sound": 2,
+            "context:ab_album": 4,
+            "context:ab_get_comment": 2,
+            "context:ab_set_comment": 1,
+            "context:ab_remove_album": 1,
+            "context:ab_set_album": 2,
+            "context:isle_album_func_801DDB54_9A7DA4": 2,
+            "context:isle_album_func_801DDD28_9A7F78": 1,
+            "context:isle_album_func_801DE080_9A82D0": 2,
+            "empty:isle_album_func_801DE080_9A82D0": 2,
+            "context:isle_album_album_CopyComment": 3,
+            "context:isle_album_album_IsOnCurrentPage": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "func_801E3F00_9AE150",
+      "first": 148,
+      "last": 174,
+      "sha256": "25adc17d1d23bf279edc46513364688dd779ad157101df165cde6e8d46d9234b",
+      "native_sha256": "95999120926434f525affbe503a0e2d282f7842ab178c71a499014575b60db93",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E3F00_9AE150",
+          "find_sha256": "3451d38cbd40ff0ad3084f14e197e616d6ec07923519b1fd211909073a8c2a51",
+          "replace_sha256": "a3b04076c14a28507e4e732ca099ddb81aa36acb326d48630a1086ab5ffa1db0",
+          "find_bytes": 53,
+          "replace_bytes": 78,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E3F00_9AE150",
+          "find_sha256": "658affb79da6258d5a75882b3a72bf52d55398f6a2512364fbe59411b52a1f89",
+          "replace_sha256": "1f9aad5396a8c4337e872d415d50036e9d14dcfef48e116e590f6e919ab5a1eb",
+          "find_bytes": 70,
+          "replace_bytes": 112,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "function:auPlaySound": 2,
+            "function:func_800BF954_5C7F4": 1,
+            "function:func_801DDB54_9A7DA4": 1,
+            "function:album_CopyComment": 1,
+            "function:album_IsOnCurrentPage": 1,
+            "field:album_D_80250170_A1A3C0": 4,
+            "field:album_D_80250550_A1A7A0": 2,
+            "field:album_D_80250558_A1A7A8": 4,
+            "field:album_PhotoCount": 1,
+            "field:album_LastPhotoIndex": 2,
+            "field:album_FirstPhotoIndex": 2,
+            "token:s32": 1,
+            "token:SOUND_ID_65": 1,
+            "token:SOUND_ID_74": 1,
+            "context:ab_sound": 2,
+            "context:ab_set_album": 1,
+            "context:isle_album_func_801DDB54_9A7DA4": 1,
+            "context:isle_album_album_CopyComment": 1,
+            "context:isle_album_album_IsOnCurrentPage": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "func_801E4068_9AE2B8",
+      "first": 176,
+      "last": 178,
+      "sha256": "53f2be9b15e497238067da93aa15f07e76161917c021a456881497e4137ce6fe",
+      "native_sha256": "c6674cb67330601b6c5f92c5d465f95c7553dcff1a92ec9a89ebf82b52af1dcd",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E4068_9AE2B8",
+          "find_sha256": "2252a376a068e08f7949171151ee30aac8098cfdd89770c36536e7988a856c1d",
+          "replace_sha256": "c1a39a84457d5cf26396403c08ecf136df834c9e1414e87872fcda88570b06e4",
+          "find_bytes": 41,
+          "replace_bytes": 67,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "readonly-photo": 1,
+            "field:album_D_80250170_A1A3C0": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "func_801E4084_9AE2D4",
+      "first": 180,
+      "last": 215,
+      "sha256": "045e1541f76423edd2ecfc9b8d537364703559450ae66b9e1dd96e9851ac6ccf",
+      "native_sha256": "f3e4c3bb81b22dd53fc05d4d58adf27c5d7a4c42bb20cb2001bd5fd2bfe2f906",
+      "rewrites": [
+        {
+          "kind": "exact",
+          "label": "func_801E4084_9AE2D4",
+          "find_sha256": "ca5ed5cc1fcc89da0ec770a1592d16ac83f5f7a91bd5d89f10b9d6b382331b3b",
+          "replace_sha256": "caf86ed8b9fabc490788da26027d299884c9edc32f42a57019d5ec2ed058337c",
+          "find_bytes": 42,
+          "replace_bytes": 79,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E4084_9AE2D4",
+          "find_sha256": "3451d38cbd40ff0ad3084f14e197e616d6ec07923519b1fd211909073a8c2a51",
+          "replace_sha256": "a3b04076c14a28507e4e732ca099ddb81aa36acb326d48630a1086ab5ffa1db0",
+          "find_bytes": 53,
+          "replace_bytes": 78,
+          "count": 1
+        },
+        {
+          "kind": "exact",
+          "label": "func_801E4084_9AE2D4",
+          "find_sha256": "229fb5cc908f5f896501b8dabee2d65b28f2104f8923c71e1d51612a673a23c4",
+          "replace_sha256": "3ddc81eae7a34c724194b5368448c715a4ac2c41cbf040fc1b4c24894dcfec6c",
+          "find_bytes": 53,
+          "replace_bytes": 78,
+          "count": 1
+        },
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "function:getAlbumPhoto": 1,
+            "field:album_D_80208C40_9D2E90": 1,
+            "field:album_EmptyComment": 1,
+            "field:album_D_80250170_A1A3C0": 2,
+            "field:album_D_80250550_A1A7A0": 1,
+            "field:album_D_80250558_A1A7A8": 2,
+            "field:album_D_80250938_A1AB88": 1,
+            "field:album_PhotoCount": 1,
+            "field:album_LastPhotoIndex": 1,
+            "field:album_FirstPhotoIndex": 1,
+            "token:s32": 5,
+            "token:u8": 1,
+            "context:ab_album": 1
+          }
+        }
+      ]
+    },
+    {
+      "source": "src/pokemon_album/9ADAD0.c",
+      "name": "func_801E41AC_9AE3FC",
+      "first": 217,
+      "last": 223,
+      "sha256": "bf86fbf217901c6f1af36c50a44516a6886169a0208f5ef59c427408e9f2d9b8",
+      "native_sha256": "0d2db6b6d23bdb763ea4e72256496b412b846a4a8fac1da95fcc7e4e14b334d8",
+      "rewrites": [
+        {
+          "kind": "semantic-native",
+          "counts": {
+            "padding": 1,
+            "field:album_D_80208C40_9D2E90": 2
+          }
+        }
+      ]
+    }
+  ],
+  "callback_roots": [
+    "func_801DCA14_9A6C64",
+    "album_BlinkCursor",
+    "album_BlinkLetter",
+    "album_CreateAlbumUI"
+  ],
+  "native_support": {
+    "src/album_source.h": {
+      "sha256": "417d031d414e136e1e7098856c69458b9e105f2c8a42aa11d4d9cdcd8a9ea7d5"
+    },
+    "src/album_source.c": {
+      "sha256": "dfb6a1a07d2ebdccbab9695c522ec19bbafb55454c39686fdaad8951dcc63cbf"
+    },
+    "src/post_course_scene_source.h": {
+      "sha256": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9"
+    },
+    "src/post_course_scene_source.c": {
+      "sha256": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b"
+    },
+    "src/post_course_window_source.h": {
+      "sha256": "9a7b3c5cf0b1cdef3c56417450750c83281e1d5454b14107b4e3a41526894499"
+    },
+    "src/post_course_window_source.c": {
+      "sha256": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4"
+    },
+    "src/post_course_window.cpp": {
+      "sha256": "955cf52a5bc68117783e031a4df7c5ee3d1b9920eeb4a98951af5b86047e1453"
+    },
+    "src/post_course_scene_hooks.cpp": {
+      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"
+    },
+    "include/35mmisle/sprite.h": {
+      "sha256": "805e76f88948e35cc33d32f253118b67003cde98373490f8a846ee338a2b20f6"
+    },
+    "src/application_photos_source.h": {
+      "sha256": "23dc5f2f6c5ceeb53dcd6e4eab608ea70ade7c77448fe90a5cee7f93e772660c"
+    },
+    "src/application_photos.hpp": {
+      "sha256": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333"
+    },
+    "src/application_photos.cpp": {
+      "sha256": "ac46cce27e9728a507417f9ce8e032ab592dcc2f30d1a1aea596278a05faf6ab"
+    },
+    "src/post_course_replay_source.h": {
+      "sha256": "f047ac1b6c1389f9d845eddce542303cadf1a7fb2d0ce28d82ac76c6d26295be"
+    },
+    "src/post_course_replay_source.c": {
+      "sha256": "ade22ad042863bac85a9ef258f4d80aa4c2288d594e43fd073840617a8ef8208"
+    },
+    "src/post_course_replay.hpp": {
+      "sha256": "138267651d319ffdeb56088a66f19a1e25365118ff2d01493460d9a0ff916a61"
+    },
+    "src/post_course_replay.cpp": {
+      "sha256": "eff1e10d86e907e1368ce6e9776dc472ab0742811b8af53ff172e732186cb1aa"
+    },
+    "include/35mmisle/process.hpp": {
+      "sha256": "181fb1d0bfa32f3dc37ff8093fce7ce970509e765ceab2bf87efb860f71eda40"
+    },
+    "src/album_scene_native.cpp": {
+      "sha256": "42ff336bbeb5cfdfac91f1d4a4ba6d8584e46058e8a26ca01d1a45d4ef099190"
+    },
+    "src/album_scene_native.hpp": {
+      "sha256": "ee8ef41623c82dce0be59de3ff069b6c0681f9e2482563997bf45b3a397a755f"
+    },
+    "src/application_runtime.cpp": {
+      "sha256": "489e0f1d6818e0ea77aae780343e4df9ce0fa2b7a2d3eea6f3a29639f04eaede"
+    },
+    "src/application_runtime.hpp": {
+      "sha256": "2a721ab816cdd79b0031da9f2d17a7d9d1794a3420ae87fe9e4c8f882522768c"
+    },
+    "src/continuation.cpp": {
+      "sha256": "e4cc5bb6cf678d4c4eae24ada2dcf7c805f01ce5fbcd843e4b822e29bd952526"
+    },
+    "src/engine.c": {
+      "sha256": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "src/game_state.hpp": {
+      "sha256": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa"
+    },
+    "src/photo_presentation.cpp": {
+      "sha256": "d6501cc4efa5b2aeae64afd6024115f0350c2807e2b095d3bf1938f43a575f75"
+    },
+    "src/photo_presentation.h": {
+      "sha256": "fadb5b59c890b69d5f34e6020cd23bd6388e8adb64bb702d4ab66afb2e45b627"
+    },
+    "src/photo_presentation.hpp": {
+      "sha256": "11c76061978365eccad4386d8b15b7d3c19e4aff49835a06431f0f5a25af64eb"
+    },
+    "src/photo_presentation_core.inc": {
+      "sha256": "edb1670c6d0aff66526126ff71499c95ee5c9d9b742eaee6e0f483431d37cc61"
+    },
+    "src/photo_replay.cpp": {
+      "sha256": "acd95c2ac272975b2a714bc57b5f6302ff90cdf75ecca1f4332dffb19e3374a3"
+    },
+    "src/photo_replay.hpp": {
+      "sha256": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693"
+    },
+    "src/post_course_native_helpers.hpp": {
+      "sha256": "5e070c3050766af3d5c6848464496a3f885b7258bf4edf521e974c421c97c246"
+    },
+    "src/post_course_resources.cpp": {
+      "sha256": "50a18de187e272422d5969cbd696d43b0167ea61f4f86fb6908d3578e73ce296"
+    },
+    "src/post_course_resources.hpp": {
+      "sha256": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467"
+    },
+    "src/post_course_scene.cpp": {
+      "sha256": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87"
+    },
+    "src/post_course_scene.hpp": {
+      "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
+    },
+    "src/post_course_scene_internal.hpp": {
+      "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
+    },
+    "src/post_course_scene_render.cpp": {
+      "sha256": "dab4324654527127f86bf968c449d0b5df59fbfef2d39b5235fd936b724f1825"
+    },
+    "src/post_course_window.hpp": {
+      "sha256": "bc6d1a25eb5614baa099a2154f5656683f8574d723e276cd50b650d6b523d1cf"
+    },
+    "src/process.cpp": {
+      "sha256": "b2e8294b61d096588f37f8c17dfeffbf7dac8507d0f844d2bb43a8577417b7b5"
+    },
+    "src/scene_graphics.cpp": {
+      "sha256": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4"
+    },
+    "src/scene_graphics.hpp": {
+      "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
+    },
+    "src/screen_transition_resources.cpp": {
+      "sha256": "0bb5fdab19fb2ffc9147f0e5f2d282f049a1b5d07f8c45a2b39672aea71b6b46"
+    },
+    "src/screen_transition_resources.hpp": {
+      "sha256": "98c5beeca3fc08be62d313110e5aac260a8e09407594ec03eb1bbbebbafedf74"
+    },
+    "src/window_memory.cpp": {
+      "sha256": "b47ef38233dc7c7e29a9d6b282ccdf0bcc7d3ce66e2f479192ac26e52c64a9d5"
+    },
+    "src/window_memory.hpp": {
+      "sha256": "95e417a8f9aed17474ef3213054fb094a652e7c147741c61190a457df51ed9e1"
+    }
+  },
+  "outputs": {
+    "declarations_sha256": "6cd45ef891b091ebbc38c38eff66d2bfabd52b3d8eb46d64f27a6b67d15f8a58",
+    "data_sha256": "91ca2d40dac41f781205397f9c73e449abef1f8c66ca54cda752b4c7fda73aa5",
+    "body_sha256": "b98397e8500572613540e262359b82606d756ffa2220c3c5aa28b9f0921e5f4d",
+    "game_sha256": "3947caa0cd4e8a1c9d401c6f867e32210c88b14820fd7bbb944138f21548f2fe"
+  },
+  "data_origins": {
+    "source_units": {
+      "src/pokemon_album/9A6B10.c": 7,
+      "src/pokemon_album/9A6F70.c": 68,
+      "src/pokemon_album/9ABB50.c": 11,
+      "src/pokemon_album/9ADAD0.c": 14
+    },
+    "original_header": "src/pokemon_album/pokemon_album.h",
+    "enum_and_scalar_origins": [
+      "src/pokemon_album/pokemon_album.h:6-16",
+      "src/window/window.h:12-20,38-60",
+      "include/enums.h:411-418"
+    ],
+    "module_initialized": [
+      "src/pokemon_album/9A6F70.c:31-61",
+      "src/pokemon_album/9ABB50.c:5-40",
+      "src/pokemon_album/9ADAD0.c:6-16"
+    ],
+    "character_page_0": {
+      "source": "src/pokemon_album/9A6F70.c:35-55",
+      "source_entry_count": 1,
+      "characters": 95,
+      "euc_jp_bytes": 190,
+      "pointer_guest": "0x80208b70",
+      "target_guest": "0x80208c50",
+      "other_pages": "Original modulo3 retained; no additional tracked initialized pointers; required precise native portability receipt for pages1/2"
+    },
+    "sign_table": {
+      "source": "src/pokemon_album/9A6F70.c:34",
+      "guest": "0x80208b58",
+      "count": 6,
+      "values": [
+        1004,
+        1010,
+        1018,
+        1022,
+        1028,
+        1035
+      ]
+    },
+    "button_tables": {
+      "source": "src/pokemon_album/9ABB50.c:8-29",
+      "tables": {
+        "album_CoverButtonsDef": 4,
+        "album_AlbumButtonsDef": 6,
+        "album_PhotoButtonsDef": 6
+      },
+      "guest": [
+        "0x80208b98",
+        "0x80208bb8",
+        "0x80208be8"
+      ],
+      "encoding": "Pinned EUC-JP source bytes; stable immutable typed descriptors"
+    },
+    "entry": {
+      "source": "src/pokemon_album/9A6B10.c:11-73,144-154",
+      "display_list_guest": "0x801e41e0",
+      "actual_gfx_commands": 14,
+      "display_list_bytes": 112,
+      "screen_guest": "0x801e4250",
+      "screen_words": 7,
+      "setup_guest": "0x801e426c",
+      "setup_words": 35,
+      "screen_flags": "0x16a99",
+      "heap_end": "0x80250950",
+      "arena_end_symbol": "window_VRAM",
+      "cleanup_guest": "0x801dcc74",
+      "init_guest": "0x801dcbf4",
+      "source_argument": 12,
+      "source_exit_latch": 13,
+      "notice": "0x100000 after successful setup return"
+    },
+    "sprites": {
+      "source": "src/pokemon_album/9A6F70.c:12-29",
+      "guests": [
+        "0x801e4518",
+        "0x801ed550",
+        "0x801f2d28",
+        "0x801f2f88",
+        "0x801f3108",
+        "0x801f3288",
+        "0x801f3408",
+        "0x801f3588",
+        "0x801f6b50",
+        "0x801fb1d0",
+        "0x801ffa10",
+        "0x801ffc80",
+        "0x80200058",
+        "0x80200400",
+        "0x802005b8",
+        "0x802006e8",
+        "0x80201728",
+        "0x80208b10"
+      ],
+      "writable_previews": {
+        "0x80201728": {
+          "instances": 7,
+          "source_copy_bytes": 4056,
+          "source": "9A6F70.c303-349,434-477"
+        },
+        "0x80208b10": {
+          "instances": 1,
+          "borrowed_delete_clones": "Source c1534, original child survives whole animation",
+          "source": "9A6F70.c494-525,1513-1560"
+        }
+      }
+    },
+    "parent_snapshot": {
+      "receipt": "qualified-640a-menu-initialized-Snapshot.json",
+      "canonical_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+      "canonical_bytes": 16777216,
+      "regions": [
+        {
+          "label": "album_entry_initialized",
+          "rom": "0x9ae430",
+          "guest": "0x801e41e0",
+          "byte_count": 288,
+          "sha256": "133a003d915d66785fe2173d4427aa97aeb4b3a91cf36e882aea1c93074cbb19"
+        },
+        {
+          "label": "album_grid_sign_and_flags",
+          "rom": "0x9d2da0",
+          "guest": "0x80208b50",
+          "byte_count": 1168,
+          "sha256": "2ef94175ec8f0ca296f5fc907ca8955f3d69704cfb6dacbcc6f679d24367880d"
+        },
+        {
+          "label": "album_unwritten_sp4_matching_code",
+          "rom": "0x9a828c",
+          "guest": "0x801de03c",
+          "byte_count": 140,
+          "sha256": "daa5172991d5d8a678ad318794c83cade1745b9f8a3bcd39cc7469a870b94965"
+        },
+        {
+          "label": "album_sprite_801e4518",
+          "rom": "0x9ae768",
+          "guest": "0x801e4518",
+          "byte_count": 128,
+          "sha256": "7ae8db5bbd9caf658541cdef94278e2f7a528d4a30a9d72ff0b9ab3a905b4820"
+        },
+        {
+          "label": "album_sprite_801ed550",
+          "rom": "0x9b77a0",
+          "guest": "0x801ed550",
+          "byte_count": 128,
+          "sha256": "b3965db4bd7c2eb5cf031af2032757dc2dce6f7e023756dca9b1ad7bf663fab6"
+        },
+        {
+          "label": "album_sprite_801f2d28",
+          "rom": "0x9bcf78",
+          "guest": "0x801f2d28",
+          "byte_count": 128,
+          "sha256": "4c7cae2171e52eb19340b935579add54b476d1973010bd136d5adb86f4c14404"
+        },
+        {
+          "label": "album_sprite_801f2f88",
+          "rom": "0x9bd1d8",
+          "guest": "0x801f2f88",
+          "byte_count": 128,
+          "sha256": "b21e4500051ae889519b817e447176746e9fca6cd37912a05c77b548b2421029"
+        },
+        {
+          "label": "album_sprite_801f3108",
+          "rom": "0x9bd358",
+          "guest": "0x801f3108",
+          "byte_count": 128,
+          "sha256": "9a892654f3d811f34431ff40491e77672213777021b1bd000d8238e527e00fc6"
+        },
+        {
+          "label": "album_sprite_801f3288",
+          "rom": "0x9bd4d8",
+          "guest": "0x801f3288",
+          "byte_count": 128,
+          "sha256": "197424b2955a9eff83482f6d8f003714fad008dd818ae877978aaf78c9c42641"
+        },
+        {
+          "label": "album_sprite_801f3408",
+          "rom": "0x9bd658",
+          "guest": "0x801f3408",
+          "byte_count": 128,
+          "sha256": "9dd04f4d69b22ba13826b0b537582685f4e6e6768c57cf566d64305901475d21"
+        },
+        {
+          "label": "album_sprite_801f3588",
+          "rom": "0x9bd7d8",
+          "guest": "0x801f3588",
+          "byte_count": 128,
+          "sha256": "a586ed94fda02d4718c254d8a8496ba2648d62445947eca7f9551c0a928632b9"
+        },
+        {
+          "label": "album_sprite_801f6b50",
+          "rom": "0x9c0da0",
+          "guest": "0x801f6b50",
+          "byte_count": 128,
+          "sha256": "f412717cbcae402002f6dc6f1fb52aec1cde10409a3158828d93927397f7926e"
+        },
+        {
+          "label": "album_sprite_801fb1d0",
+          "rom": "0x9c5420",
+          "guest": "0x801fb1d0",
+          "byte_count": 128,
+          "sha256": "6c6e5fa7d96bb9cba3c622541fa1e57a4ee0f5bf024c0909c4eadaf247b13078"
+        },
+        {
+          "label": "album_sprite_801ffa10",
+          "rom": "0x9c9c60",
+          "guest": "0x801ffa10",
+          "byte_count": 128,
+          "sha256": "690a68267f93da19f941340ddc74af4394f04d99c1d5f6dfcebc4f13c74f8119"
+        },
+        {
+          "label": "album_sprite_801ffc80",
+          "rom": "0x9c9ed0",
+          "guest": "0x801ffc80",
+          "byte_count": 128,
+          "sha256": "640919ac42157aa1916940a9a0cf8cea4027c3b55a8f5ce38d5f0fb355c61b10"
+        },
+        {
+          "label": "album_sprite_80200058",
+          "rom": "0x9ca2a8",
+          "guest": "0x80200058",
+          "byte_count": 128,
+          "sha256": "6aaf4cdea5461e593f4845c306be9575668e5179b3d46d05442f5315fb2a2a67"
+        },
+        {
+          "label": "album_sprite_80200400",
+          "rom": "0x9ca650",
+          "guest": "0x80200400",
+          "byte_count": 128,
+          "sha256": "272a347389d267242b0e72c1b4024f70f11751c9e25c7bae85fb031c35182cc1"
+        },
+        {
+          "label": "album_sprite_802005b8",
+          "rom": "0x9ca808",
+          "guest": "0x802005b8",
+          "byte_count": 128,
+          "sha256": "cbd011257df8536d94fa23b8ba051fb8c0cbab3168320078e9badbcb00c0daf0"
+        },
+        {
+          "label": "album_sprite_802006e8",
+          "rom": "0x9ca938",
+          "guest": "0x802006e8",
+          "byte_count": 128,
+          "sha256": "ae662397ef4863836a20e2be32846c072c2b5ab78609b5a0e35cb036f6f117d6"
+        },
+        {
+          "label": "album_sprite_80201728",
+          "rom": "0x9cb978",
+          "guest": "0x80201728",
+          "byte_count": 128,
+          "sha256": "a6ccf8c5931f609ec23764e8bc42ea38884009261ecd3a4fc32a2ec956f58e2a"
+        },
+        {
+          "label": "album_sprite_80208b10",
+          "rom": "0x9d2d60",
+          "guest": "0x80208b10",
+          "byte_count": 128,
+          "sha256": "ffe86e9b42ca2071ee67920914cb98d77c7ff16a1cf6a1673b95e02075c123f7"
+        }
+      ],
+      "qualification": "Parent admitted Snapshot facts only; no direct ROM/capture reads; words are not an executed MIPS claim"
+    },
+    "finite_portability_requirements": [
+      {
+        "native": "unwritten_sp4",
+        "source": "src/pokemon_album/9A6F70.c:479-488,1586",
+        "matching_code_guest": "0x801de03c",
+        "required": "Actual matched stack-residue origin or explicit exact-scoped native policy; output real owned Sprite, not guessed dragged child"
+      },
+      {
+        "native": "cover_overflow_get/cover_overflow_set",
+        "source": "src/pokemon_album/9A6F70.c:77-79,836-842,886-891",
+        "required": "Original extent4 retained; indices4/5 require finite read/write mapping from real alias/MIPS or scoped portability fact, never host SObj** alias into GObj/int or widened array"
+      },
+      {
+        "native": "empty_last_photo",
+        "source": "src/pokemon_album/9ADAD0.c:183,187-202",
+        "required": "Only empty scan path consumes admitted actual signed value; no initialized -1 guess"
+      },
+      {
+        "native": "character_grid",
+        "source": "src/pokemon_album/9A6F70.c:35-55,1113-1148",
+        "required": "Only page1/2 requires actual origin/policy; Source modulo3 untouched; no repeated page0 or NULL heal"
+      },
+      {
+        "native": "float_format_integer",
+        "source": "src/pokemon_album/9A6F70.c:209;src/window/8486E0.c:44-50",
+        "required": "Exact %5.2f/s32 target varargs residue or scoped policy, returning bounded actual ASCII; never host float-format/integer varargs UB"
+      },
+      {
+        "native": "inactive_letter_width",
+        "source": "src/pokemon_album/9A6F70.c:704,722-741",
+        "required": "Only width(sp60) when cursor>=31/inactive letter consumes exact admitted width from unwritten bytes or scoped policy; no blank initializer"
+      }
+    ],
+    "working_photo_stores": {
+      "records": 2,
+      "source": "src/pokemon_album/9ADAD0.c:9,12,88-174,176-215",
+      "full_wire": "copy_record at both actual canonical->A assignments; copy A->B before both actual swap/restore writes; sentinel clear at Original assignments",
+      "comments": "Source-owned staging comments copy first31 exactly; canonical indexed stores c712,c1158,c1172,c1191,c1193,c1197,c1211,c1214,c1218 are synchronous at Original timing including wait10/rollback; const read only"
+    },
+    "number_semantics": {
+      "source": "src/window/8486E0.c:44-62",
+      "native": "Own bounded ASCII -> explicit BE source wide digit/space bytes; numeric printf format exception isolated"
+    },
+    "text_option": {
+      "source": "src/window/text.c:221-226",
+      "album_calls": "src/pokemon_album/9A6F70.c:1050,1063",
+      "native": "isle_post_window_text_proportional, exact flags1 only"
+    }
+  },
+  "native_contract": {
+    "header": "src/album_source.h",
+    "context": "IsleAlbumSource common first",
+    "table": "IsleAlbumNative required immutable complete nonNULL",
+    "working": "Two native cold IslePhotoWorking instances; full wire copies and actual replay-read retention; no canonical identify widening",
+    "control": "Every Original branch/wait/loop and registered OM callback stays C; five SDK/entry bodies lower to exact typed own C wrappers, all95 remaining bodies materialize privately",
+    "entry_lifetime": "Entry/table/domain/owner survive native scene/source retirement; notice OR after successful poll only; actual signed manager result returned",
+    "retirement": "Parent common envelope joins real Source processes/Replay/GPU/native allocation backing before Source release; stop is not success",
+    "native_support_hash_policy": "Exact authoring-time live common/extended WorkingPhotos bytes. Parent owns final integration support fixedpoint and must reseal guarded recipe/generator after mechanical shared integration."
+  },
+  "support_allowlist": [],
+  "recipe_sha256": "e37e09504a5762cc42caf06353287801639d771976caf72924294730c2fed82a",
+  "generator_sha256": "95c2a2b26e1c72cecff06cc38ecb2717fa99953a3221eed126c1a3280c1c70e3"
+}

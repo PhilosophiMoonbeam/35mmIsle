@@ -1,12 +1,13 @@
 // Explicit private-ROM consumer of the actual application Runtime. Never a
 // ROM-free CTest, installed executable, Source-text test or alternate game loop.
-// Original Manager results alone select Boot -> Title -> Name -> Oak -> Beach.
+// Original Manager results alone select entries; owned input never injects routes.
 // The diagnostic-disabled Host supplies NO controller; SoftwareController below
 // is a separate, explicitly owned acquisition through the real Input Service.
-// CLI: PRIVATE_ROM NEW_OWNED_ROOT [ingress|course], default ingress. Course
-// continues the SAME scheduler through original Beach intro/tutorial/ending.
-// Course continues through original CameraCheck9/PhotoCheck15 and admission of
-// the constructed Manager Oak13 owner, not a rendered/interactable return Oak.
+// CLI modes: ingress, course, native0..native6, menus, credits17..credits19.
+// Course continues through original Beach/CameraCheck9/PhotoCheck15 and the
+// constructed Manager Oak13 owner, not a rendered/interactable return Oak.
+// NativeN authors an unlocked profile; real Oak selects N and actual Source
+// natural course result9 must join before actual Manager CameraCheck9 admission.
 // Exit0 requires the entire selected scenario; exit1 is any failure.
 // Each run predeclares bounded artifacts in its new owned proof root.
 #include "application_runtime.hpp"
@@ -22,6 +23,9 @@
 #include "player_photo.hpp"
 #include "player_ui_source.h"
 #include "startup_runtime.hpp"
+#include "post_course_probe_inputs.hpp"
+#include "post_course_scene_probe.hpp"
+#include "native_course_probe.hpp"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
@@ -52,7 +56,17 @@ namespace in = isle::game_input;
 namespace startup = isle::startup;
 using Time = std::chrono::steady_clock;
 constexpr std::uint16_t button_a = 0x8000, button_b = 0x4000, button_z = 0x2000, button_start = 0x1000;
-enum class Mode { ingress, course };
+enum class Mode { ingress, course, native_course, menus, credits17, credits18, credits19 };
+bool menu_mode(Mode mode) noexcept { return mode>=Mode::menus; }
+std::int32_t credit_argument(Mode mode) noexcept {
+    return mode==Mode::credits17?17:mode==Mode::credits18?18:mode==Mode::credits19?19:0;
+}
+std::uint32_t menu_target(Mode mode) noexcept {
+    const auto credit=credit_argument(mode);
+    // End24/Gallery23 and Credits20 have no discovered producer in the pinned
+    // Original Root; their separate APIs are not fabricated menu selections.
+    return credit?std::uint32_t{1}<<(credit-12):0x7u;
+}
 constexpr std::array<const char*,3> course_captures{{
     "actual-beach-tutorial-window.ppm", "actual-beach-course-window.ppm", "actual-beach-outro-window.ppm"}};
 constexpr std::array<const char*,4> post_captures{{
@@ -136,6 +150,15 @@ struct Evidence {
     Mode mode=Mode::ingress;
     CourseEvidence course;
     PostEvidence post;
+    isle::private_post_course::Probe* menu_probe=nullptr;
+    std::array<char,512> menu_failure{};
+    std::uint64_t menu_entries=0,menu_updates=0,menu_frames=0,menu_presentations=0;
+    std::uint32_t menu_qualified=0;
+    bool authored_menu_inputs=false;
+    isle::private_course::Probe* course_probe=nullptr;
+    std::int32_t requested_course=0;
+    std::uint64_t course_updates=0,course_frames=0,course_presentations=0;
+    bool authored_course_profile=false,course_api_completed=false;
     std::array<std::uint64_t,scene_count> updates{},frames{},presentations{};
     std::array<bool,6> captured{};
     std::uint64_t entries = 0,read_requests = 0,read_completions = 0,read_skips = 0,publication_acknowledgements = 0;
@@ -151,6 +174,30 @@ struct Evidence {
 // original post-omSetupScene return. Never retain pointers or reenter Runtime.
 void observe_retirement(void* user,app::SceneRetirementView view) noexcept {
     auto& evidence=*static_cast<Evidence*>(user);
+    if (evidence.mode==Mode::native_course && evidence.course_probe) {
+        try { evidence.course_probe->retired(view); }
+        catch (const std::exception& error) {
+            if (!evidence.menu_failure[0])
+                std::snprintf(evidence.menu_failure.data(),evidence.menu_failure.size(),"%s",error.what());
+        } catch (...) {
+            if (!evidence.menu_failure[0])
+                std::snprintf(evidence.menu_failure.data(),evidence.menu_failure.size(),"unknown borrowed course retirement failure");
+        }
+        return;
+    }
+    if (menu_mode(evidence.mode) && view.post && evidence.menu_probe) {
+        try {
+            evidence.menu_probe->retired(*view.post,view.source_result);
+            evidence.menu_qualified=evidence.menu_probe->qualified_mask();
+        } catch (const std::exception& error) {
+            if (!evidence.menu_failure[0])
+                std::snprintf(evidence.menu_failure.data(),evidence.menu_failure.size(),"%s",error.what());
+        } catch (...) {
+            if (!evidence.menu_failure[0])
+                std::snprintf(evidence.menu_failure.data(),evidence.menu_failure.size(),"unknown borrowed menu retirement failure");
+        }
+        return;
+    }
     if (evidence.mode==Mode::course && view.post) {
         const auto index=view.post->camera_source()?0u:1u;
         auto& p=evidence.post;
@@ -250,11 +297,30 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
         << " admitted_submissions=" << e.submissions << " retired_terminals=" << e.terminals << '\n'
         << "source_Boot_first_wait=" << e.boot_wait << " source_Boot_completed=" << e.boot_complete
         << " source_new_game_result0_notice1=" << e.menu_result << " source_Name_confirming=" << e.name_confirming
-        << " source_Name_confirmed=" << e.name_confirmed << " source_Oak_confirmed_course0=" << e.oak_result << '\n'
+        << " source_Name_confirmed=" << e.name_confirmed
+        << (menu_mode(e.mode)?" source_Oak_original_authored_menu_result=":" source_Oak_confirmed_course0=") << e.oak_result << '\n'
         << "native_Beach_camera_changes=" << e.beach_camera_changes << " original_main_music=" << e.main_music << '\n'
         << "native_GPU_Photo_Manager_retired=" << e.native_retired << " Input_Service_stopped=" << e.input_stopped
         << " SDL_audio_stream_drained=" << e.audio_drained << " Host_owners_released=" << e.host_released
         << " accepted_dummy_PCM_frames=" << e.accepted_pcm << '\n';
+    if (menu_mode(e.mode)) {
+        out << "mode=" << (credit_argument(e.mode)?"credits":"menus")
+            << " credits_argument=" << credit_argument(e.mode) << '\n'
+            << "canonical_photo_scores_comments_profile_flags_and_notices=AUTHORED_API_inputs_NOT_captured_gameplay\n"
+            << "actual_Manager_menu_entries=" << e.menu_entries << " actual_menu_updates=" << e.menu_updates
+            << " actual_menu_canonical_frames=" << e.menu_frames << " actual_menu_LUS_presentations=" << e.menu_presentations << '\n'
+            << "qualified_menu_mask=" << e.menu_qualified << " requested_Root_reachable_mask=" << menu_target(e.mode) << '\n'
+            << "Root_reachability_End24_Gallery23_Credits20=NOT_claimed_no_discovered_Original_producer\n";
+        if (e.menu_failure[0]) out << "actual_borrowed_menu_failure=" << e.menu_failure.data() << '\n';
+    }
+    if (e.mode==Mode::native_course) {
+        out<<"mode=native_course requested_course="<<e.requested_course
+            <<"\ncanonical_unlocked_profile=AUTHORED_API_input_NOT_natural_progression"
+            <<"\nactual_Source_natural_course_result9_and_Manager_CameraCheck9="<<e.course_api_completed
+            <<"\nactual_course_updates="<<e.course_updates<<" canonical_course_frames="<<e.course_frames
+            <<" actual_course_LUS_presentations="<<e.course_presentations<<'\n';
+        if(e.menu_failure[0])out<<"actual_borrowed_course_failure="<<e.menu_failure.data()<<'\n';
+    }
     if (e.mode==Mode::course) {
         const auto& c=e.course;
         out << "mode=course\n"
@@ -485,9 +551,14 @@ void close_application(std::unique_ptr<app::Runtime>& application,h::GtlClock& c
     }
     if (application->error()!=ISLE_GAME_OK) remember_failure(failure,application->message());
     const auto view=application->view();
-    if (application->scene_active() || application->completed_frame() || view.entry || view.startup || view.name || view.oak || view.beach || view.post ||
-        !clock.stopped() || clock.failed() || clock.stats().submissions!=clock.stats().terminals)
+    const bool native_retired=!application->scene_active() && !application->completed_frame() &&
+        !view.entry && !view.startup && !view.name && !view.oak && !view.beach && !view.post && !view.rainbow &&
+        !view.tunnel && !view.volcano && !view.river && !view.cave && !view.valley &&
+        clock.stopped() && clock.stats().submissions==clock.stats().terminals;
+    evidence.native_retired=native_retired;
+    if (!native_retired)
         remember_failure(failure,"stopped Runtime retained a scene, Photo/frame, Manager entry or actual GTL terminal");
+    if (clock.failed()) remember_failure(failure,"actual GTL fault remains after stopped Runtime retirement");
     evidence.submissions+=clock.stats().submissions;
     evidence.terminals+=clock.stats().terminals;
     evidence.dropped_retraces+=clock.stats().dropped_retraces;
@@ -528,8 +599,26 @@ void exercise_cold_stop(const isle::rom::Snapshot& snapshot,const isle::menu::Ca
 class Scenario {
 public:
     Scenario(app::Runtime& runtime,h::GtlClock& clock,in::Service& input,SoftwareController& controller,
-            isle::game::State& state,Timeline& timeline,const std::filesystem::path& root,Evidence& evidence)
-        : application_(runtime),clock_(clock),input_(input),controller_(controller),state_(state),timeline_(timeline),root_(root),e_(evidence) {
+            isle::game::State& state,Timeline& timeline,const std::filesystem::path& root,Evidence& evidence,
+            const isle::rom::Snapshot& snapshot)
+        : application_(runtime),clock_(clock),input_(input),controller_(controller),state_(state),timeline_(timeline),root_(root),e_(evidence),
+          snapshot_(snapshot) {
+        if (menu_mode(e_.mode)) {
+            menu_probe_=std::make_unique<isle::private_post_course::Probe>(
+                isle::private_post_course::Controller{&controller_,[](void* owner,std::uint16_t buttons,std::int8_t x,std::int8_t y) noexcept {
+                    auto& control=*static_cast<SoftwareController*>(owner);
+                    control.buttons=buttons;control.stick_x=x;control.stick_y=y;
+                }},root_/"proof");
+            e_.menu_probe=menu_probe_.get();
+        }
+        if (e_.mode==Mode::native_course) {
+            course_probe_=std::make_unique<isle::private_course::Probe>(e_.requested_course,
+                isle::private_post_course::Controller{&controller_,[](void* owner,std::uint16_t buttons,std::int8_t x,std::int8_t y) noexcept {
+                    auto& control=*static_cast<SoftwareController*>(owner);
+                    control.buttons=buttons;control.stick_x=x;control.stick_y=y;
+                }},root_/"proof");
+            e_.course_probe=course_probe_.get();
+        }
         timeline_.bind(clock_,application_);
         timeline_.display_owner=this;
         timeline_.display_service=[](void* owner) noexcept {
@@ -544,7 +633,7 @@ public:
             }
         };
     }
-    ~Scenario() {timeline_.display_service=nullptr;timeline_.display_owner=nullptr;}
+    ~Scenario() {e_.menu_probe=nullptr;e_.course_probe=nullptr;timeline_.display_service=nullptr;timeline_.display_owner=nullptr;}
     void open_course_log() {
         if (e_.mode!=Mode::course) return;
         course_log_.open(root_/"proof"/"course-source.tsv");
@@ -586,6 +675,7 @@ public:
             const auto before=clock_.stats();
             const bool pumped=application_.pump(Timeline::raw(tick));
             require(pumped && application_.error()==ISLE_GAME_OK,application_.message());
+            require(!e_.menu_failure[0],e_.menu_failure.data());
             inspect_entry();
             const auto after=clock_.stats();
             require(after.updates>=before.updates && after.updates-before.updates<=1,
@@ -598,6 +688,30 @@ public:
             e_.main_music|=timeline_.host.audio()->bgm_playing(0);
             require(!application_.stopped(),"Runtime stopped before real Beach ingress/consumer shutdown request");
             (void)timeline_.progress.idle();
+        }
+        if (e_.mode==Mode::native_course) {
+            require(e_.authored_course_profile && e_.course_api_completed && course_probe_->completed() &&
+                e_.entries==6 && e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
+                e_.menu_result && e_.name_confirming && e_.name_confirmed && e_.oak_result &&
+                e_.input_hold_audio>0 && e_.main_music && e_.course_frames>0 && e_.course_presentations>0 &&
+                std::all_of(e_.captured.begin(),e_.captured.begin()+5,[](bool value){return value;}),
+                "actual natural course/Original result9/CameraCheck9 admission proof incomplete");
+            for(std::size_t n=0;n<4;++n)
+                require(e_.updates[n]>0 && e_.frames[n]>0 && e_.presentations[n]>0,
+                    "native course qualification lost genuine original Boot/Title/Name/Oak ingress");
+            return;
+        }
+        if (menu_mode(e_.mode)) {
+            require(e_.authored_menu_inputs && (e_.menu_qualified&menu_target(e_.mode))==menu_target(e_.mode) &&
+                e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
+                e_.menu_result && e_.name_confirming && e_.name_confirmed && e_.oak_result &&
+                e_.input_hold_audio>0 && e_.main_music && e_.menu_frames>0 && e_.menu_presentations>0 &&
+                std::all_of(e_.captured.begin(),e_.captured.begin()+5,[](bool value){return value;}),
+                "authored-save original Manager menu/credits route lacks real Source/UI/return/presentation evidence");
+            for (std::size_t n=0;n<4;++n)
+                require(e_.updates[n]>0 && e_.frames[n]>0 && e_.presentations[n]>0,
+                    "menu qualification lost genuine original Boot/Title/Name/Oak ingress");
+            return;
         }
         require(e_.entries==(e_.mode==Mode::course?8u:scene_count) && e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
             e_.menu_result && e_.name_confirming && e_.name_confirmed && e_.oak_result && e_.frame_hold &&
@@ -674,6 +788,10 @@ private:
         std::size_t scene=0;
         int capture=-1,course_capture=-1,post_capture=-1;
         std::uint64_t frame=0;
+        std::int32_t menu_argument=0;
+        std::uint64_t menu_digest=0;
+        bool menu_varied=false;
+        std::int32_t native_course=-1;
     };
     app::Runtime& application_;
     h::GtlClock& clock_;
@@ -683,6 +801,14 @@ private:
     Timeline& timeline_;
     const std::filesystem::path& root_;
     Evidence& e_;
+    const isle::rom::Snapshot& snapshot_;
+    std::unique_ptr<isle::private_course::Probe> course_probe_;
+    std::unique_ptr<isle::private_post_course::Probe> menu_probe_;
+    std::uint64_t menu_visit_updates_=0;
+    unsigned gallery_title_stage_=0;
+    std::uint64_t gallery_title_stable_=0;
+    int menu_oak_phase_=-1,menu_oak_slot_=-1;
+    std::uint64_t oak_input_updates_=0,oak_hold_until_=0,oak_next_command_=0;
     Backpressure backpressure_=Backpressure::accumulating;
     in::ReadToken held_read_{};
     std::uint64_t last_read_serial_=0,batch_=0,claim_ordinal_=0,claim_audio_=0;
@@ -1294,6 +1420,50 @@ private:
         if (!view.entry) return;
         const auto entry=*view.entry; // Value only; RuntimeView pointers expire at the next pump.
         if (entry.serial==last_entry_) return;
+        if (e_.mode==Mode::native_course && e_.entries>=4) {
+            constexpr std::array course_operations{ISLE_APPLICATION_ENTRY_BEACH,ISLE_APPLICATION_ENTRY_TUNNEL,
+                ISLE_APPLICATION_ENTRY_VOLCANO,ISLE_APPLICATION_ENTRY_RIVER,ISLE_APPLICATION_ENTRY_CAVE,
+                ISLE_APPLICATION_ENTRY_VALLEY,ISLE_APPLICATION_ENTRY_RAINBOW};
+            require(entry.serial>last_entry_ && state_.initialized() && state_.save()==persistent_save_ &&
+                clock_.stats().submissions==clock_.stats().terminals,
+                "actual course Manager handoff changed canonical profile or bypassed GPU retirement");
+            if(e_.entries==4) {
+                require(entry.argument==std::uint32_t(e_.requested_course) &&
+                    entry.operation==course_operations[std::size_t(e_.requested_course)] && e_.oak_result,
+                    "actual Oak course selection did not reach requested Original course owner");
+                flag16(true);
+            } else require(e_.entries==5 && view.post && entry.operation==ISLE_APPLICATION_ENTRY_CAMERA_CHECK && entry.argument==9,
+                "natural Source course result did not admit actual Manager CameraCheck9");
+            ++e_.entries;scene_=scene_count+2;last_entry_=entry.serial;
+            controller_.buttons=0;controller_.stick_x=controller_.stick_y=0;
+            course_probe_->update(view,e_.course_updates);
+            if(e_.entries==6) {
+                require(course_probe_->completed(),"CameraCheck9 admission lacks actual joined natural Source course receipt");
+                e_.course_api_completed=true;stop_requested_=true;
+            }
+            std::cout<<"original_course_entry serial="<<entry.serial<<" operation="<<int(entry.operation)
+                <<" argument="<<entry.argument<<" requested_course="<<e_.requested_course
+                <<" naturally_completed="<<e_.course_api_completed<<std::endl;
+            return;
+        }
+        if (menu_mode(e_.mode) && e_.entries>=4) {
+            require(entry.serial>last_entry_ && e_.menu_entries<32 &&
+                state_.initialized() && state_.save()==persistent_save_ &&
+                clock_.stats().submissions==clock_.stats().terminals,
+                "original menu Manager entry regressed, exceeded its bound or bypassed canonical/GPU ownership");
+            const bool title=entry.operation==ISLE_APPLICATION_ENTRY_TITLE && entry.argument==8 && view.startup;
+            const bool oak=entry.operation==ISLE_APPLICATION_ENTRY_OAKS_LAB && entry.argument==13 && view.oak;
+            const bool menu=view.post && (entry.argument==12 || entry.argument==14 || entry.argument==22 ||
+                entry.argument==23 || entry.argument==24 || (entry.argument>=17 && entry.argument<=20));
+            require(title || oak || menu,"original Manager selected an unexpected authored-save menu route");
+            ++e_.entries;++e_.menu_entries;scene_=scene_count+2;last_entry_=entry.serial;menu_visit_updates_=0;
+            gallery_title_stage_=0;gallery_title_stable_=0;
+            controller_.buttons=0;controller_.stick_x=controller_.stick_y=0;
+            if ((e_.menu_qualified&menu_target(e_.mode))==menu_target(e_.mode)) stop_requested_=true;
+            std::cout<<"original_menu_entry serial="<<entry.serial<<" operation="<<int(entry.operation)
+                <<" argument="<<entry.argument<<" qualified_mask="<<e_.menu_qualified<<std::endl;
+            return;
+        }
         if (e_.entries>=scene_count) {
             const auto index=static_cast<std::size_t>(e_.entries-scene_count);
             require(e_.mode==Mode::course && index<3 && entry.serial>last_entry_,
@@ -1381,6 +1551,19 @@ private:
     void observe_update() {
         if (scene_>=scene_count) {
             const auto view=application_.view();
+            if (e_.mode==Mode::native_course) {
+                ++e_.course_updates;
+                course_probe_->update(view,e_.course_updates);
+                return;
+            }
+            if (menu_mode(e_.mode)) {
+                ++e_.menu_updates;++menu_visit_updates_;
+                require(view.entry,"actual menu update lost its original Manager entry");
+                if (view.post) menu_probe_->update(*view.post,static_cast<std::int32_t>(view.entry->argument),menu_visit_updates_);
+                else if (view.oak) drive_oak(*view.oak);
+                else if (view.startup) drive_gallery_title(*view.startup);
+                return;
+            }
             if (view.post) drive_post(*view.post);
             return;
         }
@@ -1454,11 +1637,94 @@ private:
             require(e_.name_confirming && view.name[0]!=0 && view.name[8]==0,
                 "actual Name skipped its one-update confirmation/default-name rule");
             confirmed_name_=view.name;saved_name_=true;e_.name_confirmed=true;controller_.buttons=0;
+            if(e_.mode==Mode::native_course && !e_.authored_course_profile) {
+                isle::private_course::seed_progress(state_,e_.requested_course);
+                e_.authored_course_profile=true;
+            }
+            if (menu_mode(e_.mode) && !e_.authored_menu_inputs) {
+                // Explicit authored canonical saved-profile inputs, installed
+                // outside Source after real Name confirmation, before Oak's
+                // owner exists. Manager entries and SDK output remain original.
+                app::Photos photos(snapshot_,*state_.save());
+                isle::private_post_course::seed(photos,state_);
+                require(!state_.save()->set_player_flag(7,true),"authored Report-unlocked flag rejected");
+                const auto credit=credit_argument(e_.mode);
+                if (credit==17) {
+                    require(!state_.save()->set_player_flag(14,true),"authored completed-profile flag rejected");
+                    state_.add_scene_notices(0x80000);
+                } else if (credit==18) state_.add_scene_notices(0x40000);
+                else if (credit==19) state_.add_scene_notices(0x40);
+                e_.authored_menu_inputs=true;
+            }
+        }
+    }
+    void drive_gallery_title(const startup::Runtime& runtime) {
+        const auto* ui=runtime.menu_ui();
+        require(ui,"actual saved-profile Title lost its original menu UI");
+        const auto source=ui->source_state();
+        const auto press=[&](std::uint16_t buttons,unsigned stage) {
+            controller_.buttons=buttons;gallery_title_stage_=stage;gallery_title_stable_=menu_visit_updates_;
+        };
+        if (gallery_title_stage_==0 && runtime.updates()>=100) press(button_start,1);
+        else if (gallery_title_stage_==1 && source==2) press(0,2);
+        else if (gallery_title_stage_==2 && menu_visit_updates_-gallery_title_stable_>=30) press(button_a,3);
+        else if (gallery_title_stage_==3 && source==3) press(0,4);
+        else if (gallery_title_stage_==4 && menu_visit_updates_-gallery_title_stable_>=30) {
+            controller_.stick_y=-60;gallery_title_stage_=5;gallery_title_stable_=menu_visit_updates_;
+        } else if (gallery_title_stage_==5) {
+            controller_.stick_y=0;gallery_title_stage_=6;gallery_title_stable_=menu_visit_updates_;
+        } else if (gallery_title_stage_==6 && menu_visit_updates_-gallery_title_stable_>=30) press(button_a,7);
+        if (runtime.phase()==startup::Phase::scene_exit) {
+            require(gallery_title_stage_==7 && runtime.exit().scene==isle::menu::scene::SourceScene::gallery,
+                "actual saved-profile Main Menu did not select original Gallery22");
+            controller_.buttons=0;controller_.stick_y=0;
         }
     }
     void drive_oak(const isle::oaks_lab::Scene& oak) {
         using Phase=isle::oaks_lab::Phase;
         const auto view=oak.view();
+        if (menu_mode(e_.mode) || e_.mode==Mode::native_course) {
+            ++oak_input_updates_;
+            if (menu_oak_phase_!=int(view.phase) || menu_oak_slot_!=view.selected_slot) {
+                menu_oak_phase_=int(view.phase);menu_oak_slot_=view.selected_slot;
+                std::cout<<"menu_root_oak phase="<<menu_oak_phase_<<" slot="<<menu_oak_slot_
+                    <<" commit_attempts="<<view.commit_attempts<<" result="<<view.source_result
+                    <<" requested_buttons="<<controller_.buttons<<" requested_y="<<int(controller_.stick_y)<<std::endl;
+            }
+            if (view.exit_requested) {
+                const auto expected=credit_argument(e_.mode);
+                require(view.phase==Phase::complete &&
+                    (e_.mode==Mode::native_course?view.source_result==e_.requested_course:
+                     expected?view.source_result==expected:
+                        view.source_result==12 || view.source_result==14 || view.source_result==8),
+                    "actual Oak emitted an unexpected authored-save menu/credits result");
+                controller_.buttons=0;controller_.stick_y=0;e_.oak_result=true;return;
+            }
+            if (oak_hold_until_ && oak_input_updates_>=oak_hold_until_) {
+                controller_.buttons=0;controller_.stick_y=0;oak_hold_until_=0;
+            }
+            if (oak_hold_until_ || oak_input_updates_<oak_next_command_) return;
+            const auto pulse=[&](std::uint16_t buttons,std::int8_t y=0) {
+                controller_.buttons=buttons;controller_.stick_y=y;
+                oak_hold_until_=oak_input_updates_+3;oak_next_command_=oak_input_updates_+24;
+            };
+            // A real held edge followed by released updates cannot leak the
+            // last dialogue acknowledgment into a newly entered Lab menu.
+            if (view.phase==Phase::page_wait || view.phase==Phase::save_prompt) pulse(button_a);
+            else if(e_.mode==Mode::native_course && view.phase==Phase::courses) {
+                if(view.selected_slot!=e_.requested_course)pulse(0,-60);
+                else pulse(button_a);
+            } else if(e_.mode==Mode::native_course && view.phase==Phase::confirmation)pulse(button_a);
+            else if (view.phase==Phase::repeat_question || view.phase==Phase::keep_going ||
+                     view.phase==Phase::courses || view.phase==Phase::confirmation) pulse(button_b);
+            else if (view.phase==Phase::lab && e_.captured[4]) {
+                require(!credit_argument(e_.mode),"authored completion notices did not select actual Oak credits route");
+                const int target=e_.mode==Mode::native_course?0:!(e_.menu_qualified&1u)?1:!(e_.menu_qualified&2u)?6:7;
+                if (view.selected_slot!=target) pulse(0,-60);
+                else pulse(button_a);
+            }
+            return;
+        }
         require(view.commit_attempts==0,"actual first-meet/course navigation implicitly saved");
         if (view.exit_requested) {
             require(oak_stage_==7 && view.phase==Phase::complete && view.source_result==0 &&
@@ -1520,8 +1786,15 @@ private:
             last_frame_entry_=last_entry_;last_frame_ordinal_=frame.ordinal;
             if (scene_<scene_count) ++e_.frames[scene_];
             else if (scene_<scene_count+2) ++e_.post.frames[scene_-scene_count];
+            if (menu_mode(e_.mode) && scene_>=scene_count) ++e_.menu_frames;
+            if(course_probe_ && scene_>=scene_count)++e_.course_frames;
             if (!timeline_.host.presentation_pending()) {
                 const int capture=capture_candidate(frame.rgba);
+                const auto menu_view=application_.view();
+                if (menu_probe_ && menu_view.post)
+                    menu_probe_->frame(*menu_view.post,static_cast<std::int32_t>(menu_view.entry->argument),frame.ordinal);
+                if(course_probe_ && scene_>=scene_count && !menu_view.post)
+                    course_probe_->frame(menu_view,frame.ordinal);
                 require(timeline_.host.queue_present(frame.rgba,frame.screen_offsets),timeline_.host.message());
                 int post_capture=-1;
                 const auto view=application_.view();
@@ -1549,6 +1822,16 @@ private:
                     }
                 }
                 display_=Display{scene_,capture,course_capture_candidate(frame.rgba),post_capture,frame.ordinal};
+                if (menu_probe_ && menu_view.post) {
+                    display_->menu_argument=static_cast<std::int32_t>(menu_view.entry->argument);
+                    display_->menu_digest=digest(frame.rgba);
+                    display_->menu_varied=varied(frame.rgba,0,0,320,240);
+                }
+                if(course_probe_ && scene_>=scene_count && !menu_view.post) {
+                    display_->native_course=e_.requested_course;
+                    display_->menu_digest=digest(frame.rgba);
+                    display_->menu_varied=varied(frame.rgba,0,0,320,240);
+                }
             } else ++e_.declined_frames;
             if (scene_==4 && !e_.frame_hold && e_.updates[4]>=16 && e_.beach_camera_changes &&
                 (e_.captured[5] || (display_ && display_->capture==5)) && varied(frame.rgba,0,0,320,240)) {
@@ -1586,6 +1869,13 @@ private:
         if (result==g::Present::completed) {
             if (display_->scene<scene_count) ++e_.presentations[display_->scene];
             else if (display_->scene<scene_count+2) ++e_.post.presentations[display_->scene-scene_count];
+            if (menu_mode(e_.mode) && display_->scene>=scene_count) ++e_.menu_presentations;
+            if (menu_probe_ && display_->menu_argument)
+                menu_probe_->presented(display_->menu_argument,display_->frame,display_->menu_digest,display_->menu_varied);
+            if(course_probe_ && display_->native_course>=0) {
+                ++e_.course_presentations;
+                course_probe_->presented(display_->native_course,display_->frame,display_->menu_digest,display_->menu_varied);
+            }
             if (display_->capture>=0) {
                 const auto capture=static_cast<std::size_t>(display_->capture);
                 if (!e_.captured[capture]) {capture_window(root_/"proof"/captures[capture]);e_.captured[capture]=true;}
@@ -1615,7 +1905,7 @@ private:
         }
     }
 };
-int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode mode) {
+int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode mode,std::int32_t requestedCourse) {
     for (const auto* name:{"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
         const char* value=std::getenv(name);
         require(value && std::string_view(value)=="dummy","private consumer requires both explicit SDL dummy audio variables");
@@ -1626,6 +1916,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
         std::filesystem::create_directory(root/"proof"),"private Runtime child directories must be newly owned, never reused");
     Evidence evidence;
     evidence.mode=mode;
+    evidence.requested_course=requestedCourse;
     if (mode==Mode::course) write_course_contract(root);
     std::string failure;
     const auto snapshot=isle::rom::read_snapshot(rom);
@@ -1668,12 +1959,12 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
                 {true,&evidence,observe_retirement});
             require(bool(made),made.message.data());
             application=std::move(made.runtime);
-            Scenario scenario(*application,clock,input,controller,state,timeline,root,evidence);
+            Scenario scenario(*application,clock,input,controller,state,timeline,root,evidence,snapshot);
             scenario.run();
         } catch (const std::exception& error) { remember_failure(failure,error.what()); }
           catch (...) { remember_failure(failure,"unknown actual Runtime scenario failure"); }
         close_application(application,clock,input,controller,timeline,root,evidence,failure);
-        evidence.native_retired=failure.empty();
+        require(!application,"closed actual Runtime still owns its Manager or native scenes");
     } catch (const std::exception& error) { remember_failure(failure,error.what()); }
       catch (...) { remember_failure(failure,"unknown actual Runtime setup failure"); }
     // No Runtime, Manager, native scene, graphics or Photo owner remains before
@@ -1715,6 +2006,21 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     }
     write_report(root,evidence,failure);
     if (!failure.empty()) {std::cerr << "private actual application integration: " << failure << '\n';return 1;}
+    if(mode==Mode::native_course) {
+        std::cout<<"actual_original_Source_natural_course_and_Manager_CameraCheck9=passed course="<<evidence.requested_course
+            <<" actual_updates="<<evidence.course_updates<<" course_frames="<<evidence.course_frames
+            <<" course_LUS_presentations="<<evidence.course_presentations
+            <<" canonical_submissions="<<evidence.submissions<<" actual_terminals="<<evidence.terminals
+            <<" accepted_dummy_PCM_frames="<<evidence.accepted_pcm<<std::endl;
+        return 0;
+    }
+    if (menu_mode(mode)) {
+        std::cout << "actual_original_Manager_authored_save_menu_routes=passed"
+            << " qualified_mask=" << evidence.menu_qualified << " target_mask=" << menu_target(mode)
+            << " canonical_submissions=" << evidence.submissions << " actual_terminals=" << evidence.terminals
+            << " API_inputs=AUTHORED_NOT_gameplay_captures full_game_Windows_parity=not_claimed\n";
+        return 0;
+    }
     if (mode==Mode::course) {
         std::cout << "completed_original_Beach_CameraCheck9_PhotoCheck15_Manager_Oak=passed"
             << " private_report=proof/application-runtime-report.txt full_game_hardware_parity=not_claimed\n";
@@ -1735,14 +2041,22 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course] (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|native0..native6|menus|credits17|credits18|credits19] (existing empty absolute nonsymlink private directory)");
         Mode mode=Mode::ingress;
+        std::int32_t requestedCourse=0;
         if (argc==4) {
             const auto name=std::filesystem::path(argv[3]).generic_string();
-            require(name=="ingress" || name=="course","mode must be ingress or course");
-            if (name=="course") mode=Mode::course;
+            const bool native=name.size()==7 && name.compare(0,6,"native")==0 && name[6]>='0' && name[6]<='6';
+            require(native || name=="ingress" || name=="course" || name=="menus" || name=="credits17" ||
+                name=="credits18" || name=="credits19","unknown actual Runtime qualification mode");
+            if(native){mode=Mode::native_course;requestedCourse=name[6]-'0';}
+            else if (name=="course") mode=Mode::course;
+            else if (name=="menus") mode=Mode::menus;
+            else if (name=="credits17") mode=Mode::credits17;
+            else if (name=="credits18") mode=Mode::credits18;
+            else if (name=="credits19") mode=Mode::credits19;
         }
-        return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode);
+        return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode,requestedCourse);
     } catch (const std::exception& error) {
         std::cerr << "private actual application integration: " << error.what() << '\n';return 1;
     } catch (...) {

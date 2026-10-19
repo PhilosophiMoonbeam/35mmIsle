@@ -10,19 +10,19 @@
   "header_sha256": "b8b448190d40fd19a2c80b5bf8ac089035c06b39d7e5fd4a75d68a2ed540ddad",
   "native_support": {
     "src/player_cart_source.h": {
-      "sha256": "a55a8ec2d16a78833aa7deff9c85fe6729bde1fbcb9c386f4dbdf71e419264a5"
+      "sha256": "2907f48a3cfb643a767317ab6d6c76a479032eeae4633b070a875c7b68a851bb"
     },
     "src/player_cart_source.c": {
-      "sha256": "59cde2b1700b1830a6893b414ab80b960c48402da63d40fdfab9086e92191263"
+      "sha256": "7d74b95904d5cde1d05fbff27cff54669fe0f34ce60cb125264d13f30772a825"
     },
     "src/player_source.h": {
       "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
     },
     "src/player_cart.hpp": {
-      "sha256": "b2eb86d441ad6df9b12d1209101aeaf9d8ba10775d0f11a9206089ed077d2b45"
+      "sha256": "1ea026ab7898dee20d0fb75e528487103529d1bdabe6dd4b8f6fc1342c70fc34"
     },
     "src/player_cart.cpp": {
-      "sha256": "b6f5716d260da47e21b0bd45c15d71927e99d47485ad781a8bcb984105facd15"
+      "sha256": "d8175f6f30a546f71ffe04a8985b6ceb2417c2f0b6bd5c2f0eb5d2fd6a695f5e"
     },
     "src/player_cart_producer.hpp": {
       "sha256": "8660d00b7b84286289eb7e79c27bbfcdc1dee92eb561c9c58778a000aae52aed"
@@ -34,7 +34,7 @@
       "sha256": "5dac893862a15ff3c468287281016f014aa083e7cd7e41853574a47cd79ce451"
     },
     "cmake/SnapPlayerServices.cmake": {
-      "sha256": "97fe2fd8cc6a03e7eb7c1395961a482b043cc54a362163e33fc54a0834cb0035"
+      "sha256": "2a2280c24374b779f5d34d2e620fa79002b1dd52699bf015230b62fd0aaa6cee"
     }
   },
   "definitions": [

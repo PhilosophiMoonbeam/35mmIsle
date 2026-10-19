@@ -16,6 +16,7 @@
 #include "scene_storage.hpp"
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -437,6 +438,14 @@ struct Consumer {
         movement_start(subject,ACTOR_TURN,0,.1f);
         require(movement.result==0 && near(placement(subject).transform.rotation.y,6.133185307f),
                 "Turn lost signed-truncation normalization or shortest cross-wrap direction");
+        prepare(subject);
+        auto full_turn=placement(subject).transform;
+        full_turn.rotation.y=std::bit_cast<float>(UINT32_C(0x40c90fdb));
+        accepted(actors.set_placement(subject.instance,full_turn));
+        movement_start(subject,ACTOR_TURN,0,1e-8f);
+        require(movement.returned && movement.result==1 &&
+                std::bit_cast<std::uint32_t>(placement(subject).transform.rotation.y)==0,
+                "Source float TAU must complete an exact full turn without a residual turning frame");
         prepare(subject); p.jumpVel=-100; p.processFlags=POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED; place(subject,{0,-8999,0});
         movement_start(subject,ACTOR_FALL_GROUND,0);
         require(movement.returned && near(placement(subject).transform.position.y,-9000) &&
@@ -1355,7 +1364,7 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
             {
                 it::Owner items(services,resources.items,world,actors,globals,player_source.value,resources.item_capacities,{32768,4096});
                 shift.items=&items; accepted(items.init()); accepted(items.set_custom_functions(nullptr,0,nullptr));
-                actor::InteractionServices interactions(services,actors,items,world,detector,*resources.bindings,resources.actors);
+                actor::InteractionServices interactions(services,actors,items,world,detector,*resources.bindings,resources.actors,resources.effects);
                 accepted(actors.bind_interactions(interactions)); // BEFORE any Actor factory.
                 Consumer consumer{services,actors,environment,items,globals,world,detector,player,resources.actors,resources.behavior};
                 body(consumer);

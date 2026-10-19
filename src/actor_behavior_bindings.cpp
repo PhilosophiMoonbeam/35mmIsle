@@ -1,5 +1,12 @@
 #include "actor_behavior_bindings.hpp"
 #include "rainbow_actor.hpp"
+#include "beach_initial_species_source.h"
+#include "tunnel_actor.hpp"
+#include "volcano_actor.hpp"
+#include "river_actor.hpp"
+#include "cave_actor.hpp"
+#include "valley_actor.hpp"
+
 
 #include <algorithm>
 #include <cstdio>
@@ -20,6 +27,12 @@ bool executable_command(std::int32_t command) noexcept {
         static_cast<unsigned>(identity),static_cast<unsigned>(graph),row);
     throw std::invalid_argument(message);
 }
+// Once-only common Original Egg imports: Source identities, not GObj callbacks.
+// Their bodies live exclusively in the common-egg C provider.
+constexpr std::uint32_t common_egg_dependencies[] = {
+    0x800aafb0u, 0x800ab000u, 0x800ab050u,
+    0x800ab138u, 0x800ab1f8u, 0x80362414u
+};
 // Provider dependencies retain these exact typed seams. They must never be
 // resolved through the GObj callback registry or cast to its signature.
 bool typed_rainbow_dependency(std::uint32_t identity) noexcept {
@@ -35,6 +48,87 @@ bool typed_rainbow_dependency(std::uint32_t identity) noexcept {
 }
 } // namespace
 
+std::span<const BehaviorCallbackBinding> course_callbacks(std::int32_t course) noexcept {
+    switch (course) {
+    case 1: return tunnel::actor_callbacks();
+    case 2: return volcano::actor_callbacks();
+    case 3: return river::actor_callbacks();
+    case 4: return cave::actor_callbacks();
+    case 5: return valley::actor_callbacks();
+    case 6: return rainbow::actor_callbacks();
+    default: return {};
+    }
+}
+std::span<const std::uint32_t> course_graphs(std::int32_t course) noexcept {
+    switch (course) {
+    case 1: return tunnel::actor_graphs();
+    case 2: return volcano::actor_graphs();
+    case 3: return river::actor_graphs();
+    case 4: return cave::actor_graphs();
+    case 5: return valley::actor_graphs();
+    case 6: return rainbow::actor_graphs();
+    default: return {};
+    }
+}
+std::span<const std::uint32_t> course_weighted_states(std::int32_t course) noexcept {
+    switch (course) {
+    case 1: return tunnel::actor_weighted_states();
+    case 2: return volcano::actor_weighted_states();
+    case 3: return river::actor_weighted_states();
+    case 4: return cave::actor_weighted_states();
+    case 5: return valley::actor_weighted_states();
+    case 6: return rainbow::actor_weighted_states();
+    default: return {};
+    }
+}
+std::span<const std::uint32_t> course_roots(std::int32_t course) noexcept {
+    switch (course) {
+    case 1: return tunnel::actor_roots();
+    case 2: return volcano::actor_roots();
+    case 3: return river::actor_roots();
+    case 4: return cave::actor_roots();
+    case 5: return valley::actor_roots();
+    case 6: return rainbow::actor_roots();
+    default: return {};
+    }
+}
+bool course_typed_dependency(std::int32_t course, std::uint32_t identity) noexcept {
+    // A callback is resolved through its typed GObj registry, even when another
+    // descriptor also names it. Only genuine other ABIs bypass that registry.
+    for (const auto& binding : course_callbacks(course))
+        if (binding.identity == identity) return false;
+    if (course>=1 && course<=5 && (identity==0x8035e0d4u ||
+        identity==0x8035e1d4u || identity==0x8035e238u)) return true;
+    if (course == 1 || course == 4)
+        for (const auto dependency : common_egg_dependencies)
+            if (dependency == identity) return true;
+    switch (course) {
+    case 1:
+        for (const auto& row : tunnel::actor_dependencies())
+            if (row.has_guest_identity && row.identity == identity)
+                return row.abi != tunnel::SourceAbi::gobj_callback;
+        break;
+    case 2:
+        for (const auto& row : volcano::actor_dependencies())
+            if (row.identity == identity) return true;
+        break;
+    case 3:
+        for (const auto& row : river::actor_dependencies())
+            if (row.identity == identity) return row.abi != river::ActorSourceAbi::gobj_callback;
+        break;
+    case 4:
+        for (const auto& row : cave::actor_dependencies())
+            if (row.identity == identity) return row.abi != cave::ActorSourceAbi::callback;
+        break;
+    case 5:
+        for (const auto& row : valley::actor_dependencies())
+            if (row.identity == identity) return row.abi != valley::SourceAbi::gobj_callback;
+        break;
+    case 6: return typed_rainbow_dependency(identity);
+    }
+    return false;
+}
+
 BehaviorBindings::BehaviorBindings(const BehaviorResources& resources,
     std::span<const BehaviorCallbackBinding> bindings,
     std::span<const std::uint32_t> graph_heads,
@@ -47,12 +141,23 @@ BehaviorBindings::BehaviorBindings(const BehaviorResources& resources,
     weighted_.reserve(source_weighted.size());
     callbacks_.reserve(bindings.size());
     std::vector<const BehaviorCallbackBinding*> registry;
-    registry.reserve(bindings.size());
+    registry.reserve(bindings.size()+(resources.course_id()>=1 && resources.course_id()<=5 ? 3u : 0u));
     for (const auto& binding:bindings) {
         if (!binding.identity || !binding.function)
             throw std::invalid_argument("Native callback binding requires nonzero identity and typed function");
         registry.push_back(&binding);
     }
+    const std::uint32_t shared_dependencies[]={0x8035dfb0u,0x8035e034u};
+    const BehaviorCallbackBinding shared[] = {
+        {0x8035df20u,func_8035DF20_4FE330,shared_dependencies},
+        {0x8035dfb0u,func_8035DFB0_4FE3C0},
+        {0x8035e034u,func_8035E034_4FE444}
+    };
+    if (resources.course_id()>=1 && resources.course_id()<=5)
+        for (const auto& binding : shared)
+            if (std::none_of(registry.begin(),registry.end(),[&](const auto* row) {
+                return row->identity==binding.identity;
+            })) registry.push_back(&binding);
     std::sort(registry.begin(),registry.end(),[](const auto* a,const auto* b) {
         return a->identity < b->identity;
     });
@@ -88,6 +193,26 @@ BehaviorBindings::BehaviorBindings(const BehaviorResources& resources,
         }
         return (*found)->function;
     };
+    // RandomState2 lists are counted, not terminated. Resolve NULL outcomes as
+    // NULL and preserve every byte weight/order; the Original chooser owns RNG.
+    counted_.reserve(resources.counted_state_options().size());
+    for (const auto& source : resources.counted_state_options()) {
+        Counted result;
+        result.rows.reserve(source.entries.size());
+        for (const auto& row : source.entries)
+            result.rows.push_back({row.weight,row.callback_identity ?
+                callback(row.callback_identity,source.wire.guest_address,result.rows.size()) : nullptr});
+        result.view={source.wire.guest_address,result.rows};
+        counted_.push_back(std::move(result));
+    }
+    if (resources.course_id()>=1 && resources.course_id()<=5) {
+        // A native scene admits the whole selected Original provider, including
+        // aux/path/helper callbacks absent from static graph rows. No narrowed
+        // caller root list can accidentally publish an incomplete ACTIVE scene.
+        for (const auto* binding:registry) callback(binding->identity,0,0);
+        for (const auto identity:course_graphs(resources.course_id())) graph(identity);
+        for (const auto identity:course_weighted_states(resources.course_id())) weighted(identity);
+    }
     for (const auto identity:graph_heads) graph(identity);
     for (const auto identity:weighted_heads) weighted(identity);
     for (const auto identity:callback_heads) callback(identity,0,0);
@@ -96,7 +221,7 @@ BehaviorBindings::BehaviorBindings(const BehaviorResources& resources,
         if (current.kind==Kind::callback) {
             const auto& binding=*registry[current.index];
             for (const auto identity:binding.callbacks)
-                if (resources.course_id()!=6 || !typed_rainbow_dependency(identity))
+                if (!course_typed_dependency(resources.course_id(),identity))
                     callback(identity,binding.identity,0);
             for (const auto identity:binding.graphs) graph(identity);
             for (const auto identity:binding.weighted_states) weighted(identity);
@@ -155,7 +280,7 @@ BehaviorBindings::BehaviorBindings(const BehaviorResources& resources,
                 [](const auto* candidate,std::uint32_t value) { return candidate->identity<value; });
             const auto& binding=**found; // Earlier closure construction resolved this identity.
             for (const auto identity:binding.callbacks)
-                if (resources.course_id()!=6 || !typed_rainbow_dependency(identity)) enqueue(identity);
+                if (!course_typed_dependency(resources.course_id(),identity)) enqueue(identity);
             for (const auto identity:binding.graphs) {
                 const auto& dependency=resources.graph(identity);
                 for (const auto& row:dependency.entries) if (executable_command(row.command)) {
@@ -184,6 +309,11 @@ const BoundWeightedStates& BehaviorBindings::weighted_states(std::uint32_t ident
     });
     if (found==weighted_.end()) throw std::out_of_range("Weighted list is outside admitted native callable closure");
     return found->view;
+}
+const BoundCountedStates& BehaviorBindings::counted_state_options(std::uint32_t identity) const {
+    require_live();
+    for (const auto& list : counted_) if (list.view.source_identity==identity) return list.view;
+    throw std::out_of_range("Counted options are outside admitted native callable closure");
 }
 IsleGameSourceCallback BehaviorBindings::callback(std::uint32_t identity) const {
     require_live();

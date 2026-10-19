@@ -47,6 +47,10 @@ public:
     List body() const noexcept { return body_; }
     std::span<const std::uint32_t> ram() const noexcept { return ram_; }
     std::uint64_t epoch() const noexcept { return epoch_; }
+    // End the synchronous mapped-RAM CPU view while retaining the real
+    // Renderer/resource borrow through the caller's actual GPU retirement.
+    // This is not a completion signal and does not release owner_.
+    void close_cpu_view() noexcept { ram_ = {}; }
 private:
     friend class Renderer;
     Packet(Renderer&, Storage, List, List) noexcept;

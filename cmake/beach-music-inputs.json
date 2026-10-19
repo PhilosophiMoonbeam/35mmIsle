@@ -119,7 +119,7 @@
       "sha256": "6ca279f4565b2ed7c5bb43ee68cc245416ffb4faaade0a899b5582335fd77879"
     },
     "src/scene_services.hpp": {
-      "sha256": "4b4fafd05a7eee03880cff975c5f8a2d1b987d6c4a32c7d3cd2c331d7cba6354"
+      "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
     },
     "src/game_audio.hpp": {
       "sha256": "13703dbf4e73508eee533164f213db5f91d7e60fd08d01f4c6d63123674effd1"
@@ -134,7 +134,7 @@
       "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"
     },
     "cmake/player-root-inputs.json": {
-      "sha256": "581564dd51f1f5a6210446ac1895ca2a40697cb848a4844ce26370b46ab6ce69"
+      "sha256": "20204de0ca2c6152268f63e229c0cf9e888eaad87e76f97be2fca49fc81c1168"
     }
   }
 }

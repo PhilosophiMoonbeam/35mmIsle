@@ -38,6 +38,7 @@ IsleGameResult isle_menu_reserve_pools(IsleGame* game, isle_arena* arena,
     IsleGameResult result = access(game);
     if (result != ISLE_GAME_OK) return result;
     if (arena == NULL || arena != game->arena) return ISLE_GAME_INVALID_ARGUMENT;
+    if (game->native_capacity_frozen) return ISLE_GAME_INVALID_STATE;
     candidate = *arena;
     if (!reserve(&candidate, objects, sizeof(*object), _Alignof(GObj), (void**)&object) ||
         !reserve(&candidate, processes, sizeof(*process), _Alignof(GObjProcess), (void**)&process) ||
@@ -50,6 +51,52 @@ IsleGameResult isle_menu_reserve_pools(IsleGame* game, isle_arena* arena,
     for (size_t i = 0; i < cameras; ++i) { camera[i].nextFree = game->free_cameras; game->free_cameras = &camera[i]; }
     for (size_t i = 0; i < matrices; ++i) { matrix[i].nextFree = game->free_matrices; game->free_matrices = &matrix[i]; }
     *arena = candidate;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_menu_reserve_native_capacity(IsleGame* game,
+    IsleGameCommandPool* pool, size_t command_nodes,
+    const IsleGameModelCapacity* models, size_t model_classes) {
+    isle_arena candidate;
+    IsleGameCommand* entries;
+    IsleGameModel* staged_models = NULL;
+    IsleGameModel* staged_tail = NULL;
+    IsleGameResult result = access(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (pool == NULL || pool->arena != game->arena ||
+        (model_classes != 0 && models == NULL)) return ISLE_GAME_INVALID_ARGUMENT;
+    if (pool->fixed_capacity || game->native_capacity_frozen || game->has_updated ||
+        game->ticking || game->callback_depth != 0) return ISLE_GAME_INVALID_STATE;
+    for (size_t i = 0; i < model_classes; ++i)
+        if (!isle_native_model_count_valid(models[i].nodes) || models[i].instances == 0)
+            return ISLE_GAME_INVALID_ARGUMENT;
+    candidate = *pool->arena;
+    if (!reserve(&candidate, command_nodes, sizeof(*entries), _Alignof(IsleGameCommand),
+            (void**)&entries)) return ISLE_GAME_EXHAUSTED;
+    for (size_t i = 0; i < model_classes; ++i) {
+        const size_t bytes = sizeof(IsleGameModel) +
+            models[i].nodes * (sizeof(IsleGameModelNode) + 1);
+        for (size_t instance = 0; instance < models[i].instances; ++instance) {
+            IsleGameModel* model;
+            if (!reserve(&candidate, 1, bytes, _Alignof(IsleGameModel), (void**)&model))
+                return ISLE_GAME_EXHAUSTED;
+            model->capacity = models[i].nodes;
+            model->nextFree = staged_models;
+            staged_models = model;
+            if (staged_tail == NULL) staged_tail = model;
+        }
+    }
+    if (staged_models != NULL) {
+        staged_tail->nextFree = game->free_models;
+        game->free_models = staged_models;
+    }
+    for (size_t i = 0; i < command_nodes; ++i) {
+        entries[i].next = pool->free;
+        pool->free = &entries[i];
+    }
+    *pool->arena = candidate;
+    pool->fixed_capacity = 1;
+    game->native_capacity_frozen = true;
     return ISLE_GAME_OK;
 }
 
@@ -108,6 +155,7 @@ IsleGameResult isle_game_command_send(IsleGameCommandPool* pool, IsleGameCommand
     entry = pool->free;
     if (entry != NULL) pool->free = entry->next;
     else {
+        if (pool->fixed_capacity) return ISLE_GAME_EXHAUSTED;
         if (isle_arena_allocate(pool->arena, sizeof(*entry), _Alignof(IsleGameCommand), &storage) != ISLE_OK) return ISLE_GAME_EXHAUSTED;
         entry = (void*)storage.data;
     }

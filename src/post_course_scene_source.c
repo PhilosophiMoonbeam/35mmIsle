@@ -1,4 +1,5 @@
 #include "post_course_scene_source.h"
+#include "gallery_source.h"
 #include "engine_internal.h"
 #include <setjmp.h>
 #include <stdlib.h>
@@ -8,7 +9,22 @@ typedef struct PostCourseCallFrame { jmp_buf failure; void* previous; } PostCour
 #define SOURCE_CHECK(source, result) \
     isle_post_course_source_checked((source), (result), __func__, #result, __LINE__)
 static int valid_scene(int32_t scene) {
-    return scene == ISLE_POST_COURSE_CAMERA_CHECK || scene == ISLE_POST_COURSE_PHOTO_CHECK;
+    switch (scene) {
+    case ISLE_POST_COURSE_CAMERA_CHECK:
+    case ISLE_POST_COURSE_ALBUM:
+    case ISLE_POST_COURSE_REPORT:
+    case ISLE_POST_COURSE_PHOTO_CHECK:
+    case ISLE_POST_COURSE_CREDITS_17:
+    case ISLE_POST_COURSE_CREDITS_18:
+    case ISLE_POST_COURSE_CREDITS_19:
+    case ISLE_POST_COURSE_CREDITS_20:
+    case ISLE_POST_COURSE_GALLERY_22:
+    case ISLE_POST_COURSE_GALLERY_23:
+    case ISLE_POST_COURSE_END_LEVEL_8:
+        return 1;
+    default:
+        return 0;
+    }
 }
 IsleGameResult isle_post_course_source_activate(IslePostCourseSceneSource* source) {
     IsleGame* game;
@@ -81,13 +97,41 @@ IslePostCourseSceneSource* isle_post_course_source_require(IsleGameObject* objec
     SOURCE_CHECK(source, source->status);
     return source;
 }
+IsleGallerySource* isle_gallery_source_require(IsleGameObject* object,
+    IsleGameSourceCallback expected) {
+    IslePostCourseSceneSource* source;
+    IsleGame* game;
+    GObjProcess* process;
+    IsleGameSourceCallback registered = NULL;
+    if (!object || !object->game) abort();
+    game = object->game;
+    source = isle_post_course_source_require(object,
+        game->postCourseSource ? game->postCourseSource->scene : 0);
+    if (!expected ||
+        (source->scene != ISLE_POST_COURSE_GALLERY_22 &&
+         source->scene != ISLE_POST_COURSE_GALLERY_23) ||
+        !game->ticking || omCurrentObject != object)
+        SOURCE_CHECK(source, ISLE_GAME_INVALID_STATE);
+    process = omCurrentProcess;
+    if (process) {
+        SOURCE_CHECK(source, isle_game_process_source_function(game, process, &registered));
+        if (process->game != game || !process->alive || process->object != object ||
+            registered != expected)
+            SOURCE_CHECK(source, ISLE_GAME_INVALID_STATE);
+    } else if (object->fnUpdate != expected) {
+        SOURCE_CHECK(source, ISLE_GAME_INVALID_STATE);
+    }
+    /* Scene22/23 share this exact C provider; common is its first member.
+     * This is not a console GObj/userData or a guest overlay layout. */
+    return (IsleGallerySource*)source;
+}
 static void source_input_update(IsleGameObject* object) {
     IslePostCourseSceneSource* source;
     if (!object || !object->game || !object->game->postCourseSource) abort();
     source = isle_post_course_source_require(object,object->game->postCourseSource->scene);
     if (source->input_object != object)
         SOURCE_CHECK(source,ISLE_GAME_INVALID_STATE);
-    /* Reached normal mode of func_800AAB5C. Camera/Photo providers never
+    /* Reached normal mode of func_800AAB5C. These overlay providers never
      * select the app-render recording/playback modes; no fake ROM/DMA replay. */
     for (;;) {
         SOURCE_CHECK(source,source->input_invalidate(source));

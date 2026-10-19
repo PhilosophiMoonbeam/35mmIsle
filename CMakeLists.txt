@@ -331,6 +331,7 @@ endif()
 include(CTest)
 if(ISLE_BUILD_GAME_ENGINE)
     include(cmake/SnapEngine.cmake)
+    include(cmake/CommonEggSource.cmake)
     target_sources(isle-engine PRIVATE src/menu_scene_bridge.c src/menu_scene_bridge.h)
     if(TARGET isle-pidgey-resources)
         add_library(isle-pidgey-producer STATIC src/pidgey_producer.cpp src/pidgey_producer.hpp)
@@ -374,10 +375,12 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/screen_transition.cpp src/screen_transition.hpp
             src/screen_transition_source.c src/screen_transition_source.h
             src/screen_transition_resources.cpp src/screen_transition_resources.hpp
-            "${_isle_screen_transition_generated}")
+            "${_isle_screen_transition_generated}"
+            src/sound_ramp_source.c src/sound_ramp_source.h "${_isle_sound_ramp_generated}")
         target_link_libraries(isle-scene PUBLIC isle-rom-snapshot isle-graphics-task)
         target_compile_options(isle-scene PRIVATE
             "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
@@ -459,7 +462,7 @@ if(ISLE_BUILD_GAME_ENGINE)
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
 
         add_library(isle-photo-subjects STATIC src/photo_subjects.cpp src/photo_subjects.hpp)
-        target_link_libraries(isle-photo-subjects PUBLIC isle-world isle-model-data isle-borrowed-model-producer)
+        target_link_libraries(isle-photo-subjects PUBLIC isle-world isle-model-data isle-borrowed-model-producer isle-engine)
         isle_target_options(isle-photo-subjects)
         target_compile_options(isle-photo-subjects PRIVATE
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
@@ -495,7 +498,7 @@ if(ISLE_BUILD_GAME_ENGINE)
             src/actor_source_owner_bridge.c "${_isle_actor_owner_generated}")
         target_link_libraries(isle-actor-owner PUBLIC
             isle-engine isle-actor-producer isle-world isle-environment-sound
-            isle-menu-effects isle-source-effect-world isle-focus-detector
+            isle-menu-effects isle-effect-bank-resources isle-source-effect-world isle-focus-detector
             isle-actor-behavior-resources isle-beach-actor-scene isle-item-resources)
         target_include_directories(isle-actor-owner PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -520,6 +523,22 @@ if(ISLE_BUILD_GAME_ENGINE)
         # Original C providers and returning native admission hooks share one
         # actor archive, as the post-course Source/scene owners do below.
         target_link_libraries(isle-actor-owner PUBLIC isle-rainbow-actor-source)
+        foreach(_isle_course IN ITEMS tunnel volcano river cave valley)
+            add_library(isle-${_isle_course}-actor-source OBJECT
+                src/${_isle_course}_actor_source.c src/${_isle_course}_actor_source.h
+                src/${_isle_course}_actor.cpp src/${_isle_course}_actor.hpp
+                "${_isle_${_isle_course}_actor_generated}")
+            target_include_directories(isle-${_isle_course}-actor-source PUBLIC "${PROJECT_SOURCE_DIR}/src")
+            target_link_libraries(isle-${_isle_course}-actor-source PUBLIC isle-engine isle-scene)
+            isle_target_options(isle-${_isle_course}-actor-source)
+            target_compile_options(isle-${_isle_course}-actor-source PRIVATE
+                "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+                "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+                "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+                "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+                "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+            target_link_libraries(isle-actor-owner PUBLIC isle-${_isle_course}-actor-source)
+        endforeach()
 
 
         add_library(isle-actor-photo-scene STATIC
@@ -1045,8 +1064,12 @@ if(BUILD_TESTING)
         PROPERTIES LABELS "synthetic" TIMEOUT 60)
 endif()
 
-if(ISLE_BUILD_RDP_PROBE)
+# Native course ownership requires the canonical services independently of
+# whether the optional diagnostic executables are requested.
+if(ISLE_BUILD_RDP_PROBE OR TARGET isle-actor-owner)
     include(cmake/ParallelRdp.cmake)
+endif()
+if(ISLE_BUILD_RDP_PROBE)
     add_executable(35mmisle-rdp-probe src/rdp_probe.cpp src/rdp_fixture.cpp src/rdp_fixture.hpp)
     target_link_libraries(35mmisle-rdp-probe PRIVATE isle_parallel_rdp isle-photo-feedback)
     isle_target_options(35mmisle-rdp-probe)
@@ -1055,7 +1078,7 @@ if(ISLE_BUILD_RDP_PROBE)
     endif()
 endif()
 
-if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE)
+if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE OR TARGET isle-actor-owner)
     include(cmake/ParallelRsp.cmake)
     isle_target_options(isle-rsp)
     if(ISLE_ENABLE_SANITIZERS)
@@ -1064,7 +1087,7 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE)
                 -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
         endforeach()
     endif()
-    if(ISLE_BUILD_RSP_PROBE)
+    if(ISLE_BUILD_RSP_PROBE OR TARGET isle-actor-owner)
         add_library(isle-rsp-packets STATIC src/rsp_packets.cpp src/rsp_packets.hpp)
         target_include_directories(isle-rsp-packets PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -1073,10 +1096,12 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE)
         target_include_directories(isle-rsp-fixture PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
         target_link_libraries(isle-rsp-fixture PUBLIC isle-rsp-packets)
         isle_target_options(isle-rsp-fixture)
-        add_executable(35mmisle-rsp-probe src/rsp_probe.cpp)
-        target_link_libraries(35mmisle-rsp-probe PRIVATE isle-rsp isle-rom-snapshot isle-rsp-fixture)
-        isle_target_options(35mmisle-rsp-probe)
-        if(ISLE_BUILD_RDP_PROBE)
+        if(ISLE_BUILD_RSP_PROBE)
+            add_executable(35mmisle-rsp-probe src/rsp_probe.cpp)
+            target_link_libraries(35mmisle-rsp-probe PRIVATE isle-rsp isle-rom-snapshot isle-rsp-fixture)
+            isle_target_options(35mmisle-rsp-probe)
+        endif()
+        if(TARGET isle_parallel_rdp)
             add_library(isle-canonical-executor STATIC src/rsp_render.cpp src/rsp_render.hpp)
             target_link_libraries(isle-canonical-executor PUBLIC isle-rsp isle-rsp-packets
                 PRIVATE isle_parallel_rdp Threads::Threads)
@@ -1087,8 +1112,10 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE)
                     isle-pidgey-producer isle-canonical-executor isle-photo-feedback)
                 isle_target_options(isle-pidgey-feedback)
             endif()
-            target_link_libraries(35mmisle-rsp-probe PRIVATE isle-canonical-executor)
-            target_compile_definitions(35mmisle-rsp-probe PRIVATE ISLE_HAS_CANONICAL_RDP=1)
+            if(TARGET 35mmisle-rsp-probe)
+                target_link_libraries(35mmisle-rsp-probe PRIVATE isle-canonical-executor)
+                target_compile_definitions(35mmisle-rsp-probe PRIVATE ISLE_HAS_CANONICAL_RDP=1)
+            endif()
             if(ISLE_BUILD_HOST_PROBE AND ISLE_BUILD_GAME_ENGINE)
                 target_sources(35mmisle-host-probe PRIVATE src/model_preview.cpp src/model_preview.hpp)
                 target_link_libraries(35mmisle-host-probe PRIVATE
@@ -1283,6 +1310,56 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
+    if(TARGET isle-player-root AND TARGET isle-player-cart AND TARGET isle-application-photos
+       AND TARGET isle-actor-photo-scene AND TARGET isle-course-model-producer)
+        foreach(_isle_course IN ITEMS tunnel volcano river cave valley)
+            add_library(isle-${_isle_course}-lifecycle-source STATIC
+                src/${_isle_course}_lifecycle_source.c src/${_isle_course}_lifecycle_source.h
+                "${_isle_${_isle_course}_lifecycle_generated}")
+            target_include_directories(isle-${_isle_course}-lifecycle-source PUBLIC "${PROJECT_SOURCE_DIR}/src")
+            target_link_libraries(isle-${_isle_course}-lifecycle-source PUBLIC isle-player-root isle-player-cart)
+            isle_target_options(isle-${_isle_course}-lifecycle-source)
+            target_compile_options(isle-${_isle_course}-lifecycle-source PRIVATE
+                "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+                "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+                "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+        endforeach()
+        add_library(isle-course-native-host STATIC src/course_native_host.cpp src/course_native_host.hpp
+            src/course_scene_native.cpp src/course_scene_native.hpp
+            src/course_scene_source.c src/course_scene_source.h src/course_scene_input.cpp
+            src/course_actor_native_services.hpp src/actor_native_context.hpp
+            src/source_vertex_publication.hpp
+            src/tunnel_actor_native_state.hpp src/tunnel_actor_native_fences.h src/tunnel_actor_native_fences.c
+            src/volcano_actor_native.hpp src/volcano_actor_native_source.c
+            src/river_actor_native_source.h src/river_actor_native_source.c
+            src/valley_actor_native.hpp src/valley_actor_native_source.h src/valley_actor_native_source.c
+            src/valley_dialogue_resources.hpp src/valley_dialogue_resources.cpp
+            src/valley_actor_window_mechanics.hpp src/valley_actor_window_mechanics.cpp
+            src/valley_actor_window_fence.h src/valley_actor_window_fence.c)
+        foreach(_isle_course IN ITEMS tunnel volcano river cave valley)
+            target_sources(isle-course-native-host PRIVATE
+                src/${_isle_course}_actor_native.cpp src/${_isle_course}_scene.cpp src/${_isle_course}_scene.hpp)
+            target_link_libraries(isle-course-native-host PUBLIC isle-${_isle_course}-lifecycle-source)
+        endforeach()
+        include(cmake/CommonEggNative.cmake)
+        target_link_libraries(isle-course-native-host PUBLIC
+            isle-player-root isle-player-cart isle-application-manager isle-application-photos
+            isle-actor-photo-scene isle-course-model-producer isle-effect-graphics-resources isle-player-commands isle-window)
+        # Concrete Source admission and Host ownership are mutually dependent
+        # static owners. CMake repeats the strongly connected archive component;
+        # Source OBJECT providers remain outside that static dependency cycle.
+        target_link_libraries(isle-actor-owner PUBLIC isle-course-native-host)
+        # Non-application consumers reach native tables, typed Actor admission,
+        # then Host/Root/lifecycle leaves. Two default SCC scans end too early.
+        set_property(TARGET isle-course-native-host PROPERTY LINK_INTERFACE_MULTIPLICITY 3)
+        isle_target_options(isle-course-native-host)
+        target_compile_options(isle-course-native-host PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    endif()
     if(TARGET isle-beach-music AND TARGET isle-course-model-producer AND TARGET isle-actor-photo-scene)
         add_executable(player-root-rsp-smoke EXCLUDE_FROM_ALL tests/player_root_rsp_smoke.cpp)
         target_link_libraries(player-root-rsp-smoke PRIVATE
@@ -1428,7 +1505,7 @@ endif()
 if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle-game-host)
     add_library(isle-application-runtime STATIC src/application_runtime.cpp src/application_runtime.hpp)
     target_link_libraries(isle-application-runtime PUBLIC isle-beach-lifecycle isle-rainbow-lifecycle
-        isle-menu-scene isle-new-game-scene isle-oaks-lab-scene isle-scene-graphics)
+        isle-course-native-host isle-menu-scene isle-new-game-scene isle-oaks-lab-scene isle-scene-graphics)
     isle_target_options(isle-application-runtime)
     target_compile_options(isle-application-runtime PRIVATE
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
@@ -1437,7 +1514,10 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
     target_link_libraries(35mmisle PRIVATE isle-application-runtime isle-game-host)
     isle_target_options(35mmisle)
     add_executable(35mmisle-application-runtime-rom-smoke EXCLUDE_FROM_ALL
-        tests/application_runtime_rom_smoke.cpp)
+        tests/application_runtime_rom_smoke.cpp
+        tests/post_course_probe_inputs.cpp
+        tests/post_course_scene_probe.cpp
+        tests/native_course_probe.cpp)
     target_link_libraries(35mmisle-application-runtime-rom-smoke PRIVATE
         isle-application-runtime isle-game-host)
     isle_target_options(35mmisle-application-runtime-rom-smoke)
@@ -1465,10 +1545,16 @@ if(TARGET isle-window)
     target_link_libraries(isle-post-course-window PUBLIC isle-post-course-resources)
     isle_target_options(isle-post-course-window)
 endif()
-if(TARGET isle-canonical-executor AND TARGET isle-photo-subjects)
-    add_library(isle-photo-replay STATIC src/photo_replay.cpp src/photo_replay.hpp)
+if(TARGET isle-canonical-executor AND TARGET isle-photo-subjects
+   AND TARGET isle-application-photos AND TARGET isle-scene-graphics)
+    add_library(isle-photo-replay STATIC
+        src/photo_replay.cpp src/photo_replay.hpp
+        src/photo_presentation.cpp src/photo_presentation.hpp)
+    # Presentation's core is included once by photo_replay.cpp, not compiled
+    # separately. Both owners use the real Photos and scene-graphics services.
     target_link_libraries(isle-photo-replay PUBLIC isle-photo-subjects isle-photo-effects
-        isle-item-resources isle-photo-lighting isle-photo-score isle-canonical-executor isle-graphics-task)
+        isle-item-resources isle-photo-lighting isle-photo-score isle-canonical-executor isle-graphics-task
+        isle-application-photos isle-scene-graphics)
     isle_target_options(isle-photo-replay)
     target_compile_options(isle-photo-replay PRIVATE
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>"
@@ -1492,14 +1578,10 @@ if(TARGET isle-canonical-executor AND TARGET isle-photo-subjects)
 endif()
 
 if(TARGET isle-post-course-replay AND TARGET isle-post-course-window)
-    foreach(_isle_post_module IN ITEMS camera_check photo_check)
+    foreach(_isle_post_module IN ITEMS camera_check)
         string(REPLACE "_" "-" _isle_post_name "${_isle_post_module}")
         set(_isle_post_private "${CMAKE_BINARY_DIR}/_deps/isle-${_isle_post_name}-private")
-        if(_isle_post_module STREQUAL "camera_check")
-            set(_isle_post_include "${_isle_post_private}/camera_check_source.inc")
-        else()
-            set(_isle_post_include "${_isle_post_private}/photo_check_original.inc")
-        endif()
+        set(_isle_post_include "${_isle_post_private}/camera_check_source.inc")
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
             "${PROJECT_SOURCE_DIR}/tools/materialize_${_isle_post_module}.py"
             "${PROJECT_SOURCE_DIR}/cmake/${_isle_post_name}-inputs.json")
@@ -1525,11 +1607,49 @@ if(TARGET isle-post-course-replay AND TARGET isle-post-course-window)
             "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
             "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
     endforeach()
+
+    include(cmake/PostCourseSources.cmake)
+    # Shared Original sorting has no native scene dependencies. Report and
+    # PhotoCheck use this one low-level C archive, never their own qsort bodies.
+    add_library(isle-original-sort-source STATIC
+        "${_isle_original_sort_generated}" src/original_sort_source.h)
+    target_include_directories(isle-original-sort-source PUBLIC "${PROJECT_SOURCE_DIR}/src"
+        PRIVATE "${_isle_original_sort_private}")
+    isle_target_options(isle-original-sort-source)
+    target_compile_options(isle-original-sort-source PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+        "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+    foreach(_isle_post_module IN ITEMS album report gallery end_level_8 credits photo_check)
+        string(REPLACE "_" "-" _isle_post_name "${_isle_post_module}")
+        add_library(isle-${_isle_post_name}-source OBJECT
+            "${_isle_${_isle_post_module}_generated}" "src/${_isle_post_module}_source.h")
+        target_include_directories(isle-${_isle_post_name}-source PRIVATE
+            "${PROJECT_SOURCE_DIR}/src" "${_isle_${_isle_post_module}_private}")
+        target_link_libraries(isle-${_isle_post_name}-source PUBLIC
+            isle-post-course-window isle-post-course-replay)
+        isle_target_options(isle-${_isle_post_name}-source)
+        target_compile_options(isle-${_isle_post_name}-source PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
+    endforeach()
+    target_link_libraries(isle-report-source PUBLIC isle-original-sort-source)
+    target_link_libraries(isle-photo-check-source PUBLIC isle-original-sort-source)
     add_library(isle-post-course-scene STATIC
         src/post_course_scene.cpp src/post_course_scene.hpp src/post_course_scene_internal.hpp
-        src/post_course_scene_hooks.cpp src/post_course_modules.cpp src/post_course_modules.hpp)
+        src/post_course_scene_hooks.cpp src/post_course_modules.cpp src/post_course_modules.hpp
+        src/post_course_scene_render.cpp
+        src/post_course_native_helpers.hpp
+        src/album_scene_native.cpp src/album_scene_native.hpp
+        src/report_scene_native.cpp src/report_scene_native.hpp
+        src/gallery_scene_native.cpp src/gallery_scene_native.hpp
+        src/end_level_8_scene_native.cpp src/end_level_8_scene_native.hpp
+        src/credits_scene_native.cpp src/credits_scene_native.hpp
+        src/credits_worker_native.cpp src/credits_worker_native.hpp)
     target_link_libraries(isle-post-course-scene PUBLIC
-        isle-camera-check-source isle-photo-check-source isle-application-manager
+        isle-camera-check-source isle-photo-check-source isle-album-source isle-report-source
+        isle-gallery-source isle-end-level-8-source isle-credits-source isle-application-manager
         isle-application-photos isle-scene-graphics)
     isle_target_options(isle-post-course-scene)
     target_compile_options(isle-post-course-scene PRIVATE
@@ -1662,21 +1782,34 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Read-only ROM identity checker; no game o
 if(TARGET 35mmisle)
     install(TARGETS 35mmisle RUNTIME_DEPENDENCY_SET isle-product-runtime
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime)
-    install(RUNTIME_DEPENDENCY_SET isle-product-runtime
-        PRE_EXCLUDE_REGEXES "^[Aa][Pp][Ii]-[Mm][Ss]-" "^[Ee][Xx][Tt]-[Mm][Ss]-"
-        POST_EXCLUDE_REGEXES "^/lib/" "^/lib64/" "^/usr/lib/" "^/usr/lib64/"
-            "/[Ss][Yy][Ss][Tt][Ee][Mm]32/"
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/35mmisle" COMPONENT Runtime)
     if(UNIX AND NOT APPLE)
         file(RELATIVE_PATH _isle_runtime_libraries
             "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_LIBDIR}/35mmisle")
-        set_target_properties(35mmisle PROPERTIES INSTALL_RPATH "$ORIGIN/${_isle_runtime_libraries}")
+        set_target_properties(35mmisle PROPERTIES
+            INSTALL_RPATH "$ORIGIN/${_isle_runtime_libraries}"
+            INSTALL_RPATH_USE_LINK_PATH FALSE)
+    endif()
+    include(cmake/RuntimeNotices.cmake)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        # Resolve from the linked product, but modify only Runtime staging
+        # copies. CLI-only builds do not need patchelf or Debian tooling.
+        configure_file(cmake/LinuxRuntime.cmake.in
+            "${CMAKE_CURRENT_BINARY_DIR}/LinuxRuntime.cmake.in" @ONLY)
+        file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/LinuxRuntime-$<CONFIG>.cmake"
+            INPUT "${CMAKE_CURRENT_BINARY_DIR}/LinuxRuntime.cmake.in")
+        install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/LinuxRuntime-$<CONFIG>.cmake"
+            COMPONENT Runtime)
+    else()
+        install(RUNTIME_DEPENDENCY_SET isle-product-runtime
+            PRE_EXCLUDE_REGEXES "^[Aa][Pp][Ii]-[Mm][Ss]-" "^[Ee][Xx][Tt]-[Mm][Ss]-"
+            POST_EXCLUDE_REGEXES "^/lib/" "^/lib64/" "^/usr/lib/" "^/usr/lib64/"
+                "/[Ss][Yy][Ss][Tt][Ee][Mm]32/"
+            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime
+            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/35mmisle" COMPONENT Runtime)
     endif()
     install(DIRECTORY "${ISLE_HOST_RENDERER_RESOURCES}/"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/35mmisle" COMPONENT Runtime)
     install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle" COMPONENT Runtime)
-    include(cmake/RuntimeNotices.cmake)
     set(CPACK_PACKAGE_NAME "35mmisle")
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Native Pokemon Snap port; requires a supported user-supplied ROM")
 endif()

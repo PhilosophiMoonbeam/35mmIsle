@@ -282,6 +282,17 @@ GameValue<std::span<const std::byte>> GameSession::album_comment(std::size_t ind
     if (index >= game_album_count) return {{}, bounds};
     return {std::span<const std::byte>(impl_->data->bytes).subspan(0x10a20 + index * 0x3e0 + game_photo_bytes, 64)};
 }
+GameValue<bool> GameSession::player_flag(unsigned id) const noexcept {
+    if (!*this) return {{}, unavailable};
+    if (id >= flag_bits.size()) return {{}, bounds};
+    if (id == 15) return {impl_->data->transient_flag};
+    return {bool(read32(impl_->data->bytes.data() + (id >= 16 && id <= 20 ? 0x68 : 0x64)) &
+                 (std::uint32_t{1} << flag_bits[id]))};
+}
+std::span<const std::byte> GameSession::source_player_name_prefix() const noexcept {
+    return *this ? std::span<const std::byte>(impl_->data->bytes).subspan(0x54, 20) :
+        std::span<const std::byte>{};
+}
 GameError GameSession::set_player_flag(unsigned id, bool value) {
     if (!*this) return unavailable;
     if (id >= flag_bits.size()) return bounds;

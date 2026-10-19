@@ -1,0 +1,163 @@
+# Native Linux Runtime installation only. Never patch the SDK/build inputs.
+find_program(_isle_patchelf NAMES patchelf REQUIRED)
+set(CMAKE_GET_RUNTIME_DEPENDENCIES_PLATFORM "linux+elf")
+set(CMAKE_GET_RUNTIME_DEPENDENCIES_TOOL "objdump")
+set(CMAKE_GET_RUNTIME_DEPENDENCIES_COMMAND [==[@CMAKE_OBJDUMP@]==])
+if(NOT CMAKE_GET_RUNTIME_DEPENDENCIES_COMMAND)
+    find_program(CMAKE_GET_RUNTIME_DEPENDENCIES_COMMAND NAMES objdump REQUIRED)
+endif()
+
+# These anchored basenames are the reviewed application families, including
+# libzip's compression/crypto children. Include only those actually reached;
+# leave loader/libc/compiler/graphics/audio/display/device/driver libraries on
+# the platform. Version suffixes come from the resolved ELF, not this project.
+set(_isle_application_library
+    "(^|/)lib(SDL3|zip|tinyxml2|spdlog|fmt|bz2|z|crypto|lzma|zstd)\\.so(\\.[0-9]+)*$")
+# Classify reached platform dependencies by reviewed basename AND system path.
+# A directory-wide exclusion would hide an unexpected application library.
+# Excluding a platform node also avoids bundling its OS-private child closure.
+set(_isle_system_library "^/(usr/)?lib(64)?/([^/]*/)*")
+set(_isle_platform_libraries
+    "${_isle_system_library}lib(c|m|mvec|stdc\\+\\+|gcc_s|atomic|pthread|dl|rt|util|resolv)\\.so(\\.[0-9]+)*$"
+    "${_isle_system_library}lib(GL|OpenGL|GLX|EGL|GLESv1_CM|GLESv2|GLdispatch|GLU|vulkan|drm|gbm)\\.so(\\.[0-9]+)*$"
+    "${_isle_system_library}lib(X11|Xext|Xcursor|Xi|Xfixes|Xrandr|Xss|Xtst|Xrender|Xau|Xdmcp|X11-xcb|xcb(-[a-z0-9]+)*)\\.so(\\.[0-9]+)*$"
+    "${_isle_system_library}lib(asound|pulse(-simple)?|pipewire-0\\.3|jack|udev|fribidi|dbus-1|systemd|decor-0|wayland-(client|cursor|egl)|xkbcommon(-x11)?)\\.so(\\.[0-9]+)*$"
+    "${_isle_system_library}ld-linux-x86-64\\.so(\\.[0-9]+)*$")
+file(GET_RUNTIME_DEPENDENCIES
+    EXECUTABLES [==[$<TARGET_FILE:35mmisle>]==]
+    RESOLVED_DEPENDENCIES_VAR _isle_dependencies
+    UNRESOLVED_DEPENDENCIES_VAR _isle_unresolved
+    CONFLICTING_DEPENDENCIES_PREFIX _isle_conflicts
+    POST_INCLUDE_REGEXES "${_isle_application_library}"
+    POST_EXCLUDE_REGEXES ${_isle_platform_libraries})
+if(_isle_unresolved OR _isle_conflicts_FILENAMES)
+    message(FATAL_ERROR "Linux Runtime closure unresolved: ${_isle_unresolved}; conflicting: ${_isle_conflicts_FILENAMES}")
+endif()
+if(NOT _isle_dependencies)
+    message(FATAL_ERROR "Linux Runtime has no resolved application libraries")
+endif()
+
+foreach(_isle_directory IN ITEMS [==[@CMAKE_INSTALL_BINDIR@]==]
+        [==[@CMAKE_INSTALL_LIBDIR@]==] [==[@CMAKE_INSTALL_DATADIR@]==])
+    if(IS_ABSOLUTE "${_isle_directory}")
+        message(FATAL_ERROR "Portable Linux Runtime requires relative install directories: ${_isle_directory}")
+    endif()
+endforeach()
+set(_isle_stage "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}")
+set(_isle_library_directory "${_isle_stage}/@CMAKE_INSTALL_LIBDIR@/35mmisle")
+set(_isle_notice_directory "${_isle_stage}/@CMAKE_INSTALL_DATADIR@/licenses/35mmisle/dependencies")
+set(_isle_notice_prefixes [==[@_isle_runtime_notice_prefixes@]==])
+
+# Select only the owning Debian package's copyright, with any referenced
+# common-license texts. No scan of /usr/share/doc and no guessed package names.
+function(_isle_debian_notices dependency resolved)
+    find_program(_isle_dpkg_query NAMES dpkg-query REQUIRED)
+    set(candidates "${resolved}" "${dependency}")
+    # Support merged-/usr hosts whose dpkg database still records /lib paths.
+    if(resolved MATCHES "^/usr/lib(64)?/")
+        string(REGEX REPLACE "^/usr" "" legacy "${resolved}")
+        list(APPEND candidates "${legacy}")
+    endif()
+    list(REMOVE_DUPLICATES candidates)
+    set(package "")
+    foreach(candidate IN LISTS candidates)
+        execute_process(COMMAND "@CMAKE_COMMAND@" -E env LC_ALL=C
+            "${_isle_dpkg_query}" --search "${candidate}"
+            RESULT_VARIABLE result OUTPUT_VARIABLE ownership ERROR_VARIABLE error
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if(result STREQUAL "0" AND ownership MATCHES "^([a-z0-9][a-z0-9+.-]*(:[a-z0-9-]+)?): ([^\n]+)$")
+            set(owner "${CMAKE_MATCH_1}")
+            set(owned_path "${CMAKE_MATCH_3}")
+            if(owned_path STREQUAL candidate)
+                set(package "${owner}")
+                break()
+            endif()
+        endif()
+    endforeach()
+    if(NOT package)
+        message(FATAL_ERROR "No unambiguous Debian owner for bundled ${dependency} (${resolved}): ${ownership} ${error}")
+    endif()
+    string(REGEX REPLACE ":[^:]+$" "" package_directory "${package}")
+    set(copyright "/usr/share/doc/${package_directory}/copyright")
+    if(NOT EXISTS "${copyright}")
+        message(FATAL_ERROR "Bundled ${dependency} requires missing ${package} notice: ${copyright}")
+    endif()
+    set(destination "${_isle_notice_directory}/debian/${package_directory}")
+    file(MAKE_DIRECTORY "${destination}")
+    # COPY_FILE dereferences notice symlinks rather than exporting host links.
+    file(COPY_FILE "${copyright}" "${destination}/copyright" ONLY_IF_DIFFERENT)
+    file(READ "${copyright}" terms)
+    if(terms STREQUAL "")
+        message(FATAL_ERROR "Empty Debian copyright for bundled ${dependency}")
+    endif()
+    string(REGEX MATCHALL "/usr/share/common-licenses/[A-Za-z0-9]([A-Za-z0-9.+_-]*[A-Za-z0-9])?" common_licenses "${terms}")
+    list(REMOVE_DUPLICATES common_licenses)
+    foreach(license IN LISTS common_licenses)
+        if(NOT EXISTS "${license}")
+            message(FATAL_ERROR "${package} notice requires missing ${license}")
+        endif()
+        get_filename_component(name "${license}" NAME)
+        file(MAKE_DIRECTORY "${destination}/common-licenses")
+        file(COPY_FILE "${license}" "${destination}/common-licenses/${name}" ONLY_IF_DIFFERENT)
+    endforeach()
+endfunction()
+
+set(_isle_staged_libraries "")
+foreach(dependency IN LISTS _isle_dependencies)
+    if(NOT dependency MATCHES "${_isle_application_library}")
+        message(FATAL_ERROR "Unreviewed nonplatform Runtime dependency: ${dependency}")
+    endif()
+    file(REAL_PATH "${dependency}" resolved)
+    if(resolved MATCHES "^/(usr/)?lib(64)?/")
+        _isle_debian_notices("${dependency}" "${resolved}")
+    else()
+        set(mapped FALSE)
+        foreach(prefix IN LISTS _isle_notice_prefixes)
+            file(RELATIVE_PATH relative "${prefix}" "${resolved}")
+            if(NOT IS_ABSOLUTE "${relative}" AND NOT relative MATCHES "^\\.\\.(/|$)")
+                set(mapped TRUE)
+                break()
+            endif()
+        endforeach()
+        if(NOT mapped)
+            message(FATAL_ERROR "Bundled ${resolved} has no selected SDK notice prefix; provide its share/doc or share/licenses terms in CMAKE_PREFIX_PATH")
+        endif()
+    endif()
+    # Retain the SONAME symlink chain; ensure only staged real files are writable.
+    get_filename_component(name "${resolved}" NAME)
+    if(EXISTS "${_isle_library_directory}/${name}" OR IS_SYMLINK "${_isle_library_directory}/${name}")
+        file(REAL_PATH "${_isle_library_directory}/${name}" staged)
+        if(staged STREQUAL resolved)
+            message(FATAL_ERROR "Runtime staging aliases the SDK original: ${resolved}")
+        endif()
+    endif()
+    file(COPY "${dependency}" DESTINATION "${_isle_library_directory}"
+        FOLLOW_SYMLINK_CHAIN FILE_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    list(APPEND _isle_staged_libraries "${_isle_library_directory}/${name}")
+endforeach()
+list(REMOVE_DUPLICATES _isle_staged_libraries)
+foreach(library IN LISTS _isle_staged_libraries)
+    execute_process(COMMAND "${_isle_patchelf}" --set-rpath "$ORIGIN" "${library}"
+        RESULT_VARIABLE result ERROR_VARIABLE error)
+    if(NOT result STREQUAL "0")
+        message(FATAL_ERROR "Cannot set staged Runtime library RUNPATH on ${library}: ${error}")
+    endif()
+endforeach()
+
+# An absolute DT_NEEDED entry bypasses RUNPATH and is not portable. Fail closed
+# rather than editing ABI identities or silently retaining a private SDK path.
+set(_isle_product "${_isle_stage}/@CMAKE_INSTALL_BINDIR@/$<TARGET_FILE_NAME:35mmisle>")
+execute_process(COMMAND "${_isle_patchelf}" --print-rpath "${_isle_product}"
+    RESULT_VARIABLE result OUTPUT_VARIABLE rpath ERROR_VARIABLE error
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT result STREQUAL "0" OR NOT rpath STREQUAL "$ORIGIN/@_isle_runtime_libraries@")
+    message(FATAL_ERROR "Unexpected product Runtime RUNPATH: ${rpath} ${error}")
+endif()
+foreach(binary IN LISTS _isle_staged_libraries _isle_product)
+    execute_process(COMMAND "${_isle_patchelf}" --print-needed "${binary}"
+        RESULT_VARIABLE result OUTPUT_VARIABLE needed ERROR_VARIABLE error)
+    if(NOT result STREQUAL "0" OR needed MATCHES "[/\\\\]")
+        message(FATAL_ERROR "Nonportable or unreadable DT_NEEDED in ${binary}: ${needed} ${error}")
+    endif()
+endforeach()

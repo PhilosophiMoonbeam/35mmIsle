@@ -22,6 +22,9 @@ struct Config {
     bool require_cpu = false;
     rsp::Limits limits{12000000, 4 * 1024 * 1024};
     Layout memory{};
+    // Retained transition packets are relocatable runtime data, not Source ROM.
+    // Snapshot composition may relocate; the Catalog adapter keeps its plan.
+    sprite::RamRange transition_memory{0x1f0000,0x10000};
 };
 // Native source-screen semantics, not a console VI/ScreenSettings layout.
 // The supported 0xa99 mode scans two 320x240 RGBA16 source buffers. Guest
@@ -139,6 +142,18 @@ public:
     // reservations(). Protected from normal display writes across Source waits.
     // Reserve before first begin; caller includes it in other producer plans.
     bool reserve_source_gpu_storage(std::span<const sprite::RamRange>) noexcept;
+    // Cold subset of the existing Replay plan, lent only by the actual unique
+    // World handoff. The retained owner must end its loan before Replay can
+    // acquire the executor again. No target/workspace protection is removed.
+    bool register_source_display_storage(const void* owner,
+        std::span<const sprite::RamRange>) noexcept;
+    bool begin_source_display_storage(const void* owner) noexcept;
+    bool end_source_display_storage(const void* owner) noexcept;
+    // Use this Frame's retained transition resources with the actual Services
+    // owner; callers must include its immutable bytes and workspace in Input.
+    render::Pass transition_pass(::isle::screen_transition::Owner&) noexcept;
+    std::span<const sprite::AssetSpan> transition_immutable() const noexcept;
+    sprite::RamRange transition_workspace() const noexcept;
     // One exclusive real executor/RAM stage, never a display/GTL token.
     // Release only after actual GPU, readback and mapped-RAM leases have ended.
     // Retained semantic replay ownership must not hold this across Source waits.

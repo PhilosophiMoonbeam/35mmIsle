@@ -1,0 +1,4587 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "repository": "https://github.com/ethteck/pokemonsnap.git",
+  "source_files": {
+    "src/river/6C05E0.c": {
+      "git_blob": "cb9c14fa4baa7590528a7e822d763dcf3aef0ad5",
+      "sha256": "fe46871b5acd19990284edf31b2218118b0327e14dffa45b54fc24975a7a05bf",
+      "line_count": 327
+    },
+    "src/river/6C1090.c": {
+      "git_blob": "8f423998751e1e04decea27d2853ed21e29e121a",
+      "sha256": "db09a49739a77ba0379f6015bfbfdd661025bf199f811b3b484d947bca3f03d0",
+      "line_count": 49
+    },
+    "src/river/6C1300.c": {
+      "git_blob": "18e90676e69975db9545b0d3cc47b1d1acbf71c7",
+      "sha256": "4dd6cd8f762c62d0cffe224419b0d4b7223beeceaa979231b3b170a3a2a21c5f",
+      "line_count": 274
+    },
+    "src/river/6C1D60.c": {
+      "git_blob": "162b1e5eab6a35015566bbb29e235d483f81fceb",
+      "sha256": "83015bf31b8913a314fbe2336ac6f0171e60c356b67407045c63dd856b709c8f",
+      "line_count": 155
+    },
+    "src/river/6C22E0.c": {
+      "git_blob": "9750131173a4b0ca6a0b4b660261a1c4f2f5bc15",
+      "sha256": "7cbbae053d175050a6756787c7fb3c202d2aaf5034e07385057d7278cc125e90",
+      "line_count": 127
+    },
+    "src/river/6C26F0.c": {
+      "git_blob": "8412f9004fe578de31d0fd22678889e69d2224c8",
+      "sha256": "7ba3482e5bc5c64a64f0b7f9ea9f348a61f9c1e733a2339a5f77a14d67bbeb11",
+      "line_count": 27
+    },
+    "src/river/6C27C0.c": {
+      "git_blob": "730d00ce1f909ac50bbabf3d98c92ec653a5db66",
+      "sha256": "736ccf7eb927c6a79ccacbed10f93661dc2c674a351c9e35ebe15f11355d8405",
+      "line_count": 208
+    },
+    "src/river/6C2E80.c": {
+      "git_blob": "cf469a4057048ddf9ba6729b060f28ad61b5f97f",
+      "sha256": "01e92da5c6cca6b269b2c5c1ffc987f581336df9f642c9c7634f5e36595128f7",
+      "line_count": 298
+    },
+    "src/river/6C3980.c": {
+      "git_blob": "ac802916acac295959c3c4c3add724266dd877ff",
+      "sha256": "f2ca77151a75c2951e4f62e0d0a12cf4438273974cb10a11886c591c77c5dfbf",
+      "line_count": 482
+    },
+    "src/river/6C4CD0.c": {
+      "git_blob": "7dc2cd6e96a233ffec07c3f991f4b80939e9a77f",
+      "sha256": "ebe83749dd54a7aef01828eef30bc4144f138b442c4cd75fb26a80e4cbf9d2d8",
+      "line_count": 57
+    },
+    "src/river/6C4EC0.c": {
+      "git_blob": "840ec2c57a1c5b776e82917cae19ae69a0fa9126",
+      "sha256": "baf2a8317cc5194c93847a391d0047242a678ed08bceb7730c0e3154e5726acd",
+      "line_count": 680
+    },
+    "src/river/6C66E0.c": {
+      "git_blob": "02fddd3312a219fa752020479a7184f18fac7540",
+      "sha256": "25dc52f22ca278eb82057ff374edddb32945fd76eabbb19b7926e08da35be6c1",
+      "line_count": 93
+    },
+    "src/river/6C6A70.c": {
+      "git_blob": "9ef78345a80d80672d66ba78348063613171b107",
+      "sha256": "277c7c65377d568187f11a6a3ec1667da23cb9e15c697f6e186a180ede945d23",
+      "line_count": 221
+    },
+    "src/river/6C7450.c": {
+      "git_blob": "4db0d850ef8c2ed63108345bc763cfdf09364868",
+      "sha256": "f2c2691971f370773e787bf2659add1bbbb79717e826b0e86d17d7a7fba24d5e",
+      "line_count": 256
+    },
+    "src/river/6C7CD0.c": {
+      "git_blob": "c9afb8d933418729f6ef714946104518bd331918",
+      "sha256": "56948f7ce51398405ee8d1a6a575896cfb38eb4e55f69ed02f79d4d9071407c1",
+      "line_count": 51
+    },
+    "src/river/6C7E50.c": {
+      "git_blob": "b30c9b2b801bd4bb2a3ec9532f2402f97fd15aec",
+      "sha256": "1e6fa078a962b9041c6cb41853e2f131782c1e02f4e50f3642c79930f97d0529",
+      "line_count": 146
+    },
+    "src/river/6C83A0.c": {
+      "git_blob": "ae8edc213cf1c10b2dcc81aa7c21ee004aef8f92",
+      "sha256": "75e40eef554a4d8ffc26361b3d294b465062f50fc65bd0f172defdb7bbfc882c",
+      "line_count": 36
+    },
+    "src/river/6C84B0.c": {
+      "git_blob": "da2fcc1fbb5b230770d9427befd154398f1dad6c",
+      "sha256": "b25c9c29ee107ff802ae248e1192091ad42817e798463a011e4defe9c9e54f13",
+      "line_count": 36
+    },
+    "src/river/6C85D0.c": {
+      "git_blob": "25a2f001f3e400d1a21b3fe9df0a9cc03023cc49",
+      "sha256": "0a082fc01f03072b3fb947d8376080f8fa5869700e4d8ed0ffb653a129d01f74",
+      "line_count": 36
+    },
+    "src/river/6C86E0.c": {
+      "git_blob": "086b2f580a763ac5a4c6fa9b2670eb7a2808ba9e",
+      "sha256": "93a260b2d3b703293f3c70ed5f1b2f11bab42696ff3b6b68878087f12b94f78d",
+      "line_count": 452
+    },
+    "src/river/6C9680.c": {
+      "git_blob": "882cbb55f89b4853b0c833a7f56115a4392c1cde",
+      "sha256": "9d69145394eefa3fbfcab077166e37ee2c6c2937c64c76da03624859faed50eb",
+      "line_count": 208
+    },
+    "src/river/6C9EB0.c": {
+      "git_blob": "f52a61e37ccc4775a183bd990b81091cfa062a7f",
+      "sha256": "260f6b38527c2193785f3396a3463c69799489abef9c7cb495d34e68f4fa4c63",
+      "line_count": 151
+    },
+    "src/river/cloyster/model.c": {
+      "git_blob": "241ad41f2659f0d044e20332d36aa2096b586759",
+      "sha256": "975d52c82b3f6eeeb9675b332e48324d29a920d203defe3986adeee82edb7bdd",
+      "line_count": 84
+    },
+    "src/river/cloyster/model_hd.c": {
+      "git_blob": "c94c56c32152eab7ade03c85ebd6d86c5a9d2f6f",
+      "sha256": "41000dc01254a6f4f3218544e1152c159d1fd7a88acae3e4e069dd73271a9a33",
+      "line_count": 77
+    },
+    "src/river/metapod/model.c": {
+      "git_blob": "7d41c2be3a09f7a95929fc4746252fa8c7e2b33e",
+      "sha256": "6f5c2f27038bae6173656104fd1e302dd94ad5bf1c9977b4c369987b1e7f9eb3",
+      "line_count": 161
+    },
+    "src/river/metapod/model_hd.c": {
+      "git_blob": "873946b0d11cf746979e8f34acb1abb266846b25",
+      "sha256": "7a12b5e1e8d2ec4c36b111121d25f7f83ba86b8a9e5eb8b89b852167607383e2",
+      "line_count": 125
+    },
+    "src/river/poliwag/model.c": {
+      "git_blob": "227452c972ed7975d0691114fa35f6a088aa4fa0",
+      "sha256": "49019add26d1ab4e0b3b7587bd668720a9610c6860d5152b3632d61c48558f8a",
+      "line_count": 138
+    },
+    "src/river/poliwag/model_hd.c": {
+      "git_blob": "e7dbf9550767904e3dca71cbe932b0df8a90e996",
+      "sha256": "42295358e3480ed197b2f4305fa5d0610f621f1dce3abd63f8061e3b5dd7489f",
+      "line_count": 125
+    },
+    "src/river/porygon/model.c": {
+      "git_blob": "db5347b7aed8888d0dd845ba1d8693f6f16181f4",
+      "sha256": "f52ddb4cc5b584ca2d81d142374334a255c86eb566d40f56bf3d8aa47daffe76",
+      "line_count": 680
+    },
+    "src/river/porygon/model_hd.c": {
+      "git_blob": "fae674fb3a75175f400e2ccbbb3388bdc03ff615",
+      "sha256": "9783bfe2ff307bd2526d793dec20117a91240fc88fbabb9990de5416495b1b20",
+      "line_count": 668
+    },
+    "src/river/psyduck/model.c": {
+      "git_blob": "83592163bc29cae9d13a807b57d5c58b10bf2258",
+      "sha256": "4825d407e2fe8478a43f5cde816fe31daa55ad8d2bf635ee1472d84950162f65",
+      "line_count": 175
+    },
+    "src/river/psyduck/model_hd.c": {
+      "git_blob": "e0808f7eb5a2fd5e34bcbf1454d3a29c645aa072",
+      "sha256": "e2feabefba2739a0050d4c606a48328fc1f9e6a230923b9d0aec700a258fbb96",
+      "line_count": 153
+    },
+    "src/river/river.h": {
+      "git_blob": "3e1364cd6a4716abe43790902078e6cee85963e3",
+      "sha256": "3bb153856acbfe16124c555003c90259a75434fdff7a0e2b41ec5b42c94d063a",
+      "line_count": 15
+    },
+    "src/river/shellder/model.c": {
+      "git_blob": "0804f60799fb94a3d237cfb93b16a514953f55e6",
+      "sha256": "e67d8781d885ad05b515c07d6ce82d33bb5650070d42d86a7b3f70fda79fe848",
+      "line_count": 75
+    },
+    "src/river/shellder/model_hd.c": {
+      "git_blob": "eff0958732d06fd15738ccbf0b1155edf289900a",
+      "sha256": "121014f2a70ef76cab3ed3d75a7f7a929d4b29f8a633e5ea907b9a74e783afb0",
+      "line_count": 67
+    },
+    "src/river/shellder2/model.c": {
+      "git_blob": "db1a2700e0ab56e06c50949bd97b3ea140b2f375",
+      "sha256": "33c8ab472dc38174a79a2f95e1d35051da89481ad00b926d6a5cdc4482425b26",
+      "line_count": 141
+    },
+    "src/river/shellder2/model_hd.c": {
+      "git_blob": "31996bf965684bed79f0bfdb3ea4c8f41def4694",
+      "sha256": "8f6abe0743eb7ce08ba68d1e8df13355731196d9f4794e4679dd132e2e3cc92a",
+      "line_count": 132
+    },
+    "src/river/slowbro/model.c": {
+      "git_blob": "064c4c85fc0986cdf175cb532b57296a197f52cb",
+      "sha256": "769efc215122837bfc0d853bd869fb6a375c4178c4c1e3be581e1816a1c1ddd0",
+      "line_count": 296
+    },
+    "src/river/slowbro/model_hd.c": {
+      "git_blob": "34e46db02a3fd28b78feb67e54771c8d51fba212",
+      "sha256": "3bdb7843828a4b0ec2183b458c863c64b8a3cce8a2d586cfb2727b7ac6888919",
+      "line_count": 247
+    },
+    "src/river/slowpoke/model.c": {
+      "git_blob": "b637ef811fbbc6a1053cfcb1b31657583eb8b0e9",
+      "sha256": "8abcb98160035b324afa11d52b4fc53dcd8711923de9eadf39af9174f7929ea2",
+      "line_count": 228
+    },
+    "src/river/slowpoke/model_hd.c": {
+      "git_blob": "95d11d2caca5d232fa3e440973244b72de84f352",
+      "sha256": "409bc54e1a06f513882b07b2823332d0522e1b6a0dc61ef2c2b71d57affb3c4b",
+      "line_count": 175
+    },
+    "src/river/vileplume/model.c": {
+      "git_blob": "092b9221c7353edc13e5d547ea02774a39cc07c9",
+      "sha256": "1ba94b35befb1f4524f77d53dce30546f4f5c83da0573df1ee16ca0ec7ee5a3e",
+      "line_count": 416
+    },
+    "src/river/vileplume/model_hd.c": {
+      "git_blob": "7b1bb242daf9fd89687a65eeca999c2c932b28a3",
+      "sha256": "e39fc74d7ee0c8f0577a1ef805356df28a6b0aeec2a0bd0510101c3ef8fcc607",
+      "line_count": 376
+    },
+    "src/sys/vector.c": {
+      "git_blob": "99b21e6c073cdbce135abfc10533defc56a05026",
+      "sha256": "f36b6f36e6e1434bd498d41df4b03e63775d8f765dc6337f76a7ccfbb5c9fa57",
+      "line_count": 347
+    },
+    "src/app_level/4FE330.c": {
+      "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761",
+      "line_count": 195
+    },
+    "src/app_level/app_level.h": {
+      "git_blob": "953e57fd6e9d76a3962068fb5aefa93d9f55b3d4",
+      "sha256": "b95ed8883bc54021ff82df89a6846b16c487e781215eb71f241dbaff194f60e4",
+      "line_count": 324
+    },
+    "include/common_structs.h": {
+      "git_blob": "2f1b52e408dd916f2e002a5efc252684a8bcf6fe",
+      "sha256": "bb84c8391dfd7a7382de6ca8119d05b139e7475dc7f2270c82cc88e1d9c25509",
+      "line_count": 343
+    },
+    "include/sys/gtl.h": {
+      "git_blob": "a17ea5a556c505ea432a1a5c800a7e34ef313323",
+      "sha256": "8a24f1d44f97f92cbc2cc5d4950875666e758bd059c3456ecca7512af59cd83b",
+      "line_count": 93
+    },
+    "include/sys/vi.h": {
+      "git_blob": "5a95a8ba8c6e8f5a5c80b7cabf68c0bebe2c658e",
+      "sha256": "f290aa7442c22a0020454ce160ee53c8abd0899155ebc0b6ea398b9addb9f4c2",
+      "line_count": 32
+    },
+    "include/constants.h": {
+      "git_blob": "53cbd9337ced13925f34f7a80168b9ac0bebd612",
+      "sha256": "9854e30df0750583ae5f4eadabc1c8c0fe8a74842857ecd43288288ae57b0b26",
+      "line_count": 8
+    },
+    "include/enums.h": {
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "line_count": 422
+    },
+    "include/common.h": {
+      "git_blob": "17a28698cf046c4c8d15fa32d5ade1827e92098d",
+      "sha256": "0689b47bca0fbcad8fcf2d24e5d9399af1cb461df8366078178138f7b2d5d0bf",
+      "line_count": 16
+    },
+    "include/sys/om.h": {
+      "git_blob": "49caf3da29bb8284b4d64031692e0a6bee70e452",
+      "sha256": "675edc6dc6eca71b1a7c3be737cceb26e34553e49f44d9bd3a1bef449afbe641",
+      "line_count": 591
+    },
+    "src/world/world.h": {
+      "git_blob": "0a4069418ecaefcfa6a859f860cd68ca3d4b89d4",
+      "sha256": "e3f0ed6c34c041958994e4e4091fbf7f4564afffa14aff24439d21378f4822a3",
+      "line_count": 237
+    },
+    "src/app_level/503C10.c": {
+      "git_blob": "85836484265173a036436390ddcc8961b9e8068b",
+      "sha256": "93549b82330d717e583d71c4628340c0f3b375e652492e9847dc79a0df78ae7a",
+      "line_count": 357
+    },
+    "src/app_level/pokemon.c": {
+      "git_blob": "ae1c70da4afc4b671a9bc8b15a3e3a3d592dcf4e",
+      "sha256": "fbe4a72f02d711dbd8e57f1b82cc1767c852c87e38abc15d352f60d174e17181",
+      "line_count": 2348
+    }
+  },
+  "semantic_origins": [
+    {
+      "path": "src/app_level/app_level.h",
+      "first": 11,
+      "last": 22,
+      "source_sha256": "295096a13541f57a4bdbb35b91aba9a3866f625d3031a8d61508659a43397467"
+    },
+    {
+      "path": "include/sys/gtl.h",
+      "first": 21,
+      "last": 61,
+      "source_sha256": "a133df25459abce388ff41c3b643c633db7c225db3e8bfb207ab5f7ac5a51225"
+    },
+    {
+      "path": "include/sys/vi.h",
+      "first": 7,
+      "last": 15,
+      "source_sha256": "4760c2112cd0fcdb02bc2fac8d6cb5f42e224f484593f83ef181411c11285728"
+    }
+  ],
+  "ownership": {
+    "course_id": 3,
+    "canonical_record": "IsleRiverActorSource.base first; fixed address before Game, Source data/BSS once; lifecycle borrows actors, no mutable mirror",
+    "initialized_storage": [
+      {
+        "symbol": "D_802E2620_6CA400",
+        "native_type": "uint8_t",
+        "Source": "src/river/6C05E0.c:9-9"
+      },
+      {
+        "symbol": "D_802E28B4_6CA694",
+        "native_type": "int32_t",
+        "Source": "src/river/6C05E0.c:12-12"
+      },
+      {
+        "symbol": "D_802E4B90_6CC970",
+        "native_type": "float",
+        "Source": "src/river/6C05E0.c:21-21"
+      },
+      {
+        "symbol": "D_802E29D0_6CA7B0",
+        "native_type": "uint32_t",
+        "Source": "src/river/6C1090.c:4-4"
+      },
+      {
+        "symbol": "D_802E2BBC_6CA99C",
+        "native_type": "IsleGameVec3",
+        "Source": "src/river/6C1300.c:22-22"
+      },
+      {
+        "symbol": "D_802E32DC_6CB0BC",
+        "native_type": "IsleGameVec3",
+        "Source": "src/river/6C2E80.c:27-27"
+      },
+      {
+        "symbol": "D_802E3308_6CB0E8",
+        "native_type": "IsleGameVec3",
+        "Source": "src/river/6C2E80.c:28-28"
+      },
+      {
+        "symbol": "D_802E364C_6CB42C",
+        "native_type": "IsleGameVec3",
+        "Source": "src/river/6C3980.c:31-31"
+      },
+      {
+        "symbol": "D_802E3658_6CB438",
+        "native_type": "IsleGameVec3",
+        "Source": "src/river/6C3980.c:32-32"
+      },
+      {
+        "symbol": "D_802E3664_6CB444",
+        "native_type": "IsleGameVec3",
+        "Source": "src/river/6C3980.c:33-33"
+      },
+      {
+        "symbol": "D_802E3C88_6CBA68",
+        "native_type": "IsleGameVec3",
+        "Source": "src/river/6C4EC0.c:44-44"
+      },
+      {
+        "symbol": "D_802E3C94_6CBA74",
+        "native_type": "IsleRiverKeep9",
+        "Source": "src/river/6C4EC0.c:45-45"
+      },
+      {
+        "symbol": "D_802E4B00_6CC8E0",
+        "native_type": "IsleGameObject*",
+        "Source": "src/river/6C4EC0.c:47-47"
+      },
+      {
+        "symbol": "D_802E3DA0_6CBB80",
+        "native_type": "int32_t",
+        "Source": "src/river/6C66E0.c:12-12"
+      },
+      {
+        "symbol": "D_802E4230_6CC010",
+        "native_type": "IsleGameObject*",
+        "Source": "src/river/6C7450.c:10-10"
+      },
+      {
+        "symbol": "D_802E4470_6CC250",
+        "native_type": "int32_t",
+        "Source": "src/river/6C7E50.c:20-20"
+      },
+      {
+        "symbol": "D_802E4474_6CC254",
+        "native_type": "uint32_t",
+        "Source": "src/river/6C7E50.c:21-21"
+      },
+      {
+        "symbol": "D_802E4498_6CC278",
+        "native_type": "IsleRiverKeep3",
+        "Source": "src/river/6C7E50.c:23-23"
+      },
+      {
+        "symbol": "D_802E4A60_6CC840",
+        "native_type": "float",
+        "Source": "src/river/6C86E0.c:25-25"
+      },
+      {
+        "symbol": "D_802E4AF4_6CC8D4",
+        "native_type": "float[3]",
+        "Source": "src/river/6C9680.c:15-15"
+      },
+      {
+        "symbol": "D_802E4B04_6CC8E4",
+        "native_type": "IsleGameObject*",
+        "Source": "src/river/6C9680.c:17-17"
+      },
+      {
+        "symbol": "D_802E4B08_6CC8E8",
+        "native_type": "int32_t",
+        "Source": "src/river/6C9680.c:19-19"
+      },
+      {
+        "symbol": "D_802E4B0C_6CC8EC",
+        "native_type": "float",
+        "Source": "src/river/6C9680.c:20-20"
+      },
+      {
+        "symbol": "D_802E4B10_6CC8F0",
+        "native_type": "float",
+        "Source": "src/river/6C9680.c:21-21"
+      },
+      {
+        "symbol": "D_802E4B80_6CC960",
+        "native_type": "int32_t",
+        "Source": "src/river/6C9EB0.c:9-9"
+      },
+      {
+        "symbol": "D_802E4B84_6CC964",
+        "native_type": "IsleGameObject*",
+        "Source": "src/river/6C9EB0.c:10-10"
+      },
+      {
+        "symbol": "D_8012ACA0_29AD70",
+        "native_type": "float",
+        "Source": "src/river/river.h:10-10"
+      },
+      {
+        "symbol": "D_802E28AC_6CA68C",
+        "native_type": "uint16_t",
+        "Source": "src/river/river.h:12-12"
+      },
+      {
+        "symbol": "D_802E28B0_6CA690",
+        "native_type": "uint16_t",
+        "Source": "src/river/river.h:13-13"
+      }
+    ],
+    "bss_storage": [
+      {
+        "symbol": "D_8033F500_7272E0",
+        "source_type": "u8",
+        "extent": [
+          "0xC8"
+        ],
+        "Source": "src/river/6C4EC0.c:50-50"
+      },
+      {
+        "symbol": "D_8033F5C8_7273A8",
+        "source_type": "GObj*",
+        "extent": [],
+        "Source": "src/river/6C4EC0.c:51-51"
+      },
+      {
+        "symbol": "D_8033F5CC_7273AC",
+        "source_type": "u32",
+        "extent": [],
+        "Source": "src/river/6C4EC0.c:52-52"
+      },
+      {
+        "symbol": "D_8033F5D0_7273B0",
+        "source_type": "u8",
+        "extent": [
+          "0xA0"
+        ],
+        "Source": "src/river/6C4EC0.c:53-53"
+      },
+      {
+        "symbol": "D_8033F670_7272E0",
+        "source_type": "u8",
+        "extent": [
+          "0x8"
+        ],
+        "Source": "src/river/6C9680.c:24-24"
+      },
+      {
+        "symbol": "D_8033F678_727458",
+        "source_type": "GObj*",
+        "extent": [],
+        "Source": "src/river/6C9680.c:25-25"
+      },
+      {
+        "symbol": "D_8033F67C_72745C",
+        "source_type": "u32",
+        "extent": [],
+        "Source": "src/river/6C9680.c:26-26"
+      },
+      {
+        "symbol": "D_8033F680_727460",
+        "source_type": "u8",
+        "extent": [],
+        "Source": "src/river/6C9680.c:27-27"
+      },
+      {
+        "symbol": "D_8033F681_727461",
+        "source_type": "u8",
+        "extent": [],
+        "Source": "src/river/6C9680.c:28-28"
+      },
+      {
+        "symbol": "D_8033F690_7272E0",
+        "source_type": "u8",
+        "extent": [
+          "0x8"
+        ],
+        "Source": "src/river/6C9EB0.c:13-13"
+      },
+      {
+        "symbol": "D_8033F698_727478",
+        "source_type": "u8",
+        "extent": [],
+        "Source": "src/river/6C9EB0.c:14-14"
+      },
+      {
+        "symbol": "D_8033F699_727479",
+        "source_type": "u8",
+        "extent": [],
+        "Source": "src/river/6C9EB0.c:15-15"
+      },
+      {
+        "symbol": "D_8033F69A_72747A",
+        "source_type": "u16",
+        "extent": [],
+        "Source": "src/river/6C9EB0.c:16-16"
+      },
+      {
+        "symbol": "D_8033F69C_72747C",
+        "source_type": "u32",
+        "extent": [],
+        "Source": "src/river/6C9EB0.c:17-17"
+      },
+      {
+        "symbol": "D_8033F6A0_727480",
+        "source_type": "u8",
+        "extent": [
+          "0x10"
+        ],
+        "Source": "src/river/6C9EB0.c:18-18"
+      }
+    ],
+    "native_retirement_clear_registered_object_globals": [
+      "D_802E4B00_6CC8E0",
+      "D_802E4230_6CC010",
+      "D_802E4B04_6CC8E4",
+      "D_802E4B84_6CC964",
+      "D_8033F5C8_7273A8",
+      "D_8033F678_727458"
+    ],
+    "context": "Parent canonical Player Root -> ActorOwner -> typed course record. Callback receiver can be Actor, helper, Item/collision or actual Player/model; never require Actor payload for every lookup.",
+    "factory_context_only": [
+      "func_802DE9C0_6C67A0",
+      "func_802E2084_6C9E64"
+    ],
+    "factory_error_fence": "isle_actor_source_factory_checked(block,blockB,spawn,result) after native_factory_context returns; validates actual caller tickets and Player C fence; true successful allocation NULL remains NULL.",
+    "activation": "Validate complete immutable typed services and native_admission(s, proposedGame, proposedServices) BEFORE pointer publication; ACTIVE last, already-active same real Game/services admission; no fake ACTIVE staging.",
+    "lifecycle": "Distinct stable owner/domain/status/live C fence; complete_scene validates independent owner real join receipt after actors DETACHED; no stale Player/Game lookup before Game or after detachment; STOPPED never completed/output success.",
+    "source_rng": "Direct Source randRange sites retain their original call count/order using real shared application RNG. Signed13lists still use actual Pokemon_SetStateRandom; counted3outcome list is indexed exactly by Source with u8 weights and no sentinel interpretation.",
+    "automatic_stack": "8 copied PokemonDef singletons and3 copied fixed graph aggregates remain per-call C continuation locals across waits; no warm global scratch or invented guest identity.",
+    "sequential_materials": "Exact two-node families at init802e454c,45dc,466c retain distinct resources and actual first/stop headers, original ordinary SetAnimation calls, .7/0 clocks only. No arbitrary seek/reset permission.",
+    "null_initial_setup": "Init802e3ea4 initial header remains0; later802e3e04,3e18,3e2c preserved; not permanently animation-disabled.",
+    "registry": "Existing catalog Source24 main rows plus all-zero terminal; both genuine1003 rows retained.8 singleton tuples and exact automatic copies remain separate origins.",
+    "shared_original_helper_required": {
+      "symbol": "func_8035E1D4_4FE5E4",
+      "selector": "src/app_level/4FE330.c:143-154",
+      "abi": "IsleGameObject*(IsleGameObject*)",
+      "owner": "Parent shared actor-control importer; no native substitute/duplicate global definition"
+    },
+    "shared_private_original_variants": [
+      "src/sys/vector.c:18-20",
+      "src/sys/vector.c:304-312",
+      "src/app_level/4FE330.c:130-141"
+    ],
+    "custom_render_source_definitions": 0,
+    "custom_render_rule": "No own River function selector defines custom render. Existing admitted resources/common actual GBI callbacks remain parent presentation responsibility; hierarchy classification alone is not execution.",
+    "automatic_records": [
+      {
+        "function": "func_802D8A48_6C0828",
+        "source_file": "src/river/6C05E0.c",
+        "declaration_line": 91,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E28B8_6CA698",
+        "source_selector": "src/river/6C05E0.c:91-91"
+      },
+      {
+        "function": "func_802D8B34_6C0914",
+        "source_file": "src/river/6C05E0.c",
+        "declaration_line": 122,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E28C8_6CA6A8",
+        "source_selector": "src/river/6C05E0.c:122-122"
+      },
+      {
+        "function": "func_802D8C24_6C0A04",
+        "source_file": "src/river/6C05E0.c",
+        "declaration_line": 152,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E28D8_6CA6B8",
+        "source_selector": "src/river/6C05E0.c:152-152"
+      },
+      {
+        "function": "func_802D8CF0_6C0AD0",
+        "source_file": "src/river/6C05E0.c",
+        "declaration_line": 181,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E28E8_6CA6C8",
+        "source_selector": "src/river/6C05E0.c:181-181"
+      },
+      {
+        "function": "func_802D8DC4_6C0BA4",
+        "source_file": "src/river/6C05E0.c",
+        "declaration_line": 211,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E28F8_6CA6D8",
+        "source_selector": "src/river/6C05E0.c:211-211"
+      },
+      {
+        "function": "func_802DA9E0_6C27C0",
+        "source_file": "src/river/6C27C0.c",
+        "declaration_line": 27,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E3008_6CADE8",
+        "source_selector": "src/river/6C27C0.c:27-27"
+      },
+      {
+        "function": "func_802DAACC_6C28AC",
+        "source_file": "src/river/6C27C0.c",
+        "declaration_line": 59,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E3018_6CADF8",
+        "source_selector": "src/river/6C27C0.c:59-59"
+      },
+      {
+        "function": "func_802DD2BC_6C509C",
+        "source_file": "src/river/6C4EC0.c",
+        "declaration_line": 133,
+        "type": "InteractionHandler3",
+        "name": "sp20",
+        "copied_singleton": "D_802E3C28_6CBA08",
+        "source_selector": "src/river/6C4EC0.c:133-133"
+      },
+      {
+        "function": "func_802DD398_6C5178",
+        "source_file": "src/river/6C4EC0.c",
+        "declaration_line": 148,
+        "type": "InteractionHandler3",
+        "name": "sp20",
+        "copied_singleton": "D_802E3C58_6CBA38",
+        "source_selector": "src/river/6C4EC0.c:148-148"
+      },
+      {
+        "function": "func_802DFF94_6C7D74",
+        "source_file": "src/river/6C7CD0.c",
+        "declaration_line": 29,
+        "type": "PokemonDef",
+        "name": "def",
+        "copied_singleton": "D_802E440C_6CC1EC",
+        "source_selector": "src/river/6C7CD0.c:29-29"
+      },
+      {
+        "function": "func_802E1678_6C9458",
+        "source_file": "src/river/6C86E0.c",
+        "declaration_line": 407,
+        "type": "InteractionHandler2",
+        "name": "sp18",
+        "copied_singleton": null,
+        "source_selector": "src/river/6C86E0.c:407-407"
+      }
+    ],
+    "file_local_without_guest_identity": [
+      {
+        "function": "nullsub2",
+        "selector": "src/river/6C86E0.c:335-336",
+        "reason": "Unused file-local empty Source definition; no emitted/qualified callable guest identity. Materialized exact body privately; never bound to guessed global nullsub alias."
+      },
+      {
+        "function": "nullsub",
+        "selector": "src/river/6C86E0.c:447-448",
+        "reason": "Unused file-local empty Source definition; no emitted/qualified callable guest identity. Materialized exact body privately; never bound to guessed global nullsub alias."
+      }
+    ],
+    "automatic_spawn_fields": {
+      "six_helpers": {
+        "written_fields": "0x3ff",
+        "writes": [
+          "id",
+          "translation.xyz",
+          "euler.xyz",
+          "scale.xyz"
+        ]
+      },
+      "func_802DA9E0_6C27C0_and_func_802DAACC_6C28AC": {
+        "written_fields": "0x7ff",
+        "additional_write": "path=pokemon->path"
+      },
+      "behavior": "Unwritten by all8helpers. No0/default authority. Native actual ticket policy/read-before-write proof required; exact query local://river-actor-automatic-unwritten-queries.json."
+    },
+    "automatic_unwritten_prerequisite": "Parent must resolve actual Source-unwritten behavior (all8) and path (6); do not read uninitialized C data or invent successful defaults. SourceForwarder503C10 passes unchanged; Pokemon.c2213/2215 consumes; Shellder initial state branches before override. All original branches remain materialized.",
+    "shared_original_player_dependencies": [
+      {
+        "symbol": "Camera_StartCutScene",
+        "identity": 2150985968,
+        "source_path": "src/app_level/player.c",
+        "first": 2601,
+        "last": 2603,
+        "source_sha256": "c875e008705df5e84157901a4809f7c6d07aaa9b14edff23d0bb2231353124de",
+        "native_sha256": "d5e10644e1073f2aefb61f92503c207e48065dc305389d91644e2ebe93fa8c83",
+        "native_declaration": "void isle_player_Camera_StartCutScene(IslePlayerSource* player, IsleGameObject* pokemon, const IslePlayerCameraAnimationClip* camAnim, float time)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "func_803570B0_4F74C0",
+        "identity": 2150985904,
+        "source_path": "src/app_level/player.c",
+        "first": 2592,
+        "last": 2599,
+        "source_sha256": "6b80ca29ce3a7da7fc0f704b26b7fb35fc0645df7a0c70b1c469515030adacff",
+        "native_sha256": "e30fdacebc517f968bbbc56fc103795f20338d1ba750e895e360a21af625911a",
+        "native_declaration": "void isle_player_func_803570B0_4F74C0(IslePlayerSource* player)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "func_80357120_4F7530",
+        "identity": 2150986016,
+        "source_path": "src/app_level/player.c",
+        "first": 2605,
+        "last": 2609,
+        "source_sha256": "8bf15bc7b75bc7a1aff60b21503aa7d3df6383ea6070af1342088dd3ff268807",
+        "native_sha256": "f9fe282575a82715c7c6d94ad4038407f7e5aa9f66fd3aae60a46eb748d211f2",
+        "native_declaration": "void isle_player_func_80357120_4F7530(IslePlayerSource* player, IsleGameObject* arg0)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "func_80357150_4F7560",
+        "identity": 2150986064,
+        "source_path": "src/app_level/player.c",
+        "first": 2611,
+        "last": 2613,
+        "source_sha256": "fceaf55c8eb18c7d2d7b9aebbc090a558657e71b581607c70610ff78b755dc8c",
+        "native_sha256": "42e7857ac4a35916bcf9c000d27b3f6dc537ebab4ba43dc6ea85f9d11e5a9988",
+        "native_declaration": "void isle_player_func_80357150_4F7560(IslePlayerSource* player, IsleGameObject* arg0)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "func_80357170_4F7580",
+        "identity": 2150986096,
+        "source_path": "src/app_level/player.c",
+        "first": 2615,
+        "last": 2623,
+        "source_sha256": "822833d62c695f46e311167ad292c77fc7ba1883038efa0cec492201d9e79cf2",
+        "native_sha256": "1c659cbe93afed5470b792b4def5f2d402cd80e29c16cdf7a7703b2bae42c155",
+        "native_declaration": "void isle_player_func_80357170_4F7580(IslePlayerSource* player)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "func_803571C4_4F75D4",
+        "identity": 2150986180,
+        "source_path": "src/app_level/player.c",
+        "first": 2625,
+        "last": 2635,
+        "source_sha256": "400c19e2b911556d2da763eed1cb05943206392f874c6e572e7ab9807dcb4d01",
+        "native_sha256": "32bb36d4f8b04a21afb7feb7c6acab2e44e53217859b0f1d59034510c9bb9cb9",
+        "native_declaration": "void isle_player_func_803571C4_4F75D4(IslePlayerSource* player)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "func_803572B0_4F76C0",
+        "identity": 2150986416,
+        "source_path": "src/app_level/player.c",
+        "first": 2643,
+        "last": 2654,
+        "source_sha256": "f37cd8dfc8d0dc260729edd59856e9f466e54469a1e5a0656286095cce95760b",
+        "native_sha256": "becd6095a0fd5b7369254b6d17e3d4137754b8251946764caeeeffc3f348a49a",
+        "native_declaration": "void isle_player_func_803572B0_4F76C0(IslePlayerSource* player)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "getLevelProgress",
+        "identity": 2150986628,
+        "source_path": "src/app_level/player.c",
+        "first": 2660,
+        "last": 2663,
+        "source_sha256": "2cc9c974650a4de0fb06ab2c48d52c0fbe7d81e0f8d9cc2cf6fd7ebdd046aff7",
+        "native_sha256": "c0624a95486812a1865f11c08ead853a1963fb983805cc17e96c4ae65fac30f5",
+        "native_declaration": "void isle_player_getLevelProgress(IslePlayerSource* player, int32_t* blockCount, float* blockPart)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "resetMainCameraSettings",
+        "identity": 2150986684,
+        "source_path": "src/app_level/player.c",
+        "first": 2673,
+        "last": 2677,
+        "source_sha256": "e49e8a3db7ba6ea15c66f3815dac77b9461c8aa780fffbb7fb51a67ee656b847",
+        "native_sha256": "9c691b6884b91a7165a4f8cbf62ec168276f37c598dd94f9c95149b21cb48e88",
+        "native_declaration": "void isle_player_resetMainCameraSettings(IslePlayerSource* player)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      },
+      {
+        "symbol": "setBackgroundMusic",
+        "identity": 2150959072,
+        "source_path": "src/app_level/player.c",
+        "first": 339,
+        "last": 341,
+        "source_sha256": "7d95e40dcb6f42c0892d1e4f322bbf087ae099b7de64c26356c25b570b032872",
+        "native_sha256": "d0ae7748d883f6bf24720f828a9c049a87b3c7641da43e50c5779640182db69b",
+        "native_declaration": "void isle_player_setBackgroundMusic(IslePlayerSource* player, int32_t songID)",
+        "provider_manifest": "cmake/player-root-inputs.json",
+        "rule": "Invoke exact compiled Original C from C after canonical ACTIVE-only Player context; no C++ reimplementation or GObj callback cast."
+      }
+    ],
+    "player_context_rule": "Both bridges resolve the actual canonical ACTIVE-only Player Source per C call; no stored old Player/Game borrow. Shared Player Root bodies run directly as compiled Original C, not native C++ replacements.",
+    "qualified_initial_numeric_fields": {
+      "authority": "local://qualified-638z-river-initial-fields-and-static-spawns.tsv",
+      "sha256": "bdccf373315301dfa6e1d257d0bce37b1af9e3915c701124a608cc98e536cd2f",
+      "actor_field_count": 55,
+      "lifecycle_field_count": 228,
+      "requested_fields_covered": 283,
+      "all_four_initialized_object_camera_words": "Qualified genuine0/semanticNULL; Source BSS separate and no ROM-query mirror",
+      "decoder": "Pure returning C generated readers compare exact width1/2/4 big-endian bit patterns before prepare mutates fixed Source records; f32 raw bits retained, no float decimal roundtrip."
+    },
+    "shared_original_actor_dependencies": [
+      {
+        "symbol": "func_8035E174_4FE584",
+        "identity": 2151014772,
+        "source_path": "src/app_level/4FE330.c",
+        "first": 130,
+        "last": 141,
+        "source_sha256": "1c3b660c29083e0805c74c403ea21f89e75d929c2882789e75191dd454c6aefe",
+        "native_declaration": "void func_8035E174_4FE584(IsleGameObject*, IsleGameVec3*)",
+        "native_sha256": "fc3f825c27931ecbc0fccb17f0b126230d67e216ddf7fde2ea9ad54b97f8f6f7",
+        "abi_role": "vector_utility",
+        "provider_manifest": "cmake/actor-control-inputs.json",
+        "status": "Existing actual compiled shared Source"
+      },
+      {
+        "symbol": "func_8035E298_4FE6A8",
+        "identity": 2151015064,
+        "source_path": "src/app_level/4FE330.c",
+        "first": 175,
+        "last": 195,
+        "source_sha256": "fd42b2212ecab5a57afb7374d6821cd74260ad9eda37be906d5d29b92262cc3b",
+        "native_declaration": "void func_8035E298_4FE6A8(IsleGameObject*)",
+        "native_sha256": "e335c41679006586f0e9030607504442d6ac60582ea267eb1dc009513ab8e993",
+        "abi_role": "gobj_callback",
+        "provider_manifest": "cmake/actor-control-inputs.json",
+        "status": "Existing actual compiled shared Source"
+      },
+      {
+        "symbol": "func_8035E1D4_4FE5E4",
+        "identity": 2151014868,
+        "source_path": "src/app_level/4FE330.c",
+        "first": 143,
+        "last": 154,
+        "source_sha256": "1e70b84d394399e46a72b4adec2e09d7a785787b574013219eaeaae15436c8a5",
+        "native_declaration": "IsleGameObject* func_8035E1D4_4FE5E4(IsleGameObject*)",
+        "native_sha256": null,
+        "abi_role": "returning_gobj_utility",
+        "provider_manifest": "cmake/actor-control-inputs.json",
+        "status": "Parent adds exact Original C selector; no native substitute"
+      }
+    ],
+    "lifecycle_completion_control": {
+      "scene_initialized": "Set once only after returning C-fenced successful actual Original post-init, never on intent or fake ACTIVE; repeated invoke_init rejects.",
+      "live_callbacks": "Generic nonwaiting lifecycle callback invokers require ACTIVE actual Game and canonical Player. Independent run/request/failure paths use their own domain/fence, not actor fence.",
+      "pre_Game_failure": "complete_scene(nonOK) accepts never-activated PREPARED actors only with NULL Game/services and independent-owner actual partial/no-Game join receipt; failure remains first-fault/STOPPED, no original-success output.",
+      "healthy_completion": "Requires DETACHED, real Original post-init witness, retained native full join receipt, no active Source/C frames and OK source/caller result.",
+      "stale_borrows": "No stored Player source; active helper resolves canonical Player per call. PreGame/postDetach checked/completion only touch independent records/owner receipt."
+    },
+    "generated_native_helpers": {
+      "actor_five_argument_adapters": 20,
+      "actor_numeric_admission_reader": 1,
+      "lifecycle_numeric_admission_reader": 1,
+      "actor_pure_vector_value_to_original_pointer_ABI_wrapper": 1,
+      "not_Original_selector_counts": "These transport helpers are separate from285 Original C selectors; no claimed Original Source body for the wrappers."
+    }
+  },
+  "native_support": {
+    "src/river_actor_source.h": {
+      "sha256": "fbcf6acde3bc57fffc880eb683d935a0f2c058385b3cefa65fa4409b3d31f367"
+    },
+    "src/river_actor_source.c": {
+      "sha256": "41cbe12985f1de4760d6d7cac6b576130806910095bb08df755cc233ae84893d"
+    },
+    "src/river_actor.hpp": {
+      "sha256": "200afa1506d9569d736cd9265f6b560c6c2b514fba2606a4c136faa8f771fc7c"
+    },
+    "src/river_actor.cpp": {
+      "sha256": "78f988dc359330e748102c056b31b87d65fe1cd8e98e079771de7d3d20581ccc"
+    },
+    "src/river_lifecycle_source.h": {
+      "sha256": "f5a14ff14182d1ee64040dd52690b6ee6250abea47cc84522ad21971d6e62bcb"
+    },
+    "src/river_lifecycle_source.c": {
+      "sha256": "a38e17bd09bce837049946720a26f901391b908233bb6de2f90dcfaa5142ab06"
+    },
+    "src/course_actor_source.h": {
+      "sha256": "e642f3b7333ac8f0d42b50467b309d87073bbdd5dca842101e73045ffddd3522"
+    },
+    "src/course_actor_source.c": {
+      "sha256": "e6fbef2ed7f926d64e5f0492dbac2ec25ed15636c51706b7a44d8b95c552e24e"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/actor_owner_source.h": {
+      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "src/source_command_scope.h": {
+      "sha256": "acd9a7312afe5129efcd6e495aa827de1ae667f3810cbe5fba5c3989516a3160"
+    },
+    "src/player_source.h": {
+      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"
+    },
+    "include/35mmisle/rng.h": {
+      "sha256": "31f84c6dd4ba8578f35e7ad3b29e183a7197b84fa98fd83e10dd4ccf69c60c29"
+    },
+    "tools/prepare_engine.py": {
+      "sha256": "bf0ecd0c670c55c2fc38ea5d147669f36267058eb52b6150b270d6bf31932ca0"
+    },
+    "src/player_root_source.h": {
+      "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"
+    },
+    "src/player_root_source.c": {
+      "sha256": "4af092e1a34bf5220f41a2eb1eb7d6c39bd2032d11bdc835090ac8a9cb5a8e93"
+    },
+    "cmake/actor-control-inputs.json": {
+      "sha256": "c738d589b54a4cbb4fa4247fd685ee868a556bf875526c0bc599df4cc1974b71"
+    },
+    "cmake/player-root-inputs.json": {
+      "sha256": "20204de0ca2c6152268f63e229c0cf9e888eaad87e76f97be2fca49fc81c1168"
+    }
+  },
+  "typed_services": {
+    "actor": [
+      {
+        "name": "reference_assign",
+        "signature": "IsleGameResult (*reference_assign)(IsleRiverActorSource*, IsleGameObject**, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject**",
+            "field"
+          ],
+          [
+            "IsleGameObject*",
+            "value"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "model",
+        "signature": "IsleGameResult (*model)(IsleRiverActorSource*, IsleGameObject*, IsleGameModelRef*);",
+        "native_value_result": "IsleGameModelRef",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "model_read",
+        "signature": "IsleGameResult (*model_read)(IsleRiverActorSource*, IsleGameModelRef, const IsleGameModelTransform**);",
+        "native_value_result": "const IsleGameModelTransform*",
+        "arguments": [
+          [
+            "IsleGameModelRef",
+            "model"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "model_store",
+        "signature": "IsleGameResult (*model_store)(IsleRiverActorSource*, IsleGameModelRef, uint32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameModelRef",
+            "model"
+          ],
+          [
+            "uint32_t",
+            "component"
+          ],
+          [
+            "float",
+            "value"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "root_position",
+        "signature": "IsleGameResult (*root_position)(IsleRiverActorSource*, IsleGameModelRef, IsleGameVec3*);",
+        "native_value_result": "IsleGameVec3",
+        "arguments": [
+          [
+            "IsleGameModelRef",
+            "model"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "root_store",
+        "signature": "IsleGameResult (*root_store)(IsleRiverActorSource*, IsleGameModelRef, uint32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameModelRef",
+            "model"
+          ],
+          [
+            "uint32_t",
+            "component"
+          ],
+          [
+            "float",
+            "value"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "node_descend",
+        "signature": "IsleGameResult (*node_descend)(IsleRiverActorSource*, IsleGameModelRef, const uint8_t*, size_t, IsleActorNodeRef*);",
+        "native_value_result": "IsleActorNodeRef",
+        "arguments": [
+          [
+            "IsleGameModelRef",
+            "model"
+          ],
+          [
+            "const uint8_t*",
+            "steps"
+          ],
+          [
+            "size_t",
+            "count"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "node_world",
+        "signature": "IsleGameResult (*node_world)(IsleRiverActorSource*, IsleActorNodeRef, IsleGameVec3*, IsleGameVec3*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleActorNodeRef",
+            "node"
+          ],
+          [
+            "IsleGameVec3*",
+            "position"
+          ],
+          [
+            "IsleGameVec3*",
+            "velocity"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "current_block",
+        "signature": "IsleGameResult (*current_block)(IsleRiverActorSource*, IsleRiverBlock**);",
+        "native_value_result": "IsleRiverBlock*",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "block_position",
+        "signature": "IsleGameResult (*block_position)(IsleRiverActorSource*, IsleRiverBlock*, IsleGameVec3*);",
+        "native_value_result": "IsleGameVec3",
+        "arguments": [
+          [
+            "IsleRiverBlock*",
+            "block"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "path_count",
+        "signature": "IsleGameResult (*path_count)(IsleRiverActorSource*, const void*, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [
+          [
+            "const void*",
+            "path"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "path_duration",
+        "signature": "IsleGameResult (*path_duration)(IsleRiverActorSource*, const void*, float*);",
+        "native_value_result": "float",
+        "arguments": [
+          [
+            "const void*",
+            "path"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "path_parameter",
+        "signature": "IsleGameResult (*path_parameter)(IsleRiverActorSource*, const void*, int32_t, float*);",
+        "native_value_result": "float",
+        "arguments": [
+          [
+            "const void*",
+            "path"
+          ],
+          [
+            "int32_t",
+            "index"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "path_point",
+        "signature": "IsleGameResult (*path_point)(IsleRiverActorSource*, const void*, int32_t, const IsleGameVec3**);",
+        "native_value_result": "const IsleGameVec3*",
+        "arguments": [
+          [
+            "const void*",
+            "path"
+          ],
+          [
+            "int32_t",
+            "index"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "item",
+        "signature": "IsleGameResult (*item)(IsleRiverActorSource*, IsleGameObject*, const IsleRiverItemView**);",
+        "native_value_result": "const IsleRiverItemView*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_object",
+        "signature": "IsleGameResult (*player_object)(IsleRiverActorSource*, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_model",
+        "signature": "IsleGameResult (*player_model)(IsleRiverActorSource*, IsleGameModelRef*);",
+        "native_value_result": "IsleGameModelRef",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "rng_range",
+        "signature": "IsleGameResult (*rng_range)(IsleRiverActorSource*, int32_t, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [
+          [
+            "int32_t",
+            "range"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "weighted",
+        "signature": "IsleGameResult (*weighted)(IsleRiverActorSource*, IsleGameObject*, uint32_t, const IsleActorRandomState**);",
+        "native_value_result": "const IsleActorRandomState*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "receiver"
+          ],
+          [
+            "uint32_t",
+            "identity"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "counted_options",
+        "signature": "IsleGameResult (*counted_options)(IsleRiverActorSource*, uint32_t, size_t*, const IsleRiverCountedOption**);",
+        "native_value_result": "const IsleRiverCountedOption*",
+        "arguments": [
+          [
+            "uint32_t",
+            "identity"
+          ],
+          [
+            "size_t*",
+            "count"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "graph",
+        "signature": "IsleGameResult (*graph)(IsleRiverActorSource*, IsleGameObject*, uint32_t, const IsleActorInteractionGraph**);",
+        "native_value_result": "const IsleActorInteractionGraph*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "receiver"
+          ],
+          [
+            "uint32_t",
+            "identity"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "add_one",
+        "signature": "IsleGameResult (*add_one)(IsleRiverActorSource*, IsleRiverBlock*, IsleRiverBlock*, const IsleRiverAutomaticSpawn*, const IsleRiverDefinition*, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [
+          [
+            "IsleRiverBlock*",
+            "a"
+          ],
+          [
+            "IsleRiverBlock*",
+            "b"
+          ],
+          [
+            "const IsleRiverAutomaticSpawn*",
+            "spawn"
+          ],
+          [
+            "const IsleRiverDefinition*",
+            "definition"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "ground",
+        "signature": "IsleGameResult (*ground)(IsleRiverActorSource*, float, float, IsleActorGround*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "float",
+            "x"
+          ],
+          [
+            "float",
+            "z"
+          ],
+          [
+            "IsleActorGround*",
+            "ground"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound",
+        "signature": "IsleGameResult (*sound)(IsleRiverActorSource*, int32_t, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [
+          [
+            "int32_t",
+            "id"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_params",
+        "signature": "IsleGameResult (*sound_params)(IsleRiverActorSource*, int32_t, int32_t, int32_t, float, int32_t, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [
+          [
+            "int32_t",
+            "id"
+          ],
+          [
+            "int32_t",
+            "volume"
+          ],
+          [
+            "int32_t",
+            "pan"
+          ],
+          [
+            "float",
+            "pitch"
+          ],
+          [
+            "int32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_active",
+        "signature": "IsleGameResult (*sound_active)(IsleRiverActorSource*, int32_t, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [
+          [
+            "int32_t",
+            "handle"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_stop",
+        "signature": "IsleGameResult (*sound_stop)(IsleRiverActorSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "handle"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_play",
+        "signature": "IsleGameResult (*bgm_play)(IsleRiverActorSource*, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "player"
+          ],
+          [
+            "int32_t",
+            "song"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_volume",
+        "signature": "IsleGameResult (*bgm_volume)(IsleRiverActorSource*, int32_t, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "player"
+          ],
+          [
+            "uint32_t",
+            "volume"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_volume_smooth",
+        "signature": "IsleGameResult (*bgm_volume_smooth)(IsleRiverActorSource*, int32_t, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "player"
+          ],
+          [
+            "int32_t",
+            "volume"
+          ],
+          [
+            "int32_t",
+            "frames"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_volume_smooth",
+        "signature": "IsleGameResult (*sound_volume_smooth)(IsleRiverActorSource*, int32_t, int32_t, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "handle"
+          ],
+          [
+            "int32_t",
+            "from"
+          ],
+          [
+            "int32_t",
+            "to"
+          ],
+          [
+            "int32_t",
+            "frames"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_global_volume",
+        "signature": "IsleGameResult (*sound_global_volume)(IsleRiverActorSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "volume"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "animation_speed",
+        "signature": "IsleGameResult (*animation_speed)(IsleRiverActorSource*, IsleGameObject*, float, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ],
+          [
+            "float",
+            "speed"
+          ],
+          [
+            "int32_t",
+            "materials"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "model_speed",
+        "signature": "IsleGameResult (*model_speed)(IsleRiverActorSource*, IsleGameModelRef, float*);",
+        "native_value_result": "float",
+        "arguments": [
+          [
+            "IsleGameModelRef",
+            "model"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera",
+        "signature": "IsleGameResult (*camera)(IsleRiverActorSource*, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_read",
+        "signature": "IsleGameResult (*camera_read)(IsleRiverActorSource*, IsleGameObject*, const IsleRiverCameraView**);",
+        "native_value_result": "const IsleRiverCameraView*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_store",
+        "signature": "IsleGameResult (*camera_store)(IsleRiverActorSource*, IsleGameObject*, uint32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "uint32_t",
+            "component"
+          ],
+          [
+            "float",
+            "value"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_speed",
+        "signature": "IsleGameResult (*camera_speed)(IsleRiverActorSource*, IsleGameObject*, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "float",
+            "speed"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_animation",
+        "signature": "IsleGameResult (*camera_animation)(IsleRiverActorSource*, IsleGameObject*, uint32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "uint32_t",
+            "identity"
+          ],
+          [
+            "float",
+            "start"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_process",
+        "signature": "IsleGameResult (*camera_process)(IsleRiverActorSource*, IsleGameObject*, int32_t, int32_t, IsleGameProcess**);",
+        "native_value_result": "IsleGameProcess*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "int32_t",
+            "kind"
+          ],
+          [
+            "int32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_model_init",
+        "signature": "IsleGameResult (*player_model_init)(IsleRiverActorSource*, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_animation",
+        "signature": "IsleGameResult (*player_animation)(IsleRiverActorSource*, uint32_t, uint32_t, float, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "model"
+          ],
+          [
+            "uint32_t",
+            "material"
+          ],
+          [
+            "float",
+            "start"
+          ],
+          [
+            "float",
+            "speed"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_change_animation",
+        "signature": "IsleGameResult (*player_change_animation)(IsleRiverActorSource*, uint32_t, uint32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "model"
+          ],
+          [
+            "uint32_t",
+            "material"
+          ],
+          [
+            "float",
+            "start"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_animation_speed",
+        "signature": "IsleGameResult (*player_animation_speed)(IsleRiverActorSource*, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "float",
+            "speed"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "animation_callback",
+        "signature": "IsleGameResult (*animation_callback)(IsleRiverActorSource*, IsleGameObject*, IsleRiverAnimationCallback);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "receiver"
+          ],
+          [
+            "IsleRiverAnimationCallback",
+            "callback"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "pause_processes",
+        "signature": "IsleGameResult (*pause_processes)(IsleRiverActorSource*, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "resume_processes",
+        "signature": "IsleGameResult (*resume_processes)(IsleRiverActorSource*, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sky_speed",
+        "signature": "IsleGameResult (*sky_speed)(IsleRiverActorSource*, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "float",
+            "speed"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "notice",
+        "signature": "IsleGameResult (*notice)(IsleRiverActorSource*, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "bits"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "progress_read",
+        "signature": "IsleGameResult (*progress_read)(IsleRiverActorSource*, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "progress_write",
+        "signature": "IsleGameResult (*progress_write)(IsleRiverActorSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "value"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "transition_prepare",
+        "signature": "IsleGameResult (*transition_prepare)(IsleRiverActorSource*, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "a"
+          ],
+          [
+            "int32_t",
+            "b"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "transition_color",
+        "signature": "IsleGameResult (*transition_color)(IsleRiverActorSource*, int32_t, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "r"
+          ],
+          [
+            "int32_t",
+            "g"
+          ],
+          [
+            "int32_t",
+            "b"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "transition_fade",
+        "signature": "IsleGameResult (*transition_fade)(IsleRiverActorSource*, int32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "direction"
+          ],
+          [
+            "float",
+            "duration"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "transition_active",
+        "signature": "IsleGameResult (*transition_active)(IsleRiverActorSource*, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "create_helper",
+        "signature": "IsleGameResult (*create_helper)(IsleRiverActorSource*, int32_t, IsleGameSourceCallback, int32_t, uint32_t, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [
+          [
+            "int32_t",
+            "id"
+          ],
+          [
+            "IsleGameSourceCallback",
+            "update"
+          ],
+          [
+            "int32_t",
+            "link"
+          ],
+          [
+            "uint32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "delete_object",
+        "signature": "IsleGameResult (*delete_object)(IsleRiverActorSource*, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "send_command",
+        "signature": "IsleGameResult (*send_command)(IsleRiverActorSource*, IsleGameObject*, int32_t, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "destination"
+          ],
+          [
+            "int32_t",
+            "command"
+          ],
+          [
+            "IsleGameObject*",
+            "sender"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "send_command_link",
+        "signature": "IsleGameResult (*send_command_link)(IsleRiverActorSource*, int32_t, int32_t, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "link"
+          ],
+          [
+            "int32_t",
+            "command"
+          ],
+          [
+            "IsleGameObject*",
+            "sender"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "distance",
+        "signature": "IsleGameResult (*distance)(IsleRiverActorSource*, IsleGameObject*, IsleGameObject*, float*);",
+        "native_value_result": "float",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "a"
+          ],
+          [
+            "IsleGameObject*",
+            "b"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_stop_all",
+        "signature": "IsleGameResult (*sound_stop_all)(IsleRiverActorSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_stop_all",
+        "signature": "IsleGameResult (*bgm_stop_all)(IsleRiverActorSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "remove_flying_items",
+        "signature": "IsleGameResult (*remove_flying_items)(IsleRiverActorSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "reset_messages",
+        "signature": "IsleGameResult (*reset_messages)(IsleRiverActorSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "audio_cutscene",
+        "signature": "IsleGameResult (*audio_cutscene)(IsleRiverActorSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "source_process",
+        "signature": "IsleGameResult (*source_process)(IsleRiverActorSource*, IsleGameObject*, IsleGameSourceCallback, int32_t, int32_t, IsleGameProcess**);",
+        "native_value_result": "IsleGameProcess*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ],
+          [
+            "IsleGameSourceCallback",
+            "callback"
+          ],
+          [
+            "int32_t",
+            "kind"
+          ],
+          [
+            "int32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "environment_sound",
+        "signature": "IsleGameResult (*environment_sound)(IsleRiverActorSource*, IsleGameObject*, uint8_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ],
+          [
+            "uint8_t",
+            "category"
+          ],
+          [
+            "int32_t",
+            "sound"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "definition",
+        "signature": "IsleGameResult (*definition)(IsleRiverActorSource*, uint32_t, uint32_t, uint32_t, IsleRiverDefinition*);",
+        "native_value_result": "IsleRiverDefinition",
+        "arguments": [
+          [
+            "uint32_t",
+            "identity"
+          ],
+          [
+            "uint32_t",
+            "function"
+          ],
+          [
+            "uint32_t",
+            "line"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "root_read",
+        "signature": "IsleGameResult (*root_read)(IsleRiverActorSource*, IsleGameModelRef, const IsleGameVec3**);",
+        "native_value_result": "const IsleGameVec3*",
+        "arguments": [
+          [
+            "IsleGameModelRef",
+            "model"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      }
+    ],
+    "lifecycle": [
+      {
+        "name": "sound_params",
+        "signature": "IsleGameResult (*sound_params)(IsleRiverLifecycleSource*, int32_t, int32_t, int32_t, float, int32_t, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [
+          [
+            "int32_t",
+            "id"
+          ],
+          [
+            "int32_t",
+            "volume"
+          ],
+          [
+            "int32_t",
+            "pan"
+          ],
+          [
+            "float",
+            "pitch"
+          ],
+          [
+            "int32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_active",
+        "signature": "IsleGameResult (*sound_active)(IsleRiverLifecycleSource*, int32_t, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [
+          [
+            "int32_t",
+            "handle"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_stop",
+        "signature": "IsleGameResult (*sound_stop)(IsleRiverLifecycleSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "handle"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sound_stop_all",
+        "signature": "IsleGameResult (*sound_stop_all)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_stop_all",
+        "signature": "IsleGameResult (*bgm_stop_all)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_play",
+        "signature": "IsleGameResult (*bgm_play)(IsleRiverLifecycleSource*, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "player"
+          ],
+          [
+            "int32_t",
+            "song"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_stop",
+        "signature": "IsleGameResult (*bgm_stop)(IsleRiverLifecycleSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "player"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_volume",
+        "signature": "IsleGameResult (*bgm_volume)(IsleRiverLifecycleSource*, int32_t, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "player"
+          ],
+          [
+            "uint32_t",
+            "volume"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "bgm_channel_volume",
+        "signature": "IsleGameResult (*bgm_channel_volume)(IsleRiverLifecycleSource*, int32_t, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "player"
+          ],
+          [
+            "int32_t",
+            "channel"
+          ],
+          [
+            "int32_t",
+            "volume"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera",
+        "signature": "IsleGameResult (*camera)(IsleRiverLifecycleSource*, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_read",
+        "signature": "IsleGameResult (*camera_read)(IsleRiverLifecycleSource*, IsleGameObject*, const IsleRiverCameraView**);",
+        "native_value_result": "const IsleRiverCameraView*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_store",
+        "signature": "IsleGameResult (*camera_store)(IsleRiverLifecycleSource*, IsleGameObject*, uint32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "uint32_t",
+            "component"
+          ],
+          [
+            "float",
+            "value"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_speed",
+        "signature": "IsleGameResult (*camera_speed)(IsleRiverLifecycleSource*, IsleGameObject*, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "float",
+            "speed"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_animation",
+        "signature": "IsleGameResult (*camera_animation)(IsleRiverLifecycleSource*, IsleGameObject*, uint32_t, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "uint32_t",
+            "identity"
+          ],
+          [
+            "float",
+            "start"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "camera_process",
+        "signature": "IsleGameResult (*camera_process)(IsleRiverLifecycleSource*, IsleGameObject*, int32_t, int32_t, IsleGameProcess**);",
+        "native_value_result": "IsleGameProcess*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "camera"
+          ],
+          [
+            "int32_t",
+            "kind"
+          ],
+          [
+            "int32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_model_init",
+        "signature": "IsleGameResult (*player_model_init)(IsleRiverLifecycleSource*, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "player_animation",
+        "signature": "IsleGameResult (*player_animation)(IsleRiverLifecycleSource*, uint32_t, uint32_t, float, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "model"
+          ],
+          [
+            "uint32_t",
+            "material"
+          ],
+          [
+            "float",
+            "start"
+          ],
+          [
+            "float",
+            "speed"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "animation_callback",
+        "signature": "IsleGameResult (*animation_callback)(IsleRiverLifecycleSource*, IsleGameObject*, IsleRiverLifecycleAnimationCallback);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "receiver"
+          ],
+          [
+            "IsleRiverLifecycleAnimationCallback",
+            "callback"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "create_helper",
+        "signature": "IsleGameResult (*create_helper)(IsleRiverLifecycleSource*, int32_t, IsleGameSourceCallback, int32_t, uint32_t, IsleGameObject**);",
+        "native_value_result": "IsleGameObject*",
+        "arguments": [
+          [
+            "int32_t",
+            "id"
+          ],
+          [
+            "IsleGameSourceCallback",
+            "update"
+          ],
+          [
+            "int32_t",
+            "link"
+          ],
+          [
+            "uint32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "delete_object",
+        "signature": "IsleGameResult (*delete_object)(IsleRiverLifecycleSource*, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "notice",
+        "signature": "IsleGameResult (*notice)(IsleRiverLifecycleSource*, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "bits"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "effect_create",
+        "signature": "IsleGameResult (*effect_create)(IsleRiverLifecycleSource*, int32_t, int32_t, IsleRiverEffect**);",
+        "native_value_result": "IsleRiverEffect*",
+        "arguments": [
+          [
+            "int32_t",
+            "bank"
+          ],
+          [
+            "int32_t",
+            "effect"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "effect_attach",
+        "signature": "IsleGameResult (*effect_attach)(IsleRiverLifecycleSource*, IsleRiverEffect*, const IsleActorNodeRef*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleRiverEffect*",
+            "effect"
+          ],
+          [
+            "const IsleActorNodeRef*",
+            "receiver"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "input_pressed",
+        "signature": "IsleGameResult (*input_pressed)(IsleRiverLifecycleSource*, uint16_t*);",
+        "native_value_result": "uint16_t",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "world_add",
+        "signature": "IsleGameResult (*world_add)(IsleRiverLifecycleSource*, IsleRiverBlock*, IsleRiverBlock*, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleRiverBlock*",
+            "a"
+          ],
+          [
+            "IsleRiverBlock*",
+            "b"
+          ],
+          [
+            "uint32_t",
+            "registry"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "world_change",
+        "signature": "IsleGameResult (*world_change)(IsleRiverLifecycleSource*, IsleRiverBlock*, IsleRiverBlock*, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleRiverBlock*",
+            "a"
+          ],
+          [
+            "IsleRiverBlock*",
+            "b"
+          ],
+          [
+            "uint32_t",
+            "registry"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "world_remove",
+        "signature": "IsleGameResult (*world_remove)(IsleRiverLifecycleSource*, IsleRiverBlock*, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleRiverBlock*",
+            "block"
+          ],
+          [
+            "uint32_t",
+            "registry"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "height_map",
+        "signature": "IsleGameResult (*height_map)(IsleRiverLifecycleSource*, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "identity"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "create_world",
+        "signature": "IsleGameResult (*create_world)(IsleRiverLifecycleSource*, uint32_t, int32_t, int32_t, int32_t, int32_t, int32_t, IsleRiverLifecycleWorldPair, IsleRiverLifecycleWorldSingle, IsleRiverLifecycleWorldPair);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "setup"
+          ],
+          [
+            "int32_t",
+            "sky"
+          ],
+          [
+            "int32_t",
+            "minimum"
+          ],
+          [
+            "int32_t",
+            "maximum"
+          ],
+          [
+            "int32_t",
+            "link"
+          ],
+          [
+            "int32_t",
+            "draw_link"
+          ],
+          [
+            "IsleRiverLifecycleWorldPair",
+            "add"
+          ],
+          [
+            "IsleRiverLifecycleWorldSingle",
+            "remove"
+          ],
+          [
+            "IsleRiverLifecycleWorldPair",
+            "change"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "sky_follow",
+        "signature": "IsleGameResult (*sky_follow)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "pokemon_registry",
+        "signature": "IsleGameResult (*pokemon_registry)(IsleRiverLifecycleSource*, int32_t, int32_t, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "a"
+          ],
+          [
+            "int32_t",
+            "b"
+          ],
+          [
+            "int32_t",
+            "c"
+          ],
+          [
+            "int32_t",
+            "d"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "transition_end",
+        "signature": "IsleGameResult (*transition_end)(IsleRiverLifecycleSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "reason"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "destroy_world",
+        "signature": "IsleGameResult (*destroy_world)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "environment_cleanup",
+        "signature": "IsleGameResult (*environment_cleanup)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "detector_disable",
+        "signature": "IsleGameResult (*detector_disable)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "remove_camera",
+        "signature": "IsleGameResult (*remove_camera)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "exit_scene",
+        "signature": "IsleGameResult (*exit_scene)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "course_cleanup",
+        "signature": "IsleGameResult (*course_cleanup)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "flute_command",
+        "signature": "IsleGameResult (*flute_command)(IsleRiverLifecycleSource*, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "block_next",
+        "signature": "IsleGameResult (*block_next)(IsleRiverLifecycleSource*, IsleRiverBlock*, IsleRiverBlock**);",
+        "native_value_result": "IsleRiverBlock*",
+        "arguments": [
+          [
+            "IsleRiverBlock*",
+            "block"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "block_position",
+        "signature": "IsleGameResult (*block_position)(IsleRiverLifecycleSource*, IsleRiverBlock*, IsleGameVec3*);",
+        "native_value_result": "IsleGameVec3",
+        "arguments": [
+          [
+            "IsleRiverBlock*",
+            "block"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "displace_items",
+        "signature": "IsleGameResult (*displace_items)(IsleRiverLifecycleSource*, float, float, float);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "float",
+            "x"
+          ],
+          [
+            "float",
+            "y"
+          ],
+          [
+            "float",
+            "z"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "load_asset",
+        "signature": "IsleGameResult (*load_asset)(IsleRiverLifecycleSource*, IsleRiverLifecycleAssetId, IsleRiverLifecycleAsset**);",
+        "native_value_result": "IsleRiverLifecycleAsset*",
+        "arguments": [
+          [
+            "IsleRiverLifecycleAssetId",
+            "asset"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "fx_bank",
+        "signature": "IsleGameResult (*fx_bank)(IsleRiverLifecycleSource*, int32_t, IsleRiverLifecycleAsset*, IsleRiverLifecycleAsset*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "bank"
+          ],
+          [
+            "IsleRiverLifecycleAsset*",
+            "script"
+          ],
+          [
+            "IsleRiverLifecycleAsset*",
+            "sprites"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "fx_camera",
+        "signature": "IsleGameResult (*fx_camera)(IsleRiverLifecycleSource*, int32_t, int32_t, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "a"
+          ],
+          [
+            "int32_t",
+            "b"
+          ],
+          [
+            "IsleGameObject*",
+            "camera"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "fx_allocate",
+        "signature": "IsleGameResult (*fx_allocate)(IsleRiverLifecycleSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "count"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "fx_dither",
+        "signature": "IsleGameResult (*fx_dither)(IsleRiverLifecycleSource*, int32_t, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "a"
+          ],
+          [
+            "int32_t",
+            "b"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "depth_allocate",
+        "signature": "IsleGameResult (*depth_allocate)(IsleRiverLifecycleSource*, uint32_t, uint32_t, void**);",
+        "native_value_result": "void*",
+        "arguments": [
+          [
+            "uint32_t",
+            "bytes"
+          ],
+          [
+            "uint32_t",
+            "alignment"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "screen",
+        "signature": "IsleGameResult (*screen)(IsleRiverLifecycleSource*, const IsleRiverLifecycleScreen*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "const IsleRiverLifecycleScreen*",
+            "screen"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "fx_bank_count",
+        "signature": "IsleGameResult (*fx_bank_count)(IsleRiverLifecycleSource*, size_t*);",
+        "native_value_result": "size_t",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "fx_bank_reset",
+        "signature": "IsleGameResult (*fx_bank_reset)(IsleRiverLifecycleSource*, size_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "size_t",
+            "bank"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "photo_reset",
+        "signature": "IsleGameResult (*photo_reset)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "pokemons_init",
+        "signature": "IsleGameResult (*pokemons_init)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "background",
+        "signature": "IsleGameResult (*background)(IsleRiverLifecycleSource*, uint8_t*, uint8_t*, uint8_t*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint8_t*",
+            "r"
+          ],
+          [
+            "uint8_t*",
+            "g"
+          ],
+          [
+            "uint8_t*",
+            "b"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "create_cameras",
+        "signature": "IsleGameResult (*create_cameras)(IsleRiverLifecycleSource*, uint32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint32_t",
+            "background"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "ui_bind",
+        "signature": "IsleGameResult (*ui_bind)(IsleRiverLifecycleSource*, IsleRiverLifecycleWorldSingle, IsleRiverLifecycleMovement, IsleGameSourceCallback, uint8_t, IsleRiverItemCollision);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleRiverLifecycleWorldSingle",
+            "exit"
+          ],
+          [
+            "IsleRiverLifecycleMovement",
+            "movement"
+          ],
+          [
+            "IsleGameSourceCallback",
+            "items"
+          ],
+          [
+            "uint8_t",
+            "kind"
+          ],
+          [
+            "IsleRiverItemCollision",
+            "collision"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "end_callback",
+        "signature": "IsleGameResult (*end_callback)(IsleRiverLifecycleSource*, IsleRiverLifecycleEnd);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleRiverLifecycleEnd",
+            "callback"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "pause_callback",
+        "signature": "IsleGameResult (*pause_callback)(IsleRiverLifecycleSource*, IsleRiverLifecycleEnd);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleRiverLifecycleEnd",
+            "callback"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "environment_init",
+        "signature": "IsleGameResult (*environment_init)(IsleRiverLifecycleSource*, const IsleRiverLifecycleEnvironment*, size_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "const IsleRiverLifecycleEnvironment*",
+            "rows"
+          ],
+          [
+            "size_t",
+            "count"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "detector_create",
+        "signature": "IsleGameResult (*detector_create)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "detector_enable",
+        "signature": "IsleGameResult (*detector_enable)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "intervals",
+        "signature": "IsleGameResult (*intervals)(IsleRiverLifecycleSource*, uint16_t, uint16_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "uint16_t",
+            "update"
+          ],
+          [
+            "uint16_t",
+            "draw"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "near_clipping",
+        "signature": "IsleGameResult (*near_clipping)(IsleRiverLifecycleSource*, int32_t);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "int32_t",
+            "disabled"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "photo_count",
+        "signature": "IsleGameResult (*photo_count)(IsleRiverLifecycleSource*, int32_t*);",
+        "native_value_result": "int32_t",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "request_scene",
+        "signature": "IsleGameResult (*request_scene)(IsleRiverLifecycleSource*, const IsleRiverLifecycleSceneSetup*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "const IsleRiverLifecycleSceneSetup*",
+            "setup"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "scene_joined",
+        "signature": "IsleGameResult (*scene_joined)(IsleRiverLifecycleSource*);",
+        "native_value_result": "void",
+        "arguments": [],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "source_process",
+        "signature": "IsleGameResult (*source_process)(IsleRiverLifecycleSource*, IsleGameObject*, IsleGameSourceCallback, int32_t, int32_t, IsleGameProcess**);",
+        "native_value_result": "IsleGameProcess*",
+        "arguments": [
+          [
+            "IsleGameObject*",
+            "object"
+          ],
+          [
+            "IsleGameSourceCallback",
+            "callback"
+          ],
+          [
+            "int32_t",
+            "kind"
+          ],
+          [
+            "int32_t",
+            "priority"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      },
+      {
+        "name": "reference_assign",
+        "signature": "IsleGameResult (*reference_assign)(IsleRiverLifecycleSource*, IsleGameObject**, IsleGameObject*);",
+        "native_value_result": "void",
+        "arguments": [
+          [
+            "IsleGameObject**",
+            "field"
+          ],
+          [
+            "IsleGameObject*",
+            "value"
+          ]
+        ],
+        "fault_rule": "Return from C++ before C checked; first failure latches; never wait/throw/nonlocal transfer through C++"
+      }
+    ]
+  },
+  "source_selector_partition": {
+    "own_total": 282,
+    "actor": 262,
+    "lifecycle": 20,
+    "extra_private_shared": 3,
+    "own_exclusions": []
+  },
+  "numeric_query_artifact": "local://river-actor-global-numeric-queries.json",
+  "map_sha256": "545866faf5fb44abf47d2f455ff7cad75580dc15320c357ac8dadc3359cb1a00",
+  "evaluated_heap_symbols": {
+    "river_code_VRAM": "0x802d8800",
+    "river_assets_VRAM_END": "0x8019aee0",
+    "difference": "0x0013d920",
+    "authority": "local://authoritative-df8815e7-evaluated-linker-symbols.json"
+  },
+  "numeric_macro_policy": "Same independently declared native numeric/controller policy as Rainbow importer; no SDK macro/layout or bit-parity claim.",
+  "provider": "river-lifecycle",
+  "transformation_version": "river-lifecycle-complete20-v1",
+  "definitions": [
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D8800_6C05E0",
+      "source_symbol": "func_802D8800_6C05E0",
+      "first": 25,
+      "last": 27,
+      "source_sha256": "c27d69aa55fdb3b15ceae694a0b6528d3843009e116d98340dbb33668e02c17f",
+      "native_sha256": "f6b130eb9d561289614d7c24a3eec03f89b5dd519cab7ade5e8a7bb92069f744",
+      "native_declaration": "void func_802D8800_6C05E0(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+      "source_abi": "void func_802D8800_6C05E0(WorldBlock* arg0, WorldBlock* arg1)",
+      "native_abi": "void func_802D8800_6C05E0(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+      "changes": [
+        {
+          "find": "void func_802D8800_6C05E0(WorldBlock* arg0, WorldBlock* arg1)",
+          "replace": "void func_802D8800_6C05E0(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D8800_6C05E0(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1) {",
+          "replace": "void func_802D8800_6C05E0(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802D8800_6C05E0(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+          "replace": "func_802D8800_6C05E0(s, IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)"
+        },
+        {
+          "find": "func_802D8800_6C05E0(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D8800_6C05E0(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonAdd(",
+          "replace": "isle_river_lifecycle_world_add(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_802E271C_6CA4FC",
+          "replace": "UINT32_C(0x802e271c)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D8824_6C0604",
+      "source_symbol": "func_802D8824_6C0604",
+      "first": 29,
+      "last": 31,
+      "source_sha256": "d0e1c322c114212d93f635cb5fdf54fd4a579e3b2a2f191255bd65b030b66dfd",
+      "native_sha256": "eaf308b42b518edbaa0ec4703a7e3ffd894dc93a5857635ef1975d4ebf75ec25",
+      "native_declaration": "void func_802D8824_6C0604(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+      "source_abi": "void func_802D8824_6C0604(WorldBlock* arg0, WorldBlock* arg1)",
+      "native_abi": "void func_802D8824_6C0604(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+      "changes": [
+        {
+          "find": "void func_802D8824_6C0604(WorldBlock* arg0, WorldBlock* arg1)",
+          "replace": "void func_802D8824_6C0604(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D8824_6C0604(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1) {",
+          "replace": "void func_802D8824_6C0604(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802D8824_6C0604(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)",
+          "replace": "func_802D8824_6C0604(s, IsleRiverLifecycleSource* s, IsleRiverBlock* arg0, IsleRiverBlock* arg1)"
+        },
+        {
+          "find": "func_802D8824_6C0604(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D8824_6C0604(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonsChangeBlock(",
+          "replace": "isle_river_lifecycle_world_change(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_802E271C_6CA4FC",
+          "replace": "UINT32_C(0x802e271c)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D8848_6C0628",
+      "source_symbol": "func_802D8848_6C0628",
+      "first": 33,
+      "last": 35,
+      "source_sha256": "97fb4ae0c64fc113089093fbd24dde747395050c8c321b93414d9d6396093b3b",
+      "native_sha256": "61ee80a1483b6dbcb4ef02b9a88357f8cccc23d3d602c1d40d5853b6d1874c1a",
+      "native_declaration": "void func_802D8848_6C0628(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+      "source_abi": "void func_802D8848_6C0628(WorldBlock* arg0)",
+      "native_abi": "void func_802D8848_6C0628(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+      "changes": [
+        {
+          "find": "void func_802D8848_6C0628(WorldBlock* arg0)",
+          "replace": "void func_802D8848_6C0628(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D8848_6C0628(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0) {",
+          "replace": "void func_802D8848_6C0628(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802D8848_6C0628(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+          "replace": "func_802D8848_6C0628(s, IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)"
+        },
+        {
+          "find": "func_802D8848_6C0628(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D8848_6C0628(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "pokemonRemove(",
+          "replace": "isle_river_lifecycle_world_remove(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_802E271C_6CA4FC",
+          "replace": "UINT32_C(0x802e271c)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D886C_6C064C",
+      "source_symbol": "func_802D886C_6C064C",
+      "first": 37,
+      "last": 42,
+      "source_sha256": "0f553b8f976bb5117ee0f0f224d5f4db557d2830185bd797a13186a52ff58ade",
+      "native_sha256": "1af9d4788caa7e55013c75315dff4fe43563967d03aa854faefa49c868718a8f",
+      "native_declaration": "void func_802D886C_6C064C(IsleRiverLifecycleSource* s)",
+      "source_abi": "void func_802D886C_6C064C(void)",
+      "native_abi": "void func_802D886C_6C064C(IsleRiverLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_802D886C_6C064C(void)",
+          "replace": "void func_802D886C_6C064C(IsleRiverLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D886C_6C064C(IsleRiverLifecycleSource* s) {",
+          "replace": "void func_802D886C_6C064C(IsleRiverLifecycleSource* s) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802D886C_6C064C(IsleRiverLifecycleSource* s)",
+          "replace": "func_802D886C_6C064C(s, IsleRiverLifecycleSource* s)"
+        },
+        {
+          "find": "func_802D886C_6C064C(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D886C_6C064C(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "setHeightMap(",
+          "replace": "isle_river_lifecycle_height_map(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "createWorld(",
+          "replace": "isle_river_lifecycle_create_world(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "setSkyBoxFollowPlayer()",
+          "replace": "isle_river_lifecycle_sky_follow(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80363928_503D38(",
+          "replace": "isle_river_lifecycle_pokemon_registry(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_80321560_709340",
+          "replace": "UINT32_C(0x80321560)",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_8012AC90",
+          "replace": "UINT32_C(0x8012ac90)",
+          "occurrences": 1
+        },
+        {
+          "find": "&func_802D8800_6C05E0",
+          "replace": "func_802D8800_6C05E0",
+          "occurrences": 1
+        },
+        {
+          "find": "&func_802D8848_6C0628",
+          "replace": "func_802D8848_6C0628",
+          "occurrences": 1
+        },
+        {
+          "find": "&func_802D8824_6C0604",
+          "replace": "func_802D8824_6C0604",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D88F8_6C06D8",
+      "source_symbol": "func_802D88F8_6C06D8",
+      "first": 44,
+      "last": 55,
+      "source_sha256": "1fb2a8801d4a0f0d925ac2db6143c7e3b836cf4b643ebcec72ac2f381ffdd95d",
+      "native_sha256": "3fd5762b8f9fa0c07e9b9d7b766a576f12fb50bec8e4620d72e1a4e82fcb54d0",
+      "native_declaration": "void func_802D88F8_6C06D8(IsleRiverLifecycleSource* s, int32_t arg0)",
+      "source_abi": "void func_802D88F8_6C06D8(s32 arg0)",
+      "native_abi": "void func_802D88F8_6C06D8(IsleRiverLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_802D88F8_6C06D8(s32 arg0)",
+          "replace": "void func_802D88F8_6C06D8(IsleRiverLifecycleSource* s, int32_t arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D88F8_6C06D8(IsleRiverLifecycleSource* s, int32_t arg0) {",
+          "replace": "void func_802D88F8_6C06D8(IsleRiverLifecycleSource* s, int32_t arg0) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802D88F8_6C06D8(IsleRiverLifecycleSource* s, int32_t arg0)",
+          "replace": "func_802D88F8_6C06D8(s, IsleRiverLifecycleSource* s, int32_t arg0)"
+        },
+        {
+          "offset": 113,
+          "find": "D_802E28B4_6CA694",
+          "replace": "s->actors->D_802E28B4_6CA694"
+        },
+        {
+          "find": "func_802D88F8_6C06D8(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D88F8_6C06D8(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopAllSounds()",
+          "replace": "isle_river_lifecycle_sound_stop_all(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopBGM()",
+          "replace": "isle_river_lifecycle_bgm_stop_all(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A19D8(",
+          "replace": "isle_river_lifecycle_transition_end(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Disable()",
+          "replace": "isle_river_lifecycle_detector_disable(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "EnvSound_Cleanup()",
+          "replace": "isle_river_lifecycle_environment_cleanup(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "destroyWorld()",
+          "replace": "isle_river_lifecycle_destroy_world(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80356FBC_4F73CC()",
+          "replace": "isle_river_lifecycle_course_cleanup(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "removeMainCamera()",
+          "replace": "isle_river_lifecycle_remove_camera(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800067DC()",
+          "replace": "isle_river_lifecycle_exit_scene(s)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D895C_6C073C",
+      "source_symbol": "func_802D895C_6C073C",
+      "first": 57,
+      "last": 64,
+      "source_sha256": "17f555aaf328d3cecf176f1c309e097c12783cb8f874a1a50465750352310c29",
+      "native_sha256": "a7ebfa8bfb71ab4b932b4633a63120bfeca46ff195d9a712fab1eebce3f6eb59",
+      "native_declaration": "void func_802D895C_6C073C(IsleGameObject* obj)",
+      "source_abi": "void func_802D895C_6C073C(GObj* obj)",
+      "native_abi": "void func_802D895C_6C073C(IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_802D895C_6C073C(GObj* obj)",
+          "replace": "void func_802D895C_6C073C(IsleGameObject* obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D895C_6C073C(IsleGameObject* obj) {",
+          "replace": "void func_802D895C_6C073C(IsleGameObject* obj) {\n    IsleRiverLifecycleSource* s = isle_river_lifecycle_current(obj);",
+          "occurrences": 1
+        },
+        {
+          "offset": 277,
+          "find": "D_802E2620_6CA400",
+          "replace": "s->actors->D_802E2620_6CA400"
+        },
+        {
+          "offset": 243,
+          "find": "D_802E2620_6CA400",
+          "replace": "s->actors->D_802E2620_6CA400"
+        },
+        {
+          "offset": 209,
+          "find": "D_802E2620_6CA400",
+          "replace": "s->actors->D_802E2620_6CA400"
+        },
+        {
+          "find": "auSetBGMChannelVolume(",
+          "replace": "isle_river_lifecycle_bgm_channel_volume(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "Items_GetPokeFluteCmd()",
+          "replace": "isle_river_lifecycle_flute_command(s)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D89AC_6C078C",
+      "source_symbol": "func_802D89AC_6C078C",
+      "first": 66,
+      "last": 67,
+      "source_sha256": "8da12e944f25f6a95c53005b3d0cb0b36f2efc166c1fc7898753b5f7b49b9ef4",
+      "native_sha256": "a1b0c4b3fbcd7378b8825f4f481cee2e486e7b805a8be3e6ae77f60a343379cc",
+      "native_declaration": "void func_802D89AC_6C078C(IsleRiverLifecycleSource* s, int32_t arg0)",
+      "source_abi": "void func_802D89AC_6C078C(s32 arg0)",
+      "native_abi": "void func_802D89AC_6C078C(IsleRiverLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_802D89AC_6C078C(s32 arg0)",
+          "replace": "void func_802D89AC_6C078C(IsleRiverLifecycleSource* s, int32_t arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D89AC_6C078C(IsleRiverLifecycleSource* s, int32_t arg0) {",
+          "replace": "void func_802D89AC_6C078C(IsleRiverLifecycleSource* s, int32_t arg0) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802D89AC_6C078C(IsleRiverLifecycleSource* s, int32_t arg0)",
+          "replace": "func_802D89AC_6C078C(s, IsleRiverLifecycleSource* s, int32_t arg0)"
+        },
+        {
+          "find": "func_802D89AC_6C078C(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D89AC_6C078C(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D89B4_6C0794",
+      "source_symbol": "func_802D89B4_6C0794",
+      "first": 69,
+      "last": 83,
+      "source_sha256": "d90f430578809260582da794c8a2ea763726d9b1b2b23816757634aa9a8b54a1",
+      "native_sha256": "23a575246c9c8a0d3bca6dbb6d1bf58f6de8db2a7d6c81bb63021423aff6124d",
+      "native_declaration": "void func_802D89B4_6C0794(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+      "source_abi": "void func_802D89B4_6C0794(WorldBlock* arg0)",
+      "native_abi": "void func_802D89B4_6C0794(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+      "changes": [
+        {
+          "find": "void func_802D89B4_6C0794(WorldBlock* arg0)",
+          "replace": "void func_802D89B4_6C0794(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D89B4_6C0794(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0) {",
+          "replace": "void func_802D89B4_6C0794(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 118,
+          "find": "WorldBlock",
+          "replace": "IsleRiverBlock"
+        },
+        {
+          "offset": 228,
+          "find": "arg0->next",
+          "replace": "isle_river_lifecycle_node_descend(s, arg0, (const uint8_t[]){1}, 1)"
+        },
+        {
+          "offset": 187,
+          "find": "arg0->next",
+          "replace": "isle_river_lifecycle_node_descend(s, arg0, (const uint8_t[]){1}, 1)"
+        },
+        {
+          "offset": 614,
+          "find": "next->descriptor->worldPos",
+          "replace": "isle_river_lifecycle_block_position(s, next)"
+        },
+        {
+          "offset": 583,
+          "find": "arg0->descriptor->worldPos",
+          "replace": "isle_river_lifecycle_block_position(s, arg0)"
+        },
+        {
+          "offset": 526,
+          "find": "next->descriptor->worldPos",
+          "replace": "isle_river_lifecycle_block_position(s, next)"
+        },
+        {
+          "offset": 495,
+          "find": "arg0->descriptor->worldPos",
+          "replace": "isle_river_lifecycle_block_position(s, arg0)"
+        },
+        {
+          "offset": 438,
+          "find": "next->descriptor->worldPos",
+          "replace": "isle_river_lifecycle_block_position(s, next)"
+        },
+        {
+          "offset": 407,
+          "find": "arg0->descriptor->worldPos",
+          "replace": "isle_river_lifecycle_block_position(s, arg0)"
+        },
+        {
+          "offset": 792,
+          "find": "func_802D88F8_6C06D8(2)",
+          "replace": "func_802D88F8_6C06D8(s, 2)"
+        },
+        {
+          "offset": 5,
+          "find": "func_802D89B4_6C0794(IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)",
+          "replace": "func_802D89B4_6C0794(s, IsleRiverLifecycleSource* s, IsleRiverBlock* arg0)"
+        },
+        {
+          "offset": 152,
+          "find": "D_802E28B4_6CA694",
+          "replace": "s->actors->D_802E28B4_6CA694"
+        },
+        {
+          "find": "func_802D89B4_6C0794(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D89B4_6C0794(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "Items_DisplaceAllItems(",
+          "replace": "isle_river_lifecycle_displace_items(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_node_descend(s, arg0, (const uint8_t[]){1}, 1)",
+          "replace": "isle_river_lifecycle_block_next(s, arg0)",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D8FCC_6C0DAC",
+      "source_symbol": "func_802D8FCC_6C0DAC",
+      "first": 263,
+      "last": 280,
+      "source_sha256": "52e2daa00ff70debd2ca2984c78e8e6b4375ef5c80a0070a3d3ec0c115fc733e",
+      "native_sha256": "64c600856bcc5217696b6bafe087d5bbd9ad79ac19a111e75f3c13f3d95dc67c",
+      "native_declaration": "void func_802D8FCC_6C0DAC(IsleRiverLifecycleSource* s)",
+      "source_abi": "void func_802D8FCC_6C0DAC(void)",
+      "native_abi": "void func_802D8FCC_6C0DAC(IsleRiverLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_802D8FCC_6C0DAC(void)",
+          "replace": "void func_802D8FCC_6C0DAC(IsleRiverLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D8FCC_6C0DAC(IsleRiverLifecycleSource* s) {",
+          "replace": "void func_802D8FCC_6C0DAC(IsleRiverLifecycleSource* s) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 599,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 569,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 505,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 472,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 300,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 269,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 204,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 170,
+          "find": "u32",
+          "replace": "uint32_t"
+        },
+        {
+          "offset": 5,
+          "find": "func_802D8FCC_6C0DAC(IsleRiverLifecycleSource* s)",
+          "replace": "func_802D8FCC_6C0DAC(s, IsleRiverLifecycleSource* s)"
+        },
+        {
+          "find": "func_802D8FCC_6C0DAC(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D8FCC_6C0DAC(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "getMainCamera()",
+          "replace": "isle_river_lifecycle_camera(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void* scriptDesc;",
+          "replace": "IsleRiverLifecycleAsset* scriptDesc;",
+          "occurrences": 1
+        },
+        {
+          "find": "void* spritesDesc;",
+          "replace": "IsleRiverLifecycleAsset* spritesDesc;",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((uint32_t) fx_script_common_ROM_START, (uint32_t) fx_script_common_ROM_END)",
+          "replace": "isle_river_lifecycle_load_asset(s, ISLE_RIVER_ASSET_COMMON_SCRIPT)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((uint32_t) fx_img_common_ROM_START, (uint32_t) fx_img_common_ROM_END)",
+          "replace": "isle_river_lifecycle_load_asset(s, ISLE_RIVER_ASSET_COMMON_SPRITES)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((uint32_t) fx_script_river_ROM_START, (uint32_t) fx_script_river_ROM_END)",
+          "replace": "isle_river_lifecycle_load_asset(s, ISLE_RIVER_ASSET_RIVER_SCRIPT)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800A73C0((uint32_t) fx_img_river_ROM_START, (uint32_t) fx_img_river_ROM_END)",
+          "replace": "isle_river_lifecycle_load_asset(s, ISLE_RIVER_ASSET_RIVER_SPRITES)",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setupBankID(",
+          "replace": "isle_river_lifecycle_fx_bank(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "D_80382D10_523120 = func_800A2094(4, 100, isle_river_lifecycle_camera(s));",
+          "replace": "isle_river_lifecycle_fx_camera(s, 4, 100, isle_river_lifecycle_camera(s));",
+          "occurrences": 1
+        },
+        {
+          "find": "D_80382D14_523124 = fx_allocEffects(10);",
+          "replace": "isle_river_lifecycle_fx_allocate(s, 10);",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_setDitherModes(",
+          "replace": "isle_river_lifecycle_fx_dither(s, ",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D90B8_6C0E98",
+      "source_symbol": "func_802D90B8_6C0E98",
+      "first": 282,
+      "last": 305,
+      "source_sha256": "aa0b0a2c0fa911f6121fa0b8be2907198170e6b739cbe81c2623b6baf7b777b0",
+      "native_sha256": "da5d3e1b287a5f46bab6115ab104afe3ca766cbaedf01b8b8179e6a2c91a2bc5",
+      "native_declaration": "void func_802D90B8_6C0E98(IsleRiverLifecycleSource* s)",
+      "source_abi": "void func_802D90B8_6C0E98(void)",
+      "native_abi": "void func_802D90B8_6C0E98(IsleRiverLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_802D90B8_6C0E98(void)",
+          "replace": "void func_802D90B8_6C0E98(IsleRiverLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D90B8_6C0E98(IsleRiverLifecycleSource* s) {",
+          "replace": "void func_802D90B8_6C0E98(IsleRiverLifecycleSource* s) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 96,
+          "find": "s32",
+          "replace": "int32_t"
+        },
+        {
+          "offset": 111,
+          "find": "u8",
+          "replace": "uint8_t"
+        },
+        {
+          "offset": 5,
+          "find": "func_802D90B8_6C0E98(IsleRiverLifecycleSource* s)",
+          "replace": "func_802D90B8_6C0E98(s, IsleRiverLifecycleSource* s)"
+        },
+        {
+          "find": "func_802D8FCC_6C0DAC()",
+          "replace": "func_802D8FCC_6C0DAC(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802E25C4_6CA3A4()",
+          "replace": "func_802E25C4_6CA3A4(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802D886C_6C064C()",
+          "replace": "func_802D886C_6C064C(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802D90B8_6C0E98(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D90B8_6C0E98(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "omAddGObj(",
+          "replace": "isle_river_lifecycle_create_helper(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "viApplyScreenSettings(",
+          "replace": "isle_river_lifecycle_screen(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8009CE00()",
+          "replace": "isle_river_lifecycle_photo_reset(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "Pokemons_Init()",
+          "replace": "isle_river_lifecycle_pokemons_init(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "getBackgroundColor(",
+          "replace": "isle_river_lifecycle_background(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "createMainCameras(",
+          "replace": "isle_river_lifecycle_create_cameras(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "initUI(",
+          "replace": "isle_river_lifecycle_ui_bind(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "setEndLevelCallback(",
+          "replace": "isle_river_lifecycle_end_callback(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "setPauseCallback(",
+          "replace": "isle_river_lifecycle_pause_callback(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "EnvSound_Init(",
+          "replace": "isle_river_lifecycle_environment_init(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Create()",
+          "replace": "isle_river_lifecycle_detector_create(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "PokemonDetector_Enable()",
+          "replace": "isle_river_lifecycle_detector_enable(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_802E2920_6CA700.zBuffer = gtlMalloc(0x25800, 0x40);",
+          "replace": "s->screen.depth_buffer = isle_river_lifecycle_depth_allocate(s, UINT32_C(0x25800), UINT32_C(0x40));",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_802E2920_6CA700",
+          "replace": "&s->screen",
+          "occurrences": 1
+        },
+        {
+          "find": "for (i = 0; i < ARRAY_COUNT(fx_SpriteBanksNum); i++) { fx_ScriptBanksNum[i] = fx_SpriteBanksNum[i] = 0; }",
+          "replace": "for (i = 0; i < (int32_t)isle_river_lifecycle_fx_bank_count(s); i++) { isle_river_lifecycle_fx_bank_reset(s, (size_t)i); }",
+          "occurrences": 1
+        },
+        {
+          "find": "D_802E2624_6CA404",
+          "replace": "s->environment",
+          "occurrences": 2
+        },
+        {
+          "find": "    for (i = 0; i < (int32_t)isle_river_lifecycle_fx_bank_count(s); i++) { isle_river_lifecycle_fx_bank_reset(s, (size_t)i); }",
+          "replace": "    const size_t bank_count = isle_river_lifecycle_fx_bank_count(s);\n    for (i = 0; i < (int32_t)bank_count; i++) { isle_river_lifecycle_fx_bank_reset(s, (size_t)i); }",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D9208_6C0FE8",
+      "source_symbol": "func_802D9208_6C0FE8",
+      "first": 307,
+      "last": 308,
+      "source_sha256": "139512dde95a3b652d28727b1f7cee064a4f1ff53c078c3166fa377aff5694b6",
+      "native_sha256": "e9054927ab54acaf8ec57af426cd4afea8c294581ec888c73638c8675ced183a",
+      "native_declaration": "void func_802D9208_6C0FE8(IsleRiverLifecycleSource* s, int32_t arg0)",
+      "source_abi": "void func_802D9208_6C0FE8(s32 arg0)",
+      "native_abi": "void func_802D9208_6C0FE8(IsleRiverLifecycleSource* s, int32_t arg0)",
+      "changes": [
+        {
+          "find": "void func_802D9208_6C0FE8(s32 arg0)",
+          "replace": "void func_802D9208_6C0FE8(IsleRiverLifecycleSource* s, int32_t arg0)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D9208_6C0FE8(IsleRiverLifecycleSource* s, int32_t arg0) {",
+          "replace": "void func_802D9208_6C0FE8(IsleRiverLifecycleSource* s, int32_t arg0) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802D9208_6C0FE8(IsleRiverLifecycleSource* s, int32_t arg0)",
+          "replace": "func_802D9208_6C0FE8(s, IsleRiverLifecycleSource* s, int32_t arg0)"
+        },
+        {
+          "find": "func_802D9208_6C0FE8(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D9208_6C0FE8(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C05E0.c",
+      "symbol": "func_802D9210_6C0FF0",
+      "source_symbol": "func_802D9210_6C0FF0",
+      "first": 310,
+      "last": 327,
+      "source_sha256": "33aa26c7eb84d28f37d87187870281726d41300981a312afba24427f08a1b216",
+      "native_sha256": "46193d0138369d7cac2d9d26ec6a3ab84381c282b4296e56cfb2f2e8748a49e0",
+      "native_declaration": "int32_t func_802D9210_6C0FF0(IsleRiverLifecycleSource* s, int32_t sceneId)",
+      "source_abi": "s32 func_802D9210_6C0FF0(s32 sceneId)",
+      "native_abi": "int32_t func_802D9210_6C0FF0(IsleRiverLifecycleSource* s, int32_t sceneId)",
+      "changes": [
+        {
+          "find": "s32 func_802D9210_6C0FF0(s32 sceneId)",
+          "replace": "int32_t func_802D9210_6C0FF0(IsleRiverLifecycleSource* s, int32_t sceneId)",
+          "occurrences": 1
+        },
+        {
+          "find": "int32_t func_802D9210_6C0FF0(IsleRiverLifecycleSource* s, int32_t sceneId) {",
+          "replace": "int32_t func_802D9210_6C0FF0(IsleRiverLifecycleSource* s, int32_t sceneId) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 8,
+          "find": "func_802D9210_6C0FF0(IsleRiverLifecycleSource* s, int32_t sceneId)",
+          "replace": "func_802D9210_6C0FF0(s, IsleRiverLifecycleSource* s, int32_t sceneId)"
+        },
+        {
+          "offset": 327,
+          "find": "D_802E28B4_6CA694",
+          "replace": "s->actors->D_802E28B4_6CA694"
+        },
+        {
+          "find": "func_802D9210_6C0FF0(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D9210_6C0FF0(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "func_800AAED0(",
+          "replace": "isle_river_lifecycle_notice(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "gtlSetIntervals(",
+          "replace": "isle_river_lifecycle_intervals(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "gtlDisableNearClipping(",
+          "replace": "isle_river_lifecycle_near_clipping(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "func_8009BC68()",
+          "replace": "isle_river_lifecycle_photo_count(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "D_802E293C_6CA71C.gtlSetup.heapSize = (uintptr_t) river_code_VRAM - (uintptr_t) river_assets_VRAM_END;",
+          "replace": "s->scene_setup.heap_size = isle_river_lifecycle_scene_heap_size(s);",
+          "occurrences": 1
+        },
+        {
+          "find": "omSetupScene(&D_802E293C_6CA71C)",
+          "replace": "isle_river_lifecycle_setup_scene(s, &s->scene_setup)",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_scene_heap_size(s)",
+          "replace": "UINT32_C(0x0013d920)",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C1090.c",
+      "symbol": "func_802D92B0_6C1090",
+      "source_symbol": "func_802D92B0_6C1090",
+      "first": 6,
+      "last": 49,
+      "source_sha256": "6962c804f7409cf1500681b0da690085c43dd71aad10b64801d667d732b6cbba",
+      "native_sha256": "e8e7576acda8c4b02889ebb45a8f10e3cff07079da9436629da99df245265da7",
+      "native_declaration": "void func_802D92B0_6C1090(IsleRiverLifecycleSource* s, int32_t arg0, float arg1)",
+      "source_abi": "void func_802D92B0_6C1090(s32 arg0, f32 arg1)",
+      "native_abi": "void func_802D92B0_6C1090(IsleRiverLifecycleSource* s, int32_t arg0, float arg1)",
+      "changes": [
+        {
+          "find": "void func_802D92B0_6C1090(s32 arg0, f32 arg1)",
+          "replace": "void func_802D92B0_6C1090(IsleRiverLifecycleSource* s, int32_t arg0, float arg1)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802D92B0_6C1090(IsleRiverLifecycleSource* s, int32_t arg0, float arg1) {",
+          "replace": "void func_802D92B0_6C1090(IsleRiverLifecycleSource* s, int32_t arg0, float arg1) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 122,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 5,
+          "find": "func_802D92B0_6C1090(IsleRiverLifecycleSource* s, int32_t arg0, float arg1)",
+          "replace": "func_802D92B0_6C1090(s, IsleRiverLifecycleSource* s, int32_t arg0, float arg1)"
+        },
+        {
+          "offset": 1190,
+          "find": "D_802E29D0_6CA7B0",
+          "replace": "s->actors->D_802E29D0_6CA7B0"
+        },
+        {
+          "offset": 837,
+          "find": "D_802E29D0_6CA7B0",
+          "replace": "s->actors->D_802E29D0_6CA7B0"
+        },
+        {
+          "offset": 674,
+          "find": "D_802E29D0_6CA7B0",
+          "replace": "s->actors->D_802E29D0_6CA7B0"
+        },
+        {
+          "offset": 516,
+          "find": "D_802E29D0_6CA7B0",
+          "replace": "s->actors->D_802E29D0_6CA7B0"
+        },
+        {
+          "offset": 351,
+          "find": "D_802E29D0_6CA7B0",
+          "replace": "s->actors->D_802E29D0_6CA7B0"
+        },
+        {
+          "offset": 153,
+          "find": "D_802E29D0_6CA7B0",
+          "replace": "s->actors->D_802E29D0_6CA7B0"
+        },
+        {
+          "find": "func_802D92B0_6C1090(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802D92B0_6C1090(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "auPlaySong(",
+          "replace": "isle_river_lifecycle_bgm_play(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "auStopSong(",
+          "replace": "isle_river_lifecycle_bgm_stop(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "auPlaySoundWithParams(",
+          "replace": "isle_river_lifecycle_sound_params(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetBGMVolume(",
+          "replace": "isle_river_lifecycle_bgm_volume(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "setBackgroundMusic(",
+          "replace": "isle_river_lifecycle_background_music(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_background_music(s, ",
+          "replace": "isle_player_setBackgroundMusic(isle_river_lifecycle_player(s), ",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C9EB0.c",
+      "symbol": "func_802E20D0_6C9EB0",
+      "source_symbol": "func_802E20D0_6C9EB0",
+      "first": 20,
+      "last": 24,
+      "source_sha256": "75010d222cb67d10d6c024dc5fa60f8fcfcc9e0b4e997c79b5fb51e5c174979e",
+      "native_sha256": "249d3952e8738c8f41ca0cf3b59cfba66135ec444e920a582aea7ca0fdb62a39",
+      "native_declaration": "void func_802E20D0_6C9EB0(IsleGameObject* obj)",
+      "source_abi": "void func_802E20D0_6C9EB0(GObj* obj)",
+      "native_abi": "void func_802E20D0_6C9EB0(IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_802E20D0_6C9EB0(GObj* obj)",
+          "replace": "void func_802E20D0_6C9EB0(IsleGameObject* obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "{",
+          "replace": "{\n    IsleRiverLifecycleSource* s = isle_river_lifecycle_current(obj);",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80357120_4F7530(",
+          "replace": "isle_river_lifecycle_source_80357120(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803570B0_4F74C0()",
+          "replace": "isle_river_lifecycle_camera_start(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803571C4_4F75D4()",
+          "replace": "isle_river_lifecycle_camera_reset(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_camera_start(s)",
+          "replace": "isle_player_func_803570B0_4F74C0(isle_river_lifecycle_player(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_camera_reset(s)",
+          "replace": "isle_player_func_803571C4_4F75D4(isle_river_lifecycle_player(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_source_80357120(s, ",
+          "replace": "isle_player_func_80357120_4F7530(isle_river_lifecycle_player(s), ",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C9EB0.c",
+      "symbol": "func_802E2100_6C9EE0",
+      "source_symbol": "func_802E2100_6C9EE0",
+      "first": 26,
+      "last": 28,
+      "source_sha256": "1858776a37773bb6d4584b51d08a5dbd86f69aa027f1b5e0787597234eeeefd4",
+      "native_sha256": "545974a24995e7d73848639aba70ae18ce6fda638bcb9ad55180d51256f32b85",
+      "native_declaration": "void func_802E2100_6C9EE0(IsleRiverLifecycleSource* s)",
+      "source_abi": "void func_802E2100_6C9EE0(void)",
+      "native_abi": "void func_802E2100_6C9EE0(IsleRiverLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_802E2100_6C9EE0(void)",
+          "replace": "void func_802E2100_6C9EE0(IsleRiverLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802E2100_6C9EE0(IsleRiverLifecycleSource* s) {",
+          "replace": "void func_802E2100_6C9EE0(IsleRiverLifecycleSource* s) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802E2100_6C9EE0(IsleRiverLifecycleSource* s)",
+          "replace": "func_802E2100_6C9EE0(s, IsleRiverLifecycleSource* s)"
+        },
+        {
+          "find": "func_802E2100_6C9EE0(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802E2100_6C9EE0(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "func_803572B0_4F76C0()",
+          "replace": "isle_river_lifecycle_camera_exit(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_camera_exit(s)",
+          "replace": "isle_player_func_803572B0_4F76C0(isle_river_lifecycle_player(s))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C9EB0.c",
+      "symbol": "func_802E2120_6C9F00",
+      "source_symbol": "func_802E2120_6C9F00",
+      "first": 30,
+      "last": 46,
+      "source_sha256": "249480c9ceac63df591f4157a64a0fc1375128ec4a103b1846d126b757fa415b",
+      "native_sha256": "e757ac71aaf0c85102151a97c2c2360a8192931db1fece9a535347cd93d077e2",
+      "native_declaration": "void func_802E2120_6C9F00(IsleRiverLifecycleSource* s, const IsleActorNodeRef* receiver, int32_t arg1, float arg2)",
+      "source_abi": "void func_802E2120_6C9F00(DObj* dobj, s32 arg1, f32 arg2)",
+      "native_abi": "void func_802E2120_6C9F00(IsleRiverLifecycleSource* s, const IsleActorNodeRef* receiver, int32_t arg1, float arg2)",
+      "changes": [
+        {
+          "find": "void func_802E2120_6C9F00(DObj* dobj, s32 arg1, f32 arg2)",
+          "replace": "void func_802E2120_6C9F00(IsleRiverLifecycleSource* s, const IsleGameModelRef* receiver, int32_t arg1, float arg2)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802E2120_6C9F00(IsleRiverLifecycleSource* s, const IsleGameModelRef* receiver, int32_t arg1, float arg2) {",
+          "replace": "void func_802E2120_6C9F00(IsleRiverLifecycleSource* s, const IsleGameModelRef* receiver, int32_t arg1, float arg2) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 291,
+          "find": "s32",
+          "replace": "int32_t"
+        },
+        {
+          "offset": 172,
+          "find": "s32",
+          "replace": "int32_t"
+        },
+        {
+          "offset": 156,
+          "find": "Effect",
+          "replace": "IsleRiverEffect"
+        },
+        {
+          "offset": 5,
+          "find": "func_802E2120_6C9F00(IsleRiverLifecycleSource* s, const IsleGameModelRef* receiver, int32_t arg1, float arg2)",
+          "replace": "func_802E2120_6C9F00(s, IsleRiverLifecycleSource* s, const IsleGameModelRef* receiver, int32_t arg1, float arg2)"
+        },
+        {
+          "offset": 246,
+          "find": "D_802E4B80_6CC960",
+          "replace": "s->actors->D_802E4B80_6CC960"
+        },
+        {
+          "find": "func_802E2120_6C9F00(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802E2120_6C9F00(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "fx_createEffect(",
+          "replace": "isle_river_lifecycle_effect_create(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "fx->dobj = dobj;",
+          "replace": "isle_river_lifecycle_effect_attach(s, fx, receiver);",
+          "occurrences": 1
+        },
+        {
+          "find": "const IsleGameModelRef* receiver",
+          "replace": "const IsleActorNodeRef* receiver",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C9EB0.c",
+      "symbol": "func_802E2194_6C9F74",
+      "source_symbol": "func_802E2194_6C9F74",
+      "first": 48,
+      "last": 59,
+      "source_sha256": "ea3132bb2c868b5a7d8f1eac58c7cc28d843df8178db4c801412fe8573ca16fb",
+      "native_sha256": "fc7b61f7e0f16202d194bf8f473dafb08b7dfcc736185937f21e22bdcf6cf89c",
+      "native_declaration": "void func_802E2194_6C9F74(IsleRiverLifecycleSource* s)",
+      "source_abi": "void func_802E2194_6C9F74(void)",
+      "native_abi": "void func_802E2194_6C9F74(IsleRiverLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_802E2194_6C9F74(void)",
+          "replace": "void func_802E2194_6C9F74(IsleRiverLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802E2194_6C9F74(IsleRiverLifecycleSource* s) {",
+          "replace": "void func_802E2194_6C9F74(IsleRiverLifecycleSource* s) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 5,
+          "find": "func_802E2194_6C9F74(IsleRiverLifecycleSource* s)",
+          "replace": "func_802E2194_6C9F74(s, IsleRiverLifecycleSource* s)"
+        },
+        {
+          "find": "func_802E2100_6C9EE0()",
+          "replace": "func_802E2100_6C9EE0(s)",
+          "occurrences": 1
+        },
+        {
+          "offset": 166,
+          "find": "D_8033F698_727478",
+          "replace": "s->actors->D_8033F698_727478"
+        },
+        {
+          "offset": 118,
+          "find": "D_8033F698_727478",
+          "replace": "s->actors->D_8033F698_727478"
+        },
+        {
+          "offset": 286,
+          "find": "D_8033F699_727479",
+          "replace": "s->actors->D_8033F699_727479"
+        },
+        {
+          "offset": 237,
+          "find": "D_8033F699_727479",
+          "replace": "s->actors->D_8033F699_727479"
+        },
+        {
+          "find": "func_802E2194_6C9F74(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802E2194_6C9F74(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "auStopSound(",
+          "replace": "isle_river_lifecycle_sound_stop(s, ",
+          "occurrences": 2
+        },
+        {
+          "find": "resetMainCameraSettings()",
+          "replace": "isle_river_lifecycle_reset_camera(s)",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(",
+          "replace": "isle_river_lifecycle_delete_object(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "func_80357170_4F7580()",
+          "replace": "isle_river_lifecycle_camera_stop(s)",
+          "occurrences": 1
+        },
+        {
+          "offset": 242,
+          "find": "auPlayingSound[s->actors->D_8033F699_727479]",
+          "replace": "isle_river_lifecycle_sound_active(s, s->actors->D_8033F699_727479)"
+        },
+        {
+          "offset": 100,
+          "find": "auPlayingSound[s->actors->D_8033F698_727478]",
+          "replace": "isle_river_lifecycle_sound_active(s, s->actors->D_8033F698_727478)"
+        },
+        {
+          "find": "isle_river_lifecycle_reset_camera(s)",
+          "replace": "isle_player_resetMainCameraSettings(isle_river_lifecycle_player(s))",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_river_lifecycle_camera_stop(s)",
+          "replace": "isle_player_func_80357170_4F7580(isle_river_lifecycle_player(s))",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C9EB0.c",
+      "symbol": "func_802E222C_6CA00C",
+      "source_symbol": "func_802E222C_6CA00C",
+      "first": 61,
+      "last": 74,
+      "source_sha256": "457d51d093eb286ede4ddd9400a456618c91ce2f1a4f5797925b0f5299d70fb6",
+      "native_sha256": "3a7d3441d76f30202aa8bb17fbb5a9310809ea1ba8c1c271c19cb504ad3145de",
+      "native_declaration": "void func_802E222C_6CA00C(IsleGameObject* obj)",
+      "source_abi": "void func_802E222C_6CA00C(GObj* obj)",
+      "native_abi": "void func_802E222C_6CA00C(IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_802E222C_6CA00C(GObj* obj)",
+          "replace": "void func_802E222C_6CA00C(IsleGameObject* obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802E222C_6CA00C(IsleGameObject* obj) {",
+          "replace": "void func_802E222C_6CA00C(IsleGameObject* obj) {\n    IsleRiverLifecycleSource* s = isle_river_lifecycle_current(obj);",
+          "occurrences": 1
+        },
+        {
+          "offset": 122,
+          "find": "s32",
+          "replace": "int32_t"
+        },
+        {
+          "offset": 194,
+          "find": "D_8033F698_727478",
+          "replace": "s->actors->D_8033F698_727478"
+        },
+        {
+          "offset": 342,
+          "find": "D_8033F699_727479",
+          "replace": "s->actors->D_8033F699_727479"
+        },
+        {
+          "find": "auPlaySoundWithParams(",
+          "replace": "isle_river_lifecycle_sound_params(s, ",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C9EB0.c",
+      "symbol": "func_802E22E4_6CA0C4",
+      "source_symbol": "func_802E22E4_6CA0C4",
+      "first": 76,
+      "last": 140,
+      "source_sha256": "d2eab2d583d9b34f0424f54cfed03c872e975f1eaaa04616ee9b2e52b1e52d27",
+      "native_sha256": "316df24569b0448d8f4b2483b6b7ea7766c85cac161d513d4e93efc1914670ff",
+      "native_declaration": "void func_802E22E4_6CA0C4(IsleGameObject* obj)",
+      "source_abi": "void func_802E22E4_6CA0C4(GObj* obj)",
+      "native_abi": "void func_802E22E4_6CA0C4(IsleGameObject* obj)",
+      "changes": [
+        {
+          "find": "void func_802E22E4_6CA0C4(GObj* obj)",
+          "replace": "void func_802E22E4_6CA0C4(IsleGameObject* obj)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802E22E4_6CA0C4(IsleGameObject* obj) {",
+          "replace": "void func_802E22E4_6CA0C4(IsleGameObject* obj) {\n    IsleRiverLifecycleSource* s = isle_river_lifecycle_current(obj);",
+          "occurrences": 1
+        },
+        {
+          "offset": 359,
+          "find": "s32",
+          "replace": "int32_t"
+        },
+        {
+          "offset": 122,
+          "find": "s32",
+          "replace": "int32_t"
+        },
+        {
+          "offset": 2211,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 2122,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 2033,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 1941,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 1848,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 1755,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 346,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 266,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 228,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 187,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 161,
+          "find": "f32",
+          "replace": "float"
+        },
+        {
+          "offset": 145,
+          "find": "GObj",
+          "replace": "IsleGameObject"
+        },
+        {
+          "offset": 341,
+          "find": "GObjProcess",
+          "replace": "IsleGameProcess"
+        },
+        {
+          "offset": 322,
+          "find": "OMCamera",
+          "replace": "IsleGameObject"
+        },
+        {
+          "offset": 2213,
+          "find": "        cam->viewMtx.lookAt.at.z = (((float) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ;",
+          "replace": "        isle_river_lifecycle_camera_store(s, cam, 5, (((float) i * (startAtZ - baseAtZ)) / 10.0f) + baseAtZ);"
+        },
+        {
+          "offset": 2122,
+          "find": "        cam->viewMtx.lookAt.at.y = (((float) i * (startAtY - baseAtY)) / 10.0f) + baseAtY;",
+          "replace": "        isle_river_lifecycle_camera_store(s, cam, 4, (((float) i * (startAtY - baseAtY)) / 10.0f) + baseAtY);"
+        },
+        {
+          "offset": 2031,
+          "find": "        cam->viewMtx.lookAt.at.x = (((float) i * (startAtX - baseAtX)) / 10.0f) + baseAtX;",
+          "replace": "        isle_river_lifecycle_camera_store(s, cam, 3, (((float) i * (startAtX - baseAtX)) / 10.0f) + baseAtX);"
+        },
+        {
+          "offset": 1936,
+          "find": "        cam->viewMtx.lookAt.eye.z = (((float) i * (startEyeZ - baseEyeZ)) / 10.0f) + baseEyeZ;",
+          "replace": "        isle_river_lifecycle_camera_store(s, cam, 2, (((float) i * (startEyeZ - baseEyeZ)) / 10.0f) + baseEyeZ);"
+        },
+        {
+          "offset": 1841,
+          "find": "        cam->viewMtx.lookAt.eye.y = (((float) i * (startEyeY - baseEyeY)) / 10.0f) + baseEyeY;",
+          "replace": "        isle_river_lifecycle_camera_store(s, cam, 1, (((float) i * (startEyeY - baseEyeY)) / 10.0f) + baseEyeY);"
+        },
+        {
+          "offset": 1746,
+          "find": "        cam->viewMtx.lookAt.eye.x = (((float) i * (startEyeX - baseEyeX)) / 10.0f) + baseEyeX;",
+          "replace": "        isle_river_lifecycle_camera_store(s, cam, 0, (((float) i * (startEyeX - baseEyeX)) / 10.0f) + baseEyeX);"
+        },
+        {
+          "offset": 1573,
+          "find": "cam->viewMtx.lookAt.at.z",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->at[2]"
+        },
+        {
+          "offset": 1533,
+          "find": "cam->viewMtx.lookAt.at.y",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->at[1]"
+        },
+        {
+          "offset": 1493,
+          "find": "cam->viewMtx.lookAt.at.x",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->at[0]"
+        },
+        {
+          "offset": 1452,
+          "find": "cam->viewMtx.lookAt.eye.z",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->eye[2]"
+        },
+        {
+          "offset": 1410,
+          "find": "cam->viewMtx.lookAt.eye.y",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->eye[1]"
+        },
+        {
+          "offset": 1368,
+          "find": "cam->viewMtx.lookAt.eye.x",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->eye[0]"
+        },
+        {
+          "offset": 692,
+          "find": "cam->viewMtx.lookAt.at.z",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->at[2]"
+        },
+        {
+          "offset": 651,
+          "find": "cam->viewMtx.lookAt.at.y",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->at[1]"
+        },
+        {
+          "offset": 610,
+          "find": "cam->viewMtx.lookAt.at.x",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->at[0]"
+        },
+        {
+          "offset": 568,
+          "find": "cam->viewMtx.lookAt.eye.z",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->eye[2]"
+        },
+        {
+          "offset": 525,
+          "find": "cam->viewMtx.lookAt.eye.y",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->eye[1]"
+        },
+        {
+          "offset": 482,
+          "find": "cam->viewMtx.lookAt.eye.x",
+          "replace": "isle_river_lifecycle_camera_read(s, cam)->eye[0]"
+        },
+        {
+          "offset": 861,
+          "find": "cam->animSpeed = 0.5f;",
+          "replace": "isle_river_lifecycle_camera_speed(s, cam, 0.5f);"
+        },
+        {
+          "offset": 443,
+          "find": "getMainCamera()->obj",
+          "replace": "getMainCamera()"
+        },
+        {
+          "find": "&D_8014A660_2BA730",
+          "replace": "UINT32_C(0x8014a660)",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_8014B450_2BB520",
+          "replace": "UINT32_C(0x8014b450)",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_8014BF30_2BC000",
+          "replace": "UINT32_C(0x8014bf30)",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802E2194_6C9F74()",
+          "replace": "func_802E2194_6C9F74(s)",
+          "occurrences": 3
+        },
+        {
+          "offset": 1150,
+          "find": "obj->fnAnimCallback = func_802E2120_6C9F00;",
+          "replace": "isle_river_lifecycle_animation_callback(s, obj, func_802E2120_6C9F00);"
+        },
+        {
+          "offset": 1298,
+          "find": "D_802E4B80_6CC960",
+          "replace": "s->actors->D_802E4B80_6CC960"
+        },
+        {
+          "offset": 1123,
+          "find": "D_802E4B80_6CC960",
+          "replace": "s->actors->D_802E4B80_6CC960"
+        },
+        {
+          "find": "omCreateProcess(",
+          "replace": "isle_actor_source_create_process(",
+          "occurrences": 2
+        },
+        {
+          "offset": 977,
+          "find": "isle_actor_source_create_process(gobj, animUpdateCameraAnimation, 1, 1)",
+          "replace": "isle_river_lifecycle_camera_process(s, gobj, 1, 1)"
+        },
+        {
+          "find": "isle_actor_source_create_process(",
+          "replace": "isle_river_lifecycle_source_process(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_SetAnimation(",
+          "replace": "isle_river_lifecycle_player_animation(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "animSetCameraAnimation(",
+          "replace": "isle_river_lifecycle_camera_animation(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "getMainCamera()",
+          "replace": "isle_river_lifecycle_camera(s)",
+          "occurrences": 2
+        },
+        {
+          "find": "gContInputPressedButtons",
+          "replace": "isle_river_lifecycle_input_pressed(s)",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "path": "src/river/6C9EB0.c",
+      "symbol": "func_802E25C4_6CA3A4",
+      "source_symbol": "func_802E25C4_6CA3A4",
+      "first": 142,
+      "last": 151,
+      "source_sha256": "a87d4987a7a7408749302d802a785aff731d330362344f3dc40173e630dc988a",
+      "native_sha256": "e9e0bdb2b31a2d8d3e79908019ee505ee4f7c0b1ac441784b6d6c667d549c910",
+      "native_declaration": "void func_802E25C4_6CA3A4(IsleRiverLifecycleSource* s)",
+      "source_abi": "void func_802E25C4_6CA3A4(void)",
+      "native_abi": "void func_802E25C4_6CA3A4(IsleRiverLifecycleSource* s)",
+      "changes": [
+        {
+          "find": "void func_802E25C4_6CA3A4(void)",
+          "replace": "void func_802E25C4_6CA3A4(IsleRiverLifecycleSource* s)",
+          "occurrences": 1
+        },
+        {
+          "find": "void func_802E25C4_6CA3A4(IsleRiverLifecycleSource* s) {",
+          "replace": "void func_802E25C4_6CA3A4(IsleRiverLifecycleSource* s) {\n    isle_river_lifecycle_enter(s);",
+          "occurrences": 1
+        },
+        {
+          "offset": 96,
+          "find": "GObj",
+          "replace": "IsleGameObject"
+        },
+        {
+          "offset": 5,
+          "find": "func_802E25C4_6CA3A4(IsleRiverLifecycleSource* s)",
+          "replace": "func_802E25C4_6CA3A4(s, IsleRiverLifecycleSource* s)"
+        },
+        {
+          "offset": 159,
+          "find": "    D_802E4B84_6CC964 = temp_v0;",
+          "replace": "    isle_river_lifecycle_reference_assign(s, &s->actors->D_802E4B84_6CC964, temp_v0);"
+        },
+        {
+          "find": "omCreateProcess(",
+          "replace": "isle_actor_source_create_process(",
+          "occurrences": 1
+        },
+        {
+          "find": "func_802E25C4_6CA3A4(s, IsleRiverLifecycleSource* s",
+          "replace": "func_802E25C4_6CA3A4(IsleRiverLifecycleSource* s",
+          "occurrences": 1
+        },
+        {
+          "find": "isle_actor_source_create_process(",
+          "replace": "isle_river_lifecycle_source_process(s, ",
+          "occurrences": 1
+        },
+        {
+          "find": "PlayerModel_Init()",
+          "replace": "isle_river_lifecycle_player_model_init(s)",
+          "occurrences": 1
+        }
+      ]
+    }
+  ],
+  "adapters": [],
+  "output_sha256": "dfd0567cc425981be1d01c1f7eb0636a69d0448c0a172c82711483f2ffcb15aa",
+  "preamble": "/* Pinned River Original C closure; generated privately, no SDK object layouts. */\n#include \"engine_internal.h\"\n#include \"river_actor_source.h\"\n#include \"river_lifecycle_source.h\"\n#include \"player_root_source.h\"\nIslePlayerSource* isle_river_actor_player(IsleRiverActorSource*);\nIslePlayerSource* isle_river_lifecycle_player(IsleRiverLifecycleSource*);\n#include <math.h>\n#include <string.h>\n#define PI 3.14159265358979323846\n#define TAU (2.0 * PI)\n#define SQ(value) ((value) * (value))\n#define ARRAY_COUNT(array) (sizeof(array) / sizeof((array)[0]))\n#define A_BUTTON 0x8000u\n#define START_BUTTON 0x1000u\n#define BGM_PLAYER_MAIN 0\n#define ITEM_ID_PESTER_BALL 162\n#define POKEMON_CMD_39 39\n#define SCENE_RIVER 3\n#define SCENE_CAMERA_CHECK 9\n#define SCENE_OAKS_LAB_2 13\n#define SOUND_ID_21 21\n#define SOUND_ID_114 114\n#define LINK_0 0\n#define LINK_POKEMON 3\n#define OBJID_0 0\n#define PokemonID_PSYDUCK 54\n#define PokemonID_POLIWAG 60\n#define PokemonID_SLOWBRO 80\n#define PokemonID_SHELLDER 90\n#define PokemonID_CLOYSTER 91\n#define PokemonID_MAGIKARP 129\n#define PokemonID_603 603\n#define PokemonID_EVOLUTION_CONTROLLER 1002\n#define POKEMON_FLAG_4 0x004\n#define POKEMON_FLAG_8 0x008\n#define POKEMON_FLAG_40 0x040\n#define POKEMON_FLAG_200 0x200\n#define POKEMON_FLAG_800 0x800\n#define POKEMON_PROCESS_FLAG_1000 0x1000\n#define GOBJ_FLAG_HIDDEN 0x01\n#define GOBJ_FLAG_2 0x02\n#define SURFACE_TYPE_007F66 0x007F66\n#define SURFACE_TYPE_337FB2 0x337FB2\n#define SURFACE_TYPE_FF0000 0xFF0000\n#define SURFACE_TYPE_FF7FB2 0xFF7FB2\nIsleGameObject* func_8035E1D4_4FE5E4(IsleGameObject*);\nIsleGameResult isle_river_lifecycle_validate_initial_fields(const uint8_t* rom, size_t bytes) {\n    static const struct { uint32_t offset, bits; uint8_t width; } fields[] = {\n        {UINT32_C(0x006ca404),UINT32_C(0x0000002a),2u},\n        {UINT32_C(0x006ca406),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca407),UINT32_C(0x00000014),1u},\n        {UINT32_C(0x006ca408),UINT32_C(0x000000df),2u},\n        {UINT32_C(0x006ca40a),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca40b),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca40c),UINT32_C(0x000000e0),2u},\n        {UINT32_C(0x006ca40e),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca40f),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca410),UINT32_C(0x000000e1),2u},\n        {UINT32_C(0x006ca412),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca413),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca414),UINT32_C(0x000000e2),2u},\n        {UINT32_C(0x006ca416),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca417),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca418),UINT32_C(0x000000e3),2u},\n        {UINT32_C(0x006ca41a),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca41b),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca41c),UINT32_C(0x0000016e),2u},\n        {UINT32_C(0x006ca41e),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca41f),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca420),UINT32_C(0x000000c8),2u},\n        {UINT32_C(0x006ca422),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca423),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca424),UINT32_C(0x000000c9),2u},\n        {UINT32_C(0x006ca426),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca427),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca428),UINT32_C(0x000000ca),2u},\n        {UINT32_C(0x006ca42a),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca42b),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca42c),UINT32_C(0x000000cb),2u},\n        {UINT32_C(0x006ca42e),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca42f),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca430),UINT32_C(0x00000070),2u},\n        {UINT32_C(0x006ca432),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca433),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca434),UINT32_C(0x00000180),2u},\n        {UINT32_C(0x006ca436),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca437),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca438),UINT32_C(0x000000d2),2u},\n        {UINT32_C(0x006ca43a),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca43b),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca43c),UINT32_C(0x000000d3),2u},\n        {UINT32_C(0x006ca43e),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca43f),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca440),UINT32_C(0x00000178),2u},\n        {UINT32_C(0x006ca442),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca443),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca444),UINT32_C(0x00000072),2u},\n        {UINT32_C(0x006ca446),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca447),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca448),UINT32_C(0x000000c0),2u},\n        {UINT32_C(0x006ca44a),UINT32_C(0x00000003),1u},\n        {UINT32_C(0x006ca44b),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca44c),UINT32_C(0x000000c1),2u},\n        {UINT32_C(0x006ca44e),UINT32_C(0x00000003),1u},\n        {UINT32_C(0x006ca44f),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca450),UINT32_C(0x000000c2),2u},\n        {UINT32_C(0x006ca452),UINT32_C(0x00000003),1u},\n        {UINT32_C(0x006ca453),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca454),UINT32_C(0x000000c3),2u},\n        {UINT32_C(0x006ca456),UINT32_C(0x00000003),1u},\n        {UINT32_C(0x006ca457),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca458),UINT32_C(0x0000017b),2u},\n        {UINT32_C(0x006ca45a),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca45b),UINT32_C(0x00000007),1u},\n        {UINT32_C(0x006ca45c),UINT32_C(0x0000017e),2u},\n        {UINT32_C(0x006ca45e),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca45f),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca460),UINT32_C(0x0000006d),2u},\n        {UINT32_C(0x006ca462),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca463),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca464),UINT32_C(0x000000ee),2u},\n        {UINT32_C(0x006ca466),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca467),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca468),UINT32_C(0x0000013c),2u},\n        {UINT32_C(0x006ca46a),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca46b),UINT32_C(0x00000009),1u},\n        {UINT32_C(0x006ca46c),UINT32_C(0x0000013d),2u},\n        {UINT32_C(0x006ca46e),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca46f),UINT32_C(0x00000009),1u},\n        {UINT32_C(0x006ca470),UINT32_C(0x0000013e),2u},\n        {UINT32_C(0x006ca472),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca473),UINT32_C(0x00000009),1u},\n        {UINT32_C(0x006ca474),UINT32_C(0x0000013f),2u},\n        {UINT32_C(0x006ca476),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca477),UINT32_C(0x00000009),1u},\n        {UINT32_C(0x006ca478),UINT32_C(0x00000165),2u},\n        {UINT32_C(0x006ca47a),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca47b),UINT32_C(0x00000009),1u},\n        {UINT32_C(0x006ca47c),UINT32_C(0x0000016f),2u},\n        {UINT32_C(0x006ca47e),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca47f),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca480),UINT32_C(0x00000073),2u},\n        {UINT32_C(0x006ca482),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca483),UINT32_C(0x00000009),1u},\n        {UINT32_C(0x006ca484),UINT32_C(0x00000075),2u},\n        {UINT32_C(0x006ca486),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca487),UINT32_C(0x00000009),1u},\n        {UINT32_C(0x006ca488),UINT32_C(0x00000107),2u},\n        {UINT32_C(0x006ca48a),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca48b),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca48c),UINT32_C(0x00000108),2u},\n        {UINT32_C(0x006ca48e),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca48f),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca490),UINT32_C(0x00000109),2u},\n        {UINT32_C(0x006ca492),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca493),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca494),UINT32_C(0x0000010a),2u},\n        {UINT32_C(0x006ca496),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca497),UINT32_C(0x00000006),1u},\n        {UINT32_C(0x006ca498),UINT32_C(0x0000010b),2u},\n        {UINT32_C(0x006ca49a),UINT32_C(0x00000002),1u},\n        {UINT32_C(0x006ca49b),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca49c),UINT32_C(0x0000010c),2u},\n        {UINT32_C(0x006ca49e),UINT32_C(0x00000002),1u},\n        {UINT32_C(0x006ca49f),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca4a0),UINT32_C(0x00000173),2u},\n        {UINT32_C(0x006ca4a2),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4a3),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca4a4),UINT32_C(0x0000007f),2u},\n        {UINT32_C(0x006ca4a6),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4a7),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4a8),UINT32_C(0x00000168),2u},\n        {UINT32_C(0x006ca4aa),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4ab),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4ac),UINT32_C(0x0000008a),2u},\n        {UINT32_C(0x006ca4ae),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4af),UINT32_C(0x00000005),1u},\n        {UINT32_C(0x006ca4b0),UINT32_C(0x00000144),2u},\n        {UINT32_C(0x006ca4b2),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4b3),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4b4),UINT32_C(0x00000145),2u},\n        {UINT32_C(0x006ca4b6),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4b7),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4b8),UINT32_C(0x00000170),2u},\n        {UINT32_C(0x006ca4ba),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4bb),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4bc),UINT32_C(0x00000184),2u},\n        {UINT32_C(0x006ca4be),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4bf),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4c0),UINT32_C(0x0000015c),2u},\n        {UINT32_C(0x006ca4c2),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4c3),UINT32_C(0x00000007),1u},\n        {UINT32_C(0x006ca4c4),UINT32_C(0x00000179),2u},\n        {UINT32_C(0x006ca4c6),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4c7),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca4c8),UINT32_C(0x0000017c),2u},\n        {UINT32_C(0x006ca4ca),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4cb),UINT32_C(0x00000008),1u},\n        {UINT32_C(0x006ca4cc),UINT32_C(0x0000017a),2u},\n        {UINT32_C(0x006ca4ce),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4cf),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4d0),UINT32_C(0x0000007a),2u},\n        {UINT32_C(0x006ca4d2),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4d3),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4d4),UINT32_C(0x00000146),2u},\n        {UINT32_C(0x006ca4d6),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4d7),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4d8),UINT32_C(0x00000136),2u},\n        {UINT32_C(0x006ca4da),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4db),UINT32_C(0x0000000e),1u},\n        {UINT32_C(0x006ca4dc),UINT32_C(0x00000137),2u},\n        {UINT32_C(0x006ca4de),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4df),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4e0),UINT32_C(0x00000138),2u},\n        {UINT32_C(0x006ca4e2),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4e3),UINT32_C(0x0000000e),1u},\n        {UINT32_C(0x006ca4e4),UINT32_C(0x00000139),2u},\n        {UINT32_C(0x006ca4e6),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4e7),UINT32_C(0x0000000e),1u},\n        {UINT32_C(0x006ca4e8),UINT32_C(0x0000017d),2u},\n        {UINT32_C(0x006ca4ea),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4eb),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca4ec),UINT32_C(0x00000086),2u},\n        {UINT32_C(0x006ca4ee),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4ef),UINT32_C(0x00000012),1u},\n        {UINT32_C(0x006ca4f0),UINT32_C(0x0000013a),2u},\n        {UINT32_C(0x006ca4f2),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4f3),UINT32_C(0x0000000c),1u},\n        {UINT32_C(0x006ca4f4),UINT32_C(0x00000164),2u},\n        {UINT32_C(0x006ca4f6),UINT32_C(0x00000001),1u},\n        {UINT32_C(0x006ca4f7),UINT32_C(0x00000010),1u},\n        {UINT32_C(0x006ca4f8),UINT32_C(0x00000171),2u},\n        {UINT32_C(0x006ca4fa),UINT32_C(0x00000000),1u},\n        {UINT32_C(0x006ca4fb),UINT32_C(0x0000000a),1u},\n        {UINT32_C(0x006ca71c),UINT32_C(0x00000000),2u},\n        {UINT32_C(0x006ca720),UINT32_C(0x8000affc),4u},\n        {UINT32_C(0x006ca724),UINT32_C(0x8000ada0),4u},\n        {UINT32_C(0x006ca728),UINT32_C(0x8019aee0),4u},\n        {UINT32_C(0x006ca72c),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca730),UINT32_C(0x00000001),4u},\n        {UINT32_C(0x006ca734),UINT32_C(0x00000002),4u},\n        {UINT32_C(0x006ca738),UINT32_C(0x00005000),4u},\n        {UINT32_C(0x006ca73c),UINT32_C(0x00002000),4u},\n        {UINT32_C(0x006ca740),UINT32_C(0x00000400),4u},\n        {UINT32_C(0x006ca744),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca748),UINT32_C(0x0000c800),4u},\n        {UINT32_C(0x006ca74c),UINT32_C(0x00000002),2u},\n        {UINT32_C(0x006ca750),UINT32_C(0x00004000),4u},\n        {UINT32_C(0x006ca754),UINT32_C(0x800a1a50),4u},\n        {UINT32_C(0x006ca758),UINT32_C(0x80004860),4u},\n        {UINT32_C(0x006ca75c),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca760),UINT32_C(0x00000400),4u},\n        {UINT32_C(0x006ca764),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca768),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca76c),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca770),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca774),UINT32_C(0x0000005c),4u},\n        {UINT32_C(0x006ca778),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca77c),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca780),UINT32_C(0x802d9208),4u},\n        {UINT32_C(0x006ca784),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca788),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca78c),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca790),UINT32_C(0x00000088),4u},\n        {UINT32_C(0x006ca794),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca798),UINT32_C(0x00000058),4u},\n        {UINT32_C(0x006ca79c),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca7a0),UINT32_C(0x00000090),4u},\n        {UINT32_C(0x006ca7a4),UINT32_C(0x802d90b8),4u},\n        {UINT32_C(0x006ca700),UINT32_C(0x803b5000),4u},\n        {UINT32_C(0x006ca704),UINT32_C(0x803da800),4u},\n        {UINT32_C(0x006ca708),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca70c),UINT32_C(0x00000000),4u},\n        {UINT32_C(0x006ca710),UINT32_C(0x00000140),4u},\n        {UINT32_C(0x006ca714),UINT32_C(0x000000f0),4u},\n        {UINT32_C(0x006ca718),UINT32_C(0x00000a99),4u},\n    };\n    size_t i, j;\n    if (!rom || bytes != UINT32_C(0x1000000)) return ISLE_GAME_INVALID_ARGUMENT;\n    for (i=0;i<sizeof(fields)/sizeof(fields[0]);++i) {\n        uint32_t bits=0;\n        if (fields[i].offset > bytes || fields[i].width > bytes-fields[i].offset) return ISLE_GAME_INVALID_STATE;\n        for (j=0;j<fields[i].width;++j) bits=(bits<<8)|rom[fields[i].offset+j];\n        if (bits != fields[i].bits) return ISLE_GAME_INVALID_STATE;\n    }\n    return ISLE_GAME_OK;\n}\n",
+  "postamble": "\n",
+  "generator_sha256": "d7984af598884c23ab1be0ad5a6cc6427361ea8883dfa70bee35089f3a49f881"
+}

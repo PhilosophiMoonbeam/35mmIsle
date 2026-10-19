@@ -87,6 +87,13 @@ DEFINITIONS = (
         ("    PokemonTransform* sp2C;\n", ""),
         ("    sp2C = GET_TRANSFORM(sp30->data.dobj);\n    sp2C->pos.v.x = arg1->x;\n    sp2C->pos.v.y = arg1->y;\n    sp2C->pos.v.z = arg1->z;", "    isle_actor_source_publish_position(sp30, *arg1);"),
     )),
+    (COMMON, "func_8035E1D4_4FE5E4", 143, 154, (
+        ("    PokemonTransform* sp2C;", "    IsleGameVec3 sp2C;"),
+        ("    sp2C = GET_TRANSFORM(sp30->data.dobj);", "    sp2C = isle_actor_source_position(sp30, sp30, 1);"),
+        ("    getGroundAt(sp2C->pos.v.x, sp2C->pos.v.z, &sp18);", "    isle_actor_source_ground(sp30, sp2C.x, sp2C.z, &sp18);"),
+        ("    sp2C->pos.v.y = sp18.height;", "    sp2C.y = sp18.height;\n    isle_actor_source_publish_position(sp30, sp2C);"),
+    )),
+    (COMMON, "func_8035E238_4FE648", 156, 162, ()),
     (POKEMON, "Pokemon_AddAtGeo", 793, 826, (
         ("PokemonDef* def", "const PokemonDef* def"),
         ("    ObjectSpawn spawn;", "    IsleActorGeoSpawn spawn;"),
@@ -138,6 +145,18 @@ MOVEMENT_DEFINITIONS = (
         ("    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
         ("            transform->pos.v.y -= fallSpeed;", "            IsleGameModelTransform values;\n            values.position.y = isle_actor_source_aux(obj, &model)->position.y;\n            values.position.y -= fallSpeed;\n            isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
         ("transform->pos.v.y <= minHeight", "isle_actor_source_aux(obj, &model)->position.y <= minHeight"),
+    )),
+    (POKEMON, "Pokemon_JumpAndBounceFromGround", 1070, 1119, (
+        ("    DObj* model = obj->data.dobj;", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
+        ("GET_TRANSFORM(model)->rot.v.y", "isle_actor_source_aux(obj, &model)->rotation.y"),
+        ("randFloat()", "isle_actor_source_rand_float(obj)"),
+        ("getGroundAt(GET_TRANSFORM(model)->pos.v.x, GET_TRANSFORM(model)->pos.v.z, &pokemon->currGround)", "isle_actor_source_ground(obj, isle_actor_source_aux(obj, &model)->position.x, isle_actor_source_aux(obj, &model)->position.z, &pokemon->currGround)"),
+        ("GET_TRANSFORM(model)->pos.v.y < pokemon->currGround.height", "isle_actor_source_aux(obj, &model)->position.y < pokemon->currGround.height"),
+        ("cmdSendCommand(gObjPlayer, PLAYER_CMD_SHAKE_CAMERA, obj)", "isle_actor_source_send_addressed(obj, isle_actor_source_player(obj), 3, obj)"),
+        ("                GET_TRANSFORM(model)->pos.v.y = pokemon->currGround.height;", "                IsleGameModelTransform values;\n                values.position.y = pokemon->currGround.height;\n                isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &values);"),
+        ("        GET_TRANSFORM(model)->pos.v.x += velX;", "        IsleGameModelTransform valuesX;\n        valuesX.position.x = isle_actor_source_aux(obj, &model)->position.x;\n        valuesX.position.x += velX;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PX, &valuesX);"),
+        ("        GET_TRANSFORM(model)->pos.v.y += velY;", "        IsleGameModelTransform valuesY;\n        valuesY.position.y = isle_actor_source_aux(obj, &model)->position.y;\n        valuesY.position.y += velY;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PY, &valuesY);"),
+        ("        GET_TRANSFORM(model)->pos.v.z += velZ;", "        IsleGameModelTransform valuesZ;\n        valuesZ.position.z = isle_actor_source_aux(obj, &model)->position.z;\n        valuesZ.position.z += velZ;\n        isle_actor_source_aux_store(obj, &model, ISLE_ACTOR_PZ, &valuesZ);"),
     )),
     (POKEMON, "Pokemon_FallDownOnGround", 1121, 1144, (
         ("    DObj* model = obj->data.dobj;\n    PokemonTransform* transform = GET_TRANSFORM(model);", "    IsleGameModelRef model = isle_actor_source_self_model(obj);"),
@@ -536,16 +555,16 @@ static const PokemonInitData D_beach_802CD948 = { UINT32_C(0x802cd948) };
 #define POKEMON_FLAG_800 0x800
 static const IsleGameVec3 D_8038838C_52879C = { 0.0f, 0.0f, 0.0f };
 #define PokemonID_1003 1003
-/* QUALIFIED native numeric policy, not established original SDK macro parity.
- * PI retains the existing NIST DLMF3.12.E1 unsuffixed double token/value.
- * TAU/PI_2 are double expressions; M_PI_F is rounded binary32 PI.
- * SIGN returns +1 for either signed zero. SQ preserves product grouping.
- * ABS compares with zero, preserving the input zero's sign. */
-#define PI 3.14159265358979323846
-#define TAU (2.0 * PI)
-#define PI_2 (PI / 2.0)
-#define M_PI_F 3.14159265358979323846f
-#define SIGN(value) (((value) >= 0) ? 1 : -1)
+/* Pinned ultralib/include/macros.h numeric tokens and comparison semantics. */
+#define PI 3.1415927f
+#define TAU 6.2831855f
+#define PI_2 1.5707964f
+/* ISO C does not require math.h to expose the pinned M_PI double constant. */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+#define M_PI_F ((f32) M_PI)
+#define SIGN(value) (((value) < 0) ? -1 : 1)
 #define SQ(value) ((value) * (value))
 #define ABS(value) (((value) < 0) ? -(value) : (value))
 /* Native World AnimationPath kind values, not an InterpData layout. */
@@ -581,7 +600,7 @@ def prepare(repository, manifest_path, output_path, owner_output_path, evidence_
     manifest_bytes = manifest_path.read_bytes()
     manifest = json.loads(manifest_bytes)
     if (manifest["schema_version"] != 1 or manifest["revision"] != REVISION or
-            manifest["transformation_version"] != "actor-control-v9"):
+            manifest["transformation_version"] != "actor-control-v10"):
         raise ValueError("unsupported actor authority/transformation")
     if git(repository, "cat-file", "-t", REVISION).strip() != b"commit":
         raise ValueError("actor authority is not a commit")

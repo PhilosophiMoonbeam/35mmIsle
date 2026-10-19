@@ -57,6 +57,9 @@ struct CollisionModel {
     const rom::Snapshot* snapshot = nullptr;
     const std::byte* source_data = nullptr;
 };
+// Exact independently initialized Tunnel1009 singleton, not a World table entry.
+// Snapshot must remain alive and unmoved until this and all prepared borrowers die.
+CollisionModel tunnel_gate_collision(const rom::Snapshot&);
 // Closed initialized Rainbow Gate record, not an arbitrary guest-root decoder.
 // Snapshot must remain alive and unmoved until this and all prepared borrowers die.
 // Legal US ROM: record [0x82a690,0x82a69c), tree [0x6b728,0x6b8b4).

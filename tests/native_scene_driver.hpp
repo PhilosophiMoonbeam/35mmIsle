@@ -71,7 +71,7 @@ public:
                   publication.acknowledged == publication.accepted,
                   "source contUpdate did not acknowledge the newly acquired sample");
             services_.raw_game_time = static_cast<std::uint32_t>(host::RetraceClock::guest_ticks(elapsed_ns()));
-            check(isle_game_tick(services_.game) == ISLE_GAME_OK,"actual scene OM update failed");
+            check(services_.tick() == ISLE_GAME_OK,"actual scene OM update failed");
             check(!scene_.failed(),scene_.error());
             if (exited_(scene_)) clock_.request_stop();
             checked(clock_.finish_update());

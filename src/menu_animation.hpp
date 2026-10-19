@@ -202,6 +202,10 @@ public:
     // Bitwise changes (including signed zero) dirty only this node and Runtime;
     // tracks/clocks/bindings/flags and borrowed events remain untouched.
     Status set_node_transform(InstanceHandle, std::size_t node, const Transform&) noexcept;
+    // Source DObj.flags write; preserve tracks, clocks and borrowed events.
+    Status set_node_flags(InstanceHandle, std::size_t node, std::uint32_t) noexcept;
+    // Direct Source timeLeft store; preserve phase, program and event leases.
+    Status set_node_time_left(InstanceHandle, std::size_t node, float) noexcept;
     // Source animSet semantics: clear track kinds but retain allocated track
     // values/rates and current fields/flags; skip is source skipFrames.
     // Capped material restarts require zero skip; bind_model remains independent.

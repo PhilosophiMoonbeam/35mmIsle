@@ -4,7 +4,10 @@
 #include "rom_view.hpp"
 #include <stdexcept>
 namespace isle::screen_transition {
-Resources::Resources(const rom::Snapshot& snapshot) {
+Resources::Resources(const rom::Snapshot& snapshot,sprite::RamRange memory):workspace_(memory) {
+    if(memory.size!=workspace.size || (memory.address&63u) || memory.address>0x800000u ||
+       memory.size>0x800000u-memory.address)
+        throw std::invalid_argument("transition workspace lacks its aligned retained RDRAM extent");
     const auto bytes=snapshot.canonical().subspan(0x5a620,0x3e0);
     const rom::GuestView solid{0x800aecb0,0x5a660,bytes.subspan(0x40,0x30)};
     const rom::GuestView round{0x800aeee0,0x5a890,bytes.subspan(0x270,0xa0)};
@@ -26,13 +29,28 @@ render::Pass Resources::pass(Owner& owner) noexcept {
     result.link_mask=s.camera_mask;
     result.camera_tag=s.camera_buffer_mask;
     result.prepare=prepare;
-    result.userdata=&owner;
+    result.userdata=this;
     result.transition_owner=&owner;
+    // Only the actual solid transition uses a depthless render mode. Retain
+    // the conservative default for any included round/shape transition.
+    result.requires_depth=false;
+    for (auto* r=owner.objects;r;r=r->next) {
+        if (r->joined) continue;
+        scene::RenderMetadata metadata;
+        if (!owner.services.render_metadata(r->object,metadata)) {
+            result.requires_depth=true; break;
+        }
+        if (result.includes(metadata) && r->render_kind!=0) {
+            result.requires_depth=true; break;
+        }
+    }
     return result;
 }
 bool Resources::prepare(void* user,std::span<uint32_t> ram,uint64_t,
     const render::Pass& pass,render::Prepared& output) {
-    auto& owner=*static_cast<Owner*>(user);
+    if(!user || !pass.transition_owner)return false;
+    const auto workspace=static_cast<Resources*>(user)->workspace_;
+    auto& owner=*pass.transition_owner;
     auto& s=owner.source;
     if (s.status!=ISLE_GAME_OK || s.D_800BE2C8!=pass.camera) return false;
     auto check=[&](IsleGameResult r) { if (r!=ISLE_GAME_OK && s.status==ISLE_GAME_OK) s.status=r; return r==ISLE_GAME_OK; };
@@ -43,8 +61,8 @@ bool Resources::prepare(void* user,std::span<uint32_t> ram,uint64_t,
         !check(isle_game_camera_matrix(s.game,pass.camera,1,&view)) ||
         !check(isle_game_camera_perspective_normalization(s.game,pass.camera,&normalization))) return false;
     graphics::Memory memory(ram);
-    constexpr uint32_t projection_at=workspace.address,view_at=projection_at+64;
-    constexpr uint32_t commands_at=workspace.address+0x100;
+    const uint32_t projection_at=workspace.address,view_at=projection_at+64;
+    const uint32_t commands_at=workspace.address+0x100;
     uint32_t cursor=commands_at, matrix=workspace.address+0x8000;
     auto cmd=[&](uint32_t a,uint32_t b) {
         if (cursor>workspace.address+0x8000-8) throw std::length_error("transition source command storage exhausted");
@@ -52,11 +70,13 @@ bool Resources::prepare(void* user,std::span<uint32_t> ram,uint64_t,
     };
     memory.matrix(projection_at,projection->fixed);memory.matrix(view_at,view->fixed);
     cmd(0xda380007,projection_at);cmd(0xdb0e0000,normalization);cmd(0xda380005,view_at);
+    output.requires_depth=false;
     for (auto* r=owner.objects;r;r=r->next) {
         if (r->joined) continue;
         scene::RenderMetadata metadata;
         if (!owner.services.render_metadata(r->object,metadata)) return false;
         if (!pass.includes(metadata)) continue;
+        if (r->render_kind!=0) output.requires_depth=true;
         const IsleGameModelNode* nodes=nullptr;size_t count=0;
         if (!check(isle_game_model_nodes(s.game,r->model,&nodes,&count)) || count!=1) return false;
         if (matrix>workspace.address+workspace.size-128) return false;

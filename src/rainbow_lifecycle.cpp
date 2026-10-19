@@ -76,7 +76,7 @@ struct Lifecycle::Impl {
     bool helper_observed=false;
     bool input_registered=false,input_joined=false;
     bool domains_bound=false, ui_bound=false, collision_bound=false;
-    bool join_receipt=false;
+    bool join_receipt=false,audio_stopped=false;
     player::cart::Owner::Reference cutscene_cart;
     IsleRainbowAnimationCallback cutscene_callback=nullptr;
     bool near_disabled=false;
@@ -312,7 +312,7 @@ void Lifecycle::Impl::cold() {
     native(isle_rainbow_actor_activate(&actor_source,services->game,&actor_services),
         "Rainbow canonical Actor Source activation rejected");
     interactions=std::make_unique<actor::InteractionServices>(*services,*actors,*items,*world,
-        detector,*bindings,actor_resources);
+        detector,*bindings,actor_resources,effect_resources);
     require(bool(actors->bind_interactions(*interactions)),"Rainbow interaction binding rejected");
     input_object=services->object(1u<<9,9,9);
     require(input_object &&
@@ -420,7 +420,16 @@ IsleGameResult Lifecycle::update(std::uint32_t raw_game_time) noexcept {
         return ISLE_GAME_INVALID_STATE;
     self.services->raw_game_time=raw_game_time;
     auto result=self.root->publish_input();
-    if (result==ISLE_GAME_OK) result=isle_game_tick(self.services->game);
+    if (result==ISLE_GAME_OK) result=self.services->tick();
+    // OM traversal and the prior GPU frame are both excluded here. Source
+    // deletion alone retains semantic/native identities and Runtime slots.
+    if (self.items) {
+        const auto collected=self.items->collect_joined();
+        if (!collected && collected.error!=items::OwnerError::lifetime && result==ISLE_GAME_OK) {
+            self.services->fail(collected.detail);
+            result=ISLE_GAME_INVALID_STATE;
+        }
+    }
     if (self.cart && self.intro_instance && self.source.D_8034B674_82ADE4) {
         const auto state=self.cart->membership(self.intro_instance);
         if (state.retiring && !state.joined) {
@@ -495,6 +504,15 @@ bool Lifecycle::Impl::close_scene() noexcept {
     actor_producer.reset(); worlds.reset(); collisions.reset();
     if (environment) environment->cleanup();
     services->stop_sound_ramps();
+    if (cancelling && !audio_stopped) {
+        const auto bgm=audio.stop_bgm();
+        const auto sounds=audio.stop_sounds();
+        if (bgm!=audio::Error::none || sounds!=audio::Error::none) {
+            fail(ISLE_GAME_EXECUTION_FAILURE,"Rainbow cancellation audio borrowers did not stop");
+            return false;
+        }
+        audio_stopped=true;
+    }
     if (input_object) {
         if (!input_joined) services->erase(input_object);
         if (!input_joined) return false;
@@ -505,6 +523,14 @@ bool Lifecycle::Impl::close_scene() noexcept {
     // End real FX attachments before native model retirement. Their node credits
     // are separate from the canonical Source field holds below.
     if (actors) actors->effects().reset();
+    if (actors && (services->failed() || isle_game_status(services->game)!=ISLE_GAME_OK)) {
+        // A failed Game cannot admit World's new Source cleanup processes.
+        // Erase/join first unlinks the real block registry, retaining canonical
+        // field borrows until the exact helper references are cleared below.
+        const auto result=actors->reset();
+        if (!result && result.error!=actor::OwnerError::lifetime &&
+            result.error!=actor::OwnerError::services) return false;
+    }
     if (root && root->retire_objects()!=ISLE_GAME_OK) return false;
     if (world && !world->retire()) return false;
     if (items) {
@@ -836,6 +862,7 @@ IsleGameResult isle_rainbow_lifecycle_native_create_world(IsleRainbowLifecycleSo
             identity!=0x800f5da0u || sky!=99 || first!=100 || last!=126 || link!=9 || render!=3 ||
             add!=isle_rainbow_lifecycle_world_add || remove!=isle_rainbow_lifecycle_world_remove ||
             change!=isle_rainbow_lifecycle_world_change || user!=s) return ISLE_GAME_INVALID_ARGUMENT;
+        self.state.background_rgb=self.world_resources.setup().background_rgb;
         self.world->publish(); self.world_published=true; return ISLE_GAME_OK;
     });
 }
@@ -857,7 +884,7 @@ IsleGameResult isle_rainbow_lifecycle_native_background(IsleRainbowLifecycleSour
     if (!r || !g || !b) return ISLE_GAME_INVALID_ARGUMENT;
     return Access::invoke(s,[&](Impl& self) {
         if (!self.world_published) return ISLE_GAME_INVALID_STATE;
-        const auto rgb=self.world_resources.setup().background_rgb;
+        const auto& rgb=self.state.background_rgb;
         *r=rgb[0]; *g=rgb[1]; *b=rgb[2]; return ISLE_GAME_OK;
     });
 }

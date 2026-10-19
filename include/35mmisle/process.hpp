@@ -32,6 +32,10 @@ public:
     // cancel another process, but cannot resume callbacks or cancel this one.
     // Exceptions return to this worker. No action storage is allocated/copied.
     void on_owner(void (*action)(void*), void* payload);
+    // Explicit serialized scheduler boundary: the owner may dispatch a different
+    // parked process before returning to this caller. This callback remains
+    // parked; its current resume/wait count is unchanged. Self-resume still fails.
+    void on_owner_dispatch(void (*action)(void*), void* payload);
 
 private:
     friend class Process;
@@ -101,7 +105,7 @@ private:
     void require_worker() const;
     void wait(std::uint64_t iterations);
     [[noreturn]] void finish();
-    void on_owner(void (*action)(void*), void* payload);
+    void on_owner(void (*action)(void*), void* payload, bool dispatch);
     void run() noexcept;
     State cancel_and_join();
     void join();
@@ -117,6 +121,7 @@ private:
     std::exception_ptr failure_;
     void (*owner_action_)(void*) = nullptr;
     void* owner_payload_ = nullptr;
+    bool owner_dispatch_ = false;
     std::exception_ptr owner_failure_;
     std::thread::id worker_id_;
     std::thread worker_;

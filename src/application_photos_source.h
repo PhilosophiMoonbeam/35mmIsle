@@ -33,6 +33,41 @@ typedef struct IslePhotoRecord {
     int32_t index; /* Canonical slot, NOT a species ID. */
     uint64_t revision;
 } IslePhotoRecord;
+/* Native cold nonmovable application::PhotoWorking storage. This opaque owner
+ * is never identified as a canonical record and never aliases a save slot. */
+typedef struct IslePhotoWorking IslePhotoWorking;
+typedef struct IslePhotoWorkingRead {
+    IslePhotoWorking* owner;
+    IsleApplicationPhotos* photos;
+    const IslePlayerPhotoData* photo;
+    const uint64_t* revision_address;
+    uint64_t revision;
+    const void* borrower;
+} IslePhotoWorkingRead;
+/* Copy preserves the entire canonical wire image. Stale/absent/wrong-owner
+ * records reject; no NULL fill or semantic re-encode of saved records.
+ * Gallery calls copy_record on all FOUR owners before ANY temporary write.
+ * Mutation/copy/clear of a borrowed destination rejects (even self-copy).
+ * clear is Original sentinel invalidation, not a fabricated saved record. */
+IsleGameResult isle_photo_working_copy_record(IslePhotoWorking*, const IslePhotoRecord*);
+IsleGameResult isle_photo_working_copy(IslePhotoWorking*, const IslePhotoWorking*);
+IsleGameResult isle_photo_working_clear(IslePhotoWorking*);
+/* photo returns the stable semantic view, including the original -1.0f
+ * sentinel after clear. describe returns NULL photo for an invalid owner.
+ * Neither is read authorization; canonical identify still rejects this view. */
+IsleGameResult isle_photo_working_photo(const IslePhotoWorking*, const IslePlayerPhotoData**);
+IsleGameResult isle_photo_working_describe(const IslePhotoWorking*, IslePhotoWorkingRead*);
+/* Single actual Photos/GameSession read lease. Initialize read outputs to zero
+ * or a describe result before acquire; never overwrite a live capability.
+ * Borrower identity and every capability field are validated; retain until
+ * Replay result acknowledgment or the real GPU/native cancellation join.
+ * No destructor auto-releases it. release clears the descriptor only on
+ * success; failure retains ownership. */
+IsleGameResult isle_photo_working_acquire_read(IslePhotoWorking*, const void*, IslePhotoWorkingRead*);
+IsleGameResult isle_photo_working_validate_read(const IslePhotoWorkingRead*);
+IsleGameResult isle_photo_working_release_read(IslePhotoWorkingRead*);
+IsleGameResult isle_application_photos_set_temporary_working(IsleApplicationPhotos*, int32_t, const IslePhotoWorking*);
+IsleGameResult isle_application_photos_set_album_working(IsleApplicationPhotos*, int32_t, const IslePhotoWorking*, const uint16_t*);
 /* All leaves return normally; no Source callbacks, ticks, waits or transfers.
  * Exceptions are contained and reported as ISLE_GAME_INVALID_STATE. Outputs are
  * cleared on failure. No operation here commits to durable storage. */
@@ -76,6 +111,9 @@ IsleGameResult isle_application_photos_remove_album(IsleApplicationPhotos*, int3
  * Invalid slot returns NULL. Removing a photo clears only character zero. */
 IsleGameResult isle_application_photos_album_comment(IsleApplicationPhotos*, int32_t, const uint16_t**);
 IsleGameResult isle_application_photos_set_album_comment(IsleApplicationPhotos*, int32_t, const uint16_t*);
+/* Exact indexed canonical store at the Original C assignment, not a deferred
+ * writer held across ohWait(10). Both signed bounds are checked. */
+IsleGameResult isle_application_photos_set_album_comment_char(IsleApplicationPhotos*, int32_t slot, int32_t character, uint16_t value);
 IsleGameResult isle_application_photos_pending_item_grant(IsleApplicationPhotos*, int source_index, int*);
 IsleGameResult isle_application_photos_set_pending_item_grant(IsleApplicationPhotos*, int source_index, int value);
 #ifdef __cplusplus

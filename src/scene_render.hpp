@@ -13,6 +13,9 @@ struct Pass;
 struct Prepared {
     List camera;
     std::array<List, 4> lanes{};
+    // Conservative compiled-producer declaration, independently checked against
+    // Pass after preparation when Source explicitly applied viZBuffer=NULL.
+    bool requires_depth = true;
 };
 // Called synchronously under the one exclusive actual-RSP preparation lease.
 // The compiled scene producer owns its native model/material/effect facts; it
@@ -48,6 +51,7 @@ struct Pass {
     // Actual transition owner retained through preparation, GPU and readback.
     ::isle::screen_transition::Owner* transition_owner = nullptr;
     Control control = nullptr;
+    bool requires_depth = true;
     bool includes(RenderMetadata object) const noexcept {
         return object.link < 64 && ((link_mask >> object.link) & 1u) &&
                (tag_match == TagMatch::equality ? object.camera_tag == camera_tag :

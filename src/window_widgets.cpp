@@ -16,6 +16,11 @@ bool Frame::create() noexcept {
  set_size(204,56);return true;
 }
 void Frame::retire() noexcept {if(active_fade_)cancel_fade(*active_fade_);for(auto& h:sprites_){if(h.object)s_.erase(h.object);h={};}}
+bool Frame::hidden() noexcept {
+ if(active_fade_ || !sprites_[0].sprite)return false;
+ for(const auto h:sprites_){const auto* v=s_.view(h.sprite);if(!v || !(v->attr&ISLE_SP_HIDDEN))return false;}
+ return !s_.failed();
+}
 void Frame::show(bool b) noexcept {for(auto h:sprites_)visibility(s_.view(h.sprite),b);}
 void Frame::show_background(bool b) noexcept {visibility(s_.view(sprites_[6].sprite),b);}
 void Frame::set_opacity(int a) noexcept {for(auto h:sprites_)if(auto v=s_.view(h.sprite))v->alpha=static_cast<std::uint8_t>(a);}

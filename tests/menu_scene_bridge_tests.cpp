@@ -1,4 +1,5 @@
 #include "menu_scene_bridge.h"
+#include "source_factory_resources.h"
 #include "owned_command_fixture.h"
 
 #include <array>
@@ -41,7 +42,7 @@ void ordered_commands_and_release() {
     unsigned calls = 0;
     IsleGameProcess* process = nullptr;
     check(isle_game_add_process(f.game, object, count, &calls, ISLE_GAME_SYNCHRONOUS, 1, &process) == ISLE_GAME_OK, "command target process");
-    IsleGameCommandPool pool{&f.arena, nullptr};
+    IsleGameCommandPool pool{&f.arena, nullptr, 0};
     IsleGameCommandQueue queue{};
     int erase = 0;
     check(isle_game_command_send(&pool, &queue, -2, object) == ISLE_GAME_OK && queue.count == 1, "enqueue actual pause command");
@@ -89,6 +90,141 @@ void initial_pool_overflow_recycling_and_rejection() {
     check(isle_menu_reserve_pools(f.game, &f.arena, std::numeric_limits<std::size_t>::max(), 1, 0, 0, 0) == ISLE_GAME_EXHAUSTED &&
           f.arena.cursor == grown, "oversized pool reservation publishes no cursor change");
     check(isle_menu_end_processes(f.game, overflow) == ISLE_GAME_OK, "empty process chain ends without removing object");
+}
+void frozen_native_capacity_rejects_growth_and_recycles() {
+    Fixture f;
+    check(isle_menu_reserve_pools(f.game,&f.arena,1,0,0,0,0)==ISLE_GAME_OK,
+          "reserve explicit physical object envelope");
+    IsleGameCommandPool pool{&f.arena,nullptr,0};
+    check(isle_menu_reserve_native_capacity(f.game,&pool,2,nullptr,0)==ISLE_GAME_OK,
+          "freeze seeded physical pools with two command nodes");
+    const auto reserved=f.arena.cursor;
+    auto* object=f.object();
+    IsleGameObject* overflow=nullptr;
+    check(isle_game_add_object(f.game,15,0,0,nullptr,nullptr,&overflow)==ISLE_GAME_EXHAUSTED &&
+          overflow==nullptr && f.arena.cursor==reserved,
+          "frozen object exhaustion never falls back to available arena space");
+    IsleGameCommandQueue queue{};
+    check(isle_game_command_send(&pool,&queue,-4,nullptr)==ISLE_GAME_OK &&
+          isle_game_command_send(&pool,&queue,-5,nullptr)==ISLE_GAME_OK,
+          "reserved command capacity accepts its exact boundary");
+    const auto* head=queue.head;
+    const auto* tail=queue.tail;
+    check(isle_game_command_send(&pool,&queue,19,nullptr)==ISLE_GAME_EXHAUSTED &&
+          queue.count==2 && queue.head==head && queue.tail==tail && f.arena.cursor==reserved,
+          "command exhaustion preserves the complete queued prefix and arena");
+    isle_game_commands_release(&pool,&queue);
+    check(isle_game_command_send(&pool,&queue,-4,nullptr)==ISLE_GAME_OK && f.arena.cursor==reserved,
+          "released command storage remains reusable after freezing");
+    int erase=0;
+    check(isle_game_commands(f.game,object,&pool,&queue,nullptr,nullptr,&erase)==ISLE_GAME_OK &&
+          isle_menu_object_hidden(f.game,object) && queue.count==0,
+          "recycled frozen command executes its actual builtin effect");
+    check(isle_game_delete_object(f.game,object)==ISLE_GAME_OK && f.object()==object &&
+          f.arena.cursor==reserved,"frozen object retirement reuses physical storage");
+    check(isle_menu_reserve_pools(f.game,&f.arena,1,0,0,0,0)==ISLE_GAME_INVALID_STATE &&
+          isle_menu_reserve_native_capacity(f.game,&pool,1,nullptr,0)==ISLE_GAME_INVALID_STATE &&
+          f.arena.cursor==reserved,"frozen pools cannot be expanded or refrozen");
+}
+void frozen_models_require_reserved_native_storage() {
+    Fixture f;
+    check(isle_menu_reserve_pools(f.game,&f.arena,1,0,0,0,0)==ISLE_GAME_OK,
+          "seed the model owner's physical object");
+    IsleGameCommandPool pool{&f.arena,nullptr,0};
+    check(isle_menu_reserve_native_capacity(f.game,&pool,0,nullptr,0)==ISLE_GAME_OK,
+          "freeze with no reserved native models");
+    auto* object=f.object();
+    const IsleGameModelNodeInit root{UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE};
+    IsleGameModel* model=nullptr;
+    const auto reserved=f.arena.cursor;
+    check(isle_game_attach_model(f.game,object,&root,1,&model)==ISLE_GAME_EXHAUSTED &&
+          model==nullptr && f.arena.cursor==reserved,
+          "an unreserved model cannot grow a frozen native arena");
+}
+void frozen_model_shapes_recycle_without_growth() {
+    Fixture f;
+    check(isle_menu_reserve_pools(f.game,&f.arena,4,0,0,0,0)==ISLE_GAME_OK,
+          "seed model and unpublished-factory owner slots");
+    IsleGameCommandPool pool{&f.arena,nullptr,0};
+    const IsleGameModelCapacity capacities[]{{1,1},{3,1}};
+    check(isle_menu_reserve_native_capacity(f.game,&pool,1,capacities,2)==ISLE_GAME_OK,
+          "reserve distinct native model shapes before freezing");
+    const auto reserved=f.arena.cursor;
+    auto* a=f.object();
+    auto* b=f.object();
+    auto* c=f.object();
+    const IsleGameModelNodeInit nodes[]{
+        {UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE},
+        {0,{{1,2,3},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE},
+        {1,{{4,5,6},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE}
+    };
+    IsleGameModel* small=nullptr;
+    IsleGameModel* large=nullptr;
+    IsleGameModel* overflow=nullptr;
+    check(isle_game_attach_model(f.game,a,nodes,1,&small)==ISLE_GAME_OK &&
+          isle_game_attach_model(f.game,b,nodes,3,&large)==ISLE_GAME_OK &&
+          f.arena.cursor==reserved,"best-fit reserves preserve both native shapes");
+    check(isle_game_attach_model(f.game,c,nodes,1,&overflow)==ISLE_GAME_EXHAUSTED &&
+          overflow==nullptr && f.arena.cursor==reserved,
+          "live model depletion cannot allocate from the remaining arena");
+    check(isle_game_remove_model(f.game,small)==ISLE_GAME_OK,
+          "release the small model without deleting its actual owner");
+    IsleSourceFactoryResources factory{};
+    check(isle_source_factory_prepare(f.game,1,nullptr,0,&factory)==ISLE_GAME_OK &&
+          f.arena.cursor==reserved,
+          "actual unpublished Source factory reserves recycled frozen model storage");
+    check(isle_source_factory_cancel(&factory)==ISLE_GAME_OK && f.arena.cursor==reserved,
+          "factory cancellation returns frozen model/object storage");
+    check(isle_game_remove_model(f.game,large)==ISLE_GAME_OK &&
+          isle_game_attach_model(f.game,c,nodes,2,&overflow)==ISLE_GAME_OK &&
+          overflow==large && f.arena.cursor==reserved,
+          "released larger model storage serves a smaller live shape without growth");
+}
+void failed_model_reservation_keeps_old_storage_and_growth_policy() {
+    Fixture f;
+    auto* object=f.object();
+    const IsleGameModelNodeInit nodes[]{
+        {UINT32_MAX,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE},
+        {0,{{},{},{1,1,1}},ISLE_GAME_MODEL_TRANSLATE}
+    };
+    IsleGameModel* old=nullptr;
+    check(isle_game_attach_model(f.game,object,nodes,1,&old)==ISLE_GAME_OK &&
+          isle_game_remove_model(f.game,old)==ISLE_GAME_OK,"seed preexisting free model");
+    IsleGameCommandPool pool{&f.arena,nullptr,0};
+    const auto before=f.arena.cursor;
+    const IsleGameModelCapacity impossible[]{{1,1},{3,std::numeric_limits<std::size_t>::max()}};
+    check(isle_menu_reserve_native_capacity(f.game,&pool,2,impossible,2)==ISLE_GAME_EXHAUSTED &&
+          f.arena.cursor==before && pool.free==nullptr && !pool.fixed_capacity,
+          "partial model exhaustion publishes neither commands nor model classes nor freeze");
+    IsleGameModel* recycled=nullptr;
+    check(isle_game_attach_model(f.game,object,nodes,1,&recycled)==ISLE_GAME_OK &&
+          recycled==old && f.arena.cursor==before &&
+          isle_game_remove_model(f.game,recycled)==ISLE_GAME_OK,
+          "failed reservation leaves the preexisting released model intact");
+    check(isle_game_attach_model(f.game,object,nodes,2,&recycled)==ISLE_GAME_OK &&
+          f.arena.cursor>before,"failed model reservation preserves ordinary growth");
+}
+void failed_or_late_capacity_reservation_does_not_freeze() {
+    {
+        Fixture f;
+        IsleGameCommandPool pool{&f.arena,nullptr,0};
+        const auto before=f.arena.cursor;
+        check(isle_menu_reserve_native_capacity(f.game,&pool,std::numeric_limits<std::size_t>::max(),nullptr,0)==
+              ISLE_GAME_EXHAUSTED && f.arena.cursor==before,
+              "overflowed command reservation publishes no partial capacity");
+        check(f.object()!=nullptr && f.arena.cursor>before,
+              "failed reservation leaves the previous growth policy usable");
+    }
+    {
+        Fixture f;
+        check(isle_game_tick(f.game)==ISLE_GAME_OK,"run an actual first native update");
+        IsleGameCommandPool pool{&f.arena,nullptr,0};
+        const auto before=f.arena.cursor;
+        check(isle_menu_reserve_native_capacity(f.game,&pool,1,nullptr,0)==ISLE_GAME_INVALID_STATE &&
+              f.arena.cursor==before,"capacity cannot be frozen after execution starts");
+        check(f.object()!=nullptr && f.arena.cursor>before,
+              "late rejection leaves the previous growth policy intact");
+    }
 }
 struct SelfEnd {
     IsleGame* game = nullptr;
@@ -161,7 +297,7 @@ void custom_commands_share_the_builtin_fifo() {
     Fixture f;
     auto* object = f.object();
     auto* source = f.object();
-    IsleGameCommandPool pool{&f.arena,nullptr};
+    IsleGameCommandPool pool{&f.arena,nullptr,0};
     IsleGameCommandQueue queue{};
     Custom state{f.game,&pool,&queue};
     int erase = 0;
@@ -221,6 +357,11 @@ void deferred_retirement_joins_before_userdata_recycling() {
 int main() {
     ordered_commands_and_release();
     initial_pool_overflow_recycling_and_rejection();
+    frozen_native_capacity_rejects_growth_and_recycles();
+    frozen_models_require_reserved_native_storage();
+    frozen_model_shapes_recycle_without_growth();
+    failed_model_reservation_keeps_old_storage_and_growth_policy();
+    failed_or_late_capacity_reservation_does_not_freeze();
     self_end_is_a_real_continuation_fence();
     prefix_reentry_preserves_native_process_order();
     custom_commands_share_the_builtin_fifo();

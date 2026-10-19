@@ -109,6 +109,17 @@ IsleGameResult isle_post_replay_preview(IslePostCourseReplay* context,
     return drive(context, operation, step, NULL, NULL, consume, user);
 }
 
+IsleGameResult isle_post_replay_preview_working(IslePostCourseReplay* context,
+    IslePhotoWorking* working, int32_t width, int32_t height, float scale,
+    IslePostCoursePreviewConsumer consume, void* user) {
+    IslePostCourseReplayOperation operation = {0};
+    IslePostCourseReplayStep step;
+    if (!context) return ISLE_GAME_INVALID_ARGUMENT;
+    if (!consume) return finish(context, operation, ISLE_GAME_INVALID_ARGUMENT);
+    step = isle_post_replay_preview_working_begin(context, working, width, height, scale, &operation);
+    return drive(context, operation, step, NULL, NULL, consume, user);
+}
+
 IsleGameResult isle_post_replay_stop(IslePostCourseReplay* context) {
     IsleGameResult result;
     if (!context) return ISLE_GAME_INVALID_ARGUMENT;

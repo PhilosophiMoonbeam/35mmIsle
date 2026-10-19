@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string_view>
 #include <thread>
+#include <utility>
 
 namespace {
 #ifdef _WIN32
@@ -86,7 +87,9 @@ int run(int argc,Argument** argv) {
     if (input.start(initial.ports)!=isle::game_input::Error::none) {
         std::cerr<<"Actual controller initialization failed.\n";return 1;
     }
-    isle::game::State state(host.data_directory()/"profile");
+    auto profile=host.data_directory()/"profile";
+    std::filesystem::create_directory(profile);
+    isle::game::State state(std::move(profile));
     auto made=isle::application::Runtime::create(snapshot,*catalog.catalog,state,input,*host.audio(),clock,application_config);
     if (!made) { std::cerr<<made.message.data()<<'\n';(void)input.stop();return 1; }
     auto& application=*made.runtime;

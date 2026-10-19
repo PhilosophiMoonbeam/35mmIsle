@@ -3,6 +3,8 @@
 // reached calls: camera_check/{87A330,87D1A0}.c and
 // photo_check/{98C330,993C50}.c. This veneer uses their existing native owners.
 #include "post_course_window.hpp"
+#include "credits_window_extension.h"
+#include "scene_graphics.hpp"
 #include <algorithm>
 #include <cstring>
 #include <exception>
@@ -38,9 +40,20 @@ struct PhotoPrototype {
     std::size_t source_bytes=0,plane_bytes=0;
 };
 PhotoPrototype photo_prototype(const post_course::Resources& resources,std::uint32_t identity) {
-    const bool camera=resources.kind()==post_course::Resources::Kind::camera_check;
-    if((camera && identity!=0x80201520u && identity!=0x80208900u) ||
-       (!camera && identity!=0x801f3b10u))
+    const auto kind=resources.kind();
+    const bool camera=kind==post_course::Resources::Kind::camera_check;
+    const bool photo=kind==post_course::Resources::Kind::photo_check;
+    const bool album=kind==post_course::Resources::Kind::album;
+    const bool report=kind==post_course::Resources::Kind::report;
+    const bool gallery=kind==post_course::Resources::Kind::gallery;
+    constexpr std::array<std::uint32_t,7> report_roots{
+        0x801f67e8u,0x801f7820u,0x801f8858u,0x801f9890u,0x801fa8c8u,0x801fb900u,0x80202ce8u};
+    if ((camera && identity!=0x80201520u && identity!=0x80208900u) ||
+        (photo && identity!=0x801f3b10u) ||
+        (album && identity!=0x80201728u && identity!=0x80208b10u) ||
+        (report && std::find(report_roots.begin(),report_roots.end(),identity)==report_roots.end()) ||
+        (gallery && identity!=0x801ea1b0u) ||
+        (!camera && !photo && !album && !report && !gallery))
         throw std::invalid_argument("unreached post-course Photo prototype");
     const auto& view=*resources.roots()[resources.sprite_index(identity)];
     if(view.bmfmt!=0 || view.bmsiz!=2 || view.width<=0 || view.height<=0 ||
@@ -119,6 +132,13 @@ struct State {
         IsleGameSprite* sprite=nullptr;
         std::uint32_t prototype=0;
         std::uint64_t serial=0;
+        std::uint32_t credits_holds=0;
+        bool credits=false;
+    };
+    struct ThumbnailAlias {
+        IsleGameObject* object=nullptr;
+        IsleGameSprite* sprite=nullptr;
+        Thumbnail* thumbnail=nullptr;
     };
     struct ThumbnailStorage {
         std::shared_ptr<Heap> heap;
@@ -156,6 +176,8 @@ struct State {
     std::unique_ptr<Operation[]> operations;
     std::unique_ptr<Table[]> tables;
     std::unique_ptr<Thumbnail[]> thumbnails;
+    std::unique_ptr<ThumbnailAlias[]> thumbnail_aliases;
+    scene::graphics::Frame* graphics=nullptr;
     std::size_t thumbnail_count=0;
     std::unique_ptr<IsleGameObject*[]> adopted;
     std::unique_ptr<bool[]> owned;
@@ -168,7 +190,8 @@ struct State {
       :services(s),text(t),frame(f),focus(m),layout(l),buttons(b),resources(r),heap(std::move(h)),
        producer(p),capacity(c),elements(std::make_unique<ElementSlot[]>(c.rasters.size())),
        operations(std::make_unique<Operation[]>(c.operations)),tables(std::make_unique<Table[]>(c.button_tables)),
-       thumbnails(std::make_unique<Thumbnail[]>(c.thumbnails.size())),thumbnail_count(c.thumbnails.size()),
+       thumbnails(std::make_unique<Thumbnail[]>(c.thumbnails.size())),
+       thumbnail_aliases(std::make_unique<ThumbnailAlias[]>(c.adopted_objects)),thumbnail_count(c.thumbnails.size()),
        adopted(std::make_unique<IsleGameObject*[]>(c.adopted_objects)),
        owned(std::make_unique<bool[]>(c.adopted_objects)) {
         if (!heap || c.rasters.empty() || !c.operations || !c.buttons_per_table)
@@ -178,31 +201,39 @@ struct State {
             if (!slot.plane_capacity || slot.plane_capacity>0x20000000u)
                 throw std::invalid_argument("post-course window plane capacity");
             for (unsigned plane=0;plane<2;++plane) {
+                if (plane && !slot.physical[plane]) continue;
                 const std::uint64_t start=slot.physical[plane],end=start+slot.plane_capacity;
                 if ((start&7u) || end>0x20000000ull || end<=start)
                     throw std::invalid_argument("post-course window physical range");
                 for (std::size_t j=0;j<=i;++j) for (unsigned k=0;k<2;++k) {
                     if (j==i && k>=plane) break;
                     const auto& other=c.rasters[j];
+                    if (k && !other.physical[k]) continue;
                     const std::uint64_t a=other.physical[k],z=a+other.plane_capacity;
                     if (start<z && a<end) throw std::invalid_argument("post-course overlapping window ranges");
                 }
             }
             elements[i].memory=slot;
         }
+        const bool credits=resources.kind()==post_course::Resources::Kind::credits;
+        if (credits && (c.rasters.size()<14 || c.thumbnails.size()>5))
+            throw std::invalid_argument("Credits requires fourteen Elements and at most five image slots");
+        const unsigned thumbnail_planes=credits?1u:2u;
         for(std::size_t i=0;i<c.thumbnails.size();++i) {
             const auto slot=c.thumbnails[i];
-            if(!slot.plane_capacity || slot.plane_capacity>0x20000000u)
+            if(!slot.plane_capacity || slot.plane_capacity>0x20000000u ||
+               (credits && (slot.plane_capacity<8u*3920u || slot.physical[1])))
                 throw std::invalid_argument("post-course thumbnail plane capacity");
-            for(unsigned plane=0;plane<2;++plane) {
+            for(unsigned plane=0;plane<thumbnail_planes;++plane) {
                 const std::uint64_t start=slot.physical[plane],end=start+slot.plane_capacity;
                 if((start&7u) || end>0x20000000ull || end<=start)
                     throw std::invalid_argument("post-course thumbnail physical range");
                 for(const auto& other:c.rasters)for(unsigned k=0;k<2;++k) {
+                    if(k && !other.physical[k])continue;
                     const std::uint64_t a=other.physical[k],z=a+other.plane_capacity;
                     if(start<z && a<end)throw std::invalid_argument("thumbnail overlaps Element reservation");
                 }
-                for(std::size_t j=0;j<=i;++j)for(unsigned k=0;k<2;++k) {
+                for(std::size_t j=0;j<=i;++j)for(unsigned k=0;k<thumbnail_planes;++k) {
                     if(j==i && k>=plane)break;
                     const auto& other=c.thumbnails[j];
                     const std::uint64_t a=other.physical[k],z=a+other.plane_capacity;
@@ -287,6 +318,10 @@ struct State {
         for(std::size_t i=0;i<p.capacity.adopted_objects;++i)if(p.adopted[i]==object) {
             p.adopted[i]=nullptr;p.owned[i]=false;
         }
+        for(std::size_t i=0;i<p.capacity.adopted_objects;++i)if(p.thumbnail_aliases[i].object==object) {
+            // A native join invalidates identities, not outstanding GPU backing.
+            p.thumbnail_aliases[i].object=nullptr;p.thumbnail_aliases[i].sprite=nullptr;
+        }
         // Real join invalidates native aliases, but graphics registration and
         // pixel storage retire only later, outside this native callback.
         for(std::size_t i=0;i<p.thumbnail_count;++i)if(p.thumbnails[i].object==object) {
@@ -339,6 +374,13 @@ struct State {
         return services.failed()?fail(ISLE_GAME_INVALID_STATE):ISLE_GAME_OK;
     }
     IsleGameResult release_thumbnail(Thumbnail& t) noexcept {
+        if(t.credits_holds)return ISLE_GAME_INVALID_STATE;
+        bool aliased=false;
+        for(std::size_t i=0;i<capacity.adopted_objects;++i)if(thumbnail_aliases[i].thumbnail==&t) {
+            if(thumbnail_aliases[i].object)return fail(ISLE_GAME_INVALID_STATE);
+            aliased=true;
+        }
+        if(aliased && (!graphics || !graphics->quiescent()))return fail(ISLE_GAME_INVALID_STATE);
         scene::SpriteHandle owner;IsleGameSprite *parent,*child,*next,*previous;
         const bool live=t.sprite && services.sprite_links(t.sprite,owner,parent,child,next,previous);
         if(live && owner.object!=t.object)return fail(ISLE_GAME_INVALID_STATE);
@@ -348,7 +390,9 @@ struct State {
             // Producer rejects outstanding actual graphics borrows BEFORE
             // changing registration or the canonical native descriptor.
             if(t.binding.generation){producer.unregister_raster(t.binding);t.binding={};}
-            if(view) {
+            // A cached Report destination may currently select a different
+            // immutable root. Its descriptor/resource binding stays untouched.
+            if(view && view->bitmap==t.raster->view(sprite::RasterSource::primary).bitmap) {
                 const auto index=resources.sprite_index(t.prototype);
                 auto replacement=*view;
                 replacement.bitmap=resources.roots()[index]->bitmap;
@@ -358,10 +402,13 @@ struct State {
                 if(!restored)return fail(ISLE_GAME_INVALID_STATE);
             }
         }catch(...){return fail(ISLE_GAME_INVALID_STATE);}
-        t.raster.reset();t.object=nullptr;t.sprite=nullptr;t.prototype=0;t.serial=0;
+        for(std::size_t i=0;i<capacity.adopted_objects;++i)
+            if(thumbnail_aliases[i].thumbnail==&t)thumbnail_aliases[i]={};
+        t.raster.reset();t.object=nullptr;t.sprite=nullptr;t.prototype=0;t.serial=0;t.credits=false;
         return ISLE_GAME_OK;
     }
     IsleGameResult retire() noexcept {
+        for(std::size_t i=0;i<thumbnail_count;++i)if(thumbnails[i].credits_holds)return ISLE_GAME_INVALID_STATE;
         cancel_all();
         // These dependencies retire only the objects initialized by this veneer.
         if(layout_live){layout.retire();layout_live=false;}
@@ -462,6 +509,10 @@ Window::Window(scene::Services& s,window::Text& t,window::Frame& f,window::Focus
 Window::~Window(){if(retire()!=ISLE_GAME_OK)std::terminate();}
 IslePostCourseWindow* Window::source() noexcept {return &p_->bridge;}
 IsleGameResult Window::retire() noexcept {return p_->retire();}
+IsleGameResult Window::bind_graphics_frame(scene::graphics::Frame& frame) noexcept {
+    if(p_->graphics || !frame.quiescent())return p_->fail(ISLE_GAME_INVALID_STATE);
+    p_->graphics=&frame;return p_->status();
+}
 std::size_t Window::thumbnail_plane_bytes(const Resources& resources,std::uint32_t identity) {
     return photo_prototype(resources,identity).plane_bytes;
 }
@@ -569,15 +620,20 @@ IsleGameResult isle_post_window_text_width(IslePostCourseWindow* s,IslePostCours
 IsleGameResult isle_post_window_element_create(IslePostCourseWindow* s,int x,int y,int w,int h,uint32_t flags,Handle* out){
     if(out)*out={};return invoke(s,[&](State& p){
         if(!out || w<=0 || w>320 || h<=0 || h>240)return ISLE_GAME_INVALID_ARGUMENT;
-        State::ElementSlot* slot=nullptr;
-        for(std::size_t i=0;i<p.element_count();++i)if(!p.elements[i].element && !p.elements[i].binding.generation){slot=&p.elements[i];break;}
-        if(!slot)return ISLE_GAME_EXHAUSTED;
         const int border=flags&window::border?4:flags&window::thick_border?8:0;
         const int bpp=flags&bits8?1:flags&bits32?4:2;
         const auto stride=(32+w+2*border+(bpp>>2)*16+15)&~15;
         const auto tile=4096/bpp/stride;
         const auto plane=std::size_t(stride*tile*((h+2*border+tile-1)/tile)*bpp);
-        if(plane>slot->memory.plane_capacity)return ISLE_GAME_EXHAUSTED;
+        State::ElementSlot* slot=nullptr;
+        for(std::size_t i=0;i<p.element_count();++i) {
+            auto& candidate=p.elements[i];
+            if(candidate.element || candidate.binding.generation ||
+               candidate.memory.plane_capacity<plane ||
+               ((flags&window::use_alt_image) && !candidate.memory.physical[1]))continue;
+            if(!slot || candidate.memory.plane_capacity<slot->memory.plane_capacity)slot=&candidate;
+        }
+        if(!slot)return ISLE_GAME_EXHAUSTED;
         slot->element=Element::create(p.heap,p.list,x,y,w,h,flags,slot->memory.physical,p.defaults);
         if(!slot->element)return ISLE_GAME_EXHAUSTED;
         slot->serial=p.element_serial();
@@ -693,6 +749,72 @@ IsleGameResult isle_post_window_sprite_links(IslePostCourseWindow* s,IsleGameSpr
 IsleGameResult isle_post_window_sprite_sibling(IslePostCourseWindow* s,IsleGameSprite* v,uint32_t id,IsleGameSprite** out){if(out)*out=nullptr;return invoke(s,[&](State& p){if(!out || !p.owns_sprite(v))return ISLE_GAME_INVALID_ARGUMENT;*out=p.services.add_sprite_sibling(v,id);return p.ok(*out!=nullptr);});}
 IsleGameResult isle_post_window_sprite_child(IslePostCourseWindow* s,IsleGameSprite* v,uint32_t id,IsleGameSprite** out){if(out)*out=nullptr;return invoke(s,[&](State& p){if(!out || !p.owns_sprite(v))return ISLE_GAME_INVALID_ARGUMENT;*out=p.services.append_sprite_child(v,id);return p.ok(*out!=nullptr);});}
 IsleGameResult isle_post_window_sprite_rebind(IslePostCourseWindow* s,IsleGameSprite* v,uint32_t id){return invoke(s,[&](State& p){if(!p.owns_sprite(v) || p.thumbnail_sprite(v))return ISLE_GAME_INVALID_ARGUMENT;return p.ok(p.services.rebind_sprite(v,id));});}
+IsleGameResult isle_post_window_sprite_assign_thumbnail(IslePostCourseWindow* s,
+    IsleGameSprite* destination,IsleGameSprite* origin){
+    return invoke(s,[&](State& p){
+        if(!p.graphics || !p.graphics->quiescent())return ISLE_GAME_INVALID_STATE;
+        if(p.resources.kind()!=post_course::Resources::Kind::album || destination==origin ||
+           !p.owns_sprite(destination) || !p.owns_sprite(origin) || p.thumbnail_sprite(destination))
+            return ISLE_GAME_INVALID_ARGUMENT;
+        State::Thumbnail* thumbnail=nullptr;
+        for(std::size_t i=0;i<p.thumbnail_count;++i)
+            if(p.thumbnails[i].serial && p.thumbnails[i].sprite==origin)thumbnail=&p.thumbnails[i];
+        if(!thumbnail || thumbnail->prototype!=0x80208b10u)return ISLE_GAME_INVALID_ARGUMENT;
+        const auto* view=p.thumbnail_view(*thumbnail);if(!view)return ISLE_GAME_INVALID_STATE;
+        const auto* previous=p.services.view(destination);
+        const auto& prototype=*p.resources.roots()[p.resources.sprite_index(0x80208b10u)];
+        if(!previous || previous->bitmap!=prototype.bitmap || previous->nbitmaps!=prototype.nbitmaps)
+            return ISLE_GAME_INVALID_STATE;
+        State::ThumbnailAlias* alias=nullptr;
+        for(std::size_t i=0;i<p.capacity.adopted_objects;++i){
+            auto& candidate=p.thumbnail_aliases[i];
+            if(candidate.sprite==destination)return ISLE_GAME_INVALID_STATE;
+            // Joined aliases are reusable only under this actual GPU fence.
+            if(!candidate.object)candidate={};
+            if(!candidate.thumbnail && !alias)alias=&candidate;
+        }
+        if(!alias)return ISLE_GAME_EXHAUSTED;
+        scene::SpriteHandle owner;IsleGameSprite *parent,*child,*next,*previous_link;
+        if(!p.services.sprite_links(destination,owner,parent,child,next,previous_link))
+            return ISLE_GAME_INVALID_ARGUMENT;
+        if(!p.services.replace_sprite(destination,thumbnail->binding.resources[0],*view,
+            thumbnail->binding.generation))return ISLE_GAME_INVALID_STATE;
+        *alias={owner.object,destination,thumbnail};return p.ok();
+    });
+}
+IsleGameResult isle_post_window_sprite_clear_root_links(IslePostCourseWindow* s,IsleGameSprite* sprite){
+    return invoke(s,[&](State& p){
+        if(!p.graphics || !p.graphics->quiescent())return ISLE_GAME_INVALID_STATE;
+        if(!p.owns_sprite(sprite))return ISLE_GAME_INVALID_ARGUMENT;
+        return p.ok(p.services.clear_sprite_root_links(sprite));
+    });
+}
+IsleGameResult isle_post_window_sprite_add(IslePostCourseWindow* s,IsleGameObject* object,
+    uint32_t identity,IsleGameSprite** out){
+    if(out)*out=nullptr;
+    return invoke(s,[&](State& p){
+        if(!out || !p.owns_object(object))return ISLE_GAME_INVALID_ARGUMENT;
+        auto* sprite=p.services.append_sprite(object,identity);
+        if(!sprite)return p.ok(false);
+        *out=sprite;return p.ok();
+    });
+}
+IsleGameResult isle_post_window_sprite_remove(IslePostCourseWindow* s,IsleGameObject* object){
+    return invoke(s,[&](State& p){
+        if(!p.owns_object(object))return ISLE_GAME_INVALID_ARGUMENT;
+        for(std::size_t i=0;i<p.thumbnail_count;++i)
+            if(p.thumbnails[i].serial && p.thumbnails[i].object==object)return ISLE_GAME_INVALID_STATE;
+        for(std::size_t i=0;i<p.capacity.adopted_objects;++i)
+            if(p.thumbnail_aliases[i].object==object)return ISLE_GAME_INVALID_STATE;
+        return p.ok(p.services.remove_sprites(object));
+    });
+}
+IsleGameResult isle_post_window_sprite_clear_link(IslePostCourseWindow* s,IsleGameSprite* sprite,int which){
+    return invoke(s,[&](State& p){
+        if((which!=0 && which!=1) || !p.owns_sprite(sprite))return ISLE_GAME_INVALID_ARGUMENT;
+        return p.ok(p.services.clear_sprite_link(sprite,which==1));
+    });
+}
 IsleGameResult isle_post_window_sprite_aux_get(IslePostCourseWindow* s,IsleGameSprite* sprite,int32_t* out){
     if(out)*out=0;
     return invoke(s,[&](State& p){
@@ -759,6 +881,8 @@ IsleGameResult isle_post_window_thumbnail_create(IslePostCourseWindow* s,IsleGam
         *out=p.handle(incarnation);return p.ok();
     });
 }
+#include "credits_window_extension.inc"
+
 IsleGameResult isle_post_window_thumbnail_write_photo(IslePostCourseWindow* s,Handle h,
                                                       const uint8_t* image,size_t count,size_t stride){
     return invoke(s,[&](State& p){
@@ -812,6 +936,41 @@ IsleGameResult isle_post_window_thumbnail_clear(IslePostCourseWindow* s,Handle h
         t->raster->publish(sprite::RasterSource::primary,offset,count);return p.ok();
     });
 }
+IsleGameResult isle_post_window_thumbnail_pixels(IslePostCourseWindow* s,Handle h,uint8_t** out,size_t* size){
+    if(out)*out=nullptr;if(size)*size=0;
+    return invoke(s,[&](State& p){
+        if(!out || !size)return ISLE_GAME_INVALID_ARGUMENT;
+        auto* thumbnail=p.thumbnail(h);
+        if(!thumbnail || !p.thumbnail_view(*thumbnail))return ISLE_GAME_INVALID_ARGUMENT;
+        auto pixels=thumbnail->raster->pixels(sprite::RasterSource::primary);
+        *out=pixels.data();*size=pixels.size();return p.ok();
+    });
+}
+IsleGameResult isle_post_window_thumbnail_publish(IslePostCourseWindow* s,Handle h,size_t offset,size_t count){
+    return invoke(s,[&](State& p){
+        auto* thumbnail=p.thumbnail(h);
+        if(!thumbnail || !p.thumbnail_view(*thumbnail))return ISLE_GAME_INVALID_ARGUMENT;
+        thumbnail->raster->publish(sprite::RasterSource::primary,offset,count);return p.ok();
+    });
+}
+IsleGameResult isle_post_window_thumbnail_select(IslePostCourseWindow* s,Handle h,uint32_t identity){
+    return invoke(s,[&](State& p){
+        auto* thumbnail=p.thumbnail(h);
+        if(!thumbnail || !thumbnail->raster || !thumbnail->binding.generation ||
+           !p.owns_sprite(thumbnail->sprite) || thumbnail->credits)return ISLE_GAME_INVALID_ARGUMENT;
+        const auto resource=p.resources.sprite_index(identity);
+        auto replacement=*p.resources.roots()[resource];
+        // This check precedes descriptor/resource mutation, including a
+        // temporary immutable selection of the same retained raster slot.
+        (void)thumbnail->raster->pixels(sprite::RasterSource::primary);
+        if(identity==thumbnail->prototype){
+            replacement.bitmap=thumbnail->raster->view(sprite::RasterSource::primary).bitmap;
+            return p.ok(p.services.replace_sprite(thumbnail->sprite,
+                thumbnail->binding.resources[0],replacement,thumbnail->binding.generation));
+        }
+        return p.ok(p.services.replace_sprite(thumbnail->sprite,resource,replacement));
+    });
+}
 IsleGameResult isle_post_window_thumbnail_release(IslePostCourseWindow* s,Handle h){
     auto* p=state(s);if(!p)return ISLE_GAME_INVALID_ARGUMENT;
     auto* t=p->thumbnail(h);if(!t)return p->fail(ISLE_GAME_INVALID_ARGUMENT);
@@ -819,6 +978,17 @@ IsleGameResult isle_post_window_thumbnail_release(IslePostCourseWindow* s,Handle
 }
 IsleGameResult isle_post_window_frame_create(IslePostCourseWindow* s,Handle* out){if(out)*out={};return invoke(s,[&](State& p){if(!out || p.frame_serial)return ISLE_GAME_INVALID_ARGUMENT;const auto serial=p.serial();if(!p.frame.create())return p.ok(false);p.frame_serial=serial;*out=p.handle(p.frame_serial);return p.ok();});}
 IsleGameResult isle_post_window_frame_delete(IslePostCourseWindow* s,Handle h){auto* p=state(s);if(!p)return ISLE_GAME_INVALID_ARGUMENT;if(!p->frame_handle(h))return p->fail(ISLE_GAME_INVALID_ARGUMENT);for(std::size_t i=0;i<p->capacity.operations;++i)if(p->operations[i].serial && p->operations[i].kind==State::Kind::fade)p->cancel(p->operations[i]);p->frame.retire();p->frame_serial=0;return p->status();}
+IsleGameResult isle_post_window_frame_retire_hidden(IslePostCourseWindow* s,Handle h){
+    return invoke(s,[&](State& p){
+        if(!p.frame_handle(h))return ISLE_GAME_INVALID_ARGUMENT;
+        if(!p.graphics || !p.graphics->quiescent() || !p.frame.hidden())return ISLE_GAME_INVALID_STATE;
+        for(std::size_t i=0;i<p.capacity.operations;++i)
+            if(p.operations[i].serial && p.operations[i].kind==State::Kind::fade)
+                return ISLE_GAME_INVALID_STATE;
+        p.frame.retire();if(p.services.failed())return ISLE_GAME_INVALID_STATE;
+        p.frame_serial=0;return p.status();
+    });
+}
 IsleGameResult isle_post_window_frame_style(IslePostCourseWindow* s,Handle h,int v){return frame_call(s,h,[&](Frame& f){f.set_style(v);});}
 IsleGameResult isle_post_window_frame_position(IslePostCourseWindow* s,Handle h,int x,int y){return frame_call(s,h,[&](Frame& f){f.set_pos(x,y);});}
 IsleGameResult isle_post_window_frame_size(IslePostCourseWindow* s,Handle h,int x,int y){return frame_call(s,h,[&](Frame& f){f.set_size(x,y);});}

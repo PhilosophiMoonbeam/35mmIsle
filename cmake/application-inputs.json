@@ -1264,22 +1264,22 @@
       "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
     },
     "include/35mmisle/continuation.h": {
-      "sha256": "10fb58f5f6cebe32ea8662cb7a4f1bfc8e287d88b6355bdd6b30cba22e7f83c9"
+      "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "4d46e31cf5b4c76910f74e93cc7523ce9c860bdc749d38c506c0ed5f266fe2dc"
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
     },
     "include/35mmisle/game_save.hpp": {
-      "sha256": "81e28ff9e15b8bd3945f4f31176e6157947c4c35218fdf359d67b4286faee934"
+      "sha256": "50b916b2fc3f36d5c305b3990d90abee49467a5cdf5d08954b2279cfdf610e7a"
     },
     "src/game_save.cpp": {
-      "sha256": "eaf26769d6c05d1ec6e3d851b24ef5a6bcbcaa46365d577ceb8bbf9fd6ceaccd"
+      "sha256": "186256d8bf9d6abf5b33c53b6c94b7c8edf1a865061c1531ecca1968c395f916"
     },
     "cmake/game-save-inputs.json": {
       "sha256": "8a4a5418b4d9fc3c66b73bfe2899e8d521ba81db2fcad661f97c5bf2c4dc95ef"
     },
     "tools/prepare_engine.py": {
-      "sha256": "b5b31702ed3682fd875253234c6a212c6f6a63621f749df08008eabdc57a014e"
+      "sha256": "bf0ecd0c670c55c2fc38ea5d147669f36267058eb52b6150b270d6bf31932ca0"
     },
     "src/application_manager.hpp": {
       "sha256": "ac8c7e9152d4a7f4b5c7f0c2e45f1e2d0cb1fd55427eb744cca1a2351426aca3"
@@ -1288,7 +1288,7 @@
       "sha256": "50175d2271aed5d49a0825150e64618fc3cada5155da691e9ca03271e850e7f0"
     },
     "src/game_state.hpp": {
-      "sha256": "e6373dd5b3ea3f2c38ab34d2180f984656490542167fcc7447f9780730c15f73"
+      "sha256": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa"
     },
     "src/game_state.cpp": {
       "sha256": "6f77eb00c42c269581a5d6e1172b806dcedfd94bd2d40b5c3bdf54a9a44fd410"
@@ -1312,7 +1312,7 @@
       "sha256": "aa8ee6dda25bfe06f7d2c3462ca66257c29b47b534508a69ee40c862c5281ba0"
     },
     "src/menu_resources.hpp": {
-      "sha256": "43c1677bdbbddb01a00623f26c61863880cad948eb2f9f13b0814c6dfb85e8aa"
+      "sha256": "da9f84df5bbd60eee3f2f430ffa01a218ab6fc98750e864b1560e66dfa6c97cc"
     },
     "src/menu_resources.cpp": {
       "sha256": "78b718fe45bff0152800c0f25d5c800f3fdb343d5c5c2550a73f3dfbbd813fc8"

@@ -3304,3 +3304,188 @@ actual animation receivers, natural completion/Retry/STOPPED, queue/reference/
 model/Photo/GPU/audio joins and remaining menu owners must all close before a
 full-game claim. No new seven-playable-course, audible-output, hardware parity,
 Windows11-runtime or binary-release qualification is established here.
+
+## Current Source integration and finite Tunnel idle repair
+
+The actual Linux LUS product, seven typed course routes, five new menu Source
+providers and shared Original sort build with all 31 retained opt-in consumers.
+All 58 CTests pass in 3.64 seconds, including real cross-domain continuation
+scheduling. Compilation does not qualify all-course or new-menu execution.
+
+Actual canonical Snapshot admission found a genuine Original idle boundary.
+At pin `df8815e75f3d79618466e01e0827c6165b93d11c`,
+`include/common_structs.h:316–322` places inputs after a 16-byte header;
+`include/sys/cont.h:7–14` defines each input as 10 bytes.
+`src/app_level/player.c:287–314` consumes `dataSize / 10` records, while
+`src/app_render/52D70.c:3–11` allocates and copies exactly the ROM section.
+Tunnel's admitted `ab1470..ab5860` section has 17,392 bytes and declares
+`dataSize = 0x43ea`: 1,738 records require four bytes beyond that allocation.
+The final record's current, pressed and held button fields are present;
+released buttons and both stick coordinates are not.
+
+Native decoding preserves the Original count and every admitted field. Only
+this exact final Tunnel record receives neutral released-button/stick values.
+Beach and other malformed extents remain strictly checked. This is a deliberate
+finite portability repair, not recovered ROM bytes or proof of Original
+residual-heap behavior. It neither truncates the Original C loop nor reads
+uninitialized native storage.
+
+The repaired real Linux SDL3/EGL/LUS application completes original-manager
+Boot → Title → Name → Oak → Beach ingress and teardown: 817 canonical frames and
+LUS presentations, balanced GPU/frame ownership, stopped Input, drained
+SDL-dummy audio and released Host owners. Beach executes 16 genuine updates;
+this run does not qualify full-course completion or Windows11 gameplay.
+Direct X11 captures show the displayed native Window, including Oak's actual
+dialogue. Post-swap `GL_FRONT` PPM captures under this EGL environment are black
+and are not visual proof; they must not be confused with displayed output.
+This is a bounded runtime smoke, not a newly frozen/traced qualification cohort
+or hardware/hearing/numerical-parity claim.
+
+A separate actual original-manager run completes Beach, CameraCheck9 and
+PhotoCheck15 before constructing Oak13. Beach executes 8,850 genuine updates
+and 4,424 rendered frames; the complete eight-entry run presents 5,972 canonical
+frames with balanced GPU terminals. Four real shutter actions produce four
+course photos, three qualifying photos and an actual selected Pidgey report
+scored 3,300. Canonical identity survives selection and report insertion.
+Native/Photo/Window/Input owners retire, SDL-dummy audio drains, and Host owners
+release. This does not qualify returned Oak rendering, the other six courses,
+all menu owners or Windows11 gameplay.
+
+The separate actual native-C Replay API consumer also passes real scoring,
+sound85, wait60/wait1 feedback, preview and Host-stop retirement. Its canonical
+photo records are explicitly authored inputs, not captured gameplay or an
+Original machine-state oracle. It does not qualify the new full-photo menu or
+Credits worker paths.
+
+Album, Report, Gallery, End8 and Credits have concrete Source/native owners,
+strict private compiler inputs and actual Runtime dispatch. Report and Album
+now render and return Original13 through real Root routes; their full-content
+interaction coverage remains bounded. Credits17/18/19 complete normal Original8
+returns. Gallery22 now renders full/next photos and returns Original8.
+Dormant End8/Credits20 and Windows gameplay require separate qualification.
+
+The menu owner retains Game/Window/photo backing across successful setup return,
+resumes Original post-setup entry code, then performs final native retirement.
+Album/Report notices use that setup boundary. Credits retains its independent
+worker until Original stop/destroy returns literal `8`; normal worker retirement
+does not latch scene cancellation. An explicit serialized scheduler rendezvous
+permits that worker to run while its sender is parked. Ordinary owner services
+still reject callback dispatch and same-domain/self-resume remains rejected.
+The exercised continuation regression covers those boundaries, not Credits UI.
+
+Actual first-menu qualification exposed two independent ownership/order faults.
+Menus reached before a course now create the same canonical Photos owner rather
+than requiring a previous course to have created it. Cold menu render capacity
+is reserved only after the actual Source screen and C initialization; Frame's
+screen-before-capacity guard remains intact.
+
+A private deliberate failure immediately after successful actual Credits screen
+configuration exercises the retained-error cleanup path. The real original
+Manager reaches Credits18, the Source error remains `cr_screen:87 -> 3`, all 776
+prior GPU submissions receive real terminals, and native/worker/entry/domain,
+Input, SDL-dummy audio and Host owners retire. The former 90-second ownership
+hang is absent. The temporary fault injection is removed; no Credits success,
+image-worker completion or result8 is inferred from this failure-path proof.
+
+Independent planner/reviewer tracing of the immutable Original finds no Root
+producer for End24 or Credits20. Original Gallery's initialized exit flag is
+zero; `src/gallery/9FAC10.c:92–94` retains its unreferenced setter, while
+`:844–889` selects Title8 unless that flag changes. Neither actual SceneSetup
+registration, DMA nor printer completion supplies a discovered setter call.
+Credits20 likewise has retained consumers but no discovered selector. Gallery23
+is reached only through End24. These real APIs remain implemented; no fabricated
+Root selection or Source-global write makes them reachable.
+
+The actual reachable Gallery route is saved-profile Title → Gallery22, button20
+for full view, A for the next photo, B for grid return, then Save4 → Title8.
+Authored save/photo/notice fixtures qualify native API/Manager integration only,
+not natural gameplay progression or dormant-scene Root reachability.
+
+
+Exact immutable Source registration excludes dormant Album/Report/Gallery/Credits
+display-list helpers from runtime dispatch. Actual common pre-render remains
+`func_800A1A50`. Full-view Gallery/End8 use the actual secondary camera and shared
+Replay World, with a checked Frame storage loan rather than duplicate Worlds.
+The retained transition workspace moves from `1f0000` to `5a0000` for post-course
+composition because the former aliases real Album/Report sprite bytes. Report,
+Album and Credits have actual GPU/LUS runtime evidence below. Gallery's grid,
+full-view, next-photo, restored-grid and normal return also execute on real Host.
+
+### Actual Credits17/18/19 normal return
+
+The same original Root scheduler reaches each variant from genuine
+Boot/Title/Name/Oak. Source retirement and actual Host completions record:
+
+| Credits argument | Source updates before normal retirement | Presented Credits frames | Whole-route GPU terminals |
+| --- | ---: | ---: | ---: |
+| 17 | 361 | 180 | 1,652 |
+| 18 | 7,288 | 3,644 | 5,116 |
+| 19 | 7,648 | 3,824 | 5,378 |
+
+Each returns Original8, admits the next actual Title8 owner, joins the independent
+photo worker and retires Source/domain/native/GPU, Input, SDL-dummy audio and Host
+owners. Credits18/19 execute their full unskippable staff sequences; the finite
+probe bound reflects the actual 129 scrolling rows and Source timing, not an
+invented completion. Actual X11 captures show worker-generated photo surfaces.
+
+Canonical photo records, scores, comments, profile flags and Oak notices are
+explicitly authored integration inputs. This is not natural course progression,
+Mew capture or a ROM-machine numerical/pixel oracle. Four authored photo records
+produce genuine Replay rasters. Original's null fifth photo leaves its destination
+unchanged; no synthetic fifth photo or blank-success substitution is introduced.
+
+Actual execution exposed a short final Credits bitmap descriptor: its canonical
+140×7 RGBA16 span is 1,960 bytes, not the 3,920-byte allocation stride used by the
+preceding seven tiles. The writable wrapper preserves the descriptor's exact
+length and the existing stride, identity, ownership and display-hold guards.
+
+Report14 and Album12 require canonical setup word5=2, while the other supported
+menus require 1. Admission now checks those exact per-kind values. A subsequent
+real Gallery22 entry exposed another lost SDK contract: Original
+`UIElement_SetState(NULL, state)` is a defined no-op during early initialization.
+The typed bridges preserve that contract without weakening nonnull handle checks.
+The real Gallery grid, full view, next photo and restored grid subsequently
+present; Source returns Original8 and the actual Manager admits Title8.
+
+### Actual reachable Report/Album/Gallery route
+
+A single original Root run executes Boot/Title/Name/Oak, Report14→13,
+Album12→13, real save→Title8, Gallery22→8, then admits the next Title8.
+All 2,955 canonical submissions receive actual GPU terminals. Native/Photo,
+Manager, Input, SDL-dummy audio and Host owners retire normally.
+
+Report and Album controls wait for three genuinely initialized, visible,
+unfaded Host presentations. Gallery's two introductory acknowledgments use
+Original's plain-C Window input helper, not common acknowledgment telemetry.
+The driver sends real A edges only while that actual text/input wait is active;
+it never sets Source selectors or scene results. Actual command20 opens full
+view, A advances to a distinct presented photo, B restores a presented grid,
+and Save4 produces normal8.
+
+Direct X11 inspection confirms the usable Report's four-species/11,400-point
+authored profile and Gallery's genuine full-photo surface. Early varied fade
+pixels are no longer accepted as interactive menu readiness. Authored canonical
+records remain integration inputs, not captured gameplay or numerical parity.
+
+### Relocated Linux Runtime product
+
+The Runtime-only TGZ contains the product, ROM checker, shaders, dependency
+notices and ten reached application shared libraries with SONAME symlinks.
+Each staged real library has `$ORIGIN` RUNPATH; the product uses
+`$ORIGIN/../lib/35mmisle`. Independent `ldd` checks on both executables and
+every staged DSO resolve all reviewed application families inside the relocated
+archive with `LD_LIBRARY_PATH` and `LD_PRELOAD` unset. Loader, C/C++ runtime
+and reviewed graphics/audio/display/device libraries remain platform prerequisites.
+
+Actual extracted `35mmisle`, launched from a new empty working/data directory,
+renders the native Title through CPU Vulkan and LUS/OpenGL. Real
+`WM_DELETE_WINDOW` produces exit0 after native/Input/SDL-dummy audio/Host
+shutdown. Input is explicitly disabled for this product-path proof; the visible
+“No Controller Connected” message is expected, not an invented controller.
+
+This run exposed and fixed missing first-run profile-directory creation.
+Product composition creates its child directory before original Boot opens the
+save session; Store's no-follow, lock, evidence-preservation and recovery checks
+remain unchanged. The proof uses the local SDK composition, not the pending
+hosted Ubuntu Release or Windows ZIP. Hosted Windows import/relocated-help
+gates do not claim Windows11 gameplay.

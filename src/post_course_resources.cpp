@@ -65,14 +65,27 @@ std::span<const window::Button> Resources::buttons(std::uint32_t guest) const {
     if (it == buttons_.end()) throw std::out_of_range("post-course button table identity");
     return it->native;
 }
+Resources::Origin Resources::origin(Kind kind) {
+    // Exact initialized data only; neither overlay code nor BSS is resident.
+    constexpr std::array<Origin,7> origins{{
+        {0x8817e0,0x8a70e0,0x801e3ff0},
+        {0x994e10,0x9a6b10,0x801e53a0},
+        {0x9ae430,0x9d3230,0x801e41e0},
+        {0x9da580,0x9fa580,0x801e3c10},
+        {0x9ff2e0,0xa084b0,0x801e1620},
+        {0xa08d10,0xa08e30,0x801dd120},
+        {0xa95760,0xaa0650,0x801deba0}}};
+    const auto index=static_cast<std::size_t>(kind);
+    if (index>=origins.size()) throw std::invalid_argument("post-course overlay kind");
+    return origins[index];
+}
 std::shared_ptr<const Resources> Resources::load(const rom::Snapshot& snapshot,
         std::shared_ptr<const window::Resources> window, Kind kind) {
     constexpr std::array<std::uint8_t,20> admitted{0xed,0xc7,0xc4,0x9c,0xc5,0x68,0xc0,0x45,0xfe,0x48,0xbe,0x0d,0x18,0x01,0x1c,0x30,0xf3,0x93,0xcb,0xaf};
     if (!window || snapshot.identity().sha1 != admitted || snapshot.identity().size != rom::us_size ||
         snapshot.canonical().size() != rom::us_size)
         throw std::invalid_argument("post-course ROM/window admission");
-    if (kind != Kind::camera_check && kind != Kind::photo_check)
-        throw std::invalid_argument("post-course overlay kind");
+    const auto selected=origin(kind);
     auto out = std::shared_ptr<Resources>(new Resources);
     out->kind_ = kind;
     out->window_ = std::move(window);
@@ -80,16 +93,12 @@ std::shared_ptr<const Resources> Resources::load(const rom::Snapshot& snapshot,
     if (common.empty() || common[0].guest != 0x80375410 || common[0].rom_begin != 0x848bc0 ||
         common[0].rom_end != 0x87a0b0 || !common[0].owner || common[0].owner->size() != 0x314f0)
         throw std::invalid_argument("post-course common initialized bank");
-    // Authority: ethteck/pokemonsnap df8815e75f3d79618466e01e0827c6165b93d11c,
-    // splat.yaml 10150-10179 and 10212-10235. First initialized .data through
-    // next overlay ROM boundary; ends equal the first BSS VRAM (802098F0 /
-    // 801F70A0). Neither code nor BSS is copied, interpreted, or installed.
+    // Pinned splat initialized boundaries, independently checked by the actual
+    // canonical Snapshot/Sprite hydration consumer for all five new menus.
     const bool camera = kind == Kind::camera_check;
-    const std::size_t begin = camera ? 0x8817e0 : 0x994e10;
-    // Common bank authority: pinned splat.yaml 10105-10154, initialized
-    // ROM [848BC0,87A0B0), source VRAM 80375410, shared with Window.
-    const std::size_t end = camera ? 0x8a70e0 : 0x9a6b10;
-    const std::uint32_t guest = camera ? 0x801e3ff0 : 0x801e53a0;
+    const auto begin=selected.rom_begin;
+    const auto end=selected.rom_end;
+    const auto guest=selected.guest_begin;
     const auto input = snapshot.canonical().subspan(begin, end - begin);
     auto owner = std::make_shared<sprite::Bank>(input.size());
     std::memcpy(owner->data(), input.data(), input.size());
@@ -119,7 +128,7 @@ std::shared_ptr<const Resources> Resources::load(const rom::Snapshot& snapshot,
             out->decode_buttons(address, 5);
             out->tables_.push_back({address,10,false});
         }
-    } else {
+    } else if (kind==Kind::photo_check) {
         // 98C330.c 593,638-650,2464-2486: every reached prototype.
         // The unused 801E5840 extern is not a Sprite in the admitted ROM.
         for (auto address : {0x801e5db0u,0x801e5ee0u,0x801f2378u,
@@ -135,6 +144,30 @@ std::shared_ptr<const Resources> Resources::load(const rom::Snapshot& snapshot,
         out->decode_buttons(0x801f4168,3);
         for (const auto& t : out->tables_)
             if (t.strings) for (std::size_t i = 0; i < t.count; ++i) (void)out->table_text(t.guest,i);
+    }
+    if (kind==Kind::album) {
+        for (auto address : {0x801e4518u,0x801ed550u,0x801f2d28u,0x801f2f88u,
+            0x801f3108u,0x801f3288u,0x801f3408u,0x801f3588u,0x801f6b50u,
+            0x801fb1d0u,0x801ffa10u,0x801ffc80u,0x80200058u,0x80200400u,
+            0x802005b8u,0x802006e8u,0x80201728u,0x80208b10u}) root(address);
+    } else if (kind==Kind::report) {
+        for (auto address : {0x801e3f48u,0x801edd60u,0x801edef0u,0x801e8f70u,
+            0x801ee150u,0x801ef7d0u,0x801f0e50u,0x801f2278u,0x801f36a0u,
+            0x801f3860u,0x801f3a10u,0x801f3b90u,0x801f4d48u,0x801f5120u,
+            0x801f54c8u,0x801f5680u,0x801f57b0u,0x80202ce8u,0x801f67e8u,
+            0x801f7820u,0x801f8858u,0x801f9890u,0x801fa8c8u,0x801fb900u}) root(address);
+        // Two separate declared six-pointer caption tables, not text pointers.
+        out->tables_={{0x80202e8c,6,false},{0x80202ea4,6,false}};
+        constexpr std::array<std::pair<std::uint32_t,std::size_t>,8> buttons{{
+            {0x80202ec8,6},{0x80202ef8,5},{0x80202f20,5},{0x80202f48,4},
+            {0x80202f68,4},{0x80202f88,4},{0x80202fa8,3},{0x80202fc0,7}}};
+        for (const auto [address,count] : buttons) out->decode_buttons(address,count);
+    } else if (kind==Kind::gallery) {
+        for (auto address : {0x801e80e8u,0x801e82a0u,0x801e83d0u,0x801e8890u,
+            0x801e8d50u,0x801e8fb0u,0x801ea1b0u}) root(address);
+    } else if (kind==Kind::credits) {
+        for (auto address : {0x801e6058u,0x801e6430u,0x801e67d8u,
+            0x801e6aa8u,0x801e8b50u}) root(address);
     }
     out->roots_.reserve(out->sprites_.size());
     out->indices_.reserve(out->sprites_.size());

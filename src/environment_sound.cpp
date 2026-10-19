@@ -13,14 +13,19 @@ std::uintptr_t key(IsleGameObject* object) noexcept { return reinterpret_cast<st
 Resources::Resources(const rom::Snapshot& snapshot, std::int32_t course_id)
     : angles_(snapshot),course_id_(course_id) {
     // Source df8815e: app_level/app_level.h EnvSoundData is u16/u8/u8 (four bytes).
-    // beach/55C110.c initializes 0x35 records at D_beach_802CBE10;
-    // rainbow/main.c initializes its nine-record D_8034AB10_82A280 array.
-    // splat.yaml maps these data starts to ROM 0x563e80 and 0x82a280.
+    // Counts come from actual Source array declarations/EnvSound_Init calls;
+    // addresses are unique matching-linker symbols at the pinned revision.
+    // No next-symbol extent or shared 0/6 table is used for another course.
     std::uint32_t wire=0,offset=0;
     switch (course_id_) {
     case 0: wire=0x802cbe10; offset=0x563e80; descriptor_count_=53; break;
+    case 1: wire=0x802edf00; offset=0x5eafd0; descriptor_count_=43; break;
+    case 2: wire=0x802e0c80; offset=0x731e80; descriptor_count_=49; break;
+    case 3: wire=0x802e2624; offset=0x6ca404; descriptor_count_=62; break;
+    case 4: wire=0x802c6150; offset=0x648600; descriptor_count_=57; break;
+    case 5: wire=0x802d2740; offset=0x7abcd0; descriptor_count_=58; break;
     case 6: wire=0x8034ab10; offset=0x82a280; descriptor_count_=9; break;
-    default: throw std::invalid_argument("Environmental sound course is not implemented");
+    default: throw std::invalid_argument("Environmental sound requires a course in 0..6");
     }
     const rom::GuestView table{wire,offset,snapshot.canonical().subspan(offset,descriptor_count_*4)};
     for (std::size_t i=0; i<descriptor_count_; ++i)

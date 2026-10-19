@@ -39,10 +39,10 @@
       "sha256": "6ac71b3e99b556d564eef874de56b502b7bb67a1ac1ee7026a831ae5eccce4c6"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "02c1d0c13b244f2d4a811aa3eb033f19a6b6ade05a4709d78f793a8b7a69610e"
+      "sha256": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "ffac524a883f6e5cbc41407d88bb1d788be923a15a1369576542566ad3f5bf6e"
+      "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
     },
     "src/rsp_render.hpp": {
       "sha256": "5184731e6d375667a1b0ed5c2ea8c35b344dec62722e3ac55d83782b7465deee"
@@ -51,7 +51,7 @@
       "sha256": "a1f5b8a60bddd86a83207c5fcb4b3265021777e468454b41421ae640bdcef45c"
     },
     "tests/menu_effects_tests.cpp": {
-      "sha256": "64e39fa6b4abb67899b7a0d45e0498f9c0dcdc87b68add722db1599a6ed19541"
+      "sha256": "becb63122f8d152b6ab53e95fb965cf966094131220b72b32d8e18cfea8dd18d"
     },
     "tests/scene_layout_rom_smoke.cpp": {
       "sha256": "0fbecf0d492fb0b8e5379f5e0247185f2526446374f2772b7d8afa6022574729"

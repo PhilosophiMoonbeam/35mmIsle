@@ -3,6 +3,8 @@
 
 #include "actor_interaction_services.h"
 #include <array>
+#include "actor_behavior_bindings.hpp"
+#include "river_actor_source.h"
 
 struct IsleRainbowActorSource;
 struct IsleRainbowActorServices;
@@ -10,6 +12,7 @@ namespace isle::scene { class Services; }
 namespace isle::items { class Owner; }
 namespace isle::world { class World; }
 namespace isle::focus { class Detector; }
+namespace isle::menu { class EffectResources; }
 
 namespace isle::actor {
 class Owner;
@@ -25,11 +28,11 @@ struct InteractionSourceAccess;
 // context. Native join alone does not authorize destruction or resource reuse.
 class InteractionServices final {
 public:
-    // Borrow the Owner's sole typed course context. Rainbow construction is
-    // after real Actor Source activation and before original Source init; it
-    // publishes nothing and does not require a current native World block yet.
+    // Borrow the Owner's sole typed context. Complete cold proof publishes
+    // nothing and needs no current World block. The canonical FX inventory is
+    // consumed only during construction; it does not install live Source banks.
     InteractionServices(scene::Services&, Owner&, items::Owner&, world::World&,
-        focus::Detector&, const BehaviorBindings&, const Resources&);
+        focus::Detector&, const BehaviorBindings&, const Resources&, const menu::EffectResources&);
     InteractionServices(const InteractionServices&) = delete;
     InteractionServices& operator=(const InteractionServices&) = delete;
     InteractionServices(InteractionServices&&) = delete;
@@ -44,6 +47,13 @@ public:
     // Recheck dynamic liveness/identity against the constructor's immutable
     // closure proof. Does not require current World publication.
     bool admits_source() const noexcept;
+    // Cold complete closure with the exact stable proposed typed table. This
+    // never stages ACTIVE pointers or requires World publication.
+    bool admits_proposed_source() const noexcept;
+    const IsleActorInteractionGraph& native_graph(std::uint32_t) const;
+    const BoundWeightedStates& native_weighted(std::uint32_t) const;
+    const BoundCountedStates& native_counted(std::uint32_t) const;
+    std::span<const IsleRiverCountedOption> river_counted(std::uint32_t) const;
 private:
     friend struct InteractionSourceAccess;
     scene::Services& services_;
@@ -75,6 +85,12 @@ private:
     const IsleRainbowActorServices* rainbow_services_ = nullptr;
     bool rainbow_closed_ = false;
     std::array<const ActorInitialization*, 5> rainbow_initializations_{};
+    bool native_closed_ = false;
+    std::array<const ActorInitialization*,32> native_initializations_{};
+    std::size_t native_initialization_count_ = 0;
+    std::array<IsleRiverCountedOption,3> river_counted_{};
+    bool prove_native_closure(const menu::EffectResources&);
+    bool admits_native_path(const void*) const;
     bool prove_rainbow_closure();
     bool admits_rainbow(const void* path) const;
 };

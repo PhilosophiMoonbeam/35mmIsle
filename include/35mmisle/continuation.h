@@ -45,10 +45,19 @@ IsleContinuationResult isle_continuation_domain_check_access(const IsleContinuat
 /* Active callback only: run a non-yielding service synchronously on this
  * domain's constructing owner, then continue the SAME resume. This is not a
  * gameplay wait/tick. The callback receives only caller-owned storage and
- * must not resume/wait on this domain. Exceptions become EXECUTION_FAILURE.
+ * must not resume any continuation. Exceptions become EXECUTION_FAILURE.
  */
 IsleContinuationResult isle_continuation_on_owner(IsleContinuationEntry service,
                                                  void* user);
+/* Active callback only: an explicit serialized scheduler boundary. The caller
+ * remains parked while its owner may dispatch a continuation in a DIFFERENT
+ * inactive domain, then returns within this same resume. No wait/GTL credit is
+ * generated. The current domain cannot be resumed, cancelled, or destroyed;
+ * all ordinary owner-service restrictions remain unchanged outside this
+ * scheduling operation. Caller storage must outlive the synchronous dispatch.
+ */
+IsleContinuationResult isle_continuation_on_owner_dispatch(IsleContinuationEntry scheduler,
+                                                          void* user);
 IsleContinuationResult isle_continuation_create(IsleContinuationDomain* domain,
                                                IsleContinuationEntry entry,
                                                void* user,

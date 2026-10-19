@@ -1,0 +1,435 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "source_path": "src/app_render/568D0.c",
+  "git_blob": "fed2e286e73ef66a946ebd7b614f2d2b7b1fca6c",
+  "source_sha256": "ab288404b621d0b12a51c846f00ae7335905931595ea58ca005f073c3e12b2b3",
+  "transformation_version": "sound-ramp-v1",
+  "canonical_storage_authority": {
+    "first": 4,
+    "last": 14,
+    "source_sha256": "bc30b7d54adba0c76a9e64b02791616eef26b8e68971f88eeec1fa0d79eae44b",
+    "native_type": "IsleSoundRampRow",
+    "storage": "one Source.D_800BEF60[5] and Source.D_800BEFD8[5] per actual Services/Game lifetime; typed GObj** fields, no console offsets"
+  },
+  "numeric_policy": {
+    "scalar_types": {
+      "s32": "int32_t",
+      "u32": "uint32_t",
+      "f32": "float"
+    },
+    "source_macros": [
+      "true from <stdbool.h> only; no arithmetic macro substitution required"
+    ],
+    "gnu_clang": [
+      "-frounding-math",
+      "-ffp-contract=off",
+      "-fno-fast-math"
+    ],
+    "gnu_c": [
+      "-fexcess-precision=standard"
+    ],
+    "msvc": [
+      "/fp:strict"
+    ],
+    "semantics": "Retain unsigned row fields, original implicit u32-to-f32 operations, original u32 assignment conversion, original interpolation expression/order, frame0 through duration inclusive, start clamps and volume-output-only clamp. No widened double interpolation, FMA, reassociation, divide/zero repair or signed-duration normalization. Native source bug comments and AB874/AB918 duplicate volume target stores preserved."
+  },
+  "definitions": [
+    {
+      "symbol": "func_800AB240",
+      "first": 72,
+      "last": 100,
+      "source_sha256": "e558f6e25dead2c833d9a713ba3e6a4930585bf23bbea7132a70869509c913b0",
+      "native_sha256": "ac2b81463c46ce4814aade6ba773aafd51369b3dcd4b9f511cf10fa0ccefd29e",
+      "changes": [
+        {
+          "find": "void func_800AB240(GObj* obj) {",
+          "replace": "void isle_sound_ramp_func_800AB240(IsleGameObject* obj) {\n    IsleSoundRampBinding* binding = isle_sound_ramp_current(obj, ISLE_SOUND_RAMP_PAN);\n    IsleSoundRampSource* s = binding->source;\n    uint32_t index = binding->index;",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_800BEFD8[(s32) obj->userData]",
+          "replace": "&s->D_800BEFD8[index]",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetSoundPan(entry->unk_04, pan);",
+          "replace": "isle_sound_ramp_checked(s, s->native.sound_pan(s, entry->unk_04, pan));",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(obj);",
+          "replace": "isle_sound_ramp_delete(s, binding);",
+          "occurrences": 1
+        },
+        {
+          "find": "entry->unk_00 = NULL;",
+          "replace": "IsleGameObject* previous = entry->unk_00;\n            entry->unk_00 = NULL;\n            isle_sound_ramp_reconcile(s, ISLE_SOUND_RAMP_PAN, index, obj, previous);",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(1);",
+          "replace": "isle_sound_ramp_wait(s, 1);",
+          "occurrences": 2
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 2
+        },
+        {
+          "find": "u32",
+          "replace": "uint32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800AB41C",
+      "first": 102,
+      "last": 130,
+      "source_sha256": "77cfd2840824676ea84de4036522e73259cd6d0ff1f7fccbf617708401201ebc",
+      "native_sha256": "ea2067a4b9851969642ba8377970b37233237138d7f1725e47fb2c92d4cbcde0",
+      "changes": [
+        {
+          "find": "s32 func_800AB41C(s32 arg0, u32 arg1, u32 arg2, s32 arg3) {",
+          "replace": "s32 isle_sound_ramp_func_800AB41C(IsleSoundRampSource* s, s32 arg0, u32 arg1, u32 arg2, s32 arg3) {",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BEFD8",
+          "replace": "s->D_800BEFD8",
+          "occurrences": 1
+        },
+        {
+          "find": "\n    for (i = 0;",
+          "replace": "\n    isle_sound_ramp_require(s);\n    for (i = 0;",
+          "occurrences": 1
+        },
+        {
+          "find": "omAddGObj(14, NULL, LINK_0, 0x80000000)",
+          "replace": "isle_sound_ramp_add_object(s, ISLE_SOUND_RAMP_PAN, (uint32_t) i)",
+          "occurrences": 1
+        },
+        {
+          "find": "ptr->unk_00->userData = (void*) i;",
+          "replace": "isle_sound_ramp_reconcile(s, ISLE_SOUND_RAMP_PAN, (uint32_t) i, ptr->unk_00, NULL);",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(ptr->unk_00, func_800AB240, 0, 1);",
+          "replace": "isle_sound_ramp_create_process(s, ISLE_SOUND_RAMP_PAN, (uint32_t) i, ptr->unk_00, isle_sound_ramp_func_800AB240);",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 4
+        },
+        {
+          "find": "u32",
+          "replace": "uint32_t",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "symbol": "func_800AB518",
+      "first": 132,
+      "last": 162,
+      "source_sha256": "e35ac3f6a6b283dc3dfd486daba5e7eefd8618a186b3a52192901f5cb5ed2666",
+      "native_sha256": "c59552a2ca541d5bb79204b237d463c541cf872699bd4269215c587d92786830",
+      "changes": [
+        {
+          "find": "void func_800AB518(GObj* obj) {",
+          "replace": "void isle_sound_ramp_func_800AB518(IsleGameObject* obj) {\n    IsleSoundRampBinding* binding = isle_sound_ramp_current(obj, ISLE_SOUND_RAMP_VOLUME);\n    IsleSoundRampSource* s = binding->source;\n    uint32_t index = binding->index;",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 1
+        },
+        {
+          "find": "&D_800BEF60[(s32) obj->userData]",
+          "replace": "&s->D_800BEF60[index]",
+          "occurrences": 1
+        },
+        {
+          "find": "auSetSoundVolume(entry->unk_04, vol);",
+          "replace": "isle_sound_ramp_checked(s, s->native.sound_volume(s, entry->unk_04, vol));",
+          "occurrences": 1
+        },
+        {
+          "find": "omDeleteGObj(obj);",
+          "replace": "isle_sound_ramp_delete(s, binding);",
+          "occurrences": 1
+        },
+        {
+          "find": "entry->unk_00 = NULL;",
+          "replace": "IsleGameObject* previous = entry->unk_00;\n            entry->unk_00 = NULL;\n            isle_sound_ramp_reconcile(s, ISLE_SOUND_RAMP_VOLUME, index, obj, previous);",
+          "occurrences": 1
+        },
+        {
+          "find": "ohWait(1);",
+          "replace": "isle_sound_ramp_wait(s, 1);",
+          "occurrences": 2
+        },
+        {
+          "find": "f32",
+          "replace": "float",
+          "occurrences": 2
+        },
+        {
+          "find": "u32",
+          "replace": "uint32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800AB700",
+      "first": 164,
+      "last": 192,
+      "source_sha256": "3f5ae0d5b4393d7bb5239866839d70a112800fdfe40ed19a1b0d7c5b1db824e6",
+      "native_sha256": "3336031d70a09812616839073f8b629e5dde6bfca10e17d1ddd199c7ecd1c99d",
+      "changes": [
+        {
+          "find": "s32 func_800AB700(s32 arg0, u32 arg1, u32 arg2, s32 arg3) {",
+          "replace": "s32 isle_sound_ramp_func_800AB700(IsleSoundRampSource* s, s32 arg0, u32 arg1, u32 arg2, s32 arg3) {",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BEF60",
+          "replace": "s->D_800BEF60",
+          "occurrences": 1
+        },
+        {
+          "find": "\n    for (i = 0;",
+          "replace": "\n    isle_sound_ramp_require(s);\n    for (i = 0;",
+          "occurrences": 1
+        },
+        {
+          "find": "omAddGObj(14, NULL, LINK_0, 0x80000000)",
+          "replace": "isle_sound_ramp_add_object(s, ISLE_SOUND_RAMP_VOLUME, (uint32_t) i)",
+          "occurrences": 1
+        },
+        {
+          "find": "ptr->unk_00->userData = (void*) i;",
+          "replace": "isle_sound_ramp_reconcile(s, ISLE_SOUND_RAMP_VOLUME, (uint32_t) i, ptr->unk_00, NULL);",
+          "occurrences": 1
+        },
+        {
+          "find": "omCreateProcess(ptr->unk_00, func_800AB518, 0, 1);",
+          "replace": "isle_sound_ramp_create_process(s, ISLE_SOUND_RAMP_VOLUME, (uint32_t) i, ptr->unk_00, isle_sound_ramp_func_800AB518);",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 4
+        },
+        {
+          "find": "u32",
+          "replace": "uint32_t",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "symbol": "func_800AB7FC",
+      "first": 194,
+      "last": 208,
+      "source_sha256": "b900924aaed3ae4609f9d1df232cbc8f62e01f31a198420a6b5bcfe22d78d0a8",
+      "native_sha256": "d9da9eb82c8ab1f5e2ef80b900bec1514d4f7ec7c13f256ce0d1c944a19f31d7",
+      "changes": [
+        {
+          "find": "void func_800AB7FC(s32 arg0) {",
+          "replace": "void isle_sound_ramp_func_800AB7FC(IsleSoundRampSource* s , s32 arg0) {",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BEF60",
+          "replace": "s->D_800BEF60",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BEFD8",
+          "replace": "s->D_800BEFD8",
+          "occurrences": 1
+        },
+        {
+          "find": "\n    if (arg0 == 0)",
+          "replace": "\n    isle_sound_ramp_require(s);\n    if (arg0 == 0)",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "symbol": "func_800AB874",
+      "first": 210,
+      "last": 221,
+      "source_sha256": "519a933ab17d449b1c3156c41777db092e758d2cc217ea9013a62b034964f6d4",
+      "native_sha256": "250980a973b34c7c9725cd7407b98ac3523d029ad6415c602eb4fd846f0848c5",
+      "changes": [
+        {
+          "find": "void func_800AB874(void) {",
+          "replace": "void isle_sound_ramp_func_800AB874(IsleSoundRampSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800BEF60",
+          "replace": "s->D_800BEF60",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BEFD8",
+          "replace": "s->D_800BEFD8",
+          "occurrences": 1
+        },
+        {
+          "find": "\n    for (i = 0;",
+          "replace": "\n    isle_sound_ramp_require(s);\n    for (i = 0;",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "symbol": "func_800AB918",
+      "first": 223,
+      "last": 236,
+      "source_sha256": "926e52d6453147a64324dc0b0363d2d532abf05dfaa8e66d67fd2f75029663f9",
+      "native_sha256": "ac4defadad1a1a97dd3e7cd40de4d005d880b2f4f54cc15464a6e0571f603432",
+      "changes": [
+        {
+          "find": "void func_800AB918(s32 arg0) {",
+          "replace": "void isle_sound_ramp_func_800AB918(IsleSoundRampSource* s , s32 arg0) {",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800BEF60",
+          "replace": "s->D_800BEF60",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BEFD8",
+          "replace": "s->D_800BEFD8",
+          "occurrences": 1
+        },
+        {
+          "find": "\n    for (i = 0;",
+          "replace": "\n    isle_sound_ramp_require(s);\n    for (i = 0;",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 2
+        }
+      ]
+    },
+    {
+      "symbol": "func_800AB9A4",
+      "first": 238,
+      "last": 253,
+      "source_sha256": "9164499ac179d354f0e54c51c9e069626de36b7a97ca6bf92d6212e4e21eaa94",
+      "native_sha256": "66098fe926773c490bbb29902b7b3c430ecf8ee9f696471b5e90253cfae1f90e",
+      "changes": [
+        {
+          "find": "void func_800AB9A4(void) {",
+          "replace": "void isle_sound_ramp_func_800AB9A4(IsleSoundRampSource* s) {",
+          "occurrences": 1
+        },
+        {
+          "find": "Struct_800BEFD8",
+          "replace": "IsleSoundRampRow",
+          "occurrences": 2
+        },
+        {
+          "find": "D_800BEF60",
+          "replace": "s->D_800BEF60",
+          "occurrences": 1
+        },
+        {
+          "find": "D_800BEFD8",
+          "replace": "s->D_800BEFD8",
+          "occurrences": 1
+        },
+        {
+          "find": "\n    for (i = 0;",
+          "replace": "\n    isle_sound_ramp_require_reset(s);\n    for (i = 0;",
+          "occurrences": 1
+        },
+        {
+          "find": "s32",
+          "replace": "int32_t",
+          "occurrences": 1
+        }
+      ]
+    }
+  ],
+  "generated_source_sha256": "75efed6670ba07c281a9e459d02fa8e69a9f252036580b810bf18fac5bb3cb4e",
+  "native_support_paths": [
+    "src/sound_ramp_source.h",
+    "src/sound_ramp_source.c",
+    "src/engine_internal.h",
+    "src/engine.c",
+    "src/scene_services.hpp",
+    "src/scene_services.cpp",
+    "src/game_audio.hpp",
+    "src/game_audio.cpp",
+    "include/35mmisle/engine.h"
+  ],
+  "native_support": {
+    "src/sound_ramp_source.h": "edc5be79911a3a3fd6d024bdf0eff7bcb6469fd430e97f165d2c29aab1cfe99e",
+    "src/sound_ramp_source.c": "8f4ce94bba408bcc921e8ff2118f18c0ea704f5944a9358cc4fb53e5bf327873",
+    "src/engine_internal.h": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b",
+    "src/engine.c": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502",
+    "src/scene_services.hpp": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae",
+    "src/scene_services.cpp": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f",
+    "src/game_audio.hpp": "13703dbf4e73508eee533164f213db5f91d7e60fd08d01f4c6d63123674effd1",
+    "src/game_audio.cpp": "ed5e5144f038a673a9a6b0202f82e4c7063774ff57710561eb1858f410c49d3a",
+    "include/35mmisle/engine.h": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+  },
+  "native_support_digest_owner": "Main refreshes all shared native-support digests only after final integration; this private provider does not modify them."
+}

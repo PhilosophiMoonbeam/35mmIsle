@@ -105,6 +105,9 @@ public:
     // terminal Services error; collection depends on actual joins/borrow release.
     // The caller supplies graphics exclusion for both phases and destruction.
     OwnerStatus retire() noexcept;
+    // Sweep every collectable incarnation, even when an earlier Item remains
+    // borrowed. A lifetime result means only the retained subset is pending;
+    // callers may continue normal updates with the other physical slots.
     OwnerStatus collect_joined() noexcept;
 private:
     SpawnResult spawn(Family, IsleGameVec3, IsleGameVec3) noexcept;

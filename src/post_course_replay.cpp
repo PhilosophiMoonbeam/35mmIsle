@@ -22,6 +22,7 @@ struct IslePostCourseReplay {
     IsleGameResult status = ISLE_GAME_OK;
     const char* diagnostic = "";
     IslePhotoRecord record{};
+    IslePhotoWorkingRead working{};
     const std::uint64_t* revision = nullptr;
     std::array<std::byte, sizeof(IslePlayerPhotoData)> unchanged{};
     std::uint64_t serial = 0, sound_played = 0;
@@ -78,9 +79,19 @@ struct IslePostCourseReplay {
         fail(ISLE_GAME_INVALID_STATE, "stale or foreign replay operation");
         return false;
     }
+    const IslePlayerPhotoData* data() const noexcept { return working.owner ? working.photo : record.photo; }
+    std::uint64_t expected_revision() const noexcept { return working.owner ? working.revision : record.revision; }
     bool current() noexcept {
-        if (!leased || !revision || *revision != record.revision) {
-            fail(ISLE_GAME_INVALID_STATE, "canonical replay revision changed"); return false;
+        if (!leased || !revision || *revision != expected_revision()) {
+            fail(ISLE_GAME_INVALID_STATE, "replay revision changed"); return false;
+        }
+        if (working.owner) {
+            if (working.photos != photos.native_source() ||
+                isle_photo_working_validate_read(&working) != ISLE_GAME_OK ||
+                std::memcmp(unchanged.data(), working.photo, unchanged.size()) != 0) {
+                fail(ISLE_GAME_INVALID_STATE, "working replay read changed"); return false;
+            }
+            return true;
         }
         const auto actual = photos.record(record.storage, record.index);
         const auto identity = photos.identify(record.photo);
@@ -97,8 +108,10 @@ struct IslePostCourseReplay {
     }
     bool release_lease() noexcept {
         if (!leased) return true;
-        if (photos.release_replay(this)) {
-            fail(ISLE_GAME_INVALID_STATE, "canonical replay lease release rejected"); return false;
+        const auto result = working.owner ? isle_photo_working_release_read(&working) :
+            (photos.release_replay(this) ? ISLE_GAME_INVALID_STATE : ISLE_GAME_OK);
+        if (result != ISLE_GAME_OK) {
+            fail(ISLE_GAME_INVALID_STATE, "replay read lease release rejected"); return false;
         }
         leased = false; revision = nullptr;
         return true;
@@ -133,7 +146,7 @@ struct IslePostCourseReplay {
     }
     IslePostCourseReplayStep begin(const IslePlayerPhotoData* photo,
         isle::photo::ReplayKind requested, int32_t width, int32_t height, float scale,
-        IslePostCourseReplayOperation* output) noexcept {
+        IslePostCourseReplayOperation* output, IslePhotoWorking* input_working = nullptr) noexcept {
         if (output) *output = {};
         observe_host();
         if (!output || active || stopping || retired || status != ISLE_GAME_OK ||
@@ -142,20 +155,34 @@ struct IslePostCourseReplay {
             return {ISLE_POST_REPLAY_FAILED,0};
         }
         active = true; absent = !photo; consumed = false; terminal = false;
-        preview_exposed = false; sound_played = 0; kind = requested; record = {};
+        preview_exposed = false; sound_played = 0; kind = requested; record = {}; working = {};
         *output = {this,++serial};
-        const auto identity = photos.identify(photo);
-        if (!identity) {
-            fail(ISLE_GAME_INVALID_ARGUMENT, "Photo pointer has no canonical owner identity");
-            return poll();
-        }
-        record = identity.value;
-        if (absent) return {ISLE_POST_REPLAY_ABSENT,0};
-        if (photos.acquire_replay(record,this,&revision)) {
-            fail(ISLE_GAME_INVALID_STATE, "canonical replay read lease unavailable"); return poll();
+        if (input_working) {
+            if (kind != isle::photo::ReplayKind::preview ||
+                isle_photo_working_describe(input_working, &working) != ISLE_GAME_OK ||
+                working.photos != photos.native_source()) {
+                fail(ISLE_GAME_INVALID_ARGUMENT, "working photo has a foreign owner"); return poll();
+            }
+            absent = !working.photo;
+            if (absent) return {ISLE_POST_REPLAY_ABSENT,0};
+            if (isle_photo_working_acquire_read(input_working, this, &working) != ISLE_GAME_OK) {
+                fail(ISLE_GAME_INVALID_STATE, "working replay read lease unavailable"); return poll();
+            }
+            revision = working.revision_address;
+        } else {
+            const auto identity = photos.identify(photo);
+            if (!identity) {
+                fail(ISLE_GAME_INVALID_ARGUMENT, "Photo pointer has no canonical owner identity");
+                return poll();
+            }
+            record = identity.value;
+            if (absent) return {ISLE_POST_REPLAY_ABSENT,0};
+            if (photos.acquire_replay(record,this,&revision)) {
+                fail(ISLE_GAME_INVALID_STATE, "canonical replay read lease unavailable"); return poll();
+            }
         }
         leased = true;
-        std::memcpy(unchanged.data(),record.photo,unchanged.size());
+        std::memcpy(unchanged.data(),data(),unchanged.size());
         if (!current()) return poll();
         bool dash = false;
         if (kind == isle::photo::ReplayKind::score) {
@@ -166,7 +193,7 @@ struct IslePostCourseReplay {
             }
             dash = flag != 0;
         }
-        const isle::photo::ReplayRequest request{kind,{record.photo,revision,record.revision},dash,width,height,scale};
+        const isle::photo::ReplayRequest request{kind,{data(),revision,expected_revision()},dash,width,height,scale};
         if (!replay.begin(request)) fail(ISLE_GAME_EXECUTION_FAILURE, "actual Replay begin failed");
         return poll();
     }
@@ -220,6 +247,16 @@ IslePostCourseReplayStep isle_post_replay_preview_begin(IslePostCourseReplay* p,
     },IslePostCourseReplayStep{ISLE_POST_REPLAY_FAILED,0});
     if (!p) { if (output) *output = {}; return {ISLE_POST_REPLAY_FAILED,0}; }
     return p->begin(photo,isle::photo::ReplayKind::preview,width,height,scale,output);
+}
+IslePostCourseReplayStep isle_post_replay_preview_working_begin(IslePostCourseReplay* p,
+    IslePhotoWorking* working, int32_t width, int32_t height, float scale,
+    IslePostCourseReplayOperation* output) {
+    if (p && !p->is_creator()) return p->on_creator([=] {
+        return isle_post_replay_preview_working_begin(p,working,width,height,scale,output);
+    },IslePostCourseReplayStep{ISLE_POST_REPLAY_FAILED,0});
+    if (!p) { if (output) *output = {}; return {ISLE_POST_REPLAY_FAILED,0}; }
+    // NULL is the genuine Original absent branch, not a fake canonical slot.
+    return p->begin(nullptr,isle::photo::ReplayKind::preview,width,height,scale,output,working);
 }
 IslePostCourseReplayStep isle_post_replay_poll(IslePostCourseReplay* p, IslePostCourseReplayOperation operation) {
     if (p && !p->is_creator()) return p->on_creator([=] {
@@ -340,7 +377,7 @@ IsleGameResult isle_post_replay_operation_release(IslePostCourseReplay* p, IsleP
     if (!p->handle(operation)) return p->status;
     if (p->leased || (!p->consumed && !p->terminal && !(p->absent && !p->stopping)))
         return p->fail(ISLE_GAME_INVALID_STATE,"replay release before actual consumption or retirement");
-    p->active = false; p->record = {}; p->preview_exposed = false;
+    p->active = false; p->record = {}; p->working = {}; p->preview_exposed = false;
     return p->status;
 }
 IsleGameResult isle_post_replay_cancel(IslePostCourseReplay* p) {

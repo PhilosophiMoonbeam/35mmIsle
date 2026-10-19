@@ -1,27 +1,32 @@
 # Complete own-GAME service bodies. Materialization never configures the decomp.
-foreach(_isle_player_service IN ITEMS player-ui screen-transition player-bump beach-music
+foreach(_isle_player_service IN ITEMS player-ui screen-transition sound-ramp player-bump beach-music
         application beach-lifecycle beach-ending beach-snorlax-kangaskhan
-        beach-meowth beach-eevee-chansey beach-scyther-special rainbow-actor rainbow-lifecycle)
+        beach-meowth beach-eevee-chansey beach-scyther-special rainbow-actor rainbow-lifecycle
+        tunnel-actor tunnel-lifecycle volcano-actor volcano-lifecycle
+        river-actor river-lifecycle cave-actor cave-lifecycle valley-actor valley-lifecycle)
     string(REPLACE "-" "_" _isle_player_service_id "${_isle_player_service}")
     set(_isle_player_service_manifest "${PROJECT_SOURCE_DIR}/cmake/${_isle_player_service}-inputs.json")
     set(_isle_player_service_generator "${PROJECT_SOURCE_DIR}/tools/prepare_${_isle_player_service_id}.py")
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
         "${_isle_player_service_manifest}" "${_isle_player_service_generator}")
     file(READ "${_isle_player_service_manifest}" _isle_player_service_authority)
-    string(JSON _isle_player_support_type ERROR_VARIABLE _isle_player_support_error
-        TYPE "${_isle_player_service_authority}" native_support)
-    if(NOT _isle_player_support_error)
-        string(JSON _isle_player_support_count LENGTH "${_isle_player_service_authority}" native_support)
-        if(_isle_player_support_count GREATER 0)
-            math(EXPR _isle_player_support_last "${_isle_player_support_count} - 1")
-            foreach(_isle_player_support_index RANGE 0 ${_isle_player_support_last})
-                string(JSON _isle_player_support_path MEMBER "${_isle_player_service_authority}"
-                    native_support ${_isle_player_support_index})
-                set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-                    "${PROJECT_SOURCE_DIR}/${_isle_player_support_path}")
-            endforeach()
+    foreach(_isle_player_support_key IN ITEMS native_support common_native_support)
+        string(JSON _isle_player_support_type ERROR_VARIABLE _isle_player_support_error
+            TYPE "${_isle_player_service_authority}" "${_isle_player_support_key}")
+        if(NOT _isle_player_support_error)
+            string(JSON _isle_player_support_count LENGTH
+                "${_isle_player_service_authority}" "${_isle_player_support_key}")
+            if(_isle_player_support_count GREATER 0)
+                math(EXPR _isle_player_support_last "${_isle_player_support_count} - 1")
+                foreach(_isle_player_support_index RANGE 0 ${_isle_player_support_last})
+                    string(JSON _isle_player_support_path MEMBER "${_isle_player_service_authority}"
+                        "${_isle_player_support_key}" ${_isle_player_support_index})
+                    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+                        "${PROJECT_SOURCE_DIR}/${_isle_player_support_path}")
+                endforeach()
+            endif()
         endif()
-    endif()
+    endforeach()
     set(_isle_${_isle_player_service_id}_generated
         "${CMAKE_BINARY_DIR}/_deps/isle-${_isle_player_service}-private/game.c")
     set(_isle_player_service_evidence
@@ -38,7 +43,8 @@ foreach(_isle_player_service IN ITEMS player-ui screen-transition player-bump be
             _isle_player_service STREQUAL "beach-eevee-chansey" OR
             _isle_player_service STREQUAL "beach-scyther-special" OR
             _isle_player_service STREQUAL "rainbow-actor" OR
-            _isle_player_service STREQUAL "rainbow-lifecycle")
+            _isle_player_service STREQUAL "rainbow-lifecycle" OR
+            _isle_player_service MATCHES "^(tunnel|volcano|river|cave|valley)-(actor|lifecycle)$")
         set(_isle_player_service_evidence
             "${CMAKE_BINARY_DIR}/_deps/isle-${_isle_player_service}-private/evidence.json")
     endif()

@@ -10,6 +10,10 @@ extern "C" {
 /* Private native metadata only; never a console layout or GPU allocation. */
 IsleGameResult isle_menu_reserve_pools(IsleGame*, isle_arena*, size_t objects,
     size_t processes, size_t sprites, size_t cameras, size_t matrices);
+/* Atomically reserve command nodes and actual-size model blocks, then freeze
+ * every native pool. Cold/idle, before first OM update; no failure publication. */
+IsleGameResult isle_menu_reserve_native_capacity(IsleGame*, IsleGameCommandPool*,
+    size_t command_nodes, const IsleGameModelCapacity*, size_t model_classes);
 IsleGameObject* isle_menu_current_object(IsleGame*);
 IsleGameObject* isle_menu_first_object(IsleGame*, uint8_t update_link);
 IsleGameObject* isle_menu_next_object(IsleGame*, IsleGameObject*);

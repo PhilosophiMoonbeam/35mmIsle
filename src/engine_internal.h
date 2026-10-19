@@ -132,7 +132,13 @@ struct IsleGameModel {
     IsleGameModelNode nodes[];
 };
 
+static inline bool isle_native_model_count_valid(size_t count) {
+    return count != 0 && count <= UINT32_MAX &&
+        count <= (SIZE_MAX - sizeof(IsleGameModel)) / (sizeof(IsleGameModelNode) + 1);
+}
+
 struct IslePlayerSource;
+struct IsleSoundRampSource;
 
 struct IsleGame {
     isle_arena* arena;
@@ -153,11 +159,14 @@ struct IsleGame {
     void* command_fault_context;
     struct IslePlayerSource* playerSource; /* Nonowning single Player C execution context. */
     struct IslePostCourseSceneSource* postCourseSource; /* Independent of original object userData. */
+    struct IsleSoundRampSource* soundRampSource; /* Actual Services-lifetime shared Original C owner. */
     IsleGameCounts counts;
     IsleGameResult fault;
     char error[512];
     jmp_buf fault_frame;
     bool ticking;
+    bool has_updated;
+    bool native_capacity_frozen;
     bool update_stopped; /* Abandoned C traversal; never a successful OM update. */
     bool alive;
 };

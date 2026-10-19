@@ -1,0 +1,491 @@
+{
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "source": "src/unk_end_level_8/A084B0.c",
+  "blob": "541be49786d466806c1221b2264276c1767a6249",
+  "sha256": "c558ee02de8dc640db9fd3238550b531b7f2c25bd2edf5358f8622703ecf9e3e",
+  "definition_count": 7,
+  "units": [
+    {
+      "name": "func_801DC8C0_A084B0",
+      "source_sha256": "1ca5f1b75ad75f13c40749ed34e9915ddceae484b72db7599c045fecbe0b9458",
+      "native_sha256": "b0beb7e219d450c753ce43859728dd41d7e392867a77992847434ac20e45aac3",
+      "rewrites": [
+        {
+          "old": "    s32 unk0[2];\n    UIFrame* sp2C;\n    UIElement* sp28;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "sp2C = UIFrame_Create();",
+          "new": "e8_check(source,isle_post_window_frame_create(source->common.window,&source->frame));",
+          "count": 1
+        },
+        {
+          "old": "    D_801DD254_A08E44 = sp2C;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "UIFrame_GetBackgroundColor(sp2C, &sp24);",
+          "new": "e8_check(source,isle_post_window_frame_color(source->common.window,source->frame,&sp24));",
+          "count": 1
+        },
+        {
+          "old": "sp28 = UIElement_Create(104, 173, 192, 47, 0);",
+          "new": "e8_check(source,isle_post_window_element_create(source->common.window,104,173,192,47,0,&source->element));",
+          "count": 1
+        },
+        {
+          "old": "    D_801DD258_A08E48 = sp28;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "window": "UIElement_SetFont",
+          "count": 1
+        },
+        {
+          "window": "UIElement_SetState",
+          "count": 1
+        },
+        {
+          "window": "UIFrame_SetPos",
+          "count": 1
+        },
+        {
+          "window": "UIFrame_SetStyle",
+          "count": 1
+        },
+        {
+          "window": "UIFrame_Show",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DC9E8_A085D8",
+      "source_sha256": "2f0ba1d2642ba6e6e0a4939ce2e697160e6f24acfc178cc8d5859618081234ec",
+      "native_sha256": "bde643cafdc0037e73da2cafd0289022cb0a7a725aea28ccb87e4d15ed1dc761",
+      "rewrites": [
+        {
+          "old": "D_801DD240_A08E30->flags &= ~1;",
+          "new": "e8_hidden(source,0);",
+          "count": 2
+        },
+        {
+          "old": "D_801DD240_A08E30->flags |= 1;",
+          "new": "e8_hidden(source,1);",
+          "count": 2
+        },
+        {
+          "old": "initObjectsOnPhoto(D_801DD244_A08E34, func_800BF574_5C414(D_801DD24C_A08E3C));",
+          "new": "e8_photo(source,source->D_801DD24C_A08E3C);",
+          "count": 2
+        },
+        {
+          "old": "func_8009FBC4();",
+          "new": "e8_replay_cleanup(source);",
+          "count": 1
+        },
+        {
+          "old": "gtlWaitAllGfxTasksDone();",
+          "new": "e8_join_graphics(source);",
+          "count": 1
+        },
+        {
+          "leaf": "func_8009FB50",
+          "count": 1
+        },
+        {
+          "leaf": "func_800A7860",
+          "count": 2
+        },
+        {
+          "leaf": "auPlaySound",
+          "count": 2
+        },
+        {
+          "leaf": "func_800AADF0",
+          "count": 1
+        },
+        {
+          "window": "UIElement_SetState",
+          "count": 3
+        },
+        {
+          "window": "UIFrame_Show",
+          "count": 2
+        },
+        {
+          "window": "UIFrame_ShowBackground",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "func_801DCE2C_A08A1C",
+      "source_sha256": "4c997cacf5ac65906c92ce76172d0b9d91650c7fe813e4746be838a14456fa42",
+      "native_sha256": "3a717c23b2e4f8c007e1a2c7d0a41a3121cf871c11a60d96ba08cdd2697823f5",
+      "rewrites": [
+        {
+          "old": "func_800A85E8(func_801DC9E8_A085D8, LINK_6, DL_LINK_0, NULL);",
+          "new": "e8_process(source,6,0,NULL);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DCE64_A08A54",
+      "source_sha256": "5cbbc749e70fcb5330ebc4094202bae6aa96451b1775018a6e7645881dd10812",
+      "native_sha256": "72de41627ee17fb7ac7e1d02bb8f49ef8d06c37b6321771f666b7b1cc92b1688",
+      "rewrites": [
+        {
+          "mechanical": "camera fields replaced by exact typed native camera contract"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCFE0_A08BD0",
+      "source_sha256": "8773f1e40b212e016294ee0a4a6abd8e5598032c147500789ef7a742adc18dd5",
+      "native_sha256": "8ae021319a5c9991439726b6b0e7c4d314e9a3f1266da0997dad7895b10f484b",
+      "rewrites": [
+        {
+          "old": "D_801DD130_A08D20.zBuffer = gtlMalloc(0x25800, 0x40);\n    viApplyScreenSettings(&D_801DD130_A08D20);",
+          "new": "e8_check(source,source->requiredNativeTable->depth_screen(source,0x25800,0x40));",
+          "count": 1
+        },
+        {
+          "old": "UIMem_CreateHeap(D_801DD260_A08E50, sizeof(D_801DD260_A08E50));",
+          "new": "e8_check(source,source->requiredNativeTable->ui_heap(source,0x32000));",
+          "count": 1
+        },
+        {
+          "leaf": "func_800AAE28",
+          "count": 1
+        },
+        {
+          "leaf": "auSetBGMVolume",
+          "count": 1
+        },
+        {
+          "leaf": "func_800A7F68",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DD070_A08C60",
+      "source_sha256": "b953e283dbbe304b5aa54f4f69fc2121e0f21d7476f32f3bb2e82725ea2427e8",
+      "native_sha256": "aae7c98ac49cc5b2071e85dcc0284128f449e0f1a3647c768112ef0d63e82567",
+      "rewrites": [
+        {
+          "leaf": "UIMem_Deallocate",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DD09C_A08C8C",
+      "source_sha256": "a530ec30129a961d5e0b50e2fa642c367bae08228ed0cb519d84b634a591ccfa",
+      "native_sha256": "cd8ea0112d467f85986f40d570c2089187cd7252f91855f4565e19b8368f6a55",
+      "rewrites": [
+        {
+          "mechanical": "independent C entry in end_level_8_source.c preserves prelatch, setup and actual retirement result"
+        }
+      ]
+    }
+  ],
+  "output_sha256": "69c9bd089d338ec731b7a65759d69a719aeb81f5cbd3b0fdda52c961e9484aeb",
+  "support_sha256": {
+    "src/end_level_8_source.h": "aa990ca4b6e2b50df2eb3ca269c070c0ebc13229ce07382ba49d8f62fb5d03a1",
+    "src/end_level_8_source.c": "4fb361377b46949a49d9e45e7ff7c3cc47f169b134fbec7fa8083af0585e4312",
+    "tools/prepare_end_level_8.py": "cfe2689bcfceae343c4bf4a1f3ae2f64b853e2db4d47f1e68b4629bd82299b8c",
+    "include/35mmisle/continuation.h": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f",
+    "include/35mmisle/engine.h": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c",
+    "include/35mmisle/process.hpp": "181fb1d0bfa32f3dc37ff8093fce7ce970509e765ceab2bf87efb860f71eda40",
+    "src/application_photos.cpp": "ac46cce27e9728a507417f9ce8e032ab592dcc2f30d1a1aea596278a05faf6ab",
+    "src/application_photos.hpp": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333",
+    "src/application_photos_source.h": "23dc5f2f6c5ceeb53dcd6e4eab608ea70ade7c77448fe90a5cee7f93e772660c",
+    "src/application_runtime.cpp": "489e0f1d6818e0ea77aae780343e4df9ce0fa2b7a2d3eea6f3a29639f04eaede",
+    "src/application_runtime.hpp": "2a721ab816cdd79b0031da9f2d17a7d9d1794a3420ae87fe9e4c8f882522768c",
+    "src/continuation.cpp": "e4cc5bb6cf678d4c4eae24ada2dcf7c805f01ce5fbcd843e4b822e29bd952526",
+    "src/end_level_8_scene_native.cpp": "ff2a2df06e3bd645975527fe057619c04239b5b2a1dd7f69a7f7434c9610a868",
+    "src/end_level_8_scene_native.hpp": "f2bc1c1e80f97e5fdf88ff486db0cb011f155e0b3f4aa8805b0c3669f3135bb9",
+    "src/engine.c": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502",
+    "src/engine_internal.h": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b",
+    "src/game_state.hpp": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa",
+    "src/photo_presentation.cpp": "d6501cc4efa5b2aeae64afd6024115f0350c2807e2b095d3bf1938f43a575f75",
+    "src/photo_presentation.h": "fadb5b59c890b69d5f34e6020cd23bd6388e8adb64bb702d4ab66afb2e45b627",
+    "src/photo_presentation.hpp": "11c76061978365eccad4386d8b15b7d3c19e4aff49835a06431f0f5a25af64eb",
+    "src/photo_presentation_core.inc": "edb1670c6d0aff66526126ff71499c95ee5c9d9b742eaee6e0f483431d37cc61",
+    "src/photo_replay.cpp": "acd95c2ac272975b2a714bc57b5f6302ff90cdf75ecca1f4332dffb19e3374a3",
+    "src/photo_replay.hpp": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693",
+    "src/post_course_native_helpers.hpp": "5e070c3050766af3d5c6848464496a3f885b7258bf4edf521e974c421c97c246",
+    "src/post_course_replay.cpp": "eff1e10d86e907e1368ce6e9776dc472ab0742811b8af53ff172e732186cb1aa",
+    "src/post_course_replay.hpp": "138267651d319ffdeb56088a66f19a1e25365118ff2d01493460d9a0ff916a61",
+    "src/post_course_replay_source.c": "ade22ad042863bac85a9ef258f4d80aa4c2288d594e43fd073840617a8ef8208",
+    "src/post_course_replay_source.h": "f047ac1b6c1389f9d845eddce542303cadf1a7fb2d0ce28d82ac76c6d26295be",
+    "src/post_course_resources.cpp": "50a18de187e272422d5969cbd696d43b0167ea61f4f86fb6908d3578e73ce296",
+    "src/post_course_resources.hpp": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467",
+    "src/post_course_scene.cpp": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87",
+    "src/post_course_scene.hpp": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932",
+    "src/post_course_scene_hooks.cpp": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228",
+    "src/post_course_scene_internal.hpp": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7",
+    "src/post_course_scene_render.cpp": "dab4324654527127f86bf968c449d0b5df59fbfef2d39b5235fd936b724f1825",
+    "src/post_course_scene_source.c": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b",
+    "src/post_course_scene_source.h": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9",
+    "src/post_course_window.cpp": "955cf52a5bc68117783e031a4df7c5ee3d1b9920eeb4a98951af5b86047e1453",
+    "src/post_course_window.hpp": "bc6d1a25eb5614baa099a2154f5656683f8574d723e276cd50b650d6b523d1cf",
+    "src/post_course_window_source.c": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4",
+    "src/post_course_window_source.h": "9a7b3c5cf0b1cdef3c56417450750c83281e1d5454b14107b4e3a41526894499",
+    "src/process.cpp": "b2e8294b61d096588f37f8c17dfeffbf7dac8507d0f844d2bb43a8577417b7b5",
+    "src/scene_graphics.cpp": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4",
+    "src/scene_graphics.hpp": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192",
+    "src/scene_services.cpp": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f",
+    "src/scene_services.hpp": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae",
+    "src/screen_transition_resources.cpp": "0bb5fdab19fb2ffc9147f0e5f2d282f049a1b5d07f8c45a2b39672aea71b6b46",
+    "src/screen_transition_resources.hpp": "98c5beeca3fc08be62d313110e5aac260a8e09407594ec03eb1bbbebbafedf74",
+    "src/window_memory.cpp": "b47ef38233dc7c7e29a9d6b282ccdf0bcc7d3ce66e2f479192ac26e52c64a9d5",
+    "src/window_memory.hpp": "95e417a8f9aed17474ef3213054fb094a652e7c147741c61190a457df51ed9e1"
+  },
+  "resource_facts": {
+    "kind": 5,
+    "scene": 24,
+    "return_prelatch": 23,
+    "initialized_bank": {
+      "rom_start": "0xa08d10",
+      "rom_end": "0xa08e30",
+      "vram": "0x801dd120",
+      "bss": "0x801dd240"
+    },
+    "screen": {
+      "source": "A084B0.c:28-36",
+      "address": "0x801dd130",
+      "width": 320,
+      "height": 240,
+      "flags": "0x16a99",
+      "framebuffers": [
+        "D_803B5000",
+        "D_803DA800"
+      ],
+      "depth_bytes": "0x25800",
+      "depth_alignment": "0x40"
+    },
+    "setup": {
+      "source": "A084B0.c:38-76",
+      "address": "0x801dd14c",
+      "arena_extent": "window_VRAM - unk_end_level_8_VRAM_END",
+      "initialize": "func_801DCFE0_A08BD0",
+      "deallocate": "func_801DD070_A08C60",
+      "update": "omUpdateAll",
+      "draw": "omDrawAll",
+      "controller": "contUpdate",
+      "callback": "func_800A1A50",
+      "near_clipping_disabled": 1
+    },
+    "camera": {
+      "source": "A084B0.c:205-229",
+      "id": 1,
+      "update": "ohUpdateDefault",
+      "link": 0,
+      "priority": 5,
+      "renderer": "ren_func_800192DC",
+      "dl_link": 10,
+      "render_priority": 32,
+      "camera_mask": -1,
+      "flags": 5,
+      "object_hidden": true,
+      "matrix_kinds": [
+        3,
+        14
+      ],
+      "near": 10,
+      "far": 25600,
+      "fovy": 55,
+      "eye": [
+        0,
+        0,
+        100
+      ],
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  "initialized_snapshot": {
+    "label": "end8_initialized",
+    "rom": "0xa08d10",
+    "guest": "0x801dd120",
+    "byte_count": 288,
+    "words": [
+      "0x05000000",
+      "0x09000000",
+      "0x03000000",
+      "0x00000000",
+      "0x803b5000",
+      "0x803da800",
+      "0x00000000",
+      "0x00000000",
+      "0x00000140",
+      "0x000000f0",
+      "0x00016a99",
+      "0x00000000",
+      "0x8000affc",
+      "0x8000ada0",
+      "0x8020f260",
+      "0x00000000",
+      "0x00000001",
+      "0x00000001",
+      "0x0000e000",
+      "0x00002000",
+      "0x00000000",
+      "0x00000000",
+      "0x00005000",
+      "0x00020000",
+      "0x00003000",
+      "0x800a1a50",
+      "0x80004860",
+      "0x00000010",
+      "0x00004000",
+      "0x00000010",
+      "0x00000000",
+      "0x00000020",
+      "0x00000000",
+      "0x0000005c",
+      "0x00000400",
+      "0x00000000",
+      "0x801dd070",
+      "0x00000000",
+      "0x00000000",
+      "0x00000000",
+      "0x00000088",
+      "0x00000000",
+      "0x00000060",
+      "0x00000000",
+      "0x00000090",
+      "0x801dcfe0",
+      "0x00000000",
+      "0x00000000",
+      "0xa4dba4ec",
+      "0xa4dca4ec",
+      "0xa4b9a4eb",
+      "0xa1a1a4b7",
+      "0xa4e3a4b7",
+      "0xa4f3a4c0",
+      "0xa4cd210a",
+      "0x5c61a4c4",
+      "0xa4aea4f2",
+      "0xa4dfa4eb",
+      "0xa1a15c62",
+      "0xa4e2a4a6",
+      "0xa4a4a4a4",
+      "0xa4e40a5c",
+      "0x7aa5e1a5",
+      "0xc3a5bba1",
+      "0xbca5b8a4",
+      "0xf2a1a1a4",
+      "0xb1a4b9a1",
+      "0xa6a4d2a4",
+      "0xe7a4a6a4",
+      "0xb8000000",
+      "0x00000000",
+      "0x00000000"
+    ],
+    "sha256": "35bd648e5e9ad6b015d1e000046aa9002f908674c730b71279ad663e2083f730"
+  },
+  "initialized_include_sha256": "e9dc85061fcb53df3f86a940e03f931fdbde78afa41bebd3cef52add8b38d627",
+  "initialized_authority": {
+    "admission": "actual isle::rom::read_snapshot",
+    "canonical_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "canonical_bytes": 16777216,
+    "method": "data and instruction words from one immutable admitted Snapshot; not an executed matching-MIPS claim",
+    "extractor_sha256": "85a8f7e935334a758cd5c317a55b466c4d614d54574cd045bb3b215f16461719",
+    "receipt_sha256": "d37a269b758391446c1e60eccf0a1c5f35ece30b6003968ceb28ebbf0e01ef9f"
+  },
+  "admitted_callbacks": {
+    "0x8000affc": "omUpdateAll",
+    "0x8000ada0": "omDrawAll",
+    "0x800a1a50": "func_800A1A50",
+    "0x80004860": "contUpdate",
+    "0x801dd070": "func_801DD070_A08C60",
+    "0x801dcfe0": "func_801DCFE0_A08BD0"
+  },
+  "decoded_initial": {
+    "speed": 0,
+    "speed_table": [
+      "0x05000000",
+      "0x09000000",
+      "0x03000000"
+    ],
+    "screen_words": [
+      "0x803b5000",
+      "0x803da800",
+      "0x00000000",
+      "0x00000000",
+      "0x00000140",
+      "0x000000f0",
+      "0x00016a99"
+    ],
+    "setup_words": [
+      "0x00000000",
+      "0x8000affc",
+      "0x8000ada0",
+      "0x8020f260",
+      "0x00000000",
+      "0x00000001",
+      "0x00000001",
+      "0x0000e000",
+      "0x00002000",
+      "0x00000000",
+      "0x00000000",
+      "0x00005000",
+      "0x00020000",
+      "0x00003000",
+      "0x800a1a50",
+      "0x80004860",
+      "0x00000010",
+      "0x00004000",
+      "0x00000010",
+      "0x00000000",
+      "0x00000020",
+      "0x00000000",
+      "0x0000005c",
+      "0x00000400",
+      "0x00000000",
+      "0x801dd070",
+      "0x00000000",
+      "0x00000000",
+      "0x00000000",
+      "0x00000088",
+      "0x00000000",
+      "0x00000060",
+      "0x00000000",
+      "0x00000090",
+      "0x801dcfe0"
+    ],
+    "arena_base": "0x8020f260",
+    "SDK_size_words_not_host_layout": {
+      "GObj": "0x5c",
+      "DObj": "0x88",
+      "OMCamera": "0x90"
+    },
+    "raw_setup_word_at_801dd17c": "0x00020000",
+    "source_Dl_camera": 10,
+    "source_photo_dl": 5,
+    "source_photo_world_link": 9,
+    "source_photo_link": 8
+  },
+  "native_outputs": {
+    "end_level_8_original.inc": "69c9bd089d338ec731b7a65759d69a719aeb81f5cbd3b0fdda52c961e9484aeb",
+    "end_level_8_declarations.inc": "85dd70521700b70d8d3d9bbc42ad04a50e1c659bdc19281eb73048468b6a0ce5",
+    "end_level_8_initial_data.inc": "e9dc85061fcb53df3f86a940e03f931fdbde78afa41bebd3cef52add8b38d627",
+    "game.c": "4fb361377b46949a49d9e45e7ff7c3cc47f169b134fbec7fa8083af0585e4312"
+  }
+}

@@ -88,4 +88,26 @@ EffectsStatus source_effect_world(IsleGame* game, IsleGameModel* model,
         for (unsigned j = 0; j < 4; ++j) output.matrix[i][j] = world.v[i][j];
     return {};
 }
+IsleGameResult source_effect_position_velocity(IsleGame* game,IsleGameModel* model,std::size_t node,
+    IsleGameVec3* position,IsleGameVec3* velocity) noexcept {
+    if (!position || !velocity) return ISLE_GAME_INVALID_ARGUMENT;
+    menu::EffectWorld world{};
+    if (!source_effect_world(game,model,node,world)) return ISLE_GAME_EXECUTION_FAILURE;
+    auto& m=world.matrix;
+    // effect.c1335-1360: normalize columns, never transform velocity as a
+    // point or derive it from frame differences/renderer's quantized caches.
+    for (unsigned col=0;col<3;++col) {
+        if (m[0][col]==0 && m[1][col]==0 && m[2][col]==0) continue;
+        const float n=std::sqrt(m[0][col]*m[0][col]+m[1][col]*m[1][col]+m[2][col]*m[2][col]);
+        if (n==0 || !std::isfinite(n) || !std::isfinite(1.0f/n)) return ISLE_GAME_INVALID_ARGUMENT;
+        const float inv=1.0f/n;
+        m[0][col]*=inv; m[1][col]*=inv; m[2][col]*=inv;
+    }
+    const auto v=*velocity;
+    const IsleGameVec3 result{m[0][0]*v.x+m[1][0]*v.y+m[2][0]*v.z,
+        m[0][1]*v.x+m[1][1]*v.y+m[2][1]*v.z,m[0][2]*v.x+m[1][2]*v.y+m[2][2]*v.z};
+    if (!std::isfinite(result.x) || !std::isfinite(result.y) || !std::isfinite(result.z)) return ISLE_GAME_INVALID_ARGUMENT;
+    *position={m[3][0],m[3][1],m[3][2]}; *velocity=result;
+    return ISLE_GAME_OK;
+}
 }

@@ -201,7 +201,7 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
             {
                 it::Owner items(services,resources.items,world,actors,globals,player_source.value,resources.item_capacities,{32768,4096});
                 shift.items=&items;
-                actor::InteractionServices interactions(services,actors,items,world,detector,*resources.bindings,resources.actors);
+                actor::InteractionServices interactions(services,actors,items,world,detector,*resources.bindings,resources.actors,resources.effects);
                 accepted(actors.bind_interactions(interactions)); // BEFORE any Actor factory.
                 player_source.value.movement.speed_multiplier=0.0005f;
                 world::Movement movement(world,player_source.value.movement,{});

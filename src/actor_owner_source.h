@@ -66,6 +66,15 @@ IsleGameResult isle_actor_owner_scale_initialization(IsleActorSource*, IsleActor
 IsleGameResult isle_actor_owner_target_position_ref(IsleActorSource*, IsleGameObject*, IsleActorPositionRef*);
 IsleGameResult isle_actor_owner_position_read(IsleActorSource*, const IsleActorPositionRef*, const IsleGameVec3**);
 IsleGameResult isle_actor_owner_node_world_ref(IsleActorSource*, const IsleActorNodeRef*, IsleGameVec3*, IsleGameVec3*);
+/* Native retained alternatives, admitted cold for this exact initialized family.
+ * Index is the Original misc slot, not a universal pointer interpretation.
+ * Object get clears output on failure; references retain actual incarnations.
+ * Path save/restore retains immutable actual World provenance, including NULL;
+ * restore before save or after retirement/reuse is rejected. */
+IsleGameResult isle_actor_owner_misc_object_get(IsleActorSource*, uint32_t, IsleGameObject**);
+IsleGameResult isle_actor_owner_misc_object_set(IsleActorSource*, uint32_t, IsleGameObject*);
+IsleGameResult isle_actor_owner_saved_path_save(IsleActorSource*, uint32_t);
+IsleGameResult isle_actor_owner_saved_path_restore(IsleActorSource*, uint32_t);
 IsleGameResult isle_actor_owner_path_info(IsleActorSource*, const void*, IsleActorPathInfo*);
 IsleGameResult isle_actor_owner_path_position(IsleActorSource*, const void*, float, IsleGameVec3*);
 IsleGameResult isle_actor_owner_path_velocity(IsleActorSource*, const void*, float, IsleGameVec3*);
@@ -111,7 +120,8 @@ typedef struct IsleActorFactoryBlock { void* owner; void* block; void* result; }
 typedef struct IsleActorFactorySpawn {
     const void* spawn;
     size_t definition;
-    /* Optional borrow, present only for the original Meowth factory read. */
+    /* Synchronous borrow for authored Meowth/Valley behavior reads, or the
+     * exact native automatic-spawn portability repair before Valley's branch. */
     const int32_t* behavior;
     size_t automatic_definition;
 } IsleActorFactorySpawn;
@@ -133,6 +143,15 @@ typedef void (*IsleActorVoidFactory)(int32_t, uint16_t,
 IsleGameResult isle_actor_source_factory_call(IsleGame*, IsleActorReturningFactory,
     IsleActorVoidFactory, int32_t, uint16_t, IsleActorFactoryBlock*,
     IsleActorFactoryBlock*, IsleActorFactorySpawn*, IsleGameObject**);
+/* Exact synchronous native ticket capability, never an object/guest cast.
+ * Clears output on failure; valid tickets identify Game even if Source context
+ * admission returned no Source. Native leaf returns before C checked transfers.
+ * Non-OK checked requires a live issued ticket and Player C factory fence;
+ * invalid/unissued tickets fail closed, never fault through a guessed Game. */
+IsleGameResult isle_actor_owner_factory_game(const IsleActorFactoryBlock*,
+    const IsleActorFactoryBlock*, const IsleActorFactorySpawn*, IsleGame**);
+void isle_actor_source_factory_checked(const IsleActorFactoryBlock*,
+    const IsleActorFactoryBlock*, const IsleActorFactorySpawn*, IsleGameResult);
 IsleGameObject* isle_actor_owner_spawn_ground_dl4(int32_t object_id, uint16_t id,
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
     const IsleActorFactoryInitialization*);
@@ -143,12 +162,18 @@ IsleGameObject* isle_actor_owner_spawn_ground(int32_t object_id, uint16_t id,
 IsleGameObject* isle_actor_owner_spawn(int32_t object_id, uint16_t id,
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
     const IsleActorFactoryInitialization*);
+/* Ordinary factory, followed by its genuine Source DL4 publication. */
+IsleGameObject* isle_actor_owner_spawn_dl4(int32_t object_id, uint16_t id,
+    IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*,
+    const IsleActorFactoryInitialization*);
 IsleGameObject* func_beach_802CAC48(int32_t object_id, uint16_t id,
     IsleActorFactoryBlock*, IsleActorFactoryBlock*, IsleActorFactorySpawn*);
 void func_beach_802CAB50(IsleGameObject*);
 void func_beach_802CAC08(IsleGameObject*);
 void func_8035E298_4FE6A8(IsleGameObject*);
 void func_8035E174_4FE584(IsleGameObject*, IsleGameVec3*);
+IsleGameObject* func_8035E1D4_4FE5E4(IsleGameObject*);
+IsleGameObject* func_8035E238_4FE648(IsleGameObject*);
 typedef struct IsleActorGeoDefinition { uint32_t identity; } IsleActorGeoDefinition;
 typedef struct IsleActorGeoSpawn {
     int32_t id;

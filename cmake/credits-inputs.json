@@ -1,0 +1,2997 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/ethteck/pokemonsnap",
+  "commit": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "overlay_body_count": 54,
+  "dependency_body_count": 1,
+  "overlay_c_files": [
+    "src/credits/A93460.c",
+    "src/credits/A937C0.c",
+    "src/credits/A94480.c",
+    "src/credits/A94940.c"
+  ],
+  "inputs": [
+    {
+      "path": "src/credits/A93460.c",
+      "git_blob": "6569b95ae1fbfa76f53dfbc046cea596c66cfa97",
+      "sha256": "84517c7ac79c0fa4631c79bc5d65326112e5397af760c452eeb83fc0524afbcd",
+      "bytes": 2368
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "git_blob": "4c0d48b7a1f65fc11b71259de53525e2e2c431d3",
+      "sha256": "3fdcffa886ff131b4c4b719706de678c52fd5ec43c59620c4c6aa623466023d2",
+      "bytes": 8518
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "git_blob": "eba7022c8ad6b4b28d635768d921a909181eecca",
+      "sha256": "3d4476d3b3a8eed0980ddd14acc9b3c6619d4504fc1abdce0a752b4675bb9321",
+      "bytes": 4134
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "git_blob": "bb6281fb790312615a96493924c27ed6ce372341",
+      "sha256": "1335e22e70075eecc0d456c9f4665e86e550d9541c9bfa92317b4cea99075c1c",
+      "bytes": 13572
+    },
+    {
+      "path": "src/credits/credits.h",
+      "git_blob": "9aafcdedddc5aa953fba2a67ea94ad0b59d6c32e",
+      "sha256": "2b74fb214a32409add0adfc3ea738592b4ee9a572536df1a6795cd511f3c86dc",
+      "bytes": 2004
+    },
+    {
+      "path": "src/sys/misc.c",
+      "git_blob": "84be12339c2f266dcfb5e2ae7ccd6a73cbe2a46b",
+      "sha256": "f6607a602e8479b0647a6e87a8e290af614e3b1b8d5e36295a2ac9c7c45e7f32",
+      "bytes": 5953
+    },
+    {
+      "path": "src/window/window.h",
+      "git_blob": "c7490b352a5c4b99e570f26ba9a556cb20afb305",
+      "sha256": "b0140107b3fe440dd3ae5ddde311ebe89fa38b8e51ec2d95a1f9aff10764cdba",
+      "bytes": 6585
+    },
+    {
+      "path": "include/enums.h",
+      "git_blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096",
+      "bytes": 9833
+    },
+    {
+      "path": "src/sys/oh.c",
+      "git_blob": "b5b871a1b622803c944f5cf83d7624426238edf8",
+      "sha256": "5cd8502eb410caccc1bccd01d9c689d924c6366701d4ac2ba8bc229f8d31b86b",
+      "bytes": 9716
+    }
+  ],
+  "native_support": {
+    "src/credits_source.h": {
+      "sha256": "0d6d997f6c8b80dd1c3bf73ec456b26c6851d8601f80d5216bc6d935fc8d4025"
+    },
+    "src/credits_source.c": {
+      "sha256": "dc66c015348fa215b256b2ec1b93673fb350041220bea1206432cdb04d812d56"
+    },
+    "src/credits_worker_native.hpp": {
+      "sha256": "b6d22207ae519582147171b41d61984ccf9892fd8cef77ead6fea391709ebceb"
+    },
+    "src/credits_worker_native.cpp": {
+      "sha256": "303a41b1f759e797d3a8e7744bda40f0484a6cc491d9677ae759eef65a103824"
+    },
+    "src/credits_window_extension.h": {
+      "sha256": "f5495b2b4677b318aa27de6255e4c83833f031eb5b56b6356c01d2bdd85f8c12"
+    },
+    "src/credits_window_extension.inc": {
+      "sha256": "6fd2a697b37608c23143c6da99f58a8dc1cfd6f57d20ddaab3bbf2edffd40977"
+    },
+    "tools/prepare_credits.py": {
+      "sha256": "48fcee61dedca6bbba13982a1bb4bc0164210d95178644532fc6dc600d68cf35"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    },
+    "include/35mmisle/sprite.h": {
+      "sha256": "805e76f88948e35cc33d32f253118b67003cde98373490f8a846ee338a2b20f6"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "src/post_course_scene_source.h": {
+      "sha256": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9"
+    },
+    "src/post_course_scene_source.c": {
+      "sha256": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b"
+    },
+    "src/post_course_window_source.h": {
+      "sha256": "9a7b3c5cf0b1cdef3c56417450750c83281e1d5454b14107b4e3a41526894499"
+    },
+    "src/post_course_window.hpp": {
+      "sha256": "bc6d1a25eb5614baa099a2154f5656683f8574d723e276cd50b650d6b523d1cf"
+    },
+    "src/post_course_window.cpp": {
+      "sha256": "955cf52a5bc68117783e031a4df7c5ee3d1b9920eeb4a98951af5b86047e1453"
+    },
+    "src/post_course_replay_source.h": {
+      "sha256": "f047ac1b6c1389f9d845eddce542303cadf1a7fb2d0ce28d82ac76c6d26295be"
+    },
+    "src/post_course_replay_source.c": {
+      "sha256": "ade22ad042863bac85a9ef258f4d80aa4c2288d594e43fd073840617a8ef8208"
+    },
+    "src/post_course_replay.cpp": {
+      "sha256": "eff1e10d86e907e1368ce6e9776dc472ab0742811b8af53ff172e732186cb1aa"
+    },
+    "src/application_photos_source.h": {
+      "sha256": "23dc5f2f6c5ceeb53dcd6e4eab608ea70ade7c77448fe90a5cee7f93e772660c"
+    },
+    "src/application_photos.cpp": {
+      "sha256": "ac46cce27e9728a507417f9ce8e032ab592dcc2f30d1a1aea596278a05faf6ab"
+    },
+    "src/sprite_raster.cpp": {
+      "sha256": "747fdab6fc4e93fda8ea20382d833d7553eb79612b9e2f60dee80c918a1f840f"
+    },
+    "src/sprite_producer.cpp": {
+      "sha256": "1a12a3cd2419d5e9d1285d029ad1bdfe9e48524d00aa2ef60ad938ee7a2978cb"
+    },
+    "src/continuation.cpp": {
+      "sha256": "e4cc5bb6cf678d4c4eae24ada2dcf7c805f01ce5fbcd843e4b822e29bd952526"
+    },
+    "include/35mmisle/process.hpp": {
+      "sha256": "181fb1d0bfa32f3dc37ff8093fce7ce970509e765ceab2bf87efb860f71eda40"
+    },
+    "src/application_photos.hpp": {
+      "sha256": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333"
+    },
+    "src/application_runtime.cpp": {
+      "sha256": "489e0f1d6818e0ea77aae780343e4df9ce0fa2b7a2d3eea6f3a29639f04eaede"
+    },
+    "src/application_runtime.hpp": {
+      "sha256": "2a721ab816cdd79b0031da9f2d17a7d9d1794a3420ae87fe9e4c8f882522768c"
+    },
+    "src/credits_scene_native.cpp": {
+      "sha256": "1805c5922595d26eb5b817901bdd4d90ae0d0c3ac8e2969bfd5e014f86f3859b"
+    },
+    "src/credits_scene_native.hpp": {
+      "sha256": "16f5eaadcaf5d5d90744f1048115d7d18a8dd2445606255712215a5041f6ad1c"
+    },
+    "src/engine.c": {
+      "sha256": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502"
+    },
+    "src/game_state.hpp": {
+      "sha256": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa"
+    },
+    "src/photo_presentation.cpp": {
+      "sha256": "d6501cc4efa5b2aeae64afd6024115f0350c2807e2b095d3bf1938f43a575f75"
+    },
+    "src/photo_presentation.h": {
+      "sha256": "fadb5b59c890b69d5f34e6020cd23bd6388e8adb64bb702d4ab66afb2e45b627"
+    },
+    "src/photo_presentation.hpp": {
+      "sha256": "11c76061978365eccad4386d8b15b7d3c19e4aff49835a06431f0f5a25af64eb"
+    },
+    "src/photo_presentation_core.inc": {
+      "sha256": "edb1670c6d0aff66526126ff71499c95ee5c9d9b742eaee6e0f483431d37cc61"
+    },
+    "src/photo_replay.cpp": {
+      "sha256": "acd95c2ac272975b2a714bc57b5f6302ff90cdf75ecca1f4332dffb19e3374a3"
+    },
+    "src/photo_replay.hpp": {
+      "sha256": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693"
+    },
+    "src/post_course_native_helpers.hpp": {
+      "sha256": "5e070c3050766af3d5c6848464496a3f885b7258bf4edf521e974c421c97c246"
+    },
+    "src/post_course_replay.hpp": {
+      "sha256": "138267651d319ffdeb56088a66f19a1e25365118ff2d01493460d9a0ff916a61"
+    },
+    "src/post_course_resources.cpp": {
+      "sha256": "50a18de187e272422d5969cbd696d43b0167ea61f4f86fb6908d3578e73ce296"
+    },
+    "src/post_course_resources.hpp": {
+      "sha256": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467"
+    },
+    "src/post_course_scene.cpp": {
+      "sha256": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87"
+    },
+    "src/post_course_scene.hpp": {
+      "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
+    },
+    "src/post_course_scene_hooks.cpp": {
+      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
+    },
+    "src/post_course_scene_internal.hpp": {
+      "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
+    },
+    "src/post_course_scene_render.cpp": {
+      "sha256": "dab4324654527127f86bf968c449d0b5df59fbfef2d39b5235fd936b724f1825"
+    },
+    "src/post_course_window_source.c": {
+      "sha256": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4"
+    },
+    "src/process.cpp": {
+      "sha256": "b2e8294b61d096588f37f8c17dfeffbf7dac8507d0f844d2bb43a8577417b7b5"
+    },
+    "src/scene_graphics.cpp": {
+      "sha256": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4"
+    },
+    "src/scene_graphics.hpp": {
+      "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
+    },
+    "src/screen_transition_resources.cpp": {
+      "sha256": "0bb5fdab19fb2ffc9147f0e5f2d282f049a1b5d07f8c45a2b39672aea71b6b46"
+    },
+    "src/screen_transition_resources.hpp": {
+      "sha256": "98c5beeca3fc08be62d313110e5aac260a8e09407594ec03eb1bbbebbafedf74"
+    },
+    "src/window_memory.cpp": {
+      "sha256": "b47ef38233dc7c7e29a9d6b282ccdf0bcc7d3ce66e2f479192ac26e52c64a9d5"
+    },
+    "src/window_memory.hpp": {
+      "sha256": "95e417a8f9aed17474ef3213054fb094a652e7c147741c61190a457df51ed9e1"
+    }
+  },
+  "definitions": [
+    {
+      "path": "src/credits/A93460.c",
+      "name": "func_credits_801DC8A0",
+      "first": 11,
+      "sha256": "5cff5be306d1c5aabe3e93a36a40535de144e85ce71121806ba91d7f3467cba1",
+      "native_sha256": "12ee636179ad1dc8e1b769bc0e0da05107e0c88f0da7fa4126e31e2d81878f5c",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DC8A0(Gfx** gfx) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "gSPDisplayList((*gfx)++, &D_credits_801DEBD8);",
+          "new": "cr_display(ctx, gfx, 0x801debd8u);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DC8A0_body(IsleCreditsSource* ctx, Gfx** gfx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A93460.c",
+      "name": "func_credits_801DC8C4",
+      "first": 15,
+      "sha256": "1b08c75fbb21ce67b1a649ad4776c95aff40145cfabb0a91e19227d231217ad8",
+      "native_sha256": "871045a4942ba0b884ee4ef6678e887fea5f793ebf031b1ac57e5a372a61ce54",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DC8C4(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "viApplyScreenSettings(&D_credits_801DEBA0);",
+          "new": "cr_screen(ctx, 0x801deba0u);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "UIMem_CreateHeap(mlHeapAlloc(&sGeneralHeap, var_a1, 8), (s32) var_a1);",
+          "new": "cr_heap(ctx, var_a1);",
+          "count": 1
+        },
+        {
+          "kind": "span",
+          "first": 272,
+          "last": 475,
+          "sha256": "981d2cc7eb7eb891cc0153d0735b0ec25c2157d12ef47a89d1e1706eb3c73ff3",
+          "new": "    cr_cameras(ctx);"
+        },
+        {
+          "kind": "literal",
+          "old": "omCreateProcess(omAddGObj(0xE, NULL, 0, 0x80000000), func_credits_801DE844, 0, 1);",
+          "new": "cr_initial_process(ctx, func_credits_801DE844);",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800AAE28\\(\\s*\\)",
+          "new": "cr_input_init(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_80374D40_8484F0\\(\\s*\\)",
+          "new": "cr_window_init(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800A7F68\\((?!ctx\\))",
+          "new": "cr_mask(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DC8C4(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A93460.c",
+      "name": "func_credits_801DC9FC",
+      "first": 35,
+      "sha256": "864351e86a1810a1b307d0bce53e78b5ad6587ac8f9caf4c155d4c4269d27f89",
+      "native_sha256": "f0226d33944589a35e561375f3fee7eff39116c011522c4daa81f173dbd3a994",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DC9FC(void* arg1) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIMem_Deallocate\\((?!ctx\\))",
+          "new": "cr_free(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DC9FC_body(IsleCreditsSource* ctx, void* arg1) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A93460.c",
+      "name": "func_credits_801DCA1C",
+      "first": 39,
+      "sha256": "69249c20d3da8ca4edc48b7d8bcbc352f11e88f570409c12ff1281b8a39bc891",
+      "native_sha256": "6dc00e499e7bc9e6c37df5267af1bf69e5c659fefd1b6845ed12c4a02347993a",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCA1C(void* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osRecvMesg(&D_credits_801ECC68, &sp34, 1);",
+          "new": "cr_receive(ctx, &sp34);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osSetThreadPri(NULL, 0x34);",
+          "new": "cr_priority(ctx, 0x34);",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "osSetThreadPri(NULL, 0x31);",
+          "new": "cr_priority(ctx, 0x31);",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "osStopThread(get_main_thread());",
+          "new": "cr_main(ctx, 1);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osStartThread(get_main_thread());",
+          "new": "cr_main(ctx, 0);",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800BF710_5C5B0\\((?!ctx\\))",
+          "new": "cr_report(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_8009FC38\\((?!ctx\\))",
+          "new": "cr_prepare_course(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE8A0\\((?!ctx\\))",
+          "new": "func_credits_801DE8A0(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE8D8\\(\\s*\\)",
+          "new": "func_credits_801DE8D8(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "PhotoData*",
+          "new": "const PhotoData*",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCA1C_body(IsleCreditsSource* ctx, void* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A93460.c",
+      "name": "func_credits_801DCAF8",
+      "first": 61,
+      "sha256": "6f56ebd3bcbd34a357bebd86fca38c7868fc0a2da268f3370c3161d272fcfc74",
+      "native_sha256": "a28af0bcdb08e933a8670f388b90996716964cfffff09b745aac1925387a94f9",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCAF8(SObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osSendMesg(&D_credits_801ECC68, arg0, 1);",
+          "new": "cr_send(ctx, arg0);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCAF8(IsleCreditsSource* ctx, SObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A93460.c",
+      "name": "func_credits_801DCB24",
+      "first": 65,
+      "sha256": "c2d674dc032776ffd1b0a57e53bed9369c1ce39572f9a0e4a15910b47ca1bf1c",
+      "native_sha256": "8bca69360a071c577863d19ad6652af77c27c5e26024bc9aa0313aac333ea9c3",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "s32 func_credits_801DCB24(s32 sceneId) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "(uintptr_t) &D_80369F80 - (uintptr_t) &D_801ED020",
+          "new": "UINT32_C(0x80369f80) - UINT32_C(0x801ed020)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osCreateMesgQueue(&D_credits_801ECC68, D_credits_801ECC40, ARRAY_COUNT(D_credits_801ECC40));",
+          "new": "cr_queue(ctx, 10);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osCreateThread(&D_credits_801E9A90, 0x64, func_credits_801DCA1C, NULL, &D_credits_801ECC40, 0x31);",
+          "new": "cr_thread_create(ctx, 0x64, func_credits_801DCA1C, NULL, 0x31);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osStartThread(&D_credits_801E9A90);",
+          "new": "cr_thread_start(ctx);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "omSetupScene(&D_credits_801DEC30);",
+          "new": "cr_setup(ctx, 0x801dec30u);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osStopThread(&D_credits_801E9A90);",
+          "new": "cr_thread_stop(ctx);",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "osDestroyThread(&D_credits_801E9A90);",
+          "new": "cr_thread_destroy(ctx);",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bgtlDisableNearClipping\\((?!ctx\\))",
+          "new": "cr_near(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bgtlSetIntervals\\((?!ctx\\))",
+          "new": "cr_intervals(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801DEC40\\b",
+          "new": "ctx->D_credits_801DEC40",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "s32 func_credits_801DCB24(IsleCreditsSource* ctx, s32 sceneId) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCC00",
+      "first": 9,
+      "sha256": "cc862cd7161691401c6149463c052f26a51b5cf10576e6eac3b9b5b890454deb",
+      "native_sha256": "a423a491dfc1b0c9da6d70c202aa23c8676686389212ea7e5fcd13d4238762b6",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "GObj* func_credits_801DCC00(GObj* arg0, Sprite* arg1) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "ohCreateSprite(0xE, ohUpdateDefault, 0, 0x80000000, renDrawSprite, 1, 0x80000000, -1, arg1, 0, NULL, 1)",
+          "new": "cr_sprite_object(ctx, arg1)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static GObj* func_credits_801DCC00(IsleCreditsSource* ctx, GObj* arg0, uint32_t arg1) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCC70",
+      "first": 13,
+      "sha256": "e7d025bb4f061af782452dbd50f3403916c2d223af4153fb2978feffd704a7cd",
+      "native_sha256": "19e8c99a47508a014dea1ad142f838eea539379b3afd54a9377fe4d090537d6a",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "GObj* func_credits_801DCC70(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "func_credits_801DCC00(gobj,",
+          "new": "func_credits_801DCC00(NULL,",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "&D_credits_801E6058",
+          "new": "0x801e6058u",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "&D_credits_801E6430",
+          "new": "0x801e6430u",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "&D_credits_801E67D8",
+          "new": "0x801e67d8u",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomGObjAddSprite\\(",
+          "new": "cr_append(ctx, ",
+          "count": 4
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCC00\\((?!ctx\\))",
+          "new": "func_credits_801DCC00(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static GObj* func_credits_801DCC70(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCCE4",
+      "first": 24,
+      "sha256": "bb5fc5b6fc63871675212ba6a05c528e7a0356dddb11c2bfec7f354fb5a8837e",
+      "native_sha256": "dccd7518583d115e57ff48c119cb5793c053fd00dd1de56c9d8a2ba1a6f0db41",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCCE4(SObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 10
+        },
+        {
+          "kind": "literal",
+          "old": "arg0->sprite",
+          "new": "(*cr_sprite(ctx, arg0))",
+          "count": 8
+        },
+        {
+          "kind": "literal",
+          "old": "arg0->next",
+          "new": "cr_next(ctx, arg0)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 3
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCCE4(IsleCreditsSource* ctx, SObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCD60",
+      "first": 47,
+      "sha256": "31166bc99afe1509fea10ca0a8a704d2b5f4c711e89d524f3c8d9f443d0081be",
+      "native_sha256": "64a82a9dbfc29026cfd905bd6e0130de3d9a5d8af15bc0c401d3b55db795ca9c",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCD60(SObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "arg0->sprite",
+          "new": "(*cr_sprite(ctx, arg0))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "arg0->next",
+          "new": "cr_next(ctx, arg0)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCD60(IsleCreditsSource* ctx, SObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCD80",
+      "first": 54,
+      "sha256": "9ba18c5b8e3c7aa3d9318a464b937580225da8f0d28c60619ab5507a64c9acb2",
+      "native_sha256": "20687739d686560fdc7f76c71774dd4c7ba68fe7e1675671ef2c15fc5c229b2d",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCD80(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "span",
+          "first": 25,
+          "last": 310,
+          "sha256": "afa454c99a179c49006b4eafbb50d7f1ae8198ff2e3ed003bd19c26729571ded",
+          "new": "\n    cr_writable(ctx, sobj, 8, 14 * 140 * sizeof(u16));\n"
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCD80(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCE10",
+      "first": 69,
+      "sha256": "a70f1635b799844e04dc56dadd62a3fa1064320d5b59b18302c4d78944256fa5",
+      "native_sha256": "bac73539f9e521c867bb7f300e02be307c218e8364fea2d29138fba037c1f082",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCE10(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCC70\\(\\s*\\)",
+          "new": "func_credits_801DCC70(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCCE4\\((?!ctx\\))",
+          "new": "func_credits_801DCCE4(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCD60\\((?!ctx\\))",
+          "new": "func_credits_801DCD60(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCD80\\((?!ctx\\))",
+          "new": "func_credits_801DCD80(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE8A0\\((?!ctx\\))",
+          "new": "func_credits_801DE8A0(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE8D8\\(\\s*\\)",
+          "new": "func_credits_801DE8D8(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DEA30\\((?!ctx\\))",
+          "new": "func_credits_801DEA30(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DEB74\\((?!ctx\\))",
+          "new": "func_credits_801DEB74(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "gobj->data.sobj",
+          "new": "cr_root(ctx, gobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECC80\\b",
+          "new": "ctx->D_credits_801ECC80",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCE10(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCEF0",
+      "first": 91,
+      "sha256": "4b353f30e495138ce6545e50b3d5f22e2d15536ae33a7eee847de7158dd55fad",
+      "native_sha256": "74ec4cd69295af98794459f15f023261fd6c27fb26c89107ac51afcea382fb0f",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCEF0(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 4
+        },
+        {
+          "kind": "regex",
+          "old": "\\bauSetBGMVolumeSmooth\\((?!ctx\\))",
+          "new": "cr_volume_smooth(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800A7470\\((?!ctx\\))",
+          "new": "cr_fade_color(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800A7860\\((?!ctx\\))",
+          "new": "cr_fade_duration(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800067DC\\(\\s*\\)",
+          "new": "cr_exit(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bgContInputPressedButtons\\b",
+          "new": "cr_pressed(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCEF0_body(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCF94",
+      "first": 110,
+      "sha256": "a1d5748b193aec053a3ab2af93a23dd8ca6a5d0de5c13d78cb568af148284b6c",
+      "native_sha256": "eb86eed91505b3cd05563ab8b75a5bf638b0f6ebb855a08db22737c3a75dccfb",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DCF94(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomCreateProcess\\((?!ctx\\))",
+          "new": "cr_process(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECC80\\b",
+          "new": "ctx->D_credits_801ECC80",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DCF94(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DCFC8",
+      "first": 114,
+      "sha256": "36fca60bb6da3a370c0d2b8d0cc9f1bef7c78ab031c650da9f14c5a5d9d80823",
+      "native_sha256": "dc3ac5ba6f10e26ceda843af9af60819c4bdb60ffd7e11215354f417c0589746",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "s32 func_credits_801DCFC8(GObj* gobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "gobj->data.sobj",
+          "new": "cr_root(ctx, gobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next->sprite",
+          "new": "(*cr_sprite(ctx, sobj->next))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next->next->sprite",
+          "new": "(*cr_sprite(ctx, sobj->next->next))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "cr_next(ctx, sobj)->next",
+          "new": "cr_next(ctx, cr_next(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static s32 func_credits_801DCFC8(IsleCreditsSource* ctx, GObj* gobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD018",
+      "first": 126,
+      "sha256": "9edfd2c65db3b3f09eee5e500d70f7a0c1b037b4a64ec9607e3029b53b89c206",
+      "native_sha256": "394232561f1a66a0b30c339a5e407213570d03198e58eda1a5fa897f240cd145",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD018(GObj* gobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCAF8\\((?!ctx\\))",
+          "new": "func_credits_801DCAF8(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "gobj->data.sobj",
+          "new": "cr_root(ctx, gobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 4
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA4\\b",
+          "new": "ctx->D_credits_801ECDA4",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ED010\\b",
+          "new": "ctx->D_credits_801ED010",
+          "count": 3
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD018(IsleCreditsSource* ctx, GObj* gobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD12C",
+      "first": 150,
+      "sha256": "8fd6527818b4b78cb9f768f556cf1c180dfecb99ff7edf6cd75461fdee8230b1",
+      "native_sha256": "85d7e2f81301c9cb819a5a7c6c8a19681748eb4bb70095b039a39c36c57a7db9",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "s32 func_credits_801DD12C(GObj* gobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "gobj->data.sobj",
+          "new": "cr_root(ctx, gobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static s32 func_credits_801DD12C(IsleCreditsSource* ctx, GObj* gobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD168",
+      "first": 163,
+      "sha256": "151f565cd49102b14ccd2a40ffc7f84a4b515bd26c13a22f8907c3f2935e0f66",
+      "native_sha256": "a1fe22feb7abf30c28bf2e21d162eb852a23291f93faffcbccad2f97329a809f",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD168(GObj* gobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 5
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohRemoveSprite\\((?!ctx\\))",
+          "new": "cr_remove(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCFC8\\((?!ctx\\))",
+          "new": "func_credits_801DCFC8(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD018\\((?!ctx\\))",
+          "new": "func_credits_801DD018(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD12C\\((?!ctx\\))",
+          "new": "func_credits_801DD12C(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA4\\b",
+          "new": "ctx->D_credits_801ECDA4",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD168_body(IsleCreditsSource* ctx, GObj* gobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD258",
+      "first": 194,
+      "sha256": "92e31d4321f4491ba568d78a1e42ad914f7800944054dadd0ca386f15f609eaf",
+      "native_sha256": "9d788059c78dfa701f4f9a008d79e655a654937b6c9647dec59f3355c4d7620b",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "GObj* func_credits_801DD258(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "func_credits_801DCC00(gobj,",
+          "new": "func_credits_801DCC00(NULL,",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "&D_credits_801E6058",
+          "new": "0x801e6058u",
+          "count": 4
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomGObjAddSprite\\(",
+          "new": "cr_append(ctx, ",
+          "count": 3
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomCreateProcess\\((?!ctx\\))",
+          "new": "cr_process(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCC00\\((?!ctx\\))",
+          "new": "func_credits_801DCC00(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static GObj* func_credits_801DD258(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD2D4",
+      "first": 205,
+      "sha256": "cc734066298906041bec5fb5e73d2c0e2613d8612ee3881338e54972b4599a6f",
+      "native_sha256": "6d6b158b029e5cc400b7e8a5b85ad86b2a5428cc484bc148afd509fa88df76b1",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD2D4(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD2D4(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD320",
+      "first": 216,
+      "sha256": "a957009619bfa38cb8cfbf731d37322fef2087af1735010cd250ffdd0132c936",
+      "native_sha256": "5cce10d875ac09d2dbb7321bf4ef54b63ad2224034924d953c249c1b423da7e6",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD320(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD320(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD340",
+      "first": 223,
+      "sha256": "ccda4bc33a254f3895a7c1088d8010916f289375c9963fee3ffe19cb8258a649",
+      "native_sha256": "358c332244605039e88b9737307cb7e1264bc73cd1e0e5d8edd463b81d0d0cc0",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD340(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "span",
+          "first": 25,
+          "last": 405,
+          "sha256": "e50baa18660b5876493ce942b22c32ace3047d5f28ccabf0c9c6db83a5e1f387",
+          "new": "\n    while (sobj != NULL) {\n        cr_writable(ctx, sobj, 8, 1960 * sizeof(u16));\n        sobj = sobj->next;\n    }\n"
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD340(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD3E0",
+      "first": 243,
+      "sha256": "236da5f3034279548d08ffe45bf25bceed8f962b79163a5a2944e37c19963755",
+      "native_sha256": "aa06475a4d4820a6880a07b0e3d7450982fd62a1efa70bec2553760606b732ac",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD3E0(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE8A0\\((?!ctx\\))",
+          "new": "func_credits_801DE8A0(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE8D8\\(\\s*\\)",
+          "new": "func_credits_801DE8D8(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD3E0(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD428",
+      "first": 250,
+      "sha256": "ffc53cf6816e13f5168280b39e6c0b604f492652a3a4842a7df23efa5ae3c6c3",
+      "native_sha256": "da565f23d5fae930a4552b20547b3a50ff028256807caa552b112f545dff8d1f",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD428(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->unk_54 = 0;",
+          "new": "cr_aux_set(ctx, sobj, 0);",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD258\\(\\s*\\)",
+          "new": "func_credits_801DD258(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD2D4\\((?!ctx\\))",
+          "new": "func_credits_801DD2D4(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD320\\((?!ctx\\))",
+          "new": "func_credits_801DD320(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD340\\((?!ctx\\))",
+          "new": "func_credits_801DD340(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD3E0\\((?!ctx\\))",
+          "new": "func_credits_801DD3E0(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "gobj->data.sobj",
+          "new": "cr_root(ctx, gobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECC94\\b",
+          "new": "ctx->D_credits_801ECC94",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD428(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD49C",
+      "first": 269,
+      "sha256": "af11880b7a435014e5dc6ddfe8d951fd908bd23d476a2e7b2b2aee0743e3832a",
+      "native_sha256": "605fb7e07826c41db377a28185fefcacd5adbac5748f67cc96e7e24b34bafda6",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD49C(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "arg0->data.sobj",
+          "new": "cr_root(ctx, arg0)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "temp_s0->sprite",
+          "new": "(*cr_sprite(ctx, temp_s0))",
+          "count": 4
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD49C_body(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD540",
+      "first": 288,
+      "sha256": "570f0425d3f8671dd50f9bada53666e0181fe2d25f5f18b0516a8ef9cec0946e",
+      "native_sha256": "9595761db460d6295f70c7e9ae218d205cafdddbe0f39aad9bb11dbcd8abc700",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD540(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "D_credits_801ECC98[i]->data.sobj",
+          "new": "cr_root(ctx, D_credits_801ECC98[i])",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sp44[i]->sprite",
+          "new": "(*cr_sprite(ctx, sp44[i]))",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "sp44[0]->sprite",
+          "new": "(*cr_sprite(ctx, sp44[0]))",
+          "count": 4
+        },
+        {
+          "kind": "literal",
+          "old": "sp44[1]->sprite",
+          "new": "(*cr_sprite(ctx, sp44[1]))",
+          "count": 3
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECC98\\b",
+          "new": "ctx->D_credits_801ECC98",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD540_body(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD744",
+      "first": 323,
+      "sha256": "f64db52de35e7871013f4574a9bc1307be579756f25f5d38e0e42f69e0271ae5",
+      "native_sha256": "f16b8aad67dbf20fae0ba6964735a6c18ed6528faffe0b52f67407c6da60d22c",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD744(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomCreateProcess\\((?!ctx\\))",
+          "new": "cr_process(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohEndAllObjectProcesses\\((?!ctx\\))",
+          "new": "cr_end_all(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECC98\\b",
+          "new": "ctx->D_credits_801ECC98",
+          "count": 3
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD744(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD790",
+      "first": 329,
+      "sha256": "9feda1afebe2e625cc753e104e4ea4f05fb539ad9fdb694eb3107c1fa80ff04c",
+      "native_sha256": "3941c7240f3507c3051e4ae0d2c6f9bd3893ec4442e772ec7faebac6883ea631",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "GObj* func_credits_801DD790(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "func_credits_801DCC00(gobj,",
+          "new": "func_credits_801DCC00(NULL,",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "&D_credits_801E6AA8",
+          "new": "0x801e6aa8u",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomCreateProcess\\((?!ctx\\))",
+          "new": "cr_process(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCC00\\((?!ctx\\))",
+          "new": "func_credits_801DCC00(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static GObj* func_credits_801DD790(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD7D8",
+      "first": 336,
+      "sha256": "5e0e3a76ba1ee04b6379a10d9b9bae9f36db3acbffa6c178d5b6ed4ef6f403bd",
+      "native_sha256": "582247800c8d5591c65147827b34ed5854aafaa8c50254a47f58b561a67e023e",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD7D8(SObj* sobj, u8 arg1) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 6
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD7D8(IsleCreditsSource* ctx, SObj* sobj, u8 arg1) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD83C",
+      "first": 350,
+      "sha256": "ee95a42adcdb6df2740b74c1b8ffbab9e29ae5c9ca256d52e39035c283531497",
+      "native_sha256": "687751c52672b2138262401f192db10260dc81b151931d1703faecb07ee28319",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD83C(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD83C(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A937C0.c",
+      "name": "func_credits_801DD848",
+      "first": 354,
+      "sha256": "677a006b0f1bf7d5328f3d9bf3a06cb4efa7c7c3d15c30f3f1416c694572848d",
+      "native_sha256": "3e7b1ca6cf1df4b52881e4f40b6d5fe3bbfdd1c306aabc6d4960a5cf87a3ad8b",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD848(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD790\\(\\s*\\)",
+          "new": "func_credits_801DD790(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD7D8\\((?!ctx\\))",
+          "new": "func_credits_801DD7D8(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD83C\\((?!ctx\\))",
+          "new": "func_credits_801DD83C(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "D_credits_801ECC98[i]->data.sobj",
+          "new": "cr_root(ctx, D_credits_801ECC98[i])",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECC98\\b",
+          "new": "ctx->D_credits_801ECC98",
+          "count": 3
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD848(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DD8C0",
+      "first": 11,
+      "sha256": "2f7be88bd6668b218ef82ab16f7825f08097afb72f616cf3560bdb95cde720c3",
+      "native_sha256": "6b992e3338f3c397ed08e61adeb51f8bf8d8d56f3b34967db74904217ee18798",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD8C0(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 5
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD8C0(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DD930",
+      "first": 27,
+      "sha256": "ad3a3f8c78af308f677e0c8a2a830a2b3c75c400ed83bffbe9b3f3d0b1c54840",
+      "native_sha256": "b96b5c6faad5ecf00ab279b1e8bbea1903c2ee5d174909b895ac7d896fba4c5a",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD930(SObj* sobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD930(IsleCreditsSource* ctx, SObj* sobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DD93C",
+      "first": 31,
+      "sha256": "186198fb5e2f1ea55fc4423e5ebfc7b57504d4c427a2c71ea3f00f56f8a3ad41",
+      "native_sha256": "f957c3ecf014eca4bf909ca0fc69221f1cc3ae384af418772d45f662e3ab832c",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD93C(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "func_credits_801DCC00(gobj,",
+          "new": "func_credits_801DCC00(NULL,",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "&D_credits_801E8B50",
+          "new": "0x801e8b50u",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCC00\\((?!ctx\\))",
+          "new": "func_credits_801DCC00(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD8C0\\((?!ctx\\))",
+          "new": "func_credits_801DD8C0(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD930\\((?!ctx\\))",
+          "new": "func_credits_801DD930(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "gobj->data.sobj",
+          "new": "cr_root(ctx, gobj)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECCA0\\b",
+          "new": "ctx->D_credits_801ECCA0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD93C(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DD980",
+      "first": 42,
+      "sha256": "4bfa3b12f59f428840ac37fb1f8cca4306cc10c1fe20bb7b486237a2a5c72b8d",
+      "native_sha256": "83578f016d33ebaee61801d90bd71f9578275e42019429ebb35b08b39a830ca8",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DD980(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "D_credits_801ECCA0->data.sobj",
+          "new": "cr_root(ctx, D_credits_801ECCA0)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 7
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECCA0\\b",
+          "new": "ctx->D_credits_801ECCA0",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DD980(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DDA60",
+      "first": 74,
+      "sha256": "e08868a27afd17f4dcaf5131d712ccc1ac04163fcfac65e4f825c75284269b2b",
+      "native_sha256": "6c0012cedb863749c7582723ce1db95f6981a4f43d7578cf334d4b3946a982f8",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDA60(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 3
+        },
+        {
+          "kind": "literal",
+          "old": "D_credits_801ECCA0->data.sobj",
+          "new": "cr_root(ctx, D_credits_801ECCA0)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 4
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECCA0\\b",
+          "new": "ctx->D_credits_801ECCA0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDA60(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DDAE8",
+      "first": 94,
+      "sha256": "18d28ee947b6c91d81177cd14a6d419ae9f40d47b8b6f3ebe42d92763448384a",
+      "native_sha256": "e9697a5c5758d72669804f9952a72dff1339417d13a7b7c000c28c889b51c395",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDAE8(u8 arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCE10\\(\\s*\\)",
+          "new": "func_credits_801DCE10(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD428\\(\\s*\\)",
+          "new": "func_credits_801DD428(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD848\\(\\s*\\)",
+          "new": "func_credits_801DD848(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD93C\\(\\s*\\)",
+          "new": "func_credits_801DD93C(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA4\\b",
+          "new": "ctx->D_credits_801ECDA4",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDAE8(IsleCreditsSource* ctx, u8 arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DDB60",
+      "first": 113,
+      "sha256": "df12e3ffd570f2d494f4311370dfa33cf5f2e70c69f12be12a2416f1813fa87d",
+      "native_sha256": "8bb918d79c65f22fbd405b340ee1e73cf229698ab579dca7ec8d38abc8191839",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDB60(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_SetPos\\((?!ctx\\))",
+          "new": "cr_element_pos(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECCB0\\b",
+          "new": "ctx->D_credits_801ECCB0",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDB60(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DDC0C",
+      "first": 131,
+      "sha256": "756267dad524bedfca35b0831fb8dff8489c5c42201ac8060399152ca8a2d0bb",
+      "native_sha256": "c5b17f0a30c8322f506c6746f8817cb9b2142199432780d5be99eee4bebb067d",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "Credit* func_credits_801DDC0C(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECCB0\\b",
+          "new": "ctx->D_credits_801ECCB0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static Credit* func_credits_801DDC0C(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94480.c",
+      "name": "func_credits_801DDC70",
+      "first": 149,
+      "sha256": "b1970b74875fc47edf70a404876867b79d13b43c39ec4d62b261c9a25ec707ee",
+      "native_sha256": "b74f3408e8cc8c7f3b737b6358cbc2f2ca454a07a8a049cfe944c7af3fe36288",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDC70(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_Create\\((?!ctx\\))",
+          "new": "cr_element_create(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_SetFont\\((?!ctx\\))",
+          "new": "cr_element_font(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_DrawBackground\\((?!ctx\\))",
+          "new": "cr_element_background(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_SetTextPos\\((?!ctx\\))",
+          "new": "cr_element_textpos(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_SetColor\\((?!ctx\\))",
+          "new": "cr_element_color(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIText_SetPrintDelay\\((?!ctx\\))",
+          "new": "cr_delay(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECCB0\\b",
+          "new": "ctx->D_credits_801ECCB0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDC70(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DDD80",
+      "first": 171,
+      "sha256": "229e2f27e50f3f315f62ff03349e4d18cb76195024dd8b237b3102ba11eeb12a",
+      "native_sha256": "fb3a8b8eaeafa76efb0c76685929e021af255074001225aa19e47132e96d8026",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDD80(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800BF710_5C5B0\\((?!ctx\\))",
+          "new": "cr_report(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA8\\b",
+          "new": "ctx->D_credits_801ECDA8",
+          "count": 3
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDB0\\b",
+          "new": "ctx->D_credits_801ECDB0",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDD80(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DDE24",
+      "first": 189,
+      "sha256": "1c7bd2661e35be915c5a846066fba29d45fcb7f84bb7121b0b0224b2f6d24814",
+      "native_sha256": "78778661751df45be5fb76903b9412e259bd1a143b83e01562052ffbc0da42b8",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDE24(GObj* gobj) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 3
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomEndProcess\\((?!ctx\\))",
+          "new": "cr_end(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bauPlaySoundWithParams\\((?!ctx\\))",
+          "new": "cr_sound(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DEA30\\((?!ctx\\))",
+          "new": "func_credits_801DEA30(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DEB74\\((?!ctx\\))",
+          "new": "func_credits_801DEB74(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "gobj->data.sobj",
+          "new": "cr_root(ctx, gobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDE24_body(IsleCreditsSource* ctx, GObj* gobj) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DDF1C",
+      "first": 214,
+      "sha256": "4aaee3acb72f7b3c9c4b0147a8843b6f1e177cffb3ccdc2070f87743f9812e7c",
+      "native_sha256": "ef7c5ec47c1b4d521b5cd4ecdec994eb0e98b1d8884ce48827c14ab7c6184bb7",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDF1C(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomCreateProcess\\((?!ctx\\))",
+          "new": "cr_process(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDF1C(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DDF48",
+      "first": 218,
+      "sha256": "c70447443cfb5ec1f4875f46fca19185aca70341a50541ee2df40ac20e32a77a",
+      "native_sha256": "d0a8e9fcf6286511759758af0ea33508f6bb47383e4546e75583102688b0a94e",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DDF48(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomEndProcess\\((?!ctx\\))",
+          "new": "cr_end(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bauPlaySoundWithParams\\((?!ctx\\))",
+          "new": "cr_sound(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "arg0->data.sobj",
+          "new": "cr_root(ctx, arg0)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "it->sprite",
+          "new": "(*cr_sprite(ctx, it))",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "it->next",
+          "new": "cr_next(ctx, it)",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DDF48_body(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE034",
+      "first": 246,
+      "sha256": "554df641f8b15c85089a0d174bcb7ead080e2d0e0217542eb846e3251b70b286",
+      "native_sha256": "570f2fe09f144d45522383d38bcd5ebe225e94e040f6a8049b3fc4ce90a2fc6b",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DE034(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bomCreateProcess\\((?!ctx\\))",
+          "new": "cr_process(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DE034(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE060",
+      "first": 250,
+      "sha256": "12c11916e3aa169b68b0e6599248109df66e4bd2c1d4d22e5f9079808a9abb4b",
+      "native_sha256": "3fd861e9c4535a2f94a64132f1d8f82a1916cbdb4cef03379e0998f6b458aa00",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DE060(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 4
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_Draw\\((?!ctx\\))",
+          "new": "cr_element_draw(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_PrintText\\((?!ctx\\))",
+          "new": "cr_print(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIText_GetStringWidth\\((?!ctx\\))",
+          "new": "cr_width(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD980\\(\\s*\\)",
+          "new": "func_credits_801DD980(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDA60\\(\\s*\\)",
+          "new": "func_credits_801DDA60(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDB60\\(\\s*\\)",
+          "new": "func_credits_801DDB60(ctx)",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDC0C\\(\\s*\\)",
+          "new": "func_credits_801DDC0C(ctx)",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDF1C\\((?!ctx\\))",
+          "new": "func_credits_801DDF1C(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE034\\((?!ctx\\))",
+          "new": "func_credits_801DE034(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bgContInputPressedButtons\\b",
+          "new": "cr_pressed(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECC80\\b",
+          "new": "ctx->D_credits_801ECC80",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA4\\b",
+          "new": "ctx->D_credits_801ECDA4",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DE060(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE35C",
+      "first": 316,
+      "sha256": "606be8d25609aed95888112d0b9fcd659d483d3e8d752ed7f3b003caa5bb4aa3",
+      "native_sha256": "ca58158bf5078b87628486828489281b3023b5a2b1d66a62538ffa0b20679109",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DE35C(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 6
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_Draw\\((?!ctx\\))",
+          "new": "cr_element_draw(ctx, ",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIElement_PrintText\\((?!ctx\\))",
+          "new": "cr_print(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bUIText_GetStringWidth\\((?!ctx\\))",
+          "new": "cr_width(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD744\\(\\s*\\)",
+          "new": "func_credits_801DD744(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DD980\\(\\s*\\)",
+          "new": "func_credits_801DD980(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDA60\\(\\s*\\)",
+          "new": "func_credits_801DDA60(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDB60\\(\\s*\\)",
+          "new": "func_credits_801DDB60(ctx)",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDC0C\\(\\s*\\)",
+          "new": "func_credits_801DDC0C(ctx)",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bgContInputPressedButtons\\b",
+          "new": "cr_pressed(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA4\\b",
+          "new": "ctx->D_credits_801ECDA4",
+          "count": 3
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ED010\\b",
+          "new": "ctx->D_credits_801ED010",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DE35C(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE734",
+      "first": 394,
+      "sha256": "ca4359cdec1c5e9cf8bfadafaa5be0106a471824ab2586b564a60e248398259b",
+      "native_sha256": "ac87e26241146d554582888673e2f64ffeb516d04869d8de621c330a8174bcb5",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DE734(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DCF94\\(\\s*\\)",
+          "new": "func_credits_801DCF94(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE060\\(\\s*\\)",
+          "new": "func_credits_801DE060(ctx)",
+          "count": 2
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE35C\\(\\s*\\)",
+          "new": "func_credits_801DE35C(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DE734_body(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE7B4",
+      "first": 410,
+      "sha256": "ccaca86befdc7c068494129f91da7e907823a489f2439e6d2ceed903d76a2881",
+      "native_sha256": "f705cc206bd349ebc3e4ca1290a326b2e65a496466e6b95724cdb7e64e7388e6",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DE7B4(s32 arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bauSetBGMVolume\\((?!ctx\\))",
+          "new": "cr_volume(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bauPlaySong\\((?!ctx\\))",
+          "new": "cr_song(ctx, ",
+          "count": 3
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DE7B4(IsleCreditsSource* ctx, s32 arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE844",
+      "first": 426,
+      "sha256": "225c7e02c9e75f4846e94e59b69fd7c7c1793deac35b2a4556352f7cca474d86",
+      "native_sha256": "5b7f1206a41e63400c7d04b9236634a80655b99dbdf6b58710b16397627bf417",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DE844(GObj* arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bohWait\\((?!ctx\\))",
+          "new": "cr_wait(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800067DC\\(\\s*\\)",
+          "new": "cr_exit(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDAE8\\((?!ctx\\))",
+          "new": "func_credits_801DDAE8(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDC70\\(\\s*\\)",
+          "new": "func_credits_801DDC70(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DDD80\\(\\s*\\)",
+          "new": "func_credits_801DDD80(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE734\\((?!ctx\\))",
+          "new": "func_credits_801DE734_body(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_credits_801DE7B4\\((?!ctx\\))",
+          "new": "func_credits_801DE7B4(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA0\\b",
+          "new": "ctx->D_credits_801ECDA0",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA3\\b",
+          "new": "((uint8_t)((uint32_t)ctx->D_credits_801ECDA0 & UINT32_C(255)))",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DE844_body(IsleCreditsSource* ctx, GObj* arg0) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE8A0",
+      "first": 436,
+      "sha256": "acad110d645d47f911b9c251b431ba6f767f352c338afbb4dfa46d7f85611027",
+      "native_sha256": "93d3513d366c0c91541573619b2c6993fa1b677552a82e271a0e9cdba769c91d",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DE8A0(SObj* sobj, s32 arg1) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "&sobj->sprite",
+          "new": "sobj",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_800BF710_5C5B0\\((?!ctx\\))",
+          "new": "cr_report(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bfunc_80374714_847EC4\\((?!ctx\\))",
+          "new": "cr_preview(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DE8A0(IsleCreditsSource* ctx, SObj* sobj, s32 arg1) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DE8D8",
+      "first": 445,
+      "sha256": "d960e512b83284db1d78a9078c0c6ea67891e4159b11c5fda65906544966b9ae",
+      "native_sha256": "e94b31515b94b6075d5f192ed3fa38bf643f59fe1d41889e3ed4440f0aab4880",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "s32 func_credits_801DE8D8(void) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\brandTRange\\((?!ctx\\))",
+          "new": "cr_rand(ctx, ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA4\\b",
+          "new": "ctx->D_credits_801ECDA4",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDA8\\b",
+          "new": "ctx->D_credits_801ECDA8",
+          "count": 5
+        },
+        {
+          "kind": "regex",
+          "old": "\\bD_credits_801ECDB0\\b",
+          "new": "ctx->D_credits_801ECDB0",
+          "count": 4
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static s32 func_credits_801DE8D8(IsleCreditsSource* ctx) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DEA30",
+      "first": 479,
+      "sha256": "f678c44898c898af19fe2c022e34f8b9fd708e1edbc37dd2002e4b3f9459ada8",
+      "native_sha256": "54c6ebd8becac43a6725e16ca7418357a3fc297a29781878c2e5b3e1fbf20ea9",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DEA30(SObj* sobj, f32 arg1) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 11
+        },
+        {
+          "kind": "literal",
+          "old": "it->sprite",
+          "new": "(*cr_sprite(ctx, it))",
+          "count": 8
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "it->next",
+          "new": "cr_next(ctx, it)",
+          "count": 3
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DEA30(IsleCreditsSource* ctx, SObj* sobj, f32 arg1) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "func_credits_801DEB74",
+      "first": 507,
+      "sha256": "2342084d629dfd7d7f7be82872dd4f3c1599ff778f6280f103ec4a18744ca58e",
+      "native_sha256": "3c568bac01ef6a2f155c332ca1a930f9d07a2cffb1b16a293a46f9b8b60bf5e7",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "void func_credits_801DEB74(SObj* sobj, f32 scale) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->sprite",
+          "new": "(*cr_sprite(ctx, sobj))",
+          "count": 2
+        },
+        {
+          "kind": "literal",
+          "old": "sobj->next",
+          "new": "cr_next(ctx, sobj)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static void func_credits_801DEB74(IsleCreditsSource* ctx, SObj* sobj, f32 scale) ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/sys/misc.c",
+      "name": "randTRange",
+      "first": 143,
+      "sha256": "35989d9cbb63227f3674f90a76aa893e24cbbb7b3a6ed716bd4ddd47d7709194",
+      "native_sha256": "78aaea9b21ad2f736fc8e0dc502a60edb2f0381ee74a919260b108a39d4f1f0b",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "s32 randTRange(s32 arg0) ",
+          "new": "CR_FUNCTION_DECLARATION ",
+          "count": 1
+        },
+        {
+          "kind": "regex",
+          "old": "\\bosGetTime\\(\\s*\\)",
+          "new": "cr_time(ctx)",
+          "count": 1
+        },
+        {
+          "kind": "literal",
+          "old": "CR_FUNCTION_DECLARATION ",
+          "new": "static s32 cr_rand(IsleCreditsSource* ctx, s32 arg0) ",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "path": "src/credits/A94940.c",
+      "name": "D_credits_801E8BA0",
+      "selector": "^Credit D_credits_801E8BA0\\[\\] = \\{.*?^\\};",
+      "sha256": "f9dfadf326c913523b8f166c3850ca206135a7fa3d18d0d70318f391ca0a9938",
+      "native_sha256": "7964238b8f7ec26519495f620df4fe21c5f1d1ae84d2c01613ddcdc88673fe29",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "Credit D_credits_801E8BA0[]",
+          "new": "static Credit D_credits_801E8BA0[]",
+          "count": 1
+        },
+        {
+          "kind": "source_strings",
+          "count": 21
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "D_credits_801E8D00",
+      "selector": "^Credit D_credits_801E8D00\\[\\] = \\{.*?^\\};",
+      "sha256": "55c60aa538d0af2c2a0ec08fa45442fcafe9b17c85bd49cb9c45c1602f942b56",
+      "native_sha256": "99d3d5e4c724dc2abc1c24d8edacfd1b2bcdfa5ad94a02e9993b52f705e06d38",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "Credit D_credits_801E8D00[]",
+          "new": "static Credit D_credits_801E8D00[]",
+          "count": 1
+        },
+        {
+          "kind": "source_strings",
+          "count": 18
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "D_credits_801E8E30",
+      "selector": "^Credit D_credits_801E8E30\\[\\] = \\{.*?^\\};",
+      "sha256": "a9a4433af8c7dd119ae1b67613c48ee3ab8a8c731ce5424455bdf1ddb05d895e",
+      "native_sha256": "f534cc3041d793fa81a0a9b1b206b3db45d0faa1a85358fdadce334ac3150b04",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "Credit D_credits_801E8E30[]",
+          "new": "static Credit D_credits_801E8E30[]",
+          "count": 1
+        },
+        {
+          "kind": "source_strings",
+          "count": 36
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "D_credits_801E9080",
+      "selector": "^Credit D_credits_801E9080\\[\\] = \\{.*?^\\};",
+      "sha256": "06aa99e64bb151f745a30fb8fc10d36879976401d6a7c6d7e60d13b45ad6f129",
+      "native_sha256": "6611bae2533d290084bb6b6d8585d44cb89f5e1c350eb6e5dd5e29c4ae3c3b90",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "Credit D_credits_801E9080[]",
+          "new": "static Credit D_credits_801E9080[]",
+          "count": 1
+        },
+        {
+          "kind": "source_strings",
+          "count": 29
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "D_credits_801E9260",
+      "selector": "^Credit D_credits_801E9260\\[\\] = \\{.*?^\\};",
+      "sha256": "ab4bafda269f89baaad4351cfcc6577327767f83433a12a89c2cfab0a0491117",
+      "native_sha256": "302c6c37849c3d3d9e35ee21e5447d1df2a924e6fc7811c0005efee361ab08cf",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "Credit D_credits_801E9260[]",
+          "new": "static Credit D_credits_801E9260[]",
+          "count": 1
+        },
+        {
+          "kind": "source_strings",
+          "count": 25
+        }
+      ]
+    },
+    {
+      "path": "src/credits/A94940.c",
+      "name": "D_credits_801E9400",
+      "selector": "^Credit\\* D_credits_801E9400\\[\\] = \\{.*?^\\};",
+      "sha256": "4ecb1e4592c3914e6372d07e3f028725b5fa17baafa48688182670a37c6d6719",
+      "native_sha256": "83de9f7d0c796161812512da12044430680e25d47f38753a93a52fe895101270",
+      "rewrites": [
+        {
+          "kind": "literal",
+          "old": "Credit* D_credits_801E9400[]",
+          "new": "static Credit* D_credits_801E9400[]",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "output_sha256": "7aee8fd309a914daab20cabe862576da7d8882031a2f3e4c6481bbcbbd13df65",
+  "game_sha256": "3c13db0bba111f64ea3185bc0bb6d055b0dc31e0b619b55b0302c95a4a501040",
+  "output_directory": "<build>/_deps/isle-credits-private",
+  "callback_abis": {
+    "gobj": [
+      "func_credits_801DCEF0",
+      "func_credits_801DD168",
+      "func_credits_801DD49C",
+      "func_credits_801DD540",
+      "func_credits_801DDE24",
+      "func_credits_801DDF48",
+      "func_credits_801DE734",
+      "func_credits_801DE844"
+    ],
+    "thread": "func_credits_801DCA1C:void(void*)",
+    "cleanup": "func_credits_801DC9FC:void(void*)",
+    "pre_render": "func_credits_801DC8A0:void(IsleCreditsDisplayListCursor**)",
+    "entry": "func_credits_801DCB24:int32(IsleCreditsSource*,int32)"
+  },
+  "data_authority": {
+    "variant_byte": "801ECDA3 is BE byte3 of 801ECDA0; generated expression uses actual word low byte, never a separate initialized field",
+    "stock_image_pixels": "NOT copied into fresh allocation; actual native UI heap payload preserved until genuine non-NULL Source preview",
+    "initialized_resources": "Parent canonical Snapshot decode/admission only; no untracked remaining_ui_credits_data.c"
+  },
+  "native_support_policy": "Private support exact. Shared hashes name the actual current dependencies plus exact proposed Window patch; Parent must refresh shared guard fixedpoint once after shared integration, preserving selector/output guards."
+}

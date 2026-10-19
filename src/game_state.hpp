@@ -46,6 +46,9 @@ public:
     int controller = -1;
     std::uint8_t title_start_flags = 0;
     isle_rng rng{};
+    // GAME4CDB0.c3-5/171-180, not WORLD overlay data or profile bytes.
+    // Only actual createWorld/setBackgroundColor service boundaries change it.
+    std::array<std::uint8_t,3> background_rgb{90,140,200};
     // Own GAME46270.c48–54 retains this application-selected script pointer.
     // Its immutable inputs outlive every course that adopts it.
     void set_idle_script(const IslePlayerIdleScript*) noexcept;

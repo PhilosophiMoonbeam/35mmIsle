@@ -162,7 +162,12 @@ IsleGameResult isle_game_object_set_retire_callback(IsleGame*, IsleGameObject*, 
  * only custom commands; -1 deletes, -2/-3 pause/resume all object processes,
  * -4/-5 hide/show. NULL custom handler drains unknown commands. */
 typedef struct IsleGameCommand IsleGameCommand;
-typedef struct IsleGameCommandPool { isle_arena* arena; IsleGameCommand* free; } IsleGameCommandPool;
+typedef struct IsleGameCommandPool {
+    isle_arena* arena;
+    IsleGameCommand* free;
+    /* Explicit cold native reservation; depletion never grows the arena. */
+    int fixed_capacity;
+} IsleGameCommandPool;
 /* Optional nonallocating semantic-owner hooks. Acquire runs only after enqueue
  * allocation succeeds; its token is settled exactly once, after delivery or on
  * cancellation. Hooks must not throw, wait, mutate OM or enqueue recursively.
@@ -295,6 +300,9 @@ IsleGameResult isle_game_sprite_view(IsleGame* game, IsleGameSprite* sprite,
  * Owner/liveness checked as sprite_view; failed get clears output to zero. */
 IsleGameResult isle_game_sprite_aux_get(IsleGame* game, IsleGameSprite* sprite, int32_t* output);
 IsleGameResult isle_game_sprite_aux_set(IsleGame* game, IsleGameSprite* sprite, int32_t value);
+/* Exact Source SObj::unk_58/unk_5C NULL pair, independent of Window hierarchy.
+ * Requires a live attachment in this game's actual object lists and no fault. */
+IsleGameResult isle_game_sprite_clear_display_cache(IsleGame* game, IsleGameSprite* sprite);
 /* Runs the selected authoritative C fade helper as a genuine stackful process;
  * this is not full intro entry, persistence initialization, audio or scene boot.
  */
@@ -472,6 +480,10 @@ typedef struct IsleGameModelNode {
     uint64_t revision;
     IsleGameModelMatrixKind matrix_kind;
 } IsleGameModelNode;
+/* Cold native storage classes, not Source logical model/node counts. */
+typedef struct IsleGameModelCapacity {
+    size_t nodes, instances;
+} IsleGameModelCapacity;
 
 /* Native type-1 payload: exactly one root, parent-before-child node order.
  * Actual-size arena storage is reused after removal. No mutation/compute

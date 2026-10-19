@@ -1,0 +1,1932 @@
+{
+  "schema": 1,
+  "provider": "gallery-22-23-original-c",
+  "repository": "ethteck/pokemonsnap",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "source_files": {
+    "src/gallery/9FA580.c": {
+      "blob": "0c462516a1c93329852e43205a9f2fd201407b33",
+      "sha256": "ac8219ab6a84e04b0573a63d5569a7689c771ee586893ab6d27574467d734748"
+    },
+    "src/gallery/9FAC10.c": {
+      "blob": "81fc91acd3294e05333bea85dbdb158fba472e5d",
+      "sha256": "673922549d440169163bb67c43b8bcb01ba93c23ff3c1bcc2a5fa5731e717c22"
+    },
+    "src/gallery/9FD510.c": {
+      "blob": "2dd5be3256f5a5f0404283d52208dd36625aa42a",
+      "sha256": "0d1106aa928b2a85aa475b435e848f7f255d7da8d3f70971bcae9090f8766033"
+    },
+    "src/gallery/9FEC10.c": {
+      "blob": "25bc6e6463f408c94a0fb3fed10538205a18c1cd",
+      "sha256": "150735bac47b3bb9e89b0eaaae8a84f044e1e55ccfc4de7ce5e55626dff31553"
+    },
+    "src/gallery/gallery.h": {
+      "blob": "9a46e5eaa199ea58cf49494c1a349dbca7a23d65",
+      "sha256": "cf9a2ff605a318998fa028fe57c9ce319ac204565ad2d0244d7d4e30a3b396ca"
+    },
+    "src/window/8486E0.c": {
+      "blob": "a822b0a8a2148ccda8b4557707f81d3a71dc19d8",
+      "sha256": "67bc8e26889891abec021e0303b58d8a9b791321db2ca8ec1658b81d8d7437ed"
+    },
+    "src/window/window.h": {
+      "blob": "c7490b352a5c4b99e570f26ba9a556cb20afb305",
+      "sha256": "b0140107b3fe440dd3ae5ddde311ebe89fa38b8e51ec2d95a1f9aff10764cdba"
+    },
+    "include/enums.h": {
+      "blob": "18d9da14c9daf13f5bb6a4ec35d25eeefbbdca07",
+      "sha256": "02b0bfbbc6d010f41039073612a7a031ee2112bdf07fd78cd4b18a17b302e096"
+    },
+    "src/main_menu/A08E30.c": {
+      "blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+      "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6"
+    },
+    "src/photo_check/993F80.c": {
+      "blob": "96c7b4a2cb298374773756a04721530df25184a9",
+      "sha256": "5895584fc50a0d9cdb094799ee731cd7f3ef840e88eacded27653f82d1bbf34f"
+    },
+    "src/more_funcs/5BF20.c": {
+      "blob": "a223a8933886f1b2b9ebf77c72aab51225474791",
+      "sha256": "ce66ec4b0fbab3ee4161b6f2713f57dce59853c652592c2b9d715baa1211e333"
+    }
+  },
+  "definitions": [
+    {
+      "name": "func_801DC8C0_9FA580",
+      "source": "src/gallery/9FA580.c",
+      "first": 14,
+      "last": 16,
+      "sha256": "7f1434b66086a9a7b49b394005ccfd56f00a9432acef23e6da9ff53fea8cef1f",
+      "signature": "void func_801DC8C0_9FA580(Gfx** dlist)"
+    },
+    {
+      "name": "func_801DC904_9FA5C4",
+      "source": "src/gallery/9FA580.c",
+      "first": 18,
+      "last": 20,
+      "sha256": "646013348f61da6b1fb7c262cdbf0e70787d062b7f201847f55b5009e3053bff",
+      "signature": "s32 func_801DC904_9FA5C4(void)"
+    },
+    {
+      "name": "func_801DC920_9FA5E0",
+      "source": "src/gallery/9FA580.c",
+      "first": 22,
+      "last": 25,
+      "sha256": "f409983d24bbfa5122867ce3c62edbe9e0140a87e4a11915020b87f9ad35bb87",
+      "signature": "void func_801DC920_9FA5E0(GObj** arg0, GObj** arg1)"
+    },
+    {
+      "name": "func_801DC948_9FA608",
+      "source": "src/gallery/9FA580.c",
+      "first": 27,
+      "last": 38,
+      "sha256": "bb6ddc8411bf444138ee084e415b9789534a4de0f038c69c42b12d91af4c7e83",
+      "signature": "void func_801DC948_9FA608(s32 arg0, s32 arg1)"
+    },
+    {
+      "name": "func_801DCA58_9FA718",
+      "source": "src/gallery/9FA580.c",
+      "first": 40,
+      "last": 47,
+      "sha256": "f72088cf92b40dd372af98d505b37fbdbd76f817bc11ca1d87423863f4ce6c04",
+      "signature": "void func_801DCA58_9FA718(GObj* arg0)"
+    },
+    {
+      "name": "func_801DCA98_9FA758",
+      "source": "src/gallery/9FA580.c",
+      "first": 49,
+      "last": 72,
+      "sha256": "8984f317d855fc89f98f248e997ec4162cf8cd78029aaed2fa72b346a2f5e6aa",
+      "signature": "void func_801DCA98_9FA758(void)"
+    },
+    {
+      "name": "func_801DCC60_9FA920",
+      "source": "src/gallery/9FA580.c",
+      "first": 74,
+      "last": 98,
+      "sha256": "f246ddca23be2e1a46c68b9cf6d20ad527192fafeb632fe8f3f472f713fe18b9",
+      "signature": "void func_801DCC60_9FA920(void)"
+    },
+    {
+      "name": "func_801DCDDC_9FAA9C",
+      "source": "src/gallery/9FA580.c",
+      "first": 100,
+      "last": 116,
+      "sha256": "86fa80707eac40184314fa8d88a479d50daf98c01b467eca02403d8d59c8c243",
+      "signature": "void func_801DCDDC_9FAA9C(void)"
+    },
+    {
+      "name": "func_801DCE90_9FAB50",
+      "source": "src/gallery/9FA580.c",
+      "first": 118,
+      "last": 120,
+      "sha256": "05090845e48b1cfc964f4823a90c3cef407a5d2abfb03acfa569c890084da13d",
+      "signature": "void func_801DCE90_9FAB50(void* arg0)"
+    },
+    {
+      "name": "func_801DCEBC_9FAB7C",
+      "source": "src/gallery/9FA580.c",
+      "first": 122,
+      "last": 132,
+      "sha256": "a459e412021ec7aadbaab76089dd13f9a06cb54c42658b45d3e85f178c07f4c5",
+      "signature": "s32 func_801DCEBC_9FAB7C(s32 arg0)"
+    },
+    {
+      "name": "func_801DCF50_9FAC10",
+      "source": "src/gallery/9FAC10.c",
+      "first": 21,
+      "last": 44,
+      "sha256": "04f5de4c876123c6bcecfa3111b6ff3c132e5aa7d03f930065ce7f57f83d92dc",
+      "signature": "void func_801DCF50_9FAC10(GObj* arg0)"
+    },
+    {
+      "name": "func_801DD074_9FAD34",
+      "source": "src/gallery/9FAC10.c",
+      "first": 46,
+      "last": 52,
+      "sha256": "5b6696e20c21a77825549afcaf551bfcf217348c92c75ab19726a7128fbb8550",
+      "signature": "void func_801DD074_9FAD34(u32 arg0)"
+    },
+    {
+      "name": "func_801DD0AC_9FAD6C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 54,
+      "last": 65,
+      "sha256": "462fa951bd0241fe6cbaac1e21c681d75e6384d69e0cf8ef0763c8f756438015",
+      "signature": "void func_801DD0AC_9FAD6C(s32 arg0)"
+    },
+    {
+      "name": "func_801DD1A8_9FAE68",
+      "source": "src/gallery/9FAC10.c",
+      "first": 67,
+      "last": 90,
+      "sha256": "62aae29256c970ba3d6c1beb7f87abe36568e7e5404d532844fcb067c0ddb0c6",
+      "signature": "UnkStruct800BEDF8* func_801DD1A8_9FAE68(void)"
+    },
+    {
+      "name": "func_801DD270_9FAF30",
+      "source": "src/gallery/9FAC10.c",
+      "first": 92,
+      "last": 94,
+      "sha256": "dde97d4ddb041e7346be04b09886799c49884b89013692d578c16c4a8fc0b997",
+      "signature": "void func_801DD270_9FAF30(void)"
+    },
+    {
+      "name": "func_801DD28C_9FAF4C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 96,
+      "last": 142,
+      "sha256": "262eb0fa43952cf7281e3d04dff406b9c5e6e5d55c99b45a80573c3df033bbca",
+      "signature": "GObj* func_801DD28C_9FAF4C(s32 arg0)"
+    },
+    {
+      "name": "func_801DD4C4_9FB184",
+      "source": "src/gallery/9FAC10.c",
+      "first": 144,
+      "last": 190,
+      "sha256": "3b97d2a7a26f7b7b7f4a5b298a1189d3e44a3e5e38b17d5525a687aca6222276",
+      "signature": "GObj* func_801DD4C4_9FB184(s32 arg0)"
+    },
+    {
+      "name": "func_801DD708_9FB3C8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 192,
+      "last": 202,
+      "sha256": "1960a1b1db7e507262bbcbd8d781af6a5e15b650e5c5260661d7e16e04bcfb7b",
+      "signature": "void func_801DD708_9FB3C8(void)"
+    },
+    {
+      "name": "func_801DD768_9FB428",
+      "source": "src/gallery/9FAC10.c",
+      "first": 204,
+      "last": 222,
+      "sha256": "60eb108d153de7cca6fe1475c19abe9dc8b00b607c5810be0be6b17b8b679809",
+      "signature": "void func_801DD768_9FB428(s32 arg0)"
+    },
+    {
+      "name": "func_801DD860_9FB520",
+      "source": "src/gallery/9FAC10.c",
+      "first": 224,
+      "last": 234,
+      "sha256": "e2c559ecfcbf12a16fc7d6ebde29a11bbf1618e028250e8ec62b3a52697b7fe2",
+      "signature": "void func_801DD860_9FB520(void)"
+    },
+    {
+      "name": "func_801DD8F8_9FB5B8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 236,
+      "last": 288,
+      "sha256": "b9bc3c81500436af213e38131016b0455b71b13e4ce5273288efdabe63f411a5",
+      "signature": "void func_801DD8F8_9FB5B8(s32 arg0, s32 arg1)"
+    },
+    {
+      "name": "func_801DDC50_9FB910",
+      "source": "src/gallery/9FAC10.c",
+      "first": 290,
+      "last": 292,
+      "sha256": "a9e4da0eac20f900c36c496eefb401b26ce2a3b1850e4670922bc1e15a947ade",
+      "signature": "void func_801DDC50_9FB910(s32 arg0)"
+    },
+    {
+      "name": "func_801DDCA8_9FB968",
+      "source": "src/gallery/9FAC10.c",
+      "first": 294,
+      "last": 380,
+      "sha256": "8d6298d1c842be34208eeff4325a9fffbd5a12f8f6e347cb9854adaf31b47e6d",
+      "signature": "void func_801DDCA8_9FB968(s32 arg0)"
+    },
+    {
+      "name": "func_801DE04C_9FBD0C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 382,
+      "last": 392,
+      "sha256": "3689d814f6e77292988e5ea58870972eecb4aa5ed239ab467d8f1b16e0f31564",
+      "signature": "void func_801DE04C_9FBD0C(s32 arg0, s32 arg1)"
+    },
+    {
+      "name": "func_801DE0B8_9FBD78",
+      "source": "src/gallery/9FAC10.c",
+      "first": 394,
+      "last": 437,
+      "sha256": "3fd7201daaf7384f18c3feea0d2f3bf8cddfa0666b50a9abd09cde42eb2a02f7",
+      "signature": "GObj* func_801DE0B8_9FBD78(void)"
+    },
+    {
+      "name": "func_801DE290_9FBF50",
+      "source": "src/gallery/9FAC10.c",
+      "first": 439,
+      "last": 445,
+      "sha256": "b77a13edceffbd366adf29e81d297cfd70f6f8dd1c70d933107ce3d0d4ba100e",
+      "signature": "void func_801DE290_9FBF50(s32 arg0)"
+    },
+    {
+      "name": "func_801DE2E0_9FBFA0",
+      "source": "src/gallery/9FAC10.c",
+      "first": 447,
+      "last": 449,
+      "sha256": "5ecb8d727b97d297ebb902143f90cda873275497b750a073cc0a91a196afbecf",
+      "signature": "void func_801DE2E0_9FBFA0(PhotoData* arg0)"
+    },
+    {
+      "name": "func_801DE318_9FBFD8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 451,
+      "last": 470,
+      "sha256": "ff182aa6fa6b59225087e67348245fef58ecb3d4b87ef8d21be8587daa4b0bd3",
+      "signature": "void func_801DE318_9FBFD8(s32 arg0)"
+    },
+    {
+      "name": "func_801DE4A0_9FC160",
+      "source": "src/gallery/9FAC10.c",
+      "first": 471,
+      "last": 481,
+      "sha256": "4003f8ef862f69937864d68325243934f89643bc390ba8474d75907ca9568a20",
+      "signature": "void func_801DE4A0_9FC160(void)"
+    },
+    {
+      "name": "func_801DE538_9FC1F8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 483,
+      "last": 494,
+      "sha256": "545ac11d2dc35633482f03a382c16fa32cf0a0f87032f830b5b54ff79bdf1424",
+      "signature": "void func_801DE538_9FC1F8(void)"
+    },
+    {
+      "name": "func_801DE5D0_9FC290",
+      "source": "src/gallery/9FAC10.c",
+      "first": 496,
+      "last": 534,
+      "sha256": "dbda7c217ddd854d95df4b97071c5fe5b6c980e9b78c81a0b0646f410756c8f9",
+      "signature": "void func_801DE5D0_9FC290(s32 arg0)"
+    },
+    {
+      "name": "func_801DE804_9FC4C4",
+      "source": "src/gallery/9FAC10.c",
+      "first": 536,
+      "last": 545,
+      "sha256": "30e6c16773689bab7f2b657e7a956a91a89ae10c59c949a8988b773a7492dfda",
+      "signature": "void func_801DE804_9FC4C4(void)"
+    },
+    {
+      "name": "func_801DE87C_9FC53C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 547,
+      "last": 691,
+      "sha256": "84bf14a8cd4d2cad87cc769f1b8d4730c9a923501fd7a013137fe3fbff6a01d9",
+      "signature": "void func_801DE87C_9FC53C(void)"
+    },
+    {
+      "name": "func_801DEE88_9FCB48",
+      "source": "src/gallery/9FAC10.c",
+      "first": 693,
+      "last": 738,
+      "sha256": "eb77b1f69dc4b8969cca398ee5be62af26ca67efd67a6abe5f6e28356bdca886",
+      "signature": "void func_801DEE88_9FCB48(void)"
+    },
+    {
+      "name": "func_801DF078_9FCD38",
+      "source": "src/gallery/9FAC10.c",
+      "first": 740,
+      "last": 891,
+      "sha256": "7d0cd4e3d333456d07a8f8b89667e726302a7232f8c2c11c9c0f2682b2bebb0b",
+      "signature": "void func_801DF078_9FCD38(GObj* arg0)"
+    },
+    {
+      "name": "func_801DF788_9FD448",
+      "source": "src/gallery/9FAC10.c",
+      "first": 893,
+      "last": 908,
+      "sha256": "42d7dde84cd0d043c56b35eda719ec2f54cc8a52c4ded66d0b51426a8b800949",
+      "signature": "void func_801DF788_9FD448(void)"
+    },
+    {
+      "name": "func_801DF850_9FD510",
+      "source": "src/gallery/9FD510.c",
+      "first": 14,
+      "last": 16,
+      "sha256": "e26885f1d50b201f3b7f411dd421bbab32ff88a6a33bdb9601bc0277e68edbf0",
+      "signature": "UIButton* func_801DF850_9FD510(void)"
+    },
+    {
+      "name": "func_801DF8A4_9FD564",
+      "source": "src/gallery/9FD510.c",
+      "first": 18,
+      "last": 50,
+      "sha256": "37a7d0312783f285ddec37bace0583d8d0a93df1519d897a7a53cdbf5bc609ab",
+      "signature": "s32 func_801DF8A4_9FD564(UnkStruct800BEDF8* arg0, s32* arg1)"
+    },
+    {
+      "name": "func_801DFA94_9FD754",
+      "source": "src/gallery/9FD510.c",
+      "first": 52,
+      "last": 102,
+      "sha256": "b898998849eae72f54c2427f0c35d7c22b9ffbc12bcfcec9193ed60162f83ef8",
+      "signature": "s32 func_801DFA94_9FD754(UnkStruct800BEDF8* arg0, s32* arg1, s32* arg2, s32 arg3)"
+    },
+    {
+      "name": "func_801DFE74_9FDB34",
+      "source": "src/gallery/9FD510.c",
+      "first": 104,
+      "last": 133,
+      "sha256": "d5997b4f1229f88fc4532f854eb2977ecb55202a31c6a0e7344455445d7573a1",
+      "signature": "s32 func_801DFE74_9FDB34(UnkStruct800BEDF8* arg0, s32* arg1, s32* arg2)"
+    },
+    {
+      "name": "func_801E006C_9FDD2C",
+      "source": "src/gallery/9FD510.c",
+      "first": 135,
+      "last": 174,
+      "sha256": "85f413642d808deae0f83183ab1c53ce5d5bc727323dd210bc3f1bf8ca077feb",
+      "signature": "s32 func_801E006C_9FDD2C(UnkStruct800BEDF8* arg0, s32* arg1, s32* arg2, s32 arg3)"
+    },
+    {
+      "name": "func_801E0328_9FDFE8",
+      "source": "src/gallery/9FD510.c",
+      "first": 176,
+      "last": 229,
+      "sha256": "5cd82aa5b6d9197cf4ce02e38da81dbf428a7b6d718f99a60cca4683c10f36c6",
+      "signature": "u32 func_801E0328_9FDFE8(void)"
+    },
+    {
+      "name": "func_801E04E8_9FE1A8",
+      "source": "src/gallery/9FD510.c",
+      "first": 231,
+      "last": 278,
+      "sha256": "86bf76264295029211897cdfc295d5b3aa041136ec0494fd5c1f6917a70d0f28",
+      "signature": "u32 func_801E04E8_9FE1A8(void)"
+    },
+    {
+      "name": "func_801E06F0_9FE3B0",
+      "source": "src/gallery/9FD510.c",
+      "first": 280,
+      "last": 328,
+      "sha256": "d97bb27b77271a374d0cb5f70c79c8e5f3e142d882e4b9ce158f7026bf2ea1d8",
+      "signature": "s32 func_801E06F0_9FE3B0(void)"
+    },
+    {
+      "name": "func_801E08FC_9FE5BC",
+      "source": "src/gallery/9FD510.c",
+      "first": 330,
+      "last": 383,
+      "sha256": "9a971a16127e3cd99030d637992882192c5e1fddfca55c628bfa99100ebd8a11",
+      "signature": "s32 func_801E08FC_9FE5BC(s32 arg0)"
+    },
+    {
+      "name": "func_801E0B7C_9FE83C",
+      "source": "src/gallery/9FD510.c",
+      "first": 385,
+      "last": 434,
+      "sha256": "1fd2ca915468d9c347adcabf02d343ef96dfc19b7e3f67d44ebc7a30fb2d6a9f",
+      "signature": "s32 func_801E0B7C_9FE83C(void)"
+    },
+    {
+      "name": "func_801E0D50_9FEA10",
+      "source": "src/gallery/9FD510.c",
+      "first": 436,
+      "last": 441,
+      "sha256": "e450ab7eda9e437e768cd2e99a164142c98d927232e2ef6ff6bee04b29f3e6f8",
+      "signature": "s32 func_801E0D50_9FEA10(void)"
+    },
+    {
+      "name": "func_801E0D80_9FEA40",
+      "source": "src/gallery/9FD510.c",
+      "first": 443,
+      "last": 453,
+      "sha256": "38b52c220677ea71cdc007f10f379a9dd4d6dbccafe0b1a3c5c6c214a7ca1997",
+      "signature": "s32 func_801E0D80_9FEA40(void)"
+    },
+    {
+      "name": "func_801E0DEC_9FEAAC",
+      "source": "src/gallery/9FD510.c",
+      "first": 455,
+      "last": 502,
+      "sha256": "eecff96a3edbd5bcab5909992e0dea34c56dad66626d96de8274a0b65a71b814",
+      "signature": "void func_801E0DEC_9FEAAC(void)"
+    },
+    {
+      "name": "func_801E0F50_9FEC10",
+      "source": "src/gallery/9FEC10.c",
+      "first": 13,
+      "last": 15,
+      "sha256": "aec7d6da81fc28c858876b9ccfd12d1fb72cf8bad0f459b717be52825ebcba2e",
+      "signature": "s32 func_801E0F50_9FEC10(void)"
+    },
+    {
+      "name": "func_801E0F6C_9FEC2C",
+      "source": "src/gallery/9FEC10.c",
+      "first": 17,
+      "last": 19,
+      "sha256": "3b686ba041c4a09615ff10fc06e82729ccea5ed8a3bd072c2a5c4d050caa9ec1",
+      "signature": "s32 func_801E0F6C_9FEC2C(void)"
+    },
+    {
+      "name": "func_801E0F88_9FEC48",
+      "source": "src/gallery/9FEC10.c",
+      "first": 21,
+      "last": 23,
+      "sha256": "3baa4bbf968b05458506b80dfb51d2f5fdbf1d4b4d63df675e9b7790ab259de0",
+      "signature": "PhotoData* func_801E0F88_9FEC48(s32 arg0)"
+    },
+    {
+      "name": "func_801E0FAC_9FEC6C",
+      "source": "src/gallery/9FEC10.c",
+      "first": 25,
+      "last": 30,
+      "sha256": "6334a13eac469880c5a4bec694d91dc7cb073a8f48848d2ffecc2a4052f84413",
+      "signature": "PhotoData* func_801E0FAC_9FEC6C(s32 arg0)"
+    },
+    {
+      "name": "func_801E0FE4_9FECA4",
+      "source": "src/gallery/9FEC10.c",
+      "first": 32,
+      "last": 34,
+      "sha256": "6b0ebd589fa6b3199201784e60bfd998d23bd8af651068788b1676a3e0fbef65",
+      "signature": "PhotoData* func_801E0FE4_9FECA4(s32 arg0)"
+    },
+    {
+      "name": "func_801E1008_9FECC8",
+      "source": "src/gallery/9FEC10.c",
+      "first": 36,
+      "last": 38,
+      "sha256": "5a8b22c34163912b384b6c631fe6e6d175955af023a794394b7c4665720d8876",
+      "signature": "PhotoData* func_801E1008_9FECC8(void)"
+    },
+    {
+      "name": "func_801E1024_9FECE4",
+      "source": "src/gallery/9FEC10.c",
+      "first": 40,
+      "last": 72,
+      "sha256": "3a2b7b4e24d80b3f3096823daa58d2cc2b67030ef9983a5a99ee6c24e7ffefda",
+      "signature": "void func_801E1024_9FECE4(s32 arg0, s32 arg1)"
+    },
+    {
+      "name": "func_801E1170_9FEE30",
+      "source": "src/gallery/9FEC10.c",
+      "first": 74,
+      "last": 110,
+      "sha256": "71683515938fd915078551c79892817f8fb625256f71694a2a327cdfdeeaf5a3",
+      "signature": "s32 func_801E1170_9FEE30(s32 arg0, s32 arg1)"
+    },
+    {
+      "name": "func_801E1318_9FEFD8",
+      "source": "src/gallery/9FEC10.c",
+      "first": 112,
+      "last": 124,
+      "sha256": "9a13a362f7306c4e750d6f51ebc3688c0a78a0279b2f94ac08c8f1c49b92e976",
+      "signature": "void func_801E1318_9FEFD8(void)"
+    },
+    {
+      "name": "func_801E1384_9FF044",
+      "source": "src/gallery/9FEC10.c",
+      "first": 126,
+      "last": 162,
+      "sha256": "b996203b9fe18e5d675983b45d4d28e42741ada11f3a14284508e34341dba3f9",
+      "signature": "void func_801E1384_9FF044(void)"
+    },
+    {
+      "name": "func_801E1504_9FF1C4",
+      "source": "src/gallery/9FEC10.c",
+      "first": 164,
+      "last": 185,
+      "sha256": "211d9e8e78602fc99e77b59e1ece23232b60c630c40eea2f1a2a1f85883fa65f",
+      "signature": "s32 func_801E1504_9FF1C4(s32 arg0)"
+    },
+    {
+      "name": "func_80374F30_8486E0",
+      "source": "src/window/8486E0.c",
+      "first": 12,
+      "last": 42,
+      "sha256": "8a3390e892e60246c1622d500b6a51e072ef17b6fcb2a359c8ad6b44956cef84",
+      "signature": "s32 func_80374F30_8486E0(UIElement* arg0, bool arg1)"
+    }
+  ],
+  "candidate_count": 60,
+  "support_definition_count": 1,
+  "native_support": {
+    "src/gallery_source.h": {
+      "sha256": "a3e203a99357e1f4769cd93cb71dce019e4ac8b4f4c21b73852508ff7e9eb6a9"
+    },
+    "src/gallery_source.c": {
+      "sha256": "34bf44a55e01d6ddafb4fb441b29ff73ffc811881b4c8c23cc391a7cc573376e"
+    },
+    "tools/prepare_gallery.py": {
+      "sha256": "415b955dd3be508f9b84c2159ae6f4c83337db1ee3ed0de3480669fe01b9465f"
+    },
+    "include/35mmisle/continuation.h": {
+      "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"
+    },
+    "include/35mmisle/engine.h": {
+      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    },
+    "include/35mmisle/process.hpp": {
+      "sha256": "181fb1d0bfa32f3dc37ff8093fce7ce970509e765ceab2bf87efb860f71eda40"
+    },
+    "src/application_photos.cpp": {
+      "sha256": "ac46cce27e9728a507417f9ce8e032ab592dcc2f30d1a1aea596278a05faf6ab"
+    },
+    "src/application_photos.hpp": {
+      "sha256": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333"
+    },
+    "src/application_photos_source.h": {
+      "sha256": "23dc5f2f6c5ceeb53dcd6e4eab608ea70ade7c77448fe90a5cee7f93e772660c"
+    },
+    "src/application_runtime.cpp": {
+      "sha256": "489e0f1d6818e0ea77aae780343e4df9ce0fa2b7a2d3eea6f3a29639f04eaede"
+    },
+    "src/application_runtime.hpp": {
+      "sha256": "2a721ab816cdd79b0031da9f2d17a7d9d1794a3420ae87fe9e4c8f882522768c"
+    },
+    "src/continuation.cpp": {
+      "sha256": "e4cc5bb6cf678d4c4eae24ada2dcf7c805f01ce5fbcd843e4b822e29bd952526"
+    },
+    "src/engine.c": {
+      "sha256": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "src/gallery_scene_native.cpp": {
+      "sha256": "41dd21db90da3efcc46d18f91b16b906fd3b3f3f559e5c3a6c26ef86ce9e9dfa"
+    },
+    "src/gallery_scene_native.hpp": {
+      "sha256": "eac96cb9145bfea7c3df822380c7f077cb34d15162cd6d18fabc8921e395452c"
+    },
+    "src/game_state.hpp": {
+      "sha256": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa"
+    },
+    "src/photo_presentation.cpp": {
+      "sha256": "d6501cc4efa5b2aeae64afd6024115f0350c2807e2b095d3bf1938f43a575f75"
+    },
+    "src/photo_presentation.h": {
+      "sha256": "fadb5b59c890b69d5f34e6020cd23bd6388e8adb64bb702d4ab66afb2e45b627"
+    },
+    "src/photo_presentation.hpp": {
+      "sha256": "11c76061978365eccad4386d8b15b7d3c19e4aff49835a06431f0f5a25af64eb"
+    },
+    "src/photo_presentation_core.inc": {
+      "sha256": "edb1670c6d0aff66526126ff71499c95ee5c9d9b742eaee6e0f483431d37cc61"
+    },
+    "src/photo_replay.cpp": {
+      "sha256": "acd95c2ac272975b2a714bc57b5f6302ff90cdf75ecca1f4332dffb19e3374a3"
+    },
+    "src/photo_replay.hpp": {
+      "sha256": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693"
+    },
+    "src/post_course_native_helpers.hpp": {
+      "sha256": "5e070c3050766af3d5c6848464496a3f885b7258bf4edf521e974c421c97c246"
+    },
+    "src/post_course_replay.cpp": {
+      "sha256": "eff1e10d86e907e1368ce6e9776dc472ab0742811b8af53ff172e732186cb1aa"
+    },
+    "src/post_course_replay.hpp": {
+      "sha256": "138267651d319ffdeb56088a66f19a1e25365118ff2d01493460d9a0ff916a61"
+    },
+    "src/post_course_replay_source.c": {
+      "sha256": "ade22ad042863bac85a9ef258f4d80aa4c2288d594e43fd073840617a8ef8208"
+    },
+    "src/post_course_replay_source.h": {
+      "sha256": "f047ac1b6c1389f9d845eddce542303cadf1a7fb2d0ce28d82ac76c6d26295be"
+    },
+    "src/post_course_resources.cpp": {
+      "sha256": "50a18de187e272422d5969cbd696d43b0167ea61f4f86fb6908d3578e73ce296"
+    },
+    "src/post_course_resources.hpp": {
+      "sha256": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467"
+    },
+    "src/post_course_scene.cpp": {
+      "sha256": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87"
+    },
+    "src/post_course_scene.hpp": {
+      "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
+    },
+    "src/post_course_scene_hooks.cpp": {
+      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
+    },
+    "src/post_course_scene_internal.hpp": {
+      "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
+    },
+    "src/post_course_scene_render.cpp": {
+      "sha256": "dab4324654527127f86bf968c449d0b5df59fbfef2d39b5235fd936b724f1825"
+    },
+    "src/post_course_scene_source.c": {
+      "sha256": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b"
+    },
+    "src/post_course_scene_source.h": {
+      "sha256": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9"
+    },
+    "src/post_course_window.cpp": {
+      "sha256": "955cf52a5bc68117783e031a4df7c5ee3d1b9920eeb4a98951af5b86047e1453"
+    },
+    "src/post_course_window.hpp": {
+      "sha256": "bc6d1a25eb5614baa099a2154f5656683f8574d723e276cd50b650d6b523d1cf"
+    },
+    "src/post_course_window_source.c": {
+      "sha256": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4"
+    },
+    "src/post_course_window_source.h": {
+      "sha256": "9a7b3c5cf0b1cdef3c56417450750c83281e1d5454b14107b4e3a41526894499"
+    },
+    "src/process.cpp": {
+      "sha256": "b2e8294b61d096588f37f8c17dfeffbf7dac8507d0f844d2bb43a8577417b7b5"
+    },
+    "src/scene_graphics.cpp": {
+      "sha256": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4"
+    },
+    "src/scene_graphics.hpp": {
+      "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
+    },
+    "src/scene_services.cpp": {
+      "sha256": "371d48ab54b458564d35c91ea538fc48664ac3ef905e5999aad8c92b284aff2f"
+    },
+    "src/scene_services.hpp": {
+      "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
+    },
+    "src/screen_transition_resources.cpp": {
+      "sha256": "0bb5fdab19fb2ffc9147f0e5f2d282f049a1b5d07f8c45a2b39672aea71b6b46"
+    },
+    "src/screen_transition_resources.hpp": {
+      "sha256": "98c5beeca3fc08be62d313110e5aac260a8e09407594ec03eb1bbbebbafedf74"
+    },
+    "src/window_memory.cpp": {
+      "sha256": "b47ef38233dc7c7e29a9d6b282ccdf0bcc7d3ce66e2f479192ac26e52c64a9d5"
+    },
+    "src/window_memory.hpp": {
+      "sha256": "95e417a8f9aed17474ef3213054fb094a652e7c147741c61190a457df51ed9e1"
+    }
+  },
+  "data_origins": {
+    "qualified_receipt": "qualified-640a-menu-initialized-Snapshot.json",
+    "receipt_sha256": "d37a269b758391446c1e60eccf0a1c5f35ece30b6003968ceb28ebbf0e01ef9f",
+    "admission": "actual isle::rom::read_snapshot",
+    "canonical_sha1": "edc7c49cc568c045fe48be0d18011c30f393cbaf",
+    "canonical_bytes": 16777216,
+    "regions": [
+      {
+        "label": "gallery_entry_initialized",
+        "rom": "0x9ff2e0",
+        "guest": "0x801e1620",
+        "byte_count": 288,
+        "sha256": "fedbaa36ed01fe156faafb6b014d35363021143c096226ab02193a64c17ea986"
+      },
+      {
+        "label": "gallery_tables_and_flags",
+        "rom": "0xa07eb4",
+        "guest": "0x801ea1f4",
+        "byte_count": 192,
+        "sha256": "3b628cc5799d5869ea1ae901c36223c31247d909531bdb81ec1548c30ac21bdc"
+      },
+      {
+        "label": "gallery_sprite_801e80e8",
+        "rom": "0xa05da8",
+        "guest": "0x801e80e8",
+        "byte_count": 128,
+        "sha256": "d23d50cae62a353233ef911ebfa807f84d422e533004adcb51412f087ad5755a"
+      },
+      {
+        "label": "gallery_sprite_801e82a0",
+        "rom": "0xa05f60",
+        "guest": "0x801e82a0",
+        "byte_count": 128,
+        "sha256": "957283886b71b73ad1a43a5796b61e2966380d39ccd2eeaba8e82e0b71e906b8"
+      },
+      {
+        "label": "gallery_sprite_801e83d0",
+        "rom": "0xa06090",
+        "guest": "0x801e83d0",
+        "byte_count": 128,
+        "sha256": "99435ddee4779d917b2030c60e304f208b699ee575fba930539cc1c5748de244"
+      },
+      {
+        "label": "gallery_sprite_801e8890",
+        "rom": "0xa06550",
+        "guest": "0x801e8890",
+        "byte_count": 128,
+        "sha256": "1c793dfcaa059d7dfb1bd56b09b8159988885d9a05d5ca879f9adfe32b5dabd8"
+      },
+      {
+        "label": "gallery_sprite_801e8d50",
+        "rom": "0xa06a10",
+        "guest": "0x801e8d50",
+        "byte_count": 128,
+        "sha256": "4d6807e8da932c73fe42b97e1759fb8dfd29bfbc8324aa4aea13089ca61f014e"
+      },
+      {
+        "label": "gallery_sprite_801e8fb0",
+        "rom": "0xa06c70",
+        "guest": "0x801e8fb0",
+        "byte_count": 128,
+        "sha256": "2c2b1e43c61b8381926a76bc828ff6c40dad21e6ae859adee16d606671abb7a7"
+      },
+      {
+        "label": "gallery_sprite_801ea1b0",
+        "rom": "0xa07e70",
+        "guest": "0x801ea1b0",
+        "byte_count": 128,
+        "sha256": "203462a4f1b1983bbb1afd8367448b1c270c92ae1b5ec37b01b1119baafc10a4"
+      }
+    ],
+    "initial_words": {
+      "D_801E16BC_9FF37C": 0,
+      "D_801EA1FC_A07EBC": 0,
+      "D_801EA1F4_A07EB4": 1,
+      "D_801EA1F8_A07EB8": 0,
+      "D_801EA200_A07EC0": -1,
+      "D_801EA204_A07EC4": 0,
+      "D_801EA288_A07F48": 0,
+      "D_801EA28C_A07F4C": 0,
+      "D_801EA290_A07F50": 0,
+      "D_801EA294_A07F54": 0,
+      "D_801EA298_A07F58": -1,
+      "D_801EA29C_A07F5C": -1,
+      "D_801EA2A0_A07F60": -1,
+      "D_801EA2A4_A07F64": -1,
+      "D_801EA2A8_A07F68": -1,
+      "D_801EA2AC_A07F6C": -1,
+      "D_801EA2B0_A07F70": -1
+    },
+    "button_tables": {
+      "801ea210": [
+        2,
+        3,
+        26,
+        20,
+        34,
+        4,
+        35
+      ],
+      "801ea248": [
+        2,
+        3,
+        26,
+        20,
+        34,
+        32,
+        4,
+        35
+      ]
+    },
+    "sprites": "Structural admission now uses qualified-640c-menu-Sprite-hydration.json actual Snapshot+sprite::hydrate results; original prefix facts remain independent bounded provenance. Parent native Resources reuses actual decoder/banks, never copied wire SDK layouts.",
+    "hydrated_resources": {
+      "receipt": "qualified-640c-menu-Sprite-hydration.json",
+      "sha256": "d63efb047faac876ff116858326de337e7c4dc2448c567146dad11a5c54ff53f",
+      "extractor_sha256": "dfa63ef22d8e76ba325ae9df9d927397fa2d8cb9dcb01ef744a380a032947141",
+      "admission": "actual isle::rom::read_snapshot and sprite::hydrate",
+      "bank": {
+        "rom_begin": "0x009ff2e0",
+        "rom_end": "0x00a084b0",
+        "guest_begin": "0x801e1620"
+      },
+      "common": {
+        "error": 0,
+        "x": 0,
+        "y": 0,
+        "scale_x": 1,
+        "scale_y": 1,
+        "attr": 512,
+        "format": 0,
+        "size": 2,
+        "palette_guest": "0x00000000",
+        "palette_bytes": 0,
+        "s": 0,
+        "t": 0,
+        "LUT_offset": 0
+      },
+      "roots": [
+        {
+          "root": "0x801e80e8",
+          "width": 240,
+          "height": 56,
+          "bmheight": 8,
+          "bmHreal": 8,
+          "nbitmaps": 7,
+          "piece_width": 240,
+          "piece_width_img": 240,
+          "piece_actualHeight": 8,
+          "piece_bytes": 3840,
+          "buffers": [
+            "0x801e1748",
+            "0x801e2650",
+            "0x801e3558",
+            "0x801e4460",
+            "0x801e5368",
+            "0x801e6270",
+            "0x801e7178"
+          ]
+        },
+        {
+          "root": "0x801e82a0",
+          "width": 2,
+          "height": 43,
+          "bmheight": 43,
+          "bmHreal": 43,
+          "nbitmaps": 1,
+          "piece_width": 2,
+          "piece_width_img": 4,
+          "piece_actualHeight": 43,
+          "piece_bytes": 344,
+          "buffers": [
+            "0x801e8138"
+          ]
+        },
+        {
+          "root": "0x801e83d0",
+          "width": 52,
+          "height": 2,
+          "bmheight": 2,
+          "bmHreal": 2,
+          "nbitmaps": 1,
+          "piece_width": 52,
+          "piece_width_img": 52,
+          "piece_actualHeight": 2,
+          "piece_bytes": 208,
+          "buffers": [
+            "0x801e82f0"
+          ]
+        },
+        {
+          "root": "0x801e8890",
+          "width": 16,
+          "height": 16,
+          "bmheight": 16,
+          "bmHreal": 16,
+          "nbitmaps": 1,
+          "piece_width": 16,
+          "piece_width_img": 16,
+          "piece_actualHeight": 16,
+          "piece_bytes": 512,
+          "buffers": [
+            "0x801e8680"
+          ]
+        },
+        {
+          "root": "0x801e8d50",
+          "width": 16,
+          "height": 16,
+          "bmheight": 16,
+          "bmHreal": 16,
+          "nbitmaps": 1,
+          "piece_width": 16,
+          "piece_width_img": 16,
+          "piece_actualHeight": 16,
+          "piece_bytes": 512,
+          "buffers": [
+            "0x801e8b40"
+          ]
+        },
+        {
+          "root": "0x801e8fb0",
+          "width": 16,
+          "height": 16,
+          "bmheight": 16,
+          "bmHreal": 16,
+          "nbitmaps": 1,
+          "piece_width": 16,
+          "piece_width_img": 16,
+          "piece_actualHeight": 16,
+          "piece_bytes": 512,
+          "buffers": [
+            "0x801e8da0"
+          ]
+        },
+        {
+          "root": "0x801ea1b0",
+          "width": 52,
+          "height": 39,
+          "bmheight": 39,
+          "bmHreal": 39,
+          "nbitmaps": 1,
+          "piece_width": 52,
+          "piece_width_img": 52,
+          "piece_actualHeight": 39,
+          "piece_bytes": 4056,
+          "buffers": [
+            "0x801e91c8"
+          ]
+        }
+      ]
+    }
+  },
+  "native_contract": {
+    "context": "IsleGallerySource common-first; immutable required IsleGalleryNative table; actual scene22/23, resourceKind4",
+    "initial_data": "immutable mandatory capability; native.initial_validate qualifies actual canonical receipt/SceneSetup/Screen/DL/callback roots/resources; provider additionally compares all initialized scalars and button rows exactly",
+    "entry": "IsleGalleryEntry stores argument/signed actual result/native status/completed; independent owner/domain/native table survive Source retirement",
+    "callback_context": "Parent implements isle_gallery_source_require(object, expected_callback) using actual common Game membership, actual scene22/23 and exact current registered callback identity passed by each C body; no userData",
+    "camera_modes": {
+      "0": "Original9FA580.c49-72; returning native creation/config only; C registers actual idle stackful kind0 priority0",
+      "1": "Original9FA580.c74-98; returning creation/config only; secondary hidden camera perspective near10/far25600/fovy55, eye0,0,100 at0,0,0 up0,1,0 matrices3/14"
+    },
+    "screen": "reserve_source_depth0x25800 align0x40 before applying actual canonical1690; no SDKlayout",
+    "render": "DC8C0 exact returning display-list admission and DC948 exact render state only; never Source control transfer",
+    "process_object": "return creation only; C installs supplied exact Source callback after return",
+    "printer": "actual Input noncontroller unsupported ->available0; Original observer/absent table stay C; forced native status/command rejects unavailable, never fake success",
+    "presentation": "begin identifies actual canonical photo read and invokes real compiled recorded-world Presentation; poll returns pending only for actual retained preparation; C polling preserves typed source continuation; native retains through graphics join/cancel retirement",
+    "graphics_join": "actual submitted graphics join; no fake frame/tick success",
+    "working": "4 distinct cold IslePhotoWorking owners, same Photos; copy_record4 then set_temporary_working4; canonical identify stays strict",
+    "window": "reuse existing actual Window/Frame/Text/Layout/Focus/thumbnail returning APIs and C wait drivers; Gallery prototype801ea1b0 actual independent11 thumbnails",
+    "save": "save native result separate from Original result output0/1; actual nonzero follows untouched C error freeze",
+    "lifetime": "source/native/InitialData/working cells fixed through actual scene detach; entry owner/domain/table outlive scene; thumbnail/fullphoto read native resources retained until actual prior graphics completion"
+  },
+  "portability_origins": {
+    "working_copy": "9FEC10:164-176 original stack PhotoData[4] becomes4genuine wire-preserving working capabilities; ordering preserved",
+    "temporary_live_invariant": {
+      "claim": "For normal Source-produced save history admitted by actual title Gallery eligibility, all four selected pointers are live on every reached Gallery save; malformed/imported histories are checked before any temporary write.",
+      "origins": [
+        {
+          "source": "src/main_menu/A08E30.c",
+          "ranges": [
+            [
+              193,
+              209
+            ],
+            [
+              474,
+              488
+            ],
+            [
+              870,
+              910
+            ],
+            [
+              1311,
+              1328
+            ]
+          ],
+          "fact": "ordinary Report count>3 admits Gallery choice2 only; choice9 maps scene22",
+          "blob": "7e60b16d4fc1555cf2d35f3825c3ed5be85556ad",
+          "sha256": "c8daeacf565a89afd06d34344caf1bf516727e9ce2c8d6e295d98145aa881da6",
+          "range_sha256": [
+            "8fa9ba69a762349b3f77b6669f960998df46c353769521adb02fdf69ca3f85b2",
+            "50db9cdc3b98f74954aa8fe3798e2ff2997f586d7bddaea85d2f26f3c6a553c8",
+            "7054a307b6ffb19d872256f84787eb922a078dd9894b29d8aa6b1a8c52b8fcbc",
+            "c7d89cb9e67e0fb976f60c0e0e1acb0cdc39ca1ffef9cce8dc62e30bcaf064dd"
+          ]
+        },
+        {
+          "source": "src/photo_check/993F80.c",
+          "ranges": [
+            [
+              259,
+              268
+            ],
+            [
+              345,
+              350
+            ]
+          ],
+          "fact": "only gameplay report writer also appends each accepted report photo to next temporary slot while highest live index<3; initialize highest live index",
+          "blob": "96c7b4a2cb298374773756a04721530df25184a9",
+          "sha256": "5895584fc50a0d9cdb094799ee731cd7f3ef840e88eacded27653f82d1bbf34f",
+          "range_sha256": [
+            "ad87273bc6fa5d2b573188a8d86627df63974521a80f4c3b67178659300b3be5",
+            "639e475aca32922e8d45eb64de200527253354badcc153d900eb8e80fae0bf38"
+          ]
+        },
+        {
+          "source": "src/more_funcs/5BF20.c",
+          "ranges": [
+            [
+              167,
+              200
+            ],
+            [
+              203,
+              218
+            ],
+            [
+              603,
+              638
+            ]
+          ],
+          "fact": "getter absent sentinel; setter copies full record; only temporary invalidator calls in reset",
+          "blob": "a223a8933886f1b2b9ebf77c72aab51225474791",
+          "sha256": "ce66ec4b0fbab3ee4161b6f2713f57dce59853c652592c2b9d715baa1211e333",
+          "range_sha256": [
+            "8dea4cde3746831809e78f0e0930135b8f46a13d51895fc5fd3af4a770d9b851",
+            "ab6eea3fbd0dd6ce35214ad339ba2a81a9c5e41332200209b749a939fa3df611",
+            "e4399e7b70a8a2346e3cd98b5cb5181bd870c59efcfd03b20e5fa760c130d6f8"
+          ]
+        },
+        {
+          "source": "src/gallery/9FEC10.c",
+          "ranges": [
+            [
+              40,
+              110
+            ],
+            [
+              126,
+              161
+            ],
+            [
+              164,
+              184
+            ]
+          ],
+          "fact": "load selected canonical pointers; transfer/swap; all4 snapshots before any4writes",
+          "blob": "25bc6e6463f408c94a0fb3fed10538205a18c1cd",
+          "sha256": "150735bac47b3bb9e89b0eaaae8a84f044e1e55ccfc4de7ce5e55626dff31553",
+          "range_sha256": [
+            "9f49aa1879b0a53104a4cfd472afd535e079cae86790bc2912701abeac8c9939",
+            "de364f95182e29ecd26ac50dc62b4aa59f9b05bde57ca0accaac581a07984b54",
+            "39813dbc95c94a27a99b53cd0beaedc039e5caaa7acf1caa422a25adbb6722f0"
+          ]
+        },
+        {
+          "source": "src/gallery/9FD510.c",
+          "ranges": [
+            [
+              330,
+              382
+            ],
+            [
+              385,
+              433
+            ]
+          ],
+          "fact": "replacement accept clears held old photo, reject swaps back; arrange cannot return while holding a photo",
+          "blob": "2dd5be3256f5a5f0404283d52208dd36625aa42a",
+          "sha256": "0d1106aa928b2a85aa475b435e848f7f255d7da8d3f70971bcae9090f8766033",
+          "range_sha256": [
+            "5888b2de57b0159cbecc3fd1c9c1e6e272b489d6d1a554fbc821fed25b1db4af",
+            "9828d9db6873dad2b01ca1254a43b2745074f612b6007fa369c8695bd280a3b6"
+          ]
+        },
+        {
+          "source": "src/unk_end_level_8/A084B0.c",
+          "ranges": [
+            [
+              193,
+              198
+            ],
+            [
+              249,
+              255
+            ]
+          ],
+          "fact": "normal route23 returns from24 which Gallery nonzero selector requests",
+          "blob": "541be49786d466806c1221b2264276c1767a6249",
+          "sha256": "c558ee02de8dc640db9fd3238550b531b7f2c25bd2edf5358f8622703ecf9e3e",
+          "range_sha256": [
+            "6132a373bc5c6ec02c76d55091a911afb0221145b4c27305c38359da0d25c621",
+            "a0cc094ae82dea1016ea12aa3c59b14a095f9c3903e46fbdda1f14d8c5384873"
+          ]
+        }
+      ],
+      "induction": [
+        "Reset begins report empty and contiguous temporary prefix length0.",
+        "Every Source report write also appends one selected live photo until temporary length4; duplicates can only fill faster relative to distinct report count.",
+        "At least4 distinct ordinary report records at title eligibility imply at least4 report-write events and therefore temporary prefix length4.",
+        "Gallery replacement preserves four chosen records; arrangement may temporarily hold one, but B exit is rejected until held photo is restored/placed.",
+        "Save takes all4 retained canonical record snapshots before mutating any temporary slot, preserving full wire bytes and avoiding alias overwrite."
+      ],
+      "boundary": "Canonical imported saves need not have Source-produced history. copy_record rejects absent/stale/wrong-owner record on snapshot loop before any temporary writes; native failure is not Original save0/1."
+    },
+    "function_comparison": "9FD510:461 identity comparison remains !=NULL, not call",
+    "selector24": "retain DD270 body; do not synthesize registration absent initializeddata proof",
+    "uninitialized_input": "9FD510:443-451 retains original local input sp18 and branch; no invented initialized buttons",
+    "native_sdk_lowering": "four straightline SDK graphics/camera helpers become typed returning native operations; thumbnail bitmap-copy spans become actual independent Window thumbnail capability; all Source branches/process/waits remain C"
+  },
+  "output_contract": {
+    "path": "<build>/_deps/isle-gallery-private/game.c",
+    "evidence": "evidence.json",
+    "sole_compilation_unit": "game.c embeds checked bridge+all generated C definitions; do not additionally compile src/gallery_source.c",
+    "guard": "immutable Git blob and SHA256 all files; frozen selector closure SHA256; exact counted exceptional rewrites and per-function positional ranges; checked generator/bridge/header SHA256; emitted per-definition/per-unit native SHA256, wholeoutput and recipe/generator digests for Parent gate"
+  },
+  "native_definitions": [
+    {
+      "name": "func_801DC8C0_9FA580",
+      "source": "src/gallery/9FA580.c",
+      "first": 14,
+      "last": 16,
+      "sha256": "7f1434b66086a9a7b49b394005ccfd56f00a9432acef23e6da9ff53fea8cef1f",
+      "signature": "void func_801DC8C0_9FA580(Gfx** dlist)",
+      "native_sha256": "7416187327916a4ea3888715653f1acd1e34b80c3ef746d281d02ffd09421f43",
+      "rewrites": [
+        {
+          "mechanical-sdk-body": "func_801DC8C0_9FA580",
+          "native": "gc_check(source,source->native->display_list(source,dlist));"
+        }
+      ]
+    },
+    {
+      "name": "func_801DC904_9FA5C4",
+      "source": "src/gallery/9FA580.c",
+      "first": 18,
+      "last": 20,
+      "sha256": "646013348f61da6b1fb7c262cdbf0e70787d062b7f201847f55b5009e3053bff",
+      "signature": "s32 func_801DC904_9FA5C4(void)",
+      "native_sha256": "b57232bed01f50e35124e06657f34561bf897d431b9b1256bdc3231dcfc940ba",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DC920_9FA5E0",
+      "source": "src/gallery/9FA580.c",
+      "first": 22,
+      "last": 25,
+      "sha256": "f409983d24bbfa5122867ce3c62edbe9e0140a87e4a11915020b87f9ad35bb87",
+      "signature": "void func_801DC920_9FA5E0(GObj** arg0, GObj** arg1)",
+      "native_sha256": "7f6314190bde0ebd952b70b0e849e7b1f069c9dd08956db56098beeacdeb876a",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DC948_9FA608",
+      "source": "src/gallery/9FA580.c",
+      "first": 27,
+      "last": 38,
+      "sha256": "bb6ddc8411bf444138ee084e415b9789534a4de0f038c69c42b12d91af4c7e83",
+      "signature": "void func_801DC948_9FA608(s32 arg0, s32 arg1)",
+      "native_sha256": "b976e504d838fff15bc76b0eb2c8474666804abf36a6c04012c3354d4d91af54",
+      "rewrites": [
+        {
+          "mechanical-sdk-body": "func_801DC948_9FA608",
+          "native": "gc_check(source,source->native->render_state(source,arg0,arg1));"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCA58_9FA718",
+      "source": "src/gallery/9FA580.c",
+      "first": 40,
+      "last": 47,
+      "sha256": "f72088cf92b40dd372af98d505b37fbdbd76f817bc11ca1d87423863f4ce6c04",
+      "signature": "void func_801DCA58_9FA718(GObj* arg0)",
+      "native_sha256": "3df1a52d81f6d7c648e7e933277558358c01c366d8732b12ab8581d7cc81fee5",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DCA98_9FA758",
+      "source": "src/gallery/9FA580.c",
+      "first": 49,
+      "last": 72,
+      "sha256": "8984f317d855fc89f98f248e997ec4162cf8cd78029aaed2fa72b346a2f5e6aa",
+      "signature": "void func_801DCA98_9FA758(void)",
+      "native_sha256": "740d6c5b53fcca3d2f39857cae8179ed2441efde92748c4cc6e823c777bbff98",
+      "rewrites": [
+        {
+          "mechanical-sdk-body": "func_801DCA98_9FA758",
+          "native": "gc_camera(source,0);"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCC60_9FA920",
+      "source": "src/gallery/9FA580.c",
+      "first": 74,
+      "last": 98,
+      "sha256": "f246ddca23be2e1a46c68b9cf6d20ad527192fafeb632fe8f3f472f713fe18b9",
+      "signature": "void func_801DCC60_9FA920(void)",
+      "native_sha256": "a008fb97cdbb7685764a94bfdd05386f0dc92df10a466dce7d7c34bc9f040ac3",
+      "rewrites": [
+        {
+          "mechanical-sdk-body": "func_801DCC60_9FA920",
+          "native": "gc_camera(source,1);"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCDDC_9FAA9C",
+      "source": "src/gallery/9FA580.c",
+      "first": 100,
+      "last": 116,
+      "sha256": "86fa80707eac40184314fa8d88a479d50daf98c01b467eca02403d8d59c8c243",
+      "signature": "void func_801DCDDC_9FAA9C(void)",
+      "native_sha256": "500792cde1c9a6f76997365478233080c227e5bbde1a5dd86d62a334c7b35829",
+      "rewrites": [
+        {
+          "old": "D_801E1690_9FF350.zBuffer = gtlMalloc(0x25800, 0x40);\n    viApplyScreenSettings(&D_801E1690_9FF350);",
+          "new": "gc_check(source,source->native->screen(source,0x25800,0x40));",
+          "count": 1
+        },
+        {
+          "old": "UIMem_CreateHeap(&D_801EA808_A084C8, 0x46000);",
+          "new": "gc_check(source,source->native->ui_heap(source,0x46000));",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DCE90_9FAB50",
+      "source": "src/gallery/9FA580.c",
+      "first": 118,
+      "last": 120,
+      "sha256": "05090845e48b1cfc964f4823a90c3cef407a5d2abfb03acfa569c890084da13d",
+      "signature": "void func_801DCE90_9FAB50(void* arg0)",
+      "native_sha256": "2dc55f5dc4a80a37b1e42510ee908545815440bc62a975b8d22c5d25e2060233",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DCEBC_9FAB7C",
+      "source": "src/gallery/9FA580.c",
+      "first": 122,
+      "last": 132,
+      "sha256": "a459e412021ec7aadbaab76089dd13f9a06cb54c42658b45d3e85f178c07f4c5",
+      "signature": "s32 func_801DCEBC_9FAB7C(s32 arg0)",
+      "native_sha256": null,
+      "rewrites": [
+        {
+          "native-entry": "isle_gallery_source_entry",
+          "original": "argument==22 route; setup; return actual D800AF3C0 after retirement"
+        }
+      ]
+    },
+    {
+      "name": "func_801DCF50_9FAC10",
+      "source": "src/gallery/9FAC10.c",
+      "first": 21,
+      "last": 44,
+      "sha256": "04f5de4c876123c6bcecfa3111b6ff3c132e5aa7d03f930065ce7f57f83d92dc",
+      "signature": "void func_801DCF50_9FAC10(GObj* arg0)",
+      "native_sha256": "a97363bbbae4ca58d537636db5c09e6d5e0ca5cb271eddbbd43a9e731702bda3",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD074_9FAD34",
+      "source": "src/gallery/9FAC10.c",
+      "first": 46,
+      "last": 52,
+      "sha256": "5b6696e20c21a77825549afcaf551bfcf217348c92c75ab19726a7128fbb8550",
+      "signature": "void func_801DD074_9FAD34(u32 arg0)",
+      "native_sha256": "8f9a915d9890e8f6256b4771a2d1b0268e1d253cf64da396c08afca3a6952118",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD0AC_9FAD6C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 54,
+      "last": 65,
+      "sha256": "462fa951bd0241fe6cbaac1e21c681d75e6384d69e0cf8ef0763c8f756438015",
+      "signature": "void func_801DD0AC_9FAD6C(s32 arg0)",
+      "native_sha256": "051815cc4be2cfbe9207c0f7053b103eef04581389810ab69455eb8bc8143e5b",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD1A8_9FAE68",
+      "source": "src/gallery/9FAC10.c",
+      "first": 67,
+      "last": 90,
+      "sha256": "62aae29256c970ba3d6c1beb7f87abe36568e7e5404d532844fcb067c0ddb0c6",
+      "signature": "UnkStruct800BEDF8* func_801DD1A8_9FAE68(void)",
+      "native_sha256": "efa5e1e4459f00bb901f6dff5caa1413f46a9c5c514d977ad03ca0ba2eb72bef",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD270_9FAF30",
+      "source": "src/gallery/9FAC10.c",
+      "first": 92,
+      "last": 94,
+      "sha256": "dde97d4ddb041e7346be04b09886799c49884b89013692d578c16c4a8fc0b997",
+      "signature": "void func_801DD270_9FAF30(void)",
+      "native_sha256": "a6fdb1c827a14e146a0b7bbea2763e4afcdcc1a60759898aba44cacec057e21f",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD28C_9FAF4C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 96,
+      "last": 142,
+      "sha256": "262eb0fa43952cf7281e3d04dff406b9c5e6e5d55c99b45a80573c3df033bbca",
+      "signature": "GObj* func_801DD28C_9FAF4C(s32 arg0)",
+      "native_sha256": "38cae74966829f887e1af896ebd254bfe68ae57f8843dae0bce3a9ddeee9d72f",
+      "rewrites": [
+        {
+          "old": "    Bitmap* bitmap;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    u8* dest;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    u8* src;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    bitmap = (Bitmap*) UIMem_Allocate(0x10);\n    dest = (u8*) UIMem_Allocate(0xFD8);\n    src = sobj->sprite.bitmap->buf;\n    *bitmap = *sobj->sprite.bitmap;\n    bitmap->buf = dest;\n    sobj->sprite.bitmap = bitmap;\n    for (x = 0xFD8; x > 0; src++, dest++, x--) {\n        *dest = *src;\n    }\n",
+          "new": "    gc_thumbnail(source,sobj);\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DD4C4_9FB184",
+      "source": "src/gallery/9FAC10.c",
+      "first": 144,
+      "last": 190,
+      "sha256": "3b97d2a7a26f7b7b7f4a5b298a1189d3e44a3e5e38b17d5525a687aca6222276",
+      "signature": "GObj* func_801DD4C4_9FB184(s32 arg0)",
+      "native_sha256": "9e0f762af34b45f2fbb8c80b8270b1ab77779decada24121ad415267ba469ac6",
+      "rewrites": [
+        {
+          "old": "    Bitmap* bitmap;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    u8* dest;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    u8* src;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    bitmap = (Bitmap*) UIMem_Allocate(0x10);\n    dest = (u8*) UIMem_Allocate(0xFD8);\n    src = sobj->sprite.bitmap->buf;\n    *bitmap = *sobj->sprite.bitmap;\n    bitmap->buf = dest;\n    sobj->sprite.bitmap = bitmap;\n    for (x = 0xFD8; x > 0; src++, dest++, x--) {\n        *dest = *src;\n    }\n",
+          "new": "    gc_thumbnail(source,sobj);\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DD708_9FB3C8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 192,
+      "last": 202,
+      "sha256": "1960a1b1db7e507262bbcbd8d781af6a5e15b650e5c5260661d7e16e04bcfb7b",
+      "signature": "void func_801DD708_9FB3C8(void)",
+      "native_sha256": "a6a91df86562416cf30b85ffc135d7a0ca86dce1e7ba061f1e5c5d9179f883e8",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD768_9FB428",
+      "source": "src/gallery/9FAC10.c",
+      "first": 204,
+      "last": 222,
+      "sha256": "60eb108d153de7cca6fe1475c19abe9dc8b00b607c5810be0be6b17b8b679809",
+      "signature": "void func_801DD768_9FB428(s32 arg0)",
+      "native_sha256": "e1b2e00225aaa57c3e3542b0e8b25889f7ade6d3058f8815a48e9de7327b7442",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD860_9FB520",
+      "source": "src/gallery/9FAC10.c",
+      "first": 224,
+      "last": 234,
+      "sha256": "e2c559ecfcbf12a16fc7d6ebde29a11bbf1618e028250e8ec62b3a52697b7fe2",
+      "signature": "void func_801DD860_9FB520(void)",
+      "native_sha256": "a194a6bd60f8c4add4bdd1b4e9a631855dc8432b23f04627edc42fee72367e80",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DD8F8_9FB5B8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 236,
+      "last": 288,
+      "sha256": "b9bc3c81500436af213e38131016b0455b71b13e4ce5273288efdabe63f411a5",
+      "signature": "void func_801DD8F8_9FB5B8(s32 arg0, s32 arg1)",
+      "native_sha256": "eda62075ceba14b7ddd533d75889e70570ef31b2c47e120829a9c2638c2d54c8",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DDC50_9FB910",
+      "source": "src/gallery/9FAC10.c",
+      "first": 290,
+      "last": 292,
+      "sha256": "a9e4da0eac20f900c36c496eefb401b26ce2a3b1850e4670922bc1e15a947ade",
+      "signature": "void func_801DDC50_9FB910(s32 arg0)",
+      "native_sha256": "a99db304da92661b85ae12d0db9c31f21a97e654d4298e6fe4fbd22a28892fdd",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DDCA8_9FB968",
+      "source": "src/gallery/9FAC10.c",
+      "first": 294,
+      "last": 380,
+      "sha256": "8d6298d1c842be34208eeff4325a9fffbd5a12f8f6e347cb9854adaf31b47e6d",
+      "signature": "void func_801DDCA8_9FB968(s32 arg0)",
+      "native_sha256": "45a75fdad0b1f4d90b7450865797162b6c73b3f041c79c25f5fcd50f26337329",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE04C_9FBD0C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 382,
+      "last": 392,
+      "sha256": "3689d814f6e77292988e5ea58870972eecb4aa5ed239ab467d8f1b16e0f31564",
+      "signature": "void func_801DE04C_9FBD0C(s32 arg0, s32 arg1)",
+      "native_sha256": "51a3b3f27fdece6c6ed6bf7d8d075685b68e084ef8f0f2ccbb343e003abe9a5e",
+      "rewrites": [
+        {
+          "old": "SET_SPRITE_POS(sobj->sprite, arg0, arg1);",
+          "new": "gc_sprite(source,sobj)->x=arg0; gc_sprite(source,sobj)->y=arg1;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE0B8_9FBD78",
+      "source": "src/gallery/9FAC10.c",
+      "first": 394,
+      "last": 437,
+      "sha256": "3fd7201daaf7384f18c3feea0d2f3bf8cddfa0666b50a9abd09cde42eb2a02f7",
+      "signature": "GObj* func_801DE0B8_9FBD78(void)",
+      "native_sha256": "8a5132669146dcfca1d863b50f12d6c5a29f2055b9c83277e887859d34fa26ef",
+      "rewrites": [
+        {
+          "old": "    Bitmap* bitmap;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    u8* dest;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    u8* src;\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "    bitmap = (Bitmap*) UIMem_Allocate(0x10);\n    dest = (u8*) UIMem_Allocate(0xFD8);\n    src = sobj->sprite.bitmap->buf;\n    *bitmap = *sobj->sprite.bitmap;\n    bitmap->buf = dest;\n    sobj->sprite.bitmap = bitmap;\n    for (i = 0xFD8; i > 0; src++, dest++, i--) {\n        *dest = *src;\n    }\n",
+          "new": "    gc_thumbnail(source,sobj);\n",
+          "count": 1
+        },
+        {
+          "old": "    s32 i;\n",
+          "new": "",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE290_9FBF50",
+      "source": "src/gallery/9FAC10.c",
+      "first": 439,
+      "last": 445,
+      "sha256": "b77a13edceffbd366adf29e81d297cfd70f6f8dd1c70d933107ce3d0d4ba100e",
+      "signature": "void func_801DE290_9FBF50(s32 arg0)",
+      "native_sha256": "a1b97871f728f6f2654569eb5d2891b314d59a33403b64880fa960d69a3dcdde",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE2E0_9FBFA0",
+      "source": "src/gallery/9FAC10.c",
+      "first": 447,
+      "last": 449,
+      "sha256": "5ecb8d727b97d297ebb902143f90cda873275497b750a073cc0a91a196afbecf",
+      "signature": "void func_801DE2E0_9FBFA0(PhotoData* arg0)",
+      "native_sha256": "0ba68fc23f993a5c5cba4e671f15fd49e8da388a6e6ae568bc70a1d1b9dcf720",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE318_9FBFD8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 451,
+      "last": 470,
+      "sha256": "ff182aa6fa6b59225087e67348245fef58ecb3d4b87ef8d21be8587daa4b0bd3",
+      "signature": "void func_801DE318_9FBFD8(s32 arg0)",
+      "native_sha256": "b65b202439971bb283a1ee269d9a18c581d5feab98c208ef02689957fd00188d",
+      "rewrites": [
+        {
+          "old": "D_8023086C_A4E52C->sprite = D_801E8FB0_A06C70;",
+          "new": "gc_rebind(source,D_8023086C_A4E52C,0x801e8fb0);",
+          "count": 1
+        },
+        {
+          "old": "D_8023086C_A4E52C->sprite = D_801E8890_A06550;",
+          "new": "gc_rebind(source,D_8023086C_A4E52C,0x801e8890);",
+          "count": 1
+        },
+        {
+          "old": "D_8023086C_A4E52C->sprite = D_801E8D50_A06A10;",
+          "new": "gc_rebind(source,D_8023086C_A4E52C,0x801e8d50);",
+          "count": 1
+        },
+        {
+          "old": "D_80230868_A4E528->data.sobj->unk_58 = NULL;\n    D_80230868_A4E528->data.sobj->unk_5C = NULL;",
+          "new": "gc_clear_matrices(source,gc_root(source,D_80230868_A4E528));",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DE4A0_9FC160",
+      "source": "src/gallery/9FAC10.c",
+      "first": 471,
+      "last": 481,
+      "sha256": "4003f8ef862f69937864d68325243934f89643bc390ba8474d75907ca9568a20",
+      "signature": "void func_801DE4A0_9FC160(void)",
+      "native_sha256": "fb41a5ca72843ff7c19964ba8ae39967e735fd697cf61b6a7306989a87251a7d",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE538_9FC1F8",
+      "source": "src/gallery/9FAC10.c",
+      "first": 483,
+      "last": 494,
+      "sha256": "545ac11d2dc35633482f03a382c16fa32cf0a0f87032f830b5b54ff79bdf1424",
+      "signature": "void func_801DE538_9FC1F8(void)",
+      "native_sha256": "aa448e45cbfb73fc2e0061f58acddc7c15a49d4d0cc892a67fc256a06d10d4e7",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE5D0_9FC290",
+      "source": "src/gallery/9FAC10.c",
+      "first": 496,
+      "last": 534,
+      "sha256": "dbda7c217ddd854d95df4b97071c5fe5b6c980e9b78c81a0b0646f410756c8f9",
+      "signature": "void func_801DE5D0_9FC290(s32 arg0)",
+      "native_sha256": "f0acfb3870d393da74064bc60eab288d6992a9018bbdd660df6c2ab11fca600a",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE804_9FC4C4",
+      "source": "src/gallery/9FAC10.c",
+      "first": 536,
+      "last": 545,
+      "sha256": "30e6c16773689bab7f2b657e7a956a91a89ae10c59c949a8988b773a7492dfda",
+      "signature": "void func_801DE804_9FC4C4(void)",
+      "native_sha256": "1538807c109bb1a2723b06a4bc2feaa7f9fc1d53115b9bb7e6545cdb1b9d48ca",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DE87C_9FC53C",
+      "source": "src/gallery/9FAC10.c",
+      "first": 547,
+      "last": 691,
+      "sha256": "84bf14a8cd4d2cad87cc769f1b8d4730c9a923501fd7a013137fe3fbff6a01d9",
+      "signature": "void func_801DE87C_9FC53C(void)",
+      "native_sha256": "8f88a0bafb6cda904760c01e749152a40af390b5b8460a267fa0e00b10eb1421",
+      "rewrites": [
+        {
+          "old": "cam = sp4C->data.cam;",
+          "new": "cam = sp4C;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801DEE88_9FCB48",
+      "source": "src/gallery/9FAC10.c",
+      "first": 693,
+      "last": 738,
+      "sha256": "eb77b1f69dc4b8969cca398ee5be62af26ca67efd67a6abe5f6e28356bdca886",
+      "signature": "void func_801DEE88_9FCB48(void)",
+      "native_sha256": "1e7e401e47118d9f053311bc96565d7a62e81ac163800261379b036aa7caff4d",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DF078_9FCD38",
+      "source": "src/gallery/9FAC10.c",
+      "first": 740,
+      "last": 891,
+      "sha256": "7d0cd4e3d333456d07a8f8b89667e726302a7232f8c2c11c9c0f2682b2bebb0b",
+      "signature": "void func_801DF078_9FCD38(GObj* arg0)",
+      "native_sha256": "48ec277b0966f738dacd53db2270c3bfa0211532932f7543b8267e531dcf0c86",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DF788_9FD448",
+      "source": "src/gallery/9FAC10.c",
+      "first": 893,
+      "last": 908,
+      "sha256": "42d7dde84cd0d043c56b35eda719ec2f54cc8a52c4ded66d0b51426a8b800949",
+      "signature": "void func_801DF788_9FD448(void)",
+      "native_sha256": "eebf56ca4aa615d37deabe1f565f6105e072896e018c0d3de65f3e81cca30b7b",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DF850_9FD510",
+      "source": "src/gallery/9FD510.c",
+      "first": 14,
+      "last": 16,
+      "sha256": "e26885f1d50b201f3b7f411dd421bbab32ff88a6a33bdb9601bc0277e68edbf0",
+      "signature": "UIButton* func_801DF850_9FD510(void)",
+      "native_sha256": "1d4a8fa77c17b739693b50627aba03f95501d3da744f0920b3acab3383132a08",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DF8A4_9FD564",
+      "source": "src/gallery/9FD510.c",
+      "first": 18,
+      "last": 50,
+      "sha256": "37a7d0312783f285ddec37bace0583d8d0a93df1519d897a7a53cdbf5bc609ab",
+      "signature": "s32 func_801DF8A4_9FD564(UnkStruct800BEDF8* arg0, s32* arg1)",
+      "native_sha256": "fe633a2131a2393ce245ebcebd2588c4aaaf375796d80612fcc5ddf8c960334b",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DFA94_9FD754",
+      "source": "src/gallery/9FD510.c",
+      "first": 52,
+      "last": 102,
+      "sha256": "b898998849eae72f54c2427f0c35d7c22b9ffbc12bcfcec9193ed60162f83ef8",
+      "signature": "s32 func_801DFA94_9FD754(UnkStruct800BEDF8* arg0, s32* arg1, s32* arg2, s32 arg3)",
+      "native_sha256": "360e0e85ea272e66b03275f661a2f2f8c2047fbe8fd135173c3fbcc6f328c870",
+      "rewrites": []
+    },
+    {
+      "name": "func_801DFE74_9FDB34",
+      "source": "src/gallery/9FD510.c",
+      "first": 104,
+      "last": 133,
+      "sha256": "d5997b4f1229f88fc4532f854eb2977ecb55202a31c6a0e7344455445d7573a1",
+      "signature": "s32 func_801DFE74_9FDB34(UnkStruct800BEDF8* arg0, s32* arg1, s32* arg2)",
+      "native_sha256": "285dd57ece22d517afca6766ecaf74a12832c230eb542b4f29fa99002d975fc2",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E006C_9FDD2C",
+      "source": "src/gallery/9FD510.c",
+      "first": 135,
+      "last": 174,
+      "sha256": "85f413642d808deae0f83183ab1c53ce5d5bc727323dd210bc3f1bf8ca077feb",
+      "signature": "s32 func_801E006C_9FDD2C(UnkStruct800BEDF8* arg0, s32* arg1, s32* arg2, s32 arg3)",
+      "native_sha256": "78ea8586d032ed540c30404b0f9deb637a46a9fc0c8412e024b98c906dd2be3d",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0328_9FDFE8",
+      "source": "src/gallery/9FD510.c",
+      "first": 176,
+      "last": 229,
+      "sha256": "5cd82aa5b6d9197cf4ce02e38da81dbf428a7b6d718f99a60cca4683c10f36c6",
+      "signature": "u32 func_801E0328_9FDFE8(void)",
+      "native_sha256": "e0bec2db1e7bbf96c21ba3c434f789a93ffe91cd9111205205b542a3cbdf2434",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E04E8_9FE1A8",
+      "source": "src/gallery/9FD510.c",
+      "first": 231,
+      "last": 278,
+      "sha256": "86bf76264295029211897cdfc295d5b3aa041136ec0494fd5c1f6917a70d0f28",
+      "signature": "u32 func_801E04E8_9FE1A8(void)",
+      "native_sha256": "dfb658ecc5815fa725cf7974fb10e780e19270ef858bf92172d6e5ea5a5595f3",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E06F0_9FE3B0",
+      "source": "src/gallery/9FD510.c",
+      "first": 280,
+      "last": 328,
+      "sha256": "d97bb27b77271a374d0cb5f70c79c8e5f3e142d882e4b9ce158f7026bf2ea1d8",
+      "signature": "s32 func_801E06F0_9FE3B0(void)",
+      "native_sha256": "0c1bc33ca797765a323e7e5bf47a203c0d00ea7033c88c60030a7506ae1ceacc",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E08FC_9FE5BC",
+      "source": "src/gallery/9FD510.c",
+      "first": 330,
+      "last": 383,
+      "sha256": "9a971a16127e3cd99030d637992882192c5e1fddfca55c628bfa99100ebd8a11",
+      "signature": "s32 func_801E08FC_9FE5BC(s32 arg0)",
+      "native_sha256": "54cfc601ccdd03bb457afe7e22b0b94540c468ae29758dcf12feb330eed54d65",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0B7C_9FE83C",
+      "source": "src/gallery/9FD510.c",
+      "first": 385,
+      "last": 434,
+      "sha256": "1fd2ca915468d9c347adcabf02d343ef96dfc19b7e3f67d44ebc7a30fb2d6a9f",
+      "signature": "s32 func_801E0B7C_9FE83C(void)",
+      "native_sha256": "505bbda615cd482e3f15310bceef99d17057657d94d0ca9dc772cc3bc3cd2e5b",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0D50_9FEA10",
+      "source": "src/gallery/9FD510.c",
+      "first": 436,
+      "last": 441,
+      "sha256": "e450ab7eda9e437e768cd2e99a164142c98d927232e2ef6ff6bee04b29f3e6f8",
+      "signature": "s32 func_801E0D50_9FEA10(void)",
+      "native_sha256": "983be57f709e31684d59514d1c8d16958e9be9ced00cdbcd7335a64e8baf58ab",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0D80_9FEA40",
+      "source": "src/gallery/9FD510.c",
+      "first": 443,
+      "last": 453,
+      "sha256": "38b52c220677ea71cdc007f10f379a9dd4d6dbccafe0b1a3c5c6c214a7ca1997",
+      "signature": "s32 func_801E0D80_9FEA40(void)",
+      "native_sha256": "ef433031ea0725d031f5a4e7b884c2b5296286da6d04fbc287c3dbe7ccec3b51",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0DEC_9FEAAC",
+      "source": "src/gallery/9FD510.c",
+      "first": 455,
+      "last": 502,
+      "sha256": "eecff96a3edbd5bcab5909992e0dea34c56dad66626d96de8274a0b65a71b814",
+      "signature": "void func_801E0DEC_9FEAAC(void)",
+      "native_sha256": "0e692f4e92fa908a318fc3c19eedc08847bc752c6d19537ce45853c40702af0a",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0F50_9FEC10",
+      "source": "src/gallery/9FEC10.c",
+      "first": 13,
+      "last": 15,
+      "sha256": "aec7d6da81fc28c858876b9ccfd12d1fb72cf8bad0f459b717be52825ebcba2e",
+      "signature": "s32 func_801E0F50_9FEC10(void)",
+      "native_sha256": "e62150ff34e42b52cef737e5eca30ddf09afcb74f8d97e1cbd7962e8b2023b86",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0F6C_9FEC2C",
+      "source": "src/gallery/9FEC10.c",
+      "first": 17,
+      "last": 19,
+      "sha256": "3b686ba041c4a09615ff10fc06e82729ccea5ed8a3bd072c2a5c4d050caa9ec1",
+      "signature": "s32 func_801E0F6C_9FEC2C(void)",
+      "native_sha256": "35adef3cbdf92577441593bd34f043a82af8549772c82576ff5299c0746b19aa",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0F88_9FEC48",
+      "source": "src/gallery/9FEC10.c",
+      "first": 21,
+      "last": 23,
+      "sha256": "3baa4bbf968b05458506b80dfb51d2f5fdbf1d4b4d63df675e9b7790ab259de0",
+      "signature": "PhotoData* func_801E0F88_9FEC48(s32 arg0)",
+      "native_sha256": "1abcfa0868f7763fca95899fb2f87b96b807a019c67bd5c6e941308e884b7fbe",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0FAC_9FEC6C",
+      "source": "src/gallery/9FEC10.c",
+      "first": 25,
+      "last": 30,
+      "sha256": "6334a13eac469880c5a4bec694d91dc7cb073a8f48848d2ffecc2a4052f84413",
+      "signature": "PhotoData* func_801E0FAC_9FEC6C(s32 arg0)",
+      "native_sha256": "781b0ce09752293acd2eb31ffe474abf46eb6e6084e716210671816d225cf473",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E0FE4_9FECA4",
+      "source": "src/gallery/9FEC10.c",
+      "first": 32,
+      "last": 34,
+      "sha256": "6b0ebd589fa6b3199201784e60bfd998d23bd8af651068788b1676a3e0fbef65",
+      "signature": "PhotoData* func_801E0FE4_9FECA4(s32 arg0)",
+      "native_sha256": "2f8b7c86f69d66ef407cbfa2f4ede94b90476054b2182d459175be77217b1edc",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E1008_9FECC8",
+      "source": "src/gallery/9FEC10.c",
+      "first": 36,
+      "last": 38,
+      "sha256": "5a8b22c34163912b384b6c631fe6e6d175955af023a794394b7c4665720d8876",
+      "signature": "PhotoData* func_801E1008_9FECC8(void)",
+      "native_sha256": "bbb75ddf0348473c0188f3eb0577c512ceeea68d9c35a9aaf2726652df6e9013",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E1024_9FECE4",
+      "source": "src/gallery/9FEC10.c",
+      "first": 40,
+      "last": 72,
+      "sha256": "3a2b7b4e24d80b3f3096823daa58d2cc2b67030ef9983a5a99ee6c24e7ffefda",
+      "signature": "void func_801E1024_9FECE4(s32 arg0, s32 arg1)",
+      "native_sha256": "d5910fe5242f8822c0f907701bce6be16f06abbe7158810774f9cf1901181c7b",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E1170_9FEE30",
+      "source": "src/gallery/9FEC10.c",
+      "first": 74,
+      "last": 110,
+      "sha256": "71683515938fd915078551c79892817f8fb625256f71694a2a327cdfdeeaf5a3",
+      "signature": "s32 func_801E1170_9FEE30(s32 arg0, s32 arg1)",
+      "native_sha256": "a5295b094516ae120d9b93468a981120028819a64ce4d1efeba678f8c43c8433",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E1318_9FEFD8",
+      "source": "src/gallery/9FEC10.c",
+      "first": 112,
+      "last": 124,
+      "sha256": "9a13a362f7306c4e750d6f51ebc3688c0a78a0279b2f94ac08c8f1c49b92e976",
+      "signature": "void func_801E1318_9FEFD8(void)",
+      "native_sha256": "3788eabecad64486db856e3b7e18b19a6ff21aea6b7353d60683502dfee89a8e",
+      "rewrites": []
+    },
+    {
+      "name": "func_801E1384_9FF044",
+      "source": "src/gallery/9FEC10.c",
+      "first": 126,
+      "last": 162,
+      "sha256": "b996203b9fe18e5d675983b45d4d28e42741ada11f3a14284508e34341dba3f9",
+      "signature": "void func_801E1384_9FF044(void)",
+      "native_sha256": "4853f5c74b849c33ed0d4c9b25a6e24277ee6cdcd0fe54f088659f4bb3ad2322",
+      "rewrites": [
+        {
+          "old": "(PhotoData*) func_800BF574_5C414(i)",
+          "new": "func_800BF574_5C414(i)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_801E1504_9FF1C4",
+      "source": "src/gallery/9FEC10.c",
+      "first": 164,
+      "last": 185,
+      "sha256": "211d9e8e78602fc99e77b59e1ece23232b60c630c40eea2f1a2a1f85883fa65f",
+      "signature": "s32 func_801E1504_9FF1C4(s32 arg0)",
+      "native_sha256": "fd7fb0ef7d766e052a5db7dc7d5dcbd7122bd8fdb35ad51cd39d8845864a7dd2",
+      "rewrites": [
+        {
+          "old": "    PhotoData sp18[ARRAY_COUNT(D_802309B0_A4E670)];\n",
+          "new": "",
+          "count": 1
+        },
+        {
+          "old": "sp18[spE9C] = *D_802309B0_A4E670[spE9C];",
+          "new": "gc_snapshot(source,spE9C,D_802309B0_A4E670[spE9C]);",
+          "count": 1
+        },
+        {
+          "old": "func_800BF5D8_5C478(spE9C, &sp18[spE9C]);",
+          "new": "gc_write_snapshot(source,spE9C);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "func_80374F30_8486E0",
+      "source": "src/window/8486E0.c",
+      "first": 12,
+      "last": 42,
+      "sha256": "8a3390e892e60246c1622d500b6a51e072ef17b6fcb2a359c8ad6b44956cef84",
+      "signature": "s32 func_80374F30_8486E0(UIElement* arg0, bool arg1)",
+      "native_sha256": "a28d76dcc8d6ea413bbb45960453249cefadfc73c3db91cf1c2419d4a951546b",
+      "rewrites": []
+    }
+  ],
+  "native_outputs": {
+    "game.c": "6b6264f51d8bb8920bb8782f5e3937e903c9bfb2ac495f2b979f51a351bc22b7",
+    "gallery_original.inc": "827df4fe6c51e6d0c41f34aa1904d59dec6e0ba663e8a5f9a7c649c48f87fd5d",
+    "gallery_declarations.inc": "7b3c8324233d80b99d9ee70ebd55943e7f2220637d01449be6ba4e94e1427dee"
+  },
+  "native_units": {
+    "src/gallery/9FA580.c": {
+      "source_sha256": "ac8219ab6a84e04b0573a63d5569a7689c771ee586893ab6d27574467d734748",
+      "native_sha256": "198f1efc83a180a36282f2561cbd73de6be0ff25854c749558289a8f7059bdd8"
+    },
+    "src/gallery/9FAC10.c": {
+      "source_sha256": "673922549d440169163bb67c43b8bcb01ba93c23ff3c1bcc2a5fa5731e717c22",
+      "native_sha256": "07b42ac59bc5fa78f4320c03267df295eabeb1cf6450f339a052d9ac455ba21a"
+    },
+    "src/gallery/9FD510.c": {
+      "source_sha256": "0d1106aa928b2a85aa475b435e848f7f255d7da8d3f70971bcae9090f8766033",
+      "native_sha256": "4d84d1ad95b3907306ff8f256deeed47e9b4b7f63089022b4a0d1a0fc93f1cbb"
+    },
+    "src/gallery/9FEC10.c": {
+      "source_sha256": "150735bac47b3bb9e89b0eaaae8a84f044e1e55ccfc4de7ce5e55626dff31553",
+      "native_sha256": "564462a50357da9db34a3c8e85dbd3499a6c803f11fa7c1ecccf04695d42912d"
+    },
+    "src/window/8486E0.c": {
+      "source_sha256": "67bc8e26889891abec021e0303b58d8a9b791321db2ca8ec1658b81d8d7437ed",
+      "native_sha256": "a28d76dcc8d6ea413bbb45960453249cefadfc73c3db91cf1c2419d4a951546b"
+    }
+  }
+}

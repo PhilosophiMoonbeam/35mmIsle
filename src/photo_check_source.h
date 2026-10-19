@@ -59,7 +59,6 @@ struct IslePhotoCheckSource {
     IslePhotoCheckInput input;
     IslePostCourseScoredPhoto score_scratch;
     char formatted[400], number_ascii[16], number_source[34];
-    size_t qsortItemSize;
     IslePhotoCheckCompare qsortCompareFunc;
 };
 

@@ -74,6 +74,36 @@ void* Heap::allocate(std::size_t bytes) noexcept {
 void Heap::deallocate(void* data) noexcept {
     if (data) merge(reinterpret_cast<Chunk*>(static_cast<std::byte*>(data) - overhead()));
 }
+Heap::Chunk* Heap::find_allocation(const void* data) const noexcept {
+    if (!data) return nullptr;
+    const auto requested=reinterpret_cast<std::uintptr_t>(data);
+    const auto base=reinterpret_cast<std::uintptr_t>(base_);
+    if (requested<base || requested-base>=size_) return nullptr;
+    std::size_t offset=0;
+    Chunk* previous=nullptr;
+    while (offset<size_) {
+        if (size_-offset<sizeof(Chunk)) return nullptr;
+        auto* chunk=reinterpret_cast<Chunk*>(base_+offset);
+        if (chunk->previous!=previous || chunk->size<sizeof(Chunk) ||
+            chunk->size%alignof(Chunk) || chunk->size>size_-offset)
+            return nullptr;
+        if (reinterpret_cast<std::uintptr_t>(chunk->payload.data)==requested)
+            return chunk->allocated ? chunk : nullptr;
+        previous=chunk;
+        offset+=chunk->size;
+    }
+    return nullptr;
+}
+bool Heap::owns_allocation(const void* data,std::size_t bytes) const noexcept {
+    const auto* chunk=find_allocation(data);
+    return chunk && bytes<=chunk->size-overhead();
+}
+bool Heap::deallocate_checked(void* data) noexcept {
+    auto* chunk=find_allocation(data);
+    if (!chunk) return false;
+    merge(chunk);
+    return true;
+}
 void* Heap::reallocate(void* data, std::size_t bytes) noexcept {
     if (!data) return allocate(bytes);
     auto* c = reinterpret_cast<Chunk*>(static_cast<std::byte*>(data) - overhead());

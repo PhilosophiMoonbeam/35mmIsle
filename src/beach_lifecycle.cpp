@@ -294,7 +294,7 @@ void Lifecycle::Impl::cold() {
     bindings=std::make_unique<actor::BehaviorBindings>(behavior_resources,behaviors.callbacks,
         behaviors.graphs,std::span<const std::uint32_t>{},behaviors.roots);
     interactions=std::make_unique<actor::InteractionServices>(*services,*actors,*items,*world,
-        detector,*bindings,actor_resources);
+        detector,*bindings,actor_resources,effect_resources);
     require(bool(actors->bind_interactions(*interactions)),"Beach interaction binding rejected");
 }
 void Lifecycle::Impl::producers() {
@@ -395,7 +395,16 @@ IsleGameResult Lifecycle::update(std::uint32_t raw_game_time) noexcept {
         return ISLE_GAME_INVALID_STATE;
     self.services->raw_game_time=raw_game_time;
     auto result=self.root->publish_input();
-    if (result==ISLE_GAME_OK) result=isle_game_tick(self.services->game);
+    if (result==ISLE_GAME_OK) result=self.services->tick();
+    // Native deletion is not physical Item collection. Both OM traversal and
+    // the previous GPU frame are excluded at this live update boundary.
+    if (self.items) {
+        const auto collected=self.items->collect_joined();
+        if (!collected && collected.error!=items::OwnerError::lifetime && result==ISLE_GAME_OK) {
+            self.services->fail(collected.detail);
+            result=ISLE_GAME_INVALID_STATE;
+        }
+    }
     if (self.cart && self.intro_instance && self.source.D_beach_802CC0E4) {
         const auto state=self.cart->membership(self.intro_instance);
         if (state.retiring && !state.joined) {
@@ -746,6 +755,7 @@ IsleGameResult isle_beach_lifecycle_native_create_world(IsleBeachLifecycleSource
             identity!=0x8011b914u || sky!=99 || first!=100 || last!=126 || link!=9 || render!=3 ||
             add!=isle_beach_lifecycle_world_add || remove!=isle_beach_lifecycle_world_remove ||
             change!=isle_beach_lifecycle_world_change || user!=s) return ISLE_GAME_INVALID_ARGUMENT;
+        self.state.background_rgb=self.world_resources.setup().background_rgb;
         self.world->publish(); self.world_published=true; return ISLE_GAME_OK;
     });
 }
@@ -767,7 +777,7 @@ IsleGameResult isle_beach_lifecycle_native_background(IsleBeachLifecycleSource* 
     if (!r || !g || !b) return ISLE_GAME_INVALID_ARGUMENT;
     return Access::invoke(s,[&](Impl& self) {
         if (!self.world_published) return ISLE_GAME_INVALID_STATE;
-        const auto rgb=self.world_resources.setup().background_rgb;
+        const auto& rgb=self.state.background_rgb;
         *r=rgb[0]; *g=rgb[1]; *b=rgb[2]; return ISLE_GAME_OK;
     });
 }

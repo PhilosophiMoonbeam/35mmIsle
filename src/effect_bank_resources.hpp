@@ -27,6 +27,9 @@ private:
 EffectBank decode_effect_bank(rom::GuestView script_section,
                               rom::GuestView image_section, std::uint32_t bank_id);
 
+// Original course identity to canonical resource group; not an active slot.
+EffectGroup effect_group(std::int32_t course_id);
+
 // Immutable nine-group inventory, not nine simultaneously active bank slots.
 // Scene callers select common(slot3) and one course(slot0), or intro(slot0).
 // Snapshot must outlive this owner and every borrowed result. Moving Snapshot

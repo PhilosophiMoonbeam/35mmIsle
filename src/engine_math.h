@@ -60,6 +60,9 @@ static inline bool isle_game_reflection_component(float value) {
 
 /* Native declarations checked against the privately admitted GAME prototypes. */
 f32 Vec3fNormalize(Vec3f* v);
+f32 Vec3fMagnitude(Vec3f* v);
+f32 Vec3fAngleDiff(Vec3f* v, Vec3f* w);
+Vec3f* Vec3fReflect(Vec3f* v, Vec3f* normal);
 Vec3f* Vec3fAdd(Vec3f* dst, Vec3f* addend);
 Vec3f* Vec3fDiff(Vec3f* difference, Vec3f* minuend, Vec3f* subtrahend);
 Vec3f* Vec3fGetEulerRotation(Vec3f* v, enum VectorAxisFlags axis, f32 angle);

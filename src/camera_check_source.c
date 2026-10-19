@@ -126,7 +126,7 @@ static void cc_element_clear(IsleCameraCheckSource* c,UIElement* e) { cc_checked
 static void cc_element_background(IsleCameraCheckSource* c,UIElement* e) { cc_checked(c,isle_post_window_element_background(c->common.window,e->handle)); }
 static void cc_element_font(IsleCameraCheckSource* c,UIElement* e,int font) { cc_checked(c,isle_post_window_element_font(c->common.window,e->handle,font)); }
 static void cc_element_position(IsleCameraCheckSource* c,UIElement* e,int x,int y) { cc_checked(c,isle_post_window_element_text_position(c->common.window,e->handle,x,y)); }
-static void cc_element_state(IsleCameraCheckSource* c,UIElement* e,int state) { cc_checked(c,isle_post_window_element_visible(c->common.window,e->handle,state==UI_NORMAL)); }
+static void cc_element_state(IsleCameraCheckSource* c,UIElement* e,int state) { if(e==NULL)return; /* Original UIElement_SetState accepts NULL. */ cc_checked(c,isle_post_window_element_visible(c->common.window,e->handle,state==UI_NORMAL)); }
 static void cc_element_color(IsleCameraCheckSource* c,UIElement* e,int which,int r,int g,int b,int a) { cc_checked(c,isle_post_window_element_color(c->common.window,e->handle,which==UI_FOREGROUND,(IslePostCourseColor){r,g,b,a})); }
 static void cc_element_fill(IsleCameraCheckSource* c,UIElement* e,int x1,int y1,int x2,int y2,int r,int g,int b,int a) { cc_checked(c,isle_post_window_element_fill(c->common.window,e->handle,x1,y1,x2,y2,(IslePostCourseColor){r,g,b,a})); }
 static void cc_element_fill_default(IsleCameraCheckSource* c,UIElement* e,int x1,int y1,int x2,int y2) { cc_checked(c,isle_post_window_element_fill_default(c->common.window,e->handle,x1,y1,x2,y2)); }

@@ -33,6 +33,7 @@ public:
  Frame(scene::Services&, const Resources&); ~Frame();
  Frame(const Frame&)=delete; Frame& operator=(const Frame&)=delete;
  bool create() noexcept; void retire() noexcept;
+ bool hidden() noexcept;
  void set_style(int) noexcept; void set_pos(int,int) noexcept; void set_size(int,int) noexcept;
  void show(bool) noexcept; void show_background(bool) noexcept; void set_opacity(int) noexcept;
  Color background_color() const noexcept;

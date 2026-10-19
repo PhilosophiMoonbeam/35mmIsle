@@ -253,7 +253,8 @@ Step Runtime::tick(std::uint32_t raw_time) noexcept {
     if (self.phase == Phase::retired || self.error != Error::none) return Step::failed;
     self.raw_time = raw_time;
     if (self.services) self.services->raw_game_time = raw_time;
-    if (!self.native(isle_game_tick(self.storage.game()),"source startup OM traversal failed")) return Step::failed;
+    const auto updated = self.services ? self.services->tick() : isle_game_tick(self.storage.game());
+    if (!self.native(updated,"source startup OM traversal failed")) return Step::failed;
     ++self.updates;
     if (self.services && self.services->failed()) { self.fail(Error::native,self.services->error()); return Step::failed; }
     if (self.phase == Phase::logo && self.logo_exit) {

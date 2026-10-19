@@ -440,6 +440,59 @@ void callback_owner_service_fence() {
           "owner handoffs consume no extra gameplay resume or wait");
 }
 
+struct ScheduledWorkerData {
+    IsleContinuationDomain* sender_domain;
+    IsleContinuationDomain* worker_domain;
+    IsleContinuation* sender = nullptr;
+    IsleContinuation* worker = nullptr;
+    int sender_phase = 0, worker_phase = 0;
+    IsleContinuationResult dispatched = ISLE_CONT_OK, self_resume = ISLE_CONT_OK;
+    bool ordinary_rejected = false, worker_saw_parked_sender = false;
+};
+void scheduled_worker_entry(void* raw) {
+    auto& data=*static_cast<ScheduledWorkerData*>(raw);
+    data.worker_saw_parked_sender=data.sender_phase==1;
+    data.worker_phase=1;
+    if(isle_continuation_wait(data.worker_domain,1)!=ISLE_CONT_OK)return;
+    data.worker_phase=2;
+}
+void dispatch_independent_worker(void* raw) {
+    auto& data=*static_cast<ScheduledWorkerData*>(raw);
+    data.self_resume=isle_continuation_resume(data.sender);
+    data.dispatched=isle_continuation_resume(data.worker);
+}
+void scheduling_sender_entry(void* raw) {
+    auto& data=*static_cast<ScheduledWorkerData*>(raw);
+    data.sender_phase=1;
+    if(isle_continuation_on_owner(dispatch_independent_worker,&data)!=ISLE_CONT_OK)return;
+    data.ordinary_rejected=data.dispatched==ISLE_CONT_EXECUTION_FAILURE && data.worker_phase==0;
+    if(isle_continuation_on_owner_dispatch(dispatch_independent_worker,&data)!=ISLE_CONT_OK)return;
+    data.sender_phase=2;
+    if(isle_continuation_wait(data.sender_domain,1)!=ISLE_CONT_OK)return;
+    data.sender_phase=3;
+}
+void independent_worker_scheduler_boundary() {
+    Domain sender_domain,worker_domain;
+    ScheduledWorkerData data{sender_domain.value,worker_domain.value};
+    check(isle_continuation_on_owner_dispatch(dispatch_independent_worker,&data)==ISLE_CONT_INVALID_STATE &&
+          data.worker_phase==0,"scheduler rejects calls outside an active Source callback");
+    check(isle_continuation_create(worker_domain.value,scheduled_worker_entry,&data,&data.worker)==ISLE_CONT_OK &&
+          isle_continuation_create(sender_domain.value,scheduling_sender_entry,&data,&data.sender)==ISLE_CONT_OK,
+          "create independent real worker and sending Source continuations");
+    check(isle_continuation_resume(data.sender)==ISLE_CONT_OK &&
+          state(data.sender)==ISLE_CONT_WAITING && state(data.worker)==ISLE_CONT_WAITING &&
+          data.ordinary_rejected && data.dispatched==ISLE_CONT_OK &&
+          data.self_resume==ISLE_CONT_INVALID_STATE && data.worker_saw_parked_sender &&
+          data.sender_phase==2 && data.worker_phase==1,
+          "only explicit scheduling dispatches the worker before sender continuation, without recursive self-resume");
+    check(isle_continuation_resume(data.sender)==ISLE_CONT_OK &&
+          state(data.sender)==ISLE_CONT_COMPLETED && data.sender_phase==3 && data.worker_phase==1,
+          "worker dispatch consumes no extra sender wait and invents no worker resume");
+    check(isle_continuation_resume(data.worker)==ISLE_CONT_OK &&
+          state(data.worker)==ISLE_CONT_COMPLETED && data.worker_phase==2,
+          "independent worker retains its real suspended stack until its own next resume");
+}
+
 } // namespace
 
 int main() {
@@ -455,6 +508,7 @@ int main() {
         cpp_entry_failure_boundary();
         shutdown_joins_all_accepted_processes();
         callback_owner_service_fence();
+        independent_worker_scheduler_boundary();
     } catch (const std::exception& exception) {
         check(false, exception.what());
     } catch (...) {

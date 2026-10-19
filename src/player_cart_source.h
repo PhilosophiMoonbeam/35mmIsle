@@ -14,10 +14,13 @@ extern "C" {
 typedef struct IslePlayerCartModelAnimation IslePlayerCartModelAnimation;
 typedef struct IslePlayerCartMaterialAnimation IslePlayerCartMaterialAnimation;
 
+struct IslePlayerCartEvent;
 typedef struct IslePlayerCartSource {
     IslePlayerSource* player;
     void* owner;
     IsleGameObject* cartGObj;
+    /* Borrow of the actual batch event only during its fenced C callback. */
+    const struct IslePlayerCartEvent* current_event;
 } IslePlayerCartSource;
 
 /* An actual native model incarnation and node index, never a pose copy. */

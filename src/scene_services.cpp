@@ -2,6 +2,7 @@
 #include "menu_scene_bridge.h"
 #include "borrowed_model_kernel.hpp"
 #include "source_factory_resources.h"
+#include "sound_ramp_source.h"
 
 #include <algorithm>
 #include <cmath>
@@ -56,13 +57,6 @@ struct Services::Impl {
         bool drawing = false, deleting = false, dispatching = false, retired = false;
         bool native_commands = false;
     };
-    struct Ramp {
-        Impl* owner = nullptr;
-        IsleGameObject* object = nullptr;
-        int slot = 0;
-        std::uint32_t from = 0, to = 0, tick = 0, duration = 0;
-        bool pan = false;
-    };
     Services& s;
     isle_arena& arena;
     ResourceView resources;
@@ -71,7 +65,8 @@ struct Services::Impl {
     SpriteRecord* free_sprites = nullptr;
     std::size_t prepared_objects = 0;
     IsleGameCommandPool commands{};
-    std::array<Ramp, 5> volumes{}, pans{};
+    IsleSoundRampSource sound{};
+    std::span<IsleSoundRampBinding> sound_bindings;
     ::isle::screen_transition::Owner transition;
     bool exit = false;
     bool destroying = false;
@@ -81,8 +76,6 @@ struct Services::Impl {
     explicit Impl(Services& services, isle_arena& storage, ResourceView view)
         : s(services), arena(storage), resources(view), transition(services) {
         commands.arena = &arena;
-        for (auto& ramp : volumes) ramp.owner = this;
-        for (auto& ramp : pans) { ramp.owner = this; ramp.pan = true; }
     }
     void initialize() {
         const auto& setup = resources.pools;
@@ -102,6 +95,27 @@ struct Services::Impl {
             entry->next = free_sprites;
             free_sprites = entry;
         }
+        // The Original calendar is Game-global, not one copy per Services.
+        // Secondary object owners borrow the actual existing association.
+        if (isle_sound_ramp_source_current(s.game)) return;
+        const auto capacity = std::max<std::size_t>(10, setup.objects);
+        if (capacity > SIZE_MAX / sizeof(IsleSoundRampBinding)) {
+            s.fail("Original sound binding capacity overflow");
+            return;
+        }
+        isle_span storage{};
+        if (isle_arena_allocate(&arena, capacity * sizeof(IsleSoundRampBinding),
+                alignof(IsleSoundRampBinding), &storage) != ISLE_OK) {
+            s.fail("Original sound binding arena exhausted");
+            return;
+        }
+        auto* bindings = static_cast<IsleSoundRampBinding*>(static_cast<void*>(storage.data));
+        for (std::size_t i = 0; i < capacity; ++i) ::new (static_cast<void*>(bindings + i)) IsleSoundRampBinding{};
+        sound_bindings = {bindings, capacity};
+        const IsleSoundRampNative native{sound_publish, sound_reconcile, sound_erase,
+            sound_joined, sound_release, sound_pan, sound_volume};
+        s.check(isle_sound_ramp_source_initialize(&sound, s.game, this, 1, native,
+            bindings, capacity), "Original sound calendar initialization");
     }
     template<class T> T* allocate() noexcept {
         isle_span storage{};
@@ -118,6 +132,7 @@ struct Services::Impl {
             output->next = nullptr;
             return ISLE_GAME_OK;
         }
+        if (commands.fixed_capacity) return ISLE_GAME_EXHAUSTED;
         isle_span storage{};
         if (isle_arena_allocate(&arena,sizeof(ObjectRecord),alignof(ObjectRecord),&storage) != ISLE_OK)
             return ISLE_GAME_EXHAUSTED;
@@ -186,6 +201,10 @@ struct Services::Impl {
     SpriteRecord* attach_sprite(ObjectRecord& owner, SpriteRecord* parent, SpriteRecord* after,
         std::size_t resource, const IsleSprite& initial, std::uint64_t generation) noexcept {
         if (lifecycle_record(owner.object) == nullptr) return nullptr;
+        if (!free_sprites && commands.fixed_capacity) {
+            s.fail("scene native sprite capacity exhausted");
+            return nullptr;
+        }
         auto* record = free_sprites;
         if (record != nullptr) free_sprites = record->next;
         else record = allocate<SpriteRecord>();
@@ -379,51 +398,68 @@ struct Services::Impl {
         entry->draw_next = *at;
         *at = entry;
     }
-    static void ramp_process(IsleGameObject* object, void* user) noexcept {
-        auto& ramp = *static_cast<Ramp*>(user);
-        auto& self = *ramp.owner;
-        while (!self.s.failed()) {
-            const float from = static_cast<float>(ramp.from);
-            const float to = static_cast<float>(ramp.to);
-            const float value = ((static_cast<float>(ramp.tick) * (to - from)) /
-                                 static_cast<float>(ramp.duration)) + from;
-            auto output = static_cast<std::uint32_t>(value);
-            if (!ramp.pan && output > 0x7fff) output = 0x7fff;
-            if (!self.s.check(ramp.pan ? self.s.audio.sound_pan(static_cast<unsigned>(ramp.slot), output) :
-                    self.s.audio.sound_volume(static_cast<unsigned>(ramp.slot), output), "menu sound ramp control")) return;
-            if (ramp.tick >= ramp.duration) {
-                ramp.object = nullptr;
-                ramp.slot = 0;
-                ramp.from = ramp.to = ramp.tick = ramp.duration = 0;
-                self.s.erase(object);
-                return;
-            }
-            ++ramp.tick;
-            if (!self.s.wait()) return;
-        }
+    static Impl* sound_owner(IsleSoundRampSource* source) noexcept {
+        if (!source || !source->owner) return nullptr;
+        auto* self = static_cast<Impl*>(source->owner);
+        return &self->sound == source && self->s.game == source->game &&
+            self->sound_bindings.data() == source->bindings &&
+            self->sound_bindings.size() == source->binding_capacity ? self : nullptr;
     }
-    bool ramp(bool pan, int slot, std::uint32_t from, std::uint32_t to, std::int32_t updates) noexcept {
-        if (s.failed()) return false;
-        if (slot < 0 || static_cast<std::size_t>(slot) >= game_audio::sound_slots || updates <= 0) {
-            s.fail("invalid menu sound ramp slot or duration");
-            return false;
+    static IsleGameResult sound_publish(IsleSoundRampSource* source, IsleSoundRampBinding* binding) noexcept {
+        auto* self = sound_owner(source);
+        if (!self || !binding || binding->source != source || binding->object ||
+            !binding->field || *binding->field) return ISLE_GAME_INVALID_STATE;
+        auto* object = self->s.object(14, 0, 0x80000000u);
+        if (!object) return ISLE_GAME_EXHAUSTED;
+        if (!self->s.source_owner_register(object, {&binding->field, 1})) {
+            const auto erased = self->s.erase(object);
+            if (erased != ISLE_GAME_OK) return erased;
+            return self->find(object) ? ISLE_GAME_EXECUTION_FAILURE : ISLE_GAME_INVALID_STATE;
         }
-        auto& calendar = pan ? pans : volumes;
-        for (auto& ramp : calendar) {
-            if (ramp.object != nullptr) continue;
-            ramp.slot = slot;
-            ramp.from = std::min(from, pan ? 127u : 0x7fffu);
-            ramp.to = std::min(to, pan ? 127u : 0x7fffu);
-            ramp.tick = 0;
-            ramp.duration = static_cast<std::uint32_t>(updates);
-            ramp.object = s.object(14);
-            if (ramp.object == nullptr) return false;
-            if (!s.check(isle_menu_set_update(s.game, ramp.object, nullptr, nullptr), "menu ramp object update")) return false;
-            if (s.process(ramp.object, ramp_process, &ramp) == nullptr) return false;
-            return true;
-        }
-        // Source AB41C/AB700 return -1 on a full five-entry calendar.
-        return false;
+        binding->object = object;
+        const auto result = isle_game_object_set_source_update(source->game, object, nullptr);
+        self->s.check(result, "Original sound updater removal");
+        return result;
+    }
+    static IsleGameResult sound_reconcile(IsleSoundRampSource* source, IsleSoundRampBinding* binding,
+        IsleGameObject* previous) noexcept {
+        auto* self = sound_owner(source);
+        if (!self || !binding || binding->source != source || !binding->object || !binding->field)
+            return ISLE_GAME_INVALID_STATE;
+        return self->s.source_reference_reconcile(binding->object, binding->field, previous) ?
+            ISLE_GAME_OK : ISLE_GAME_INVALID_STATE;
+    }
+    static IsleGameResult sound_erase(IsleSoundRampSource* source, IsleSoundRampBinding* binding) noexcept {
+        auto* self = sound_owner(source);
+        if (!self || !binding || binding->source != source || !binding->object)
+            return ISLE_GAME_INVALID_STATE;
+        if (self->s.source_owner_joined(binding->object)) return ISLE_GAME_OK;
+        return self->s.erase(binding->object);
+    }
+    static int sound_joined(IsleSoundRampSource* source, const IsleSoundRampBinding* binding) noexcept {
+        auto* self = sound_owner(source);
+        return self && binding && binding->source == source && binding->object &&
+            self->s.source_owner_joined(binding->object);
+    }
+    static IsleGameResult sound_release(IsleSoundRampSource* source, IsleSoundRampBinding* binding) noexcept {
+        auto* self = sound_owner(source);
+        if (!self || !binding || binding->source != source || !binding->object ||
+            !self->s.source_owner_collectable(binding->object)) return ISLE_GAME_INVALID_STATE;
+        return self->s.source_owner_release(binding->object) ? ISLE_GAME_OK : ISLE_GAME_INVALID_STATE;
+    }
+    static IsleGameResult sound_pan(IsleSoundRampSource* source, int32_t slot, uint32_t value) noexcept {
+        auto* self = sound_owner(source);
+        if (!self || self->s.failed()) return ISLE_GAME_INVALID_STATE;
+        const auto result = self->s.audio.sound_pan(static_cast<unsigned>(slot), value);
+        self->s.check(result, "Original sound pan");
+        return result == audio::Error::none ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE;
+    }
+    static IsleGameResult sound_volume(IsleSoundRampSource* source, int32_t slot, uint32_t value) noexcept {
+        auto* self = sound_owner(source);
+        if (!self || self->s.failed()) return ISLE_GAME_INVALID_STATE;
+        const auto result = self->s.audio.sound_volume(static_cast<unsigned>(slot), value);
+        self->s.check(result, "Original sound volume");
+        return result == audio::Error::none ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE;
     }
 };
 ::isle::menu::model::CameraBasisState& Services::camera_basis() noexcept { return impl_->camera_basis; }
@@ -434,6 +470,12 @@ Services::Services(IsleGame* owner, isle_arena& arena, ResourceView resources,
       rng(persistent.rng), controller(persistent.controller), start_flags(persistent.title_start_flags),
       impl_(std::make_unique<Impl>(*this, arena, resources)) {
     impl_->initialize();
+}
+IsleGameResult Services::reserve_native_capacity(std::size_t command_nodes,
+    std::span<const IsleGameModelCapacity> models) noexcept {
+    if (failed() || impl_->prepared_objects) return ISLE_GAME_INVALID_STATE;
+    return isle_menu_reserve_native_capacity(game,&impl_->commands,command_nodes,
+        models.data(),models.size());
 }
 Services::ObjectPreparation::~ObjectPreparation() {
     if (owner_ || record_) std::terminate();
@@ -455,6 +497,8 @@ bool Services::retire_objects() noexcept {
 }
 Services::~Services() {
     if (!retire_objects()) std::terminate();
+    if (impl_->sound.game && (isle_sound_ramp_source_collect(&impl_->sound) != ISLE_GAME_OK ||
+        isle_sound_ramp_source_close(&impl_->sound) != ISLE_GAME_OK)) std::terminate();
     while (impl_->objects != nullptr) {
         auto* entry = impl_->objects;
         // Neither failed joins nor still-pending external/manual calls permit
@@ -466,6 +510,13 @@ Services::~Services() {
             if (!source_owner_release(entry->object)) std::terminate();
         } else impl_->unlink(entry);
     }
+}
+IsleGameResult Services::tick() noexcept {
+    const auto updated = isle_game_tick(game);
+    auto* sound = isle_sound_ramp_source_current(game);
+    const auto collected = sound ? isle_sound_ramp_source_collect(sound) : ISLE_GAME_OK;
+    check(collected, "Original sound joined-incarnation collection");
+    return updated == ISLE_GAME_OK ? collected : updated;
 }
 bool Services::failed() const noexcept { return impl_->error[0] != '\0'; }
 const char* Services::error() const noexcept { return impl_->error; }
@@ -655,9 +706,10 @@ bool Services::source_reference_assign(IsleGameObject* receiver, IsleGameObject*
 bool Services::source_reference_reconcile(IsleGameObject* receiver, IsleGameObject** field,
     IsleGameObject* previous) noexcept {
     auto* record = receiver ? impl_->find(receiver) : nullptr;
-    if (!record || !record->source_registered || record->deleting ||
-        std::find(record->source_fields.begin(), record->source_fields.end(), field) == record->source_fields.end()) {
-        fail("scene reference reconciliation requires an actual live registered canonical field");
+    if (!record || !record->source_registered ||
+        std::find(record->source_fields.begin(), record->source_fields.end(), field) == record->source_fields.end() ||
+        (record->deleting && (record->retired || *field || isle_menu_current_object(game) != receiver))) {
+        fail("scene reference reconciliation requires a registered field or its current deleting owner's clear");
         return false;
     }
     if (*field == previous) return true;
@@ -860,13 +912,15 @@ void Services::end_process(IsleGameProcess* process) noexcept {
 void Services::end_processes(IsleGameObject* object) noexcept {
     check(isle_menu_end_processes(game, object), "menu native object process end");
 }
-void Services::erase(IsleGameObject* object) noexcept {
+IsleGameResult Services::erase(IsleGameObject* object) noexcept {
     auto* record = impl_->find(object);
-    if (record == nullptr) { fail("menu erasing an unregistered native object"); return; }
+    if (record == nullptr) { fail("menu erasing an unregistered native object"); return ISLE_GAME_INVALID_ARGUMENT; }
     object = record->object;
-    if (record->deleting && isle_menu_current_object(game) == object) return;
+    if (record->deleting && isle_menu_current_object(game) == object) return ISLE_GAME_OK;
     record->deleting = true;
-    check(isle_game_delete_object(game, object), "scene native whole-object deletion");
+    const auto result = isle_game_delete_object(game, object);
+    check(result, "scene native whole-object deletion");
+    return result;
 }
 SpriteHandle Services::sprite(std::uint32_t identity, std::uint8_t link, std::uint32_t priority,
                               std::uint32_t object_id) noexcept {
@@ -877,6 +931,28 @@ SpriteHandle Services::sprite(std::uint32_t identity, std::uint8_t link, std::ui
     if (child == nullptr) { erase(owner); return {}; }
     impl_->link_draw(impl_->find(owner), {link,priority,0xffffffffu});
     return {owner, child};
+}
+IsleGameSprite* Services::append_empty_sprite(IsleGameObject* object) noexcept {
+    if (failed()) return nullptr;
+    auto* owner = impl_->lifecycle_record(object);
+    if (owner == nullptr) return nullptr;
+    IsleSprite empty{};
+    empty.attr = ISLE_SP_HIDDEN;
+    auto* record = impl_->attach_sprite(*owner, nullptr, nullptr,
+        sprite::RasterBinding::no_index, empty, 0);
+    return record ? record->sprite : nullptr;
+}
+IsleGameSprite* Services::sprite_from_view(const IsleSprite* expected) noexcept {
+    if (expected == nullptr || failed()) return nullptr;
+    for (auto* owner = impl_->objects; owner != nullptr; owner = owner->next) {
+        if (owner->deleting || owner->retired) continue;
+        for (auto* record = owner->sprites; record != nullptr; record = record->next) {
+            const auto* current = view(record->sprite);
+            if (current == nullptr) return nullptr;
+            if (current == expected) return record->sprite;
+        }
+    }
+    return nullptr;
 }
 IsleGameSprite* Services::append_sprite(IsleGameObject* object, std::uint32_t identity) noexcept {
     if (failed()) return nullptr;
@@ -991,6 +1067,36 @@ bool Services::sprite_links(IsleGameSprite* sprite, SpriteHandle& owner,
     for (auto* p=first;p && p!=record;p=p->sibling) previous=p->sprite;
     return true;
 }
+bool Services::clear_sprite_link(IsleGameSprite* sprite,bool parent) noexcept {
+    if (failed()) return false;
+    auto* record=impl_->find_sprite(sprite);
+    if (!record || !view(sprite)) return false;
+    if (parent) {
+        if (record->parent) return false;
+        record->parent=nullptr;
+    } else {
+        if (record->child) return false;
+        record->child=nullptr;
+    }
+    return true;
+}
+bool Services::clear_sprite_root_links(IsleGameSprite* sprite) noexcept {
+    if (failed()) return false;
+    auto* record=impl_->find_sprite(sprite);
+    if (!record || record->parent) {
+        fail("scene root-link clear requires an actual live root sprite"); return false;
+    }
+    bool root=false;
+    for (auto* p=record->owner->roots;p;p=p->sibling) if (p==record) root=true;
+    if (!root || !view(sprite)) {
+        fail("scene root-link clear rejects an orphaned attachment"); return false;
+    }
+    if (!check(isle_game_sprite_clear_display_cache(game,sprite),
+        "scene root sprite native cache clear")) return false;
+    record->child=record->child_tail=nullptr;
+    record->parent=nullptr;
+    return true;
+}
 bool Services::sprite_root(IsleGameObject* object, IsleGameSprite*& root) noexcept {
     root=nullptr;
     auto* record=impl_->find(object);
@@ -1061,29 +1167,30 @@ int Services::play_sound(std::uint32_t sound, game_audio::Parameters parameters)
     if (!check(audio.play_sound(sound, parameters, slot), "menu play sound")) return -1;
     return slot;
 }
-bool Services::ramp_sound_volume(int slot, std::uint32_t from, std::uint32_t to, std::int32_t updates) noexcept {
-    return impl_->ramp(false, slot, from, to, updates);
+IsleGameResult Services::ramp_sound_volume(int slot, std::uint32_t from, std::uint32_t to,
+    std::int32_t updates, std::int32_t* source_result) noexcept {
+    const auto result = isle_sound_ramp_start_volume(isle_sound_ramp_source_current(game), slot, from, to, updates, source_result);
+    check(result, "Original volume ramp admission");
+    return result;
 }
-bool Services::ramp_sound_pan(int slot, std::uint32_t from, std::uint32_t to, std::int32_t updates) noexcept {
-    return impl_->ramp(true, slot, from, to, updates);
+IsleGameResult Services::ramp_sound_pan(int slot, std::uint32_t from, std::uint32_t to,
+    std::int32_t updates, std::int32_t* source_result) noexcept {
+    const auto result = isle_sound_ramp_start_pan(isle_sound_ramp_source_current(game), slot, from, to, updates, source_result);
+    check(result, "Original pan ramp admission");
+    return result;
 }
-void Services::stop_sound_ramps() noexcept {
-    for (auto& ramp : impl_->volumes) {
-        if (ramp.object != nullptr) erase(ramp.object);
-        ramp = Impl::Ramp{impl_.get()};
-    }
-    for (auto& ramp : impl_->pans) {
-        if (ramp.object != nullptr) erase(ramp.object);
-        ramp = Impl::Ramp{impl_.get()};
-        ramp.pan = true;
-    }
+IsleGameResult Services::reset_sound_ramps() noexcept {
+    const auto result = isle_sound_ramp_source_reset(isle_sound_ramp_source_current(game));
+    check(result, "Original sound calendar reset");
+    return result;
+}
+IsleGameResult Services::stop_sound_ramps() noexcept {
+    const auto result = isle_sound_ramp_source_stop(isle_sound_ramp_source_current(game));
+    check(result, "Original sound ramp retirement");
+    return result;
 }
 bool Services::fade_all_sounds(std::int32_t updates) noexcept {
-    if (updates <= 0) { fail("invalid source sound fade duration"); return false; }
-    // AB918 intentionally writes volume.to twice; the pan target is retained.
-    for (auto& ramp : impl_->volumes) { ramp.tick = 0; ramp.duration = static_cast<std::uint32_t>(updates); ramp.to = 0; }
-    for (auto& ramp : impl_->pans) { ramp.tick = 0; ramp.duration = static_cast<std::uint32_t>(updates); }
-    return !failed();
+    return check(isle_sound_ramp_fade_all(isle_sound_ramp_source_current(game), updates), "Original AB918 sound fade");
 }
 void Services::request_exit(std::int32_t result) noexcept {
     if (!impl_->exit) { impl_->exit = true; impl_->result = result; }

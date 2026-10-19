@@ -47,6 +47,12 @@ struct Membership {
 // Shared source callback policy. This also admits a standalone actual
 // animation/native model context without claiming that model's FSM is native.
 // The sole guarded source record supplies current animHeader and tangible.
+struct TunnelAnimationBinding { IsleTunnelActorSource* source; IsleTunnelAnimationCallback function; };
+struct VolcanoAnimationBinding { IsleVolcanoActorSource* source; IsleVolcanoAnimationCallback function; };
+struct RiverAnimationBinding { IsleRiverActorSource* source; IsleRiverAnimationCallback function; };
+struct CaveAnimationBinding { IsleCaveActorSource* source; IsleCaveAnimationCallback function; };
+struct ValleyAnimationBinding { IsleValleyActorSource* source; IsleValleyAnimationCallback function; };
+using NativeAnimationBinding = std::variant<std::monostate, TunnelAnimationBinding, VolcanoAnimationBinding, RiverAnimationBinding, CaveAnimationBinding, ValleyAnimationBinding>;
 struct EventServices {
     scene::Services& services;
     environment_sound::Environment& sound;
@@ -56,12 +62,22 @@ struct EventServices {
     bool sound_enabled = true;
     IsleGameObject* particle_owner = nullptr;
     IsleGameObject* effect_owner = nullptr;
+    const NativeAnimationBinding* native_callback = nullptr;
 };
 OwnerStatus dispatch_event(IsleActorSource&, const menu::animation::CallbackEvent&, EventServices) noexcept;
 OwnerStatus step_source_animation(IsleActorSource&, menu::animation::InstanceHandle, EventServices) noexcept;
 OwnerStatus apply_source_animation(IsleActorSource&, menu::animation::InstanceHandle,
     const actor::ActorAnimationHeader*, float start, bool force,
     const actor::ActorInitialization&, const actor::Resources&, EventServices) noexcept;
+// Cold, receiver-qualified alternatives to Original's pointer-in-s32 misc words.
+// Masks select Original misc indexes for this exact family, never all actors.
+struct RetainedFieldFamily {
+    std::uint32_t actor_id = 0, initialization_identity = 0;
+    std::uint32_t misc_object_mask = 0, saved_path_mask = 0;
+};
+struct RetainedFieldOptions {
+    std::span<const RetainedFieldFamily> families;
+};
 // Sole source coordinator, not a second animator/scheduler/renderer. Services,
 // World, immutable resources, borrowed typed course state, Environment and Detector outlive this owner.
 // ALL mutation/tick/cleanup/collection/destruction requires the caller's real
@@ -76,7 +92,7 @@ public:
           environment_sound::Environment&, focus::Detector&, IslePlayerSource&,
           std::span<const menu::animation::SlotCapacity>,
           std::span<const menu::EffectBank* const>,
-          menu::animation::ExecutionCapacity = {});
+          menu::animation::ExecutionCapacity = {}, RetainedFieldOptions = {});
     ~Owner();
     Owner(const Owner&) = delete;
     Owner& operator=(const Owner&) = delete;
@@ -116,10 +132,38 @@ public:
     // initialized singletons. Only id/transforms (mask0x3ff) are Source-written.
     SpawnResult add_one_rainbow(const IsleRainbowDefinition&,
         const IsleRainbowAutomaticSpawn&, world::Block*, world::Block* reference) noexcept;
+    SpawnResult add_one_tunnel(const IsleTunnelDefinition&, const IsleTunnelAutomaticSpawn&,
+        world::Block*, world::Block* reference) noexcept;
+    OwnerStatus bind_animation_callback(IsleTunnelActorSource&, IsleGameObject*, IsleTunnelAnimationCallback) noexcept;
+    SpawnResult add_one_volcano(const IsleVolcanoDefinition&, const IsleVolcanoAutomaticSpawn&,
+        world::Block*, world::Block* reference) noexcept;
+    OwnerStatus bind_animation_callback(IsleVolcanoActorSource&, IsleGameObject*, IsleVolcanoAnimationCallback) noexcept;
+    SpawnResult add_one_river(const IsleRiverDefinition&, const IsleRiverAutomaticSpawn&,
+        world::Block*, world::Block* reference) noexcept;
+    OwnerStatus bind_animation_callback(IsleRiverActorSource&, IsleGameObject*, IsleRiverAnimationCallback) noexcept;
+    SpawnResult add_one_cave(const IsleCaveDefinition&, const IsleCaveAutomaticSpawn&,
+        world::Block*, world::Block* reference) noexcept;
+    OwnerStatus bind_animation_callback(IsleCaveActorSource&, IsleGameObject*, IsleCaveAnimationCallback) noexcept;
+    SpawnResult add_one_valley(const IsleValleyDefinition&, const IsleValleyAutomaticSpawn&,
+        world::Block*, world::Block* reference) noexcept;
+    OwnerStatus bind_animation_callback(IsleValleyActorSource&, IsleGameObject*, IsleValleyAnimationCallback) noexcept;
+    SpawnResult add_geo_tunnel(IsleGameObject*, std::uint16_t requested,
+        const IsleTunnelDefinition&) noexcept;
+    SpawnResult add_geo_volcano(IsleGameObject*, std::uint16_t requested,
+        const IsleVolcanoDefinition&) noexcept;
+    SpawnResult add_geo_cave(IsleGameObject*, std::uint16_t requested,
+        const IsleCaveDefinition&) noexcept;
+    SpawnResult add_geo_valley(IsleGameObject*, std::uint16_t requested,
+        const IsleValleyDefinition&) noexcept;
+    // Exact descriptor-selected custom block callback; the existing two methods
+    // remain the Original shared scalar relocation primitives used by C leaves.
+    OwnerStatus change_block_source(menu::animation::InstanceHandle, std::uint32_t identity,
+        menu::Vec3 previous, menu::Vec3 current) noexcept;
     OwnerStatus block_members(const world::Block&,
         std::span<menu::animation::InstanceHandle>, std::size_t& written) const noexcept;
     OwnerStatus set_animation(menu::animation::InstanceHandle, const actor::ActorAnimationHeader*, float start = 0, bool force = false) noexcept;
     OwnerStatus step_animation(menu::animation::InstanceHandle) noexcept;
+    OwnerStatus set_animation_speed(menu::animation::InstanceHandle, float) noexcept;
     // Complete source logical-order position/flag80 + pair/command26 manager.
     // Caller owns the sole priority2 scene boundary and real graphics exclusion.
     OwnerStatus update_collisions() noexcept;
@@ -148,6 +192,7 @@ public:
     const IsleActorSource* source(menu::animation::InstanceHandle) const noexcept;
     IsleGameObject* object(menu::animation::InstanceHandle) const noexcept;
     IsleGameModel* native_model(menu::animation::InstanceHandle) const noexcept;
+    menu::animation::InstanceHandle instance(IsleGameObject*) const noexcept;
     bool registered(menu::animation::InstanceHandle) const noexcept;
     Membership membership(menu::animation::InstanceHandle) const noexcept;
     // Fixed-address physical storage, refreshed in source DL/priority/insertion
@@ -179,6 +224,16 @@ public:
     const CourseContext& course_context() const noexcept;
 private:
     SpawnResult spawn_native(const SpawnRequest&) noexcept;
+    SpawnResult add_geo_typed(IsleGameObject*, std::uint32_t requested,
+        std::uint32_t singleton, std::uint32_t origin, std::uint32_t line,
+        std::uint32_t family, std::uint32_t factory, std::uint32_t initialization,
+        std::uint32_t change, std::uint32_t remove) noexcept;
+    SpawnResult add_one_typed(std::uint32_t singleton, std::uint32_t origin,
+        std::uint32_t line, std::uint32_t family, std::uint32_t factory,
+        std::uint32_t initialization, std::uint32_t change, std::uint32_t remove,
+        std::uint32_t requested, std::uint32_t fields, IsleGameVec3 translation,
+        IsleGameVec3 euler, IsleGameVec3 scale, const void* path,
+        world::Block*, world::Block*) noexcept;
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

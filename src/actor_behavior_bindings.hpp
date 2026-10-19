@@ -21,6 +21,14 @@ struct BehaviorCallbackBinding {
     IsleGameSourceCallback function = nullptr;
     std::span<const std::uint32_t> callbacks, graphs, weighted_states;
 };
+// Closed provider views retain each course's actual typed callback registry.
+std::span<const BehaviorCallbackBinding> course_callbacks(std::int32_t) noexcept;
+std::span<const std::uint32_t> course_graphs(std::int32_t) noexcept;
+std::span<const std::uint32_t> course_weighted_states(std::int32_t) noexcept;
+std::span<const std::uint32_t> course_roots(std::int32_t) noexcept;
+bool course_typed_dependency(std::int32_t, std::uint32_t) noexcept;
+struct BoundCountedOption { std::uint8_t weight; IsleGameSourceCallback function; };
+struct BoundCountedStates { std::uint32_t source_identity; std::span<const BoundCountedOption> rows; };
 struct BoundWeightedStates {
     std::uint32_t source_identity = 0;
     std::span<const IsleActorRandomState> rows; // Includes native NULL terminal.
@@ -45,6 +53,7 @@ public:
 
     const IsleActorInteractionGraph& graph(std::uint32_t identity) const;
     const BoundWeightedStates& weighted_states(std::uint32_t identity) const;
+    const BoundCountedStates& counted_state_options(std::uint32_t identity) const;
     IsleGameSourceCallback callback(std::uint32_t identity) const;
     bool contains(IsleGameSourceCallback) const;
     // Rechecks mutable/caller-retained rows and every executable callback's
@@ -64,6 +73,7 @@ private:
         std::vector<IsleActorRandomState> rows;
         BoundWeightedStates view;
     };
+    struct Counted { std::vector<BoundCountedOption> rows; BoundCountedStates view; };
     struct Callback {
         std::uint32_t identity;
         IsleGameSourceCallback function;
@@ -72,6 +82,7 @@ private:
     const BehaviorResources* resources_;
     std::vector<Graph> graphs_;
     std::vector<Weighted> weighted_;
+    std::vector<Counted> counted_;
     std::vector<Callback> callbacks_;
 };
 } // namespace isle::actor

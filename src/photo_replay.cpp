@@ -1,4 +1,5 @@
 #include "photo_replay.hpp"
+#include "photo_presentation.hpp"
 #include "photo_subjects.hpp"
 #include "photo_effects_renderer.hpp"
 #include "photo_lighting.hpp"
@@ -67,18 +68,6 @@ bool same(const IslePlayerPhotoData& a, const IslePlayerPhotoData& b) {
 void finite(IsleGameVec3 v) {
     require(std::isfinite(v.x) && std::isfinite(v.y) && std::isfinite(v.z),"Nonfinite recorded replay vector");
 }
-menu::EffectGroup effect_group(std::int32_t id) {
-    switch (id) {
-    case course::beach_id: return menu::EffectGroup::beach;
-    case course::tunnel_id: return menu::EffectGroup::tunnel;
-    case course::volcano_id: return menu::EffectGroup::volcano;
-    case course::river_id: return menu::EffectGroup::river;
-    case course::cave_id: return menu::EffectGroup::cave;
-    case course::valley_id: return menu::EffectGroup::valley;
-    case course::rainbow_id: return menu::EffectGroup::rainbow;
-    default: throw std::runtime_error("Replay course is not an original course");
-    }
-}
 // Same fresh-AObj seek budget as the subject reconstruction. Items have looping
 // material streams, so Runtime's default acyclic certificate is not applicable.
 std::size_t seek_budget(const menu::Animation& stream, float time,
@@ -122,6 +111,7 @@ class RecordedItems final {
     IsleGame* game_;
     const items::Resources& resources_;
     const IslePlayerPhotoData& record_;
+    std::uint32_t object_link_, dl_link_;
     std::array<Slot,6> slots_{};
     std::vector<menu::model::PacketBinding> bindings_;
     std::vector<menu::animation::SlotCapacity> capacities_;
@@ -139,8 +129,9 @@ class RecordedItems final {
         }
     }
 public:
-    RecordedItems(IsleGame* game, const items::Resources& resources, const IslePlayerPhotoData& record)
-        : game_(game), resources_(resources), record_(record) {
+    RecordedItems(IsleGame* game, const items::Resources& resources, const IslePlayerPhotoData& record,
+        std::uint32_t object_link = 17, std::uint32_t dl_link = 19)
+        : game_(game), resources_(resources), record_(record), object_link_(object_link), dl_link_(dl_link) {
         std::size_t nodes = 0;
         for (std::size_t i = 0; i < 6 && record.items[i].itemType >= 1 && record.items[i].itemType <= 4; ++i) {
             finite(record.items[i].pos);
@@ -198,12 +189,12 @@ public:
                 animation(runtime_->set_node_transform(slot.instance,0,root));
             }
             auto& binding = slot.binding;
-            binding.render = {19,0x80000000u,UINT32_MAX};
+            binding.render = {dl_link_,0x80000000u,UINT32_MAX};
             binding.model.slot = i; binding.model.runtime = runtime_.get();
             binding.model.state = runtime_->model(slot.instance);
             binding.model.pose = menu::model::PoseSource::native;
             binding.model.root = menu::model::RootRecipe::source;
-            native(isle_game_add_object(game_,128,17,0x80000000u,nullptr,nullptr,&binding.model.object));
+            native(isle_game_add_object(game_,128,object_link_,0x80000000u,nullptr,nullptr,&binding.model.object));
             native(isle_game_object_set_retire_callback(game_,binding.model.object,joined,&slot)); slot.observed = true;
             require(bool(menu::model::attach_source_model(game_,binding.model.object,model,binding.model.state,
                 menu::model::RootRecipe::source,scratch_,&binding.model.model)),"Recorded item native model attachment rejected");
@@ -274,7 +265,7 @@ struct Replay::Impl {
     std::vector<std::byte> preview;
     LightingInputs lighting;
     menu::EffectResources effects;
-    std::unique_ptr<world::Resources> world_resources;
+    std::shared_ptr<world::Resources> world_resources;
     std::unique_ptr<World> world;
     std::unique_ptr<world::Producer> world_producer;
     std::unique_ptr<items::Resources> item_resources;
@@ -292,6 +283,7 @@ struct Replay::Impl {
     IsleGameObject* effect_object = nullptr;
     bool effect_observed = false, effect_requested = false, effect_joined = false;
     bool resources_current = false;
+    const void* presentation_borrower = nullptr;
     ReplayRequest request{};
     IslePlayerPhotoData record{};
     ReplayGpuBinding binding{};
@@ -316,6 +308,7 @@ struct Replay::Impl {
         : game(g),snapshot(s),source(s.canonical().data()),module(m),access(a),config(c),
           external(c.external_reservations.begin(),c.external_reservations.end()),staging(ram_bytes/4),lighting(s),effects(s) {
         require(game && access.acquire && access.release,"Replay needs actual Game and guarded GPU access");
+        require(c.dl_link < 32 && c.world_object_link < 32 && c.photo_object_link < 32,"Replay Source link tuple is invalid");
         require(c.program == graphics::SourceProgram::f3dex2_non_fifo,"Replay requires original included F3DEX2_NoN_fifo program");
         require(c.buffer_width == 320 && c.buffer_height == 210,"Replay requires Source 320x210 preview backing storage");
         config.external_reservations = external;
@@ -455,6 +448,28 @@ struct Replay::Impl {
         }
         return true;
     }
+    bool prepare_course_resources(std::int32_t level, bool need_camera = true) {
+        if (world_resources && world_resources->course_id() != level && !course_clear()) return false;
+        if (!world_resources) {
+            world_resources = std::make_shared<world::Resources>(snapshot,level);
+            world = std::make_unique<World>(game,*world_resources,module,config.world_object_link,config.dl_link);
+            if (config.background_rgb) *config.background_rgb=world_resources->setup().background_rgb;
+            require(world->publish(),"Replay World native publication rejected");
+        }
+        if (!item_resources) {
+            const auto& setup = world_resources->setup();
+            item_resources = std::make_unique<items::Resources>(snapshot,setup.fog_rgb,setup.fog_min,setup.fog_max);
+            const std::array banks{&effects.bank(menu::EffectGroup::common),&effects.bank(menu::effect_group(level))};
+            effect_graphics = std::make_unique<menu::EffectGraphicsResources>(snapshot,banks,config.memory.effect_assets);
+            effect_renderer = std::make_unique<photo_effects::Renderer>(effects,*effect_graphics,level);
+            require(bool(effect_renderer->status()),"Recorded effect resource admission rejected");
+        }
+        if (need_camera) {
+            camera_create();
+            if (!world_producer) world_producer = std::make_unique<world::Producer>(game,camera,basis,*world_resources,world->render_view(),config.memory.world,world_other);
+        }
+        return true;
+    }
     bool reconstruct() {
         require_current(); camera_create();
         if (world_resources && world_resources->course_id() != record.levelID) {
@@ -465,25 +480,14 @@ struct Replay::Impl {
             assets.clear(); assets_ready = false;
             subject_resources.reset(); resources_current = true;
         }
-        if (!world_resources) {
-            world_resources = std::make_unique<world::Resources>(snapshot,record.levelID);
-            world = std::make_unique<World>(game,*world_resources,module);
-            require(world->publish(),"Replay World native publication rejected");
-            world_producer = std::make_unique<world::Producer>(game,camera,basis,*world_resources,world->render_view(),config.memory.world,world_other);
-            const auto& setup = world_resources->setup();
-            item_resources = std::make_unique<items::Resources>(snapshot,setup.fog_rgb,setup.fog_min,setup.fog_max);
-            const std::array banks{&effects.bank(menu::EffectGroup::common),&effects.bank(effect_group(record.levelID))};
-            effect_graphics = std::make_unique<menu::EffectGraphicsResources>(snapshot,banks,config.memory.effect_assets);
-            effect_renderer = std::make_unique<photo_effects::Renderer>(effects,*effect_graphics,record.levelID);
-            require(bool(effect_renderer->status()),"Recorded effect resource admission rejected");
-        }
+        if (!prepare_course_resources(record.levelID)) return false;
         require(world->reconstruct({record.unk_00_16,record.unk_04.f32,record.unk_08}),"Replay World reconstruction rejected");
         if (!subject_resources) subject_resources = std::make_unique<subjects::Resources>(snapshot,*world_resources,record);
-        subjects = std::make_unique<subjects::Reconstruction>(game,*subject_resources,subjects::LinkOwnership{17,19,UINT32_MAX});
+        subjects = std::make_unique<subjects::Reconstruction>(game,*subject_resources,subjects::LinkOwnership{config.photo_object_link,config.dl_link,UINT32_MAX});
         native(subjects->publish());
-        items = std::make_unique<RecordedItems>(game,*item_resources,record); items->publish();
+        items = std::make_unique<RecordedItems>(game,*item_resources,record,config.photo_object_link,config.dl_link); items->publish();
         // Actual Source recorded effect GObj, created after the item objects.
-        native(isle_game_add_object(game,128,17,0x80000000u,nullptr,nullptr,&effect_object));
+        native(isle_game_add_object(game,128,config.photo_object_link,0x80000000u,nullptr,nullptr,&effect_object));
         native(isle_game_object_set_retire_callback(game,effect_object,[](IsleGameObject*,void* user) noexcept {
             static_cast<Impl*>(user)->effect_joined = true;
         },this)); effect_observed = true;
@@ -601,7 +605,7 @@ struct Replay::Impl {
             auto& entry = order[order_count];
             entry = {object.object,object.render,object.lanes,frame.reservations,false,order_count};
             if constexpr (requires { object.resets_camera; }) entry.resets_camera = object.resets_camera;
-            require(entry.object && entry.render.link == 19,"Replay callback has wrong Source identity/link");
+            require(entry.object && entry.render.link == config.dl_link,"Replay callback has wrong Source identity/link");
             for (std::size_t i = 0; i < order_count; ++i) require(order[i].object != entry.object,"Replay object belongs to two producers");
             ++order_count;
         }
@@ -879,11 +883,39 @@ Replay::Replay(IsleGame* game, const rom::Snapshot& snapshot, world::ModuleState
     ReplayGpuAccess access, ReplayConfig config) : impl_(std::make_unique<Impl>(game,snapshot,module,access,config)) {}
 Replay::~Replay() noexcept {
     const auto& s = *impl_;
-    if (s.token || s.binding.executor || s.world || s.subjects || s.items || s.camera_object || s.effect_object || s.request_live) std::terminate();
+    if (s.token || s.binding.executor || s.world || s.subjects || s.items || s.camera_object || s.effect_object || s.request_live || s.presentation_borrower) std::terminate();
+}
+bool Replay::initialize_preview_camera(std::uint32_t background,IsleGameObject** object,
+    IsleGameCamera** camera) noexcept {
+    if (object) *object=nullptr;
+    if (camera) *camera=nullptr;
+    auto& s=*impl_;
+    if (!object || !camera || s.failed || s.stopping || s.request_live ||
+        s.presentation_borrower || s.camera || s.camera_object) return false;
+    try {
+        s.camera_create();
+        const IsleGameCameraParameters* saved=nullptr;
+        native(isle_game_camera_parameters(s.game,s.camera,&saved));
+        auto viewport=saved->viewport;
+        viewport.scale[0]=viewport.translate[0]=640;
+        viewport.scale[1]=viewport.translate[1]=420;
+        const IsleGamePerspective perspective{33.0f,321.0f/211.0f,62.5f,8000.0f,1.0f};
+        const IsleGameLookAt look{{-1,0,0},{0,0,0},{0,0,1}};
+        const IsleGameCameraRenderState render{0x17u,background,UINT32_MAX};
+        native(isle_game_camera_set_perspective(s.game,s.camera,&perspective));
+        native(isle_game_camera_set_look_at(s.game,s.camera,&look));
+        native(isle_game_camera_set_viewport(s.game,s.camera,&viewport));
+        native(isle_game_camera_set_render_state(s.game,s.camera,&render));
+        native(isle_game_camera_compute_all(s.game,s.camera));
+        *object=s.camera_object; *camera=s.camera;
+        return true;
+    } catch (const std::exception& error) { s.fail(error.what()); }
+      catch (...) { s.fail("Original thumbnail camera initialization failed"); }
+    return false;
 }
 bool Replay::begin(const ReplayRequest& request) noexcept {
     auto& s = *impl_;
-    if (s.failed || s.stopping || s.phase != Impl::Phase::idle || s.request_live) return false;
+    if (s.failed || s.stopping || s.phase != Impl::Phase::idle || s.request_live || s.presentation_borrower) return false;
     try {
         require(request.kind == ReplayKind::score || request.kind == ReplayKind::preview,"Invalid replay operation kind");
         require(request.record.data && request.record.revision && *request.record.revision == request.record.expected_revision,
@@ -924,6 +956,7 @@ ReplayStep Replay::poll() noexcept {
             if (!s.stopping) return s.step();
         }
         if (s.stopping) {
+            if (s.presentation_borrower) return {ReplaySignal::pending};
             s.effect_packet = {}; if (!s.release_binding()) return {ReplaySignal::pending};
             if (!s.native_clear()) return {ReplaySignal::pending};
             s.request_live = false; s.request = {}; s.phase = Impl::Phase::stopped; return s.step();
@@ -981,6 +1014,43 @@ bool Replay::retire() noexcept {
     cancel(); (void)poll();
     return impl_->phase == Impl::Phase::stopped;
 }
+bool Replay::prepare_course(std::int32_t level) noexcept {
+    auto& s = *impl_;
+    if (s.failed || s.stopping || s.request_live || s.token || s.binding.executor || s.phase != Impl::Phase::idle || s.presentation_borrower) return false;
+    try { return s.prepare_course_resources(level,false); }
+    catch (const std::exception& error) { s.fail(error.what()); }
+    catch (...) { s.fail("Replay Source course preparation failed"); }
+    return false;
+}
+ReplayAcquire Replay::take_presentation_world(IsleGame* game,const void* borrower,std::int32_t level,
+    std::uint32_t dl,std::uint32_t world_link,std::uint32_t photo_link,ReplayWorldHandoff& output) noexcept {
+    auto& s=*impl_;
+    if(!borrower || game!=s.game || output.resources || output.world || s.failed || s.stopping ||
+        s.presentation_borrower || dl!=s.config.dl_link || world_link!=s.config.world_object_link || photo_link!=s.config.photo_object_link)
+        return ReplayAcquire::failed;
+    if(s.request_live || s.token || s.binding.executor || s.phase!=Impl::Phase::idle) return ReplayAcquire::pending;
+    try {
+        if(!s.transient_clear()) return ReplayAcquire::pending;
+        if(!s.prepare_course_resources(level,false)) return ReplayAcquire::pending;
+        if(s.world_producer) {s.world_producer->retire();s.world_producer.reset();}
+        s.subject_resources.reset();s.resources_current=false;s.assets.clear();s.assets_ready=false;
+        output.resources=std::move(s.world_resources);output.world=std::move(s.world);
+        s.presentation_borrower=borrower;
+        return ReplayAcquire::admitted;
+    } catch(const std::exception& error) {s.fail(error.what());} catch(...) {s.fail("Replay World handoff rejected");}
+    return ReplayAcquire::failed;
+}
+bool Replay::return_presentation_world(const void* borrower,ReplayWorldHandoff&& input) noexcept {
+    auto& s=*impl_;
+    if(!borrower || s.presentation_borrower!=borrower || !input.resources || !input.world || s.world_resources || s.world) return false;
+    // These are CPU-only resources: every transient native/effect borrow was
+    // joined before take. World/native callbacks move without changing address.
+    s.effect_renderer.reset();s.effect_graphics.reset();s.item_resources.reset();
+    s.assets.clear();s.assets_ready=false;s.resources_current=false;
+    s.world_resources=std::move(input.resources);s.world=std::move(input.world);
+    s.presentation_borrower=nullptr;
+    return true;
+}
 bool Replay::busy() const noexcept {
     const auto& s = *impl_; return s.phase != Impl::Phase::idle && s.phase != Impl::Phase::stopped;
 }
@@ -988,3 +1058,5 @@ bool Replay::gpu_busy() const noexcept { return impl_->token != 0 || impl_->bind
 const char* Replay::error() const noexcept { return impl_->failed ? impl_->message.data() : ""; }
 std::span<const Range> Replay::reservations() const noexcept { return impl_->owned; }
 } // namespace isle::photo
+
+#include "photo_presentation_core.inc"

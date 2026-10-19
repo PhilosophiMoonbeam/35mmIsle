@@ -59,7 +59,7 @@ menu::animation::ExecutionCapacity execution_capacity(const world::Resources& re
 struct World::Impl {
     struct NativeOwner {
         IsleGameObject* object = nullptr;
-        bool observing = false, joined = false;
+        bool observing = false, joined = false, requested = false;
     };
     struct Binding {
         Impl* owner = nullptr;
@@ -73,6 +73,7 @@ struct World::Impl {
     IsleGame* game;
     const world::Resources& resources;
     world::ModuleState& module;
+    std::uint32_t object_link, dl_link;
     world::ResourceView resource_view;
     std::unique_ptr<menu::animation::Runtime> runtime;
     std::vector<world::Block> blocks;
@@ -86,8 +87,8 @@ struct World::Impl {
     bool started = false, published = false, clearing = false, complete = false, failed = false;
     std::size_t clear_index = 0;
     std::string failure = "Replay World publication, reconstruction, scheduling or deletion failed", empty;
-    Impl(IsleGame* g, const world::Resources& r, world::ModuleState& m)
-        : game(g),resources(r),module(m),resource_view{&r.setup(),&r.sky(),r.blocks(),r.primary_count(),r.models(),
+    Impl(IsleGame* g, const world::Resources& r, world::ModuleState& m, std::uint32_t ol, std::uint32_t dl)
+        : game(g),resources(r),module(m),object_link(ol),dl_link(dl),resource_view{&r.setup(),&r.sky(),r.blocks(),r.primary_count(),r.models(),
             r.materials(),r.animations(),r.paths(),r.static_definitions(),
             r.height_map().wire.bytes.empty() ? nullptr : &r.height_map(),r.collision_models(),
             r.ceiling_map().wire.bytes.empty() ? nullptr : &r.ceiling_map(),r.sky_model_index()} {}
@@ -101,7 +102,7 @@ struct World::Impl {
     void object(std::uint32_t id, IsleGameObject*& output) {
         // Replay owns no gameplay command queue or AI updater; only the exact
         // synchronous World processes below are admitted to native scheduling.
-        native(isle_game_add_object(game,id,18,0x80000000,nullptr,nullptr,&output));
+        native(isle_game_add_object(game,id,object_link,0x80000000,nullptr,nullptr,&output));
         auto& owner = native_owners[static_cast<std::size_t>(id-99)];
         owner.object = output;
         native(isle_game_object_set_retire_callback(game,output,joined,&owner));
@@ -177,23 +178,25 @@ struct World::Impl {
         auto owner = std::find_if(native_owners.begin(),native_owners.end(),
             [object](const NativeOwner& candidate) { return candidate.object == object; });
         if (owner == native_owners.end()) { failed = true; return false; }
-        if (!owner->joined) {
-            if (isle_game_delete_object(game,object) != ISLE_GAME_OK) failed = true;
+        if (!owner->joined && !owner->requested) {
+            if (isle_game_delete_object(game,object) != ISLE_GAME_OK) { failed = true; return false; }
+            owner->requested = true;
             if (!owner->observing) {
                 IsleGameObjectMetadata metadata{};
                 owner->joined = isle_game_object_metadata(game,object,&metadata) == ISLE_GAME_INVALID_ARGUMENT;
             }
         }
-        if (!owner->joined) { failed = true; return false; }
+        if (!owner->joined) return false;
         owner->object = nullptr;
         for (auto& b : bindings) if (b.object == object) { b.object = nullptr; b.model = nullptr; }
         for (auto& r : render) if (r.object == object) { r.object = nullptr; r.model = nullptr; }
         object = nullptr; return true;
     }
 };
-World::World(IsleGame* game, const world::Resources& resources, world::ModuleState& module)
-    : impl_(std::make_unique<Impl>(game,resources,module)) {
-    require(game && module.sky_max_angle > 0 && std::isfinite(module.global_timer),"Replay World requires live native game/module"); resources.require_live();
+World::World(IsleGame* game, const world::Resources& resources, world::ModuleState& module,
+    std::uint32_t object_link, std::uint32_t dl_link)
+    : impl_(std::make_unique<Impl>(game,resources,module,object_link,dl_link)) {
+    require(game && object_link < 32 && dl_link < 32 && module.sky_max_angle > 0 && std::isfinite(module.global_timer),"Replay World requires live native game/module/links"); resources.require_live();
     auto& s = *impl_; s.blocks.resize(resources.blocks().size());
     s.native_owners.resize(resources.blocks().size()*2+1);
     std::size_t count = resources.sky_model_index() != world::no_index ? 1 : 0;
@@ -254,7 +257,7 @@ bool World::publish() noexcept {
             // Control roads retain their real source DL registration/state, but
             // are not terrain submissions in the replay borrowed render view.
             if (!b.road) s.render.push_back({b.object,b.model,b.model_index,b.sky ? s.resources.sky().display_list_guest : s.blocks[b.block].resource->metadata.display_list_guest,
-                callback,18,19,b.sky ? 0x80000001u : 0x80000000u,b.sky,b.instance});
+                callback,s.object_link,s.dl_link,b.sky ? 0x80000001u : 0x80000000u,b.sky,b.instance});
             if (b.sky) {
                 if (s.resources.sky().animation_guest) {
                     s.process(b.object,Impl::update_sky,&b,1);
@@ -337,7 +340,13 @@ bool World::clear() noexcept {
         if (!s.erase(b.road_object)) return false; b.road_model = nullptr;
     }
     if (!s.erase(s.sky_object)) return false;
-    s.runtime->retire(); s.movement.block = nullptr; s.complete = true; return true;
+    for (auto& binding : s.bindings) if (binding.instance) {
+        if (!s.runtime->begin_retire(binding.instance) || !s.runtime->release_retired(binding.instance)) {
+            s.failed = true; return false;
+        }
+        binding.instance = {};
+    }
+    s.movement.block = nullptr; s.complete = true; return true;
 }
 bool World::available() const noexcept {
     return impl_->published && !impl_->clearing && !impl_->failed &&
@@ -345,6 +354,16 @@ bool World::available() const noexcept {
             [](const Impl::NativeOwner& owner) { return owner.joined; });
 }
 bool World::cleared() const noexcept { return impl_->complete; }
+bool World::rearm() noexcept {
+    auto& s = *impl_;
+    if (!s.complete || s.failed) return false;
+    for (auto& owner : s.native_owners) owner = {};
+    for (auto& block : s.blocks) { block.instance = {}; block.road_instance = {}; }
+    s.render.clear(); s.sky = nullptr;
+    s.started = s.published = s.clearing = s.complete = false;
+    s.clear_index = 0;
+    return true;
+}
 const std::string& World::error() const noexcept { return impl_->failed ? impl_->failure : impl_->empty; }
 world::RenderView World::render_view() const noexcept {
     return {&impl_->resource_view,impl_->runtime.get(),impl_->render,this,[](const void* owner) noexcept { return static_cast<const World*>(owner)->available(); }};

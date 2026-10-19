@@ -131,6 +131,8 @@ public:
     Reconstruction& operator=(const Reconstruction&) = delete;
     IsleGameResult publish() noexcept;
     IsleGameResult clear() noexcept;
+    // Reuse the cold record plan only after every native/runtime join.
+    bool rearm() noexcept;
     // OK accepts logical clear; cleared(), not the return code, confirms every
     // actual native post-retire observer and Runtime release. Pending joins
     // retain all storage. Failure is sticky but cleanup remains available.

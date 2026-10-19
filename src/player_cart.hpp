@@ -81,6 +81,8 @@ public:
     const IslePlayerCartMaterialAnimation* intro_material() const noexcept;
     const IslePlayerCartModelAnimation* outro_model() const noexcept;
     const IslePlayerCartMaterialAnimation* outro_material() const noexcept;
+    const IslePlayerCartModelAnimation* model_animation(std::uint32_t identity) const noexcept;
+    const IslePlayerCartMaterialAnimation* material_animation(std::uint32_t identity) const noexcept;
     IsleGameObject* object(menu::animation::InstanceHandle) const noexcept;
     IsleGameModel* native_model(menu::animation::InstanceHandle) const noexcept;
     menu::animation::InstanceHandle instance(IsleGameObject*) const noexcept;
@@ -91,11 +93,17 @@ public:
     std::span<const RenderBinding> render_bindings(std::span<scene::RenderOrderEntry>) noexcept;
     Borrow borrow() noexcept;
     Reference retain(IsleGameObject*) noexcept;
-    // Adopt only an actual node pointer in the currently dispatched event batch.
+    // Adopt only the actual node pointer of the current fenced C event.
     // The returned credit stores the native incarnation/index, never that pointer;
     // it permits animation updates but defers both native and Runtime retirement.
     // Move it into EffectRuntime::set_effect_attachment before leaving the leaf.
     menu::RetainedEffectAttachment retain_effect_node(const IslePlayerCartNode*) noexcept;
+    // Reborrow only the exact model incarnation/node of that same current event.
+    menu::RetainedEffectAttachment retain_effect_node(const IsleGameModelRef&,std::size_t node) noexcept;
+    bool issued_effect_node(const IsleGameModelRef&,std::size_t node) const noexcept;
+    bool callback_matches(IsleGameObject*,IslePlayerCartCallback,void*) const noexcept;
+    // Original direct DObj.timeLeft store; retain the current event lease/queue.
+    OwnerStatus set_node_time_left(const IsleGameModelRef&,std::size_t node,float) noexcept;
     // Returning native leaf: hide logical membership and join only the known
     // synchronous animator. Never deletes the object/Runtime or ends arbitrary
     // stackful callers. Original C must end its delayed/current processes AFTER

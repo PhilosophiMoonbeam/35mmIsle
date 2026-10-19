@@ -2,6 +2,7 @@
 #define ISLE_ACTOR_PRODUCER_HPP
 
 #include "actor_resources.hpp"
+#include "source_vertex_publication.hpp"
 #include "borrowed_model_kernel.hpp"
 #include "scene_render.hpp"
 #include "focus_capture.hpp"
@@ -80,6 +81,10 @@ struct ProducerFrame {
 // through preparation. A hook must not mutate bindings, lifetimes or poses.
 // Preprefix gates/subjects retain their old flags; postprefix gates read the
 // collector's canonical flags. Filtered-out prefixes never invoke the hook.
+struct SourceRender {
+    void* user = nullptr;
+    IsleGameResult (*invoke)(void*, IsleGameObject*, std::uint32_t) noexcept = nullptr;
+};
 class Producer final {
 public:
     // other_reservations is the COMPLETE disjoint scene/task/output union,
@@ -88,7 +93,8 @@ public:
     Producer(IsleGame*, IsleGameCamera*, menu::model::CameraBasisState&,
              const actor::Resources&, std::span<const menu::animation::SlotCapacity>,
              std::span<const ActorRenderBinding> ordered_bindings, ProducerLayout,
-             std::span<const menu::RamRange> other_reservations, DetectorBinding*);
+             std::span<const menu::RamRange> other_reservations, DetectorBinding*, SourceRender = {},
+             std::span<const source_geometry::VertexPublication> source_vertices = {});
     ~Producer();
     Producer(const Producer&) = delete;
     Producer& operator=(const Producer&) = delete;
@@ -103,6 +109,10 @@ public:
     // Mathematical local RTS x parent/placement only; NOT source54 FX sampling.
     std::span<const menu::model::WorldMatrix> world_nodes(menu::animation::InstanceHandle) const noexcept;
     std::span<const IsleGameModelNode> native_nodes(menu::animation::InstanceHandle) const noexcept;
+    // Only the currently executing, C-fenced custom Source callback may append.
+    // These packets share the real bounded lane arrays and publication transaction.
+    IsleGameResult source_packet(std::uint32_t lane, std::uint32_t first, std::uint32_t second) noexcept;
+    IsleGameResult source_hierarchy(IsleGameObject*, menu::RenderType) noexcept;
     // Owner-only after real native joins and GPU/readback release. No fake fence,
     // native deletion or Runtime retirement is manufactured by this adapter.
     void retire() noexcept;

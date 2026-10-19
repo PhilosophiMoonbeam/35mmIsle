@@ -1,0 +1,4021 @@
+{
+  "schema_version": 1,
+  "provider": "cave-lifecycle",
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "transformation_version": "cave-source235-common-egg6-v2",
+  "generator_sha256": "e77f7a7608909ae7d466afef7ac295c9b76bda602cc6987b6c7ced2236309c82",
+  "transformer_sha256": "27154350c37f7f6947e3f5801f7e0ae63683fbab6a1aecb82eb9be706282b463",
+  "source_files": {
+    "src/cave/1F5E70.c": {
+      "git_blob": "c27aac57e2c36a93c69a4a6d6a02d7ce13e4a6be",
+      "sha256": "2c8fbc6d385b9eff6e169aa710eea96006e0c0206ab08fe17ac63d1c54089a8b",
+      "bytes": 90,
+      "line_count": 7
+    },
+    "src/cave/6401B0.c": {
+      "git_blob": "11931cf62762b8abb23f0ea60d3c83b4a6b1c64b",
+      "sha256": "48c030408467829d479d15e2ef781ade2a749b4a6c775273fbfbf6cc7fe3aef7",
+      "bytes": 6257,
+      "line_count": 204
+    },
+    "src/cave/640900.c": {
+      "git_blob": "16a13ddf70178ab92825a377d730e9331a296f77",
+      "sha256": "d6ab5179314aec67dc8b3befca8f4cb31093af9dd02e6ba07600690749a66491",
+      "bytes": 1864,
+      "line_count": 62
+    },
+    "src/cave/640CD0.c": {
+      "git_blob": "c1aaec7b45092f417c8134e3077b43f45cd1f869",
+      "sha256": "a07b0681924f43ff4646223b0d0ee5a8dbf3ac42e5cc3631ab3a68f3e671b983",
+      "bytes": 7598,
+      "line_count": 236
+    },
+    "src/cave/6414D0.c": {
+      "git_blob": "f9e8118015a5c4daf5c1fbcdf52d0760ab050e43",
+      "sha256": "cecab876c4851d2489aedc7a0cde32736458d2bcde26478638c3248c9d11140f",
+      "bytes": 5367,
+      "line_count": 161
+    },
+    "src/cave/641A50.c": {
+      "git_blob": "d3a89506513f47767a7720885de3b47912cb3976",
+      "sha256": "2bc2da42f0ca3b6fb71815bcc6b5d4efaba8ed0e3fb8c3b9112a0d19b02243f3",
+      "bytes": 7870,
+      "line_count": 239
+    },
+    "src/cave/642290.c": {
+      "git_blob": "ee471ccecfcb196cef5a114c73721bcb2f9e6779",
+      "sha256": "08ae560b63cd5ae69fa42bb852200a0b4b1a842202717319384f11cdd6587ab9",
+      "bytes": 3189,
+      "line_count": 99
+    },
+    "src/cave/6425F0.c": {
+      "git_blob": "65f9bc166e66ae30fc9e5ca19ab40289af068109",
+      "sha256": "8d9556dfc1c7176063c44709eaa9dc96567560be6fe7f7d7948ae117271de86f",
+      "bytes": 5792,
+      "line_count": 187
+    },
+    "src/cave/642CC0.c": {
+      "git_blob": "d12f2ed8a5a1dbe5a7f2b1589db2f3cdb8f3b2fa",
+      "sha256": "e1e88f98ebab638b124fc7545d6c7ecfea423d2eb7a20fbf1f1b66531ad92a45",
+      "bytes": 10343,
+      "line_count": 321
+    },
+    "src/cave/6438F0.c": {
+      "git_blob": "8beba6dc77da4f144355d807ffacab9dbd4fbaad",
+      "sha256": "2664d09f542381dc4b5e1b9830ee866f8646bdaf86d26e6e54b2b67b1ae32397",
+      "bytes": 16327,
+      "line_count": 550
+    },
+    "src/cave/644E80.c": {
+      "git_blob": "5bf80549d90df6154566ec0357db87cafa4b4594",
+      "sha256": "f9bfbe07e7ac94b1976f3cd1a57103ca17d6a4d6505a6ea111e274dee865603a",
+      "bytes": 7159,
+      "line_count": 247
+    },
+    "src/cave/645740.c": {
+      "git_blob": "a83716e5a19c4dd3082105f2fa9a7e5e250669b7",
+      "sha256": "43fab92dad6900b6ac233ebbbdf55dd3945e1f24fdb54af7e4edb6c2af312007",
+      "bytes": 1001,
+      "line_count": 30
+    },
+    "src/cave/645870.c": {
+      "git_blob": "d00662c632557cdd69d0a8f410baa89af67eac44",
+      "sha256": "8dc01293dd7400d02f24b932d1cf00db68b865c4f7f206479e3824c32fcfd710",
+      "bytes": 3763,
+      "line_count": 120
+    },
+    "src/cave/645D90.c": {
+      "git_blob": "92f4adb3fccd90047f2df73805b54fca13beb2c2",
+      "sha256": "564ffae0c399fdba64219927d4fa16916f74cb99d5b8ea014cd474fc2668ab59",
+      "bytes": 11012,
+      "line_count": 359
+    },
+    "src/cave/646B50.c": {
+      "git_blob": "e8a3cb4f377ba22ec8466cfa9733cf098ca38bec",
+      "sha256": "979da2834ff8455cdf10639b13cacee416c56e3fae8f22d2ea503839655d05f0",
+      "bytes": 3317,
+      "line_count": 97
+    },
+    "src/cave/646EA0.c": {
+      "git_blob": "6495d52b6dfbc994b8cbb64d0efd368c053a5aaf",
+      "sha256": "9efccef405bc2a96adf64ac3d4b0a1ffde31efec19f41248c0cdbcf469e5d2a5",
+      "bytes": 4552,
+      "line_count": 150
+    },
+    "src/cave/647360.c": {
+      "git_blob": "a274a578ecf551b1749d177ba306ab90f4039a4b",
+      "sha256": "3fd1a5b2e3eefe6265fa98108c48480e210d4a80baddc4b47e9d761f9adce7a7",
+      "bytes": 15730,
+      "line_count": 514
+    },
+    "src/cave/articuno/model.c": {
+      "git_blob": "52c28d42d2e834402e59700e05a928eb5d7a5361",
+      "sha256": "f32472d429a622e785824b3651371401812a9157e5d3eb206cd4c1b67ec814ad",
+      "bytes": 10238,
+      "line_count": 310
+    },
+    "src/cave/articuno/model_hd.c": {
+      "git_blob": "063128809455a47bdaffa600d9db14cec30d5eef",
+      "sha256": "25ca06c173ba6aad559af10f2e4163267f93462065b3071ad9d0ff9e84512b6f",
+      "bytes": 8734,
+      "line_count": 273
+    },
+    "src/cave/cave.h": {
+      "git_blob": "6c1586d07e4fdb0cef03ff77f9f725cbca18648a",
+      "sha256": "db8b4f602f42724a7da6ba2dd8f8f5a1bd76e71a8e18ca4e775f42aca84880f0",
+      "bytes": 608,
+      "line_count": 25
+    },
+    "src/cave/ditto/model.c": {
+      "git_blob": "a888771dadcc199ffe7d45b568890246974e2b7d",
+      "sha256": "7bf938b9211b0bc90bb462ce00cf717a720b8dddd428088fad90abdfb0e91db8",
+      "bytes": 8801,
+      "line_count": 197
+    },
+    "src/cave/ditto/model_hd.c": {
+      "git_blob": "5b9e60becaba326e9c86387d186e07d093629a68",
+      "sha256": "fe874ae03f98bbba8fd14564151fb4f55551fa15ab6216753a639b2e6fcb6e1d",
+      "bytes": 6049,
+      "line_count": 142
+    },
+    "src/cave/grimer/model.c": {
+      "git_blob": "8ef71f82f7057edfab23865fe5e6c63c1a654b71",
+      "sha256": "dfbcecaee7837a2a330f217625cf7ad1c62ed12d2e6a36e8c72f89c502917b09",
+      "bytes": 20351,
+      "line_count": 1105
+    },
+    "src/cave/grimer/model_hd.c": {
+      "git_blob": "65ce511a011a24656148e347c60330a97790d9ea",
+      "sha256": "a5a00a21bb53812f2006b626a59733d24441b1801baf0e5c6b8d2e080add3f54",
+      "bytes": 17886,
+      "line_count": 1050
+    },
+    "src/cave/jigglypuff/model.c": {
+      "git_blob": "2b7d8f439ccfe680fa60e2d68fa79885c57d0ffe",
+      "sha256": "107f099148ed6dfcce1bf079aea3a48be569ef8e1e696b79bf4ec2718872dcdc",
+      "bytes": 9973,
+      "line_count": 361
+    },
+    "src/cave/jigglypuff/model_hd.c": {
+      "git_blob": "9770c039d1f35cef8a4d64c53c1aebe7ddae3cf0",
+      "sha256": "29c5f54ad64b22f3f8a5af32528686489f8b9f4d30d483b0918d29c5ebc2805c",
+      "bytes": 8219,
+      "line_count": 328
+    },
+    "src/cave/jynx/model.c": {
+      "git_blob": "6e286fbc77170ac4d57dd7127948e47c19369526",
+      "sha256": "b35d5183074a330b2657239465e33594d25869281b77000e88e03fef23f7f99c",
+      "bytes": 9390,
+      "line_count": 301
+    },
+    "src/cave/jynx/model_hd.c": {
+      "git_blob": "56929d98c6ec5a2e5e9567c59ec8352ef765da02",
+      "sha256": "611692f3d984fd04a9e30a87a4092eaea65ff28038a29c464e25dbbe5eab9ffb",
+      "bytes": 6149,
+      "line_count": 248
+    },
+    "src/cave/jynx/textures.c": {
+      "git_blob": "182750d3ba584abcce7279dd0c844f713ab91eb7",
+      "sha256": "ca718fed16882b78f8a83dd2f05a0b61fbd4acf63f3cd8f7c61e10a01f945249",
+      "bytes": 1366,
+      "line_count": 76
+    },
+    "src/cave/koffing/model.c": {
+      "git_blob": "26b4f8d4ac0c1e0679caa8e399790ee24b6cc1ae",
+      "sha256": "cb2305952b46fd5ad03f4f5893267d879785dcd0c96df5049dbc388e712a5836",
+      "bytes": 16705,
+      "line_count": 852
+    },
+    "src/cave/koffing/model_hd.c": {
+      "git_blob": "2788b445dd4b0d7cea97fafae6f74e0e4aa1943d",
+      "sha256": "b118473fb4f1b1a9f2108d80864d6f2f98fae06ecff7129150c551f7fb580738",
+      "bytes": 14521,
+      "line_count": 817
+    },
+    "src/cave/muk/model.c": {
+      "git_blob": "cd710f09a2f00f37ad1a6a79f37d4512311a0343",
+      "sha256": "e7690a988786f552364f9c86fb7144075c2acd814f74f52deaf05bdef32ea361",
+      "bytes": 18639,
+      "line_count": 1086
+    },
+    "src/cave/muk/model_hd.c": {
+      "git_blob": "25c857b91c1a8cf2f14bdff527a458fc604bf34d",
+      "sha256": "d0d6f24cf33b36955053cf42ec94a58b6ad32882e56b2eeae61c9b49468c5fe7",
+      "bytes": 15920,
+      "line_count": 979
+    },
+    "src/cave/victreebel/model.c": {
+      "git_blob": "d5bbd95f6d1ce2dd817cbe73a1c7d6f6be1db86e",
+      "sha256": "380ee0710c15c9c0cf5647006c289a7f9c90f0d71ba1de540d72df661fd27baf",
+      "bytes": 10790,
+      "line_count": 442
+    },
+    "src/cave/victreebel/model_hd.c": {
+      "git_blob": "b17ad3bd98d8e3718c51ca8d8bf593b4b6a87ad2",
+      "sha256": "41868e3d90fca698183b4b2069c4fc16acb91190889304f6c580477cc8eb0e28",
+      "bytes": 8883,
+      "line_count": 407
+    },
+    "src/cave/weepinbell/model.c": {
+      "git_blob": "c233c759eeafc0916c4960f6d91de5f4d0d9a6ae",
+      "sha256": "f1ae750622f4aa78b3c427f12d852ba94367299f53a0495ce7f08a0cf2e9d2e6",
+      "bytes": 9398,
+      "line_count": 348
+    },
+    "src/cave/weepinbell/model_hd.c": {
+      "git_blob": "a428e7eb7749f6d84932663d36444297b715ef28",
+      "sha256": "ad3cbd1861fd94792da731dede7e09cd4644018c2b95129a13dd88ad764dd535",
+      "bytes": 6790,
+      "line_count": 281
+    }
+  },
+  "shared_source_files": {
+    "src/app_level/4FE330.c": {
+      "git_blob": "442eb2428ed369706fe2f0520e3b9d8834b2bb60",
+      "sha256": "05259eee7e6939334dd1cb5023476225b514e5008526a6cd6fe5cc2c3eade761",
+      "bytes": 4773,
+      "line_count": 195
+    }
+  },
+  "complete_source_inventory": [
+    {
+      "path": "src/cave/1F5E70.c",
+      "defined_functions": 1,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "defined_functions": 14,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/640900.c",
+      "defined_functions": 1,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/640CD0.c",
+      "defined_functions": 19,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/6414D0.c",
+      "defined_functions": 13,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/641A50.c",
+      "defined_functions": 14,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/642290.c",
+      "defined_functions": 7,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/6425F0.c",
+      "defined_functions": 13,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/642CC0.c",
+      "defined_functions": 24,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/6438F0.c",
+      "defined_functions": 34,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/644E80.c",
+      "defined_functions": 18,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/645740.c",
+      "defined_functions": 3,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/645870.c",
+      "defined_functions": 10,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/645D90.c",
+      "defined_functions": 21,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/646B50.c",
+      "defined_functions": 5,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/646EA0.c",
+      "defined_functions": 8,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/647360.c",
+      "defined_functions": 30,
+      "role": "Source_selector_definitions"
+    },
+    {
+      "path": "src/cave/articuno/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/articuno/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/cave.h",
+      "defined_functions": 0,
+      "role": "Source_header_types"
+    },
+    {
+      "path": "src/cave/ditto/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/ditto/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/grimer/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/grimer/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/jigglypuff/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/jigglypuff/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/jynx/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/jynx/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/jynx/textures.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/koffing/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/koffing/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/muk/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/muk/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/victreebel/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/victreebel/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/weepinbell/model.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    },
+    {
+      "path": "src/cave/weepinbell/model_hd.c",
+      "defined_functions": 0,
+      "role": "asset_data_only_no_function_selectors_existing_native_resource_catalog"
+    }
+  ],
+  "definitions": [
+    {
+      "path": "src/cave/1F5E70.c",
+      "symbol": "func_8012A0C0_1F5E70",
+      "first": 6,
+      "last": 7,
+      "source_sha256": "ec938a0444daa794c0b79b9b2a0b0a42dde643c69ee62a0e7c94a74031dbef20",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_8012A0C0_1F5E70(void)",
+      "identity": 2148704448,
+      "native_declaration": "void func_8012A0C0_1F5E70(IsleCaveLifecycleSource* s)",
+      "native_sha256": "77bfaecceafc385b751946807e5339c2bb640d69fc2d24c9d974213eaaa6b4f0",
+      "source_empty": true
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BDF34_6403E4",
+      "first": 82,
+      "last": 84,
+      "source_sha256": "579803e5d882e185d516c260e8273611c7d57799601274a9d62b2936ab150fcf",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BDF34_6403E4(WorldBlock* arg0, WorldBlock* arg1)",
+      "identity": 2150358836,
+      "native_declaration": "void func_802BDF34_6403E4(IsleCaveLifecycleSource* s, IsleCaveWorldBlock* arg0, IsleCaveWorldBlock* arg1)",
+      "native_sha256": "d3740a594c73aa20fbbdffa0a0336a80fd81bd627f8f697212b8a180891a79b3",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BDF58_640408",
+      "first": 86,
+      "last": 88,
+      "source_sha256": "b00fc26822dad71b2087b69015a5160d0325413dbd2fe675d9842c2c98a880ca",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BDF58_640408(WorldBlock* arg0, WorldBlock* arg1)",
+      "identity": 2150358872,
+      "native_declaration": "void func_802BDF58_640408(IsleCaveLifecycleSource* s, IsleCaveWorldBlock* arg0, IsleCaveWorldBlock* arg1)",
+      "native_sha256": "f3192e469cd14d0cfd11a0e6f39a3b1245207ea787d84ed8d809c223a567a823",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BDF7C_64042C",
+      "first": 90,
+      "last": 92,
+      "source_sha256": "13c81b6b5de5c78723a162316b6a04d8378c8cdec6fcdc4ca567e0e74d41fa29",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BDF7C_64042C(WorldBlock* arg0)",
+      "identity": 2150358908,
+      "native_declaration": "void func_802BDF7C_64042C(IsleCaveLifecycleSource* s, IsleCaveWorldBlock* arg0)",
+      "native_sha256": "2e0716e7b4f8f2f62150d5ad46090cb93bcfdba8353e33c6ce0ec3ffe473f754",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BDFA0_640450",
+      "first": 94,
+      "last": 100,
+      "source_sha256": "73cf28d830894a564846123ad82d458672975a4d1c3f4bec011d1cac92e208f3",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BDFA0_640450(void)",
+      "identity": 2150358944,
+      "native_declaration": "void func_802BDFA0_640450(IsleCaveLifecycleSource* s)",
+      "native_sha256": "99e07e6c02c4fb3ab19d3abbb81827d390fa4db935ea457fe07552ae6f356220",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE038_6404E8",
+      "first": 102,
+      "last": 113,
+      "source_sha256": "6e6fa3baf9d85c95a0ed01f74abb4e3f00319ef5e60859a8964b4cc5d964fb49",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BE038_6404E8(s32 arg0)",
+      "identity": 2150359096,
+      "native_declaration": "void func_802BE038_6404E8(IsleCaveLifecycleSource* s, int32_t arg0)",
+      "native_sha256": "cb90e4a93aad3b8ae74004507b703a46873896d61d42de19cedb4c57eefcd1d9",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE09C_64054C",
+      "first": 115,
+      "last": 116,
+      "source_sha256": "28ac72a0ab34b5e6968e338cacc042234adc3dd1c648d9c3b0e800ec02f480ab",
+      "domain": "lifecycle",
+      "role": "callback",
+      "source_signature": "void func_802BE09C_64054C(GObj* arg0)",
+      "identity": 2150359196,
+      "receiver": "arg0",
+      "native_declaration": "void func_802BE09C_64054C(IsleGameObject* arg0)",
+      "native_sha256": "99a345e2e6e7f0c6c8bcb543b5fd63e8461c3d05c37139e2bcd09f1dfeb89566",
+      "source_empty": true
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE0A4_640554",
+      "first": 118,
+      "last": 119,
+      "source_sha256": "b181e8f48e67957bd8b5dc076b8c9fbfd5e54a2058b4a89549ecb6bd8a270f37",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BE0A4_640554(s32 arg0)",
+      "identity": 2150359204,
+      "native_declaration": "void func_802BE0A4_640554(IsleCaveLifecycleSource* s, int32_t arg0)",
+      "native_sha256": "7393f40f5c8174d48ede22609ebc481675f4213abfb19e38d8b097b9f356dab5",
+      "source_empty": true
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE0AC_64055C",
+      "first": 121,
+      "last": 135,
+      "source_sha256": "37e7cd883dbb78504e6bffeb9c0e12dfae3d3960f60f35fea6ce03be114cf90e",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BE0AC_64055C(WorldBlock* arg0)",
+      "identity": 2150359212,
+      "native_declaration": "void func_802BE0AC_64055C(IsleCaveLifecycleSource* s, IsleCaveWorldBlock* arg0)",
+      "native_sha256": "e9deda2971c0495f900851fb36eaecbf6889c003f00e166ecec7dd99585d06ef",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE140_6405F0",
+      "first": 137,
+      "last": 154,
+      "source_sha256": "e537259e9ef0cb96f8c4ba6bc10d7ce61e87b839a930f91c961e11a9eda6ea01",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BE140_6405F0(void)",
+      "identity": 2150359360,
+      "native_declaration": "void func_802BE140_6405F0(IsleCaveLifecycleSource* s)",
+      "native_sha256": "a3aef5c24bae8b6b759e5a8afa0158b4395987a7f9edae64d1676e51b44eea74",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE22C_6406DC",
+      "first": 156,
+      "last": 182,
+      "source_sha256": "25d123aca5ac6e74a779d30ee0fb7c95498071e8ddf4ed2ca7ee185fb5292425",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BE22C_6406DC(void)",
+      "identity": 2150359596,
+      "native_declaration": "void func_802BE22C_6406DC(IsleCaveLifecycleSource* s)",
+      "native_sha256": "bf9913c4382d3f972fc690e8f3a5eeba96a68e223ad94fd696a9f93c2940160f",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE3A8_640858",
+      "first": 184,
+      "last": 185,
+      "source_sha256": "20bf8b44e3d98d95b4c0b5c0a39b9e6cb7b5a2ac136caeff87d5f7315298b350",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802BE3A8_640858(s32 arg0)",
+      "identity": 2150359976,
+      "native_declaration": "void func_802BE3A8_640858(IsleCaveLifecycleSource* s, int32_t arg0)",
+      "native_sha256": "b12329e50ce641eee46e8fcb0356d0c83289be5b0ff8502cc52eb9d22e18f65a",
+      "source_empty": true
+    },
+    {
+      "path": "src/cave/6401B0.c",
+      "symbol": "func_802BE3B0_640860",
+      "first": 187,
+      "last": 204,
+      "source_sha256": "2e003757dec7737bba285d4949656b9bd21090e63485033e2a4dc2113f0e83e8",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "s32 func_802BE3B0_640860(s32 arg0)",
+      "identity": 2150359984,
+      "native_declaration": "int32_t func_802BE3B0_640860(IsleCaveLifecycleSource* s, int32_t arg0)",
+      "native_sha256": "2d27277d665cea8b9fa8a980dddfc20339435763c08fb337db318fbf3d117941",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C5B60_648010",
+      "first": 371,
+      "last": 375,
+      "source_sha256": "9ef2e48f586faa2e874cef177017ecc820f86dc7f178fc126f56278b5fca59cf",
+      "domain": "lifecycle",
+      "role": "callback",
+      "source_signature": "void func_802C5B60_648010(GObj* arg0)",
+      "identity": 2150390624,
+      "receiver": "arg0",
+      "native_declaration": "void func_802C5B60_648010(IsleGameObject* arg0)",
+      "native_sha256": "df9cd204367985f8ab9038a64997d4c7d5afb3bdc5aee53d344f7e93b74de6a7",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C5B90_648040",
+      "first": 377,
+      "last": 379,
+      "source_sha256": "c86b603e41ef3db1335d85f1b4a18c741163c47a80fb064058a4ec2794d97d72",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802C5B90_648040(void)",
+      "identity": 2150390672,
+      "native_declaration": "void func_802C5B90_648040(IsleCaveLifecycleSource* s)",
+      "native_sha256": "0e3cc389588e921e30d59b82128b9e9bcd2d52186666a98a60b79109b9ec635d",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C5BB0_648060",
+      "first": 381,
+      "last": 397,
+      "source_sha256": "363a3b635dd8a8373280fb40a0ecf4939653a9b8ab988e28859ab3d8a4a9dc5c",
+      "domain": "lifecycle",
+      "role": "animation",
+      "source_signature": "void func_802C5BB0_648060(DObj* dobj, s32 arg1, f32 arg2)",
+      "identity": 2150390704,
+      "model_name": "dobj",
+      "event_name": "arg1",
+      "value_name": "arg2",
+      "native_declaration": "void func_802C5BB0_648060(IsleCaveLifecycleSource* s, const IsleActorNodeRef* callback_model, int32_t arg1, float arg2)",
+      "native_sha256": "58f31915e43f935a17225c1c8964f33a3a87d8e21671bea3b88c67d71f39b73b",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C5C24_6480D4",
+      "first": 399,
+      "last": 413,
+      "source_sha256": "d16253a666fc7503983bd4039e12785395765112497f0e841423dd8de40c59e5",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802C5C24_6480D4(void)",
+      "identity": 2150390820,
+      "native_declaration": "void func_802C5C24_6480D4(IsleCaveLifecycleSource* s)",
+      "native_sha256": "f99bc08c389c9f3a6e2e9e3778aa5cdbaf76f7c6127e599d20365bfe7dca7016",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C5CEC_64819C",
+      "first": 415,
+      "last": 425,
+      "source_sha256": "ce5075fd4dee5a46cfc030610ffbbea1138cafe9a7b8ca8865990b3f3d6b0b92",
+      "domain": "lifecycle",
+      "role": "callback",
+      "source_signature": "void func_802C5CEC_64819C(GObj* obj)",
+      "identity": 2150391020,
+      "receiver": "obj",
+      "native_declaration": "void func_802C5CEC_64819C(IsleGameObject* obj)",
+      "native_sha256": "9478492b94d584b82436e705f8565ce95edae0722a3a00ca28b5724d05ab6a14",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C5D80_648230",
+      "first": 427,
+      "last": 437,
+      "source_sha256": "d14af30eb5c71a66e9965446f4f6eac162191bab259cac356e6910d16d5dd5b3",
+      "domain": "lifecycle",
+      "role": "callback",
+      "source_signature": "void func_802C5D80_648230(GObj* obj)",
+      "identity": 2150391168,
+      "receiver": "obj",
+      "native_declaration": "void func_802C5D80_648230(IsleGameObject* obj)",
+      "native_sha256": "b21c51ef722f94a43e50c56cd634874dfbec4e8d2070663a1e9222ea3cc8aa58",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C5DFC_6482AC",
+      "first": 439,
+      "last": 503,
+      "source_sha256": "0f709dc46cf9e55c6bdba8ac0a1dc4b9c9177faea7dbf2f66ab325957fbef923",
+      "domain": "lifecycle",
+      "role": "callback",
+      "source_signature": "void func_802C5DFC_6482AC(GObj* obj)",
+      "identity": 2150391292,
+      "receiver": "obj",
+      "native_declaration": "void func_802C5DFC_6482AC(IsleGameObject* obj)",
+      "native_sha256": "4964974fb931bdadfc8b732bffd8cd8a84b0bb73d71220815bc98ef26b8b8d8b",
+      "source_empty": false
+    },
+    {
+      "path": "src/cave/647360.c",
+      "symbol": "func_802C60F4_6485A4",
+      "first": 505,
+      "last": 514,
+      "source_sha256": "7e4c04e4830eb60320fb1c67ddef42aee31702a05a19c993ce76e26998964128",
+      "domain": "lifecycle",
+      "role": "utility",
+      "source_signature": "void func_802C60F4_6485A4(void)",
+      "identity": 2150392052,
+      "native_declaration": "void func_802C60F4_6485A4(IsleCaveLifecycleSource* s)",
+      "native_sha256": "3376ee013c31e487f4d91d3aeb86016d5c79a2db00eaeb9bb42c829a6ec0c492",
+      "source_empty": false
+    }
+  ],
+  "shared_definitions": [
+    {
+      "path": "src/app_level/4FE330.c",
+      "symbol": "func_8035E1D4_4FE5E4",
+      "native_symbol": "isle_cave_actor_original_func_8035E1D4_4FE5E4",
+      "first": 143,
+      "last": 154,
+      "source_signature": "GObj* func_8035E1D4_4FE5E4(GObj* obj)",
+      "source_sha256": "1e70b84d394399e46a72b4adec2e09d7a785787b574013219eaeaae15436c8a5",
+      "identity": 2151014868,
+      "mode": "course_transform",
+      "domain": "actor",
+      "role": "object_utility",
+      "receiver": "obj",
+      "source_empty": false,
+      "native_sha256": "6c187d5066a7a51b523f4c247679b8da3510f7b37e500f6ed6cbc54c9d4938d4",
+      "native_declaration": "IsleGameObject* isle_cave_actor_original_func_8035E1D4_4FE5E4(IsleGameObject* obj)"
+    }
+  ],
+  "selector_accounting": {
+    "total": 235,
+    "actor": 214,
+    "lifecycle": 21,
+    "omitted": 0
+  },
+  "generated_definition_count": 21,
+  "output_sha256": "755edc0af66ad6e4d936d1ad69a795fb021bb0b4990647efda1a0d34d870e114",
+  "native_support": {
+    "src/cave_actor_source.h": {
+      "sha256": "705f2e01f7c4692d897a4b1dd9458b23d4dc1b043981fc941ffde22ffd9565f5"
+    },
+    "src/cave_actor_source.c": {
+      "sha256": "b7ae8d16f1614fe7ce28e575e179d9835761dd2a8c147b26575b0f9abdb8e430"
+    },
+    "src/cave_actor.hpp": {
+      "sha256": "5b7e28a675e36f55be9ab86c82fb60c17441ef494118bd206a5d32f576f53ad2"
+    },
+    "src/cave_actor.cpp": {
+      "sha256": "8b992e81bf89f4759cbfd8a06214c4c392f884a5ffef9b65d6c5531d37bce03c"
+    },
+    "src/cave_lifecycle_source.h": {
+      "sha256": "15fc95de6e1b7412890321451bd6f06a4203b151f38fc674dd8bfdf56f48eeed"
+    },
+    "src/cave_lifecycle_source.c": {
+      "sha256": "fbcfa101d0c349779cc3e5e7a3663306497f7132a401db817543e066ee9b7a70"
+    },
+    "src/course_actor_source.h": {
+      "sha256": "e642f3b7333ac8f0d42b50467b309d87073bbdd5dca842101e73045ffddd3522"
+    },
+    "tools/prepare_cave_actor.py": {
+      "sha256": "27154350c37f7f6947e3f5801f7e0ae63683fbab6a1aecb82eb9be706282b463"
+    },
+    "tools/prepare_cave_lifecycle.py": {
+      "sha256": "e77f7a7608909ae7d466afef7ac295c9b76bda602cc6987b6c7ced2236309c82"
+    },
+    "src/egg_source.h": {
+      "sha256": "e6d87f3fbaa5473f8a95532683231a08d31448b653149ee7109128c13b315d37"
+    },
+    "src/egg_source.c": {
+      "sha256": "b199a8228d44ce623862b6ec15a56d845a0e142e01fc33b00cb75c76687829fc"
+    },
+    "src/actor_source.h": {
+      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+    },
+    "src/engine_internal.h": {
+      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+    },
+    "tools/prepare_common_egg.py": {
+      "sha256": "2b213eea62dfd1e1f65296d976aacf38224af2cd238572e9f3f5fdfb23522787"
+    }
+  },
+  "typed_provider_counts": {
+    "selectors": 235,
+    "actor_definitions": 214,
+    "lifecycle_definitions": 21,
+    "actor_gobj_callbacks": 189,
+    "lifecycle_gobj_callbacks": 5,
+    "factories": 17,
+    "six_argument_factories": 14,
+    "counted_lists": 1,
+    "counted_rows": 2,
+    "signed_weighted_lists": 5,
+    "signed_weighted_rows_including_terminals": 18,
+    "static_graphs": 48,
+    "receiver_qualified_header_pairs": 84,
+    "automatic_aggregates": 22,
+    "source_empty_definitions": 6,
+    "supplementary_shared_definitions": 1,
+    "total_original_definitions": 236,
+    "generated_actor_definitions": 215,
+    "child_factory_dependencies": 4,
+    "actor_service_fields": 57,
+    "lifecycle_service_fields_including_join": 72,
+    "generated_lifecycle_definitions": 21,
+    "qualified_actor_initial_fields": 55,
+    "qualified_lifecycle_initial_fields": 213,
+    "qualified_egg_frame_fields": 2,
+    "required_common_egg_definitions": 6,
+    "closure_original_definitions": 242
+  },
+  "factory_abi_proofs": [
+    {
+      "symbol": "func_802BEFD8_641488",
+      "identity": 2150363096,
+      "source_selector": "src/cave/640CD0.c:234-236",
+      "source_signature": "GObj* func_802BEFD8_641488(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802BEFD8_641488(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "e7eb855241869b28b2c1cc3af8db0bc4c3c6fb288e61fb6236af19726a6a79bf",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802BF55C_641A0C",
+      "identity": 2150364508,
+      "source_selector": "src/cave/6414D0.c:159-161",
+      "source_signature": "GObj* func_802BF55C_641A0C(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802BF55C_641A0C(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "8f1a07f07d10d8e22915406a0a1054eed7133f449be7ff72fe35fb03c25b66af",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802BFDA0_642250",
+      "identity": 2150366624,
+      "source_selector": "src/cave/641A50.c:237-239",
+      "source_signature": "GObj* func_802BFDA0_642250(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802BFDA0_642250(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "685cae67ea74d9882c01a904c3b7be1d0105cb79713ce19d9ebab90b5744f81d",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C0104_6425B4",
+      "identity": 2150367492,
+      "source_selector": "src/cave/642290.c:97-99",
+      "source_signature": "GObj* func_802C0104_6425B4(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C0104_6425B4(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "cba35503311916f1f49cb83cb93afd90b6987a3ca57ac1e17ddc6bdff258d679",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C07D4_642C84",
+      "identity": 2150369236,
+      "source_selector": "src/cave/6425F0.c:185-187",
+      "source_signature": "GObj* func_802C07D4_642C84(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C07D4_642C84(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "90d1ea3e49ecb55cebc6ecf97b3c2076e9ae3961076a7912a3390466883880df",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C10C8_643578",
+      "identity": 2150371528,
+      "source_selector": "src/cave/642CC0.c:238-240",
+      "source_signature": "GObj* func_802C10C8_643578(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C10C8_643578(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "e11237241a2540cb559e1345c32c3482ce371961e8a5452b02313c59827dc449",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C13B4_643864",
+      "identity": 2150372276,
+      "source_selector": "src/cave/642CC0.c:315-317",
+      "source_signature": "GObj* func_802C13B4_643864(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C13B4_643864(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "419e585e80b9dfb73bd15f181d672c3a08faa812caae2a013fe9fce64a3b34da",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C13EC_64389C",
+      "identity": 2150372332,
+      "source_selector": "src/cave/642CC0.c:319-321",
+      "source_signature": "GObj* func_802C13EC_64389C(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C13EC_64389C(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "ed59d8ebf4363aff7056e05e214c521376f5b3ff1415d1f1ceddb01d2d7c1e6d",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C2994_644E44",
+      "identity": 2150377876,
+      "source_selector": "src/cave/6438F0.c:548-550",
+      "source_signature": "GObj* func_802C2994_644E44(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C2994_644E44(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "2c9f23f00099ae013ef3d3be08b3342ec8734add5a14cfd92940307fda6b4a84",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C3250_645700",
+      "identity": 2150380112,
+      "source_selector": "src/cave/644E80.c:245-247",
+      "source_signature": "GObj* func_802C3250_645700(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C3250_645700(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "5b7b60d6ad941275df61b56daa93212383f386855cf52314a6a83b0beb2f3690",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C3388_645838",
+      "identity": 2150380424,
+      "source_selector": "src/cave/645740.c:28-30",
+      "source_signature": "GObj* func_802C3388_645838(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C3388_645838(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "02b47ad2749d814cf4ef96ea5ee4c92a676783dc9f043cc20296607703c1ae11",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C465C_646B0C",
+      "identity": 2150385244,
+      "source_selector": "src/cave/645D90.c:357-359",
+      "source_signature": "GObj* func_802C465C_646B0C(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C465C_646B0C(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "41873f13a8a54cb1b7f99c3c01f003a029fb9993a0276218bda20d54b7702838",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C49A8_646E58",
+      "identity": 2150386088,
+      "source_selector": "src/cave/646B50.c:93-97",
+      "source_signature": "GObj* func_802C49A8_646E58(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "native_signature": "IsleGameObject* func_802C49A8_646E58(int32_t gObjID, uint16_t id, IsleActorFactoryBlock* roomA, IsleActorFactoryBlock* roomB, IsleActorFactorySpawn* spawn)",
+      "source_sha256": "5265b14e9f9aa9333806e37e0e186d8f6d244e2a673a3999196186f32c38ac23",
+      "sixth_argument_unused": false,
+      "native_adapter": "none_preserve_actual_abi"
+    },
+    {
+      "symbol": "func_802C4E64_647314",
+      "identity": 2150387300,
+      "source_selector": "src/cave/646EA0.c:146-150",
+      "source_signature": "GObj* func_802C4E64_647314(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "native_signature": "IsleGameObject* func_802C4E64_647314(int32_t gObjID, uint16_t id, IsleActorFactoryBlock* roomA, IsleActorFactoryBlock* roomB, IsleActorFactorySpawn* spawn)",
+      "source_sha256": "69feab546a7626220b1164d2f78b675e5e40107ec4422c79d7e9d82049f1906c",
+      "sixth_argument_unused": false,
+      "native_adapter": "none_preserve_actual_abi"
+    },
+    {
+      "symbol": "func_802C5548_6479F8",
+      "identity": 2150389064,
+      "source_selector": "src/cave/647360.c:231-233",
+      "source_signature": "GObj* func_802C5548_6479F8(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C5548_6479F8(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "187ee9cefe86082232e6c62b63b887abbbc1a50b440362279b64b65bfc9503bf",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    },
+    {
+      "symbol": "func_802C55D4_647A84",
+      "identity": 2150389204,
+      "source_selector": "src/cave/647360.c:245-247",
+      "source_signature": "void func_802C55D4_647A84(s32 gObjID, u16 id, WorldBlock* roomA, WorldBlock* roomB, ObjectSpawn* spawn)",
+      "native_signature": "void func_802C55D4_647A84(int32_t gObjID, uint16_t id, IsleActorFactoryBlock* roomA, IsleActorFactoryBlock* roomB, IsleActorFactorySpawn* spawn)",
+      "source_sha256": "7657ecc20eab17df5ec03526d65ceb9d0655b02d678dafa20b04841625e4996b",
+      "sixth_argument_unused": false,
+      "native_adapter": "none_preserve_actual_abi"
+    },
+    {
+      "symbol": "func_802C5B28_647FD8",
+      "identity": 2150390568,
+      "source_selector": "src/cave/647360.c:367-369",
+      "source_signature": "GObj* func_802C5B28_647FD8(s32 objID, u16 id, WorldBlock* block, WorldBlock* blockB, ObjectSpawn* spawn, PokemonInitData* initData)",
+      "native_signature": "IsleGameObject* func_802C5B28_647FD8(int32_t objID, uint16_t id, IsleActorFactoryBlock* block, IsleActorFactoryBlock* blockB, IsleActorFactorySpawn* spawn, const IsleActorFactoryInitialization* initData)",
+      "source_sha256": "f978fce061c5e8497f03226f94056cd0946c615e9896f5907d934f1543fc28da",
+      "sixth_argument_unused": true,
+      "native_adapter": "fiveargument_returning_transport_only"
+    }
+  ],
+  "supporting_source_authority": {
+    "numeric_macros": {
+      "authority": "df8815e7:ultralib/include/macros.h",
+      "PI": "3.1415927f",
+      "TAU": "6.2831855f",
+      "FLOAT_MAX": "3.4028234e38f",
+      "ARRAY_COUNT": "signed32 sizeof(array)/sizeof(array[0])"
+    },
+    "shared_returning_child": [
+      {
+        "path": "src/app_level/4FE330.c",
+        "symbol": "func_8035E1D4_4FE5E4",
+        "native_symbol": "isle_cave_actor_original_func_8035E1D4_4FE5E4",
+        "first": 143,
+        "last": 154,
+        "source_signature": "GObj* func_8035E1D4_4FE5E4(GObj* obj)",
+        "source_sha256": "1e70b84d394399e46a72b4adec2e09d7a785787b574013219eaeaae15436c8a5",
+        "identity": 2151014868,
+        "mode": "course_transform",
+        "domain": "actor",
+        "role": "object_utility",
+        "receiver": "obj",
+        "source_empty": false,
+        "native_sha256": "6c187d5066a7a51b523f4c247679b8da3510f7b37e500f6ed6cbc54c9d4938d4",
+        "native_declaration": "IsleGameObject* isle_cave_actor_original_func_8035E1D4_4FE5E4(IsleGameObject* obj)"
+      }
+    ],
+    "item_alias": "include/common_structs.h:99-103 + include/sys/om.h:283-287 + src/app_level/app_level.h Item.collisionVelocity@0x14",
+    "removal_list": "src/app_level/app_level.h UnkBlueShark size4,2u16",
+    "SceneSetup": "existing semanticwire decoder35words/ScreenSettings7words; realcanonicalROMinput, no guestlayout overlay",
+    "common_egg_provider": {
+      "provider": "common-egg",
+      "transformation_version": "common-egg-original6-v1",
+      "manifest": "cmake/common-egg-inputs.json",
+      "definition_count": 6,
+      "output_sha256": "98f8a8746d8b0aa6369dba16542a1e9e1522430850359925e9178d1f93b8b4cb",
+      "definitions": [
+        {
+          "symbol": "func_800AAFB0",
+          "native_symbol": "isle_egg_original_func_800AAFB0",
+          "native_declaration": "int8_t isle_egg_original_func_800AAFB0(int16_t arg0, int16_t arg1, float arg2)",
+          "source_sha256": "cf477e312b49fc2e0d1406ad88be29a222b5cb5c7e260aa441162dd42c486cf2",
+          "native_sha256": "fdcd12987334878fc87fd3bd935e74170c8b704999b3b8c324d318f9a5733a89"
+        },
+        {
+          "symbol": "func_800AB000",
+          "native_symbol": "isle_egg_original_func_800AB000",
+          "native_declaration": "int16_t isle_egg_original_func_800AB000(int16_t arg0, int16_t arg1, float arg2)",
+          "source_sha256": "6eacc489a1076121b84287e3b78adc5b3a43554e8be4736d5d64fcac8664a974",
+          "native_sha256": "8921906046ff41c8e4c7ee7477adc4211dcd0f4bcd6224df9ae2411a836d4c2c"
+        },
+        {
+          "symbol": "func_800AB050",
+          "native_symbol": "isle_egg_original_func_800AB050",
+          "native_declaration": "void isle_egg_original_func_800AB050(float arg0, int32_t arg1, IsleEggVertex* arg2, IsleEggVertex* arg3, IsleEggVertex* arg4)",
+          "source_sha256": "c533c3ae98d51eb8bab8f525e68d2ef7cfed750b95eceaeea833caddcc05ef00",
+          "native_sha256": "e024ef5f90124fb1debfa878ddaae3fb133c7f4a139bd3f274fb7e54517e1ecf"
+        },
+        {
+          "symbol": "func_800AB138",
+          "native_symbol": "isle_egg_original_func_800AB138",
+          "native_declaration": "int32_t isle_egg_original_func_800AB138(IsleEgg* arg0, float arg1)",
+          "source_sha256": "96fcaf192c0c87cfbf9c012f163ddb0a0e21e531e04346a3b06af8462f11ebc6",
+          "native_sha256": "bf964488d730f26688e795305d3f3613a0e6172a043b262c1da467e145aad4ba"
+        },
+        {
+          "symbol": "func_800AB1F8",
+          "native_symbol": "isle_egg_original_func_800AB1F8",
+          "native_declaration": "void isle_egg_original_func_800AB1F8(IsleEgg* arg0)",
+          "source_sha256": "c3fd3ea4917b92ff018c74ef99c779a50474931472f7fe7c5ce4fc1cbef320c3",
+          "native_sha256": "763454e40d141c02c3f421315cb23769a2575f0c87c6c0c8bfc81eb8212b9d3d"
+        },
+        {
+          "symbol": "func_80362414_502824",
+          "native_symbol": "isle_egg_original_func_80362414_502824",
+          "native_declaration": "void isle_egg_original_func_80362414_502824(IsleActorSource* obj, IsleEgg* egg, float arg2)",
+          "source_sha256": "bbe5e351430a6d6cbe962bc7c38e816c8c0eb26f4b461ccb44e1c7294e06bf2c",
+          "native_sha256": "fcace7ecb5e2909671b1c79ffc65a678966d9b7af2768a0fe854a0782788d562"
+        }
+      ]
+    }
+  },
+  "numeric_authority": {
+    "map_sha256": "545866faf5fb44abf47d2f455ff7cad75580dc15320c357ac8dadc3359cb1a00",
+    "reader_mappings": [
+      [
+        2148704464,
+        2055808,
+        544000
+      ],
+      [
+        2149248496,
+        2599808,
+        128528
+      ],
+      [
+        2150392144,
+        6587904,
+        491488
+      ],
+      [
+        2148428496,
+        410240,
+        61232
+      ],
+      [
+        2148490640,
+        471472,
+        41472
+      ],
+      [
+        2151358336,
+        8583392,
+        12416
+      ],
+      [
+        2148532112,
+        512944,
+        110784
+      ],
+      [
+        2151339392,
+        8595808,
+        18944
+      ],
+      [
+        2148642896,
+        623728,
+        6912
+      ],
+      [
+        2151327488,
+        8614752,
+        11904
+      ],
+      [
+        2148649808,
+        630640,
+        54640
+      ],
+      [
+        2151313840,
+        8626656,
+        13648
+      ],
+      [
+        2151187216,
+        5408544,
+        144
+      ],
+      [
+        2150949168,
+        5551568,
+        8400
+      ],
+      [
+        2150921888,
+        5559968,
+        27280
+      ],
+      [
+        2150909824,
+        5587248,
+        12064
+      ],
+      [
+        2150889152,
+        5599312,
+        20672
+      ]
+    ],
+    "actor_reads": [
+      {
+        "symbol": "D_802C6354_648804",
+        "guest": 2150392660,
+        "rom_offset": 6588420,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 2,
+            "kind": "u16"
+          }
+        ],
+        "source": [
+          "src/cave/6401B0.c:15-15",
+          "src/cave/645740.c:4-4"
+        ]
+      },
+      {
+        "symbol": "D_802C6378_648828",
+        "guest": 2150392696,
+        "rom_offset": 6588456,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "s32"
+          }
+        ],
+        "source": [
+          "src/cave/6401B0.c:18-18"
+        ]
+      },
+      {
+        "symbol": "D_802C6430_6488E0",
+        "guest": 2150392880,
+        "rom_offset": 6588640,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "u32"
+          }
+        ],
+        "source": [
+          "src/cave/640900.c:5-5"
+        ]
+      },
+      {
+        "symbol": "D_802C6AA4_648F54",
+        "guest": 2150394532,
+        "rom_offset": 6590292,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "f32_bits"
+          }
+        ],
+        "source": [
+          "src/cave/641A50.c:14-14"
+        ]
+      },
+      {
+        "symbol": "D_802C6D4C_6491FC",
+        "guest": 2150395212,
+        "rom_offset": 6590972,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          },
+          {
+            "offset": 4,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          },
+          {
+            "offset": 8,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          },
+          {
+            "offset": 12,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          }
+        ],
+        "source": [
+          "src/cave/6425F0.c:12-12",
+          "src/cave/6438F0.c:14-14"
+        ]
+      },
+      {
+        "symbol": "D_802C72A0_649750",
+        "guest": 2150396576,
+        "rom_offset": 6592336,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          },
+          {
+            "offset": 4,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          },
+          {
+            "offset": 8,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          },
+          {
+            "offset": 12,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          }
+        ],
+        "source": [
+          "src/cave/6425F0.c:21-21",
+          "src/cave/6438F0.c:24-24"
+        ]
+      },
+      {
+        "symbol": "D_802C729C_64974C",
+        "guest": 2150396572,
+        "rom_offset": 6592332,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "f32_bits"
+          }
+        ],
+        "source": [
+          "src/cave/6438F0.c:23-23"
+        ]
+      },
+      {
+        "symbol": "D_802C7410_6498C0",
+        "guest": 2150396944,
+        "rom_offset": 6592704,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "f32_bits"
+          },
+          {
+            "offset": 4,
+            "width": 4,
+            "kind": "f32_bits"
+          },
+          {
+            "offset": 8,
+            "width": 4,
+            "kind": "f32_bits"
+          }
+        ],
+        "source": [
+          "src/cave/6438F0.c:30-30"
+        ]
+      },
+      {
+        "symbol": "D_802C747C_64992C",
+        "guest": 2150397052,
+        "rom_offset": 6592812,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 1,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 2,
+            "width": 1,
+            "kind": "u8"
+          }
+        ],
+        "source": [
+          "src/cave/6438F0.c:32-32"
+        ]
+      },
+      {
+        "symbol": "D_802C7480_649930",
+        "guest": 2150397056,
+        "rom_offset": 6592816,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 1,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 2,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 3,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 4,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 5,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 6,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 7,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 8,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 9,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 10,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 11,
+            "width": 1,
+            "kind": "u8"
+          }
+        ],
+        "source": [
+          "src/cave/6438F0.c:33-33"
+        ]
+      },
+      {
+        "symbol": "D_802C75EC_649A9C",
+        "guest": 2150397420,
+        "rom_offset": 6593180,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          }
+        ],
+        "source": [
+          "src/cave/644E80.c:7-7",
+          "src/cave/645870.c:5-5"
+        ]
+      },
+      {
+        "symbol": "D_802C75F0_649AA0",
+        "guest": 2150397424,
+        "rom_offset": 6593184,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          }
+        ],
+        "source": [
+          "src/cave/644E80.c:8-8",
+          "src/cave/645870.c:6-6"
+        ]
+      },
+      {
+        "symbol": "D_802C7980_649E30",
+        "guest": 2150398336,
+        "rom_offset": 6594096,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "f32_bits"
+          }
+        ],
+        "source": [
+          "src/cave/645870.c:10-10",
+          "src/cave/645D90.c:13-13"
+        ]
+      },
+      {
+        "symbol": "D_802C79C4_649E74",
+        "guest": 2150398404,
+        "rom_offset": 6594164,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "f32_bits"
+          },
+          {
+            "offset": 4,
+            "width": 4,
+            "kind": "f32_bits"
+          },
+          {
+            "offset": 8,
+            "width": 4,
+            "kind": "f32_bits"
+          }
+        ],
+        "source": [
+          "src/cave/645D90.c:14-14"
+        ]
+      },
+      {
+        "symbol": "D_802C7B4C_649FFC",
+        "guest": 2150398796,
+        "rom_offset": 6594556,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          }
+        ],
+        "source": [
+          "src/cave/645D90.c:18-18",
+          "src/cave/646B50.c:10-10",
+          "src/cave/646EA0.c:7-7"
+        ]
+      },
+      {
+        "symbol": "D_802C7C3C_64A0EC",
+        "guest": 2150399036,
+        "rom_offset": 6594796,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          }
+        ],
+        "source": [
+          "src/cave/645D90.c:19-19",
+          "src/cave/646EA0.c:13-13"
+        ]
+      },
+      {
+        "symbol": "D_802C7C28_64A0D8",
+        "guest": 2150399016,
+        "rom_offset": 6594776,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "vertex_data_identity"
+          },
+          {
+            "offset": 4,
+            "width": 4,
+            "kind": "vertex_buffer_identity"
+          },
+          {
+            "offset": 8,
+            "width": 4,
+            "kind": "s32"
+          },
+          {
+            "offset": 12,
+            "width": 4,
+            "kind": "s32"
+          },
+          {
+            "offset": 16,
+            "width": 4,
+            "kind": "f32_bits"
+          }
+        ],
+        "source": [
+          "src/cave/646EA0.c:12-12"
+        ]
+      },
+      {
+        "symbol": "D_8012A0F8_1F5EA8",
+        "guest": 2148704504,
+        "rom_offset": 2055848,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "f32_bits"
+          }
+        ],
+        "source": [
+          "src/cave/647360.c:7-7"
+        ]
+      },
+      {
+        "symbol": "D_802C7FC0_64A470",
+        "guest": 2150399936,
+        "rom_offset": 6595696,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "s32"
+          }
+        ],
+        "source": [
+          "src/cave/647360.c:33-33"
+        ]
+      },
+      {
+        "symbol": "D_802C7FC4_64A474",
+        "guest": 2150399940,
+        "rom_offset": 6595700,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "s32"
+          }
+        ],
+        "source": [
+          "src/cave/647360.c:34-34"
+        ]
+      },
+      {
+        "symbol": "D_802C7FE8_64A498",
+        "guest": 2150399976,
+        "rom_offset": 6595736,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 2,
+            "kind": "u16"
+          },
+          {
+            "offset": 2,
+            "width": 2,
+            "kind": "u16"
+          }
+        ],
+        "source": [
+          "src/cave/647360.c:36-36"
+        ]
+      },
+      {
+        "symbol": "D_802C8040_64A4F0",
+        "guest": 2150400064,
+        "rom_offset": 6595824,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "s32"
+          }
+        ],
+        "source": [
+          "src/cave/647360.c:38-38"
+        ]
+      },
+      {
+        "symbol": "D_802C8044_64A4F4",
+        "guest": 2150400068,
+        "rom_offset": 6595828,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 4,
+            "kind": "semantic_object_identity"
+          }
+        ],
+        "source": [
+          "src/cave/647360.c:39-39"
+        ]
+      },
+      {
+        "symbol": "D_802C6D5C_64920C",
+        "guest": 2150395228,
+        "rom_offset": 6590988,
+        "fields": [
+          {
+            "offset": 0,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 1,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 2,
+            "width": 1,
+            "kind": "u8"
+          },
+          {
+            "offset": 3,
+            "width": 1,
+            "kind": "u8"
+          }
+        ],
+        "source": [
+          "src/cave/6425F0.c:13-13"
+        ]
+      }
+    ],
+    "lifecycle_reads": [
+      {
+        "symbol": "D_802C6150_648600",
+        "guest": 2150392144,
+        "rom_offset": 6587904,
+        "bytes": 228
+      },
+      {
+        "symbol": "D_802C6234_6486E4",
+        "guest": 2150392372,
+        "rom_offset": 6588132,
+        "bytes": 288
+      },
+      {
+        "symbol": "D_802C637C_64882C",
+        "guest": 2150392700,
+        "rom_offset": 6588460,
+        "bytes": 28
+      },
+      {
+        "symbol": "D_802C6398_648848",
+        "guest": 2150392728,
+        "rom_offset": 6588488,
+        "bytes": 140
+      }
+    ],
+    "heap": {
+      "code_vram": 2150358272,
+      "assets_end": 2149248496,
+      "difference": 1109776,
+      "receipt": "authoritative-df8815e7-evaluated-linker-symbols.json"
+    },
+    "qualified_initial_words": {
+      "source": "qualified-638z-cave-initial-fields-and-static-spawns.tsv",
+      "sha256": "8468f2c0b6dc8e992811a555cc39f4b4ac569bd8b90bfa2f57cd82dba658ec25",
+      "fields": [
+        {
+          "symbol": "D_802C6354_648804",
+          "guest": 2150392660,
+          "offset": 0,
+          "width": 2,
+          "kind": "u16",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6378_648828",
+          "guest": 2150392696,
+          "offset": 0,
+          "width": 4,
+          "kind": "s32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6430_6488E0",
+          "guest": 2150392880,
+          "offset": 0,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6AA4_648F54",
+          "guest": 2150394532,
+          "offset": 0,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D4C_6491FC",
+          "guest": 2150395212,
+          "offset": 0,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D4C_6491FC",
+          "guest": 2150395212,
+          "offset": 4,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D4C_6491FC",
+          "guest": 2150395212,
+          "offset": 8,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D4C_6491FC",
+          "guest": 2150395212,
+          "offset": 12,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C72A0_649750",
+          "guest": 2150396576,
+          "offset": 0,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C72A0_649750",
+          "guest": 2150396576,
+          "offset": 4,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C72A0_649750",
+          "guest": 2150396576,
+          "offset": 8,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C72A0_649750",
+          "guest": 2150396576,
+          "offset": 12,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C729C_64974C",
+          "guest": 2150396572,
+          "offset": 0,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7410_6498C0",
+          "guest": 2150396944,
+          "offset": 0,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7410_6498C0",
+          "guest": 2150396944,
+          "offset": 4,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7410_6498C0",
+          "guest": 2150396944,
+          "offset": 8,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C747C_64992C",
+          "guest": 2150397052,
+          "offset": 0,
+          "width": 1,
+          "kind": "u8",
+          "bits": 3
+        },
+        {
+          "symbol": "D_802C747C_64992C",
+          "guest": 2150397052,
+          "offset": 1,
+          "width": 1,
+          "kind": "u8",
+          "bits": 4
+        },
+        {
+          "symbol": "D_802C747C_64992C",
+          "guest": 2150397052,
+          "offset": 2,
+          "width": 1,
+          "kind": "u8",
+          "bits": 5
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 0,
+          "width": 1,
+          "kind": "u8",
+          "bits": 3
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 1,
+          "width": 1,
+          "kind": "u8",
+          "bits": 4
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 2,
+          "width": 1,
+          "kind": "u8",
+          "bits": 5
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 3,
+          "width": 1,
+          "kind": "u8",
+          "bits": 6
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 4,
+          "width": 1,
+          "kind": "u8",
+          "bits": 7
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 5,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 6,
+          "width": 1,
+          "kind": "u8",
+          "bits": 9
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 7,
+          "width": 1,
+          "kind": "u8",
+          "bits": 10
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 8,
+          "width": 1,
+          "kind": "u8",
+          "bits": 11
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 9,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 10,
+          "width": 1,
+          "kind": "u8",
+          "bits": 13
+        },
+        {
+          "symbol": "D_802C7480_649930",
+          "guest": 2150397056,
+          "offset": 11,
+          "width": 1,
+          "kind": "u8",
+          "bits": 14
+        },
+        {
+          "symbol": "D_802C75EC_649A9C",
+          "guest": 2150397420,
+          "offset": 0,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C75F0_649AA0",
+          "guest": 2150397424,
+          "offset": 0,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7980_649E30",
+          "guest": 2150398336,
+          "offset": 0,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C79C4_649E74",
+          "guest": 2150398404,
+          "offset": 0,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C79C4_649E74",
+          "guest": 2150398404,
+          "offset": 4,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C79C4_649E74",
+          "guest": 2150398404,
+          "offset": 8,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7B4C_649FFC",
+          "guest": 2150398796,
+          "offset": 0,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7C3C_64A0EC",
+          "guest": 2150399036,
+          "offset": 0,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7C28_64A0D8",
+          "guest": 2150399016,
+          "offset": 0,
+          "width": 4,
+          "kind": "vertex_data_identity",
+          "bits": 2149033856
+        },
+        {
+          "symbol": "D_802C7C28_64A0D8",
+          "guest": 2150399016,
+          "offset": 4,
+          "width": 4,
+          "kind": "vertex_buffer_identity",
+          "bits": 2150399008
+        },
+        {
+          "symbol": "D_802C7C28_64A0D8",
+          "guest": 2150399016,
+          "offset": 8,
+          "width": 4,
+          "kind": "s32",
+          "bits": 324
+        },
+        {
+          "symbol": "D_802C7C28_64A0D8",
+          "guest": 2150399016,
+          "offset": 12,
+          "width": 4,
+          "kind": "s32",
+          "bits": 2
+        },
+        {
+          "symbol": "D_802C7C28_64A0D8",
+          "guest": 2150399016,
+          "offset": 16,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 0
+        },
+        {
+          "symbol": "D_8012A0F8_1F5EA8",
+          "guest": 2148704504,
+          "offset": 0,
+          "width": 4,
+          "kind": "f32_bits",
+          "bits": 1086324736
+        },
+        {
+          "symbol": "D_802C7FC0_64A470",
+          "guest": 2150399936,
+          "offset": 0,
+          "width": 4,
+          "kind": "s32",
+          "bits": 4294967295
+        },
+        {
+          "symbol": "D_802C7FC4_64A474",
+          "guest": 2150399940,
+          "offset": 0,
+          "width": 4,
+          "kind": "s32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C7FE8_64A498",
+          "guest": 2150399976,
+          "offset": 0,
+          "width": 2,
+          "kind": "u16",
+          "bits": 1001
+        },
+        {
+          "symbol": "D_802C7FE8_64A498",
+          "guest": 2150399976,
+          "offset": 2,
+          "width": 2,
+          "kind": "u16",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C8040_64A4F0",
+          "guest": 2150400064,
+          "offset": 0,
+          "width": 4,
+          "kind": "s32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C8044_64A4F4",
+          "guest": 2150400068,
+          "offset": 0,
+          "width": 4,
+          "kind": "semantic_object_identity",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D5C_64920C",
+          "guest": 2150395228,
+          "offset": 0,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D5C_64920C",
+          "guest": 2150395228,
+          "offset": 1,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D5C_64920C",
+          "guest": 2150395228,
+          "offset": 2,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6D5C_64920C",
+          "guest": 2150395228,
+          "offset": 3,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        }
+      ],
+      "array_proof": "cave-array-consumed-prefix-proof.json"
+    },
+    "consumed_prefix_proof": {
+      "numeric_authority": "qualified-638z-cave-initial-fields-and-static-spawns.tsv",
+      "numeric_sha256": "8468f2c0b6dc8e992811a555cc39f4b4ac569bd8b90bfa2f57cd82dba658ec25",
+      "indices": {
+        "Koffing109": [
+          1,
+          2,
+          3
+        ],
+        "Jigglypuff39": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "source_diversions": [
+        "src/cave/6438F0.c:75-93 behavior4,5,6 call actual nonreturning Pokemon_SetState before indexed routines"
+      ],
+      "source_index_consumers": [
+        "src/cave/6425F0.c:81-91",
+        "src/cave/6425F0.c:121-138",
+        "src/cave/6438F0.c:95-110"
+      ],
+      "dynamic_source_producers": [
+        "src/cave/6401B0.c:25-52 =>129",
+        "src/cave/640CD0.c:33-43 =>132",
+        "src/cave/642CC0.c:36-44 =>89",
+        "shared app_level/4FE330.c/common1003 closure=>1003"
+      ],
+      "mutability": "No Source Cave235 function assigns pokemon.behavior. Imported common1003 helper assigns only its new1003 behavior0. Native admission must prove actual canonical World/catalog/ticket producers; static rows alone are not a blanket dynamic reachability proof.",
+      "canonical_extent": "All three indexed semantic arrays retain native4-slotprefix0..3. No neighboring-label extent inference."
+    },
+    "remaining_queries": [],
+    "qualified_639a": {
+      "source": "qualified-639a-cave-extra-Source-fields.tsv",
+      "sha256": "d4abb489a04dfabeac125909a37062782e90730a9c4ac2d12ba0036672f87b83",
+      "lifecycle_fields": [
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 0,
+          "width": 2,
+          "kind": "u16",
+          "bits": 145
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 2,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 3,
+          "width": 1,
+          "kind": "u8",
+          "bits": 22
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 4,
+          "width": 2,
+          "kind": "u16",
+          "bits": 213
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 6,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 7,
+          "width": 1,
+          "kind": "u8",
+          "bits": 20
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 8,
+          "width": 2,
+          "kind": "u16",
+          "bits": 214
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 10,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 11,
+          "width": 1,
+          "kind": "u8",
+          "bits": 20
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 12,
+          "width": 2,
+          "kind": "u16",
+          "bits": 152
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 14,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 15,
+          "width": 1,
+          "kind": "u8",
+          "bits": 30
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 16,
+          "width": 2,
+          "kind": "u16",
+          "bits": 216
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 18,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 19,
+          "width": 1,
+          "kind": "u8",
+          "bits": 28
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 20,
+          "width": 2,
+          "kind": "u16",
+          "bits": 217
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 22,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 23,
+          "width": 1,
+          "kind": "u8",
+          "bits": 28
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 24,
+          "width": 2,
+          "kind": "u16",
+          "bits": 332
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 26,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 27,
+          "width": 1,
+          "kind": "u8",
+          "bits": 14
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 28,
+          "width": 2,
+          "kind": "u16",
+          "bits": 333
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 30,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 31,
+          "width": 1,
+          "kind": "u8",
+          "bits": 14
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 32,
+          "width": 2,
+          "kind": "u16",
+          "bits": 334
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 34,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 35,
+          "width": 1,
+          "kind": "u8",
+          "bits": 14
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 36,
+          "width": 2,
+          "kind": "u16",
+          "bits": 149
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 38,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 39,
+          "width": 1,
+          "kind": "u8",
+          "bits": 14
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 40,
+          "width": 2,
+          "kind": "u16",
+          "bits": 150
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 42,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 43,
+          "width": 1,
+          "kind": "u8",
+          "bits": 14
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 44,
+          "width": 2,
+          "kind": "u16",
+          "bits": 103
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 46,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 47,
+          "width": 1,
+          "kind": "u8",
+          "bits": 14
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 48,
+          "width": 2,
+          "kind": "u16",
+          "bits": 210
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 50,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 51,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 52,
+          "width": 2,
+          "kind": "u16",
+          "bits": 211
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 54,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 55,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 56,
+          "width": 2,
+          "kind": "u16",
+          "bits": 376
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 58,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 59,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 60,
+          "width": 2,
+          "kind": "u16",
+          "bits": 114
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 62,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 63,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 64,
+          "width": 2,
+          "kind": "u16",
+          "bits": 196
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 66,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 67,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 68,
+          "width": 2,
+          "kind": "u16",
+          "bits": 198
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 70,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 71,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 72,
+          "width": 2,
+          "kind": "u16",
+          "bits": 197
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 74,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 75,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 76,
+          "width": 2,
+          "kind": "u16",
+          "bits": 132
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 78,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 79,
+          "width": 1,
+          "kind": "u8",
+          "bits": 15
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 80,
+          "width": 2,
+          "kind": "u16",
+          "bits": 366
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 82,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 83,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 84,
+          "width": 2,
+          "kind": "u16",
+          "bits": 134
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 86,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 87,
+          "width": 1,
+          "kind": "u8",
+          "bits": 18
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 88,
+          "width": 2,
+          "kind": "u16",
+          "bits": 139
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 90,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 91,
+          "width": 1,
+          "kind": "u8",
+          "bits": 18
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 92,
+          "width": 2,
+          "kind": "u16",
+          "bits": 119
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 94,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 95,
+          "width": 1,
+          "kind": "u8",
+          "bits": 15
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 96,
+          "width": 2,
+          "kind": "u16",
+          "bits": 306
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 98,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 99,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 100,
+          "width": 2,
+          "kind": "u16",
+          "bits": 307
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 102,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 103,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 104,
+          "width": 2,
+          "kind": "u16",
+          "bits": 308
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 106,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 107,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 108,
+          "width": 2,
+          "kind": "u16",
+          "bits": 372
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 110,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 111,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 112,
+          "width": 2,
+          "kind": "u16",
+          "bits": 263
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 114,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 115,
+          "width": 1,
+          "kind": "u8",
+          "bits": 18
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 116,
+          "width": 2,
+          "kind": "u16",
+          "bits": 354
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 118,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 119,
+          "width": 1,
+          "kind": "u8",
+          "bits": 15
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 120,
+          "width": 2,
+          "kind": "u16",
+          "bits": 264
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 122,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 123,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 124,
+          "width": 2,
+          "kind": "u16",
+          "bits": 265
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 126,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 127,
+          "width": 1,
+          "kind": "u8",
+          "bits": 10
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 128,
+          "width": 2,
+          "kind": "u16",
+          "bits": 266
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 130,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 131,
+          "width": 1,
+          "kind": "u8",
+          "bits": 10
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 132,
+          "width": 2,
+          "kind": "u16",
+          "bits": 127
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 134,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 135,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 136,
+          "width": 2,
+          "kind": "u16",
+          "bits": 360
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 138,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 139,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 140,
+          "width": 2,
+          "kind": "u16",
+          "bits": 371
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 142,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 143,
+          "width": 1,
+          "kind": "u8",
+          "bits": 10
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 144,
+          "width": 2,
+          "kind": "u16",
+          "bits": 335
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 146,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 147,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 148,
+          "width": 2,
+          "kind": "u16",
+          "bits": 336
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 150,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 151,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 152,
+          "width": 2,
+          "kind": "u16",
+          "bits": 337
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 154,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 155,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 156,
+          "width": 2,
+          "kind": "u16",
+          "bits": 338
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 158,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 159,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 160,
+          "width": 2,
+          "kind": "u16",
+          "bits": 339
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 162,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 163,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 164,
+          "width": 2,
+          "kind": "u16",
+          "bits": 340
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 166,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 167,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 168,
+          "width": 2,
+          "kind": "u16",
+          "bits": 341
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 170,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 171,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 172,
+          "width": 2,
+          "kind": "u16",
+          "bits": 321
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 174,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 175,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 176,
+          "width": 2,
+          "kind": "u16",
+          "bits": 322
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 178,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 179,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 180,
+          "width": 2,
+          "kind": "u16",
+          "bits": 323
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 182,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 183,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 184,
+          "width": 2,
+          "kind": "u16",
+          "bits": 136
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 186,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 187,
+          "width": 1,
+          "kind": "u8",
+          "bits": 12
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 188,
+          "width": 2,
+          "kind": "u16",
+          "bits": 188
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 190,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 191,
+          "width": 1,
+          "kind": "u8",
+          "bits": 26
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 192,
+          "width": 2,
+          "kind": "u16",
+          "bits": 106
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 194,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 195,
+          "width": 1,
+          "kind": "u8",
+          "bits": 26
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 196,
+          "width": 2,
+          "kind": "u16",
+          "bits": 107
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 198,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 199,
+          "width": 1,
+          "kind": "u8",
+          "bits": 26
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 200,
+          "width": 2,
+          "kind": "u16",
+          "bits": 153
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 202,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 203,
+          "width": 1,
+          "kind": "u8",
+          "bits": 26
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 204,
+          "width": 2,
+          "kind": "u16",
+          "bits": 328
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 206,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 207,
+          "width": 1,
+          "kind": "u8",
+          "bits": 18
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 208,
+          "width": 2,
+          "kind": "u16",
+          "bits": 329
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 210,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 211,
+          "width": 1,
+          "kind": "u8",
+          "bits": 22
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 212,
+          "width": 2,
+          "kind": "u16",
+          "bits": 330
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 214,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 215,
+          "width": 1,
+          "kind": "u8",
+          "bits": 22
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 216,
+          "width": 2,
+          "kind": "u16",
+          "bits": 331
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 218,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 219,
+          "width": 1,
+          "kind": "u8",
+          "bits": 22
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 220,
+          "width": 2,
+          "kind": "u16",
+          "bits": 309
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 222,
+          "width": 1,
+          "kind": "u8",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 223,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 224,
+          "width": 2,
+          "kind": "u16",
+          "bits": 133
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 226,
+          "width": 1,
+          "kind": "u8",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6150_648600",
+          "guest": 2150392144,
+          "offset": 227,
+          "width": 1,
+          "kind": "u8",
+          "bits": 8
+        },
+        {
+          "symbol": "D_802C637C_64882C",
+          "guest": 2150392700,
+          "offset": 0,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2151370752
+        },
+        {
+          "symbol": "D_802C637C_64882C",
+          "guest": 2150392700,
+          "offset": 4,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2151524352
+        },
+        {
+          "symbol": "D_802C637C_64882C",
+          "guest": 2150392700,
+          "offset": 8,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C637C_64882C",
+          "guest": 2150392700,
+          "offset": 12,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C637C_64882C",
+          "guest": 2150392700,
+          "offset": 16,
+          "width": 4,
+          "kind": "u32",
+          "bits": 320
+        },
+        {
+          "symbol": "D_802C637C_64882C",
+          "guest": 2150392700,
+          "offset": 20,
+          "width": 4,
+          "kind": "u32",
+          "bits": 240
+        },
+        {
+          "symbol": "D_802C637C_64882C",
+          "guest": 2150392700,
+          "offset": 24,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2713
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 0,
+          "width": 2,
+          "kind": "u16",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 4,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2147528700
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 8,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2147528096
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 12,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2149248496
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 16,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 20,
+          "width": 4,
+          "kind": "u32",
+          "bits": 1
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 24,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 28,
+          "width": 4,
+          "kind": "u32",
+          "bits": 20480
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 32,
+          "width": 4,
+          "kind": "u32",
+          "bits": 8192
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 36,
+          "width": 4,
+          "kind": "u32",
+          "bits": 1024
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 40,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 44,
+          "width": 4,
+          "kind": "u32",
+          "bits": 51200
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 48,
+          "width": 2,
+          "kind": "u16",
+          "bits": 2
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 52,
+          "width": 4,
+          "kind": "u32",
+          "bits": 16384
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 56,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2148145744
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 60,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2147502176
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 64,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 68,
+          "width": 4,
+          "kind": "u32",
+          "bits": 1088
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 72,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 76,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 80,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 84,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 88,
+          "width": 4,
+          "kind": "u32",
+          "bits": 92
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 92,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 96,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 100,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2150359976
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 104,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 108,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 112,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 116,
+          "width": 4,
+          "kind": "u32",
+          "bits": 136
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 120,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 124,
+          "width": 4,
+          "kind": "u32",
+          "bits": 88
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 128,
+          "width": 4,
+          "kind": "u32",
+          "bits": 0
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 132,
+          "width": 4,
+          "kind": "u32",
+          "bits": 144
+        },
+        {
+          "symbol": "D_802C6398_648848",
+          "guest": 2150392728,
+          "offset": 136,
+          "width": 4,
+          "kind": "u32",
+          "bits": 2150359596
+        }
+      ],
+      "egg_frame_table": [
+        {
+          "symbol": "qualified_D_802C7C28_64A0D8_tempBuffer",
+          "guest": 2150399008,
+          "offset": 0,
+          "width": 4,
+          "kind": "Source_end2_consumed_vertex_frame_identity",
+          "bits": 2150883856,
+          "canonical_Source_BSS_aliases": [
+            {
+              "symbol": "D_8033E150_6C0600",
+              "source_selector": "src/cave/640900.c:13-13",
+              "offset": 192,
+              "declared_bytes": 5440
+            }
+          ]
+        },
+        {
+          "symbol": "qualified_D_802C7C28_64A0D8_tempBuffer",
+          "guest": 2150399008,
+          "offset": 4,
+          "width": 4,
+          "kind": "Source_end2_consumed_vertex_frame_identity",
+          "bits": 2149040272,
+          "canonical_Source_BSS_aliases": []
+        }
+      ]
+    }
+  },
+  "source_storage": {
+    "canonical_u16_alias": "D_802C6354_648804: main.u16 reads/writes;645740.s16 onlywrites0",
+    "pointer_integer_alias": "Jigglypuff.miscVars2 savepath is replaced by typedperActor savedpath ownership, no castthroughs32",
+    "SomeBits": "11canonical logical bitfields, original BSS zero semantics; one Source reset clears all flags, never overlay SDK bitfield layout",
+    "object_arrays": "D802C6D4C/D802C72A0 canonicalGObj*[4]; D802C6D5C u8[4]. Qualified638z producer rows+completeSource dynamicfactoryclosure+nonreturningSource4/5/6branches prove consumedprefix; no neighboring-label inference.",
+    "lifecycle_borrow": "ActorSource owns allSource mutableglobals once; Lifecycle onlyborrows actors, plus ownSceneSetup/Screen/environment/registry immutable numericfields.",
+    "egg_frame0_alias": "One canonical typed BSS storageD_8033E150_6C0600:prefix0xC0,324nativeSource-widthvertices=0x1440bytes,suffix0x40,total0x1540; frame0guest0x8033e210 aliases thatfield, no copiedbuffer or guest/SDKcast. Frame1source0x8017c090; outputdatasource0x8017a780.",
+    "egg": "Canonical IsleEgg with bound native 16-byte IsleEggVertex arrays; checked shared bind/commit and one common Original C provider, no course-specific Egg service types or algorithm copies."
+  },
+  "ownership": {
+    "course": 4,
+    "actor_record": "fixedaddress independent record basefirst; preparecanonicalSourceoncepreGame; proposedGame/servicesadmissionbeforeACTIVE last; detachonlyafteractualretirementjoins",
+    "lifecycle_record": "independentdomain/status/fence/services; actorsborrowsonecanonicalmutablerecord; neverActor fencepreGame/detached; explicitentryclockfailurecontrol",
+    "original_bodies": "Build-private only:214 actor+21 lifecycle course Original C plus unchanged supplementary object utility1. Required common Egg6 is imported from its once-only provider, not emitted here. Actual six Source-empty course bodies retained.",
+    "excluded_scope": "No omitted course selectors:235=214actor+21lifecycle.19asset-onlyC files have0functionselectors. Only func8035E1D4 from app_level/4FE330.c is supplemental course-owned; all six Egg Original definitions belong exclusively to common-egg.",
+    "parent_owns": "nativehost/services/routing/sharedfactoring/CMake/CourseState/Beads/git/gates/ROM/sceneactivation; no repositorySourceedits authorizedyet"
+  },
+  "common_egg_provider": {
+    "provider": "common-egg",
+    "transformation_version": "common-egg-original6-v1",
+    "manifest": "cmake/common-egg-inputs.json",
+    "definition_count": 6,
+    "output_sha256": "98f8a8746d8b0aa6369dba16542a1e9e1522430850359925e9178d1f93b8b4cb",
+    "definitions": [
+      {
+        "symbol": "func_800AAFB0",
+        "native_symbol": "isle_egg_original_func_800AAFB0",
+        "native_declaration": "int8_t isle_egg_original_func_800AAFB0(int16_t arg0, int16_t arg1, float arg2)",
+        "source_sha256": "cf477e312b49fc2e0d1406ad88be29a222b5cb5c7e260aa441162dd42c486cf2",
+        "native_sha256": "fdcd12987334878fc87fd3bd935e74170c8b704999b3b8c324d318f9a5733a89"
+      },
+      {
+        "symbol": "func_800AB000",
+        "native_symbol": "isle_egg_original_func_800AB000",
+        "native_declaration": "int16_t isle_egg_original_func_800AB000(int16_t arg0, int16_t arg1, float arg2)",
+        "source_sha256": "6eacc489a1076121b84287e3b78adc5b3a43554e8be4736d5d64fcac8664a974",
+        "native_sha256": "8921906046ff41c8e4c7ee7477adc4211dcd0f4bcd6224df9ae2411a836d4c2c"
+      },
+      {
+        "symbol": "func_800AB050",
+        "native_symbol": "isle_egg_original_func_800AB050",
+        "native_declaration": "void isle_egg_original_func_800AB050(float arg0, int32_t arg1, IsleEggVertex* arg2, IsleEggVertex* arg3, IsleEggVertex* arg4)",
+        "source_sha256": "c533c3ae98d51eb8bab8f525e68d2ef7cfed750b95eceaeea833caddcc05ef00",
+        "native_sha256": "e024ef5f90124fb1debfa878ddaae3fb133c7f4a139bd3f274fb7e54517e1ecf"
+      },
+      {
+        "symbol": "func_800AB138",
+        "native_symbol": "isle_egg_original_func_800AB138",
+        "native_declaration": "int32_t isle_egg_original_func_800AB138(IsleEgg* arg0, float arg1)",
+        "source_sha256": "96fcaf192c0c87cfbf9c012f163ddb0a0e21e531e04346a3b06af8462f11ebc6",
+        "native_sha256": "bf964488d730f26688e795305d3f3613a0e6172a043b262c1da467e145aad4ba"
+      },
+      {
+        "symbol": "func_800AB1F8",
+        "native_symbol": "isle_egg_original_func_800AB1F8",
+        "native_declaration": "void isle_egg_original_func_800AB1F8(IsleEgg* arg0)",
+        "source_sha256": "c3fd3ea4917b92ff018c74ef99c779a50474931472f7fe7c5ce4fc1cbef320c3",
+        "native_sha256": "763454e40d141c02c3f421315cb23769a2575f0c87c6c0c8bfc81eb8212b9d3d"
+      },
+      {
+        "symbol": "func_80362414_502824",
+        "native_symbol": "isle_egg_original_func_80362414_502824",
+        "native_declaration": "void isle_egg_original_func_80362414_502824(IsleActorSource* obj, IsleEgg* egg, float arg2)",
+        "source_sha256": "bbe5e351430a6d6cbe962bc7c38e816c8c0eb26f4b461ccb44e1c7294e06bf2c",
+        "native_sha256": "fcace7ecb5e2909671b1c79ffc65a678966d9b7af2768a0fe854a0782788d562"
+      }
+    ]
+  }
+}

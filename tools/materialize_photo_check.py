@@ -16,9 +16,9 @@ from prepare_engine import git, publish
 REVISION = 'df8815e75f3d79618466e01e0827c6165b93d11c'
 PRIMARY_SOURCES = {'src/photo_check/98C330.c','src/photo_check/993C50.c',
                    'src/photo_check/993F80.c'}
-SUPPORT_DEFINITIONS = {'src/sys/misc.c':{'swap','qsortInternal','qsort2'},
-                       'src/window/8486E0.c':{'func_80374F30_8486E0'}}
+SUPPORT_DEFINITIONS = {'src/window/8486E0.c':{'func_80374F30_8486E0'}}
 BRIDGE = {
+    'qsort2':'pc_qsort',
     'FocusMark_Create':'pc_focus_create','FocusMark_MoveFront':'pc_focus_front',
     'FocusMark_SetPos':'pc_focus_position','FocusMark_SetSize':'pc_focus_size',
     'FocusMark_SetTargetPos':'pc_focus_target','FocusMark_Show':'pc_focus_show',
@@ -186,13 +186,6 @@ def rewrite_definition(original, name, names):
                         ('sp24->unk4_30','sp24->source_second_flag'),('sp24->unk4_29','sp24->for_album')]:
             count=original.count(old)
             if count: change(old,new,count)
-    if name=='qsortInternal':
-        change('            last = s1 - qsortItemSize;',
-               '            if (s1 == first) break;\n            last = s1 - qsortItemSize;',label='native-empty-sort-range-pointer-safety')
-        change('            qsortInternal(first, s1 - qsortItemSize);',
-               '            if (s1 > first) qsortInternal(first, s1 - qsortItemSize);',label='native-empty-sort-range-pointer-safety')
-    if name=='qsort2':
-        change('s32 (*compare)(const void*, const void*)','IslePhotoCheckCompare compare')
     # Use exact source byte counts and only rewrite code, never text/comment content.
     original=code_only(original,lambda s:sub(r'\bUNUSED\s+[^;]+;','',s,'remove-matching-only-padding'))
     original=code_only(original,lambda s:sub(r'\b(\w+)->userData\s*=\s*([^;]+);',r'pc_userdata_set(source, \1, \2);',s,'actual-userdata-set'))
@@ -220,7 +213,7 @@ def rewrite_definition(original, name, names):
             code=sub(r'\b'+original_name+r'\b','isle_photo_check_'+original_name,code,'function:'+original_name)
         for original_name,native in BRIDGE.items():
             code=sub(r'\b'+original_name+r'\b',native,code,'bridge:'+original_name)
-        for variable in GLOBALS+['qsortItemSize','qsortCompareFunc']:
+        for variable in GLOBALS:
             code=sub(r'\b'+variable+r'\b','source->'+variable,code,'context-field:'+variable)
         for original_name,native in {**TYPES,**CONSTANTS,**READ_ONLY}.items():
             code=sub(r'\b'+original_name+r'\b',native,code,'semantic-token:'+original_name)
@@ -229,9 +222,8 @@ def rewrite_definition(original, name, names):
         for function in calls:
             code=sub(r'\b'+function+r'\(\s*(?!Context\b)',function+'(source, ',code,'context-call:'+function)
             code=sub(re.escape(function+'(source, )'),function+'(source)',code,'empty-call:'+function)
-        for function in ['source->D_801F4198_9A3C08','source->qsortCompareFunc']:
+        for function in ['source->D_801F4198_9A3C08']:
             code=sub(re.escape(function+'('),function+'(source, ',code,'context-comparator:'+function)
-        if name=='qsort2': code=sub(re.escape('compare(curr, next)'),'compare(source, curr, next)',code,'context-sort-comparator')
         return code
     signature=code_only(signature,tokens)
     # The signature has already acquired context; do not insert it twice.
@@ -274,8 +266,17 @@ def main():
     parser.add_argument('--source-repo',required=True,type=Path)
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--manifest',type=Path,default=Path(__file__).resolve().parents[1]/'cmake/photo-check-inputs.json')
+    parser.add_argument('--manifest-sha256',required=True)
     args=parser.parse_args()
-    manifest=json.loads(args.manifest.read_text())
+    manifest_raw=args.manifest.read_bytes()
+    if not re.fullmatch(r'[0-9a-f]{64}',args.manifest_sha256) or hashlib.sha256(manifest_raw).hexdigest()!=args.manifest_sha256:
+        raise ValueError('PhotoCheck externally admitted recipe fingerprint')
+    manifest=json.loads(manifest_raw)
+    root=Path(__file__).resolve().parents[1]
+    if not manifest['native_support']: raise ValueError('missing PhotoCheck native support guards')
+    for path,identity in manifest['native_support'].items():
+        if hashlib.sha256((root/path).read_bytes()).hexdigest()!=identity['sha256']:
+            raise ValueError(('PhotoCheck native support digest',path))
     if manifest['revision']!=REVISION: raise ValueError('unadmitted GAME revision')
     texts={}
     for path,identity in manifest['source_files'].items():
@@ -299,19 +300,34 @@ def main():
     data=data_materialize(texts)
     # UI numeric constants are pinned separately in the manifest, not SDK bodies.
     decl=manifest['window_enum_declarations']+'\n'+decl
+    bridge=(root/'src/photo_check_source.c').read_text()
+    game=bridge
+    for include,content in [('photo_check_original.inc',body),('photo_check_declarations.inc',decl),('photo_check_data.inc',data)]:
+        marker='#include "'+include+'"'
+        if game.count(marker)!=1: raise ValueError(('PhotoCheck bridge include closure',include))
+        game=game.replace(marker,content)
+    outputs={'body_sha256':digest(body),'declarations_sha256':digest(decl),'data_sha256':digest(data),'game_sha256':digest(game)}
+    if records!=manifest['native_definitions']:
+        raise ValueError('PhotoCheck native definition/rewrite fingerprint')
+    if outputs!=manifest['native_outputs']:
+        raise ValueError('PhotoCheck whole-output fingerprint')
     args.output.parent.mkdir(parents=True,exist_ok=True)
     publish(args.output,body)
     publish(args.output.with_name('photo_check_declarations.inc'),decl)
     publish(args.output.with_name('photo_check_data.inc'),data)
+    publish(args.output.with_name('game.c'),game)
     publish(Path(str(args.output)+'.manifest.json'),json.dumps({
         'provider':manifest['provider'],'revision':REVISION,'definitions':records,
+        'recipe_sha256':hashlib.sha256(manifest_raw).hexdigest(),
+        'generator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        'native_support':manifest['native_support'],
         'data_origins':manifest['data_origins'],'source_files':manifest['source_files'],
         'support_allowlist':manifest['support_allowlist'],
         'native_contract':manifest['native_contract'],
         'native_contract_origins':manifest['native_contract_origins'],
         'native_pointer_corrections':manifest['native_pointer_corrections'],
         'intentional_source_defect_corrections':manifest['intentional_source_defect_corrections'],
-        'outputs':{'body_sha256':digest(body),'declarations_sha256':digest(decl),'data_sha256':digest(data)}},indent=2)+'\n')
+        'outputs':outputs},indent=2)+'\n')
 
 if __name__=='__main__':
     main()

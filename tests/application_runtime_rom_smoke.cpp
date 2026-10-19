@@ -3,15 +3,17 @@
 // Original Manager results alone select entries; owned input never injects routes.
 // The diagnostic-disabled Host supplies NO controller; SoftwareController below
 // is a separate, explicitly owned acquisition through the real Input Service.
-// CLI modes: ingress, course, native0..native6, menus, credits17..credits19.
-// Course and photographed NativeN continue through original CameraCheck9,
-// PhotoCheck15 and an actually rendered/presented returned Oak13 owner.
-// NativeN authors unlock progress only; roll photographs remain genuine Source
-// captures. Native5-empty independently preserves natural zero-photo Oak13.
+// CLI modes: ingress, course, native0..native6[-oak-cancel], native5-empty,
+// menus and credits17..credits19. Photographed courses normally continue through
+// actual Camera9/Photo15/Oak Save/Original Title8 and a cold exact-profile reopen.
+// NativeN authors unlock progress only; roll photographs remain genuine Source.
+// Oak-cancel preserves mid-print retirement; Native5-empty preserves Source13.
 // Exit0 requires the entire selected scenario; exit1 is any failure.
 // Each run predeclares bounded artifacts in its new owned proof root.
 #include "application_runtime.hpp"
 #include "camera_check_source.h"
+#include "canonical_frame_capture.hpp"
+#include "credits_worker_native.hpp"
 #include "game_host.hpp"
 #include "host_progress.hpp"
 #include "new_game_scene.hpp"
@@ -28,7 +30,6 @@
 #include "native_course_probe.hpp"
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -46,7 +47,6 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 namespace {
 namespace app = isle::application;
@@ -68,15 +68,15 @@ std::uint32_t menu_target(Mode mode) noexcept {
     return credit?std::uint32_t{1}<<(credit-12):0x7u;
 }
 constexpr std::array<const char*,3> course_captures{{
-    "actual-beach-tutorial-window.ppm", "actual-beach-course-window.ppm", "actual-beach-outro-window.ppm"}};
+    "canonical-beach-tutorial-frame.ppm", "canonical-beach-course-frame.ppm", "canonical-beach-outro-frame.ppm"}};
 constexpr std::array<const char*,4> post_captures{{
-    "actual-camera-check-window.ppm","actual-camera-marked-window.ppm",
-    "actual-photo-assessment-window.ppm","actual-photo-report-window.ppm"}};
+    "canonical-camera-check-frame.ppm","canonical-camera-marked-frame.ppm",
+    "canonical-photo-assessment-frame.ppm","canonical-photo-report-frame.ppm"}};
 constexpr std::size_t scene_count = 5;
 constexpr std::array<const char*,scene_count> scene_names{{"Boot","Title","Name","Oak","Beach"}};
 constexpr std::array<const char*,6> captures{{
-    "actual-logo-window.ppm", "actual-title-window.ppm", "actual-menu-window.ppm",
-    "actual-name-window.ppm", "actual-oak-window.ppm", "actual-beach-window.ppm"}};
+    "canonical-logo-frame.ppm", "canonical-title-frame.ppm", "canonical-menu-frame.ppm",
+    "canonical-name-frame.ppm", "canonical-oak-frame.ppm", "canonical-beach-frame.ppm"}};
 constexpr std::array<IsleApplicationEntryOperation,scene_count> operations{{
     ISLE_APPLICATION_ENTRY_BOOT, ISLE_APPLICATION_ENTRY_TITLE, ISLE_APPLICATION_ENTRY_NAME,
     ISLE_APPLICATION_ENTRY_OAKS_LAB, ISLE_APPLICATION_ENTRY_BEACH}};
@@ -147,6 +147,13 @@ struct PostEvidence {
     bool returned=false;
     bool oak_presented=false;
     std::uint64_t oak_frames=0,oak_presentations=0,oak_updates=0;
+    bool oak_saved=false,oak_exit_observed=false,title_presented=false,credits_joined=false,cold_profile=false;
+    bool credits_visible=false;
+    bool title_picture=false;
+    std::uint64_t save_generation_before=0,save_generation=0,credits_serial=0,title_serial=0;
+    std::uint64_t credits_updates=0,credits_frames=0,credits_presentations=0,title_updates=0,title_frames=0,title_presentations=0;
+    std::int32_t oak_result=-1,credits_result=-1,oak_phase=-1,oak_slot=-1,title_state=-1;
+    isle::save::GameSnapshot committed{};
 };
 struct Evidence {
     Mode mode=Mode::ingress;
@@ -160,6 +167,7 @@ struct Evidence {
     isle::private_course::Probe* course_probe=nullptr;
     std::int32_t requested_course=0;
     bool empty_course=false;
+    bool returned_oak_cancel=false;
     std::uint64_t course_updates=0,course_frames=0,course_presentations=0;
     bool authored_course_profile=false,course_api_completed=false;
     std::array<std::uint64_t,scene_count> updates{},frames{},presentations{};
@@ -185,6 +193,15 @@ bool native_course_operation(IsleApplicationEntryOperation operation) noexcept {
         case ISLE_APPLICATION_ENTRY_RAINBOW:return true;
         default:return false;
     }
+}
+bool joined_post_scene(const app::SceneRetirementView& view,std::uint64_t serial,std::uint32_t argument) noexcept {
+    if(!view.entry || !view.post)return false;
+    const auto& post=*view.post;
+    const auto result=post.result();
+    return view.entry->serial==serial && view.entry->argument==argument && result && *result==view.source_result &&
+        post.status()==isle::post_course::SceneStatus::retired && post.error()==ISLE_GAME_OK &&
+        !post.graphics_busy() && !post.completed_frame() && !post.setup_pending() &&
+        !post.source().domain && !post.source().game && !post.source().window && !post.source().replay;
 }
 // Synchronous borrowed inspection after real native/Photo retirement and the
 // original post-omSetupScene return. Never retain pointers or reenter Runtime.
@@ -219,15 +236,17 @@ void observe_retirement(void* user,app::SceneRetirementView view) noexcept {
         const auto index=view.post->camera_source()?0u:1u;
         auto& p=evidence.post;
         ++p.retirements[index];
-        const auto result=view.post->result();
+        p.joined[index]=joined_post_scene(view,p.serial[index],index==0?9u:15u);
         p.results[index]=view.source_result;
-        p.joined[index]=view.entry && view.entry->serial==p.serial[index] &&
-            view.entry->argument==(index==0?9u:15u) && result && *result==view.source_result &&
-            view.post->status()==isle::post_course::SceneStatus::retired &&
-            view.post->error()==ISLE_GAME_OK && !view.post->graphics_busy() &&
-            !view.post->completed_frame() && !view.post->setup_pending() &&
-            view.post->source().domain==nullptr && view.post->source().game==nullptr &&
-            view.post->source().window==nullptr && view.post->source().replay==nullptr;
+        return;
+    }
+    if(post_course_mode(evidence) && view.post && view.post->credits_source()) {
+        auto& p=evidence.post;
+        const auto* credits=view.post->credits_source();
+        p.credits_result=view.source_result;
+        p.credits_joined=joined_post_scene(view,p.credits_serial,18) && view.source_result==8 &&
+            credits->entry_complete && credits->source_result==8 && !credits->worker &&
+            !credits->worker_active && !credits->destination_count;
         return;
     }
     if (evidence.mode!=Mode::course || !view.beach) return;
@@ -257,10 +276,10 @@ void write_course_contract(const std::filesystem::path& root) {
     std::ofstream out(root/"proof"/"course-contract.txt");
     out << "invocation=PRIVATE_ROM NEW_OWNED_ROOT course\n"
         << "default_and_explicit_ingress=PRIVATE_ROM NEW_OWNED_ROOT [ingress]\n"
-        << "exit0=qualified_selected_scenario_including_course_CameraCheck9_PhotoCheck15_rendered_returned_Oak13\n"
+        << "exit0=qualified_Beach_Camera9_Photo15_returned_Oak_Save_Original_Title8_cold_profile_and_real_teardown\n"
         << "exit1=any_failure_including_missing_Source_UI_report_or_join_evidence\n"
-        << "next_owner=actual_typed_CameraCheck9_then_PhotoCheck15_result13_then_rendered_Manager_Oak_argument13\n"
-        << "full_application=bounded_Beach_post_course_return_Oak_NOT_durable_save_all_courses_or_hardware_parity\n"
+        << "next_owner=actual_Camera9_Photo15_Oak13_Save_Original_Title8_no_entry_override\n"
+        << "full_application=bounded_first_Beach_post_course_save_continuation_NOT_campaign_or_hardware_parity\n"
         << "source_authority=ethteck/pokemonsnap@df8815e75f3d79618466e01e0827c6165b93d11c\n"
         << "gameplay=original_Runtime_Controller_Input_Audio_GTL_GPU_Photo_only\n"
         << "driving=readonly_original_Source_observations_to_owned_buttons_and_sticks_only\n"
@@ -275,14 +294,14 @@ void write_course_contract(const std::filesystem::path& root) {
         << "post_identity=actual_owner_roll_pointer_slot_exact_canonical_nonflag_bytes_to_selected_scored_record_and_Report_species_score_flags_may_revise_record\n"
         << "photo_assessment=selected_marked_roll_identity_scored_then_phase0_visible_photo_completed_presentation_then_later_phase1_or2\n"
         << "photo_report=actual_Source_identity_and_new_216x72_summary_then_save_ack2197_real_A_consumed_released_final_values_guidance_ack2302_completed\n"
-        << "post_screenshots=completed_actual_Host_presentations_of_later_canonical_frames_after_exact_completed_ack_waits_Camera1039_Photo2302_visual_inspection_required\n"
+        << "post_frame_captures=exact_borrowed_canonical_RGBA_later_frames_after_Camera1039_Photo2302_actual_Host_presentation_required_NOT_window_screenshots_external_window_visual_inspection_required\n"
         << "photo_assessment_screenshot=truthful_early_phase0_assessment_NOT_completed_evaluation\n"
         << "post_input_diagnostics=published_Service_samples_and_readonly_actual_Photo_and_Camera_consumed_caches_NO_accessor_calls\n"
         << "outro_evidence=actual_ending_Source_cart_publication_native_animation_terminal0_to1_then_original_scene_return\n"
         << "post_scene_evidence=synchronous_borrow_after_native_Photo_GPU_scene_and_continuation_retirement_before_Manager_acknowledgement\n"
         << "predeclared_artifacts=application-runtime-report.txt,course-contract.txt,course-source.tsv,course-retirement.txt,course-next-entry.txt,post-course-source.tsv\n"
         << "post_ledger_bound=20000_rows_including_header_512_bytes_per_row_maximum\n"
-        << "post_capture_bound=4_PPM_files_each_at_most_50331680_bytes_4096x4096_RGB_plus_header\n";
+        << "post_capture_bound=4_PPM_files_each_230415_bytes_320x240_RGB_plus_header\n";
     for (const auto* name:captures) out << "original_ingress_capture=" << name << '\n';
     for (const auto* name:course_captures) out << "course_capture=" << name << '\n';
     for (const auto* name:post_captures) out << "post_course_capture=" << name << '\n';
@@ -294,6 +313,7 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
         << "input=explicit_owned_software_NOT_Host_LUS_or_physical\n"
         << "audio=actual_native_RSP_checked_SDL_dummy_NOT_hardware_playback\n"
         << "graphics=actual_CPU_Vulkan_canonical_RGBA_copied_LUS_OpenGL\n"
+        << "capture_scope=borrowed_canonical_RDP_RGBA_NOT_window_external_window_required_for_UI_visual_proof\n"
         << "scene_selection=original_Manager_results_only\n"
         << "hardware_numerical_pixel_parity_full_game_Windows_runtime=not_claimed\n";
     if (!failure.empty()) out << "failure=" << failure << '\n';
@@ -315,7 +335,7 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
         << "source_Boot_first_wait=" << e.boot_wait << " source_Boot_completed=" << e.boot_complete
         << " source_new_game_result0_notice1=" << e.menu_result << " source_Name_confirming=" << e.name_confirming
         << " source_Name_confirmed=" << e.name_confirmed
-        << (menu_mode(e.mode)?" source_Oak_original_authored_menu_result=":" source_Oak_confirmed_course0=") << e.oak_result << '\n'
+        << (menu_mode(e.mode)?" source_Oak_original_authored_menu_result=":" source_Oak_confirmed_course=") << e.oak_result << '\n'
         << "native_Beach_camera_changes=" << e.beach_camera_changes << " original_main_music=" << e.main_music << '\n'
         << "native_GPU_Photo_Manager_retired=" << e.native_retired << " Input_Service_stopped=" << e.input_stopped
         << " SDL_audio_stream_drained=" << e.audio_drained << " Host_owners_released=" << e.host_released
@@ -343,8 +363,8 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
     if (e.mode==Mode::course) {
         const auto& c=e.course;
         out << "mode=course\n"
-            << "qualification=" << (c.qualified && failure.empty()?"completed_Beach_CameraCheck_PhotoCheck_rendered_returned_Oak13":"FAILED") << '\n'
-            << "full_application=bounded_course_post_course_rendered_return_Oak_NOT_durable_save_or_campaign\n"
+            << "qualification=" << (c.qualified && failure.empty()?"completed_Beach_Camera9_Photo15_Oak_Save_Title8_cold_profile":"FAILED") << '\n'
+            << "full_application=bounded_first_course_save_continuation_NOT_natural_campaign\n"
             << "course_exit_contract=0_only_for_complete_original_course_post_course_and_teardown_other_failures_1\n"
             << "source_rows=" << c.source_rows << " shutter_button_presses=" << c.shutter_presses
             << " source_roll_photos=" << c.photos << " source_qualifying_photos=" << c.qualifying_photos
@@ -385,11 +405,20 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
             << "actual_typed_owner=" << (c.next_operation==ISLE_APPLICATION_ENTRY_CAMERA_CHECK?"CameraCheck":
                 c.next_operation==ISLE_APPLICATION_ENTRY_PHOTO_CHECK?"PhotoCheck":"unexpected") << '\n'
             << "qualified_completed_course_post_course=" << (c.qualified && failure.empty()) << '\n'
-            << "full_application=bounded_course_post_course_rendered_return_Oak_NOT_durable_save_or_campaign\n";
+            << "full_application=bounded_first_course_save_continuation_NOT_natural_campaign\n";
         require(bool(retired) && bool(next),"private actual retirement/next-entry artifacts could not be retained");
     }
     if (post_course_mode(e)) {
         const auto& p=e.post;
+        out<<"requested_returned_Oak_cancel="<<e.returned_oak_cancel<<" actual_Oak_save_acknowledged="<<p.oak_saved
+            <<" generation_before="<<p.save_generation_before<<" acknowledged_generation="<<p.save_generation
+            <<" Source_Oak_result="<<p.oak_result<<" Source_Oak_exit_observed="<<p.oak_exit_observed<<'\n'
+            <<"actual_Credits18_serial="<<p.credits_serial<<" updates="<<p.credits_updates<<" frames="<<p.credits_frames
+            <<" LUS_presentations="<<p.credits_presentations<<" visible_presented="<<p.credits_visible
+            <<" Original_result="<<p.credits_result<<" joined="<<p.credits_joined<<'\n'
+            <<"actual_Source_Title8_serial="<<p.title_serial<<" updates="<<p.title_updates<<" frames="<<p.title_frames
+            <<" LUS_presentations="<<p.title_presentations<<" visible_presented="<<p.title_presented
+            <<" Source_UI_state="<<p.title_state<<" cold_reopened_exact_canonical_profile="<<p.cold_profile<<'\n';
         out << "post_source_rows=" << p.rows << " source_marked=" << p.marked << " source_scored=" << p.scored
             << " assessment_mask=" << p.assessment_mask << " ordered_assessment_progress=" << p.assessment_progress
             << " report_before=" << p.report_before << " report_after=" << p.report_after
@@ -410,7 +439,7 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
             << "summary_element_serial=" << p.summary_serial << " initial_element_serial=" << p.initial_element_serial
             << " summary_width=" << p.summary_width << " summary_height=" << p.summary_height
             << " summary_seen=" << p.summary_seen << " last_summary_visible=" << p.summary_visible
-            << " screenshot_visual_inspection=required summary_text_completion_at_final_ack2302=" << bool(p.final_ack_serial) << '\n';
+            << " screenshot_visual_inspection=external_window_required_canonical_PPM_is_NOT_window summary_text_completion_at_final_ack2302=" << bool(p.final_ack_serial) << '\n';
         out << "camera_intro_prompt=" << p.intro_prompt_seen << " presented=" << p.intro_presented
             << " actual_A_requested=" << p.intro_ack_requested << " Source_A_consumed=" << p.intro_ack_consumed
             << " retired_Photo_element_observed_without_fault=" << p.retired_element_seen << '\n';
@@ -434,50 +463,6 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
             out << post_captures[i] << " captured=" << p.captured[i] << '\n';
     }
     require(bool(out),"private Runtime report could not be retained");
-}
-// Actual current default-framebuffer pixels AFTER successful copied LUS
-// presentation and its GL completion. Canonical RDRAM is never labeled a window.
-void capture_window(const std::filesystem::path& path) {
-    auto* window = SDL_GL_GetCurrentWindow();
-    require(window != nullptr,"presented GL window is unavailable");
-    int width=0,height=0;
-    require(SDL_GetWindowSizeInPixels(window,&width,&height) && width>0 && height>0 && width<=4096 && height<=4096,
-        "presented window has invalid pixel extent");
-    using ReadBuffer = void (APIENTRY*)(GLenum);
-    using PixelStore = void (APIENTRY*)(GLenum,GLint);
-    using ReadPixels = void (APIENTRY*)(GLint,GLint,GLsizei,GLsizei,GLenum,GLenum,void*);
-    using GetError = GLenum (APIENTRY*)();
-    using BindFramebuffer = void (APIENTRY*)(GLenum,GLuint);
-    using GetInteger = void (APIENTRY*)(GLenum,GLint*);
-    const auto read_buffer = reinterpret_cast<ReadBuffer>(SDL_GL_GetProcAddress("glReadBuffer"));
-    const auto pixel_store = reinterpret_cast<PixelStore>(SDL_GL_GetProcAddress("glPixelStorei"));
-    const auto read_pixels = reinterpret_cast<ReadPixels>(SDL_GL_GetProcAddress("glReadPixels"));
-    const auto error = reinterpret_cast<GetError>(SDL_GL_GetProcAddress("glGetError"));
-    const auto bind_framebuffer = reinterpret_cast<BindFramebuffer>(SDL_GL_GetProcAddress("glBindFramebuffer"));
-    const auto get_integer = reinterpret_cast<GetInteger>(SDL_GL_GetProcAddress("glGetIntegerv"));
-    require(read_buffer && pixel_store && read_pixels && error && bind_framebuffer && get_integer,
-        "actual GL surface readback API missing");
-    require(error()==GL_NO_ERROR,"presentation left an actual GL error before readback");
-    GLint old_framebuffer=0,old_read_buffer=0,old_alignment=0;
-    get_integer(GL_READ_FRAMEBUFFER_BINDING,&old_framebuffer);
-    get_integer(GL_READ_BUFFER,&old_read_buffer);
-    get_integer(GL_PACK_ALIGNMENT,&old_alignment);
-    bind_framebuffer(GL_READ_FRAMEBUFFER,0);
-    read_buffer(GL_FRONT);
-    pixel_store(GL_PACK_ALIGNMENT,1);
-    std::vector<std::byte> pixels(static_cast<std::size_t>(width)*static_cast<std::size_t>(height)*3);
-    read_pixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,pixels.data());
-    const auto read_error=error();
-    pixel_store(GL_PACK_ALIGNMENT,old_alignment);
-    bind_framebuffer(GL_READ_FRAMEBUFFER,static_cast<GLuint>(old_framebuffer));
-    read_buffer(static_cast<GLenum>(old_read_buffer));
-    require(read_error==GL_NO_ERROR && error()==GL_NO_ERROR,"actual window readback/state restoration failed");
-    std::ofstream out(path,std::ios::binary);
-    out << "P6\n" << width << ' ' << height << "\n255\n";
-    const auto row=static_cast<std::size_t>(width)*3;
-    for (int y=height;y-- > 0;)
-        out.write(reinterpret_cast<const char*>(pixels.data()+static_cast<std::size_t>(y)*row),static_cast<std::streamsize>(row));
-    require(bool(out),"actual presented-window capture could not be retained");
 }
 bool varied(std::span<const std::byte> rgba,int left,int top,int right,int bottom) {
     const auto first=static_cast<std::size_t>(top*320+left)*4;
@@ -721,7 +706,8 @@ public:
         }
         if (e_.mode==Mode::native_course) {
             require(e_.authored_course_profile && e_.course_api_completed && course_probe_->completed() &&
-                e_.entries==(e_.empty_course?6u:8u) && e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
+                e_.entries==(e_.empty_course?6u:e_.returned_oak_cancel?8u:e_.post.credits_serial?10u:9u) &&
+                e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
                 e_.menu_result && e_.name_confirming && e_.name_confirmed && e_.oak_result &&
                 e_.input_hold_audio>0 && e_.main_music && e_.course_frames>0 && e_.course_presentations>0 &&
                 std::all_of(e_.captured.begin(),e_.captured.begin()+5,[](bool value){return value;}),
@@ -730,6 +716,7 @@ public:
                 require(e_.updates[n]>0 && e_.frames[n]>0 && e_.presentations[n]>0,
                     "native course qualification lost genuine original Boot/Title/Name/Oak ingress");
             if (!e_.empty_course) validate_post_course();
+            if (!e_.empty_course && !e_.returned_oak_cancel) validate_saved_continuation();
             return;
         }
         if (menu_mode(e_.mode)) {
@@ -744,7 +731,7 @@ public:
                     "menu qualification lost genuine original Boot/Title/Name/Oak ingress");
             return;
         }
-        require(e_.entries==(e_.mode==Mode::course?8u:scene_count) && e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
+        require(e_.entries==(e_.mode==Mode::course?9u:scene_count) && e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
             e_.menu_result && e_.name_confirming && e_.name_confirmed && e_.oak_result && e_.frame_hold &&
             (e_.mode==Mode::course || e_.stop_while_held) &&
             e_.input_hold_audio>0 && e_.frame_hold_audio>0 && e_.beach_camera_changes>0 && e_.main_music &&
@@ -786,6 +773,7 @@ public:
                 throw std::runtime_error("complete original Beach/tutorial/photos/travel/ending/post-scene retirement evidence is incomplete");
             }
             validate_post_course();
+            validate_saved_continuation();
             course_log_.flush();
             require(bool(course_log_),"actual course source ledger write failed");
         }
@@ -806,6 +794,7 @@ private:
         std::int32_t native_course=-1;
         std::uint64_t entry_serial=0;
         bool oak_ready=false;
+        bool title_ready=false;
     };
     app::Runtime& application_;
     h::GtlClock& clock_;
@@ -876,6 +865,16 @@ private:
                 "actual post-course owner lacked updates/render/presentation/retirement");
         post_log_.flush();
         require(bool(post_log_),"actual post-course source ledger write failed");
+    }
+    void validate_saved_continuation() const {
+        const auto& p=e_.post;
+        require(p.oak_saved && p.committed && p.save_generation>p.save_generation_before &&
+            p.committed.generation()==p.save_generation && p.oak_exit_observed &&
+            p.title_serial>p.oak_serial && p.title_updates>0 && p.title_frames>0 &&
+            p.title_presentations>0 && p.title_presented && p.title_state==2 &&
+            (p.credits_serial?(p.oak_result==18 && p.credits_joined && p.credits_result==8 &&
+                p.credits_updates>0 && p.credits_frames>0 && p.credits_presentations>0 && p.credits_visible):p.oak_result==8),
+            "actual Oak acknowledged save/Original continuation/presented Title8 proof incomplete");
     }
     void choose_course_photo(const IsleCameraCheckSource& camera) {
         if(target_photo_.photo)return;
@@ -969,16 +968,16 @@ private:
     static bool acknowledgment_ready(const IslePostCourseSceneSource& source,
             IslePostCourseElement element,int line) {
         const auto& ack=source.acknowledgment;
-        isle::post_course::WindowObservation operations{};
-        require(isle::post_course::Window::observe_operations(source.window,&operations)==ISLE_GAME_OK,
+        isle::post_course::WindowObservation observation{};
+        require(isle::post_course::Window::observe_operations(source.window,&observation)==ISLE_GAME_OK,
             "actual post-course operation observation failed");
         // The helper has actually read neutral input and is suspended inside
         // its poll loop, not its initial wait or its post-consumption wait.
         return ack.active && ack.waiting && ack.polls && ack.caller_line==line &&
             ack.element.owner==element.owner && ack.element.serial==element.serial &&
             !ack.current_buttons && !ack.pressed_buttons &&
-            !operations.printing && !operations.skip_enabled &&
-            !operations.prints && !operations.fades && !operations.layouts;
+            !observation.printing && !observation.skip_enabled &&
+            !observation.prints && !observation.fades && !observation.layouts;
     }
     void observe_capture_readiness(std::size_t capture,std::size_t source) {
         auto& p=e_.post;
@@ -1264,6 +1263,51 @@ private:
         }
         write_post_row(camera?"CameraCheck9":"PhotoCheck15",p.serial[i],p.updates[i]);
     }
+    void drive_returned_oak(const isle::oaks_lab::Scene& oak) {
+        using Phase=isle::oaks_lab::Phase;
+        auto& p=e_.post;
+        ++p.oak_updates;
+        const auto view=oak.view();
+        require(!oak.failed(),oak.error());
+        if(p.oak_phase!=int(view.phase) || p.oak_slot!=view.selected_slot) {
+            p.oak_phase=int(view.phase);p.oak_slot=view.selected_slot;
+            std::cout<<"returned_oak_source phase="<<p.oak_phase<<" slot="<<p.oak_slot
+                <<" page="<<view.page_address<<" commit_attempts="<<view.commit_attempts<<std::endl;
+        }
+        if(view.commit_attempts && isle::oaks_lab::commit_acknowledged(view.commit) && !p.oak_saved) {
+            auto saved=state_.save()->snapshot();
+            require(saved && saved.value.generation()==view.commit.generation &&
+                view.commit.generation>p.save_generation_before,
+                "actual Oak save did not publish a new acknowledged canonical generation");
+            p.committed=std::move(saved.value);p.save_generation=view.commit.generation;p.oak_saved=true;
+        }
+        if(view.exit_requested) {
+            require(view.phase==Phase::complete && p.oak_saved &&
+                (view.source_result==8 || (p.selected_species==151 && view.source_result==18)),
+                "actual returned Oak exited without its acknowledged save or legitimate Source continuation");
+            p.oak_result=view.source_result;p.oak_exit_observed=true;hold_post_input();return;
+        }
+        require(view.phase!=Phase::save_failed,"actual returned Oak save failed");
+        const bool ready=release_post_pulse();
+        if(!p.oak_presented || e_.returned_oak_cancel) {hold_post_input();return;}
+        if(!ready)return;
+        if(view.phase==Phase::page_wait)request_post_pulse(button_a);
+        else if(view.phase==Phase::repeat_question || view.phase==Phase::courses || view.phase==Phase::confirmation)
+            request_post_pulse(button_b);
+        else if(view.phase==Phase::lab) {
+            // Original main layout slot7 is Save buttonID4, NOT Manager scene4.
+            if(view.selected_slot!=7)request_post_pulse(0,-64);
+            else request_post_pulse(button_a);
+        } else if(view.phase==Phase::save_prompt)request_post_pulse(button_a);
+        else if(view.phase==Phase::keep_going) {
+            require(p.oak_saved,"Source keep-going prompt preceded acknowledged save");
+            request_post_pulse(button_b);
+        } else if(view.page_address==0x801c6a94 && view.printed_characters && !p.oak_saved) {
+            // Exact Original forced-save second line, printed with zero delay
+            // before its actual A/B poll; Mew then selects Credits18 naturally.
+            request_post_pulse(button_a);
+        }
+    }
     std::uint64_t logged_course_update_=0;
     int logged_course_status_=-1;
     std::optional<IsleGameVec3> last_position_;
@@ -1543,6 +1587,26 @@ private:
                 <<" argument="<<entry.argument<<" qualified_mask="<<e_.menu_qualified<<std::endl;
             return;
         }
+        if(post_course_mode(e_) && e_.post.returned && e_.entries>=8) {
+            auto& p=e_.post;
+            require(entry.serial>last_entry_ && p.oak_saved && p.oak_exit_observed && !view.oak &&
+                clock_.stats().submissions==clock_.stats().terminals,
+                "saved Oak continuation bypassed its actual Source exit/owner/graphics retirement");
+            if(entry.argument==18 && view.post && view.post->credits_source()) {
+                require(e_.entries==8 && !p.credits_serial && p.oak_result==18,
+                    "actual Mew Oak continuation did not select its first genuine Credits18");
+                p.credits_serial=entry.serial;scene_=scene_count+3;
+            } else {
+                require(entry.operation==ISLE_APPLICATION_ENTRY_TITLE && entry.argument==8 && view.startup &&
+                    (p.credits_serial?(e_.entries==9 && p.credits_joined && p.credits_result==8):
+                        (e_.entries==8 && p.oak_result==8)),
+                    "actual saved Source continuation did not enter genuine Title8");
+                p.title_serial=entry.serial;scene_=scene_count+4;
+            }
+            ++e_.entries;last_entry_=entry.serial;hold_post_input();post_pulse_=PostPulse::releasing;
+            write_post_row("SavedSourceContinuation",entry.serial,0);
+            return;
+        }
         if (e_.entries>=scene_count) {
             const auto index=static_cast<std::size_t>(e_.entries-scene_count);
             require(post_course_mode(e_) && index<3 && entry.serial>last_entry_,
@@ -1572,6 +1636,9 @@ private:
                 read_report(e_.post.report_after,e_.post.score_after);
             } else {
                 e_.post.oak_serial=entry.serial;
+                const auto saved=state_.save()->snapshot();
+                require(bool(saved),"actual returned Oak canonical save baseline unavailable");
+                e_.post.save_generation_before=saved.value.generation();
                 read_report(e_.post.report_after,e_.post.score_after);
                 e_.post.returned=true;
             }
@@ -1647,9 +1714,25 @@ private:
                 else if (view.startup) drive_gallery_title(*view.startup);
                 return;
             }
-            if (view.post) drive_post(*view.post);
-            else if (post_course_mode(e_) && view.oak) {
-                ++e_.post.oak_updates;hold_post_input();
+            if (post_course_mode(e_) && view.post && view.post->credits_source()) {
+                ++e_.post.credits_updates;
+                require(e_.post.credits_updates<=12000 && view.post->error()==ISLE_GAME_OK,
+                    "actual Source Credits18 failed or exceeded its existing full-sequence failure bound");
+                const auto* credits=view.post->credits_source();
+                const bool ready=release_post_pulse();
+                // Credits18 has no early-skip process: Original polls A/Start
+                // only after its complete sequence and final180-frame wait.
+                if(ready && e_.post.credits_visible && credits->worker && !credits->worker->main_excluded())
+                    request_post_pulse(button_start);
+            } else if (view.post) drive_post(*view.post);
+            else if (post_course_mode(e_) && view.oak) drive_returned_oak(*view.oak);
+            else if (post_course_mode(e_) && view.startup && e_.post.title_serial) {
+                ++e_.post.title_updates;
+                const auto* ui=view.startup->menu_ui();
+                require(ui,"actual saved Title8 lost its Source UI");
+                e_.post.title_state=ui->source_state();
+                const bool ready=release_post_pulse();
+                if(ready && e_.post.title_picture && e_.post.title_state!=2)request_post_pulse(button_start);
             }
             return;
         }
@@ -1881,7 +1964,6 @@ private:
                     menu_probe_->frame(*menu_view.post,static_cast<std::int32_t>(menu_view.entry->argument),frame.ordinal);
                 if(course_probe_ && scene_>=scene_count && !menu_view.post && !e_.course_api_completed)
                     course_probe_->frame(menu_view,frame.ordinal);
-                require(timeline_.host.queue_present(frame.rgba,frame.screen_offsets),timeline_.host.message());
                 int post_capture=-1;
                 const auto view=application_.view();
                 if (view.post) {
@@ -1914,6 +1996,16 @@ private:
                     display_->oak_ready=view.oak->view().printed_characters>=4 &&
                         varied(frame.rgba,100,34,192,120) && varied(frame.rgba,104,173,296,220);
                 }
+                if(post_course_mode(e_) && view.entry && (view.entry->serial==e_.post.credits_serial ||
+                    view.entry->serial==e_.post.title_serial)) {
+                    display_->menu_varied=varied(frame.rgba,0,0,320,240);
+                    if(view.entry->serial==e_.post.credits_serial)++e_.post.credits_frames;
+                    else {
+                        ++e_.post.title_frames;
+                        display_->title_ready=view.startup && view.startup->menu_ui() &&
+                            view.startup->menu_ui()->source_state()==2 && post_pulse_==PostPulse::ready;
+                    }
+                }
                 if (menu_probe_ && menu_view.post) {
                     display_->menu_argument=static_cast<std::int32_t>(menu_view.entry->argument);
                     display_->menu_digest=digest(frame.rgba);
@@ -1924,6 +2016,15 @@ private:
                     display_->menu_digest=digest(frame.rgba);
                     display_->menu_varied=varied(frame.rgba,0,0,320,240);
                 }
+                if(display_->capture>=0 && !e_.captured[static_cast<std::size_t>(display_->capture)])
+                    isle::private_capture::write_frame(root_/"proof"/captures[static_cast<std::size_t>(display_->capture)],frame.rgba);
+                if(display_->course_capture>=0 && !e_.course.captured[static_cast<std::size_t>(display_->course_capture)])
+                    isle::private_capture::write_frame(root_/"proof"/course_captures[static_cast<std::size_t>(display_->course_capture)],frame.rgba);
+                if(display_->post_capture>=0 && !e_.post.captured[static_cast<std::size_t>(display_->post_capture)])
+                    isle::private_capture::write_frame(root_/"proof"/post_captures[static_cast<std::size_t>(display_->post_capture)],frame.rgba);
+                if(display_->oak_ready && !e_.post.oak_presented)
+                    isle::private_capture::write_frame(root_/"proof"/"canonical-returned-oak-frame.ppm",frame.rgba);
+                require(timeline_.host.queue_present(frame.rgba,frame.screen_offsets),timeline_.host.message());
             } else ++e_.declined_frames;
             if (scene_==4 && !e_.frame_hold && e_.updates[4]>=16 && e_.beach_camera_changes &&
                 (e_.captured[5] || (display_ && display_->capture==5)) && varied(frame.rgba,0,0,320,240)) {
@@ -1964,10 +2065,26 @@ private:
             if(e_.post.oak_serial && display_->entry_serial==e_.post.oak_serial) {
                 ++e_.post.oak_presentations;
                 if(display_->oak_ready && !e_.post.oak_presented) {
-                    capture_window(root_/"proof"/"actual-returned-oak-window.ppm");
-                    e_.post.oak_presented=true;stop_requested_=true;
+                    e_.post.oak_presented=true;stop_requested_=e_.returned_oak_cancel;
                     std::cout<<"returned_oak_surface_ready serial="<<e_.post.oak_serial
                         <<" frame="<<display_->frame<<" updates="<<e_.post.oak_updates<<std::endl;
+                }
+            }
+            if(e_.post.credits_serial && display_->entry_serial==e_.post.credits_serial) {
+                ++e_.post.credits_presentations;
+                if(display_->menu_varied && !e_.post.credits_visible) {
+                    e_.post.credits_visible=true;
+                    std::cout<<"saved_credits_surface_ready serial="<<e_.post.credits_serial
+                        <<" frame="<<display_->frame<<std::endl;
+                }
+            }
+            if(e_.post.title_serial && display_->entry_serial==e_.post.title_serial) {
+                ++e_.post.title_presentations;
+                e_.post.title_picture|=display_->menu_varied;
+                if(display_->menu_varied && display_->title_ready && !e_.post.title_presented) {
+                    e_.post.title_presented=true;stop_requested_=true;
+                    std::cout<<"continuation_title_surface_ready serial="<<e_.post.title_serial
+                        <<" frame="<<display_->frame<<std::endl;
                 }
             }
             if (menu_mode(e_.mode) && display_->scene>=scene_count) ++e_.menu_presentations;
@@ -1979,18 +2096,16 @@ private:
             }
             if (display_->capture>=0) {
                 const auto capture=static_cast<std::size_t>(display_->capture);
-                if (!e_.captured[capture]) {capture_window(root_/"proof"/captures[capture]);e_.captured[capture]=true;}
+                e_.captured[capture]=true;
             }
             if (display_->course_capture>=0) {
                 const auto capture=static_cast<std::size_t>(display_->course_capture);
-                if (!e_.course.captured[capture]) {
-                    capture_window(root_/"proof"/course_captures[capture]);e_.course.captured[capture]=true;
-                }
+                e_.course.captured[capture]=true;
             }
             if (display_->post_capture>=0) {
                 const auto capture=static_cast<std::size_t>(display_->post_capture);
                 if (!e_.post.captured[capture]) {
-                    capture_window(root_/"proof"/post_captures[capture]);e_.post.captured[capture]=true;
+                    e_.post.captured[capture]=true;
                     const auto source=capture<2?0u:1u;
                     e_.post.capture_frame[capture]=display_->frame;
                     e_.post.capture_presentation[capture]=e_.post.presentations[source];
@@ -2006,7 +2121,8 @@ private:
         }
     }
 };
-int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode mode,std::int32_t requestedCourse,bool emptyCourse) {
+int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode mode,std::int32_t requestedCourse,
+        bool emptyCourse,bool returnedOakCancel) {
     for (const auto* name:{"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
         const char* value=std::getenv(name);
         require(value && std::string_view(value)=="dummy","private consumer requires both explicit SDL dummy audio variables");
@@ -2019,6 +2135,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     evidence.mode=mode;
     evidence.requested_course=requestedCourse;
     evidence.empty_course=emptyCourse;
+    evidence.returned_oak_cancel=returnedOakCancel;
     if (mode==Mode::course) write_course_contract(root);
     std::string failure;
     const auto snapshot=isle::rom::read_snapshot(rom);
@@ -2037,6 +2154,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     SoftwareController controller;
     in::Service input;
     Timeline timeline{host,input,controller};
+    {
     isle::game::State state(root/"profile");
     try {
         require(SDL_GL_GetCurrentContext()!=nullptr,"actual required OpenGL override was lost during CVar reload");
@@ -2069,6 +2187,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
         require(!application,"closed actual Runtime still owns its Manager or native scenes");
     } catch (const std::exception& error) { remember_failure(failure,error.what()); }
       catch (...) { remember_failure(failure,"unknown actual Runtime setup failure"); }
+    }
     // No Runtime, Manager, native scene, graphics or Photo owner remains before
     // the real Input cancellation and independent Audio stop/stream drain.
     if (input.running()) {
@@ -2097,9 +2216,24 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     evidence.host_released=!closed.failed && closed.owners_released &&
         closed.audio==isle::audio::SdlAudioOutput::CloseDisposition::stream_drained;
     if (!evidence.host_released) remember_failure(failure,"actual Host/Audio/GUI/worker owners did not retire after observed stream drain");
-    if (failure.empty() && (!evidence.input_stopped || evidence.accepted_pcm==0 || evidence.submissions!=evidence.terminals ||
-        evidence.released_frames!=evidence.submissions || evidence.read_requests!=evidence.read_completions))
+    if (!evidence.input_stopped || evidence.accepted_pcm==0 || evidence.submissions!=evidence.terminals ||
+        evidence.released_frames!=evidence.submissions || evidence.read_requests!=evidence.read_completions)
         remember_failure(failure,"actual final frame/input/Audio ownership ledger did not balance");
+    if(post_course_mode(evidence) && !evidence.returned_oak_cancel && failure.empty()) {
+        try {
+            require(evidence.post.oak_saved && bool(evidence.post.committed),"actual durable save snapshot missing");
+            auto reopened=isle::save::GameSession::open(root/"profile",0);
+            require(reopened && reopened.state==isle::save::GameLoadState::ready,
+                "actual closed-profile cold reopen did not load an existing ready save");
+            const auto actual=reopened.session.snapshot();
+            require(actual && actual.value.generation()==evidence.post.save_generation,
+                "actual cold reopened generation differs from Source Oak save acknowledgment");
+            const auto expected_bytes=evidence.post.committed.image().bytes(),actual_bytes=actual.value.image().bytes();
+            require(std::equal(expected_bytes.begin(),expected_bytes.end(),actual_bytes.begin(),actual_bytes.end()),
+                "actual cold reopened canonical profile differs from the acknowledged Source save");
+            evidence.post.cold_profile=true;
+        } catch(const std::exception& error) {remember_failure(failure,error.what());}
+    }
     if (mode==Mode::course && failure.empty()) {
         if (!evidence.post.returned || !evidence.course.post_scene_verified || !evidence.native_retired ||
             !evidence.audio_drained || !evidence.host_released)
@@ -2110,7 +2244,8 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     if (!failure.empty()) {std::cerr << "private actual application integration: " << failure << '\n';return 1;}
     if(mode==Mode::native_course) {
         std::cout<<(evidence.empty_course?"actual_original_Source_natural_empty_course_and_Manager_Oak13=passed course=":
-            "actual_original_Source_natural_course_and_Manager_CameraCheck9=passed course=")<<evidence.requested_course
+            evidence.returned_oak_cancel?"actual_course_Photo15_returned_Oak_mid_print_cancel=passed course=":
+            "actual_course_Photo15_Oak_Save_Source_Title8_and_cold_profile=passed course=")<<evidence.requested_course
             <<" actual_updates="<<evidence.course_updates<<" course_frames="<<evidence.course_frames
             <<" course_LUS_presentations="<<evidence.course_presentations
             <<" canonical_submissions="<<evidence.submissions<<" actual_terminals="<<evidence.terminals
@@ -2125,7 +2260,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
         return 0;
     }
     if (mode==Mode::course) {
-        std::cout << "completed_original_Beach_CameraCheck9_PhotoCheck15_Manager_Oak=passed"
+        std::cout << "completed_original_Beach_Camera9_Photo15_Oak_Save_Source_Title8_and_cold_profile=passed"
             << " private_report=proof/application-runtime-report.txt full_game_hardware_parity=not_claimed\n";
         return 0;
     }
@@ -2144,24 +2279,27 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|native0..native6|native5-empty|menus|credits17|credits18|credits19] (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|native0..native6[-oak-cancel]|native5-empty|menus|credits17|credits18|credits19] (existing empty absolute nonsymlink private directory)");
         Mode mode=Mode::ingress;
         std::int32_t requestedCourse=0;
         bool emptyCourse=false;
+        bool returnedOakCancel=false;
         if (argc==4) {
             const auto name=std::filesystem::path(argv[3]).generic_string();
             const bool native=name.size()==7 && name.compare(0,6,"native")==0 && name[6]>='0' && name[6]<='6';
             emptyCourse=name=="native5-empty";
-            require(native || emptyCourse || name=="ingress" || name=="course" || name=="menus" || name=="credits17" ||
+            returnedOakCancel=name.size()==18 && name.compare(0,6,"native")==0 && name[6]>='0' &&
+                name[6]<='6' && name.compare(7,11,"-oak-cancel")==0;
+            require(native || emptyCourse || returnedOakCancel || name=="ingress" || name=="course" || name=="menus" || name=="credits17" ||
                 name=="credits18" || name=="credits19","unknown actual Runtime qualification mode");
-            if(native || emptyCourse){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
+            if(native || emptyCourse || returnedOakCancel){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
             else if (name=="course") mode=Mode::course;
             else if (name=="menus") mode=Mode::menus;
             else if (name=="credits17") mode=Mode::credits17;
             else if (name=="credits18") mode=Mode::credits18;
             else if (name=="credits19") mode=Mode::credits19;
         }
-        return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode,requestedCourse,emptyCourse);
+        return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode,requestedCourse,emptyCourse,returnedOakCancel);
     } catch (const std::exception& error) {
         std::cerr << "private actual application integration: " << error.what() << '\n';return 1;
     } catch (...) {

@@ -166,7 +166,7 @@ VolcanoTargets volcano_targets(const IsleVolcanoActorSource& source) {
     // borrow survives this serialized owner-side traversal.
     return targets;
 }
-bool photo_target(const IslePlayerSource& player,IsleGameVec3& target) {
+bool photo_target(const IslePlayerSource& player,IsleGameVec3& target,const std::array<bool,152>* photographed) {
     IsleGameObject* previous=nullptr;
     float nearest=10000.0f;
     bool found=false;
@@ -178,6 +178,7 @@ bool photo_target(const IslePlayerSource& player,IsleGameVec3& target) {
         previous=object;
         if(!model || actor->id<=0 || actor->id>151 || !actor->tangible || !(actor->flags&4u) ||
            !(actor->playerDist>=0 && actor->playerDist<=nearest))continue;
+        if(photographed && (*photographed)[static_cast<std::size_t>(actor->id)])continue;
         IsleGameObjectMetadata metadata{};
         require(isle_game_object_metadata(player.game,object,&metadata)==ISLE_GAME_OK,
             "actual course photo-target visibility unavailable");
@@ -223,6 +224,7 @@ struct Probe::Impl {
     const IslePlayerPhotoData* captured_roll=nullptr;
     std::array<std::uint64_t,60> captured_digests{};
     int captured_count=0;
+    std::array<bool,152> photographed{};
     int photos=0,qualified=0,reason=0,focus_id=0,hits1=3,hits2=3,mew_mode=0;
     int pending_mew_slot=-1,pending_mew_qualified=0;
     int controls=0,disabled=0,direction=0,zoom_target=0,cooldown=0;
@@ -321,6 +323,9 @@ struct Probe::Impl {
         for(;captured_count<photos;++captured_count) {
             const auto& photo=captured_roll[captured_count];
             require(photo.levelID==course,"actual captured photograph belongs to a different course");
+            const auto id=photo.pokemons[0].pokemonID;
+            if((photo.unk_00_16&0xe0u)==0x20u && id>0 && id<=151)
+                photographed[static_cast<std::size_t>(id)]=true;
             std::array<std::byte,0x3a0> bytes;
             isle::player::encode_photo(photo,bytes);
             bytes[1]=std::byte{0};
@@ -395,11 +400,11 @@ struct Probe::Impl {
         sx=std::abs(error_x)<6?0:stick(error_x*(player.gDirectionIndex==0?-16.0f:16.0f));
         sy=std::abs(error_y)<6?0:stick(error_y*8);
     }
-    void search_photo(const IslePlayerSource& player,bool subject,std::uint16_t pad) {
+    void search_photo(const IslePlayerSource& player,bool subject,std::uint16_t pad,const std::array<bool,152>* seen) {
         std::int8_t sx=0,sy=0;
         if(!subject && player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn) {
             IsleGameVec3 target{};
-            if(photo_target(player,target))aim(player,target,true,sx,sy);
+            if(photo_target(player,target,seen))aim(player,target,true,sx,sy);
             else sx=24;
         }
         set(pad,sx,sy);
@@ -550,7 +555,7 @@ struct Probe::Impl {
                 !(prior&a) && !(player.input.current_buttons&a)) {pad|=a;++shutters;}
             // Use actual eligible Actor collision centers, including pitch;
             // a level-only yaw sweep can miss every low Valley subject.
-            search_photo(player,subject,pad);return;
+            search_photo(player,subject,pad,nullptr);return;
         }
         // Original player.c:2516–2527 creates updateTutorialMain ONLY for Beach.
         // IsTutorialEnabled is a profile choice on every course, not proof of
@@ -561,14 +566,17 @@ struct Probe::Impl {
         }
         if(player.IsInputDisabled)return;
         if(course==2 && control_volcano(view.volcano->actors_source(),player,focus,prior))return;
-        // Reserve the post-puzzle shutter for actual Moltres, not another
-        // ordinary subject; tutorial qualification and Mew's cap stay unchanged.
-        if(course==2?qualified>=3:photos>=4)return;
+        // Preserve Volcano's three ordinary shots plus its real Moltres puzzle.
+        // Else seek new subjects instead of spending the trip on an early tiny
+        // subject whose valid live focus can still fail Source score visibility.
+        // Leave one of the actual sixty film slots unused: film exhaustion must
+        // not replace the goal's natural course-end result.
+        if(course==2?qualified>=3:photos>=static_cast<int>(std::size(player.photo->D_800B0598)-1))return;
+        const bool wanted=subject && !photographed[static_cast<std::size_t>(focus.pokemon_id)];
         std::uint16_t pad=z;
         if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
-            !(prior&a) && !(player.input.current_buttons&a) && (subject || photos==0)) {pad|=a;++shutters;}
-        // The same owned-input search serves qualification and ordinary shots.
-        search_photo(player,subject,pad);
+            !(prior&a) && !(player.input.current_buttons&a) && wanted) {pad|=a;++shutters;}
+        search_photo(player,wanted,pad,&photographed);
     }
 };
 

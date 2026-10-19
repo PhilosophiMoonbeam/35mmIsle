@@ -1,6 +1,7 @@
 #ifndef ISLE_NATIVE_SCENE_DRIVER_HPP
 #define ISLE_NATIVE_SCENE_DRIVER_HPP
 
+#include "canonical_frame_capture.hpp"
 #include "game_host.hpp"
 #include "host_clock.hpp"
 #include "scene_graphics.hpp"
@@ -9,6 +10,7 @@
 #include <chrono>
 #include <exception>
 #include <filesystem>
+#include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <thread>
@@ -23,19 +25,18 @@ class Driver final {
 public:
     using Time = std::chrono::steady_clock::time_point;
     using Predicate = bool (*)(const Scene&) noexcept;
-    using Capture = void (*)(const std::filesystem::path&);
     Driver(Scene& native_scene, scene::Services& services, game_input::Service& input,
            game_host::Host& platform, scene::graphics::Frame& graphics,
            host::GtlClock& clock, host::RetraceClock& retraces,
            std::uint64_t& retrace_ordinal, Time epoch, Time deadline,
            Predicate exited, Predicate capture_ready,
-           std::filesystem::path capture_path, Capture capture)
+           std::filesystem::path capture_path)
         : scene_(native_scene), services_(services), input_(input), host_(platform),
           graphics_(graphics), clock_(clock), retraces_(retraces),
           retrace_ordinal_(retrace_ordinal), epoch_(epoch), deadline_(deadline),
           exited_(exited), capture_ready_(capture_ready),
-          capture_path_(std::move(capture_path)), capture_(capture) {
-        check(exited_ && capture_ready_ && capture_,"real scene driver callbacks are required");
+          capture_path_(std::move(capture_path)) {
+        check(exited_ && capture_ready_,"real scene driver callbacks are required");
         check(graphics_.quiescent() && clock_.stopped(),"scene entry preceded actual graphics/GTL retirement");
         checked(clock_.reset({1,2,2,true,0}));
     }
@@ -182,10 +183,9 @@ private:
             check(presented != game_host::Present::failed,host_.message());
             if (presented == game_host::Present::completed) {
                 ++presentations_;
-                if (queued_capture_ready_ && !capture_attempted_) {
-                    capture_attempted_ = true;
-                    capture_(capture_path_);
+                if (queued_capture_ready_ && !captured_) {
                     captured_ = true;
+                    std::cout<<"native_scene_surface_ready"<<std::endl;
                 }
             }
         }
@@ -210,8 +210,9 @@ private:
             check(completed.screen_offsets.horizontal == live.horizontal &&
                   completed.screen_offsets.vertical == live.vertical,
                   "actual scene graphics used profile/editor VI instead of canonical live output");
-            check(host_.queue_present(completed.rgba,completed.screen_offsets),host_.message());
             queued_capture_ready_ = capture_ready_(scene_);
+            if(queued_capture_ready_ && !captured_)private_capture::write_frame(capture_path_,completed.rgba);
+            check(host_.queue_present(completed.rgba,completed.screen_offsets),host_.message());
         }
     }
     Scene& scene_;
@@ -225,13 +226,12 @@ private:
     Time epoch_, deadline_;
     Predicate exited_, capture_ready_;
     std::filesystem::path capture_path_;
-    Capture capture_;
     game_input::HostFrame sample_{};
     std::optional<host::FrameToken> executing_, offered_draw_;
     std::array<char,512> error_{};
     std::uint64_t reads_ = 0, updates_ = 0, frames_ = 0, presentations_ = 0;
     bool updating_ = false, queued_capture_ready_ = false;
-    bool capture_attempted_ = false, captured_ = false;
+    bool captured_ = false;
 };
 } // namespace isle::private_scene
 #endif

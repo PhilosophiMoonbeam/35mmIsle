@@ -3336,8 +3336,8 @@ LUS presentations, balanced GPU/frame ownership, stopped Input, drained
 SDL-dummy audio and released Host owners. Beach executes 16 genuine updates;
 this run does not qualify full-course completion or Windows11 gameplay.
 Direct X11 captures show the displayed native Window, including Oak's actual
-dialogue. Post-swap `GL_FRONT` PPM captures under this EGL environment are black
-and are not visual proof; they must not be confused with displayed output.
+dialogue. At that checkpoint, post-swap `GL_FRONT` PPM captures under EGL are
+black and not visual proof; they must not be confused with displayed output.
 This is a bounded runtime smoke, not a newly frozen/traced qualification cohort
 or hardware/hearing/numerical-parity claim.
 
@@ -3801,10 +3801,101 @@ releases balance, native/Photo/Manager/Input/Audio/Host owners close, and the
 independent retirement deadline remains clear.
 
 External inspection of the owned X11 window verifies the returned Oak room,
-menu and printing dialogue. Its internal `GL_FRONT` PPM is black under this
-EGL/Xvfb setup despite the valid X11 surface; that artifact is not accepted as
-visible proof. This bounded receipt does not yet establish Oak Save, durable
-reopen, Source continuation or natural campaign progression. Valley's four
-qualified captures independently reach Camera Check but currently yield no
-positive-score ordinary candidate; that replay/capture boundary remains under
-investigation without weakening score or identity acceptance.
+menu and printing dialogue. At this cancellation checkpoint the internal
+`GL_FRONT` PPM is black under EGL/Xvfb and is not accepted as visible proof.
+That bounded cancellation does not establish Save or cold reopen; the later
+full continuations below do.
+
+Valley's earlier four qualifying captures contain no positive-score ordinary
+candidate. Read-only inspection observes 6 and 8 visible depth pixels for the
+first/last focused Magikarp, below Original's 12-pixel scoring threshold.
+Qualification is not a positive-score guarantee. Input-only capture diversity
+subsequently records Geodude (74) with actual score 220; no capture, reconstruction,
+scorer, eligibility or identity rule is weakened.
+
+### Full course-photo Save continuations
+
+Seven independently owned Linux Runtime executions now complete genuine
+course photography → Camera9 → Photo15 → rendered Oak13 → acknowledged Save →
+actual Title8 → closed-owner cold profile reopen. The frozen consumer is
+SHA256 `df8d95e40eaf073c2d091598f251700d26279db56e9946df44b548848adfbea0`.
+These are separate profiles, not a contiguous natural campaign.
+
+| Course / receipt | Course updates | Course frames / LUS presentations | Actual Report species | Source score | All closed GPU terminals |
+|---|---:|---:|---|---:|---:|
+| Fresh Beach /641dt | 8,850 | 4,424 | Pidgey (16) | 3,300 | 6,525 |
+| Tunnel /641du | 9,973 | 4,986 | Pikachu (25) | 2,100 | 7,470 |
+| Volcano /641dv | 8,033 | 4,016 | Ponyta (78) | 2,000 | 6,506 |
+| River /641dw | 9,668 | 4,833 | Poliwag (60) | 170 | 7,280 |
+| Cave /641dx | 9,932 | 4,965 | Zubat (41) | 210 | 7,426 |
+| Valley /641ds | 11,520 | 5,759 | Geodude (74) | 220 | 8,236 |
+| Rainbow /641dr | 11,029 | 5,514 | Mew (151) | 8,340 | 11,812 |
+
+Beach uses the actual fresh Name/profile, original tutorial/follow-up, natural
+ending and a real eight-retrace held Frame with independent PCM progress.
+`native1` through `native6` explicitly seed access/abilities after actual Name
+confirmation; they do not seed photographs, scores or Report records.
+Volcano retains its strict real egg/item/Moltres146/focus/capture/travel proof.
+
+For every row, Camera's real filtered grid marks the captured canonical roll
+pointer/slot. Photo15 evaluates that same image, then publishes identical
+flag-normalized canonical bytes and the actual Source score to its Report slot.
+The selected-photo early phase0 presentation, later assessment, summary and
+separate consumed/released acknowledgments remain ordered. Native course,
+Camera and Photo GPU/Source owners actually join before subsequent entries.
+
+Ordinary Save uses the actual Oak Save button and prompts. All seven receipts
+observe generation 0→1 acknowledged publication. Ordinary Oak returns 8; Mew
+forces real Save and returns 18. Credits18 has no early-skip process: actual
+Start pulses can be consumed only after the full sequence and final 180-frame
+wait. That execution performs 7,279 updates/3,639 presentations, joins with
+Original result 8 and enters actual Title8.
+
+Title completion now requires an actual varied picture, real Start/release,
+Source UI state 2 and a later completed presentation. External X11 PNGs show
+the complete bright island/logo/Press Start screen, not the earlier two-frame
+dark fade. Ordinary Title performs 129 updates/presentations; the Mew receipt
+performs 132. This is returned Title readiness, not a claim that Continue has
+already reentered gameplay.
+
+Only after Runtime/Photos, State/Store lock, Input, Audio and Host destruction
+does `GameSession::open` cold-load the existing ready profile. Its generation
+and full canonical saved image match the acknowledged snapshot byte-for-byte.
+Each row's submissions, terminals and released Frames balance; Input reads
+equal completions, native retirement deadline remains clear and independent
+SDL-dummy PCM drains. The separate `nativeN-oak-cancel` objective retains the
+actual mid-print cancellation regression without pretending it saved.
+
+GCC builds the product, all 31 native consumers and private interfaces and passes
+all 58 CPU contracts; Clang's native/RSP build, both CLIs and 58 contracts pass.
+Public `df6a8c9` also passes all ten hosted Linux/MSVC jobs, including portable
+products. These are source/runtime ownership receipts, not unseeded progression,
+Original/hardware numerical parity, physical hearing or Windows 11 execution.
+
+### Canonical Frame captures and actual-window evidence
+
+Application and Startup consumers now share
+`tests/canonical_frame_capture.hpp`. It writes the actual borrowed canonical
+RDP RGBA while the completed Frame lease is valid, before Host copy/release.
+The fixed RGB row buffer avoids a full-window allocation or driver readback.
+Each `canonical-*-frame.ppm` is a checked 320×240 P6 image, exactly 230,415 bytes.
+It is explicitly **not** a window screenshot. Capture/presentation facts become
+true only after the corresponding real Host presentation completes.
+
+Both ambiguous `GL_FRONT` helpers are removed. Startup's Name/Oak driver no
+longer carries a window-capture callback; every caller uses the same canonical
+writer. Separate readiness cues permit the external observer to capture the
+actual owned X11 surface without reading or changing Source state.
+
+All affected paths execute successfully after this cutover: Startup → Name →
+Oak, live-VI reset → real saved-profile Title reentry, fresh full Beach and
+full Valley through Save/Title/cold reopen. Canonical Report images are directly
+inspected with the actual 3,300-point Pidgey and 220-point Geodude summaries;
+the Name image is correctly oriented and readable. Separately inspected X11
+PNGs show the actual Name editor, Oak room and complete reentered Title.
+No canonical image is substituted for that window evidence.
+
+The final GCC product/all-consumer/private-interface build and all 58 contracts
+pass. The native application and startup snapshot hashes are respectively
+`c776063cfe1b9df6dd5d6a44b00a4a989b552d63997b26f1b85ecd24cf06db91` and
+`223ace9d930c9ddda2fba575a4d9b6cc248dcc48559769d04330f1705a10c965`.

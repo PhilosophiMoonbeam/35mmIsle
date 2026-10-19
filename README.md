@@ -4,9 +4,15 @@
 
 # 35mmIsle 📸
 
-**35mmIsle is the native port of Pokémon Snap (1999) to modern systems, based on [libultraship (LUS)](https://github.com/Kenix3/libultraship).** The initial implementation targets are Linux x64 and Windows 11 x64.
+**35mmIsle is the native port of Pokémon Snap (1999) to modern systems, based on [libultraship (LUS)](https://github.com/Kenix3/libultraship).** Target platforms are Linux x64 and Windows 11 x64.
 
 The port builds on the authoritative [Pokémon Snap decompilation](https://github.com/ethteck/pokemonsnap), with integration patterns informed by other mature LUS-based ports. ROMs and extracted game assets are not distributed with this repository.
+
+## Runtime status
+
+The actual Linux application Runtime has completed all seven courses through genuine captured-photo selection, Source evaluation, rendered Oak, acknowledged Save, visible Title and byte-exact cold profile reopen. Mew additionally completes the original full Credits18 sequence. The Beach qualification starts from a fresh profile; the other six course qualifications use explicit access/ability profiles, not authored photographs or scores. These separate runs do **not** establish unseeded campaign progression, physical-controller/audio qualification, hardware pixel parity or Windows 11 gameplay.
+
+Published [`df6a8c9`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39215880436) passes all ten Linux/MSVC jobs, including complete native products, all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish current runtime evidence from the historical component checkpoints below. Natural unlocks, item rewards and six-sign progression are being qualified through the same live canonical profile.
 
 ## Development documentation
 

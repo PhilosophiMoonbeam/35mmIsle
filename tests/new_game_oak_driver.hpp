@@ -26,8 +26,7 @@ inline NameOakMetrics exercise_name_to_oak(
         scene::graphics::Frame& graphics, host::GtlClock& clock,
         host::RetraceClock& retraces, std::uint64_t& ordinal,
         Driver<new_game::Scene>::Time epoch, Driver<new_game::Scene>::Time deadline,
-        const std::filesystem::path& root, Driver<new_game::Scene>::Capture capture,
-        application::Manager& manager) {
+        const std::filesystem::path& root, application::Manager& manager) {
     demand(state.initialized() && state.save() && (state.scene_notices()&1u) &&
            !storage.game() && graphics.quiescent() && clock.stopped(),
            "actual source title-to-Name entry prerequisites are missing");
@@ -84,7 +83,7 @@ inline NameOakMetrics exercise_name_to_oak(
         NativeDriver driver(name,services,input,platform,graphics,clock,retraces,ordinal,epoch,deadline,
             [](const new_game::Scene& value) noexcept { return value.exit_requested(); },
             [](const new_game::Scene& value) noexcept { return value.observation().controls_ready; },
-            root/"proof"/"actual-name-window.ppm",capture);
+            root/"proof"/"canonical-name-frame.ppm");
         new_game::private_smoke::Hooks hooks{
             &driver,
             [](void* owner,const game_input::HostFrame& sample,new_game::private_smoke::Frame& frame) noexcept {
@@ -97,7 +96,7 @@ inline NameOakMetrics exercise_name_to_oak(
             new_game::private_smoke::Scenario::empty_default,2400,error);
         demand(exercised,driver.error()[0]?driver.error():error.c_str());
         demand(driver.fence(),driver.error());
-        demand(driver.captured(),"actual completed Name window was not observed");
+        demand(driver.captured(),"actual canonical Name frame was not captured and presented");
         demand(state.save() == persistent_save && state.save_initialization() == initialization &&
                (state.scene_notices()&1u),"Name replaced the profile or consumed Oak's first-meet notice");
         expect_live_vi();
@@ -143,7 +142,7 @@ inline NameOakMetrics exercise_name_to_oak(
                 const auto view = value.view();
                 return (view.phase == oaks_lab::Phase::dialogue && view.printed_characters >= 4) ||
                        view.phase == oaks_lab::Phase::lab || view.phase == oaks_lab::Phase::courses;
-            },root/"proof"/"actual-oak-window.ppm",capture);
+            },root/"proof"/"canonical-oak-frame.ppm");
         oaks_lab::private_smoke::Hooks hooks{
             &driver,
             [](void* owner,const game_input::HostFrame& sample,oaks_lab::private_smoke::Frame& frame) noexcept {
@@ -155,7 +154,7 @@ inline NameOakMetrics exercise_name_to_oak(
             oaks_lab::private_smoke::Scenario::first_meet_course,0,8000,error);
         demand(exercised,driver.error()[0]?driver.error():error.c_str());
         demand(driver.fence(),driver.error());
-        demand(driver.captured(),"actual completed Oak portrait/dialogue window was not observed");
+        demand(driver.captured(),"actual canonical Oak portrait/dialogue frame was not captured and presented");
         demand(state.save() == persistent_save && state.save_initialization() == initialization &&
                !(state.scene_notices()&1u),"Oak lost the persistent profile or failed source notice consumption");
         expect_live_vi();

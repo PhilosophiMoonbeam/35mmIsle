@@ -10,9 +10,9 @@
 #include "host_clock.hpp"
 #include "application_manager.hpp"
 #include "new_game_oak_driver.hpp"
+#include "canonical_frame_capture.hpp"
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
@@ -22,7 +22,6 @@
 #include <stdexcept>
 #include <string_view>
 #include <thread>
-#include <vector>
 
 namespace {
 namespace s = isle::startup;
@@ -74,50 +73,6 @@ void check_existing_profile(const std::filesystem::path& path) {
     const auto screen = data.value.screen_offsets();
     require(flag && flag.value && screen && screen.value.horizontal == 8 && screen.value.vertical == -6 &&
             data.value.generation() == 1,"RAM-only new-game reset implicitly committed over the existing disk profile");
-}
-// Actual current default-framebuffer pixels AFTER successful LUS presentation
-// and its real GL completion. No canonical-RDRAM image is relabeled as a window.
-void capture_window(const std::filesystem::path& path) {
-    auto* window = SDL_GL_GetCurrentWindow();
-    require(window != nullptr,"presented GL window is unavailable");
-    int width = 0, height = 0;
-    require(SDL_GetWindowSizeInPixels(window,&width,&height) && width > 0 && height > 0 && width <= 4096 && height <= 4096,
-            "presented window has invalid pixel extent");
-    using ReadBuffer = void (APIENTRY*)(GLenum);
-    using PixelStore = void (APIENTRY*)(GLenum,GLint);
-    using ReadPixels = void (APIENTRY*)(GLint,GLint,GLsizei,GLsizei,GLenum,GLenum,void*);
-    using GetError = GLenum (APIENTRY*)();
-    using BindFramebuffer = void (APIENTRY*)(GLenum,GLuint);
-    using GetInteger = void (APIENTRY*)(GLenum,GLint*);
-    const auto read_buffer = reinterpret_cast<ReadBuffer>(SDL_GL_GetProcAddress("glReadBuffer"));
-    const auto pixel_store = reinterpret_cast<PixelStore>(SDL_GL_GetProcAddress("glPixelStorei"));
-    const auto read_pixels = reinterpret_cast<ReadPixels>(SDL_GL_GetProcAddress("glReadPixels"));
-    const auto error = reinterpret_cast<GetError>(SDL_GL_GetProcAddress("glGetError"));
-    const auto bind_framebuffer = reinterpret_cast<BindFramebuffer>(SDL_GL_GetProcAddress("glBindFramebuffer"));
-    const auto get_integer = reinterpret_cast<GetInteger>(SDL_GL_GetProcAddress("glGetIntegerv"));
-    require(read_buffer && pixel_store && read_pixels && error && bind_framebuffer && get_integer,
-            "actual GL surface readback API missing");
-    require(error() == GL_NO_ERROR,"presentation left an actual GL error before readback");
-    GLint old_framebuffer = 0, old_read_buffer = 0, old_alignment = 0;
-    get_integer(GL_READ_FRAMEBUFFER_BINDING,&old_framebuffer);
-    get_integer(GL_READ_BUFFER,&old_read_buffer);
-    get_integer(GL_PACK_ALIGNMENT,&old_alignment);
-    bind_framebuffer(GL_READ_FRAMEBUFFER,0);
-    read_buffer(GL_FRONT);
-    pixel_store(GL_PACK_ALIGNMENT,1);
-    std::vector<std::byte> pixels(static_cast<std::size_t>(width)*static_cast<std::size_t>(height)*3);
-    read_pixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,pixels.data());
-    const auto read_error = error();
-    pixel_store(GL_PACK_ALIGNMENT,old_alignment);
-    bind_framebuffer(GL_READ_FRAMEBUFFER,static_cast<GLuint>(old_framebuffer));
-    read_buffer(static_cast<GLenum>(old_read_buffer));
-    require(read_error == GL_NO_ERROR && error() == GL_NO_ERROR,"actual presented window readback/state restoration failed");
-    std::ofstream output(path,std::ios::binary);
-    output << "P6\n" << width << ' ' << height << "\n255\n";
-    const auto row = static_cast<std::size_t>(width)*3;
-    for (int y = height; y-- > 0;)
-        output.write(reinterpret_cast<const char*>(pixels.data()+static_cast<std::size_t>(y)*row),static_cast<std::streamsize>(row));
-    require(bool(output),"private actual-window capture could not be retained");
 }
 int run(const std::filesystem::path& rom, const std::filesystem::path& root, Scenario scenario) {
     const bool full_title = scenario == Scenario::full_title;
@@ -243,7 +198,6 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                 const auto frame = graphics.completed();
                 require(frame && frame.rgba.size() == 320u*240u*4u,"actual framebuffer readback has wrong complete extent");
                 if (!host.presentation_pending()) {
-                    require(host.queue_present(frame.rgba,frame.screen_offsets),host.message());
                     const auto* ui = runtime->menu_ui();
                     queued_menu_ready = ui && ui->source_state() == 3 && runtime->updates()-stable_since >= 30;
                     queued_logo_ready = runtime->phase() == s::Phase::logo &&
@@ -251,6 +205,13 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                     const auto prepared_view = runtime->view();
                     queued_title_ready = prepared_view.title && prepared_view.title->active() &&
                         prepared_view.title->source_time() >= 50;
+                    if(!logo_capture && queued_logo_ready)
+                        isle::private_capture::write_frame(root/"proof"/"canonical-logo-frame.ppm",frame.rgba);
+                    if(!title_capture && queued_title_ready)
+                        isle::private_capture::write_frame(root/"proof"/"canonical-title-frame.ppm",frame.rgba);
+                    if(!menu_capture && queued_menu_ready)
+                        isle::private_capture::write_frame(root/"proof"/"canonical-menu-frame.ppm",frame.rgba);
+                    require(host.queue_present(frame.rgba,frame.screen_offsets),host.message());
                 }
                 ++canonical_frames;
             }
@@ -263,16 +224,16 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                 // This tag belongs to the retained copied presentation, not
                 // whatever native UI state has advanced to during a decline.
                 if (!logo_capture && queued_logo_ready) {
-                    capture_window(root/"proof"/"actual-logo-window.ppm");
                     logo_capture = true;
+                    std::cout<<"startup_surface_ready stage=logo"<<std::endl;
                 }
                 if (!title_capture && queued_title_ready) {
-                    capture_window(root/"proof"/"actual-title-window.ppm");
                     title_capture = true;
+                    std::cout<<"startup_surface_ready stage=title"<<std::endl;
                 }
                 if (!menu_capture && queued_menu_ready) {
-                    capture_window(root/"proof"/"actual-menu-window.ppm");
                     menu_capture = true;
+                    std::cout<<"startup_surface_ready stage=menu"<<std::endl;
                 }
             }
         }
@@ -433,7 +394,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
         clock.request_stop();clock.poll();
         require(clock.stopped(),"source manager handoff retained a Name clock context");
         scene_metrics = isle::private_scene::exercise_name_to_oak(snapshot,game_state,scene_storage,
-            input,host,graphics,clock,retraces,ordinal,epoch,deadline,root,capture_window,manager);
+            input,host,graphics,clock,retraces,ordinal,epoch,deadline,root,manager);
     } else {
     auto* const persistent_save = game_state.save();
     auto* const initialization_evidence = game_state.save_initialization();
@@ -485,8 +446,10 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                 executing.reset();
                 const auto frame = graphics.completed();
                 if (!host.presentation_pending()) {
-                    require(host.queue_present(frame.rgba,frame.screen_offsets),host.message());
                     queued_prompt = runtime->menu_ui() && runtime->menu_ui()->source_state() == 2;
+                    if(queued_prompt && prompt_presentations==9)
+                        isle::private_capture::write_frame(root/"proof"/"canonical-reentered-title-frame.ppm",frame.rgba);
+                    require(host.queue_present(frame.rgba,frame.screen_offsets),host.message());
                 }
                 ++reentry_frames;
             }
@@ -496,7 +459,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
             require(shown != g::Present::failed,host.message());
             if (shown == g::Present::completed && queued_prompt && prompt_presentations < 10) {
                 if (++prompt_presentations == 10)
-                    capture_window(root/"proof"/"actual-reentered-title-window.ppm");
+                    std::cout<<"startup_surface_ready stage=reentered_title"<<std::endl;
             }
         }
         if (prompt_presentations == 10) clock.request_stop();
@@ -569,7 +532,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
               << " accepted_dummy_PCM_frames=" << accepted_frames << " max_audio_frames_during_GPU_wait=" << greatest_busy_audio_progress
               << " menu_first_update=" << first_menu_update << " gtl_queue_dropped_retraces=" << clock.stats().dropped_retraces
               << " logo_RGB_changes=20 menu=A_to_main_B_to_prompt_Start_to_main new_game_source_scene=0 entry_flags=1"
-                 " actual_window_capture=private_PPM input=explicit_owned_software_NOT_LUS_or_physical"
+                 " canonical_RGBA_capture=private_PPM_NOT_window external_window_visual_inspection=required input=explicit_owned_software_NOT_LUS_or_physical"
                  " audio=actual_RSP_checked_SDL_dummy_drained gameplay_Original_numerical_hardware_parity=not_claimed\n";
     return 0;
 }

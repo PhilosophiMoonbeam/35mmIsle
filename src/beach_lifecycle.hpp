@@ -9,6 +9,8 @@
 #include "world_module.hpp"
 #include <memory>
 #include <optional>
+namespace isle::actor { class Owner; class Producer; class Resources; }
+namespace isle::world { class World; }
 namespace isle::beach {
 struct LifecycleAccess;
 enum class LifecycleStatus { ready, setup_pending, running, retiring, completed, cancelled, failed, retired };
@@ -62,6 +64,12 @@ public:
     const IsleBeachLifecycleSource& source() const noexcept;
     // Canonical live ending state, NULL after actual Actor owner retirement.
     const IsleBeachEndingSource* ending_source() const noexcept;
+    // Scoped read-only observations, like NativeHost. Native pointers become
+    // NULL when their real owners retire; immutable resources live with Entry.
+    const actor::Resources& actor_resources() const noexcept;
+    const actor::Owner* actors() const noexcept;
+    const actor::Producer* actor_packet_producer() const noexcept;
+    const world::World* world_owner() const noexcept;
 private:
     struct Impl;
     explicit Lifecycle(std::unique_ptr<Impl>) noexcept;

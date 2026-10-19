@@ -1,4 +1,8 @@
 #include "native_course_probe.hpp"
+#include "captured_photo_identity.hpp"
+#include "native_progression_puzzles.hpp"
+#include "native_valley_dash_puzzle.hpp"
+#include "native_sign_puzzles.hpp"
 #include "application_runtime.hpp"
 #include "game_state.hpp"
 #include "tunnel_scene.hpp"
@@ -16,6 +20,8 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <limits>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -166,30 +172,45 @@ VolcanoTargets volcano_targets(const IsleVolcanoActorSource& source) {
     // borrow survives this serialized owner-side traversal.
     return targets;
 }
-bool photo_target(const IslePlayerSource& player,IsleGameVec3& target,const std::array<bool,152>* photographed) {
+int ordinary_species(int id) noexcept {
+    // Original score.c normalizes the real flying Shellder actor603 to90.
+    return id==603?90:(id>0 && id<=151?id:0);
+}
+struct ShotHistory { std::uint8_t consumed=0;float acquisition_distance=0; };
+struct PhotoTarget { IsleGameVec3 position{};int species=0;float distance=0; };
+bool photo_target(const IslePlayerSource& player,PhotoTarget& target,const std::array<ShotHistory,152>* shots) {
     IsleGameObject* previous=nullptr;
     float nearest=10000.0f;
-    bool found=false;
+    bool found=false,prefer_retake=false;
     for(;;) {
         IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
         require(isle_actor_source_link3_next(player.game,previous,&object,&actor,&model)==ISLE_GAME_OK,
             "actual course photo-target traversal rejected");
         if(!object)break;
         previous=object;
-        if(!model || actor->id<=0 || actor->id>151 || !actor->tangible || !(actor->flags&4u) ||
-           !(actor->playerDist>=0 && actor->playerDist<=nearest))continue;
-        if(photographed && (*photographed)[static_cast<std::size_t>(actor->id)])continue;
+        const auto species=ordinary_species(actor->id);
+        if(!model || !species || !actor->tangible || !(actor->flags&4u) ||
+           !(actor->playerDist>=0 && actor->playerDist<=10000))continue;
+        const auto* history=shots?&(*shots)[static_cast<std::size_t>(species)]:nullptr;
+        if(history && history->consumed>=2)continue;
         IsleGameObjectMetadata metadata{};
         require(isle_game_object_metadata(player.game,object,&metadata)==ISLE_GAME_OK,
             "actual course photo-target visibility unavailable");
         if(metadata.flags&1u)continue;
         const auto& position=actor->collPosition;
-        const float pitch=std::atan2(position.y-player.CameraEyePos.y,
-            std::hypot(position.x-player.CameraEyePos.x,position.z-player.CameraEyePos.z));
+        const float horizontal=std::hypot(position.x-player.CameraEyePos.x,position.z-player.CameraEyePos.z);
+        const float pitch=std::atan2(position.y-player.CameraEyePos.y,horizontal);
         if(!(pitch>=player.MinPitch && pitch<=player.MaxPitch))continue;
-        target=position;nearest=actor->playerDist;found=true;
+        const float distance=std::hypot(horizontal,position.y-player.CameraEyePos.y);
+        const bool retake=history && history->consumed;
+        // One acquisition plus one half-distance opportunity. This physical
+        // framing hint is not an Oak score: real replay still selects the best.
+        if(retake && !(history->acquisition_distance>0 && distance<=history->acquisition_distance*.5f))continue;
+        if(found && ((prefer_retake && !retake) ||
+            (prefer_retake==retake && actor->playerDist>nearest)))continue;
+        target={position,species,distance};nearest=actor->playerDist;prefer_retake=retake;found=true;
     }
-    // Only a scalar collision center survives this owner-side observation.
+    // Only scalar observations survive; no Actor/model handle escapes.
     return found;
 }
 bool different(const IsleGameVec3& first,const IsleGameVec3& second) {
@@ -197,17 +218,19 @@ bool different(const IsleGameVec3& first,const IsleGameVec3& second) {
 }
 }
 
-void seed_progress(game::State& state,std::int32_t course) {
+void seed_progress(game::State& state,std::int32_t course,CaptureGoal goal) {
     require(course>=0 && course<7,"authored course profile argument outside0..6");
     auto* session=state.save();require(state.initialized() && session,"real Name must precede authored unlocked profile");
     const auto before=session->source_player_name_prefix();require(before.size()>=16,"actual confirmed Name missing");
     std::array<std::byte,16> name{};std::copy_n(before.begin(),16,name.begin());
     require(std::any_of(name.begin(),name.end(),[](auto byte){return byte!=std::byte{};}),"authored profile cannot replace missing real Name confirmation");
-    // Source6's known-course and unlocked-course must agree: otherwise its
-    // new-course dialogue overwrites the selected field during Oak startup.
-    accepted(session->set_selected_course(6),"authored known-course mutation rejected");
-    accepted(session->set_unlocked_course(6),"authored unlock mutation rejected");
+    // Isolation checks need the actual endpoint to increase progress. Ordinary
+    // per-course checks retain the explicitly authored all-course access.
+    const auto available=goal==CaptureGoal::progression && (course==1 || course==3)?course:6;
+    accepted(session->set_selected_course(static_cast<unsigned>(available)),"authored known-course mutation rejected");
+    accepted(session->set_unlocked_course(available),"authored unlock mutation rejected");
     for(unsigned flag=0;flag<3;++flag)accepted(session->set_player_flag(flag,true),"authored equipment mutation rejected");
+    accepted(session->set_player_flag(5,goal==CaptureGoal::sign),"authored sign/Dash prerequisite mutation rejected");
     accepted(session->set_player_flag(12,false),"authored hold-Z control mutation rejected");
     accepted(session->set_player_flag(13,false),"authored ordinary Y-axis mutation rejected");
     const auto after=session->source_player_name_prefix();
@@ -217,6 +240,12 @@ void seed_progress(game::State& state,std::int32_t course) {
 struct Probe::Impl {
     std::int32_t course;
     CaptureGoal goal;
+    game::State& state;
+    std::optional<private_campaign::ProgressionPuzzles> progression;
+    std::optional<private_campaign::ValleyDashPuzzle> dash;
+    std::optional<private_campaign::SignPuzzles> signs;
+    private_campaign::Progress canonical_progress{};
+    bool goal_initialized=false,progress_initialized=false;
     private_post_course::Controller controller;
     std::ofstream ledger;
     std::uint64_t rows=0,serial=0,updates=0,last_external=0,frames=0,presents=0,varied=0,movement=0,shutters=0,throws=0;
@@ -224,12 +253,14 @@ struct Probe::Impl {
     const IslePlayerPhotoData* captured_roll=nullptr;
     std::array<std::uint64_t,60> captured_digests{};
     int captured_count=0;
-    std::array<bool,152> photographed{};
+    std::array<ShotHistory,152> ordinary_shots{};
+    int pending_ordinary_slot=-1,pending_ordinary_species=0;
+    float pending_ordinary_distance=0;
     int photos=0,qualified=0,reason=0,focus_id=0,hits1=3,hits2=3,mew_mode=0;
     int pending_mew_slot=-1,pending_mew_qualified=0;
     int controls=0,disabled=0,direction=0,zoom_target=0,cooldown=0;
     std::uint32_t consumed_buttons=0,pressed_buttons=0;
-    float move_time=0;
+    float move_time=0,control_time=0;
     std::uint16_t buttons=0;
     std::int8_t x=0,y=0;
     IsleGameVec3 previous{};
@@ -247,21 +278,123 @@ struct Probe::Impl {
     IsleGameVec3 volcano_gate_position{},volcano_egg_position{};
     int pending_volcano_slot=-1,pending_volcano_qualified=0,volcano_throws=0,volcano_ordinary_photos=0;
     int volcano_cart_stopped=0,volcano_throw_timeout=0;
+    std::uint16_t volcano_item_button=0;
     bool volcano_gate_stopped=false,volcano_throw_consumed=false,volcano_egg_transition=false;
     bool volcano_gate_released=false,volcano_moltres_seen=false,volcano_moltres_photo=false;
     struct FrameTag {std::uint64_t ordinal=0,serial=0,update=0;int photos=0,reason=0;unsigned phase=0;};
     std::array<FrameTag,2> tags{};
-    explicit Impl(std::int32_t id,private_post_course::Controller pad,const std::filesystem::path& root,CaptureGoal capture)
-        :course(id),goal(capture),controller(pad) {
+    explicit Impl(std::int32_t id,private_post_course::Controller pad,const std::filesystem::path& root,
+                  CaptureGoal capture,game::State& liveState)
+        :course(id),goal(capture),state(liveState),controller(pad) {
         require(course>=0 && course<7 && controller.owner && controller.set,"actual course and owned controller required");
         std::filesystem::create_directories(root);
         ledger.exceptions(std::ios::badbit|std::ios::failbit);
         ledger.open(root/("course-"+std::to_string(course)+"-source.tsv"),std::ios::out|std::ios::trunc);
-        row("scope\tauthored unlocked canonical profile; actual Runtime/Manager course Source and owned inputs; not natural save progression or N64 parity");
+        row("scope\tactual canonical profile and Runtime/Manager course Source with owned inputs; application-runtime-report.txt identifies unseeded versus authored access; not N64 parity");
         row(goal==CaptureGoal::empty_roll?"objective\tgenuine empty Source roll; natural Oak13 admission":
             "objective\tgenuine Source photographs; natural CameraCheck9 admission");
         row("bounds\t27 primary world IDs *2667 minimum-speed updates +2400 intro/end; Rainbow7200+1800+2000+1200+120+1200;131072 rows;2 scalar frame tags;no images");
         row("kind\tcourse\tserial\tupdates\tframes\tpresents\tphotos\tqualified\tend_reason\tintro_done\tending\tbuttons\tx\ty\tfocus\thits1\thits2\tmew_mode\tmovement\tvalue\tcontrols\tdisabled\tdirection\tzoom_target\tcooldown\tconsumed_buttons\tpressed_buttons\tmove_time\tposition_x\tposition_y\tposition_z\tvolcano_stage\tegg_present\tegg_distance\tegg_radius\tegg_x\tegg_y\tegg_z\tegg_graph\tegg_path\tcart_stopped\tthrow_timeout\tvolcano_throws\tvolcano_throw_consumed\tvolcano_egg_transition\tvolcano_gate_released\tmoltres_tangible\tvolcano_moltres_photo");
+    }
+    void activate_goal() {
+        if(goal_initialized)return;
+        goal_initialized=true;
+        const private_post_course::Controller pad{this,[](void* owner,std::uint16_t mask,std::int8_t sx,std::int8_t sy) noexcept {
+            static_cast<Impl*>(owner)->set(mask,sx,sy);
+        }};
+        const private_campaign::Aim camera{this,[](void* owner,const IslePlayerSource& player,
+                const IsleGameVec3& point,bool zoomed,std::int8_t& sx,std::int8_t& sy) {
+            static_cast<Impl*>(owner)->aim(player,point,zoomed,sx,sy);
+        }};
+        if(goal==CaptureGoal::progression) {
+            require(course==1 || course==3 || course==5,"actual progression objective requires Tunnel, River or Valley");
+            if(course==5)dash.emplace(pad,camera);
+            else progression.emplace(course==1?private_campaign::Puzzle::tunnel1014:
+                private_campaign::Puzzle::river1019,pad,camera);
+        } else if(goal==CaptureGoal::sign) {
+            require(course>=0 && course<6 && state.save(),"actual sign objective requires a live canonical ordinary-course profile");
+            std::array<bool,6> reported{};
+            const auto catalog=private_campaign::sign_evidence();
+            for(std::size_t i=0;i<reported.size();++i) {
+                const auto photo=state.save()->photo(save::PhotoSet::report,
+                    63+static_cast<std::size_t>(catalog[i].course));
+                require(photo && photo.value.size()==save::game_photo_bytes,"actual sign Report prerequisite unavailable");
+                reported[i]=!std::all_of(photo.value.begin()+4,photo.value.begin()+8,
+                    [](std::byte byte){return byte==std::byte{0xff};});
+            }
+            signs.emplace(course,reported,pad,camera);
+        }
+    }
+    bool control_goal(const application::RuntimeView& view) {
+        if(progression) {
+            const auto& facts=progression->facts();
+            if(!progress_initialized || (!facts.complete &&
+                    (facts.endpoint_entered || (state.scene_notices()&0x400u)))) {
+                require(state.save(),"actual progression canonical profile unavailable");
+                const auto snapshot=state.save()->snapshot();
+                require(bool(snapshot),"actual progression canonical snapshot unavailable");
+                const auto known=snapshot.value.selected_course();
+                const auto unlocked=snapshot.value.unlocked_course();
+                require(known && unlocked,"actual progression known/unlocked fields unavailable");
+                canonical_progress={static_cast<int>(known.value),unlocked.value};
+                progress_initialized=true;
+            }
+            return progression->update(view,state,canonical_progress,updates);
+        }
+        if(dash)return dash->update(view,state,updates);
+        if(signs)return signs->update(view,state,updates);
+        return false;
+    }
+    bool goal_complete() const noexcept {
+        return progression?progression->facts().complete:dash?dash->facts().complete:
+            signs?signs->facts().capture_observed:true;
+    }
+    void note_goal() {
+        if(!progression && !dash && !signs)return;
+        std::ostringstream text;
+        text.precision(std::numeric_limits<float>::max_digits10);
+        text<<"puzzle\tcourse="<<course<<"\tserial="<<serial<<"\tupdates="<<updates;
+        if(progression) {
+            const auto& f=progression->facts();
+            text<<"\tdependency="<<int(f.dependency)<<"\tknown="<<canonical_progress.known_course
+                <<"\tunlocked="<<canonical_progress.unlocked_course<<"\ttarget="<<f.target_present
+                <<"\tgraph="<<f.target_graph<<"\tbehavior="<<f.target_behavior<<"\tblock="<<f.current_block
+                <<"\tsurface="<<f.trigger_surface<<"\tthrows="<<f.throw_requests<<'/'<<f.throws_consumed
+                <<"\ttrigger="<<f.trigger_transition<<"\tendpoint="<<f.endpoint_entered
+                <<"\tprogress="<<f.progress_observed<<"\tnotice="<<f.notice_observed<<"\tcomplete="<<f.complete;
+        } else if(dash) {
+            const auto& f=dash->facts();
+            text<<"\tdependency="<<int(f.dependency)<<"\tblock="<<f.current_block
+                <<"\tsquirtle_graph="<<f.squirtle.graph<<"\tsquirtle_hit="<<f.squirtle_hit
+                <<"\tslide="<<f.squirtle_sliding<<"\tsnap="<<f.slide_snap_observed
+                <<"\tvector_observed="<<f.slide_item_direction_observed<<"\tgeometry_observed="<<f.slide_geometry_observed
+                <<"\tvector="<<f.slide_item_direction.x<<','<<f.slide_item_direction.y<<','<<f.slide_item_direction.z
+                <<"\titem_position="<<f.slide_item_position.x<<','<<f.slide_item_position.y<<','<<f.slide_item_position.z
+                <<"\tyaw="<<f.slide_item_yaw<<','<<f.slide_target_yaw
+                <<"\tlaunch="<<f.launch_alignment_ready<<','<<f.launch_yaw<<','<<f.launch_target_yaw<<','<<f.launch_uncertainty
+                <<"\tsquirtle_position="<<f.squirtle.position.x<<','<<f.squirtle.position.y<<','<<f.squirtle.position.z
+                <<"\tmountain_position="<<f.mountain_mankey.position.x<<','<<f.mountain_mankey.position.y<<','<<f.mountain_mankey.position.z
+                <<"\tmankey_graph="<<f.mankey.graph<<"\trevealed="<<f.mankey_revealed
+                <<"\tsafe="<<f.mankey_safe_side<<"\tmankey_hit="<<f.mankey_hit
+                <<"\tswitch="<<f.switch_triggered<<"\tendpoint="<<f.endpoint_entered
+                <<"\tdash="<<f.dash_observed<<"\tnotice="<<f.notice_observed<<"\tcomplete="<<f.complete;
+        } else {
+            const auto& f=signs->facts();
+            text<<"\tid="<<f.id<<"\tdependency="<<int(f.dependency)<<"\tproducer="<<int(f.producer_state)
+                <<"\tgraph="<<f.sign_graph<<"\tproducer_graph="<<f.producer_graph
+                <<"\tflags="<<f.sign_flags<<"\tsurface="<<f.trigger_surface
+                <<"\tfocus_authorized="<<f.focus_authorized
+                <<"\tgeometry="<<f.geometry_ready<<','<<f.geometry_kind<<','<<f.geometry_frame<<','<<f.geometry_rejection
+                <<"\tinput_target="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z
+                <<"\tpowered="<<f.powered<<"\tcleared="<<f.smoke_cleared
+                <<"\tflute_playing="<<f.flute_playing<<"\tproducer_distance="<<f.producer_player_distance
+                <<"\tcontrol_time="<<control_time
+                <<"\titems="<<f.item_requests<<'/'<<f.items_consumed
+                <<"\tshutters="<<f.shutter_requests<<'/'<<f.shutters_consumed
+                <<"\troll="<<f.capture_slot<<"\tprimary="<<f.recorded_primary
+                <<"\tcomplete="<<f.capture_observed;
+        }
+        row(text.str());
     }
     void set(std::uint16_t pad=0,std::int8_t sx=0,std::int8_t sy=0) noexcept {
         buttons=pad;x=sx;y=sy;controller.set(controller.owner,pad,sx,sy);
@@ -305,6 +438,7 @@ struct Probe::Impl {
         controls=player.D_80382D04_523114;disabled=player.IsInputDisabled;direction=player.gDirectionIndex;
         zoom_target=player.TargetDirectionZoomedIn;cooldown=player.sTimerAfterPhotoTaken;
         consumed_buttons=player.input.current_buttons;pressed_buttons=player.input.pressed_buttons;move_time=player.movement.move_time;
+        control_time=player.movement.control_time;
         if(course==6 && s.running && s.intro_done && controls) {
             if(!mew_shielded_seen && hits1>0 && hits2>0) {
                 mew_initial_hits1=hits1;mew_initial_hits2=hits2;mew_shielded_seen=true;
@@ -323,15 +457,27 @@ struct Probe::Impl {
         for(;captured_count<photos;++captured_count) {
             const auto& photo=captured_roll[captured_count];
             require(photo.levelID==course,"actual captured photograph belongs to a different course");
-            const auto id=photo.pokemons[0].pokemonID;
-            if((photo.unk_00_16&0xe0u)==0x20u && id>0 && id<=151)
-                photographed[static_cast<std::size_t>(id)]=true;
-            std::array<std::byte,0x3a0> bytes;
-            isle::player::encode_photo(photo,bytes);
-            bytes[1]=std::byte{0};
-            std::uint64_t hash=14695981039346656037ull;
-            for(const auto byte:bytes) {hash^=std::to_integer<std::uint8_t>(byte);hash*=1099511628211ull;}
-            captured_digests[static_cast<std::size_t>(captured_count)]=hash;
+            const auto id=ordinary_species(photo.pokemons[0].pokemonID);
+            const int requested=captured_count==pending_ordinary_slot?pending_ordinary_species:0;
+            const int tracked=requested?requested:((photo.unk_00_16&0xe0u)==0x20u?id:0);
+            if(tracked>0 && tracked<=151) {
+                auto& history=ordinary_shots[static_cast<std::size_t>(tracked)];
+                if(requested)require(history.consumed<2,"ordinary input exceeded its two-exposure target plan");
+                if(!history.consumed && requested)history.acquisition_distance=pending_ordinary_distance;
+                ++history.consumed;
+                // Source scoring may prefer another subject in this real
+                // capture. Bound consumed target requests, not raw subject0.
+                ledger<<"exposure\tcourse="<<course<<"\tserial="<<serial<<"\troll="<<captured_count
+                    <<"\ttarget_species="<<tracked<<"\traw_subject_zero="<<photo.pokemons[0].pokemonID
+                    <<"\tconsumed="<<unsigned(history.consumed)
+                    <<"\tacquisition_distance_hint="<<history.acquisition_distance<<'\n';
+                ++rows;require(bool(ledger),"actual consumed exposure ledger write failed");
+            }
+            std::array<std::byte,save::game_photo_bytes> bytes;
+            captured_digests[static_cast<std::size_t>(captured_count)]=photo_identity(photo,bytes);
+        }
+        if(pending_ordinary_slot>=0 && photos>pending_ordinary_slot) {
+            pending_ordinary_slot=-1;pending_ordinary_species=0;pending_ordinary_distance=0;
         }
         if(pending_mew_slot>=0 && photos>pending_mew_slot && qualified>pending_mew_qualified) {
             const auto& captured=player.photo->D_800B0598[pending_mew_slot];
@@ -396,15 +542,16 @@ struct Probe::Impl {
         const float scale=std::tan(camera->perspective.fovy*pi/360);
         const float px=depth>1?side/depth/scale/camera->perspective.aspect*160:(side>=0?320.0f:-320.0f);
         const float py=depth>1?-up/depth/scale*120:0;
-        const float error_x=px-player.ReticleScreenX,error_y=py-player.ReticleScreenY;
+        const float error_x=px-static_cast<float>(player.ReticleScreenX);
+        const float error_y=py-static_cast<float>(player.ReticleScreenY);
         sx=std::abs(error_x)<6?0:stick(error_x*(player.gDirectionIndex==0?-16.0f:16.0f));
         sy=std::abs(error_y)<6?0:stick(error_y*8);
     }
-    void search_photo(const IslePlayerSource& player,bool subject,std::uint16_t pad,const std::array<bool,152>* seen) {
+    void search_photo(const IslePlayerSource& player,bool subject,std::uint16_t pad) {
         std::int8_t sx=0,sy=0;
         if(!subject && player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn) {
-            IsleGameVec3 target{};
-            if(photo_target(player,target,seen))aim(player,target,true,sx,sy);
+            PhotoTarget target{};
+            if(photo_target(player,target,nullptr))aim(player,target.position,true,sx,sy);
             else sx=24;
         }
         set(pad,sx,sy);
@@ -421,6 +568,12 @@ struct Probe::Impl {
             // after the ordinary/tutorial photographs, rather than force travel.
             if(!egg.present || !egg.tangible || !(egg.flags&0x20u) || !egg.interactive ||
                !player.IsCartStopped || egg.distance-egg.radius>5 || egg.distance>=1200 || qualified<3)return false;
+            const auto pester=state.save()->player_flag(1),apple=state.save()->player_flag(0);
+            require(pester && apple && (pester.value || apple.value),
+                "actual Volcano egg gate has no owned projectile");
+            // Original egg graph accepts both CMD9 and CMD13. Natural first
+            // access owns Apple before the later Pester reward.
+            volcano_item_button=pester.value?b:a;
             volcano_gate_stopped=true;volcano_ordinary_photos=qualified;
             volcano_gate_position=player.movement.position;volcano_egg_position=egg.position;
             volcano_stage=VolcanoStage::aim_egg;note("volcano_actual_egg_gate");
@@ -430,7 +583,9 @@ struct Probe::Impl {
             volcano_gate_released=true;note("volcano_actual_cart_resumed");
         }
         if(volcano_stage==VolcanoStage::aim_egg) {
-            if(!volcano_throw_consumed && volcano_throws>0 && (player.input.pressed_buttons&b) && player.ThrowItemTimeout>0) {
+            if(!volcano_throw_consumed && volcano_throws>0 &&
+                (player.input.pressed_buttons&volcano_item_button) && player.ThrowItemTimeout>0 &&
+                player.LastItemId==(volcano_item_button==b?162:163)) {
                 volcano_throw_consumed=true;note("volcano_egg_throw_consumed");
             }
             if(volcano_throw_consumed && egg.present && !egg.interactive && egg.path &&
@@ -458,8 +613,9 @@ struct Probe::Impl {
                 if(ray>0)aimed.y+=.15f*flight*(flight+1)-100*distance/ray;
                 std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy);
                 std::uint16_t pad=0;
-                if(!sx && !sy && ray>0 && player.ThrowItemTimeout==0 && !(prior&b) && !(player.input.current_buttons&b)) {
-                    pad=b;++throws;++volcano_throws;
+                if(!sx && !sy && ray>0 && player.ThrowItemTimeout==0 &&
+                    !(prior&volcano_item_button) && !(player.input.current_buttons&volcano_item_button)) {
+                    pad=volcano_item_button;++throws;++volcano_throws;
                 }
                 set(pad,sx,sy);
                 if(pad)note("volcano_egg_throw_requested");
@@ -495,12 +651,19 @@ struct Probe::Impl {
     void control(const application::RuntimeView& view,const Sample& s) {
         const auto prior=buttons;set();
         if(goal==CaptureGoal::empty_roll)return;
+        // Endpoint cutscenes disable ordinary photography. Their actual
+        // progress/notice and printed dialogue still require observation/input.
+        if(s.player && s.intro_done && (goal==CaptureGoal::progression || goal==CaptureGoal::sign) &&
+            (!s.player->IsTutorialEnabled || qualified>=3) &&
+            (course!=0 || !s.player->IsTutorialEnabled || (tutorial_clear && tutorial_stick)) &&
+            control_goal(view))return;
         if(!s.running || !s.player || !s.intro_done || !s.player->D_80382D04_523114 || s.ending)return;
         const auto& player=*s.player;
         IslePlayerPhotoFocus focus{};
         require(isle_player_photo_published_focus(player.photo,&focus)==ISLE_GAME_OK,"actual published course Photo focus rejected");
         focus_id=focus.pokemon_id;
-        const bool subject=focus.present && focus.object && focus.pokemon_id>0 && focus.pokemon_id<=151 && (focus.flags&4u);
+        const auto focus_species=ordinary_species(focus.pokemon_id);
+        const bool subject=focus.present && focus.object && focus_species && (focus.flags&4u);
         if(course==6) {
             const auto& actors=view.rainbow->actors_source();
             // Shield CMD9/13 is forwarded to Mew: first3 hits break phase1,
@@ -555,33 +718,48 @@ struct Probe::Impl {
                 !(prior&a) && !(player.input.current_buttons&a)) {pad|=a;++shutters;}
             // Use actual eligible Actor collision centers, including pitch;
             // a level-only yaw sweep can miss every low Valley subject.
-            search_photo(player,subject,pad,nullptr);return;
+            search_photo(player,subject,pad);return;
         }
         // Original player.c:2516–2527 creates updateTutorialMain ONLY for Beach.
         // IsTutorialEnabled is a profile choice on every course, not proof of
         // an owned tutorial/follow-up process that Volcano could acknowledge.
-        if(course==0 && player.IsTutorialEnabled && !player.D_803AE516_54E926) {
+        // D_803AE516 is an out-of-film/end latch, NOT tutorial completion.
+        // Original player.c1943-1957 ends follow-up after real message/stick
+        // waits without changing that latch. Resume only from those witnesses.
+        if(course==0 && player.IsTutorialEnabled && (!tutorial_clear || !tutorial_stick)) {
             const bool message=followup(player.ui);
             set(message && !(prior&a) && !(player.input.current_buttons&a)?a:0,tutorial_followup && !tutorial_stick?8:0);return;
         }
         if(player.IsInputDisabled)return;
         if(course==2 && control_volcano(view.volcano->actors_source(),player,focus,prior))return;
         // Preserve Volcano's three ordinary shots plus its real Moltres puzzle.
-        // Else seek new subjects instead of spending the trip on an early tiny
-        // subject whose valid live focus can still fail Source score visibility.
+        // Acquire coverage, then allow one genuinely closer exposure. A first
+        // consumed shutter is not proof of a completed or high-value Report.
         // Leave one of the actual sixty film slots unused: film exhaustion must
         // not replace the goal's natural course-end result.
         if(course==2?qualified>=3:photos>=static_cast<int>(std::size(player.photo->D_800B0598)-1))return;
-        const bool wanted=subject && !photographed[static_cast<std::size_t>(focus.pokemon_id)];
+        PhotoTarget target{};
+        const bool have_target=photo_target(player,target,&ordinary_shots);
+        std::int8_t sx=0,sy=0;
+        if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn) {
+            if(have_target)aim(player,target.position,true,sx,sy);
+            else sx=24;
+        }
+        const bool wanted=have_target && subject && focus_species==target.species && !sx && !sy;
         std::uint16_t pad=z;
         if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
-            !(prior&a) && !(player.input.current_buttons&a) && wanted) {pad|=a;++shutters;}
-        search_photo(player,wanted,pad,&photographed);
+            !(prior&a) && !(player.input.current_buttons&a) && wanted) {
+            pad|=a;++shutters;
+            pending_ordinary_slot=photos;pending_ordinary_species=target.species;
+            pending_ordinary_distance=target.distance;
+        }
+        set(pad,sx,sy);
     }
 };
 
-Probe::Probe(std::int32_t course,private_post_course::Controller controller,const std::filesystem::path& root,CaptureGoal goal)
-    :p_(std::make_unique<Impl>(course,controller,root,goal)) {}
+Probe::Probe(std::int32_t course,private_post_course::Controller controller,const std::filesystem::path& root,
+             CaptureGoal goal,game::State& state)
+    :p_(std::make_unique<Impl>(course,controller,root,goal,state)) {}
 Probe::~Probe()=default;
 void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpdates) {
     auto& p=*p_;Sample s;
@@ -595,9 +773,10 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
         }
         return;
     }
-    require(view.entry && view.entry->argument==std::uint32_t(p.course),"actual Manager course argument differs from authored request");
+    require(view.entry && view.entry->argument==std::uint32_t(p.course),"actual Manager course argument differs from requested course");
     if(!p.entered) {
         p.set();p.entered=true;p.serial=view.entry->serial;p.last_external=actualUpdates;p.note("actual_source_enter");
+        p.activate_goal();
     }
     require(view.entry->serial==p.serial && actualUpdates>=p.last_external,"actual course identity/update sequence changed");
     const auto delta=actualUpdates-p.last_external;
@@ -605,19 +784,25 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
     if(delta>limit || p.updates>limit-delta)p.fail("actual Source course update failure bound exhausted");
     p.updates+=delta;p.last_external=actualUpdates;p.observe(s);
     if(delta)p.control(view,s);
-    if(delta && (p.updates%8==0 || s.reason || s.ending))p.note("update");
+    if(delta && (p.updates%8==0 || s.reason || s.ending)) {p.note("update");p.note_goal();}
 }
 void Probe::retired(application::SceneRetirementView view) {
     auto& p=*p_;Sample s;if(!selected(view,p.course,s))return;
+    if(p.signs)p.signs->retire();
     p.observe(s);p.set();
+    p.note_goal();
+    if(!p.goal_complete())p.fail("actual input-only progression or sign objective did not complete");
     const bool empty=p.goal==CaptureGoal::empty_roll;
     const auto expected=empty?13:9;
+    // Original scripted endpoints send PLAYER_CMD_7, whose Player callback
+    // ends with reason3. Normal travel/film exhaustion ends with reason2.
+    const auto expectedReason=p.goal==CaptureGoal::progression?3:2;
     const bool captures=empty?(p.photos==0 && p.qualified==0 && p.shutters==0):(p.photos>0 && p.shutters>0);
     if(!p.entered || p.retirement || !view.entry || view.entry->serial!=p.serial || view.entry->argument!=std::uint32_t(p.course) ||
        !s.retired || !s.joined || !s.source_complete || !s.closed || s.input!=p.course || s.output!=expected || view.source_result!=expected ||
-       s.reason!=2 || !p.intro_seen || !p.intro_done || !p.travel_seen || (p.course!=6 && !p.movement) ||
+       s.reason!=expectedReason || !p.intro_seen || !p.intro_done || !p.travel_seen || (p.course!=6 && !p.movement) ||
        !captures || !p.travel_presentations)
-        p.fail("actual natural course/Original photographed9 or empty13/join receipt rejected");
+        p.fail("actual Source course result/reason/join receipt rejected");
     if(p.course==0 && (!p.ending_wait || !p.ending_terminal))p.fail("actual Beach ending Cart handshake not observed");
     if(p.course==2 && (p.volcano_stage!=Impl::VolcanoStage::travel_after_egg || p.volcano_ordinary_photos<3 ||
        !p.volcano_gate_stopped || !p.volcano_throw_consumed || !p.volcano_egg_transition || !p.volcano_gate_released ||
@@ -630,6 +815,7 @@ void Probe::retired(application::SceneRetirementView view) {
 void Probe::frame(const application::RuntimeView& view,std::uint64_t ordinal) {
     auto& p=*p_;Sample s;if(!selected(view,p.course,s))return;
     require(p.entered && view.entry && view.entry->serial==p.serial && s.frame,"actual course completed Frame provenance missing");
+    if(p.signs)p.signs->frame(view,ordinal);
     auto& tag=p.tags[ordinal%p.tags.size()];
     require(!tag.serial,"actual course Frame provenance slot reused before real presentation");
     tag={ordinal,p.serial,p.updates,p.photos,p.reason,p.ending_seen?2u:p.intro_done?1u:0u};++p.frames;

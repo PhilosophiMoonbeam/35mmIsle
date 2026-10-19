@@ -340,6 +340,19 @@ void synchronous_wait_failure_does_not_continue() {
             "source flag wait escaped the existing synchronous C fault fence");
     trace(f, {61});
 }
+void generic_helper_source_process_keeps_native_wait_and_join() {
+    ActorControlFixture f{}; isle_rng rng{1}; World world;
+    auto* actor = bind(world, f, rng);
+    ok(isle_game_add_object(world.game,14,0,0x80000000u,nullptr,&f,&f.helper));
+    require(actor_control_payload_empty(f.helper),"generic helper unexpectedly has an Actor payload");
+    f.actor.stateProc=start(world,actor,actor_control_spawn_helper_process);
+    for(int i=0;i<4;++i)ok(isle_game_tick(world.game));
+    trace(f,{70,71,72,73});
+    require(f.actor.stateProc==nullptr && actor_control_joined(f.helper_process) &&
+        counts(world).processes==0 && actor_control_payload_empty(f.helper),
+        "generic Source helper did not execute, wait, self-finish and join independently of Actor payload");
+}
+
 } // namespace
 
 int main() {
@@ -356,6 +369,7 @@ int main() {
         nullable_lookup_accepts_only_joined_identity_held_absence();
         creation_failure_exits_both_c_fences();
         synchronous_wait_failure_does_not_continue();
+        generic_helper_source_process_keeps_native_wait_and_join();
         std::cout << "native source actor controls passed\n";
         return 0;
     } catch (const std::exception& error) {

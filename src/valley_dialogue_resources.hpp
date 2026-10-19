@@ -26,10 +26,10 @@ private:
     sprite::BankOwner bank_;
     std::array<IsleValleyDialogue,15> main_{};
     std::array<IsleValleyDialogue,2> empty_{};
-    std::array<sprite::Sprite,8> sprites_{};
-    std::array<const IsleSprite*,6> first_{}, second_{};
-    std::array<scene::SpriteResource,8> resources_{};
-    std::array<const IsleSprite*,8> roots_{};
+    std::array<sprite::Sprite,14> sprites_{};
+    std::array<const IsleSprite*,6> first_{}, second_{}, third_{};
+    std::array<scene::SpriteResource,14> resources_{};
+    std::array<const IsleSprite*,14> roots_{};
     std::array<sprite::BankMapping,1> banks_{};
 };
 }

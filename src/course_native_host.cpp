@@ -76,6 +76,7 @@ struct NativeHost::Impl {
     NativeDescription description;
     const menu::RamRange joined_lists;
     bool cpu = false, prepared = false, initialized = false, exiting = false;
+    bool updating = false;
     bool cancelling = false, closing = false, retired = false, detach_authorized = false;
     bool detached = false, references_released = false, scene_cleared = false;
     bool world_published = false, follows_camera = false, screen_applied = false;
@@ -246,13 +247,17 @@ struct NativeHost::Impl {
         helper.registered = true;
         return callback ? isle_game_object_set_source_update(services->game,helper.object,callback) : ISLE_GAME_OK;
     }
-    bool join_helper(Helper& helper) noexcept {
+    bool retire_helper(Helper& helper) noexcept {
         if (!helper.object) return true;
         if (!helper.joined) {
             if (helper.observed) services->erase(helper.object);
             else if (isle_game_delete_object(services->game,helper.object) == ISLE_GAME_OK) helper.joined = true;
         }
-        if (!helper.joined) return false;
+        return helper.joined;
+    }
+    bool join_helper(Helper& helper) noexcept {
+        if (!helper.object) return true;
+        if (!retire_helper(helper)) return false;
         if (helper.registered && !services->source_owner_release(helper.object)) return false;
         helper = Helper{this};
         return true;
@@ -407,10 +412,17 @@ IsleGameResult NativeHost::finish_initialization() noexcept {
 IsleGameResult NativeHost::update(std::uint32_t raw_game_time) noexcept {
     auto& self = *impl_;
     if (self.error != ISLE_GAME_OK) return self.error;
-    if (!self.initialized || self.closing || self.exiting || !self.frame || !self.frame->quiescent()) return ISLE_GAME_INVALID_STATE;
+    if (!self.initialized || self.updating || self.closing || self.exiting || !self.frame || !self.frame->quiescent()) return ISLE_GAME_INVALID_STATE;
     self.services->raw_game_time = raw_game_time;
     auto result = self.root->publish_input();
-    if (result == ISLE_GAME_OK) result = self.services->tick();
+    if (result == ISLE_GAME_OK) {
+        // The creator validates GPU quiescence before admitting this OM tick.
+        // Source continuations inherit this serialized phase, not permission
+        // to query the creator-affine graphics executor from their threads.
+        self.updating = true;
+        result = self.services->tick();
+        self.updating = false;
+    }
     // Real Source deletion retains Item identities/Runtime incarnations until
     // outside-OM collection, with the prior GPU frame excluded by update().
     if (self.items) {
@@ -500,10 +512,13 @@ bool NativeHost::retire_scene(bool cancelling, RetirementHooks hooks, SceneJoinR
             self.audio_stopped = true;
         }
         if (!self.join_helper(self.input_owner)) return false;
-        // Helper identity stays live while its registered canonical fields are
-        // cleared; its updates/processes cannot execute once closing begins.
-        for (auto& helper : self.helpers) if (helper.object && !helper.joined)
+        // Stop every helper before clearing canonical references. Non-reference
+        // helpers must really join first: the reference helper may retain them.
+        // Keep that receiver live until its registered fields have been cleared.
+        for (auto& helper : self.helpers) if (helper.object && !helper.joined) {
             self.services->end_processes(helper.object);
+            if (&helper != self.references && !self.retire_helper(helper)) return false;
+        }
         if (self.actors) self.actors->effects().reset();
         if (self.actors && (self.services->failed() ||
                 isle_game_status(self.services->game) != ISLE_GAME_OK)) {
@@ -518,6 +533,8 @@ bool NativeHost::retire_scene(bool cancelling, RetirementHooks hooks, SceneJoinR
         // The real main-camera owner releases Player FX field credits. This
         // must precede World's/reference hooks, which require those joins.
         if (self.cancelling && self.renderer && self.renderer->abort_main() != ISLE_GAME_OK) return false;
+        if (self.renderer && !self.cancelling && self.root && self.root->source().camera &&
+            (self.renderer->remove_main() != ISLE_GAME_OK || self.renderer->service_main_removal() != ISLE_GAME_OK)) return false;
         if (self.world && !self.world->retire()) return false;
         if (self.items) {
             const auto result = self.items->retire();
@@ -550,8 +567,6 @@ bool NativeHost::retire_scene(bool cancelling, RetirementHooks hooks, SceneJoinR
             const auto result = self.actors->reset();
             if (!result && !(self.cancelling && result.error == actor::OwnerError::services)) return false;
         }
-        if (self.renderer && !self.cancelling && self.root && self.root->source().camera &&
-            (self.renderer->remove_main() != ISLE_GAME_OK || self.renderer->service_main_removal() != ISLE_GAME_OK)) return false;
         if (self.root && (self.root->source().D_80382D10_523120 || self.root->source().D_80382D14_523124)) return false;
         if (self.root && self.root->collect_joined() != ISLE_GAME_OK) return false;
         if (self.items && !self.items->collect_joined()) return false;
@@ -670,7 +685,7 @@ IsleGameResult NativeHost::create_helper(std::uint32_t id, IsleGameSourceCallbac
     auto* current = self.services ? isle_menu_current_object(self.services->game) : nullptr;
     const bool running_source = self.prepared && self.initialized && !self.closing &&
         !self.exiting && self.error==ISLE_GAME_OK && self.services && !self.services->failed() &&
-        self.references && self.references->registered && self.frame && self.frame->quiescent() &&
+        self.updating && self.references && self.references->registered && self.frame &&
         current && self.services->source_owner_registered(current) &&
         !self.services->source_owner_joined(current) &&
         isle_actor_source_execution_status(self.services->game)==ISLE_GAME_OK;

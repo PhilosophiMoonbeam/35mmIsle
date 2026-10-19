@@ -121,6 +121,8 @@ void Pokemon_WaitForFlagNoInteraction(IsleGameObject*, uint32_t flags);
 
 /* C-only translation seams consumed by the private selected definitions. */
 IsleActorSource* isle_actor_source_require(IsleGameObject*);
+/* Original generic omCreateProcess: the target may be a non-Actor helper or
+ * camera; creation still requires a live same-game native callback. */
 IsleGameProcess* isle_actor_source_create_process(IsleGameObject*, IsleGameSourceCallback, int32_t kind, int32_t priority);
 int32_t isle_actor_source_rand_range(IsleGameObject*, int32_t range);
 float isle_actor_source_rand_float(IsleGameObject*);

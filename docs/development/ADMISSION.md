@@ -3899,3 +3899,352 @@ The final GCC product/all-consumer/private-interface build and all 58 contracts
 pass. The native application and startup snapshot hashes are respectively
 `c776063cfe1b9df6dd5d6a44b00a4a989b552d63997b26f1b85ecd24cf06db91` and
 `223ace9d930c9ddda2fba575a4d9b6cc248dcc48559769d04330f1705a10c965`.
+
+### First unseeded Report unlock
+
+Frozen Linux consumer
+`73aa2b5be2c68bb6eb48203eb1ff53791522f917e811c7f755d720ab7ce77b70`
+passes `campaign-first-unlock` in 361.02 seconds. Actual Boot → Title → Name
+begins with generation 0, known/unlocked progress 0/0, no Reports, zero Report
+score and no Apple/Pester/Flute/Dash. The access-profile writer is not called.
+Only owned controller inputs drive the native scenes.
+
+The first attempt failed the unchanged six-species acceptance criterion:
+its driver captured three Pidgey photographs and published one 3,290-point
+Report. Original `src/app_level/player.c:1943–1957,2026–2038,2100–2113`
+shows why: `D_803AE516_54E926` is an end/out-of-film latch, not tutorial
+completion. The driver now resumes photography after the actual follow-up
+message clears and its stick input is consumed; it does not set Source flags.
+
+The corrected trip executes 8,836 genuine course updates and 4,417 canonical
+course frames/presentations. The fixed-capacity useful-photo policy selects
+the highest actual Source score per missing/improving species, resolves ties
+by original roll slot, and permits legitimate zero-score missing signs only
+with actual Dash eligibility. This run publishes all seven ordinary selections:
+
+| Original roll slot | Species | Source score | Canonical Report slot |
+|---|---|---:|---:|
+| 0 | Pidgey16 | 3,290 | 8 |
+| 3 | Doduo84 | 2,540 | 33 |
+| 5 | Butterfree12 | 210 | 6 |
+| 6 | Lapras131 | 200 | 52 |
+| 8 | Meowth52 | 170 | 18 |
+| 10 | Eevee133 | 2,460 | 54 |
+| 11 | Kangaskhan115 | 340 | 42 |
+
+Each selection retains its actual captured owner, original slot, course epoch
+and normalized wire digest. Real Camera marks require subsequent completed
+Host presentation. Independently sorted Photo15 rows match canonical handles,
+not queue indices. Every actual score and full non-flag Report wire image
+matches its captured photograph; no representative item substitutes for the batch.
+The inspected canonical summary displays seven kinds and 9,210 points.
+
+Original Photo15 advances unlocked progress to 1. The real Oak Save acknowledges
+generation 1; known progress remains 0 because this run does not revisit course
+selection to unveil Tunnel. Actual Title8 reaches visible Source UI state2,
+then complete Runtime/Photos/State/Input/Audio/Host retirement precedes a
+byte-exact cold reopen. All 7,824 GPU submissions/terminals/releases and
+19,829 Input reads/completions balance; retirement deadline count is zero.
+Checked SDL-dummy output accepts 10,771,520 PCM frames, not physical hearing.
+
+The GCC product/all-31-consumer/private-interface build and all 58 contracts
+pass for this frozen implementation. Separate unchanged single-photo Volcano,
+Valley and Mew routes also pass Save/Title/cold; Mew includes full Credits18.
+The seven-item run establishes the first natural Report threshold, not Tunnel
+entry, later event unlocks, equipment, six signs, the complete campaign,
+Original numerical parity or Windows 11 runtime. Public `1f4f37e` independently
+passes all ten hosted Linux/MSVC jobs, but predates this unseeded qualification.
+
+### Scripted helpers and failed-live native retirement
+
+Real endpoint execution exposed two SDK ownership assumptions. Helper creation
+ran on a Source continuation but queried the creator-affine graphics executor;
+`NativeHost` now admits helper publication only inside its actual OM-update
+phase, without querying GPU state from that worker. Original `omCreateProcess`
+also accepts payload-free helpers; the shared bridge now validates the actual
+Game/current Source owner rather than requiring an unrelated Pokemon payload.
+The permanent CPU regression exercises real helper creation, kind0 scheduling,
+one-frame wait, self-end and joined process retirement on GCC and Clang.
+
+A separate cancellation deadlock retained a canonical field pointing to helper
+id14. Actual debugger inspection proved idle/TLS/callback, GPU, Audio, Player,
+World, Item and Cart gates had passed. The helper was still alive: its processes
+had stopped, but structural deletion occurred only after field cleanup required
+its actual joined record. `NativeHost` now retires non-reference helpers first,
+retains their registered identities through canonical-credit release, and keeps
+the unique field receiver live until its fields clear. Final collection still
+requires real joined callbacks and zero borrowed credits. Neither Services
+assignment guards nor the original sticky failure are relaxed. Independent
+planner and reviewer assessments found no demonstrated defect in this bounded
+two-phase correction; they are static assessments, not runtime proof.
+
+Frozen Linux qualifier SHA-256
+`060442277ba529d393ada262645f7d0a65580b2b22110363b873a0545303dd4f`
+then exercises both actual, already-rendered course failures:
+
+| Real input-driven route | Source updates / course presents | GPU submissions / terminals / releases | Input reads / completions | Accepted SDL-dummy PCM frames |
+| --- | --- | --- | --- | --- |
+| River endpoint, native Actor-owner SDK failure | 8,357 / 4,178 | 5,463 / 5,463 / 5,463 | 14,053 / 14,053 | 7,634,848 |
+| Valley switch/cutscene, native course-Actor SDK failure | 10,664 / 5,332 | 6,641 / 6,641 / 6,641 | 16,082 / 16,082 | 8,650,320 |
+
+Both consumers correctly remain `FAILED`, retaining their respective first
+native failure. Both now close native/GPU/Photo/Manager, Input, SDL Audio and
+Host owners with zero retirement deadlines. The actual Valley X11 window is
+visually inspected. These runs qualify failure-preserving live-scene teardown;
+they do not qualify the still-failing endpoint cutscenes, Dash award, Save,
+natural campaign, physical audio, numerical parity or Windows gameplay.
+
+The full GCC product/all-31-consumer/private-interface build and all 58 CPU
+contracts pass for this helper-retirement implementation. The independent
+Clang native configuration also passes all 58 contracts, including the generic
+helper regression; that configuration does not build the LUS NativeHost.
+
+### Genuine Tunnel unlock and Valley Dash
+
+Frozen Linux qualifier SHA-256
+`d68b31a694aacd0598dc40c40932d4882b3b567d67ad557f065623f32d26fab3`
+completes both isolated real-input objectives, their Original photo-review
+paths, genuine Oak Save generation0→1, visible Title8/UIstate2 and exact
+canonical cold reopen. Both actual continuation windows are visually inspected.
+
+| Actual route | Source updates / course presents | Source objective | Exact Photo15 Report | Balanced GPU submissions / terminals / releases | Balanced Input reads / completions | SDL-dummy PCM frames |
+| --- | --- | --- | --- | --- | --- | --- |
+| Tunnel | 9,311 / 4,655 | 3 consumed Apple throws; trigger/endpoint; unlocked1→2 and notice0x400 | Pikachu25, 2,100 points | 7,103 / 7,103 / 7,103 | 16,649 / 16,649 | 8,898,992 |
+| Valley | 12,415 / 6,207 | Squirtle hit/strict-angle slide; Mankey reveal/safe landing/hit; switch; printed dialogue; new Dash and notice0x800 | Geodude74, 220 points | 8,923 / 8,923 / 8,923 | 21,066 / 21,066 | 11,257,840 |
+
+Both retire every native/GPU/Photo/Manager/Input/Audio/Host owner with zero
+retirement deadlines. Their scripted endpoints correctly end with Original
+reason3: immutable Player's `PLAYER_CMD_7` dispatch invokes that reason.
+The qualifier now explicitly requires reason3 for progression objectives,
+retaining reason2 for normal travel/film exhaustion and the actual Original
+photographed9/empty13 result checks. It never rewrites Source reasons/results.
+
+Valley's shot eligibility follows the actual camera launch vector and live
+collision-sphere angular margin, not a delay or invented velocity. The successful
+Source slide uses incoming `(20.4926777,16.89814,34.4505615)` and snaps through
+the real strict π/9 test. The late cutscene required the omitted six-entry
+`0x802ec620` sprite table; the loader now hydrates its six actual descriptors,
+increasing owned resource cardinality from 8 to the exact 14. Dialogue text
+remains in the caller's admitted immutable ROM; the executable retains only
+row/pointer/extent metadata, not duplicate ROM text.
+
+The entry unlock/ability profiles are authored isolation inputs. The event
+effects themselves, button consumption, Source scoring, Save acknowledgement
+and cold image comparison are genuine. This does not establish an unseeded
+campaign, the River endpoint, six signs, physical input/audio, Source numerical
+parity or Windows 11 gameplay. The full GCC product/all-31-consumer/private
+interface build and all 58 contracts pass for this frozen implementation.
+
+### Genuine River unlock and normal camera-reference retirement
+
+Frozen Linux qualifier SHA-256
+`39ec2ceb6e1bdb43c6390f37508fa998af8dbd09663658f5dee20b88f4ad031f`
+completes the isolated River event: three consumed real Pester throws, the
+actual accepted surface/trigger, endpoint, unlocked3→4 and notice0x400.
+Original reason3/result9 follows 8,358 Source updates and 4,178 course
+presentations. Actual Camera9/Photo15 publishes Poliwag60's 170-point Report;
+Oak acknowledges Save generation0→1, and visible Title8/UIstate2 precedes
+complete owner retirement and exact canonical cold reopen. Its actual X11
+continuation window is visually inspected.
+
+Two independent failures preceded this proof. `Pokemon_RunInteractions`
+incorrectly required a live World before its NULL-graph no-op. Actual debugger
+state proved a live, non-retiring Pikachu25, NULL graph, healthy Services and
+World, and an already requested scripted World retirement. Immutable
+`pokemon.c:630–643` returns immediately for that graph. The bridge now retains
+real Actor-owner validation but does not query unused scene dependencies;
+non-NULL graphs retain complete admission.
+
+The next actual run reached reason3 but stalled in ordinary retirement.
+Debugger inspection identified canonical target GObj1 as the real Renderer
+reference owner: removal requested, not removed, cancellation false. Creator-side
+`remove_main`/`service_main_removal` was ordered after fields required its joined
+record. The unchanged normal removal/join gate now precedes World and canonical
+reference cleanup, beside the existing early cancellation abort. No reference
+guard, Source result, actual join or failure is bypassed.
+
+All 6,588 GPU submissions/terminals/releases and 14,780 Input reads/completions
+balance; every native/GPU/Photo/Manager/Input/Audio/Host owner closes with zero
+retirement deadlines. Checked SDL-dummy output accepts 7,920,480 PCM frames.
+The full GCC product/all-31-consumer/private-interface build and all 58 CPU
+contracts pass for this frozen implementation. The entry profile remains
+authored; natural campaign progression, signs, physical devices, numerical
+parity and Windows 11 gameplay are not established by this isolated proof.
+
+### Six genuine sign captures
+
+Six independent owned-window runs complete genuine Source sign capture,
+Camera9 marking, Photo15 assessment, exact Report publication, acknowledged
+Save, Title8 and exact canonical cold reopen. Access and equipment, including
+Dash, are explicit isolation inputs; no photograph, score, Report, focus,
+producer state or Source result is authored.
+
+| Course | Sign | Report slot | Captured roll | Normalized full-wire digest |
+|---|---|---|---|---|
+| Beach | 1004 | 63 | 3 | 3718540626728483547 |
+| Tunnel | 1010 | 64 | 9 | 17461408252081114838 |
+| Volcano | 1028 | 65 | 3 | 1250528706182328976 |
+| River | 1022 | 66 | 3 | 8430182264686518745 |
+| Cave | 1018 | 67 | 5 | 7678956909500828363 |
+| Valley | 1035 | 68 | 3 | 12665412511274531166 |
+
+Each sign's actual Source score is zero. Identity checks cover its canonical
+captured pointer/slot, selected and scored Source rows, full normalized
+`0x3a0` Report wire and saved bytes; ordinary photographs in the same batch
+are checked independently. A summary screenshot is not claimed for every
+individual batch item.
+
+Beach, Tunnel, Volcano and Valley use frozen binary
+`8fadb2206bf43c496a5b03b752b1707a402fbfda73bd1c61915957b94420ccd5`.
+Cave uses
+`7b2fa5e18d342bd4143fe439331af62f6ad2af974c1d773b878b07ee10729b11`.
+River uses
+`cccd774e738291af08cdfd063ba4350fd9239d8a296a443e4d9d4cca2c9f8f70`.
+Every run balances its actual GPU/Input ledgers and closes native, Photo,
+Manager, Audio and Host owners without retirement deadlines. Actual returned
+Oak or Title windows were visually inspected. Volcano's external Title
+capture raced window destruction; its completed Title/UI-state2 and exact
+cold-reopen receipts establish continuation, not that empty external image.
+
+The private framing helper derives a steering hint from admitted immutable
+model triangles and the actual prepared canonical Frame's native poses/world
+matrices. Fixed capacities come from all six real sign catalogs: one model,
+at most34 nodes and37 relational display lists. It handles validated nested
+calls, conservative CULLDL paths and exact generated-material descriptors;
+unused culling vertices are not treated as visible mesh. It neither writes
+Source/native matrices nor uses a collision pivot as the captured mesh's
+visual center.
+
+Volcano's real18+44 billboard uses an explicitly typed optical-axis steering
+hint with its actual prepared camera and live placement. That hint is not a
+claim of current projected bounds or pixel parity. The real face animation,
+detector membership, focus1028, shutter, primary1028 and Report65 provide the
+capture proof. Its Pester producer and the separate Moltres egg/cart
+handshake also complete through actual inputs.
+
+Cave first failed with flag`0x104` throughout778 active observations and no
+prepared geometry. Source projection sets flag100 before the Producer
+prepares a visible pose, so a geometry-only neutral controller could never
+acquire that view. The correction first aims at the actual Source culling
+point with shutters forbidden; only after Source clears100 does it use the
+prepared mesh for framing and require real flag4/focus authorization. The
+successful run captures1018 and publishes Report67 without a visibility
+override or matrix recomputation.
+
+River initially failed because the tested lane0 reached Vileplume's real
+hearing radius only after the independent sign window closed. Actual C-left
+edges turn the camera to Source direction3; normal Source steering moves the
+cart's cross-track control time to 1. Music then clears smoke at update 3600,
+with actual producer distance 1086.84302. Source publishes sign FLAG4 by
+update 3720 and the real capture becomes Report66. Hearing radius, progress
+window, collision, capture gates and producer state remain unchanged.
+
+These six isolated proofs do not establish the unseeded six-sign campaign,
+physical-device output, N64 numerical/pixel parity or Windows11 gameplay.
+
+### Continuous unseeded trip ownership
+
+Frozen binary
+`57803c715da02deb571f8799f074c940200ffac9bff8667998b039b820c0c5ef`
+completes two genuinely saved trips in one live State/Save/Input/Audio/Host/
+Manager. No access, equipment, photo, score, Report or route result is seeded.
+Each real Save → keep-going A returns to the same Oak serial before its real
+course-menu selection and retirement.
+
+| Trip | Course entry | Returned Oak | Actual Oak result | Save generation | Known K | Unlocked U | Reports | Score |
+|---|---|---|---|---|---|---|---|---|
+| Beach | 5 | 8 | 1: Tunnel | 1 | 0 | 1 | 7 | 9210 |
+| Tunnel | 9 | 12 | 0: Beach | 2 | 1 | 1 | 14 | 18310 |
+
+Each outgoing Oak produces exactly one matching retirement receipt. Native
+entry13 is the genuine repeated Beach chosen by the fair route policy, not
+Title/New Game or a replacement process. The actual course menu reconciles
+K to U; neither field is treated as the current ride.
+
+Raw Probe/PhotoBatch/roll observers are destroyed in the acknowledged saved
+Lab before another Runtime pump can construct the next course and reuse its
+real roll storage. Pointer-free outgoing Oak evidence survives until its
+retirement callback. Every trip has a separate proof directory; the aggregate
+journal stores value-only saved/retired receipts.
+
+The third ride ends naturally and its actual Camera14/Photo15 publishes two
+improvements: Report count remains14 while score becomes18360. The private
+observer then fails its20,000-row bound because it incorrectly required an
+incidental phase0 before recognizing the selected image. The Source itself
+reaches the real summary. That failed scope still balances all39,016 GPU
+submissions/terminals/releases and closes native, Photo, Manager, Input,
+SDL-dummy Audio and Host owners with zero retirement deadlines.
+
+The phase assertion is removed, not repinned to another internal phase.
+Current qualification observes a substantial real replayed bitmap, its actual
+LUS presentation and the original summary/Save/final-acknowledgment chain.
+The repeated-trip rerun now saves the previously failing improvement-only
+third trip, a fourth trip with no useful photographs (real Camera13 → Oak13,
+without Photo15), and two further trips. Its six acknowledged generations
+retain fourteen species and reach 20,920 points. These are per-trip receipts
+from a still-running process, not final campaign or shutdown qualification.
+Higher species/score thresholds, retained-Report reassessment, forced-credit
+continuation and the complete natural campaign remain unproved. No cold
+reopen is claimed for the failed three-trip scenario.
+
+### Fresh real-capture quality
+
+A fresh, unseeded Beach qualification using frozen
+`cccd774e738291af08cdfd063ba4350fd9239d8a296a443e4d9d4cca2c9f8f70`
+consumes thirteen real photographs and selects seven distinct positive-score
+Reports totaling 14,730 points. Original Source advances unlocked progress
+from 0 to 1. Acknowledged Save generation1, actual Title8/UI-state2 and exact
+canonical cold reopen preserve the result.
+
+| Species | First scored capture | Selected capture | Actual Source score change |
+|---|---|---|---|
+| Pikachu (25) | Roll3 | Roll4 | 230 → 2,720 |
+| Butterfree (12) | Roll5 | Roll8 | 230 → 3,010 |
+
+Both selected captures have actual Source framing1 and pose points1000;
+their earlier captures have framing0 and pose points0. The controller's
+closer-distance opportunity is a physical steering hint, not a substitute
+for visibility, pose, completeness or scoring. Camera's real evaluated rows
+determine the selected best capture. No capture, score, Report or ability is
+authored.
+
+All 7,981 GPU submissions, terminals and releases balance. Native/Photo/
+Manager/Input/Audio/Host owners close without retirement deadlines after
+10,300,144 accepted dummy PCM frames. The actual owned Title window was
+visually inspected. This seven-species result does not establish the 22/40
+species thresholds, later score rewards, physical audio or Windows11 play.
+
+A later complete-campaign candidate,
+`ae9d3d52cc8790dec46394f50f10385588e723c516e258a252af5a03a719a683`,
+has independently acknowledged its first real seven-Report/14,730-point Save
+and retired Oak once into Tunnel. Its twelve consumed captures include the
+three original tutorial exposures and at most two controlled requests per
+ordinary target. Roll8 targets Butterfree (12) but has raw subject0 Meowth
+(52); Source scoring and the selected Report identify Butterfree. Histories
+therefore bind the actual consumed slot to the requested focus target, not
+the incidental ordering of captured subjects. This ongoing process has not
+yet qualified its final shutdown or cold reopen.
+
+### Real production ControlDeck boundary
+
+The normal `35mmisle` product, not the private Runtime consumer, has been
+launched with the legal ROM, fresh private data, CPU Vulkan canonical
+rendering, dummy SDL audio and actual LUS ControlDeck acquisition. XTest
+Space/X key events pass through its owned SDL/OpenGL window and the real
+default Start/A mappings. Actual Boot, Title menu, Name character entry and
+Oak surfaces were visually inspected.
+
+The first unsupervised run exits1 during New Game with a blank diagnostic
+line before normal component destruction. No window-close request was sent.
+A separate read-only-debugger run reaches Name and Oak; a genuine
+`WM_DELETE_WINDOW` request then produces Progress stopped, Runtime error
+`ISLE_GAME_OK`, `platform_failed=false`, drained audio and actual exit0.
+
+These different outcomes establish a timing-sensitive unresolved failure,
+not a fixed or fully qualified launcher. Bead `bd_35mmIsle-v4u.21.1` remains
+open. Independent planner/reviewer assessments agree that the first actual
+Runtime/Host/Progress error or stop setter must determine the correction;
+factory support, capture gates and owner checks must not be weakened.
+Physical keyboard/gamepad hardware, physical audio and Windows11 gameplay
+remain outside these observed Linux/XTest boundaries.
+

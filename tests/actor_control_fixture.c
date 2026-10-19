@@ -168,3 +168,24 @@ void actor_control_invalid_wait(IsleGameObject* object) {
     Pokemon_WaitForFlagNoInteraction(object, f->mask);
     ++f->after_end;
 }
+
+static void helper_process(IsleGameObject* object) {
+    ActorControlFixture* f = object->updateUser;
+    expect(f, object == f->helper && object->userData == NULL &&
+        object->sourcePayloadKind == ISLE_SOURCE_PAYLOAD_NONE);
+    expect(f, omCurrentObject == object && omCurrentProcess != NULL &&
+        omCurrentProcess->object == object && omCurrentProcess->kind == 0);
+    record(f, 72);
+    ohWait(1);
+    record(f, 73);
+    omEndProcess(NULL);
+    ++f->after_end;
+}
+void actor_control_spawn_helper_process(IsleGameObject* object) {
+    ActorControlFixture* f = fixture(object);
+    record(f, 70);
+    f->helper_process = isle_actor_source_create_process(f->helper, helper_process, 0, 1);
+    record(f, 71);
+    Pokemon_SetState(object, NULL);
+    ++f->after_end;
+}

@@ -116,10 +116,10 @@
       "sha256": "b490ccd33995d5b625deefd671824a83b62bd0543defe422c7009d159695058f"
     },
     "src/beach_lifecycle.hpp": {
-      "sha256": "cc6ff8465b2f0c60359ec3fca43b37bf12242ed324df97241db82601d3f8e87f"
+      "sha256": "e4a423ac6731632a7565cbcfc5d0874f1279ade066773deab7af4b6556c02856"
     },
     "src/beach_lifecycle.cpp": {
-      "sha256": "a374b7777eb6e6ffdc10d43cfa1b4d7656c06800baceef346eea520b8c48c533"
+      "sha256": "41dfa1e0825413896269ee3545097592fa9d837267488954477a0e23a0647fa3"
     },
     "src/application_photos.hpp": {
       "sha256": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333"
@@ -152,7 +152,7 @@
       "sha256": "0a7f7e6e8b17c37e3f6bbb270603ce70107b9f092ace7fd5c260423a7656efc9"
     },
     "src/actor_source.h": {
-      "sha256": "cb7f19adaf015bb7867288e11823aef2e8707dade5f2c7dda7abe586b85abeec"
+      "sha256": "b5dea41761b024e3572afdf2c29ff3821b70806cb530603473aadddaf434ff59"
     },
     "src/player_source.h": {
       "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"

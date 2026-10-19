@@ -9,10 +9,10 @@ struct IslePlayerPhotoData;
 namespace isle::game { class State; }
 namespace isle::application { struct RuntimeView; struct SceneRetirementView; }
 namespace isle::private_course {
+enum class CaptureGoal { photographs,empty_roll,progression,sign };
 // Explicit authored unlocked profile, AFTER real Name confirmation and BEFORE
 // Oak construction. Preserves Name; does not manufacture natural progression.
-void seed_progress(game::State&,std::int32_t course);
-enum class CaptureGoal { photographs,empty_roll };
+void seed_progress(game::State&,std::int32_t course,CaptureGoal);
 // Borrows the actual typed Runtime owners only. Never creates/advances Source,
 // owns a native Scene, changes a transform, or requests an exit/Manager entry.
 // Volcano additionally requires the observed Source egg cart stop, a consumed
@@ -20,7 +20,7 @@ enum class CaptureGoal { photographs,empty_roll };
 // resumed cart travel. Actor/placement observations never mutate native state.
 class Probe final {
 public:
-    Probe(std::int32_t course,private_post_course::Controller,const std::filesystem::path& proofRoot,CaptureGoal);
+    Probe(std::int32_t course,private_post_course::Controller,const std::filesystem::path& proofRoot,CaptureGoal,game::State&);
     ~Probe();
     Probe(const Probe&)=delete;
     Probe& operator=(const Probe&)=delete;

@@ -73,15 +73,21 @@ IsleActorSource* isle_actor_source_require(IsleGameObject* object) {
 
 IsleGameProcess* isle_actor_source_create_process(IsleGameObject* object,
     IsleGameSourceCallback function, int32_t kind, int32_t priority) {
-    IsleActorSource* actor = isle_actor_source_require(object);
+    /* Original omCreateProcess targets any native GObj, including endpoint
+     * helpers and cameras. Only Actor-specific operations require Pokemon data. */
+    IsleGame* game = object != NULL ? object->game : NULL;
+    if (game == NULL || !game->ticking || omCurrentObject == NULL ||
+        omCurrentObject->game != game) {
+        isle_native_execution_fault(game, "source object process requires a live native callback");
+    }
     IsleGameProcess* process = NULL;
-    IsleGameResult result = isle_game_add_source_process(actor->game, object, function,
+    IsleGameResult result = isle_game_add_source_process(game, object, function,
         (IsleGameProcessKind)kind, (uint32_t)priority, &process);
     if (result != ISLE_GAME_OK) {
         /* Worker fail exits its saved C fence. Synchronous owner failure exits
          * the existing tick C fence. The selected body cannot publish NULL and
          * continue as though allocation/continuation creation had succeeded. */
-        isle_native_execution_fault(actor->game, "native actor source process creation failed");
+        isle_native_execution_fault(game, "native source object process creation failed");
     }
     return process;
 }

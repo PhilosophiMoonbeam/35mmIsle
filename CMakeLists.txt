@@ -1517,7 +1517,14 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
         tests/application_runtime_rom_smoke.cpp
         tests/post_course_probe_inputs.cpp
         tests/post_course_scene_probe.cpp
-        tests/native_course_probe.cpp)
+        tests/native_course_probe.cpp
+        tests/campaign_photo_selection.cpp
+        tests/campaign_photo_batch.cpp
+        tests/native_campaign_policy.cpp
+        tests/native_progression_puzzles.cpp
+        tests/native_valley_dash_puzzle.cpp
+        tests/native_sign_geometry.cpp
+        tests/native_sign_puzzles.cpp)
     target_link_libraries(35mmisle-application-runtime-rom-smoke PRIVATE
         isle-application-runtime isle-game-host)
     isle_target_options(35mmisle-application-runtime-rom-smoke)

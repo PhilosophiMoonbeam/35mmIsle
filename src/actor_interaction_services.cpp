@@ -1033,13 +1033,14 @@ struct InteractionSourceAccess {
             void* value = nullptr;
             auto result = isle_actor_owner_interaction_context(source, &value);
             if (result != ISLE_GAME_OK) return result;
-            // Preserve Beach's context-free NULL graph path. A bound context,
-            // including Rainbow, must still prove its live canonical course.
-            if (!value) return source->transitionGraph ? ISLE_GAME_INVALID_STATE : ISLE_GAME_OK;
+            // Original RunInteractions returns immediately for a NULL graph,
+            // including scripted waits after World retirement begins. The real
+            // Actor owner is still checked above; no scene dependency is used.
+            if (!source->transitionGraph) return ISLE_GAME_OK;
+            if (!value) return ISLE_GAME_INVALID_STATE;
             auto& self = *static_cast<InteractionServices*>(value);
             result = validate(self, source);
             if (result != ISLE_GAME_OK) return result;
-            if (!source->transitionGraph) return ISLE_GAME_OK;
             if (!self.services_.source_owner_registered(source->object)) return ISLE_GAME_INVALID_STATE;
             IsleGameVec3 root;
             result = position(source->game, source->object, Position::root, root);

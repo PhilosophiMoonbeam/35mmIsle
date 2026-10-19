@@ -150,6 +150,8 @@ public:
     IsleGameResult sky_follow() noexcept;
     IsleGameResult allocate_depth(std::uint32_t bytes, std::uint32_t alignment, void**) noexcept;
     IsleGameResult apply_screen(const scene::graphics::SourceScreen&, const void* depth) noexcept;
+    // Dynamic Source helpers require the admitted OM-update phase; GPU
+    // quiescence is checked on the creator before that phase, never here.
     IsleGameResult create_helper(std::uint32_t id, IsleGameSourceCallback,
         std::uint8_t link, std::uint32_t priority, IsleGameObject**) noexcept;
     IsleGameResult initialize_collisions(IsleGameObject* helper) noexcept;

@@ -457,6 +457,10 @@ LifecycleStatus Lifecycle::status() const noexcept { return impl_->status; }
 IsleGameResult Lifecycle::error() const noexcept { return impl_->error; }
 const char* Lifecycle::message() const noexcept { return impl_->message.data(); }
 const IsleBeachLifecycleSource& Lifecycle::source() const noexcept { return impl_->source; }
+const actor::Resources& Lifecycle::actor_resources() const noexcept { return impl_->actor_resources; }
+const actor::Owner* Lifecycle::actors() const noexcept { return impl_->actors.get(); }
+const actor::Producer* Lifecycle::actor_packet_producer() const noexcept { return impl_->actor_producer.get(); }
+const world::World* Lifecycle::world_owner() const noexcept { return impl_->world.get(); }
 const IsleBeachEndingSource* Lifecycle::ending_source() const noexcept {
     return impl_->actors?&impl_->actors->ending_source():nullptr;
 }

@@ -140,7 +140,7 @@
       "sha256": "b49ca8664ab9dc4c7cf6ed50728a444fd7618a88b07839a2349cbf4e3e2496f6"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "c738d589b54a4cbb4fa4247fd685ee868a556bf875526c0bc599df4cc1974b71"
+      "sha256": "b5cb5bbbccf9d5862468075e62cd11f11e8c2c9c575db8fb2087f833c0b99878"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
       "sha256": "3347c4fe853a9abf64df66e3a2a7e0c093cec39158aaf5f5e7d5822ea122da63"

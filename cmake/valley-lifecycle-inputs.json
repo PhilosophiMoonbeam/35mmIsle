@@ -6213,7 +6213,7 @@
       "sha256": "18dce3f0957433095b63c0bd0145a5b0d875304eac820942bec04c930fca6975"
     },
     "src/valley_actor_source.c": {
-      "sha256": "549961904b587337edf12367a6c85f712804e9fca23333794a6444b611b1b782"
+      "sha256": "66dedc66a711ac670e9273f171a80ee4782446a8e11f784692d825c06736ab62"
     },
     "src/valley_actor.hpp": {
       "sha256": "05723fbe55898d70b12c9b7ba8b6e130c4780d7232f015ab93ea3b0d9ca2a36e"
@@ -6237,16 +6237,16 @@
       "sha256": "b5dea41761b024e3572afdf2c29ff3821b70806cb530603473aadddaf434ff59"
     },
     "src/actor_owner_source.h": {
-      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
+      "sha256": "c1e17b98102bd858492f1f4ee61da31d244369ac79fc74cd12e44fa873954d36"
     },
     "src/actor_source_bridge.c": {
       "sha256": "591394a02c7e987b953166b51e50f4090d29084a780e0c36b23d1b9da93ab89a"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"
+      "sha256": "99ef78ff1baa78d959199f4ab14aea6be3794783bade1e37abc6818f9a83c84a"
     },
     "src/actor_owner.cpp": {
-      "sha256": "c7612d7fc04a047eee0577ac8fedc38a205c993104960dd4aafc38cb92a081d9"
+      "sha256": "85e240c698e318aa8979b8d0286b62a368d4c4d5ca3aee900dfe07c19e1991eb"
     },
     "src/actor_behavior_bindings.hpp": {
       "sha256": "5eb20328bba03118cdd4bd1be8c8d9367cb2e7d53c165e379f0bd5c654bf2e59"
@@ -6258,7 +6258,7 @@
       "sha256": "3bd5ffba0b0aa77b8430d5a2a9268a80bc5cf0cf6375d9fb0bc3751fa5f2f6b7"
     },
     "src/engine_internal.h": {
-      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+      "sha256": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc"
     },
     "src/engine_math.h": {
       "sha256": "411a9cb40f003b8c17549c8dc126069016bae19965e069313e0043021cf254f4"
@@ -6267,7 +6267,7 @@
       "sha256": "afb404b3a5ac475fb1541ae6d5fe4fe5f3f38cf9b69e2f59e30c727f1cfdab5a"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+      "sha256": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
     },
     "include/35mmisle/continuation.h": {
       "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"

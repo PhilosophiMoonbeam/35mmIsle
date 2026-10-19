@@ -119,7 +119,7 @@ void PhotoBatch::observe_selected(const IslePhotoCheckSource& photo) {
         if(!scored.unk_1A_14 && !scored.unk_1A_13) {
             IslePhotoRecord retained_record{};
             auto& retained_item=items_[identify(scored.unk_0,retained_record)];
-            if(retained_item.selected &&
+            if(retained_item.selected && !retained_item.old_report_selected &&
                 retained_item.planned.disposition==PhotoDisposition::retain_existing_report) {
                 require(scored.pkmnID==retained_item.planned.species &&
                     scored.totalScore==static_cast<std::uint32_t>(retained_item.planned.score),
@@ -127,6 +127,9 @@ void PhotoBatch::observe_selected(const IslePhotoCheckSource& photo) {
                 std::array<std::byte,save::game_photo_bytes> bytes;
                 require(private_course::photo_identity(*retained_record.photo,bytes)==retained_item.captured_digest,
                     "actual retained decision changed captured non-flag photo bytes");
+                require((photo.input.currentButtons & 0x8000u) && (photo.input.pressedButtons & 0x8000u),
+                    "actual old-Report decision lacks Source-consumed A input");
+                retained_item.old_report_confirmed_a=true;
                 retained_item.old_report_selected=true;
             }
             continue;
@@ -190,6 +193,24 @@ void PhotoBatch::observe_reports() {
         require(private_course::photo_identity(*item.planned.record.photo,captured_bytes)==item.captured_digest &&
             captured_bytes==report_bytes,"actual campaign Report differs from the full captured non-flag wire image");
         item.reported=true;item.assessed=true;item.report_digest=hash;++reported_;++assessed_;
+    }
+}
+void PhotoBatch::validate_retained_save(const save::GameSnapshot& saved) const {
+    for(const auto& item:items()) {
+        if(item.planned.disposition!=PhotoDisposition::retain_existing_report)continue;
+        require(item.selected && item.old_report_selected && item.old_report_confirmed_a &&
+            item.retained && item.assessed && !item.reported && prior_reports_ && saved,
+            "saved retained assessment lacks actual scored selection, consumed A or old-image disposition");
+        const auto slot=static_cast<std::size_t>(item.planned.report_index);
+        const auto baseline=prior_reports_.photo(save::PhotoSet::report,slot);
+        const auto current=saved.photo(save::PhotoSet::report,slot);
+        const auto present=saved.photo_present(save::PhotoSet::report,slot);
+        const auto score=saved.report_score(slot);
+        require(baseline && current && present && present.value && score &&
+            baseline.value.size()==save::game_photo_bytes && current.value.size()==save::game_photo_bytes &&
+            score.value==item.prior_report_score &&
+            std::equal(baseline.value.begin(),baseline.value.end(),current.value.begin()),
+            "acknowledged Save changed exact retained prior Report wire bytes or score");
     }
 }
 } // namespace isle::private_campaign

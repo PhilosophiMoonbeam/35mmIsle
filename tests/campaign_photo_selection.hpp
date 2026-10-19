@@ -37,6 +37,11 @@ struct SelectionPlan {
     // Failure leaves count zero; Photos must outlive the plan.
     [[nodiscard]] IsleGameResult build(const IsleCameraCheckSource&,
                                       bool allow_reassessment = false) noexcept;
+    // Explicit private qualification purpose, not the useful-plan fallback:
+    // select one real positive ordinary row with a saved Report and <= its
+    // saved score, even when other useful rows exist. Reads every scored row,
+    // not just the best photograph of each species. Empty succeeds.
+    [[nodiscard]] IsleGameResult build_retained_assessment(const IsleCameraCheckSource&) noexcept;
     [[nodiscard]] std::span<const PlannedPhoto> photos() const noexcept {
         return {items.data(), count};
     }

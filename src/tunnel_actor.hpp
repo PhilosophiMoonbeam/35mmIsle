@@ -35,7 +35,11 @@ struct ActorDependency {
     std::span<const char* const> source_external_operations;
 };
 struct ActorAutomaticOrigin { ActorSourceOrigin origin; std::uint32_t containing_function, declaration_line; };
-struct ActorChildFactoryDependency { ActorAutomaticOrigin origin; IsleTunnelDefinition definition; };
+struct ActorChildFactoryDependency {
+    ActorAutomaticOrigin origin;
+    IsleTunnelDefinition definition;
+    bool from_geo;
+};
 /* Automatic instances have no guest address. initializer_identity names only
  * the actual static two-row object copied by Source, or zero for literals. */
 struct ActorAutomaticGraphDependency {

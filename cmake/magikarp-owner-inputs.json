@@ -104,10 +104,10 @@
       "sha256": "ac0d2a1cb760ebe216bf220f1529b988ec63fe280180d981d9c5353d65e6b931"
     },
     "src/rainbow_actor_source.h": {
-      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+      "sha256": "bdb63e319ba1f1630b5ad92b42c6624deb63bbea3122b68bd437b761fcc886c7"
     },
     "src/rainbow_actor_source.c": {
-      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+      "sha256": "e08e7301a29feed244901eaa4fedc9456e64d6dfd77db3096622dc2c1f1b02f1"
     },
     "src/rainbow_actor.hpp": {
       "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
@@ -128,19 +128,19 @@
       "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
     },
     "src/actor_owner.cpp": {
-      "sha256": "c7612d7fc04a047eee0577ac8fedc38a205c993104960dd4aafc38cb92a081d9"
+      "sha256": "85e240c698e318aa8979b8d0286b62a368d4c4d5ca3aee900dfe07c19e1991eb"
     },
     "src/actor_owner_source.h": {
-      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
+      "sha256": "c1e17b98102bd858492f1f4ee61da31d244369ac79fc74cd12e44fa873954d36"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"
+      "sha256": "99ef78ff1baa78d959199f4ab14aea6be3794783bade1e37abc6818f9a83c84a"
     },
     "tools/prepare_actor_control.py": {
       "sha256": "b49ca8664ab9dc4c7cf6ed50728a444fd7618a88b07839a2349cbf4e3e2496f6"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "b5cb5bbbccf9d5862468075e62cd11f11e8c2c9c575db8fb2087f833c0b99878"
+      "sha256": "ab56889ed65e0a6d2bf0a749e5e0daa3eaaf51ca0c56f18c5fc87d691017cbf5"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
       "sha256": "3347c4fe853a9abf64df66e3a2a7e0c093cec39158aaf5f5e7d5822ea122da63"

@@ -423,13 +423,13 @@
   "native_support": {
     "src/sound_ramp_source.h": "edc5be79911a3a3fd6d024bdf0eff7bcb6469fd430e97f165d2c29aab1cfe99e",
     "src/sound_ramp_source.c": "8f4ce94bba408bcc921e8ff2118f18c0ea704f5944a9358cc4fb53e5bf327873",
-    "src/engine_internal.h": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b",
-    "src/engine.c": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502",
+    "src/engine_internal.h": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc",
+    "src/engine.c": "710d4650e1bc2066cf52a6908198c7819662dc500dfdbfd04fb005fcd075f409",
     "src/scene_services.hpp": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae",
-    "src/scene_services.cpp": "ce621f752a484688158fb42f9527461bc815e7745985dfda968819ac8dec06dc",
+    "src/scene_services.cpp": "e907c7f18fc19b9802ccded83a370b57d8c6531637cef921e187456fed963a44",
     "src/game_audio.hpp": "13703dbf4e73508eee533164f213db5f91d7e60fd08d01f4c6d63123674effd1",
     "src/game_audio.cpp": "ed5e5144f038a673a9a6b0202f82e4c7063774ff57710561eb1858f410c49d3a",
-    "include/35mmisle/engine.h": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+    "include/35mmisle/engine.h": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
   },
   "native_support_digest_owner": "Main refreshes all shared native-support digests only after final integration; this private provider does not modify them."
 }

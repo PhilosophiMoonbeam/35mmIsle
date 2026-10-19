@@ -85,7 +85,7 @@ IsleGameResult isle_tunnel_actor_deactivate(IsleTunnelActorSource* s) {
      * Photo/audio joins; idle counts are not a retirement certificate. */
     result = isle_tunnel_actor_native_retirement(s);
     if (result != ISLE_GAME_OK) return result;
-    status = live_status(s->base.nativeGame);
+    status = isle_actor_source_retirement_status(s->base.nativeGame);
     if (s->base.status == ISLE_GAME_OK && status != ISLE_GAME_OK) s->base.status = status;
     s->base.nativeGame = NULL;
     s->services = NULL;

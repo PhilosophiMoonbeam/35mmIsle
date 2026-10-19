@@ -123,7 +123,7 @@ IsleGameResult isle_rainbow_actor_deactivate(IsleRainbowActorSource* s) {
         return ISLE_GAME_INVALID_STATE;
     result=isle_game_require_idle(s->nativeGame);
     if (result!=ISLE_GAME_OK) return result;
-    result=native_status(s->nativeGame);
+    result=isle_actor_source_retirement_status(s->nativeGame);
     if (s->status==ISLE_GAME_OK) s->status=result;
     result=isle_game_counts(s->nativeGame,&counts);
     if (result!=ISLE_GAME_OK) return result;

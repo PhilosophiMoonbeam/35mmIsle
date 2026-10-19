@@ -123,6 +123,8 @@ public:
     IsleGameResult prepare(actor::CourseContext) noexcept;
     IsleGameResult finish_initialization() noexcept;
     IsleGameResult update(std::uint32_t raw_game_time) noexcept;
+    IsleGameResult acknowledge_update_stop() noexcept;
+    bool update_abandoned() const noexcept;
     bool draw(scene::graphics::FrameContext = {}) noexcept;
     bool graphics_busy() const noexcept;
     scene::graphics::Poll poll() noexcept;
@@ -315,11 +317,17 @@ public:
     IsleGameResult update(std::uint32_t raw_game_time) noexcept {
         if (status_ != LifecycleStatus::running || !host_ || cancelling_) return ISLE_GAME_INVALID_STATE;
         auto result = host_->update(raw_game_time);
-        if (result == ISLE_GAME_OK) result = adapter_.source_status();
+        if (result == ISLE_GAME_OK || result == ISLE_GAME_STOPPED) {
+            const auto source = adapter_.source_status();
+            if (source != ISLE_GAME_OK) result = source;
+            else if (result == ISLE_GAME_STOPPED && host_->exit_requested())
+                result = host_->acknowledge_update_stop();
+        }
         if (result != ISLE_GAME_OK) return fail(result,host_->error() == ISLE_GAME_OK ? "typed course update failed" : host_->message());
         if (host_->exit_requested()) status_ = LifecycleStatus::retiring;
         return ISLE_GAME_OK;
     }
+    bool update_abandoned() const noexcept { return host_ && host_->update_abandoned(); }
     bool draw(scene::graphics::FrameContext context = {}) noexcept {
         if (status_ != LifecycleStatus::running || !host_ || cancelling_) return false;
         const bool result = host_->draw(context);

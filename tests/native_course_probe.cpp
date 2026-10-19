@@ -3,6 +3,8 @@
 #include "native_progression_puzzles.hpp"
 #include "native_valley_dash_puzzle.hpp"
 #include "native_sign_puzzles.hpp"
+#include "native_beach_photo_puzzle.hpp"
+#include "native_tunnel_photo_puzzles.hpp"
 #include "application_runtime.hpp"
 #include "game_state.hpp"
 #include "tunnel_scene.hpp"
@@ -181,7 +183,7 @@ struct PhotoTarget { IsleGameVec3 position{};int species=0;float distance=0; };
 bool photo_target(const IslePlayerSource& player,PhotoTarget& target,const std::array<ShotHistory,152>* shots) {
     IsleGameObject* previous=nullptr;
     float nearest=10000.0f;
-    bool found=false,prefer_retake=false;
+    bool found=false,selected_retake=false;
     for(;;) {
         IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
         require(isle_actor_source_link3_next(player.game,previous,&object,&actor,&model)==ISLE_GAME_OK,
@@ -206,9 +208,11 @@ bool photo_target(const IslePlayerSource& player,PhotoTarget& target,const std::
         // One acquisition plus one half-distance opportunity. This physical
         // framing hint is not an Oak score: real replay still selects the best.
         if(retake && !(history->acquisition_distance>0 && distance<=history->acquisition_distance*.5f))continue;
-        if(found && ((prefer_retake && !retake) ||
-            (prefer_retake==retake && actor->playerDist>nearest)))continue;
-        target={position,species,distance};nearest=actor->playerDist;prefer_retake=retake;found=true;
+        // First exposures take precedence over a second opportunity; only the
+        // later actual Camera score decides whether either improves a Report.
+        if(found && ((!selected_retake && retake) ||
+            (selected_retake==retake && actor->playerDist>nearest)))continue;
+        target={position,species,distance};nearest=actor->playerDist;selected_retake=retake;found=true;
     }
     // Only scalar observations survive; no Actor/model handle escapes.
     return found;
@@ -244,6 +248,9 @@ struct Probe::Impl {
     std::optional<private_campaign::ProgressionPuzzles> progression;
     std::optional<private_campaign::ValleyDashPuzzle> dash;
     std::optional<private_campaign::SignPuzzles> signs;
+    std::optional<private_campaign::BeachPhotoPuzzle> beach_photos;
+    std::optional<private_campaign::TunnelPhotoPuzzles> tunnel_photos;
+    std::uint64_t ordinary_puzzle_shutters=0,ordinary_puzzle_throws=0;
     private_campaign::Progress canonical_progress{};
     bool goal_initialized=false,progress_initialized=false;
     private_post_course::Controller controller;
@@ -306,7 +313,10 @@ struct Probe::Impl {
                 const IsleGameVec3& point,bool zoomed,std::int8_t& sx,std::int8_t& sy) {
             static_cast<Impl*>(owner)->aim(player,point,zoomed,sx,sy);
         }};
-        if(goal==CaptureGoal::progression) {
+        if(goal==CaptureGoal::photographs) {
+            if(course==0)beach_photos.emplace(pad,camera);
+            else if(course==1)tunnel_photos.emplace(pad,camera);
+        } else if(goal==CaptureGoal::progression) {
             require(course==1 || course==3 || course==5,"actual progression objective requires Tunnel, River or Valley");
             if(course==5)dash.emplace(pad,camera);
             else progression.emplace(course==1?private_campaign::Puzzle::tunnel1014:
@@ -345,12 +355,32 @@ struct Probe::Impl {
         if(signs)return signs->update(view,state,updates);
         return false;
     }
+    bool control_ordinary_puzzles(const application::RuntimeView& view) {
+        bool owned=false;
+        std::uint64_t requested_shutters=0,requested_throws=0;
+        if(beach_photos) {
+            owned=beach_photos->update(view,state,updates);
+            const auto& f=beach_photos->facts();
+            requested_shutters=f.shutter_requests;requested_throws=f.throw_requests;
+        } else if(tunnel_photos) {
+            owned=tunnel_photos->update(view,state,updates);
+            const auto& f=tunnel_photos->facts();
+            for(auto count:f.shutter_requests)requested_shutters+=count;
+            requested_throws=f.apple_requests;
+        }
+        require(requested_shutters>=ordinary_puzzle_shutters && requested_throws>=ordinary_puzzle_throws,
+            "actual ordinary puzzle request counters moved backward");
+        shutters+=requested_shutters-ordinary_puzzle_shutters;
+        throws+=requested_throws-ordinary_puzzle_throws;
+        ordinary_puzzle_shutters=requested_shutters;ordinary_puzzle_throws=requested_throws;
+        return owned;
+    }
     bool goal_complete() const noexcept {
         return progression?progression->facts().complete:dash?dash->facts().complete:
             signs?signs->facts().capture_observed:true;
     }
     void note_goal() {
-        if(!progression && !dash && !signs)return;
+        if(!progression && !dash && !signs && !beach_photos && !tunnel_photos)return;
         std::ostringstream text;
         text.precision(std::numeric_limits<float>::max_digits10);
         text<<"puzzle\tcourse="<<course<<"\tserial="<<serial<<"\tupdates="<<updates;
@@ -378,7 +408,7 @@ struct Probe::Impl {
                 <<"\tsafe="<<f.mankey_safe_side<<"\tmankey_hit="<<f.mankey_hit
                 <<"\tswitch="<<f.switch_triggered<<"\tendpoint="<<f.endpoint_entered
                 <<"\tdash="<<f.dash_observed<<"\tnotice="<<f.notice_observed<<"\tcomplete="<<f.complete;
-        } else {
+        } else if(signs) {
             const auto& f=signs->facts();
             text<<"\tid="<<f.id<<"\tdependency="<<int(f.dependency)<<"\tproducer="<<int(f.producer_state)
                 <<"\tgraph="<<f.sign_graph<<"\tproducer_graph="<<f.producer_graph
@@ -393,6 +423,57 @@ struct Probe::Impl {
                 <<"\tshutters="<<f.shutter_requests<<'/'<<f.shutters_consumed
                 <<"\troll="<<f.capture_slot<<"\tprimary="<<f.recorded_primary
                 <<"\tcomplete="<<f.capture_observed;
+        } else if(beach_photos) {
+            const auto& f=beach_photos->facts();
+            text<<"\tfamily=beach_photo\tdependency="<<int(f.dependency)<<"\towns="<<f.owns_pad
+                <<"\tapple="<<f.apple_available<<"\tprior_report="<<f.prior_report
+                <<"\ttarget="<<f.target_present<<"\tgraph="<<f.target_graph<<"\tstate="<<f.target_state
+                <<"\tflags="<<f.target_flags<<"\tposition="<<f.target_collision.x<<','<<f.target_collision.y<<','<<f.target_collision.z
+                <<"\tphoto_eligible="<<f.photo_eligible<<"\tpublished_focus="<<f.published_focus
+                <<"\tfocus="<<f.focus_id<<'/'<<f.focus_flags<<"\tzoom_settled="<<f.zoom_settled
+                <<"\tinput_target="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z
+                <<"\tinitial8="<<f.initial_flag8_seen<<"\treveal="<<f.reveal_state_seen
+                <<"\tflag8_cleared="<<f.flag8_cleared<<"\tgraph_changed="<<f.graph_changed_after_consumption
+                <<"\titems="<<f.throw_requests<<'/'<<f.throws_pressed<<'/'<<f.throws_consumed
+                <<"\tshutters="<<f.shutter_requests<<'/'<<f.shutters_pressed<<'/'<<f.captures_consumed
+                <<"\troll="<<f.capture_slot<<"\traw_subject_zero="<<f.captured_subject_zero
+                <<"\tcaptured_chansey="<<f.captured_chansey<<"\tcomplete="<<f.complete;
+        } else if(tunnel_photos) {
+            const auto& f=tunnel_photos->facts();
+            text<<"\tfamily=tunnel_photos\tphase="<<int(f.phase)<<"\towns="<<f.owns_pad
+                <<"\tstage="<<f.diglett_stage<<"\tstage_values_seen="<<f.stage_values_seen
+                <<"\trise_accepted="<<f.rise_accepted[0]<<','<<f.rise_accepted[1]<<','<<f.rise_accepted[2]
+                <<"\trole="<<f.active_diglett_role<<"\tdugtrio="<<f.dugtrio_rise_seen
+                <<"\tconnected="<<f.num_connected<<"\tmax_connected="<<f.max_connected
+                <<"\tgroup_transition="<<f.group_transition_seen<<"\tmagneton="<<f.magneton_spawn_seen
+                <<"\titems="<<f.apple_requests<<'/'<<f.apples_consumed
+                <<"\tshutters="<<f.shutter_requests[0]<<','<<f.shutter_requests[1]<<','<<f.shutter_requests[2]<<','<<f.shutter_requests[3]
+                <<"\tcaptures="<<f.captures[0]<<','<<f.captures[1]<<','<<f.captures[2]<<','<<f.captures[3]
+                <<"\ttarget="<<f.target_id<<"\ttarget_role="<<f.target_role<<"\tgraph="<<f.target_graph
+                <<"\tfocus_eligible="<<f.focus_eligible<<"\tlure="<<f.magnemite_lure_seen[0]<<','<<f.magnemite_lure_seen[1]<<','<<f.magnemite_lure_seen[2]
+                <<"\trecoil="<<f.magnemite_recoil_seen
+                <<"\troles_seen="<<f.diglett_roles_seen<<"\tstage_restarts="<<f.diglett_stage_restarts
+                <<"\trise_visible="<<f.rise_visible_updates[0]<<','<<f.rise_visible_updates[1]<<','<<f.rise_visible_updates[2]
+                <<"\trise_ready="<<f.rise_ready_updates[0]<<','<<f.rise_ready_updates[1]<<','<<f.rise_ready_updates[2]
+                <<"\trise_focus="<<f.rise_focus_updates[0]<<','<<f.rise_focus_updates[1]<<','<<f.rise_focus_updates[2]
+                <<"\trise_cooldown="<<f.rise_cooldown_updates[0]<<','<<f.rise_cooldown_updates[1]<<','<<f.rise_cooldown_updates[2]
+                <<"\trequested_exposures="<<f.requested_exposures[0]<<','<<f.requested_exposures[1]<<','<<f.requested_exposures[2]<<','<<f.requested_exposures[3]
+                <<"\tprimary_mismatches="<<f.requested_primary_mismatches<<"\tunknown_primary="<<f.unknown_primary_exposures
+                <<"\tlast_capture="<<f.last_capture_slot<<'/'<<f.last_capture_requested_id<<'/'<<f.last_capture_raw_subject_zero
+                <<"\tzoom_recovery="<<f.zoom_recovery_active<<'/'<<f.zoom_recovery_updates<<'/'<<f.zoom_recovery_exhausted
+                <<"\tmagnet_masks="<<f.magnemite_ready_mask<<'/'<<f.magnemite_zoom_mask<<'/'<<f.magnemite_luring_mask
+                <<'/'<<f.magnemite_arrived_mask<<'/'<<f.magnemite_attracted_mask
+                <<"\tnearest_magnet="<<f.nearest_magnemite_distance
+                <<"\tapple_item="<<f.apple_item_present<<'/'<<f.apple_item_state<<'/'<<f.apple_item_flags<<'/'<<f.apple_item_id
+                <<"\tapple_identity="<<f.apple_item_pool<<'/'<<f.apple_item_slot<<'/'<<f.apple_item_incarnation
+                <<"\tapple_flight="<<f.apple_flight_active<<'/'<<f.apple_flight_updates<<'/'<<f.apple_flight_exhausted
+                <<"\tapple_landings="<<f.apple_landings_seen<<"\tlost_flights="<<f.apple_lost_flights
+                <<"\tarc_rejections="<<f.apple_arc_rejections
+                <<"\tapple_plan="<<f.apple_plan_result<<'/'<<f.apple_plan_candidates<<'/'<<f.apple_plan_arc_rejections
+                <<"\tapple_near="<<f.apple_near_mask<<'/'<<f.apple_plan_near_mask
+                <<"\tapple_root_distances="<<f.apple_root_distances[0]<<','<<f.apple_root_distances[1]<<','<<f.apple_root_distances[2]
+                <<"\tapple_position="<<f.apple_position.x<<','<<f.apple_position.y<<','<<f.apple_position.z
+                <<"\tpredicted_landing="<<f.apple_predicted_landing.x<<','<<f.apple_predicted_landing.y<<','<<f.apple_predicted_landing.z;
         }
         row(text.str());
     }
@@ -641,12 +722,12 @@ struct Probe::Impl {
             if(volcano_stage==VolcanoStage::photograph_moltres && !volcano_moltres_photo && pending_volcano_slot<0 &&
                focus.present && focus.object && focus.pokemon_id==146 && (focus.flags&4u) && !(focus.flags&8u) &&
                player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
-               !(prior&a) && !(player.input.current_buttons&a) && photos<60) {
+               !(prior&a) && !(player.input.current_buttons&a) && photos<59) {
                 pad|=a;++shutters;pending_volcano_slot=photos;pending_volcano_qualified=qualified;
             }
             set(pad,sx,sy);return true;
         }
-        return true;
+        return goal!=CaptureGoal::photographs || volcano_stage!=VolcanoStage::travel_after_egg;
     }
     void control(const application::RuntimeView& view,const Sample& s) {
         const auto prior=buttons;set();
@@ -731,13 +812,16 @@ struct Probe::Impl {
             set(message && !(prior&a) && !(player.input.current_buttons&a)?a:0,tutorial_followup && !tutorial_stick?8:0);return;
         }
         if(player.IsInputDisabled)return;
+        if((beach_photos || tunnel_photos) && control_ordinary_puzzles(view))return;
         if(course==2 && control_volcano(view.volcano->actors_source(),player,focus,prior))return;
-        // Preserve Volcano's three ordinary shots plus its real Moltres puzzle.
-        // Acquire coverage, then allow one genuinely closer exposure. A first
-        // consumed shutter is not proof of a completed or high-value Report.
-        // Leave one of the actual sixty film slots unused: film exhaustion must
-        // not replace the goal's natural course-end result.
-        if(course==2?qualified>=3:photos>=static_cast<int>(std::size(player.photo->D_800B0598)-1))return;
+        // Ordinary Volcano coverage resumes after the actual egg/Moltres
+        // handshake. Reserve its required exposure before that capture and
+        // always leave one physical film slot unused for natural course end.
+        const int film_limit=static_cast<int>(std::size(player.photo->D_800B0598))-
+            (course==2 && !volcano_moltres_photo?2:1);
+        if(course==2 && goal!=CaptureGoal::photographs) {
+            if(qualified>=3)return;
+        } else if(photos>=film_limit)return;
         PhotoTarget target{};
         const bool have_target=photo_target(player,target,&ordinary_shots);
         std::int8_t sx=0,sy=0;

@@ -120,8 +120,10 @@ IsleGameResult isle_rainbow_actor_activate(IsleRainbowActorSource*, IsleGame*,
  * fences, semantic object holds and model/FX credits have closed. Idle/process
  * counts alone DO NOT prove these external joins. Requires null retained GObjs,
  * invalidated ModelRefs and collision.native; clears only scene-native bindings,
- * preserves owner/scalars and latches terminal Game fault/STOPPED in status.
- * OK reports successful detachment, not successful original Source execution. */
+ * preserves owner/scalars and latches terminal Game faults/unrelated STOPPED.
+ * Only an acknowledged returning scene-exit stop permits healthy detachment;
+ * active Source execution still remains STOPPED. OK reports successful
+ * detachment, not successful original Source execution. */
 IsleGameResult isle_rainbow_actor_deactivate(IsleRainbowActorSource*);
 /* Returning Root -> ActorOwner -> typed course-context lookup, no registry or
  * Source execution. During activate only, it may recognize PREPARED with the

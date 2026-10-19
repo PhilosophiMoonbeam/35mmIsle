@@ -503,10 +503,11 @@ Input Host::acquire_input() noexcept {
         // returns before sampling, its GetPads pointer cannot match this buffer.
         auto& pads = impl_->pads[impl_->deck->GetPads() == impl_->pads[0].data() ? 1 : 0];
         pads = {};
-        SDL_ClearError();
         impl_->deck->WriteToPad(pads.data());
         if (impl_->deck->GetPads() != pads.data()) return result;
-        if (*SDL_GetError()) { impl_->fail(Error::input, SDL_GetError()); return result; }
+        // Optional HID discovery may set SDL error text while keyboard sampling
+        // succeeds. GetPads is the completion signal; preserve actual per-port
+        // errors below, rather than treating SDL's diagnostic string as status.
         result.controller_bits = impl_->controller_bits;
         for (std::size_t port = 0; port < game_input::port_count; ++port) {
             const auto controller = impl_->deck->GetControllerByPort(static_cast<std::uint8_t>(port));

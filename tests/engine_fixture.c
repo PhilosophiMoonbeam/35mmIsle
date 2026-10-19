@@ -186,6 +186,31 @@ void engine_source_reject_nested_stop(IsleGameObject* object) {
     record(fixture, 484);
 }
 
+static void returning_scene_exit(IslePlayerSource* source, void* user) {
+    EngineFixture* fixture = user;
+    if (source->nonwaiting_call_frame == NULL) ++fixture->failures;
+    record(fixture, 561);
+    fixture->exit_leaf(omCurrentObject, fixture);
+    if (source->nonwaiting_call_frame == NULL) ++fixture->failures;
+    record(fixture, 565);
+}
+void engine_source_scene_exit(IsleGameObject* object) {
+    EngineFixture* fixture = object->userData;
+    IslePlayerSource* source = object->game->playerSource;
+    record(fixture, 560);
+    require_ok(fixture, isle_player_source_call(source, returning_scene_exit, fixture));
+    if (source->nonwaiting_call_frame != NULL) ++fixture->failures;
+    record(fixture, 566);
+    if (fixture->mode == 1) omEndProcess(NULL);
+    if (fixture->mode == 2)
+        isle_native_execution_fault(fixture->game, "first failure after returning exit request");
+    if (fixture->mode == 3) ohWait(1);
+    record(fixture, 567);
+}
+void engine_scene_exit_fault(IsleGame* game, const char* text) {
+    isle_native_execution_fault(game, text);
+}
+
 void engine_source_wait_once(IsleGameObject* object) {
     EngineFixture* fixture = object->userData;
     record(fixture, 500);

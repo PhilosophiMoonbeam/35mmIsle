@@ -19,7 +19,7 @@ struct PhotoBatchItem {
     bool marked=false,mark_presented=false,selected=false,reported=false;
     // Assessment is separate from publishing the new image: retained means
     // exact immutable pre-trip Report bytes and score survived the assessment.
-    bool assessed=false,retained=false,old_report_selected=false;
+    bool assessed=false,retained=false,old_report_selected=false,old_report_confirmed_a=false;
     std::int32_t prior_report_score=0;
 };
 class PhotoBatch final {
@@ -34,6 +34,9 @@ public:
     int observe_marks(const IsleCameraCheckSource&);
     void observe_selected(const IslePhotoCheckSource&);
     void observe_reports();
+    // Compare full immutable saved wire bytes and scores, including flags.
+    // Use the acknowledged Save snapshot before dropping this roll's handles.
+    void validate_retained_save(const save::GameSnapshot&) const;
     void reset() noexcept;
     std::span<PhotoBatchItem> items() noexcept {return {items_.data(),count_};}
     std::span<const PhotoBatchItem> items() const noexcept {return {items_.data(),count_};}

@@ -89,7 +89,7 @@ struct Runtime::Impl {
     std::array<char,512> diagnostic{};
     IsleGameResult failure=ISLE_GAME_OK;
     std::uint64_t resource_identity=1;
-    bool updating=false,publication_ready=false,draw_accepted=false;
+    bool updating=false,publication_ready=false,draw_accepted=false,update_abandoned=false;
     bool completed_hold=false,transition=false,stopping=false,closed=false;
 
     Impl(const rom::Snapshot& s,const menu::Catalog& c,game::State& g,
@@ -413,9 +413,11 @@ struct Runtime::Impl {
         }
     }
     bool update(std::uint32_t raw_time) noexcept {
+        update_abandoned=false;
         if (has_course()) {
             const bool advanced=with_course([&](auto& current) {
                 if (!checked_course(current,current.update(raw_time))) return false;
+                update_abandoned=current.update_abandoned();
                 transition=current.status()==course::LifecycleStatus::retiring || clock.stopping();
                 return true;
             });
@@ -444,9 +446,11 @@ struct Runtime::Impl {
             if (input.begin_update()!=game_input::Error::none)
                 return fail(ISLE_GAME_INVALID_STATE,"Beach common input cache invalidation failed");
             if (!checked(beach->update(raw_time),beach->message())) return false;
+            update_abandoned=beach->update_abandoned();
             transition=beach->status()==beach::LifecycleStatus::retiring||clock.stopping();
         } else if (rainbow) {
             if (!checked_rainbow(rainbow->update(raw_time))) return failure==ISLE_GAME_OK;
+            update_abandoned=rainbow->update_abandoned();
             transition=rainbow->status()==rainbow::LifecycleStatus::retiring||clock.stopping();
         } else if (post) {
             const auto updated=post->update(raw_time);
@@ -643,7 +647,9 @@ struct Runtime::Impl {
         if (stopping) { // C has exited; abandon, never finish, its claim.
             (void)stop();return failure==ISLE_GAME_OK;
         }
-        if (!checked(clock.finish_update(),"actual OM update completion rejected")) return false;
+        if (update_abandoned) {
+            if (!checked(clock.abandon_update(),"scene-exit traversal still owned its GTL phase")) return false;
+        } else if (!checked(clock.finish_update(),"actual OM update completion rejected")) return false;
         updating=false;publication={};publication_ready=false;
         return true;
     }

@@ -1162,8 +1162,8 @@ constexpr std::uint32_t roots[] = {0x802e3a14u, 0x802e4b40u, 0x802e5160u, 0x802e
 constexpr IsleTunnelCountedOption magikarp_options[] = {{3, tunnel_SpawnMagikarp}, {4, nullptr}};
 constexpr ActorCountedOptions counted_options[] = {{0x802ee120u, magikarp_options}};
 constexpr ActorChildFactoryDependency child_factories[] = {
-    {{{"src/tunnel/magneton/code.c", "tunnel_SpawnMagneton", 204, 209}, 0x802e5094u, 204}, {0x00000000u, 0x802e5094u, 0x00000052u, 0x802e505cu, 0x80363eb4u, 0x80364280u, 0x802ee79cu}},
-    {{{"src/tunnel/main.c", "tunnel_SpawnMagikarp", 214, 214}, 0x802e2500u, 214}, {0x802ee110u, 0x802e2500u, 0x00000081u, 0x802ebf04u, 0x80363eb4u, 0x80364280u, 0x802efe7cu}},
+    {{{"src/tunnel/magneton/code.c", "tunnel_SpawnMagneton", 204, 209}, 0x802e5094u, 204}, {0x00000000u, 0x802e5094u, 0x00000052u, 0x802e505cu, 0x80363eb4u, 0x80364280u, 0x802ee79cu}, true},
+    {{{"src/tunnel/main.c", "tunnel_SpawnMagikarp", 214, 214}, 0x802e2500u, 214}, {0x802ee110u, 0x802e2500u, 0x00000081u, 0x802ebf04u, 0x80363eb4u, 0x80364280u, 0x802efe7cu}, false},
 };
 constexpr ActorAnimationBinding animation_callbacks[] = {
     {0x802ecc18u, func_802ECC18_5E9CE8},

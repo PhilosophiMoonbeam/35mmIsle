@@ -42,6 +42,8 @@ public:
     const IsleRainbowLifecycleSceneSetup* pending_setup() const noexcept;
     IsleGameResult initialize_scene() noexcept;
     IsleGameResult update(std::uint32_t raw_game_time) noexcept;
+    // A healthy returning scene exit truncated OM; never a completed GTL update.
+    bool update_abandoned() const noexcept;
     bool draw(scene::graphics::FrameContext = {}) noexcept;
     bool graphics_busy() const noexcept;
     scene::graphics::Poll poll() noexcept;

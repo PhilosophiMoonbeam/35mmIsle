@@ -2056,6 +2056,20 @@ SpawnResult Owner::add_geo_tunnel(IsleGameObject* object,std::uint16_t requested
     const IsleTunnelDefinition& definition) noexcept {
     const auto reject=[](const char* detail) { return SpawnResult{{OwnerError::admission,detail},{},nullptr}; };
     if (impl_->course_context.course_id()!=1) return reject("typed AddAtGeo belongs to another course");
+    for (const auto& child:tunnel::actor_child_factories()) {
+        const auto& fact=child.definition;
+        if (!child.from_geo || requested!=fact.actor_id ||
+            definition.identity!=fact.identity || definition.origin!=fact.origin ||
+            definition.actor_id!=fact.actor_id || definition.factory!=fact.factory ||
+            definition.initialization!=fact.initialization || definition.change_block!=fact.change_block ||
+            definition.remove!=fact.remove) continue;
+        // Source's automatic PokemonDef is not an invented singleton. Preserve
+        // its function/line authority while the original AddAtGeo initializes
+        // every spawn field and copies the canonical parent's final position.
+        return add_geo_typed(object,requested,fact.identity,child.origin.containing_function,
+            fact.identity ? 0u : child.origin.declaration_line,fact.actor_id,fact.factory,
+            fact.initialization,fact.change_block,fact.remove);
+    }
     if (requested==1003 && definition.identity==0x8038837cu && definition.origin==0 &&
         definition.actor_id==1003 && definition.factory==0x8035e0d4u &&
         definition.initialization==0x80388348u && definition.change_block==0x80363dbcu && definition.remove==0x80364280u)
@@ -2194,7 +2208,7 @@ SpawnResult Owner::add_one_tunnel(const IsleTunnelDefinition& definition,
         return reject("Tunnel automatic spawn belongs to another typed course");
     for (const auto& child:tunnel::actor_child_factories()) {
         const auto& fact=child.definition;
-        if (written.origin!=child.origin.containing_function || written.written_fields!=0x3ffu ||
+        if (child.from_geo || written.origin!=child.origin.containing_function || written.written_fields!=0x3ffu ||
             definition.identity!=fact.identity || definition.origin!=fact.origin ||
             definition.actor_id!=fact.actor_id || definition.factory!=fact.factory ||
             definition.change_block!=fact.change_block || definition.remove!=fact.remove ||

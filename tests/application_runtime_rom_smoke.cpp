@@ -150,6 +150,7 @@ struct PostEvidence {
     bool retired_element_seen=false;
     bool filter_seen=false,filter_unwound=false,menu_reset=false,menu_refreshed=false,confirmation_seen=false;
     bool selected_identity=false,report_identity=false,assessment_identity=false,summary_seen=false,summary_visible=false;
+    bool retained_old_confirmed_a=false;
     std::uint16_t requested_buttons=0,published_buttons=0,published_pad=0,published_released=0;
     std::int8_t requested_y=0,published_y=0;
     unsigned pulse=0;
@@ -180,12 +181,20 @@ struct Evidence {
     bool empty_course=false;
     bool returned_oak_cancel=false;
     bool campaign_first_unlock=false,full_campaign=false,unseeded_profile=false;
+    bool campaign_retained=false,retained_save_verified=false,retained_qualified=false;
+    int retained_first_reports=0;
+    std::int64_t retained_first_score=0;
+    std::uint64_t retained_first_generation=0;
     std::uint64_t campaign_trips=0,campaign_updates=0,campaign_frames=0,campaign_presentations=0;
     bool campaign_complete=false;
     int natural_unlocked=-1,natural_known=-1;
     isle::private_course::CaptureGoal capture_goal=isle::private_course::CaptureGoal::photographs;
     std::uint64_t course_updates=0,course_frames=0,course_presentations=0;
     bool authored_course_profile=false,course_api_completed=false;
+    bool native_fail_live=false,native_failure_triggered=false;
+    std::uint64_t native_failure_entry=0;
+    IsleGameResult close_runtime_error=ISLE_GAME_OK;
+    bool close_clock_failed=false;
     std::array<std::uint64_t,scene_count> updates{},frames{},presentations{};
     std::array<bool,6> captured{};
     std::uint64_t entries = 0,read_requests = 0,read_completions = 0,read_skips = 0,publication_acknowledgements = 0;
@@ -198,6 +207,9 @@ struct Evidence {
     bool audio_drained = false,host_released = false,main_music = false;
     bool native_retirement_deadline = false;
 };
+bool continuous_campaign(const Evidence& e) noexcept {
+    return e.full_campaign || e.campaign_retained;
+}
 bool post_course_mode(const Evidence& e) noexcept {
     return e.mode==Mode::course || (e.mode==Mode::native_course && !e.empty_course);
 }
@@ -256,7 +268,7 @@ void observe_retirement(void* user,app::SceneRetirementView view) noexcept {
         p.results[index]=view.source_result;
         return;
     }
-    if (evidence.full_campaign && view.entry &&
+    if (continuous_campaign(evidence) && view.entry &&
         view.entry->operation==ISLE_APPLICATION_ENTRY_OAKS_LAB &&
         view.entry->serial==evidence.post.oak_serial) {
         auto& p=evidence.post;
@@ -273,7 +285,7 @@ void observe_retirement(void* user,app::SceneRetirementView view) noexcept {
             !credits->worker_active && !credits->destination_count;
         return;
     }
-    if(evidence.full_campaign && view.entry &&
+    if(continuous_campaign(evidence) && view.entry &&
         view.entry->operation==ISLE_APPLICATION_ENTRY_TITLE &&
         view.entry->serial==evidence.post.title_serial) {
         ++evidence.post.title_retirements;evidence.post.title_result=view.source_result;
@@ -383,7 +395,7 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
     }
     if (e.mode==Mode::native_course) {
         out<<"mode=native_course requested_course="<<e.requested_course
-            <<((e.campaign_first_unlock || e.full_campaign)?"\ncanonical_unlocked_profile=UNSEEDED_actual_Name_NO_authored_progress":
+            <<((e.campaign_first_unlock || continuous_campaign(e))?"\ncanonical_unlocked_profile=UNSEEDED_actual_Name_NO_authored_progress":
                 "\ncanonical_unlocked_profile=AUTHORED_API_input_NOT_natural_progression")
             <<(e.empty_course?"\nactual_Source_natural_empty_course_result13_and_Manager_Oak13=":
                 "\nactual_Source_natural_course_result9_and_Manager_CameraCheck9=")<<e.course_api_completed
@@ -392,10 +404,23 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
             <<" actual_saved_known="<<e.natural_known<<" actual_saved_unlocked="<<e.natural_unlocked
             <<" input_only_course_objective="<<static_cast<int>(e.capture_goal)
             <<" actual_course_LUS_presentations="<<e.course_presentations<<'\n';
+        if(e.native_fail_live)
+            out<<"private_qualification=consumer_failure_while_live_Rainbow_frame_held_NOT_sticky_native_fault\n"
+                <<"expected_consumer_failure_triggered="<<e.native_failure_triggered
+                <<" live_entry="<<e.native_failure_entry
+                <<" final_Runtime_error="<<static_cast<int>(e.close_runtime_error)
+                <<" final_clock_failed="<<e.close_clock_failed<<'\n';
         out<<"one_profile_campaign="<<e.full_campaign<<" actual_saved_trips="<<e.campaign_trips
             <<" complete_rewards_signs_Mew="<<e.campaign_complete
             <<" aggregate_course_updates="<<e.campaign_updates<<" aggregate_course_frames="<<e.campaign_frames
             <<" aggregate_course_presentations="<<e.campaign_presentations<<'\n';
+        if(e.campaign_retained)
+            out<<"private_qualification=campaign-retained bounded_Beach_trips=2 NOT_full_campaign\n"
+                <<"retained_qualification="<<(e.retained_qualified?"passed":"FAILED")
+                <<" first_acknowledged_generation="<<e.retained_first_generation
+                <<" first_saved_Reports="<<e.retained_first_reports<<" first_saved_score="<<e.retained_first_score
+                <<" second_saved_exact_prior_Reports="<<e.retained_save_verified
+                <<" actual_default_OLD_Source_consumed_A="<<e.post.retained_old_confirmed_a<<'\n';
         if(e.menu_failure[0])out<<"actual_borrowed_course_failure="<<e.menu_failure.data()<<'\n';
     }
     if (e.mode==Mode::course) {
@@ -459,6 +484,8 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
             <<" Source_UI_state="<<p.title_state<<" cold_reopened_exact_canonical_profile="<<p.cold_profile<<'\n';
         out<<"actual_captured_batch="<<p.batch_count<<" marked="<<p.batch_marked
             <<" selected_scored="<<p.batch_selected<<" exact_Source_Reports="<<p.batch_reported
+            <<" assessed="<<p.batch_assessed<<" retained="<<p.batch_retained
+            <<" default_OLD_Source_consumed_A="<<p.retained_old_confirmed_a
             <<" assessment_scope=one_actual_selected_batch_image_NOT_per_item_screenshot\n";
         out << "post_source_rows=" << p.rows << " source_marked=" << p.marked << " source_scored=" << p.scored
             << " assessment_mask=" << p.assessment_mask << " ordered_assessment_progress=" << p.assessment_progress
@@ -565,6 +592,8 @@ void close_application(std::unique_ptr<app::Runtime>& application,h::GtlClock& c
         in::Service& input,SoftwareController& controller,Timeline& timeline,
         const std::filesystem::path& root,Evidence& evidence,std::string& failure) {
     evidence.native_retired=false; // A prior cold-stop scope cannot certify this Runtime.
+    evidence.close_runtime_error=ISLE_GAME_OK;
+    evidence.close_clock_failed=false;
     if (!application) return;
     application->request_stop();
     controller.buttons=0;
@@ -603,6 +632,8 @@ void close_application(std::unique_ptr<app::Runtime>& application,h::GtlClock& c
         (void)timeline.progress.idle();
     }
     if (application->error()!=ISLE_GAME_OK) remember_failure(failure,application->message());
+    evidence.close_runtime_error=application->error();
+    evidence.close_clock_failed=clock.failed();
     const auto view=application->view();
     const bool native_retired=!application->scene_active() && !application->completed_frame() &&
         !view.entry && !view.startup && !view.name && !view.oak && !view.beach && !view.post && !view.rainbow &&
@@ -657,7 +688,7 @@ public:
         : application_(runtime),clock_(clock),input_(input),controller_(controller),state_(state),timeline_(timeline),root_(root),
           proof_root_(root/"proof"),e_(evidence),
           snapshot_(snapshot) {
-        if(e_.full_campaign) {
+        if(continuous_campaign(e_)) {
             proof_root_/="trip-0";
             std::filesystem::create_directories(proof_root_);
         }
@@ -738,6 +769,14 @@ public:
             inspect_backpressure(tick);
             consume_frame(tick);
             present();
+            if(e_.native_failure_triggered) {
+                application_.request_stop();
+                require(application_.pump(Timeline::raw(tick)) && !application_.stopped() &&
+                    application_.scene_active() && application_.completed_frame().ordinal==held_frame_ordinal_,
+                    "live Rainbow cancellation bypassed the caller's actual completed frame");
+                e_.stop_while_held=true;
+                throw std::runtime_error("expected live Rainbow consumer failure while a completed frame is held");
+            }
             e_.main_music|=timeline_.host.audio()->bgm_playing(0);
             require(!application_.stopped(),"Runtime stopped before real Beach ingress/consumer shutdown request");
             (void)timeline_.progress.idle();
@@ -755,6 +794,27 @@ public:
             for(std::size_t n=0;n<4;++n)
                 require(e_.updates[n] && e_.frames[n] && e_.presentations[n],
                     "one-profile campaign lost its genuine Boot/Title/Name/first Oak ingress");
+            validate_saved_continuation();
+            return;
+        }
+        if(e_.campaign_retained) {
+            require(e_.unseeded_profile && !e_.authored_course_profile && !e_.full_campaign &&
+                !e_.campaign_complete && e_.retained_save_verified && e_.campaign_trips==2 &&
+                campaign_trip_frozen_ && campaign_trip_archived_ && campaign_finished_course_==0 &&
+                !e_.course_probe && !course_probe_ && !photo_batch_.count() &&
+                e_.post.batch_count==1 && e_.post.batch_selected==1 && e_.post.batch_reported==0 &&
+                e_.post.batch_assessed==1 && e_.post.batch_retained==1 && e_.post.retained_old_confirmed_a &&
+                e_.post.report_before==e_.retained_first_reports &&
+                e_.post.report_after==e_.retained_first_reports &&
+                e_.post.score_before==e_.retained_first_score && e_.post.score_after==e_.retained_first_score &&
+                e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
+                e_.menu_result && e_.name_confirming && e_.name_confirmed && e_.oak_result &&
+                e_.input_hold_audio && e_.main_music && e_.campaign_frames && e_.campaign_presentations &&
+                std::all_of(e_.captured.begin(),e_.captured.begin()+5,[](bool value){return value;}),
+                "bounded retained qualification lacks two genuine saved Beach trips and an exact A-confirmed old Report");
+            for(std::size_t n=0;n<4;++n)
+                require(e_.updates[n] && e_.frames[n] && e_.presentations[n],
+                    "retained qualification lost genuine Boot/Title/Name/first Oak ingress");
             validate_saved_continuation();
             return;
         }
@@ -905,6 +965,28 @@ private:
     unsigned campaign_title_stage_=0;
     std::uint64_t campaign_title_stable_=0;
     isle::save::GameSnapshot campaign_committed_{};
+    isle::save::GameSnapshot retained_first_committed_{};
+    bool campaign_route_finished() const noexcept {
+        return e_.full_campaign?e_.campaign_complete:e_.retained_save_verified;
+    }
+    void validate_retained_profile(const isle::save::GameSnapshot& current) const {
+        require(retained_first_committed_ && current,"retained qualification lacks its first acknowledged Save baseline");
+        for(std::size_t slot=0;slot<ISLE_PHOTO_REPORT_CAPACITY;++slot) {
+            const auto before=retained_first_committed_.photo_present(isle::save::PhotoSet::report,slot);
+            const auto after=current.photo_present(isle::save::PhotoSet::report,slot);
+            require(before && after && before.value==after.value,
+                "retained qualification added or removed a first-trip saved Report");
+            if(!before.value)continue;
+            const auto before_score=retained_first_committed_.report_score(slot),after_score=current.report_score(slot);
+            const auto before_photo=retained_first_committed_.photo(isle::save::PhotoSet::report,slot);
+            const auto after_photo=current.photo(isle::save::PhotoSet::report,slot);
+            require(before_score && after_score && before_score.value==after_score.value &&
+                before_photo && after_photo && before_photo.value.size()==isle::save::game_photo_bytes &&
+                after_photo.value.size()==isle::save::game_photo_bytes &&
+                std::equal(before_photo.value.begin(),before_photo.value.end(),after_photo.value.begin()),
+                "retained qualification changed first-trip saved Report bytes or score");
+        }
+    }
     bool assessment_visible_=false,summary_ready_=false,intro_ready_=false;
     std::array<char,256> display_failure_{};
     void bind_course_probe() {
@@ -934,9 +1016,29 @@ private:
             require(bool(post_log_),"campaign no-assessment ledger write failed");
         }
         campaign_finished_course_=e_.requested_course;
-        campaign_policy_.completed(campaign_finished_course_);
+        if(e_.full_campaign)campaign_policy_.completed(campaign_finished_course_);
         campaign_committed_=p.committed;
-        e_.campaign_complete=campaign_policy_.complete(campaign_committed_);
+        if(e_.full_campaign)e_.campaign_complete=campaign_policy_.complete(campaign_committed_);
+        if(e_.campaign_retained) {
+            require(campaign_finished_course_==0 && e_.campaign_trips<2,
+                "bounded retained qualification left Beach or exceeded two trips");
+            if(!e_.campaign_trips) {
+                require(p.report_before==0 && p.score_before==0 && p.batch_count &&
+                    p.batch_reported==p.batch_count && !p.batch_retained && p.report_after>0 && p.score_after>0,
+                    "retained qualification first trip lacks genuine new Reports in acknowledged Save");
+                retained_first_committed_=p.committed;
+                e_.retained_first_reports=p.report_after;e_.retained_first_score=p.score_after;
+                e_.retained_first_generation=p.save_generation;
+            } else {
+                require(p.batch_count==1 && p.batch_selected==1 && p.batch_reported==0 &&
+                    p.batch_assessed==1 && p.batch_retained==1 && p.retained_old_confirmed_a &&
+                    p.save_generation>e_.retained_first_generation,
+                    "retained qualification second Save lacks one actual A-confirmed old-image assessment");
+                photo_batch_.validate_retained_save(p.committed);
+                validate_retained_profile(p.committed);
+                e_.retained_save_verified=true;
+            }
+        }
         e_.natural_known=static_cast<int>(campaign_committed_.selected_course().value);
         e_.natural_unlocked=campaign_committed_.unlocked_course().value;
         // The next Source constructor resets and reuses the roll before its
@@ -947,11 +1049,15 @@ private:
         campaign_trip_frozen_=true;
     }
     void prepare_campaign_trip() {
-        require(campaign_trip_frozen_ && !e_.campaign_complete,
+        require(campaign_trip_frozen_ && !campaign_route_finished(),
             "campaign continuation preceded frozen proof or followed its complete saved profile");
         const auto saved=state_.save()->snapshot();
         require(bool(saved),"campaign next-course canonical observations unavailable");
-        campaign_trip_=campaign_policy_.next(saved.value);
+        if(e_.campaign_retained) {
+            require(retained_first_committed_ && campaign_finished_course_==0 && e_.campaign_trips<=1,
+                "bounded retained qualification cannot schedule another Beach before its first acknowledged Save");
+            campaign_trip_={0,isle::private_course::CaptureGoal::photographs,false};
+        } else campaign_trip_=campaign_policy_.next(saved.value);
         require(campaign_trip_.course>=0 && campaign_trip_.course<=6,
             "incomplete campaign has no legal actual next course");
         e_.requested_course=campaign_trip_.course;e_.capture_goal=campaign_trip_.goal;
@@ -1026,7 +1132,7 @@ private:
             scene_=scene_count+1;post_stage_=PostStage::photo_intro;
         } else if(entry.operation==ISLE_APPLICATION_ENTRY_OAKS_LAB && entry.argument==13 && view.oak) {
             if(campaign_stage_==CampaignStage::title) {
-                require(!e_.campaign_complete && campaign_trip_archived_ &&
+                require(!campaign_route_finished() && campaign_trip_archived_ &&
                     p.title_retirements==1 && p.title_result==13,
                     "campaign resumed Title without its actual Continue13 retirement receipt");
                 p={};prepare_campaign_trip();campaign_stage_=CampaignStage::resume_oak;
@@ -1089,12 +1195,15 @@ private:
             require(p.updates[i]>0 && p.frames[i]>0 && p.presentations[i]>0 && p.retirements[i]==1,
                 "actual post-course owner lacked updates/render/presentation/retirement");
         std::ofstream batch(proof_root_/"course-photo-batch.tsv");
-        batch<<"course_epoch\troll\tspecies\tSource_score\tReport_slot\tnormalized_digest\tmarked_revision\tselected_revision\tmarked\tpresented\tselected\treported\tassessed\tretained\n";
+        batch<<"course_epoch\troll\tspecies\tSource_score\tReport_slot\tnormalized_digest\tmarked_revision\tselected_revision\tmarked\tpresented\tselected\treported\tassessed\tretained\tplanned_disposition\tprior_saved_score\tdefault_OLD_Source_consumed_A\n";
         for(const auto& item:photo_batch_.items())
             batch<<photo_batch_.epoch()<<'\t'<<item.planned.record.index<<'\t'<<item.planned.species<<'\t'
                 <<item.planned.score<<'\t'<<item.planned.report_index<<'\t'<<item.captured_digest<<'\t'
                 <<item.marked_revision<<'\t'<<item.selected_revision<<'\t'<<item.marked<<'\t'<<item.mark_presented
-                <<'\t'<<item.selected<<'\t'<<item.reported<<'\t'<<item.assessed<<'\t'<<item.retained<<'\n';
+                <<'\t'<<item.selected<<'\t'<<item.reported<<'\t'<<item.assessed<<'\t'<<item.retained
+                <<'\t'<<(item.planned.disposition==isle::private_campaign::PhotoDisposition::retain_existing_report?
+                    "retain_existing_report":"publish_new_report")
+                <<'\t'<<item.prior_report_score<<'\t'<<item.old_report_confirmed_a<<'\n';
         batch.close();require(bool(batch),"actual complete captured-batch ledger could not be retained");
         post_log_.flush();
         require(bool(post_log_),"actual post-course source ledger write failed");
@@ -1135,7 +1244,8 @@ private:
                 <<row.unk_14<<'\t'<<row.unk_16<<'\n';
         }
         scores.close();require(bool(scores),"actual Source score component ledger write failed");
-        if(e_.campaign_first_unlock || e_.full_campaign || e_.capture_goal==isle::private_course::CaptureGoal::sign) {
+        if(e_.campaign_first_unlock || continuous_campaign(e_) || e_.capture_goal==isle::private_course::CaptureGoal::sign ||
+            (e_.mode==Mode::native_course && e_.capture_goal==isle::private_course::CaptureGoal::photographs)) {
             bool allow_reassessment=false;
             if(e_.full_campaign) {
                 const auto saved=state_.save()->snapshot();
@@ -1143,7 +1253,13 @@ private:
                 allow_reassessment=campaign_policy_.next(saved.value).allow_reassessment;
             }
             isle::private_campaign::SelectionPlan plan;
-            require(plan.build(camera,allow_reassessment)==ISLE_GAME_OK,
+            if(e_.campaign_retained && e_.campaign_trips==1) {
+                const auto saved=state_.save()->snapshot();
+                require(bool(saved),"retained qualification second Camera has no actual saved profile");
+                validate_retained_profile(saved.value);
+                require(plan.build_retained_assessment(camera)==ISLE_GAME_OK && plan.count==1,
+                    "actual second Beach roll has no positive non-improving ordinary saved-Report photograph");
+            } else require(plan.build(camera,allow_reassessment)==ISLE_GAME_OK,
                 "actual useful or retained-assessment Source photo plan could not be built");
             photo_batch_.freeze(camera,plan.photos(),course_probe_.get(),course_epoch_);
         } else {
@@ -1165,6 +1281,9 @@ private:
         for(const auto& item:photo_batch_.items())
             std::cout<<"course_photo_batch_item epoch="<<course_epoch_<<" roll="<<item.planned.record.index
                 <<" species="<<item.planned.species<<" score="<<item.planned.score
+                <<" prior_saved_score="<<item.prior_report_score
+                <<" disposition="<<(item.planned.disposition==isle::private_campaign::PhotoDisposition::retain_existing_report?
+                    "retain_existing_report":"publish_new_report")
                 <<" captured_digest="<<item.captured_digest<<'\n';
     }
     void locate_course_photo(const IsleCameraCheckSource& camera) {
@@ -1357,7 +1476,8 @@ private:
             p.selected_species=first.planned.species;p.selected_score=static_cast<std::uint32_t>(first.planned.score);
             p.selected_digest=first.captured_digest;
         }
-        if(first.reported) {p.report_slot=first.planned.report_index;p.report_digest=first.report_digest;}
+        if(first.assessed) {p.report_slot=first.planned.report_index;p.report_digest=first.report_digest;}
+        p.retained_old_confirmed_a=first.old_report_confirmed_a;
     }
     void observe_photo_display(const IslePhotoCheckSource& photo) {
         auto& p=e_.post;
@@ -1527,7 +1647,7 @@ private:
             std::cout<<"returned_oak_source phase="<<p.oak_phase<<" slot="<<p.oak_slot
                 <<" page="<<view.page_address<<" commit_attempts="<<view.commit_attempts<<std::endl;
         }
-        if(e_.full_campaign && campaign_stage_==CampaignStage::resume_oak) {
+        if(continuous_campaign(e_) && campaign_stage_==CampaignStage::resume_oak) {
             if(view.exit_requested) {
                 require(view.phase==Phase::complete && view.source_result==e_.requested_course,
                     "resumed campaign Oak did not select its real next course");
@@ -1543,10 +1663,10 @@ private:
             p.committed=std::move(saved.value);p.save_generation=view.commit.generation;p.oak_saved=true;
         }
         if(view.exit_requested) {
-            if(e_.full_campaign)freeze_campaign_trip();
+            if(continuous_campaign(e_))freeze_campaign_trip();
             require(view.phase==Phase::complete && p.oak_saved &&
                 (view.source_result==8 || (view.source_result>=17 && view.source_result<=19) ||
-                    (e_.full_campaign && campaign_next_prepared_ && view.source_result==e_.requested_course)),
+                    (continuous_campaign(e_) && campaign_next_prepared_ && view.source_result==e_.requested_course)),
                 "actual returned Oak exited without its acknowledged save or legitimate Source continuation");
             p.oak_result=view.source_result;p.oak_exit_observed=true;hold_post_input();return;
         }
@@ -1554,10 +1674,11 @@ private:
         const bool ready=release_post_pulse();
         if(!p.oak_presented || e_.returned_oak_cancel) {hold_post_input();return;}
         if(!ready)return;
-        if(e_.full_campaign && p.oak_saved && view.phase==Phase::lab && !campaign_next_prepared_) {
+        if(continuous_campaign(e_) && p.oak_saved && view.phase==Phase::lab &&
+            !campaign_route_finished() && !campaign_next_prepared_) {
             prepare_campaign_trip();campaign_stage_=CampaignStage::select_course;
         }
-        if(e_.full_campaign && campaign_next_prepared_) {drive_oak(oak);return;}
+        if(continuous_campaign(e_) && campaign_next_prepared_) {drive_oak(oak);return;}
         if(view.phase==Phase::page_wait)request_post_pulse(button_a);
         else if(view.phase==Phase::repeat_question || view.phase==Phase::courses || view.phase==Phase::confirmation)
             request_post_pulse(button_b);
@@ -1568,8 +1689,8 @@ private:
         } else if(view.phase==Phase::save_prompt)request_post_pulse(button_a);
         else if(view.phase==Phase::keep_going) {
             require(p.oak_saved,"Source keep-going prompt preceded acknowledged save");
-            if(e_.full_campaign)freeze_campaign_trip();
-            request_post_pulse(e_.full_campaign && !e_.campaign_complete?button_a:button_b);
+            if(continuous_campaign(e_))freeze_campaign_trip();
+            request_post_pulse(continuous_campaign(e_) && !campaign_route_finished()?button_a:button_b);
         } else if(view.page_address==0x801c6a94 && view.printed_characters && !p.oak_saved) {
             // Exact Original forced-save second line, printed with zero delay
             // before its actual A/B poll; Mew then selects Credits18 naturally.
@@ -1810,7 +1931,7 @@ private:
         if (!view.entry) return;
         const auto entry=*view.entry; // Value only; RuntimeView pointers expire at the next pump.
         if (entry.serial==last_entry_) return;
-        if(e_.full_campaign && e_.entries>=4) {inspect_campaign_entry(view);return;}
+        if(continuous_campaign(e_) && e_.entries>=4) {inspect_campaign_entry(view);return;}
         if (e_.mode==Mode::native_course && (e_.entries==4 || (e_.empty_course && e_.entries==5))) {
             constexpr std::array course_operations{ISLE_APPLICATION_ENTRY_BEACH,ISLE_APPLICATION_ENTRY_TUNNEL,
                 ISLE_APPLICATION_ENTRY_VOLCANO,ISLE_APPLICATION_ENTRY_RIVER,ISLE_APPLICATION_ENTRY_CAVE,
@@ -2003,7 +2124,7 @@ private:
                 require(ui,"actual saved Title8 lost its Source UI");
                 e_.post.title_state=ui->source_state();
                 const bool ready=release_post_pulse();
-                if(e_.full_campaign && !e_.campaign_complete && e_.post.title_presented) {
+                if(continuous_campaign(e_) && !campaign_route_finished() && e_.post.title_presented) {
                     if(ready && campaign_title_stage_==0 && e_.post.title_state==2) {
                         request_post_pulse(button_a);campaign_title_stage_=1;
                         campaign_title_stable_=e_.post.title_updates;
@@ -2085,11 +2206,11 @@ private:
             require(e_.name_confirming && view.name[0]!=0 && view.name[8]==0,
                 "actual Name skipped its one-update confirmation/default-name rule");
             confirmed_name_=view.name;saved_name_=true;e_.name_confirmed=true;controller_.buttons=0;
-            if(e_.mode==Mode::native_course && !e_.campaign_first_unlock && !e_.full_campaign && !e_.authored_course_profile) {
+            if(e_.mode==Mode::native_course && !e_.campaign_first_unlock && !continuous_campaign(e_) && !e_.authored_course_profile) {
                 isle::private_course::seed_progress(state_,e_.requested_course,e_.capture_goal);
                 e_.authored_course_profile=true;
             }
-            if((e_.campaign_first_unlock || e_.full_campaign) && !e_.unseeded_profile) {
+            if((e_.campaign_first_unlock || continuous_campaign(e_)) && !e_.unseeded_profile) {
                 const auto snapshot=state_.save()->snapshot();
                 require(bool(snapshot),"fresh campaign canonical profile unavailable");
                 const auto unlocked=snapshot.value.unlocked_course();
@@ -2325,21 +2446,36 @@ private:
                     isle::private_capture::write_frame(proof_root_/"canonical-returned-oak-frame.ppm",frame.rgba);
                 require(timeline_.host.queue_present(frame.rgba,frame.screen_offsets),timeline_.host.message());
             } else ++e_.declined_frames;
-            if (scene_==4 && !e_.frame_hold && e_.updates[4]>=16 && e_.beach_camera_changes &&
-                (e_.captured[5] || (display_ && display_->capture==5)) && varied(frame.rgba,0,0,320,240)) {
+            const bool native_failure_frame=e_.native_fail_live && !e_.frame_hold &&
+                application_.view().rainbow && e_.course_frames>=151 && e_.course_presentations>=151 &&
+                varied(frame.rgba,0,0,320,240);
+            if (native_failure_frame || (scene_==4 && !e_.frame_hold && e_.updates[4]>=16 && e_.beach_camera_changes &&
+                (e_.captured[5] || (display_ && display_->capture==5)) && varied(frame.rgba,0,0,320,240))) {
                 holding_frame_=true;held_frame_ordinal_=frame.ordinal;held_digest_=digest(frame.rgba);
                 held_ordinal_=timeline_.progress.ordinal();held_audio_=timeline_.host.audio()->accepted_frames();held_stats_=clock_.stats();
+                if(native_failure_frame)e_.native_failure_entry=last_entry_;
             }
         }
         if (holding_frame_) {
+            const auto active=application_.view();
             require(frame.ordinal==held_frame_ordinal_ && clock_.stats().updates==held_stats_.updates &&
                 clock_.stats().submissions==held_stats_.submissions && clock_.stats().terminals==held_stats_.terminals &&
-                clock_.buffered_retraces()<=4 && application_.view().beach && !application_.stopped(),
-                "unreleased genuine Beach frame allowed Source/GTL progress or premature native/Photo retirement");
-            if (timeline_.progress.ordinal()-held_ordinal_<8 || timeline_.host.audio()->accepted_frames()==held_audio_ || !e_.captured[5]) return;
+                clock_.buffered_retraces()<=4 && !application_.stopped() &&
+                (e_.native_fail_live?(active.rainbow && active.entry &&
+                    active.entry->serial==e_.native_failure_entry):bool(active.beach)),
+                "unreleased genuine course frame allowed Source/GTL progress or premature native/Photo retirement");
+            if (timeline_.progress.ordinal()-held_ordinal_<8 || timeline_.host.audio()->accepted_frames()==held_audio_ ||
+                (!e_.native_fail_live && !e_.captured[5])) return;
             require(digest(frame.rgba)==held_digest_,"actual held completed pixels changed before caller release");
             e_.frame_hold=true;e_.frame_hold_ticks=timeline_.progress.ordinal()-held_ordinal_;
             e_.frame_hold_audio=timeline_.host.audio()->accepted_frames()-held_audio_;
+            if(e_.native_fail_live) {
+                // Arm inside display service, but fail only from run() after
+                // that returning callback closes. The real Runtime retains
+                // this frame through the subsequent consumer cancellation.
+                e_.native_failure_triggered=true;
+                return;
+            }
             if (e_.mode==Mode::ingress) {
                 application_.request_stop();
                 require(application_.pump(Timeline::raw(tick)) && !application_.stopped() && application_.scene_active() &&
@@ -2387,7 +2523,7 @@ private:
                 ++e_.post.title_presentations;
                 e_.post.title_picture|=display_->menu_varied;
                 if(display_->menu_varied && display_->title_ready && !e_.post.title_presented) {
-                    e_.post.title_presented=true;stop_requested_=!e_.full_campaign || e_.campaign_complete;
+                    e_.post.title_presented=true;stop_requested_=!continuous_campaign(e_) || campaign_route_finished();
                     std::cout<<"continuation_title_surface_ready serial="<<e_.post.title_serial
                         <<" frame="<<display_->frame<<std::endl;
                 }
@@ -2428,7 +2564,7 @@ private:
 };
 int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode mode,std::int32_t requestedCourse,
         bool emptyCourse,bool returnedOakCancel,bool campaignFirstUnlock,isle::private_course::CaptureGoal captureGoal,
-        bool fullCampaign) {
+        bool fullCampaign,bool campaignRetained,bool nativeFailLive) {
     for (const auto* name:{"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
         const char* value=std::getenv(name);
         require(value && std::string_view(value)=="dummy","private consumer requires both explicit SDL dummy audio variables");
@@ -2444,6 +2580,8 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     evidence.returned_oak_cancel=returnedOakCancel;
     evidence.campaign_first_unlock=campaignFirstUnlock;
     evidence.full_campaign=fullCampaign;
+    evidence.campaign_retained=campaignRetained;
+    evidence.native_fail_live=nativeFailLive;
     evidence.capture_goal=captureGoal;
     if (mode==Mode::course) write_course_contract(root);
     std::string failure;
@@ -2543,6 +2681,13 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
             evidence.post.cold_profile=true;
         } catch(const std::exception& error) {remember_failure(failure,error.what());}
     }
+    if(evidence.campaign_retained && failure.empty()) {
+        evidence.retained_qualified=evidence.retained_save_verified && evidence.campaign_trips==2 &&
+            evidence.post.cold_profile && evidence.native_retired && evidence.input_stopped &&
+            evidence.audio_drained && evidence.host_released;
+        if(!evidence.retained_qualified)
+            remember_failure(failure,"bounded retained qualification lacks exact cold reopen or complete physical-owner teardown");
+    }
     if (mode==Mode::course && failure.empty()) {
         if (!evidence.post.returned || !evidence.course.post_scene_verified || !evidence.native_retired ||
             !evidence.audio_drained || !evidence.host_released)
@@ -2553,6 +2698,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     if (!failure.empty()) {std::cerr << "private actual application integration: " << failure << '\n';return 1;}
     if(mode==Mode::native_course) {
         std::cout<<(evidence.full_campaign?"actual_unseeded_one_profile_rewards_six_signs_Mew_Source_credits_Save_Title_cold=passed course=":
+            evidence.campaign_retained?"actual_unseeded_two_Beach_default_OLD_retained_Report_Save_Title_exact_cold=passed course=":
             evidence.empty_course?"actual_original_Source_natural_empty_course_and_Manager_Oak13=passed course=":
             evidence.returned_oak_cancel?"actual_course_Photo15_returned_Oak_mid_print_cancel=passed course=":
             evidence.campaign_first_unlock?"actual_unseeded_six_Report_unlock_Save_Title8_cold_profile=passed course=":
@@ -2590,13 +2736,15 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-first-unlock|native0..native6[-oak-cancel]|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|native0..native6[-oak-cancel]|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] (existing empty absolute nonsymlink private directory)");
         Mode mode=Mode::ingress;
         std::int32_t requestedCourse=0;
         bool emptyCourse=false;
         bool returnedOakCancel=false;
         bool campaignFirstUnlock=false;
         bool fullCampaign=false;
+        bool campaignRetained=false;
+        bool nativeFailLive=false;
         auto captureGoal=isle::private_course::CaptureGoal::photographs;
         if (argc==4) {
             const auto name=std::filesystem::path(argv[3]).generic_string();
@@ -2606,16 +2754,18 @@ int main(int argc,char** argv) {
                 name[6]<='6' && name.compare(7,11,"-oak-cancel")==0;
             campaignFirstUnlock=name=="campaign-first-unlock";
             fullCampaign=name=="campaign";
+            campaignRetained=name=="campaign-retained";
+            nativeFailLive=name=="native6-fail-live";
             const bool event=name=="native1-event" || name=="native3-event" || name=="native5-event";
             const bool sign=name.size()==12 && name.compare(0,6,"native")==0 && name[6]>='0' &&
                 name[6]<='5' && name.compare(7,5,"-sign")==0;
             if(event)captureGoal=isle::private_course::CaptureGoal::progression;
             else if(sign)captureGoal=isle::private_course::CaptureGoal::sign;
-            require(native || event || sign || emptyCourse || returnedOakCancel || campaignFirstUnlock || fullCampaign ||
+            require(native || event || sign || emptyCourse || returnedOakCancel || nativeFailLive || campaignFirstUnlock || fullCampaign || campaignRetained ||
                 name=="ingress" || name=="course" || name=="menus" || name=="credits17" ||
                 name=="credits18" || name=="credits19","unknown actual Runtime qualification mode");
-            if(native || event || sign || emptyCourse || returnedOakCancel){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
-            else if(campaignFirstUnlock || fullCampaign)mode=Mode::native_course;
+            if(native || event || sign || emptyCourse || returnedOakCancel || nativeFailLive){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
+            else if(campaignFirstUnlock || fullCampaign || campaignRetained)mode=Mode::native_course;
             else if (name=="course") mode=Mode::course;
             else if (name=="menus") mode=Mode::menus;
             else if (name=="credits17") mode=Mode::credits17;
@@ -2623,7 +2773,7 @@ int main(int argc,char** argv) {
             else if (name=="credits19") mode=Mode::credits19;
         }
         return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode,requestedCourse,emptyCourse,
-            returnedOakCancel,campaignFirstUnlock,captureGoal,fullCampaign);
+            returnedOakCancel,campaignFirstUnlock,captureGoal,fullCampaign,campaignRetained,nativeFailLive);
     } catch (const std::exception& error) {
         std::cerr << "private actual application integration: " << error.what() << '\n';return 1;
     } catch (...) {

@@ -129,4 +129,48 @@ IsleGameResult SelectionPlan::build(const IsleCameraCheckSource& camera,
     return ISLE_GAME_OK;
 }
 
+IsleGameResult SelectionPlan::build_retained_assessment(const IsleCameraCheckSource& camera) noexcept {
+    count = 0;
+    if (camera.common.status != ISLE_GAME_OK) return camera.common.status;
+    if (!camera.common.photos || camera.common.scene != ISLE_POST_COURSE_CAMERA_CHECK)
+        return ISLE_GAME_INVALID_STATE;
+    const auto rows = camera.D_camera_check_80208964;
+    const auto& owner = *reinterpret_cast<application::Photos*>(camera.common.photos);
+    if (rows < 0 || rows > ISLE_PHOTO_ROLL_CAPACITY || rows != owner.count())
+        return ISLE_GAME_INVALID_STATE;
+    PlannedPhoto chosen{};
+    for (std::int32_t row = 0; row < rows; ++row) {
+        const auto& source = camera.D_camera_check_80249B30[static_cast<std::size_t>(row)];
+        if (source.unk_08 <= 0 || source.unk_08 > ordinary_species_max || source.unk_04 <= 0)
+            continue;
+        int present = 0;
+        auto result = isle_application_photos_report_present(camera.common.photos, source.unk_08, &present);
+        if (result != ISLE_GAME_OK) return result;
+        if (!present) continue;
+        std::int32_t previous_score = 0;
+        result = isle_application_photos_report_score(camera.common.photos, source.unk_08, &previous_score);
+        if (result != ISLE_GAME_OK) return result;
+        if (source.unk_04 > previous_score) continue;
+        std::int32_t report_index = -1;
+        result = isle_application_photos_report_index(camera.common.photos, source.unk_08, &report_index);
+        if (result != ISLE_GAME_OK) return result;
+        if (report_index < 0 || report_index >= ISLE_PHOTO_REPORT_CAPACITY)
+            return ISLE_GAME_INVALID_STATE;
+        IslePhotoRecord record{};
+        result = isle_application_photos_identify(camera.common.photos, source.unk_00, &record);
+        if (result != ISLE_GAME_OK) return result;
+        if (!record.photo || record.owner != camera.common.photos || record.storage != ISLE_PHOTO_ROLL ||
+            record.index < 0 || record.index >= rows)
+            return ISLE_GAME_INVALID_STATE;
+        if (!chosen.record.photo || record.index < chosen.record.index)
+            chosen = {record, source.unk_08, source.unk_04, report_index,
+                      PhotoDisposition::retain_existing_report};
+    }
+    if (chosen.record.photo) {
+        items[0] = chosen;
+        count = 1;
+    }
+    return ISLE_GAME_OK;
+}
+
 }

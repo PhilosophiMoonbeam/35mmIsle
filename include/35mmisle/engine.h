@@ -67,6 +67,18 @@ IsleGameResult isle_game_tick(IsleGame* game);
  * STOPPED until destruction. Idle teardown remains legal. This does not grant
  * a scene result, input acknowledgement, GTL update, draw or GPU terminal. */
 IsleGameResult isle_game_stop_update(IsleGame* game);
+/* Returning scene-exit intent from an active updater/process, including nested
+ * nonwaiting native/Source calls. Does not abandon any active frame. The outer
+ * C dispatcher stops only after the invocation returns/self-ends and ordinary
+ * OM deferred object/process deletion has completed, before another dispatch.
+ * tick then returns STOPPED and no later tick can run gameplay. No allocation. */
+IsleGameResult isle_game_request_update_stop(IsleGame* game);
+/* Scene owner only, after the stopped tick returns and genuine exit intent,
+ * healthy Source statuses and successful logical teardown have been checked.
+ * Acknowledges only the returning request above, never stop_update/cancellation.
+ * Does not resume OM or grant a scene result, completed GTL update or any join.
+ * Real faults take precedence; physical retirement remains separately fenced. */
+IsleGameResult isle_game_acknowledge_update_stop(IsleGame* game);
 /* Returning owner/domain and traversal guard for physical collection. Does not
  * inspect or clear sticky execution failure, so genuine teardown remains legal.
  * Not proof of graphics, Photo, model, identity or other consumer retirement. */

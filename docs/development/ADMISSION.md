@@ -4181,8 +4181,8 @@ LUS presentation and the original summary/Save/final-acknowledgment chain.
 The repeated-trip rerun now saves the previously failing improvement-only
 third trip, a fourth trip with no useful photographs (real Camera13 → Oak13,
 without Photo15), and two further trips. Its six acknowledged generations
-retain fourteen species and reach 20,920 points. These are per-trip receipts
-from a still-running process, not final campaign or shutdown qualification.
+retain fourteen species and reach 20,920 points. These per-trip receipts do
+not establish final campaign or shutdown qualification.
 Higher species/score thresholds, retained-Report reassessment, forced-credit
 continuation and the complete natural campaign remain unproved. No cold
 reopen is claimed for the failed three-trip scenario.
@@ -4222,8 +4222,25 @@ three original tutorial exposures and at most two controlled requests per
 ordinary target. Roll8 targets Butterfree (12) but has raw subject0 Meowth
 (52); Source scoring and the selected Report identify Butterfree. Histories
 therefore bind the actual consumed slot to the requested focus target, not
-the incidental ordering of captured subjects. This ongoing process has not
-yet qualified its final shutdown or cold reopen.
+the incidental ordering of captured subjects. Its recorded trips do not
+qualify final shutdown or cold reopen.
+
+The same immutable candidate subsequently records five genuine acknowledged
+saves, with exactly one outgoing Oak retirement per trip:
+
+| Save generation | Completed course | Ordinary Reports | Report points | Known / unlocked |
+|---|---|---|---|---|
+| 1 | Beach | 7 | 14,730 | 0 / 1 |
+| 2 | Tunnel | 13 | 24,800 | 1 / 1 |
+| 3 | Beach | 13 | 24,870 | 1 / 1 |
+| 4 | Tunnel event | 13 | 24,870 | 1 / 2 |
+| 5 | Volcano | 16 | 27,920 | 2 / 2 |
+
+The real Apple-enabled Tunnel event unlocks Volcano. Its no-useful-photo
+return uses actual Camera13 → Oak13 without Photo15 or invented score growth.
+These saved receipts establish natural progress beyond the first unlock,
+not the 22/40-species thresholds, later equipment or the final campaign.
+
 
 ### Real production ControlDeck boundary
 
@@ -4234,17 +4251,233 @@ Space/X key events pass through its owned SDL/OpenGL window and the real
 default Start/A mappings. Actual Boot, Title menu, Name character entry and
 Oak surfaces were visually inspected.
 
-The first unsupervised run exits1 during New Game with a blank diagnostic
-line before normal component destruction. No window-close request was sent.
-A separate read-only-debugger run reaches Name and Oak; a genuine
-`WM_DELETE_WINDOW` request then produces Progress stopped, Runtime error
-`ISLE_GAME_OK`, `platform_failed=false`, drained audio and actual exit0.
+The initial unsupervised exit 1 and blank diagnostic are retained as
+failed-before evidence. Two distinct defects were subsequently captured:
 
-These different outcomes establish a timing-sensitive unresolved failure,
-not a fixed or fully qualified launcher. Bead `bd_35mmIsle-v4u.21.1` remains
-open. Independent planner/reviewer assessments agree that the first actual
-Runtime/Host/Progress error or stop setter must determine the correction;
-factory support, capture gates and owner checks must not be weakened.
-Physical keyboard/gamepad hardware, physical audio and Windows11 gameplay
+- `Host::acquire_input` inferred failure from SDL's global error text after
+  a completed ControlDeck `WriteToPad`. The actual first rejection was
+  `No HID devices found in the system.`, despite a valid keyboard controller,
+  matching destination pad and zero port error. The correction uses actual
+  acquisition/status contracts, not incidental SDL diagnostic text.
+- Original attract completion closes World admission before queued
+  priority-4 Pokémon cleanup; priority-7 state work could then run against
+  the unavailable World. A returning scene-exit request now terminates
+  traversal only after the triggering C/C++ invocation and ordinary OM
+  deferred deletion/join epilogue finish. Healthy scene owners explicitly
+  acknowledge that boundary for retirement; raw execution remains stopped,
+  genuine faults dominate, and the truncated GTL update is abandoned.
+  This is a native lifetime adaptation, not an assertion that Original GTL
+  terminated OM at that earlier point. Complete Source result switches and
+  matching Manager acknowledgments remain authoritative.
+
+Scene Services also preserves the actual native engine diagnostic instead
+of losing it on the path to the application error. Existing engine/Services
+regressions exercise current/noncurrent deletion, actual continuation joins,
+returning C++ destructors, Source suffixes, first-fault precedence and
+rejection of unrelated or unfinished stop acknowledgments.
+
+Frozen normal product
+`5809686f96ca20d0cd0a6a52dfe2e67cb51a35e44c211d0cf036561355ace599`
+passes the real Linux ControlDeck scenario under ordinary ASLR:
+uninterrupted Beach attract serial 3 ends with Original reason 7/result 8;
+real keyboard Start interrupts Tunnel attract serial 5 with reason 8/result 8.
+Both release the matching entry borrow and reach a healthy normal transition,
+not application cancellation. Subsequent real New Game, name entry `A` and
+Oak greeting surfaces were visually inspected.
+
+A genuine `WM_DELETE_WINDOW` then yields Source `ISLE_GAME_OK`,
+`platform_failed=false`, drained audio, `closed.failed=false`,
+`owners_released=true`, `stream_drained`, and actual process exit 0.
+Beads `bd_35mmIsle-v4u.21` and `.21.1` are qualified within this boundary.
+Physical keyboard/gamepad hardware, physical audio and Windows 11 gameplay
 remain outside these observed Linux/XTest boundaries.
+
+### Expanded ordinary Volcano photography
+
+Frozen candidate
+`cb056edb002d73a948a0f47d53d4e2c0c367707fea9e5a7e1eb55843e15cff0b`
+removes two private-controller restrictions: the three-qualified-photo
+cutoff and permanent pad ownership after the completed egg/Moltres sequence.
+Photographs mode reserves one required Moltres exposure plus one unused film
+slot before that encounter, then leaves one unused slot afterward. Other
+goal ownership and actual Source capture gates remain unchanged.
+
+A real isolated Volcano run consumes eleven captures: eight before the egg,
+the genuine Moltres exposure, then two Charmeleon exposures after the actual
+handshake. Source observes egg stop at update4407, projectile-induced falling
+at4476, tangible Moltres at4662 and the required capture at4664. Original
+natural end returns9 into actual CameraCheck9; film exhaustion is not used.
+
+| Actual CameraCheck species | Highest evaluated score |
+|---|---|
+| Rapidash (78) | 2,500 |
+| Vulpix (37) | 210 |
+| Magmar (126) | 290 |
+| Charmander (4) | 2,560 |
+| Moltres (146) | 300 |
+| Charmeleon (5) | 370 |
+
+This isolated baseline mode marks only Rapidash roll0, worth2,000, and
+publishes its exact Report28. Six evaluated species are not six published
+Reports; full-campaign batch selection is separate. Access/equipment are
+authored isolation inputs, not natural progression.
+
+Acknowledged Save generation1, presented Title8/UI-state2 and exact canonical
+cold reopen succeed. All6,814 GPU submissions/terminals/releases balance;
+8,804,176 dummy PCM frames are accepted; native/Photo/Manager/Input/Audio/Host
+owners close with no retirement deadline. The actual Title window was
+visually inspected. Natural22/40, later score rewards, physical devices and
+Windows11 gameplay remain unqualified.
+
+### Genuine retained-Report reassessment
+
+The same `cb056edb...cff0b` candidate passes private `campaign-retained`:
+fresh Boot/Title/Name, real first Beach review/Save, legal same-profile Beach
+reselection, then a genuine non-improving photograph chosen for assessment.
+The second trip's Pidgey roll0 scores240 against its saved3,290-point
+Report8. Actual A input confirms the default OLD choice; Source clears the
+new-image selection bit without publishing that capture.
+
+The new capture's normalized digest is6766810547867948522; the retained
+Report remains6506512695856798764. Every first-trip Report's presence, full
+canonical wire bytes and score remain unchanged in acknowledged Save
+generation2: seven Reports totaling14,730. Presented Title8 serial13,
+UI-state2 and exact whole-profile cold reopen succeed.
+
+The two real rides complete17,667 Source updates and8,832 course
+frames/presentations. All13,540 GPU submissions/terminals/releases balance;
+18,193,840 dummy PCM frames are accepted; native/Photo/Manager/Input/Audio/
+Host owners close without retirement deadlines. The actual Title window was
+visually inspected. This is a two-trip retention qualification, not complete
+campaign, equipment, physical-device or Windows11 gameplay proof.
+
+### Real Apple Chansey and native ordinary-photo batches
+
+Frozen Linux consumer
+`1548c8b5fd71e313ea1cea6481c13a3f83ed4549d1045da5db723bf339c45c4b`
+passes isolated `native0` through the real Camera, Photo, Report, acknowledged
+Save, presented Title and exact whole-profile cold reopen. The controller
+uses real Apple input, observes Chansey's original reveal, graph transition
+and flag-8 removal, then takes roll 9 with actual subject 113. Source
+assessment publishes Chansey's 2,460-point photograph in Report slot 41;
+its normalized digest remains `18115348708060114525`.
+
+Native ordinary-photo qualification now uses the existing useful-batch
+selection instead of publishing only the earliest positive roll. This run
+marks, scores, assesses and publishes seven actual photographs:
+
+| Species | Source score |
+|---|---:|
+| Pidgey | 3,290 |
+| Pikachu | 2,720 |
+| Doduo | 230 |
+| Meowth | 2,380 |
+| Butterfree | 3,010 |
+| Chansey | 2,460 |
+| Kangaskhan | 590 |
+
+Save generation 1 contains these seven Reports, totaling 14,680 points.
+The real course completes 8,847 updates and 4,423 canonical frames/LUS
+presentations. All 8,018 GPU submissions, terminals and releases balance;
+10,336,672 dummy PCM frames are accepted. Native, Photo, Manager, Input,
+Audio and Host owners close without retirement deadlines. Presented Title 8,
+serial 9, UI state 2 was visually inspected.
+
+This profile explicitly authors unlock/equipment API inputs. It proves the
+Apple interaction and durable Report, not natural reward acquisition,
+pre-Pester ownership, complete campaign, physical-device playback or
+Windows 11 gameplay. An earlier `native1` isolation saved and cold-reopened
+seven genuine Reports without completing the intended Dugtrio or
+Magnemite/Magneton chains. The subsequent physical qualification below
+supersedes that target-coverage limit, not its historical result.
+
+### Live Rainbow consumer-failure retirement
+
+Frozen Linux consumer
+`fe22f94a57745d9bef9617584815d8767cb17541e344f72be62cdf974dead3f1`
+qualifies private `native6-fail-live`. This deliberately retains a real
+completed Rainbow frame after 152 course frames/presentations and 304 Source
+updates. Across eight actual retraces, Source/GTL progress and submissions
+remain blocked while another 4,432 dummy PCM frames are accepted. A real
+Runtime stop request cannot bypass the caller's retained frame.
+
+The outer consumer then raises its explicit expected failure. The executable
+correctly returns 1 and writes `actual_application_runtime=FAILED`; no Source
+scene result, Camera admission, Report, Save or cold continuation is invented.
+Independent receipt checks establish 1,473 balanced GPU submissions,
+terminals and releases; 2,813 Input reads/completions; and 1,511,584 accepted
+dummy PCM frames. Native, Photo, Manager, Input, Audio and Host owners close
+without retirement deadlines. Final Runtime error and clock failure are zero.
+The actual live Rainbow window was visually inspected.
+
+This proves consumer-driven failed-scope retirement, not a recreated sticky
+native SDK fault. The same candidate separately passes the normal Rainbow
+route: two genuine three-hit shield stages, four qualified Mew photographs,
+11,028 completed Source updates and 5,514 course frames/presentations.
+The exiting epilogue's truncated update is abandoned rather than counted.
+
+Natural Camera 9 and Photo 15 publish Mew's 8,340-point Report in slot 62,
+with normalized digest `12476375641034481958`. Oak acknowledges Save
+generation 1 and returns original result 18. Credits 18 serial 9 runs
+7,279 updates and 3,639 frames/presentations, returns original result 8 and
+joins. Presented Title serial 10, UI state 2 and exact whole-profile cold
+reopen succeed; the actual Title window was visually inspected.
+
+All 11,812 GPU submissions, terminals and releases balance; all 26,974
+Input reads complete; 14,468,432 dummy PCM frames are accepted. Native,
+Photo, Manager, Input, Audio and Host owners close without retirement
+deadlines. This authored-unlock isolation proves real Mew, Source exit,
+credits and durable continuation—not natural campaign/equipment acquisition,
+hardware audio, Windows 11 gameplay or numerical/pixel parity.
+
+### Exact Tunnel evolution factories and physical Reports
+
+Frozen consumer
+`c3f1cd6dc80c7717d55665c54ae3d35bda868602965ae783336530ccd7598e91`
+qualifies the repaired `native1` chains. Source accepts all three Diglett
+rise photographs, advances its real stage to 8 and creates Dugtrio.
+One consumed Apple, tracked by `(pool, slot, incarnation)` rather than a
+wrapping item ID, lands through real physics and lures all three Magnemite.
+Source reaches its combination transition and creates Magneton.
+Each requested exposure has the matching actual canonical primary species;
+there are no primary mismatches or unknown-primary credits.
+
+The failed-before run reached that actual combination but rejected
+Magneton's AddAtGeo definition. The SDK bridge now admits only its exact
+pinned automatic provenance: identity zero, function `0x802e5094`,
+declaration line 204, requested/family 82 and matching
+factory/initialization/change/remove identities. Existing typed transport,
+parent inheritance, current-block guards, resource-backed publication and
+the distinct transforms-only Magikarp route remain intact. No fallback
+factory, invented capacity or Source state mutation was introduced.
+
+The actual Camera/Photo batch publishes ten Reports totaling 9,600 points,
+including these previously unqualified species:
+
+| Species | Source score | Report slot | Normalized digest |
+|---|---:|---:|---:|
+| Dugtrio | 110 | 17 | 6637382693228595347 |
+| Magnemite | 220 | 31 | 2183283723666273999 |
+| Magneton | 1,880 | 32 | 2229114735278134091 |
+
+The ride completes 10,224 updates and 5,112 canonical frames/presentations.
+Original Camera 9 → Photo 15 → Oak 13 acknowledgments lead to Save generation
+1, presented Title 8 serial 9/UI state 2 and exact whole-profile cold reopen.
+All 8,992 GPU submissions/terminals/releases and 20,376 Input reads/completions
+balance; 11,045,888 dummy PCM frames are accepted. All native/Photo/Manager/
+Input/Audio/Host owners close without retirement deadlines; actual exit is 0.
+The actual continuation Title window was visually inspected.
+
+Ordinary-photo selection also now prioritizes a first species exposure over
+a retake; same-class nearest ordering, two-exposure limit, distance-based
+retake gate, actual focus, cooldown, release and film bounds remain unchanged.
+Source Camera/Photo evaluation—not a live-distance hint—still determines
+score and Report utility.
+
+This is authored-access physical isolation, not proof of natural 22/40-species
+progression or equipment thresholds. A separate unseeded campaign exposes
+a still-open Chansey capture gap: ten real Apples produce reveal and flag-8
+removal, but no shutter request. Its sealed receipts do not earn natural
+Chansey, Pester or complete-campaign credit.
+
 

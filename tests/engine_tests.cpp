@@ -104,6 +104,8 @@ void source_stop_abandons_only_an_authorized_update() {
     trace(fixture,{479,480});
     require(fixture.after_finish==0 && isle_game_status(world.game)==ISLE_GAME_OK,
         "C code resumed after stop or normal quit became an execution fault");
+    require(isle_game_acknowledge_update_stop(world.game)==ISLE_GAME_INVALID_STATE,
+        "nonreturning active-stack stop acquired a successful scene-exit acknowledgement");
     require(isle_game_tick(world.game)==ISLE_GAME_STOPPED,
         "abandoned OM world allowed later gameplay updates");
     trace(fixture,{479,480});
@@ -2865,6 +2867,151 @@ void observe_model_retirement(World& world, IsleGameObject* owner, EngineFixture
     ok(isle_game_object_set_retire_callback(world.game, owner, engine_observe_joined, &fixture));
 }
 
+void returning_scene_exit_leaf(IsleGameObject*, void* user) {
+    auto& fixture = *static_cast<EngineFixture*>(user);
+    // This is a real native C++ ownership frame between two C Source frames.
+    // Its destructor MUST run before Source's suffix/self-end, not be abandoned.
+    struct ReturningOwner {
+        EngineFixture& fixture;
+        ~ReturningOwner() {
+            fixture.events[fixture.count++] = 564;
+            ++fixture.after_finish;
+        }
+    } owner{fixture};
+    fixture.events[fixture.count++] = 562;
+    if (fixture.exit_target &&
+        isle_game_delete_object(fixture.game,fixture.exit_target)!=ISLE_GAME_OK) ++fixture.failures;
+    fixture.local_result = isle_game_request_update_stop(fixture.game);
+    if (fixture.local_result!=ISLE_GAME_OK ||
+        isle_game_acknowledge_update_stop(fixture.game)!=ISLE_GAME_INVALID_STATE) ++fixture.failures;
+    fixture.events[fixture.count++] = 563;
+}
+
+void returning_scene_exit_preserves_source_and_deletion_epilogues() {
+    // Updater, synchronous Source, stackful Source return, stackful self-end;
+    // each deletes either its current owner or a noncurrent model/process owner.
+    for (int dispatch : {0,1,2,3}) for (bool current : {false,true}) {
+        World world;
+        EngineFixture fixture{}; fixture.game=world.game;
+        IslePlayerSource source{}; isle_rng rng{};
+        ok(isle_player_source_prepare(world.game,&source,&rng,&fixture,10));
+        ok(isle_player_source_activate(&source));
+        require(isle_game_request_update_stop(world.game)==ISLE_GAME_INVALID_STATE &&
+            isle_game_acknowledge_update_stop(world.game)==ISLE_GAME_INVALID_STATE,
+            "idle/unrequested scene stop was authorized");
+        IsleGameResult foreign=ISLE_GAME_OK;
+        std::thread wrong_owner([&] { foreign=isle_game_request_update_stop(world.game); });
+        wrong_owner.join();
+        require(foreign==ISLE_GAME_WRONG_OWNER,"scene stop lost actual domain ownership");
+        auto* trigger=object(world,560,0,10);
+        auto* target=current?trigger:object(world,568);
+        observe_model_retirement(world,target,fixture);
+        engine_bind_source_payload(trigger,&fixture);
+        fixture.exit_target=target; fixture.exit_leaf=returning_scene_exit_leaf;
+        fixture.mode=dispatch==3?1:0;
+        fixture.observed_processes[0]=process(world,target,engine_victim,&fixture,ISLE_GAME_STACKFUL,11);
+        fixture.observed_process_count=1;
+        fixture.waiting_processes=dispatch==0?0:1;
+        IsleGameProcess* stopping=nullptr;
+        if (dispatch==0) ok(isle_game_object_set_source_update(world.game,trigger,engine_source_scene_exit));
+        else {
+            ok(isle_game_add_source_process(world.game,trigger,engine_source_scene_exit,
+                dispatch==1?ISLE_GAME_SYNCHRONOUS:ISLE_GAME_STACKFUL,10,&stopping));
+            if (current) fixture.observed_processes[fixture.observed_process_count++]=stopping;
+        }
+        EngineRecord later{&fixture,599};
+        auto* actor=object(world,599,0,0,dispatch==0?engine_record_process:nullptr,
+            dispatch==0?&later:nullptr);
+        process(world,actor,engine_record_process,&later,ISLE_GAME_SYNCHRONOUS,7);
+        const auto arena_used=world.arena.cursor;
+        const auto tick=isle_game_tick(world.game);
+        // Close the real returning Player binding before any assertion unwinds
+        // its fixed-address local Source record.
+        const auto detached=isle_player_source_deactivate(&source);
+        ok(detached);
+        require(tick==ISLE_GAME_STOPPED,"returning scene exit was credited as a full OM update");
+        std::vector<int> expected{560,561,562,563,564,565,566,567};
+        if (dispatch!=0) expected.insert(expected.begin(),700);
+        if (dispatch==3) expected.erase(std::find(expected.begin(),expected.end(),567));
+        const auto retirement=current?expected.end():std::find(expected.begin(),expected.end(),563);
+        expected.insert(retirement,{451,452});
+        require(fixture.failures==0 && fixture.count==expected.size() &&
+            std::equal(expected.begin(),expected.end(),fixture.events),
+            "scene stop skipped a returning owner/Source suffix, reordered deletion, or dispatched a later Actor");
+        require(fixture.after_finish==1 && source.nonwaiting_call_frame==nullptr &&
+            source.status==ISLE_GAME_OK && fixture.pre_retire_calls==1 && fixture.retire_calls==1 &&
+            !engine_object_alive(target) && !engine_model_alive(fixture.model) &&
+            fixture.retired_continued==0 && world.arena.cursor==arena_used,
+            "returning exit did not perform actual nonallocating deletion/continuation joins");
+        for (std::size_t i=0;i<fixture.observed_process_count;++i)
+            require(engine_process_joined(fixture.observed_processes[i]),
+                "scene stop synthesized rather than joined deleted-owner processes");
+        require(isle_game_status(world.game)==ISLE_GAME_OK,"healthy scene exit became a fault");
+        ok(isle_game_acknowledge_update_stop(world.game));
+        require(isle_game_acknowledge_update_stop(world.game)==ISLE_GAME_INVALID_STATE &&
+            isle_game_tick(world.game)==ISLE_GAME_STOPPED && fixture.count==expected.size(),
+            "acknowledging scene exit resumed gameplay or accepted an unrelated stop");
+        ok(isle_game_require_idle(world.game));
+        ok(isle_game_destroy(world.game)); world.game=nullptr;
+    }
+}
+
+void returning_scene_exit_retains_real_failure_precedence() {
+    {
+        World world;
+        engine_scene_exit_fault(world.game,"first failure before scene exit");
+        require(isle_game_request_update_stop(world.game)==ISLE_GAME_EXECUTION_FAILURE &&
+            isle_game_acknowledge_update_stop(world.game)==ISLE_GAME_EXECUTION_FAILURE &&
+            isle_game_tick(world.game)==ISLE_GAME_EXECUTION_FAILURE,
+            "scene stop hid a prior real engine failure");
+        engine_scene_exit_fault(world.game,"later failure must not replace the first");
+        require(std::strcmp(isle_game_error(world.game),"first failure before scene exit")==0,
+            "scene stop replaced the first native diagnostic");
+    }
+    for (int mode : {0,2,3}) {
+        World world;
+        EngineFixture fixture{}; fixture.game=world.game; fixture.mode=mode;
+        fixture.exit_leaf=returning_scene_exit_leaf;
+        IslePlayerSource source{}; isle_rng rng{};
+        ok(isle_player_source_prepare(world.game,&source,&rng,&fixture,10));
+        ok(isle_player_source_activate(&source));
+        auto* trigger=object(world,560);
+        engine_bind_source_payload(trigger,&fixture);
+        IsleGameProcess* stopping=nullptr;
+        ok(isle_game_add_source_process(world.game,trigger,engine_source_scene_exit,
+            ISLE_GAME_STACKFUL,10,&stopping));
+        EngineRecord later{&fixture,599};
+        process(world,object(world,599),engine_record_process,&later,ISLE_GAME_SYNCHRONOUS,7);
+        const auto tick=isle_game_tick(world.game);
+        const auto detached=isle_player_source_deactivate(&source);
+        if (mode==0) {
+            ok(detached);
+            require(tick==ISLE_GAME_STOPPED,"healthy exit failed before fault-after-ack regression");
+            ok(isle_game_acknowledge_update_stop(world.game));
+            engine_scene_exit_fault(world.game,"first failure after scene exit acknowledgement");
+        } else {
+            require(detached==ISLE_GAME_EXECUTION_FAILURE && tick==ISLE_GAME_EXECUTION_FAILURE,
+                "post-request failure or unfinished Source invocation was normalized into scene success");
+        }
+        const char* expected=mode==0?"first failure after scene exit acknowledgement":
+            mode==2?"first failure after returning exit request":
+                "scene exit reached an incomplete native dispatch epilogue";
+        require(fixture.failures==0 && fixture.after_finish==1 &&
+            isle_game_acknowledge_update_stop(world.game)==ISLE_GAME_EXECUTION_FAILURE &&
+            isle_game_request_update_stop(world.game)==ISLE_GAME_EXECUTION_FAILURE &&
+            isle_game_tick(world.game)==ISLE_GAME_EXECUTION_FAILURE &&
+            std::strcmp(isle_game_error(world.game),expected)==0,
+            "real failure lost precedence before/after scene-stop acknowledgement");
+        require(std::find(fixture.events,fixture.events+fixture.count,599)==fixture.events+fixture.count,
+            "later Actor dispatched after a terminal scene request/failure");
+        engine_scene_exit_fault(world.game,"later failure after scene stop");
+        require(std::strcmp(isle_game_error(world.game),expected)==0,
+            "later failure replaced the scene-stop first diagnostic");
+        ok(isle_game_destroy(world.game)); world.game=nullptr;
+        require(engine_process_joined(stopping),"failed exit did not join its actual Source process");
+    }
+}
+
 void native_identity_holds_preserve_only_joined_addresses() {
     for (bool self_delete : {false, true}) {
         EngineIdentityFixture identity{};
@@ -3320,6 +3467,8 @@ int main() {
         source_function_identity_and_reuse();
         source_stop_abandons_only_an_authorized_update();
         source_stop_preserves_nested_player_fence();
+        returning_scene_exit_preserves_source_and_deletion_epilogues();
+        returning_scene_exit_retains_real_failure_precedence();
         source_wait_preserves_returning_boundaries();
         source_function_pause_matches_actual_callables();
         source_function_pause_preserves_real_waits();

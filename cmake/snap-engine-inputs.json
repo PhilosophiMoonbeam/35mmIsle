@@ -53,7 +53,7 @@
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/engine.c": {
-      "sha256": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502",
+      "sha256": "710d4650e1bc2066cf52a6908198c7819662dc500dfdbfd04fb005fcd075f409",
       "object_lifecycle": {
         "native_order": "Original native pre-retirement observer runs once at the sole validated omDeleteGObj teardown, before any process join or payload removal. Payload corruption rejects before observer/state publication; a failed/incomplete join retains native storage and the started bit without repeating pre-notification. Existing post observer remains after all actual joins, payload removal and unlink/alive=false, before object free-list publication.",
         "source_deferred_order": "Exact own GAME df8815e75f3d79618466e01e0827c6165b93d11c src/sys/om.c:1757-1778 and 1780-1824 retain current-object deletion requests until update return or process yield/return, clear omCurrentObject/omCurrentProcess, then call the native teardown. No source definition/body/identity changes, second scheduler or early self-notification.",
@@ -105,13 +105,13 @@
       "use": "Private C-compatible extern-C helper contract for source54 fixed payload and source48 camera basis. Pure checked operations, no ownership/selector/cache allocation; failure-atomic outputs and explicit C-libm/FP/unused-row semantics."
     },
     "src/engine_internal.h": {
-      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b",
+      "sha256": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc",
       "object_lifecycle": "Actual native GObj pre-callback/user and retirement-started state accompany the retained post callback/user. Arena allocation/reuse zeroes all observers and state; payload/userData and updateUser remain distinct. No foreign layout, GPU completion boolean, owner registry or per-object allocation.",
       "placement": "One embedded accepted placement record, no separate registry/allocation, no engine floating-world cache and no synthetic DObj/node.",
       "use": "Original actual-size camera/matrix/reflection/model native payload ownership, object retirement callback/userdata and bounded arena free lists, not console or SDK ownership layouts. Native updateUser is distinct from GAME entity userData; allocation and object reuse clear both, and callback replacement preserves actor payload. Process function is the actual callable IsleGameSourceCallback, distinct from native two-argument entry/user and scheduler adapter; zero-initialized arena reuse clears identities."
     },
     "include/35mmisle/engine.h": {
-      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c",
+      "sha256": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62",
       "object_lifecycle": "Companion isle_game_object_set_pre_retire_callback preserves existing post API/callers. Pre observer sees validated intact payload/processes at actual teardown, not the current/self request; post observes completed native joins/removal, not renderer retirement. Both observers must not throw, wait or mutate OM; userdata survives the observers and any pending command dispatch. Clearing before teardown is permitted; late pre-observer replacement is rejected.",
       "contextual_model_math": "Explicit immutable CONTEXTUAL_RPY=2 is a full finite accepted local pose, not a context-free fixed matrix. Reserved zero fixed bytes are never uploadable; computing getter evaluates accepted-pose revision without RTS/identity. Quantized/cast constraints apply only to ordinary local kinds; renderer output admission remains distinct.",
       "placement": "Typed native placement enum/record plus validate/set/stable nonmutating view. Explicit separate setter transaction, neutral disabled metadata and independent source-local cache lifetime.",
@@ -314,8 +314,19 @@
       "first": 1826,
       "last": 1856,
       "source_sha256": "efdf664718f3b68d3ac3301106204304a9d5e6c98f5b8f41a8bb58fdcad16b69",
-      "native_sha256": "efdf664718f3b68d3ac3301106204304a9d5e6c98f5b8f41a8bb58fdcad16b69",
-      "changes": []
+      "native_sha256": "035e8009ae6d853999c0ffa8eb57f5a2a24efa259bcf1da732ee3b17c21603bb",
+      "changes": [
+        {
+          "find": "                obj = omUpdateGObj(obj);\n",
+          "replace": "                obj = omUpdateGObj(obj);\n                if (isle_native_dispatch_finished()) return;\n",
+          "reason": "Consume returning native scene-exit intent only after the Source updater and its ordinary deferred current-object deletion epilogue have returned, before another dispatch."
+        },
+        {
+          "find": "                proc = omRunProcess(proc);\n",
+          "replace": "                proc = omRunProcess(proc);\n                if (isle_native_dispatch_finished()) return;\n",
+          "reason": "Consume returning native scene-exit intent only after the Source process returns/self-ends and OM completes deferred object/process deletion and real continuation joins; never discard a nested native owner frame."
+        }
+      ]
     },
     {
       "symbol": "func_800E1958_AA0708",

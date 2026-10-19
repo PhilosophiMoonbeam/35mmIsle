@@ -45,6 +45,9 @@ public:
     // rejects GPU/readback work but retains completed CPU Photo/history for
     // original CopyInfo and shutter consumers; draw retires it before reuse.
     IsleGameResult update(std::uint32_t raw_game_time) noexcept;
+    // True only after a healthy Source exit stopped traversal at its OM epilogue.
+    // The application must abandon, not finish, this update's GTL claim.
+    bool update_abandoned() const noexcept;
     bool draw(scene::graphics::FrameContext = {}) noexcept;
     bool graphics_busy() const noexcept;
     scene::graphics::Poll poll() noexcept;

@@ -167,7 +167,7 @@ IsleGameResult isle_river_actor_deactivate(IsleRiverActorSource* s) {
     if (!s || s->base.phase != ISLE_COURSE_ACTOR_ACTIVE || !s->base.nativeGame ||
         !s->base.owner || !river_services_complete(s->services) || s->base.nonwaiting_call_frame)
         return ISLE_GAME_INVALID_STATE;
-    status=isle_actor_source_execution_status(s->base.nativeGame);
+    status=isle_actor_source_retirement_status(s->base.nativeGame);
     if (s->base.status == ISLE_GAME_OK) s->base.status=status;
     result=isle_river_actor_native_retirement(s);
     if (result != ISLE_GAME_OK) return result;

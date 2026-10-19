@@ -129,6 +129,10 @@ typedef struct IsleActorFactoryInitialization { uint32_t identity; } IsleActorFa
 int32_t isle_actor_factory_behavior(const IsleActorFactorySpawn*);
 /* Actual native Game/domain fault plus abandoned-update STOPPED state. */
 IsleGameResult isle_actor_source_execution_status(IsleGame*);
+/* Detachment only, after the course owner's genuine native join fences. Allows
+ * ONLY its acknowledged returning scene-exit stop; active execution remains
+ * STOPPED and unrelated nonreturning stops/cancellation remain terminal. */
+IsleGameResult isle_actor_source_retirement_status(IsleGame*);
 /* Original Pokemon_RemovePokemons, shared by course providers. The returning
  * C fence requires the actual current Actor to remain in the terminated list;
  * cleanup therefore cannot discard its owning native service call. */

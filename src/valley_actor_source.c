@@ -236,7 +236,7 @@ IsleGameResult isle_valley_actor_activate(IsleValleyActorSource* s, IsleGame* ga
 IsleGameResult isle_valley_actor_deactivate(IsleValleyActorSource* s) {
     IsleGameResult result;
     if (!s || s->base.phase!=ISLE_COURSE_ACTOR_ACTIVE || !s->base.nativeGame || !s->base.owner || !services_complete(s->services) || s->base.nonwaiting_call_frame) return ISLE_GAME_INVALID_STATE;
-    result=isle_actor_source_execution_status(s->base.nativeGame);
+    result=isle_actor_source_retirement_status(s->base.nativeGame);
     if(result!=ISLE_GAME_OK && s->base.status==ISLE_GAME_OK) s->base.status=result;
     result=isle_valley_actor_native_retirement(s);
     if (result!=ISLE_GAME_OK) { if(s->base.status==ISLE_GAME_OK) s->base.status=result; return result; }

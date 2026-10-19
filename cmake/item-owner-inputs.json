@@ -43,10 +43,10 @@
       "sha256": "ac0d2a1cb760ebe216bf220f1529b988ec63fe280180d981d9c5353d65e6b931"
     },
     "src/rainbow_actor_source.h": {
-      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+      "sha256": "bdb63e319ba1f1630b5ad92b42c6624deb63bbea3122b68bd437b761fcc886c7"
     },
     "src/rainbow_actor_source.c": {
-      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+      "sha256": "e08e7301a29feed244901eaa4fedc9456e64d6dfd77db3096622dc2c1f1b02f1"
     },
     "src/rainbow_actor.hpp": {
       "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
@@ -91,13 +91,13 @@
       "sha256": "b053794bcbd06f3eb9df6eb3fc3e213f87653695287e755f98ef8fc9210c1a3f"
     },
     "src/engine.c": {
-      "sha256": "e80f9b632ac961c65caf52626613ed2fef2485a068ffc03b0de25a6dd1cd4502"
+      "sha256": "710d4650e1bc2066cf52a6908198c7819662dc500dfdbfd04fb005fcd075f409"
     },
     "src/engine_internal.h": {
-      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+      "sha256": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+      "sha256": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
     },
     "src/menu_animation.hpp": {
       "sha256": "2a86c02a11e58574c987cc7cd06df0580930507424be53b937dd5b85b3b6d6b0"
@@ -109,7 +109,7 @@
       "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
     },
     "src/scene_services.cpp": {
-      "sha256": "ce621f752a484688158fb42f9527461bc815e7745985dfda968819ac8dec06dc"
+      "sha256": "e907c7f18fc19b9802ccded83a370b57d8c6531637cef921e187456fed963a44"
     },
     "src/world_runtime.hpp": {
       "sha256": "f8c75f19fe010624088615ec745dcfaaec07ca36724bb25ed1241eb91b8c7aa0"
@@ -121,13 +121,13 @@
       "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
     },
     "src/actor_owner.cpp": {
-      "sha256": "c7612d7fc04a047eee0577ac8fedc38a205c993104960dd4aafc38cb92a081d9"
+      "sha256": "85e240c698e318aa8979b8d0286b62a368d4c4d5ca3aee900dfe07c19e1991eb"
     },
     "src/actor_owner_source.h": {
-      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
+      "sha256": "c1e17b98102bd858492f1f4ee61da31d244369ac79fc74cd12e44fa873954d36"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"
+      "sha256": "99ef78ff1baa78d959199f4ab14aea6be3794783bade1e37abc6818f9a83c84a"
     },
     "src/beach_magikarp_scene.hpp": {
       "sha256": "7774ba3e4e59d84692d1553df23b36f0d8e91d2b8a4632e4ceffcc004fee3a1b"

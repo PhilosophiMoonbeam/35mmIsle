@@ -605,6 +605,13 @@ void services_lifecycle_composes_delete_paths(const fs::path& parent) {
                       context.retiring == 1 && context.joined == 1 &&
                       engine_process_joined(context.processes[0]) && engine_process_joined(context.processes[1]),
                       "actual faulted-game erase must join native ownership, preserve its original fault and not invent a Services failure");
+                const std::string native_failure = isle_game_error(native.game());
+                check(services.tick() == ISLE_GAME_EXECUTION_FAILURE && services.failed() &&
+                      !native_failure.empty(),
+                      "scene traversal observes the retained native fault after real owner cleanup");
+                services.fail("later scene cleanup failure");
+                check(native_failure == services.error(),
+                      "the first native traversal diagnostic survives later scene failure reporting");
             }
         }
         IsleGameCounts counts{};

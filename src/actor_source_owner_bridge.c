@@ -16,6 +16,12 @@ IsleGameResult isle_actor_source_execution_status(IsleGame* game) {
     IsleGameResult result = isle_game_status(game);
     return result == ISLE_GAME_OK && game->update_stopped ? ISLE_GAME_STOPPED : result;
 }
+IsleGameResult isle_actor_source_retirement_status(IsleGame* game) {
+    IsleGameResult result = isle_actor_source_execution_status(game);
+    if (result != ISLE_GAME_STOPPED ||
+        game->returning_update_stop != ISLE_UPDATE_STOP_ACKNOWLEDGED) return result;
+    return isle_game_require_idle(game);
+}
 
 int32_t isle_actor_factory_behavior(const IsleActorFactorySpawn* spawn) {
     /* Owner proves the actual authored Meowth/Valley borrow, or the exact

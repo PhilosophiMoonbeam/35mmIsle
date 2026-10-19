@@ -70,6 +70,7 @@ struct Lifecycle::Impl {
     IsleGameResult error=ISLE_GAME_OK;
     std::array<char,512> message{};
     bool initializing=false,initialized=false,exit_requested=false,cancelling=false;
+    bool update_abandoned=false;
     bool requested=false,world_published=false,height_map=false,sky_follow=false,screen_applied=false;
     bool helper_joined=false,helper_registered=false,scene_retired=false;
     bool helper_observed=false;
@@ -399,6 +400,19 @@ IsleGameResult Lifecycle::update(std::uint32_t raw_game_time) noexcept {
     self.services->raw_game_time=raw_game_time;
     auto result=self.root->publish_input();
     if (result==ISLE_GAME_OK) result=self.services->tick();
+    // Only this scene owner may consume its returning terminal traversal.
+    // Source has returned through the end callback and OM has joined pending
+    // current-object/process deletion; no full update is credited to GTL.
+    if (result==ISLE_GAME_STOPPED && self.exit_requested && !self.cancelling &&
+        self.world && self.world->retired()) {
+        if (self.services->failed()) result=ISLE_GAME_INVALID_STATE;
+        else if (self.source.status!=ISLE_GAME_OK) result=self.source.status;
+        else if (self.root->source().status!=ISLE_GAME_OK) result=self.root->source().status;
+        else {
+            result=isle_game_acknowledge_update_stop(self.services->game);
+            if (result==ISLE_GAME_OK) self.update_abandoned=true;
+        }
+    }
     // Native deletion is not physical Item collection. Both OM traversal and
     // the previous GPU frame are excluded at this live update boundary.
     if (self.items) {
@@ -454,6 +468,7 @@ IsleGameResult Lifecycle::release_completed() noexcept {
     return ISLE_GAME_OK;
 }
 LifecycleStatus Lifecycle::status() const noexcept { return impl_->status; }
+bool Lifecycle::update_abandoned() const noexcept { return impl_->update_abandoned; }
 IsleGameResult Lifecycle::error() const noexcept { return impl_->error; }
 const char* Lifecycle::message() const noexcept { return impl_->message.data(); }
 const IsleBeachLifecycleSource& Lifecycle::source() const noexcept { return impl_->source; }
@@ -665,7 +680,10 @@ IsleGameResult isle_beach_lifecycle_owner_transition_end(IsleBeachLifecycleSourc
 }
 IsleGameResult isle_beach_lifecycle_native_exit_scene(IsleBeachLifecycleSource* s) {
     return Access::invoke(s,[&](Impl& self) {
-        if (!self.services) return ISLE_GAME_INVALID_STATE;
+        if (!self.services || self.exit_requested || self.cancelling ||
+            !self.world || !self.world->retired()) return ISLE_GAME_INVALID_STATE;
+        const auto result=isle_game_request_update_stop(self.services->game);
+        if (result!=ISLE_GAME_OK) return result;
         self.exit_requested=true; self.clock.request_stop();
         return ISLE_GAME_OK;
     });

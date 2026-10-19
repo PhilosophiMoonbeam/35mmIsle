@@ -140,6 +140,13 @@ static inline bool isle_native_model_count_valid(size_t count) {
 struct IslePlayerSource;
 struct IsleSoundRampSource;
 
+typedef enum IsleReturningUpdateStop {
+    ISLE_UPDATE_STOP_NONE = 0,
+    ISLE_UPDATE_STOP_PENDING,
+    ISLE_UPDATE_STOP_DISPATCHED,
+    ISLE_UPDATE_STOP_ACKNOWLEDGED
+} IsleReturningUpdateStop;
+
 struct IsleGame {
     isle_arena* arena;
     IsleContinuationDomain* domain;
@@ -168,6 +175,8 @@ struct IsleGame {
     bool has_updated;
     bool native_capacity_frozen;
     bool update_stopped; /* Abandoned C traversal; never a successful OM update. */
+    IsleReturningUpdateStop returning_update_stop;
+    GObjProcess* returning_update_process; /* Borrow until this dispatch epilogue. */
     bool alive;
 };
 
@@ -201,6 +210,7 @@ void func_800E1958_AA0708(SObj* sprite, u16 updates);
 /* Original native replacements consumed by the selected game definitions. */
 void isle_native_execution_fault(IsleGame* game, const char* text);
 void isle_native_resume_process(GObjProcess* process);
+bool isle_native_dispatch_finished(void);
 void omEndProcess(GObjProcess* process);
 void omDeleteGObj(GObj* object);
 SObj* omGetSObj(void);

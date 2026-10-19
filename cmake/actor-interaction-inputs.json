@@ -9,10 +9,10 @@
       "sha256": "ac0d2a1cb760ebe216bf220f1529b988ec63fe280180d981d9c5353d65e6b931"
     },
     "src/rainbow_actor_source.h": {
-      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+      "sha256": "bdb63e319ba1f1630b5ad92b42c6624deb63bbea3122b68bd437b761fcc886c7"
     },
     "src/rainbow_actor_source.c": {
-      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+      "sha256": "e08e7301a29feed244901eaa4fedc9456e64d6dfd77db3096622dc2c1f1b02f1"
     },
     "src/rainbow_actor.hpp": {
       "sha256": "a71ba9c29eb93a76783c47107749b51a51e58324341fe63e64e6191e159af58b"
@@ -33,22 +33,22 @@
       "sha256": "b5dea41761b024e3572afdf2c29ff3821b70806cb530603473aadddaf434ff59"
     },
     "src/actor_owner_source.h": {
-      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
+      "sha256": "c1e17b98102bd858492f1f4ee61da31d244369ac79fc74cd12e44fa873954d36"
     },
     "src/actor_source_owner_bridge.c": {
-      "sha256": "6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"
+      "sha256": "99ef78ff1baa78d959199f4ab14aea6be3794783bade1e37abc6818f9a83c84a"
     },
     "src/actor_source_bridge.c": {
       "sha256": "591394a02c7e987b953166b51e50f4090d29084a780e0c36b23d1b9da93ab89a"
     },
     "src/actor_owner.cpp": {
-      "sha256": "c7612d7fc04a047eee0577ac8fedc38a205c993104960dd4aafc38cb92a081d9"
+      "sha256": "85e240c698e318aa8979b8d0286b62a368d4c4d5ca3aee900dfe07c19e1991eb"
     },
     "src/actor_owner.hpp": {
       "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
     },
     "src/scene_services.cpp": {
-      "sha256": "ce621f752a484688158fb42f9527461bc815e7745985dfda968819ac8dec06dc"
+      "sha256": "e907c7f18fc19b9802ccded83a370b57d8c6531637cef921e187456fed963a44"
     },
     "src/scene_services.hpp": {
       "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
@@ -57,7 +57,7 @@
       "sha256": "2b533bfd3978e239dbd5743052fb877ba98defcd1cd074b36e3978077e323088"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+      "sha256": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
     },
     "src/actor_spatial.h": {
       "sha256": "962287772ecea45dbc4431ec014969c15dab2ba66bdd39e04853c6641326aaf9"
@@ -84,7 +84,7 @@
       "sha256": "bd5afdd961ce6339b5784474b44425407f0f3837022bf66bbff29cec4509440d"
     },
     "tests/scene_services_tests.cpp": {
-      "sha256": "21e10bc31ea8a7d92d9bcf354fbda5dd5943a32aa165bbf414212ad28d397277"
+      "sha256": "7bd0dfeebc60bebd62a8726d89cc8e81528095ec360d60c709fb8aeb2bb2d549"
     },
     "tests/world_runtime_tests.cpp": {
       "sha256": "ff112550e9aadfaf0017822e7f072e805c4c61220ff6469166b30866ed14fb10"

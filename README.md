@@ -18,7 +18,7 @@ Isolated real-input routes also complete the Tunnel and River event unlocks and 
 
 All six [genuine sign routes](docs/development/ADMISSION.md#six-genuine-sign-captures)—Beach, Tunnel, Volcano, River, Cave and Valley—now publish their exact zero-score sign Reports and complete Save/Title/cold reopen. Their access and equipment are isolation inputs, not proof of the complete unseeded one-profile campaign.
 
-Published [`1f4f37e`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39226468944) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
+Published [`f293653`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39265681154) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
 
 ## Development documentation
 

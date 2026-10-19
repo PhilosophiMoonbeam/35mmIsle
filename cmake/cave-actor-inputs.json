@@ -3690,7 +3690,7 @@
       "sha256": "705f2e01f7c4692d897a4b1dd9458b23d4dc1b043981fc941ffde22ffd9565f5"
     },
     "src/cave_actor_source.c": {
-      "sha256": "b7ae8d16f1614fe7ce28e575e179d9835761dd2a8c147b26575b0f9abdb8e430"
+      "sha256": "42a9ffba45498f0bd67ae21cdb65d90b68975a1fb9f5187c7554fe9f915dc02f"
     },
     "src/cave_actor.hpp": {
       "sha256": "5b7e28a675e36f55be9ab86c82fb60c17441ef494118bd206a5d32f576f53ad2"
@@ -3723,7 +3723,7 @@
       "sha256": "b5dea41761b024e3572afdf2c29ff3821b70806cb530603473aadddaf434ff59"
     },
     "src/engine_internal.h": {
-      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+      "sha256": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc"
     },
     "tools/prepare_common_egg.py": {
       "sha256": "2b213eea62dfd1e1f65296d976aacf38224af2cd238572e9f3f5fdfb23522787"

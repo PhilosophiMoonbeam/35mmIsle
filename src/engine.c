@@ -498,7 +498,10 @@ IsleGameResult isle_game_process_source_function(IsleGame* game, IsleGameProcess
 void omEndProcess(GObjProcess* process) {
     IsleGame* game = active_game;
     if (process == NULL || process == omCurrentProcess) {
-        omD_8004AC54 = 1;
+        /* Whole-object deletion also owns this process. A Source suffix may
+         * self-end after requesting current-object deletion; never downgrade
+         * that pending epilogue to process-only retirement. */
+        if (omD_8004AC54 != 2) omD_8004AC54 = 1;
         if (omCurrentProcess != NULL && omCurrentProcess->kind == ISLE_GAME_STACKFUL) {
             if (isle_continuation_finish(game->domain) != ISLE_CONT_OK) {
                 isle_native_execution_fault(game, "stackful self-end outside its active C continuation");
@@ -635,6 +638,53 @@ IsleGameResult isle_game_stop_update(IsleGame* game) {
     return finished == ISLE_CONT_WRONG_OWNER ? ISLE_GAME_WRONG_OWNER :
         finished == ISLE_CONT_RESOURCE_FAILURE ? ISLE_GAME_EXHAUSTED :
         finished == ISLE_CONT_EXECUTION_FAILURE ? ISLE_GAME_EXECUTION_FAILURE : ISLE_GAME_INVALID_STATE;
+}
+
+IsleGameResult isle_game_request_update_stop(IsleGame* game) {
+    IsleGameResult result = access_game(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (!game->ticking || game->update_stopped || omCurrentObject == NULL ||
+        game->retirement_observer || game->command_fault_abort != NULL)
+        return ISLE_GAME_INVALID_STATE;
+    game->returning_update_stop = ISLE_UPDATE_STOP_PENDING;
+    game->returning_update_process = omCurrentProcess;
+    return ISLE_GAME_OK;
+}
+
+IsleGameResult isle_game_acknowledge_update_stop(IsleGame* game) {
+    IsleGameResult result = isle_game_require_idle(game);
+    if (result != ISLE_GAME_OK) return result;
+    if (game->fault != ISLE_GAME_OK) return game->fault;
+    if (!game->update_stopped ||
+        game->returning_update_stop != ISLE_UPDATE_STOP_DISPATCHED)
+        return ISLE_GAME_INVALID_STATE;
+    game->returning_update_stop = ISLE_UPDATE_STOP_ACKNOWLEDGED;
+    return ISLE_GAME_OK;
+}
+
+/* Called only by the selected outer OM traversal AFTER omUpdateGObj/omRunProcess
+ * returns, including their ordinary deferred deletion/continuation joins. The
+ * request leaf must return through all intervening Source and C++ owners. */
+bool isle_native_dispatch_finished(void) {
+    IsleGame* game = active_game;
+    if (game->fault != ISLE_GAME_OK)
+        isle_native_execution_fault(game, game->error);
+    if (game->returning_update_stop != ISLE_UPDATE_STOP_PENDING) return false;
+    if (omCurrentObject != NULL || omCurrentProcess != NULL || omD_8004AC54 != 0 ||
+        game->callback_depth != 0 || game->retirement_observer ||
+        game->command_fault_abort != NULL ||
+        (game->returning_update_process && game->returning_update_process->alive &&
+            game->returning_update_process->kind == ISLE_GAME_STACKFUL) ||
+        (game->playerSource && game->playerSource->nonwaiting_call_frame) ||
+        (game->postCourseSource && game->postCourseSource->nonwaiting_call_frame)) {
+        isle_native_execution_fault(game, "scene exit reached an incomplete native dispatch epilogue");
+        return false;
+    }
+    game->returning_update_stop = ISLE_UPDATE_STOP_DISPATCHED;
+    game->returning_update_process = NULL;
+    game->update_stopped = true;
+    return true;
 }
 
 void ohWait(s32 updates) {

@@ -225,7 +225,7 @@ IsleGameResult isle_cave_actor_activate(IsleCaveActorSource* s, IsleGame* game, 
 IsleGameResult isle_cave_actor_deactivate(IsleCaveActorSource* s) {
     IsleGameResult r;
     if (!s || s->base.phase!=ISLE_COURSE_ACTOR_ACTIVE || s->base.nonwaiting_call_frame) return ISLE_GAME_INVALID_STATE;
-    r=isle_actor_source_execution_status(s->base.nativeGame);
+    r=isle_actor_source_retirement_status(s->base.nativeGame);
     if (s->base.status==ISLE_GAME_OK && r!=ISLE_GAME_OK) s->base.status=r;
     r=isle_cave_actor_native_retirement(s);
     if (r!=ISLE_GAME_OK) { if (s->base.status==ISLE_GAME_OK) s->base.status=r; return r; }

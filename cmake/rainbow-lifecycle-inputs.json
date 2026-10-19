@@ -77,10 +77,10 @@
   },
   "native_support": {
     "src/rainbow_lifecycle.hpp": {
-      "sha256": "2f917c920677694a810dcaeeb737abb724aa489be84149de8ed7df0f98f9ca4e"
+      "sha256": "b100d5d45ea90f6fb9d8627c0d702d28cbc6d138bb0750a39a858aa8e26885d6"
     },
     "src/rainbow_lifecycle.cpp": {
-      "sha256": "002985d072c1d50b84b2c555b5602c08d137d5d95ffce215da024027519647d3"
+      "sha256": "5347dddd52f384910d6278622bb74a1c20497936ab373a0926a59733742d0a75"
     },
     "src/rainbow_lifecycle_source.h": {
       "sha256": "1dccfe5b1e6c30ec2b40157f80b9400bd86e9a80d114a0e164751143e67d2005"
@@ -89,13 +89,13 @@
       "sha256": "9b0eb91cd64d0b46114a88d20f13ee399de3af4d51e38798249e76460812d1c5"
     },
     "src/rainbow_actor_source.h": {
-      "sha256": "50df9b6fc4e29d6a24e67288a6756243e9f5b343fcabb28dfb2ef70d672a89b8"
+      "sha256": "bdb63e319ba1f1630b5ad92b42c6624deb63bbea3122b68bd437b761fcc886c7"
     },
     "src/rainbow_actor_source.c": {
-      "sha256": "2cd5e1d4d88c31e3ab9a0f88acdea8b183cbd6df50ee1dff9ebacff19c1d4e26"
+      "sha256": "e08e7301a29feed244901eaa4fedc9456e64d6dfd77db3096622dc2c1f1b02f1"
     },
     "src/actor_owner_source.h": {
-      "sha256": "96dc6d0cd5f94291b78b13277827a0da1e2a5df7e1d71caa6bbe1d40f83524e3"
+      "sha256": "c1e17b98102bd858492f1f4ee61da31d244369ac79fc74cd12e44fa873954d36"
     },
     "src/actor_source.h": {
       "sha256": "b5dea41761b024e3572afdf2c29ff3821b70806cb530603473aadddaf434ff59"
@@ -125,10 +125,10 @@
       "sha256": "0a7f7e6e8b17c37e3f6bbb270603ce70107b9f092ace7fd5c260423a7656efc9"
     },
     "src/engine_internal.h": {
-      "sha256": "732ceffab8ab22ad1dfde67ffc7cc69785adf80d333e39282fe9899d2370203b"
+      "sha256": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc"
     },
     "include/35mmisle/engine.h": {
-      "sha256": "5efc0de61d168646782b4442587e24ed6bcbb2285cd19437b5f16f205b719c4c"
+      "sha256": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
     },
     "include/35mmisle/continuation.h": {
       "sha256": "c3328188ca968bd0cc3f4351ca92805cf2170a2e5a3265a1b4dc7beb5695053f"

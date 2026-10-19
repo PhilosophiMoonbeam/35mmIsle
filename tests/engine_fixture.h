@@ -25,6 +25,8 @@ typedef struct EngineFixture {
     IsleGameProcess* observed_processes[4];
     size_t observed_process_count;
     size_t waiting_processes;
+    IsleGameObject* exit_target;
+    IsleGameCallback exit_leaf; /* Real returning C++ owner used by Source. */
 } EngineFixture;
 
 typedef struct EngineRecord {
@@ -70,6 +72,8 @@ void engine_source_b(IsleGameObject* object);
 void engine_source_stop_update(IsleGameObject* object);
 void engine_native_reject_stop_update(IsleGameObject* object, void* user);
 void engine_source_reject_nested_stop(IsleGameObject* object);
+void engine_source_scene_exit(IsleGameObject*);
+void engine_scene_exit_fault(IsleGame*, const char*);
 void engine_source_wait_once(IsleGameObject* object);
 void engine_native_reject_source_wait(IsleGameObject* object, void* user);
 void engine_source_reject_nested_wait(IsleGameObject* object);

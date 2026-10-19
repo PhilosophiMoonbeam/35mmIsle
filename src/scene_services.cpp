@@ -514,6 +514,10 @@ Services::~Services() {
 }
 IsleGameResult Services::tick() noexcept {
     const auto updated = isle_game_tick(game);
+    // Stop-update is a normal terminal boundary; an actual traversal failure
+    // must retain the engine's first diagnostic before collection can replace it.
+    if (updated != ISLE_GAME_OK && updated != ISLE_GAME_STOPPED)
+        fail(isle_game_error(game));
     auto* sound = isle_sound_ramp_source_current(game);
     const auto collected = sound ? isle_sound_ramp_source_collect(sound) : ISLE_GAME_OK;
     check(collected, "Original sound joined-incarnation collection");

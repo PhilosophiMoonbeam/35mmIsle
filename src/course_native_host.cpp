@@ -76,7 +76,7 @@ struct NativeHost::Impl {
     NativeDescription description;
     const menu::RamRange joined_lists;
     bool cpu = false, prepared = false, initialized = false, exiting = false;
-    bool updating = false;
+    bool updating = false, update_abandoned = false;
     bool cancelling = false, closing = false, retired = false, detach_authorized = false;
     bool detached = false, references_released = false, scene_cleared = false;
     bool world_published = false, follows_camera = false, screen_applied = false;
@@ -427,7 +427,8 @@ IsleGameResult NativeHost::update(std::uint32_t raw_game_time) noexcept {
     // outside-OM collection, with the prior GPU frame excluded by update().
     if (self.items) {
         const auto collected = self.items->collect_joined();
-        if (!collected && collected.error != items::OwnerError::lifetime && result == ISLE_GAME_OK) {
+        if (!collected && collected.error != items::OwnerError::lifetime &&
+            (result == ISLE_GAME_OK || result == ISLE_GAME_STOPPED)) {
             self.services->fail(collected.detail);
             result = ISLE_GAME_INVALID_STATE;
         }
@@ -437,12 +438,28 @@ IsleGameResult NativeHost::update(std::uint32_t raw_game_time) noexcept {
     for (auto& helper : self.helpers)
         if (&helper!=self.references && helper.object && helper.joined && helper.registered &&
             self.services->source_owner_collectable(helper.object) && !self.join_helper(helper) &&
-            result==ISLE_GAME_OK) result=ISLE_GAME_INVALID_STATE;
-    if (result == ISLE_GAME_OK && self.services->failed()) result = ISLE_GAME_INVALID_STATE;
-    if (result == ISLE_GAME_OK) result = self.root->source().status;
+            (result==ISLE_GAME_OK || result==ISLE_GAME_STOPPED)) result=ISLE_GAME_INVALID_STATE;
+    if (result == ISLE_GAME_OK || result == ISLE_GAME_STOPPED) {
+        if (self.services->failed()) result = ISLE_GAME_INVALID_STATE;
+        else if (self.root->source().status != ISLE_GAME_OK) result = self.root->source().status;
+    }
+    // The typed scene owner still must validate ALL its Source statuses before
+    // acknowledging this terminal traversal. Other STOPPED remains cancellation.
+    if (result == ISLE_GAME_STOPPED && self.exiting && !self.cancelling &&
+        self.world && self.world->retired()) return result;
     return result == ISLE_GAME_OK ? result : fail(result,
         isle_game_status(self.services->game)!=ISLE_GAME_OK ?
             isle_game_error(self.services->game) : self.services->error());
+}
+IsleGameResult NativeHost::acknowledge_update_stop() noexcept {
+    auto& self = *impl_;
+    if (!self.exiting || self.cancelling || self.error != ISLE_GAME_OK ||
+        !self.services || self.services->failed() || !self.root ||
+        self.root->source().status != ISLE_GAME_OK || !self.world || !self.world->retired())
+        return ISLE_GAME_INVALID_STATE;
+    const auto result = isle_game_acknowledge_update_stop(self.services->game);
+    if (result == ISLE_GAME_OK) self.update_abandoned = true;
+    return result;
 }
 bool NativeHost::draw(g::FrameContext context) noexcept {
     auto& self = *impl_;
@@ -640,7 +657,10 @@ IsleGameResult NativeHost::near_clipping(bool disabled) noexcept {
 }
 IsleGameResult NativeHost::exit_scene() noexcept {
     auto& self = *impl_;
-    if (!self.services || self.closing) return ISLE_GAME_INVALID_STATE;
+    if (!self.services || self.closing || self.exiting || self.cancelling ||
+        !self.world || !self.world->retired()) return ISLE_GAME_INVALID_STATE;
+    const auto result = isle_game_request_update_stop(self.services->game);
+    if (result != ISLE_GAME_OK) return result;
     self.exiting = true; self.clock.request_stop(); return ISLE_GAME_OK;
 }
 IsleGameResult NativeHost::destroy_world() noexcept {
@@ -833,6 +853,7 @@ bool NativeHost::execution_open() const noexcept {
     return closure_prepared() && !impl_->exiting && impl_->error == ISLE_GAME_OK;
 }
 bool NativeHost::exit_requested() const noexcept { return impl_->exiting; }
+bool NativeHost::update_abandoned() const noexcept { return impl_->update_abandoned; }
 bool NativeHost::initialized() const noexcept { return impl_->initialized; }
 bool NativeHost::retired() const noexcept { return impl_->retired; }
 bool NativeHost::owns_input(IsleGameObject* object) const noexcept {

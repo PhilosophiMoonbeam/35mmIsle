@@ -3613,3 +3613,20 @@ matches that ownership. The corrected actual run consumes43 throws, observes
 the egg transition, resumes Cart travel and observes tangible Moltres, reaching
 5,341 updates/2,670 presentations before a native Actor SDK failure. It has
 three qualifying photos but no Moltres photo, natural9 or Camera9 acceptance.
+
+### Windows product dependency boundary
+
+Hosted run39195291192 builds the complete MSVC static-runtime LUS product,
+all31 native consumers and the application/post-course consumers; all58 CPU
+tests and product/CLI help pass. CPack alone fails while following Windows
+system dependencies to unresolved `HvsiFileTrust.dll`; no ZIP is produced.
+
+Before [CMP0207 NEW](https://cmake.org/cmake/help/latest/policy/CMP0207.html),
+resolved paths may contain native backslashes, forward slashes or both. The
+System32 post-exclusion now matches either separator and directory-name case.
+A matched resolved OS path stops dependency recursion; unresolved application
+DLLs still fail. No DLL-name exception, additional system exclusion or minimum
+CMake-version increase is introduced. Linux relocation and notices are unchanged.
+Actual CMake probes pass five native/slash/mixed-path cases and four
+application/directory-boundary negatives, including the generated install
+expression under legacy policy. Actual hosted ZIP verification remains pending.

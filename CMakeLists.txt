@@ -1800,10 +1800,12 @@ if(TARGET 35mmisle)
         install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/LinuxRuntime-$<CONFIG>.cmake"
             COMPONENT Runtime)
     else()
+        # Before CMP0207 NEW (CMake 4.3), resolved Windows paths can mix
+        # native and forward separators. Stop at System32 before recursing.
         install(RUNTIME_DEPENDENCY_SET isle-product-runtime
             PRE_EXCLUDE_REGEXES "^[Aa][Pp][Ii]-[Mm][Ss]-" "^[Ee][Xx][Tt]-[Mm][Ss]-"
             POST_EXCLUDE_REGEXES "^/lib/" "^/lib64/" "^/usr/lib/" "^/usr/lib64/"
-                "/[Ss][Yy][Ss][Tt][Ee][Mm]32/"
+                "[/\\][Ss][Yy][Ss][Tt][Ee][Mm]32[/\\]"
             RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime
             LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/35mmisle" COMPONENT Runtime)
     endif()

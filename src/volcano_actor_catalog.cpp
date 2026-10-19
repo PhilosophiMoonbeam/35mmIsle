@@ -119,8 +119,8 @@ constexpr std::array<model_assets::Mapping,8> mappings{{
     {0x80388310,0x00528720,0x00000090},
     {0x8034e130,0x0054b5d0,0x000020d0},
 }};
-// Twenty live registry rows in Source order, then seven distinct singletons.
-constexpr std::array<DefinitionSpec,27> definitions{{
+// Twenty live registry rows in Source order, then eight distinct singletons.
+constexpr std::array<DefinitionSpec,28> definitions{{
     {0x802e0d44,126,0x802d7f28,0x80363eb4,0x80364280,9,false},
     {0x802e0d54,78,0x802d8a5c,0x80363eb4,0x80364280,12,false},
     {0x802e0d64,4,0x802d9cb8,0x80363eb4,0x80364280,2,false},
@@ -148,6 +148,7 @@ constexpr std::array<DefinitionSpec,27> definitions{{
     {0x802e0f94,1030,0x802df240,0x80363dbc,0x80364280,8,true},
     {0x802e3358,1029,0x802de6b4,0x80363dbc,0x80364280,13,true},
     {0x802e3368,1028,0x802de52c,0x80363dbc,0x80364280,7,true},
+    {0x8038837c,1003,0x8035e0d4,0x80363dbc,0x80364280,19,true},
 }};
 constexpr std::array<DefinitionTableSpec,1> tables{{
     {0x802e0d44,0x802e0e84,0,20},
@@ -168,7 +169,7 @@ constexpr std::array<AutomaticActorDefinition,8> automatic_definitions{{
 // Qualified 638n: 1318 model streams, 254 texture streams, four paths.
 // Raw Moltres/smoke render identities remain 802de26c/802dfae4, not aliases.
 const CourseCatalog catalog{2,0x800fffb8,mappings,material_extents,initializations,headers,definitions,tables,
-                            automatic_definitions,{20,59,1318,254,91,27,4}};
+                            automatic_definitions,{20,59,1318,254,91,28,4}};
 } // namespace
 const CourseCatalog& volcano_catalog() noexcept { return catalog; }
 } // namespace isle::actor::detail

@@ -395,7 +395,14 @@ IsleGameResult isle_cave_lifecycle_invoke(IsleCaveLifecycleSource* s,IsleCaveLif
     IslePlayerSource* player=NULL; IsleGameResult result;
     if (!s || !callback || !s->owner || !s->domain || !services_complete(s->services)) return ISLE_GAME_INVALID_ARGUMENT;
     if (s->status!=ISLE_GAME_OK) return s->status;
-    if (isle_continuation_domain_check_access(s->domain)!=ISLE_CONT_OK) return ISLE_GAME_INVALID_STATE;
+    if (isle_continuation_domain_check_access(s->domain)!=ISLE_CONT_OK) {
+        /* The independent entry is suspended while real OM callbacks execute
+         * in the active Game's domain, as in the other course adapters. */
+        if (!s->actors || s->actors->base.phase!=ISLE_COURSE_ACTOR_ACTIVE ||
+            !s->actors->base.nativeGame) return ISLE_GAME_INVALID_STATE;
+        result=isle_actor_source_execution_status(s->actors->base.nativeGame);
+        if (result!=ISLE_GAME_OK) return result;
+    }
     if (s->actors && s->actors->base.phase==ISLE_COURSE_ACTOR_ACTIVE) {
         result=isle_player_source_context(s->actors->base.nativeGame,&player);
         if (result!=ISLE_GAME_OK) return lifecycle_return(s,result);

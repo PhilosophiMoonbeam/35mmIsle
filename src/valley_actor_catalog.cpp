@@ -98,13 +98,13 @@ constexpr std::array<model_assets::Mapping,8> mappings{{
     {0x80388310,0x00528720,0x00000090},
     {0x8034e130,0x0054b5d0,0x000020d0},
 }};
-// Twenty live registry rows in Source/initialized order, then the five exact
+// Twenty live registry rows in Source/initialized order, then six exact
 // singleton records. The all-zero terminator is validated by tables below.
 // Distinct ordinary Staryu/Starmie factory identities survive their shared
 // initialization: registry802cd704/802cde04, singleton802cd73c/802cde3c.
 // Magikarp factory802d21c8 selects ground for behavior!=3, ordinary otherwise;
 // both Source calls bind InitData802ec934, never a fabricated second family.
-constexpr std::array<DefinitionSpec,25> definitions{{
+constexpr std::array<DefinitionSpec,26> definitions{{
     {0x802d282c,75,0x802c957c,0x80363eb4,0x80364280,0,false},
     {0x802d283c,130,0x802c97f8,0x80363dbc,0x80364280,1,false},
     {0x802d284c,74,0x802c9f90,0x80363eb4,0x80364280,2,false},
@@ -130,6 +130,7 @@ constexpr std::array<DefinitionSpec,25> definitions{{
     {0x802d29a4,129,0x802d21c8,0x80363eb4,0x80364280,16,true},
     {0x802ecae0,120,0x802cd73c,0x80363dbc,0x80364280,7,true},
     {0x802ecaf0,121,0x802cde3c,0x80363dbc,0x80364280,8,true},
+    {0x8038837c,1003,0x8035e0d4,0x80363dbc,0x80364280,19,true},
 }};
 constexpr std::array<DefinitionTableSpec,1> tables{{{0x802d282c,0x802d296c,0,20}}};
 // Exact automatic Source copies in valley/79F1B0.c blob
@@ -147,7 +148,7 @@ constexpr std::array<AutomaticActorDefinition,3> automatic_definitions{{
 // Extra Source-used signed list802ecb00 belongs to BehaviorResources, not
 // this immutable actor catalog. No callback execution is claimed here.
 const CourseCatalog catalog{5,0x80100720,mappings,material_extents,initializations,headers,definitions,tables,
-                            automatic_definitions,{20,23,1136,85,96,25,0}};
+                            automatic_definitions,{20,23,1136,85,96,26,0}};
 static_assert(initializations.size()<=max_catalog_models);
 } // namespace
 const CourseCatalog& valley_catalog() noexcept { return catalog; }

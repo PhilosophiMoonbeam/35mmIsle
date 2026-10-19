@@ -139,14 +139,6 @@ IsleGameResult collide(void* user,IsleGameVec3* a,IsleGameVec3* b,IsleGameVec3* 
 #define LEAF(name,args,...) IsleGameResult name args noexcept { return invoke(s,[&](H& h)->IsleGameResult { __VA_ARGS__ }); }
 LEAF(reference_assign,(S* s,IsleGameObject** field,IsleGameObject* value),
     if (!field) return invalid;
-    for (const auto& b:h.actors()->render_bindings()) {
-        if (!b.model.object) continue;
-        IsleActorSource* source=nullptr;
-        const auto r=actor_source(h,b.model.object,&source);
-        if (r!=ISLE_GAME_OK) return r;
-        if (field==&source->apple || field==&source->interactionTarget)
-            return isle_actor_owner_reference_assign(source,field,value);
-    }
     return h.reference(field,value);)
 LEAF(source,(S* s,IsleGameObject* object,IsleActorSource** out),return actor_source(h,object,out);)
 LEAF(model,(S* s,IsleGameObject* object,IsleGameModelRef* out),return model_reference(h,object,out);)

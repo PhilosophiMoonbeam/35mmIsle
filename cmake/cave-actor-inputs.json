@@ -3702,7 +3702,7 @@
       "sha256": "3d93099f12c4292073932ec52ac58b748027060cb1a6d4eaab448cb9412c469d"
     },
     "src/cave_lifecycle_source.c": {
-      "sha256": "0f7f89456b99aa737085fee06ab867720a8d1fe4135dc75c3552e4e95bcc7dfa"
+      "sha256": "69786693a8556ce6c3505eca2cd7a3566535882d88159b5daeac92ee032663f7"
     },
     "src/course_actor_source.h": {
       "sha256": "e642f3b7333ac8f0d42b50467b309d87073bbdd5dca842101e73045ffddd3522"

@@ -145,19 +145,19 @@
       "sha256": "8ce2614d734b005de29a2fe4738b15e65d128faa3d458f9b32d4228463f3d3ed"
     },
     "src/river_actor_catalog.cpp": {
-      "sha256": "84148f70d02b394a026aea035e761f35f27e4dca6fae73ecb9be1f8737171a44"
+      "sha256": "6e1478083dd53a1d7b6b8bbe8a705375fd078150fd8bf27efa9291b983148e5e"
     },
     "src/tunnel_actor_catalog.cpp": {
-      "sha256": "8cfb7f78e0663c63d2964a49363960b0f180f1b6ec03f2653047a4328402c6e6"
+      "sha256": "38b4393c5afa6b7815fd7e6935f8b6aa5be9ea9eae1a8e7e93b10087f7a9075b"
     },
     "src/volcano_actor_catalog.cpp": {
-      "sha256": "96aa4888c39a2d054dc7a2ffa8e64d899a92214f97267bbc4584bca3fe492d6f"
+      "sha256": "3ae4b08faa62be982d7811ce2def37258514f6b72a1ebe1b52f5bad745940942"
     },
     "src/cave_actor_catalog.cpp": {
-      "sha256": "9750187937683989c259280ff91e6939ea700dce5a963039c3ff269c78c8f77e"
+      "sha256": "7912b01463e3c5a08b4db7cbbbbd984329372ee4915c5ab1a235833f68df7a85"
     },
     "src/valley_actor_catalog.cpp": {
-      "sha256": "048c287f8f8cc8651da0097064bd35bc38054ddeb3aed3da50ed8c33de1cf047"
+      "sha256": "3bd5ffba0b0aa77b8430d5a2a9268a80bc5cf0cf6375d9fb0bc3751fa5f2f6b7"
     },
     "src/actor_resources.cpp": {
       "sha256": "0051adc3217710ee25f95d19799cc6e09ce17ea1323b05bced746848ff6de96b"

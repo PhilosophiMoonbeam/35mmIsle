@@ -9,7 +9,7 @@ world::Block* block(Adapter& owner,IsleValleyWorldBlock* value) {
     if (value && !native) throw std::invalid_argument("foreign or inconsistent Valley Source World view");
     return native;
 }
-constexpr std::array<actor::RetainedFieldFamily,1> retained{{{118,0x802eca30u,1u,0u}}};
+constexpr std::array<actor::RetainedFieldFamily,1> retained{{{147,0x802d3100u,1u,0u}}};
 IsleValleyLifecycleServices make_lifecycle_services() noexcept;
 }
 Adapter::Adapter() noexcept : actor_services(course::make_valley_actor_services()), lifecycle_services(make_lifecycle_services()) {}
@@ -265,13 +265,13 @@ IsleValleyLifecycleServices make_lifecycle_services() noexcept {
             return Adapter::invoke(p0,[&](Adapter& a) { return a.active() && a.native.receiver(p1) ? isle_course_scene_object_control(a.native.player(),isle_player_func_80357120_4F7530,p1) : ISLE_GAME_INVALID_STATE; });
         },
         .intro_finish=+[](IsleValleyLifecycleSource* p0) noexcept -> IsleGameResult {
-            return Adapter::invoke(p0,[&](Adapter& a) { return a.active() ? isle_course_scene_control(a.native.player(),isle_player_func_803571C4_4F75D4) : ISLE_GAME_INVALID_STATE; });
+            return Adapter::invoke(p0,[&](Adapter& a) { return a.active() ? isle_course_scene_control(a.native.player(),isle_player_func_803572B0_4F76C0) : ISLE_GAME_INVALID_STATE; });
         },
         .intro_prepare=+[](IsleValleyLifecycleSource* p0) noexcept -> IsleGameResult {
-            return Adapter::invoke(p0,[&](Adapter& a) { return a.active() ? isle_course_scene_control(a.native.player(),isle_player_func_80357170_4F7580) : ISLE_GAME_INVALID_STATE; });
+            return Adapter::invoke(p0,[&](Adapter& a) { return a.active() ? isle_course_scene_control(a.native.player(),isle_player_func_803571C4_4F75D4) : ISLE_GAME_INVALID_STATE; });
         },
         .intro_stop=+[](IsleValleyLifecycleSource* p0) noexcept -> IsleGameResult {
-            return Adapter::invoke(p0,[&](Adapter& a) { return a.active() ? isle_course_scene_control(a.native.player(),isle_player_func_803572B0_4F76C0) : ISLE_GAME_INVALID_STATE; });
+            return Adapter::invoke(p0,[&](Adapter& a) { return a.active() ? isle_course_scene_control(a.native.player(),isle_player_func_80357170_4F7580) : ISLE_GAME_INVALID_STATE; });
         },
         .animation_callback=+[](IsleValleyLifecycleSource* p0,IsleGameObject* p1,IsleValleyLifecycleAnimationCallback p2) noexcept -> IsleGameResult {
             return Adapter::invoke(p0,[&](Adapter& a) { if (!a.active() || p2!=func_802C6630_79FBC0 || !a.native.host->cart()->instance(p1)) return ISLE_GAME_INVALID_ARGUMENT; return a.native.host->cart()->set_callback(p1,isle_course_scene_valley_cart_event,&a.source) ? ISLE_GAME_OK : ISLE_GAME_INVALID_STATE; });

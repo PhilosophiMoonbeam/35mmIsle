@@ -89,11 +89,6 @@ world::Block* ActorNativeMechanics::native_block(IsleValleyWorldBlock* value) no
     for(std::size_t i=0;i<blocks_.size();++i) if(value==&blocks_[i]) return &native[i];
     return nullptr;
 }
-const IslePlayerCameraAnimationClip* ActorNativeMechanics::clip(std::uint32_t identity) const noexcept {
-    constexpr std::array<std::uint32_t,3> identities{{0x8011c550u,0x8011da1cu,0x801204a0u}};
-    for(std::size_t i=0;i<identities.size();++i) if(identity==identities[i] && clips[i].owner) return &clips[i];
-    return nullptr;
-}
 IsleGameResult actor_native_mechanics(IsleValleyActorSource* source,ActorNativeMechanics** output) noexcept {
     if(output) *output=nullptr;
     if(!output) return ISLE_GAME_INVALID_ARGUMENT;
@@ -188,15 +183,19 @@ const menu::AnimationPath* path(Context& c,const void* value) noexcept {
     for(const auto& candidate:c.host.world_owner()->resources().paths) if(&candidate==value) return &candidate;
     return nullptr;
 }
-IsleGameResult clips(Context& c) noexcept {
+IsleGameResult camera_clip(Context& c,std::uint32_t identity,const IslePlayerCameraAnimationClip** output) noexcept {
+    *output=nullptr;
     if(!c.host.camera()) return ISLE_GAME_INVALID_STATE;
-    if(c.native.clips[0].owner && c.native.clips[1].owner && c.native.clips[2].owner) return ISLE_GAME_OK;
-    constexpr std::array<std::uint32_t,3> identities{{0x8011c550u,0x8011da1cu,0x801204a0u}};
-    for(std::size_t i=0;i<identities.size();++i) {
-        const auto index=c.host.cart_resources().camera_animation(identities[i]);
-        if(index==menu::no_index || !c.host.camera()->clip(index,c.native.clips[i])) return ISLE_GAME_INVALID_STATE;
+    const auto index=c.host.cart_resources().camera_animation(identity);
+    if(!identity || index==menu::no_index) return ISLE_GAME_INVALID_ARGUMENT;
+    for(const auto& clip:c.native.clips) if(clip.owner && clip.index==index) {
+        *output=&clip; return ISLE_GAME_OK;
     }
-    return ISLE_GAME_OK;
+    for(auto& clip:c.native.clips) if(!clip.owner) {
+        if(!c.host.camera()->clip(index,clip)) return ISLE_GAME_INVALID_STATE;
+        *output=&clip; return ISLE_GAME_OK;
+    }
+    return ISLE_GAME_EXHAUSTED;
 }
 IslePlayerCartCallback cart_callback(IsleValleyAnimationCallback callback) noexcept {
     if(callback==func_802D0420_7A99B0) return isle_valley_native_ceremony_cart_event;
@@ -256,7 +255,7 @@ IsleValleyActorServices make_valley_actor_services() noexcept {
         .camera_read=+[](IsleValleyActorSource* s,IsleValleyCamera* value,const IsleGameLookAt** out) noexcept { if(out) *out=nullptr; if(!out) return ISLE_GAME_INVALID_ARGUMENT; return with(s,[&](Context& c){ auto r=camera(c,value); if(r!=ISLE_GAME_OK) return r; const IsleGameCameraParameters* params=nullptr; r=isle_game_camera_parameters(c.host.game(),value->camera,&params); if(r==ISLE_GAME_OK) *out=&params->look_at; return r; }); },
         .camera_component=+[](IsleValleyActorSource* s,IsleValleyCamera* value,int32_t target,uint32_t part,float number) noexcept { if(part>2 || target<0 || target>1) return ISLE_GAME_INVALID_ARGUMENT; return with(s,[&](Context& c){ auto r=camera(c,value); if(r!=ISLE_GAME_OK) return r; const IsleGameCameraParameters* params=nullptr; r=isle_game_camera_parameters(c.host.game(),value->camera,&params); if(r!=ISLE_GAME_OK) return r; auto next=params->look_at; (target?next.at:next.eye)[part]=number; return isle_game_camera_set_look_at(c.host.game(),value->camera,&next); }); },
         .camera_object=+[](IsleValleyActorSource* s,IsleValleyCamera* value,IsleGameObject** out) noexcept { if(out) *out=nullptr; if(!out) return ISLE_GAME_INVALID_ARGUMENT; return with(s,[&](Context& c){ auto r=camera(c,value); return r==ISLE_GAME_OK ? isle_game_camera_object(c.host.game(),value->camera,out) : r; }); },
-        .camera_animation=+[](IsleValleyActorSource* s,IsleValleyCamera* value,uint32_t id,float start) noexcept { return with(s,[&](Context& c){ auto r=camera(c,value); if(r!=ISLE_GAME_OK) return r; r=clips(c); if(r!=ISLE_GAME_OK) return r; auto* clip=c.native.clip(id); if(!clip) return ISLE_GAME_INVALID_ARGUMENT; return c.host.camera()->set(clip,start) ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE; }); },
+        .camera_animation=+[](IsleValleyActorSource* s,IsleValleyCamera* value,uint32_t id,float start) noexcept { return with(s,[&](Context& c){ auto r=camera(c,value); if(r!=ISLE_GAME_OK) return r; const IslePlayerCameraAnimationClip* clip=nullptr; r=camera_clip(c,id,&clip); if(r!=ISLE_GAME_OK) return r; return c.host.camera()->set(clip,start) ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE; }); },
         .camera_animation_process=+[](IsleValleyActorSource* s,IsleGameObject* object,int32_t kind,uint32_t priority,IsleGameProcess** out) noexcept { if(out) *out=nullptr; if(!out || kind!=1 || priority!=1) return ISLE_GAME_INVALID_ARGUMENT; return with(s,[&](Context& c){ IsleGameObject* actual=nullptr; auto r=isle_game_camera_object(c.host.game(),c.player.camera,&actual); if(r!=ISLE_GAME_OK || object!=actual) return ISLE_GAME_INVALID_ARGUMENT; return isle_game_add_source_process(c.host.game(),object,isle_course_scene_camera_update,ISLE_GAME_SYNCHRONOUS,priority,out); }); },
         .pause_processes=+[](IsleValleyActorSource* s,IsleGameObject* object) noexcept { return with(s,[&](Context& c){ return isle_game_pause_object_processes(c.host.game(),object,1); }); },
         .resume_processes=+[](IsleValleyActorSource* s,IsleGameObject* object) noexcept { return with(s,[&](Context& c){ return isle_game_pause_object_processes(c.host.game(),object,0); }); },
@@ -281,7 +280,7 @@ IsleValleyActorServices make_valley_actor_services() noexcept {
         .player_model_animation=+[](IsleValleyActorSource* s,uint32_t m,uint32_t t,float start,float speed) noexcept { return with(s,[&](Context& c){ return cart_animation(c,m,t,start,speed,false); }); },
         .player_model_change=+[](IsleValleyActorSource* s,uint32_t m,uint32_t t,float start) noexcept { return with(s,[&](Context& c){ return cart_animation(c,m,t,start,0,true); }); },
         .player_model_speed=+[](IsleValleyActorSource* s,float speed) noexcept { return with(s,[&](Context& c){ return c.host.cart() && c.host.cart()->set_animation_speed(speed) ? ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE; }); },
-        .cutscene_start=+[](IsleValleyActorSource* s,IsleGameObject* object,uint32_t id,float start) noexcept { return with(s,[&](Context& c){ auto r=receiver(c,object); if(r!=ISLE_GAME_OK) return r; r=clips(c); if(r!=ISLE_GAME_OK) return r; const auto* clip=id?c.native.clip(id):nullptr; if(id && !clip) return ISLE_GAME_INVALID_ARGUMENT; return isle_player_root_invoke_start_cutscene(&c.player,object,clip,start); }); },
+        .cutscene_start=+[](IsleValleyActorSource* s,IsleGameObject* object,uint32_t id,float start) noexcept { return with(s,[&](Context& c){ auto r=receiver(c,object); if(r!=ISLE_GAME_OK) return r; const IslePlayerCameraAnimationClip* clip=nullptr; if(id) { r=camera_clip(c,id,&clip); if(r!=ISLE_GAME_OK) return r; } return isle_player_root_invoke_start_cutscene(&c.player,object,clip,start); }); },
         .sound=+[](IsleValleyActorSource* s,uint32_t id,int32_t* out) noexcept { if(!out) return ISLE_GAME_INVALID_ARGUMENT; return with(s,[&](Context& c){ *out=c.host.services()->play_sound(id); return c.host.services()->failed()?ISLE_GAME_EXECUTION_FAILURE:ISLE_GAME_OK; }); },
         .sound_params=+[](IsleValleyActorSource* s,uint32_t id,int32_t volume,int32_t pan,float pitch,int32_t reverb,int32_t* out) noexcept { if(!out || volume<0 || volume>0x7fff || pan<0 || pan>127 || reverb<0 || reverb>127) return ISLE_GAME_INVALID_ARGUMENT; return with(s,[&](Context& c){ *out=c.host.services()->play_sound(id,{static_cast<uint16_t>(volume),static_cast<uint8_t>(pan),static_cast<uint8_t>(reverb),pitch}); return c.host.services()->failed()?ISLE_GAME_EXECUTION_FAILURE:ISLE_GAME_OK; }); },
         .sound_active=+[](IsleValleyActorSource* s,int32_t handle,int32_t* out) noexcept { if(!out || handle<0 || size_t(handle)>=game_audio::sound_slots) return ISLE_GAME_INVALID_ARGUMENT; return with(s,[&](Context& c){ *out=c.host.audio().playing_sound(static_cast<unsigned>(handle)); return ISLE_GAME_OK; }); },

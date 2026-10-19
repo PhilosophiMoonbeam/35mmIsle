@@ -144,7 +144,7 @@ constexpr std::array<model_assets::Mapping,17> mappings{{
     {0x8033f6c0,0x00557050,0x000050c0},
 }};
 // Source registry order is preserved; singleton Muk uses the OTHER InitData.
-constexpr std::array<DefinitionSpec,20> definitions{{
+constexpr std::array<DefinitionSpec,21> definitions{{
     {0x802c6234,1,0x802befd8,0x80363eb4,0x80364280,0,false},
     {0x802c6244,132,0x802bf55c,0x80363eb4,0x80364280,1,false},
     {0x802c6254,70,0x802bfda0,0x80363eb4,0x80364280,2,false},
@@ -165,6 +165,7 @@ constexpr std::array<DefinitionSpec,20> definitions{{
     {0x802c6358,129,0x802c3388,0x80363eb4,0x80364280,10,true},
     {0x802c65d8,132,0x802bf55c,0x80363eb4,0x80364280,1,true},
     {0x802c6fc4,89,0x802c13b4,0x80363dbc,0x80364280,6,true},
+    {0x8038837c,1003,0x8035e0d4,0x80363dbc,0x80364280,17,true},
 }};
 constexpr std::array<DefinitionTableSpec,1> tables{{{0x802c6234,0x802c6344,0,17}}};
 // Source automatic copies have function+line origins, never fabricated ROM records.
@@ -177,7 +178,7 @@ constexpr std::array<AutomaticActorDefinition,3> automatic_definitions{{
     {{0x802c0810,38},89,0x802c13b4,0x80363dbc,0x80364280,6},
 }};
 const CourseCatalog catalog{4,0x8012a0e8,mappings,material_extents,initializations,headers,
-                            definitions,tables,automatic_definitions,{18,68,1201,316,84,20,0}};
+                            definitions,tables,automatic_definitions,{18,68,1201,316,84,21,0}};
 } // namespace
 const CourseCatalog& cave_catalog() noexcept { return catalog; }
 } // namespace isle::actor::detail

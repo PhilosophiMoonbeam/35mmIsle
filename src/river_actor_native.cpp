@@ -204,7 +204,43 @@ IsleRiverActorServices make_river_actor_services() noexcept {
         .audio_cutscene=+[](Source* s) noexcept { return call(s,[&](Context& c) { return c.services().reset_sound_ramps(); }); },
         .source_process=+[](Source* s,IsleGameObject* object,IsleGameSourceCallback callback,std::int32_t kind,std::int32_t priority,IsleGameProcess** out) noexcept { if (out) *out=nullptr; return call(s,[&](Context& c) { if (!c.host.bindings() || !c.host.bindings()->contains(callback)) return ISLE_GAME_INVALID_ARGUMENT; return process(c,object,callback,kind,priority,out); }); },
         .environment_sound=+[](Source* s,IsleGameObject* object,std::uint8_t category,std::int32_t sound) noexcept { return call(s,[&](Context& c) { IsleActorSource* a=nullptr; auto r=isle_actor_source_get(c.host.game(),object,&a); return r==ISLE_GAME_OK ? isle_actor_owner_environment_sound(a,category,sound) : r; }); },
-        .definition=+[](Source* s,std::uint32_t identity,std::uint32_t function,std::uint32_t line,IsleRiverDefinition* out) noexcept { if (out) *out={}; return call(s,[&](Context& c) { if (!out) return ISLE_GAME_INVALID_ARGUMENT; const auto& resources=c.host.actor_resources(); if (identity) { if (function || line) return ISLE_GAME_INVALID_ARGUMENT; const auto& d=resources.definition(identity); if (!d.singleton || d.initialization>=resources.initializations().size()) return ISLE_GAME_INVALID_ARGUMENT; *out={identity,d.actor_id,d.factory_identity,d.change_block_identity,d.remove_identity,resources.initializations()[d.initialization].wire.guest_address,{0,0}}; return ISLE_GAME_OK; } for (const auto& d:resources.automatic_definitions()) if (d.origin.function_identity==function && d.origin.line==line) { if (d.initialization>=resources.initializations().size()) return ISLE_GAME_INVALID_STATE; *out={0,d.actor_id,d.factory_identity,d.change_block_identity,d.remove_identity,resources.initializations()[d.initialization].wire.guest_address,{function,line}}; return ISLE_GAME_OK; } return ISLE_GAME_INVALID_ARGUMENT; }); },
+        .definition=+[](Source* s,std::uint32_t identity,std::uint32_t function,std::uint32_t line,IsleRiverDefinition* out) noexcept {
+            if (out) *out={};
+            return call(s,[&](Context& c) {
+                if (!out) return ISLE_GAME_INVALID_ARGUMENT;
+                const auto& resources=c.host.actor_resources();
+                if (identity) {
+                    const auto& d=resources.definition(identity);
+                    if (!d.singleton || d.initialization>=resources.initializations().size()) return ISLE_GAME_INVALID_ARGUMENT;
+                    if (function || line) {
+                        bool copied_singleton=false;
+                        for (const auto& child:river::actor_child_factories())
+                            if (child.copied_singleton==identity && child.origin.function==function &&
+                                child.origin.line==line) { copied_singleton=true; break; }
+                        if (!copied_singleton) return ISLE_GAME_INVALID_ARGUMENT;
+                        bool copy=false;
+                        for (const auto& a:resources.automatic_definitions())
+                            if (a.origin.function_identity==function && a.origin.line==line &&
+                                a.actor_id==d.actor_id && a.factory_identity==d.factory_identity &&
+                                a.change_block_identity==d.change_block_identity && a.remove_identity==d.remove_identity &&
+                                a.initialization==d.initialization) { copy=true; break; }
+                        if (!copy) return ISLE_GAME_INVALID_ARGUMENT;
+                    }
+                    // A Source local copy retains automatic-value authority;
+                    // the singleton address witnesses its initializer only.
+                    *out={function || line ? 0u : identity,d.actor_id,d.factory_identity,d.change_block_identity,d.remove_identity,
+                        resources.initializations()[d.initialization].wire.guest_address,{function,line}};
+                    return ISLE_GAME_OK;
+                }
+                for (const auto& d:resources.automatic_definitions()) if (d.origin.function_identity==function && d.origin.line==line) {
+                    if (d.initialization>=resources.initializations().size()) return ISLE_GAME_INVALID_STATE;
+                    *out={0,d.actor_id,d.factory_identity,d.change_block_identity,d.remove_identity,
+                        resources.initializations()[d.initialization].wire.guest_address,{function,line}};
+                    return ISLE_GAME_OK;
+                }
+                return ISLE_GAME_INVALID_ARGUMENT;
+            });
+        },
         .root_read=+[](Source* s,IsleGameModelRef ref,const IsleGameVec3** out) noexcept { if (out) *out=nullptr; return call(s,[&](Context& c) { if (!out) return ISLE_GAME_INVALID_ARGUMENT; const IsleGameModelNode* nodes=nullptr; auto r=root(c,ref,&nodes); if (r==ISLE_GAME_OK) *out=&nodes[0].transform.position; return r; }); },
     };
 }

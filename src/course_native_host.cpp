@@ -13,6 +13,7 @@
 #include "player_ui_resources.hpp"
 #include "actor_photo_scene.hpp"
 #include "actor_interaction_services.hpp"
+#include "actor_owner_source.h"
 #include "world_producer.hpp"
 #include "item_owner.hpp"
 #include "course_model_producer.hpp"
@@ -780,8 +781,21 @@ IsleGameResult NativeHost::bind_item_collision(IsleItemCollisionProvider callbac
 }
 IsleGameResult NativeHost::reference(IsleGameObject** field, IsleGameObject* object) noexcept {
     auto& self = *impl_;
-    return self.references && self.references->registered && self.services &&
-        self.services->source_reference_assign(self.references->object,field,object) ? ISLE_GAME_OK : ISLE_GAME_INVALID_STATE;
+    if (!field || !self.services) return ISLE_GAME_INVALID_STATE;
+    if (self.references && self.references->registered)
+        for (auto** registered:self.references->fields)
+            if (registered==field)
+                return self.services->source_reference_assign(self.references->object,field,object)?
+                    ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
+    if (self.actors) for (const auto& binding:self.actors->render_bindings()) {
+        if (!binding.model.object) continue;
+        IsleActorSource* source=nullptr;
+        const auto result=isle_actor_source_get(self.services->game,binding.model.object,&source);
+        if (result!=ISLE_GAME_OK) return result;
+        if (field==&source->apple || field==&source->interactionTarget)
+            return isle_actor_owner_reference_assign(source,field,object);
+    }
+    return ISLE_GAME_INVALID_STATE;
 }
 bool NativeHost::valid_block(const world::Block* block) const noexcept {
     if (!impl_->world || !block) return false;

@@ -48,7 +48,7 @@
     "src/actor_source_owner_bridge.c": {"sha256":"6153409fcf3fa3fe41cabb6436c879ed540bf9aa0893da46fc1555e58a3b0814"},
     "src/world_runtime.hpp": {"sha256":"f8c75f19fe010624088615ec745dcfaaec07ca36724bb25ed1241eb91b8c7aa0"},
     "src/world_runtime.cpp": {"sha256":"b21496bec89c7a979044c5fff9e1ea298016643f32ddff97e6f5b144e8df2047"},
-    "src/actor_owner.cpp": {"sha256":"9889d22618a966c65b2250b5421f6ea687884f689c0913d1d82160b11bffb42b"},
+    "src/actor_owner.cpp": {"sha256":"c7612d7fc04a047eee0577ac8fedc38a205c993104960dd4aafc38cb92a081d9"},
     "tests/actor_collision_rom_smoke.cpp": {"sha256":"77bb13c84a0c4eebaa5c9b9d3e85ad0623762a3e90b60c3bda38eeea7b3b7143"},
     "tests/actor_command26_rom_smoke.cpp": {"sha256":"5f03fda1896950d0865693564d11a6b5e1a8a661ee2bb291832ab709e63e3493"},
     "tests/world_collision_tests.cpp": {"sha256":"810064c73888145813a06e3e1439e49874ed8d8f662c92eefb9f1128e5aebaef"},

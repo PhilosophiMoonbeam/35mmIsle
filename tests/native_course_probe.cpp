@@ -101,8 +101,10 @@ template<class Adapter> Sample sample(const course::Lifecycle<Adapter>& owner) {
     if(v.player) {
         v.intro|=!v.player->D_80382D04_523114;
         v.intro_done|=v.player->D_80382D04_523114==1;
-        v.ending=v.player->D_80382D9C_5231AC!=0 && !v.player->IsCartStopped;
     }
+    // Player's D_80382D9C also latches ordinary BUMP commands; it is not
+    // an end-of-course flag. The course's Original reason owns that transition.
+    v.ending=v.reason!=0;
     v.frame=bool(owner.completed_frame());require(owner.error()==ISLE_GAME_OK,owner.message());return v;
 }
 template<class View> bool selected(const View& view,std::int32_t course,Sample& out) {
@@ -348,7 +350,7 @@ struct Probe::Impl {
         sy=std::abs(error_y)<6?0:stick(error_y*8);
     }
     bool control_volcano(const IsleVolcanoActorSource& actors,const IslePlayerSource& player,
-        const IslePlayerPhotoFocus& focus,std::uint16_t prior) {
+        std::uint16_t prior) {
         volcano_snapshot=volcano_targets(actors);
         const auto& egg=volcano_snapshot.egg;const auto& moltres=volcano_snapshot.moltres;
         volcano_cart_stopped=player.IsCartStopped;volcano_throw_timeout=player.ThrowItemTimeout;
@@ -419,9 +421,14 @@ struct Probe::Impl {
             // Existing aim() drives the Source camera/reticle via the owned pad.
             const auto* target=moltres.present && moltres.tangible?&moltres:egg.present && egg.tangible?&egg:nullptr;
             if(target && player.gDirectionIndex==-1)aim(player,target->collision,true,sx,sy);
+            // Original moltres_Render draws the hierarchy without a detector
+            // subject. Aim through the pad; the captured Source roll below,
+            // not an impossible focus146 assertion, must prove the photo.
+            const bool moltres_centered=target==&moltres &&
+                std::abs(int(sx))<=12 && std::abs(int(sy))<=12;
             std::uint16_t pad=z;
             if(volcano_stage==VolcanoStage::photograph_moltres && !volcano_moltres_photo && pending_volcano_slot<0 &&
-               focus.present && focus.object && focus.pokemon_id==146 && (focus.flags&4u) && !(focus.flags&8u) &&
+               moltres_centered && (moltres.flags&4u) && !(moltres.flags&8u) &&
                player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
                !(prior&a) && !(player.input.current_buttons&a) && photos<60) {
                 pad|=a;++shutters;pending_volcano_slot=photos;pending_volcano_qualified=qualified;
@@ -490,7 +497,10 @@ struct Probe::Impl {
             std::uint16_t pad=z;
             if(subject && player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
                 !(prior&a) && !(player.input.current_buttons&a)) {pad|=a;++shutters;}
-            set(pad);return;
+            // Eggs/effects are not qualifying subjects. Search with the same
+            // actual camera input used below rather than holding that view
+            // for the entire course without ever requesting a photograph.
+            set(pad,!subject?24:0);return;
         }
         // Original player.c:2516–2527 creates updateTutorialMain ONLY for Beach.
         // IsTutorialEnabled is a profile choice on every course, not proof of
@@ -500,7 +510,7 @@ struct Probe::Impl {
             set(message && !(prior&a) && !(player.input.current_buttons&a)?a:0,tutorial_followup && !tutorial_stick?8:0);return;
         }
         if(player.IsInputDisabled)return;
-        if(course==2 && control_volcano(view.volcano->actors_source(),player,focus,prior))return;
+        if(course==2 && control_volcano(view.volcano->actors_source(),player,prior))return;
         // Reserve the post-puzzle shutter for actual Moltres, not another
         // ordinary subject; tutorial qualification and Mew's cap stay unchanged.
         if(course==2?qualified>=3:photos>=4)return;

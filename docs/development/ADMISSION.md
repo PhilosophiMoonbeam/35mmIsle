@@ -3616,10 +3616,10 @@ three qualifying photos but no Moltres photo, natural9 or Camera9 acceptance.
 
 ### Windows product dependency boundary
 
-Hosted run39195291192 builds the complete MSVC static-runtime LUS product,
+Prior hosted run39195291192 builds the complete MSVC static-runtime LUS product,
 all31 native consumers and the application/post-course consumers; all58 CPU
 tests and product/CLI help pass. CPack alone fails while following Windows
-system dependencies to unresolved `HvsiFileTrust.dll`; no ZIP is produced.
+system dependencies to unresolved `HvsiFileTrust.dll`; that run produces no ZIP.
 
 Before [CMP0207 NEW](https://cmake.org/cmake/help/latest/policy/CMP0207.html),
 resolved paths may contain native backslashes, forward slashes or both. The
@@ -3629,4 +3629,101 @@ DLLs still fail. No DLL-name exception, additional system exclusion or minimum
 CMake-version increase is introduced. Linux relocation and notices are unchanged.
 Actual CMake probes pass five native/slash/mixed-path cases and four
 application/directory-boundary negatives, including the generated install
-expression under legacy policy. Actual hosted ZIP verification remains pending.
+expression under legacy policy. Subsequent public commit `5ab3614`,
+[run39199329571](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39199329571),
+passes all ten jobs, including MSVC product/all31 consumers/all58 CPU tests,
+portable Runtime ZIP verification and upload, and Linux Release TGZ packaging.
+The downloaded Windows artifact is5,348,635 bytes,118 ZIP members and two
+PE-x64 executables, with bundled shader/notices and no ROM, private Source or
+application DLLs. SHA256 is
+`43f69fe64e317c80ff1acea5c0284d49698a3d61f46988a8fdb221d825f6a89e`.
+Actual PE import inspection finds OS libraries only; Unicode/space extraction
+succeeds. Hosted WindowsServer2022 build/package checks are not a Windows11
+gameplay claim; local Windows execution is unavailable.
+
+### Canonical typed-course definitions and live state ownership
+
+Actual Tunnel completes 9,952 Source updates/4,975 course presentations and four
+qualifying photos, then Original result9 and Manager Camera9 admission. Its
+6,236 whole-runtime GPU submissions/terminals/releases balance; native/Input/
+Audio/Host owners close. Current GCC production/all31 native consumers/all58
+CPU tests pass; the current Clang21.1.8 native/RSP build, all58 CPU tests and
+both CLI help paths also pass. These are separate from hosted Windows checks
+and do not claim physical Input/audio or full-game hardware parity.
+
+River's real Shellder splash reached Original `Pokemon_AddAtGeo` with valid
+current blocks, inherited path and singleton `D_8038837C_52878C`. The five
+native catalogs contained registry1003 rows but omitted that distinct singleton.
+They now append the ROM-validated record at `0x8038837c`, retaining factory
+`0x8035e0d4`, InitData `0x80388348`, change `0x80363dbc` and remove `0x80364280`.
+Existing initialized mappings already contain its16 bytes. Registry/automatic
+authority, model counts and physical capacities are unchanged. Independent
+review confirms Original copies inherited behavior explicitly; it is not zeroed.
+Actual River progresses from3,320 to6,647 updates with four qualifying photos.
+
+A later River failure distinguishes an automatic definition from its canonical
+initializer: Original copies `D_802E3008` at function `0x802da9e0`, line27.
+The native selector accepts both authorities only when the exact child
+`copied_singleton` witness and existing automatic-origin record match the full
+singleton family, factory/change/remove tuple and InitData index. The resulting
+local value has identity0 and retains both origin fields; the singleton address
+witnesses its initializer rather than turning the local into a registry borrow.
+Guest-only and automatic-only admission keep their separate checks. Actual River
+then completes9,692 updates/4,845 course presentations with four qualifying
+photos, Original result9/Camera9 admission and6,130 balanced whole-runtime GPU
+submissions/terminals/releases; native/Input/Audio/Host owners all close.
+
+Actual Magmar recovery clears its Actor-owned `apple` field. The shared native
+broker previously treated that address as a scene global. It now checks the
+registered scene-field span first, then routes only the existing Actor
+`apple`/`interactionTarget` fields through their real Source owner. Tunnel's
+duplicate routing is removed; reference credits and native joins remain real.
+Actual Volcano completes8,616 updates/4,307 course presentations with26 captured
+photos, four qualifying photos, genuine egg/projectile/Moltres/cart-resume
+receipts, Original result9 and Manager Camera9 admission. All5,580 whole-runtime
+GPU submissions/terminals/releases balance and native/Input/Audio/Host owners
+close. Neither course receipt yet claims rendered Camera Check or assessment.
+
+Valley's requested intro camera `0x80121d30` already exists at canonical index49.
+Its native adapter now lazily fills the existing three stable clip slots by
+canonical index instead of preloading unrelated fixed identities. Actual Valley
+presents terrain at306 updates/153 frames. Independent planner/reviewer
+assessments then identify a three-way intro-control misbinding: prepare must
+hide/pause, stop must unfreeze Pokémon/items, and finish must show/resume Player.
+The adapter preserves that exact Original function order. Newly unpaused
+Magikarp execution exposes a shared ground-node helper restricted to Beach
+InitData; it now accepts each canonical Magikarp model while retaining family,
+model-resource identity and every child/parent/sibling bound. Exhaustive scoped
+Source audits identify the retained misc-object receiver as Dratini147 /
+InitData `0x802d3100`, index0, not Goldeen118 / `0x802eca30`. Both the strict
+Owner policy and scene description replace the wrong family; no second family,
+broader pointer mask or additional cold allocation is introduced. Other audited
+policies remain Tunnel81/object0, Volcano1026/object1, Cave39/saved-path2 and no
+River retained family. Valley progresses to11,520 updates/5,759 presentations
+and native retirement, where a genuine scene-global reference-credit failure
+blocks closure. That run expires its independent retirement deadline; it does
+not certify native/Input/Audio/Host cleanup.
+
+Cave's natural finish reaches the Player's EndLevel callback from a real OM
+worker. Its lifecycle adapter incorrectly required the separately suspended
+entry-domain thread. It now uses the existing Volcano pattern: retain that
+entry-domain check, or require an ACTIVE Actor/Game and successful native
+execution access before the existing returning Player C fence. Detached and
+foreign callers gain no bypass. Separately, the private qualification phase
+uses ordinary camera-search input when the forward subject is an egg/effect;
+it no longer waits forever for an eligible Pokémon in an unchanged view.
+Actual Cave completes 12,194 updates/6,096 course presentations, four qualifying
+photos, Original result9 and Camera9 admission. All 7,393 whole-runtime GPU
+submissions/terminals/releases balance; native/Input/Audio/Host owners close.
+
+The private controller also no longer mistakes Player's shared
+`D_80382D9C_5231AC` BUMP/FINISH deduplication latch for level completion.
+Its generic ending predicate uses the course's Original end reason; ordinary
+bump recovery therefore cannot disable subsequent Moltres aiming. Original
+`moltres_Render` deliberately draws without a detector-subject hook. An actual
+paused view shows centered Moltres and canonical photo membership146, while
+depth-subject history contains only Magmar126. The private shutter driver now
+uses ordinary pad-driven centered aim, not an impossible focus146 prerequisite.
+Success still requires an actual stored Source photo containing146 and a real
+qualifying-count increase; no renderer/Source acceptance rule is changed.
+Source-owned Input-disabled checks and failure bounds remain intact.

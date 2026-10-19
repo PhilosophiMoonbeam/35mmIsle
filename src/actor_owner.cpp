@@ -478,7 +478,7 @@ struct Owner::Impl {
             throw std::invalid_argument("retained misc alternatives are not part of course0/6 policy");
         const RetainedFieldFamily expected[] = {
             {81,0x802ee660u,1u,0u}, {1026,0x802e2fd8u,2u,0u},
-            {39,0x802c7590u,0u,4u}, {118,0x802eca30u,1u,0u}
+            {39,0x802c7590u,0u,4u}, {147,0x802d3100u,1u,0u}
         };
         const RetainedFieldFamily* actual=nullptr;
         switch (state.course_id()) {
@@ -3254,7 +3254,8 @@ IsleGameResult isle_actor_owner_magikarp_active(IsleActorSource* source,int acti
 }
 IsleGameResult isle_actor_owner_ground_node(IsleActorSource* source,size_t* output) {
     auto* slot=isle::actor::SourceAccess::slot(source);
-    if (!slot || !output || source->id!=129 || slot->initialization->wire.guest_address!=0x802cdaecu)
+    // The shared helper follows each course's canonical Magikarp model.
+    if (!slot || !output || source->id!=129)
         return ISLE_GAME_INVALID_STATE;
     const auto state=slot->owner->runtime->model(slot->instance);
     const IsleGameModelNode* nodes=nullptr; size_t count=0;

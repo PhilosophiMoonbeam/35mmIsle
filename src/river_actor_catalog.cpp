@@ -118,7 +118,7 @@ constexpr std::array<model_assets::Mapping,14> mappings{{
     {0x8033f6c0,0x557050,20672},
 }};
 // Registry order includes BOTH genuine1003 rows; singletons follow.
-constexpr std::array<DefinitionSpec,32> definitions{{
+constexpr std::array<DefinitionSpec,33> definitions{{
     {0x802e271c,79,0x802d9f44,0x80363eb4,0x80364280,0,false},
     {0x802e272c,80,0x802da4b8,0x80363eb4,0x80364280,1,false},
     {0x802e273c,603,0x802da9a4,0x80363eb4,0x80364280,3,false},
@@ -151,6 +151,7 @@ constexpr std::array<DefinitionSpec,32> definitions{{
     {0x802e3008,90,0x802da8cc,0x80363dbc,0x80364280,2,true},
     {0x802e3018,91,0x802db064,0x80363dbc,0x80364280,5,true},
     {0x802e440c,1002,0x802dff5c,0x80363dbc,0x80364280,15,true},
+    {0x8038837c,1003,0x8035e0d4,0x80363dbc,0x80364280,22,true},
 }};
 constexpr std::array<DefinitionTableSpec,1> tables{{
     {0x802e271c,0x802e289c,0,24},
@@ -175,7 +176,7 @@ constexpr std::array<AutomaticActorDefinition,8> automatic_definitions{{
     {{0x802dff94,29},1002,0x802dff5c,0x80363dbc,0x80364280,15},
 }};
 const CourseCatalog catalog{3,0x8012ac90,mappings,material_extents,initializations,headers,definitions,tables,
-                            automatic_definitions,{23,40,1230,280,105,32,1},material_playbacks};
+                            automatic_definitions,{23,40,1230,280,105,33,1},material_playbacks};
 } // namespace
 const CourseCatalog& river_catalog() noexcept { return catalog; }
 } // namespace isle::actor::detail

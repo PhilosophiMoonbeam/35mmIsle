@@ -33,7 +33,6 @@ public:
     IsleValleyCamera camera;
     std::array<IsleValleyEffect,10> effects{};
     std::array<IslePlayerCameraAnimationClip,3> clips{};
-    const IslePlayerCameraAnimationClip* clip(std::uint32_t) const noexcept;
 private:
     bool block_views_valid() const noexcept;
     IsleValleyActorSource* source_ = nullptr;

@@ -132,8 +132,8 @@ constexpr std::array<model_assets::Mapping,14> mappings{{
     {0x803476a0,0x0054d6a0,0x00006a90},
     {0x80344780,0x00554130,0x00002f20},
 }};
-// Twenty-one live ordered registry rows, followed by the distinct singleton.
-constexpr std::array<DefinitionSpec,22> definitions{{
+// Twenty-one live ordered registry rows, followed by distinct singletons.
+constexpr std::array<DefinitionSpec,23> definitions{{
     {0x802edfac,81,0x802e4afc,0x80363eb4,0x80364280,18,false},
     {0x802edfbc,82,0x802e505c,0x80363eb4,0x80364280,19,false},
     {0x802edfcc,101,0x802e5c74,0x80363eb4,0x80364280,16,false},
@@ -156,6 +156,7 @@ constexpr std::array<DefinitionSpec,22> definitions{{
     {0x802ee0dc,1014,0x802edec0,0x80363dbc,0x80364280,13,false},
     {0x802ee0ec,1001,0x802ecfc8,0x80363dbc,0x80364280,12,false},
     {0x802ee110,129,0x802ebf04,0x80363eb4,0x80364280,8,true},
+    {0x8038837c,1003,0x8035e0d4,0x80363dbc,0x80364280,20,true},
 }};
 constexpr std::array<DefinitionTableSpec,1> tables{{
     {0x802edfac,0x802ee0fc,0,21},
@@ -169,7 +170,7 @@ constexpr std::array<AutomaticActorDefinition,2> automatic_definitions{{
     {{0x802e2500,214},129,0x802ebf04,0x80363eb4,0x80364280,8},
 }};
 const CourseCatalog catalog{1,0x8011e6cc,mappings,material_extents,initializations,headers,
-                            definitions,tables,automatic_definitions,{21,65,794,143,70,22,5}};
+                            definitions,tables,automatic_definitions,{21,65,794,143,70,23,5}};
 static_assert(initializations.size()<=max_catalog_models);
 } // namespace
 const CourseCatalog& tunnel_catalog() noexcept { return catalog; }

@@ -42,6 +42,8 @@ public:
     bool captured_photo(std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
     // Narrows the same canonical identity to the consumed late Lapras exposure.
     bool captured_lapras_late_photo(std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
+    // Narrows canonical identity to the real Apple-assisted River child80 exposure.
+    [[nodiscard]] bool captured_river_slowbro_photo(std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
 private:
     struct Impl;
     std::unique_ptr<Impl> p_;

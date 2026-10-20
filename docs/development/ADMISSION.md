@@ -4893,3 +4893,137 @@ tests pass. The private ROM consumer is excluded from the default build;
 build its named target explicitly before freezing an actual-runtime
 candidate. CPU gates alone do not rebuild or prove this changed path.
 
+### Captured Charmeleon pose threshold
+
+The real Pester regression on frozen `510184f` already contains a usable
+same-run pose-threshold crossing for species 5, not a predicted live score:
+
+| Canonical epoch/roll | Animation selector | Captured time | Captured yaw | Pose points | Completeness | Proximity | Well framed | Source total |
+|---|---:|---:|---:|---:|---:|---:|---|---:|
+| 5/8 | 4 | 1.75 | 6.02833796 | 0 | 6,071 | 210 | No | 130 |
+| 5/10 | 5 | 17.6000023 | 3.6922648 | 750 | 10,000 | 900 | Yes | 3,300 |
+
+Both records have raw/evaluated species 5 and explicit pose/special IDs 0.
+Their captured camera eye/at values remain in the raw score receipt. This
+does not establish a continuous live Actor incarnation or a universal
+geometry/yaw rule. The higher record is actually selected, assessed and
+published to Report slot 2 with normalized full-wire identity
+`11190560766555336881`, then survives Save generation 1/Title9/UI2/exact cold.
+The current eight-species isolation also preserves the earlier species set.
+
+A real-ROM resource observation chooses its actual course-2 initializer:
+`0x802e2e08`, factory `0x802dd214`, model 3/18 nodes, scale `(1.8,1.8,1.8)`,
+collision descriptor `(0,166,-2.6)`, radius 53 and flags 37. The normal World
+supplies fog `(121,77,23)`, range `989..1000`; normal Actor resource construction
+closes its graphics and nine animation-header dependencies. These are
+immutable-resource facts, not native prepared-frame bounds or sign-only
+decoder admission. No flames are dropped, capacity guessed, Source scoring
+changed or public/live pose-prediction API added. The observation completes
+calibration; it does not earn natural 40 Reports, 130,000 points or a full
+campaign.
+
+### Hosted portable Runtime verification
+
+Published `68d2a39243556efbc440032326b111129bca47e0` passes all ten
+[hosted jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39373104937):
+Linux GCC/Clang Debug/Release, real Linux LUS/SDL3 native product, canonical
+CPU-Vulkan checks, Windows MSVC Debug/Release, canonical renderer and full
+static-runtime native product. Both portable Runtime artifacts were downloaded
+privately from that exact completed run and inspected.
+
+| Target | Runtime archive SHA256 |
+| --- | --- |
+| Linux x64 | `a624fb936598fffe8782ad65140808fec12b98aeb0b4e23bc96227c4e336f716` |
+| Windows x64 | `a06fda6cccbefc35abf75ab872da8fc50928a8627efb4ee4d7ba05c83cac7036` |
+
+The extracted Linux ELF64 x86-64 product executes `--help` with exit 0, then
+boots the admitted ROM using its packaged resources, default Host/LUS input,
+real canonical CPU Vulkan/LUS OpenGL and SDL dummy audio. Its actual owned
+640×480 window visibly renders the original HAL/jungle and Todd/camera intro.
+A real X11 Start key is sent; exact Source consumption is not inferred from
+the image. Genuine `WM_DELETE_WINDOW` closes the owned process normally with
+joined exit 0. This package smoke is not another campaign/Save/Title/cold run;
+the product log emits no exact GPU/Input/PCM counts, so none are claimed.
+
+The Windows archive contains an actual PE32+ x86-64 native product and ROM CLI.
+Hosted MSVC compilation, CPU contracts and packaging pass. Windows 11 gameplay,
+hardware input/audio and numerical pixel parity remain unexercised here.
+Neither package contains a ROM or extracted game assets.
+
+### Rejected same-animation Lapras clock experiment
+
+A bounded private candidate used its own first canonical Lapras exposure's
+animation clock 105 and actual Source model-animation table `0x80183d20` to
+delay later-cohort physical steering until the same table reached that clock.
+It did not change exact focus, counter acknowledgment, four-shot limits or
+the 360-update steering budget. The actual unseeded run still ends after
+8,835 updates/4,417 frames with twelve qualified photos, roles `1/0/0`,
+counters `1,0,0`, steering `360,360,0`, no dedicated shutter and no mismatch.
+All 5,666 GPU and 17,092 Input operations balance; 9,200,416 dummy PCM frames
+are accepted and every owner retires without a deadline. No late Report or
+Save/Title/cold is credited.
+
+The independent same-binary ordinary Beach baseline preserves nine Reports/
+14,420 points, Save generation 1 and actual Title9/UI2/exact cold. The entire
+failed clock gate and its temporary fields/getter observations are removed;
+no SDK or scoring change is justified by this experiment.
+
+### Physical River Apple-assisted evolution
+
+The pinned Slowpoke route approaches a real Apple until its root enters the
+live path-endpoint trigger (`XZ distance² <225000`); eating an Apple is not
+the evolution condition. The existing Source/native evolution callback and
+dynamic Slowbro factory remain unchanged. The private controller supplies only
+physical Apple, camera and release input. Its pure forecast includes bounded
+ground reflection/settling; actual native item, state, incarnation and canonical
+photo observations—not forecast results—establish success.
+
+An authored-access River isolation now completes this physical chain with one
+requested/pressed/consumed/released Apple, 18 steering updates and 11 recovery
+updates. The tracked parent reaches endpoint distance² `6.08662653` from
+`511717.219`; its real evolution/cleanup produces a new attributed child.
+The child's coherent canonical primary-species-80 exposure is roll 5, Source
+score 1,400, Report slot 30, normalized full-wire identity `17998251324005852963`.
+Actual Camera/Photo selection, assessment and publication preserve that
+identity through acknowledged Save generation 1, actual Title serial 9/UI2 and exact
+whole-profile cold reopen. The actual returned Title image is inspected.
+
+This ride publishes seven Reports/9,550 points. It contains species
+`60,79,54,80,11,91,25`; species 90 from the earlier five-species baseline is
+absent. Separate authored runs do not establish their durable union.
+All 8,479 GPU and 23,083 Input operations balance; 12,448,080 dummy PCM frames
+are accepted, and every owner retires without a deadline. Authored `native3`
+access includes equipment flags; Apple-only requests are not proof of
+naturally earned Apple-only equipment.
+
+The genuine copied-input selector now passes ready Boot, original Title result
+11/notice 2 and Oak argument 11's legal River 3 choice. Naturally earned
+Apple-only provenance comes from the preceding real journey receipts, not the
+copy loader or hashes. No Name owner, authored access or equipment grant runs.
+
+| Actual boundary | Generation | Reports | Report points |
+| --- | ---: | ---: | ---: |
+| Independent loaded input | 27 | 29 | 47,720 |
+| Acknowledged Save and exact cold reopen | 28 | 30 | 51,300 |
+
+One actual Apple, 95 steering updates, 11 recovery updates and eight bounded
+planning updates produce the attributed child and coherent raw80 roll 0.
+Actual Camera/Photo selects, assesses and publishes Source score 3,580 to
+Report slot 30, normalized full-wire identity `8384836425378919186`; the final
+Save and cold image preserve it. The actual Title serial 8/UI2 is visually
+inspected. All 6,761 GPU and 24,339 Input operations balance; 13,090,816 dummy
+PCM frames are accepted and every owner retires without a deadline.
+
+An independent cold-loader probe opens only separate copies of both quiescent
+profiles. All other 68 Report slots retain exact presence, complete wire bytes
+and scores; Name's 16 bytes remain unchanged. Apple stays available while
+Pester and Flute stay unavailable at entry, acknowledgment and cold reopen.
+Both original profiles retain exact inventory, bytes and metadata. Geometry
+admission waits without owning pad or consuming an incarnation until a safe
+trajectory exists; the original finite request/control limits remain intact.
+
+This qualifies one real inherited-profile River ride and its new Report, not
+a fresh origin or the complete natural one-profile campaign. The current
+same-binary authored regression also preserves its seven-Report/9,550-point
+result; separate authored profiles still do not establish a durable union.
+

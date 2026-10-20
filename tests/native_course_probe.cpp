@@ -5,6 +5,7 @@
 #include "native_sign_puzzles.hpp"
 #include "native_beach_photo_puzzle.hpp"
 #include "native_tunnel_photo_puzzles.hpp"
+#include "native_river_photo_puzzle.hpp"
 #include "application_runtime.hpp"
 #include "game_state.hpp"
 #include "tunnel_scene.hpp"
@@ -295,6 +296,7 @@ struct Probe::Impl {
     std::optional<private_campaign::SignPuzzles> signs;
     std::optional<private_campaign::BeachPhotoPuzzle> beach_photos;
     std::optional<private_campaign::TunnelPhotoPuzzles> tunnel_photos;
+    std::optional<private_campaign::RiverPhotoPuzzle> river_photos;
     std::uint64_t ordinary_puzzle_shutters=0,ordinary_puzzle_throws=0;
     private_campaign::Progress canonical_progress{};
     bool goal_initialized=false,progress_initialized=false;
@@ -408,6 +410,7 @@ struct Probe::Impl {
         if(goal==CaptureGoal::photographs || goal==CaptureGoal::lapras_photographs) {
             if(course==0)beach_photos.emplace(pad,camera);
             else if(course==1)tunnel_photos.emplace(pad,camera);
+            else if(course==3)river_photos.emplace(pad,camera);
         } else if(goal==CaptureGoal::progression) {
             require(course==1 || course==3 || course==5,"actual progression objective requires Tunnel, River or Valley");
             if(course==5)dash.emplace(pad,camera);
@@ -459,6 +462,9 @@ struct Probe::Impl {
             const auto& f=tunnel_photos->facts();
             for(auto count:f.shutter_requests)requested_shutters+=count;
             requested_throws=f.apple_requests;
+        } else if(river_photos) {
+            owned=river_photos->update(view,updates);
+            requested_throws=river_photos->requests();
         }
         require(requested_shutters>=ordinary_puzzle_shutters && requested_throws>=ordinary_puzzle_throws,
             "actual ordinary puzzle request counters moved backward");
@@ -498,7 +504,7 @@ struct Probe::Impl {
                 <<"\tdirection/zoom/cooldown="<<direction<<'/'<<zoom_target<<'/'<<cooldown;
             row(window.str());
         }
-        if(!progression && !dash && !signs && !beach_photos && !tunnel_photos)return;
+        if(!progression && !dash && !signs && !beach_photos && !tunnel_photos && !river_photos)return;
         std::ostringstream text;
         text.precision(std::numeric_limits<float>::max_digits10);
         text<<"puzzle\tcourse="<<course<<"\tserial="<<serial<<"\tupdates="<<updates;
@@ -615,6 +621,31 @@ struct Probe::Impl {
                 <<"\tapple_root_distances="<<f.apple_root_distances[0]<<','<<f.apple_root_distances[1]<<','<<f.apple_root_distances[2]
                 <<"\tapple_position="<<f.apple_position.x<<','<<f.apple_position.y<<','<<f.apple_position.z
                 <<"\tpredicted_landing="<<f.apple_predicted_landing.x<<','<<f.apple_predicted_landing.y<<','<<f.apple_predicted_landing.z;
+        } else if(river_photos) {
+            const auto& f=river_photos->facts();
+            text<<"\tfamily=river_photo\tphase="<<int(f.phase)<<"\tdisposition="<<int(f.disposition)
+                <<"\tavailable/ready/owns/exhausted="<<f.available<<'/'<<f.player_ready<<'/'<<f.owns_pad<<'/'<<f.exhausted
+                <<"\tprior79/captured79="<<f.prior_slowpoke_report<<'/'<<f.slowpoke_captured
+                <<"\tparent="<<f.parent[0]<<'/'<<f.parent[1]<<'/'<<f.parent[2]
+                <<"\ttarget="<<f.target_present<<'/'<<f.target_object_id<<'/'<<f.target_behavior
+                <<"\tgraph/state/flags="<<f.target_graph<<'/'<<f.target_state<<'/'<<f.target_flags
+                <<"\troot="<<f.root.x<<','<<f.root.y<<','<<f.root.z
+                <<"\tendpoint="<<f.endpoint.x<<','<<f.endpoint.y<<','<<f.endpoint.z
+                <<"\tendpoint_squared="<<f.root_endpoint_squared<<'/'<<f.initial_endpoint_squared<<'/'<<f.best_endpoint_squared
+                <<"\titems="<<f.requests<<'/'<<f.pressed<<'/'<<f.consumed<<'/'<<f.releases
+                <<"\titem="<<f.item[0]<<'/'<<f.item[1]<<'/'<<f.item[2]
+                <<"\titem_gates="<<f.item_present<<'/'<<f.item_still<<'/'<<f.item_safe<<'/'<<f.item_closest
+                <<'/'<<f.different_apple<<'/'<<f.apple_reference_matches<<'/'<<f.interaction_reference_matches
+                <<"\titem_position="<<f.item_position.x<<','<<f.item_position.y<<','<<f.item_position.z
+                <<"\tcandidate="<<f.candidate.x<<','<<f.candidate.y<<','<<f.candidate.z
+                <<"\tpredicted="<<f.predicted_landing.x<<','<<f.predicted_landing.y<<','<<f.predicted_landing.z
+                <<"\tgeometry="<<f.candidates<<'/'<<f.ground_rejections<<'/'<<f.corridor_rejections<<'/'<<f.arc_rejections<<'/'<<f.actual_ray_rejections
+                <<"\tcontrol_steer/recovery/plan="<<f.steering_updates<<'/'<<f.recovery_updates<<'/'<<f.planning_updates
+                <<"\tapproach/evolution/CMD28="<<f.approach_seen<<'/'<<f.evolution_seen<<'/'<<f.command28_seen
+                <<"\tchild="<<f.child[0]<<'/'<<f.child[1]<<'/'<<f.child[2]
+                <<"\tspawn/cleanup/capture="<<f.spawn_seen<<'/'<<f.parent_cleanup_seen<<'/'<<f.complete
+                <<"\tslowbro_slot="<<f.slowbro_slot<<"\tcoherent_slots="<<f.captured_slots
+                <<"\tmismatches="<<f.mismatches<<'/'<<f.capture_mismatches;
         }
         row(text.str());
     }
@@ -1489,6 +1520,9 @@ struct Probe::Impl {
             }
             set(pad,sx,sy);return;
         }
+        // River luring is independent of profile-wide tutorial preference.
+        // Its passive observer already ran; its own gates preserve ordinary A.
+        if(river_photos && !player.IsInputDisabled && control_ordinary_puzzles(view))return;
         if(player.IsTutorialEnabled && qualified<3) {
             if(!surface)return;
             std::uint16_t pad=z;
@@ -1581,6 +1615,7 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
     const auto limit=p.course==6?rainbow_bound:travel_bound;
     if(delta>limit || p.updates>limit-delta)p.fail("actual Source course update failure bound exhausted");
     p.updates+=delta;p.last_external=actualUpdates;p.observe(s);
+    if(delta && p.river_photos)p.river_photos->observe(view,p.updates);
     if(delta)p.observe_ordinary_minima(s);
     if(delta)p.control(view,s);
     if(delta && (p.updates%8==0 || s.reason || s.ending)) {p.note("update");p.note_goal();}
@@ -1651,5 +1686,10 @@ bool Probe::captured_photo(std::int32_t slot,const IslePlayerPhotoData* photo,st
 bool Probe::captured_lapras_late_photo(std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t digest) const noexcept {
     return p_->beach_photos && p_->beach_photos->facts().lapras.late_captured &&
         p_->beach_photos->facts().lapras.late_slot==slot && captured_photo(slot,photo,digest);
+}
+bool Probe::captured_river_slowbro_photo(std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t digest) const noexcept {
+    return slot>=0 && slot<60 && p_->river_photos && p_->river_photos->facts().complete &&
+        (p_->river_photos->facts().captured_slots&(std::uint64_t{1}<<static_cast<unsigned>(slot)))!=0 &&
+        captured_photo(slot,photo,digest);
 }
 }

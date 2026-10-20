@@ -4,6 +4,8 @@
 // The diagnostic-disabled Host supplies NO controller; SoftwareController below
 // is a separate, explicitly owned acquisition through the real Input Service.
 // CLI modes: ingress, course, campaign-lapras, native0..native6[-oak-cancel], native2-apple,
+// Preserved-input private mode: campaign-resume-river INPUT_PROFILE_DIRECTORY
+// performs one strict River80 ride; natural profile provenance is external.
 // native5-empty, menus and credits17..credits19. Photographed courses normally
 // continue through actual Camera9/Photo15/Oak Save/Original Title8 and cold reopen.
 // NativeN authors access/gear only; native2-apple authors Apple-only access,
@@ -189,6 +191,11 @@ struct Evidence {
     bool campaign_first_unlock=false,full_campaign=false,unseeded_profile=false;
     const isle::private_campaign::SavedProfileInput* saved_input=nullptr;
     bool resume_one=false,boot_loaded_input=false,initial_continue=false,source_unchanged=false;
+    bool resume_river=false;
+    std::int32_t river_source_score=0;
+    std::uint64_t river_capture_digest=0;
+    unsigned river_report_stages=0;
+    std::array<int,3> river_gear_flags{{-1,-1,-1}};
     std::string source_failure;
     std::uint64_t initial_title_serial=0,initial_title_retirements=0;
     std::int32_t initial_title_result=-1;
@@ -420,7 +427,8 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
     if (!failure.empty()) out << "failure=" << failure << '\n';
     if(e.saved_input) {
         e.saved_input->write_evidence(out);
-        out<<"private_qualification="<<(e.resume_one?"campaign-resume-one":"campaign-resume")
+        out<<"private_qualification="<<(e.resume_river?"campaign-resume-river":
+                e.resume_one?"campaign-resume-one":"campaign-resume")
             <<"\nprofile_provenance=LOADED_PRESERVED_INPUT"
             <<"\nunseeded_profile=false authored_course_profile=false"
             <<"\nName_evidence=N/A_not_entered no_synthetic_confirmations=true"
@@ -440,6 +448,20 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
                 "actual_rewards_six_signs_Mew_and_joined_credits")
             <<"\nsource_final_inventory_and_bytes_unchanged="<<e.source_unchanged<<'\n';
         if(!e.source_failure.empty())out<<"source_nonmutation_failure="<<e.source_failure<<'\n';
+        if(e.resume_river)out
+            <<"River_profile_origin=EXTERNALLY_SUPPLIED_naturally_earned_Apple_only_provenance_NOT_proven_by_flag\n"
+            <<"River_scope=one_actual_River3_ride_NOT_fresh_NOT_full_campaign\n"
+            <<"River_capture_goal=ordinary_photographs_strict_actual_child80_predicate\n"
+            <<"River80_Source_score="<<e.river_source_score<<" captured_digest="<<e.river_capture_digest
+            <<" selected="<<bool(e.river_report_stages&1)
+            <<" assessed="<<bool(e.river_report_stages&2)
+            <<" published="<<bool(e.river_report_stages&4)
+            <<" acknowledged_Save="<<bool(e.river_report_stages&8)
+            <<" exact_cold="<<(e.river_report_stages==15 && e.post.cold_profile)
+            <<"\nRiver_gear_flags012_entry_ack_cold="<<e.river_gear_flags[0]<<','
+            <<e.river_gear_flags[1]<<','<<e.river_gear_flags[2]
+            <<"\nRiver_inherited_Reports_generation_historicalSaves=baseline_only_NOT_this_ride_proof\n"
+            <<"River_Report_wire_identity=PhotoBatch_normalized_roll_slot_full_wire_and_exact_final_cold_snapshot\n";
         if(e.post.committed) {
             const auto& before=e.saved_input->baseline();
             int reports_before=0;std::int64_t score_before=0;
@@ -848,7 +870,15 @@ public:
           proof_root_(root/"proof"),e_(evidence),
           snapshot_(snapshot) {
         if(e_.saved_input) {
-            campaign_trip_=campaign_policy_.next(e_.saved_input->baseline());
+            if(e_.resume_river) {
+                const auto& baseline=e_.saved_input->baseline();
+                const auto known=baseline.selected_course();
+                const auto unlocked=baseline.unlocked_course();
+                require(known && known.value>=3 && unlocked && unlocked.value>=3,
+                    "campaign-resume-river requires already legal River access");
+                observe_river_gear(baseline,0);
+                campaign_trip_={3,isle::private_course::CaptureGoal::photographs,false};
+            } else campaign_trip_=campaign_policy_.next(e_.saved_input->baseline());
             require(campaign_trip_.course>=0 && campaign_trip_.course<=6,
                 "loaded campaign has no legal next course");
             e_.requested_course=campaign_trip_.course;e_.capture_goal=campaign_trip_.goal;
@@ -1212,8 +1242,9 @@ private:
         }
     }
     bool allow_natural_empty_course() const noexcept {
-        return e_.empty_course || ((e_.full_campaign || e_.campaign_empty || e_.saved_input) && e_.requested_course<6 &&
-            e_.capture_goal==isle::private_course::CaptureGoal::photographs);
+        return !e_.resume_river && (e_.empty_course ||
+            ((e_.full_campaign || e_.campaign_empty || e_.saved_input) && e_.requested_course<6 &&
+                e_.capture_goal==isle::private_course::CaptureGoal::photographs));
     }
     bool assessment_visible_=false,summary_ready_=false,intro_ready_=false;
     std::array<char,256> display_failure_{};
@@ -1239,6 +1270,9 @@ private:
             p.oak_presented && p.oak_frames && p.oak_presentations &&
             (!display_ || (display_->native_course<0 && display_->batch_mark<0)),
             "campaign trip lacks a completed course, acknowledged save or drained raw-photo presentation");
+        if(e_.resume_river)require(e_.requested_course==3 && photo_batch_.count() &&
+            e_.river_source_score>0 && e_.river_report_stages==15,
+            "strict River ride cannot qualify an empty or no-better return");
         if(photo_batch_.count())validate_post_course();
         else {
             require(!p.serial[1] && !p.retirements[1] && !p.batch_count && !p.batch_marked &&
@@ -1353,6 +1387,11 @@ private:
             else if(first) {
                 require(e_.boot_loaded_input && e_.initial_continue && e_.captured[4],
                     "loaded first course bypassed its actual Continue/Oak presentation");
+                if(e_.resume_river) {
+                    const auto saved=state_.save()->snapshot();
+                    require(bool(saved),"River actual course entry snapshot unavailable");
+                    observe_river_gear(saved.value,0);
+                }
             }
             else {
                 archive_campaign_trip();
@@ -1439,7 +1478,61 @@ private:
             "assessment-hold","assess-A","summary-hold","photo-finish-A","Oak13-admitted"}};
         return names[static_cast<std::size_t>(stage)];
     }
+    void observe_river_gear(const isle::save::GameSnapshot& saved,std::size_t boundary) {
+        if(!e_.resume_river)return;
+        int flags=0;
+        for(unsigned flag=0;flag<3;++flag) {
+            const auto value=saved.player_flag(flag);
+            require(bool(value),"River gear observation unavailable");
+            if(value.value)flags|=1<<flag;
+        }
+        e_.river_gear_flags[boundary]=flags;
+        require(flags==1,"River Apple-only isolation violated; natural rewards are not cleared");
+    }
+    void observe_river_reports() {
+        if(!e_.resume_river)return;
+        for(const auto& item:photo_batch_.items()) {
+            if(item.planned.species!=80)continue;
+            require(item.planned.score>0 &&
+                item.planned.disposition==isle::private_campaign::PhotoDisposition::publish_new_report &&
+                course_probe_ && course_probe_->captured_river_slowbro_photo(
+                    item.planned.record.index,item.planned.record.photo,item.captured_digest),
+                "River best80 is not a positive new Report from the qualified actual child capture");
+            require(!e_.river_capture_digest || e_.river_capture_digest==item.captured_digest,
+                "River80 captured identity changed during assessment");
+            e_.river_capture_digest=item.captured_digest;
+            e_.river_source_score=item.planned.score;
+            e_.river_report_stages=(e_.river_report_stages&8u) | unsigned(item.selected) |
+                unsigned(item.assessed)<<1 | unsigned(item.reported)<<2;
+            require(!item.reported || (item.assessed && item.report_digest==item.captured_digest),
+                "River80 publication changed exact captured identity");
+        }
+    }
+    void validate_river_saved_report(const isle::save::GameSnapshot& saved) {
+        if(!e_.resume_river)return;
+        observe_river_reports();
+        require(e_.river_source_score>0 && (e_.river_report_stages&7u)==7u,
+            "River Save lacks positive exact selected/assessed/published80");
+        for(const auto& item:photo_batch_.items()) {
+            if(item.planned.species!=80)continue;
+            const auto slot=static_cast<std::size_t>(item.planned.report_index);
+            const auto report=saved.photo(isle::save::PhotoSet::report,slot);
+            const auto points=saved.report_score(slot);
+            std::array<std::byte,isle::save::game_photo_bytes> captured_bytes;
+            const auto digest=isle::private_course::photo_identity(*item.planned.record.photo,captured_bytes);
+            require(item.marked && item.mark_presented && item.selected && item.assessed && item.reported &&
+                item.report_digest==item.captured_digest && digest==e_.river_capture_digest &&
+                points && points.value==e_.river_source_score && report &&
+                report.value.size()==captured_bytes.size() && report.value[0]==captured_bytes[0] &&
+                std::equal(captured_bytes.begin()+2,captured_bytes.end(),report.value.begin()+2),
+                "acknowledged River Save changed required80 wire bytes or Source score");
+            e_.river_report_stages|=8u;
+        }
+        require(e_.river_report_stages==15,"River Save missing exact80 Report");
+        observe_river_gear(saved,1);
+    }
     void observe_apple_reports() {
+        observe_river_reports();
         const bool lapras=e_.capture_goal==isle::private_course::CaptureGoal::lapras_photographs;
         if(!lapras && e_.capture_goal!=isle::private_course::CaptureGoal::apple_evolution)return;
         for(const auto& item:photo_batch_.items()) {
@@ -1461,6 +1554,7 @@ private:
         }
     }
     void validate_apple_saved_reports(const isle::save::GameSnapshot& saved) {
+        validate_river_saved_report(saved);
         const bool lapras=e_.capture_goal==isle::private_course::CaptureGoal::lapras_photographs;
         if(!lapras && e_.capture_goal!=isle::private_course::CaptureGoal::apple_evolution)return;
         observe_apple_reports();
@@ -1495,6 +1589,8 @@ private:
                 [](const auto& item){return item.mark_presented;}),
             "actual complete captured batch lacks a marked presentation, Source score or exact assessment disposition");
         observe_apple_reports();
+        if(e_.resume_river)require(e_.river_source_score>0 && (e_.river_report_stages&7u)==7u,
+            "strict River requires positive selected/assessed/published actual80");
         if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
             require(std::all_of(e_.apple_source_scores.begin(),e_.apple_source_scores.end(),
                 [](std::int32_t score){return score>0;}) &&
@@ -1542,6 +1638,10 @@ private:
             (p.credits_serial?(p.oak_result==static_cast<std::int32_t>(p.credits_argument) && p.credits_joined && p.credits_result==8 &&
                 p.credits_updates>0 && p.credits_frames>0 && p.credits_presentations>0 && p.credits_visible):p.oak_result==8),
             "actual Oak acknowledged save/Original continuation/presented Title8 proof incomplete");
+        if(e_.resume_river)require(e_.requested_course==3 && e_.initial_oak_result==3 &&
+            e_.river_report_stages==15 && e_.river_source_score>0 &&
+            e_.river_gear_flags[0]==1 && e_.river_gear_flags[1]==1,
+            "River continuation lacks legal one-ride80 acknowledged identity and Apple-only boundaries");
         if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
             require(e_.requested_course==2 && e_.authored_course_profile &&
                 std::all_of(e_.apple_gear_flags.begin(),e_.apple_gear_flags.begin()+4,
@@ -1626,6 +1726,8 @@ private:
         require(e_.full_campaign || e_.saved_input || photo_batch_.count()>0,
             "actual campaign roll has no useful Source-admissible photograph");
         observe_apple_reports();
+        if(e_.resume_river)require(e_.river_source_score>0 && e_.river_capture_digest,
+            "River actual best-photo plan has no positive qualified80; empty/no-better is not success");
         if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
             require(std::all_of(e_.apple_source_scores.begin(),e_.apple_source_scores.end(),
                 [](std::int32_t score){return score>0;}),
@@ -3014,7 +3116,7 @@ private:
 int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode mode,std::int32_t requestedCourse,
         bool emptyCourse,bool returnedOakCancel,bool campaignFirstUnlock,isle::private_course::CaptureGoal captureGoal,
         bool fullCampaign,bool campaignRetained,bool nativeFailLive,bool campaignEmpty,
-        const std::filesystem::path& inputProfile,bool resumeOne) {
+        const std::filesystem::path& inputProfile,bool resumeOne,bool resumeRiver) {
     for (const auto* name:{"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
         const char* value=std::getenv(name);
         require(value && std::string_view(value)=="dummy","private consumer requires both explicit SDL dummy audio variables");
@@ -3034,6 +3136,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     evidence.campaign_empty=campaignEmpty;
     evidence.native_fail_live=nativeFailLive;
     evidence.capture_goal=captureGoal;
+    evidence.resume_river=resumeRiver;
     std::optional<isle::private_campaign::SavedProfileInput> saved_input;
     if(!inputProfile.empty()) {
         saved_input.emplace(isle::private_campaign::SavedProfileInput::prepare(inputProfile,root/"profile"));
@@ -3136,6 +3239,17 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
             require(std::equal(expected_bytes.begin(),expected_bytes.end(),actual_bytes.begin(),actual_bytes.end()),
                 "actual cold reopened canonical profile differs from the acknowledged Source save");
             observe_apple_gear(evidence,actual.value,4);
+            if(evidence.resume_river) {
+                int flags=0;
+                for(unsigned flag=0;flag<3;++flag) {
+                    const auto value=actual.value.player_flag(flag);
+                    require(bool(value),"River cold gear observation unavailable");
+                    if(value.value)flags|=1<<flag;
+                }
+                evidence.river_gear_flags[2]=flags;
+                require(flags==1 && evidence.river_report_stages==15 && evidence.river_source_score>0,
+                    "River cold reopen lacks exact positive80 or Apple-only isolation");
+            }
             if(evidence.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
                 require(std::all_of(evidence.apple_gear_flags.begin(),evidence.apple_gear_flags.end(),
                     [](int flags){return flags==1;}),
@@ -3173,7 +3287,9 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     write_report(root,evidence,failure);
     if (!failure.empty()) {std::cerr << "private actual application integration: " << failure << '\n';return 1;}
     if(mode==Mode::native_course) {
-        std::cout<<(evidence.saved_input?(evidence.resume_one?
+        std::cout<<(evidence.resume_river?
+            "actual_loaded_external_natural_Apple_only_River3_child80_positive_exact_Report_Save_Title_cold=passed course=":
+            evidence.saved_input?(evidence.resume_one?
             "actual_loaded_preserved_input_one_new_ride_Title11_notice2_Oak11_Save_Title_exact_cold_NOT_fresh_NOT_full_campaign=passed course=":
             "actual_loaded_preserved_input_campaign_rewards_signs_Mew_credits_Save_Title_exact_cold_NOT_fresh=passed course="):
             evidence.full_campaign?"actual_unseeded_one_profile_rewards_six_signs_Mew_Source_credits_Save_Title_cold=passed course=":
@@ -3239,7 +3355,7 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4 || argc==5,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one] INPUT_PROFILE_DIRECTORY (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river] INPUT_PROFILE_DIRECTORY (existing empty absolute nonsymlink private directory)");
         Mode mode=Mode::ingress;
         std::int32_t requestedCourse=0;
         bool emptyCourse=false;
@@ -3250,16 +3366,18 @@ int main(int argc,char** argv) {
         bool campaignEmpty=false;
         bool nativeFailLive=false;
         bool resumeOne=false;
+        bool resumeRiver=false;
         std::filesystem::path inputProfile;
         auto captureGoal=isle::private_course::CaptureGoal::photographs;
         if (argc>=4) {
             const auto name=std::filesystem::path(argv[3]).generic_string();
             const bool native=name.size()==7 && name.compare(0,6,"native")==0 && name[6]>='0' && name[6]<='6';
-            const bool resume=name=="campaign-resume" || name=="campaign-resume-one";
+            const bool resume=name=="campaign-resume" || name=="campaign-resume-one" || name=="campaign-resume-river";
             require(resume?argc==5:argc==4,
-                "only campaign-resume and campaign-resume-one require one INPUT_PROFILE_DIRECTORY; old forms reject extra arguments");
+                "only campaign-resume, campaign-resume-one and campaign-resume-river require INPUT_PROFILE_DIRECTORY; old forms reject extra arguments");
             if(resume) {
-                inputProfile=std::filesystem::path(argv[4]);resumeOne=name=="campaign-resume-one";
+                resumeRiver=name=="campaign-resume-river";
+                inputProfile=std::filesystem::path(argv[4]);resumeOne=name=="campaign-resume-one" || resumeRiver;
                 require(!inputProfile.empty(),"saved campaign input profile directory must not be empty");
             }
             emptyCourse=name=="native5-empty";
@@ -3291,7 +3409,7 @@ int main(int argc,char** argv) {
         }
         return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode,requestedCourse,emptyCourse,
             returnedOakCancel,campaignFirstUnlock,captureGoal,fullCampaign,campaignRetained,nativeFailLive,campaignEmpty,
-            inputProfile,resumeOne);
+            inputProfile,resumeOne,resumeRiver);
     } catch (const std::exception& error) {
         std::cerr << "private actual application integration: " << error.what() << '\n';return 1;
     } catch (...) {

@@ -5369,3 +5369,65 @@ The forward natural lineage now reaches 34 Reports/68,280 points. Natural
 Pester, 40 species, all signs, Mew/final credits, fresh full-campaign completion
 and Windows gameplay remain independently unqualified.
 
+### Shared normal-reticle steering and complete Volcano acquisition regression
+
+The private input driver removes its inherited quadrant-zero horizontal
+inversion from shared normal aiming. At authoritative GAME
+`df8815e75f3d79618466e01e0827c6165b93d11c`, the reticle is on object link 0 and
+Player on link 9. Equal-priority OM processes follow that order. The reticle
+therefore consumes the previous normal-camera-flipped X before current analog
+normalization; its quadrant-zero subtraction cancels that flip. Positive raw X
+moves right in every settled normal quadrant, with the existing update delay.
+Current C-button edge panning consumes fresh normalized X. Independent planner
+and reviewer assessments agree on this complete chain, not an isolated sign.
+
+Only the shared driver multiplier changes. Original Source, scheduling,
+projection, Y preference, zoomed aiming, physical throw gates, ownership and
+attempt bounds remain unchanged. There is no caller-specific compensation shim.
+The existing canonical Beach acquisition guard now also covers ordinary authored
+Volcano isolation: positive assessed Reports for
+`4,5,6,37,58,59,78,126,146`. Apple-only, event, sign and natural campaign scopes
+are excluded. The guard checks actual species coverage, not exact scores,
+digests, wording or incidental defaults.
+
+Corrected frozen consumer `651v`
+(`bf91777d6c5c66396669f912ce235bf5defc0db83ee17feb051b8887bbca5df2`)
+passes the protected scopes below. Guarded `652c`
+(`3e87fcd1e704cd0addd985b4da3beb01b0d1fc6ad30d9e49ca953dd0c97ea390`)
+repeats ordinary Volcano with the new guard active. The previous sealed Pester
+isolation omitted Growlithe; the corrected isolation preserves its previous
+species and adds an actual positive Growlithe Report.
+
+| Actual scope | Source course updates / frames | Exact Reports / points | Saved continuation |
+| --- | ---: | ---: | --- |
+| Apple-only Volcano `651x` | 8,860 / 4,430 | 7 / 6,950 | Save 1; Title 9, UI2, 129 frames; exact cold |
+| Nine-species Beach `651z` | 8,902 / 4,451 | 9 / 14,420 | Save 1; Title 9, UI2, 129 frames; exact cold |
+| Guarded Pester Volcano `652d` | 8,758 / 4,379 | 9 / 11,670 | Save 1; Title 9, UI2, 129 frames; exact cold |
+| Mew `652a` | 11,028 / 5,514 | 1 / 8,340 | Save 1; joined Credits18; Title 10, UI2, 132 frames; exact cold |
+
+Actual owned-window Title images were inspected for all four scopes. Apple
+alone remains set at all five canonical gear boundaries. Credits18 completes
+7,279 updates and 3,639 presentations before its original return. GPU/Input
+operations balance, dummy audio drains, all owners retire and deadlines remain
+zero. These authored access/equipment isolations do not establish naturally
+earned rewards or one-profile campaign completion. The explicit private target,
+full native build and all 58 CPU tests pass after the guard.
+
+The exact publication scope is also compiled and linked independently as `652m`
+(`0d06739f0fe88717c7fa8b4486afc63982e57f480c804c6afe26c70de1c0fae7`).
+Its Probe comes from the staged Git blob
+`11b289f81808d3cd0f74a3dd3ffded1f4835b739`; the unqualified food helper is
+neither compiled nor linked. Actual `652n` passes in 294.73 seconds with the
+same nine-species Volcano result above, acknowledged Save, visually inspected
+Title and exact cold continuation. All owners retire without a deadline.
+
+Separately, the existing Moltres retake improves the genuine forward lineage's
+Report 59 from 3,840 to 3,880. Source Save 41 records 34 Reports/68,320 points;
+published-feature cold continuation `651t` verifies the whole inherited image,
+preserves it through NoBetter Beach Save 42, reaches actual Title 7/UI2/129
+presentations and reopens byte-exactly. This is not a Charmander food gain.
+The separate food experiment has no qualifying Source Report. Natural Pester,
+40 species, six signs, Mew/final credits, fresh complete campaign and Windows
+gameplay remain open.
+
+

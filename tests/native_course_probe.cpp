@@ -888,7 +888,9 @@ struct Probe::Impl {
         const float py=depth>1?-up/depth/scale*120:0;
         const float error_x=px-static_cast<float>(player.ReticleScreenX);
         const float error_y=py-static_cast<float>(player.ReticleScreenY);
-        sx=std::abs(error_x)<6?0:stick(error_x*(player.gDirectionIndex==0?-16.0f:16.0f));
+        // Reticle link0 precedes Player link9: in steady quadrant0 it
+        // subtracts the previous camera-flipped X. Raw polarity stays positive.
+        sx=std::abs(error_x)<6?0:stick(error_x*16.0f);
         sy=std::abs(error_y)<6?0:stick(error_y*8);
         if(player.IsAxisYInverted)sy=static_cast<std::int8_t>(-sy);
     }

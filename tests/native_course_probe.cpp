@@ -243,19 +243,26 @@ bool different(const IsleGameVec3& first,const IsleGameVec3& second) {
 
 void seed_progress(game::State& state,std::int32_t course,CaptureGoal goal) {
     require(course>=0 && course<7,"authored course profile argument outside0..6");
+    require(goal!=CaptureGoal::apple_evolution || course==2,"authored Apple evolution profile requires Volcano");
     auto* session=state.save();require(state.initialized() && session,"real Name must precede authored unlocked profile");
     const auto before=session->source_player_name_prefix();require(before.size()>=16,"actual confirmed Name missing");
     std::array<std::byte,16> name{};std::copy_n(before.begin(),16,name.begin());
     require(std::any_of(name.begin(),name.end(),[](auto byte){return byte!=std::byte{};}),"authored profile cannot replace missing real Name confirmation");
-    // Isolation checks need the actual endpoint to increase progress. Ordinary
-    // per-course checks retain the explicitly authored all-course access.
-    const auto available=goal==CaptureGoal::progression && (course==1 || course==3)?course:6;
+    // Endpoint checks must still increase progress. Apple-only isolation grants
+    // only its requested course; existing ordinary checks retain all-course access.
+    const auto available=goal==CaptureGoal::apple_evolution ||
+        (goal==CaptureGoal::progression && (course==1 || course==3))?course:6;
     accepted(session->set_selected_course(static_cast<unsigned>(available)),"authored known-course mutation rejected");
     accepted(session->set_unlocked_course(available),"authored unlock mutation rejected");
-    for(unsigned flag=0;flag<3;++flag)accepted(session->set_player_flag(flag,true),"authored equipment mutation rejected");
+    // Apple-only access is an authored isolation profile, not an earned reward.
+    for(unsigned flag=0;flag<3;++flag)
+        accepted(session->set_player_flag(flag,goal!=CaptureGoal::apple_evolution || flag==0),
+            "authored equipment mutation rejected");
     accepted(session->set_player_flag(5,goal==CaptureGoal::sign),"authored sign/Dash prerequisite mutation rejected");
-    accepted(session->set_player_flag(12,false),"authored hold-Z control mutation rejected");
-    accepted(session->set_player_flag(13,false),"authored ordinary Y-axis mutation rejected");
+    if(goal!=CaptureGoal::apple_evolution) {
+        accepted(session->set_player_flag(12,false),"authored hold-Z control mutation rejected");
+        accepted(session->set_player_flag(13,false),"authored ordinary Y-axis mutation rejected");
+    }
     const auto after=session->source_player_name_prefix();
     require(after.size()>=16 && std::equal(name.begin(),name.end(),after.begin()),"authored progress altered confirmed Name");
 }
@@ -311,11 +318,11 @@ struct Probe::Impl {
     std::uint16_t volcano_item_button=0;
     bool volcano_gate_stopped=false,volcano_throw_consumed=false,volcano_egg_transition=false;
     bool volcano_gate_released=false,volcano_moltres_seen=false,volcano_moltres_photo=false;
-    // Lava acquisition is optional ordinary photography, never an access gate.
+    // Lava acquisition stays optional except for the explicit Apple objective.
     // Bits are 5/6/58/59; captures below mean actual qualified raw primary.
     static constexpr std::array<int,4> lava_species{{5,6,58,59}};
     struct LavaActor {
-        bool present=false,visible=false,tangible=false,photographable=false,pester=false,evolve=false,spawn=false,spent=false;
+        bool present=false,visible=false,tangible=false,photographable=false,pester=false,apple=false,evolve=false,spawn=false,spent=false;
         int state=0,steps=0;
         std::uint32_t surface=0;
         float distance=0,radius=0;
@@ -329,16 +336,20 @@ struct Probe::Impl {
     std::array<unsigned,4> lava_exposures{};
     std::array<unsigned,4> lava_photo_updates{};
     unsigned lava_control_updates=0;
-    bool lava_reports_sampled=false,lava_available=false,lava_hit=false,lava_dive=false,lava_appeared=false;
-    bool lava_controller_working=false,lava_release=false,lava_tracking=false,lava_contact=false;
+    bool lava_reports_sampled=false,lava_available=false,lava_pester_available=false;
+    bool lava_hit=false,lava_apple_consumed=false,lava_apple_hit=false,lava_dive=false,lava_appeared=false;
+    bool lava_controller_working=false,lava_release=false,lava_tracking=false,lava_contact=false,lava_flight_hit=false;
     int lava_block=-1,lava_counter=0,lava_spent=0,lava_responses=0,lava_ground_contacts=0;
     int lava_pending_press=0,lava_press_age=0,lava_flight_age=0;
+    std::uint16_t lava_pending_button=0,lava_flight_button=0,lava_release_button=0;
+    int lava_pending_item_id=0,lava_flight_item_id=0,lava_flight_kind=0;
     int lava_spawn_requests=0,lava_char_requests=0,lava_consumed=0,lava_rejected=0,lava_lost=0;
     int lava_pending_slot=-1,lava_pending_species=0,lava_pending_qualified=0,lava_primary=0,lava_mismatches=0;
     unsigned lava_queries=0,lava_arc_rejections=0;
     IsleGameVec3 lava_ground{},lava_predicted{},lava_velocity{};
-    std::array<std::uint64_t,3> lava_item{};
-    std::array<std::array<std::uint64_t,3>,20> lava_items_before{};
+    // Exact native identity plus Source kind; never an Item/Actor borrow.
+    std::array<std::uint64_t,4> lava_item{},lava_hit_item{};
+    std::array<std::array<std::uint64_t,4>,20> lava_items_before{};
     std::size_t lava_items_before_count=0;
     struct FrameTag {std::uint64_t ordinal=0,serial=0,update=0;int photos=0,reason=0;unsigned phase=0;};
     std::array<FrameTag,2> tags{};
@@ -346,12 +357,15 @@ struct Probe::Impl {
                   CaptureGoal capture,game::State& liveState)
         :course(id),goal(capture),state(liveState),controller(pad) {
         require(course>=0 && course<7 && controller.owner && controller.set,"actual course and owned controller required");
+        require(goal!=CaptureGoal::apple_evolution || course==2,"actual Apple evolution objective requires Volcano");
         std::filesystem::create_directories(root);
         ledger.exceptions(std::ios::badbit|std::ios::failbit);
         ledger.open(root/("course-"+std::to_string(course)+"-source.tsv"),std::ios::out|std::ios::trunc);
         row("scope\tactual canonical profile and Runtime/Manager course Source with owned inputs; application-runtime-report.txt identifies unseeded versus authored access; not N64 parity");
         row(goal==CaptureGoal::empty_roll?"objective\tgenuine empty Source roll; natural Oak13 admission":
             "objective\tgenuine Source photographs; natural CameraCheck9 admission");
+        if(goal==CaptureGoal::apple_evolution)
+            row("access\tauthored Apple-only unlocked access; Apple0=true Pester1=false Flute2=false; not natural progression; existing Name/controls preserved");
         row("bounds\t27 primary world IDs *2667 minimum-speed updates +2400 intro/end; Rainbow7200+1800+2000+1200+120+1200;131072 rows;2 scalar frame tags;no images");
         row("kind\tcourse\tserial\tupdates\tframes\tpresents\tphotos\tqualified\tend_reason\tintro_done\tending\tbuttons\tx\ty\tfocus\thits1\thits2\tmew_mode\tmovement\tvalue\tcontrols\tdisabled\tdirection\tzoom_target\tcooldown\tconsumed_buttons\tpressed_buttons\tmove_time\tposition_x\tposition_y\tposition_z\tvolcano_stage\tegg_present\tegg_distance\tegg_radius\tegg_x\tegg_y\tegg_z\tegg_graph\tegg_path\tcart_stopped\tthrow_timeout\tvolcano_throws\tvolcano_throw_consumed\tvolcano_egg_transition\tvolcano_gate_released\tmoltres_tangible\tvolcano_moltres_photo");
     }
@@ -428,6 +442,10 @@ struct Probe::Impl {
         return owned;
     }
     bool goal_complete() const noexcept {
+        if(goal==CaptureGoal::apple_evolution)
+            return course==2 && lava_char_requests>0 && lava_apple_consumed && lava_apple_hit && lava_hit &&
+                lava_hit_item[0] && lava_hit_item[3]==163 && lava_controller_working && lava_dive && lava_appeared &&
+                (lava_captures&3u)==3u && !lava_mismatches && !lava_pending_press && lava_pending_slot<0;
         // RNG misses are not failures or captures. Only requested photographs
         // and an actually observed evolution carry a retirement obligation.
         const bool evolution_attempted=lava_char_requests>0 && lava_dive;
@@ -694,7 +712,9 @@ struct Probe::Impl {
             const float yaw=std::atan2(-local_x,local_z);
             const float pitch=std::atan2(target.y-player.CameraEyePos.y,std::hypot(dx,dz));
             sx=stick(wrapped(yaw-player.PlayerViewYaw)*80/.025f);
-            sy=stick((player.ViewPitch-pitch)*80/.015f);return;
+            sy=stick((player.ViewPitch-pitch)*80/.015f);
+            if(player.IsAxisYInverted)sy=static_cast<std::int8_t>(-sy);
+            return;
         }
         const IsleGameCameraParameters* camera=nullptr;
         require(isle_game_camera_parameters(player.game,player.camera,&camera)==ISLE_GAME_OK && camera,"actual course camera parameters rejected");
@@ -714,6 +734,7 @@ struct Probe::Impl {
         const float error_y=py-static_cast<float>(player.ReticleScreenY);
         sx=std::abs(error_x)<6?0:stick(error_x*(player.gDirectionIndex==0?-16.0f:16.0f));
         sy=std::abs(error_y)<6?0:stick(error_y*8);
+        if(player.IsAxisYInverted)sy=static_cast<std::int8_t>(-sy);
     }
     void search_photo(const IslePlayerSource& player,bool subject,std::uint16_t pad) {
         std::int8_t sx=0,sy=0;
@@ -726,7 +747,7 @@ struct Probe::Impl {
     }
     void note_volcano_lava() {
         std::ostringstream text;
-        text<<"volcano_lava\tupdates="<<updates<<"\tavailable="<<lava_available
+        text<<"volcano_lava\tupdates="<<updates<<"\tavailable="<<lava_available<<'/'<<lava_pester_available
             <<"\tblock="<<lava_block<<"\tprogress="<<move_time
             <<"\treports/captures/requested/seen="<<lava_reports<<'/'<<lava_captures<<'/'<<lava_photo_requests<<'/'<<lava_seen
             <<"\tspawners/spent/counter="<<lava_spawner_count<<'/'<<lava_spent<<'/'<<lava_counter
@@ -745,13 +766,21 @@ struct Probe::Impl {
             <<"\tqueries/rejected_arcs="<<lava_queries<<'/'<<lava_arc_rejections
             <<"\tprimary/mismatch="<<lava_primary<<'/'<<lava_mismatches;
         row(text.str());
+        std::ostringstream item;
+        item<<"volcano_lava_item\tupdates="<<updates
+            <<"\tpending_button/id/kind="<<lava_pending_button<<'/'<<lava_pending_item_id<<'/'<<lava_pending_press
+            <<"\tflight_button/id/kind="<<lava_flight_button<<'/'<<lava_flight_item_id<<'/'<<lava_flight_kind
+            <<"\tflight_identity="<<lava_item[0]<<','<<lava_item[1]<<','<<lava_item[2]<<','<<lava_item[3]
+            <<"\thit_identity="<<lava_hit_item[0]<<','<<lava_hit_item[1]<<','<<lava_hit_item[2]<<','<<lava_hit_item[3]
+            <<"\tapple_consumed/hit="<<lava_apple_consumed<<'/'<<lava_apple_hit;
+        row(item.str());
     }
-    static bool lava_command(const IsleActorSource& actor,int command) {
-        if(!actor.transitionGraph)return false;
+    static IsleGameSourceCallback lava_command(const IsleActorSource& actor,int command) {
+        if(!actor.transitionGraph)return nullptr;
         const auto& graph=*actor.transitionGraph;
         for(std::size_t i=0;i<graph.count;++i)
-            if(graph.rows[i].cmd==command && graph.rows[i].state)return true;
-        return false;
+            if(graph.rows[i].cmd==command && graph.rows[i].state)return graph.rows[i].state;
+        return nullptr;
     }
     void observe_volcano_lava(const course::NativeHost& host,const IsleVolcanoActorSource& source,
         const IslePlayerSource& player) {
@@ -759,9 +788,10 @@ struct Probe::Impl {
         lava_counter=source.volcano_GrowlitheAndArcanineCounter;
         const auto* world=host.world_owner();
         lava_block=world && world->current()?static_cast<int>(world->current()->index):-1;
-        const auto ability=state.save()->player_flag(1);
-        require(bool(ability),"actual Volcano canonical Pester ownership unavailable");
-        lava_available=ability.value && player.ui && player.ui->Icons_NumItemsAvailable>=2;
+        const auto pester=state.save()->player_flag(1),apple=state.save()->player_flag(0);
+        require(pester && apple,"actual Volcano canonical projectile ownership unavailable");
+        lava_pester_available=pester.value && player.ui && player.ui->Icons_NumItemsAvailable>=2;
+        lava_available=lava_pester_available || (apple.value && player.ui && player.ui->Icons_NumItemsAvailable>=1);
         IsleGameObject* cursor=nullptr;
         for(;;) {
             IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
@@ -794,17 +824,22 @@ struct Probe::Impl {
             LavaActor observed{};
             observed.present=true;observed.visible=!(metadata.flags&1u);observed.tangible=actor->tangible!=0;
             observed.photographable=(actor->flags&4u) && !(actor->flags&8u);
-            observed.pester=lava_command(*actor,9);observed.evolve=lava_command(*actor,29);
-            observed.spawn=lava_command(*actor,38);observed.spent=actor->id==1026 && actor->miscVars[0].field1!=0;
+            const auto pester_hit=lava_command(*actor,9),apple_hit=lava_command(*actor,13);
+            observed.pester=pester_hit==charmeleon_HitByPesterBall || pester_hit==charmeleon_BounceOfPesterBall;
+            observed.apple=apple_hit==charmeleon_HitByApple || apple_hit==charmeleon_BounceOfApple;
+            observed.evolve=lava_command(*actor,29)==charmeleon_EvolveIntoCharizard;
+            observed.spawn=lava_command(*actor,38)!=nullptr;observed.spent=actor->id==1026 && actor->miscVars[0].field1!=0;
             observed.position=placement->transform.position;observed.collision=actor->collPosition;
             observed.distance=actor->playerDist;observed.radius=actor->collisionRadius;
             observed.surface=actor->currGround.surfaceType;observed.steps=actor->miscVars[0].field1;
-            observed.state=function==charmeleon_BounceOfPesterBall?2:function==charmeleon_StepToOrigPos?3:
-                function==charmeleon_EvolveIntoCharizard?4:function==growlithe_spawner_SpawnPokemon?5:1;
+            observed.state=(function==charmeleon_BounceOfPesterBall || function==charmeleon_BounceOfApple ||
+                function==charmeleon_HitByPesterBall || function==charmeleon_HitByApple)?2:
+                function==charmeleon_StepToOrigPos?3:function==charmeleon_EvolveIntoCharizard?4:
+                function==growlithe_spawner_SpawnPokemon?5:1;
             if(is_evolution_controller) {
                 require(lava_controller_count<lava_controllers.size(),"actual Volcano lava controller observation capacity exhausted");
                 lava_controllers[lava_controller_count++]=observed.position;
-                lava_controller_working|=function==evolution_controller_EvolveIntoCharizard;
+                lava_controller_working|=lava_hit && function==evolution_controller_EvolveIntoCharizard;
             }
             if(actor->id==1026) {
                 require(lava_spawner_count<lava_spawners.size(),"actual Volcano lava spawner observation capacity exhausted");
@@ -819,39 +854,72 @@ struct Probe::Impl {
                    (observed.visible==target.visible && actor->id==5 && observed.evolve && !target.evolve) ||
                    (observed.visible==target.visible && observed.evolve==target.evolve && observed.distance<target.distance))target=observed;
                 if(observed.visible && observed.tangible)lava_seen|=1u<<index;
-                if(actor->id==6 && observed.visible && observed.tangible)lava_appeared=true;
+                if(actor->id==6 && observed.visible && observed.tangible && lava_dive)lava_appeared=true;
                 if(actor->id==5) {
-                    lava_dive|=observed.state==4;
-                    // The interaction target is borrowed only here. No Item or
-                    // Actor pointer survives the serialized observation.
-                    if(observed.state==2 && actor->interactionTarget && host.items_owner()) {
-                        const auto* item=host.items_owner()->source(actor->interactionTarget);
-                        if(item && item->itemID==162) {lava_hit=true;lava_velocity=item->collisionVelocity;}
+                    lava_dive|=lava_hit && observed.state==4;
+                    // Match the executing Source interaction target to the
+                    // consumed flight, not any nearby item of the same kind.
+                    // Apple's collisionVelocity is its incoming value; its
+                    // current velocity may already have reflected away.
+                    const bool expected_state=lava_flight_item_id==163?
+                        (function==charmeleon_HitByApple || function==charmeleon_BounceOfApple):
+                        (function==charmeleon_HitByPesterBall || function==charmeleon_BounceOfPesterBall);
+                    if(!lava_flight_hit && expected_state && lava_flight_kind==2 && lava_item[0] &&
+                       actor->interactionTarget && host.items_owner()) {
+                        auto& items=*host.items_owner();
+                        for(const auto& binding:items.render_bindings()) {
+                            if(binding.model.object!=actor->interactionTarget)continue;
+                            const auto* item=items.source(binding.model.object);
+                            if(!item || item->itemID!=lava_flight_item_id)continue;
+                            const auto identity=binding.model.state.instance;
+                            const std::array<std::uint64_t,4> exact{identity.pool,identity.slot,identity.incarnation,
+                                static_cast<std::uint64_t>(item->itemID)};
+                            if(exact!=lava_item)continue;
+                            lava_flight_hit=true;
+                            if(!lava_hit || (!lava_apple_hit && item->itemID==163)) {
+                                lava_hit_item=exact;lava_velocity=item->collisionVelocity;
+                            }
+                            lava_hit=true;lava_apple_hit|=item->itemID==163;
+                            // Apple's Source item rebounds and can remain live
+                            // long after this answered interaction. End only
+                            // our flight observation, then let the actual graph
+                            // and Player cooldown govern its shorter recovery.
+                            if(item->itemID==163)lava_tracking=false;
+                            break;
+                        }
                     }
                 }
             }
         }
     }
-    void remember_lava_items(items::Owner& owner) {
+    void remember_lava_items(items::Owner& owner,int item_id) {
         lava_items_before_count=0;
         for(const auto& binding:owner.render_bindings()) {
             if(!binding.model.object)continue;
             const auto* item=owner.source(binding.model.object);
-            if(!item || item->itemID!=162)continue;
+            if(!item || item->itemID!=item_id)continue;
             const auto identity=binding.model.state.instance;
             require(bool(identity) && lava_items_before_count<lava_items_before.size(),
-                "actual Volcano Pester identity observation capacity exhausted");
-            lava_items_before[lava_items_before_count++]={identity.pool,identity.slot,identity.incarnation};
+                "actual Volcano item identity observation capacity exhausted");
+            lava_items_before[lava_items_before_count++]={identity.pool,identity.slot,identity.incarnation,
+                static_cast<std::uint64_t>(item->itemID)};
         }
     }
     void observe_lava_input(const course::NativeHost& host,const IslePlayerSource& player) {
         if(lava_pending_press) {
-            if(player.input.current_buttons&b) {
-                if((player.input.pressed_buttons&b) && player.ThrowItemTimeout>0 && player.LastItemId==162) {
-                    ++lava_consumed;lava_tracking=true;lava_contact=false;lava_item={};lava_flight_age=0;
+            if(player.input.current_buttons&lava_pending_button) {
+                if((player.input.pressed_buttons&lava_pending_button) && player.ThrowItemTimeout>0 &&
+                   player.LastItemId==lava_pending_item_id && player.gDirectionIndex>=0 &&
+                   !player.TargetDirectionZoomedIn && player.TurnToDirSpeed==0 &&
+                   (lava_pending_button!=a || !(player.input.pressed_buttons&b))) {
+                    lava_tracking=true;lava_contact=false;lava_flight_hit=false;lava_item={};lava_flight_age=0;
+                    lava_flight_button=lava_pending_button;lava_flight_item_id=lava_pending_item_id;
+                    lava_flight_kind=lava_pending_press;
                 } else ++lava_rejected;
-                lava_pending_press=0;lava_release=true;
-            } else if(++lava_press_age>=4) {++lava_rejected;lava_pending_press=0;lava_release=true;}
+                lava_release_button=lava_pending_button;lava_pending_press=0;lava_release=true;
+            } else if(++lava_press_age>=4) {
+                ++lava_rejected;lava_release_button=lava_pending_button;lava_pending_press=0;lava_release=true;
+            }
         }
         if(!lava_tracking)return;
         bool found=false;
@@ -860,16 +928,22 @@ struct Probe::Impl {
         if(owner)for(const auto& binding:owner->render_bindings()) {
             if(!binding.model.object)continue;
             const auto* item=owner->source(binding.model.object);
-            if(!item || item->itemID!=162)continue;
+            if(!item || item->itemID!=lava_flight_item_id)continue;
             const auto instance=binding.model.state.instance;
-            require(bool(instance),"actual Volcano live Pester incarnation unavailable");
-            const std::array<std::uint64_t,3> identity{instance.pool,instance.slot,instance.incarnation};
+            require(bool(instance),"actual Volcano live item incarnation unavailable");
+            const std::array<std::uint64_t,4> identity{instance.pool,instance.slot,instance.incarnation,
+                static_cast<std::uint64_t>(item->itemID)};
             if(tracked) {if(identity!=lava_item)continue;}
             else if(std::find(lava_items_before.begin(),lava_items_before.begin()+lava_items_before_count,identity)!=
                 lava_items_before.begin()+lava_items_before_count)continue;
-            require(!found,"actual Volcano new Pester incarnation ambiguous");
-            found=true;lava_item=identity;
-            if((item->flags&ISLE_ITEM_TOUCHED_GROUND) && !lava_contact && world) {
+            require(!found,"actual Volcano new item incarnation ambiguous");
+            found=true;
+            if(!tracked) {
+                lava_item=identity;++lava_consumed;
+                lava_apple_consumed|=lava_flight_kind==2 && lava_flight_item_id==163 && lava_flight_button==a;
+            }
+            if(lava_flight_kind==1 && lava_flight_item_id==162 &&
+               (item->flags&ISLE_ITEM_TOUCHED_GROUND) && !lava_contact && world) {
                 const IsleGameModelPlacement* placement=nullptr;
                 require(isle_game_model_placement(player.game,binding.model.model,&placement)==ISLE_GAME_OK && placement,
                     "actual Volcano Pester contact placement unavailable");
@@ -884,11 +958,12 @@ struct Probe::Impl {
                 }
             }
         }
-        // Lava impacts can retire their Item before this owner observation.
-        // A lost flight is not a contact; spawner flags/actors are independent
-        // actual Source response evidence.
+        // This bounds observation, never item lifetime or collision success.
+        // Source retires Pester after its >60 rest; Apple has distinct >170
+        // stationary/>140 shrinking paths and can rebound after a real hit.
+        // Eviction/lava retirement is not a hit or spawner-contact witness.
         if((!found && lava_flight_age>2) || ++lava_flight_age>=180) {
-            if(!lava_contact)++lava_lost;
+            if(!lava_contact && !lava_flight_hit)++lava_lost;
             lava_tracking=false;
         }
     }
@@ -947,7 +1022,8 @@ struct Probe::Impl {
     }
     bool lava_bounce_target(const world::World& world,const IslePlayerSource& player,IsleGameVec3& aimed) {
         const auto& actor=lava_actors[0];
-        if(!actor.present || !actor.visible || !actor.tangible || !actor.pester || !actor.evolve ||
+        if(!actor.present || !actor.visible || !actor.tangible || !(actor.radius>0) || !actor.evolve ||
+           !(lava_pester_available?actor.pester:actor.apple) ||
            lava_char_requests>=8 || lava_dive || !lava_controller_count)return false;
         const float dx=actor.collision.x-player.CameraEyePos.x,dz=actor.collision.z-player.CameraEyePos.z;
         const float horizontal=std::hypot(dx,dz);
@@ -989,24 +1065,31 @@ struct Probe::Impl {
     }
     int lava_film_reserve() const noexcept {
         int reserve=1+(!volcano_moltres_photo?1:0);
-        if(lava_available && goal==CaptureGoal::photographs)
-            for(std::size_t i=0;i<lava_species.size();++i)
-                if(!((lava_reports|lava_captures)&(1u<<i)))++reserve;
+        if(goal==CaptureGoal::photographs || goal==CaptureGoal::apple_evolution) {
+            const auto acquired=goal==CaptureGoal::apple_evolution?lava_captures:(lava_reports|lava_captures);
+            for(std::size_t i=0;i<lava_species.size();++i) {
+                const auto& actor=lava_actors[i];
+                const bool can_acquire=i<2?(lava_available || goal==CaptureGoal::apple_evolution):lava_pester_available;
+                const bool present=actor.present && actor.visible && actor.tangible && actor.photographable;
+                if(!(acquired&(1u<<i)) && (can_acquire || present))++reserve;
+            }
+        }
         return reserve;
     }
     bool control_volcano_lava(const course::NativeHost& host,const IslePlayerSource& player,
         const IslePlayerPhotoFocus& focus,std::uint16_t prior) {
-        if(goal!=CaptureGoal::photographs || !lava_available)return false;
-        if(lava_pending_press) {set(b);return true;}
+        if(goal!=CaptureGoal::photographs && goal!=CaptureGoal::apple_evolution)return false;
+        if(lava_pending_press) {set(lava_pending_button);return true;}
         if(lava_release) {
-            if(!(player.input.current_buttons&b))lava_release=false;
+            if(!(player.input.current_buttons&lava_release_button))lava_release=false;
             return true;
         }
+        const auto acquired=goal==CaptureGoal::apple_evolution?lava_captures:(lava_reports|lava_captures);
         // First preserve Charmeleon, and photograph actual spawned subjects
         // before considering another throw. Requested focus never earns a bit.
         for(std::size_t i=0;i<lava_actors.size();++i) {
             const auto& actor=lava_actors[i];
-            if(((lava_reports|lava_captures)&(1u<<i)) || !actor.present || !actor.visible ||
+            if((acquired&(1u<<i)) || !actor.present || !actor.visible ||
                !actor.tangible || !actor.photographable || lava_exposures[i]>=2 || lava_photo_updates[i]>=1200)continue;
             if(photos>=60-lava_film_reserve()+1)return false;
             ++lava_photo_updates[i];
@@ -1022,7 +1105,7 @@ struct Probe::Impl {
             }
             set(pad,sx,sy);return true;
         }
-        if(lava_tracking || lava_pending_slot>=0 || photos>=60-lava_film_reserve())return false;
+        if(!lava_available || lava_tracking || lava_pending_slot>=0 || photos>=60-lava_film_reserve())return false;
         if(lava_control_updates>=4096)return false;
         const auto* world=host.world_owner();auto* items=host.items_owner();
         if(!world || !items)return false;
@@ -1030,12 +1113,15 @@ struct Probe::Impl {
         IsleGameVec3 aimed{};
         int kind=0;
         // Never evolve a missing Charmeleon until its real first capture.
-        if(!((lava_reports|lava_captures)&2u) && ((lava_reports|lava_captures)&1u) &&
-           lava_bounce_target(*world,player,aimed))kind=2;
-        else if((~(lava_reports|lava_captures)&12u) && lava_spawn_target(*world,player,aimed))kind=1;
+        if(!(acquired&2u) && (acquired&1u) && lava_bounce_target(*world,player,aimed))kind=2;
+        else if(lava_pester_available && (~acquired&12u) && lava_spawn_target(*world,player,aimed))kind=1;
         if(!kind)return false;
         ++lava_control_updates;
-        if(player.gDirectionIndex<0 || player.TurnToDirSpeed!=0)return true;
+        if(player.gDirectionIndex<0 || player.TargetDirectionZoomedIn || player.TurnToDirSpeed!=0) {
+            if(player.ZoomSwitchMode==1 && player.gDirectionIndex==-1 &&
+               !(prior&z) && !(player.input.current_buttons&z))set(z);
+            return true;
+        }
         if(kind==2) {
             // Original player.c permits reticle motion only inside the current
             // C-button quadrant. A valid bounce outside it never centers.
@@ -1058,8 +1144,11 @@ struct Probe::Impl {
             }
         }
         std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy);
+        const std::uint16_t item_button=lava_pester_available?b:a;
+        const int item_id=lava_pester_available?162:163;
         std::uint16_t pad=0;
-        if(!sx && !sy && player.ThrowItemTimeout==0 && !(prior&b) && !(player.input.current_buttons&b)) {
+        if(!sx && !sy && player.ThrowItemTimeout==0 && !(prior&item_button) &&
+           !(player.input.current_buttons&item_button) && !(player.input.current_buttons&z)) {
             // Recheck the actual reticle flight, not only the desired ray.
             IsleGameVec3 actual{};
             bool ready=kind==2;
@@ -1071,7 +1160,10 @@ struct Probe::Impl {
                         ready=true;
                 }
             if(ready) {
-                remember_lava_items(*items);pad=b;++throws;lava_pending_press=kind;lava_press_age=0;
+                // Freeze the actual available Source kind/button until the
+                // press, release and flight have been observed independently.
+                lava_pending_button=item_button;lava_pending_item_id=item_id;
+                remember_lava_items(*items,item_id);pad=item_button;++throws;lava_pending_press=kind;lava_press_age=0;
                 if(kind==1)++lava_spawn_requests;else ++lava_char_requests;
             }
         }
@@ -1082,7 +1174,7 @@ struct Probe::Impl {
         const auto& actors=view.volcano->actors_source();
         const auto* host=view.volcano->native_host();
         require(host,"actual Volcano lava observation requires course host");
-        if(!lava_reports_sampled && goal==CaptureGoal::photographs) {
+        if(!lava_reports_sampled && (goal==CaptureGoal::photographs || goal==CaptureGoal::apple_evolution)) {
             for(std::size_t i=0;i<lava_species.size();++i) {
                 const auto present=view.volcano->photos().report_present(lava_species[i]);
                 require(bool(present),"actual Volcano canonical species Report presence unavailable");
@@ -1090,7 +1182,7 @@ struct Probe::Impl {
             }
             lava_reports_sampled=true;
         }
-        observe_volcano_lava(*host,actors,player);observe_lava_input(*host,player);
+        observe_lava_input(*host,player);observe_volcano_lava(*host,actors,player);
         volcano_snapshot=volcano_targets(actors);
         const auto& egg=volcano_snapshot.egg;const auto& moltres=volcano_snapshot.moltres;
         volcano_cart_stopped=player.IsCartStopped;volcano_throw_timeout=player.ThrowItemTimeout;
@@ -1128,9 +1220,14 @@ struct Probe::Impl {
                 note("volcano_actual_egg_falling");
             } else {
                 if(!egg.present)fail("actual Volcano egg disappeared without an observed projectile transition");
-                // Releasing Z lets the actual Player finish zooming out. Item
-                // buttons are never delivered through the photo input mode.
-                if(player.gDirectionIndex<0 || player.TurnToDirSpeed!=0 || !egg.interactive)return true;
+                // Hold-Z releases normally; established switch-Z controls need
+                // a fresh physical Z edge. Neither mode may throw while zoomed.
+                if(player.gDirectionIndex<0 || player.TargetDirectionZoomedIn ||
+                   player.TurnToDirSpeed!=0 || !egg.interactive) {
+                    if(player.ZoomSwitchMode==1 && player.gDirectionIndex==-1 &&
+                       !(prior&z) && !(player.input.current_buttons&z))set(z);
+                    return true;
+                }
                 const auto& position=egg.collision;
                 const float distance=std::hypot(position.x-player.CameraEyePos.x,
                     position.y-player.CameraEyePos.y,position.z-player.CameraEyePos.z);
@@ -1180,7 +1277,8 @@ struct Probe::Impl {
             }
             set(pad,sx,sy);return true;
         }
-        if(goal==CaptureGoal::photographs && volcano_stage==VolcanoStage::travel_after_egg)
+        if((goal==CaptureGoal::photographs || goal==CaptureGoal::apple_evolution) &&
+           volcano_stage==VolcanoStage::travel_after_egg)
             return control_volcano_lava(*host,player,focus,prior);
         return true;
     }
@@ -1285,11 +1383,11 @@ struct Probe::Impl {
         if(player.IsInputDisabled)return;
         if((beach_photos || tunnel_photos) && control_ordinary_puzzles(view))return;
         if(course==2 && control_volcano(view,player,focus,prior))return;
-        // Reserve each missing lava subject, Moltres, and one natural-end slot.
-        // Before genuine Pester availability the existing Volcano budget holds.
+        // Reserve only attainable lava acquisitions or actual present subjects,
+        // Moltres, and one natural-end slot. Apple cannot acquire spawner58/59.
         const int film_limit=static_cast<int>(std::size(player.photo->D_800B0598))-
             (course==2?lava_film_reserve():1);
-        if(course==2 && goal!=CaptureGoal::photographs) {
+        if(course==2 && goal!=CaptureGoal::photographs && goal!=CaptureGoal::apple_evolution) {
             if(qualified>=3)return;
         } else if(photos>=film_limit)return;
         PhotoTarget target{};
@@ -1352,7 +1450,7 @@ void Probe::retired(application::SceneRetirementView view) {
     if(p.signs)p.signs->retire();
     p.observe(s);p.set();
     p.note_goal();
-    if(!p.goal_complete())p.fail("actual input-only progression or sign objective did not complete");
+    if(!p.goal_complete())p.fail("actual input-only capture, evolution, progression or sign objective did not complete");
     const bool empty=p.goal==CaptureGoal::empty_roll;
     const auto expected=empty?13:9;
     // Original scripted endpoints send PLAYER_CMD_7, whose Player callback

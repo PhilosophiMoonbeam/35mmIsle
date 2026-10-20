@@ -4630,3 +4630,63 @@ Charizard isolation are separate profiles, not proof of their durable union
 in a natural campaign. Charmander remains absent from this batch. Those
 coverage and natural-progression limits remain open.
 
+### Apple-only evolution before Pester
+
+Independent planner/reviewer assessments select the same minimal extension:
+retain the existing physical lava driver, parameterize its real projectile
+input and identity, and keep Pester preferred when actually available.
+Original Normal/Bounce graphs accept Apple command 13; both reach the real
+`BounceBack`/ground/controller route. Apple recovery and lifetime differ
+from Pester and are not replaced with Pester timing.
+
+Private `native2-apple` uses `CaptureGoal::apple_evolution`, existing
+initialization/Probe signatures and authored course-2 access only. Confirmed
+Name and controls remain intact. Apple is authored; Pester and Flute are
+not. The driver itself writes only serialized pad input. It does not call
+Source handlers or alter actor, item, controller, camera or progress state.
+
+Frozen consumer
+`510184f1adf93a4db1616b16c4318c4e02531f24cb226415bf0d487ac9772d6a`
+completes the actual Apple-only qualification. Three requests produce three
+consumed Apples and no rejected press. The successful flight and actual
+interaction target match `(pool=4, slot=0, incarnation=4, itemID=163)`;
+the incoming collision velocity is observed before rebound. Real hit,
+controller transition, dive and visible appearance witnesses all succeed.
+Two earlier lost-flight observations are not turned into impact credit.
+No Pester spawner request is made and the spawn counter remains four.
+
+The real Camera/Photo chain, not raw capture identity alone, publishes:
+
+| Species | Source score | Report slot | Normalized digest |
+|---|---:|---:|---:|
+| Charmeleon | 520 | 2 | 1309305097571781358 |
+| Charizard | 600 | 3 | 11837398188880947705 |
+
+Selection, assessment, publication, acknowledged Save bytes/scores and exact
+cold Report identities are checked for both species. Canonical equipment is
+Apple=true/Pester=false/Flute=false at all five boundaries: course entry,
+retirement, returned Oak, acknowledged Save and cold reopen. A genuine
+reward change would fail qualification; it is never silently cleared.
+
+The original egg/Moltres/cart and course-result-9 chain remains required.
+The ride completes 8,848 updates and 4,424 frames/presentations, publishes
+six Reports totalling 4,340 points, acknowledges Save generation 1 and
+presents Title serial 9/UI state 2 before exact whole-profile cold reopen.
+The executable returns 0.
+
+The same frozen executable also passes the existing Pester `native2`
+regression: 9,000 updates/4,500 frames, the same seven Reports totalling
+8,790 points, including Charmeleon 3,300 and Charizard 590, followed by
+Save generation 1, presented Title serial 9/UI state 2 and exact cold reopen.
+
+| Actual scope | Balanced GPU submissions/terminals/releases | Balanced Input reads/completions | Accepted dummy PCM frames |
+|---|---:|---:|---:|
+| Apple-only | 7,659 | 18,448 | 9,993,472 |
+| Pester regression | 7,914 | 19,061 | 10,326,432 |
+
+Both runs release all owners without retirement deadlines; both actual
+Title windows were visually inspected. Neither is a natural Apple reward,
+complete one-profile campaign, hardware/controller/audio-playback,
+N64 numerical parity or Windows gameplay proof. Charmander and combined
+natural species coverage remain separate open work.
+

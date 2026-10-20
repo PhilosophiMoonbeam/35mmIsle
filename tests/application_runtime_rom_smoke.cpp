@@ -3,10 +3,11 @@
 // Original Manager results alone select entries; owned input never injects routes.
 // The diagnostic-disabled Host supplies NO controller; SoftwareController below
 // is a separate, explicitly owned acquisition through the real Input Service.
-// CLI modes: ingress, course, native0..native6[-oak-cancel], native5-empty,
-// menus and credits17..credits19. Photographed courses normally continue through
-// actual Camera9/Photo15/Oak Save/Original Title8 and a cold exact-profile reopen.
-// NativeN authors unlock progress only; roll photographs remain genuine Source.
+// CLI modes: ingress, course, native0..native6[-oak-cancel], native2-apple,
+// native5-empty, menus and credits17..credits19. Photographed courses normally
+// continue through actual Camera9/Photo15/Oak Save/Original Title8 and cold reopen.
+// NativeN authors access/gear only; native2-apple authors Apple-only access,
+// never natural progression. Roll photographs and Reports remain genuine Source.
 // Campaign mode keeps one fresh profile and uses only real Source rewards.
 // Oak-cancel preserves mid-print retirement; Native5-empty preserves Source13.
 // Exit0 requires the entire selected scenario; exit1 is any failure.
@@ -190,6 +191,11 @@ struct Evidence {
     bool campaign_complete=false;
     int natural_unlocked=-1,natural_known=-1;
     isle::private_course::CaptureGoal capture_goal=isle::private_course::CaptureGoal::photographs;
+    const isle::save::GameSession* apple_profile=nullptr;
+    std::array<int,5> apple_gear_flags{{-1,-1,-1,-1,-1}};
+    std::array<std::int32_t,2> apple_source_scores{};
+    // Per species5/6: selected1, assessed2, published4, exact acknowledged Save8.
+    std::array<unsigned,2> apple_report_stages{};
     std::uint64_t course_updates=0,course_frames=0,course_presentations=0;
     bool authored_course_profile=false,course_api_completed=false;
     bool native_fail_live=false,native_failure_triggered=false;
@@ -208,6 +214,22 @@ struct Evidence {
     bool audio_drained = false,host_released = false,main_music = false;
     bool native_retirement_deadline = false;
 };
+constexpr std::array<const char*,5> apple_gear_boundaries{{
+    "entry","course_retirement","returned_Oak","acknowledged_Save","cold_reopen"}};
+template<class Profile>
+void observe_apple_gear(Evidence& evidence,const Profile& profile,std::size_t boundary) {
+    if(evidence.capture_goal!=isle::private_course::CaptureGoal::apple_evolution)return;
+    int flags=0;
+    for(unsigned flag=0;flag<3;++flag) {
+        const auto value=profile.player_flag(flag);
+        require(bool(value),"native2-apple canonical gear flag observation unavailable");
+        if(value.value)flags|=1<<flag;
+    }
+    evidence.apple_gear_flags[boundary]=flags;
+    if(flags!=1)
+        throw std::runtime_error(std::string("native2-apple requires canonical Apple0=true/Pester1=false/Flute2=false at ")+
+            apple_gear_boundaries[boundary]+"; an awarded reward is never cleared");
+}
 bool continuous_campaign(const Evidence& e) noexcept {
     return e.full_campaign || e.campaign_retained;
 }
@@ -238,7 +260,13 @@ void observe_retirement(void* user,app::SceneRetirementView view) noexcept {
     auto& evidence=*static_cast<Evidence*>(user);
     if (evidence.mode==Mode::native_course && evidence.course_probe && view.entry &&
         native_course_operation(view.entry->operation)) {
-        try { evidence.course_probe->retired(view); }
+        try {
+            if(evidence.capture_goal==isle::private_course::CaptureGoal::apple_evolution) {
+                require(evidence.apple_profile,"native2-apple retirement lost its canonical profile owner");
+                observe_apple_gear(evidence,*evidence.apple_profile,1);
+            }
+            evidence.course_probe->retired(view);
+        }
         catch (const std::exception& error) {
             if (!evidence.menu_failure[0])
                 std::snprintf(evidence.menu_failure.data(),evidence.menu_failure.size(),"%s",error.what());
@@ -405,6 +433,27 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
             <<" actual_saved_known="<<e.natural_known<<" actual_saved_unlocked="<<e.natural_unlocked
             <<" input_only_course_objective="<<static_cast<int>(e.capture_goal)
             <<" actual_course_LUS_presentations="<<e.course_presentations<<'\n';
+        if(e.capture_goal==isle::private_course::CaptureGoal::apple_evolution) {
+            out<<"private_qualification=native2-apple\n"
+                <<"authored_course2_access_and_Apple_only=AUTHORED_API_initialization_NOT_natural_progression\n"
+                <<"Apple_evolution_requirements=actual163_consume_new_identity_hit_controller_dive_appearance_qualified_raw5_6_and_Camera_Source_positive5_6_exact_Reports\n";
+            for(std::size_t boundary=0;boundary<e.apple_gear_flags.size();++boundary) {
+                const auto flags=e.apple_gear_flags[boundary];
+                out<<"canonical_gear_boundary="<<apple_gear_boundaries[boundary]<<" observed="<<(flags>=0)
+                    <<" Apple_flag0="<<(flags<0?-1:int(bool(flags&1)))
+                    <<" Pester_flag1="<<(flags<0?-1:int(bool(flags&2)))
+                    <<" Flute_flag2="<<(flags<0?-1:int(bool(flags&4)))<<'\n';
+            }
+            for(std::size_t i=0;i<e.apple_source_scores.size();++i) {
+                const auto stages=e.apple_report_stages[i];
+                out<<"Apple_evolution_Report_species="<<i+5<<" Camera_Source_score="<<e.apple_source_scores[i]
+                    <<" exact_selected="<<bool(stages&1)<<" exact_assessed="<<bool(stages&2)
+                    <<" exact_published_canonical_Report="<<bool(stages&4)
+                    <<" exact_acknowledged_Save_Report="<<bool(stages&8)
+                    <<" exact_cold_reopened_Report="<<(bool(stages&8) && e.post.cold_profile)<<'\n';
+            }
+            out<<"Apple_evolution_Report_identity=existing_PhotoBatch_owner_roll_slot_normalized_full_wire_identity_NOT_raw_primary_ID_only\n";
+        }
         if(e.native_fail_live)
             out<<"private_qualification=consumer_failure_while_live_Rainbow_frame_held_NOT_sticky_native_fault\n"
                 <<"expected_consumer_failure_triggered="<<e.native_failure_triggered
@@ -1173,6 +1222,45 @@ private:
             "assessment-hold","assess-A","summary-hold","photo-finish-A","Oak13-admitted"}};
         return names[static_cast<std::size_t>(stage)];
     }
+    void observe_apple_reports() {
+        if(e_.capture_goal!=isle::private_course::CaptureGoal::apple_evolution)return;
+        for(const auto& item:photo_batch_.items()) {
+            if(item.planned.species!=5 && item.planned.species!=6)continue;
+            require(item.planned.score>0 &&
+                item.planned.disposition==isle::private_campaign::PhotoDisposition::publish_new_report,
+                "native2-apple requires real positive Camera-scored species5/6 new Reports");
+            const auto index=static_cast<std::size_t>(item.planned.species-5);
+            e_.apple_source_scores[index]=item.planned.score;
+            e_.apple_report_stages[index]=(e_.apple_report_stages[index]&8u) |
+                unsigned(item.selected) | unsigned(item.assessed)<<1 | unsigned(item.reported)<<2;
+            require(!item.reported || (item.assessed && item.report_digest==item.captured_digest),
+                "native2-apple published Report lost its exact captured PhotoBatch identity");
+        }
+    }
+    void validate_apple_saved_reports(const isle::save::GameSnapshot& saved) {
+        if(e_.capture_goal!=isle::private_course::CaptureGoal::apple_evolution)return;
+        observe_apple_reports();
+        for(const auto& item:photo_batch_.items()) {
+            if(item.planned.species!=5 && item.planned.species!=6)continue;
+            require(item.marked && item.mark_presented && item.selected && item.assessed && item.reported &&
+                item.report_digest==item.captured_digest,
+                "native2-apple Save lacks exact selected/assessed/published species5/6 Reports");
+            const auto slot=static_cast<std::size_t>(item.planned.report_index);
+            const auto report=saved.photo(isle::save::PhotoSet::report,slot);
+            const auto points=saved.report_score(slot);
+            std::array<std::byte,isle::save::game_photo_bytes> captured_bytes;
+            const auto digest=isle::private_course::photo_identity(*item.planned.record.photo,captured_bytes);
+            require(report && report.value.size()==captured_bytes.size() && points &&
+                points.value==item.planned.score && digest==item.captured_digest &&
+                report.value[0]==captured_bytes[0] &&
+                std::equal(captured_bytes.begin()+2,captured_bytes.end(),report.value.begin()+2),
+                "native2-apple acknowledged Save changed a species5/6 captured Report or Source score");
+            e_.apple_report_stages[static_cast<std::size_t>(item.planned.species-5)]|=8u;
+        }
+        require(std::all_of(e_.apple_report_stages.begin(),e_.apple_report_stages.end(),
+            [](unsigned stages){return stages==15;}),
+            "native2-apple acknowledged Save is missing an exact positive species5/6 Report");
+    }
     void validate_post_course() {
         const auto& p=e_.post;
         require(photo_batch_.count()>0 && photo_batch_.marked_count()==photo_batch_.count() &&
@@ -1180,6 +1268,13 @@ private:
             std::all_of(photo_batch_.items().begin(),photo_batch_.items().end(),
                 [](const auto& item){return item.mark_presented;}),
             "actual complete captured batch lacks a marked presentation, Source score or exact assessment disposition");
+        observe_apple_reports();
+        if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
+            require(std::all_of(e_.apple_source_scores.begin(),e_.apple_source_scores.end(),
+                [](std::int32_t score){return score>0;}) &&
+                std::all_of(e_.apple_report_stages.begin(),e_.apple_report_stages.end(),
+                    [](unsigned stages){return (stages&7u)==7u;}),
+                "native2-apple requires actual Camera-positive5/6 exact selected/assessed/published canonical Reports");
         require(p.marked>0 && p.scored>0 && (e_.mode!=Mode::course || p.report_before==0) &&
             p.intro_presented && p.intro_ack_requested && p.intro_ack_consumed && p.retired_element_seen &&
             p.report_after>=p.report_before && p.score_after>=p.score_before &&
@@ -1218,6 +1313,13 @@ private:
             (p.credits_serial?(p.oak_result==static_cast<std::int32_t>(p.credits_argument) && p.credits_joined && p.credits_result==8 &&
                 p.credits_updates>0 && p.credits_frames>0 && p.credits_presentations>0 && p.credits_visible):p.oak_result==8),
             "actual Oak acknowledged save/Original continuation/presented Title8 proof incomplete");
+        if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
+            require(e_.requested_course==2 && e_.authored_course_profile &&
+                std::all_of(e_.apple_gear_flags.begin(),e_.apple_gear_flags.begin()+4,
+                    [](int flags){return flags==1;}) &&
+                std::all_of(e_.apple_report_stages.begin(),e_.apple_report_stages.end(),
+                    [](unsigned stages){return stages==15;}),
+                "native2-apple lacks authored Apple-only entry/retirement/Oak/Save boundaries or exact saved5/6 Reports");
     }
     void validate_first_unlock() {
         const auto& p=e_.post;
@@ -1255,7 +1357,8 @@ private:
         }
         scores.close();require(bool(scores),"actual Source score component ledger write failed");
         if(e_.campaign_first_unlock || continuous_campaign(e_) || e_.capture_goal==isle::private_course::CaptureGoal::sign ||
-            (e_.mode==Mode::native_course && e_.capture_goal==isle::private_course::CaptureGoal::photographs)) {
+            (e_.mode==Mode::native_course && (e_.capture_goal==isle::private_course::CaptureGoal::photographs ||
+                e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution))) {
             bool allow_reassessment=false;
             if(e_.full_campaign) {
                 const auto saved=state_.save()->snapshot();
@@ -1287,6 +1390,11 @@ private:
             photo_batch_.freeze(camera,{&chosen,1},course_probe_.get(),course_epoch_);
         }
         require(e_.full_campaign || photo_batch_.count()>0,"actual campaign roll has no useful Source-admissible photograph");
+        observe_apple_reports();
+        if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
+            require(std::all_of(e_.apple_source_scores.begin(),e_.apple_source_scores.end(),
+                [](std::int32_t score){return score>0;}),
+                "native2-apple Camera has no actual positive-scored species5/6 pair; raw primary IDs are insufficient");
         e_.post.batch_count=photo_batch_.count();batch_mark_=0;
         for(const auto& item:photo_batch_.items())
             std::cout<<"course_photo_batch_item epoch="<<course_epoch_<<" roll="<<item.planned.record.index
@@ -1474,6 +1582,9 @@ private:
         auto& p=e_.post;
         photo_batch_.observe_selected(photo);
         photo_batch_.observe_reports();
+        if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution &&
+            (p.batch_selected!=photo_batch_.selected_count() || p.batch_reported!=photo_batch_.reported_count() ||
+                p.batch_assessed!=photo_batch_.assessed_count()))observe_apple_reports();
         p.batch_selected=photo_batch_.selected_count();p.batch_reported=photo_batch_.reported_count();
         p.batch_assessed=photo_batch_.assessed_count();p.batch_retained=photo_batch_.retained_count();
         p.scored=static_cast<int>(p.batch_selected);
@@ -1670,6 +1781,8 @@ private:
             require(saved && saved.value.generation()==view.commit.generation &&
                 view.commit.generation>p.save_generation_before,
                 "actual Oak save did not publish a new acknowledged canonical generation");
+            observe_apple_gear(e_,saved.value,3);
+            validate_apple_saved_reports(saved.value);
             p.committed=std::move(saved.value);p.save_generation=view.commit.generation;p.oak_saved=true;
         }
         if(view.exit_requested) {
@@ -1954,6 +2067,7 @@ private:
                     entry.operation==course_operations[std::size_t(e_.requested_course)] && e_.oak_result,
                     "actual Oak course selection did not reach requested Original course owner");
                 flag16(true);
+                observe_apple_gear(e_,*state_.save(),0);
                 course_epoch_=entry.serial;
             } else require(e_.entries==5 && e_.empty_course && view.oak &&
                 entry.operation==ISLE_APPLICATION_ENTRY_OAKS_LAB && entry.argument==13,
@@ -2039,6 +2153,7 @@ private:
                 e_.post.oak_serial=entry.serial;
                 const auto saved=state_.save()->snapshot();
                 require(bool(saved),"actual returned Oak canonical save baseline unavailable");
+                observe_apple_gear(e_,saved.value,2);
                 e_.post.save_generation_before=saved.value.generation();
                 read_report(e_.post.report_after,e_.post.score_after);
                 e_.post.returned=true;
@@ -2217,8 +2332,13 @@ private:
                 "actual Name skipped its one-update confirmation/default-name rule");
             confirmed_name_=view.name;saved_name_=true;e_.name_confirmed=true;controller_.buttons=0;
             if(e_.mode==Mode::native_course && !e_.campaign_first_unlock && !continuous_campaign(e_) && !e_.authored_course_profile) {
+                // AUTHORED access/gear initialization after actual Name only.
+                // apple_evolution authors course2 plus Apple, never a natural
+                // reward, captured roll or Report; later Source rewards stay.
                 isle::private_course::seed_progress(state_,e_.requested_course,e_.capture_goal);
                 e_.authored_course_profile=true;
+                if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
+                    e_.apple_profile=state_.save();
             }
             if((e_.campaign_first_unlock || continuous_campaign(e_)) && !e_.unseeded_profile) {
                 const auto snapshot=state_.save()->snapshot();
@@ -2688,6 +2808,11 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
             const auto expected_bytes=evidence.post.committed.image().bytes(),actual_bytes=actual.value.image().bytes();
             require(std::equal(expected_bytes.begin(),expected_bytes.end(),actual_bytes.begin(),actual_bytes.end()),
                 "actual cold reopened canonical profile differs from the acknowledged Source save");
+            observe_apple_gear(evidence,actual.value,4);
+            if(evidence.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
+                require(std::all_of(evidence.apple_gear_flags.begin(),evidence.apple_gear_flags.end(),
+                    [](int flags){return flags==1;}),
+                    "native2-apple exact cold reopen lacks all five canonical Apple-only gear boundaries");
             evidence.post.cold_profile=true;
         } catch(const std::exception& error) {remember_failure(failure,error.what());}
     }
@@ -2712,6 +2837,8 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
             evidence.empty_course?"actual_original_Source_natural_empty_course_and_Manager_Oak13=passed course=":
             evidence.returned_oak_cancel?"actual_course_Photo15_returned_Oak_mid_print_cancel=passed course=":
             evidence.campaign_first_unlock?"actual_unseeded_six_Report_unlock_Save_Title8_cold_profile=passed course=":
+            evidence.capture_goal==isle::private_course::CaptureGoal::apple_evolution?
+                "actual_authored_Apple_only_course2_Source_scored5_6_Photo15_Oak_Save_Title8_exact_cold=passed course=":
             "actual_course_Photo15_Oak_Save_Source_Title8_and_cold_profile=passed course=")<<evidence.requested_course
             <<" actual_updates="<<evidence.course_updates<<" course_frames="<<evidence.course_frames
             <<" course_LUS_presentations="<<evidence.course_presentations
@@ -2746,7 +2873,7 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|native0..native6[-oak-cancel]|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] (existing empty absolute nonsymlink private directory)");
         Mode mode=Mode::ingress;
         std::int32_t requestedCourse=0;
         bool emptyCourse=false;
@@ -2769,12 +2896,14 @@ int main(int argc,char** argv) {
             const bool event=name=="native1-event" || name=="native3-event" || name=="native5-event";
             const bool sign=name.size()==12 && name.compare(0,6,"native")==0 && name[6]>='0' &&
                 name[6]<='5' && name.compare(7,5,"-sign")==0;
+            const bool apple=name=="native2-apple";
             if(event)captureGoal=isle::private_course::CaptureGoal::progression;
             else if(sign)captureGoal=isle::private_course::CaptureGoal::sign;
-            require(native || event || sign || emptyCourse || returnedOakCancel || nativeFailLive || campaignFirstUnlock || fullCampaign || campaignRetained ||
+            else if(apple)captureGoal=isle::private_course::CaptureGoal::apple_evolution;
+            require(native || event || sign || apple || emptyCourse || returnedOakCancel || nativeFailLive || campaignFirstUnlock || fullCampaign || campaignRetained ||
                 name=="ingress" || name=="course" || name=="menus" || name=="credits17" ||
                 name=="credits18" || name=="credits19","unknown actual Runtime qualification mode");
-            if(native || event || sign || emptyCourse || returnedOakCancel || nativeFailLive){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
+            if(native || event || sign || apple || emptyCourse || returnedOakCancel || nativeFailLive){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
             else if(campaignFirstUnlock || fullCampaign || campaignRetained)mode=Mode::native_course;
             else if (name=="course") mode=Mode::course;
             else if (name=="menus") mode=Mode::menus;

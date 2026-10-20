@@ -9,7 +9,7 @@ struct IslePlayerPhotoData;
 namespace isle::game { class State; }
 namespace isle::application { struct RuntimeView; struct SceneRetirementView; }
 namespace isle::private_course {
-enum class CaptureGoal { photographs,empty_roll,progression,sign };
+enum class CaptureGoal { photographs,empty_roll,progression,sign,apple_evolution };
 // Explicit authored unlocked profile, AFTER real Name confirmation and BEFORE
 // Oak construction. Preserves Name; does not manufacture natural progression.
 void seed_progress(game::State&,std::int32_t course,CaptureGoal);
@@ -18,6 +18,8 @@ void seed_progress(game::State&,std::int32_t course,CaptureGoal);
 // Volcano additionally requires the observed Source egg cart stop, a consumed
 // controller item throw, natural egg/Moltres transition, captured species146 and
 // resumed cart travel. Actor/placement observations never mutate native state.
+// Apple evolution additionally requires a consumed new Apple incarnation, its
+// exact Charmeleon hit, real evolution witnesses and qualified raw species5/6.
 class Probe final {
 public:
     Probe(std::int32_t course,private_post_course::Controller,const std::filesystem::path& proofRoot,CaptureGoal,game::State&);

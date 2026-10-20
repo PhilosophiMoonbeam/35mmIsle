@@ -476,6 +476,7 @@ const actor::Resources& Lifecycle::actor_resources() const noexcept { return imp
 const actor::Owner* Lifecycle::actors() const noexcept { return impl_->actors.get(); }
 const actor::Producer* Lifecycle::actor_packet_producer() const noexcept { return impl_->actor_producer.get(); }
 const world::World* Lifecycle::world_owner() const noexcept { return impl_->world.get(); }
+const items::Owner* Lifecycle::items_owner() const noexcept { return impl_->items.get(); }
 const IsleBeachEndingSource* Lifecycle::ending_source() const noexcept {
     return impl_->actors?&impl_->actors->ending_source():nullptr;
 }

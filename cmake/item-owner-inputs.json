@@ -64,10 +64,10 @@
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/item_owner.hpp": {
-      "sha256": "28e1f22605a1183b21de9619fa548590cede21b0f82b697181eca04cd67921de"
+      "sha256": "5a05357438d2692f1a91af3d8020c11c990ca34ebaab9e0bc3876b9f747506ab"
     },
     "src/item_owner.cpp": {
-      "sha256": "4f2bf822993b677fcf18d3333de4a0a95e0dbf6ad0b0b590aee2d4f35d7ac9d8"
+      "sha256": "6d37cee56a6ddcee34859bf9ead2c07bb8a384a9d48e91ec65a89964daf557a6"
     },
     "src/item_owner_source.h": {
       "sha256": "1842121e7052322c9acd84d9f49bd8f4d466ca2ea4e04aff46691a9de58b3662"

@@ -214,6 +214,9 @@ struct Consumer {
         }
     }
     void physical_exhaustion(const actor::SpawnResult& actor) {
+        const auto& observed=std::as_const(items);
+        require(!observed.slot_instance(0) && !observed.slot_instance(observed.animation().slot_count()),
+                "empty or out-of-range physical slot exposed an Item incarnation");
         const auto first=items.spawn_apple({100,1000,200},{0,0,0}); accepted(first.status);
         reject_without_source_mutation(&first);
         reject_without_source_mutation(&first,true);
@@ -221,8 +224,9 @@ struct Consumer {
         require(services.source_reference_assign(actor.object,&pokemon->interactionTarget,first.object),
                 "physical-exhaustion fixture could not adopt actual Item target");
         accepted(items.delete_item(first.object)); tick();
-        require(items.membership(first.instance).joined && pokemon->interactionTarget==first.object,
-                "physical-exhaustion fixture did not retain its actually joined Item");
+        require(items.membership(first.instance).joined && pokemon->interactionTarget==first.object &&
+                !observed.slot_instance(first.instance.slot),
+                "joined retained Item lost its target or remained enumerable as live");
         require(!items.collect_joined(),"joined-but-borrowed Item was collected");
         const auto cursor=globals.source.object_counter;
         reject_without_source_mutation();
@@ -232,8 +236,9 @@ struct Consumer {
         std::uint32_t id=0; native(isle_game_object_id(services.game,next.object,&id));
         require(id==300u+(static_cast<std::uint32_t>(cursor)+1u)%20u &&
                 globals.source.total==1 && globals.source.apples==1 &&
-                next.instance.slot==first.instance.slot && next.instance.incarnation!=first.instance.incarnation,
-                "legitimate collection did not preserve next source ID/count and fresh physical incarnation");
+                next.instance.slot==first.instance.slot && next.instance.incarnation!=first.instance.incarnation &&
+                observed.slot_instance(next.instance.slot)==next.instance && !observed.source(first.instance),
+                "legitimate collection did not preserve source counts and expose only the fresh physical incarnation");
     }
     void true_threshold_exhaustion(const actor::SpawnResult& actor) {
         const auto oldest=items.spawn_apple({100,1000,200},{0,0,0}); accepted(oldest.status);

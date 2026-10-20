@@ -74,6 +74,9 @@ public:
     IsleGameObject* object(menu::animation::InstanceHandle) const noexcept;
     IsleGameModel* native_model(menu::animation::InstanceHandle) const noexcept;
     menu::animation::InstanceHandle instance(IsleGameObject*) const noexcept;
+    // Immutable physical-slot observation; bound by animation().slot_count().
+    // Empty for inactive, retiring or out-of-range slots. No iterator/cache work.
+    menu::animation::InstanceHandle slot_instance(std::size_t) const noexcept;
     Membership membership(menu::animation::InstanceHandle) const noexcept;
     // Canonical live slot identity, including independent water/lava splashes.
     std::optional<Family> family(menu::animation::InstanceHandle) const noexcept;

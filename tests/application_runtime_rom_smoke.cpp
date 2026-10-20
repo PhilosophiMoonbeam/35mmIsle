@@ -1655,6 +1655,15 @@ private:
             (p.credits_serial?(p.oak_result==static_cast<std::int32_t>(p.credits_argument) && p.credits_joined && p.credits_result==8 &&
                 p.credits_updates>0 && p.credits_frames>0 && p.credits_presentations>0 && p.credits_visible):p.oak_result==8),
             "actual Oak acknowledged save/Original continuation/presented Title8 proof incomplete");
+        if(e_.mode==Mode::native_course && e_.authored_course_profile && e_.requested_course==0 &&
+           e_.capture_goal==isle::private_course::CaptureGoal::photographs) {
+            constexpr std::array<int,9> beach_species{{12,16,25,52,84,113,115,131,133}};
+            const auto items=photo_batch_.items();
+            for(const int species:beach_species)
+                require(std::any_of(items.begin(),items.end(),[&](const auto& item) {
+                    return item.planned.species==species && item.planned.score>0 && item.reported && item.assessed;
+                }),"authored Beach isolation lacks one of its nine actual positive assessed Source Reports");
+        }
         if(e_.resume_river)require(e_.requested_course==3 && e_.initial_oak_result==3 &&
             e_.river_objective!=isle::private_campaign::RiverPhotoObjective::none &&
             e_.river_report_stages==15 && e_.river_source_score>0 &&

@@ -11,6 +11,7 @@
 #include <optional>
 namespace isle::actor { class Owner; class Producer; class Resources; }
 namespace isle::world { class World; }
+namespace isle::items { class Owner; }
 namespace isle::beach {
 struct LifecycleAccess;
 enum class LifecycleStatus { ready, setup_pending, running, retiring, completed, cancelled, failed, retired };
@@ -73,6 +74,7 @@ public:
     const actor::Owner* actors() const noexcept;
     const actor::Producer* actor_packet_producer() const noexcept;
     const world::World* world_owner() const noexcept;
+    const items::Owner* items_owner() const noexcept;
 private:
     struct Impl;
     explicit Lifecycle(std::unique_ptr<Impl>) noexcept;

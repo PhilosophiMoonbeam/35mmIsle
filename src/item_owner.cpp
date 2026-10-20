@@ -524,6 +524,11 @@ IsleItemSource* Owner::source(IsleGameObject* object) noexcept { auto* s=impl_->
 IsleGameObject* Owner::object(menu::animation::InstanceHandle h) const noexcept { auto* s=impl_->find(h); return s?s->object:nullptr; }
 IsleGameModel* Owner::native_model(menu::animation::InstanceHandle h) const noexcept { auto* s=impl_->find(h); return s?s->model:nullptr; }
 menu::animation::InstanceHandle Owner::instance(IsleGameObject* o) const noexcept { auto* s=impl_->find(o); return s?s->instance:menu::animation::InstanceHandle{}; }
+menu::animation::InstanceHandle Owner::slot_instance(std::size_t index) const noexcept {
+    if (index>=impl_->slots.size()) return {};
+    const auto& slot=impl_->slots[index];
+    return slot.active && !slot.retiring?slot.instance:menu::animation::InstanceHandle{};
+}
 Membership Owner::membership(menu::animation::InstanceHandle h) const noexcept {
     auto* s=impl_->find(h,true); return {s && s->payload && exists(s->object),s && s->retiring,s && s->joined,impl_->globals.source.payload_cache};
 }

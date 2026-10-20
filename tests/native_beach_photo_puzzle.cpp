@@ -3,6 +3,8 @@
 #include "game_state.hpp"
 #include "actor_owner_source.h"
 #include "beach_eevee_chansey_source.h"
+#include "beach_snorlax_kangaskhan_source.h"
+#include "item_owner.hpp"
 #include "player_source.h"
 #include "player_ui_source.h"
 #include "actor_owner.hpp"
@@ -92,6 +94,139 @@ bool in_photo_pitch(const IslePlayerSource& player, const IsleGameVec3& target) 
     const float horizontal = std::hypot(target.x-player.CameraEyePos.x, target.z-player.CameraEyePos.z);
     const float pitch = std::atan2(target.y-player.CameraEyePos.y, horizontal);
     return pitch >= player.MinPitch && pitch <= player.MaxPitch;
+}
+using NativeKey = std::array<std::uint64_t, 3>;
+NativeKey native_key(menu::animation::InstanceHandle value) noexcept {
+    return {value.pool, value.slot, value.incarnation};
+}
+float wrapped(float angle) noexcept {
+    return std::remainder(angle, 6.28318530717958647692f);
+}
+std::uint32_t kangaskhan_callback(IsleGameSourceCallback value) noexcept {
+    if (value == func_beach_802C9BF8) return 0x802c9bf8;
+    if (value == func_beach_802C9C88) return 0x802c9c88;
+    if (value == func_beach_802C9DCC) return 0x802c9dcc;
+    if (value == func_beach_802C9E70) return 0x802c9e70;
+    if (value == func_beach_802C9F9C) return 0x802c9f9c;
+    if (value == func_beach_802CA010) return 0x802ca010;
+    return 0;
+}
+struct Kangaskhan {
+    bool present = false, eligible = false, focused = false, has_path = false;
+    NativeKey identity{}, sender{};
+    std::uint32_t graph = 0, state = 0, path = 0;
+    int context = -1;
+    float radius = 0, yaw = 0, heading = 0, parameter = 0;
+    IsleGameVec3 position{}, collision{}, global_collision{};
+};
+Kangaskhan observe_kangaskhan(const application::RuntimeView& view, const IslePlayerSource& player,
+                            const NativeKey& selected) {
+    Kangaskhan result;
+    const auto* actors = view.beach->actors();
+    const auto* items = view.beach->items_owner();
+    const auto* world = view.beach->world_owner();
+    require(actors && items && world && world->current() && world->current()->resource,
+            "Beach Kangaskhan native owners unavailable");
+    IslePlayerPhotoFocus focus{};
+    require(isle_player_photo_published_focus(player.photo, &focus) == ISLE_GAME_OK,
+            "Beach Kangaskhan published focus unavailable");
+    const IsleGameModelPlacement* player_placement = nullptr;
+    require(isle_game_model_placement(player.game, player.model, &player_placement) == ISLE_GAME_OK && player_placement,
+            "Beach Kangaskhan actual Player placement unavailable");
+    const auto player_position = player_placement->transform.position;
+    IsleGameObject* previous = nullptr;
+    for (;;) {
+        IsleGameObject* object = nullptr;
+        IsleActorSource* source = nullptr;
+        IsleGameModel* model = nullptr;
+        require(isle_actor_source_link3_next(player.game, previous, &object, &source, &model) == ISLE_GAME_OK,
+                "Beach Kangaskhan native traversal rejected");
+        if (!object) break;
+        previous = object;
+        if (source->id != 115) continue;
+        const auto identity = native_key(actors->instance(object));
+        if (selected[0] && identity != selected) continue;
+        require(!result.present && identity[0], "Beach Kangaskhan duplicate or unowned incarnation");
+        result.present = true; result.identity = identity;
+        result.sender = native_key(items->instance(source->interactionTarget));
+        result.graph = source->transitionGraph ? source->transitionGraph->source_identity : 0;
+        result.has_path = source->path != nullptr; result.parameter = source->pathParam;
+        result.radius = source->collisionRadius; result.collision = source->collPosition;
+        const auto origin = world->current()->resource->metadata.world_position;
+        result.global_collision = {result.collision.x+origin.x*100, result.collision.y+origin.y*100,
+                                   result.collision.z+origin.z*100};
+        IsleGameSourceCallback state = nullptr, path = nullptr;
+        if (source->stateProc)
+            require(isle_game_process_source_function(player.game, source->stateProc, &state) == ISLE_GAME_OK,
+                    "Beach Kangaskhan state observation rejected");
+        if (source->pathProc)
+            require(isle_game_process_source_function(player.game, source->pathProc, &path) == ISLE_GAME_OK,
+                    "Beach Kangaskhan path observation rejected");
+        result.state = kangaskhan_callback(state); result.path = kangaskhan_callback(path);
+        if (!model) continue;
+        const IsleGameModelPlacement* placement = nullptr;
+        require(isle_game_model_placement(player.game, model, &placement) == ISLE_GAME_OK && placement,
+                "Beach Kangaskhan placement unavailable");
+        result.position = placement->transform.position; result.yaw = placement->transform.rotation.y;
+        result.heading = std::atan2(player_position.x-result.position.x, player_position.z-result.position.z);
+        IsleGameObjectMetadata metadata{};
+        require(isle_game_object_metadata(player.game, object, &metadata) == ISLE_GAME_OK,
+                "Beach Kangaskhan visibility unavailable");
+        result.eligible = placement->mode != ISLE_GAME_MODEL_PLACEMENT_DISABLED && !(metadata.flags&1u) &&
+            source->tangible && (source->flags&4u) && source->playerDist >= 0 && source->playerDist <= 10000;
+        result.focused = focus.present && focus.object == object && focus.pokemon_id == 115 && (focus.flags&4u);
+        result.context = focus.context;
+    }
+    return result;
+}
+struct BeachItems {
+    unsigned valid = 0;
+    NativeKey only{};
+    int state = ISLE_ITEM_INVALID;
+};
+BeachItems observe_beach_items(const items::Owner& owner) {
+    BeachItems result;
+    for (std::size_t slot = 0; slot < owner.animation().slot_count(); ++slot) {
+        const auto instance = owner.slot_instance(slot);
+        if (!instance) continue;
+        const auto family = owner.family(instance);
+        require(bool(family), "Beach Item incarnation lost its family");
+        if (*family != items::Family::apple && *family != items::Family::pester_ball) continue;
+        const auto* source = owner.source(instance);
+        require(source && source->itemID == (*family == items::Family::apple ? 163 : 162),
+                "Beach Item family/payload observation inconsistent");
+        if (source->state <= ISLE_ITEM_INVALID) continue;
+        ++result.valid; result.only = native_key(instance); result.state = source->state;
+        // Family remains independently checked at the throw receipt.
+        if (*family != items::Family::apple) result.only = {};
+    }
+    return result;
+}
+struct BeachIntercept {
+    float time = 0, miss = 0;
+    IsleGameVec3 target{};
+};
+bool kangaskhan_intercept(const IslePlayerSource& player, const IsleGameVec3& eye,
+                         const IsleGameVec3& collision, const IsleGameVec3& motion,
+                         const IsleGameVec3& ray, BeachIntercept& result) {
+    const IsleGameVec3 delta{ray.x-eye.x, ray.y-eye.y+100, ray.z-eye.z};
+    const float norm = std::hypot(delta.x, delta.y, delta.z);
+    if (!(norm > 0)) return false;
+    const IsleGameVec3 velocity{50*delta.x/norm+player.PlayerVelocity.x,
+        50*delta.y/norm+player.PlayerVelocity.y, 50*delta.z/norm+player.PlayerVelocity.z};
+    const float dx = collision.x+motion.x-eye.x, dz = collision.z+motion.z-eye.z;
+    const float vx = velocity.x*.5f-motion.x, vz = velocity.z*.5f-motion.z;
+    const float speed_squared = vx*vx+vz*vz;
+    if (!(speed_squared > 0)) return false;
+    result.time = (dx*vx+dz*vz)/speed_squared;
+    if (!(result.time > 0 && result.time <= 160)) return false;
+    result.target = {collision.x+motion.x*(result.time+1), collision.y+motion.y*(result.time+1),
+                     collision.z+motion.z*(result.time+1)};
+    const IsleGameVec3 position{eye.x+velocity.x*.5f*result.time,
+        eye.y+velocity.y*.5f*result.time-.15f*result.time*(result.time+1),
+        eye.z+velocity.z*.5f*result.time};
+    result.miss = std::hypot(position.x-result.target.x, position.y-result.target.y, position.z-result.target.z);
+    return std::isfinite(result.miss);
 }
 } // namespace
 
@@ -284,6 +419,214 @@ bool BeachPhotoPuzzle::update_lapras(const application::RuntimeView& view, std::
     publish(buttons, x, y);
     return true;
 }
+bool BeachPhotoPuzzle::update_kangaskhan(const application::RuntimeView& view, std::uint64_t updates) {
+    auto& f = facts_.kangaskhan;
+    using Phase = KangaskhanPhotoPhase;
+    using End = KangaskhanPhotoEnd;
+    f.owns_pad = false;
+    if (f.phase == Phase::closed) return false;
+    const auto& player = *view.beach->source().player;
+    const auto target = observe_kangaskhan(view, player, f.actor);
+    const auto* owner = view.beach->items_owner();
+    require(owner, "Beach Kangaskhan Item owner retired");
+    const auto items = observe_beach_items(*owner);
+    f.present = target.present; f.graph = target.graph; f.state = target.state; f.path = target.path;
+    f.position = target.position; f.collision = target.collision; f.radius = target.radius;
+    f.path_parameter = target.parameter; f.yaw = target.yaw; f.heading = target.heading;
+    f.facing_error = wrapped(target.heading-target.yaw); f.valid_items = items.valid;
+    f.motion_ready = target.present && target.identity == kangaskhan_observed_actor_ &&
+                     kangaskhan_observed_update_+1 == updates;
+    if (f.motion_ready) {
+        f.motion = {target.global_collision.x-kangaskhan_global_collision_.x,
+                    target.global_collision.y-kangaskhan_global_collision_.y,
+                    target.global_collision.z-kangaskhan_global_collision_.z};
+        f.motion_ready = std::isfinite(f.motion.x) && std::isfinite(f.motion.y) && std::isfinite(f.motion.z);
+    }
+    kangaskhan_observed_actor_ = target.identity;
+    kangaskhan_global_collision_ = target.global_collision; kangaskhan_observed_update_ = updates;
+    const bool ready = player.D_80382D04_523114 == 1 && !player.IsInputDisabled && !player.IsPaused;
+    const bool admitted_graph = target.graph == 0x802cd694 || target.graph == 0x802cd634 ||
+                               target.graph == 0x802cd6c4 || target.graph == 0x802cd6f4;
+    const auto enter = [&](Phase phase, std::uint64_t bound) {
+        f.phase = phase; f.phase_started = updates; f.deadline = updates+bound;
+    };
+    const auto finish = [&](End end) { f.end = end; enter(Phase::release, 4); };
+    const auto hold_zoom = [&]() -> std::uint16_t {
+        return player.ZoomSwitchMode == 0 && player.gDirectionIndex < 0 ? zoom_button : 0;
+    };
+    IsleGameVec3 aimed{};
+    bool inverse_ready = false;
+    if (f.phase == Phase::dormant) {
+        // Refuse unresolved foreign food without taking its input ownership.
+        if (!ready || !target.eligible || !admitted_graph || items.valid ||
+            (target.graph == 0x802cd694 && !target.has_path) || player.photo->gPhotoCount >= 59 ||
+            (player.input.current_buttons&apple_button)) return false;
+        // Visibility is not ballistic reach. Do not spend the finite aim window
+        // or replace ordinary inputs while the existing low arc is unreachable.
+        if (!f.motion_ready || !(inverse_ready = projectile_target(player,target.collision,aimed))) return false;
+        f.actor = target.identity; enter(Phase::aiming, 360);
+    }
+    if (f.phase != Phase::release && (!target.present || target.identity != f.actor)) finish(End::actor_lost);
+    if (f.throw_consumed && !f.throw_release && updates > f.throw_consumed &&
+        !(player.input.current_buttons&apple_button)) {
+        f.throw_release = updates; ++f.releases;
+    }
+    if (f.phase == Phase::throw_receipt) {
+        const bool pressed = (player.input.current_buttons&apple_button) && (player.input.pressed_buttons&apple_button);
+        if (pressed) ++f.throw_presses;
+        const bool consumed = updates == f.throw_request+1 && pressed && ready &&
+            player.gDirectionIndex >= 0 && !player.TargetDirectionZoomedIn && player.TurnToDirSpeed == 0 &&
+            player.input.current_buttons == apple_button &&
+            player.LastItemId == 163 && player.ThrowItemTimeout > 0 &&
+            player.photo->gPhotoCount == f.film_before && player.photo->D_800AE27C == f.qualified_before &&
+            items.valid == 1 && items.only[0] && items.state == ISLE_ITEM_FLYING;
+        if (!consumed) { ++f.mismatches; finish(End::throw_mismatch); }
+        else {
+            ++f.throws_consumed; f.throw_consumed = updates; f.item = items.only;
+            enter(Phase::flight, 180);
+        }
+    }
+    if (f.phase == Phase::flight) {
+        const auto current = owner->slot_instance(std::size_t(f.item[1]));
+        const auto* flight = native_key(current) == f.item ? owner->source(current) : nullptr;
+        const auto expected = f.initial_route ? 0x802c9bf8u : 0x802c9dccu;
+        if (flight && target.state == expected && target.sender == f.item) {
+            f.hit = true; f.sender = target.sender; f.hit_update = updates;
+            f.incoming = flight->collisionVelocity;
+            enter(Phase::reaction, 360);
+        } else if (!flight) finish(End::flight_lost);
+        else if (updates >= f.deadline) finish(End::flight_timeout);
+    }
+    if (f.phase == Phase::reaction) {
+        if (f.initial_route && target.path == 0x802c9c88 && !f.path_seen) {
+            f.path_seen = true; f.path_update = updates;
+        }
+        const bool turning = f.initial_route
+            ? f.path_seen && target.state == 0x802c9f9c && target.path == 0x802ca010
+            : target.state == 0x802c9dcc && target.path == 0x802c9e70;
+        if (turning) { f.turn_seen = true; f.turn_update = updates; enter(Phase::framing, 360); }
+        else if (updates >= f.deadline) finish(End::reaction_timeout);
+    }
+    if (f.phase == Phase::shutter_receipt) {
+        const bool pressed = (player.input.current_buttons&apple_button) && (player.input.pressed_buttons&apple_button);
+        if (pressed) ++f.shutter_presses;
+        f.taken_context = player.photo->PokemonDetector_TakenPhotoIndex;
+        bool coherent = updates == f.shutter_request+1 && pressed && ready &&
+            player.photo->gPhotoCount == f.slot+1 && player.photo->D_800AE27C == f.qualified_before+1 &&
+            f.taken_context >= 0 && f.taken_context < 2 && f.decision_context >= 0 && f.decision_context < 2;
+        // A completed detector publication may advance between decision and A.
+        // Native actor identity and the full actual taken subject must agree;
+        // equality of the two buffer indices is not a Source capture invariant.
+        if (coherent) {
+            const auto& image = player.photo->D_800B0598[f.slot];
+            const auto& context = player.photo->PokemonDetector_Photo[f.taken_context];
+            coherent = image.levelID == 0 && (image.unk_00_16&0xe0u) == 0x20u &&
+                image.pokemons[0].pokemonID == 115 &&
+                native_key(view.beach->actors()->instance(context.pokemonInFocus)) == f.actor;
+            bool same_subject = false;
+            for (std::size_t i = 0; i < 12 && coherent; ++i) {
+                if (native_key(view.beach->actors()->instance(context.pokemonObjects[i])) != f.actor) continue;
+                const auto& original = context.main.pokemons[i]; const auto& saved = image.pokemons[0];
+                same_subject = original.pokemonID == saved.pokemonID && original.unk_00_13 == saved.unk_00_13 &&
+                    original.poseID == saved.poseID && original.specialID == saved.specialID &&
+                    original.animationTime == saved.animationTime && original.yaw == saved.yaw &&
+                    original.position.x == saved.position.x && original.position.y == saved.position.y &&
+                    original.position.z == saved.position.z;
+                break;
+            }
+            coherent = coherent && same_subject;
+        }
+        f.coherent = coherent;
+        if (coherent) { f.capture_update = updates; finish(End::none); }
+        else { ++f.mismatches; finish(End::capture_mismatch); }
+    }
+    if (f.phase == Phase::release) {
+        if (!(player.input.current_buttons&apple_button)) {
+            if (f.coherent) { f.shutter_release = updates; ++f.releases; }
+            f.complete = f.coherent && f.hit && f.throw_release && f.shutter_release > f.capture_update;
+            if (f.complete) f.end = End::complete;
+            f.phase = Phase::closed; return false;
+        }
+        if (updates >= f.deadline) { f.end = End::release_timeout; f.phase = Phase::closed; return false; }
+        f.owns_pad = facts_.owns_pad = true; ++f.controls; publish(hold_zoom()); return true;
+    }
+    f.owns_pad = facts_.owns_pad = true; ++f.controls;
+    if ((f.phase == Phase::aiming || f.phase == Phase::framing) && updates >= f.deadline) {
+        finish(f.phase == Phase::aiming ? End::aim_timeout : End::turn_ended);
+        publish(hold_zoom()); return true;
+    }
+    if (!ready) { publish(hold_zoom()); return true; }
+    if (f.phase == Phase::flight || f.phase == Phase::reaction) { publish(); return true; }
+    if (player.photo->gPhotoCount >= 59) { finish(End::film_reserved); publish(hold_zoom()); return true; }
+    if (f.phase == Phase::aiming) {
+        if (items.valid || !admitted_graph || !target.eligible) {
+            // No throw occurred; leave the optional attempt closed rather than steal a foreign duty.
+            finish(End::actor_lost); publish(); return true;
+        }
+        if (player.gDirectionIndex < 0 || player.TargetDirectionZoomedIn || player.TurnToDirSpeed != 0) {
+            publish(player.ZoomSwitchMode == 1 && player.gDirectionIndex == -1 &&
+                    !(player.input.current_buttons&zoom_button) ? zoom_button : 0);
+            return true;
+        }
+        bool reachable = f.motion_ready && (inverse_ready || projectile_target(player,target.collision,aimed));
+        const IsleGameCameraParameters* camera = nullptr;
+        require(isle_game_camera_parameters(player.game, player.camera, &camera) == ISLE_GAME_OK && camera,
+                "Beach Kangaskhan launch camera unavailable");
+        const IsleGameVec3 eye{camera->look_at.eye[0],camera->look_at.eye[1],camera->look_at.eye[2]};
+        BeachIntercept prediction{};
+        for (unsigned iteration = 0; iteration < 3 && reachable; ++iteration)
+            reachable = kangaskhan_intercept(player, eye, target.collision, f.motion, aimed, prediction) &&
+                        projectile_target(player, prediction.target, aimed);
+        if (!reachable) { publish(); return true; }
+        const float dx = aimed.x-player.CameraEyePos.x, dz = aimed.z-player.CameraEyePos.z;
+        const float sn = std::sin(-player.movement.rotation.y), cs = std::cos(-player.movement.rotation.y);
+        const float yaw = std::atan2(-(dx*cs+dz*sn), dz*cs-dx*sn);
+        int wanted = player.gDirectionIndex;
+        const auto error = [&](int index) { return std::abs(wrapped(yaw-(float(index)-2)*1.5707963267948966f)); };
+        for (int index = 0; index < 4; ++index) if (error(index) < error(wanted)) wanted = index;
+        if (wanted != player.gDirectionIndex) {
+            const std::uint16_t turn = (wanted-player.gDirectionIndex+4)%4 == 3 ? 0x0002 : 0x0001;
+            publish(!(player.input.current_buttons&turn) ? turn : 0); return true;
+        }
+        std::int8_t x = 0, y = 0; aim_.point(aim_.owner, player, aimed, false, x, y);
+        const bool ray = kangaskhan_intercept(player, eye, target.collision, f.motion, player.cam_target, prediction);
+        f.predicted_time = prediction.time; f.predicted_miss = prediction.miss;
+        if (!x && !y && ray && prediction.miss < target.radius && player.ThrowItemTimeout == 0 &&
+            !(player.input.current_buttons&(apple_button|zoom_button)) &&
+            player.ui && player.ui->Icons_NumItemsAvailable >= 1 && observe_beach_items(*owner).valid == 0) {
+            f.initial_route = target.graph == 0x802cd694;
+            f.film_before = player.photo->gPhotoCount; f.qualified_before = player.photo->D_800AE27C;
+            ++f.throw_requests; f.throw_request = updates; enter(Phase::throw_receipt, 1);
+            publish(apple_button); return true;
+        }
+        publish(0,x,y); return true;
+    }
+    if (f.phase == Phase::framing) {
+        const bool turning = f.initial_route ? target.path == 0x802ca010 : target.path == 0x802c9e70;
+        if (!turning || !target.eligible) {
+            finish(End::turn_ended); publish(hold_zoom()); return true;
+        }
+        f.aligned_updates = std::abs(f.facing_error) <= .1f ? f.aligned_updates+1 : 0;
+        const bool zoomed = player.gDirectionIndex == -1 && !player.TargetDirectionZoomedIn && player.TurnToDirSpeed == 0;
+        if (!zoomed) {
+            const bool enter_zoom = player.ZoomSwitchMode == 0 ||
+                (player.gDirectionIndex >= 0 && !player.TargetDirectionZoomedIn &&
+                 !(player.input.current_buttons&zoom_button));
+            publish(enter_zoom ? zoom_button : 0);
+            return true;
+        }
+        std::int8_t x = 0, y = 0; aim_.point(aim_.owner, player, target.collision, true, x, y);
+        std::uint16_t buttons = hold_zoom();
+        if (f.throw_release && f.aligned_updates >= 2 && target.focused && in_photo_pitch(player,target.collision) &&
+            !x && !y && player.sTimerAfterPhotoTaken < 0 && !(player.input.current_buttons&apple_button)) {
+            f.slot = player.photo->gPhotoCount; f.qualified_before = player.photo->D_800AE27C;
+            f.decision_context = target.context; f.shutter_request = updates; ++f.shutter_requests;
+            enter(Phase::shutter_receipt, 1); buttons |= apple_button;
+        }
+        publish(buttons,x,y); return true;
+    }
+    return true;
+}
 bool BeachPhotoPuzzle::update(const application::RuntimeView& view, const game::State& state,
                               std::uint64_t updates) {
     if (sampled_ && updates == last_update_) return facts_.owns_pad;
@@ -318,8 +661,39 @@ bool BeachPhotoPuzzle::update(const application::RuntimeView& view, const game::
                               wire.value[6] != std::byte{0xff} || wire.value[7] != std::byte{0xff};
         facts_.prior_report_checked = true;
     }
-    if (facts_.prior_report) { facts_.dependency = BeachPhotoDependency::prior_report; return false; }
-    if (facts_.complete) { facts_.dependency = BeachPhotoDependency::none; return false; }
+    const auto optional_kangaskhan = [&]() {
+        auto& k = facts_.kangaskhan;
+        if (!k.checked) {
+            const int report = isle_player_photo_func_8009BB4C(player->photo,115);
+            require(report >= 0 && report < int(save::game_report_count), "Beach Kangaskhan Report mapping unavailable");
+            const auto wire = state.save()->photo(save::PhotoSet::report,std::size_t(report));
+            require(bool(wire) && wire.value.size() == save::game_photo_bytes, "Beach Kangaskhan Report unavailable");
+            k.prior_report = wire.value[4] != std::byte{0xff} || wire.value[5] != std::byte{0xff} ||
+                             wire.value[6] != std::byte{0xff} || wire.value[7] != std::byte{0xff};
+            k.checked = true;
+        }
+        // Even a neutral handoff is optional input ownership: absent115 must
+        // leave the original first-acquisition schedule entirely unchanged.
+        if (!k.prior_report) return false;
+        // Chansey completion does not imply its last A has been released.
+        if (release_pending_) {
+            if (player->input.current_buttons&apple_button) {
+                if (++facts_.kangaskhan.handoff_updates > 4) {
+                    facts_.kangaskhan.phase = KangaskhanPhotoPhase::closed;
+                    facts_.kangaskhan.end = KangaskhanPhotoEnd::release_timeout;
+                    release_pending_ = false;
+                    return false;
+                }
+                facts_.owns_pad = true;
+                publish(player->ZoomSwitchMode == 0 && player->gDirectionIndex < 0 ? zoom_button : 0);
+                return true;
+            }
+            release_pending_ = false;
+        }
+        return update_kangaskhan(view,updates);
+    };
+    if (facts_.prior_report) { facts_.dependency = BeachPhotoDependency::prior_report; return optional_kangaskhan(); }
+    if (facts_.complete) { facts_.dependency = BeachPhotoDependency::none; return optional_kangaskhan(); }
     facts_.film = player->photo->gPhotoCount;
     facts_.qualified = player->photo->D_800AE27C;
     require(facts_.film >= 0 && facts_.film <= 60 && facts_.qualified >= 0 && facts_.qualified <= facts_.film,
@@ -369,7 +743,7 @@ bool BeachPhotoPuzzle::update(const application::RuntimeView& view, const game::
             facts_.throw_release_update = updates;
         release_pending_ = false;
     }
-    if (facts_.complete) { facts_.dependency = BeachPhotoDependency::none; return false; }
+    if (facts_.complete) { facts_.dependency = BeachPhotoDependency::none; return optional_kangaskhan(); }
     if (!facts_.player_ready) { facts_.dependency = BeachPhotoDependency::player_not_ready; return false; }
     if (facts_.film >= 59) { facts_.dependency = BeachPhotoDependency::film_reserved; return false; }
 

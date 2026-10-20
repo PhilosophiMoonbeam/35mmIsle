@@ -116,10 +116,10 @@
       "sha256": "b490ccd33995d5b625deefd671824a83b62bd0543defe422c7009d159695058f"
     },
     "src/beach_lifecycle.hpp": {
-      "sha256": "658178a5d966077fa5eaf7935a996e28c9d54aaac7393d669118fbbec9e56bec"
+      "sha256": "4b7df157a70902ed281bc90855290d79f72921fae787293acb6811a7a7af8448"
     },
     "src/beach_lifecycle.cpp": {
-      "sha256": "f1368838bfe37f3ead97a42c8b809ea64db193cbc819f45b4374856a62709a76"
+      "sha256": "f49f51ea3938a360467213660933d84539a405603621107bf82b4f0169f5d41d"
     },
     "src/application_photos.hpp": {
       "sha256": "b5bb43ef94f39d252d986f3eaeaf6e29e913fbd9f7f8b80195ad6ce08bbb2333"

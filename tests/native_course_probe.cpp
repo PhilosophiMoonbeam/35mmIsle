@@ -481,7 +481,8 @@ struct Probe::Impl {
         if(beach_photos) {
             owned=beach_photos->update(view,state,updates);
             const auto& f=beach_photos->facts();
-            requested_shutters=f.shutter_requests;requested_throws=f.throw_requests;
+            requested_shutters=f.shutter_requests+f.kangaskhan.shutter_requests;
+            requested_throws=f.throw_requests+f.kangaskhan.throw_requests;
         } else if(tunnel_photos) {
             owned=tunnel_photos->update(view,state,updates);
             const auto& f=tunnel_photos->facts();
@@ -610,6 +611,33 @@ struct Probe::Impl {
                 <<"\taim_sample="<<lapras.aim_sample<<"\taim_radius="<<lapras.aim_radius
                 <<"\tactual_collision_volume_aim_hint="<<lapras.aim_hint.x<<','<<lapras.aim_hint.y<<','<<lapras.aim_hint.z;
             row(focus.str());
+            const auto& k=f.kangaskhan;
+            std::ostringstream kangaskhan;
+            kangaskhan.precision(std::numeric_limits<float>::max_digits10);
+            kangaskhan<<"beach_kangaskhan\tupdates="<<updates<<"\tphase/end="<<int(k.phase)<<'/'<<int(k.end)
+                <<"\tchecked/prior/owns="<<k.checked<<'/'<<k.prior_report<<'/'<<k.owns_pad
+                <<"\tactor="<<k.actor[0]<<'/'<<k.actor[1]<<'/'<<k.actor[2]
+                <<"\titem="<<k.item[0]<<'/'<<k.item[1]<<'/'<<k.item[2]
+                <<"\tsender="<<k.sender[0]<<'/'<<k.sender[1]<<'/'<<k.sender[2]
+                <<"\tpresent/initial/path/hit/turn="<<k.present<<'/'<<k.initial_route<<'/'<<k.path_seen<<'/'<<k.hit<<'/'<<k.turn_seen
+                <<"\tgraph/state/path="<<k.graph<<'/'<<k.state<<'/'<<k.path
+                <<"\tvalid_items="<<k.valid_items<<"\tphase_started/deadline="<<k.phase_started<<'/'<<k.deadline
+                <<"\tcontrols/aligned="<<k.controls<<'/'<<k.aligned_updates
+                <<"\tchansey_handoff_updates="<<k.handoff_updates
+                <<"\tthrow=requests/presses/consumed:"<<k.throw_requests<<'/'<<k.throw_presses<<'/'<<k.throws_consumed
+                <<"\tthrow_updates="<<k.throw_request<<'/'<<k.throw_consumed<<'/'<<k.throw_release
+                <<"\treaction_updates="<<k.hit_update<<'/'<<k.path_update<<'/'<<k.turn_update
+                <<"\tshutter=requests/presses/coherent:"<<k.shutter_requests<<'/'<<k.shutter_presses<<'/'<<k.coherent
+                <<"\tshutter_updates="<<k.shutter_request<<'/'<<k.capture_update<<'/'<<k.shutter_release
+                <<"\treleases/mismatches/complete="<<k.releases<<'/'<<k.mismatches<<'/'<<k.complete
+                <<"\tfilm/qualified/slot/context/taken="<<k.film_before<<'/'<<k.qualified_before<<'/'<<k.slot<<'/'<<k.decision_context<<'/'<<k.taken_context
+                <<"\tpath_parameter/yaw/heading/error="<<k.path_parameter<<'/'<<k.yaw<<'/'<<k.heading<<'/'<<k.facing_error
+                <<"\tmotion_ready="<<k.motion_ready<<"\tmotion="<<k.motion.x<<','<<k.motion.y<<','<<k.motion.z
+                <<"\tanalytic_intercept_NOT_receipt="<<k.predicted_time<<'/'<<k.predicted_miss<<'/'<<k.radius
+                <<"\tposition="<<k.position.x<<','<<k.position.y<<','<<k.position.z
+                <<"\tcollision="<<k.collision.x<<','<<k.collision.y<<','<<k.collision.z
+                <<"\tincoming="<<k.incoming.x<<','<<k.incoming.y<<','<<k.incoming.z;
+            row(kangaskhan.str());
         } else if(tunnel_photos) {
             const auto& f=tunnel_photos->facts();
             text<<"\tfamily=tunnel_photos\tphase="<<int(f.phase)<<"\towns="<<f.owns_pad

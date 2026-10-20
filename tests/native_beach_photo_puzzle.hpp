@@ -27,8 +27,32 @@ struct LaprasPhotoFacts {
     std::uint64_t mismatches = 0;
     std::int32_t target_behavior = -1, late_slot = -1;
 };
+enum class KangaskhanPhotoPhase { dormant, aiming, throw_receipt, flight, reaction, framing, shutter_receipt, release, closed };
+enum class KangaskhanPhotoEnd { none, complete, actor_lost, aim_timeout, throw_mismatch,
+    flight_lost, flight_timeout, reaction_timeout, turn_ended, film_reserved, capture_mismatch, release_timeout };
+struct KangaskhanPhotoFacts {
+    KangaskhanPhotoPhase phase = KangaskhanPhotoPhase::dormant;
+    KangaskhanPhotoEnd end = KangaskhanPhotoEnd::none;
+    bool checked = false, prior_report = false, owns_pad = false, initial_route = false;
+    bool present = false, path_seen = false, hit = false, turn_seen = false;
+    bool motion_ready = false, coherent = false, complete = false;
+    std::array<std::uint64_t, 3> actor{}, item{}, sender{};
+    std::uint32_t graph = 0, state = 0, path = 0, valid_items = 0;
+    std::uint32_t throw_requests = 0, throw_presses = 0, throws_consumed = 0;
+    std::uint32_t shutter_requests = 0, shutter_presses = 0, releases = 0, mismatches = 0;
+    std::uint64_t phase_started = 0, deadline = 0, controls = 0, aligned_updates = 0;
+    std::uint32_t handoff_updates = 0;
+    std::uint64_t throw_request = 0, throw_consumed = 0, throw_release = 0;
+    std::uint64_t hit_update = 0, path_update = 0, turn_update = 0;
+    std::uint64_t shutter_request = 0, capture_update = 0, shutter_release = 0;
+    std::int32_t film_before = 0, qualified_before = 0, slot = -1, decision_context = -1, taken_context = -1;
+    float path_parameter = 0, yaw = 0, heading = 0, facing_error = 0, radius = 0;
+    float predicted_time = 0, predicted_miss = 0;
+    IsleGameVec3 position{}, collision{}, motion{}, incoming{};
+};
 struct BeachPhotoFacts {
     LaprasPhotoFacts lapras{};
+    KangaskhanPhotoFacts kangaskhan{};
     BeachPhotoDependency dependency = BeachPhotoDependency::course_not_active;
     bool owns_pad = false, player_ready = false, apple_available = false;
     bool prior_report_checked = false, prior_report = false;
@@ -64,6 +88,7 @@ public:
 private:
     void publish(std::uint16_t = 0, std::int8_t = 0, std::int8_t = 0) noexcept;
     bool update_lapras(const application::RuntimeView&, std::uint64_t);
+    bool update_kangaskhan(const application::RuntimeView&, std::uint64_t);
     private_post_course::Controller controller_;
     Aim aim_;
     BeachPhotoFacts facts_{};
@@ -76,6 +101,9 @@ private:
     std::array<std::int32_t, 3> lapras_observed_counters_{};
     bool lapras_pending_ = false, lapras_release_ = false;
     std::uint64_t lapras_request_update_ = 0;
+    std::array<std::uint64_t, 3> kangaskhan_observed_actor_{};
+    IsleGameVec3 kangaskhan_global_collision_{};
+    std::uint64_t kangaskhan_observed_update_ = 0;
 };
 } // namespace isle::private_campaign
 #endif

@@ -5280,3 +5280,92 @@ This qualifies the inherited-profile Moltres replacement and physical 5/6
 Save/Title/cold chain. It does not establish naturally earned Pester, 40 species,
 all signs, Mew, final credits, fresh full-campaign completion or Windows gameplay.
 
+### Physical Apple-hit Kangaskhan quality route
+
+The existing Beach photo driver now admits one optional quality attempt only
+with canonical Apple and an already-saved Kangaskhan, after Chansey duty and
+its actual A release. It does not replace ordinary first acquisition. Before
+owning input, the target must have an admitted CMD13 graph, a real initial path
+when required, consecutive native-incarnation motion observations and a
+reachable existing low arc. Visibility alone must not start the finite budget.
+All valid Apple/Pester items block initial admission; independent splashes do
+not. The zero-item condition is rechecked at the one normal unzoomed A edge.
+
+`items::Owner::slot_instance()` provides allocation-free, immutable physical-slot
+keys through the existing animation capacity. Inactive, retiring and
+out-of-range slots return empty; a reused slot exposes only its new incarnation.
+The const Beach Item-owner accessor follows existing Actor/World lifetimes.
+Neither query touches Source iterators, render caches, physics or ownership.
+The existing real-ROM one-slot `physical` Item consumer passes empty/bounds,
+joined-but-held retirement and fresh-incarnation/stale-handle checks.
+Reviewed support identities in both existing manifests are updated; pinned
+Source bodies, revision and transformation outputs are unchanged.
+
+Pinned `src/beach/561B30.c:38–61,89–111,142–160` defines two real routes:
+initial graph `802CD694` takes hit animation → `802C9C88` walk → `802CA010`
+player-facing turn; later admitted graphs take `802C9DCC` → `802C9E70`.
+Both independent planner and reviewer assessments identify the same trap:
+the supplied turn flag keeps tracking Player rather than completing on
+alignment (`pokemon.c:1348–1391`). The driver requires the actual applicable
+callback and physical facing, not a permanently awaited `PATH_ENDED`.
+Source retains all state changes. The input policy keeps its fixed
+360-update aim, 180-flight, 360-reaction, 360-framing and four-release bounds,
+three pure intercept refinements and 160-update prediction horizon; no retries.
+
+One actual next-update A edge must leave film/qualified counters unchanged
+and create exactly one flying native Apple. Its complete key must match
+the tracked Actor's CMD13 reaction `interactionTarget`; neither a changed
+animation nor item disappearance establishes a hit. One zoomed shutter then
+requires exact live focus, film/qualified increments, raw primary115/course0/
+scope `0x20`, matching taken-context native Actor and complete saved primary,
+followed by an actual release. Successive detector-buffer indices may differ;
+native focus and full subject correspondence remain mandatory.
+
+Early candidate `650c` spent its budget before ballistic reach and took no
+shot. It also performed one neutral Chansey handoff without saved115, losing
+Eevee from the otherwise nine-species authored baseline. The frozen published
+control `650h` still captured all nine. Moving canonical115 admission before
+**any** optional input restores the original schedule; no Eevee/SDK patch or
+coverage waiver is used. An existing authored-Beach isolation assertion now
+requires all nine actual positive, reported and assessed Source species.
+The planning premise `115 → Report16/2,480` was also wrong: the actual Source
+table maps115 to Report42, whose inherited score is600. Runtime already used
+that table; immutable historical receipts are not rewritten.
+
+Final frozen consumer
+`c111ea0b6207c413fc992dd905ea1d446c2cc70b59000ae0eb5a26812b632878`
+passes the explicit/full native builds and all 58 CPU contracts. Genuine
+one-ride continuation `650k` passes in 321.60 seconds:
+
+| Actual boundary | Generation | Reports | Report points | Kangaskhan Report 42 |
+| --- | ---: | ---: | ---: | ---: |
+| Quiescent natural `649p` input | 37 | 34 | 64,940 | 600 |
+| Acknowledged Save and exact cold reopen | 38 | 34 | 68,280 | 3,940 |
+
+Actor `3/31/1` receives Apple `4/0/1`: request/consume/release updates
+6,767/6,768/6,769, exact sender-attributed hit 6,851, actual initial path 6,940
+and turn 7,034. Shutter 7,304 is coherent at 7,305 and released at 7,306:
+one throw, one shutter, two releases, zero mismatches, complete.
+Decision/taken contexts 0/1 differ legitimately; the full taken primary agrees.
+Source selects roll 9/full-wire identity `10013621663114056048`, with
+completeness 9,973, proximity 970, pose 1,000, well-framed true and no bonuses.
+There is one improved image and no new species or equipment.
+
+The ride completes 8,875 Source updates/4,437 presentations, actual visually
+inspected Title 8/UI2/129 presentations and exact whole-profile cold reopen.
+All 6,340 GPU and 17,572 Input operations balance; 9,507,584 dummy PCM frames are
+accepted, all owners retire, the deadline remains zero and original input
+inventory/bytes/metadata remain unchanged. No branch is merged.
+
+Same-binary strict authored baseline `650l` passes in 374.09 seconds: all nine
+exact Source Reports/14,420 points, all selected full-wire images identical to
+pre-change control `650h`, 8,902 Source updates/4,451 presentations, Save 1,
+visually inspected Title 9/UI2/129 presentations and exact cold reopen.
+All 8,260 GPU and 20,369 Input operations balance; 11,113,984 dummy PCM frames are
+accepted and all owners retire without a deadline. Its equipment/access are
+isolation inputs, not naturally earned rewards.
+
+The forward natural lineage now reaches 34 Reports/68,280 points. Natural
+Pester, 40 species, all signs, Mew/final credits, fresh full-campaign completion
+and Windows gameplay remain independently unqualified.
+

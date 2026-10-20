@@ -5199,3 +5199,84 @@ were removed. Private frozen evidence is retained, not shipped scaffolding.
 The Source-supported possibility is not disproved universally. Natural
 40-species, equipment, signs, Mew and final-campaign gates remain open.
 
+### Source-paused Moltres retake
+
+Pinned `src/volcano/moltres/code.c:117–167` pauses the appearance path through
+`POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED` during shake-off, then clears that
+**process** flag before flight resumes. It is not Actor flag `0x20`.
+The private input driver preserves the first Moltres image and permits one
+additional normal zoomed shutter only in a later pause of the same native
+pool/slot/incarnation. Lava acquisitions keep input priority and existing film
+reserves. The pause ending, actor replacement or cleanup closes the opportunity;
+there is no guessed wait, retry expansion, pose write or scorer call.
+
+Actual A consumption must be the next completed Source update, increase film
+and qualified captures by one, retain raw primary 146/course 2/zoom scope, and
+match the taken context's focused native actor and complete saved primary.
+A real release is separately observed. Live focus and pose observations are
+admission evidence, not a substitute for actual Source best selection.
+
+Frozen consumer
+`276d52cf7243cd092786ac342da7769696ca5a0f88d1975c1ee63d02b7a88882`
+passes strict authored Apple-only isolation `649l` in 350.39 seconds: physical
+5/6 evolution, seven exact Reports/6,950 points, Save 1, visually inspected
+Title 9/UI2/129 presentations and exact whole-profile cold reopen. Apple alone
+remains available at all five boundaries. All 7,852 GPU and 19,960 Input
+operations balance; 10,767,408 dummy PCM frames are accepted, all owners retire
+and the retirement deadline remains zero. This isolation takes **zero**
+optional retakes because lava acquisition owns the window; it establishes
+nonregression, not retake success.
+
+Genuine continuation `649m` independently copies the quiescent natural `648u`
+profile. The first Beach and Tunnel Saves change no Reports. Its next Volcano
+ride qualifies the optional retake without losing physical Apple evolution:
+
+| Species | Inherited Report score | Selected Source score | Selected roll | Full-wire normalized identity |
+| --- | ---: | ---: | ---: | --- |
+| Moltres 146 | 320 | 3,840 | 8 | `1271071027048545007` |
+| Charmeleon 5 | 2,000 | 3,440 | 10 | `12003045792220555046` |
+| Charizard 6 | Absent | 3,620 | 11 | `13842832292260546630` |
+
+Actor `65/19/1` is first photographed at Source update 4,656/roll 7. Its later
+pause spans updates 4,849–5,044. The one optional request at 4,937 is consumed
+coherently at 4,938 and released at 4,939: one request/press/capture/release,
+zero mismatches and 89 control updates. Actual Source chooses the new image:
+animation 2/pose 100, completeness 10,000, proximity 570, pose points 1,350,
+well-framed true and no special/same-species bonus.
+
+The same ride completes 8,932 Source updates/4,466 presentations. Apple
+flight/hit identity `66/0/3/163` agrees; hit, dive, controller and Charizard
+appearance all occur. The three assessed publications acknowledge generation
+36 with **34 Reports/64,940 points**, from generation 33/33 Reports/56,360
+points. That is one new species and two improved images, not three species.
+The consumer is normally retired through its verified owned X11 window after
+the sealed Save. Input inventory/bytes remain unchanged, all owners retire,
+all 18,505 GPU and 53,477 Input operations balance, 28,784,896 dummy PCM frames
+are accepted and the retirement deadline remains zero. Its interrupted next
+River ride and intentional scenario-failed host-quit receipt are not final
+Title/cold or full-campaign evidence.
+
+Same-binary Pester isolation `649o` passes in 345.29 seconds: 9,108 Source
+updates/4,554 presentations, eight exact Reports/10,710 points, matching
+physical flight/hit identity `4/0/5/162`, dive/controller/Charizard appearance,
+Save 1, visually inspected Title 9/UI2/129 presentations and exact cold reopen.
+All eight selected full-wire images match the prior Pester regression `649e`.
+Again lava priority admits no optional retake. All 8,190 GPU and 19,794 Input
+operations balance, 10,683,824 dummy PCM frames are accepted and all owners
+retire without a deadline. Equipment is authored isolation input, not earned.
+
+Genuine cold continuation `649p` then independently copies the **quiescent
+649m output**, never merges a branch, and passes in 306.77 seconds. Actual Boot
+recovers its exact generation-36 whole image; Source Title result 11 enters
+Continue. One ordinary Beach ride leaves all 34 Reports/64,940 points unchanged
+and acknowledges generation 37. Actual Source Title serial 7/UI2 is visually
+inspected after 129 presentations; the whole canonical cold image equals the
+acknowledged Save. The input's inventory, slot bytes, permissions, mtimes,
+sizes and link counts remain unchanged. All 5,672 GPU and 16,834 Input
+operations balance, 9,064,256 dummy PCM frames are accepted, all owners retire
+and the retirement deadline remains zero.
+
+This qualifies the inherited-profile Moltres replacement and physical 5/6
+Save/Title/cold chain. It does not establish naturally earned Pester, 40 species,
+all signs, Mew, final credits, fresh full-campaign completion or Windows gameplay.
+

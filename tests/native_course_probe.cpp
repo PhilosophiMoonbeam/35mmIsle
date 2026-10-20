@@ -17,6 +17,7 @@
 #include "player_photo.hpp"
 #include "player_ui_source.h"
 #include "actor_owner_source.h"
+#include "actor_owner.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -143,13 +144,16 @@ std::int8_t stick(float value) {
     return static_cast<std::int8_t>(std::clamp(value,-80.0f,80.0f));
 }
 struct VolcanoActor {
-    bool present=false,tangible=false,interactive=false,path=false;
+    bool present=false,tangible=false,interactive=false,path=false,focused=false;
     std::uint16_t flags=0;
+    std::uint32_t process_flags=0;
     float distance=0,radius=0;
     IsleGameVec3 position{},collision{};
+    std::array<std::uint64_t,3> identity{};
 };
 struct VolcanoTargets {VolcanoActor egg,moltres;};
-VolcanoTargets volcano_targets(const IsleVolcanoActorSource& source) {
+VolcanoTargets volcano_targets(const IsleVolcanoActorSource& source,const actor::Owner& owner,
+                              const IslePlayerPhotoFocus& focus) {
     VolcanoTargets targets;
     auto* game=source.base.nativeGame;
     require(game,"actual Volcano actor game missing");
@@ -168,8 +172,12 @@ VolcanoTargets volcano_targets(const IsleVolcanoActorSource& source) {
         const IsleGameModelPlacement* placement=nullptr;
         require(isle_game_model_placement(game,model,&placement)==ISLE_GAME_OK && placement &&
             placement->mode!=ISLE_GAME_MODEL_PLACEMENT_DISABLED,"actual Volcano model placement borrow rejected");
+        const auto identity=actor->id==146?owner.instance(object):menu::animation::InstanceHandle{};
+        require(actor->id!=146 || bool(identity),"actual Moltres incarnation unavailable");
         target={true,actor->tangible!=0,actor->transitionGraph!=nullptr,actor->pathProc!=nullptr,
-            actor->flags,actor->playerDist,actor->collisionRadius,placement->transform.position,actor->collPosition};
+            focus.present && focus.object==object && focus.pokemon_id==actor->id,
+            actor->flags,actor->processFlags,actor->playerDist,actor->collisionRadius,
+            placement->transform.position,actor->collPosition,{identity.pool,identity.slot,identity.incarnation}};
     }
     // Scalar observations only: no object, model, semantic reference or pose
     // borrow survives this serialized owner-side traversal.
@@ -340,6 +348,13 @@ struct Probe::Impl {
     std::uint16_t volcano_item_button=0;
     bool volcano_gate_stopped=false,volcano_throw_consumed=false,volcano_egg_transition=false;
     bool volcano_gate_released=false,volcano_moltres_seen=false,volcano_moltres_photo=false;
+    struct MoltresRetake {
+        std::array<std::uint64_t,3> actor{};
+        bool initialized=false,first_paused=false,pause_seen=false,closed=false,pending=false,release_pending=false,coherent=false;
+        std::uint64_t first_request=0,first_capture=0,pause_enter=0,pause_exit=0,request=0,consumed=0,released=0;
+        unsigned requests=0,presses=0,releases=0,mismatches=0,control_updates=0;
+        int first_slot=-1,slot=-1,qualified_before=0;
+    } moltres_retake;
     // Lava acquisition stays optional except for the explicit Apple objective.
     // Bits are 5/6/58/59; captures below mean actual qualified raw primary.
     static constexpr std::array<int,4> lava_species{{5,6,58,59}};
@@ -780,6 +795,9 @@ struct Probe::Impl {
             volcano_moltres_photo|=qualified>pending_volcano_qualified && captured.levelID==2 &&
                 std::any_of(std::begin(captured.pokemons),std::end(captured.pokemons),
                     [](const auto& subject){return subject.pokemonID==146;});
+            if(volcano_moltres_photo && moltres_retake.first_slot<0) {
+                moltres_retake.first_slot=pending_volcano_slot;moltres_retake.first_capture=updates;
+            }
             pending_volcano_slot=-1;
         }
         if(lava_pending_slot>=0 && photos>lava_pending_slot) {
@@ -971,6 +989,18 @@ struct Probe::Impl {
             <<"\tanalytic_intercept_NOT_receipt="<<lava_intercept_hint.time<<'/'<<lava_intercept_hint.miss
             <<"\tintercept_target="<<lava_intercept_hint.target.x<<','<<lava_intercept_hint.target.y<<','<<lava_intercept_hint.target.z;
         row(motion.str());
+        const auto& retake=moltres_retake;
+        std::ostringstream bird;
+        bird<<"volcano_moltres_retake\tupdates="<<updates<<"\tactor="
+            <<retake.actor[0]<<'/'<<retake.actor[1]<<'/'<<retake.actor[2]
+            <<"\tprocess_flags="<<volcano_snapshot.moltres.process_flags
+            <<"\tfirst/pause_seen/first_paused/closed="<<retake.initialized<<'/'<<retake.pause_seen<<'/'<<retake.first_paused<<'/'<<retake.closed
+            <<"\tfirst_request/capture/slot="<<retake.first_request<<'/'<<retake.first_capture<<'/'<<retake.first_slot
+            <<"\tpause_enter/exit="<<retake.pause_enter<<'/'<<retake.pause_exit
+            <<"\trequests/presses/consumed/releases="<<retake.requests<<'/'<<retake.presses<<'/'<<(retake.consumed!=0)<<'/'<<retake.releases
+            <<"\trequest/consumed/released="<<retake.request<<'/'<<retake.consumed<<'/'<<retake.released
+            <<"\tslot/coherent/mismatches/control="<<retake.slot<<'/'<<retake.coherent<<'/'<<retake.mismatches<<'/'<<retake.control_updates;
+        row(bird.str());
     }
     static IsleGameSourceCallback lava_command(const IsleActorSource& actor,int command) {
         if(!actor.transitionGraph)return nullptr;
@@ -1428,6 +1458,85 @@ struct Probe::Impl {
         }
         set(pad,sx,sy);return true;
     }
+    void observe_moltres_retake(const course::NativeHost& host,const IslePlayerSource& player) {
+        auto& retake=moltres_retake;
+        const auto& target=volcano_snapshot.moltres;
+        const bool paused=(target.process_flags&POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED)!=0;
+        if(!retake.initialized && retake.first_slot>=0) {
+            retake.initialized=true;retake.first_paused=paused;
+            const auto& first=player.photo->D_800B0598[retake.first_slot];
+            retake.closed=paused || !target.present || target.identity!=retake.actor ||
+                retake.first_capture!=retake.first_request+1 ||
+                (first.unk_00_16&0xe0u)!=0x20u || first.pokemons[0].pokemonID!=146;
+        }
+        if(!retake.initialized)return;
+        if(!retake.closed && (!target.present || target.identity!=retake.actor))retake.closed=true;
+        if(!retake.closed && paused && !retake.pause_seen) {
+            retake.pause_seen=true;retake.pause_enter=updates;
+        }
+        if(retake.pause_seen && !paused && !retake.pause_exit) {
+            retake.pause_exit=updates;retake.closed=true;
+        }
+        if(retake.pending && updates>retake.request) {
+            const bool pressed=(player.input.current_buttons&a) && (player.input.pressed_buttons&a);
+            if(pressed)++retake.presses;
+            bool coherent=updates==retake.request+1 && pressed && paused && target.present &&
+                target.identity==retake.actor && photos==retake.slot+1 && qualified==retake.qualified_before+1;
+            const int taken=player.photo->PokemonDetector_TakenPhotoIndex;
+            coherent=coherent && taken>=0 && taken<2;
+            if(coherent) {
+                const auto& saved=player.photo->D_800B0598[retake.slot];
+                const auto& context=player.photo->PokemonDetector_Photo[taken];
+                const auto focused=host.actors()->instance(context.pokemonInFocus);
+                coherent=saved.levelID==2 && (saved.unk_00_16&0xe0u)==0x20u && saved.pokemons[0].pokemonID==146 &&
+                    std::array<std::uint64_t,3>{focused.pool,focused.slot,focused.incarnation}==retake.actor;
+                bool same_subject=false;
+                for(std::size_t i=0;i<12 && coherent;++i) {
+                    const auto identity=host.actors()->instance(context.pokemonObjects[i]);
+                    if(std::array<std::uint64_t,3>{identity.pool,identity.slot,identity.incarnation}!=retake.actor)continue;
+                    const auto& original=context.main.pokemons[i];
+                    const auto& image=saved.pokemons[0];
+                    same_subject=original.pokemonID==image.pokemonID && original.unk_00_13==image.unk_00_13 &&
+                        original.poseID==image.poseID && original.specialID==image.specialID &&
+                        original.animationTime==image.animationTime && original.yaw==image.yaw &&
+                        original.position.x==image.position.x && original.position.y==image.position.y &&
+                        original.position.z==image.position.z;
+                    break;
+                }
+                coherent=coherent && same_subject;
+            }
+            retake.pending=false;retake.release_pending=true;retake.coherent=coherent;
+            if(coherent)retake.consumed=updates;
+            else ++retake.mismatches;
+        }
+        if(retake.release_pending && !(player.input.current_buttons&a)) {
+            retake.release_pending=false;++retake.releases;retake.released=updates;
+        }
+    }
+    bool control_moltres_retake(const IslePlayerSource& player,std::uint16_t prior) {
+        auto& retake=moltres_retake;
+        const auto& target=volcano_snapshot.moltres;
+        if(retake.release_pending) {
+            set(player.ZoomSwitchMode==0?z:0);return true;
+        }
+        if(!retake.initialized || retake.closed || !retake.pause_seen || retake.requests ||
+           !(target.process_flags&POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED) ||
+           !target.present || !target.tangible || !(target.flags&4u) ||
+           target.identity!=retake.actor || photos>=60-lava_film_reserve())return false;
+        ++retake.control_updates;
+        const bool settled=player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.TurnToDirSpeed==0;
+        std::int8_t sx=0,sy=0;
+        if(settled)aim(player,target.collision,true,sx,sy);
+        std::uint16_t pad=player.ZoomSwitchMode==0?z:0;
+        if(player.ZoomSwitchMode==1 && player.gDirectionIndex>=0 && player.TurnToDirSpeed==0 &&
+           !(player.input.current_buttons&z))pad=z;
+        if(settled && target.focused && player.sTimerAfterPhotoTaken<0 &&
+           !(prior&a) && !(player.input.current_buttons&a)) {
+            pad|=a;sx=sy=0;++shutters;++retake.requests;retake.pending=true;
+            retake.request=updates;retake.slot=photos;retake.qualified_before=qualified;
+        }
+        set(pad,sx,sy);return true;
+    }
     bool control_volcano(const application::RuntimeView& view,const IslePlayerSource& player,
         const IslePlayerPhotoFocus& focus,std::uint16_t prior) {
         const auto& actors=view.volcano->actors_source();
@@ -1442,7 +1551,9 @@ struct Probe::Impl {
             lava_reports_sampled=true;
         }
         observe_lava_input(*host,player);observe_volcano_lava(*host,actors,player);
-        volcano_snapshot=volcano_targets(actors);
+        require(host->actors(),"actual Volcano puzzle Actor owner unavailable");
+        volcano_snapshot=volcano_targets(actors,*host->actors(),focus);
+        observe_moltres_retake(*host,player);
         const auto& egg=volcano_snapshot.egg;const auto& moltres=volcano_snapshot.moltres;
         volcano_cart_stopped=player.IsCartStopped;volcano_throw_timeout=player.ThrowItemTimeout;
         if(volcano_stage==VolcanoStage::travel) {
@@ -1533,12 +1644,15 @@ struct Probe::Impl {
                player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
                !(prior&a) && !(player.input.current_buttons&a) && photos<60-lava_film_reserve()+1) {
                 pad|=a;++shutters;pending_volcano_slot=photos;pending_volcano_qualified=qualified;
+                moltres_retake.actor=moltres.identity;moltres_retake.first_request=updates;
             }
             set(pad,sx,sy);return true;
         }
         if((goal==CaptureGoal::photographs || goal==CaptureGoal::apple_evolution) &&
-           volcano_stage==VolcanoStage::travel_after_egg)
-            return control_volcano_lava(*host,player,focus,prior);
+           volcano_stage==VolcanoStage::travel_after_egg) {
+            if(control_volcano_lava(*host,player,focus,prior))return true;
+            return control_moltres_retake(player,prior);
+        }
         return true;
     }
     void control(const application::RuntimeView& view,const Sample& s) {

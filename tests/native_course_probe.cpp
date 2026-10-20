@@ -397,7 +397,7 @@ struct Probe::Impl {
         row("bounds\t27 primary world IDs *2667 minimum-speed updates +2400 intro/end; Rainbow7200+1800+2000+1200+120+1200;131072 rows;2 scalar frame tags;no images");
         row("kind\tcourse\tserial\tupdates\tframes\tpresents\tphotos\tqualified\tend_reason\tintro_done\tending\tbuttons\tx\ty\tfocus\thits1\thits2\tmew_mode\tmovement\tvalue\tcontrols\tdisabled\tdirection\tzoom_target\tcooldown\tconsumed_buttons\tpressed_buttons\tmove_time\tposition_x\tposition_y\tposition_z\tvolcano_stage\tegg_present\tegg_distance\tegg_radius\tegg_x\tegg_y\tegg_z\tegg_graph\tegg_path\tcart_stopped\tthrow_timeout\tvolcano_throws\tvolcano_throw_consumed\tvolcano_egg_transition\tvolcano_gate_released\tmoltres_tangible\tvolcano_moltres_photo");
     }
-    void activate_goal() {
+    void activate_goal(const application::RuntimeView& view) {
         if(goal_initialized)return;
         goal_initialized=true;
         const private_post_course::Controller pad{this,[](void* owner,std::uint16_t mask,std::int8_t sx,std::int8_t sy) noexcept {
@@ -410,7 +410,11 @@ struct Probe::Impl {
         if(goal==CaptureGoal::photographs || goal==CaptureGoal::lapras_photographs) {
             if(course==0)beach_photos.emplace(pad,camera);
             else if(course==1)tunnel_photos.emplace(pad,camera);
-            else if(course==3)river_photos.emplace(pad,camera);
+            else if(course==3) {
+                require(view.river,"River objective requires its actual lifecycle");
+                const auto objective=private_campaign::choose_river_photo_objective(view.river->photos());
+                if(objective!=private_campaign::RiverPhotoObjective::none)river_photos.emplace(pad,camera,objective);
+            }
         } else if(goal==CaptureGoal::progression) {
             require(course==1 || course==3 || course==5,"actual progression objective requires Tunnel, River or Valley");
             if(course==5)dash.emplace(pad,camera);
@@ -623,7 +627,8 @@ struct Probe::Impl {
                 <<"\tpredicted_landing="<<f.apple_predicted_landing.x<<','<<f.apple_predicted_landing.y<<','<<f.apple_predicted_landing.z;
         } else if(river_photos) {
             const auto& f=river_photos->facts();
-            text<<"\tfamily=river_photo\tphase="<<int(f.phase)<<"\tdisposition="<<int(f.disposition)
+            text<<"\tfamily=river_photo\tobjective="<<int(f.objective)
+                <<"\tphase="<<int(f.phase)<<"\tdisposition="<<int(f.disposition)
                 <<"\tavailable/ready/owns/exhausted="<<f.available<<'/'<<f.player_ready<<'/'<<f.owns_pad<<'/'<<f.exhausted
                 <<"\tprior79/captured79="<<f.prior_slowpoke_report<<'/'<<f.slowpoke_captured
                 <<"\tparent="<<f.parent[0]<<'/'<<f.parent[1]<<'/'<<f.parent[2]
@@ -644,8 +649,27 @@ struct Probe::Impl {
                 <<"\tapproach/evolution/CMD28="<<f.approach_seen<<'/'<<f.evolution_seen<<'/'<<f.command28_seen
                 <<"\tchild="<<f.child[0]<<'/'<<f.child[1]<<'/'<<f.child[2]
                 <<"\tspawn/cleanup/capture="<<f.spawn_seen<<'/'<<f.parent_cleanup_seen<<'/'<<f.complete
-                <<"\tslowbro_slot="<<f.slowbro_slot<<"\tcoherent_slots="<<f.captured_slots
+                <<"\tcaptured_slot="<<f.captured_slot<<"\tcoherent_slots="<<f.captured_slots
                 <<"\tmismatches="<<f.mismatches<<'/'<<f.capture_mismatches;
+            if(f.objective==private_campaign::RiverPhotoObjective::hidden_bulbasaur1) {
+                row(text.str());
+                text.str({});
+                text.clear();
+                text<<"puzzle\tcourse="<<course<<"\tserial="<<serial<<"\tupdates="<<updates
+                    <<"\tfamily=river_bulbasaur";
+                text<<"\tbulbasaur="<<f.bulbasaur[0]<<'/'<<f.bulbasaur[1]<<'/'<<f.bulbasaur[2]
+                    <<"\tApple_sender="<<f.apple_sender[0]<<'/'<<f.apple_sender[1]<<'/'<<f.apple_sender[2]
+                    <<"\thidden/sender/reveal/path="<<f.bulbasaur_hidden_seen<<'/'<<f.apple_sender_seen<<'/'<<f.reveal_seen<<'/'<<f.reveal_path_seen
+                    <<"\ttarget_path/index/object_flags="<<f.target_path_state<<'/'<<f.target_path_index<<'/'<<f.target_object_flags
+                    <<"\ttarget_path_parameter="<<f.target_path_parameter
+                    <<"\tnotification/current_previous="<<f.notification_observed<<'/'<<f.notification_previous
+                    <<"\tnotification_update="<<f.notification_update
+                    <<"\tnotification_position="<<f.notification_position.x<<','<<f.notification_position.y<<','<<f.notification_position.z
+                    <<"\tnotification_actor_endpoint_distance="<<f.notification_actor_distance<<'/'<<f.notification_endpoint_distance
+                    <<"\tpredicted_notification="<<f.predicted_notification.x<<','<<f.predicted_notification.y<<','<<f.predicted_notification.z
+                    <<"\thidden/reveal/path_updates="<<f.hidden_update<<'/'<<f.reveal_update<<'/'<<f.reveal_path_update
+                    <<"\trevealed_present/eligible/focused="<<f.revealed_present<<'/'<<f.revealed_eligible<<'/'<<f.revealed_focused;
+            }
         }
         row(text.str());
     }
@@ -1608,7 +1632,7 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
     require(view.entry && view.entry->argument==std::uint32_t(p.course),"actual Manager course argument differs from requested course");
     if(!p.entered) {
         p.set();p.entered=true;p.serial=view.entry->serial;p.last_external=actualUpdates;p.note("actual_source_enter");
-        p.activate_goal();
+        p.activate_goal(view);
     }
     require(view.entry->serial==p.serial && actualUpdates>=p.last_external,"actual course identity/update sequence changed");
     const auto delta=actualUpdates-p.last_external;
@@ -1687,9 +1711,10 @@ bool Probe::captured_lapras_late_photo(std::int32_t slot,const IslePlayerPhotoDa
     return p_->beach_photos && p_->beach_photos->facts().lapras.late_captured &&
         p_->beach_photos->facts().lapras.late_slot==slot && captured_photo(slot,photo,digest);
 }
-bool Probe::captured_river_slowbro_photo(std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t digest) const noexcept {
-    return slot>=0 && slot<60 && p_->river_photos && p_->river_photos->facts().complete &&
+bool Probe::captured_river_objective_photo(private_campaign::RiverPhotoObjective objective,std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t digest) const noexcept {
+    return objective!=private_campaign::RiverPhotoObjective::none && slot>=0 && slot<60 &&
+        p_->river_photos && p_->river_photos->facts().objective==objective && p_->river_photos->facts().complete &&
         (p_->river_photos->facts().captured_slots&(std::uint64_t{1}<<static_cast<unsigned>(slot)))!=0 &&
-        captured_photo(slot,photo,digest);
+        captured_photo(slot,photo,digest) && photo->pokemons[0].pokemonID==static_cast<int>(objective);
 }
-}
+} // namespace isle::private_course

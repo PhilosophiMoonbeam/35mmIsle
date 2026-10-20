@@ -1,5 +1,6 @@
 #include "native_river_photo_puzzle.hpp"
 #include "application_runtime.hpp"
+#include "application_photos.hpp"
 #include "game_state.hpp"
 #include "river_scene.hpp"
 #include "river_actor_source.h"
@@ -62,12 +63,13 @@ bool same_subject(const IslePlayerPokemonPhoto& a, const IslePlayerPokemonPhoto&
         a.position.x==b.position.x && a.position.y==b.position.y && a.position.z==b.position.z && a.yaw==b.yaw;
 }
 void snapshot(Planning& out, const IslePlayerSource& player, actor::Owner& actors, items::Owner& items,
-              const RiverIncarnation& selected, const RiverIncarnation& child,
+              const world::World& world, RiverPhotoObjective objective,
+              const RiverIncarnation& selected, const RiverIncarnation& subject,
               const std::array<RiverIncarnation, 2>& attempted, const IsleGameVec3& origin) {
     out.parent={};
     out.sphere_count=0; out.item_count=0; out.child_count=0; out.capacity_ok=true;
     out.other_evolving=false; out.multiple_other_evolving=false; out.other_global={};
-    out.captured_child_context=false; out.focus={};
+    out.captured_subject_context=false; out.focus={};
     IslePlayerPhotoFocus focus{};
     require(isle_player_photo_published_focus(player.photo, &focus)==ISLE_GAME_OK,
             "River published focus observation rejected");
@@ -86,7 +88,9 @@ void snapshot(Planning& out, const IslePlayerSource& player, actor::Owner& actor
             if (out.sphere_count==out.spheres.size()) out.capacity_ok=false;
             else out.spheres[out.sphere_count++]={source->collPosition, source->collisionRadius};
         }
-        if ((source->id!=79 && source->id!=80) || !model) continue;
+        const bool bulbasaur=objective==RiverPhotoObjective::hidden_bulbasaur1;
+        if ((bulbasaur ? source->id!=1 || source->behavior!=1 : source->id!=79 && source->id!=80) ||
+            !model) continue;
         const auto instance=actors.instance(object);
         require(bool(instance), "River Actor incarnation unavailable");
         const IsleGameModelPlacement* placement=nullptr;
@@ -112,10 +116,38 @@ void snapshot(Planning& out, const IslePlayerSource& player, actor::Owner& actor
         actor.approaching=callback==func_802D9808_6C15E8;
         actor.evolving=callback==func_802D9AC4_6C18A4;
         actor.state=actor.evolving ? 0x802d9ac4u : actor.approaching ? 0x802d9808u : 0;
+        if (bulbasaur) {
+            actor.hidden_wait=callback==func_802E1194_6C8F74;
+            actor.showing=callback==func_802E12D8_6C90B8;
+            actor.state=actor.hidden_wait ? 0x802e1194u :
+                actor.showing ? 0x802e12d8u : callback==func_802E11D4_6C8FB4 ? 0x802e11d4u : 0;
+            IsleGameSourceCallback path_callback=nullptr;
+            if (source->pathProc)
+                require(isle_game_process_source_function(player.game, source->pathProc, &path_callback)==ISLE_GAME_OK,
+                        "River Bulbasaur path identity observation rejected");
+            actor.reveal_path=path_callback==func_802E1374_6C9154;
+            actor.path_state=actor.reveal_path ? 0x802e1374u : 0;
+            actor.path_parameter=source->pathParam;
+            const auto paths=world.resources().paths;
+            for (std::size_t i=0; i<paths.size(); ++i) {
+                const auto& path=paths[i];
+                if (&path!=source->path) continue;
+                if (path.segment_point_count>=path.points.size()) break;
+                actor.path_index=static_cast<int>(i);
+                const auto& point=path.points[path.segment_point_count];
+                const auto offset=world.current()->resource->metadata.world_position;
+                actor.endpoint={(point.x-offset.x)*100, (point.y-offset.y)*100, (point.z-offset.z)*100};
+                break;
+            }
+        }
         actor.ready=accepts(*source, 15) && accepts(*source, 28);
         actor.endpoint_ready=source->path && finite(actor.endpoint) && finite(actor.root) &&
             (source->miscVars[1].field1==1 || actor.evolving);
         actor.endpoint_distance=endpoint_squared(actor.root, actor.endpoint);
+        if (bulbasaur) {
+            actor.endpoint_ready=actor.path_index==10 && finite(actor.endpoint) && finite(actor.root);
+            actor.endpoint_distance=distance_squared(actor.root, actor.endpoint);
+        }
         actor.explicit_ground=source->forbiddenGround!=nullptr;
         if (actor.explicit_ground) {
             actor.ground_list_valid=false;
@@ -128,6 +160,12 @@ void snapshot(Planning& out, const IslePlayerSource& player, actor::Owner& actor
         require(isle_game_object_metadata(player.game, object, &metadata)==ISLE_GAME_OK,
                 "River Actor metadata observation rejected");
         actor.object_id=metadata.id;
+        actor.object_flags=metadata.flags; actor.tangible=source->tangible!=0;
+        if (bulbasaur) {
+            actor.hidden_wait=actor.hidden_wait && actor.graph==0x802e49e0u &&
+                !actor.tangible && (metadata.flags&3u)==3u;
+            actor.ready=actor.hidden_wait && accepts(*source, 14);
+        }
         const float horizontal=std::hypot(actor.collision.x-player.CameraEyePos.x,
                                           actor.collision.z-player.CameraEyePos.z);
         const float pitch=std::atan2(actor.collision.y-player.CameraEyePos.y, horizontal);
@@ -136,20 +174,23 @@ void snapshot(Planning& out, const IslePlayerSource& player, actor::Owner& actor
             pitch>=player.MinPitch && pitch<=player.MaxPitch;
         actor.focused=actor.eligible && focus.present && focus.object==object &&
             out.focus.pokemon_id==source->id && (out.focus.flags&4u) && !(out.focus.flags&8u);
-        if (source->id==80) {
-            if (out.child_count==out.children.size()) out.capacity_ok=false;
-            else out.children[out.child_count++]=actor;
+        const int species=static_cast<int>(objective);
+        if (source->id==species && actor.identity==subject && actor.eligible) {
             const int taken=player.photo->PokemonDetector_TakenPhotoIndex;
-            if (actor.identity==child && actor.eligible && taken>=0 && taken<2) {
+            if (taken>=0 && taken<2) {
                 const auto& context=player.photo->PokemonDetector_Photo[taken];
                 if (context.pokemonInFocus==object) for (std::size_t i=0; i<12; ++i) {
-                    if (context.pokemonObjects[i]!=object || context.main.pokemons[i].pokemonID!=80) continue;
+                    if (context.pokemonObjects[i]!=object || context.main.pokemons[i].pokemonID!=species) continue;
                     const int count=player.photo->gPhotoCount;
                     if (count>0 && count<=60)
-                        out.captured_child_context=same_subject(context.main.pokemons[i],
+                        out.captured_subject_context=same_subject(context.main.pokemons[i],
                             player.photo->D_800B0598[count-1].pokemons[0]);
                 }
             }
+        }
+        if (!bulbasaur && source->id==80) {
+            if (out.child_count==out.children.size()) out.capacity_ok=false;
+            else out.children[out.child_count++]=actor;
         } else {
             if (actor.identity!=selected && actor.evolving) {
                 out.multiple_other_evolving |= out.other_evolving;
@@ -157,8 +198,8 @@ void snapshot(Planning& out, const IslePlayerSource& player, actor::Owner& actor
             }
             bool already_attempted=false;
             for (const auto& prior:attempted) already_attempted |= prior==actor.identity;
-            const bool candidate=!selected[0] && !already_attempted && actor.eligible &&
-                actor.ready && actor.endpoint_ready;
+            const bool candidate=!selected[0] && !already_attempted && actor.endpoint_ready &&
+                actor.ready && (bulbasaur ? actor.hidden_wait : actor.eligible);
             if (actor.identity==selected || (candidate && (!out.parent.present ||
                 actor.endpoint_distance<out.parent.endpoint_distance))) out.parent=actor;
         }
@@ -180,7 +221,8 @@ void snapshot(Planning& out, const IslePlayerSource& player, actor::Owner& actor
         require(isle_game_object_metadata(player.game, binding.model.object, &metadata)==ISLE_GAME_OK,
                 "River Item metadata observation rejected");
         out.items[out.item_count++]={key(instance), source->itemID, source->state, source->flags,
-                                    metadata.flags, metadata.id, nodes[0].transform.position};
+                                    metadata.flags, metadata.id, nodes[0].transform.position,
+                                    source->velocity, source->prevPos};
     }
 }
 // Exact Source items.c splash/delete surfaces, separate from walking rules.
@@ -214,11 +256,14 @@ bool walk_surface(const Actor& actor, std::int32_t surface) {
     default: return true;
     }
 }
-bool safe_ground(const world::World& world, const IsleGameVec3& p, world::GroundResult& ground) {
+bool apple_ground(const world::World& world, const IsleGameVec3& p, world::GroundResult& ground) {
     return finite(p) && std::abs(p.x)<9990 && std::abs(p.z)<9990 &&
         world.ground_at(p.x, p.z, ground) && std::isfinite(ground.height) &&
         std::abs(ground.height+12)<9990 && apple_surface(ground.surface) &&
-        std::isfinite(ground.normal.y) && ground.normal.y>=.9f;
+        std::isfinite(ground.normal.x) && std::isfinite(ground.normal.y) && std::isfinite(ground.normal.z);
+}
+bool safe_ground(const world::World& world, const IsleGameVec3& p, world::GroundResult& ground) {
+    return apple_ground(world,p,ground) && ground.normal.y>=.9f;
 }
 bool corridor(const world::World& world, const Actor& actor, const IsleGameVec3& target) {
     const float dx=target.x-actor.root.x, dz=target.z-actor.root.z;
@@ -250,11 +295,23 @@ bool segment_hits(const Sphere& sphere, const IsleGameVec3& p, const IsleGameVec
     const float t=std::clamp(projection, 0.0f, 1.0f);
     return distance_squared({p.x+t*v.x, p.y+t*v.y, p.z+t*v.z}, sphere.center)<=sphere.radius*sphere.radius;
 }
-// Bounded Source ground-bounce/settling forecast. Splash, ceilings, walls and
-// Actor impacts remain rejected; only actual native flight establishes landing.
+struct Flight {
+    IsleGameVec3 settled{}, notification{};
+    int surface=-1;
+    bool notifies=false;
+};
+bool notification_geometry(const Actor& actor, const IsleGameVec3& point) {
+    return actor.endpoint_ready && distance_squared(actor.root, point)<600*600 &&
+        distance_squared(actor.endpoint, point)<310*310;
+}
+// One bounded Source forecast. River's synchronous Item update self-end
+// returns to Items_BounceFromGround, which still broadcasts CMD14. A settled
+// contact and a moving post-halfstep contact therefore both authorize input.
 bool landing(const world::World& world, const IslePlayerSource& player, const Planning& observed,
-             const IsleGameVec3& ray, IsleGameVec3& result, int& surface) {
+             const IsleGameVec3& ray, RiverPhotoObjective objective, Flight& result) {
     if (!observed.capacity_ok || !finite(ray)) return false;
+    const bool bulbasaur=objective==RiverPhotoObjective::hidden_bulbasaur1;
+    result={};
     const IsleGameCameraParameters* camera=nullptr;
     require(isle_game_camera_parameters(player.game, player.camera, &camera)==ISLE_GAME_OK && camera,
             "River launch camera observation rejected");
@@ -281,15 +338,27 @@ bool landing(const world::World& world, const IslePlayerSource& player, const Pl
                     if (p.y<ground.height) low=p; else high=p;
                 }
             }
-            if (!safe_ground(world, p, ground)) return false;
+            if (!(bulbasaur ? apple_ground(world,p,ground) : safe_ground(world,p,ground))) return false;
             const float coefficient=restitution(ground.surface);
-            const float speed=std::hypot(v.x, v.y, v.z)*coefficient;
+            const float incoming=std::hypot(v.x, v.y, v.z);
+            float speed=incoming*coefficient;
+            if (bulbasaur && speed<13 && ground.normal.y<.866f &&
+                ground.normal.x*ground.normal.x+ground.normal.z*ground.normal.z<6.5f*6.5f) speed=13;
             p.y=ground.height+12;
-            if (speed<13) { result=p; surface=ground.surface; return true; }
+            if (speed<13) {
+                result.settled=p; result.surface=ground.surface;
+                if (bulbasaur && notification_geometry(observed.parent,p)) {
+                    result.notification=p; result.notifies=true;
+                    return true;
+                }
+                return !bulbasaur;
+            }
+            if (!(incoming>0)) return false;
+            const float scale=bulbasaur ? speed/incoming : coefficient;
             const float dot=v.x*ground.normal.x+v.y*ground.normal.y+v.z*ground.normal.z;
-            v={(v.x-2*dot*ground.normal.x)*coefficient,
-               (v.y-2*dot*ground.normal.y)*coefficient,
-               (v.z-2*dot*ground.normal.z)*coefficient};
+            v={(v.x-2*dot*ground.normal.x)*scale,
+               (v.y-2*dot*ground.normal.y)*scale,
+               (v.z-2*dot*ground.normal.z)*scale};
             ground_bounce=true;
         }
         const IsleGameVec3 segment{v.x*.5f, v.y*.5f, v.z*.5f};
@@ -300,6 +369,10 @@ bool landing(const world::World& world, const IslePlayerSource& player, const Pl
         prior=p;
         if (!ground_bounce) v.y-=.6f;
         p.x+=v.x*.5f; p.y+=v.y*.5f; p.z+=v.z*.5f;
+        if (bulbasaur && ground_bounce && notification_geometry(observed.parent, p)) {
+            result.notification=p; result.surface=ground.surface; result.notifies=true;
+            return true;
+        }
     }
     return false;
 }
@@ -320,6 +393,35 @@ bool closest_candidate(const Planning& observed, const IsleGameVec3& point) {
 bool plan(const world::World& world, const IslePlayerSource& player, const Planning& observed,
           RiverPhotoFacts& facts, IsleGameVec3& aimed) {
     const auto& actor=observed.parent;
+    if (facts.objective==RiverPhotoObjective::hidden_bulbasaur1) {
+        bool found=false;
+        float best=0;
+        for (const float x:{0.0f, -125.0f, 125.0f, -250.0f, 250.0f})
+            for (const float z:{0.0f, -125.0f, 125.0f, -250.0f, 250.0f}) {
+                ++facts.candidates;
+                IsleGameVec3 point{actor.endpoint.x+x, 0, actor.endpoint.z+z};
+                world::GroundResult ground{};
+                if (!apple_ground(world, point, ground)) { ++facts.ground_rejections; continue; }
+                point.y=ground.height+12;
+                IsleGameVec3 ray{};
+                if (!projectile_target(player, {point.x, ground.height, point.z}, ray)) {
+                    ++facts.arc_rejections; continue;
+                }
+                const float pitch=std::atan2(ray.y-player.CameraEyePos.y,
+                    std::hypot(ray.x-player.CameraEyePos.x, ray.z-player.CameraEyePos.z));
+                Flight flight;
+                if (!(pitch>=player.MinPitch && pitch<=player.MaxPitch) ||
+                    !landing(world, player, observed, ray, facts.objective, flight) || !flight.notifies) {
+                    ++facts.arc_rejections; continue;
+                }
+                const float separation=distance_squared(flight.notification, actor.endpoint);
+                if (!found || separation<best) {
+                    found=true; best=separation; aimed=ray; facts.candidate=point;
+                    facts.predicted_notification=flight.notification; facts.predicted_surface=flight.surface;
+                }
+            }
+        return found;
+    }
     const float distance=std::sqrt(actor.endpoint_distance);
     if (!(distance>0)) return false;
     const float ux=(actor.endpoint.x-actor.root.x)/distance;
@@ -338,7 +440,7 @@ bool plan(const world::World& world, const IslePlayerSource& player, const Plann
         if (!progress_candidate(actor, point) || !closest_candidate(observed, point)) {
             ++facts.corridor_rejections; continue;
         }
-        IsleGameVec3 ray{}, impact{}; int surface=-1;
+        IsleGameVec3 ray{}; Flight flight;
         if (!projectile_target(player, {point.x, ground.height, point.z}, ray)) {
             ++facts.arc_rejections; continue;
         }
@@ -346,13 +448,13 @@ bool plan(const world::World& world, const IslePlayerSource& player, const Plann
             std::hypot(ray.x-player.CameraEyePos.x, ray.z-player.CameraEyePos.z));
         if (!(pitch>=player.MinPitch && pitch<=player.MaxPitch)) { ++facts.arc_rejections; continue; }
         if (!corridor(world, actor, point)) { ++facts.corridor_rejections; continue; }
-        if (!landing(world, player, observed, ray, impact, surface) ||
-            !progress_candidate(actor, impact) || !closest_candidate(observed, impact) ||
-            !corridor(world, actor, impact)) { ++facts.arc_rejections; continue; }
-        const float remaining=endpoint_squared(impact, actor.endpoint);
+        if (!landing(world, player, observed, ray, facts.objective, flight) ||
+            !progress_candidate(actor, flight.settled) || !closest_candidate(observed, flight.settled) ||
+            !corridor(world, actor, flight.settled)) { ++facts.arc_rejections; continue; }
+        const float remaining=endpoint_squared(flight.settled, actor.endpoint);
         if (!found || remaining<best) {
             found=true; best=remaining; aimed=ray;
-            facts.candidate=point; facts.predicted_landing=impact; facts.predicted_surface=surface;
+            facts.candidate=point; facts.predicted_landing=flight.settled; facts.predicted_surface=flight.surface;
         }
     }
     return found;
@@ -361,11 +463,45 @@ bool contains(const std::array<RiverIncarnation, 20>& keys, std::size_t count, c
     for (std::size_t i=0; i<count; ++i) if (keys[i]==identity) return true;
     return false;
 }
+bool actual_ground_notification(const world::World& world, const Item& item, bool newly_settled) {
+    const bool still=item.state==ISLE_ITEM_STILL;
+    if (item.kind!=ISLE_ITEM_APPLE || (!still && item.state!=ISLE_ITEM_FLYING) ||
+        (still && !newly_settled) || (item.object_flags&1u) ||
+        (item.flags&(ISLE_ITEM_BOUNCED|ISLE_ITEM_TOUCHED_GROUND|ISLE_ITEM_DELETED))!=
+            (ISLE_ITEM_BOUNCED|ISLE_ITEM_TOUCHED_GROUND) ||
+        !finite(item.position) || !finite(item.velocity) || !finite(item.previous_position)) return false;
+    // Actual ROOT/contact scalars only. A newly settled synchronous update
+    // notifies at height+12; a moving bounce notifies after its halfstep.
+    const IsleGameVec3 contact=still ? item.position :
+        IsleGameVec3{item.position.x-item.velocity.x*.5f,
+                     item.position.y-item.velocity.y*.5f,
+                     item.position.z-item.velocity.z*.5f};
+    world::GroundResult ground{}, prior_ground{};
+    return apple_ground(world, contact, ground) &&
+        std::abs(contact.y-ground.height-12)<=.5f &&
+        world.ground_at(item.previous_position.x,item.previous_position.z,prior_ground) &&
+        item.previous_position.y<=prior_ground.height+.375f;
+}
 } // namespace
 
-RiverPhotoPuzzle::RiverPhotoPuzzle(private_post_course::Controller controller, Aim aim)
-    : controller_(controller), aim_(aim) {
+RiverPhotoObjective choose_river_photo_objective(application::Photos& photos) {
+    const auto slowbro=photos.report_present(80);
+    require(bool(slowbro), "River canonical Slowbro Report read unavailable");
+    const auto bulbasaur=photos.report_present(1);
+    require(bool(bulbasaur), "River canonical Bulbasaur Report read unavailable");
+    return !slowbro.value ? RiverPhotoObjective::slowbro80 :
+        !bulbasaur.value ? RiverPhotoObjective::hidden_bulbasaur1 : RiverPhotoObjective::none;
+}
+RiverPhotoPuzzle::RiverPhotoPuzzle(private_post_course::Controller controller, Aim aim,
+                                 RiverPhotoObjective objective)
+    : controller_(controller), aim_(aim), objective_(objective) {
     require(controller_.set && aim_.point, "River photos require real pad and pure aim bridges");
+    require(objective==RiverPhotoObjective::none || objective==RiverPhotoObjective::slowbro80 ||
+            objective==RiverPhotoObjective::hidden_bulbasaur1, "River photo objective invalid");
+    facts_.objective=objective;
+}
+const RiverIncarnation& RiverPhotoPuzzle::selected_actor() const noexcept {
+    return objective_==RiverPhotoObjective::hidden_bulbasaur1 ? facts_.bulbasaur : facts_.parent;
 }
 void RiverPhotoPuzzle::publish(std::uint16_t buttons, std::int8_t x, std::int8_t y) noexcept {
     controller_.set(controller_.owner, buttons, x, y);
@@ -377,10 +513,36 @@ void RiverPhotoPuzzle::stop(RiverPhotoDisposition disposition) noexcept {
     capture_armed_=false;
 }
 void RiverPhotoPuzzle::abandon_parent(RiverPhotoDisposition disposition) noexcept {
-    facts_.parent={}; capture_armed_=false;
-    attempt_approach_=false; previous_parent_evolving_=false;
-    facts_.approach_seen=false; facts_.endpoint_progress=false;
-    facts_.command28_seen=false; facts_.evolution_seen=false;
+    facts_.parent={}; facts_.child={}; facts_.item={}; facts_.bulbasaur={}; facts_.apple_sender={};
+    capture_armed_=false; armed_subject_={}; armed_slot_=-1; armed_qualified_=0;
+    tracking_item_=false; evolution_entered_=false; attempt_approach_=false;
+    previous_parent_evolving_=false; previous_hidden_=false; previous_target_={};
+    previous_notification_=false; previous_item_={}; previous_notification_update_=0;
+    previous_notification_global_={}; previous_notification_actor_global_={};
+    previous_notification_endpoint_global_={};
+    prethrow_count_=0; prethrow_actor_apple_={}; previous_child_count_=0;
+    previous_other_evolving_=false; previous_other_ambiguous_=false;
+    facts_.approach_seen=false; facts_.endpoint_progress=false; facts_.command28_seen=false;
+    facts_.evolution_seen=false; facts_.parent_cleanup_seen=false; facts_.spawn_seen=false;
+    facts_.child_present=false; facts_.child_eligible=false; facts_.child_focused=false;
+    facts_.bulbasaur_hidden_seen=false; facts_.apple_sender_seen=false;
+    facts_.reveal_seen=false; facts_.reveal_path_seen=false; facts_.revealed_present=false;
+    facts_.revealed_eligible=false; facts_.revealed_focused=false;
+    facts_.notification_observed=false; facts_.notification_previous=false;
+    facts_.item_present=false; facts_.item_still=false; facts_.item_safe=false; facts_.item_closest=false;
+    facts_.different_apple=false; facts_.apple_reference_matches=false; facts_.interaction_reference_matches=false;
+    facts_.approach_update=0; facts_.evolution_update=0; facts_.spawn_update=0;
+    facts_.hidden_update=0; facts_.notification_update=0; facts_.reveal_update=0; facts_.reveal_path_update=0;
+    facts_.initial_endpoint_squared=0; facts_.best_endpoint_squared=0;
+    facts_.captured_slot=-1; facts_.captured_slots=0;
+    facts_.target_present=false; facts_.endpoint_ready=false; facts_.target_behavior=-1;
+    facts_.target_path_index=-1; facts_.target_graph=0; facts_.target_state=0; facts_.target_path_state=0;
+    facts_.target_object_flags=0; facts_.target_flags=0; facts_.target_object_id=0;
+    facts_.child_flags=0; facts_.child_object_id=0; facts_.item_object_id=0;
+    facts_.item_state=0; facts_.item_kind=0; facts_.item_flags=0;
+    facts_.notification_position={}; facts_.predicted_notification={};
+    facts_.notification_actor_distance=0; facts_.notification_endpoint_distance=0;
+    facts_.item_root_distance=0; facts_.item_endpoint_distance=0;
     actor_steering_=0; actor_recovery_=0; actor_planning_=0; zoom_out_requested_=false;
     facts_.disposition=disposition; facts_.phase=RiverPhotoPhase::observe;
 }
@@ -390,6 +552,7 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
     const bool consecutive=sampled_ && updates==previous_update_+1;
     previous_update_=updates; sampled_=true; facts_.last_update=updates; facts_.owns_pad=false;
     observation_active_=false;
+    if (objective_==RiverPhotoObjective::none) return;
     if (!view.river || view.river->status()!=course::LifecycleStatus::running) {
         if (started_ && !facts_.complete) stop(RiverPhotoDisposition::course_ended);
         return;
@@ -404,17 +567,24 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
     require(actors && items && world, "River actual Actor/Item/World unavailable");
     const auto* block=world->current();
     // Adapter::requested witnesses initial scene setup, not course retirement.
-    if (!block || !block->resource || world->retired()) {
+    if (!block || !block->resource || world->retired() || !world->error().empty()) {
         if (started_ && !facts_.complete) stop(RiverPhotoDisposition::course_ended);
         return;
     }
     facts_.current_block=static_cast<int>(block->index);
     const auto offset=block->resource->metadata.world_position;
     const IsleGameVec3 origin{offset.x*100, offset.y*100, offset.z*100};
-    snapshot(planning_, *player, *actors, *items, facts_.parent, facts_.child, attempted_parents_, origin);
+    const bool bulbasaur=objective_==RiverPhotoObjective::hidden_bulbasaur1;
+    const auto& subject_identity=bulbasaur ? facts_.bulbasaur : facts_.child;
+    snapshot(planning_, *player, *actors, *items, *world, objective_, selected_actor(),
+             subject_identity, attempted_parents_, origin);
     const auto& observed=planning_;
     observation_active_=true;
     const auto& parent=observed.parent;
+    const bool was_hidden=consecutive && previous_hidden_ && previous_target_==parent.identity;
+    const auto hidden_global=previous_parent_global_;
+    previous_hidden_=parent.present && parent.hidden_wait;
+    previous_target_=parent.identity;
     const auto& photo=*player->photo;
     facts_.film=photo.gPhotoCount; facts_.qualified=photo.D_800AE27C;
     require(facts_.film>=0 && facts_.film<=60 && facts_.qualified>=0 && facts_.qualified<=facts_.film,
@@ -429,7 +599,7 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
     if (!started_ && facts_.player_ready && apple.value) {
         started_=true; facts_.initial_update=updates;
     }
-    if (!reports_sampled_) {
+    if (!reports_sampled_ && !bulbasaur) {
         const auto report=entry.photos().report_present(79);
         require(bool(report), "River canonical Slowpoke Report read unavailable");
         facts_.prior_slowpoke_report=report.value; reports_sampled_=true;
@@ -440,18 +610,20 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
     for (int slot=observed_roll_; slot<facts_.film; ++slot) {
         const auto& captured=photo.D_800B0598[slot];
         facts_.capture_observed=true; facts_.raw_primary=captured.pokemons[0].pokemonID;
-        if (one_exposure && captured.levelID==3 && (captured.unk_00_16&0xe0u)==0x20u &&
+        if (!bulbasaur && one_exposure && captured.levelID==3 && (captured.unk_00_16&0xe0u)==0x20u &&
             captured.pokemons[0].pokemonID==79) facts_.slowpoke_captured=true;
-        if (captured.pokemons[0].pokemonID!=80) continue;
+        if (captured.pokemons[0].pokemonID!=static_cast<int>(objective_)) continue;
         ++facts_.captures;
         const bool coherent=!facts_.exhausted && capture_armed_ && consecutive &&
-            armed_child_==facts_.child && armed_slot_==slot && armed_qualified_+1==facts_.qualified &&
-            facts_.spawn_seen && facts_.parent_cleanup_seen && one_exposure &&
+            armed_subject_==subject_identity && armed_slot_==slot && armed_qualified_+1==facts_.qualified &&
+            (bulbasaur ? facts_.reveal_seen && facts_.reveal_path_seen && facts_.apple_sender_seen &&
+                facts_.notification_observed && facts_.release_update>=facts_.consumed_update :
+                facts_.spawn_seen && facts_.parent_cleanup_seen) && one_exposure &&
             (player->input.pressed_buttons&a_button) && (player->input.current_buttons&a_button) &&
-            facts_.taken_context>=0 && facts_.taken_context<2 && observed.captured_child_context &&
+            facts_.taken_context>=0 && facts_.taken_context<2 && observed.captured_subject_context &&
             captured.levelID==3 && (captured.unk_00_16&0xe0u)==0x20u;
         if (coherent) {
-            facts_.complete=true; facts_.slowbro_slot=slot; facts_.capture_update=updates;
+            facts_.complete=true; facts_.captured_slot=slot; facts_.capture_update=updates;
             facts_.captured_slots|=std::uint64_t{1}<<static_cast<unsigned>(slot);
             facts_.disposition=RiverPhotoDisposition::qualified; facts_.phase=RiverPhotoPhase::finished;
         } else { ++facts_.capture_mismatches; ++facts_.mismatches; }
@@ -463,6 +635,12 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
         facts_.collision=parent.collision; facts_.collision_radius=parent.radius;
         facts_.target_graph=parent.graph; facts_.target_state=parent.state; facts_.target_flags=parent.flags;
         facts_.target_behavior=parent.behavior; facts_.target_object_id=parent.object_id;
+        facts_.target_path_index=parent.path_index; facts_.target_path_state=parent.path_state;
+        facts_.target_object_flags=parent.object_flags; facts_.target_path_parameter=parent.path_parameter;
+        if (bulbasaur && parent.identity==facts_.bulbasaur && parent.hidden_wait) {
+            if (!facts_.bulbasaur_hidden_seen) facts_.hidden_update=updates;
+            facts_.bulbasaur_hidden_seen=true;
+        }
         facts_.process_flags=parent.process_flags; facts_.counter=parent.counter;
         facts_.model_animation=parent.model_animation; facts_.animation_time=parent.animation_time;
         facts_.target_yaw=parent.yaw; facts_.endpoint_ready=parent.endpoint_ready;
@@ -496,16 +674,27 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
         } else { ++facts_.mismatches; stop(RiverPhotoDisposition::spawn_unattributed); }
     }
     facts_.child_present=false; facts_.child_eligible=false; facts_.child_focused=false;
-    for (std::size_t i=0; i<observed.child_count; ++i) {
+    facts_.revealed_present=false; facts_.revealed_eligible=false; facts_.revealed_focused=false;
+    const Actor* subject=nullptr;
+    if (bulbasaur) {
+        if (facts_.reveal_seen && parent.present && parent.identity==facts_.bulbasaur) {
+            subject=&parent; facts_.revealed_present=true;
+            facts_.revealed_eligible=parent.eligible; facts_.revealed_focused=parent.focused;
+        }
+    } else for (std::size_t i=0; i<observed.child_count; ++i) {
         const auto& child=observed.children[i];
         if (child.identity!=facts_.child) continue;
+        subject=&child;
         facts_.child_present=true; facts_.child_eligible=child.eligible; facts_.child_focused=child.focused;
         facts_.child_root=child.root; facts_.child_yaw=child.yaw; facts_.child_flags=child.flags;
-        if (child.focused) ++facts_.capture_focus_updates;
-        if (!facts_.exhausted && facts_.spawn_seen && child.focused &&
-            facts_.player_ready && player->gDirectionIndex==-1 && !player->TargetDirectionZoomedIn &&
-            player->sTimerAfterPhotoTaken<0 && !(player->input.current_buttons&a_button) && facts_.film<60) {
-            capture_armed_=true; armed_child_=child.identity;
+    }
+    if (subject) {
+        if (subject->focused) ++facts_.capture_focus_updates;
+        if (!facts_.exhausted && (bulbasaur ? facts_.reveal_seen && facts_.reveal_path_seen : facts_.spawn_seen) &&
+            subject->focused && facts_.player_ready && player->gDirectionIndex==-1 &&
+            !player->TargetDirectionZoomedIn && player->sTimerAfterPhotoTaken<0 &&
+            !(player->input.current_buttons&a_button) && facts_.film<60) {
+            capture_armed_=true; armed_subject_=subject->identity;
             armed_slot_=facts_.film; armed_qualified_=facts_.qualified;
         }
     }
@@ -525,6 +714,10 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
         if ((player->input.pressed_buttons&a_button) && player->ThrowItemTimeout>0 && player->LastItemId==163) {
             ++facts_.consumed; facts_.consumed_update=updates;
             tracking_item_=true; facts_.item={}; attempt_start_=updates; attempt_approach_=false;
+            previous_notification_=false; previous_item_={}; previous_notification_update_=0;
+            facts_.item_present=false; facts_.item_still=false; facts_.item_safe=false;
+            facts_.different_apple=false; facts_.apple_reference_matches=false;
+            facts_.interaction_reference_matches=false; facts_.apple_sender_seen=false; facts_.apple_sender={};
         } else { ++facts_.mismatches; stop(RiverPhotoDisposition::press_timeout); }
         pending_press_=false; pending_release_=true; release_start_=updates;
     }
@@ -539,7 +732,7 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
         pending_release_=false; stop(RiverPhotoDisposition::release_timeout);
     }
     if (facts_.complete || facts_.exhausted) return;
-    if (facts_.spawn_seen) {
+    if (facts_.spawn_seen || facts_.reveal_seen) {
         facts_.phase=RiverPhotoPhase::capture; facts_.disposition=RiverPhotoDisposition::capture_pending;
         return;
     }
@@ -559,10 +752,78 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
             facts_.item_still=item->state==ISLE_ITEM_STILL;
             world::GroundResult ground{};
             facts_.item_safe=!(item->object_flags&1u) && !(item->flags&ISLE_ITEM_DELETED) &&
-                safe_ground(*world, item->position, ground) &&
+                (bulbasaur ? apple_ground(*world,item->position,ground) : safe_ground(*world,item->position,ground)) &&
                 (!facts_.item_still || ((item->flags&ISLE_ITEM_TOUCHED_GROUND) &&
                     std::abs(item->position.y-ground.height-12)<=1));
             facts_.ground_surface=ground.surface;
+            if (bulbasaur) {
+                const bool newly_settled=consecutive && previous_item_.identity==item->identity &&
+                    previous_item_.state==ISLE_ITEM_FLYING && item->state==ISLE_ITEM_STILL;
+                const bool current_notification=actual_ground_notification(*world, *item, newly_settled);
+                const bool prior_notification=consecutive && previous_notification_ &&
+                    previous_notification_update_+1==updates && previous_item_.identity==item->identity;
+                if (parent.present) {
+                    facts_.item_root_distance=std::sqrt(distance_squared(item->position,parent.root));
+                    facts_.item_endpoint_distance=std::sqrt(distance_squared(item->position,parent.endpoint));
+                    facts_.different_apple=prethrow_actor_apple_!=item->identity;
+                    facts_.apple_reference_matches=parent.apple==item->identity;
+                    facts_.interaction_reference_matches=parent.interaction==item->identity;
+                    const bool sender=facts_.different_apple && facts_.apple_reference_matches &&
+                        facts_.interaction_reference_matches && facts_.item_safe &&
+                        item->kind==ISLE_ITEM_APPLE && facts_.consumed_update>=facts_.request_update;
+                    if (sender) { facts_.apple_sender_seen=true; facts_.apple_sender=item->identity; }
+                    const auto current_global=global(item->position,origin);
+                    const auto endpoint_global=global(parent.endpoint,origin);
+                    const bool current_geometry=current_notification && was_hidden && parent.endpoint_ready &&
+                        distance_squared(current_global,hidden_global)<600*600 &&
+                        distance_squared(current_global,endpoint_global)<310*310;
+                    const bool prior_geometry=prior_notification &&
+                        distance_squared(previous_notification_global_,previous_notification_actor_global_)<600*600 &&
+                        distance_squared(previous_notification_global_,previous_notification_endpoint_global_)<310*310;
+                    // NULL graph/visibility/timers alone never qualify. These
+                    // admitted SHOW and path callbacks identify the exact Source
+                    // route (including its animation) without guessing modelAnims.
+                    if (parent.showing && !facts_.reveal_seen) {
+                        if (!was_hidden || !facts_.bulbasaur_hidden_seen || parent.identity!=facts_.bulbasaur ||
+                            !parent.tangible || parent.object_flags!=0 || !parent.reveal_path ||
+                            parent.path_index!=10 || !sender || !(current_geometry || prior_geometry)) {
+                            ++facts_.mismatches; stop(RiverPhotoDisposition::reveal_unattributed); return;
+                        }
+                        const bool previous=!current_geometry;
+                        const auto position=previous ? previous_notification_global_ : global(item->position,origin);
+                        const auto actor_position=previous ? previous_notification_actor_global_ : hidden_global;
+                        const auto endpoint=previous ? previous_notification_endpoint_global_ : global(parent.endpoint,origin);
+                        facts_.notification_observed=true; facts_.notification_previous=previous;
+                        facts_.notification_position={position.x-origin.x,position.y-origin.y,position.z-origin.z};
+                        facts_.notification_actor_distance=std::sqrt(distance_squared(position,actor_position));
+                        facts_.notification_endpoint_distance=std::sqrt(distance_squared(position,endpoint));
+                        facts_.notification_update=previous ? previous_notification_update_ : updates;
+                        facts_.reveal_seen=true; facts_.reveal_path_seen=true;
+                        facts_.reveal_update=updates; facts_.reveal_path_update=updates;
+                        tracking_item_=false; facts_.phase=RiverPhotoPhase::capture;
+                        facts_.disposition=RiverPhotoDisposition::capture_pending;
+                        return;
+                    }
+                }
+                previous_item_=*item; previous_notification_=current_notification && parent.present;
+                previous_notification_update_=updates;
+                if (previous_notification_) {
+                    previous_notification_global_=global(item->position,origin);
+                    previous_notification_actor_global_=parent.global_root;
+                    previous_notification_endpoint_global_=global(parent.endpoint,origin);
+                }
+                if (!parent.present) { stop(RiverPhotoDisposition::actor_lost); return; }
+                if (item->flags&ISLE_ITEM_TOUCHED_GROUND) {
+                    if (!facts_.item_safe) {
+                        ++facts_.blocked_items; stop(RiverPhotoDisposition::item_unsafe); return;
+                    }
+                }
+                if (item->state==ISLE_ITEM_FLYING) {
+                    ++facts_.flight_updates; facts_.phase=RiverPhotoPhase::flight;
+                } else facts_.phase=RiverPhotoPhase::observe;
+                if (updates-attempt_start_>=observation_cap-1) stop(RiverPhotoDisposition::approach_timeout);
+                return;
+            }
             if (parent.present) {
                 facts_.item_root_distance=std::sqrt(distance_squared(item->position, parent.root));
                 facts_.different_apple=prethrow_actor_apple_!=item->identity;
@@ -591,6 +852,7 @@ void RiverPhotoPuzzle::observe(const application::RuntimeView& view, std::uint64
         } else {
             ++facts_.lost_items;
             if (!attempt_approach_ && !parent.evolving) { stop(RiverPhotoDisposition::item_lost); return; }
+            previous_notification_=false;
             // Disappearance is not consumption/evolution evidence. Wait for the
             // actual state or return to an idle graph before another throw.
             if (parent.present && parent.ready && !parent.approaching && !parent.evolving) tracking_item_=false;
@@ -632,35 +894,39 @@ bool RiverPhotoPuzzle::update(const application::RuntimeView& view, std::uint64_
         publish(pending_press_ && !facts_.exhausted ? a_button : 0); return true;
     }
     if (facts_.complete || facts_.exhausted) return false;
+    const bool bulbasaur=objective_==RiverPhotoObjective::hidden_bulbasaur1;
     if (!facts_.apple_available) { facts_.disposition=RiverPhotoDisposition::apple_unavailable; return false; }
     if (!facts_.player_ready) { facts_.disposition=RiverPhotoDisposition::player_not_ready; return false; }
-    if (facts_.spawn_seen || evolution_entered_) return false;
+    if (facts_.spawn_seen || facts_.reveal_seen || evolution_entered_) return false;
     if ((player->input.current_buttons&a_button) || player->sTimerAfterPhotoTaken>=0) return false;
     if (tracking_item_) { facts_.disposition=RiverPhotoDisposition::item_outstanding; return false; }
-    if (facts_.parent[0] && !parent.present) {
+    if (selected_actor()[0] && !parent.present) {
         abandon_parent(RiverPhotoDisposition::actor_lost); return false;
     }
-    if (!facts_.prior_slowpoke_report && !facts_.slowpoke_captured) {
+    if (!bulbasaur && !facts_.prior_slowpoke_report && !facts_.slowpoke_captured) {
         facts_.disposition=RiverPhotoDisposition::preserve_slowpoke; return false;
     }
     if (facts_.film>=59) { facts_.disposition=RiverPhotoDisposition::film_reserved; return false; }
     if (!parent.present) { facts_.disposition=RiverPhotoDisposition::target_absent; return false; }
     if (!parent.endpoint_ready) { facts_.disposition=RiverPhotoDisposition::endpoint_not_ready; return false; }
-    if (!parent.ready || parent.approaching || parent.evolving || parent.endpoint_distance<trigger_squared) {
+    if (!parent.ready || parent.approaching || parent.evolving ||
+        (!bulbasaur && parent.endpoint_distance<trigger_squared)) {
         facts_.disposition=RiverPhotoDisposition::target_not_ready; return false;
     }
     IsleGameVec3 aimed{};
     bool planned=false;
-    if (!facts_.parent[0]) {
+    if (!selected_actor()[0]) {
         if (facts_.incarnation_count>=attempted_parents_.size()) {
             stop(RiverPhotoDisposition::incarnation_limit); return false;
         }
-        // A live distant actor is not yet a physical control opportunity.
-        // Wait without owning pad or consuming an incarnation until a real
-        // bounded trajectory and safe walking corridor are feasible.
+        // Commit neither pad ownership nor an incarnation until the same
+        // bounded integrator finds the objective's physical opportunity.
         planned=plan(*world, *player, observed, facts_, aimed);
         if (!planned) { facts_.disposition=RiverPhotoDisposition::unsafe_geometry; return false; }
-        facts_.parent=parent.identity;
+        if (bulbasaur) {
+            facts_.bulbasaur=parent.identity; facts_.bulbasaur_hidden_seen=parent.hidden_wait;
+            facts_.hidden_update=updates;
+        } else facts_.parent=parent.identity;
         attempted_parents_[static_cast<std::size_t>(facts_.incarnation_count++)]=parent.identity;
         facts_.initial_endpoint_squared=parent.endpoint_distance; facts_.best_endpoint_squared=parent.endpoint_distance;
         actor_steering_=0; actor_recovery_=0; actor_planning_=0;
@@ -704,14 +970,20 @@ bool RiverPhotoPuzzle::update(const application::RuntimeView& view, std::uint64_
     ++actor_steering_; ++facts_.steering_updates;
     std::uint16_t buttons=0;
     if (!x && !y && !(player->input.current_buttons&a_button) && player->ThrowItemTimeout==0) {
-        IsleGameVec3 impact{}; int surface=-1;
-        if (landing(*world, *player, observed, player->cam_target, impact, surface) &&
-            distance_squared(impact, facts_.predicted_landing)<=50*50 && progress_candidate(parent, impact) &&
-            closest_candidate(observed, impact) && corridor(*world, parent, impact)) {
+        Flight flight;
+        const bool forecast=landing(*world, *player, observed, player->cam_target, objective_, flight);
+        const bool feasible=forecast && (bulbasaur ?
+            flight.notifies && notification_geometry(parent,flight.notification) :
+            distance_squared(flight.settled, facts_.predicted_landing)<=50*50 &&
+                progress_candidate(parent, flight.settled) && closest_candidate(observed, flight.settled) &&
+                corridor(*world, parent, flight.settled));
+        if (feasible) {
             prethrow_count_=0; prethrow_actor_apple_=parent.apple;
             for (std::size_t i=0; i<observed.item_count; ++i)
                 prethrow_items_[prethrow_count_++]=observed.items[i].identity;
-            facts_.predicted_landing=impact; facts_.predicted_surface=surface;
+            if (bulbasaur) facts_.predicted_notification=flight.notification;
+            else facts_.predicted_landing=flight.settled;
+            facts_.predicted_surface=flight.surface;
             facts_.request_update=updates; ++facts_.requests; pending_press_=true;
             buttons=a_button; facts_.phase=RiverPhotoPhase::press;
         } else ++facts_.actual_ray_rejections;

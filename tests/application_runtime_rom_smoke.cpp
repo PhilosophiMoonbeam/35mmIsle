@@ -5,7 +5,7 @@
 // is a separate, explicitly owned acquisition through the real Input Service.
 // CLI modes: ingress, course, campaign-lapras, native0..native6[-oak-cancel], native2-apple,
 // Preserved-input private mode: campaign-resume-river INPUT_PROFILE_DIRECTORY
-// performs one strict River80 ride; natural profile provenance is external.
+// performs one strict missing-objective River ride; natural profile provenance is external.
 // native5-empty, menus and credits17..credits19. Photographed courses normally
 // continue through actual Camera9/Photo15/Oak Save/Original Title8 and cold reopen.
 // NativeN authors access/gear only; native2-apple authors Apple-only access,
@@ -32,12 +32,14 @@
 #include "post_course_scene.hpp"
 #include "post_course_window.hpp"
 #include "player_photo_source.h"
+#include "river_scene.hpp"
 #include "player_photo.hpp"
 #include "player_ui_source.h"
 #include "startup_runtime.hpp"
 #include "post_course_probe_inputs.hpp"
 #include "post_course_scene_probe.hpp"
 #include "native_course_probe.hpp"
+#include "native_river_photo_puzzle.hpp"
 
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -192,6 +194,7 @@ struct Evidence {
     const isle::private_campaign::SavedProfileInput* saved_input=nullptr;
     bool resume_one=false,boot_loaded_input=false,initial_continue=false,source_unchanged=false;
     bool resume_river=false;
+    isle::private_campaign::RiverPhotoObjective river_objective=isle::private_campaign::RiverPhotoObjective::none;
     std::int32_t river_source_score=0;
     std::uint64_t river_capture_digest=0;
     unsigned river_report_stages=0;
@@ -451,8 +454,9 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
         if(e.resume_river)out
             <<"River_profile_origin=EXTERNALLY_SUPPLIED_naturally_earned_Apple_only_provenance_NOT_proven_by_flag\n"
             <<"River_scope=one_actual_River3_ride_NOT_fresh_NOT_full_campaign\n"
-            <<"River_capture_goal=ordinary_photographs_strict_actual_child80_predicate\n"
-            <<"River80_Source_score="<<e.river_source_score<<" captured_digest="<<e.river_capture_digest
+            <<"River_capture_goal=ordinary_photographs_strict_actual_frozen_objective_predicate\n"
+            <<"River_required_species="<<static_cast<int>(e.river_objective)
+            <<"\nRiver_Source_score="<<e.river_source_score<<" captured_digest="<<e.river_capture_digest
             <<" selected="<<bool(e.river_report_stages&1)
             <<" assessed="<<bool(e.river_report_stages&2)
             <<" published="<<bool(e.river_report_stages&4)
@@ -1391,6 +1395,15 @@ private:
                     const auto saved=state_.save()->snapshot();
                     require(bool(saved),"River actual course entry snapshot unavailable");
                     observe_river_gear(saved.value,0);
+                    require(view.river &&
+                        e_.river_objective==isle::private_campaign::RiverPhotoObjective::none,
+                        "strict River objective must freeze once at actual River entry");
+                    // Photos is an independent application borrow at entry, before
+                    // the first Probe update or capture. Report publication must
+                    // never cause another choice during this ride.
+                    e_.river_objective=isle::private_campaign::choose_river_photo_objective(view.river->photos());
+                    require(e_.river_objective!=isle::private_campaign::RiverPhotoObjective::none,
+                        "strict River requires a missing canonical objective Report");
                 }
             }
             else {
@@ -1491,30 +1504,34 @@ private:
     }
     void observe_river_reports() {
         if(!e_.resume_river)return;
+        require(e_.river_objective!=isle::private_campaign::RiverPhotoObjective::none,
+            "strict River Report observation preceded the frozen objective");
+        const auto required_species=static_cast<int>(e_.river_objective);
         for(const auto& item:photo_batch_.items()) {
-            if(item.planned.species!=80)continue;
+            if(item.planned.species!=required_species)continue;
             require(item.planned.score>0 &&
                 item.planned.disposition==isle::private_campaign::PhotoDisposition::publish_new_report &&
-                course_probe_ && course_probe_->captured_river_slowbro_photo(
+                course_probe_ && course_probe_->captured_river_objective_photo(e_.river_objective,
                     item.planned.record.index,item.planned.record.photo,item.captured_digest),
-                "River best80 is not a positive new Report from the qualified actual child capture");
+                "River best required-species photo is not a positive new Report from the qualified frozen objective");
             require(!e_.river_capture_digest || e_.river_capture_digest==item.captured_digest,
-                "River80 captured identity changed during assessment");
+                "River required-species captured identity changed during assessment");
             e_.river_capture_digest=item.captured_digest;
             e_.river_source_score=item.planned.score;
             e_.river_report_stages=(e_.river_report_stages&8u) | unsigned(item.selected) |
                 unsigned(item.assessed)<<1 | unsigned(item.reported)<<2;
             require(!item.reported || (item.assessed && item.report_digest==item.captured_digest),
-                "River80 publication changed exact captured identity");
+                "River required-species publication changed exact captured identity");
         }
     }
     void validate_river_saved_report(const isle::save::GameSnapshot& saved) {
         if(!e_.resume_river)return;
         observe_river_reports();
         require(e_.river_source_score>0 && (e_.river_report_stages&7u)==7u,
-            "River Save lacks positive exact selected/assessed/published80");
+            "River Save lacks positive exact selected/assessed/published required species");
+        const auto required_species=static_cast<int>(e_.river_objective);
         for(const auto& item:photo_batch_.items()) {
-            if(item.planned.species!=80)continue;
+            if(item.planned.species!=required_species)continue;
             const auto slot=static_cast<std::size_t>(item.planned.report_index);
             const auto report=saved.photo(isle::save::PhotoSet::report,slot);
             const auto points=saved.report_score(slot);
@@ -1525,10 +1542,10 @@ private:
                 points && points.value==e_.river_source_score && report &&
                 report.value.size()==captured_bytes.size() && report.value[0]==captured_bytes[0] &&
                 std::equal(captured_bytes.begin()+2,captured_bytes.end(),report.value.begin()+2),
-                "acknowledged River Save changed required80 wire bytes or Source score");
+                "acknowledged River Save changed required-species wire bytes or Source score");
             e_.river_report_stages|=8u;
         }
-        require(e_.river_report_stages==15,"River Save missing exact80 Report");
+        require(e_.river_report_stages==15,"River Save missing exact required-species Report");
         observe_river_gear(saved,1);
     }
     void observe_apple_reports() {
@@ -1590,7 +1607,7 @@ private:
             "actual complete captured batch lacks a marked presentation, Source score or exact assessment disposition");
         observe_apple_reports();
         if(e_.resume_river)require(e_.river_source_score>0 && (e_.river_report_stages&7u)==7u,
-            "strict River requires positive selected/assessed/published actual80");
+            "strict River requires positive selected/assessed/published actual objective");
         if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
             require(std::all_of(e_.apple_source_scores.begin(),e_.apple_source_scores.end(),
                 [](std::int32_t score){return score>0;}) &&
@@ -1639,9 +1656,10 @@ private:
                 p.credits_updates>0 && p.credits_frames>0 && p.credits_presentations>0 && p.credits_visible):p.oak_result==8),
             "actual Oak acknowledged save/Original continuation/presented Title8 proof incomplete");
         if(e_.resume_river)require(e_.requested_course==3 && e_.initial_oak_result==3 &&
+            e_.river_objective!=isle::private_campaign::RiverPhotoObjective::none &&
             e_.river_report_stages==15 && e_.river_source_score>0 &&
             e_.river_gear_flags[0]==1 && e_.river_gear_flags[1]==1,
-            "River continuation lacks legal one-ride80 acknowledged identity and Apple-only boundaries");
+            "River continuation lacks legal one-ride objective acknowledged identity and Apple-only boundaries");
         if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
             require(e_.requested_course==2 && e_.authored_course_profile &&
                 std::all_of(e_.apple_gear_flags.begin(),e_.apple_gear_flags.begin()+4,
@@ -1727,7 +1745,7 @@ private:
             "actual campaign roll has no useful Source-admissible photograph");
         observe_apple_reports();
         if(e_.resume_river)require(e_.river_source_score>0 && e_.river_capture_digest,
-            "River actual best-photo plan has no positive qualified80; empty/no-better is not success");
+            "River actual best-photo plan has no positive qualified required species; empty/no-better is not success");
         if(e_.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
             require(std::all_of(e_.apple_source_scores.begin(),e_.apple_source_scores.end(),
                 [](std::int32_t score){return score>0;}),
@@ -3247,8 +3265,11 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
                     if(value.value)flags|=1<<flag;
                 }
                 evidence.river_gear_flags[2]=flags;
-                require(flags==1 && evidence.river_report_stages==15 && evidence.river_source_score>0,
-                    "River cold reopen lacks exact positive80 or Apple-only isolation");
+                require(flags==1 &&
+                    evidence.river_objective!=isle::private_campaign::RiverPhotoObjective::none &&
+                    evidence.river_report_stages==15 && evidence.river_source_score>0 &&
+                    evidence.river_capture_digest,
+                    "River whole-profile exact cold reopen lacks positive frozen objective or Apple-only isolation");
             }
             if(evidence.capture_goal==isle::private_course::CaptureGoal::apple_evolution)
                 require(std::all_of(evidence.apple_gear_flags.begin(),evidence.apple_gear_flags.end(),
@@ -3287,9 +3308,11 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     write_report(root,evidence,failure);
     if (!failure.empty()) {std::cerr << "private actual application integration: " << failure << '\n';return 1;}
     if(mode==Mode::native_course) {
-        std::cout<<(evidence.resume_river?
-            "actual_loaded_external_natural_Apple_only_River3_child80_positive_exact_Report_Save_Title_cold=passed course=":
-            evidence.saved_input?(evidence.resume_one?
+        if(evidence.resume_river)
+            std::cout<<"actual_loaded_external_natural_Apple_only_River3_required_species"
+                <<static_cast<int>(evidence.river_objective)
+                <<"_positive_exact_Report_Save_Title_cold=passed course=";
+        else std::cout<<(evidence.saved_input?(evidence.resume_one?
             "actual_loaded_preserved_input_one_new_ride_Title11_notice2_Oak11_Save_Title_exact_cold_NOT_fresh_NOT_full_campaign=passed course=":
             "actual_loaded_preserved_input_campaign_rewards_signs_Mew_credits_Save_Title_exact_cold_NOT_fresh=passed course="):
             evidence.full_campaign?"actual_unseeded_one_profile_rewards_six_signs_Mew_Source_credits_Save_Title_cold=passed course=":
@@ -3302,7 +3325,8 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
             evidence.campaign_first_unlock?"actual_unseeded_six_Report_unlock_Save_Title8_cold_profile=passed course=":
             evidence.capture_goal==isle::private_course::CaptureGoal::apple_evolution?
                 "actual_authored_Apple_only_course2_Source_scored5_6_Photo15_Oak_Save_Title8_exact_cold=passed course=":
-            "actual_course_Photo15_Oak_Save_Source_Title8_and_cold_profile=passed course=")<<evidence.requested_course
+            "actual_course_Photo15_Oak_Save_Source_Title8_and_cold_profile=passed course=");
+        std::cout<<evidence.requested_course
             <<" actual_updates="<<evidence.course_updates<<" course_frames="<<evidence.course_frames
             <<" course_LUS_presentations="<<evidence.course_presentations
             <<" canonical_submissions="<<evidence.submissions<<" actual_terminals="<<evidence.terminals

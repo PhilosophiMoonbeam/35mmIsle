@@ -5,9 +5,14 @@
 #include "player_photo_source.h"
 #include <array>
 #include <cstddef>
+#include <cstdint>
+
+namespace isle::application { class Photos; }
 
 namespace isle::private_campaign {
 using RiverIncarnation = std::array<std::uint64_t, 3>;
+enum class RiverPhotoObjective : std::uint8_t { none=0, slowbro80=80, hidden_bulbasaur1=1 };
+RiverPhotoObjective choose_river_photo_objective(application::Photos&);
 enum class RiverPhotoPhase { observe, unzoom, aim, press, release, flight, approach, evolution, capture, finished };
 enum class RiverPhotoDisposition {
     course_not_active, player_not_ready, apple_unavailable, preserve_slowpoke,
@@ -16,9 +21,10 @@ enum class RiverPhotoDisposition {
     recovery_limit, request_limit, press_timeout, release_timeout,
     item_ambiguous, item_lost, item_unsafe, approach_timeout, actor_lost,
     incarnation_limit, evolution_unattributed, evolution_timeout,
-    spawn_unattributed, capture_pending, overall_limit, course_ended, qualified, none
+    spawn_unattributed, capture_pending, overall_limit, course_ended, qualified, none, reveal_unattributed
 };
 struct RiverPhotoFacts {
+    RiverPhotoObjective objective=RiverPhotoObjective::none;
     bool available=false, complete=false, owns_pad=false, exhausted=false;
     bool player_ready=false, apple_available=false, prior_slowpoke_report=false;
     bool slowpoke_captured=false, target_present=false, endpoint_ready=false;
@@ -27,25 +33,33 @@ struct RiverPhotoFacts {
     bool approach_seen=false, endpoint_progress=false, command28_seen=false;
     bool evolution_seen=false, parent_cleanup_seen=false, spawn_seen=false;
     bool child_present=false, child_eligible=false, child_focused=false, capture_observed=false;
+    bool bulbasaur_hidden_seen=false, apple_sender_seen=false, reveal_seen=false, reveal_path_seen=false;
+    bool revealed_present=false, revealed_eligible=false, revealed_focused=false;
+    bool notification_observed=false, notification_previous=false;
     RiverPhotoPhase phase=RiverPhotoPhase::observe;
     RiverPhotoDisposition disposition=RiverPhotoDisposition::course_not_active;
-    std::int32_t slowbro_slot=-1, current_block=-1, target_behavior=-1;
+    std::int32_t captured_slot=-1, current_block=-1, target_behavior=-1, target_path_index=-1;
     std::int32_t film=0, qualified=0, item_state=0, item_kind=0, raw_primary=0;
     std::int32_t focus_species=0, focus_context=-1, taken_context=-1;
     std::uint32_t target_graph=0, target_state=0, process_flags=0, model_animation=0;
+    std::uint32_t target_path_state=0, target_object_flags=0;
     std::uint32_t target_flags=0, child_flags=0, item_flags=0, focus_flags=0;
     std::uint32_t target_object_id=0, child_object_id=0, item_object_id=0;
     std::int32_t counter=0, ground_surface=-1, predicted_surface=-1;
     float animation_time=0, root_endpoint_squared=0, initial_endpoint_squared=0;
     float best_endpoint_squared=0, item_root_distance=0, collision_radius=0;
+    float item_endpoint_distance=0, notification_actor_distance=0, notification_endpoint_distance=0;
+    float target_path_parameter=0;
     float target_yaw=0, child_yaw=0, spawn_yaw_error=0, spawn_distance_squared=0;
     IsleGameVec3 root{}, endpoint{}, collision{}, global_root{}, child_root{};
     IsleGameVec3 item_position{}, candidate{}, predicted_landing{}, input_target{};
-    RiverIncarnation parent{}, child{}, item{};
+    IsleGameVec3 predicted_notification{}, notification_position{};
+    RiverIncarnation parent{}, child{}, item{}, bulbasaur{}, apple_sender{};
     std::uint64_t initial_update=0, last_update=0, request_update=0, consumed_update=0;
     std::uint64_t release_update=0, approach_update=0, evolution_update=0;
     std::uint64_t spawn_update=0, capture_update=0;
-    std::uint64_t captured_slots=0; // Coherent exposures of this same child; roll capacity is sixty.
+    std::uint64_t hidden_update=0, notification_update=0, reveal_update=0, reveal_path_update=0;
+    std::uint64_t captured_slots=0; // Coherent exposures of this same qualified subject; capacity is sixty.
     std::uint64_t requests=0, pressed=0, consumed=0, releases=0;
     std::uint64_t steering_updates=0, recovery_updates=0, flight_updates=0;
     std::uint64_t planning_updates=0;
@@ -59,10 +73,12 @@ namespace river_detail {
 struct Actor {
     bool present=false, eligible=false, focused=false, ready=false, approaching=false, evolving=false;
     bool endpoint_ready=false, ground_list_valid=true, explicit_ground=false;
+    bool hidden_wait=false, showing=false, reveal_path=false, tangible=false;
     RiverIncarnation identity{}, apple{}, interaction{};
     std::uint32_t object_id=0, graph=0, state=0, process_flags=0, flags=0, model_animation=0;
-    int behavior=0, counter=0;
-    float radius=0, yaw=0, animation_time=0, endpoint_distance=0;
+    std::uint32_t path_state=0, object_flags=0;
+    int behavior=0, counter=0, path_index=-1;
+    float radius=0, yaw=0, animation_time=0, endpoint_distance=0, path_parameter=0;
     IsleGameVec3 root{}, global_root{}, collision{}, endpoint{};
     std::array<float, 32> forbidden{};
     std::size_t forbidden_count=0;
@@ -74,6 +90,7 @@ struct Item {
     unsigned flags=0, object_flags=0;
     std::uint32_t object_id=0;
     IsleGameVec3 position{};
+    IsleGameVec3 velocity{}, previous_position{};
 };
 struct Planning {
     Actor parent{};
@@ -85,7 +102,7 @@ struct Planning {
     std::size_t child_count=0;
     bool other_evolving=false, multiple_other_evolving=false;
     IsleGameVec3 other_global{};
-    bool captured_child_context=false;
+    bool captured_subject_context=false;
     IslePlayerPhotoFocus focus{}; // Scalar fields only; object is never stored.
 };
 } // namespace river_detail
@@ -93,7 +110,7 @@ struct Planning {
 // authority. All references retained here are scalar native incarnation keys.
 class RiverPhotoPuzzle final {
 public:
-    RiverPhotoPuzzle(private_post_course::Controller, Aim);
+    RiverPhotoPuzzle(private_post_course::Controller, Aim, RiverPhotoObjective);
     RiverPhotoPuzzle(const RiverPhotoPuzzle&)=delete;
     RiverPhotoPuzzle& operator=(const RiverPhotoPuzzle&)=delete;
     // Call on every completed update, including ordinary shutter/release.
@@ -106,8 +123,10 @@ private:
     void publish(std::uint16_t=0, std::int8_t=0, std::int8_t=0) noexcept;
     void stop(RiverPhotoDisposition) noexcept;
     void abandon_parent(RiverPhotoDisposition) noexcept;
+    const RiverIncarnation& selected_actor() const noexcept;
     private_post_course::Controller controller_;
     Aim aim_;
+    const RiverPhotoObjective objective_;
     RiverPhotoFacts facts_{};
     bool sampled_=false, started_=false, reports_sampled_=false;
     bool pending_press_=false, pending_release_=false, tracking_item_=false;
@@ -117,7 +136,7 @@ private:
     std::uint64_t previous_update_=0, attempt_start_=0, release_start_=0;
     std::uint64_t actor_steering_=0, actor_recovery_=0, actor_planning_=0;
     int observed_roll_=-1, observed_qualified_=0, armed_slot_=-1, armed_qualified_=0;
-    RiverIncarnation armed_child_{};
+    RiverIncarnation armed_subject_{};
     std::array<RiverIncarnation, 2> attempted_parents_{};
     std::array<RiverIncarnation, 20> prethrow_items_{};
     std::size_t prethrow_count_=0;
@@ -131,6 +150,12 @@ private:
     float previous_parent_yaw_=0;
     bool previous_other_evolving_=false, previous_other_ambiguous_=false;
     IsleGameVec3 previous_other_global_{};
+    bool previous_hidden_=false, previous_notification_=false;
+    RiverIncarnation previous_target_{};
+    river_detail::Item previous_item_{};
+    IsleGameVec3 previous_notification_global_{}, previous_notification_actor_global_{};
+    IsleGameVec3 previous_notification_endpoint_global_{};
+    std::uint64_t previous_notification_update_=0;
 };
 } // namespace isle::private_campaign
 #endif

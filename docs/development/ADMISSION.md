@@ -5027,3 +5027,70 @@ a fresh origin or the complete natural one-profile campaign. The current
 same-binary authored regression also preserves its seven-Report/9,550-point
 result; separate authored profiles still do not establish a durable union.
 
+### Physical River Apple-revealed Bulbasaur
+
+The same private `campaign-resume-river INPUT_PROFILE_DIRECTORY` selector now
+freezes one canonical objective at actual River entry: missing Slowbro (80)
+first, then missing Bulbasaur (1). With neither missing, strict entry fails.
+The ordinary campaign simply omits the helper when both Reports exist. There
+is one controller, one bounded trajectory integrator and one Report/Save/cold
+pipeline; no legacy Slowbro-only predicate or slot alias remains.
+
+Bulbasaur's hidden behavior 1 is attributed through its actual native
+incarnation, graph, SHOW and reveal-path callbacks. The exact new Apple must
+occupy both Source sender references. Its current/previous observed ROOT
+contact must satisfy actor distance <600 and raw path-endpoint distance <310.
+The endpoint is typed `points[segment_point_count]`, not an interpolated spline
+sample. Ordinary photography must coherently capture that same revealed actor;
+another Bulbasaur, predicted contact or visibility alone cannot qualify.
+
+The first real attempt exposed an incorrect moving-only forecast. Source's
+default Item update is kind 1/synchronous. Self `omEndProcess` returns to
+`Items_BounceFromGround`, which still broadcasts CMD14 after a low-speed
+`Items_CollideWithGround` return. Both newly settled height+12 contacts and
+moving reflected-halfstep contacts can notify. Settled attribution requires a
+consecutive same-item FLYING→STILL transition; old resting geometry is not a
+fresh receipt. No SDK behavior, Source callback or process state was changed.
+A subsequent diagnostic-row overflow was fixed by splitting route facts into
+two separately bounded rows, not increasing the row or gameplay budgets.
+
+Frozen consumer `eaa8ee48708bdf71b45bbeff934fbde37204a17fd1f2ad6f0de49d9ff7c5c36e`
+passes the explicit application build, full native build and all 58 CPU tests.
+Actual genuine continuation `647y` then passes from the completed natural
+Slowbro profile, with Apple available and Pester/Flute unavailable throughout:
+
+| Actual boundary | Generation | Reports | Report points |
+| --- | ---: | ---: | ---: |
+| Independent loaded input | 28 | 30 | 51,300 |
+| Acknowledged Save and exact cold reopen | 29 | 32 | 53,810 |
+
+Hidden incarnation `3/7/1` receives exact Apple `4/0/1`. Observed notification
+update 1239 precedes actual SHOW/path update 1240; actor/endpoint distances are
+561.759/46.361. Actual control uses 62 steering, 11 recovery and 12 planning
+updates. Coherent roll 0/slot-mask 1 is raw Bulbasaur (1), Source score 2,400,
+Report slot 0 and normalized full-wire identity `200280603321036282`.
+Incidental Poliwag (60) adds Source 110 to Report slot 23, identity `17756665076852326243`.
+Both pass ordinary Source best selection, assessment, publication and Save.
+
+Independent cold loaders open only separate copies of both quiescent profiles.
+All 30 inherited Reports, including Slowbro (80), retain exact presence, full
+wire bytes and scores; Name's 16 bytes remain unchanged. Of the other 68 slots, 67 are wholly
+unchanged and the sole addition is the actually assessed Poliwag. Both original
+profiles retain exact supported inventory, bytes and metadata. Actual Title
+serial 8/UI2/129 presented frames is visually inspected; the complete cold image
+equals the acknowledged Save.
+
+The ride completes 9,604 Source updates/4,802 course presentations. All 6,801 GPU
+and 18,518 Input operations balance; 9,877,872 dummy PCM frames are accepted and
+all owners retire without a deadline. These are two additional natural Reports
+on one inherited-profile ride, not a fresh/full campaign or a new equipment
+reward. The natural 40-species, Pester/Flute, signs and final-campaign gates
+remain independently required.
+
+Same-binary regressions also pass: genuine missing-Slowbro continuation `648a`
+retains the exact Source 3,580 Report identity and Save/Title/cold result;
+independent cold loaders again find all other 68 Report slots and Name unchanged.
+Authored River isolation `648b` retains seven Reports/9,550 points, actual Save
+generation 1, Title serial 9/UI2 and exact cold reopen. Its authored access and
+equipment are not natural progression or an additional profile union.
+

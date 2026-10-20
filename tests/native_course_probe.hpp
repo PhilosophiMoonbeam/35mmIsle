@@ -8,6 +8,7 @@
 struct IslePlayerPhotoData;
 namespace isle::game { class State; }
 namespace isle::application { struct RuntimeView; struct SceneRetirementView; }
+namespace isle::private_campaign { enum class RiverPhotoObjective : std::uint8_t; }
 namespace isle::private_course {
 enum class CaptureGoal { photographs,empty_roll,progression,sign,apple_evolution,lapras_photographs };
 // Explicit authored unlocked profile, AFTER real Name confirmation and BEFORE
@@ -42,8 +43,8 @@ public:
     bool captured_photo(std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
     // Narrows the same canonical identity to the consumed late Lapras exposure.
     bool captured_lapras_late_photo(std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
-    // Narrows canonical identity to the real Apple-assisted River child80 exposure.
-    [[nodiscard]] bool captured_river_slowbro_photo(std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
+    // Narrows canonical identity to the same qualified, immutable River objective.
+    [[nodiscard]] bool captured_river_objective_photo(private_campaign::RiverPhotoObjective,std::int32_t slot,const IslePlayerPhotoData*,std::uint64_t normalizedDigest) const noexcept;
 private:
     struct Impl;
     std::unique_ptr<Impl> p_;

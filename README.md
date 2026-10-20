@@ -22,9 +22,9 @@ Physical-input isolation also publishes [Tunnel evolution Reports](docs/developm
 
 The [Apple-only Charizard route](docs/development/ADMISSION.md#apple-only-evolution-before-pester) also passes real capture, Source evaluation, Save/Title/cold reopen while Pester and Flute remain unavailable at every checked boundary. Apple and course access are explicit isolation inputs, not naturally earned rewards; the existing Pester route passes its regression.
 
-The [River Apple-assisted evolution route](docs/development/ADMISSION.md#physical-river-apple-assisted-evolution) passes genuine Continue from a naturally earned Apple-only profile: physical Slowpoke-to-Slowbro evolution, exact positive Report publication, acknowledged Save, actual Title and cold reopen. Prior Reports, Name and the original input remain unchanged; this is one inherited-profile ride, not fresh/full-campaign proof.
+The [River Apple routes](docs/development/ADMISSION.md#physical-river-apple-revealed-bulbasaur) pass genuine Continue from naturally earned Apple-only profiles: physical Slowpoke-to-Slowbro evolution and hidden Bulbasaur reveal, positive Source Reports, acknowledged Save, actual Title and exact cold reopen. Inherited Reports, Name and original inputs remain unchanged. The forward profile lineage reaches 32 Reports/53,810 points; this is inherited-profile evidence, not fresh/full-campaign proof.
 
-Published [`68d2a39`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39373104937) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
+Published [`768d6aa`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39383039159) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
 
 ## Development documentation
 

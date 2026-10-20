@@ -179,7 +179,21 @@ int ordinary_species(int id) noexcept {
     return id==603?90:(id>0 && id<=151?id:0);
 }
 struct ShotHistory { std::uint8_t consumed=0;bool reported=false;float acquisition_distance=0; };
-struct PhotoTarget { IsleGameVec3 position{};int species=0;float distance=0; };
+struct PhotoTarget {
+    IsleGameVec3 position{};int species=0;float distance=0;
+    bool retake=false,focus_object_matches=false;
+};
+// Diagnostic values only. Source object IDs do not establish pool generations
+// or continuous actor identity; these minima cannot drive an online retake.
+struct OrdinaryMinimum {
+    std::uint64_t update=0;
+    std::uint32_t object_id=0,actor_flags=0,object_flags=0,source_buttons=0,prior_buttons=0;
+    float distance=0,player_distance=0,acquisition_distance=0,yaw_error=0,pitch_error=0;
+    int raw_id=0,direction=0,zoom_target=0,cooldown=0,film=0,disabled=0,paused=0,volcano_phase=0;
+    int focus_id=0,focus_flags=0;
+    std::int8_t aim_x=0,aim_y=0;
+    bool half_distance=false,matching_focus=false;
+};
 struct PikachuWindow {
     bool sampled=false,base_eligible=false,half_distance=false,focus_matches=false;
     std::uint32_t object_id=0;
@@ -230,7 +244,9 @@ bool photo_target(const IslePlayerSource& player,PhotoTarget& target,const std::
         if(found && ((selected_missing && !missing) ||
             (selected_missing==missing && (actor->playerDist>nearest ||
                 (actor->playerDist==nearest && !selected_retake && retake)))))continue;
-        target={position,species,distance};nearest=actor->playerDist;
+        target={position,species,distance,retake,
+            focus && focus->object==object && focus->pokemon_id==actor->id};
+        nearest=actor->playerDist;
         selected_retake=retake;selected_missing=missing;found=true;
     }
     // Only scalar observations survive; no Actor/model handle escapes.
@@ -243,6 +259,7 @@ bool different(const IsleGameVec3& first,const IsleGameVec3& second) {
 
 void seed_progress(game::State& state,std::int32_t course,CaptureGoal goal) {
     require(course>=0 && course<7,"authored course profile argument outside0..6");
+    require(goal!=CaptureGoal::lapras_photographs,"unseeded Lapras qualification cannot author progress");
     require(goal!=CaptureGoal::apple_evolution || course==2,"authored Apple evolution profile requires Volcano");
     auto* session=state.save();require(state.initialized() && session,"real Name must precede authored unlocked profile");
     const auto before=session->source_player_name_prefix();require(before.size()>=16,"actual confirmed Name missing");
@@ -271,6 +288,8 @@ struct Probe::Impl {
     std::int32_t course;
     CaptureGoal goal;
     game::State& state;
+    const bool allow_natural_empty;
+    bool empty_retirement=false;
     std::optional<private_campaign::ProgressionPuzzles> progression;
     std::optional<private_campaign::ValleyDashPuzzle> dash;
     std::optional<private_campaign::SignPuzzles> signs;
@@ -287,6 +306,7 @@ struct Probe::Impl {
     std::array<std::uint64_t,60> captured_digests{};
     int captured_count=0;
     std::array<ShotHistory,152> ordinary_shots{};
+    std::array<std::array<OrdinaryMinimum,3>,152> ordinary_minima{};
     bool ordinary_reports_sampled=false;
     int pending_ordinary_slot=-1,pending_ordinary_species=0;
     float pending_ordinary_distance=0;
@@ -354,18 +374,24 @@ struct Probe::Impl {
     struct FrameTag {std::uint64_t ordinal=0,serial=0,update=0;int photos=0,reason=0;unsigned phase=0;};
     std::array<FrameTag,2> tags{};
     explicit Impl(std::int32_t id,private_post_course::Controller pad,const std::filesystem::path& root,
-                  CaptureGoal capture,game::State& liveState)
-        :course(id),goal(capture),state(liveState),controller(pad) {
+                  CaptureGoal capture,game::State& liveState,bool allowNaturalEmpty)
+        :course(id),goal(capture),state(liveState),allow_natural_empty(allowNaturalEmpty),controller(pad) {
         require(course>=0 && course<7 && controller.owner && controller.set,"actual course and owned controller required");
+        require(goal!=CaptureGoal::lapras_photographs || course==0,"actual Lapras objective requires Beach");
         require(goal!=CaptureGoal::apple_evolution || course==2,"actual Apple evolution objective requires Volcano");
+        require(!allow_natural_empty || (course<6 && (goal==CaptureGoal::photographs || goal==CaptureGoal::empty_roll)),
+            "empty Source admission permission is limited to ordinary photography or explicit empty isolation");
         std::filesystem::create_directories(root);
         ledger.exceptions(std::ios::badbit|std::ios::failbit);
         ledger.open(root/("course-"+std::to_string(course)+"-source.tsv"),std::ios::out|std::ios::trunc);
         row("scope\tactual canonical profile and Runtime/Manager course Source with owned inputs; application-runtime-report.txt identifies unseeded versus authored access; not N64 parity");
-        row(goal==CaptureGoal::empty_roll?"objective\tgenuine empty Source roll; natural Oak13 admission":
+        row(goal==CaptureGoal::empty_roll?"objective\tgenuine explicit empty Source roll; zero shutter requests; actual Oak13 admission":
+            allow_natural_empty?"objective\tgenuine Source photographs or permitted naturally empty roll; actual CameraCheck9 or Oak13 admission":
             "objective\tgenuine Source photographs; natural CameraCheck9 admission");
         if(goal==CaptureGoal::apple_evolution)
             row("access\tauthored Apple-only unlocked access; Apple0=true Pester1=false Flute2=false; not natural progression; existing Name/controls preserved");
+        if(goal==CaptureGoal::lapras_photographs)
+            row("access\tunseeded actual Name and no-item Lapras photo-response qualification; no authored progress or gear");
         row("bounds\t27 primary world IDs *2667 minimum-speed updates +2400 intro/end; Rainbow7200+1800+2000+1200+120+1200;131072 rows;2 scalar frame tags;no images");
         row("kind\tcourse\tserial\tupdates\tframes\tpresents\tphotos\tqualified\tend_reason\tintro_done\tending\tbuttons\tx\ty\tfocus\thits1\thits2\tmew_mode\tmovement\tvalue\tcontrols\tdisabled\tdirection\tzoom_target\tcooldown\tconsumed_buttons\tpressed_buttons\tmove_time\tposition_x\tposition_y\tposition_z\tvolcano_stage\tegg_present\tegg_distance\tegg_radius\tegg_x\tegg_y\tegg_z\tegg_graph\tegg_path\tcart_stopped\tthrow_timeout\tvolcano_throws\tvolcano_throw_consumed\tvolcano_egg_transition\tvolcano_gate_released\tmoltres_tangible\tvolcano_moltres_photo");
     }
@@ -379,7 +405,7 @@ struct Probe::Impl {
                 const IsleGameVec3& point,bool zoomed,std::int8_t& sx,std::int8_t& sy) {
             static_cast<Impl*>(owner)->aim(player,point,zoomed,sx,sy);
         }};
-        if(goal==CaptureGoal::photographs) {
+        if(goal==CaptureGoal::photographs || goal==CaptureGoal::lapras_photographs) {
             if(course==0)beach_photos.emplace(pad,camera);
             else if(course==1)tunnel_photos.emplace(pad,camera);
         } else if(goal==CaptureGoal::progression) {
@@ -442,6 +468,8 @@ struct Probe::Impl {
         return owned;
     }
     bool goal_complete() const noexcept {
+        if(goal==CaptureGoal::lapras_photographs)
+            return course==0 && beach_photos && beach_photos->facts().lapras.complete;
         if(goal==CaptureGoal::apple_evolution)
             return course==2 && lava_char_requests>0 && lava_apple_consumed && lava_apple_hit && lava_hit &&
                 lava_hit_item[0] && lava_hit_item[3]==163 && lava_controller_working && lava_dive && lava_appeared &&
@@ -530,6 +558,27 @@ struct Probe::Impl {
                 <<"\tshutters="<<f.shutter_requests<<'/'<<f.shutters_pressed<<'/'<<f.captures_consumed
                 <<"\troll="<<f.capture_slot<<"\traw_subject_zero="<<f.captured_subject_zero
                 <<"\tcaptured_chansey="<<f.captured_chansey<<"\tcomplete="<<f.complete;
+            const auto& lapras=f.lapras;
+            text<<"\tlapras_initial="<<lapras.initial_counters[0]<<','<<lapras.initial_counters[1]<<','<<lapras.initial_counters[2]
+                <<"\tlapras_counters="<<lapras.counters[0]<<','<<lapras.counters[1]<<','<<lapras.counters[2]
+                <<"\tlapras_initialized="<<lapras.initialized<<"\tlapras_owns="<<lapras.owns_pad
+                <<"\tlapras_target_focused="<<lapras.target_focused
+                <<"\tlapras_mismatches="<<lapras.mismatches
+                <<"\tlapras_control_updates="<<lapras.control_updates[0]<<','<<lapras.control_updates[1]<<','<<lapras.control_updates[2]
+                <<"\tlapras_roles="<<lapras.first_triggered<<'/'<<lapras.second_triggered<<'/'<<lapras.late_captured
+                <<"\tlapras_shutters="<<lapras.shutter_requests[0]<<','<<lapras.shutter_requests[1]<<','<<lapras.shutter_requests[2]
+                <<"\tlapras_captures="<<lapras.captures[0]<<','<<lapras.captures[1]<<','<<lapras.captures[2]
+                <<"\tlapras_target="<<lapras.target_behavior<<"\tlapras_late_slot="<<lapras.late_slot
+                <<"\tlapras_complete="<<lapras.complete;
+            std::ostringstream focus;
+            focus<<"lapras_focus\tcourse="<<course<<"\tserial="<<serial<<"\tupdates="<<updates
+                <<"\tfocus_present="<<lapras.focus_present<<"\tfocus_live="<<lapras.focus_live
+                <<"\tfocus_species="<<lapras.focus_species<<"\tfocus_behavior="<<lapras.focus_behavior
+                <<"\tfocus_graph="<<lapras.focus_graph<<"\tfocus_object_id="<<lapras.focus_object_id
+                <<"\ttarget_object_id="<<lapras.target_object_id<<"\tfocus_flags="<<lapras.focus_flags
+                <<"\taim_sample="<<lapras.aim_sample<<"\taim_radius="<<lapras.aim_radius
+                <<"\tactual_collision_volume_aim_hint="<<lapras.aim_hint.x<<','<<lapras.aim_hint.y<<','<<lapras.aim_hint.z;
+            row(focus.str());
         } else if(tunnel_photos) {
             const auto& f=tunnel_photos->facts();
             text<<"\tfamily=tunnel_photos\tphase="<<int(f.phase)<<"\towns="<<f.owns_pad
@@ -735,6 +784,85 @@ struct Probe::Impl {
         sx=std::abs(error_x)<6?0:stick(error_x*(player.gDirectionIndex==0?-16.0f:16.0f));
         sy=std::abs(error_y)<6?0:stick(error_y*8);
         if(player.IsAxisYInverted)sy=static_cast<std::int8_t>(-sy);
+    }
+    void observe_ordinary_minima(const Sample& s) {
+        if(course>=6 || !s.running || !s.intro_done || !s.player || !s.player->photo)return;
+        const auto& player=*s.player;
+        IslePlayerPhotoFocus focus{};
+        require(isle_player_photo_published_focus(player.photo,&focus)==ISLE_GAME_OK,
+            "actual ordinary minimum focus borrow rejected");
+        IsleGameObject* cursor=nullptr;
+        for(;;) {
+            IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
+            require(isle_actor_source_link3_next(player.game,cursor,&object,&actor,&model)==ISLE_GAME_OK,
+                "actual ordinary minimum traversal rejected");
+            if(!object)break;
+            cursor=object;
+            const int species=ordinary_species(actor->id);
+            if(!species)continue;
+            const auto& history=ordinary_shots[static_cast<std::size_t>(species)];
+            if(history.consumed!=1 || !(history.acquisition_distance>0) || !model ||
+               !actor->tangible || !(actor->flags&4u) || !(actor->playerDist>=0 && actor->playerDist<=10000))continue;
+            IsleGameObjectMetadata metadata{};
+            require(isle_game_object_metadata(player.game,object,&metadata)==ISLE_GAME_OK,
+                "actual ordinary minimum visibility borrow rejected");
+            if(metadata.flags&1u)continue;
+            const auto& position=actor->collPosition;
+            const float dx=position.x-player.CameraEyePos.x,dz=position.z-player.CameraEyePos.z;
+            const float horizontal=std::hypot(dx,dz);
+            const float pitch=std::atan2(position.y-player.CameraEyePos.y,horizontal);
+            if(!(pitch>=player.MinPitch && pitch<=player.MaxPitch))continue;
+            const float distance=std::hypot(horizontal,position.y-player.CameraEyePos.y);
+            const float sn=std::sin(-player.movement.rotation.y),cs=std::cos(-player.movement.rotation.y);
+            const float yaw_error=wrapped(std::atan2(-(dx*cs+dz*sn),dz*cs-dx*sn)-player.PlayerViewYaw);
+            const float pitch_error=player.ViewPitch-pitch;
+            const auto sx=stick(yaw_error*80/.025f);
+            auto sy=stick(pitch_error*80/.015f);
+            if(player.IsAxisYInverted)sy=static_cast<std::int8_t>(-sy);
+            const bool matching=focus.present && focus.object==object && focus.pokemon_id==actor->id &&
+                (focus.flags&4u) && !(focus.flags&8u);
+            // Local readiness is not target arbitration or proof that a
+            // counterfactual controller could have focused another quadrant.
+            const bool ready=matching && player.D_80382D04_523114==1 &&
+                !player.IsInputDisabled && !player.IsPaused && player.gDirectionIndex==-1 &&
+                !player.TargetDirectionZoomedIn && player.TurnToDirSpeed==0 &&
+                player.sTimerAfterPhotoTaken<0 && !(buttons&a) && !(player.input.current_buttons&a) &&
+                photos<59 && (course!=0 || !player.IsTutorialEnabled || (tutorial_clear && tutorial_stick));
+            auto& minima=ordinary_minima[static_cast<std::size_t>(species)];
+            for(std::size_t category=0;category<minima.size();++category) {
+                if((category==1 && !matching) || (category==2 && !ready))continue;
+                auto& minimum=minima[category];
+                if(minimum.update && !(distance<minimum.distance))continue;
+                minimum={updates,metadata.id,actor->flags,metadata.flags,player.input.current_buttons,buttons,
+                    distance,actor->playerDist,history.acquisition_distance,yaw_error,pitch_error,
+                    actor->id,player.gDirectionIndex,player.TargetDirectionZoomedIn,player.sTimerAfterPhotoTaken,
+                    photos,player.IsInputDisabled,player.IsPaused,static_cast<int>(volcano_stage),
+                    focus.pokemon_id,focus.flags,sx,sy,distance<=history.acquisition_distance*.5f,matching};
+            }
+        }
+    }
+    void emit_ordinary_minima() {
+        constexpr const char* categories[]{"base_eligible","matching_object_focus","matching_object_local_ready_NOT_arbitration"};
+        const auto precision=ledger.precision(std::numeric_limits<float>::max_digits10);
+        for(std::size_t species=1;species<ordinary_minima.size();++species)
+            for(std::size_t category=0;category<ordinary_minima[species].size();++category) {
+                const auto& m=ordinary_minima[species][category];if(!m.update)continue;
+                ledger<<"ordinary_minimum\tcourse="<<course<<"\tserial="<<serial<<"\tspecies="<<species
+                    <<"\tcategory="<<categories[category]<<"\tupdates="<<m.update<<"\tSource_object_id_NOT_generation="<<m.object_id
+                    <<"\traw_id="<<m.raw_id<<"\tdistance="<<m.distance<<"\tplayer_distance="<<m.player_distance
+                    <<"\tacquisition_distance_hint="<<m.acquisition_distance<<"\thalf_distance="<<m.half_distance
+                    <<"\tactor_flags="<<m.actor_flags<<"\tobject_flags="<<m.object_flags
+                    <<"\tmatching_focus="<<m.matching_focus<<"\tfocus="<<m.focus_id<<'/'<<m.focus_flags
+                    <<"\tyaw_pitch_error="<<m.yaw_error<<'/'<<m.pitch_error
+                    <<"\thypothetical_zoom_aim_NOT_input="<<int(m.aim_x)<<'/'<<int(m.aim_y)
+                    <<"\tdirection_zoom_cooldown="<<m.direction<<'/'<<m.zoom_target<<'/'<<m.cooldown
+                    <<"\tfilm_disabled_paused="<<m.film<<'/'<<m.disabled<<'/'<<m.paused
+                    <<"\tprior_Source_buttons="<<m.prior_buttons<<'/'<<m.source_buttons
+                    <<"\tvolcano_phase="<<m.volcano_phase<<'\n';
+                ++rows;
+            }
+        ledger.precision(precision);
+        require(bool(ledger),"actual ordinary minimum ledger write failed");
     }
     void search_photo(const IslePlayerSource& player,bool subject,std::uint16_t pad) {
         std::int8_t sx=0,sy=0;
@@ -1306,7 +1434,7 @@ struct Probe::Impl {
                     [](std::byte byte){return byte==std::byte{0xff};});
             }
             ordinary_reports_sampled=true;
-            row("ordinary_policy\tmissing saved Report acquisitions first; otherwise nearest eligible; real Camera/Oak utility");
+            row("ordinary_policy\tmissing saved Report acquisitions first; otherwise nearest eligible; legacy acquisition/repeats retained; extra moving half-distance repeats require exact live focus and no unresolved Apple photo puzzle; same two-exposure cap");
         }
         const auto& player=*s.player;
         IslePlayerPhotoFocus focus{};
@@ -1399,7 +1527,16 @@ struct Probe::Impl {
             if(have_target)aim(player,target.position,true,sx,sy);
             else sx=24;
         }
-        const bool wanted=have_target && subject && focus_species==target.species && !sx && !sy;
+        const bool focused_species=have_target && subject && focus_species==target.species;
+        bool moving_repeat=focused_species && (sx || sy) && target.retake &&
+            target.focus_object_matches && !(focus.flags&8u);
+        if(moving_repeat && beach_photos) {
+            // Additional shots must not perturb an unresolved scripted reveal
+            // and steal its later first-acquisition visibility opportunity.
+            const auto& puzzle=beach_photos->facts();
+            moving_repeat=!puzzle.apple_available || puzzle.prior_report || puzzle.complete;
+        }
+        const bool wanted=focused_species && ((!sx && !sy) || moving_repeat);
         std::uint16_t pad=z;
         if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
             !(prior&a) && !(player.input.current_buttons&a) && wanted) {
@@ -1409,7 +1546,9 @@ struct Probe::Impl {
             pending_ordinary_context=focus.context;
             std::ostringstream request;
             request<<"ordinary_request\tcourse="<<course<<"\tserial="<<serial<<"\tupdates="<<updates
-                <<"\troll="<<photos<<"\tspecies="<<target.species<<"\tcontext="<<focus.context;
+                <<"\troll="<<photos<<"\tspecies="<<target.species<<"\tcontext="<<focus.context
+                <<"\tretake="<<target.retake<<"\texact_selected_focus="<<target.focus_object_matches
+                <<"\tdistance="<<target.distance<<"\ttracking_stick="<<int(sx)<<','<<int(sy);
             row(request.str());
         }
         set(pad,sx,sy);
@@ -1417,18 +1556,18 @@ struct Probe::Impl {
 };
 
 Probe::Probe(std::int32_t course,private_post_course::Controller controller,const std::filesystem::path& root,
-             CaptureGoal goal,game::State& state)
-    :p_(std::make_unique<Impl>(course,controller,root,goal,state)) {}
+             CaptureGoal goal,game::State& state,bool allowNaturalEmpty)
+    :p_(std::make_unique<Impl>(course,controller,root,goal,state,allowNaturalEmpty)) {}
 Probe::~Probe()=default;
 void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpdates) {
     auto& p=*p_;Sample s;
     if(!selected(view,p.course,s)) {
         if(p.retirement && !p.post && view.entry) {
-            const bool empty=p.goal==CaptureGoal::empty_roll;
+            const bool empty=p.empty_retirement;
             require(empty?(view.oak && view.entry->operation==ISLE_APPLICATION_ENTRY_OAKS_LAB && view.entry->argument==13):
                 (view.post && view.entry->operation==ISLE_APPLICATION_ENTRY_CAMERA_CHECK && view.entry->argument==9),
                 "natural course result did not enter its actual Original empty-roll Oak13 or photographed CameraCheck9 owner");
-            p.post=true;p.note(empty?"actual_empty_post13":"actual_post9",view.entry->serial);p.ledger.flush();
+            p.post=true;p.note(empty?(p.goal==CaptureGoal::empty_roll?"actual_explicit_empty_post13":"actual_natural_empty_post13"):"actual_post9",view.entry->serial);p.ledger.flush();
         }
         return;
     }
@@ -1442,6 +1581,7 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
     const auto limit=p.course==6?rainbow_bound:travel_bound;
     if(delta>limit || p.updates>limit-delta)p.fail("actual Source course update failure bound exhausted");
     p.updates+=delta;p.last_external=actualUpdates;p.observe(s);
+    if(delta)p.observe_ordinary_minima(s);
     if(delta)p.control(view,s);
     if(delta && (p.updates%8==0 || s.reason || s.ending)) {p.note("update");p.note_goal();}
 }
@@ -1449,14 +1589,18 @@ void Probe::retired(application::SceneRetirementView view) {
     auto& p=*p_;Sample s;if(!selected(view,p.course,s))return;
     if(p.signs)p.signs->retire();
     p.observe(s);p.set();
+    p.emit_ordinary_minima();
     p.note_goal();
     if(!p.goal_complete())p.fail("actual input-only capture, evolution, progression or sign objective did not complete");
-    const bool empty=p.goal==CaptureGoal::empty_roll;
+    const bool explicitEmpty=p.goal==CaptureGoal::empty_roll;
+    const bool empty=p.photos==0 && p.allow_natural_empty &&
+        (explicitEmpty || p.goal==CaptureGoal::photographs);
     const auto expected=empty?13:9;
     // Original scripted endpoints send PLAYER_CMD_7, whose Player callback
     // ends with reason3. Normal travel/film exhaustion ends with reason2.
     const auto expectedReason=p.goal==CaptureGoal::progression?3:2;
-    const bool captures=empty?(p.photos==0 && p.qualified==0 && p.shutters==0):(p.photos>0 && p.shutters>0);
+    const bool captures=empty?(p.qualified==0 && (!explicitEmpty || p.shutters==0)):
+        (!explicitEmpty && p.photos>0 && p.shutters>0);
     if(!p.entered || p.retirement || !view.entry || view.entry->serial!=p.serial || view.entry->argument!=std::uint32_t(p.course) ||
        !s.retired || !s.joined || !s.source_complete || !s.closed || s.input!=p.course || s.output!=expected || view.source_result!=expected ||
        s.reason!=expectedReason || !p.intro_seen || !p.intro_done || !p.travel_seen || (p.course!=6 && !p.movement) ||
@@ -1469,7 +1613,8 @@ void Probe::retired(application::SceneRetirementView view) {
         p.fail("actual Volcano egg/projectile/Moltres photo/cart-resume handshake not observed");
     if(p.course==6 && (!p.ending_wait || !p.ending_terminal || !p.unshielded_photo || !p.mew_shields_broken || !p.throws))
         p.fail("actual Rainbow shield/Mew capture/gate Cart handshake not observed");
-    p.retirement=true;p.note(empty?"joined_original_empty_result13":"joined_original_result9",view.source_result);p.ledger.flush();
+    p.empty_retirement=empty;p.retirement=true;
+    p.note(empty?(explicitEmpty?"joined_original_explicit_empty_result13":"joined_original_natural_empty_result13"):"joined_original_result9",view.source_result);p.ledger.flush();
 }
 void Probe::frame(const application::RuntimeView& view,std::uint64_t ordinal) {
     auto& p=*p_;Sample s;if(!selected(view,p.course,s))return;
@@ -1497,9 +1642,14 @@ void Probe::presented(std::int32_t course,std::uint64_t ordinal,std::uint64_t di
     tag={};
 }
 bool Probe::completed() const noexcept {return p_->retirement && p_->post;}
+bool Probe::empty_completed() const noexcept {return p_->retirement && p_->post && p_->empty_retirement && p_->photos==0 && p_->qualified==0;}
 bool Probe::captured_photo(std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t normalizedDigest) const noexcept {
     const auto& p=*p_;
     return slot>=0 && slot<p.captured_count && photo==p.captured_roll+slot &&
         normalizedDigest==p.captured_digests[static_cast<std::size_t>(slot)];
+}
+bool Probe::captured_lapras_late_photo(std::int32_t slot,const IslePlayerPhotoData* photo,std::uint64_t digest) const noexcept {
+    return p_->beach_photos && p_->beach_photos->facts().lapras.late_captured &&
+        p_->beach_photos->facts().lapras.late_slot==slot && captured_photo(slot,photo,digest);
 }
 }

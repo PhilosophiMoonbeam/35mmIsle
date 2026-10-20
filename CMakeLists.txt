@@ -1520,6 +1520,7 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
         tests/native_course_probe.cpp
         tests/campaign_photo_selection.cpp
         tests/campaign_photo_batch.cpp
+        tests/campaign_saved_profile.cpp
         tests/native_campaign_policy.cpp
         tests/native_progression_puzzles.cpp
         tests/native_beach_photo_puzzle.cpp

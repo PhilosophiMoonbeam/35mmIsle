@@ -4582,6 +4582,43 @@ has primary actor 4 but evaluated species 126. Primary animation, pose and
 yaw must not be attributed to a different scored subject. No live
 predicted-score, pose-only Rules API or synthetic pixels were introduced.
 
+A completed read-only GDB trace of frozen consumer `510184f` reaches actual
+`Replay::acknowledge`, not its normal empty-mapping shortcut. Preferred
+species 4/flags 0x23 maps photo 0 to feedback 0 in a six-subject rendered mapping:
+
+| Actual rendered subject | Total | Visible | Approximate total | Center | Visible center |
+|---|---:|---:|---:|---:|---:|
+| Preferred Charmander (4), slot 0 | 7 | 5 | 7 | 7 | 3 |
+| Magmar (126), slot 1 | 14 | 14 | 14 | 5 | 1 |
+
+The preferred image fails Source's twelve-visible-pixel gate, not its
+coverage-ratio gate. Removing occlusion alone cannot enlarge that frozen
+footprint enough. After normal continuation, actual Camera roll 5 has raw
+primary 4 but evaluates as 126/210. Seven Reports total 8,790; Save generation 1,
+presented Title serial 9/UI state 2 and exact whole-profile cold reopen succeed.
+All 7,914 GPU operations and 17,367 Input reads/completions balance; 9,405,664
+dummy PCM frames are accepted. All owners retire without deadlines; exit is 0.
+No external window image was captured for this manual diagnostic.
+
+Independent planner/reviewer assessments retain the existing distance
+policy and require actual opportunity measurements. A scalar-only full
+ride records these post-acquisition species-4 witnesses before arbitration:
+
+| Actual witness | Source update | Camera distance | Exact-object focus | Unchanged half-distance gate |
+|---|---:|---:|---|---|
+| Base-eligible minimum | 5,536 | 426.19809 | No | Pass |
+| Focused minimum | 5,378 | 627.618042 | Yes | Pass |
+
+No locally shutter-ready zero-chase-error witness is recorded. These
+phase-4 samples establish closer eligible/focused opportunities, not an
+actual requested retake, arbitration priority or improved Report. Source
+object ID 150 does not prove a pool generation or continuity with the first
+actor. The observer leaves input selection and scoring unchanged; actual
+Volcano and Beach regressions retain seven/8,790 and nine/14,420 respectively,
+each through acknowledged Save, presented Title and exact cold reopen.
+Neither the undersized image nor these minima justify changing Source's
+scorer or substituting another arbitrary distance fraction.
+
 The obsolete acquisition-only natural run was intentionally closed through
 its real window-manager close event after 14 acknowledged Saves. Its final
 profile has 16 Reports, 22,180 points and K/U 1/1; Apple remains below its
@@ -4689,4 +4726,170 @@ Title windows were visually inspected. Neither is a natural Apple reward,
 complete one-profile campaign, hardware/controller/audio-playback,
 N64 numerical parity or Windows gameplay proof. Charmander and combined
 natural species coverage remain separate open work.
+
+
+### Natural milestones and empty-course continuation
+
+Frozen hybrid `84977b8` reaches genuine one-profile milestones without
+authored progress, captures, Reports, scores or equipment:
+
+| Acknowledged Save | Reports | Total points | Known/unlocked course | Actual evidence |
+|---|---:|---:|---|---|
+| 15 | 16 | 25,210 | 1/1 | Doduo (84), 2,160; Apple point threshold crossed |
+| 16 | 16 | 26,840 | 1/2 | Tunnel endpoint opens Volcano |
+| 17 | 21 | 33,720 | 2/2 | Charmander 210, Charmeleon 2,000, Vulpix 2,270, Magmar 2,100, Moltres 300 |
+| 18 | 22 | 38,040 | 2/3 | Chansey 4,320; River discovery opens |
+| 26 | 29 | 47,720 | 3/3 | Last acknowledged profile before an empty River ride |
+
+The natural Chansey route observes ten consumed Apples, real reveal/flag-8
+clearing/graph change and one qualified capture. The 22-Report discovery
+opens River; it does not grant Pester, whose equipment score threshold is
+72,500.
+
+The next River, serial 102, naturally ends with no photos after 9,667
+updates/4,833 frames. The private validator incorrectly requires a
+photographed result-9 return and rejects the genuine empty result-13 path.
+This is not an SDK execution fault. All 155,109 GPU operations and 397,758
+Input reads/completions balance; 213,023,824 dummy PCM frames are accepted
+and all owners retire without deadlines. This run has no final Title or
+cold-reopen proof and does not complete the campaign.
+
+Optional ordinary campaign rides now explicitly permit a real zero-photo
+result 13, followed by actual Manager Oak13 admission. Strict isolated
+photography, progression, signs, Apple evolution, Lapras and Rainbow
+objectives are not relaxed. Empty rides create no Camera9 or Photo15 owner.
+The existing Oak controller performs the real Save; canonical Report
+presence, every photo byte and every score must remain unchanged. Genuine
+empty rides advance the full campaign's visited-course cursor, never its
+Report coverage or completion predicate.
+
+Bounded `native3-empty-campaign` qualifies that direct path with frozen
+`1951d01`: authored River access/gear after original Name ingress, ordinary
+photograph goal, optional-empty permission and actual course-only no-A
+inputs. It suppresses 1,478 requested A inputs, completes 9,667 Source
+updates/4,833 frames, admits Oak serial 6 directly, acknowledges Save
+generation 1, presents Title serial 7/UI state 2 and exactly cold-reopens
+the whole canonical profile. The zero-Report baseline remains unchanged;
+this isolation does not independently prove preservation of an already
+positive Report on the new branch.
+
+All 6,489 GPU operations and 17,639 Input reads/completions balance;
+9,407,696 dummy PCM frames are accepted. Owners retire without deadlines;
+exit is 0 and the actual Title window was visually inspected. No Camera,
+Photo assessment, captured image, new Report, natural reward, complete
+campaign, physical controller/audio playback, N64 parity or Windows
+gameplay is claimed for this authored-access isolation.
+
+### Preserved-profile Continue and natural Chansey cold identity
+
+Private `campaign-resume-one INPUT_PROFILE_DIRECTORY` and
+`campaign-resume INPUT_PROFILE_DIRECTORY` copy opaque, quiescent journal inputs
+into a new owned profile. Only that copy is opened by `GameSession`; source
+`save.lock` is witnessed by metadata, never opened or acquired. Unsupported
+inventory, recovery evidence, aliases and nonempty source locks are rejected.
+Copied preflight and actual Boot must both load explicitly ready, with exact
+generation and whole canonical-image equality. This is not a general importer
+or recovery facility.
+
+Frozen `99092ede` qualifies the bounded mode against the preserved natural
+generation-26 profile: 29 Reports/47,720 points, known/unlocked 3/3, Apple
+available and Pester/Flute unavailable. Actual initial Title retires with
+**result 11/notice 2 into Oak11**. The original planning assumption of
+Continue13/Oak13 was wrong; post-course Oak13 is a separate transition.
+No Name owner, synthetic confirmation, authored progress or inherited trip
+credit is introduced. The diagnostic starts a new scheduling epoch at legal
+Beach0, not at the last saved course.
+
+The real ride completes 8,830 updates/4,415 frames. Its nonempty Camera9
+finds no better Report and genuinely returns 13 without creating Photo15.
+Actual Oak acknowledges generation 27, then Title serial 7 presents
+129 frames/UI state 2; the final whole canonical profile cold-reopens exactly.
+Both input slots and their inventory/bytes/metadata remain unchanged.
+All 5,670 GPU operations and 16,064 Input reads/completions balance;
+8,573,456 dummy PCM frames are accepted. All owners retire without deadlines,
+exit is 0 and the actual Title window was visually inspected.
+
+An independent copied-only cold inspection compares generations 26 and 27:
+all 69 Report-presence values, complete photo wires and scores are unchanged.
+Report slot 41 retains the natural epoch-68 Chansey capture: 928-byte wire,
+Source score 4,320 and normalized full-wire identity
+`9566391892739762471`. This joins the earlier real Apple/reveal/capture/Save
+receipts to actual Continue/Save/Title/cold retention before Pester. Copying or
+hashing alone does not establish natural provenance; those earlier receipts
+do. The bounded continuation does not complete or replace the independent
+fresh campaign. The configured native build and all 58 CPU tests pass.
+
+### Lapras acquisition remains unqualified
+
+The bounded nine-point collision-volume search does not complete the chain:
+actual counters remain `100`, captures `1/0/0` and steering costs
+`360/360/0`, with no mismatches or dedicated shutters. The unchanged Apple-path
+regression retains all nine Reports/14,420 points and identical full selected
+photo identities through Save/Title/cold.
+
+A read-only owned-process observation associates the exact behavior-2 target
+with completed ticket `(context 1, generation 790, submission 1580)`. It is
+the sole actual Photo member but changes zero of 64 center-tile halfwords
+before membership adjudication. The actual camera is settled, unsuppressed
+and responds to the hint; projection from its simultaneous parameters places
+that point approximately `(161.03,120.41)` against viewport center `(160,120)`.
+That arithmetic is not a body-coverage or depth-visibility proof. The previous
+presented X11 frame shows terrain at the reticle, not a visible Lapras body;
+it is not asserted identical to the completed canonical submission.
+
+Independent camera planning and original-state review both require measured
+pose/visibility opportunities before redistributing the same finite budget.
+No detector membership repair, synthetic focus, guessed mesh center,
+Source/scoring mutation, generic geometry-admission bypass or budget increase
+is justified by this failure.
+
+Frozen `7ec285a` also tests relocating the same budget to the next natural
+shown cycle. It observes first-show update 2,801 and hidden update 3,331,
+but still finishes with counters `100`, captures `1/0/0` and no dedicated
+shutter. All 5,666 GPU operations and 16,260 Input reads/completions balance;
+8,748,448 dummy PCM frames are accepted and owners retire without deadlines.
+The unsuccessful phase tracker and waiting gate were removed, not retained
+as a claimed fix.
+
+### Exact-focus closer repeats without losing first acquisitions
+
+Private ordinary photography retains its original zero-tracking shots,
+missing-Report priority, half-distance boundary and two-exposure cap.
+An additional moving repeat requires actual present, eligible focus on the
+exact selected live Actor/raw species; no native pointer escapes traversal.
+It does not alter Source, capture data, scorer, model admission or first
+acquisitions.
+
+Extra moving repeats wait while an actual Apple photo puzzle has neither
+a prior Report nor a completed capture. The unrestricted experiment advanced a
+Butterfree repeat from update 1,977 to 1,889, shifted the later Chansey
+controller's completion and lost Eevee. Preserving the existing scripted
+dependency restores all nine Beach Reports and their complete prior
+identities; no species-specific exception or guessed input tolerance is used.
+
+Frozen `195844bb` qualifies both actual paths:
+
+| Actual scope | Reports | Points | Source updates | Course frames | Balanced GPU operations | Balanced Input reads | Accepted dummy PCM |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Beach regression | 9 | 14,420 | 8,902 | 4,451 | 8,260 | 20,738 | 11,334,432 |
+| Volcano | 8 | 8,840 | 9,073 | 4,536 | 8,106 | 19,860 | 10,704,320 |
+
+Volcano retains all seven previous species and adds a positive Charmander
+Report. Its unchanged first acquisition is roll 5 at distance 3,949.49.
+The actual closer repeat is roll 8 at distance 1,699.78, with exact selected
+focus and nonzero tracking stick `(-10,0)`. Source evaluates Charmander to
+190; Report slot 1 preserves normalized full-wire identity
+`6093650111649733660`. Charizard evaluates to 3,420. This is not a uniform
+per-species score improvement or the separate at-least-200 pose proof.
+
+Both real flows acknowledge Save generation 1, present Title serial 9/UI
+state 2 for 129 frames and exactly cold-reopen the whole canonical profile.
+Owners retire without deadlines. Actual X11 captures are retained and the
+Beach Title was visually inspected. Gear/access are authored isolation
+inputs, not natural rewards or complete-campaign evidence.
+
+The explicit private-consumer build, configured native build and all 58 CPU
+tests pass. The private ROM consumer is excluded from the default build;
+build its named target explicitly before freezing an actual-runtime
+candidate. CPU gates alone do not rebuild or prove this changed path.
 

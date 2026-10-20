@@ -22,7 +22,7 @@ Physical-input isolation also publishes [Tunnel evolution Reports](docs/developm
 
 The [Apple-only Charizard route](docs/development/ADMISSION.md#apple-only-evolution-before-pester) also passes real capture, Source evaluation, Save/Title/cold reopen while Pester and Flute remain unavailable at every checked boundary. Apple and course access are explicit isolation inputs, not naturally earned rewards; the existing Pester route passes its regression.
 
-Published [`c56b613`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39352310623) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
+Published [`aff2721`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39356205365) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
 
 ## Development documentation
 

@@ -44,6 +44,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <span>
@@ -1233,15 +1234,24 @@ private:
         const auto count=camera.D_camera_check_80208964;
         require(count>0 && count<=ISLE_PHOTO_ROLL_CAPACITY,"actual scored Camera roll count unavailable");
         std::ofstream scores(proof_root_/"course-roll-scores.tsv");
-        scores<<"course_epoch\troll\tspecies\tSource_score\twell_framed\tpose_points\tcompleteness\tproximity\tspecial_bonus\tsame_species_bonus\n";
+        scores.precision(std::numeric_limits<float>::max_digits10);
+        scores<<"course_epoch\troll\tspecies\tSource_score\twell_framed\tpose_points\tcompleteness\tproximity\tspecial_bonus\tsame_species_bonus"
+            <<"\tprimary_raw_id\tprimary_animation\tprimary_pose_id\tprimary_special_id\tprimary_animation_time\tprimary_yaw"
+            <<"\tcamera_eye_x\tcamera_eye_y\tcamera_eye_z\tcamera_at_x\tcamera_at_y\tcamera_at_z\n";
         for(int i=0;i<count;++i) {
             const auto& row=camera.D_camera_check_80249B30[static_cast<std::size_t>(i)];
             IslePhotoRecord record{};
             require(row.unk_00 && isle_application_photos_identify(camera.common.photos,row.unk_00,&record)==ISLE_GAME_OK &&
                 record.storage==ISLE_PHOTO_ROLL,"actual score component row is not a captured canonical roll");
+            const auto& captured=*record.photo;
+            const auto& primary=captured.pokemons[0];
             scores<<course_epoch_<<'\t'<<record.index<<'\t'<<row.unk_08<<'\t'<<row.unk_04<<'\t'
                 <<row.unk_0C<<'\t'<<row.unk_0E<<'\t'<<row.unk_10<<'\t'<<row.unk_12<<'\t'
-                <<row.unk_14<<'\t'<<row.unk_16<<'\n';
+                <<row.unk_14<<'\t'<<row.unk_16<<'\t'<<primary.pokemonID<<'\t'
+                <<unsigned(primary.unk_00_13)<<'\t'<<unsigned(primary.poseID)<<'\t'
+                <<unsigned(primary.specialID)<<'\t'<<primary.animationTime<<'\t'<<primary.yaw<<'\t'
+                <<captured.unk_08.x<<'\t'<<captured.unk_08.y<<'\t'<<captured.unk_08.z<<'\t'
+                <<captured.unk_14.x<<'\t'<<captured.unk_14.y<<'\t'<<captured.unk_14.z<<'\n';
         }
         scores.close();require(bool(scores),"actual Source score component ledger write failed");
         if(e_.campaign_first_unlock || continuous_campaign(e_) || e_.capture_goal==isle::private_course::CaptureGoal::sign ||

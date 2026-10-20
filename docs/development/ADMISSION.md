@@ -4480,4 +4480,153 @@ a still-open Chansey capture gap: ten real Apples produce reveal and flag-8
 removal, but no shutter request. Its sealed receipts do not earn natural
 Chansey, Pester or complete-campaign credit.
 
+### Actual failed SDK-scope retirement
+
+The earlier frozen `fe22f94a57745d9bef9617584815d8767cb17541e344f72be62cdf974dead3f1`
+candidate also completed an unseeded campaign attempt before the exact
+Magneton factory correction. Eight real rides acknowledged Save generations
+1–8, reaching 20 Reports and 32,450 points with original K/U = 2/2.
+The ninth ride fails at the real Tunnel AddAtGeo provenance guard, after
+7,466 updates and 3,733 frames/presentations. The executable returns 1 and
+preserves `actual_application_runtime=FAILED` with the exact guard diagnostic;
+that interrupted ride earns no Camera, Report, Save, Title or cold receipt.
+
+Despite this actual SDK failure, all 54,001 GPU submissions, terminals and
+releases balance; all 140,965 Input reads complete. Native/Photo/Manager,
+Input, SDL audio and Host owners retire, audio drains, and 75,708,816 dummy
+PCM frames are accepted without retirement deadlines. This is separate
+failed-SDK-scope evidence, not a reinterpretation of the intentionally raised
+consumer-only Rainbow failure. It does not turn the incomplete natural
+campaign into a successful campaign or claim a held-frame fault scenario.
+
+
+
+### Physical Volcano lava species
+
+Frozen consumer
+`92fcb98f8e1397f5f68895806fe2cdf0728a0bfa169e099554250ac58a233bca`
+passes the extended authored-access `native2` isolation. Three consumed
+Pester throws produce Original spawner responses, and Source's successful
+spawn counter decreases from four to two. The actual qualified roll contains
+both lava species; Camera/Photo publishes their corresponding Reports:
+
+| Species | Source score | Report slot | Normalized digest |
+|---|---:|---:|---:|
+| Growlithe | 3,180 | 21 | 7836152211471645592 |
+| Arcanine | 1,680 | 22 | 14183525015404509701 |
+
+Source retires the Items before a qualifying ground-contact observation is
+retained. Their three lost-flight observations are not converted into
+contact credit; the actual Source responses, counter and captured species
+provide the separate physical witnesses.
+
+Seven Reports total 10,780 points. The real egg → Moltres → resumed-cart
+handshake and natural course end complete 8,334 updates and 4,167 canonical
+frames/presentations. Save generation 1, presented Title 8 serial 9/UI state 2
+and exact whole-profile cold reopen succeed. All 7,637 GPU submissions,
+terminals and releases and 20,171 Input reads/completions balance;
+10,909,232 dummy PCM frames are accepted. All owners retire without
+deadlines and the executable returns 0. The actual Title was visually inspected.
+
+This does not complete the Volcano acquisition task: no Charizard or
+Charmeleon Pester attempt is observed. The evolution controller is correctly
+spawned and registered: ordinary ledger rows from update 3,936 record it,
+and a separate actual World/factory/observer trace confirms family 1002,
+behavior 0 and update link 3. Terminal controller count zero describes its
+later lifetime, not whole-ride absence. Physical planning remains unqualified.
+The earlier six-species baseline's Charmander is also absent from this batch.
+These coverage gaps remain open; neither generic process success nor the
+additional Reports substitutes for them or proves natural progression.
+
+### Ordinary acquisition versus saved-Report quality
+
+Actual saved-photo calibration rejects a low-pose explanation for the
+230-point Pikachu. The earlier 2,720-point image receives Source proximity
+360, pose 1,000 and the framing multiplier; the later 230-point image exits
+the size gate before pose is awarded. The same actor position does not imply
+the same camera axis, animation time or evaluated photo.
+
+The bounded ordinary-target trace identifies a closing retake opportunity:
+Pikachu object 131 remains eligible at updates 1,480–1,528, inside its
+half-acquisition-distance window, while an unacquired Lapras monopolizes
+selection. Object identity 131 is not species identity 131.
+
+| Actual authored-access Beach policy | Reports | Total points | Pikachu | Coverage boundary |
+|---|---:|---:|---:|---|
+| Every first exposure before retakes | 9 | 14,420 | 230 | Retake starved |
+| Nearest eligible subject, first exposure only breaks distance ties | 7 | 15,220 | 2,720 | Lapras and Eevee absent |
+| Missing saved-Report acquisitions first; otherwise nearest eligible | 9 | 14,420 | 230 | Empty-Report baseline preserved |
+
+The nearest-only consumer exits successfully but fails the species-coverage
+acceptance criterion; its higher aggregate is not an accepted replacement.
+The hybrid caches actual canonical Report presence once per ride through
+the admitted signed species map. First acquisitions missing from that
+profile take precedence; already-reported species may use nearer eligible
+quality opportunities. Its first ride does not prove later-trip improvement.
+Camera/Oak remains the sole authority for replacement and retention.
+
+Frozen hybrid consumer
+`84977b8aabd0018b4b8b9aa738232cca1aa147ba1d5a5e34ad129609843e8800`
+preserves all nine exact baseline Reports, including Chansey 4,340 and
+Eevee 3,020, over 8,902 updates and 4,451 frames/presentations. Save generation
+1, presented Title serial 9/UI state 2 and exact cold reread succeed.
+All 8,259 GPU submissions/terminals/releases and 19,345 Input reads/completions
+balance; 10,490,896 dummy PCM frames are accepted. Owners retire without
+deadlines; exit is 0 and the actual Title was visually inspected.
+This isolation grants access/gear, not Reports, and is not natural
+pre-Pester Chansey or a complete campaign.
+
+Captured score diagnostics now distinguish primary stored actor metadata
+from the subject actually chosen by Source evaluation. A real Volcano row
+has primary actor 4 but evaluated species 126. Primary animation, pose and
+yaw must not be attributed to a different scored subject. No live
+predicted-score, pose-only Rules API or synthetic pixels were introduced.
+
+The obsolete acquisition-only natural run was intentionally closed through
+its real window-manager close event after 14 acknowledged Saves. Its final
+profile has 16 Reports, 22,180 points and K/U 1/1; Apple remains below its
+24,000-point threshold. The fifteenth Beach ride is interrupted, not saved.
+The report correctly fails with host quit before scenario completion:
+no final Camera, Save, Title, cold or campaign credit is inferred. All 83,110
+GPU submissions/terminals/releases and 242,956 Input reads/completions
+balance, with 131,019,152 dummy PCM frames, complete owner retirement and
+no deadline. This is intentional obsolete-consumer cancellation, not an SDK
+failure.
+
+### Physical Charmeleon-to-Charizard route
+
+Read-only attachment to the actual native process confirms the existing
+evolution controller: Source family 1002, behavior 0, native object 160,
+update link 3, alive and not retiring. At update 7,745 the bounded bounce
+forecast succeeds and the real throw cooldown is zero, but the requested
+stick X is −80 while the actual reticle remains at −60 in direction 0.
+Neither an absent controller nor universal forecast failure explains this
+press blocker.
+
+Original `player.c` owns four unzoomed camera quadrants. Real C-right and
+C-left edges increment/decrement their index and execute the original turn
+process. The private physical driver selects the nearest quadrant before
+centering the desired bounce ray; it never writes camera, actor, item,
+controller or profile state. The ballistic forecast remains an input hint,
+not a substitute for original collision, ground-walk or evolution logic.
+
+The same frozen hybrid consumer above completes an actual `native2` ride
+with two Charmeleon throw requests and five consumed Pester throws overall.
+Source hit, dive, appearance and controller-transition witnesses become
+true; the qualified raw roll contains Charizard. The actual Camera/Photo
+chain publishes Charizard 590 into canonical Report slot 3, normalized digest
+`1364847823581016086`, and Charmeleon 3,300 into slot 2.
+
+The ride completes 9,000 updates and 4,500 canonical frames/presentations.
+Seven Reports total 8,790 points. Save generation 1, presented Title serial
+9/UI state 2 and exact cold whole-profile reread succeed. All 7,916 GPU
+submissions/terminals/releases and 18,085 Input reads/completions balance;
+9,762,272 dummy PCM frames are accepted. All owners retire without deadlines,
+exit is 0, and the actual Title was visually inspected.
+
+This ride publishes Arcanine but not Growlithe; the successful-spawn counter
+decreases from four to three. Earlier Growlithe/Arcanine isolation and this
+Charizard isolation are separate profiles, not proof of their durable union
+in a natural campaign. Charmander remains absent from this batch. Those
+coverage and natural-progression limits remain open.
 

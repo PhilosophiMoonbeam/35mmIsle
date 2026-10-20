@@ -18,7 +18,9 @@ Isolated real-input routes also complete the Tunnel and River event unlocks and 
 
 All six [genuine sign routes](docs/development/ADMISSION.md#six-genuine-sign-captures)—Beach, Tunnel, Volcano, River, Cave and Valley—now publish their exact zero-score sign Reports and complete Save/Title/cold reopen. Their access and equipment are isolation inputs, not proof of the complete unseeded one-profile campaign.
 
-Published [`f293653`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39265681154) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
+Physical-input isolation also publishes [Tunnel evolution Reports](docs/development/ADMISSION.md#exact-tunnel-evolution-factories-and-physical-reports) and [Volcano Growlithe, Arcanine and Charizard Reports](docs/development/ADMISSION.md#physical-charmeleon-to-charizard-route), with actual Source evaluation and Save/Title/cold reread. The Volcano species are qualified across separate rides/profiles; their natural one-profile union and remaining acquisition coverage are not claimed.
+
+Published [`06d55ae`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39344447644) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
 
 ## Development documentation
 

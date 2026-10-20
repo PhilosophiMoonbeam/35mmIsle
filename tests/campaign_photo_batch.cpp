@@ -40,19 +40,20 @@ void PhotoBatch::freeze(const IsleCameraCheckSource& camera,std::span<const Plan
         require(!capture || capture->captured_photo(record.index,record.photo,hash),
             "campaign plan is not the same actual captured slot/address/wire digest after course detachment");
         auto& item=items_[count_];
+        auto& session=reinterpret_cast<application::Photos*>(owner_)->save_session();
+        const auto points=session.report_score(report);
+        require(bool(points),"campaign prior canonical Report score is unavailable");
+        item.prior_report_score=points.value;
         if(planned.disposition==PhotoDisposition::retain_existing_report) {
-            auto& session=reinterpret_cast<application::Photos*>(owner_)->save_session();
             if(!prior_reports_) {
                 auto snapshot=session.snapshot();
                 require(bool(snapshot),"campaign retained Report baseline snapshot is unavailable");
                 prior_reports_=std::move(snapshot.value);
             }
             const auto present=prior_reports_.photo_present(save::PhotoSet::report,report);
-            const auto points=prior_reports_.report_score(report);
-            require(present && present.value && points && planned.species>0 &&
+            require(present && present.value && planned.species>0 &&
                 planned.species<=151 && planned.score>0 && planned.score<=points.value,
                 "campaign retained assessment requires a real non-improving ordinary Report");
-            item.prior_report_score=points.value;
         }
         item.planned=planned;item.captured_digest=hash;
         by_roll_[slot]=static_cast<std::int32_t>(count_);reports[report]=true;++count_;

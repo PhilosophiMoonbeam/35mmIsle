@@ -369,6 +369,12 @@ struct Probe::Impl {
     int lava_pending_slot=-1,lava_pending_species=0,lava_pending_qualified=0,lava_primary=0,lava_mismatches=0;
     unsigned lava_queries=0,lava_arc_rejections=0;
     IsleGameVec3 lava_ground{},lava_predicted{},lava_velocity{};
+    std::array<std::uint64_t,3> lava_char_identity{};
+    std::uint64_t lava_char_observed_update=0;
+    IsleGameVec3 lava_char_global_collision{},lava_char_motion{};
+    bool lava_char_motion_ready=false;
+    struct LavaIntercept {IsleGameVec3 target{},velocity{};float time=0,miss=0;};
+    LavaIntercept lava_intercept_hint{};
     // Exact native identity plus Source kind; never an Item/Actor borrow.
     std::array<std::uint64_t,4> lava_item{},lava_hit_item{};
     std::array<std::array<std::uint64_t,4>,20> lava_items_before{};
@@ -957,6 +963,14 @@ struct Probe::Impl {
             <<"\thit_identity="<<lava_hit_item[0]<<','<<lava_hit_item[1]<<','<<lava_hit_item[2]<<','<<lava_hit_item[3]
             <<"\tapple_consumed/hit="<<lava_apple_consumed<<'/'<<lava_apple_hit;
         row(item.str());
+        std::ostringstream motion;
+        motion<<"volcano_lava_motion\tupdates="<<updates<<"\tidentity="
+            <<lava_char_identity[0]<<'/'<<lava_char_identity[1]<<'/'<<lava_char_identity[2]
+            <<"\tconsecutive="<<lava_char_motion_ready<<"\tvelocity="
+            <<lava_char_motion.x<<','<<lava_char_motion.y<<','<<lava_char_motion.z
+            <<"\tanalytic_intercept_NOT_receipt="<<lava_intercept_hint.time<<'/'<<lava_intercept_hint.miss
+            <<"\tintercept_target="<<lava_intercept_hint.target.x<<','<<lava_intercept_hint.target.y<<','<<lava_intercept_hint.target.z;
+        row(motion.str());
     }
     static IsleGameSourceCallback lava_command(const IsleActorSource& actor,int command) {
         if(!actor.transitionGraph)return nullptr;
@@ -976,6 +990,7 @@ struct Probe::Impl {
         lava_pester_available=pester.value && player.ui && player.ui->Icons_NumItemsAvailable>=2;
         lava_available=lava_pester_available || (apple.value && player.ui && player.ui->Icons_NumItemsAvailable>=1);
         IsleGameObject* cursor=nullptr;
+        IsleGameObject* selected_char=nullptr;
         for(;;) {
             IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
             require(isle_actor_source_link3_next(player.game,cursor,&object,&actor,&model)==ISLE_GAME_OK,
@@ -1035,7 +1050,10 @@ struct Probe::Impl {
                 auto& target=lava_actors[index];
                 if(!target.present || (observed.visible && !target.visible) ||
                    (observed.visible==target.visible && actor->id==5 && observed.evolve && !target.evolve) ||
-                   (observed.visible==target.visible && observed.evolve==target.evolve && observed.distance<target.distance))target=observed;
+                   (observed.visible==target.visible && observed.evolve==target.evolve && observed.distance<target.distance)) {
+                    target=observed;
+                    if(index==0)selected_char=object;
+                }
                 if(observed.visible && observed.tangible)lava_seen|=1u<<index;
                 if(actor->id==6 && observed.visible && observed.tangible && lava_dive)lava_appeared=true;
                 if(actor->id==5) {
@@ -1074,6 +1092,22 @@ struct Probe::Impl {
                 }
             }
         }
+        lava_char_motion_ready=false;
+        if(selected_char && host.actors() && world && world->current() && world->current()->resource) {
+            const auto identity=host.actors()->instance(selected_char);
+            require(bool(identity),"actual Charmeleon motion incarnation unavailable");
+            const std::array<std::uint64_t,3> key{identity.pool,identity.slot,identity.incarnation};
+            const auto origin=world->current()->resource->metadata.world_position;
+            const auto& collision=lava_actors[0].collision;
+            const IsleGameVec3 global{collision.x+origin.x*100,collision.y+origin.y*100,collision.z+origin.z*100};
+            if(key==lava_char_identity && lava_char_observed_update+1==updates) {
+                lava_char_motion={global.x-lava_char_global_collision.x,global.y-lava_char_global_collision.y,
+                    global.z-lava_char_global_collision.z};
+                lava_char_motion_ready=std::isfinite(lava_char_motion.x) && std::isfinite(lava_char_motion.y) &&
+                    std::isfinite(lava_char_motion.z);
+            }
+            lava_char_identity=key;lava_char_global_collision=global;lava_char_observed_update=updates;
+        } else {lava_char_identity={};lava_char_observed_update=0;}
     }
     void remember_lava_items(items::Owner& owner,int item_id) {
         lava_items_before_count=0;
@@ -1203,46 +1237,86 @@ struct Probe::Impl {
         }
         return false;
     }
+    bool lava_intercept(const IslePlayerSource& player,const IsleGameVec3& ray,LavaIntercept& result) const {
+        if(!lava_char_motion_ready)return false;
+        const IsleGameCameraParameters* camera=nullptr;
+        require(isle_game_camera_parameters(player.game,player.camera,&camera)==ISLE_GAME_OK && camera,
+            "actual moving Charmeleon launch camera unavailable");
+        const IsleGameVec3 eye{camera->look_at.eye[0],camera->look_at.eye[1],camera->look_at.eye[2]};
+        const IsleGameVec3 delta{ray.x-eye.x,ray.y-eye.y+100,ray.z-eye.z};
+        const float norm=std::hypot(delta.x,delta.y,delta.z);
+        if(!(norm>0))return false;
+        result.velocity={50*delta.x/norm+player.PlayerVelocity.x,50*delta.y/norm+player.PlayerVelocity.y,
+            50*delta.z/norm+player.PlayerVelocity.z};
+        const auto& collision=lava_actors[0].collision;
+        // One completed Source update separates this observation from A.
+        const float dx=collision.x+lava_char_motion.x-eye.x,dz=collision.z+lava_char_motion.z-eye.z;
+        const float vx=result.velocity.x*.5f-lava_char_motion.x,vz=result.velocity.z*.5f-lava_char_motion.z;
+        const float speed_squared=vx*vx+vz*vz;
+        if(!(speed_squared>0))return false;
+        result.time=(dx*vx+dz*vz)/speed_squared;
+        if(!(result.time>0 && result.time<=160))return false;
+        result.target={collision.x+lava_char_motion.x*(result.time+1),
+            collision.y+lava_char_motion.y*(result.time+1),collision.z+lava_char_motion.z*(result.time+1)};
+        const IsleGameVec3 position{eye.x+result.velocity.x*.5f*result.time,
+            eye.y+result.velocity.y*.5f*result.time-.15f*result.time*(result.time+1),
+            eye.z+result.velocity.z*.5f*result.time};
+        result.miss=std::hypot(position.x-result.target.x,position.y-result.target.y,position.z-result.target.z);
+        return std::isfinite(result.miss);
+    }
+    bool lava_bounce_path(const world::World& world,const LavaIntercept& impact) {
+        const auto& actor=lava_actors[0];
+        if(!(impact.miss<actor.radius))return false;
+        lava_intercept_hint=impact;
+        const float speed=std::hypot(impact.velocity.x,impact.velocity.z);
+        if(!(speed>0))return false;
+        const float vx=impact.velocity.x*300*.033f/speed,vz=impact.velocity.z*300*.033f/speed;
+        IsleGameVec3 position{actor.position.x+lava_char_motion.x*(impact.time+1),
+            actor.position.y+lava_char_motion.y*(impact.time+1),actor.position.z+lava_char_motion.z*(impact.time+1)};
+        float jump=150*.033f;
+        for(unsigned step=0;step<80 && lava_queries<512;++step) {
+            position.x+=vx;position.z+=vz;
+            world::GroundResult ground{};++lava_queries;
+            if(!world.ground_at(position.x,position.z,ground))break;
+            position.y+=jump;jump-=9.8f*.033f;
+            if(jump<0 && position.y<ground.height) {
+                position.y=ground.height;
+                if(ground.surface!=0xff4c19)break;
+                for(std::size_t i=0;i<lava_controller_count;++i) {
+                    const float cx=position.x-lava_controllers[i].x,cz=position.z-lava_controllers[i].z;
+                    if(cx*cx+cz*cz<100000) {lava_ground=impact.target;lava_predicted=position;return true;}
+                }
+                break;
+            }
+        }
+        ++lava_arc_rejections;return false;
+    }
     bool lava_bounce_target(const world::World& world,const IslePlayerSource& player,IsleGameVec3& aimed) {
         const auto& actor=lava_actors[0];
         if(!actor.present || !actor.visible || !actor.tangible || !(actor.radius>0) || !actor.evolve ||
-           !(lava_pester_available?actor.pester:actor.apple) ||
+           !(lava_pester_available?actor.pester:actor.apple) || !lava_char_motion_ready ||
            lava_char_requests>=8 || lava_dive || !lava_controller_count)return false;
         const float dx=actor.collision.x-player.CameraEyePos.x,dz=actor.collision.z-player.CameraEyePos.z;
         const float horizontal=std::hypot(dx,dz);
         if(!(horizontal>0))return false;
-        // Offset within the live collision sphere to explore real incoming
-        // headings. Forecast only: the actual collisionVelocity owns bounce.
+        // Refine a constant-velocity aim from consecutive same-incarnation
+        // observations, not the current center of a moving collision sphere.
+        // Actual collisionVelocity and the Source graph still own the bounce.
         for(int offset=-2;offset<=2;++offset) {
-            auto target=actor.collision;
-            target.x+=dz/horizontal*actor.radius*.2f*static_cast<float>(offset);
-            target.z-=dx/horizontal*actor.radius*.2f*static_cast<float>(offset);
-            if(!private_campaign::projectile_target(player,target,aimed))continue;
-            const IsleGameVec3 ray{aimed.x-player.CameraEyePos.x,aimed.y-player.CameraEyePos.y+100,
-                aimed.z-player.CameraEyePos.z};
-            const float norm=std::hypot(ray.x,ray.y,ray.z);
-            if(!(norm>0))continue;
-            float vx=50*ray.x/norm+player.PlayerVelocity.x,vz=50*ray.z/norm+player.PlayerVelocity.z;
-            const float speed=std::hypot(vx,vz);
-            if(!(speed>0))continue;
-            vx*=300*.033f/speed;vz*=300*.033f/speed;
-            auto position=actor.position;float jump=150*.033f;
-            for(unsigned step=0;step<80 && lava_queries<512;++step) {
-                position.x+=vx;position.z+=vz;
-                world::GroundResult ground{};++lava_queries;
-                if(!world.ground_at(position.x,position.z,ground))break;
-                position.y+=jump;jump-=9.8f*.033f;
-                if(jump<0 && position.y<ground.height) {
-                    position.y=ground.height;
-                    if(ground.surface!=0xff4c19)break;
-                    for(std::size_t i=0;i<lava_controller_count;++i) {
-                        const float cx=position.x-lava_controllers[i].x,cz=position.z-lava_controllers[i].z;
-                        if(cx*cx+cz*cz<100000) {lava_ground=target;lava_predicted=position;return true;}
-                    }
+            auto base=actor.collision;
+            base.x+=dz/horizontal*actor.radius*.2f*static_cast<float>(offset);
+            base.z-=dx/horizontal*actor.radius*.2f*static_cast<float>(offset);
+            auto target=base;
+            for(unsigned refinement=0;refinement<3;++refinement) {
+                LavaIntercept impact{};
+                if(!private_campaign::projectile_target(player,target,aimed) || !lava_intercept(player,aimed,impact))break;
+                if(impact.miss<actor.radius) {
+                    if(lava_bounce_path(world,impact))return true;
                     break;
                 }
+                target={base.x+lava_char_motion.x*(impact.time+1),base.y+lava_char_motion.y*(impact.time+1),
+                    base.z+lava_char_motion.z*(impact.time+1)};
             }
-            ++lava_arc_rejections;
         }
         return false;
     }
@@ -1334,7 +1408,9 @@ struct Probe::Impl {
            !(player.input.current_buttons&item_button) && !(player.input.current_buttons&z)) {
             // Recheck the actual reticle flight, not only the desired ray.
             IsleGameVec3 actual{};
-            bool ready=kind==2;
+            LavaIntercept impact{};
+            const bool intercepted=kind==2 && lava_intercept(player,player.cam_target,impact);
+            bool ready=intercepted && lava_bounce_path(*world,impact);
             if(kind==1 && lava_landing(*world,player,player.cam_target,actual))
                 for(std::size_t i=0;i<lava_spawner_count;++i) {
                     const auto& spawner=lava_spawners[i];

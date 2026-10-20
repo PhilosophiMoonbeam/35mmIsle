@@ -11,6 +11,7 @@
 namespace isle::private_campaign {
 
 enum class PhotoDisposition {
+    // Publishes the selected image; it may replace an already registered species.
     publish_new_report,
     retain_existing_report,
 };

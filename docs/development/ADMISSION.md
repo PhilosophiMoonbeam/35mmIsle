@@ -5094,3 +5094,108 @@ Authored River isolation `648b` retains seven Reports/9,550 points, actual Save
 generation 1, Title serial 9/UI2 and exact cold reopen. Its authored access and
 equipment are not natural progression or an additional profile union.
 
+### Motion-led Apple evolution
+
+The private Volcano driver now derives Charmeleon motion from consecutive
+completed Source observations of the same native incarnation. Persistent
+positions are block-globalized; World queries remain current-block-local.
+At most three refinements reuse the existing pure `projectile_target` inverse.
+Both the desired ray and actual `cam_target` must intersect the moving sphere
+before the existing bounce/terrain/controller admission permits A. Source's
+actual Item identity, collision velocity, hit, dive, controller, appearance and
+qualified capture remain authority. No SDK, Source handler, pose, scorer or
+profile mutation is introduced; existing throw, control, query and film caps
+remain unchanged.
+
+Frozen clean consumer
+`f1b70b6ddfd09fdabcf0bc0724541c1c68f88e9a5fc71dc80f6d94e63f5a42ea`
+passes the explicit consumer build, full native build and all 58 CPU tests.
+Actual `649b` passes strict `native2-apple` in 316.99 seconds: 8,860 Source
+updates/4,430 course presentations, physical Apple evolution, all seven exact
+Source Reports, acknowledged Save 1, visually inspected Title serial 9/UI2
+with 129 presentations, and byte-exact whole-profile cold reopen. Apple alone
+is available at entry, retirement, Oak, Save and cold reopen.
+
+| Authored Apple-only isolation | Charmeleon Source score | Charizard Source score | Seven-Report total |
+| --- | ---: | ---: | ---: |
+| Prior control `648o` | 2,800 | 570 | 7,000 |
+| Motion-led `649b` | 80 | 3,240 | 6,950 |
+
+The other five selected full-wire images remain identical. New Charizard
+Report slot 3 has normalized identity `933212500619361177`; Charmeleon slot 2
+has identity `3936370416982923503`. The changed input schedule produces a
+different photographic outcome, not a monotonic first-ride score improvement.
+These results qualify this exact evolution route, not general reliability.
+Retaining an inherited better image still requires actual Source best
+selection and the genuine-profile Save chain.
+
+All 7,847 GPU submissions/releases/terminals and 18,292 Input reads/completions
+balance; 9,873,920 SDL-dummy PCM frames are accepted. All owners retire without
+a deadline. Authored access/Apple are isolation inputs, not naturally earned
+rewards or a complete campaign. A separate genuine continuation from a
+quiescent naturally progressed profile remains independently required.
+
+Same-binary authored all-equipment regression `649e` also passes: eight exact
+Reports/10,710 points, physical Pester hit/dive/controller/Charizard chain,
+Save 1, visually inspected Title serial 9/UI2/129 presentations and exact cold
+reopen. All 8,190 GPU and 18,920 Input operations balance; 10,209,040 dummy PCM
+frames are accepted and all owners retire without a deadline.
+
+Genuine continuation `649c` uses a separate copy of the quiescent natural
+`648u` output, not authored access or a merged profile. Its first two rides
+leave Report totals unchanged; the next Volcano ride has a real Apple hit,
+dive, controller, appearance and qualified capture:
+
+| Actual boundary | Generation | Reports | Report points | Charmeleon slot 2 | Charizard slot 3 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Independent cold-read input | 33 | 33 | 56,360 | 2,000 | Absent |
+| Acknowledged third new Save | 36 | 34 | 61,420 | 3,440 | 3,620 |
+
+The two selected full-wire identities are `1151571072150657884` and
+`5428400585846249957`. Source best selection improves one existing species and
+adds one species. The ride completes 8,932 Source updates/4,466 presentations.
+These sealed Save receipts do not establish final Title/cold or full-campaign
+completion. Independent cold inspection opened only a copy of the untouched
+quiescent input; its inventory, bytes and metadata remain unchanged.
+
+That accounting exposed an evidence-only bug: `prior_saved_score` was populated
+only for retained-old assessments, so published replacements misleadingly
+logged zero. It now reads the actual nonsealing canonical per-slot score for
+every planned image. `publish_new_report` means a newly published image, not
+necessarily a newly registered species. Old receipts remain unmodified;
+their zero field is not evidence that an inherited image or score was absent.
+
+Frozen evidence-corrected consumer
+`17dfdbc8ff6fff35faeea135946af1a6d7165bf3be944b8901149385cf38bbee`
+passes the explicit/full native builds and all 58 CPU tests. Actual genuine
+one-ride continuation `649h` then passes in 308.45 seconds, correctly logging
+the nonzero prior score for its actually published Lapras replacement:
+
+| Actual boundary | Generation | Reports | Report points | Lapras score |
+| --- | ---: | ---: | ---: | ---: |
+| Preserved input | 29 | 32 | 53,810 | 190 |
+| Acknowledged Save and exact cold reopen | 30 | 32 | 53,820 | 200 |
+
+Normalized identity `16970942907090337834` matches the earlier same-input
+capture. No new species or equipment is credited. This ordinary exposure does
+not qualify the separate strict pre-Apple late-Lapras chain. Actual Title
+serial 8/UI2/129 presentations is visually inspected and the whole cold image
+equals acknowledged Save.
+All 6,281 GPU and 17,111 Input operations balance; 9,220,384 dummy PCM frames
+are accepted, all owners retire without a deadline and the original input
+inventory/bytes remain unchanged.
+
+
+### Rejected Vulpix framing experiment
+
+An experimental one-Apple camera-side lure physically reached Vulpix's
+Apple approach, then the rebound hit the pursuing actor before eating or
+turning; the strict combined run also missed Charizard. Independent planner
+and reviewer assessments chose known material/impact first-contact settling
+over unproven lateral/radial reordering. Its bounded revised search found no
+admissible opportunity: 22,824 candidates, zero commitments/throws/captures.
+No Vulpix gain is claimed; the entire unqualified controller and integration
+were removed. Private frozen evidence is retained, not shipped scaffolding.
+The Source-supported possibility is not disproved universally. Natural
+40-species, equipment, signs, Mew and final-campaign gates remain open.
+

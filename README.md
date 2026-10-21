@@ -28,7 +28,9 @@ The [River Apple routes](docs/development/ADMISSION.md#physical-river-apple-reve
 
 Original burn-triggered Charmander evolution now crosses the [native automatic-factory boundary](docs/development/ADMISSION.md#automatic-evolution-initialized-family-admission) without confusing its callback tuple with a resource row. The genuine continuation saves the resulting Charmeleon Report and cold-reopens exactly; full campaign completion is not claimed.
 
-Published [`fdf679c`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39513357396) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
+The [physical Apple-fed Charmander route](docs/development/ADMISSION.md#physical-charmander-food-portrait-and-legal-volcano-only-continuation) reaches actual food interaction, a coherent driver-owned photograph, a higher Source Report, acknowledged Save, Title and independent exact cold continuation. This proves a legal inherited-profile continuation, not a fresh complete campaign.
+
+Published [`d01d3bc`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39519204830) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
 
 ## Development documentation
 

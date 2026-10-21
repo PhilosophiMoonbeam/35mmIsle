@@ -1525,6 +1525,7 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
         tests/native_progression_puzzles.cpp
         tests/native_beach_photo_puzzle.cpp
         tests/native_tunnel_photo_puzzles.cpp
+        tests/native_volcano_food_photo.cpp
         tests/native_river_photo_puzzle.cpp
         tests/native_valley_dash_puzzle.cpp
         tests/native_sign_geometry.cpp

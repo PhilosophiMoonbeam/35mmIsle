@@ -5426,7 +5426,8 @@ Report 59 from 3,840 to 3,880. Source Save 41 records 34 Reports/68,320 points;
 published-feature cold continuation `651t` verifies the whole inherited image,
 preserves it through NoBetter Beach Save 42, reaches actual Title 7/UI2/129
 presentations and reopens byte-exactly. This is not a Charmander food gain.
-The separate food experiment has no qualifying Source Report. Natural Pester,
+At this steering checkpoint, the separate food experiment had no qualifying
+Source Report. Natural Pester,
 40 species, six signs, Mew/final credits, fresh complete campaign and Windows
 gameplay remain open.
 
@@ -5504,6 +5505,97 @@ and the corrected owner. The unqualified food controller is neither compiled
 nor linked. Actual `653g` repeats the Pester contract above in 312.35 seconds,
 with acknowledged Save, visually inspected Title and exact cold continuation;
 GPU/Input operations balance, owners retire and the deadline remains zero.
-The separate portrait controller remains unqualified and is not part of this
-SDK correction.
+At this SDK checkpoint, the separate portrait controller was unqualified and
+was not part of this SDK correction.
+
+### Physical Charmander food portrait and legal Volcano-only continuation
+
+The private input-only food driver requires an actually earned Apple and
+existing canonical Charmander/Magmar Reports. It predicts one surviving Apple
+landing and Charmander ground approach, then requires the real new item,
+ground contact, settlement, adoption, RunToApple and WithApple. It writes only
+ordinary pad input; Original handlers, transforms, commands, animation/pose
+values, counters, scorer and profile contents remain authoritative.
+
+The finite search retains 12 candidates/128 plans, 160 flight steps, at most
+one rebound and a 224-step terrain-checked approach forecast. Source's
+80-speed/40-distance movement, collision-before-gravity ordering, material
+damping, immediate rebound half-step and 16 contact subdivisions are
+preserved. Aim, approach, film reserve, preemption and four-update release
+bounds remain finite. There is one physical Apple and one driver-owned shutter,
+not a retry or second-item fallback. Predicted landing/stop facts are not
+interaction or photograph receipts.
+
+Competing planner/reviewer assessments resolve the previous coherent
+220-point exposure: Original returns before pose/centering when its apparent
+size is below 0.245 or completeness below 0.6. Proximity230 implies only
+28–37 visible scoring pixels; at least47 are required. Thus `well_framed=0`
+does not itself prove bad aim. Collision-center tracking, native projection
+and completed-context capture remain unchanged.
+
+The selected policy ranks reachable stops by distance and uses a conservative
+1,000-unit acquisition ceiling at planning, final throw and actual shutter.
+That ceiling is a heuristic, not a Source scoring threshold or success claim.
+The obsolete prospective-facing veto is removed: explicit food pose106
+bypasses Original's ordinary yaw lookup. Shutter A may accompany tracking axes,
+as Original permits; the throw still requires neutral axes. Actual taken
+context, primary species/key, animation, pose, time, yaw, position and releases
+are checked. Decision/taken context indices may legitimately alternate.
+Receipt/geometry records are separate; the 1,024-byte and 131,072-row ledger
+limits are not enlarged.
+
+`campaign-resume-volcano INPUT_PROFILE_DIRECTORY` selects one already legal
+Volcano ride through actual Boot, Continue11 and Oak11/result2 inputs. It
+requires canonical known/unlocked access of at least2; it does not author
+access, equipment or progress. Policy-selected `campaign-resume-one` and strict
+River semantics remain unchanged. Inherited trips/Reports are not new proof.
+
+Both following continuations start independently from legal cold `653e`,
+generation46, 34 Reports/68,340 points:
+
+| Actual branch | Food-driver shutter | Source Charmander Report | Saved total | Independent fresh-process cold |
+| --- | ---: | ---: | ---: | --- |
+| Earlier controller `653j` / ride `653k` | 0; existing photographer later captures food pose | 2,940 replaces240 | 34 / 71,060; Save47 | `653l`: whole Boot47, NoBetter Save48, Title7/UI2/129, exact cold |
+| Selected `653m` / ride `653n` | 1 coherent capture; normal release | 2,920 replaces240 | 34 / 71,040; Save47 | `653o`: whole Boot47, NoBetter Save48, Title7/UI2/129, exact cold |
+
+Selected binary SHA256:
+`bf91b9e61f643f52f4964074c0d03000c11445a2a7ae640d21f8d2bd6cb4a6f4`.
+Its actual actor/item identities are `3/12/1` and `4/0/1`: throw
+3517/3518/release3519, flying-ground3548, adoption/run3549, Still3566,
+WithApple3659, shutter3660/capture3661/release3662. Slot6 is coherent,
+mismatches are zero and both releases are observed. Actual Source primary4,
+animation8, pose106/time2 has 1,200 pose points, proximity280,
+completeness9341 and genuine framing. Report1's normalized digest is
+`17024356516929036200`; actual Camera/Photo/Oak select, assess and publish it.
+The separately improved Moltres Report59 is 3,900 versus3,880, not a food gain.
+
+Selected Volcano completes 8,778 Source updates/4,389 frames, acknowledged
+Save47 and actual Title8/UI2/129. Independent `653o` passes in 246.24 seconds,
+verifies the entire inherited generation47 image, preserves Name/flags/Reports,
+and leaves source inventory/bytes/metadata unchanged. Actual assessment,
+Report and both continuation-Title surfaces were inspected. GPU/Input
+operations balance, dummy audio drains, owners retire and deadlines are zero.
+
+The 71,060-point `653l` lineage remains the better legal forward profile;
+it is not merged with the dedicated-shutter branch. Its photograph is genuine,
+but it is not relabeled as driver-owned shutter completion. Natural Pester,
+40 species, six signs, the Mew/endgame chain, a fresh complete campaign and
+Windows gameplay remain open.
+
+
+The final selected binary also preserves all four protected real-runtime scopes:
+
+| Scope | Source updates / frames | Reports / points | Persisted continuation |
+| --- | ---: | ---: | --- |
+| Strict Apple-only Volcano `653q` | 8,860 / 4,430 | 7 / 6,950 | Save1; Title9/UI2/129; exact cold |
+| Pester Volcano `653r` | 8,758 / 4,379 | 9 / 11,670 | Save1; Title9/UI2/129; exact cold |
+| Beach `653s` | 8,902 / 4,451 | 9 / 14,420 | Save1; Title9/UI2/129; exact cold |
+| Mew `653t` | 11,028 / 5,514 | 1 / 8,340 | Save1; joined Credits18; Title10/UI2/132; exact cold |
+
+All actual continuation-Title surfaces were inspected. The strict Apple route
+preserves Apple-only equipment at all five canonical boundaries and exactly
+persists Source5=80/Source6=3,240. Mew's original Credits18 joins after
+7,279 updates/3,639 presentations. GPU/Input operations balance, dummy audio
+drains, owners retire and deadlines remain zero. These authored-access
+isolations are regression evidence, not naturally earned rewards.
 

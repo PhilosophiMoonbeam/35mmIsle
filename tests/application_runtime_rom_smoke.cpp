@@ -4,8 +4,8 @@
 // The diagnostic-disabled Host supplies NO controller; SoftwareController below
 // is a separate, explicitly owned acquisition through the real Input Service.
 // CLI modes: ingress, course, campaign-lapras, native0..native6[-oak-cancel], native2-apple,
-// Preserved-input private mode: campaign-resume-river INPUT_PROFILE_DIRECTORY
-// performs one strict missing-objective River ride; natural profile provenance is external.
+// Preserved-input private modes: campaign-resume-{river,volcano} INPUT_PROFILE_DIRECTORY
+// perform one legally unlocked ride; River additionally requires its missing objective.
 // native5-empty, menus and credits17..credits19. Photographed courses normally
 // continue through actual Camera9/Photo15/Oak Save/Original Title8 and cold reopen.
 // NativeN authors access/gear only; native2-apple authors Apple-only access,
@@ -193,7 +193,7 @@ struct Evidence {
     bool campaign_first_unlock=false,full_campaign=false,unseeded_profile=false;
     const isle::private_campaign::SavedProfileInput* saved_input=nullptr;
     bool resume_one=false,boot_loaded_input=false,initial_continue=false,source_unchanged=false;
-    bool resume_river=false;
+    bool resume_river=false,resume_volcano=false;
     isle::private_campaign::RiverPhotoObjective river_objective=isle::private_campaign::RiverPhotoObjective::none;
     std::int32_t river_source_score=0;
     std::uint64_t river_capture_digest=0;
@@ -431,7 +431,7 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
     if(e.saved_input) {
         e.saved_input->write_evidence(out);
         out<<"private_qualification="<<(e.resume_river?"campaign-resume-river":
-                e.resume_one?"campaign-resume-one":"campaign-resume")
+                e.resume_volcano?"campaign-resume-volcano":e.resume_one?"campaign-resume-one":"campaign-resume")
             <<"\nprofile_provenance=LOADED_PRESERVED_INPUT"
             <<"\nunseeded_profile=false authored_course_profile=false"
             <<"\nName_evidence=N/A_not_entered no_synthetic_confirmations=true"
@@ -882,6 +882,13 @@ public:
                     "campaign-resume-river requires already legal River access");
                 observe_river_gear(baseline,0);
                 campaign_trip_={3,isle::private_course::CaptureGoal::photographs,false};
+            } else if(e_.resume_volcano) {
+                const auto& baseline=e_.saved_input->baseline();
+                const auto known=baseline.selected_course();
+                const auto unlocked=baseline.unlocked_course();
+                require(known && known.value>=2 && unlocked && unlocked.value>=2,
+                    "campaign-resume-volcano requires already legal Volcano access");
+                campaign_trip_={2,isle::private_course::CaptureGoal::photographs,false};
             } else campaign_trip_=campaign_policy_.next(e_.saved_input->baseline());
             require(campaign_trip_.course>=0 && campaign_trip_.course<=6,
                 "loaded campaign has no legal next course");
@@ -3145,7 +3152,7 @@ private:
 int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode mode,std::int32_t requestedCourse,
         bool emptyCourse,bool returnedOakCancel,bool campaignFirstUnlock,isle::private_course::CaptureGoal captureGoal,
         bool fullCampaign,bool campaignRetained,bool nativeFailLive,bool campaignEmpty,
-        const std::filesystem::path& inputProfile,bool resumeOne,bool resumeRiver) {
+        const std::filesystem::path& inputProfile,bool resumeOne,bool resumeRiver,bool resumeVolcano) {
     for (const auto* name:{"SDL_AUDIO_DRIVER","SDL_AUDIODRIVER"}) {
         const char* value=std::getenv(name);
         require(value && std::string_view(value)=="dummy","private consumer requires both explicit SDL dummy audio variables");
@@ -3165,7 +3172,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     evidence.campaign_empty=campaignEmpty;
     evidence.native_fail_live=nativeFailLive;
     evidence.capture_goal=captureGoal;
-    evidence.resume_river=resumeRiver;
+    evidence.resume_river=resumeRiver;evidence.resume_volcano=resumeVolcano;
     std::optional<isle::private_campaign::SavedProfileInput> saved_input;
     if(!inputProfile.empty()) {
         saved_input.emplace(isle::private_campaign::SavedProfileInput::prepare(inputProfile,root/"profile"));
@@ -3390,7 +3397,7 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4 || argc==5,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river] INPUT_PROFILE_DIRECTORY (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river|-volcano] INPUT_PROFILE_DIRECTORY (existing empty absolute nonsymlink private directory)");
         Mode mode=Mode::ingress;
         std::int32_t requestedCourse=0;
         bool emptyCourse=false;
@@ -3402,17 +3409,19 @@ int main(int argc,char** argv) {
         bool nativeFailLive=false;
         bool resumeOne=false;
         bool resumeRiver=false;
+        bool resumeVolcano=false;
         std::filesystem::path inputProfile;
         auto captureGoal=isle::private_course::CaptureGoal::photographs;
         if (argc>=4) {
             const auto name=std::filesystem::path(argv[3]).generic_string();
             const bool native=name.size()==7 && name.compare(0,6,"native")==0 && name[6]>='0' && name[6]<='6';
-            const bool resume=name=="campaign-resume" || name=="campaign-resume-one" || name=="campaign-resume-river";
+            const bool resume=name=="campaign-resume" || name=="campaign-resume-one" ||
+                name=="campaign-resume-river" || name=="campaign-resume-volcano";
             require(resume?argc==5:argc==4,
-                "only campaign-resume, campaign-resume-one and campaign-resume-river require INPUT_PROFILE_DIRECTORY; old forms reject extra arguments");
+                "only campaign-resume[-one|-river|-volcano] requires INPUT_PROFILE_DIRECTORY; old forms reject extra arguments");
             if(resume) {
-                resumeRiver=name=="campaign-resume-river";
-                inputProfile=std::filesystem::path(argv[4]);resumeOne=name=="campaign-resume-one" || resumeRiver;
+                resumeRiver=name=="campaign-resume-river";resumeVolcano=name=="campaign-resume-volcano";
+                inputProfile=std::filesystem::path(argv[4]);resumeOne=name=="campaign-resume-one" || resumeRiver || resumeVolcano;
                 require(!inputProfile.empty(),"saved campaign input profile directory must not be empty");
             }
             emptyCourse=name=="native5-empty";
@@ -3444,7 +3453,7 @@ int main(int argc,char** argv) {
         }
         return run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]),mode,requestedCourse,emptyCourse,
             returnedOakCancel,campaignFirstUnlock,captureGoal,fullCampaign,campaignRetained,nativeFailLive,campaignEmpty,
-            inputProfile,resumeOne,resumeRiver);
+            inputProfile,resumeOne,resumeRiver,resumeVolcano);
     } catch (const std::exception& error) {
         std::cerr << "private actual application integration: " << error.what() << '\n';return 1;
     } catch (...) {

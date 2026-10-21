@@ -6,6 +6,7 @@
 #include "native_beach_photo_puzzle.hpp"
 #include "native_tunnel_photo_puzzles.hpp"
 #include "native_river_photo_puzzle.hpp"
+#include "native_volcano_food_photo.hpp"
 #include "application_runtime.hpp"
 #include "game_state.hpp"
 #include "tunnel_scene.hpp"
@@ -305,6 +306,7 @@ struct Probe::Impl {
     std::optional<private_campaign::BeachPhotoPuzzle> beach_photos;
     std::optional<private_campaign::TunnelPhotoPuzzles> tunnel_photos;
     std::optional<private_campaign::RiverPhotoPuzzle> river_photos;
+    std::optional<private_campaign::VolcanoFoodPhoto> volcano_food;
     std::uint64_t ordinary_puzzle_shutters=0,ordinary_puzzle_throws=0;
     private_campaign::Progress canonical_progress{};
     bool goal_initialized=false,progress_initialized=false;
@@ -431,6 +433,7 @@ struct Probe::Impl {
         if(goal==CaptureGoal::photographs || goal==CaptureGoal::lapras_photographs) {
             if(course==0)beach_photos.emplace(pad,camera);
             else if(course==1)tunnel_photos.emplace(pad,camera);
+            else if(course==2)volcano_food.emplace(pad,camera);
             else if(course==3) {
                 require(view.river,"River objective requires its actual lifecycle");
                 const auto objective=private_campaign::choose_river_photo_objective(view.river->photos());
@@ -499,6 +502,17 @@ struct Probe::Impl {
         ordinary_puzzle_shutters=requested_shutters;ordinary_puzzle_throws=requested_throws;
         return owned;
     }
+    bool control_volcano_food(const application::RuntimeView& view,bool available) {
+        if(!volcano_food)return false;
+        const bool owned=volcano_food->update(view,state,updates,available);
+        const auto& f=volcano_food->facts();
+        require(f.shutter_requests>=ordinary_puzzle_shutters && f.throw_requests>=ordinary_puzzle_throws,
+            "actual Volcano food request counters moved backward");
+        shutters+=f.shutter_requests-ordinary_puzzle_shutters;
+        throws+=f.throw_requests-ordinary_puzzle_throws;
+        ordinary_puzzle_shutters=f.shutter_requests;ordinary_puzzle_throws=f.throw_requests;
+        return owned;
+    }
     bool goal_complete() const noexcept {
         if(goal==CaptureGoal::lapras_photographs)
             return course==0 && beach_photos && beach_photos->facts().lapras.complete;
@@ -517,6 +531,41 @@ struct Probe::Impl {
     }
     void note_goal() {
         if(course==2)note_volcano_lava();
+        if(volcano_food) {
+            const auto& f=volcano_food->facts();
+            std::ostringstream food;
+            food<<"volcano_food\tupdates="<<updates<<"\tphase/end="<<int(f.phase)<<'/'<<int(f.end)
+                <<"\tchecked/prior/owns="<<f.checked<<'/'<<f.prior_reports<<'/'<<f.owns_pad
+                <<"\tactor="<<f.actor[0]<<'/'<<f.actor[1]<<'/'<<f.actor[2]
+                <<"\titem="<<f.item[0]<<'/'<<f.item[1]<<'/'<<f.item[2]
+                <<"\tapple="<<f.apple[0]<<'/'<<f.apple[1]<<'/'<<f.apple[2]
+                <<"\tinteraction="<<f.interaction[0]<<'/'<<f.interaction[1]<<'/'<<f.interaction[2]
+                <<"\tpresent/settled/adopted/approached/with="<<f.present<<'/'<<f.settled<<'/'<<f.adopted<<'/'<<f.approached<<'/'<<f.with_apple
+                <<"\tgraph/state/path="<<f.graph<<'/'<<f.state<<'/'<<f.path<<"\tvalid_items="<<f.valid_items
+                <<"\tplans/candidates/ground/arc/corridor="<<f.plans<<'/'<<f.candidates<<'/'<<f.ground_rejections<<'/'<<f.arc_rejections<<'/'<<f.corridor_rejections
+                <<"\tphase_started/deadline="<<f.phase_started<<'/'<<f.deadline<<"\tcontrols/aligned="<<f.controls<<'/'<<f.aligned_updates
+                <<"\tthrow=requests/presses/consumed:"<<f.throw_requests<<'/'<<f.throw_presses<<'/'<<f.throws_consumed
+                <<"\tthrow_updates="<<f.throw_request<<'/'<<f.throw_consumed<<'/'<<f.throw_release
+                <<"\tfood_updates="<<f.settled_update<<'/'<<f.adopted_update<<'/'<<f.approached_update<<'/'<<f.with_apple_update
+                <<"\tflying_ground_contact="<<f.flying_ground_contact<<'/'<<f.flying_ground_contact_update
+                <<"\tshutter=requests/presses/coherent:"<<f.shutter_requests<<'/'<<f.shutter_presses<<'/'<<f.coherent
+                <<"\tshutter_updates="<<f.shutter_request<<'/'<<f.capture_update<<'/'<<f.shutter_release
+                <<"\treleases/mismatches/complete="<<f.releases<<'/'<<f.mismatches<<'/'<<f.complete
+                <<"\tfilm/qualified/slot/context/taken="<<f.film_before<<'/'<<f.qualified_before<<'/'<<f.slot<<'/'<<f.decision_context<<'/'<<f.taken_context;
+            row(food.str());
+            std::ostringstream geometry;
+            geometry.precision(std::numeric_limits<float>::max_digits10);
+            geometry<<"volcano_food_geometry\tupdates="<<updates
+                <<"\tyaw/facing_error="<<f.yaw<<'/'<<f.facing_error<<"\tsurface="<<f.surface
+                <<"\tposition="<<f.position.x<<','<<f.position.y<<','<<f.position.z
+                <<"\tcollision="<<f.collision.x<<','<<f.collision.y<<','<<f.collision.z
+                <<"\tcandidate_global="<<f.candidate_global.x<<','<<f.candidate_global.y<<','<<f.candidate_global.z
+                <<"\tpredicted_contact_NOT_receipt="<<f.predicted_contact.x<<','<<f.predicted_contact.y<<','<<f.predicted_contact.z;
+            geometry<<"\tanalytic_bounces_NOT_receipt="<<f.predicted_bounces
+                <<"\tportrait_range_rejections="<<f.portrait_rejections
+                <<"\tpredicted_stop_NOT_receipt="<<f.predicted_stop.x<<','<<f.predicted_stop.y<<','<<f.predicted_stop.z;
+            row(geometry.str());
+        }
         if(course==0 && ordinary_shots[25].consumed==1) {
             const auto& f=pikachu_window;
             std::ostringstream window;
@@ -1592,8 +1641,12 @@ struct Probe::Impl {
             // jump and return to Idle. Wait for this genuine blocking encounter,
             // after the ordinary/tutorial photographs, rather than force travel.
             if(!egg.present || !egg.tangible || !(egg.flags&0x20u) || !egg.interactive ||
-               !player.IsCartStopped || egg.distance-egg.radius>5 || egg.distance>=1200 || qualified<3)
-                return control_volcano_lava(*host,player,focus,prior);
+               !player.IsCartStopped || egg.distance-egg.radius>5 || egg.distance>=1200 || qualified<3) {
+                const bool lava_owned=control_volcano_lava(*host,player,focus,prior);
+                const bool food_owned=control_volcano_food(view,!lava_owned);
+                return lava_owned || food_owned;
+            }
+            (void)control_volcano_food(view,false);
             const auto pester=state.save()->player_flag(1),apple=state.save()->player_flag(0);
             require(pester && apple && (pester.value || apple.value),
                 "actual Volcano egg gate has no owned projectile");
@@ -1680,8 +1733,13 @@ struct Probe::Impl {
         }
         if((goal==CaptureGoal::photographs || goal==CaptureGoal::apple_evolution) &&
            volcano_stage==VolcanoStage::travel_after_egg) {
-            if(control_volcano_lava(*host,player,focus,prior))return true;
-            return control_moltres_retake(player,prior);
+            if(control_volcano_lava(*host,player,focus,prior)) {
+                (void)control_volcano_food(view,false);return true;
+            }
+            if(control_moltres_retake(player,prior)) {
+                (void)control_volcano_food(view,false);return true;
+            }
+            return control_volcano_food(view,true);
         }
         return true;
     }

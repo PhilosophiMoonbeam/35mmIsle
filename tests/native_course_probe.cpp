@@ -448,7 +448,7 @@ struct Probe::Impl {
         }};
         const private_campaign::Aim camera{this,[](void* owner,const IslePlayerSource& player,
                 const IsleGameVec3& point,bool zoomed,std::int8_t& sx,std::int8_t& sy) {
-            static_cast<Impl*>(owner)->aim(player,point,zoomed,sx,sy);
+            static_cast<Impl*>(owner)->aim(player,point,zoomed,sx,sy,6);
         }};
         if(goal==CaptureGoal::photographs || goal==CaptureGoal::lapras_photographs) {
             if(course==0) {
@@ -472,7 +472,13 @@ struct Probe::Impl {
                     food_report=report.value.photo->pokemons[0].pokemonID==4 &&
                         report.value.photo->pokemons[0].poseID==106;
                 }
-                if(food_report)volcano_magmar_pair.emplace(pad,camera);
+                if(food_report) {
+                    const private_campaign::Aim precise_camera{this,[](void* owner,const IslePlayerSource& player,
+                            const IsleGameVec3& point,bool zoomed,std::int8_t& sx,std::int8_t& sy) {
+                        static_cast<Impl*>(owner)->aim(player,point,zoomed,sx,sy,1);
+                    }};
+                    volcano_magmar_pair.emplace(pad,precise_camera);
+                }
                 else volcano_food.emplace(pad,camera);
             }
             else if(course==3) {
@@ -1086,6 +1092,15 @@ struct Probe::Impl {
                 <<"\tsettled/overlap/interaction_updates="<<f.settled_update<<'/'<<f.overlap_update<<'/'<<f.interaction_update
                 <<"\tcontrols/aligned="<<f.controls<<'/'<<f.aligned_updates;
             row(pair.str());
+            std::ostringstream launch;
+            launch<<"volcano_magmar_actual_launch\tupdates="<<updates
+                <<"\tlanding=pass/invalid/terrain/ceiling/subdivision/unsafe/target/rebound/speed/distance/settled_sphere/static/flight_sphere/horizon:";
+            for(std::size_t i=0;i<f.actual_landing.size();++i) {
+                if(i) launch<<'/';
+                launch<<f.actual_landing[i];
+            }
+            launch<<"\tother_actor_distance/surface="<<f.actual_other_actor_distance<<'/'<<f.actual_other_actor_surface;
+            row(launch.str());
             for(std::size_t i=0;i<2;++i) {
                 std::ostringstream actor;
                 actor.precision(std::numeric_limits<float>::max_digits10);
@@ -1474,7 +1489,8 @@ struct Probe::Impl {
             placement->mode!=ISLE_GAME_MODEL_PLACEMENT_DISABLED,"actual Rainbow model placement borrow rejected");
         position=placement->transform.position;return true;
     }
-    void aim(const IslePlayerSource& player,const IsleGameVec3& target,bool zoomed,std::int8_t& sx,std::int8_t& sy) {
+    void aim(const IslePlayerSource& player,const IsleGameVec3& target,bool zoomed,std::int8_t& sx,std::int8_t& sy,
+             float unzoomed_pixel_tolerance) {
         if(zoomed) {
             const float dx=target.x-player.CameraEyePos.x,dz=target.z-player.CameraEyePos.z;
             const float sn=std::sin(-player.movement.rotation.y),cs=std::cos(-player.movement.rotation.y);
@@ -1504,8 +1520,10 @@ struct Probe::Impl {
         const float error_y=py-static_cast<float>(player.ReticleScreenY);
         // Reticle link0 precedes Player link9: in steady quadrant0 it
         // subtracts the previous camera-flipped X. Raw polarity stays positive.
-        sx=std::abs(error_x)<6?0:stick(error_x*16.0f);
-        sy=std::abs(error_y)<6?0:stick(error_y*8);
+        // Pair throws need finer steering than ordinary framing: screen
+        // deadband alone never authorizes the unchanged physical-ray gate.
+        sx=std::abs(error_x)<unzoomed_pixel_tolerance?0:stick(error_x*16.0f);
+        sy=std::abs(error_y)<unzoomed_pixel_tolerance?0:stick(error_y*8);
         if(player.IsAxisYInverted)sy=static_cast<std::int8_t>(-sy);
     }
     void observe_ordinary_minima(const Sample& s) {
@@ -1591,7 +1609,7 @@ struct Probe::Impl {
         std::int8_t sx=0,sy=0;
         if(!subject && player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn) {
             PhotoTarget target{};
-            if(photo_target(player,target,nullptr,nullptr,nullptr,0,0))aim(player,target.position,true,sx,sy);
+            if(photo_target(player,target,nullptr,nullptr,nullptr,0,0))aim(player,target.position,true,sx,sy,6);
             else sx=24;
         }
         set(pad,sx,sy);
@@ -2025,7 +2043,7 @@ struct Probe::Impl {
             if(photos>=60-lava_film_reserve()+1)return false;
             ++lava_photo_updates[i];
             std::int8_t sx=0,sy=0;
-            if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn)aim(player,actor.collision,true,sx,sy);
+            if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn)aim(player,actor.collision,true,sx,sy,6);
             std::uint16_t pad=z;
             if(lava_pending_slot<0 && focus.present && focus.object && focus.pokemon_id==lava_species[i] &&
                (focus.flags&4u) && !(focus.flags&8u) && !sx && !sy && player.gDirectionIndex==-1 &&
@@ -2074,7 +2092,7 @@ struct Probe::Impl {
                 return true;
             }
         }
-        std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy);
+        std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy,6);
         const std::uint16_t item_button=lava_pester_available?b:a;
         const int item_id=lava_pester_available?162:163;
         std::uint16_t pad=0;
@@ -2170,7 +2188,7 @@ struct Probe::Impl {
         ++retake.control_updates;
         const bool settled=player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.TurnToDirSpeed==0;
         std::int8_t sx=0,sy=0;
-        if(settled)aim(player,target.collision,true,sx,sy);
+        if(settled)aim(player,target.collision,true,sx,sy,6);
         std::uint16_t pad=player.ZoomSwitchMode==0?z:0;
         if(player.ZoomSwitchMode==1 && player.gDirectionIndex>=0 && player.TurnToDirSpeed==0 &&
            !(player.input.current_buttons&z))pad=z;
@@ -2263,7 +2281,7 @@ struct Probe::Impl {
                 aimed.y-=.5f*flight*player.PlayerVelocity.y;
                 aimed.z-=.5f*flight*player.PlayerVelocity.z;
                 if(ray>0)aimed.y+=.15f*flight*(flight+1)-100*distance/ray;
-                std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy);
+                std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy,6);
                 std::uint16_t pad=0;
                 if(!sx && !sy && ray>0 && player.ThrowItemTimeout==0 &&
                     !(prior&volcano_item_button) && !(player.input.current_buttons&volcano_item_button)) {
@@ -2288,7 +2306,7 @@ struct Probe::Impl {
             // Follow only tangible actual actors, reborrowing each placement.
             // Existing aim() drives the Source camera/reticle via the owned pad.
             const auto* target=moltres.present && moltres.tangible?&moltres:egg.present && egg.tangible?&egg:nullptr;
-            if(target && player.gDirectionIndex==-1)aim(player,target->collision,true,sx,sy);
+            if(target && player.gDirectionIndex==-1)aim(player,target->collision,true,sx,sy,6);
             std::uint16_t pad=z;
             if(volcano_stage==VolcanoStage::photograph_moltres && !volcano_moltres_photo && pending_volcano_slot<0 &&
                focus.present && focus.object && focus.pokemon_id==146 && (focus.flags&4u) && !(focus.flags&8u) &&
@@ -2371,7 +2389,7 @@ struct Probe::Impl {
                     const float ray=std::hypot(player.cam_target.x-player.CameraEyePos.x,
                         player.cam_target.y-player.CameraEyePos.y,player.cam_target.z-player.CameraEyePos.z);
                     if(ray>0)aimed.y+=.15f*flight*(flight+1)-100*distance/ray;
-                    std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy);
+                    std::int8_t sx=0,sy=0;aim(player,aimed,false,sx,sy,6);
                     std::uint16_t pad=0;
                     // Actual cam_target is updated by the canonical reticle
                     // process. Its ray, not a native model write, aims the item.
@@ -2382,7 +2400,7 @@ struct Probe::Impl {
             }
             if(player.IsInputDisabled)return;
             std::int8_t sx=0,sy=0;
-            if(target(actors,position,false) && player.gDirectionIndex==-1)aim(player,position,true,sx,sy);
+            if(target(actors,position,false) && player.gDirectionIndex==-1)aim(player,position,true,sx,sy,6);
             std::uint16_t pad=z;
             if(subject && focus.pokemon_id==151 && !(focus.flags&8u) && player.gDirectionIndex==-1 &&
                 !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 && !(prior&a) && !(player.input.current_buttons&a) && photos<4) {
@@ -2442,7 +2460,7 @@ struct Probe::Impl {
         pikachu_sampled_update=updates;
         std::int8_t sx=0,sy=0;
         if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn) {
-            if(have_target)aim(player,target.position,true,sx,sy);
+            if(have_target)aim(player,target.position,true,sx,sy,6);
             else sx=24;
         }
         const bool focused_species=have_target && subject && focus_species==target.species;

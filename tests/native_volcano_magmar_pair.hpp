@@ -2,6 +2,7 @@
 #define ISLE_PRIVATE_NATIVE_VOLCANO_MAGMAR_PAIR_HPP
 
 #include "native_progression_puzzles.hpp"
+#include "native_volcano_food_geometry.hpp"
 #include <array>
 
 namespace isle::private_campaign {
@@ -44,6 +45,8 @@ struct MagmarPairFacts {
     unsigned pair_count = 0, valid_items = 0, plans = 0, candidates = 0;
     unsigned ground_rejections = 0, arc_rejections = 0, corridor_rejections = 0;
     unsigned race_rejections = 0, portrait_rejections = 0, predicted_bounces = 0;
+    std::array<unsigned,static_cast<std::size_t>(food_geometry::LandingRejection::count)> actual_landing{};
+    unsigned actual_other_actor_distance=0, actual_other_actor_surface=0;
     unsigned predicted_arrival_delta = 0, throw_requests = 0, throw_presses = 0, throws_consumed = 0;
     unsigned shutter_requests = 0, shutter_presses = 0, releases = 0, mismatches = 0;
     std::uint64_t phase_started = 0, deadline = 0, convergence_deadline = 0, controls = 0, aligned_updates = 0;

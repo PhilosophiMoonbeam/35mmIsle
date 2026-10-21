@@ -234,13 +234,21 @@ struct Forecast {
     float overlap_margin=0;
 };
 bool forecast(const world::World& world,const IslePlayerSource& player,const Observation& observed,
-              const IsleGameVec3& ray,const IsleGameVec3& target,Forecast& out,MagmarPairFacts& facts) {
+              const IsleGameVec3& ray,const IsleGameVec3& target,Forecast& out,MagmarPairFacts& facts,bool actual_ray) {
     world::GroundResult floor{};
     if (!geometry::ground(world,target,floor) || !geometry::walkable(observed.pair[0].walker,floor.surface) ||
         !geometry::walkable(observed.pair[1].walker,floor.surface)) { ++facts.ground_rejections; return false; }
-    if (!geometry::landing(world,player,observed.pair[0].walker,observed.scene,ray,target,out.landing) ||
-        !(geometry::squared(out.landing.root,observed.pair[1].walker.collision)<590*590) ||
-        !geometry::walkable(observed.pair[1].walker,out.landing.surface)) { ++facts.arc_rejections; return false; }
+    const bool landed=geometry::landing(world,player,observed.pair[0].walker,observed.scene,ray,target,out.landing);
+    if (actual_ray) ++facts.actual_landing[static_cast<std::size_t>(out.landing.rejection)];
+    if (!landed) { ++facts.arc_rejections; return false; }
+    if (!(geometry::squared(out.landing.root,observed.pair[1].walker.collision)<590*590)) {
+        if (actual_ray) ++facts.actual_other_actor_distance;
+        ++facts.arc_rejections; return false;
+    }
+    if (!geometry::walkable(observed.pair[1].walker,out.landing.surface)) {
+        if (actual_ray) ++facts.actual_other_actor_surface;
+        ++facts.arc_rejections; return false;
+    }
     for (std::size_t i=0;i<2;++i) {
         if (!geometry::corridor(world,observed.pair[i].walker,out.landing.root,160,50,out.stop[i],out.steps[i])) {
             ++facts.corridor_rejections; return false;
@@ -293,7 +301,7 @@ bool plan(const world::World& world,const IslePlayerSource& player,const Observa
         candidate.y=floor.height;
         IsleGameVec3 ray{}; Forecast prediction{};
         if (!projectile_target(player,candidate,ray)) { ++facts.arc_rejections; continue; }
-        if (!forecast(world,player,observed,ray,candidate,prediction,facts)) continue;
+        if (!forecast(world,player,observed,ray,candidate,prediction,facts,false)) continue;
         const float distance=std::min(geometry::squared(prediction.stop[0],player.CameraEyePos),
                                       geometry::squared(prediction.stop[1],player.CameraEyePos));
         if (found && distance>=best) continue;
@@ -579,7 +587,7 @@ bool MagmarPairPhoto::update(const application::RuntimeView& view,const game::St
             // Screen alignment is not physical ray acceptance. Keep this
             // unspent candidate within its original aim deadline; never throw
             // until the actual ray passes every forecast gate.
-            if (!forecast(world,*player,observed,player->cam_target,target,prediction,f)) {
+            if (!forecast(world,*player,observed,player->cam_target,target,prediction,f,true)) {
                 publish(); return true;
             }
             remember(prediction,f); f.film_before=player->photo->gPhotoCount; f.qualified_before=player->photo->D_800AE27C;

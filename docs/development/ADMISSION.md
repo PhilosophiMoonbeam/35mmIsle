@@ -6364,3 +6364,50 @@ Exact published commit `bb764fafaa09a50a8b3e9ef208af2ae6feaa7495` passes
 all ten Linux/MSVC jobs in run39589347777; Windows gameplay/hardware
 parity is not inferred from those builds.
 
+### Physical Magmar launch precision
+
+The independent empty-profile run reaches 34 Reports/71,580 points but
+stalls below the natural Pester award. Competing planner/reviewer
+assessments establish no Source defect in the sampled pair attempts:
+Original requires a STILL Apple for Magmar acquisition, and autonomous
+Walk collisions can produce the same fighting pose without Apple causation.
+The causal history and all finite input bounds remain unchanged.
+
+Read-only landing rejection facts isolate a separate controller issue.
+Both comparisons start from the same genuine Save114 whole Boot image,
+SHA256 `df5cfccc3f27f66bb173e15f7829e63fddb666d3df1a4e1185e4fb0c96055ab4`.
+The diagnostic does not change input decisions. Only the subsequent
+pair-specific pure Aim bridge changes its unzoomed screen tolerance;
+all other callers explicitly retain six pixels.
+
+| Actual native observation | Six-pixel diagnostic | One-pixel pair steering |
+| --- | ---: | ---: |
+| Frozen binary prefix | `3ee920a5` | `7cf45043` |
+| Actual-ray first-contact target rejections | 94 | 1 |
+| Accepted actual landing forecasts | 1 | 1 |
+| Owned Apple request/consume/release updates | 5240/5241/5242 | 5019/5020/5021 |
+| Actual settlement | 5274 | 5062 |
+| Both actors' adoption/running receipts | 5275 | 5063 |
+| Accepted partner-directed interaction | 5280 | 5113 |
+| Coherent shutter request/capture/release | 5281/5282/5283 | 5117/5118/5119 |
+| Original roll score for species126 | 6190 | 5560 |
+| Pair complete / mismatches | 1 / 0 | 1 / 0 |
+
+The correction keeps steering rather than treating coarse screen
+alignment as sufficient precision. The actual ray must still pass the
+unchanged 35-unit first-contact gate, terrain/collision checks, both
+prospective pursuit corridors and live causal receipts. No extra throw,
+deadline reset, Source callback, pose/score/RNG write or forecast waiver
+is introduced. The lower corrected roll score is not called a quality
+increase: the inherited Report already scores6040, so Original correctly
+retains it and acknowledges Save115 at63 Reports/130,720 points.
+
+The corrected actual process exits0 after218.69seconds, returns to
+visible Title7/UI2 and cold-reopens exactly. Source inventory/bytes are
+unchanged; all native owners retire, deadline stays0 and dummy SDL
+accepts6,854,032 PCM frames. Private/full builds and58/58 CPU contracts
+pass. All41 selected compile inputs are identical before/after the
+corrected build. These are one-course inherited-profile comparisons,
+not fresh completion or Windows gameplay. A new empty-root campaign
+uses immutable `7cf45043` with no inherited/authored profile.
+

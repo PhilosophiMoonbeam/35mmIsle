@@ -18,7 +18,17 @@ struct Walker {
     std::size_t forbidden_count=0;
 };
 struct Scene { std::array<Sphere,128> spheres{}; std::size_t sphere_count=0; };
-struct LandingForecast { IsleGameVec3 root{}; int surface=-1; unsigned rebounds=0; };
+enum class LandingRejection {
+    none, invalid_launch, terrain, ceiling, subdivision, unsafe_ground,
+    target_miss, second_rebound, nonfinite_speed, actor_distance,
+    landing_sphere, static_collision, flight_sphere, horizon, count
+};
+struct LandingForecast {
+    IsleGameVec3 root{};
+    int surface=-1;
+    unsigned rebounds=0;
+    LandingRejection rejection=LandingRejection::none;
+};
 float squared(const IsleGameVec3&,const IsleGameVec3&) noexcept;
 bool ground(const world::World&,const IsleGameVec3&,world::GroundResult&);
 bool walkable(const Walker&,int surface);

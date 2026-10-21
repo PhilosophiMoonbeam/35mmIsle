@@ -99,13 +99,16 @@ bool landing(const world::World& world, const IslePlayerSource& player, const Wa
     auto& contact=forecast.root;
     auto& surface=forecast.surface;
     auto& rebounds=forecast.rebounds;
+    const auto reject=[&](LandingRejection reason) { forecast.rejection=reason; return false; };
+    forecast.rejection=LandingRejection::none;
     const IsleGameCameraParameters* camera=nullptr;
     require(isle_game_camera_parameters(player.game,player.camera,&camera)==ISLE_GAME_OK && camera,
             "Volcano food actual launch camera unavailable");
     IsleGameVec3 position{camera->look_at.eye[0],camera->look_at.eye[1],camera->look_at.eye[2]};
     IsleGameVec3 velocity{ray.x-position.x,ray.y-position.y+100,ray.z-position.z};
     const float length=std::hypot(velocity.x,velocity.y,velocity.z);
-    if (!(finite(position) && std::isfinite(length) && length>0 && scene.sphere_count<=scene.spheres.size())) return false;
+    if (!(finite(position) && std::isfinite(length) && length>0 && scene.sphere_count<=scene.spheres.size()))
+        return reject(LandingRejection::invalid_launch);
     velocity={50*velocity.x/length+player.PlayerVelocity.x,50*velocity.y/length+player.PlayerVelocity.y,
               50*velocity.z/length+player.PlayerVelocity.z};
     IsleGameVec3 previous=position;
@@ -115,8 +118,10 @@ bool landing(const world::World& world, const IslePlayerSource& player, const Wa
         world::GroundResult floor{},ceiling{};
         // Airborne travel may cross lava/water; only actual contact must be
         // ordinary safe food ground. Do not reject terrain merely below an arc.
-        if (!world.ground_at(position.x,position.z,floor) || !std::isfinite(floor.height) ||
-            (world.ceiling_at(position.x,position.z,ceiling) && position.y+12>=ceiling.height)) return false;
+        if (!world.ground_at(position.x,position.z,floor) || !std::isfinite(floor.height))
+            return reject(LandingRejection::terrain);
+        if (world.ceiling_at(position.x,position.z,ceiling) && position.y+12>=ceiling.height)
+            return reject(LandingRejection::ceiling);
         if (position.y<=floor.height+.375f) {
             const IsleGameVec3 penetrated=position;
             if (position.y<floor.height-.375f) {
@@ -125,19 +130,21 @@ bool landing(const world::World& world, const IslePlayerSource& player, const Wa
                 IsleGameVec3 above=previous,below=position;
                 for (unsigned subdivision=0;subdivision<16;++subdivision) {
                     position={(above.x+below.x)*.5f,(above.y+below.y)*.5f,(above.z+below.z)*.5f};
-                    if (!world.ground_at(position.x,position.z,floor) || !std::isfinite(floor.height)) return false;
+                    if (!world.ground_at(position.x,position.z,floor) || !std::isfinite(floor.height))
+                        return reject(LandingRejection::subdivision);
                     if (std::abs(position.y-floor.height)<=.375f) break;
                     if (position.y<floor.height) below=position; else above=position;
                 }
             }
-            if (!safe_ground(floor)) return false;
+            if (!safe_ground(floor)) return reject(LandingRejection::unsafe_ground);
             contact={position.x,floor.height+12,position.z}; surface=floor.surface;
-            if (!rebounds && squared(contact,{target.x,target.y+12,target.z})>35*35) return false;
+            if (!rebounds && squared(contact,{target.x,target.y+12,target.z})>35*35)
+                return reject(LandingRejection::target_miss);
             const float restitution=damping(floor.surface);
             const float incoming_speed=std::hypot(velocity.x,velocity.y,velocity.z);
             const float speed=restitution*incoming_speed;
             if (speed>=13) {
-                if (rebounds) return false; // At most one rebound; no horizon reset.
+                if (rebounds) return reject(LandingRejection::second_rebound); // No horizon reset.
                 const IsleGameVec3 unit{velocity.x/incoming_speed,velocity.y/incoming_speed,velocity.z/incoming_speed};
                 const float dot=unit.x*floor.normal.x+unit.y*floor.normal.y+unit.z*floor.normal.z;
                 velocity={speed*(unit.x-2*dot*floor.normal.x),
@@ -150,28 +157,28 @@ bool landing(const world::World& world, const IslePlayerSource& player, const Wa
                 rebounds=1; first_contact_step=step;
                 continue;
             }
-            if (!(speed<13)) return false;
-            if (!(squared(contact,observed.collision)<590*590)) return false;
+            if (!(speed<13)) return reject(LandingRejection::nonfinite_speed);
+            if (!(squared(contact,observed.collision)<590*590)) return reject(LandingRejection::actor_distance);
             for (std::size_t i=0;i<scene.sphere_count;++i) {
                 // Prospective horizontal-pursuit margin, not a guarantee
                 // about future 3D Actor motion or Source update ordering.
                 const float pursuit=scene.spheres[i].pursuit_speed>0 && rebounds
                     ? scene.spheres[i].pursuit_speed*.033f*float(step-first_contact_step) : 0;
-                if (sphere_hit(scene.spheres[i],contact,contact,pursuit)) return false;
+                if (sphere_hit(scene.spheres[i],contact,contact,pursuit)) return reject(LandingRejection::landing_sphere);
             }
             return true;
         }
         // Source queries static/Actor collisions BEFORE applying gravity.
         const IsleGameVec3 query{position.x+velocity.x*.5f,position.y+velocity.y*.5f,position.z+velocity.z*.5f};
-        if (!static_clear(world,position,query)) return false;
+        if (!static_clear(world,position,query)) return reject(LandingRejection::static_collision);
         for (std::size_t i=0;i<scene.sphere_count;++i) {
             const float pursuit=scene.spheres[i].pursuit_speed>0 && rebounds
                 ? scene.spheres[i].pursuit_speed*.033f*float(step-first_contact_step) : 0;
-            if (sphere_hit(scene.spheres[i],position,query,pursuit)) return false;
+            if (sphere_hit(scene.spheres[i],position,query,pursuit)) return reject(LandingRejection::flight_sphere);
         }
         previous=position; velocity.y-=.6f;
         position={position.x+velocity.x*.5f,position.y+velocity.y*.5f,position.z+velocity.z*.5f};
     }
-    return false;
+    return reject(LandingRejection::horizon);
 }
 } // namespace isle::private_campaign::food_geometry

@@ -699,6 +699,16 @@ struct Probe::Impl {
                 <<"\tshell_stage/animation/time="<<f.shell_stage<<'/'<<f.target_animation<<'/'<<f.animation_time
                 <<"\tsteering/recovery/rejected="<<f.steering_updates<<'/'<<f.recovery_updates<<'/'<<f.arc_rejections
                 <<"\tinput="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z<<'\n';finish();
+            ledger<<"valley_pester_fish_latch\tupdates="<<updates
+                <<"\tbusy/active/species/behavior="<<f.fish_latch_busy<<'/'<<bool(f.fish_latch[0])<<'/'
+                <<f.fish_latch_species<<'/'<<f.fish_latch_behavior
+                <<"\tactor="<<f.fish_latch[0]<<'/'<<f.fish_latch[1]<<'/'<<f.fish_latch[2]
+                <<"\tgraph/state/flags/object/visible="<<f.fish_latch_graph<<'/'<<f.fish_latch_state<<'/'
+                <<f.fish_latch_flags<<'/'<<f.fish_latch_object_flags<<'/'<<f.fish_latch_visible
+                <<"\titem_sender="<<f.fish_latch_item_sender[0]<<'/'<<f.fish_latch_item_sender[1]<<'/'<<f.fish_latch_item_sender[2]
+                <<"\tactor_sender="<<f.fish_latch_actor_sender[0]<<'/'<<f.fish_latch_actor_sender[1]<<'/'<<f.fish_latch_actor_sender[2]
+                <<"\troot/path_parameter="<<f.fish_latch_root.x<<','<<f.fish_latch_root.y<<','
+                <<f.fish_latch_root.z<<'/'<<f.fish_latch_path_parameter<<'\n';finish();
             for(unsigned index=0;index<f.shell_items.size();++index)if(f.shell_items[index][0]) {
                 const auto& item=f.shell_items[index];
                 ledger<<"valley_pester_shell\tupdates="<<updates<<"\tstage="<<index+1

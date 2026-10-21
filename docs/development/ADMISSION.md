@@ -6193,7 +6193,111 @@ consumers and the existing automatic-resource/repair contracts. Thirteen
 reviewed-support manifests refresh only hashes for `actor_owner.cpp`,
 `valley_actor.hpp` and `valley_actor.cpp`; Original recipe selections and
 prepared Source fingerprints are unchanged. Full/private native builds
-and58 CPU contracts pass. Those contracts do not establish the actual
-automatic-birth regression; owned full-course replay and real weighted
-water-spawn qualification remain separately required.
+and58 CPU contracts pass. Those contracts alone cannot establish the
+automatic-birth regression; the following owned actual run supplies that
+separate consumer proof.
+
+The after-fix frozen`152bef10` starts from the same old independent
+54-Report/103,490-point checkpoint, using the newer private driver rather
+than claiming equivalence to the earlier frozen private code. Owned GDB
+permits no inferior function calls or Source writes. At the actual
+water-hook118 call, it observes the spawn declaration82 and copied
+definition84, the admitted callback tuple, and a non-null returned
+`GObj`. No nonzero native Owner status is observed. All six actual course
+rides subsequently reach acknowledged Save; Valley finishes at
+Save107/57Reports/113,090points. The native window is then closed normally
+at that sealed boundary. The resulting supervisor exit1 means the
+deliberately interrupted campaign had not finished, not another native
+execution leaf. This proves actual118 birth through the corrected shared
+gate; an after-fix147 birth, fish reveal/lifetime, full campaign, credits
+and Windows gameplay are not inferred from it.
+
+### Physical four-stage Dragonite reveal
+
+The actual main continuation starts from Save112/61Reports/125,520points.
+Its whole inherited Boot image is exact with canonical SHA256
+`83314df190a6fc2bc228578c9d9d4a1bc99e4bb47d481e489866fb1f1b9ee62b`,
+independently preserving the preceding Sandslash checkpoint. Original
+Oak selects legal Valley5; the ordinary missing-objective selector chooses
+Dragonite149. No goal override, save edit or diagnostic-branch merge is used.
+
+Four distinct own Item incarnations `4/0/1` through`4/0/4` hit the actual
+shell`3/47/1` through material`0019FF`. Their Original stage transitions
+occur at updates7548/7809/8005/8206 and become ready at
+7568/7823/8015/8214. The last stage reveals the preplaced149`3/38/1`;
+generic photography owns the shutter at8234/roll11. Actual focus/taken
+contexts agree and the full copied image has zero attribution mismatches.
+
+Source awards2,680points in Report61 with normalized digest
+`13354949950452443097`. The owned actual assessment visibly identifies
+`DRAGONITE NEW`. Original Photo/Oak processing acknowledges
+Save113/62Reports/128,200points, returns to actual Title8/UI2 and
+cold-reopens the canonical profile exactly. The inherited input remains
+unchanged. Flute is still absent; its130,000-point condition is not bypassed.
+
+An independent `69c66418` continuation loads the entire Save113 image
+exactly, canonical SHA256
+`53f73869a321613fcd5db99e8c8aac0f29a68cb4de7d2928f4066dcf621bf275`.
+Its legal Valley ride returns through Original no-better Camera/Oak,
+acknowledges Save114 with the same62Reports/128,200points, presents actual
+Title7/UI2 and cold-reopens exactly. Input inventory/bytes stay unchanged;
+all native owners release with retirement deadline0. This qualifies
+independent Dragonite persistence, not the unsuccessful Goldeen objective
+in that diagnostic ride.
+
+### Native factory initial command graph and natural Flute
+
+Independent planner and reviewer assessments identify a second, distinct
+factory defect. Pinned Original `pokemon.c:2200–2219` installs
+`initData->animSetup->transitionGraph` after its late resets and before
+returning the new actor. Native `Owner::spawn_native` instead cleared that
+field twice. Goldeen's admitted setup graph is `802EC9D0`, whose real
+command31 row selects `802D22A0`.
+
+Original OM ordering matters: the new link3 priority7 initializer is
+inserted before the currently running link4 Item process. Traversal does
+not revisit it in that pass. The next object update consumes queued31
+before the initializer runs. A null birth graph therefore ignores the
+command correctly under Original's command interpreter; later installation
+inside the hidden initializer is too late.
+
+The SDK now resolves the exact admitted setup graph through the existing
+canonical C API after effective path/behavior assignment and before factory
+return. Null setup graphs remain null. Resolution uses the actual bound
+active object/model and existing initialization/path admission; failure
+uses normal rollback. No Source initializer invocation, command replay or
+deferral, scheduling change, family118 special case, latch cleanup shim,
+RNG alteration or profile write is introduced. The independent reviewer
+finds no patch-introduced defect. Thirteen support pins change only the
+reviewed `actor_owner.cpp` hash.
+
+The owned before/after runs use the same preserved Save113 input and the
+same physical third Pester collision at update1375: material `337FB2`,
+actual player distance698.661, Item`4/0/3`, B/consume/release
+1344/1345/1346.
+
+| Frozen consumer | Actual118 incarnation`3/20/1` at1376 | Later lifetime |
+|---|---|---|
+| `69c66418`, before | Hidden, no accepted Item sender; initializer has now installed `EC9D0` | Retired by1384; global latch remains non-null through11687 |
+| `5046df80`, after | Visible in Original`802D237C`, actual Item sender`4/0/3` | Original animation completion clears the latch and cleans up |
+
+The before-run diagnostic state0 was an unmapped callback, not evidence
+of no process. Passive state mapping now distinguishes the initial and
+accepted Goldeen states and the ordinary foreign-fish animation waiters.
+Neither diagnostic sampling nor Source gameplay fields are mutated.
+
+Generic photography takes the after-run shutter at1394/roll3. Actual
+focus/taken contexts agree; the full copied image has zero attribution
+mismatches. Source awards2,520points in Report43, normalized digest
+`1008465116432851997`; the owned assessment visibly identifies
+`GOLDEEN NEW`.
+
+Original Photo/Oak processing acknowledges Save114 with
+63 Reports/130,720 points and naturally changes Flute flag2 from0 to1.
+Apple, Pester and Dash remain earned. Actual Title8/UI2 is presented and
+the canonical profile cold-reopens exactly. Input inventory/bytes remain
+unchanged; all owners release, retirement deadline stays0, and dummy SDL
+accepts9,774,464 PCM frames. Full/private native builds and58 CPU contracts
+pass. This proves the real first-command/lifetime regression and natural
+Flute threshold, not fresh campaign completion or Windows gameplay.
 

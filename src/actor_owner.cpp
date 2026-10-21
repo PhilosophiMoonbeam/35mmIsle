@@ -2582,10 +2582,16 @@ SpawnResult Owner::spawn_native(const SpawnRequest& request) noexcept {
     source.unk_18=-1; source.processFlags=0; source.counter=0; source.pathProc=nullptr;
     source.transitionGraph=nullptr; source.pokemonLoopTarget=0; source.lastAnimationFrame=0;
     source.jumpVel=0; source.hSpeed=0; source.facingYaw=0;
-    source.transitionGraph=nullptr; source.unk_E4=255;
+    source.unk_E4=255;
     if (written_path && spawn.path!=world::no_index) source.path=&self.world.resources().paths[spawn.path];
     else if (repair) source.path=nullptr;
     if (!unwritten || repair) source.behavior=spawn.behavior;
+    // Pokemon_SpawnOnGround installs the setup graph before returning, so a
+    // caller's command may match before the initial state process first runs.
+    if (initialization.setup.transition_graph_identity &&
+        isle_actor_owner_graph(&source,initialization.setup.transition_graph_identity,&source.transitionGraph)!=ISLE_GAME_OK) {
+        rollback(); return reject(OwnerError::admission,"actor factory initial setup graph is not canonically admitted");
+    }
     source.pathParam=0; source.eggGeo=nullptr; source.poseID=0; source.specialPoseID=0;
     source.playerDist=maximum_distance;
     self.logical[self.logical_count++]=slot; slot->logical=true;

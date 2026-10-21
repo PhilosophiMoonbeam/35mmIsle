@@ -40,6 +40,12 @@ struct ValleyPesterFacts {
     IsleGameVec3 root{}, collision{}, motion{}, item_position{}, ground_position{}, input_target{};
     ValleyPesterIncarnation target{}, early_actor{}, swimmer{}, shell{}, subject{}, item{}, accepted_item{}, accepted_sender{};
     ValleyPesterIncarnation focus_actor{}, taken_actor{}, captured_actor{}, fish_latch{};
+    ValleyPesterIncarnation fish_latch_item_sender{}, fish_latch_actor_sender{};
+    int fish_latch_species=0, fish_latch_behavior=0;
+    std::uint32_t fish_latch_graph=0, fish_latch_state=0, fish_latch_flags=0, fish_latch_object_flags=0;
+    float fish_latch_path_parameter=0;
+    IsleGameVec3 fish_latch_root{};
+    bool fish_latch_visible=false;
     ValleyPesterIncarnation early_item{}, swimmer_item{};
     std::array<ValleyPesterIncarnation,4> shell_items{};
     std::array<std::uint64_t,4> shell_hit_updates{}, shell_ready_updates{};

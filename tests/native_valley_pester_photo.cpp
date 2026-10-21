@@ -43,6 +43,12 @@ ValleyPesterIncarnation key(menu::animation::InstanceHandle h) { return {h.pool,
 float squared(IsleGameVec3 a,IsleGameVec3 b) { const float x=a.x-b.x,y=a.y-b.y,z=a.z-b.z;return x*x+y*y+z*z; }
 bool finite(IsleGameVec3 p) { return std::isfinite(p.x)&&std::isfinite(p.y)&&std::isfinite(p.z); }
 std::uint32_t state_id(IsleGameSourceCallback f) {
+    if (f==func_802D2230_7AB7C0) return 0x802d2230u;
+    if (f==func_802D22A0_7AB830) return 0x802d22a0u;
+    if (f==func_802CA270_7A3800) return 0x802ca270u;
+    if (f==func_802CA364_7A38F4) return 0x802ca364u;
+    if (f==func_802D1200_7AA790) return 0x802d1200u;
+    if (f==func_802D1344_7AA8D4) return 0x802d1344u;
     if (f==func_802D17D8_7AAD68) return 0x802d17d8u;
     if (f==func_802D1ACC_7AB05C) return 0x802d1accu;
     if (f==func_802D1F18_7AB4A8) return 0x802d1f18u;
@@ -104,7 +110,8 @@ void snapshot(Snapshot& s,const IslePlayerSource& p,actor::Owner& actors,items::
             if (s.sphere_count==s.spheres.size()) s.capacity=false;
             else s.spheres[s.sphere_count++]={identity,source->collPosition,source->collisionRadius};
         }
-        if (source->id!=118 && source->id!=129 && source->id!=130 && source->id!=149 && source->id!=1033) continue;
+        if (source->id!=118 && source->id!=129 && source->id!=130 && source->id!=147 &&
+            source->id!=149 && source->id!=1033) continue;
         if (s.actor_count==s.actors.size()) { s.capacity=false;continue; }
         Actor a{};a.identity=identity;a.species=source->id;a.behavior=source->behavior;
         a.object=object;a.interaction=source->interactionTarget;
@@ -335,6 +342,18 @@ void ValleyPesterPhotoPuzzle::observe(const application::RuntimeView& view,std::
     observed_roll_=facts_.film;observed_qualified_=facts_.qualified;capture_armed_=false;
     facts_.mankey_latched=source.D_802D3FF8_7AD588!=0;
     facts_.fish_latch=key(actors->instance(source.D_802D2980_7ABF10));facts_.fish_latch_busy=source.D_802D2980_7ABF10!=nullptr;
+    facts_.fish_latch_item_sender={};facts_.fish_latch_actor_sender={};
+    facts_.fish_latch_species=0;facts_.fish_latch_behavior=0;
+    facts_.fish_latch_graph=0;facts_.fish_latch_state=0;facts_.fish_latch_flags=0;facts_.fish_latch_object_flags=0;
+    facts_.fish_latch_path_parameter=0;facts_.fish_latch_root={};facts_.fish_latch_visible=false;
+    if (const auto* fish=find_actor(s,facts_.fish_latch)) {
+        facts_.fish_latch_item_sender=fish->item_sender;facts_.fish_latch_actor_sender=fish->actor_sender;
+        facts_.fish_latch_species=fish->species;facts_.fish_latch_behavior=fish->behavior;
+        facts_.fish_latch_graph=fish->graph;facts_.fish_latch_state=fish->state;
+        facts_.fish_latch_flags=fish->flags;facts_.fish_latch_object_flags=fish->object_flags;
+        facts_.fish_latch_path_parameter=fish->path;facts_.fish_latch_root=fish->root;
+        facts_.fish_latch_visible=fish->visible;
+    }
     const Actor* target=nullptr;
     if (facts_.required_species==130) {
         if (!facts_.early_latch) target=facts_.early_actor[0]?find_actor(s,facts_.early_actor):species(s,129,2);

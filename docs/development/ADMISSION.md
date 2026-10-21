@@ -5729,3 +5729,69 @@ the final constructor-guard correction. All 58 CPU contracts pass after that
 correction. Cave gameplay and later campaign gates remain separate evidence;
 this River milestone does not qualify complete campaign or Windows gameplay.
 
+### Natural forty species, Valley Dash and first sign
+
+The same legal inherited campaign `655b` proceeds through Source-authorized
+River, Cave and Valley, then photographs the Beach sign. These are new actual
+rides and assessments, not inherited history counted again:
+
+| Trip / course | Acknowledged Save | Reports / points | Actual progression |
+|---|---:|---:|---|
+| 3 / River | 60 | 36 / 78,360 | Original empty scene13/reason3; unlocked4 |
+| 4 / Cave | 61 | 41 / 86,000 | Seven assessments; five new species; unlocked5 |
+| 5 / Valley | 62 | 46 / 90,350 | Genuine Squirtle/Mankey switch endpoint; Dash |
+| 6 / Beach | 63 | 47 / 90,350 | Sign1004, Report63, zero Source score |
+| 7 / Tunnel | 64 | 47 / 90,550 | One genuine improved Report |
+
+Cave publishes new species88/39/109/70/124 and improved1/41. Valley's original
+progression completes after 12,421 updates/6,210 frames with observed physical
+Squirtle hit/slide, Mankey hit, switch, endpoint, Dash and notice. Beach sign
+publication preserves captured digest12017242621974660254 through actual
+marking, presentation, selection and assessment.
+
+Independent process `655f` cold-loads the whole canonical Save64 image,
+SHA256`524a261f7378474b254d9150529c306d97191028468f2c885e8ed914467c51e0`,
+with Name, all Reports, known5/unlocked5 and actual Apple/Pester/Dash flags
+unchanged; Flute remains absent. A real no-better Beach ride acknowledges
+Save65, preserves 47 Reports/90,550 points and returns actual Title7/UI2
+(129 updates/frames), followed by exact canonical cold reopening. The actual
+Title surface was inspected. All 5,694 GPU operations and 14,898 input reads
+balance; 7,962,672 dummy PCM frames drain; owners release without a deadline;
+the original input directory remains unchanged.
+
+Campaign `655b` subsequently exposes an incomplete Volcano-sign objective;
+its unsaved attempt is not credited. Remaining signs, natural Flute,
+Rainbow/Mew, complete fresh campaign and Windows gameplay remain unqualified.
+
+### Physical Volcano smoke sign producer correction
+
+Competing read-only planner/reviewer assessments identify two concrete
+private-controller defects in the failed natural sign attempt: it observes
+decorative smoke puff1029 instead of true producer1027, and accepts a lava
+endpoint outside the original producer's strict 150-unit 3D sender radius.
+Pinned `include/enums.h:367–369`, `src/app_level/pokemon.c:1838–1855` and
+`src/volcano/smoke_spawner/code.c:155–164` establish the actual identity,
+command10 radius and sender-underlying `FF4C19` surface contract.
+
+The corrected controller observes1027 and restricts its existing terrain
+grid to contact sender `(x,ground+12,z)` strictly within that radius. Five
+25-unit rings retain every admissible existing grid point; the discarded
+sixth ring starts at the excluded 150-unit horizontal boundary. Original
+ballistic aiming, physical input delivery, sign geometry, focus membership
+and shutter/publication checks remain. No Source command, actor, transform,
+score, unlock or profile is authored. The candidate endpoint remains a
+prospective aim, not a claim of exact first-contact forecasting.
+
+Frozen runtime
+`8e31d61c65c2e473485b8c0d8781cb8d07dd9091bbae6d4332d632e1bfac2213`
+continues whole legal cold Save65 in campaign `655j`. Volcano trip2/epoch10
+consumes four real Pester requests, observes actual smoke1028 and its face,
+and consumes one qualified sign shutter at roll0; completion is observed by
+update608. The original course joins scene9 after 7,996 updates/3,998 frames.
+Normal CameraCheck/PhotoCheck marks, presents, selects, assesses and reports
+exact captured digest17672522939401220297 as zero-score sign Report65.
+Oak13 acknowledges Save68: 48 Reports/90,550 points, known5/unlocked5.
+The actual returned-Oak surface was inspected. Full native build and all
+58 CPU contracts pass. Later campaign milestones and independent cold
+preservation of this new sign are not implied by this Save receipt.
+

@@ -48,7 +48,7 @@ constexpr std::array<SignEvidence,6> evidence{{
      "Progress1,.9 through2,.9; actual D_802E3DA0 controls FLAG4. Special membership bypass, primary flagsa0."},
     {1028,2,0x801140c0,
      "src/volcano/koffing_smoke/code.c:60-112; Actor1028 init802e3254, state802de390",
-     "smoke_spawner/code.c:38-46,109-180 Actor1029, cmd10 real Pester sender; sender ground MUST be FF4C19. WaitSmokeFade prevents duplicate production; real smoke1028 follows its path and reveal animation.",
+     "smoke_spawner/code.c:38-46,109-180 Actor1027, cmd10 real Pester sender within strict150-unit 3D radius; sender ground MUST be FF4C19. WaitSmokeFade prevents duplicate production; real smoke1028 follows its path and reveal animation.",
      "koffing_smoke/code.c:75-99 show->RevealFace->hide->cleanup. Ordinary detector membership AND primary Pokemon1028 required; never substitute1031 volcano smoke."},
     {1035,5,0x80119bb0,
      "src/valley/7AA720.c:3-8; Actor1035 init802ec7b8, state802d1190",
@@ -86,7 +86,7 @@ Observations observe(const IslePlayerSource& player, int sign_id, const IslePlay
         Actor* target=nullptr;
         if (source->id==sign_id) target=&result.sign;
         else if ((sign_id==1010 && source->id==25 && source->behavior==5) ||
-                 (sign_id==1022 && source->id==45) || (sign_id==1028 && source->id==1029))
+                 (sign_id==1022 && source->id==45) || (sign_id==1028 && source->id==1027))
             target=&result.producer;
         else if (sign_id==1010 && source->id==602) target=&result.egg;
         else if (sign_id==1010 && source->id==145) target=&result.zapdos;
@@ -148,12 +148,13 @@ template<class Entry> bool course_entry(const Entry* entry,const IslePlayerSourc
 }
 bool lava_target(const world::World& world, const IslePlayerSource& player,
                  IsleGameVec3 origin, IsleGameVec3& target) {
-    // Query the real crater around its actual1029 producer. This is a terrain
-    // search, not an elapsed-input script: accepted interior and launch arc
-    // must both exist. Never use the smoke's aerial position as an impact.
-    for (int ring=0;ring<=40;++ring)
+    // Actual1027 producer, not decorative puff1029. Original command10
+    // requires sender distance<150; ground contact lifts the Item by12.
+    // This prospective endpoint does not prove an unobstructed real flight.
+    for (int ring=0;ring<=5;++ring)
         for (int x=-ring;x<=ring;++x) for (int z=-ring;z<=ring;++z) {
             if (std::abs(x)!=ring && std::abs(z)!=ring) continue;
+            if (625.0f*static_cast<float>(x*x+z*z)>=150.0f*150.0f) continue;
             const float px=origin.x+25.0f*static_cast<float>(x);
             const float pz=origin.z+25.0f*static_cast<float>(z);
             world::GroundResult ground{}, margin{};
@@ -163,6 +164,8 @@ bool lava_target(const world::World& world, const IslePlayerSource& player,
             if (!lava(px,pz,ground) || !lava(px-25,pz,margin) || !lava(px+25,pz,margin) ||
                 !lava(px,pz-25,margin) || !lava(px,pz+25,margin)) continue;
             const IsleGameVec3 point{px,ground.height,pz};
+            const IsleGameVec3 sender{point.x,point.y+12.0f,point.z};
+            if (!(distance(sender,origin)<150.0f)) continue;
             IsleGameVec3 aimed{};
             if (projectile_target(player,point,aimed)) { target=point; return true; }
         }

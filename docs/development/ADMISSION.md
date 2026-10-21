@@ -5430,4 +5430,80 @@ The separate food experiment has no qualifying Source Report. Natural Pester,
 40 species, six signs, Mew/final credits, fresh complete campaign and Windows
 gameplay remain open.
 
+### Automatic evolution initialized-family admission
+
+A genuine Apple-only continuation exposed a native SDK admission defect in
+`Owner::add_geo_typed`, not an Original behavior or Apple-expiry defect.
+Read-only host GDB replay `652p` identifies the same live Charmander through
+burn and evolution. Its effect family 1002 is admitted; subsequent Original
+`charmeleon_EvolvedSpawn` fails at Source update 4,080. The exact automatic
+origin `0x802dd24c/635`, family 5, factory `0x802dd214`, initialized resources
+and callback tuple are admitted, but resource lookup returns `SIZE_MAX`.
+Automatic index zero is valid. Source status is still OK immediately before
+the first returned execution error; no handler, command or pose is injected.
+
+The initialized family-5 resource row `0x802e0d84` has block callback
+`0x802d6a14`; the automatic definition legitimately uses `0x80363eb4`.
+Resource admission already permits this distinction. Typed AddAtGeo now
+associates an exactly admitted automatic origin with its initialized
+family/factory/Init resource row without requiring duplicate registry
+callbacks. Singleton callback checks, exact automatic function/line and
+callback checks, complete Source admission, C fences and canonical publication
+checks remain unchanged. Original requested ID 1030 is authoritative and is
+not rewritten to family 5.
+
+An immutable all-course resource audit covers all 27 automatic definitions.
+Only this family-5 helper lacks a resource row with an identical callback
+tuple. All 26 others have a match, including one of Charizard's two initialized
+rows. `AddOneTyped` is unchanged; the audit is data evidence, not a claim that
+every factory executed. All 13 support manifests track corrected owner SHA256
+`b75abe663dd1335f6f98d719d0316e491c3552d5bda85a02e85e9a9c3edd342d`.
+
+SDK-only frozen `652t`
+(`a4b9d492a0f2700f4fe03c1eb3007c4c01bc86d3770ea90c9f6f0ed29977985c`)
+retains the pre-portrait controller so geometry changes cannot mask the
+admission correction. The legal input remains the independently cold-verified
+`651t` lineage. Actual receipts:
+
+| Boundary | Source updates / frames | Durable result |
+| --- | ---: | --- |
+| Before correction `652p` | 4,080 / 2,040 | Actor leaf failure; no Volcano Save |
+| Corrected Volcano `652u` | 8,533 / 4,266 | Original result9; Photo12/Oak13; Save45, 34 Reports/68,340 points |
+| Cold continuation `653e` | Beach 8,875 / 4,437 | Exact whole Boot45; NoBetter Save46; Title7/UI2/129; exact cold |
+
+The actual improved Report is Charmeleon: Source score 3,460 replaces 3,440 in
+Report2, normalized digest `4723453568673643081`. It is not a food photograph:
+the retained controller has one physical Apple, reaches WithApple, and never
+requests its food shutter. After the sealed Volcano Save, an identity-checked
+normal window-close request retires `652u` during River; neither a River Save,
+Title nor full-campaign completion is claimed for that interrupted run.
+Separate `653e` copies only its quiescent Save, verifies the whole inherited
+image, preserves Name/flags/Reports and leaves input bytes/metadata unchanged.
+Its actual owned-window Title was inspected. GPU/Input operations balance,
+dummy audio drains, owners retire and the deadline remains zero.
+
+Protected post-correction authored-access scopes also pass:
+
+| Scope | Source updates / frames | Reports / points | Final continuation |
+| --- | ---: | ---: | --- |
+| Apple-only Volcano `652w` | 8,860 / 4,430 | 7 / 6,950 | Save1; Title9/UI2/129; exact cold |
+| Pester Volcano `652y` | 8,758 / 4,379 | 9 / 11,670 | Save1; Title9/UI2/129; exact cold |
+| Beach `653c` | 8,902 / 4,451 | 9 / 14,420 | Save1; Title9/UI2/129; exact cold |
+| Mew `653d` | 11,028 / 5,514 | 1 / 8,340 | Save1; joined Credits18; Title10/UI2/132; exact cold |
+
+All four actual owned-window Titles were inspected. Mew's Original Credits18
+joins after 7,279 updates/3,639 presentations. These isolations do not establish
+naturally earned Pester, signs or endgame. The full native build and all 58 CPU
+tests pass. All 31 native component consumers plus the application and
+post-course interface consumers compile against the corrected owner.
+
+Exact publication-scope binary `653f`
+(`23be06fca7453a6c076d994a1600684d4260dc52cbc3aec411d13ca547e64d75`)
+uses published Probe blob `11b289f81808d3cd0f74a3dd3ffded1f4835b739`
+and the corrected owner. The unqualified food controller is neither compiled
+nor linked. Actual `653g` repeats the Pester contract above in 312.35 seconds,
+with acknowledged Save, visually inspected Title and exact cold continuation;
+GPU/Input operations balance, owners retire and the deadline remains zero.
+The separate portrait controller remains unqualified and is not part of this
+SDK correction.
 

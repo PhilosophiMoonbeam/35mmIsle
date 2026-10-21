@@ -26,7 +26,9 @@ A subsequent [physical Apple-hit Kangaskhan route](docs/development/ADMISSION.md
 
 The [River Apple routes](docs/development/ADMISSION.md#physical-river-apple-revealed-bulbasaur) pass genuine Continue from naturally earned Apple-only profiles: physical Slowpoke-to-Slowbro evolution and hidden Bulbasaur reveal, positive Source Reports, acknowledged Save, actual Title and exact cold reopen. Inherited Reports, Name and original inputs remain unchanged. These are inherited-profile continuations, not fresh/full-campaign proof.
 
-Published [`f310912`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39421255073) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
+Original burn-triggered Charmander evolution now crosses the [native automatic-factory boundary](docs/development/ADMISSION.md#automatic-evolution-initialized-family-admission) without confusing its callback tuple with a resource row. The genuine continuation saves the resulting Charmeleon Report and cold-reopens exactly; full campaign completion is not claimed.
+
+Published [`fdf679c`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39513357396) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
 
 ## Development documentation
 

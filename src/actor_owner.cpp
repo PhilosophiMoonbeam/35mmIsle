@@ -2028,10 +2028,14 @@ SpawnResult Owner::add_geo_typed(IsleGameObject* object,std::uint32_t requested,
         if (automatic==actor_no_index) return reject("AddAtGeo automatic function/line provenance is not admitted");
     }
     std::size_t index=actor_no_index;
+    // Exact automatic origins already validate their callback tuple above;
+    // their initialized resource family can use different registry callbacks.
+    const bool automatic_family=!singleton && automatic!=actor_no_index;
     for (std::size_t i=0;i<self.resources.definitions().size();++i) {
         const auto& def=self.resources.definitions()[i];
         if ((!singleton || (def.singleton && def.wire.guest_address==singleton)) && def.actor_id==family &&
-            def.factory_identity==factory && def.change_block_identity==change && def.remove_identity==remove &&
+            def.factory_identity==factory && (automatic_family ||
+                (def.change_block_identity==change && def.remove_identity==remove)) &&
             def.initialization<self.resources.initializations().size() &&
             &self.resources.initializations()[def.initialization]==init && initialized_definition(self.resources,def)) {
             index=i; break;

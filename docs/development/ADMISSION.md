@@ -6301,3 +6301,66 @@ accepts9,774,464 PCM frames. Full/private native builds and58 CPU contracts
 pass. This proves the real first-command/lifetime regression and natural
 Flute threshold, not fresh campaign completion or Windows gameplay.
 
+### Natural Flute continuation and sixth sign
+
+The same frozen `5046df80` continues from the naturally earned Flute
+checkpoint in one uninterrupted native process. Original Oak selects each
+legal ride; the existing policy records only completed rides. No equipment,
+access, sign, score, pose or RNG value is authored.
+
+| Trip | Course | Acknowledged Save | Reports | Report score | Known/unlocked | Newly published Source images |
+|---|---|---|---|---|---|---|
+| 0 | Beach0 | 115 | 63 | 130720 | 5/5 | None; real no-better flow |
+| 1 | Tunnel1 | 116 | 65 | 133160 | 5/5 | Zapdos145:2440; sign1010:0 |
+| 2 | Volcano2 | 117 | 65 | 133160 | 5/5 | None; real no-better flow |
+| 3 | River3 | 118 | 66 | 133160 | 5/6 | Sign1022:0 |
+
+Tunnel's actual Source digests are `15052231615904970116` for Zapdos
+in Report58 and `821687995497269984` for sign1010 in Report64.
+Its first owned assessment identifies `ZAPDOS NEW`, not the sign. The
+actual Report surface shows 60 Pokémon kinds and the sign instruction.
+
+River's sign1022 occupies Report66 with normalized digest
+`12518838652024128428`. Its owned actual assessment visibly identifies
+`PKMN Sign NEW` and depicts the Cubone-shaped tree. Original Photo/Oak
+processing saves the sixth sign and unlocks Rainbow Cloud. Zero-point
+sign Reports are Original results, not synthesized Pokémon scores.
+
+This establishes all six saved signs and natural access6 on that legal
+lineage. It does not infer Mew, complete credits, a final Title/cold
+reopen, fresh campaign completion or Windows gameplay from the unlock.
+
+### Natural Mew and complete Original Credits18
+
+The same uninterrupted `5046df80` continuation completes all seven legal
+courses. After the sixth sign, Cave and Valley acknowledge Saves119/120
+without inventing improvements; actual course selection reconciles
+known/unlocked to6/6. The first genuine Rainbow6 entry is visibly rendered.
+
+Its real captured151 image earns8,400points in Source Report62 with
+normalized digest `10956671026245714448`. The owned actual assessment
+identifies `MEW NEW`. Original Photo/Oak processing acknowledges Save121,
+67 Reports/141,560 points, then returns18 and selects genuine Credits18.
+
+Credits serial28 runs7,279 actual updates and presents all3,639 completed
+frames, returns Original8 and joins its worker/scene owners. Actual Title
+serial29 presents132frames, reaches UI2 and cold-reopens the canonical
+profile exactly. The owned Credits and Title surfaces are inspected.
+No early skip, forced result or substituted completion is used.
+
+The seven new saved rides total71,266 Source updates and35,630 actual
+course presentations. Apple, Pester, Flute and Dash remain naturally owned;
+all six signs and Mew are saved. The inherited whole Save114 image was
+independently exact at Boot, canonical SHA256
+`df5cfccc3f27f66bb173e15f7829e63fddb666d3df1a4e1185e4fb0c96055ab4`.
+Its source inventory/bytes remain unchanged. GPU/Photo/Input/SDL audio/Host
+owners all retire, deadline stays0, and dummy SDL accepts58,118,528 PCM
+frames. The actual native process exits0 after1,835.05seconds.
+
+This qualifies the complete naturally earned inherited-profile
+continuation, not a fresh campaign. A separate empty-root `campaign` run
+uses the same immutable binary and no preserved or authored profile.
+Exact published commit `bb764fafaa09a50a8b3e9ef208af2ae6feaa7495` passes
+all ten Linux/MSVC jobs in run39589347777; Windows gameplay/hardware
+parity is not inferred from those builds.
+

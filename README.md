@@ -32,7 +32,7 @@ The [physical Apple-fed Charmander route](docs/development/ADMISSION.md#physical
 
 The [physical Magmar pair route](docs/development/ADMISSION.md#physical-magmar-pair-photo-and-natural-pester-reward) uses one real Apple, both actors' food adoption and their genuine fire interaction to earn a 6,040-point Source Report. Normal Photo/Oak processing awards Pester; acknowledged Save, actual Title and independent cold continuation preserve the 75,040-point profile. Forty species, later rewards/signs and a fresh complete campaign remain open.
 
-Published [`a05af33`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39524046486) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
+Published [`a5befd3`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39534089727) passes all ten Linux/MSVC jobs: full native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows Runtime archives. [Admission records](docs/development/ADMISSION.md#full-course-photo-save-continuations) distinguish exercised runtime evidence from historical component checkpoints and build-only evidence.
 
 ## Development documentation
 

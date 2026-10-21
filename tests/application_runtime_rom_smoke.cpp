@@ -1255,7 +1255,8 @@ private:
     bool allow_natural_empty_course() const noexcept {
         return !e_.resume_river && (e_.empty_course ||
             ((e_.full_campaign || e_.campaign_empty || e_.saved_input) && e_.requested_course<6 &&
-                e_.capture_goal==isle::private_course::CaptureGoal::photographs));
+                (e_.capture_goal==isle::private_course::CaptureGoal::photographs ||
+                 e_.capture_goal==isle::private_course::CaptureGoal::progression)));
     }
     bool assessment_visible_=false,summary_ready_=false,intro_ready_=false;
     std::array<char,256> display_failure_{};

@@ -5700,3 +5700,32 @@ progression, Dash, 130,000-point Flute, six signs or naturally reached Mew/
 credits. Existing policy is continuing the preserved profile through those
 Source-authorized gates; Windows gameplay remains unqualified.
 
+### Natural River empty-film progression
+
+The inherited legal Pester profile reaches 36 Reports/78,360 points after
+normal Source assessment of Growlithe (1,500) and Arcanine (1,820). Its River
+progression completes the genuine scripted endpoint without taking a photo.
+Pinned upstream `src/river/6C05E0.c:310–327` returns CameraCheck only when
+`func_8009BC68()>0`; otherwise it returns `SCENE_OAKS_LAB_2` (13).
+
+The private probe previously rejected this valid combination: progression
+reason3 with zero photos and original scene13. Optional-empty permission,
+constructor admission and retirement classification now consistently allow
+scripted progression. Goal completion, joined original result/reason,
+zero qualified photos, actual presentation and owned-input checks remain.
+Strict photographic continuation and Mew do not gain empty-film permission.
+No Source gameplay, scoring, profile or unlock state is rewritten.
+
+Frozen runtime `712e5199d06f71f1641258f2524a59a34d4160ea222d5a9483023e05c468d8cc`
+completes actual River epoch13 in campaign `655b`: 8,357 Source updates/
+4,178 frames, three genuine throws, triggered endpoint and completed
+progression, zero photos, joined original scene13/reason3. Normal Oak14
+acknowledges Save60 with known3/unlocked4 and exactly unchanged 36 Reports/
+78,360 points. No CameraCheck or PhotoCheck owner is fabricated.
+
+The existing authored ordinary-empty River isolation also passed actual
+Source13/reason2, acknowledged Save, Title and exact cold reopening before
+the final constructor-guard correction. All 58 CPU contracts pass after that
+correction. Cave gameplay and later campaign gates remain separate evidence;
+this River milestone does not qualify complete campaign or Windows gameplay.
+

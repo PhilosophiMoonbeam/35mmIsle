@@ -408,8 +408,8 @@ struct Probe::Impl {
         require(course>=0 && course<7 && controller.owner && controller.set,"actual course and owned controller required");
         require(goal!=CaptureGoal::lapras_photographs || course==0,"actual Lapras objective requires Beach");
         require(goal!=CaptureGoal::apple_evolution || course==2,"actual Apple evolution objective requires Volcano");
-        require(!allow_natural_empty || (course<6 && (goal==CaptureGoal::photographs || goal==CaptureGoal::empty_roll)),
-            "empty Source admission permission is limited to ordinary photography or explicit empty isolation");
+        require(!allow_natural_empty || (course<6 && (goal==CaptureGoal::photographs || goal==CaptureGoal::progression || goal==CaptureGoal::empty_roll)),
+            "empty Source admission permission requires ordinary photography, scripted progression, or explicit empty isolation");
         std::filesystem::create_directories(root);
         ledger.exceptions(std::ios::badbit|std::ios::failbit);
         ledger.open(root/("course-"+std::to_string(course)+"-source.tsv"),std::ios::out|std::ios::trunc);
@@ -2020,7 +2020,7 @@ void Probe::retired(application::SceneRetirementView view) {
     if(!p.goal_complete())p.fail("actual input-only capture, evolution, progression or sign objective did not complete");
     const bool explicitEmpty=p.goal==CaptureGoal::empty_roll;
     const bool empty=p.photos==0 && p.allow_natural_empty &&
-        (explicitEmpty || p.goal==CaptureGoal::photographs);
+        (explicitEmpty || p.goal==CaptureGoal::photographs || p.goal==CaptureGoal::progression);
     const auto expected=empty?13:9;
     // Original scripted endpoints send PLAYER_CMD_7, whose Player callback
     // ends with reason3. Normal travel/film exhaustion ends with reason2.

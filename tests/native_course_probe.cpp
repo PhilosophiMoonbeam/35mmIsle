@@ -7,7 +7,10 @@
 #include "native_tunnel_photo_puzzles.hpp"
 #include "native_river_photo_puzzle.hpp"
 #include "native_volcano_food_photo.hpp"
+#include "native_volcano_magmar_pair.hpp"
 #include "application_runtime.hpp"
+#include "application_photos.hpp"
+#include "application_photos_source.h"
 #include "game_state.hpp"
 #include "tunnel_scene.hpp"
 #include "volcano_scene.hpp"
@@ -307,6 +310,7 @@ struct Probe::Impl {
     std::optional<private_campaign::TunnelPhotoPuzzles> tunnel_photos;
     std::optional<private_campaign::RiverPhotoPuzzle> river_photos;
     std::optional<private_campaign::VolcanoFoodPhoto> volcano_food;
+    std::optional<private_campaign::MagmarPairPhoto> volcano_magmar_pair;
     std::uint64_t ordinary_puzzle_shutters=0,ordinary_puzzle_throws=0;
     private_campaign::Progress canonical_progress{};
     bool goal_initialized=false,progress_initialized=false;
@@ -433,7 +437,21 @@ struct Probe::Impl {
         if(goal==CaptureGoal::photographs || goal==CaptureGoal::lapras_photographs) {
             if(course==0)beach_photos.emplace(pad,camera);
             else if(course==1)tunnel_photos.emplace(pad,camera);
-            else if(course==2)volcano_food.emplace(pad,camera);
+            else if(course==2) {
+                require(view.volcano,"Volcano objective requires its actual lifecycle");
+                auto& canonical_photos=view.volcano->photos();
+                const auto charm=canonical_photos.report_present(4),magmar=canonical_photos.report_present(126);
+                require(charm && magmar,"Volcano objective canonical Reports unavailable");
+                bool food_report=false;
+                if(charm.value && magmar.value) {
+                    const auto report=canonical_photos.record(ISLE_PHOTO_REPORT,canonical_photos.report_index(4));
+                    require(report && report.value.photo,"Volcano objective canonical primary unavailable");
+                    food_report=report.value.photo->pokemons[0].pokemonID==4 &&
+                        report.value.photo->pokemons[0].poseID==106;
+                }
+                if(food_report)volcano_magmar_pair.emplace(pad,camera);
+                else volcano_food.emplace(pad,camera);
+            }
             else if(course==3) {
                 require(view.river,"River objective requires its actual lifecycle");
                 const auto objective=private_campaign::choose_river_photo_objective(view.river->photos());
@@ -503,14 +521,21 @@ struct Probe::Impl {
         return owned;
     }
     bool control_volcano_food(const application::RuntimeView& view,bool available) {
-        if(!volcano_food)return false;
-        const bool owned=volcano_food->update(view,state,updates,available);
-        const auto& f=volcano_food->facts();
-        require(f.shutter_requests>=ordinary_puzzle_shutters && f.throw_requests>=ordinary_puzzle_throws,
+        bool owned=false;std::uint64_t requested_shutters=0,requested_throws=0;
+        if(volcano_magmar_pair) {
+            owned=volcano_magmar_pair->update(view,state,updates,available);
+            requested_shutters=volcano_magmar_pair->facts().shutter_requests;
+            requested_throws=volcano_magmar_pair->facts().throw_requests;
+        } else if(volcano_food) {
+            owned=volcano_food->update(view,state,updates,available);
+            requested_shutters=volcano_food->facts().shutter_requests;
+            requested_throws=volcano_food->facts().throw_requests;
+        } else return false;
+        require(requested_shutters>=ordinary_puzzle_shutters && requested_throws>=ordinary_puzzle_throws,
             "actual Volcano food request counters moved backward");
-        shutters+=f.shutter_requests-ordinary_puzzle_shutters;
-        throws+=f.throw_requests-ordinary_puzzle_throws;
-        ordinary_puzzle_shutters=f.shutter_requests;ordinary_puzzle_throws=f.throw_requests;
+        shutters+=requested_shutters-ordinary_puzzle_shutters;
+        throws+=requested_throws-ordinary_puzzle_throws;
+        ordinary_puzzle_shutters=requested_shutters;ordinary_puzzle_throws=requested_throws;
         return owned;
     }
     bool goal_complete() const noexcept {
@@ -564,6 +589,67 @@ struct Probe::Impl {
             geometry<<"\tanalytic_bounces_NOT_receipt="<<f.predicted_bounces
                 <<"\tportrait_range_rejections="<<f.portrait_rejections
                 <<"\tpredicted_stop_NOT_receipt="<<f.predicted_stop.x<<','<<f.predicted_stop.y<<','<<f.predicted_stop.z;
+            row(geometry.str());
+        }
+        if(volcano_magmar_pair) {
+            const auto& f=volcano_magmar_pair->facts();
+            std::ostringstream pair;
+            pair<<"volcano_magmar_pair\tupdates="<<updates<<"\tphase/end="<<int(f.phase)<<'/'<<int(f.end)
+                <<"\tchecked/prior/owns="<<f.checked<<'/'<<f.prior_reports<<'/'<<f.owns_pad
+                <<"\tpresent/count/capacity="<<f.pair_present<<'/'<<f.pair_count<<'/'<<f.capacity
+                <<"\tmoltres="<<f.moltres_appeared<<'/'<<f.moltres_update
+                <<"\tsettled/overlap/accepted/special/complete="<<f.settled<<'/'<<f.overlap<<'/'<<f.accepted_interaction<<'/'<<f.special11<<'/'<<f.complete
+                <<"\tplans/candidates/ground/arc/corridor/race/portrait="<<f.plans<<'/'<<f.candidates<<'/'<<f.ground_rejections<<'/'<<f.arc_rejections
+                <<'/'<<f.corridor_rejections<<'/'<<f.race_rejections<<'/'<<f.portrait_rejections
+                <<"\tphase/deadline/convergence="<<f.phase_started<<'/'<<f.deadline<<'/'<<f.convergence_deadline
+                <<"\tthrow=requests/presses/consumed:"<<f.throw_requests<<'/'<<f.throw_presses<<'/'<<f.throws_consumed
+                <<"\tthrow_updates="<<f.throw_request<<'/'<<f.throw_consumed<<'/'<<f.throw_release
+                <<"\tsettled/overlap/interaction_updates="<<f.settled_update<<'/'<<f.overlap_update<<'/'<<f.interaction_update
+                <<"\tcontrols/aligned="<<f.controls<<'/'<<f.aligned_updates;
+            row(pair.str());
+            for(std::size_t i=0;i<2;++i) {
+                std::ostringstream actor;
+                actor.precision(std::numeric_limits<float>::max_digits10);
+                actor<<"volcano_magmar_actor\tupdates="<<updates<<"\ti="<<i
+                    <<"\tactor="<<f.actor[i][0]<<'/'<<f.actor[i][1]<<'/'<<f.actor[i][2]
+                    <<"\tapple="<<f.apple[i][0]<<'/'<<f.apple[i][1]<<'/'<<f.apple[i][2]
+                    <<"\tfood="<<f.food_target[i][0]<<'/'<<f.food_target[i][1]<<'/'<<f.food_target[i][2]
+                    <<"\tinteraction="<<f.interaction[i][0]<<'/'<<f.interaction[i][1]<<'/'<<f.interaction[i][2]
+                    <<"\tpresent/wait/activated/adopted/running/accepting/accepted="<<f.present[i]<<'/'<<f.wait_seen[i]<<'/'<<f.activated[i]<<'/'<<f.adopted[i]
+                    <<'/'<<f.running_seen[i]<<'/'<<f.accepting26[i]<<'/'<<f.accepted26[i]
+                    <<"\tgraph/state/path/model/flags="<<f.graph[i]<<'/'<<f.state[i]<<'/'<<f.path[i]<<'/'<<f.model_anims[i]<<'/'<<f.process_flags[i]
+                    <<"\twait/activated/adopted/running_updates="<<f.wait_update[i]<<'/'<<f.activation_update[i]<<'/'<<f.adoption_update[i]<<'/'<<f.running_update[i]
+                    <<"\tacceptance_update/graph/time="<<f.acceptance_update[i]<<'/'<<f.acceptance_graph[i]<<'/'<<f.acceptance_world_time[i]
+                    <<"\troot="<<f.position[i].x<<','<<f.position[i].y<<','<<f.position[i].z
+                    <<"\tcollision="<<f.collision[i].x<<','<<f.collision[i].y<<','<<f.collision[i].z
+                    <<"\tradius/yaw="<<f.radius[i]<<'/'<<f.yaw[i]
+                    <<"\tlive=id/animation/pose/special/time:"<<f.live[i].pokemon<<'/'<<f.live[i].animation<<'/'<<f.live[i].pose<<'/'<<f.live[i].special<<'/'<<f.live[i].time;
+                row(actor.str());
+            }
+            std::ostringstream capture;
+            capture.precision(std::numeric_limits<float>::max_digits10);
+            capture<<"volcano_magmar_capture\tupdates="<<updates
+                <<"\taggressor="<<f.aggressor_index<<':'<<f.aggressor[0]<<'/'<<f.aggressor[1]<<'/'<<f.aggressor[2]
+                <<"\tpartner="<<f.partner[0]<<'/'<<f.partner[1]<<'/'<<f.partner[2]
+                <<"\ttaken_actor="<<f.taken_actor[0]<<'/'<<f.taken_actor[1]<<'/'<<f.taken_actor[2]
+                <<"\tshutter=requests/presses/coherent:"<<f.shutter_requests<<'/'<<f.shutter_presses<<'/'<<f.coherent
+                <<"\tshutter_updates="<<f.shutter_request<<'/'<<f.capture_update<<'/'<<f.shutter_release
+                <<"\treleases/mismatches="<<f.releases<<'/'<<f.mismatches
+                <<"\tfilm/qualified/slot/decision/taken="<<f.film_before<<'/'<<f.qualified_before<<'/'<<f.slot<<'/'<<f.decision_context<<'/'<<f.taken_context
+                <<"\ttaken=id/animation/pose/special/time:"<<f.taken.pokemon<<'/'<<f.taken.animation<<'/'<<f.taken.pose<<'/'<<f.taken.special<<'/'<<f.taken.time
+                <<"\ttaken_world_time="<<f.taken_world_time;
+            row(capture.str());
+            std::ostringstream geometry;
+            geometry.precision(std::numeric_limits<float>::max_digits10);
+            geometry<<"volcano_magmar_geometry\tupdates="<<updates
+                <<"\tcandidate_global="<<f.candidate_global.x<<','<<f.candidate_global.y<<','<<f.candidate_global.z
+                <<"\tpredicted_contact_NOT_receipt="<<f.predicted_contact.x<<','<<f.predicted_contact.y<<','<<f.predicted_contact.z
+                <<"\tpredicted_stops_NOT_receipt="<<f.predicted_stop[0].x<<','<<f.predicted_stop[0].y<<','<<f.predicted_stop[0].z
+                <<'/'<<f.predicted_stop[1].x<<','<<f.predicted_stop[1].y<<','<<f.predicted_stop[1].z
+                <<"\tpredicted_steps/delta/margin_NOT_receipt="<<f.predicted_steps[0]<<'/'<<f.predicted_steps[1]<<'/'<<f.predicted_arrival_delta<<'/'<<f.predicted_overlap_margin
+                <<"\tprospective_overlap_NOT_receipt="<<f.prospective_overlap<<"\tanalytic_bounces_NOT_receipt="<<f.predicted_bounces
+                <<"\tflying_ground_contact="<<f.flying_ground_contact<<'/'<<f.flying_ground_contact_update
+                <<"\tactual_settlement="<<f.actual_settlement.x<<','<<f.actual_settlement.y<<','<<f.actual_settlement.z<<"\tsurface="<<f.surface;
             row(geometry.str());
         }
         if(course==0 && ordinary_shots[25].consumed==1) {
@@ -1646,7 +1732,6 @@ struct Probe::Impl {
                 const bool food_owned=control_volcano_food(view,!lava_owned);
                 return lava_owned || food_owned;
             }
-            (void)control_volcano_food(view,false);
             const auto pester=state.save()->player_flag(1),apple=state.save()->player_flag(0);
             require(pester && apple && (pester.value || apple.value),
                 "actual Volcano egg gate has no owned projectile");
@@ -1657,6 +1742,10 @@ struct Probe::Impl {
             volcano_gate_position=player.movement.position;volcano_egg_position=egg.position;
             volcano_stage=VolcanoStage::aim_egg;note("volcano_actual_egg_gate");
         }
+        // Keep passive lineage continuous while the egg/Moltres controller
+        // owns input; these stages can span the actual pair activation.
+        if(volcano_stage!=VolcanoStage::travel && volcano_stage!=VolcanoStage::travel_after_egg)
+            (void)control_volcano_food(view,false);
         if(volcano_gate_stopped && volcano_egg_transition && !volcano_gate_released &&
            !player.IsCartStopped && different(player.movement.position,volcano_gate_position)) {
             volcano_gate_released=true;note("volcano_actual_cart_resumed");

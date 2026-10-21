@@ -1,4 +1,5 @@
 #include "native_volcano_food_photo.hpp"
+#include "native_volcano_food_geometry.hpp"
 #include "application_runtime.hpp"
 #include "application_photos.hpp"
 #include "game_state.hpp"
@@ -11,7 +12,6 @@
 #include "player_source.h"
 #include "player_ui_source.h"
 #include "world_runtime.hpp"
-#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
@@ -25,9 +25,6 @@ using Phase = VolcanoFoodPhase;
 using End = VolcanoFoodEnd;
 void require(bool value, const char* message) { if (!value) throw std::runtime_error(message); }
 Key key(menu::animation::InstanceHandle value) { return {value.pool, value.slot, value.incarnation}; }
-float squared(const IsleGameVec3& p, const IsleGameVec3& q) {
-    const float x=p.x-q.x, y=p.y-q.y, dz=p.z-q.z; return x*x+y*y+dz*dz;
-}
 float wrapped(float value) { return std::remainder(value, 6.28318530717958647692f); }
 bool finite(const IsleGameVec3& p) { return std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z); }
 IsleGameVec3 translated(const IsleGameVec3& p, const IsleGameVec3& origin, float sign) {
@@ -52,19 +49,16 @@ std::uint32_t callback(IsleGameSourceCallback fn) {
     if (fn==charmander_MoveTurnToTarget) return 0x802d95ac;
     return 0;
 }
-struct Sphere { IsleGameVec3 center{}; float radius=0; bool primary=false; };
 struct Observation {
-    bool present=false, eligible=false, ready=false, focused=false, capacity=true, forbidden_valid=true;
+    bool present=false, eligible=false, ready=false, focused=false, capacity=true;
     Key actor{}, apple{}, interaction{}, only_item{};
     std::uint32_t graph=0, state=0, path=0;
     unsigned valid_items=0;
     int context=-1, item_state=ISLE_ITEM_INVALID;
-    float radius=0, yaw=0;
-    IsleGameVec3 root{}, collision{}, origin{};
-    std::array<Sphere,128> spheres{};
-    std::size_t sphere_count=0;
-    std::array<float,16> forbidden{};
-    std::size_t forbidden_count=0;
+    float yaw=0;
+    IsleGameVec3 origin{};
+    food_geometry::Walker walker{};
+    food_geometry::Scene scene{};
 };
 Observation observe(const IslePlayerSource& player, const actor::Owner& actors,
                     const items::Owner& items, const world::World& world, const Key& selected) {
@@ -82,9 +76,9 @@ Observation observe(const IslePlayerSource& player, const actor::Owner& actors,
         if (!object) break;
         previous=object;
         if (source->tangible && source->collisionRadius>0) {
-            if (out.sphere_count==out.spheres.size()) out.capacity=false;
-            else out.spheres[out.sphere_count++]={source->collPosition,source->collisionRadius,
-                                                 source->id==4 && source->behavior==5};
+            if (out.scene.sphere_count==out.scene.spheres.size()) out.capacity=false;
+            else out.scene.spheres[out.scene.sphere_count++]={source->collPosition,source->collisionRadius,
+                                                 source->id==4 && source->behavior==5 ? 80.0f : 0.0f};
         }
         if (source->id!=4 || source->behavior!=5 || !model) continue;
         const auto identity=key(actors.instance(object));
@@ -93,7 +87,7 @@ Observation observe(const IslePlayerSource& player, const actor::Owner& actors,
         out.present=true; out.actor=identity; out.apple=key(items.instance(source->apple));
         out.interaction=key(items.instance(source->interactionTarget));
         out.graph=source->transitionGraph ? source->transitionGraph->source_identity : 0;
-        out.radius=source->collisionRadius; out.collision=source->collPosition;
+        out.walker.radius=source->collisionRadius; out.walker.collision=source->collPosition;
         IsleGameSourceCallback state=nullptr,path=nullptr;
         if (source->stateProc) require(isle_game_process_source_function(player.game,source->stateProc,&state)==ISLE_GAME_OK,
                                       "Volcano food state observation rejected");
@@ -104,7 +98,7 @@ Observation observe(const IslePlayerSource& player, const actor::Owner& actors,
         const IsleGameModelPlacement* placement=nullptr;
         require(isle_game_model_placement(player.game,model,&placement)==ISLE_GAME_OK && placement,
                 "Volcano food Actor placement unavailable");
-        out.root=placement->transform.position; out.yaw=placement->transform.rotation.y;
+        out.walker.root=placement->transform.position; out.yaw=placement->transform.rotation.y;
         IsleGameObjectMetadata metadata{};
         require(isle_game_object_metadata(player.game,object,&metadata)==ISLE_GAME_OK,
                 "Volcano food Actor visibility unavailable");
@@ -113,10 +107,10 @@ Observation observe(const IslePlayerSource& player, const actor::Owner& actors,
         out.focused=focus.present && focus.object==object && focus.pokemon_id==4 && (focus.flags&4u) && !(focus.flags&8u);
         out.context=focus.context;
         if (source->forbiddenGround) {
-            out.forbidden_valid=false;
-            for (std::size_t i=0; i<source->forbiddenGroundCount && i<out.forbidden.size(); ++i) {
-                const float value=source->forbiddenGround[i]; out.forbidden[out.forbidden_count++]=value;
-                if (value==0) { out.forbidden_valid=true; break; }
+            out.walker.forbidden_valid=false;
+            for (std::size_t i=0; i<source->forbiddenGroundCount && i<out.walker.forbidden.size(); ++i) {
+                const float value=source->forbiddenGround[i]; out.walker.forbidden[out.walker.forbidden_count++]=value;
+                if (value==0) { out.walker.forbidden_valid=true; break; }
             }
         }
     }
@@ -134,186 +128,32 @@ Observation observe(const IslePlayerSource& player, const actor::Owner& actors,
     }
     return out;
 }
-bool food_surface(int value) {
-    switch (value) {
-    case 0x00ff00: case 0xff4c19: case 0x0019ff: case 0x007f66:
-    case 0x337fb2: case 0x4ccccc: case 0xff0000: return false;
-    default: return value>=0;
-    }
-}
-bool safe_ground(const world::GroundResult& result) {
-    return std::isfinite(result.height) && std::abs(result.height)<9900 && food_surface(result.surface) &&
-        std::isfinite(result.normal.x) && std::isfinite(result.normal.y) &&
-        std::isfinite(result.normal.z) && result.normal.y>=.9f;
-}
-bool ground(const world::World& world, const IsleGameVec3& point, world::GroundResult& result) {
-    return finite(point) && std::abs(point.x)<9900 && std::abs(point.z)<9900 &&
-        world.ground_at(point.x,point.z,result) && safe_ground(result);
-}
-bool walkable(const Observation& observed, int surface) {
-    if (!observed.forbidden_valid || !food_surface(surface)) return false;
-    if (observed.forbidden_count) {
-        for (std::size_t i=0;i<observed.forbidden_count;++i) {
-            if (!observed.forbidden[i]) return true;
-            if (observed.forbidden[i]==static_cast<float>(surface)) return false;
-        }
-        return false;
-    }
-    return surface!=0x7f6633 && surface!=0x7f667f && surface!=0xff7fb2;
-}
-bool static_clear(const world::World& world, const IsleGameVec3& from, const IsleGameVec3& to) {
-    world::Vec3 hit{},reflected{};
-    return world.collide({from.x,from.y,from.z},{to.x-from.x,to.y-from.y,to.z-from.z},hit,reflected)<0;
-}
-bool sphere_hit(const Sphere& sphere, const IsleGameVec3& from, const IsleGameVec3& to, float extra=0) {
-    const IsleGameVec3 delta{to.x-from.x,to.y-from.y,to.z-from.z};
-    const float length=squared(from,to);
-    const float t=length>0 ? std::clamp(((sphere.center.x-from.x)*delta.x+(sphere.center.y-from.y)*delta.y+
-                                        (sphere.center.z-from.z)*delta.z)/length,0.0f,1.0f) : 0;
-    return squared({from.x+t*delta.x,from.y+t*delta.y,from.z+t*delta.z},sphere.center)<=
-        (sphere.radius+12+extra)*(sphere.radius+12+extra);
-}
-bool corridor(const world::World& world, const Observation& observed, const IsleGameVec3& target,
-              IsleGameVec3& stopped) {
-    const float distance=std::hypot(target.x-observed.root.x,target.z-observed.root.z);
-    if (!(distance>observed.radius+75 && distance<550)) return false;
-    // Pure prospective geometry at Source's 80*.033 step: check the next root
-    // AND the current-root forward-radius probe, then the 3D stopping rule.
-    // Actual later RunToApple/WithApple, not this forecast, earns the receipt.
-    constexpr float step=80.0f*.033f;
-    IsleGameVec3 root=observed.root;
-    for (unsigned i=0;i<224;++i) {
-        float dx=target.x-root.x,dz=target.z-root.z;
-        if (std::abs(dz)<.00001f) { dx=1; dz=0; } // Pinned GetHeadingVector.
-        const float length=std::hypot(dx,dz);
-        if (!(length>0 && std::isfinite(length))) return false;
-        const float ux=dx/length,uz=dz/length;
-        IsleGameVec3 next{root.x+ux*step,0,root.z+uz*step};
-        const IsleGameVec3 ahead{root.x+ux*observed.radius,0,root.z+uz*observed.radius};
-        world::GroundResult floor{},forward{};
-        if (!ground(world,next,floor) || !walkable(observed,floor.surface) ||
-            !ground(world,ahead,forward) || !walkable(observed,forward.surface)) return false;
-        next.y=floor.height;
-        if (std::abs(next.y-root.y)>16 ||
-            !static_clear(world,{root.x,root.y+observed.radius+12,root.z},
-                               {next.x,next.y+observed.radius+12,next.z})) return false;
-        root=next;
-        const float remaining=std::sqrt(squared(target,root));
-        if (std::abs(remaining-40)<step || remaining<40) { stopped=root; return true; }
-    }
-    return false;
-}
-float damping(int surface) {
-    // Pinned items.c404-474: unknown/default ordinary surfaces stop the Apple.
-    switch (surface) {
-    case 0x4c7f00: case 0x996666: case 0xff9919: case 0xb2997f: return .2f;
-    case 0x331919: case 0x193333: case 0x4c1900: case 0x4c4c33: case 0x7f4c00:
-    case 0x7f667f: case 0x7f7f7f: case 0xff7fb2: case 0x7f6633: return .3f;
-    default: return 0;
-    }
-}
-bool landing(const world::World& world, const IslePlayerSource& player, const Observation& observed,
-             const IsleGameVec3& ray, const IsleGameVec3& target, IsleGameVec3& contact, int& surface, unsigned& rebounds) {
-    const IsleGameCameraParameters* camera=nullptr;
-    require(isle_game_camera_parameters(player.game,player.camera,&camera)==ISLE_GAME_OK && camera,
-            "Volcano food actual launch camera unavailable");
-    IsleGameVec3 position{camera->look_at.eye[0],camera->look_at.eye[1],camera->look_at.eye[2]};
-    IsleGameVec3 velocity{ray.x-position.x,ray.y-position.y+100,ray.z-position.z};
-    const float length=std::hypot(velocity.x,velocity.y,velocity.z);
-    if (!(finite(position) && std::isfinite(length) && length>0 && observed.capacity)) return false;
-    velocity={50*velocity.x/length+player.PlayerVelocity.x,50*velocity.y/length+player.PlayerVelocity.y,
-              50*velocity.z/length+player.PlayerVelocity.z};
-    IsleGameVec3 previous=position;
-    rebounds=0;
-    unsigned first_contact_step=0;
-    for (unsigned step=0;step<160;++step) {
-        world::GroundResult floor{},ceiling{};
-        // Airborne travel may cross lava/water; only actual contact must be
-        // ordinary safe food ground. Do not reject terrain merely below an arc.
-        if (!world.ground_at(position.x,position.z,floor) || !std::isfinite(floor.height) ||
-            (world.ceiling_at(position.x,position.z,ceiling) && position.y+12>=ceiling.height)) return false;
-        if (position.y<=floor.height+.375f) {
-            const IsleGameVec3 penetrated=position;
-            if (position.y<floor.height-.375f) {
-                // Pinned Items_BounceFromGround recovers the first contact,
-                // including its material/normal, before deciding settlement.
-                IsleGameVec3 above=previous,below=position;
-                for (unsigned subdivision=0;subdivision<16;++subdivision) {
-                    position={(above.x+below.x)*.5f,(above.y+below.y)*.5f,(above.z+below.z)*.5f};
-                    if (!world.ground_at(position.x,position.z,floor) || !std::isfinite(floor.height)) return false;
-                    if (std::abs(position.y-floor.height)<=.375f) break;
-                    if (position.y<floor.height) below=position; else above=position;
-                }
-            }
-            if (!safe_ground(floor)) return false;
-            contact={position.x,floor.height+12,position.z}; surface=floor.surface;
-            if (!rebounds && squared(contact,{target.x,target.y+12,target.z})>35*35) return false;
-            const float restitution=damping(floor.surface);
-            const float incoming_speed=std::hypot(velocity.x,velocity.y,velocity.z);
-            const float speed=restitution*incoming_speed;
-            if (speed>=13) {
-                if (rebounds) return false; // At most one rebound; no horizon reset.
-                const IsleGameVec3 unit{velocity.x/incoming_speed,velocity.y/incoming_speed,velocity.z/incoming_speed};
-                const float dot=unit.x*floor.normal.x+unit.y*floor.normal.y+unit.z*floor.normal.z;
-                velocity={speed*(unit.x-2*dot*floor.normal.x),
-                          speed*(unit.y-2*dot*floor.normal.y),
-                          speed*(unit.z-2*dot*floor.normal.z)};
-                // Items_CollideWithGround advances this half-step immediately,
-                // without gravity or another collision query in this update.
-                previous=penetrated;
-                position={contact.x+velocity.x*.5f,contact.y+velocity.y*.5f,contact.z+velocity.z*.5f};
-                rebounds=1; first_contact_step=step;
-                continue;
-            }
-            if (!(speed<13)) return false;
-            if (!(squared(contact,observed.collision)<590*590)) return false;
-            for (std::size_t i=0;i<observed.sphere_count;++i) {
-                // Prospective horizontal-pursuit margin, not a guarantee
-                // about future 3D Actor motion or Source update ordering.
-                const float pursuit=observed.spheres[i].primary && rebounds
-                    ? 80*.033f*float(step-first_contact_step) : 0;
-                if (sphere_hit(observed.spheres[i],contact,contact,pursuit)) return false;
-            }
-            return true;
-        }
-        // Source queries static/Actor collisions BEFORE applying gravity.
-        const IsleGameVec3 query{position.x+velocity.x*.5f,position.y+velocity.y*.5f,position.z+velocity.z*.5f};
-        if (!static_clear(world,position,query)) return false;
-        for (std::size_t i=0;i<observed.sphere_count;++i) {
-            const float pursuit=observed.spheres[i].primary && rebounds
-                ? 80*.033f*float(step-first_contact_step) : 0;
-            if (sphere_hit(observed.spheres[i],position,query,pursuit)) return false;
-        }
-        previous=position; velocity.y-=.6f;
-        position={position.x+velocity.x*.5f,position.y+velocity.y*.5f,position.z+velocity.z*.5f};
-    }
-    return false;
-}
 bool plan(const world::World& world, const IslePlayerSource& player, const Observation& observed,
           VolcanoFoodFacts& facts, IsleGameVec3& target) {
-    const float dx=player.CameraEyePos.x-observed.root.x,dz=player.CameraEyePos.z-observed.root.z;
+    const float dx=player.CameraEyePos.x-observed.walker.root.x,dz=player.CameraEyePos.z-observed.walker.root.z;
     const float length=std::hypot(dx,dz);
-    if (!(length>0 && finite(observed.root))) return false;
+    if (!(length>0 && finite(observed.walker.root))) return false;
     const float ux=dx/length,uz=dz/length;
     bool found=false; float best_distance=0;
     for (float offset:{400.0f,500.0f,320.0f,240.0f}) for (float lateral:{0.0f,-80.0f,80.0f}) {
         ++facts.candidates;
-        IsleGameVec3 candidate{observed.root.x+offset*ux-lateral*uz,0,observed.root.z+offset*uz+lateral*ux};
+        IsleGameVec3 candidate{observed.walker.root.x+offset*ux-lateral*uz,0,observed.walker.root.z+offset*uz+lateral*ux};
         world::GroundResult result{};
-        if (!ground(world,candidate,result) || !walkable(observed,result.surface)) { ++facts.ground_rejections; continue; }
+        if (!food_geometry::ground(world,candidate,result) || !food_geometry::walkable(observed.walker, result.surface)) { ++facts.ground_rejections; continue; }
         candidate.y=result.height;
-        IsleGameVec3 ray{},contact{},stopped{}; int surface=-1; unsigned rebounds=0;
-        if (!projectile_target(player,candidate,ray) || !landing(world,player,observed,ray,candidate,contact,surface,rebounds)) {
+        IsleGameVec3 ray{},stopped{}; food_geometry::LandingForecast prediction{}; unsigned steps=0;
+        if (!observed.capacity || !projectile_target(player,candidate,ray) ||
+            !food_geometry::landing(world,player,observed.walker,observed.scene,ray,candidate,prediction)) {
             ++facts.arc_rejections; continue;
         }
-        if (!corridor(world,observed,contact,stopped)) { ++facts.corridor_rejections; continue; }
-        const float distance=squared(stopped,player.CameraEyePos);
+        if (!food_geometry::corridor(world,observed.walker,prediction.root,80.0f,40.0f,stopped,steps)) { ++facts.corridor_rejections; continue; }
+        const float distance=food_geometry::squared(stopped,player.CameraEyePos);
         if (distance>portrait_range_squared) { ++facts.portrait_rejections; continue; }
         if (found && distance>=best_distance) continue;
         // Food supplies an explicit Source pose, not ordinary yaw-based points.
         // Prefer the closest reachable stop; future cart motion remains unproved.
         found=true; best_distance=distance; target=candidate;
-        facts.surface=surface; facts.predicted_contact=contact; facts.predicted_bounces=rebounds;
+        facts.surface=prediction.surface; facts.predicted_contact=prediction.root; facts.predicted_bounces=prediction.rebounds;
         facts.predicted_stop=stopped;
     }
     return found;
@@ -352,8 +192,8 @@ bool VolcanoFoodPhoto::update(const application::RuntimeView& view,const game::S
     const auto observed=observe(*player,*host->actors(),items,world,f.actor);
     f.present=observed.present; f.graph=observed.graph; f.state=observed.state; f.path=observed.path;
     f.apple=observed.apple; f.interaction=observed.interaction; f.valid_items=observed.valid_items;
-    f.position=observed.root; f.collision=observed.collision; f.yaw=observed.yaw;
-    f.facing_error=wrapped(std::atan2(player->CameraEyePos.x-observed.root.x,player->CameraEyePos.z-observed.root.z)-observed.yaw);
+    f.position=observed.walker.root; f.collision=observed.walker.collision; f.yaw=observed.yaw;
+    f.facing_error=wrapped(std::atan2(player->CameraEyePos.x-observed.walker.root.x,player->CameraEyePos.z-observed.walker.root.z)-observed.yaw);
     const bool ready=player->D_80382D04_523114==1 && !player->IsInputDisabled && !player->IsPaused;
     const auto enter=[&](Phase phase,std::uint64_t bound) { f.phase=phase; f.phase_started=updates; f.deadline=updates+bound; };
     const auto finish=[&](End end) { f.end=end; enter(Phase::release,4); };
@@ -369,8 +209,8 @@ bool VolcanoFoodPhoto::update(const application::RuntimeView& view,const game::S
         // not exhaust the fixed search at 4–6k distance, before a portrait or
         // its camera-side food is a physically reachable close opportunity.
         IsleGameVec3 reachable{};
-        if (squared(player->CameraEyePos,observed.collision)>2000*2000 ||
-            !projectile_target(*player,observed.collision,reachable)) return false;
+        if (food_geometry::squared(player->CameraEyePos,observed.walker.collision)>2000*2000 ||
+            !projectile_target(*player,observed.walker.collision,reachable)) return false;
         ++f.plans; IsleGameVec3 target{};
         if (!plan(world,*player,observed,f,target)) return false;
         f.actor=observed.actor; f.candidate_global=translated(target,observed.origin,1); enter(Phase::aiming,360);
@@ -406,7 +246,7 @@ bool VolcanoFoodPhoto::update(const application::RuntimeView& view,const game::S
                     "Volcano food actual settled root unavailable");
             world::GroundResult floor{};
             const auto point=nodes[0].transform.position;
-            if (ground(world,point,floor) && std::abs(point.y-floor.height-12)<.5f) {
+            if (food_geometry::ground(world,point,floor) && std::abs(point.y-floor.height-12)<.5f) {
                 f.settled=true; f.settled_update=updates; f.surface=floor.surface;
             }
         }
@@ -478,11 +318,15 @@ bool VolcanoFoodPhoto::update(const application::RuntimeView& view,const game::S
             publish(!(player->input.current_buttons&turn) ? turn : 0); return true;
         }
         std::int8_t x=0,y=0; aim_.point(aim_.owner,*player,ray,false,x,y);
+        food_geometry::LandingForecast prediction{}; IsleGameVec3 stopped{}; unsigned steps=0;
         if (!x && !y && player->ThrowItemTimeout==0 && !(player->input.current_buttons&(a|z)) &&
             player->ui && player->ui->Icons_NumItemsAvailable>=1 &&
-            landing(world,*player,observed,player->cam_target,target,f.predicted_contact,f.surface,f.predicted_bounces) &&
-            corridor(world,observed,f.predicted_contact,f.predicted_stop) &&
-            squared(f.predicted_stop,player->CameraEyePos)<=portrait_range_squared) {
+            observed.capacity &&
+            food_geometry::landing(world,*player,observed.walker,observed.scene,player->cam_target,target,prediction) &&
+            food_geometry::corridor(world,observed.walker,prediction.root,80.0f,40.0f,stopped,steps) &&
+            food_geometry::squared(stopped,player->CameraEyePos)<=portrait_range_squared) {
+            f.predicted_contact=prediction.root; f.surface=prediction.surface;
+            f.predicted_bounces=prediction.rebounds; f.predicted_stop=stopped;
             f.film_before=player->photo->gPhotoCount; f.qualified_before=player->photo->D_800AE27C;
             f.throw_request=updates; ++f.throw_requests; enter(Phase::throw_receipt,1); publish(a); return true;
         }
@@ -496,11 +340,11 @@ bool VolcanoFoodPhoto::update(const application::RuntimeView& view,const game::S
             !player->TargetDirectionZoomedIn && !(player->input.current_buttons&z));
         publish(enter_zoom ? z : 0); return true;
     }
-    std::int8_t x=0,y=0; aim_.point(aim_.owner,*player,observed.collision,true,x,y);
+    std::int8_t x=0,y=0; aim_.point(aim_.owner,*player,observed.walker.collision,true,x,y);
     // Actual proximity gates this sole shutter; Original still decides size,
     // explicit pose and center coverage from the completed captured context.
     f.aligned_updates=f.phase==Phase::framing &&
-        squared(player->CameraEyePos,observed.collision)<=portrait_range_squared ? f.aligned_updates+1 : 0;
+        food_geometry::squared(player->CameraEyePos,observed.walker.collision)<=portrait_range_squared ? f.aligned_updates+1 : 0;
     std::uint16_t buttons=zoom();
     if (f.phase==Phase::framing && f.throw_release && f.aligned_updates>=2 && observed.focused &&
         player->sTimerAfterPhotoTaken<0 && !(player->input.current_buttons&a)) {

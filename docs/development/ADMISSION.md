@@ -5576,9 +5576,10 @@ and leaves source inventory/bytes/metadata unchanged. Actual assessment,
 Report and both continuation-Title surfaces were inspected. GPU/Input
 operations balance, dummy audio drains, owners retire and deadlines are zero.
 
-The 71,060-point `653l` lineage remains the better legal forward profile;
-it is not merged with the dedicated-shutter branch. Its photograph is genuine,
-but it is not relabeled as driver-owned shutter completion. Natural Pester,
+At this checkpoint, the 71,060-point `653l` lineage remained the better legal
+forward profile; it was not merged with the dedicated-shutter branch.
+Its photograph is genuine but is not relabeled as driver-owned shutter
+completion. Natural Pester,
 40 species, six signs, the Mew/endgame chain, a fresh complete campaign and
 Windows gameplay remain open.
 
@@ -5598,4 +5599,104 @@ persists Source5=80/Source6=3,240. Mew's original Credits18 joins after
 7,279 updates/3,639 presentations. GPU/Input operations balance, dummy audio
 drains, owners retire and deadlines remain zero. These authored-access
 isolations are regression evidence, not naturally earned rewards.
+
+### Shared Volcano food geometry regression
+
+`native_volcano_food_geometry` owns the bounded flight/ground/walking predictor
+used by the physical food controllers. Observations embed the 128-sphere Scene
+and 16-entry forbidden-ground Walker; forecasts borrow these carriers rather
+than copying the Scene. Charmander retains its 80/40 movement/stopping policy,
+160-step/one-rebound flight bound, capacity gate and actual-Source receipts.
+
+Frozen `ec86eadf` exercises the extraction in `native-magmar-char-regression653y`.
+The independent legal generation46 input produces the same physical Apple
+3517/3518/3519, driver shutter3660/3661/3662, decision0/taken1, Source4=2,920,
+pose106/animation8/time2 and Report digest17024356516929036200 as the qualified
+pre-extraction route. Coherent/complete are true; mismatches are zero.
+Acknowledged Save47 retains 34 Reports/71,040 points; actual Title8/UI2/129
+and exact canonical reopen pass. Actual assessment, Report and Title PNGs were
+inspected. All 6,564 GPU and 14,395 Input operations balance; 7,746,416 dummy
+PCM frames drain, owners retire, deadline is zero and input remains unchanged.
+
+A separate ride `653x`, from the higher `653l` lineage, earns only a genuine
+Moltres improvement: Source146=3,940, prior 3,900, Report59 digest16772378392134164527.
+Save49 contains 34 Reports/71,100 points. Independent process `653z` exactly
+loads the entire generation49 canonical image, then preserves it through a
+no-better Beach ride, Save50 and actual Title7/UI2/129. Input bytes/metadata
+remain unchanged; GPU/Input/audio owners retire normally. This was the better
+legal frontier at the extraction checkpoint, not a merge or Magmar/Pester gain.
+
+Published `a05af33` independently passes all ten jobs in
+[run 39524046486](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39524046486),
+including Linux/MSVC products, all 31 component consumers, application/post-course
+interfaces and portable archives. Hosted Windows builds do not prove Windows
+gameplay. At this checkpoint, natural Pester, 40 species, six signs and the
+fresh end-to-end chain remained unqualified.
+
+### Physical Magmar pair photo and natural Pester reward
+
+Frozen `d92ad75b` selects this objective only from actual saved primary
+Charmander4/pose106 and prior Magmar126 Reports. Two behavior0/block4 Magmar
+incarnations retain genuine WaitMoltres1598→Idle4662 lineage; visible Moltres
+appears4662. Passive observation continues while the egg/Moltres owner holds
+input. Source state replacement may publish a graph-cleared scheduled Idle;
+an unavailable observation never earns adjacent activation.
+
+The fixed 12-candidate/128-plan, 160-step/one-rebound predictor remains
+prospective. One-shot call-free debugger evidence identifies the rejected
+5030 ray: screen-aligned sticks still predict first contact 118.76 units from
+the target, beyond the unchanged 35-unit gate. The controller therefore retains
+the same unspent candidate and original 360-update aiming deadline; it does not
+widen geometry, reset search, bypass the actual-ray gate or retry an Apple.
+Continuous camera tracking does not prevent a shutter with exact live focus.
+
+Actual `654k` consumes one Apple5235/5236, releases5237, touches ground5253,
+settles safely5271 and records both exact-item adoptions/Running5272.
+Strict overlap5308 precedes both actual accepting26 transitions5309 with the
+recorded counterpart. The selected aggressor3/17/1 and partner3/16/1 enter
+Source animation9/pose111/special11. One driver shutter5313 is consumed5314
+and released5315. Slot8, exact taken incarnation, complete captured-context
+copy and acceptance timestamp pass; coherent/complete are true, releases2,
+mismatches0. This pair run exercises decision1/taken1; the separate Charmander
+regression exercises decision0/taken1. No cross-index pair case is claimed.
+
+| Genuine publication | Prior Source score | New Source score | Report slot | Exact normalized digest |
+| --- | ---: | ---: | ---: | ---: |
+| Magmar126, roll8 | 2,100 | 6,040 | 49 | 14031086077712947029 |
+| Moltres146, roll7 | 3,900 | 3,940 | 59 | 16772378392134164527 |
+
+Magmar's taken primary is 126/animation9/pose111/special11/time2. Original scoring
+reports well-framed1, pose1,200, completeness9,933, proximity660, special800 and
+same-species720. Both images are genuinely marked, presented, selected,
+reported and assessed. The inspected Report-window PNG shows 34 kinds/75,040
+points; the first assessment PNG depicts Moltres, not Magmar.
+
+Normal Photo15/Oak processing awards Pester flag1 from 0→1. Acknowledged Save49
+retains Apple and 34 Reports/75,040 points; actual Title8/UI2/129 and exact
+canonical reopen pass. Independent `654l` loads the entire generation49 image,
+including Pester, then preserves all Reports/flags through a no-better Beach
+ride, Save50 and inspected actual Title7/UI2/129. Neither input is modified.
+GPU/Input operations balance, dummy audio drains, owners retire and deadlines
+are zero. The two rides take 239.21 and 316.81 seconds respectively.
+
+The final binary also preserves all protected authored-access scopes:
+
+| Scope | Source updates / frames | Reports / points | Persisted continuation |
+| --- | ---: | ---: | --- |
+| Strict Apple-only Volcano `654m` | 8,860 / 4,430 | 7 / 6,950 | Save1; Title9/UI2/129; exact cold |
+| Pester Volcano `654n` | 8,758 / 4,379 | 9 / 11,670 | Save1; Title9/UI2/129; exact cold |
+| Beach `654o` | 8,902 / 4,451 | 9 / 14,420 | Save1; Title9/UI2/129; exact cold |
+| Mew `654p` | 11,028 / 5,514 | 1 / 8,340 | Save1; joined Credits18; Title10/UI2/132; exact cold |
+
+All actual continuation-Title surfaces were inspected. Strict Apple ownership
+holds at all five canonical boundaries, with exact Source5=80/Source6=3,240
+publication/persistence. Mew's original Credits18 joins after 7,279 updates/
+3,639 presentations. All service operations balance and owners retire without
+a deadline. Full native build and all 58 CPU contracts pass.
+
+Natural Pester is now earned and cold-persistent on one inherited legal
+lineage. This does not prove a fresh complete campaign, forty-species/Valley
+progression, Dash, 130,000-point Flute, six signs or naturally reached Mew/
+credits. Existing policy is continuing the preserved profile through those
+Source-authorized gates; Windows gameplay remains unqualified.
 

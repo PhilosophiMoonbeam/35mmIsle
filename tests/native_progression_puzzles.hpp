@@ -8,6 +8,7 @@
 struct IslePlayerSource;
 namespace isle::application { struct RuntimeView; }
 namespace isle::game { class State; }
+namespace isle::world { class World; }
 
 namespace isle::private_campaign {
 enum class Puzzle { tunnel1014, river1019 };
@@ -21,6 +22,14 @@ struct Aim {
 // Original item launch/half-step gravity, inverted into a real camera aim point.
 // Read-only; false means no reachable low arc. The Item still resolves impacts.
 [[nodiscard]] bool projectile_target(const IslePlayerSource&,const IsleGameVec3&,IsleGameVec3& aimed);
+// Optional pure prospective gate; an empty filter preserves terrain-only search.
+struct RiverSurfaceFilter {
+    void* owner=nullptr;
+    bool (*accept)(void*,const IsleGameVec3&)=nullptr;
+};
+// Queried FF7FB2 interior within the real River sender-distance bound.
+[[nodiscard]] bool river_pester_surface_target(const world::World&, IsleGameVec3 origin,
+                                               IsleGameVec3& target, RiverSurfaceFilter);
 // Copy these from the canonical GameSnapshot, not the ridden course argument.
 // Original progress_get reads selected_course; progress_set writes unlocked_course.
 struct Progress { int known_course = -1, unlocked_course = -1; };

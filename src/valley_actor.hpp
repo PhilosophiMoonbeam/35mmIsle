@@ -14,7 +14,8 @@ using ActorFactory6 = IsleGameObject* (*)(std::int32_t,std::uint16_t,IsleActorFa
 using ActorVoidFactory5 = void (*)(std::int32_t,std::uint16_t,IsleActorFactoryBlock*,IsleActorFactoryBlock*,IsleActorFactorySpawn*);
 using ActorBlockChange = void (*)(IsleGameObject*,float,float,float,float,float,float);
 struct ActorFactoryBinding { std::uint32_t actor_id, factory, initialization, initial_state; ActorFactoryWrapper wrapper; ActorFactory5 returning5; ActorFactory6 returning6; ActorVoidFactory5 nonreturning5; };
-struct ActorChildFactoryDependency { std::uint32_t helper_identity, declaration_line, singleton_origin, requested_id, family, factory, initialization, change_block, remove, written_fields; };
+// ObjectSpawn and copied PokemonDef have distinct local Source declaration origins.
+struct ActorChildFactoryDependency { std::uint32_t helper_identity, spawn_declaration_line, definition_declaration_line, singleton_origin, requested_id, family, factory, initialization, change_block, remove, written_fields; };
 struct ActorCountedOption { std::uint8_t weight; std::uint32_t callback; };
 struct ActorCountedOptions { std::uint32_t identity; std::span<const ActorCountedOption> rows; };
 struct ActorAnimationBinding { std::uint32_t identity; IsleValleyAnimationCallback function; };

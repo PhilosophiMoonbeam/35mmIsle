@@ -96,12 +96,14 @@ float distance_squared(const IsleGameVec3& a, const IsleGameVec3& b) {
     const float x=a.x-b.x,y=a.y-b.y,z=a.z-b.z;
     return x*x+y*y+z*z;
 }
+} // namespace
 // River6C05E0.c235-260: ONLY a Pester ground contact on FF7FB2 sends
 // cmd29 WITH its real Item sender. 6C4EC0.c109-129 requires distance<1000;
-// c147-168 additionally requires behavior2 and current block4. Direct hit cmd9
-// has a NULL sender (items.c1068), whose distance is FLOAT_MAX (pokemon.c452).
-// Choose a real queried interior of that surface, never the hidden Actor itself.
-bool river_surface(const world::World& world, IsleGameVec3 origin, IsleGameVec3& target) {
+// Behavior2 enters the endpoint cutscene only in physical block4. Direct cmd9
+// also receives the current Item through cmd.c36-38; this helper deliberately
+// targets queried ground for the independently observed cmd29 route.
+bool river_pester_surface_target(const world::World& world, IsleGameVec3 origin, IsleGameVec3& target,
+                                RiverSurfaceFilter filter) {
     const auto valid = [&](float x, float z, world::GroundResult& ground) {
         return world.ground_at(x, z, ground) && ground.surface == 0xff7fb2;
     };
@@ -120,13 +122,13 @@ bool river_surface(const world::World& world, IsleGameVec3 origin, IsleGameVec3&
             if (distance_squared(point, origin) >= 1000000 ||
                 !valid(px-25, pz, margin) || !valid(px+25, pz, margin) ||
                 !valid(px, pz-25, margin) || !valid(px, pz+25, margin)) continue;
+            if (filter.accept && !filter.accept(filter.owner,point)) continue;
             target = point;
             return true;
         }
     }
     return false;
 }
-} // namespace
 // Original items.c231-259,855-1094: launch speed50 plus PlayerVelocity;
 // each update integrates half velocity after subtracting .6 vertical velocity.
 // Find the low-arc launch for the actual stationary target. This is input aiming
@@ -286,7 +288,7 @@ bool ProgressionPuzzles::update(const application::RuntimeView& view, const game
         require(block->resource, "progression puzzle current block metadata absent");
         const auto origin = block->resource->metadata.world_position;
         if (!surface_cached_) {
-            surface_cached_ = river_surface(*world, target.position, point);
+            surface_cached_ = river_pester_surface_target(*world, target.position, point, {});
             if (surface_cached_) global_surface_ = {
                 point.x+100*origin.x, point.y+100*origin.y, point.z+100*origin.z};
         } else point = {global_surface_.x-100*origin.x, global_surface_.y-100*origin.y,

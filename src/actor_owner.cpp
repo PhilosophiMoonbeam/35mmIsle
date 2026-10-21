@@ -2301,13 +2301,13 @@ SpawnResult Owner::add_one_valley(const IsleValleyDefinition& definition,
         // descriptor's requested identity separate from definition family.
         const auto requested=child.requested_id;
         if (!child.written_fields || written.origin!=child.helper_identity ||
-            written.declaration_line!=child.declaration_line || written.written_fields!=child.written_fields ||
+            written.declaration_line!=child.spawn_declaration_line || written.written_fields!=child.written_fields ||
             static_cast<std::uint32_t>(written.id)!=requested || definition.identity!=0 ||
             definition.singleton_origin!=child.singleton_origin || definition.origin!=child.helper_identity ||
-            definition.declaration_line!=child.declaration_line || definition.family!=child.family ||
+            definition.declaration_line!=child.definition_declaration_line || definition.family!=child.family ||
             definition.factory!=child.factory || definition.change_block!=child.change_block ||
             definition.remove!=child.remove) continue;
-        return add_one_typed(0,child.helper_identity,child.declaration_line,child.family,child.factory,
+        return add_one_typed(0,child.helper_identity,child.definition_declaration_line,child.family,child.factory,
             child.initialization,child.change_block,child.remove,written.id,written.written_fields,
             written.translation,written.euler,written.scale,nullptr,block,reference);
     }

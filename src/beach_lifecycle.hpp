@@ -75,6 +75,7 @@ public:
     const actor::Producer* actor_packet_producer() const noexcept;
     const world::World* world_owner() const noexcept;
     const items::Owner* items_owner() const noexcept;
+    application::Photos& photos() const noexcept;
 private:
     struct Impl;
     explicit Lifecycle(std::unique_ptr<Impl>) noexcept;

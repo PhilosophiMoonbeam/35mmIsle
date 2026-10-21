@@ -36612,10 +36612,10 @@
       "sha256": "66dedc66a711ac670e9273f171a80ee4782446a8e11f784692d825c06736ab62"
     },
     "src/valley_actor.hpp": {
-      "sha256": "05723fbe55898d70b12c9b7ba8b6e130c4780d7232f015ab93ea3b0d9ca2a36e"
+      "sha256": "a57710e99a3e6b8d3511baf27f05c1ae387e1004d8a4401c5cf56c53cb1613a2"
     },
     "src/valley_actor.cpp": {
-      "sha256": "775dd1eccff5b5a43c3eba8fb9c5b899939a20777baf6fb95850e77dbdd14674"
+      "sha256": "075802a5b9f550fcd4c3b595fe9711929d56a69eaa521085a9c0cdbed01e5d40"
     },
     "src/valley_lifecycle_source.h": {
       "sha256": "1599afa1dc18121cb44ec2c4226a2a701aa2edcc1deb54fac3e69da81199f0d6"
@@ -36642,7 +36642,7 @@
       "sha256": "99ef78ff1baa78d959199f4ab14aea6be3794783bade1e37abc6818f9a83c84a"
     },
     "src/actor_owner.cpp": {
-      "sha256": "b75abe663dd1335f6f98d719d0316e491c3552d5bda85a02e85e9a9c3edd342d"
+      "sha256": "65597b33ef4b8ba2c39b79dbf8d36e804eff27dfb335ea4bffbc306eaed9e4be"
     },
     "src/actor_behavior_bindings.hpp": {
       "sha256": "5eb20328bba03118cdd4bd1be8c8d9367cb2e7d53c165e379f0bd5c654bf2e59"

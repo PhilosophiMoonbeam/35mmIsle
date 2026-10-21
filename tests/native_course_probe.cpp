@@ -6,6 +6,12 @@
 #include "native_beach_photo_puzzle.hpp"
 #include "native_tunnel_photo_puzzles.hpp"
 #include "native_river_photo_puzzle.hpp"
+#include "native_river_porygon_photo.hpp"
+#include "native_cave_pester_photo.hpp"
+#include "native_cave_victreebel_photo.hpp"
+#include "native_beach_pester_photo.hpp"
+#include "native_valley_pester_photo.hpp"
+#include "native_valley_ground_reveal_photo.hpp"
 #include "native_volcano_food_photo.hpp"
 #include "native_volcano_magmar_pair.hpp"
 #include "application_runtime.hpp"
@@ -213,11 +219,11 @@ struct PikachuWindow {
     float distance=0,acquisition_distance=0;
 };
 bool photo_target(const IslePlayerSource& player,PhotoTarget& target,const std::array<ShotHistory,152>* shots,
-    const IslePlayerPhotoFocus* focus,PikachuWindow* pikachu) {
+    const IslePlayerPhotoFocus* focus,PikachuWindow* pikachu,int deferred_species,std::uintptr_t preferred_object) {
     if(pikachu) { *pikachu={};pikachu->sampled=true; }
     IsleGameObject* previous=nullptr;
     float nearest=10000.0f;
-    bool found=false,selected_retake=false,selected_missing=false;
+    bool found=false,selected_retake=false,selected_missing=false,selected_preferred=false;
     for(;;) {
         IsleGameObject* object=nullptr;IsleActorSource* actor=nullptr;IsleGameModel* model=nullptr;
         require(isle_actor_source_link3_next(player.game,previous,&object,&actor,&model)==ISLE_GAME_OK,
@@ -225,6 +231,8 @@ bool photo_target(const IslePlayerSource& player,PhotoTarget& target,const std::
         if(!object)break;
         previous=object;
         const auto species=ordinary_species(actor->id);
+        const bool preferred=preferred_object && reinterpret_cast<std::uintptr_t>(object)==preferred_object;
+        if(species==deferred_species && !preferred)continue;
         if(!model || !species || !actor->tangible || !(actor->flags&4u) ||
            !(actor->playerDist>=0 && actor->playerDist<=10000))continue;
         const auto* history=shots?&(*shots)[static_cast<std::size_t>(species)]:nullptr;
@@ -254,13 +262,14 @@ bool photo_target(const IslePlayerSource& player,PhotoTarget& target,const std::
         // Preserve first acquisitions missing from the actual saved Report.
         // Once covered, nearest eligible opportunities may improve the profile;
         // real Camera/Oak still decides whether any retake replaces its Report.
-        if(found && ((selected_missing && !missing) ||
+        if(found && ((selected_preferred && !preferred) ||
+            (selected_preferred==preferred && ((selected_missing && !missing) ||
             (selected_missing==missing && (actor->playerDist>nearest ||
-                (actor->playerDist==nearest && !selected_retake && retake)))))continue;
+                (actor->playerDist==nearest && !selected_retake && retake)))))))continue;
         target={position,species,distance,retake,
             focus && focus->object==object && focus->pokemon_id==actor->id};
         nearest=actor->playerDist;
-        selected_retake=retake;selected_missing=missing;found=true;
+        selected_retake=retake;selected_missing=missing;selected_preferred=preferred;found=true;
     }
     // Only scalar observations survive; no Actor/model handle escapes.
     return found;
@@ -309,9 +318,16 @@ struct Probe::Impl {
     std::optional<private_campaign::BeachPhotoPuzzle> beach_photos;
     std::optional<private_campaign::TunnelPhotoPuzzles> tunnel_photos;
     std::optional<private_campaign::RiverPhotoPuzzle> river_photos;
+    std::optional<private_campaign::RiverPorygonPhotoPuzzle> river_porygon;
+    std::optional<private_campaign::CavePesterPhotoPuzzle> cave_pester;
+    std::optional<private_campaign::CaveVictreebelPhotoPuzzle> cave_victreebel;
+    std::optional<private_campaign::BeachPesterPhotoPuzzle> beach_pester;
+    std::optional<private_campaign::ValleyPesterPhotoPuzzle> valley_pester;
+    std::optional<private_campaign::ValleyGroundRevealPhotoPuzzle> valley_ground;
     std::optional<private_campaign::VolcanoFoodPhoto> volcano_food;
     std::optional<private_campaign::MagmarPairPhoto> volcano_magmar_pair;
     std::uint64_t ordinary_puzzle_shutters=0,ordinary_puzzle_throws=0;
+    std::uint64_t pester_puzzle_throws=0;
     private_campaign::Progress canonical_progress{};
     bool goal_initialized=false,progress_initialized=false;
     private_post_course::Controller controller;
@@ -435,7 +451,14 @@ struct Probe::Impl {
             static_cast<Impl*>(owner)->aim(player,point,zoomed,sx,sy);
         }};
         if(goal==CaptureGoal::photographs || goal==CaptureGoal::lapras_photographs) {
-            if(course==0)beach_photos.emplace(pad,camera);
+            if(course==0) {
+                beach_photos.emplace(pad,camera);
+                if(goal==CaptureGoal::photographs) {
+                    require(view.beach,"Beach objective requires its actual lifecycle");
+                    const auto species=private_campaign::choose_beach_pester_photo_species(view.beach->photos());
+                    if(species)beach_pester.emplace(pad,camera,species);
+                }
+            }
             else if(course==1)tunnel_photos.emplace(pad,camera);
             else if(course==2) {
                 require(view.volcano,"Volcano objective requires its actual lifecycle");
@@ -456,6 +479,20 @@ struct Probe::Impl {
                 require(view.river,"River objective requires its actual lifecycle");
                 const auto objective=private_campaign::choose_river_photo_objective(view.river->photos());
                 if(objective!=private_campaign::RiverPhotoObjective::none)river_photos.emplace(pad,camera,objective);
+                else if(private_campaign::needs_river_porygon_photo(view.river->photos()))
+                    river_porygon.emplace(pad,camera);
+            }
+            else if(course==4) {
+                require(view.cave,"Cave objective requires its actual lifecycle");
+                const auto species=private_campaign::choose_cave_pester_photo_species(view.cave->photos());
+                if(species==71)cave_victreebel.emplace(pad,camera);
+                else if(species)cave_pester.emplace(pad,camera,species);
+            }
+            else if(course==5) {
+                require(view.valley,"Valley objective requires its actual lifecycle");
+                const auto species=private_campaign::choose_valley_pester_photo_species(view.valley->photos());
+                if(species==27 || species==28)valley_ground.emplace(pad,camera,species);
+                else if(species)valley_pester.emplace(pad,camera,species);
             }
         } else if(goal==CaptureGoal::progression) {
             require(course==1 || course==3 || course==5,"actual progression objective requires Tunnel, River or Valley");
@@ -496,6 +533,23 @@ struct Probe::Impl {
         if(signs)return signs->update(view,state,updates);
         return false;
     }
+    bool control_pester_photos(const application::RuntimeView& view) {
+        bool owned=false;
+        std::uint64_t requested=0;
+        if(beach_pester) {
+            owned=beach_pester->update(view,updates);
+            requested=beach_pester->facts().requests;
+        } else if(valley_pester) {
+            owned=valley_pester->update(view,updates);
+            requested=valley_pester->facts().requests;
+        } else if(valley_ground) {
+            owned=valley_ground->update(view,updates);
+            requested=valley_ground->facts().requests;
+        } else return false;
+        require(requested>=pester_puzzle_throws,"actual Pester photo request counter moved backward");
+        throws+=requested-pester_puzzle_throws;pester_puzzle_throws=requested;
+        return owned;
+    }
     bool control_ordinary_puzzles(const application::RuntimeView& view) {
         bool owned=false;
         std::uint64_t requested_shutters=0,requested_throws=0;
@@ -512,6 +566,15 @@ struct Probe::Impl {
         } else if(river_photos) {
             owned=river_photos->update(view,updates);
             requested_throws=river_photos->requests();
+        } else if(river_porygon) {
+            owned=river_porygon->update(view,updates);
+            requested_throws=river_porygon->facts().requests;
+        } else if(cave_pester) {
+            owned=cave_pester->update(view,updates);
+            requested_throws=cave_pester->facts().requests;
+        } else if(cave_victreebel) {
+            owned=cave_victreebel->update(view,updates);
+            requested_throws=cave_victreebel->facts().requests;
         }
         require(requested_shutters>=ordinary_puzzle_shutters && requested_throws>=ordinary_puzzle_throws,
             "actual ordinary puzzle request counters moved backward");
@@ -554,7 +617,413 @@ struct Probe::Impl {
         return lava_complete && (progression?progression->facts().complete:dash?dash->facts().complete:
             signs?signs->facts().capture_observed:true);
     }
+    void note_pester_photos() {
+        const auto finish=[this] {
+            ++rows;require(rows<ledger_bound && bool(ledger),"bounded Pester photo ledger failed");
+        };
+        const auto write=[this,&finish](const char* kind,const auto& f) {
+            ledger<<kind<<"\tupdates="<<updates<<"\tspecies="<<f.required_species
+                <<"\tphase/end="<<int(f.phase)<<'/'<<int(f.disposition)
+                <<"\tblock/film/qualified="<<f.current_block<<'/'<<f.film<<'/'<<f.qualified
+                <<"\tavailable/owns/complete/exhausted="<<f.available<<'/'<<f.owns_pad<<'/'
+                <<f.complete<<'/'<<f.exhausted
+                <<"\trequests/consumed/releases="<<f.requests<<'/'<<f.consumed<<'/'<<f.releases
+                <<"\tcaptured_slots="<<f.captured_slots<<'\n';
+            finish();
+        };
+        if(beach_pester) {
+            const auto& f=beach_pester->facts();write("beach_pester",f);
+            ledger<<"beach_pester_actor\tupdates="<<updates
+                <<"\ttarget="<<f.target[0]<<'/'<<f.target[1]<<'/'<<f.target[2]
+                <<"\tbehavior/graph/state/flags/object="<<f.target_behavior<<'/'<<f.target_graph<<'/'
+                <<f.target_state<<'/'<<f.target_flags<<'/'<<f.target_object_flags
+                <<"\troot="<<f.root.x<<','<<f.root.y<<','<<f.root.z
+                <<"\tcollision/radius="<<f.collision.x<<','<<f.collision.y<<','<<f.collision.z<<'/'<<f.collision_radius
+                <<"\thidden/physical/sender/reaction/reveal/eligible/focus/window/cleanup="<<f.hidden_seen<<'/'
+                <<f.physical_seen<<'/'<<f.sender_seen<<'/'<<f.reaction_seen<<'/'<<f.reveal_seen<<'/'
+                <<f.eligible<<'/'<<f.focused<<'/'<<f.capture_pending<<'/'<<f.cleanup_seen<<'\n';finish();
+            ledger<<"beach_pester_item\tupdates="<<updates
+                <<"\titem="<<f.item[0]<<'/'<<f.item[1]<<'/'<<f.item[2]
+                <<"\taccepted="<<f.accepted_item[0]<<'/'<<f.accepted_item[1]<<'/'<<f.accepted_item[2]
+                <<"\tsender="<<f.interaction_sender[0]<<'/'<<f.interaction_sender[1]<<'/'<<f.interaction_sender[2]
+                <<"\tkind/state/flags/object/distance="<<f.item_kind<<'/'<<f.item_state<<'/'
+                <<f.item_flags<<'/'<<f.item_object_flags<<'/'<<f.accepted_distance
+                <<"\tposition="<<f.item_position.x<<','<<f.item_position.y<<','<<f.item_position.z
+                <<"\trequest/consume/release/physical/sender/reaction/reveal/capture="<<f.request_update<<'/'
+                <<f.consumed_update<<'/'<<f.release_update<<'/'<<f.physical_update<<'/'<<f.sender_update<<'/'
+                <<f.reaction_update<<'/'<<f.reveal_update<<'/'<<f.capture_update
+                <<"\tcontext/taken/raw/slot/mismatches="<<f.focus_context<<'/'<<f.taken_context<<'/'
+                <<f.raw_primary<<'/'<<f.captured_slot<<'/'<<f.capture_mismatches<<'/'<<f.full_copy_mismatches<<'\n';finish();
+            const auto prediction=[this](const char* name,const private_campaign::BeachPesterForecast& value) {
+                ledger<<'\t'<<name<<'='<<value.accepted<<'/'<<value.ground<<'/'<<value.surface<<'/'
+                    <<value.static_object<<'/'<<value.updates<<'/'<<value.actor_distance<<'/'
+                    <<value.contact.x<<','<<value.contact.y<<','<<value.contact.z;
+            };
+            ledger<<"beach_pester_forecast\tupdates="<<updates
+                <<"\tsteering/recovery/rejected="<<f.steering_updates<<'/'<<f.recovery_updates<<'/'<<f.forecast_rejections
+                <<"\tinput="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z;
+            prediction("ideal",f.ideal_forecast);prediction("actual",f.actual_forecast);ledger<<'\n';finish();
+        }
+        if(valley_pester) {
+            const auto& f=valley_pester->facts();write("valley_pester",f);
+            ledger<<"valley_pester_actor\tupdates="<<updates
+                <<"\ttarget="<<f.target[0]<<'/'<<f.target[1]<<'/'<<f.target[2]
+                <<"\tearly="<<f.early_actor[0]<<'/'<<f.early_actor[1]<<'/'<<f.early_actor[2]
+                <<"\tswimmer="<<f.swimmer[0]<<'/'<<f.swimmer[1]<<'/'<<f.swimmer[2]
+                <<"\tshell="<<f.shell[0]<<'/'<<f.shell[1]<<'/'<<f.shell[2]
+                <<"\tsubject="<<f.subject[0]<<'/'<<f.subject[1]<<'/'<<f.subject[2]
+                <<"\tbehavior/graph/state/flags/object="<<f.target_behavior<<'/'<<f.target_graph<<'/'
+                <<f.target_state<<'/'<<f.target_flags<<'/'<<f.target_object_flags
+                <<"\tsubject_state/flags="<<f.subject_state<<'/'<<f.subject_flags
+                <<"\troot="<<f.root.x<<','<<f.root.y<<','<<f.root.z
+                <<"\tsource/host="<<f.source_status<<'/'<<f.host_status<<'\n';finish();
+            ledger<<"valley_pester_item\tupdates="<<updates
+                <<"\titem="<<f.item[0]<<'/'<<f.item[1]<<'/'<<f.item[2]
+                <<"\taccepted="<<f.accepted_item[0]<<'/'<<f.accepted_item[1]<<'/'<<f.accepted_item[2]
+                <<"\tsender="<<f.accepted_sender[0]<<'/'<<f.accepted_sender[1]<<'/'<<f.accepted_sender[2]
+                <<"\tkind/state/flags/object/material/predicted="<<f.item_kind<<'/'<<f.item_state<<'/'
+                <<f.item_flags<<'/'<<f.item_object_flags<<'/'<<f.material<<'/'<<f.predicted_material
+                <<"\tposition="<<f.item_position.x<<','<<f.item_position.y<<','<<f.item_position.z
+                <<"\tground="<<f.ground_position.x<<','<<f.ground_position.y<<','<<f.ground_position.z
+                <<"\tground_player/target_distance="<<f.ground_player_distance<<'/'<<f.ground_target_distance
+                <<"\trequest/consume/release/physical/reveal/capture="<<f.request_update<<'/'
+                <<f.consumed_update<<'/'<<f.release_update<<'/'<<f.physical_update<<'/'<<f.reveal_update<<'/'<<f.capture_update
+                <<"\tcontext/taken/raw/slot/mismatches="<<f.focus_context<<'/'<<f.taken_context<<'/'
+                <<f.raw_primary<<'/'<<f.captured_slot<<'/'<<f.capture_mismatches<<'\n';finish();
+            ledger<<"valley_pester_chain\tupdates="<<updates
+                <<"\tearly_hit/leap/latch/mankey/swimmer_hit/source_leap="<<f.early_hit<<'/'<<f.early_leap<<'/'
+                <<f.early_latch<<'/'<<f.mankey_latched<<'/'<<f.swimmer_hit<<'/'<<f.source_leap
+                <<"\tfish_busy/attempts/landings="<<f.fish_latch_busy<<'/'<<f.fish_attempts<<'/'<<f.physical_landings
+                <<"\tsubject_visible/eligible/focus/window/copied="<<f.subject_visible<<'/'<<f.subject_eligible<<'/'
+                <<f.subject_focused<<'/'<<f.capture_pending<<'/'<<f.full_context_copied
+                <<"\tshell_stage/animation/time="<<f.shell_stage<<'/'<<f.target_animation<<'/'<<f.animation_time
+                <<"\tsteering/recovery/rejected="<<f.steering_updates<<'/'<<f.recovery_updates<<'/'<<f.arc_rejections
+                <<"\tinput="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z<<'\n';finish();
+            for(unsigned index=0;index<f.shell_items.size();++index)if(f.shell_items[index][0]) {
+                const auto& item=f.shell_items[index];
+                ledger<<"valley_pester_shell\tupdates="<<updates<<"\tstage="<<index+1
+                    <<"\titem="<<item[0]<<'/'<<item[1]<<'/'<<item[2]
+                    <<"\thit/ready/animation="<<f.shell_hit_updates[index]<<'/'<<f.shell_ready_updates[index]<<'/'
+                    <<f.shell_animations[index]<<'\n';finish();
+            }
+        }
+        if(valley_ground) {
+            const auto& f=valley_ground->facts();write("valley_ground",f);
+            ledger<<"valley_ground_actor\tupdates="<<updates
+                <<"\tsubject="<<f.subject[0]<<'/'<<f.subject[1]<<'/'<<f.subject[2]
+                <<"\toffered="<<f.offered_subject[0]<<'/'<<f.offered_subject[1]<<'/'<<f.offered_subject[2]
+                <<"\tgraveler="<<f.graveler[0]<<'/'<<f.graveler[1]<<'/'<<f.graveler[2]
+                <<"\tregistered="<<f.registered_graveler[0]<<'/'<<f.registered_graveler[1]<<'/'<<f.registered_graveler[2]
+                <<"\ttarget_graph/state/path/flags/object="<<f.target_graph<<'/'<<f.target_state<<'/'<<f.target_path<<'/'
+                <<f.target_flags<<'/'<<f.target_object_flags
+                <<"\tsubject_graph/state/flags/object="<<f.subject_graph<<'/'<<f.subject_state<<'/'<<f.subject_flags<<'/'<<f.subject_object_flags
+                <<"\tgraveler_graph/state/path="<<f.graveler_graph<<'/'<<f.graveler_state<<'/'<<f.graveler_path
+                <<"\troot="<<f.root.x<<','<<f.root.y<<','<<f.root.z
+                <<"\tsubject_root="<<f.subject_root.x<<','<<f.subject_root.y<<','<<f.subject_root.z
+                <<"\tgraveler_root="<<f.graveler_root.x<<','<<f.graveler_root.y<<','<<f.graveler_root.z
+                <<"\tsource/host="<<f.source_status<<'/'<<f.host_status<<'\n';finish();
+            ledger<<"valley_ground_handshake\tupdates="<<updates
+                <<"\tSource_derived_emissions20/38/39="<<f.command20_source_derived<<'/'<<f.command38_source_derived<<'/'<<f.command39_source_derived
+                <<"\tobserved_first38/second38/bounce/landing/receiver/reveal="<<f.first38_accepted<<'/'
+                <<f.second38_accepted<<'/'<<f.graveler_bounce_seen<<'/'<<f.graveler_landing_seen<<'/'
+                <<f.receiver_acceptance_seen<<'/'<<f.reveal_seen
+                <<"\tsender20="<<f.sender20[0]<<'/'<<f.sender20[1]<<'/'<<f.sender20[2]
+                <<"\tsender38first="<<f.sender38_first[0]<<'/'<<f.sender38_first[1]<<'/'<<f.sender38_first[2]
+                <<"\tsender38second="<<f.sender38_second[0]<<'/'<<f.sender38_second[1]<<'/'<<f.sender38_second[2]
+                <<"\tsender39="<<f.sender39[0]<<'/'<<f.sender39[1]<<'/'<<f.sender39[2]
+                <<"\tfirst38/second38/bounce/landing/reveal_updates="<<f.first38_update<<'/'<<f.second38_update<<'/'
+                <<f.graveler_bounce_update<<'/'<<f.graveler_landing_update<<'/'<<f.reveal_update
+                <<"\tfirst38_graphs="<<f.first38_before_graph<<'/'<<f.first38_after_graph
+                <<"\tsecond38_graph/state/path="<<f.second38_before_graph<<'/'<<f.second38_after_state<<'/'<<f.second38_after_path
+                <<"\treceiver_graph/state/distance="<<f.receiver_before_graph<<'/'<<f.receiver_after_state<<'/'<<f.actual_receiver_distance
+                <<"\treceiver_sender_root="<<f.receiver_sender_root.x<<','<<f.receiver_sender_root.y<<','<<f.receiver_sender_root.z
+                <<"\treceiver_root="<<f.receiver_root.x<<','<<f.receiver_root.y<<','<<f.receiver_root.z<<'\n';finish();
+            ledger<<"valley_ground_capture\tupdates="<<updates
+                <<"\tvisible/hidden/eligible/focus/window/fullcopy/captured="<<f.subject_visible<<'/'<<f.subject_hidden<<'/'
+                <<f.subject_eligible<<'/'<<f.subject_focused<<'/'<<f.capture_pending<<'/'<<f.full_context_copied<<'/'<<f.capture_observed
+                <<"\tcontext/taken/evaluator/captured_evaluator/raw/slot="<<f.focus_context<<'/'<<f.taken_context<<'/'
+                <<f.evaluator_slot<<'/'<<f.captured_evaluator_slot<<'/'<<f.raw_primary<<'/'<<f.captured_slot
+                <<"\tcaptured_actor="<<f.captured_actor[0]<<'/'<<f.captured_actor[1]<<'/'<<f.captured_actor[2]
+                <<"\tupdate/hash/mismatches="<<f.capture_update<<'/'<<f.captured_identity_hash<<'/'<<f.capture_mismatches
+                <<"\tactive_throw/steering/recovery/rejected="<<f.active_throw<<'/'<<f.steering_updates<<'/'
+                <<f.recovery_updates<<'/'<<f.arc_rejections
+                <<"\tinput="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z<<'\n';finish();
+            const auto forecast=[&](const char* label,unsigned index,const auto& prediction) {
+                ledger<<label<<"\tupdates="<<updates<<"\tindex="<<index
+                    <<"\tresult/flight/bounce/reflections="<<int(prediction.disposition)<<'/'<<prediction.flight<<'/'
+                    <<prediction.bounce_steps<<'/'<<prediction.reflections
+                    <<"\taim="<<prediction.aimed.x<<','<<prediction.aimed.y<<','<<prediction.aimed.z
+                    <<"\thit_root="<<prediction.hit_root.x<<','<<prediction.hit_root.y<<','<<prediction.hit_root.z
+                    <<"\tlanding="<<prediction.landing.x<<','<<prediction.landing.y<<','<<prediction.landing.z
+                    <<"\tnormal="<<prediction.normal.x<<','<<prediction.normal.y<<','<<prediction.normal.z
+                    <<"\tyaw/distance/material/static="<<prediction.yaw<<'/'<<prediction.receiver_distance<<'/'
+                    <<prediction.surface<<'/'<<prediction.static_object<<"\tblocker="<<prediction.blocker[0]<<'/'
+                    <<prediction.blocker[1]<<'/'<<prediction.blocker[2]<<'\n';finish();
+            };
+            if(f.graveler[0])forecast("valley_ground_graveler_forecast",0,f.graveler_forecast);
+            for(unsigned index=0;index<f.throws.size();++index)if(f.throws[index].actor[0]) {
+                const auto& r=f.throws[index];
+                ledger<<"valley_ground_throw\tupdates="<<updates<<"\tindex="<<index
+                    <<"\tactor="<<r.actor[0]<<'/'<<r.actor[1]<<'/'<<r.actor[2]
+                    <<"\titem="<<r.item[0]<<'/'<<r.item[1]<<'/'<<r.item[2]
+                    <<"\taccepted="<<r.accepted_item[0]<<'/'<<r.accepted_item[1]<<'/'<<r.accepted_item[2]
+                    <<"\trequest/consume/release/hit/bounce/landing="<<r.request_update<<'/'<<r.consumed_update<<'/'
+                    <<r.release_update<<'/'<<r.hit_update<<'/'<<r.bounce_update<<'/'<<r.landing_update
+                    <<"\tseen/present/hidden/removed/interaction/hit/bounce/landing="<<r.item_seen<<'/'<<r.item_present<<'/'
+                    <<r.item_hidden<<'/'<<r.item_removed<<'/'<<r.interaction_matches<<'/'<<r.hit_seen<<'/'<<r.bounce_seen<<'/'<<r.landing_seen
+                    <<"\tbehavior/ready_graph/hit_state/path/landing_state/path="<<r.behavior<<'/'<<r.ready_graph<<'/'
+                    <<r.hit_state<<'/'<<r.hit_path<<'/'<<r.landing_state<<'/'<<r.landing_path
+                    <<"\titem_kind/state/flags/object="<<r.item_kind<<'/'<<r.item_state<<'/'<<r.item_flags<<'/'<<r.item_object_flags
+                    <<"\titem_position="<<r.item_position.x<<','<<r.item_position.y<<','<<r.item_position.z
+                    <<"\thit_root="<<r.hit_root.x<<','<<r.hit_root.y<<','<<r.hit_root.z
+                    <<"\tbounce_root="<<r.bounce_root.x<<','<<r.bounce_root.y<<','<<r.bounce_root.z
+                    <<"\tlanding="<<r.landing.x<<','<<r.landing.y<<','<<r.landing.z
+                    <<"\tyaw/actual_material/distance="<<r.bounce_yaw<<'/'<<r.actual_surface<<'/'<<r.receiver_distance<<'\n';finish();
+                forecast("valley_ground_plan",index,r.forecast);
+                forecast("valley_ground_actual_ray_forecast",index,r.actual_forecast);
+            }
+        }
+        if(river_porygon) {
+            const auto& f=river_porygon->facts();write("river_porygon",f);
+            ledger<<"river_porygon_actor\tupdates="<<updates
+                <<"\ttarget="<<f.target[0]<<'/'<<f.target[1]<<'/'<<f.target[2]
+                <<"\tbehavior/graph/state/flags/object="<<f.target_behavior<<'/'<<f.target_graph<<'/'
+                <<f.target_state<<'/'<<f.target_flags<<'/'<<f.target_object_flags
+                <<"\troot="<<f.target_position.x<<','<<f.target_position.y<<','<<f.target_position.z
+                <<"\tinput="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z
+                <<"\thidden/surface/notification/sender/reveal/eligible/focus="<<f.hidden_seen<<'/'
+                <<f.trigger_surface<<'/'<<f.notification_observed<<'/'<<f.sender_seen<<'/'
+                <<f.reveal_seen<<'/'<<f.revealed_eligible<<'/'<<f.revealed_focused<<'\n';finish();
+            ledger<<"river_porygon_item\tupdates="<<updates
+                <<"\titem="<<f.item[0]<<'/'<<f.item[1]<<'/'<<f.item[2]
+                <<"\tsender="<<f.interaction_sender[0]<<'/'<<f.interaction_sender[1]<<'/'<<f.interaction_sender[2]
+                <<"\tkind/state/flags/object/surface="<<f.item_kind<<'/'<<f.item_state<<'/'
+                <<f.item_flags<<'/'<<f.item_object_flags<<'/'<<f.ground_surface
+                <<"\tposition="<<f.item_position.x<<','<<f.item_position.y<<','<<f.item_position.z
+                <<"\tcontact/distance="<<f.notification_position.x<<','<<f.notification_position.y<<','
+                <<f.notification_position.z<<'/'<<f.notification_actor_distance
+                <<"\trequest/consume/release/contact/sender/reveal/capture="<<f.request_update<<'/'
+                <<f.consumed_update<<'/'<<f.release_update<<'/'<<f.notification_update<<'/'
+                <<f.sender_update<<'/'<<f.reveal_update<<'/'<<f.capture_update
+                <<"\tcontext/taken/raw/slot/mismatches="<<f.focus_context<<'/'<<f.taken_context<<'/'
+                <<f.raw_primary<<'/'<<f.captured_slot<<'/'<<f.capture_mismatches<<'\n';finish();
+            const auto prediction=[this](const char* name,const private_campaign::RiverPorygonForecast& value) {
+                ledger<<'\t'<<name<<'='<<int(value.disposition)<<'/'<<value.first_surface<<'/'
+                    <<value.static_object<<'/'<<value.flight_updates<<'/'<<value.actor_distance<<'/'
+                    <<value.first_position.x<<','<<value.first_position.y<<','<<value.first_position.z;
+            };
+            ledger<<"river_porygon_forecast\tupdates="<<updates
+                <<"\tcandidates/rejected/actual_rejected="<<f.forecast_candidates<<'/'
+                <<f.forecast_rejections<<'/'<<f.actual_forecast_rejections;
+            prediction("ideal",f.ideal_forecast);prediction("actual",f.actual_forecast);
+            prediction("rejected",f.rejected_forecast);ledger<<'\n';finish();
+            ledger<<"river_porygon_first_ground\tupdates="<<updates
+                <<"\tobserved/queried/consecutive="<<f.first_ground_observed<<'/'
+                <<f.first_ground_queried<<'/'<<f.first_ground_consecutive
+                <<"\tcontact_update/flags/object/surface="<<f.first_ground_update<<'/'
+                <<f.first_ground_flags<<'/'<<f.first_ground_object_flags<<'/'<<f.ground_surface
+                <<"\tposition/distance="<<f.first_ground_position.x<<','<<f.first_ground_position.y<<','
+                <<f.first_ground_position.z<<'/'<<f.first_ground_actor_distance
+                <<"\tplanned="<<f.surface_target.x<<','<<f.surface_target.y<<','<<f.surface_target.z<<'\n';finish();
+        }
+        if(cave_victreebel) {
+            const auto& f=cave_victreebel->facts();write("cave_victreebel",f);
+            ledger<<"cave_victreebel_actor\tupdates="<<updates
+                <<"\tparent="<<f.parent[0]<<'/'<<f.parent[1]<<'/'<<f.parent[2]
+                <<"\tsubject="<<f.subject[0]<<'/'<<f.subject[1]<<'/'<<f.subject[2]
+                <<"\tparent_graph/state/path/flags/object="<<f.target_graph<<'/'<<f.target_state<<'/'
+                <<f.target_path<<'/'<<f.target_flags<<'/'<<f.target_object_flags
+                <<"\tsubject_graph/state/path/flags/object="<<f.subject_graph<<'/'<<f.subject_state<<'/'
+                <<f.subject_path<<'/'<<f.subject_flags<<'/'<<f.subject_object_flags
+                <<"\troot="<<f.root.x<<','<<f.root.y<<','<<f.root.z
+                <<"\tsubject_root="<<f.subject_root.x<<','<<f.subject_root.y<<','<<f.subject_root.z
+                <<"\tsource/host="<<f.source_status<<'/'<<f.host_status<<'\n';finish();
+            ledger<<"cave_victreebel_item\tupdates="<<updates
+                <<"\titem="<<f.item[0]<<'/'<<f.item[1]<<'/'<<f.item[2]
+                <<"\taccepted="<<f.accepted_item[0]<<'/'<<f.accepted_item[1]<<'/'<<f.accepted_item[2]
+                <<"\tkind/state/flags/object="<<f.item_kind<<'/'<<f.item_state<<'/'<<f.item_flags<<'/'<<f.item_object_flags
+                <<"\tposition="<<f.item_position.x<<','<<f.item_position.y<<','<<f.item_position.z
+                <<"\tcollision_velocity="<<f.collision_velocity.x<<','<<f.collision_velocity.y<<','<<f.collision_velocity.z
+                <<"\tincoming/facing/error/hspeed/jump="<<f.incoming_yaw<<'/'<<f.facing_yaw<<'/'
+                <<f.heading_error<<'/'<<f.hspeed<<'/'<<f.jump_velocity
+                <<"\trequest/consume/release/hit="<<f.request_update<<'/'<<f.consumed_update<<'/'
+                <<f.release_update<<'/'<<f.hit_update<<'\n';finish();
+            ledger<<"cave_victreebel_handshake\tupdates="<<updates
+                <<"\tpreplaced/hit/heading/landing/29/30/31/reveal/cleanup/flag4/window="<<f.preplaced_seen<<'/'
+                <<f.hit_seen<<'/'<<f.heading_seen<<'/'<<f.landing_seen<<'/'<<f.command29_seen<<'/'
+                <<f.command30_seen<<'/'<<f.command31_seen<<'/'<<f.reveal_seen<<'/'
+                <<f.parent_cleanup_seen<<'/'<<f.subject_flag4<<'/'<<f.capture_pending
+                <<"\tsender29="<<f.sender29[0]<<'/'<<f.sender29[1]<<'/'<<f.sender29[2]
+                <<"\tsender30="<<f.sender30[0]<<'/'<<f.sender30[1]<<'/'<<f.sender30[2]
+                <<"\tsender31="<<f.sender31[0]<<'/'<<f.sender31[1]<<'/'<<f.sender31[2]
+                <<"\tlanding/surface/distance="<<f.actual_landing.x<<','<<f.actual_landing.y<<','
+                <<f.actual_landing.z<<'/'<<f.actual_surface<<'/'<<f.actual_distance
+                <<"\tlanding/29/30/31/reveal/cleanup/flag4/capture_updates="<<f.landing_update<<'/'
+                <<f.command29_update<<'/'<<f.command30_update<<'/'<<f.command31_update<<'/'
+                <<f.reveal_update<<'/'<<f.cleanup_update<<'/'<<f.flag4_update<<'/'<<f.capture_update<<'\n';finish();
+            ledger<<"cave_victreebel_capture\tupdates="<<updates
+                <<"\teligible/focus="<<f.subject_eligible<<'/'<<f.subject_focused
+                <<"\tcontext/taken/evaluator/captured_evaluator/raw/slot="<<f.focus_context<<'/'
+                <<f.taken_context<<'/'<<f.evaluator_slot<<'/'<<f.captured_evaluator_slot<<'/'
+                <<f.raw_primary<<'/'<<f.captured_slot
+                <<"\tidentity/mismatches="<<f.captured_identity_hash<<'/'<<f.capture_mismatches<<'/'<<f.mismatches
+                <<"\tsteering/recovery/rejected="<<f.steering_updates<<'/'<<f.recovery_updates<<'/'<<f.arc_rejections<<'\n';finish();
+            const auto prediction=[this,&finish](const char* kind,const private_campaign::CaveVictreebelForecast& value) {
+                ledger<<kind<<"\tupdates="<<updates
+                    <<"\tresult/flight_step/knock_steps="<<int(value.disposition)<<'/'<<value.flight_step<<'/'<<value.knock_steps
+                    <<"\ttarget="<<value.target.x<<','<<value.target.y<<','<<value.target.z
+                    <<"\taim="<<value.aimed.x<<','<<value.aimed.y<<','<<value.aimed.z
+                    <<"\tterminal="<<value.position.x<<','<<value.position.y<<','<<value.position.z
+                    <<"\tlanding/material/distance="<<value.landing.x<<','<<value.landing.y<<','<<value.landing.z<<'/'
+                    <<value.ground_surface<<'/'<<value.landing_distance
+                    <<"\tstatic/blocker="<<value.static_object<<'/'<<value.blocker[0]<<'/'
+                    <<value.blocker[1]<<'/'<<value.blocker[2]<<'\n';finish();
+            };
+            if(f.plan_count)prediction("cave_victreebel_last_plan",f.plan_forecasts[f.plan_count-1]);
+            prediction("cave_victreebel_stored_actual",f.actual_forecast);
+        }
+        if(cave_pester) {
+            const auto& f=cave_pester->facts();write("cave_pester",f);
+            ledger<<"cave_pester_actor\tupdates="<<updates
+                <<"\tparent="<<f.parent[0]<<'/'<<f.parent[1]<<'/'<<f.parent[2]
+                <<"\tchild="<<f.child[0]<<'/'<<f.child[1]<<'/'<<f.child[2]
+                <<"\tbehavior/graph/state/flags/object="<<f.target_behavior<<'/'<<f.target_graph<<'/'
+                <<f.target_state<<'/'<<f.target_flags<<'/'<<f.target_object_flags
+                <<"\troot="<<f.root.x<<','<<f.root.y<<','<<f.root.z
+                <<"\tchild_root="<<f.child_root.x<<','<<f.child_root.y<<','<<f.child_root.z
+                <<"\thits/counter/window/increments="<<f.accepted_hits<<'/'<<f.hit_counter<<'/'
+                <<f.hit_window<<'/'<<f.counter_increments
+                <<"\tevolution/spawn/cleanup/eligible/focus="<<f.evolution_seen<<'/'<<f.spawn_seen<<'/'
+                <<f.parent_cleanup_seen<<'/'<<f.child_eligible<<'/'<<f.child_focused
+                <<"\tsource/host="<<f.source_status<<'/'<<f.host_status<<'\n';finish();
+            ledger<<"cave_pester_item\tupdates="<<updates
+                <<"\titem="<<f.item[0]<<'/'<<f.item[1]<<'/'<<f.item[2]
+                <<"\taccepted="<<f.accepted_item[0]<<'/'<<f.accepted_item[1]<<'/'<<f.accepted_item[2]
+                <<"\tkind/state/flags/object/interaction="<<f.item_kind<<'/'<<f.item_state<<'/'
+                <<f.item_flags<<'/'<<f.item_object_flags<<'/'<<f.interaction_matches
+                <<"\tposition="<<f.item_position.x<<','<<f.item_position.y<<','<<f.item_position.z
+                <<"\tinput="<<f.input_target.x<<','<<f.input_target.y<<','<<f.input_target.z
+                <<"\trequest/consume/release/hit/evolution/spawn/cleanup/capture="<<f.request_update<<'/'
+                <<f.consumed_update<<'/'<<f.release_update<<'/'<<f.hit_update<<'/'<<f.evolution_update<<'/'
+                <<f.spawn_update<<'/'<<f.cleanup_update<<'/'<<f.capture_update
+                <<"\tcontext/taken/raw/slot/mismatches="<<f.focus_context<<'/'<<f.taken_context<<'/'
+                <<f.raw_primary<<'/'<<f.captured_slot<<'/'<<f.capture_mismatches<<'/'<<f.mismatches<<'\n';finish();
+            if(f.required_species==89) {
+                const auto consume_prediction=[&](const char* label,std::size_t index,const private_campaign::CavePesterConsumeRay& c) {
+                    ledger<<label<<"\tupdates="<<updates<<"\tindex="<<index
+                        <<"\tvalid/direction/reticle="<<c.valid<<'/'<<c.direction<<'/'<<c.reticle_x<<'/'<<c.reticle_y
+                        <<"\tpredicted_ray="<<c.ray.x<<','<<c.ray.y<<','<<c.ray.z
+                        <<"\tcompleted_eye="<<c.camera.look_at.eye[0]<<','<<c.camera.look_at.eye[1]<<','<<c.camera.look_at.eye[2]
+                        <<"\tinput="<<c.input_x<<','<<c.input_y
+                        <<"\tcached_stick="<<c.stick_x_value<<','<<c.stick_y_value
+                        <<"\taccum="<<c.stick_x_accum<<','<<c.stick_y_accum
+                        <<"\tyaw/pitch="<<c.view_yaw<<'/'<<c.view_pitch<<'\n';finish();
+                };
+                consume_prediction("cave_pester_consume_prediction",f.throw_count,f.consume_prediction);
+                ledger<<"cave_pester_timing\tupdates="<<updates<<"\theader/receiver/speed="
+                    <<f.reaction_header<<'/'<<f.reaction_receiver<<'/'<<f.reaction_speed
+                    <<"\twait/callback_wait/advances="<<f.reaction_wait<<'/'<<f.reaction_callback_wait<<'/'<<f.reaction_advances
+                    <<"\tthrows/live_pester/cooldown="<<f.throw_count<<'/'<<f.live_pester_items<<'/'<<f.throw_cooldown
+                    <<"\tprospective_impact/admission="<<f.predicted_impact<<'/'<<f.admission_after<<'/'
+                    <<f.admission_before<<'\n';finish();
+                for(std::size_t index=0;index<f.throw_count;++index) {
+                    const auto& t=f.throws[index];
+                    ledger<<"cave_pester_throw\tupdates="<<updates<<"\tindex="<<index
+                        <<"\titem="<<t.item[0]<<'/'<<t.item[1]<<'/'<<t.item[2]
+                        <<"\tsender="<<t.sender[0]<<'/'<<t.sender[1]<<'/'<<t.sender[2]
+                        <<"\treceiver="<<t.receiver[0]<<'/'<<t.receiver[1]<<'/'<<t.receiver[2]
+                        <<"\tcreated/accepted/incremented/retired="<<t.created<<'/'<<t.accepted<<'/'
+                        <<t.counter_incremented<<'/'<<t.retired
+                        <<"\trequest/consume/release/create/hit/counter/retire/observe="<<t.request_update<<'/'
+                        <<t.consumed_update<<'/'<<t.release_update<<'/'<<t.created_update<<'/'<<t.hit_update<<'/'
+                        <<t.counter_update<<'/'<<t.retired_update<<'/'<<t.observed_update
+                        <<"\tcounter_before/after/window="<<t.counter_before<<'/'<<t.counter_after<<'/'<<t.counter_window
+                        <<"\treceiver_graph/state/process/animation/time="<<t.receiver_graph<<'/'<<t.receiver_state<<'/'
+                        <<t.hit_process_flags<<'/'<<t.hit_model_animation<<'/'<<t.hit_animation_time
+                        <<"\tcounter_graph/state="<<t.counter_graph<<'/'<<t.counter_state<<"\tprethrow=";
+                    for(std::size_t item=0;item<t.prethrow_count;++item) {
+                        if(item) ledger<<',';
+                        const auto& identity=t.prethrow_items[item];
+                        ledger<<identity[0]<<'/'<<identity[1]<<'/'<<identity[2];
+                    }
+                    ledger<<'\n';finish();
+                    ledger<<"cave_pester_throw_launch\tupdates="<<updates<<"\tindex="<<index
+                        <<"\teye="<<t.launch_eye.x<<','<<t.launch_eye.y<<','<<t.launch_eye.z
+                        <<"\tray="<<t.launch_ray.x<<','<<t.launch_ray.y<<','<<t.launch_ray.z
+                        <<"\tplayer_velocity="<<t.launch_player_velocity.x<<','<<t.launch_player_velocity.y<<','<<t.launch_player_velocity.z
+                        <<"\tconsumed_eye="<<t.consumed_eye.x<<','<<t.consumed_eye.y<<','<<t.consumed_eye.z
+                        <<"\tconsumed_ray="<<t.consumed_ray.x<<','<<t.consumed_ray.y<<','<<t.consumed_ray.z
+                        <<"\tconsumed_player_velocity="<<t.consumed_player_velocity.x<<','<<t.consumed_player_velocity.y<<','<<t.consumed_player_velocity.z
+                        <<"\tcreated_position="<<t.created_position.x<<','<<t.created_position.y<<','<<t.created_position.z
+                        <<"\tcreated_velocity="<<t.created_velocity.x<<','<<t.created_velocity.y<<','<<t.created_velocity.z
+                        <<"\tbuttons/pressed/cooldown="<<t.consumed_buttons<<'/'<<t.pressed_buttons<<'/'<<t.consumed_timeout
+                        <<"\tprospective_launch_impact/preceding/admission="<<t.launch_predicted_impact<<'/'
+                        <<t.preceding_impact<<'/'<<t.admission_after<<'/'<<t.admission_before<<'\n';finish();
+                    consume_prediction("cave_pester_throw_consume_prediction",index,t.consume_prediction);
+                    const auto& prediction=t.remaining_forecast;
+                    ledger<<"cave_pester_throw_flight\tupdates="<<updates<<"\tindex="<<index
+                        <<"\tpresent/hidden/kind/state/flags/object/rest="<<t.present<<'/'<<t.hidden<<'/'
+                        <<t.kind<<'/'<<t.state<<'/'<<t.flags<<'/'<<t.object_flags<<'/'<<t.rest_timer
+                        <<"\tposition="<<t.position.x<<','<<t.position.y<<','<<t.position.z
+                        <<"\tvelocity="<<t.velocity.x<<','<<t.velocity.y<<','<<t.velocity.z
+                        <<"\tforecast_update/impact/result/step="<<t.forecast_update<<'/'<<t.predicted_impact<<'/'
+                        <<int(prediction.disposition)<<'/'<<prediction.step
+                        <<"\tterminal="<<prediction.position.x<<','<<prediction.position.y<<','<<prediction.position.z
+                        <<"\tblocker="<<prediction.blocker[0]<<'/'<<prediction.blocker[1]<<'/'<<prediction.blocker[2]
+                        <<"\tblocker_species/constant_motion="<<prediction.blocker_species<<'/'<<prediction.constant_motion
+                        <<"\tblocker_motion="<<prediction.blocker_motion.x<<','<<prediction.blocker_motion.y<<','<<prediction.blocker_motion.z
+                        <<"\tground/static="<<prediction.ground_surface<<'/'<<prediction.static_object<<'\n';finish();
+                }
+            }
+            if(f.launch_update) {
+                const auto& prediction=f.actual_forecast;
+                ledger<<"cave_pester_launch\tupdates="<<updates<<"\tlaunch_update="<<f.launch_update
+                    <<"\tgate/aim/reticle="<<int(f.launch_gate)<<'/'<<f.launch_aim_x<<'/'<<f.launch_aim_y<<'/'
+                    <<f.launch_reticle_x<<'/'<<f.launch_reticle_y
+                    <<"\tactual_result/step="<<int(prediction.disposition)<<'/'<<prediction.step
+                    <<"\tactual_ray="<<prediction.aimed.x<<','<<prediction.aimed.y<<','<<prediction.aimed.z
+                    <<"\tterminal="<<prediction.position.x<<','<<prediction.position.y<<','<<prediction.position.z
+                    <<"\tactual_ground/height/static="<<prediction.ground_surface<<'/'<<prediction.ground_height<<'/'
+                    <<prediction.static_object<<"\tactual_blocker="<<prediction.blocker[0]<<'/'
+                    <<prediction.blocker[1]<<'/'<<prediction.blocker[2]
+                    <<"\tblocker_species/constant_motion="<<prediction.blocker_species<<'/'<<prediction.constant_motion
+                    <<"\tblocker_motion="<<prediction.blocker_motion.x<<','<<prediction.blocker_motion.y<<','<<prediction.blocker_motion.z
+                    <<"\tblocking_item="<<f.blocking_item[0]<<'/'<<f.blocking_item[1]<<'/'<<f.blocking_item[2]
+                    <<"\tblocking_kind/state/flags/object/rest="<<f.blocking_kind<<'/'<<f.blocking_state<<'/'
+                    <<f.blocking_flags<<'/'<<f.blocking_object_flags<<'/'<<f.blocking_rest_timer<<'\n';finish();
+            }
+            if(f.plan_count) {
+                ledger<<"cave_pester_planning\tupdates="<<updates<<"\tplan_update="<<f.planning_update
+                    <<"\teye="<<f.planning_eye.x<<','<<f.planning_eye.y<<','<<f.planning_eye.z
+                    <<"\tvelocity="<<f.planning_velocity.x<<','<<f.planning_velocity.y<<','<<f.planning_velocity.z
+                    <<"\tray="<<f.planning_ray.x<<','<<f.planning_ray.y<<','<<f.planning_ray.z
+                    <<"\tmotion/radius="<<f.planning_motion.x<<','<<f.planning_motion.y<<','
+                    <<f.planning_motion.z<<'/'<<f.planning_radius
+                    <<"\tsteering/recovery/rejected="<<f.steering_updates<<'/'<<f.recovery_updates<<'/'
+                    <<f.arc_rejections<<'\n';finish();
+                for(unsigned index=0;index<f.plan_count;++index) {
+                    const auto& prediction=f.plan_forecasts[index];
+                    ledger<<"cave_pester_prediction\tupdates="<<updates<<"\tplan_update="<<f.planning_update
+                        <<"\trefinement/result/step="<<index<<'/'<<int(prediction.disposition)<<'/'<<prediction.step
+                        <<"\ttarget="<<prediction.target.x<<','<<prediction.target.y<<','<<prediction.target.z
+                        <<"\taim_valid="<<prediction.aimed_valid
+                        <<"\taim="<<prediction.aimed.x<<','<<prediction.aimed.y<<','<<prediction.aimed.z
+                        <<"\tterminal="<<prediction.position.x<<','<<prediction.position.y<<','<<prediction.position.z
+                        <<"\tground/height/static="<<prediction.ground_surface<<'/'<<prediction.ground_height<<'/'
+                        <<prediction.static_object<<"\tblocker="<<prediction.blocker[0]<<'/'
+                        <<prediction.blocker[1]<<'/'<<prediction.blocker[2]
+                        <<"\tcenter/radius/entry/target_entry="<<prediction.blocker_center.x<<','
+                        <<prediction.blocker_center.y<<','<<prediction.blocker_center.z<<'/'
+                        <<prediction.blocker_radius<<'/'<<prediction.entry<<'/'<<prediction.target_entry
+                        <<"\tblocker_species/constant_motion="<<prediction.blocker_species<<'/'<<prediction.constant_motion
+                        <<"\tblocker_motion="<<prediction.blocker_motion.x<<','<<prediction.blocker_motion.y<<','<<prediction.blocker_motion.z
+                        <<'\n';finish();
+                }
+            }
+        }
+    }
     void note_goal() {
+        note_pester_photos();
         if(course==2)note_volcano_lava();
         if(volcano_food) {
             const auto& f=volcano_food->facts();
@@ -1112,7 +1581,7 @@ struct Probe::Impl {
         std::int8_t sx=0,sy=0;
         if(!subject && player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn) {
             PhotoTarget target{};
-            if(photo_target(player,target,nullptr,nullptr,nullptr))aim(player,target.position,true,sx,sy);
+            if(photo_target(player,target,nullptr,nullptr,nullptr,0,0))aim(player,target.position,true,sx,sy);
             else sx=24;
         }
         set(pad,sx,sy);
@@ -1911,9 +2380,11 @@ struct Probe::Impl {
             }
             set(pad,sx,sy);return;
         }
+        if((beach_pester || valley_pester || valley_ground) && !player.IsInputDisabled && control_pester_photos(view))return;
         // River luring is independent of profile-wide tutorial preference.
         // Its passive observer already ran; its own gates preserve ordinary A.
-        if(river_photos && !player.IsInputDisabled && control_ordinary_puzzles(view))return;
+        if((river_photos || river_porygon || cave_pester || cave_victreebel) && !player.IsInputDisabled &&
+            control_ordinary_puzzles(view))return;
         if(player.IsTutorialEnabled && qualified<3) {
             if(!surface)return;
             std::uint16_t pad=z;
@@ -1934,7 +2405,13 @@ struct Probe::Impl {
             set(message && !(prior&a) && !(player.input.current_buttons&a)?a:0,tutorial_followup && !tutorial_stick?8:0);return;
         }
         if(player.IsInputDisabled)return;
-        if((beach_photos || tunnel_photos) && control_ordinary_puzzles(view))return;
+        const int pester_window_species=beach_pester && beach_pester->facts().capture_pending?
+            beach_pester->facts().required_species:valley_pester && valley_pester->facts().capture_pending?
+            valley_pester->facts().required_species:valley_ground && valley_ground->facts().capture_pending?
+            valley_ground->facts().required_species:cave_victreebel && cave_victreebel->facts().capture_pending?
+            cave_victreebel->facts().required_species:0;
+        const bool pester_window=pester_window_species!=0;
+        if(!pester_window && (beach_photos || tunnel_photos) && control_ordinary_puzzles(view))return;
         if(course==2 && control_volcano(view,player,focus,prior))return;
         // Reserve only attainable lava acquisitions or actual present subjects,
         // Moltres, and one natural-end slot. Apple cannot acquire spawner58/59.
@@ -1944,7 +2421,13 @@ struct Probe::Impl {
             if(qualified>=3)return;
         } else if(photos>=film_limit)return;
         PhotoTarget target{};
-        const bool have_target=photo_target(player,target,&ordinary_shots,&focus,&pikachu_window);
+        const auto* ground=valley_ground && !valley_ground->facts().complete && !valley_ground->facts().exhausted?
+            &valley_ground->facts():nullptr;
+        // Identity-bound reveal windows defer only their own premature species.
+        // The borrowed pointer arbitrates this observation; the controller's
+        // pool/slot/incarnation receipts establish continuity across updates.
+        const bool have_target=photo_target(player,target,&ordinary_shots,&focus,&pikachu_window,
+            ground?ground->required_species:0,ground && ground->capture_pending?ground->offered_subject_object:0);
         ordinary_target=have_target?target.species:0;
         pikachu_sampled_update=updates;
         std::int8_t sx=0,sy=0;
@@ -1961,7 +2444,12 @@ struct Probe::Impl {
             const auto& puzzle=beach_photos->facts();
             moving_repeat=!puzzle.apple_available || puzzle.prior_report || puzzle.complete;
         }
-        const bool wanted=focused_species && ((!sx && !sy) || moving_repeat);
+        // A physical reveal can close while collision-center steering continues.
+        // The actual published, unmasked focus is the photographic witness;
+        // geometric zero-stick alignment is only a prospective framing hint.
+        const bool window_capture=focused_species && target.species==pester_window_species &&
+            target.focus_object_matches && !(focus.flags&8u);
+        const bool wanted=focused_species && ((!sx && !sy) || moving_repeat || window_capture);
         std::uint16_t pad=z;
         if(player.gDirectionIndex==-1 && !player.TargetDirectionZoomedIn && player.sTimerAfterPhotoTaken<0 &&
             !(prior&a) && !(player.input.current_buttons&a) && wanted) {
@@ -2007,6 +2495,12 @@ void Probe::update(const application::RuntimeView& view,std::uint64_t actualUpda
     if(delta>limit || p.updates>limit-delta)p.fail("actual Source course update failure bound exhausted");
     p.updates+=delta;p.last_external=actualUpdates;p.observe(s);
     if(delta && p.river_photos)p.river_photos->observe(view,p.updates);
+    if(delta && p.river_porygon)p.river_porygon->observe(view,p.updates);
+    if(delta && p.cave_pester)p.cave_pester->observe(view,p.updates);
+    if(delta && p.cave_victreebel)p.cave_victreebel->observe(view,p.updates);
+    if(delta && p.beach_pester)p.beach_pester->observe(view,p.updates);
+    if(delta && p.valley_pester)p.valley_pester->observe(view,p.updates);
+    if(delta && p.valley_ground)p.valley_ground->observe(view,p.updates);
     if(delta)p.observe_ordinary_minima(s);
     if(delta)p.control(view,s);
     if(delta && (p.updates%8==0 || s.reason || s.ending)) {p.note("update");p.note_goal();}

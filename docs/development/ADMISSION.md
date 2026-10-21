@@ -5795,3 +5795,405 @@ The actual returned-Oak surface was inspected. Full native build and all
 58 CPU contracts pass. Later campaign milestones and independent cold
 preservation of this new sign are not implied by this Save receipt.
 
+### Natural four signs and cold progression
+
+Campaign `655j` subsequently publishes Cave sign1018/Report67 with captured
+digest12369941958202525440 and Valley sign1035/Report68 with captured
+digest17165638640515410274. Together with the previously saved Beach and
+Volcano signs, these are four genuine assessed sign Reports. Normal Cave/
+Valley photographs continue improving the profile; repeated rides are not
+counted as evidence of convergence or a guaranteed eventual Flute reward.
+
+| Acknowledged Save | Reports / points | New evidence |
+|---:|---:|---|
+| 70 | 49 / 93,310 | Cave sign; improved Zubat/Weepinbell |
+| 71 | 52 / 94,870 | Valley sign; new Starmie/Dratini; improved Graveler/Staryu |
+| 77 | 52 / 98,960 | First complete post-sign ordinary round |
+| 83 | 52 / 100,480 | Second ordinary round still improves |
+| 89 | 52 / 102,390 | Third ordinary round still improves |
+
+Independent process `655q` loads the whole Save89 canonical image,
+SHA256`e71a0661ca7c405a3cb542cb6dab36f26ed7809fe8de1f558033d906df534028`,
+and preserves all Reports, Name, known5/unlocked5 and actual Apple/Pester/
+Dash flags. A normal no-better Beach ride acknowledges Save90, returns
+actual Title7/UI2 (129 updates/frames) and cold-reopens the exact canonical
+image. The actual Title surface was inspected; owners release without a
+deadline and the original input directory remains unchanged. This run
+takes 260.31 seconds and does not merge another profile's progress.
+
+A read-only canonical-byte inventory, crosschecked against that actual
+Boot89 image and the admitted ROM's signed Report-index mapping, identifies
+48 ordinary Reports plus sign Reports63/65/67/68. Flute is absent; Tunnel/
+River signs, Rainbow/Mew and complete fresh-campaign proof remain open.
+Windows hosted builds remain distinct from Windows gameplay qualification.
+
+### Physical Porygon and Ditto, one legal lineage
+
+Campaign `656e` uses frozen binary
+`e9684ea7e24f8d7af9791594977c8395254ae4eef1c7deefeca547c15d91d365`
+and independently cold-qualified Save95. River and Cave add the following
+actual selected, assessed and published photographs without modifying Source
+state, pose, counters, scorer, profile, RNG or command dispatch:
+
+| Course / species | Roll | Source score | Report slot | Captured digest |
+|---|---:|---:|---:|---:|
+| River / Porygon137 | 3 | 690 | 55 | 5796349619654925424 |
+| Cave / Ditto132 | 0 | 200 | 53 | 10042481395364373839 |
+
+The first Porygon attempt (`656b`) physically struck material`0x4c7f00`,
+not the required`0xff7fb2`; it returned empty normally and did not qualify.
+The correction forecasts the first ground contact in original movement
+order, including static/ceiling rejection, 16-step contact refinement and
+strict sender radius. Both an ideal candidate and the quantized actual
+reticle ray must pass before B. Actual first-ground evidence is latched,
+including nonqualifying materials, rather than overwritten by later defaults.
+The existing River progression caller retains its original unfiltered search.
+
+The corrected ride requests/consumes/releases one Pester at6592/6593/6594.
+Real Item`96/0/1` first contacts`0xff7fb2` at6652, 225.181 units from
+target`95/37/1`; the same Item becomes the interaction sender and the
+original Porygon reveal runs at6653. Generic photography captures the exact
+subject in slots0 and3; original evaluation chooses the690-point image.
+Seven roll images and the normal9/reason2 return lead through Camera/Photo/
+Oak to Save99:53 Reports/103,290 points.
+
+Cave then requests/consumes/releases one Pester at350/351/352. Exact Item
+`189/0/1` is accepted by impostor`188/2/1`; original evolution creates
+Ditto`188/10/1` at474, parent cleanup follows at550, and the ordinary
+shutter captures slot0 at1171. Decision-context0/taken-context1 passes the
+shared full Source-copy guard, with zero capture/identity mismatches.
+Normal assessment and Save100 retain both new species:54 Reports/103,490.
+The actual River assessment screenshot depicts Psyduck, not Porygon;
+per-species claims above come from original evaluation/Report receipts,
+not an incorrectly labelled first-assessment screenshot.
+
+Independent process `656i` loads the whole Save100 canonical image,
+SHA256`e67781b472c4e9677b4f15e50285e864180959dbd57d0ce9de0d6a37258fd315`.
+A no-better Beach ride acknowledges Save101, returns actual Title7/UI2
+(129 updates/frames), and cold-reopens the exact canonical profile.
+The actual Title window was inspected. All54 Reports, Apple/Pester/Dash,
+known5/unlocked5 and the four signs persist; Flute remains absent.
+The282-second run retires5694 GPU frames, drains8,314,048 SDL-dummy PCM
+frames, releases owners without a deadline, and leaves its input unchanged.
+This is continued legal progression, not a fresh complete campaign or
+Windows gameplay qualification.
+
+Muk remains unqualified: a separate `656b` Cave ride proves two actual
+own-Item Pester hits and two original Grimer counter increments, but its
+third prospective plan is rejected before aiming. Competing planner/reviewer
+assessments find no demonstrated SDK contradiction or evidence that raising
+the steering budget would fix it. Bounded prediction receipts distinguish
+the rejecting numerical/collision branch; no Source counter or policy is
+changed to bypass the failure.
+
+### Physical Beach Pester photo windows
+
+Frozen binary`1b6f0b4250de0f5f2725e1396cc72861b638631c56b118d916adf981d59809bf`
+qualifies both Beach routes in successive preserved-input rides:
+
+| Run / species | Roll | Source score | Report slot | Captured digest |
+|---|---:|---:|---:|---:|
+| `656p` / Snorlax143 | 8 | 2,440 | 56 | 14298267708670554232 |
+| `656r` / Scyther123 | 8 | 1,940 | 46 | 1356372813344939205 |
+
+The first Snorlax attempt physically wakes it but misses its photographic
+window. A bounded decision receipt at2720 proves selected143, actual
+matching-object focus143/flags53, settled zoom and no cooldown; nonzero
+collision-center steering`10/80` alone vetoes A. A later sleeping raw143
+image evaluates as special500/zero points and cannot qualify a143 Report.
+
+The correction keeps ordinary target priority, film limits and retake caps.
+During the verified physical objective's live window only, generic
+photography may press A for its currently selected species when the actual
+published focus matches that object and FLAG8 is clear, even while geometric
+steering continues. The physical driver never owns A. Prior arming and the
+complete actual taken-context copy still establish capture. Temporary
+arbitration instrumentation is removed after the failing-before/passing-after
+native trajectory; Source flags, scorer and game thresholds are unchanged.
+
+Snorlax accepts real Item`4/0/1` at2629 after2534/2535/2536 request/
+consumption/release. Its actual awake stage starts2670; generic capture2718
+uses slot8 with zero context mismatches. Original assessment acknowledges
+Save102:55 Reports/105,930 points, then actual Title8/UI2 (129 updates/
+frames) and exact cold reopen. The inspected owned-window assessment says
+`SNORLAX NEW`; the Title window was also inspected.
+
+Independent process `656r` loads the whole Save102 image,
+SHA256`f143eac610731d6189955d40137ab2cf381f2203b933fc911c65f885b9fcfc9b`,
+and verifies all55 inherited Reports. Hidden Scyther's zero collision radius
+rules out direct hits. One real Pester request4423/consume4424/release4425
+instead reaches ground at4450; original cmd10 accepts that Item at4451 with
+interaction distance57.8867, below the strict150 boundary. Original jump-out,
+restored radius and same-Actor reveal precede capture4466. Decision-context0/
+taken-context1 passes the full-copy guard without mismatches.
+
+Original assessment acknowledges Save103:56 Reports/107,870 points,
+followed by actual Title8/UI2 and exact cold reopen; the actual Title window
+was inspected. Both runs leave their input directories unchanged. Apple,
+Pester, Dash, known5/unlocked5 and the four signs persist; Flute remains
+absent. These are continued legal rides, not fresh/full-campaign or Windows
+gameplay qualification.
+
+Beach canonical selection borrows the actual `application::Photos` owner,
+matching the existing generic course-lifecycle accessor. Its native support
+identity hashes are updated deliberately; pinned Original C definitions,
+recipe and generated output identities remain unchanged.
+
+Independent continuation `656t` subsequently loads the entire Save103
+canonical image, SHA256`704b1716d64fb72982c972f218c470b52f431ba73c48ca925cb697d4d13545c7`,
+with all56 Reports/107,870 points exact. Original Oak input selects already
+known/unlocked Cave4; its normal return acknowledges Save104 without
+changing Reports, then actual Title7/UI2 (129 updates/frames) and exact
+cold reopen complete. The Title window was inspected, owners release
+without a deadline, and the source directory remains unchanged.
+
+The private preserved-input command now accepts
+`campaign-resume-one INPUT_PROFILE_DIRECTORY [COURSE]`, where an explicit
+course is exactly one digit0–6 and must be both known and unlocked in the
+preserved baseline and actual Boot-loaded image before original Oak input.
+Omitting it retains the first policy ride. This does not author access,
+replace Manager navigation, or weaken the separate strict River/Volcano
+contracts. The actual Cave4 ride above passes; locked Rainbow6 is rejected
+before Oak input. Executed malformed/extra-argument cases reject empty,
+`00`, `7`, `-1`, `4x`, and course arguments supplied to other resume modes
+without creating an output root.
+
+### Physical Weepinbell/Victreebel water handshake
+
+Competing planner/reviewer assessments select a dedicated controller:
+Victreebel71 is already placed and hidden, so Ditto/Muk dynamic-child
+provenance cannot describe this route. Canonical Cave objectives become
+132→71→89; Muk's unresolved physical sequence is not marked complete.
+The new controller owns B/Z/stick only and observes every actual completed
+update while generic photography owns all shutters.
+
+Frozen binary`6a608c4580a2957d30f0db506a71908fe01468c2b0d38de16d1f5ac32b975942`
+passes private/native builds and58 CPU contracts, then actual legal Cave4
+run `656x` completes the full original water handshake on its first attempt:
+
+| Receipt | Actual update / identity |
+|---|---|
+| Pester request / consumption / release | 4608 / 4609 / 4610; Item`4/0/1` |
+| Accepted hit / actual landing | 4634 / 4704; Weepinbell`3/18/1` |
+| cmd29 / cmd30 | 4766:70→71 / 4768:71→70 |
+| cmd31 / reveal / parent cleanup | 4870; same preplaced71`3/17/1` |
+| Original FLAG4 / generic capture | 4934 / 4958; roll13 |
+| Original assessment / Report | 4,180 points; slot25; digest12628517860572157620 |
+
+Prospective input checks include both the Pester's first physical collision
+and the resulting70 flight: actual collision-velocity direction, horizontal
+stepping before vertical displacement,`.033` scaling, original gravity,
+the explicit non-NULL empty forbidden-ground list, water`0x007f66`, and
+the receiving71's root-distance boundary. Actual landing material is32614
+and the original receiver distance is165.288, below500. Forecasts do not
+establish the hit, landing, command receipts or capture.
+
+Distinct Item/70/71 associations survive the changing `interactionTarget`
+domain and original cmd22 cleanup clearing. No new71 incarnation, copied
+parent yaw, synthetic spawn, callback invocation or Source-state write
+substitutes for the real29/30/31 sequence. The original64-update eligibility
+delay is observed, and the immutable full taken-context image hash equals
+the subsequently selected Report digest with zero capture mismatches.
+
+Normal Photo/Oak processing acknowledges Save105:57 Reports/112,060 points,
+including a separate10-point Jynx improvement. Actual Title8/UI2 (129
+updates/frames) and exact cold reopen pass; its owned Title window was
+inspected. The first-assessment owned window was not captured, so it is
+not claimed as per-species visual proof. The input directory is unchanged.
+Flute, remaining signs, Mew/fresh-complete-campaign proof and Windows
+gameplay qualification remain open.
+
+Independent process`656z` then loads the whole canonical Save105 image
+`f51e20dec4e4f4907877c13140d5d479a3731a7d988d5e0a9125cdf4311364b0`
+exactly at real Boot, completes a legal Beach ride with no better Report,
+acknowledges Save106 and preserves57/112,060 through inspected Title7/UI2
+(129 updates/frames) and another exact cold reopen. Input bytes remain
+unchanged; all owners retire and the retirement deadline stays zero.
+
+### Physical early Magikarp to Gyarados reveal
+
+Actual legal Valley5 run`657d`, frozen
+`09bc73219357eed85028a9aaf865b961b2f5060c1a2b657623dd716478ba4c7d`,
+qualifies the original early-Magikarp/swimmer/Gyarados chain. It descends
+directly from independent Save106/57 Reports; no diagnostic branches merge.
+
+The prior direct5 diagnostic exhausted256 recovery updates because unsafe
+re-planning relinquished an already-bound swimmer to generic zoom.
+At update5528, fresh Z entered direction−2; repeated acquisition/recovery
+never produced a second throw. Source/host statuses remained0/0. The
+private correction recovers before re-planning once bound, retains neutral
+ownership through temporarily unsafe geometry, and charges neutral
+re-planning against the existing2048 acquisition budget. No deadline,
+recovery limit, Source threshold or gameplay state changes.
+
+The corrected run observes four real Pester requests/consumptions/releases,
+the early129 hit/leap/latch without hitting cliff Mankey, and the actual
+swimmer`3/31/1` hit/leap. The fourth Item is`4/0/4`; swimmer hit and leap are
+already observed by completed update6088. Original cmd30 reveals preplaced
+Gyarados`3/30/1` at6304 after its sender retires. Association uses the
+previously observed incarnation and Original retained sender/cleanup
+semantics, not a repaired Source pointer or a synthetic child.
+
+Generic A captures roll8 at6410 with zero capture mismatches. Original
+Photo/Oak assesses species130 for2,920 points, Report51, normalized digest
+10892831139506461121. A separate160-point Mankey improvement makes
+acknowledged Save107 total58 Reports/115,140. Inspected actual Title8/UI2
+(129 updates/frames), exact cold reopen and unchanged input bytes pass.
+No per-species owned assessment-window screenshot is claimed.
+
+Independent process`657g` loads the whole canonical Save107 image
+`2faa8bbd248f3589b09cf7002ccb3393ab9645225247267f16b58bbb1c6ae47c`
+exactly at real Boot, completes a legal Beach no-better ride, acknowledges
+Save108 and preserves the complete frontier through inspected Title7/UI2
+(129 updates/frames) and another exact cold reopen. All owners retire,
+deadline0, input unchanged. Dragonite/Goldeen, Flute and subsequent
+complete-campaign qualification remain open.
+
+### Physical Grimer/Muk three-flight sequence
+
+The serialized private strategy could not land three hits before the
+vehicle left useful geometry. Original permits overlapping Pester flights:
+fresh B has45 updates of cooldown, five live balls are supported, and
+hidden removal tails count toward that capacity. A graph-NULL reaction
+discards incoming commands rather than queuing them. The private controller
+therefore admits exactly three distinct owned flights with independently
+forecast impact reservations and actual per-Item acceptance/counter receipts.
+
+ROM header`802c6f88` and receiver`8015a3cc` establish binary32 speed`.8`,
+WAIT3/CALLBACK16 wait33 and46 animation advances to the loop callback.
+Four additional guard updates are explicitly private scheduling policy,
+not an Original reaction duration or a changed counter window.
+
+Two prospective-physics defects were resolved without changing Source:
+
+- The next OM object pass republishes the reticle ray before Player
+  processes run. Forecasting the already-published `cam_target` was stale.
+  Pure homogeneous unprojection of the completed camera/integer reticle
+  predicts the consumed ray; all three recorded predictions match actual
+  consumption at printed precision.
+- Zubat`3/3/1` intercepted the former third flight. Every competing sphere
+  now has consecutive per-incarnation global-motion samples, avoiding
+  block-rebase deltas. Items priority7 consumes the stored collision sample
+  before priority2 refresh: prospective step0 uses the observed center.
+  Constant-motion extrapolation remains a forecast, never hit credit.
+
+Frozen`6505950ba7a02cb8d4395f12852838f504cb8b306a8579d8dd2b77b5f05b0a04`
+replay`657p` observes:
+
+| Own Item | B / consumption / release | Accepted hit | Actual counter increment |
+|---|---|---|---|
+| `4/0/1` | 755 / 756 / 757 | 884 | 930:0→1 |
+| `4/1/1` | 811 / 812 / 813 | 936 | 982:1→2 |
+| `4/2/1` | 862 / 863 / 864 | 988 | 1034:2→3 |
+
+Original evolution starts1034, creates Muk`3/10/1` at1106, and cleans up
+Grimer`3/0/1` at1107. Generic A captures roll0 at1206; full taken-context
+identity has zero mismatches. Original Photo/Oak publishes89 for2,520
+points, Report35, digest3564847739796360712. The owned assessment window
+actually depicts MUK/NEW.
+
+This is a real sequential continuation of the chosen Sandshrew branch:
+independent Boot loads the whole Save110 image
+`04a18ca70d63cf3bf54d746387dda9a3b0dde755c27a4fddc13882418770a549`
+exactly, then Save111 holds60 Reports/122,400 including a separate340-point
+Bulbasaur improvement. Inspected actual Title8/UI2 (129 updates/frames),
+exact cold reopen and unchanged input pass. A parallel successful Muk
+diagnostic was not merged into the profile.
+
+Independent`657r` subsequently loads the whole Save111 image
+`ef77a9581816bbce079a424e350c8044b3a9ac8c97d23fecefa31b2068ab8acf`
+exactly at real Boot, preserves Muk and physically replays Sandslash.
+Original3,120-point Report28 produces Save112/61 Reports/125,520, followed
+by inspected Title8/UI2, exact cold reopen, unchanged input, released
+owners and retirement deadline0. Thus the chosen profile contains both
+routes through actual sequential rides, not a merged save.
+
+### Physical Sandshrew/Sandslash rock handshakes
+
+Competing planner/reviewer assessments overturn the earlier proximity-pop
+description. Initial cmd16 makes27/28 burrow; Sandshrew's block2/.1
+auxiliary expires it. Original re-emergence requires20/39. Earlier focused
+generic raw27/28 images assessed as background74/75, not new27/28 Reports.
+No generic shutter or Source scoring defect was established.
+
+A separate bounded B/Z/stick controller preserves the early130 route and
+selects130→27→28→149→118 across rides. It defers only its own premature
+species and offers one live incarnation after witnessed emergence; generic
+photography retains A and its existing film, two-exposure and half-distance
+rules. Reviewer correction includes the priority6 auxiliary's first
+Original turn before the priority5 bounce reads yaw, including the PI tie.
+
+Actual27 run`657m` hits ready behavior1 Geodude`3/1/1` using own Item`4/0/1`:
+B2161/consumption2162/release2163, hit/bounce2261, landing2299. Hidden
+Sandshrew`3/6/1` accepts that sender and enters SHOW at2300; actual root3D
+distance252.142 satisfies Original's strict`<600`. Generic roll5 captures
+2352 with zero mismatches. Original publishes3,260 points/Report10,
+digest17014718355928848302. Staryu's separate260-point improvement makes
+Save110 total59/119,540. Subsequent independent whole-image Boot and Muk
+continuation above preserve this Report.
+
+Actual28 diagnostic`657q` uses two different behavior2 Geodudes, not direct
+Pester hits on Graveler:
+
+| Receipt | First / second |
+|---|---|
+| Geodude incarnation | `3/23/1` / `3/24/1` |
+| Own Item | `4/0/1` / `4/1/1` |
+| B / consumption / release | 3886/3887/3888 / 4025/4026/4027 |
+| Accepted hit / landing | 3972/4012 / 4078/4114 |
+| Graveler accepted38 | 4013:BB4→BD4 / 4115:BD4→8650/8704 |
+
+Registered behavior1 Graveler`3/22/1` bounces at4115, lands4188 and is the
+actual sender accepted by hidden Sandslash`3/26/1` at4189. Generic roll6
+captures4314 with zero mismatches; Original publishes3,120 points,
+Report11/digest13476481472260372799. Commands38/39 do not inherit20's
+distance gate. Emission flags are Source-derived; receiver sender/state
+transitions are actual acceptance witnesses.
+
+Owned assessment windows actually depict SANDSHREW/NEW and SANDSLASH/NEW.
+Both runs complete normal Photo/Oak, acknowledged Save, Title8/UI2 and
+exact cold reopen with input bytes unchanged. The28 diagnostic's
+Save111/60 Reports/122,660 lacks the parallel Muk Report; it is not merged.
+Real sequential replay`657r` now reproduces that28 assessment/digest from
+the chosen Muk profile and acknowledges Save112/61 Reports/125,520.
+Independent`657s` additionally loads the whole diagnostic28 Save111 image
+`7c0d1e8bb89e22793324cc38f533e4dd191bcdb89fb0df4b01e3d37cc1e37cc4`
+exactly at Boot and preserves it through a legal Dragonite ride,
+acknowledged Save, Title8/UI2 and exact cold reopen. The separate
+diagnostic branch remains unmerged.
+
+### Distinct Valley automatic-child declaration origins
+
+The actual full0..5 lineage using frozen`adcdb574` fails inside Original
+water-hook Dratini147 creation: `func_802C5F70_79F500` calls the real native
+`isle_valley_actor_add_one`, which returns execution failure before Save.
+Owned read-only GDB first identifies that leaf, then catches the earlier
+native `OwnerError::admission`. Its observed string prefix uniquely matches
+the Source-provenance rejection in `Owner::add_one_valley`.
+
+Pinned lowering preserves two different local declarations:
+
+| Automatic family | ObjectSpawn declaration | Copied PokemonDef declaration |
+|---|---|---|
+| Goldeen118 | 82 | 84 |
+| Dratini147 | 118 | 120 |
+| Magikarp129 | 151 | 153 |
+
+The old compiled child fact stored one line and compared both declarations
+against it, rejecting all three legitimate tuples. The native child schema
+now names `spawn_declaration_line` and `definition_declaration_line`
+separately. Both remain strict; the admitted factory/resource/portability
+origin continues to use the definition line84/120/153. The two AddAtGeo
+entries retain0/0. No compatibility field, arithmetic line adjustment,
+Source rewrite, RNG alteration, missing-field fallback or relaxed tuple
+validation is introduced.
+
+Independent review finds the correction consistent with both Valley child
+consumers and the existing automatic-resource/repair contracts. Thirteen
+reviewed-support manifests refresh only hashes for `actor_owner.cpp`,
+`valley_actor.hpp` and `valley_actor.cpp`; Original recipe selections and
+prepared Source fingerprints are unchanged. Full/private native builds
+and58 CPU contracts pass. Those contracts do not establish the actual
+automatic-birth regression; owned full-course replay and real weighted
+water-spawn qualification remain separately required.
+

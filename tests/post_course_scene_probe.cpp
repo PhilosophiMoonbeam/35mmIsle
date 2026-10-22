@@ -64,10 +64,9 @@ bool raster_varied(const IsleSprite& sprite) {
     }
     return bytes>=1024 && changed>=128;
 }
-// Scalar comparison under the real completed Frame borrow. Report's native
-// child is tiled/swizzled RGBA5551; the completed image is canonical RGBA8.
-// Checking the photo interior against that child excludes a visible UI-only
-// frame, an unchanged prototype and a mock echo of a completion counter.
+// Compare the real tiled/swizzled RGBA5551 raster with its completed RGBA8
+// image, not merely a created destination or an offscreen varied thumbnail.
+// Report children are root-relative; Credits C places each SObj absolutely.
 std::uint64_t raster_digest(const IsleSprite& sprite) {
     std::uint64_t digest=1469598103934665603ull;
     if(!sprite.bitmap || sprite.nbitmaps<=0 || sprite.nbitmaps>32)return 0;
@@ -84,16 +83,18 @@ std::uint64_t raster_digest(const IsleSprite& sprite) {
     }
     return bytes?digest:0;
 }
-bool report_image_matches(const IsleSprite& root,const IsleSprite& photo,
-                          const scene::graphics::Completed& frame) {
+bool photo_image_matches(const IsleSprite& root,const IsleSprite& photo,
+                         const scene::graphics::Completed& frame,bool relative_to_root=true) {
     if(photo.width!=140 || photo.height!=105 || photo.bmfmt!=0 || photo.bmsiz!=2 ||
-       !unfaded(&root) || !unfaded(&photo) || (photo.attr&ISLE_SP_SCALE) ||
+       !unfaded(&root) || !unfaded(&photo) ||
+       ((photo.attr&ISLE_SP_SCALE) && (photo.scalex!=1 || photo.scaley!=1)) ||
        !raster_varied(photo))return false;
-    const int left=int(root.x)+int(photo.x),top=int(root.y)+int(photo.y);
+    const int left=(relative_to_root?int(root.x):0)+int(photo.x);
+    const int top=(relative_to_root?int(root.y):0)+int(photo.y);
     if(left<0 || top<0 || left+140>int(frame.width) || top+105>int(frame.height) ||
        frame.stride<frame.width*4 || frame.rgba.size()<std::size_t(frame.stride)*frame.height)
         return false;
-    unsigned samples=0,matches=0,changed=0,first=0;
+    unsigned samples=0,matches=0,changed=0,changed_matches=0,first=0;
     for(unsigned y=4;y<101;y+=4)for(unsigned x=4;x<136;x+=4) {
         unsigned local_y=y;
         const IsleBitmap* piece=nullptr;
@@ -120,8 +121,9 @@ bool report_image_matches(const IsleSprite& root,const IsleSprite& photo,
             if(actual>value+20 || value>actual+20)match=false;
         }
         ++samples;if(match)++matches;
+        if(pixel!=first && match)++changed_matches;
     }
-    return samples>=128 && changed>=32 && matches*4>=samples*3;
+    return samples>=128 && changed>=32 && matches*4>=samples*3 && changed_matches*4>=changed*3;
 }
 }
 struct Probe::Impl {
@@ -498,8 +500,26 @@ void Probe::frame(const Scene& scene,std::int32_t argument,std::uint64_t ordinal
     require(slot!=p.frame_tags.end(),"bounded copied menu presentation provenance exhausted");
     p.inspect_images(scene);
     std::uint32_t image_mask=0;
-    for(std::size_t i=0;i<p.image_incarnations.size();++i)
-        if(p.image_incarnations[i])image_mask|=std::uint32_t(1)<<i;
+    if(const auto* credits=scene.credits_source();
+       credits && credits->worker && !credits->worker->main_excluded()) {
+        for(std::size_t i=0;i<credits->destination_count;++i) {
+            const auto& destination=credits->destinations[i];
+            // Source later removes these SObjs before releasing destination
+            // storage. A completed Host image is evidence, not a live borrow.
+            if(p.presented_images&(std::uint32_t(1)<<i))continue;
+            if(!destination.incarnation || p.image_incarnations[i]!=destination.incarnation)continue;
+            IsleGameObject* object=nullptr;
+            require(isle_game_sprite_object(scene.source().game,destination.sprite,&object)==ISLE_GAME_OK,
+                    "actual Credits image owner observation rejected");
+            if(!visible(scene.source(),object))continue;
+            const IsleSprite *photo=nullptr,*root=nullptr;
+            require(post_course::Window::observe_sprite(scene.source().window,destination.sprite,&photo)==ISLE_GAME_OK &&
+                    post_course::Window::observe_sprite_root(scene.source().window,object,&root)==ISLE_GAME_OK,
+                    "actual Credits image geometry observation rejected");
+            if(root && photo && photo_image_matches(*root,*photo,scene.completed_frame(),false))
+                image_mask|=std::uint32_t(1)<<i;
+        }
+    }
     bool full=false;
     if(const auto* gallery=scene.gallery_source())
         full=visible(scene.source(),gallery->D_801EA7FC_A084BC);
@@ -531,7 +551,7 @@ void Probe::frame(const Scene& scene,std::int32_t argument,std::uint64_t ordinal
                     "actual Report detail root observation rejected");
             const auto digest=photo?raster_digest(*photo):0;
             if(!root || !photo || !digest || digest==p.report_prototype_digest ||
-               !report_image_matches(*root,*photo,scene.completed_frame()))
+               !photo_image_matches(*root,*photo,scene.completed_frame()))
                 slot->report_view=Impl::ReportView::none;
             else slot->report_raster=digest;
         }

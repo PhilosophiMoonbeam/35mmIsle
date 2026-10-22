@@ -1918,6 +1918,21 @@ Two independent source audits find implemented typed catalogs/providers for cour
 
 All seven runs complete real GPU/Photo/Manager/Input/audio/Host retirement without a retirement deadline; all preregistered inputs remain unchanged. Qualification SHA-256: `5dc1c7af947c7f72127ece9e918bd8b9484d8b37e7b0737ea9e310f7f9f91e50`. SDL dummy transport and explicitly owned software input are not physical audio/controller qualification. Windows11 gameplay, dormant End24/Credits20 ingress and the separately running fresh campaign remain unclaimed.
 
+## Visible Credits images and observer borrow lifetime
+
+The test observer in `tests/post_course_scene_probe.cpp` now distinguishes generated Credits rasters from images actually presented. The former worker-image marker could credit valid destinations while their sprites remained offscreen; its initial black Credits19 capture is not visible-photo proof.
+
+The shared photo matcher requires a complete in-viewport 140×105 RGBA5551 photo, unfaded unit-scale geometry, varied samples, and at least 75% matching samples and changed-color samples against the completed native frame. Credits use Source absolute child coordinates; Report retains relative coordinates. Evidence is credited only after the corresponding actual Host presentation. A credited image no longer retains a Sprite borrow: Source legitimately removes SObjs before releasing destination storage. The first stricter Credits19 run exposed that observer lifetime error and remains failed; no invalid query is suppressed and no Source timing, profile, callback or result is changed.
+
+| Original Credits argument | First worker-image-qualified frame | Credits frames = LUS presentations | Whole-run submissions = terminals |
+|---|---:|---:|---:|
+| 17 | 2,751 | 2,781 | 4,253 |
+| 19 | 588 | 3,818 | 5,372 |
+
+Both corrected cases exit 0 through real Source return and joined worker ownership. Credits17 consumes explicit software Start input only after required image-presentation evidence; Credits19 completes normally. Owned-PID SDL/LUS X11 captures show reconstructed photographs and Source captions. Both retire GPU/Photo/Manager/Input/audio/Host owners without a retirement deadline; all nine preregistered inputs remain unchanged. Frozen consumer SHA-256: `71af7459a0a0f7b84d94ff27cc388caad8f4f5939a185fa831e2ac1a131435f6`; qualification SHA-256: `ed0d1b3a1e1f750a18d8c755bb78260df4bd68a992aa7476c54fe58da2131d9b`.
+
+The shared-matcher Report14/Album12/Gallery22 regression also exits 0 with mask7 and 3,417 actual submissions/terminals, using the preceding frozen consumer `0d4da4e440d6690fd9a41b584608515bf407eea7bcd6f049f01c1009b886abf1`; the subsequent borrow-lifetime change is Credits-only. These are existing **API-authored canonical photo/profile fixtures**, not fresh or gameplay-earned progress. They do not qualify dormant Credits20 ingress, every fault timing, Native/Original pixel or audio parity, physical devices or Windows11 execution.
+
 ## Fresh clone-update transport results
 
 Fresh strict-grammar sources passed seventeen detached groups, complete source/alias/retained-identity checks and actual fail-closed gates. An authored native pthread fixture observed successful `clone3({input} => {output}, size)`, credited both zero/nonzero memfd truncations, and rejected anonymous credit after an ordinary file replaced the descriptor. No helper permission was relaxed or inferred from a memory object's name.

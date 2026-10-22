@@ -301,7 +301,84 @@ void mutable_state_and_scissor() {
     check(op(flip_words,0xf1)[1] == 0xfc000200 && op(flip_words,0xe1)[1] == 0x00600000,
           "negative scale flips S using signed derivatives and last-texel origin");
 }
-void derivatives_require_actual_raster_coverage() {
+void ordinary_sprite_edges_and_fractional_origins() {
+    auto bank = std::make_shared<sp::Bank>(16, 0xff);
+    const std::array<IsleBitmap,4> bitmap{{
+        {1,1,0,0,nullptr,0,2,0}, {4,4,0,0,bank->data(),16,2,0},
+        {1,1,0,0,nullptr,0,2,0}, {4,4,0,0,bank->data(),16,2,0}}};
+    IsleSprite source{};
+    source.x = source.y = 10;
+    source.width = 5; source.height = 3; source.bmheight = 1; source.bmHreal = 2;
+    source.scalex = source.scaley = 1.5f; source.attr = ISLE_SP_SCALE;
+    source.red = source.green = source.blue = source.alpha = 255;
+    source.nbitmaps = 4; source.istep = 1; source.bitmap = bitmap.data();
+    source.bmfmt = 0; source.bmsiz = 2;
+    const std::array<const IsleSprite*,1> roots{{&source}};
+    const std::array<sp::BankMapping,1> banks{{{bank,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4);
+    producer.install(ram,1,{});
+    auto view = source;
+    const std::array<sp::Draw,1> draws{{{0,&view}}};
+    const auto prepare = [&](sp::Camera camera) {
+        const auto list = producer.prepare(ram,1,draws,camera,{0x150000,4096});
+        return std::span<const std::uint32_t>(ram).subspan(list.address/4,list.words);
+    };
+    const auto words = prepare({});
+    check(op(words,0xe4) == std::vector<std::uint32_t>{
+              0xe4048034,0x00030028,0xe404803c,0x00030030},
+          "half-pixel bitmap origins produce integer destination edges on both source rows");
+    check(op(words,0xf1) == std::vector<std::uint32_t>{
+              0xf1000000,0x02ab02ab,0xf1000000,0x02ab02ab},
+          "a 1.5 scale rounds the ordinary reciprocal to 683, not 682");
+    check(op(words,0xe1) == std::vector<std::uint32_t>{
+              0xe1000000,0x000b0000,0xe1000000,0x000b000b},
+          "rounded half-pixel origins retain eleven thirty-seconds of fractional source phase");
+    const auto clipped = prepare({{0,0,320,240},{13,13,17,15}});
+    check(op(clipped,0xe4) == std::vector<std::uint32_t>{0xe404403c,0x00034034} &&
+          op(clipped,0xe1) == std::vector<std::uint32_t>{0xe1000000,0x00200020},
+          "integer scissoring advances the already rounded origin independently on both axes");
+    view.attr |= ISLE_SP_TEXSHIFT | ISLE_SP_FRACPOS;
+    view.frac_s = -7; view.frac_t = 3;
+    view.expx = 3; view.expy = 5;
+    const auto shifted = prepare({});
+    check(op(shifted,0xe4) == std::vector<std::uint32_t>{
+              0xe4054034,0x0003c028,0xe4054050,0x0003c044} &&
+          op(shifted,0xe1) == std::vector<std::uint32_t>{
+              0xe1000000,0x00140013,0xe1000000,0x0014001e},
+          "explosion moves integer edges without changing the independent fractional and half-texel phase");
+    view = source; view.y = -1;
+    check(op(prepare({}),0xe1)[1] == 0x000b0015,
+          "a negative integer position preserves biased-cast correction rather than substituting ceil");
+    view = source; view.scalex = 2.00005f;
+    const auto near_integer = op(prepare({}),0xe4);
+    check((near_integer[1] >> 12) == 48 && ((near_integer[0] >> 12) & 0xfff) == 84,
+          "the source edge bias retains positions just above an integer instead of applying unconditional ceil");
+}
+void message_derivatives_remain_independent() {
+    auto bank = std::make_shared<sp::Bank>(208,0xff);
+    IsleBitmap bitmap{14,16,0,0,bank->data(),bank->size(),13,0};
+    IsleSprite source{};
+    source.x = source.y = 10; source.width = source.height = 14;
+    source.bmheight = source.bmHreal = 13;
+    source.scalex = source.scaley = 1.5f;
+    source.attr = ISLE_SP_SCALE | ISLE_SP_TEXSHUF;
+    source.red = source.green = source.blue = source.alpha = 255;
+    source.nbitmaps = source.istep = 1; source.bitmap = &bitmap;
+    source.bmfmt = 4; source.bmsiz = 1;
+    const std::array<const IsleSprite*,1> roots{{&source}};
+    const std::array<sp::BankMapping,1> banks{{{bank,0x80300000}}};
+    sp::Producer producer(roots,banks);
+    std::vector<std::uint32_t> ram(8*1024*1024/4);
+    producer.install(ram,1,{});
+    const std::array<sp::Draw,1> draws{{{0,&source,0,sp::DrawMode::message_intensity,30,30}}};
+    const auto list = producer.prepare(ram,1,draws,{}, {0x150000,4096});
+    const auto words = std::span(ram).subspan(list.address/4,list.words);
+    check(op(words,0xf1) == std::vector<std::uint32_t>{0xf1000000,0x02aa02aa} &&
+          op(words,0xe4) == std::vector<std::uint32_t>{0xe4078078,0x00028028},
+          "Msg retains its separate truncating reciprocal and caller-lowered integer endpoints");
+}
+void minification_capacity_is_atomic() {
     Fixture fixture;
     fixture.bitmap[0] = {64,64,0,0,fixture.bytes->data(),128,1,0};
     fixture.sprite.width = 64; fixture.sprite.height = 1;
@@ -314,17 +391,6 @@ void derivatives_require_actual_raster_coverage() {
     producer.install(ram,1,{});
     auto tiny = fixture.sprite;
     tiny.x = 10; tiny.y = 10;
-    tiny.scalex = tiny.scaley = 1.0f/1048576.0f;
-    auto visible = fixture.sprite;
-    visible.x = 16; visible.y = 20;
-    const std::array<sp::Draw,2> draws{{{0,&tiny},{0,&visible}}};
-    const auto list = producer.prepare(ram,1,draws,{}, {0x150000,4096});
-    const auto words = std::span(ram).subspan(list.address/4,list.words);
-    const auto rectangle = op(words,0xe4), derivative = op(words,0xf1);
-    check(list.rectangles == 1 && rectangle.size() == 2 && derivative.size() == 2 &&
-          rectangle[0] == (0xe4000000u|(320u<<12)|84u) &&
-          rectangle[1] == ((64u<<12)|80u) && derivative[1] == 0x04000400,
-          "zero-quarter-pixel sprite consumes no derivative and cannot suppress the following visible sprite");
     tiny.scalex = 0.02f; tiny.scaley = 1;
     const std::array<sp::Draw,1> minified{{{0,&tiny}}};
     const auto minified_list = producer.prepare(ram,1,minified,{}, {0x150000,4096});
@@ -339,10 +405,6 @@ void derivatives_require_actual_raster_coverage() {
                                  {0x150000,static_cast<std::uint32_t>(minified_list.words*4-8)});},
             "minified geometry still requires complete command capacity");
     check(ram == before_capacity_failure, "minified capacity failure preserves all RAM atomically");
-    tiny.scalex = -1.0f/1048576.0f;
-    const auto empty = producer.prepare(ram,1,draws,{}, {0x150000,4096});
-    check(empty.rectangles == 1,
-          "nonempty quarter bounds with no integer sample do not evaluate an overflowing reciprocal");
 }
 void minification_axes_and_coordinate_boundaries() {
     auto bank = std::make_shared<sp::Bank>(60*68*2,0xff);
@@ -759,7 +821,9 @@ void dynamic_native_formats_and_bank_alias_rejection() {
 int main() {
     try {
         installation_and_transactions(); mutable_state_and_scissor(); ci_palette_and_odd_rows();
-        derivatives_require_actual_raster_coverage();
+        ordinary_sprite_edges_and_fractional_origins();
+        message_derivatives_remain_independent();
+        minification_capacity_is_atomic();
         bitmap_step_preserves_source_geometry();
         actual_height_is_not_row_stride();
         consecutive_texture_setup_and_transitions();

@@ -55,8 +55,10 @@ struct RasterBinding {
 // Consecutive identical texture/band/tile setups reuse TMEM within one Sprite,
 // never across Sprites or passes. Dry-run planning has the same bounded command
 // capacity and resident-state transitions as the subsequent allocation-free write.
-// Destination quantization and signed/overflowing derivative lowering retain
-// the native RDP sample contract, not Source's integer-edge rounding arithmetic.
+// Positive ordinary Sprites use pinned GAME integer edges, rounded reciprocal
+// derivatives and fractional-origin correction. Signed flips and overflow-safe
+// sample lowering remain distinct native extensions; message modes keep their
+// independently admitted arithmetic.
 //
 // The caller holds an exclusive graphics preparation lease for install/prepare,
 // and retains this owner AND all source descriptors until actual GPU retirement.

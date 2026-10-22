@@ -6479,3 +6479,58 @@ optional photograph/ending, all 69 Report slots, Windows ROM gameplay,
 Windows 11 hardware, physical audio/controller qualification or N64
 numerical/pixel parity.
 
+### Source ordinary Sprite rounding
+
+The ordinary positive-scale Sprite path now follows pinned own-GAME
+`src/window/8456E0.c`, blob `fe37ecc39550b4ff4b97f8f672b44f9b05ed9a9c`:
+binary32 reciprocal plus 0.5 before integer truncation; row-dependent
+0.99999/0.9999 destination-edge bias; separately rounded S10.5 origin
+correction; integer scissor advancement; explosion offsets after rounding.
+Artificial TMEM bands advance from the original bitmap origin instead of
+restarting its phase. Bilerp windows retain the actual consumed neighbors.
+Pinned `src/app_level/msg.c:227–237` independently truncates Msg derivatives;
+that path does not inherit ordinary Sprite rounding.
+
+A four-descriptor fixture `[blank1, live4, blank1, live4]`, logical size 5×3,
+stored height 2, row stride 1, position 10/10 and scale 1.5 requires rectangles
+`[12,10,18,13]` and `[12,12,18,15]`, derivatives 683 and origins 11/32.
+Focused command regressions additionally distinguish scissor advancement,
+explosion offsets, negative positions, near-integer bias and Msg behavior.
+An actual ROM-RSP/CPU-Vulkan fixture checks every framebuffer pixel against
+the Source rectangles, full color/hidden coverage, explosion and clipping.
+
+The new fixture linked against the frozen old producer exits 1 at actual
+hidden-coverage disagreement (`969ed62a4061149c10f679fec48a1d08b24bde69b16419940bc6139d35e559e4`).
+The corrected full GPU consumer exits 0 in 6.38 seconds
+(`2d5ef6936a7f324cd9fedfc6676adc672f5680881e9c239f9975681559e8c0f1`).
+It also exercises logo, two menu cohorts, all three oversized GAME pieces,
+dynamic-raster restoration, signed/overflowing axes, scissor clipping,
+split borders, bilerp/TEXSHIFT, CUTOUT/alpha and RDRAM guards.
+
+Obsolete assertions were deleted, not repinned: quarter-height native
+coverage is not Source integer geometry; shrinking mutable Sprite dimensions
+does not crop its initial stored bitmap; an oversized first bitmap wraps
+before row admission. Signed flips, safe overflow lowering and arbitrary
+offset-descriptor cropping remain explicitly separate native extensions;
+this correction does not claim universal Original pixel equivalence.
+
+The corrected SDK also completes one genuine preserved-profile Cave ride
+with immutable Runtime `0f5b59125abf680b2ac6937a12509cf514c6939e688e47b5a100844e2ae1d724`.
+Its input is the closed natural Save36 lineage, 54 Reports/90,350 points,
+whole canonical SHA256 `39cacd17ede253fae8730a313e51830666d6886d83c34d349002e0f7719a637c`.
+No profile/input/gear/Source state is authored or merged. Actual Source
+publishes five better/new Reports: 39=2520, 109=1460, 70=2120, 71=4180, 124=190.
+Victreebel71 is newly present; the others replace genuine weaker Reports.
+Normal Photo15/Oak processing acknowledges Save37 at 55 Reports/99,200 points,
+returns visible Title8/UI2 and cold-reopens the entire canonical profile.
+Input inventory and bytes remain unchanged. The actual process exits 0 in
+290.51 seconds; all 8008 submissions retire, all native owners join, deadline
+stays 0 and SDL dummy audio accepts 9,068,624 PCM frames. Owned actual Cave,
+returned Oak and final Title PNGs are inspected.
+
+Private/full builds and all 58 CPU contracts pass. Credits and post-course
+support fingerprints admit the reviewed Sprite bytes without weakening the
+strict source gates. The private 48-input post-build source archive and
+before/after GPU identities remain retained. The Cave run is one inherited
+ride, not a new full fresh campaign or Windows gameplay qualification.
+

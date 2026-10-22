@@ -46,8 +46,8 @@ struct Derivative {
     double reciprocal = 0;
     bool lower = false;
 };
-Derivative derivative(float scale) {
-    const float value = 1024.0f / scale;
+Derivative derivative(float scale, bool source_round) {
+    const float value = 1024.0f / scale + (source_round ? 0.5f : 0.0f);
     if (std::isfinite(value) && value >= -32768 && value <= 32767) {
         const int encoded = static_cast<int>(value);
         require(encoded != 0, "sprite scale loses RDP texture precision");
@@ -55,7 +55,29 @@ Derivative derivative(float scale) {
     }
     // Only the conceptual derivative is widened. An overflowing S5.10 value
     // is never packed into a command; each consumed sample is rebased below.
-    return {0, std::trunc(1024.0 / static_cast<double>(scale)), true};
+    const double reciprocal = source_round && std::isfinite(value) ?
+        std::trunc(static_cast<double>(value)) :
+        std::trunc(1024.0 / static_cast<double>(scale) + (source_round ? 0.5 : 0.0));
+    return {0, reciprocal, true};
+}
+// GAME window/8456E0 quantizes positive-scale sprite edges before clipping.
+// Keep the cast's truncation (including negative positions), not ceil().
+// The binary32 bias is significant near an integer destination boundary.
+double source_edge(float position, float bias = 0.9999f) {
+    require(std::isfinite(position), "sprite placement arithmetic overflow");
+    return std::trunc(static_cast<double>(position + bias));
+}
+double source_origin(const Derivative& derivative, float position, double edge,
+                     double clipped, int offset) {
+    // The fractional correction is rounded in S10.5 before the integer
+    // scissor advance, which instead uses an arithmetic right shift.
+    const float delta = static_cast<float>(edge) - position;
+    const float product = static_cast<float>(derivative.reciprocal) * delta;
+    const double correction = std::isfinite(product) ?
+        std::trunc(static_cast<double>(product)) :
+        std::trunc(derivative.reciprocal * static_cast<double>(delta));
+    return offset + std::floor((correction + 16) / 32) +
+        std::floor((clipped - edge) * derivative.reciprocal / 32);
 }
 int texture_origin(double value) {
     require(value >= -32768 && value <= 32767,
@@ -573,6 +595,10 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
             if ((s.attr & ISLE_SP_HIDDEN) || !s.width || !s.height || !s.nbitmaps) continue;
             const float sx = s.attr & ISLE_SP_SCALE ? s.scalex : 1.0f;
             const float sy = s.attr & ISLE_SP_SCALE ? s.scaley : 1.0f;
+            // GAME's ordinary draw admits forward rectangles. Signed flips
+            // are a native extension; Msg has its own truncating arithmetic.
+            const bool source_x = draw.mode == DrawMode::sprite && sx > 0;
+            const bool source_y = draw.mode == DrawMode::sprite && sy > 0;
             if (sx == 0 || sy == 0) continue;
             const bool copy = (s.attr & ISLE_SP_FASTCOPY) != 0;
             require(!copy || (sx == 1.0f && sy == 1.0f), "COPY sprites cannot scale or flip");
@@ -661,20 +687,34 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                     int ss = 0, tt = 0;
                     double wide_s = 0, wide_t = 0;
                     if (!load_only && w > 0 && h > 0) {
-                        const float l = std::min(x0, x1), t = std::min(y0, y1);
-                        const float rr = std::max(x0, x1), bb = std::max(y0, y1);
-                        // clip() has checked every bound into [0, 1023], so
-                        // these conversions are exact in binary32.
-                        if (rr <= static_cast<float>(bounds.left) || bb <= static_cast<float>(bounds.top) ||
-                            l >= static_cast<float>(bounds.right) || t >= static_cast<float>(bounds.bottom))
+                        const float origin_x = float(s.x) + float(px) * sx;
+                        const float origin_y = float(s.y) + float(py) * sy;
+                        const double edge_x = source_x ? source_edge(origin_x) : 0;
+                        const double edge_y = source_y ?
+                            source_edge(origin_y, row == 0 ? 0.99999f : 0.9999f) : 0;
+                        const double explosion_x = column * s.expx;
+                        const double explosion_y = row * s.expy;
+                        const double l = source_x ? edge_x + explosion_x : std::min(x0, x1);
+                        const double t = source_y ? source_edge(float(s.y) +
+                            float(py + first_row - b.t) * sy,
+                            row == 0 && first_row == b.t ? 0.99999f : 0.9999f) + explosion_y :
+                            std::min(y0, y1);
+                        const double rr = source_x ?
+                            source_edge(float(s.x) + float(px + w) * sx) + explosion_x :
+                            std::max(x0, x1);
+                        const double bb = source_y ? source_edge(float(s.y) +
+                            float(py + last_row - b.t) * sy,
+                            row == 0 && !b.actualHeight && last_row == b.t + total_h ?
+                                0.99999f : 0.9999f) + explosion_y : std::max(y0, y1);
+                        if (rr <= bounds.left || bb <= bounds.top ||
+                            l >= bounds.right || t >= bounds.bottom)
                             continue;
-                        // Clip before narrowing; huge offscreen positions never
-                        // overflow integer conversions. Texture coordinates track
-                        // the same quantized derivative used by the hardware.
-                        left = static_cast<int>(std::max(l, float(bounds.left)) * 4.0f);
-                        top = static_cast<int>(std::max(t, float(bounds.top)) * 4.0f);
-                        right = static_cast<int>(std::min(rr, float(bounds.right)) * 4.0f);
-                        bottom = static_cast<int>(std::min(bb, float(bounds.bottom)) * 4.0f);
+                        // Clip before narrowing; even huge offscreen Source
+                        // edges cannot overflow a host integer conversion.
+                        left = static_cast<int>(std::max(l, double(bounds.left)) * 4);
+                        top = static_cast<int>(std::max(t, double(bounds.top)) * 4);
+                        right = static_cast<int>(std::min(rr, double(bounds.right)) * 4);
+                        bottom = static_cast<int>(std::min(bb, double(bounds.bottom)) * 4);
                         if (left >= right || top >= bottom) continue;
                         // modes() is non-AA: coverage bit 0 is the integer
                         // destination sample. Quarter coverage without such a
@@ -683,33 +723,45 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                                       (top + 3) / 4 >= (bottom + 3) / 4))
                             continue;
                         if (!derivatives_ready) {
-                            dx = derivative(sx); dy = derivative(sy);
+                            dx = derivative(sx, source_x); dy = derivative(sy, source_y);
                             derivatives_ready = true;
                         }
                         const int base_s = (b.s + (sx < 0 ? w - 1 : 0)) * 32 +
                             (s.attr & ISLE_SP_TEXSHIFT ? 16 : 0) +
                             (s.attr & ISLE_SP_FRACPOS ? int(s.frac_s) : 0);
                         const int base_t = (tile_t + (sy < 0 ? h - 1 : 0)) * 32 + t_shift;
-                        if (dx.lower)
+                        if (source_x) {
+                            wide_s = source_origin(dx, origin_x, edge_x,
+                                double(left) / 4 - explosion_x, base_s);
+                            if (!dx.lower) ss = texture_origin(wide_s);
+                        } else if (dx.lower)
                             wide_s = std::trunc(static_cast<double>(base_s) +
                                 (static_cast<double>(left) / 4 - l) * dx.reciprocal / 32);
                         else {
                             const float start_s = float(b.s + (sx < 0 ? w - 1 : 0)) * 32.0f +
                                 (s.attr & ISLE_SP_TEXSHIFT ? 16.0f : 0.0f) +
                                 (s.attr & ISLE_SP_FRACPOS ? float(s.frac_s) : 0.0f) +
-                                (float(left) * 0.25f - l) * float(dx.encoded) / 32.0f;
+                                (float(left) * 0.25f - float(l)) * float(dx.encoded) / 32.0f;
                             ss = texture_origin(start_s);
                         }
-                        if (dy.lower)
+                        if (source_y) {
+                            // Band boundaries are not new bitmap origins.
+                            // Advance from the original rounded top, then
+                            // rebase only the TMEM address, retaining UV phase.
+                            wide_t = source_origin(dy, origin_y, edge_y,
+                                double(top) / 4 - explosion_y,
+                                (b.t - load_first) * 32 + t_shift);
+                            if (!dy.lower && !p.border_rows) tt = texture_origin(wide_t);
+                        } else if (dy.lower)
                             wide_t = std::trunc(static_cast<double>(base_t) +
                                 (static_cast<double>(top) / 4 - t) * dy.reciprocal / 32);
                         else {
                             const float start_t = float(tile_t + (sy < 0 ? h - 1 : 0)) * 32.0f +
                                 float(t_shift) +
-                                (float(top) * 0.25f - t) * float(dy.encoded) / 32.0f;
+                                (float(top) * 0.25f - float(t)) * float(dy.encoded) / 32.0f;
                             tt = texture_origin(start_t);
                         }
-                        if (dy.lower && p.border_rows) {
+                        if ((dy.lower || source_y) && p.border_rows) {
                             // Fractional Y anchors can move the consumed sample
                             // outside its nominal source band. Select TMEM from
                             // actual global samples, not band geometry; retain
@@ -735,6 +787,7 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                             const int previous = load_first;
                             load_first = std::clamp(load_first, minimum, maximum);
                             wide_t += (previous - load_first) * 32;
+                            if (!dy.lower) tt = texture_origin(wide_t);
                         }
                     }
                     const int rows = std::min<int>(p.load_rows, p.rows - load_first);

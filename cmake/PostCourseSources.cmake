@@ -71,7 +71,7 @@ isle_prepare_post_course_source(end-level-8 prepare_end_level_8.py
     7bb30f08182d2668ed8198f2950f74327079e1f2f7a1724d388e0063258b6769)
 isle_prepare_post_course_source(credits prepare_credits.py
     48fcee61dedca6bbba13982a1bb4bc0164210d95178644532fc6dc600d68cf35
-    d9cadf17f1e538070df952161c3bc4036a3d97a30f353b4f10a796d3b80541ab)
+    f5084b8be75a6bc3d857401d7c59d866fd351e729245fe2215e218a472421c8f)
 isle_prepare_post_course_source(original-sort prepare_original_sort.py
     42364399b6b78b023ce393d3cd3b141b930229dcd8ecbfee3ddc037771ca4294
     abcaf6af309c144a0a8f13d0fae5a8f67e377950c9e5699304d492c6f9adc30e)

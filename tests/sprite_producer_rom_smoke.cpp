@@ -387,6 +387,53 @@ void minification_pixels(const std::vector<std::byte>& image, sp::Bounds extent,
                 "minification selected the wrong authored RGB5 source sample");
     }
 }
+void source_integer_edges(Proof& proof) {
+    // Pinned GAME window/8456E0: blank descriptors advance row layout;
+    // ceil-biased bitmap edges precede explosion and scissor clipping.
+    // Uniform saturated red isolates real geometry/coverage from filtering.
+    auto bank=std::make_shared<sp::Bank>(16);
+    for(std::size_t at=0;at<bank->size();at+=2) {
+        (*bank)[at]=0xf8;(*bank)[at+1]=0x01;
+    }
+    const std::array<IsleBitmap,4> bitmaps{{
+        {1,1,0,0,nullptr,0,2,0},{4,4,0,0,bank->data(),16,2,0},
+        {1,1,0,0,nullptr,0,2,0},{4,4,0,0,bank->data(),16,2,0}}};
+    IsleSprite source{};
+    source.x=source.y=10;
+    source.width=5;source.height=3;source.bmheight=1;source.bmHreal=2;
+    source.scalex=source.scaley=1.5f;source.attr=ISLE_SP_SCALE;
+    source.red=source.green=source.blue=source.alpha=255;
+    source.nbitmaps=4;source.istep=1;source.bitmap=bitmaps.data();
+    source.bmfmt=0;source.bmsiz=2;
+    const std::array<const IsleSprite*,1> roots{{&source}};
+    const std::array<sp::BankMapping,1> banks{{{bank,0x802b5000}}};
+    sp::Producer producer(roots,banks);
+    auto view=source;
+    const std::array<sp::Draw,1> draws{{{0,&view}}};
+    const auto check_image=[&](const std::vector<std::byte>& image,
+                               std::initializer_list<sp::Bounds> rectangles) {
+        for(unsigned y=0;y<240;++y)for(unsigned x=0;x<320;++x) {
+            bool covered=false;
+            for(const auto bounds:rectangles)
+                covered=covered||(int(x)>=bounds.left&&int(x)<bounds.right&&
+                                  int(y)>=bounds.top&&int(y)<bounds.bottom);
+            const auto observed=pixel(image,x,y);
+            require(covered ? (observed>>1)==0x7c00u : observed==1,
+                    "actual sprite coverage differs from pinned GAME integer rectangles");
+        }
+    };
+    constexpr std::array<StoredCoverage,2> full{{{12,10,7},{17,14,7}}};
+    check_image(proof.render(producer,draws,{},full),{{12,10,18,13},{12,12,18,15}});
+    ++proof.epoch;
+    view.expx=3;view.expy=2;
+    check_image(proof.render(producer,draws),{{15,10,21,13},{15,14,21,17}});
+    ++proof.epoch;
+    view.expx=view.expy=0;
+    check_image(proof.render(producer,draws,{{0,0,320,240},{14,11,17,14}}),
+                {{14,11,17,14}});
+    ++proof.epoch;
+    std::cout<<"native-private-sprite Source_integer_edges_explosion_clipping_actual_rsp_rdp=pass\n";
+}
 void native_minification_samples(Proof& proof) {
     // Pinned consumer authority: parallel-rdp rdp_device.cpp:735-771,
     // shaders/span_setup.comp:111-148, interpolation.h:95-125 and
@@ -397,28 +444,6 @@ void native_minification_samples(Proof& proof) {
     // those equations, not echoes of the native producer's encoded commands.
     MinificationPlane plane(128,128);
     auto view = plane.source;
-    view.scalex = view.scaley = 1.0f / 64.0f;
-    // Both overflow: source (0,0), (64,0), (0,64), (64,64).
-    // Nominal bands leave quarter-height rectangles at both consumed Y rows:
-    // coverage count2 -> opaque CLAMP stored coverage1, not texture alpha1.
-    constexpr std::array<StoredCoverage,4> quarter_coverage{{
-        {80,80,1},{81,80,1},{80,81,1},{81,81,1}}};
-    minification_pixels(plane.render(proof,view,{},quarter_coverage),{80,80,82,82},{
-        {80,80,0x0003},{81,80,0x0007},{80,81,0x0013},{81,81,0x0017}});
-
-    view.height = 8; view.scaley = 0.5f;
-    // Only S overflows; the representable T step must remain two source rows.
-    minification_pixels(plane.render(proof,view),{80,80,82,84},{
-        {80,80,0x0003},{81,80,0x0007},{80,81,0x0083},{81,81,0x0087},
-        {80,82,0x0103},{81,82,0x0107},{80,83,0x0183},{81,83,0x0187}});
-    view = plane.source; view.width = 8;
-    view.scalex = 0.5f; view.scaley = 1.0f / 64.0f;
-    // Only T overflows; the representable S step must remain two columns.
-    minification_pixels(plane.render(proof,view),{80,80,84,82},{
-        {80,80,0x0003},{81,80,0x1003},{82,80,0x2003},{83,80,0x3003},
-        {80,81,0x0013},{81,81,0x1013},{82,81,0x2013},{83,81,0x3013}});
-
-    view = plane.source;
     view.scalex = 1.0f / 32.0f; view.scaley = 1.0f / 64.0f;
     // +32768 cannot be encoded as signed S5.10. Wrapping it reverses these
     // columns, while zeroing it without rebasing repeats the first column.
@@ -440,57 +465,8 @@ void native_minification_samples(Proof& proof) {
     // Scissor clipping must not restart the sample phase at the new origin.
     minification_pixels(plane.render(proof,view,{{0,0,320,240},{81,81,82,82}}),
                         {81,81,82,82},{{81,81,0x0017}});
-    // A skipped source column creates a genuine quarter-pixel left edge
-    // without changing the public integer position API. Samples at x=81,82
-    // consume source columns 48,112, not 0,64 or the rounded geometry edge.
-    const std::array<IsleBitmap,2> quarter_columns{{
-        {16,16,0,0,nullptr,0,128,0},plane.bitmaps[0]}};
-    view.width = 144; view.nbitmaps = 2; view.bitmap = quarter_columns.data();
-    minification_pixels(plane.render(proof,view),{81,80,83,82},{
-        {81,80,0x8005},{82,80,0x8009},{81,81,0x8015},{82,81,0x8019}});
 
-    MinificationPlane narrow(8,128);
-    view = narrow.source; view.scaley = 1.0f / 64.0f;
-    // Nonzero bitmap S/T origins remain relative to their stored plane.
-    auto origin_bitmap = narrow.bitmaps[0];
-    origin_bitmap.s = 2; origin_bitmap.t = 4;
-    view.width = 6; view.height = view.bmheight = 124;
-    view.bitmap = &origin_bitmap;
-    minification_pixels(narrow.render(proof,view),{80,80,86,82},{
-        {80,80,0x1103},{85,80,0x3903},{80,81,0x1113},{85,81,0x3913}});
-    // A real quarter-pixel TOP is deliberately NOT symmetric with LEFT.
-    // This whole 8x128 plane fits TMEM: no artificial band can hide the Y
-    // anchor. TOP=80.25 consumes rows 64,128 (the latter clamps to edge127),
-    // not geometrically snapped rows48,112. Both columns remain distinct.
-    const std::array<IsleBitmap,2> quarter_rows{{
-        {8,8,0,0,nullptr,0,128,0},narrow.bitmaps[0]}};
-    view = narrow.source; view.height = 256; view.nbitmaps = 2;
-    view.expy = -112; view.bitmap = quarter_rows.data();
-    view.scaley = 1.0f / 64.0f;
-    minification_pixels(narrow.render(proof,view),{80,81,88,83},{
-        {80,81,0x0013},{87,81,0x3813},{80,82,0x07db},{87,82,0x3fdb}});
-
-    // Exact reached source fade, with the actual 60x68 / 60x34 topology.
-    // The final source scalar is deliberately not replaced by a safe clamp.
-    MinificationPlane route(60,68,34);
-    view = route.source; view.x = 120; view.y = 134;
-    view.scalex = view.scaley = 1.0f - 59.0f / 60.0f;
-    minification_pixels(route.render(proof,view),{120,134,121,135},{{120,134,0x0003}});
-    // Positive quarter-area but no non-AA sample: the second 34-row piece
-    // at 134.5..135 must not reject or manufacture a framebuffer write.
-    // At 0.001 even the quarter geometry is empty; a following visible draw
-    // proves that this valid source scalar does not abort the whole task.
-    auto tiny = view; tiny.scalex = tiny.scaley = 0.001f;
-    auto witness = route.source;
-    witness.x = witness.y = 100; witness.width = witness.height = 2;
-    const std::array<const IsleSprite*,1> roots{{&route.source}};
-    const std::array<sp::BankMapping,1> banks{{{route.bank,0x802b5000}}};
-    sp::Producer producer(roots,banks);
-    const std::array<sp::Draw,2> draws{{{0,&tiny},{0,&witness}}};
-    minification_pixels(proof.render(producer,draws),{100,100,102,102},{
-        {100,100,0x0003},{101,100,0x0803},{100,101,0x0043},{101,101,0x0843}});
-    ++proof.epoch;
-    std::cout<<"native-private-sprite minification_samples_axes_signed_quarters_clipping_empty=pass\n";
+    std::cout<<"native-private-sprite minification_axes_signed_clipping=pass\n";
 }
 void native_minification_filter_alpha(Proof& proof) {
     MinificationPlane whole(8,128), split(8,128,64);
@@ -574,11 +550,14 @@ int wmain(int argc,wchar_t** argv) {
 int main(int argc,char** argv) {
 #endif
     try {
-        require(argc==2,"expected explicit private ROM path");
+        require(argc==2||(argc==3&&std::filesystem::path(argv[2])=="--source-rounding-only"),
+                "expected explicit private ROM path and optional --source-rounding-only");
         const auto snapshot=isle::rom::read_snapshot(std::filesystem::path(argv[1]));
         auto resources=isle::menu::hydrate(snapshot);
         require(bool(resources),"private menu resource hydration failed");
         Proof proof(snapshot);
+        source_integer_edges(proof);
+        if(argc==3)return 0;
         private_scene(proof,*resources.catalog,isle::menu::Scene::logo,0x802bc0c0);
         private_scene(proof,*resources.catalog,isle::menu::Scene::title_menu,0x803051f0);
         private_scene(proof,*resources.catalog,isle::menu::Scene::title_menu,0x802db328);

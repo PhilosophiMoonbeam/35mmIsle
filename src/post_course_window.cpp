@@ -124,8 +124,10 @@ struct State {
         sprite::RasterBinding binding{};
         std::uint64_t serial=0;
     };
+    struct ThumbnailStorage;
     struct Thumbnail {
         post_course::WindowRasterSlot memory;
+        std::shared_ptr<ThumbnailStorage> backing;
         std::shared_ptr<sprite::Raster> raster;
         sprite::RasterBinding binding{};
         IsleGameObject* object=nullptr;
@@ -167,6 +169,7 @@ struct State {
     Text& text;Frame& frame;Focus& focus;Layout& layout;Buttons& buttons;
     const post_course::Resources& resources;
     std::shared_ptr<Heap> heap;
+    std::shared_ptr<Heap> thumbnail_heap;
     sprite::Producer& producer;
     ElementList list;
     ElementDefaults defaults{};
@@ -219,6 +222,10 @@ struct State {
         if (credits && (c.rasters.size()<14 || c.thumbnails.size()>5))
             throw std::invalid_argument("Credits requires fourteen Elements and at most five image slots");
         const unsigned thumbnail_planes=credits?1u:2u;
+        constexpr auto thumbnail_alignment=alignof(std::max_align_t);
+        const auto thumbnail_header=credits?0:Heap::overhead();
+        const auto thumbnail_minimum=credits?0:Heap::minimum_chunk();
+        std::size_t thumbnail_bytes=!credits && !c.thumbnails.empty()?thumbnail_minimum:0;
         for(std::size_t i=0;i<c.thumbnails.size();++i) {
             const auto slot=c.thumbnails[i];
             if(!slot.plane_capacity || slot.plane_capacity>0x20000000u ||
@@ -241,6 +248,35 @@ struct State {
                 }
             }
             thumbnails[i].memory=slot;
+            if(!credits) {
+                const auto limit=std::numeric_limits<std::size_t>::max();
+                if(slot.plane_capacity>(limit-thumbnail_header)/2)
+                    throw std::length_error("native thumbnail backing extent");
+                const auto extent=std::max(slot.plane_capacity*2+thumbnail_header,thumbnail_minimum);
+                if(extent>limit-(thumbnail_alignment-1))
+                    throw std::length_error("native thumbnail backing extent alignment");
+                const auto bytes=(extent+thumbnail_alignment-1)&~(thumbnail_alignment-1);
+                if(bytes>limit-thumbnail_bytes)
+                    throw std::length_error("native thumbnail backing total");
+                thumbnail_bytes+=bytes;
+            }
+        }
+        // Paired retained rasters are Native storage, not GAME UI allocations.
+        // Keep Credits' exact single-plane Source allocations on their heap.
+        if(thumbnail_bytes) {
+            if(thumbnail_bytes>std::numeric_limits<std::size_t>::max()-(thumbnail_alignment-1))
+                throw std::length_error("native thumbnail backing alignment");
+            thumbnail_heap=std::make_shared<Heap>((thumbnail_bytes+thumbnail_alignment-1)&~(thumbnail_alignment-1));
+            // Reserve the whole pair per slot once: smaller images must not
+            // fragment or consume another admitted slot's retained backing.
+            for(std::size_t i=0;i<thumbnail_count;++i) {
+                auto& slot=thumbnails[i];
+                auto backing=std::make_shared<ThumbnailStorage>();
+                backing->heap=thumbnail_heap;
+                backing->block=thumbnail_heap->allocate(slot.memory.plane_capacity*2);
+                if(!backing->block)throw std::runtime_error("native thumbnail backing reservation");
+                slot.backing=std::move(backing);
+            }
         }
         for (std::size_t i=0;i<c.button_tables;++i)
             tables[i].converted=std::make_unique<Button[]>(c.buttons_per_table);
@@ -850,13 +886,13 @@ IsleGameResult isle_post_window_thumbnail_create(IslePostCourseWindow* s,IsleGam
         if(!p.services.sprite_links(native,owner,parent,child,next,previous) || !parent)
             return ISLE_GAME_INVALID_ARGUMENT;
         const auto incarnation=p.serial();
-        auto allocation=std::make_shared<State::ThumbnailStorage>();allocation->heap=p.heap;
-        allocation->block=p.heap->allocate(count*2);
-        if(!allocation->block)return ISLE_GAME_EXHAUSTED;
+        const auto& allocation=slot->backing;
+        if(!allocation || !allocation->block)return ISLE_GAME_INVALID_STATE;
         auto* pixels=static_cast<std::uint8_t*>(allocation->block);
+        auto* alternate=pixels+slot->memory.plane_capacity;
         std::memcpy(pixels,layout.pixels,layout.source_bytes);
         if(count>layout.source_bytes)std::memset(pixels+layout.source_bytes,0,count-layout.source_bytes);
-        std::memcpy(pixels+count,pixels,count);
+        std::memcpy(alternate,pixels,count);
         std::vector<sprite::RasterPiece> pieces;
         pieces.reserve(std::size_t(prototype.nbitmaps));
         for(std::size_t i=0;i<std::size_t(prototype.nbitmaps);++i) {
@@ -869,7 +905,7 @@ IsleGameResult isle_post_window_thumbnail_create(IslePostCourseWindow* s,IsleGam
         auto raster=std::make_shared<sprite::Raster>(prototype,pieces,
             std::array<sprite::RasterStorage,2>{{
                 {allocation,{pixels,count},slot->memory.physical[0]},
-                {allocation,{pixels+count,count},slot->memory.physical[1]}}});
+                {allocation,{alternate,count},slot->memory.physical[1]}}});
         auto binding=p.producer.register_raster(raster);
         // Publish ownership before touching the native attachment so even a
         // terminal native error retains the registration/storage for teardown.

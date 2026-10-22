@@ -21,6 +21,9 @@ struct WindowCapacity {
     // copy the original prototype; the primary is updated/published in place
     // only after the caller's real graphics retirement. No preview renderer.
     std::span<const WindowRasterSlot> thumbnails{};
+    // Paired host backing uses a separate bounded arena with fixed per-slot
+    // reservations, not the GAME UI heap. Credits' single-plane Source image
+    // allocations are unchanged.
 };
 struct WindowObservation {
     std::size_t prints=0,fades=0,layouts=0;

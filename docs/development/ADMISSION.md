@@ -1819,6 +1819,16 @@ The two retained Pikachu full-screen captures are **not pixel-exact**: 1,388 RGB
 
 
 
+## Report detail Native backing and natural reopen
+
+The exact published preview-5 Linux product terminates with `Report14 returning native leaf` when ordinary inputs select Report → PKMN Report → View → the existing Bulbasaur/River/2,610 record. Release notes disclose that failure; preview-5 assets and tag remain unchanged. Static accounting identifies at least 199,824 bytes of simultaneously retained Native planes against the 184,320-byte GAME Report UI heap. The historical process reports only the generic leaf error; a numeric allocation result was not observed.
+
+Paired Native thumbnail planes now occupy a separately bounded arena, reserved once per admitted slot. GAME UI heap size, Source order, physical reservations, prototype/record identity and graphics-borrow retirement remain unchanged. Fixed slot reservations avoid a mixed-size first-fit fragmentation regression found during independent review before publication. Credits retains its existing single-plane GAME-heap allocation path.
+
+The corrected private, uninstrumented Linux binary opens that exact genuinely earned Bulbasaur record, performs actual Check, returns to the list, reopens the same record, opens Charmander/Volcano/2,980 and returns through the Report cover to Oak. Normal WM close joins and exits 0; no forced cleanup, errors, protected-input mutation, debugger or Source/profile field authoring occurs. Qualification SHA-256: `724eba6fb70eb959361cc4baa78609cf58992d4e74a0d958900cf7235cd08ee8`.
+
+The actual ROM Window consumer passes mixed-size large/small release/recreation with exact completed framebuffer output, plus active-borrow rejection and retirement; all 59 Linux Debug contracts pass. The separate API-authored Source consumer now completes actual Report detail, B/list, reopen, list/menu/cover and joined Oak result 13: detail presentations occur at updates 316 and 442; Report retires at 646. The complete Report/Album/Gallery run closes 3,417 actual submissions/terminals and exits 0. Its fixture remains explicitly authored API input, not natural gameplay. Initial consumer failures exposed an exact 21-update GAME cover-entry wait, not missing Host sampling; the final gate respects that Source wait. Cross-lifetime pixel-digest equality is not required: both visits retain canonical record identity and independently match the reconstructed photo to the actual completed frame. No hosted-artifact, Windows 11 runtime, Original pixel-parity or fixed-binary fresh-campaign qualification is claimed.
+
 ## Fresh clone-update transport results
 
 Fresh strict-grammar sources passed seventeen detached groups, complete source/alias/retained-identity checks and actual fail-closed gates. An authored native pthread fixture observed successful `clone3({input} => {output}, size)`, credited both zero/nonzero memfd truncations, and rejected anonymous credit after an ordinary file replaced the descriptor. No helper permission was relaxed or inferred from a memory object's name.

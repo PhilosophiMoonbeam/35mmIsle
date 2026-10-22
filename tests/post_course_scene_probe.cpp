@@ -2,6 +2,8 @@
 #include "post_course_scene.hpp"
 #include "post_course_window.hpp"
 #include "credits_worker_native.hpp"
+#include "application_photos_source.h"
+#include <cstddef>
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -62,6 +64,65 @@ bool raster_varied(const IsleSprite& sprite) {
     }
     return bytes>=1024 && changed>=128;
 }
+// Scalar comparison under the real completed Frame borrow. Report's native
+// child is tiled/swizzled RGBA5551; the completed image is canonical RGBA8.
+// Checking the photo interior against that child excludes a visible UI-only
+// frame, an unchanged prototype and a mock echo of a completion counter.
+std::uint64_t raster_digest(const IsleSprite& sprite) {
+    std::uint64_t digest=1469598103934665603ull;
+    if(!sprite.bitmap || sprite.nbitmaps<=0 || sprite.nbitmaps>32)return 0;
+    std::size_t bytes=0;
+    for(int i=0;i<sprite.nbitmaps;++i) {
+        const auto& piece=sprite.bitmap[i];
+        require(piece.byte_count<=1024*1024 && bytes<=1024*1024-piece.byte_count,
+                "Report raster exceeds bounded readonly inspection");
+        if(!piece.buf)return 0;
+        bytes+=piece.byte_count;
+        for(std::size_t j=0;j<piece.byte_count;++j) {
+            digest^=piece.buf[j];digest*=1099511628211ull;
+        }
+    }
+    return bytes?digest:0;
+}
+bool report_image_matches(const IsleSprite& root,const IsleSprite& photo,
+                          const scene::graphics::Completed& frame) {
+    if(photo.width!=140 || photo.height!=105 || photo.bmfmt!=0 || photo.bmsiz!=2 ||
+       !unfaded(&root) || !unfaded(&photo) || (photo.attr&ISLE_SP_SCALE) ||
+       !raster_varied(photo))return false;
+    const int left=int(root.x)+int(photo.x),top=int(root.y)+int(photo.y);
+    if(left<0 || top<0 || left+140>int(frame.width) || top+105>int(frame.height) ||
+       frame.stride<frame.width*4 || frame.rgba.size()<std::size_t(frame.stride)*frame.height)
+        return false;
+    unsigned samples=0,matches=0,changed=0,first=0;
+    for(unsigned y=4;y<101;y+=4)for(unsigned x=4;x<136;x+=4) {
+        unsigned local_y=y;
+        const IsleBitmap* piece=nullptr;
+        for(int i=0;i<photo.nbitmaps;++i) {
+            const auto& candidate=photo.bitmap[i];
+            if(candidate.actualHeight<=0)return false;
+            if(local_y<unsigned(candidate.actualHeight)) {piece=&candidate;break;}
+            local_y-=unsigned(candidate.actualHeight);
+        }
+        if(!piece || piece->width_img<140)return false;
+        const auto offset=(std::size_t(local_y)*std::size_t(piece->width_img)*2+x*2)^
+                          ((local_y&1)?std::size_t{4}:std::size_t{0});
+        if(offset+1>=piece->byte_count)return false;
+        const unsigned pixel=(unsigned(piece->buf[offset])<<8)|piece->buf[offset+1];
+        if(!samples)first=pixel;
+        else if(pixel!=first)++changed;
+        const auto at=std::size_t(top+int(y))*frame.stride+std::size_t(left+int(x))*4;
+        const std::array<unsigned,3> expected{
+            ((pixel>>11)&31)*255/31,((pixel>>6)&31)*255/31,((pixel>>1)&31)*255/31};
+        bool match=true;
+        for(unsigned channel=0;channel<3;++channel) {
+            const auto actual=std::to_integer<unsigned>(frame.rgba[at+channel]);
+            const auto value=expected[channel];
+            if(actual>value+20 || value>actual+20)match=false;
+        }
+        ++samples;if(match)++matches;
+    }
+    return samples>=128 && changed>=32 && matches*4>=samples*3;
+}
 }
 struct Probe::Impl {
     Controller controller;
@@ -77,12 +138,27 @@ struct Probe::Impl {
     bool surface_ready=false,full_seen=false,gallery_returned=false,next_requested=false;
     bool next_image_seen=false,return_requested=false,full_ready=false,holding=false,releasing=false;
     unsigned stage=0;
+    enum class ReportStep : unsigned {
+        cover,list_menu,list_selected,detail,returned_list,reopened_detail,
+        final_list,exit_list,returned_cover,exit_cover
+    };
+    enum class ReportView : unsigned { none,cover,list_menu,list_selected,detail };
+    ReportStep report_step=ReportStep::cover;
+    std::uint64_t report_step_frames=0,report_prototype_digest=0,report_detail_digest=0;
+    std::uint64_t report_revision=0;
+    std::int32_t report_species=0,report_slot=-1;
+    bool report_detail_presented=false,report_reopened_presented=false;
+    std::uint64_t report_cover_at=0;
+    bool report_cover_observed=false;
     Clock::time_point started{};
     struct FrameTag {
         std::uint64_t ordinal=0,updates=0;
         std::int32_t argument=0;
         std::uint32_t images=0;
         bool full=false,next=false,menu=false,returned=false;
+        ReportView report_view=ReportView::none;
+        ReportStep report_step=ReportStep::cover;
+        std::uint64_t report_raster=0;
     };
     std::array<FrameTag,2> frame_tags{};
     std::uint32_t presented_images=0;
@@ -127,6 +203,10 @@ struct Probe::Impl {
         menu_frames=0;return_requested=full_ready=false;next_baseline_digest=0;
         next_requested=next_image_seen=holding=releasing=false;stage=0;
         pulse_at=next_pulse=0;started=Clock::now();neutral();
+        report_step=ReportStep::cover;report_step_frames=0;
+        report_prototype_digest=report_detail_digest=report_revision=0;
+        report_cover_at=0;report_cover_observed=false;
+        report_species=0;report_slot=-1;report_detail_presented=report_reopened_presented=false;
         require(scene.source().scene==entry,"actual Source entry argument differs from Manager borrow");
         note("enter",scene);ledger.flush();
     }
@@ -165,6 +245,9 @@ struct Probe::Impl {
             require(post_course::Window::observe_element(scene.source().window,
                         report->D_80230C1C_A2758C->handle,&sprite)==ISLE_GAME_OK,
                     "actual Report cover observation rejected");
+            // Header/list and detail reuse this Source cell. Only the actual
+            // cover geometry may authorize the initial/final cover command.
+            if(!sprite || sprite->width!=182 || sprite->height!=97)return false;
         } else if(const auto* gallery=scene.gallery_source()) {
             // The selector is assigned only AFTER both initial acknowledgments.
             // The title is hidden throughout the real full-photo excursion.
@@ -199,6 +282,118 @@ struct Probe::Impl {
                 "actual Gallery Layout button slot observation rejected");
         return id;
     }
+    bool report_element(const Scene& scene,const IsleReportElement* element,int width,int height,
+                        bool full_color=true) {
+        if(!element || !element->handle.owner || !element->handle.serial)return false;
+        const IsleSprite* sprite=nullptr;
+        require(post_course::Window::observe_element(scene.source().window,element->handle,&sprite)==ISLE_GAME_OK,
+                "actual Report element observation rejected");
+        return sprite && sprite->width==width && sprite->height==height &&
+               (full_color?unfaded(sprite):(!(sprite->attr&ISLE_SP_HIDDEN) &&
+                sprite->red>=229 && sprite->green>=229 && sprite->blue>=229));
+    }
+    bool report_root_visible(const Scene& scene) {
+        const auto* s=scene.report_source();
+        if(!s || !visible(scene.source(),s->D_80230C10_A27580))return false;
+        const IsleSprite* root=nullptr;
+        require(post_course::Window::observe_sprite_root(scene.source().window,s->D_80230C10_A27580,&root)==ISLE_GAME_OK,
+                "actual Report root visibility observation rejected");
+        // Report hides this hierarchy through the root Sprite, not GObj flags.
+        return root && !(root->attr&ISLE_SP_HIDDEN);
+    }
+    ReportView report_view(const Scene& scene) {
+        const auto* s=scene.report_source();
+        if(!s || !settled(scene) || !s->D_80230E14_A27784)return ReportView::none;
+        if(menu_ready(scene))return ReportView::cover;
+        if(!report_element(scene,s->D_80230C34_A275A4,108,16))return ReportView::none;
+        if(s->D_80203008_9F9978==2 && report_root_visible(scene) &&
+           report_element(scene,s->D_80230C38_A275A8,84,12) &&
+           report_element(scene,s->D_80230C30_A275A0,192,52)) {
+            for(const auto* row:s->D_80230C80_A275F0)
+                if(report_element(scene,row,184,8))return ReportView::none;
+            return ReportView::detail;
+        }
+        if(!report_element(scene,s->D_80230C1C_A2758C,176,15,false) ||
+           !report_element(scene,s->D_80230C80_A275F0[0],184,8) ||
+           report_root_visible(scene))return ReportView::none;
+        if(s->D_80203008_9F9978==1 && s->D_80230DB4_A27724==0 &&
+           s->D_8020300C_9F997C==0)return ReportView::list_selected;
+        if(s->D_80203008_9F9978==0 && gallery_slot(scene,0)==29)return ReportView::list_menu;
+        return ReportView::none;
+    }
+    void report_record(const Scene& scene) {
+        const auto* s=scene.report_source();
+        IslePhotoRecord record{},first{};
+        std::int32_t count=0,score=0;
+        require(scene.source().photos &&
+                isle_application_photos_report_count(scene.source().photos,&count)==ISLE_GAME_OK && count>0,
+                "Report detail prerequisite missing: existing canonical ordinary Report photo; no fixture manufactured");
+        const auto species=s->D_80230CB0_A27620[0];
+        require(species>0 && species<=151 && s->D_80230DB4_A27724==0 &&
+                isle_application_photos_report(scene.source().photos,species,&record)==ISLE_GAME_OK &&
+                isle_application_photos_report_ordinal(scene.source().photos,0,&first)==ISLE_GAME_OK &&
+                record.photo && record.owner==scene.source().photos && record.storage==ISLE_PHOTO_REPORT &&
+                record.photo==first.photo && record.index==first.index && record.revision &&
+                isle_application_photos_report_score(scene.source().photos,species,&score)==ISLE_GAME_OK && score>0,
+                "Report detail prerequisite missing: positive first-species canonical Report record");
+        if(!report_species) {
+            report_species=species;report_slot=record.index;report_revision=record.revision;
+            note("report_first_record",scene,static_cast<std::uint64_t>(species));
+        } else require(report_species==species && report_slot==record.index && report_revision==record.revision,
+                       "Report detail/reopen changed the existing canonical first-species identity");
+    }
+    void report_control(const Scene& scene) {
+        const auto view=report_view(scene);
+        if(report_step_frames<3)return;
+        // Pinned GAME func_801E2EB0 enters func_801E1378 before polling:
+        // even an already visible cover has an unconditional 21-update wait.
+        if((report_step==ReportStep::cover || report_step==ReportStep::returned_cover) &&
+           (!report_cover_observed || updates<report_cover_at || updates-report_cover_at<21))return;
+        const auto command=[&](std::uint16_t button,ReportStep next,const char* kind) {
+            pulse(button);report_step=next;stage=static_cast<unsigned>(next);
+            report_step_frames=0;report_cover_observed=false;note(kind,scene);
+        };
+        switch(report_step) {
+        case ReportStep::cover:
+            if(view==ReportView::cover) {
+                report_record(scene);
+                require(gallery_slot(scene,scene.report_source()->D_80202EC0_9F9830)==2,
+                        "actual Report cover did not select PKMN Report");
+                command(a_button,ReportStep::list_menu,"report_pkmn_input");
+            }
+            break;
+        case ReportStep::list_menu:
+            if(view==ReportView::list_menu)command(a_button,ReportStep::list_selected,"report_view_input");
+            break;
+        case ReportStep::list_selected:
+        case ReportStep::returned_list:
+            if(view==ReportView::list_selected) {
+                report_record(scene);
+                require(report_prototype_digest,"Report omitted original pre-preview detail child observation");
+                command(a_button,report_step==ReportStep::list_selected?ReportStep::detail:ReportStep::reopened_detail,
+                        "report_first_species_input");
+            }
+            break;
+        case ReportStep::detail:
+            if(view==ReportView::detail && report_detail_presented)
+                command(b_button,ReportStep::returned_list,"report_detail_back_input");
+            break;
+        case ReportStep::reopened_detail:
+            if(view==ReportView::detail && report_reopened_presented)
+                command(b_button,ReportStep::final_list,"report_reopened_back_input");
+            break;
+        case ReportStep::final_list:
+            if(view==ReportView::list_selected)command(b_button,ReportStep::exit_list,"report_list_back_input");
+            break;
+        case ReportStep::exit_list:
+            if(view==ReportView::list_menu)command(b_button,ReportStep::returned_cover,"report_cover_input");
+            break;
+        case ReportStep::returned_cover:
+            if(view==ReportView::cover)command(b_button,ReportStep::exit_cover,"report_oak_input");
+            break;
+        case ReportStep::exit_cover:break;
+        }
+    }
     void control(const Scene& scene) {
         const bool ready=pulse_ready();
         if(scene.status()!=Status::running) {neutral();holding=releasing=false;return;}
@@ -211,10 +406,7 @@ struct Probe::Impl {
             if(s->album_PanelButtons && s->album_BackgroundGObj && menu_frames>=3 &&
                menu_ready(scene))pulse(b_button);
         } else if(argument==14) {
-            const auto* s=scene.report_source();
-            require(s,"actual Report typed Source missing");
-            if(s->D_80230E14_A27784 && s->D_80230C1C_A2758C && menu_frames>=3 &&
-               menu_ready(scene))pulse(b_button);
+            report_control(scene);
         } else if(argument==22 || argument==23) {
             const auto* s=scene.gallery_source();
             require(s,"actual Gallery typed Source missing");
@@ -316,6 +508,34 @@ void Probe::frame(const Scene& scene,std::int32_t argument,std::uint64_t ordinal
     const bool menu=p.menu_ready(scene);
     *slot={ordinal,p.updates,argument,image_mask,full,p.next_requested,menu,
            menu && p.return_requested};
+    if(argument==14) {
+        const auto* s=scene.report_source();
+        require(s,"actual Report typed Source missing");
+        slot->report_step=p.report_step;
+        slot->report_view=p.report_view(scene);
+        if(slot->report_view==Impl::ReportView::cover &&
+           (p.report_step==Impl::ReportStep::cover || p.report_step==Impl::ReportStep::returned_cover) &&
+           !p.report_cover_observed) {
+            p.report_cover_at=p.updates;p.report_cover_observed=true;
+        }
+        const IsleSprite *photo=nullptr,*root=nullptr;
+        if(s->D_80230C14_A27584) {
+            require(post_course::Window::observe_sprite(scene.source().window,s->D_80230C14_A27584,&photo)==ISLE_GAME_OK,
+                    "actual Report detail child observation rejected");
+            if(photo && p.report_step==Impl::ReportStep::cover && !p.report_prototype_digest)
+                p.report_prototype_digest=raster_digest(*photo);
+        }
+        if(slot->report_view==Impl::ReportView::detail) {
+            p.report_record(scene);
+            require(post_course::Window::observe_sprite_root(scene.source().window,s->D_80230C10_A27580,&root)==ISLE_GAME_OK,
+                    "actual Report detail root observation rejected");
+            const auto digest=photo?raster_digest(*photo):0;
+            if(!root || !photo || !digest || digest==p.report_prototype_digest ||
+               !report_image_matches(*root,*photo,scene.completed_frame()))
+                slot->report_view=Impl::ReportView::none;
+            else slot->report_raster=digest;
+        }
+    }
 }
 void Probe::presented(std::int32_t argument,std::uint64_t ordinal,
                       std::uint64_t pixel_digest,bool visible_pixels) {
@@ -347,6 +567,37 @@ void Probe::presented(std::int32_t argument,std::uint64_t ordinal,
     if(tag.menu && ++p.menu_frames==1) {
         scalar_note("interactive_surface_presented");p.ledger.flush();
         std::cout<<"menu_api_surface_ready scene="<<argument<<" frames="<<p.frames<<" view=menu"<<std::endl;
+    }
+    if(argument==14 && tag.report_step==p.report_step) {
+        using Step=Impl::ReportStep;using View=Impl::ReportView;
+        const auto expected=p.report_step==Step::cover || p.report_step==Step::returned_cover?View::cover:
+            p.report_step==Step::list_menu || p.report_step==Step::exit_list?View::list_menu:
+            p.report_step==Step::detail || p.report_step==Step::reopened_detail?View::detail:
+            p.report_step==Step::exit_cover?View::none:View::list_selected;
+        if(expected!=View::none && tag.report_view==expected) {
+            ++p.report_step_frames;
+            if(expected==View::detail) {
+                require(tag.report_raster,"Report detail Host completion lacks reconstructed native raster");
+                if(p.report_step==Step::detail) {
+                    if(!p.report_detail_digest)p.report_detail_digest=tag.report_raster;
+                    require(p.report_detail_digest==tag.report_raster,"Report detail raster changed without input");
+                    p.report_detail_presented=true;
+                } else {
+                    // Replays retain canonical record identity, not an
+                    // incidental cross-lifetime renderer pixel digest.
+                    require(p.report_detail_presented,
+                            "Report reopen preceded the first actual detail presentation");
+                    p.report_reopened_presented=true;
+                }
+            }
+            if(p.report_step_frames==3) {
+                scalar_note(expected==View::detail?
+                    (p.report_step==Step::detail?"report_detail_image_presented":"report_reopened_image_presented"):
+                    expected==View::cover?"report_cover_presented":
+                    expected==View::list_menu?"report_list_menu_presented":"report_first_row_presented");
+                p.ledger.flush();
+            }
+        }
     }
     if(tag.returned && !p.gallery_returned) {
         p.gallery_returned=true;p.stage=3;scalar_note("gallery_grid_returned");
@@ -389,9 +640,15 @@ void Probe::retired(const Scene& scene,std::int32_t result) {
             "actual menu retirement retains Source/native/Frame/Window ownership");
     require(scene.result() && *scene.result()==result,"actual Original menu result missing or mismatched");
     require(p.surface_ready && p.varied_frames>=3,"actual menu retired without visible canonical Host presentations");
-    if(p.argument==12 || p.argument==14) {
-        require(p.menu_frames>=3,"Album/Report omitted usable unfaded Host presentations");
-        require(result==13,"Album/Report Original return must be OaksLab2=13");
+    if(p.argument==12) {
+        require(p.menu_frames>=3,"Album omitted usable unfaded Host presentations");
+        require(result==13,"Album Original return must be OaksLab2=13");
+    } else if(p.argument==14) {
+        require(p.menu_frames>=6 && p.report_step==Impl::ReportStep::exit_cover &&
+                p.report_species>0 && p.report_slot>=0 && p.report_revision &&
+                p.report_detail_presented && p.report_reopened_presented && p.report_detail_digest,
+                "Report omitted genuine cover/PKMN/View/first-detail/B/reopen/list/cover controls and image presentations");
+        require(result==13,"Report Original return must be OaksLab2=13");
     }
     else if(p.argument==22 || p.argument==23) {
         const auto* gallery=scene.gallery_source();

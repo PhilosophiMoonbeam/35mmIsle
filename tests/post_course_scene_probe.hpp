@@ -24,14 +24,21 @@ public:
     // is a monotonically increasing count of actual completed Source updates
     // (global or per-entry); repeated observations do not advance a pulse.
     void update(const post_course::Scene&,std::int32_t argument,std::uint64_t updates);
-    // Capture only bounded scalar Source provenance while the genuine completed
-    // Frame is held. This retains neither Scene/Window/raster nor pixel borrows.
+    // Capture bounded Source provenance under the genuine completed Frame.
+    // Report additionally compares the reconstructed native detail child's
+    // tiled RGBA5551 interior to this Frame's RGBA8 pixels, retaining only
+    // scalar evidence; no Scene/Window/raster/pixel borrow survives the call.
     void frame(const post_course::Scene&,std::int32_t argument,std::uint64_t frameOrdinal);
     // ONLY after Host::try_present returned completed for the copied surface.
     // Scalars were computed under the corresponding real Frame borrow.
     // Menu-ready signals additionally require copied Source initialization,
     // unfaded/visible UI and settled real Window operations; first varied
-    // fade-in pixels alone never authorize Report/Album return or Gallery entry.
+    // fade-in pixels alone never authorize Album return or Gallery entry.
+    // Report requires ordinary cover -> PKMN Report -> View -> first species A,
+    // matched detail-image Host completions -> B/reopen the same canonical
+    // photo -> B/list -> B/menu -> B/cover -> B and actual Oak13 retirement.
+    // Existing Photos are read only; absent first-species input is a missing
+    // prerequisite, never permission to manufacture a photo or callback result.
     void presented(std::int32_t argument,std::uint64_t frameOrdinal,
                    std::uint64_t pixelDigest,bool varied);
     // At actual Runtime retirement callback, after Scene::retire() joined.

@@ -480,6 +480,57 @@ void raster_case(const isle::rom::Snapshot& rom,const std::shared_ptr<const ui::
     log<<prefix<<"_actual_rsp_rdp\tframes="<<gpu.frames
        <<"\tfull_frame_exact_normal_source_math_all_child_revisions_release_all_piece_borrow_guard\tpass\n";
 }
+void mixed_size_reuse_case(const isle::rom::Snapshot& rom,const std::shared_ptr<const ui::Resources>& common,
+                          const std::shared_ptr<const pc::Resources>& resources,isle::game_audio::Session& audio,
+                          isle::game::State& state,const fs::path& output,std::ostream& log){
+    Fixture f(common,resources,audio,state);Gpu gpu(rom);
+    IsleGameObject* object=nullptr;IsleGameSprite* parent=nullptr;
+    ok(isle_post_window_sprite_object_create(f.probe.window,6,0x801fe318u,&object,&parent),"mixed-size actual Camera parent");
+    auto& root=native(f,parent);isle_sprite_move(&root,0,0);isle_sprite_color(&root,255,255,255,255);root.attr&=~ISLE_SP_HIDDEN;
+    // Creation order matters: a shared first-fit pool first places the large
+    // pair before both small pairs. Capacities remain the admitted two-small,
+    // one-large plan used by the other Camera consumer case.
+    std::array<Child,3> children{{
+        child(f,parent,0x80208900u,160,20),
+        child(f,parent,0x80201520u,20,20),
+        child(f,parent,0x80201520u,90,20)}};
+    std::array<PhotoPixels,3> sources{{
+        PhotoPixels(140,105,37),PhotoPixels(52,39,41),PhotoPixels(52,39,43)}};
+    std::array<const PhotoPixels*,3> source_views{{&sources[0],&sources[1],&sources[2]}};
+    for(std::size_t i=0;i<children.size();++i){
+        const auto& view=native(f,children[i].sprite);
+        require(std::size_t(view.width)==sources[i].width && std::size_t(view.height)==sources[i].height,
+                "mixed-size Camera consumers require actual admitted large and small geometry");
+        write(f,children[i],sources[i]);pixels(f,children[i],sources[i]);
+    }
+    const auto initial=gpu.render(f,children);
+    image_matches(initial,f,children,source_views,"mixed-size-initial");
+    require(gpu.executor.quiescent(),"mixed-size release requires actual graphics retirement");
+    ok(isle_post_window_thumbnail_release(f.probe.window,children[0].image),"retired large Camera binding release");
+    ok(isle_post_window_thumbnail_release(f.probe.window,children[2].image),"retired second small Camera binding release");
+    for(const auto index:{0u,2u})
+        require(native(f,children[index].sprite).bitmap==
+                    resources->roots()[resources->sprite_index(children[index].identity)]->bitmap,
+                "mixed-size release must restore the same native child's immutable binding");
+    // The surviving first small pair separates the free regions. Recreating
+    // small1 must not consume large's retained capacity and strand its slot.
+    ok(isle_post_window_thumbnail_create(f.probe.window,children[2].sprite,children[2].identity,&children[2].image),
+       "recreate second small Camera thumbnail after real graphics retirement");
+    sources[2]=PhotoPixels(52,39,47);write(f,children[2],sources[2]);
+    ok(isle_post_window_thumbnail_create(f.probe.window,children[0].sprite,children[0].identity,&children[0].image),
+       "recreate large Camera thumbnail with its admitted slot still available");
+    sources[0]=PhotoPixels(140,105,53);write(f,children[0],sources[0]);
+    for(std::size_t i=0;i<children.size();++i)pixels(f,children[i],sources[i]);
+    const auto reused=gpu.render(f,children);
+    image_matches(reused,f,children,source_views,"mixed-size-recreated");
+    require(initial!=reused,"mixed-size recreation must publish changed real Camera pixels");
+    artifact(output/"camera-mixed-size-recreated",reused);
+    require(gpu.executor.quiescent(),"mixed-size final cleanup requires actual graphics retirement");
+    for(const auto& c:children)
+        ok(isle_post_window_thumbnail_release(f.probe.window,c.image),"retire every mixed-size Camera binding after real graphics completion");
+    log<<"camera_mixed_size_reuse\tframes="<<gpu.frames
+       <<"\tlarge_small_small_release_large_small_recreate_small_large_full_frame_exact\tpass\n";
+}
 void run(const fs::path& rom_path,const fs::path& root){
     require(root.is_absolute() && fs::is_directory(fs::symlink_status(root)) && !fs::is_symlink(fs::symlink_status(root)) &&
             fs::is_empty(root) && fs::canonical(root)==root.lexically_normal(),"NEW_OWNED_EMPTY_ROOT must exist, be empty, canonical, absolute and nonsymlink");
@@ -498,6 +549,7 @@ void run(const fs::path& rom_path,const fs::path& root){
     log<<"case\tactual_updates_or_geometry\tactual_beats_or_topology\tresult\n";
     text_cases(common,camera,*audio.session,state,log);layout_case(common,camera,*audio.session,state,log);
     raster_case(rom,common,camera,*audio.session,state,root/"artifacts",log);
+    mixed_size_reuse_case(rom,common,camera,*audio.session,state,root/"artifacts",log);
     raster_case(rom,common,photo,*audio.session,state,root/"artifacts",log);
     require(pcm.used==0 && pcm.finishes==0 && pcm.polls==0 && audio.session->accepted_frames()==0,"Window tests must not fabricate Audio task/output progress");
     audio.session.reset();require(!executor.machine && !executor.borrowed,"actual Audio RSP ownership retired");

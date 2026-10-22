@@ -1632,7 +1632,7 @@ The successful Original process exits normally after 30.337 seconds; its caller 
 
 GCC Debug passes all 59 component CTests; optimized GCC passes the scalar and score consumers; Clang passes scalar, score and effects consumers. The actual Linux product rebuilds. Real CPU-Vulkan effects execute their format/tenth-frame/retirement workload; the rebuilt photograph consumer completes 68 genuine GPU frames, four expected failed-GPU paths and 83 Original C OM/CopyInfo updates. Independent arithmetic, route-closure and composition reviews report no concrete defect within these scopes.
 
-Private qualification manifest SHA-256: `ad9c3656d015fddd196a96a0ac22c74bd2e2388ae4351b45a46be61cb4987c65`. Original `PI_2` macro value/type, universal underflow/exception-status behavior, physical N64 behavior and complete Original execution of the scoring function remain unproven. Exact cohort agreement does not establish those claims. Full Original-score parity and Windows 11 runtime qualification remain separate open gates.
+Private scalar qualification manifest SHA-256: `ad9c3656d015fddd196a96a0ac22c74bd2e2388ae4351b45a46be61cb4987c65`. Original `PI_2` macro value/type, universal underflow/exception-status behavior and physical N64 behavior remain unproven. This scalar cohort does not execute the complete Original scoring function; the separate complete-score cohort below supplies its own bounded evidence. Neither establishes universal score/pixel parity or Windows 11 runtime qualification.
 
 ### Exact scalar-angle portable Runtime products
 
@@ -1648,6 +1648,32 @@ The published `SHA256SUMS` SHA-256 is `21b94f2ddf6699144d209285068549d895d83f8c4
 The exact downloaded Linux ELF passes `--help` and a separate uninstrumented ordinary-SDL-keyboard session with an unchanged whole, previously earned Save pair. Actual boot, Title, Beach attract and Continue-selection surfaces were captured. The session reached its declared 1,200-second deadline, sent normal WM close and returned 0 with no forced cleanup, errors or modified protected inputs; the pair remained byte-exact. A preceding unsupported-GLX startup is excluded. The successful session uses documented SDL3 `SDL_VIDEO_FORCE_EGL=1` and CPU rendering, not a product patch.
 
 This session does **not** qualify Album/AB, a new photograph/Oak assessment or a fresh campaign for this binary. Those earlier results retain their source/cohort boundaries. Windows package/help/CI success is not Windows 11 ROM gameplay. Private portable-product qualification SHA-256: `e87c28ce81f4fca4e1a00169f8ca9fc09cbe441afa2da6285d499f1d2a55fec7`.
+
+## Independent complete Original and native photo scoring
+
+A fresh Original lifetime starts with empty saves and ordinary SDL/XTest input: New Game, naturally entered photographer name, Oak introduction, Beach tutorial photographs and normal Quit Course. No guest state, score, photograph, controller result or callback return is authored. The actual GAME replay initializer/configuration and yield-capable OM/GTL caller execute the complete `func_800A0EA4` → rendering/counting → `score_CalculateScore` path.
+
+Independent pinned [CXD4](https://github.com/mupen64plus/mupen64plus-rsp-cxd4/tree/00906a92641c540a64e4e7505012157315314810) and serial [Angrylion](https://github.com/ata4/angrylion-rdp-plus/tree/31bdb1f0a79dd726017a38432540c6b5db0fa117) execute real opaque microcode and RDP work over live Original memory; no SDK producer body/header, opaque SDK/DSP object or full CPU/RAM checkpoint is inspected. Plugin forwarding wrappers observe public descriptors, actual invocations/interrupt callbacks and dispatch counters, not expected outcomes. These mixed-notice reference plugins remain private and are not relicensed or included in the portable release.
+
+Each actual outer entry captures the complete typed 928-byte pre-call PhotoData, all 12 subject, six item and 32 effect slots, raw binary32 values, source order and sentinels. Post-call photo flags, all eleven ScoreData fields, selected rank/map/slot/species, both actual 159,744-byte feedback planes and reductions remain separate output evidence. Actual PC/SP-matched returns, camera restoration, wrapper copying, caller return, one-VI wait/resumption and subsequent VIs establish lifetime completion rather than just a returned C value.
+
+Both FOV passes require real graphics-task ancestry, halted/broke RSP return, actually forwarded SP/DP interrupts, positive real RDP dispatch/triangle/full-sync work, nonempty actual subject depths and a drained pipeline at actual `gtlDrawOne` return. Attribution opens at actual `score_Render` entry, not after graphics have already executed. Earlier closed attempts with a late attribution window or unrelated-interrupt credit are excluded; independent review accepted both corrections before the fresh successful lifetime.
+
+The fresh Original exits normally with **four qualified lifetimes**, zero pending observed frames, zero in-flight RSP/RDP calls, no observer failure and completed cleanup. Every launched asset, including lawful ROM, core, plugins, observer and contract, retains its launch SHA-256. Private Original qualification SHA-256: `7591af962bb56a17b9f3f3155ae9dbb5be508218e8f0836c3f9fb3f1f995586b`.
+
+Four separate native consumers losslessly translate only those pre-call inputs into production Replay. Native independently reconstructs the world/subjects/items/effects, executes its actual GAME C render consumer with canonical RSP/CPU-Vulkan RDP, reduces its own completed memory and computes its own score. Original counts, feedback, ScoreData and expected results are never native inputs. Actual Source wait1 advances OM once; real Host Audio uses SDL's dummy device. Every consumer completes two actual GPU frames, restores its camera, joins Source, retires Replay/Frame and destroys the game with zero objects, cameras, models/nodes, matrices, sprites or processes remaining.
+
+| Genuine photograph | Original total | Native total | Differing ScoreData fields |
+|---|---:|---:|---:|
+| 1 | 3,300 | 3,300 | 0 / 11 |
+| 2 | 2,130 | 2,130 | 0 / 11 |
+| 3 | 1,030 | 1,030 | 0 / 11 |
+| 4 | 2,210 | 2,210 | 0 / 11 |
+
+Selected input slots and post-call photo flags also agree in all four comparisons. Native completes eight genuine GPU passes. The public Replay API does not expose FinalCounts or a complete feedback-slot map, so this consumer fabricates neither; equality here is of actual complete scoring outputs, not a claimed bytewise framebuffer comparison. Fresh Native GameSession Dash state is identified separately; no Original save state is imported. The photos do not exercise every species, effect, equipment state, signed-zero case or rendering backend.
+
+Private comparison manifest SHA-256: `d5cca808c67a6ebbc22bd2826dd3396c11d2826a9cf3696ccd4a8869ce8e3385`. This bounds the production `be7f372` implementation's independent complete-score agreement; it is not physical N64, universal score/pixel/FP, Windows 11 gameplay or downloaded-product campaign qualification.
+
 
 
 ## Fresh clone-update transport results

@@ -6759,3 +6759,31 @@ private observer's scalar wait/store proof, earlier fresh campaigns or
 Oak-scoring checks, all-species coverage, audio-arithmetic/hearing parity,
 Windows ROM/UI/device qualification or hardware-GPU proof to this cohort.
 
+### Published Linux startup failure paths
+
+The same downloaded preview-3 Linux ELF exercises these actual application
+failure paths, not only the standalone ROM checker:
+
+| Input or destination | Exit | Observed rejection |
+| --- | --- | --- |
+| No ROM argument | 2 | Usage; no game launch |
+| Missing ROM path | 1 | Input cannot be opened |
+| Short wrong input | 1 | Incomplete or unreadable image |
+| Owned unreadable input | 1 | Input cannot be opened |
+| Owned 16 MiB wrong image with N64 byte-order magic | 1 | Exact-US identity admission fails |
+| Data-directory path is a regular file | 1 | Directory creation fails |
+| Owned read-only data directory | 1 | Profile-directory creation fails with permission denied |
+
+All admitted cases terminate without a timeout. The read-only-directory
+case uses the already qualified EGL/CPU-Vulkan and dummy-audio environment
+and records normal component destruction. An earlier GLX-only fixture
+failed window creation; that result is not counted as permission proof.
+The lawful ROM and the owned path-conflict marker remain unchanged.
+Repeating the full-size wrong-image rejection against the entire existing
+acknowledged profile preserves both generation 41/40 canonical members
+byte-exact. No fixture modifies that profile's photo or comment.
+
+This is Linux startup rejection and profile-preservation evidence. It
+does not substitute for Windows ROM-backed error paths, filesystem
+power-loss survival or an interrupted successful Save transaction.
+

@@ -1729,6 +1729,22 @@ Two fail-closed CLI probes and seven explicitly synthetic report/interpretation 
 
 Private qualification SHA-256: `1d2bcd10cdd19d78d287d1c5ba908418a93b0cc6b91547b3f2b422001db15893`. This establishes bounded controlled public-input influence. Original gain-consumption identity, gain-effective interval, internal N, SETBUFF-as-N, isolated-voice PCM, arithmetic, hardware, natural-trajectory and full Native synthesis parity remain **unproven**. The extra heap/public restart remain controlled perturbations; the frozen earlier corpus is not requalified.
 
+### Held-out long-duration retarget compatibility
+
+A separate four-lifetime experiment retains the same actual public call and target while testing longer public durations. Before **any** new collection, strict-compiled unchanged Native helpers, their eleven-file project-source/header closure, immutable coefficient table and three pairwise-distinct two-case prediction vectors are sealed. Only GPR7—the documented public time argument—is changed in the two variants; fresh baseline/repeat perform no argument writes.
+
+| Public duration, µs | Actual subsequent left-current word | Native output-clock model | Native source-clock model | Unconditional previous-target model |
+|---|---:|---:|---:|---:|
+| 32000 | 44 | 44 | 6 | 2015 |
+| 64000 | 6 | 6 | 2 | 2015 |
+
+The output-clock model uses the observed 512-output-frame separation between two initialized ENV placements; the competing source-clock model uses 256 samples at public pitch 0.5. Native duration-policy counts 1024/2048 remain explicit model assumptions, not observed Original internal variables. Exact agreement across both held-out cases establishes compatibility only with the named predeclared Native policy; no model, interval or rounding rule is adjusted after collection.
+
+All four lifetimes exit normally: 1,412 real RSP tasks total, 8,746 public entries/matched returns per case, closed resource/factory/heap guards, unchanged protected inputs and no forbidden endpoints. Fresh byte/public admissions and complete-prefix query-4 DAGs run serially under the unchanged 8 GiB address-space bound. The comparison preserves exact baseline-repeat output, first-INIT words, all six ENV geometries, actual builder cutoffs/full histories, later gain/Stop/Free calls and both-side command/declared-PCM support. Eight synthetic negatives reject wrong geometry, unmatched or one-case-only models, duplicate vectors, prediction tampering and one-sided support; multiple-match defense reports nondiscrimination.
+
+Private qualification SHA-256: `0084690f1c0bdd391c9b7a29f115f45646d04f4642e1156a451184bc0bfa5e23`. A CLI-only preflight rejection is retained before the corrected prediction-only invocation; no observations or expectations change. Original gain-consumption identity, effective interval, internal N, arithmetic, isolated Original PCM, hardware and natural-trajectory claims remain false. The earlier one-bit packed-rate discrepancy is not resolved by this bounded compatibility result.
+
+
 ## Native GAME sound admission and descriptor-volume corrections
 
 Competing exact-source assessments identify two Native service discrepancies against canonical GAME `src/sys/audio.c:1289–1316,1359–1374`. Missing sound IDs previously returned `invalid_parameter`, allowing scene services to retain a failure instead of the ordinary `-1` result. They now preserve source idle-counter aging and return successful execution with slot `-1`; malformed parameters still fail. Volume changes before descriptor allocation no longer rewrite a queued sound's starting parameters. Descriptor-backed controls and replacement handling are retained.

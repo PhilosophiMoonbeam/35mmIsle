@@ -428,7 +428,7 @@
     "src/scene_services.hpp": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae",
     "src/scene_services.cpp": "e907c7f18fc19b9802ccded83a370b57d8c6531637cef921e187456fed963a44",
     "src/game_audio.hpp": "13703dbf4e73508eee533164f213db5f91d7e60fd08d01f4c6d63123674effd1",
-    "src/game_audio.cpp": "1f202d4da5349fddd803464ca9db1e84b4eb294eb04aae29e5e8a2ea91fa1e10",
+    "src/game_audio.cpp": "66e8490d50d280bb26ef23a1868494188d42e74cf4839fa825d8339ee0bf363f",
     "include/35mmisle/engine.h": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
   },
   "native_support_digest_owner": "Main refreshes all shared native-support digests only after final integration; this private provider does not modify them."

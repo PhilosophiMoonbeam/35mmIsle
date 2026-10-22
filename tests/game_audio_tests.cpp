@@ -268,7 +268,9 @@ void absent_sound_and_idle_aging() {
     check(session.stop_sounds() == a::Error::none, "queued boundary requests cancel without a descriptor");
 }
 
-std::vector<std::vector<std::uint8_t>> pending_sound_commands(bool volume_before_binding) {
+enum class PendingControl { none, volume, pan, pitch, reverb };
+
+std::vector<std::vector<std::uint8_t>> pending_sound_commands(PendingControl control) {
     Consumer sink; sink.limit = 1024;
     auto made = make(sink);
     if (!made) { check(false, "pending-volume producer initializes"); return {}; }
@@ -276,9 +278,15 @@ std::vector<std::vector<std::uint8_t>> pending_sound_commands(bool volume_before
     int slot = -1;
     check(session.play_sound(0, {0x3000, 64, 0, 1.0f}, slot) == a::Error::none && slot >= 0,
           "explicit-volume sound queues before descriptor binding");
-    if (volume_before_binding)
-        check(session.sound_volume(static_cast<unsigned>(slot), 0) == a::Error::none,
-              "pre-descriptor volume control remains an ordinary ignored request");
+    a::Error result = a::Error::none;
+    switch (control) {
+        case PendingControl::none: break;
+        case PendingControl::volume: result = session.sound_volume(static_cast<unsigned>(slot), 0); break;
+        case PendingControl::pan: result = session.sound_pan(static_cast<unsigned>(slot), 0); break;
+        case PendingControl::pitch: result = session.sound_pitch(static_cast<unsigned>(slot), 0.5f); break;
+        case PendingControl::reverb: result = session.sound_reverb(static_cast<unsigned>(slot), 100); break;
+    }
+    check(result == a::Error::none, "pre-descriptor control remains an ordinary ignored request");
     a::TaskView initial;
     check(session.build(initial) == a::Error::none, "pending-volume producer publishes bootstrap");
     cpu_complete(session, initial);
@@ -311,11 +319,32 @@ std::vector<std::vector<std::uint8_t>> pending_sound_commands(bool volume_before
     return commands;
 }
 
-void unbound_volume_preserves_pending_sound() {
-    const auto baseline = pending_sound_commands(false);
-    const auto ignored = pending_sound_commands(true);
-    check(baseline == ignored,
-          "volume before descriptor binding cannot alter the pending sound's actual producer commands");
+void unbound_controls_preserve_pending_sound() {
+    const auto baseline = pending_sound_commands(PendingControl::none);
+    check(baseline == pending_sound_commands(PendingControl::volume),
+          "unbound volume cannot alter pending producer commands");
+    check(baseline == pending_sound_commands(PendingControl::pan),
+          "unbound pan cannot alter pending producer commands");
+    check(baseline == pending_sound_commands(PendingControl::pitch),
+          "unbound pitch cannot alter pending producer commands");
+    check(baseline == pending_sound_commands(PendingControl::reverb),
+          "unbound reverb cannot alter pending producer commands");
+}
+
+void unbound_priority_preserves_steal_order() {
+    Consumer sink;
+    auto made = make(sink);
+    if (!made) { check(false, "unbound-priority owner initializes"); return; }
+    auto& session = *made.session;
+    int slot = -1;
+    for (unsigned i = 0; i < g::sound_slots; ++i)
+        check(session.play_sound(0, {}, slot) == a::Error::none && slot == static_cast<int>(i),
+              "priority fixture queues equal-priority sounds");
+    check(session.sound_priority(g::sound_slots - 1, 1) == a::Error::none,
+          "unbound priority request is ordinary");
+    check(session.play_sound(0, {}, slot) == a::Error::none && slot == 0,
+          "unbound priority cannot redirect stealing from the oldest equal-priority sound");
+    check(session.stop_sounds() == a::Error::none, "unbound-priority sounds cancel cleanly");
 }
 
 void readiness_and_failure() {
@@ -712,7 +741,8 @@ int main() {
     readiness_and_failure(); partial_output_and_clock(); stop_restart_and_drain();
     local_bootstrap_and_first_update(false); local_bootstrap_and_first_update(true);
     reordered_sfx_descriptor_reuse();
-    absent_sound_and_idle_aging(); unbound_volume_preserves_pending_sound();
+    absent_sound_and_idle_aging(); unbound_controls_preserve_pending_sound();
+    unbound_priority_preserves_steal_order();
     flute_cycle_and_reconstruction(); flute_natural_completion_and_stopped_timestamp(); flute_checked_audio_errors();
     source_epoch_admission_and_equal_timestamps();
     effects_reset_atomicity(); live_priority_steal_retirement();

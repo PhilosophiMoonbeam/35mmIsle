@@ -323,24 +323,26 @@ a::Error Session::sound_volume(unsigned slot, std::uint32_t value) noexcept {
 }
 a::Error Session::sound_pan(unsigned slot, std::uint32_t value) noexcept {
     if (slot >= sounds_.size() || control() != a::Error::none) return a::Error::invalid_parameter;
-    auto& s = sounds_[slot]; s.parameters.pan = static_cast<std::uint8_t>(std::min(value, 127u));
-    return s.handle.generation == 0 || !service_->player(sfx_).active(s.handle) ? a::Error::none : sound_control(slot, service_->player(sfx_).stage_pan(s.handle, s.parameters.pan));
+    auto& s = sounds_[slot];
+    return s.handle.generation == 0 || !service_->player(sfx_).active(s.handle) ? a::Error::none : sound_control(slot, service_->player(sfx_).stage_pan(s.handle, static_cast<std::uint8_t>(std::min(value, 127u))));
 }
 a::Error Session::sound_pitch(unsigned slot, float value) noexcept {
     if (slot >= sounds_.size() || control() != a::Error::none || !std::isfinite(value) ||
         value < 1.0f / 32768.0f) return a::Error::invalid_parameter;
-    auto& s = sounds_[slot]; s.parameters.pitch = std::min(value, 2.0f);
-    return s.handle.generation == 0 || !service_->player(sfx_).active(s.handle) ? a::Error::none : sound_control(slot, service_->player(sfx_).stage_pitch(s.handle, s.parameters.pitch));
+    auto& s = sounds_[slot];
+    return s.handle.generation == 0 || !service_->player(sfx_).active(s.handle) ? a::Error::none : sound_control(slot, service_->player(sfx_).stage_pitch(s.handle, std::min(value, 2.0f)));
 }
 a::Error Session::sound_reverb(unsigned slot, std::uint32_t value) noexcept {
     if (slot >= sounds_.size() || control() != a::Error::none) return a::Error::invalid_parameter;
-    auto& s = sounds_[slot]; s.parameters.reverb = static_cast<std::uint8_t>(std::min(value, 127u));
-    return s.handle.generation == 0 || !service_->player(sfx_).active(s.handle) ? a::Error::none : sound_control(slot, service_->player(sfx_).stage_fx_mix(s.handle, s.parameters.reverb));
+    auto& s = sounds_[slot];
+    return s.handle.generation == 0 || !service_->player(sfx_).active(s.handle) ? a::Error::none : sound_control(slot, service_->player(sfx_).stage_fx_mix(s.handle, static_cast<std::uint8_t>(std::min(value, 127u))));
 }
 a::Error Session::sound_priority(unsigned slot, std::uint8_t value) noexcept {
     if (slot >= sounds_.size() || control() != a::Error::none) return a::Error::invalid_parameter;
-    auto& s = sounds_[slot]; s.priority = value;
-    return s.handle.generation == 0 || !service_->player(sfx_).active(s.handle) ? a::Error::none : service_->player(sfx_).set_priority(s.handle, value);
+    auto& s = sounds_[slot];
+    if (s.handle.generation == 0) return a::Error::none;
+    s.priority = value;
+    return !service_->player(sfx_).active(s.handle) ? a::Error::none : service_->player(sfx_).set_priority(s.handle, value);
 }
 a::Error Session::global_sound_volume(std::uint8_t value, bool current_only) noexcept {
     if (control() != a::Error::none) return a::Error::invalid_state;

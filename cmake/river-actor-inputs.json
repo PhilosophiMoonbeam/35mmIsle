@@ -970,7 +970,7 @@
       "sha256": "ab56889ed65e0a6d2bf0a749e5e0daa3eaaf51ca0c56f18c5fc87d691017cbf5"
     },
     "cmake/player-root-inputs.json": {
-      "sha256": "92c532c7f290fcf341816cdc1aad399f4446bc44a54d7c61a8649c5469b286a4"
+      "sha256": "20c556771a4efa47a1f867a3881d18b7775cc663b2eec9acf58bf37b0ee4afc7"
     }
   },
   "typed_services": {

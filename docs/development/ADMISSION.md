@@ -1748,6 +1748,23 @@ The same source inventory confirms the existing current-course/selected-course/u
 
 Private correction qualification SHA-256: `504f371ec485f5bd324bfda37e5afd109fadf2e15b50f2b6afce30fa0403aea4`; source-inventory SHA-256: `e20dd121dea3fdebae896fcb6f717401d85f803c6f1aae54e6219c251859b1fb`. Exact before/after executables, source and retained PCM remain private. This qualifies two Native GAME API boundaries, not complete Original synthesis/arithmetic, all SDK-state eligibility or parameter domains, physical playback/hardware, Windows 11 gameplay or a newly completed campaign.
 
+### Adjacent descriptor controls and persistent reverb
+
+Canonical GAME `audio.c:1376–1416,1429–1434,1584–1608` establishes two additional corrections. Per-sound pan, pitch and reverb forward clamped descriptor controls without overwriting GAME start parameters; priority changes do not update steal precedence before descriptor allocation. Native now preserves those boundaries. Existing validation, bound controls and global-reverb clamping remain unchanged.
+
+Four additional producer regressions fail before correction and pass afterward: ignored unbound pan/pitch/reverb and equal-priority queued-slot stealing after an unbound priority request. The complete Linux debug suite passes **59/59**. Separate before/after actual Native/RSP executions cover nine cases each, **3,060 tasks total**, retained PCM and complete borrower retirement.
+
+| Scenario versus same-version baseline | Before: changed shared signed16 components | After: changed shared signed16 components |
+|---|---:|---:|
+| Pan before descriptor allocation | 94831 | 0 |
+| Pitch before descriptor allocation | 150792 | 0 |
+| Reverb before descriptor allocation | 146001 | 0 |
+| Bound transient reverb followed by persistent-global reset | 145317 | 0 |
+
+The incorrect pre-binding pitch also produces 128,000 extra signed16 components; corrected output has the baseline extent. Ordinary bound pan, pitch and reverb remain effective and each is byte-exact against its own before-fix output. Baseline and global-reset-only output are also preserved. The reset case proves that a transient descriptor reverb setting no longer contaminates later composition from GAME start parameters.
+
+Private qualification SHA-256: `29a5c746b3aa7ee44b4de449255847b210a0f51b6f543b47e497562a8891b5ec`. Original producer arithmetic, complete SDK-state eligibility, physical playback and Windows 11 gameplay remain unqualified. Intermediate commit `439a194` passes all ten hosted jobs but is not the final preview source for this additional correction family.
+
 
 
 

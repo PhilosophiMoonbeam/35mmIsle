@@ -5,11 +5,13 @@
 #include "post_course_window.hpp"
 #include "credits_window_extension.h"
 #include "scene_graphics.hpp"
+#include "35mmisle/continuation.h"
 #include <algorithm>
 #include <cstring>
 #include <exception>
 #include <limits>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -181,6 +183,7 @@ struct State {
     std::unique_ptr<Thumbnail[]> thumbnails;
     std::unique_ptr<ThumbnailAlias[]> thumbnail_aliases;
     scene::graphics::Frame* graphics=nullptr;
+    std::thread::id graphics_owner{};
     std::size_t thumbnail_count=0;
     std::unique_ptr<IsleGameObject*[]> adopted;
     std::unique_ptr<bool[]> owned;
@@ -416,7 +419,9 @@ struct State {
             if(thumbnail_aliases[i].object)return fail(ISLE_GAME_INVALID_STATE);
             aliased=true;
         }
-        if(aliased && (!graphics || !graphics->quiescent()))return fail(ISLE_GAME_INVALID_STATE);
+        // Frame/Executor inspection is creator-owned even when the caller is
+        // a serialized Source continuation on its own native worker thread.
+        if(aliased && !graphics_quiescent())return fail(ISLE_GAME_INVALID_STATE);
         scene::SpriteHandle owner;IsleGameSprite *parent,*child,*next,*previous;
         const bool live=t.sprite && services.sprite_links(t.sprite,owner,parent,child,next,previous);
         if(live && owner.object!=t.object)return fail(ISLE_GAME_INVALID_STATE);
@@ -442,6 +447,16 @@ struct State {
             if(thumbnail_aliases[i].thumbnail==&t)thumbnail_aliases[i]={};
         t.raster.reset();t.object=nullptr;t.sprite=nullptr;t.prototype=0;t.serial=0;t.credits=false;
         return ISLE_GAME_OK;
+    }
+    bool graphics_quiescent() const noexcept {
+        if(!graphics)return false;
+        if(std::this_thread::get_id()==graphics_owner)return graphics->quiescent();
+        struct Query { scene::graphics::Frame* frame;bool quiescent=false; } query{graphics};
+        const auto result=isle_continuation_on_owner([](void* raw) {
+            auto& value=*static_cast<Query*>(raw);
+            value.quiescent=value.frame->quiescent();
+        },&query);
+        return result==ISLE_CONT_OK && query.quiescent;
     }
     IsleGameResult retire() noexcept {
         for(std::size_t i=0;i<thumbnail_count;++i)if(thumbnails[i].credits_holds)return ISLE_GAME_INVALID_STATE;
@@ -547,7 +562,7 @@ IslePostCourseWindow* Window::source() noexcept {return &p_->bridge;}
 IsleGameResult Window::retire() noexcept {return p_->retire();}
 IsleGameResult Window::bind_graphics_frame(scene::graphics::Frame& frame) noexcept {
     if(p_->graphics || !frame.quiescent())return p_->fail(ISLE_GAME_INVALID_STATE);
-    p_->graphics=&frame;return p_->status();
+    p_->graphics=&frame;p_->graphics_owner=std::this_thread::get_id();return p_->status();
 }
 std::size_t Window::thumbnail_plane_bytes(const Resources& resources,std::uint32_t identity) {
     return photo_prototype(resources,identity).plane_bytes;
@@ -788,7 +803,7 @@ IsleGameResult isle_post_window_sprite_rebind(IslePostCourseWindow* s,IsleGameSp
 IsleGameResult isle_post_window_sprite_assign_thumbnail(IslePostCourseWindow* s,
     IsleGameSprite* destination,IsleGameSprite* origin){
     return invoke(s,[&](State& p){
-        if(!p.graphics || !p.graphics->quiescent())return ISLE_GAME_INVALID_STATE;
+        if(!p.graphics_quiescent())return ISLE_GAME_INVALID_STATE;
         if(p.resources.kind()!=post_course::Resources::Kind::album || destination==origin ||
            !p.owns_sprite(destination) || !p.owns_sprite(origin) || p.thumbnail_sprite(destination))
             return ISLE_GAME_INVALID_ARGUMENT;
@@ -820,7 +835,7 @@ IsleGameResult isle_post_window_sprite_assign_thumbnail(IslePostCourseWindow* s,
 }
 IsleGameResult isle_post_window_sprite_clear_root_links(IslePostCourseWindow* s,IsleGameSprite* sprite){
     return invoke(s,[&](State& p){
-        if(!p.graphics || !p.graphics->quiescent())return ISLE_GAME_INVALID_STATE;
+        if(!p.graphics_quiescent())return ISLE_GAME_INVALID_STATE;
         if(!p.owns_sprite(sprite))return ISLE_GAME_INVALID_ARGUMENT;
         return p.ok(p.services.clear_sprite_root_links(sprite));
     });
@@ -1017,7 +1032,7 @@ IsleGameResult isle_post_window_frame_delete(IslePostCourseWindow* s,Handle h){a
 IsleGameResult isle_post_window_frame_retire_hidden(IslePostCourseWindow* s,Handle h){
     return invoke(s,[&](State& p){
         if(!p.frame_handle(h))return ISLE_GAME_INVALID_ARGUMENT;
-        if(!p.graphics || !p.graphics->quiescent() || !p.frame.hidden())return ISLE_GAME_INVALID_STATE;
+        if(!p.graphics_quiescent() || !p.frame.hidden())return ISLE_GAME_INVALID_STATE;
         for(std::size_t i=0;i<p.capacity.operations;++i)
             if(p.operations[i].serial && p.operations[i].kind==State::Kind::fade)
                 return ISLE_GAME_INVALID_STATE;

@@ -1,6 +1,8 @@
 #include "post_course_window_probe.h"
 #include "engine_internal.h"
 
+void isle_window_probe_frame_cycle(IsleGameObject*);
+
 void isle_window_probe_bind(IsleGameObject* object,IsleWindowProbe* probe) { object->userData=probe; }
 static IsleGameResult remember(IsleWindowProbe* p,uint16_t character) {
     if(p->count>=16)return ISLE_GAME_INVALID_STATE;
@@ -87,4 +89,42 @@ void isle_window_probe_heartbeat(IsleGameObject* object) {
         p->aux_result=isle_post_window_sprite_aux_get(p->window,p->aux_target,&value);
         p->aux_observed=value;++p->aux_reads;
     }
+}
+
+/* The existing test record's element/table handles name successive Frames in
+ * this case. All fades and waits remain in compiled C on the real Source
+ * process; only evidence is written to the test-owned record. */
+void isle_window_probe_frame_cycle(IsleGameObject* object) {
+    IsleWindowProbe* p=object->userData;
+    int cycle;
+    if(p->entered)return;
+    p->entered=1;
+    p->result=isle_post_window_frame_create(p->window,&p->element);
+    if(p->result!=ISLE_GAME_OK)goto done;
+    for(cycle=0;cycle<3;++cycle) {
+        p->result=isle_post_window_fade_in(p->window,p->element,3);
+        if(p->result!=ISLE_GAME_OK)goto done;
+        p->count=cycle*2+1;
+        p->result=isle_game_source_wait(p->game,1);
+        if(p->result!=ISLE_GAME_OK)goto done;
+        p->result=isle_post_window_fade_out(p->window,p->element);
+        if(p->result!=ISLE_GAME_OK)goto done;
+        p->count=cycle*2+2;
+        p->result=isle_game_source_wait(p->game,1);
+        if(p->result!=ISLE_GAME_OK)goto done;
+        p->table=p->element;
+        p->slots_before[cycle]=p->beats;
+        p->result=isle_post_window_frame_retire_hidden(p->window,p->element);
+        if(p->result!=ISLE_GAME_OK)goto done;
+        p->result=isle_post_window_frame_create(p->window,&p->element);
+        if(p->result!=ISLE_GAME_OK)goto done;
+        p->slots_after[cycle]=p->beats;
+        if(p->element.owner!=p->table.owner || p->element.serial==p->table.serial) {
+            p->result=ISLE_GAME_INVALID_STATE;
+            goto done;
+        }
+        ++p->callback_waits;
+    }
+done:
+    p->returned=1;
 }

@@ -12,6 +12,7 @@
 #include "scene_storage.hpp"
 #include "graphics_task.hpp"
 #include "rsp_render.hpp"
+#include "scene_graphics.hpp"
 #include <algorithm>
 #include <array>
 #include <filesystem>
@@ -21,6 +22,9 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <thread>
+
+extern "C" void isle_window_probe_frame_cycle(IsleGameObject*);
 
 namespace {
 namespace fs=std::filesystem;
@@ -531,6 +535,142 @@ void mixed_size_reuse_case(const isle::rom::Snapshot& rom,const std::shared_ptr<
     log<<"camera_mixed_size_reuse\tframes="<<gpu.frames
        <<"\tlarge_small_small_release_large_small_recreate_small_large_full_frame_exact\tpass\n";
 }
+void frame_owner_case(const isle::rom::Snapshot& rom,const std::shared_ptr<const ui::Resources>& common,
+                      const std::shared_ptr<const pc::Resources>& resources,isle::game_audio::Session& audio,
+                      isle::game::State& state,std::ostream& log){
+    namespace sg=isle::scene::graphics;
+    for(const bool reject:{false,true}){
+        // Construct on, and retain the executor on, this same owner throughout.
+        // Fixture/Window and Source workers retire before their bound Frame.
+        sg::Config config;config.require_cpu=true;config.limits={16000000,4*1024*1024};
+        config.memory={{0x6b0000,0x10000},{0x6c0000,0x10000},{0x6d0000,0x40000},depth};
+        config.transition_memory={0x5a0000,0x10000};
+        auto created=sg::Frame::create(rom,config);
+        require(bool(created),created.message.data());
+        auto graphics=std::move(created.frame);
+        Fixture f(common,resources,audio,state);
+        struct DrainOnExit {
+            sg::Frame& frame;
+            ~DrainOnExit(){while(frame.poll()==sg::Poll::pending)std::this_thread::yield();}
+        } retirement{*graphics};
+        ok(f.window->bind_graphics_frame(*graphics),"bind actual creator-owned graphics Frame");
+        auto* camera_owner=f.services->object(0x711,0);
+        require(camera_owner,"actual Window sprite camera owner");
+        f.source_owners.push_back(camera_owner);
+        IsleGameCamera* camera=nullptr;
+        ok(isle_game_attach_camera(f.storage.game(),camera_owner,&camera),"actual Window sprite camera");
+        std::vector<sp::AssetSpan> immutable;
+        const auto sprite_assets=f.producer.assets();
+        const auto common_assets=common->common_render_assets();
+        immutable.insert(immutable.end(),sprite_assets.begin(),sprite_assets.end());
+        immutable.insert(immutable.end(),common_assets.begin(),common_assets.end());
+        const std::array<sp::RamRange,1> render_ranges{{commands}};
+        unsigned frames=0,observed=0;
+        struct FramePiece { IsleGameObject* object;const IsleSprite* view; };
+        const auto pieces=[&]{
+            // Render preparation prunes hidden hierarchies. Observe actual
+            // native owners separately, as in the existing Window contracts.
+            std::array<FramePiece,9> result{};std::size_t total=0;
+            std::array<sc::RenderOrderEntry,128> owners{};
+            for(unsigned link=0;link<32;++link){
+                std::size_t count=0;
+                require(f.services->render_order(static_cast<std::uint8_t>(link),owners,count),
+                        "actual native Frame owner observation capacity");
+                for(std::size_t i=0;i<count;++i){
+                    IsleGameSprite* attachment=nullptr;
+                    const auto found=isle_game_object_sprite(f.storage.game(),owners[i].object,&attachment);
+                    if(found==ISLE_GAME_INVALID_ARGUMENT)continue;
+                    ok(found,"observe actual native Frame root attachment");
+                    IsleSprite* view=nullptr;
+                    ok(isle_game_sprite_view(f.storage.game(),attachment,&view),"observe actual native Frame local state");
+                    require(total<result.size(),"unexpected native sprite owner in Frame-only fixture");
+                    result[total++]={owners[i].object,view};
+                }
+            }
+            require(total==result.size(),"actual Frame must retain exactly nine native pieces, including hidden ones");
+            return result;
+        };
+        const auto drain=[&]{
+            while(graphics->poll()==sg::Poll::pending)std::this_thread::yield();
+            require(graphics->error()==sg::Error::none && graphics->quiescent() &&
+                    bool(graphics->completed()),graphics->message());
+            ++frames;
+        };
+        const auto draw=[&](bool finish){
+            require(graphics->quiescent(),"Window fade draw requires actual previous GPU retirement");
+            std::array<sc::SpriteDraw,256> sprites{};std::size_t count=0;
+            require(f.services->sprite_draws(sprites,count),"prepare visible actual Frame draws");
+            const bool hidden=(f.probe.count&1)==0;
+            const auto native_pieces=pieces();
+            if(hidden)
+                require(count==0 && std::all_of(native_pieces.begin(),native_pieces.end(),[](const auto& piece){
+                    return (piece.view->attr&ISLE_SP_HIDDEN)!=0;
+                }),"completed Source collapse must hide every actual native Frame piece");
+            else
+                require(count>0 && std::any_of(native_pieces.begin(),native_pieces.end(),[](const auto& piece){
+                    return (piece.view->attr&ISLE_SP_HIDDEN)==0;
+                }),"completed Source expansion must expose actual native Frame pieces");
+            std::array<sc::render::Pass,2> passes{};
+            passes[0].kind=sc::render::Kind::clear;passes[0].priority=100;
+            passes[0].flags=3;passes[0].background_rgba=0x182840ff;
+            auto& pass=passes[1];pass.kind=sc::render::Kind::sprites;pass.camera=camera;
+            pass.flags=8;pass.camera_tag=UINT32_MAX;pass.sprites=std::span(sprites).first(count);
+            pass.sprite_commands=commands;
+            sc::render::Input input;input.game=f.storage.game();
+            input.resources={1,&f.producer,immutable,render_ranges};
+            input.resources.pre_render=common->common_pre_render();input.passes=passes;
+            require(graphics->begin(input,{frames&1u}),graphics->message());
+            require(graphics->submission()!=0 && graphics->busy() && !graphics->quiescent(),
+                    "actual Window draw did not retain its real outstanding graphics owner");
+            if(finish)drain();
+        };
+        f.source(isle_window_probe_heartbeat,ISLE_GAME_SYNCHRONOUS,0xffffffffu);
+        f.source(isle_window_probe_frame_cycle,ISLE_GAME_STACKFUL,1);
+        for(unsigned step=0;step<400 && !f.probe.returned;++step){
+            require(graphics->quiescent(),"Source fade resumes only after actual GPU retirement");
+            f.tick();
+            if(unsigned(f.probe.count)==observed || f.probe.returned)continue;
+            observed=unsigned(f.probe.count);
+            const bool hold=reject && observed==2;
+            draw(!hold);
+            if(!hold)continue;
+            const auto before=pieces();
+            std::array<IsleSprite,9> retained{};
+            for(std::size_t i=0;i<retained.size();++i)retained[i]=*before[i].view;
+            const auto handle=f.probe.element;
+            const auto ticks=f.ticks;
+            const auto beats=f.probe.beats;
+            f.tick();
+            require(f.probe.returned && f.probe.result==ISLE_GAME_INVALID_STATE &&
+                    !f.probe.callback_waits && f.ticks==ticks+1 && f.probe.beats==beats+1 &&
+                    f.probe.element.owner==handle.owner && f.probe.element.serial==handle.serial &&
+                    isle_post_window_status(f.probe.window)==ISLE_GAME_INVALID_STATE,
+                    "active compiled-C hidden retirement failed to reject the real outstanding graphics borrower inline");
+            const auto after=pieces();
+            for(std::size_t i=0;i<retained.size();++i){
+                const auto& a=retained[i];const auto& b=*after[i].view;
+                require(before[i].object==after[i].object && before[i].view==after[i].view &&
+                        a.bitmap==b.bitmap && a.attr==b.attr && a.x==b.x && a.y==b.y &&
+                        a.scalex==b.scalex && a.scaley==b.scaley && a.alpha==b.alpha,
+                        "outstanding graphics rejection mutated a real hidden Frame piece");
+            }
+            drain();
+        }
+        require(f.probe.entered && f.probe.returned,"actual compiled-C Frame cycle did not finish");
+        if(!reject){
+            ok(f.probe.result,"active compiled-C retire/recreate after actual Frame fades and GPU retirement");
+            require(observed==6 && frames==6 && f.probe.callback_waits==3 &&
+                    f.services->sprite_count()==9 && graphics->quiescent(),
+                    "repeated real Frame fade/retire/recreate lost owners or completion boundaries");
+            for(unsigned i=0;i<3;++i)
+                require(f.probe.slots_before[i]==f.probe.slots_after[i],
+                        "creator handoff generated a Source wait or extra OM heartbeat");
+        }else require(observed==2 && frames==2 && graphics->quiescent(),
+                     "rejected graphics borrower failed to reach actual release");
+        log<<(reject?"frame_source_owner_borrow_reject":"frame_source_owner_recreate")
+           <<"\tupdates="<<f.ticks<<"\tframes="<<frames<<"\tpass\n";
+    }
+}
 void run(const fs::path& rom_path,const fs::path& root){
     require(root.is_absolute() && fs::is_directory(fs::symlink_status(root)) && !fs::is_symlink(fs::symlink_status(root)) &&
             fs::is_empty(root) && fs::canonical(root)==root.lexically_normal(),"NEW_OWNED_EMPTY_ROOT must exist, be empty, canonical, absolute and nonsymlink");
@@ -551,6 +691,7 @@ void run(const fs::path& rom_path,const fs::path& root){
     raster_case(rom,common,camera,*audio.session,state,root/"artifacts",log);
     mixed_size_reuse_case(rom,common,camera,*audio.session,state,root/"artifacts",log);
     raster_case(rom,common,photo,*audio.session,state,root/"artifacts",log);
+    frame_owner_case(rom,common,camera,*audio.session,state,log);
     require(pcm.used==0 && pcm.finishes==0 && pcm.polls==0 && audio.session->accepted_frames()==0,"Window tests must not fabricate Audio task/output progress");
     audio.session.reset();require(!executor.machine && !executor.borrowed,"actual Audio RSP ownership retired");
     log.flush();

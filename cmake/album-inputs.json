@@ -3312,7 +3312,7 @@
       "sha256": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4"
     },
     "src/post_course_window.cpp": {
-      "sha256": "31bb51b90a5a838e640513b6fe3c6cf02ecae95547b03876da50e69ecac40bf6"
+      "sha256": "9668b19639c177d52aa8a815395c8389a07cd78d1ec1c74e19c641fe249de4b2"
     },
     "src/post_course_scene_hooks.cpp": {
       "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
@@ -3772,6 +3772,6 @@
     "native_support_hash_policy": "Exact authoring-time live common/extended WorkingPhotos bytes. Parent owns final integration support fixedpoint and must reseal guarded recipe/generator after mechanical shared integration."
   },
   "support_allowlist": [],
-  "recipe_sha256": "32ddc96095683711a65e43c53a007734cd9b0d91b625a9510be610b94cd1bdfe",
-  "generator_sha256": "a0b9925d2b67a144d2084cbdaf15115a087bfb82ff6af997b9594b970ec8482a"
+  "recipe_sha256": "a31f0e93c0401a6b67b2233f42cf0483d4624e6b5d296872afdf5d54a8ddca88",
+  "generator_sha256": "9cc1b3b5340893359dfd8c28c3bd64ffbfc4e072805c1fb96445f845af8f97a2"
 }

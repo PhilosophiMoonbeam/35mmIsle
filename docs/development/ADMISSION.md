@@ -1850,6 +1850,18 @@ Actual Rearrange inputs produce Name order, Course order with the preceding Name
 
 Corrected qualification SHA-256: `9faf1e049c1f134aac64e7735fd1df4c7e8b62a79255ede6acd877dc724b2988`. A superseded parent transcription of lower scores is preserved separately; original images are unchanged and authoritative. This inherited-profile evidence covers present/missing sign and full-photo/placeholder/full-photo transitions, not exhaustive sort ties, every sign, a new Save/fresh campaign or Windows 11 runtime.
 
+## Album repeated-prompt creator ownership and durable edits
+
+Ordinary preview-6 Album inputs reproduce SIGABRT after an earlier Delete→No followed by another Delete confirmation. A bounded own-Native fatal stack identifies the primary cause: a Source continuation worker calls `Frame::quiescent()`, reaching the RSP executor’s creator-thread guard through hidden prompt-Frame retirement. A diagnostic repeated detail prompt reproduces it without comment editing or Arrange; neither photo movement nor the later confirmed-deletion clone is the cause. Preview-6 release notes disclose this separate failure; its assets/tag remain unchanged.
+
+Window now routes all four graphics-fence queries through the existing synchronous `isle_continuation_on_owner` service when called by a Source worker. It still queries the actual creator-owned Frame/executor; creator guards, borrowed-task rejection, Source resume/tick accounting and object identity remain intact. No cached/fabricated fence, exception suppression, allocation or extra GAME wait is introduced.
+
+Actual compiled-C regression executes three Frame fade/hide/retire/recreate cycles, six real graphics completions and unchanged OM heartbeat accounting. A separate outstanding real task rejects retirement without changing any of nine native owners, bindings or geometry. All 59 Linux Debug contracts pass; Report/Album/Gallery closes 3,417 submissions/terminals and Credits17 closes 1,652.
+
+The private uninstrumented fixed binary edits the genuine Pidgey comment **AB→ABA** through the Source keyboard, exercises B backspace, exits through End, cancels repeated detail Delete prompts, restores a held Arrange photo on B, then deposits it from slot 0 into empty slot 1. The original main-Delete path now displays its confirmation and accepts No. Actual Oak Save→Yes→Title and normal close exit 0. A second process loads the entire saved pair, shows slot 0 empty, reconstructs Pidgey from slot 1 and displays **ABA**, then closes normally with exit 0. Protected inputs/source pair are unchanged; there are no forced results, Source/profile field writes, debugger use in the after-cohort, errors or forced cleanup.
+
+Qualification SHA-256: `77d657996c84996ee3d07f3a1f15b157423935295ac8a31ee0d8b04bed4dde99`. The editor has no transactional Cancel: B deletes a character, End exits without disk Save, and Oak performs durability. This is one-photo slot-placement durability, not an occupied-photo swap, confirmed deletion, hosted corrected product, Windows 11 runtime or fresh-campaign claim.
+
 
 
 ## Fresh clone-update transport results

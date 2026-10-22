@@ -1896,6 +1896,28 @@ The corrected frozen Runtime consumer `2f694d010279159d63e22c48cd8f6daa097ab8943
 
 Bounded qualification SHA-256: `d2c3a80ea227e571132a6e34d84396f4e7b874ffa82e8db0edbc50a62de3dca9`. Foreign-Manager runtime coverage, Windows11/devices, dormant End24/Credits20 Root ingress and current full fresh-campaign completion are not claimed. Forcing a dormant selector or borrowing Title to qualify another Source entry remains invalid.
 
+## Seven typed Source courses and Cart ownership after entry-capability enforcement
+
+Production source `bc6f68e726c1713094aa9270c2db4840e4e5e003` passes all ten terminal Linux/MSVC jobs in [run 39852679522](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39852679522). Independent native0–native6 runs exercise actual Original course/Cart owners, recorded photographs, Camera9/Photo15/Oak, acknowledged Save, Source-selected Title and exact canonical cold reload. Access/gear are existing **explicitly authored canonical API fixtures**; the photographs and assessments are genuine Source execution. This is not a new unseeded campaign or earned unlock proof.
+
+| Course | Positive assessed/published Reports | Actual graphics submissions = terminals |
+|---|---:|---:|
+| Beach | 9 | 8202 |
+| Tunnel | 10 | 8992 |
+| Volcano | 9 | 8207 |
+| River | 7 | 8478 |
+| Cave | 8 | 8522 |
+| Valley | 9 | 9905 |
+| Rainbow Cloud | 1 | 11812 |
+
+The original seven-case aggregate remains **failed**: its Beach run completed nine genuine positive Reports, Save and Title but hit a stale generic-smoke assertion requiring Eevee133 rather than the dynamically selected Snorlax143. The current missing-Report policy explicitly selects Snorlax first. The historical fixed nine-species Beach/Volcano postcondition is **deleted, not repinned**; per-photo identities, positive Source assessment/publication, explicit Apple/Lapras objectives, Save/Title/cold and owner-retirement checks remain. Six successful cases use frozen consumer `2f694d010279159d63e22c48cd8f6daa097ab894390ed61f9f5ab060fd94b4ff`; the new Beach run uses test-only corrected consumer `2df1729117243c0cadfac9b9e7964574e58db77383f456f908552d624706a5b9`, with identical production native-support hashes. Failed evidence is not overwritten or relabeled.
+
+Tunnel produces an actual selected, assessed and published Dugtrio51 Report110. Rainbow Cloud produces Mew151 Report8340, real Oak result18, full Credits18 (7279 updates/3639 actual frames and LUS presentations), joined Original return8 and cold Title. Owned-PID X11 course surfaces are inspected for all seven; the first Credits surface is a fading reconstructed Mew photograph, not proof of every ending caption or image.
+
+Two independent source audits find implemented typed catalogs/providers for courses1–5, seven-way `CourseContext`, shared mechanical host/lifecycle adapters, retained misc/path/factory-failure routing, checked Original sound ramps, seven environmental tables, defined unwritten-spawn portability contracts, genuine Egg vertex publication and one shared six-definition Egg provider. Strict pinned Git objects, counted source/native rewrites, exact output/support hashes, typed factory admissions and requested Cart tuple identities remain enforced. These are selection/ownership closure plus bounded live-consumer proofs—not every possible Actor branch, unbounded pool peak or Original trajectory/pixel equivalence.
+
+All seven runs complete real GPU/Photo/Manager/Input/audio/Host retirement without a retirement deadline; all preregistered inputs remain unchanged. Qualification SHA-256: `5dc1c7af947c7f72127ece9e918bd8b9484d8b37e7b0737ea9e310f7f9f91e50`. SDL dummy transport and explicitly owned software input are not physical audio/controller qualification. Windows11 gameplay, dormant End24/Credits20 ingress and the separately running fresh campaign remain unclaimed.
+
 ## Fresh clone-update transport results
 
 Fresh strict-grammar sources passed seventeen detached groups, complete source/alias/retained-identity checks and actual fail-closed gates. An authored native pthread fixture observed successful `clone3({input} => {output}, size)`, credited both zero/nonzero memfd truncations, and rejected anonymous credit after an ordinary file replaced the descriptor. No helper permission was relaxed or inferred from a memory object's name.

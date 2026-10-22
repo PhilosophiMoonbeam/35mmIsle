@@ -4,7 +4,7 @@
 
 Dependency DAG for a faithful, native Pokémon Snap desktop port on Linux x64 and Windows 11 x64. This document specifies implementation contracts, not a declaration of playability. The first fidelity baseline is the upstream US ROM; other ROM regions/revisions, consoles, mobile, web and other libultraship platforms require separate support decisions. MIT applies to original 35mmIsle work only. Source availability, ROM possession and matching builds do not establish redistribution permission.
 
-Work-unit IDs below are stable import keys for Beads, not task-state tracking. An assigned integration owner imports these units and dependencies into Beads; no milestone closes from compilation alone. Every wave requires an independent reviewer and orchestrator-run smoke with the evidence specified in [VALIDATION.md](VALIDATION.md).
+Work-unit IDs below are stable Beads import keys, not task-state tracking. The units and dependencies are imported into Beads under an integration owner; no milestone closes from compilation alone. Every wave requires an independent reviewer and orchestrator-run smoke with the evidence specified in [VALIDATION.md](VALIDATION.md).
 
 ## Evidence baseline
 
@@ -34,7 +34,7 @@ Work-unit IDs below are stable import keys for Beads, not task-state tracking. A
 
 ## Work-unit DAG
 
-`R` = research/decision artifact, `I` = real implementation after its gates. Owned surfaces are proposed implementation boundaries, not claims that those paths currently exist. Acceptance proof is retained locally per VALIDATION; the reviewer signs the behavioral result and the orchestrator runs the smoke.
+`R` = research/decision artifact, `I` = real implementation after its gates. Owned surfaces name implementation and interface boundaries, not a live inventory of completed or missing code. Beads records current work status; [ADMISSION](../development/ADMISSION.md) records exercised proof and its cohort limits. Acceptance proof is retained locally per VALIDATION; the reviewer signs the behavioral result and the orchestrator runs the smoke.
 
 | ID / wave | Title / kind | Dependencies | Owned surfaces | Interface outputs | Acceptance proof | Stop/go gate |
 |---|---|---|---|---|---|---|

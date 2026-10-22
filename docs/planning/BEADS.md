@@ -4,7 +4,7 @@
 
 Implementation epic: **`bd_35mmIsle-v4u`**. Planning epic: **`bd_35mmIsle-b7h`**. These are actual local Beads IDs, not proposed names. [ROADMAP.md](ROADMAP.md) defines the implementation contracts; this document maps those contracts to the live tracker. Published contracts and IDs remain useful even when the live database is local.
 
-**The local Dolt-backed Beads database is the sole source of current task status, claims, blockers, and completion.** This is not a parallel status tracker. The frozen handoff recorded all 16 future units open and unclaimed; that observation is not a promise of their current status. No Dolt remote synchronization was authorized or claimed. Publishing this Markdown does not synchronize the database.
+**The local Dolt-backed Beads database is the sole source of current task status, claims, blockers, and completion.** This is not a parallel status tracker. The original planning handoff recorded all 16 implementation units open and unclaimed; that historical observation does not describe their current status. No Dolt remote synchronization was authorized or claimed at that handoff. Current Git publication and Dolt synchronization follow active user authorization and `bd prime`; publishing this Markdown alone does not synchronize the database.
 
 Use the repository's Beads environment:
 

@@ -20,7 +20,7 @@ void run(const char* filename) {
     conflicts[1].memory.workspace.address=0x110000;
     conflicts[2].memory.output.address=0x110000;
     conflicts[3].memory.depth=0x110000;
-    conflicts[4].memory.commands={0xaec40,0x440}; // Actual fixed fade source, outside cold BSS.
+    conflicts[4].memory.commands={0xaec40,0x540}; // Actual fixed fade source, outside cold BSS.
     conflicts[5].memory.depth=0x3b5000; // Real startup framebuffer cannot also be depth.
     for(std::size_t index=0;index<conflicts.size();++index) {
         auto rejected=graphics::Frame::create(*resources.catalog,snapshot,conflicts[index]);

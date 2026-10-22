@@ -37,12 +37,12 @@ struct AlbumSceneNative final {
     bool render_bound = false;
 
     // Actual Source Gfx** semantics, not a cast to an SDK pointer. Parent binds
-    // this exact state-owned cursor only inside Frame's exclusive RAM lease,
-    // through begin_cursor(), and propagates end_cursor()'s returned address to
-    // the corresponding real lane. The preincrement leaf leaves address at the
-    // command it wrote; render_state postincrements by all five commands.
+    // this callback-scoped capability through begin_cursor(), then propagates
+    // end_cursor()'s bounded physical address to the corresponding real lane.
+    // No mapped RAM survives a leaf. The preincrement leaf leaves address at
+    // the command it wrote; render_state postincrements by all five commands.
     struct DisplayCursor {
-        std::span<std::uint32_t> ram;
+        scene::graphics::SourceControl* control = nullptr;
         std::uint64_t epoch = 0;
         std::uint32_t address = 0, end = 0;
         bool active = false;

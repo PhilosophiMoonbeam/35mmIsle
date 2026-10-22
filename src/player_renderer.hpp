@@ -16,10 +16,10 @@ class Ui;
 // Retained camera scheduling/render metadata, not another Player, camera pose,
 // clock, Detector transaction registry or original Root entrypoint. Services,
 // Source, providers, ROM and resources outlive detach().
-// Canonical Player main5/UI0/FX0 are admitted. Task-flushing camera flags10/40
-// require a real multi-task Frame transaction and reject, never succeed as NOPs.
-// Postflag4 combines pending source lanes; flag4-off lanes remain deferred until
-// the actual final-GTL phase. No extra camera, fake task or completion is used.
+// One logical Frame owns sequential native process/reset task boundaries.
+// Postflag4 combines pending lanes; flag10 submits and drains before resetting
+// Source cursors, while flag40 submits without allocator reset. Only whole
+// logical completion publishes the image and releases resource owners.
 class Renderer final {
 public:
     // Includes adopted Source message and transition scheduling cameras.

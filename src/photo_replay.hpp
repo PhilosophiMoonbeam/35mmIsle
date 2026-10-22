@@ -8,6 +8,7 @@
 #include "rsp_render.hpp"
 #include "player_photo_source.h"
 #include "35mmisle/photo_score.hpp"
+#include "scene_graphics.hpp"
 
 namespace isle::photo {
 // The Source owner, not Replay, issues and retains this capability. Every field
@@ -18,10 +19,13 @@ struct RecordCapability {
     const std::uint64_t* revision = nullptr;
     std::uint64_t expected_revision = 0;
 };
+// Every admitted preview or score binding names its actual owning Frame.
+// Null Frame is only an uninitialized/pending output, never executor-only access.
 struct ReplayGpuBinding {
     rsp::CanonicalExecutor* executor = nullptr;
     const graphics::SourcePrograms* programs = nullptr;
     std::uint64_t epoch = 0, admission = 0;
+    scene::graphics::Frame* frame = nullptr;
 };
 enum class ReplayAcquire { pending, admitted, failed };
 struct ReplayGpuAccess {
@@ -83,11 +87,18 @@ struct ReplayResult {
     std::span<const std::byte> rgba5551;
     std::uint32_t width = 0, height = 0, stride_bytes = 0;
 };
-// Same authoritative Game. No callback, OM/GTL tick, Source wait, or gameplay AI
-// is dispatched here. Native operations are returning leaves in the caller's
-// admitted Source context. acquire must grant a real quiescent executor/program
-// and exclusive RAM epoch; release follows actual GPU+mapped read retirement.
-// In particular normal display/World processes remain free during wait60/wait1.
+// Actual natural score_Render boundary evidence, copied from the shared Frame
+// after Original's post10 returned and restored the native camera fields.
+struct ScoreExecution {
+    scene::graphics::TaskReceipt task;
+    bool wide = false, source_returned = false, camera_restored = false;
+    std::uint16_t pokemon_count = 0;
+};
+// The same authoritative Game. The admitted complete score_Render C producer
+// dispatches only inside its plain-C fence and the borrowed Frame transaction;
+// ordinary OM/GTL ticks, Source waits and gameplay AI are never dispatched here.
+// Preview borrows the same quiescent executor; score uses its exact Frame's
+// SourceControl submit/drain path. Both release only after mapped read retirement.
 // Snapshot, Game, world::ModuleState and access.context outlive Replay, including
 // all GPU/readback and native cleanup. Destruction requires retire()==true:
 // silently destroying native callback storage is illegal.
@@ -134,6 +145,7 @@ public:
     bool gpu_busy() const noexcept;
     const char* error() const noexcept;
     std::span<const menu::RamRange> reservations() const noexcept;
+    std::span<const ScoreExecution> score_executions() const noexcept;
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

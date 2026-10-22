@@ -336,7 +336,7 @@ struct Case {
     IsleGameObject* reticle_identity = nullptr;
     IsleGameObject* main_identity = nullptr;
     std::array<NativeJoin,5> native_joins{};
-    NativeJoin scene_join;
+    bool scene_root_registered = false;
     std::unique_ptr<player::commands::Binding> commands;
     std::unique_ptr<player::Ui> ui;
     std::unique_ptr<player::BumpOwner> bump;
@@ -623,10 +623,12 @@ struct Case {
         IslePlayerSource* canonical=nullptr; native(isle_player_source_context(services->game,&canonical));
         require(canonical==&source() && !source().object && !source().model,"Root cold canonical activation lost identity");
         scene_root=services->object(0,0,0x80000000u); require(scene_root,"actual scene root0 allocation failed");
-        scene_join.object=scene_root;
-        require(services->observe_lifecycle(scene_root,
-            {NativeJoin::on_retiring,NativeJoin::on_joined,&scene_join}),
-            "actual scene root native join observer admission failed");
+        // This fixture owns helper0, but CollisionPass owns its secondary
+        // lifecycle slot. Keep one native identity hold and use the public
+        // joined/collectable queries instead of borrowing that observer slot.
+        require(services->source_owner_register(scene_root,{}),
+            "actual scene root native identity hold admission failed");
+        scene_root_registered=true;
         commands=std::make_unique<player::commands::Binding>(*services,source());
         ui=std::make_unique<player::Ui>(ui_resources,*services,source(),sprites,0);
         bump=std::make_unique<player::BumpOwner>(*services,source());
@@ -725,10 +727,10 @@ struct Case {
         const std::array observed{root_identity,reticle_identity,source().ObjectPauseMenu,
             bump->source().BumpDetector_Object};
         for (std::size_t i=0;i<observed.size();++i) {
-            native_joins[i].object=observed[i];
             require(services->observe_lifecycle(observed[i],
                 {NativeJoin::on_retiring,NativeJoin::on_joined,&native_joins[i]}),
                 "native Root/reticle/pause/Bump join observer admission failed");
+            native_joins[i].object=observed[i];
         }
         IslePlayerSource* bound=nullptr;
         native(isle_player_source_get(services->game,root_identity,&bound));
@@ -762,10 +764,10 @@ struct Case {
         native(isle_player_photo_PokemonDetector_Enable(&application));
         require(detection.enabled,"actual Beach Source detector-enable stage did not enable capture");
         const auto initialized_cart=cart->init(); require(bool(initialized_cart),initialized_cart.status.detail);
-        native_joins[4].object=initialized_cart.object;
         require(services->observe_lifecycle(initialized_cart.object,
             {NativeJoin::on_retiring,NativeJoin::on_joined,&native_joins[4]}),
             "actual Cart native/semantic join observer admission failed");
+        native_joins[4].object=initialized_cart.object;
         accepted(cart->set_animation(cart->intro_model(),cart->intro_material(),0,0));
         const auto others=[&](std::array<menu::RamRange,3> own,bool framebuffer) {
             std::vector<menu::RamRange> result;
@@ -939,9 +941,11 @@ struct Case {
             std::cerr << "  om=" << om << " draws=" << draws
                 << " completed_hold=" << completed_hold << " storage=" << storage_created
                 << " input_running=" << input.running() << '\n';
-            std::cerr << "  scene-root object=" << static_cast<const void*>(scene_join.object)
-                << " retiring=" << scene_join.retiring << " joined=" << scene_join.joined
-                << " invalid=" << scene_join.invalid << '\n';
+            std::cerr << "  scene-root object=" << static_cast<const void*>(scene_root)
+                << " registered=" << scene_root_registered
+                << " joined=" << bool(services && scene_root && services->source_owner_joined(scene_root))
+                << " collectable=" << bool(services && scene_root && services->source_owner_collectable(scene_root))
+                << '\n';
             if (frame) std::cerr << "  Frame busy=" << frame->busy()
                 << " quiescent=" << frame->quiescent() << " completed=" << bool(frame->completed())
                 << " submission=" << frame->submission() << " error=" << int(frame->error())
@@ -1175,9 +1179,44 @@ struct Case {
             if (world && !world->retire()) return reject("actual World retirement rejected");
             operation="scene-root.erase";
             if (scene_root) {
-                services->erase(scene_root);
-                if (scene_join.invalid || scene_join.retiring!=1 || scene_join.joined!=1)
-                    return reject("scene root native observer did not prove exactly one actual retire/join");
+                const auto prior_fault=isle_game_status(services->game);
+                if (!scene_root_registered || !services->source_owner_joined(scene_root)) {
+                    const auto erased=services->erase(scene_root);
+                    if (erased!=ISLE_GAME_OK && erased!=prior_fault)
+                        return reject("actual scene root native deletion rejected",int(erased));
+                }
+                if (scene_root_registered) {
+                    operation="scene-root.native-join";
+                    IsleGameObjectMetadata expired{};
+                    const auto metadata=isle_game_object_metadata(services->game,scene_root,&expired);
+                    const bool joined=services->source_owner_joined(scene_root);
+                    const bool collectable=services->source_owner_collectable(scene_root);
+                    log.add("native-join","scene-root0",static_cast<const void*>(scene_root),
+                        joined,collectable,int(metadata));
+                    if (!joined || !collectable || metadata!=ISLE_GAME_INVALID_ARGUMENT)
+                        return reject("scene root identity hold did not preserve actual joined-dead state",int(metadata));
+                    // Exercise the real native allocator only on a healthy
+                    // run; earlier terminal faults still require genuine join
+                    // and hold release, never new work or failure suppression.
+                    operation="scene-root.identity-pressure";
+                    if (!services->failed() && prior_fault==ISLE_GAME_OK) {
+                        IsleGameObject* pressure=nullptr;
+                        const auto allocated=isle_game_add_object(services->game,UINT32_MAX,0,0,nullptr,nullptr,&pressure);
+                        if (allocated!=ISLE_GAME_OK)
+                            return reject("native identity pressure allocation rejected",int(allocated));
+                        const bool distinct=pressure!=scene_root;
+                        const auto erased=isle_game_delete_object(services->game,pressure);
+                        if (erased!=ISLE_GAME_OK)
+                            return reject("native identity pressure retirement rejected",int(erased));
+                        log.add("native-identity-pressure","scene-root0",static_cast<const void*>(scene_root),
+                            static_cast<const void*>(pressure),distinct);
+                        if (!distinct) return reject("native allocator reused scene root identity before release");
+                    }
+                    operation="scene-root.identity-release";
+                    if (!services->source_owner_release(scene_root))
+                        return reject("actual scene root native identity hold remains");
+                    scene_root_registered=false;
+                }
                 scene_root=nullptr;
             }
             operation="dependent-owners.release";

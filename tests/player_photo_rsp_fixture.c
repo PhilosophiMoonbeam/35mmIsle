@@ -1,5 +1,6 @@
 #include "player_photo_rsp_fixture.h"
 #include "actor_source.h"
+#include "player_render_source.h"
 
 static void make(IslePlayerSource* player, void* user, int raw, int checked) {
     PlayerPhotoRspMake* result = user;
@@ -54,4 +55,38 @@ void player_photo_rsp_copy_info(IsleGameObject* object, void* user) {
     ++result->entered;
     isle_player_photo_PokemonDetector_CopyInfo(object);
     ++result->returned;
+}
+
+static PlayerPhotoRspBoundary* boundary;
+void player_photo_rsp_boundary_bind(PlayerPhotoRspBoundary* value) {
+    boundary = value;
+}
+void player_photo_rsp_boundary_render(IslePlayerSource* player, IsleGameObject* object) {
+    PlayerPhotoRspBoundary* current = boundary;
+    isle_player_source_checked(player, current != NULL && current->render != NULL &&
+        current->observe != NULL ? ISLE_GAME_OK : ISLE_GAME_INVALID_STATE);
+    ++current->entered;
+    current->render(player, object);
+    isle_player_source_checked(player, current->observe(current->context));
+    /* Independently owned SDK mechanism commands, not a GAME producer rewrite.
+     * These execute only after the real callback and its task boundary return. */
+    for (uint32_t lane = 0; lane < 4; ++lane) {
+        static const uint32_t colors[4] = {
+            0xf801f801u, 0x07c107c1u, 0x003f003fu, 0xffffffffu
+        };
+        const int32_t x = 20 + (int32_t)lane * 12;
+        if (!(current->suffix_lanes & (1u << lane))) continue;
+        isle_player_source_checked(player, isle_player_render_backend_pipe_sync(player, lane));
+        isle_player_source_checked(player, isle_player_render_backend_color_target(
+            player, lane, ISLE_PLAYER_RENDER_COLOR_TARGET));
+        isle_player_source_checked(player, isle_player_render_backend_scissor(player, lane, 0, 0, 320, 240));
+        isle_player_source_checked(player, isle_player_render_backend_cycle(player, lane, ISLE_PLAYER_RENDER_FILL_CYCLE));
+        isle_player_source_checked(player, isle_player_render_backend_mode(player, lane, ISLE_PLAYER_RENDER_NOOP));
+        isle_player_source_checked(player, isle_player_render_backend_fill_color(player, lane, colors[lane]));
+        isle_player_source_checked(player, isle_player_render_backend_fill_rectangle(player, lane, x, 100, x + 7, 107));
+        isle_player_source_checked(player, isle_player_render_backend_pipe_sync(player, lane));
+        isle_player_source_checked(player, isle_player_render_backend_cycle(player, lane, ISLE_PLAYER_RENDER_ONE_CYCLE));
+        isle_player_source_checked(player, isle_player_render_backend_mode(player, lane, ISLE_PLAYER_RENDER_AA_ZB_OPAQUE));
+    }
+    ++current->returned;
 }

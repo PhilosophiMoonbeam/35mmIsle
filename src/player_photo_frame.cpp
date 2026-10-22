@@ -31,7 +31,7 @@ IsleGameResult Photo::capture_prefix(std::uint16_t context,std::uint64_t generat
     return remember(result);
 }
 IsleGameResult Photo::bind_submission(IslePlayerPhotoTicket ticket,const scene::graphics::Frame& frame) noexcept {
-    if(ticket.context>=2 || !ticket.submission || frame.submission()!=ticket.submission ||
+    if(ticket.context>=2 || !ticket.submission || frame.presentation_submission()!=ticket.submission ||
        frame.error()!=scene::graphics::Error::none || !frame.busy()) return ISLE_GAME_INVALID_STATE;
     auto& pending=pending_[ticket.context];
     if(pending.phase!=Phase::prepared || !pending.history_retained ||
@@ -52,7 +52,12 @@ IsleGameResult Photo::retire_failed(IslePlayerPhotoTicket ticket,const scene::gr
     auto* pending=matching(ticket);
     if(!pending || pending->borrows || pending->frame!=&frame ||
        (pending->phase!=Phase::submitted && pending->phase!=Phase::postprocessed) ||
-       !frame.failed_submission(ticket.submission)) return ISLE_GAME_INVALID_STATE;
+       !frame.quiescent() || frame.error()==scene::graphics::Error::none)
+        return ISLE_GAME_INVALID_STATE;
+    bool recorded=false;
+    for(const auto& receipt:frame.task_receipts())
+        recorded=recorded||(receipt.token==ticket.submission&&(receipt.completed||receipt.failed));
+    if(!recorded) return ISLE_GAME_INVALID_STATE;
     // A failed GPU is not a Source callback. Unconsumed FIFO IDs survive.
     return release_pending(*pending);
 }
@@ -136,7 +141,7 @@ IsleGameResult Controller::end_preparation() noexcept {
 IsleGameResult Controller::prefix(void* user,focus::Photo& output) noexcept {
     if(!user) return ISLE_GAME_INVALID_ARGUMENT;
     auto& self=*static_cast<Controller*>(user);
-    if(!self.preparing_ || self.preparing_->submission() || !self.collector_ ||
+    if(!self.preparing_ || !self.preparing_->preparing() || !self.collector_ ||
        self.detector_.prefix_user!=&self || self.detector_.prepare_membership!=prefix ||
        self.detector_.context>=2)
         return ISLE_GAME_INVALID_STATE;
@@ -170,7 +175,7 @@ IsleGameResult Controller::prefix(void* user,focus::Photo& output) noexcept {
 IsleGameResult Controller::request() noexcept {
     const auto access=photo_.source_access();
     if(access!=ISLE_GAME_OK) return access;
-    if(!preparing_ || preparing_->submission() || detector_.context>=2 ||
+    if(!preparing_ || !preparing_->preparing() || detector_.context>=2 ||
        detector_.prefix_user!=this || detector_.prepare_membership!=prefix) return ISLE_GAME_INVALID_STATE;
     // Only a real fresh capture needs a GPU/history lease before submission.
     // An ID-only/no-prefix request is unbound until an eligible callback.
@@ -190,11 +195,24 @@ IslePlayerPhotoTicket Controller::ticket(const scene::graphics::Frame& frame) co
     const auto* entry=pending(frame);
     return entry?entry->ticket:IslePlayerPhotoTicket{};
 }
+IsleGameResult Controller::task_submitted(const scene::graphics::Frame& frame) noexcept {
+    const auto access=photo_.source_access(true);
+    if(access!=ISLE_GAME_OK) return access;
+    const auto token=frame.presentation_submission();
+    if(!token || !frame.busy() || frame.task_receipts().empty() ||
+       frame.task_receipts().back().token!=token) return ISLE_GAME_INVALID_STATE;
+    for(auto& entry:photo_.pending_) if(entry.frame==&frame) {
+        if(entry.phase!=Photo::Phase::prepared&&entry.phase!=Photo::Phase::captured)
+            return ISLE_GAME_INVALID_STATE;
+        entry.task_exposure=token;
+    }
+    return ISLE_GAME_OK;
+}
 IsleGameResult Controller::submitted(const scene::graphics::Frame& frame,IslePlayerPhotoTicket& output) noexcept {
     output={};
     const auto access=photo_.source_access();
     if(access!=ISLE_GAME_OK) return access;
-    if(preparing_ || !frame.submission() || !frame.busy() ||
+    if(preparing_ || !frame.presentation_submission() || !frame.busy() ||
        frame.error()!=scene::graphics::Error::none) return ISLE_GAME_INVALID_STATE;
     if(!pending(frame)) {
         if(!photo_.count_) return ISLE_GAME_INVALID_STATE;
@@ -204,7 +222,7 @@ IsleGameResult Controller::submitted(const scene::graphics::Frame& frame,IslePla
         if(result!=ISLE_GAME_OK) return result;
     }
     for(auto& entry:photo_.pending_) if(entry.frame==&frame && entry.phase==Photo::Phase::prepared) {
-        const IslePlayerPhotoTicket executing{entry.ticket.context,entry.ticket.generation,frame.submission()};
+        const IslePlayerPhotoTicket executing{entry.ticket.context,entry.ticket.generation,frame.presentation_submission()};
         const auto result=photo_.bind_submission(executing,frame);
         if(result!=ISLE_GAME_OK) return result;
     }
@@ -215,7 +233,7 @@ IsleGameResult Controller::completed_memory(const scene::graphics::Frame& frame,
     rsp::CanonicalExecutor::MemoryLease& lease,std::uint32_t framebuffer,bool registered) {
     const auto access=photo_.source_access(true);
     if(access!=ISLE_GAME_OK) return access;
-    if(!frame.submission() || frame.error()!=scene::graphics::Error::none || !frame.busy() ||
+    if(!frame.presentation_submission() || frame.error()!=scene::graphics::Error::none || !frame.busy() ||
        !lease || lease.postprocess_active()) return ISLE_GAME_INVALID_STATE;
     for(const auto& entry:photo_.pending_)
         if(entry.frame==&frame && entry.phase==Photo::Phase::postprocessed) return ISLE_GAME_INVALID_STATE;
@@ -228,7 +246,7 @@ IsleGameResult Controller::completed_memory(const scene::graphics::Frame& frame,
     if(bound!=ISLE_GAME_OK) return bound;
     auto& entry=photo_.pending_[context];
     if(entry.phase==Photo::Phase::prepared) {
-        const auto result=photo_.bind_submission({context,entry.ticket.generation,frame.submission()},frame);
+        const auto result=photo_.bind_submission({context,entry.ticket.generation,frame.presentation_submission()},frame);
         if(result!=ISLE_GAME_OK) return result;
     }
     auto words=lease.postprocess_words();
@@ -261,10 +279,11 @@ IsleGameResult Controller::retire(const scene::graphics::Frame& frame) noexcept 
 IsleGameResult Controller::retire_unsubmitted(const scene::graphics::Frame& frame) noexcept {
     const auto access=photo_.source_access(true);
     if(access!=ISLE_GAME_OK) return access;
-    if(!pending(frame) || preparing_==&frame || !frame.quiescent() || frame.submission())
+    if(!pending(frame) || preparing_==&frame || !frame.quiescent() ||
+       frame.submission() || !frame.task_receipts().empty())
         return ISLE_GAME_INVALID_STATE;
     for(auto& entry:photo_.pending_) if(entry.frame==&frame) {
-        if(entry.ticket.submission || (entry.phase!=Photo::Phase::rejected &&
+        if(entry.task_exposure || entry.ticket.submission || (entry.phase!=Photo::Phase::rejected &&
            entry.phase!=Photo::Phase::captured && entry.phase!=Photo::Phase::prepared))
             return ISLE_GAME_INVALID_STATE;
         const auto result=photo_.retire(entry.ticket);if(result!=ISLE_GAME_OK) return result;
@@ -278,7 +297,15 @@ IsleGameResult Controller::retire_failed(const scene::graphics::Frame& frame) no
     for(auto& entry:photo_.pending_) if(entry.frame==&frame) {
         if(!entry.ticket.submission) {
             if(!frame.quiescent() || frame.error()==scene::graphics::Error::none) return ISLE_GAME_INVALID_STATE;
-            const auto result=photo_.retire(entry.ticket);if(result!=ISLE_GAME_OK) return result;
+            if(entry.task_exposure) {
+                bool drained=false;
+                for(const auto& receipt:frame.task_receipts())
+                    drained=drained||(receipt.token==entry.task_exposure&&(receipt.completed||receipt.failed));
+                if(!drained || entry.borrows) return ISLE_GAME_INVALID_STATE;
+                const auto result=photo_.release_pending(entry);if(result!=ISLE_GAME_OK) return result;
+            } else {
+                const auto result=photo_.retire(entry.ticket);if(result!=ISLE_GAME_OK) return result;
+            }
         } else {
             const auto result=photo_.retire_failed(entry.ticket,frame);if(result!=ISLE_GAME_OK) return result;
         }

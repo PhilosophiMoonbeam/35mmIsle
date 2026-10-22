@@ -173,6 +173,79 @@ ProgramLoad SourcePrograms::load(SourceProgram program, CommandRange reset) cons
               0xdd000000u | (selected.load_data_bytes - 1), selected.text.address,
               0xde000000, reset.address}}, 6};
 }
+void plan_source_join(const SourcePrograms& programs,SourceProgramSelection selection,
+    const std::array<SourceLaneCursor,4>& lanes,CommandRange reset,bool process,SourceJoinPlan& output) {
+    output.word_counts.fill(0);output.root={};output.terminal={};output.empty=true;
+    const auto populated=[&](unsigned lane){return lanes[lane].populated;};
+    if(!populated(0)&&!populated(1)&&!populated(2)&&!populated(3))return;
+    require(process||populated(0),"Source combine requires its continuing lane0");
+    validate_commands(reset);
+    for(const auto& lane:lanes) {
+        require(!(lane.current&7u)&&!(lane.end&7u)&&lane.current<=lane.end&&lane.end<=ram_size,
+            "Source join cursor escaped its bounded physical lane");
+        if(lane.populated)validate_range(lane.head,8,8,"Source join head escaped RDRAM");
+    }
+    const unsigned first=populated(0)?0:populated(2)?2:populated(1)?1:3;
+    output.program=source_task_program(selection,first==2||first==3);
+    if(process)static_cast<void>(programs.descriptor(output.program));
+    const auto cursor=[&](unsigned lane) {
+        return lanes[lane].current+static_cast<std::uint32_t>(output.word_counts[lane]*4);
+    };
+    const auto emit=[&](unsigned lane,std::uint32_t a,std::uint32_t b) {
+        auto& count=output.word_counts[lane];
+        require(count<=output.words[lane].size()-2&&
+            count*4<=lanes[lane].end-lanes[lane].current&&
+            lanes[lane].end-lanes[lane].current-count*4>=8,
+            "Source join root/branch/terminal cold capacity exhausted");
+        output.words[lane][count++]=a;output.words[lane][count++]=b;
+    };
+    std::array<ProgramLoad,2> packets;
+    std::array<SourceProgram,2> cached{};
+    unsigned packet_count=0;
+    const auto load=[&](unsigned lane,SourceProgram program) {
+        unsigned index=0;
+        while(index<packet_count&&cached[index]!=program)++index;
+        if(index==packet_count) {
+            require(packet_count<packets.size(),"Source join exceeded its two program choices");
+            cached[index]=program;packets[index]=programs.load(program,reset);++packet_count;
+        }
+        const auto& packet=packets[index];
+        for(std::size_t i=0;i<packet.word_count;i+=2)emit(lane,packet.words[i],packet.words[i+1]);
+    };
+    const auto branch=[&](unsigned lane,std::uint32_t destination){emit(lane,0xde010000u,destination);};
+    const auto finish=[&](unsigned lane) {
+        output.terminal={cursor(lane),2};emit(lane,0xe9000000u,0);emit(lane,0xdf000000u,0);
+    };
+    const auto primary=selection.primary,line=source_line_program(selection);
+    // Literal GAME gtl.c process447-550 / combine552-616, including the
+    // lane1->3 reload appended to lane0 AFTER its earlier branch.
+    if(populated(0)) {
+        if(populated(2)){load(0,line);branch(0,lanes[2].head);}
+        else if(populated(1)){if(selection.alternate_active)load(0,primary);branch(0,lanes[1].head);}
+        else if(populated(3)){load(0,line);branch(0,lanes[3].head);}
+        else if(process)finish(0);
+    }
+    if(populated(2)) {
+        if(populated(1)){load(2,primary);branch(2,lanes[1].head);}
+        else if(populated(3))branch(2,lanes[3].head);
+        else if(process)finish(2);
+        else {load(2,primary);branch(2,cursor(0));}
+    }
+    if(populated(1)) {
+        if(populated(3)){load(0,line);branch(1,lanes[3].head);}
+        else if(process)finish(1);
+        else {if(selection.alternate_active)load(1,primary);branch(1,cursor(0));}
+    }
+    if(populated(3)) {
+        if(process)finish(3);
+        else {load(3,primary);branch(3,cursor(0));}
+    }
+    if(process) {
+        output.root={cursor(first),2};
+        emit(first,0xde000000u,reset.address);branch(first,lanes[first].head);
+    }
+    output.empty=false;
+}
 std::array<std::uint32_t, reset_command_words> reset_commands(ResetInputs inputs) {
     require(inputs.framebuffer_bytes && !(inputs.framebuffer_bytes & 1u),
             "Invalid source reset owned 16-bit framebuffer extent");

@@ -3351,10 +3351,10 @@
       "sha256": "181fb1d0bfa32f3dc37ff8093fce7ce970509e765ceab2bf87efb860f71eda40"
     },
     "src/album_scene_native.cpp": {
-      "sha256": "42ff336bbeb5cfdfac91f1d4a4ba6d8584e46058e8a26ca01d1a45d4ef099190"
+      "sha256": "0336616dd6ee874b858c964ab975299592fcc610d2bb6a63960a1d860c6d183e"
     },
     "src/album_scene_native.hpp": {
-      "sha256": "ee8ef41623c82dce0be59de3ff069b6c0681f9e2482563997bf45b3a397a755f"
+      "sha256": "8faf99fe4ad2acc0d78c40855d5ba31e8a0ac17c1922baaf999e1d9ee0e2ad82"
     },
     "src/application_runtime.cpp": {
       "sha256": "441992e179b8459efb848a1a8930d7a636e11d439a6eea48f35d0eb83103e87d"
@@ -3387,10 +3387,10 @@
       "sha256": "dcaa12c020ea840aa54c7c5604ec084d84be76539f94b7b0ce728596eecc172d"
     },
     "src/photo_replay.cpp": {
-      "sha256": "39e3a2dbab3a671984dc87a097bb8a802546c856e2d7fcf59bf33f3739be3b6a"
+      "sha256": "0ebec723055e93136ac40ca0b781580ad7dc457791438918f661f0aef78c37d8"
     },
     "src/photo_replay.hpp": {
-      "sha256": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693"
+      "sha256": "794c25d49a77fe1c274225f6fd12fe06d050041dc9492282d4bd468e34673cac"
     },
     "src/post_course_native_helpers.hpp": {
       "sha256": "5e070c3050766af3d5c6848464496a3f885b7258bf4edf521e974c421c97c246"
@@ -3402,7 +3402,7 @@
       "sha256": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "99bb723cdb14b0e8caffca992720455389008f9f5bcc104a1534386a1b4aab87"
+      "sha256": "3ba2405101d4062593ea28d342d2c1cfcce92d0ee5d1af7584e9579983e3def5"
     },
     "src/post_course_scene.hpp": {
       "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
@@ -3411,7 +3411,7 @@
       "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
     },
     "src/post_course_scene_render.cpp": {
-      "sha256": "dab4324654527127f86bf968c449d0b5df59fbfef2d39b5235fd936b724f1825"
+      "sha256": "11063bd1c0fff307ea92554ce833135b01b216e95e03226a54356a235d9401fb"
     },
     "src/post_course_window.hpp": {
       "sha256": "bc6d1a25eb5614baa099a2154f5656683f8574d723e276cd50b650d6b523d1cf"
@@ -3420,10 +3420,10 @@
       "sha256": "b2e8294b61d096588f37f8c17dfeffbf7dac8507d0f844d2bb43a8577417b7b5"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4"
+      "sha256": "7fdef8be2b549c0bacf0b7628dc050f8373b2a7a0e26ba848ca39faaba3539a4"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
+      "sha256": "1340db97f8fd096a4e504cb4111ab0c56eea61daaa401999bba0c8d575949302"
     },
     "src/scene_services.cpp": {
       "sha256": "e907c7f18fc19b9802ccded83a370b57d8c6531637cef921e187456fed963a44"
@@ -3772,6 +3772,6 @@
     "native_support_hash_policy": "Exact authoring-time live common/extended WorkingPhotos bytes. Parent owns final integration support fixedpoint and must reseal guarded recipe/generator after mechanical shared integration."
   },
   "support_allowlist": [],
-  "recipe_sha256": "65342c1839c12eaeadbec31c994010c7a3a409abda50bc9d135241e39ed77f89",
-  "generator_sha256": "a6000cf760a10ac77ee35975ac676f5feaaa16371183ada6a75a3da37fda99f5"
+  "recipe_sha256": "ea0991df819086bd6d9df45574b8fe34dce610d58dc83a60caf687e1f1ce1c98",
+  "generator_sha256": "0db24d25282bb3ce58b8049b61d766434956ed1e21b8ef5109fd22a89cc06194"
 }

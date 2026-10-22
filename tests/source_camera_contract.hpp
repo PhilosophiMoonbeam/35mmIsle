@@ -94,19 +94,27 @@ struct Probe {
     static bool control(void* context, g::SourceControl& source) {
         auto& self = *static_cast<Probe*>(context);
         require(++self.dispatches == 1, "camera contract dispatched more than once");
-        const auto ram = source.ram();
         // The global pre-render call is a real reserved, callable empty native list.
         // Primary/secondary bodies below are emitted by Frame, never manufactured.
-        graphics::Memory memory(ram);
-        memory.word(arena.address, 0xdf000000u); memory.word(arena.address + 4, 0);
-        const auto end_primary = source.initialize_camera_into(primary_begin, primary_end - 8);
-        self.primary = inspect(ram, primary_begin, end_primary);
-        memory.word(end_primary, 0xdf000000u); memory.word(end_primary + 4, 0);
-        source.call({primary_begin, (end_primary + 8 - primary_begin) / 4});
-        const auto end_secondary = source.restore_camera(2, secondary_begin, secondary_end - 8);
-        self.secondary = inspect(ram, secondary_begin, end_secondary);
-        memory.word(end_secondary, 0xdf000000u); memory.word(end_secondary + 4, 0);
-        source.call({secondary_begin, (end_secondary + 8 - secondary_begin) / 4});
+        source.with_ram(nullptr,+[](void*,std::span<std::uint32_t> ram) {
+            graphics::Memory memory(ram);
+            memory.word(arena.address,0xdf000000u);memory.word(arena.address+4,0);
+        });
+        struct Inspect { Commands& commands;std::uint32_t begin,end; };
+        const auto inspect_and_end=+[](void* raw,std::span<std::uint32_t> ram) {
+            auto& value=*static_cast<Inspect*>(raw);
+            value.commands=inspect(ram,value.begin,value.end);
+            graphics::Memory memory(ram);
+            memory.word(value.end,0xdf000000u);memory.word(value.end+4,0);
+        };
+        const auto end_primary=source.initialize_camera_into(primary_begin,primary_end-8);
+        Inspect primary{self.primary,primary_begin,end_primary};
+        source.with_ram(&primary,inspect_and_end);
+        source.call({primary_begin,(end_primary+8-primary_begin)/4});
+        const auto end_secondary=source.restore_camera(2,secondary_begin,secondary_end-8);
+        Inspect secondary{self.secondary,secondary_begin,end_secondary};
+        source.with_ram(&secondary,inspect_and_end);
+        source.call({secondary_begin,(end_secondary+8-secondary_begin)/4});
         require(self.primary.fills == 2 && self.secondary.fills == 0,
                 "camera primary clears or secondary no-clear contract changed");
         require(self.primary.viewport_address == self.secondary.viewport_address &&
@@ -204,7 +212,7 @@ inline void source_camera_contract(const rom::Snapshot& snapshot, const std::fil
     d::require(bool(made), made.message.data());
     d::Join join{made.frame};
     auto& frame = *made.frame;
-    d::require(frame.reserve_render_capacity({0, 1}), frame.message());
+    d::require(frame.reserve_render_capacity({0,1,1,1}),frame.message());
     const std::array reservations{d::arena};
     d::r::Resources resources;
     resources.identity = 1; resources.reservations = reservations; resources.pre_render = d::arena.address;
@@ -246,6 +254,34 @@ inline void source_camera_contract(const rom::Snapshot& snapshot, const std::fil
             }
         }
         d::save(new_output_directory / (std::string(names[index]) + ".rgba8"), completed.rgba);
+    }
+    // A physical address is not continuing mapping authority. Reject a task
+    // boundary while a scoped writer is active, unwind it, and leave neither
+    // a real submission nor a presentation/lease behind.
+    {
+        auto rejected=d::g::Frame::create(snapshot,{true});
+        d::require(bool(rejected),rejected.message.data());
+        d::Join rejected_join{rejected.frame};
+        d::require(rejected.frame->reserve_render_capacity({0,1,1,1}),rejected.frame->message());
+        bool continued=false;
+        d::r::Pass pass;
+        pass.kind=d::r::Kind::clear;pass.camera=camera;pass.flags=3;pass.userdata=&continued;
+        pass.control=+[](void* raw,d::g::SourceControl& control) {
+            control.command(0xe7000000u,0);
+            struct Attempt { d::g::SourceControl& control;bool& continued; };
+            Attempt attempt{control,*static_cast<bool*>(raw)};
+            control.with_ram(&attempt,+[](void* raw,std::span<std::uint32_t>) {
+                auto& value=*static_cast<Attempt*>(raw);
+                value.control.process_commands(false);
+                value.continued=true;
+            });
+            return true;
+        };
+        d::require(!rejected.frame->begin({game,resources,{&pass,1},{}},{0})&&!continued&&
+            rejected.frame->error()==d::g::Error::preparation&&rejected.frame->task_receipts().empty()&&
+            !rejected.frame->busy()&&rejected.frame->quiescent()&&!rejected.frame->completed()&&
+            !rejected.frame->submission()&&!rejected.frame->presentation_submission(),
+            "active mapped writer escaped its task boundary rejection or retained ownership");
     }
     d::require(frame.retire() && frame.quiescent(), "camera Frame retirement failed");
     made.frame.reset();

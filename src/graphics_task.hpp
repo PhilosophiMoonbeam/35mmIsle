@@ -83,6 +83,27 @@ private:
     const rom::Snapshot* snapshot_;
     const std::byte* source_;
 };
+// Pure bounded packet planning for native GTL combine/process. A false
+// populated lane still supplies its real cursor/end: the literal lane1->3
+// reload is appended to lane0 even when that lane is not an entry candidate.
+struct SourceLaneCursor {
+    std::uint32_t head = 0, current = 0, end = 0;
+    bool populated = false;
+};
+struct SourceJoinPlan {
+    static constexpr std::size_t lane_word_capacity = 32;
+    std::array<std::array<std::uint32_t,lane_word_capacity>,4> words;
+    std::array<std::size_t,4> word_counts{};
+    CommandRange root{}, terminal{};
+    SourceProgram program{};
+    bool empty = true;
+};
+// Performs all program/cursor/tail-capacity validation before caller writes.
+// process=true appends one actual terminal and the post-END reset/branch entry;
+// false preserves the continuing lane0 tail and emits no submission terminal.
+void plan_source_join(const SourcePrograms&, SourceProgramSelection,
+    const std::array<SourceLaneCursor,4>&, CommandRange reset, bool process,
+    SourceJoinPlan&);
 
 struct ResetInputs {
     std::uint32_t framebuffer, depth, viewport, identity;

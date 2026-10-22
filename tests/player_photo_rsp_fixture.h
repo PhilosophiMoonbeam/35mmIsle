@@ -25,6 +25,17 @@ typedef struct PlayerPhotoRspRetiredSubject {
     IsleGameResult lookup;
     unsigned entered, returned, missing, cleared;
 } PlayerPhotoRspRetiredSubject;
+/* Diagnostic C suffix after a real Source camera callback; the observer is a
+ * returning leaf. Its failure is checked only after its C++ frames unwind. */
+typedef struct PlayerPhotoRspBoundary {
+    void (*render)(IslePlayerSource*, IsleGameObject*);
+    IsleGameResult (*observe)(void*);
+    void* context;
+    uint32_t suffix_lanes;
+    unsigned entered, returned;
+} PlayerPhotoRspBoundary;
+void player_photo_rsp_boundary_bind(PlayerPhotoRspBoundary*);
+void player_photo_rsp_boundary_render(IslePlayerSource*, IsleGameObject*);
 void player_photo_rsp_make(IslePlayerSource*, void*);
 void player_photo_rsp_make_raw(IslePlayerSource*, void*);
 void player_photo_rsp_make_checked(IslePlayerSource*, void*);

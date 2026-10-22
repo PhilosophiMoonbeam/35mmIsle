@@ -79,8 +79,9 @@ struct Input {
     // Actual included task program, independent of later in-list transitions.
     // Legacy callers retain their original F3DEX2_NoN_fifo task ID2.
     ::isle::graphics::SourceProgram program = ::isle::graphics::SourceProgram::f3dex2_non_fifo;
-    // Optional final wire phase under the same real preparation lease, after
-    // every camera callback. This is not an extra camera/pass or submission.
+    // Optional final wire phase after every camera callback in the same logical
+    // transaction. It may submit a genuine remaining task, or close an empty
+    // tail after an earlier task; it is never an extra camera/pass.
     Control finalize=nullptr;
     void* finalize_user=nullptr;
 };

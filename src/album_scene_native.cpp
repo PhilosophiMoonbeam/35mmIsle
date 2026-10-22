@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
+#include <stdexcept>
 #include <utility>
 
 namespace isle::post_course {
@@ -229,21 +230,29 @@ IsleGameResult notices_or(void* raw,std::uint32_t mask) noexcept {
 IsleGameResult display_list(IsleAlbumSource* source,void* raw) noexcept {
     return call(source,[&](auto&,auto& state) {
         auto& cursor=state.display_cursor;
-        if(raw!=&cursor || !cursor.active || !state.render_bound ||
-           cursor.address>cursor.end || cursor.end-cursor.address<16)
+        if(raw!=&cursor || !cursor.active || !cursor.control || !state.render_bound ||
+           cursor.control->epoch()!=cursor.epoch || cursor.address>cursor.end ||
+           cursor.end-cursor.address<16)
             return ISLE_GAME_INVALID_STATE;
         // gSPDisplayList(++(*arg0),list): preincrement the pointer-reference,
         // write there, and DO NOT postincrement after that write.
         const auto address=cursor.address+8;
-        cursor.ram[address/4]=0xde000000;
-        cursor.ram[address/4+1]=state.initialization_address;
+        struct Write { std::uint32_t address, target; } write{address,state.initialization_address};
+        cursor.control->with_ram(&write,+[](void* raw,std::span<std::uint32_t> ram) {
+            const auto& value=*static_cast<Write*>(raw);
+            if(ram.size()!=ram_bytes/4 || value.address>ram_bytes-8)
+                throw std::runtime_error("Album display cursor escaped actual RDRAM");
+            ram[value.address/4]=0xde000000;
+            ram[value.address/4+1]=value.target;
+        });
         cursor.address=address;return ISLE_GAME_OK;
     });
 }
 IsleGameResult render_state(IsleAlbumSource* source,std::int32_t,std::int32_t) noexcept {
     return call(source,[&](auto&,auto& state) {
         auto& cursor=state.display_cursor;
-        if(!cursor.active || !state.render_bound || cursor.address>cursor.end ||
+        if(!cursor.active || !cursor.control || !state.render_bound ||
+           cursor.control->epoch()!=cursor.epoch || cursor.address>cursor.end ||
            cursor.end-cursor.address<40)return ISLE_GAME_INVALID_STATE;
         constexpr std::uint32_t render_mode=0x8|0x10|0x20|0x40|0x2000|
             (3u<<26)|(1u<<22)|(3u<<18); // cycle2 G_RM_NOOP2=0
@@ -253,7 +262,14 @@ IsleGameResult render_state(IsleAlbumSource* source,std::int32_t,std::int32_t) n
             (15u<<24)|(7u<<21)|(7u<<18)|(7u<<3);
         const std::array<std::uint32_t,10> words{0xde000000,state.initialization_address,
             0xe3001801,0,0xe7000000,0,0xe200001c,render_mode,combine0,combine1};
-        std::copy(words.begin(),words.end(),cursor.ram.begin()+cursor.address/4);
+        struct Write { std::uint32_t address; const std::array<std::uint32_t,10>& words; };
+        Write write{cursor.address,words};
+        cursor.control->with_ram(&write,+[](void* raw,std::span<std::uint32_t> ram) {
+            const auto& value=*static_cast<Write*>(raw);
+            if(ram.size()!=ram_bytes/4 || value.address>ram_bytes-sizeof(value.words))
+                throw std::runtime_error("Album render cursor escaped actual RDRAM");
+            std::copy(value.words.begin(),value.words.end(),ram.begin()+value.address/4);
+        });
         cursor.address+=40;return ISLE_GAME_OK;
     });
 }
@@ -416,11 +432,11 @@ IsleGameResult AlbumSceneNative::apply_render(scene::render::Input& input) noexc
 }
 IsleGameResult AlbumSceneNative::begin_cursor(scene::graphics::SourceControl& control,
     std::uint32_t address,std::uint32_t end) noexcept {
-    const auto ram=control.ram();const auto epoch=control.epoch();
+    const auto epoch=control.epoch();
     if(!source || status!=ISLE_GAME_OK || !render_bound || display_cursor.active ||
-       ram.size()!=ram_bytes/4 || !epoch || (address&7u) || (end&7u) ||
-       address>end || end>ram_bytes)return ISLE_GAME_INVALID_STATE;
-    display_cursor={ram,epoch,address,end,true};return ISLE_GAME_OK;
+       !epoch || (address&7u) || (end&7u) || address>end || end>ram_bytes)
+        return ISLE_GAME_INVALID_STATE;
+    display_cursor={&control,epoch,address,end,true};return ISLE_GAME_OK;
 }
 IsleGameResult AlbumSceneNative::end_cursor(std::uint32_t* address) noexcept {
     if(address)*address=0;

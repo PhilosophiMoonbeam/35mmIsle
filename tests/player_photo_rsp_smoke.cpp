@@ -10,6 +10,7 @@
 #include "effect_graphics_resources.hpp"
 #include "photo_lighting.hpp"
 #include "player_photo_frame.hpp"
+#include "photo_replay.hpp"
 #include "player_photo_rsp_fixture.h"
 #include "scene_storage.hpp"
 #include "source_effect_camera.hpp"
@@ -22,6 +23,7 @@
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <source_location>
 #include <stdexcept>
 #include <string>
@@ -284,7 +286,7 @@ struct Readback {
             "postprocessed phase bypassed the actual Frame's still-live completed mapping/readback ownership");
         if(self.failure==Failure::after_postprocess) throw std::runtime_error("photo intended completed-memory failure after postprocess");
         if(self.failure==Failure::callback_reservation) {
-            require(!self.frame->reserve_render_capacity({0,0})&&self.frame->error()==g::Error::preparation&&
+            require(!self.frame->reserve_render_capacity({0,0,0,0})&&self.frame->error()==g::Error::preparation&&
                 self.frame->submission()==self.ticket.submission&&!self.frame->completed()&&
                 !self.frame->failed_submission(self.ticket.submission)&&!self.frame->retire()&&
                 self.photos->retire_failed(*self.frame)==ISLE_GAME_INVALID_STATE,
@@ -426,8 +428,98 @@ void verify_snapshot(IslePlayerPhotoSource& source,IslePlayerPhotoTicket ticket,
             ((packed>>8)&31u)==p.specialID&&(packed&255u)==p.poseID,"actual canonical Pokemon wire packing changed");
     }
 }
+// Natural10 input is this consumer's untouched real C shutter result, not an
+// authored photo or Source camera/state/geometry fixture. The complete admitted
+// score_Render C body must reach the shared Frame's real post10 task boundary.
+void captured_score_boundary(rom::Snapshot& snapshot,const IslePlayerPhotoData& captured,
+    const std::filesystem::path& output) {
+    const auto original=encode(captured);
+    scene::Storage storage;native(storage.create());
+    g::Config frame_config;frame_config.require_cpu=true;
+    frame_config.memory.commands={0x6b0000,0x10000};
+    frame_config.memory.workspace={0x6c0000,0x10000};
+    frame_config.memory.output={0x6d0000,0x40000};
+    auto made=g::Frame::create(snapshot,frame_config);require(bool(made),made.message.data());
+    auto& frame=*made.frame;
+    world::ModuleState module;
+    struct Access {
+        g::Frame& frame;
+        static photo::ReplayAcquire acquire(void* raw,photo::ReplayGpuBinding& output) noexcept {
+            auto& self=*static_cast<Access*>(raw);g::SourceGpuBinding binding;
+            switch(self.frame.acquire_source_gpu(binding)) {
+            case g::SourceGpuAcquire::pending:return photo::ReplayAcquire::pending;
+            case g::SourceGpuAcquire::failed:return photo::ReplayAcquire::failed;
+            case g::SourceGpuAcquire::admitted:
+                output={binding.executor,binding.programs,binding.epoch,binding.admission,&self.frame};
+                return photo::ReplayAcquire::admitted;
+            }
+            return photo::ReplayAcquire::failed;
+        }
+        static bool release(void* raw,const photo::ReplayGpuBinding& binding) noexcept {
+            auto& self=*static_cast<Access*>(raw);
+            return binding.frame==&self.frame&&self.frame.release_source_gpu(
+                {binding.executor,binding.programs,binding.epoch,binding.admission});
+        }
+    } access{frame};
+    std::vector<menu::RamRange> external;
+    for(const auto range:frame.reservations())
+        if(range.address||range.size!=graphics::bss_end)external.push_back({range.address,range.size});
+    photo::ReplayConfig config;auto& memory=config.memory;
+    memory.world={{0x400000,0x20000},{0x420000,0x10000},{0x430000,0x10000}};
+    memory.subjects={{0x440000,0x60000},{0x4a0000,0x20000},{0x4c0000,0x20000},{}};
+    memory.items={{0x4e0000,0x10000},{0x4f0000,0x10000},{0x500000,0x10000},{}};
+    memory.commands={0x510000,0x20000};memory.workspace={0x530000,0x10000};memory.output={0x540000,0x40000};
+    memory.effects={0x580000,0x10000};memory.effect_assets={0x630000,0x80000};
+    memory.feedback={0x7be600,0x27000};memory.preview_color={0x7be600,0x20d00};memory.preview_depth={0x7df300,0x20d00};
+    config.external_reservations=external;
+    {
+        photo::Replay replay(storage.game(),snapshot,module,{&access,Access::acquire,Access::release},config);
+        struct Join {photo::Replay& replay;~Join(){while(!replay.retire())std::this_thread::yield();}} join{replay};
+        std::vector<sprite::RamRange> protected_ranges;
+        for(const auto range:replay.reservations())
+            protected_ranges.push_back({static_cast<std::uint32_t>(range.offset),static_cast<std::uint32_t>(range.size)});
+        require(frame.reserve_source_gpu_storage(protected_ranges),frame.message());
+        const std::uint64_t revision=1;
+        require(replay.begin({photo::ReplayKind::score,{&captured,&revision,revision}}),replay.error());
+        for(;;) {
+            const auto step=replay.poll();
+            if(step.signal==photo::ReplaySignal::result)break;
+            require(step.signal!=photo::ReplaySignal::failed&&step.signal!=photo::ReplaySignal::cancelled,replay.error());
+            if(step.signal==photo::ReplaySignal::wait1||step.signal==photo::ReplaySignal::wait60||
+               step.signal==photo::ReplaySignal::play_sound85)require(replay.acknowledge(step.obligation),replay.error());
+            else require(step.signal==photo::ReplaySignal::pending,"captured Source score invented an unrelated obligation");
+        }
+        const auto receipts=replay.score_executions();
+        require(receipts.size()==2&&receipts[0].wide&&!receipts[1].wide&&
+            receipts[0].task.token!=receipts[1].task.token&&replay.result().score&&
+            !replay.gpu_busy()&&frame.quiescent()&&!frame.completed()&&!frame.submission()&&
+            !frame.presentation_submission()&&encode(captured)==original,
+            "captured photograph did not reach genuine Source wide/narrow10 without display publication or input mutation");
+        std::ofstream report(output/"natural-score10.tsv");
+        report<<"scope\tCAPTURED-PHOTO-complete-Source-score_Render-natural10-NOT-native40-reachability\n";
+        report<<"wide\ttoken\tprogram\troot\ttext\tdata\tfullsync\tdma\tpackets\tpokemon_count\n";
+        for(const auto& receipt:receipts) {
+            const auto& task=receipt.task;
+            require(receipt.source_returned&&receipt.camera_restored&&task.token&&task.completed&&!task.failed&&
+                bool(task.execution)&&task.execution.full_syncs==1&&task.execution.dma_reads&&task.execution.packets&&
+                task.execution.packet_words&&receipt.pokemon_count&&task.task.commands_address==task.root&&
+                task.program==graphics::SourceProgram::f3dex2_non_fifo&&task.task.text_address&&task.task.data_address,
+                "natural score10 lacked actual task execution or ran C suffix before completion/reset");
+            report<<receipt.wide<<'\t'<<task.token<<'\t'<<unsigned(task.program)<<'\t'<<task.root<<'\t'
+                <<task.task.text_address<<'\t'<<task.task.data_address<<'\t'<<task.execution.full_syncs<<'\t'
+                <<task.execution.dma_reads<<'\t'<<task.execution.packets<<'\t'<<receipt.pokemon_count<<'\n';
+        }
+        require(bool(report),"natural captured Source score receipt write failed");
+        save(output/"natural-score10-captured-photo.bin",original);
+        require(replay.acknowledge_result(),replay.error());
+        while(!replay.retire())std::this_thread::yield();
+    }
+    require(frame.retire(),"natural Source score Frame did not retire after exact binding release");
+    native(storage.destroy());
+}
 void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
     packing_edges();
+    std::optional<IslePlayerPhotoData> score_capture;
     const auto profile=output/"profile";std::filesystem::create_directory(profile);
     const world::Resources world_resources(snapshot, isle::course::beach_id);const auto& setup=world_resources.setup();
     const actor::Resources actor_resources(snapshot,0,{setup.fog_rgb,setup.fog_min,setup.fog_max});
@@ -766,6 +858,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                     "checked C take accepted an unpublished taken index or exact cleanup failed after sticky source failure");
                 source.status=ISLE_GAME_OK;application.status=ISLE_GAME_OK;
                 make(full);tickets.retire(first);tickets.retire(full);
+                score_capture=application.D_800B0598[0];
                 IslePlayerPhotoFocus retired_focus{};native(isle_player_photo_published_focus(&application,&retired_focus));
                 IslePlayerPhotoTicket retired_ticket=full;
                 require(same(retired_focus,detector.published())&&
@@ -795,7 +888,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                         Readback::Failure::late_reservation,Readback::Failure::callback_reservation}[failure_case];
                     const auto failed=begin(*secondary,failed_readback,true,false);
                     if(failure_case==2) {
-                        require(!secondary->reserve_render_capacity({0,0})&&secondary->error()==g::Error::preparation&&
+                        require(!secondary->reserve_render_capacity({0,0,0,0})&&secondary->error()==g::Error::preparation&&
                             secondary->submission()==failed.submission&&secondary->busy()&&!secondary->quiescent()&&
                             !secondary->completed()&&failed_readback.calls==0&&!secondary->retire(),
                             "late cold-reservation fault lost its genuine outstanding token or published a GPU image");
@@ -1024,12 +1117,41 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                         try { static_cast<void>(producer.prepare(preparation,1000000+failure_case,passes[0])); }
                         catch(const std::exception&) { rejected=true; }
                     };
+                    const auto requests_before=photo_controller->queued_requests();
+                    const auto prepare_in_frame=[&](actor::Producer& producer) {
+                        auto scoped_prepare=[&](std::span<std::uint32_t>,std::uint64_t,
+                            const scene::render::Pass&,scene::render::Prepared&) {
+                            prepare(producer);
+                            if(failure_case==2) {
+                                const auto ticket=photo_controller->ticket(*secondary);
+                                require(detection.context==target&&detector.generation(target)==ticket.generation&&
+                                    detector.context_available(target),
+                                    "unsubmitted real preparation lacks its exact committed history");
+                                require(photo->seal_history(target,ticket.generation+1)==ISLE_GAME_INVALID_STATE,
+                                    "unsubmitted capture accepted a foreign committed generation");
+                                native(photo_controller->request());
+                            }
+                            // Abort this real preparation before any RSP task.
+                            return false;
+                        };
+                        auto attempt_pass=passes[0];
+                        attempt_pass.userdata=&scoped_prepare;
+                        attempt_pass.prepare=+[](void* raw,std::span<std::uint32_t> ram,std::uint64_t epoch,
+                            const scene::render::Pass& pass,scene::render::Prepared& output) {
+                            return (*static_cast<decltype(scoped_prepare)*>(raw))(ram,epoch,pass,output);
+                        };
+                        auto attempt_input=scene_input;
+                        attempt_input.passes=std::span(&attempt_pass,1);
+                        require(!secondary->begin(attempt_input,{old_context})&&secondary->quiescent()&&
+                            secondary->error()==g::Error::preparation&&secondary->task_receipts().empty(),
+                            "prefix lifetime fixture did not abort actual preparation before RSP submission");
+                    };
                     if(failure_case==1) {
                         auto bounded_layout=actor_layout;bounded_layout.lists.size=104;
                         actor::Producer bounded(services.game,camera,basis,actor_resources,actor_capacities,
                             actors.render_bindings(),bounded_layout,actor_other,&detection);
-                        prepare(bounded);bounded.retire();
-                    } else prepare(actor_producer);
+                        prepare_in_frame(bounded);bounded.retire();
+                    } else prepare_in_frame(actor_producer);
                     const auto captured_ticket=photo_controller->ticket(*secondary);
                     require(captured_ticket==IslePlayerPhotoTicket{target,before_generation+1,0}&&!services.failed()&&
                         services.source_owner_borrows(original_actor.object).fields>before_holds,
@@ -1050,12 +1172,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
                             "rejected producer's uncommitted generation was accepted as a production image request");
                     } else {
                         require(detection.context==target&&detector.generation(target)==captured_ticket.generation&&
-                            detector.context_available(target),
-                            "unsubmitted real preparation lacks its exact committed history");
-                        require(photo->seal_history(target,captured_ticket.generation+1)==ISLE_GAME_INVALID_STATE,
-                            "unsubmitted capture accepted a foreign committed generation");
-                        native(photo_controller->request());
-                        require(!detector.context_available(target),"unsubmitted seal acquired no actual history lease");
+                            !detector.context_available(target)&&photo_controller->queued_requests()==requests_before+1,
+                            "unsubmitted Source request lost its committed history lease or concrete FIFO ID");
                     }
                     native(photo_controller->end_preparation());
                     require(!secondary->submission()&&
@@ -1173,6 +1291,10 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
         }
         native(storage.destroy());
     }
+    // The native OM is creator-thread bound to one Storage. Retain the exact
+    // genuine C-produced value, then start Replay only after that owner closes.
+    require(score_capture.has_value(),"actual C shutter record was not retained for Source score rendering");
+    captured_score_boundary(snapshot,*score_capture,output);
     require(session.stop()==audio::Error::none,"actual photo audio stop failed");
     for(unsigned n=0;n<240&&session.state()!=game_audio::Session::State::draining;++n) pump();
     require(session.state()==game_audio::Session::State::draining&&session.service().voices_retired(),"actual photo audio voices did not retire");
@@ -1182,6 +1304,8 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
     report<<"component=actual-source-photo-World-Actor-Item-FX\n"
         <<"gpu_frames="<<gpu_frames<<"\nfailed_GPU_frames="<<failed_frames<<"\noriginal_C_OM_CopyInfo_updates="<<copy_updates<<'\n'
         <<"actual_prefix_GPU_captures="<<prefix_captures<<'\n'
+        <<"natural10=untouched_actual_C_shutter_record_complete_imported_score_Render_wide_narrow_shared_Frame_real_post_submit_drain_C_suffix_restore\n"
+        <<"natural10_scope=captured_record_component_proof_not_natural_Player_gameplay_or_native40_reachability\n"
         <<"roll=60_actual_GPU_captures_then_exhaustion_then_application_reset_then_one_actual_capture\n"
         <<"selection=original_actual_roll_flag_set_clear_restore_then_CE00_clears_it\n"
         <<"roll_query=original_BC80_inclusive_count_including_count60_one_past_pointer_never_dereferenced\n"
@@ -1201,7 +1325,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output) {
         <<"published_focus=actual_Detector_query_presence_only_clear_keeps_identity_flags_context_computed_staged_and_capture\n"
         <<"course_reentry=fresh_native_Detector_generation0_retains_both_application_photo_headers_resets_membership_without_minting_stage_then_real_GPU_captures\n"
         <<"wire=60_big_endian_0x3a0_PhotoData_records_plus_post_application_reset_record\n"
-        <<"artifacts=photo-full.ppm,photo-full.rgba8,photo-full.rgba16be,photo-full.depth16be,photo-00.bin..photo-59.bin,photo-after-application-reset.bin\n"
+        <<"artifacts=photo-full.ppm,photo-full.rgba8,photo-full.rgba16be,photo-full.depth16be,photo-00.bin..photo-59.bin,photo-after-application-reset.bin,natural-score10.tsv,natural-score10-captured-photo.bin\n"
         <<"failure_artifacts=failed-before-postprocess_and_failed-after-postprocess_and_failed-callback-reservation_each_rgba16be_depth16be_unpublished-photo.bin;failed-late-reservation_unpublished-photo.bin_only_no_callback_or_readback_copy\n"
         <<"RGBA8=320x240_tightly_packed_RGBA;RGBA16_depth16=320x240_big_endian_halfwords\n"
         <<"limits=one_Beach_World_fixed_legacy55_camera_API_Player_and_trigger_two_Actor_slots_eight_Item_slots\n"

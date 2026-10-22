@@ -351,7 +351,7 @@
       "sha256": "b89283f94e22816c4b08a6196ee694fc0d455765997567760e826f9a0ce66c52"
     },
     "tests/post_course_replay_rom_smoke.cpp": {
-      "sha256": "8e903a322db6f205a107d679d6b1cbf711eea143a13ebebebf25b546cf04482e"
+      "sha256": "13b867a9f123d3f23ca6e525282e14aae562102ba69c9f1c3221085ae1a7f4b7"
     },
     "tests/post_course_replay_probe.c": {
       "sha256": "bf06d48b24eaf220254490ac13483e20180c6aa54a4e0108019491082d7a4730"
@@ -384,19 +384,19 @@
       "sha256": "186256d8bf9d6abf5b33c53b6c94b7c8edf1a865061c1531ecca1968c395f916"
     },
     "tests/photo_replay_rsp_smoke.cpp": {
-      "sha256": "f5e2fd297dd951655fa9702466af438c8d3d557ec79b7ec3a8e8fb66e7fdd5c0"
+      "sha256": "56d14cbfb1bb42a50c92e2b9112741c14462c8a27112bb35faef865882d50092"
     },
     "src/photo_replay.hpp": {
-      "sha256": "2f29013763ffc5335bc01657ce046b67a6e8ea27b53c9f81eb8117c70c7b8693"
+      "sha256": "794c25d49a77fe1c274225f6fd12fe06d050041dc9492282d4bd468e34673cac"
     },
     "src/photo_replay.cpp": {
-      "sha256": "39e3a2dbab3a671984dc87a097bb8a802546c856e2d7fcf59bf33f3739be3b6a"
+      "sha256": "0ebec723055e93136ac40ca0b781580ad7dc457791438918f661f0aef78c37d8"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "1921f809eb7184bfeaf020b9c0cb4b670b9961cc47806cbe03d38c7248faa192"
+      "sha256": "1340db97f8fd096a4e504cb4111ab0c56eea61daaa401999bba0c8d575949302"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "aec546d425994dc0745e7afa6d8fdae0c9869a5da33fe35fcebb6cc90f2073d4"
+      "sha256": "7fdef8be2b549c0bacf0b7628dc050f8373b2a7a0e26ba848ca39faaba3539a4"
     },
     "src/photo_world.hpp": {
       "sha256": "3855a6553c5af94d74810a980aa9bd1e1c8fee7c01365bb6ec6840da2f1f2f18"

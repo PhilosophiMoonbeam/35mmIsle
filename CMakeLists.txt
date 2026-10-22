@@ -1381,7 +1381,8 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
-    if(TARGET isle-player-photo AND TARGET isle-actor-photo-scene AND TARGET isle-course-model-producer)
+    if(TARGET isle-player-photo AND TARGET isle-actor-photo-scene AND TARGET isle-course-model-producer
+       AND TARGET isle-photo-subjects AND TARGET isle-application-photos AND TARGET isle-canonical-executor)
         add_executable(player-photo-rsp-smoke EXCLUDE_FROM_ALL
             tests/player_photo_rsp_smoke.cpp tests/player_photo_rsp_fixture.c)
         target_link_libraries(player-photo-rsp-smoke PRIVATE
@@ -1397,7 +1398,7 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
     if(TARGET isle-player-renderer AND TARGET isle-player-ui AND TARGET isle-course-model-producer
        AND TARGET isle-player-cart AND TARGET isle-actor-photo-scene)
         add_executable(player-source-renderer-rsp-smoke EXCLUDE_FROM_ALL
-            tests/player_source_renderer_rsp_smoke.cpp)
+            tests/player_source_renderer_rsp_smoke.cpp tests/player_photo_rsp_fixture.c)
         target_link_libraries(player-source-renderer-rsp-smoke PRIVATE
             isle-player-renderer isle-player-ui isle-course-model-producer
             isle-player-cart isle-actor-photo-scene
@@ -1567,9 +1568,28 @@ if(TARGET isle-window)
 endif()
 if(TARGET isle-canonical-executor AND TARGET isle-photo-subjects
    AND TARGET isle-application-photos AND TARGET isle-scene-graphics)
+    set(_isle_photo_score_private "${CMAKE_BINARY_DIR}/_deps/isle-photo-score-render-private")
+    set(_isle_photo_score_manifest "${PROJECT_SOURCE_DIR}/cmake/photo-score-render-inputs.json")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/tools/prepare_photo_score_render.py"
+        "${PROJECT_SOURCE_DIR}/tools/prepare_engine.py"
+        "${_isle_photo_score_manifest}"
+        "${PROJECT_SOURCE_DIR}/src/photo_score_source.h"
+        "${PROJECT_SOURCE_DIR}/src/photo_score_source.c")
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tools/prepare_photo_score_render.py"
+            --repository "${_isle_snap_source}" --manifest "${_isle_photo_score_manifest}"
+            --output "${_isle_photo_score_private}"
+        RESULT_VARIABLE _isle_photo_score_result
+        OUTPUT_VARIABLE _isle_photo_score_output ERROR_VARIABLE _isle_photo_score_error)
+    if(NOT _isle_photo_score_result EQUAL 0)
+        message(FATAL_ERROR "Private score_Render source preparation failed:\n${_isle_photo_score_output}${_isle_photo_score_error}")
+    endif()
     add_library(isle-photo-replay STATIC
         src/photo_replay.cpp src/photo_replay.hpp
-        src/photo_presentation.cpp src/photo_presentation.hpp)
+        src/photo_presentation.cpp src/photo_presentation.hpp
+        src/photo_score_source.c src/photo_score_source.h
+        "${_isle_photo_score_private}/photo_score_render_original.c")
     # Presentation's core is included once by photo_replay.cpp, not compiled
     # separately. Both owners use the real Photos and scene-graphics services.
     target_link_libraries(isle-photo-replay PUBLIC isle-photo-subjects isle-photo-effects
@@ -1577,8 +1597,13 @@ if(TARGET isle-canonical-executor AND TARGET isle-photo-subjects
         isle-application-photos isle-scene-graphics)
     isle_target_options(isle-photo-replay)
     target_compile_options(isle-photo-replay PRIVATE
-        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>"
+        "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+        "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
         "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    if(TARGET player-photo-rsp-smoke)
+        target_link_libraries(player-photo-rsp-smoke PRIVATE isle-photo-replay)
+    endif()
     if(TARGET isle-scene-graphics)
         add_executable(photo-replay-rsp-smoke EXCLUDE_FROM_ALL tests/photo_replay_rsp_smoke.cpp)
         target_link_libraries(photo-replay-rsp-smoke PRIVATE isle-photo-replay isle-scene-graphics)

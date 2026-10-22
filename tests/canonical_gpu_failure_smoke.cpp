@@ -1,6 +1,7 @@
 // ROM/SDK-free authored RSP -> real canonical RDP consumer. CPU Vulkan only.
-// This tests the pinned renderer's LoadTile4bpp validation failure, NOT device
-// loss, a prolonged GPU drain, or a hardware renderer. No output files are used.
+// This tests the pinned renderer's LoadTile4bpp validation failure and actual
+// task/CPU-only completed lease reuse, NOT device loss, a prolonged GPU drain,
+// Source producer reachability, or a hardware renderer. No output files are used.
 #include "rsp_render.hpp"
 
 #include <algorithm>
@@ -227,6 +228,23 @@ void blocking_retire_failure() {
               << observed << "\"\n";
 }
 
+void blocking_wait_failure() {
+    Executor executor(true, {10000, 64});
+    const Program program(invalid_load.size());
+    auto preparation = prepare(executor, invalid_load, true);
+    const auto token = executor.begin(std::move(preparation), make_task(program, invalid_load.size()), program.bytes);
+    Executor::MemoryLease escaped;
+    // No external poll: this acquisition must drive owner handoff and the
+    // worker's real failure drain before throwing, without exposing mappings.
+    const auto observed = expect_error([&] { escaped = executor.wait_completed(token); });
+    require(!escaped && !preparation, "failed wait exposed memory or restored consumed preparation");
+    require_poisoned_quiescent(executor);
+    expect_error([&] { escaped = executor.wait_completed(token); });
+    require(!escaped, "consumed failed wait token exposed a memory lease");
+    std::cout << "wait_completed external_polls=0 token_rejections=1 preparation_rejections=1 "
+                 "escaped_memory_leases=0 diagnostic=\"" << observed << "\"\n";
+}
+
 void blocking_execute_failure() {
     Executor executor(true, {10000, 64});
     const Program program(invalid_load.size());
@@ -266,10 +284,9 @@ struct Draw {
     std::array<std::uint16_t, width * height> pixels{};
     std::size_t packets = 0, packet_words = 0, full_syncs = 0;
 };
-Draw successful_draw(Executor& executor, bool cold) {
-    const Program program(simple_fill.size());
-    auto preparation = prepare(executor, simple_fill, cold);
-    auto memory = executor.execute(std::move(preparation), make_task(program, simple_fill.size()), program.bytes);
+Draw completed_draw(Executor& executor, const Executor::MemoryLease& memory,
+                    std::span<const std::uint32_t> expected_commands = simple_fill,
+                    std::uint16_t expected_pixel = fill_pixel) {
     require(bool(memory), "successful fill did not return actual completed mappings");
     require(!executor.quiescent(), "active successful result lease was reported quiescent");
     Draw draw;
@@ -279,10 +296,11 @@ Draw successful_draw(Executor& executor, bool cold) {
         draw.packets = result.packets;
         draw.packet_words = result.packet_words;
         draw.full_syncs = result.full_syncs;
-        require(draw.packets == simple_fill.size() / 2 && draw.packet_words == simple_fill.size() && draw.full_syncs == 1,
+        require(draw.packets == expected_commands.size() / 2 &&
+                draw.packet_words == expected_commands.size() && draw.full_syncs == 1,
                 "successful fill's actual RSP packet counters disagree with the authored stream");
-        require(memory.packets().words().size() == simple_fill.size() &&
-                std::equal(simple_fill.begin(), simple_fill.end(), memory.packets().words().begin()),
+        require(memory.packets().words().size() == expected_commands.size() &&
+                std::equal(expected_commands.begin(), expected_commands.end(), memory.packets().words().begin()),
                 "successful real RSP packet contents changed");
         const auto ram = memory.rdram();
         require(ram.size() == (8u << 20) && memory.hidden().size() == (4u << 20),
@@ -291,7 +309,7 @@ Draw successful_draw(Executor& executor, bool cold) {
             const auto address = color_address + index * 2;
             draw.pixels[index] = static_cast<std::uint16_t>(
                 (std::uint16_t(guest_byte(ram, address)) << 8) | guest_byte(ram, address + 1));
-            require(draw.pixels[index] == fill_pixel, "actual fill pixels do not match RGBA5551 red");
+            require(draw.pixels[index] == expected_pixel, "actual fill pixels do not match the authored RGBA5551 value");
         }
         for (std::size_t byte = 0; byte < 16; ++byte) {
             const auto expected = static_cast<std::uint8_t>(guard_word >> ((3u - (byte & 3u)) * 8));
@@ -300,6 +318,14 @@ Draw successful_draw(Executor& executor, bool cold) {
                     "actual fill corrupted a neighboring RDRAM guard");
         }
     } // Every mapping/reference borrower ends before releasing the owner lease.
+    return draw;
+}
+
+Draw successful_draw(Executor& executor, bool cold) {
+    const Program program(simple_fill.size());
+    auto preparation = prepare(executor, simple_fill, cold);
+    auto memory = executor.execute(std::move(preparation), make_task(program, simple_fill.size()), program.bytes);
+    const auto draw = completed_draw(executor, memory);
     memory.release();
     require(executor.quiescent(), "successful lease release did not restore quiescence");
     return draw;
@@ -318,6 +344,186 @@ void cold_warm_success() {
               << " cold_full_syncs=" << cold.full_syncs << " warm_full_syncs=" << warm.full_syncs
               << " rgba5551=0xf801 guards=unchanged cold_warm=equal\n";
 }
+
+void cpu_finish_success() {
+    Executor executor(true, {10000, 64});
+    const Program program(simple_fill.size());
+    const auto task = make_task(program, simple_fill.size());
+    auto commands = simple_fill;
+    constexpr std::uint16_t first_pixel = fill_pixel & ~1u;
+    // Clearing the RGBA16 low bit makes the real fill establish non-cold hidden
+    // history. The oracle compares actual completed bytes, not authored hidden.
+    commands[9] = (std::uint32_t(first_pixel) << 16) | first_pixel;
+    auto preparation = prepare(executor, commands, true);
+    const auto first_token = executor.begin(std::move(preparation), task, program.bytes);
+    require(first_token != 0 && !preparation, "first real task did not consume preparation");
+    expect_error([&] { auto invalid = executor.wait_completed(0); });
+    expect_error([&] { auto invalid = executor.wait_completed(first_token + 1); });
+    require(!executor.quiescent(), "wrong wait token released the real outstanding task");
+    auto memory = executor.wait_completed(first_token);
+    const auto hidden_fingerprint = [](std::span<const std::byte> hidden) {
+        std::uint64_t value = 14695981039346656037ull;
+        for (const auto byte : hidden)
+            value = (value ^ std::to_integer<std::uint8_t>(byte)) * 1099511628211ull;
+        return value;
+    };
+    std::uintptr_t rdram_identity = 0, hidden_identity = 0;
+    std::uint64_t hidden_history = 0;
+    isle::rsp::Result actual_result{};
+    std::array<isle::rsp::PacketRange, simple_fill.size() / 2> actual_ranges{};
+    {
+        (void)completed_draw(executor, memory, commands, first_pixel);
+        actual_result = memory.rsp_result();
+        const auto& packets = memory.packets();
+        require(packets.packets().size() == actual_ranges.size(),
+                "first task did not retain its exact authored packet ranges");
+        std::copy(packets.packets().begin(), packets.packets().end(), actual_ranges.begin());
+        const auto ram = memory.rdram(), hidden = memory.hidden();
+        rdram_identity = reinterpret_cast<std::uintptr_t>(ram.data());
+        hidden_identity = reinterpret_cast<std::uintptr_t>(hidden.data());
+        require(std::any_of(hidden.begin(), hidden.end(),
+                           [](std::byte value) { return value != std::byte{3}; }),
+                "actual fill did not establish non-cold hidden history");
+        hidden_history = hidden_fingerprint(hidden);
+    }
+    expect_error([&] { auto invalid = executor.begin_preparation(); });
+    memory.release();
+    require(executor.quiescent(), "wait-completed result release did not restore quiescence");
+    expect_error([&] { auto invalid = executor.wait_completed(first_token); });
+
+    constexpr std::uint32_t marker_address = texture_address + 4;
+    constexpr std::uint32_t marker = 0x5a0123ef;
+    preparation = executor.begin_preparation();
+    {
+        auto words = preparation.words();
+        words[marker_address / 4] = marker;
+        // CPU-only preparation may replace task bytes. A fabricated execution
+        // would now encounter this genuinely invalid RDP stream.
+        std::copy(invalid_load.begin(), invalid_load.end(), words.begin() + commands_address / 4);
+    }
+    expect_error([&] { auto invalid = executor.finish_preparation(std::move(preparation), 0); });
+    require(bool(preparation) && preparation.words()[marker_address / 4] == marker,
+            "zero CPU-finish receipt consumed or changed preparation");
+    expect_error([&] { auto invalid = executor.finish_preparation(std::move(preparation), first_token + 1); });
+    require(bool(preparation) && preparation.words()[marker_address / 4] == marker,
+            "wrong CPU-finish receipt consumed or changed preparation");
+    memory = executor.finish_preparation(std::move(preparation), first_token);
+    require(!preparation && bool(memory) && !executor.quiescent(),
+            "CPU finish did not transfer exclusive preparation into a completed result");
+    {
+        (void)completed_draw(executor, memory, commands, first_pixel);
+        const auto& result = memory.rsp_result();
+        require(result.error == actual_result.error && result.sp_status == actual_result.sp_status &&
+                result.dma_reads == actual_result.dma_reads && result.dma_writes == actual_result.dma_writes &&
+                result.imem_writes == actual_result.imem_writes && result.packets == actual_result.packets &&
+                result.packet_words == actual_result.packet_words && result.full_syncs == actual_result.full_syncs,
+                "CPU finish replaced the prior actual task result");
+        const auto& packets = memory.packets();
+        require(packets.packets().size() == actual_ranges.size() &&
+                std::equal(actual_ranges.begin(), actual_ranges.end(), packets.packets().begin()),
+                "CPU finish replaced the prior actual packet ranges");
+        const auto ram = memory.rdram(), hidden = memory.hidden();
+        require(reinterpret_cast<std::uintptr_t>(ram.data()) == rdram_identity &&
+                reinterpret_cast<std::uintptr_t>(hidden.data()) == hidden_identity &&
+                hidden_fingerprint(hidden) == hidden_history,
+                "CPU finish replaced persistent RDRAM/hidden storage or changed hidden history");
+        for (std::size_t byte = 0; byte < sizeof(marker); ++byte)
+            require(guest_byte(ram, marker_address + byte) ==
+                    static_cast<std::uint8_t>(marker >> ((3u - byte) * 8)),
+                    "CPU finish discarded preparation writes");
+    }
+    expect_error([&] { auto invalid = executor.begin_preparation(); });
+    memory.release();
+    require(executor.quiescent(), "CPU-finished result release did not restore quiescence");
+
+    preparation = prepare(executor, simple_fill, false);
+    require(preparation.words()[marker_address / 4] == marker,
+            "next preparation invalidated CPU-finished writeback");
+    const auto second_token = executor.begin(std::move(preparation), task, program.bytes);
+    require(second_token == first_token + 1, "CPU finish fabricated an intervening task token");
+    memory = executor.wait_completed(second_token);
+    {
+        (void)completed_draw(executor, memory);
+        require(reinterpret_cast<std::uintptr_t>(memory.rdram().data()) == rdram_identity &&
+                reinterpret_cast<std::uintptr_t>(memory.hidden().data()) == hidden_identity,
+                "next healthy actual task replaced persistent executor storage");
+    }
+    memory.release();
+    preparation = executor.begin_preparation();
+    expect_error([&] { auto invalid = executor.finish_preparation(std::move(preparation), first_token); });
+    require(bool(preparation), "stale CPU-finish receipt consumed preparation");
+    memory = executor.finish_preparation(std::move(preparation), second_token);
+    require(!preparation && bool(memory), "current actual receipt failed after rejecting a stale receipt");
+    memory.release();
+    require(executor.quiescent(), "CPU-finish/reuse sequence retained an exclusive lease");
+    std::cout << "cpu_finish actual_tasks=2 consecutive_tokens=1 external_polls=0 cpu_finishes=2 "
+                 "zero_wrong_stale_receipts_preserve_preparation=1 actual_result_packets=unchanged "
+                 "rdram_hidden_identity=stable hidden_history=preserved cpu_writeback=preserved\n";
+}
+
+void second_task_failure(bool fail_in_rsp) {
+    // Authored canonical mechanism coverage, not a naturally reached Source
+    // producer: retain one executor across a real success, CPU finish and failure.
+    Executor executor(true, {10000, 64});
+    const Program first(simple_fill.size());
+    auto preparation = prepare(executor, simple_fill, true);
+    const auto first_token = executor.begin(std::move(preparation), make_task(first, simple_fill.size()), first.bytes);
+    auto memory = executor.wait_completed(first_token);
+    (void)completed_draw(executor, memory);
+    memory.release();
+    require(executor.quiescent(), "first actual task did not drain before sequential failure case");
+    preparation = executor.begin_preparation();
+    {
+        auto words = preparation.words();
+        words[texture_address / 4] = 0x6a5b4c3d;
+    }
+    memory = executor.finish_preparation(std::move(preparation), first_token);
+    require(!preparation && bool(memory), "successful prefix CPU finish did not transfer preparation");
+    (void)completed_draw(executor, memory);
+    memory.release();
+    require(executor.quiescent(), "successful CPU-finished prefix retained a mapping before task two");
+
+    const auto commands = fail_in_rsp ? std::span<const std::uint32_t>(simple_fill) :
+                                        std::span<const std::uint32_t>(invalid_load);
+    Program second(commands.size());
+    if (fail_in_rsp) {
+        // The actual RSP emits the valid fill packets, then reaches the same
+        // bounded backward-edge failure exercised by rsp_tests.cpp. Partial
+        // packet output must never be submitted to the GPU or returned as ready.
+        second.bytes.resize(second.bytes.size() - sizeof(std::uint32_t));
+        second.emit(0x1000ffffu); // Local BEQ r0,r0,-1.
+        second.emit(0);           // Delay-slot NOP.
+    }
+    preparation = prepare(executor, commands, false);
+    Executor::Token second_token = 0;
+    std::string observed;
+    if (fail_in_rsp) {
+        observed = expect_error([&] {
+            second_token = executor.begin(std::move(preparation), make_task(second, commands.size()), second.bytes);
+        });
+        require(second_token == 0 && observed.find("error=execution_budget") != std::string::npos,
+                "second actual RSP task did not fail at its authored bounded loop before GPU admission");
+    } else {
+        second_token = executor.begin(std::move(preparation), make_task(second, commands.size()), second.bytes);
+        require(second_token == first_token + 1, "CPU-finished prefix fabricated a task before failing GPU work");
+        observed = expect_error([&] { memory = executor.wait_completed(second_token); });
+        require(observed.find("canonical RSP/RDP backend error:") != std::string::npos,
+                "second actual task did not surface its authored backend validation failure");
+        expect_error([&] { memory = executor.wait_completed(second_token); });
+    }
+    require(!memory && !preparation, "failed second task exposed memory or restored consumed preparation");
+    require_poisoned_quiescent(executor);
+    // A prior successful receipt cannot bypass the failed second task's poison.
+    // Its preparation was consumed, and a fresh one was explicitly refused.
+    expect_error([&] { memory = executor.finish_preparation(std::move(preparation), first_token); });
+    expect_error([&] { memory = executor.wait_completed(first_token); });
+    require(!memory && executor.quiescent(),
+            "prior task receipt resurrected completed mappings after the second task failed");
+    std::cout << "second_task_" << (fail_in_rsp ? "rsp" : "gpu")
+              << "_failure successful_prefix_tasks=1 successful_prefix_cpu_finishes=1 external_polls=0 "
+                 "prior_receipt_rejected=1 escaped_memory_leases=0 poisoned_quiescent=1 diagnostic=\""
+              << observed << "\"\n";
+}
 } // namespace
 
 int main(int argc, char**) {
@@ -329,10 +535,14 @@ int main(int argc, char**) {
     try {
         asynchronous_failure();
         blocking_retire_failure();
+        blocking_wait_failure();
         blocking_execute_failure();
         destructor_failure();
         cold_warm_success();
-        std::cout << "canonical_gpu_failure_smoke=passed observed_backend_exceptions=3 "
+        cpu_finish_success();
+        second_task_failure(false);
+        second_task_failure(true);
+        std::cout << "canonical_gpu_failure_smoke=passed observed_backend_exceptions=5 observed_rsp_execution_exceptions=1 "
                      "failure_input_packets_per_submission=4 failure_input_words_per_submission=8 "
                      "vulkan_requirement=CPU device_loss_not_tested=1 prolonged_drain_not_tested=1\n";
         return EXIT_SUCCESS;

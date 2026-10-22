@@ -52,8 +52,9 @@ public:
     IsleGameResult seal_history(std::uint16_t context,std::uint64_t generation) noexcept;
     // Bind to the concrete executing Frame. It must outlive the ticket and
     // must not begin again or retire until this ticket is retired.
-    // ticket.submission must be Frame::submission(). ticket.context identifies
-    // Detector history, independently of Frame::submission_context().
+    // ticket.submission must be Frame::presentation_submission(): the last
+    // real task receipt, including an already drained final task.
+    // ticket.context identifies Detector history independently of Frame context.
     IsleGameResult bind_submission(IslePlayerPhotoTicket,const scene::graphics::Frame&) noexcept;
     IsleGameResult bind_snapshot_owner(scene::Services&,IsleGameObject*) noexcept;
     IsleGameResult require_taken_context() noexcept;
@@ -89,6 +90,9 @@ private:
     struct Pending { IslePlayerPhotoTicket ticket{}; Phase phase=Phase::idle; unsigned borrows=0;
         std::array<IsleGameObject*,33> holds{}; std::size_t held=0; bool history_retained=false;
         const scene::graphics::Frame* frame=nullptr;
+        // Latest real task that could consume this history; independent of the
+        // final presentation ticket and never an entry in the Source ID FIFO.
+        std::uint64_t task_exposure=0;
     };
     Pending* matching(IslePlayerPhotoTicket) noexcept;
     IsleGameResult source_access(bool cleanup=false) noexcept;

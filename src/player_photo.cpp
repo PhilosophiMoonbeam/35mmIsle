@@ -315,7 +315,7 @@ IsleGameResult Photo::postprocess(IslePlayerPhotoTicket ticket,std::span<std::ui
     std::uint32_t regions,std::uint32_t framebuffer) noexcept {
     auto* pending=matching(ticket);
     if(!pending || pending->phase!=Phase::submitted || !pending->frame ||
-       pending->frame->submission()!=ticket.submission) return ISLE_GAME_INVALID_STATE;
+       pending->frame->presentation_submission()!=ticket.submission) return ISLE_GAME_INVALID_STATE;
     if(regions!=detector_.copies.region_offset(0)) return ISLE_GAME_INVALID_ARGUMENT;
     if(detector_.history.analyze(ticket.context,words,regions)!=focus::Error::none) return ISLE_GAME_INVALID_STATE;
     if(detector_.history.mark_center(words,framebuffer,player_.gDirectionIndex)!=focus::Error::none)
@@ -349,7 +349,8 @@ IsleGameResult Photo::release(IslePlayerPhotoTicket ticket) noexcept {
 }
 IsleGameResult Photo::retire(IslePlayerPhotoTicket ticket) noexcept {
     auto* pending=matching(ticket);
-    if(!pending || pending->borrows || (pending->phase!=Phase::complete&&
+    if(!pending || pending->borrows ||
+       (pending->task_exposure&&pending->phase!=Phase::complete) || (pending->phase!=Phase::complete&&
        pending->phase!=Phase::prepared&&pending->phase!=Phase::captured&&pending->phase!=Phase::rejected))
         return ISLE_GAME_INVALID_STATE;
     return release_pending(*pending);
@@ -371,6 +372,7 @@ IsleGameResult Photo::release_pending(Pending& pending) noexcept {
             return remember(ISLE_GAME_INVALID_STATE);
     }
     pending.held=0; pending.phase=Phase::idle; pending.frame=nullptr;
+    pending.task_exposure=0;
     if(completed_==ticket.context) completed_=-1;
     if(published_==ticket.context) published_=-1;
     return ISLE_GAME_OK;

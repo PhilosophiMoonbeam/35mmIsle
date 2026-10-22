@@ -134,7 +134,17 @@ scene::render::Input Scene::Impl::Native::render_input() {
     IsleGameCamera* photo_camera=nullptr;
     if(const auto* gallery=std::get_if<GallerySceneNative>(&menu))photo_camera=gallery->photo_camera;
     else if(const auto* end=std::get_if<EndLevel8SceneNative>(&menu))photo_camera=end->camera;
-    const auto draw_control=+[](void*,scene::graphics::SourceControl& control) {control.draw();return true;};
+    const auto draw_control=+[](void*,scene::graphics::SourceControl& control) {
+        control.draw();
+        // These ordinary camera callbacks own the actual outer command group.
+        // Keep Source's independent post ordering: process/reset10 precedes40;
+        // an empty group after reset is not another graphics task. Custom
+        // Source controls below retain their own callback-specific post policy.
+        const auto flags=control.camera_flags();
+        if(flags&0x10u)control.process_commands(true);
+        if(flags&0x40u)control.process_commands(false);
+        return true;
+    };
     const auto skip_control=+[](void*,scene::graphics::SourceControl&) {return true;};
     for(std::size_t i=0;i<pass_count;++i) {
         auto& pass=passes[i];

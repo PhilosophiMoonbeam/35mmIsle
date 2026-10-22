@@ -236,7 +236,7 @@ struct Fixture {
         case sg::SourceGpuAcquire::pending: return pg::ReplayAcquire::pending;
         case sg::SourceGpuAcquire::failed: return pg::ReplayAcquire::failed;
         case sg::SourceGpuAcquire::admitted:
-            ++f.acquisitions; out = {binding.executor,binding.programs,binding.epoch,binding.admission};
+            ++f.acquisitions;out={binding.executor,binding.programs,binding.epoch,binding.admission,f.gpu.get()};
             return pg::ReplayAcquire::admitted;
         }
         return pg::ReplayAcquire::failed;
@@ -244,7 +244,8 @@ struct Fixture {
     static bool release(void* context, const pg::ReplayGpuBinding& binding) noexcept {
         auto& f = *static_cast<Fixture*>(context);
         if (std::this_thread::get_id() != f.creator) return false;
-        if (!f.gpu->release_source_gpu({binding.executor,binding.programs,binding.epoch,binding.admission})) return false;
+        if(binding.frame!=f.gpu.get()||
+           !f.gpu->release_source_gpu({binding.executor,binding.programs,binding.epoch,binding.admission}))return false;
         ++f.releases; return true;
     }
     static IsleGameResult service(void* context) noexcept {

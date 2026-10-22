@@ -5,13 +5,14 @@
 #include "rsp_render.hpp"
 #include "scene_render.hpp"
 
-namespace isle::graphics { class SourcePrograms; }
+namespace isle::graphics { class SourcePrograms; enum class SourceProgram : std::uint32_t; }
 namespace isle::scene::graphics {
 enum class Error { none, invalid, resource, native, preparation, execution, retired };
 enum class Poll { idle, pending, completed, failed };
 // Physical task ownership, independent of immutable course banks. Commands
-// reserve their final 0x400 bytes for identity/viewport payloads. Workspace
-// contains stack, yield, task and boot at offsets 0/0x4000/0x6000/0x7000.
+// reserve their first 0x100 bytes for the generic task reset prefix and final
+// 0x400 for identity/viewport payloads. Workspace contains stack, yield, task
+// and boot at offsets 0/0x4000/0x6000/0x7000.
 struct Layout {
     sprite::RamRange commands{0x100000, 0x10000};
     sprite::RamRange workspace{0x280000, 0x10000};
@@ -61,20 +62,27 @@ struct CompletedWork {
 struct RenderCapacity {
     std::size_t sprite_draws = 0;
     std::size_t resource_reservations = 0;
+    // Total retained real receipts and Source descriptor slots between resets.
+    // Empty processing consumes neither. Both are cold, bounded admission limits.
+    std::size_t task_receipts = 33;
+    std::size_t source_task_slots = 33;
 };
 struct CreateResult;
-// Synchronous nonowning source-camera capability. Never retain this object,
-// its RAM span or a pointer to either after the control callback returns.
+// Synchronous nonowning source capability. Never retain it past its control
+// callback; a temporary borrower must restore its guard before normal return.
+// RAM is available only inside returning scoped writer callbacks, never across
+// a task boundary or after the control callback returns.
 // C callers enter through returning C++ leaves and a nested plain-C fence;
 // no checked C transfer may cross these command/preparation frames.
 class SourceControl final {
 public:
     SourceControl(const SourceControl&) = delete;
     SourceControl& operator=(const SourceControl&) = delete;
-    std::span<std::uint32_t> ram() const noexcept;
+    void with_ram(void*, void (*)(void*, std::span<std::uint32_t>));
     std::uint64_t epoch() const noexcept;
     std::uint32_t framebuffer() const noexcept;
     std::uint32_t depth() const noexcept;
+    std::uint32_t camera_flags() const noexcept;
     void command(std::uint32_t, std::uint32_t);
     void call(render::List);
     // Emit the same genuine reset body as the default renderer into a caller's
@@ -90,9 +98,20 @@ public:
     std::uint32_t restore_camera(unsigned lane,std::uint32_t cursor,std::uint32_t end);
     std::uint32_t initialize_camera_into(std::uint32_t cursor,std::uint32_t end);
     std::uint32_t draw_into(std::uint32_t cursor,std::uint32_t end);
-    // Finalizer only: validate a genuine owned FullSync/EndDL terminal, call
-    // its source group and let the outer task end without a second FullSync.
-    void finish_task_group(render::List root,render::List terminal);
+    // Cold admission check before a caller emits task roots or terminal tails.
+    // Does not consume a slot; submit_task performs the same check and consumes.
+    void reserve_task();
+    // Publish one actual task after every scoped writer has returned. Submission
+    // does not reset Source cursors/allocators. The next writer joins the GPU.
+    void submit_task(render::List root, render::List terminal,
+                     ::isle::graphics::SourceProgram);
+    // Actual completion before a Source reset; no synthetic reset-only task.
+    void drain_tasks();
+    // Reset Source task accounting only after drain, alongside allocator reset.
+    void reset_task_slots();
+    // Generic callback-owned outer commands use the same actual task boundary.
+    // A reset joins completion before resetting Source task accounting.
+    void process_commands(bool reset);
     // Compiled passes only: prepares real producer lists without emitting any
     // camera or lane commands. The borrow expires with this control callback.
     // At most once; cannot mix either explicit phase with draw().
@@ -112,11 +131,28 @@ struct SourceGpuBinding {
     const ::isle::graphics::SourcePrograms* programs = nullptr;
     std::uint64_t epoch = 0, admission = 0;
 };
+struct TaskReceipt {
+    // Zero token with failed=true records a synchronous RSP attempt rejected
+    // before GPU acceptance, never a manufactured submitted identity.
+    std::uint64_t token = 0;
+    ::isle::graphics::SourceProgram program{};
+    std::uint32_t root = 0, terminal = 0;
+    bool completed = false, failed = false;
+    // Copied scalar evidence from an actual returned RSP attempt, including its
+    // failure. GPU completion remains separate; no RAM mapping is implied.
+    rsp::Result execution{};
+    bool has_execution = false;
+    // Actual task fields captured before the shared descriptor workspace is
+    // reused. This is the native transport contract, never an SDK layout.
+    rsp::Task task{};
+};
 
 // Owner-thread source compositor. Catalog and unmoved Snapshot outlive Frame.
-// begin borrows View ONLY while preparing actual RAM. No native/producer view is
-// retained during execution. The owner must poll until !busy() before the next
-// Runtime tick, transition, producer retirement, or native object destruction.
+// begin borrows View through synchronous logical dispatch. Each scoped writer
+// ends before real task submission; the GPU receives only task/RAM packets,
+// never native views. The logical resource owners remain pinned across every
+// inter-task gap. Poll until !busy() before the next runtime tick, transition,
+// producer retirement or native object destruction.
 class Frame final {
 public:
     static CreateResult create(const rom::Snapshot&, Config = {}) noexcept;
@@ -159,16 +195,34 @@ public:
     // Retained semantic replay ownership must not hold this across Source waits.
     SourceGpuAcquire acquire_source_gpu(SourceGpuBinding&) noexcept;
     bool release_source_gpu(const SourceGpuBinding&) noexcept;
+    // Exact admitted Replay/score owner only. Runs a returning Source callback
+    // through the same task boundary/lease machinery, synchronously closes its
+    // final real result, and invokes work once. No display image, GTL token,
+    // presentation ordinal or framebuffer/FIFO completion is manufactured.
+    bool run_source_control(const SourceGpuBinding&, void*,
+        bool (*)(void*,SourceControl&), CompletedWork = {}) noexcept;
     bool begin(render::Input, FrameContext = {}, CompletedWork = {}) noexcept;
     bool begin(startup::View, FrameContext = {}) noexcept;
+    // Returning owner-side failure latch, never a GPU cancellation or terminal.
+    // Covers admission/consumer failures after a real task was submitted. The
+    // owner must still poll/drain; successful presentation is suppressed.
+    bool fail_draw(Error, const char*) noexcept;
     Poll poll() noexcept;
     bool busy() const noexcept;
     bool quiescent() const noexcept;
-    // Actual executor token, valid only while this Frame owns the submission.
+    // Last real task while the logical draw remains live, not a busy predicate.
     std::uint64_t submission() const noexcept;
+    // Stable actual final-task identity until next begin, including already
+    // drained flag10 tasks. It is independent of presentation ordinal/FIFO IDs.
+    std::uint64_t presentation_submission() const noexcept;
+    std::span<const TaskReceipt> task_receipts() const noexcept;
+    // Dispatch authority, including CPU-only gaps after a drained Source10.
+    // Neither a GPU token nor permission to retain a mapped RAM span.
+    bool preparing() const noexcept;
     unsigned submission_context() const noexcept;
-    // Read-only bounded evidence: the actual failed token is retained only
-    // after executor leases, GPU work, postprocessing and readback have ended.
+    // A submitted task belongs to this failed logical draw only after all real
+    // execution/readback/writer leases have drained. Earlier successful tasks
+    // remain independently truthful completed receipts.
     bool failed_submission(std::uint64_t) const noexcept;
     // Actual protected cold/task/command/output/depth ranges and, after explicit
     // source-screen setup, its two physical framebuffer spans. Not a GPU fence.

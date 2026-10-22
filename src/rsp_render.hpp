@@ -25,7 +25,8 @@ public:
         explicit operator bool() const noexcept;
         std::span<std::uint32_t> words() const noexcept;
         // All borrowed CPU writers MUST have ceased access before cancel,
-        // destruction or execute. Abandonment poisons, never rolls RAM back.
+        // destruction, execution or finish_preparation. Abandonment poisons,
+        // never rolls RAM back.
         void cancel() noexcept;
     private:
         friend class CanonicalExecutor;
@@ -81,6 +82,7 @@ public:
 
     // The caller initializes every byte its task uses. Hidden is initialized
     // once at cold creation; neither memory is implicitly reset between tasks.
+    // Release the previous result lease before reacquiring preparation.
     PreparationLease begin_preparation();
     // RSP execution remains synchronous on the owner thread (shared upstream
     // JIT globals are not qualified for concurrent audio/graphics execution).
@@ -94,9 +96,32 @@ public:
     // or failure drain remains pending; failure retires the owner-thread JIT
     // before the worker drains processor/RAM. Only after that drain does poll
     // consume the failed token and rethrow the original failure, with no result
-    // lease. Tokens are single-use; true alone does not consume a successful one.
+    // lease. Completion acquisition/retirement consumes a token once; true alone
+    // does not consume a successful token.
     bool poll(Token token);
     MemoryLease completed(Token token);
+    // Blocking acquisition of the outstanding actual task's completed mappings.
+    // Uses the same owner-JIT/worker-processor failure drain as poll(); failures
+    // consume the token and poison without publishing a result lease.
+    MemoryLease wait_completed(Token token);
+    // Scalar evidence from the latest begin invocation, including an RSP error.
+    // Null until its actual machine returns a Result. Invalidated by the next
+    // begin call; never a GPU completion fence or authority to map memory.
+    const Result* attempted_result() const noexcept;
+    // Consume exclusive CPU-only preparation without publishing a result mapping,
+    // task or receipt. All writers must end first. Flush writes and release CPU
+    // ownership; preserve any prior completed task, but do not replay its callback.
+    // Backend failure consumes preparation and poisons the executor.
+    void release_preparation(PreparationLease&& preparation);
+    // Consume exclusive CPU-only preparation after the latest successful actual
+    // task was completed and its result lease released. Receipt is that task's
+    // executor-local token, not outstanding work or a new submission. Reject
+    // zero/stale/mismatched receipts and foreign leases before consuming.
+    // All CPU writers must end first. Flush their writes without read-map
+    // invalidation, RSP execution, GPU work or a new token; retain that actual
+    // task's Result/PacketBuffer and persistent hidden mapping for final readback.
+    // Backend failure consumes preparation and poisons; no mapping escapes.
+    MemoryLease finish_preparation(PreparationLease&& preparation, Token receipt);
     // Blocking shutdown/abandonment fence, not an authored frame completion.
     // On failure drains/poisons and throws; no result mapping escapes.
     void retire(Token token);

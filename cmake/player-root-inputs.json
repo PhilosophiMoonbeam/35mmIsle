@@ -28446,10 +28446,10 @@
       "sha256": "a46bf69443bc26e56c5881734796766bdd79e1b39f62b54fd13958dc526c15da"
     },
     "tests/player_root_rsp_smoke.cpp": {
-      "sha256": "cbefadf772097fc9a03c953b1b61fd4c245f78857f32d1bbfcbb4381d01dd6d9"
+      "sha256": "8f0695a80152a5b9e3b1a75267db89c4005a102631ee5af3c25ec65efbe67437"
     },
     "tests/source_camera_contract.hpp": {
-      "sha256": "117a56d9d761616abd523838f24b156195dd0ae49bca7ba4ee05103e7ec343ea"
+      "sha256": "da0e52ada5d5d8f96afbcff1bee5607b7d79f389d7addcc1d143b5cc330c8b15"
     }
   }
 }

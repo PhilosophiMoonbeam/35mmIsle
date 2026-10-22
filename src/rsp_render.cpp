@@ -245,6 +245,7 @@ struct CanonicalExecutor::Impl {
     Limits limits;
     PacketBuffer packets;
     Result result{};
+    bool result_valid = false;
     ErrorSink errors;
     Vulkan::Context context;
     Vulkan::Device device;
@@ -263,7 +264,7 @@ struct CanonicalExecutor::Impl {
     bool gpu_stopping = false;
     std::exception_ptr gpu_failure;
     const std::byte *completed_rdram = nullptr, *completed_hidden = nullptr;
-    std::uint64_t next_token = 0, active_token = 0;
+    std::uint64_t next_token = 0, active_token = 0, completed_token = 0;
 };
 
 CanonicalExecutor::CanonicalExecutor(bool require_cpu, Limits limits) {
@@ -415,6 +416,11 @@ void CanonicalExecutor::MemoryLease::release() noexcept {
     hidden_ = {};
 }
 
+const Result* CanonicalExecutor::attempted_result() const noexcept {
+    impl_->require_creator_noexcept();
+    return impl_->result_valid ? &impl_->result : nullptr;
+}
+
 bool CanonicalExecutor::quiescent() const noexcept {
     impl_->require_creator_noexcept();
     return !impl_->preparing && !impl_->executing && !impl_->leased;
@@ -450,10 +456,13 @@ CanonicalExecutor::Token CanonicalExecutor::begin(
     PreparationLease&& preparation, const Task& task, std::span<const std::byte> boot) {
     auto& state = *impl_;
     state.require_creator();
+    state.result_valid = false;
     require(preparation.owner_ == &state && state.preparing && !state.executing && !state.leased,
             "canonical execution requires this executor's exclusive preparation lease");
     require(!state.poisoned, "canonical executor is poisoned; a new cold session is required");
     preparation.owner_ = nullptr;
+    // A new actual task replaces the prior receipt's result/packet evidence.
+    state.completed_token = 0;
     state.preparing = false;
     state.executing = true;
     try {
@@ -462,6 +471,7 @@ CanonicalExecutor::Token CanonicalExecutor::begin(
         // The native borrower has ceased access. The actual persistent RSP
         // executes on the exact processor-owned words; only packets are copied.
         state.result = state.machine->execute(task, boot, state.limits);
+        state.result_valid = true;
         if (!state.result) rsp_failure(state.result);
         require(!state.packets.rejected() && state.result.packet_words == state.packets.words().size() &&
                 state.result.packets == state.packets.packets().size(),
@@ -518,6 +528,7 @@ bool CanonicalExecutor::poll(Token token) {
 CanonicalExecutor::MemoryLease CanonicalExecutor::completed(Token token) {
     require(poll(token), "canonical GPU execution has not completed");
     auto& state = *impl_;
+    state.completed_token = token;
     state.leased = true;
     state.executing = false;
     state.active_token = 0;
@@ -525,20 +536,73 @@ CanonicalExecutor::MemoryLease CanonicalExecutor::completed(Token token) {
                        {state.completed_hidden, hidden_bytes});
 }
 
-void CanonicalExecutor::retire(Token token) {
+CanonicalExecutor::MemoryLease CanonicalExecutor::wait_completed(Token token) {
     auto& state = *impl_;
     state.require_creator();
     require(token != 0 && token == state.active_token && state.executing,
-            "canonical retirement requires the outstanding execution token");
+            "canonical completion requires the outstanding execution token");
+    // The owner must retire the JIT before a failed worker may drain its RAM.
+    // completed() then consumes/rethrows that failure only after the real drain.
     state.wait_for_gpu();
-    auto lease = completed(token);
+    return completed(token);
+}
+
+void CanonicalExecutor::release_preparation(PreparationLease&& preparation) {
+    auto& state = *impl_;
+    state.require_creator();
+    require(preparation.owner_ == &state && state.preparing && !state.executing && !state.leased,
+            "canonical CPU release requires this executor's exclusive preparation lease");
+    require(!state.poisoned, "canonical executor is poisoned; a new cold session is required");
+    preparation.owner_ = nullptr;
+    state.preparing = false;
+    try {
+        state.errors.require_clean();
+        state.processor->end_write_rdram();
+        state.errors.require_clean();
+    } catch (...) {
+        state.poison();
+        throw;
+    }
+}
+
+CanonicalExecutor::MemoryLease CanonicalExecutor::finish_preparation(
+    PreparationLease&& preparation, Token receipt) {
+    auto& state = *impl_;
+    state.require_creator();
+    require(preparation.owner_ == &state && state.preparing && !state.executing && !state.leased,
+            "canonical CPU completion requires this executor's exclusive preparation lease");
+    require(!state.poisoned, "canonical executor is poisoned; a new cold session is required");
+    require(receipt != 0 && receipt == state.completed_token,
+            "canonical CPU completion requires the latest successful actual task receipt");
+    preparation.owner_ = nullptr;
+    state.preparing = false;
+    try {
+        state.errors.require_clean();
+        require(state.completed_rdram == reinterpret_cast<const std::byte*>(state.words.data()) &&
+                state.completed_hidden,
+                "canonical CPU completion lost its persistent completed mappings");
+        // The prior real GPU task and result lease already ended. Preparation
+        // may only have CPU writes since then: flush, never invalidate/remap or
+        // submit synthetic work. Hidden and the real task evidence are unchanged.
+        state.processor->end_write_rdram();
+        state.errors.require_clean();
+        state.leased = true;
+        return MemoryLease(state, {state.completed_rdram, rdram_bytes},
+                           {state.completed_hidden, hidden_bytes});
+    } catch (...) {
+        state.poison();
+        throw;
+    }
+}
+
+void CanonicalExecutor::retire(Token token) {
+    auto lease = wait_completed(token);
     lease.release();
 }
 
 CanonicalExecutor::MemoryLease CanonicalExecutor::execute(
     PreparationLease&& preparation, const Task& task, std::span<const std::byte> boot) {
     const auto token = begin(std::move(preparation), task, boot);
-    impl_->wait_for_gpu();
-    return completed(token);
+    return wait_completed(token);
 }
 } // namespace isle::rsp

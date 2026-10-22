@@ -1961,7 +1961,7 @@ The camera consumer executes normal→FIFO blink→normal, real provider/prefix/
 
 All 125 byte-hashed native support paths across 58 manifests have explicit LF policy and retain the exact qualified bytes through actual Git index filtering with Windows `core.autocrlf=true`. Hosted MSVC evidence remains tied to its published revision. This is component evidence, not original initUI/Player 7/full 106-definition execution, complete gameplay, private Windows11 runtime, LUS presentation or hardware/hearing parity.
 
-Camera flags `0x10`/`0x40` remain explicit unsupported mid-frame task boundaries until real native multi-task transactions implement source process/reset semantics. A hidden prefix does not authorize a successful ProcessImage drop: pinned code nonblocking-enqueues the current existing Detector context regardless of a new prefix capture. That retained-snapshot request path remains separately tracked and fail-closed. Neither limit is an external SDK blocker.
+At this historical checkpoint, camera flags `0x10`/`0x40` were unsupported and retained-context ProcessImage remained fail-closed. A hidden prefix never authorizes a successful request drop: pinned GAME nonblocking-enqueues the current Detector context regardless of a new capture. The later [native logical-frame qualification](#native-logical-frames-and-mid-frame-gtl-tasks) supersedes these implementation limits without changing this historical cohort. Neither was an external SDK blocker.
 
 
 ## Complete ordinary first-entry behavior and factory closures
@@ -2018,9 +2018,10 @@ ProcessImage retains the original two-entry FIFO of context IDs, not copies of
 enqueue-time pixels/generations. Eligible completion resolves current context
 metadata against the real shared GPU rows. Queue membership is independent of
 GPU/shutter/history capabilities; callback removal does not discard queued IDs.
-These paths and the signed drawn-frame counter are implemented; their expanded
-standalone renderer/Photo cohort still requires refreshed runtime/parity proof.
-Flags `0x10`/`0x40` remain real multi-task implementation work, not SDK blockers.
+At this historical checkpoint these FIFO and signed drawn-frame paths were
+implemented but their expanded renderer/Photo cohort remained unqualified.
+The later [native logical-frame qualification](#native-logical-frames-and-mid-frame-gtl-tasks)
+supersedes that limit and implements real `0x10`/`0x40` task boundaries.
 
 ### Initial Debug component qualification
 
@@ -6601,5 +6602,117 @@ fresh campaign or universal N64 numerical/pixel parity. The completed fresh
 campaign remains pinned separately to `311155c`; corrected-Sprite fresh
 requalification is independent. Physical gamepad/audio-device usability,
 Windows ROM gameplay and Windows11 hardware remain unqualified. The genuine
-multi-task GTL capability remains separate implementation work.
+multi-task GTL capability is not included in that released cohort; the later
+native component qualification below is independent.
+
+
+## Native logical frames and mid-frame GTL tasks
+
+The native graphics cutover implements pinned GAME `render.c:2576–2588`:
+combine flag `0x04`, then flag `0x10` process/drain/reset, then flag `0x40`
+process. A `0x50` camera does not submit a phantom task after the reset.
+Lane order remains 0→2→1→3, including sparse starts and the literal 1→3 reload.
+Unchanged GAME `score_Render` supplies real flag `0x10`, doubled/restored FOV,
+128×96 viewport, segment 0F/0C bindings, per-object depth copies and double draws.
+This does not establish natural Source reachability of every camera flag.
+
+One persistent executor per Frame retains actual RDRAM, hidden coverage/depth state and
+the microcode machine across tasks. A logical Frame keeps its graphics,
+camera, Cart and Photo owners borrowed across intermediate GPU completion;
+that completion is not a presentation, CopyInfo publication or downstream
+callback. Scoped `with_ram` writers end before submission. Cold reservation
+provides 33 task receipts/slots, a 0x100 callable-prefix region and a minimum
+0x540 generic layout; immutable layout and asset-overlap guards remain strict.
+
+Each receipt separates the actual returned RSP scalar result from GPU-token
+acceptance and completion. A failed second RSP execution retains a failed
+zero-token receipt; a failed second GPU execution retains its real accepted
+token. Both preserve the first task's actual completion, retire real owners
+and expose no completed image or downstream callback. CPU-only empty draws
+release preparation without inventing GPU work, presentation tokens or Photo
+FIFO consumption. Reused Photo pending slots clear their old task exposure.
+
+The same cutover repairs genuine main-camera recreation removal flags and
+preserves a plain-C callback's typed first error before Frame's boolean
+control boundary. The Root fixture retains helper0 with an explicit native
+identity hold instead of stealing CollisionPass's secondary lifecycle slot;
+actual joined/dead metadata and allocator pressure prove retention until
+explicit release. No Original lifecycle callback is substituted.
+
+The complete configured Linux native build and all 58 registered CPU contracts
+pass. Independently launched real consumers pass on CPU Vulkan/llvmpipe:
+
+| Consumer | Exercised result and limit |
+| --- | --- |
+| Source renderer | Real flag 0x10/0x40/0x50 transactions; returning-C suffix lane masks 1/4/8/10; sparse lanes; receipt/slot rejection; two-task real RSP and GPU failures; recreated-camera/owner cleanup |
+| Canonical executor | Cold/warm 64-pixel fills, stable RDRAM/hidden identity, two real CPU drains, actual second-task execution-budget and RGBA4 LoadTile failures; no escaped mappings |
+| Photo | 68 genuine GPU frames, four actual failed GPU frames, 83 unchanged-C OM CopyInfo updates; prefix rejection, reused contexts and failed retirement |
+| Root | Actual physical input, tutorial, idle/no-song behavior and native/semantic ownership collection; not complete-game or hardware proof |
+| Replay | All seven authored course records produce 134,400-byte GPU previews; actual cancellation and 346 subject-differing bytes; not a naturally captured-record claim |
+| Post-course | Actual native-C/score/preview/Host-stop consumer; authored records only |
+| Scene layout | Producer/core overlap rejection and preserved independent generic core |
+
+Strict full-RGBA controls compare unsplit output against 0x14 and 0x44 with
+equal cold color/coverage/hidden history. Consecutive warm frames are not
+misclassified as equivalent initial states. No RDP backend change, pixel
+tolerance or expected-output repin was used. Deliberately malformed native
+GPU input is the independently qualified RGBA4 texture LoadTile rejection,
+not an assumed failure from merely selecting a 4-bit color target.
+
+An independent read-only review found no concrete patch-introduced ownership
+or error-propagation defect within its stated scope. Runtime proof remains
+the parent-executed consumers, not that assessment. Device loss, prolonged
+GPU drains, exhaustive callback reentrancy, physical devices and Windows11
+ROM gameplay remain unqualified. This cohort does not inherit the published
+`ac87924` Runtime or separate fresh-campaign qualification.
+
+### Unmodified Linux keyboard, Save and cold Album Replay
+
+The frozen local, unmodified G30 ELF
+`2dd99dd45e2c0e6e006271fd72dbea1b5e891e365450f5f51dac9f035bef967e`
+passes actual SDL keyboard Title/Continue/Oak/Beach interaction. Continuous
+viewfinder hold followed by a separate A tap consumes film 60→58. The natural
+ride returns two genuine photographs to Camera Check; neither is eligible
+for Oak, so this lifetime is not claimed as an Oak assessment. Actual
+Save-Yes/keep-going-No reaches visible Title/PRESS START. Normal WM close
+joins with exit 0, unchanged protected inputs, no forced cleanup and no errors.
+The local archive is not substituted for the published Runtime artifact.
+
+A separate private read-only observer cohort qualifies the Album editor,
+not the unmodified ELF or a public shipping artifact. Its input is the entire
+acknowledged generation 39/40 pair containing a genuinely captured Pidgey,
+inserted into Album through ordinary shipping-product menus. Ordinary inputs
+exercise AB, B-backspace, re-entry, End and width rejection; no Source
+profile/photo/comment/pose/counter or completion is externally authored.
+
+All 360 canonical before/after observations preserve the full 928-byte photo
+SHA256 `e06a8981579d9ec0119c664fbdccc85cdcee5d51cb16dec523090a2c67447bed`.
+The observer records 180 actual stores. Twelve actual width-170 rejections
+cross the 169-pixel boundary; each genuine wait(10) enters and returns within
+the same live domain/handle generation with exactly 10 actual owner resumes.
+The following real setter zeroes only the rejected BE16 character, preserving
+the remaining comment bytes and the photo. The preceding terminator store
+is distinguished from the appended character; no whole-comment Cancel
+restoration or fabricated wait completion is substituted.
+
+End leaves the genuine final AB value; actual Oak Save-Yes, keep-going-No,
+visible Title and normal WM exit 0 provide durable persistence. A read-only
+native envelope inspector, with no repair/reseal/semantic rewrite, observes:
+
+| Canonical member | Generation | Bytes | SHA256 |
+| --- | --- | --- | --- |
+| save.a | 41 | 127,780 | `f87e259913692adae8a2142eefc8b5cefee849dcbdcd545d33e77ba627c23861` |
+| save.b | 40 | 127,780 | `a049a5ce98ccfba7c91df898160df064d9067b062847f792007c5a97fafb2724` |
+
+Generation 41's exact 64-byte comment is BE prefix `a3c1a3c2` followed by 60
+zero bytes. Its full photo remains byte-identical to the captured seed.
+A fresh process of the unmodified ELF above admits that whole pair,
+continues through the real menus and visibly reproduces AB on both the
+Album page and enlarged genuine Pidgey Replay. It closes normally with
+exit 0; both canonical members remain byte-exact after shutdown.
+
+These are inherited-profile Linux UI/persistence qualifications. The
+observer's exact cohort and scalar event correlation remain separate from
+the unmodified cold process, hosted Windows products, hardware/hearing
+parity, full species coverage and the independently pinned fresh campaign.
 

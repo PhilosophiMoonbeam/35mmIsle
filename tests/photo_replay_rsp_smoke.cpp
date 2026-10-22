@@ -69,14 +69,17 @@ struct Harness {
     static pg::ReplayAcquire acquire(void* opaque,pg::ReplayGpuBinding& out) noexcept {
         auto& h=*static_cast<Harness*>(opaque);sg::SourceGpuBinding binding;
         switch(h.frame->acquire_source_gpu(binding)) {
-        case sg::SourceGpuAcquire::admitted:out={binding.executor,binding.programs,binding.epoch,binding.admission};return pg::ReplayAcquire::admitted;
+        case sg::SourceGpuAcquire::admitted:
+            out={binding.executor,binding.programs,binding.epoch,binding.admission,h.frame.get()};
+            return pg::ReplayAcquire::admitted;
         case sg::SourceGpuAcquire::pending:return pg::ReplayAcquire::pending;
         case sg::SourceGpuAcquire::failed:return pg::ReplayAcquire::failed;
         }
         return pg::ReplayAcquire::failed;
     }
     static bool release(void* opaque,const pg::ReplayGpuBinding& binding) noexcept {
-        return static_cast<Harness*>(opaque)->frame->release_source_gpu(
+        auto& frame=*static_cast<Harness*>(opaque)->frame;
+        return binding.frame==&frame&&frame.release_source_gpu(
             {binding.executor,binding.programs,binding.epoch,binding.admission});
     }
     void prepare(int course,bool subject) {

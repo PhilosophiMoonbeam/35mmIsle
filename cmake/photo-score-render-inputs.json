@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
+  "source_path": "src/app_render/score.c",
+  "source_blob": "17a0d973c0050536cf4af4265a0bb106f294c82e",
+  "source_sha256": "ae38f419085fa0506c799d06347b4f6e0772ac06819021f07f838735e24cb60c",
+  "transformation_version": "photo-score-render-complete-v1",
+  "scope": "complete-genuine-score_Render-native-handles-public-wire-no-SDK",
+  "generator_sha256": "494f0b82f9adc1d1da97a6ec72e5d8fb2aea71f45cbb08e5d693b71aeb887158",
+  "definition": {
+    "symbol": "score_Render",
+    "first": 154,
+    "last": 228,
+    "source_declaration": "void score_Render(GObj* camObj)",
+    "source_sha256": "037d3260494361e6b863a306907723a8821b07fe9a7e3d3218d0c8d493992300",
+    "native_declaration": "void isle_photo_score_render(IslePhotoScoreSource* source, IsleGameObject* camObj)",
+    "native_sha256": "d664c9795f770087e3c168748fa08b3f555177c2a684b85784daf7506fa84c67",
+    "changes": [
+      {
+        "find": "void score_Render(GObj* camObj)",
+        "replace": "void isle_photo_score_render(IslePhotoScoreSource* source, IsleGameObject* camObj)",
+        "occurrences": 1
+      },
+      {
+        "find": "OMCamera*",
+        "replace": "IsleGameCamera*",
+        "occurrences": 1
+      },
+      {
+        "find": "GObj*",
+        "replace": "IsleGameObject*",
+        "occurrences": 1
+      },
+      {
+        "find": "s32 ",
+        "replace": "int32_t ",
+        "occurrences": 1
+      },
+      {
+        "find": "u32 ",
+        "replace": "uint32_t ",
+        "occurrences": 2
+      },
+      {
+        "find": "f32 ",
+        "replace": "float ",
+        "occurrences": 1
+      },
+      {
+        "find": "initObjectsOnPhoto(score_CameraObject->data.cam, score_CurrentPhoto)",
+        "replace": "isle_photo_score_initialize(source, source->camera_object, source->current_photo)",
+        "occurrences": 1
+      },
+      {
+        "find": "omCurrentCamera = camObj;",
+        "replace": "isle_photo_score_current_camera(source, camObj);",
+        "occurrences": 1
+      },
+      {
+        "find": "camObj->data.cam",
+        "replace": "isle_photo_score_camera(source, camObj)",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->flags |= CAMERA_FLAG_10;",
+        "replace": "isle_photo_score_flags(source, camera, UINT32_C(0x10), 1);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->flags &= ~CAMERA_FLAG_10;",
+        "replace": "isle_photo_score_flags(source, camera, UINT32_C(0x10), 0);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->perspMtx.persp.fovy *= 2.0f;",
+        "replace": "isle_photo_score_fovy_scale(source, camera, 2.0f);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->perspMtx.persp.fovy /= 2.0f;",
+        "replace": "isle_photo_score_fovy_scale(source, camera, 0.5f);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->vp.vp.vscale[0] = 128;",
+        "replace": "isle_photo_score_viewport_component(source, camera, 0, 0, 128);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->vp.vp.vscale[1] = 96;",
+        "replace": "isle_photo_score_viewport_component(source, camera, 0, 1, 96);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->vp.vp.vtrans[0] = 128;",
+        "replace": "isle_photo_score_viewport_component(source, camera, 1, 0, 128);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->vp.vp.vtrans[1] = 96;",
+        "replace": "isle_photo_score_viewport_component(source, camera, 1, 1, 96);",
+        "occurrences": 1
+      },
+      {
+        "find": "gSPViewport(gMainGfxPos[0]++, &camera->vp)",
+        "replace": "isle_photo_score_viewport(source, camera)",
+        "occurrences": 1
+      },
+      {
+        "find": "gSPSegment(gMainGfxPos[0]++, ",
+        "replace": "isle_photo_score_segment(source, ",
+        "occurrences": 4
+      },
+      {
+        "find": "gSPDisplayList(gMainGfxPos[0]++, ",
+        "replace": "isle_photo_score_display_list(source, ",
+        "occurrences": 2
+      },
+      {
+        "find": "aspect = camera->perspMtx.persp.aspect;",
+        "replace": "aspect = isle_photo_score_aspect(source, camera);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->perspMtx.persp.aspect = 4.0f / 3.0f;",
+        "replace": "isle_photo_score_set_aspect(source, camera, 4.0f / 3.0f);",
+        "occurrences": 1
+      },
+      {
+        "find": "camera->perspMtx.persp.aspect = aspect;",
+        "replace": "isle_photo_score_set_aspect(source, camera, aspect);",
+        "occurrences": 1
+      },
+      {
+        "find": "renPrepareCameraMatrix(&gMainGfxPos[0], camera)",
+        "replace": "isle_photo_score_prepare_camera(source, camera)",
+        "occurrences": 1
+      },
+      {
+        "find": "camObj->dlLinkBitMask",
+        "replace": "source->link_mask",
+        "occurrences": 1
+      },
+      {
+        "find": "camObj->unk_38",
+        "replace": "source->buffer_mask",
+        "occurrences": 1
+      },
+      {
+        "find": "camObj->cameraTag",
+        "replace": "source->camera_tag",
+        "occurrences": 1
+      },
+      {
+        "find": "omGObjListDlHead[dllink]",
+        "replace": "isle_photo_score_first(source, dllink)",
+        "occurrences": 1
+      },
+      {
+        "find": "it->nextDl",
+        "replace": "isle_photo_score_next(source, it)",
+        "occurrences": 1
+      },
+      {
+        "find": "it->flags",
+        "replace": "isle_photo_score_object_flags(source, it)",
+        "occurrences": 1
+      },
+      {
+        "find": "it->cameraTag",
+        "replace": "isle_photo_score_object_tag(source, it)",
+        "occurrences": 1
+      },
+      {
+        "find": "GOBJ_FLAG_HIDDEN",
+        "replace": "UINT32_C(1)",
+        "occurrences": 1
+      },
+      {
+        "find": "omRenderedObject = it;",
+        "replace": "source->rendered_object = it;",
+        "occurrences": 1
+      },
+      {
+        "find": "photo_PokemonObjs[score_PokemonCount]",
+        "replace": "isle_photo_score_photo_object(source, source->pokemon_count)",
+        "occurrences": 1
+      },
+      {
+        "find": "it->fnRender(it)",
+        "replace": "isle_photo_score_draw(source, it)",
+        "occurrences": 2
+      },
+      {
+        "find": "it->lastDrawFrame = gtlDrawnFrameCounter;",
+        "replace": "isle_photo_score_mark_drawn(source, it, source->drawn_frame_counter);",
+        "occurrences": 1
+      },
+      {
+        "find": "gDPPipeSync(gMainGfxPos[0]++)",
+        "replace": "isle_photo_score_pipe_sync(source)",
+        "occurrences": 1
+      },
+      {
+        "find": "gDPSetDepthImage(gMainGfxPos[0]++, 0x0C000000)",
+        "replace": "isle_photo_score_depth_restore(source)",
+        "occurrences": 1
+      },
+      {
+        "find": "renCameraPostRender(camera)",
+        "replace": "isle_photo_score_post(source, camera)",
+        "occurrences": 1
+      },
+      {
+        "find": "score_ReadyToRender",
+        "replace": "source->ready",
+        "occurrences": 2
+      },
+      {
+        "find": "score_WideFOV",
+        "replace": "source->wide",
+        "occurrences": 2
+      },
+      {
+        "find": "score_ImageBuffer",
+        "replace": "source->image_buffer",
+        "occurrences": 1
+      },
+      {
+        "find": "score_CurrentZBuffer",
+        "replace": "source->current_z_buffer",
+        "occurrences": 2
+      },
+      {
+        "find": "score_GfxSetupBuffers",
+        "replace": "source->setup_list",
+        "occurrences": 1
+      },
+      {
+        "find": "score_GfxCopyZBuffer",
+        "replace": "source->copy_list",
+        "occurrences": 1
+      },
+      {
+        "find": "score_PokemonZBuffer",
+        "replace": "source->pokemon_z_buffer",
+        "occurrences": 1
+      },
+      {
+        "find": "score_ZBufferBefore",
+        "replace": "source->z_buffer_before",
+        "occurrences": 1
+      },
+      {
+        "find": "score_PokemonCount",
+        "replace": "source->pokemon_count",
+        "occurrences": 5
+      },
+      {
+        "find": "photo_PokemonCount",
+        "replace": "source->photo_count",
+        "occurrences": 1
+      },
+      {
+        "find": "false",
+        "replace": "0",
+        "occurrences": 1
+      }
+    ]
+  },
+  "recipe_sha256": "f74ec9db0b5b4d8562c8559a13e4d47876357f8137d10fb993f9907a808e8d3a",
+  "output_sha256": "592b3d1386faef15f22ea865e3880be38198622055a02cbfb1894509622a3f47",
+  "native_support": {
+    "src/photo_score_source.h": {
+      "sha256": "df28f19f717104d2d61b2959f698e93818f952e347e74f39543c08202c811fd1"
+    },
+    "src/photo_score_source.c": {
+      "sha256": "9b3f473090b42c0041a01e09e9ad42903b869f86f27cbe2f20eb8a23081cfcc8"
+    }
+  }
+}

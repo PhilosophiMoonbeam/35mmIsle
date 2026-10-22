@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <vector>
 #include <optional>
+#include <type_traits>
 
 namespace isle::player {
 namespace {
@@ -48,7 +49,7 @@ struct Renderer::Impl {
         screen_transition::Owner* transition_owner=nullptr;
         r::Kind kind=r::Kind::compiled;
         Dispatch dispatch{};
-        std::array<std::uint32_t,4> wire_begin{},wire_cursor{},wire_end{};
+        std::array<std::uint32_t,4> wire_begin{},wire_cursor{},wire_end{},wire_saved{};
         std::uint32_t reset_address=0;
         std::size_t reset_count=0;
     };
@@ -56,32 +57,55 @@ struct Renderer::Impl {
         Impl& owner;
         Record& record;
         g::SourceControl& control;
-        w::Memory memory;
+        template<class F> void mapped(F&& function) {
+            using Function=std::remove_reference_t<F>;
+            control.with_ram(&function,[](void* user,std::span<std::uint32_t> words) {
+                w::Memory memory(words);(*static_cast<Function*>(user))(memory);
+            });
+        }
         std::array<std::uint32_t,4>& begin;
         std::array<std::uint32_t,4>& cursor;
         std::array<std::uint32_t,4>& end;
         bool initialized=false,prepared=false,posted=false;
         r::Prepared lists{};
         Sink(Impl& self,Record& camera,g::SourceControl& capability):owner(self),record(camera),control(capability),
-            memory(capability.ram()),begin(camera.wire_begin),cursor(camera.wire_cursor),end(camera.wire_end) {
+            begin(camera.wire_begin),cursor(camera.wire_cursor),end(camera.wire_end) {
             require(!self.sink,"source render sink already active");
             const auto index=static_cast<std::size_t>(&camera-self.records.data());
             const auto base=self.config.lanes.address+static_cast<std::uint32_t>(index)*self.record_bytes;
             const auto lane_bytes=(self.record_bytes-0x200u)/4u&~7u;
-            for(unsigned i=0;i<4;++i) { begin[i]=cursor[i]=base+i*lane_bytes;end[i]=begin[i]+lane_bytes; }
+            for(unsigned i=0;i<4;++i) {
+                begin[i]=cursor[i]=camera.wire_saved[i]=base+i*lane_bytes;end[i]=begin[i]+lane_bytes;
+            }
             camera.reset_address=base+self.record_bytes-0x200u;camera.reset_count=0;
             camera.dispatch={};camera.dispatch.epoch=control.epoch();
             camera.dispatch.framebuffer=control.framebuffer();camera.dispatch.depth=control.depth();
-            self.link_zero(camera,memory);
+            mapped([&](w::Memory& memory){self.link_zero(camera,memory);});
             self.sink=this;
         }
         ~Sink() { owner.sink=nullptr; }
         void command(unsigned lane,std::uint32_t first,std::uint32_t second) {
             require(lane<4,"source wire lane is outside four bounded cursors",ISLE_GAME_INVALID_ARGUMENT);
             require(cursor[lane]<=end[lane]-8,"source wire lane cold capacity exhausted",ISLE_GAME_EXHAUSTED);
-            memory.word(cursor[lane],first);memory.word(cursor[lane]+4,second);cursor[lane]+=8;
+            mapped([&](w::Memory& memory) {
+                // A real Source suffix may emit after process/reset returned.
+                // Reattach only its newly written segment, never the submitted
+                // head or terminal; no second post callback is manufactured.
+                if(posted&&owner.wire_tails[lane]!=&record) {
+                    record.wire_saved[lane]=cursor[lane];
+                    if(owner.wire_tails[lane])
+                        owner.append(*owner.wire_tails[lane],lane,0xde010000u,cursor[lane],memory);
+                    else owner.wire_heads[lane]=&record;
+                    owner.wire_tails[lane]=&record;
+                }
+                memory.word(cursor[lane],first);memory.word(cursor[lane]+4,second);
+            });cursor[lane]+=8;
         }
-        w::CommandRange reset_range() {return owner.ensure_reset(control,memory,record);}
+        w::CommandRange reset_range() {
+            w::CommandRange result{};
+            mapped([&](w::Memory& memory){result=owner.ensure_reset(control,memory,record);});
+            return result;
+        }
         void load(unsigned lane,w::SourceProgram program) {
             const auto packet=owner.config.programs->load(program,reset_range());
             for(std::size_t i=0;i<packet.word_count;i+=2) command(lane,packet.words[i],packet.words[i+1]);
@@ -96,7 +120,7 @@ struct Renderer::Impl {
         void call(unsigned lane,r::List list) {
             if(!list.words) return;
             require(!(list.address&7u)&&!(list.words&1u)&&list.words>=2&&
-                list.address<=control.ram().size()*4&&list.words<=(control.ram().size()*4-list.address)/4,
+                list.address<=0x800000u&&list.words<=(0x800000u-list.address)/4,
                 "source provider list is not a bounded physical range");
             bool covered=false;
             for(const auto range:owner.reservations) covered=covered||
@@ -112,6 +136,9 @@ struct Renderer::Impl {
     std::array<Record,camera_capacity> records{};
     std::array<r::Pass,camera_capacity> passes{};
     std::array<Record*,4> wire_heads{},wire_tails{};
+    r::List task_root{},task_terminal{};
+    w::SourceProgram task_program=w::SourceProgram::f3dex2_non_fifo;
+    std::size_t source_task_slots=0;
     std::vector<scene::SpriteDraw> sprites;
     std::vector<sprite::RamRange> reservations;
     std::vector<sprite::AssetSpan> immutable;
@@ -179,6 +206,7 @@ struct Renderer::Impl {
         std::size_t n=0;
         while(n+1<diagnostic.size()&&message[n]) {diagnostic[n]=message[n];++n;}
         diagnostic[n]='\0';
+        if(frame) (void)frame->fail_draw(g::Error::execution,diagnostic.data());
     }
     void ready() {
         require(!detached&&source.native_renderer==this,"source renderer is detached");
@@ -233,7 +261,6 @@ struct Renderer::Impl {
         require(metadata.scheduling_object&&!find(metadata.scheduling_object)&&
             (helper||((created||metadata.projection)&&(metadata.render||(reserved&&metadata.prepare)))),
             "invalid or duplicate genuine scheduling camera",ISLE_GAME_INVALID_ARGUMENT);
-        require(!(metadata.flags&0x50u),"task-flushing source camera requires actual multi-task Frame admission");
         auto& record=reserved?*reserved:free_record();
         require(!record.active,"reserved source scheduling camera is already active");
         record={};record.owner=this;record.metadata=metadata;
@@ -259,7 +286,11 @@ struct Renderer::Impl {
                 "camera native/source identity retain failed");
             record.registered=true;
         }
-        if(fields) reference_owner=metadata.scheduling_object;
+        if(fields) {
+            reference_owner=metadata.scheduling_object;
+            main_removal_requested=false;
+            main_removed=false;
+        }
         return record;
     }
     IsleGameResult stop_main() noexcept {
@@ -375,7 +406,6 @@ struct Renderer::Impl {
         } else {
             require(!record.retiring&&!record.joined&&record.metadata.scheduling_object==owner.source.camera_object&&
                 record.metadata.projection==transition_pass.camera,"Source transition replaced a borrowed scheduling identity");
-            require(!(transition_pass.flags&0x50u),"task-flushing transition requires actual multi-task Frame admission");
             record.metadata.flags=transition_pass.flags;
             record.metadata.background=transition_pass.background_rgba;
             record.metadata.link_mask=static_cast<std::uint32_t>(transition_pass.link_mask);
@@ -452,8 +482,13 @@ struct Renderer::Impl {
         }
         // Every first callback, including source sprite render, enters a C-only
         // guard. A backend's nested preRender uses another C-only guard.
-        native(isle_player_render_invoke_callback(&self.source,record.metadata.render,
-            record.metadata.scheduling_object),"original C camera callback failed");
+        const auto result=isle_player_render_invoke_callback(&self.source,record.metadata.render,
+            record.metadata.scheduling_object);
+        if(result!=ISLE_GAME_OK) {
+            // Frame's bool control boundary cannot carry the typed C error.
+            // Preserve it before Frame performs generic rejection/retirement.
+            self.fail(result,"original C camera callback failed");return false;
+        }
         require(sink.posted,"original camera callback returned without its actual source post phase");
         return true;
     }
@@ -483,8 +518,11 @@ struct Renderer::Impl {
                 record.metadata.projection,0),"source preRender lane0 failed");
         }
         if(!record.transition) {
-            lighting.install(std::as_writable_bytes(current.control.ram()));
-            lighting.install_direction(std::as_writable_bytes(current.control.ram()),direction);
+            current.control.with_ram(this,[](void* user,std::span<std::uint32_t> words) {
+                auto& self=*static_cast<Impl*>(user);
+                self.lighting.install(std::as_writable_bytes(words));
+                self.lighting.install_direction(std::as_writable_bytes(words),self.direction);
+            });
         }
         if(record.metadata.flags&0x20u) current.restore(1);
         current.lists=current.control.prepare();current.prepared=true;
@@ -508,6 +546,7 @@ struct Renderer::Impl {
     void publish_aux(Record&,w::Memory&);
     w::CommandRange ensure_reset(g::SourceControl&,w::Memory&,Record&);
     void join(g::SourceControl&,w::Memory&,Record&,bool final);
+    void process(g::SourceControl&,Record&);
     static bool finalize(void*,g::SourceControl&);
     static void completed_memory(void* user,rsp::CanonicalExecutor::MemoryLease& lease,std::uint32_t framebuffer) {
         auto& self=*static_cast<Impl*>(user);
@@ -530,13 +569,13 @@ void Renderer::Impl::append(Record& record,unsigned lane,std::uint32_t first,std
     record.wire_cursor[lane]+=8;refresh(record);
 }
 void Renderer::Impl::link_zero(Record& record,w::Memory& memory) {
-    if(wire_tails[0]) append(*wire_tails[0],0,0xde010000u,record.wire_begin[0],memory);
+    if(wire_tails[0]) append(*wire_tails[0],0,0xde010000u,record.wire_saved[0],memory);
     else wire_heads[0]=&record;
     wire_tails[0]=&record;
 }
 void Renderer::Impl::publish_aux(Record& record,w::Memory& memory) {
-    for(unsigned lane=1;lane<4;++lane) if(record.wire_cursor[lane]!=record.wire_begin[lane]) {
-        if(wire_tails[lane]) append(*wire_tails[lane],lane,0xde010000u,record.wire_begin[lane],memory);
+    for(unsigned lane=1;lane<4;++lane) if(record.wire_cursor[lane]!=record.wire_saved[lane]) {
+        if(wire_tails[lane]) append(*wire_tails[lane],lane,0xde010000u,record.wire_saved[lane],memory);
         else wire_heads[lane]=&record;
         wire_tails[lane]=&record;
     }
@@ -559,82 +598,95 @@ w::CommandRange Renderer::Impl::ensure_reset(g::SourceControl& control,w::Memory
     return {record.reset_address,record.reset_count};
 }
 void Renderer::Impl::join(g::SourceControl& control,w::Memory& memory,Record& reset_record,bool final) {
-    std::array<bool,4> populated{};
-    for(unsigned lane=0;lane<4;++lane) populated[lane]=wire_heads[lane]!=nullptr;
-    // Every admitted Player/create/FX/UI camera emits actual lane0 init or
-    // scalar packets. Independently admitted task8 remains available in Input.
-    require(populated[0],"source camera driver lost its actual lane0 task head");
-    const auto head=[&](unsigned lane) {return wire_heads[lane]->wire_begin[lane];};
-    const auto cursor=[&](unsigned lane) {return wire_tails[lane]->wire_cursor[lane];};
-    const auto emit=[&](unsigned lane,std::uint32_t first,std::uint32_t second) {
-        append(*wire_tails[lane],lane,first,second,memory);
-    };
-    const auto load=[&](unsigned lane,w::SourceProgram program) {
-        const auto packet=config.programs->load(program,ensure_reset(control,memory,reset_record));
-        for(std::size_t i=0;i<packet.word_count;i+=2) emit(lane,packet.words[i],packet.words[i+1]);
-    };
-    const auto branch=[&](unsigned lane,std::uint32_t destination) {emit(lane,0xde010000u,destination);};
-    r::List terminal{};
-    const auto finish=[&](unsigned lane) {
-        terminal={cursor(lane),4};emit(lane,0xe9000000u,0);emit(lane,0xdf000000u,0);
-    };
-    const auto selection=config.program_selection;
-    const auto primary=selection.primary,line=w::source_line_program(selection);
-    // Pinned gtlCombine552–616 / gtlProcess447–550 share these branch choices,
-    // but NOT their tails. Preserve the literal lane1->3 load into lane0 and
-    // then-current cursor0 addresses, including the unreachable appended load.
-    if(populated[2]) {load(0,line);branch(0,head(2));}
-    else if(populated[1]) {if(selection.alternate_active) load(0,primary);branch(0,head(1));}
-    else if(populated[3]) {load(0,line);branch(0,head(3));}
-    else if(final) finish(0);
-    if(populated[2]) {
-        if(populated[1]) {load(2,primary);branch(2,head(1));}
-        else if(populated[3]) branch(2,head(3));
-        else if(final) finish(2);
-        else {load(2,primary);branch(2,cursor(0));}
+    std::array<w::SourceLaneCursor,4> lanes{};
+    bool populated=false;
+    for(unsigned lane=0;lane<4;++lane) {
+        const auto* tail=wire_tails[lane]?wire_tails[lane]:&reset_record;
+        lanes[lane]={wire_heads[lane]?wire_heads[lane]->wire_saved[lane]:tail->wire_saved[lane],
+            tail->wire_cursor[lane],tail->wire_end[lane],wire_heads[lane]!=nullptr};
+        populated=populated||lanes[lane].populated;
     }
-    if(populated[1]) {
-        if(populated[3]) {load(0,line);branch(1,head(3));}
-        else if(final) finish(1);
-        else {if(selection.alternate_active) load(1,primary);branch(1,cursor(0));}
-    }
-    if(populated[3]) {
-        if(final) finish(3);
-        else {load(3,primary);branch(3,cursor(0));}
+    if(!populated) return;
+    w::SourceJoinPlan plan;
+    w::plan_source_join(*config.programs,config.program_selection,lanes,
+        ensure_reset(control,memory,reset_record),final,plan);
+    // The shared pure planner validates every program and complete tail before
+    // any join packets are emitted, including the literal lane1->3 load0.
+    for(unsigned lane=0;lane<4;++lane) if(plan.word_counts[lane]) {
+        auto& tail=wire_tails[lane]?*wire_tails[lane]:reset_record;
+        for(std::size_t i=0;i<plan.word_counts[lane];i+=2)
+            append(tail,lane,plan.words[lane][i],plan.words[lane][i+1],memory);
+        wire_tails[lane]=&tail;
     }
     if(final) {
-        // Native equivalence of gtlProcess's post-END reset/branch task entry:
-        // the shared Frame root already performs that exact reset body once,
-        // then calls this NOPUSH-linked source0 chain. Its terminal returns to
-        // the outer ENDDL; finish_task_group omits a duplicate FullSync.
-        control.finish_task_group(wire_heads[0]->dispatch.lanes[0],terminal);
+        task_root={plan.root.address,plan.root.commands*2};
+        task_terminal={plan.terminal.address,plan.terminal.commands*2};
+        task_program=plan.program;
     } else {
-        // Source saved0 deliberately stays at the frame's source0 head. Its
-        // current tail/return slot is linked to the next scheduling camera.
-        for(unsigned lane=1;lane<4;++lane) wire_heads[lane]=wire_tails[lane]=nullptr;
+        // Combine advances only auxiliary saved positions; process advances
+        // all positions after the actual task submission succeeds.
+        for(unsigned lane=1;lane<4;++lane) {
+            if(wire_tails[lane])
+                wire_tails[lane]->wire_saved[lane]=wire_tails[lane]->wire_cursor[lane];
+            wire_heads[lane]=wire_tails[lane]=nullptr;
+        }
         config.program_selection.alternate_active=false;
     }
+}
+void Renderer::Impl::process(g::SourceControl& control,Record& record) {
+    for(unsigned lane=0;lane<4;++lane)
+        if(wire_heads[lane]&&wire_heads[lane]==wire_tails[lane]&&
+           wire_heads[lane]->wire_saved[lane]==wire_tails[lane]->wire_cursor[lane])
+            wire_heads[lane]=nullptr;
+    if(!wire_heads[0]&&!wire_heads[1]&&!wire_heads[2]&&!wire_heads[3]) return;
+    require(source_task_slots<camera_capacity+1,"source task slots exhausted before reset",ISLE_GAME_EXHAUSTED);
+    control.reserve_task();
+    struct Context {Impl& self;g::SourceControl& control;Record& record;} context{*this,control,record};
+    control.with_ram(&context,[](void* user,std::span<std::uint32_t> words) {
+        auto& c=*static_cast<Context*>(user);w::Memory memory(words);
+        c.self.join(c.control,memory,c.record,true);
+    });
+    control.submit_task(task_root,task_terminal,task_program);
+    ++source_task_slots;presentation_task=true;
+    for(unsigned lane=0;lane<4;++lane)
+        if(wire_tails[lane]) wire_tails[lane]->wire_saved[lane]=wire_tails[lane]->wire_cursor[lane];
+    wire_heads.fill(nullptr);wire_tails.fill(nullptr);
+    if(config.photos)
+        native(config.photos->task_submitted(*frame),"source Photo intermediate task exposure rejected");
 }
 void Renderer::Impl::post(IsleGameCamera* value) {
     require(sink&&sink->initialized&&!sink->posted&&value==sink->record.metadata.projection,
         "source post does not match current initialized scheduling camera");
     auto& current=*sink;
-    require(current.cursor[0]!=current.begin[0],"source camera returned without actual lane0 commands");
-    publish_aux(current.record,current.memory);
-    if(current.record.metadata.flags&4u) {
-        join(current.control,current.memory,current.record,false);
-        current.record.dispatch.combined=true;
+    current.mapped([&](w::Memory& memory) {
+        publish_aux(current.record,memory);
+        if(current.record.metadata.flags&4u) {
+            join(current.control,memory,current.record,false);
+            current.record.dispatch.combined=true;
+        }
+    });
+    if(current.record.metadata.flags&0x10u) {
+        process(current.control,current.record);
+        current.control.drain_tasks();
+        current.control.reset_task_slots();
+        source_task_slots=0;
+        for(auto& record:records) {
+            record.wire_cursor=record.wire_saved=record.wire_begin;
+            record.reset_count=0;record.dispatch.reset={};
+            record.dispatch.lanes={};record.dispatch.prefix={};
+        }
+        current.lists={};current.prepared=false;
+        config.program_selection.alternate_active=false;
     }
+    if(current.record.metadata.flags&0x40u) process(current.control,current.record);
     current.posted=true;
 }
 bool Renderer::Impl::finalize(void* user,g::SourceControl& control) {
     auto& self=*static_cast<Impl*>(user);
     try {
         self.ready();require(!self.sink,"source callback outlived its final wire boundary");
-        if(self.wire_heads[0]) {
-            w::Memory memory(control.ram());
-            self.join(control,memory,*self.wire_tails[0],true);
-            self.presentation_task=true;
+        for(const unsigned lane:{0u,2u,1u,3u}) if(self.wire_heads[lane]) {
+            self.process(control,*self.wire_tails[lane]);break;
         }
         return true;
     } catch(const Failure& failure) {self.fail(failure.result,failure.message);}
@@ -811,7 +863,8 @@ bool Renderer::reserve(g::Frame& frame) noexcept {
             for(const auto range:frame.reservations()) append(range);
             for(const auto framebuffer:self.config.resources.framebuffers) append({framebuffer,320u*240u*2u});
         }
-        return frame.reserve_render_capacity({self.config.sprite_capacity,self.reservations.size()});
+        return frame.reserve_render_capacity({self.config.sprite_capacity,self.reservations.size(),
+            camera_capacity+1,camera_capacity+1});
     } catch(const Failure& failure) {self.fail(failure.result,failure.message);}
       catch(const std::exception& failure) {self.fail(ISLE_GAME_EXECUTION_FAILURE,failure.what());}
       catch(...) {self.fail(ISLE_GAME_EXECUTION_FAILURE,"Source render reservation exception");}
@@ -833,6 +886,7 @@ bool Renderer::begin(g::Frame& frame,g::FrameContext context,g::CompletedWork wo
         self.frame=&frame;self.downstream=work;
         self.wire_heads.fill(nullptr);self.wire_tails.fill(nullptr);
         self.presentation_task=false;
+        self.source_task_slots=0;
         // gtlInitDLists173 resets only this source program selector.
         self.config.program_selection.alternate_active=false;
         if(self.cart_owner) {
@@ -870,9 +924,15 @@ bool Renderer::begin(g::Frame& frame,g::FrameContext context,g::CompletedWork wo
         IsleGameResult ended=ISLE_GAME_OK;
         if(self.preparing) { ended=self.config.photos->end_preparation();self.preparing=false; }
         if(!begun||ended!=ISLE_GAME_OK) {
-            if(self.config.photos&&self.config.photos->has_pending(frame))
-                native(self.config.photos->retire_unsubmitted(frame),"failed source preparation Photo retirement rejected");
-            self.cart_borrow.reset();self.frame=nullptr;self.downstream={};native(ended,"source Photo collector restoration failed");
+            if(frame.quiescent()) {
+                if(self.config.photos&&self.config.photos->has_pending(frame)) {
+                    const auto retired=frame.task_receipts().empty()?
+                        self.config.photos->retire_unsubmitted(frame):self.config.photos->retire_failed(frame);
+                    native(retired,"failed source preparation Photo retirement rejected");
+                }
+                self.cart_borrow.reset();self.frame=nullptr;self.downstream={};
+            }
+            native(ended,"source Photo collector restoration failed");
             self.fail(ISLE_GAME_EXECUTION_FAILURE,frame.message());return false;
         }
         if(self.config.photos&&(self.config.photos->has_pending(frame)||
@@ -889,7 +949,8 @@ bool Renderer::begin(g::Frame& frame,g::FrameContext context,g::CompletedWork wo
     if(self.preparing) { const auto restored=self.config.photos->end_preparation();self.preparing=false;if(restored!=ISLE_GAME_OK) self.fail(restored,"source Photo collector cleanup failed"); }
     if(self.frame&&!self.frame->busy()) {
         if(self.config.photos&&self.config.photos->has_pending(*self.frame)) {
-            const auto retired=self.config.photos->retire_unsubmitted(*self.frame);
+            const auto retired=self.frame->task_receipts().empty()?
+                self.config.photos->retire_unsubmitted(*self.frame):self.config.photos->retire_failed(*self.frame);
             if(retired!=ISLE_GAME_OK) self.fail(retired,"source Photo unsubmitted cleanup failed");
         }
         self.cart_borrow.reset();self.frame=nullptr;
@@ -1077,7 +1138,6 @@ IsleGameResult isle_player_render_backend_create_camera(IslePlayerSource* source
 IsleGameResult isle_player_render_backend_camera_flags(IslePlayerSource* source,IsleGameCamera* camera,uint32_t flags) {
     return RendererAccess::invoke(source,[&](auto& self){
         auto& record=self.camera(camera);auto& metadata=record.metadata;
-        isle::player::require(!((metadata.flags|flags)&0x50u),"task-flushing source camera requires actual multi-task Frame admission");
         metadata.flags|=flags;
         metadata.tag_match=(metadata.flags&8u)?isle::scene::render::TagMatch::equality:isle::scene::render::TagMatch::intersection;
         for(auto& pass:self.passes) if(pass.userdata==&record) {pass.flags=metadata.flags;pass.tag_match=metadata.tag_match;}

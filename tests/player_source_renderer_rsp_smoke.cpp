@@ -12,6 +12,7 @@
 #include "effect_bank_resources.hpp"
 #include "actual_player_source.hpp"
 #include "actual_audio_driver.hpp"
+#include "player_photo_rsp_fixture.h"
 #include "scene_storage.hpp"
 #include <algorithm>
 #include <array>
@@ -123,12 +124,35 @@ struct Content {
     std::array<scene::RenderOrderEntry,128> cart_order{};
     unsigned calls=0;
     bool fail_after_prefix=false;
+    enum class Fault {none,rsp,gpu};
+    Fault fault=Fault::none;
+    g::Frame* fault_frame=nullptr;
     static bool prepare(void* user,std::span<std::uint32_t> ram,std::uint64_t epoch,const r::Pass& pass,r::Prepared& output) {
         auto& self=*static_cast<Content*>(user);
         require(self.models&&self.actors&&self.items&&self.cart,"real source content not attached before dispatch");
         require(self.copies.install(ram)==focus::CaptureStatus::ok,"actual capture regions did not install");
         self.actors->render_bindings();self.items->render_bindings();
         output=self.models->prepare(ram,epoch,pass);++self.calls;
+        if(self.fault!=Fault::none&&self.fault_frame&&!self.fault_frame->task_receipts().empty()) {
+            const auto receipts=self.fault_frame->task_receipts();
+            require(receipts.size()==1&&receipts.front().completed&&!receipts.front().failed,
+                "native task2 fault was reached before the real first task completed");
+            require(output.lanes[0].words>=(self.fault==Fault::rsp?2u:6u),
+                "native task2 fault has no bounded owned producer command extent");
+            graphics::Memory memory(ram);
+            // Malformed independently owned native packets, not SDK code/state:
+            // an out-of-RDRAM DL fetch or the real RGBA4 LoadTile rejection
+            // independently exercised by canonical-gpu-failure-smoke.
+            if(self.fault==Fault::rsp) {
+                memory.word(output.lanes[0].address,0xde000000u);
+                memory.word(output.lanes[0].address+4,0x00fffff8u);
+            } else {
+                constexpr std::array<std::uint32_t,6> invalid_load{
+                    0xfd000000u,0x3b5000u,0xf5000200u,0,0xf4000000u,0};
+                for(std::size_t i=0;i<invalid_load.size();++i)
+                    memory.word(output.lanes[0].address+static_cast<std::uint32_t>(i*4),invalid_load[i]);
+            }
+        }
         // A real producer has captured the prefix and committed history. Reject
         // this preparation before original ProcessImage; never fake completion.
         return !self.fail_after_prefix;
@@ -270,6 +294,163 @@ struct Evidence {
         return false;
     }
 };
+// Native SDK0x40/0x10 mechanism diagnostics using the admitted World, Actor,
+// Item, Cart, Photo-prefix, FX and UI producers. These deliberately configured
+// scheduling flags are NOT evidence of naturally reached GAME score_Render.
+enum class BoundaryFailure { none,suffix,receipts,slots };
+struct BoundarySuffix {
+    g::Frame& frame;
+    player::Renderer& renderer;
+    player::Controller& photos;
+    focus::Detector& detector;
+    scene::Services& services;
+    std::span<IsleGameObject* const> ordinary;
+    focus::Focus publication;
+    bool reset=false,fail=false,empty_tail=false;
+    unsigned calls=0;
+    std::uint64_t token=0;
+    static IsleGameResult observe(void* raw) noexcept {
+        auto& self=*static_cast<BoundarySuffix*>(raw);
+        try {
+            ++self.calls;
+            if(self.empty_tail)for(auto* object:self.ordinary) {
+                IsleGameObjectMetadata metadata{};
+                native(isle_game_object_metadata(self.services.game,object,&metadata));
+                native(isle_game_object_set_flags(self.services.game,object,metadata.flags|1u));
+            }
+            const auto receipts=self.frame.task_receipts();
+            require(receipts.size()==1&&receipts[0].token&&
+                receipts[0].program==graphics::SourceProgram::f3dex2_non_fifo,
+                "plain-C post suffix did not observe the actual first task identity/program");
+            self.token=receipts[0].token;
+            require(self.frame.preparing()&&self.frame.busy()&&!self.frame.quiescent()&&
+                self.frame.poll()==g::Poll::pending&&self.frame.task_receipts().size()==1&&
+                !self.frame.completed()&&!self.frame.retire()&&
+                self.renderer.collect_joined()==ISLE_GAME_INVALID_STATE&&
+                self.renderer.detach()==ISLE_GAME_INVALID_STATE,
+                "inter-task gap released logical Frame/camera ownership before the C suffix");
+            g::SourceGpuBinding binding;
+            require(self.frame.acquire_source_gpu(binding)==g::SourceGpuAcquire::pending&&!binding.executor,
+                "Replay acquired the shared executor during a live logical Source draw");
+            const auto now=self.detector.published();
+            require(now.object==self.publication.object&&now.present==self.publication.present&&
+                now.pokemon_id==self.publication.pokemon_id&&now.flags==self.publication.flags&&
+                now.context==self.publication.context&&self.photos.queued_requests()==1,
+                "intermediate completion consumed Source ID FIFO or published CopyInfo");
+            if(self.reset)require(receipts[0].completed&&!receipts[0].failed&&
+                bool(receipts[0].execution)&&receipts[0].execution.full_syncs==1&&
+                receipts[0].execution.dma_reads&&receipts[0].execution.packets,
+                "flag10 C suffix ran before actual RSP/RDP completion");
+            return self.fail?ISLE_GAME_EXHAUSTED:ISLE_GAME_OK;
+        } catch(...) {return ISLE_GAME_EXECUTION_FAILURE;}
+    }
+};
+void boundary_diagnostic(scene::Services& services,g::Frame& frame,player::Renderer& renderer,
+    IslePlayerSource& source,player::Controller& controller,focus::Detector& detector,
+    const photo::LightingInputs& lighting,const player::Renderer::Config& config,
+    IsleGameObject* main_object,std::span<IsleGameObject* const> ordinary,
+    const std::filesystem::path& output,std::uint32_t post_flags,BoundaryFailure failure,
+    std::span<const std::byte> expected_image={},std::uint32_t suffix_lanes=0) {
+    // All geometry/camera inputs remain the same admitted producers and actual
+    // main projection. Only the native scheduling recipe is diagnostic.
+    std::vector<std::pair<IsleGameObject*,std::uint32_t>> visibility;
+    for(auto* object:ordinary) {
+        IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(services.game,object,&metadata));
+        visibility.emplace_back(object,metadata.flags);
+        if(object==main_object||post_flags==0x50u)
+            native(isle_game_object_set_flags(services.game,object,metadata.flags|1u));
+    }
+    auto* object=services.object(0x7004000,0);require(object,"native boundary scheduling camera allocation failed");
+    IsleGameCamera* attachment=nullptr;native(isle_game_attach_camera(services.game,object,&attachment));
+    player::Renderer::Camera camera{object,source.camera,player_photo_rsp_boundary_render,
+        isle_player_mainCameraPreRender,5,post_flags|1u,0x385878ffu,0x38,UINT32_MAX};
+    native(renderer.attach(camera));
+    BoundarySuffix suffix{frame,renderer,controller,detector,services,ordinary,detector.published(),
+        bool(post_flags&0x10u),failure==BoundaryFailure::suffix,post_flags==0x50u||suffix_lanes!=0};
+    PlayerPhotoRspBoundary c_suffix{isle_player_mainCameraRender,BoundarySuffix::observe,&suffix,suffix_lanes,0,0};
+    player_photo_rsp_boundary_bind(&c_suffix);
+    struct Guard {
+        scene::Services& services;g::Frame& frame;player::Renderer& renderer;
+        player::Controller& photos;IsleGameObject* object;
+        const std::vector<std::pair<IsleGameObject*,std::uint32_t>>& visibility;
+        ~Guard() {
+            while(frame.busy())if(renderer.poll()==g::Poll::pending)std::this_thread::yield();
+            if(frame.completed()&&photos.has_pending(frame)&&renderer.release_completed()!=ISLE_GAME_OK)
+                std::terminate();
+            player_photo_rsp_boundary_bind(nullptr);
+            services.erase(object);
+            if(renderer.collect_joined()!=ISLE_GAME_OK)std::terminate();
+            for(const auto [object,flags]:visibility)
+                if(isle_game_object_set_flags(services.game,object,flags)!=ISLE_GAME_OK)std::terminate();
+        }
+    } guard{services,frame,renderer,controller,object,visibility};
+    if(failure==BoundaryFailure::receipts||failure==BoundaryFailure::slots)
+        require(frame.reserve_render_capacity({config.sprite_capacity,config.resources.reservations.size()+3,
+            failure==BoundaryFailure::receipts?1u:33u,failure==BoundaryFailure::slots?1u:33u}),frame.message());
+    Evidence evidence{lighting,renderer,object};
+    const auto before=renderer.drawn_frame_counter();
+    const bool begun=renderer.begin(frame,{0},{&evidence,Evidence::complete});
+    if(failure!=BoundaryFailure::none) {
+        require(!begun&&frame.task_receipts().size()==1&&suffix.calls==1&&
+            !frame.completed()&&!evidence.calls,"boundary failure fabricated task2 or a completed image");
+        const auto first=renderer.status();
+        require(first!=ISLE_GAME_OK&&
+            (failure!=BoundaryFailure::suffix||
+             (first==ISLE_GAME_EXHAUSTED&&source.status==ISLE_GAME_EXHAUSTED&&c_suffix.returned==0)),
+            ("plain-C failure fence lost the first actual post-submission error: renderer="+
+             std::to_string(int(first))+" source="+std::to_string(int(source.status))+
+             " returned="+std::to_string(c_suffix.returned)).c_str());
+        while(frame.busy())if(renderer.poll()==g::Poll::pending)std::this_thread::yield();
+        require(!controller.has_pending(frame)&&!frame.submission()&&!frame.completed()&&
+            renderer.drawn_frame_counter()==before,"failed logical draw retained Photo ownership or counted/presented");
+        native(renderer.set_postprocess(false));
+        require(renderer.status()==first,"boundary cleanup replaced the first error");
+        return;
+    }
+    require(begun&&suffix.calls==1&&c_suffix.entered==1&&c_suffix.returned==1,renderer.message());
+    g::Poll result;
+    do {result=renderer.poll();if(result==g::Poll::pending)std::this_thread::yield();} while(result==g::Poll::pending);
+    const auto receipts=frame.task_receipts();
+    const auto expected=post_flags==0x50u?1u:2u;
+    require(result==g::Poll::completed&&receipts.size()==expected&&evidence.calls==1&&
+        renderer.drawn_frame_counter()==before+1&&!frame.submission()&&
+        frame.presentation_submission()==receipts.back().token&&receipts.front().token==suffix.token,
+        "native boundary did not complete distinct real tasks as one logical presentation");
+    const auto label="native-boundary-"+std::to_string(post_flags)+
+        (suffix_lanes?"-suffix-lanes-"+std::to_string(suffix_lanes):"");
+    std::ofstream report(output/(label+".tsv"));
+    report<<"scope\tNATIVE-SDK-MECHANISM-genuine-producers-NOT-natural-score_Render-proof suffix_lanes="<<suffix_lanes<<"\n";
+    report<<"token\tprogram\troot\tterminal\tfullsync\tdma\tpackets\tpacket_words\n";
+    std::uint64_t previous=0;
+    for(const auto& receipt:receipts) {
+        const auto descriptor=config.programs->descriptor(receipt.program);
+        require(receipt.token!=previous&&receipt.completed&&!receipt.failed&&bool(receipt.execution)&&
+            receipt.execution.full_syncs==1&&receipt.execution.dma_reads&&receipt.execution.packets&&
+            receipt.execution.packet_words&&receipt.task.commands_address==receipt.root&&
+            receipt.task.text_address==descriptor.text.address&&receipt.task.data_address==descriptor.data.address,
+            "a recorded native task did not actually execute its own RSP/RDP stream");
+        report<<receipt.token<<'\t'<<unsigned(receipt.program)<<'\t'<<receipt.root<<'\t'<<receipt.terminal<<'\t'
+            <<receipt.execution.full_syncs<<'\t'<<receipt.execution.dma_reads<<'\t'<<receipt.execution.packets<<'\t'
+            <<receipt.execution.packet_words<<'\n';
+        previous=receipt.token;
+    }
+    require(bool(report),"native boundary receipt evidence write failed");
+    save(output/(label+".rgba8"),frame.completed().rgba);
+    if(!expected_image.empty())
+        require(std::ranges::equal(frame.completed().rgba,expected_image),
+            "native task boundary changed the composed image from the same genuine producer inputs");
+    if(suffix_lanes) {
+        constexpr std::array<std::array<unsigned,4>,4> colors{{
+            {255,0,0,255},{0,255,0,255},{0,0,255,255},{255,255,255,255}}};
+        const auto completed=frame.completed();
+        for(unsigned lane=0;lane<4;++lane) if(suffix_lanes&(1u<<lane))
+            for(unsigned y=100;y<108;++y) for(unsigned x=20+lane*12;x<28+lane*12;++x)
+                for(unsigned channel=0;channel<4;++channel)
+                    require(std::to_integer<unsigned>(completed.rgba[y*completed.stride+x*4+channel])==colors[lane][channel],
+                        "returning C suffix or sparse/reloaded lane did not reach the actual framebuffer");
+    }
+    native(renderer.release_completed());
+}
 // Isolated actual producer/GPU regression: deliberately NOT SourceMain's image
 // request path and NOT a Controller preparation window. PhotoScene's genuine
 // membership hook and both Detector history generations are the observables.
@@ -449,41 +630,33 @@ void source_queue_cases(scene::Services& services,g::Frame& frame,
         "queued ID pinned its obsolete enqueue-generation metadata instead of allowing genuine Source overwrite");
     const auto latest=encoded(first_context);const auto latest_generation=detector.generation(first_context);
     // No matching Source task means no callback, not last retired token replay.
-    struct NoSourceTask {
-        player::Renderer& renderer;std::span<IsleGameObject* const> cameras;
-        std::array<std::uint64_t,4> epochs{};unsigned calls=0;
-        static void complete(void* user,rsp::CanonicalExecutor::MemoryLease& lease,std::uint32_t) {
-            auto& self=*static_cast<NoSourceTask*>(user);
-            require(++self.calls==1,"no-source GPU draw acquired multiple completed mappings");
-            for(std::size_t n=0;n<self.cameras.size();++n) {
-                player::Renderer::Dispatch last{};native(self.renderer.dispatch_metadata(self.cameras[n],last));
-                require(last.epoch==self.epochs[n],"hidden camera fabricated a new Source dispatch");
-            }
-            require(!lease.postprocess_active(),"no-source draw retained an exclusive Photo mapping");
-        }
-    } no_source{renderer,cameras};
+    std::array<std::uint64_t,4> skipped_epochs{};
     native(renderer.set_postprocess(true));std::array<std::uint32_t,4> flags{};
     require(cameras.size()==flags.size(),"no-task scenario needs every actual scheduling camera");
     for(std::size_t n=0;n<cameras.size();++n) {
         player::Renderer::Dispatch last{};native(renderer.dispatch_metadata(cameras[n],last));
-        no_source.epochs[n]=last.epoch;
+        skipped_epochs[n]=last.epoch;
         IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(services.game,cameras[n],&metadata));
         flags[n]=metadata.flags;native(isle_game_object_set_flags(services.game,cameras[n],metadata.flags|1u));
     }
-    // No Source camera ran: its light installation/main-camera payload is not
-    // this task's contract. Observe genuine GPU completion and unchanged last
-    // Source dispatches instead; the queued IDs must survive the GFX_END.
+    // Hidden scheduling cameras produce no actual task. One logical draw still
+    // completes, without replaying a prior receipt or consuming queued Photo IDs.
     const auto before_empty=std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter());
-    require(renderer.begin(frame,{0},{&no_source,NoSourceTask::complete}),renderer.message());
+    require(renderer.begin(frame,{0}),renderer.message());
     require(frame.busy()&&std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter())==before_empty+1u,
-        "whole no-source draw did not advance its independent counter before GPU completion");
+        "whole no-source draw did not advance its independent counter once");
     const auto empty_counter=renderer.drawn_frame_counter();
     g::Poll empty_result;do {empty_result=renderer.poll();if(empty_result==g::Poll::pending) std::this_thread::yield();} while(empty_result==g::Poll::pending);
-    require(empty_result==g::Poll::completed&&no_source.calls==1&&renderer.drawn_frame_counter()==empty_counter,
-        "no-source GPU completion failed or advanced the independent draw counter");
+    require(empty_result==g::Poll::completed&&renderer.drawn_frame_counter()==empty_counter&&
+        frame.task_receipts().empty()&&!frame.presentation_submission(),
+        "no-source logical completion fabricated a task or advanced the draw counter");
+    for(std::size_t n=0;n<cameras.size();++n) {
+        player::Renderer::Dispatch last{};native(renderer.dispatch_metadata(cameras[n],last));
+        require(last.epoch==skipped_epochs[n],"hidden camera fabricated a new Source dispatch");
+    }
     save(output/"source-no-matching-task.rgba8",frame.completed().rgba);
     require(controller.queued_requests()==2&&!controller.has_pending(frame)&&same(detector.computed(),prior_computed),
-        "GFX_END without a matching Source task reused an old token/callback and consumed Detector FIFO");
+        "no-task logical completion reused an old receipt or consumed Detector FIFO");
     for(std::size_t n=0;n<cameras.size();++n) native(isle_game_object_set_flags(services.game,cameras[n],flags[n]));
     // The current context differs from FIFO head; callback consumes latest head
     // metadata against the one shared 20-region array in this actual mapping.
@@ -572,7 +745,6 @@ std::unique_ptr<g::Frame> line_diagnostics(rom::Snapshot& snapshot,scene::Servic
         flags.push_back(metadata.flags);native(isle_game_object_set_flags(services.game,object,metadata.flags|1u));}
     std::ofstream report(output/"line-microcode-diagnostic.tsv");
     report<<"scope\tMICROCODE-LINEDRAW-native-camera-admitted-Cart-vertices-not-GAME-line-provider-parity\n";
-    const auto line_program=config.programs->descriptor(graphics::SourceProgram::l3dex2_fifo);
     for(unsigned bits=0;bits<8;++bits) {
         probe.mask=1u|(bits<<1);
         Evidence evidence{lighting,renderer,probe.object};
@@ -588,22 +760,6 @@ std::unique_ptr<g::Frame> line_diagnostics(rom::Snapshot& snapshot,scene::Servic
         const auto executed_lines=unsigned(bool(probe.mask&4u))+unsigned(bool(probe.mask&8u)&&!(probe.mask&2u));
         require(evidence.triangles==initial.triangles*executed_lines,
             "source in-list triangle/line transitions did not execute the exact qualified LINE3D contexts");
-        if((probe.mask&0xau)==0xau) {
-            const auto& lane0=evidence.lane_words[0];const auto& lane1=evidence.lane_words[1];
-            const auto& lane3=evidence.lane_words[3];std::size_t first_branch=lane0.size(),last_line_load=0;
-            bool line_load=false,misplaced=false;
-            for(std::size_t i=0;i+1<lane0.size();i+=2) {
-                if(lane0[i]==0xde010000u) first_branch=std::min(first_branch,i);
-                if(lane0[i]==0xdd0007ffu&&lane0[i+1]==line_program.text.address) {line_load=true;last_line_load=i;}
-            }
-            for(std::size_t i=0;i+1<lane1.size();i+=2)
-                misplaced=misplaced||(lane1[i]==0xdd0007ffu&&lane1[i+1]==line_program.text.address);
-            require(line_load&&last_line_load>first_branch&&!misplaced&&lane1.size()>=2&&lane3.size()>=2&&
-                lane1[lane1.size()-2]==0xde010000u&&lane1.back()==evidence.dispatch.lanes[3].address&&
-                lane3[lane3.size()-2]==0xde010000u&&lane3.back()==evidence.dispatch.lanes[0].address+
-                    static_cast<std::uint32_t>(evidence.dispatch.lanes[0].words*4-16),
-                "literal lane1->3 source quirk was relocated, flattened, made reachable or returned to the wrong current0 cursor");
-        }
         report<<probe.mask<<'\t'<<evidence.triangles<<'\t'<<executed_lines<<"\tCPU0123-GPU0213\n";
     }
     native(isle_player_render_backend_camera_flags(&source,probe.camera,0x20u));
@@ -633,9 +789,6 @@ std::unique_ptr<g::Frame> line_diagnostics(rom::Snapshot& snapshot,scene::Servic
             evidence.triangles==initial.triangles*lines,"flag4-off source lanes did not wait for actual final-GTL joining");
         const unsigned terminal_lane=(probe.mask&8u)?3u:(probe.mask&2u)?1u:(probe.mask&4u)?2u:0u;
         const auto& tail=evidence.lane_words[terminal_lane];
-        require(tail.size()>=4&&tail[tail.size()-4]==0xe9000000u&&tail[tail.size()-3]==0&&
-            tail[tail.size()-2]==0xdf000000u&&tail.back()==0,
-            "final-GTL tail restored/branched like per-camera combine instead of real FullSync/EndDL");
         if(terminal_lane==2) for(std::size_t i=0;i+1<tail.size();i+=2)
             require(tail[i]!=0xdd0007ffu,"final line-only tail invented a normal-program restore");
         report<<"deferred\t"<<probe.mask<<'\t'<<evidence.triangles<<"\tfinal-FullSync-EndDL-no-camera-combine\n";
@@ -664,7 +817,151 @@ struct GraphicsLifetime {
         }
     }
 };
-enum class Failure {none,after_prefix,after_seal,completed_memory,nested_wire,source_queue,removed_callback_memory};
+void task2_failure_diagnostic(scene::Services& services,g::Frame& frame,player::Renderer& renderer,
+    IslePlayerSource& source,player::Controller& controller,player::Photo& photo_owner,focus::Detector& detector,
+    const photo::LightingInputs& lighting,Content& content,std::span<IsleGameObject* const> ordinary,
+    const std::filesystem::path& output,bool rsp_fault) {
+    // Independent native SDK fault inputs. Real GAME callbacks capture both
+    // contexts; no Source state, completion callback or failed result is forged.
+    std::vector<std::pair<IsleGameObject*,std::uint32_t>> visibility;
+    for(auto* object:ordinary) {
+        IsleGameObjectMetadata metadata{};native(isle_game_object_metadata(services.game,object,&metadata));
+        visibility.emplace_back(object,metadata.flags);
+        native(isle_game_object_set_flags(services.game,object,metadata.flags|1u));
+    }
+    std::array<IsleGameObject*,2> objects{};
+    struct Guard {
+        scene::Services& services;g::Frame& frame;player::Renderer& renderer;
+        player::Controller& controller;Content& content;
+        std::array<IsleGameObject*,2>& objects;
+        const std::vector<std::pair<IsleGameObject*,std::uint32_t>>& visibility;
+        ~Guard() {
+            while(frame.busy())if(renderer.poll()==g::Poll::pending)std::this_thread::yield();
+            if(frame.completed()&&controller.has_pending(frame)&&renderer.release_completed()!=ISLE_GAME_OK)
+                std::terminate();
+            content.fault=Content::Fault::none;content.fault_frame=nullptr;
+            player_photo_rsp_boundary_bind(nullptr);
+            for(auto* object:objects)if(object)services.erase(object);
+            if(renderer.collect_joined()!=ISLE_GAME_OK)std::terminate();
+            for(const auto [object,flags]:visibility)
+                if(isle_game_object_set_flags(services.game,object,flags)!=ISLE_GAME_OK)std::terminate();
+        }
+    } guard{services,frame,renderer,controller,content,objects,visibility};
+    BoundarySuffix suffix{frame,renderer,controller,detector,services,ordinary,detector.published(),true,false,false};
+    PlayerPhotoRspBoundary c_suffix{isle_player_mainCameraRender,BoundarySuffix::observe,&suffix,0,0,0};
+    player_photo_rsp_boundary_bind(&c_suffix);
+    for(std::size_t i=0;i<objects.size();++i) {
+        objects[i]=services.object(0x7005000u+static_cast<std::uint32_t>(i),0);
+        require(objects[i],"native task2 fault scheduling camera allocation failed");
+        IsleGameCamera* attachment=nullptr;native(isle_game_attach_camera(services.game,objects[i],&attachment));
+        player::Renderer::Camera camera{objects[i],source.camera,
+            i?isle_player_mainCameraRender:player_photo_rsp_boundary_render,isle_player_mainCameraPreRender,
+            i?4:5,i?5u:0x15u,0x385878ffu,0x38,UINT32_MAX};
+        native(renderer.attach(camera));
+    }
+    content.fault=rsp_fault?Content::Fault::rsp:Content::Fault::gpu;
+    content.fault_frame=&frame;
+    Evidence evidence{lighting,renderer,objects[0]};
+    const auto before=std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter());
+    const bool begun=renderer.begin(frame,{0},{&evidence,Evidence::complete});
+    require(begun!=rsp_fault,"native task2 fault crossed the wrong actual RSP/GPU admission boundary");
+    g::Poll result;
+    do {result=renderer.poll();if(result==g::Poll::pending)std::this_thread::yield();} while(result==g::Poll::pending);
+    const auto receipts=frame.task_receipts();
+    require(result==g::Poll::failed&&frame.quiescent()&&!frame.completed()&&!frame.submission()&&
+        receipts.size()==2&&suffix.calls==1&&c_suffix.returned==1&&!evidence.calls,
+        ("failed native task2: rsp="+std::to_string(rsp_fault)+" poll="+std::to_string(int(result))+
+         " quiescent="+std::to_string(frame.quiescent())+" image="+std::to_string(bool(frame.completed()))+
+         " submission="+std::to_string(bool(frame.submission()))+" receipts="+std::to_string(receipts.size())+
+         " C-observer="+std::to_string(suffix.calls)+" C-returned="+std::to_string(c_suffix.returned)+
+         " post="+std::to_string(evidence.calls)).c_str());
+    const auto& first=receipts.front();const auto& second=receipts.back();
+    require(first.token==suffix.token&&first.completed&&!first.failed&&first.has_execution&&
+        bool(first.execution)&&first.execution.full_syncs==1&&second.failed&&!second.completed&&second.has_execution,
+        "native task2 failure lost the first actual completion or either real RSP result");
+    require(rsp_fault?(!second.token&&!bool(second.execution)):
+        (second.token==first.token+1&&bool(second.execution)&&second.execution.full_syncs==1),
+        "native task2 receipt confused synchronous RSP rejection with a real failed GPU token");
+    require(!controller.has_pending(frame)&&photo_owner.quiescent()&&detector.context_available(0)&&
+        detector.context_available(1)&&controller.queued_requests()==2&&
+        std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter())==before+(begun?1u:0u),
+        "native task2 failure stranded Photo/Actor history, consumed unreceived IDs or changed whole-draw counting");
+    const auto first_error=renderer.status();
+    require(first_error!=ISLE_GAME_OK,"native task2 failed without preserving its first error");
+    native(renderer.set_postprocess(false));
+    require(renderer.status()==first_error,"native task2 cleanup replaced its first failure");
+    std::ofstream report(output/(rsp_fault?"native-task2-rsp-failure.tsv":"native-task2-gpu-failure.tsv"));
+    report<<"scope\tNATIVE-SDK-MECHANISM-not-natural-Source-reachability\n";
+    report<<"token\trsp_result\trsp_error\tsp_status\tfullsync\tpacket_words\tgpu_completed\tfailed\n";
+    for(const auto& receipt:receipts)
+        report<<receipt.token<<'\t'<<receipt.has_execution<<'\t'<<unsigned(receipt.execution.error)<<'\t'
+            <<receipt.execution.sp_status<<'\t'<<receipt.execution.full_syncs<<'\t'<<receipt.execution.packet_words
+            <<'\t'<<receipt.completed<<'\t'<<receipt.failed<<'\n';
+    require(bool(report),"native task2 failure receipt report write failed");
+    // The enclosing real Owners scope must still retire/join Cart, Items and
+    // Actor resources successfully; a retained Renderer Cart borrow fails there.
+}
+
+enum class Failure {none,after_prefix,after_seal,completed_memory,nested_wire,source_queue,removed_callback_memory,
+    boundary_suffix,boundary_receipts,boundary_slots,boundary_reset_suffix,task2_rsp,task2_gpu};
+void source_program_contract(const graphics::SourcePrograms& programs) {
+    namespace w=graphics;
+    const w::SourceProgramSelection selection{w::SourceProgram::f3dex2_non_fifo};
+    const w::CommandRange reset{0x1000,1};
+    const auto cursors=[](unsigned mask) {
+        std::array<w::SourceLaneCursor,4> lanes{};
+        for(unsigned lane=0;lane<4;++lane) {
+            const auto head=0x2000u+lane*0x1000u;
+            lanes[lane]={head,head+16,head+0x400,(mask&(1u<<lane))!=0};
+        }
+        return lanes;
+    };
+    for(const unsigned lane:{0u,2u,1u,3u}) {
+        const auto lanes=cursors(1u<<lane);w::SourceJoinPlan plan;
+        w::plan_source_join(programs,selection,lanes,reset,true,plan);
+        require(!plan.empty&&plan.program==w::source_task_program(selection,lane==2||lane==3)&&
+            plan.terminal.address==lanes[lane].current&&plan.terminal.commands==2&&
+            plan.root.address==lanes[lane].current+16&&plan.root.commands==2,
+            "native first-populated lane selected wrong program, terminal or post-END entry");
+        require(plan.words[lane][0]==0xe9000000u&&plan.words[lane][2]==0xdf000000u&&
+            plan.words[lane][4]==0xde000000u&&plan.words[lane][5]==reset.address&&
+            plan.words[lane][6]==0xde010000u&&plan.words[lane][7]==lanes[lane].head,
+            "native process omitted actual terminal/reset-call/saved-head branch");
+    }
+    const auto lanes=cursors(0xf);w::SourceJoinPlan combined,processed;
+    w::plan_source_join(programs,selection,lanes,reset,false,combined);
+    w::plan_source_join(programs,selection,lanes,reset,true,processed);
+    require(!combined.root.commands&&!combined.terminal.commands&&processed.root.commands&&
+        processed.terminal.commands&&processed.words[3][0]==0xe9000000u&&
+        combined.words[3][0]!=0xe9000000u,
+        "combine became process instead of preserving its continuing lane0 cursor");
+    // Literal GAME quirk: lane1->3 appends its reload on lane0, not lane1.
+    const auto split=cursors((1u<<1)|(1u<<3));w::SourceJoinPlan quirk;
+    w::plan_source_join(programs,selection,split,reset,true,quirk);
+    const auto reload=programs.load(w::source_line_program(selection),reset);
+    require(quirk.word_counts[0]==reload.word_count&&
+        std::equal(reload.words.begin(),reload.words.begin()+reload.word_count,quirk.words[0].begin())&&
+        quirk.words[1][0]==0xde010000u&&quirk.words[1][1]==split[3].head,
+        "literal lane1-to3 reload moved from lane0 or changed branch target");
+    const auto rejects=[&](auto input,auto selected) {
+        w::SourceJoinPlan plan;bool rejected=false;
+        // Caller publication remains untouched until the complete plan exists.
+        std::array<std::uint32_t,8> publication{};publication.fill(0x12345678u);
+        try {w::plan_source_join(programs,selected,input,reset,true,plan);}
+        catch(const std::exception&) {rejected=true;}
+        require(rejected&&std::all_of(publication.begin(),publication.end(),
+            [](auto word){return word==0x12345678u;}),
+            "native task overflow/invalid program escaped pure preflight");
+    };
+    auto tail=cursors(1);tail[0].end=tail[0].current+8;rejects(tail,selection);
+    auto entry=cursors(1);entry[0].end=entry[0].current+24;rejects(entry,selection);
+    auto invalid=selection;invalid.primary=static_cast<w::SourceProgram>(255);
+    rejects(cursors(1),invalid);
+    w::SourceJoinPlan empty;
+    w::plan_source_join(programs,selection,cursors(0),reset,true,empty);
+    require(empty.empty&&!empty.root.commands&&!empty.terminal.commands,
+        "empty process manufactured a task");
+}
 void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure failure,unsigned independent) {
     require(std::filesystem::create_directory(output),"source scenario directory already exists");
     require(std::filesystem::create_directory(output/"profile"),"source scenario profile creation failed");
@@ -675,6 +972,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
     const player::UiResources ui_resources(snapshot);const player::PhotoResources photo_resources(snapshot);
     const environment_sound::Resources sounds(snapshot,0);const menu::EffectResources effect_resources(snapshot);
     const photo::LightingInputs lighting(snapshot);const graphics::SourcePrograms programs(snapshot);
+    source_program_contract(programs);
     const std::array banks{&effect_resources.bank(menu::EffectGroup::common),&effect_resources.bank(menu::EffectGroup::beach)};
     const menu::EffectGraphicsResources effect_graphics(snapshot,banks,{0x700000,0x80000});
     sprite::Producer sprites(ui_resources.roots(),ui_resources.banks());
@@ -705,6 +1003,11 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
         player::Ui ui(ui_resources,services,source,sprites,0);source.ui=&ui.source();
         focus::Detector detector;focus::RegionCopies copies(capture_layout);actor::DetectorBinding detection{copies,detector};detection.enabled=true;
         auto made=g::Frame::create(snapshot,{true,{16000000,4*1024*1024},frame_layout});require(bool(made),made.message.data());auto& frame=*made.frame;
+        // Enable the optional Source GPU admission API with this fixture's real,
+        // independently reserved guard arena; a live draw must exclude a borrower.
+        const std::array source_gpu_storage{sprite::RamRange{
+            static_cast<std::uint32_t>(guard_range.offset),static_cast<std::uint32_t>(guard_range.size)}};
+        require(frame.reserve_source_gpu_storage(source_gpu_storage),frame.message());
         std::vector<menu::RamRange> mutable_ranges{world_layout.payloads,world_layout.lists,world_layout.materials,
             actor_layout.payloads,actor_layout.lists,actor_layout.materials,item_layout.payloads,item_layout.lists,item_layout.materials,
             cart_layout.payloads,cart_layout.lists,cart_layout.materials,fx_commands,joined_lists,guard_range,line_arena,
@@ -724,6 +1027,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
         config.prepare=Content::prepare;config.prepare_user=&content;config.programs=&programs;config.effect_resources=&effect_graphics;
         if(failure==Failure::nested_wire) config.lanes.size=32*0x400;
         if(failure==Failure::after_seal) config.sprite_capacity=1;
+        std::array<std::unique_ptr<g::Frame>,3> comparison_frames;
         player::Renderer renderer(services,source,lighting,config);
         IsleGameObject* actual_ui=nullptr;native(renderer.create_main(0x385878ff,&actual_ui));
         require(actual_ui&&renderer.ui_camera_object()==actual_ui&&source.camera,"original C constructor lost its actual UI result/main camera");
@@ -759,6 +1063,12 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
         const std::array actor_capacities{actor_capacity,actor_capacity};std::array<a::SlotCapacity,8> item_capacities;item_capacities.fill(item_capacity);
         const auto cart_capacity=a::slot_capacity(cart_resources.animation_resources().models[0]);const std::array cart_capacities{cart_capacity,cart_capacity};
         {
+            // World outlives these owners, including failed construction or
+            // adoption. End its borrowed hooks before outer World teardown.
+            struct HookScope {
+                Hooks& hooks;
+                ~HookScope() {hooks.actors=nullptr;hooks.items=nullptr;}
+            } hook_scope{hooks};
             beach::ActorSceneResources sceneData(snapshot);
             std::uint16_t scene_latch=sceneData.initial_scalars().magikarp_active;
             beach::ActorSceneState sceneState(sceneData,scene_latch);
@@ -813,11 +1123,47 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
             const auto particle=actors.effects().create_particle(3,0,{500,1233,4000},{});require(bool(particle.status)&&particle.spawned,"actual shared common3 FX did not spawn");tick();tick();
             native(isle_actor_source_pause_object(actors.source(actor.actor.instance),1));native(isle_game_pause_updates(services.game,actor.actor.object,true));
             native(isle_player_render_invoke_viewport(&source,8,0,312,232));
+            if(failure==Failure::task2_rsp||failure==Failure::task2_gpu) {
+                const std::array ordinary{main_object,actual_ui,retained_ui,actors.particle_object()};
+                task2_failure_diagnostic(services,frame,renderer,source,controller,photo,detector,lighting,content,
+                    ordinary,output,failure==Failure::task2_rsp);
+            } else if(failure==Failure::boundary_suffix||failure==Failure::boundary_reset_suffix||
+               failure==Failure::boundary_receipts||failure==Failure::boundary_slots) {
+                const std::array ordinary{main_object,actual_ui,retained_ui,actors.particle_object()};
+                const auto kind=(failure==Failure::boundary_suffix||failure==Failure::boundary_reset_suffix)?
+                    BoundaryFailure::suffix:failure==Failure::boundary_receipts?BoundaryFailure::receipts:BoundaryFailure::slots;
+                boundary_diagnostic(services,frame,renderer,source,controller,detector,lighting,config,
+                    main_object,ordinary,output,failure==Failure::boundary_reset_suffix?0x14u:0x44u,kind);
+            } else {
             if(failure==Failure::source_queue) {
                 const std::array ordinary{main_object,actual_ui,retained_ui,actors.particle_object()};
                 source_queue_cases(services,frame,renderer,controller,photo,source,application,
                     photo_scene,detection,detector,ordinary,output,tick);
             } else {
+            std::array<std::uint16_t,2> warmed_contexts{UINT16_MAX,UINT16_MAX};
+            if(failure==Failure::after_prefix) {
+                // Complete and retire both real Photo contexts before failing a
+                // later prefix on the first reused slot. Its old task exposure
+                // must not prevent unsubmitted history/Actor ownership cleanup.
+                for(std::size_t n=0;n<warmed_contexts.size();++n) {
+                    Evidence warm{lighting,renderer,main_object};
+                    require(renderer.begin(frame,{detection.context},{&warm,Evidence::complete}),renderer.message());
+                    g::Poll warmed;
+                    do {warmed=renderer.poll();if(warmed==g::Poll::pending) std::this_thread::yield();}
+                    while(warmed==g::Poll::pending);
+                    require(warmed==g::Poll::completed&&warm.triangles&&warm.rectangles,
+                        "Photo reuse setup did not complete actual geometry and UI");
+                    const auto ticket=controller.ticket(frame);
+                    require(ticket.submission&&ticket.submission==frame.presentation_submission(),
+                        "Photo reuse setup did not own its actual completed task");
+                    warmed_contexts[n]=ticket.context;
+                    native(renderer.release_completed());
+                    tick();
+                }
+                require(warmed_contexts[0]!=warmed_contexts[1]&&photo.quiescent()&&
+                    static_cast<std::uint16_t>(1-detection.context)==warmed_contexts[0],
+                    "Photo failure setup did not retire both slots and return to the first context");
+            }
             content.fail_after_prefix=failure==Failure::after_prefix;
             const auto before=detector.generation(static_cast<std::uint16_t>(1-detection.context));
             Evidence evidence{lighting,renderer,main_object};
@@ -826,13 +1172,17 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
             auto changed=view;changed.eye[0]+=300;
             native(isle_game_camera_set_look_at(services.game,source.camera,&changed));
             require(renderer.light_direction()==evidence.expected,"native camera change unexpectedly recomputed source-owned OM light bytes");
+            if(failure==Failure::completed_memory)
+                native(isle_player_render_backend_camera_flags(&source,source.camera,0x40u));
+            const auto before_draws=std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter());
             const bool begun=renderer.begin(frame,{detection.context},{&evidence,Evidence::complete});
-            require(renderer.drawn_frame_counter()==(begun?1:0),
-                "failed/skipped whole source draw fabricated a counter advance or actual dispatch did not advance");
+            require(std::bit_cast<std::uint32_t>(renderer.drawn_frame_counter())==before_draws+(begun?1u:0u),
+                "failed whole draw advanced its counter or a successful returned draw did not advance once");
             if(failure==Failure::after_prefix||failure==Failure::after_seal||failure==Failure::nested_wire) {
                 require(!begun&&!frame.submission()&&frame.quiescent()&&!controller.has_pending(frame)&&photo.quiescent(),
                     "source preparation failure retained sink/ticket or fabricated a GPU submission/completion");
-                require(content.calls==(failure==Failure::nested_wire?0u:1u),"source failure crossed the wrong real prefix/history phase");
+                require(failure!=Failure::after_prefix||detection.context==warmed_contexts[0],
+                    "pre-submission failure did not reuse the previously completed Photo context");
                 require(failure!=Failure::nested_wire||source.status==ISLE_GAME_EXHAUSTED,"nested C GBI failure did not preserve exact exhaustion status");
             } else {
                 require(begun,renderer.message());require(frame.submission()&&controller.ticket(frame).submission==frame.submission(),"source request did not bind actual Frame/token");
@@ -845,6 +1195,13 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                 if(failure==Failure::completed_memory||failure==Failure::removed_callback_memory) {
                     require(result==g::Poll::failed&&frame.failed_submission(actual_token)&&!controller.has_pending(frame)&&photo.quiescent(),
                         "actual completed-memory failure did not retire its exact failed ticket");
+                    if(failure==Failure::completed_memory) {
+                        const auto receipts=frame.task_receipts();
+                        require(receipts.size()==2&&receipts[0].completed&&!receipts[0].failed&&
+                            receipts[0].token!=actual_token&&receipts[1].token==actual_token&&
+                            bool(receipts[0].execution)&&receipts[0].execution.full_syncs==1,
+                            "task2 completed-memory failure erased task1 completion or its exact receipt");
+                    }
                     require(controller.queued_requests()==(failure==Failure::removed_callback_memory?1u:0u),
                         "failed completion erased an unconsumed Source ID or restored an already-received message");
                     const auto first_error=renderer.status();native(renderer.set_postprocess(false));
@@ -871,8 +1228,52 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                         evidence.contains(0xf6000000u|xy(319,232),xy(312,-1))&&
                         evidence.contains(0xed000000u|xy(8,0),xy(312,232)),
                         "source inclusive top/bottom/side fields or signed Ymin-1/scissor were clamped, reordered or made exclusive");
-                    require(renderer.remove_main()==ISLE_GAME_INVALID_STATE,"completed GPU bypassed outstanding real Photo camera/resource ownership");
+                    require(renderer.abort_main()==ISLE_GAME_INVALID_STATE&&source.camera&&
+                        !renderer.main_removal_pending()&&!services.source_owner_joined(main_object),
+                        "physical camera cancellation bypassed Photo holds or changed its logical lifetime");
                     native(renderer.release_completed());
+                    if(independent==0) {
+                        // Match real camera state, framebuffer0 and cold
+                        // color/coverage history; warm AA edges are input state.
+                        const auto cold_frame=[&](std::size_t slot) -> g::Frame& {
+                            auto fresh=g::Frame::create(snapshot,{true,{16000000,4*1024*1024},frame_layout});
+                            require(bool(fresh),fresh.message.data());
+                            require(fresh.frame->reserve_source_gpu_storage(source_gpu_storage),fresh.frame->message());
+                            require(renderer.reserve(*fresh.frame),renderer.message());
+                            comparison_frames[slot]=std::move(fresh.frame);
+                            return *comparison_frames[slot];
+                        };
+                        auto& reference_frame=cold_frame(0);
+                        Evidence reference{lighting,renderer,main_object};
+                        require(renderer.begin(reference_frame,{0},{&reference,Evidence::complete}),renderer.message());
+                        do {result=renderer.poll();if(result==g::Poll::pending) std::this_thread::yield();}
+                        while(result==g::Poll::pending);
+                        require(result==g::Poll::completed&&reference.triangles&&reference.rectangles,
+                            "current-state unsplit reference did not complete actual geometry and UI");
+                        const auto completed=reference_frame.completed().rgba;
+                        const std::vector<std::byte> ordinary_image(completed.begin(),completed.end());
+                        save(output/"current-state-unsplit-reference.rgba8",ordinary_image);
+                        native(renderer.release_completed());
+                        const std::array ordinary{main_object,actual_ui,retained_ui,actors.particle_object()};
+                        std::size_t comparison_slot=1;
+                        for(const auto flags:{0x44u,0x14u}) {
+                            auto& split_frame=cold_frame(comparison_slot++);
+                            boundary_diagnostic(services,split_frame,renderer,source,controller,detector,lighting,config,
+                                main_object,ordinary,output,flags,BoundaryFailure::none,ordinary_image);
+                        }
+                        // Independent ordered10 then40: the latter and the
+                        // final tail are empty, so neither may invent a task.
+                        boundary_diagnostic(services,frame,renderer,source,controller,detector,lighting,config,
+                            main_object,ordinary,output,0x50,BoundaryFailure::none);
+                        // The returning C suffix itself emits commands after
+                        // reset/advance. Execute sparse first2, first3 and1->3
+                        // reload paths, rather than only inspecting their plans.
+                        for(const auto lanes:{1u,4u,8u,10u})
+                            boundary_diagnostic(services,frame,renderer,source,controller,detector,lighting,config,
+                                main_object,ordinary,output,0x14u,BoundaryFailure::none,{},lanes);
+                        boundary_diagnostic(services,frame,renderer,source,controller,detector,lighting,config,
+                            main_object,ordinary,output,0x44u,BoundaryFailure::none,{},1u);
+                    }
                     hidden_prefix_regression(services,frame,content,lighting,renderer,source.camera,
                         photo_scene,detection,detector,cart,config,output);
                     native(isle_player_render_invoke_viewport(&source,0,0,320,240));
@@ -942,6 +1343,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                 }
             }
             }
+            }
         }
         native(ui.retire());native(renderer.detach());native(commands.detach());
     }
@@ -975,6 +1377,12 @@ int main(int argc,char** argv) {
         run(snapshot,output/"failed-nested-wire",Failure::nested_wire,5);
         run(snapshot,output/"source-context-queue",Failure::source_queue,6);
         run(snapshot,output/"failed-removed-callback",Failure::removed_callback_memory,7);
+        run(snapshot,output/"failed-boundary-C-suffix",Failure::boundary_suffix,8);
+        run(snapshot,output/"failed-boundary-receipts",Failure::boundary_receipts,9);
+        run(snapshot,output/"failed-boundary-slots",Failure::boundary_slots,10);
+        run(snapshot,output/"failed-boundary10-C-suffix",Failure::boundary_reset_suffix,11);
+        run(snapshot,output/"failed-actual-task2-rsp",Failure::task2_rsp,12);
+        run(snapshot,output/"failed-actual-task2-gpu",Failure::task2_gpu,13);
         std::cout<<"original-C-source-renderer-component passed; originalRoot/fullgame/hardware/Windows11 not claimed\n";return 0;
     } catch(const std::exception& error) {std::cerr<<"player-source-renderer-rsp-smoke: "<<error.what()<<'\n';return 1;}
 }

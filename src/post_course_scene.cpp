@@ -416,7 +416,7 @@ Scene::Impl::Native::Native(Impl& parent):owner(parent),
             if(!graphics->configure_source_screen(screen,nullptr))
                 throw std::runtime_error(graphics->message());
         }
-        if(original_pair && !graphics->reserve_render_capacity({draws.size(),32}))
+        if(original_pair && !graphics->reserve_render_capacity({draws.size(),32,33,33}))
             throw std::runtime_error(graphics->message());
         source_objects.reserve(128);
     } catch(const std::exception& error) {
@@ -572,14 +572,16 @@ photo::ReplayAcquire Scene::Impl::acquire_gpu(void* raw,photo::ReplayGpuBinding&
     case scene::graphics::SourceGpuAcquire::failed:
         owner.fail(ISLE_GAME_EXECUTION_FAILURE,native.graphics->message());return photo::ReplayAcquire::failed;
     case scene::graphics::SourceGpuAcquire::admitted:
-        output={binding.executor,binding.programs,binding.epoch,binding.admission};return photo::ReplayAcquire::admitted;
+        output={binding.executor,binding.programs,binding.epoch,binding.admission,native.graphics.get()};
+        return photo::ReplayAcquire::admitted;
     }
     return photo::ReplayAcquire::failed;
 }
 bool Scene::Impl::release_gpu(void* raw,const photo::ReplayGpuBinding& binding) noexcept {
     if(!raw)return false;
     auto& owner=*static_cast<Impl*>(raw);
-    if(owner.creator!=std::this_thread::get_id() || !owner.native || !owner.native->graphics)return false;
+    if(owner.creator!=std::this_thread::get_id() || !owner.native || !owner.native->graphics ||
+       binding.frame!=owner.native->graphics.get())return false;
     const bool released=owner.native->graphics->release_source_gpu(
         {binding.executor,binding.programs,binding.epoch,binding.admission});
     if(!released)owner.fail(ISLE_GAME_INVALID_STATE,"post-course actual Replay GPU release rejected");
@@ -816,7 +818,7 @@ IsleGameResult Scene::initialize_scene() noexcept {
         // Cold menus apply their actual Source screen during entry/C init.
         // Capacity seals that configuration only after those calls complete.
         if(owner.kind!=Resources::Kind::camera_check && owner.kind!=Resources::Kind::photo_check &&
-           !owner.native->graphics->reserve_render_capacity({owner.native->draws.size(),32}))
+           !owner.native->graphics->reserve_render_capacity({owner.native->draws.size(),32,33,33}))
             return owner.fail(ISLE_GAME_INVALID_STATE,owner.native->graphics->message());
         owner.source_initialized=true;owner.phase=SceneStatus::running;return ISLE_GAME_OK;
     } catch(const std::exception& error) {return owner.fail(ISLE_GAME_INVALID_STATE,error.what());}

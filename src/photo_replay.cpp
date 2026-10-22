@@ -5,6 +5,7 @@
 #include "photo_lighting.hpp"
 #include "item_resources.hpp"
 #include "course_resources.hpp"
+#include "photo_score_source.h"
 
 #include <algorithm>
 #include <bit>
@@ -19,7 +20,8 @@
 // app_render/47380.c870-925,1039-1133,1245-1343,1646-1680;
 // app_render/score.c53-122,154-327,488-674;
 // window/847B60.c24-96,184-214; app_render/53AD0.c72-111.
-// This owner never executes Source C callbacks or borrows an ordinary GTL token.
+// Score dispatches the complete admitted Source C producer through the shared
+// Frame's scoped submit/drain capability; preview retains its guarded GPU loan.
 namespace isle::photo {
 namespace {
 using Range = menu::RamRange;
@@ -236,11 +238,12 @@ struct Callback {
     std::span<const Range> reservations;
     bool resets_camera = false;
     std::size_t insertion = 0;
+    std::uint32_t last_draw_frame = 0;
 };
 }
 
 struct Replay::Impl {
-    enum class Phase { idle, prepare_wide, prepare_narrow, prepare_preview, gpu_wide, gpu_narrow, gpu_preview,
+    enum class Phase { idle, prepare_wide, prepare_narrow, prepare_preview, gpu_preview,
                        sound, wait60, wait1, result, stopping, stopped };
     IsleGame* game;
     const rom::Snapshot& snapshot;
@@ -288,6 +291,15 @@ struct Replay::Impl {
     IslePlayerPhotoData record{};
     ReplayGpuBinding binding{};
     rsp::CanonicalExecutor::Token token = 0;
+    scene::graphics::SourceControl* score_control = nullptr;
+    IslePhotoScoreSource score_source{};
+    std::uint32_t score_camera_address = 0;
+    std::array<std::uint32_t,4> score_lane_begin{},score_lane_end{};
+    std::array<std::size_t,4> score_saved{};
+    graphics::SourceProgramSelection score_programs{};
+    bool score_post_drained = false, score_completed = false;
+    std::array<ScoreExecution,2> score_executions{};
+    std::size_t score_execution_count = 0;
     photo_feedback::WideCounts wide{};
     photo_feedback::FinalCounts counts{};
     photo_score::Photo score_photo{};
@@ -502,20 +514,12 @@ struct Replay::Impl {
                 items->capacities(),items->bindings(),config.memory.items,item_other);
         return true;
     }
-    void camera_configure(bool wide_pass) {
-        IsleGamePerspective perspective{wide_pass ? 60.0f : 30.0f,4.0f/3.0f,10,25600,1};
-        const IsleGameCameraParameters* saved = nullptr; native(isle_game_camera_parameters(game,camera,&saved));
-        auto viewport = saved->viewport;
-        if (request.kind == ReplayKind::preview) {
-            perspective.fovy = 30.0f/request.preview_scale;
-            perspective.aspect = float(width+1)/float(height+1);
-            source_aspect = perspective.aspect;
-            viewport.scale[0] = viewport.translate[0] = static_cast<std::int16_t>(((width+1)/2)*4);
-            viewport.scale[1] = viewport.translate[1] = static_cast<std::int16_t>(((height+1)/2)*4);
-        } else {
-            viewport.scale[0] = viewport.translate[0] = 128;
-            viewport.scale[1] = viewport.translate[1] = 96;
-        }
+    void camera_configure() {
+        IsleGamePerspective perspective{30.0f/request.preview_scale,float(width+1)/float(height+1),10,25600,1};
+        const IsleGameCameraParameters* saved=nullptr;native(isle_game_camera_parameters(game,camera,&saved));
+        auto viewport=saved->viewport;
+        viewport.scale[0]=viewport.translate[0]=static_cast<std::int16_t>(((width+1)/2)*4);
+        viewport.scale[1]=viewport.translate[1]=static_cast<std::int16_t>(((height+1)/2)*4);
         const IsleGameLookAt look{{record.unk_08.x,record.unk_08.y,record.unk_08.z},
             {record.unk_14.x,record.unk_14.y,record.unk_14.z},{0,1,0}};
         native(isle_game_camera_set_perspective(game,camera,&perspective));
@@ -611,16 +615,6 @@ struct Replay::Impl {
         }
     }
     menu::EffectCamera effect_camera() {
-        if (request.kind == ReplayKind::score) {
-            // score_Render restores aspect immediately after preparing its
-            // model matrices. The FX callback computes its own floating
-            // projection from these restored Source fields, NOT the GPU MVP.
-            const IsleGameCameraParameters* parameters = nullptr;
-            native(isle_game_camera_parameters(game,camera,&parameters));
-            auto perspective = parameters->perspective; perspective.aspect = source_aspect;
-            native(isle_game_camera_set_perspective(game,camera,&perspective));
-            native(isle_game_camera_compute_all(game,camera));
-        }
         const IsleGameCameraMatrix *projection = nullptr, *view = nullptr;
         native(isle_game_camera_matrix(game,camera,0,&projection)); native(isle_game_camera_matrix(game,camera,1,&view));
         menu::EffectCamera result;
@@ -638,8 +632,9 @@ struct Replay::Impl {
         }
         return result;
     }
-    void compose(bool wide_pass) {
-        camera_configure(wide_pass); preflight_assets();
+#include "photo_score_render_core.inc"
+    void compose_preview() {
+        camera_configure();preflight_assets();
         require(stage_epoch != UINT64_MAX,"Replay stage incarnation exhausted"); ++stage_epoch;
         graphics::validate_cold_inputs(staging,snapshot,source,static_cast<std::uint32_t>(config.memory.workspace.offset+0x7000));
         graphics::install_cold_inputs(staging,snapshot,static_cast<std::uint32_t>(config.memory.workspace.offset+0x7000));
@@ -670,46 +665,38 @@ struct Replay::Impl {
         }
         const IsleGameFixedMatrix identity{{{0x00010000,0,1,0},{0,0x00010000,0,1},{0,0,0,0},{0,0,0,0}}};
         memory.matrix(payload+64,identity);
-        const bool scoring = request.kind == ReplayKind::score;
-        const auto color = static_cast<std::uint32_t>(scoring ? layout.feedback.offset : layout.preview_color.offset);
-        const auto depth = static_cast<std::uint32_t>(scoring ? layout.feedback.offset+photo_feedback::plane_bytes : layout.preview_depth.offset);
-        const auto color_bytes = static_cast<std::uint32_t>(scoring ? photo_feedback::plane_bytes : layout.preview_color.size);
-        const auto depth_bytes = static_cast<std::uint32_t>(scoring ? photo_feedback::plane_bytes : layout.preview_depth.size);
+        const auto color=static_cast<std::uint32_t>(layout.preview_color.offset);
+        const auto depth=static_cast<std::uint32_t>(layout.preview_depth.offset);
+        const auto color_bytes=static_cast<std::uint32_t>(layout.preview_color.size);
+        const auto depth_bytes=static_cast<std::uint32_t>(layout.preview_depth.size);
         const auto reset = graphics::reset_commands({color,depth,payload,payload+64,
             lighting.pre_render_guest()-0x80000000u,color_bytes,depth_bytes});
         for (std::size_t i = 0; i < reset.size(); ++i) memory.word(static_cast<std::uint32_t>(layout.commands.offset+i*4),reset[i]);
         memory.word(static_cast<std::uint32_t>(layout.commands.offset+reset.size()*4),0xdf000000);
         memory.word(static_cast<std::uint32_t>(layout.commands.offset+reset.size()*4+4),0);
         call(0,static_cast<std::uint32_t>(layout.commands.offset));
-        if (scoring) {
-            std::fill_n(staging.begin()+static_cast<std::ptrdiff_t>(layout.feedback.offset/4),photo_feedback::buffer_bytes/4,0u);
-            command(0,0xdc080008,payload); segment(15,color); segment(12,depth);
-            call(0,setup_guest); call(0,wf.camera.address);
-        } else {
-            // renInitCameraEx clears depth; only Cave's initObjectsOnPhoto leaves
-            // CAMERA_FLAG_2 set, so other courses preserve the real color bytes.
-            const auto xmax = std::min(config.buffer_width,static_cast<std::uint32_t>(
-                parameters->viewport.translate[0]/4+parameters->viewport.scale[0]/4));
-            const auto ymax = std::min(config.buffer_height,static_cast<std::uint32_t>(
-                parameters->viewport.translate[1]/4+parameters->viewport.scale[1]/4));
-            command(0,0xdc080008,payload);
-            command(0,0xed000000,(xmax*4<<12)|(ymax*4));
-            command(0,0xe7000000,0); command(0,0xe3000a01,3u<<20); command(0,0xe200001c,0);
-            command(0,0xff100000|(config.buffer_width-1),depth); command(0,0xf7000000,0xfffcfffc);
+        // renInitCameraEx clears depth; only Cave's initObjectsOnPhoto leaves
+        // CAMERA_FLAG_2 set, so other courses preserve the real color bytes.
+        const auto xmax=std::min(config.buffer_width,static_cast<std::uint32_t>(
+            parameters->viewport.translate[0]/4+parameters->viewport.scale[0]/4));
+        const auto ymax=std::min(config.buffer_height,static_cast<std::uint32_t>(
+            parameters->viewport.translate[1]/4+parameters->viewport.scale[1]/4));
+        command(0,0xdc080008,payload);
+        command(0,0xed000000,(xmax*4<<12)|(ymax*4));
+        command(0,0xe7000000,0);command(0,0xe3000a01,3u<<20);command(0,0xe200001c,0);
+        command(0,0xff100000|(config.buffer_width-1),depth);command(0,0xf7000000,0xfffcfffc);
+        command(0,0xf6000000|((xmax-1)*4<<12)|((ymax-1)*4),0);
+        if(record.levelID==course::cave_id) {
+            command(0,0xe7000000,0);command(0,0xff100000|(config.buffer_width-1),color);
+            command(0,0xf7000000,0x00410041); // native RGBA8888 05080401 -> RGBA5551 0041
             command(0,0xf6000000|((xmax-1)*4<<12)|((ymax-1)*4),0);
-            if (record.levelID == course::cave_id) {
-                command(0,0xe7000000,0); command(0,0xff100000|(config.buffer_width-1),color);
-                command(0,0xf7000000,0x00410041); // native RGBA8888 05080401 -> RGBA5551 0041
-                command(0,0xf6000000|((xmax-1)*4<<12)|((ymax-1)*4),0);
-            }
-            command(0,0xe7000000,0); command(0,0xff100000|(config.buffer_width-1),color); command(0,0xfe000000,depth);
-            command(0,0xe3000a01,0); command(0,0xe200001c,0x00552078);
-            call(0,static_cast<std::uint32_t>(layout.commands.offset+0x100)); call(0,wf.camera.address);
         }
+        command(0,0xe7000000,0);command(0,0xff100000|(config.buffer_width-1),color);command(0,0xfe000000,depth);
+        command(0,0xe3000a01,0);command(0,0xe200001c,0x00552078);
+        call(0,static_cast<std::uint32_t>(layout.commands.offset+0x100));call(0,wf.camera.address);
         // Every lane starts with the actual source camera. Lanes 2/1/3 execute
         // only at the original combine-all boundary, not once per object.
         for (unsigned lane = 1; lane < 4; ++lane) call(lane,wf.camera.address);
-        const auto slots = subjects->scored_slots(); mapping_count = 0;
         const auto draw = [&](const Callback& object) {
             for (unsigned lane = 0; lane < 4; ++lane) raw(lane,object.lanes[lane],object.reservations);
             if (object.resets_camera) call(0,wf.camera.address);
@@ -717,16 +704,6 @@ struct Replay::Impl {
         for (const auto& object : std::span(order).first(order_count)) {
             IsleGameObjectMetadata metadata{}; native(isle_game_object_metadata(game,object.object,&metadata));
             if ((metadata.flags&1u) || !object.render.camera_tag) continue;
-            // Preserve score_Render's sequential pointer comparison, including
-            // its priority-reordering quirk; never assign slots by species.
-            if (scoring && mapping_count < slots.size() && object.object == slots[mapping_count].object) {
-                const auto slot = static_cast<std::uint32_t>(mapping_count);
-                mapping[mapping_count] = {slots[mapping_count].record_index,static_cast<std::uint8_t>(mapping_count)};
-                ++mapping_count;
-                segment(10,color+(2+slot)*photo_feedback::plane_bytes);
-                segment(11,color+(14+slot)*photo_feedback::plane_bytes);
-                call(0,copy_guest); draw(object); command(0,0xe7000000,0); command(0,0xfe000000,0x0c000000);
-            }
             draw(object);
         }
         // The actual effect callback setup precedes gtlCombineAllDLists. Its
@@ -794,12 +771,12 @@ struct Replay::Impl {
         if (granted.executor) binding = granted;
         if (result == ReplayAcquire::pending) { require(!granted.executor,"Pending replay admission returned an executor"); return false; }
         require(result == ReplayAcquire::admitted,"Replay guarded GPU admission failed");
-        require(binding.executor && binding.programs && binding.epoch && binding.admission && binding.executor->quiescent(),
-            "Replay GPU binding lacks actual exclusive quiescence/epoch/program authority");
+        require(binding.frame&&binding.executor&&binding.programs&&binding.epoch&&binding.admission&&binding.executor->quiescent(),
+            "Replay GPU binding lacks its required Frame/exclusive quiescence/epoch/program authority");
         return true;
     }
-    void submit(bool wide_pass) {
-        compose(wide_pass);
+    void submit_preview() {
+        compose_preview();
         auto preparation = binding.executor->begin_preparation();
         try {
             { const auto words = preparation.words(); commit(words); }
@@ -814,25 +791,12 @@ struct Replay::Impl {
         if (!stopping) {
             require_current();
             const auto bytes = completed.rdram();
-            if (phase == Phase::gpu_preview) {
-                const auto base = config.memory.preview_color.offset;
-                require(base <= bytes.size() && preview.size() <= bytes.size()-base,"Completed replay preview extent rejected");
-                for (std::size_t i = 0; i < preview.size(); ++i) preview[i] = bytes[(base+i)^3u];
-            } else {
-                photo_feedback::PlanesView view;
-                require(photo_feedback::PlanesView::borrow({reinterpret_cast<const std::uint8_t*>(bytes.data()),bytes.size()},
-                    static_cast<std::uint32_t>(config.memory.feedback.offset),view),"Completed replay feedback planes unavailable");
-                if (phase == Phase::gpu_wide) require(photo_feedback::count_wide(view,wide),"Completed replay wide reduction failed");
-                else require(photo_feedback::count_narrow(view,wide,counts),"Completed replay narrow reduction failed");
-            }
+            require(phase==Phase::gpu_preview,"Replay direct completion is not a preview task");
+            const auto base=config.memory.preview_color.offset;
+            require(base<=bytes.size()&&preview.size()<=bytes.size()-base,"Completed replay preview extent rejected");
+            for(std::size_t i=0;i<preview.size();++i)preview[i]=bytes[(base+i)^3u];
         }
         completed.release(); effect_packet = {};
-        if (!stopping && phase == Phase::gpu_wide) {
-            const IsleGameCameraParameters* parameters = nullptr;
-            native(isle_game_camera_parameters(game,camera,&parameters));
-            auto perspective = parameters->perspective; perspective.fovy = 30;
-            native(isle_game_camera_set_perspective(game,camera,&perspective));
-        }
         release_binding(); return true;
     }
     void score_input() {
@@ -928,6 +892,7 @@ bool Replay::begin(const ReplayRequest& request) noexcept {
         s.width = static_cast<std::uint32_t>(std::clamp(request.width,16,320));
         s.height = static_cast<std::uint32_t>(std::clamp(request.height,16,210));
         s.wide = {}; s.counts = {}; s.mapping = {}; s.mapping_count = 0; s.sound_cursor = 0; s.score = {};
+        s.score_executions={};s.score_execution_count=0;
         s.resources_current = false; s.score_input(); s.require_current();
         if (request.kind == ReplayKind::score && s.shortcut()) s.phase = Impl::Phase::result;
         else s.phase = request.kind == ReplayKind::score ? Impl::Phase::prepare_wide : Impl::Phase::prepare_preview;
@@ -944,14 +909,9 @@ ReplayStep Replay::poll() noexcept {
             (s.items && s.items->externally_retired()) || (s.camera_joined && !s.camera_requested) ||
             (s.effect_joined && !s.effect_requested))) s.fail("Replay native ownership changed outside its admitted lifetime");
         if (s.token) {
-            const auto previous = s.phase;
             try { if (!s.complete()) return {ReplaySignal::pending}; }
             catch (...) { s.token = 0; s.effect_packet = {}; s.release_binding(); throw; }
-            if (!s.stopping) {
-                if (previous == Impl::Phase::gpu_wide) s.phase = Impl::Phase::prepare_narrow;
-                else if (previous == Impl::Phase::gpu_preview) s.phase = Impl::Phase::result;
-                else s.next_sound();
-            }
+            if(!s.stopping)s.phase=Impl::Phase::result;
             // Completion and a new acquisition are separate bounded leaves.
             if (!s.stopping) return s.step();
         }
@@ -964,10 +924,15 @@ ReplayStep Replay::poll() noexcept {
         const auto phase = s.phase;
         if (phase == Impl::Phase::prepare_wide || phase == Impl::Phase::prepare_narrow || phase == Impl::Phase::prepare_preview) {
             s.require_current();
-            if (!s.acquire() || !s.reconstruct()) return {ReplaySignal::pending};
-            s.submit(phase == Impl::Phase::prepare_wide);
-            s.phase = phase == Impl::Phase::prepare_wide ? Impl::Phase::gpu_wide :
-                phase == Impl::Phase::prepare_narrow ? Impl::Phase::gpu_narrow : Impl::Phase::gpu_preview;
+            if(!s.acquire())return {ReplaySignal::pending};
+            if(s.request.kind==ReplayKind::score) {
+                s.submit_score(phase==Impl::Phase::prepare_wide);
+                if(phase==Impl::Phase::prepare_wide)s.phase=Impl::Phase::prepare_narrow;
+                else s.next_sound();
+            } else {
+                if(!s.reconstruct())return {ReplaySignal::pending};
+                s.submit_preview();s.phase=Impl::Phase::gpu_preview;
+            }
             return {ReplaySignal::pending};
         }
         return s.step();
@@ -1057,6 +1022,9 @@ bool Replay::busy() const noexcept {
 bool Replay::gpu_busy() const noexcept { return impl_->token != 0 || impl_->binding.executor != nullptr; }
 const char* Replay::error() const noexcept { return impl_->failed ? impl_->message.data() : ""; }
 std::span<const Range> Replay::reservations() const noexcept { return impl_->owned; }
+std::span<const ScoreExecution> Replay::score_executions() const noexcept {
+    return std::span(impl_->score_executions).first(impl_->score_execution_count);
+}
 } // namespace isle::photo
 
 #include "photo_presentation_core.inc"

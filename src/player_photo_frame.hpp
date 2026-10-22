@@ -14,8 +14,8 @@ public:
     Controller& operator=(const Controller&)=delete;
     // Quiescence concerns actual capabilities, not unbound Source FIFO IDs.
     bool quiescent() const noexcept {return !preparing_&&photo_.quiescent();}
-    // Bracket synchronous Frame::begin (or an unsubmitted producer preparation).
-    // Restores the real collector before any native OM callback can run.
+    // Bracket the whole synchronous logical dispatch, across intermediate
+    // submissions and resets. Restore the collector before native OM resumes.
     IsleGameResult begin_preparation(const scene::graphics::Frame&) noexcept;
     IsleGameResult end_preparation() noexcept;
     // Original nonblocking ProcessImage: enqueue CURRENT u16 ID, including
@@ -27,6 +27,9 @@ public:
     // Read the actual preparation/GPU/consumer capability, never a FIFO record.
     // A callback can select a different context by consuming its head ID.
     IslePlayerPhotoTicket ticket(const scene::graphics::Frame&) const noexcept;
+    // Record intermediate GPU exposure without ending the logical collector
+    // or binding/consuming a presentation ticket or Source FIFO ID.
+    IsleGameResult task_submitted(const scene::graphics::Frame&) noexcept;
     // Immediately after successful Frame::begin, before any poll. A no-prefix
     // current-context GPU lease is admitted only after its real task exists;
     // FIFO head metadata remains separately resolved at the eligible callback.

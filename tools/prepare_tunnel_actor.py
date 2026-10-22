@@ -11,7 +11,7 @@ REVISION = "df8815e75f3d79618466e01e0827c6165b93d11c"
 VERSION = "tunnel-actor-original276-common-egg6-v3"
 SOURCE_SHA256 = "c41560260c5c211721425fa47e742eb9881ef1d1c01a496a8dcab94452c1299f"
 SELECTOR_SHA256 = "9053ac53944de3170ec43b99ee8122a353d81b2816eac60d972853bdd37143ae"
-RECIPE_SHA256 = "925d0dd0901d7865ae46f91cecdc0255408ee7bb030118479a42f648adaef981"
+RECIPE_SHA256 = "da477de58cab92f0289c2ecd696d8975803688fc8aa4632a53ace7e35b3c6c8c"
 OUTPUT_SHA256 = "1f4937141d0319a080b0a6a2d36b270d408e58f0b667ddcff85508249ac624c7"
 OWN_SUPPORT = ("src/tunnel_actor_source.h", "src/tunnel_actor_source.c",
                "src/tunnel_actor.hpp", "src/tunnel_actor.cpp",

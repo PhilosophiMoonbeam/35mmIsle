@@ -3,7 +3,7 @@
   "provider": "tunnel-actor",
   "revision": "df8815e75f3d79618466e01e0827c6165b93d11c",
   "transformation_version": "tunnel-actor-original276-common-egg6-v3",
-  "generator_sha256": "abe9735aa8f28405af37f3e718edd1c0358b8fd225179e5e90513b1b417744a3",
+  "generator_sha256": "8e1364a99801bf807e3b1a1c80c4e666a990e57c64eebbbfc65b3e6698fe5401",
   "source_files": {
     "src/tunnel/diglett/code.c": {
       "git_blob": "2d6592b32379087f714a47d308a6694f4a220155",
@@ -19713,7 +19713,7 @@
         },
         {
           "callee": "atan2f",
-          "route": "native libm atan2f(float,float)->float",
+          "route": "shared GAME isle_game_atan2f(float,float)->float via engine_math.h",
           "line": 57,
           "source_abi": [],
           "source_call": "atan2f(pokemon->pos1.x - playerTransform->pos.v.x, pokemon->pos1.z - playerTransform->pos.v.z)",

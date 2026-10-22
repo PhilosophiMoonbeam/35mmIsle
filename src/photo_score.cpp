@@ -1,4 +1,5 @@
 #include "35mmisle/photo_score.hpp"
+#include "35mmisle/game_math.h"
 
 #include <bit>
 #include <cfenv>
@@ -130,7 +131,7 @@ struct Evaluation {
             if (!std::isfinite(subject.yaw) || !std::isfinite(photo.eye_x) || !std::isfinite(photo.eye_z) ||
                 !std::isfinite(photo.at_x) || !std::isfinite(photo.at_z)) return false;
             const float x = sub(photo.eye_x, photo.at_x), z = sub(photo.eye_z, photo.at_z);
-            float angle = sub(subject.yaw, std::atan2(x, z));
+            float angle = sub(subject.yaw, isle_game_atan2f(x, z));
             if (!std::isfinite(angle)) return false;
             while (angle > pi) {
                 const float next = sub(angle, tau);

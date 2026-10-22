@@ -174,7 +174,7 @@
       "TRUNC.W.S at800A0DB0"
     ],
     "endpoint": "Exact binary32 pi produces column12. Defined BE image address reads preserve next-row spill, including final row into class[0]; no native out-of-bounds array or angle clamp.",
-    "atan2": "Native standard-library float atan2; independent Original return/boundary parity remains unqualified."
+    "atan2": "Shared GAME isle_game_atan2f, independently expressed from pinned GAME src/sys/misc.c:15-76; no native-libm scalar angle substitution. Full Original return/boundary parity remains unqualified."
   },
   "ownership": "Borrow FinalCounts directly, separate2byte SubjectMap per render rank maps original photo index and sparse feedback slot. Preserve zero-visible active ranks, original raw record order, exact camera/yaw/animation/pose/special/level/flags/dash metadata and apply returned photo_flags after success. No per-call allocation, plane/table/count repacking or hidden global state.",
   "verification": {

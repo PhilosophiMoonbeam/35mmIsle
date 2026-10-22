@@ -92,6 +92,12 @@ function(isle_target_options target)
     endif()
 endfunction()
 
+add_library(isle-game-math STATIC src/game_math.c include/35mmisle/game_math.h)
+target_include_directories(isle-game-math PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+isle_target_options(isle-game-math)
+target_compile_options(isle-game-math PRIVATE
+    "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math>")
+
 add_library(isle-native STATIC src/native.c src/rng.c
     include/35mmisle/native.h include/35mmisle/rng.h)
 target_include_directories(isle-native PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -115,7 +121,7 @@ target_include_directories(isle-focus-detector PUBLIC "${CMAKE_CURRENT_SOURCE_DI
 isle_target_options(isle-focus-detector)
 
 add_library(isle-photo-score STATIC src/photo_score.cpp include/35mmisle/photo_score.hpp)
-target_link_libraries(isle-photo-score PUBLIC isle-photo-feedback)
+target_link_libraries(isle-photo-score PUBLIC isle-photo-feedback PRIVATE isle-game-math)
 isle_target_options(isle-photo-score)
 target_compile_options(isle-photo-score PRIVATE
     "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>")
@@ -286,7 +292,7 @@ if(TARGET isle-rom-snapshot)
     isle_target_options(isle-menu-animation)
 
     add_library(isle-menu-effects STATIC src/menu_effects.cpp src/menu_effects.hpp)
-    target_link_libraries(isle-menu-effects PUBLIC isle-menu-resources isle-native)
+    target_link_libraries(isle-menu-effects PUBLIC isle-menu-resources isle-native PRIVATE isle-game-math)
     isle_target_options(isle-menu-effects)
     target_compile_options(isle-menu-effects PRIVATE
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
@@ -747,6 +753,13 @@ if(BUILD_TESTING)
     target_link_libraries(sprite-tests PRIVATE isle-sprite)
     isle_target_options(sprite-tests)
     add_test(NAME sprite-tests COMMAND sprite-tests)
+
+    add_executable(game-math-tests tests/game_math_tests.cpp)
+    target_link_libraries(game-math-tests PRIVATE isle-game-math)
+    isle_target_options(game-math-tests)
+    target_compile_options(game-math-tests PRIVATE
+        "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math>")
+    add_test(NAME game-math-tests COMMAND game-math-tests)
 
     add_executable(audio-bank-tests tests/audio_bank_tests.cpp)
     target_link_libraries(audio-bank-tests PRIVATE isle-audio-bank)

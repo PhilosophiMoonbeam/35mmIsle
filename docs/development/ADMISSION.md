@@ -1604,7 +1604,35 @@ The coincident second actor had actual zero visibility and earned no bonus; remo
 
 Meaningful authored-table regressions cover selection/visibility/completeness/pose boundaries, exact flags, sparse mapping, twelve subjects, zero-visible ranks, companion fraction rounding, PI spill and transactional rejection. GCC Debug/full LUS, GCC Release and Clang ASan+UBSan each passed twenty-four component CTests. The actual GPU consumer used Debug, not a fully instrumented backend. Its complete trace had 38/38 terminal PIDs, all absent, zero known physical DRM/input/audio/udmabuf rows and zero permission denials; ROM identity remained unchanged. Private proof SHA-256: `2722a3e406a2e76641544894979b323a989d9b09e753ae448ab5b88b8beebbc4`.
 
-This establishes native Oak CPU behavior over authored matching photo descriptors and genuine native model feedback. Standard-library float `atan2` still needs independent Original return/bin-boundary qualification. Full saved-photo/world/items/effects reconstruction, original score/pixel parity, scene/UI/gameplay, Windows 11 runtime and release qualification remain open.
+This original experiment establishes native Oak CPU behavior over authored matching photo descriptors and genuine native model feedback. The later scalar-angle qualification below replaces its host-libm dependency. These bounded results alone do not establish full saved-photo reconstruction, Original score/pixel parity, natural gameplay, Windows 11 runtime or release qualification.
+
+## GAME scalar angles and independent score-boundary composition
+
+`isle-game-math` independently expresses authoritative GAME `src/sys/misc.c:15–76` at `df8815e75f3d79618466e01e0827c6165b93d11c`: continued-fraction coefficients/grouping, binary32 stages and comparison-based quadrants. The C API allocates nothing, does not change floating-point controls and does not interpose standard-library symbols. Photo scoring, menu effects and every admitted private GAME C `atanf`/`atan2f` route use this one implementation; deliberate host-side steering mathematics remains separate.
+
+An independently authored public-call observer and predeclared corpus were frozen before inspecting that GAME math body for the native implementation. Actual mapped `atan2f` entries at `0x80019abc`, architectural argument/RM readbacks and PC/SP-matched real returns reproduced **28** native score discrepancies: signed-zero quadrants, the negative-axis sign and one-ULP pose-bin crossings. No SDK producer body/header, opaque object, private AI or guest snapshot was inspected.
+
+The final prospective cohort observes the executing thread's actual entry/return MXCSR. The reference interpreter enables FTZ for RM0/1 and disables it for RM2/3 in this captured FS profile; host rounding can be applied lazily. Native comparison therefore selects rounding from actual guest FCSR and copies only observed stable FTZ/DAZ controls. Matching RM alone had left **217** scalar differences. No emulator-specific FTZ policy or output-fitting special case was added to production.
+
+Matched FTZ also changes some authored camera-subtraction operands. Composition binds the **actual production subtraction bits**, full entry FCSR and observed denormal controls to actual public Original scalar observations. Conflicting returns or absent bindings fail admission; eight additional predeclared input pairs close the observed coverage gaps. It never substitutes the original query row when that row's operands differ.
+
+| Final controlled observation / consumer | Actual result |
+|---|---:|
+| Public scalar calls; actual entries, returns and matched returns | 10,824 each |
+| Raw scalar bit differences under matched context | 0 |
+| RM0 production-score compositions | 2,712: 2,711 accepted and one agreed invalid-animation rejection |
+| Score-field differences | 0 |
+| Expected non-nearest scoring-contract rejections | 8,112 |
+| Unexpected acceptance/rejection, protocol errors, duplicate events or profile differences | 0 |
+| Fixture operand changes across all modes; explicitly rebound rather than ignored | 152 |
+| Actual Original transport tasks / DMA rows / bytes | 353 / 91,735 / 20,166,728 |
+| Command-fetch, ordered last-write PCM and custody disagreements | 0 |
+
+The successful Original process exits normally after 30.337 seconds; its caller resumes, all protected inputs remain unchanged and no forbidden device endpoint/network call is recorded. The owned scalar caller consumes 232 additional actual GAME general-heap bytes. This is a controlled scalar mechanism, not an uninstrumented or natural gameplay trajectory. Separate explicitly synthetic duplicate-entry and missing-MXCSR fixtures both reject with exit2. A malformed extension rejected before collection is excluded, not relabeled successful.
+
+GCC Debug passes all 59 component CTests; optimized GCC passes the scalar and score consumers; Clang passes scalar, score and effects consumers. The actual Linux product rebuilds. Real CPU-Vulkan effects execute their format/tenth-frame/retirement workload; the rebuilt photograph consumer completes 68 genuine GPU frames, four expected failed-GPU paths and 83 Original C OM/CopyInfo updates. Independent arithmetic, route-closure and composition reviews report no concrete defect within these scopes.
+
+Private qualification manifest SHA-256: `ad9c3656d015fddd196a96a0ac22c74bd2e2388ae4351b45a46be61cb4987c65`. Original `PI_2` macro value/type, universal underflow/exception-status behavior, physical N64 behavior and complete Original execution of the scoring function remain unproven. Exact cohort agreement does not establish those claims. Full Original-score parity and Windows 11 runtime qualification remain separate open gates.
 
 ## Fresh clone-update transport results
 

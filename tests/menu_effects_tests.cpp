@@ -1,5 +1,6 @@
 // Public authored-IR consumers: no ROM, copied source bytecode or asset fixtures.
 #include "menu_effects.hpp"
+#include "35mmisle/game_math.h"
 
 #include <array>
 #include <bit>
@@ -134,8 +135,8 @@ void rotation_a9() {
     // Independent source expression evaluation, not the runtime helper or a
     // length-only invariant (the historical disputed sign changes z alone).
     const Vec3 input{2.25f,-3.5f,4.75f};
-    const float pitch=std::atan2(input.y,input.z),sp=std::sin(pitch),cp=std::cos(pitch);
-    const float yaw=std::atan2(input.x,input.y*sp+input.z*cp),sy=std::sin(yaw),cy=std::cos(yaw);
+    const float pitch=isle_game_atan2f(input.y,input.z),sp=std::sin(pitch),cp=std::cos(pitch);
+    const float yaw=isle_game_atan2f(input.x,input.y*sp+input.z*cp),sy=std::sin(yaw),cy=std::cos(yaw);
     const float length=std::sqrt(input.x*input.x+input.y*input.y+input.z*input.z);
     const float azimuth=isle_rng_next_float(&oracle)*6.2831855f;
     const float radial=std::sin(angle)*length;

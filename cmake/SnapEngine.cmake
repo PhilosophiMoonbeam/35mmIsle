@@ -159,7 +159,7 @@ target_sources(isle-engine PRIVATE src/player_root_source.h
     "${_isle_player_root_private}/player_root_support.c")
 target_include_directories(isle-engine PUBLIC "${PROJECT_SOURCE_DIR}/include"
     PRIVATE "${PROJECT_SOURCE_DIR}/src")
-target_link_libraries(isle-engine PUBLIC isle-native isle-continuation)
+target_link_libraries(isle-engine PUBLIC isle-native isle-continuation isle-game-math)
 if(UNIX)
     target_link_libraries(isle-engine PRIVATE m)
 endif()

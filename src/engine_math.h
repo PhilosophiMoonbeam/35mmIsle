@@ -3,6 +3,13 @@
 
 #include "35mmisle/engine.h"
 #include <math.h>
+#include "35mmisle/game_math.h"
+/* Only native GAME C closures include this bridge. Resolve their scalar angle
+ * calls explicitly after the host declarations, without exporting libm names
+ * or changing deliberate host-side probe/controller mathematics.
+ */
+#define atanf isle_game_atanf
+#define atan2f isle_game_atan2f
 #include <float.h>
 #include <stdint.h>
 #include <stdbool.h>

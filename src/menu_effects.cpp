@@ -1,4 +1,5 @@
 #include "menu_effects.hpp"
+#include "35mmisle/game_math.h"
 
 #include <algorithm>
 #include <bit>
@@ -9,7 +10,7 @@
 
 // Own GAME df8815e75f3d79618466e01e0827c6165b93d11c effect.c/effect.h.
 // Binary32 source expression grouping; compile without fast-math/contraction.
-// Native C float libm parity with Original remains unqualified.
+// Scalar angles use GAME math; remaining host trig parity is unqualified.
 namespace isle::menu {
 namespace {
 constexpr float tau = 6.2831855f;
@@ -519,8 +520,8 @@ int EffectRuntime::tick_particle(int index, int previous) noexcept {
             }
             case 0xa9: {
                 const float angle = scalar(code, cursor); const Vec3 old = v.velocity;
-                const float pitch = std::atan2(old.y, old.z), sp = std::sin(pitch), cp = std::cos(pitch);
-                const float yaw = std::atan2(old.x, old.y * sp + old.z * cp), sy = std::sin(yaw), cy = std::cos(yaw);
+                const float pitch = isle_game_atan2f(old.y, old.z), sp = std::sin(pitch), cp = std::cos(pitch);
+                const float yaw = isle_game_atan2f(old.x, old.y * sp + old.z * cp), sy = std::sin(yaw), cy = std::cos(yaw);
                 const float mag = magnitude(old), t = isle_rng_next_float(rng_) * tau;
                 const float sa = std::sin(angle) * mag, x = std::cos(t) * sa, y = std::sin(t) * sa;
                 const float ca = std::cos(angle) * mag;
@@ -687,8 +688,8 @@ EffectsStatus EffectRuntime::update_effects(EffectWorldResolver resolve, void* c
             step = tau / int(e.accumulator);
         }
         while (e.accumulator >= 1.0f) {
-            const float pitch = std::atan2(velocity.y, velocity.z), sp = std::sin(pitch), cp = std::cos(pitch);
-            const float yaw = std::atan2(velocity.x, velocity.y*sp + velocity.z*cp), sy = std::sin(yaw), cy = std::cos(yaw);
+            const float pitch = isle_game_atan2f(velocity.y, velocity.z), sp = std::sin(pitch), cp = std::cos(pitch);
+            const float yaw = isle_game_atan2f(velocity.x, velocity.y*sp + velocity.z*cp), sy = std::sin(yaw), cy = std::cos(yaw);
             const float mag = magnitude(velocity);
             float fraction = 1.0f, radius;
             if (s.parameters[5] < 0.0f) radius = -s.parameters[5];

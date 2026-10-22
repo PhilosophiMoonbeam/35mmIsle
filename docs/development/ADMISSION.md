@@ -1670,9 +1670,45 @@ Four separate native consumers losslessly translate only those pre-call inputs i
 | 3 | 1,030 | 1,030 | 0 / 11 |
 | 4 | 2,210 | 2,210 | 0 / 11 |
 
-Selected input slots and post-call photo flags also agree in all four comparisons. Native completes eight genuine GPU passes. The public Replay API does not expose FinalCounts or a complete feedback-slot map, so this consumer fabricates neither; equality here is of actual complete scoring outputs, not a claimed bytewise framebuffer comparison. Fresh Native GameSession Dash state is identified separately; no Original save state is imported. The photos do not exercise every species, effect, equipment state, signed-zero case or rendering backend.
+Selected input slots and post-call photo flags also agree in all four comparisons. Native completes eight genuine GPU passes. The public Replay API does not expose FinalCounts or a complete feedback-slot map, so this score-only consumer fabricates neither; its equality claim concerns actual complete scoring outputs. The separate read-only observer below supplies its own raw-word/count evidence. Fresh Native GameSession Dash state is identified separately; no Original save state is imported. The photos do not exercise every species, effect, equipment state, signed-zero case or rendering backend.
 
 Private comparison manifest SHA-256: `d5cca808c67a6ebbc22bd2826dd3396c11d2826a9cf3696ccd4a8869ce8e3385`. This bounds the production `be7f372` implementation's independent complete-score agreement; it is not physical N64, universal score/pixel/FP, Windows 11 gameplay or downloaded-product campaign qualification.
+
+## Exact complete-photo feedback comparison
+
+A separate private Native consumer observes the existing completed-memory callback immediately after real wide/narrow feedback reductions and before lease release. Only the native replay translation unit and its shared score-render include are privately copied; production sources and APIs are unchanged. The observer copies exactly 159,744 guest-big-endian bytes per pass through canonical word-swapped32 addressing, plus the actual owned render-index→PhotoData-slot map. It never writes RAM, reads hidden/full RAM, retains a lease pointer or reads Original results/feedback/counts as Native input.
+
+All four qualified Original pre-call photographs independently reconstruct, render, score and retire normally through this consumer. Exact comparison covers **638,976 u16 words** across eight completed passes: all 26 × 64 × 48 words per pass, including color plane0, inactive slots and every packed-depth word. There are **zero raw-word differences**, not merely equal scores or counts. Independently derived per-pixel GAME predicates and all seven reduction arrays also agree; Original derived arrays match its separately recorded arrays. Slot mappings and selected targets agree without reordering.
+
+The original score-only harness, CMake recipe and ELF were preserved before observation was added; identity manifest SHA-256: `ee91b788a7c250275870265adf26ad9294bdf8da5ef665f91e3dea229fc09680`. A separate explicitly synthetic truncated-buffer fixture rejects with exit2; no observed buffer is edited. Independent observer/linkage and comparator/predicate reviews report no concrete defect within their source scopes. The temporary build hook is removed after execution.
+
+Private feedback qualification SHA-256: `852f60a00604013a777c7ff1baae4eddfbe540d2b1b83b05f9fd8e17756e899b`. This is exact agreement for these eight actual public GAME feedback buffers, not hidden-coverage state, every focus/occlusion boundary, every photo/scene, physical N64 behavior, Windows 11 gameplay or universal backend/pixel parity.
+
+## Controlled RAW16 resource-to-voice dependency qualification
+
+A new controlled public-interface mechanism allocates **65,728 actual GAME general-heap bytes** for six immutable RAW16 resources and an owned MIPS DMA factory/provider. Preparation occurs at audio frame 160, after the observed general-heap initialization and before the first observed sound allocation. Genuine GAME reverb 0/1 calls request the existing GAME-managed stop/drain/close/reinitialization transaction; no second concurrent driver, private SDK field write, fabricated callback or forced return is used. The second actual SDK initialization consumes the owned public DMA factory input; owned requests return actual initialized RAM, while unchanged GAME requests naturally forward to the Original GAME provider with opaque state treated only as an equality label.
+
+The fresh collector exits normally after 29.461 s with protected inputs unchanged, no forbidden endpoint/network call, **8,746 actual public entries/matched returns**, zero pending calls and 353 real tasks. Independent byte reduction verifies all 68,355 DMA rows/14,939,128 bytes, fetched commands and ordered last-write PCM. Actual owned write-watch preflight, six physical resource guards, all SP-write exclusions and terminal byte readbacks pass. The protocol preserves fixed query frames 300/308/316/324/332/340 and terminal 354.
+
+Exact physical LOAD rows can extend beyond a returned request into already initialized logical payload. The strict consumer partitions each byte into time-qualified exact request coverage or explicit initialization-only read-ahead; a provider return is never a RAM write. Later requests never retroactively cover earlier reads. The first 40-byte LOAD splits 32/8 across two actual requests; the final 24-byte LOAD splits 16 request-covered bytes plus 8 nonzero initialized payload bytes with no fabricated provider ID.
+
+Actual public descriptor returns must precede the matched builder return and task begin. Observation IDs are checked against exact pointer/bytes/lifetime and actual invocation labels; episode descriptors come from that invocation's own actual observations. Every surviving prior start or returned-Free episode remains a competitor. Each claimed ENV association requires valid ordered resource/LOAD/resample/state/PCM dependencies and one exact `(synth, voice, start-invocation)` episode at initialization and current use.
+
+| Controlled query | Scoped resource/voice-associated ENV records |
+|---|---:|
+| 0 | 21 |
+| 1 | 18 |
+| 2 | 18 |
+| 3 | 19 |
+| 4 | 6 |
+| 5 | 6 |
+
+All six actual analyses pass that scoped association. Multiple ordered INIT commands can belong to the same resource/start episode; their multiplicity does not identify which gain call was consumed. Gain-call consumption, gain-effective sample intervals, internal N, SETBUFF-as-N and arithmetic remain **unproven**. The explicit result class is `resource_voice_associated_gain_unresolved`, not a numerical synthesis oracle or full gain-attributed group.
+
+Complete reachable ordered DAGs are streamed once per node to hashed sidecars with explicit PCM-position roots. Independent bounded-memory verification checks every node ID, ordered-parent reference, root, count, byte length and SHA-256; no duplicate or dangling ID is present. Seventeen explicitly synthetic interval probes and five explicitly synthetic in-memory probes against the actual consumer reject malformed coverage/hash/identity/root ordering without changing collected evidence. An earlier analysis exceeded its intentional 8-GiB address-space cap; streaming removes duplicate graph materialization and all six fresh analyses finish below the unchanged cap, without truncating evidence or raising the limit.
+
+Private resource/voice qualification SHA-256: `46272c4aafd9fe6068fab43d7f21a11e4a5b9b7d805f3bb006905d2ee253ecf9`. The extra heap, authored RAW16 inputs and public restart are controlled perturbations, not a natural-gameplay, frozen-ADPCM, hardware, physical-audio-device or arithmetic qualification.
+
 
 
 

@@ -1862,6 +1862,13 @@ The private uninstrumented fixed binary edits the genuine Pidgey comment **AB→
 
 Qualification SHA-256: `77d657996c84996ee3d07f3a1f15b157423935295ac8a31ee0d8b04bed4dde99`. The editor has no transactional Cancel: B deletes a character, End exits without disk Save, and Oak performs durability. This is one-photo slot-placement durability, not an occupied-photo swap, confirmed deletion, hosted corrected product, Windows 11 runtime or fresh-campaign claim.
 
+### Actual confirmed deletion and canonical cold clearing
+
+A separate new owned copy of the genuinely saved slot-1 Pidgey/ABA pair executes ordinary **Delete→Yes**. The real retained-raster clone/deletion animation returns to an empty grid; cover shows **0 Taken / 60 Left**. Actual Oak Save→Yes→Title and normal close exit 0. A second process loads the exact whole saved pair, shows Album disabled at Oak and closes normally; protected source pairs and product files remain unchanged.
+
+A throwaway, read-only consumer of the existing Native `GameSession` API independently admits both existing profiles without initialization or commit. The edited source Save contains exactly one Album record at slot 1 with code units `A3C1,A3C2,A3C1` (**ABA**); the deleted Save contains zero photos and zero nonzero Album comments across all 60 slots. Before/after pair hashes are identical for each inspection. Qualification SHA-256: `ef5a1204303a4bd525c43de082c27ad686798367c42b8634a070399bee144fd7`. This extends the preceding private-binary cohort; it is not Windows 11 or hosted-artifact qualification.
+
+
 
 
 ## Fresh clone-update transport results

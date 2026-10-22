@@ -1829,6 +1829,20 @@ The corrected private, uninstrumented Linux binary opens that exact genuinely ea
 
 The actual ROM Window consumer passes mixed-size large/small release/recreation with exact completed framebuffer output, plus active-borrow rejection and retirement; all 59 Linux Debug contracts pass. The separate API-authored Source consumer now completes actual Report detail, B/list, reopen, list/menu/cover and joined Oak result 13: detail presentations occur at updates 316 and 442; Report retires at 646. The complete Report/Album/Gallery run closes 3,417 actual submissions/terminals and exits 0. Its fixture remains explicitly authored API input, not natural gameplay. Initial consumer failures exposed an exact 21-update GAME cover-entry wait, not missing Host sampling; the final gate respects that Source wait. Cross-lifetime pixel-digest equality is not required: both visits retain canonical record identity and independently match the reconstructed photo to the actual completed frame. No hosted-artifact, Windows 11 runtime, Original pixel-parity or fixed-binary fresh-campaign qualification is claimed.
 
+### Preview 6: corrected portable Report products
+
+[Preview 6](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.6) publishes exact source `81f15307af902555537e60de8b44a120e9b73671`. [Hosted run 39822346984](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39822346984) has ten terminal successful Linux/MSVC jobs. Raw hosted artifact identities, safe archive paths, x64 ELF/PE headers, notices, shaders, bundled dependencies and Linux help exit 0 are checked before UI execution.
+
+| Public Runtime archive | Bytes | SHA-256 |
+|---|---:|---|
+| Linux x64 TGZ | 9,882,453 | `689afa9fd4aac4d80ec11bcceaab4e4e1633ef67e35fdb1471d5ce5541c58817` |
+| Windows x64 ZIP | 5,373,193 | `8801b2574217af8ef36d630ce59d6512efb192d61393964bed6ace6827b58d6b` |
+
+The exact downloaded Linux ELF passes ordinary Title/Continue/Oak/Report/Bulbasaur View/Check/list/reopen/Charmander/list/menu/cover/Oak and normal close. A second process loads the whole unchanged pair and reconstructs Bulbasaur/River/2,610 again; both processes join and exit 0 with no forced cleanup, errors or protected-input mutation. This is an inherited genuinely earned profile, not a new Save or fresh campaign. Both public archives are independently downloaded after publication and pass their published SHA-256 sums. Qualification SHA-256: `775ce5a5dfb21e2538d2c96f986a2f3e1ec48f6798cd8c08f3d8c7d09a39c2de`.
+
+Windows MSVC build/help/package acceptance does not establish Windows 11 gameplay or physical devices. Preview-5 assets/tag and their disclosed failure remain unchanged; the earlier fresh campaign runs a separately frozen pre-fix binary and cannot qualify this revision.
+
+
 ## Fresh clone-update transport results
 
 Fresh strict-grammar sources passed seventeen detached groups, complete source/alias/retained-identity checks and actual fail-closed gates. An authored native pthread fixture observed successful `clone3({input} => {output}, size)`, credited both zero/nonzero memfd truncations, and rejected anonymous credit after an ordinary file replaced the descriptor. No helper permission was relaxed or inferred from a memory object's name.

@@ -1634,6 +1634,22 @@ GCC Debug passes all 59 component CTests; optimized GCC passes the scalar and sc
 
 Private qualification manifest SHA-256: `ad9c3656d015fddd196a96a0ac22c74bd2e2388ae4351b45a46be61cb4987c65`. Original `PI_2` macro value/type, universal underflow/exception-status behavior, physical N64 behavior and complete Original execution of the scoring function remain unproven. Exact cohort agreement does not establish those claims. Full Original-score parity and Windows 11 runtime qualification remain separate open gates.
 
+### Exact scalar-angle portable Runtime products
+
+Source `be7f372dcda8da37d1b30f8ff7783e1aa0122a42` passes all ten jobs in [CI 39747038144](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39747038144), including GCC/Clang Debug/Release, MSVC x64 Debug/Release, complete static-runtime Windows and Linux products, real Linux CPU-Vulkan execution and MSVC canonical RDP consumers. [Preview 4](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.4) publishes the unchanged hosted archives; the public tag resolves to that exact commit.
+
+| Product | Bytes | SHA-256 |
+|---|---:|---|
+| Linux x64 `.tar.gz` | 9,881,709 | `24d7009f24a5edec40cce4df3b8b78518d64b0341af2fb235651ff89683204c6` |
+| Windows x64 `.zip` | 5,372,776 | `bd658b64225c0a86bc8bb353aab4fec6f12d0ca6f942a874de63c00e1868303b` |
+
+The published `SHA256SUMS` SHA-256 is `21b94f2ddf6699144d209285068549d895d83f8c4ac3d48b6d0d0a0978728e2a`; authenticated release metadata independently reports all three matching digests. Relative safe archive paths, applicable notices and absence of ROM/derived game archives were checked. Downloaded ELF and AMD64 PE identities are respectively `5af1e742bb59b48bd0d57f9aee370391f324a9957083197f8a595bdf0330caaa` and `46e6b9b9299a4d538dc97063d8c02c34e1cbaa22888f93eac2da6f68b8ea1e25`.
+
+The exact downloaded Linux ELF passes `--help` and a separate uninstrumented ordinary-SDL-keyboard session with an unchanged whole, previously earned Save pair. Actual boot, Title, Beach attract and Continue-selection surfaces were captured. The session reached its declared 1,200-second deadline, sent normal WM close and returned 0 with no forced cleanup, errors or modified protected inputs; the pair remained byte-exact. A preceding unsupported-GLX startup is excluded. The successful session uses documented SDL3 `SDL_VIDEO_FORCE_EGL=1` and CPU rendering, not a product patch.
+
+This session does **not** qualify Album/AB, a new photograph/Oak assessment or a fresh campaign for this binary. Those earlier results retain their source/cohort boundaries. Windows package/help/CI success is not Windows 11 ROM gameplay. Private portable-product qualification SHA-256: `e87c28ce81f4fca4e1a00169f8ca9fc09cbe441afa2da6285d499f1d2a55fec7`.
+
+
 ## Fresh clone-update transport results
 
 Fresh strict-grammar sources passed seventeen detached groups, complete source/alias/retained-identity checks and actual fail-closed gates. An authored native pthread fixture observed successful `clone3({input} => {output}, size)`, credited both zero/nonzero memfd truncations, and rejected anonymous credit after an ordinary file replaced the descriptor. No helper permission was relaxed or inferred from a memory object's name.

@@ -1773,6 +1773,22 @@ All **28 actual RSP tasks / 3,584 stereo output frames** complete and retire. Pu
 
 Nominal CPU deadlines 320/336 and interrupted successor deadline 224 are metadata, not extra INIT commands or assumed RSP amplitude snaps. One initial comparator invocation rejects an incorrect capture-directory path; only that path is corrected, with predictions unchanged and the rejection retained. Qualification SHA-256: `7553819707c8da9b5a4c4d80d3546462143535ac330c94ca88bfcfa414282eef`. This admits the bounded **Native public-control → producer-command → real completed output** contract, not Original gain-consumption identity, effective interval, internal N, arithmetic or hardware parity.
 
+## Preview 5: descriptor-control portable products
+
+[Preview 5](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.5) fixes the GAME sound boundaries above. Its immutable source is `8d0c11cfd84afb13de245df808bdb25f6a295598`; [hosted run 39792034677](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39792034677) has ten terminal successful Linux/MSVC jobs. An initially inconsistent completed-workflow/in-progress-last-job response is retained; a final no-cache job query establishes all ten terminal results before publication. CLI ZIP extraction rejects raw `archive:false` TGZ transport; authenticated API download preserves the actual raw archives and verifies their hosted sizes/digests.
+
+| Public Runtime archive | Bytes | SHA-256 |
+|---|---:|---|
+| Linux x64 | 9881758 | `649da3dc4c213cb2db5dc8285989a9db7cc3cdba837140a8596008d3e7e926e1` |
+| Windows x64 | 5372795 | `e6a4c54986ea1d0daed51980ace839078f2277ca6cf7d6aa22949d3139f59d7a` |
+
+Both archives pass unique safe-path, asset-exclusion, required license/notice/shader and executable-architecture checks; downloaded Linux help exits 0. The exact Linux ELF is `e5e0119a9b4f08cf90cf62815d75e18cd8d73b0e049293810c3aa3e79c30df76`; Windows AMD64 PE is `2a4b381e148237136abc12fdeff64b2e6bb544528ddca2079db19f0c16e46c9b`. Independent download of the public release assets passes both published checksums.
+
+Actual ordinary XTest keyboard input on the downloaded Linux product reaches Title/Continue/Oak, course selection and B return, Album cover/grid, retained Pidgey enlargement and Check, B return through grid/cover/Oak, acknowledged Save, and settled Title. Normal WM close exits 0 after 451.72 seconds; no forced cleanup, errors or protected-input mutation. A second actual process loads the entire newly saved pair, reaches Oak/Album and the retained Pidgey photograph, then closes normally with exit 0. Both 127,780-byte saved members transfer byte-exact; the inherited source pair remains unchanged. No field editing, profile merging, Source-state writing or callback injection occurs.
+
+Private portable qualification SHA-256: `0f501668f79655b9f322f66fa15da189fc0e9fc914621ade0f26a90c6587028f`. This is an inherited-earned-profile packaged UI/Save/cold-continuity qualification, not newly captured/scored photographs or a fresh campaign. Software graphics and SDL dummy audio do not qualify physical devices; Windows Server 2022 MSVC build/package evidence does not qualify Windows 11 gameplay. Previous releases and campaign cohorts remain immutable.
+
+
 
 
 

@@ -1933,6 +1933,18 @@ Both corrected cases exit 0 through real Source return and joined worker ownersh
 
 The shared-matcher Report14/Album12/Gallery22 regression also exits 0 with mask7 and 3,417 actual submissions/terminals, using the preceding frozen consumer `0d4da4e440d6690fd9a41b584608515bf407eea7bcd6f049f01c1009b886abf1`; the subsequent borrow-lifetime change is Credits-only. These are existing **API-authored canonical photo/profile fixtures**, not fresh or gameplay-earned progress. They do not qualify dormant Credits20 ingress, every fault timing, Native/Original pixel or audio parity, physical devices or Windows11 execution.
 
+The published observer commit `e42ade67b72f971092f372aa555066715d1df134` passes all ten terminal hosted jobs in [run 39864411354](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39864411354). Windows compilation remains distinct from Windows11 ROM/UI/device execution.
+
+## Fresh 8d campaign completion and build-source custody deviation
+
+Frozen consumer `8155a7e3ca32c240c2654f790700ad4ef0c4167cda8ffb939a319b92d482aace`, production source `8d0c11cfd84afb13de245df808bdb25f6a295598`, completes one genuinely empty-root profile in 32,205.682 seconds. Actual Name and Source-consumed software input earn all seven courses, four equipment flags, six signs and Mew over 124 acknowledged saves; no inherited profile or authored progress, gear, photographs, scores, poses or RNG is used. The historical trip66/125220-point no-improvement checkpoint was not a permanent dead end.
+
+The final canonical profile contains 67 Reports and 141,110 points. Mew is actually assessed and published for 8,360 points at Report62 with preserved selected identity. Credits18 serial425 runs 7,279 updates and 3,639 actual frames/LUS presentations, returns Original result8 and joins. Title serial426 reaches UI state2; canonical storage reopens exactly. All 707,577 graphics submissions reach terminal completion; GPU/Photo/Manager/Input/audio/Host owners retire without a deadline, and the process exits 0. Owned-PID captures cover all seven course surfaces and final Title. The first ending capture shows a dim fading reconstructed Mew—not every Credits image or caption.
+
+Custody is reported without rewriting the original manifest: **58 of 59 preregistered identities remain unchanged**. The sole difference is the mutable build-source file `tests/application_runtime_rom_smoke.cpp`, edited during subsequent development; the frozen executable, ROM and runtime dependencies remain unchanged. Its exact original source is recovered from immutable commit8d and matches preregistered SHA-256 `826d210f2dc7c56ff5851fbeeedf62140990e70fa595a6579c754f8609077b50`. This establishes declared compiled-source provenance, not a retroactive all59-files-unchanged pass. Completion-evidence SHA-256: `ac0d8e0704e5ce977c8d170957a3d823212d8fb13b06b16ad64bc5320036c33b`.
+
+This is observed fresh Linux completion for the older Sprite/audio-control build with an explicit build-source custody deviation. It does not qualify later Report backing, Window creator fences or entry-capability changes. The separate frozen17ab campaign remains independent; current-source completion, Original pixel/arithmetic parity, hearing, physical devices and Windows11 execution are not inferred.
+
 ## Fresh clone-update transport results
 
 Fresh strict-grammar sources passed seventeen detached groups, complete source/alias/retained-identity checks and actual fail-closed gates. An authored native pthread fixture observed successful `clone3({input} => {output}, size)`, credited both zero/nonzero memfd truncations, and rejected anonymous credit after an ordinary file replaced the descriptor. No helper permission was relaxed or inferred from a memory object's name.

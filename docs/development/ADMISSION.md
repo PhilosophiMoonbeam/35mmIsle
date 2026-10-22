@@ -1765,6 +1765,14 @@ The incorrect pre-binding pitch also produces 128,000 extra signed16 components;
 
 Private qualification SHA-256: `29a5c746b3aa7ee44b4de449255847b210a0f51b6f543b47e497562a8891b5ec`. Original producer arithmetic, complete SDK-state eligibility, physical playback and Windows 11 gameplay remain unqualified. Intermediate commit `439a194` passes all ten hosted jobs but is not the final preview source for this additional correction family.
 
+### Independent Native gain-calendar execution
+
+Competing assessments distinguish directly testable Native scheduling from unobservable Original internal arithmetic. A separately authored binary32/packing predictor is sealed before executing four Native public `Synth` calendars: baseline, exact repeat, interruption and delayed onset. An initial RAW16 fixture is rejected by the existing public `unsupported_wave` boundary before any task; its failed evidence remains immutable. A new supported, entirely authored ADPCM fixture is preregistered separately, without changing production waveform support or gain math.
+
+All **28 actual RSP tasks / 3,584 stereo output frames** complete and retire. Public gain INIT tuples and continuation spans match the independent predictions: baseline/repeat INIT at frames 0/64, interruption at 0/64/192, delayed onset at 0/80. Baseline/repeat commands and completed PCM are exact. Causal prefixes, actual post-control changes, silent stop windows and complete descriptor/physical-voice/task/PCM/RSP retirement pass. Separately labelled synthetic wrong-onset, missing-successor, wrong-current-origin and task-mapping records are rejected.
+
+Nominal CPU deadlines 320/336 and interrupted successor deadline 224 are metadata, not extra INIT commands or assumed RSP amplitude snaps. One initial comparator invocation rejects an incorrect capture-directory path; only that path is corrected, with predictions unchanged and the rejection retained. Qualification SHA-256: `7553819707c8da9b5a4c4d80d3546462143535ac330c94ca88bfcfa414282eef`. This admits the bounded **Native public-control → producer-command → real completed output** contract, not Original gain-consumption identity, effective interval, internal N, arithmetic or hardware parity.
+
 
 
 

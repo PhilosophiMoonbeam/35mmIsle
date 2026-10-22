@@ -1842,6 +1842,15 @@ The exact downloaded Linux ELF passes ordinary Title/Continue/Oak/Report/Bulbasa
 
 Windows MSVC build/help/package acceptance does not establish Windows 11 gameplay or physical devices. Preview-5 assets/tag and their disclosed failure remain unchanged; the earlier fresh campaign runs a separately frozen pre-fix binary and cannot qualify this revision.
 
+### Natural Report sorting, Best Shot and Sign resource restoration
+
+A further ordinary-keyboard run on the exact preview-6 ELF opens Best Shot **Magmar/Volcano/5,410**, executes Check and returns to cover. It opens the existing Kingler sign photograph and acknowledges both collected-sign captions, then selects the missing Pinsir sign: its immutable enlarged placeholder and two hint pages are canonical, not a failed photo replay. B advances a caption page rather than aborting this Source sequence. Returning from that placeholder to Best Shot restores the actual Magmar photograph through the shared retained detail binding.
+
+Actual Rearrange inputs produce Name order, Course order with the preceding Name comparison, and descending Score order headed by Magmar 5,410, Chansey 4,320 and Victreebel 4,180. B retains the selected ordering; View opens the sorted Magmar record. Selecting No. restores the original numeric order. The run returns through cover to settled Oak, then joins and exits 0 on normal WM close without errors, forced cleanup, protected-input mutation or authored Source/profile fields.
+
+Corrected qualification SHA-256: `9faf1e049c1f134aac64e7735fd1df4c7e8b62a79255ede6acd877dc724b2988`. A superseded parent transcription of lower scores is preserved separately; original images are unchanged and authoritative. This inherited-profile evidence covers present/missing sign and full-photo/placeholder/full-photo transitions, not exhaustive sort ties, every sign, a new Save/fresh campaign or Windows 11 runtime.
+
+
 
 ## Fresh clone-update transport results
 

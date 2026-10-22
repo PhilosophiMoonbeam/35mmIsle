@@ -6411,3 +6411,71 @@ corrected build. These are one-course inherited-profile comparisons,
 not fresh completion or Windows gameplay. A new empty-root campaign
 uses immutable `7cf45043` with no inherited/authored profile.
 
+### Fresh unseeded complete campaign
+
+The immutable `7cf45043bae067c32e66bebd6ed6e024d3136621ab9cb997289bc7b0fd395cd6`
+private Runtime completes the entire campaign from a new empty application
+root. There is no inherited profile, authored progress, equipment, photograph,
+score, RNG/Actor mutation or profile merging. One actual Name/profile owner
+persists through all 124 rides; generations advance consecutively from 1 to 124.
+The process exits 0 after 29,870.96 seconds.
+
+This is the implementation published at `311155cb7abcd248673feeef0410a8ef470f3d49`,
+not the later speculative quality-opportunity experiment. That experiment is
+removed, unqualified and unnecessary: the unchanged original fresh process
+earns Flute and completes naturally. All 41 selected compile-input hashes
+match the frozen reviewed build after experiment removal.
+
+| Saved trip (zero-based) | Course | Save generation | Reports | Points | Actual progression |
+|---|---|---|---|---|---|
+|0|Beach|1|8|9,770|Original selects Tunnel|
+|7|Tunnel|8|16|25,500|Real event unlock selects Volcano|
+|8|Volcano|9|22|34,390|Original selects River|
+|22|Beach|23|33|72,550|Natural Pester score threshold|
+|27|Beach|28|40|77,490|Original selects Valley|
+|28|Valley|29|46|83,430|Real Squirtle/Mankey/switch chain earns Dash|
+|117|Cave|118|63|130,310|Natural Flute score threshold|
+|120|Tunnel|121|65|132,750|Zapdos and fifth sign published|
+|122|River|123|66|132,750|Sixth sign published; Original selects Rainbow|
+|123|Rainbow|124|67|141,110|Mew published; Original selects Credits18|
+
+All six zero-score signs are actual selected/scored/published photographs:
+trips 29/120/31/122/33/34 publish species 1004/1010/1028/1022/1018/1035
+to canonical Report slots 63–68. Final Mew scores 8,360 at Report 62,
+normalized digest 7028470555748039373. Camera/Photo validation checks the
+consumed queue, scored result, Report mapping and complete normalized
+captured-photo wire identity, not merely species/count or screenshot text.
+Cave 117 publishes Grimer 3700 over 2500 and Jigglypuff 2540 over 2520;
+the genuine 1220-point replacement crosses 130,000 without an extra quality
+scheduler or fabricated evaluation.
+
+Completion reads the acknowledged canonical save: equipment flags 0/1/2/5
+(Apple/Pester/Flute/Dash), unlocked course 6, all six sign presences and Mew.
+Missing observations fail instead of becoming success. Final K/U is 6/6.
+Original Credits18 serial 425 runs 7279 updates/3639 completed presentations,
+returns Original8 and joins. Actual Title8 serial 426 presents 132 frames,
+reaches UI2 and cold-reopens the entire canonical profile and generation
+byte-exactly. The owned external Credits and final Title PNGs are inspected.
+
+The final report records 1,202,403 aggregate course updates and 601,168 course
+presentations; all 707,590 admitted application submissions retire. Native
+GPU/Photo/Manager, Input, SDL audio and Host owners retire; deadline remains 0.
+Checked native RSP audio delivers 941,935,216 PCM frames to SDL's dummy device.
+The campaign controller supplies owned software input; separate shipping
+application checks exercise ordinary SDL keyboard Title/Continue/Oak input.
+
+The private evidence root is `native-fresh-precise-campaign658p`; its sealed
+report, 124-row journey, per-trip publication ledgers, source archive, binary
+identity and completion manifest remain private. Independent reviewer
+inspection accepts the fresh campaign checks and preserves the distinction
+between this diagnostic binary and the separately qualified shipping ELF.
+
+CI [39636639535](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39636639535)
+passes all ten jobs for the published implementation: Linux/MSVC native
+products, 31 component consumers, 58 CPU contracts and both Runtime archives.
+The downloaded Linux payload is independently ROM-smoked; Windows x64 is
+build/CPU/contracts/help/packaging-qualified only. This does not claim every
+optional photograph/ending, all 69 Report slots, Windows ROM gameplay,
+Windows 11 hardware, physical audio/controller qualification or N64
+numerical/pixel parity.
+

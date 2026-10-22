@@ -10,11 +10,11 @@ The port builds on the authoritative [Pokémon Snap decompilation](https://githu
 
 ## Runtime status
 
-The native Linux application has completed a [fresh, unseeded, one-profile campaign](docs/development/ADMISSION.md#fresh-unseeded-complete-campaign): all seven courses, naturally earned Apple/Pester/Flute/Dash, six sign Reports, Rainbow/Mew, full Original Credits18, acknowledged Save, visible Title and byte-exact cold profile reopen. The actual run completes **124 saved rides, 67 Reports and 141,110 points**, without authored progress, photographs, scores, equipment or profile merging.
+The native Linux application at `311155c` has completed a [fresh, unseeded, one-profile campaign](docs/development/ADMISSION.md#fresh-unseeded-complete-campaign): all seven courses, naturally earned Apple/Pester/Flute/Dash, six sign Reports, Rainbow/Mew, full Original Credits18, acknowledged Save, visible Title and byte-exact cold profile reopen. The actual run completes **124 saved rides, 67 Reports and 141,110 points**, without authored progress, photographs, scores, equipment or profile merging.
 
-The proof exercises actual Original Manager results, captured-photo selection and evaluation, canonical native graphics presented through libultraship, checked native audio through SDL's dummy device, and complete owner retirement. Separate shipping-application checks exercise ordinary SDL keyboard input through Title/Continue/Oak; the campaign driver supplies owned software controller input.
+The proof exercises actual Original Manager results, captured-photo selection and evaluation, canonical native graphics presented through libultraship, checked native audio through SDL's dummy device, and complete owner retirement. Separate [downloaded-product checks](docs/development/ADMISSION.md#downloaded-corrected-runtime-keyboard-assessment-and-cold-continuation) exercise ordinary SDL keyboard input through Title/Continue/Oak, Beach photography, Camera Check, actual Oak scoring, Save/Title and exact cold-profile continuation; the campaign driver supplies owned software controller input.
 
-[`ac87924`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39706319890), including corrected Original ordinary Sprite rounding, passes all ten Linux/MSVC jobs: native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows x64 Runtime archives. The published preview remains pinned to [`311155c`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39636639535); its Linux distribution also runs with the privately owned ROM. Windows ROM gameplay, Windows 11 hardware, physical-controller/audio-device qualification and N64 numerical/pixel parity are **not claimed**.
+[`ac87924`](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39706319890), including corrected Original ordinary Sprite rounding, passes all ten Linux/MSVC jobs: native products, compilation of all 31 component consumers, 58 CPU contracts and portable Linux/Windows x64 Runtime archives. The [corrected Runtime preview](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.2) distributes those exact artifacts and checksums. Its Linux shipping product passes the ROM-backed keyboard/scoring/save/cold-continuation checks; full fresh requalification of the corrected implementation is separate. Windows ROM gameplay, Windows 11 hardware, physical-controller/audio-device qualification and N64 numerical/pixel parity are **not claimed**.
 
 Earlier isolated and inherited-profile qualifications remain in the [admission record](docs/development/ADMISSION.md). They are historical evidence, not substitutes for the completed fresh campaign. ROMs and derived private development evidence are not distributed.
 
@@ -284,7 +284,19 @@ build/native-game/35mmisle /private/pokemonsnap.z64
 
 The Windows full-host preset builds `build/windows-host-release/Release/35mmisle.exe`. The application requires compatible Vulkan and SDL3/OpenGL support; it reads the exact supported ROM without modifying or bundling it. `--data-directory` selects profile/configuration storage. `--cpu-renderer` requires an actual Vulkan CPU device; it is not a null backend. `--disable-input` disables controller acquisition only, not Audio or graphics.
 
-Current Linux qualification completes the [fresh unseeded campaign](docs/development/ADMISSION.md#fresh-unseeded-complete-campaign), including natural Rainbow/Mew, full Original Credits18, rendered Oak, acknowledged Save, visible Title and exact cold reopen. Earlier authored Rainbow Retry isolation remains separate historical evidence. Portable Linux/Windows x64 Runtime archives and checksums are available in the [native campaign prerelease](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.1); Windows ROM gameplay and Windows 11 hardware remain unqualified. Runtime dependencies and notices accompany the archives. Embedded terms, source/linkage obligations and release composition remain governed by [LICENSING](docs/planning/LICENSING.md#import-and-release-review-gates); a successful build alone is not a redistribution grant.
+Default keyboard controls:
+
+|Keyboard|N64 control|
+|---|---|
+|`W` / `A` / `S` / `D`|Analog stick: up / left / down / right|
+|`X`|A: confirm; shutter while Z is held|
+|`C`|B: cancel|
+|`Z`|Hold Z: camera viewfinder|
+|`Space`|Start: Title menu; course pause|
+
+These bindings are exercised through ordinary SDL keyboard input in the downloaded Linux product. Gamepad/device qualification remains separate.
+
+The [fresh unseeded campaign](docs/development/ADMISSION.md#fresh-unseeded-complete-campaign) is qualified at `311155c`, including natural Rainbow/Mew, full Original Credits18, rendered Oak, acknowledged Save, visible Title and exact cold reopen. The corrected `ac87924` product separately passes downloaded-artifact keyboard, genuine Photo/Oak assessment, Save/Title and cold continuation checks. Earlier authored Rainbow Retry isolation remains historical evidence. Portable Linux/Windows x64 Runtime archives and checksums are available in the [corrected Runtime prerelease](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.2); Windows ROM gameplay and Windows 11 hardware remain unqualified. Runtime dependencies and notices accompany the archives. Embedded terms, source/linkage obligations and release composition remain governed by [LICENSING](docs/planning/LICENSING.md#import-and-release-review-gates); a successful build alone is not a redistribution grant.
 
 ### Private intro asset and original C fade
 

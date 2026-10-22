@@ -6528,9 +6528,78 @@ Input inventory and bytes remain unchanged. The actual process exits 0 in
 stays 0 and SDL dummy audio accepts 9,068,624 PCM frames. Owned actual Cave,
 returned Oak and final Title PNGs are inspected.
 
-Private/full builds and all 58 CPU contracts pass. Credits and post-course
-support fingerprints admit the reviewed Sprite bytes without weakening the
+Private/full builds and all 58 CPU contracts pass. Exact public revision
+`ac87924675af06db6bb4961322af1cc2d311cb53` passes all ten Linux/MSVC jobs in
+[CI 39706319890](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39706319890).
+Credits and post-course support fingerprints admit the reviewed Sprite bytes without weakening the
 strict source gates. The private 48-input post-build source archive and
 before/after GPU identities remain retained. The Cave run is one inherited
 ride, not a new full fresh campaign or Windows gameplay qualification.
+
+### Downloaded corrected Runtime: keyboard, assessment and cold continuation
+
+The corrected `ac87924` CI artifacts are downloaded and checked as complete
+distribution payloads, not substituted local development executables:
+
+|Payload|Members|SHA256|
+|---|---:|---|
+|Linux x64 TGZ|136|`792f3571a0fbb3519a3f51620fa4c525f99c8ecc6b3713115e1d4c6917985114`|
+|Windows x64 ZIP|118|`1087fbc2864e10c3277b62863523144d658b7e6f1a29d8d98ea8ab128a75fb19`|
+
+The Linux shipping ELF is
+`9f2fbcf2745081b44a22b18aab3bd47c2d62ab221422e17b13f347d6d28ebecd`.
+The Windows application is an actual PE32+ AMD64 executable, SHA256
+`ae80bf0ae0c6288dda61cec543523a60c6efa6db11b13a6ea310a62d45c64c1e`.
+`sha256sum -c SHA256SUMS` accepts both payloads. Windows evidence remains
+native MSVC/CPU/CLI/packaging, not private-ROM Windows execution.
+
+Private Linux qualification runs the unchanged downloaded product with its
+owned ROM, software Vulkan/OpenGL and SDL dummy audio. It copies only whole,
+unchanged, genuinely earned canonical save pairs; no progress, gear,
+photograph, score, Actor, camera pose or Source counter is authored.
+XTest supplies ordinary keyboard events to the exact PID/executable-owned
+window. PID start ticks, executable SHA, window identity and focus are checked
+before input and literal PNG capture. This is ordinary SDL keyboard
+qualification, not a diagnostic controller substituted into the application.
+
+The first shipping lifetime enters Title/Continue/Oak and Beach, takes a
+genuine photograph, returns through Camera Check's no-eligible-photo path,
+acknowledges Save and reaches visible Title. It closes normally with exit0
+in 391.00 seconds. Its blank photograph is not misreported as an Oak
+assessment. A cold continuation of its exact saved pair visibly reproduces
+51 species, four signs and 99,200 points.
+
+The second lifetime supplies the scored path. It enters Beach through the
+actual menus, takes two photographs, identifies PIDGEY in Camera Check,
+marks that genuine captured photograph for Oak and submits it. Original
+assessment produces 1,030 points: size280, pose750, no center multiplier.
+The existing picture scores 3,290; ordinary A input retains that higher
+Report picture. Evaluation preserves 51 species/99,200 points and returns
+to Oak. Actual Save/keep-going-No returns to visible Title/PRESS START.
+Normal window-close joins the product with exit0 in 1,028.52 seconds, with no
+forced cleanup or errors.
+
+A separate cold product process admits the entire acknowledged scored pair,
+continues to Oak and opens the actual Report: 51 species, four signs,
+99,200 points. It then closes normally with exit0. Both canonical files
+remain byte-exact before admission and after cold shutdown:
+`save.a` is `4a6b8b101cf47a37262e76ee768dd210015815deaaf0e1228c188c116630d472`;
+`save.b` is `14cf6c3ccf17d75692f4104fb46c109226209cd7d17cdbb963914bfd4c9459f8`.
+Each file is 127,780 bytes. Every qualified lifetime preserves protected
+ROM/archive/executable/input-pair hashes.
+
+Owned Title, Oak, Beach, Camera Check, Pidgey preview/mark, scored comparison,
+Save and cold Report PNGs are inspected. Private evidence roots are
+`native-shipping-controls659v-run`, `native-shipping-controls659z-cold` and
+`native-shipping-controls659aj-coldcontinue`; the separate Title-only cold
+observation `native-shipping-controls659ag-finalcold` is not substituted for
+the final Oak/Report continuation. `native-artifact-delivery659v-manifest.json`
+retains exact distribution, executable, receipt and profile identities.
+
+These are inherited-profile shipping-artifact qualifications, not a new
+fresh campaign or universal N64 numerical/pixel parity. The completed fresh
+campaign remains pinned separately to `311155c`; corrected-Sprite fresh
+requalification is independent. Physical gamepad/audio-device usability,
+Windows ROM gameplay and Windows11 hardware remain unqualified. The genuine
+multi-task GTL capability remains separate implementation work.
 

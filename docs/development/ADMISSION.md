@@ -1884,6 +1884,18 @@ Both public archives are independently downloaded after publication and pass the
 
 
 
+## Matching Manager entry admission and absent-printer startup
+
+`post_course::Scene::create` requires the caller's actual `EntryBorrow`. `Manager::owns_entry` checks exact Manager identity, the live unreleased pending serial, operation and argument before Scene allocation/resource preparation. A copied `EntryIntent`, default/moved-from/released capability or unrelated pending entry is not admission. Runtime passes its existing real borrow; no alternate route, compatibility overload, Source resume or fabricated result is added.
+
+A frozen pre-fix `17abf56` consumer executes genuine Boot→Title and erroneously constructs Album12 under the actual Title borrow. It does **not** resume the invalid Scene's Source entry or acknowledge a different Manager result. The corrected consumer rejects the same construction; both leave the genuine pending Title request unchanged and complete normal startup/menu/Title roundtrips: 643 canonical frames/presentations, including 186 reentry frames. Permanent actual-ROM startup coverage checks valid Boot/Title capabilities plus default, moved-from, released, wrong-operation and wrong-argument rejection.
+
+The real startup also observes Input printer capability **unsupported**, actual Boot serial1 retired/released, immediate Title8 serial2, Manager error OK and Diagnostic overlay generation0. This qualifies the Original printer-absent branch, **not** an independently sampled GAME `-3`, executable Diagnostic or successful printer memory/cache/print service.
+
+The corrected frozen Runtime consumer `2f694d010279159d63e22c48cd8f6daa097ab894390ed61f9f5ab060fd94b4ff` additionally traverses actual Manager-selected Report14/Album12/Gallery22: 3417 submissions and real terminals, mask7/target7, normal exit0. Owned-PID X11 captures show Report, Album and full Pidgey→Pikachu Gallery reconstruction. Its preexisting four-Report canonical API fixture is explicitly authored—not newly earned photographs, fresh progression or Original pixel-parity proof. Linux Debug contracts pass 59/59; Linux Runtime/startup consumers build under strict resealed Source/native support inputs.
+
+Bounded qualification SHA-256: `d2c3a80ea227e571132a6e34d84396f4e7b874ffa82e8db0edbc50a62de3dca9`. Foreign-Manager runtime coverage, Windows11/devices, dormant End24/Credits20 Root ingress and current full fresh-campaign completion are not claimed. Forcing a dormant selector or borrowing Title to qualify another Source entry remains invalid.
+
 ## Fresh clone-update transport results
 
 Fresh strict-grammar sources passed seventeen detached groups, complete source/alias/retained-identity checks and actual fail-closed gates. An authored native pthread fixture observed successful `clone3({input} => {output}, size)`, credited both zero/nonzero memfd truncations, and rejected anonymous credit after an ordinary file replaced the descriptor. No helper permission was relaxed or inferred from a memory object's name.

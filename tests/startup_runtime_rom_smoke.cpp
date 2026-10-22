@@ -272,15 +272,63 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                     require(runtime->retire(),runtime->message());
                     runtime.reset();
                     const auto boot_serial=entry_borrow.intent().serial;
+                    const auto boot_argument=entry_borrow.intent().argument;
+                    const isle::application::EntryBorrow empty_entry;
+                    require(manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_BOOT,boot_argument),
+                        "actual Boot borrow did not authorize its pending entry");
+                    require(!manager.owns_entry(empty_entry,ISLE_APPLICATION_ENTRY_BOOT,boot_argument) &&
+                            !manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_TITLE,boot_argument) &&
+                            !manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_BOOT,boot_argument^1u),
+                        "default/wrong-operation/wrong-argument borrow authorized the real Boot entry");
+                    auto moved_boot=std::move(entry_borrow);
+                    require(!entry_borrow &&
+                            !manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_BOOT,boot_argument) &&
+                            manager.owns_entry(moved_boot,ISLE_APPLICATION_ENTRY_BOOT,boot_argument),
+                        "Boot capability did not transfer exclusively to its moved-to borrower");
+                    entry_borrow=std::move(moved_boot);
+                    require(!moved_boot &&
+                            !manager.owns_entry(moved_boot,ISLE_APPLICATION_ENTRY_BOOT,boot_argument) &&
+                            manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_BOOT,boot_argument),
+                        "restored Boot capability left a moved-from authorization");
                     entry_borrow={};
-                    require(manager.complete_entry(boot_serial,0)==ISLE_GAME_OK,manager.message());
+                    require(!entry_borrow &&
+                            !manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_BOOT,boot_argument),
+                        "released Boot borrow retained entry authorization");
+                    const auto boot_completion=manager.complete_entry(boot_serial,0);
+                    require(boot_completion==ISLE_GAME_OK,manager.message());
                     checked(clock.reset({1,1,2,true,0}));
+                    const auto printer_capability=input.require(in::Operation::printer);
+                    require(printer_capability==in::Error::unsupported,
+                        "actual input unexpectedly advertised a native printer endpoint");
                     require(manager.resume()==ISLE_GAME_OK,manager.message());
                     const auto* title_entry=manager.pending_entry();
-                    require(title_entry&&title_entry->operation==ISLE_APPLICATION_ENTRY_TITLE&&title_entry->argument==8,
-                        "original application manager did not select the real title entry after Boot");
-                    entry_borrow=manager.borrow_entry(title_entry->serial);
-                    require(bool(entry_borrow),"actual title entry lifetime borrow failed");
+                    require(title_entry&&title_entry->operation==ISLE_APPLICATION_ENTRY_TITLE&&title_entry->argument==8 &&
+                            title_entry->serial==boot_serial+1,
+                        "original application manager did not select immediate real Title(8) after Boot");
+                    const auto title_serial=title_entry->serial;
+                    require(!manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_TITLE,8),
+                        "released Boot borrower authorized the next Title entry");
+                    entry_borrow=manager.borrow_entry(title_serial);
+                    require(bool(entry_borrow) &&
+                            manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_TITLE,8),
+                        "actual Title entry lifetime borrow did not authorize its pending entry");
+                    require(!manager.owns_entry(empty_entry,ISLE_APPLICATION_ENTRY_TITLE,8) &&
+                            !manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_BOOT,8) &&
+                            !manager.owns_entry(entry_borrow,ISLE_APPLICATION_ENTRY_TITLE,9),
+                        "default/wrong-operation/wrong-argument borrow authorized the real Title entry");
+                    require(manager.error()==ISLE_GAME_OK,manager.message());
+                    const auto printer_diagnostic_generation=manager.resources().overlay_generation(
+                        ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0);
+                    require(printer_diagnostic_generation==0,
+                        "printer-absent Boot-to-Title route loaded the printer Diagnostic overlay");
+                    // Public owner observations only: no independently sampled
+                    // GAME printer-test return and no Diagnostic entry/completion.
+                    std::cout<<"startup_printer_absence input_printer=unsupported boot_completed=1 boot_borrow_released=1"
+                        <<" boot_serial="<<boot_serial<<" title_serial="<<title_serial
+                        <<" title_argument=8 consecutive_entry=1 manager_error=OK printer_diagnostic_overlay_generation="
+                        <<printer_diagnostic_generation
+                        <<" live_capability=actual_boot_and_title default_rejected=1 moved_from_rejected=1"
+                        <<" released_rejected=1 wrong_operation_rejected=1 wrong_argument_rejected=1"<<std::endl;
                     expect_live(reset_offsets?8:0,reset_offsets?-6:0);
                     auto title=s::Runtime::create_title(*catalog.catalog,input,*host.audio(),game_state,scene_storage,
                         static_cast<std::uint32_t>(h::RetraceClock::guest_ticks(ns)));

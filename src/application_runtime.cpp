@@ -393,7 +393,7 @@ struct Runtime::Impl {
             case ISLE_APPLICATION_ENTRY_CREDITS: kind=post_course::Resources::Kind::credits; break;
             default: return fail(ISLE_GAME_INVALID_STATE,"post-course entry has no native resource kind");
             }
-            auto made=post_course::Scene::create(snapshot,*manager,state,input,audio,clock,*photos,
+            auto made=post_course::Scene::create(snapshot,*manager,entry,state,input,audio,clock,*photos,
                 *progress,{this,service_post_course},post_modules,kind,
                 static_cast<std::int32_t>(request->argument),config.require_cpu_renderer);
             if (!made) return fail(made.error,made.message.data());

@@ -100,6 +100,9 @@ public:
     IsleGameResult resume() noexcept;
     const EntryIntent* pending_entry() const noexcept;
     EntryBorrow borrow_entry(std::uint64_t serial) noexcept;
+    // Admit only this manager's still-held borrow of the current real request.
+    bool owns_entry(const EntryBorrow&, IsleApplicationEntryOperation operation,
+        std::uint32_t argument) const noexcept;
     IsleGameResult complete_entry(std::uint64_t serial, std::int32_t source_result) noexcept;
     // cancel joins original C, but never cancels a native scene behind its
     // owner's back. Retained entry/resources survive until its borrow retires.

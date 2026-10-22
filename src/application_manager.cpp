@@ -259,6 +259,16 @@ EntryBorrow Manager::borrow_entry(std::uint64_t serial) noexcept {
     p.borrowed = true;
     return EntryBorrow(*this, *entry);
 }
+bool Manager::owns_entry(const EntryBorrow& borrow, IsleApplicationEntryOperation operation,
+    std::uint32_t argument) const noexcept {
+    const auto& p = *impl_;
+    const auto* entry = pending_entry();
+    // Intent alone is not authority: ownership and the live borrow must agree.
+    return borrow.manager_ == this && entry && p.borrowed &&
+        p.released_serial != entry->serial && borrow.intent_.serial == entry->serial &&
+        borrow.intent_.operation == entry->operation && borrow.intent_.argument == entry->argument &&
+        entry->operation == operation && entry->argument == argument;
+}
 IsleGameResult Manager::complete_entry(std::uint64_t serial, std::int32_t value) noexcept {
     auto& p = *impl_;
     if (!p.on_owner()) return ISLE_GAME_WRONG_OWNER;

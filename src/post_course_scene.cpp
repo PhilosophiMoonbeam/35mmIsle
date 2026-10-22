@@ -725,10 +725,22 @@ IsleGameResult Scene::Impl::accept_entry_result() noexcept {
 Scene::Scene(std::unique_ptr<Impl> owner) noexcept:p_(std::move(owner)) {}
 Scene::~Scene()=default;
 SceneCreateResult Scene::create(const rom::Snapshot& snapshot,application::Manager& manager,
-    game::State& state,game_input::Service& input,game_audio::Session& audio,host::GtlClock& clock,
+    const application::EntryBorrow& entry,game::State& state,game_input::Service& input,game_audio::Session& audio,host::GtlClock& clock,
     application::Photos& photos,host::Progress& progress,ReplayNativeProgress native_progress,
     Modules& modules,Resources::Kind kind,std::int32_t argument,bool cpu) noexcept {
     SceneCreateResult result;
+    constexpr std::array operations{
+        ISLE_APPLICATION_ENTRY_CAMERA_CHECK,ISLE_APPLICATION_ENTRY_PHOTO_CHECK,
+        ISLE_APPLICATION_ENTRY_ALBUM,ISLE_APPLICATION_ENTRY_REPORT,
+        ISLE_APPLICATION_ENTRY_GALLERY,ISLE_APPLICATION_ENTRY_END_LEVEL_8,
+        ISLE_APPLICATION_ENTRY_CREDITS};
+    const auto ordinal=static_cast<std::size_t>(kind);
+    if(ordinal>=operations.size() ||
+       !manager.owns_entry(entry,operations[ordinal],static_cast<std::uint32_t>(argument))) {
+        result.error=ISLE_GAME_INVALID_STATE;
+        copy_message(result.message,"post-course requires its matching live Manager entry borrow");
+        return result;
+    }
     try {
         auto owner=std::make_unique<Impl>(snapshot,manager,state,input,audio,clock,photos,progress,
                                         native_progress,modules,kind,argument,cpu);

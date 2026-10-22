@@ -3357,7 +3357,7 @@
       "sha256": "8faf99fe4ad2acc0d78c40855d5ba31e8a0ac17c1922baaf999e1d9ee0e2ad82"
     },
     "src/application_runtime.cpp": {
-      "sha256": "441992e179b8459efb848a1a8930d7a636e11d439a6eea48f35d0eb83103e87d"
+      "sha256": "d57c8ffcd96a219032066d940c32bb8227a0408f31781ec988917b5784a624e9"
     },
     "src/application_runtime.hpp": {
       "sha256": "2a721ab816cdd79b0031da9f2d17a7d9d1794a3420ae87fe9e4c8f882522768c"
@@ -3402,10 +3402,10 @@
       "sha256": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "3ba2405101d4062593ea28d342d2c1cfcce92d0ee5d1af7584e9579983e3def5"
+      "sha256": "97b0c363f8e96ee50fff6e219bc05ec8379488ca6e07eb79d4092d9f36dbdd19"
     },
     "src/post_course_scene.hpp": {
-      "sha256": "98b4ac022e8726519b57b41ffd73a6f5bc0323e477e15caa27539ba252adc932"
+      "sha256": "47806fecd9c8e2607780b7af9439abf6fc335fc53a90e31fe7606bcb70d3ebff"
     },
     "src/post_course_scene_internal.hpp": {
       "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
@@ -3772,6 +3772,6 @@
     "native_support_hash_policy": "Exact authoring-time live common/extended WorkingPhotos bytes. Parent owns final integration support fixedpoint and must reseal guarded recipe/generator after mechanical shared integration."
   },
   "support_allowlist": [],
-  "recipe_sha256": "a31f0e93c0401a6b67b2233f42cf0483d4624e6b5d296872afdf5d54a8ddca88",
-  "generator_sha256": "9cc1b3b5340893359dfd8c28c3bd64ffbfc4e072805c1fb96445f845af8f97a2"
+  "recipe_sha256": "78ec280f965b1561f73d775e18903928ac0b5815eb23ea7d321619b4919ae706",
+  "generator_sha256": "34f97a8ca3ae6636f69138998adfc05880fa58e77b87c162aee269ff0b2ad838"
 }

@@ -1282,10 +1282,10 @@
       "sha256": "bf0ecd0c670c55c2fc38ea5d147669f36267058eb52b6150b270d6bf31932ca0"
     },
     "src/application_manager.hpp": {
-      "sha256": "ac8c7e9152d4a7f4b5c7f0c2e45f1e2d0cb1fd55427eb744cca1a2351426aca3"
+      "sha256": "ac75682a13a12b4f0aef4f249cc59b1d483ecac42e07fbfe141180187b221c75"
     },
     "src/application_manager.cpp": {
-      "sha256": "50175d2271aed5d49a0825150e64618fc3cada5155da691e9ca03271e850e7f0"
+      "sha256": "67c6aa1bc302e4f810fa247747a4e7979aadb6ad74477063a438961a6f07191b"
     },
     "src/game_state.hpp": {
       "sha256": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa"

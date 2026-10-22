@@ -27,7 +27,7 @@ class Scene final {
     friend struct SceneAccess;
 public:
     static SceneCreateResult create(const rom::Snapshot&, application::Manager&,
-        game::State&, game_input::Service&, game_audio::Session&, host::GtlClock&,
+        const application::EntryBorrow&, game::State&, game_input::Service&, game_audio::Session&, host::GtlClock&,
         application::Photos&, host::Progress&, ReplayNativeProgress, Modules&,
         Resources::Kind, std::int32_t entry_argument, bool require_cpu_renderer=false) noexcept;
     ~Scene();

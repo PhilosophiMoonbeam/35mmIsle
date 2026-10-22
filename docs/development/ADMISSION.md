@@ -1804,6 +1804,15 @@ Actual ordinary XTest keyboard input on the downloaded Linux product reaches Tit
 
 Private portable qualification SHA-256: `0f501668f79655b9f322f66fa15da189fc0e9fc914621ade0f26a90c6587028f`. This is an inherited-earned-profile packaged UI/Save/cold-continuity qualification, not newly captured/scored photographs or a fresh campaign. Software graphics and SDL dummy audio do not qualify physical devices; Windows Server 2022 MSVC build/package evidence does not qualify Windows 11 gameplay. Previous releases and campaign cohorts remain immutable.
 
+### Natural Gallery arrangement, Save and cold replay
+
+A separate ordinary-keyboard cohort on the exact preview-5 ELF selects the real Title Gallery item, acknowledges both Original instruction pages, opens the four-image grid and enlarges Pidgey. A advances to an actual reconstructed Pikachu photograph; B restores the grid. Ordinary Arrange inputs swap the first two records, then actual Gallery Save returns to Title. Normal WM close exits 0 without forced cleanup, errors or protected-input mutation.
+
+A second process cold-loads the complete saved pair. Both the swapped thumbnails and the first enlarged **Pikachu record** persist, distinguishing durable photo ordering from a thumbnail-only change. Normal WM close during that replay also exits 0. Both 127,780-byte saved members transfer exactly; the genuinely earned inherited source pair is unchanged. The UI distinguishes 51 seen Pokémon species/99,200 Report points from 55 Report pictures; these are not interchangeable counts.
+
+The two retained Pikachu full-screen captures are **not pixel-exact**: 1,388 RGB pixels differ, of which 1,384 lie in the lower overlay region and four above it. No cause or Original/hardware pixel parity is inferred. Qualification SHA-256: `8288d50ead8f5566fb10db3a32b4a409fcf15700ccb9440f962fa0cbc92cc3f5`. This closes the concrete natural Gallery ownership/edit/Save/cold path, not dormant End24/Credits20 routes, Windows 11 gameplay or the separately running fresh campaign.
+
+
 
 
 

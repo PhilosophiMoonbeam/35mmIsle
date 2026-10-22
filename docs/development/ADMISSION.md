@@ -1868,6 +1868,19 @@ A separate new owned copy of the genuinely saved slot-1 Pidgey/ABA pair executes
 
 A throwaway, read-only consumer of the existing Native `GameSession` API independently admits both existing profiles without initialization or commit. The edited source Save contains exactly one Album record at slot 1 with code units `A3C1,A3C2,A3C1` (**ABA**); the deleted Save contains zero photos and zero nonzero Album comments across all 60 slots. Before/after pair hashes are identical for each inspection. Qualification SHA-256: `ef5a1204303a4bd525c43de082c27ad686798367c42b8634a070399bee144fd7`. This extends the preceding private-binary cohort; it is not Windows 11 or hosted-artifact qualification.
 
+### Preview 7: qualified creator-owned Window products
+
+[Preview 7](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.7) publishes exact source `17abf56f0db9becd22fb8125e0b97b771037f34a`. [Hosted run 39843319795](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39843319795) has ten terminal successful Linux/MSVC jobs. Both raw artifacts pass digest/size, safe-path, dependency/notices, shader and x64 executable admission; Linux help exits 0.
+
+| Public Runtime archive | Bytes | SHA-256 |
+|---|---:|---|
+| Linux x64 TGZ | 9,878,550 | `afee07847c1bb94ba78a5928fd9b02e887cc22896bb673193ec3e4c114632cd8` |
+| Windows x64 ZIP | 5,373,441 | `01e5f5133984632b3951f2ea55ee21736c2e9416bb8f798c35be98a4e5aa0928` |
+
+The exact downloaded Linux ELF opens genuine Pidgey/ABA, edits its comment to **ABAA**, cancels repeated detail Delete prompts, moves the photo from slot 1 to empty slot 2, cancels the main Delete prompt and executes actual Oak Save→Yes→Title. A second process loads the exact whole pair, shows the moved thumbnail and reconstructs Pidgey/ABAA. Both normal closes join and exit 0; no errors, forced cleanup, Source/profile field authoring or protected-input mutation occurs. Existing public `GameSession` inspection independently confirms exactly one photo at slot 2 and code units `A3C1,A3C2,A3C1,A3C1`, without modifying either saved member. Qualification SHA-256: `7698aa76b64ec3593736b56be9686f5e69547355b7f40e223afa90265765ad78`.
+
+Both public archives are independently downloaded after publication and pass their published checksums. Preview-6 assets/tag remain immutable with its known failure disclosed. Windows 11/physical devices and complete fresh-campaign fidelity remain separate gates; the new empty-root frozen consumer `058022d5…` runs the corrected SDK without an inherited profile, but completion is not claimed.
+
 
 
 

@@ -1729,6 +1729,26 @@ Two fail-closed CLI probes and seven explicitly synthetic report/interpretation 
 
 Private qualification SHA-256: `1d2bcd10cdd19d78d287d1c5ba908418a93b0cc6b91547b3f2b422001db15893`. This establishes bounded controlled public-input influence. Original gain-consumption identity, gain-effective interval, internal N, SETBUFF-as-N, isolated-voice PCM, arithmetic, hardware, natural-trajectory and full Native synthesis parity remain **unproven**. The extra heap/public restart remain controlled perturbations; the frozen earlier corpus is not requalified.
 
+## Native GAME sound admission and descriptor-volume corrections
+
+Competing exact-source assessments identify two Native service discrepancies against canonical GAME `src/sys/audio.c:1289–1316,1359–1374`. Missing sound IDs previously returned `invalid_parameter`, allowing scene services to retain a failure instead of the ordinary `-1` result. They now preserve source idle-counter aging and return successful execution with slot `-1`; malformed parameters still fail. Volume changes before descriptor allocation no longer rewrite a queued sound's starting parameters. Descriptor-backed controls and replacement handling are retained.
+
+New deterministic regressions reproduce three failures before correction: ordinary absence, saturating idle-aging/steal precedence, and pending-start command equivalence. The corrected complete Linux debug suite passes **59/59** tests. These CPU-contract fixtures make no DSP or generated-PCM claim.
+
+A separate private scenario executes the actual Native GAME session, lawful ROM assets and real RSP machine through a checked retained-PCM consumer. Each of the three cases runs before and after correction: 150 actual tasks and 160,224 signed16 components per case, **900 actual tasks total**, checked SP `0x203`/no-DPC terminals, complete voice/task/PCM drain and actual RSP borrower destruction.
+
+| Control versus same-version baseline | Before: changed signed16 components | After: changed signed16 components |
+|---|---:|---:|
+| Zero volume before descriptor allocation | 105370 | 0 |
+| Zero volume after descriptor binding | 104476 | 104476 |
+
+Every actual missing-ID call changes from error 7/slot `-1` to success/slot `-1`. Baseline PCM and the already-bound-control PCM are each byte-exact before/after: the fix does not suppress valid bound controls or change their existing synthesis. The production Linux Runtime is rebuilt. Strict support gates initially reject stale fingerprints; six reviewed support/dependent manifest identities are refreshed without weakening validation, source pins, definition coverage or generators. The private build hook is removed after execution.
+
+The same source inventory confirms the existing current-course/selected-course/unlocked-course distinction, registered-report tutorial threshold, imported OM ramp calendars and asynchronous yield/join/collect ownership protocol. Narrow GAME declarations and `auThreadMain:1055–1064` establish the existing BGM timer decrement and float add/clamp/truncation stages without SDK producer or layout inspection; surrounding complete audio-task publication order remains unclaimed.
+
+Private correction qualification SHA-256: `504f371ec485f5bd324bfda37e5afd109fadf2e15b50f2b6afce30fa0403aea4`; source-inventory SHA-256: `e20dd121dea3fdebae896fcb6f717401d85f803c6f1aae54e6219c251859b1fb`. Exact before/after executables, source and retained PCM remain private. This qualifies two Native GAME API boundaries, not complete Original synthesis/arithmetic, all SDK-state eligibility or parameter domains, physical playback/hardware, Windows 11 gameplay or a newly completed campaign.
+
+
 
 
 

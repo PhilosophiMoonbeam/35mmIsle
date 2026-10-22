@@ -260,9 +260,11 @@ bool Session::has_sound(std::uint32_t id) const noexcept {
 a::Error Session::play_sound(std::uint32_t id, Parameters parameters, int& slot) noexcept {
     slot = -1;
     if (control() != a::Error::none) return a::Error::invalid_state;
-    if (!has_sound(id) || !valid(parameters)) return a::Error::invalid_parameter;
-    const auto priority = resources_.priorities[id];
+    if (!valid(parameters)) return a::Error::invalid_parameter;
     for (auto& s : sounds_) if (s.idle < 255) ++s.idle;
+    // Absent GAME sound IDs are ordinary -1 results, not service failures.
+    if (!has_sound(id)) return a::Error::none;
+    const auto priority = resources_.priorities[id];
     int selected = -1;
     for (unsigned i = 0; i < sounds_.size(); ++i) {
         if (sounds_[i].handle.generation == 0 && sounds_[i].starting < 0) { selected = static_cast<int>(i); break; }
@@ -311,8 +313,10 @@ a::Error Session::stop_sounds() noexcept {
 a::Error Session::sound_volume(unsigned slot, std::uint32_t value) noexcept {
     if (slot >= sounds_.size() || control() != a::Error::none) return a::Error::invalid_parameter;
     auto& s = sounds_[slot];
+    // GAME ignores volume changes until this slot owns a sound descriptor.
+    if (s.handle.generation == 0) return a::Error::none;
     s.parameters.volume = static_cast<std::uint16_t>(std::min(value, 32767u));
-    if (s.handle.generation == 0 || !service_->player(sfx_).active(s.handle)) return a::Error::none;
+    if (!service_->player(sfx_).active(s.handle)) return a::Error::none;
     const auto* resource = resources_.sounds.banks()[0]->instruments[0]->sounds[static_cast<std::size_t>(s.bound_sound)];
     const auto volume = static_cast<std::uint16_t>((static_cast<std::uint32_t>(s.parameters.volume) * resource->volume * global_volume_) >> 14);
     return sound_control(slot, service_->player(sfx_).stage_volume(s.handle, volume));

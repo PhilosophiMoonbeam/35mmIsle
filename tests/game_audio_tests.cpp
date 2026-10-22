@@ -7,6 +7,7 @@
 #include <iostream>
 #include <limits>
 #include <string_view>
+#include <vector>
 
 namespace g = isle::game_audio;
 namespace a = isle::audio;
@@ -236,6 +237,87 @@ void reordered_sfx_descriptor_reuse() {
     sink.state = g::Output::State::drained;
     check(session.poll_drain() == a::Error::none, "reordered SFX checked consumer completes drain");
 }
+void absent_sound_and_idle_aging() {
+    Consumer sink;
+    auto made = make(sink);
+    if (!made) { check(false, "absent-sound boundary owner initializes"); return; }
+    auto& session = *made.session;
+    for (unsigned i = 0; i < g::sound_slots; ++i) {
+        int slot = -1;
+        check(session.play_sound(0, {}, slot) == a::Error::none && slot == static_cast<int>(i),
+              "equal-priority starts reserve each source slot");
+    }
+    int slot = -1;
+    check(session.play_sound(0, {}, slot) == a::Error::none && slot == 0,
+          "oldest queued source slot is replaced before aging saturation");
+    // Every ordinary absent request still ages slots. Saturation turns the
+    // newer slot0 and older slot1 into a tie, resolved in source slot order.
+    bool ordinary = true;
+    for (unsigned i = 0; i < 255; ++i) {
+        slot = 99;
+        ordinary &= session.play_sound(std::numeric_limits<std::uint32_t>::max(), {}, slot) ==
+                    a::Error::none && slot == -1;
+    }
+    check(ordinary, "absent sounds return ordinary -1 without reporting a service error");
+    check(session.play_sound(0, {}, slot) == a::Error::none && slot == 0,
+          "absent requests retain saturating idle aging and its observable steal precedence");
+    auto malformed = g::Parameters{};
+    malformed.pitch = 0.0f;
+    check(session.play_sound(0, malformed, slot) == a::Error::invalid_parameter && slot == -1,
+          "ordinary absence does not suppress malformed-parameter failures");
+    check(session.stop_sounds() == a::Error::none, "queued boundary requests cancel without a descriptor");
+}
+
+std::vector<std::vector<std::uint8_t>> pending_sound_commands(bool volume_before_binding) {
+    Consumer sink; sink.limit = 1024;
+    auto made = make(sink);
+    if (!made) { check(false, "pending-volume producer initializes"); return {}; }
+    auto& session = *made.session;
+    int slot = -1;
+    check(session.play_sound(0, {0x3000, 64, 0, 1.0f}, slot) == a::Error::none && slot >= 0,
+          "explicit-volume sound queues before descriptor binding");
+    if (volume_before_binding)
+        check(session.sound_volume(static_cast<unsigned>(slot), 0) == a::Error::none,
+              "pre-descriptor volume control remains an ordinary ignored request");
+    a::TaskView initial;
+    check(session.build(initial) == a::Error::none, "pending-volume producer publishes bootstrap");
+    cpu_complete(session, initial);
+    std::vector<std::vector<std::uint8_t>> commands;
+    commands.reserve(4);
+    std::uint64_t tick = 0;
+    for (; tick < 4;) {
+        ++tick;
+        check(session.retrace(tick, tick * 1000000000ull / 60) == a::Error::none &&
+              session.submit() == a::Error::none, "pending-volume source clock advances");
+        a::TaskView task;
+        check(session.build(task) == a::Error::none, "pending-volume source command production succeeds");
+        if (task.token.serial == 0) continue;
+        auto& bytes = commands.emplace_back(task.command_bytes);
+        const auto* ram = reinterpret_cast<const std::uint8_t*>(session.service().rdram_words().data());
+        for (std::uint32_t i = 0; i < task.command_bytes; ++i)
+            bytes[i] = ram[(task.command_address + i) ^ 3u];
+        cpu_complete(session, task);
+        check(session.submit() == a::Error::none, "pending-volume producer retains checked PCM ownership");
+    }
+    check(session.stop() == a::Error::none, "pending-volume source requests retirement");
+    for (unsigned i = 0; i < 20 && session.state() != g::Session::State::draining; ++i) {
+        ++tick;
+        if (!cpu_tick(session, tick, tick * 1000000000ull / 60)) return commands;
+    }
+    check(session.state() == g::Session::State::draining && session.service().voices_retired(),
+          "pending-volume producer retires all command, voice and PCM owners");
+    sink.state = g::Output::State::drained;
+    check(session.poll_drain() == a::Error::none, "pending-volume checked consumer finishes");
+    return commands;
+}
+
+void unbound_volume_preserves_pending_sound() {
+    const auto baseline = pending_sound_commands(false);
+    const auto ignored = pending_sound_commands(true);
+    check(baseline == ignored,
+          "volume before descriptor binding cannot alter the pending sound's actual producer commands");
+}
+
 void readiness_and_failure() {
     Consumer sink;
     sink.rate = 32000;
@@ -630,6 +712,7 @@ int main() {
     readiness_and_failure(); partial_output_and_clock(); stop_restart_and_drain();
     local_bootstrap_and_first_update(false); local_bootstrap_and_first_update(true);
     reordered_sfx_descriptor_reuse();
+    absent_sound_and_idle_aging(); unbound_volume_preserves_pending_sound();
     flute_cycle_and_reconstruction(); flute_natural_completion_and_stopped_timestamp(); flute_checked_audio_errors();
     source_epoch_admission_and_equal_timestamps();
     effects_reset_atomicity(); live_priority_steal_retirement();

@@ -6716,3 +6716,46 @@ observer's exact cohort and scalar event correlation remain separate from
 the unmodified cold process, hosted Windows products, hardware/hearing
 parity, full species coverage and the independently pinned fresh campaign.
 
+## Hosted G30 Runtime products and cold Album Replay
+
+Commit `43060723db3108cd59a87970fae18ba7f182a096` passes all ten jobs in
+[CI run 39730790206](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39730790206):
+Linux GCC/Clang Debug/Release, MSVC x64 Debug/Release, the actual CPU Vulkan
+renderer, MSVC canonical-renderer compilation and both complete native products.
+The hosted products compile all 31 opt-in component consumers, run their
+ROMless CPU contracts and qualify portable Runtime composition. These are
+compiled Windows/Linux targets, not Windows ROM or hardware execution proof.
+
+[Native preview 3](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.3)
+publishes only the exact two hosted Runtime containers and `SHA256SUMS`.
+All three uploaded asset sizes and digests are checked before publication;
+the release targets the exact commit above.
+
+| Runtime archive | Bytes | SHA256 |
+| --- | --- | --- |
+| `35mmisle-0.1.0-Linux-64bit.tar.gz` | 9,881,435 | `b6522f63d32f76e8a1b00815569237f2a8dca60112d0fe3b4e909a65e440a06f` |
+| `35mmisle-0.1.0-Windows-64bit.zip` | 5,372,848 | `85ae266e1edd705246c786c988b22b0b3db53b79f5f571d44e648e4adb048668` |
+
+The downloaded Linux archive contains the actual ELF64 x86-64 product;
+the Windows archive contains the actual PE32+ AMD64 product. Runtime paths,
+selected dependency notices and package-contained links are checked; no ROM,
+OTR or canonical Save is distributed. Both extracted Linux CLIs execute
+`--help` with exit 0 without alternate library or preload paths.
+
+A separate cold process launches the exact downloaded Linux product, ELF
+SHA256 `37c06db08f777d738ca6aa2596ff8f230dda5592bef92f54d21626887c509d86`,
+with its bundled runtime closure and the entire acknowledged generation
+41/40 pair listed above. Ordinary owned keyboard input traverses
+Title/Continue/Oak/Album/Open/Enlarge. Literal captures show AB on the
+selected Album page and the enlarged genuine Pidgey Replay. No Source
+profile, photo, comment, pose, counter or completion is externally authored.
+
+Normal WM shutdown joins with exit 0 after 479.984 seconds. Every protected
+runtime/input file is unchanged; no error or forced cleanup is recorded.
+Both canonical members remain byte-exact after shutdown. This qualifies
+inherited-profile Linux UI, cold comment persistence, native photo Replay
+and owner retirement on the shipping artifact. It does not transfer the
+private observer's scalar wait/store proof, earlier fresh campaigns or
+Oak-scoring checks, all-species coverage, audio-arithmetic/hearing parity,
+Windows ROM/UI/device qualification or hardware-GPU proof to this cohort.
+

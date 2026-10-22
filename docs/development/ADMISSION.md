@@ -1709,6 +1709,27 @@ Complete reachable ordered DAGs are streamed once per node to hashed sidecars wi
 
 Private resource/voice qualification SHA-256: `46272c4aafd9fe6068fab43d7f21a11e4a5b9b7d805f3bb006905d2ee253ecf9`. The extra heap, authored RAW16 inputs and public restart are controlled perturbations, not a natural-gameplay, frozen-ADPCM, hardware, physical-audio-device or arithmetic qualification.
 
+## Controlled public-gain argument influence
+
+Using the preceding controlled fixture, four fresh lifetimes select one actually entered `alSynSetVol` invocation at frame 332 for owned resource 4/voice 34/synth 11. The baseline and independent repeat perform no argument write. Each intervention changes only one effective public argument before genuine callee execution; actual entry readback and architectural PC/SP return are required. All four collections exit normally with protected inputs unchanged, no forbidden endpoint/network call, zero pending calls, 353 real tasks and 8,746 actual public entries/matched returns each.
+
+| Case | Public target | Public time, µs | Left target word | Left packed rate | Right packed rate | Changed Acmd words | Changed declared mixed-PCM bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Baseline/repeat | 8128 | 8000 | 2015 | 83085 | 65660 | 0 | 0 |
+| Target-half | 4064 | 8000 | 503 | 79563 | 65660 | 4 | 716 |
+| Time-double | 8128 | 16000 | 2015 | 73790 | 65598 | 2 | 676 |
+
+The word columns describe the first actual initialized ENV: both initial current words are 1 and the right target is 0. “Target-half” describes the public argument, not half-amplitude PCM. Both interventions change only frames 332–333. All task geometry, commands and PCM match across the two baselines; every completed task before 332, normalized pre-intervention API history, resource observations and all nonselected typed controls—including later gain/Stop/Free calls—remain exact across variants.
+
+The existing Native implementation is pinned to published `be7f372` before these collections. Its numerical predictions are saved before either changed case launches; compiled unchanged duration/rate helpers and the existing perceived-volume/channel policy match all 24 first-ENV public current/target/rate fields across the four collections. This is agreement with predeclared Native helper predictions, **not** a full Native command-producer or PCM comparison.
+
+Competing planner/reviewer assessments identify three fail-open report/interpretation gates in the initial private comparator. That protected source remains unchanged; a separate v2 consumer requires selected command and PCM support on **both** sides, actual admitted builder-return cutoffs, matching unique current/initialization StartVoice episodes, and support confined to admitted output tasks 332–339. It independently reexecutes byte/public admission and checks complete hashed DAG closure and actual command identities. Semantic ancestry remains the source-identified fresh v6 reduction, not a second semantic reduction by the comparator.
+
+Two fail-closed CLI probes and seven explicitly synthetic report/interpretation probe records validate the corrections without changing closed observations. They reproduce legacy acceptance of a missing candidate and one-sided command/PCM support, then observe rejection or unresolved classification in v2.
+
+Private qualification SHA-256: `1d2bcd10cdd19d78d287d1c5ba908418a93b0cc6b91547b3f2b422001db15893`. This establishes bounded controlled public-input influence. Original gain-consumption identity, gain-effective interval, internal N, SETBUFF-as-N, isolated-voice PCM, arithmetic, hardware, natural-trajectory and full Native synthesis parity remain **unproven**. The extra heap/public restart remain controlled perturbations; the frozen earlier corpus is not requalified.
+
+
 
 
 

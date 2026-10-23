@@ -1198,6 +1198,9 @@ def prove(program, arguments, evidence_path):
 
 
 def main():
+    # Redirected Windows streams otherwise use a locale code page for Unicode paths.
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     capture_parser = commands.add_parser('capture')

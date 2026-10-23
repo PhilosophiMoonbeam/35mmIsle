@@ -7285,18 +7285,31 @@ is restored. The modified executable SHA-256 is
 This is actual combined-product startup/library-replacement proof, not transfer
 of any complete campaign, audio-fidelity or Windows qualification.
 
+A separate actual Release Runtime archive is independently extracted into a
+Unicode/spaces path. Every one of its 117 file/symlink entries matches the final
+composition record, and both extracted CLIs execute help. With previously
+nonexistent user data and the producer worktree/build unavailable, the extracted
+product presents the genuine Nintendo64 intro in its owned SDL window and closes
+through normal WM_DELETE with exit 0. This is current Release package/startup
+proof, not a new campaign or Windows/device qualification.
+
 Native CI builds baseline/modified library companions, executes real generated
 code, relinks the actual product and runs help. Producer roots remain available;
-help is not a ROM-backed product-JIT proof. At source `7e5fc69`,
-[run 39948927692](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39948927692)
+help is not a ROM-backed product-JIT proof. At source `594e830`,
+[run 39952134697](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39952134697)
 passes nine jobs, including complete Linux capture/relink/Runtime archive checks.
-Native MSVC accepts the exact notice families, builds the full product and all
-consumer targets, passes 59 CPU tests, executes help and creates the private kit.
-Its standalone library configuration then rejects an undefined `CMAKE_BUILD_TYPE`
-because the generated comparison used an unquoted variable. The corrected guard
-expands quoted values; a real Ninja Multi-Config consumer fails before and passes
-after, including library build, generated 42/43 code, whole-product relink and
-help. Wrong single-config and extra multi-config selections still reject.
+Native MSVC builds the full product and all consumers, passes 59 CPU tests,
+executes help and creates the private kit. The delivered baseline library now
+builds and executes generated 42/43 code with sequential/overlapping states.
+Its whole-product linker creates the application, but the helper then exits 1:
+the redirected legacy code page cannot encode its Unicode-path success message.
+The helper now selects strict UTF-8 for its own stdout/stderr; native child-tool
+output retains its native encoding. A real Unicode-path whole-product relink
+under strict CP1252 fails before and succeeds after, with actual product help.
+An actual Unicode argument error remains intact UTF-8 with exit 2. No replacement
+characters, error suppression or CI-only environment workaround is used.
+The prior multi-config repair also passes a real Ninja Multi-Config consumer;
+wrong single-config and extra multi-config selections still reject.
 The repaired native MSVC companion and Windows Runtime archive remain pending.
 VS2022's actual x64 developer environment is selected before host configuration,
 without invented SDK/library paths.

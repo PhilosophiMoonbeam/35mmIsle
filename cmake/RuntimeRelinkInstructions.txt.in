@@ -59,6 +59,8 @@ thin archives reject kit creation, without changing the producer's flags.
 This is not a generic compiler/ABI portability claim. Compiler debug records in
 opaque PRIVATE objects have not been promised redacted; separately review their
 privacy before any distribution. Text metadata/recipes contain no producer paths.
+The helper's own messages and diagnostics use strict UTF-8, including redirected
+Windows streams; native child tools retain their native output encoding.
 
 Capture and recipient relink both reject LINK/_LINK_ implicit options before
 invoking tools. Linux also rejects ambient GCC_EXEC_PREFIX, COMPILER_PATH,

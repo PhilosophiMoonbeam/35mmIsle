@@ -7218,6 +7218,13 @@ rejects a one-header reverted mixed family before output. Ubuntu/upstream mixing
 and unknown alterations also reject. No generic newline or per-header alternative
 is accepted. Configure, build and install recheck inputs and prepared payload.
 
+Git newline defaults affect `git archive`, not only checkouts. Pinned dependency
+clones now record `core.autocrlf=false` and `core.eol=lf`; the LUS archive command
+sets both explicitly. A real Windows-style archive changes all six selected LUS
+input hashes; explicit canonical settings match every existing pin. Full native
+configure under isolated Windows-style global Git settings, actual build and
+product help pass. No source hash or extractor rule is relaxed.
+
 The final Runtime install records all staged files/symlinks except its own
 manifest, actual compiler/linker/archiver/CMake hashes, selected public/prepared
 source identities, selected package/toolchain/Windows SDK/vcpkg metadata and
@@ -7242,6 +7249,10 @@ On CMake 3.27+, `ISLE_BUILD_RUNTIME_RELINK_KIT=ON` requests File API metadata
 within the first configure/generate invocation, then captures the actual ordered
 product link, recursive responses, non-system DSO closure and toolchain identities.
 The ordinary build and standalone recipient library retain their 3.24 minimum.
+A previously nonexistent Linux build completes all 600 steps and creates the kit
+with one configure/generate invocation, without a manual query or bootstrap.
+That kit builds its delivered library, executes generated 42/43 code and relinks
+the entire actual product, whose help succeeds.
 The private kit contains complete prepared lightning/mman source/build controls,
 license/patch provenance, ordinary application link inputs and a relative recipe
 replacing only lightning. The exact pinned upstream personal `.suo` cache is
@@ -7274,12 +7285,16 @@ is restored. The modified executable SHA-256 is
 This is actual combined-product startup/library-replacement proof, not transfer
 of any complete campaign, audio-fidelity or Windows qualification.
 
-Native CI is configured to build baseline/modified library companions, execute
-real generated-code checks, relink the actual product and run help on Linux and
-native MSVC. Producer roots remain available in those hosted checks; help is
-not a ROM-backed product-JIT proof. This revision's native MSVC execution remains
-pending. VS2022's actual x64 developer environment is selected before host
-configuration, rather than inventing SDK/library paths.
+Native CI builds baseline/modified library companions, executes real generated
+code, relinks the actual product and runs help. Producer roots remain available;
+help is not a ROM-backed product-JIT proof. At source `44743a3`,
+[run 39945800990](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39945800990)
+passes nine jobs, including the complete Linux source-SDL capture, relink and
+Runtime archive checks. Native MSVC accepts the exact vcpkg JSON family, then
+rejects changed LUS `Fonts.h` bytes before product compilation. The canonical
+acquisition repair passes the local Windows-default smoke above; its native
+Windows result remains pending. VS2022's actual x64 developer environment is
+selected before host configuration, without invented SDK/library paths.
 
 All new candidate archives and relink companions remain runner-local; automatic
 GAME-derived binary uploads are removed. Historical published previews are not

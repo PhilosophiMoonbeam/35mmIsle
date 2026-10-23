@@ -82,6 +82,7 @@ else()
     FetchContent_Declare(isle_lus_source
         GIT_REPOSITORY https://github.com/Kenix3/libultraship.git
         GIT_TAG ${_isle_lus_pin}
+        GIT_CONFIG core.autocrlf=false core.eol=lf
         GIT_SUBMODULES "")
     FetchContent_GetProperties(isle_lus_source)
     if(NOT isle_lus_source_POPULATED)
@@ -125,7 +126,8 @@ elseif(EXISTS "${_isle_lus_archive}")
 endif()
 file(REMOVE_RECURSE "${_isle_lus_staging}")
 file(MAKE_DIRECTORY "${_isle_lus_staging}")
-execute_process(COMMAND "${GIT_EXECUTABLE}" -C "${_isle_lus_input}" archive --format=tar
+execute_process(COMMAND "${GIT_EXECUTABLE}" -c core.autocrlf=false -c core.eol=lf
+    -C "${_isle_lus_input}" archive --format=tar
     "--output=${_isle_lus_archive}" ${_isle_lus_pin}
     RESULT_VARIABLE _isle_archive_result)
 if(NOT _isle_archive_result EQUAL 0)
@@ -186,18 +188,23 @@ configure_file("${_isle_lus_private}/src/fast/LICENSE.txt"
     "${ISLE_HOST_RENDERER_RESOURCES}/fast-renderer-LICENSE.txt" COPYONLY)
 
 # First FetchContent declaration wins. Resolve upstream tag names to recorded commits.
+# Canonical source bytes must not depend on the host's Git newline defaults.
 FetchContent_Declare(ImGui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG 4806a1924ff6181180bf5e4b8b79ab4394118875
+    GIT_CONFIG core.autocrlf=false core.eol=lf
     PATCH_COMMAND "${CMAKE_COMMAND}"
         "-Dpatch_file=${_isle_lus_private}/cmake/dependencies/patches/imgui-fixes-and-config.patch"
         -Dwith_reset=FALSE -P "${_isle_lus_private}/cmake/dependencies/git-patch.cmake")
 FetchContent_Declare(ThreadPool GIT_REPOSITORY https://github.com/bshoshany/thread-pool.git
-    GIT_TAG 097aa718f25d44315cadb80b407144ad455ee4f9)
+    GIT_TAG 097aa718f25d44315cadb80b407144ad455ee4f9
+    GIT_CONFIG core.autocrlf=false core.eol=lf)
 FetchContent_Declare(prism GIT_REPOSITORY https://github.com/KiritoDv/prism-processor.git
-    GIT_TAG 1de054450e7b3c5f777d2e3dfcb228ad120c329d)
+    GIT_TAG 1de054450e7b3c5f777d2e3dfcb228ad120c329d
+    GIT_CONFIG core.autocrlf=false core.eol=lf)
 FetchContent_Declare(monocypher GIT_REPOSITORY https://github.com/LoupVaillant/Monocypher.git
-    GIT_TAG 0d85f98c9d9b0227e42cf795cb527dff372b40a4)
+    GIT_TAG 0d85f98c9d9b0227e42cf795cb527dff372b40a4
+    GIT_CONFIG core.autocrlf=false core.eol=lf)
 
 # Fail at discovery, not as an apparently ready Null backend or an opaque link error.
 find_package(OpenGL REQUIRED)

@@ -7509,3 +7509,48 @@ Historical campaign/path-custody failures remain unchanged. This is bounded
 prospective Linux startup/provider admission, not a replacement full campaign,
 whole-port completion or R1/R2 publication approval.
 
+
+At `18ae6aa726fbca28f171244b44993cb202c76740`,
+[run 40032573319](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40032573319)
+passes all ten Linux/MSVC jobs, including both full native products, all
+existing consumers, configured CPU contracts, real CPU-Vulkan rendering,
+private static-library replacement and runner-local Runtime package checks.
+This exact CI result predates the live-output correction below. Hosted Windows
+remains build/tooling evidence, not Windows 11 ROM-backed execution; no ROM or
+derived artifact is uploaded.
+
+### Live public-output and controlled-source campaign preparation
+
+Readiness observation requires output before producer exit. The custody
+launcher's stdout/stderr files now use unbuffered, complete writes through the
+existing checked write loop. A real two-stage native consumer exposes the
+published buffered behavior: its first output becomes visible only together
+with its later output. The corrected launcher exposes the first stage while
+the producer is still waiting, then retains exact final bytes, size, hash,
+normal exit and `ECHILD` retirement. The permanent native regression uses a
+FIFO-controlled continuation, not a fixed sleep or mocked output callback.
+
+A separate frozen current consumer
+`db6fcb74e66024e11637eb8c3fea8191b1c502d251ad82998752dbb18a1aea3e`
+passes genuine empty-root ingress under sealed image custody: actual Title
+pixels, 5,287,546 syscall stops, 33,442 metadata events, normal exit 0 and complete
+owned-tree/FD retirement. This is a bounded SDK-consumer ingress, not a fresh
+campaign or the shipping application's keyboard/physical-input qualification.
+
+For the next prospective campaign, a fresh detached project checkout binds
+all **931 tracked project inputs** to exact Git blobs at
+`18ae6aa726fbca28f171244b44993cb202c76740` before configuration. All remain
+SHA-256-exact after 628 actual native build steps. The immutable tracked-project
+archive is
+`f9c79c781714d1f6494411689fdc1e25991a26ae05efecd334cfe9e6292b52bd`;
+selected actual cache, command, Ninja, host-pin and composition-input snapshots
+are retained. Controlled consumer
+`8fd72bbd7c4d0ec903925a230b0c0ed251db833a9f5a01208a3d1894b02fb112`
+is frozen separately, never substituted into the earlier ingress receipt.
+These are controlled project-source/build facts, not retrospective per-header
+build hashes or exhaustive generated/third-party/compiler closure.
+
+The historical completed campaign's runtime-path deviation remains unchanged.
+Neither the controlled build nor bounded ingress closes the separate new
+empty-root all-seven-course/credits/cold campaign gate.
+

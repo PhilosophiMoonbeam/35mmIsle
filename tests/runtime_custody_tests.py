@@ -6,12 +6,14 @@ Fixtures are our own C sources, compiled into TemporaryDirectory. No ROM, SDK,
 source-text assertions, simulated loader, or mocked admission is involved.
 """
 import argparse
+import ctypes
 import errno
 import fcntl
 import hashlib
 import json
 import os
 from pathlib import Path
+import select
 import shutil
 import signal
 import socket
@@ -87,6 +89,14 @@ int main(int argc, char **argv) {
     if (!strcmp(argv[1], "exit7")) return 7;
     if (!strcmp(argv[1], "signal")) { raise(SIGTERM); return 4; }
     if (!strcmp(argv[1], "sleep")) { sleep(10); return 0; }
+    if (!strcmp(argv[1], "live-output")) {
+        if (argc < 3 || write(1, "stage-one\n", 10) != 10) return 30;
+        int fd = open(argv[2], O_RDONLY);
+        char release;
+        if (fd < 0 || read(fd, &release, 1) != 1) return 31;
+        close(fd);
+        return write(1, "stage-two\n", 10) == 10 ? 0 : 32;
+    }
     if (!strcmp(argv[1], "escaped-clone3") || !strcmp(argv[1], "escaped-clone") ||
         !strcmp(argv[1], "escaped-doublefork")) {
         struct clone_args arguments = {0};
@@ -576,6 +586,55 @@ class NativeCustodyTests(unittest.TestCase):
                 self.assertTrue(receipt['retained_fds_closed'])
                 self.assertTrue(receipt['syscall_custody']['complete'])
                 self.assertNotIn('native-abi-attempt-returned', receipt['streams']['stdout']['preview_utf8'])
+
+    def test_public_output_is_observable_before_native_producer_can_continue(self):
+        self.manifest()
+        release = self.root / 'release.fifo'
+        os.mkfifo(release, 0o600)
+        native = ctypes.CDLL(None, use_errno=True)
+        native.inotify_init1.argtypes = [ctypes.c_int]
+        native.inotify_init1.restype = ctypes.c_int
+        native.inotify_add_watch.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32]
+        native.inotify_add_watch.restype = ctypes.c_int
+        notification = native.inotify_init1(os.O_CLOEXEC | os.O_NONBLOCK)
+        self.assertGreaterEqual(notification, 0)
+        self.addCleanup(os.close, notification)
+        self.assertGreaterEqual(native.inotify_add_watch(
+            notification, os.fsencode(self.root), 0x2 | 0x8 | 0x80 | 0x100), 0)
+        command = [sys.executable, '-B', str(Path(custody.__file__).absolute()), 'launch',
+                   '--manifest', str(self.manifest_path), '--record', str(self.record),
+                   '--timeout', '10', '--audit-module', AUDIT_MODULE, '--',
+                   str(self.application), 'live-output', str(release)]
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        first = b''
+        deadline = time.monotonic() + 5
+        try:
+            while time.monotonic() < deadline:
+                if not select.select([notification], [], [], max(0, deadline - time.monotonic()))[0]:
+                    break
+                while True:
+                    try:
+                        os.read(notification, 65536)
+                    except BlockingIOError:
+                        break
+                path = Path(str(self.record) + '.stdout')
+                if path.exists():
+                    first = path.read_bytes()
+                    if first:
+                        break
+        finally:
+            # Release the real producer even when the live-output assertion
+            # fails, so its isolated owner can retire normally.
+            descriptor = os.open(release, os.O_RDWR | os.O_NONBLOCK)
+            try:
+                os.write(descriptor, b'1')
+                stdout, stderr = process.communicate(timeout=15)
+            finally:
+                os.close(descriptor)
+        self.assertEqual(process.returncode, 0, stderr.decode(errors='strict'))
+        self.assertEqual(first, b'stage-one\n')
+        self.assertEqual(Path(str(self.record) + '.stdout').read_bytes(), b'stage-one\nstage-two\n')
+        self.assert_admitted(json.loads(self.record.read_text()))
 
     def test_source_control_channel_failure_is_fail_closed(self):
         self.manifest([self.late])

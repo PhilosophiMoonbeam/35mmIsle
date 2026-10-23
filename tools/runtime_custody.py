@@ -788,7 +788,7 @@ class Supervisor:
                 selector.register(read_fd, selectors.EVENT_READ, name)
                 if name != 'handoff':
                     path = Path(str(self.record_path) + '.' + name)
-                    self.streams[name] = {'stream': path.open('wb'), 'path': path, 'size': 0,
+                    self.streams[name] = {'stream': path.open('wb', buffering=0), 'path': path, 'size': 0,
                                           'hash': hashlib.sha256(), 'preview': bytearray(), 'fully_drained': False}
             selector.register(self.parent_socket, selectors.EVENT_READ, 'control')
             while True:
@@ -898,7 +898,7 @@ class Supervisor:
 
     def capture(self, name, block):
         info = self.streams[name]
-        info['stream'].write(block)
+        write_all(info['stream'].fileno(), block)
         info['hash'].update(block)
         info['size'] += len(block)
         info['preview'].extend(block[:max(0, 8192 - len(info['preview']))])

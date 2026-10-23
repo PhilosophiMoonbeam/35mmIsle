@@ -24,6 +24,8 @@ Earlier `be7f372` shared GAME-derived binary32 angles match 10,824 actual public
 
 A separate [controlled public-gain experiment](docs/development/ADMISSION.md#controlled-public-gain-argument-influence) establishes target/time influence on actual Original commands and declared mixed PCM, with agreement to previously fixed Native word predictions. It does not identify Original internal gain consumption or qualify complete Native synthesis parity.
 
+A [clean public custom-FX matrix](docs/development/ADMISSION.md#clean-public-custom-fx-phase-word-matrix) now confirms the Native implementation's bounded RESAMPLE phase-word projection across section placement, offsets, feedback/feedforward and pole conditions. The corrected public-dataflow parser is frozen before a fresh Original confirmation cohort; the earlier failed analysis remains recorded. This is not full PCM, hidden SDK arithmetic, hardware or Windows 11 qualification.
+
 Earlier isolated and inherited-profile qualifications remain in the [admission record](docs/development/ADMISSION.md). They are historical evidence, not substitutes for the completed fresh campaign. ROMs and derived private development evidence are not distributed.
 
 ## Development documentation

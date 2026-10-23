@@ -17,6 +17,9 @@ function(isle_add_runtime_relink_kit)
     if(NOT ISLE_BUILD_RUNTIME_RELINK_KIT)
         return()
     endif()
+    if(CMAKE_VERSION VERSION_LESS 3.27)
+        message(FATAL_ERROR "Private relink capture requires CMake >=3.27 for same-invocation File API queries")
+    endif()
     if(TARGET runtime-relink-kit)
         message(FATAL_ERROR "isle_add_runtime_relink_kit must be called exactly once")
     endif()
@@ -35,9 +38,11 @@ function(isle_add_runtime_relink_kit)
     set(_module "${CMAKE_CURRENT_FUNCTION_LIST_DIR}")
     get_filename_component(_project "${_module}/.." ABSOLUTE)
     set(_private "${CMAKE_BINARY_DIR}/private-runtime-relink")
-    file(MAKE_DIRECTORY "${_private}" "${CMAKE_BINARY_DIR}/.cmake/api/v1/query/client-isle-runtime-relink")
-    file(WRITE "${CMAKE_BINARY_DIR}/.cmake/api/v1/query/client-isle-runtime-relink/query.json"
-        "{\"requests\":[{\"kind\":\"codemodel\",\"version\":2},{\"kind\":\"toolchains\",\"version\":1}]}\n")
+    # CMake >=3.27 registers these shared queries for this invocation and writes
+    # their replies at generation time, including the first configure.
+    # https://cmake.org/cmake/help/v3.27/command/cmake_file_api.html
+    cmake_file_api(QUERY API_VERSION 1 CODEMODEL 2 TOOLCHAINS 1)
+    file(MAKE_DIRECTORY "${_private}")
     set(_settings "{}")
     foreach(_pair IN ITEMS
         "build|${CMAKE_BINARY_DIR}" "project|${_project}" "source|${ISLE_RSP_SOURCE_ROOT}"
@@ -94,8 +99,7 @@ function(isle_add_runtime_relink_kit)
         if(_launcher)
             message(FATAL_ERROR "Private relink capture will not silently replace an existing linker launcher")
         endif()
-        # Launcher generator expressions require CMake >=3.27. This target is
-        # single-config Ninja: use the concrete configuration with older CMake.
+        # Use the concrete configuration for this single-config Ninja target.
         set_property(TARGET 35mmisle PROPERTY CXX_LINKER_LAUNCHER
             "${Python3_EXECUTABLE};-B;${_project}/tools/runtime_relink.py;capture;--settings;${_private}/settings-${CMAKE_BUILD_TYPE}.json;--")
     endif()

@@ -7208,10 +7208,15 @@ and dependency pins are unchanged. These mechanisms do **not** approve R1/R2.
 bytes, both embedded font identities and the generated icon-definition family.
 It emits license-only excerpts, including Font Awesome/ProggyClean, StrHash64,
 selected glob, Monocypher and nlohmann file-level attributions. No font/source
-body is exported by this extractor. The canonical JSON header family and one
-exact archived Ubuntu variant are distinct identities; a genuine upstream/
-distro mixed family and an unknown altered family both fail before output.
-Configure, build and install recheck the selected inputs and prepared payload.
+body is exported by this extractor. Canonical, exact Ubuntu and exact frozen
+vcpkg header families are distinct identities. The vcpkg 3.12.0 port-version 2
+applies `fix-4736_char8_t.patch` then `fix-4742_std_optional.patch` and installs
+modular headers; two conversion-header overrides retain the other 44 canonical
+pins. Archive, portfile, manifest and ordered-patch hashes identify that complete
+family. Actual extractor execution accepts its reconstructed public inputs and
+rejects a one-header reverted mixed family before output. Ubuntu/upstream mixing
+and unknown alterations also reject. No generic newline or per-header alternative
+is accepted. Configure, build and install recheck inputs and prepared payload.
 
 The final Runtime install records all staged files/symlinks except its own
 manifest, actual compiler/linker/archiver/CMake hashes, selected public/prepared
@@ -7233,8 +7238,10 @@ path all reject. Complete Runtime installs with a missing receipt or a removed
 actually reached SDL identity fail without a candidate manifest; the valid
 receipt is restored byte-exact. Notices alone cannot satisfy this provenance gate.
 
-`ISLE_BUILD_RUNTIME_RELINK_KIT=ON` captures the actual ordered product link,
-recursive responses, non-system DSO closure and native toolchain identities.
+On CMake 3.27+, `ISLE_BUILD_RUNTIME_RELINK_KIT=ON` requests File API metadata
+within the first configure/generate invocation, then captures the actual ordered
+product link, recursive responses, non-system DSO closure and toolchain identities.
+The ordinary build and standalone recipient library retain their 3.24 minimum.
 The private kit contains complete prepared lightning/mman source/build controls,
 license/patch provenance, ordinary application link inputs and a relative recipe
 replacing only lightning. The exact pinned upstream personal `.suo` cache is

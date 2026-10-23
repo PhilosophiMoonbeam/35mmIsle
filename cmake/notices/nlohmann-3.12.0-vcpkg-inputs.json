@@ -1,0 +1,63 @@
+{
+  "json_version": "3.12.0",
+  "layout": "modular",
+  "name": "vcpkg-nlohmann-json-3.12.0-2-4da8ab8ef910293046e651287ff1115d9a4f14b0",
+  "package": {
+    "repository": "https://github.com/microsoft/vcpkg",
+    "baseline_commit": "4da8ab8ef910293046e651287ff1115d9a4f14b0",
+    "port": "nlohmann-json",
+    "version": "3.12.0",
+    "port_version": 2,
+    "port_manifest": {
+      "path": "ports/nlohmann-json/vcpkg.json",
+      "url": "https://raw.githubusercontent.com/microsoft/vcpkg/4da8ab8ef910293046e651287ff1115d9a4f14b0/ports/nlohmann-json/vcpkg.json",
+      "bytes": 438,
+      "sha256": "b576fa660ad7fcd9aa0324cc775b596d48aa7f14c993f63b23865a8673835310"
+    },
+    "portfile": {
+      "path": "ports/nlohmann-json/portfile.cmake",
+      "url": "https://raw.githubusercontent.com/microsoft/vcpkg/4da8ab8ef910293046e651287ff1115d9a4f14b0/ports/nlohmann-json/portfile.cmake",
+      "bytes": 1700,
+      "sha256": "9bae6425097eb8d78e6f9a213de5258a3dfac57056e4c42e76a3a8d805fbdc1b"
+    },
+    "source_archive": {
+      "url": "https://codeload.github.com/nlohmann/json/tar.gz/refs/tags/v3.12.0",
+      "tag": "v3.12.0",
+      "tag_object": "65ee68451d8eb2b5f3a30b410476ab83deb3289b",
+      "commit": "55f93686c01528224f448c19128836e7df245f72",
+      "bytes": 9678593,
+      "sha256": "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187",
+      "sha512": "6cc1e86261f8fac21cc17a33da3b6b3c3cd5c116755651642af3c9e99bb3538fd42c1bd50397a77c8fb6821bc62d90e6b91bcdde77a78f58f2416c62fc53b97d"
+    },
+    "patches_in_applied_order": [
+      {
+        "path": "ports/nlohmann-json/fix-4736_char8_t.patch",
+        "url": "https://raw.githubusercontent.com/microsoft/vcpkg/4da8ab8ef910293046e651287ff1115d9a4f14b0/ports/nlohmann-json/fix-4736_char8_t.patch",
+        "bytes": 5800,
+        "sha256": "4c0177c5b4c4fb0978b54e2e113d2c76865059a85aa1b060b87f441056813fde"
+      },
+      {
+        "path": "ports/nlohmann-json/fix-4742_std_optional.patch",
+        "url": "https://raw.githubusercontent.com/microsoft/vcpkg/4da8ab8ef910293046e651287ff1115d9a4f14b0/ports/nlohmann-json/fix-4742_std_optional.patch",
+        "bytes": 3778,
+        "sha256": "218c2182366f1e9b997fc81f1b27b951a1438a3578f8e0cb22a1957cc326ccbd"
+      }
+    ],
+    "header_installation": {
+      "cmake_options": {
+        "JSON_Install": "ON",
+        "JSON_MultipleHeaders": "ON"
+      },
+      "source_directory": "include/",
+      "installed_directory": "include/",
+      "selected_header_count": 46
+    }
+  },
+  "review": "The frozen vcpkg port applies both declared patches in order to the exact upstream archive whose SHA512 matches the portfile. JSON_MultipleHeaders=ON installs the modular include/ tree, not single_include/. Exactly two of the 46 selected modular headers change; the remaining 44 retain their canonical upstream pins. Both patches preserve the existing file-level copyright and MIT attribution inventory retained in nlohmann-3.12.0.txt. This is one exact complete post-patch modular family, not independent per-header alternatives, a single-header variant, newline normalization, or an unknown/mixed-family fallback. Header hashes and provenance source hashes are over exact HTTP/archive bytes including final LF.",
+  "schema": 1,
+  "sha256_overrides": {
+    "nlohmann/detail/conversions/from_json.hpp": "c8ac5448a602b03d18c29eeae7eae989d1b5bed49ab3fbb5ff996fb7e8514d6b",
+    "nlohmann/detail/conversions/to_json.hpp": "8cc8523b7ba2b549a0a08a0611765155a63ee81653ad3e414decfd656a520a56"
+  },
+  "upstream_base_commit": "55f93686c01528224f448c19128836e7df245f72"
+}

@@ -578,15 +578,17 @@ def capture(settings_path, command):
 
 def file_api(settings, capture_record):
     reply = Path(settings['build']) / '.cmake/api/v1/reply'
-    indexes = sorted(reply.glob('index-*.json'), key=lambda path: path.stat().st_mtime_ns)
+    # CMake specifies the lexicographically largest index name as current.
+    indexes = sorted(reply.glob('index-*.json'))
     if not indexes:
         fail('CMake File API reply missing; configure with the private relink hook before building')
     index = load(indexes[-1])
-    responses = index['reply']['client-isle-runtime-relink']['query.json']['responses']
-    models = [item for item in responses if item.get('kind') == 'codemodel']
-    if len(models) != 1:
-        fail('candidate-specific File API codemodel response missing')
-    model = load(reply / models[0]['jsonFile'])
+    # cmake_file_api(QUERY) produces shared stateless replies, not client replies.
+    model_response = index.get('reply', {}).get('codemodel-v2', {})
+    if (model_response.get('kind') != 'codemodel' or
+            model_response.get('version', {}).get('major') != 2 or not model_response.get('jsonFile')):
+        fail('CMake File API shared codemodel-v2 response missing or incompatible')
+    model = load(reply / model_response['jsonFile'])
     configurations = [item for item in model['configurations'] if item['name'] == settings['configuration']]
     if len(configurations) != 1:
         fail('captured configuration does not match CMake File API')

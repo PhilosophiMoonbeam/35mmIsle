@@ -154,6 +154,8 @@ PRODUCER INTEGRATION (NOT A RECIPIENT BUILD REQUIREMENT)
 After the final 35mmisle target/resource/install-RPATH setup in root CMake:
   include(cmake/RuntimeRelink.cmake)
   isle_add_runtime_relink_kit()
+Producer configure requires CMake >=3.27 for same-generation File API queries.
+Ordinary builds and this standalone recipient library retain their 3.24 minimum.
 Configure the existing native preset with -DISLE_BUILD_RUNTIME_RELINK_KIT=ON,
 build the actual 35mmisle, then explicitly build --target runtime-relink-kit
 (--config @CONFIGURATION@ on MSBuild). The default output is the PRIVATE binary

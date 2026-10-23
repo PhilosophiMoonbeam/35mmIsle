@@ -548,6 +548,12 @@
     },
     "3.12.0": {
       "commit": "55f93686c01528224f448c19128836e7df245f72",
+      "distributions": [
+        {
+          "path": "notices/nlohmann-3.12.0-vcpkg-inputs.json",
+          "sha256": "354aa888be26eee38d2c79524db80e1d53949443332e3567c0b26dc37b1c4ed9"
+        }
+      ],
       "inputs": [
         {
           "root": "compliance",

@@ -7295,22 +7295,28 @@ proof, not a new campaign or Windows/device qualification.
 
 Native CI builds baseline/modified library companions, executes real generated
 code, relinks the actual product and runs help. Producer roots remain available;
-help is not a ROM-backed product-JIT proof. At source `594e830`,
-[run 39952134697](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39952134697)
-passes nine jobs, including complete Linux capture/relink/Runtime archive checks.
-Native MSVC builds the full product and all consumers, passes 59 CPU tests,
-executes help and creates the private kit. The delivered baseline library now
-builds and executes generated 42/43 code with sequential/overlapping states.
-Its whole-product linker creates the application, but the helper then exits 1:
-the redirected legacy code page cannot encode its Unicode-path success message.
-The helper now selects strict UTF-8 for its own stdout/stderr; native child-tool
-output retains its native encoding. A real Unicode-path whole-product relink
-under strict CP1252 fails before and succeeds after, with actual product help.
-An actual Unicode argument error remains intact UTF-8 with exit 2. No replacement
-characters, error suppression or CI-only environment workaround is used.
-The prior multi-config repair also passes a real Ninja Multi-Config consumer;
-wrong single-config and extra multi-config selections still reject.
-The repaired native MSVC companion and Windows Runtime archive remain pending.
+help is not a ROM-backed product-JIT proof. At source `a859a09`,
+[run 39956071193](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39956071193)
+passes all ten native jobs. Both full host builds compile the product and all
+consumer targets, pass 59 CPU tests, execute help and create the private kit.
+Both native platforms build baseline and genuinely source-modified lightning,
+execute generated 42/43 code with sequential/overlapping states, relink the
+entire actual product against each archive and execute both products' help.
+Native MSVC completes these commands in a Unicode/spaces recipient directory.
+
+The Linux TGZ and Windows ZIP contain their final composition record and selected
+notices. Windows PE inspection confirms AMD64 and the explicit platform-import
+boundary, without redistributable CRT imports. Both extracted Windows CLIs
+execute help from an unrelated Unicode working directory with a minimal System
+environment. The run uploads zero artifacts: Runtime packages, objects and relink
+material remain runner-local. Hosted Windows is Server 2022, not Windows 11
+private-ROM gameplay or physical-device qualification.
+
+Actual local regressions retain failing-before/passing-after evidence for the
+multi-config undefined-variable guard and strict-CP1252 Unicode output. Wrong
+single-config and extra multi-config selections still reject. Helper-owned
+messages use strict UTF-8; native child output retains its native encoding.
+No replacement characters, error suppression or CI-only workaround is used.
 VS2022's actual x64 developer environment is selected before host configuration,
 without invented SDK/library paths.
 

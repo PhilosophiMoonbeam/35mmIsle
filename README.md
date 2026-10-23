@@ -365,6 +365,8 @@ The Linux smoke completed 64 actual RSP tasks, RDP completions, CPU preparations
 
 Pinned dependency clones and the LUS committed-source export explicitly select canonical LF bytes, independently of host Git newline defaults. Notice hashes remain exact; platform newline conversion is not accepted as an alternative identity.
 
+At `a859a09`, [all ten native CI jobs pass](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39956071193), including Linux/MSVC whole-product relinking and portable Runtime archive checks. Candidate payloads remain runner-local; this is not Windows 11 gameplay or redistribution approval.
+
 For a **private** static GNU lightning companion, configure the full native build with `-DISLE_BUILD_RUNTIME_RELINK_KIT=ON` before its actual final link, then build `runtime-relink-kit`. Producing the kit requires CMake 3.27+ for same-generation File API queries; ordinary builds and the standalone recipient library retain their CMake 3.24 minimum. Default output is `private-runtime-relink-kit/<configuration>` under the build directory. Follow its `RELINK-INSTRUCTIONS.txt` for standalone library rebuild, genuine source modification, generated-code execution and whole-product relink. The kit contains GAME-derived application objects: **do not publish it or infer redistribution permission**. It is not installed by CPack, does not clear R1/R2, and does not transfer Linux execution evidence to MSVC/Windows 11.
 
 

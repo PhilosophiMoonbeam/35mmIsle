@@ -1899,7 +1899,7 @@ A throwaway, read-only consumer of the existing Native `GameSession` API indepen
 
 The exact downloaded Linux ELF opens genuine Pidgey/ABA, edits its comment to **ABAA**, cancels repeated detail Delete prompts, moves the photo from slot 1 to empty slot 2, cancels the main Delete prompt and executes actual Oak Save→Yes→Title. A second process loads the exact whole pair, shows the moved thumbnail and reconstructs Pidgey/ABAA. Both normal closes join and exit 0; no errors, forced cleanup, Source/profile field authoring or protected-input mutation occurs. Existing public `GameSession` inspection independently confirms exactly one photo at slot 2 and code units `A3C1,A3C2,A3C1,A3C1`, without modifying either saved member. Qualification SHA-256: `7698aa76b64ec3593736b56be9686f5e69547355b7f40e223afa90265765ad78`.
 
-Both public archives are independently downloaded after publication and pass their published checksums. Preview-6 assets/tag remain immutable with its known failure disclosed. Windows 11/physical devices and complete fresh-campaign fidelity remain separate gates; the new empty-root frozen consumer `058022d5…` runs the corrected SDK without an inherited profile, but completion is not claimed.
+Both public archives are independently downloaded after publication and pass their published checksums. Preview-6 assets/tag remain immutable with its known failure disclosed. At publication, the separate empty-root consumer `058022d5…` had not completed; its later [fresh17ab qualification](#fresh-17ab-campaign-completion-and-exact-custody-boundary) is recorded independently below. That consumer is not the downloaded Runtime ELF. Windows11 and physical-device qualification remain separate gates.
 
 
 
@@ -1964,6 +1964,16 @@ The final canonical profile contains 67 Reports and 141,110 points. Mew is actua
 Custody is reported without rewriting the original manifest: **58 of 59 preregistered identities remain unchanged**. The sole difference is the mutable build-source file `tests/application_runtime_rom_smoke.cpp`, edited during subsequent development; the frozen executable, ROM and runtime dependencies remain unchanged. Its exact original source is recovered from immutable commit8d and matches preregistered SHA-256 `826d210f2dc7c56ff5851fbeeedf62140990e70fa595a6579c754f8609077b50`. This establishes declared compiled-source provenance, not a retroactive all59-files-unchanged pass. Completion-evidence SHA-256: `ac0d8e0704e5ce977c8d170957a3d823212d8fb13b06b16ad64bc5320036c33b`.
 
 This is observed fresh Linux completion for the older Sprite/audio-control build with an explicit build-source custody deviation. It does not qualify later Report backing, Window creator fences or entry-capability changes. The separate frozen17ab campaign remains independent; current-source completion, Original pixel/arithmetic parity, hearing, physical devices and Windows11 execution are not inferred.
+
+## Fresh 17ab campaign completion and exact custody boundary
+
+Frozen consumer `058022d529863b0dd3ba330baf7b9665b21b5cf03efdf067513e1d061a4a0db9`, source `17abf56f0db9becd22fb8125e0b97b771037f34a`, completes a new empty-root, one-profile campaign in 32,855.607 seconds. Actual Name and Source-consumed software controls earn all seven courses and pass the rewards/six-signs/Mew completion gate over 124 acknowledged saves. No inherited profile or authored progress, gear, photographs, scores, poses or RNG is used.
+
+The final journal records 67 Reports and 141,110 points; the genuine selected Mew photograph contributes 8,360 points. Credits18 serial425 runs 7,279 updates and 3,639 frames/LUS presentations, returns result8 and joins. Title8 serial426 reaches UI state2 and reopens the canonical profile exactly. All 707,572 graphics submissions retire; GPU/Photo/Manager/Input/audio/Host owners release normally, without a retirement deadline. The process exits0. Owned-PID captures cover all seven course surfaces; the final Title window is visually inspected. The initial Credits capture is not photo-specific proof.
+
+**61 of 63 original protected paths remain unchanged.** Two mutable test sources—`tests/application_runtime_rom_smoke.cpp` and `tests/post_course_scene_probe.cpp`—differ after subsequent development. The original manifest is retained; its five declared build-source snapshots match their pinned Git identities and hashes, including both changed files. This is explicit compiled-source provenance with deviations, not an all63-unchanged or exhaustive historical dependency-closure pass. Private qualification SHA-256: `019c4bf8c413859baefca65c9ff17c4a49b34458b295dc0781bfa40ddd8d289c`.
+
+This qualifies the frozen17ab consumer's genuine fresh Linux campaign through the Report/Window fixes. It does not qualify the downloaded product's complete campaign, later EntryBorrow enforcement, the separately running current-build campaign, Original pixel/arithmetic parity, physical controllers/audio or Windows11 execution. The older8d cohort remains independent.
 
 ## Fresh clone-update transport results
 

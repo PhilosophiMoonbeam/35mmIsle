@@ -20,7 +20,7 @@ using startup::View;
 namespace {
 namespace sp = ::isle::sprite;
 namespace wire = ::isle::graphics;
-constexpr std::uint32_t width = 320, height = 240, target_bytes = width * height * 2;
+constexpr std::uint32_t startup_target_bytes = 320 * 240 * 2;
 constexpr std::uint32_t transition_workspace = screen_transition::Resources::workspace.address;
 constexpr sp::RamRange sprite_commands{0x150000, 0x50000};
 constexpr std::uint32_t effect_commands = 0x1a0000, effect_assets = 0x1b0000, effect_end = 0x1f0000;
@@ -32,7 +32,7 @@ constexpr std::array<sp::RamRange,6> startup_producer_ranges{{
     sprite_commands, {effect_commands,effect_assets-effect_commands},
     {transition_workspace,0x10000}}};
 constexpr std::array<sp::RamRange,3> startup_fixed_targets{{
-    {0x3b5000,target_bytes}, {0x3da800,target_bytes},
+    {0x3b5000,startup_target_bytes}, {0x3da800,startup_target_bytes},
     {transition_vertices,0x3e0}}};
 struct Failure { Error error; const char* message; };
 bool intersects(sp::RamRange a, sp::RamRange b) noexcept {
@@ -42,7 +42,8 @@ bool intersects(sp::RamRange a, sp::RamRange b) noexcept {
 void require(bool ok, const char* message, Error error = Error::invalid) {
     if (!ok) throw Failure{error, message};
 }
-std::array<sp::RamRange, 5> validate_layout(Layout layout, bool startup_adapter) {
+std::array<sp::RamRange, 5> validate_layout(Layout layout, bool startup_adapter,
+                                          std::uint32_t target_bytes) {
     require(!(layout.commands.address & 63u) && !(layout.commands.size & 63u) &&
             layout.commands.size >= 0x540, "scene command storage lacks aligned reset/list/viewport capacity");
     require(!(layout.workspace.address & 63u) && !(layout.workspace.size & 63u) &&
@@ -68,12 +69,21 @@ std::array<sp::RamRange, 5> validate_layout(Layout layout, bool startup_adapter)
     }
     return ranges;
 }
+std::uint32_t validate_extent(std::uint32_t width, std::uint32_t height, bool startup_adapter) {
+    require((width == 320 && height == 240) ||
+            (!startup_adapter && width == 640 && height == 480),
+            "scene raster extent is unsupported by the cold renderer");
+    return width * height * 2;
+}
 struct CoreStorage {
+    const std::uint32_t width, height, target_bytes;
     const std::array<sp::RamRange, 5> ranges;
     const std::uint32_t top, top_end, identity, reset_viewport;
     const std::uint32_t stack, yield, task, boot, output, output_end, depth;
-    CoreStorage(Layout layout, bool startup_adapter)
-        : ranges(validate_layout(layout, startup_adapter)), top(ranges[1].address),
+    CoreStorage(Config config, bool startup_adapter)
+        : width(config.raster_width), height(config.raster_height),
+          target_bytes(validate_extent(width,height,startup_adapter)),
+          ranges(validate_layout(config.memory, startup_adapter, target_bytes)), top(ranges[1].address),
           top_end(top + ranges[1].size - 0x400), identity(top_end), reset_viewport(identity + 64),
           stack(ranges[2].address), yield(stack + 0x4000), task(stack + 0x6000), boot(stack + 0x7000),
           output(ranges[3].address), output_end(output + ranges[3].size), depth(ranges[4].address) {}
@@ -101,28 +111,28 @@ std::uint32_t packed_color(std::uint32_t rgba) {
                        ((rgba >> 10) & 0x3eu) | ((rgba >> 7) & 1u);
     return (value << 16) | value;
 }
-IsleGameViewport full_viewport() {
+IsleGameViewport full_viewport(const CoreStorage& core) {
     IsleGameViewport vp{};
-    vp.scale[0] = vp.translate[0] = static_cast<std::int16_t>(width * 2);
-    vp.scale[1] = vp.translate[1] = static_cast<std::int16_t>(height * 2);
+    vp.scale[0] = vp.translate[0] = static_cast<std::int16_t>(core.width * 2);
+    vp.scale[1] = vp.translate[1] = static_cast<std::int16_t>(core.height * 2);
     vp.scale[2] = vp.translate[2] = 511;
     return vp;
 }
-sp::Bounds bounds(const IsleGameViewport& vp) {
+sp::Bounds bounds(const IsleGameViewport& vp, const CoreStorage& core) {
     // Match Source integer rounding; target clipping affects scissor, not the viewport.
     sp::Bounds result{vp.translate[0] / 4 - vp.scale[0] / 4,
         vp.translate[1] / 4 - vp.scale[1] / 4,
         vp.translate[0] / 4 + vp.scale[0] / 4,
         vp.translate[1] / 4 + vp.scale[1] / 4};
     result.left=std::max(result.left,0); result.top=std::max(result.top,0);
-    result.right=std::min(result.right,int(width)); result.bottom=std::min(result.bottom,int(height));
-    require(result.left >= 0 && result.top >= 0 && result.right <= int(width) &&
-            result.bottom <= int(height) && result.left < result.right && result.top < result.bottom,
+    result.right=std::min(result.right,int(core.width)); result.bottom=std::min(result.bottom,int(core.height));
+    require(result.left >= 0 && result.top >= 0 && result.right <= int(core.width) &&
+            result.bottom <= int(core.height) && result.left < result.right && result.top < result.bottom,
             "startup source viewport exceeds source GPU target", Error::preparation);
     return result;
 }
-void viewport(wire::Memory& memory, std::uint32_t at, const IsleGameViewport& vp) {
-    static_cast<void>(bounds(vp));
+void viewport(wire::Memory& memory, std::uint32_t at, const IsleGameViewport& vp, const CoreStorage& core) {
+    static_cast<void>(bounds(vp,core));
     for (unsigned i = 0; i < 4; ++i) {
         memory.half(at + i * 2, static_cast<std::uint16_t>(vp.scale[i]));
         memory.half(at + 8 + i * 2, static_cast<std::uint16_t>(vp.translate[i]));
@@ -182,15 +192,15 @@ struct Commands {
                 bool restoring = false) {
         require(restoring || !(flags & 1u) || depth_bytes,
                 "depthless Source camera requested an actual depth clear",Error::resource);
-        const auto clipped = bounds(vp); // Source scissor never changes the uploaded viewport.
+        const auto clipped = bounds(vp,core); // Scissor never changes the uploaded viewport.
         command(0xdc080008, vp_address);
         scissor(clipped);
         if (!restoring && (flags & 1u)) {
             command(0xe7000000, 0); mode(true, 20, 2, 0x300000);
-            mode(false, 3, 29, 0); command(0xff10013f, depth);
+            mode(false, 3, 29, 0); command(0xff100000u | (core.width - 1), depth);
             command(0xf7000000, 0xfffcfffc); fill(clipped);
         }
-        command(0xe7000000, 0); command(0xff10013f, color);
+        command(0xe7000000, 0); command(0xff100000u | (core.width - 1), color);
         if (!restoring && (flags & 2u)) {
             mode(true, 20, 2, 0x300000); mode(false, 3, 29, 0);
             command(0xf7000000, packed_color(rgba)); fill(clipped);
@@ -201,7 +211,8 @@ struct Commands {
     }
     void reset(std::uint32_t color, std::uint32_t pre_render) {
         const auto words = wire::reset_commands(
-            {color, depth, core.reset_viewport, core.identity, pre_render, target_bytes, depth_bytes});
+            {color, depth, core.reset_viewport, core.identity, pre_render,
+             core.target_bytes, depth_bytes, core.width, core.height});
         for (std::size_t i = 0; i < words.size(); i += 2) command(words[i], words[i + 1]);
     }
 };
@@ -295,7 +306,8 @@ struct SourceControlAccess {
             },
             &draw, [](void* context) { (*static_cast<Draw*>(context))(); },
             &call, [](void* context, render::List list) { (*static_cast<Call*>(context))(list); },
-            {framebuffer,commands.depth,commands.core.reset_viewport,commands.core.identity,pre_render,target_bytes,commands.depth_bytes},
+            {framebuffer,commands.depth,commands.core.reset_viewport,commands.core.identity,pre_render,
+             commands.core.target_bytes,commands.depth_bytes,commands.core.width,commands.core.height},
             &restore,[](void* context,unsigned lane,std::uint32_t cursor,std::uint32_t end) {
                 return (*static_cast<Restore*>(context))(lane,cursor,end);
             },&finish,[](void* context,render::List root,render::List terminal,wire::SourceProgram program) {
@@ -388,7 +400,7 @@ struct Frame::Impl {
     screen_transition::Resources transitions;
     std::vector<sp::Draw> draws;
     std::vector<scene::SpriteDraw> startup_sprites;
-    std::vector<std::byte> rgba = std::vector<std::byte>(width * height * 4);
+    std::vector<std::byte> rgba;
     sp::Producer empty_sprites{std::span<const IsleSprite* const>{}, std::span<const sp::BankMapping>{}};
     std::vector<sp::RamRange> composition_reservations, command_reservations;
     std::optional<RenderCapacity> render_capacity;
@@ -539,9 +551,10 @@ struct Frame::Impl {
     }
 
     Impl(const menu::Catalog* c, const rom::Snapshot& s, Config config)
-        : storage(config.memory, c != nullptr), source_depth{storage.ranges[4], 0x40},
+        : storage(config, c != nullptr), source_depth{storage.ranges[4], 0x40},
           catalog(c), snapshot(s), source(s.canonical().data()),
-          transitions(s,config.transition_memory), executor(config.require_cpu, config.limits) {
+          transitions(s,config.transition_memory), rgba(storage.target_bytes * 2),
+          executor(config.require_cpu, config.limits) {
         require(source != nullptr && snapshot.canonical().size() == rom::us_size,
                 "startup graphics requires an admitted stable Snapshot", Error::resource);
         require(!catalog || (config.transition_memory.address==screen_transition::Resources::workspace.address &&
@@ -562,8 +575,8 @@ struct Frame::Impl {
             const auto scene = index == 0 ? menu::Scene::logo : menu::Scene::title_menu;
             auto& result = scenes[index];
             const auto& screen = catalog->screen(scene);
-            require(screen.width == width && screen.height == height &&
-                    screen.allocated_depth_bytes == target_bytes &&
+            require(screen.width == storage.width && screen.height == storage.height &&
+                    screen.allocated_depth_bytes == storage.target_bytes &&
                     physical(screen.framebuffer_guests[0]) == 0x3b5000 &&
                     physical(screen.framebuffer_guests[1]) == 0x3da800 && screen.framebuffer_guests[2] == 0,
                     "startup source framebuffer layout differs", Error::resource);
@@ -590,7 +603,7 @@ struct Frame::Impl {
                 result.reservations.push_back(converted);
             }
             for (unsigned i = 0; i < 2; ++i) {
-                const sp::RamRange framebuffer{physical(screen.framebuffer_guests[i]), target_bytes};
+                const sp::RamRange framebuffer{physical(screen.framebuffer_guests[i]), storage.target_bytes};
                 result.reservations.push_back(framebuffer);
             }
         }
@@ -610,7 +623,7 @@ struct Frame::Impl {
             for (const auto core : storage.ranges)
                 require(!intersects(range,core),"Source GPU storage aliases display core storage",Error::resource);
             if (source_screen) for (const auto framebuffer : source_targets)
-                require(!intersects(range,{framebuffer,target_bytes}),
+                require(!intersects(range,{framebuffer,storage.target_bytes}),
                         "Source GPU storage aliases display framebuffer",Error::resource);
         }
         std::sort(candidate.begin(),candidate.end(),[](const auto& a,const auto& b) { return a.address<b.address; });
@@ -653,11 +666,10 @@ struct Frame::Impl {
         source_configuration_ready();
         require(!source_screen && (depth ? source_depth_reserved && depth == &source_depth : !source_depth_reserved),
                 "source screen depth must be this Frame's actual capability or explicit NULL",Error::resource);
-        // Pinned sched.c339-361: 16A99 additionally disables VI gamma dither
-        // and enables VI dither-filter/divot. Both exact modes use RGBA16,
-        // noninterlaced 320x240 RDP storage. Native readback is not VI filtering.
-        require(screen.width == width && screen.height == height &&
-                (screen.flags == 0xa99 || screen.flags == 0x16a99) &&
+        // Exact admitted Source modes; native readback is not VI filtering.
+        require(screen.width == storage.width && screen.height == storage.height &&
+                ((storage.width == 320 && (screen.flags == 0xa99 || screen.flags == 0x16a99)) ||
+                 (storage.width == 640 && screen.flags == 0x695)) &&
                 screen.framebuffer_identity[2] == 0,
                 "source screen mode is not supported by the actual RGBA16 renderer", Error::resource);
         std::array<std::uint32_t, 2> targets{};
@@ -665,7 +677,7 @@ struct Frame::Impl {
             require(screen.framebuffer_identity[i] != 0,
                     "source screen is missing a source framebuffer identity", Error::resource);
             targets[i] = physical(screen.framebuffer_identity[i]);
-            const sp::RamRange target{targets[i], target_bytes};
+            const sp::RamRange target{targets[i], storage.target_bytes};
             require(!(target.address & 63u) && target.address <= menu::rdram_size &&
                     target.size <= menu::rdram_size - target.address,
                     "source framebuffer lacks aligned physical RDRAM storage", Error::resource);
@@ -676,11 +688,11 @@ struct Frame::Impl {
                 require(!intersects(target,range),
                         "source screen framebuffer aliases retained replay storage",Error::resource);
         }
-        require(!intersects({targets[0], target_bytes}, {targets[1], target_bytes}),
+        require(!intersects({targets[0], storage.target_bytes}, {targets[1], storage.target_bytes}),
                 "source screen framebuffer contexts overlap", Error::resource);
         std::copy(storage.ranges.begin(), storage.ranges.end(), source_reservations.begin());
         for (std::size_t i = 0; i < targets.size(); ++i)
-            source_reservations[storage.ranges.size() + i] = {targets[i], target_bytes};
+            source_reservations[storage.ranges.size() + i] = {targets[i], storage.target_bytes};
         source_targets = targets;
         source_screen = screen;
     }
@@ -831,7 +843,7 @@ struct Frame::Impl {
         const auto targets = source_screen ? source_targets : input.resources.framebuffers;
         const bool depthless = source_screen && !source_depth_reserved;
         const std::uint32_t depth = depthless ? 0 : storage.depth;
-        const std::uint32_t depth_bytes = depthless ? 0 : target_bytes;
+        const std::uint32_t depth_bytes = depthless ? 0 : storage.target_bytes;
         require(!source_depth_reserved || source_screen.has_value(),
                 "reserved source depth was never applied to an actual screen", Error::resource);
         require(!source_screen || input.resources.framebuffers == source_targets,
@@ -859,18 +871,18 @@ struct Frame::Impl {
         composition_reservations.insert(composition_reservations.end(),retained.begin(),retained.end());
         for (const auto framebuffer : targets) {
             require(!(framebuffer & 7u) && framebuffer <= menu::rdram_size &&
-                    target_bytes <= menu::rdram_size - framebuffer,
+                    storage.target_bytes <= menu::rdram_size - framebuffer,
                     "scene framebuffer exceeds physical RAM", Error::resource);
             for (const auto core : storage.ranges)
-                require(!intersects({framebuffer, target_bytes}, core),
+                require(!intersects({framebuffer, storage.target_bytes}, core),
                         "scene framebuffer overlaps core task/depth/command storage");
             for (const auto range : source_gpu_storage)
-                require(!intersects({framebuffer,target_bytes},range),
+                require(!intersects({framebuffer,storage.target_bytes},range),
                         "scene framebuffer overlaps retained Source GPU storage",Error::resource);
-            composition_reservations.push_back({framebuffer, target_bytes});
+            composition_reservations.push_back({framebuffer, storage.target_bytes});
         }
-        require(targets[0] + target_bytes <= targets[1] ||
-                targets[1] + target_bytes <= targets[0],
+        require(targets[0] + storage.target_bytes <= targets[1] ||
+                targets[1] + storage.target_bytes <= targets[0],
                 "scene source framebuffer contexts overlap", Error::resource);
         const auto protected_count = composition_reservations.size();
         require(input.resources.pre_render && input.resources.pre_render < menu::rdram_size &&
@@ -887,7 +899,7 @@ struct Frame::Impl {
             require((pass.camera || pass.kind == render::Kind::clear) &&
                     (pass.kind != render::Kind::compiled || pass.prepare),
                     "scene pass is missing its actual camera/compiled preparation");
-            if (pass.camera) static_cast<void>(bounds(camera_parameters(input.game, pass.camera).viewport));
+            if (pass.camera) static_cast<void>(bounds(camera_parameters(input.game, pass.camera).viewport,storage));
             require(!depthless || pass.control || !(pass.flags & 1u),
                     "depthless Source pass requested an actual depth clear",Error::resource);
             require(!depthless || pass.control || pass.kind != render::Kind::compiled || !pass.requires_depth,
@@ -950,7 +962,7 @@ struct Frame::Impl {
             wire::Memory memory(ram);
             const IsleGameFixedMatrix one{{{0x10000, 0, 1, 0}, {0, 0x10000, 0, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
             memory.matrix(storage.identity,one);
-            viewport(memory,storage.reset_viewport,full_viewport());
+            viewport(memory,storage.reset_viewport,full_viewport(storage),storage);
             commands.memory=&memory;
             commands.reset(color,input.resources.pre_render);
             require(commands.cursor<=outer_begin-8,"scene reset prefix exceeds its cold reservation",Error::preparation);
@@ -1042,10 +1054,10 @@ struct Frame::Impl {
             render::Prepared prepared;
             auto initialize = [&] {
                 mapped_commands([&](auto,auto& memory) {
-                vp = pass.camera ? camera_parameters(input.game, pass.camera).viewport : full_viewport();
-                viewport(memory, vp_address, vp);
+                vp = pass.camera ? camera_parameters(input.game, pass.camera).viewport : full_viewport(storage);
+                viewport(memory, vp_address, vp, storage);
                 commands.camera(vp_address, vp, pass.flags, pass.background_rgba, 0, color);
-                vp_bounds = bounds(vp);
+                vp_bounds = bounds(vp,storage);
                 clipped = {std::max(vp_bounds.left, pass.scissor.left),
                     std::max(vp_bounds.top, pass.scissor.top), std::min(vp_bounds.right, pass.scissor.right),
                     std::min(vp_bounds.bottom, pass.scissor.bottom)};
@@ -1059,10 +1071,10 @@ struct Frame::Impl {
                 require(pass.camera&&!(cursor&7u)&&!(end&7u)&&cursor<=end&&end<=ram.size_bytes(),
                         "source secondary camera cursor exceeds actual RAM",Error::preparation);
                 const auto& current=camera_parameters(input.game,pass.camera).viewport;
-                viewport(memory,vp_address,current);
+                viewport(memory,vp_address,current,storage);
                 Commands secondary{memory,storage,cursor,end,depth,depth_bytes};
                 secondary.camera(vp_address,current,pass.flags&~3u,pass.background_rgba,lane,color,true);
-                const auto current_bounds=bounds(current);
+                const auto current_bounds=bounds(current,storage);
                 const sp::Bounds restored{std::max(current_bounds.left,pass.scissor.left),
                     std::max(current_bounds.top,pass.scissor.top),std::min(current_bounds.right,pass.scissor.right),
                     std::min(current_bounds.bottom,pass.scissor.bottom)};
@@ -1365,7 +1377,7 @@ bool Frame::run_source_control(const SourceGpuBinding& binding,void* user,
             memory.copy(state.storage.boot,state.snapshot.canonical().subspan(wire::boot_rom,wire::boot_bytes));
             state.boot_resident=true;
         }
-        Commands commands{state.storage,state.storage.depth,target_bytes};
+        Commands commands{state.storage,state.storage.depth,state.storage.target_bytes};
         auto saved_command=commands.cursor;
         auto mapping=[&](void* context,void (*function)(void*,std::span<std::uint32_t>)) {
             state.write_commands(commands,[&](auto words,auto&) {function(context,words);});
@@ -1571,18 +1583,18 @@ Poll Frame::poll() noexcept {
         }
         const auto ram = completed.rdram();
         require(ram.size() == menu::rdram_size && state.color <= ram.size() &&
-                target_bytes <= ram.size() - state.color,
+                state.storage.target_bytes <= ram.size() - state.color,
                 "startup completed source framebuffer exceeds mapped GPU RAM", Error::execution);
-        for (std::size_t y = 0; y < height; ++y) {
-            const auto row = state.color + y * width * 2;
-            require(row <= ram.size() && width * 2 <= ram.size() - row,
+        for (std::size_t y = 0; y < state.storage.height; ++y) {
+            const auto row = state.color + y * state.storage.width * 2;
+            require(row <= ram.size() && state.storage.width * 2 <= ram.size() - row,
                     "startup completed source row exceeds mapped GPU RAM", Error::execution);
-            for (std::size_t x = 0; x < width; ++x) {
+            for (std::size_t x = 0; x < state.storage.width; ++x) {
                 const auto at = row + x * 2;
                 const auto pixel = (std::to_integer<unsigned>(ram[at ^ 3u]) << 8) |
                                    std::to_integer<unsigned>(ram[(at + 1) ^ 3u]);
                 const unsigned r = (pixel >> 11) & 31, g = (pixel >> 6) & 31, b = (pixel >> 1) & 31;
-                const auto destination = (y * width + x) * 4;
+                const auto destination = (y * state.storage.width + x) * 4;
                 state.rgba[destination] = std::byte((r << 3) | (r >> 2));
                 state.rgba[destination + 1] = std::byte((g << 3) | (g >> 2));
                 state.rgba[destination + 2] = std::byte((b << 3) | (b >> 2));
@@ -1636,7 +1648,8 @@ Error Frame::error() const noexcept { return impl_->error; }
 const char* Frame::message() const noexcept { return impl_->message.data(); }
 Completed Frame::completed() const noexcept {
     if (!impl_->ready || busy() || impl_->retired || impl_->error != Error::none) return {};
-    return {impl_->rgba, width, height, width * 4, impl_->offsets, impl_->ordinal};
+    return {impl_->rgba, impl_->storage.width, impl_->storage.height,
+            impl_->storage.width * 4, impl_->offsets, impl_->ordinal};
 }
 bool Frame::retire() noexcept {
     if (busy() || impl_->source_display_active) return false;

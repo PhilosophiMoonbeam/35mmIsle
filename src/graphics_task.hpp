@@ -109,13 +109,14 @@ struct ResetInputs {
     std::uint32_t framebuffer, depth, viewport, identity;
     std::uint32_t pre_render;
     std::uint32_t framebuffer_bytes, depth_bytes;
+    std::uint32_t width = 320, height = 240;
 };
 inline constexpr std::size_t reset_command_words = 60;
 // Source rdpReset numeric wire body, INCLUDING its actual global pre-render
 // call, but WITHOUT ENDDL. Append ENDDL in an owned slot for a callable reset.
 // Caller reserves all referenced targets/payloads/lists before writing packets.
 // Explicit target extents are their owned 16-bit allocations, not the global
-// 320x240 scissor installed here; Source offscreen callbacks replace that scissor.
+// scissor installed here; Source offscreen callbacks replace that scissor.
 // depth/depth_bytes == 0/0 explicitly binds Source NULL without claiming an
 // allocation at physical zero. Any non-NULL depth requires its positive extent.
 std::array<std::uint32_t, reset_command_words> reset_commands(ResetInputs);

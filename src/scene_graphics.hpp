@@ -26,10 +26,11 @@ struct Config {
     // Retained transition packets are relocatable runtime data, not Source ROM.
     // Snapshot composition may relocate; the Catalog adapter keeps its plan.
     sprite::RamRange transition_memory{0x1f0000,0x10000};
+    std::uint32_t raster_width = 320, raster_height = 240;
 };
 // Native source-screen semantics, not a console VI/ScreenSettings layout.
-// The supported 0xa99 mode scans two 320x240 RGBA16 source buffers. Guest
-// identities are preserved here; only their validated physical spans reach RDP.
+// Supported RGBA16 modes scan two buffers at the Frame's admitted cold extent.
+// Guest identities are preserved; only validated physical spans reach RDP.
 struct SourceScreen {
     std::uint32_t width = 320, height = 240, flags = 0xa99;
     std::array<std::uint32_t, 3> framebuffer_identity{0x803b5000, 0x803da800, 0};

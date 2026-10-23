@@ -39,10 +39,10 @@
       "sha256": "6ac71b3e99b556d564eef874de56b502b7bb67a1ac1ee7026a831ae5eccce4c6"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "7fdef8be2b549c0bacf0b7628dc050f8373b2a7a0e26ba848ca39faaba3539a4"
+      "sha256": "78a9cfb3f51791cd65464f81cf0baf9e5dd9394d67bdaa8da463d4ac3a9d33e5"
     },
     "src/scene_graphics.hpp": {
-      "sha256": "1340db97f8fd096a4e504cb4111ab0c56eea61daaa401999bba0c8d575949302"
+      "sha256": "0c58e995aa4a6ea6675579a719aad258f6e438a1b42a149bf8f3ed941b678954"
     },
     "src/rsp_render.hpp": {
       "sha256": "d90a83dcf18e035803c2bf4c9c8bb417a318d4e13a992f5905f652eff0e221fb"

@@ -58,11 +58,15 @@ public:
     bool pump_audio() noexcept;
     bool stop_audio() noexcept;
     Drain poll_audio_drain() noexcept;
-    // Copies exactly one tightly packed 320x240 RGBA8 surface synchronously.
-    // Declined presentation keeps this same copy; new frames cannot overwrite it.
-    // Source VI offsets are horizontal clocks and vertical half-lines, not camera
-    // pixels: x=horizontal/2, y=(vertical rounded down to even)/2 at 320x240.
+    // Explicit scene-cold boundary; refuses pending presentation or failed/stopped
+    // ownership. Supports only 320x240 and 640x480; fences old GPU/cache borrowers.
+    bool configure_present(std::uint32_t surface_width, std::uint32_t surface_height) noexcept;
+    // Copies one tightly packed RGBA8 surface at the configured extent. Declined
+    // presentation keeps this copy; queueing never allocates or changes extent.
+    // VI clocks/half-lines scale with extent; vertical rounds down to even first.
     bool queue_present(std::span<const std::byte>, save::ScreenOffsets = {}) noexcept;
+    bool queue_present(std::span<const std::byte>, std::uint32_t surface_width,
+                       std::uint32_t surface_height, save::ScreenOffsets = {}) noexcept;
     bool presentation_pending() const noexcept;
     Present try_present() noexcept;
     bool cancel_present() noexcept;

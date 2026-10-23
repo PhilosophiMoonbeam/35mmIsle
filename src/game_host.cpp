@@ -47,9 +47,11 @@ constexpr std::uint32_t audio_boot = 0x107000;
 constexpr std::uint32_t audio_text = 0x3d980, audio_data = 0x44ba0;
 constexpr std::size_t tile_width = 64, tile_height = 16;
 constexpr std::size_t tile_bytes = tile_width * tile_height * 4;
-constexpr std::size_t tile_columns = width / tile_width, tile_rows = height / tile_height;
-constexpr std::size_t tile_count = tile_columns * tile_rows;
-static_assert(tile_count * tile_bytes == rgba_bytes);
+constexpr std::size_t commands_per_tile = 16, fixed_commands = 18;
+// Keep the existing 64-byte backing alignment with exact per-extent ownership;
+// no dependency on a vector allocator's lesser byte-element alignment.
+struct alignas(64) Tile { std::array<std::byte, tile_bytes> bytes{}; };
+static_assert(sizeof(Tile) == tile_bytes);
 
 template<std::size_t N> void text(std::array<char, N>& to, const char* from) noexcept {
     const auto n = from ? std::min(N - 1, std::strlen(from)) : 0;
@@ -125,8 +127,11 @@ struct Host::Impl {
     GlFinish finish_gpu = nullptr;
     std::array<std::array<OSContPad, game_input::port_count>, 2> pads{};
     std::uint8_t controller_bits = 0;
-    alignas(64) std::array<std::byte, rgba_bytes> tiles{};
-    std::array<Gfx, 2048> commands{};
+    std::uint32_t present_width = width, present_height = height;
+    std::size_t tile_columns = width / tile_width, tile_rows = height / tile_height;
+    std::unique_ptr<Tile[]> tiles = std::make_unique<Tile[]>(tile_columns * tile_rows);
+    std::unique_ptr<Gfx[]> commands =
+        std::make_unique<Gfx[]>(fixed_commands + tile_columns * tile_rows * commands_per_tile);
     const std::unordered_map<Mtx*, MtxF> replacements;
     bool pending = false, sdl_owned = false, window_ready = false, config_ready = false, stopped = false;
     Shutdown closure{};
@@ -325,18 +330,18 @@ struct Host::Impl {
         finish_gpu();
         const auto interpreter = window->GetInterpreterWeak().lock();
         require(bool(interpreter), "Presentation lost its LUS interpreter");
-        for (std::size_t i = 0; i < tile_count; ++i)
-            interpreter->TextureCacheDelete(reinterpret_cast<const std::uint8_t*>(tiles.data() + i * tile_bytes));
+        for (std::size_t i = 0; i < tile_columns * tile_rows; ++i)
+            interpreter->TextureCacheDelete(reinterpret_cast<const std::uint8_t*>(tiles[i].bytes.data()));
     }
     void build_commands(save::ScreenOffsets offsets) {
-        Gfx* out = commands.data();
+        Gfx* out = commands.get();
         gDPPipeSync(out++);
-        gDPSetScissor(out++, G_SC_NON_INTERLACE, 0, 0, width, height);
-        gDPSetColorImage(out++, G_IM_FMT_RGBA, G_IM_SIZ_16b, width, 0x00100000);
+        gDPSetScissor(out++, G_SC_NON_INTERLACE, 0, 0, present_width, present_height);
+        gDPSetColorImage(out++, G_IM_FMT_RGBA, G_IM_SIZ_16b, present_width, 0x00100000);
         gDPSetDepthImage(out++, 0x00200000);
         gDPSetCycleType(out++, G_CYC_FILL);
         gDPSetFillColor(out++, 0x00010001);
-        gDPFillRectangle(out++, 0, 0, width - 1, height - 1);
+        gDPFillRectangle(out++, 0, 0, present_width - 1, present_height - 1);
         gDPPipeSync(out++);
         gDPSetCycleType(out++, G_CYC_1CYCLE);
         gDPSetTexturePersp(out++, G_TP_NONE);
@@ -347,15 +352,19 @@ struct Host::Impl {
         gDPSetRenderMode(out++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
         gDPSetCombineMode(out++, G_CC_DECALRGBA, G_CC_DECALRGBA);
         // GAME sched.c rounds both vertical edges DOWN to even half-lines.
+        // Source clocks/half-lines describe the same full VI surface at either
+        // extent: 320 uses half-pixel offsets, 640 uses whole-pixel offsets.
         const int vertical = offsets.vertical - ((offsets.vertical % 2 + 2) % 2);
+        const int horizontal_scale = int(present_width / width);
+        const int vertical_scale = int(present_height / height);
         for (std::size_t row = 0; row < tile_rows; ++row) for (std::size_t column = 0; column < tile_columns; ++column) {
-            const int x = int(column * tile_width * 4) + offsets.horizontal * 2;
-            const int y = int(row * tile_height * 4) + vertical * 2;
+            const int x = int(column * tile_width * 4) + offsets.horizontal * 2 * horizontal_scale;
+            const int y = int(row * tile_height * 4) + vertical * 2 * vertical_scale;
             const int left = std::max(0, x), top = std::max(0, y);
-            const int right = std::min(int(width * 4), x + int(tile_width * 4));
-            const int bottom = std::min(int(height * 4), y + int(tile_height * 4));
+            const int right = std::min(int(present_width * 4), x + int(tile_width * 4));
+            const int bottom = std::min(int(present_height * 4), y + int(tile_height * 4));
             if (left >= right || top >= bottom) continue;
-            const auto* source = tiles.data() + (row * tile_columns + column) * tile_bytes;
+            const auto* source = tiles[row * tile_columns + column].bytes.data();
             gDPLoadTextureTile(out++, source, G_IM_FMT_RGBA, G_IM_SIZ_32b, tile_width, tile_height,
                 0, 0, tile_width - 1, tile_height - 1, 0,
                 G_TX_CLAMP, G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
@@ -365,7 +374,6 @@ struct Host::Impl {
         }
         gDPFullSync(out++);
         gSPEndDisplayList(out++);
-        static_assert(16 + tile_count * 16 + 2 < 2048);
     }
     bool execute_audio(const audio::TaskView& built) noexcept {
         bool success = false;
@@ -547,16 +555,49 @@ Drain Host::poll_audio_drain() noexcept {
     if (impl_->audio_session->poll_drain() != audio::Error::none) { impl_->audio_failure("Source audio stream drain failed"); return Drain::failed; }
     return impl_->audio_session->state() == game_audio::Session::State::drained ? Drain::drained : Drain::pending;
 }
-bool Host::queue_present(std::span<const std::byte> rgba, save::ScreenOffsets offsets) noexcept {
+bool Host::configure_present(std::uint32_t new_width, std::uint32_t new_height) noexcept {
     if (impl_->stopped || impl_->error != Error::none || impl_->pending) return false;
-    if (rgba.size() != rgba_bytes || offsets.horizontal < -76 || offsets.horizontal > 24 ||
+    if (!((new_width == 320 && new_height == 240) || (new_width == 640 && new_height == 480)))
+        return impl_->fail(Error::invalid, "Unsupported presentation extent");
+    if (new_width == impl_->present_width && new_height == impl_->present_height) return true;
+    try {
+        const auto columns = new_width / tile_width, rows = new_height / tile_height;
+        auto tiles = std::make_unique<Tile[]>(columns * rows);
+        auto commands = std::make_unique<Gfx[]>(fixed_commands + columns * rows * commands_per_tile);
+        const auto interpreter = impl_->window->GetInterpreterWeak().lock();
+        require(bool(interpreter), "Presentation lost its LUS interpreter");
+        // Fence and delete using OLD addresses/count before changing backing.
+        impl_->invalidate_tiles();
+        interpreter->SetNativeDimensions(float(new_width), float(new_height));
+        impl_->tiles = std::move(tiles);
+        impl_->commands = std::move(commands);
+        impl_->present_width = new_width;
+        impl_->present_height = new_height;
+        impl_->tile_columns = columns;
+        impl_->tile_rows = rows;
+        return true;
+    } catch (const std::bad_alloc&) { return impl_->fail(Error::allocation, "Presentation extent allocation failed"); }
+    catch (const std::exception& e) { return impl_->fail(Error::graphics, e.what()); }
+    catch (...) { return impl_->fail(Error::graphics, "Presentation extent configuration failed"); }
+}
+bool Host::queue_present(std::span<const std::byte> rgba, save::ScreenOffsets offsets) noexcept {
+    return queue_present(rgba, impl_->present_width, impl_->present_height, offsets);
+}
+bool Host::queue_present(std::span<const std::byte> rgba, std::uint32_t surface_width,
+                         std::uint32_t surface_height, save::ScreenOffsets offsets) noexcept {
+    if (impl_->stopped || impl_->error != Error::none || impl_->pending) return false;
+    if (surface_width != impl_->present_width || surface_height != impl_->present_height ||
+        rgba.size() != std::size_t(impl_->present_width) * impl_->present_height * 4 ||
+        offsets.horizontal < -76 || offsets.horizontal > 24 ||
         offsets.vertical < -36 || offsets.vertical > 14) return impl_->fail(Error::invalid, "Invalid native RGBA8 surface or VI offsets");
     try {
         impl_->invalidate_tiles();
-        for (std::size_t row = 0; row < tile_rows; ++row) for (std::size_t column = 0; column < tile_columns; ++column)
-            for (std::size_t y = 0; y < tile_height; ++y)
-                std::memcpy(impl_->tiles.data() + (row * tile_columns + column) * tile_bytes + y * tile_width * 4,
-                    rgba.data() + (row * tile_height + y) * stride + column * tile_width * 4, tile_width * 4);
+        for (std::size_t row = 0; row < impl_->tile_rows; ++row)
+            for (std::size_t column = 0; column < impl_->tile_columns; ++column)
+                for (std::size_t y = 0; y < tile_height; ++y)
+                    std::memcpy(impl_->tiles[row * impl_->tile_columns + column].bytes.data() + y * tile_width * 4,
+                        rgba.data() + (row * tile_height + y) * impl_->present_width * 4 + column * tile_width * 4,
+                        tile_width * 4);
         impl_->build_commands(offsets);
         impl_->pending = true;
         return true;
@@ -569,7 +610,7 @@ Present Host::try_present() noexcept {
     if (!impl_->pending) return Present::idle;
     try {
         if (!impl_->window->IsRunning()) return cancel_present() ? Present::declined : Present::failed;
-        if (!impl_->window->DrawAndRunGraphicsCommands(impl_->commands.data(), impl_->replacements)) return Present::declined;
+        if (!impl_->window->DrawAndRunGraphicsCommands(impl_->commands.get(), impl_->replacements)) return Present::declined;
         impl_->finish_gpu(); // LUS OpenGL FinishRender is not a completion fence.
         impl_->pending = false;
         return Present::completed;

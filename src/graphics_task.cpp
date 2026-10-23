@@ -247,6 +247,9 @@ void plan_source_join(const SourcePrograms& programs,SourceProgramSelection sele
     output.empty=false;
 }
 std::array<std::uint32_t, reset_command_words> reset_commands(ResetInputs inputs) {
+    require((inputs.width == 320 && inputs.height == 240) ||
+            (inputs.width == 640 && inputs.height == 480),
+            "Invalid source reset global raster extent");
     require(inputs.framebuffer_bytes && !(inputs.framebuffer_bytes & 1u),
             "Invalid source reset owned 16-bit framebuffer extent");
     require((!inputs.depth && !inputs.depth_bytes) ||
@@ -284,7 +287,7 @@ std::array<std::uint32_t, reset_command_words> reset_commands(ResetInputs inputs
     mode(true, 9, 3, 0xc00); mode(true, 8, 1, 0);
     mode(false, 0, 2, 0); mode(false, 3, 29, 0x0f0a4000);
     mode(true, 6, 2, 0); command(0xe7000000, 0);
-    command(0xed000000, (320u * 4 << 12) | (240u * 4));
+    command(0xed000000, (inputs.width * 4 << 12) | (inputs.height * 4));
     command(0xde000000, inputs.pre_render);
     return words;
 }

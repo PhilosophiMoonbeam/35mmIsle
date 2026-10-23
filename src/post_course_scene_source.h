@@ -8,6 +8,8 @@ extern "C" {
 #endif
 
 enum {
+    /* Native overlay identity, never an application/guest scene selector. */
+    ISLE_POST_COURSE_PRINTER_DIAGNOSTIC = -2,
     ISLE_POST_COURSE_CAMERA_CHECK = 9,
     ISLE_POST_COURSE_ALBUM = 12,
     ISLE_POST_COURSE_REPORT = 14,

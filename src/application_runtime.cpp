@@ -377,11 +377,13 @@ struct Runtime::Impl {
         case ISLE_APPLICATION_ENTRY_REPORT:
         case ISLE_APPLICATION_ENTRY_GALLERY:
         case ISLE_APPLICATION_ENTRY_END_LEVEL_8:
+        case ISLE_APPLICATION_ENTRY_PRINTER_DIAGNOSTIC:
         case ISLE_APPLICATION_ENTRY_CREDITS: {
             if (!progress||!native_service.service)
                 return fail(ISLE_GAME_INVALID_STATE,"post-course entry requires bound actual Host progress");
             if (!photos) photos=std::make_unique<Photos>(snapshot,*state.save());
-            post_modules.observe_window(snapshot,manager->resources());
+            if(request->operation!=ISLE_APPLICATION_ENTRY_PRINTER_DIAGNOSTIC)
+                post_modules.observe_window(snapshot,manager->resources());
             post_course::Resources::Kind kind;
             switch (request->operation) {
             case ISLE_APPLICATION_ENTRY_CAMERA_CHECK: kind=post_course::Resources::Kind::camera_check; break;
@@ -391,11 +393,13 @@ struct Runtime::Impl {
             case ISLE_APPLICATION_ENTRY_GALLERY: kind=post_course::Resources::Kind::gallery; break;
             case ISLE_APPLICATION_ENTRY_END_LEVEL_8: kind=post_course::Resources::Kind::end_level_8; break;
             case ISLE_APPLICATION_ENTRY_CREDITS: kind=post_course::Resources::Kind::credits; break;
+            case ISLE_APPLICATION_ENTRY_PRINTER_DIAGNOSTIC: kind=post_course::Resources::Kind::printer_diagnostic; break;
             default: return fail(ISLE_GAME_INVALID_STATE,"post-course entry has no native resource kind");
             }
             auto made=post_course::Scene::create(snapshot,*manager,entry,state,input,audio,clock,*photos,
                 *progress,{this,service_post_course},post_modules,kind,
-                static_cast<std::int32_t>(request->argument),config.require_cpu_renderer);
+                static_cast<std::int32_t>(request->argument),config.require_cpu_renderer,
+                config.station,config.application_epoch,request->serial);
             if (!made) return fail(made.error,made.message.data());
             post=std::move(made.scene);
             const auto resumed=post->resume();
@@ -666,7 +670,7 @@ RuntimeCreateResult Runtime::create(const rom::Snapshot& snapshot,const menu::Ca
         if (std::adjacent_find(impl->callbacks.begin(),impl->callbacks.end(),[](const auto& a,const auto& b){return a.identity==b.identity;})!=impl->callbacks.end()) {
             made.error=ISLE_GAME_INVALID_STATE;text(made.message,"course callback Source identity has multiple owners");return made;
         }
-        auto manager=Manager::create(snapshot,state,input,audio,clock,catalog);
+        auto manager=Manager::create(snapshot,state,input,audio,clock,catalog,0,options.station);
         if (!manager) { made.error=manager.error;made.message=manager.message;return made; }
         impl->manager=std::move(manager.manager);
         auto graphics=scene::graphics::Frame::create(catalog,snapshot,{options.require_cpu_renderer,{16000000,4*1024*1024}});

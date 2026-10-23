@@ -316,6 +316,14 @@ These bindings are exercised through ordinary SDL keyboard input in the download
 
 Current candidate-specific execution evidence is in [Runtime status](#runtime-status) and [ADMISSION](docs/development/ADMISSION.md); earlier campaign, numerical, photo and menu proofs do not transfer automatically to a changed executable. Historical [preview 7](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.7) remains immutable. CI builds and checks new Runtime archives without uploading them while redistribution/compliance gates remain open. Windows ROM gameplay and Windows 11 hardware remain unqualified. [LICENSING](docs/planning/LICENSING.md#import-and-release-review-gates) governs embedded terms, linkage, source/relink delivery and publication; successful compilation or an asset-free archive is not a redistribution grant.
 
+### Native Snap Station
+
+Add `--snap-station-directory PATH` to the application command, selecting an existing writable output directory. This configures an output-backed virtual accessory; it does not connect automatically. Press `F9` to connect or disconnect. Connect before opening Gallery, select the four photographs through ordinary GAME controls, then choose **Print**.
+
+Original Save and printer-reset commands retire the old application and host, then recreate them through normal Boot using the same saved profile. The native station captures sixteen completed 640×480 GAME-rendered passes into an exclusive job directory containing `sheet.bmp`: a lossless 2560×1920, four-by-four sheet. It does not synthesize substitute photographs or require a physical Snap Station.
+
+The Diagnostic terminal window is blank after printing; output remains in its job directory. `Space`/Start publishes another identical `sheet-copy-N.bmp`; close the window normally to leave. Output errors fail explicitly rather than acknowledging a completed print. [Actual Linux execution and limits](docs/development/ADMISSION.md#native-virtual-snap-station-and-original-diagnostic) remain separate from Windows runtime and physical-printer qualification.
+
 ### Private intro asset and original C fade
 
 Configure the host above with `-DISLE_BUILD_GAME_ENGINE=ON` and optionally `-DISLE_SNAP_SOURCE_DIR=/path/to/read-only/pokemonsnap`. Then run the same explicit EGL/library environment with:

@@ -15,7 +15,7 @@ function(isle_prepare_post_course_source name generator generator_sha256 manifes
         message(FATAL_ERROR "Unadmitted ${name} manifest fingerprint")
     endif()
     file(READ "${manifest}" authority)
-    if(name STREQUAL "end-level-8")
+    if(name STREQUAL "end-level-8" OR name STREQUAL "printer-diagnostic")
         set(support_key support_sha256)
     else()
         set(support_key native_support)
@@ -33,7 +33,7 @@ function(isle_prepare_post_course_source name generator generator_sha256 manifes
         # Album admits its canonical recipe seal internally, not a CLI digest.
         set(arguments --source-repo "${_isle_snap_source}" --support-root "${PROJECT_SOURCE_DIR}"
             --build-root "${CMAKE_BINARY_DIR}" --manifest "${manifest}")
-    elseif(name STREQUAL "end-level-8")
+    elseif(name STREQUAL "end-level-8" OR name STREQUAL "printer-diagnostic")
         set(arguments --decomp "${_isle_snap_source}" --support-root "${PROJECT_SOURCE_DIR}"
             --recipe "${manifest}" --manifest-sha256 "${manifest_sha256}" --output "${private}")
     elseif(name STREQUAL "credits")
@@ -58,23 +58,26 @@ function(isle_prepare_post_course_source name generator generator_sha256 manifes
 endfunction()
 
 isle_prepare_post_course_source(album prepare_album.py
-    bdfd8de74a99280be4ab114a7cca38481ef2fc547faf7313c0512ecd7f3dca2d
-    8ebb591ee252894a9f4eb46e346323d9da3c9cc14e24cda12b009d7660a87506)
+    857859285d1bc25a1dc1977ceb6268a918865a0e379bf100dc9e4722005563f2
+    d6f774fc57b17f77f732c27cd7c4ca0e64f781ac68694569abf9e97369232c43)
 isle_prepare_post_course_source(report prepare_report.py
     d0917bfdf2910be85ce5f179744a102228577a9b33a314ac59a811720047f357
-    19b27f77402df523f760bfaf2105d4c6f573325b8a587e7d4bfa8e03485a6ead)
+    9245c8066d69f5b6ee30dc651065cd0f508b261a026a6ab706c2daa91c7700bb)
 isle_prepare_post_course_source(gallery prepare_gallery.py
     415b955dd3be508f9b84c2159ae6f4c83337db1ee3ed0de3480669fe01b9465f
-    7c162546808a684860892ab4fde9de19afe36cfe8cb8814484a82c8aa12dd0ba)
+    aaeab29e6853afe89cbf1c6207521db1fd9572cc4140f003cb6cbad5f1853cfc)
 isle_prepare_post_course_source(end-level-8 prepare_end_level_8.py
     cfe2689bcfceae343c4bf4a1f3ae2f64b853e2db4d47f1e68b4629bd82299b8c
-    ce681995b4b63c917e312ea2873b6f871dc49b56ec8458ad5f6e4f2bd81656d7)
+    58f9b7c151665816d104d093c903a6edff110bcd3963e65476e5c0b1dec0aa6d)
 isle_prepare_post_course_source(credits prepare_credits.py
     48fcee61dedca6bbba13982a1bb4bc0164210d95178644532fc6dc600d68cf35
-    52787cc9f12b8eaf246a7783f2642c10ac9466de77467264a869c8e307b3d4d5)
+    4bff0ff764a054beb28fc0a5c52b1c7b1ba8325611b91634410199d503ee13b5)
 isle_prepare_post_course_source(original-sort prepare_original_sort.py
     42364399b6b78b023ce393d3cd3b141b930229dcd8ecbfee3ddc037771ca4294
     abcaf6af309c144a0a8f13d0fae5a8f67e377950c9e5699304d492c6f9adc30e)
 isle_prepare_post_course_source(photo-check materialize_photo_check.py
     de71afa30ace2ec56c3ae3057fc0beef635cfa0e019b9bef087fb3aaf1ef1c3d
-    1249d5b12d186c5cf936e2538f0b92efda111133974516a487bfcea35e2cf920)
+    c92961a9e498d768732d23d1a0f0018b8534a35c972338c804fa3b2516472858)
+isle_prepare_post_course_source(printer-diagnostic prepare_printer_diagnostic.py
+    65bbadd50b6a3be6f7010e54d7e162c362ddef5bcf7605646a0ba13aaa5d6294
+    4808e16f07b3596f195b09d65d7d57f42ef9117f6a89e52fd720f97b556c9535)

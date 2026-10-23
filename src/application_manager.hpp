@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 
+namespace isle::snap_station { class Device; }
 namespace isle::application {
 struct EntryIntent {
     std::uint64_t serial = 0;
@@ -91,7 +92,7 @@ class Manager final {
 public:
     static CreateResult create(const rom::Snapshot&, game::State&, game_input::Service&,
         game_audio::Session&, host::GtlClock&, const menu::Catalog&,
-        std::int32_t manager_argument = 0) noexcept;
+        std::int32_t manager_argument = 0, snap_station::Device* station = nullptr) noexcept;
     ~Manager();
     Manager(const Manager&) = delete;
     Manager& operator=(const Manager&) = delete;

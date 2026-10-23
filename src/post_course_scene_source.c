@@ -10,6 +10,7 @@ typedef struct PostCourseCallFrame { jmp_buf failure; void* previous; } PostCour
     isle_post_course_source_checked((source), (result), __func__, #result, __LINE__)
 static int valid_scene(int32_t scene) {
     switch (scene) {
+    case ISLE_POST_COURSE_PRINTER_DIAGNOSTIC:
     case ISLE_POST_COURSE_CAMERA_CHECK:
     case ISLE_POST_COURSE_ALBUM:
     case ISLE_POST_COURSE_REPORT:

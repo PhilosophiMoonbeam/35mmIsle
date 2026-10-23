@@ -30,6 +30,8 @@
 #include <ship/thread/ThreadPool.h>
 
 #include <algorithm>
+#include <atomic>
+#include <cstdio>
 #include <cstring>
 #include <stdexcept>
 #include <string>
@@ -134,6 +136,10 @@ struct Host::Impl {
         std::make_unique<Gfx[]>(fixed_commands + tile_columns * tile_rows * commands_per_tile);
     const std::unordered_map<Mtx*, MtxF> replacements;
     bool pending = false, sdl_owned = false, window_ready = false, config_ready = false, stopped = false;
+    SDL_Window* native_window = nullptr;
+    SDL_WindowID native_window_id = 0;
+    std::atomic<std::uint32_t> station_actions{0};
+    bool watching_events = false;
     Shutdown closure{};
     Output output;
     std::unique_ptr<game_audio::Session> audio_session;
@@ -149,6 +155,13 @@ struct Host::Impl {
     bool fail(Error kind, const char* reason) noexcept {
         if (error == Error::none) { error = kind; text(message, reason); }
         return false;
+    }
+    static bool SDLCALL watch_event(void* raw, SDL_Event* event) noexcept {
+        auto& self = *static_cast<Impl*>(raw);
+        if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat &&
+            event->key.key == SDLK_F9 && event->key.windowID == self.native_window_id)
+            self.station_actions.fetch_add(1,std::memory_order_relaxed);
+        return true;
     }
     bool audio_failure(const char* reason) noexcept {
         const auto& e = output.error();
@@ -295,7 +308,7 @@ struct Host::Impl {
         window_ready = true;
         SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, false);
         if (deck) deck->Init(&controller_bits);
-        else for (const auto event : {SDL_EVENT_KEY_DOWN, SDL_EVENT_KEY_UP, SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP})
+        else for (const auto event : {SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP})
             SDL_SetEventEnabled(event, false);
         bridge->UpdateCaches(context);
         window->SetRendererUCode(ucode_f3dex2);
@@ -304,6 +317,12 @@ struct Host::Impl {
         const auto interpreter = window->GetInterpreterWeak().lock();
         require(interpreter && interpreter->GetCurrentRenderingAPI() && SDL_GL_GetCurrentContext() && window->IsRunning(),
                 "LUS did not establish its real SDL3/OpenGL window and renderer");
+        native_window = SDL_GL_GetCurrentWindow();
+        require(native_window != nullptr, SDL_GetError());
+        native_window_id = SDL_GetWindowID(native_window);
+        require(native_window_id != 0, SDL_GetError());
+        require(SDL_AddEventWatch(watch_event,this), SDL_GetError());
+        watching_events = true;
         finish_gpu = reinterpret_cast<GlFinish>(SDL_GL_GetProcAddress("glFinish"));
         require(finish_gpu != nullptr, "OpenGL completion barrier is unavailable");
         interpreter->SetNativeDimensions(float(width), float(height));
@@ -410,6 +429,10 @@ struct Host::Impl {
     }
     Shutdown shutdown() noexcept {
         if (stopped) return closure;
+        if (watching_events) {
+            SDL_RemoveEventWatch(watch_event,this);
+            watching_events = false;
+        }
         // No asynchronous audio execution exists in this owner. Complete/retire
         // PCM before Session retires Machine, and Machine before service RAM.
         if (audio_session) {
@@ -457,6 +480,8 @@ struct Host::Impl {
         // This also covers failures before a backend was acquired at all.
         if (sdl_owned) { SDL_Quit(); sdl_owned = false; }
         stopped = true;
+        native_window = nullptr; native_window_id = 0;
+        station_actions.store(0,std::memory_order_relaxed);
         closure.owners_released = window_witness.expired() && gui_witness.expired() && deck_witness.expired() &&
             resource_witness.expired() && pool_witness.expired();
         if (!closure.owners_released) fail(Error::platform, "Platform shutdown retained a LUS ownership cycle");
@@ -501,6 +526,24 @@ bool Host::pump_events() noexcept {
     try { impl_->window->HandleEvents(); return impl_->window->IsRunning(); }
     catch (const std::exception& e) { return impl_->fail(Error::platform, e.what()); }
     catch (...) { return impl_->fail(Error::platform, "LUS event processing failed"); }
+}
+bool Host::station_action_pending() const noexcept {
+    return impl_->station_actions.load(std::memory_order_relaxed) != 0;
+}
+bool Host::take_station_action() noexcept {
+    auto pending=impl_->station_actions.load(std::memory_order_relaxed);
+    while (pending) {
+        if (impl_->station_actions.compare_exchange_weak(pending,pending-1,std::memory_order_relaxed))
+            return true;
+    }
+    return false;
+}
+bool Host::station_feedback(const char* status) noexcept {
+    if (impl_->stopped || impl_->error != Error::none || !impl_->native_window || !status) return false;
+    std::array<char,768> caption{};
+    std::snprintf(caption.data(),caption.size(),"35mmIsle - Snap Station: %s",status);
+    return SDL_SetWindowTitle(impl_->native_window,caption.data()) ||
+        impl_->fail(Error::platform,SDL_GetError());
 }
 Input Host::acquire_input() noexcept {
     Input result;

@@ -2,6 +2,7 @@
 #include "oaks_lab_resources.hpp"
 #include "window_element.hpp"
 #include "window_widgets.hpp"
+#include "snap_station.hpp"
 #include <algorithm>
 #include <bit>
 #include <cstring>
@@ -432,12 +433,33 @@ struct Scene::Impl {
         if(result>=0){if(!forced_save())return false;s.state.clear_scene_notices();publish_exit(result);return false;}
         text.set_print_delay(0);return true;
     }
+    bool printer_save_notification(std::uint8_t command) {
+        auto* station=s.input.printer();
+        if(!station)return true;
+        if(station->error()!=snap_station::Error::none) {
+            s.fail(station->message());return false;
+        }
+        if(!station->available())return true;
+        auto idle=[&]() {
+            for(;;) {
+                std::uint8_t status=0;
+                if(!station->status(status)) {s.fail(station->message());return false;}
+                if(status!=8)return true;
+                if(!wait())return false;
+            }
+        };
+        if(!idle())return false;
+        if(!station->command(command)) {s.fail(station->message());return false;}
+        return idle();
+    }
     bool commit() {
         observed.phase=Phase::saving;++observed.commit_attempts;
+        if(!printer_save_notification(0xcc))return false;
         observed.commit=s.save.commit(s.raw_game_time);
         if(!commit_acknowledged(observed.commit)) {
             save_failure();return false;
         }
+        if(!printer_save_notification(0x33))return false;
         return refresh();
     }
     void save_failure() {

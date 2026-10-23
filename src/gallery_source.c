@@ -203,7 +203,22 @@ static void gc_deallocate(Context* source,void* p) { gc_check(source,source->nat
 static int32_t gc_printer_available(Context* source) { int32_t out; gc_check(source,source->native->printer_available(source,&out)); return out; }
 static int32_t gc_printer_status(Context* source) { int32_t out; gc_check(source,source->native->printer_status(source,&out)); return out; }
 static int32_t gc_fade_poll(Context* source) { int32_t out; gc_check(source,source->native->fade_poll(source,&out)); return out; }
-static int32_t gc_save(Context* source) { int32_t out; gc_check(source,source->native->save(source,&out)); return out; }
+static int32_t gc_save(Context* source) {
+    int32_t out;
+    if (gc_printer_available(source)) {
+        while (gc_printer_status(source) == 8) gc_wait(source,1);
+        gc_printer_command(source,0xCC);
+        while (gc_printer_status(source) == 8) gc_wait(source,1);
+    }
+    gc_check(source,source->native->save(source,&out));
+    if (out != 0) return out;
+    if (gc_printer_available(source)) {
+        while (gc_printer_status(source) == 8) gc_wait(source,1);
+        gc_printer_command(source,0x33);
+        while (gc_printer_status(source) == 8) gc_wait(source,1);
+    }
+    return 0;
+}
 static int32_t gc_report_count(Context* source) { int32_t out; gc_check(source,isle_application_photos_report_count(source->common.photos,&out)); return out; }
 static UnkStruct800BEDF8* gc_input(Context* source,int32_t player) {
     gc_check(source,source->native->input(source,player,&source->input)); return &source->input;

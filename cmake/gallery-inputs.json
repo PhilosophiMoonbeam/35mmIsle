@@ -546,7 +546,7 @@
       "sha256": "a3e203a99357e1f4769cd93cb71dce019e4ac8b4f4c21b73852508ff7e9eb6a9"
     },
     "src/gallery_source.c": {
-      "sha256": "34bf44a55e01d6ddafb4fb441b29ff73ffc811881b4c8c23cc391a7cc573376e"
+      "sha256": "d52c9f86325811e2f4a1af4c4a8bca0d9273220e0d2cdba28c724c1842ec6c2c"
     },
     "tools/prepare_gallery.py": {
       "sha256": "415b955dd3be508f9b84c2159ae6f4c83337db1ee3ed0de3480669fe01b9465f"
@@ -570,10 +570,10 @@
       "sha256": "23dc5f2f6c5ceeb53dcd6e4eab608ea70ade7c77448fe90a5cee7f93e772660c"
     },
     "src/application_runtime.cpp": {
-      "sha256": "d57c8ffcd96a219032066d940c32bb8227a0408f31781ec988917b5784a624e9"
+      "sha256": "607f47af0cc20ab17cd7ecbcfc26d2727f36185d3676fdd717467122da535cd5"
     },
     "src/application_runtime.hpp": {
-      "sha256": "2a721ab816cdd79b0031da9f2d17a7d9d1794a3420ae87fe9e4c8f882522768c"
+      "sha256": "c6d296b48ce731917910e3eb2aecf187debfe76bda0571c1099b156a1ef0d20e"
     },
     "src/continuation.cpp": {
       "sha256": "e4cc5bb6cf678d4c4eae24ada2dcf7c805f01ce5fbcd843e4b822e29bd952526"
@@ -585,7 +585,7 @@
       "sha256": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc"
     },
     "src/gallery_scene_native.cpp": {
-      "sha256": "41dd21db90da3efcc46d18f91b16b906fd3b3f3f559e5c3a6c26ef86ce9e9dfa"
+      "sha256": "534b528381c324d2c86f191b4b808a5ead83690316cad62bfb11abd846d602ff"
     },
     "src/gallery_scene_native.hpp": {
       "sha256": "eac96cb9145bfea7c3df822380c7f077cb34d15162cd6d18fabc8921e395452c"
@@ -627,31 +627,31 @@
       "sha256": "f047ac1b6c1389f9d845eddce542303cadf1a7fb2d0ce28d82ac76c6d26295be"
     },
     "src/post_course_resources.cpp": {
-      "sha256": "50a18de187e272422d5969cbd696d43b0167ea61f4f86fb6908d3578e73ce296"
+      "sha256": "77477497b126d3ff80f86d503fb48a2fae0f3d85e4677effa20c32f386aa00b9"
     },
     "src/post_course_resources.hpp": {
-      "sha256": "0bcc5cd7c0973f16c6ec6b41cc59019fd5560095849b24094cd59fba779eb467"
+      "sha256": "8931d253eca84147f89d643a934b36e6295a9b9f11b47c69e0c38cdeafd9f48e"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "97b0c363f8e96ee50fff6e219bc05ec8379488ca6e07eb79d4092d9f36dbdd19"
+      "sha256": "d689c2837cb2013ea7162be1abbdd50a7dd981ceaa4258ba2f57d63777034d65"
     },
     "src/post_course_scene.hpp": {
-      "sha256": "47806fecd9c8e2607780b7af9439abf6fc335fc53a90e31fe7606bcb70d3ebff"
+      "sha256": "307e4e1354680b07fc9eb171afcc01af751ed06e57b14b22a4b10671ab872748"
     },
     "src/post_course_scene_hooks.cpp": {
       "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
     },
     "src/post_course_scene_internal.hpp": {
-      "sha256": "c163c0c546a450c799c1a4d1436ea148b7297a7bf8d8e8890ee18c394d7f8fa7"
+      "sha256": "4c24997403f7da1c6e078a3032a1caa0b99549a74bfe9ad32d92922033fafa3e"
     },
     "src/post_course_scene_render.cpp": {
-      "sha256": "11063bd1c0fff307ea92554ce833135b01b216e95e03226a54356a235d9401fb"
+      "sha256": "5ea878e33518545ea8651cebf7c84a9c16a8fed90b59368a13ac4c217cbddaf3"
     },
     "src/post_course_scene_source.c": {
-      "sha256": "dc35ba10f91eefa2c07e82a32dc03a240f78e230768b67173e6ab747dfbc292b"
+      "sha256": "e0de60c22999218bab16c179bf1eacae22fcf7aa0f1a24d075cdd9426b1a498b"
     },
     "src/post_course_scene_source.h": {
-      "sha256": "03d53871c8831f18d89d2abc4fad1fdf3a517b658665f496a407272273c13fa9"
+      "sha256": "87fe86b4f837607881d77e5c20cdb87d9cdb717112af12e65847571ecf0ad48c"
     },
     "src/post_course_window.cpp": {
       "sha256": "9668b19639c177d52aa8a815395c8389a07cd78d1ec1c74e19c641fe249de4b2"
@@ -957,7 +957,7 @@
     "screen": "reserve_source_depth0x25800 align0x40 before applying actual canonical1690; no SDKlayout",
     "render": "DC8C0 exact returning display-list admission and DC948 exact render state only; never Source control transfer",
     "process_object": "return creation only; C installs supplied exact Source callback after return",
-    "printer": "actual Input noncontroller unsupported ->available0; Original observer/absent table stay C; forced native status/command rejects unavailable, never fake success",
+    "printer": "actual Input capability routes only to its borrowed live output-backed station; null/disconnected ->available0, failed live owner ->explicit endpoint failure; Original availability/status/command branches remain C, CC/33 bracket actual committed Save, 5A requests real same-profile application/host reset, never fake hardware success",
     "presentation": "begin identifies actual canonical photo read and invokes real compiled recorded-world Presentation; poll returns pending only for actual retained preparation; C polling preserves typed source continuation; native retains through graphics join/cancel retirement",
     "graphics_join": "actual submitted graphics join; no fake frame/tick success",
     "working": "4 distinct cold IslePhotoWorking owners, same Photos; copy_record4 then set_temporary_working4; canonical identify stays strict",
@@ -1903,7 +1903,7 @@
     }
   ],
   "native_outputs": {
-    "game.c": "6b6264f51d8bb8920bb8782f5e3937e903c9bfb2ac495f2b979f51a351bc22b7",
+    "game.c": "a831aa1ec04044f8d1598d0bc82eae8106233dd5f0c79d48db9456c0d823650c",
     "gallery_original.inc": "827df4fe6c51e6d0c41f34aa1904d59dec6e0ba663e8a5f9a7c649c48f87fd5d",
     "gallery_declarations.inc": "7b3c8324233d80b99d9ee70ebd55943e7f2220637d01449be6ba4e94e1427dee"
   },

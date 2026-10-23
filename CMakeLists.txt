@@ -108,8 +108,13 @@ target_compile_options(isle-native PRIVATE
 add_library(isle-host-clock STATIC src/host_clock.cpp src/host_clock.hpp)
 isle_target_options(isle-host-clock)
 
+add_library(isle-snap-station STATIC src/snap_station.cpp src/snap_station.hpp)
+target_include_directories(isle-snap-station PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+isle_target_options(isle-snap-station)
+
 add_library(isle-game-input STATIC src/game_input.cpp include/35mmisle/game_input.hpp)
 target_include_directories(isle-game-input PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(isle-game-input PUBLIC isle-snap-station)
 isle_target_options(isle-game-input)
 
 add_library(isle-photo-feedback STATIC src/photo_feedback.cpp include/35mmisle/photo_feedback.hpp)
@@ -720,6 +725,12 @@ if(BUILD_TESTING)
     target_link_libraries(game-input-tests PRIVATE isle-game-input Threads::Threads)
     isle_target_options(game-input-tests)
     add_test(NAME game-input-tests COMMAND game-input-tests)
+
+    add_executable(snap-station-tests tests/snap_station_tests.cpp)
+    target_link_libraries(snap-station-tests PRIVATE isle-snap-station)
+    isle_target_options(snap-station-tests)
+    add_test(NAME snap-station-tests COMMAND snap-station-tests)
+    set_tests_properties(snap-station-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
 
     add_executable(rom-tests tests/rom_tests.cpp)
     target_link_libraries(rom-tests PRIVATE isle-rom)
@@ -1570,7 +1581,9 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
     endif()
 endif()
 if(TARGET isle-window)
-    add_library(isle-post-course-resources STATIC src/post_course_resources.cpp src/post_course_resources.hpp)
+    add_library(isle-post-course-resources STATIC
+        src/post_course_resources.cpp src/post_course_resources.hpp
+        src/diagnostic_resources.cpp src/diagnostic_resources.hpp)
     target_link_libraries(isle-post-course-resources PUBLIC isle-window)
     isle_target_options(isle-post-course-resources)
     add_library(isle-post-course-window STATIC
@@ -1678,7 +1691,7 @@ if(TARGET isle-post-course-replay AND TARGET isle-post-course-window)
         "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
         "$<$<COMPILE_LANG_AND_ID:C,GNU>:-fexcess-precision=standard>"
         "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>")
-    foreach(_isle_post_module IN ITEMS album report gallery end_level_8 credits photo_check)
+    foreach(_isle_post_module IN ITEMS album report gallery end_level_8 credits photo_check printer_diagnostic)
         string(REPLACE "_" "-" _isle_post_name "${_isle_post_module}")
         add_library(isle-${_isle_post_name}-source OBJECT
             "${_isle_${_isle_post_module}_generated}" "src/${_isle_post_module}_source.h")
@@ -1704,11 +1717,12 @@ if(TARGET isle-post-course-replay AND TARGET isle-post-course-window)
         src/gallery_scene_native.cpp src/gallery_scene_native.hpp
         src/end_level_8_scene_native.cpp src/end_level_8_scene_native.hpp
         src/credits_scene_native.cpp src/credits_scene_native.hpp
+        src/printer_diagnostic_scene_native.cpp src/printer_diagnostic_scene_native.hpp
         src/credits_worker_native.cpp src/credits_worker_native.hpp)
     target_link_libraries(isle-post-course-scene PUBLIC
         isle-camera-check-source isle-photo-check-source isle-album-source isle-report-source
         isle-gallery-source isle-end-level-8-source isle-credits-source isle-application-manager
-        isle-application-photos isle-scene-graphics)
+        isle-application-photos isle-scene-graphics isle-printer-diagnostic-source isle-snap-station)
     isle_target_options(isle-post-course-scene)
     target_compile_options(isle-post-course-scene PRIVATE
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"

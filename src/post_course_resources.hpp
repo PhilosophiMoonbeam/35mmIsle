@@ -8,7 +8,7 @@
 namespace isle::post_course {
 class Resources final {
 public:
-    enum class Kind { camera_check, photo_check, album, report, gallery, end_level_8, credits };
+    enum class Kind { camera_check, photo_check, album, report, gallery, end_level_8, credits, printer_diagnostic };
     struct Origin {
         std::size_t rom_begin, rom_end;
         std::uint32_t guest_begin;

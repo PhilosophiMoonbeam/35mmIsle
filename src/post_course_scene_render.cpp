@@ -53,7 +53,8 @@ void append_range(std::vector<sprite::RamRange>& output,sprite::RamRange range) 
 IsleGameResult Scene::Impl::initialize_presentation() noexcept {
     try {
         auto& scene=live();
-        if((kind!=Resources::Kind::gallery && kind!=Resources::Kind::end_level_8) ||
+        if((kind!=Resources::Kind::gallery && kind!=Resources::Kind::end_level_8 &&
+            kind!=Resources::Kind::printer_diagnostic) ||
            !scene.pipeline || !scene.graphics || scene.presentation)
             return fail(ISLE_GAME_INVALID_STATE,"post-course full-photo initialization lacks its unique shared Replay");
         photo::PresentationConfig config;
@@ -63,12 +64,16 @@ IsleGameResult Scene::Impl::initialize_presentation() noexcept {
         if(kind==Resources::Kind::end_level_8) {
             config.dl_link=5;config.world_object_link=9;config.photo_object_link=8;
         }
+        if(kind==Resources::Kind::printer_diagnostic) {
+            config.dl_link=5;config.world_object_link=9;config.photo_object_link=3;
+        }
         auto& memory=config.memory;
         memory.world={{0x400000,0x20000},{0x420000,0x10000},{0x430000,0x10000}};
         memory.subjects={{0x440000,0x60000},{0x4a0000,0x20000},{0x4c0000,0x20000},{}};
         memory.items={{0x4e0000,0x10000},{0x4f0000,0x10000},{0x500000,0x10000},{}};
         memory.commands={0x510000,0x20000};
         memory.effects={0x580000,0x10000};memory.effect_assets={0x630000,0x80000};
+        if(kind==Resources::Kind::printer_diagnostic)memory.effect_assets=diagnostic_effect_assets;
         const std::array shared{memory.world.payloads,memory.world.lists,memory.world.materials,
             memory.subjects.payloads,memory.subjects.lists,memory.subjects.materials,
             memory.items.payloads,memory.items.lists,memory.items.materials,
@@ -134,6 +139,7 @@ scene::render::Input Scene::Impl::Native::render_input() {
     IsleGameCamera* photo_camera=nullptr;
     if(const auto* gallery=std::get_if<GallerySceneNative>(&menu))photo_camera=gallery->photo_camera;
     else if(const auto* end=std::get_if<EndLevel8SceneNative>(&menu))photo_camera=end->camera;
+    else if(const auto* diagnostic=std::get_if<PrinterDiagnosticSceneNative>(&menu))photo_camera=diagnostic->camera;
     const auto draw_control=+[](void*,scene::graphics::SourceControl& control) {
         control.draw();
         // These ordinary camera callbacks own the actual outer command group.
@@ -151,12 +157,17 @@ scene::render::Input Scene::Impl::Native::render_input() {
         // Copy the actual compiled transition recipe, including both its owner
         // lifetime and conservative depth declaration. Only kind0 is depthless.
         if(pass.camera==transition_camera)pass=graphics->transition_pass(transition);
-        if(photo_camera && pass.camera==photo_camera) {
+        if(photo_camera && pass.camera==photo_camera &&
+           (presentation || owner.kind!=Resources::Kind::printer_diagnostic)) {
             if(!presentation)throw std::logic_error("post-course Source full-photo camera has no Presentation owner");
             pass.kind=scene::render::Kind::compiled;
             pass.prepare=photo::Presentation::prepare_pass;
             pass.userdata=presentation.get();
             pass.requires_depth=true;
+        } else if(photo_camera && pass.camera==photo_camera) {
+            // Original terminal entry has an active camera but no photo objects.
+            pass.kind=scene::render::Kind::sprites;
+            pass.prepare=nullptr;pass.userdata=nullptr;pass.requires_depth=false;
         }
         IsleGameCameraRenderState state{};
         if(isle_game_camera_render_state(storage.game(),pass.camera,&state)!=ISLE_GAME_OK)
@@ -189,7 +200,9 @@ scene::render::Input Scene::Impl::Native::render_input() {
     programs.disable_near_clipping=owner.near_clipping_disabled;
     if(presentation_revision>(std::numeric_limits<std::uint64_t>::max()>>8))
         throw std::runtime_error("post-course Presentation resource identity exhausted");
-    const auto identity=(presentation_revision<<8)|static_cast<std::uint32_t>(owner.source().scene);
+    const auto context_identity=owner.kind==Resources::Kind::printer_diagnostic?0xfeu:
+        static_cast<std::uint32_t>(owner.source().scene);
+    const auto identity=(presentation_revision<<8)|context_identity;
     return {storage.game(),{identity,producer.get(),immutable,frame_reservations,
         {owner.screen_words[0]&0x1fffffffu,owner.screen_words[1]&0x1fffffffu},common->common_pre_render()},
         std::span<const scene::render::Pass>(passes).first(pass_count),offsets,

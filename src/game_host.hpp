@@ -51,6 +51,11 @@ public:
     game_audio::Session* audio() noexcept;
     const audio::SdlAudioOutput::Info& audio_info() const noexcept;
     bool pump_events() noexcept;
+    // Native F9 key-down edge, independent of controller/Source input. The
+    // caller consumes it outside Source callbacks before touching the endpoint.
+    bool station_action_pending() const noexcept;
+    bool take_station_action() noexcept;
+    bool station_feedback(const char* status) noexcept;
     Input acquire_input() noexcept;
     // Independent scheduler input: never called by events or presentation.
     bool notify_retrace(std::uint64_t ordinal, std::uint64_t monotonic_ns) noexcept;

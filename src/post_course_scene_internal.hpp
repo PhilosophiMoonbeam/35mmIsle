@@ -8,6 +8,8 @@
 #include "gallery_scene_native.hpp"
 #include "end_level_8_scene_native.hpp"
 #include "credits_scene_native.hpp"
+#include "printer_diagnostic_scene_native.hpp"
+#include "diagnostic_resources.hpp"
 #include "photo_presentation.hpp"
 #include <array>
 #include <cstring>
@@ -21,6 +23,9 @@
 #include <type_traits>
 
 namespace isle::post_course {
+// Exact 64-byte-aligned maximum of actual common+course FX packs over all seven
+// worlds (0xe800); both replay and display must lend the identical reservation.
+inline constexpr menu::RamRange diagnostic_effect_assets{0x380000,0xe800};
 struct Scene::Impl {
     const rom::Snapshot& snapshot;
     application::Manager& manager;
@@ -35,11 +40,15 @@ struct Scene::Impl {
     Resources::Kind kind;
     std::int32_t argument;
     bool require_cpu;
+    snap_station::Device* station;
+    std::uint64_t application_epoch,entry_serial;
+    std::shared_ptr<const DiagnosticResources> diagnostic_resources;
     const std::thread::id creator = std::this_thread::get_id();
     std::variant<std::monostate,IsleCameraCheckSource,IslePhotoCheckSource,
-        IsleAlbumSource,IsleReportSource,IsleGallerySource,IsleEndLevel8Source,IsleCreditsSource> context;
+        IsleAlbumSource,IsleReportSource,IsleGallerySource,IsleEndLevel8Source,IsleCreditsSource,
+        IslePrinterDiagnosticSource> context;
     std::variant<std::monostate,IslePhotoCheckEntry,IsleAlbumEntry,IsleReportEntry,
-        IsleGalleryEntry,IsleEndLevel8Entry> entry_context;
+        IsleGalleryEntry,IsleEndLevel8Entry,IslePrinterDiagnosticEntry> entry_context;
     IsleContinuationDomain* domain = nullptr;
     IsleContinuation* entry = nullptr;
     SceneStatus phase = SceneStatus::ready;
@@ -85,7 +94,7 @@ struct Scene::Impl {
         std::unique_ptr<Replay> replay;
         std::unique_ptr<photo::Presentation> presentation;
         std::variant<std::monostate,AlbumSceneNative,ReportSceneNative,GallerySceneNative,
-            EndLevel8SceneNative,CreditsSceneNative> menu;
+            EndLevel8SceneNative,CreditsSceneNative,PrinterDiagnosticSceneNative> menu;
         IsleGameObject* preview_object = nullptr;
         IsleGameCamera* preview_camera = nullptr;
         std::vector<WindowRasterSlot> element_slots;
@@ -119,7 +128,8 @@ struct Scene::Impl {
 
     Impl(const rom::Snapshot&,application::Manager&,game::State&,game_input::Service&,
          game_audio::Session&,host::GtlClock&,application::Photos&,host::Progress&,
-         ReplayNativeProgress,Modules&,Resources::Kind,std::int32_t,bool);
+         ReplayNativeProgress,Modules&,Resources::Kind,std::int32_t,bool,
+         snap_station::Device*,std::uint64_t,std::uint64_t);
     ~Impl();
     IslePostCourseSceneSource& source() noexcept;
     const IslePostCourseSceneSource& source() const noexcept;

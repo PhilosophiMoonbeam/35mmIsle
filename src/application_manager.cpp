@@ -1,4 +1,5 @@
 #include "application_manager.hpp"
+#include "snap_station.hpp"
 
 #include <cstdio>
 #include <exception>
@@ -154,6 +155,7 @@ struct Manager::Impl {
     game_audio::Session& audio;
     host::GtlClock& clock;
     Resources resources;
+    snap_station::Device* station = nullptr;
     const std::thread::id owner = std::this_thread::get_id();
     IsleContinuationDomain* domain = nullptr;
     IsleContinuation* continuation = nullptr;
@@ -169,8 +171,9 @@ struct Manager::Impl {
     bool resuming = false, cancelled = false, retired = false;
 
     Impl(const rom::Snapshot& snapshot, game::State& s, game_input::Service& i,
-         game_audio::Session& a, host::GtlClock& c, const menu::Catalog& catalog) noexcept
-        : state(s), input(i), audio(a), clock(c), resources(snapshot, catalog) {}
+         game_audio::Session& a, host::GtlClock& c, const menu::Catalog& catalog,
+         snap_station::Device* endpoint) noexcept
+        : state(s), input(i), audio(a), clock(c), resources(snapshot, catalog), station(endpoint) {}
     ~Impl() {
         // Construction failure also follows the same join-before-link-release
         // order. A live native scene borrow is a fatal ownership contract error.
@@ -192,10 +195,11 @@ Manager::Manager(std::unique_ptr<Impl> impl) noexcept : impl_(std::move(impl)) {
 Manager::~Manager() = default;
 CreateResult Manager::create(const rom::Snapshot& snapshot, game::State& state,
     game_input::Service& input, game_audio::Session& audio, host::GtlClock& clock,
-    const menu::Catalog& catalog, std::int32_t argument) noexcept {
+    const menu::Catalog& catalog, std::int32_t argument, snap_station::Device* station) noexcept {
     CreateResult made;
     try {
-        auto impl = std::make_unique<Impl>(snapshot, state, input, audio, clock, catalog);
+        auto impl = std::make_unique<Impl>(snapshot, state, input, audio, clock, catalog, station);
+        if (station && station->available()) input.bind_printer(station);
         if (!impl->resources.live()) {
             made.error = ISLE_GAME_INVALID_STATE;
             text(made.message, "application resources require the same live admitted Snapshot and Catalog");
@@ -404,17 +408,33 @@ struct NativeAccess {
         case Operation::vpk: return p.resources.retain(static_cast<IsleApplicationVpk>(call.a));
         case Operation::printer_available: {
             if (!call.output) return ISLE_GAME_INVALID_ARGUMENT;
-            const auto capability = p.input.require(game_input::Operation::printer);
-            // No N64 printer endpoint exists on these native platforms. The
-            // concrete input service states unsupported, not generic success.
-            if (capability == game_input::Error::unsupported) { integer(call.output, 0); return ISLE_GAME_OK; }
-            // A future endpoint requires its real memory/cache owner too. Do
-            // not advertise support merely because controller samples work.
-            return p.fail(ISLE_GAME_EXECUTION_FAILURE, "printer capability lacks a native memory/cache endpoint");
+            if (p.station && p.input.printer() == p.station &&
+                p.station->error() != snap_station::Error::none)
+                return p.fail(ISLE_GAME_EXECUTION_FAILURE,p.station->message());
+            integer(call.output, p.station && p.station->available() &&
+                p.input.require(game_input::Operation::printer) == game_input::Error::none ? 1 : 0);
+            return ISLE_GAME_OK;
         }
-        case Operation::printer_memory:
-        case Operation::cache:
-            return p.fail(ISLE_GAME_EXECUTION_FAILURE, "N64 printer memory/cache operation unavailable on native platform");
+        case Operation::printer_memory: {
+            if (!call.output || !p.station) return ISLE_GAME_INVALID_ARGUMENT;
+            snap_station::Memory memory;
+            if (!p.station->memory(memory)) return p.fail(ISLE_GAME_EXECUTION_FAILURE,p.station->message());
+            *static_cast<IsleApplicationPrinterMemory*>(call.output) =
+                {memory.words,memory.word_count,memory.byte_count};
+            return ISLE_GAME_OK;
+        }
+        case Operation::cache: {
+            if (!call.output || !p.station ||
+                (call.a != ISLE_APPLICATION_CACHE_WRITEBACK && call.a != ISLE_APPLICATION_CACHE_INVALIDATE))
+                return ISLE_GAME_INVALID_ARGUMENT;
+            const auto& memory = *static_cast<const IsleApplicationPrinterMemory*>(call.output);
+            if (memory.word_count != 0xffffc || memory.byte_count != 0x400000 ||
+                call.b != static_cast<std::int64_t>(memory.byte_count)) return ISLE_GAME_INVALID_ARGUMENT;
+            return p.station->cache({memory.words,memory.word_count,memory.byte_count},
+                call.a == ISLE_APPLICATION_CACHE_WRITEBACK ? snap_station::CacheOperation::writeback :
+                    snap_station::CacheOperation::invalidate) ? ISLE_GAME_OK :
+                p.fail(ISLE_GAME_EXECUTION_FAILURE,p.station->message());
+        }
         case Operation::flag:
         case Operation::saved_offsets: {
             if (!call.output || (call.operation == Operation::saved_offsets && !call.output2)) return ISLE_GAME_INVALID_ARGUMENT;
@@ -544,7 +564,8 @@ IsleGameResult isle_application_native_cache(IsleApplicationSource* s, IsleAppli
     const IsleApplicationPrinterMemory* memory, size_t bytes) {
     using A = isle::application::NativeAccess;
     if (!memory || bytes > static_cast<size_t>(std::numeric_limits<int64_t>::max())) return ISLE_GAME_INVALID_ARGUMENT;
-    return A::invoke({s,A::Operation::cache,op,static_cast<int64_t>(bytes)});
+    return A::invoke({s,A::Operation::cache,op,static_cast<int64_t>(bytes),0,0,
+        const_cast<IsleApplicationPrinterMemory*>(memory)});
 }
 IsleGameResult isle_application_native_check_flag(IsleApplicationSource* s, int32_t flag, int32_t* output) {
     using A = isle::application::NativeAccess; return A::invoke({s,A::Operation::flag,flag,0,0,0,output});

@@ -1,3 +1,4 @@
+#include "snap_station.hpp"
 #include "gallery_scene_native.hpp"
 #include "post_course_native_helpers.hpp"
 #include "photo_presentation.hpp"
@@ -416,24 +417,32 @@ IsleGameResult printer_available(S* s,int32_t* out) noexcept {
     if (!out) return ISLE_GAME_INVALID_ARGUMENT;
     return call(s,[&](auto& owner,auto& state) {
         state.printer_requirement = owner.input.require(game_input::Operation::printer);
-        if (state.printer_requirement != game_input::Error::unsupported) return ISLE_GAME_INVALID_STATE;
-        // This is the real controller service's absent accessory projection.
-        // No fake printer instance, cache/RAM test, or successful command.
-        *out = 0; return ISLE_GAME_OK;
+        if (owner.station && owner.input.printer() == owner.station &&
+            owner.station->error() != snap_station::Error::none) return ISLE_GAME_EXECUTION_FAILURE;
+        *out = state.printer_requirement == game_input::Error::none &&
+            owner.station && owner.station->available() ? 1 : 0;
+        return ISLE_GAME_OK;
     });
 }
 IsleGameResult printer_status(S* s,int32_t* out) noexcept {
     if (out) *out = 0;
     if (!out) return ISLE_GAME_INVALID_ARGUMENT;
-    return call(s,[](auto& owner,auto& state) {
+    return call(s,[&](auto& owner,auto& state) {
         state.printer_requirement = owner.input.require(game_input::Operation::printer);
-        return ISLE_GAME_INVALID_STATE;
+        std::uint8_t status = 0;
+        if (!owner.station || state.printer_requirement != game_input::Error::none ||
+            !owner.station->status(status)) return ISLE_GAME_EXECUTION_FAILURE;
+        *out = status;
+        return ISLE_GAME_OK;
     });
 }
-IsleGameResult printer_command(S* s,int32_t) noexcept {
-    return call(s,[](auto& owner,auto& state) {
+IsleGameResult printer_command(S* s,int32_t command) noexcept {
+    if (command < 0 || command > 255) return ISLE_GAME_INVALID_ARGUMENT;
+    return call(s,[&](auto& owner,auto& state) {
         state.printer_requirement = owner.input.require(game_input::Operation::printer);
-        return ISLE_GAME_INVALID_STATE;
+        return owner.station && state.printer_requirement == game_input::Error::none &&
+            owner.station->command(static_cast<std::uint8_t>(command)) ?
+            ISLE_GAME_OK : ISLE_GAME_EXECUTION_FAILURE;
     });
 }
 IsleGameResult sound_default(S* s,int32_t id) noexcept {

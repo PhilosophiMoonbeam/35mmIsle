@@ -51,15 +51,18 @@ std::uint32_t initialized_word(const rom::Snapshot& snapshot,Resources::Kind kin
 Scene::Impl::Impl(const rom::Snapshot& rom,application::Manager& app,game::State& persistent,
     game_input::Service& controllers,game_audio::Session& sound,host::GtlClock& gtl,
     application::Photos& records,host::Progress& host_progress,ReplayNativeProgress outer,
-    Modules& mutable_modules,Resources::Kind selection,std::int32_t entry_argument,bool cpu)
+    Modules& mutable_modules,Resources::Kind selection,std::int32_t entry_argument,bool cpu,
+    snap_station::Device* device,std::uint64_t epoch,std::uint64_t serial)
     :snapshot(rom),manager(app),state(persistent),input(controllers),audio(sound),clock(gtl),
      photos(records),progress(host_progress),outer_progress(outer),modules(mutable_modules),
-     kind(selection),argument(entry_argument),require_cpu(cpu) {
+     kind(selection),argument(entry_argument),require_cpu(cpu),station(device),
+     application_epoch(epoch),entry_serial(serial) {
     const auto ordinal=static_cast<std::size_t>(kind);
-    constexpr std::array<std::int32_t,7> scenes{9,15,12,14,22,24,17};
+    constexpr std::array<std::int32_t,8> scenes{9,15,12,14,22,24,17,-2};
     if(ordinal>=scenes.size() ||
        (kind==Resources::Kind::gallery ? argument!=22 && argument!=23 :
-        kind==Resources::Kind::credits ? argument<17 || argument>20 : argument!=scenes[ordinal]))
+        kind==Resources::Kind::credits ? argument<17 || argument>20 :
+        kind==Resources::Kind::printer_diagnostic ? argument<0 || argument>16 : argument!=scenes[ordinal]))
         throw std::invalid_argument("post-course Source kind/entry argument");
     if(!state.initialized() || !outer_progress.owner || !outer_progress.service)
         throw std::invalid_argument("post-course requires canonical State and actual native progress");
@@ -128,9 +131,11 @@ IsleGameResult Scene::Impl::prepare_entry() noexcept {
     case Resources::Kind::gallery:context.emplace<IsleGallerySource>();break;
     case Resources::Kind::end_level_8:context.emplace<IsleEndLevel8Source>();break;
     case Resources::Kind::credits:context.emplace<IsleCreditsSource>();break;
+    case Resources::Kind::printer_diagnostic:context.emplace<IslePrinterDiagnosticSource>();break;
     }
     auto& common_source=source();
-    common_source.owner=this;common_source.domain=domain;common_source.scene=argument;
+    common_source.owner=this;common_source.domain=domain;
+    common_source.scene=kind==Resources::Kind::printer_diagnostic?ISLE_POST_COURSE_PRINTER_DIAGNOSTIC:argument;
     common_source.photos=photos.native_source();common_source.status=ISLE_GAME_OK;
     void (*function)(void*)=nullptr;
     void* entry_argument=nullptr;
@@ -148,7 +153,8 @@ IsleGameResult Scene::Impl::prepare_entry() noexcept {
         try { native=std::make_unique<Native>(*this); }
         catch(const std::exception& error) {return fail(ISLE_GAME_INVALID_STATE,error.what());}
         catch(...) {return fail(ISLE_GAME_EXECUTION_FAILURE,"post-course cold native admission threw");}
-        common_source.game=native->storage.game();common_source.window=native->window->source();
+        common_source.game=native->storage.game();
+        common_source.window=native->window?native->window->source():nullptr;
         result=isle_post_course_source_activate(&common_source);
         if(result!=ISLE_GAME_OK)return fail(result,"post-course cold Source activation");
         native->activated=true;
@@ -170,6 +176,10 @@ IsleGameResult Scene::Impl::prepare_entry() noexcept {
             auto& call=entry_context.emplace<IsleEndLevel8Entry>();
             call.source=end;call.argument=argument;call.status=ISLE_GAME_OK;
             function=isle_end_level_8_source_entry;entry_argument=&call;
+        } else if(auto* diagnostic=std::get_if<IslePrinterDiagnosticSource>(&context)) {
+            auto& call=entry_context.emplace<IslePrinterDiagnosticEntry>();
+            call.source=diagnostic;call.argument=argument;call.status=ISLE_GAME_OK;
+            function=isle_printer_diagnostic_source_entry;entry_argument=&call;
         } else {
             function=isle_credits_source_entry;entry_argument=&std::get<IsleCreditsSource>(context);
         }
@@ -182,6 +192,20 @@ IsleGameResult Scene::Impl::prepare_entry() noexcept {
 }
 IsleGameResult Scene::Impl::admit_layout() noexcept {
     try {
+        if(kind==Resources::Kind::printer_diagnostic) {
+            if(!manager.resources().overlay_generation(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0) ||
+               manager.resources().overlay(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0).bytes.empty())
+                return fail(ISLE_GAME_INVALID_STATE,"Diagnostic requires its actual loaded overlay owner");
+            auto common=::isle::window::Resources::load(snapshot);
+            diagnostic_resources=DiagnosticResources::load(Resources::load(snapshot,common,kind));
+            const auto& screen=diagnostic_resources->screen();
+            requested_screen=0x801e5510;requested_setup=0x801e552c;
+            std::copy(screen.framebuffers.begin(),screen.framebuffers.end(),screen_words.begin());
+            screen_words[3]=screen.depth_buffer;screen_words[4]=screen.width;
+            screen_words[5]=screen.height;screen_words[6]=screen.flags;
+            setup_words=diagnostic_resources->setup_words();
+            return ISLE_GAME_OK;
+        }
         constexpr std::array<std::array<std::uint32_t,2>,7> addresses{{
             {0x801e4060,0x801e407c},{0x801e5410,0x801e542c},
             {0x801e4250,0x801e426c},{0x801e3c80,0x801e3c9c},
@@ -208,7 +232,7 @@ IsleGameResult Scene::Impl::prepare_menu() noexcept {
     try {
         auto& scene=live();
         IsleGameResult result=ISLE_GAME_OK;
-        if(kind!=Resources::Kind::album) {
+        if(scene.window && kind!=Resources::Kind::album) {
             result=scene.window->bind_graphics_frame(*scene.graphics);
             if(result!=ISLE_GAME_OK)return fail(result,"post-course Window Frame binding");
         }
@@ -239,6 +263,17 @@ IsleGameResult Scene::Impl::prepare_menu() noexcept {
                     isle_end_level_8_source_initialize(&std::get<IsleEndLevel8Source>(owner.context),
                         owner.modules.window_generation);
                 },this);
+        } else if(auto* source=std::get_if<IslePrinterDiagnosticSource>(&context)) {
+            auto& menu=scene.menu.emplace<PrinterDiagnosticSceneNative>(photos);
+            source->requiredNativeTable=&printer_diagnostic_scene_native_table();
+            result=isle_post_course_source_call(&source->common,
+                [](IslePostCourseSceneSource*,void* raw) {
+                    auto& owner=*static_cast<Impl*>(raw);
+                    isle_printer_diagnostic_source_initialize(
+                        &std::get<IslePrinterDiagnosticSource>(owner.context),
+                        owner.manager.resources().overlay_generation(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0));
+                },this);
+            if(result==ISLE_GAME_OK)result=printer_diagnostic_scene_native_prepare(source,menu);
         } else if(auto* source=std::get_if<IsleCreditsSource>(&context)) {
             auto& menu=scene.menu.emplace<CreditsSceneNative>(photos);
             source->native=&credits_scene_native_table();
@@ -296,25 +331,38 @@ Scene::Impl::Native::Native(Impl& parent):owner(parent),
         case Resources::Kind::report:return std::size_t{0x2d000};
         case Resources::Kind::end_level_8:return std::size_t{0x32000};
         case Resources::Kind::credits:return std::size_t{parent.argument==19?0x64000u:0x78000u};
+        case Resources::Kind::printer_diagnostic:return std::size_t{0x2d4000};
         }
         std::terminate();
     }()) {
     try {
         const auto created=storage.create();
         if(created!=ISLE_GAME_OK)throw std::runtime_error("post-course native Game construction");
-        common=::isle::window::Resources::load(owner.snapshot);
-        resources=Resources::load(owner.snapshot,common,owner.kind);
+        if(owner.kind==Resources::Kind::printer_diagnostic) {
+            if(!owner.diagnostic_resources)
+                throw std::invalid_argument("Diagnostic immutable resource owner is unavailable");
+            resources=owner.diagnostic_resources->owner();
+            common=resources->window();
+        } else {
+            common=::isle::window::Resources::load(owner.snapshot);
+            resources=Resources::load(owner.snapshot,common,owner.kind);
+        }
         producer=std::make_unique<sprite::Producer>(resources->roots(),resources->banks());
         services=std::make_unique<scene::Services>(storage.game(),storage.arena(),resources->view(),
                                                   owner.input,owner.audio,owner.state);
-        heap=std::make_shared<::isle::window::Heap>(heap_bytes);
-        buttons=std::make_unique<::isle::window::Buttons>(common,heap,*services);
-        text=std::make_unique<::isle::window::Text>(common->font());
-        ui_frame=std::make_unique<::isle::window::Frame>(*services,*common);
-        focus=std::make_unique<::isle::window::Focus>(*services,*common);
-        layout=std::make_unique<::isle::window::Layout>(*services,*common);
+        // Diagnostic uses native cameras/sprites, not the unloaded Window UI
+        // module. Its real Game/Services/Frame owners remain mandatory.
+        if(owner.kind!=Resources::Kind::printer_diagnostic) {
+            heap=std::make_shared<::isle::window::Heap>(heap_bytes);
+            buttons=std::make_unique<::isle::window::Buttons>(common,heap,*services);
+            text=std::make_unique<::isle::window::Text>(common->font());
+            ui_frame=std::make_unique<::isle::window::Frame>(*services,*common);
+            focus=std::make_unique<::isle::window::Focus>(*services,*common);
+            layout=std::make_unique<::isle::window::Layout>(*services,*common);
+        }
         const bool original_pair=owner.kind==Resources::Kind::camera_check || owner.kind==Resources::Kind::photo_check;
-        element_slots.reserve(original_pair?4:32);
+        if(owner.kind!=Resources::Kind::printer_diagnostic)
+            element_slots.reserve(original_pair?4:32);
         reservations.reserve(96);
         reservations.push_back({0x590000,0x10000});
         std::uint32_t next=0x710000;
@@ -339,6 +387,7 @@ Scene::Impl::Native::Native(Impl& parent):owner(parent),
         case Resources::Kind::gallery:add_elements(8,0x10000);break;
         case Resources::Kind::end_level_8:add_elements(1,0x10000);break;
         case Resources::Kind::credits:add_elements(14,0x5000);break;
+        case Resources::Kind::printer_diagnostic:break;
         }
         const auto add_thumbnails=[&](std::size_t count,std::uint32_t identity,bool primary_only=false) {
             const auto bytes=primary_only?std::size_t{8*3920}:Window::thumbnail_plane_bytes(*resources,identity);
@@ -367,6 +416,7 @@ Scene::Impl::Native::Native(Impl& parent):owner(parent),
         case Resources::Kind::gallery:add_thumbnails(11,0x801ea1b0);break;
         case Resources::Kind::end_level_8:break;
         case Resources::Kind::credits:add_thumbnails(5,0x801e6058,true);break;
+        case Resources::Kind::printer_diagnostic:break;
         }
         const auto sprite_assets=producer->assets();
         const auto common_assets=common->common_render_assets();
@@ -380,11 +430,16 @@ Scene::Impl::Native::Native(Impl& parent):owner(parent),
                 if(overlaps({asset.address,static_cast<std::uint32_t>(asset.bytes.size())},range))
                     throw std::runtime_error("post-course raster/command plan overlaps actual immutable assets");
         }
-        window=std::make_unique<Window>(*services,*text,*ui_frame,*focus,*layout,*buttons,
-            *resources,heap,*producer,WindowCapacity{element_slots,8,16,64,64,thumbnail_slots});
+        if(owner.kind!=Resources::Kind::printer_diagnostic)
+            window=std::make_unique<Window>(*services,*text,*ui_frame,*focus,*layout,*buttons,
+                *resources,heap,*producer,WindowCapacity{element_slots,8,16,64,64,thumbnail_slots});
         scene::graphics::Config config;
         config.require_cpu=owner.require_cpu;
         config.memory={{0x6b0000,0x10000},{0x6c0000,0x10000},{0x6d0000,0x40000},0x600000};
+        if(owner.kind==Resources::Kind::printer_diagnostic) {
+            config.raster_width=640;config.raster_height=480;
+            config.memory={{0x360000,0x10000},{0x370000,0x10000},{0x3b5000,0x40000},0x600000};
+        }
         config.transition_memory={0x5a0000,0x10000};
         auto created_frame=scene::graphics::Frame::create(owner.snapshot,config);
         if(!created_frame)throw std::runtime_error(created_frame.message.data());
@@ -445,6 +500,8 @@ void Scene::Impl::Native::add_camera(IsleGameObject* object,IsleGameCamera* came
     auto& pass=passes[pass_count++];pass={};
     pass.kind=scene::render::Kind::sprites;pass.camera=camera;
     pass.priority=priority;pass.link_mask=mask;pass.camera_tag=tag;
+    pass.scissor={0,0,static_cast<std::int32_t>(owner.screen_words[4]),
+        static_cast<std::int32_t>(owner.screen_words[5])};
     pass.tag_match=scene::render::TagMatch::intersection;
 }
 
@@ -466,6 +523,9 @@ IsleGameResult Scene::Impl::initialize_replay() noexcept {
         if(kind==Resources::Kind::end_level_8) {
             config.dl_link=5;config.world_object_link=9;config.photo_object_link=8;
         }
+        if(kind==Resources::Kind::printer_diagnostic) {
+            config.dl_link=5;config.world_object_link=9;config.photo_object_link=3;
+        }
         ::isle::graphics::SourceProgramSelection programs;
         programs.disable_near_clipping=near_clipping_disabled;
         config.program=::isle::graphics::source_task_program(programs,false);
@@ -477,6 +537,11 @@ IsleGameResult Scene::Impl::initialize_replay() noexcept {
         memory.effects={0x580000,0x10000};memory.effect_assets={0x630000,0x80000};
         memory.preview_color={0x7be600,0x20d00};memory.preview_depth={0x7df300,0x20d00};
         memory.feedback={0x7be600,0x27000};
+        if(kind==Resources::Kind::printer_diagnostic) {
+            memory.effect_assets=diagnostic_effect_assets;
+            memory.preview_color={0x5b0000,0x20d00};memory.preview_depth={0x5d0d00,0x20d00};
+            memory.feedback={0x5b0000,0x27000};
+        }
         std::vector<menu::RamRange> external;
         external.reserve(scene.reservations.size()+scene.graphics->reservations().size());
         for(const auto range:scene.graphics->reservations()) {
@@ -501,7 +566,8 @@ IsleGameResult Scene::Impl::initialize_replay() noexcept {
         scene.replay=std::make_unique<Replay>(scene.storage.game(),photos,*scene.pipeline,progress,audio,
                                             ReplayNativeProgress{this,native_progress});
         source().replay=scene.replay->source();scene.replay_initialized=true;
-        if(kind==Resources::Kind::gallery || kind==Resources::Kind::end_level_8) {
+        if(kind==Resources::Kind::gallery || kind==Resources::Kind::end_level_8 ||
+           kind==Resources::Kind::printer_diagnostic) {
             const auto initialized=initialize_presentation();
             if(initialized!=ISLE_GAME_OK)return initialized;
         }
@@ -727,13 +793,14 @@ Scene::~Scene()=default;
 SceneCreateResult Scene::create(const rom::Snapshot& snapshot,application::Manager& manager,
     const application::EntryBorrow& entry,game::State& state,game_input::Service& input,game_audio::Session& audio,host::GtlClock& clock,
     application::Photos& photos,host::Progress& progress,ReplayNativeProgress native_progress,
-    Modules& modules,Resources::Kind kind,std::int32_t argument,bool cpu) noexcept {
+    Modules& modules,Resources::Kind kind,std::int32_t argument,bool cpu,
+    snap_station::Device* station,std::uint64_t application_epoch,std::uint64_t entry_serial) noexcept {
     SceneCreateResult result;
     constexpr std::array operations{
         ISLE_APPLICATION_ENTRY_CAMERA_CHECK,ISLE_APPLICATION_ENTRY_PHOTO_CHECK,
         ISLE_APPLICATION_ENTRY_ALBUM,ISLE_APPLICATION_ENTRY_REPORT,
         ISLE_APPLICATION_ENTRY_GALLERY,ISLE_APPLICATION_ENTRY_END_LEVEL_8,
-        ISLE_APPLICATION_ENTRY_CREDITS};
+        ISLE_APPLICATION_ENTRY_CREDITS,ISLE_APPLICATION_ENTRY_PRINTER_DIAGNOSTIC};
     const auto ordinal=static_cast<std::size_t>(kind);
     if(ordinal>=operations.size() ||
        !manager.owns_entry(entry,operations[ordinal],static_cast<std::uint32_t>(argument))) {
@@ -743,7 +810,7 @@ SceneCreateResult Scene::create(const rom::Snapshot& snapshot,application::Manag
     }
     try {
         auto owner=std::make_unique<Impl>(snapshot,manager,state,input,audio,clock,photos,progress,
-                                        native_progress,modules,kind,argument,cpu);
+                                        native_progress,modules,kind,argument,cpu,station,application_epoch,entry_serial);
         result.error=owner->prepare_entry();
         if(result.error!=ISLE_GAME_OK) {copy_message(result.message,owner->diagnostic.data());return result;}
         result.scene=std::unique_ptr<Scene>(new Scene(std::move(owner)));
@@ -801,7 +868,8 @@ IsleGameResult Scene::initialize_scene() noexcept {
         auto& source=owner.source();
         if(!owner.native) {
             owner.native=std::make_unique<Impl::Native>(owner);
-            source.game=owner.native->storage.game();source.window=owner.native->window->source();
+            source.game=owner.native->storage.game();
+            source.window=owner.native->window?owner.native->window->source():nullptr;
             const auto activated=isle_post_course_source_activate(&source);
             if(activated!=ISLE_GAME_OK) {
                 source.game=nullptr;source.window=nullptr;
@@ -818,6 +886,7 @@ IsleGameResult Scene::initialize_scene() noexcept {
         case Resources::Kind::gallery:initialize=isle_gallery_source_init_call;break;
         case Resources::Kind::end_level_8:initialize=isle_end_level_8_source_init_call;break;
         case Resources::Kind::credits:initialize=isle_credits_source_init;break;
+        case Resources::Kind::printer_diagnostic:initialize=isle_printer_diagnostic_source_init_call;break;
         }
         owner.callbacks_active=true;
         const auto initialized=isle_post_course_source_call(&source,initialize,nullptr);
@@ -825,7 +894,8 @@ IsleGameResult Scene::initialize_scene() noexcept {
         if(initialized!=ISLE_GAME_OK && initialized!=ISLE_GAME_STOPPED)
             return owner.fail(initialized,"original post-course nonwaiting C initialization");
         if(initialized==ISLE_GAME_STOPPED)return owner.request_stop();
-        if(!owner.native->heap_admitted || !owner.native->input_initialized || !owner.native->replay_initialized)
+        if(owner.kind!=Resources::Kind::printer_diagnostic &&
+           (!owner.native->heap_admitted || !owner.native->input_initialized || !owner.native->replay_initialized))
             return owner.fail(ISLE_GAME_INVALID_STATE,"original post-course C initialization omitted native service admission");
         // Cold menus apply their actual Source screen during entry/C init.
         // Capacity seals that configuration only after those calls complete.
@@ -889,6 +959,10 @@ IsleGameResult Scene::release_completed() noexcept {
     if(p_->creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
     const auto completed=completed_frame();
     if(!completed)return ISLE_GAME_INVALID_STATE;
+    if(auto* diagnostic=std::get_if<IslePrinterDiagnosticSource>(&p_->context)) {
+        const auto staged=printer_diagnostic_scene_native_completed(diagnostic,completed);
+        if(staged!=ISLE_GAME_OK)return p_->fail(staged,"diagnostic completed Frame staging failed");
+    }
     p_->native->released_ordinal=completed.ordinal;
     return ISLE_GAME_OK;
 }
@@ -961,6 +1035,7 @@ const IsleReportSource* Scene::report_source() const noexcept {return std::get_i
 const IsleGallerySource* Scene::gallery_source() const noexcept {return std::get_if<IsleGallerySource>(&p_->context);}
 const IsleEndLevel8Source* Scene::end_level_8_source() const noexcept {return std::get_if<IsleEndLevel8Source>(&p_->context);}
 const IsleCreditsSource* Scene::credits_source() const noexcept {return std::get_if<IsleCreditsSource>(&p_->context);}
+const IslePrinterDiagnosticSource* Scene::printer_diagnostic_source() const noexcept {return std::get_if<IslePrinterDiagnosticSource>(&p_->context);}
 const IsleCameraCheckInput* Scene::camera_input_observation(std::size_t controller) const noexcept {
     if (!camera_source() || !p_->native || p_->native->retired ||
         controller >= p_->native->camera_inputs.size() || !p_->native->camera_input_observed[controller])

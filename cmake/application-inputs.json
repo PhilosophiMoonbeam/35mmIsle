@@ -1282,10 +1282,10 @@
       "sha256": "bf0ecd0c670c55c2fc38ea5d147669f36267058eb52b6150b270d6bf31932ca0"
     },
     "src/application_manager.hpp": {
-      "sha256": "ac75682a13a12b4f0aef4f249cc59b1d483ecac42e07fbfe141180187b221c75"
+      "sha256": "54bb9d1d4c1a7deefa45d99ec8e099c7bc5570719864b1cd2e84e5eb8a0ac543"
     },
     "src/application_manager.cpp": {
-      "sha256": "67c6aa1bc302e4f810fa247747a4e7979aadb6ad74477063a438961a6f07191b"
+      "sha256": "841eee02099e140250f1cbde847d25484bcdd14ad4da4393c7f7cee4e1ea513b"
     },
     "src/game_state.hpp": {
       "sha256": "670794a514a31b1681d95db964401c937787ffb421b0288773fb618fb6b202fa"
@@ -1306,10 +1306,10 @@
       "sha256": "e9cf3932229019f65ca03d701a54d669fd74e91467ec505055bdc5fa47ae3b43"
     },
     "include/35mmisle/game_input.hpp": {
-      "sha256": "7a4bf8cc03e3e745580d4b51d7fe54ee812851663f5fc57f18ad6436347c0bf2"
+      "sha256": "077b7510bd3b305593ef7eb4de40d489395028bd51b04c1f4b2bc5ef924d9719"
     },
     "src/game_input.cpp": {
-      "sha256": "aa8ee6dda25bfe06f7d2c3462ca66257c29b47b534508a69ee40c862c5281ba0"
+      "sha256": "bef472552378b9ade7d6614a3fadd6d08f8ad1a07b2dd435465351b39440b4a9"
     },
     "src/menu_resources.hpp": {
       "sha256": "da9f84df5bbd60eee3f2f430ffa01a218ab6fc98750e864b1560e66dfa6c97cc"

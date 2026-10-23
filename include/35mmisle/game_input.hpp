@@ -6,12 +6,13 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace isle::snap_station { class Device; }
 namespace isle::game_input {
 
 inline constexpr std::size_t port_count = 4;
 enum class Error { none, stopped, already_started, invalid_sample, invalid_parameter,
                    read_in_flight, pending_update, stale_token, exhausted, unsupported,
-                   transfer_full, transfer_empty };
+                   transfer_full, transfer_empty, endpoint_failure };
 enum class Connection { absent, present };
 // Identity is supplied by acquisition, not synthesized by the service. Zero means
 // absent. Error is the host's actual per-port read error, never accessory status.
@@ -94,6 +95,9 @@ public:
     [[nodiscard]] Error set_update_every_tick(bool enabled) noexcept;
     [[nodiscard]] Error set_hold(std::int32_t delay, std::int32_t interval) noexcept;
     [[nodiscard]] Error require(Operation operation) const noexcept;
+    // Borrowed native endpoint; owner-thread only and must outlive this binding.
+    void bind_printer(snap_station::Device* station) noexcept { station_ = station; }
+    snap_station::Device* printer() const noexcept { return station_; }
     [[nodiscard]] bool running() const noexcept { return running_; }
     [[nodiscard]] bool needs_publication() const noexcept { return dirty_; }
     [[nodiscard]] bool update_every_tick() const noexcept { return every_tick_; }
@@ -124,6 +128,7 @@ public:
     [[nodiscard]] Error set_menu_scale(std::uint32_t value) noexcept;
     [[nodiscard]] std::uint32_t menu_scale() const noexcept { return menu_scale_ * 8u; }
 private:
+    snap_station::Device* station_ = nullptr;
     struct State {
         Pad raw{};
         std::uint16_t pressed = 0, released = 0, held = 0;

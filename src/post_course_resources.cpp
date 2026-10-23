@@ -67,14 +67,15 @@ std::span<const window::Button> Resources::buttons(std::uint32_t guest) const {
 }
 Resources::Origin Resources::origin(Kind kind) {
     // Exact initialized data only; neither overlay code nor BSS is resident.
-    constexpr std::array<Origin,7> origins{{
+    constexpr std::array<Origin,8> origins{{
         {0x8817e0,0x8a70e0,0x801e3ff0},
         {0x994e10,0x9a6b10,0x801e53a0},
         {0x9ae430,0x9d3230,0x801e41e0},
         {0x9da580,0x9fa580,0x801e3c10},
         {0x9ff2e0,0xa084b0,0x801e1620},
         {0xa08d10,0xa08e30,0x801dd120},
-        {0xa95760,0xaa0650,0x801deba0}}};
+        {0xa95760,0xaa0650,0x801deba0},
+        {0xaa20a0,0xaaa610,0x801dd060}}};
     const auto index=static_cast<std::size_t>(kind);
     if (index>=origins.size()) throw std::invalid_argument("post-course overlay kind");
     return origins[index];
@@ -103,8 +104,9 @@ std::shared_ptr<const Resources> Resources::load(const rom::Snapshot& snapshot,
     auto owner = std::make_shared<sprite::Bank>(input.size());
     std::memcpy(owner->data(), input.data(), input.size());
     out->banks_ = {sprite::BankMapping{common[0].owner, common[0].guest}, sprite::BankMapping{std::move(owner), guest}};
-    for (const auto& resource : out->window_->sprites(window::ResourceBank::Group::common))
-        out->sprites_.push_back(resource);
+    if(kind!=Kind::printer_diagnostic)
+        for (const auto& resource : out->window_->sprites(window::ResourceBank::Group::common))
+            out->sprites_.push_back(resource);
     const auto root = [&out](std::uint32_t address) {
         const auto& bank = out->banks_[1];
         const auto result = sprite::hydrate(bank.owner, bank.guest_begin, address);
@@ -168,6 +170,9 @@ std::shared_ptr<const Resources> Resources::load(const rom::Snapshot& snapshot,
     } else if (kind==Kind::credits) {
         for (auto address : {0x801e6058u,0x801e6430u,0x801e67d8u,
             0x801e6aa8u,0x801e8b50u}) root(address);
+    } else if (kind==Kind::printer_diagnostic) {
+        // Pinned AA18E0.c declaration and source creation identity.
+        root(0x801e5478);
     }
     out->roots_.reserve(out->sprites_.size());
     out->indices_.reserve(out->sprites_.size());

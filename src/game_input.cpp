@@ -1,3 +1,4 @@
+#include "snap_station.hpp"
 #include "35mmisle/game_input.hpp"
 
 #include <algorithm>
@@ -188,7 +189,10 @@ Error Service::set_hold(std::int32_t delay, std::int32_t interval) noexcept {
     return Error::none;
 }
 Error Service::require(Operation operation) const noexcept {
-    return operation == Operation::controller_samples ? Error::none : Error::unsupported;
+    if (operation == Operation::controller_samples) return Error::none;
+    if (operation != Operation::printer || !station_) return Error::unsupported;
+    if (station_->error() != snap_station::Error::none) return Error::endpoint_failure;
+    return station_->available() ? Error::none : Error::unsupported;
 }
 Error Service::begin_update() noexcept {
     if (!running_) return Error::stopped;

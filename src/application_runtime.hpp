@@ -37,6 +37,8 @@ struct RuntimeConfig {
     // retain pointers, mutate Source or reenter Runtime. Not called on cancel.
     void* retirement_user = nullptr;
     void (*scene_retired)(void*, SceneRetirementView) = nullptr;
+    snap_station::Device* station = nullptr;
+    std::uint64_t application_epoch = 0;
 };
 // Borrowed owner-phase inspection. Pointers expire at the next pump/retirement;
 // no preparation, GPU, Photo or native identity credit is transferred here.

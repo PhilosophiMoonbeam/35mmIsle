@@ -11,9 +11,11 @@
 #include "gallery_source.h"
 #include "end_level_8_source.h"
 #include "credits_source.h"
+#include "printer_diagnostic_source.h"
 #include <memory>
 #include <optional>
 
+namespace isle::snap_station { class Device; }
 namespace isle::post_course {
 struct SceneCreateResult;
 struct SceneAccess;
@@ -29,7 +31,9 @@ public:
     static SceneCreateResult create(const rom::Snapshot&, application::Manager&,
         const application::EntryBorrow&, game::State&, game_input::Service&, game_audio::Session&, host::GtlClock&,
         application::Photos&, host::Progress&, ReplayNativeProgress, Modules&,
-        Resources::Kind, std::int32_t entry_argument, bool require_cpu_renderer=false) noexcept;
+        Resources::Kind, std::int32_t entry_argument, bool require_cpu_renderer=false,
+        snap_station::Device* station=nullptr, std::uint64_t application_epoch=0,
+        std::uint64_t entry_serial=0) noexcept;
     ~Scene();
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
@@ -60,6 +64,7 @@ public:
     const IsleGallerySource* gallery_source() const noexcept;
     const IsleEndLevel8Source* end_level_8_source() const noexcept;
     const IsleCreditsSource* credits_source() const noexcept;
+    const IslePrinterDiagnosticSource* printer_diagnostic_source() const noexcept;
     // Last input actually returned to original CameraCheck, not a new
     // menu/neutral derivation. Null until Source reads it, or after retirement.
     // Read-only borrow; serialized native updates may replace its values.

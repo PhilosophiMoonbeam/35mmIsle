@@ -683,6 +683,22 @@ if(ISLE_BUILD_GAME_ENGINE)
     endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+   CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64)$" AND
+   CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    # This loader-bootstrap helper cannot acquire libc or sanitizer runtimes.
+    # It is qualification tooling, never linked into or installed with the game.
+    add_library(isle-runtime-custody-audit MODULE
+        tools/runtime_custody_audit.c tools/runtime_custody_protocol.h)
+    target_compile_features(isle-runtime-custody-audit PRIVATE c_std_11)
+    target_compile_options(isle-runtime-custody-audit PRIVATE
+        -ffreestanding -fno-builtin -fno-stack-protector -fno-sanitize=all)
+    target_link_options(isle-runtime-custody-audit PRIVATE
+        -nostdlib -nodefaultlibs -fno-sanitize=all -Wl,-z,defs -Wl,-z,noexecstack)
+    set_target_properties(isle-runtime-custody-audit PROPERTIES
+        PREFIX "" C_VISIBILITY_PRESET default SKIP_BUILD_RPATH TRUE)
+endif()
+
 if(BUILD_TESTING)
     add_executable(native-tests tests/native_tests.c)
     target_link_libraries(native-tests PRIVATE isle-native)
@@ -731,6 +747,16 @@ if(BUILD_TESTING)
     isle_target_options(snap-station-tests)
     add_test(NAME snap-station-tests COMMAND snap-station-tests)
     set_tests_properties(snap-station-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+
+    if(TARGET isle-runtime-custody-audit AND NOT CMAKE_CROSSCOMPILING)
+        find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+        add_test(NAME runtime-custody-tests
+            COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tests/runtime_custody_tests.py"
+                --audit-module "$<TARGET_FILE:isle-runtime-custody-audit>"
+                --compiler "${CMAKE_C_COMPILER}")
+        set_tests_properties(runtime-custody-tests PROPERTIES
+            LABELS "synthetic;runtime-custody" TIMEOUT 180)
+    endif()
 
     add_executable(rom-tests tests/rom_tests.cpp)
     target_link_libraries(rom-tests PRIVATE isle-rom)

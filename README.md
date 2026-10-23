@@ -302,6 +302,8 @@ build/native-game/35mmisle /private/pokemonsnap.z64
 
 The Windows full-host preset builds `build/windows-host-release/Release/35mmisle.exe`. The application requires compatible Vulkan and SDL3/OpenGL support; it reads the exact supported ROM without modifying or bundling it. `--data-directory` selects profile/configuration storage. `--cpu-renderer` requires an actual Vulkan CPU device; it is not a null backend. `--disable-input` disables controller acquisition only, not Audio or graphics.
 
+`--renderer-resources PATH` selects the existing pinned LUS shader-resource directory explicitly; for the build above, use `build/native-game/host-renderer-resources`. An explicit path must contain `shaders/opengl/default.shader.glsl`; a missing path fails rather than falling back. Omit the option to retain installed-resource discovery and the build-tree default. This selects renderer support data, not ROM assets or an alternative graphics backend.
+
 Default keyboard controls:
 
 |Keyboard|N64 control|

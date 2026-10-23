@@ -20,20 +20,24 @@ using Argument=wchar_t;
 constexpr std::wstring_view help_option=L"--help",data_option=L"--data-directory";
 constexpr std::wstring_view cpu_option=L"--cpu-renderer",input_option=L"--disable-input";
 constexpr std::wstring_view station_option=L"--snap-station-directory";
+constexpr std::wstring_view resources_option=L"--renderer-resources";
 #else
 using Argument=char;
 constexpr std::string_view help_option="--help",data_option="--data-directory";
 constexpr std::string_view cpu_option="--cpu-renderer",input_option="--disable-input";
 constexpr std::string_view station_option="--snap-station-directory";
+constexpr std::string_view resources_option="--renderer-resources";
 #endif
 void usage(std::ostream& out) {
     out<<"Usage: 35mmisle <ROM> [--data-directory <directory>] [--cpu-renderer] [--disable-input]\n"
          "                  [--snap-station-directory <directory>]\n"
+         "                  [--renderer-resources <directory>]\n"
          "       35mmisle --help\n"
          "ROM must be the exact US Pokemon Snap image; z64/v64/n64 order is recognized from content.\n"
          "The ROM is read and normalized in memory, never modified or bundled.\n"
          "--cpu-renderer requires a CPU Vulkan device for canonical rendering.\n"
          "--disable-input disables controller acquisition for diagnostics; no controller is invented.\n"
+         "--renderer-resources selects an explicit existing pinned shader-resource directory.\n"
          "--snap-station-directory configures an existing output directory; F9 connects/disconnects.\n";
 }
 void nap() { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
@@ -94,6 +98,10 @@ int run(int argc,Argument** argv) {
         else if (option==input_option) host_config.input=isle::game_host::InputMode::diagnostic_disabled;
         else if (option==data_option&&index+1<argc) host_config.data_directory=std::filesystem::path(argv[++index]);
         else if (option==station_option&&index+1<argc) station_directory=std::filesystem::path(argv[++index]);
+        else if (option==resources_option&&index+1<argc) {
+            host_config.renderer_resources=std::filesystem::path(argv[++index]);
+            if(host_config.renderer_resources.empty()) { usage(std::cerr);return 2; }
+        }
         else { usage(std::cerr);return 2; }
     }
     const auto snapshot=isle::rom::read_snapshot(std::filesystem::path(argv[1]));

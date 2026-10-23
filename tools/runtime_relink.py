@@ -804,6 +804,47 @@ def elf_dynamic(path):
             'rpath': re.findall(r'\(RPATH\).*\[([^\]]*)\]', output)}
 
 
+def elf_identity(path):
+    """Read native ELF identity/program headers with binutils, without loading it.
+
+    This is deliberately separate from elf_dynamic's established return contract.
+    Consumers must supply their own admission policy for dynamic directives.
+    """
+    dynamic = elf_dynamic(path)
+    if dynamic is None:
+        fail('not an ELF image: ' + str(path))
+    environment = dict(os.environ, LC_ALL='C')
+    output = subprocess.check_output(
+        ['readelf', '--wide', '--file-header', '--program-headers', '--dynamic', str(path)],
+        text=True, env=environment, stderr=subprocess.PIPE)
+    def field(name):
+        match = re.search(r'^\s*' + re.escape(name) + r':\s*(.+)$', output, re.MULTILINE)
+        if not match:
+            fail('missing ELF header field ' + name)
+        return match.group(1).strip()
+    segments = []
+    for match in re.finditer(
+            r'^\s*(\S+)\s+(0x[0-9a-fA-F]+)\s+(0x[0-9a-fA-F]+)\s+'
+            r'(0x[0-9a-fA-F]+)\s+(0x[0-9a-fA-F]+)\s+(0x[0-9a-fA-F]+)'
+            r'\s+([RWE ]*?)\s+(0x[0-9a-fA-F]+)\s*$', output, re.MULTILINE):
+        kind, offset, address, physical, filesz, memsz, flags, alignment = match.groups()
+        segments.append({'type': kind, 'offset': int(offset, 16),
+                         'vaddr': int(address, 16), 'paddr': int(physical, 16),
+                         'filesz': int(filesz, 16), 'memsz': int(memsz, 16),
+                         'flags': flags.replace(' ', ''), 'align': int(alignment, 16)})
+    if not segments:
+        fail('ELF has no readable program headers: ' + str(path))
+    interpreters = re.findall(r'\[Requesting program interpreter:\s*([^\]]+)\]', output)
+    tags = re.findall(r'^\s*0x[0-9a-fA-F]+\s+\(([^)]+)\)\s*(.*)$',
+                      output, re.MULTILINE)
+    return {'class': field('Class'), 'data': field('Data'),
+            'machine': field('Machine'), 'type': field('Type').split()[0],
+            'entry': int(field('Entry point address'), 16),
+            'segments': segments, 'interpreters': interpreters,
+            'dynamic_tags': [{'tag': name, 'value': value} for name, value in tags],
+            'dynamic': dynamic}
+
+
 def linux_runtime_closure(settings, plan):
     """Resolve real ELF DT_NEEDED recursively, without executing any product.
 

@@ -7287,14 +7287,19 @@ of any complete campaign, audio-fidelity or Windows qualification.
 
 Native CI builds baseline/modified library companions, executes real generated
 code, relinks the actual product and runs help. Producer roots remain available;
-help is not a ROM-backed product-JIT proof. At source `44743a3`,
-[run 39945800990](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39945800990)
-passes nine jobs, including the complete Linux source-SDL capture, relink and
-Runtime archive checks. Native MSVC accepts the exact vcpkg JSON family, then
-rejects changed LUS `Fonts.h` bytes before product compilation. The canonical
-acquisition repair passes the local Windows-default smoke above; its native
-Windows result remains pending. VS2022's actual x64 developer environment is
-selected before host configuration, without invented SDK/library paths.
+help is not a ROM-backed product-JIT proof. At source `7e5fc69`,
+[run 39948927692](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39948927692)
+passes nine jobs, including complete Linux capture/relink/Runtime archive checks.
+Native MSVC accepts the exact notice families, builds the full product and all
+consumer targets, passes 59 CPU tests, executes help and creates the private kit.
+Its standalone library configuration then rejects an undefined `CMAKE_BUILD_TYPE`
+because the generated comparison used an unquoted variable. The corrected guard
+expands quoted values; a real Ninja Multi-Config consumer fails before and passes
+after, including library build, generated 42/43 code, whole-product relink and
+help. Wrong single-config and extra multi-config selections still reject.
+The repaired native MSVC companion and Windows Runtime archive remain pending.
+VS2022's actual x64 developer environment is selected before host configuration,
+without invented SDK/library paths.
 
 All new candidate archives and relink companions remain runner-local; automatic
 GAME-derived binary uploads are removed. Historical published previews are not

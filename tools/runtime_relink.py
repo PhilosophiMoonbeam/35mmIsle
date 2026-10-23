@@ -768,11 +768,11 @@ def library_source(settings, output, capture_record, api):
             fail('unrepresentable CMake option')
         return '[==[' + value + ']==]'
     flags = ['# Actual candidate lightning compilation flags; no producer include paths.',
-             'if(NOT CMAKE_BUILD_TYPE STREQUAL "" AND NOT CMAKE_BUILD_TYPE STREQUAL ' +
+             'if(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL ' +
              cmake_quote(settings['configuration']) + ')',
              '  message(FATAL_ERROR "Use the candidate configuration recorded in kit-manifest.json")', 'endif()']
     flags.extend([
-        'if(CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_CONFIGURATION_TYPES STREQUAL ' +
+        'if(CMAKE_CONFIGURATION_TYPES AND NOT "${CMAKE_CONFIGURATION_TYPES}" STREQUAL ' +
         cmake_quote(settings['configuration']) + ')',
         '  message(FATAL_ERROR "Configure only the recorded candidate configuration")', 'endif()',
         'file(SHA256 "${CMAKE_C_COMPILER}" _isle_candidate_compiler_sha256)',

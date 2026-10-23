@@ -1,0 +1,37 @@
+{
+  "json_version": "3.11.3",
+  "layout": "modular",
+  "name": "ubuntu-nlohmann-json3-3.12.0.really.3.12.0.really.3.11.3-3build1",
+  "package": {
+    "architecture": "all",
+    "binary_package": "nlohmann-json3-dev",
+    "binary_version": "3.12.0.really.3.12.0.really.3.11.3-3build1",
+    "bytes": 191288,
+    "path": "pool/main/n/nlohmann-json3/nlohmann-json3-dev_3.12.0.really.3.12.0.really.3.11.3-3build1_all.deb",
+    "repository": "https://archive.ubuntu.com/ubuntu",
+    "sha256": "d074e6107bef659ccfa169cb1d9e2e0daa9bcecfea84ce13c45812ff9cd58e9d",
+    "source_package": "nlohmann-json3",
+    "source_version": "3.12.0.really.3.12.0.really.3.11.3-3build1"
+  },
+  "review": "All45selectedheadersbyte-identicaltoofficialAPT-SHA256-boundbinarypackage;16headerbodyhashesdifferfromcanonicalupstream. CompleteactualheaderattributioninventorypreservesNielsLohmann2013-2023,FlorianLoitsch2009,Abseil2018,BjornHoehrmann2008-2009,EvanNemerson2016-2021/MIT,allretainedinnlohmann-3.11.3.txt. Thisisoneexactwholeheaderfamily,notper-fileunknownfallbackorlicenseofunrelatedcode. Requiredunchanged29headerpinsremaincanonical; unknown/mixed/alteredfamilyrejects.",
+  "schema": 1,
+  "sha256_overrides": {
+    "nlohmann/detail/conversions/from_json.hpp": "5f3aed574ebe5de7c851dbac103f180dfee4a47ee42be543d90411e6558e322b",
+    "nlohmann/detail/conversions/to_chars.hpp": "e6c861992eeda86e9786c262255a3c895528dac873105672aee8cd4470fa93ce",
+    "nlohmann/detail/conversions/to_json.hpp": "c5ba33e3934e2a24ac79ebffa3983e5fed4921c87f269900990078987b7c52af",
+    "nlohmann/detail/input/binary_reader.hpp": "d159bae1dc11f70015d6b7efa048f3695fd148a21d612280a216cf5407990726",
+    "nlohmann/detail/input/input_adapters.hpp": "be312b02b2f90c920b3eaf78bba2c5f8170d50ccdb22deeb795a2e48ffd22df7",
+    "nlohmann/detail/input/json_sax.hpp": "cdd33a21d2908fd56feb83f1521109fcbbb0caa0b9e05deb2955356f3137c369",
+    "nlohmann/detail/input/parser.hpp": "bdd1f6ff60a085bd4b094574d083744c0af0529c70232289f32b6a2e30c941bc",
+    "nlohmann/detail/macro_scope.hpp": "13a7c365c3de4f07c218476237a014dc6f9d16a1b7ed922cac5c20703f28bed3",
+    "nlohmann/detail/macro_unscope.hpp": "e979fa9fb8398d3eee4efe0caf442d8ebf73d8855fbf36663955dcc7e0774dba",
+    "nlohmann/detail/meta/cpp_future.hpp": "d13bc6be0b4b11a705bc38dbd9f19ccba11def2c0aa2ec5b879b0d732b16190e",
+    "nlohmann/detail/meta/std_fs.hpp": "6b3c379db833360ef778b200454b276fb1382ae5a42c479e5a07b2dc9772e399",
+    "nlohmann/detail/meta/type_traits.hpp": "f650f5f32ad652d6819dd1005491bd71a5e321dd28b3c4e229ccd937aeb033aa",
+    "nlohmann/detail/output/binary_writer.hpp": "f0278c59acf61bf906725f52ea490cb3bf68d1ae4b8e7e277bf17cf05c816e53",
+    "nlohmann/detail/output/serializer.hpp": "4867a5f1edf5fab005a91529f1c5b40f7f2977bcd699259efae25f3ea7be64a5",
+    "nlohmann/detail/string_escape.hpp": "a905c6e5cc037716c420f9fad8a7677b41510ae15a8ce93dd83b6287c10b85b5",
+    "nlohmann/json.hpp": "b6ae9fe0e4b02835185466309deafed1bca2facab121d7c819eb689e743d350d"
+  },
+  "upstream_base_commit": "9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03"
+}

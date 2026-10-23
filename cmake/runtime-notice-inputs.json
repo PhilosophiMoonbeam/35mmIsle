@@ -1,0 +1,879 @@
+{
+  "schema": 1,
+  "scope": "Runtime selected permissive embedded/file-level notices only; not R1/R2 approval or GNU lightning corresponding-source/relink delivery.",
+  "pins": {
+    "lus": "759b13401cd6903daa67a00a753066f791622e78",
+    "imgui": "4806a1924ff6181180bf5e4b8b79ab4394118875",
+    "monocypher": "0d85f98c9d9b0227e42cf795cb527dff372b40a4",
+    "stb": "0bc88af4de5fb022db643c2d8e549a0927749354"
+  },
+  "license_choices": {
+    "glob": "MIT selected from Dual MIT/GPL, explicitly selected by pinned LUS source",
+    "stb_image_and_imgui_imstb": "MIT selected; complete MIT OR public-domain alternatives preserved",
+    "monocypher": "BSD-2-Clause selected; complete BSD-2-Clause OR CC0-1.0 alternatives preserved",
+    "fontawesome_font": "OFL-1.1",
+    "iconfontcppheaders": "Zlib; upstream icon metadata CC-BY-3.0 attribution and terms preserved",
+    "proggyclean": "MIT",
+    "nlohmann_and_embedded_components": "MIT, preserving Loitsch, Abseil, Hoehrmann, Nemerson and Lohmann file-level attribution"
+  },
+  "inputs": [
+    {
+      "root": "lus",
+      "path": "include/ship/window/gui/Fonts.h",
+      "sha256": "857172f44e9c3139abdf5c7e9d525f201bb5a312bae172e77cb7396b507d375a"
+    },
+    {
+      "root": "lus",
+      "path": "include/ship/window/gui/IconsFontAwesome4.h",
+      "sha256": "c4ed89c262e87bb1efdf5f71159b48c5b0b583f9f9b8363910201d68b96ec021"
+    },
+    {
+      "root": "lus",
+      "path": "include/ship/utils/StrHash64.h",
+      "sha256": "194dfd6df2f8d2c310302a4b444bda480d5a210644a7640929a5f111c36bcce4",
+      "output": "libultraship/include_ship_utils_StrHash64.h.txt",
+      "ranges": [
+        [
+          14,
+          4437
+        ]
+      ]
+    },
+    {
+      "root": "lus",
+      "path": "src/ship/utils/StrHash64.cpp",
+      "sha256": "6322829e4f2576f5aff156e86bf6ebacb6fc423a55ec34fad07ca082c188b03f",
+      "output": "libultraship/src_ship_utils_StrHash64.cpp.txt",
+      "ranges": [
+        [
+          0,
+          4423
+        ]
+      ]
+    },
+    {
+      "root": "lus",
+      "path": "src/ship/utils/glob.c",
+      "sha256": "f2f3979af60d84c368d0436e2ddbe5251af6ed9397d55e7116ce00ac031a7ef8",
+      "output": "libultraship/glob-selection.txt",
+      "ranges": [
+        [
+          50,
+          263
+        ]
+      ]
+    },
+    {
+      "root": "monocypher",
+      "path": "LICENCE.md",
+      "sha256": "a5781770269d2516e52ba4863f790c10a16da4089a1e81823aee19ff1e9026b0",
+      "output": "monocypher/LICENCE.txt",
+      "ranges": [
+        [
+          0,
+          9256
+        ]
+      ]
+    },
+    {
+      "root": "monocypher",
+      "path": "src/monocypher.c",
+      "sha256": "02174117935699d418443c75a558a287deb06ef8cf7c1adced61d9047d2f323d",
+      "output": "monocypher/src_monocypher.c.txt",
+      "ranges": [
+        [
+          0,
+          2403
+        ]
+      ]
+    },
+    {
+      "root": "monocypher",
+      "path": "src/monocypher.h",
+      "sha256": "fcaf6ed771358bb4f40fba016f6518ae86ec02b1b877d2cc35ad92d3a26fd7b3",
+      "output": "monocypher/src_monocypher.h.txt",
+      "ranges": [
+        [
+          0,
+          2403
+        ]
+      ]
+    },
+    {
+      "root": "monocypher",
+      "path": "src/optional/monocypher-ed25519.c",
+      "sha256": "97d581639dfa72be08a6d57deb7d79b736be001cb416819cab196d22559d242b",
+      "output": "monocypher/src_optional_monocypher-ed25519.c.txt",
+      "ranges": [
+        [
+          0,
+          2403
+        ]
+      ]
+    },
+    {
+      "root": "monocypher",
+      "path": "src/optional/monocypher-ed25519.h",
+      "sha256": "3a3035181f991a158d0e1c7567258f0bae8ba0f1f23c5512b4a1db1b3c9730ce",
+      "output": "monocypher/src_optional_monocypher-ed25519.h.txt",
+      "ranges": [
+        [
+          0,
+          2403
+        ]
+      ]
+    },
+    {
+      "root": "stb",
+      "path": "stb_image.h",
+      "sha256": "c54b15a689e6a1f32c75e2ec23afa442e3e0e37e894b73c1974d08679b20dd5c",
+      "output": "stb/stb_image.txt",
+      "ranges": [
+        [
+          280174,
+          282848
+        ]
+      ]
+    },
+    {
+      "root": "imgui",
+      "path": "imstb_rectpack.h",
+      "sha256": "2efa3d5f7d003c19743b15155dad9f46d9f9fc783a18893d703b431d3c990972",
+      "output": "imgui/imstb_rectpack.h.txt",
+      "ranges": [
+        [
+          17670,
+          20344
+        ]
+      ]
+    },
+    {
+      "root": "imgui",
+      "path": "imstb_textedit.h",
+      "sha256": "77010e494caf72c178b573569612aec409d24380409676325a31d02de0ec64b7",
+      "output": "imgui/imstb_textedit.h.txt",
+      "ranges": [
+        [
+          54454,
+          57128
+        ]
+      ]
+    },
+    {
+      "root": "imgui",
+      "path": "imstb_truetype.h",
+      "sha256": "87f08919ae8e7223451d0e9d06b62829075d3e920c9e6ad436db9d7e7427ffce",
+      "output": "imgui/imstb_truetype.h.txt",
+      "ranges": [
+        [
+          196811,
+          199485
+        ]
+      ]
+    },
+    {
+      "root": "imgui",
+      "path": "backends/imgui_impl_opengl3_loader.h",
+      "sha256": "9d17b1679dc876e0ca693631030e70656c372c808c6767644c3b545834483e24",
+      "output": "imgui/opengl3-loader.txt",
+      "ranges": [
+        [
+          1694,
+          3032
+        ],
+        [
+          4189,
+          4527
+        ]
+      ]
+    },
+    {
+      "root": "imgui",
+      "path": "imgui_draw.cpp",
+      "sha256": "8823f49f5c7a5181c0435a5fa01a03c3ff5bece283482b81001e71a66993f997",
+      "output": "imgui/embedded-font-attributions.txt",
+      "ranges": [
+        [
+          223829,
+          224420
+        ],
+        [
+          228939,
+          229280
+        ]
+      ]
+    },
+    {
+      "root": "compliance",
+      "path": "notices/fontawesome-font.txt",
+      "sha256": "581aa71a6a298f52818499a98a92f2684351bb24ceac573290b8910f3a69287b",
+      "output": "licenses/fontawesome-font.txt",
+      "ranges": [
+        [
+          0,
+          4351
+        ]
+      ]
+    },
+    {
+      "root": "compliance",
+      "path": "notices/iconfontcppheaders.txt",
+      "sha256": "98752f93ac15b56698ff608ee8c1ac549142eada434921380e01dd360b15102a",
+      "output": "licenses/iconfontcppheaders.txt",
+      "ranges": [
+        [
+          0,
+          21032
+        ]
+      ]
+    },
+    {
+      "root": "compliance",
+      "path": "notices/proggyclean.txt",
+      "sha256": "b2d1a46a1b6ebb82f1ee67f4a746d1f1d357438409fb94ebc9b28f122c6c284d",
+      "output": "licenses/proggyclean.txt",
+      "ranges": [
+        [
+          0,
+          1205
+        ]
+      ]
+    },
+    {
+      "root": "compliance",
+      "path": "notices/glob-MIT.txt",
+      "sha256": "fa2092eb737b146c9a0a0510d3e4efe4286809a5f659f8dfd6e4a7f22d0f0a18",
+      "output": "licenses/glob-MIT.txt",
+      "ranges": [
+        [
+          0,
+          1475
+        ]
+      ]
+    },
+    {
+      "root": "compliance",
+      "path": "notices/glob-MIT.txt",
+      "sha256": "fa2092eb737b146c9a0a0510d3e4efe4286809a5f659f8dfd6e4a7f22d0f0a18",
+      "output": "imgui/Khronos-MIT-permission.txt",
+      "ranges": [
+        [
+          452,
+          1475
+        ]
+      ]
+    },
+    {
+      "root": "lus",
+      "path": "LICENSE",
+      "sha256": "fdd4f25c62f0a30865c4395d53e731be208c7b8912d5c068dbd93ca7fadc8a97",
+      "output": "libultraship/LICENSE.txt",
+      "ranges": [
+        [
+          0,
+          1090
+        ]
+      ]
+    },
+    {
+      "root": "imgui",
+      "path": "LICENSE.txt",
+      "sha256": "c80c5789748d955c4a650562baa0d750494e2c7128c2ca66aaebe2e3c4e198bf",
+      "output": "imgui/LICENSE.txt",
+      "ranges": [
+        [
+          0,
+          1083
+        ]
+      ]
+    }
+  ],
+  "json": {
+    "3.11.3": {
+      "commit": "9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03",
+      "distributions": [
+        {
+          "path": "notices/nlohmann-3.11.3-ubuntu-inputs.json",
+          "sha256": "dbe7d18550d69108d315ed13e1a9530c2fff743fa86c8b80834cc4864fd77588"
+        }
+      ],
+      "inputs": [
+        {
+          "root": "compliance",
+          "path": "notices/nlohmann-3.11.3.txt",
+          "sha256": "b551acbbf32d017331eed60b50fa362a211e27c73f695a246b189d7219ca907d",
+          "output": "nlohmann/LICENSE-and-file-attributions.txt",
+          "ranges": [
+            [
+              0,
+              2911
+            ]
+          ]
+        }
+      ],
+      "modular": [
+        {
+          "root": "json",
+          "path": "nlohmann/adl_serializer.hpp",
+          "sha256": "242b578e1a41c97dec6890bd88bdb824cdb76a9edd849c108299a59469d327e0"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/byte_container_with_subtype.hpp",
+          "sha256": "c7dc197cbb54b9168373b4b9a3e1cc57cc5583bfcf5008b722b363335bc53511"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/abi_macros.hpp",
+          "sha256": "1c7dc7c5062b199a35853f4056ed00ed359ef8fa5c7fb15a58bc79598ec21422"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/conversions/from_json.hpp",
+          "sha256": "b37ced0ba32f8ac5834b4c96058ca5e445bccea27f46299a359eed0ecbf2e58e"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/conversions/to_chars.hpp",
+          "sha256": "5fe11205c45dbd08373244d743f38e89ceefb8c9b5fc4c68077117c786d53bef"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/conversions/to_json.hpp",
+          "sha256": "73bad524856d475a6071fd7b5422f80df13ba7586f0d4b48141c2ec60cebcf89"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/exceptions.hpp",
+          "sha256": "55299c55106de2624ca7aa6a5705ad6ff53814c1b52f8fe8d2872f13c956c95a"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/hash.hpp",
+          "sha256": "74a9e3af772127cf0b12ee794abc8c47b5bea74ce658d0d20179a26be5d95d0d"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/binary_reader.hpp",
+          "sha256": "484bcc276c4fa6c7c61a93a8223f3e53bb4dc966e688e96641a93a50d7e503e9"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/input_adapters.hpp",
+          "sha256": "bd549419506089c82c94446f939587362ff01516b8e6624c472e704d27b1be42"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/json_sax.hpp",
+          "sha256": "9147c9d07784a5f3de890d68401ae07d03d0bc0db24ebcbe7beb8a31cfd858a0"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/lexer.hpp",
+          "sha256": "550c275f09d55deb1705b97b8a15b02f211ea0ba87e95452e7a023b854bb024c"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/parser.hpp",
+          "sha256": "094aed22cfdd641ac15ef59bfef8dd1e23fd92373633a92ed928cb580f0cbd7e"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/position_t.hpp",
+          "sha256": "0c9c5be26020c0a7929f3cc1e7e0065589d6a8f4dc1bd2ee13f10ef1a7efaa24"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/internal_iterator.hpp",
+          "sha256": "e75cf5e3c9ae358055bf3335fa2c5b6bbfbd1e24ea3dfdb62c187f37a8e2b485"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/iter_impl.hpp",
+          "sha256": "70d81ebb931db43a19fe3872a3fb1bc91fab27509c8d29ee4c4dd247b384cae1"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/iteration_proxy.hpp",
+          "sha256": "839efba147f6f15c693c741039daa3d383c2f4afb8fe653e4dad49a9f998d1d1"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/iterator_traits.hpp",
+          "sha256": "04b0edaeb214aa1c932b9078849a8fbbbda9c7a241b4cbc28a90b6d11c959443"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/json_reverse_iterator.hpp",
+          "sha256": "031b45c4f90ab7d64ecb6606fad880d867a23fc63a431f0de34f0fc104307b66"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/primitive_iterator.hpp",
+          "sha256": "6c949107bb779cecb8beba0835f7292656b52b08c3f6a6d3b27229b58c28aefe"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/json_custom_base_class.hpp",
+          "sha256": "70da7c5b17777f8da6d83310d6526856542585efa8a078db61227b11aaf9ec0b"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/json_pointer.hpp",
+          "sha256": "4cf537ad88b2d686d5a349b26da7e012ba9a58b01a0ab2badaa796d9150e69bb"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/json_ref.hpp",
+          "sha256": "1660750dd10a562aac1eea37021f1e7138a5d6d50b051815708497a8d30bf60d"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/macro_scope.hpp",
+          "sha256": "70d2b2aa49a93170ded3d0c0d1b0f76103fdd09704ba5ecc862bc03095920847"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/macro_unscope.hpp",
+          "sha256": "5f7040df475e2c943d9b22c335b61600deb14b1e48a69b3450de4c4a08c320bc"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/call_std/begin.hpp",
+          "sha256": "379660c15a30b84ff2a67e22734638f608cc37b34648461c7e9167da1153d861"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/call_std/end.hpp",
+          "sha256": "deca609bf200442f452b848c19f28ee30879df0ca35e959ed3b41f861c92df55"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/cpp_future.hpp",
+          "sha256": "486ba5a3724131d0c1646e36d9a4a9877505b2914078347e6067bb65593f01ce"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/detected.hpp",
+          "sha256": "f79aa1f107e4dfd4554753e6fe05364a1147ef4498d3125cfc939a5534d2d527"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/identity_tag.hpp",
+          "sha256": "bba9559dec8519de3044b537e96a59a601831797a5a3c38bf8023a6d949118d0"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/is_sax.hpp",
+          "sha256": "1f81d6098b9aad02a95c27ec333bbb13eec3c5171b968e39b7ecb1b06b16c55b"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/std_fs.hpp",
+          "sha256": "fb514154ea8c11c04a00efeb2e89edbfd40f149ed39ef36568d9b2a1062e85e0"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/type_traits.hpp",
+          "sha256": "1f901f9e4bcd585ff22c6b0c0956566ba8a4a1238a490a64e7755a2c313040d5"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/void_t.hpp",
+          "sha256": "581e7b157457eb9c488793f2cd7066b2c1ba31d5e9fea6f0d67c8c732b5088e4"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/output/binary_writer.hpp",
+          "sha256": "665ce1ea5fb2cb425896b713bdd8d8d5a6d69688924fa6e2efaffb4e9d132011"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/output/output_adapters.hpp",
+          "sha256": "1e0bcc375b4d84180649198e2f8061f5968a10a6913231fee097689d281ed565"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/output/serializer.hpp",
+          "sha256": "259c611d4b1147e3626d25bc05994b28f91f4fcca2e578e486dcf51c0234e5c8"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/string_concat.hpp",
+          "sha256": "e8001630045f800c0ebcfc19e2b2f90139a4d20a9a359e134657767fd6fa9aa2"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/string_escape.hpp",
+          "sha256": "3bf6687ffa7f6fd3034591adfdd6ea073584df83694c6b57feed9ada965801e7"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/value_t.hpp",
+          "sha256": "60a7e24b34e93b8ba40eecf310a40c55042754328271c246f9cc1069f6a25958"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/json.hpp",
+          "sha256": "2432cbf7f4258453538eca193cd937fc777462ae2ce8ee9f46e6ee460ef56bea"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/json_fwd.hpp",
+          "sha256": "c5b950b428534861b5869254fd773afc724112fc9e141bd1fc89189640a3ae5d"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/ordered_map.hpp",
+          "sha256": "31d1bb02500b734e09c27ce2cc216c8af188344fbc19a6946ae301a12c7b62df"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/thirdparty/hedley/hedley.hpp",
+          "sha256": "20d6c1c6d6c30365f68a45093798937971b593919fb3051431f0c015dfa671fb"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/thirdparty/hedley/hedley_undef.hpp",
+          "sha256": "0f8902f26872f40a2514e9c9be2fcebfce6cde0022e9364fddd17fb49575b146"
+        }
+      ],
+      "single": [
+        {
+          "root": "json",
+          "path": "nlohmann/json.hpp",
+          "sha256": "9bea4c8066ef4a1c206b2be5a36302f8926f7fdc6087af5d20b417d0cf103ea6"
+        }
+      ]
+    },
+    "3.12.0": {
+      "commit": "55f93686c01528224f448c19128836e7df245f72",
+      "inputs": [
+        {
+          "root": "compliance",
+          "path": "notices/nlohmann-3.12.0.txt",
+          "sha256": "ce3fc8311c9f338131d8e69b94e0e968be342bafbfd51aa1c3c81503373b2069",
+          "output": "nlohmann/LICENSE-and-file-attributions.txt",
+          "ranges": [
+            [
+              0,
+              2923
+            ]
+          ]
+        }
+      ],
+      "modular": [
+        {
+          "root": "json",
+          "path": "nlohmann/adl_serializer.hpp",
+          "sha256": "80742b0081e0ac5094ad4d7a3549e969b004bb7ed86807911a8177c843701262"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/byte_container_with_subtype.hpp",
+          "sha256": "2b75a051d2f82fd95f613c70472b85a281d085f1973791c1118244099bf38942"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/abi_macros.hpp",
+          "sha256": "cebb5441f1ce851444f47a7d8ea0446339ee499df83215ebd873c8347a191bd7"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/conversions/from_json.hpp",
+          "sha256": "5f227d243c0d5c0d67c4c72b2b57fb8a7d50053ab2d667fb6a5880b1481fc9f1"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/conversions/to_chars.hpp",
+          "sha256": "20b9bc4469ee490bc626d8dbcdee060a494292473df4bdbcecfe2f2145ed562d"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/conversions/to_json.hpp",
+          "sha256": "46429c1b87ea71962ffb68dcb0a7e7811a3ebf5f102bcf318688e48ff1f6b73e"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/exceptions.hpp",
+          "sha256": "5c9b21e0a13ac0bab8dea676b9804d739dfd2adc24f036f97ab243ef70e2aae7"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/hash.hpp",
+          "sha256": "a025807281c5d92fdfddcc993b2b2a9658146435cc10b003723b130698445c80"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/binary_reader.hpp",
+          "sha256": "9e617825317910352f2a2025bb8749898287fa3003e81ce22a57b52c535d0eab"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/input_adapters.hpp",
+          "sha256": "01fa7af8fdd1ba7b1c12089bf92783f70d09a93db7564e4df70544fc85304de6"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/json_sax.hpp",
+          "sha256": "0ed6fdb0ef91f163cca312b7ffd6e0842f12e1b8340204ab2d0c05277e0d1f18"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/lexer.hpp",
+          "sha256": "a8b73e55242731375c088133f3a355af7b1bb82d6b9531678cb20560d3733c1d"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/parser.hpp",
+          "sha256": "b4a762967b174de0c43896b465e4a7c8c92c3a8636f669debdec836050f7912a"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/input/position_t.hpp",
+          "sha256": "0239037872b622a5f3f42fa1b453d201f977d21829b2dc4a19abe2594515eada"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/internal_iterator.hpp",
+          "sha256": "bf015623518c5aab4762d9a4d21af0e85a26cdcb3fc6e69e464c8575a3b87aba"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/iter_impl.hpp",
+          "sha256": "c6f0664c4965287154505837dde4ae13e7625978745e8876951fc90da61b5068"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/iteration_proxy.hpp",
+          "sha256": "3c562f1783e1fc9476ed53d8054bc50309caa425d993996a9ddf9194fb2129cc"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/iterator_traits.hpp",
+          "sha256": "960d1fefbe7cb220292b07e4ec047bfa9a3ccbd753adaf62e5d583f746e71e47"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/json_reverse_iterator.hpp",
+          "sha256": "6f072fb2b9e151ad9645cb03a9aa23231480bf447e53b2e0ecb41f45fb7503e1"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/iterators/primitive_iterator.hpp",
+          "sha256": "40a03177d519ba378e59bed0a53a9be8022fd3d0ee701409781c0e856d5bf510"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/json_custom_base_class.hpp",
+          "sha256": "e622910868b019ba09460c96a6092c1018ed501f34cce4ed633641400c2d2500"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/json_pointer.hpp",
+          "sha256": "9c5b54a455e96c63788c157d914b70cde6a3f36ef1e5df037f4fc17bb92f235d"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/json_ref.hpp",
+          "sha256": "5d133945d0859acaa82c50c1a044b1e1f806c0a38107eae24bf07ff5944fc1e3"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/macro_scope.hpp",
+          "sha256": "76012b860dc76e7c28efead61311d588596417f5b476fc20f762b1ad81858ae0"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/macro_unscope.hpp",
+          "sha256": "626b7e10290a2bb558634b8bbfbc5118b5ce696151b5bc87418142c578bd501e"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/call_std/begin.hpp",
+          "sha256": "4629b547aa6b6629c266b1b474f576cbde5ce898c96502c828a72d99212b9f34"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/call_std/end.hpp",
+          "sha256": "e09dd80f2263ff192d60bad19bdbdc5402866d0b0c8caeb9c2759b26ba864a39"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/cpp_future.hpp",
+          "sha256": "71e606c586174ff875f5996a00bc6e84a49e0919eafd6fb38c7cb928dfdf5795"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/detected.hpp",
+          "sha256": "d144ac2ab6bb92be35bfda7eec560b9d030760e4330b7f951a2aca63469488a1"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/identity_tag.hpp",
+          "sha256": "37ff788879d4b14ffa2e79bdc75b470d2c2ca5ebadafef649312f653455d45fa"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/is_sax.hpp",
+          "sha256": "e60398b282767374747db20ab06101804c7345eea0761a313a298bf87b913f91"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/std_fs.hpp",
+          "sha256": "257716f0958e9fd6c1dc3f0335716d779550353c58bc929e8dda1c79bd336701"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/type_traits.hpp",
+          "sha256": "d5da966796c089fa89cba5474309fd2124b083d99adf17991084a6a532fdf55d"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/meta/void_t.hpp",
+          "sha256": "c340e7b148543b0abfd719ddbc3759e23c2feffc63656136a15fd80b98ca8bf8"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/output/binary_writer.hpp",
+          "sha256": "cdf56265d14b80505796dfb94d79896a226e8888e4f730ff6e92c31a2b891cd1"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/output/output_adapters.hpp",
+          "sha256": "3322dce8f63e69930806bd8691c2cd9ece8a76b54b34f617641329c44559bbb5"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/output/serializer.hpp",
+          "sha256": "4c079acb8f6936c4f787fd5706a52c77a1751dd34787a821705845698ec8540e"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/string_concat.hpp",
+          "sha256": "fb30fb50c325a1b5610a62a9061a1966b4e850dd964635c1ad1c4c9da48f7daa"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/string_escape.hpp",
+          "sha256": "cb12b0e5903b1ec90aaa96a4a71e0cf7106440ca9cedcff6495677d01f244733"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/string_utils.hpp",
+          "sha256": "85e2fbdfe07f1a44b90d5422ee1b951d1053f32e429dc4aee36274fb03fd9354"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/detail/value_t.hpp",
+          "sha256": "67ed7b164db48556bb4ae409a645401faba459081570f9b9f9ff977fd32c6114"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/json.hpp",
+          "sha256": "88d7eb42b19599cab48856576dd4ea52538df72ad7c57200c50de98bda246458"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/json_fwd.hpp",
+          "sha256": "8777a878c20a412dd04c8011c87c3d72d74e48a4dda5e52f7948e26dd2168931"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/ordered_map.hpp",
+          "sha256": "2d4e2d9f6e6a0c2d2adadcb620da1f49585fa4e54e54cfa16b6d20e01d857d61"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/thirdparty/hedley/hedley.hpp",
+          "sha256": "1547b367895f8be9f8283ae21f583182db572ad990236220002b632a15238712"
+        },
+        {
+          "root": "json",
+          "path": "nlohmann/thirdparty/hedley/hedley_undef.hpp",
+          "sha256": "ddf06784ca9448b4899db96a409ec1cbc65a0f682db9c966c011f00b77ae75c4"
+        }
+      ],
+      "single": [
+        {
+          "root": "json",
+          "path": "nlohmann/json.hpp",
+          "sha256": "aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63"
+        }
+      ]
+    }
+  },
+  "primary_material": [
+    {
+      "url": "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/a8386aae19e200ddb0f6845b5feeee5eb7013687/src/license.html",
+      "sha256": "715b4f7d269db77c300eb191bec64bd0278fd63e07a8c561462ab3eb7e7c8eef"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/a8386aae19e200ddb0f6845b5feeee5eb7013687/_config.yml",
+      "sha256": "e199710aaa3f4a0f2f18386420ebe1fd84b8c44a875c35a81b15525a1c481003"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/a8386aae19e200ddb0f6845b5feeee5eb7013687/src/icons.yml",
+      "sha256": "930e9765c3dc20a99641f8230932b9f1d4f3ced26d7e298ed8b533241236fd66"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/juliettef/IconFontCppHeaders/210b5a399a64270674560d633638952d1e8d804d/licence.txt",
+      "sha256": "8a0e8338ba1d9359adbbfe5ffb70d6423b169192d146dae12410adaff15aa67a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bluescan/proggyfonts/139ec08a38096161291792313ef5803fc4f0e37b/LICENSE",
+      "sha256": "fe61d069df303c697e04200f5f8232c2cb09dd3572f4357b323469f7d592d142"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/spdx/license-list-data/c4a7237ec8f4654e867546f9f409749300f1bf4c/text/OFL-1.1.txt",
+      "sha256": "8eea8287e5876b539670cadb82e99f9a7afddec6f6730811be1daf25d2e9bcfd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/spdx/license-list-data/c4a7237ec8f4654e867546f9f409749300f1bf4c/text/CC-BY-3.0.txt",
+      "sha256": "e6bc9e9c474700b708f568bac9e5a8a9bcb2b1dad53442f5ba449fcb848b8e76"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/d1bd5fa07667fcc3e38996ec42aef98761f23039/lib/glob.c",
+      "sha256": "aac0db64cfd77da48c2744c1af6c55ef7b1d3b38f83056607fa773a4818af2f8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/d1bd5fa07667fcc3e38996ec42aef98761f23039/LICENSES/preferred/MIT",
+      "sha256": "323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/nlohmann/json/9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03/LICENSE.MIT",
+      "sha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/nlohmann/json/55f93686c01528224f448c19128836e7df245f72/LICENSE.MIT",
+      "sha256": "46a65cffd1ea955132d95a8dd921640714a8d6b537d2e4e482d31145ae95b603"
+    }
+  ],
+  "fonts": {
+    "fontawesome": {
+      "version": "4.7.0 2016",
+      "size": 165548,
+      "sha256": "aa58f33f239a0fb02f5c7a6c45c043d7a9ac9a093335806694ecd6d4edc0d6a8",
+      "source_root": "lus",
+      "source_path": "include/ship/window/gui/Fonts.h",
+      "encoding": "base85-stb",
+      "primary_url": "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/a8386aae19e200ddb0f6845b5feeee5eb7013687/fonts/fontawesome-webfont.ttf"
+    },
+    "proggyclean": {
+      "version": "2004/04/15",
+      "size": 41208,
+      "sha256": "527d2a443ce051f93f7e77b855609722b8cb220a9f104b4aa037be5c90b71324",
+      "source_root": "imgui",
+      "source_path": "imgui_draw.cpp",
+      "encoding": "u8-stb",
+      "primary_url": "https://raw.githubusercontent.com/bluescan/proggyfonts/139ec08a38096161291792313ef5803fc4f0e37b/ProggyOriginal/ProggyClean.ttf"
+    }
+  },
+  "icon_defines": {
+    "count": 679,
+    "sha256": "1b789b94b8511467c2859b112c3e075dbf7d491ca95a0187cbb728fb2ca45f9e",
+    "primary_url": "https://raw.githubusercontent.com/juliettef/IconFontCppHeaders/210b5a399a64270674560d633638952d1e8d804d/IconsFontAwesome4.h",
+    "primary_sha256": "80f33a69afb351c2e6c396e92cf32240133cbbe0d0d775399e49cb5e7cc03c70",
+    "modification": "LUS adds documentation and reformats whitespace; all preprocessor definitions match."
+  }
+}

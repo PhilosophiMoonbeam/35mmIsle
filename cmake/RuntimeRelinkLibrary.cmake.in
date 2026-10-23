@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.24)
+# Exact delivered prepared source, not the producer's pin-rematerialization step.
+# Users may modify this tree. This does not grant rights to application objects.
+if(POLICY CMP0091)
+    cmake_policy(SET CMP0091 NEW)
+endif()
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+project(isle_private_lightning_relink C)
+find_package(Threads REQUIRED)
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 OR NOT CMAKE_SYSTEM_NAME MATCHES "^(Linux|Windows)$")
+    message(FATAL_ERROR "This candidate requires Linux x64 or Windows MSVC x64")
+endif()
+if(WIN32 AND NOT MSVC)
+    message(FATAL_ERROR "This candidate requires native MSVC /MT on Windows")
+endif()
+add_library(isle-rsp-lightning STATIC
+    lightning/lib/jit_disasm.c lightning/lib/jit_memory.c
+    lightning/lib/jit_names.c lightning/lib/jit_note.c
+    lightning/lib/jit_print.c lightning/lib/jit_size.c lightning/lib/lightning.c)
+target_include_directories(isle-rsp-lightning SYSTEM PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lightning/include")
+target_compile_definitions(isle-rsp-lightning PUBLIC HAVE_MMAP=1)
+target_link_libraries(isle-rsp-lightning PUBLIC Threads::Threads)
+set_target_properties(isle-rsp-lightning PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED ON)
+if(WIN32)
+    target_sources(isle-rsp-lightning PRIVATE win32/mman/sys/mman.c)
+    target_include_directories(isle-rsp-lightning PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/win32/mman")
+    target_compile_definitions(isle-rsp-lightning PUBLIC
+        NOMINMAX WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0600 __x86_64__=1)
+    target_compile_definitions(isle-rsp-lightning PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+include("${CMAKE_CURRENT_SOURCE_DIR}/candidate-flags.cmake")
+add_executable(lightning-jit-proof jit-proof.c)
+target_link_libraries(lightning-jit-proof PRIVATE isle-rsp-lightning)
+set_target_properties(lightning-jit-proof PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED ON)

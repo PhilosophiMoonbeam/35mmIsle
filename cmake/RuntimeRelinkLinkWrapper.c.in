@@ -1,0 +1,42 @@
+/* PRIVATE build-time link capture, not part of the application or runtime ABI. */
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <wchar.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+int wmain(void)
+{
+    const wchar_t *tail = GetCommandLineW();
+    const wchar_t *prefix = L"\"@ISLE_RELINK_PYTHON@\" -B \"@ISLE_RELINK_SCRIPT@\" capture --settings \"@ISLE_RELINK_SETTINGS@\" -- \"@ISLE_RELINK_LINKER@\" ";
+    STARTUPINFOW startup = {0};
+    PROCESS_INFORMATION process = {0};
+    DWORD result = 1;
+    wchar_t *command;
+    /* Skip only our executable, leaving every linker character untouched. */
+    if (*tail == L'\"') {
+        ++tail;
+        while (*tail && *tail != L'\"') ++tail;
+        if (*tail) ++tail;
+    } else {
+        while (*tail && *tail != L' ' && *tail != L'\t') ++tail;
+    }
+    while (*tail == L' ' || *tail == L'\t') ++tail;
+    command = (wchar_t *)calloc(wcslen(prefix) + wcslen(tail) + 1, sizeof(wchar_t));
+    if (!command) return 1;
+    wcscpy_s(command, wcslen(prefix) + wcslen(tail) + 1, prefix);
+    wcscat_s(command, wcslen(prefix) + wcslen(tail) + 1, tail);
+    startup.cb = sizeof(startup);
+    if (!CreateProcessW(L"@ISLE_RELINK_PYTHON@", command, NULL, NULL, TRUE, 0,
+                        NULL, NULL, &startup, &process)) {
+        fwprintf(stderr, L"Private relink capture could not start Python (error %lu)\n", GetLastError());
+        free(command);
+        return 1;
+    }
+    free(command);
+    WaitForSingleObject(process.hProcess, INFINITE);
+    GetExitCodeProcess(process.hProcess, &result);
+    CloseHandle(process.hThread);
+    CloseHandle(process.hProcess);
+    return (int)result;
+}

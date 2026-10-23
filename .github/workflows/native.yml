@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# Hosted runners only. No ROMs; only Runtime-component product archives are uploaded.
+# Hosted runners only. No ROMs, GAME-derived binaries, or private object kits are uploaded.
 jobs:
   linux:
     name: Linux ${{ matrix.compiler.name }} / ${{ matrix.preset }}
@@ -119,7 +119,7 @@ jobs:
       - name: Provision frozen vcpkg source and SHA256-verified tool
         run: ./tools/prepare_windows_host.ps1 -Root "$env:RUNNER_TEMP/35mmisle-windows-host-vcpkg"
       - name: Configure actual static-runtime host and audio before project discovery
-        run: cmake --preset windows-host-release
+        run: cmake --preset windows-host-release -DISLE_BUILD_RUNTIME_RELINK_KIT=ON
       - name: Build actual product, full LUS, audio, RSP, canonical RDP, native engine and CPU tests with MSVC
         run: cmake --build --preset windows-host-release --parallel 2
       - name: Build all 31 native Player, Actor, Item and publication consumers without a ROM
@@ -148,8 +148,42 @@ jobs:
           }
           & "./build/windows-host-release/Release/35mmisle.exe" --help
           if ($LASTEXITCODE -ne 0) { throw "Native product help failed" }
+      - name: Exercise private native static-library replacement without a ROM
+        run: |
+          cmake --build --preset windows-host-release --target runtime-relink-kit --parallel 2
+          if ($LASTEXITCODE -ne 0) { throw "Private whole-product kit assembly failed" }
+          $recipient = Join-Path $env:RUNNER_TEMP '35mmIsle relink 路径'
+          Copy-Item -LiteralPath 'build/windows-host-release/private-runtime-relink-kit/Release' -Destination $recipient -Recurse -ErrorAction Stop
+          Push-Location $recipient
+          try {
+            cmake -S library -B baseline-library -G 'Visual Studio 17 2022' -A x64 -DCMAKE_CONFIGURATION_TYPES=Release
+            if ($LASTEXITCODE -ne 0) { throw "Baseline standalone lightning configure failed" }
+            cmake --build baseline-library --config Release --parallel 2
+            if ($LASTEXITCODE -ne 0) { throw "Baseline standalone lightning build failed" }
+            & ./baseline-library/Release/lightning-jit-proof.exe
+            if ($LASTEXITCODE -ne 0) { throw "Baseline generated-code execution failed" }
+            python -B runtime_relink.py relink --lightning baseline-library/Release/isle-rsp-lightning.lib --output baseline/35mmisle.exe
+            if ($LASTEXITCODE -ne 0) { throw "Actual baseline whole-product relink failed" }
+            & ./baseline/35mmisle.exe --help
+            if ($LASTEXITCODE -ne 0) { throw "Baseline relinked product help failed" }
+            python -B runtime_relink.py mark-proof --library library
+            if ($LASTEXITCODE -ne 0) { throw "Delivered lightning source modification failed" }
+            cmake -S library -B modified-library -G 'Visual Studio 17 2022' -A x64 -DCMAKE_CONFIGURATION_TYPES=Release
+            if ($LASTEXITCODE -ne 0) { throw "Modified standalone lightning configure failed" }
+            cmake --build modified-library --config Release --parallel 2
+            if ($LASTEXITCODE -ne 0) { throw "Modified standalone lightning build failed" }
+            python -B runtime_relink.py prove --program modified-library/Release/lightning-jit-proof.exe --evidence modified-jit-proof.json
+            if ($LASTEXITCODE -ne 0) { throw "Actual modified generated-code proof failed" }
+            python -B runtime_relink.py relink --lightning modified-library/Release/isle-rsp-lightning.lib --output modified/35mmisle.exe
+            if ($LASTEXITCODE -ne 0) { throw "Actual modified whole-product relink failed" }
+            & ./modified/35mmisle.exe --help
+            if ($LASTEXITCODE -ne 0) { throw "Modified relinked product help failed" }
+          } finally {
+            Pop-Location
+          }
+          # Producer roots remain available here. Help is not actual product JIT/gameplay proof.
+          # All objects, source companions, executables and receipts remain runner-local.
       - name: Package and check the portable Windows x64 Runtime archive
-        id: runtime-package
         run: |
           $packageDirectory = Join-Path $env:RUNNER_TEMP "35mmisle-runtime-windows"
           # CPackConfig selects Runtime only, including dependency DLLs, renderer resources and notices.
@@ -162,7 +196,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Cannot inspect Runtime ZIP" }
           foreach ($relative in @('bin/35mmisle.exe', 'bin/35mmisle-rom.exe',
               'share/35mmisle/LICENSE', 'share/35mmisle/fast-renderer-LICENSE.txt',
-              'share/licenses/35mmisle/LICENSE', 'share/licenses/35mmisle-rom-tool/LICENSE')) {
+              'share/licenses/35mmisle/LICENSE', 'share/licenses/35mmisle-rom-tool/LICENSE',
+              'share/35mmisle/runtime-composition.json',
+              'share/licenses/35mmisle/dependencies/scoped/licenses/fontawesome-font.txt',
+              'share/licenses/35mmisle/dependencies/scoped/licenses/proggyclean.txt',
+              'share/licenses/35mmisle/dependencies/scoped/libultraship/include_ship_utils_StrHash64.h.txt',
+              'share/licenses/35mmisle/dependencies/scoped/libultraship/glob-selection.txt',
+              'share/licenses/35mmisle/dependencies/scoped/monocypher/LICENCE.txt')) {
             if ($entries -cnotcontains "$root/$relative") { throw "Runtime ZIP missing $relative" }
           }
           foreach ($relative in @('share/35mmisle/shaders/opengl/',
@@ -243,17 +283,8 @@ jobs:
             if ($process.ExitCode -ne 0) { throw "Extracted Runtime executable failed: $name ($($process.ExitCode))" }
             $process.Dispose()
           }
-          "archive=$($archives[0].FullName)" >> $env:GITHUB_OUTPUT
-      - name: Upload only the portable Windows x64 Runtime ZIP
-        # actions/upload-artifact v7.0.2, verified with upstream git ls-remote.
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        with:
-          path: ${{ steps.runtime-package.outputs.archive }}
-          archive: false
-          if-no-files-found: error
-          retention-days: 7
-          include-hidden-files: false
       # Compiler/package proof only; no Windows 11 gameplay or release qualification.
+      # Candidate archives remain runner-local while R1 redistribution approval is absent.
 
   linux-host:
     name: Linux native product / LUS / SDL3 / canonical RSP-RDP
@@ -299,6 +330,15 @@ jobs:
             -DSDL_X11=ON -DSDL_WAYLAND=OFF -DSDL_OPENGL=ON -DSDL_OPENGLES=ON
           cmake --build "$RUNNER_TEMP/sdl-build" --parallel 2
           cmake --install "$RUNNER_TEMP/sdl-build"
+      - name: Capture actual pinned SDL3 build and installed-byte identities
+        run: |
+          python3 -B tools/runtime_composition.py capture-sdk \
+            --source build-dependencies/SDL --build "$RUNNER_TEMP/sdl-build" \
+            --repository https://github.com/libsdl-org/SDL \
+            --recipe .github/workflows/native.yml \
+            --built-library "$RUNNER_TEMP/sdl-build/libSDL3.so.0" \
+            --library "$RUNNER_TEMP/host-prefix/lib/libSDL3.so.0" \
+            --output "$RUNNER_TEMP/runtime-sdk-identities.json"
       - name: Configure genuine pinned native product and all synthetic tests
         # Empty ISLE_LUS_SOURCE_DIR fetches the enforced immutable LUS commit.
         # System packages/runner images are not a fully locked release composition.
@@ -307,7 +347,9 @@ jobs:
             -DBUILD_TESTING=ON -DISLE_BUILD_HOST_PROBE=ON -DISLE_LUS_SOURCE_DIR= \
             -DISLE_BUILD_GAME_ENGINE=ON -DISLE_SNAP_SOURCE_DIR= \
             -DISLE_BUILD_AUDIO_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON \
-            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/host-prefix" -DCMAKE_INSTALL_LIBDIR=lib
+            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/host-prefix" -DCMAKE_INSTALL_LIBDIR=lib \
+            -DISLE_RUNTIME_SDK_IDENTITIES="$RUNNER_TEMP/runtime-sdk-identities.json" \
+            -DISLE_BUILD_RUNTIME_RELINK_KIT=ON
       - name: Build actual product, host and original services
         run: cmake --build build/linux-host --parallel 2
       - name: Build all 31 native Player, Actor, Item and publication consumers without a ROM
@@ -346,8 +388,29 @@ jobs:
           [[ "$probe_output" == *"Submitted 240 real-renderer frames;"* ]]
           [[ "$probe_output" == *"HOST_OWNERS_RELEASED:"* ]]
           # Submission/lifetime markers are not pixel or game-fidelity assertions.
+      - name: Exercise private native static-library replacement without a ROM
+        run: |
+          set -euo pipefail
+          cmake --build build/linux-host --target runtime-relink-kit --parallel 2
+          recipient="$RUNNER_TEMP/35mmIsle relink 路径"
+          cp -rf build/linux-host/private-runtime-relink-kit/Release "$recipient"
+          (
+            cd "$recipient"
+            cmake -S library -B baseline-library -G Ninja -DCMAKE_BUILD_TYPE=Release
+            cmake --build baseline-library --parallel 2
+            ./baseline-library/lightning-jit-proof
+            python3 -B runtime_relink.py relink --lightning baseline-library/libisle-rsp-lightning.a --output baseline/35mmisle
+            ./baseline/35mmisle --help
+            python3 -B runtime_relink.py mark-proof --library library
+            cmake -S library -B modified-library -G Ninja -DCMAKE_BUILD_TYPE=Release
+            cmake --build modified-library --parallel 2
+            python3 -B runtime_relink.py prove --program modified-library/lightning-jit-proof --evidence modified-jit-proof.json
+            python3 -B runtime_relink.py relink --lightning modified-library/libisle-rsp-lightning.a --output modified/35mmisle
+            ./modified/35mmisle --help
+          )
+          # Producer roots remain available here. Help is not actual product JIT/gameplay proof.
+          # All objects, source companions, executables and receipts remain runner-local.
       - name: Package and check the portable Linux x64 Runtime archive
-        id: runtime-package
         shell: bash
         run: |
           set -euo pipefail
@@ -362,7 +425,13 @@ jobs:
           entries="$(cmake -E tar tf "${archives[0]}")"
           for relative in bin/35mmisle bin/35mmisle-rom \
             share/35mmisle/LICENSE share/35mmisle/fast-renderer-LICENSE.txt \
-            share/licenses/35mmisle/LICENSE share/licenses/35mmisle-rom-tool/LICENSE; do
+            share/licenses/35mmisle/LICENSE share/licenses/35mmisle-rom-tool/LICENSE \
+            share/35mmisle/runtime-composition.json \
+            share/licenses/35mmisle/dependencies/scoped/licenses/fontawesome-font.txt \
+            share/licenses/35mmisle/dependencies/scoped/licenses/proggyclean.txt \
+            share/licenses/35mmisle/dependencies/scoped/libultraship/include_ship_utils_StrHash64.h.txt \
+            share/licenses/35mmisle/dependencies/scoped/libultraship/glob-selection.txt \
+            share/licenses/35mmisle/dependencies/scoped/monocypher/LICENCE.txt; do
             [[ "$entries" == *"$root/$relative"$'\n'* || "$entries" == *"$root/$relative" ]] ||
               { echo "Runtime TGZ missing $relative" >&2; exit 1; }
           done
@@ -409,17 +478,8 @@ jobs:
           for copyright in "${copyrights[@]}"; do [[ -s "$copyright" ]]; done
           [[ "$entries" != *'license_check_docker.sh'* && "$entries" != *'license_check.sh'* && "$entries" != *'license-checker.cfg'* ]]
           (cd "$unpack" && "$portable/bin/35mmisle-rom" --help && "$portable/bin/35mmisle" --help)
-          printf 'archive=%s\n' "${archives[0]}" >> "$GITHUB_OUTPUT"
-      - name: Upload only the portable Linux x64 Runtime TGZ
-        # actions/upload-artifact v7.0.2; upload the existing archive without repacking.
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        with:
-          path: ${{ steps.runtime-package.outputs.archive }}
-          archive: false
-          if-no-files-found: error
-          retention-days: 7
-          include-hidden-files: false
       # System loader/graphics/audio drivers remain host prerequisites, not bundled SDKs.
+      # Candidate archives remain runner-local while R1 redistribution approval is absent.
 
   linux-rdp:
     name: Linux canonical RDP / actual CPU Vulkan

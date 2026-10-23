@@ -1,0 +1,183 @@
+PRIVATE STATIC GNU LIGHTNING WHOLE-PRODUCT RELINK COMPANION
+
+PRIVATE ONLY. R1 HOLD. This kit contains compiled application material. It does
+not grant or establish permission to distribute the GAME-derived application,
+application objects, library sources, Windows mman shim, or any other material.
+No inferred MIT grant, EULA exception, or source/object redistribution clearance.
+Retain the independently reviewed rights/terms before any proposed conveyance.
+The GNU lightning use/modified-source notices and GPL/LGPL texts are retained
+under library/lightning. Exact win32/mman ancestry, files and README declaration
+are retained separately; the complete applicable notice/grant disposition is
+unresolved, not replaced by the RSP project's MIT copyright holders.
+
+WHAT THIS KIT DOES
+The actual 35mmisle link, not a synthetic application, supplied every ordered
+object/archive/resource/library argument. Nested @ response files were expanded
+while they existed; their original byte hashes are in kit-manifest.json. CMake
+File API checks actual configuration, target closure and product object/resource
+presence. Its optional commandFragments are NOT used as the final link recipe.
+The Windows route preserves /MANIFEST:NO and the actual compiled .res. The Linux
+route retains ordered linker flags/groups/repeated libraries and uses an
+executable-relative Runtime DSO directory. No old executable is copied into the
+kit or used as relink output. Only the GNU lightning archive slot is replaced.
+
+Linux capture additionally resolves the complete recursive DT_NEEDED graph with
+the native CMake file(GET_RUNTIME_DEPENDENCIES) ELF/objdump resolver, following
+RPATH/RUNPATH and ldconfig, then the bounded parent directories of explicit DSO
+link inputs for extracted SDK siblings. --trace alone is NOT a runtime closure.
+Unresolved names, conflicting SONAME identities or missing
+captured dependencies reject the kit. Every non-system original is hash-bound
+at capture and copied with relative kit paths and required SONAME aliases;
+external System Library identities and dependency edges are recorded separately.
+Original private RPATH/RUNPATH strings stay in private capture only; the kit
+records their hashes, not producer directories. Recipient staging rewrites only
+DSO copies and supplies both executable-relative runtime lookup and a separate
+relative runtime-directory link-time search path.
+
+The kit has exact prepared lightning source, all headers/backends/support/build
+inputs, win32/mman, source/patch hashes, retained upstream archive identity,
+preparation scripts/tool hashes, actual standalone compilation flags, real
+non-lightning application link inputs, ordered recipe, and toolchain/config/CRT
+receipt. No GAME source, ROM, save/profile, producer build tree or toolchain/SDK
+binaries are included. Source modification intentionally does not invoke the
+producer's source preparation/rematerialization script.
+The exact pinned upstream mman/sys/.vs/mman/v14/.suo is personal IDE state, not
+source or build control. Its identity is in library/provenance/excluded-upstream-ide-cache.json.
+Only that cache is omitted; all source and compilation/installation controls remain included.
+
+PREREQUISITES AND LIMITS
+Use the recorded native x64 platform and @CONFIGURATION@ configuration.
+Install the exact compiler/linker components and matching System Libraries
+identified by basename/SHA-256 in kit-manifest.json. relink verifies them before
+calling the actual linker. Windows requires VS2022/MSVC x64 native developer
+shell, the recorded toolset/Windows SDK, and /MT (/MTd for Debug). Linux requires
+the recorded native compiler/binutils, Python 3, CMake >=3.24, Ninja, readelf and
+patchelf. readelf is producer-side metadata inspection; patchelf changes ONLY
+recipient-staged DSO copies to $ORIGIN, not kit inputs or SDK originals.
+These are ordinary native objects: detected GCC/LLVM/MSVC LTO-only material and
+thin archives reject kit creation, without changing the producer's flags.
+This is not a generic compiler/ABI portability claim. Compiler debug records in
+opaque PRIVATE objects have not been promised redacted; separately review their
+privacy before any distribution. Text metadata/recipes contain no producer paths.
+
+Capture and recipient relink both reject LINK/_LINK_ implicit options before
+invoking tools. Linux also rejects ambient GCC_EXEC_PREFIX, COMPILER_PATH,
+LIBRARY_PATH, LD_LIBRARY_PATH, LD_RUN_PATH and LD_PRELOAD. Use a clean recorded
+native toolchain environment, not hidden search/injection overrides. Windows
+still requires the real developer LIB environment, whose selected System Library
+files must match the captured hashes.
+
+Linux --push-state/--pop-state preserve the library-selection stack, including
+restoring static/dynamic selection before resolving later -l arguments.
+Alternate driver linker/toolchain selectors (-fuse-ld, --ld-path, -B prefixes,
+specs/wrapper/toolchain/target overrides) are explicitly rejected. Capture asks
+the native driver for its default linker, requires agreement with CMake's
+linker, and fingerprints that resolved tool. Recipient relink repeats the driver
+query and verifies that actual default-linker hash; it does not check an unused
+linker selected only by an old producer path.
+
+Use an independently extracted copy in a spaces/non-ASCII path and make the
+producer source/build directories unavailable for all following link commands.
+No ROM is needed to build lightning, run synthetic JIT, or relink the product.
+The existing matching private Runtime bundle supplies renderer assets/notices
+and Windows runtime DLLs/OS graphics/audio/device prerequisites; it is not an
+application object substitute. To run the whole product, retain that bundle's
+normal resources, and use a newly linked executable rather than its old binary.
+Linux output additionally gets its own adjacent lib/ containing the supplied
+non-system DSOs, with executable $ORIGIN/lib and DSO $ORIGIN RUNPATH. Reusing an
+existing output or DSO destination is rejected rather than silently overwriting
+candidate evidence. Do not sign/strip/reinstall before preserving relink evidence.
+
+LINUX: BASELINE STANDALONE LIBRARY AND ACTUAL WHOLE PRODUCT
+From the extracted kit directory, with the recorded compiler selected:
+  cmake -S library -B build-lightning -G Ninja -DCMAKE_BUILD_TYPE=@CONFIGURATION@
+  cmake --build build-lightning --config @CONFIGURATION@
+  ./build-lightning/lightning-jit-proof
+  python3 runtime_relink.py relink --lightning build-lightning/libisle-rsp-lightning.a --output baseline/35mmisle
+
+WINDOWS: BASELINE (native x64 VS2022 developer PowerShell)
+  cmake -S library -B build-lightning -G "Visual Studio 17 2022" -A x64 -DCMAKE_CONFIGURATION_TYPES=@CONFIGURATION@
+  cmake --build build-lightning --config @CONFIGURATION@
+  & .\build-lightning\@CONFIGURATION@\lightning-jit-proof.exe
+  python runtime_relink.py relink --lightning build-lightning/@CONFIGURATION@/isle-rsp-lightning.lib --output baseline/35mmisle.exe
+
+If the compiler/linker is not on PATH, relink accepts --driver with its current
+recipient path. It must still match every captured hash. No producer absolute
+path or fallback to a different compiler is used.
+
+REAL MODIFICATION AND SYNTHETIC JIT PROOF
+The following command modifies the delivered library's actual init_jit body to
+write @MARKER@ to stderr. This is an explicitly requested private proof
+modification, never applied automatically to the producer's runtime/library.
+  python3 runtime_relink.py mark-proof --library library
+
+Linux:
+  cmake -S library -B build-lightning-modified -G Ninja -DCMAKE_BUILD_TYPE=@CONFIGURATION@
+  cmake --build build-lightning-modified --config @CONFIGURATION@
+  python3 runtime_relink.py prove --program build-lightning-modified/lightning-jit-proof --evidence modified-jit-proof.json
+  python3 runtime_relink.py relink --lightning build-lightning-modified/libisle-rsp-lightning.a --output modified/35mmisle
+
+Windows (use python rather than python3 for mark-proof as well):
+  cmake -S library -B build-lightning-modified -G "Visual Studio 17 2022" -A x64 -DCMAKE_CONFIGURATION_TYPES=@CONFIGURATION@
+  cmake --build build-lightning-modified --config @CONFIGURATION@
+  python runtime_relink.py prove --program build-lightning-modified/@CONFIGURATION@/lightning-jit-proof.exe --evidence modified-jit-proof.json
+  python runtime_relink.py relink --lightning build-lightning-modified/@CONFIGURATION@/isle-rsp-lightning.lib --output modified/35mmisle.exe
+
+The proof program executes actual generated machine code returning 42/43 with
+sequential and overlapping lightning state lifetimes. prove requires both its
+real zero exit and marker in actual stderr; it never fabricates/injects that
+marker into captured output. The relink receipt records the exact replacement
+archive hash, output executable hash, actual response hash, and staged DSO hashes.
+The product link is still the actual product's entire captured object closure,
+not the proof program. Different archive hashes alone are NOT execution proof.
+
+GENUINE PRODUCT PROOF (PARENT-OWNED; EXTERNAL ADMITTED INPUTS ONLY)
+Use a separate copy of the matching Runtime resources, put the newly linked
+modified executable in the normal executable location, and preserve its adjacent
+Linux lib/ directory. No old executable may be used. From the extracted kit,
+set ADMITTED_ROM to the independently admitted actual ROM and FRESH_PRIVATE_DATA
+to a fresh private application-data directory (neither is a kit input).
+Linux:
+  python3 runtime_relink.py prove --program modified/35mmisle --evidence modified-product-proof.json -- "$ADMITTED_ROM" --data-directory "$FRESH_PRIVATE_DATA"
+Windows PowerShell:
+  python runtime_relink.py prove --program modified/35mmisle.exe --evidence modified-product-proof.json -- "$env:ADMITTED_ROM" --data-directory "$env:FRESH_PRIVATE_DATA"
+Run real ordinary startup/input and close the actual window normally, preserving
+its real exit. If resources need the normal Runtime layout, use --program with
+the newly linked executable's location there, not the example modified directory.
+--help is NOT product proof: it does not invoke the JIT. No fake input, callbacks,
+profile authoring, or campaign-state manipulation is part of this companion.
+A genuine library marker is necessary but not sufficient for all product gates.
+Existing parent-owned RSP regression/runtime/platform checks remain required;
+no Linux/Windows/gameplay/audio/campaign qualification is transferred by a link.
+
+PRODUCER INTEGRATION (NOT A RECIPIENT BUILD REQUIREMENT)
+After the final 35mmisle target/resource/install-RPATH setup in root CMake:
+  include(cmake/RuntimeRelink.cmake)
+  isle_add_runtime_relink_kit()
+Configure the existing native preset with -DISLE_BUILD_RUNTIME_RELINK_KIT=ON,
+build the actual 35mmisle, then explicitly build --target runtime-relink-kit
+(--config @CONFIGURATION@ on MSBuild). The default output is the PRIVATE binary
+tree's private-runtime-relink-kit/@CONFIGURATION@. ISLE_RUNTIME_RELINK_OUTPUT
+can select a private destination. Existing uninstrumented products have no valid
+capture: configure ON BEFORE building; force a genuine final relink if needed.
+Never add this target/output to CPack Source, Runtime install, or automatic
+artifact upload. Native MSVC CI must actually build and execute all above proof
+routes before claiming that platform, rather than relying on Linux generation.
+
+Capture interfaces/documentation:
+  https://cmake.org/cmake/help/latest/prop_tgt/LANG_LINKER_LAUNCHER.html
+  https://cmake.org/cmake/help/latest/prop_tgt/VS_GLOBAL_variable.html
+  https://learn.microsoft.com/en-us/visualstudio/msbuild/link-task?view=visualstudio
+MSBuild LinkToolExe/LinkToolPath route Link's tool executable/path; the dedicated
+native /MT forwarding tool preserves the original command tail and Python reads
+live response inputs before forwarding to the actual recorded CMAKE_LINKER.
+Check native CI's generated product project and actual wrapper capture receipt;
+a missing capture fails the kit instead of substituting Unix link.txt or guessed
+File API fragments. Linux adds --trace for linker-input diagnostics only.
+  https://cmake.org/cmake/help/latest/command/file.html#get-runtime-dependencies
+
+Publication, if independently authorized in the future, still needs complete
+applicable rights/relink terms and source/kit/binary availability/access notices,
+LGPL/GPL obligations, and candidate-specific composition/runtime evidence. A
+private generated companion is not public corresponding-source delivery, and
+this mechanism does not resolve the mman/GAME/other R1 holds.

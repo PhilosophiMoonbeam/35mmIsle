@@ -1,0 +1,23 @@
+LUS glob_match: MIT alternative selected, not GPL.
+LUS src/ship/utils/glob.c explicitly selects MIT from the Linux module dual MIT/GPL grant.
+Origin: Linux lib/glob.c at d1bd5fa07667fcc3e38996ec42aef98761f23039.
+Linux introduction by George Spelvin, 2014-08-06, commit b01250856b25f4417c51aa33afc451fbf7da1484.
+The pinned Linux glob.c does not contain a copyright-holder line. The following is its MIT permission/warranty text, without inventing one.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.

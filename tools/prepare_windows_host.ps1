@@ -77,6 +77,33 @@ $environment = @{
     VCPKG_DISABLE_METRICS = '1'
     VCPKG_BINARY_SOURCES = 'clear'
 }
+# MSBuild discovers tools independently; recipient-side native LINK needs the
+# actual developer environment. Export its selected tool/SDK paths by the same
+# mechanism as the verified vcpkg root, never guessed include/library paths.
+$vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+$visualStudio = @(& $vswhere -latest -version '[17.0,18.0)' -products '*' `
+    -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
+if ($LASTEXITCODE -ne 0 -or $visualStudio.Count -ne 1) {
+    throw 'Cannot locate the required native VS2022 x64 toolchain.'
+}
+$developerShell = Join-Path $visualStudio[0] 'Common7/Tools/VsDevCmd.bat'
+$developerEnvironment = @(& $env:ComSpec /d /s /c "`"$developerShell`" -no_logo -arch=x64 -host_arch=x64 >nul && set")
+if ($LASTEXITCODE -ne 0) { throw 'VS2022 x64 developer environment initialization failed.' }
+$selectedVariables = @('Path', 'INCLUDE', 'LIB', 'LIBPATH', 'VCToolsInstallDir',
+    'VCToolsVersion', 'VSINSTALLDIR', 'VCINSTALLDIR', 'VisualStudioVersion',
+    'WindowsSdkDir', 'WindowsSDKVersion', 'WindowsSdkBinPath', 'WindowsSdkVerBinPath',
+    'WindowsSDKLibVersion', 'UniversalCRTSdkDir', 'UCRTVersion',
+    'VSCMD_ARG_HOST_ARCH', 'VSCMD_ARG_TGT_ARCH')
+foreach ($line in $developerEnvironment) {
+    if ($line -match '^([^=]+)=(.*)$' -and $selectedVariables -contains $Matches[1]) {
+        $environment[$Matches[1]] = $Matches[2]
+    }
+}
+foreach ($name in @('Path', 'INCLUDE', 'LIB', 'VCToolsInstallDir', 'WindowsSdkDir')) {
+    if (-not $environment.ContainsKey($name) -or -not $environment[$name]) {
+        throw "VS2022 x64 developer environment omitted $name."
+    }
+}
 foreach ($entry in $environment.GetEnumerator()) {
     [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
     if ($env:GITHUB_ENV) {

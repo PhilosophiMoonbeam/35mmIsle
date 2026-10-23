@@ -1,0 +1,17 @@
+# This must be the LAST Runtime install script: hash final notices and rewritten DSOs.
+if([==[@CMAKE_SYSTEM_NAME@]==] STREQUAL "Linux" AND NOT DEFINED _isle_linux_runtime_json)
+    message(FATAL_ERROR "Runtime composition must run after Linux dependency staging")
+endif()
+if(NOT DEFINED _isle_linux_runtime_json)
+    set(_isle_linux_runtime_json "[]")
+endif()
+execute_process(COMMAND [==[@_isle_composition_python@]==] -B
+    [==[@_isle_composition_generator@]==]
+    --inputs [==[@_isle_composition_inputs@]==]
+    --stage "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}"
+    --linux-libraries "${_isle_linux_runtime_json}"
+    RESULT_VARIABLE _isle_composition_result
+    ERROR_VARIABLE _isle_composition_error)
+if(NOT _isle_composition_result STREQUAL "0")
+    message(FATAL_ERROR "Candidate Runtime composition failed closed: ${_isle_composition_error}")
+endif()

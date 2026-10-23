@@ -7388,6 +7388,27 @@ invented completion is added. The native backend's isolated CPU fixture checks
 all tile corners, exact repeat bytes, cache ownership, stale/wrong frame
 identities and failure cleanup. The full native build and all 60 CPU tests pass.
 
+Two further fresh ordinary runs exercise integrated failure and cancellation.
+An owned preexisting final-output collision produces the real native publication
+error and checked C `pd_command` failure, exits 1, preserves the destination
+bytes exactly and removes only its partial output. A separate normal WM_DELETE
+during a visibly rendered retained Pikachu photograph exits 0 and cleans its actual
+partial file without publishing a completed sheet. Both protect the original
+UI-earned save pair. The first cancellation observer wrongly required a changed
+X11 window ID; actual host recreation reuses that ID. Its failed observation
+is retained separately. The corrected owned-window/public-photo/no-sheet rule
+is frozen before the fresh cancellation confirmation; no product guard changes.
+
+At source `df9bd2abb0f376fef6febc0ff8068acd0d197c66`,
+[run 39992105528](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39992105528)
+passes all ten native Linux/MSVC jobs. Both full hosts compile the actual
+product, all existing ROMless consumer/interface targets, execute configured
+CPU tests, exercise real private static-library replacement and create/check
+their Runtime packages. Separate native CPU-Vulkan and canonical RDP jobs pass.
+Packages and relink material remain runner-local; CI neither receives the ROM
+nor uploads derived output. Hosted Windows remains Server 2022 build/tooling
+evidence, not Windows 11 ROM-backed execution.
+
 ROM, extracted resources, saves, screenshots, print images and raw observations
 remain private. This qualifies the named Linux CPU-Vulkan/SDL-dummy execution,
 not physical printer output, Windows runtime, Windows 11 devices, Original pixel

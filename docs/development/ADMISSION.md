@@ -8437,3 +8437,56 @@ ROM assets, executables and proof payloads were not published. Release,
 Original fidelity/pacing, hearing/hardware and Windows 11 gameplay gates remain
 separate and unqualified.
 
+### Installed Runtime after the label repair
+
+The exact `5e3ee1c` build also passed a separate new Linux Runtime installation
+and ordinary startup/closure check. Component installation exited 0 without
+reconfiguration or rebuilding. Only normal generated `install_manifest_Runtime.txt`
+metadata was written in the build directory; all 998 selected inputs and three
+build outputs remained unchanged. The new stage's 109 regular files, nine
+symlinks and 86 directories were independently checked before and after execution.
+Installed product:
+`d0aa26c70256a273e024b8dbe51d878eb8bdde91cc29290f122e3ca3036845e7`.
+
+Actual installed help exited 0 with 717-byte stdout and empty stderr. A separate
+fresh profile and authenticated display reached the actual PRESS START Title,
+mapped all ten exact staged application DSOs and returned 0 after one advertised
+WM_DELETE. Parent viewed the real Title image and verified the primary mapping
+rows against staged path/device/inode/SHA256 identities. No LD_* environment or
+renderer-resource override was used. Both owners reached ECHILD with empty
+child/task sets, closed all owned FDs and completed actual regular-log EOF
+observations; no cleanup signals or forced retirement occurred.
+
+The staged default shader inode 22361555, device 64512, produced actual
+OPEN/ACCESS/CLOSE events. Parent explicitly authorized a reader-free interval
+after help retired: no Parent/reviewer/helper staged-payload reads occurred
+through GUI/tree/FD/monitor retirement. A nonce- and retirement-hash-bound explicit
+end authorization preceded all post-run hashes. Inotify is not PID attribution
+or an exact read-count instrument. GUI stderr retains 1,366 bytes of llvmpipe
+information and four successful-but-stalled compute-compile warnings.
+
+Two helper defects were rejected before Native execution: unbound GUI
+preregistration bytes and a shared WM-close reservation race. The corrected
+helper validates one stable NOFOLLOW preregistration read against both authorized
+records before parsing argv/environment, and handles an existing exact
+reservation without resending or claiming a send. Twenty-six unlaunched V1
+artifacts remain preserved. Focused V2 ownership/resource reviews and one
+six-script syntax gate preceded authorization. This records prevention and
+actual accepted execution, not runtime reproduction of the rejected races.
+
+Install receipt:
+`5e5cd7ef04497534fbae4b82a3fd3e89e6cef9b746c5e4ef310164c6431d6c4e`.
+Help receipt:
+`1b71daf68d5c8efcf5062fe2c07f6bbba6299aaa9a96f08707f1fd209056ba53`.
+GUI receipt:
+`1ea369fedde11272652ecff5997bbaa053227b2d4f1109cdcf26e44a35315253`.
+Qualification:
+`7cbdc5b00fc5acc229ed357aea33d83358989b8ba76aaf3b81f226f4bdcbf983`.
+Parent acceptance:
+`d35b2db63b3eb0b8f36a432b751f0b61041ba673e91fd66596e2d6bed381c6b3`.
+
+This is installed Linux startup, dependency/resource ownership and ordinary
+closure evidence only—not the ongoing fresh campaign, sealed-image custody,
+Windows 11 gameplay, hearing/hardware, Original fidelity/pacing or redistribution
+approval. Composition remains HOLD/NOT APPROVED; no private payload was uploaded.
+

@@ -7778,10 +7778,11 @@ The reviewed `1d6ecc` product ran independently on an exclusive X11 display
 from the unchanged, inherited UI-earned pair. Actual keyboard input reached
 Boot, Title, cold Continue, Oak, Beach and three successful exposures
 (`60 → 59 → 58 → 57`). Additional shutter presses that did not decrement film
-are retained, not credited as photographs. After ordinary tutorial photography,
+are retained, not credited as photographs. After ordinary photography,
 Start exposed Continue/Quit Course/Retry; Quit Course returned to Camera Check.
-Competing source assessments and the visible choices support the intended
-tutorial input guard, not a pause-rendering patch.
+The initial missed Starts did not establish live tutorial state or a renderer
+defect. Static input/tutorial/transition guards remain candidate explanations;
+the visible choices qualify the working path, not a causal diagnosis.
 
 Camera Check displayed three actual Pidgey thumbnails and 3,470 points.
 Ordinary Oak marking, photo confirmation and submission reached live
@@ -7811,12 +7812,57 @@ not Original pacing, hearing, physical GPU/controller or Windows 11 evidence.
 
 ### Exact-head cross-platform CI
 
-[Run 40055193649](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40055193649)
+[Run 40062874346](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40062874346)
 passed all ten Linux and MSVC jobs at
-`91c223f9e9ef5d888750022c3b26ebbeed423ccc`: actual product/LUS/audio/RSP/RDP,
+`62e7963004de3eb1114321ae345b1c920365a8c9`: actual product/LUS/audio/RSP/RDP,
 31 native consumers, post-course interfaces, CPU checks, private replacement
 relink and portable packaging checks. Hosted MSVC builds and synthetic
 execution do not qualify a Windows 11 ROM run.
+
+### Optimized product Save and independent cold Report
+
+The same frozen 936-input source archive produced an optimized GCC 15.2
+Linux executable without changing gameplay, execution budgets or pacing policy:
+`840a150a7820d4c8a2cd9d572123e49d3cd7b1b34a388f7b50a0c044c5d1d6ab`.
+Default targets, four ROM consumers, all 61 Release CPU checks and actual
+product help passed. The archive does not seal compiler, third-party or
+generated-GAME build inputs.
+
+Ordinary keyboard photography produced three Pidgey thumbnails and the
+4,600-point Camera Check summary. The third photograph was marked and submitted.
+Ordinary B advanced the real evaluation without authoring a result:
+size 290, pose 750, technique ×2 and companion bonus 60 yielded 2,140.
+The actual Report-choice UI selected that new photograph. Oak's evaluation
+total became 740,000; return to Oak, Save/Yes and Keep Going/No reached the
+Title transition. The real journal changed one bank; neither bank was edited
+by the controller.
+
+A separate process received an exact whole-file copy of that completed,
+UI-produced pair—not a fresh-game profile or an authored checkpoint.
+Boot/Title/Continue, Oak's Report menu and the Report table showed the persisted
+total and Pidgey score. The actual Report viewer then displayed the same
+captured Beach photograph, credited to Todd, with 2,140 points.
+
+| Actual run | Runtime images | Unchanged protected inputs | Native exit |
+|---|---:|---:|---:|
+| Photograph → grade → Report choice → Save | 86 | 16 | 0 |
+| Independent cold Continue → saved Report/photo | 86 | 19 | 0 |
+
+Both custody receipts admit normal `WM_DELETE_WINDOW` retirement: `ECHILD`,
+empty wait/task ledgers, closed retained FDs, control EOF and no supervisor
+`SIGKILL`. All 325 recorded artifacts were byte-hashed.
+Save-run receipt:
+`d3a1f2327a7231b1f55b9c8d2e8d121d8856c7344ca3dbfc03067b5025f2f5ba`.
+Cold-run receipt:
+`9896e2fcca61ad7b91a9d48f0d618e90fd4716518b6bd0040dfdceb1b5e01d31`.
+Joint bounded qualification:
+`db5b5bbd75d4c94dd99c4dc2f6bfdb70f872f0564bfc8de1dd981b3c878cf661`.
+
+This closes the optimized Linux core-photo/Save/cold-Report exercise, not a
+fresh full campaign, F9/fault matrix, Root24/Credits20 producer, Original pacing,
+hearing, physical GPU/controller, Windows 11 runtime or redistribution gate.
+The real runs remain software CPU Vulkan, llvmpipe, dummy PCM and ordinary
+keyboard under intrusive custody.
 
 ### Final direct Driver exercise
 

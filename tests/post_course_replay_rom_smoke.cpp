@@ -489,9 +489,9 @@ int run(const fs::path& rom_path,const fs::path& root) {
     bool drained=false;
     while (!progress.deadline_expired()) {
         (void)progress.poll(); require(host.error()==isle::game_host::Error::none,host.message());
-        const auto state=audio.poll_drain();
-        require(state!=isle::game_audio::Drain::failed,audio.message());
-        if (state==isle::game_audio::Drain::drained) { drained=true; break; }
+        const auto drain_state=audio.poll_drain();
+        require(drain_state!=isle::game_audio::Drain::failed,audio.message());
+        if (drain_state==isle::game_audio::Drain::drained) { drained=true; break; }
         (void)progress.idle();
     }
     const auto accepted_frames=audio.session().accepted_frames();

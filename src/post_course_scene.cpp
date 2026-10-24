@@ -1020,6 +1020,9 @@ bool Scene::Impl::draw(scene::graphics::FrameContext context) noexcept {
     catch(...) {owner.fail(ISLE_GAME_EXECUTION_FAILURE,"post-course rendering threw");return false;}
 }
 bool Scene::Impl::graphics_busy() const noexcept {return native && native->graphics && native->graphics->busy();}
+bool Scene::Impl::replay_preview_submission_pending() const noexcept {
+    return native && native->pipeline && native->pipeline->preview_submission_pending();
+}
 scene::graphics::Poll Scene::Impl::poll() noexcept {
     auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return scene::graphics::Poll::failed;
@@ -1112,6 +1115,7 @@ IsleGameResult Scene::initialize_scene() noexcept {return p_->initialize_scene()
 IsleGameResult Scene::update(std::uint32_t raw_game_time) noexcept {return p_->update(raw_game_time);}
 bool Scene::draw(scene::graphics::FrameContext context) noexcept {return p_->draw(context);}
 bool Scene::graphics_busy() const noexcept {return p_->graphics_busy();}
+bool Scene::replay_preview_submission_pending() const noexcept {return p_->replay_preview_submission_pending();}
 scene::graphics::Poll Scene::poll() noexcept {return p_->poll();}
 scene::graphics::Completed Scene::completed_frame() const noexcept {return p_->completed_frame();}
 IsleGameResult Scene::release_completed() noexcept {return p_->release_completed();}

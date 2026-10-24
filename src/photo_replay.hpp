@@ -143,6 +143,9 @@ public:
     bool return_presentation_world(const void* borrower, ReplayWorldHandoff&&) noexcept;
     bool busy() const noexcept;
     bool gpu_busy() const noexcept;
+    // Owner-thread observation of a real submitted, unretired preview token.
+    // Neither an executor loan nor a claim that hardware is still executing.
+    bool preview_submission_pending() const noexcept;
     const char* error() const noexcept;
     std::span<const menu::RamRange> reservations() const noexcept;
     std::span<const ScoreExecution> score_executions() const noexcept;

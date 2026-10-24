@@ -1020,6 +1020,7 @@ bool Replay::busy() const noexcept {
     const auto& s = *impl_; return s.phase != Impl::Phase::idle && s.phase != Impl::Phase::stopped;
 }
 bool Replay::gpu_busy() const noexcept { return impl_->token != 0 || impl_->binding.executor != nullptr; }
+bool Replay::preview_submission_pending() const noexcept { return impl_->token != 0; }
 const char* Replay::error() const noexcept { return impl_->failed ? impl_->message.data() : ""; }
 std::span<const Range> Replay::reservations() const noexcept { return impl_->owned; }
 std::span<const ScoreExecution> Replay::score_executions() const noexcept {

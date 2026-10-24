@@ -10,13 +10,14 @@
 // continue through actual Camera9/Photo15/Oak Save/Original Title8 and cold reopen.
 // NativeN authors access/gear only; native2-apple authors Apple-only access,
 // never natural progression. Roll photographs and Reports remain genuine Source.
-// Campaign mode keeps one fresh profile and uses only real Source rewards.
+// Fresh campaign branches to the public ControlDeck consumer before diagnostics.
 // Resume modes copy preserved input and start a new diagnostic scheduling epoch;
 // inherited campaign progress is never fresh-profile or newly earned evidence.
 // Oak-cancel preserves mid-print retirement; Native5-empty preserves Source13.
 // Exit0 requires the entire selected scenario; exit1 is any failure.
 // Each run predeclares bounded artifacts in its new owned proof root.
 #include "application_runtime.hpp"
+#include "native_public_campaign.hpp"
 #include "camera_check_source.h"
 #include "canonical_frame_capture.hpp"
 #include "captured_photo_identity.hpp"
@@ -3420,7 +3421,19 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4 || argc==5 || argc==6,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river|-volcano] INPUT_PROFILE_DIRECTORY; only campaign-resume-one accepts optional final COURSE digit 0..6 (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|replay-stop|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river|-volcano] INPUT_PROFILE_DIRECTORY; only campaign-resume-one accepts optional final COURSE digit 0..6 (existing empty absolute nonsymlink private directory)");
+#ifdef _WIN32
+        if (argc == 4 && std::wstring_view(argv[3]) == L"campaign")
+#else
+        if (argc == 4 && std::string_view(argv[3]) == "campaign")
+#endif
+            return isle::native_public_campaign::run(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]));
+#ifdef _WIN32
+        if (argc == 4 && std::wstring_view(argv[3]) == L"replay-stop")
+#else
+        if (argc == 4 && std::string_view(argv[3]) == "replay-stop")
+#endif
+            return isle::native_public_campaign::run_preview_stop(std::filesystem::path(argv[1]),std::filesystem::path(argv[2]));
         Mode mode=Mode::ingress;
         std::int32_t requestedCourse=0;
         bool emptyCourse=false;
@@ -3458,7 +3471,7 @@ int main(int argc,char** argv) {
             returnedOakCancel=name.size()==18 && name.compare(0,6,"native")==0 && name[6]>='0' &&
                 name[6]<='6' && name.compare(7,11,"-oak-cancel")==0;
             campaignFirstUnlock=name=="campaign-first-unlock" || name=="campaign-lapras";
-            fullCampaign=name=="campaign" || (resume && !resumeOne);
+            fullCampaign=resume && !resumeOne;
             campaignRetained=name=="campaign-retained";
             campaignEmpty=name=="native3-empty-campaign";
             nativeFailLive=name=="native6-fail-live";

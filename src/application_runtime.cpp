@@ -50,7 +50,6 @@ struct WindowScene {
     void retire() noexcept {
         if (name) name->retire();
         if (oak) oak->retire();
-        oak.reset();name.reset();services.reset();producer.reset();
     }
 };
 }
@@ -296,6 +295,7 @@ struct Runtime::Impl {
         oaks_lab::Config options;
         options.level_id=manager->source_level();
         options.resource_identity=resource_identity++;
+        options.retain_published_save=config.scene_retired!=nullptr;
         window->oak.emplace(*window->services,oak_resources,*window->producer,options);
         return window->oak->start()||fail(ISLE_GAME_EXECUTION_FAILURE,window->oak->error());
     }
@@ -562,14 +562,21 @@ struct Runtime::Impl {
             if (!startup->retire()) return fail(ISLE_GAME_EXECUTION_FAILURE,startup->message());
             startup.reset();
         }
+        save::GameSnapshot published_save;
         if (window) {
             if (completed_source&&window->name) {
                 std::int32_t source_result=0;
                 if (!window->name->complete_scene()||!window->name->take_result(source_result))
                     return fail(ISLE_GAME_EXECUTION_FAILURE,window->name->error());
                 result=source_result;
-            } else if (completed_source&&window->oak) result=window->oak->view().source_result;
-            window->retire();window.reset();
+            } else if (completed_source&&window->oak) {
+                result=window->oak->view().source_result;
+                if (config.scene_retired) published_save=window->oak->published_save();
+            }
+            window->retire();
+            if (window->oak&&window->oak->failed())
+                fail(ISLE_GAME_EXECUTION_FAILURE,window->oak->error());
+            window.reset();
         }
         if (storage.game()&&!checked(storage.destroy(),"native window arena/domain retirement failed")) return false;
         if (completed_source&&stopping) return false;
@@ -577,7 +584,7 @@ struct Runtime::Impl {
             if (!entry||!result) return fail(ISLE_GAME_INVALID_STATE,"retired scene lost its original entry/result");
             config.scene_retired(config.retirement_user,{&entry.intent(),*result,beach.get(),post.get(),rainbow.get(),
                 course_pointer<tunnel::Lifecycle>(),course_pointer<volcano::Lifecycle>(),course_pointer<river::Lifecycle>(),
-                course_pointer<cave::Lifecycle>(),course_pointer<valley::Lifecycle>()});
+                course_pointer<cave::Lifecycle>(),course_pointer<valley::Lifecycle>(),std::move(published_save)});
         }
         beach.reset();
         rainbow.reset();

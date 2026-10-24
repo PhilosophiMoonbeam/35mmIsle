@@ -1,6 +1,7 @@
 #ifndef ISLE_APPLICATION_RUNTIME_HPP
 #define ISLE_APPLICATION_RUNTIME_HPP
 #include "application_manager.hpp"
+#include "35mmisle/game_save.hpp"
 #include "beach_lifecycle.hpp"
 #include "rainbow_lifecycle.hpp"
 #include <memory>
@@ -29,12 +30,15 @@ struct SceneRetirementView {
     const course::Lifecycle<river::Adapter>* river = nullptr;
     const course::Lifecycle<cave::Adapter>* cave = nullptr;
     const course::Lifecycle<valley::Adapter>* valley = nullptr;
+    // Owning output from this scene's actual successful durable Save ACK.
+    // Immutable canonical bytes/generation survive scene/session destruction.
+    save::GameSnapshot published_save{};
 };
 struct RuntimeConfig {
     bool require_cpu_renderer = false;
-    // Outside traversal, after actual scene retirement/result, before owner
-    // release and Manager acknowledgement. Borrowed observation only; never
-    // retain pointers, mutate Source or reenter Runtime. Not called on cancel.
+    // Outside traversal, after actual scene retirement/result, before Manager
+    // acknowledgement. Pointers are borrowed: never retain them, mutate Source
+    // or reenter Runtime. published_save may be retained. Not called on cancel.
     void* retirement_user = nullptr;
     void (*scene_retired)(void*, SceneRetirementView) = nullptr;
     snap_station::Device* station = nullptr;

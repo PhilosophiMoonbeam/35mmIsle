@@ -62,6 +62,7 @@ struct Scene::Impl {
     IsleGameObject* owner=nullptr;
     IsleGameObject* input_object=nullptr;
     save::GameSnapshot saved;
+    save::GameSnapshot published_save;
     std::array<char,17> player_name{};
     std::array<scene::SpriteDraw,256> draws{};
     std::array<scene::render::Pass,4> passes{};
@@ -459,6 +460,14 @@ struct Scene::Impl {
         if(!commit_acknowledged(observed.commit)) {
             save_failure();return false;
         }
+        if(config.retain_published_save) {
+            // commit() has sealed and published these exact bytes/generation;
+            // snapshot() now only shares their owner. Capture before any wait
+            // or later RAM mutation, whose copy-on-write preserves this output.
+            auto value=s.save.snapshot();
+            if(!value){s.fail("Oak published save snapshot unavailable");return false;}
+            published_save=std::move(value.value);
+        }
         if(!printer_save_notification(0x33))return false;
         return refresh();
     }
@@ -773,6 +782,7 @@ bool Scene::start() noexcept {
     try{return impl_->initialize();}catch(const std::exception& e){impl_->s.fail(e.what());return false;}catch(...){impl_->s.fail("Oak initialization exception");return false;}
 }
 View Scene::view() const noexcept{return impl_->observed;}
+save::GameSnapshot Scene::published_save() const noexcept{return impl_->s.failed()?save::GameSnapshot{}:impl_->published_save;}
 bool Scene::failed() const noexcept{return impl_->s.failed();}
 const char* Scene::error() const noexcept{return impl_->s.error();}
 void Scene::retire() noexcept{if(impl_)impl_->retire();}

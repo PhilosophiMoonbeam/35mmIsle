@@ -8051,3 +8051,258 @@ Rejection record:
 
 
 
+## Native public ControlDeck campaign cutover and negative pilot
+
+The exact fresh `PRIVATE_ROM NEW_EMPTY_ROOT campaign` route now enters
+`tests/native_public_campaign.cpp` before the legacy software-controller,
+Scenario and course-Probe setup. Input is acquired through the actual Host
+ControlDeck endpoint and acknowledged by the real Input Service. The semantic
+operator must use fresh actual X11 pixels and its own prior actions only.
+Native entry/retirement, presentation, input-ACK and Save metadata is passive:
+it must never feed menu, course, aiming or timing decisions.
+
+`application::SceneRetirementView::published_save` carries an optional immutable
+`save::GameSnapshot`. Oak retains it immediately after the actual successful
+durable commit ACK; Runtime publishes it only after the Scene/domain retirement
+boundary and before Manager ACK. Retention is opt-in for a retirement observer,
+uses the existing shared payload, and neither authors progress nor copies the
+Save image. Cancellation/fault supplies no successful retirement publication.
+The consumer retains that snapshot through owner retirement for a whole-image,
+generation-exact cold GameSession comparison. This is not a second executable
+Boot. The bounded Save-ACK/publication-retention observation below is qualified;
+whole-image cold equality for the new complete campaign remains unqualified.
+
+The root must be a new empty absolute nonsymlink directory, mode 0700 on Linux.
+The headless development consumer explicitly requires both audio variables:
+
+```sh
+SDL_AUDIO_DRIVER=dummy SDL_AUDIODRIVER=dummy \
+  build/35mmisle-application-runtime-rom-smoke \
+  PRIVATE_ROM ABSOLUTE_NEW_EMPTY_ROOT campaign
+```
+
+This is real Native audio-service ownership with a dummy sink, not hearing,
+hardware or audio-parity qualification. Full acceptance remains unchanged:
+genuine Boot/Title/Name/Oak retirement; all seven independent course retirements;
+naturally earned four gear, six sign Reports and Mew in an acknowledged durable
+Save; full Credits18 joined result 8; subsequent Title8 with 120 completed
+presentations and independent visible-pixel evidence; exact cold canonical
+GameSession equality; ordinary close and complete owner/tree/FD retirement.
+Early close, incomplete milestones or deadline are nonzero failures. The final
+Title remains live for independent capture until ordinary Host close.
+The 86,400-second limit and Source/GTL/clock/RSP pacing are unchanged.
+
+### Exact build and actual negative execution
+
+A new 938-file Own-source cohort compiled the actual product and consumer after
+the complete existing admission chain was refreshed: Native support hashes;
+Album canonical recipe and generator self-hash; and all five independent outer
+manifest fingerprints. Original revision, file/function/data/output pins were
+not changed; no check was skipped. Two earlier configure-only failures remain
+immutable rejected evidence, not compilation or Native execution.
+
+Source archive:
+`b1e5def3d176433513575eee2c38b19b47a7fe6e015ca8c4d4c99d6d7520b0d3`.
+Configure, Release all+consumer at parallelism 2, all 61 CPU tests, and actual
+product `--help` exited 0. All 1,959 selected inputs remained unchanged.
+Build receipt:
+`e6b1357aa13e43ac10cbfbc22ec792b52432da784f7f169e4804fe51f938cee7`.
+This selected-source/input inventory is not a compiler/third-party/generated
+closure seal or an upstream-pristine identity.
+
+The actual 17,387,520-byte consumer
+`e7e438c084bf67bec82658f237d9a967cdc913b9f2ab14df4c30ddb17aeb5e5e`
+ran with a prospectively admitted 86-image manifest, isolated authenticated
+800×600 Xvfb, actual 640×480 Native surface, and an empty one-profile root.
+The operator checked actual kernel/sealed-loader identity, root geometry/
+stacking, focus and event continuity. Seven root-visible PNGs required real
+post-arm nonsynthetic XDamage; no self-paint, forced expose or private readiness
+marker supplied freshness. Actual visible Boot, Title/New Game and Name were
+observed through ordinary XTEST→ControlDeck input, without Native-output,
+Source-phase, profile, progress, actor-coordinate or RNG feedback.
+
+The operator retired with exit 0 and neutral keys before one advertised ordinary
+WM_DELETE. Native then naturally exited 1:
+`WM close/EOF before full fresh campaign completion`. Runtime/Input/Audio/Host
+retired; all 2,733 GTL submissions had terminals, and all 24,745 input requests
+had actual completions. Whole-tree ECHILD, accounted root status, empty trace/
+pending-wait ledgers, stream/control EOF and retained-sealed-FD closure completed
+without supervisor SIGKILL. All 86 source-image bytes and all 1,959 selected
+build inputs stayed unchanged after execution.
+
+Only after that boundary did the separate collector copy public Native metadata.
+It exited 1 and classified the case `NEGATIVE_COHORT`, as required. Boot and
+initial Title retired; Name entered but did not retire. Oak, courses, Save ACK,
+Credits, final Title and cold equality were not qualified. The frozen report's
+`final_Title_presentations` field incorrectly labels the current Name count;
+the actual final-Title serial is zero and completion is false. Its Source
+reporting guard was corrected separately; that edit is not retroactive to this
+frozen executable. No final-Title evidence is inferred from that counter.
+
+Actual custody receipt:
+`cd6a8db5c7e65e16e66e7f5a6c4bc084747de813ee9fa8038dea2cdba0163791`.
+Bounded negative qualification:
+`52b126693b4afee596bca1b45b438e633c2572fd0b2a03ee2c703d8d77a41de2`.
+An earlier omitted-argv0 preflight rejection and a separate actual startup
+failure missing `SDL_AUDIO_DRIVER` remain negative, unreused cases.
+Private payloads are not distributed. Neither this pilot nor historical
+software-controller campaigns qualify a complete current-build pixel-only
+campaign, active Replay cancellation, Windows 11 gameplay, audible devices,
+Original fidelity, pacing or redistribution.
+
+### Actual immutable Save publication
+
+A separate fresh pixel-only cohort used the same exact `e7e438c0…` executable,
+new empty root and strict 86-image custody. Thirty genuinely fresh attributed
+PNGs and prior operator actions supplied all semantic input. Ordinary New Game,
+Start→End and A accepted GAME's empty-name default **Todd**; Oak's ordinary Save
+was reachable without authoring a profile or taking a course. No Native output
+or profile/Save payload was read to guide input.
+
+Actual one-way event order was Name serial 3 joined result 11; Oak serial 4
+joined result 8; `save_ack` serial 4, operation 11, generation 1; then Title8
+entry serial 5. The current Runtime/Oak four-file implementation exactly matches
+that frozen build. Its retirement observer retains the immutable snapshot in
+consumer-owned storage; the final report reads its generation only after
+Runtime, Scene, Manager and session destruction. This observes genuine
+acknowledged publication and the new snapshot's retention lifetime, not an
+independent payload or cold-equality comparison.
+
+Natural post-Save PRESS START Title was freshly captured. The operator released
+all keys and retired 0 before one advertised ordinary WM close. Native naturally
+exited 1 because the campaign was incomplete; terminal collector exited 1 /
+`NEGATIVE_COHORT`. All 3,110 GTL submissions had terminals; all 26,609 input
+requests had completions. Runtime/Input/Audio/Host, whole tree/ECHILD,
+control/streams and retained FDs retired without a kill.
+
+Actual custody:
+`aac5b62695fa70d9593a6365333012642599d329a51a7211fb710116df025f8a`.
+Private qualification:
+`4d2607d49e51379a0f9c682ec3d6af163ddf1efee969ff65c25277e09642697a`.
+Parent independently checked these artifacts, exact frozen/current publication
+implementation hashes, event order and the actual final Title image. The first
+attempt started its one-shot observer before any PID-owned Native window
+existed; that failure remains immutable. The new case waited for actual public
+X11 mapped-window readiness before starting its observer. Loader PREINIT alone
+does not establish window readiness.
+
+This closes the bounded immutable publication/retention feature, not a complete
+campaign, whole canonical cold comparison, second executable Boot, submitted
+Replay cancellation, hardware audio, Windows 11 or Original parity.
+
+### Current candidate ordinary-close rejection
+
+The next reviewed source adds a Native-owned submitted-preview observation and
+a separate `replay-stop` diagnostic; ordinary `campaign` remains strict. All
+36 affected Native-support rows across nine manifests and the existing Album
+canonical/generator/seven outer CMake seals were refreshed without changing
+Original revision, bodies, data or output pins. New selected 938-file archive:
+`be3a40f9191cc8e08cf85c77a4d37e47acc4d8df103ca2cbe2a8672c9a3cdf8f`.
+Configure, Release all+consumer at parallelism 2, all 61 CPU tests and actual
+product help exited 0; all 1,959 selected inputs stayed unchanged. Build receipt:
+`0fb8cebea68de03c3ea52d84a7dd797f4cb5f909826161b2047181814755e9d4`.
+
+Actual 17,388,120-byte consumer
+`c7d19c4f7ec21fcb5d369edb4edeec9e00350a0261c2d5121713ee4d8e5e8e25`
+was prospectively admitted and exercised through ordinary pixel-only Boot,
+Title/New Game and visible Name on the separate owned display. Ten fresh
+attributed XDamage PNGs bracketed the actual surface. The operator retired 0
+with neutral keys before exactly one advertised ordinary WM close. Native
+naturally exited 1 and terminal collection remained `NEGATIVE_COHORT` / exit 1.
+
+The corrected report records 127 actual Name presentations but zero final-Title
+serial and presentations. Campaign qualification, preview trigger and preview
+qualification are all zero. Runtime/Input/Audio/Host, all 1,012 GTL submissions/
+terminals/released frames, all 16,903 input requests/completions, and whole-tree
+ECHILD/control/stream/retained-FD retirement balanced without a kill. The final
+copied Host presentation was cancelled normally; 1,011 presentations do not
+claim that every released frame reached the display. All 86 source-image bytes,
+1,959 selected build inputs and operational preregistrations stayed unchanged.
+
+Parent verified the underlying custody/report, exact qualification hash, input
+preservation and actual Name PNG. Custody:
+`4b1f7c5c7c6a1c167ae4f09808119ad30a2a0a4577a067e716d3f32b9e78a2ad`.
+Bounded current-candidate rejection:
+`1569637944c40b0e1e74ac16b8047e31548a04e9ac76e23623b5b6f141aaa29a`.
+This verifies early-close rejection and the report correction, not complete
+campaign, Save/cold equality or submitted-preview cancellation.
+
+### Actual submitted-preview Host cancellation
+
+`photo::Replay::preview_submission_pending()` observes a real outstanding preview
+submission token on its owner thread. Unlike `gpu_busy()`, it does not accept a
+mere executor loan. `post_course::Scene` forwards only that Native pipeline
+predicate; no token, private Source phase or payload is exported.
+
+The separate `replay-stop` CLI uses the same fresh-root ControlDeck/input/frame/
+Audio/Runtime ownership as `campaign`. Only the genuine nested Native Replay
+service may arm it: progress must still be running, the actual entry must be
+Camera9 or Photo15, and a submitted preview must remain unretired. It requests
+ordinary shared `host::Progress::request_stop()`, never directly cancels Replay.
+The real Camera/Photo C driver must drain and return STOPPED through
+`isle_post_course_source_checked`; Runtime abandons the active GTL update,
+retires its owners without a fault, and never publishes the cancelled Entry's
+successful result. The standalone explicit Replay-stop helper is not this proof.
+
+```sh
+SDL_AUDIO_DRIVER=dummy SDL_AUDIODRIVER=dummy \
+  build/35mmisle-application-runtime-rom-smoke \
+  PRIVATE_ROM ABSOLUTE_NEW_EMPTY_ROOT replay-stop
+```
+
+This is an explicit negative cancellation diagnostic, not an alternate partial
+campaign success. Its report always leaves campaign qualification zero.
+A reviewed precedence defect was corrected before this frozen build: a Host
+stop already observed before the nested service must not arm the diagnostic.
+The running-status guard was independently re-reviewed; ordinary pre-trigger
+close was exercised, not the exact same-frame race.
+
+The exact `c7d19c4f…` consumer completed two separately admitted 86-image cohorts
+on a new owned authenticated display. Early visible Title/Name close naturally
+returned Native 1, with no preview marker and no cancellation qualification.
+All 734 GTL submissions/terminals/releases and 10,163 input requests/completions
+joined. Its outer wrapper mistakenly retained a 300-second deadline, disclosed
+without modification; natural return at 244.826 seconds preceded it and no
+kill occurred. The positive wrapper had no outer deadline; both Native limits
+remained 86,400 seconds.
+
+The positive fresh route visibly entered Name **A**, Oak, Go to Course and
+Beach, took ordinary zoomed photographs, and used the actual pause/Quit Course
+menu. Camera Check displayed four retained pictures. Fifty-eight fresh
+attributed PNGs and prior actions alone supplied semantics; no Source, profile,
+Save or Native-output feedback was used. Actual Camera9 entry serial 6,
+operation 10, argument 9 then reached the nested submitted-preview boundary.
+Native naturally returned 0 with cancellation qualification 1, stopped-without-
+fault 1 and `preview_stop_entry_result_emitted=0`. All 3,918 GTL submissions/
+terminals/releases and 59,119 input requests/completions balanced.
+
+Runtime/Input/Audio/Host and each entire traced tree reached accounted root
+status, ECHILD, empty pending/trace ledgers, control/stream EOF and retained-
+through-reaping FD closure without a kill. All 90 prospective execution inputs
+and the six helper sources stayed unchanged; Parent also rechecked all 1,959
+selected build inputs after both runs. Positive custody:
+`d43e8f2806037f79bcc0bded5d54c1199de3518f948f720ebada699084214e0d`.
+Early negative custody:
+`10c29b6b62100b691706c3e41a9cf14087cdea3a702836866cfb3cdf155b634d`.
+
+The positive operator honestly failed closed with exit 1 on actual UnmapNotify
+18 during a guarded wait, as Native retired its Window. Its final neutralization
+record has no failures or held/uncertain keys. No visibility waiver, restart,
+resend, synthetic ACK or uninterrupted post-unmap pixel claim was introduced.
+Both collectors deliberately returned 1 /
+`REPLAY_STOP_NEGATIVE_COHORT_PARENT_ACCEPTANCE_PENDING`, even for Native 0.
+Parent separately accepted the bounded cancellation only after independently
+checking underlying receipts/reports, exact frozen inputs and actual Camera
+Check pixels.
+
+Positive qualification:
+`0a535b7f6c8d6255152c66bb225a7adfc79e287246e9dbf01621409bfdff97b3`.
+Early negative:
+`9e950599515fd29d0c9b5e9dc32f33a036258198bfc7d957f9ca8afb86ffdc85`.
+Parent acceptance:
+`911b5ef3dfff88a866e9d178b27dc4eec5ed68971fbef011d5990176bcb50cd0`.
+The token proves submitted/unretired ownership, not that physical GPU execution
+was still in progress at the stop instant. Photo15, full Camera/Photo success,
+complete campaign, Save/cold equality, hardware/hearing, Windows 11, Original
+fidelity/pacing and redistribution are not established by these cases.
+

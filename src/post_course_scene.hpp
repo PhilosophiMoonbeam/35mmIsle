@@ -50,6 +50,8 @@ public:
     IsleGameResult update(std::uint32_t raw_game_time) noexcept;
     bool draw(scene::graphics::FrameContext = {}) noexcept;
     bool graphics_busy() const noexcept;
+    // Native Replay preview ownership, distinct from the Window graphics frame.
+    bool replay_preview_submission_pending() const noexcept;
     scene::graphics::Poll poll() noexcept;
     scene::graphics::Completed completed_frame() const noexcept;
     IsleGameResult release_completed() noexcept;

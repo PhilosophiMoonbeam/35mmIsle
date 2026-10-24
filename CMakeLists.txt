@@ -1570,6 +1570,7 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
     isle_target_options(35mmisle)
     add_executable(35mmisle-application-runtime-rom-smoke EXCLUDE_FROM_ALL
         tests/application_runtime_rom_smoke.cpp
+        tests/native_public_campaign.cpp
         tests/post_course_probe_inputs.cpp
         tests/post_course_scene_probe.cpp
         tests/native_course_probe.cpp

@@ -387,10 +387,10 @@
       "sha256": "56d14cbfb1bb42a50c92e2b9112741c14462c8a27112bb35faef865882d50092"
     },
     "src/photo_replay.hpp": {
-      "sha256": "794c25d49a77fe1c274225f6fd12fe06d050041dc9492282d4bd468e34673cac"
+      "sha256": "4f013f7a91fef902a3a56e95fa356648fee9cea2374d9c33b0431f03545c521e"
     },
     "src/photo_replay.cpp": {
-      "sha256": "0ebec723055e93136ac40ca0b781580ad7dc457791438918f661f0aef78c37d8"
+      "sha256": "81b95d841c5faf39e6585673ade32156f7a337d7453c67678eaa2d84b8656c74"
     },
     "src/scene_graphics.hpp": {
       "sha256": "0c58e995aa4a6ea6675579a719aad258f6e438a1b42a149bf8f3ed941b678954"

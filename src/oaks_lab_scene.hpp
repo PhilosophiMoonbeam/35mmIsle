@@ -1,5 +1,6 @@
 #ifndef ISLE_OAKS_LAB_SCENE_HPP
 #define ISLE_OAKS_LAB_SCENE_HPP
+#include "35mmisle/game_save.hpp"
 #include "scene_render.hpp"
 #include "window_resources.hpp"
 #include "window_widgets.hpp"
@@ -22,6 +23,8 @@ struct Config {
     std::uint64_t resource_identity = 1;
     std::array<std::uint32_t,2> raster_addresses{0x400000,0x410000};
     sprite::RamRange sprite_commands{0x640000,0x20000};
+    // Retain only actual acknowledged publication output, not later live RAM.
+    bool retain_published_save = false;
 };
 struct Navigation { int slot = 0; unsigned move_sounds = 0; bool back = false; };
 Navigation source_navigation(std::span<const window::Button,8>,int slot,const game_input::MenuInput&) noexcept;
@@ -38,6 +41,9 @@ public:
     Scene& operator=(const Scene&) = delete;
     bool start() noexcept;
     View view() const noexcept;
+    // Owning immutable output; empty unless retention was enabled and this
+    // scene's actual durable Save commit was acknowledged.
+    save::GameSnapshot published_save() const noexcept;
     scene::render::Input render_input();
     bool failed() const noexcept;
     const char* error() const noexcept;

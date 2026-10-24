@@ -3315,7 +3315,7 @@
       "sha256": "9668b19639c177d52aa8a815395c8389a07cd78d1ec1c74e19c641fe249de4b2"
     },
     "src/post_course_scene_hooks.cpp": {
-      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
+      "sha256": "6c89f31133831882440d11cf272e60f3654927324195200a30bf3ef105afec8d"
     },
     "include/35mmisle/engine.h": {
       "sha256": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
@@ -3395,6 +3395,12 @@
     "src/post_course_native_helpers.hpp": {
       "sha256": "5e070c3050766af3d5c6848464496a3f885b7258bf4edf521e974c421c97c246"
     },
+    "src/post_course_modules.cpp": {
+      "sha256": "25eb1682b44cb5fed2dc79fb30184ba3dd9915fa8e5f5c5737854fca8e508698"
+    },
+    "src/post_course_modules.hpp": {
+      "sha256": "0cf8d663ee5bb9ce7284919ac36e9b040bfa9dfa1d1f26553fd318af0b351a0a"
+    },
     "src/post_course_resources.cpp": {
       "sha256": "77477497b126d3ff80f86d503fb48a2fae0f3d85e4677effa20c32f386aa00b9"
     },
@@ -3402,13 +3408,13 @@
       "sha256": "8931d253eca84147f89d643a934b36e6295a9b9f11b47c69e0c38cdeafd9f48e"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "d689c2837cb2013ea7162be1abbdd50a7dd981ceaa4258ba2f57d63777034d65"
+      "sha256": "ac82039d45b53302ebd63e9617226bb1647068157eb4a7cd4a7c3d27928db46f"
     },
     "src/post_course_scene.hpp": {
-      "sha256": "307e4e1354680b07fc9eb171afcc01af751ed06e57b14b22a4b10671ab872748"
+      "sha256": "9e9053c6f17ba4637eba108a66259acb35d4452fe78f9a3e90757ef0d0c71eee"
     },
     "src/post_course_scene_internal.hpp": {
-      "sha256": "4c24997403f7da1c6e078a3032a1caa0b99549a74bfe9ad32d92922033fafa3e"
+      "sha256": "9b1e4c61feeb8b8fadf94d10ff9c40fdcea9fe8a375e6d2ea849f9ab82ae9926"
     },
     "src/post_course_scene_render.cpp": {
       "sha256": "5ea878e33518545ea8651cebf7c84a9c16a8fed90b59368a13ac4c217cbddaf3"
@@ -3772,6 +3778,6 @@
     "native_support_hash_policy": "Exact authoring-time live common/extended WorkingPhotos bytes. Parent owns final integration support fixedpoint and must reseal guarded recipe/generator after mechanical shared integration."
   },
   "support_allowlist": [],
-  "recipe_sha256": "bfb2e0d0e7d8ff3ee64dccb020cc9af1afb15dcbf7564d33ee84dedc6c4ead07",
-  "generator_sha256": "857859285d1bc25a1dc1977ceb6268a918865a0e379bf100dc9e4722005563f2"
+  "recipe_sha256": "0eb80b6fa206e902c9a99c9c0d83b57e1420509b91195f2acbf0196d61250423",
+  "generator_sha256": "f3e0c67845d2d8ad61f9524cb4e7f2dd341f3047d09fc805b206985b35209de8"
 }

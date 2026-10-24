@@ -27,8 +27,13 @@ namespace isle::post_course {
 // worlds (0xe800); both replay and display must lend the identical reservation.
 inline constexpr menu::RamRange diagnostic_effect_assets{0x380000,0xe800};
 struct Scene::Impl {
+    // Declared first, released last: a component's real module lifetime spans
+    // native retirement, entry/domain destruction and all member destructors.
+    const std::optional<ComponentModules::Lease> component_modules;
     const rom::Snapshot& snapshot;
-    application::Manager& manager;
+    // Null only for the typed component lease above; Root-only native services
+    // must still require the actual Manager and its real overlay residency.
+    application::Manager* const manager;
     game::State& state;
     game_input::Service& input;
     game_audio::Session& audio;
@@ -56,6 +61,7 @@ struct Scene::Impl {
     std::array<char,512> diagnostic{};
     bool requested = false, native_retired = false, cancelling = false;
     bool setup_returned = false, source_initialized = false, entry_returned = false;
+    bool replay_admission_pending = false;
     bool entry_resuming = false, callbacks_active = false, native_pumping = false;
     bool near_clipping_disabled = false;
     std::uint32_t requested_screen = 0, requested_setup = 0;
@@ -130,7 +136,28 @@ struct Scene::Impl {
          game_audio::Session&,host::GtlClock&,application::Photos&,host::Progress&,
          ReplayNativeProgress,Modules&,Resources::Kind,std::int32_t,bool,
          snap_station::Device*,std::uint64_t,std::uint64_t);
+    Impl(ComponentModules::Lease,game::State&,game_input::Service&,
+         game_audio::Session&,host::GtlClock&,application::Photos&,host::Progress&,
+         ReplayNativeProgress,Resources::Kind,std::int32_t,bool);
     ~Impl();
+    void validate_configuration() const;
+    std::uint64_t window_module_generation() const;
+    IsleGameResult resume() noexcept;
+    bool setup_pending() const noexcept;
+    IsleGameResult initialize_scene() noexcept;
+    IsleGameResult update(std::uint32_t) noexcept;
+    bool draw(scene::graphics::FrameContext) noexcept;
+    bool graphics_busy() const noexcept;
+    scene::graphics::Poll poll() noexcept;
+    scene::graphics::Completed completed_frame() const noexcept;
+    IsleGameResult release_completed() noexcept;
+    bool retire_scene() noexcept;
+    IsleGameResult cancel() noexcept;
+    IsleGameResult retire() noexcept;
+    SceneStatus status() const noexcept;
+    IsleGameResult error() const noexcept;
+    const char* message() const noexcept;
+    std::optional<std::int32_t> result() const noexcept;
     IslePostCourseSceneSource& source() noexcept;
     const IslePostCourseSceneSource& source() const noexcept;
     Native& live();
@@ -174,7 +201,7 @@ struct SceneAccess {
         return invoke(&owner.source(),std::forward<F>(function));
     }
     template<class O>
-    static IsleGameResult deallocate_native(O& owner,void* allocation) noexcept {
+    static IsleGameResult deallocate_native(O& owner,void* allocation) {
         if (!allocation) return ISLE_GAME_INVALID_ARGUMENT;
         if (!owner.native || !owner.native->heap || !owner.native->heap_admitted)
             return ISLE_GAME_INVALID_STATE;
@@ -182,7 +209,7 @@ struct SceneAccess {
             if(allocation!=&metadata)continue;
             if(metadata.owner!=&owner || metadata.allocation!=owner.native.get() ||
                metadata.source!=std::get_if<IsleCreditsSource>(&owner.context) ||
-               metadata.generation!=owner.modules.window_generation || !metadata.payload ||
+               metadata.generation!=owner.window_module_generation() || !metadata.payload ||
                !owner.native->heap->owns_allocation(metadata.payload,metadata.bytes))
                 return ISLE_GAME_INVALID_ARGUMENT;
             if(!owner.native->heap->deallocate_checked(metadata.payload))return ISLE_GAME_INVALID_ARGUMENT;

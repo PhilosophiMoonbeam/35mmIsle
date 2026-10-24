@@ -169,6 +169,12 @@ def main():
     manifest = json.loads(args.manifest.read_text())
     if manifest['commit'] != REVISION:
         raise ValueError('unadmitted GAME revision')
+    root = Path(__file__).resolve().parents[1]
+    if not manifest['native_support']:
+        raise ValueError('missing CameraCheck native support guards')
+    for path, identity in manifest['native_support'].items():
+        if digest((root / path).read_bytes()) != identity['sha256']:
+            raise ValueError('unadmitted native support: ' + path)
     source = {}
     for item in manifest['inputs']:
         raw = subprocess.run(['git', '-C', str(args.source_repo), 'show',

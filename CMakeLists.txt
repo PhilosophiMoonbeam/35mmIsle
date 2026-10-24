@@ -1756,6 +1756,22 @@ if(TARGET isle-post-course-replay AND TARGET isle-post-course-window)
     if(TARGET isle-application-runtime)
         target_link_libraries(isle-application-runtime PUBLIC isle-post-course-scene)
     endif()
+    if(TARGET isle-game-host)
+        add_executable(post-course-component-rom-smoke EXCLUDE_FROM_ALL
+            tests/post_course_component_rom_smoke.cpp)
+        target_link_libraries(post-course-component-rom-smoke PRIVATE
+            isle-post-course-scene isle-game-host)
+        isle_target_options(post-course-component-rom-smoke)
+        if(WIN32)
+            target_sources(post-course-component-rom-smoke PRIVATE src/game_host.rc)
+            target_include_directories(post-course-component-rom-smoke PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+            if(MSVC)
+                target_link_options(post-course-component-rom-smoke PRIVATE /MANIFEST:NO)
+            elseif(MINGW)
+                target_link_options(post-course-component-rom-smoke PRIVATE -municode)
+            endif()
+        endif()
+    endif()
 endif()
 
 

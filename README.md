@@ -220,6 +220,24 @@ GAME audio endpoint inspection runs synchronously on the actual SDL owner throug
 
 Link `isle-process` through CMake to inherit `Threads::Threads`; the header-only queue also requires native thread linkage. Existing process targets retain strict FP options (`/fp:strict` on MSVC; `-fno-fast-math`, `-ffp-contract=off` and `-frounding-math` on GCC/Clang).
 
+### Standalone End8/Credits components
+
+`post_course::Component` executes the original End8 or Credits17–20 component over real native State, Photos, Input, Audio, GTL, graphics and module owners. It is type-distinct from Root-admitted `Scene`: no Manager entry borrow, Root selector, fabricated overlay generation or application-entry acknowledgment is supplied.
+
+In an already configured full native-host build:
+
+```sh
+HOST_BUILD=/path/to/native-host-build
+cmake --build "$HOST_BUILD" --target post-course-component-rom-smoke --parallel 2
+"$HOST_BUILD/post-course-component-rom-smoke" /path/to/pokemonsnap.z64 \
+  /private/existing-component-workdir end8 --cpu-renderer
+```
+
+Supply the untouched whole ordinary-UI-earned save pair in `workdir/profile`; the consumer does not repair missing photos or author progress, gear, selectors or RNG. Other explicit selections are `credits17`, `credits18`, `credits19` and `credits20`. `--cancel-at before-update|completed-frame` exercises real ownership boundaries; deadlines fail rather than certify completion. `--help` lists renderer-resource and ordinary ControlDeck controls.
+
+The actual Linux End8 proof renders two earned photographs, advances with A, hides the message with Z and returns 23 through B after joined retirement. [Admission evidence](docs/development/ADMISSION.md#native-end8-component-and-deferred-source-admission) separates this component execution from the still-unqualified Root24/Credits20 producers, fresh campaign, Windows 11 runtime, hardware/hearing and Original-fidelity gates.
+
+
 ### VPK0 decoding contract
 
 `isle::vpk0::decode(std::span<const std::byte> input, std::span<std::byte> output) noexcept` returns a `Result` containing `error`, `bytes_consumed` and `bytes_written`; its explicit boolean conversion denotes success. The caller owns bounded, **nonoverlapping** input/output storage; decoding performs no allocations. The lowercase `vpk0` header declares the output length. Invalid/truncated headers and insufficient output capacity fail before writes; a body error can leave partial output, which callers must not publish. Publish output only on success. Success stops at the declared output length and reports the logical consumed bytes rounded up from bits; trailing input, such as subsequent ROM data, is allowed. Nonzero sample-method values share the format's nonzero-method behavior, not an invented unsupported-method rejection.

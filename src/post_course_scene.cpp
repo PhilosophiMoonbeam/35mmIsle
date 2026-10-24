@@ -53,10 +53,31 @@ Scene::Impl::Impl(const rom::Snapshot& rom,application::Manager& app,game::State
     application::Photos& records,host::Progress& host_progress,ReplayNativeProgress outer,
     Modules& mutable_modules,Resources::Kind selection,std::int32_t entry_argument,bool cpu,
     snap_station::Device* device,std::uint64_t epoch,std::uint64_t serial)
-    :snapshot(rom),manager(app),state(persistent),input(controllers),audio(sound),clock(gtl),
+    :snapshot(rom),manager(&app),state(persistent),input(controllers),audio(sound),clock(gtl),
      photos(records),progress(host_progress),outer_progress(outer),modules(mutable_modules),
      kind(selection),argument(entry_argument),require_cpu(cpu),station(device),
      application_epoch(epoch),entry_serial(serial) {
+    validate_configuration();
+}
+Scene::Impl::Impl(ComponentModules::Lease lease,game::State& persistent,
+    game_input::Service& controllers,game_audio::Session& sound,host::GtlClock& gtl,
+    application::Photos& records,host::Progress& host_progress,ReplayNativeProgress outer,
+    Resources::Kind selection,std::int32_t entry_argument,bool cpu)
+    :component_modules(std::in_place,std::move(lease)),snapshot(component_modules->snapshot()),
+     manager(nullptr),state(persistent),input(controllers),audio(sound),clock(gtl),
+     photos(records),progress(host_progress),outer_progress(outer),modules(component_modules->data()),
+     kind(selection),argument(entry_argument),require_cpu(cpu),station(nullptr),
+     application_epoch(0),entry_serial(0) {
+    validate_configuration();
+}
+void Scene::Impl::validate_configuration() const {
+    if(component_modules) {
+        if(manager || &component_modules->snapshot()!=&snapshot ||
+           (kind!=Resources::Kind::end_level_8 && kind!=Resources::Kind::credits))
+            throw std::invalid_argument("post-course component module binding/selection");
+    } else if(!manager) {
+        throw std::invalid_argument("post-course Root binding requires its actual Manager");
+    }
     const auto ordinal=static_cast<std::size_t>(kind);
     constexpr std::array<std::int32_t,8> scenes{9,15,12,14,22,24,17,-2};
     if(ordinal>=scenes.size() ||
@@ -66,6 +87,9 @@ Scene::Impl::Impl(const rom::Snapshot& rom,application::Manager& app,game::State
         throw std::invalid_argument("post-course Source kind/entry argument");
     if(!state.initialized() || !outer_progress.owner || !outer_progress.service)
         throw std::invalid_argument("post-course requires canonical State and actual native progress");
+}
+std::uint64_t Scene::Impl::window_module_generation() const {
+    return component_modules?component_modules->generation():modules.window_generation;
 }
 Scene::Impl::~Impl() {
     if(creator!=std::this_thread::get_id())std::terminate();
@@ -193,8 +217,8 @@ IsleGameResult Scene::Impl::prepare_entry() noexcept {
 IsleGameResult Scene::Impl::admit_layout() noexcept {
     try {
         if(kind==Resources::Kind::printer_diagnostic) {
-            if(!manager.resources().overlay_generation(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0) ||
-               manager.resources().overlay(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0).bytes.empty())
+            if(!manager || !manager->resources().overlay_generation(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0) ||
+               manager->resources().overlay(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0).bytes.empty())
                 return fail(ISLE_GAME_INVALID_STATE,"Diagnostic requires its actual loaded overlay owner");
             auto common=::isle::window::Resources::load(snapshot);
             diagnostic_resources=DiagnosticResources::load(Resources::load(snapshot,common,kind));
@@ -261,9 +285,10 @@ IsleGameResult Scene::Impl::prepare_menu() noexcept {
                 [](IslePostCourseSceneSource*,void* raw) {
                     auto& owner=*static_cast<Impl*>(raw);
                     isle_end_level_8_source_initialize(&std::get<IsleEndLevel8Source>(owner.context),
-                        owner.modules.window_generation);
+                        owner.window_module_generation());
                 },this);
         } else if(auto* source=std::get_if<IslePrinterDiagnosticSource>(&context)) {
+            if(!manager)return fail(ISLE_GAME_INVALID_STATE,"Diagnostic requires its actual Manager");
             auto& menu=scene.menu.emplace<PrinterDiagnosticSceneNative>(photos);
             source->requiredNativeTable=&printer_diagnostic_scene_native_table();
             result=isle_post_course_source_call(&source->common,
@@ -271,7 +296,7 @@ IsleGameResult Scene::Impl::prepare_menu() noexcept {
                     auto& owner=*static_cast<Impl*>(raw);
                     isle_printer_diagnostic_source_initialize(
                         &std::get<IslePrinterDiagnosticSource>(owner.context),
-                        owner.manager.resources().overlay_generation(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0));
+                        owner.manager->resources().overlay_generation(ISLE_APPLICATION_OVERLAY_UNK_SEGMENT_AA18E0));
                 },this);
             if(result==ISLE_GAME_OK)result=printer_diagnostic_scene_native_prepare(source,menu);
         } else if(auto* source=std::get_if<IsleCreditsSource>(&context)) {
@@ -823,8 +848,49 @@ SceneCreateResult Scene::create(const rom::Snapshot& snapshot,application::Manag
     }
     return result;
 }
-IsleGameResult Scene::resume() noexcept {
-    auto& owner=*p_;
+Component::Component(std::unique_ptr<Scene::Impl> owner) noexcept:p_(std::move(owner)) {}
+Component::~Component()=default;
+ComponentCreateResult Component::create(const rom::Snapshot& snapshot,game::State& state,
+    game_input::Service& input,game_audio::Session& audio,host::GtlClock& clock,
+    application::Photos& photos,host::Progress& progress,ReplayNativeProgress native_progress,
+    ComponentModules& modules,ComponentEntry selection,bool cpu) noexcept {
+    ComponentCreateResult result;
+    Resources::Kind kind;
+    std::int32_t argument;
+    switch(selection) {
+    case ComponentEntry::end_level_8:kind=Resources::Kind::end_level_8;argument=24;break;
+    case ComponentEntry::credits17:kind=Resources::Kind::credits;argument=17;break;
+    case ComponentEntry::credits18:kind=Resources::Kind::credits;argument=18;break;
+    case ComponentEntry::credits19:kind=Resources::Kind::credits;argument=19;break;
+    case ComponentEntry::credits20:kind=Resources::Kind::credits;argument=20;break;
+    default:
+        result.error=ISLE_GAME_INVALID_ARGUMENT;
+        copy_message(result.message,"post-course component entry selection");
+        return result;
+    }
+    try {
+        auto lease=modules.acquire();
+        if(&lease.snapshot()!=&snapshot) {
+            result.error=ISLE_GAME_INVALID_ARGUMENT;
+            copy_message(result.message,"post-course component requires its module owner's Snapshot");
+            return result;
+        }
+        auto owner=std::make_unique<Scene::Impl>(std::move(lease),state,input,audio,clock,
+                                               photos,progress,native_progress,kind,argument,cpu);
+        result.error=owner->prepare_entry();
+        if(result.error!=ISLE_GAME_OK) {copy_message(result.message,owner->diagnostic.data());return result;}
+        result.component=std::unique_ptr<Component>(new Component(std::move(owner)));
+    } catch(const std::bad_alloc&) {
+        result.error=ISLE_GAME_EXHAUSTED;copy_message(result.message,"post-course component allocation failed");
+    } catch(const std::exception& error) {
+        result.error=ISLE_GAME_INVALID_STATE;copy_message(result.message,error.what());
+    } catch(...) {
+        result.error=ISLE_GAME_EXECUTION_FAILURE;copy_message(result.message,"post-course component construction threw");
+    }
+    return result;
+}
+IsleGameResult Scene::Impl::resume() noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
     if(owner.failure!=ISLE_GAME_OK)return owner.failure;
     if(owner.cancelling)return ISLE_GAME_STOPPED;
@@ -854,9 +920,9 @@ IsleGameResult Scene::resume() noexcept {
     }
     return ISLE_GAME_OK;
 }
-bool Scene::setup_pending() const noexcept {return p_->phase==SceneStatus::setup_pending && !p_->source_initialized;}
-IsleGameResult Scene::initialize_scene() noexcept {
-    auto& owner=*p_;
+bool Scene::Impl::setup_pending() const noexcept {return phase==SceneStatus::setup_pending && !source_initialized;}
+IsleGameResult Scene::Impl::initialize_scene() noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
     if(owner.failure!=ISLE_GAME_OK)return owner.failure;
     if(!setup_pending() || owner.native_retired || owner.cancelling)
@@ -895,19 +961,23 @@ IsleGameResult Scene::initialize_scene() noexcept {
             return owner.fail(initialized,"original post-course nonwaiting C initialization");
         if(initialized==ISLE_GAME_STOPPED)return owner.request_stop();
         if(owner.kind!=Resources::Kind::printer_diagnostic &&
-           (!owner.native->heap_admitted || !owner.native->input_initialized || !owner.native->replay_initialized))
+           (!owner.native->heap_admitted || !owner.native->input_initialized || !source.input_process ||
+            (owner.kind!=Resources::Kind::end_level_8 && !owner.native->replay_initialized)))
             return owner.fail(ISLE_GAME_INVALID_STATE,"original post-course C initialization omitted native service admission");
         // Cold menus apply their actual Source screen during entry/C init.
         // Capacity seals that configuration only after those calls complete.
         if(owner.kind!=Resources::Kind::camera_check && owner.kind!=Resources::Kind::photo_check &&
            !owner.native->graphics->reserve_render_capacity({owner.native->draws.size(),32,33,33}))
             return owner.fail(ISLE_GAME_INVALID_STATE,owner.native->graphics->message());
+        // End8 registers its main process here; that process admits Replay on
+        // the first real OM update, not in the nonwaiting initializer.
+        owner.replay_admission_pending=owner.kind==Resources::Kind::end_level_8;
         owner.source_initialized=true;owner.phase=SceneStatus::running;return ISLE_GAME_OK;
     } catch(const std::exception& error) {return owner.fail(ISLE_GAME_INVALID_STATE,error.what());}
     catch(...) {return owner.fail(ISLE_GAME_EXECUTION_FAILURE,"post-course native initialization threw");}
 }
-IsleGameResult Scene::update(std::uint32_t raw_game_time) noexcept {
-    auto& owner=*p_;
+IsleGameResult Scene::Impl::update(std::uint32_t raw_game_time) noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
     if(owner.failure!=ISLE_GAME_OK)return owner.failure;
     if(owner.cancelling)return ISLE_GAME_STOPPED;
@@ -925,13 +995,22 @@ IsleGameResult Scene::update(std::uint32_t raw_game_time) noexcept {
     if(native.services->failed())return owner.fail(ISLE_GAME_EXECUTION_FAILURE,native.services->error());
     if(updated==ISLE_GAME_STOPPED || owner.source().status==ISLE_GAME_STOPPED || owner.cancelling)
         return owner.request_stop();
+    if(owner.replay_admission_pending) {
+        if(!native.replay_initialized)
+            return owner.fail(ISLE_GAME_INVALID_STATE,"End8 first Source update omitted Replay admission");
+        owner.replay_admission_pending=false;
+    }
     if(native.services->exit_requested())owner.phase=SceneStatus::retiring;
     return ISLE_GAME_OK;
 }
-bool Scene::draw(scene::graphics::FrameContext context) noexcept {
-    auto& owner=*p_;
+bool Scene::Impl::draw(scene::graphics::FrameContext context) noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id() || owner.phase!=SceneStatus::running ||
        owner.failure!=ISLE_GAME_OK || owner.cancelling || !owner.native || graphics_busy() || completed_frame())return false;
+    if(owner.replay_admission_pending) {
+        owner.fail(ISLE_GAME_INVALID_STATE,"End8 draw requires its first actual Source update");
+        return false;
+    }
     try {
         if(!owner.native->graphics->begin(owner.native->render_input(),context)) {
             owner.fail(ISLE_GAME_EXECUTION_FAILURE,owner.native->graphics->message());return false;
@@ -940,9 +1019,9 @@ bool Scene::draw(scene::graphics::FrameContext context) noexcept {
     } catch(const std::exception& error) {owner.fail(ISLE_GAME_EXECUTION_FAILURE,error.what());return false;}
     catch(...) {owner.fail(ISLE_GAME_EXECUTION_FAILURE,"post-course rendering threw");return false;}
 }
-bool Scene::graphics_busy() const noexcept {return p_->native && p_->native->graphics && p_->native->graphics->busy();}
-scene::graphics::Poll Scene::poll() noexcept {
-    auto& owner=*p_;
+bool Scene::Impl::graphics_busy() const noexcept {return native && native->graphics && native->graphics->busy();}
+scene::graphics::Poll Scene::Impl::poll() noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return scene::graphics::Poll::failed;
     if(!owner.native || !owner.native->graphics)return scene::graphics::Poll::idle;
     const auto status=owner.native->graphics->poll();
@@ -950,24 +1029,24 @@ scene::graphics::Poll Scene::poll() noexcept {
     if(status==scene::graphics::Poll::completed && !completed_frame())return scene::graphics::Poll::idle;
     return status;
 }
-scene::graphics::Completed Scene::completed_frame() const noexcept {
-    if(!p_->native || !p_->native->graphics)return {};
-    const auto completed=p_->native->graphics->completed();
-    return completed && completed.ordinal!=p_->native->released_ordinal?completed:scene::graphics::Completed{};
+scene::graphics::Completed Scene::Impl::completed_frame() const noexcept {
+    if(!native || !native->graphics)return {};
+    const auto completed=native->graphics->completed();
+    return completed && completed.ordinal!=native->released_ordinal?completed:scene::graphics::Completed{};
 }
-IsleGameResult Scene::release_completed() noexcept {
-    if(p_->creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
+IsleGameResult Scene::Impl::release_completed() noexcept {
+    if(creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
     const auto completed=completed_frame();
     if(!completed)return ISLE_GAME_INVALID_STATE;
-    if(auto* diagnostic=std::get_if<IslePrinterDiagnosticSource>(&p_->context)) {
+    if(auto* diagnostic=std::get_if<IslePrinterDiagnosticSource>(&context)) {
         const auto staged=printer_diagnostic_scene_native_completed(diagnostic,completed);
-        if(staged!=ISLE_GAME_OK)return p_->fail(staged,"diagnostic completed Frame staging failed");
+        if(staged!=ISLE_GAME_OK)return fail(staged,"diagnostic completed Frame staging failed");
     }
-    p_->native->released_ordinal=completed.ordinal;
+    native->released_ordinal=completed.ordinal;
     return ISLE_GAME_OK;
 }
-bool Scene::retire_scene() noexcept {
-    auto& owner=*p_;
+bool Scene::Impl::retire_scene() noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return false;
     if(owner.entry_resuming || owner.callbacks_active || owner.native_pumping)return false;
     if(owner.native_retired)return true;
@@ -986,8 +1065,8 @@ bool Scene::retire_scene() noexcept {
     else if(owner.entry_returned)owner.phase=SceneStatus::completed;
     return true;
 }
-IsleGameResult Scene::cancel() noexcept {
-    auto& owner=*p_;
+IsleGameResult Scene::Impl::cancel() noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
     if(owner.phase==SceneStatus::retired)return owner.failure;
     (void)owner.request_stop();
@@ -1000,8 +1079,8 @@ IsleGameResult Scene::cancel() noexcept {
     }
     (void)retire_scene();return owner.failure;
 }
-IsleGameResult Scene::retire() noexcept {
-    auto& owner=*p_;
+IsleGameResult Scene::Impl::retire() noexcept {
+    auto& owner=*this;
     if(owner.creator!=std::this_thread::get_id())return ISLE_GAME_WRONG_OWNER;
     if(owner.phase==SceneStatus::retired)return owner.failure;
     if(owner.phase!=SceneStatus::completed && owner.phase!=SceneStatus::cancelled && owner.phase!=SceneStatus::failed)
@@ -1019,14 +1098,46 @@ IsleGameResult Scene::retire() noexcept {
     }
     owner.phase=SceneStatus::retired;return owner.failure;
 }
-SceneStatus Scene::status() const noexcept {return p_->phase;}
-IsleGameResult Scene::error() const noexcept {return p_->failure;}
-const char* Scene::message() const noexcept {return p_->diagnostic.data();}
-std::optional<std::int32_t> Scene::result() const noexcept {
-    if((p_->phase==SceneStatus::completed || p_->phase==SceneStatus::retired) &&
-       p_->native_retired && !p_->cancelling && p_->failure==ISLE_GAME_OK)return p_->output_scene;
+SceneStatus Scene::Impl::status() const noexcept {return phase;}
+IsleGameResult Scene::Impl::error() const noexcept {return failure;}
+const char* Scene::Impl::message() const noexcept {return diagnostic.data();}
+std::optional<std::int32_t> Scene::Impl::result() const noexcept {
+    if((phase==SceneStatus::completed || phase==SceneStatus::retired) &&
+       native_retired && !cancelling && failure==ISLE_GAME_OK)return output_scene;
     return std::nullopt;
 }
+IsleGameResult Scene::resume() noexcept {return p_->resume();}
+bool Scene::setup_pending() const noexcept {return p_->setup_pending();}
+IsleGameResult Scene::initialize_scene() noexcept {return p_->initialize_scene();}
+IsleGameResult Scene::update(std::uint32_t raw_game_time) noexcept {return p_->update(raw_game_time);}
+bool Scene::draw(scene::graphics::FrameContext context) noexcept {return p_->draw(context);}
+bool Scene::graphics_busy() const noexcept {return p_->graphics_busy();}
+scene::graphics::Poll Scene::poll() noexcept {return p_->poll();}
+scene::graphics::Completed Scene::completed_frame() const noexcept {return p_->completed_frame();}
+IsleGameResult Scene::release_completed() noexcept {return p_->release_completed();}
+bool Scene::retire_scene() noexcept {return p_->retire_scene();}
+IsleGameResult Scene::cancel() noexcept {return p_->cancel();}
+IsleGameResult Scene::retire() noexcept {return p_->retire();}
+SceneStatus Scene::status() const noexcept {return p_->status();}
+IsleGameResult Scene::error() const noexcept {return p_->error();}
+const char* Scene::message() const noexcept {return p_->message();}
+std::optional<std::int32_t> Scene::result() const noexcept {return p_->result();}
+IsleGameResult Component::resume() noexcept {return p_->resume();}
+bool Component::setup_pending() const noexcept {return p_->setup_pending();}
+IsleGameResult Component::initialize_scene() noexcept {return p_->initialize_scene();}
+IsleGameResult Component::update(std::uint32_t raw_game_time) noexcept {return p_->update(raw_game_time);}
+bool Component::draw(scene::graphics::FrameContext context) noexcept {return p_->draw(context);}
+bool Component::graphics_busy() const noexcept {return p_->graphics_busy();}
+scene::graphics::Poll Component::poll() noexcept {return p_->poll();}
+scene::graphics::Completed Component::completed_frame() const noexcept {return p_->completed_frame();}
+IsleGameResult Component::release_completed() noexcept {return p_->release_completed();}
+bool Component::retire_scene() noexcept {return p_->retire_scene();}
+IsleGameResult Component::cancel() noexcept {return p_->cancel();}
+IsleGameResult Component::retire() noexcept {return p_->retire();}
+SceneStatus Component::status() const noexcept {return p_->status();}
+IsleGameResult Component::error() const noexcept {return p_->error();}
+const char* Component::message() const noexcept {return p_->message();}
+std::optional<std::int32_t> Component::result() const noexcept {return p_->result();}
 const IslePostCourseSceneSource& Scene::source() const noexcept {return p_->source();}
 const IsleCameraCheckSource* Scene::camera_source() const noexcept {return std::get_if<IsleCameraCheckSource>(&p_->context);}
 const IslePhotoCheckSource* Scene::photo_source() const noexcept {return std::get_if<IslePhotoCheckSource>(&p_->context);}

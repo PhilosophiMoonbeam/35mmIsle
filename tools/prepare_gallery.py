@@ -145,6 +145,8 @@ def main():
         'src/photo_replay.cpp',
         'src/photo_replay.hpp',
         'src/post_course_native_helpers.hpp',
+        'src/post_course_modules.cpp',
+        'src/post_course_modules.hpp',
         'src/post_course_replay.cpp',
         'src/post_course_replay.hpp',
         'src/post_course_replay_source.c',

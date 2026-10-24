@@ -137,7 +137,7 @@ jobs:
           player-ui-screen-rsp-smoke post-course-replay-rom-smoke post-course-window-rom-smoke
           scene-layout-rom-smoke world-producer-rsp-smoke --parallel 2
       - name: Build actual application and post-course interface consumers without ROMs
-        run: cmake --build --preset windows-host-release --target 35mmisle-application-runtime-rom-smoke post-course-interfaces-rom-smoke --parallel 2
+        run: cmake --build --preset windows-host-release --target 35mmisle-application-runtime-rom-smoke post-course-interfaces-rom-smoke post-course-component-rom-smoke --parallel 2
       - name: Run all ROMless CPU CTests
         run: ctest --preset windows-host-release
       - name: Exercise help without graphics, audio devices or ROMs
@@ -367,7 +367,7 @@ jobs:
           player-ui-screen-rsp-smoke post-course-replay-rom-smoke post-course-window-rom-smoke
           scene-layout-rom-smoke world-producer-rsp-smoke --parallel 2
       - name: Build actual application and post-course interface consumers without ROMs
-        run: cmake --build build/linux-host --target 35mmisle-application-runtime-rom-smoke post-course-interfaces-rom-smoke --parallel 2
+        run: cmake --build build/linux-host --target 35mmisle-application-runtime-rom-smoke post-course-interfaces-rom-smoke post-course-component-rom-smoke --parallel 2
       - name: Exercise native product help without devices or ROMs
         run: build/linux-host/35mmisle --help
       - name: Run all Release-active synthetic tests

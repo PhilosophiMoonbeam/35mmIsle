@@ -57,7 +57,9 @@ def rewrite(name,text):
     # Calls with no nested parentheses are the exact remaining native leaf calls.
     for old,field in native.items():
         pattern=r'\b'+old+r'\(([^()]*)\);'
-        def leaf(m): return 'e8_check(source,source->requiredNativeTable->'+field+'(source'+(','+m[1] if m[1].strip() else '')+'));'
+        def leaf(m):
+            if field=='input_initialize': return 'e8_input_initialize(source);'
+            return 'e8_check(source,source->requiredNativeTable->'+field+'(source'+(','+m[1] if m[1].strip() else '')+'));'
         text,n=re.subn(pattern,leaf,text)
         if n: records.append({'leaf':old,'count':n})
     direct={'UIFrame_SetStyle','UIFrame_SetPos','UIFrame_Show','UIFrame_ShowBackground','UIElement_SetState','UIElement_SetFont'}

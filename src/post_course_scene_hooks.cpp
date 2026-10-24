@@ -131,12 +131,18 @@ extern "C" IsleGameResult isle_camera_check_native_set_flag(IsleCameraCheckSourc
 extern "C" IsleGameResult isle_camera_check_native_level(IsleCameraCheckSource* source, int32_t* output) {
     if (output) *output = 0;
     if (!output) return ISLE_GAME_INVALID_ARGUMENT;
-    return invoke(source, [&](auto& owner) { *output = owner.manager.source_level(); return ISLE_GAME_OK; });
+    return invoke(source, [&](auto& owner) {
+        if(!owner.manager)return ISLE_GAME_INVALID_STATE;
+        *output = owner.manager->source_level(); return ISLE_GAME_OK;
+    });
 }
 extern "C" IsleGameResult isle_photo_check_native_level_id(IslePhotoCheckSource* source, int32_t* output) {
     if (output) *output = 0;
     if (!output) return ISLE_GAME_INVALID_ARGUMENT;
-    return invoke(source, [&](auto& owner) { *output = owner.manager.source_level(); return ISLE_GAME_OK; });
+    return invoke(source, [&](auto& owner) {
+        if(!owner.manager)return ISLE_GAME_INVALID_STATE;
+        *output = owner.manager->source_level(); return ISLE_GAME_OK;
+    });
 }
 extern "C" IsleGameResult isle_camera_check_native_roll_count(IsleCameraCheckSource* source, int32_t* output) {
     if (output) *output = 0;
@@ -488,7 +494,7 @@ IsleGameResult SceneAccess::credits_cleanup_context(void* allocation,
         }
         if (!owned || envelope->allocation!=&native || !envelope->payload ||
             !envelope->bytes || !envelope->generation ||
-            envelope->generation!=owner.modules.window_generation ||
+            envelope->generation!=owner.window_module_generation() ||
             !native.heap->owns_allocation(envelope->payload,envelope->bytes))
             return ISLE_GAME_INVALID_ARGUMENT;
         *output=source;

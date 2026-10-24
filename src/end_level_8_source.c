@@ -50,6 +50,11 @@ static void e8_process(Context* s,int link,int dl,void* list) {
     e8_check(s,s->requiredNativeTable->process_object(s,link,dl,list,&obj));
     e8_check(s,isle_game_add_source_process(s->common.game,obj,isle_end_level_8_func_801DC9E8_A085D8,ISLE_GAME_STACKFUL,0,&process));
 }
+static void e8_input_initialize(Context* s) {
+    e8_check(s,s->requiredNativeTable->input_initialize(s));
+    s->common.input_invalidate=isle_post_course_native_input_invalidate;
+    e8_check(s,isle_post_course_source_install_input(&s->common));
+}
 static UnkStruct800BEDF8* e8_input(Context* s,int id) { e8_check(s,s->requiredNativeTable->input(s,id,&s->input)); return &s->input; }
 static int e8_fade_pending(Context* s) { int32_t n=0; e8_check(s,s->requiredNativeTable->fade_pending(s,&n)); return n; }
 static void e8_UIFrame_SetStyle(Context* s,int style) { e8_check(s,isle_post_window_frame_style(s->common.window,s->frame,style)); }

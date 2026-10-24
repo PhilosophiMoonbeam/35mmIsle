@@ -18,6 +18,9 @@
 namespace isle::snap_station { class Device; }
 namespace isle::post_course {
 struct SceneCreateResult;
+struct ComponentCreateResult;
+class Component;
+enum class ComponentEntry { end_level_8, credits17, credits18, credits19, credits20 };
 struct SceneAccess;
 enum class SceneStatus { ready, setup_pending, running, retiring, completed, cancelled, failed, retired };
 /* Shared actual original CameraCheck9, PhotoCheck15, Album12, Report14,
@@ -27,6 +30,7 @@ enum class SceneStatus { ready, setup_pending, running, retiring, completed, can
  * EntryBorrow; this owner never selects the application's next entry. */
 class Scene final {
     friend struct SceneAccess;
+    friend class Component;
 public:
     static SceneCreateResult create(const rom::Snapshot&, application::Manager&,
         const application::EntryBorrow&, game::State&, game_input::Service&, game_audio::Session&, host::GtlClock&,
@@ -79,6 +83,48 @@ struct SceneCreateResult {
     std::unique_ptr<Scene> scene;
     std::array<char,512> message{};
     explicit operator bool() const noexcept { return error == ISLE_GAME_OK && bool(scene); }
+};
+/* Independent End8/Credits execution, not a Manager entry or Root Scene.
+ * The Snapshot, State/save session, Input, Audio, GTL, Photos, progress owners
+ * and ComponentModules must outlive this component's complete retirement and
+ * destruction, including nested native-progress callbacks. Its private module
+ * lease survives every native/worker/graphics/entry/domain borrower.
+ * Results are Source outputs only; never acknowledge a Manager entry with them. */
+class Component final {
+public:
+    static ComponentCreateResult create(const rom::Snapshot&, game::State&,
+        game_input::Service&, game_audio::Session&, host::GtlClock&,
+        application::Photos&, host::Progress&, ReplayNativeProgress,
+        ComponentModules&, ComponentEntry, bool require_cpu_renderer=false) noexcept;
+    ~Component();
+    Component(const Component&) = delete;
+    Component& operator=(const Component&) = delete;
+    IsleGameResult resume() noexcept;
+    bool setup_pending() const noexcept;
+    IsleGameResult initialize_scene() noexcept;
+    // STOPPED has the same cancellation/join contract as Scene::update.
+    IsleGameResult update(std::uint32_t raw_game_time) noexcept;
+    bool draw(scene::graphics::FrameContext = {}) noexcept;
+    bool graphics_busy() const noexcept;
+    scene::graphics::Poll poll() noexcept;
+    scene::graphics::Completed completed_frame() const noexcept;
+    IsleGameResult release_completed() noexcept;
+    bool retire_scene() noexcept;
+    IsleGameResult cancel() noexcept;
+    IsleGameResult retire() noexcept;
+    SceneStatus status() const noexcept;
+    IsleGameResult error() const noexcept;
+    const char* message() const noexcept;
+    std::optional<std::int32_t> result() const noexcept;
+private:
+    explicit Component(std::unique_ptr<Scene::Impl>) noexcept;
+    std::unique_ptr<Scene::Impl> p_;
+};
+struct ComponentCreateResult {
+    IsleGameResult error = ISLE_GAME_OK;
+    std::unique_ptr<Component> component;
+    std::array<char,512> message{};
+    explicit operator bool() const noexcept { return error == ISLE_GAME_OK && bool(component); }
 };
 }
 #endif

@@ -70,9 +70,9 @@ IsleGameResult with(IsleReportSource* source,F&& function) noexcept {
 template<class O>
 IsleGameResult admit(O& owner,ReportSceneNative& state) {
     auto& resources=*owner.live().resources;
-    if(resources.kind()!=Resources::Kind::report)return ISLE_GAME_INVALID_STATE;
-    const auto generation=owner.manager.resources().overlay_generation(ISLE_APPLICATION_OVERLAY_POKEMON_REPORT);
-    if(!generation || owner.manager.resources().overlay(ISLE_APPLICATION_OVERLAY_POKEMON_REPORT).bytes.empty())
+    if(resources.kind()!=Resources::Kind::report || !owner.manager)return ISLE_GAME_INVALID_STATE;
+    const auto generation=owner.manager->resources().overlay_generation(ISLE_APPLICATION_OVERLAY_POKEMON_REPORT);
+    if(!generation || owner.manager->resources().overlay(ISLE_APPLICATION_OVERLAY_POKEMON_REPORT).bytes.empty())
         return ISLE_GAME_INVALID_STATE;
     if(state.admitted)return state.generation==generation?ISLE_GAME_OK:ISLE_GAME_INVALID_STATE;
     if(state.generation)return ISLE_GAME_INVALID_STATE;

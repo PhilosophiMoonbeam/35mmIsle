@@ -11,7 +11,7 @@
       "sha256": "4f30ef7e8363f1950a59ea2ddede06b3086e38200dede03a9b3b5a1c4db6fd3b"
     },
     "tools/materialize_camera_check.py": {
-      "sha256": "4810e5bf041b12971a0d2b2f3ea63c21149c8966c7818e09c90508311d0f4948"
+      "sha256": "6392cde3a43c5e0b0892da3f451ec478cadec2ca343ba2f66fdac7241253b539"
     },
     "src/post_course_scene_source.h": {
       "sha256": "87fe86b4f837607881d77e5c20cdb87d9cdb717112af12e65847571ecf0ad48c"
@@ -20,22 +20,22 @@
       "sha256": "e0de60c22999218bab16c179bf1eacae22fcf7aa0f1a24d075cdd9426b1a498b"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "d689c2837cb2013ea7162be1abbdd50a7dd981ceaa4258ba2f57d63777034d65"
+      "sha256": "ac82039d45b53302ebd63e9617226bb1647068157eb4a7cd4a7c3d27928db46f"
     },
     "src/post_course_scene.hpp": {
-      "sha256": "307e4e1354680b07fc9eb171afcc01af751ed06e57b14b22a4b10671ab872748"
+      "sha256": "9e9053c6f17ba4637eba108a66259acb35d4452fe78f9a3e90757ef0d0c71eee"
     },
     "src/post_course_scene_internal.hpp": {
-      "sha256": "4c24997403f7da1c6e078a3032a1caa0b99549a74bfe9ad32d92922033fafa3e"
+      "sha256": "9b1e4c61feeb8b8fadf94d10ff9c40fdcea9fe8a375e6d2ea849f9ab82ae9926"
     },
     "src/post_course_scene_hooks.cpp": {
-      "sha256": "4862e5ea77b43980b7865008a9295228769fec3b815578ee077893a173792228"
+      "sha256": "6c89f31133831882440d11cf272e60f3654927324195200a30bf3ef105afec8d"
     },
     "src/post_course_modules.cpp": {
-      "sha256": "8c2a19e27616f5ebc2ab5d96f064521ec1ce4c1239c652c8cdd681596f79e2df"
+      "sha256": "25eb1682b44cb5fed2dc79fb30184ba3dd9915fa8e5f5c5737854fca8e508698"
     },
     "src/post_course_modules.hpp": {
-      "sha256": "3e0a436840cf5628ed8dca9549b14116d12181d471040db4fd96fba3d95c5eb9"
+      "sha256": "0cf8d663ee5bb9ce7284919ac36e9b040bfa9dfa1d1f26553fd318af0b351a0a"
     }
   },
   "repository": "https://github.com/ethteck/pokemonsnap",

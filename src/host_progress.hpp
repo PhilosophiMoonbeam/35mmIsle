@@ -2,6 +2,7 @@
 #define ISLE_HOST_PROGRESS_HPP
 
 #include "game_host.hpp"
+#include "game_audio_driver.hpp"
 #include "host_clock.hpp"
 #include <array>
 #include <chrono>
@@ -18,6 +19,17 @@ struct InputAcknowledgement {
     void* owner = nullptr;
     bool (*acknowledge)(void*, const game_input::EventResult&) noexcept = nullptr;
 };
+// Native platform leaves. Direct consumers execute them on SDL main; the
+// product supplies real main-owner transfers instead. A read retains its exact
+// ReadToken until the actual acquisition completes. Callbacks never run GAME.
+struct PlatformProgress {
+    void* owner = nullptr;
+    bool (*poll_events)(void*) noexcept = nullptr;
+    game_host::Input (*read)(void*, game_input::ReadToken) noexcept = nullptr;
+    game_host::Error (*error)(void*) noexcept = nullptr;
+    const char* (*message)(void*) noexcept = nullptr;
+};
+PlatformProgress direct_platform(game_host::Host&) noexcept;
 struct ProgressPolicy {
     bool request_input = true, complete_input = true;
     bool scene_active = false, offer_retraces = true, poll_events = true;
@@ -28,16 +40,16 @@ struct ProgressTick {
     game_input::EventResult completion{};
     bool completed = false, completion_accepted = false;
 };
-// One serialized main-thread Host owner, shared by ordinary and nested native
+// One serialized GAME service owner, shared by ordinary and nested native
 // servicing. Construct before Runtime; bind its actual acknowledgement afterward.
-// Host, Service and acquisition storage must outlive this object. Clock and
-// acknowledgement storage must remain live until unbind(), after nested work
-// has ceased and before Runtime/clock destruction. No borrowed callback owns a
-// Runtime. Unbinding does not reset the epoch, retrace fraction or VI ordinal.
+// Platform, Driver, Service and acquisition storage must outlive this object.
+// Clock and acknowledgement storage remain live until unbind(), after nested
+// work has ceased and before Runtime/clock destruction. Unbinding does not reset
+// the epoch, retrace fraction or VI ordinal.
 class Progress final {
 public:
     using Time = std::chrono::steady_clock;
-    Progress(game_host::Host&, game_input::Service&, InputAcquisition = {});
+    Progress(PlatformProgress, game_input::Service&, game_audio::Driver&, InputAcquisition = {});
     Progress(const Progress&) = delete;
     Progress& operator=(const Progress&) = delete;
     void bind(GtlClock&, InputAcknowledgement) noexcept;
@@ -69,8 +81,9 @@ private:
     void fail(const char*) noexcept;
     void observe_deadline() noexcept;
     void acquire(ProgressTick&) noexcept;
-    game_host::Host& host_;
+    PlatformProgress platform_;
     game_input::Service& input_;
+    game_audio::Driver& audio_;
     InputAcquisition acquisition_;
     GtlClock* clock_ = nullptr;
     InputAcknowledgement acknowledgement_{};

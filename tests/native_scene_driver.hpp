@@ -3,6 +3,7 @@
 
 #include "canonical_frame_capture.hpp"
 #include "game_host.hpp"
+#include "game_audio_driver.hpp"
 #include "host_clock.hpp"
 #include "scene_graphics.hpp"
 #include "scene_services.hpp"
@@ -26,12 +27,12 @@ public:
     using Time = std::chrono::steady_clock::time_point;
     using Predicate = bool (*)(const Scene&) noexcept;
     Driver(Scene& native_scene, scene::Services& services, game_input::Service& input,
-           game_host::Host& platform, scene::graphics::Frame& graphics,
+           game_host::Host& platform, game_audio::Driver& audio, scene::graphics::Frame& graphics,
            host::GtlClock& clock, host::RetraceClock& retraces,
            std::uint64_t& retrace_ordinal, Time epoch, Time deadline,
            Predicate exited, Predicate capture_ready,
            std::filesystem::path capture_path)
-        : scene_(native_scene), services_(services), input_(input), host_(platform),
+        : scene_(native_scene), services_(services), input_(input), host_(platform), audio_(audio),
           graphics_(graphics), clock_(clock), retraces_(retraces),
           retrace_ordinal_(retrace_ordinal), epoch_(epoch), deadline_(deadline),
           exited_(exited), capture_ready_(capture_ready),
@@ -170,14 +171,14 @@ private:
             const auto completed = input_.complete_read(requested.read,sample_);
             check(completed.error == game_input::Error::none,"actual owned scene sample completion rejected");
             ++reads_;
-            check(host_.notify_retrace(++retrace_ordinal_,ns),host_.message());
+            check(audio_.notify_retrace(++retrace_ordinal_,ns),audio_.message());
         }
         if (ticks && !clock_.stopping() && !clock_.stopped()) {
             const auto offered = clock_.offer_retraces(ticks);
             check(offered == host::ClockError::none || offered == host::ClockError::full,
                   "actual source retrace admission failed");
         }
-        check(host_.pump_audio(),host_.message());
+        check(audio_.pump(),audio_.message());
         if (host_.presentation_pending()) {
             const auto presented = host_.try_present();
             check(presented != game_host::Present::failed,host_.message());
@@ -219,6 +220,7 @@ private:
     scene::Services& services_;
     game_input::Service& input_;
     game_host::Host& host_;
+    game_audio::Driver& audio_;
     scene::graphics::Frame& graphics_;
     host::GtlClock& clock_;
     host::RetraceClock& retraces_;

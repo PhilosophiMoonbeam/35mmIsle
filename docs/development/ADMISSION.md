@@ -7637,19 +7637,26 @@ Root/campaign executable.
 
 | Actual component case | Observed outcome | Real updates | Submissions = terminals = presentations |
 |---|---|---:|---:|
+| Credits17, isolated ordinary skip | Actual Zubat worker photograph and Director credits on its own X11 display; ordinary A; Original result 8, exit 0, not full-roll proof | 811 | 405 |
 | Credits18, full roll | Worker photograph and scrolling credits; visible Nintendo final card; ordinary XTEST A through SDL3/ControlDeck; Original result 8, exit 0 | 7,599 | 3,799 |
+| Credits19, isolated full roll | Actual worker-photo filmstrip and full scrolling credits; visible Nintendo final card; two ordinary A holds; Original result 8, exit 0 | 8,922 | 4,460 |
 | Credits20, ordinary skip | Visible worker-rendered Psyduck photograph; ordinary A; Original result 8, exit 0 | 4,429 | 2,214 |
 | Credits18, active 60-second deadline | Worker initialized and rendered; actual retained deadline failure, error 5, no result, exit 1 | 292 | 146 |
 | End8, cancellation before update | Real C input process registered but unstarted; requested cancellation, no result, exit 0 | 0 | 0 |
 
 Every listed cohort admits its frozen images, retires Source/graphics/Host
 and audio owners, reaches `ECHILD` with empty task/wait ledgers, closes
-retained descriptors, uses no supervisor `SIGKILL`, and preserves all 15
-protected inputs. Actual retirement attempts are 1 and pending returns are
+retained descriptors, uses no supervisor `SIGKILL`, and preserves every
+protected input (15 per original cohort; 16 for isolated Credits17/19).
+Actual retirement attempts are 1 and pending returns are
 0: these runs do **not** dynamically qualify a multiple-pending retry.
 The full-roll and skip receipts are respectively
 `4492d1d0e88b8ff4076472847e99c45677d657ff53b644de856e4f4fd95097f9`
 and `f64916f63815d1c9751f43aacc3deeaf55a0bf7150afe86eb134a29a0848da8c`.
+The isolated Credits17 receipt is
+`602b3f3a4d22ed10d24a926a7744ee23e137a53963272127c39dd3c34f16df2e`.
+The isolated Credits19 full-roll receipt is
+`97d3846dbc55204adeaf43605244fb36591695d5558101b68765c7adbd3caaf0`.
 The active-deadline receipt is
 `4906e76f25e30b9d2b14d3ab4d65566f043f470b8fc4141ed3b587dd711009f8`;
 the final cold-cancellation receipt is
@@ -7691,10 +7698,116 @@ after stop. The worker/deadline observations above exercise those final
 consumer corrections without promoting unobserved pending-return behavior.
 
 All native targets build and all 61 local CPU CTests pass after the final
-production and consumer corrections. Published `6825434` independently passed
-[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40036692279);
-that earlier CI result is not a build claim for this component cutover.
+production and consumer corrections. Published `77f1cd6` passed
+[all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40048218009),
+including the full host and new component consumer builds. This qualifies that
+component cutover's builds, not subsequent dedicated-GAME-owner changes.
 ROMs, generated GAME bodies, private executables, saves, pixels and PCM
 remain unuploaded. Root24/Credits20 producers, full fresh campaign,
 Windows 11 runtime and Original-fidelity gates are not closed by this section.
+
+## Native product dedicated GAME owner
+
+`game_owner::Owner` constructs the actual State/Runtime/Manager, continuation,
+graphics, Input, Station, GTL, Progress and audio ownership tree on one
+persistent ordinary GAME thread. Main owns SDL/LUS, acquisition, presentation
+and PCM transport. `Host::audio()` and its mixed producer lifecycle are removed;
+all actual consumers explicitly retain a GAME audio `Driver`.
+
+The product uses existing fixed SPSC Input transfers, one retained asynchronous
+display offer/acknowledgment, and one bounded synchronous main rendezvous for
+actual endpoint operations. No mutex spans SDL work, GAME execution or join.
+A display acknowledgment ends main's pixel access; GAME performs the existing
+FrameToken/Station release. Accepted RPC stack arguments remain retained through
+their actual reply, including during stop. Nested native waits use the same
+Progress policy and returning native service, never another OM update.
+
+Reset keeps the same GAME thread, Input Service and Station. Main collects F9;
+only outer GAME code consumes reset/disconnect after Source/native leaves
+return. Input cancellation settles both transfer directions before reentry.
+Native users retire before Driver/RSP/RAM, then actual SDL stream closure and
+Host teardown. Independent ownership and audio/consumer reviews found no
+concrete P0/P1/P2 defect; these are source reviews, not runtime qualification.
+
+### Actual initial product exercise
+
+Private executable
+`a0017bd28a18f034fded9afc9c46fd3816b3780b22d9c10fa4465898320a4b59`
+ran on its own X11 display with the unchanged inherited UI-earned pair.
+Actual pixels show Nintendo64 logo, animated Intro, Title menu, ordinary
+Space/Start and X/A cold Continue, then Oak dialogue. Real `WM_DELETE_WINDOW`
+at the visible Oak surface returned exit 0: the program accepted actual audio
+drain and creator-owned retirement before Host closure.
+
+The prospective 86-image custody receipt admits the run, retires its complete
+owned tree and retained FDs, reaches `ECHILD` with empty task/wait ledgers,
+uses no supervisor `SIGKILL`, and preserves all ten immutable protected inputs.
+Receipt:
+`78b769fed0cbf31a3ca472c312d22fdc7934006ca9fc255c13387941a3aaaed6`.
+Product-owned profile copies are separately recorded mutable outputs; the
+inherited source pair is immutable.
+
+Public kernel metadata distinguishes main from named GAME tasks, but child
+threads inherit the creator's name: names alone do not identify a unique owner.
+An earlier real Return key event was mislabeled Start in descriptive metadata;
+the original record and correction are retained. Only documented Space/Start
+and X/A responses are qualified. No Source/private-state observation supplied
+input or completion.
+
+This initial worktree binary has no prospective full-source build seal.
+The reviewed successor is captured separately: 936 own-project inputs remain
+unchanged before/after the full default and four ROM-consumer builds, followed
+by all 61 CPU CTests passing in 8.39 seconds. Its source archive is
+`990c7e1613d6107f210bc87690912335cf61b44f652373b3dbe90f82979e354a`;
+the product is
+`1d6eccbdf25512cb81f62f36c5a4eba979dd05eb6ee1fc60788f30ff00f40d8d`
+and direct component consumer is
+`214f63c10155b4e846794776659a5768330931b1a04f4c5f444ef5491d625529`.
+This captures own source, not compiler/third-party/generated-GAME closure.
+An earlier compile-only failure remains recorded: restoring the required
+`ReplayNativeProgress` complete-type header corrected it without changing
+Original bodies, input, timing, execution budgets or expected outputs.
+
+Photo/scoring native waits, reset, fault-matrix, new Windows builds and runtime,
+W04 Original pacing and full fresh campaign are not qualified by the initial
+Boot-to-Oak exercise. Its LLVM llvmpipe/dummy-PCM scope remains explicit.
+
+### Final direct Driver exercise
+
+The reviewed direct component consumer ran on a separate display and unchanged
+earned pair: actual A advanced Pikachu to Pidgey; ordinary B inputs and a later
+optional Z preceded dimming and Original result 23. The exact sampled B event
+and message-toggle acceptance are not established. All 297 submissions,
+consumer releases, presentations and GTL terminals agree; Source, Driver,
+Host and audio retired normally with exit 0. Its 86 admitted images, `ECHILD`,
+empty ledgers, closed retained FDs, no `SIGKILL` and 16 unchanged protected
+inputs were verified. Receipt:
+`0a2ab77cc5fdbf48cfd24f4090d228a3af317d1e2433e8867a8d326d2503c6a8`.
+This separately exercises the direct creator-to-SDL inspection fence; it is
+not a Root producer or product photo/scoring qualification.
+
+### Whole-product private relink closure
+
+The actual reviewed product's ordered link capture includes
+`libisle-game-owner.a` with `game_owner.cpp.o`, and `libisle-game-host.a`
+with `game_audio_driver.cpp.o`. The complete private kit was archived and
+independently extracted under a path containing spaces and Unicode.
+With producer repositories/build/SDK paths hidden by `bwrap`, all 23 actual
+recipient commands succeeded: baseline and genuinely modified GNU lightning
+builds, synthetic JIT marker/42/43 execution, replacement product relinks and
+both products' help. Each adjacent-library output passes a 102-ELF closure
+check with relative RUNPATH, no absolute `DT_NEEDED` or unresolved dependency,
+and supplied libraries resolved inside its own `lib/`.
+
+Kit archive:
+`f93b1effd7716e9d24d8d40718f92f2cab10c708d55c20b28a8f39d8e4a2d7e0`.
+Validation record:
+`6c85da301350b938e2b38ebcff98c7412e6b7e42283faba84495f427d0442613`.
+Parent verification checks all 13 recorded artifacts. Build-private
+`ISLE_BUILD_RUNTIME_RELINK_KIT` remains enabled; no project source or frozen
+GUI candidate changed. This proves private Linux replacement/relink and
+adjacent-library composition, not ROM/product-JIT execution, a full CPack
+Runtime archive, Windows 11, hearing or redistribution approval.
+
+
 

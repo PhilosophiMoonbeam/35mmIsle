@@ -216,7 +216,7 @@ A separate frozen Linux run executed real title/menu→name entry→Oak dialogue
 
 The independent native GPU sprite consumer also exercised signed/anisotropic minification, quarter-pixel sampling, clipped and empty geometry, texture borders/filtering, CI palette banks, mutable raster revisions, CUTOUT and blending. RGB5 samples and actual framebuffer/hidden coverage are checked separately: framebuffer bit 0 is coverage, not texture alpha. This proof covers the native-resolution non-AA renderer state, not independent Original equivalence or Windows runtime.
 
-GAME audio endpoint inspection runs synchronously on the actual SDL owner through `isle_continuation_on_owner`; it continues the same continuation resume without a GAME tick, wait or cached readiness substitution. The checked SDL-dummy startup/reset/reentry scenario exercised these controls while audio also progressed during real graphics waits. This is owner-thread/control evidence, not physical output or hearing qualification.
+GAME owns its audio `Driver`, Session, producer RAM and actual RSP executor; SDL owns only the real endpoint. Product inspect/submit/finish/drain calls rendezvous synchronously with main and return actual transport results, never cached readiness or queue admission. Single-main-thread diagnostic consumers retain the returning `isle_continuation_on_owner` fence; that API reaches the continuation creator, not an arbitrary SDL thread. Existing SDL-dummy controls/retirement evidence is not hearing or physical-output qualification.
 
 Link `isle-process` through CMake to inherit `Threads::Threads`; the header-only queue also requires native thread linkage. Existing process targets retain strict FP options (`/fp:strict` on MSVC; `-fno-fast-math`, `-ffp-contract=off` and `-frounding-math` on GCC/Clang).
 
@@ -321,6 +321,10 @@ build/native-game/35mmisle /private/pokemonsnap.z64
 The Windows full-host preset builds `build/windows-host-release/Release/35mmisle.exe`. The application requires compatible Vulkan and SDL3/OpenGL support; it reads the exact supported ROM without modifying or bundling it. `--data-directory` selects profile/configuration storage. `--cpu-renderer` requires an actual Vulkan CPU device; it is not a null backend. `--disable-input` disables controller acquisition only, not Audio or graphics.
 
 `--renderer-resources PATH` selects the existing pinned LUS shader-resource directory explicitly; for the build above, use `build/native-game/host-renderer-resources`. An explicit path must contain `shaders/opengl/default.shader.glsl`; a missing path fails rather than falling back. Omit the option to retain installed-resource discovery and the build-tree default. This selects renderer support data, not ROM assets or an alternative graphics backend.
+
+The product's persistent `game_owner::Owner` constructs and retires State, Runtime, Manager, native continuations, Input, GTL and canonical graphics on a dedicated GAME thread. Main continues actual events and platform requests while Source is inside native waits. Completed pixels remain borrowed until main copies or explicitly declines them; only GAME then releases the real FrameToken.
+
+Native reset preserves the same GAME thread, Input Service and Snap Station. The old Runtime, profile lock, queued acquisitions and native borrowers retire before ordinary boot reopens the profile under the next application epoch. F9/reset decisions are consumed outside returning Source/native callbacks; main never selects a Source scene or advances OM.
 
 Default keyboard controls:
 

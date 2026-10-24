@@ -25,6 +25,7 @@
 #include "campaign_saved_profile.hpp"
 #include "credits_worker_native.hpp"
 #include "game_host.hpp"
+#include "game_audio_driver.hpp"
 #include "host_progress.hpp"
 #include "new_game_scene.hpp"
 #include "oaks_lab_scene.hpp"
@@ -731,12 +732,13 @@ std::uint64_t digest(std::span<const std::byte> bytes) noexcept {
 using Tick = h::ProgressTick;
 struct Timeline {
     g::Host& host;
+    isle::game_audio::Driver& audio;
     h::Progress progress;
     app::Runtime* runtime=nullptr;
     void* display_owner=nullptr;
     IsleGameResult (*display_service)(void*) noexcept=nullptr;
-    Timeline(g::Host& actual,in::Service& input,SoftwareController& controller)
-        : host(actual),progress(actual,input,{&controller,[](void* owner) noexcept {
+    Timeline(g::Host& actual,in::Service& input,isle::game_audio::Driver& driver,SoftwareController& controller)
+        : host(actual),audio(driver),progress(h::direct_platform(actual),input,driver,{&controller,[](void* owner) noexcept {
             g::Input acquired;
             acquired.ports=static_cast<SoftwareController*>(owner)->sample();
             acquired.completed=true;
@@ -846,7 +848,7 @@ void exercise_cold_stop(const isle::rom::Snapshot& snapshot,const isle::menu::Ca
     std::unique_ptr<app::Runtime> application;
     std::string failure;
     try {
-        auto made=app::Runtime::create(snapshot,catalog,state,input,*timeline.host.audio(),clock,{true});
+        auto made=app::Runtime::create(snapshot,catalog,state,input,timeline.audio.session(),clock,{true});
         require(bool(made),made.message.data());
         application=std::move(made.runtime);
         timeline.bind(clock,*application);
@@ -995,7 +997,7 @@ public:
                 e_.stop_while_held=true;
                 throw std::runtime_error("expected live Rainbow consumer failure while a completed frame is held");
             }
-            e_.main_music|=timeline_.host.audio()->bgm_playing(0);
+            e_.main_music|=timeline_.audio.session().bgm_playing(0);
             require(!application_.stopped(),"Runtime stopped before real Beach ingress/consumer shutdown request");
             (void)timeline_.progress.idle();
         }
@@ -2404,7 +2406,7 @@ private:
                 clock_.buffered_retraces()==0 && clock_.stats().submissions==0 && !input_.pending_update() &&
                 input_.pending_read()==held_read_ && e_.read_requests==1 && clock_.stats().dropped_retraces>=4,
                 "Runtime did not retain its genuinely claimed GTL update behind the withheld Input read");
-            claim_ordinal_=timeline_.progress.ordinal();claim_audio_=timeline_.host.audio()->accepted_frames();
+            claim_ordinal_=timeline_.progress.ordinal();claim_audio_=timeline_.audio.session().accepted_frames();
             e_.blocked_claim=true;backpressure_=Backpressure::claimed;
         } else if (backpressure_==Backpressure::claimed) {
             const auto view=application_.view();
@@ -2412,9 +2414,9 @@ private:
                 clock_.stats().submissions==0 && input_.pending_read()==held_read_ && e_.read_requests==1 &&
                 clock_.buffered_retraces()<=4 && !input_.pending_update(),
                 "withheld acquisition advanced Source/GTL, duplicated a read or lost its update claim");
-            if (timeline_.progress.ordinal()-claim_ordinal_>=8 && timeline_.host.audio()->accepted_frames()>claim_audio_) {
+            if (timeline_.progress.ordinal()-claim_ordinal_>=8 && timeline_.audio.session().accepted_frames()>claim_audio_) {
                 e_.input_hold_ticks=timeline_.progress.ordinal()-claim_ordinal_;
-                e_.input_hold_audio=timeline_.host.audio()->accepted_frames()-claim_audio_;
+                e_.input_hold_audio=timeline_.audio.session().accepted_frames()-claim_audio_;
                 require(e_.read_skips>=7,"coalesced actual retraces did not exercise single-read-in-flight admission");
                 complete_read();
                 require(input_.needs_publication(),"real held read did not retain its unpublished sample");
@@ -3051,7 +3053,7 @@ private:
             if (native_failure_frame || (scene_==4 && !e_.frame_hold && e_.updates[4]>=16 && e_.beach_camera_changes &&
                 (e_.captured[5] || (display_ && display_->capture==5)) && varied(frame.rgba,0,0,320,240))) {
                 holding_frame_=true;held_frame_ordinal_=frame.ordinal;held_digest_=digest(frame.rgba);
-                held_ordinal_=timeline_.progress.ordinal();held_audio_=timeline_.host.audio()->accepted_frames();held_stats_=clock_.stats();
+                held_ordinal_=timeline_.progress.ordinal();held_audio_=timeline_.audio.session().accepted_frames();held_stats_=clock_.stats();
                 if(native_failure_frame)e_.native_failure_entry=last_entry_;
             }
         }
@@ -3063,11 +3065,11 @@ private:
                 (e_.native_fail_live?(active.rainbow && active.entry &&
                     active.entry->serial==e_.native_failure_entry):bool(active.beach)),
                 "unreleased genuine course frame allowed Source/GTL progress or premature native/Photo retirement");
-            if (timeline_.progress.ordinal()-held_ordinal_<8 || timeline_.host.audio()->accepted_frames()==held_audio_ ||
+            if (timeline_.progress.ordinal()-held_ordinal_<8 || timeline_.audio.session().accepted_frames()==held_audio_ ||
                 (!e_.native_fail_live && !e_.captured[5])) return;
             require(digest(frame.rgba)==held_digest_,"actual held completed pixels changed before caller release");
             e_.frame_hold=true;e_.frame_hold_ticks=timeline_.progress.ordinal()-held_ordinal_;
-            e_.frame_hold_audio=timeline_.host.audio()->accepted_frames()-held_audio_;
+            e_.frame_hold_audio=timeline_.audio.session().accepted_frames()-held_audio_;
             if(e_.native_fail_live) {
                 // Arm inside display service, but fail only from run() after
                 // that returning callback closes. The real Runtime retains
@@ -3208,9 +3210,12 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     auto platform=g::Host::create(snapshot,std::move(options));
     require(bool(platform),platform.message.data());
     auto& host=*platform.host;
+    auto audio_owner=isle::game_audio::Driver::create(snapshot,host.audio_output());
+    require(bool(audio_owner),audio_owner.message.data());
+    auto& audio=*audio_owner.driver;
     SoftwareController controller;
     in::Service input;
-    Timeline timeline{host,input,controller};
+    Timeline timeline{host,input,audio,controller};
     {
     isle::game::State state(root/"profile");
     try {
@@ -3232,7 +3237,7 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
         h::GtlClock clock({1,1,2,true,0});
         std::unique_ptr<app::Runtime> application;
         try {
-            auto made=app::Runtime::create(snapshot,*hydrated.catalog,state,input,*host.audio(),clock,
+            auto made=app::Runtime::create(snapshot,*hydrated.catalog,state,input,audio.session(),clock,
                 {true,&evidence,observe_retirement});
             require(bool(made),made.message.data());
             application=std::move(made.runtime);
@@ -3255,20 +3260,24 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
             remember_failure(failure,"actual application shutdown left an unacknowledged Input publication");
     }
     if (!host.cancel_present()) remember_failure(failure,host.message());
-    if (host.error()==g::Error::none && host.stop_audio()) {
+    if (host.error()==g::Error::none && audio.error()==isle::game_audio::DriverError::none && audio.stop()) {
         timeline.progress.set_deadline(Time::now()+std::chrono::seconds(90),
             "actual SDL/native Audio stop/drain deadline or failure");
         while (!timeline.progress.deadline_expired()) {
             (void)timeline.advance(false);
             if (host.error()!=g::Error::none) break;
-            const auto drain=host.poll_audio_drain();
-            if (drain==g::Drain::failed) break;
-            if (drain==g::Drain::drained) {evidence.audio_drained=true;break;}
+            const auto drain=audio.poll_drain();
+            if (drain==isle::game_audio::Drain::failed) break;
+            if (drain==isle::game_audio::Drain::drained) {evidence.audio_drained=true;break;}
             (void)timeline.progress.idle();
         }
     }
-    if (!evidence.audio_drained) remember_failure(failure,host.message()[0]?host.message():"actual SDL/native Audio stop/drain deadline or failure");
-    evidence.accepted_pcm=host.audio()->accepted_frames();
+    if (!evidence.audio_drained) {
+        const auto* diagnostic=audio.message()[0]?audio.message():host.message();
+        remember_failure(failure,diagnostic[0]?diagnostic:"actual SDL/native Audio stop/drain deadline or failure");
+    }
+    evidence.accepted_pcm=audio.session().accepted_frames();
+    if (!audio.retire()) remember_failure(failure,audio.message());
     const auto closed=host.shutdown();
     evidence.host_released=!closed.failed && closed.owners_released &&
         closed.audio==isle::audio::SdlAudioOutput::CloseDisposition::stream_drained;

@@ -22,7 +22,7 @@ inline void demand(bool value,const char* reason) {
 // the Beach request. This consumer stops at that real request, not fake gameplay.
 inline NameOakMetrics exercise_name_to_oak(
         const rom::Snapshot& snapshot, game::State& state, scene::Storage& storage,
-        game_input::Service& input, game_host::Host& platform,
+        game_input::Service& input, game_host::Host& platform, game_audio::Driver& audio,
         scene::graphics::Frame& graphics, host::GtlClock& clock,
         host::RetraceClock& retraces, std::uint64_t& ordinal,
         Driver<new_game::Scene>::Time epoch, Driver<new_game::Scene>::Time deadline,
@@ -77,10 +77,10 @@ inline NameOakMetrics exercise_name_to_oak(
         demand(storage.reset() == ISLE_GAME_OK && storage.create() == ISLE_GAME_OK,
                "actual Name native arena entry failed");
         backing = storage.game();
-        scene::Services services(storage.game(),storage.arena(),{{64,64,128,8,1024},sprites},input,*platform.audio(),state);
+        scene::Services services(storage.game(),storage.arena(),{{64,64,128,8,1024},sprites},input,audio.session(),state);
         new_game::Scene name(services,ui_resources,producer);
         using NativeDriver = Driver<new_game::Scene>;
-        NativeDriver driver(name,services,input,platform,graphics,clock,retraces,ordinal,epoch,deadline,
+        NativeDriver driver(name,services,input,platform,audio,graphics,clock,retraces,ordinal,epoch,deadline,
             [](const new_game::Scene& value) noexcept { return value.exit_requested(); },
             [](const new_game::Scene& value) noexcept { return value.observation().controls_ready; },
             root/"proof"/"canonical-name-frame.ppm");
@@ -130,13 +130,13 @@ inline NameOakMetrics exercise_name_to_oak(
         sprite::Producer producer(lab_resources->roots(),mapping);
         demand(storage.reset() == ISLE_GAME_OK && storage.create() == ISLE_GAME_OK && storage.game() == backing,
                "Oak failed to reuse the actual application-owned native backing");
-        scene::Services services(storage.game(),storage.arena(),lab_resources->view(),input,*platform.audio(),state);
+        scene::Services services(storage.game(),storage.arena(),lab_resources->view(),input,audio.session(),state);
         oaks_lab::Config configuration;
         configuration.level_id = manager.source_level();
         configuration.resource_identity = 0x4f414bu;
         oaks_lab::Scene lab(services,lab_resources,producer,configuration);
         using NativeDriver = Driver<oaks_lab::Scene>;
-        NativeDriver driver(lab,services,input,platform,graphics,clock,retraces,ordinal,epoch,deadline,
+        NativeDriver driver(lab,services,input,platform,audio,graphics,clock,retraces,ordinal,epoch,deadline,
             [](const oaks_lab::Scene& value) noexcept { return value.view().exit_requested; },
             [](const oaks_lab::Scene& value) noexcept {
                 const auto view = value.view();

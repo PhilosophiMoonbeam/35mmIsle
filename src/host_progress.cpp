@@ -5,15 +5,28 @@
 
 namespace isle::host {
 namespace {
-game_host::Input host_acquisition(void* owner) noexcept {
+game_host::Input host_acquisition(void* owner, game_input::ReadToken) noexcept {
     return static_cast<game_host::Host*>(owner)->acquire_input();
+}
+bool host_events(void* owner) noexcept {
+    return static_cast<game_host::Host*>(owner)->pump_events();
+}
+game_host::Error host_error(void* owner) noexcept {
+    return static_cast<game_host::Host*>(owner)->error();
+}
+const char* host_message(void* owner) noexcept {
+    return static_cast<game_host::Host*>(owner)->message();
 }
 void retain(std::array<char,512>& destination, const char* message) noexcept {
     std::snprintf(destination.data(),destination.size(),"%s",message && message[0]?message:"actual Host progress failed");
 }
 }
-Progress::Progress(game_host::Host& host, game_input::Service& input, InputAcquisition acquisition)
-    : host_(host), input_(input), acquisition_(acquisition.read?acquisition:InputAcquisition{&host,host_acquisition}) {}
+PlatformProgress direct_platform(game_host::Host& host) noexcept {
+    return {&host,host_events,host_acquisition,host_error,host_message};
+}
+Progress::Progress(PlatformProgress platform, game_input::Service& input,
+                   game_audio::Driver& audio, InputAcquisition acquisition)
+    : platform_(platform), input_(input), audio_(audio), acquisition_(acquisition) {}
 
 void Progress::bind(GtlClock& clock, InputAcknowledgement acknowledgement) noexcept {
     clock_=&clock;
@@ -58,7 +71,8 @@ void Progress::acquire(ProgressTick& tick) noexcept {
     if (!acknowledgement_.acknowledge) {
         fail("actual Input completion has no bound acknowledgement owner");return;
     }
-    const auto acquired=acquisition_.read(acquisition_.owner);
+    const auto acquired=acquisition_.read?acquisition_.read(acquisition_.owner):
+        platform_.read(platform_.owner,pending);
     if (!acquired.completed) return;
     tick.completion=input_.complete_read(pending,acquired.ports);
     if (tick.completion.error!=game_input::Error::none) {
@@ -74,7 +88,8 @@ ProgressTick Progress::complete_input() noexcept {
     ProgressTick tick;
     tick.ns=elapsed_ns();
     acquire(tick);
-    if (host_.error()!=game_host::Error::none) fail(host_.message());
+    if (platform_.error(platform_.owner)!=game_host::Error::none) fail(platform_.message(platform_.owner));
+    if (audio_.error()!=game_audio::DriverError::none) fail(audio_.message());
     observe_deadline();
     return tick;
 }
@@ -94,8 +109,8 @@ ProgressTick Progress::poll() noexcept {
     ProgressTick tick;
     tick.ns=elapsed_ns();
     observe_deadline();
-    if (policy_.poll_events && !host_.pump_events()) {
-        if (host_.error()!=game_host::Error::none) fail(host_.message());
+    if (policy_.poll_events && !platform_.poll_events(platform_.owner)) {
+        if (platform_.error(platform_.owner)!=game_host::Error::none) fail(platform_.message(platform_.owner));
         else request_stop();
     }
     tick.count=retraces_.advance(tick.ns);
@@ -119,21 +134,24 @@ ProgressTick Progress::poll() noexcept {
                 }
             }
         }
-        if (host_.error()==game_host::Error::none && !host_.notify_retrace(++ordinal_,tick.ns))
-            fail(host_.message());
+        if (platform_.error(platform_.owner)==game_host::Error::none &&
+            audio_.error()==game_audio::DriverError::none && !audio_.notify_retrace(++ordinal_,tick.ns))
+            fail(audio_.message());
     }
     // One acquisition AFTER the whole real coalesced batch. A pending provider
     // retains the exact read while independent events, VI and Audio continue.
     if (status_==ProgressStatus::running && clock_ && policy_.complete_input &&
-        input_.running() && host_.error()==game_host::Error::none) acquire(tick);
-    if (host_.error()!=game_host::Error::none) fail(host_.message());
+        input_.running() && platform_.error(platform_.owner)==game_host::Error::none) acquire(tick);
+    if (platform_.error(platform_.owner)!=game_host::Error::none) fail(platform_.message(platform_.owner));
+    if (audio_.error()!=game_audio::DriverError::none) fail(audio_.message());
     if (clock_ && policy_.scene_active && !clock_->stopping() && !clock_->stopped()) {
         offerable_+=tick.count;
         if (policy_.offer_retraces) (void)offer_retraces(offerable_);
     } else offerable_=0;
     // Even stopped/failed progress services independent actual Audio obligations
     // while the caller drains native owners. No new Input request is admitted.
-    if (host_.error()==game_host::Error::none && !host_.pump_audio()) fail(host_.message());
+    if (platform_.error(platform_.owner)==game_host::Error::none &&
+        audio_.error()==game_audio::DriverError::none && !audio_.pump()) fail(audio_.message());
     observe_deadline();
     return tick;
 }

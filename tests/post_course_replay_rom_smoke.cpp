@@ -11,6 +11,7 @@
 #include "post_course_replay_probe.h"
 #include "scene_graphics.hpp"
 #include "scene_storage.hpp"
+#include "game_audio_driver.hpp"
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <array>
@@ -41,6 +42,7 @@ void ok(IsleGameResult result, const char* message) { require(result == ISLE_GAM
 struct Fixture {
     const isle::rom::Snapshot& rom;
     isle::game_host::Host& host;
+    isle::game_audio::Driver& audio;
     isle::host::Progress& progress;
     isle::application::Photos& photos;
     isle::game_input::Service& input;
@@ -76,8 +78,9 @@ struct Fixture {
     bool wire_watch = false, witness_requested = false;
 
     Fixture(const isle::rom::Snapshot& r, isle::game_host::Host& h, isle::host::Progress& p,
-            isle::application::Photos& ph, isle::game_input::Service& in, isle::game::State& state)
-        : rom(r),host(h),progress(p),photos(ph),input(in) {
+            isle::game_audio::Driver& a, isle::application::Photos& ph,
+            isle::game_input::Service& in, isle::game::State& state)
+        : rom(r),host(h),audio(a),progress(p),photos(ph),input(in) {
         try { initialize(state); }
         catch (const std::exception& e) {
             // A constructor-body handler runs BEFORE member destruction. In
@@ -129,7 +132,7 @@ struct Fixture {
         std::vector<isle::sprite::RamRange> protected_ranges;
         for (const auto range:pipeline->reservations()) protected_ranges.push_back({std::uint32_t(range.offset),std::uint32_t(range.size)});
         require(gpu->reserve_source_gpu_storage(protected_ranges),gpu->message());
-        replay = std::make_unique<pc::Replay>(storage.game(),photos,*pipeline,progress,*host.audio(),pc::ReplayNativeProgress{this,service});
+        replay = std::make_unique<pc::Replay>(storage.game(),photos,*pipeline,progress,audio.session(),pc::ReplayNativeProgress{this,service});
         producer = std::make_unique<isle::sprite::Producer>(resources->roots(),resources->banks());
         const auto sprite_assets=producer->assets();
         const auto common_assets=common->common_render_assets();
@@ -137,7 +140,7 @@ struct Fixture {
         immutable.insert(immutable.end(),sprite_assets.begin(),sprite_assets.end());
         immutable.insert(immutable.end(),common_assets.begin(),common_assets.end());
         auto view = resources->view(); view.pools = {128,128,256,8,1024};
-        services = std::make_unique<sc::Services>(storage.game(),storage.arena(),view,input,*host.audio(),state);
+        services = std::make_unique<sc::Services>(storage.game(),storage.arena(),view,input,audio.session(),state);
         require(!services->failed(),services->error());
         text = std::make_unique<ui::Text>(common->font());
         frame = std::make_unique<ui::Frame>(*services,*common);
@@ -414,17 +417,20 @@ int run(const fs::path& rom_path,const fs::path& root) {
     isle::game_host::Config config; config.data_directory=root/"host"; config.input=isle::game_host::InputMode::diagnostic_disabled;
     auto platform=isle::game_host::Host::create(rom,config); require(bool(platform),platform.message.data());
     auto& host=*platform.host;
+    auto audio_owner=isle::game_audio::Driver::create(rom,host.audio_output());
+    require(bool(audio_owner),audio_owner.message.data());
+    auto& audio=*audio_owner.driver;
     require(std::string_view(host.audio_info().driver.data())=="dummy" && host.audio_info().source.freq==32006 &&
             host.audio_info().source.channels==2 && host.audio_info().source.format==SDL_AUDIO_S16,"actual checked SDL dummy source format");
     isle::game_input::Service input; require(input.start({})==isle::game_input::Error::none,"actual absent-port Input Service");
-    isle::host::Progress progress(host,input); progress.set_policy({false,false,false,false,true});
+    isle::host::Progress progress(isle::host::direct_platform(host),input,audio); progress.set_policy({false,false,false,false,true});
     progress.set_deadline(Time::now()+std::chrono::minutes(10),"private real Source Replay Host/GPU deadline");
     isle::game::State state(root/"profile"); require(state.initialize(1),state.error()); require(state.save()!=nullptr,"canonical application GameSession");
     isle::application::Photos photos(rom,*state.save());
     std::ofstream log(root/"artifacts"/"chronology.tsv"); require(bool(log),"fresh bounded private chronology");
     log << "scope\tauthored_canonical_records_NOT_captured_gameplay;direct_native_OM_updates_NOT_GTL;real_Host_wallclock_SDL_dummy\n";
     {
-        Fixture f(rom,host,progress,photos,input,state);
+        Fixture f(rom,host,progress,audio,photos,input,state);
         const auto subject=authored(true); f.canonical(subject); f.launch(ISLE_REPLAY_PROBE_SCORE);
         ok(f.tick(),"first real Source score update");
         require(f.probe.entered && !f.probe.returned && f.probe.stage==60 && f.probe.sounds==1 &&
@@ -478,18 +484,20 @@ int run(const fs::path& rom_path,const fs::path& root) {
         log << "native_progress\t" << f.services_count << '\t' << f.display_completed << '\t' << f.display_presented << '\t' << f.ticks << '\n';
     }
     require(input.stop().error==isle::game_input::Error::none,"actual Input Service stop");
-    require(host.stop_audio(),host.message());
+    require(audio.stop(),audio.message());
     progress.set_deadline(Time::now()+std::chrono::seconds(90),"actual SDL dummy native Audio drain deadline");
     bool drained=false;
     while (!progress.deadline_expired()) {
         (void)progress.poll(); require(host.error()==isle::game_host::Error::none,host.message());
-        const auto state=host.poll_audio_drain();
-        require(state!=isle::game_host::Drain::failed,host.message());
-        if (state==isle::game_host::Drain::drained) { drained=true; break; }
+        const auto state=audio.poll_drain();
+        require(state!=isle::game_audio::Drain::failed,audio.message());
+        if (state==isle::game_audio::Drain::drained) { drained=true; break; }
         (void)progress.idle();
     }
-    require(drained && host.audio()->accepted_frames()>0,"actual sound85 RSP/SDL dummy PCM did not drain");
-    log << "actual_audio_accepted_frames\t" << host.audio()->accepted_frames() << '\n';
+    const auto accepted_frames=audio.session().accepted_frames();
+    require(drained && accepted_frames>0,"actual sound85 RSP/SDL dummy PCM did not drain");
+    log << "actual_audio_accepted_frames\t" << accepted_frames << '\n';
+    require(audio.retire(),audio.message());
     const auto closed=host.shutdown();
     require(!closed.failed && closed.owners_released && closed.audio==isle::audio::SdlAudioOutput::CloseDisposition::stream_drained,
             "real Host native/SDL owners not released after actual drain");

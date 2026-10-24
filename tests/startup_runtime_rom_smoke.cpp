@@ -7,6 +7,7 @@
 #include "scene_storage.hpp"
 #include "game_state.hpp"
 #include "game_host.hpp"
+#include "game_audio_driver.hpp"
 #include "host_clock.hpp"
 #include "application_manager.hpp"
 #include "new_game_oak_driver.hpp"
@@ -103,6 +104,9 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
     auto platform = g::Host::create(snapshot,std::move(configuration));
     require(bool(platform),platform.message.data());
     auto& host = *platform.host;
+    auto audio_owner = isle::game_audio::Driver::create(snapshot,host.audio_output());
+    require(bool(audio_owner),audio_owner.message.data());
+    auto& audio = *audio_owner.driver;
     require(SDL_GL_GetCurrentContext() != nullptr,"actual required OpenGL override was lost during CVar reload");
     const auto disabled = host.acquire_input();
     require(disabled.completed && disabled.controller_bits == 0 &&
@@ -115,7 +119,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
     isle::game::State game_state(root/"profile");
     isle::scene::Storage scene_storage;
     h::GtlClock clock({1,1,2,true,0});
-    auto application = isle::application::Manager::create(snapshot,game_state,input,*host.audio(),clock,*catalog.catalog);
+    auto application = isle::application::Manager::create(snapshot,game_state,input,audio.session(),clock,*catalog.catalog);
     require(bool(application),application.message.data());
     auto& manager = *application.manager;
     require(&manager.screen_offsets() == &game_state.screen_offsets(),
@@ -127,12 +131,12 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
     auto entry_borrow=manager.borrow_entry(initial_entry->serial);
     require(bool(entry_borrow),"actual application Boot entry borrow failed");
     // Reverse destruction order is essential on every thrown failure: actual
-    // graphics drain/join, then callbacks/native objects, then host audio/SDL.
+    // graphics drain/join, then callbacks/native objects, then GAME audio/SDL.
     std::unique_ptr<s::Runtime> runtime;
     auto renderer = isle::scene::graphics::Frame::create(*catalog.catalog,snapshot,{true,{12000000,4*1024*1024}});
     require(bool(renderer),renderer.message.data());
     auto& graphics = *renderer.frame;
-    auto started = s::Runtime::create_boot(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
+    auto started = s::Runtime::create_boot(*catalog.catalog,input,audio.session(),game_state,scene_storage,0);
     require(bool(started),started.message.data());
     runtime = std::move(started.runtime);
     require(runtime->save_initialization() == nullptr,"save initialization ran before the actual first logo wait");
@@ -181,18 +185,18 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
         const auto ticks = retraces.advance(ns);
         for (std::uint64_t n = 0; n < ticks; ++n) {
             complete_read(input,input.retrace(),controller);
-            require(host.notify_retrace(++ordinal,ns),host.message());
+            require(audio.notify_retrace(++ordinal,ns),audio.message());
         }
         offer_ticks(clock,ticks);
-        require(host.pump_audio(),host.message());
-        saw_main_music |= host.audio()->bgm_playing(0);
-        saw_aux_music |= host.audio()->bgm_playing(1);
+        require(audio.pump(),audio.message());
+        saw_main_music |= audio.session().bgm_playing(0);
+        saw_aux_music |= audio.session().bgm_playing(1);
         if (executing) {
             const auto result = graphics.poll();
             require(result != isle::scene::graphics::Poll::failed,graphics.message());
             if (result == isle::scene::graphics::Poll::completed) {
                 require(!graphics.busy() && graphics.quiescent(),"completed graphics retained actual RAM/native/GPU borrowers");
-                greatest_busy_audio_progress = std::max(greatest_busy_audio_progress,host.audio()->accepted_frames()-busy_audio_begin);
+                greatest_busy_audio_progress = std::max(greatest_busy_audio_progress,audio.session().accepted_frames()-busy_audio_begin);
                 checked(clock.offer_terminal(*executing,h::Terminal::completed));
                 executing.reset();
                 const auto frame = graphics.completed();
@@ -330,7 +334,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                         <<" live_capability=actual_boot_and_title default_rejected=1 moved_from_rejected=1"
                         <<" released_rejected=1 wrong_operation_rejected=1 wrong_argument_rejected=1"<<std::endl;
                     expect_live(reset_offsets?8:0,reset_offsets?-6:0);
-                    auto title=s::Runtime::create_title(*catalog.catalog,input,*host.audio(),game_state,scene_storage,
+                    auto title=s::Runtime::create_title(*catalog.catalog,input,audio.session(),game_state,scene_storage,
                         static_cast<std::uint32_t>(h::RetraceClock::guest_ticks(ns)));
                     require(bool(title),title.message.data());
                     runtime=std::move(title.runtime);
@@ -415,7 +419,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
                 require(graphics.begin(runtime->view(),{static_cast<unsigned>(canonical_frames&1)}),graphics.message());
                 checked(clock.accept_draw(action.token));
                 executing = action.token;
-                busy_audio_begin = host.audio()->accepted_frames();
+                busy_audio_begin = audio.session().accepted_frames();
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -442,7 +446,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
         clock.request_stop();clock.poll();
         require(clock.stopped(),"source manager handoff retained a Name clock context");
         scene_metrics = isle::private_scene::exercise_name_to_oak(snapshot,game_state,scene_storage,
-            input,host,graphics,clock,retraces,ordinal,epoch,deadline,root,manager);
+            input,host,audio,graphics,clock,retraces,ordinal,epoch,deadline,root,manager);
     } else {
     auto* const persistent_save = game_state.save();
     auto* const initialization_evidence = game_state.save_initialization();
@@ -454,7 +458,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
     require(old_runtime->retire(),old_runtime->message());
     const auto reentry_ns = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now()-epoch).count());
-    auto reentered = s::Runtime::create_title(*catalog.catalog,input,*host.audio(),game_state,scene_storage,
+    auto reentered = s::Runtime::create_title(*catalog.catalog,input,audio.session(),game_state,scene_storage,
         static_cast<std::uint32_t>(h::RetraceClock::guest_ticks(reentry_ns)));
     require(bool(reentered),reentered.message.data());
     runtime = std::move(reentered.runtime);
@@ -465,7 +469,7 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
     if (reset_offsets) expect_live(8,-6);
     // The retired old wrapper must not destroy new content in borrowed Storage.
     old_runtime.reset();
-    auto boot_again = s::Runtime::create_boot(*catalog.catalog,input,*host.audio(),game_state,scene_storage,0);
+    auto boot_again = s::Runtime::create_boot(*catalog.catalog,input,audio.session(),game_state,scene_storage,0);
     require(!boot_again && scene_storage.game() == native_backing,
             "second boot reused an initialized profile or destroyed the live reentered native scene");
     controller.buttons = 0;
@@ -481,10 +485,10 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
         const auto ticks = retraces.advance(ns);
         for (std::uint64_t n=0;n<ticks;++n) {
             complete_read(input,input.retrace(),controller);
-            require(host.notify_retrace(++ordinal,ns),host.message());
+            require(audio.notify_retrace(++ordinal,ns),audio.message());
         }
         offer_ticks(clock,ticks);
-        require(host.pump_audio(),host.message());
+        require(audio.pump(),audio.message());
         if (executing) {
             const auto result = graphics.poll();
             require(result != isle::scene::graphics::Poll::failed,graphics.message());
@@ -548,21 +552,22 @@ int run(const std::filesystem::path& rom, const std::filesystem::path& root, Sce
             std::none_of(stopped_input.cancelled.begin(),stopped_input.cancelled.end(),[](const auto& token) { return bool(token); }),
             "actual input shutdown retained an unacknowledged publication");
     require(host.cancel_present(),host.message());
-    require(host.stop_audio(),host.message());
+    require(audio.stop(),audio.message());
     for (;;) {
         const auto now = std::chrono::steady_clock::now();
         require(now < deadline,"actual SDL/native audio retirement deadline expired");
         require(host.pump_events(),host.message());
         const auto ns = static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now-epoch).count());
         const auto ticks = retraces.advance(ns);
-        for (std::uint64_t n = 0; n < ticks; ++n) require(host.notify_retrace(++ordinal,ns),host.message());
-        require(host.pump_audio(),host.message());
-        const auto drain = host.poll_audio_drain();
-        require(drain != g::Drain::failed,host.message());
-        if (drain == g::Drain::drained) break;
+        for (std::uint64_t n = 0; n < ticks; ++n) require(audio.notify_retrace(++ordinal,ns),audio.message());
+        require(audio.pump(),audio.message());
+        const auto drain = audio.poll_drain();
+        require(drain != isle::game_audio::Drain::failed,audio.message());
+        if (drain == isle::game_audio::Drain::drained) break;
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    const auto accepted_frames = host.audio()->accepted_frames();
+    const auto accepted_frames = audio.session().accepted_frames();
+    require(audio.retire(),audio.message());
     const auto closed = host.shutdown();
     require(!closed.failed && closed.owners_released && closed.audio == isle::audio::SdlAudioOutput::CloseDisposition::stream_drained,
             "actual platform/audio/GUI/worker ownership did not retire after observed stream drain");

@@ -8,8 +8,6 @@
 #include <windows.h>
 #endif
 #include "game_host.hpp"
-#include "graphics_task.hpp"
-#include "35mmisle/rsp.hpp"
 #include "35mmisle/continuation.h"
 
 #include <SDL3/SDL.h>
@@ -45,8 +43,6 @@ namespace isle::game_host {
 namespace {
 using Output = audio::SdlAudioOutput;
 using NativeOutput = game_audio::Output;
-constexpr std::uint32_t audio_boot = 0x107000;
-constexpr std::uint32_t audio_text = 0x3d980, audio_data = 0x44ba0;
 constexpr std::size_t tile_width = 64, tile_height = 16;
 constexpr std::size_t tile_bytes = tile_width * tile_height * 4;
 constexpr std::size_t commands_per_tile = 16, fixed_commands = 18;
@@ -142,13 +138,6 @@ struct Host::Impl {
     bool watching_events = false;
     Shutdown closure{};
     Output output;
-    std::unique_ptr<game_audio::Session> audio_session;
-    // Only initialization borrows Snapshot. Real execution uses owned boot bytes
-    // and the admitted image already installed below AudioService producer RAM.
-    const rom::Snapshot* initializing_snapshot = nullptr;
-    std::array<std::byte, graphics::boot_bytes> boot{};
-    std::unique_ptr<rsp::Machine> machine;
-    std::span<std::uint32_t> borrowed_audio_ram;
 
     explicit Impl(Config c) : options(std::move(c)) {}
     ~Impl() { shutdown(); }
@@ -185,7 +174,9 @@ struct Host::Impl {
             request.host.fail(Error::audio,"Audio inspection did not reach the actual SDL owner");
             return;
         }
-        request.result = {output_state(request.host.output.state()),
+        const auto state = request.host.output.state();
+        if (state == Output::State::failed) request.host.audio_failure("Audio endpoint failed");
+        request.result = {output_state(state),
                          static_cast<std::uint32_t>(request.host.output.info().source.freq)};
     }
     static NativeOutput::Info inspect_output(void* owner) noexcept {
@@ -198,6 +189,10 @@ struct Host::Impl {
     }
     static NativeOutput::Acceptance submit_output(void* owner, std::span<const std::int16_t> samples) noexcept {
         auto& self = *static_cast<Impl*>(owner);
+        if (!SDL_IsMainThread()) {
+            self.fail(Error::audio,"Audio submission did not reach the actual SDL owner");
+            return {};
+        }
         const auto result = self.output.try_submit(samples);
         if (result == Output::Submit::accepted)
             return {NativeOutput::Submit::accepted, static_cast<std::uint32_t>(samples.size() / 2)};
@@ -207,39 +202,19 @@ struct Host::Impl {
     }
     static bool finish_output(void* owner) noexcept {
         auto& self = *static_cast<Impl*>(owner);
+        if (!SDL_IsMainThread())
+            return self.fail(Error::audio,"Audio finish did not reach the actual SDL owner");
         return self.output.finish_input() || self.audio_failure("SDL final audio flush failed");
     }
     static NativeOutput::State poll_output(void* owner) noexcept {
         auto& self = *static_cast<Impl*>(owner);
+        if (!SDL_IsMainThread()) {
+            self.fail(Error::audio,"Audio drain did not reach the actual SDL owner");
+            return NativeOutput::State::failed;
+        }
         const auto result = self.output.poll_drain();
         if (result == Output::Drain::error) self.audio_failure("SDL audio stream drain failed");
         return output_state(self.output.state());
-    }
-    static bool reject_dp(void*, std::span<const std::uint32_t>) noexcept { return false; }
-    static bool initialize_executor(void* owner, std::span<std::uint32_t> words) noexcept {
-        auto& self = *static_cast<Impl*>(owner);
-        try {
-            require(self.initializing_snapshot && !self.machine, "Audio executor initialization has no admitted ROM");
-            const auto& snapshot = *self.initializing_snapshot;
-            graphics::validate_cold_inputs(words, snapshot, snapshot.canonical().data(), audio_boot);
-            graphics::install_cold_inputs(words, snapshot, audio_boot);
-            std::copy_n(snapshot.canonical().begin() + graphics::boot_rom, self.boot.size(), self.boot.begin());
-            self.machine = std::make_unique<rsp::Machine>(words, reject_dp, nullptr);
-            self.borrowed_audio_ram = words;
-            return true;
-        } catch (const std::exception& e) {
-            self.fail(Error::audio, e.what());
-        } catch (...) { self.fail(Error::audio, "Audio RSP initialization failed"); }
-        self.machine.reset(); self.borrowed_audio_ram = {};
-        return false;
-    }
-    static bool executor_ready(void* owner, std::span<std::uint32_t> words) noexcept {
-        const auto& self = *static_cast<Impl*>(owner);
-        return self.machine && self.borrowed_audio_ram.data() == words.data() && self.borrowed_audio_ram.size() == words.size();
-    }
-    static void retire_executor(void* owner) noexcept {
-        auto& self = *static_cast<Impl*>(owner);
-        self.machine.reset(); self.borrowed_audio_ram = {};
     }
     void load_configuration() {
         config = std::make_shared<Ship::Config>(lus_path(configuration_path));
@@ -249,7 +224,7 @@ struct Host::Impl {
         variables->Save();
         config->Save();
     }
-    void init(const rom::Snapshot& snapshot) {
+    void init() {
 #ifdef _WIN32
         require(GetACP() == CP_UTF8, "Game host requires its Windows UTF-8 activeCodePage manifest");
 #endif
@@ -327,23 +302,10 @@ struct Host::Impl {
         require(finish_gpu != nullptr, "OpenGL completion barrier is unavailable");
         interpreter->SetNativeDimensions(float(width), float(height));
         config_ready = true;
-        require(output.open({static_cast<int>(game_audio::source_rate), options.max_queued_audio_frames, options.physical_audio_device}),
-                output.error().message.data());
-        auto hydrated = game_audio::hydrate(snapshot);
-        require(bool(hydrated), "GAME audio resource hydration failed");
-        std::array<audio::effects::Section, 8> sections{};
-        audio::effects::Config effects;
-        require(game_audio::native_startup_effects(hydrated.resources, sections, effects) == audio::Error::none,
-                "GAME default eight-section effects derivation failed");
-        initializing_snapshot = &snapshot;
-        auto made = game_audio::Session::create(std::move(hydrated.resources), effects,
-            {this, inspect_output, submit_output, finish_output, poll_output},
-            {this, initialize_executor, executor_ready, retire_executor});
-        initializing_snapshot = nullptr;
-        require(bool(made), "GAME audio/player/output/RSP initialization failed");
-        audio_session = std::move(made.session);
-        require(audio_session->initialization_ready() && executor_ready(this, audio_session->service().rdram_words()),
-                "GAME audio Session is not actually ready");
+        if (!output.open({static_cast<int>(game_audio::source_rate), options.max_queued_audio_frames, options.physical_audio_device})) {
+            audio_failure("SDL audio endpoint opening failed");
+            throw std::runtime_error(message.data());
+        }
     }
     void invalidate_tiles() {
         finish_gpu();
@@ -394,53 +356,15 @@ struct Host::Impl {
         gDPFullSync(out++);
         gSPEndDisplayList(out++);
     }
-    bool execute_audio(const audio::TaskView& built) noexcept {
-        bool success = false;
-        try {
-            require(machine && borrowed_audio_ram.data() == audio_session->service().rdram_words().data(),
-                    "Audio task lost its actual RSP borrower");
-            const rsp::Task task{2, 0, audio_boot, graphics::boot_bytes, audio_text, 0x1000, audio_data, 0x800,
-                0, 0, 0, 0, built.command_address, built.command_bytes, 0, 0};
-            const auto actual = machine->execute(task, boot, {10000000, 0});
-            success = bool(actual) && actual.sp_status == 0x203 && actual.packets == 0 &&
-                actual.packet_words == 0 && actual.full_syncs == 0;
-            if (!success) fail(Error::audio, "Audio RSP failed SP0x203/no-DPC/budget terminal validation");
-        } catch (const std::exception& e) { fail(Error::audio, e.what()); }
-        catch (...) { fail(Error::audio, "Audio RSP execution failed"); }
-        // Every published task receives its actual terminal, including exception,
-        // unexpected DPC, budget and malformed status paths. No PCM on failure.
-        const auto completed = audio_session->complete(built.token, success);
-        if (completed != audio::Error::none) return audio_failure("Audio actual-terminal completion failed");
-        return success;
-    }
-    bool pump_audio() noexcept {
-        if (!audio_session || stopped || error != Error::none) return false;
-        if (output.state() == Output::State::failed) return audio_failure("Audio endpoint failed");
-        if (audio_session->submit() != audio::Error::none) return audio_failure("Audio PCM acceptance failed");
-        audio::TaskView built;
-        const auto result = audio_session->build(built);
-        if (result != audio::Error::none) {
-            if (built.token.serial) (void)audio_session->complete(built.token, false);
-            return audio_failure("Audio source task build failed");
-        }
-        if (built.token.serial && !execute_audio(built)) return false;
-        if (audio_session->submit() != audio::Error::none) return audio_failure("Audio source-gated PCM acceptance failed");
-        return true;
-    }
     Shutdown shutdown() noexcept {
         if (stopped) return closure;
         if (watching_events) {
             SDL_RemoveEventWatch(watch_event,this);
             watching_events = false;
         }
-        // No asynchronous audio execution exists in this owner. Complete/retire
-        // PCM before Session retires Machine, and Machine before service RAM.
-        if (audio_session) {
-            if (audio_session->service().has_lease() && audio_session->abandon_pcm() != audio::Error::none)
-                fail(Error::audio, "Audio abort could not retire its completed PCM lease");
-            audio_session.reset();
-        }
-        machine.reset(); borrowed_audio_ram = {};
+        // Every GAME user and the borrowed-output Driver must retire before this
+        // actual SDL endpoint closes. Host owns no Source player, RSP or RAM and
+        // cannot acknowledge their retirement. A pending stream closes aborted.
         const auto audio_closed = output.close();
         closure.audio = audio_closed.disposition;
         if (audio_closed.failed) audio_failure("Checked audio closure failed");
@@ -492,12 +416,12 @@ struct Host::Impl {
 
 Host::Host(std::unique_ptr<Impl> impl) noexcept : impl_(std::move(impl)) {}
 Host::~Host() = default;
-CreateResult Host::create(const rom::Snapshot& snapshot, Config config) noexcept {
+CreateResult Host::create(const rom::Snapshot&, Config config) noexcept {
     CreateResult result;
     std::unique_ptr<Impl> impl;
     try {
         impl = std::make_unique<Impl>(std::move(config));
-        impl->init(snapshot);
+        impl->init();
         result.host.reset(new Host(std::move(impl)));
         return result;
     } catch (const std::bad_alloc&) {
@@ -519,7 +443,9 @@ bool Host::running() const noexcept { return !impl_->stopped && impl_->error == 
 Error Host::error() const noexcept { return impl_->error; }
 const char* Host::message() const noexcept { return impl_->message.data(); }
 const std::filesystem::path& Host::data_directory() const noexcept { return impl_->options.data_directory; }
-game_audio::Session* Host::audio() noexcept { return impl_->audio_session.get(); }
+game_audio::Output Host::audio_output() noexcept {
+    return {impl_.get(), Impl::inspect_output, Impl::submit_output, Impl::finish_output, Impl::poll_output};
+}
 const Output::Info& Host::audio_info() const noexcept { return impl_->output.info(); }
 bool Host::pump_events() noexcept {
     if (impl_->stopped || impl_->error != Error::none) return false;
@@ -578,25 +504,6 @@ Input Host::acquire_input() noexcept {
     } catch (const std::exception& e) { impl_->fail(Error::input, e.what()); }
     catch (...) { impl_->fail(Error::input, "ControlDeck acquisition failed"); }
     return result;
-}
-bool Host::notify_retrace(std::uint64_t ordinal, std::uint64_t ns) noexcept {
-    if (impl_->stopped || impl_->error != Error::none || !impl_->audio_session) return false;
-    if (impl_->audio_session->retrace(ordinal, ns) != audio::Error::none) return impl_->audio_failure("Source audio retrace rejected");
-    return true;
-}
-bool Host::pump_audio() noexcept { return impl_->pump_audio(); }
-bool Host::stop_audio() noexcept {
-    if (impl_->stopped || impl_->error != Error::none || !impl_->audio_session) return false;
-    return impl_->audio_session->stop() == audio::Error::none || impl_->audio_failure("Source audio stop failed");
-}
-Drain Host::poll_audio_drain() noexcept {
-    if (impl_->stopped || impl_->error != Error::none || !impl_->audio_session) return Drain::failed;
-    const auto state = impl_->audio_session->state();
-    if (state == game_audio::Session::State::drained) return Drain::drained;
-    if (state == game_audio::Session::State::failed) { impl_->audio_failure("Source audio drain failed"); return Drain::failed; }
-    if (state != game_audio::Session::State::draining) return Drain::pending;
-    if (impl_->audio_session->poll_drain() != audio::Error::none) { impl_->audio_failure("Source audio stream drain failed"); return Drain::failed; }
-    return impl_->audio_session->state() == game_audio::Session::State::drained ? Drain::drained : Drain::pending;
 }
 bool Host::configure_present(std::uint32_t new_width, std::uint32_t new_height) noexcept {
     if (impl_->stopped || impl_->error != Error::none || impl_->pending) return false;

@@ -1,5 +1,6 @@
 #include "application_photos.hpp"
 #include "game_host.hpp"
+#include "game_audio_driver.hpp"
 #include "game_state.hpp"
 #include "host_progress.hpp"
 #include "post_course_modules.hpp"
@@ -360,25 +361,27 @@ struct Consumer {
 };
 
 bool shutdown(isle::game_host::Host& host, isle::game_input::Service& input,
-              isle::host::Progress& progress) noexcept {
+              isle::host::Progress& progress, isle::game_audio::Driver& audio) noexcept {
     progress.unbind();
     const auto stopped = input.stop();
     bool failed = stopped.error != isle::game_input::Error::none;
     if (!host.cancel_present()) failed = true;
     progress.clear_deadline();
     bool drained = false;
-    if (host.error() == isle::game_host::Error::none && host.stop_audio()) {
+    if (host.error() == isle::game_host::Error::none && audio.stop()) {
         progress.set_deadline(Time::now() + std::chrono::seconds(30), "actual Host audio shutdown deadline");
         while (!progress.deadline_expired()) {
             progress.set_policy({false, false, false, false, true});
             (void)progress.poll();
             if (host.error() != isle::game_host::Error::none) break;
-            const auto state = host.poll_audio_drain();
-            if (state == isle::game_host::Drain::drained) { drained = true; break; }
-            if (state == isle::game_host::Drain::failed) break;
+            const auto state = audio.poll_drain();
+            if (state == isle::game_audio::Drain::drained) { drained = true; break; }
+            if (state == isle::game_audio::Drain::failed) break;
             (void)progress.idle();
         }
     }
+    if (!audio.retire()) failed = true;
+    if (audio.error() != isle::game_audio::DriverError::none) std::cerr << audio.message() << '\n';
     const auto closed = host.shutdown();
     std::cout << "HOST_RETIRED owners_released=" << closed.owners_released
               << " audio_drained=" << drained << " audio_close=" << static_cast<int>(closed.audio)
@@ -401,9 +404,12 @@ int run(int argc, Argument** argv) {
     auto platform = isle::game_host::Host::create(snapshot, options.host);
     if (!platform) { std::cerr << platform.message.data() << '\n'; return 1; }
     auto& host = *platform.host;
+    auto audio_owner = isle::game_audio::Driver::create(snapshot,host.audio_output());
+    if (!audio_owner) { std::cerr << audio_owner.message.data() << '\n'; return 1; }
+    auto& audio_driver = *audio_owner.driver;
     isle::game_input::Service input;
     isle::host::GtlClock clock({1, 1, 2, true, 0});
-    isle::host::Progress progress(host, input);
+    isle::host::Progress progress(isle::host::direct_platform(host), input, audio_driver);
     Consumer consumer{host, input, clock, progress, options.cancellation};
     progress.bind(clock, {&consumer, Consumer::acknowledge});
     progress.set_deadline(Time::now() + std::chrono::seconds(options.deadline_seconds),
@@ -429,7 +435,7 @@ int run(int argc, Argument** argv) {
     }
     consumer.observe_host();
     bool success = false;
-    if (!consumer.stopping && initialized_input && host.audio()) {
+    if (!consumer.stopping && initialized_input) {
         isle::game::State state(profile);
         isle::host::ProgressTick opened_at{};
         opened_at.ns = progress.elapsed_ns();
@@ -443,7 +449,7 @@ int run(int argc, Argument** argv) {
             isle::post_course::ComponentModules modules(snapshot);
             std::cout << "PUBLIC_INPUT_READY controllers=" << input.snapshot().controller_count
                       << " PROFILE_READY existing_pair=true no_input_repair=true\n";
-            auto made = Component::create(snapshot, state, input, *host.audio(), clock, photos, progress,
+            auto made = Component::create(snapshot, state, input, audio_driver.session(), clock, photos, progress,
                 {&consumer, Consumer::native_service}, modules, options.entry, options.cpu);
             if (!made) consumer.fail(made.message.data());
             else {
@@ -451,16 +457,16 @@ int run(int argc, Argument** argv) {
                 consumer.run();
                 success = !consumer.failed && (consumer.normal_result || consumer.cancellation_reached);
                 // Callback storage, ROM, modules, Photos, State, Input, GTL and
-                // Host all remain live through complete Component destruction.
+                // GAME audio and Host all remain live through complete Component destruction.
                 made.component.reset();
                 consumer.component = nullptr;
             }
             // Even decoded/save/module owners remain live until actual audio,
             // native executors and Host callbacks have reached their terminals.
-            return shutdown(host, input, progress) && success ? 0 : 1;
+            return shutdown(host, input, progress, audio_driver) && success ? 0 : 1;
         }
     } else consumer.fail("actual Input/Host startup did not complete");
-    (void)shutdown(host, input, progress);
+    (void)shutdown(host, input, progress, audio_driver);
     return 1;
 }
 } // namespace

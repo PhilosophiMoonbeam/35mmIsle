@@ -1538,7 +1538,8 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
 endif()
 include(GNUInstallDirs)
 if(TARGET libultraship AND TARGET isle-audio-output AND TARGET isle-rsp AND TARGET isle-game-audio)
-    add_library(isle-game-host STATIC src/game_host.cpp src/game_host.hpp src/host_progress.cpp src/host_progress.hpp)
+    add_library(isle-game-host STATIC src/game_host.cpp src/game_host.hpp
+        src/game_audio_driver.cpp src/game_audio_driver.hpp src/host_progress.cpp src/host_progress.hpp)
     file(RELATIVE_PATH ISLE_HOST_INSTALLED_RESOURCES
         "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_FULL_DATADIR}/35mmisle")
     target_compile_definitions(isle-game-host PRIVATE F3DEX_GBI_2
@@ -1561,8 +1562,11 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
     target_compile_options(isle-application-runtime PRIVATE
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
         "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+    add_library(isle-game-owner STATIC src/game_owner.cpp src/game_owner.hpp)
+    target_link_libraries(isle-game-owner PUBLIC isle-application-runtime isle-game-host PRIVATE Threads::Threads)
+    isle_target_options(isle-game-owner)
     add_executable(35mmisle src/game_main.cpp)
-    target_link_libraries(35mmisle PRIVATE isle-application-runtime isle-game-host)
+    target_link_libraries(35mmisle PRIVATE isle-game-owner)
     isle_target_options(35mmisle)
     add_executable(35mmisle-application-runtime-rom-smoke EXCLUDE_FROM_ALL
         tests/application_runtime_rom_smoke.cpp

@@ -8367,3 +8367,73 @@ This shipping-style Linux startup/closure check is not sealed-image custody,
 campaign, hearing/hardware, Windows 11, Original fidelity/pacing or redistribution
 approval. Composition remains HOLD/NOT APPROVED; no payload was published.
 
+### Longest-species NEW-label capacity
+
+A fresh exact-`e90f2d3` campaign terminated during Beach photography with Native
+SIGABRT, root wait status 6 and the libc diagnostic `buffer overflow detected`.
+The strict producer exited 126; all 187 loader checkpoints were accepted, with
+no handoff or syscall-custody failure. Whole-tree retirement, ECHILD, stream EOF
+and retained-FD closure completed; all 1,001 selected protected inputs and twelve
+operational inputs remained unchanged. The absent final Native report remains
+absent, not reconstructed or promoted to campaign success. Negative qualification:
+`53ba988e30eb6ce0f4ed2645ac6819bd2814f319b5e3e35187d77b28cd30ae72`.
+Primary diagnostic:
+`977ea10267aa3f3a1ee3288b85de6974e243890e5cfb3cb5775b64a0d6c653e8`.
+No causal fatal stack was obtained; the following repair addresses an
+independently established defect, not a claimed stack attribution.
+
+Pinned GAME `showPokemonLabel` formats a species name and the complete twelve-byte
+NEW/shadow-control suffix into a 32-byte local array. Offline enumeration through
+the existing decoder of all 152 name pointers in the exact admitted ROM found a
+maximum of twenty EUC-JP bytes, with fourteen entries at that maximum. The
+getter's separate special-name alternatives are shorter. Therefore a valid
+longest-name NEW label requires **33 bytes**, including NUL. This is a property
+of the exact admitted data, not a new decoder-enforced arbitrary-string limit.
+Private static-bound audit:
+`595f1904fbe32e96d430ce124e2d18acf943587824165911dfb8fdfd16d54b12`.
+
+[`5e3ee1c`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/5e3ee1c3c740ff2a6bf535474f7525c3a3ac82b0)
+adds one occurrence-counted Native declaration transformation:
+`char sp40[20 + sizeof(D_80382D68_523178)]`. The complete suffix array's `sizeof`
+includes NUL. Formatting, novelty predicate, label timing, synchronous UI copy,
+Source signatures and fortify remain unchanged; there is no heap allocation,
+truncation, unchecked replacement formatter or pacing change. This deliberately
+repairs Original undefined memory behavior rather than claiming byte-identical
+execution of that behavior.
+
+All Original revision/blob/function/data/selection pins and generated
+header/support identities remain unchanged. The Native definition, canonical
+recipe, generator, generated Root and three direct dependent manifest seals
+were refreshed without bypassing checks. The real complete106 materializer
+exited 0. Independent semantic and guard reviews found no actionable defect;
+they are static review, not runtime proof.
+
+An exact 938-file checkout of `5e3ee1c` configured and built the actual product,
+full application consumer and private relink kit at parallelism 2; all 61 CPU
+tests and actual product help exited 0. All 998 selected source/Git/SDK/tool
+inputs remained unchanged. Build receipt:
+`b73be5e031a97210bab259f6e17f4d868f81347ec0ffddbec5cc6f7d8d2505d7`.
+Actual consumer:
+`2a075f46d87f3eddf2ae5634cac4aad6ffee6a92ad83a70ea49acf03f8c8f569`.
+[All ten hosted Linux/MSVC jobs passed](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40122376118),
+including actual product/consumer builds, CPU/renderer checks, static-library
+replacement and both Runtime package checks. This is not Windows 11 ROM gameplay.
+
+A separate new empty-root strict86 cohort used actual ControlDeck input and
+fresh attributed pixels only. After ordinary Name/Oak/Beach/tutorial actions,
+a real Z-held A photograph displayed the complete **BUTTERFREE NEW** label,
+including both NEW glyph halves; a subsequent fresh image showed continuing
+gameplay without an abort. Parent directly viewed both images. Full-label PNG:
+`6e348931d9764465c344b692862f875432cb2266c79ba24862e4f150fa57f1e9`.
+Bounded visual record:
+`1adffa87c810417fc667ec11f150e5dd468186c76b1643bcd9e0a4a7f7cdaf50`.
+
+This proves the changed longest-name display path, not terminal whole-custody
+acceptance or the full campaign. The same fresh campaign remains active;
+all-seven-course, progression, signs, Mew, Save/Credits/final-Title and cold-reload
+acceptance remain pending. No live Source fields, profiles, saves, reports or
+Native diagnostic output were used to select gameplay input. Private images,
+ROM assets, executables and proof payloads were not published. Release,
+Original fidelity/pacing, hearing/hardware and Windows 11 gameplay gates remain
+separate and unqualified.
+

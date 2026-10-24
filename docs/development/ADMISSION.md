@@ -7864,6 +7864,38 @@ hearing, physical GPU/controller, Windows 11 runtime or redistribution gate.
 The real runs remain software CPU Vulkan, llvmpipe, dummy PCM and ordinary
 keyboard under intrusive custody.
 
+### Dedicated-owner Station reset and disconnect
+
+The same optimized executable completed ordinary Title/Gallery interaction,
+real F9 attachment, Print and the visible Save path. The genuine diagnostic
+rendered the four UI-arranged photographs through all sixteen passes and
+published a complete 2560×1920, 24-bit BMP. Visual inspection of the complete
+sheet confirms all sixteen full tiles, without the former half-frame clipping.
+One distinct terminal Start press published one byte-identical copy; the
+completed sheet and copy each contain 14,745,654 bytes, SHA-256:
+`df102b4139a2ddcea0a2c6725d6d6a5d81bd1f86b927a08b73020053863a5eb1`.
+
+F9 during the nonreturning terminal diagnostic retired that session. The
+observer saw the actual PID-owned window disappear, did not resend the key,
+then captured recreated normal Boot under the same PID/start/sealed-loader
+identity and reused window ID. Actual main-loop reopening requires successful
+old Host shutdown, owner release and PCM drain before advancing the epoch.
+Normal `WM_DELETE_WINDOW` from the new Boot returned 0.
+
+The accepted receipt verifies 86 sealed images, `ECHILD`, empty wait/task
+ledgers, tree/FD retirement, control EOF and no supervisor `SIGKILL`.
+All 20 protected inputs remain byte-exact; 68 actual artifacts were hashed.
+Receipt:
+`9610b0bb1aa5d2e046cfa8aad62b33e74b9be17eceaf2b17817927dcc53cc0b3`.
+Bounded qualification:
+`88e69ccf9445c61ee3dd82156cec8a263dc43864c3b32e8665491abf77ad6b2e`.
+
+This qualifies the dedicated-owner print/reset/terminal-copy/disconnect path,
+not publication-collision or early-capture cancellation. The inherited
+UI-earned pair, software CPU Vulkan, llvmpipe, dummy PCM and keyboard limits
+remain; no physical printer, device, hearing, Original pacing or Windows 11
+runtime result is inferred.
+
 ### Final direct Driver exercise
 
 The reviewed direct component consumer ran on a separate display and unchanged

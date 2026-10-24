@@ -8306,3 +8306,64 @@ was still in progress at the stop instant. Photo15, full Camera/Photo success,
 complete campaign, Save/cold equality, hardware/hearing, Windows 11, Original
 fidelity/pacing and redistribution are not established by these cases.
 
+### Published-source installed Linux Runtime
+
+Published Own source
+[`e90f2d3`](https://github.com/PhilosophiMoonbeam/35mmIsle/commit/e90f2d32820796ae58134bf5966100131f713399)
+passes [all ten Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40098164391),
+including actual product/31 opt-in/interface consumers, ROMless CPU/renderer
+checks, private static-library replacement and both x64 Runtime package checks.
+Archives remain runner-local; Windows 11 ROM gameplay is not established.
+
+A separate exact 938-file shallow checkout of that published Own commit—not a
+synthetic Git identity—built the actual Linux product and consumer. Original
+GAME authority remains the separately pinned `df8815e7` Git objects. Selected
+Own archive:
+`5a42f06c19c64376f2a6369f37139ea6311e0c09b97afb92054d77dc91dc552a`.
+Configure, all+consumer at parallelism 2, all 61 CPU tests and actual help exited
+0. All 998 selected source/Git/SDK/tool inputs remained unchanged; this is not
+a compiler/third-party/generated closure seal. Build receipt:
+`f331e21eabee1c4acf9ed263aa3cba7105ea963b15946376ccfc7ef00d5e55d5`.
+
+New Runtime component installation exited 0 with the existing supported schema-2
+SDK-identity receipt and private pinned `patchelf`, without reconfiguration,
+rebuilding or reuse of an old stage. All 998 inputs plus three frozen build
+outputs remained byte-identical. The complete new stage—109 regular files,
+nine symlinks, 29,276,583 regular-file bytes and 93 notice files—remained unchanged
+after actual Native execution. Installed product:
+`82defd336e9d4cfbf97fda30fd065f37308c9fc7da93bb84185480af2324a442`.
+
+Actual installed `--help` exited 0 with empty stderr. A new authenticated owned
+display exercised ordinary Boot/intro, visible PRESS START Title and one
+advertised WM_DELETE, followed by natural exit 0. No LD_* or renderer-resource
+override was used. Live kernel mappings matched all ten staged application
+DSOs. Staged shader inode 55897795 emitted actual OPEN/ACCESS/CLOSE events while
+Parent/helpers were not staged-resource readers; inotify alone is not PID
+attribution. The monitor closed before post-run hashing.
+
+Both owners reached ECHILD with empty child/task sets and closed owned FDs,
+without cleanup signals. Four regular stdout/stderr logs reached actual terminal
+read EOF and their observer FDs closed; these are not pipe-EOF claims. GUI stderr
+retains 2,728 bytes of llvmpipe information and successful-but-stalled shader
+compile warnings, not suppressed or described as empty.
+
+An authenticated-X11 migration defect was caught before Native: authentication
+had reached child/ImageMagick environments but not shared in-process clients.
+The corrected constructor binds the exact owned authority before XOpenDisplay.
+The rejected V1 remains unlaunched; V2 passed two focused reviews and one
+five-script syntax gate before execution. Parent independently verified source
+and receipt hashes, complete stage fingerprints, immutable build inputs/outputs,
+normal ownership retirement, resource evidence and actual Title pixels.
+
+GUI receipt:
+`86ea0428b16206d3d22866c838a94f768bfb65ed08416a8334853432de945e85`.
+CLI receipt:
+`da73aabe91c3864ab0f8ec0b9d584570affd71d1323056c715a8732fef7421ee`.
+Qualification:
+`e31c3661f83bbc6527119afcff13a67dc75985e5c36eddc98be0bfcbba82a796`.
+Parent acceptance:
+`87329a86e94387b8a4f18fb96b556dd80999d0ca07104f80f5ef6f1386cb24c7`.
+This shipping-style Linux startup/closure check is not sealed-image custody,
+campaign, hearing/hardware, Windows 11, Original fidelity/pacing or redistribution
+approval. Composition remains HOLD/NOT APPROVED; no payload was published.
+

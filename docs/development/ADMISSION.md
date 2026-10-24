@@ -7964,6 +7964,90 @@ The old-source forced-order test timed out and supplies no assertion-level
 before/after proof. No Native causal, Original, pacing or filter-policy claim
 is inferred from these Own checks.
 
+### Direct product, failure and installed Runtime qualification
+
+The unchanged optimized `840a150a…` product also ran directly, without syscall
+tracing or a sealed loader, on an exclusive display with a whole UI-earned pair.
+Ordinary Gallery/F9/Print produced the complete sheet; a distinct Start produced
+an identical copy. Both match the accepted traced sheet SHA-256
+`df102b4139a2ddcea0a2c6725d6d6a5d81bd1f86b927a08b73020053863a5eb1`.
+F9 disconnect recovered to actual natural Beach-attract pixels; ordinary
+WM_DELETE returned 0, with ECHILD, no owned children/tasks or cleanup signals,
+eight unchanged protected input entries and 161 hashed artifacts. Initial
+clipped captures are partial surfaces only; later actual window movement
+provided complete 640×480 acquisition. Sampled post-publication pixels were
+black; no terminal display-correctness or Original parity claim follows.
+Record:
+`3b9735a21938773db5f693ef67f42e495e64974a4a88489808a34cc22506a590`.
+
+A fresh strict-custody negative cohort used an actual O_EXCL/fsynced Own file
+at the Native-created job's publication destination. Ordinary Print reached
+genuine diagnostic photos, then Native reported a bitmap-publication failure
+and exited 1 naturally. All 902 tasks retired, with ECHILD, empty ledgers,
+FD/control EOF, no signals, 121 unchanged protected closure entries, unchanged
+sentinel and no partial file. Execution-image custody is admitted; this is
+not a positive product-success admission. Numeric EEXIST is an inference from
+the preserved destination and no-replace `linkat`, not a journaled errno.
+Record:
+`d2d452a1eec8d2906211a62ad101c8c10fdf070cf703451c25f1c01164f58448`.
+
+A separately preregistered direct cohort proves early capture cancellation.
+The observer pinned the original empty Native partial inode read-only before
+Print, then sent one actual F9 after data appeared beyond the valid 54-byte
+header. Before any WM_DELETE, that same inode was unlinked with zero links
+and final size 14,739,894, below the complete 14,745,654-byte sheet; neither
+partial nor publication remained. Actual same-process Beach-attract recovery
+preceded normal close, exit 0, ECHILD, empty owned tasks and 13 unchanged
+protected entries. Sparse high-water length is not a capture counter; this
+establishes rendered-frame data entry followed by early cancellation, not an
+exact interruption within command 2 or diagnostic scanout timing.
+Record:
+`dc245f44a754b7691dd851243ac6ec505b29cf4f6fd98cdd00f328247b2a91ee`.
+The earlier missing-directory attempt remains rejected, including its helper
+error and cleanup signal. The new private owner's narrow kernel Z/X/gone
+retirement fence was reviewed and exercised by an Own kernel classifier smoke,
+but was not exercised by this Native return.
+
+Fresh Runtime installation passed after supplying the existing supported
+schema-2 `capture-deb-sdk` receipt for five reached extracted SDK DSOs and a
+private pinned `patchelf`. The 936 archived Own files and explicitly separate
+synthetic Git metadata stayed bound across a new configure/Release build/install;
+all 1,957 selected build inputs remained unchanged. This is not an upstream
+Git identity or an independently authenticated APT/source-build claim.
+
+Installed ELF `a340149c…` ran `--help` with exit 0, then its separate GUI
+cohort naturally reached actual 640×480 PRESS START Title and closed normally.
+No LD_* variable or renderer-resource override was supplied. Actual kernel
+mappings matched all ten staged application DSOs; staged shader inode
+open/read/close events occurred with no competing staged-resource readers.
+Inotify itself supplies no PID attribution. Both owners reached ECHILD with
+empty trees and closed FDs; all 2,075 protected paths and the complete
+109-file/nine-symlink stage inventory, including 93 notices, stayed unchanged.
+Record:
+`2300c1bd98c9889385c00f54d6ec634e390b25cdb55d46e6e952d27ecac219aa`.
+The two incomplete prior installs remain failed evidence. Composition retains
+HOLD/NOT APPROVED; no payload was published. These Linux software-renderer/dummy
+audio checks do not establish hearing, pacing, Windows 11 or redistribution.
+
+### Older empty-root campaign remains rejected
+
+The frozen `18ae6aa` campaign ended after 36,556.50 seconds in its old custody
+formatter: unregistered initial-stop status `8390015`, root -9, supervisor
+SIGKILL, admission false and control EOF false. Tree/FD retirement and ECHILD
+do not convert it to success. The current legal-order fix is not retroactive;
+the exact Native scheduling cause remains unproven.
+
+The independent after-retirement pixel audit supports recorded PID/start/
+sealed-loader/window identity, but not fresh unobscured pixel attribution.
+Three distinct nonblack captures and favorable pre-capture window trees do
+not supply the missing interval visibility/repaint witness. Contamination is
+not demonstrated; ambiguity is enough to reject visual/full-gate promotion.
+Seven required captures are missing. No prefix is salvaged as campaign,
+Save, Credits or Root-producer qualification.
+Rejection record:
+`e4854690eeb53bdb326f95b8924de5e98ee9fbea6e52bfde5ae30fb2e4cb1e88`.
+
+
 
 
 

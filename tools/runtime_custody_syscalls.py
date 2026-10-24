@@ -13,6 +13,7 @@ rejected-tree retirement; this gate is not a process sandbox.
 """
 import ctypes
 import errno
+import json
 import os
 from pathlib import Path
 import signal
@@ -217,10 +218,10 @@ class SyscallAdmission:
         thread.interrupt_requested = False
 
     def _collect_once(self):
-        progress = self.owner.collect()
+        progress = self.owner.collect(stop_timeout=self.stop_timeout)
         if self.owner.rejections and not self.retiring:
             raise SyscallCustodyError('Unregistered descendant wait evidence: ' +
-                                      '; '.join(self.owner.rejections))
+                                      json.dumps(self.owner.rejections, sort_keys=True))
         return progress
 
     def _ingest(self, tid, status):
@@ -353,7 +354,8 @@ class SyscallAdmission:
                 if error.errno not in (errno.EIO, errno.ESRCH):
                     raise
         deadline = time.monotonic() + self.stop_timeout
-        while any(not thread.stopped and not thread.exiting for thread in self.threads.values()):
+        while (self.owner.pending or
+               any(not thread.stopped and not thread.exiting for thread in self.threads.values())):
             if not self._collect_once():
                 if time.monotonic() >= deadline:
                     raise SyscallCustodyError('Thread-quiescence metadata deadline expired')

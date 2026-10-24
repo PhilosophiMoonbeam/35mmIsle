@@ -69,6 +69,7 @@ class IsolatedOwner:
         self.root_status = None
         self.callbacks = {}
         self.pending = []
+        self.initial_stop_deadlines = {}
         self.rejections = []
         self.reaped_tasks = []
         self.observed_children = set()
@@ -104,6 +105,7 @@ class IsolatedOwner:
         self.root_pid = self.root_status = None
         self.callbacks.clear()
         self.pending.clear()
+        self.initial_stop_deadlines.clear()
         self.rejections.clear()
         self.reaped_tasks.clear()
         self.observed_children.clear()
@@ -134,6 +136,7 @@ class IsolatedOwner:
         if tid <= 0 or tid in self.callbacks:
             raise OwnershipError('Invalid or repeated trace registration')
         self.callbacks[tid] = callback
+        self.initial_stop_deadlines.pop(tid, None)
         self.wait_echild = False
 
     def drain_notifications(self):
@@ -174,11 +177,12 @@ class IsolatedOwner:
             if error.errno != errno.ESRCH:
                 raise
 
-    def _dispatch_pending(self):
+    def _dispatch_pending(self, stop_timeout):
         progress = False
-        # A child's initial stop may precede the parent's creation event in the
-        # -1 wait stream. Drain registered events first, then revisit deferred
-        # children after the event callback has installed their registrations.
+        # A seized child's initial EVENT_STOP may precede the parent's creation
+        # event even across collect calls. Only the parent's kernel event may
+        # register it; until then retain the stop without issuing any restart.
+        # The syscall gate supplies its existing stop deadline, not a new budget.
         while True:
             known = next((index for index, (tid, _) in enumerate(self.pending)
                           if tid in self.callbacks), None)
@@ -204,18 +208,26 @@ class IsolatedOwner:
                 self.pending.remove((tid, status))
                 progress = True
                 continue
+            if (not self.retiring and not self.wait_echild and self.callbacks and
+                    stop_timeout > 0 and os.WIFSTOPPED(status) and
+                    status >> 16 == 128 and os.WSTOPSIG(status) == signal.SIGTRAP):
+                deadline = self.initial_stop_deadlines.setdefault(tid, time.monotonic() + stop_timeout)
+                if time.monotonic() < deadline:
+                    continue
             self._reject(tid, 'Unregistered owned task wait status', wait_status=status,
                          source='waitpid-wall')
             if os.WIFEXITED(status) or os.WIFSIGNALED(status):
                 self.pending.remove((tid, status))
+                self.initial_stop_deadlines.pop(tid, None)
                 progress = True
             elif self.retiring and os.WIFSTOPPED(status):
                 self._retire_unregistered_stop(tid, status)
                 self.pending.remove((tid, status))
+                self.initial_stop_deadlines.pop(tid, None)
                 progress = True
         return progress
 
-    def collect(self):
+    def collect(self, *, stop_timeout=0.0):
         if self._collecting:
             raise OwnershipError('Dedicated owner wait dispatch cannot recurse')
         self._collecting = True
@@ -240,7 +252,7 @@ class IsolatedOwner:
                     if tid == self.root_pid:
                         self.root_status = status
                 self.pending.append((tid, status))
-            progress |= self._dispatch_pending()
+            progress |= self._dispatch_pending(stop_timeout)
             # Callback delivery can expose an additional initial/final stop on
             # the next collect. ECHILD is never enough with a nonempty ledger.
             return progress
@@ -250,6 +262,7 @@ class IsolatedOwner:
     @property
     def complete(self):
         return (self.wait_echild and not self.callbacks and not self.pending
+                and not self.initial_stop_deadlines
                 and (self.root_pid is None or self.root_status is not None))
 
     def retire(self, kernel=None, timeout=5.0):

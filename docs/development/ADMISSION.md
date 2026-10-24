@@ -7933,5 +7933,37 @@ GUI candidate changed. This proves private Linux replacement/relink and
 adjacent-library composition, not ROM/product-JIT execution, a full CPack
 Runtime archive, Windows 11, hearing or redistribution approval.
 
+### Cross-collection initial thread stops
+
+An actual optimized Native publication-collision cohort remains rejected:
+its ownership ledger saw an unregistered initial stop, and a dictionary
+formatting `TypeError` obscured the structured rejection. Its root was killed;
+neither its partial output nor its cleanup promotes it to a qualification.
+The exact Native scheduling cause is unproven.
+
+The sole wait owner now retains only an unknown `SIGTRAP`/`PTRACE_EVENT_STOP`
+across collection boundaries, under a fixed first-observation deadline.
+Only a subsequently validated parent clone event registers that task.
+Unknown tasks are never resumed or admitted; expiry, other unknown statuses,
+inconsistent `ECHILD`, and process creation still reject. Critical mapping
+freezes also drain pending initial stops before checking the kernel task set.
+Structured failures retain their JSON details rather than joining dictionaries.
+
+Three real-kernel regressions cover legal child-first ordering across a
+collection boundary, deadline rejection with retirement, and continued
+rejection of process creation. Seven selected regressions passed; the complete
+suite ran 29 tests: 28 passed, one skipped because this kernel did not implement
+the tested `clone3` creation. A separate invocation of the actual repaired CLI
+ran an Own executable through 64 pthreads and 1,024 real approved library-load,
+mapping and execute-protection operations: exit 0, admitted 86-image manifest,
+12,783 syscall stops, `ECHILD`, empty ledgers, retired tree/FDs, control EOF,
+unchanged preregistered inputs and no `SIGKILL`.
+Smoke record:
+`1ced6f7c0c336022198af9db799482d6a7be67e7dc43706da0a431e3b7ac609f`.
+The old-source forced-order test timed out and supplies no assertion-level
+before/after proof. No Native causal, Original, pacing or filter-policy claim
+is inferred from these Own checks.
+
+
 
 

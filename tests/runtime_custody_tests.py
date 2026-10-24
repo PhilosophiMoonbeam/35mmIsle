@@ -6,6 +6,7 @@ Fixtures are our own C sources, compiled into TemporaryDirectory. No ROM, SDK,
 source-text assertions, simulated loader, or mocked admission is involved.
 """
 import argparse
+from contextlib import contextmanager
 import ctypes
 import errno
 import fcntl
@@ -25,6 +26,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import runtime_custody as custody
+import runtime_custody_syscalls as syscall_custody
 from runtime_relink import elf_identity
 
 AUDIT_MODULE = None
@@ -313,6 +315,101 @@ class NativeCustodyTests(unittest.TestCase):
         with self.supervisor(*args, **kwargs) as supervisor:
             return supervisor.run()
 
+    @contextmanager
+    def ordered_clone_waits(self, supervisor, *, expire=False):
+        """Split real kernel child/parent stops across collector calls.
+
+        No wait status or admission result is fabricated. Only delivery of the
+        parent's actual creation event is delayed; the child remains in its
+        kernel initial ptrace stop throughout the unregistered interval.
+        """
+        owner = supervisor.owner
+        real_waitpid, real_collect = os.waitpid, owner.collect
+        evidence = {'unregistered_cycles': [], 'parent': None, 'child': None,
+                    'initial_stop_ns': None, 'rejected_ns': None}
+        early_child = None
+        held_parent = None
+        boundaries = 0
+        release_late = False
+
+        def waitpid(pid, options):
+            nonlocal early_child, held_parent, boundaries
+            if held_parent is not None:
+                if boundaries:
+                    boundaries -= 1
+                    return (0, 0)
+                if expire and not release_late and not owner.retiring:
+                    return (0, 0)
+                result, held_parent = held_parent, None
+                return result
+            if owner.retiring and early_child is not None:
+                result, early_child = early_child, None
+                return result
+            tid, status = real_waitpid(pid, options)
+            if not tid or evidence['parent'] is not None or owner.retiring:
+                return tid, status
+            if (tid not in owner.callbacks and os.WIFSTOPPED(status) and
+                    status >> 16 == 128 and os.WSTOPSIG(status) == signal.SIGTRAP):
+                # The kernel may already choose child-first ordering. Keep its
+                # real status until we have the matching parent event to delay.
+                early_child = (tid, status)
+                return (0, 0)
+            if not os.WIFSTOPPED(status) or status >> 16 not in (1, 2, 3):
+                return tid, status
+            child = ctypes.c_ulong()
+            syscall_custody._call(0x4201, tid, 0, ctypes.byref(child))
+            held_parent = (tid, status)
+            if early_child is not None:
+                self.assertEqual(early_child[0], child.value)
+                child_status, early_child = early_child, None
+            else:
+                deadline = time.monotonic() + 2
+                while True:
+                    child_status = real_waitpid(child.value, options)
+                    if child_status[0]:
+                        break
+                    self.assertLess(time.monotonic(), deadline, 'missing kernel child initial stop')
+                    time.sleep(.0005)
+            self.assertEqual(child_status[0], child.value)
+            self.assertTrue(os.WIFSTOPPED(child_status[1]))
+            self.assertEqual(child_status[1] >> 16, 128)
+            self.assertEqual(os.WSTOPSIG(child_status[1]), signal.SIGTRAP)
+            evidence.update(parent=held_parent, child=child_status)
+            evidence['initial_stop_ns'] = time.monotonic_ns()
+            boundaries = 2
+            return child_status
+
+        def collect(**kwargs):
+            nonlocal release_late
+            if expire and supervisor.syscalls is not None:
+                # Exercise the existing stop policy with a shorter fixture-only
+                # deadline, never a larger production budget or a fake clock.
+                supervisor.syscalls.stop_timeout = .25
+            result = real_collect(**kwargs)
+            child = evidence['child']
+            if child is not None and child in owner.pending and held_parent is not None:
+                state = next(line for line in Path(f'/proc/{child[0]}/status').read_text().splitlines()
+                             if line.startswith('State:')).split()[1]
+                evidence['unregistered_cycles'].append({
+                    'registered': child[0] in owner.callbacks, 'state': state,
+                    'complete': owner.complete, 'rejections': list(owner.rejections)})
+                # Sealed images must still be live during unresolved ownership.
+                for image in supervisor.images:
+                    os.fstat(image.fd)
+            if expire and owner.rejections and held_parent is not None:
+                evidence['rejected_ns'] = time.monotonic_ns()
+                # Deliver the late real event before teardown. It must not
+                # erase the already-recorded deadline failure or resume tasks.
+                release_late = True
+                real_collect(**kwargs)
+            return result
+
+        os.waitpid, owner.collect = waitpid, collect
+        try:
+            yield evidence
+        finally:
+            os.waitpid, owner.collect = real_waitpid, real_collect
+
     def assert_admitted(self, receipt):
         self.assertTrue(receipt['admitted'], receipt.get('failure'))
         self.assertTrue(receipt['activated'])
@@ -490,6 +587,68 @@ class NativeCustodyTests(unittest.TestCase):
         created = [event for event in metadata if event['kind'] == 'created']
         self.assertEqual(len(created), 2)
         self.assertTrue(all(event['tgid'] == receipt['pid'] for event in created))
+
+    def test_child_initial_stop_before_parent_event_across_collectors_is_admitted(self):
+        self.manifest([self.late])
+        with self.supervisor(mode='threads', target=self.late) as supervisor:
+            supervisor.prepare()
+            image = next(image for image in supervisor.images if image.original == str(self.late))
+            supervisor.arguments[2] = image.path
+            with self.ordered_clone_waits(supervisor) as evidence:
+                receipt = supervisor.run()
+        self.assert_admitted(receipt)
+        self.assertGreaterEqual(len(evidence['unregistered_cycles']), 2)
+        for cycle in evidence['unregistered_cycles']:
+            self.assertFalse(cycle['registered'])
+            self.assertFalse(cycle['complete'])
+            self.assertEqual(cycle['state'], 't')
+            self.assertEqual(cycle['rejections'], [])
+        self.assertIn('native-thread-mappings-complete', receipt['streams']['stdout']['preview_utf8'])
+        self.assertTrue(receipt['syscall_custody']['complete'])
+        self.assertEqual(receipt['ownership']['pending_wait_statuses'], [])
+
+    def test_unregistered_initial_stop_deadline_rejects_with_structured_evidence_and_retires(self):
+        self.manifest([self.late])
+        with self.supervisor(mode='threads', target=self.late) as supervisor:
+            supervisor.prepare()
+            image = next(image for image in supervisor.images if image.original == str(self.late))
+            supervisor.arguments[2] = image.path
+            with self.ordered_clone_waits(supervisor, expire=True) as evidence:
+                receipt = supervisor.run()
+        self.assertFalse(receipt['admitted'])
+        child, status = evidence['child']
+        self.assertEqual(evidence['unregistered_cycles'][0]['rejections'], [])
+        self.assertGreaterEqual(evidence['rejected_ns'] - evidence['initial_stop_ns'], 250_000_000)
+        # Ownership rejection must latch a syscall failure, not escape through
+        # an unrelated formatter error and lose its structured kernel evidence.
+        self.assertIsNotNone(receipt['syscall_custody']['failure'])
+        rejected = next(row for row in receipt['ownership']['rejected_tasks']
+                        if row['tid'] == child)
+        self.assertEqual(rejected['wait_status'], status)
+        self.assertTrue(receipt['owned_tree_retired'])
+        self.assertTrue(receipt['ownership']['wait_echild'])
+        self.assertTrue(receipt['syscall_custody']['complete'])
+        self.assertTrue(receipt['retained_fds_closed'])
+        self.assertTrue(receipt['retained_through_reaping'])
+        self.assertEqual(receipt['ownership']['remaining_trace_tids'], [])
+        self.assertEqual(receipt['ownership']['pending_wait_statuses'], [])
+        self.assertFalse(Path(f'/proc/{child}').exists())
+        self.assertNotIn('native-thread-mappings-complete', receipt['streams']['stdout']['preview_utf8'])
+
+    def test_child_first_ordering_does_not_admit_a_new_process(self):
+        self.manifest()
+        with self.supervisor(mode='fork') as supervisor:
+            with self.ordered_clone_waits(supervisor) as evidence:
+                receipt = supervisor.run()
+        self.assertIsNotNone(evidence['child'])
+        self.assertFalse(receipt['admitted'])
+        self.assertNotIn('native-child-ran', receipt['streams']['stdout']['preview_utf8'])
+        self.assertTrue(receipt['owned_tree_retired'])
+        self.assertTrue(receipt['syscall_custody']['complete'])
+        self.assertTrue(receipt['retained_fds_closed'])
+        self.assertEqual(receipt['ownership']['remaining_trace_tids'], [])
+        self.assertEqual(receipt['ownership']['pending_wait_statuses'], [])
+        self.assertFalse(Path(f"/proc/{evidence['child'][0]}").exists())
 
     def test_worker_survives_leader_exit_with_actual_mapping_and_loader_admission(self):
         self.manifest([self.late])

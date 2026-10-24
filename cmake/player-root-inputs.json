@@ -8151,10 +8151,15 @@
       "first": 1173,
       "last": 1199,
       "source_sha256": "4de60769e706c9340075c5d58267589394c33b232987689009e12af728842277",
-      "native_sha256": "515f02ba1645676c06f8cbab46deabc82dbe9cb76ed54b6de5aebc05b598d081",
+      "native_sha256": "6f5c500d13d3389059cf28daa0c0986a56b6c709c5cd157538da09d6d0590303",
       "native_declaration": "void isle_player_showPokemonLabel(IslePlayerSource* player, int32_t pokemonID, int32_t arg1, int32_t* arg2)",
       "actual_one_argument_callback": false,
       "changes": [
+        {
+          "find": "char sp40[32];",
+          "replace": "/* Admitted GAME names are at most 20 EUC-JP bytes; sizeof includes the suffix NUL. */\n    char sp40[20 + sizeof(D_80382D68_523178)];",
+          "occurrences": 1
+        },
         {
           "find": " && strc",
           "replace": " && isle_player_strc",
@@ -28346,11 +28351,11 @@
     }
   ],
   "output_sha256": {
-    "root": "be5098adc6d3d677024d90a1736bc2d912dffed1322d65ce0dc1a580f9e0baee",
+    "root": "f22cd951fadcf7476b65125e5e3cce650b957a3430c226443a3a2cca8a862e14",
     "support": "28e2dd821d5ee132ea11c87146547ef746cce5b932030d946a98d9eef9b25f50",
     "header": "0b041c5f39e3253d93ef762f7c13c5f6067cfc8e384124d972ccf92a2700eb22"
   },
-  "generator_sha256": "4aadf007f02b8072f5adfd2366d303aa22f499b47e344fbe48324c6ffc8aaa72",
+  "generator_sha256": "21f6016ec8a22baab3c711f1680d0685e50b1c37d1cf92652220c78ffa5328f5",
   "native_support": {
     "src/player_root_source.h": {
       "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"

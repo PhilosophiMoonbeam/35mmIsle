@@ -7772,6 +7772,52 @@ Photo/scoring native waits, reset, fault-matrix, new Windows builds and runtime,
 W04 Original pacing and full fresh campaign are not qualified by the initial
 Boot-to-Oak exercise. Its LLVM llvmpipe/dummy-PCM scope remains explicit.
 
+### Reviewed product keyboard and active-scoring retirement
+
+The reviewed `1d6ecc` product ran independently on an exclusive X11 display
+from the unchanged, inherited UI-earned pair. Actual keyboard input reached
+Boot, Title, cold Continue, Oak, Beach and three successful exposures
+(`60 → 59 → 58 → 57`). Additional shutter presses that did not decrement film
+are retained, not credited as photographs. After ordinary tutorial photography,
+Start exposed Continue/Quit Course/Retry; Quit Course returned to Camera Check.
+Competing source assessments and the visible choices support the intended
+tutorial input guard, not a pause-rendering patch.
+
+Camera Check displayed three actual Pidgey thumbnails and 3,470 points.
+Ordinary Oak marking, photo confirmation and submission reached live
+old/new-photo evaluation: current size 240, pose 1,000 and total 1,240;
+the off-center technique response and following same-Pokémon category appeared.
+This is evaluation-path coverage, not completed final grading, report-photo
+selection, Save or cold reload. An earlier interactive description misread
+the size as 290; the retained clear pixels and qualification correct it to 240.
+
+An identity-bound ordinary `WM_DELETE_WINDOW` during active evaluation returned
+exit 0 before the unchanged external deadline. All 86 runtime images were
+sealed; the owned tree and retained FDs retired, control EOF and `ECHILD` were
+observed, wait/task ledgers were empty, and no supervisor `SIGKILL` was used.
+All 14 immutable protected inputs remain byte-identical; 219 artifacts were
+stream-hashed. Receipt:
+`e7a9f73ff37e9274d4d8e5adf4433a8ed063ed3456db1b159af5c79c96e1d90a`.
+Bounded qualification:
+`bf164b5f295c14fca33cccbbdee6433ede0e102245e2e8a806eb59d4934a4864`.
+
+The preceding deeper cohort exceeded its 3,300-second external deadline:
+exit -9, supervisor `SIGKILL`, custody rejected. Its partial observations
+remain diagnostic only; they are not merged into this accepted run.
+Neither run used Source/private-state observations, forced selectors,
+instruction changes, profile/RNG edits or authored photographs. This remains
+Debug/software-CPU rendering, llvmpipe, dummy PCM and ordinary keyboard scope,
+not Original pacing, hearing, physical GPU/controller or Windows 11 evidence.
+
+### Exact-head cross-platform CI
+
+[Run 40055193649](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/40055193649)
+passed all ten Linux and MSVC jobs at
+`91c223f9e9ef5d888750022c3b26ebbeed423ccc`: actual product/LUS/audio/RSP/RDP,
+31 native consumers, post-course interfaces, CPU checks, private replacement
+relink and portable packaging checks. Hosted MSVC builds and synthetic
+execution do not qualify a Windows 11 ROM run.
+
 ### Final direct Driver exercise
 
 The reviewed direct component consumer ran on a separate display and unchanged

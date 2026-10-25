@@ -8625,3 +8625,57 @@ Windows 11 gameplay acceptance. A further genuinely empty-root full campaign
 retains every original acceptance predicate and the unextended 86,400-second
 Source budget; none of the preceding negative prefixes supplies progress.
 
+### Duration-aware control transport and actual worker reaping
+
+The later new full campaign reached ongoing Beach photography but not a natural
+ride ending or Report. A valid external `wait` requested 180 seconds while its
+client retained a 120-second default response timeout. The client disconnected
+after 120.24 seconds; the server correctly treated the pending action as uncertain
+and retired control. No later input/recovery occurred. Ordinary Native retirement
+returned incomplete 1 with full custody, unchanged inputs and no Native crash.
+Its added photographs do not establish developed recognition, Report, Save,
+Tunnel or any completed ride. Preserved terminal negative:
+`8ccac1818d2b51f0b91e08aafee370781be5be8a4240e48dfeb53b8ee22e5f04`.
+
+A new client now derives its transport timeout as
+`max(120, validated_command_duration + 30)` seconds. The existing finite
+0..86,400 duration validator is shared with the server; an explicit timeout must
+be finite and cover duration plus 30 seconds. Invalid/insufficient overrides
+reject before socket creation or request transmission. Four actual negative
+cases against a private kernel UNIX listener received no connection; no fake
+server reply was used. This changes only transport allowance, never the
+Source/launch-origin budget, command semantics, pacing, idle, receipt, Xlib or
+cleanup limits. There is no timeout retry.
+
+The first isolated real 180-second command completed normally, but exposed an
+independent broker accounting race: real terminal neutral completion and worker
+wait status 0 were observed, while an earlier `waitpid(WNOHANG)` had not yet
+reported that status after channel EOF. The broker correctly remained negative
+under its old rule; that case was not restarted or promoted. Preserved negative:
+`e5dc095bd0ff9ce703a4970c773723171fd0e15965c5e35c855d2e6c7ed52240`.
+
+The further new broker distinguishes IPC EOF from process reaping. Only real
+terminal neutral completion, empty pending keys and no active Xlib call permit
+actual owned-worker harvesting within the existing fixed eight-second bound.
+EOF and actual `waitpid` status are recorded separately; a healthy exiting worker
+is not signaled prematurely and status 0 is never fabricated. Missing terminal
+facts, nonzero status, timeout or evidence error remain unsuccessful.
+
+A separately preregistered real smoke completed the default-client wait in
+180.00985639 seconds, obtained a new attributable frame under the same identities,
+then normally retired operator/broker 0. Actual worker status 0 was harvested
+5.910813 milliseconds after EOF with no signal in that harvest. One advertised
+ordinary WM_DELETE produced expected incomplete Native 1 and collector negative
+1; whole-tree/ECHILD, root accounting, empty pending/trace sets, every recorded
+EOF and retained sealed-FD closure passed. All 1,277 GTL submissions and 38,041
+input requests completed. All 1,001 protected inputs/outputs, 86 images, eight
+harness sources, six helper dependencies and display/auth bytes were unchanged.
+
+Positive **control/lifecycle-only** qualification:
+`bb80e5d79b46946262384ae2b0e1c8eea20a5c9461a335dd0fa57445cc3ba574`.
+Actual terminal custody:
+`fb60feafebfae91ca32ccc7eb9df9952174b15e8ea0de384777ebe0dabb856f7`.
+The subsequent full campaign again starts genuinely empty. No negative prefix,
+partial game result, Source timing change or private payload publication supplies
+its acceptance.
+

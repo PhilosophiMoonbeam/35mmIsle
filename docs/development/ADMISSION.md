@@ -8788,3 +8788,57 @@ public-kernel lifecycle evidence, not Original SDK/private-memory observation.
 The subsequent installed product also retired normally without signals; its
 own run did not hit that race, so no Native PF_EXITING observation is invented.
 
+### Strict X11 deadlines and durable-writer retirement
+
+Two subsequent Native GUI cases remain terminal negatives. The fresh campaign
+reached Camera Check but not Oak evaluation; the installed cold continuation
+reached a Lab transition but did not display its retained Report. Each actual
+Xlib deadline failure withdrew semantic input authority. Independent bounded
+neutral cleanup and separate ordinary close were observed; neither case was
+resumed, relabelled or accepted as gameplay/cold evidence. Historical call versus
+broker scheduling delay cannot be reconstructed from their older records.
+
+The prospective Own helper now assigns each operation a worker-origin sequence
+and immutable three-second deadline before IPC. Both actual return and broker
+acceptance must precede that deadline; a timely result discovered late is still
+negative. Post-wait checks precede ready-message dispatch. A separate owned
+writer performs actual journal writes/fsync, and only its real sequence-matched
+durability receipt grants input permission. Action-journal fsync is fenced too.
+Cleanup and earliest-existing stop/EOF retirement retain the original
+eight-second fences; no Source, Native owner, pacing or timeout budget changed.
+
+The final retirement receipt is a separate exclusively created file, not the
+last journal row. It records actual worker/writer/cleanup wait status, pipe EOF,
+channel closure and durable sequence coverage. A stopped writer with a held key
+must still permit independent actual keyup/autorepeat restoration. Queued data,
+pipe EOF, a stop reply or a reservation alone cannot assert durable completion
+or process retirement.
+
+An isolated real owned Xvfb proof completed all eight histories: normal
+XQueryTree/XSync plus actual fsync; timely completion queued behind a stopped
+broker; delayed begin dispatch; real server grab; stopped writer with a held
+key; worker EOF before wait; healthy exit near the existing stop fence; and
+expiry of that same fence. Expected positive and negative outcomes all matched.
+Every case actually reaped its children and closed its channels. The controller
+FD baseline was restored; the server returned unforced zero, its cookie was
+removed after wait, and its owned socket was absent.
+
+An earlier one-shot fixture failed before any scenario because it incorrectly
+required an Xvfb lock file. A separate actual owned-server probe established
+that this host's successful `-displayfd` startup creates the owned socket but
+no lock. The new fixture validates a lock when present and records absence
+otherwise; it does not invent a retired lock identity. The earlier failed
+fixture and its receipts remain unchanged.
+
+| Qualified Own component | SHA-256 |
+| --- | --- |
+| Actual eight-case OS terminal receipt | `43e22e38ba0914374a3c9e4adb36cf440e9a788f508bb8fe0731acf58839bf6b` |
+| Executed strict X11 guard | `b2dca8ffa519b0406b20f19433ca90b25aa989db5253065b0879859cde23ff8b` |
+| Executed persistent journal writer | `2105bca625753385ab0ee4898df8e06aa077b2359a6e16c388b392eb7e0a86bd` |
+
+This qualifies only the Own OS watchdog/lifecycle component. It does not
+rehabilitate either Native negative, prove genuine Native integration,
+retained-Report GUI cold continuation, all seven courses, complete-profile
+cold startup, Windows 11, Original fidelity or R1/R2. No ROM, GAME/SDK body,
+save, screenshot, private binary or private proof payload was published.
+

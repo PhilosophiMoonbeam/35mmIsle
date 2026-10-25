@@ -8906,3 +8906,47 @@ hearing, Original fidelity or R1/R2. The OS-only painting identity dependency
 is not transferred into the genuine Native cohort. No private payload was
 published.
 
+### Installed Linux earned first-course GUI cold continuation
+
+The exact current installed product (`5e3ee1c`, executable
+`d0aa26c70256a273e024b8dbe51d878eb8bdde91cc29290f122e3ca3036845e7`)
+now passes a separate genuine GUI cold-continuation component. The existing
+public canonical adapter copied the accepted original first-course Save into
+an independent new destination. A new product process with its own HOME,
+display and bus then showed Continue, resumed Oak's Lab, opened Pokémon Report
+with **1 kind / 3,300 points before any new earning**, and responded to B by
+returning to the Lab. Four distinct actually viewed PNGs and their completed
+request intervals establish that chronology; no profile/source feedback
+selected the inputs.
+
+Neutral keyboard service, its worker and durable writer returned zero with no
+pending commit, reservation or journal debt. Exactly one advertised
+`WM_DELETE_WINDOW` followed actual normal operator retirement. Its worker and
+writer, the Native target and sole Native owner returned zero without a Native
+signal or forced cleanup. Whole-tree ECHILD/no tasks, stdout/stderr EOF and
+owned FD/resource-monitor closure preceded explicit same-nonce Parent end.
+Posthash preserved all 1,042 selected inputs, the installed stage, source groups
+and original earned profile. Identity-matched display/bus owners were retired
+only afterward; each actually waited its own unforced-zero child.
+
+The frozen primary passive collector returned **zero**, independently followed
+by bounded Parent acceptance. This does not rewrite the original first-course
+collector's exit 1 or its separate post-closure consumer's exit 0. The
+preparation-time destination `GameSession`/lock open remains disclosed; the
+source lock was metadata-only. This is not an unopened-profile, cache-cleared
+OS or first-ever load assertion.
+
+| Actual cold-component record | SHA-256 |
+| --- | --- |
+| Completed Native owner receipt | `50df971a21131fcddf7bef7729a25bf059efa6680cba760432781fd400496737` |
+| Retirement bound by explicit Parent end | `6261ca543753dc7b34f42950faebeca49896f8528fbb11d619d247cf96aa1c88` |
+| Passing frozen component collector | `873b086607357d762e7299339de7e3c8bb97a50432338e51e583c25489fca8c6` |
+| Parent bounded acceptance | `8a5f03069fb384cfaf16d3eb84f903e46291d493f625b642d417a4f0e515c591` |
+
+This closes only installed Linux **earned first-course GUI cold continuation**.
+A complete current-build empty-root/all-seven campaign and its separate
+complete-profile cold qualification remain open, as do Windows 11 gameplay,
+physical GPU/hearing, Original fidelity/pacing and R1/R2. Earlier failed cohorts
+remain immutable negatives; no private binary, ROM/GAME/SDK body, Save or PNG
+was published.
+

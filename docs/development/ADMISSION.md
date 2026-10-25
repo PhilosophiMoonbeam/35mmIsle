@@ -8986,3 +8986,30 @@ change was made. Separate bounded compatibility acceptance:
 This permits a new empty-root full campaign with identical controller sources,
 not reuse of smoke progress, a campaign pass or release approval.
 
+### Long sealed campaign: late durability acceptance
+
+The subsequent genuinely empty-root campaign is an immutable negative.
+Beach reached its natural exit; Camera Check displayed all 11 photographs.
+Ordinary selection identified and marked Pidgey, Doduo, Pikachu, Butterfree and
+Meowth. Oak actually scored the first three at 3,290, 590 and 200 before the
+controller failed; this is not a completed Report, Save or campaign.
+
+The exact controller failure was `Real fsync acceptance crossed original
+persistence fence`. The pending `XGetWindowAttributes` body had returned in
+approximately 160 ms; six journal records remained unacknowledged. The
+acceptance-time deadline failure does not establish disk latency or OOM as its
+cause. The bounded ten-minute qualification was not a long-run guarantee.
+The worker and writer were killed/reaped by their owner; independent cleanup
+returned zero with no uncertain key release or repeat restoration.
+
+Semantic authority ended permanently. One separately supervised, genuinely
+advertised negative WM close returned zero using the already frozen public
+primitives. Native custody then completed/admitted with target/owner exit 1,
+whole-tree ECHILD, accounted root status, no forced Native kill, output EOF and
+sealed-descriptor closure. The explicit negative reader-end path actually
+returned producer exit 1 without fabricating normal service receipts or
+performing protected-input posthash, normal collection or profile reuse.
+The owned display returned child 0/owner 130; the shared bus was untouched.
+Bead `bd_35mmIsle-02n` tracks the competing deadline/receipt assessments.
+All-seven completion and complete-profile cold qualification remain open.
+

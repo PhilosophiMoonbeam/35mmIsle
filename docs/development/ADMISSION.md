@@ -8842,3 +8842,67 @@ retained-Report GUI cold continuation, all seven courses, complete-profile
 cold startup, Windows 11, Original fidelity or R1/R2. No ROM, GAME/SDK body,
 save, screenshot, private binary or private proof payload was published.
 
+### Bounded durable progress under sustained public observation
+
+The next genuine Native cold case loaded Continue and reached a responsive Lab,
+but terminated its public operator before the retained Report could be viewed.
+Its writer acknowledged sequence 47283 with 770 records still outstanding.
+The physical next row did not establish fsync completion or ACK acceptance.
+The Native target subsequently closed ordinarily with complete tree/EOF/FD
+retirement and unchanged protected inputs. The case remains a negative.
+
+Independent planner and reviewer assessments selected a single-operation
+durability barrier rather than batching. The worker now waits for the exact
+end-record fsync-backed `call-durable` receipt before advancing. Worker receipt,
+broker transmission and persistence retain the **same original three-second
+operation deadline**. Input `broker-recorded` permission remains distinct.
+Actual per-record fsync is retained; no Source/observation pacing or Native
+budget changed. A real storage or scheduling stall still fails.
+
+Queue accounting now covers queued, sent-unacknowledged and reserved encoded
+packets. Ordinary production has 16 slots/1 MiB; finite retirement has reserved
+624 slots/39 MiB. These are ceilings, not eager allocations or complete
+Python/kernel memory measurements. End capacity is reserved before begin
+admission. No record is evicted, truncated or called durable merely because it
+was queued. Normal retirement requires no commit, reservation or persistence
+debt and a complete ordered journal.
+
+Optional lifecycle serialization/pipe failure can no longer prevent actual
+writer termination or independent cleanup. Static review also identified and
+corrected a race that expired an already timely sent commit during subsequent
+housekeeping. Two one-shot fixture negatives remain unchanged: one compared
+differently originated deadline ceilings instead of actual retirement times;
+another supplied a 640×480 root to an unchanged 800×600 observer invariant.
+Neither was promoted or reused.
+
+The corrected real owned-X11 run passed **all 13 scenarios**, including the
+original eight, actual within-deadline writer stop/resume, stop during pending
+completion, closed/full optional pipes, and the sustained actual
+`Operator.serve`/`PublicX11` path. Its independent painter did not wait for
+observer acknowledgements. The actual 300-second idle transition released a
+held key, required a fresh capture before new input, and restored repeat policy
+at normal stop. Sustained worker/writer returned zero; all owned actors,
+channels and FDs retired. Xvfb returned unforced zero, its exact cookie was
+removed, its socket disappeared, and the controller FD baseline was restored.
+
+| Sustained observation | Actual result |
+| --- | ---: |
+| Elapsed seconds | 605.906 |
+| Quiet seconds | 301.063 |
+| Independently active painting seconds | 303.024 |
+| Durable journal rows | 64,097 |
+| Peak charged records, including reservations | 3 |
+| Peak charged encoded bytes, including reservations | 66,204 |
+
+| Qualified Own identity | SHA-256 |
+| --- | --- |
+| Actual complete 13-case terminal | `ae583f07f68beaa0088994ab986bd3f51741160c066a9666b18e1b0f4d8645ce` |
+| Executed durable-progress guard | `404dc5bff6dbb4c90f77cc693dad4aba793bd48429187d96b3e9e06a95babe2c` |
+| Executed bounded writer | `884758b20fecbdb401bba61dbefbda3c96ad2f593723dcabc8a69ed0368397a6` |
+
+This is **Own OS component proof**, not renewed Native GUI cold continuation,
+all-course gameplay, complete-profile cold startup, Windows 11, hardware,
+hearing, Original fidelity or R1/R2. The OS-only painting identity dependency
+is not transferred into the genuine Native cohort. No private payload was
+published.
+

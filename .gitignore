@@ -33,3 +33,6 @@
 *.rdc
 *.gfxr
 *.apitrace
+
+# Cache files
+**/__pycache__/

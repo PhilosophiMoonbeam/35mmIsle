@@ -9013,3 +9013,43 @@ The owned display returned child 0/owner 130; the shared bus was untouched.
 Bead `bd_35mmIsle-02n` tracks the competing deadline/receipt assessments.
 All-seven completion and complete-profile cold qualification remain open.
 
+### Qualified late-acceptance diagnostics and real boundary controls
+
+Independent planner/reviewer assessments found no source-proven correctness
+defect in the long-run failure. The new diagnostic retains ten bounded scalar
+facts only when a valid real fsync receipt was received before its original
+deadline but fresh acceptance crossed that deadline. Write, fsync, receive and
+acceptance timestamps remain distinct. Rejection still precedes debt release,
+durable advancement and worker permission. This is diagnostic retention—not a
+historical-cause fix, retry, deadline extension or pacing change.
+
+A fresh isolated OS qualification actually passed all 15 scenarios. The added
+positive case completed real Xlib, per-record fsync and worker acknowledgement
+before the original three-second deadline. The added negative case established
+a real held key/repeat-off obligation, observed actual broker kernel stop,
+released the real Xlib body, observed its timely return/end transmission, and
+resumed acceptance after the original deadline. It retained charged debt,
+denied completion/successor permission and preserved the full rejection.
+Actual independent cleanup completed, reaped, reached EOF and closed its
+channel before its original eight-second ceiling; a separate real query
+confirmed neutral keys and restored repeat.
+
+The unchanged sustained scenario completed 64,137 durable rows in 605.8 seconds,
+including 301.1 seconds quiet, 303.0 seconds independently painted activity and
+one actual 300-second idle release. The independent painter produced 3,058
+frames without observer backpressure. All normal actors returned zero with
+zero debt; intentional negative cases remained negative. Actual display exit
+was zero, matching authority was removed, socket/lock were absent, and the
+controller descriptor baseline was restored.
+
+The accepted OS terminal digest is
+`e8ead229d853f07667deb14d25c9b993c665905671baee39b160baf1420b6308`;
+the Parent qualification digest is
+`8456d856afde0aaa389c3136cf07c677a9418fa2f5e58030a6941ee9b3320d48`.
+The integrated Native source cohort passed its no-import syntax/JSON gate.
+Normal consumers now require an explicitly present, null rejection field;
+negative consumers preserve the original full terminal receipt. A new
+same-source sealed compatibility run remains mandatory before another
+empty-root full campaign. Neither source gating nor this OS qualification
+grants Native compatibility, full-campaign, cold-profile or release approval.
+

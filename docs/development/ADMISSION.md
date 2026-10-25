@@ -8950,3 +8950,39 @@ physical GPU/hearing, Original fidelity/pacing and R1/R2. Earlier failed cohorts
 remain immutable negatives; no private binary, ROM/GAME/SDK body, Save or PNG
 was published.
 
+### Current sealed controller compatibility before full campaign
+
+A separate, genuinely empty-root Linux compatibility run exercised the current
+`5e3ee1c` campaign consumer (`2a075f46d87f3eddf2ae5634cac4aad6ffee6a92ad83a70ea49acf03f8c8f569`)
+under the unchanged strict 86-image custody contract: one application, loader
+and auditor plus 83 providers. All image seals were 15. After accepted PREINIT,
+28 distinct providers were actually observed opening; this is an observed
+subset, not a claim that all admitted images were dynamically exercised.
+
+Parent viewed attributable river-opening pixels, requested an ordinary
+two-second Start hold, and viewed the resulting island/title scene. Semantic
+authority ended after 175.158 seconds, before the original 180-second
+interaction decision cutoff. No InputService acknowledgement was inferred.
+The original 86,400-second Native wall limit and three-second operation fence
+were unchanged.
+
+The operator and one advertised WM-close service, workers and journal writers
+actually returned zero with empty debt/reservations and closed channels.
+Native custody completed/admitted without forced cleanup: whole-tree ECHILD,
+accounted root status, no pending trace/wait entries, all output EOF and retained
+sealed descriptors closed. Native, producer and frozen primary collector each
+returned **1**, correctly retaining incomplete-campaign classification. After
+explicit nonce-bound reader exclusion, all 1,116 armed selected inputs were
+unchanged; the historical 1,001-record selection is not an exhaustive compiler
+closure. The owned display returned child 0/owner 130; the external shared bus
+was neither owned nor retired.
+
+The same twelve controller/producer source bytes also passed actual
+authorization/cessation boundary checks. These exposed and corrected a rejected
+directory descriptor leak; missing broker terminal receipts and conflicting
+normal/negative terminal authorities are rejected. No SDK or Source scheduling
+change was made. Separate bounded compatibility acceptance:
+`7aebeb64ede2a22dc24eb1d2fb05b9b968aca963f465d77929c184a8b99b48fd`.
+This permits a new empty-root full campaign with identical controller sources,
+not reuse of smoke progress, a campaign pass or release approval.
+

@@ -8571,3 +8571,57 @@ post-idle actual DAMAGE capture/reply, visually chosen ordinary input and its
 normal terminal acceptance. No Source timing/budget or game-state predicate was
 changed, and no private evidence payload was published.
 
+### Known-no-input refusal and normal operator retirement
+
+A second new campaign exercised healthy held-key expiry, another full neutral
+interval, genuine fresh-image rearming and ordinary A processing. A later
+Start request arrived 314.717776299 seconds after its preceding capture completed.
+The unchanged guard correctly refused it before input, but its then-terminal
+refusal policy unnecessarily discarded healthy control. This is not a Native
+game defect. That case was preserved as terminal negative, never restarted or
+salvaged; normal owned Native retirement again returned incomplete 1.
+Terminal negative qualification:
+`087380dc6777b891fe7b935d98b0115244e5d044e93d6aaabaf78b3d8b529988`.
+
+New competing planner/reviewer assessments selected one private
+`FreshCaptureRequired` exception in a wholly new frozen harness. It can originate
+only at the healthy pre-transition gate, before **any** request key intent/write,
+with held, uncertain and expected-key sets empty and actual keymap health
+verified. Pulse duration validation now precedes that gate; malformed requests
+remain fatal. Only that exception is caught. Its explicit response is
+`accepted=false`, `action_attempted=false`, `fresh_capture_required=true`,
+`same_id_retry_allowed=false`; the client validates it and returns 2, not success.
+The consumed ID, distinct durable refusal, unchanged idle clock and same observer
+remain. A new manual capture, actual visual inspection and new semantic decision
+are required. No automatic capture/resubmission, generic recovery, baseline
+reset or Source timing change exists. Other errors and all uncertainty remain
+terminal, including refusal logging, health, transport or reply failures.
+
+A separately preregistered empty-root smoke proved the entire revised sequence:
+real held-Z expiry/key-up/empty keymap; valid premature A declined with client 2
+and no action intent/write or clock refresh; continued observation; manual
+post-arm DAMAGE capture and actual whole-frame viewing; newly chosen A down/up;
+normal operator/broker return 0 with genuine final neutral completion and no
+evidence failures. An additional delayed request was safely refused without
+retiring observation. Original attributed 640×480 PNGs were retained unchanged;
+clearly labelled 320×240 nearest-neighbor whole-frame previews were used for
+visual inspection, not substituted for captured evidence.
+
+One advertised ordinary WM_DELETE then produced the **expected incomplete
+Native campaign return 1**. Terminal collection remained negative 1. Whole-tree,
+ECHILD, root-status accounting, empty pending/trace sets, all recorded EOF and
+retained sealed-FD closure passed. All 1,654 GTL submissions reached terminal
+resolution and all 48,068 input requests completed. All 1,001 protected build
+inputs/outputs, 86 images, eight harness sources, six dependencies and display/auth
+bytes remained unchanged; no Native timeout or kill was used.
+
+Positive **harness-only** qualification:
+`01dce220f27d62f461ee149eabfab0a2539112a475a920d5da6fd1763b64eb98`.
+Actual terminal custody:
+`45cafdf7a267c9b6bae7f2e2e2eb4db15a1b83b845892c0955f36ab5a3dfe3e7`.
+This closes the controller idle-safety defect, not campaign, Native InputService
+consumption, rendering continuity, Original fidelity, hearing/hardware or
+Windows 11 gameplay acceptance. A further genuinely empty-root full campaign
+retains every original acceptance predicate and the unextended 86,400-second
+Source budget; none of the preceding negative prefixes supplies progress.
+

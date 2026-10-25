@@ -8679,3 +8679,112 @@ The subsequent full campaign again starts genuinely empty. No negative prefix,
 partial game result, Source timing change or private payload publication supplies
 its acceptance.
 
+### Installed Linux product: natural first course, Save and normal exit
+
+The actual installed regular ELF from production `5e3ee1c` now completes an
+ordinary first-course loop from an empty, independent profile. Its executable
+SHA-256 is
+`d0aa26c70256a273e024b8dbe51d878eb8bdde91cc29290f122e3ca3036845e7`;
+kernel admission identifies that real file and all ten installed application
+DSOs, not a substituted sealed-consumer/bootstrap receipt.
+
+Parent independently viewed genuine fresh public captures of:
+
+- New Game/default Todd, ordinary Oak introduction and Beach entry;
+- three real focused Pidgey exposures, followed by the natural goal-gate vehicle
+  transition and Camera Check reporting three pictures;
+- developed-photo evaluation and Report summary: **one kind, 3,300 points**;
+- Save selection, “Shall I save your progress?” → ordinary A, “Would you like to
+  keep going?” → Yes, and the stationary laboratory return.
+
+No separate literal “Saved” banner is claimed. These observations come from
+attributed post-arm DAMAGE captures and physical input history, not profile,
+phase, score-counter, actor-coordinate or Native-output feedback. Persistent
+zoom plus **A-only** shutter pulses actually consume film; duplicate Z pulses
+are not inferred or retried.
+
+The keyboard operator, ordinary WM worker, Native target and standalone owner
+all returned **0**. One genuinely advertised WM_DELETE followed actual neutral
+operator retirement. Sole-owner waits reached ECHILD with no remaining children
+or tasks; stdout/stderr reached terminal EOF, and owned descriptors and the
+resource monitor closed. No cleanup signal or forced termination was used.
+Only then did Parent authorize the explicit same-nonce reader-free end and
+whole-byte postreads. All 1,013 selected protected identities, the installed
+109-file/9-symlink/86-directory composition and nineteen frozen helper inputs
+remained unchanged. These selected inputs are not an exhaustive compiler
+closure. The actual default shader inode produced OPEN/ACCESS/CLOSE events;
+inotify has no per-event PID attribution.
+
+**Collector defect retained, not hidden.** The frozen primary metadata
+collector returned **1** because it required every profile file to be nonempty.
+Native correctly wrote `save.a` (127,780 bytes) and the legitimate zero-byte
+`save.lock`. The [public Store contract](../../include/35mmisle/save_store.hpp)
+and existing
+[preserved-profile adapter](../../tests/campaign_saved_profile.cpp) already
+support that stable lock file. The primary source/result was not edited or
+silently promoted.
+
+A **separate, explicitly post-closure** consumer reused that exact current-build
+adapter and public `GameSession` implementation. It copied the complete supported
+inventory to a new independent directory without opening or locking the source
+Store/lock; the copy loaded explicitly ready, with no repair or fresh fallback.
+It verified unchanged source inventory, slot bytes, permissions, mtimes, sizes
+and link counts, then released the copied session and lock. Actual compilation
+and execution returned 0. Generation is **1**; the checksum-valid canonical
+image is **127,652 bytes**, SHA-256
+`00e9c7015b6ec4d3da862a6da3080869d570f90c51aa0062001f32a06c014ae6`.
+The separate corrected metadata consumer also returned 0. Neither a nonempty
+file nor the copier alone establishes natural earned progress; that provenance
+comes from the independently viewed gameplay/Save sequence and retired cohort.
+
+| Record | SHA-256 |
+|---|---|
+| Actual normal product-owner receipt | `fab429923c73217ca92f615c32dac384a9209d7757a4fcc95ecae6a18dd99f51` |
+| Separate public canonical validation | `3570daaa3a2a25ea8c68a71091449bfbef7a75f43035f72ecd11673af55bd4be` |
+| Explicit posthoc corrected component evidence | `ef86a2e223c7bf2078daecd7dbb70f05a7d6a7df651f1ac8c779920765ccecd5` |
+| Parent bounded acceptance, including the primary failure | `398982caa3520a54ce53750dff565cafa66274fd0eff980fee0659bb2946642b` |
+
+This closes only the installed Linux **first natural course / earned Save /
+normal-exit component**. It is not the ongoing fresh strict86 campaign, a second
+product executable's cold Boot, the complete-profile cold gate, Windows 11
+runtime, Original fidelity/pacing, physical GPU/hearing or R1/R2 approval.
+Runtime composition remains HOLD/NOT APPROVED; no private payload was uploaded.
+
+### Direct-action orchestration and public-kernel retirement
+
+Two preceding cases remain immutable negatives: child Eval's default
+30-second deadline interrupted real 30-/35-second waits despite a correct
+duration-aware backend client. A prospective Parent-hosted single-action tool
+removes that child Eval/subprocess layer, admits at most ten seconds per action,
+and retains the unchanged backend timeout, Xlib, cleanup, Source and owner
+budgets. Actual direct child-tool calls and wait/capture operations complete;
+there is no timeout replay.
+
+A separate caller mistake pulsed `[Z,A]` over an already-held Z. The backend
+correctly rejected it terminally. The next prospective client tracks only its
+own successful public held-alias history and actual empty-key responses, and
+rejects overlapping pulses **before any connection or consumed ID**. A real
+private UNIX listener observed no connection for that negative case. It never
+silently removes a requested key or transforms an action. The failed cohort
+is not resumed or used as a game prefix.
+
+Another negative owner observed `/proc/PID/exe` disappear before a sole wait
+status was available, then recorded cleanup and remained disqualified. Its
+unrecorded kernel flags are not reconstructed retrospectively. The prospective
+Linux observer now records public
+[`/proc/PID/stat` field 9](https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html)
+and admits only the same bound PID/start in Z/X or actual `PF_EXITING`.
+[Linux 7.0 defines that bit as `0x4`](https://github.com/torvalds/linux/blob/v7.0/include/linux/sched.h);
+[`do_exit` sets it before `exit_mm` and `exit_notify`](https://github.com/torvalds/linux/blob/v7.0/kernel/exit.c).
+Real executable-inode/start/mapping mismatches remain terminal before any
+retirement waiver or reap. The existing five-second ordinary retirement fence,
+actual wait status, ECHILD, EOF and descriptor requirements remain unchanged.
+
+On the actual Linux 7.0.0-38 host, four independent **owned test processes**
+showed state R and flags 4,194,316 on both sides of actual executable ENOENT;
+all four subsequently returned unforced 0 with their pipes/EOF closed. Live
+wrong-inode/start, non-exiting ENOENT and unrelated-path cases rejected. This is
+public-kernel lifecycle evidence, not Original SDK/private-memory observation.
+The subsequent installed product also retired normally without signals; its
+own run did not hit that race, so no Native PF_EXITING observation is invented.
+

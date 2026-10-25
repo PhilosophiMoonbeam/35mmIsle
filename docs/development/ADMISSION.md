@@ -8428,10 +8428,11 @@ gameplay without an abort. Parent directly viewed both images. Full-label PNG:
 Bounded visual record:
 `1adffa87c810417fc667ec11f150e5dd468186c76b1643bcd9e0a4a7f7cdaf50`.
 
-This proves the changed longest-name display path, not terminal whole-custody
-acceptance or the full campaign. The same fresh campaign remains active;
-all-seven-course, progression, signs, Mew, Save/Credits/final-Title and cold-reload
-acceptance remain pending. No live Source fields, profiles, saves, reports or
+This proves the changed longest-name display path, not the full campaign.
+The same cohort subsequently retired as an incomplete negative after its
+external controller's inactivity watchdog fired; terminal evidence follows
+below. All-seven-course, progression, signs, Mew, full Credits/final-Title and
+cold-reload acceptance remain pending. No live Source fields, profiles, saves, reports or
 Native diagnostic output were used to select gameplay input. Private images,
 ROM assets, executables and proof payloads were not published. Release,
 Original fidelity/pacing, hearing/hardware and Windows 11 gameplay gates remain
@@ -8489,4 +8490,42 @@ This is installed Linux startup, dependency/resource ownership and ordinary
 closure evidence only—not the ongoing fresh campaign, sealed-image custody,
 Windows 11 gameplay, hearing/hardware, Original fidelity/pacing or redistribution
 approval. Composition remains HOLD/NOT APPROVED; no private payload was uploaded.
+
+### Fixed-label cohort: terminal scope and controller failure
+
+The same actual strict86 cohort also displayed the complete **KANGASKHAN NEW**
+label and continued through natural Beach and Tunnel rail endings. Parent
+independently viewed both longest-name labels. Ordinary Beach review showed
+six Report species and 3,390 points. Terminal public events record one real
+durable Save ACK, generation 1, and completed-course mask 3. Tunnel's later
+Camera Check remained incomplete; no all-seven, gear/sign/Mew, Credits,
+final-Title or cold-reload pass is claimed.
+
+While the actual Tunnel photo-detail screen was stationary, the external
+pixel operator reached its 300-second inactivity guard and exited 1. Its broker
+records real neutral completion, no evidence failures and a reaped worker.
+The Native game had not crashed. The failed operator was not restarted and the
+case was not resumed, rebound or salvaged. One genuinely advertised WM_DELETE,
+checked against the actual sealed loader/application identities, then produced
+the required incomplete-campaign Native return 1. No Native timeout or kill
+was used, and Source/GTL/clock/RSP budgets and pacing were unchanged.
+
+Actual producer duration was 26,001.74 seconds. Terminal custody completed with
+admission true, whole-tree retirement, ECHILD, root wait status 256 accounted,
+empty pending/trace task sets, control/stdout/stderr EOF and retained sealed-FD
+closure. The terminal-only collector correctly returned negative 1. No fortified
+abort occurred. All 29,080 GTL submissions reached terminal resolution and their
+completed frames were released; all 594,932 input requests completed. All 1,001
+selected protected build inputs/outputs, 86 source images, eight harness inputs
+and six selected helper dependencies remained unchanged.
+
+Custody receipt:
+`223d8f1dfe41d4230321c9ba4f791f2d6223ece1b58ceccf472d8704c3ccd288`.
+Terminal public report:
+`be548bb2a61c020dce56d6d0844c25bc7e22d8e3f26e63a74c3e8922b232c0e8`.
+Negative qualification:
+`1ae641c182de63a441d1b913ebcd22766f1df2f98c2d530bfd25eb76e2e7159e`.
+These records qualify the corrected label path and bounded normal owner
+retirement, not a complete campaign. The separate controller idle-lifecycle
+defect is tracked without weakening the failed case's acceptance contract.
 

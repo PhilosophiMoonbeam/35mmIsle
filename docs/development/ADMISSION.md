@@ -8529,3 +8529,45 @@ These records qualify the corrected label path and bounded normal owner
 retirement, not a complete campaign. The separate controller idle-lifecycle
 defect is tracked without weakening the failed case's acceptance contract.
 
+### Pixel-controller idle safety: isolated negative regression
+
+Independent planner and reviewer assessments selected a guarded live
+`idle_neutral` state rather than a keepalive dependency or automatic game
+Pause. A new frozen harness retains its original 300-second inactivity limit,
+three-second synchronous Xlib bound, eight-second independent cleanup bound,
+all strict86 admission/identity guards and the unextended launch-origin
+86,400-second campaign budget. Healthy idle withdraws keydown authority before
+ordinary guarded keyups, verifies an empty server keymap, and keeps the same
+observer, DAMAGE subscription and disabled-autorepeat policy. Terminal
+`neutral_complete` and autorepeat restoration remain terminal-only.
+
+A genuinely new empty-root case exercised this path with the unchanged
+`5e3ee1c` consumer. Parent inspected actual fresh pixels, held physical Z once,
+and sent no commands for more than 300 real seconds. Actual server-processed
+keyup occurred 300.124200463 seconds after the successful held-key reply;
+the broker independently recorded it, the queried keymap was empty, and the
+operator remained live without terminal neutral completion.
+
+Before any new capture, a deliberately separate negative request attempted A.
+The operator correctly rejected it terminally **before any new press intent
+or XTEST write**. Its broker reaped worker status 256 with genuine final neutral
+completion and no evidence failures. This failed case was not resumed or
+salvaged. One advertised ordinary WM_DELETE then produced Native incomplete
+return 1; the terminal-only collector returned negative 1. Whole-tree/ECHILD,
+root status accounting, empty pending/trace task sets, all recorded EOF and
+retained sealed-FD closure passed. Actual syscall custody completed 6,601,747
+stops and 40,575 events without a custody failure. All 1,001 protected
+build inputs/outputs, 86 images, eight harness sources, six selected helper
+dependencies and new display/auth bytes remained unchanged.
+
+Actual idle/rejection record:
+`9df698ead1f67fb11e3a11b1f078337b6ec700a54a0d46bcffdcc38c160e523f`.
+Terminal negative qualification:
+`f20956125e1eaaec8ba4922874e6be9d51e1175ca320599293cea39f9d13ec10`.
+This proves held-key expiry and stale-input refusal, not successful fresh-image
+reactivation, full campaign, Native input consumption, suspension of gameplay
+or uninterrupted rendering. The separate new fresh campaign must still prove
+post-idle actual DAMAGE capture/reply, visually chosen ordinary input and its
+normal terminal acceptance. No Source timing/budget or game-state predicate was
+changed, and no private evidence payload was published.
+

@@ -9103,3 +9103,46 @@ source gate and a genuinely new strict 86-image, empty-profile compatibility
 run before a new full campaign. No original SDK, GAME, ROM or private Native
 state participated in these infrastructure proofs.
 
+### Pre-arm content integrity and live helper identity
+
+Competing preflight assessments exposed an inherited reader-boundary mismatch:
+live binding, operator startup and WM startup called the full helper/dependency
+inventory despite the written pre-arm hashing exclusion. Actual content reads
+were reproduced on the already-closed, qualified helper; no Native lifetime
+violation was executed. This is not evidence of the earlier fsync failure's cause.
+
+Preparation now emits `flow-source-prepared-v2`, joining the actual expected
+hashes to stable file/alias identities before arming. The actual admission pins
+that prepared receipt's digest. Live binding/service verification checks that
+trusted receipt and the current selected identities without reading protected
+input bodies. Sources must be owner `0400` before capture; changing their mode
+or content afterward invalidates the recorded identity. Existing full pre-arm
+and authorized post-retirement content verification remain mandatory. Sealed
+application/loader checks, normal/negative separation and deadlines are unchanged.
+
+The final no-import gate passed for all twelve Native-helper sources and the
+two disposable proof scripts. Three separate fixtures were genuinely prepared
+from those exact source bytes; none contained Native admission or a profile.
+Real syscall analysis observed:
+
+| Actual API scenario | Actual verifier outcome | Selected records | Protected bytes read inside API |
+| --- | --- | ---: | ---: |
+| Legacy content inventory, closed helper | Completed | 18 | 11,237,706 |
+| Corrected identity verification | Accepted | 378 | 0 |
+| Same-size source mutation, original mtime/mode retained | Rejected | 378 | 0 |
+| Valid-JSON prepared-receipt mutation, original digest retained | Rejected | 378 | 0 |
+
+All corrected cases restored their actual descriptor baselines and had complete
+real exit-zero trace records. The older quiet trace had no exit record; its
+retirement is attributed explicitly to the separately recorded actual Parent
+wait/closed-handle evidence, never a synthetic trace line. Unknown reads,
+protected mappings and alternative I/O could not substitute for the boundary.
+The negative fixtures were not restored or reused. Disposable scripts and
+source fixtures were removed; metadata receipts and traces remain private.
+
+The Parent boundary-acceptance digest is
+`70f47c9a17d50e256aca837a4a097be4482b4755adda57c9212b6f45233176e8`.
+This accepts only the Own helper integrity/reader boundary. It neither admits
+Native nor supplies campaign, cold-profile or release credit. A new separate
+same-source strict 86-image, empty-profile compatibility run remains mandatory.
+

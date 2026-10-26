@@ -9053,3 +9053,53 @@ same-source sealed compatibility run remains mandatory before another
 empty-root full campaign. Neither source gating nor this OS qualification
 grants Native compatibility, full-campaign, cold-profile or release approval.
 
+### Private XKB output and qualified display/controller combination
+
+A subsequent compatibility attempt stopped before display readiness or Native
+launch: `xkbcomp` could not close its temporary keymap, and Xvfb rejected keyboard
+initialization. A later read-only quota query observed only 555,008 bytes of
+headroom for the current UID on `/tmp`; the exact earlier failure errno was not
+captured. The failed helper root remains immutable and grants no compatibility
+credit. No unrelated temporary data, quota or system policy was changed.
+
+The installed Xorg 21.1.22 code selects its compile-time XKB output directory,
+not `TMPDIR`. The remedy uses a private build of the exact installed Ubuntu
+source version `2:21.1.22-1ubuntu1.2`, its 17 distribution patches and the
+supported private XKB-output configuration. There is no Own C patch, compiler
+wrapper, preload, XKB bypass or replacement system installation. Source archives
+matched the published HTTPS/SHA256 facts; PGP verification was unavailable
+because the signing key was absent. Runtime DRI paths remain the system paths.
+
+The actual private executable digest is
+`c631ec55882fd9aa5023c373cd3c7dcaadc70a9cb45422a840ebea798d27029e`.
+A fresh owned-server proof observed the real compiler create an empty output
+with `O_CREAT|O_EXCL`, write and close it successfully, then the real server
+read, close and unlink it successfully. Failed precreation unlink observations
+remain failures, not cleanup evidence. Authenticated X11 readiness and complete
+unforced actor/wait/EOF/descriptor/authority retirement were observed. Two
+earlier rejected proof roots remain negative. The accepted keymap-boundary
+digest is
+`7bbe5d8b863eadbabe39d630b657dfe2203c45dd2c1288df0a3495a9116a87a8`.
+
+The exact private-server/controller combination then actually passed all 15
+scenarios in 661.0 seconds, without changing the original three-second
+operation/persistence/worker-acknowledgement fence or eight-second cleanup
+ceiling. The sustained case completed 63,977 durable rows in 606.0 seconds:
+301.1 seconds quiet, 303.1 seconds active, one idle transition and 3,059
+independently painted frames without observer backpressure. Normal debt was
+zero. Peak charged queue occupancy was three records and 66,212 encoded bytes,
+including the reserved 65,536-byte packet—not a whole-process memory bound.
+The real late-acceptance negative retained debt and denied acknowledgement;
+actual independent cleanup restored neutral keys/repeat before its original
+deadline. All owned children/channels retired; the private server waited zero
+without forced termination, its authority/socket/lock disappeared, the XKB
+output directory was empty, and the controller descriptor baseline matched.
+
+The Parent combination-qualification digest is
+`3ee94f2993e6b8fd0bd6ad6a7fe43ea47f160c43babe0ed7e9bb4213233f5837`.
+This accepts only Own OS infrastructure/controller behavior. The changed
+dependency selection and Native helper cohort still require their own final
+source gate and a genuinely new strict 86-image, empty-profile compatibility
+run before a new full campaign. No original SDK, GAME, ROM or private Native
+state participated in these infrastructure proofs.
+

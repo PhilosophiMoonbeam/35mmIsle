@@ -399,3 +399,51 @@ input epoch. It does not qualify a Native launch, optional PID-hint behavior,
 campaign, cold profile or Windows 11. A fresh helper cutover, real PID-hint
 boundary proof and new empty-profile strict 86-image compatibility run remain
 required before the new full campaign.
+
+### Optional X11 PID hint and explicit borrowed-bus selection
+
+A new Native compatibility attempt refused before operator readiness:
+the controller passed atom zero to `XGetWindowProperty` when `_NET_WM_PID`
+did not exist. The advertised PID is optional; actual XRes ownership remains
+mandatory. The corrected Own controller skips only that absent optional
+property request. It does not create a hint, accept ambiguous ownership or
+ignore a conflicting advertised PID.
+
+Five real Own-only X11 cases exercised the corrected boundary:
+
+| Actual case | Observed result |
+| --- | --- |
+| Prior controller, missing atom | `BadAtom`: code 5, request 20, resource 0 |
+| Corrected controller, missing atom | Actual XRes owner accepted; atom remained absent |
+| Corrected controller, matching hint | Actual XRes owner accepted |
+| Existing atom, absent window property | Actual XRes owner accepted |
+| Conflicting CARDINAL32 hint | Rejected; matching-owner controls passed before conflict and after restoration on the same window |
+
+All descriptor baselines were restored. The actual probe exited zero;
+display owner exited 130 after Parent termination, and its Xvfb child exited
+zero without forced killing. Actual streams/handles closed, display socket
+and lock disappeared, and selected inputs remained stable. Disposable proof
+scripts were removed; receipts and metadata remain private. The Parent
+boundary-acceptance digest is
+`6f396f8de0b5170ee77fc86f22f313b05a7dc0c02eea996d7c0f6a510e9aacf0`.
+This is Own API evidence, not Native compatibility or campaign credit.
+
+An intervening fresh preparation also refused before Xvfb because its pinned
+external bus process no longer existed. That negative root was preserved,
+not repaired. A separately registered, Parent-owned private bus now has actual
+PID/start/executable/socket-peer and public GetId evidence. Its local EXTERNAL
+configuration has no activation service directories or ambient configuration
+includes; no system configuration or Original sandbox policy was changed.
+The original 365 selected file records remain unchanged, with three explicit
+additional daemon/configuration/acquisition records: 368 selected inputs and
+381 live source/dependency identities. The display helper only borrows this
+bus; Parent retains its separate lifetime authority through compatibility
+and campaign borrowing.
+
+Competing reviews found that historical manifest copying retained the old
+`DBUS_SESSION_BUS_ADDRESS` despite validating a different selected bus. The
+fresh source cutover explicitly relocates that environment selector and
+requires selected/display/manifest/fresh-handshake agreement before arming.
+All 85 nonapplication image records and aliases remain unchanged. The source
+gate and Own proof do not substitute for the still-required new empty-profile
+strict 86-image Native compatibility run or final bus retirement.

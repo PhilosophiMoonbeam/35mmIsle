@@ -447,3 +447,36 @@ requires selected/display/manifest/fresh-handshake agreement before arming.
 All 85 nonapplication image records and aliases remain unchanged. The source
 gate and Own proof do not substitute for the still-required new empty-profile
 strict 86-image Native compatibility run or final bus retirement.
+
+### Same-source strict 86-image compatibility after the cutover
+
+A separate, genuinely empty-profile Native cohort completed the changed-helper
+compatibility gate using the exact twelve source files intended for the full
+campaign. Actual durable activation/PREINIT preceded binding and attributable
+window readiness. After viewing the completed title screen, a finite one-second
+Start press visibly produced New Game/Options choices. The response was
+actually viewed 167.549294132 seconds after the conservative Parent launch
+timestamp, within the unchanged 180-second decision cutoff. Earlier animation
+alone and a zero-duration physical pulse were not credited as consumed input.
+
+The terminal custody receipt admitted the exact 86-image cohort. Actual audit
+checkpoints observed 28 providers mapped late after PREINIT; this is a measured
+subset, not proof that every admitted image was dynamically exercised.
+The Native manifest selected the same retained Parent-owned private bus.
+
+Operator and WM workers, writers, brokers and services all retired normally
+with zero exits. The deliberately incomplete Native target, custody and
+producer returned one; passive collection also returned one and retained its
+negative-gameplay classification. Whole-tree retirement, ECHILD, accounted
+root status, no pending trace/wait state, complete stream EOF and retained
+sealed-descriptor closure were checked before reader withdrawal. Authorized
+posthash then found all 1,473 selected protected inputs stable. The display
+owner/server exited 130/zero without forced killing; handles, socket and lock
+were retired. The separate bus remains owned for the subsequent full campaign.
+
+The Parent compatibility-acceptance digest is
+`ed41fad3c22ca68dcaff8dcf1fad17f8751b0b34639bd9488da6a486b421ab83`.
+This accepts only the changed controller/runtime combination. No partial
+profile, prefix or gameplay credit transfers to the separate new full cohort.
+All-seven-course completion, complete Credits, final Save/Title, canonical cold
+continuation, actual Windows 11 and release acceptance remain separate gates.

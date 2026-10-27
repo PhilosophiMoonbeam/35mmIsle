@@ -367,3 +367,35 @@ The Parent boundary-acceptance digest is
 This accepts only the Own helper integrity/reader boundary. It neither admits
 Native nor supplies campaign, cold-profile or release credit. A new separate
 same-source strict 86-image, empty-profile compatibility run remains mandatory.
+
+### Explicit host-package input epoch
+
+A fresh pre-arm source freeze rejected changed dependency bytes before any
+display, Native process or PID-hint probe launched. Actual measurement found
+three changed hashes among 365 selected records, with no resolved-path change:
+the unused legacy system Xvfb record and the Brotli common/decoder providers.
+Installed Xvfb/Xserver packages were `2:21.1.22-1ubuntu1.3`; Brotli was
+`1.2.0-3ubuntu0.1`. Package verification returned zero with empty output.
+The private Xvfb executable and its Ubuntu `1.2` build provenance did not change.
+
+All 86 originally sealed Native image records, including all 85
+nonapplication records, were independently measured unchanged; the original
+manifest contains no Brotli record. This is a measured distinction between
+the selected helper inputs and the sealed Native image set, not an exhaustive
+transitive dependency-closure claim.
+
+A new, explicitly authorized input epoch passed the real original-budget
+15-case Own OS qualification in 660.79 seconds. Parent checks independently
+verified the positive and late-negative persistence fences, actual cleanup,
+wait/EOF/descriptor and display-resource retirement. The sustained case ran
+605,675,134,278 ns and produced 65,377 durable journal rows; original quiet,
+active, idle-transition and independent-painter criteria held. All 365
+selected inputs and 86 image records remained stable after actual retirement.
+
+The new Parent combination-qualification digest is
+`7420bdf36c5533d6ccd481cc8da56bc5c7a3e427fbdaa5db9849511021948501`.
+It supersedes the older combination only for the explicitly measured helper
+input epoch. It does not qualify a Native launch, optional PID-hint behavior,
+campaign, cold profile or Windows 11. A fresh helper cutover, real PID-hint
+boundary proof and new empty-profile strict 86-image compatibility run remain
+required before the new full campaign.

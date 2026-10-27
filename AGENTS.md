@@ -169,3 +169,22 @@ re-read whole files.
 After big code changes, refresh the graph with `trail build` (deterministic,
 no API key, $0).
 <!-- trail:end -->
+
+<!-- resource-lifecycle:start -->
+## Resource lifecycle and disk usage
+
+Reuse compatible build trees, dependency caches, environments and development
+containers without compromising isolation; avoid per-run clones and copies.
+Treat per-run resources as disposable unless persistence is explicitly required.
+Namespace or label owned containers, volumes, worktrees, browser profiles and
+scratch; register cleanup before acquisition, clean up on success, failure and
+interruption, and reconcile verified inactive leftovers on startup. Replacing
+owned disposable containers must retire the old containers and anonymous volumes;
+remove named volumes only with verified ownership and explicit disposable status.
+Preserve active/shared services, persistent data, secrets, unique work and required
+backups; never use broad host-wide pruning. Put large scratch on verified
+disk-backed storage, not RAM-backed `/tmp`. Set size, age and count budgets for
+caches, logs, captures and retained runs; keep compact evidence, bound concurrency,
+verify cleanup and space afterward, and report intentional retention with its
+purpose and expiry.
+<!-- resource-lifecycle:end -->

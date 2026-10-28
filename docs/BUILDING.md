@@ -86,6 +86,8 @@ The integration owner observed 240 real-renderer frames via Xvfb + Mesa llvmpipe
 
 ### Windows static-runtime host dependencies
 
+For deferred actual-host setup, private data boundaries and optional runner operation, use the [Windows 11 agent handoff](../doc/WINDOWS11_AGENT_HANDOFF.md). Execute it only after Linux prerequisites and explicit owner activation; writing the handoff does not qualify a Windows host.
+
 The full-host preset uses Visual Studio 2022 x64, static CRT dependencies and a frozen vcpkg source/registry/tool selection. In the **same PowerShell 7 session**:
 
 ```powershell

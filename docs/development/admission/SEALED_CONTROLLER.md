@@ -92,6 +92,10 @@ This proves caller-loss ownership, not recovery from death of the owner or host.
 | Real process/IPC fixture | `d4da48ab9c72cf3bd8b10d3d260b48e77738c203039d59261e6b34b4cff49140` |
 | Finite and caller-reset qualifier | `47f9255be5aaf7970475375b3121fddeda6ae766892fd2df40e7f083766ef44a` |
 | Parent's combined Own acceptance | `359be6e50a432222ca4626e1ef09b288def85179db55f5d23c62d5b7c417fdad` |
+| Guarded owned-input cessation revision | `c321e8e06f8251f4ce6470dfa75262c5025af7d50ffbcf126b487e2b2385ac8f` |
+| Shared-guard finite qualifier | `292694edae2857b16df330573491fb5f55e035492df31e39c3fb2ba6674b32cb` |
+| Guarded AF_UNIX qualification fixture | `0bb0ef298e0edaf417e71dcbb945bef8b5c3c963d9bd2af8b9b5b72eb9b4ad91` |
+| Fresh guarded thirteen-case Own acceptance | `9c186c665c87436df58fa1e39996d5de3c502072a4c891e4284994fedc48febc` |
 
 The original three-second journal/Xlib, eight-second cleanup, fifteen-second
 capture, 150-second CLI and launch-origin 86,400-second Native limits remain
@@ -120,11 +124,33 @@ Three actual Own socket cases exercised stale-node retirement, a live listener
 whose own pathname was removed, and real wait completion with pipe EOF withheld.
 Each eligible handoff acquired and reaped one Own-only lifecycle-effect child.
 These observations do not qualify Native WM or the producer's reader-end
-consumer. A finite rerun passed five cases before a subsequent owner failed to
-publish readiness; its actual outer wait and EOF were retained, but internal
-closure remains unproved and its component interlock remains set. The direct
-socket harness omitted that interlock, so its observations are not full
-component admission. No startup, journal or OOM cause is inferred.
+consumer. A finite rerun failed after five passes: its actual outer wait and
+EOF were retained, but no internal retirement receipt appeared. Its interlock
+was preserved. The direct socket harness omitted that interlock; its physical
+observations remain useful, but that execution is not component admission.
+
+Both qualification entrypoints now share one registration-bound atomic guard;
+their child roles authenticate the admitted parent and guard. Actual finite
+guard acquisition and the focused public entrypoint each rejected the retained
+interlock with kernel `EEXIST`, without creating a case or admitting an actor.
+The original guard, root entries and Parent descriptor set remained unchanged.
+
+Both independent assessments supported a bounded **[INFERENCE]** of no protocol
+child acquisition: the exact frozen owner requires unremoved, durable
+constructor artifacts before any child launch, and those artifacts were absent
+after its actual outer wait. A separate Own-only adjudication accepted that
+source invariant under preserved code/directory custody. The original guard
+was archived with its inode and bytes intact; the failed suite and unguarded
+observations were not rewritten as passes. No child wait or owner-retirement
+receipt was manufactured.
+
+Fresh, separately authorized cases then passed all ten finite histories and
+three guarded AF_UNIX cases in an actual seven-second command. Actual waits,
+EOFs, descriptors, admitted parent identities and positive guard release were
+checked; all source bytes remained stable. No real Eval reset was performed
+with Native/display active. This qualifies the Own mechanism, not Native WM,
+the original producer consumer or a campaign. Startup, journal and OOM causes
+remain unknown.
 
 ### Strict X11 deadlines and durable-writer retirement
 

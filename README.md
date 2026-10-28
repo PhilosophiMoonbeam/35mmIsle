@@ -6,7 +6,7 @@
 
 **35mmIsle is a native port of Pokémon Snap (1999) to modern systems, based on [libultraship (LUS)](https://github.com/Kenix3/libultraship).** Its target platforms are Linux x64 and Windows 11 x64.
 
-The authoritative game source is the upstream [Pokémon Snap decompilation](https://github.com/ethteck/pokemonsnap), not the modified local fork. [BASELINES](docs/planning/BASELINES.md) records the authoritative source pin and the initial exact US ROM baseline. ROMs and extracted game assets are not distributed with this repository.
+The authoritative game source is the upstream [Pokémon Snap decompilation](https://github.com/ethteck/pokemonsnap). [BASELINES](docs/planning/BASELINES.md) records the authoritative source pin and the initial exact US ROM baseline. ROMs and extracted game assets are not distributed with this repository.
 
 ## Project scope
 

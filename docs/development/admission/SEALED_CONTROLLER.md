@@ -7,6 +7,7 @@ Controller qualification, negative campaign results, and integrity-boundary reco
 ## Contents
 
 - [Direct-action orchestration and public-kernel retirement](#direct-action-orchestration-and-public-kernel-retirement)
+- [External Parent ownership across caller loss](#external-parent-ownership-across-caller-loss)
 - [Strict X11 deadlines and durable-writer retirement](#strict-x11-deadlines-and-durable-writer-retirement)
 - [Bounded durable progress under sustained public observation](#bounded-durable-progress-under-sustained-public-observation)
 - [Current sealed controller compatibility before full campaign](#current-sealed-controller-compatibility-before-full-campaign)
@@ -54,6 +55,76 @@ wrong-inode/start, non-exiting ENOENT and unrelated-path cases rejected. This is
 public-kernel lifecycle evidence, not Original SDK/private-memory observation.
 The subsequent installed product also retired normally without signals; its
 own run did not hit that race, so no Native PF_EXITING observation is invented.
+
+### External Parent ownership across caller loss
+
+A later fresh campaign remains terminal-negative after an interrupted neutral
+wait and an expired original journal fence. Its outstanding begin record had
+not been sent to the writer; this does not establish a slow fsync or OOM cause.
+The broker retired its own children, but its original finally was incomplete.
+The Parent interpreter and retained process handles were subsequently lost.
+Absent PIDs do not reconstruct wait status, EOF, Native whole-tree accounting
+or sealed-FD closure. No normal posthash, collector, profile or prefix reuse
+was admitted for that case.
+
+The replacement Parent lifecycle owner runs outside the disposable caller
+interpreter. It acquires its own children, retains one authenticated persistent
+controller lease, and dispatches each original action identity at most once.
+Caller EOF or uncertainty withdraws semantic authority without retry or
+adoption. Actual `waitpid` results, decoded return codes, pipe EOF and descriptor
+closure remain separate facts. Signal handlers latch stop state rather than
+raising through acquisition or retirement. Bounded drains account for short
+writes; incomplete evidence never becomes successful retirement.
+
+An actual Own-OS qualification passed ten histories: normal operation, pipe
+pressure, disconnect, abort, disposable caller loss, duplicate owner and public
+identities, overlap, first signal during retirement, and output-cap failure.
+A separate real Eval reset then destroyed the pending action's caller while
+the named external owner retained its original processes. Exactly one CLI
+dispatch occurred; the service returned zero and the unanswered CLI returned
+one after real IPC EOF. Both were actually reaped, with both output EOFs and
+all owned descriptors closed. The frozen sources and contract remained stable.
+This proves caller-loss ownership, not recovery from death of the owner or host.
+
+| Exercised Own component | SHA-256 |
+| --- | --- |
+| External Parent lifecycle owner | `d771a2ccda29fbcdea68024e96ced618d9738e5872e71bde902fd46d322abc2e` |
+| Real process/IPC fixture | `d4da48ab9c72cf3bd8b10d3d260b48e77738c203039d59261e6b34b4cff49140` |
+| Finite and caller-reset qualifier | `47f9255be5aaf7970475375b3121fddeda6ae766892fd2df40e7f083766ef44a` |
+| Parent's combined Own acceptance | `359be6e50a432222ca4626e1ef09b288def85179db55f5d23c62d5b7c417fdad` |
+
+The original three-second journal/Xlib, eight-second cleanup, fifteen-second
+capture, 150-second CLI and launch-origin 86,400-second Native limits remain
+unchanged, as do Source/GTL/RSP behavior and pacing. These Own histories do not
+exercise the Native adapter, fix the historical journal failure, or qualify a
+campaign. A separate genuinely empty sealed Native compatibility run must
+exercise the new owner before another fresh full campaign. Windows 11,
+canonical cold continuation, hearing and fidelity remain separate gates.
+
+The subsequent fresh Native compatibility case exercised nine original CLI
+requests normally and displayed the title-island animation. A further Start
+request was refused before dispatch at the unchanged launch-origin 180-second
+interaction cutoff; New Game was not observed. Negative retirement then exposed
+an Own integration defect: the close helper rejected a leftover input-socket
+pathname despite actual input-service wait/EOF/FD closure and broker cessation.
+The failed helper never reached its original WM reservation or X11 close path.
+Independent planner and reviewer assessments rejected an auxiliary close:
+an unused reservation does not account for an additional service's readers and
+waits. The frozen owner retains Native and its display through the original
+retirement protocol; neither pathname unlinking nor deadline passage proves
+whole-tree closure.
+
+A separate future owner revision replaces the pathname veto with positive
+withdrawn-authority, no-pending-CLI and actual owned-input retirement checks.
+Three actual Own socket cases exercised stale-node retirement, a live listener
+whose own pathname was removed, and real wait completion with pipe EOF withheld.
+Each eligible handoff acquired and reaped one Own-only lifecycle-effect child.
+These observations do not qualify Native WM or the producer's reader-end
+consumer. A finite rerun passed five cases before a subsequent owner failed to
+publish readiness; its actual outer wait and EOF were retained, but internal
+closure remains unproved and its component interlock remains set. The direct
+socket harness omitted that interlock, so its observations are not full
+component admission. No startup, journal or OOM cause is inferred.
 
 ### Strict X11 deadlines and durable-writer retirement
 

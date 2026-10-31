@@ -144,10 +144,10 @@
       "sha256": "58ae803b8da29230e670e0d0173bc113fe9d44180b1b3d02894c81555e42a4ab"
     },
     "src/sprite_producer.hpp": {
-      "sha256": "eb6c0ba3a33c5604c91fc5884798cb54fa30acf8624fe03355164d498a7a7f5f"
+      "sha256": "dc016a6f7746ff6a294c27e5d61f018f11e26d6de38fd9e18f8adf89b27fcaa0"
     },
     "src/sprite_producer.cpp": {
-      "sha256": "61f88f0029dd2d624a09238a6bd90006c0a2ec05be01020ed55ea7a3723ce66e"
+      "sha256": "94c65f70d22f71fe22ae66445562545b4163c3aaaf2fd0d68d976ea9d0e28f6a"
     }
   },
   "integration": {

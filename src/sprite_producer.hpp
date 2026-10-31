@@ -19,7 +19,12 @@ struct AssetSpan {
 // Pixel bounds are half-open. GAME's sprite camera intersects viewport bounds
 // with its scaled global camera scissor before traversing source object order.
 struct Bounds { std::int32_t left = 0, top = 0, right = 320, bottom = 240; };
-struct Camera { Bounds viewport, scissor; };
+struct Camera {
+    Bounds viewport, scissor;
+    // Ordinary sprite camera AlphaCompare; zero disables. CUTOUT selects 1.
+    // Message draws retain their separately lowered command state.
+    std::uint8_t alpha_threshold = 0;
+};
 // Msg's original lane0 texture rectangles use integer inclusive-source
 // endpoints (already lowered by its C body) and a decal-alpha button mode.
 enum class DrawMode : std::uint8_t { sprite, message_intensity, message_rgba };

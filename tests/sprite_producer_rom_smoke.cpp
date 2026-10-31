@@ -543,6 +543,39 @@ void native_minification_filter_alpha(Proof& proof) {
     }
     std::cout<<"native-private-sprite minification_split_borders_bilerp_texshift_cutout_alpha=pass\n";
 }
+void source_camera_alpha_compare(Proof& proof) {
+    // Authored RGBA16 stimulus, not an Original asset or alpha-mask oracle:
+    // transparent cyan beside opaque red, sampled away from bilerp boundaries.
+    MinificationPlane plane(8,8);
+    for(unsigned y=0;y<8;++y)for(unsigned x=0;x<8;++x) {
+        const std::uint16_t rgba=x<4?0x07fe:0xf801;
+        const auto at=(y*8+x)*2;
+        (*plane.bank)[at]=static_cast<std::uint8_t>(rgba>>8);
+        (*plane.bank)[at+1]=static_cast<std::uint8_t>(rgba);
+    }
+    auto view=plane.source;
+    const auto observe=[&](sp::Camera camera) {
+        const auto image=plane.render(proof,view,camera);
+        return std::array<std::uint16_t,2>{pixel(image,81,81),pixel(image,86,81)};
+    };
+    sp::Camera disabled{};disabled.alpha_threshold=0;
+    const auto opaque=observe(disabled);
+    sp::Camera source_camera{};source_camera.alpha_threshold=5;
+    const auto compared=observe(source_camera);
+    require((opaque[0]>>1)==(0x07feu>>1) && compared[0]==1,
+            "source camera AlphaCompare must preserve background under transparent colored texels");
+    require((opaque[1]>>1)==(0xf801u>>1) && compared[1]==opaque[1],
+            "source camera AlphaCompare must not erase or recolor opaque sprite interiors");
+    view.alpha=3;
+    const auto below_threshold=observe(source_camera);
+    require(below_threshold[0]==1 && below_threshold[1]==1,
+            "source camera threshold must compare the combiner's primitive-modulated alpha");
+    view.attr|=ISLE_SP_CUTOUT;
+    const auto cutout=observe(source_camera);
+    require(cutout[0]==1 && (cutout[1]>>1)==(0xf801u>>1),
+            "explicit CUTOUT threshold1 must override camera threshold5 without exposing alpha-zero RGB");
+    std::cout<<"native-private-sprite Source_camera_alpha_background_opaque_modulation_cutout=pass\n";
+}
 } // namespace
 #ifdef _WIN32
 int wmain(int argc,wchar_t** argv) {
@@ -550,12 +583,14 @@ int wmain(int argc,wchar_t** argv) {
 int main(int argc,char** argv) {
 #endif
     try {
-        require(argc==2||(argc==3&&std::filesystem::path(argv[2])=="--source-rounding-only"),
-                "expected explicit private ROM path and optional --source-rounding-only");
+        const bool alpha_only=argc==3&&std::filesystem::path(argv[2])=="--source-camera-alpha-only";
+        require(argc==2||(argc==3&&(alpha_only||std::filesystem::path(argv[2])=="--source-rounding-only")),
+                "expected explicit private ROM path and optional --source-rounding-only or --source-camera-alpha-only");
         const auto snapshot=isle::rom::read_snapshot(std::filesystem::path(argv[1]));
         auto resources=isle::menu::hydrate(snapshot);
         require(bool(resources),"private menu resource hydration failed");
         Proof proof(snapshot);
+        if(alpha_only){source_camera_alpha_compare(proof);return 0;}
         source_integer_edges(proof);
         if(argc==3)return 0;
         private_scene(proof,*resources.catalog,isle::menu::Scene::logo,0x802bc0c0);
@@ -566,6 +601,7 @@ int main(int argc,char** argv) {
         mutable_raster_boundary(proof);
         native_minification_samples(proof);
         native_minification_filter_alpha(proof);
+        source_camera_alpha_compare(proof);
         return 0;
     } catch(const std::filesystem::filesystem_error&) {
         std::cerr<<"sprite smoke: private filesystem operation failed\n";

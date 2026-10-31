@@ -344,6 +344,56 @@ pause-menu surface, whole 106-body Player owner, gameplay or Windows runtime
 is inferred. Earlier camera and sixty-component receipts retain their separate
 source identities.
 
+### Common sprite-camera alpha comparison
+
+`sprite::Camera::alpha_threshold` carries ordinary sprite-camera AlphaCompare
+state: zero disables comparison; explicit `CUTOUT` selects threshold 1.
+Independently lowered Msg modes retain their own state.
+`render::Pass::sprite_alpha_threshold` makes camera policy explicit. Oak's
+common cameras 2 and 30 select threshold 5 and restore `G_AC_NONE` after
+traversal, as specified by pinned OWN-GAME `app_render/53AD0.c:649–710`.
+The generic `renSpriteCameraRender`, `sys/render.c:2714–2746`, does not
+explicitly set that threshold; its existing native policy and the independent
+fade pass remain unchanged. No common-camera policy is extrapolated to them.
+This changes neither immutable asset bytes, sprite attributes nor blender words.
+The [public AlphaCompare manual](https://ultra64.ca/files/documentation/online-manuals/man-v5-1/n64man/gdp/gDPSetAlphaCompare.htm)
+defines the comparison; no SDK producer body, header, layout or default mode
+word is an implementation input.
+
+Independently reviewed [NTSC-attributed footage at 07:03](https://www.youtube.com/watch?v=_j-oGwPM10Q&t=423s)
+and [PAL-attributed footage at 08:06](https://www.youtube.com/watch?v=LzWsE-NJdeE&t=486s)
+show freestanding vehicle, Todd and Oak route icons, not cyan rectangles.
+Their physical capture chains and exact revisions are not authenticated.
+The admitted affected resources are RGBA16 with binary texture alpha, not CI
+palette assets. Actual canonical RSP/RDP before/after rendering over two
+authored backgrounds preserved 0 versus 7,562 classified transparent-interior
+samples; 1,628 opaque-interior samples retained identical pixel hashes.
+Private actual-render images confirm the corresponding silhouettes.
+
+The complete `35mmisle-sprite-producer-rom-smoke PRIVATE_ROM` consumer passed
+with the new behavior. `--source-camera-alpha-only` selects its bounded
+background preservation, opaque-color preservation, primitive-alpha modulation
+and explicit-CUTOUT precedence cases. These are actual GPU readbacks from
+authored mathematical stimuli, not Original expected images or renderer masks.
+
+An ABI-consistent Linux product, rebuilt across all 80 header-dependent product
+objects, reached this menu from a fresh data directory through the real default
+ControlDeck keyboard path: Title, Name, Oak introduction and Beach selection.
+All three icons retained their silhouettes, map and surrounding UI after normal
+cancellation to the lab and re-entry. Ordinary `WM_DELETE_WINDOW` ended the
+native process with unforced exit 0, drained pipes and a readable, closed
+original pidfd; the exclusively owned X11 server then retired.
+
+This surface smoke used CPU Vulkan, software OpenGL through the
+[documented SDL3 EGL selection](https://wiki.libsdl.org/SDL3/SDL_HINT_VIDEO_FORCE_EGL)
+and diagnostic dummy audio. An earlier GLX launch failed before window creation
+and remains separate negative evidence; its data directory was not reused.
+The EGL result does not qualify the failed GLX configuration or physical output.
+
+Component evidence does not establish every menu animation, revision-exact
+Original parity, hardware output or actual Windows 11 gameplay.
+
+
 ## Native camera computation and enumeration-free presentation
 
 Native type-3 camera ownership uses the existing bounded arena and recycled nodes, not SDK camera/object layouts. Empty, sprite and camera payloads have distinct teardown; unsupported payload types fail rather than acting as an unimplemented DObj path. Two same-kind matrices are permitted as in GAME. Configuration invalidates only dependent computed matrices; unchanged poses avoid repeated normalization. Read-only float/fixed borrows remain stable until removal, with no per-update allocation or redundant big-endian matrix cache.

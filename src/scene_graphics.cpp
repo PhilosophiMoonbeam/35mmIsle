@@ -1130,11 +1130,14 @@ struct Frame::Impl {
                         } else command_reservations.push_back(range);
                     }
                     require(covered, "scene sprite command arena is not reserved");
-                    const auto list = producer->prepare(ram, epoch, draws, {vp_bounds, pass.scissor},
+                    const auto list = producer->prepare(ram, epoch, draws,
+                        {vp_bounds, pass.scissor, pass.sprite_alpha_threshold},
                                                         remaining, command_reservations);
                     pool.used += static_cast<std::uint32_t>(list.words * sizeof(std::uint32_t));
                     commands.call(list.address);
                     commands.mode(true, 19, 1, 0x80000);
+                    if (pass.sprite_alpha_threshold)
+                        commands.mode(false, 0, 2, 0); // Explicit Source camera restores G_AC_NONE.
                     draws.clear();
                     return;
                 }

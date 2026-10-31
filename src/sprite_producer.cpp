@@ -111,9 +111,12 @@ Bounds clip(Camera c) {
     return {std::clamp(b.left, 0, 1023), std::clamp(b.top, 0, 1023),
             std::clamp(b.right, 0, 1023), std::clamp(b.bottom, 0, 1023)};
 }
-void modes(Stream& out, const IsleSprite& s, bool copy, DrawMode mode) {
+void modes(Stream& out, const IsleSprite& s, bool copy, DrawMode mode,
+           std::uint8_t camera_alpha_threshold) {
     const bool z = !copy && (s.attr & ISLE_SP_Z);
     const bool blend = !copy && (s.attr & ISLE_SP_TRANSPARENT);
+    const std::uint32_t alpha_threshold = (s.attr & ISLE_SP_CUTOUT) ? 1u :
+        (mode == DrawMode::sprite ? camera_alpha_threshold : 0u);
     // Public othermode: non-perspective rectangles, RGBA16 TLUT for CI,
     // bilerp in normal cycle, point sampling in COPY; RGB/alpha dither off.
     const std::uint32_t high = (copy ? 0x200000u : 0x002000u) |
@@ -123,7 +126,7 @@ void modes(Stream& out, const IsleSprite& s, bool copy, DrawMode mode) {
     std::uint32_t low = mode == DrawMode::sprite ?
         (blend ? 0x00504040u : 0x00000000u) : 0x00504240u;
     if (z) low |= 0x34u; // Z source=primitive, compare and update.
-    if (s.attr & ISLE_SP_CUTOUT) low |= 1u;
+    if (alpha_threshold) low |= 1u;
     out.command(0xe7000000, 0);
     out.command(0xef000000 | high, low);
     // Both cycles: (TEXEL0 - 0) * PRIMITIVE + 0, for RGB and alpha.
@@ -134,7 +137,7 @@ void modes(Stream& out, const IsleSprite& s, bool copy, DrawMode mode) {
                     ((mode == DrawMode::message_rgba ? 1u : 7u) << 3) | (mode == DrawMode::message_rgba ? 1u : 7u));
     out.command(0xfa000000, (std::uint32_t(s.red) << 24) | (std::uint32_t(s.green) << 16) |
                                    (std::uint32_t(s.blue) << 8) | s.alpha);
-    out.command(0xf9000000, 1); // CUTOUT threshold; otherwise unused.
+    out.command(0xf9000000, alpha_threshold ? alpha_threshold : 1u);
     if (z) out.command(0xee000000, std::uint32_t(std::uint16_t(s.zdepth)) << 16);
 }
 } // namespace
@@ -613,7 +616,7 @@ Sublist Producer::prepare(std::span<std::uint32_t> memory, std::uint64_t epoch,
                      s.bitmap[0].width_img == 16 && s.bitmap[0].actualHeight == 13 &&
                      ((s.bmfmt == 4 && s.bmsiz == 1) || (s.bmfmt == 0 && s.bmsiz == 2))),
                     "invalid source message draw");
-            modes(out, s, copy, draw.mode);
+            modes(out, s, copy, draw.mode, camera.alpha_threshold);
             if (s.bmfmt == 2) {
                 out.command(0xfd100000, r.palette);
                 out.command(0xe8000000, 0);

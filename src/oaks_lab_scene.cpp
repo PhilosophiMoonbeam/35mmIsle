@@ -810,6 +810,8 @@ scene::render::Input Scene::render_input() {
         pass.camera=p.camera_handles[i+1];
         pass.priority=priorities[i];
         pass.flags=i<2?4:8;
+        // Common cameras use func_800A9FF8; the independent fade does not.
+        pass.sprite_alpha_threshold=i<2?5:0;
         pass.link_mask=std::uint64_t(1)<<links[i];
         pass.camera_tag=1u<<links[i];
         pass.sprites=std::span<const scene::SpriteDraw>(p.draws).first(count);

@@ -134,7 +134,7 @@
       "sha256": "747fdab6fc4e93fda8ea20382d833d7553eb79612b9e2f60dee80c918a1f840f"
     },
     "src/sprite_producer.cpp": {
-      "sha256": "61f88f0029dd2d624a09238a6bd90006c0a2ec05be01020ed55ea7a3723ce66e"
+      "sha256": "94c65f70d22f71fe22ae66445562545b4163c3aaaf2fd0d68d976ea9d0e28f6a"
     },
     "src/continuation.cpp": {
       "sha256": "e4cc5bb6cf678d4c4eae24ada2dcf7c805f01ce5fbcd843e4b822e29bd952526"
@@ -221,7 +221,7 @@
       "sha256": "b2e8294b61d096588f37f8c17dfeffbf7dac8507d0f844d2bb43a8577417b7b5"
     },
     "src/scene_graphics.cpp": {
-      "sha256": "78a9cfb3f51791cd65464f81cf0baf9e5dd9394d67bdaa8da463d4ac3a9d33e5"
+      "sha256": "1820125d305bec230cc0671e73f4b664a74bb6964ec91b53441837a3a8598a58"
     },
     "src/scene_graphics.hpp": {
       "sha256": "0c58e995aa4a6ea6675579a719aad258f6e438a1b42a149bf8f3ed941b678954"

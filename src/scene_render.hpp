@@ -52,6 +52,9 @@ struct Pass {
     ::isle::screen_transition::Owner* transition_owner = nullptr;
     Control control = nullptr;
     bool requires_depth = true;
+    // Explicit Source-camera state, not a generic sprite default. Nonzero
+    // enables comparison around this traversal and restores G_AC_NONE after.
+    std::uint8_t sprite_alpha_threshold = 0;
     bool includes(RenderMetadata object) const noexcept {
         return object.link < 64 && ((link_mask >> object.link) & 1u) &&
                (tag_match == TagMatch::equality ? object.camera_tag == camera_tag :

@@ -70,6 +70,14 @@
       ]
     },
     {
+      "path": "src/app_render/53AD0.c",
+      "git_blob": "aa25770661121586cb00b1927a96e147878a3255",
+      "sha256": "ba598979cc9bdff222f2e94c22f0c650018ec7408b37e40d42f13ee82d121ced",
+      "spans": [
+        {"lines": [649, 710], "facts": "Own-GAME common sprite-camera callback enables AlphaCompare threshold5 before traversal and restores NONE afterward; both common cameras2/30 use it. Generic sys/render.c renSpriteCameraRender does not explicitly set5; no SDK spInit/spX2 body/default state inferred."}
+      ]
+    },
+    {
       "path": "include/35mmisle/sprite.h",
       "facts": "Existing repository native scalar/borrowed bitmap interface and numeric attribute constants, not an SDK structure"
     },
@@ -83,6 +91,7 @@
     {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro16/16-01.html", "facts": "Public sprite placement/scaling/scissor and overlap-border description"},
     {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro16/16-02.html", "facts": "Public bitmap scalar meanings, load-only s, actualHeight, explosion spacing, variable width, TLUT and sprite attributes; documentation only, no SDK header read"},
     {"url": "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/sp/spSetAttribute.html", "facts": "TRANSPARENT/CUTOUT/HIDDEN/Z/SCALE/FASTCOPY/TEXSHIFT/FRACPOS/TEXSHUF/EXTERN public semantics"},
+    {"url": "https://ultra64.ca/files/documentation/online-manuals/man-v5-1/n64man/gdp/gDPSetAlphaCompare.htm", "facts": "Public NONE/THRESHOLD comparison and transparent-region discard semantics; documentation only, no SDK body/header/layout"},
     {"url": "https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gsp/gSPTextureRectangle.html", "facts": "10.2 screen coordinates, S10.5 texture origins, S5.10 derivatives, COPY inclusive endpoints and derivative four, one-cycle exclusive endpoints"},
     {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro13/13-07.html", "facts": "Bilerp requires both interpolation neighbors; disjoint screen pieces retain texel overlap around both internal tile borders"},
     {"url": "https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro13/13-11.html", "facts": "RGBA32/YUV unsupported in COPY mode; texture image alignment"},
@@ -100,6 +109,7 @@
     "palette_upload": "CI4/8 palette source images remain RGBA16. The TLUT load tile uses size0, independently of source size2, so each entry reaches all four TMEM banks. Explicit startTLUT/nTLUT and CI4 bitmap palette-bank bounds remain checked. Actual bank0 red and independent bank3 blue, tint and restoration are exercised; no stale-bank or caller-specific workaround.",
     "oversized_source": "Three reached 32x68 RGBA16 menu bitmaps exceed 4 KiB TMEM. Bounded bands retain upper AND lower filtered border rows with disjoint screen coverage; even-row interleave parity and 64-bit source alignment remain intact. Load windows follow whole-texel fractional-origin changes, while local texture origins retain the fractional remainder. A 32x68 RGBA16 plane with frac_t=-16 draws bands 0..60 and 60..68, loads rows 0..64 and 58..68, and samples local T=-0.5 and 1.5 respectively.",
     "frame": "Caller supplies ordered Draw resource-index/shallow-view pairs, viewport/scissor, command arena, reservations and exclusive RAM epoch. Preflight precedes every write. No frame allocation, asset byte rescan/copy or cache growth.",
+    "camera_alpha": "Camera carries ordinary-sprite AlphaCompare threshold:0 disabled, explicit CUTOUT1 takes precedence; Msg keeps independent command state. Pass selects camera policy explicitly, default0. Oak common cameras2/30 select5 and the compositor restores NONE after traversal, from the exact Own-GAME callback. Generic renSpriteCameraRender and independent fade remain unchanged; no guessed SDK default word, asset flag/mask/color mutation or per-frame allocation.",
     "ordinary_geometry": "Positive ordinary Sprite axes use pinned GAME binary32 reciprocal plus0.5 before integer truncation; destination edges use the source row-dependent0.99999/0.9999 bias. Fractional-origin correction rounds separately before integer scissor advancement. Explosion offsets apply only after edge rounding, not inside texture phase. Artificial TMEM bands advance from the original bitmap origin. Signed flips and overflowing derivative sample lowering remain native extensions, not universal Original equivalence. Message modes keep their independent truncating arithmetic.",
     "minification_lowering": {
       "selection": "Positive ordinary axes use Source-rounded integral edges, reciprocal and S10.5 correction. Only derivatives outside the signed S5.10 field are decomposed into destination sample cells. Signed-flip extensions and message modes retain their independently admitted paths. No source scalar clamp/hide, signed-field wrap, CPU pixels, per-frame allocation or arbitrary geometry snap.",

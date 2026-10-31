@@ -5,6 +5,7 @@
 #include "beach_lifecycle.hpp"
 #include "rainbow_lifecycle.hpp"
 #include <memory>
+#include <optional>
 
 namespace isle::startup { class Runtime; }
 namespace isle::new_game { class Scene; }
@@ -19,6 +20,12 @@ namespace isle::cave { struct Adapter; }
 namespace isle::valley { struct Adapter; }
 namespace isle::application {
 struct RuntimeCreateResult;
+// Owning output of the actual completed Boot initialization, not a later reopen.
+// Canonical bytes remain immutable and independent of State/Store lifetime.
+struct BootLoadPublication {
+    save::GameLoadState state = save::GameLoadState::io_error;
+    save::LoadResult load{};
+};
 struct SceneRetirementView {
     const EntryIntent* entry = nullptr;
     std::int32_t source_result = 0;
@@ -33,6 +40,7 @@ struct SceneRetirementView {
     // Owning output from this scene's actual successful durable Save ACK.
     // Immutable canonical bytes/generation survive scene/session destruction.
     save::GameSnapshot published_save{};
+    std::optional<BootLoadPublication> boot_load{};
 };
 struct RuntimeConfig {
     bool require_cpu_renderer = false;

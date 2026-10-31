@@ -3,6 +3,7 @@
 
 #include "application_runtime.hpp"
 #include "game_host.hpp"
+#include "game_run_report.hpp"
 #include <array>
 #include <filesystem>
 #include <memory>
@@ -24,7 +25,7 @@ struct EpochResult {
 class Owner final {
 public:
     Owner(const rom::Snapshot&, const menu::Catalog&, application::RuntimeConfig,
-          std::filesystem::path station_directory);
+          std::filesystem::path station_directory, game_run_report::Purpose);
     ~Owner();
     Owner(const Owner&) = delete;
     Owner& operator=(const Owner&) = delete;
@@ -36,9 +37,16 @@ public:
     void request_stop() noexcept;
     bool epoch_retired() const noexcept;
     EpochResult result() const noexcept;
+    // Supply the actual main-owned cancellation and Host shutdown receipt for
+    // each admitted epoch, after GAME retirement. Never fabricates closure.
+    void observe_host_shutdown(std::uint64_t application_epoch, bool cancel_present_succeeded,
+                               const game_host::Shutdown&) noexcept;
     // Keeps main requests serviceable until actual GAME retirement, then wakes
     // and joins the persistent owner. Must run before destroying the last Host.
     void finish() noexcept;
+    // No live summary: null until the worker is joined and all admitted Host
+    // epochs have supplied actual shutdown receipts (also null when disabled).
+    const game_run_report::Recorder* terminal_evidence() const noexcept;
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

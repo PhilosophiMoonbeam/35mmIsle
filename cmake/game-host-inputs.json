@@ -1,7 +1,14 @@
 {
   "schema_version": 1,
-  "implementation": ["src/game_host.hpp", "src/game_host.cpp", "src/game_audio_driver.hpp", "src/game_audio_driver.cpp", "src/host_progress.hpp", "src/host_progress.cpp", "src/game_owner.hpp", "src/game_owner.cpp"],
+  "implementation": ["src/game_host.hpp", "src/game_host.cpp", "src/game_audio_driver.hpp", "src/game_audio_driver.cpp", "src/host_progress.hpp", "src/host_progress.cpp", "src/game_owner.hpp", "src/game_owner.cpp", "src/game_run_report.hpp", "src/game_run_report.cpp"],
   "use": "Native platform and explicit GAME-service integration. The product constructs its real Runtime ownership tree on one persistent dedicated GAME thread; SDL/LUS, endpoint I/O and optional presentation remain main-owned. This inventory is not physical-device, Windows11 runtime, Original-pacing or full-campaign qualification.",
+  "terminal_evidence": {
+    "option": "--terminal-report campaign|cold-boot DIRECTORY",
+    "path": "The actual shipping game_main/Owner/Runtime path; disabled by default, not the direct-Runtime diagnostic consumer.",
+    "observation": "Bounded separate GAME/main ledgers; scalar epoch/entry/offer/frame identity; only actual completed Host presentations; genuine owning retired-scene Save and completed-Boot load publications.",
+    "privacy_and_behavior": "No live payload, Source/profile/Store inspection, controller feedback, automatic stopping, new scheduling or pacing. Serialize only after native-owned shutdown and worker join.",
+    "scope": "Native terminal boundary evidence only. First-Mew acquisition timing needs independent public pixels; whole-tree/EOF/sealed-image/lease/Parent acceptance and real second executable Boot remain separate."
+  },
   "upstream": {
     "repository": "https://github.com/Kenix3/libultraship.git",
     "revision": "759b13401cd6903daa67a00a753066f791622e78",

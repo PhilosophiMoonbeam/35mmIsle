@@ -582,9 +582,15 @@ struct Runtime::Impl {
         if (completed_source&&stopping) return false;
         if (completed_source&&config.scene_retired) {
             if (!entry||!result) return fail(ISLE_GAME_INVALID_STATE,"retired scene lost its original entry/result");
+            std::optional<BootLoadPublication> boot_load;
+            if (entry.intent().operation==ISLE_APPLICATION_ENTRY_BOOT) {
+                if (const auto* initialized=state.save_initialization())
+                    boot_load.emplace(BootLoadPublication{initialized->state,initialized->load});
+            }
             config.scene_retired(config.retirement_user,{&entry.intent(),*result,beach.get(),post.get(),rainbow.get(),
                 course_pointer<tunnel::Lifecycle>(),course_pointer<volcano::Lifecycle>(),course_pointer<river::Lifecycle>(),
-                course_pointer<cave::Lifecycle>(),course_pointer<valley::Lifecycle>(),std::move(published_save)});
+                course_pointer<cave::Lifecycle>(),course_pointer<valley::Lifecycle>(),std::move(published_save),
+                std::move(boot_load)});
         }
         beach.reset();
         rainbow.reset();

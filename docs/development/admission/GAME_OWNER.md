@@ -15,6 +15,8 @@ Dedicated GAME ownership, product retirement, and the recorded qualification bou
 - [Cross-collection initial thread stops](#cross-collection-initial-thread-stops)
 - [Direct product, failure and installed Runtime qualification](#direct-product-failure-and-installed-runtime-qualification)
 - [Older empty-root campaign remains rejected](#older-empty-root-campaign-remains-rejected)
+- [Passive shipping terminal evidence](#passive-shipping-terminal-evidence)
+- [Completed development campaign](#completed-development-campaign)
 
 ## Native product dedicated GAME owner
 
@@ -360,4 +362,68 @@ Rejection record:
 
 
 
+
+## Passive shipping terminal evidence
+
+`--terminal-report campaign|cold-boot DIRECTORY` observes the actual
+`game_main → game_owner::Owner → Runtime` path, not a direct-Runtime diagnostic.
+Disabled mode constructs no recorder. Enabled mode uses separate bounded
+GAME/main ledgers and copied epoch, entry, frame and offer identities. A copy ACK
+or FrameToken release is not presentation credit; actual Host completion remains
+attributed to its original pending entry across later scene retirement.
+
+The original retirement callback runs first with its unchanged borrowed view.
+Only copied scalars and owning immutable Save/completed-Boot publications enter
+the recorder. Retired Save publications are not an exhaustive every-ACK ledger;
+observed generations increase within each epoch, with gaps allowed. Qualification
+uses only the final application epoch. A legitimate initial Oak Save/Title/
+Continue detour does not impose a direct-first-course requirement.
+
+Output is unavailable until real worker join and all admitted Host shutdown
+receipts. Serialization occurs after native owners retire, uses exclusive
+no-follow file creation, and preserves prior outputs on refusal. Canonical
+payloads retain their row, epoch and generation provenance. Native predicates
+do not prove temporal Mew acquisition, public-window visibility, accepted-profile
+equality, a second process launch, or external OS custody.
+
+Independent planner/reviewer findings produced failing-before regressions for
+the first-Oak detour and `linked/` directory-symlink bypass. Both are corrected;
+the integrated Release build and all 63 CPU CTests pass. The actual installed
+candidate is `daa01ecac4911feed0e2e63ff95a1a82517ddb842fa65629e1e3e1a937a6ef5d`,
+built from the recorded implementation bytes before publication:
+
+| Actual installed scenario | Native exit | Native evidence | Observed public surface |
+|---|---:|---|---|
+| Default, report disabled | 0 | No report output | Animated intro; ordinary Start input |
+| Campaign, closed early | 1 | Valid, component closure complete, campaign incomplete | Title/New Game → active Name card |
+| Cold purpose, empty profile | 1 | Valid, component closure complete, missing Boot rejected | New Game/Options; no Continue |
+
+Each used ordinary WM close, actual original-pidfd exit/reap/closure and both
+pipe EOFs, without a Native termination signal or watchdog expiry. Requested
+report directories stayed empty while the game ran. Installed shader discovery
+needed no explicit override. Scope: Linux software Vulkan/OpenGL and dummy PCM;
+no full shipping campaign, positive accepted-profile cold boot, physical-device,
+Original-fidelity, Windows 11 or redistribution qualification.
+Private smoke receipt:
+`930dcab7e3fdda380ce5a806fb2571202c71004a139ba5d6bb31081aa939b10a`.
+
+## Completed development campaign
+
+A separate fresh Source-observing development run at `53c47f9` completed
+60 sequentially saved trips and all seven natural course outcomes. It earned
+four gear upgrades, all six Report signs and Mew, with 59 ordinary Report kinds
+before Rainbow/Mew and 60 after the Mew Save. Final totals are 66 Report entries
+including signs and 149,270 points. Credits18 retired with result8 after 3,639
+completed Host presentations; the later active Title8 completed 132.
+
+The Native process exited normally with code0 after approximately 4.53 hours.
+Parent postclosure production-codec checks independently validated both slots:
+generation59 and generation60; the final canonical image SHA-256 is
+`00a8b590d0fd75191156b4e74f11b7ef2ffaa90492069689da1816491cc2ee58`.
+The six preregistered selected inputs and shared diagnostic Photo object stayed
+unchanged; this is not exhaustive compiler-input custody. Source counters and
+the internal canonical reopen are development evidence only. Neither the profile
+nor any successful prefix transfers into shipping acceptance. Shipping-thread
+qualification, independent public-pixel timing, a second executable Boot and the
+cause of historical failed cases remain separate.
 

@@ -1574,9 +1574,17 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
     target_compile_options(isle-application-runtime PRIVATE
         "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
         "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
-    add_library(isle-game-owner STATIC src/game_owner.cpp src/game_owner.hpp)
+    add_library(isle-game-owner STATIC src/game_owner.cpp src/game_owner.hpp
+        src/game_run_report.cpp src/game_run_report.hpp)
     target_link_libraries(isle-game-owner PUBLIC isle-application-runtime isle-game-host PRIVATE Threads::Threads)
     isle_target_options(isle-game-owner)
+    if(BUILD_TESTING)
+        add_executable(game-run-report-tests tests/game_run_report_tests.cpp)
+        target_link_libraries(game-run-report-tests PRIVATE isle-game-owner)
+        isle_target_options(game-run-report-tests)
+        add_test(NAME game-run-report-tests COMMAND game-run-report-tests)
+        set_tests_properties(game-run-report-tests PROPERTIES LABELS "synthetic" TIMEOUT 60)
+    endif()
     add_executable(35mmisle src/game_main.cpp)
     target_link_libraries(35mmisle PRIVATE isle-game-owner)
     isle_target_options(35mmisle)

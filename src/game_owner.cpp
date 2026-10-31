@@ -39,6 +39,7 @@ struct Owner::Impl {
     const application::RuntimeConfig config;
     const std::filesystem::path station_directory;
     const std::thread::id main_thread=std::this_thread::get_id();
+    std::optional<game_run_report::Recorder> recorder;
     mutable std::mutex mutex;
     std::condition_variable changed;
     game_input::HostTransfer transfer;
@@ -58,16 +59,33 @@ struct Owner::Impl {
     void* call_argument=nullptr;
     DisplayState display_state=DisplayState::idle;
     DisplayOffer display{};
+    // Empty when disabled. Only scalar correlation crosses the existing display
+    // handoff; Host's pending copy is independently retained by main's recorder.
+    std::optional<game_run_report::FrameIdentity> display_identity;
     std::uint64_t next_display=0;
     game_input::ReadToken main_read{},game_read{};
     std::optional<game_input::ReadCompletion> main_completion;
 
     Impl(const rom::Snapshot& s,const menu::Catalog& c,application::RuntimeConfig options,
-         std::filesystem::path directory)
+         std::filesystem::path directory,game_run_report::Purpose purpose)
         :snapshot(s),catalog(c),config(options),station_directory(std::move(directory)) {
+        if (purpose!=game_run_report::Purpose::disabled) recorder.emplace(purpose);
         worker=std::thread([this] { run(); });
         std::unique_lock lock(mutex);
         changed.wait(lock,[this] { return ready; });
+    }
+    static void scene_retired(void* owner,application::SceneRetirementView view) {
+        auto& self=*static_cast<Impl*>(owner);
+        // Keep the original callback, borrowed ownership phase and exception
+        // behavior. This forwarder deliberately is not unconditionally noexcept.
+        if (self.config.scene_retired) self.config.scene_retired(self.config.retirement_user,view);
+        application::SceneRetirementView evidence;
+        std::optional<application::EntryIntent> entry;
+        if (view.entry) { entry=*view.entry;evidence.entry=&*entry; }
+        evidence.source_result=view.source_result;
+        evidence.published_save=std::move(view.published_save);
+        evidence.boot_load=std::move(view.boot_load);
+        self.recorder->game_retired(self.epoch,evidence);
     }
     void require_main() const noexcept {
         if (std::this_thread::get_id()!=main_thread) std::terminate();
@@ -191,10 +209,22 @@ struct Owner::Impl {
         while (transfer.acquire_sample(completion)==game_input::Error::none) {}
         game_read={};
     }
-    std::uint64_t offer(const scene::graphics::Completed& frame) noexcept {
+    std::uint64_t offer(const scene::graphics::Completed& frame,application::Runtime& application) noexcept {
+        std::optional<game_run_report::FrameIdentity> identity;
+        if (recorder) {
+            // Runtime/Frame are GAME-owned. Copy the real entry and ordinal
+            // before entering the handoff mutex; no borrowed pointer crosses it.
+            const auto view=application.view();
+            if (view.entry) identity=recorder->game_frame(epoch,*view.entry,frame.ordinal);
+            else {
+                identity.emplace();
+                identity->application_epoch=epoch;identity->frame_ordinal=frame.ordinal;
+            }
+        }
         std::lock_guard lock(mutex);
         if (display_state!=DisplayState::idle||next_display==std::numeric_limits<std::uint64_t>::max()) return 0;
         display={epoch,++next_display,frame.rgba,frame.width,frame.height,frame.screen_offsets};
+        if (recorder) display_identity=identity;
         display_state=DisplayState::offered;changed.notify_all();
         return display.serial;
     }
@@ -202,6 +232,7 @@ struct Owner::Impl {
         std::lock_guard lock(mutex);
         if (display_state!=DisplayState::acknowledged) return false;
         if (display.serial!=serial||display.epoch!=epoch) std::terminate();
+        if (recorder) display_identity.reset();
         display={};display_state=DisplayState::idle;changed.notify_all();return true;
     }
     struct NativeDisplay {
@@ -218,7 +249,7 @@ struct Owner::Impl {
             }
             if (!self.outstanding) {
                 if (const auto frame=self.application.completed_frame()) {
-                    self.outstanding=self.bridge.offer(frame);
+                    self.outstanding=self.bridge.offer(frame,self.application);
                     if (!self.outstanding) { self.failed=true;self.application.request_stop();return ISLE_GAME_INVALID_STATE; }
                 }
             }
@@ -238,8 +269,14 @@ struct Owner::Impl {
     }
     EpochResult run_epoch(game_input::Service& input,snap_station::Device& station,bool& completing_reset) noexcept {
         EpochResult result{};
+        std::optional<game_run_report::EpochRetirement> closure;
+        if (recorder) { closure.emplace();closure->application_epoch=epoch; }
         auto audio=game_audio::Driver::create(snapshot,audio_output());
-        if (!audio) { retain(result.message,audio.message.data());cancel_input();return result; }
+        if (!audio) {
+            retain(result.message,audio.message.data());cancel_input();
+            if (closure) recorder->game_epoch_retired(*closure);
+            return result;
+        }
         auto& driver=*audio.driver;
         host::GtlClock clock({1,1,2,true,0});
         host::Progress progress(platform(),input,driver);
@@ -264,6 +301,7 @@ struct Owner::Impl {
                 else {
                     state.emplace(profile);
                     auto options=config;options.station=&station;options.application_epoch=epoch;
+                    if (recorder) { options.retirement_user=this;options.scene_retired=scene_retired; }
                     auto made=application::Runtime::create(snapshot,catalog,*state,input,driver.session(),clock,options);
                     if (!made) retain(result.message,made.message.data());
                     else {
@@ -317,6 +355,7 @@ struct Owner::Impl {
                         if (progress.status()==host::ProgressStatus::failed) retain(result.message,progress.message());
                         progress.unbind();
                         runtime.reset();native_display.reset();
+                        if (closure) closure->runtime_retired=true;
                     }
                 }
             }
@@ -334,9 +373,14 @@ struct Owner::Impl {
                 (void)NativeDisplay::service(&*native_display);(void)progress.idle();
             }
             progress.unbind();runtime.reset();native_display.reset();
+            if (closure) closure->runtime_retired=true;
         }
         state.reset();
-        if (initialized&&input.stop().error!=game_input::Error::none) retain(result.message,"actual Input stop failed");
+        if (initialized) {
+            const auto stopped=input.stop();
+            if (stopped.error!=game_input::Error::none) retain(result.message,"actual Input stop failed");
+            if (closure) closure->input_stopped=stopped.error==game_input::Error::none;
+        }
         input.bind_printer(nullptr);cancel_input();
         if (result.disconnect_requested) station.disconnect();
         bool drained=false;
@@ -355,9 +399,18 @@ struct Owner::Impl {
         if (error(this)!=game_host::Error::none) retain(result.message,message(this));
         if (progress.status()==host::ProgressStatus::failed) retain(result.message,progress.message());
         if (!drained) retain(result.message,"actual audio shutdown did not drain");
-        if (!driver.retire()) retain(result.message,driver.message());
+        const bool driver_retired=driver.retire();
+        if (!driver_retired) retain(result.message,driver.message());
         result.successful=!result.message[0]&&!platform_failed&&drained;
         completing_reset=result.reset_requested&&!result.disconnect_requested;
+        if (closure) {
+            closure->successful=result.successful;
+            closure->reset_requested=result.reset_requested;
+            closure->disconnect_requested=result.disconnect_requested;
+            closure->audio_drained=drained;
+            closure->driver_retired=driver_retired;
+            recorder->game_epoch_retired(*closure);
+        }
         return result;
     }
     void run() noexcept {
@@ -439,21 +492,34 @@ struct Owner::Impl {
             std::lock_guard lock(mutex);call_state=CallState::completed;changed.notify_all();
         }
         DisplayOffer offered{};
+        std::optional<game_run_report::FrameIdentity> offered_identity;
         {
             std::lock_guard lock(mutex);
-            if (display_state==DisplayState::offered) { offered=display;display_state=DisplayState::copying; }
+            if (display_state==DisplayState::offered) {
+                offered=display;display_state=DisplayState::copying;
+                if (recorder) offered_identity=display_identity;
+            }
         }
         if (offered.serial) {
             if (host->error()==game_host::Error::none) {
-                if ((!host->presentation_pending()||host->cancel_present())&&
-                    host->configure_present(offered.width,offered.height))
-                    (void)host->queue_present(offered.rgba,offered.width,offered.height,offered.offsets);
+                bool available=!host->presentation_pending();
+                if (!available) {
+                    available=host->cancel_present();
+                    if (recorder) recorder->main_cancelled(available);
+                }
+                if (available&&host->configure_present(offered.width,offered.height)) {
+                    const bool queued=host->queue_present(offered.rgba,offered.width,offered.height,offered.offsets);
+                    if (recorder&&queued) recorder->main_queued(*offered_identity,offered.serial);
+                }
             }
             // Copy or explicit decline has returned. This only ends main's
             // pixel access; GAME performs the real FrameToken/Station release.
             std::lock_guard lock(mutex);display_state=DisplayState::acknowledged;changed.notify_all();
         }
-        if (host->error()==game_host::Error::none&&host->presentation_pending()) (void)host->try_present();
+        if (host->error()==game_host::Error::none&&host->presentation_pending()) {
+            const auto presented=host->try_present();
+            if (recorder) recorder->main_presented(presented,host->presentation_pending());
+        }
         observe_platform();
         std::unique_lock lock(mutex);
         changed.wait_for(lock,std::chrono::milliseconds(1),[this] {
@@ -462,8 +528,8 @@ struct Owner::Impl {
     }
 };
 Owner::Owner(const rom::Snapshot& snapshot,const menu::Catalog& catalog,application::RuntimeConfig config,
-             std::filesystem::path directory)
-    :impl_(std::make_unique<Impl>(snapshot,catalog,config,std::move(directory))) {}
+             std::filesystem::path directory,game_run_report::Purpose purpose)
+    :impl_(std::make_unique<Impl>(snapshot,catalog,config,std::move(directory),purpose)) {}
 Owner::~Owner() { finish(); }
 bool Owner::start_epoch(game_host::Host& host,const std::filesystem::path& profile,std::uint64_t epoch) noexcept {
     auto& self=*impl_;self.require_main();
@@ -489,6 +555,10 @@ bool Owner::epoch_retired() const noexcept {
 EpochResult Owner::result() const noexcept {
     std::lock_guard lock(impl_->mutex);return impl_->outcome;
 }
+void Owner::observe_host_shutdown(std::uint64_t epoch,bool cancelled,const game_host::Shutdown& closed) noexcept {
+    auto& self=*impl_;self.require_main();
+    if (self.recorder) self.recorder->main_host_shutdown(epoch,cancelled,closed);
+}
 void Owner::finish() noexcept {
     if (!impl_) return;
     auto& self=*impl_;self.require_main();
@@ -499,5 +569,11 @@ void Owner::finish() noexcept {
         std::lock_guard lock(self.mutex);self.quitting=true;self.changed.notify_all();
     }
     self.worker.join();self.host=nullptr;
+    if (self.recorder) self.recorder->joined();
+}
+const game_run_report::Recorder* Owner::terminal_evidence() const noexcept {
+    auto& self=*impl_;self.require_main();
+    if (self.worker.joinable()||!self.recorder||!self.recorder->readable()) return nullptr;
+    return &*self.recorder;
 }
 } // namespace isle::game_owner

@@ -5,6 +5,7 @@ Install the prerequisite host dependencies described in [Building the native run
 [Project README](../README.md) · [Admission index](development/ADMISSION.md)
 
 - [Native application](#native-application)
+- [Terminal evidence](#terminal-evidence)
 - [Native Snap Station](#native-snap-station)
 
 ## Application usage
@@ -43,6 +44,27 @@ Default keyboard controls:
 These bindings are exercised through ordinary SDL keyboard input in the downloaded Linux product. Gamepad/device qualification remains separate.
 
 Current candidate-specific execution evidence is in [Runtime status](STATUS.md#runtime-status) and [ADMISSION](development/ADMISSION.md); earlier campaign, numerical, photo and menu proofs do not transfer automatically to a changed executable. Historical [preview 7](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.7) remains immutable. CI builds and checks new Runtime archives without uploading them while redistribution/compliance gates remain open. Windows ROM gameplay and Windows 11 hardware remain unqualified. [LICENSING](planning/LICENSING.md#import-and-release-review-gates) governs embedded terms, linkage, source/relink delivery and publication; successful compilation or an asset-free archive is not a redistribution grant.
+
+### Terminal evidence
+
+`--terminal-report campaign DIRECTORY` or `--terminal-report cold-boot DIRECTORY`
+enables passive observation on the actual shipping GAME-owner path. Normal play
+leaves it disabled. Select an existing writable directory with none of
+`report.json`, `terminal-save.bin` or `boot-load.bin` present; existing files,
+FIFO destinations and a symlink output directory are refused.
+
+After worker join and actual native/Host shutdown, the application writes
+`report.json` and any available whole immutable canonical Save or completed-Boot
+load image. These files may contain private profile data; keep them private.
+The purpose selects a terminal evidence predicate, not scenes, inputs, progress
+or automatic stopping. Closing before that predicate is complete returns 1
+even if ordinary game shutdown succeeds; output failure also returns 1.
+
+Native completion is not whole-run acceptance. Campaign evidence still needs
+independent public pixels, including first-Mew acquisition timing. Cold-boot
+evidence still needs a genuinely separate executable launch and exact equality
+with the accepted full-campaign profile. OS process-tree, wait, pipe, sealed-image
+and external-owner closure are separate. See [the ownership contract](development/admission/GAME_OWNER.md#passive-shipping-terminal-evidence).
 
 ### Native Snap Station
 

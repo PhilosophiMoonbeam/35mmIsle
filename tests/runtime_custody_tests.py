@@ -34,6 +34,7 @@ COMPILER = None
 
 APPLICATION = r'''
 #define _GNU_SOURCE
+#include <errno.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <link.h>
@@ -91,6 +92,13 @@ int main(int argc, char **argv) {
     if (!strcmp(argv[1], "exit7")) return 7;
     if (!strcmp(argv[1], "signal")) { raise(SIGTERM); return 4; }
     if (!strcmp(argv[1], "sleep")) { sleep(10); return 0; }
+    if (!strcmp(argv[1], "invalid-data-map")) {
+        errno = 0;
+        void *mapped = mmap(0, 4096, PROT_READ | PROT_WRITE, MAP_PRIVATE, -1, 0);
+        if (mapped != MAP_FAILED || errno != EBADF) return 33;
+        puts("native-data-ebadf-handled");
+        return 0;
+    }
     if (!strcmp(argv[1], "live-output")) {
         if (argc < 3 || write(1, "stage-one\n", 10) != 10) return 30;
         int fd = open(argv[2], O_RDONLY);
@@ -545,6 +553,13 @@ class NativeCustodyTests(unittest.TestCase):
                 if mapping['inode'] == data.stat().st_ino]
         self.assertTrue(rows)
         self.assertTrue(all('x' not in row['permissions'] and not row['immutable_custody'] for row in rows))
+
+    def test_nonexecuting_invalid_mapping_preserves_kernel_error_handling(self):
+        self.manifest()
+        receipt = self.run_target(mode='invalid-data-map')
+        self.assert_admitted(receipt)
+        self.assertEqual(receipt['streams']['stdout']['preview_utf8'],
+                         'native-data-ebadf-handled\n')
 
 
     def test_transient_original_inode_exec_and_protection_are_refused_before_completion(self):

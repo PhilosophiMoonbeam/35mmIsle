@@ -286,7 +286,7 @@ class SyscallAdmission:
         if info[0] != 'entry':
             return False
         number, arguments = info[1:]
-        return ((number == 9 and not (arguments[3] & 0x20)) or
+        return ((number == 9 and arguments[2] & 4 and not (arguments[3] & 0x20)) or
                 (number in (10, 329) and arguments[2] & 4))
 
     def _dispatch(self, thread):
@@ -386,13 +386,12 @@ class SyscallAdmission:
                 raise SyscallCustodyError('Invalid file-backed mmap descriptor')
             metadata = os.stat(f'/proc/{thread.tid}/fd/{descriptor}')
             identity = _identity(metadata)
-            executable = bool(arguments[2] & 4)
-            if executable and (not stat.S_ISREG(metadata.st_mode) or identity not in self.identities):
+            if not stat.S_ISREG(metadata.st_mode) or identity not in self.identities:
                 raise SyscallCustodyError('Unadmitted file-backed executable mmap')
             self._record('file_mmap_entry', tid=thread.tid, descriptor=descriptor,
                          size=arguments[1], protection=arguments[2], flags=arguments[3],
-                         offset=arguments[5], identity=identity, executable=executable,
-                         custody='sealed_image' if identity in self.identities else 'unprotected_data')
+                         offset=arguments[5], identity=identity, executable=True,
+                         custody='sealed_image')
         else:
             first, size, protection = arguments[:3]
             if not size or first > _MAX_ADDRESS - size:

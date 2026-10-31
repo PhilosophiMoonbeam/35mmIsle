@@ -92,11 +92,13 @@ actual post-PREINIT fork; its origin is not inferred from that observation.
 The documented [D-Bus autolaunch behavior](https://dbus.freedesktop.org/doc/dbus-launch.1.html)
 supports an environment hypothesis, not retrospective caller attribution.
 
-Nonexecuting mapped data and anonymous executable/JIT mappings are explicitly
-recorded **without immutable custody**. Actual locale data and anonymous
-renderer/RSP work require these already-declared exclusions; no inode-name
-exception, ignored unknown file-backed execution or fabricated capability is
-added. Kernel vDSO remains independently witnessed. Shader/ICD/data bytes,
+Loader checkpoints record nonexecuting data and anonymous executable/JIT mappings
+**without immutable custody**. Ordinary nonexecuting mmaps remain traced, but do
+not quiesce sibling threads or produce critical-admission journal pairs; kernel
+errors remain available to the application. Any later file-backed execution
+still requires full admission. Locale data and renderer/RSP work use these
+existing exclusions; no inode-name exception or unknown file-backed execution is
+accepted. Kernel vDSO remains independently witnessed. Shader/ICD/data bytes,
 private COW/JIT contents, external services, exhaustive compiler closure,
 hardware/hearing and Windows 11 execution are not qualified by this result.
 Historical campaign/path-custody failures remain unchanged. This is bounded

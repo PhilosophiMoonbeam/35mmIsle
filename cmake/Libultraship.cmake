@@ -4,7 +4,8 @@ include(FetchContent)
 find_package(Git REQUIRED)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_LIST_DIR}/dependencies.json"
-    "${CMAKE_CURRENT_LIST_DIR}/patches/lus-host-lifetime.patch")
+    "${CMAKE_CURRENT_LIST_DIR}/patches/lus-host-lifetime.patch"
+    "${CMAKE_CURRENT_LIST_DIR}/patches/lus-controller-deadzone.patch")
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "^(Linux|Windows)$" OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "The procedural LUS host probe supports Linux x64 and Windows x64 only")
@@ -135,18 +136,22 @@ if(NOT _isle_archive_result EQUAL 0)
 endif()
 file(ARCHIVE_EXTRACT INPUT "${_isle_lus_archive}" DESTINATION "${_isle_lus_staging}")
 set(_isle_lifetime_patch "${CMAKE_CURRENT_LIST_DIR}/patches/lus-host-lifetime.patch")
+set(_isle_controller_deadzone_patch "${CMAKE_CURRENT_LIST_DIR}/patches/lus-controller-deadzone.patch")
 # Exact-pin, three-context-line hunks are applied after each fresh committed-byte
 # export. Ship::ControlDeck owns the caches used by its LUS::ControlDeck subclass.
+# ControllerStick includes exact deadzone boundaries in its zero-length branch.
 # Run outside any containing worktree: patch paths are rooted at this snapshot,
 # never interpreted relative to the parent project or read-only reference checkout.
 execute_process(COMMAND "${CMAKE_COMMAND}" -E env --unset=GIT_DIR --unset=GIT_WORK_TREE
     --unset=GIT_COMMON_DIR --unset=GIT_INDEX_FILE
-    "GIT_CEILING_DIRECTORIES=${CMAKE_BINARY_DIR}" "${GIT_EXECUTABLE}" apply "${_isle_lifetime_patch}"
+    "GIT_CEILING_DIRECTORIES=${CMAKE_BINARY_DIR}" "${GIT_EXECUTABLE}" apply
+    "${_isle_lifetime_patch}" "${_isle_controller_deadzone_patch}"
     WORKING_DIRECTORY "${_isle_lus_staging}" RESULT_VARIABLE _isle_patch_result)
 if(NOT _isle_patch_result EQUAL 0)
-    message(FATAL_ERROR "The exact-base host lifetime adaptation could not be applied")
+    message(FATAL_ERROR "The exact-base native host adaptations could not be applied")
 endif()
 file(SHA256 "${_isle_lifetime_patch}" _isle_lifetime_digest)
+file(SHA256 "${_isle_controller_deadzone_patch}" _isle_controller_deadzone_digest)
 file(SHA256 "${_isle_lus_archive}" _isle_lus_archive_digest)
 
 # Upstream downloads stb without a digest. Replace precisely that acquisition statement
@@ -229,6 +234,7 @@ file(WRITE "${CMAKE_BINARY_DIR}/isle-host-dependencies.txt"
     "LUS_source=immutable git archive; host_patch_scope=build-private snapshot only\n"
     "LUS_archive_sha256=${_isle_lus_archive_digest}\n"
     "host_lifetime_patch_sha256=${_isle_lifetime_digest}\n"
+    "controller_deadzone_patch_sha256=${_isle_controller_deadzone_digest}\n"
     "ImGui=4806a1924ff6181180bf5e4b8b79ab4394118875 + LUS imgui-fixes-and-config.patch\n"
     "ThreadPool=097aa718f25d44315cadb80b407144ad455ee4f9\n"
     "prism=1de054450e7b3c5f777d2e3dfcb228ad120c329d\n"

@@ -5,7 +5,7 @@
   "upstream": {
     "repository": "https://github.com/Kenix3/libultraship.git",
     "revision": "759b13401cd6903daa67a00a753066f791622e78",
-    "existing_adaptation": "cmake/patches/lus-host-lifetime.patch, applied only to the existing immutable build-private LUS snapshot by cmake/Libultraship.cmake",
+    "existing_adaptation": "cmake/patches/lus-host-lifetime.patch and cmake/patches/lus-controller-deadzone.patch, applied only to the existing immutable build-private LUS snapshot by cmake/Libultraship.cmake",
     "patterns_reused_without_API_changes": ["src/host_probe.cpp", "src/model_preview.cpp", "src/audio_transport.cpp"],
     "read_boundaries": [
       "src/fast/Fast3dWindow.cpp:27-78,78-140,162-214",
@@ -16,6 +16,8 @@
       "src/libultraship/controller/controldeck/ControlDeck.cpp:10-79",
       "src/libultraship/controller/controldevice/controller/Controller.cpp:24-75",
       "src/ship/controller/controldeck/ControlDeck.cpp:29-56,84-113",
+      "src/ship/controller/controldevice/controller/ControllerStick.cpp:233-278,416-424",
+      "src/libultraship/window/gui/InputEditorWindow.cpp:644-672",
       "src/ship/config/Config.cpp:15-18,202-224",
       "src/ship/config/ConsoleVariable.cpp:251-287"
     ],

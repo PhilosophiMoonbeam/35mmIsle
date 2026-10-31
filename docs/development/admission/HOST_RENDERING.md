@@ -80,6 +80,14 @@ The host dependency setup required OpenGL **and GLES2 development headers** as w
 
 The scoped adaptation and original host owner release GUI/control-deck/resource/interpreter/backend owning references after final use, shut ImGui down while the OpenGL context exists, and reject actual SDL/window/context initialization failures rather than presenting a null backend as success. It is a development host-lifetime adaptation, not game behavior, general multi-context support or an upstream SDK transplant. The native probe mounts only the pinned renderer's OpenGL shader resources and preserves its MIT notices; no game archive is substituted.
 
+### Configured controller deadzone endpoints
+
+`cmake/patches/lus-controller-deadzone.patch` changes the pinned `Ship::ControllerStick::Process` neutral comparison from `<` to `<=`. The SDK input editor permits deadzones from 0% through 100%. Previously, neutral input at 0% and full cardinal input at 100% entered a zero-divisor calculation and converted NaN to `int8_t`. The boundary correction preserves interior rescaling, octagonal limits and the existing sensitivity semantics; it does not introduce a replacement normalizer or additional setting clamps.
+
+Both host patches apply only to the fresh build-owned git-archive snapshot. Their individual SHA-256 identities appear in `isle-host-dependencies.txt` and runtime composition, together with the selected prepared source tree. The reference checkout remains unchanged.
+
+`lus-controller-stick-tests` exercises the compiled SDK's public settings and `UpdatePad` with real Config/CVar ownership and deterministic raw-axis inputs. It checks output coordinates and floating-point invalid/divide-by-zero flags, because the old NaN conversion could appear to return zero. The Linux GCC before/after consumer failed the five singular endpoint cases before the patch and passed all ten cases afterward; interior threshold/rescaling and diagonal behavior remained unchanged. The permanent regression and existing `game-input-tests` also passed. Registration supports the host build on both target platforms; this observation is not Windows 11, physical-device, hardware-input or campaign qualification.
+
 ### Current decoder verification and CI declaration
 
 The root build includes explicit-source `isle-vpk0` and `vpk0-tests`, preserving existing libraries, native thread linkage and process FP settings. GCC Debug/Release and Clang ASan+UBSan each passed all five synthetic executables. Checks remain active in Release. The decoder uses caller-owned nonoverlapping storage without allocations; body failures may leave partial output, unpublished unless successful.

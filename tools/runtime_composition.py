@@ -226,6 +226,7 @@ def source_identities(inputs):
     lus_identity.update({'selected_prepared_tree': tree_identity(lus, names),
                          'archive_sha256': digest(inputs['lus_archive']),
                          'host_patch_sha256': digest(root / 'cmake/patches/lus-host-lifetime.patch'),
+                         'controller_deadzone_patch_sha256': digest(root / 'cmake/patches/lus-controller-deadzone.patch'),
                          'imgui_patch_sha256': digest(lus / 'cmake/dependencies/patches/imgui-fixes-and-config.patch'),
                          'preparation_recipe_sha256': digest(root / 'cmake/Libultraship.cmake')})
     result['libultraship'] = lus_identity

@@ -1,0 +1,12 @@
+diff --git a/src/ship/controller/controldevice/controller/ControllerStick.cpp b/src/ship/controller/controldevice/controller/ControllerStick.cpp
+--- a/src/ship/controller/controldevice/controller/ControllerStick.cpp
++++ b/src/ship/controller/controldevice/controller/ControllerStick.cpp
+@@ -239,7 +239,7 @@ void ControllerStick::Process(int8_t& x, int8_t& y) {
+ 
+     // create scaled circular dead-zone
+     auto len = sqrt(ux * ux + uy * uy);
+-    if (len < mDeadzone) {
++    if (len <= mDeadzone) {
+         len = 0;
+     } else if (len > MAX_AXIS_RANGE) {
+         len = MAX_AXIS_RANGE / len;

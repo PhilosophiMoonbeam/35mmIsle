@@ -742,6 +742,18 @@ if(BUILD_TESTING)
     isle_target_options(game-input-tests)
     add_test(NAME game-input-tests COMMAND game-input-tests)
 
+    if(TARGET libultraship)
+        add_executable(lus-controller-stick-tests tests/lus_controller_stick_tests.cpp)
+        target_link_libraries(lus-controller-stick-tests PRIVATE libultraship)
+        isle_target_options(lus-controller-stick-tests)
+        target_compile_options(lus-controller-stick-tests PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
+        add_test(NAME lus-controller-stick-tests
+            COMMAND lus-controller-stick-tests "${CMAKE_CURRENT_BINARY_DIR}")
+        set_tests_properties(lus-controller-stick-tests PROPERTIES LABELS "synthetic;host-input" TIMEOUT 15)
+    endif()
+
     add_executable(snap-station-tests tests/snap_station_tests.cpp)
     target_link_libraries(snap-station-tests PRIVATE isle-snap-station)
     isle_target_options(snap-station-tests)

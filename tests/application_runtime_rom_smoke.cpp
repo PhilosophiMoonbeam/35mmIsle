@@ -14,9 +14,12 @@
 // Resume modes copy preserved input and start a new diagnostic scheduling epoch;
 // inherited campaign progress is never fresh-profile or newly earned evidence.
 // Oak-cancel preserves mid-print retirement; Native5-empty preserves Source13.
+// beach-magikarp-local-copy is a direct native-admission regression fixture,
+// NOT gameplay, campaign progress, opaque-case diagnosis or qualification.
 // Exit0 requires the entire selected scenario; exit1 is any failure.
 // Each run predeclares bounded artifacts in its new owned proof root.
 #include "application_runtime.hpp"
+#include "actor_owner.hpp"
 #include "native_public_campaign.hpp"
 #include "camera_check_source.h"
 #include "canonical_frame_capture.hpp"
@@ -71,7 +74,7 @@ namespace in = isle::game_input;
 namespace startup = isle::startup;
 using Time = std::chrono::steady_clock;
 constexpr std::uint16_t button_a = 0x8000, button_b = 0x4000, button_z = 0x2000, button_start = 0x1000;
-enum class Mode { ingress, course, native_course, menus, credits17, credits18, credits19 };
+enum class Mode { ingress, course, native_course, beach_magikarp_local_copy, menus, credits17, credits18, credits19 };
 bool menu_mode(Mode mode) noexcept { return mode>=Mode::menus; }
 std::int32_t credit_argument(Mode mode) noexcept {
     return mode==Mode::credits17?17:mode==Mode::credits18?18:mode==Mode::credits19?19:0;
@@ -179,10 +182,23 @@ struct PostEvidence {
     std::int32_t title_result=-1;
     isle::save::GameSnapshot committed{};
 };
+struct MagikarpCopyEvidence {
+    bool attempted=false,local_definition=false,proven=false;
+    IsleGameResult fence=ISLE_GAME_INVALID_STATE,context=ISLE_GAME_INVALID_STATE;
+    IsleGameResult current_block=ISLE_GAME_INVALID_STATE,add_one=ISLE_GAME_INVALID_STATE;
+    IsleGameResult model=ISLE_GAME_INVALID_STATE,factory_position=ISLE_GAME_INVALID_STATE;
+    IsleGameResult trigger_model=ISLE_GAME_INVALID_STATE,trigger_position=ISLE_GAME_INVALID_STATE;
+    std::array<IsleGameResult,3> postcopy{{ISLE_GAME_INVALID_STATE,ISLE_GAME_INVALID_STATE,ISLE_GAME_INVALID_STATE}};
+    IsleGameResult position=ISLE_GAME_INVALID_STATE;
+    std::size_t block_index=0;
+    IsleGameVec3 initial_position{},trigger_root{},final_position{};
+    IsleGameModelTransform placement{};
+};
 struct Evidence {
     Mode mode=Mode::ingress;
     CourseEvidence course;
     PostEvidence post;
+    MagikarpCopyEvidence magikarp_copy;
     isle::private_post_course::Probe* menu_probe=nullptr;
     std::array<char,512> menu_failure{};
     std::uint64_t menu_entries=0,menu_updates=0,menu_frames=0,menu_presentations=0;
@@ -245,6 +261,132 @@ struct Evidence {
     bool audio_drained = false,host_released = false,main_music = false;
     bool native_retirement_deadline = false;
 };
+struct MagikarpCopyCall {
+    MagikarpCopyEvidence* evidence;
+    IsleBeachLifecycleSource* source=nullptr;
+    IsleBeachLifecycleBlock* block=nullptr;
+    IsleGameObject* object=nullptr;
+    IsleGameModel* model=nullptr;
+    IsleGameModel* trigger_model=nullptr;
+};
+// This entire C-fenced callback has only trivial automatic records. A native
+// Source fault may longjmp through it; assertions and C++ owners stay outside.
+void add_magikarp_local_copy(IslePlayerSource* player,void* user) {
+    auto* call=static_cast<MagikarpCopyCall*>(user);
+    auto* evidence=call->evidence;
+    evidence->context=isle_beach_lifecycle_native_context(player->object,&call->source);
+    if(evidence->context!=ISLE_GAME_OK || !call->source)return;
+    evidence->current_block=isle_beach_lifecycle_native_current_block(call->source,&call->block);
+    if(evidence->current_block!=ISLE_GAME_OK || !call->block)return;
+    IsleBeachLifecyclePokemonDef definition=call->source->magikarp;
+    evidence->local_definition=&definition!=&call->source->magikarp;
+    // Exact written subset of Original beach55C110's automatic spawn. No
+    // behavior/path, fabricated factory identity, profile, gear or RNG stores.
+    IsleBeachLifecycleSpawn spawn;
+    spawn.id=129;
+    spawn.translation={0,0,0};
+    spawn.euler={0,0,0};
+    spawn.scale={1,1,1};
+    evidence->add_one=isle_beach_lifecycle_native_add_one(
+        call->source,call->block,call->block,&spawn,&definition,&call->object);
+    if(evidence->add_one!=ISLE_GAME_OK || !call->object)return;
+    evidence->model=isle_beach_lifecycle_native_model(call->source,call->object,&call->model);
+    if(evidence->model!=ISLE_GAME_OK || !call->model)return;
+    evidence->factory_position=isle_beach_lifecycle_native_model_position(call->source,call->model,1,&evidence->initial_position);
+    if(evidence->factory_position!=ISLE_GAME_OK)return;
+    // Original's post-factory DObj-root to AUX placement copy, through the real
+    // retained Player trigger and native model APIs, not authored coordinates.
+    evidence->trigger_model=isle_beach_lifecycle_native_model(call->source,player->object,&call->trigger_model);
+    if(evidence->trigger_model!=ISLE_GAME_OK || !call->trigger_model)return;
+    evidence->trigger_position=isle_beach_lifecycle_native_model_position(
+        call->source,call->trigger_model,0,&evidence->trigger_root);
+    if(evidence->trigger_position!=ISLE_GAME_OK)return;
+    evidence->postcopy[0]=isle_beach_lifecycle_native_set_position_component(
+        call->source,call->model,0,evidence->trigger_root.x);
+    if(evidence->postcopy[0]!=ISLE_GAME_OK)return;
+    evidence->postcopy[1]=isle_beach_lifecycle_native_set_position_component(
+        call->source,call->model,1,evidence->trigger_root.y);
+    if(evidence->postcopy[1]!=ISLE_GAME_OK)return;
+    evidence->postcopy[2]=isle_beach_lifecycle_native_set_position_component(
+        call->source,call->model,2,evidence->trigger_root.z);
+    if(evidence->postcopy[2]!=ISLE_GAME_OK)return;
+    evidence->position=isle_beach_lifecycle_native_model_position(call->source,call->model,1,&evidence->final_position);
+}
+void exercise_magikarp_local_copy(const isle::beach::Lifecycle& lifecycle,MagikarpCopyEvidence& evidence) {
+    require(!evidence.attempted && !lifecycle.graphics_busy() &&
+        lifecycle.status()==isle::beach::LifecycleStatus::running &&
+        lifecycle.error()==ISLE_GAME_OK && lifecycle.source().status==ISLE_GAME_OK &&
+        lifecycle.source().player,"local-copy regression requires the quiescent real running Beach");
+    evidence.attempted=true;
+    MagikarpCopyCall call{&evidence};
+    evidence.fence=isle_player_source_call(lifecycle.source().player,add_magikarp_local_copy,&call);
+    require(evidence.fence==ISLE_GAME_OK,"local-copy native spawn escaped through the Player Source failure fence");
+    require(evidence.context==ISLE_GAME_OK && call.source==&lifecycle.source(),
+        "local-copy native_context did not resolve the actual Runtime Beach Source");
+    require(evidence.current_block==ISLE_GAME_OK && call.block && evidence.local_definition,
+        "local-copy fixture did not use its actual current block and automatic descriptor copy");
+    require(evidence.add_one==ISLE_GAME_OK,
+        "Beach native_add_one rejected the Source-local Magikarp descriptor value copy");
+    // The automatic definition is already out of scope here. All following
+    // observations must still resolve the real returned actor/model lifetime.
+    require(call.object && evidence.model==ISLE_GAME_OK && call.model &&
+        evidence.factory_position==ISLE_GAME_OK && evidence.trigger_model==ISLE_GAME_OK &&
+        evidence.trigger_position==ISLE_GAME_OK && evidence.postcopy[0]==ISLE_GAME_OK &&
+        evidence.postcopy[1]==ISLE_GAME_OK && evidence.postcopy[2]==ISLE_GAME_OK &&
+        evidence.position==ISLE_GAME_OK,
+        "local-copy native factory/trigger model/postcopy did not complete");
+    const auto* owner=lifecycle.actors();
+    const auto* world=lifecycle.world_owner();
+    require(owner && world && world->current() &&
+        static_cast<const void*>(call.block)==world->current(),
+        "local-copy factory did not use the actual current World block");
+    const auto instance=owner->instance(call.object);
+    const auto* actor=owner->source(instance);
+    const auto membership=owner->membership(instance);
+    require(instance && actor && actor->object==call.object && actor->id==129 &&
+        actor->game==call.source->player->game && actor->baseBlock==world->current() &&
+        owner->object(instance)==call.object && owner->native_model(instance)==call.model &&
+        owner->registered(instance) && membership.logical && membership.registered &&
+        !membership.retiring && !membership.joined,
+        "local-copy factory bypassed actual Actor129/current-block/Owner membership");
+    const auto& resources=lifecycle.actor_resources();
+    const auto& definition=resources.definition(0x802cbff4u);
+    require(definition.actor_id==call.source->magikarp.id &&
+        definition.factory_identity==call.source->magikarp.initialize_identity &&
+        definition.change_block_identity==call.source->magikarp.update_identity &&
+        definition.remove_identity==call.source->magikarp.remove_identity &&
+        definition.initialization<resources.initializations().size(),
+        "local-copy descriptor differs from the actual immutable admitted resource tuple");
+    const auto& initialization=resources.initializations()[definition.initialization];
+    require(actor->initData==&initialization && actor->animSetup==&initialization.setup &&
+        initialization.setup.initial_header<resources.headers().size() &&
+        actor->animHeader==&resources.headers()[initialization.setup.initial_header] &&
+        actor->stateProc,
+        "local-copy Actor129 did not execute the complete admitted native factory");
+    const IsleGameModelPlacement* placement=nullptr;
+    require(isle_game_model_validate_binding(actor->game,call.object,call.model)==ISLE_GAME_OK &&
+        isle_game_model_placement(actor->game,call.model,&placement)==ISLE_GAME_OK && placement &&
+        placement->mode==ISLE_GAME_MODEL_PLACEMENT_RTS,
+        "local-copy factory model lacks its canonical native placement binding");
+    isle::world::GroundResult ground{};
+    const IsleGameVec3 expected_position{0,world->ground_at(0,0,ground)?ground.height:0.0f,0};
+    const IsleGameVec3 expected_scale{
+        initialization.scale.x*.1f,initialization.scale.y*.1f,initialization.scale.z*.1f};
+    const auto equal=[](IsleGameVec3 a,IsleGameVec3 b) {
+        return a.x==b.x && a.y==b.y && a.z==b.z;
+    };
+    require(equal(evidence.initial_position,expected_position) &&
+        equal(evidence.final_position,evidence.trigger_root) &&
+        equal(placement->transform.position,evidence.trigger_root) &&
+        equal(placement->transform.rotation,{0,0,0}) && equal(placement->transform.scale,expected_scale),
+        "local-copy factory/postcopy changed canonical ground position, trigger root, Euler or initialization scale");
+    require(lifecycle.error()==ISLE_GAME_OK && call.source->status==ISLE_GAME_OK &&
+        call.source->player->status==ISLE_GAME_OK,
+        "local-copy success left an actual native Source or Lifecycle failure");
+    evidence.block_index=world->current()->index;
+    evidence.placement=placement->transform;
+    evidence.proven=true;
+}
 constexpr std::array<const char*,5> apple_gear_boundaries{{
     "entry","course_retirement","returned_Oak","acknowledged_Save","cold_reopen"}};
 template<class Profile>
@@ -431,6 +573,29 @@ void write_report(const std::filesystem::path& root,const Evidence& e,const std:
         << "scene_selection=original_Manager_results_only\n"
         << "hardware_numerical_pixel_parity_full_game_Windows_runtime=not_claimed\n";
     if (!failure.empty()) out << "failure=" << failure << '\n';
+    if(e.mode==Mode::beach_magikarp_local_copy) {
+        const auto& m=e.magikarp_copy;
+        out<<"private_regression=beach-magikarp-local-copy\n"
+            <<"fixture_scope=direct_native_admission_NOT_gameplay_NOT_qualification_NOT_opaque_case_diagnosis\n"
+            <<"fixture_trigger=actual_Player_model_root_after_actual_factory\n"
+            <<"descriptor=automatic_value_copy_of_actual_Source_magikarp\n"
+            <<"written_spawn_fields=id129_translation0_euler0_scale1_ONLY\n"
+            <<"malformed_tuple_cases=not_run_sticky_native_failures_not_cleared\n"
+            <<"local_copy_attempted="<<m.attempted<<" distinct_automatic_descriptor="<<m.local_definition
+            <<" Source_call_fence_result="<<int(m.fence)<<" native_context_result="<<int(m.context)
+            <<" native_current_block_result="<<int(m.current_block)<<" native_add_one_result="<<int(m.add_one)<<'\n'
+            <<"native_model_result="<<int(m.model)<<" factory_position_result="<<int(m.factory_position)
+            <<" trigger_model_result="<<int(m.trigger_model)<<" trigger_root_result="<<int(m.trigger_position)
+            <<" postcopy_x_result="<<int(m.postcopy[0])<<" postcopy_y_result="<<int(m.postcopy[1])
+            <<" postcopy_z_result="<<int(m.postcopy[2])<<" canonical_position_result="<<int(m.position)<<'\n'
+            <<"actual_Actor129_model_Owner_membership_current_block_transforms_proven="<<m.proven
+            <<" current_block_index="<<m.block_index<<'\n'
+            <<"factory_position="<<m.initial_position.x<<','<<m.initial_position.y<<','<<m.initial_position.z
+            <<" trigger_root="<<m.trigger_root.x<<','<<m.trigger_root.y<<','<<m.trigger_root.z
+            <<" postcopy_position="<<m.final_position.x<<','<<m.final_position.y<<','<<m.final_position.z<<'\n'
+            <<"canonical_rotation="<<m.placement.rotation.x<<','<<m.placement.rotation.y<<','<<m.placement.rotation.z
+            <<" canonical_initialization_scale="<<m.placement.scale.x<<','<<m.placement.scale.y<<','<<m.placement.scale.z<<'\n';
+    }
     if(e.saved_input) {
         e.saved_input->write_evidence(out);
         out<<"private_qualification="<<(e.resume_river?"campaign-resume-river":
@@ -1111,13 +1276,15 @@ public:
         }
         require(e_.entries==(e_.mode==Mode::course?9u:scene_count) && e_.cold_stop && e_.blocked_claim && e_.resumed_claim && e_.boot_wait && e_.boot_complete &&
             e_.menu_result && e_.name_confirming && e_.name_confirmed && e_.oak_result && e_.frame_hold &&
-            (e_.mode==Mode::course || e_.stop_while_held) &&
+            (e_.mode==Mode::course || e_.mode==Mode::beach_magikarp_local_copy || e_.stop_while_held) &&
             e_.input_hold_audio>0 && e_.frame_hold_audio>0 && e_.beach_camera_changes>0 && e_.main_music &&
             std::all_of(e_.captured.begin(),e_.captured.end(),[](bool value){return value;}),
             "actual application source/UI/backpressure/window/audio acceptance evidence is incomplete");
         for (std::size_t n=0;n<scene_count;++n)
             require(e_.updates[n]>0 && e_.frames[n]>0 && e_.presentations[n]>0,
                 "an original Manager scene lacked genuine Source updates, canonical draws or copied LUS presentation");
+        if(e_.mode==Mode::beach_magikarp_local_copy)
+            require(e_.magikarp_copy.proven,"local-copy regression stopped without the actual native factory/postcopy proof");
         if (e_.mode==Mode::course) {
             const auto& c=e_.course;
             const bool complete=c.intro_seen && c.intro_finished && c.tutorial_seen && c.tutorial_input_released &&
@@ -3090,6 +3257,13 @@ private:
         require(application_.release_completed()==ISLE_GAME_OK,application_.message());
         ++e_.released_frames;
         require(!application_.completed_frame(),"Runtime retained completed frame access after actual caller release");
+        if(e_.mode==Mode::beach_magikarp_local_copy && e_.frame_hold && !e_.magikarp_copy.attempted) {
+            const auto* beach=application_.view().beach;
+            require(beach,"local-copy regression lost the real Beach Lifecycle");
+            exercise_magikarp_local_copy(*beach,e_.magikarp_copy);
+            application_.request_stop();
+            stop_requested_=true;
+        }
     }
     void present() {
         if (!timeline_.host.presentation_pending()) return;
@@ -3349,6 +3523,13 @@ int run(const std::filesystem::path& rom,const std::filesystem::path& root,Mode 
     }
     write_report(root,evidence,failure);
     if (!failure.empty()) {std::cerr << "private actual application integration: " << failure << '\n';return 1;}
+    if(mode==Mode::beach_magikarp_local_copy) {
+        std::cout<<"private_native_Beach_local_definition_Actor129_model_Owner_current_block_postcopy=passed"
+            <<" real_native_GPU_Input_Audio_Host_retirement=passed"
+            <<" fixture=NOT_gameplay_NOT_qualification"
+            <<" private_report=proof/application-runtime-report.txt\n";
+        return 0;
+    }
     if(mode==Mode::native_course) {
         if(evidence.resume_river)
             std::cout<<"actual_loaded_external_natural_Apple_only_River3_required_species"
@@ -3421,7 +3602,7 @@ int main(int argc,char** argv) {
 #endif
     try {
         require(argc==3 || argc==4 || argc==5 || argc==6,
-            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|campaign|replay-stop|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river|-volcano] INPUT_PROFILE_DIRECTORY; only campaign-resume-one accepts optional final COURSE digit 0..6 (existing empty absolute nonsymlink private directory)");
+            "expected PRIVATE_ROM NEW_OWNED_ROOT [ingress|course|beach-magikarp-local-copy|campaign|replay-stop|campaign-retained|campaign-first-unlock|campaign-lapras|native3-empty-campaign|native0..native6[-oak-cancel]|native2-apple|native6-fail-live|native1-event|native3-event|native5-event|native0..native5-sign|native5-empty|menus|credits17|credits18|credits19] or PRIVATE_ROM NEW_OWNED_ROOT campaign-resume[-one|-river|-volcano] INPUT_PROFILE_DIRECTORY; only campaign-resume-one accepts optional final COURSE digit 0..6 (existing empty absolute nonsymlink private directory)");
 #ifdef _WIN32
         if (argc == 4 && std::wstring_view(argv[3]) == L"campaign")
 #else
@@ -3484,11 +3665,12 @@ int main(int argc,char** argv) {
             else if(apple)captureGoal=isle::private_course::CaptureGoal::apple_evolution;
             else if(name=="campaign-lapras")captureGoal=isle::private_course::CaptureGoal::lapras_photographs;
             require(native || event || sign || apple || emptyCourse || returnedOakCancel || nativeFailLive || campaignFirstUnlock || fullCampaign || campaignRetained || campaignEmpty || resume ||
-                name=="ingress" || name=="course" || name=="menus" || name=="credits17" ||
-                name=="credits18" || name=="credits19","unknown actual Runtime qualification mode");
+                name=="ingress" || name=="course" || name=="beach-magikarp-local-copy" || name=="menus" ||
+                name=="credits17" || name=="credits18" || name=="credits19","unknown actual Runtime qualification/regression mode");
             if(native || event || sign || apple || emptyCourse || returnedOakCancel || nativeFailLive || campaignEmpty){mode=Mode::native_course;requestedCourse=emptyCourse?5:name[6]-'0';}
             else if(campaignFirstUnlock || fullCampaign || campaignRetained || resume)mode=Mode::native_course;
             else if (name=="course") mode=Mode::course;
+            else if (name=="beach-magikarp-local-copy") mode=Mode::beach_magikarp_local_copy;
             else if (name=="menus") mode=Mode::menus;
             else if (name=="credits17") mode=Mode::credits17;
             else if (name=="credits18") mode=Mode::credits18;

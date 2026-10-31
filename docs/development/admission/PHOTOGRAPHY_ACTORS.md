@@ -277,6 +277,38 @@ All 50 CPU contracts pass Debug, Release and Clang ASan+UBSan, including indepen
 
 Every accepted complete tree was stable/absent before its sole initial observation: unchanged ROM and zero known physical/permission attempts. Address/UB failures stayed fatal; leak scanning was disabled only under ptrace. Exact twelve-case scopes/executable/archive identities are in [`beach-magikarp-scene-inputs.json`](../../../cmake/beach-magikarp-scene-inputs.json); source numeric/service scope is in [`actor-photo-eligibility-inputs.json`](../../../cmake/actor-photo-eligibility-inputs.json). The following cutover qualifies genuine gated membership/scheduling/GPU focus; full Item/Player services and complete port acceptance remain open.
 
+### Runtime lifecycle descriptor copies
+
+Original `55C110.c` copies `D_beach_802CBFF4` into an automatic `PokemonDef`
+before calling `pokemonAddOne`. The native lifecycle adapter admits that copy
+by its four values—species, initializer, block update and removal identities—
+against the immutable `0x802cbff4` resource. It must not require the caller's
+descriptor address to equal the retained Source field. World membership,
+spawn ID, resource and complete factory admission remain checked.
+
+The opt-in actual-Runtime regression exercises this boundary:
+
+```sh
+cmake --build build/lus-host --target 35mmisle-application-runtime-rom-smoke
+SDL_AUDIO_DRIVER=dummy SDL_AUDIODRIVER=dummy \
+  build/lus-host/35mmisle-application-runtime-rom-smoke \
+  "$PRIVATE_ROM" "$NEW_EMPTY_ROOT" beach-magikarp-local-copy
+```
+
+The existing graphics/display prerequisites apply. The fixture reaches the real
+Beach Lifecycle through Boot/Title/Name/Oak, creates Actor129 using a local
+descriptor, performs the Original root-position postcopy, and verifies actual
+Owner membership, model binding, current block, immutable initialization and
+canonical transforms after the descriptor's lifetime ends. This lifecycle path
+transports only Source-written ID/transforms; it does not read indeterminate
+path/behavior or rewrite cached actor positions.
+
+The identical regression rejected the local copy before correction and passed
+against the corrected library, with bounded Runtime/Input/Audio/Host retirement.
+It is a direct-admission fixture, not ordinary gameplay, campaign qualification,
+Original parity, physical-device validation or proof of an older opaque failure's
+cause.
+
 ## Native photo membership, scheduling and genuine Magikarp GPU focus
 
 `actor::photo::collect_membership` follows actual native link-3 head/next order, not Owner slots, payloads or render bindings. It validates identical live canonical source/model bindings, applies the source predicate until twelve accepted entries, stops before visiting the tail and publishes a fresh zero-focus/null-tail Photo only on success. Earlier flag100 visibility effects deliberately survive a later invalid node. A focus-only projection avoids claiming full photograph serialization or the source's invalid pose-tail behavior.

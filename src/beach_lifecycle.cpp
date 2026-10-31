@@ -1239,9 +1239,10 @@ IsleGameResult isle_beach_lifecycle_native_add_one(IsleBeachLifecycleSource* s,I
     return Access::invoke(s,[&](Impl& self) {
         auto* block=block_cast(first); auto* reference=block_cast(second);
         if (!block || !definition) return ISLE_GAME_OK;
-        if (!spawn || definition!=&s->magikarp || spawn->id!=129 || !self.valid_block(block) ||
+        if (!spawn || spawn->id!=129 || !self.valid_block(block) ||
             !self.valid_block(reference) || !block->resource || !reference->resource || !self.actors)
             return ISLE_GAME_INVALID_ARGUMENT;
+        // Original 55C110 passes a stack copy; admit its immutable tuple, not its address.
         const auto definitions=self.actor_resources.definitions();
         for (std::size_t n=0;n<definitions.size();++n) {
             const auto& actual=definitions[n];

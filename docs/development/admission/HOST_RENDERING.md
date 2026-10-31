@@ -390,6 +390,11 @@ and diagnostic dummy audio. An earlier GLX launch failed before window creation
 and remains separate negative evidence; its data directory was not reused.
 The EGL result does not qualify the failed GLX configuration or physical output.
 
+Shared-renderer support changes must advance both the support fingerprints and
+the independent post-course manifest pins in `PostCourseSources.cmake`. Album
+also binds its canonical recipe seal and generator digest. These admission
+guards remain strict; updating native support alone is insufficient.
+
 Component evidence does not establish every menu animation, revision-exact
 Original parity, hardware output or actual Windows 11 gameplay.
 

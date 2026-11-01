@@ -39,6 +39,34 @@ All facts below are observed in pinned source. Proposed contracts elsewhere in t
 - Persisted bytes must use explicit schema, widths, endian and version, never native pointer sizes, C padding or compiler bitfield layout. Original checksum/version behavior and native transaction integrity are distinct obligations.
 - Differential equality proves only the fixtures exercised. All acceptance records identify coverage and unresolved uncertainty; no blanket “100% accurate” statement follows from this plan.
 
+## Approved prospective dispositions and evidence applicability
+
+The user approved the following criterion changes in Beads `bd_35mmIsle-v4u.32`, revision R32-1. Approval changes the named criteria, not product qualification.
+
+### Production gameplay ownership
+
+**Before:** a mandatory dedicated ordinary OS game thread. **After:** one serialized, creator-thread-affine production gameplay owner. Retain continuation semantics, FP initialization/control isolation, native stack alignment/capacity/overflow, independently paced service/input ordering under stalls and pause, feedback independent of presentation, backpressure, cancellation, wake-before-join, failure, reset and retirement. Required toolchain/platform coverage and WID dependencies are unchanged.
+
+The shipping `game_owner::Owner` already starts a dedicated worker and constructs State/Runtime there; Runtime caller affinity does not mean main-thread execution. The generalization does not replace that worker or establish missing thread functionality. [Production-owner evidence](../development/admission/GAME_OWNER.md#native-product-dedicated-game-owner) remains bounded to its documented candidate and observations.
+
+### Dormant Root routes and real components
+
+**Before:** mandatory natural Root ingress for End24/Credits20. **After:** exact-pinned-source reachability review plus real standalone End8/Credits20 qualification. Record that no producer was established in the reviewed source, not universal unreachability; reassess upon a legitimate producer or relevant source change.
+
+Retain every implemented component and reachable campaign/ending behavior, including natural Credits18/result8. Explicitly map downstream Gallery23 to applicable component evidence or an unresolved blocker: End8 returning 23 and ordinary Gallery22 evidence alone do not qualify Gallery23 execution/retirement. Use untouched whole ordinary-UI-earned save pairs; no authored progression, profile merging/repair, forced selectors or fabricated Root admission. Standalone completion never establishes Root reachability. Original entry execution, visible scene/save/photo/result behavior, strict provenance, once-only Source closure and lifetime/cancel/fault/retirement obligations remain.
+
+### Bounded operator and stop conditions
+
+The selected final Linux method is bounded AI pixel operation in a **new** cohort: public pixels, ordinary assigned input and one legitimate original input owner. Preserve per-operation journals, sealed images, actual Host completions, original-owner terminal/whole-tree/FD/lease closure, protected inputs and whole-profile cold-boot proof. Validate readiness and the prospective capture/ownership/safe-stop procedure before launch; no old controller or failed-profile reuse.
+
+Review each natural course return. After two repeated rides or 60 active minutes without the next progression checkpoint, stop progression under the approved safe procedure and escalate. One final campaign per authorization; no automatic restart. A numerical investigation preregisters its discriminator/falsifier and stops at two attempts or four operator-hours; attempt two requires a concrete repaired prerequisite or new discriminator. Harness failures permit one scoped prospective repair/retest, then escalate on recurrence. Exhaustion is not success or authority to continue; owned retirement remains required under unchanged deadlines.
+
+### Evidence applicability
+
+Record the exact changed criteria and affected coverage entries. Prior acceptance conclusions are not grandfathered: current qualification remains pending until evidence applicability is assessed against the revised criteria, candidate identity and retained obligations. Preserve historical receipts as observations of their actual inputs, build and scope. Authored fixtures, builds alone and source-only review cannot qualify UI-earned standalone execution or full production-runtime behavior.
+
+F02/F12, numerical fidelity, platform/backend, lifecycle and rights requirements remain binding. These decisions authorize no campaign launch/controller transfer, fresh original-reference collection, numerical tolerance change, Windows 11 provisioning or binary publication. Windows 11 remains deferred; actual native runtime evidence is still required.
+
 ## Reusable original-ROM fixture process
 
 ### Provenance and non-distribution

@@ -163,3 +163,5 @@ Supply the untouched whole ordinary-UI-earned save pair in `workdir/profile`; th
 
 The actual Linux End8 proof renders two earned photographs, advances with A, hides the message with Z and returns 23 through B after joined retirement. [Admission evidence](admission/END8.md#native-end8-component-and-deferred-source-admission) separates this component execution from the still-unqualified Root24/Credits20 producers, fresh campaign, Windows 11 runtime, hardware/hearing and Original-fidelity gates.
 
+[Approved prospective criteria](../planning/VALIDATION.md#approved-prospective-dispositions-and-evidence-applicability) distinguish pinned-source reachability review from real standalone qualification without discarding reachable behavior. End8 returning 23 does not qualify downstream Gallery23 execution/retirement; its evidence must be explicitly mapped or remain a blocker. Historical receipts are not retroactive acceptance under the revised criteria.
+

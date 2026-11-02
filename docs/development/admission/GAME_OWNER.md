@@ -443,3 +443,35 @@ supervisor termination signal or deadline exhaustion. New display/bus services
 are separately owned and retired; no old campaign/controller is adopted.
 This qualifies partial-Host failure and idle-worker wake/join only, not active
 Runtime/RPC/display/audio/reset behavior, Original fidelity or Windows11.
+
+## Current installed production startup and ordinary close
+
+Current Linux installed ELF
+`adcfe303a7b0bc20799f9f366ed8c2a308ffcf937a664d073c080e7aa3416afb`
+passes two separate bounded startup/presentation/ordinary-close cells. The
+fresh Runtime installation verifies all 108 regular files and nine symlinks
+before execution; every payload hash, size and link target remains unchanged
+after both cells. Install-time Git metadata is not an object-level reproducible
+build attestation or a release grant.
+
+| Execution cell | Renderer-resource evidence | Actual 640×480 presentation | Ordinary-close result |
+|---|---|---|---|
+| Regular staged ELF, no resource override | PID-attributed native worker opens of `stage/bin/../share/35mmisle/shaders/opengl/default.shader.glsl`; eleven actual staged executable mappings | HAL forest intro → Todd forest intro | Native/controller exit 0 in 0.264 s; both pipes EOF/closed; not sealed-custody or `ECHILD` acceptance |
+| Strict sealed-image/syscall custody, explicit **staged** resources | Exact staged application and ten staged application DSOs; no default-discovery claim | Forest fade → Nintendo forest intro | Native/controller exit 0 in 8.229 s; all 90 tasks reaped, `ECHILD`, no remaining/pending/rejected tasks, pipe EOF and retained-FD closure |
+
+The distinction is intentional: the existing sealed launcher executes memfd
+loader/application paths, while ordinary installed discovery uses
+`SDL_GetBasePath()`. A successful sealed launch cannot establish the ordinary
+package-base premise. No fake executable path, build-tree fallback promotion
+or single-run conjunction is claimed.
+
+Each cell starts with fresh empty application data, default input enabled and
+diagnostic dummy audio. Authenticated public captures show changing actual
+content; the attributed target advertises `WM_DELETE_WINDOW` before receiving
+exactly one ordinary close message. No gameplay button, F9 or terminal-report
+purpose is supplied. Startup observation is bounded to 120 s and post-close
+retirement to 60 s; neither watchdog, forced termination nor deadline expiry is
+credited. New display/bus/observer owners retire separately, and the disposable
+stage is removed after closure while its exact composition/receipts remain.
+These cells do not establish campaign/cold-boot completion, numerical fidelity,
+physical devices/hearing, Wayland, Windows 11 or publication approval.

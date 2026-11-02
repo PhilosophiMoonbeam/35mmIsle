@@ -28355,7 +28355,7 @@
     "support": "28e2dd821d5ee132ea11c87146547ef746cce5b932030d946a98d9eef9b25f50",
     "header": "0b041c5f39e3253d93ef762f7c13c5f6067cfc8e384124d972ccf92a2700eb22"
   },
-  "generator_sha256": "21f6016ec8a22baab3c711f1680d0685e50b1c37d1cf92652220c78ffa5328f5",
+  "generator_sha256": "2bfed92d4a40f0a93303cce0d35b154014f766a19c8de873620e2ab8a3d7e571",
   "native_support": {
     "src/player_root_source.h": {
       "sha256": "7442da25196a994e330c38921c7bda3e7dcd9a0450ff4a1e8ca0b30e9e26b7f1"
@@ -28451,7 +28451,13 @@
       "sha256": "a46bf69443bc26e56c5881734796766bdd79e1b39f62b54fd13958dc526c15da"
     },
     "tests/player_root_rsp_smoke.cpp": {
-      "sha256": "8f0695a80152a5b9e3b1a75267db89c4005a102631ee5af3c25ec65efbe67437"
+      "sha256": "6ce5516d0e4295899051c26b3a4a90ac8b87624f1045dda327a12239478a08b3"
+    },
+    "tests/player_root_rsp_fixture.c": {
+      "sha256": "edce685cf3c774cfb31a8b51a59c6534749b77c399d52e6ac67e2f355f7f5a80"
+    },
+    "tests/player_root_rsp_fixture.h": {
+      "sha256": "ac3662cbc4746e10d234529d0b98d4a402ac6fe419daeb72c346051baa63ee0e"
     },
     "tests/source_camera_contract.hpp": {
       "sha256": "da0e52ada5d5d8f96afbcff1bee5607b7d79f389d7addcc1d143b5cc330c8b15"

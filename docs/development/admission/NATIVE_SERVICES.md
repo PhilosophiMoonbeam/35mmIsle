@@ -1032,3 +1032,37 @@ qualification below extends Root integration, not full-game completion.
 Public CI receives no ROM or extracted assets; the latest hosted receipt remains
 the separately identified immutable `23f4c05` result.
 
+### Targeted Root EUC-JP consumer qualification
+
+The existing consumer has a bounded selection that leaves its four default
+scenarios unchanged:
+
+```bash
+"$BUILD/player-root-rsp-smoke" "$PRIVATE_ROM" "$NEW_OUTPUT" --root-message-glyphs
+```
+
+`NEW_OUTPUT` must not exist. Explicit public native API inputs call the genuine
+Root `showPokemonLabel` and `Tutorial_ShowMessage` through plain-C checked
+fences. The null-name fallback and fresh-profile unknown-name comparison both
+preserve `A1 A9`; the comparison suppresses `NEW`, not the question-mark label.
+The tutorial publishes `A6 C5` into both actual Message buffers. Tests bind the
+admitted mono-font resources 86/96 independently of the character dispatcher.
+
+Linux x64 GCC 15.2 Release executable
+`f388c93000abeda5371cfeb0cde483771ef5c2838d0242ca6883b8f0531833bc`
+exits normally with status 0 in 1.088 seconds on software Vulkan, llvmpipe
+LLVM 21.1.8. Three initial OM updates precede six completed GPU draws.
+Actual RDP texture loads/rectangles, 12×12 glyph/shadow geometry and changed
+foreground pixels establish rendered glyph dispatch; the resulting surfaces
+were directly inspected. Original `MESSAGE_NONE` removes the glyphs.
+
+The same execution closes actual Actor/Item/Player/Message-camera/Renderer
+native and semantic owners, GPU/readback leases and independent audio-RSP/PCM
+drain. No photo or progression counter advances during the targeted calls.
+The original controller observes natural exit and pipe EOF and closes its
+pidfd. This is direct native API-consumer evidence, not sealed whole-process
+custody, earned tutorial progression, a new full-Root/course/campaign run,
+independent Original fidelity, sanitizer qualification or Windows 11 runtime.
+The strict Root generator/support hashes remain enforced; the complete
+106-body recipe and generated GAME identities are unchanged.
+

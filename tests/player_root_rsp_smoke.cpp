@@ -2,8 +2,9 @@
 // Opt-in private-ROM consumer of the canonical original-C Player Root.
 // This is generic Root acceptance with Beach resources, not the Beach intro,
 // a second Player FSM, full-game qualification, or hardware/Windows parity.
-// Usage: player-root-rsp-smoke PRIVATE_ROM NEW_OUTPUT_DIRECTORY
+// Usage: player-root-rsp-smoke PRIVATE_ROM NEW_OUTPUT_DIRECTORY [--root-message-glyphs]
 #include "player_root.hpp"
+#include "player_root_rsp_fixture.h"
 #include "player_renderer.hpp"
 #include "player_commands.hpp"
 #include "player_ui.hpp"
@@ -289,7 +290,7 @@ struct NativeJoin {
         ++self.joined;
     }
 };
-enum class Scenario { fresh, idle_interrupted, idle_finished, no_background_music };
+enum class Scenario { fresh, idle_interrupted, idle_finished, no_background_music, root_message_glyphs };
 struct Case {
     const rom::Snapshot& snapshot;
     std::filesystem::path output;
@@ -335,6 +336,7 @@ struct Case {
     IsleGameObject* root_identity = nullptr;
     IsleGameObject* reticle_identity = nullptr;
     IsleGameObject* main_identity = nullptr;
+    IsleGameObject* message_identity = nullptr;
     std::array<NativeJoin,5> native_joins{};
     bool scene_root_registered = false;
     std::unique_ptr<player::commands::Binding> commands;
@@ -379,6 +381,8 @@ struct Case {
     bool completed_hold = false, closed = false, storage_created = false;
     bool first_frame_saved = false, message_saved = false, fade_saved = false;
     bool transition_visible = false;
+    std::size_t watched_glyph_resource = 0, glyph_loads = 0, glyph_rectangles = 0;
+    std::uint32_t watched_glyph_address = 0;
     std::int32_t last_total = 0, last_qualifying = 0;
 
     Case(const rom::Snapshot& rom, std::filesystem::path directory, Scenario selected)
@@ -501,12 +505,28 @@ struct Case {
             }
         }
         bool transition_executed=false;
+        std::uint32_t texture = 0;
+        self.glyph_loads=0; self.glyph_rectangles=0;
         for (const auto packet:lease.packets().packets()) {
             const auto words=lease.packets().words().subspan(packet.offset,packet.count);
             require(!words.empty(),"Root produced empty real RDP packet");
             const auto op=(words[0]>>24)&63u;
             self.triangles+=op>=8 && op<=15;
             self.rectangles+=op==0x24 || op==0x25;
+            if (op==0x3d && words.size()>=2) {
+                texture=physical(words[1]);
+                self.glyph_loads+=self.watched_glyph_address && texture==self.watched_glyph_address;
+            }
+            if ((op==0x24 || op==0x25) && words.size()>=2 &&
+                self.watched_glyph_address && texture==self.watched_glyph_address) {
+                for (const auto& glyph:self.ui->message_draws()) {
+                    if (glyph.resource!=self.watched_glyph_resource) continue;
+                    const auto upper=(std::uint32_t(glyph.view->x*4)<<12)|std::uint32_t(glyph.view->y*4);
+                    const auto lower=(std::uint32_t(glyph.right*4)<<12)|std::uint32_t(glyph.bottom*4);
+                    self.glyph_rectangles+=(words[0]&0x00ffffffu)==lower &&
+                        (words[1]&0x00ffffffu)==upper;
+                }
+            }
             if (op==0x3a && words.size()>=2)
                 for (std::size_t i=0;i<color_count;++i) transition_executed|=words[1]==transition_colors[i];
         }
@@ -705,6 +725,7 @@ struct Case {
         require(source().ui==&ui->source(),"Root.bind did not publish the genuine retained Ui");
         native(root->initialize());
         native(renderer->bind_ui(*ui,message_commands));
+        message_identity=ui->source().Msg_CameraObject;
         require(hooks->count==8,"original Movement_Init did not invoke exactly the current/next eight factories");
         constexpr std::array<std::int32_t,8> expected{12,84,25,1004,16,16,16,131};
         for (std::size_t i=0;i<expected.size();++i) {
@@ -834,6 +855,112 @@ struct Case {
             "original rejected song request unexpectedly started a background sequence");
         checkpoint("original-no-song-third-music-iteration-343-361");
         draw("no-background-music");
+    }
+    void root_message_glyphs() {
+        // A targeted public-API diagnostic, not a focus/shutter observation or
+        // tutorial progression. No OM tick is needed after real Root init and
+        // its existing show-controls waits; all cases use the same real frame.
+        auto& msg=ui->source();
+        const auto unchanged_om=om;
+        const auto photos=application.gPhotoCount;
+        const auto qualifying=application.D_800AE27C;
+        const auto verify_text=[&](std::string_view expected) {
+            require(msg.Msg_MessageLength==static_cast<std::int32_t>(expected.size()) &&
+                std::string_view(reinterpret_cast<const char*>(msg.Msg_MessageText))==expected &&
+                std::string_view(reinterpret_cast<const char*>(msg.Msg_PrintedText))==expected &&
+                msg.Msg_PrintDelay==0,"Root emission did not reach both real Message buffers in the EUC-JP domain");
+        };
+        const auto watch=[&](unsigned mono_index) {
+            const auto* pixels=msg.font_mono_bitmaps[mono_index].buf;
+            watched_glyph_resource=ui->resource_base()+ui_resources.glyph_index(pixels);
+            const auto& bank=ui_resources.banks()[0];
+            const auto offset=pixels-bank.owner->data();
+            require(offset>=0 && static_cast<std::size_t>(offset)<bank.owner->size(),
+                "expected glyph is outside the admitted font bank");
+            watched_glyph_address=physical(bank.guest_begin+static_cast<std::uint32_t>(offset));
+        };
+        const auto rendered=[&](std::span<const std::byte> blank, bool only_glyph) {
+            const sprite::Draw* foreground=nullptr;
+            std::size_t glyphs=0;
+            for (const auto& draw:ui->message_draws()) {
+                if (draw.resource!=watched_glyph_resource) continue;
+                ++glyphs;
+                require(draw.mode==sprite::DrawMode::message_intensity && draw.view &&
+                    draw.right-draw.view->x==12 && draw.bottom-draw.view->y==12,
+                    "Root EUC-JP unit did not select the real wide intensity glyph");
+                if (draw.view->red==255 && draw.view->green==255 && draw.view->blue==255 &&
+                    draw.view->alpha==255) foreground=&draw;
+            }
+            require(glyphs==2 && foreground && glyph_loads==2 && glyph_rectangles==2 &&
+                (!only_glyph || ui->message_draws().size()==2),
+                "Root glyph/shadow resource or executed texture/rectangle dispatch is missing or incorrect");
+            const auto& view=*foreground->view;
+            require(view.x>=0 && view.y>=0 && foreground->right<320 && foreground->bottom<240,
+                "Root glyph output escaped the real color surface");
+            std::size_t changed=0, bright=0;
+            for (int y=view.y;y<=foreground->bottom;++y) for (int x=view.x;x<=foreground->right;++x) {
+                const auto at=static_cast<std::size_t>(y*320+x)*2;
+                const auto before=(std::to_integer<unsigned>(blank[at])<<8)|
+                    (std::to_integer<unsigned>(blank[at+1])&0xfeu);
+                const auto after=(std::to_integer<unsigned>(color[at])<<8)|
+                    (std::to_integer<unsigned>(color[at+1])&0xfeu);
+                changed+=before!=after;
+                bright+=before!=after && ((after>>11)&31u)>=16 &&
+                    ((after>>6)&31u)>=16 && ((after>>1)&31u)>=16;
+            }
+            require(changed>4 && bright>4,"executed Root glyph did not produce meaningful foreground pixels");
+            log.add("root-glyph",watched_glyph_address,watched_glyph_resource,glyphs,
+                glyph_loads,glyph_rectangles,view.x,view.y,changed,bright);
+        };
+        release();
+        PlayerRootRspLabel label{0,0,0};
+        native(isle_player_source_call(&source(),player_root_rsp_label,&label));
+        require(label.hidden==1,"original label reset did not arm its next visible emission");
+        draw("root-message-blank");
+        const auto blank=color;
+        release();
+        // ROM D_8039379C entry24=A1A9 and entry34=A6C5 select mono86/96.
+        // These independent admitted resource ordinals are NOT obtained by
+        // calling Msg_GetCharParams on a test-authored replacement message.
+        watch(86);
+        label.visible=1;
+        native(isle_player_source_call(&source(),player_root_rsp_label,&label));
+        require(label.hidden==0,"original null-name label did not consume its visibility gate");
+        verify_text("\xA1\xA9");
+        draw("root-unknown-null-fallback"); rendered(blank,true);
+        checkpoint("Root-showPokemonLabel-null-fallback-1173-1199");
+        release();
+        label.visible=0;
+        native(isle_player_source_call(&source(),player_root_rsp_label,&label));
+        label.species=1004; label.visible=1;
+        native(isle_player_source_call(&source(),player_root_rsp_label,&label));
+        // The fresh profile has no Dash Engine: actual getPokemonName(1004)
+        // returns A1A9. Root's strcmp2 must suppress NEW, not the '?' label.
+        verify_text("\xA1\xA9");
+        draw("root-unknown-comparison-no-new"); rendered(blank,true);
+        checkpoint("Root-showPokemonLabel-unknown-comparison-no-NEW-1173-1199");
+        release();
+        watch(96);
+        std::int32_t message=3; // Pinned MESSAGE_TAKE_PICTURES, an explicit API input.
+        native(isle_player_source_call(&source(),player_root_rsp_tutorial_message,&message));
+        const auto tutorial=std::string_view(reinterpret_cast<const char*>(msg.Msg_MessageText));
+        const auto printed=std::string_view(reinterpret_cast<const char*>(msg.Msg_PrintedText));
+        require(tutorial.find("\xA6\xC5")!=std::string_view::npos &&
+            printed.find("\xA6\xC5")!=std::string_view::npos && msg.Msg_PrintDelay==0,
+            "Root tutorial did not publish its EUC-JP glyph unit into both actual Message buffers");
+        draw("root-tutorial-epsilon"); rendered(blank,false);
+        checkpoint("Root-Tutorial_ShowMessage-epsilon-1861-1889");
+        release();
+        message=0; // Original MESSAGE_NONE, not a direct buffer clear.
+        native(isle_player_source_call(&source(),player_root_rsp_tutorial_message,&message));
+        watched_glyph_address=0;
+        draw("root-message-reset");
+        require(ui->message_draws().empty() && msg.Msg_PrintedText[0]==0 &&
+            msg.Msg_MessageLength==0,"Root MESSAGE_NONE did not remove actual message glyphs");
+        require(om==unchanged_om && application.gPhotoCount==photos && application.D_800AE27C==qualifying &&
+            !events.request_exit,"targeted Root glyph diagnostic advanced gameplay/progression");
+        log.add("scope","actual-Root-null-name-and-unknown-comparison-A1A9-and-tutorial-A6C5",
+            "explicit-native-API-inputs-not-earned-tutorial-or-detector-observations",om,draws);
     }
     void fresh() {
         require(!source().gIdleScript,"fresh tutorial unexpectedly adopted an idle script");
@@ -1156,6 +1283,12 @@ struct Case {
             if (ui) {
                 const auto result=ui->retire();
                 if (result!=ISLE_GAME_OK) return reject("actual Ui native join remains",int(result));
+                if (scenario==Scenario::root_message_glyphs) {
+                    require(!ui->source().Msg_CameraObject && !ui->source().Msg_Camera &&
+                        ui->message_draws().empty() && services->source_owner_joined(message_identity),
+                        "Root glyph Message camera or retained glyph views did not actually join");
+                    log.add("join","Root-glyph-Message-camera-and-views",static_cast<const void*>(message_identity));
+                }
             }
             operation="Actors.FX-native-joins";
             if (actors) {
@@ -1171,6 +1304,11 @@ struct Case {
                 const auto detached=renderer->detach();
                 if (detached!=ISLE_GAME_OK) return reject("Renderer camera/observer detach rejected",int(detached));
                 renderer.reset();
+                if (scenario==Scenario::root_message_glyphs) {
+                    require(!services->source_owner_registered(message_identity),
+                        "Root glyph Message camera identity survived Renderer detach");
+                    log.add("join","Root-glyph-Message-camera-identity-collected");
+                }
             }
             log.add("join","Renderer-foreign-primary-then-secondary-detach");
             operation="Frame.retire";
@@ -1306,6 +1444,7 @@ void run(const rom::Snapshot& snapshot, const std::filesystem::path& output, Sce
         scene->build();
         if (scenario==Scenario::fresh) scene->fresh();
         else if (scenario==Scenario::no_background_music) scene->no_background_music();
+        else if (scenario==Scenario::root_message_glyphs) scene->root_message_glyphs();
         else scene->idle_case();
     } catch (...) { first_failure=std::current_exception(); }
     if (!scene->close()) {
@@ -1320,11 +1459,18 @@ void run(const rom::Snapshot& snapshot, const std::filesystem::path& output, Sce
 }
 int main(int argc, char** argv) {
     try {
-        require(argc==3,"usage: player-root-rsp-smoke PRIVATE_ROM NEW_OUTPUT_DIRECTORY");
+        require(argc==3 || (argc==4 && std::string_view(argv[3])=="--root-message-glyphs"),
+            "usage: player-root-rsp-smoke PRIVATE_ROM NEW_OUTPUT_DIRECTORY [--root-message-glyphs]");
         const std::filesystem::path output=argv[2];
         require(!output.empty() && !std::filesystem::exists(output),"Root output root must be a fresh directory");
         require(std::filesystem::create_directories(output),"Root output root creation failed");
         const auto snapshot=rom::read_snapshot(argv[1]);
+        if (argc==4) {
+            run(snapshot,output/"root-message-glyphs",Scenario::root_message_glyphs);
+            std::cout << "targeted actual Root EUC-JP A1A9 fallback/comparison and A6C5 glyph/dispatch/join acceptance passed; "
+                "tutorial progression/full Root/Beach/campaign/fidelity/Windows11 not claimed\n";
+            return 0;
+        }
         isle::test::source_camera_contract(snapshot,output/"camera-contract");
         run(snapshot,output/"fresh-tutorial",Scenario::fresh);
         run(snapshot,output/"idle-interrupted",Scenario::idle_interrupted);

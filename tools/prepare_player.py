@@ -35,6 +35,7 @@ SUPPORT = (
     "src/player_ui_resources.hpp", "src/player_ui_resources.cpp",
     "include/35mmisle/game_save.hpp", "src/game_save.cpp",
     "src/screen_transition_source.h", "tests/player_root_rsp_smoke.cpp",
+    "tests/player_root_rsp_fixture.c", "tests/player_root_rsp_fixture.h",
     "tests/source_camera_contract.hpp",
 )
 

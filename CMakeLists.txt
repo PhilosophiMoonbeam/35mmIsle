@@ -1423,14 +1423,17 @@ if(TARGET isle-menu-scene AND TARGET isle-canonical-executor)
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
     if(TARGET isle-beach-music AND TARGET isle-course-model-producer AND TARGET isle-actor-photo-scene)
-        add_executable(player-root-rsp-smoke EXCLUDE_FROM_ALL tests/player_root_rsp_smoke.cpp)
+        add_executable(player-root-rsp-smoke EXCLUDE_FROM_ALL
+            tests/player_root_rsp_smoke.cpp tests/player_root_rsp_fixture.c)
         target_link_libraries(player-root-rsp-smoke PRIVATE
             isle-beach-music isle-player-root isle-player-commands isle-player-ui isle-player-bump
             isle-course-model-producer isle-player-cart isle-actor-photo-scene
             isle-effect-bank-resources isle-effect-graphics-resources isle-rsp)
         isle_target_options(player-root-rsp-smoke)
         target_compile_options(player-root-rsp-smoke PRIVATE
+            "$<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
             "$<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-frounding-math;-ffp-contract=off;-fno-fast-math>"
+            "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/fp:strict>"
             "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/fp:strict>")
     endif()
     if(TARGET isle-player-ui)

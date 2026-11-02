@@ -28364,10 +28364,10 @@
       "sha256": "4af092e1a34bf5220f41a2eb1eb7d6c39bd2032d11bdc835090ac8a9cb5a8e93"
     },
     "src/player_source.h": {
-      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
+      "sha256": "5ad51f9b29bb9f6cac377b63ae2fcb8a2f177e15dc30ef0c14d77dc9a924d1f1"
     },
     "src/player_source_bridge.c": {
-      "sha256": "859f1608c7d681e797047ed47fa906e6c712d8845bd24a50d0fca175df2bda63"
+      "sha256": "4378312f76accbdd8082863c0ee9d1a841d6f74d11edab58d9edf9ac7980790f"
     },
     "src/engine_internal.h": {
       "sha256": "c9700b1a9d2943733fbe9cda66ae486c16422335000e629be8fa2d74d68eb4fc"
@@ -28406,7 +28406,7 @@
       "sha256": "b5722a948478c27089db170edd0993885dc07f9e77e96d90cdc8792821095f62"
     },
     "cmake/player-render-inputs.json": {
-      "sha256": "45e8725c3a2125c582989005b25cb165612d955fcbc2fab98062c9a897a89b4a"
+      "sha256": "a3a7eaeb65371cea1401df648ac7f2d716b503125eefacfb7333c0d829cbab02"
     },
     "src/player_root.hpp": {
       "sha256": "dc396f8eb02f521edf43079e9de133d39078a1c6a7ed9f32d8680a43f12ed4a4"

@@ -888,8 +888,21 @@ void task2_failure_diagnostic(scene::Services& services,g::Frame& frame,player::
         "native task2 failure stranded Photo/Actor history, consumed unreceived IDs or changed whole-draw counting");
     const auto first_error=renderer.status();
     require(first_error!=ISLE_GAME_OK,"native task2 failed without preserving its first error");
+    const std::string first_diagnostic=renderer.message();
+    if(!rsp_fault) {
+        require(source.status==ISLE_GAME_OK&&!source.failure[0]&&!first_diagnostic.empty(),
+            "actual GPU poll rejection did not first fail Renderer independently of Source");
+        unsigned returned=0;
+        require(isle_player_source_call(&source,player_photo_rsp_reject_sprite,&returned)==
+                ISLE_GAME_INVALID_ARGUMENT&&source.status==ISLE_GAME_INVALID_ARGUMENT&&
+            !returned&&!source.nonwaiting_call_frame&&isle_game_status(services.game)==ISLE_GAME_OK&&
+            std::string(source.failure).find("isle_game_object_sprite")!=std::string::npos&&
+            renderer.status()==first_error&&first_diagnostic==renderer.message(),
+            "later real C borrow rejection replaced the first actual GPU poll error");
+    }
     native(renderer.set_postprocess(false));
-    require(renderer.status()==first_error,"native task2 cleanup replaced its first failure");
+    require(renderer.status()==first_error&&first_diagnostic==renderer.message(),
+        "native task2 cleanup replaced its first status or diagnostic");
     std::ofstream report(output/(rsp_fault?"native-task2-rsp-failure.tsv":"native-task2-gpu-failure.tsv"));
     report<<"scope\tNATIVE-SDK-MECHANISM-not-natural-Source-reachability\n";
     report<<"token\trsp_result\trsp_error\tsp_status\tfullsync\tpacket_words\tgpu_completed\tfailed\n";
@@ -1184,6 +1197,16 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                 require(failure!=Failure::after_prefix||detection.context==warmed_contexts[0],
                     "pre-submission failure did not reuse the previously completed Photo context");
                 require(failure!=Failure::nested_wire||source.status==ISLE_GAME_EXHAUSTED,"nested C GBI failure did not preserve exact exhaustion status");
+                if(failure==Failure::nested_wire) {
+                    const std::string diagnostic=source.failure;
+                    require(!diagnostic.empty()&&diagnostic.size()<sizeof(source.failure)&&
+                        diagnostic.find("isle_player_render_")!=std::string::npos&&
+                        diagnostic==renderer.message()&&isle_game_status(services.game)==ISLE_GAME_OK,
+                        "actual bounded C GBI failure lost first callsite/status at Renderer or poisoned Game");
+                    native(renderer.set_postprocess(false));
+                    require(diagnostic==renderer.message()&&diagnostic==source.failure,
+                        "failed-wire Photo cleanup replaced or invalidated first C diagnostic");
+                }
             } else {
                 require(begun,renderer.message());require(frame.submission()&&controller.ticket(frame).submission==frame.submission(),"source request did not bind actual Frame/token");
                 require(controller.ticket(frame).context!=frame.submission_context()&&controller.ticket(frame).generation==before+1,
@@ -1204,8 +1227,11 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& output,Failure fai
                     }
                     require(controller.queued_requests()==(failure==Failure::removed_callback_memory?1u:0u),
                         "failed completion erased an unconsumed Source ID or restored an already-received message");
-                    const auto first_error=renderer.status();native(renderer.set_postprocess(false));
-                    require(renderer.status()==first_error,"SC removal cleanup erased the first Renderer failure");
+                    const auto first_error=renderer.status();
+                    const std::string first_diagnostic=renderer.message();
+                    native(renderer.set_postprocess(false));
+                    require(renderer.status()==first_error&&first_diagnostic==renderer.message(),
+                        "SC removal cleanup replaced the first Renderer status or diagnostic");
                     if(failure==Failure::removed_callback_memory) {
                         photo_scene.retire();
                         require(controller.queued_requests()==0,"genuine Source teardown retained its old message FIFO");

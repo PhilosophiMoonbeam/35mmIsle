@@ -2,6 +2,13 @@
 #include "actor_source.h"
 #include "player_render_source.h"
 
+void player_photo_rsp_reject_sprite(IslePlayerSource* player, void* user) {
+    unsigned* returned = user;
+    /* Actual checked native borrow rejection; no fake result or renderer call. */
+    (void)isle_player_source_first_sprite(player, NULL);
+    ++*returned;
+}
+
 static void make(IslePlayerSource* player, void* user, int raw, int checked) {
     PlayerPhotoRspMake* result = user;
     ++result->entered;

@@ -1,14 +1,17 @@
 #include "beach_actor_scene.hpp"
 // Explicit private-ROM CPU/API selector consumer, excluded from default/CTest.
-// Actual Source23 automatic/FIFO C executes under native OM fences. Player,
-// graphs, cached distances, detector pixels and poses are fixed API-authored
-// inputs, NOT Original observations, a production Player FSM, all71 graphs,
-// graphics/GPU-fence proof, fullgame or Windows11 qualification. Actual audio
-// RSP tasks and an owned PCM stream are drained at the end; no GPU is required.
+// Default: actual Source23 automatic/FIFO C under native OM fences, with
+// API-authored graphs, Player inputs and movement fixtures. --eevee-chansey:
+// actual production family factories/graphs and retained ROM paths; only Eevee
+// spawn variants and Apple-hit delivery are explicit native API fixtures.
+// Neither selection proves earned progression, Original, GPU, fullgame or
+// Windows11. Both drain actual audio RSP tasks and an owned PCM stream.
 #include "actor_interaction_probe.h"
 #include "actor_movement_probe.h"
 #include "actor_behavior_bindings.hpp"
 #include "actor_interaction_services.hpp"
+#include "beach_eevee_chansey.hpp"
+#include "beach_eevee_chansey_source.h"
 #include "item_owner.hpp"
 #include "actual_audio_driver.hpp"
 #include "actual_player_source.hpp"
@@ -196,6 +199,49 @@ std::unique_ptr<actor::BehaviorBindings> make_bindings(const actor::BehaviorReso
     return std::make_unique<actor::BehaviorBindings>(resources,bindings,graphs,weighted,roots);
 }
 
+std::unique_ptr<actor::BehaviorBindings> make_family_bindings(const actor::BehaviorResources& resources) {
+    // Match Runtime's complete-family admission, including callbacks not
+    // transitively reachable from the two initial state roots.
+    const auto callbacks=beach::eevee_chansey_callbacks();
+    std::vector<std::uint32_t> roots; roots.reserve(callbacks.size());
+    for (const auto& callback:callbacks) roots.push_back(callback.identity);
+    return std::make_unique<actor::BehaviorBindings>(resources,callbacks,beach::eevee_chansey_graphs(),
+        std::span<const std::uint32_t>{},roots);
+}
+
+// Read-only successful-enqueue observation. Native Source still owns every
+// command, its queue token and canonical target store; this is not a receiver.
+struct FamilySignals {
+    struct Event {
+        IsleGameObject* receiver=nullptr;
+        IsleGameObject* sender=nullptr;
+        int command=0;
+        std::size_t queued=0;
+    };
+    scene::Services* services=nullptr;
+    std::array<Event,16> events{};
+    std::size_t count=0;
+    bool overflow=false;
+    static void observe(IsleGameObject* receiver,int command,IsleGameObject* sender,void* user) noexcept {
+        auto& self=*static_cast<FamilySignals*>(user);
+        if (command<32 || command>34) return;
+        if (self.count==self.events.size()) { self.overflow=true; return; }
+        self.events[self.count++]={receiver,sender,command,self.services->source_owner_borrows(sender).queued};
+    }
+    void broadcast(std::size_t offset,int command,IsleGameObject* sender,
+                   IsleGameObject* eevee,IsleGameObject* chansey) const {
+        require(!overflow && count==offset+2,"family broadcast did not enqueue once to each actual Actor");
+        const bool eevee_first=actor_interaction_link_precedes(eevee,chansey)!=0;
+        const auto& first=events[offset]; const auto& second=events[offset+1];
+        require(first.receiver==(eevee_first?eevee:chansey) &&
+                second.receiver==(eevee_first?chansey:eevee) &&
+                first.sender==sender && second.sender==sender &&
+                first.command==command && second.command==command &&
+                first.queued>0 && second.queued==first.queued+1,
+                "family broadcast lost native link order, original sender or independent enqueue credits");
+    }
+};
+
 struct Consumer {
     scene::Services& services;
     actor::Owner& actors;
@@ -212,6 +258,7 @@ struct Consumer {
     ActorInteractionProbe probe{};
     ActorMovementProbe movement{};
     std::uint32_t next_id=10000;
+    FamilySignals family_signals{&services};
     bool shut_down=false;
     Consumer(scene::Services& s,actor::Owner& ac,environment_sound::Environment& e,it::Owner& i,it::Globals& g,
              world::World& w,focus::Detector& d,ApiSourceOwner& p,
@@ -324,6 +371,212 @@ struct Consumer {
         auto result=apple?items.spawn_apple({x,0,0},{0,0,0}):items.spawn_ball({x,0,0},{0,0,0});
         accepted(result.status); items.source(result.instance)->state=state;
         accepted(items.pause()); suppress(result.object,true); return result;
+    }
+
+    template<class Predicate>
+    void until(unsigned bound,Predicate done,const char* failure) {
+        for (unsigned n=0;n<bound && !done();++n) tick();
+        require(done(),failure);
+    }
+    bool family_graph(const actor::SpawnResult& subject,std::uint32_t identity) {
+        const auto* graph=source(subject).transitionGraph;
+        return graph && graph->source_identity==identity;
+    }
+    actor::SpawnResult family_spawn(world::Block& block,const world::Spawn& descriptor) {
+        std::size_t definition=actor::actor_no_index;
+        for (std::size_t n=0;n<resources.definitions().size();++n)
+            if (!resources.definitions()[n].singleton &&
+                resources.definitions()[n].actor_id==static_cast<std::uint32_t>(descriptor.id)) definition=n;
+        require(definition!=actor::actor_no_index && world.current(),"actual family factory/current World absent");
+        auto result=actors.spawn({next_id++,definition,&block,world.current(),&descriptor});
+        accepted(result.status); subjects.push_back(result);
+        require(result.object && actors.native_model(result.instance) &&
+                actor_interaction_native_update(result.object) && source(result).stateProc,
+                "family factory did not publish its actual native model/update/initial state");
+        // Deliberately no prepare(), graph store, progress flag or handler call.
+        return result;
+    }
+    void family_joined(const actor::SpawnResult& subject) {
+        const auto membership=actors.membership(subject.instance);
+        require(!membership.logical && !membership.registered && membership.retiring && membership.joined &&
+                services.source_owner_joined(subject.object) && !actor_interaction_object_alive(subject.object) &&
+                actor_interaction_process_count(subject.object)==0,
+                "family retirement did not join native state/path processes and unlink actual membership");
+    }
+    void eevee_chansey(const actor::BehaviorBindings& bindings,bool fresh_only=false) {
+        const auto& scene=actors.course_context().beach();
+        const auto& initial=scene.resources.initial_scalars();
+        require(initial.eevee_chansey_path_wire.guest_address==0x802cd3f4u &&
+                initial.eevee_chansey_path_wire.bytes.size()==4 &&
+                initial.eevee_chansey_path_identity==0 && !scene.eevee_chansey_path,
+                "new scene did not hydrate the admitted four-byte initial shared-path receipt");
+        require(world.enter_first(0) && world.error().empty(),"family current World publication failed");
+
+        // Chansey contributes an actual ROM spawn/path. Eevee's behavior1 and
+        // later behavior0 are disclosed typed API inputs: neither requires an
+        // invented matching ROM row, arbitrary origin or forged path pointer.
+        world::Block* chansey_block=nullptr; const world::Spawn* chansey_row=nullptr;
+        for (auto& block:world.blocks()) for (const auto& row:block.resource->spawns)
+            if (!chansey_row && row.id==113 && row.path<world.resources().paths.size()) {
+                chansey_block=&block; chansey_row=&row;
+            }
+        require(chansey_row && chansey_row->wire.bytes.size()==48,"actual ROM Chansey path-bearing spawn absent");
+        const auto* path=&world.resources().paths[chansey_row->path];
+        require(path->kind>=0 && path->kind<=3 && std::isfinite(path->duration) && path->duration>0,
+                "Chansey path is outside the real Source FollowPath domain");
+        for (float t:{0.0f,.5f,1.0f}) {
+            const auto point=world::path_position(*path,t);
+            require(std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z),
+                    "retained ROM Chansey path has no finite admitted sample");
+        }
+        auto eevee_input=*chansey_row;
+        eevee_input.id=133; eevee_input.behavior=1; eevee_input.path=world::no_index; eevee_input.wire={};
+        const auto eevee=family_spawn(*chansey_block,eevee_input);
+        auto& e=source(eevee);
+        const void** slot=nullptr;
+        native(isle_actor_interaction_scene_path(&e,0x802cd3f4u,&slot));
+        require(slot==&scene.eevee_chansey_path && !*slot,"Eevee initial shared slot was reset or substituted");
+        auto* initial_state=e.stateProc;
+        for (unsigned n=0;n<3;++n) tick();
+        require(!*slot && !e.path && !e.transitionGraph && !e.pathProc && e.stateProc==initial_state &&
+                actor_interaction_function_count(eevee.object,func_beach_802C72E0,7)==1,
+                "Eevee did not retain its actual initial wait for Chansey publication");
+        if (fresh_only) {
+            accepted(actors.cleanup(eevee.instance)); family_joined(eevee);
+            accepted(actors.collect_joined());
+            require(!actors.source(eevee.instance) && !scene.eevee_chansey_path,
+                    "fresh-scene waiting Eevee did not join without resurrecting the prior path");
+            return;
+        }
+        require(services.set_command_queued_observer(eevee.object,FamilySignals::observe,&family_signals),
+                "Eevee native FIFO observation failed");
+        const auto chansey=family_spawn(*chansey_block,*chansey_row);
+        auto& c=source(chansey);
+        require(!*slot && c.path==path,"factory alone executed publication or changed the ROM Chansey path");
+        const void** chansey_slot=nullptr;
+        native(isle_actor_interaction_scene_path(&c,0x802cd3f4u,&chansey_slot));
+        require(chansey_slot==slot,"two actual families did not borrow one scene-owned slot");
+        require(services.set_command_queued_observer(chansey.object,FamilySignals::observe,&family_signals),
+                "Chansey native FIFO observation failed");
+        // Stall only fnUpdate delivery, not Source state/path/animation work, so
+        // the real broadcast's queue credits can be inspected before consumption.
+        suppress(eevee.object,true); suppress(chansey.object,true);
+        until(4,[&] { return *slot==path && e.path==path && family_graph(chansey,0x802cd3f8u); },
+              "Chansey initial Source publication did not release Eevee's actual shared-path wait");
+        until(64,[&] { return family_graph(eevee,0x802ccc28u); },
+              "Eevee behavior1 did not enter its source chase after the original sixty-update wait");
+        auto* eevee_path=e.pathProc; auto* chansey_path=c.pathProc;
+        require(eevee_path && chansey_path && actor_interaction_process_alive(eevee_path) &&
+                actor_interaction_process_alive(chansey_path) && e.path==path && c.path==path,
+                "source chase did not keep both real native path processes on Chansey's retained path");
+        family_signals.broadcast(0,34,eevee.object,eevee.object,chansey.object);
+        require(services.source_owner_borrows(eevee.object).queued==2,
+                "real command34 broadcast did not retain both stalled native FIFO sender credits");
+        suppress(eevee.object,false); suppress(chansey.object,false); tick();
+        require(services.source_owner_borrows(eevee.object).queued==0 &&
+                !e.interactionTarget && !c.interactionTarget,
+                "ignored initial command34 acquired a target or failed to settle its real queue tokens");
+
+        // Actual Apple owner/model, at a Source-produced path pose. Only the
+        // collision notification (cmd13) is API-authored; Source emits33/34/32.
+        auto apple=items.spawn_apple(placement(eevee).transform.position,{0,0,0});
+        accepted(apple.status); accepted(items.pause()); suppress(apple.object,true);
+        suppress(chansey.object,true);
+        enqueue(eevee,13,apple.object);
+        until(4,[&] { return family_graph(eevee,0x802ccc68u); },
+              "real Eevee graph did not consume the authored Apple-hit notification");
+        family_signals.broadcast(2,33,eevee.object,eevee.object,chansey.object);
+        require(e.interactionTarget==apple.object && services.source_owner_borrows(apple.object).fields==1 &&
+                services.source_owner_borrows(eevee.object).queued==2,
+                "Eevee hit/broadcast did not independently adopt the Item and retain both command33 credits");
+        suppress(chansey.object,false);
+        until(4,[&] { return family_graph(chansey,0x802cd438u); },
+              "actual command33 did not select Chansey's C-stack automatic graph");
+        require(c.interactionTarget==eevee.object && services.source_owner_borrows(eevee.object).fields==1 &&
+                services.source_owner_borrows(eevee.object).queued==0,
+                "Chansey command33 did not convert its queued original sender into a canonical field hold");
+        const auto* local=c.transitionGraph;
+        const auto& admitted=bindings.graph(0x802cd438u);
+        auto* local_state=c.stateProc; const float paused_param=c.pathParam;
+        const auto paused_pose=placement(chansey).transform.position;
+        for (unsigned n=0;n<3;++n) {
+            tick();
+            require(c.transitionGraph==local && local!=&admitted && local->rows!=admitted.rows &&
+                    local->count==4 && local->source_identity==admitted.source_identity &&
+                    c.stateProc==local_state && actor_interaction_process_alive(local_state) &&
+                    actor_interaction_function_count(chansey.object,func_beach_802C93B8,7)==1 &&
+                    c.pathProc==chansey_path && actor_interaction_process_alive(chansey_path) &&
+                    e.pathProc==eevee_path && actor_interaction_process_alive(eevee_path) &&
+                    (c.processFlags&POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED) &&
+                    c.pathParam==paused_param && same(placement(chansey).transform.position,paused_pose),
+                    "Chansey automatic graph/path pause did not survive the original mask-zero wait");
+            const IsleActorInteraction* live_rows=nullptr;
+            native(isle_actor_interaction_rows(&c,&live_rows));
+            require(live_rows==local->rows,"native admission substituted a static graph for the live C-stack rows");
+        }
+        const auto previous=world.current()->resource->metadata.world_position;
+        auto* next=world.enter_next(); require(next && world.error().empty(),"family next World block absent");
+        const auto current=next->resource->metadata.world_position;
+        for (const auto& subject:{eevee,chansey})
+            for (const auto& definition:resources.definitions())
+                if (!definition.singleton && definition.actor_id==static_cast<std::uint32_t>(source(subject).id))
+                    accepted(actors.change_block_source(subject.instance,definition.change_block_identity,
+                        {previous.x,previous.y,previous.z},{current.x,current.y,current.z}));
+        require(*slot==path && e.path==path && c.path==path && c.transitionGraph==local,
+                "real block-change callbacks reset the scene path or invalidated the waiting automatic graph");
+        until(180,[&] { return family_signals.count==6 && family_graph(chansey,0x802cd3f8u); },
+              "natural Eevee hit-animation completion did not emit34 and resume Chansey through its waiting local graph");
+        family_signals.broadcast(4,34,eevee.object,eevee.object,chansey.object);
+        until(4,[&] { return services.source_owner_borrows(eevee.object).queued==0; },
+              "natural command34 resume retained an already consumed queue token");
+        const float resumed_param=c.pathParam; tick();
+        require(c.pathParam!=resumed_param && !(c.processFlags&POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED) &&
+                c.pathProc==chansey_path && actor_interaction_process_alive(chansey_path) &&
+                c.interactionTarget==eevee.object && *slot==path,
+                "command34 did not genuinely resume the original shared-path process after the stack wait");
+
+        suppress(eevee.object,true); enqueue(chansey,13,apple.object);
+        until(4,[&] { return family_signals.count==8; },
+              "Chansey original reveal did not emit command32 from the real Chansey sender");
+        family_signals.broadcast(6,32,chansey.object,eevee.object,chansey.object);
+        tick(); // Chansey consumes its ignored self32; Eevee's own queue stays stalled.
+        require(!c.transitionGraph && !c.pathProc && c.interactionTarget==apple.object &&
+                services.source_owner_borrows(chansey.object).queued==1 &&
+                services.source_owner_borrows(eevee.object).fields==0 &&
+                services.source_owner_borrows(apple.object).fields==2,
+                "reveal failed to cancel its path, replace the old sender hold or preserve Eevee's pending command32");
+        accepted(actors.cleanup(chansey.instance)); family_joined(chansey);
+        auto held=actors.collect_joined();
+        require(!held && held.error==actor::OwnerError::lifetime && *slot==path &&
+                services.source_owner_registered(chansey.object) &&
+                services.source_owner_borrows(chansey.object).queued==1,
+                "Chansey native join incorrectly released a pending cross-actor sender or the scene-owned path");
+        suppress(eevee.object,false); tick();
+        require(family_graph(eevee,0x802ccca8u) && e.interactionTarget==chansey.object &&
+                services.source_owner_borrows(chansey.object).queued==0 &&
+                services.source_owner_borrows(chansey.object).fields==1,
+                "Eevee failed to adopt joined-but-identity-held command32 sender before finishing its FIFO credit");
+        held=actors.collect_joined();
+        require(!held && held.error==actor::OwnerError::lifetime &&
+                !services.source_owner_collectable(chansey.object),
+                "consumed command32 was mistaken for release of Eevee's independent canonical sender field");
+
+        eevee_input.behavior=0;
+        const auto later=family_spawn(*chansey_block,eevee_input);
+        until(3,[&] { return source(later).path==path; },
+              "fresh Eevee factory reset or failed to adopt the still-owned path after publisher retirement");
+        require(*slot==path,"actor creation reset the shared path before scene retirement");
+        accepted(actors.cleanup(eevee.instance)); family_joined(eevee);
+        require(services.source_owner_borrows(chansey.object).fields==0,
+                "Eevee real retirement failed to close its retained joined-Chansey field");
+        accepted(actors.cleanup(later.instance)); family_joined(later);
+        accepted(actors.collect_joined());
+        for (const auto& subject:{eevee,chansey,later})
+            require(!actors.source(subject.instance) && !actors.native_model(subject.instance) &&
+                    !services.source_owner_registered(subject.object),
+                    "joined unborrowed family identity/model/semantic record was not collected");
+        require(*slot==path && !world.retired() && services.source_owner_borrows(apple.object).fields==0,
+                "family collection invalidated the retained World path or left an Item borrower");
     }
 
     IsleGameModelPlacement placement(const actor::SpawnResult& subject) {
@@ -1304,12 +1557,12 @@ struct Resources {
     std::array<a::SlotCapacity,8> actor_capacities{};
     std::array<a::SlotCapacity,32> item_capacities{};
     std::unique_ptr<actor::BehaviorBindings> bindings;
-    explicit Resources(const rom::Snapshot& snapshot)
+    explicit Resources(const rom::Snapshot& snapshot,bool family=false)
         : world(snapshot, isle::course::beach_id),sceneData(snapshot),actors(snapshot,0,{world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max}),
           items(snapshot,world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max),
           behavior(snapshot,0),sound(snapshot,0),effects(snapshot),
           banks{&effects.bank(menu::EffectGroup::common),&effects.bank(menu::EffectGroup::beach)},
-          bindings(make_bindings(behavior)) {
+          bindings(family?make_family_bindings(behavior):make_bindings(behavior)) {
         a::SlotCapacity ac{},ic{};
         for (const auto& model:actors.models()) { const auto c=a::slot_capacity(model); ac.nodes=std::max(ac.nodes,c.nodes); ac.material_attachments=std::max(ac.material_attachments,c.material_attachments); }
         for (const auto& model:items.models()) { const auto c=a::slot_capacity(model); ic.nodes=std::max(ic.nodes,c.nodes); ic.material_attachments=std::max(ic.material_attachments,c.material_attachments); }
@@ -1381,9 +1634,9 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
     native(storage.destroy());
 }
 
-void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
+void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,bool family=false) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"private profile must exist and be empty");
-    Resources resources(snapshot);
+    Resources resources(snapshot,family);
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"actual selector audio hydration failed");
     std::array<audio::effects::Section,8> sections; audio::effects::Config effects;
     require(game_audio::native_startup_effects(hydrated.resources,sections,effects)==audio::Error::none,"actual selector audio effects admission failed");
@@ -1393,6 +1646,12 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(bool(made),"actual selector audio Session creation failed"); auto& session=*made.session;
     {
         game::State state(profile); require(state.initialize(1),"selector profile initialization failed");
+        if (family) {
+            with_graph(resources,session,state,[&](Consumer& c) { c.eevee_chansey(*resources.bindings); });
+            // Same immutable ROM resources/audio owner, genuinely new scene,
+            // World, Services and native game after the first graph's joins.
+            with_graph(resources,session,state,[&](Consumer& c) { c.eevee_chansey(*resources.bindings,true); });
+        } else {
         with_graph(resources,session,state,[](Consumer& c) {
             c.constructor_rejections();
             const auto subject=c.spawn();
@@ -1427,6 +1686,7 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
         }
         with_graph(resources,session,state,[](Consumer& c) { c.movement_paths(c.spawn()); },paths);
         with_graph(resources,session,state,[](Consumer& c) { c.movement_path_fault(c.spawn()); },paths);
+        }
     }
     unsigned audio_tasks=0;
     require(session.retrace(1,1000000000ull/60)==audio::Error::none && session.submit()==audio::Error::none,
@@ -1445,13 +1705,17 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile) {
     require(session.state()==game_audio::Session::State::draining && session.poll_drain()==audio::Error::none &&
             session.poll_drain()==audio::Error::none && capture.finishes==1 && capture.used>0 && audio_tasks>0,
             "actual selector audio client retirement/actual RSP owned PCM drain failed");
-    std::cout<<"native_Actor_actual_C_automatic_FIFO_CPU_API=passed native_original_C_movement_CPU_diagnostics=passed bounded_semantic_four_pathkinds_not_ROM_trajectories=true audio_RSP_owned_PCM_drain=passed PlayerFSM_all71graphs_GPU_Original_fullgame_Windows11=not_claimed\n";
+    if (family)
+        std::cout<<"native_Eevee_Chansey_shared_ROM_path_stack_graph_commands32_33_34_sender_lifetimes_joined_reset_CPU_API=passed authored_Eevee_variants_Apple_hit_inputs=true audio_RSP_owned_PCM_drain=passed earned_progression_GPU_Original_fullgame_Windows11=not_claimed\n";
+    else
+        std::cout<<"native_Actor_actual_C_automatic_FIFO_CPU_API=passed native_original_C_movement_CPU_diagnostics=passed bounded_semantic_four_pathkinds_not_ROM_trajectories=true audio_RSP_owned_PCM_drain=passed PlayerFSM_all71graphs_GPU_Original_fullgame_Windows11=not_claimed\n";
 }
 } // namespace
 int main(int argc,char** argv) {
     try {
-        require(argc==3,"usage: actor-interaction-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE");
-        auto snapshot=rom::read_snapshot(argv[1]); run(snapshot,argv[2]); return EXIT_SUCCESS;
+        const bool family=argc==4 && std::string_view(argv[3])=="--eevee-chansey";
+        require(argc==3 || family,"usage: actor-interaction-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE [--eevee-chansey]");
+        auto snapshot=rom::read_snapshot(argv[1]); run(snapshot,argv[2],family); return EXIT_SUCCESS;
     } catch (const std::exception& error) {
         std::cerr<<"actor-interaction-rom-smoke: "<<error.what()<<'\n'; return EXIT_FAILURE;
     }

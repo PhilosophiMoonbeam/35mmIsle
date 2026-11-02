@@ -92,7 +92,8 @@ void isle_native_execution_fault(IsleGame* game, const char* text) {
      * returned before reaching this boundary; aborting the outer continuation
      * here would discard the intervening native owner's C++ call. */
     if (game->playerSource && game->playerSource->nonwaiting_call_frame)
-        isle_player_source_checked(game->playerSource, game->fault);
+        isle_player_source_checked_at(game->playerSource, game->fault,
+            __func__, game->error, __LINE__);
     if (game->postCourseSource && game->postCourseSource->nonwaiting_call_frame)
         isle_post_course_source_checked(game->postCourseSource, game->fault,
             __func__, game->error, __LINE__);

@@ -8,6 +8,8 @@ void player_source_helper_userdata(IsleGameObject*, void*);
 void player_source_helper_wait(IsleGameObject*);
 void player_source_cold_entry(IslePlayerSource*, void*);
 void player_source_nested_failure(IslePlayerSource*, void*);
+void player_source_failure_to_native(IsleGameObject*);
+void player_source_host_failure(IsleGameObject*);
 void player_source_forbidden_wait(IslePlayerSource*, void*);
 void player_source_native_actor_failure(IslePlayerSource*, void*);
 typedef struct PlayerSpriteBorrow {

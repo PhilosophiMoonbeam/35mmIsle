@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 /* C-only entries keep native source failure transfers out of C++ frames. */
+void player_photo_rsp_reject_sprite(IslePlayerSource*, void*);
 typedef struct PlayerPhotoRspMake {
     IsleGameObject* subject;
     int32_t value;

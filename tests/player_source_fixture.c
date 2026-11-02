@@ -37,8 +37,29 @@ static void returned_native_failure(IslePlayerSource* source, void* user) {
 
 void player_source_nested_failure(IslePlayerSource* source, void* user) {
     IsleGameResult result = isle_player_source_call(source, returned_native_failure, user);
+    if (result != ISLE_GAME_OK) {
+        /* Real secondary cleanup rejection differs from the original invalid
+         * object argument. It must not replace that first status or callsite. */
+        result = isle_game_wait(source->game, 1);
+    }
     isle_player_source_checked(source, result);
     source->ThrowItemTimeout = 98;
+}
+
+void player_source_failure_to_native(IsleGameObject* object) {
+    IslePlayerSource* source = object->game->playerSource;
+    source->ThrowItemTimeout = 42;
+    /* NULL object is valid current-object shorthand inside OM. A NULL output
+     * actually rejects here; no local fence may return into this C suffix. */
+    isle_player_source_checked(source,
+        isle_game_object_metadata(source->game, object, NULL));
+    source->ThrowItemTimeout = 99;
+}
+
+void player_source_host_failure(IsleGameObject* object) {
+    IslePlayerSource* source = isle_player_source_current(object);
+    isle_player_source_checked(source,
+        isle_game_object_metadata(source->game, object, NULL));
 }
 
 void player_source_forbidden_wait(IslePlayerSource* source, void* user) {

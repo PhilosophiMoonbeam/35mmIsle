@@ -1591,6 +1591,10 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
     add_executable(35mmisle src/game_main.cpp)
     target_link_libraries(35mmisle PRIVATE isle-game-owner)
     isle_target_options(35mmisle)
+    add_executable(native-host-failure-rom-smoke EXCLUDE_FROM_ALL
+        tests/native_host_failure_rom_smoke.cpp tests/player_source_fixture.c)
+    target_link_libraries(native-host-failure-rom-smoke PRIVATE isle-application-runtime)
+    isle_target_options(native-host-failure-rom-smoke)
     add_executable(35mmisle-application-runtime-rom-smoke EXCLUDE_FROM_ALL
         tests/application_runtime_rom_smoke.cpp
         tests/native_public_campaign.cpp

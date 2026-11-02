@@ -1,5 +1,6 @@
 #include "player_source.h"
 #include "engine_internal.h"
+#include <stdio.h>
 
 /* Same explicitly qualified modern PI policy as the common C importer; this is
  * not a claim about original SDK macro types or numerical equivalence. */
@@ -182,14 +183,18 @@ IsleGameResult isle_player_source_call(IslePlayerSource* source,
     return source->status;
 }
 
-void isle_player_source_checked(IslePlayerSource* source, IsleGameResult result) {
+void isle_player_source_checked_at(IslePlayerSource* source, IsleGameResult result,
+    const char* caller, const char* operation, int32_t line) {
     if (result == ISLE_GAME_OK) return;
     if (source->status == ISLE_GAME_OK) source->status = result;
+    if (!source->failure[0])
+        (void)snprintf(source->failure, sizeof(source->failure),
+            "Player %.64s:%d: %.140s -> %d", caller, (int)line, operation, (int)source->status);
     if (source->nonwaiting_call_frame != NULL) {
         IslePlayerCallFrame* frame = source->nonwaiting_call_frame;
         longjmp(frame->failure, 1);
     }
-    isle_native_execution_fault(source->game, "original Player native source leaf failed");
+    isle_native_execution_fault(source->game, source->failure);
 }
 
 void isle_player_source_wait(IslePlayerSource* source, int32_t updates) {

@@ -138,6 +138,45 @@ Fresh existing consumers also passed full World geometry—eight primary/four se
 
 These are actor prerequisites, not playable Beach or a product executable. Native actor ownership/control/factories, source player/items/detector/FX integration, combined-scene RAM layout, actor54/48 GPU, all-course gameplay, Windows11 private-ROM execution and release gates remain open.
 
+### Eevee/Chansey shared-path and sender ownership
+
+`actor-interaction-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE --eevee-chansey`
+executes both genuine Source factories and their retained ROM path. Eevee waits
+for Chansey's scene-slot publication; commands 34→33→34→32 travel through actual
+native queues. The original C-stack graph survives yielding and block changes,
+then actual command dispatch resumes its paused path. Joined Chansey remains
+uncollectable first through Eevee's queued sender credit, then through its
+independent canonical target hold. Collection succeeds after real receiver
+retirement. Later actor creation retains the path; a new scene starts clean.
+
+The first execution exposed a native dispatcher defect: the canonical Eevee
+callback `0x80362d2c` was rejected by `Owner::change_block_source`, although the
+production Beach lifecycle already invoked it correctly. The dispatcher now
+uses the same returning C fence and original `Pokemon_ChangeBlockAndRemove`;
+canonical-definition checks and conditional removal remain intact.
+The corrected GCC Release consumer exits normally in 0.165 seconds, including
+actual audio-RSP/PCM drain. Eevee variants and Apple-hit notifications are
+explicit typed API inputs, not earned progression, full-family behavioral
+equivalence, graphics, Original fidelity or Windows 11 qualification.
+
+### Rainbow environmental voices and final PCM ownership
+
+`environment-sound-rsp-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE --rainbow`
+selects the actual nine-descriptor course6 table. Real Mew header/events supply
+sound352/category0, replacement350/category0 and independent147/category1.
+Native voices exercise hearing cutoff, replacement, coexistence, category stop,
+camera-dependent pan and fixed parameters after source-model/process retirement.
+
+The GCC Release execution completes 69 actual RSP tasks and accepts 36,896 PCM
+frames, with reversed channel dominance, exact stopped-PCM silence and joined
+source observers. Final completed PCM must be accepted without building another
+task before `voices_retired()` is meaningful; that predicate includes the live
+PCM lease. The consumer verifies this source-notification boundary separately
+from its held two-poll output drain. No audio algorithm or expected sample was
+changed to repair the earlier invalid observer. API-authored spatial inputs do
+not prove the Mew factory/animation, global ambience, hearing, Original PCM parity,
+campaign completion or Windows 11 runtime.
+
 ## Native actor controls, actual actor GPU and live focus CPU
 
 Six selected GAME C helpers now compile privately from the exact authoritative Git objects: state/random-state, auxiliary start/stop, path replacement and no-interaction flag wait. They use the existing native scheduler and one actual GObj payload; no SDK layouts, callback registry, guest function casts or second scheduler. A native binding marker prevents unrelated `userData` dereference. ASan reproduced the four-byte foreign-payload overflow before correction; fresh/reused-payload regressions pass afterward. The independent reviewer accepted the correction.

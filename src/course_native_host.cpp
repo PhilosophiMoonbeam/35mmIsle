@@ -276,10 +276,24 @@ IsleGameResult NativeHost::fail(IsleGameResult result, const char* text) noexcep
     auto& self = *impl_;
     if (result != ISLE_GAME_OK && self.error == ISLE_GAME_OK) {
         self.error = result;
+        if (self.root && self.root->source().failure[0]) text = self.root->source().failure;
         if (text && text[0]) std::snprintf(self.message.data(),self.message.size(),"%s",text);
         else std::snprintf(self.message.data(),self.message.size(),"native course operation failed (%u)",static_cast<unsigned>(result));
     }
     return self.error;
+}
+IsleGameResult NativeHost::source_call_failed(IsleGameResult result, bool entered_healthy,
+    const char* text) noexcept {
+    auto& self = *impl_;
+    if (result != ISLE_GAME_OK && entered_healthy && self.root && self.root->source().failure[0]) {
+        /* This invocation admitted the native leaf while Host was healthy.
+         * That leaf can latch its error before C checks its returning result.
+         * Attach only this invocation's context, never a later cleanup's. */
+        if (self.error == ISLE_GAME_OK) self.error = result;
+        std::snprintf(self.message.data(),self.message.size(),"%s",self.root->source().failure);
+        return self.error;
+    }
+    return fail(result,text);
 }
 void NativeHost::Impl::cold(actor::CourseContext context) {
     require(!storage && !prepared && !retired && context.course_id() == description.course_id,
@@ -419,9 +433,16 @@ IsleGameResult NativeHost::update(std::uint32_t raw_game_time) noexcept {
         // The creator validates GPU quiescence before admitting this OM tick.
         // Source continuations inherit this serialized phase, not permission
         // to query the creator-affine graphics executor from their threads.
+        const bool entered_healthy = self.error == ISLE_GAME_OK;
         self.updating = true;
         result = self.services->tick();
         self.updating = false;
+        const auto source_result = result == ISLE_GAME_OK || result == ISLE_GAME_STOPPED ?
+            (self.services->failed() ? ISLE_GAME_INVALID_STATE : self.root->source().status) : result;
+        if (source_result != ISLE_GAME_OK && source_result != ISLE_GAME_STOPPED)
+            (void)source_call_failed(source_result,entered_healthy,
+                isle_game_status(self.services->game) != ISLE_GAME_OK ?
+                    isle_game_error(self.services->game) : self.services->error());
     }
     // Real Source deletion retains Item identities/Runtime incarnations until
     // outside-OM collection, with the prior GPU frame excluded by update().
@@ -501,6 +522,8 @@ bool NativeHost::retire_scene(bool cancelling, RetirementHooks hooks, SceneJoinR
             fail(native_status,isle_game_error(self.services->game));
         else if (self.services->failed())
             fail(ISLE_GAME_EXECUTION_FAILURE,self.services->error());
+        else if (self.root && self.root->source().status != ISLE_GAME_OK)
+            fail(self.root->source().status,self.root->source().failure);
     }
     self.cancelling |= cancelling || self.error != ISLE_GAME_OK;
     self.closing = true;

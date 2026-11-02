@@ -310,6 +310,34 @@ published Source sprite revision `4c009ee` separately passed
 [all ten hosted Linux/MSVC jobs](https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/39025174041);
 its twenty-consumer compiler proof does not qualify these subsequent additions.
 
+### Rainbow Cart clips and retained graphics ownership
+
+`player-cart-owner-rsp-smoke` now accepts trailing `--rainbow`; the existing
+Beach invocation is unchanged. Course-selected World descriptors supply fog
+without constructing an unused World. Real Rainbow model, material and camera
+streams determine half-speed update bounds and a source-visible interior
+sample; no Beach trajectory or lifecycle wait constant supplies their timing.
+
+| Clip | Terminal half-tick | Visible sample half-tick | Returned root END callbacks |
+|---|---:|---:|---:|
+| Intro | 300 | 180 | 1 |
+| Fresh outro | 300 | 150 | 1 |
+
+The actual GCC consumer advances all native model/material slots and the
+Source camera, checks independent terminal states and stable disabled output,
+and completes canonical RSP/RDP color/depth readback. Hidden geometry provides
+the framebuffer control; the unchanged visible state reproduces its result in
+the second real framebuffer. Both saved surfaces were directly inspected.
+An actual Owner borrow spans submission and readback: logical retirement
+cannot join or collect its native storage, even after completion, until that
+borrow closes. Collection then still waits for the Source current identity
+and remaining producer/frame owners. Three real C callback rejection paths
+and the existing Beach consumer also pass.
+
+This is component/API-authored clip and ownership evidence. It does not admit
+the Rainbow course continuation, earned progression, independent Original
+equivalence, physical graphics/audio, Windows 11, or a final playthrough.
+
 ## Canonical Source sprite execution
 
 `isle_game_object_sprite` returns the actual native list head, with the same

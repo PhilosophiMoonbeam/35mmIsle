@@ -41,10 +41,10 @@
       "sha256": "e6fbef2ed7f926d64e5f0492dbac2ec25ed15636c51706b7a44d8b95c552e24e"
     },
     "src/player_source.h": {
-      "sha256": "59ea8bd01770e10883cb0e9c6758455ab3e4f893ec5c9cd2476d29c0e7fc9335"
+      "sha256": "5ad51f9b29bb9f6cac377b63ae2fcb8a2f177e15dc30ef0c14d77dc9a924d1f1"
     },
     "src/player_source_bridge.c": {
-      "sha256": "859f1608c7d681e797047ed47fa906e6c712d8845bd24a50d0fca175df2bda63"
+      "sha256": "4378312f76accbdd8082863c0ee9d1a841d6f74d11edab58d9edf9ac7980790f"
     },
     "src/world_movement_state.h": {
       "sha256": "0d231cd3556bc0004abd77bb5d6f97474cf0762ed4fdeacfd0f0af0f928195b3"
@@ -53,7 +53,7 @@
       "sha256": "486332ff28b9516b7c7006d82ce3686607fd26f1531fe6e1e2216f38f759a4ad"
     },
     "src/engine.c": {
-      "sha256": "710d4650e1bc2066cf52a6908198c7819662dc500dfdbfd04fb005fcd075f409",
+      "sha256": "79f6693014be4f741a4a7abae3edb425cdeecf4578762333a57a32dbc355141d",
       "object_lifecycle": {
         "native_order": "Original native pre-retirement observer runs once at the sole validated omDeleteGObj teardown, before any process join or payload removal. Payload corruption rejects before observer/state publication; a failed/incomplete join retains native storage and the started bit without repeating pre-notification. Existing post observer remains after all actual joins, payload removal and unlink/alive=false, before object free-list publication.",
         "source_deferred_order": "Exact own GAME df8815e75f3d79618466e01e0827c6165b93d11c src/sys/om.c:1757-1778 and 1780-1824 retain current-object deletion requests until update return or process yield/return, clear omCurrentObject/omCurrentProcess, then call the native teardown. No source definition/body/identity changes, second scheduler or early self-notification.",

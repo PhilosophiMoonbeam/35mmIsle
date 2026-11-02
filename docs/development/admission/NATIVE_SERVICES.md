@@ -210,6 +210,48 @@ the full static-runtime MSVC host. No ROM or private generated assets enter
 public jobs. This receipt qualifies that exact dependency revision, not later
 local canonical Actor/Item changes or private Windows11 gameplay.
 
+### First checked Player failure context
+
+`IslePlayerSource` now retains its first checked caller, operation, line and
+status in a bounded 256-byte record. The canonical C check evaluates both
+operands once; success skips the out-of-line formatter. Nested returning
+fences, secondary rejection, a later genuine native fault and process join
+preserve that first record. Catching a returning C rejection still does not
+manufacture a Game fault or jump across an owning C++ frame.
+
+Renderer and typed NativeHost reporting snapshot component health at the
+actual C invocation. A leaf may latch its component error before the same
+invocation attaches C context; only that invocation may enrich the stored
+diagnostic. A later cleanup failure cannot replace an earlier independent
+component error. Getters return stable component-owned buffers.
+
+Current command wall time, not gameplay performance:
+
+| Verification | Exercised contracts/cases | Seconds |
+|---|---:|---:|
+| Rebuilt GCC CPU suite | 63 | 9.53 |
+| Rebuilt Clang ASan/UBSan CPU suite | 63 | 16.86 |
+| Actual Source Renderer RSP/RDP consumer | 14 | 7.280 |
+| Actual typed Tunnel Host failure/retirement | 1 | 0.399 |
+
+The Renderer consumer exercises both causal orders: nested-wire rejection
+gains its same-call C context; an actual task-2 GPU failure with healthy Source
+keeps its first message after a later real C-fenced sprite-borrow rejection
+and cleanup. The native-transfer unit uses a real object with null metadata
+output: null object is legitimate current-object shorthand inside OM.
+`native-host-failure-rom-smoke PRIVATE_ROM EMPTY_PRIVATE_PROFILE` also executes
+real typed Tunnel entry/initialization, then a checked null-output API call
+from a C process on its actual Player. The failing ordinary update exposes the
+caller/API at both Host and lifecycle boundaries. Staged cancellation and
+retirement join the entry and destroy Game/Root/Renderer while preserving the
+first diagnostic and withholding a normal course result. One actual audio-RSP
+task and independently drained owned PCM close the remaining audio lifetime.
+No Source error/state fields or product fault switch supply this case.
+
+These results do not identify the historical campaign leaf failure or admit
+Manager-selected Tunnel traversal, earned progression, course completion,
+display/device behavior, or Original/Windows 11 fidelity.
+
 ## Canonical Actor/Item Player association
 
 Published `05b2616` removes `PlayerState`, `PlayerBinding`, their setters and

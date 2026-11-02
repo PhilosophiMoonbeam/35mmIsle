@@ -51,6 +51,7 @@ typedef struct IslePlayerSource {
     void* native_renderer; /* Nonowning retained renderer domain; no pose/clock mirror. */
     void* native_root; /* Nonowning retained Root domain; all gameplay state remains here. */
     IsleGameResult status; /* First checked C execution/admission failure. */
+    char failure[256]; /* First checked diagnostic, retained through joins/deactivation. */
     void* nonwaiting_call_frame; /* Private C-only; positive waits are forbidden. */
     IsleWorldMovementState movement;
     IslePlayerInput input;
@@ -166,7 +167,20 @@ typedef void (*IslePlayerNonwaitingCall)(IslePlayerSource*, void* user);
  * C++ leaves finish before checked() transfers into this local C-only fence.
  * Positive waits reject before any continuation handoff. */
 IsleGameResult isle_player_source_call(IslePlayerSource*, IslePlayerNonwaitingCall, void*);
-void isle_player_source_checked(IslePlayerSource*, IsleGameResult);
+/* Canonical C check: both operands evaluate once; callsite text has immutable
+ * lifetime, and only a failing result formats the bounded Source-owned message.
+ * The first status/message survive nested fences and secondary cleanup errors.
+ * Returning consumers must use failure as well as status; no Game fault is
+ * manufactured merely because a local nonwaiting fence catches the failure. */
+void isle_player_source_checked_at(IslePlayerSource*, IsleGameResult,
+    const char* caller, const char* operation, int32_t line);
+static inline void isle_player_source_check_result(IslePlayerSource* source, IsleGameResult result,
+    const char* caller, const char* operation, int32_t line) {
+    if (result != ISLE_GAME_OK)
+        isle_player_source_checked_at(source, result, caller, operation, line);
+}
+#define isle_player_source_checked(source, result) \
+    isle_player_source_check_result((source), (result), __func__, #result, __LINE__)
 void isle_player_source_wait(IslePlayerSource*, int32_t updates);
 
 /* C-only creation follows the canonical callback/failure contract below.

@@ -1,11 +1,12 @@
 // Opt-in admitted-ROM C/native/compiled-pass/RSP/RDP component consumer.
-// Not a CTest, original capture, full Beach continuation or game/device proof.
+// Not a CTest, original capture, full course continuation or game/device proof.
 #include "player_cart.hpp"
 #include "player_cart_producer.hpp"
 #include "player_cart_owner_rsp_fixture.h"
 #include "player_camera_animation.hpp"
 #include "player_camera_viewport.h"
 #include "beach_world_resources.hpp"
+#include "course_resources.hpp"
 #include "photo_lighting.hpp"
 #include "actual_audio_driver.hpp"
 #include "actual_player_source.hpp"
@@ -20,6 +21,7 @@
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -320,8 +322,84 @@ void boundaries(scene::Services& services,c::Owner& owner,isle_arena& arena,cons
     // Keep only replacement live for subsequent real GPU observations. Its
     // callback is NULL, exactly source's fresh default, not Actor loop policy.
 }
+// The decoder orders only reachable commands, including camera jump fragments.
+// These finite Rainbow streams use additive waits, not Texture22's timer reset.
+// Derive half-speed update bounds from those waits; do not borrow Beach timing
+// or the lifecycle's separately bounded intro-wait/camera-restore processes.
+bool source_wait(std::uint8_t opcode) {
+    return opcode==2 || opcode==3 || opcode==5 || opcode==8 || opcode==10 ||
+        opcode==15 || opcode==16 || opcode==17 || opcode==18 || opcode==20 || opcode==23;
+}
+unsigned source_ticks(const menu::Animation& program) {
+    require(!program.commands.empty() && program.commands.back().opcode==0,
+        "Rainbow Cart stream lacks a finite real END");
+    unsigned ticks=0;
+    for (const auto& command:program.commands) {
+        require(command.opcode!=22,"Rainbow Cart timing requires an unadmitted timer reset");
+        if (source_wait(command.opcode)) {
+            require(command.duration<=(std::numeric_limits<unsigned>::max()-2-ticks)/2,"Rainbow Cart source duration overflow");
+            ticks+=2u*command.duration;
+        }
+    }
+    return ticks;
+}
+struct RainbowSchedule {
+    std::array<unsigned,43> models{};
+    std::array<unsigned,8> materials{};
+    unsigned camera=0,limit=0,sample=0;
+};
+RainbowSchedule rainbow_schedule(const player::CartResources& resources,bool intro) {
+    const auto& clip=intro?resources.intro():resources.outro();
+    const auto animation=resources.animation_resources();
+    require(resources.course_id()==6 &&
+        clip.model_animation_table.guest_address==(intro?0x80119ae0u:0x801183e0u) &&
+        clip.material_animation_table.guest_address==(intro?0x8011a970u:0x80119050u) &&
+        clip.camera_identity==(intro?0x8011b3e0u:0x80119a8cu),
+        "Rainbow Cart selected another course's model/material/camera tuple");
+    require(clip.model_bindings.size()==43 && clip.material_bindings.size()==8,
+        "Rainbow Cart lost its complete model/material attachment interfaces");
+    RainbowSchedule result;
+    const auto duration=[&](std::size_t index,menu::AnimationKind kind) {
+        require(index<animation.animations.size() && animation.animations[index].kind==kind,
+            "Rainbow Cart binding did not resolve a real typed stream");
+        const auto& program=animation.animations[index];
+        const auto ticks=source_ticks(program); result.limit=std::max(result.limit,ticks); return ticks;
+    };
+    for (std::size_t n=0;n<result.models.size();++n) {
+        const auto index=clip.model_bindings[n];
+        result.models[n]=duration(index,menu::AnimationKind::model);
+    }
+    for (std::size_t m=0;m<result.materials.size();++m)
+        if (clip.material_bindings[m]!=menu::no_index) {
+            result.materials[m]=duration(clip.material_bindings[m],menu::AnimationKind::texture);
+        }
+    result.camera=duration(clip.camera_animation,menu::AnimationKind::camera);
+    unsigned cursor=0,visible_begin=0,visible_end=result.models[0];
+    for (const auto& command:animation.animations[clip.model_bindings[0]].commands) {
+        if (command.opcode==15) {
+            if (!(command.mask&2u)) visible_begin=cursor;
+            else if (cursor>visible_begin) { visible_end=cursor; break; }
+        }
+        if (source_wait(command.opcode)) cursor+=2u*command.duration;
+    }
+    require(visible_begin<visible_end,"Rainbow Cart has no source-visible root interval");
+    result.sample=visible_begin+(visible_end-visible_begin)/2;
+    require(result.sample<result.models[0] && result.sample<result.camera,
+        "Rainbow Cart interior sample reached a source terminal");
+    return result;
+}
+bool different(const a::MaterialState& x,const a::MaterialState& y) {
+    return x.image_index!=y.image_index || x.next_image_index!=y.next_image_index ||
+        x.palette_index!=y.palette_index || x.lod_level!=y.lod_level || x.parameters!=y.parameters ||
+        x.color_and_trailing_words!=y.color_and_trailing_words || x.word_4c!=y.word_4c;
+}
+bool different(const a::CameraState& x,const a::CameraState& y) {
+    return x.eye.x!=y.eye.x || x.eye.y!=y.eye.y || x.eye.z!=y.eye.z ||
+        x.at.x!=y.at.x || x.at.y!=y.at.y || x.at.z!=y.at.z || x.roll!=y.roll || x.fov_y!=y.fov_y;
+}
 void gpu(const rom::Snapshot& snapshot,scene::Services& services,c::Owner& owner,const player::CartResources& resources,
-    IsleGameCamera* camera,const photo::LightingInputs& lighting,const beach::WorldMetadata& world,const std::filesystem::path& output) {
+    IsleGameCamera* camera,const photo::LightingInputs& lighting,const beach::WorldMetadata& world,const std::filesystem::path& output,
+    bool rainbow=false) {
     std::array<scene::RenderOrderEntry,8> order{};
     const auto bindings=owner.render_bindings(order);
     auto created=g::Frame::create(snapshot,{true,{16000000,4*1024*1024},frame_layout}); require(bool(created),created.message.data());
@@ -369,6 +447,86 @@ void gpu(const rom::Snapshot& snapshot,scene::Services& services,c::Owner& owner
         accepted(driver.set_speed(0.5f)); accepted(driver.set(&clip,time));
         native(isle_game_tick(services.game)); accepted(driver.update(0));
     };
+    c::InitResult fresh{{},cart,instance};
+    if (rainbow) {
+        // This course-only flow does not claim Beach's mixed-domain, FIFO,
+        // multi-object priority or workspace-handoff boundary scenarios.
+        for (const bool is_intro:{true,false}) {
+            if (!is_intro) {
+                const auto previous=fresh;
+                fresh=owner.init(); require(bool(fresh),fresh.status.detail);
+                accepted(owner.retire(previous.object)); accepted(owner.collect_joined());
+            }
+            const auto schedule=rainbow_schedule(resources,is_intro);
+            const auto& clip=is_intro?resources.intro():resources.outro();
+            PlayerCartRspEvents events{}; events.player=owner.source()->player; events.expected=fresh.object;
+            accepted(owner.set_callback(fresh.object,player_cart_rsp_callback,&events));
+            accepted(owner.set_animation(is_intro?owner.intro_model():owner.outro_model(),
+                is_intro?owner.intro_material():owner.outro_material(),0,0.5f));
+            IslePlayerCameraAnimationClip camera_clip{}; accepted(driver.clip(clip.camera_animation,camera_clip));
+            accepted(driver.set_speed(0.5f)); accepted(driver.set(&camera_clip,0));
+            std::array<a::Transform,43> initial_pose{},terminal_pose{};
+            std::array<a::MaterialState,8> initial_material{},terminal_material{};
+            a::CameraState initial_camera{},terminal_camera{};
+            bool model_advanced=false,material_advanced=false,camera_advanced=false,rendered=false;
+            for (unsigned tick=0;tick<=schedule.limit+1;++tick) {
+                native(isle_game_tick(services.game)); accepted(driver.update(0)); publication(services,owner,fresh);
+                const auto state=owner.animation().model(fresh.instance);
+                const auto& view=driver.state();
+                require(state.nodes.size()==initial_pose.size() && state.materials.size()==initial_material.size(),
+                    "Rainbow Cart consumed incomplete pose/material state");
+                for (std::size_t n=0;n<state.nodes.size();++n) {
+                    require(state.nodes[n].clock.phase==(tick<schedule.models[n]?a::Phase::running:a::Phase::disabled),
+                        "Rainbow Cart model did not terminate at its own source END");
+                    if (!tick) initial_pose[n]=state.nodes[n].transform;
+                    else model_advanced|=different(initial_pose[n],state.nodes[n].transform);
+                    if (tick==schedule.limit) terminal_pose[n]=state.nodes[n].transform;
+                    if (tick>schedule.limit) require(!different(terminal_pose[n],state.nodes[n].transform),
+                        "Rainbow Cart disabled model continued moving");
+                }
+                for (std::size_t m=0;m<state.materials.size();++m) {
+                    if (clip.material_bindings[m]!=menu::no_index)
+                        require(state.materials[m].clock.phase==(tick<schedule.materials[m]?a::Phase::running:a::Phase::disabled),
+                            "Rainbow Cart material did not terminate at its own source END");
+                    if (!tick) initial_material[m]=state.materials[m];
+                    else material_advanced|=different(initial_material[m],state.materials[m]);
+                    if (tick==schedule.limit) terminal_material[m]=state.materials[m];
+                    if (tick>schedule.limit) require(!different(terminal_material[m],state.materials[m]),
+                        "Rainbow Cart disabled material continued changing");
+                }
+                require(view.clock.phase==(tick<schedule.camera?a::Phase::running:a::Phase::disabled),
+                    "Rainbow Cart camera did not terminate at its own source END");
+                if (!tick) initial_camera=view;
+                else camera_advanced|=different(initial_camera,view);
+                if (tick==schedule.limit) terminal_camera=view;
+                if (tick>schedule.limit) require(!different(terminal_camera,view) && view.written_channels==0,
+                    "Rainbow Cart disabled camera continued publishing");
+                const auto ended=tick>=schedule.models[0]?1u:0u;
+                require(!events.invalid && events.count==ended && events.entered==ended && events.returned==ended &&
+                    (!ended || (events.ids[0]==-1 && events.arguments[0]==0 && events.nodes[0].node==0)),
+                    "Rainbow Cart real C END receiver/return fence changed");
+                if (tick==schedule.sample) {
+                    require(!(state.nodes[0].flags&2u),"Rainbow Cart source interior sample hid its root");
+                    native(isle_game_object_set_flags(services.game,fresh.object,1)); const auto hidden=draw();
+                    require(hidden.triangles.empty(),"Hidden Rainbow Cart reached real RSP geometry");
+                    native(isle_game_object_set_flags(services.game,fresh.object,0)); const auto visible=draw();
+                    require(!visible.triangles.empty() && color_changes(visible,hidden)>0 && visible.depths!=hidden.depths,
+                        "Rainbow Cart source geometry failed completed RSP/RDP color/depth proof");
+                    save_image(output,is_intro?"cart-intro":"cart-outro",frame->completed());
+                    require(draw(1)==visible,"Rainbow Cart second real framebuffer changed unchanged source output");
+                    rendered=true;
+                }
+            }
+            require(model_advanced && material_advanced && camera_advanced && rendered,
+                "Rainbow Cart did not consume advancing real model/material/camera and raster output");
+            accepted(owner.set_callback(fresh.object,nullptr,nullptr));
+            std::cout<<"Rainbow Cart "<<(is_intro?"intro":"outro")<<" source_half_ticks="<<schedule.limit
+                <<" sample_half_tick="<<schedule.sample<<" C_END_callbacks="<<events.count<<'\n';
+            // Return through the real C setters and camera updater to the same
+            // source-derived visible sample for the held submission below.
+            if (!is_intro) bind(false,static_cast<float>(schedule.sample)*0.5f);
+        }
+    } else {
     // Fixed, source-defined trajectory samples, not a view/scale/pose search.
     // Both cutscene clocks start at the same actual source sample.
     bind(true,90);
@@ -408,7 +566,7 @@ void gpu(const rom::Snapshot& snapshot,scene::Services& services,c::Owner& owner
     require(owner.animation().model(instance).nodes[0].flags==2 && draw().triangles.empty(),"Rebind incorrectly restored source control flags");
     // A genuinely fresh C factory is essential: resetting a retained pose/control
     // is not the original outro lifecycle. There is prepared physical capacity.
-    auto fresh=owner.init(); require(bool(fresh),fresh.status.detail); accepted(owner.retire(cart)); accepted(owner.collect_joined());
+    fresh=owner.init(); require(bool(fresh),fresh.status.detail); accepted(owner.retire(cart)); accepted(owner.collect_joined());
     bind(false,90); // source current now identifies only the new fresh object
     const auto outro=draw(); require(!outro.triangles.empty() && color_changes(outro,hidden)>0,
         "Fresh source outro J-fogged Cart did not reach actual RSP/RDP");
@@ -456,6 +614,7 @@ void gpu(const rom::Snapshot& snapshot,scene::Services& services,c::Owner& owner
         accepted(owner.retire(previous.object)); accepted(owner.collect_joined());
         bind(false,90);
     }
+    }
     // Delay real completion with the submission's actual Owner borrow. Logical
     // retire closes new binding access immediately; it cannot delete/reuse the
     // native model while preparation/GPU/readback still owns this borrow.
@@ -467,17 +626,19 @@ void gpu(const rom::Snapshot& snapshot,scene::Services& services,c::Owner& owner
         !owner.membership(fresh.instance).joined,"GPU borrow failed to retain actual native Cart storage");
     while (frame->poll()==g::Poll::pending) std::this_thread::yield();
     require(frame->error()==g::Error::none && frame->quiescent() && readback.calls==1,frame->message());
+    if (rainbow) require(!delayed.triangles.empty() && !owner.collect_joined() && !owner.membership(fresh.instance).joined,
+        "Completed Rainbow readback lost geometry or bypassed its retained Owner borrow");
     gpu_hold={}; require(owner.membership(fresh.instance).joined && !owner.collect_joined() && owner.source()->cartGObj==fresh.object,
         "Native join incorrectly cleared source current held identity");
     driver.retire(); producer.retire(); require(frame->retire(),"Cart real GPU consumer retirement failed");
     accepted(owner.retire()); accepted(owner.collect_joined());
 }
-void callback_failure(scene::Services& services,c::Owner& owner,unsigned scenario) {
+void callback_failure(scene::Services& services,c::Owner& owner,unsigned scenario,float terminal=150) {
     const auto cart=owner.init(); require(bool(cart),cart.status.detail);
     PlayerCartRspEvents events{}; events.player=owner.source()->player; events.expected=cart.object;
     events.fail=scenario!=3; events.retire=scenario==2; events.reenter=scenario==3; events.reenter_model=owner.intro_model();
     accepted(owner.set_callback(cart.object,player_cart_rsp_callback,&events));
-    accepted(owner.set_animation(owner.outro_model(),owner.outro_material(),150,1));
+    accepted(owner.set_animation(owner.outro_model(),owner.outro_material(),terminal,1));
     require(isle_game_tick(services.game)!=ISLE_GAME_OK && events.entered==1 && events.returned==0 && events.count==1 && !events.invalid &&
         owner.source()->player->status==(scenario==3?ISLE_GAME_INVALID_STATE:ISLE_GAME_INVALID_ARGUMENT),
         "Actual C callback failure did not preserve first fault or rejected reentrant Runtime mutation");
@@ -495,11 +656,12 @@ void nonfinite_failure(c::Owner& owner) {
         "Nonfinite real Runtime input did not reject both domains before mutation");
     owner.retire(); accepted(owner.collect_joined());
 }
-void run(const std::filesystem::path& filename,const std::filesystem::path& profile,const std::filesystem::path& output) {
+void run(const std::filesystem::path& filename,const std::filesystem::path& profile,const std::filesystem::path& output,bool rainbow=false) {
     require(std::filesystem::is_directory(profile) && std::filesystem::is_empty(profile),"Cart private profile must exist and be empty");
     require(std::filesystem::is_directory(output) && std::filesystem::is_empty(output),"Cart capture directory must exist and be empty");
-    const auto snapshot=rom::read_snapshot(filename); const auto world=beach::world_descriptors(snapshot);
-    const player::CartResources resources(snapshot,0,{world.world.fog_rgb,world.world.fog_min,world.world.fog_max});
+    const auto snapshot=rom::read_snapshot(filename);
+    const auto world=course::world_descriptors(snapshot,rainbow?6:0).world;
+    const player::CartResources resources(snapshot,rainbow?6:0,{world.fog_rgb,world.fog_min,world.fog_max});
     const photo::LightingInputs lighting(snapshot);
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"Cart borrowed Services audio resource admission failed");
     std::array<audio::effects::Section,8> sections; audio::effects::Config effects;
@@ -508,20 +670,27 @@ void run(const std::filesystem::path& filename,const std::filesystem::path& prof
     auto audio=game_audio::Session::create(std::move(hydrated.resources),effects,pcm.output(),execution.executor()); require(bool(audio),"Cart borrowed Services Session failed");
     game::State state(profile); require(state.initialize(1),"Cart private profile initialization failed");
     const auto capacity=a::slot_capacity(resources.animation_resources().models[0]); const std::array capacities{capacity,capacity,capacity};
+    const float callback_terminal=rainbow?static_cast<float>(rainbow_schedule(resources,false).models[0])*0.5f:150.0f;
     for (unsigned scenario=0;scenario<5;++scenario) {
         game_input::Service input; scene::Storage storage(16*1024*1024); native(storage.create());
         scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,*audio.session,state);
         private_player::Source context(services); auto* camera=source_camera(services); context.value.camera=camera;
         c::Owner owner(services,resources,context.value,capacities,{}); OwnerScope scope{owner};
-        if (!scenario) { boundaries(services,owner,storage.arena(),resources); gpu(snapshot,services,owner,resources,camera,lighting,world.world,output); }
-        else if (scenario<4) callback_failure(services,owner,scenario);
+        if (!scenario) {
+            if (rainbow) { const auto cart=owner.init(); require(bool(cart),cart.status.detail); }
+            else boundaries(services,owner,storage.arena(),resources);
+            gpu(snapshot,services,owner,resources,camera,lighting,world,output,rainbow);
+        }
+        else if (scenario<4) callback_failure(services,owner,scenario,callback_terminal);
         else nonfinite_failure(owner);
     }
-    std::cout<<"Cart actual four-function C Owner, independent native animations/callbacks/default FIFO/prepared capacity/retained joins and real J-fogged compiled RSP/RDP intro+fresh-outro consumer passed; no full Beach/game/device claim\n";
+    if (rainbow) std::cout<<"Rainbow Cart focused source intro+fresh-outro advancement, real J-fogged RSP/RDP/readback, held graphics retirement and C callback-failure fences passed; no Beach-only boundary/full course/game/device claim\n";
+    else std::cout<<"Cart actual four-function C Owner, independent native animations/callbacks/default FIFO/prepared capacity/retained joins and real J-fogged compiled RSP/RDP intro+fresh-outro consumer passed; no full Beach/game/device claim\n";
 }
 }
 int main(int argc,char** argv) {
-    if (argc!=4) { std::cerr<<"usage: player-cart-owner-rsp-smoke PRIVATE_ADMITTED_ROM EMPTY_PRIVATE_PROFILE EMPTY_CAPTURE_DIRECTORY\n"; return EXIT_FAILURE; }
-    try { run(argv[1],argv[2],argv[3]); return EXIT_SUCCESS; }
+    const bool rainbow=argc==5 && std::string_view(argv[4])=="--rainbow";
+    if (argc!=4 && !rainbow) { std::cerr<<"usage: player-cart-owner-rsp-smoke PRIVATE_ADMITTED_ROM EMPTY_PRIVATE_PROFILE EMPTY_CAPTURE_DIRECTORY [--rainbow]\n"; return EXIT_FAILURE; }
+    try { run(argv[1],argv[2],argv[3],rainbow); return EXIT_SUCCESS; }
     catch (const std::exception& error) { std::cerr<<error.what()<<'\n'; return EXIT_FAILURE; }
 }

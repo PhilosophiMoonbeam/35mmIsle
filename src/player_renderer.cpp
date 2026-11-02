@@ -199,9 +199,12 @@ struct Renderer::Impl {
         config.resources.reservations=reservations;
         p.native_renderer=this;
     }
-    void fail(IsleGameResult result,const char* message) noexcept {
-        if(error!=ISLE_GAME_OK) return;
-        error=result;
+    void fail(IsleGameResult result,const char* message,bool source_call_entered_healthy=false) noexcept {
+        if(error!=ISLE_GAME_OK&&!(source_call_entered_healthy&&source.failure[0])) return;
+        if(error==ISLE_GAME_OK) error=result;
+        // The entry snapshot belongs to this actual C invocation, not a later
+        // cleanup call. Its native leaf can fail before C attaches the callsite.
+        if(source.failure[0]) message=source.failure;
         if(!message) message="source renderer failure";
         std::size_t n=0;
         while(n+1<diagnostic.size()&&message[n]) {diagnostic[n]=message[n];++n;}
@@ -482,12 +485,13 @@ struct Renderer::Impl {
         }
         // Every first callback, including source sprite render, enters a C-only
         // guard. A backend's nested preRender uses another C-only guard.
+        const bool entered_healthy=self.error==ISLE_GAME_OK;
         const auto result=isle_player_render_invoke_callback(&self.source,record.metadata.render,
             record.metadata.scheduling_object);
         if(result!=ISLE_GAME_OK) {
             // Frame's bool control boundary cannot carry the typed C error.
             // Preserve it before Frame performs generic rejection/retirement.
-            self.fail(result,"original C camera callback failed");return false;
+            self.fail(result,"original C camera callback failed",entered_healthy);return false;
         }
         require(sink.posted,"original camera callback returned without its actual source post phase");
         return true;
@@ -717,9 +721,10 @@ Renderer::~Renderer() { if(impl_&&!impl_->detached) std::terminate(); }
 IsleGameResult Renderer::create_main(std::int32_t background,IsleGameObject** output) noexcept {
     if(!output) return ISLE_GAME_INVALID_ARGUMENT;
     *output=nullptr;
+    const bool entered_healthy=impl_->error==ISLE_GAME_OK;
     const auto result=isle_player_render_invoke_create(&impl_->source,background,output);
     if(*output) impl_->ui=*output;
-    if(result!=ISLE_GAME_OK) impl_->fail(result,"complete original C camera creation failed");
+    if(result!=ISLE_GAME_OK) impl_->fail(result,"complete original C camera creation failed",entered_healthy);
     return result;
 }
 IsleGameResult Renderer::attach(const Camera& camera) noexcept {

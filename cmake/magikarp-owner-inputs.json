@@ -128,7 +128,7 @@
       "sha256": "345b3aacb15e96fa1bd3ef4d15417de56dfb195371cd60ab0ce49817dedbaecc"
     },
     "src/actor_owner.cpp": {
-      "sha256": "2aaca3725c5af85ecd11254f24a4676be59f51ba573947828515af661d762d31"
+      "sha256": "b2c9ece80c9ddb04084cb4be9f7bd4ed4edd9a329b2561bce5b4ba1c52fe7c02"
     },
     "src/actor_owner_source.h": {
       "sha256": "c1e17b98102bd858492f1f4ee61da31d244369ac79fc74cd12e44fa873954d36"
@@ -140,7 +140,7 @@
       "sha256": "b49ca8664ab9dc4c7cf6ed50728a444fd7618a88b07839a2349cbf4e3e2496f6"
     },
     "cmake/actor-control-inputs.json": {
-      "sha256": "ab56889ed65e0a6d2bf0a749e5e0daa3eaaf51ca0c56f18c5fc87d691017cbf5"
+      "sha256": "8b9bd02807160c6a5229b03336a31c67df84babbd6427ec950c3d7d9cdff9295"
     },
     "tests/magikarp_owner_rom_smoke.cpp": {
       "sha256": "3347c4fe853a9abf64df66e3a2a7e0c093cec39158aaf5f5e7d5822ea122da63"

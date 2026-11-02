@@ -127,6 +127,8 @@ void helper_uses_game_context_across_real_wait_without_payload_cast() {
     ok(isle_game_tick(world.game));
     require(world.source.ThrowItemTimeout == 42 && world.counts().processes == 0 && unrelated_userdata == 17,
             "C helper lost its context, resumed a self-ended suffix, or cast unrelated helper userdata");
+    require(world.source.failure[0] == '\0',
+            "successful C entries and real waits manufactured a failure diagnostic");
     IslePlayerSource* output=&world.source;
     require(isle_player_source_get(world.game,helper,&output) == ISLE_GAME_INVALID_STATE && !output,
             "context lookup manufactured a root Player payload for a helper");
@@ -231,6 +233,13 @@ void nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status() {
                     world.source.status == expected && world.source.ThrowItemTimeout == 41 &&
                     world.source.nonwaiting_call_frame == nullptr && !destroyed,
                     "local C failure skipped a fence, executed a rejected suffix, or crossed its owning C++ caller");
+            const std::string first=world.source.failure;
+            require(!first.empty() && first.size()<sizeof(world.source.failure) &&
+                    first.find(callback == player_source_nested_failure ?
+                        "returned_native_failure" : "isle_player_source_wait") != std::string::npos &&
+                    (callback != player_source_nested_failure ||
+                        first.find("isle_game_object_metadata") != std::string::npos),
+                    "first checked operation/caller/status was lost across nested C failure or secondary cleanup");
             require(isle_game_status(world.game) == ISLE_GAME_OK && world.counts().processes == 0,
                     "nonwaiting admission failure fabricated an OM fault or continuation");
             require(isle_player_source_bind(world.game,world.object(7),&world.source) == expected &&
@@ -239,9 +248,43 @@ void nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status() {
             require(isle_player_source_call(&world.source,player_source_nested_failure,nullptr) == expected &&
                     world.source.ThrowItemTimeout == 41,
                     "a sticky source failure reentered C execution or changed its original status");
+            require(first==world.source.failure,
+                    "later rejected returning call overwrote the retained first diagnostic");
         }
         require(destroyed,"returned C failure bypassed C++ owner destruction");
     }
+}
+
+void first_guarded_failure_survives_a_later_native_transfer_and_join() {
+    World world;
+    auto* object=world.object(7);
+    IsleGameProcess* process=nullptr;
+    ok(isle_game_add_source_process(world.game,object,player_source_failure_to_native,
+        ISLE_GAME_SYNCHRONOUS,9,&process));
+    const auto used=world.arena.cursor;
+    require(isle_player_source_call(&world.source,player_source_nested_failure,nullptr) ==
+                ISLE_GAME_INVALID_ARGUMENT && isle_game_status(world.game)==ISLE_GAME_OK,
+            "returning checked rejection newly latched a native execution fault");
+    const std::string first=world.source.failure;
+    require(first.find("returned_native_failure")!=std::string::npos &&
+                first.find("isle_game_object_metadata")!=std::string::npos,
+            "nested failure retained the secondary cleanup operation instead of the first API failure");
+    bool destroyed=false;
+    struct Owner { bool& destroyed; ~Owner() { destroyed=true; } };
+    {
+        Owner owner{destroyed};
+        require(isle_game_tick(world.game)==ISLE_GAME_EXECUTION_FAILURE &&
+                    world.source.status==ISLE_GAME_INVALID_ARGUMENT &&
+                    world.source.ThrowItemTimeout==42 && !world.source.nonwaiting_call_frame &&
+                    !destroyed && first==world.source.failure && first==isle_game_error(world.game),
+                "later native transfer lost the guarded first error, ran its suffix or crossed C++ ownership");
+    }
+    require(destroyed && world.arena.cursor==used,
+            "failure reporting allocated native storage or bypassed the returning owner");
+    require(isle_game_end_process(world.game,process)==ISLE_GAME_EXECUTION_FAILURE &&
+                first==world.source.failure && first==isle_game_error(world.game) &&
+                world.counts().processes==0,
+            "actual failed-process join replaced or invalidated the first diagnostic");
 }
 
 void native_fault_returns_without_executing_a_rejected_source_suffix() {
@@ -258,10 +301,18 @@ void native_fault_returns_without_executing_a_rejected_source_suffix() {
                 world.source.ThrowItemTimeout==41 && !world.source.nonwaiting_call_frame &&
                 !destroyed && isle_game_status(world.game)==ISLE_GAME_EXECUTION_FAILURE,
             "native fault escaped its returning C fence or executed rejected Source code");
+        const std::string native=isle_game_error(world.game);
+        const std::string diagnostic=world.source.failure;
+        require(!native.empty() &&
+                    diagnostic.find("isle_native_execution_fault")!=std::string::npos &&
+                    diagnostic.find(native.substr(0,140))!=std::string::npos,
+            "native fault's nearer C fence replaced its actual first error with a generic status expression");
         require(isle_player_source_call(&world.source,
                     player_source_native_actor_failure,root)==ISLE_GAME_EXECUTION_FAILURE &&
                 world.source.ThrowItemTimeout==41,
             "a failed native Game reentered Source execution or healed its failure");
+        require(diagnostic==world.source.failure && native==isle_game_error(world.game),
+            "sticky native rejection replaced the first Source callsite or native diagnostic");
     }
     require(destroyed,"native fault bypassed its owning C++ destructor");
 }
@@ -435,6 +486,10 @@ void sprite_borrow_without_active_source_faults_only_inside_the_native_c_guard()
                 "a prepared but inactive Source authorized a native sprite borrow or crossed C++");
     }
     require(destroyed,"native C sprite fault skipped the returning C++ owner's destructor");
+    const std::string diagnostic=source.failure;
+    require(diagnostic.find("check_callback_source")!=std::string::npos &&
+                diagnostic==isle_game_error(game),
+            "unguarded checked admission failure lost its callsite/status at the native error surface");
     require(isle_game_delete_object(game,owner) == ISLE_GAME_EXECUTION_FAILURE,
             "inactive Source sprite rejection changed the native latched fault");
     IsleGameCounts remaining{};
@@ -442,6 +497,8 @@ void sprite_borrow_without_active_source_faults_only_inside_the_native_c_guard()
     require(remaining.objects == 0 && remaining.processes == 0 && remaining.sprites == 0,
             "inactive Source sprite fault prevented joined cleanup");
     ok(isle_game_destroy(game));
+    require(diagnostic==source.failure,
+            "retiring the actual failed native Game invalidated retained Source diagnostic storage");
 }
 void source_viewport_conversion_retains_quarterpixels_and_signed_low_lanes() {
     World world;
@@ -550,6 +607,7 @@ int main() {
         object_process_controls_preserve_real_waits_updaters_and_current_context();
         ordered_source_lookup_preserves_link_priority_absence_and_checked_boundaries();
         nonwaiting_c_fences_restore_ownership_and_preserve_native_fault_status();
+        first_guarded_failure_survives_a_later_native_transfer_and_join();
         native_fault_returns_without_executing_a_rejected_source_suffix();
         sprite_borrows_reacquire_actual_membership_after_a_real_wait();
         sprite_borrow_failures_use_only_the_canonical_nested_c_fence();

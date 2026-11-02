@@ -141,6 +141,9 @@ public:
     IsleGameResult error() const noexcept;
     const char* message() const noexcept;
     IsleGameResult fail(IsleGameResult, const char*) noexcept;
+    // Complete an actual returning C invocation. Only a Host healthy at that
+    // invocation's entry may attach its checked callsite to a leaf-side error.
+    IsleGameResult source_call_failed(IsleGameResult, bool entered_healthy, const char*) noexcept;
 
     // Returning mechanics for EXACT typed adapter thunks. These operations do
     // not select Source callbacks, infer identities, run Original policy or wait.
@@ -304,11 +307,17 @@ public:
             if (error == ISLE_GAME_OK) { stage = "typed native closure preparation failed"; error = host_->prepare(adapter_.context()); }
             if (error == ISLE_GAME_OK) { stage = "typed Source scene binding failed"; error = adapter_.bind_scene(*host_); }
             if (error == ISLE_GAME_OK) { stage = "typed Source activation failed"; error = adapter_.activate(*host_); }
-            if (error == ISLE_GAME_OK) { stage = "typed Original initialization invocation failed"; error = adapter_.invoke_init(); }
+            if (error == ISLE_GAME_OK) {
+                stage = "typed Original initialization invocation failed";
+                const bool entered_healthy = host_->error() == ISLE_GAME_OK;
+                error = adapter_.invoke_init();
+                if (error != ISLE_GAME_OK)
+                    error = host_->source_call_failed(error,entered_healthy,stage);
+            }
             if (error == ISLE_GAME_OK) { stage = "typed Original initialization Source status failed"; error = adapter_.source_status(); }
             if (error == ISLE_GAME_OK) { stage = "typed native producer initialization failed"; error = host_->finish_initialization(); }
             initializing_ = false;
-            if (error != ISLE_GAME_OK) return fail(error,host_->error() == ISLE_GAME_OK ? stage : host_->message());
+            if (error != ISLE_GAME_OK) return fail(error,host_->message()[0] ? host_->message() : stage);
             status_ = host_->exit_requested() ? LifecycleStatus::retiring : LifecycleStatus::running;
             return ISLE_GAME_OK;
         } catch (const std::exception& e) { initializing_ = false; return fail(ISLE_GAME_INVALID_STATE,e.what()); }

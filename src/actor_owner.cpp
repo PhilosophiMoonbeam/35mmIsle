@@ -2759,6 +2759,10 @@ OwnerStatus Owner::change_block_source(menu::animation::InstanceHandle handle,st
     if (!function) {
         if (identity==0x80363dbcu) return change_block(handle,previous,current);
         if (identity==0x80363eb4u) return change_block_ground(handle,previous,current);
+        if (identity==0x80362d2cu)
+            return isle_meowth_source_call_change_block(slot->object,previous.x,previous.y,previous.z,
+                current.x,current.y,current.z,2)==ISLE_GAME_OK?OwnerStatus{}:
+                rejected(OwnerError::native,"original block change and conditional removal failed");
         return rejected(OwnerError::admission,"block callback lacks an exact compiled Source binding");
     }
     if (SourceAccess::course_admission(*this)!=ISLE_GAME_OK)

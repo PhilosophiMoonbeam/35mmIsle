@@ -7,7 +7,6 @@ declare_isolated_owner(); it must not create unrelated children afterwards.
 import ctypes
 import errno
 import os
-from pathlib import Path
 import signal
 import sys
 import time
@@ -45,6 +44,9 @@ class IsolatedOwner:
         if sys.platform != 'linux' or os.uname().machine != 'x86_64':
             raise OwnershipError('Isolated custody ownership requires Linux x86-64')
         self.pid = os.getpid()
+        # Cache path spelling, never proc contents; every census stays fresh.
+        self._pid_name = str(self.pid)
+        self._children_path = f'/proc/self/task/{self.pid}/children'
         self._check_isolated(empty=True)
         # Installing SIG_DFL clears an inherited SIG_IGN/SA_NOCLDWAIT disposition;
         # a default SIGCHLD, unlike explicit SIG_IGN, retains waitable zombies.
@@ -83,14 +85,15 @@ class IsolatedOwner:
     def _direct_children(self):
         # Only this dedicated single-threaded process can reap these children.
         # No wait occurs between this census and the retirement signals below.
-        text = Path(f'/proc/self/task/{self.pid}/children').read_text(encoding='ascii')
+        with open(self._children_path, encoding='ascii') as stream:
+            text = stream.read()
         return {int(value) for value in text.split()}
 
     def _check_isolated(self, empty=False):
         if os.getpid() != self.pid:
             raise OwnershipError('Isolated owner cannot be inherited across fork')
-        tids = {int(path.name) for path in Path('/proc/self/task').iterdir()}
-        if tids != {self.pid}:
+        tids = os.listdir('/proc/self/task')
+        if len(tids) != 1 or tids[0] != self._pid_name:
             raise OwnershipError('Custody owner must remain single-threaded')
         children = self._direct_children()
         if empty and children:

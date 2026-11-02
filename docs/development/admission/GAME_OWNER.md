@@ -475,3 +475,38 @@ credited. New display/bus/observer owners retire separately, and the disposable
 stage is removed after closure while its exact composition/receipts remain.
 These cells do not establish campaign/cold-boot completion, numerical fidelity,
 physical devices/hearing, Wayland, Windows 11 or publication approval.
+
+## Installed Linux path, resize and profile-admission cells
+
+One fresh private Runtime installation under `Runtime spaces 雪` exercised the
+same installed ELF identified above, GNU 15.2 Release and the original shared
+dependency composition. No build or reconfigure was performed. Its cached
+configure record names `e3354d582b1bb4a5d29bcfc243704640decf76c0` plus tracked
+diff `218a94d673c75699f3e9847ee308fdd81d633de11943f20e2af23cb63f50268f`;
+this is retained provenance, **not clean/current-public source attestation**.
+
+| Installed-product stimulus | Observed result |
+|---|---|
+| Unicode/spaces prefix, ordinary resource discovery | Changing actual HAL/forest presentation; ordinary close, exit0. |
+| Absent ROM / owned wrong 16 MiB image with N64 magic | Both reject with exit1; wrong input remains unchanged. |
+| Owned unwritable data root / profile lock directory | Renderer admission precedes visible filesystem/profile failure; exit1, no alternate save path. |
+| Owned unwritable `XDG_CACHE_HOME` | Two traced `EACCES` failures; Mesa explicitly disables optional shader caching, continues rendering and closes ordinarily with exit0. |
+| Attributed X11 resize and restore | Actual 640×480 → 800×450 → 640×480 geometry/captures, changing presentation at both extents; ordinary close, exit0. |
+| Concurrent access to one whole earned-profile copy | Holder visibly reaches genuine Title; second installed process reports profile-open failure and exits1 in0.615s. Holder then closes ordinarily; both closed canonical files remain byte-exact. |
+
+F14 requires correct writable paths/errors, not rejection when optional shader
+caching is unavailable. The cache trace observes no alternative cache-writing
+open or directory creation; disabling that cache is not a save-path fallback.
+No acceptance criterion is changed. Source pair, installed inventory and
+provider identities remain unchanged. Actual pixels confirm the resized
+presentation, restored Todd scene and genuine `PRESS START` Title.
+
+Original Native/controllers/readers retire naturally before owned stage,
+configuration, authentication, display and bus cleanup. Compact qualification
+`2404ea31832347dec9b24cb908ee78a3680e60162eef302a13b1e79efc19c33f`
+and cleanup ledger
+`3cc9380928c48d45c631f734d99e6658a01db0501a2474ceceae841638eceb3c`
+retain exact observations. These are ordinary direct-child/metadata-trace
+cells, not sealed-image, `ECHILD` or whole-tree custody. They do not establish
+the full package loop, final campaign/profile cold boot, DPI/fullscreen/device
+loss, physical hardware/hearing, complete Linux matrix or Windows11.

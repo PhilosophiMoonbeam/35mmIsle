@@ -57,6 +57,30 @@ accounted root status. Deadline expiry records incomplete retirement while
 retaining custody until actual cessation. This is not a malicious-code sandbox
 or a guarantee that every kernel-blocked task can terminate within a deadline.
 
+The current owner hot path retains a fresh task enumeration and child-file read
+before **every collection**, not merely each polling batch. It caches only PID
+and path spelling, uses fresh `os.listdir` names instead of per-entry `Path`
+objects, and opens/reads/closes the child file normally. Collection/dispatch
+order, syscall entry/exit validation, mapping quiescence, spawn/signal handling
+and census-to-retirement-signal ordering are unchanged. Neither census batching
+nor seccomp filtering is introduced.
+
+One actual paired Own-only fixture performs 10,000 checked `SYS_getpid` calls
+through the real custody CLI; both controllers use the same `cProfile`
+instrumentation. Observed results:
+
+| Implementation | Target loop elapsed | Owner census cumulative | Actual syscall stops |
+|---|---:|---:|---:|
+| Before | 1.8321 s | 1.2922 s | 20,207 |
+| Same-boundary optimization | 1.0715 s | 0.5882 s | 20,207 |
+
+Both runs return the exact PID×10,000 sum, exit normally with 0 and retain complete
+sealed-image/task custody, `ECHILD`, empty pending/rejection sets, stream EOF
+and FD closure without SIGKILL/deadline completion. All 63 current contracts,
+including the real mapping/spawn/child-first/caller-child regressions, pass.
+This is one instrumented pair, **not gameplay pacing, a new application
+readiness proof or permission to retry an exhausted Station/campaign cohort**.
+
 Competing planner/reviewer assessments identified implicit executable
 permissions, x32 dispatch, leader-first retirement and escaped-child ownership
 gaps before correction. Actual regressions additionally exposed ignored signal

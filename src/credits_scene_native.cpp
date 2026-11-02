@@ -408,6 +408,15 @@ IsleGameResult cancel_drain(IsleCreditsSource* source,int* done) noexcept {
         if(idle!=ISLE_GAME_OK)return idle;
         const auto progressed=owner.native_progress(&owner);
         remember(state,progressed);
+        // A fault can abandon the worker with Replay's shared GPU admission
+        // still live. Presentation waits for that same Frame to be quiescent,
+        // so drain the cancelled submission before asking it to return World.
+        // Replay::poll retains any World currently borrowed by Presentation.
+        if(n.pipeline && n.pipeline->gpu_busy()) {
+            (void)n.pipeline->poll();
+            if(n.pipeline->error()[0])remember(state,ISLE_GAME_EXECUTION_FAILURE);
+            if(n.pipeline->gpu_busy())return state.failure;
+        }
         // Actual Presentation World handoff precedes shared Replay retirement.
         if(n.presentation) {
             const auto status=n.presentation->retire();

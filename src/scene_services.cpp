@@ -1040,8 +1040,11 @@ bool Services::restore_sprite_after_failure(IsleGameSprite* sprite, std::size_t 
         return false;
     auto* record = impl_->find_sprite(sprite);
     if (!record) return false;
-    auto* destination = view(sprite);
-    if (!destination) return false;
+    // The ordinary view() goes through check(), which deliberately rejects a
+    // sticky Services failure. This joined-only teardown retains that failure.
+    IsleSprite* destination=nullptr;
+    if (isle_game_sprite_view(game,sprite,&destination) != ISLE_GAME_OK || !destination)
+        return false;
     *destination = replacement;
     record->resource = resource;
     record->generation = generation;

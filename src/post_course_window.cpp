@@ -425,7 +425,11 @@ struct State {
         scene::SpriteHandle owner;IsleGameSprite *parent,*child,*next,*previous;
         const bool live=t.sprite && services.sprite_links(t.sprite,owner,parent,child,next,previous);
         if(live && owner.object!=t.object)return fail(ISLE_GAME_INVALID_STATE);
-        IsleSprite* view=live?services.view(t.sprite):nullptr;
+        // Retirement must inspect the still-live descriptor even after the
+        // Services fault latch; its ordinary view() rejects that sticky fault.
+        IsleSprite* view=nullptr;
+        const auto viewed=live?isle_game_sprite_view(services.game,t.sprite,&view):ISLE_GAME_OK;
+        if(viewed!=ISLE_GAME_OK)return fail(viewed);
         if(live && !view)return fail(ISLE_GAME_INVALID_STATE);
         try {
             // Producer rejects outstanding actual graphics borrows BEFORE

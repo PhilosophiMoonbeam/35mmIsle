@@ -660,7 +660,7 @@
       "sha256": "87fe86b4f837607881d77e5c20cdb87d9cdb717112af12e65847571ecf0ad48c"
     },
     "src/post_course_window.cpp": {
-      "sha256": "9668b19639c177d52aa8a815395c8389a07cd78d1ec1c74e19c641fe249de4b2"
+      "sha256": "5ca2151820f17227f738f172114c63e60ba7683ec740338c786ef2f9c50f2e04"
     },
     "src/post_course_window.hpp": {
       "sha256": "7bb39f15f30d872ae7014040672fb36b72a36b1077625dedc520b9555db05b70"
@@ -681,7 +681,7 @@
       "sha256": "0c58e995aa4a6ea6675579a719aad258f6e438a1b42a149bf8f3ed941b678954"
     },
     "src/scene_services.cpp": {
-      "sha256": "e907c7f18fc19b9802ccded83a370b57d8c6531637cef921e187456fed963a44"
+      "sha256": "bcadd42d078e43272192867d2eaf151abb1f9a83c92f6e99e0c5132e6c5ff097"
     },
     "src/scene_services.hpp": {
       "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"

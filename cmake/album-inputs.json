@@ -3312,7 +3312,7 @@
       "sha256": "3c65e563983a8d4b3b231a17f1d9121977b6b690b614395059b217db808afcf4"
     },
     "src/post_course_window.cpp": {
-      "sha256": "9668b19639c177d52aa8a815395c8389a07cd78d1ec1c74e19c641fe249de4b2"
+      "sha256": "5ca2151820f17227f738f172114c63e60ba7683ec740338c786ef2f9c50f2e04"
     },
     "src/post_course_scene_hooks.cpp": {
       "sha256": "6c89f31133831882440d11cf272e60f3654927324195200a30bf3ef105afec8d"
@@ -3432,7 +3432,7 @@
       "sha256": "0c58e995aa4a6ea6675579a719aad258f6e438a1b42a149bf8f3ed941b678954"
     },
     "src/scene_services.cpp": {
-      "sha256": "e907c7f18fc19b9802ccded83a370b57d8c6531637cef921e187456fed963a44"
+      "sha256": "bcadd42d078e43272192867d2eaf151abb1f9a83c92f6e99e0c5132e6c5ff097"
     },
     "src/scene_services.hpp": {
       "sha256": "d2fd5c8639b85e7bd4d0d06ebb7c77c29e5aa7611ee754b9b46296f6edf749ae"
@@ -3778,6 +3778,6 @@
     "native_support_hash_policy": "Exact authoring-time live common/extended WorkingPhotos bytes. Parent owns final integration support fixedpoint and must reseal guarded recipe/generator after mechanical shared integration."
   },
   "support_allowlist": [],
-  "recipe_sha256": "20c13fbf1705704675619a2657edcb59b9e1d0440a056b4ddf031b20be181caa",
-  "generator_sha256": "c0cb2bcd7cb7d7152ffc6d0f78d0a362d937789f76b39f18f812f7da8bae6502"
+  "recipe_sha256": "aee91b7b7150c93c1a98bff14dcad910dcdf99b723055893f727bd2b4083d95c",
+  "generator_sha256": "51acf1b9c464d9d358e6616ce03dbd0d893ba38355b91feb0bd621408a4052aa"
 }

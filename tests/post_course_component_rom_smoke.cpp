@@ -37,12 +37,13 @@ struct Options {
     Cancellation cancellation = Cancellation::none;
     unsigned deadline_seconds = 600;
     bool cpu = false;
+    bool fail_native_service = false;
 };
 void usage(std::ostream& out) {
     out << "Usage: post-course-component-rom-smoke <ROM> <existing-workdir>\n"
            "       <end8|gallery23|credits17|credits18|credits19|credits20> [--cpu-renderer]\n"
            "       [--renderer-resources <directory>] [--deadline-seconds <1..86400>]\n"
-           "       [--cancel-at <before-update|completed-frame>]\n"
+           "       [--cancel-at <before-update|completed-frame> | --fail-native-service]\n"
            "The exact US ROM is read-only; workdir/profile must already contain the WHOLE\n"
            "unchanged canonical save pair earned through ordinary UI. No missing profile,\n"
            "photo, progress, gear, selector or RNG inputs are created or repaired here.\n"
@@ -54,6 +55,8 @@ void usage(std::ostream& out) {
            "--cpu-renderer requires a CPU Vulkan device for canonical rendering.\n"
            "--renderer-resources selects the actual existing pinned shader directory.\n"
            "A deadline is FAILURE followed by actual retirement, never completion.\n"
+           "--fail-native-service returns EXECUTION_FAILURE once at the first actual native\n"
+           "service callback; it always exits 1, including if that boundary is not reached.\n"
            "Exit 0 requires an actual result or the requested reached cancellation,\n"
            "joined component/GTL owners and drained Host audio; no Root or hearing claim.\n";
 }
@@ -85,6 +88,7 @@ bool parse(int argc, Argument** argv, Options& options) {
     for (int index = 4; index < argc; ++index) {
         const Text option(argv[index]);
         if (option == OPTION("--cpu-renderer")) options.cpu = true;
+        else if (option == OPTION("--fail-native-service")) options.fail_native_service = true;
         else if (option == OPTION("--renderer-resources") && index + 1 < argc) {
             options.host.renderer_resources = std::filesystem::path(argv[++index]);
             if (options.host.renderer_resources.empty()) return false;
@@ -97,7 +101,7 @@ bool parse(int argc, Argument** argv, Options& options) {
             else return false;
         } else return false;
     }
-    return true;
+    return !options.fail_native_service || options.cancellation == Cancellation::none;
 }
 const char* status_name(Status status) noexcept {
     switch (status) {
@@ -123,12 +127,14 @@ struct Consumer {
     isle::host::Progress& progress;
     Cancellation cancellation;
     isle::post_course::ComponentEntry entry;
+    bool fail_native_service;
     Component* component = nullptr;
     std::optional<isle::host::FrameToken> executing{};
     isle::game_input::RequestToken publication{};
     bool publication_ready = false, updating = false, stopping = false;
     bool draw_accepted = false;
     bool failed = false, cancellation_reached = false, normal_result = false;
+    bool native_service_failure_injected = false;
     std::uint64_t updates = 0, submissions = 0, releases = 0;
     std::uint64_t presentations = 0, native_services = 0;
     std::uint64_t retirement_attempts = 0, retirement_pending = 0;
@@ -227,6 +233,16 @@ struct Consumer {
     static IsleGameResult native_service(void* raw) noexcept {
         auto& self = *static_cast<Consumer*>(raw);
         ++self.native_services;
+        if (self.fail_native_service && !self.native_service_failure_injected) {
+            self.native_service_failure_injected = true;
+            std::cout << "NATIVE_SERVICE_FAILURE_INJECTED call=" << self.native_services
+                      << " result=" << static_cast<int>(ISLE_GAME_EXECUTION_FAILURE)
+                      << " consumer_failed=" << self.failed << " consumer_stopping=" << self.stopping << '\n';
+            // Return the public fault before changing any consumer stop/error
+            // state. Source/Component must propagate it; later callbacks still
+            // service real display and retirement owners through the usual path.
+            return ISLE_GAME_EXECUTION_FAILURE;
+        }
         self.service_display();
         // STOPPED requests the existing Source cancellation path. No lifecycle
         // destruction or OM/GTL update is reentered under this returning leaf.
@@ -353,6 +369,8 @@ struct Consumer {
         std::cout << " actual_updates=" << updates << " submitted=" << submissions
                   << " consumer_releases=" << releases << " host_presentations=" << presentations
                   << " native_services=" << native_services
+                  << " native_service_failure_requested=" << fail_native_service
+                  << " native_service_failure_injected=" << native_service_failure_injected
                   << " retirement_attempts=" << retirement_attempts << " retirement_pending=" << retirement_pending
                   << " gtl_submissions=" << stats.submissions
                   << " gtl_terminals=" << stats.terminals << " gtl_stopped=" << clock.stopped()
@@ -362,6 +380,14 @@ struct Consumer {
             fail("component retired with an outstanding public owner");
         if (cancellation != Cancellation::none && !cancellation_reached)
             fail("requested cancellation milestone was not reached");
+        if (fail_native_service) {
+            if (!native_service_failure_injected)
+                fail("requested native service failure boundary was not reached");
+            else if (component->error() != ISLE_GAME_EXECUTION_FAILURE)
+                fail("native service execution failure was not retained by Component");
+            if (result || normal_result)
+                fail("native service failure produced a normal component result");
+        }
     }
 };
 
@@ -415,14 +441,15 @@ int run(int argc, Argument** argv) {
     isle::game_input::Service input;
     isle::host::GtlClock clock({1, 1, 2, true, 0});
     isle::host::Progress progress(isle::host::direct_platform(host), input, audio_driver);
-    Consumer consumer{host, input, clock, progress, options.cancellation, options.entry};
+    Consumer consumer{host, input, clock, progress, options.cancellation, options.entry, options.fail_native_service};
     progress.bind(clock, {&consumer, Consumer::acknowledge});
     progress.set_deadline(Time::now() + std::chrono::seconds(options.deadline_seconds),
                           "standalone component deadline expired; not successful completion");
     progress.set_policy({false, false, false, false, true});
     std::cout << "COMPONENT_ONLY entry=" << options.entry_name
               << " root_route_claimed=false manager_entry_borrow=false input=ordinary-ControlDeck"
-                 " private_source_reads=false canonical_pair_authored=false\n";
+                 " private_source_reads=false canonical_pair_authored=false"
+              << " native_service_failure_requested=" << options.fail_native_service << '\n';
     const auto& audio = host.audio_info();
     std::cout << "AUDIO_OUTPUT driver=" << audio.driver.data()
               << " physical_device=" << audio.physical_device << " logical_device=" << audio.logical_device
@@ -460,7 +487,8 @@ int run(int argc, Argument** argv) {
             else {
                 consumer.component = made.component.get();
                 consumer.run();
-                success = !consumer.failed && (consumer.normal_result || consumer.cancellation_reached);
+                success = !options.fail_native_service && !consumer.failed &&
+                    (consumer.normal_result || consumer.cancellation_reached);
                 // Callback storage, ROM, modules, Photos, State, Input, GTL and
                 // GAME audio and Host all remain live through complete Component destruction.
                 made.component.reset();

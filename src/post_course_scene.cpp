@@ -73,7 +73,8 @@ Scene::Impl::Impl(ComponentModules::Lease lease,game::State& persistent,
 void Scene::Impl::validate_configuration() const {
     if(component_modules) {
         if(manager || &component_modules->snapshot()!=&snapshot ||
-           (kind!=Resources::Kind::end_level_8 && kind!=Resources::Kind::credits))
+           (kind!=Resources::Kind::end_level_8 && kind!=Resources::Kind::credits &&
+            !(kind==Resources::Kind::gallery && argument==23)))
             throw std::invalid_argument("post-course component module binding/selection");
     } else if(!manager) {
         throw std::invalid_argument("post-course Root binding requires its actual Manager");
@@ -863,6 +864,7 @@ ComponentCreateResult Component::create(const rom::Snapshot& snapshot,game::Stat
     case ComponentEntry::credits18:kind=Resources::Kind::credits;argument=18;break;
     case ComponentEntry::credits19:kind=Resources::Kind::credits;argument=19;break;
     case ComponentEntry::credits20:kind=Resources::Kind::credits;argument=20;break;
+    case ComponentEntry::gallery23:kind=Resources::Kind::gallery;argument=23;break;
     default:
         result.error=ISLE_GAME_INVALID_ARGUMENT;
         copy_message(result.message,"post-course component entry selection");

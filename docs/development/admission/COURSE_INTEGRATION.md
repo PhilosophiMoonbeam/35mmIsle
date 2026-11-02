@@ -364,13 +364,35 @@ zero; `src/gallery/9FAC10.c:92–94` retains its unreferenced setter, while
 `:844–889` selects Title8 unless that flag changes. Neither actual SceneSetup
 registration, DMA nor printer completion supplies a discovered setter call.
 Credits20 likewise has retained consumers but no discovered selector. Gallery23
-is reached only through End24. These real APIs remain implemented; no fabricated
-Root selection or Source-global write makes them reachable.
+is reached in Root only through End24. These real APIs remain implemented; no
+fabricated Root selection or Source-global write makes them reachable.
 
 The actual reachable Gallery route is saved-profile Title → Gallery22, button20
 for full view, A for the next photo, B for grid return, then Save4 → Title8.
 Authored save/photo/notice fixtures qualify native API/Manager integration only,
 not natural gameplay progression or dormant-scene Root reachability.
+
+The separate `post_course::ComponentEntry::gallery23` selection now runs the
+existing native Gallery owner with Source argument `23`, without any Manager,
+EntryBorrow or application acknowledgment. The prior standalone consumer
+offered only End8/Credits; neither End8 returning23 nor Gallery22's existing
+runtime receipt executed this downstream selection. Source initializes the
+Gallery mode from `argument == 22`: Gallery23 omits Gallery22's song start and
+opening photo-choice dialogue, but retains the same actual Window, Replay,
+full-view, save, Source continuation and joined retirement owners. Its untouched
+initialized exit flag selects result8 on normal Save; no setter/global write
+is supplied to force End24.
+
+[Standalone build, whole-profile, input and capture prerequisites](../COMPONENTS.md#standalone-end8gallery23credits-components)
+describe the exact `post-course-component-rom-smoke ... gallery23` procedure,
+including separate before-update and completed-frame cancellation runs. Use an
+untouched whole UI-earned pair with saved Gallery photos for full-view/next-photo
+coverage; never synthesize missing photos or progression. The consumer checks
+normal Gallery23 result8 and the existing public retirement/graphics/GTL/Host
+boundaries. This implementation is not a recorded Gallery23 runtime proof:
+normal execution, external captures and cancellation receipts remain prospective
+until exercised. It neither admits dormant Root entries nor reconstructs the
+preceding End8 audio/history or natural campaign progression.
 
 
 Exact immutable Source registration excludes dormant Album/Report/Gallery/Credits

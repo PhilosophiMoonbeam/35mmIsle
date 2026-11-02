@@ -146,9 +146,9 @@ GAME owns its audio `Driver`, Session, producer RAM and actual RSP executor; SDL
 
 Link `isle-process` through CMake to inherit `Threads::Threads`; the header-only queue also requires native thread linkage. Existing process targets retain strict FP options (`/fp:strict` on MSVC; `-fno-fast-math`, `-ffp-contract=off` and `-frounding-math` on GCC/Clang).
 
-### Standalone End8/Credits components
+### Standalone End8/Gallery23/Credits components
 
-`post_course::Component` executes the original End8 or Credits17–20 component over real native State, Photos, Input, Audio, GTL, graphics and module owners. It is type-distinct from Root-admitted `Scene`: no Manager entry borrow, Root selector, fabricated overlay generation or application-entry acknowledgment is supplied.
+`post_course::Component` executes the original End8, downstream Gallery23 or Credits17–20 component over real native State, Photos, Input, Audio, GTL, graphics and module owners. It is type-distinct from Root-admitted `Scene`: no Manager entry borrow, Root selector, fabricated overlay generation or application-entry acknowledgment is supplied. Gallery23 selects the existing native Gallery owner with actual Source argument `23`; it is not Gallery22 and does not automatically follow an End8 result.
 
 In an already configured full native-host build:
 
@@ -157,11 +157,20 @@ HOST_BUILD=/path/to/native-host-build
 cmake --build "$HOST_BUILD" --target post-course-component-rom-smoke --parallel 2
 "$HOST_BUILD/post-course-component-rom-smoke" /path/to/pokemonsnap.z64 \
   /private/existing-component-workdir end8 --cpu-renderer
+"$HOST_BUILD/post-course-component-rom-smoke" /path/to/pokemonsnap.z64 \
+  /private/existing-component-workdir gallery23 --cpu-renderer
 ```
 
-Supply the untouched whole ordinary-UI-earned save pair in `workdir/profile`; the consumer does not repair missing photos or author progress, gear, selectors or RNG. Other explicit selections are `credits17`, `credits18`, `credits19` and `credits20`. `--cancel-at before-update|completed-frame` exercises real ownership boundaries; deadlines fail rather than certify completion. `--help` lists renderer-resource and ordinary ControlDeck controls.
+Supply the untouched whole ordinary-UI-earned save pair in `workdir/profile`; the consumer does not repair missing photos or author progress, gear, selectors or RNG. For photo/full-view coverage use a whole earned pair already containing at least two saved Gallery photographs; an empty Gallery cannot establish that coverage. Other explicit selections are `credits17`, `credits18`, `credits19` and `credits20`. The workdir must already exist and be writable: the actual Source Save action publishes through the canonical save session. Use a whole-pair working copy if the original receipt must remain unchanged.
+
+The configured build must include the real native Host and canonical RSP/RDP renderer, the pinned renderer resources (pass `--renderer-resources /existing/shader/directory` if needed), an available Vulkan device (CPU Vulkan for `--cpu-renderer`), a real Host display and an allowed audio endpoint. Focus the Host window and use ordinary ControlDeck input: W/A/S/D stick, X=A, C=B, Z=Z, Space=Start. No private Source reads are needed. Capture the actual window externally: Gallery23 omits Gallery22's opening “Pick your four best shots!” dialogue and its song-start branch, then presents the same genuine Gallery controls. Select full view (Source button20), A for the next earned photograph, B for the grid, then Save (button4). Its initialized exit flag remains zero, so normal Source completion returns `8`, not End8's `23`; the consumer rejects that mistaken output. Standalone startup does not recreate End8's preceding audio/history.
+
+Run `gallery23 --cancel-at before-update` and, separately, `gallery23 --cancel-at completed-frame` with the same ROM/workdir arguments to exercise real ownership boundaries. `--help` lists deadline and renderer-resource options. Deadlines fail rather than certify completion. For a normal receipt retain `COMPONENT_ONLY entry=gallery23`, completed window captures, `COMPONENT_RETIRED ... error=0 result=8`, balanced actual GTL submission/terminal counts and the existing joined Host/audio shutdown output. Cancellation receipts are separate, not a substitute for normal Gallery23 execution.
 
 The actual Linux End8 proof renders two earned photographs, advances with A, hides the message with Z and returns 23 through B after joined retirement. [Admission evidence](admission/END8.md#native-end8-component-and-deferred-source-admission) separates this component execution from the still-unqualified Root24/Credits20 producers, fresh campaign, Windows 11 runtime, hardware/hearing and Original-fidelity gates.
 
-[Approved prospective criteria](../planning/VALIDATION.md#approved-prospective-dispositions-and-evidence-applicability) distinguish pinned-source reachability review from real standalone qualification without discarding reachable behavior. End8 returning 23 does not qualify downstream Gallery23 execution/retirement; its evidence must be explicitly mapped or remain a blocker. Historical receipts are not retroactive acceptance under the revised criteria.
+[Approved prospective criteria](../planning/VALIDATION.md#approved-prospective-dispositions-and-evidence-applicability) distinguish pinned-source reachability review from real standalone qualification without discarding reachable behavior. End8 returning 23 and the earlier Gallery22 receipt do not qualify downstream Gallery23 execution/retirement. Historical receipts are not retroactive acceptance under the revised criteria.
 
+The new standalone Gallery23 consumer was exercised on Linux with an untouched whole UI-earned source pair and separate working copies. Actual authenticated-window captures show the grid, full Pikachu photograph, A-next Pidgey photograph and B-restored grid; ordinary Save returns Source8. The normal case retires 2,303 actual graphics submissions/terminals with no Root acknowledgments. Separate before-update and held-completed-frame cancellation cases both exit0 with joined Component/GTL owners and drained Host audio.
+
+All three cases have sealed-image/syscall custody, natural process exit0, complete owned-task reaping, `ECHILD`, pipe EOF and retained-FD closure; the original source pair is unchanged. Independent review found no concrete ownership/Root-admission defect. This is bounded native standalone Gallery23 evidence, not Root reachability, Original pixel/audio fidelity, physical-device/hearing, a fresh campaign, whole-profile cold boot or Windows11 qualification.

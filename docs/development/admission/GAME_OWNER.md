@@ -427,3 +427,19 @@ nor any successful prefix transfers into shipping acceptance. Shipping-thread
 qualification, independent public-pixel timing, a second executable Boot and the
 cause of historical failed cases remain separate.
 
+
+## Idle production-owner startup-failure retirement
+
+A separate Linux negative scenario uses engineering executable SHA-256
+`daa01ecac4911feed0e2e63ff95a1a82517ddb842fa65629e1e3e1a937a6ef5d`.
+An explicitly empty renderer-resource directory produces the exact
+`Pinned LUS OpenGL shader resources are missing` diagnostic after the real GAME
+worker starts but before profile creation or `start_epoch`. The target exits1
+naturally, its worker exits0, and the fresh application-data directory stays empty.
+
+Current sealed-image/syscall custody observes complete owned-task reaping,
+`ECHILD`, empty trace/wait ledgers, pipe EOF and retained-FD closure, with no
+supervisor termination signal or deadline exhaustion. New display/bus services
+are separately owned and retired; no old campaign/controller is adopted.
+This qualifies partial-Host failure and idle-worker wake/join only, not active
+Runtime/RPC/display/audio/reset behavior, Original fidelity or Windows11.

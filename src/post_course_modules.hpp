@@ -29,7 +29,7 @@ struct Modules final {
 
 class Component;
 
-/* Independently initialized Window data for standalone End8/Credits execution.
+/* Independently initialized Window data for standalone End8/Gallery23/Credits execution.
  * The borrowed Snapshot must remain alive and unmoved through this owner's
  * lifetime. Serialized access remains on its creator thread. Component epochs
  * never represent Root overlay residency. */

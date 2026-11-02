@@ -17,6 +17,14 @@ bd show bd_35mmIsle-v4u.1
 
 `bd ready` discovers currently unblocked work; `bd show <id>` reads the actual contract, dependencies, and status. Follow `bd prime` for claiming and updating work. Git publication and Dolt remote synchronization are distinct authorization decisions.
 
+## Autonomous execution and local blockers
+
+Pursue every reachable, independently authorized implementation or qualification task before requesting intervention. Inspect unfinished `in_progress` and blocked records as well as `bd ready`; an empty ready queue is not proof that useful work is exhausted. Distinguish implemented functionality, proven defects, validation mechanisms and release acceptance rather than repeating work from stale titles.
+
+Attach missing data, host permission, physical-device/human observations, rights decisions and deferred Windows prerequisites only to the proofs they actually block. Keep true prerequisites and acceptance criteria intact. Parent-completion dependencies do not automatically prohibit independent lower-level work: create narrowly scoped runnable tasks with their actual inputs, retain the parent gate, and record bounded evidence without claiming parent completion.
+
+Use independent lanes for product defects, native components/runtime, packaging/install and fidelity. Claim and verify the next reachable lane when another is blocked. Before escalation, record the remaining obligations and why each requires an inaccessible input; do not ask for intervention merely because the current preferred path stopped. Existing ownership, isolation, publication and platform-deferral constraints remain binding.
+
 ## Work-unit and dependency IDs
 
 Dependencies below are prerequisites of the row, not tasks blocked by the row. IDs and dependency lists reproduce the handoff mapping.

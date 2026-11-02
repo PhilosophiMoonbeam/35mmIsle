@@ -20,10 +20,10 @@
       "sha256": "e0de60c22999218bab16c179bf1eacae22fcf7aa0f1a24d075cdd9426b1a498b"
     },
     "src/post_course_scene.cpp": {
-      "sha256": "7f06297bf75b7486d830a53158d74283b8678c74639b822272590aa6e8729868"
+      "sha256": "15a20f1909e23c6f0ae35720b224b43325df9b9d1eed5da0aad4bc8a6132788c"
     },
     "src/post_course_scene.hpp": {
-      "sha256": "e82c8920b5f951744ed47f1c3b7cce5aa0cc17a7f24ab6c9c4307f2c6412b8ee"
+      "sha256": "2862ec40258f90bcb3ac35096f97616473c4c4d469101eeaf94ac4df69e2bd17"
     },
     "src/post_course_scene_internal.hpp": {
       "sha256": "39f40569326c79f235063a7895135ba30717613de65b8bec8f2e11143c0bde9a"
@@ -35,7 +35,7 @@
       "sha256": "25eb1682b44cb5fed2dc79fb30184ba3dd9915fa8e5f5c5737854fca8e508698"
     },
     "src/post_course_modules.hpp": {
-      "sha256": "0cf8d663ee5bb9ce7284919ac36e9b040bfa9dfa1d1f26553fd318af0b351a0a"
+      "sha256": "f04115c439c67f3295e37fbab49fb0dfb40c8bd15477d5a7f60466d3e2408bec"
     }
   },
   "repository": "https://github.com/ethteck/pokemonsnap",

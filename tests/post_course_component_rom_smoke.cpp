@@ -40,7 +40,7 @@ struct Options {
 };
 void usage(std::ostream& out) {
     out << "Usage: post-course-component-rom-smoke <ROM> <existing-workdir>\n"
-           "       <end8|credits17|credits18|credits19|credits20> [--cpu-renderer]\n"
+           "       <end8|gallery23|credits17|credits18|credits19|credits20> [--cpu-renderer]\n"
            "       [--renderer-resources <directory>] [--deadline-seconds <1..86400>]\n"
            "       [--cancel-at <before-update|completed-frame>]\n"
            "The exact US ROM is read-only; workdir/profile must already contain the WHOLE\n"
@@ -76,6 +76,7 @@ bool parse(int argc, Argument** argv, Options& options) {
     const Text entry(argv[3]);
     using Entry = isle::post_course::ComponentEntry;
     if (entry == OPTION("end8")) { options.entry = Entry::end_level_8; options.entry_name = "end8"; }
+    else if (entry == OPTION("gallery23")) { options.entry = Entry::gallery23; options.entry_name = "gallery23"; }
     else if (entry == OPTION("credits17")) { options.entry = Entry::credits17; options.entry_name = "credits17"; }
     else if (entry == OPTION("credits18")) { options.entry = Entry::credits18; options.entry_name = "credits18"; }
     else if (entry == OPTION("credits19")) { options.entry = Entry::credits19; options.entry_name = "credits19"; }
@@ -121,6 +122,7 @@ struct Consumer {
     isle::host::GtlClock& clock;
     isle::host::Progress& progress;
     Cancellation cancellation;
+    isle::post_course::ComponentEntry entry;
     Component* component = nullptr;
     std::optional<isle::host::FrameToken> executing{};
     isle::game_input::RequestToken publication{};
@@ -340,6 +342,9 @@ struct Consumer {
         }
         observe_host();
         const auto result = component->result();
+        if (normal_result && entry == isle::post_course::ComponentEntry::gallery23 &&
+            (!result || *result != 8))
+            fail("standalone Gallery23 must return actual Source8, not End8's result23");
         std::cout << "COMPONENT_RETIRED status=" << status_name(component->status())
                   << " error=" << static_cast<int>(component->error()) << " result=";
         if (result) std::cout << *result;
@@ -410,7 +415,7 @@ int run(int argc, Argument** argv) {
     isle::game_input::Service input;
     isle::host::GtlClock clock({1, 1, 2, true, 0});
     isle::host::Progress progress(isle::host::direct_platform(host), input, audio_driver);
-    Consumer consumer{host, input, clock, progress, options.cancellation};
+    Consumer consumer{host, input, clock, progress, options.cancellation, options.entry};
     progress.bind(clock, {&consumer, Consumer::acknowledge});
     progress.set_deadline(Time::now() + std::chrono::seconds(options.deadline_seconds),
                           "standalone component deadline expired; not successful completion");

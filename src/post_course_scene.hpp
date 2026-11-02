@@ -20,7 +20,7 @@ namespace isle::post_course {
 struct SceneCreateResult;
 struct ComponentCreateResult;
 class Component;
-enum class ComponentEntry { end_level_8, credits17, credits18, credits19, credits20 };
+enum class ComponentEntry { end_level_8, credits17, credits18, credits19, credits20, gallery23 };
 struct SceneAccess;
 enum class SceneStatus { ready, setup_pending, running, retiring, completed, cancelled, failed, retired };
 /* Shared actual original CameraCheck9, PhotoCheck15, Album12, Report14,
@@ -86,7 +86,7 @@ struct SceneCreateResult {
     std::array<char,512> message{};
     explicit operator bool() const noexcept { return error == ISLE_GAME_OK && bool(scene); }
 };
-/* Independent End8/Credits execution, not a Manager entry or Root Scene.
+/* Independent End8/Gallery23/Credits execution, not a Manager entry or Root Scene.
  * The Snapshot, State/save session, Input, Audio, GTL, Photos, progress owners
  * and ComponentModules must outlive this component's complete retirement and
  * destruction, including nested native-progress callbacks. Its private module

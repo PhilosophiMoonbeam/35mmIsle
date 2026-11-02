@@ -6,6 +6,8 @@
 // spawn variants and Apple-hit delivery are explicit native API fixtures.
 // Neither selection proves earned progression, Original, GPU, fullgame or
 // Windows11. Both drain actual audio RSP tasks and an owned PCM stream.
+// --meowth: real52 factory/root and22 graphs; API variants reuse actual ROM
+// block2 behavior2 placement. Native Movement starts at explicit block0/4.
 #include "actor_interaction_probe.h"
 #include "actor_movement_probe.h"
 #include "actor_behavior_bindings.hpp"
@@ -17,6 +19,10 @@
 #include "actual_player_source.hpp"
 #include "effect_bank_resources.hpp"
 #include "scene_storage.hpp"
+#include "beach_meowth.hpp"
+#include "beach_meowth_source.h"
+#include "beach_scyther_special.hpp"
+#include "world_movement.hpp"
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -198,6 +204,24 @@ std::unique_ptr<actor::BehaviorBindings> make_bindings(const actor::BehaviorReso
     const std::array<std::uint32_t,2> roots{0x8035df20u,0x802cab50u};
     return std::make_unique<actor::BehaviorBindings>(resources,bindings,graphs,weighted,roots);
 }
+std::unique_ptr<actor::BehaviorBindings> make_meowth_bindings(const actor::BehaviorResources& resources,
+                                                          std::uint32_t omitted=0) {
+    std::vector<actor::BehaviorCallbackBinding> callbacks(beach::meowth_callbacks().begin(),beach::meowth_callbacks().end());
+    // 7050 calls the real AddAtGeo1006 helper, whose own original state broadcasts,
+    // plays sound34 and cleans up. Do not substitute a common callback for it.
+    for (const auto& callback:beach::scyther_special_callbacks())
+        if (callback.identity==0x802cbce0u || callback.identity==0x802cbd04u) callbacks.push_back(callback);
+    std::sort(callbacks.begin(),callbacks.end(),[](const auto& x,const auto& y) { return x.identity<y.identity; });
+    const auto family_roots=beach::meowth_roots();
+    std::vector<std::uint32_t> roots(family_roots.begin(),family_roots.end());
+    roots.push_back(0x802cbce0u); // Actual1006 factory state; its metadata owns CBD04.
+    if (omitted)
+        callbacks.erase(std::remove_if(callbacks.begin(),callbacks.end(),[&](const auto& callback) {
+            return callback.identity==omitted;
+        }),callbacks.end());
+    return std::make_unique<actor::BehaviorBindings>(resources,callbacks,beach::meowth_graphs(),
+        std::span<const std::uint32_t>{},roots);
+}
 
 std::unique_ptr<actor::BehaviorBindings> make_family_bindings(const actor::BehaviorResources& resources) {
     // Match Runtime's complete-family admission, including callbacks not
@@ -374,9 +398,466 @@ struct Consumer {
     }
 
     template<class Predicate>
-    void until(unsigned bound,Predicate done,const char* failure) {
-        for (unsigned n=0;n<bound && !done();++n) tick();
-        require(done(),failure);
+    void until(unsigned bound,Predicate done,const char* detail) {
+        for (unsigned n=0;n<bound&&!done();++n) tick();
+        if (!done()) {
+            for (const auto& subject:subjects) if (const auto* p=actors.source(subject.instance)) {
+                const auto position=placement(subject).transform.position;
+                std::cerr<<"Actor bounded failure: "<<detail<<" variant="<<p->behavior
+                         <<" graph=0x"<<std::hex<<(p->transitionGraph?p->transitionGraph->source_identity:0)
+                         <<std::dec<<" position="<<position.x<<','<<position.y<<','<<position.z
+                         <<" speed="<<p->hSpeed<<" radius="<<p->collisionRadius
+                         <<" flags="<<p->processFlags<<" counter="<<p->counter
+                         <<" pathParam="<<p->pathParam<<" playerDist="<<p->playerDist
+                         <<" target="<<p->interactionTarget<<" apple="<<p->apple<<'\n';
+            }
+            require(false,detail);
+        }
+    }
+    bool meowth_graph(const actor::SpawnResult& subject,std::uint32_t identity) {
+        const auto* graph=source(subject).transitionGraph;
+        return graph && graph->source_identity==identity;
+    }
+    bool meowth_header(const actor::SpawnResult& subject,std::uint32_t identity) {
+        const auto* header=static_cast<const actor::ActorAnimationHeader*>(source(subject).animHeader);
+        return header && header->wire.guest_address==identity;
+    }
+    void meowth_player(const actor::SpawnResult& subject,float distance,
+                      std::source_location where=std::source_location::current()) {
+        const auto origin=placement(subject).transform.position;
+        auto position=origin;
+        position.x+=distance;
+        const IsleGameModelTransform transform{position,{0,0,0},{1,1,1}};
+        native(isle_game_model_set_placement(services.game,player.model,ISLE_GAME_MODEL_PLACEMENT_RTS,&transform));
+        const IsleGameModelPlacement* published=nullptr;
+        native(isle_game_model_placement(services.game,player.model,&published));
+        require(published->transform.position.y==origin.y && published->transform.position.z==origin.z,
+                "Meowth Player fixture failed its actual one-axis placement precondition",where);
+        const auto actual_distance=std::abs(published->transform.position.x-origin.x);
+        native(isle_actor_owner_distance(&source(subject)));
+        if (!near(source(subject).playerDist,actual_distance))
+            std::cerr<<"Meowth Player distance: requested="<<distance<<" accepted="<<actual_distance
+                     <<" actual="<<source(subject).playerDist<<" actor_x="<<origin.x
+                     <<" player_x="<<published->transform.position.x<<'\n';
+        require(near(source(subject).playerDist,actual_distance),
+                "actual Meowth Player distance leaf lost published native placement",where);
+    }
+    actor::SpawnResult meowth_spawn(int variant) {
+        std::size_t definition=actor::actor_no_index;
+        for (std::size_t n=0;n<resources.definitions().size();++n)
+            if (resources.definitions()[n].actor_id==52 && resources.definitions()[n].factory_identity==0x802c7270u) definition=n;
+        require(definition!=actor::actor_no_index,"actual Meowth52/factory7270 definition absent");
+        require(world.blocks().size()>2,"Meowth fixture requires actual ROM block2");
+        auto* spawn_block=&world.blocks()[2];
+        const world::Spawn* seed=nullptr;
+        for (const auto& row:spawn_block->resource->spawns)
+            if (row.id==52 && row.behavior==2) { seed=&row; break; }
+        require(seed && near(seed->position.x,10.787099838256836f) &&
+                near(seed->position.y,2.390049934387207f) &&
+                near(seed->position.z,-11.034899711608887f) && seed->path==world::no_index,
+                "Meowth actual ROM block2 behavior2 row80135614 domain changed");
+        // The API variant is authored; placement is the actual ROM behavior2 row.
+        world::Spawn descriptor=*seed; descriptor.behavior=variant;
+        if (variant==3) {
+            // Borrow the actual ROM Meowth3 trajectory, never a diagnostic path.
+            for (const auto& block:world.resources().blocks) for (const auto& row:block.spawns)
+                if (row.id==52 && row.behavior==3 && row.path!=world::no_index) descriptor.path=row.path;
+            require(descriptor.path<world.resources().paths.size(),"actual ROM Meowth3 path domain absent");
+        }
+        require(world.current(),"Meowth factory requires actual current World");
+        auto result=actors.spawn({next_id++,definition,spawn_block,world.current(),&descriptor});
+        accepted(result.status); subjects.push_back(result);
+        auto& p=source(result);
+        require(p.id==52 && p.behavior==variant && p.stateProc &&
+                actor_interaction_native_update(result.object) &&
+                actor_interaction_function_count(result.object,func_beach_802C5DAC,7)==1,
+                "Meowth factory did not publish its genuine initial Source process/Update");
+        if (variant==0) meowth_ground(result);
+        meowth_player(result,2000);
+        const std::array<std::uint32_t,5> graphs{0x802cc40c,0x802cc644,0x802cc7e4,0x802cc854,0x802cc904};
+        until(8,[&] { return meowth_graph(result,graphs.at(static_cast<std::size_t>(variant))); },
+              "Meowth actual root did not select requested behavior variant");
+        require(near(p.miscVars[0].field0,p.collisionOffset.x) &&
+                near(p.miscVars[1].field0,p.collisionOffset.y) &&
+                near(p.miscVars[2].field0,p.collisionOffset.z) && near(p.miscVars[3].field0,p.collisionRadius),
+                "Meowth initial state did not retain its actual collision geometry");
+        return result;
+    }
+    void meowth_ground(const actor::SpawnResult& subject) {
+        const auto position=placement(subject).transform.position;
+        const std::array<float,4> offsets{0,2.64013671875f,source(subject).collisionRadius,20};
+        for (std::size_t n=0;n<offsets.size();++n) {
+            world::GroundResult ground;
+            const bool found=world.ground_at(position.x,position.z+offsets[n],ground);
+            const bool valid=found && ground.surface==0x7f4c00 &&
+                near(ground.height,249.99368286132812f) && near(position.y,ground.height);
+            if (!valid)
+                std::cerr<<"Meowth actual World domain failure sample="<<n
+                         <<" x="<<position.x<<" z="<<position.z+offsets[n]
+                         <<" y="<<position.y<<" found="<<found<<" height="<<ground.height
+                         <<" surface=0x"<<std::hex<<ground.surface<<std::dec<<'\n';
+            require(valid,"Meowth actual factory/first-step/radius/item ground domain differs from pinned source");
+        }
+    }
+    it::SpawnResult meowth_item(const actor::SpawnResult& subject,bool apple,float distance=20) {
+        auto position=placement(subject).transform.position; position.z+=distance;
+        auto result=apple?items.spawn_apple(position,{0,0,0}):items.spawn_ball(position,{0,0,0});
+        accepted(result.status); items.source(result.instance)->state=ISLE_ITEM_STILL;
+        accepted(items.pause()); suppress(result.object,true);
+        const IsleGameModelNode* nodes=nullptr; std::size_t count=0;
+        native(isle_game_model_peek_nodes(services.game,items.native_model(result.instance),&nodes,&count));
+        require(count>0 && same(nodes[0].transform.position,position),
+                "Meowth actual Item root differs from explicit native target");
+        world::GroundResult ground;
+        require(world.ground_at(nodes[0].transform.position.x,nodes[0].transform.position.z,ground) &&
+                ground.surface==0x7f4c00 && near(ground.height,position.y),
+                "Meowth actual Item ground target lost pinned allowed flat surface");
+        return result;
+    }
+    void meowth_command(const actor::SpawnResult& subject,int command,IsleGameObject* sender=nullptr) {
+        const auto before=sender?services.source_owner_borrows(sender).queued:0;
+        enqueue(subject,command,sender);
+        if (sender) require(services.source_owner_borrows(sender).queued==before+1,
+                            "Meowth command did not retain its actual FIFO sender");
+        tick();
+        if (sender) require(services.source_owner_borrows(sender).queued==before,
+                            "Meowth Update did not consume its actual FIFO sender credit");
+    }
+    void meowth_flute(const actor::SpawnResult& subject,std::uint32_t entered,std::uint32_t returned,
+                     IsleGameSourceCallback helper) {
+        meowth_player(subject,1000);
+        require(items.flute().play()==audio::Error::none,"Meowth actual Flute client failed to start");
+        until(8,[&] { return meowth_graph(subject,entered); },"Meowth actual graph did not hear owned Flute");
+        tick();
+        require(actor_interaction_function_count(subject.object,helper,5)==1 &&
+                source(subject).interactionTarget==player.object,
+                "Meowth Flute state did not retain Player or run its original waiting path helper");
+        require(items.flute().stop()==audio::Error::none,"Meowth actual Flute client failed to stop");
+        until(8,[&] { return meowth_graph(subject,returned); },"Meowth Flute helper did not complete on actual stop");
+        require(actor_interaction_function_count(subject.object,helper,5)==0,
+                "Meowth Flute helper remained stranded after state transfer");
+        meowth_player(subject,2000);
+    }
+    void meowth_reaction(const actor::SpawnResult& subject,int command,std::uint32_t header,
+                        std::uint32_t returned) {
+        meowth_command(subject,command,player.object);
+        until(8,[&] { return meowth_header(subject,header); },"Meowth FIFO did not enter original reaction animation");
+        until(512,[&] { return meowth_graph(subject,returned); },"Meowth reaction did not finish through actual animation events");
+    }
+    void meowth_aux(const actor::SpawnResult& subject,std::uint32_t entered,std::uint32_t returned) {
+        const auto offset=source(subject).collisionOffset;
+        const auto radius=source(subject).collisionRadius;
+        meowth_player(subject,100);
+        until(8,[&] { return meowth_graph(subject,entered); },"Meowth near-Player graph failed to select original auxiliary state");
+        tick();
+        require(actor_interaction_function_count(subject.object,func_beach_802C5C60,6)==1 &&
+                source(subject).miscVars[4].field1 &&
+                source(subject).interactionTarget==player.object,
+                "Meowth actual collision auxiliary/Player canonical hold was not started");
+        meowth_player(subject,2000);
+        until(48,[&] { return !near(source(subject).collisionRadius,radius); },
+              "Meowth auxiliary did not publish its delayed actual collision geometry");
+        const auto scale=placement(subject).transform.scale;
+        const auto& p=source(subject);
+        require(near(p.collisionOffset.x,-60/(scale.x/.1f)) &&
+                near(p.collisionOffset.y,207/(scale.y/.1f)) &&
+                near(p.collisionOffset.z,31/(scale.z/.1f)) &&
+                near(p.collisionRadius,38.3f*(scale.y/.1f)),
+                "Meowth auxiliary geometry did not use captured native model scale");
+        until(64,[&] { return !actor_interaction_function_count(subject.object,func_beach_802C5C60,6); },
+              "Meowth timed collision auxiliary retained a native process");
+        require(same(source(subject).collisionOffset,offset) && near(source(subject).collisionRadius,radius),
+                "Meowth auxiliary did not restore root-saved collision geometry");
+        until(512,[&] { return meowth_graph(subject,returned); },"Meowth auxiliary reaction did not rejoin actual state graph");
+    }
+    void meowth_default(unsigned selection) {
+        const auto subject=meowth_spawn(0);
+        if (selection==0) {
+            until(1200,[&] { return actor_interaction_function_count(subject.object,func_beach_802C5F9C,5)==1; },
+                  "Meowth actual weighted idle never selected its original circle helper");
+            const auto before=placement(subject).transform.position;
+            tick(); tick();
+            require(source(subject).hSpeed==20 && source(subject).pokemonLoopTarget==5 &&
+                    (!same(placement(subject).transform.position,before) ||
+                     (source(subject).processFlags&POKEMON_PROCESS_FLAG_PATH_ENDED)),
+                    "Meowth weighted walking helper produced neither movement nor real blocked completion");
+            return;
+        }
+        if (selection==1) {
+            meowth_flute(subject,0x802cc594,0x802cc40c,func_beach_802C6514);
+            return;
+        }
+        if (selection==2) {
+            meowth_command(subject,9,player.object);
+            until(8,[&] { return meowth_header(subject,0x802cc3a8); },"Meowth hit state did not enter first actual animation");
+            until(512,[&] { return meowth_header(subject,0x802cc3bc); },"Meowth hit state omitted actual middle recovery animation");
+            until(512,[&] { return meowth_graph(subject,0x802cc4c4); },"Meowth hit recovery did not advance all three original headers");
+            until(512,[&] { return source(subject).hSpeed==80; },"Meowth hit recovery never executed original walk helper619C");
+            return;
+        }
+        if (selection==3) {
+            meowth_reaction(subject,13,0x802cc394,0x802cc4f4);
+            until(512,[&] { return source(subject).hSpeed==80; },"Meowth pester recovery never executed original walk helper619C");
+            return;
+        }
+        const auto item=meowth_item(subject,selection!=4);
+        const auto pursuit_start=placement(subject).transform.position;
+        if (selection==4) {
+            meowth_command(subject,10,item.object);
+            until(8,[&] { return meowth_graph(subject,0x802cc524); },"Meowth ball FIFO did not select flee graph");
+            tick();
+            require(source(subject).hSpeed==80 && source(subject).apple==item.object &&
+                    source(subject).interactionTarget==item.object &&
+                    (actor_interaction_function_count(subject.object,func_beach_802C6288,5)==1 ||
+                     (source(subject).processFlags&POKEMON_PROCESS_FLAG_PATH_ENDED)),
+                    "Meowth flee did not execute original RunAway helper with actual Item canonical holds");
+            return;
+        }
+        if (selection==5) meowth_command(subject,14,item.object);
+        // selection6 deliberately takes automatic15 ->6478 ->62E4, not FIFO14.
+        until(16,[&] { return meowth_graph(subject,0x802cc564); },"Meowth actual apple did not enter pursuit/eating graph");
+        until(256,[&] { return source(subject).counter>0 && meowth_header(subject,0x802cc3e4); },
+              "Meowth original turn/RunToTarget helper failed to reach eating wait");
+        require(!same(placement(subject).transform.position,pursuit_start),
+                "Meowth successful target-reached result lacked actual native movement");
+        require(source(subject).apple==item.object && source(subject).interactionTarget==item.object &&
+                services.source_owner_borrows(item.object).fields==2 &&
+                (source(subject).processFlags&POKEMON_PROCESS_TARGET_REACHED),
+                "Meowth eating wait lost actual Item ownership or original target-reached outcome");
+        until(96,[&] { return !items.source(item.instance) || items.source(item.instance)->state==ISLE_ITEM_INVALID; },
+              "Meowth actual counter/Source eat did not delete its owned apple");
+        until(16,[&] { return !source(subject).apple && !source(subject).interactionTarget; },
+              "Meowth Item death notifications did not clear both actual canonical references");
+        accepted(items.collect_joined());
+        require(!items.source(item.instance) && !services.source_owner_registered(item.object),
+                "Meowth consumed Item retained unjoined native/semantic ownership");
+    }
+    void meowth_variant_one(bool late) {
+        const auto subject=meowth_spawn(1);
+        if (!late) {
+            meowth_flute(subject,0x802cc6b4,0x802cc644,func_beach_802C68D8);
+            meowth_reaction(subject,13,0x802cc394,0x802cc644);
+            meowth_aux(subject,0x802cc6e4,0x802cc714);
+            meowth_reaction(subject,13,0x802cc394,0x802cc714);
+            meowth_reaction(subject,9,0x802cc3a8,0x802cc714);
+            meowth_flute(subject,0x802cc7b4,0x802cc714,func_beach_802C68D8);
+            return;
+        }
+        meowth_command(subject,9,player.object);
+        until(512,[&] { return meowth_graph(subject,0x802cc784); },
+              "Meowth late hit did not consume genuine Movement progress and enter6AA0");
+        until(512,[&] { return meowth_graph(subject,0x802cc714); },
+              "Meowth late6AA0 animation recovery failed to reach69D4");
+        require(actors.membership(subject.instance).logical && !(source(subject).processFlags&POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED),
+                "Meowth late-progress hit took cleanup branch or stranded movement pause");
+    }
+    void meowth_hidden_variant() {
+        const auto subject=meowth_spawn(2);
+        IsleGameObjectMetadata metadata{}; native(isle_game_object_metadata(services.game,subject.object,&metadata));
+        require((metadata.flags&1) && !source(subject).tangible,"Meowth hidden variant did not own native hide/tangibility");
+        meowth_command(subject,28,player.object);
+        until(8,[&] { return meowth_graph(subject,0x802cc804); },"Meowth actual command28 did not reveal second variant");
+        native(isle_game_object_metadata(services.game,subject.object,&metadata));
+        require(!(metadata.flags&1) && source(subject).tangible,"Meowth reveal state failed native visibility/tangibility publication");
+        meowth_player(subject,500);
+        until(8,[&] { return meowth_graph(subject,0x802cc824); },"Meowth revealed graph did not select near-Player6CC4");
+        until(512,[&] { return meowth_graph(subject,0x802cc5c4); },"Meowth6CC4 did not transition to original6580");
+        //6580 has already started its auxiliary; observe its restoration by the
+        // actual queued pester state clearing misc4, without forging source flags.
+        tick();
+        const auto offset=source(subject).collisionOffset;
+        const auto radius=source(subject).collisionRadius;
+        require(actor_interaction_function_count(subject.object,func_beach_802C5C60,6)==1,
+                "Meowth revealed reaction omitted actual collision auxiliary");
+        meowth_player(subject,2000);
+        meowth_command(subject,13,player.object);
+        until(8,[&] { return !actor_interaction_function_count(subject.object,func_beach_802C5C60,6); },
+              "Meowth revealed auxiliary survived actual cancellation");
+        require(same(source(subject).collisionOffset,offset) && near(source(subject).collisionRadius,radius),
+                "Meowth cancelled revealed auxiliary lost original collision geometry");
+    }
+    void meowth_path_variant() {
+        const auto subject=meowth_spawn(3);
+        meowth_player(subject,100);
+        until(8,[&] { return meowth_graph(subject,0x802cc874); },"Meowth3 did not enter genuine ROM path state");
+        tick(); tick();
+        const auto parameter=source(subject).pathParam;
+        const auto position=placement(subject).transform.position;
+        tick(); tick();
+        require(source(subject).path && source(subject).pathParam>parameter &&
+                !same(placement(subject).transform.position,position),
+                "Meowth original ResetPathPos/FollowPath did not advance actual ROM trajectory");
+        meowth_player(subject,2000);
+        for (const auto [command,graph]:std::array<std::pair<int,std::uint32_t>,2>{{{13,0x802cc8d4},{9,0x802cc8a4}}}) {
+            meowth_command(subject,command,player.object);
+            until(512,[&] { return meowth_graph(subject,graph); },"Meowth moving reaction omitted actual paused graph");
+            const auto paused=source(subject).pathParam;
+            tick(); tick();
+            require(source(subject).pathParam==paused && (source(subject).processFlags&POKEMON_PROCESS_FLAG_MOVEMENT_PAUSED),
+                    "Meowth reaction failed to pause genuine concurrent path helper");
+            until(512,[&] { return meowth_graph(subject,0x802cc874); },"Meowth path reaction failed original recovery");
+        }
+        const auto* path=static_cast<const menu::AnimationPath*>(source(subject).path);
+        require(std::isfinite(path->duration) && path->duration>0 && path->duration*30<=8192,
+                "Meowth actual ROM path exceeds explicit8192-tick helper phase bound");
+        until(static_cast<unsigned>(std::ceil(path->duration*30))+16,[&] { return !source(subject).stateProc; },
+              "Meowth actual ROM path did not complete/join its state and helper");
+        require(!source(subject).pathProc && (source(subject).processFlags&POKEMON_PROCESS_FLAG_PATH_ENDED) &&
+                meowth_header(subject,0x802cc344),
+                "Meowth actual path terminal state lost PATH_ENDED/idle header or retained helper");
+    }
+    void meowth_fourth_variant(bool helper) {
+        const auto subject=meowth_spawn(4);
+        if (!helper) {
+            meowth_command(subject,36,player.object);
+            until(8,[&] { return meowth_graph(subject,0x802cc934); },"Meowth4 command36 did not start turn state");
+            // The pinned loop stops only when bit0x08 is CLEAR, despite the
+            // decomp flag's name.660C sets it and therefore tracks indefinitely.
+            for (unsigned n=0;n<64;++n) tick();
+            require(actor_interaction_function_count(subject.object,func_beach_802C660C,5)==1 &&
+                    !(source(subject).processFlags&POKEMON_PROCESS_FLAG_PATH_ENDED),
+                    "Meowth4 did not retain its source-defined persistent tracking helper");
+            const auto before_turn=placement(subject).transform.rotation.y;
+            // Source's dz~=0 branch discards dx's sign, so merely crossing
+            // the X axis predicts the SAME heading. Use a distinct diagonal.
+            auto next_target=placement(subject).transform.position;
+            next_target.x-=2000; next_target.z+=1000;
+            const IsleGameModelTransform tracked{next_target,{0,0,0},{1,1,1}};
+            native(isle_game_model_set_placement(services.game,player.model,
+                ISLE_GAME_MODEL_PLACEMENT_RTS,&tracked));
+            tick(); tick();
+            require(!near(placement(subject).transform.rotation.y,before_turn),
+                    "Meowth4 persistent helper did not turn toward the actually moved Player");
+            meowth_reaction(subject,9,0x802cc3a8,0x802cc934);
+            until(512,[&] { return meowth_header(subject,0x802cc3f8) && meowth_graph(subject,0x802cc934); },
+                  "Meowth7130 did not complete all recovery animations and reenter original70C0");
+            require(source(subject).stateProc,"Meowth4 recovery failed to retain actual waiting state");
+            return;
+        }
+        struct HelperEvents {
+            scene::Services& services;
+            IsleGameObject* receiver;
+            std::array<int,2> commands{};
+            std::array<IsleGameObject*,2> senders{};
+            unsigned count=0,errors=0;
+            static void queued(IsleGameObject* receiver,int32_t command,IsleGameObject* sender,void* user) noexcept {
+                auto& self=*static_cast<HelperEvents*>(user);
+                if (command!=37 && command!=38) return;
+                if (receiver!=self.receiver || self.count>=self.commands.size()) { ++self.errors; return; }
+                self.commands[self.count]=command; self.senders[self.count++]=sender;
+            }
+            ~HelperEvents() {
+                if (!services.set_command_queued_observer(receiver,nullptr,nullptr)) std::terminate();
+            }
+        } events{services,subject.object};
+        require(services.set_command_queued_observer(subject.object,HelperEvents::queued,&events),
+                "Meowth helper queue observer admission failed");
+        meowth_command(subject,29,player.object);
+        IsleGameObject* child=nullptr;
+        for (const auto& binding:actors.render_bindings()) {
+            auto* object=binding.model.object;
+            const auto handle=actors.instance(object);
+            const auto* p=actors.source(handle);
+            if (p && p->id==1006) child=object;
+        }
+        require(child && child!=subject.object && services.source_owner_registered(child),
+                "Meowth original7050/AddAtGeo failed to create genuine helper1006");
+        const auto handle=actors.instance(child);
+        meowth_player(actor::SpawnResult{{},handle,child},100);
+        until(8,[&] { return environment.sound_handle(0x34)>=0; },"Meowth helper did not play its real owned environment sound34");
+        until(512,[&] { return actors.membership(handle).joined; },"Meowth helper did not perform source cleanup/native join");
+        until(512,[&] { return !source(subject).stateProc; },"Meowth7050 animation did not finish after helper spawn");
+        //38 is enqueued by the helper process after this tick's receiver Update;
+        // its native join does not consume the parent's genuine FIFO sender loan.
+        until(8,[&] { return !services.source_owner_borrows(child).queued; },
+              "Meowth helper's final38 did not drain through the real receiver Update");
+        require(!events.errors && events.count==2 && events.commands[0]==37 && events.commands[1]==38 &&
+                events.senders[0]==child && events.senders[1]==child &&
+                !services.source_owner_borrows(child).queued,
+                "Meowth genuine helper did not send/settle ordered command37/38 with its actual owned identity");
+        accepted(actors.collect_joined());
+        require(!actors.source(handle) && !services.source_owner_registered(child),
+                "Meowth helper retained its joined native/semantic owner");
+        require(!services.source_owner_borrows(subject.object).queued,
+                "Meowth helper retained a queued parent sender loan");
+        // Source freezes one-shot parameters on removal; it does NOT stop the
+        // voice. Exercise its live Environment after the Actor has been freed.
+        require(environment.update(),"fixed helper sound retained a dead Actor model/source borrow");
+    }
+    void meowth_early_hit() {
+        const auto subject=meowth_spawn(1);
+        const auto receiver=meowth_spawn(2);
+        meowth_command(subject,9,player.object);
+        until(512,[&] { return actors.membership(subject.instance).joined; },
+              "Meowth early hit did not take genuine Movement progress cleanup branch");
+        until(8,[&] { return meowth_graph(receiver,0x802cc804); },
+              "Meowth early cleanup omitted real link3 command28/reveal receiver");
+        const auto held=services.source_owner_borrows(subject.object);
+        require(!held.queued && held.fields==1 && source(receiver).interactionTarget==subject.object,
+                "Meowth reveal did not convert its real broadcast sender into a canonical field hold");
+        const auto blocked=actors.collect_joined();
+        require(!blocked && blocked.error==actor::OwnerError::lifetime &&
+                services.source_owner_registered(subject.object),
+                "Meowth collected a joined sender still held by the revealed receiver");
+        // Real automatic16 replaces the reveal sender with the nearby Player.
+        // Native join alone never grants permission to erase a canonical hold.
+        meowth_player(receiver,500);
+        until(8,[&] { return meowth_graph(receiver,0x802cc824); },
+              "Meowth revealed receiver did not consume the real near-Player transition");
+        require(source(receiver).interactionTarget==player.object &&
+                !services.source_owner_borrows(subject.object).fields,
+                "Meowth near-Player transition retained its retired broadcast sender");
+        accepted(actors.collect_joined());
+        require(!actors.source(subject.instance) && !services.source_owner_registered(subject.object),
+                "Meowth early cleanup did not join and release native/semantic owner");
+    }
+    void meowth_relocation(int variant) {
+        const auto subject=meowth_spawn(variant);
+        const auto before=placement(subject).transform;
+        const auto pos1=source(subject).pos1,target=source(subject).targetPos;
+        accepted(actors.change_block_source(subject.instance,0x802c71e8,{0,0,0},{1,2,3}));
+        const auto after=placement(subject).transform;
+        auto expected=[&](IsleGameVec3 p) {
+            p.x-=100; p.z-=300;
+            if (variant==1) p.y-=200;
+            else {
+                world::GroundResult ground;
+                p.y=world.ground_at(p.x,p.z,ground)?ground.height:0;
+            }
+            return p;
+        };
+        require(same(after.position,expected(before.position)) && same(after.rotation,before.rotation) &&
+                same(after.scale,before.scale) && same(source(subject).pos1,expected(pos1)) &&
+                same(source(subject).targetPos,expected(target)),
+                "Meowth genuine change-block callback did not preserve ordinary/ground placement and both saved positions");
+    }
+    void meowth_admission() {
+        std::vector<std::uint32_t> identities;
+        for (const auto& callback:beach::meowth_callbacks()) identities.push_back(callback.identity);
+        identities.push_back(0x802cbce0); identities.push_back(0x802cbd04);
+        for (const auto omitted:identities) {
+            bool rejected=false;
+            try { (void)make_meowth_bindings(behavior,omitted); }
+            catch (const std::invalid_argument& error) {
+                rejected=std::string_view(error.what()).starts_with("Unresolved native callback ");
+                if (!rejected) std::cerr<<"Meowth closure rejected for unrelated reason: "<<error.what()<<'\n';
+            }
+            require(rejected,"Meowth incomplete original callback/graph/helper closure was accepted");
+        }
+    }
+    void meowth_native_fault() {
+        const auto subject=meowth_spawn(0);
+        const auto graph=source(subject).transitionGraph;
+        require(environment.set_listener(nullptr,nullptr),"Meowth native-leaf fault listener release failed");
+        native(isle_game_remove_model(services.game,player.model));
+        player.model=nullptr; actors.player_source().model=nullptr;
+        enqueue(subject,14,player.object);
+        require(isle_game_tick(services.game)==ISLE_GAME_EXECUTION_FAILURE &&
+                isle_game_status(services.game)==ISLE_GAME_EXECUTION_FAILURE,
+                "Meowth actual missing Player native model leaf did not fail closed");
+        require(source(subject).transitionGraph==graph && !source(subject).apple && !source(subject).interactionTarget &&
+                !actor_interaction_function_count(subject.object,func_beach_802C63F4,5),
+                "Meowth rejected native leaf executed reaction/path suffix");
     }
     bool family_graph(const actor::SpawnResult& subject,std::uint32_t identity) {
         const auto* graph=source(subject).transitionGraph;
@@ -1557,12 +2038,14 @@ struct Resources {
     std::array<a::SlotCapacity,8> actor_capacities{};
     std::array<a::SlotCapacity,32> item_capacities{};
     std::unique_ptr<actor::BehaviorBindings> bindings;
-    explicit Resources(const rom::Snapshot& snapshot,bool family=false)
+    bool meowth=false;
+    explicit Resources(const rom::Snapshot& snapshot,bool family=false,bool meowth_selection=false)
         : world(snapshot, isle::course::beach_id),sceneData(snapshot),actors(snapshot,0,{world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max}),
           items(snapshot,world.setup().fog_rgb,world.setup().fog_min,world.setup().fog_max),
           behavior(snapshot,0),sound(snapshot,0),effects(snapshot),
           banks{&effects.bank(menu::EffectGroup::common),&effects.bank(menu::EffectGroup::beach)},
-          bindings(family?make_family_bindings(behavior):make_bindings(behavior)) {
+          bindings(meowth_selection?make_meowth_bindings(behavior):family?make_family_bindings(behavior):make_bindings(behavior)),
+          meowth(meowth_selection) {
         a::SlotCapacity ac{},ic{};
         for (const auto& model:actors.models()) { const auto c=a::slot_capacity(model); ac.nodes=std::max(ac.nodes,c.nodes); ac.material_attachments=std::max(ac.material_attachments,c.material_attachments); }
         for (const auto& model:items.models()) { const auto c=a::slot_capacity(model); ic.nodes=std::max(ic.nodes,c.nodes); ic.material_attachments=std::max(ic.material_attachments,c.material_attachments); }
@@ -1574,7 +2057,7 @@ struct Resources {
 
 template<class Body>
 void with_graph(Resources& resources,game_audio::Session& audio,game::State& state,Body body,
-                std::span<const menu::AnimationPath> semantic_paths={}) {
+                std::span<const menu::AnimationPath> semantic_paths={},std::size_t movement_block=0) {
     game_input::Service input; scene::Storage storage(32*1024*1024); native(storage.create());
     {
         scene::Services services(storage.game(),storage.arena(),{{4,6,0,1,2},{}},input,audio,state);
@@ -1619,9 +2102,19 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
                 shift.items=&items; accepted(items.init()); accepted(items.set_custom_functions(nullptr,0,nullptr));
                 actor::InteractionServices interactions(services,actors,items,world,detector,*resources.bindings,resources.actors,resources.effects);
                 accepted(actors.bind_interactions(interactions)); // BEFORE any Actor factory.
+                world::Movement movement(world,player_source.value.movement,{});
+                if (resources.meowth)
+                    require(movement.initialize(movement_block),"Meowth genuine Movement/World initialization failed");
                 Consumer consumer{services,actors,environment,items,globals,world,detector,player,resources.actors,resources.behavior};
                 body(consumer);
                 require(consumer.shutdown(),"actual native/semantic fault cleanup left borrowers or failed real joins");
+                if (resources.meowth) {
+                    for (const auto& subject:consumer.subjects)
+                        require(!actors.source(subject.instance) && !services.source_owner_registered(subject.object),
+                                "Meowth retained Actor source/native owner after joined shutdown");
+                    for (const auto& binding:actors.render_bindings())
+                        require(!binding.model.object,"Meowth retained helper/Actor render owner");
+                }
                 shift.items=nullptr;
             }
             shift.actors=nullptr;
@@ -1634,9 +2127,9 @@ void with_graph(Resources& resources,game_audio::Session& audio,game::State& sta
     native(storage.destroy());
 }
 
-void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,bool family=false) {
+void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,bool family=false,bool meowth=false) {
     require(std::filesystem::is_directory(profile)&&std::filesystem::is_empty(profile),"private profile must exist and be empty");
-    Resources resources(snapshot,family);
+    Resources resources(snapshot,family,meowth);
     auto hydrated=game_audio::hydrate(snapshot); require(bool(hydrated),"actual selector audio hydration failed");
     std::array<audio::effects::Section,8> sections; audio::effects::Config effects;
     require(game_audio::native_startup_effects(hydrated.resources,sections,effects)==audio::Error::none,"actual selector audio effects admission failed");
@@ -1646,7 +2139,20 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,bool famil
     require(bool(made),"actual selector audio Session creation failed"); auto& session=*made.session;
     {
         game::State state(profile); require(state.initialize(1),"selector profile initialization failed");
-        if (family) {
+        if (meowth) {
+            for (unsigned selection=0;selection<7;++selection)
+                with_graph(resources,session,state,[selection](Consumer& c) { c.meowth_default(selection); });
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_admission(); c.meowth_variant_one(false); });
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_early_hit(); });
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_variant_one(true); },{},4);
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_hidden_variant(); });
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_path_variant(); });
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_fourth_variant(false); });
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_fourth_variant(true); });
+            for (int variant:{0,1})
+                with_graph(resources,session,state,[variant](Consumer& c) { c.meowth_relocation(variant); });
+            with_graph(resources,session,state,[](Consumer& c) { c.meowth_native_fault(); });
+        } else if (family) {
             with_graph(resources,session,state,[&](Consumer& c) { c.eevee_chansey(*resources.bindings); });
             // Same immutable ROM resources/audio owner, genuinely new scene,
             // World, Services and native game after the first graph's joins.
@@ -1705,7 +2211,9 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,bool famil
     require(session.state()==game_audio::Session::State::draining && session.poll_drain()==audio::Error::none &&
             session.poll_drain()==audio::Error::none && capture.finishes==1 && capture.used>0 && audio_tasks>0,
             "actual selector audio client retirement/actual RSP owned PCM drain failed");
-    if (family)
+    if (meowth)
+        std::cout<<"native_Meowth52_factory7270_root5DAC_variants0_1_2_3_4_CPU=passed actual_ROM_graphs22_Item_eat_Flute_collision_aux_ROM_path_helper1006=passed genuine_Movement_block0_block4_6700_early_late=passed joined_Actor_Item_Player_helper_audio_RSP_owned_PCM_drain=passed authored_API_variants_from_ROM_behavior2=true earned_progression_PlayerFSM_Original_GPU_campaign_fullgame_Windows11=not_claimed\n";
+    else if (family)
         std::cout<<"native_Eevee_Chansey_shared_ROM_path_stack_graph_commands32_33_34_sender_lifetimes_joined_reset_CPU_API=passed authored_Eevee_variants_Apple_hit_inputs=true audio_RSP_owned_PCM_drain=passed earned_progression_GPU_Original_fullgame_Windows11=not_claimed\n";
     else
         std::cout<<"native_Actor_actual_C_automatic_FIFO_CPU_API=passed native_original_C_movement_CPU_diagnostics=passed bounded_semantic_four_pathkinds_not_ROM_trajectories=true audio_RSP_owned_PCM_drain=passed PlayerFSM_all71graphs_GPU_Original_fullgame_Windows11=not_claimed\n";
@@ -1714,8 +2222,9 @@ void run(rom::Snapshot& snapshot,const std::filesystem::path& profile,bool famil
 int main(int argc,char** argv) {
     try {
         const bool family=argc==4 && std::string_view(argv[3])=="--eevee-chansey";
-        require(argc==3 || family,"usage: actor-interaction-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE [--eevee-chansey]");
-        auto snapshot=rom::read_snapshot(argv[1]); run(snapshot,argv[2],family); return EXIT_SUCCESS;
+        const bool meowth=argc==4 && std::string_view(argv[3])=="--meowth";
+        require(argc==3 || family || meowth,"usage: actor-interaction-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE [--eevee-chansey|--meowth]");
+        auto snapshot=rom::read_snapshot(argv[1]); run(snapshot,argv[2],family,meowth); return EXIT_SUCCESS;
     } catch (const std::exception& error) {
         std::cerr<<"actor-interaction-rom-smoke: "<<error.what()<<'\n'; return EXIT_FAILURE;
     }

@@ -16,6 +16,9 @@ namespace isle::game_run_report {
 enum class Purpose { disabled, campaign, cold_boot };
 inline constexpr std::size_t boundary_capacity = 65536;
 inline constexpr std::uint32_t no_row = std::numeric_limits<std::uint32_t>::max();
+// Shared passive labels for the same actual entry/load facts in private reports.
+const char* entry_name(IsleApplicationEntryOperation) noexcept;
+const char* save_load_name(save::GameLoadState) noexcept;
 
 // Scalar-only correlation. GAME constructs this while its completed Frame is
 // borrowed. Main never inspects Runtime or retains a GAME/scene/pixel pointer.

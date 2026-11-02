@@ -5,6 +5,7 @@ Install the prerequisite host dependencies described in [Building the native run
 [Project README](../README.md) · [Admission index](development/ADMISSION.md)
 
 - [Native application](#native-application)
+- [Opt-in diagnostic labels](#opt-in-diagnostic-labels)
 - [Terminal evidence](#terminal-evidence)
 - [Native Snap Station](#native-snap-station)
 
@@ -25,6 +26,9 @@ build/native-game/35mmisle /private/pokemonsnap.z64
 
 The Windows full-host preset builds `build/windows-host-release/Release/35mmisle.exe`. The application requires compatible Vulkan and SDL3/OpenGL support; it reads the exact supported ROM without modifying or bundling it. `--data-directory` selects profile/configuration storage. `--cpu-renderer` requires an actual Vulkan CPU device; it is not a null backend. `--disable-input` disables controller acquisition only, not Audio or graphics.
 
+Canonical Save slots live in `<data-directory>/profile`; pass the data root,
+not that `profile` subdirectory. Diagnostic text reports live in the data root.
+
 `--renderer-resources PATH` selects the existing pinned LUS shader-resource directory explicitly; for the build above, use `build/native-game/host-renderer-resources`. An explicit path must contain `shaders/opengl/default.shader.glsl`; a missing path fails rather than falling back. Omit the option to retain installed-resource discovery and the build-tree default. This selects renderer support data, not ROM assets or an alternative graphics backend.
 
 The product's persistent `game_owner::Owner` constructs and retires State, Runtime, Manager, native continuations, Input, GTL and canonical graphics on a dedicated GAME thread. Main continues actual events and platform requests while Source is inside native waits. Completed pixels remain borrowed until main copies or explicitly declines them; only GAME then releases the real FrameToken.
@@ -44,6 +48,53 @@ Default keyboard controls:
 These bindings are exercised through ordinary SDL keyboard input in the downloaded Linux product. Gamepad/device qualification remains separate.
 
 Current candidate-specific execution evidence is in [Runtime status](STATUS.md#runtime-status) and [ADMISSION](development/ADMISSION.md); earlier campaign, numerical, photo and menu proofs do not transfer automatically to a changed executable. Historical [preview 7](https://github.com/PhilosophiMoonbeam/35mmIsle/releases/tag/v0.1.0-preview.7) remains immutable. CI builds and checks new Runtime archives without uploading them while redistribution/compliance gates remain open. Windows ROM gameplay and Windows 11 hardware remain unqualified. [LICENSING](planning/LICENSING.md#import-and-release-review-gates) governs embedded terms, linkage, source/relink delivery and publication; successful compilation or an asset-free archive is not a redistribution grant.
+
+### Opt-in diagnostic labels
+
+Add `--diagnostics` to an ordinary application launch; no configuration or JSON
+editing is required:
+
+```sh
+build/native-game/35mmisle /private/pokemonsnap.z64 --diagnostics
+```
+
+The existing LUS/ImGui presentation draws a noninteractive high-contrast label.
+It shows the application version and configured source revision, a stable run ID,
+actual application epoch and scene/course entry (including its original raw
+argument), GTL update/retrace/submission counts and clock frame, and the latest
+offered native image's epoch/entry/frame ordinal. Scene ordinals and image
+ordinals are different identities; neither is an invented GUI frame count.
+Save status is the actual Boot open result and **boot-loaded** durable generation,
+not current RAM, unsaved progress or an exhaustive Save-acknowledgement ledger.
+
+There is no diagnostic gameplay key or interactive window to capture input.
+Use the visible run ID together with epoch/entry/frame or GTL update as the report
+marker: take a screenshot or note it when something happens, describe what you
+observed and what you expected, and close the application normally.
+The label updates only through existing native presentation; a stuck image can
+therefore retain its last label. It does not independently animate or advance
+the game. A real observed failure is marked `FAILED` in red, with its first
+error retained even after scene and Host retirement; `none observed` is not a
+correctness or sound-fidelity certification.
+
+After normal cleanup/join, the selected application data directory contains
+`last-diagnostic.txt`, a bounded private text report (under 4 KiB). Its retained
+label text is also printed to standard error. The file is atomically replaced on each diagnostic run;
+the run ID inside distinguishes it from an older run. On POSIX the exclusive
+report is created with owner-only permissions (`0600`), independently of the
+process umask, including replacement of an older report. One exclusively created
+`last-diagnostic.txt.tmp` may remain if the process is killed while writing.
+A pre-existing temporary file or output failure is refused and reported,
+without overwriting that temporary file or the previous report; the process
+returns nonzero. Non-diagnostic launches neither show the label nor write this
+report. `--data-directory` selects the same storage as ordinary play.
+
+The report includes no ROM/profile payload, inventory, credentials, telemetry
+or public upload. Review error text for private filesystem paths before pasting
+the relevant text into chat. **Audio fidelity remains unqualified:** playback
+and these labels cannot prove or disprove a numerical/sample-rate defect,
+including a reported `.35` issue. There is no audible-issue detector. Keep
+observations about sound separate from the real error/status context.
 
 ### Terminal evidence
 

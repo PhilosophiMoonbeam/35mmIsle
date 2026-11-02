@@ -100,8 +100,8 @@ parity and a complete current-build pixel-only campaign remain separate gates.
 - Internal `isle-player-cart`: all four complete original C control functions execute through prepared native objects, the shared Runtime and C-fenced per-object callbacks. Every Init creates a fresh cart; current-pointer, independent NULL-domain, source-control, FIFO, caller and actual GPU/readback retention rules remain distinct. The shared J-fogged kernel emits genuine cart geometry/materials in Services DL3 order, with per-object fragments for composition. Debug, Release and Clang ASan/UBSan pass source-camera intro/fresh-outro RSP/RDP, independent RAM/epoch, reordered fragment and failure-cleanup consumers. At published `79463d3`, all 21 consumers pass their three-profile/63-whole-case cohort and 57 CPU tests per profile. Original Beach intro/outro continuations and full Player/game integration remain separate work.
 - Internal actor controls (`actor_source.h`): six exact pinned GAME C helpers retain the existing native scheduler, real waits, state/path/auxiliary ordering, function identity and application RNG. Required lookup still rejects absent or unrelated payloads; nullable lookup distinguishes genuine absence from foreign identity or corrupt ownership. The coordinated owner below adds genuine common1003 and Magikarp source execution without another scheduler or clock.
 - Internal source ownership in `scene::Services`: the same registered native owner retains identity and semantic storage through successful FIFO enqueue, active delivery and actual canonical apple/target-field borrows. Adoption precedes old-borrow release; ordinary FIFO suffixes survive transfer. Actual retirement closes receiver-owned cycles, while joined collection still waits for every source and graphics borrower. Unregistered custom senders reject before source-queue publication; unrelated menu objects remain opt-in.
-- Internal `isle-actor-owner`: one canonical source record per native GObj, one shared Runtime/FX owner and pinned GAME C state/path/update definitions. Existing complete common1003/header/FIFO/sound-FX/identity acceptance remains intact. Genuine Magikarp129 passes actual Debug/Release/Clang ASan+UBSan CPU factory/state/path, initial/state header distinction, shared-RNG yaw, exact ground-wait/first-eligible emission, same-owner common sibling, nonzero normalized velocity, source ID wrap/second-pass/occupied-max fallback and native/audio cleanup. Other species callback/resource closures remain explicitly unadmitted; native photography integration is below.
-- Internal `actor::BehaviorBindings`: constructor-only typed callback/graph/weighted-list closure over existing immutable data, with exact native function identities and complete requested dependency admission. All 71 graph resources remain distinct from executable closure: the registry currently compiles six common/Magikarp callbacks, not every Beach species. Unknown reachable native callbacks or incompatible factory/resources reject before the corresponding custom command is consumed.
+- Internal `isle-actor-owner`: one canonical source record per native GObj, one shared Runtime/FX owner and pinned GAME C state/path/update definitions. Existing complete common1003/header/FIFO/sound-FX/identity acceptance remains intact. Genuine Magikarp129 passes actual Debug/Release/Clang ASan+UBSan CPU factory/state/path, initial/state header distinction, shared-RNG yaw, exact ground-wait/first-eligible emission, same-owner common sibling, nonzero normalized velocity, source ID wrap/second-pass/occupied-max fallback and native/audio cleanup. Production additionally composes the complete Beach initial-species, Snorlax/Kangaskhan, Meowth, Eevee/Chansey and Scyther/special callback families in `application_runtime.cpp`. Admission is not full runtime/fidelity qualification of every variant; native photography integration is below.
+- Internal `actor::BehaviorBindings`: constructor-only typed callback/graph/weighted-list closure over existing immutable data, with exact native function identities and complete requested dependency admission. The six common/Magikarp callbacks are the shared base, not a production-wide executable ceiling. Production appends the named compiled families and their graphs, then resolves every requested root/dependency. All 71 Beach graph resources remain distinct from runtime coverage: unknown reachable native callbacks or incompatible factory/resources still reject before the corresponding custom command is consumed.
 - Internal original-C interaction execution: complete `Pokemon_RunInteractions`, `Pokemon_HandleCommand` and `Pokemon_Update` use one native FIFO and eleven returning native service leaves, not a second C++ interpreter. Source row ordering, strict boundaries, auxiliary/state process priorities, retained sender/field identities, consumed-prefix faults and ordinary suffixes are exercised. Command19 preserves valid NULL-current-World equality and last-match semantics. Actual automatic/FIFO CPU/API consumers pass all three profiles with compatible Magikarp129 and rejected incompatible1003 callback closures; the registered Player fixture is not the production Player FSM.
 - Internal `items::Owner`: 53 privately compiled pinned GAME definitions retain source throw/flight/collision/apple/pester/fume/Flute behavior over actual native models, World and Actor services. Twenty logical entries, the original 0–19 cursor/300+i IDs, overall-oldest threshold ordering, NULL-payload fumes and real command21/22 lifetime are preserved. Admission prepares actual unpublished model/object/continuation resources before source side effects; rejection leaves native/source/Runtime ownership intact. Seven complete private scenarios cover physical rejection, source thresholds, real waits, fault cleanup and retained identity reuse. Position-only effect publication preserves the actual bank3/script0 velocity.
 - Internal `items::Flute`: source songs1/3/2 and commands5/6/7 follow the accepted shared audio-build epoch, retained song index and natural source flags. Each profile executes all nine actual audio-RSP comparisons, 828 tasks, exact direct-song/restart PCM and nonzero muted-counterfactual differences before owned CPU PCM drain. This is not SDL3-stream, hardware-hearing or Original numerical parity.
@@ -171,7 +171,7 @@ For the separate returning-service fault diagnostic, run `credits20 --fail-nativ
 
 The initial Credits20 fault run and the subsequent GPU-drain-order attempt both timed out without retirement and remain negative evidence. An Own-code debugger trace subsequently passed graphics, worker, Replay and process joins and reached destination cleanup. Ordinary `Services::view()` rejects a sticky Services failure even when the actual native sprite-view operation succeeds; both thumbnail release and failure-only descriptor restoration incorrectly used that success-only accessor. Joined cleanup now uses the checked native sprite view without relaxing ordinary access, registered ownership, queue holds, live-alias rejection, process joins, raster borrower fences or the first failure. The separate bounded GPU-drain ordering correction is not credited as resolving the destination-cleanup defect.
 
-The repaired Linux consumer `7a16413755e1329a5dfc1ba8729964f03a49d8dcf34f295f4063cca61ba967c0` passes the actual returning-service fault: callback1 returns error5 before consumer cancellation; native retirement completes, error5 and no normal result remain, and the process naturally exits1. Current bounded regressions use separate untouched whole UI-earned working pairs:
+At the Services-fault checkpoint, Linux consumer `7a16413755e1329a5dfc1ba8729964f03a49d8dcf34f295f4063cca61ba967c0` passes the actual returning-service fault: callback1 returns error5 before consumer cancellation; native retirement completes, error5 and no normal result remain, and the process naturally exits1. These bounded regressions use separate untouched whole UI-earned working pairs:
 
 | Scenario | Natural exit | Source result | Balanced graphics submissions/terminals |
 |---|---:|---|---:|
@@ -181,16 +181,88 @@ The repaired Linux consumer `7a16413755e1329a5dfc1ba8729964f03a49d8dcf34f295f406
 | Gallery23 visible Save through B/A | 0 | 8 | 1,136 |
 | Gallery23 returning-service failure | 1 | None; retained error5 | 0 |
 
-All five retire actual Component/GTL/Host/audio owners, preserve zero Root acknowledgments and close sealed-image custody with complete task reaping, `ECHILD`, no remaining/pending tasks, pipe EOF and retained-FD closure. No SIGKILL or deadline completion is credited. The full native build and all63 existing CTests pass. A preceding Gallery image-tour attempt reached the enlarged photograph but expired before Save; it remains negative evidence, not normal qualification. The successful current Gallery smoke covers grid/Save/retirement and the distinct actual callback fault, not a transferred full image-tour, fresh campaign, Original fidelity, physical-device/hearing or Windows11 proof.
+All five checkpoint cases retire actual Component/GTL/Host/audio owners, preserve zero Root acknowledgments and close sealed-image custody with complete task reaping, `ECHILD`, no remaining/pending tasks, pipe EOF and retained-FD closure. No SIGKILL or deadline completion is credited. The full native build and all63 existing CTests pass. A preceding Gallery image-tour attempt reached the enlarged photograph but expired before Save; it remains negative evidence, not normal qualification. This checkpoint establishes grid/Save/retirement and the distinct actual callback fault; renewed full-tour proof below is not transferred from the Save-only case.
 
 The permanent `scene-services-tests` regression uses two real registered native sprites and distinct hydrated texel buffers. It raises a genuine native execution fault, proves that any remaining process prevents restoration, joins all work, and checks complete descriptor/backing restoration without changing the other sprite or either first diagnostic. Linking this test against the isolated pre-fix Services object fails both consumer-visible restoration assertions; corrected GCC and Clang versions pass. Both current suites pass all 63 contracts; the Clang 21 run enables ASan/UBSan and leak detection without suppressions.
 
-The separate real Clang Credits20 fault run reaches callback1/error5, preserves no normal Source result and naturally completes Native/Component/GTL/Host/audio retirement in 8.95 s. **It is not a clean Native sanitizer pass:** LeakSanitizer then reports 128 bytes in one allocation. One changed loader-mapping discriminator reproduces that allocation and maps its upper frames to the system Mesa `libgallium-26.0.8-1ubuntu0.3.so` and `libEGL_mesa.so.0` during public SDL window creation; the precise allocation lifecycle remains under investigation. Neither result is suppressed or waived. Selected project/RSP instrumentation does not imply that all LUS/dependency sources, drivers, shaders or generated JIT instructions are instrumented.
+The earlier real Clang Credits20 fault run reaches callback1/error5, preserves
+no normal Source result and completes Native/Component/GTL/Host/audio retirement
+in 8.95 seconds. **That historical run is not a clean sanitizer pass:**
+LeakSanitizer reports 128 bytes. Exact Ubuntu `26.0.8-1ubuntu0.3` **amd64v3**
+symbols bind Gallium build ID `a0457f79e49cef6f577fdcd5032aba68b5d220e3`,
+offset `0x665216`, to `get_cpu_topology`, `src/util/u_cpu_detect.c:566`.
+Its L3 masks remain in DSO-private capability state until Gallium unloads before
+LSan. This identifies a dependency-owned allocation, not a game-scene/audio leak.
+[Exact distro source](https://archive.ubuntu.com/ubuntu/pool/main/m/mesa/mesa_26.0.8-1ubuntu0.3.dsc)
+and [amd64v3 checksums](https://launchpadlibrarian.net/868105830/mesa_26.0.8-1ubuntu0.3_amd64v3.changes)
+identify that unchanged negative.
+
+Independent planner/reviewer assessments select real provider-owned storage,
+not suppression or a destructor-order workaround. The exact distro source and
+five Ubuntu patches build with
+[`mesa-topology-static.patch`](../../cmake/patches/mesa-topology-static.patch):
+each visited CPU can discover at most one L3 ID, so the existing 1024-CPU bound
+supports 128 KiB of private BSS per linked utility instance. The caps layout,
+NULL/no-cache state, used-mask initialization, topology, affinity restoration and
+once-only publication remain unchanged. No application accesses Mesa-private
+pointers; no driver is retained to hide lost roots. This is an optional private
+validation provider, not a new default dependency or a system-package change.
+
+Real Own EGL/Vulkan work verifies multiple users, co-residence, both close
+orders, unload/reload and actual provider mapping removal before fatal,
+unsuppressed leak checks. The first Vulkan-first case retains its failed
+instantaneous task-count observation. One prospectively approved observer repair
+waits within 5 seconds for the **same** strict FD/task baseline while requiring
+all provider mappings absent; its two-cycle retest passes. Its first samples
+already match, so no claim explains the historical extra task or demonstrates
+the waiting branch fixed it. The failed original matrix is not rewritten.
+
+The subsequent actual Clang21 ASan/UBSan/LSan Credits20 changed-path run uses the
+corrected coherent EGL/Gallium/lavapipe closure. Callback1 returns error5 before
+consumer failure/stop; no normal result appears; Component/GTL/Host/audio retire.
+The process naturally exits the deliberately required 1 in 12.152 seconds, with
+fatal diagnostics and leak detection enabled and **no sanitizer findings**.
+Loader records show initialization and link-map destruction for all three
+selected providers; source/ELF hashes remain unchanged across execution.
+
+| Selected provider | Actual SHA-256 |
+|---|---|
+| Gallium | `e43f8c580092134b11380b1eb4a3a602ff64512f7a18ae687f5623116aafc438` |
+| EGL Mesa | `d0bb1a0e0afd493fcd1c7e1054cd663d702e506bac033a7ea07614280a0ea366` |
+| Lavapipe | `61e49628c52f3b004381accc07b9ecf8089f84c0faa694dfe39ca634a43f8176` |
+
+Native proof uses original bounded Popen/pidfd ownership, **not ptrace-based
+LSan** or a complete sealed-custody claim. All Native/helper owners retire;
+no suppression, `LD_PRELOAD`, `LD_LIBRARY_PATH`, disabled leak checking or
+root-retention credit is used. Stock Mesa remains unchanged, and this selected
+private-provider result is not all-driver, Original-fidelity, campaign,
+hardware/hearing, Windows11 or redistribution acceptance. Instrumenting selected
+project/RSP sources does not instrument every LUS/dependency, shader or JIT.
 
 The actual Linux End8 proof renders two earned photographs, advances with A, hides the message with Z and returns 23 through B after joined retirement. [Admission evidence](admission/END8.md#native-end8-component-and-deferred-source-admission) separates this component execution from the still-unqualified Root24/Credits20 producers, fresh campaign, Windows 11 runtime, hardware/hearing and Original-fidelity gates.
 
 [Approved prospective criteria](../planning/VALIDATION.md#approved-prospective-dispositions-and-evidence-applicability) distinguish pinned-source reachability review from real standalone qualification without discarding reachable behavior. End8 returning 23 and the earlier Gallery22 receipt do not qualify downstream Gallery23 execution/retirement. Historical receipts are not retroactive acceptance under the revised criteria.
 
-The new standalone Gallery23 consumer was exercised on Linux with an untouched whole UI-earned source pair and separate working copies. Actual authenticated-window captures show the grid, full Pikachu photograph, A-next Pidgey photograph and B-restored grid; ordinary Save returns Source8. The normal case retires 2,303 actual graphics submissions/terminals with no Root acknowledgments. Separate before-update and held-completed-frame cancellation cases both exit0 with joined Component/GTL owners and drained Host audio.
+The earlier standalone Gallery23 qualification used an untouched whole UI-earned source pair and separate working copies. Actual authenticated-window captures show the grid, full Pikachu photograph, A-next Pidgey photograph and B-restored grid; ordinary Save returns Source8. That normal case retires 2,303 actual graphics submissions/terminals with no Root acknowledgments. Separate before-update and held-completed-frame cancellation cases both exit0 with joined Component/GTL owners and drained Host audio.
 
 All three cases have sealed-image/syscall custody, natural process exit0, complete owned-task reaping, `ECHILD`, pipe EOF and retained-FD closure; the original source pair is unchanged. Independent review found no concrete ownership/Root-admission defect. This is bounded native standalone Gallery23 evidence, not Root reachability, Original pixel/audio fidelity, physical-device/hearing, a fresh campaign, whole-profile cold boot or Windows11 qualification.
+
+After the integrated diagnostic and Meowth-dispatch changes, a new whole-pair
+working copy completes the entire ordinary-ControlDeck Gallery23 tour in one
+61.132-second process: four-photo grid, individually acknowledged Enlarge
+selection, full Pikachu, A-next full Pidgey, B-restored grid/focus, separate
+B-selected Save and A returning actual Source8. It records 586 actual updates,
+585 submissions/releases/presentations/terminals, error0 and joined Component,
+GTL, Host and audio retirement. Sealed custody admits natural exit0 with the
+whole owned tree reaped, control EOF and retained descriptors closed; no
+SIGKILL or deadline success. The original90-second consumer/120-second custody
+ceilings remain unchanged.
+
+Three preceding operator negatives remain unaccepted. Their causes were
+inputs during original animation, background-dependent caption matching and
+an overconstrained restored-caption assertion—not demonstrated game defects.
+The repaired observer uses public pixels: original focus appears only after
+fade,18-frame wait and layout completion; the restored description need not
+equal the earlier Enlarge description. No private Source state drives input,
+no missing milestone is inferred from another case, and no full-game,
+Original-fidelity or Windows11 acceptance follows.

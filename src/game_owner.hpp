@@ -15,6 +15,12 @@ struct EpochResult {
     bool disconnect_requested = false;
     std::array<char,512> message{};
 };
+struct Diagnostics {
+    // Immutable strings outlive Owner; a null run_id leaves observation disabled.
+    const char* version = nullptr;
+    const char* revision = nullptr;
+    const char* run_id = nullptr;
+};
 
 // Main owns this handle and the borrowed Host. One persistent ordinary thread
 // constructs, runs and destroys every GAME owner, including across native reset.
@@ -25,7 +31,7 @@ struct EpochResult {
 class Owner final {
 public:
     Owner(const rom::Snapshot&, const menu::Catalog&, application::RuntimeConfig,
-          std::filesystem::path station_directory, game_run_report::Purpose);
+          std::filesystem::path station_directory, game_run_report::Purpose, Diagnostics);
     ~Owner();
     Owner(const Owner&) = delete;
     Owner& operator=(const Owner&) = delete;
@@ -47,6 +53,11 @@ public:
     // No live summary: null until the worker is joined and all admitted Host
     // epochs have supplied actual shutdown receipts (also null when disabled).
     const game_run_report::Recorder* terminal_evidence() const noexcept;
+    // Main-only first-failure observation, including startup/Host closure errors.
+    // Disabled diagnostics are a no-op. No profile or Source state is inspected.
+    void diagnostic_failure(const char*) noexcept;
+    // Bounded private text; remains readable after finish()/Host destruction.
+    const char* diagnostic_report() noexcept;
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

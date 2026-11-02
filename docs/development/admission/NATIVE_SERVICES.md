@@ -248,6 +248,29 @@ first diagnostic and withholding a normal course result. One actual audio-RSP
 task and independently drained owned PCM close the remaining audio lifetime.
 No Source error/state fields or product fault switch supply this case.
 
+The optional `rainbow-photo-camera` argument instead initializes the real
+Rainbow lifecycle and adds a native scheduling camera after the main camera.
+That callback observes the actual Photo owner holding a capture before
+requesting an invalid native command lane. The consumer requires retained
+Renderer failure, then real PhotoScene/FIFO and native borrower retirement,
+without an ordinary course result or cleared error. Independent Manager,
+Input and owned PCM retirement remain required. The component establishes an
+explicit API-authored preceding-menu main sequence (`0x17`, matching
+`menu_ui_scene.cpp::menu_music`) and services real RSP/PCM until a nonzero public
+tempo query acknowledges its binding. This is not an earned startup route.
+Silent initial tasks alone leave the sequence unbound: Rainbow's first Source
+update changes the persistent main tempo, and the actual CSP correctly rejects
+tempo on an unbound sequence. Real Audio service continues between native
+updates and through final drain. This is an injected renderer mechanism
+regression, not natural Retry, course reachability or fidelity.
+
+The current Linux GNU sealed-custody and direct Clang ASan/UBSan/LSan cases
+both exited naturally with zero after this exact pending-Photo fault and full
+independent retirement. Each executed 22 real audio RSP tasks; the preceding
+sequence binding acknowledged tempo 428159 after three tasks and 1280 accepted
+PCM frames. The original adjacent Tunnel mode also passed. Cold-unbound fixture
+failures remain negative evidence, not accepted retries or an Audio fix.
+
 These results do not identify the historical campaign leaf failure or admit
 Manager-selected Tunnel traversal, earned progression, course completion,
 display/device behavior, or Original/Windows 11 fidelity.

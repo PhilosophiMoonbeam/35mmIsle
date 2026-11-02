@@ -40,6 +40,22 @@ struct Owner::Impl {
     const std::filesystem::path station_directory;
     const std::thread::id main_thread=std::this_thread::get_id();
     std::optional<game_run_report::Recorder> recorder;
+    const Diagnostics diagnostics;
+    struct DiagnosticState {
+        std::uint64_t entry=0, updates=0, retraces=0, draws=0;
+        std::uint64_t boot_generation=0;
+        IsleApplicationEntryOperation operation=ISLE_APPLICATION_ENTRY_BOOT;
+        std::uint32_t argument=0, clock_frame=0;
+        IsleGameResult runtime_error=ISLE_GAME_OK;
+        int save_load=-1;
+        bool active=false, paused=false, stopping=false;
+        friend bool operator==(const DiagnosticState&,const DiagnosticState&)=default;
+    } diagnostic_state{};
+    bool diagnostic_dirty=true,diagnostic_joined=false,diagnostic_host_closed=false;
+    bool diagnostic_label_failure=false; // Main only; set while formatting under mutex.
+    std::uint64_t diagnostic_image_epoch=0,diagnostic_image_entry=0,diagnostic_image_frame=0;
+    std::array<char,768> diagnostic_first_error{};
+    std::array<char,3072> diagnostic_text{};
     mutable std::mutex mutex;
     std::condition_variable changed;
     game_input::HostTransfer transfer;
@@ -67,12 +83,77 @@ struct Owner::Impl {
     std::optional<game_input::ReadCompletion> main_completion;
 
     Impl(const rom::Snapshot& s,const menu::Catalog& c,application::RuntimeConfig options,
-         std::filesystem::path directory,game_run_report::Purpose purpose)
-        :snapshot(s),catalog(c),config(options),station_directory(std::move(directory)) {
+         std::filesystem::path directory,game_run_report::Purpose purpose,Diagnostics labels)
+        :snapshot(s),catalog(c),config(options),station_directory(std::move(directory)),diagnostics(labels) {
         if (purpose!=game_run_report::Purpose::disabled) recorder.emplace(purpose);
         worker=std::thread([this] { run(); });
         std::unique_lock lock(mutex);
         changed.wait(lock,[this] { return ready; });
+    }
+    // All diagnostic shared state uses the existing handoff mutex. Never borrow
+    // a Runtime/State/scene on main or seal/snapshot mutable Save RAM for labels.
+    void diagnostic_fail_locked(const char* failure) noexcept {
+        if (!diagnostics.run_id||diagnostic_first_error[0]||!failure||!failure[0]) return;
+        std::snprintf(diagnostic_first_error.data(),diagnostic_first_error.size(),
+            "epoch=%llu entry=%llu update=%llu: %.512s",
+            static_cast<unsigned long long>(epoch),
+            static_cast<unsigned long long>(diagnostic_state.entry),
+            static_cast<unsigned long long>(diagnostic_state.updates),failure);
+        diagnostic_dirty=true;
+    }
+    void diagnostic_observe(application::Runtime& runtime,const host::GtlClock& clock,
+                            const game::State& state) noexcept {
+        if (!diagnostics.run_id) return;
+        const auto view=runtime.view();
+        const auto stats=clock.stats();
+        DiagnosticState next{};
+        if (view.entry) {
+            next.entry=view.entry->serial;next.operation=view.entry->operation;next.argument=view.entry->argument;
+        }
+        next.active=runtime.scene_active();next.paused=clock.paused();next.stopping=clock.stopping();
+        next.updates=stats.updates;next.retraces=stats.retraces;next.draws=stats.submissions;
+        next.clock_frame=clock.frame();next.runtime_error=runtime.error();
+        if (const auto* opened=state.save_initialization()) {
+            next.save_load=static_cast<int>(opened->state);
+            next.boot_generation=opened->load.snapshot.generation();
+        }
+        std::lock_guard lock(mutex);
+        if (next!=diagnostic_state) { diagnostic_state=next;diagnostic_dirty=true; }
+        if (runtime.error()!=ISLE_GAME_OK) diagnostic_fail_locked(runtime.message());
+        if (state.initialization_attempted()&&!state.initialized()) diagnostic_fail_locked(state.error());
+    }
+    const char* diagnostic_format() noexcept {
+        if (!diagnostics.run_id) return nullptr;
+        std::lock_guard lock(mutex);
+        if (!diagnostic_dirty) return diagnostic_text.data();
+        const auto& d=diagnostic_state;
+        std::snprintf(diagnostic_text.data(),diagnostic_text.size(),
+            "35mmIsle %.48s | configured source %.40s\n"
+            "Run %.32s | epoch %llu | %s\n"
+            "Scene %s | entry %llu | raw argument %u | %s\n"
+            "GTL updates %llu | retraces %llu | submissions %llu | clock %u\n"
+            "Image epoch %llu / entry %llu / frame %llu\n"
+            "Save load %s | boot-loaded durable generation %llu\n"
+            "Runtime error %d | first error: %s\n"
+            "Closure GAME %s / Host %s | audio fidelity UNQUALIFIED",
+            diagnostics.version?diagnostics.version:"",diagnostics.revision?diagnostics.revision:"",
+            diagnostics.run_id,static_cast<unsigned long long>(epoch),
+            diagnostic_first_error[0]?"FAILED":diagnostic_joined?"CLOSED":
+                retired?"RETIRED":d.stopping?"STOPPING":d.paused?"PAUSED":"OBSERVING",
+            d.entry?game_run_report::entry_name(d.operation):"between entries",
+            static_cast<unsigned long long>(d.entry),d.argument,d.active?"active":"inactive",
+            static_cast<unsigned long long>(d.updates),static_cast<unsigned long long>(d.retraces),
+            static_cast<unsigned long long>(d.draws),d.clock_frame,
+            static_cast<unsigned long long>(diagnostic_image_epoch),
+            static_cast<unsigned long long>(diagnostic_image_entry),
+            static_cast<unsigned long long>(diagnostic_image_frame),
+            d.save_load<0?"not opened":game_run_report::save_load_name(static_cast<save::GameLoadState>(d.save_load)),
+            static_cast<unsigned long long>(d.boot_generation),
+            static_cast<int>(d.runtime_error),diagnostic_first_error[0]?diagnostic_first_error.data():"none observed",
+            diagnostic_joined?"joined":"not joined",diagnostic_host_closed?"closed":"not closed");
+        diagnostic_label_failure=diagnostic_first_error[0]!=0;
+        diagnostic_dirty=false;
+        return diagnostic_text.data();
     }
     static void scene_retired(void* owner,application::SceneRetirementView view) {
         auto& self=*static_cast<Impl*>(owner);
@@ -224,6 +305,11 @@ struct Owner::Impl {
         std::lock_guard lock(mutex);
         if (display_state!=DisplayState::idle||next_display==std::numeric_limits<std::uint64_t>::max()) return 0;
         display={epoch,++next_display,frame.rgba,frame.width,frame.height,frame.screen_offsets};
+        if (diagnostics.run_id) {
+            const auto view=application.view();
+            diagnostic_image_epoch=epoch;diagnostic_image_entry=view.entry?view.entry->serial:0;
+            diagnostic_image_frame=frame.ordinal;diagnostic_dirty=true;
+        }
         if (recorder) display_identity=identity;
         display_state=DisplayState::offered;changed.notify_all();
         return display.serial;
@@ -239,9 +325,12 @@ struct Owner::Impl {
         Impl& bridge;
         application::Runtime& application;
         bool& failed;
+        host::GtlClock& clock;
+        game::State& state;
         std::uint64_t outstanding=0;
         static IsleGameResult service(void* raw) noexcept {
             auto& self=*static_cast<NativeDisplay*>(raw);
+            self.bridge.diagnostic_observe(self.application,self.clock,self.state);
             if (self.outstanding&&self.bridge.acknowledged(self.outstanding)) {
                 self.outstanding=0;
                 const auto result=self.application.release_completed();
@@ -306,7 +395,7 @@ struct Owner::Impl {
                     if (!made) retain(result.message,made.message.data());
                     else {
                         runtime=std::move(made.runtime);
-                        native_display.emplace(NativeDisplay{*this,*runtime,platform_failed,0});
+                        native_display.emplace(NativeDisplay{*this,*runtime,platform_failed,clock,*state,0});
                         progress.bind(clock,{runtime.get(),+[](void* owner,const game_input::EventResult& completion) noexcept {
                             return static_cast<application::Runtime*>(owner)->acknowledge_input(completion)==ISLE_GAME_OK;
                         }});
@@ -433,6 +522,8 @@ struct Owner::Impl {
             {
                 std::lock_guard lock(mutex);
                 if (call_state!=CallState::idle||display_state!=DisplayState::idle) std::terminate();
+                diagnostic_fail_locked(result.message.data());
+                if (diagnostics.run_id) { diagnostic_state.active=false;diagnostic_dirty=true; }
                 outcome=result;active=false;retired=true;changed.notify_all();
             }
         }
@@ -446,6 +537,7 @@ struct Owner::Impl {
         if (platform_error==game_host::Error::none&&actual_error!=game_host::Error::none) {
             retain(platform_message,host->message());platform_error=actual_error;
         }
+        diagnostic_fail_locked(platform_message.data());
         if (!running||platform_error!=game_host::Error::none) stop_requested=true;
         changed.notify_all();
     }
@@ -516,6 +608,10 @@ struct Owner::Impl {
             // pixel access; GAME performs the real FrameToken/Station release.
             std::lock_guard lock(mutex);display_state=DisplayState::acknowledged;changed.notify_all();
         }
+        if (diagnostics.run_id) {
+            const auto* label=diagnostic_format();
+            host->diagnostic_label(label,diagnostic_label_failure);
+        }
         if (host->error()==game_host::Error::none&&host->presentation_pending()) {
             const auto presented=host->try_present();
             if (recorder) recorder->main_presented(presented,host->presentation_pending());
@@ -528,8 +624,8 @@ struct Owner::Impl {
     }
 };
 Owner::Owner(const rom::Snapshot& snapshot,const menu::Catalog& catalog,application::RuntimeConfig config,
-             std::filesystem::path directory,game_run_report::Purpose purpose)
-    :impl_(std::make_unique<Impl>(snapshot,catalog,config,std::move(directory),purpose)) {}
+             std::filesystem::path directory,game_run_report::Purpose purpose,Diagnostics diagnostics)
+    :impl_(std::make_unique<Impl>(snapshot,catalog,config,std::move(directory),purpose,diagnostics)) {}
 Owner::~Owner() { finish(); }
 bool Owner::start_epoch(game_host::Host& host,const std::filesystem::path& profile,std::uint64_t epoch) noexcept {
     auto& self=*impl_;self.require_main();
@@ -543,6 +639,9 @@ bool Owner::start_epoch(game_host::Host& host,const std::filesystem::path& profi
     if (self.platform_error!=game_host::Error::none) retain(self.platform_message,host.message());
     self.platform_running=host.running();self.stop_requested=!self.platform_running;
     self.station_actions=0;self.outcome={};self.retired=false;self.active=true;
+    if (self.diagnostics.run_id) {
+        self.diagnostic_state={};self.diagnostic_host_closed=false;self.diagnostic_dirty=true;
+    }
     self.changed.notify_all();return true;
 }
 void Owner::service() noexcept { impl_->service(); }
@@ -558,6 +657,13 @@ EpochResult Owner::result() const noexcept {
 void Owner::observe_host_shutdown(std::uint64_t epoch,bool cancelled,const game_host::Shutdown& closed) noexcept {
     auto& self=*impl_;self.require_main();
     if (self.recorder) self.recorder->main_host_shutdown(epoch,cancelled,closed);
+    if (self.diagnostics.run_id) {
+        std::lock_guard lock(self.mutex);
+        self.diagnostic_host_closed=true;self.diagnostic_dirty=true;
+        if (!cancelled||closed.failed||!closed.owners_released||
+            closed.audio!=audio::SdlAudioOutput::CloseDisposition::stream_drained)
+            self.diagnostic_fail_locked("Host shutdown/cancellation/audio closure failed");
+    }
 }
 void Owner::finish() noexcept {
     if (!impl_) return;
@@ -569,11 +675,23 @@ void Owner::finish() noexcept {
         std::lock_guard lock(self.mutex);self.quitting=true;self.changed.notify_all();
     }
     self.worker.join();self.host=nullptr;
+    if (self.diagnostics.run_id) {
+        std::lock_guard lock(self.mutex);
+        self.diagnostic_joined=true;self.diagnostic_dirty=true;
+    }
     if (self.recorder) self.recorder->joined();
 }
 const game_run_report::Recorder* Owner::terminal_evidence() const noexcept {
     auto& self=*impl_;self.require_main();
     if (self.worker.joinable()||!self.recorder||!self.recorder->readable()) return nullptr;
     return &*self.recorder;
+}
+void Owner::diagnostic_failure(const char* failure) noexcept {
+    auto& self=*impl_;self.require_main();
+    if (!self.diagnostics.run_id) return;
+    std::lock_guard lock(self.mutex);self.diagnostic_fail_locked(failure);
+}
+const char* Owner::diagnostic_report() noexcept {
+    impl_->require_main();return impl_->diagnostic_format();
 }
 } // namespace isle::game_owner

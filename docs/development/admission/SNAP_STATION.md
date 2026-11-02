@@ -42,7 +42,7 @@ starts immediately after preview color, preserving the Original backing alias.
 Camera-pass scissors now derive from the actual Source screen dimensions.
 All immutable-span, overlap, exact shared-loan and GPU-retirement guards remain.
 
-The actual Linux development executable SHA-256 is
+At the earlier native Station checkpoint, the Linux executable SHA-256 is
 `a31d822865d3ea39c6db374b82175a22d26952be0f0c6b00664a426beb114fd6`.
 A fresh whole-pair copy of photographs earned and arranged through ordinary UI
 traverses Title/Gallery, real F9 attachment, Print, Original Save, actual
@@ -53,6 +53,26 @@ publish exactly one byte-identical additional copy; released-input idle creates
 none. Original argument 16 remains the nonreturning terminal entry, not a
 seventeenth photograph. Normal owned-window WM_DELETE joins with exit 0, and the
 protected original UI-earned save pair remains unchanged.
+
+A renewed bounded production run uses executable
+`05e361bb211a7bc457b308160ecaedb36755da5e595363605ee8067bd817d595`
+and another untouched whole UI-earned pair copy. Actual ordinary input skips
+the running intro, opens Gallery22, attaches F9, acknowledges both instruction
+pages, selects Print and completes its original Save/reset. The real sixteen
+passes publish the 2560×1920 sheet by 179.63 seconds; ordinary Start publishes
+one byte-identical copy. Each 14,745,654-byte file has SHA-256
+`df102b4139a2ddcea0a2c6725d6d6a5d81bd1f86b927a08b73020053863a5eb1`.
+
+The diagnostic window receives a new destruction subscription after the first
+reset; its old witness is cleared. One F9 then proves a separate second
+retirement/recreation and actual normal Boot/disconnected caption, even though
+the numeric window ID is reused. Ordinary close at 215.593 seconds naturally
+exits 0 with admitted custody, complete tree reaping/`ECHILD`, pipe EOF and
+retained-FD closure; both original display/bus helpers reap 0. The 300-second
+custody, 210-second sheet and 220-second input-stop limits are unchanged.
+The preceding wrong-data-root case remains negative: `--data-directory` takes
+the root containing `profile`, not the `profile` directory itself. No Station
+input or gameplay repair is credited to that operator failure.
 
 The earlier ordinary cases remain negative evidence: genuine overlay ownership,
 unused Window capacity and preview-alias admission rejected before correction;

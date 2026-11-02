@@ -30,6 +30,13 @@ ctest --preset windows-release
 
 Debug presets are `linux-debug` and `windows-debug`. CTest executables exercise independently authored native memory, ROM identity, GTL clock/context policy, stackful processes, owned queues, VPK0, compiled-C continuations, typed sprites, packed-depth photo reductions, audio resources/readers/players/synthesis/effects, controller publication and checked save codecs/persistence/startup state; checks remain active in Release. The private game engine adds actual upstream C dispatcher, fade and camera/model computations with synthetic data. Public jobs never receive a ROM or extracted game content.
 
+The shipping `35mmisle` target embeds its configured application version and
+source revision for the opt-in [diagnostic label/report](RUNNING.md#opt-in-diagnostic-labels).
+Reconfigure after source changes before producing a reportable build: the
+configured revision is build provenance, not runtime Git inspection or a claim
+that an executable is a qualified release. Diagnostics reuse pinned LUS/ImGui;
+no extra library, private SDK state or diagnostic gameplay controller is added.
+
 ### VPK0 decoding contract
 
 `isle::vpk0::decode(std::span<const std::byte> input, std::span<std::byte> output) noexcept` returns a `Result` containing `error`, `bytes_consumed` and `bytes_written`; its explicit boolean conversion denotes success. The caller owns bounded, **nonoverlapping** input/output storage; decoding performs no allocations. The lowercase `vpk0` header declares the output length. Invalid/truncated headers and insufficient output capacity fail before writes; a body error can leave partial output, which callers must not publish. Publish output only on success. Success stops at the declared output length and reports the logical consumed bytes rounded up from bits; trailing input, such as subsequent ROM data, is allowed. Nonzero sample-method values share the format's nonzero-method behavior, not an invented unsupported-method rejection.

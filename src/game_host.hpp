@@ -56,6 +56,9 @@ public:
     bool station_action_pending() const noexcept;
     bool take_station_action() noexcept;
     bool station_feedback(const char* status) noexcept;
+    // Main-thread-only passive ImGui label. Borrowed text must survive until the
+    // next call or Host shutdown. Null disables it; no input/window is created.
+    void diagnostic_label(const char* text, bool failure) noexcept;
     Input acquire_input() noexcept;
     // Explicit scene-cold boundary; refuses pending presentation or failed/stopped
     // ownership. Supports only 320x240 and 640x480; fences old GPU/cache borrowers.

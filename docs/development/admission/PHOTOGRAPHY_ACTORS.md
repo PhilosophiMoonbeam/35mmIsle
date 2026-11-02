@@ -159,6 +159,52 @@ actual audio-RSP/PCM drain. Eevee variants and Apple-hit notifications are
 explicit typed API inputs, not earned progression, full-family behavioral
 equivalence, graphics, Original fidelity or Windows 11 qualification.
 
+### Meowth bounded native family consumer
+
+`actor-interaction-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE --meowth`
+selects the real actor52 factory `0x802c7270`, root `0x802c5dac`, all five
+behavior variants and 22 retained ROM graphs, without common-selector callback
+substitution. Variants are explicit typed API inputs: their placement comes
+from actual ROM block2 behavior2 row `0x80135614`, not a nonexistent behavior0
+ROM row. Variant3 additionally borrows its actual ROM path. Native Movement
+initialization at block0/block4 is an explicit fixture, not earned progression.
+
+Before expecting pursuit success, actual `World::ground_at` queries check the
+factory, first-step destination, collision-radius probe and item target against
+the pinned flat `0x7f4c00` surface/height. The consumer retains the original
+target-reached and actual displacement requirements, FIFO sender credits,
+Player-distance/Flute ownership, timed collision auxiliary restoration,
+helper1006 commands37/38 and sound34, callback-closure rejection, relocation,
+native-leaf fail-closed behavior, joins, fresh-scene reset and audio-RSP/PCM drain.
+Bound failures print live graph, position, flags, speed, radius, counter,
+path parameter and actual canonical targets; ground failures print query results.
+
+The standalone target remains excluded from default builds/CTest. Build it
+explicitly, then invoke it with a fresh existing empty profile:
+`actor-interaction-rom-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE --meowth`.
+The actual full consumer passes GNU Release in 0.669 s and Clang 21
+ASan/UBSan with leak detection in 11.590 s; both naturally exit0 with empty
+stderr under the unchanged 60-second outer bound. Existing default and
+Eevee/Chansey consumers also pass in both builds, and both CPU suites pass 63/63.
+
+The run reproduced a real missing dispatch route: canonical Beach Meowth
+callback `0x802c71e8` was rejected although its original C body was compiled.
+`Owner::change_block_source` now routes that exact Beach identity through the
+existing checked C adapter with its behavior-selected ground policy. Actual
+variants 0/1 verify both placement branches, saved positions and joined ownership.
+The same full consumer fails before this correction and passes afterward.
+
+Fixture corrections preserve source behavior rather than changing the game:
+command28 retains a joined sender until real automatic16 replaces its field;
+binary32 input checks use accepted native coordinates, not an impossible ideal
+offset; bit`0x08` keeps the original turn helper alive despite its misleading
+decomp name; the near-zero-Z heading branch ignores X sign, so tracking uses a
+distinct diagonal; final command38 drains through the next actual receiver
+Update; fixed one-shot sounds keep playing without borrowing a freed Actor.
+No numerical tolerance, forbidden surface, source RNG or lifetime rule is relaxed.
+This is CPU/API family qualification, not earned progression, Player FSM,
+Original numerical parity, GPU, campaign, hardware hearing or Windows11 proof.
+
 ### Rainbow environmental voices and final PCM ownership
 
 `environment-sound-rsp-smoke PRIVATE_ROM EXISTING_EMPTY_PROFILE --rainbow`

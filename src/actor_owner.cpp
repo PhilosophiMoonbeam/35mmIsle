@@ -2759,6 +2759,10 @@ OwnerStatus Owner::change_block_source(menu::animation::InstanceHandle handle,st
     if (!function) {
         if (identity==0x80363dbcu) return change_block(handle,previous,current);
         if (identity==0x80363eb4u) return change_block_ground(handle,previous,current);
+        if (impl_->course_context.course_id()==0 && identity==0x802c71e8u)
+            return isle_meowth_source_call_change_block(slot->object,previous.x,previous.y,previous.z,
+                current.x,current.y,current.z,-1)==ISLE_GAME_OK?OwnerStatus{}:
+                rejected(OwnerError::native,"original Meowth behavior-selected block change failed");
         if (identity==0x80362d2cu)
             return isle_meowth_source_call_change_block(slot->object,previous.x,previous.y,previous.z,
                 current.x,current.y,current.z,2)==ISLE_GAME_OK?OwnerStatus{}:

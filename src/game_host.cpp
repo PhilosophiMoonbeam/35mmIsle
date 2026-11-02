@@ -70,6 +70,9 @@ class GameGui final : public Fast::Fast3dGui {
 public:
     GameGui(bool input, const std::filesystem::path& data)
         : input_(input), ini_(lus_path(data / "imgui.ini")), log_(lus_path(data / "imgui_log.txt")) {}
+    void diagnostic_label(const char* label, bool failure) noexcept {
+        diagnostic_text_ = label; diagnostic_failure_ = failure;
+    }
     void release() {
         Ship::Gui::ReleaseHostReferences();
         mWindow.reset(); mResourceManager.reset(); mConsoleVariables.reset();
@@ -96,9 +99,30 @@ protected:
     void ImGuiBackendShutdown() override {
         if (renderer_) { Fast::Fast3dGui::ImGuiBackendShutdown(); renderer_ = false; }
     }
+    void DrawGame() override {
+        Fast::Fast3dGui::DrawGame();
+        // Ship::Gui::EndDraw calls EndFrame/Render immediately after DrawGame;
+        // DrawFloatingWindows is already post-render and cannot add this label.
+        if (!diagnostic_text_) return;
+        // A foreground draw list never creates an interactive ImGui window or
+        // changes keyboard/gamepad capture. LUS owns NewFrame/Render/presentation.
+        const auto* viewport = ImGui::GetMainViewport();
+        const float wrap = std::max(1.0f, viewport->Size.x - 32.0f);
+        const auto size = ImGui::CalcTextSize(diagnostic_text_, nullptr, false, wrap);
+        const ImVec2 origin(viewport->Pos.x + 8.0f, viewport->Pos.y + 8.0f);
+        auto* draw = ImGui::GetForegroundDrawList();
+        draw->AddRectFilled(origin, ImVec2(origin.x + size.x + 16.0f, origin.y + size.y + 12.0f),
+                            IM_COL32(12, 14, 18, 228));
+        draw->AddText(ImGui::GetFont(), ImGui::GetFontSize(),
+                      ImVec2(origin.x + 8.0f, origin.y + 6.0f),
+                      diagnostic_failure_ ? IM_COL32(255, 128, 112, 255) : IM_COL32(245, 245, 245, 255),
+                      diagnostic_text_, nullptr, wrap);
+    }
 private:
     bool input_, platform_ = false, renderer_ = false;
     const std::string ini_, log_;
+    const char* diagnostic_text_ = nullptr;
+    bool diagnostic_failure_ = false;
 };
 } // namespace
 
@@ -470,6 +494,9 @@ bool Host::station_feedback(const char* status) noexcept {
     std::snprintf(caption.data(),caption.size(),"35mmIsle - Snap Station: %s",status);
     return SDL_SetWindowTitle(impl_->native_window,caption.data()) ||
         impl_->fail(Error::platform,SDL_GetError());
+}
+void Host::diagnostic_label(const char* label, bool failure) noexcept {
+    if (impl_->gui) impl_->gui->diagnostic_label(label, failure);
 }
 Input Host::acquire_input() noexcept {
     Input result;

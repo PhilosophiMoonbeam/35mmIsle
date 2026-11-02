@@ -1,0 +1,25 @@
+--- a/src/util/u_cpu_detect.c
++++ b/src/util/u_cpu_detect.c
+@@ -107,6 +107,11 @@
+ };
+ 
+ #if DETECT_ARCH_X86 || DETECT_ARCH_X86_64
++/* At most one L3 cache is discovered per CPU.  Keep the masks with the
++ * owning utility instance so their lifetime matches the published caps.
++ */
++static util_affinity_mask L3_affinity_masks_storage[UTIL_MAX_CPUS];
++
+ static int has_cpuid(void);
+ #endif
+ 
+@@ -563,9 +568,7 @@
+             if (idx == -1) {
+                idx = num_L3_caches;
+                L3_found[num_L3_caches++] = l3_id;
+-               L3_affinity_masks = realloc(L3_affinity_masks, sizeof(util_affinity_mask) * num_L3_caches);
+-               if (!L3_affinity_masks)
+-                  return;
++               L3_affinity_masks = L3_affinity_masks_storage;
+                memset(&L3_affinity_masks[num_L3_caches - 1], 0, sizeof(util_affinity_mask));
+             }
+             util_cpu_caps.cpu_to_L3[i] = idx;

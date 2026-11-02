@@ -348,6 +348,8 @@ void emit_boot(Json& json, const BootFacts& facts) noexcept {
     json.text("]}");
 }
 } // namespace
+const char* entry_name(IsleApplicationEntryOperation operation) noexcept { return operation_name(operation); }
+const char* save_load_name(save::GameLoadState state) noexcept { return load_name(state); }
 
 struct Recorder::Impl {
     struct GameRow {

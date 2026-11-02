@@ -1590,6 +1590,26 @@ if(TARGET isle-beach-lifecycle AND TARGET isle-rainbow-lifecycle AND TARGET isle
     endif()
     add_executable(35mmisle src/game_main.cpp)
     target_link_libraries(35mmisle PRIVATE isle-game-owner)
+    # Diagnostic labels identify the configured source, not a release-acceptance claim.
+    set(_isle_build_revision "unversioned")
+    execute_process(COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}"
+        rev-parse --short=12 HEAD
+        OUTPUT_VARIABLE _isle_revision RESULT_VARIABLE _isle_revision_result
+        OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    if(_isle_revision_result EQUAL 0 AND _isle_revision MATCHES "^[0-9a-f]+$")
+        set(_isle_build_revision "${_isle_revision}")
+        execute_process(COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}"
+            diff --quiet --no-ext-diff HEAD --
+            RESULT_VARIABLE _isle_dirty_result ERROR_QUIET)
+        if(_isle_dirty_result EQUAL 1)
+            string(APPEND _isle_build_revision "+modified")
+        elseif(NOT _isle_dirty_result EQUAL 0)
+            set(_isle_build_revision "unversioned")
+        endif()
+    endif()
+    target_compile_definitions(35mmisle PRIVATE
+        ISLE_BUILD_VERSION="${PROJECT_VERSION}"
+        ISLE_BUILD_REVISION="${_isle_build_revision}")
     isle_target_options(35mmisle)
     add_executable(native-host-failure-rom-smoke EXCLUDE_FROM_ALL
         tests/native_host_failure_rom_smoke.cpp tests/player_source_fixture.c)

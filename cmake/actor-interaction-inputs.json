@@ -84,7 +84,7 @@
       "sha256": "bd5afdd961ce6339b5784474b44425407f0f3837022bf66bbff29cec4509440d"
     },
     "tests/scene_services_tests.cpp": {
-      "sha256": "7bd0dfeebc60bebd62a8726d89cc8e81528095ec360d60c709fb8aeb2bb2d549"
+      "sha256": "7e06867a71c591d38eb81c9755affe30473f485b0e5d244e9f3c2aefc173ea9a"
     },
     "tests/world_runtime_tests.cpp": {
       "sha256": "ff112550e9aadfaf0017822e7f072e805c4c61220ff6469166b30866ed14fb10"

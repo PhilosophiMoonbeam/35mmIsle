@@ -1021,6 +1021,137 @@ void services_prepared_admission_and_native_visibility(const fs::path& parent) {
           "cancellation after failure frees unpublished ownership without clearing or replacing scene error");
 }
 
+void services_restore_sprite_after_native_failure(const fs::path& parent) {
+    Profile profile(parent);
+    isle::game::State state(profile.path);
+    check(state.initialize(1),"initialize failed-sprite restoration profile");
+    if (!state.initialized()) return;
+    AudioOwner audio_owner;
+    auto audio = audio_owner.create();
+    check(bool(audio),"initialize failed-sprite restoration audio owner");
+    if (!audio) return;
+    isle::game_input::Service input;
+    IsleSprite prototype{};
+    prototype.x = 1; prototype.y = 2; prototype.width = prototype.height = 1;
+    prototype.scalex = prototype.scaley = 1;
+    prototype.red = prototype.green = prototype.blue = prototype.alpha = 255;
+    prototype.bmfmt = 4; prototype.bmsiz = 1; prototype.bmheight = prototype.bmHreal = 1;
+    const auto authored_sprite = [&](std::uint8_t texel) {
+        auto bytes = std::make_shared<isle::sprite::Bank>(17,0);
+        (*bytes)[1] = 1; (*bytes)[3] = 1;
+        (*bytes)[8] = 1; (*bytes)[11] = 16; (*bytes)[13] = 1;
+        (*bytes)[16] = texel;
+        const isle::sprite::BankOwner immutable = std::move(bytes);
+        return isle::sprite::hydrate_bitmaps(immutable,0x01000000,prototype,0x01000000,1);
+    };
+    const auto canonical_asset = authored_sprite(213);
+    const auto temporary_asset = authored_sprite(37);
+    check(bool(canonical_asset) && bool(temporary_asset),"hydrate two distinct real sprite backings");
+    if (!canonical_asset || !temporary_asset) return;
+    const IsleSprite canonical = *canonical_asset.asset.view();
+    IsleSprite temporary = *temporary_asset.asset.view();
+    temporary.x = -31; temporary.y = 47;
+    temporary.scalex = 1.5f; temporary.scaley = 0.75f;
+    temporary.attr = ISLE_SP_SCALE | ISLE_SP_FRACPOS;
+    temporary.red = 11; temporary.green = 22; temporary.blue = 33; temporary.alpha = 44;
+    temporary.expx = 3; temporary.expy = -4; temporary.zdepth = 17;
+    temporary.frac_s = 9; temporary.frac_t = 10;
+    IsleSprite independent = temporary;
+    independent.x = 51; independent.y = -63; independent.alpha = 97;
+    const auto same_descriptor = [](const IsleSprite& actual, const IsleSprite& expected) {
+        return actual.x == expected.x && actual.y == expected.y &&
+            actual.width == expected.width && actual.height == expected.height &&
+            actual.scalex == expected.scalex && actual.scaley == expected.scaley &&
+            actual.expx == expected.expx && actual.expy == expected.expy &&
+            actual.attr == expected.attr && actual.zdepth == expected.zdepth &&
+            actual.red == expected.red && actual.green == expected.green &&
+            actual.blue == expected.blue && actual.alpha == expected.alpha &&
+            actual.startTLUT == expected.startTLUT && actual.nTLUT == expected.nTLUT &&
+            actual.LUT == expected.LUT && actual.LUT_bytes == expected.LUT_bytes &&
+            actual.istart == expected.istart && actual.istep == expected.istep &&
+            actual.nbitmaps == expected.nbitmaps && actual.ndisplist == expected.ndisplist &&
+            actual.bmheight == expected.bmheight && actual.bmHreal == expected.bmHreal &&
+            actual.bmfmt == expected.bmfmt && actual.bmsiz == expected.bmsiz &&
+            actual.bitmap == expected.bitmap && actual.frac_s == expected.frac_s && actual.frac_t == expected.frac_t;
+    };
+    const std::array bank{sc::SpriteResource{700,canonical_asset.asset},sc::SpriteResource{701,temporary_asset.asset}};
+    sc::Storage native(1024*1024);
+    check(native.create() == ISLE_GAME_OK,"create actual failed-sprite restoration arena");
+    const auto native_matches = [&](IsleGameSprite* sprite, const IsleSprite& expected) {
+        IsleSprite* actual = nullptr;
+        return isle_game_sprite_view(native.game(),sprite,&actual) == ISLE_GAME_OK &&
+            actual != nullptr && same_descriptor(*actual,expected);
+    };
+    sc::SpriteHandle target{}, other{};
+    Lifecycle context{};
+    context.game = native.game();
+    std::string native_failure;
+    {
+        sc::Services services(native.game(),native.arena(),{{2,2,2,0,0},bank},input,*audio.session,state);
+        target = services.sprite(700,30,6,40);
+        other = services.sprite(701,30,7,41);
+        check(target.sprite && other.sprite &&
+              services.replace_sprite(target.sprite,1,temporary,17) &&
+              services.replace_sprite(other.sprite,1,independent,19) &&
+              canonical.bitmap != temporary.bitmap && canonical.bitmap[0].buf != temporary.bitmap[0].buf &&
+              native_matches(target.sprite,temporary) && native_matches(other.sprite,independent),
+              "registered target actually borrows a different descriptor/backing from its canonical resource");
+        if (!target.sprite || !other.sprite || services.failed()) return;
+        IsleGameCounts counts{};
+        check(isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.processes == 0 &&
+              !services.restore_sprite_after_failure(target.sprite,0,canonical) && !services.failed() &&
+              native_matches(target.sprite,temporary),
+              "joined-only restoration cannot overwrite a healthy registered sprite even with no processes");
+        context.processes[0] = services.process(other.object,lifecycle_sleep,&context);
+        check(context.processes[0] && services.tick() == ISLE_GAME_OK && context.started == 1 &&
+              engine_process_waiting(context.processes[0]),
+              "park a real continuation on the independent sprite owner");
+        context.processes[1] = services.process(target.object,lifecycle_fault,&context,ISLE_GAME_SYNCHRONOUS,0);
+        check(context.processes[1] && services.tick() == ISLE_GAME_EXECUTION_FAILURE && services.failed() &&
+              isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.processes == 2 &&
+              engine_process_alive(context.processes[1]) && engine_process_waiting(context.processes[0]) &&
+              context.continued == 0,
+              "genuine synchronous wait failure latches Services while both native processes remain owned");
+        native_failure = isle_game_error(native.game());
+        check(!native_failure.empty() && native_failure == services.error(),
+              "Services retains the original native traversal fault, not an invented cleanup failure");
+        services.end_process(context.processes[1]);
+        check(engine_process_joined(context.processes[1]) && engine_object_process_count(target.object) == 0 &&
+              engine_process_waiting(context.processes[0]) &&
+              isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.processes == 1 &&
+              !services.restore_sprite_after_failure(target.sprite,0,canonical) &&
+              native_matches(target.sprite,temporary) && native_matches(other.sprite,independent),
+              "restoration rejects without mutation while another owner's actual continuation is still parked");
+        services.end_process(context.processes[0]);
+        check(engine_process_joined(context.processes[0]) && engine_process_joined(context.processes[1]) &&
+              isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.processes == 0 &&
+              counts.objects == 2 && counts.sprites == 2 &&
+              engine_object_alive(target.object) && engine_object_alive(other.object),
+              "process-only joins leave both actual native sprite owners and the restoration target alive");
+        check(services.restore_sprite_after_failure(target.sprite,0,canonical) &&
+              native_matches(target.sprite,canonical) && native_matches(other.sprite,independent),
+              "failed joined restoration replaces the actual native descriptor without touching another sprite");
+        IsleSprite* restored = nullptr;
+        check(isle_game_sprite_view(native.game(),target.sprite,&restored) == ISLE_GAME_OK && restored &&
+              restored->bitmap == canonical.bitmap && restored->bitmap[0].buf == canonical.bitmap[0].buf &&
+              restored->bitmap[0].byte_count == 1 && restored->bitmap[0].buf[0] == 213 &&
+              temporary.bitmap[0].buf[0] == 37,
+              "native restoration returns to the real canonical texel backing, not the temporary borrowed bank");
+        check(services.failed() && native_failure == services.error() &&
+              isle_game_status(native.game()) == ISLE_GAME_EXECUTION_FAILURE &&
+              native_failure == isle_game_error(native.game()) && context.continued == 0,
+              "rejection, actual process joins and successful restoration preserve both original sticky faults");
+    }
+    IsleGameCounts counts{};
+    check(isle_game_counts(native.game(),&counts) == ISLE_GAME_OK && counts.objects == 0 &&
+          counts.sprites == 0 && counts.processes == 0 && !engine_object_alive(target.object) &&
+          !engine_object_alive(other.object) && engine_process_joined(context.processes[0]) &&
+          engine_process_joined(context.processes[1]) && context.continued == 0 &&
+          isle_game_status(native.game()) == ISLE_GAME_EXECUTION_FAILURE &&
+          native_failure == isle_game_error(native.game()),
+          "faulted Services destruction actually joins both native sprite owners without resuming abandoned work");
+}
+
 void services_sprite_hierarchy(const fs::path& parent) {
     Profile profile(parent);
     isle::game::State state(profile.path);
@@ -1317,6 +1448,7 @@ int main(int argc, char** argv) {
         services_source_owners(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_reject_unregistered_sender(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_prepared_admission_and_native_visibility(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
+        services_restore_sprite_after_native_failure(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
         services_sprite_hierarchy(argc == 2 ? fs::absolute(argv[1]) : fs::temp_directory_path());
     } catch (const std::exception& error) { std::cerr << "FAIL: " << error.what() << '\n'; return EXIT_FAILURE; }
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;

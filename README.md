@@ -14,6 +14,8 @@ The port's scope covers all seven courses, original interactions and unlocks, ca
 
 ## Getting started
 
+Prebuilt preview Runtime archives are available under [GitHub Releases](https://github.com/PhilosophiMoonbeam/35mmIsle/releases). Choose the Windows x64 ZIP or Linux x64 TAR.GZ, not a source-code archive; extract the whole package and supply your own supported US ROM. See [installed Runtime instructions](docs/RUNNING.md#prebuilt-runtime) for launch commands, controls and optional on-screen diagnostics. Runtime users do not need development SDKs or build tools.
+
 The default build provides standalone native tools without LUS or game/reference checkouts. The native application is opt-in and requires a user-supplied supported ROM and additional private build inputs. See [BUILDING](docs/BUILDING.md) for prerequisites and build options, then [RUNNING](docs/RUNNING.md) for application setup and use.
 
 The project is in development. [STATUS](docs/STATUS.md) distinguishes current candidate-specific evidence from historical results and open qualification gates. Those results do not establish a complete current-build pixel-only campaign, Windows 11 gameplay, physical-device qualification or release approval. Beads remains the live authority for work tracking; the documents below provide design, contracts and evidence rather than a live task ledger.

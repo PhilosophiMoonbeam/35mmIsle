@@ -1,9 +1,10 @@
 # Running the native application
 
-Install the prerequisite host dependencies described in [Building the native runtime and tools](BUILDING.md) before building and launching the application. This page covers launch options, controls and Snap Station use. Run all commands from the repository root.
+Prebuilt preview Runtime archives do not require development SDKs or build tools. Host graphics, audio and input support remain required. Developers should first prepare the dependencies in [Building the native runtime and tools](BUILDING.md). Run build commands from the repository root; run installed commands from the extracted directory containing `bin/`.
 
 [Project README](../README.md) · [Admission index](development/ADMISSION.md)
 
+- [Prebuilt Runtime](#prebuilt-runtime)
 - [Native application](#native-application)
 - [Opt-in diagnostic labels](#opt-in-diagnostic-labels)
 - [Terminal evidence](#terminal-evidence)
@@ -11,15 +12,54 @@ Install the prerequisite host dependencies described in [Building the native run
 
 ## Application usage
 
+### Prebuilt Runtime
+
+Download the Windows x64 Runtime ZIP or Linux x64 Runtime TAR.GZ from
+[GitHub Releases](https://github.com/PhilosophiMoonbeam/35mmIsle/releases).
+GitHub's automatic source-code archives are not executables. Extract the
+**whole Runtime package**, including `bin/`, libraries, shaders and notices;
+do not copy only the executable.
+
+The application reads your own supported **US Pokémon Snap** ROM. It detects
+z64/v64/n64 byte order from content and never modifies or bundles the ROM.
+Open a terminal in the extracted directory containing `bin/`.
+
+Windows PowerShell:
+
+```powershell
+$Data = Join-Path $env:LOCALAPPDATA "35mmIsle\preview8"
+New-Item -ItemType Directory -Force -Path $Data | Out-Null
+.\bin\35mmisle.exe "C:\path\pokemonsnap.z64" --data-directory $Data --diagnostics
+```
+
+Linux:
+
+```sh
+DATA="$HOME/.local/share/35mmIsle/preview8"
+mkdir -p "$DATA"
+./bin/35mmisle "/path/to/pokemonsnap.z64" --data-directory "$DATA" --diagnostics
+```
+
+Replace the ROM path. These commands isolate preview data from older profiles;
+no configuration or JSON editing is needed. `--diagnostics` is optional and
+does not automate play. See [controls](#native-application) and
+[diagnostic reporting](#opt-in-diagnostic-labels) below.
+
+The LUS frontend needs working OpenGL support; canonical game rendering needs
+a Vulkan loader and compatible device/driver. Linux also requires compatible
+glibc/libstdc++ and display/audio/device backend libraries; it is not a
+universally static package. Native hosted Windows build/package checks do not
+establish Windows 11 gameplay or physical-device qualification.
+
 ### Native application
 
-With the host dependencies above, build the actual application and all required native services:
+With the host dependencies above and `LLVM_ROOT` pointing to the sealed LLVM root prepared in BUILDING, build the actual application and all required native services:
 
 ```sh
 cmake -S . -B build/native-game -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DISLE_BUILD_HOST_PROBE=ON -DISLE_BUILD_AUDIO_PROBE=ON \
   -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON \
-  -DCMAKE_PREFIX_PATH="$PREFIX"
+  -DCMAKE_PREFIX_PATH="$PREFIX" -DISLE_LLVM_ROOT="$LLVM_ROOT"
 cmake --build build/native-game --target 35mmisle --parallel 2
 build/native-game/35mmisle /private/pokemonsnap.z64
 ```

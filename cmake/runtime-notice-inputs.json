@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "scope": "Runtime selected permissive embedded/file-level notices only; not R1/R2 approval or GNU lightning corresponding-source/relink delivery.",
+  "scope": "Runtime selected permissive embedded/file-level notices; component terms retain their own scope. Native LLVM notices are retained separately from the verified source-backed LLVM selection.",
   "pins": {
     "lus": "759b13401cd6903daa67a00a753066f791622e78",
     "imgui": "4806a1924ff6181180bf5e4b8b79ab4394118875",

@@ -4,16 +4,25 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      retain_preview8_candidate:
+        description: 'Retain checked preview8 Windows/Linux candidates for maintainer download (no release publication)'
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
-# Hosted runners only. No ROMs, GAME-derived binaries, or private object kits are uploaded.
+# Hosted runners only. Manual candidate uploads are explicit Runtime/source files, never build trees.
 jobs:
   linux:
+    # Wait for the existing host job to seed LLVM; still run checks if that host job fails.
+    needs: linux-host
+    if: always() && !cancelled()
     name: Linux ${{ matrix.compiler.name }} / ${{ matrix.preset }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -36,8 +45,34 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ninja-build
+      - name: Identify exact native LLVM cache
+        id: llvm-key
+        shell: bash
+        run: |
+          python3 -B tools/llvm_cache_identity.py --root "$RUNNER_TEMP/llvm" --configuration Release >> "$GITHUB_OUTPUT"
+      - name: Restore exact source-backed native LLVM
+        id: llvm-cache
+        # actions/cache v5.0.3, verified against upstream immutable tag.
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
+      - name: Build missing pinned native LLVM (two compiler jobs)
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --prepare
+          # GCC-built LLVM is ABI-compatible with native GNU/Clang libstdc++ project builds.
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --configure --build-type Release --cc gcc --cxx g++
+          cmake --build "$RUNNER_TEMP/llvm/build" --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --seal-build
+      - name: Verify source, compiler, cache and sealed LLVM archive bytes
+        shell: bash
+        run: |
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --verify-sealed
       - name: Configure native services, exact C dispatcher and bounded RSP
-        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON
+        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_LLVM_ROOT="$RUNNER_TEMP/llvm"
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
       - name: Run synthetic tests (including Release)
@@ -52,10 +87,13 @@ jobs:
         run: cpack --config build/${{ matrix.preset }}/CPackConfig.cmake -B build/${{ matrix.preset }}/packages
 
   windows:
+    # Wait for the existing host job to seed LLVM; still run checks if that host job fails.
+    needs: windows-host
+    if: always() && !cancelled()
     name: Windows MSVC x64 / ${{ matrix.preset }}
     # This is a toolchain CI runner, not a Windows 11 game qualification claim.
     runs-on: windows-2022
-    timeout-minutes: 15
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -70,8 +108,47 @@ jobs:
           persist-credentials: false
           submodules: false
           lfs: false
+      - name: Identify exact native LLVM cache
+        id: llvm-key
+        shell: pwsh
+        run: |
+          $identity = python -B tools/llvm_cache_identity.py --root "$env:RUNNER_TEMP/llvm" --configuration ${{ matrix.configuration }}
+          if ($LASTEXITCODE -ne 0) { throw "LLVM cache identity failed" }
+          $identity | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Restore exact source-backed native LLVM
+        id: llvm-cache
+        # actions/cache v5.0.3, verified against upstream immutable tag.
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
+      - name: Build missing pinned native LLVM (two compiler jobs)
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --prepare
+          if ($LASTEXITCODE -ne 0) { throw "LLVM source preparation failed" }
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --configure --generator 'Visual Studio 17 2022' --architecture x64 --build-type ${{ matrix.configuration }}
+          if ($LASTEXITCODE -ne 0) { throw "LLVM native configure failed" }
+          cmake --build "$env:RUNNER_TEMP/llvm/build" --config ${{ matrix.configuration }} --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+          if ($LASTEXITCODE -ne 0) { throw "LLVM native build failed" }
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --seal-build
+          if ($LASTEXITCODE -ne 0) { throw "LLVM binary inventory sealing failed" }
+      - name: Verify source, compiler, cache and sealed LLVM archive bytes
+        shell: pwsh
+        run: |
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --verify-sealed
+          if ($LASTEXITCODE -ne 0) { throw "Restored/built LLVM identity verification failed" }
+      - name: Save verified native LLVM dependency only
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
       - name: Configure native services, exact C dispatcher and bounded RSP
-        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON
+        run: cmake --preset ${{ matrix.preset }} -DISLE_BUILD_GAME_ENGINE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_LLVM_ROOT="$env:RUNNER_TEMP/llvm"
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --parallel 2
       - name: Run synthetic tests (including Release)
@@ -105,7 +182,7 @@ jobs:
     name: Windows MSVC x64 / static-runtime LUS + audio + RSP + RDP + native engine
     # Hosted compiler/CPU/CLI proof, not a Windows 11, graphics or audio-device claim.
     runs-on: windows-2022
-    timeout-minutes: 60
+    timeout-minutes: 360
     defaults:
       run:
         shell: pwsh
@@ -118,8 +195,47 @@ jobs:
           lfs: false
       - name: Provision frozen vcpkg source and SHA256-verified tool
         run: ./tools/prepare_windows_host.ps1 -Root "$env:RUNNER_TEMP/35mmisle-windows-host-vcpkg"
+      - name: Identify exact native LLVM cache
+        id: llvm-key
+        shell: pwsh
+        run: |
+          $identity = python -B tools/llvm_cache_identity.py --root "$env:RUNNER_TEMP/llvm" --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "LLVM cache identity failed" }
+          $identity | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Restore exact source-backed native LLVM
+        id: llvm-cache
+        # actions/cache v5.0.3, verified against upstream immutable tag.
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
+      - name: Build missing pinned native LLVM (two compiler jobs)
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --prepare
+          if ($LASTEXITCODE -ne 0) { throw "LLVM source preparation failed" }
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --configure --generator 'Visual Studio 17 2022' --architecture x64 --build-type Release
+          if ($LASTEXITCODE -ne 0) { throw "LLVM native configure failed" }
+          cmake --build "$env:RUNNER_TEMP/llvm/build" --config Release --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+          if ($LASTEXITCODE -ne 0) { throw "LLVM native build failed" }
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --seal-build
+          if ($LASTEXITCODE -ne 0) { throw "LLVM binary inventory sealing failed" }
+      - name: Verify source, compiler, cache and sealed LLVM archive bytes
+        shell: pwsh
+        run: |
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --verify-sealed
+          if ($LASTEXITCODE -ne 0) { throw "Restored/built LLVM identity verification failed" }
+      - name: Save verified native LLVM dependency only
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
       - name: Configure actual static-runtime host and audio before project discovery
-        run: cmake --preset windows-host-release -DISLE_BUILD_RUNTIME_RELINK_KIT=ON
+        run: cmake --preset windows-host-release -DISLE_LLVM_ROOT="$env:RUNNER_TEMP/llvm"
       - name: Build actual product, full LUS, audio, RSP, canonical RDP, native engine and CPU tests with MSVC
         run: cmake --build --preset windows-host-release --parallel 2
       - name: Build all 31 native Player, Actor, Item and publication consumers without a ROM
@@ -148,41 +264,6 @@ jobs:
           }
           & "./build/windows-host-release/Release/35mmisle.exe" --help
           if ($LASTEXITCODE -ne 0) { throw "Native product help failed" }
-      - name: Exercise private native static-library replacement without a ROM
-        run: |
-          cmake --build --preset windows-host-release --target runtime-relink-kit --parallel 2
-          if ($LASTEXITCODE -ne 0) { throw "Private whole-product kit assembly failed" }
-          $recipient = Join-Path $env:RUNNER_TEMP '35mmIsle relink 路径'
-          Copy-Item -LiteralPath 'build/windows-host-release/private-runtime-relink-kit/Release' -Destination $recipient -Recurse -ErrorAction Stop
-          Push-Location $recipient
-          try {
-            cmake -S library -B baseline-library -G 'Visual Studio 17 2022' -A x64 -DCMAKE_CONFIGURATION_TYPES=Release
-            if ($LASTEXITCODE -ne 0) { throw "Baseline standalone lightning configure failed" }
-            cmake --build baseline-library --config Release --parallel 2
-            if ($LASTEXITCODE -ne 0) { throw "Baseline standalone lightning build failed" }
-            & ./baseline-library/Release/lightning-jit-proof.exe
-            if ($LASTEXITCODE -ne 0) { throw "Baseline generated-code execution failed" }
-            python -B runtime_relink.py relink --lightning baseline-library/Release/isle-rsp-lightning.lib --output baseline/35mmisle.exe
-            if ($LASTEXITCODE -ne 0) { throw "Actual baseline whole-product relink failed" }
-            & ./baseline/35mmisle.exe --help
-            if ($LASTEXITCODE -ne 0) { throw "Baseline relinked product help failed" }
-            python -B runtime_relink.py mark-proof --library library
-            if ($LASTEXITCODE -ne 0) { throw "Delivered lightning source modification failed" }
-            cmake -S library -B modified-library -G 'Visual Studio 17 2022' -A x64 -DCMAKE_CONFIGURATION_TYPES=Release
-            if ($LASTEXITCODE -ne 0) { throw "Modified standalone lightning configure failed" }
-            cmake --build modified-library --config Release --parallel 2
-            if ($LASTEXITCODE -ne 0) { throw "Modified standalone lightning build failed" }
-            python -B runtime_relink.py prove --program modified-library/Release/lightning-jit-proof.exe --evidence modified-jit-proof.json
-            if ($LASTEXITCODE -ne 0) { throw "Actual modified generated-code proof failed" }
-            python -B runtime_relink.py relink --lightning modified-library/Release/isle-rsp-lightning.lib --output modified/35mmisle.exe
-            if ($LASTEXITCODE -ne 0) { throw "Actual modified whole-product relink failed" }
-            & ./modified/35mmisle.exe --help
-            if ($LASTEXITCODE -ne 0) { throw "Modified relinked product help failed" }
-          } finally {
-            Pop-Location
-          }
-          # Producer roots remain available here. Help is not actual product JIT/gameplay proof.
-          # All objects, source companions, executables and receipts remain runner-local.
       - name: Package and check the portable Windows x64 Runtime archive
         run: |
           $packageDirectory = Join-Path $env:RUNNER_TEMP "35mmisle-runtime-windows"
@@ -283,13 +364,30 @@ jobs:
             if ($process.ExitCode -ne 0) { throw "Extracted Runtime executable failed: $name ($($process.ExitCode))" }
             $process.Dispose()
           }
+          "ISLE_RUNTIME_ARCHIVE=$($archives[0].FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "ISLE_RUNTIME_EXTRACTED=$product" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       # Compiler/package proof only; no Windows 11 gameplay or release qualification.
-      # Candidate archives remain runner-local while R1 redistribution approval is absent.
+      - name: Seal explicitly authorized preview8 Windows candidate
+        if: github.event_name == 'workflow_dispatch' && inputs.retain_preview8_candidate
+        run: |
+          python -B tools/prepare_runtime_candidate.py --archive "$env:ISLE_RUNTIME_ARCHIVE" --extracted "$env:ISLE_RUNTIME_EXTRACTED" --source . --revision "${{ github.sha }}" --output "$env:RUNNER_TEMP/preview8-candidate"
+          if ($LASTEXITCODE -ne 0) { throw "Candidate privacy/payload sealing failed" }
+      - name: Retain checked Windows candidate for maintainer download
+        if: github.event_name == 'workflow_dispatch' && inputs.retain_preview8_candidate
+        # actions/upload-artifact v7.0.1, resolved against upstream tag.
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: preview8-Windows-x64-${{ github.sha }}
+          path: ${{ runner.temp }}/preview8-candidate/*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          include-hidden-files: false
 
   linux-host:
     name: Linux native product / LUS / SDL3 / canonical RSP-RDP
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 360
     env:
       CC: gcc
       CXX: g++
@@ -339,6 +437,39 @@ jobs:
             --built-library "$RUNNER_TEMP/sdl-build/libSDL3.so.0" \
             --library "$RUNNER_TEMP/host-prefix/lib/libSDL3.so.0" \
             --output "$RUNNER_TEMP/runtime-sdk-identities.json"
+      - name: Identify exact native LLVM cache
+        id: llvm-key
+        shell: bash
+        run: |
+          python3 -B tools/llvm_cache_identity.py --root "$RUNNER_TEMP/llvm" --configuration Release >> "$GITHUB_OUTPUT"
+      - name: Restore exact source-backed native LLVM
+        id: llvm-cache
+        # actions/cache v5.0.3, verified against upstream immutable tag.
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
+      - name: Build missing pinned native LLVM (two compiler jobs)
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --prepare
+          # GCC-built LLVM is ABI-compatible with native GNU/Clang libstdc++ project builds.
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --configure --build-type Release --cc gcc --cxx g++
+          cmake --build "$RUNNER_TEMP/llvm/build" --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --seal-build
+      - name: Verify source, compiler, cache and sealed LLVM archive bytes
+        shell: bash
+        run: |
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --verify-sealed
+      - name: Save verified native LLVM dependency only
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
       - name: Configure genuine pinned native product and all synthetic tests
         # Empty ISLE_LUS_SOURCE_DIR fetches the enforced immutable LUS commit.
         # System packages/runner images are not a fully locked release composition.
@@ -349,7 +480,7 @@ jobs:
             -DISLE_BUILD_AUDIO_PROBE=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON \
             -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/host-prefix" -DCMAKE_INSTALL_LIBDIR=lib \
             -DISLE_RUNTIME_SDK_IDENTITIES="$RUNNER_TEMP/runtime-sdk-identities.json" \
-            -DISLE_BUILD_RUNTIME_RELINK_KIT=ON
+            -DISLE_LLVM_ROOT="$RUNNER_TEMP/llvm"
       - name: Build actual product, host and original services
         run: cmake --build build/linux-host --parallel 2
       - name: Build all 31 native Player, Actor, Item and publication consumers without a ROM
@@ -388,28 +519,6 @@ jobs:
           [[ "$probe_output" == *"Submitted 240 real-renderer frames;"* ]]
           [[ "$probe_output" == *"HOST_OWNERS_RELEASED:"* ]]
           # Submission/lifetime markers are not pixel or game-fidelity assertions.
-      - name: Exercise private native static-library replacement without a ROM
-        run: |
-          set -euo pipefail
-          cmake --build build/linux-host --target runtime-relink-kit --parallel 2
-          recipient="$RUNNER_TEMP/35mmIsle relink 路径"
-          cp -rf build/linux-host/private-runtime-relink-kit/Release "$recipient"
-          (
-            cd "$recipient"
-            cmake -S library -B baseline-library -G Ninja -DCMAKE_BUILD_TYPE=Release
-            cmake --build baseline-library --parallel 2
-            ./baseline-library/lightning-jit-proof
-            python3 -B runtime_relink.py relink --lightning baseline-library/libisle-rsp-lightning.a --output baseline/35mmisle
-            ./baseline/35mmisle --help
-            python3 -B runtime_relink.py mark-proof --library library
-            cmake -S library -B modified-library -G Ninja -DCMAKE_BUILD_TYPE=Release
-            cmake --build modified-library --parallel 2
-            python3 -B runtime_relink.py prove --program modified-library/lightning-jit-proof --evidence modified-jit-proof.json
-            python3 -B runtime_relink.py relink --lightning modified-library/libisle-rsp-lightning.a --output modified/35mmisle
-            ./modified/35mmisle --help
-          )
-          # Producer roots remain available here. Help is not actual product JIT/gameplay proof.
-          # All objects, source companions, executables and receipts remain runner-local.
       - name: Package and check the portable Linux x64 Runtime archive
         shell: bash
         run: |
@@ -478,13 +587,30 @@ jobs:
           for copyright in "${copyrights[@]}"; do [[ -s "$copyright" ]]; done
           [[ "$entries" != *'license_check_docker.sh'* && "$entries" != *'license_check.sh'* && "$entries" != *'license-checker.cfg'* ]]
           (cd "$unpack" && "$portable/bin/35mmisle-rom" --help && "$portable/bin/35mmisle" --help)
+          printf 'ISLE_RUNTIME_ARCHIVE=%s\nISLE_RUNTIME_EXTRACTED=%s\n' "${archives[0]}" "$portable" >> "$GITHUB_ENV"
       # System loader/graphics/audio drivers remain host prerequisites, not bundled SDKs.
-      # Candidate archives remain runner-local while R1 redistribution approval is absent.
+      - name: Seal explicitly authorized preview8 Linux candidate
+        if: github.event_name == 'workflow_dispatch' && inputs.retain_preview8_candidate
+        run: python3 -B tools/prepare_runtime_candidate.py --archive "$ISLE_RUNTIME_ARCHIVE" --extracted "$ISLE_RUNTIME_EXTRACTED" --source . --revision "${{ github.sha }}" --output "$RUNNER_TEMP/preview8-candidate"
+      - name: Retain checked Linux candidate for maintainer download
+        if: github.event_name == 'workflow_dispatch' && inputs.retain_preview8_candidate
+        # actions/upload-artifact v7.0.1, resolved against upstream tag.
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: preview8-Linux-x64-${{ github.sha }}
+          path: ${{ runner.temp }}/preview8-candidate/*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          include-hidden-files: false
 
   linux-rdp:
+    # Wait for the existing host job to seed LLVM; still run checks if that host job fails.
+    needs: linux-host
+    if: always() && !cancelled()
     name: Linux canonical RDP / actual CPU Vulkan
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 360
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
@@ -498,10 +624,36 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ninja-build libvulkan1 mesa-vulkan-drivers
+      - name: Identify exact native LLVM cache
+        id: llvm-key
+        shell: bash
+        run: |
+          python3 -B tools/llvm_cache_identity.py --root "$RUNNER_TEMP/llvm" --configuration Release >> "$GITHUB_OUTPUT"
+      - name: Restore exact source-backed native LLVM
+        id: llvm-cache
+        # actions/cache v5.0.3, verified against upstream immutable tag.
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
+      - name: Build missing pinned native LLVM (two compiler jobs)
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --prepare
+          # GCC-built LLVM is ABI-compatible with native GNU/Clang libstdc++ project builds.
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --configure --build-type Release --cc gcc --cxx g++
+          cmake --build "$RUNNER_TEMP/llvm/build" --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --seal-build
+      - name: Verify source, compiler, cache and sealed LLVM archive bytes
+        shell: bash
+        run: |
+          python3 -B tools/prepare_llvm.py --root "$RUNNER_TEMP/llvm" --verify-sealed
       - name: Configure exact renderer and shader compiler closure
         run: |
           cmake -S . -B build/linux-rdp -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_TESTING=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_GAME_ENGINE=ON
+            -DBUILD_TESTING=ON -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON -DISLE_BUILD_GAME_ENGINE=ON -DISLE_LLVM_ROOT="$RUNNER_TEMP/llvm"
       - name: Build real renderer and all opt-in native Player, Actor, Item and publication consumers
         run: cmake --build build/linux-rdp --target 35mmisle-rdp-probe 35mmisle-rsp-probe actor-collision-rom-smoke actor-command26-rom-smoke actor-interaction-rom-smoke actor-owner-rom-smoke actor-producer-rsp-smoke beach-initial-species-rom-smoke beach-magikarp-scene-rom-smoke course-collision-rsp-smoke course-magikarp-rsp-smoke course-scene-rsp-smoke environment-sound-rsp-smoke item-flute-rom-smoke item-owner-rom-smoke item-producer-rsp-smoke magikarp-owner-rom-smoke player-bump-rom-smoke player-camera-animation-rom-smoke player-cart-owner-rsp-smoke player-cart-resources-rom-smoke player-commands-rom-smoke player-photo-rsp-smoke player-root-rsp-smoke player-source-renderer-rsp-smoke player-ui-screen-rsp-smoke world-producer-rsp-smoke --parallel 2
       - name: Execute exact packed-depth, coverage and GPU-copy checks
@@ -515,10 +667,13 @@ jobs:
         run: build/linux-rdp/35mmisle-rsp-probe --help
 
   windows-rdp:
+    # Wait for the existing host job to seed LLVM; still run checks if that host job fails.
+    needs: windows-host
+    if: always() && !cancelled()
     name: Windows MSVC x64 / canonical RDP build
     # Compiler/CLI proof only; no Windows Vulkan ICD or Windows 11 run claimed.
     runs-on: windows-2022
-    timeout-minutes: 30
+    timeout-minutes: 360
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
@@ -528,10 +683,42 @@ jobs:
           persist-credentials: false
           submodules: false
           lfs: false
+      - name: Identify exact native LLVM cache
+        id: llvm-key
+        shell: pwsh
+        run: |
+          $identity = python -B tools/llvm_cache_identity.py --root "$env:RUNNER_TEMP/llvm" --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "LLVM cache identity failed" }
+          $identity | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Restore exact source-backed native LLVM
+        id: llvm-cache
+        # actions/cache v5.0.3, verified against upstream immutable tag.
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        with:
+          path: ${{ runner.temp }}/llvm
+          key: ${{ steps.llvm-key.outputs.key }}
+          enableCrossOsArchive: false
+      - name: Build missing pinned native LLVM (two compiler jobs)
+        if: steps.llvm-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --prepare
+          if ($LASTEXITCODE -ne 0) { throw "LLVM source preparation failed" }
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --configure --generator 'Visual Studio 17 2022' --architecture x64 --build-type Release
+          if ($LASTEXITCODE -ne 0) { throw "LLVM native configure failed" }
+          cmake --build "$env:RUNNER_TEMP/llvm/build" --config Release --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+          if ($LASTEXITCODE -ne 0) { throw "LLVM native build failed" }
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --seal-build
+          if ($LASTEXITCODE -ne 0) { throw "LLVM binary inventory sealing failed" }
+      - name: Verify source, compiler, cache and sealed LLVM archive bytes
+        shell: pwsh
+        run: |
+          python -B tools/prepare_llvm.py --root "$env:RUNNER_TEMP/llvm" --verify-sealed
+          if ($LASTEXITCODE -ne 0) { throw "Restored/built LLVM identity verification failed" }
       - name: Configure exact renderer and shader compiler closure
         run: |
           cmake -S . -B build/windows-rdp -G "Visual Studio 17 2022" -A x64 `
-            -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON
+            -DBUILD_TESTING=OFF -DISLE_BUILD_RDP_PROBE=ON -DISLE_BUILD_RSP_PROBE=ON -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' -DISLE_LLVM_ROOT="$env:RUNNER_TEMP/llvm"
       - name: Build actual MSVC renderer and shader tool
         run: cmake --build build/windows-rdp --config Release --target 35mmisle-rdp-probe 35mmisle-rsp-probe --parallel 2
       - name: Exercise native CLI and fail-closed Unicode output ownership

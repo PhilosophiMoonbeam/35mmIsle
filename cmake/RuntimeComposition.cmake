@@ -59,6 +59,10 @@ function(isle_install_runtime_composition)
             "lus_archive|${_isle_lus_archive}"
             "lus_inventory|${_isle_lus_inventory}"
             "rsp_root|${_isle_rsp_private}" "rdp_root|${_isle_rdp_private}"
+            "llvm_root|${ISLE_LLVM_SOURCE_ROOT}"
+            "llvm_build|${ISLE_LLVM_BUILD_ROOT}"
+            "llvm_provenance|${ISLE_LLVM_PROVENANCE}"
+            "llvm_version|${ISLE_LLVM_VERSION}"
             "product_relative|${CMAKE_INSTALL_BINDIR}/$<TARGET_FILE_NAME:35mmisle>"
             "checker_relative|${CMAKE_INSTALL_BINDIR}/$<TARGET_FILE_NAME:35mmisle-rom>"
             "notice_relative|${CMAKE_INSTALL_DATADIR}/licenses/35mmisle"
@@ -69,6 +73,8 @@ function(isle_install_runtime_composition)
         string(SUBSTRING "${pair}" ${start} -1 value)
         _isle_composition_string(inputs "${key}" "${value}")
     endforeach()
+    string(JSON inputs SET "${inputs}" sdk_notice_inventory
+        "${_isle_runtime_sdk_notice_inventory}")
     # Flags are fingerprinted privately, never exported with host include paths.
     set(configurations ${CMAKE_CONFIGURATION_TYPES})
     if(NOT configurations AND CMAKE_BUILD_TYPE)

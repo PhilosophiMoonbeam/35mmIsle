@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scope": "Production source-backed native X86 LLVM ORC static libraries, with no Clang project, prebuilt DLL, legacy RSP debug CPU, ROM or SDK",
+  "dependencies": [
+    {
+      "name": "llvm",
+      "repository": "llvm/llvm-project",
+      "version": "21.1.8",
+      "tag": "llvmorg-21.1.8",
+      "commit": "2078da43e25a4623cab2d0d60decddf709aaea28",
+      "archive_url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.8/llvm-project-21.1.8.src.tar.xz",
+      "archive_sha256": "4633a23617fa31a3ea51242586ea7fb1da7140e426bd62fc164261fe036aa142",
+      "source_inventory_sha256": "973581c4b66fc85e4c0db3e3172f06d73c043e063f06c6945d8b34d6b0de0809",
+      "license": "Apache-2.0 WITH LLVM-exception; preserve all selected third-party embedded and standalone notices",
+      "source_selection": ["llvm", "cmake", "third-party"],
+      "source_materialization": "Every selected regular file retained unchanged; three upstream MLGO script symlinks materialized as exact copies of their regular archive targets",
+      "license_file": "llvm/LICENSE.TXT",
+      "notice_policy": "Mirror every LICENSE/COPYING/COPYRIGHT/NOTICE file from selected source closure and retain embedded file notices",
+      "max_bytes": 21474836480,
+      "max_compile_jobs": 2
+    }
+  ]
+}

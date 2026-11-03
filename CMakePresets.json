@@ -48,6 +48,9 @@
       "hidden": true,
       "inherits": "tooling-base",
       "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+      },
       "architecture": "x64",
       "condition": {
         "type": "equals",

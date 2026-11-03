@@ -210,7 +210,36 @@
   "native_game_save": {"target": "isle-game-save", "manifest": "cmake/game-save-inputs.json", "only_genuine_missing_initializes": true, "canonical_codec_and_Store_reused": true, "owning_immutable_COW_snapshots": true, "actual_durable_generations_and_cold_reload": 2, "actual_session_move_and_snapshot_lifetime": true, "GCC_Debug_Release_Clang_ASan_UBSan_CPU_passed": true, "full_GAME_UI_or_Windows11_qualified": false},
   "input_disabled_presentation": {"flag": "--no-input", "default_input_unchanged": true, "driver_isolation": false, "observed_linux_intro_presentations": 120, "native_C_updates": 122, "visual_admissions_and_terminals": 121, "actual_default_framebuffer_inspected": "Private real SDL swap60 original sprite, swap100 black, 640x480 front framebuffer; every actual swap forwarded", "whole_trace_PID_and_terminal_pairs": [[70,70],[70,70],[68,68]], "known_DRM_input_audio_udmabuf_attempts": 0, "EACCES_EPERM_rows": 0, "evidence_manifest_sha256": "1cc8c47baf47bb5253855a354856c6c5b247b0382743a988f3e7a46e91e85624", "physical_input_gameplay_Windows11_qualified": false},
   "canonical_rdp_experiment": {"default_enabled": false, "manifest": "cmake/rdp-dependencies.json", "build": "cmake/ParallelRdp.cmake", "renderer_commit": "1cecd042b2619bc505c12bfdc713808386f2b54d", "exact_archive_pins": 10, "shader_compiler": "Built from exact private Granite/compiler closure; two hash-bounded missing-standard-header adaptations", "observed_runtime": "Actual CPU Vulkan llvmpipe LLVM21.1.8, Mesa26.0.8, API1.4.335; three completed stages, zero errors", "independent_private_comparison": {"reference_commit": "31bdb1f0a79dd726017a38432540c6b5db0fa117", "reference_terms": "Old MAME noncommercial/source-disclosure; private standalone research only, not port-linked or distributed", "exact_matched_bytes": 718848, "different_bytes": 0}, "packaged": false, "limits": "Original synthetic workload only; no private-ROM/RSP/custom-matrix/full-photo/hardware/Windows Vulkan qualification"},
-  "canonical_rsp_experiment": {"default_enabled": false, "manifest": "cmake/rsp-dependencies.json", "build": "cmake/ParallelRsp.cmake", "core_commit": "9ab776a2ce28899769c4f911403234cac62fc799", "core_license_selection": "MIT", "statically_linked_lightning": "LGPL-3.0-or-later, not MIT", "adaptation": "bounded-block-host-services-msvc-safe-emission-v2", "source_composition": "Explicit library-only JIT/SIMD sources and original host CP0 service; no SDK, upstream runner/fuzzer/debug JIT or game CPU", "observed_runtime": "GCC Debug/Release and fully source-instrumented Clang ASan+UBSan; actual exact-ROM graphics/line and native-produced audio tasks", "native_msvc_ci": {"commit": "3e478d80d34a30c8f456ed43430587b95a2c923c", "run": "https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38675299538", "jobs_passed": 9, "jobs_total": 9, "native_debug_release_tests": 10, "combined_renderer_compiler_built": true, "standard_token_conformance": "/permissive-", "host": "Windows Server 2022; not Windows 11 or Windows Vulkan runtime qualification"}, "sanitizer_limit": "Generated instructions uninstrumented; Clang function-type-cookie check disabled only on foreign JIT-entry call; ASan and other UBSan remain", "graphics_only": false, "rsp_fullsync_is_gpu_completion": false, "historical_after_sp_replay": {"actual_vulkan_completed": true, "memory": "Former separate initialized RDRAM; superseded by actual shared-memory execution", "independent_cpu_reference": "31bdb1f0a79dd726017a38432540c6b5db0fa117; old MAME terms, private reference-only", "matched_bytes": 18816, "different_bytes": 0}, "current_canonical_execution": "Actual new RSP tasks on processor-owned persistent RDRAM; authored target clears, one cold hidden initialization; real RDP device completion before CPU readback", "actual_native_camera_upload": {"tasks": 2, "normalization": 5, "FOV30_colored_pixels": 153, "FOV60_colored_pixels": 28, "same_canonical_allocation_and_canary": true, "GAME_model_or_photo_qualified": false}, "independent_frontend_parity": false, "packaged": false, "release_approved": false},
+  "canonical_rsp_experiment": {
+    "default_enabled": false,
+    "manifest": "cmake/rsp-dependencies.json",
+    "build": "cmake/ParallelRsp.cmake",
+    "core_commit": "9ab776a2ce28899769c4f911403234cac62fc799",
+    "core_license_selection": "MIT",
+    "jit": {
+      "implementation": "Original LLVM ORC region backend retaining MIT-selected RSP SIMD helpers",
+      "manifest": "cmake/llvm-dependencies.json",
+      "version": "21.1.8",
+      "commit": "2078da43e25a4623cab2d0d60decddf709aaea28",
+      "license": "Apache-2.0 WITH LLVM-exception; separately retained selected third-party notices",
+      "linkage": "Source-built native X86 static components; MSVC static CRT on Windows"
+    },
+    "source_composition": "LLVM scalar/control-flow IR, selected MIT SIMD/CP2/load-store helpers and original host CP0 service; no lightning, mman shim, legacy debug CPU, SDK implementation or game CPU",
+    "sanitizer_limit": "Generated instructions uninstrumented; Clang function-type-cookie check disabled only on foreign JIT-entry call; ASan and other UBSan remain",
+    "graphics_only": false,
+    "rsp_fullsync_is_gpu_completion": false,
+    "independent_frontend_parity": false,
+    "historical_lightning_qualification": {
+      "scope": "Earlier backend evidence only; does not qualify the LLVM cutover or its release artifacts",
+      "observed_runtime": "GCC Debug/Release and fully source-instrumented Clang ASan+UBSan; actual exact-ROM graphics/line and native-produced audio tasks",
+      "native_msvc_ci": {"commit": "3e478d80d34a30c8f456ed43430587b95a2c923c", "run": "https://github.com/PhilosophiMoonbeam/35mmIsle/actions/runs/38675299538", "jobs_passed": 9, "jobs_total": 9, "native_debug_release_tests": 10, "combined_renderer_compiler_built": true, "standard_token_conformance": "/permissive-", "host": "Windows Server 2022; not Windows 11 or Windows Vulkan runtime qualification"},
+      "after_sp_replay": {"actual_vulkan_completed": true, "memory": "Former separate initialized RDRAM; superseded by actual shared-memory execution", "independent_cpu_reference": "31bdb1f0a79dd726017a38432540c6b5db0fa117; old MAME terms, private reference-only", "matched_bytes": 18816, "different_bytes": 0},
+      "canonical_execution": "Actual new RSP tasks on processor-owned persistent RDRAM; authored target clears, one cold hidden initialization; real RDP device completion before CPU readback",
+      "actual_native_camera_upload": {"tasks": 2, "normalization": 5, "FOV30_colored_pixels": 153, "FOV60_colored_pixels": 28, "same_canonical_allocation_and_canary": true, "GAME_model_or_photo_qualified": false},
+      "packaged": false,
+      "release_approved": false
+    }
+  },
   "native_audio_experiment": {
     "default_producer_enabled": true,
     "default_ROM_or_SDL_consumer_enabled": false,

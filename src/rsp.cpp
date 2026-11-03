@@ -1,5 +1,5 @@
 #include "35mmisle/rsp.hpp"
-#include "rsp_jit.hpp"
+#include "rsp_llvm.hpp"
 
 #include <algorithm>
 #include <array>
@@ -66,7 +66,7 @@ struct Machine::Impl {
     Limits limits{};
     Result result{};
     bool failed = false;
-    RSP::JIT::CPU cpu;
+    RSP::LLVM::CPU cpu;
 
     Impl(std::span<std::uint32_t> memory, PacketSink callback, void* opaque)
         : ram(memory), sink(callback), context(opaque) {

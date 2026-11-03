@@ -30,11 +30,11 @@ import tempfile
 import time
 
 try:
-    from .runtime_relink import digest, elf_identity
+    from .runtime_elf import digest, elf_identity
     from .runtime_custody_syscalls import SyscallAdmission, SyscallCustodyError
     from .runtime_custody_owner import declare_isolated_owner, require_isolated_owner, OwnershipError
 except ImportError:
-    from runtime_relink import digest, elf_identity
+    from runtime_elf import digest, elf_identity
     from runtime_custody_syscalls import SyscallAdmission, SyscallCustodyError
     from runtime_custody_owner import declare_isolated_owner, require_isolated_owner, OwnershipError
 

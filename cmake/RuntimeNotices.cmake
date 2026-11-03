@@ -1,6 +1,7 @@
-# Preserve file-level notices from the actual selected build inputs. This is
-# not R1/R2 release approval or corresponding-source/relink delivery. The scoped
-# preparation below separately checks embedded and in-file permissive terms.
+# Preserve notices from the actual selected production inputs, including scoped
+# embedded and in-file terms. This inventory is not a legal-clearance opinion.
+include("${CMAKE_CURRENT_LIST_DIR}/RuntimeComposition.cmake")
+set_property(GLOBAL PROPERTY ISLE_RUNTIME_SDK_NOTICE_INVENTORY "[]")
 function(isle_install_runtime_notices root label)
     set(notice_count 0)
     if(NOT IS_DIRECTORY "${root}")
@@ -21,12 +22,25 @@ function(isle_install_runtime_notices root label)
         endif()
         if(lower_name MATCHES "^(license|licence|licenseref|copying|copyright|notice|credits)([._-].*)?$"
            OR lower_name MATCHES "\\.(license|licence|spdx)$"
-           OR lower_relative MATCHES "(^|/)(licen[sc]es?|copying([._-][^/]*)?)/")
+           OR lower_relative MATCHES "(^|/)(licen[sc]es?|copying([._-][^/]*)?)/"
+           OR (label STREQUAL "llvm" AND lower_name MATCHES "\\.txt$"))
             get_filename_component(directory "${relative}" DIRECTORY)
             install(FILES "${notice}" DESTINATION
                 "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle/dependencies/${label}/${directory}"
                 COMPONENT Runtime)
             math(EXPR notice_count "${notice_count} + 1")
+            if(label STREQUAL "sdk")
+                # Bind the exact selected source notice, not an arbitrary staged SDK file.
+                file(SHA256 "${notice}" notice_sha256)
+                set(entry "{}")
+                _isle_composition_string(entry path
+                    "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle/dependencies/sdk/${relative}")
+                _isle_composition_string(entry sha256 "${notice_sha256}")
+                get_property(inventory GLOBAL PROPERTY ISLE_RUNTIME_SDK_NOTICE_INVENTORY)
+                string(JSON index LENGTH "${inventory}")
+                string(JSON inventory SET "${inventory}" ${index} "${entry}")
+                set_property(GLOBAL PROPERTY ISLE_RUNTIME_SDK_NOTICE_INVENTORY "${inventory}")
+            endif()
         endif()
     endforeach()
     if(ARGC GREATER 2)
@@ -113,6 +127,10 @@ install(CODE "${_isle_notice_postinstall}" COMPONENT Runtime)
 
 isle_install_runtime_notices("${_isle_lus_private}" libultraship)
 isle_install_runtime_notices("${ISLE_RSP_NOTICES}" parallel-rsp)
+isle_install_runtime_notices("${ISLE_LLVM_NOTICES}" llvm llvm_notice_count)
+if(NOT llvm_notice_count GREATER 0)
+    message(FATAL_ERROR "Selected native LLVM notices are missing")
+endif()
 isle_install_runtime_notices("${_isle_rdp_private}/notices" parallel-rdp)
 foreach(dependency IN ITEMS ImGui ThreadPool prism monocypher)
     FetchContent_GetProperties(${dependency} SOURCE_DIR notice_source)
@@ -135,3 +153,4 @@ endforeach()
 if(VCPKG_INSTALLED_DIR AND VCPKG_TARGET_TRIPLET)
     isle_install_runtime_notices("${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share" vcpkg)
 endif()
+get_property(_isle_runtime_sdk_notice_inventory GLOBAL PROPERTY ISLE_RUNTIME_SDK_NOTICE_INVENTORY)

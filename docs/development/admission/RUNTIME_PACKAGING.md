@@ -1,15 +1,78 @@
-# Runtime products, composition, and private relinking
+# Runtime products and composition
 
-Runtime product, packaging, and private relinking records retain their original legal and release boundaries.
+Current preview8 composition is described first; older package/relink execution
+records below remain historical and do not qualify the LLVM backend.
 
 [Admission index](../ADMISSION.md) · [Project README](../../../README.md)
 
 Contents:
 
+- [Preview8 native LLVM composition and candidates](#preview8-native-llvm-composition-and-candidates)
 - [Hosted G30 Runtime products and cold Album Replay](#hosted-g30-runtime-products-and-cold-album-replay)
 - [Published Linux startup failure paths](#published-linux-startup-failure-paths)
 - [Current downloaded Runtime ordinary input and cold edits](#current-downloaded-runtime-ordinary-input-and-cold-edits)
 - [Runtime composition and private static-library relinking](#runtime-composition-and-private-static-library-relinking)
+
+## Preview8 native LLVM composition and candidates
+
+The new production cutover selects source-backed LLVM **21.1.8**
+(`2078da43e25a4623cab2d0d60decddf709aaea28`) native X86 ORC and the MIT
+parallel-rsp helper subset at `9ab776a2ce28899769c4f911403234cac62fc799`.
+There is no production GNU lightning, Windows mman, legacy JIT allocator or
+private static-library replacement companion. The retired kit tools/wrappers
+and kit-only generated-code jobs are removed; all actual CPU, ROMless consumer,
+real CPU-Vulkan, host-renderer and portable-package checks remain.
+
+`runtime-composition.json` inventories final staged bytes, selected source and
+dependency preparation hashes, LLVM source inventory/build/cache/compiler
+identity, actual platform packages and installed notices. LLVM's license and
+selected third-party notices are installed under
+`share/licenses/35mmisle/dependencies/llvm`; the project MIT does not replace
+those terms. The source-backed native Windows dependency uses `/MT`, not a
+prebuilt `/MD` workaround. Existing AMD64 import/no-redistributable-CRT checks
+remain required.
+
+The maintainer supplied a clean-room reverse-engineered Snap distribution
+basis on 2026-11-03; the old missing-basis issue `16.8.7` is closed. This
+[recorded disposition](../../planning/LICENSING.md#preview8-maintainer-disposition)
+is not an independent legal opinion or blanket MIT grant. It is not an
+automatic R1 hold on public preview8. Actual component notices/obligations,
+archive privacy and runtime evidence retain their own scopes.
+
+The existing hosted workflow accepts the manual boolean
+`retain_preview8_candidate` (default **false**). Only `workflow_dispatch` with
+that explicit opt-in retains existing full-host Windows ZIP and Linux TGZ
+candidates for **14 days**. Push/PR runs do not upload. No release is created,
+and workflow permissions remain `contents: read`.
+
+Before upload, `tools/prepare_runtime_candidate.py` compares every member of
+the exact ZIP/TGZ with the independently extracted install-time inventory,
+rejects missing/extra/duplicate/special/traversing entries, enforces bounded
+Runtime paths and excludes private payload/file types and recognizable secrets.
+Explicit archive directories are accepted only as strict ancestors of already
+validated payload files; unexpected empty directories remain excluded.
+`RuntimeNotices.cmake` also records the selected SDK **license-only** source
+notice paths and SHA256 values before staging. Composition preserves that
+producer selection as `producer_selected_sdk_notices`. The candidate accepts
+regular files below the exact `share/licenses/35mmisle/dependencies/sdk/`
+notice subtree only when their names and hashes match that producer inventory;
+headers, libraries, unlisted files, SDK material elsewhere and secrets still
+reject. This is not a general SDK whitelist or approval inferred from staged
+filenames.
+It verifies a clean immutable **full source commit** against the composition,
+then exports only that committed public project tree through `git archive`.
+External full source is fetched from the immutable pins and retained recipes,
+not bundled from a developer's private build tree. The retained artifact has
+only the Runtime archive, project source archive, composition, candidate
+receipt and `SHA256SUMS`. Notices are inside the verified Runtime archive.
+No ROM, extracted assets, SDK implementation/toolchain, profiles, captures,
+object kits or whole build tree is uploaded.
+
+The maintainer downloads, verifies hashes, extracts and smokes these exact
+candidate bytes before separately authorized final `gh` publication. Hosted
+Server 2022 compiler/package proof is not Windows 11 gameplay/device evidence.
+The LLVM cutover does not inherit old campaign, fidelity, performance or
+private relink acceptance merely because source/package generation succeeds.
 
 ## Hosted G30 Runtime products and cold Album Replay
 
@@ -124,6 +187,11 @@ complete synthesis parity, Windows 11 gameplay or release-rights qualification.
 ROM-derived images, saves and raw observations remain private.
 
 ## Runtime composition and private static-library relinking
+
+**Historical pre-LLVM evidence only.** The following describes the old backend,
+source-specific executions and retired kit, not current commands or a new
+preview8 publication hold. The preview8 policy and composition above supersede
+present-tense restrictions in this retained historical record.
 
 The 2026-10-23 integration adds exact selected embedded/file-level notice
 preparation, schema-2 install-time Runtime composition and an explicit private

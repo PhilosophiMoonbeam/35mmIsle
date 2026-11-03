@@ -769,6 +769,11 @@ if(BUILD_TESTING)
         set_tests_properties(runtime-custody-tests PROPERTIES
             LABELS "synthetic;runtime-custody" TIMEOUT 180)
     endif()
+    find_package(Python3 3.9 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME runtime-candidate-tests
+        COMMAND "${Python3_EXECUTABLE}" -B "${PROJECT_SOURCE_DIR}/tests/runtime_candidate_tests.py")
+    set_tests_properties(runtime-candidate-tests PROPERTIES
+        LABELS "synthetic;runtime-packaging" TIMEOUT 60)
 
     add_executable(rom-tests tests/rom_tests.cpp)
     target_link_libraries(rom-tests PRIVATE isle-rom)
@@ -1144,7 +1149,7 @@ if(ISLE_BUILD_RSP_PROBE OR ISLE_BUILD_AUDIO_PROBE OR TARGET isle-actor-owner)
     include(cmake/ParallelRsp.cmake)
     isle_target_options(isle-rsp)
     if(ISLE_ENABLE_SANITIZERS)
-        foreach(_isle_rsp_dependency isle-parallel-rsp isle-rsp-lightning)
+        foreach(_isle_rsp_dependency isle-parallel-rsp isle-rsp-llvm)
             target_compile_options(${_isle_rsp_dependency} PRIVATE
                 -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
         endforeach()
@@ -1978,8 +1983,6 @@ if(TARGET 35mmisle)
     install(DIRECTORY "${ISLE_HOST_RENDERER_RESOURCES}/"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/35mmisle" COMPONENT Runtime)
     install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/35mmisle" COMPONENT Runtime)
-    include(cmake/RuntimeRelink.cmake)
-    isle_add_runtime_relink_kit()
     include(cmake/RuntimeComposition.cmake)
     isle_install_runtime_composition()
     set(CPACK_PACKAGE_NAME "35mmisle")

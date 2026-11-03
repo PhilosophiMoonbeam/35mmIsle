@@ -212,6 +212,54 @@ def prepared_identity(inputs, kind):
     return result
 
 
+def llvm_identity(inputs):
+    root = Path(inputs['llvm_root'])
+    receipt_path = Path(inputs['llvm_provenance'])
+    receipt = load(receipt_path)
+    pin = load(Path(inputs['source_root']) / 'cmake/llvm-dependencies.json')['dependencies'][0]
+    require(receipt.get('version') == inputs['llvm_version'] == '21.1.8',
+            'Selected native LLVM version differs from production pin')
+    require(receipt.get('commit') == pin['commit'] ==
+            '2078da43e25a4623cab2d0d60decddf709aaea28' and
+            receipt.get('archive_sha256') == pin['archive_sha256'] ==
+            '4633a23617fa31a3ea51242586ea7fb1da7140e426bd62fc164261fe036aa142' and
+            receipt.get('source_inventory_sha256') == pin['source_inventory_sha256'],
+            'Selected native LLVM source differs from production pin')
+    build = receipt['build']
+    require(build['cache_sha256'] == digest(Path(inputs['llvm_build']) / 'CMakeCache.txt') and
+            build['source_inventory_sha256'] == receipt['source_inventory_sha256'],
+            'Native LLVM source/build provenance is stale')
+    artifacts_path = receipt_path.parent / 'build-artifacts.json'
+    require(digest(artifacts_path) == sha(build['artifact_inventory_sha256']),
+            'Native LLVM compiled-artifact receipt changed')
+    artifacts = load(artifacts_path)
+    require(artifacts['cache_sha256'] == build['cache_sha256'] and
+            artifacts['source_inventory_sha256'] == receipt['source_inventory_sha256'] and
+            artifacts['files'], 'Native LLVM compiled-artifact receipt is stale or empty')
+    for name, expected_sha256 in artifacts['files'].items():
+        path = Path(inputs['llvm_build']) / relative(name)
+        require(not path.is_symlink() and digest(path) == sha(expected_sha256),
+                'Selected LLVM compiled archive/header/export bytes changed')
+    licenses = []
+    for name in receipt['license_files']:
+        name = relative(name)
+        licenses.append({'path': name, 'sha256': digest(root / name)})
+    require(licenses, 'Selected LLVM third-party notices are missing')
+    return {'repository': 'https://github.com/llvm/llvm-project',
+            'version': receipt['version'], 'commit': commit(receipt['commit']),
+            'archive_sha256': sha(receipt['archive_sha256']),
+            'source_inventory_sha256': sha(receipt['source_inventory_sha256']),
+            'receipt_sha256': digest(receipt_path),
+            'manifest_sha256': digest(Path(inputs['source_root']) / 'cmake/llvm-dependencies.json'),
+            'recipe_sha256': digest(Path(inputs['source_root']) / 'tools/prepare_llvm.py'),
+            'build': {key: build[key] for key in (
+                'cache_sha256', 'compiler_id', 'compiler_version', 'compiler_sha256',
+                'system', 'processor', 'pointer_size', 'build_type', 'targets',
+                'shared', 'msvc_runtime', 'standard_library', 'artifact_inventory_sha256')},
+            'licenses': licenses,
+            'scope': 'Source-backed static native X86 LLVM ORC JIT; not an object-level link census'}
+
+
 def source_identities(inputs):
     root = Path(inputs['source_root'])
     manifest = load(root / 'cmake/dependencies.json')
@@ -248,13 +296,14 @@ def source_identities(inputs):
                            'generated_implementation_sha256': digest(header.with_name('stb_impl.c'))}
     result['parallel_rsp'] = prepared_identity(inputs, 'rsp')
     result['parallel_rdp'] = prepared_identity(inputs, 'rdp')
+    result['llvm'] = llvm_identity(inputs)
     # Authority metadata only: never open or export private GAME materializations.
     game_manifest = root / 'cmake/snap-engine-inputs.json'
     game = load(game_manifest)
     result['game_authority'] = {'repository': repository(game['repository']),
                               'revision': commit(game['revision']),
                               'manifest_sha256': digest(game_manifest),
-                              'scope': 'private-development authority metadata only; no redistribution grant'}
+                              'scope': 'Clean-room reverse-engineered Snap authority; maintainer distribution basis recorded, not a blanket third-party license'}
     return result
 
 
@@ -526,6 +575,27 @@ def prerequisites(system):
     return common
 
 
+def selected_sdk_notices(records, payload):
+    """Admit only producer-selected SDK license files with exact installed bytes."""
+    require(isinstance(records, list), 'Producer SDK notice inventory must be a list')
+    prefix = 'share/licenses/35mmisle/dependencies/sdk/'
+    selected = {}
+    for record in records:
+        require(isinstance(record, dict), 'Malformed producer SDK notice selection')
+        name = relative(record['path'])
+        expected_sha256 = sha(record['sha256'])
+        require(name.startswith(prefix), 'Producer SDK notice is outside its exact notice subtree')
+        item = payload.get(name)
+        require(item and item['kind'] == 'file' and item['sha256'] == expected_sha256,
+                'Selected SDK notice is missing, nonregular or has changed bytes')
+        require(name not in selected or selected[name] == expected_sha256,
+                'Conflicting producer SDK notice selections')
+        selected[name] = expected_sha256
+    require({name for name in payload if name.startswith(prefix)} == set(selected),
+            'SDK notice payload differs from explicit producer selection')
+    return [{'path': name, 'sha256': selected[name]} for name in sorted(selected)]
+
+
 def generate(inputs_path, stage_path, libraries_json):
     inputs = load(inputs_path)
     system = inputs['system']
@@ -584,6 +654,7 @@ def generate(inputs_path, stage_path, libraries_json):
         require(relative(inputs[key]) in indexed, 'Required installed Runtime executable is missing')
     notice_prefix = relative(inputs['notice_relative']) + '/'
     require(any(name.startswith(notice_prefix) for name in indexed), 'Runtime notices have not been staged')
+    sdk_notices = selected_sdk_notices(inputs['sdk_notice_inventory'], indexed)
     for library in libraries:
         require(library['path'] in indexed and indexed[library['path']]['sha256'] == library['staged_sha256'],
                 'Final staged DSO bytes differ from Linux rewrite receipt')
@@ -592,11 +663,16 @@ def generate(inputs_path, stage_path, libraries_json):
               'project': {'name': text(inputs['project_name'], 'project name'),
                           'version': text(inputs['project_version'], 'project version')},
               'scope': 'Observed selected public source/preparation/build metadata and final staged bytes; not an object-level reproducible-build attestation',
-              'release_gates': {'r1_redistribution_approval': 'NOT APPROVED by this record',
-                                'r2_complete_compliance_approval': 'NOT APPROVED by this record',
-                                'publication': 'HOLD pending separate rights, source/relink, notice and runtime gates'},
+              'distribution_disposition': {
+                  'snap_basis': 'Maintainer states clean-room reverse engineering, no official source, lawful US distribution basis; historical missing-basis issue 16.8.7 closed',
+                  'scope': 'Maintainer disposition, not independent legal clearance or blanket MIT relicensing',
+                  'publication': 'Preview8 candidate retention is manual and opt-in; final publication is a separate maintainer action',
+                  'third_party': 'Actual selected notices and component obligations remain applicable',
+                  'private_inputs': 'ROMs, extracted assets, SDKs, profiles, captures and secrets excluded',
+                  'runtime': 'Hosted MSVC compiler/package checks do not qualify Windows 11 or game fidelity'},
               'build': build, 'selected_sources': source_identities(inputs),
               'selected_packages': selected_packages(inputs), 'linux_bundled_libraries': libraries,
+              'producer_selected_sdk_notices': sdk_notices,
               'platform_prerequisites': prerequisites(system),
               'generator_sha256': digest(Path(__file__)),
               'cmake_recipe_sha256': {name: digest(root / name) for name in (

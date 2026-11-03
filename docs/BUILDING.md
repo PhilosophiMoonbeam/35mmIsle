@@ -12,7 +12,7 @@ Build requirements, private engine preparation, host probes and Windows dependen
 
 ## Building the original runtime and tools
 
-Requires CMake 3.24+, a C11/C++20 compiler, native thread support and a 64-bit target. Linux presets use Ninja; Windows presets use Visual Studio 2022 x64. The default build is independent of LUS and all game/reference checkouts:
+Requires CMake 3.24+, a C11/C++20 compiler, Python 3.9+ for synthetic packaging tests, native thread support and a 64-bit target. Linux presets use Ninja; Windows presets use Visual Studio 2022 x64. The default build is independent of LUS and all game/reference checkouts:
 
 ```sh
 cmake --preset linux-release
@@ -56,6 +56,58 @@ ctest --test-dir build/native-engine --output-on-failure --no-tests=error
 Omit `ISLE_SNAP_SOURCE_DIR` to fetch the immutable authoritative commit privately. A supplied repository may have a different HEAD or dirty worktree: preparation reads exact Git objects, never working files or an upstream build. [`snap-engine-inputs.json`](../cmake/snap-engine-inputs.json) identifies seven immutable GAME source/header blobs, thirty-seven reviewed definitions, source/native hashes and narrowly versioned seam transformations. [`prepare_engine.py`](../tools/prepare_engine.py) emits C/provenance only inside the build directory and verifies original native support hashes. No SDK implementation/header is compiled, and complete GAME bodies are not committed or packaged. This is private development admission, not blanket MIT or redistribution permission.
 
 Camera APIs own type-3 payloads and up to two matrices. `isle_game_camera_peek_matrix` borrows immutable kind without computing dirty caches; `isle_game_camera_compute_all` publishes matrix/reflection/normalization only after every calculation succeeds. Kind8 uses fixed Y-up and dirties on eye/target/roll, not up-only edits. Model APIs retain translate-only/kind-28 local caches or explicit renderer-contextual poses, independently of model-level placement. Pure preflight precedes mutation; native retirement joins actual work. Fixed words upload directly into word-swapped RDRAM only where a valid local or renderer-owned payload exists. Full scene/photo, actor assets and Windows 11 runtime qualification remain separate.
+
+
+## Native LLVM RSP backend
+
+Any build enabling RSP (including the full host/audio product) requires the
+source-backed **LLVM 21.1.8** native X86 ORC JIT selected by
+[`llvm-dependencies.json`](../cmake/llvm-dependencies.json). The selected
+parallel-rsp `9ab776a2ce28899769c4f911403234cac62fc799` provides MIT SIMD/CP2
+helpers; `src/rsp_llvm.cpp` provides generated scalar/control execution.
+GNU lightning, its old JIT/allocator and Windows mman are not production inputs.
+The public `isle::rsp::Machine` interface and existing CPU/consumer checks remain.
+
+Prepare and compile the owned dependency once with a compatible native C++ ABI
+and configuration (exact native MSVC toolchain/static CRT on Windows; GNU/Clang
+with the same libstdc++ ABI on Linux). Keep at most two compiler jobs and use disk-backed storage;
+do not point this at the old embedded Clang/debug-RSP tree or an arbitrary prebuilt
+LLVM installation:
+
+```sh
+LLVM_ROOT=/path/to/owned/llvm-21.1.8-release
+python3 -B tools/prepare_llvm.py --root "$LLVM_ROOT" --prepare
+python3 -B tools/prepare_llvm.py --root "$LLVM_ROOT" --configure --build-type Release --cc gcc --cxx g++
+cmake --build "$LLVM_ROOT/build" --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+python3 -B tools/prepare_llvm.py --root "$LLVM_ROOT" --seal-build
+cmake -S . -B build/rsp -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DISLE_BUILD_RSP_PROBE=ON -DISLE_LLVM_ROOT="$LLVM_ROOT"
+```
+
+Windows Debug requires a separate owned Debug root for the matching `/MTd` CRT.
+Linux Debug/Clang builds may reuse verified Release LLVM with the same native
+libstdc++ ABI; the project's own Debug/sanitizer checks are unchanged.
+For a new compiler-specific root, select its `--cc` and `--cxx`.
+Preparation verifies the immutable archive/source inventory
+and retains provenance/notices; it does **not** compile dependencies implicitly.
+CMake rejects stale source/build receipts, wrong native targets and incompatible
+CRT/compiler configurations. Runtime composition records the exact selected
+LLVM source/build identities and bundles its own and selected third-party texts,
+not a blanket MIT label. LLVM uses Apache-2.0 WITH LLVM-exception with separately
+identified third-party portions. Historical pre-cutover proofs are not LLVM
+runtime/performance qualification.
+
+Hosted CI caches only the owned LLVM dependency root, never project/GAME builds,
+SDKs or private inputs. Existing full-host jobs seed compatible Release LLVM for
+the other checks; Windows Debug uses a separate `/MTd` identity. Keys include the
+actual compiler SHA256, hosted image, native OS/architecture, CMake version,
+absolute root and pinned source/preparation recipes, with no fallback keys.
+Every cache hit uses `--verify-sealed` to check source/cache/compiler facts and
+the sealed static-archive/generated-header/CMake-export inventory; matching hits
+are not reconfigured. Cache misses compile with two jobs, then `--seal-build`
+binds actual binary bytes before cache save. The owned root remains subject to
+its 20-GiB capacity check. Native jobs allow up to 360 minutes for a cold source
+build; this is not measured build-time or performance qualification.
 
 
 ## Opt-in real libultraship host probe (nonplayable)
@@ -103,10 +155,32 @@ The full-host preset uses Visual Studio 2022 x64, static CRT dependencies and a 
 
 ```powershell
 ./tools/prepare_windows_host.ps1
-cmake --preset windows-host-release
+$llvmRoot = Join-Path $env:LOCALAPPDATA '35mmisle-llvm-21.1.8-release'
+python -B tools/prepare_llvm.py --root $llvmRoot --prepare
+python -B tools/prepare_llvm.py --root $llvmRoot --configure --generator 'Visual Studio 17 2022' --architecture x64 --build-type Release
+cmake --build "$llvmRoot/build" --config Release --parallel 2 --target LLVMOrcJIT LLVMX86CodeGen LLVMX86AsmParser LLVMX86Desc LLVMX86Info LLVMCore LLVMExecutionEngine LLVMRuntimeDyld LLVMPasses
+python -B tools/prepare_llvm.py --root $llvmRoot --seal-build
+cmake --preset windows-host-release -DISLE_LLVM_ROOT="$llvmRoot"
 cmake --build --preset windows-host-release --parallel 2
 ctest --preset windows-host-release
 ```
 
 The script creates only its own checkout, refuses unowned/dirty/wrong-pin inputs, and verifies the vcpkg executable's size/SHA-256 before execution. It selects the installed VS2022 x64 developer environment and exports its actual compiler/SDK search paths, using the same environment mechanism as vcpkg. CMake repeats vcpkg verification before `project()` loads the toolchain. No floating bootstrap, overlays, automatic LUS vcpkg or binary cache substitution. The preset enables host, private engine, audio, RSP and canonical RDP; public CI needs no ROM. Compiler/CLI evidence and Windows 11/device runtime qualification remain separate; see ADMISSION.
+
+
+The native LLVM dependency is compiled with MSVC and `/MT` (`/MTd` in a separate
+Debug root), not a `/MD` prebuilt patched at application link time. The same
+static CRT policy applies to the core Windows presets. Hosted Runtime packaging
+still inspects every AMD64 PE's imports and rejects redistributable CRT imports.
+
+### Preview8 candidate retention
+
+The existing [native workflow](../.github/workflows/native.yml) keeps ordinary
+push/PR packages runner-local. A maintainer may dispatch it at an immutable full
+source commit with `retain_preview8_candidate=true`. Only the existing Windows
+and Linux full-host jobs retain their already checked Runtime ZIP/TGZ, exact
+composition, committed project source archive, candidate receipt and SHA256SUMS
+for 14 days. No additional release workflow or write-scoped token is involved.
+Download and inspect/smoke these exact files before the separately authorized
+final `gh` release publication. See [packaging boundaries](development/admission/RUNTIME_PACKAGING.md#preview8-native-llvm-composition-and-candidates).
 

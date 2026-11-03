@@ -27,7 +27,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import runtime_custody as custody
 import runtime_custody_syscalls as syscall_custody
-from runtime_relink import elf_identity
+from runtime_elf import elf_identity
 
 AUDIT_MODULE = None
 COMPILER = None

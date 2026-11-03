@@ -39,6 +39,12 @@ The original retrace/AI/task phases remain distinct from gameplay and host prese
 
 ## Private exact RSP task execution — bounded W06 evidence
 
+**Backend scope:** the execution evidence in this section used the historical
+GNU lightning backend. Preview8 now uses source-backed LLVM 21.1.8 and only the
+selected MIT parallel-rsp helpers; see [current composition](RUNTIME_PACKAGING.md#preview8-native-llvm-composition-and-candidates).
+The following source-specific measurements and old notice statements remain
+historical, not qualification or requirements of the new backend.
+
 `isle-rsp` and `35mmisle-rsp-probe` use `parallel-rsp@9ab776a2ce28899769c4f911403234cac62fc799`, archive SHA-256 `e03ad7e3277a9f763aab0aff86da350cf93fecb66ef7f616298d84755fa6275d`. The explicit library-only JIT/SIMD composition selects the core's MIT license, **not** an MIT license for statically linked GNU lightning (LGPL-3.0-or-later) or other bundled material. Full original archive/notices and six exact-input adaptation hashes remain build-private. Public tooling contains original native adaptations; substantial GNU assembler matching bodies are read from exact private spans, not embedded publicly. No release/package approval follows.
 
 Original `Machine` owns DMEM/IMEM/CP0 and borrows stable 8-MiB word-swapped RDRAM, never host pointers disguised as console addresses. Original CP0/DMA code replaces upstream plugin services. DMA validates all rows before transfer, preserves separately programmed pending latches, supports both directions/count/skip/alignment/same-bank wrap and yields for IMEM invalidation. SP status, semaphore and interrupt state are explicit. RDRAM/XBUS DPC delivery retains partial packets and calls the bounded host sink only after returning from generated code. Each compiled basic-block entry—including internal backedges—consumes budget. Compilation errors return explicit failure before generated-frame unwinding. FullSync counts observed commands; **no DP timeline completion is implied**. Current admission is graphics/type 1/flags 4 only, without cycle timing, single-step execution, audio or yield/resume.

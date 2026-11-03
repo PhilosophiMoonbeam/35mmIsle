@@ -70,7 +70,7 @@ void usage(std::ostream& out) {
            "--play selects checked SDL output; pumps events, retains blocked PCM, then flushes/drains.\n"
            "It opens one enumerated physical endpoint with no fallback. Stream drain is NOT DAC/hearing proof.\n"
            "No game CPU/full boot/BGM/effects/N64 hardware/physical playback qualification.\n"
-           "Native core MIT; static GNU lightning LGPL-3.0-or-later; see project licenses.\n"
+           "Native core MIT; LLVM Apache-2.0 WITH LLVM-exception; see bundled third-party notices.\n"
            "Output scope: private synthesized PCM and non-payload provenance only;\n"
            "no ROM, SDK implementation, bank, microcode, or RAM dump is published.\n";
 }
@@ -284,7 +284,7 @@ int run(int argc, Argument* argv[]) {
               << " size=" << session.identity().size << " input_order=" << order(session.identity().order)
               << " quota_policy=explicit_experiment ai_occupancy=not_claimed\n"
                  "scope=native_dry_one_voice_actual_RSP no_game_CPU_no_full_boot_no_hardware_or_hearing_qualification\n"
-                 "licenses=native_MIT,static_GNU_lightning_LGPL-3.0-or-later output=private_PCM_and_nonpayload_provenance_only\n";
+                 "licenses=native_MIT,LLVM_Apache-2.0_WITH_LLVM-exception output=private_PCM_and_nonpayload_provenance_only\n";
     std::ofstream pcm_file, tasks_file;
     if (!options.raw.empty()) {
         if (!std::filesystem::create_directory(options.raw))
@@ -382,7 +382,7 @@ int run(int argc, Argument* argv[]) {
                     "quota_policy=explicit_experiment_not_AI_occupancy\n"
                     "scope=no_game_CPU_full_boot_BGM_effects_hardware_or_physical_playback_qualification\n"
                     "independent_RSP_or_hardware_parity=not_claimed\n"
-                    "licenses=native_core_MIT;static_GNU_lightning_LGPL-3.0-or-later;see_project_licenses\n"
+                    "licenses=native_core_MIT;LLVM_Apache-2.0_WITH_LLVM-exception;see_bundled_thirdparty_notices\n"
                     "output_scope=private_synthesized_PCM_and_nonpayload_provenance_only\n"
                     "no_ROM_bank_microcode_SDK_implementation_or_RAM_dump\n"
                  << "audio_output=" << (options.play ? "checked_SDL_stream_drained_not_DAC_completion" : "not_requested") << '\n'

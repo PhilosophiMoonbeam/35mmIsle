@@ -6,7 +6,29 @@ The root `LICENSE` is canonical MIT for **original 35mmIsle contributions**: thi
 
 Nintendo/decompiled game code, ROMs, extracted or reconstructed game assets, SDK material, vendor dependencies, and upstream-derived portions are **not relicensed by that MIT grant**. Preserve upstream copyright, license, attribution, and restriction notices; record the applicable terms per file/component. Adding a 35mmIsle copyright or SPDX header, renaming a file, translating an implementation, or adapting upstream code does not erase its provenance. Mixed files require separate identification of original and upstream-derived portions; do not label the whole file MIT without evidence of permission.
 
-**Continue native implementation with LUS and independently authored missing services.** The user's direction admits candidate-scoped original runtime work, the pinned MIT LUS integration and lawful private ROM extraction/reference/capture development under [ADMISSION](../development/ADMISSION.md). Restricted SDK implementations are excluded and replaced, not prerequisites to obtain before engineering can proceed. This is authorization for the requested private development use, not a third-party redistribution grant or blanket MIT determination. Do not publish ROMs, extracted assets, copied decompiled/SDK payloads, reference checkouts, generated game archives, compiled game payloads, or secrets. Actual source imports and release artifacts retain the separate reviews below.
+**Continue native implementation with LUS and independently authored missing services.** The user's direction admits candidate-scoped runtime work, pinned MIT LUS integration and lawful private ROM extraction/reference/capture development under [ADMISSION](../development/ADMISSION.md). Restricted SDK implementations are excluded and replaced. Preview8's public Runtime distribution uses the maintainer disposition below; this does not relicense third-party components or authorize ROMs, extracted assets, SDK payloads, private profiles/captures, reference-tree copies or secrets.
+
+## Preview8 maintainer disposition
+
+On 2026-11-03 the maintainer explicitly supplied the Snap distribution basis:
+clean-room reverse engineering, no official source, and a lawful US basis for
+the requested public preview8 Windows x64/Linux x64 Runtime. The previous
+missing-basis issue `16.8.7` is closed. This is a recorded maintainer disposition,
+not independent legal clearance, a new upstream license, or a blanket MIT claim.
+The absence of a repository-wide Snap license is not reinstated as a global
+automatic preview8 publication hold. Actual third-party terms and artifact
+privacy/composition checks remain applicable.
+
+The new production RSP composition is the selected MIT parallel-rsp helper core
+plus original LLVM ORC integration and source-backed LLVM **21.1.8**. LLVM's
+Apache-2.0 WITH LLVM-exception license and selected third-party notices are
+bundled under `share/licenses/35mmisle/dependencies/llvm`. GNU lightning,
+Windows mman and their private relink companion are not new Runtime inputs.
+Historical release/relink evidence retains its original source/backend scope.
+Ordinary push/PR workflows never publish. Explicit manual candidate retention
+permits maintainer download, inspection and exact-hash smoke before the
+separately authorized final public preview; it is not Windows 11/device/game
+fidelity qualification.
 
 ## Evidence baseline
 
@@ -83,7 +105,7 @@ The user confirms a lawful private development ROM and directs extraction, refer
 
 | Unresolved fact/decision | Concrete resolving experiment or evidence | Blocking boundary |
 |---|---|---|
-| Snap/MM/OOT/Shipwright game-source permission and right-holder scope | Select an actual import and trace its exact file/history/notices and intended use; obtain an applicable rights basis or qualified review where needed. Do not invent a replacement upstream license. | Only the affected import or release composition is held without an affirmative basis; original runtime/services, permissive LUS integration and admitted private ROM development proceed. |
+| MM/OOT/Shipwright and future game-source imports | Trace the exact candidate/history/notices and intended use; obtain a material-specific basis where needed. Snap preview8 already has the maintainer's recorded clean-room distribution basis above. | No resurrection of the closed Snap missing-basis issue or a blanket rights stop; actual new third-party imports retain individual review. |
 | SGI/Nintendo SDK restrictions in Snap and Ghostship | Separate interface/behavior requirements from proprietary implementation; build the needed service originally or use a provenance-reviewed permissive dependency. Review any future proposed copied material individually. | Restricted SDK implementation/header copying is excluded, not a global dependency. Renaming or translation is not independent replacement. |
 | Ownership limits in 2Ship CC0 and Ghostship MIT | Trace each reuse candidate to original port authors versus MM/SM64/SDK/vendor ancestry; compare its exact notice history and rights basis. | Blanket project-license conclusions are rejected. |
 | LUS fonts and full dependency graph | Resolve exact embedded font/header origin, version and license text; enumerate the selected configuration's downloads, linked libraries and packaged media. Produce the shipped obligation inventory. | The pinned host integration is admitted; unresolved shipped-component obligations limit release approval, not all dependency engineering. |

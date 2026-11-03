@@ -97,6 +97,13 @@ not a blanket MIT label. LLVM uses Apache-2.0 WITH LLVM-exception with separatel
 identified third-party portions. Historical pre-cutover proofs are not LLVM
 runtime/performance qualification.
 
+The artifact seal includes ordinary `build/lib` archives and, for a CMake
+multi-config build, the selected `build/<configuration>/lib` output used by
+Visual Studio. The selected Debug/Release configuration must be offered by the
+generated cache; Release-only archives cannot satisfy a Debug seal. Required
+components, generated headers, CMake exports and regular-file hashes remain
+mandatory; selected library-root symlinks are rejected.
+
 Hosted CI caches only the owned LLVM dependency root, never project/GAME builds,
 SDKs or private inputs. Existing full-host jobs seed compatible Release LLVM for
 the other checks; Windows Debug uses a separate `/MTd` identity. Keys include the

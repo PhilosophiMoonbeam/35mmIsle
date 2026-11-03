@@ -371,12 +371,24 @@ def artifact_files(root):
     build = root / 'build'
     selected = set()
     archives = []
-    for path in (build / 'lib').rglob('*'):
-        if path.is_symlink():
+    values = cache_values(root)
+    library_directories = [build / 'lib']
+    if values.get('CMAKE_CONFIGURATION_TYPES'):
+        configuration = values.get('CMAKE_BUILD_TYPE')
+        if (configuration not in ('Debug', 'Release') or
+                configuration not in values['CMAKE_CONFIGURATION_TYPES'].split(';')):
+            raise ValueError('LLVM selected multi-config configuration is invalid')
+        # Visual Studio emits component libraries here, not under build/lib.
+        library_directories.append(build / configuration / 'lib')
+    for directory in library_directories:
+        if directory.is_symlink():
             raise ValueError('LLVM compiled artifact tree must not contain symlinks')
-        if path.is_file() and path.suffix.lower() in ('.a', '.lib'):
-            archives.append(path)
-            selected.add(path)
+        for path in directory.rglob('*'):
+            if path.is_symlink():
+                raise ValueError('LLVM compiled artifact tree must not contain symlinks')
+            if path.is_file() and path.suffix.lower() in ('.a', '.lib'):
+                archives.append(path)
+                selected.add(path)
     # These are the actual CMake component target names requested by the
     # provisioning contract, not a guessed transitive linker library list.
     names = {path.stem.removeprefix('lib') for path in archives}

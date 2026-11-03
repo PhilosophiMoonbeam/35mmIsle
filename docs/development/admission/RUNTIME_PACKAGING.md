@@ -100,7 +100,10 @@ PCM and complete task-counter CSVs were byte-identical across all nine
 old/O2/O1 processes per case. This is native-backend regression agreement,
 **not Original audio fidelity**. LLVM is not uniformly faster: cold compilation
 and late spikes remain materially worse than the previous backend, despite
-lower warm medians. The spikes remain included and unattributed.
+lower warm medians. The spikes remain included. Subsequent private phase
+instrumentation correlated tasks 122/142 with first compilation of a previously
+unused region; IR optimization and native code generation dominated that cost.
+This does not establish that all future latency outliers have the same cause.
 
 O1 reduced mean first-task CPU by 7.5–8.5% and improved aggregate warm throughput
 by 0.9–3.3% against O2 in this experiment. It is not a confidence-qualified or

@@ -461,7 +461,9 @@ void optimize(ir::Module& module) {
     passes.registerFunctionAnalyses(functions);
     passes.registerLoopAnalyses(loops);
     passes.crossRegisterProxies(loops, functions, cgscc, modules);
-    auto pipeline = passes.buildPerModuleDefaultPipeline(ir::OptimizationLevel::O2);
+    // O1 reduces measured first-use cost for small regions; native codegen
+    // retains LLJIT's default optimization level.
+    auto pipeline = passes.buildPerModuleDefaultPipeline(ir::OptimizationLevel::O1);
     pipeline.run(module, modules);
 }
 

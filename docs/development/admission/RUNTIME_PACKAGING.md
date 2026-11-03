@@ -74,6 +74,41 @@ Server 2022 compiler/package proof is not Windows 11 gameplay/device evidence.
 The LLVM cutover does not inherit old campaign, fidelity, performance or
 private relink acceptance merely because source/package generation succeeds.
 
+### Bounded native task costs
+
+The release IR pipeline uses **O1**; LLJIT's native-codegen optimization default
+is unchanged. A private comparison changed only the IR pipeline from O2 to O1,
+linked the same instrumented audio frontend, and ran three independent
+512-task processes per case. Each process had a 60-second deadline. Both cases
+used sound 14 and quota 640; the controlled case changed pitch after task 64,
+pan after 128, and stopped the voice after 384.
+
+The following are RSP-only thread-CPU measurements on the development Linux
+host, not whole-game frame rates. Warm includes **every task 11–512**, including
+late outliers; the controlled distribution includes active and idle tasks.
+The old backend was rebuilt from public source `5787cb2`, not substituted by
+an interpreter.
+
+| Case | Backend | First task, three-run range (ms) | Warm median (µs) | Worst warm task (µs) | Warm tasks / CPU-second |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Normal | Previous lightning | 3.052–3.151 | 74.840 | 130.264 | 13,195.3 |
+| Normal | LLVM O1 | 462.513–474.654 | 71.043 | 4,309.404 | 12,391.4 |
+| Controlled | Previous lightning | 3.018–3.075 | 71.013 | 130.614 | 16,656.7 |
+| Controlled | LLVM O1 | 455.005–466.055 | 68.408 | 4,824.428 | 15,113.2 |
+
+PCM and complete task-counter CSVs were byte-identical across all nine
+old/O2/O1 processes per case. This is native-backend regression agreement,
+**not Original audio fidelity**. LLVM is not uniformly faster: cold compilation
+and late spikes remain materially worse than the previous backend, despite
+lower warm medians. The spikes remain included and unattributed.
+
+O1 reduced mean first-task CPU by 7.5–8.5% and improved aggregate warm throughput
+by 0.9–3.3% against O2 in this experiment. It is not a confidence-qualified or
+strict Pareto improvement: the controlled median increased about 1.2% against
+O2. These were sequential three-repeat experiments, not randomized trials.
+O1 was selected to reduce measured first-use and tail costs without adding
+tiering, another backend, or a runtime configuration surface.
+
 ## Hosted G30 Runtime products and cold Album Replay
 
 Commit `43060723db3108cd59a87970fae18ba7f182a096` passes all ten jobs in

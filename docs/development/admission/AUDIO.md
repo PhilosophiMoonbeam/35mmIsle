@@ -127,7 +127,7 @@ Actual integrated Linux evidence:
 - GCC Debug built full LUS, engine, RSP, producer, CLI and transport; all eleven CTests passed. Public raw CLI completed 400 tasks / 256,000 frames with pitch, pan, stop and replay; every SP terminal status was `0x203`, with no DPC packets.
 - GCC Release and Clang ASan+UBSan engine/RSP/audio configurations also passed all eleven tests and actual 128-task / 81,920-frame checked-dummy execution with controls, stop and replay. Sanitized actual graphics/line execution passed all five tasks. Two original-code Clang diagnostics were corrected by a nonshadowing destination name and explicit checked signed-byte conversion, not suppressed.
 - Public `--play` submitted and drained 15,360 actual native frames through SDL3 3.4.2 `dummy`, source 32,006 Hz to 44,100-Hz S16 stereo. Its raw source PCM exactly matched the no-play path. A separate actual-RSP consumer filled a paused 2,048-frame bound, observed repeated `WouldBlock` without changing accounting or retiring its lease, rejected an early build, resumed and accepted 3,072 frames exactly once, then flushed/drained while preserving the host SDL reference.
-- The SDL leaf's separate private runs additionally exercised 48,000-Hz F32 conversion, abort, oversized input, post-finish rejection, unavailable driver, synthetic removal and event-filter rejection. Synthetic removal is not physical unplug or endpoint-liveness evidence. The selected leaf uses one enumerated physical endpoint and no Null fallback; its removal-watch lifetime relies on the audited SDL3 3.4.2 dispatch/removal fence.
+- The SDL leaf's separate private runs additionally exercised 48,000-Hz F32 conversion, abort, oversized input, post-finish rejection, unavailable driver, synthetic removal and event-filter rejection. Synthetic removal is not physical unplug or endpoint-liveness evidence. At that stage the selected leaf used one enumerated physical endpoint and no Null fallback; its removal-watch lifetime relied on the audited SDL3 3.4.2 dispatch/removal fence.
 - Combined real LUS/SDL3 EGL software rendering and actual native RSP-to-dummy audio completed 120 intro-asset frames / 119 original C updates, 107 audio tasks and 68,480 accepted/drained source frames. Parent inspected the owned-display video: centered original sprite, RGB fade and black terminal state. A syscall trace observed **one** `O_RDONLY` ROM open for both consumers. The 16-MiB snapshot was released before frames; audio watch/stream, C users, GPU/cache/host and asset storage retired in their required order.
 - Unicode/spaced-path v64 and n64 combined-host runs also completed their 120-frame presentation/fade and stream/owner teardown with one read-only ROM open each; parent inspected both videos. The v64 trace's octal-escaped UTF-8 pathname initially defeated the private harness's literal matcher; decoding the existing successful trace fixed the evidence filter without rerunning the host or changing project code.
 - Migrated RSP CLI executed all five original graphics/line tasks successfully for each z64/v64/n64 input. Eleven public audio argument/device/output rejection cases returned failure, preserved existing raw output and did not expose the private input pathname. An explicitly unavailable SDL driver failed admission without a real hardware attempt.
@@ -135,6 +135,33 @@ Actual integrated Linux evidence:
 - Independent transport/Session/CLI/host/snapshot source review reported no confirmed defects; it executed no gates. Runtime evidence above is separate from that review.
 
 The checked SDL leaf is composed directly into the LUS host session, not falsely registered as its legacy void-playback backend. Host queue pacing and quota 640 are explicitly experimental; they are not original guest AI occupancy, VI timing or original cue synchronization. Physical audio opens previously failed EACCES and were not retried. No hearing, hardware-GPU, Windows audio, Windows 11, full title/menu/course, BGM/effects or complete W12 qualification follows.
+
+### System-default playback selection
+
+A Windows preview 8 user reported monitor-speaker output instead of the system
+default. The zero-device policy had explicitly selected the first enumerated
+physical endpoint. Corrected builds open `SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK`;
+nonzero explicit physical requests remain enumeration-validated, pinned and
+fail-closed without fallback. Default playback retains the logical SDL handle
+while SDL migrates its physical backing. Its diagnostic physical ID is zero,
+meaning unspecified, and its name/format fields are opening snapshots.
+
+The native transport regression passes actual SDL dummy PCM queue, backpressure,
+flush/drain, retained-reference and invalid-explicit-device checks. A separate
+isolated PulseAudio test used two real software null sinks: SDL enumerated B
+first, but the default stream opened on A while an explicit stream stayed on B.
+Changing the default to B moved the same logical default handle; observed
+backend sink-input routes agreed. Removing B moved default playback back to A
+while the pinned stream failed disconnected and refused further PCM or fallback.
+Both original consumer and private server exited zero and were reaped.
+
+The first private server bootstrap lacked its protocol-support library search
+path; its bounded negative and normal signal retirement are preserved separately.
+Only the private module lookup was repaired before the successful routing check.
+No system audio service/settings, user profile or physical endpoint was changed.
+This proves software selection and migration, not Windows 11 physical routing,
+hearing, hardware unplug or Original audio fidelity.
+
 
 ## Shared synthesis and pre-CSP ownership qualification
 

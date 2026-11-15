@@ -37,9 +37,9 @@ public:
     struct Config {
         int source_rate = 0;
         std::size_t max_queued_source_frames = 0;
-        // Must be a currently enumerated physical playback ID. Zero resolves
-        // once to the FIRST enumerated physical endpoint, not the migratable
-        // SDL default. No other device/driver is tried if opening it fails.
+        // Zero opens SDL's system-default playback policy, including migration
+        // when the default changes. Nonzero must be a currently enumerated
+        // physical playback ID; opening/removal never falls back to another ID.
         SDL_AudioDeviceID physical_device = 0;
     };
     struct Info {
@@ -47,8 +47,11 @@ public:
         std::array<char, 64> driver{};
         std::array<char, 256> device_name{};
         SDL_AudioDeviceID physical_device = 0, logical_device = 0;
-        // Checked opening snapshots; source remains native-endian S16 stereo.
-        // Stream output/device formats may differ: SDL owns conversion.
+        // physical_device is the explicitly pinned ID, or zero for SDL-managed
+        // default playback (not an inferred physical identity). logical_device
+        // is the actual opened SDL handle and remains stable across migration.
+        // Checked opening snapshots, not live migration telemetry. Source
+        // remains native-endian S16 stereo; SDL owns output/device conversion.
         SDL_AudioSpec source{}, stream_output{}, device{};
         int device_buffer_frames = 0;
         std::size_t max_queued_source_frames = 0;

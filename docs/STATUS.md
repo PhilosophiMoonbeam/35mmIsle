@@ -18,6 +18,12 @@ all static Beach species admission, and actual RSP/RDP lens-border pixels across
 four lanes plus zoom-out restoration. Native Windows artifact verification and
 updated executable delivery are separate gates; preview 8 is not silently replaced.
 
+A subsequent Windows report identified playback on monitor speakers instead of
+the system default. Corrected source replaces first-enumerated endpoint selection
+with SDL's migratable default policy while preserving explicit physical pinning.
+Actual isolated two-endpoint software routing, default changes, endpoint removal
+and stream closure pass; Windows physical routing and hearing remain unqualified.
+
 The campaign and fidelity evidence below is historical, not qualification of
 preview 8 or its repaired successor. Windows 11 provisioned acceptance remains
 deferred; the user's observed failure is retained as negative product evidence.

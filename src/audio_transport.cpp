@@ -44,9 +44,11 @@ bool SDLCALL SdlAudioOutput::watch(void* userdata, SDL_Event* event) noexcept {
         auto& self = *static_cast<SdlAudioOutput*>(userdata);
         const auto physical = self.watched_physical_.load(std::memory_order_acquire);
         const auto logical = self.watched_logical_.load(std::memory_order_acquire);
-        // Before both identities are published, any playback removal fails
-        // closed. This covers enumeration/open/returned-logical-ID races.
-        if (!physical || !logical || event->adevice.which == physical || event->adevice.which == logical) {
+        // Before the logical identity is published, any playback removal fails
+        // closed. Thereafter default playback follows only its logical handle:
+        // removing the old physical default must not defeat SDL's migration.
+        if (!logical || event->adevice.which == logical ||
+            (physical && event->adevice.which == physical)) {
             self.removed_.store(true, std::memory_order_release);
         }
     }
@@ -114,32 +116,27 @@ bool SdlAudioOutput::open(Config config) noexcept {
         return false;
     }
     watching_ = true;
-    int count = 0;
-    SDL_AudioDeviceID* devices = SDL_GetAudioPlaybackDevices(&count);
-    if (!devices) {
-        fail_sdl("SDL_GetAudioPlaybackDevices");
-        cleanup();
-        return false;
+    const SDL_AudioDeviceID selected = config.physical_device ?
+        config.physical_device : SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+    if (config.physical_device) {
+        int count = 0;
+        SDL_AudioDeviceID* devices = SDL_GetAudioPlaybackDevices(&count);
+        if (!devices) {
+            fail_sdl("SDL_GetAudioPlaybackDevices");
+            cleanup();
+            return false;
+        }
+        bool found = false;
+        for (int i = 0; i < count; ++i) found = found || devices[i] == selected;
+        SDL_free(devices);
+        if (!found) {
+            fail(ErrorKind::unavailable_device, "select physical playback device", "Requested physical endpoint is not enumerated; no fallback attempted");
+            cleanup();
+            return false;
+        }
+        info_.physical_device = selected;
+        watched_physical_.store(selected, std::memory_order_release);
     }
-    SDL_AudioDeviceID selected = config.physical_device;
-    if (!selected && count > 0) selected = devices[0];
-    bool found = false;
-    for (int i = 0; i < count; ++i) found = found || devices[i] == selected;
-    SDL_free(devices);
-    if (!selected || !found) {
-        fail(ErrorKind::unavailable_device, "select physical playback device", "Requested physical endpoint is not enumerated; no fallback attempted");
-        cleanup();
-        return false;
-    }
-    info_.physical_device = selected;
-    watched_physical_.store(selected, std::memory_order_release);
-    const char* name = SDL_GetAudioDeviceName(selected);
-    if (!name) {
-        fail_sdl("SDL_GetAudioDeviceName");
-        cleanup();
-        return false;
-    }
-    copy_text(info_.device_name, name);
     const char* driver = SDL_GetCurrentAudioDriver();
     if (!driver) {
         fail(ErrorKind::invalid_state, "SDL_GetCurrentAudioDriver", "Audio subsystem has no selected driver");
@@ -151,7 +148,7 @@ bool SdlAudioOutput::open(Config config) noexcept {
         cleanup();
         return false;
     }
-    // Physical identity is already watched; never open the migratable default.
+    // The default sentinel is a policy, never an enumerated physical identity.
     stream_ = SDL_OpenAudioDeviceStream(selected, &info_.source, nullptr, nullptr);
     if (!stream_) {
         fail_sdl("SDL_OpenAudioDeviceStream");
@@ -166,6 +163,15 @@ bool SdlAudioOutput::open(Config config) noexcept {
         return false;
     }
     watched_logical_.store(info_.logical_device, std::memory_order_release);
+    // Resolve the opening name through the actual logical device, not a second
+    // default lookup that could already refer to a different endpoint.
+    const char* name = SDL_GetAudioDeviceName(info_.logical_device);
+    if (!name) {
+        fail_sdl("SDL_GetAudioDeviceName");
+        cleanup();
+        return false;
+    }
+    copy_text(info_.device_name, name);
     if (!SDL_GetAudioDeviceFormat(info_.logical_device, &info_.device, &info_.device_buffer_frames)) {
         fail_sdl("SDL_GetAudioDeviceFormat");
         cleanup();

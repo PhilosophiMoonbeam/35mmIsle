@@ -69,6 +69,11 @@ The Windows full-host preset builds `build/windows-host-release/Release/35mmisle
 Canonical Save slots live in `<data-directory>/profile`; pass the data root,
 not that `profile` subdirectory. Diagnostic text reports live in the data root.
 
+Corrected builds use SDL's system-default playback device and follow default-device
+changes. Preview 8 instead selected the first enumerated endpoint, which could
+send sound to monitor speakers. This routing correction does not establish
+Original audio fidelity or physical-device qualification.
+
 `--renderer-resources PATH` selects the existing pinned LUS shader-resource directory explicitly; for the build above, use `build/native-game/host-renderer-resources`. An explicit path must contain `shaders/opengl/default.shader.glsl`; a missing path fails rather than falling back. Omit the option to retain installed-resource discovery and the build-tree default. This selects renderer support data, not ROM assets or an alternative graphics backend.
 
 The product's persistent `game_owner::Owner` constructs and retires State, Runtime, Manager, native continuations, Input, GTL and canonical graphics on a dedicated GAME thread. Main continues actual events and platform requests while Source is inside native waits. Completed pixels remain borrowed until main copies or explicitly declines them; only GAME then releases the real FrameToken.
@@ -173,6 +178,10 @@ and external-owner closure are separate. See [the ownership contract](developmen
 ### Native Snap Station
 
 Add `--snap-station-directory PATH` to the application command, selecting an existing writable output directory. This configures an output-backed virtual accessory; it does not connect automatically. Press `F9` to connect or disconnect. Connect before opening Gallery, select the four photographs through ordinary GAME controls, then choose **Print**.
+
+F9 is not a course, camera or diagnostic-label control. Without
+`--snap-station-directory`, it only reports **no output directory configured**
+in the window title; it does not connect a printer or request application exit.
 
 Original Save and printer-reset commands retire the old application and host, then recreate them through normal Boot using the same saved profile. The native station captures sixteen completed 640×480 GAME-rendered passes into an exclusive job directory containing `sheet.bmp`: a lossless 2560×1920, four-by-four sheet. It does not synthesize substitute photographs or require a physical Snap Station.
 
